@@ -11,6 +11,17 @@ import { libsPath, projectPath } from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types'
 import { version } from '../../package.json'
 
+/** Local Tools checkout — has non-interactive sudo + `.localhost` hosts skip. */
+const TOOLS_RPX_SRC = join(homedir(), 'Code/Tools/rpx/packages/rpx/src/index.ts')
+
+type DevelopmentRpx = typeof import('@stacksjs/rpx')
+
+async function importDevelopmentRpx(): Promise<DevelopmentRpx> {
+  if (existsSync(TOOLS_RPX_SRC))
+    return await import(TOOLS_RPX_SRC) as DevelopmentRpx
+  return await import('@stacksjs/rpx')
+}
+
 // rpx registry ids written by this `./buddy dev` session — cleared on shutdown.
 let activeRpxRegistryIds: string[] = []
 
@@ -438,6 +449,28 @@ export async function startDevelopmentServer(_options: DevOptions, _startTime?: 
         .map((ok, i) => ok ? null : ports[i].name)
         .filter((x): x is string => x !== null)
 
+      if (hasCustomDomain && domain) {
+        try {
+          await rpxTlsPreflight
+          await registerRpxProxiesForDomain({
+            domain,
+            frontendPort,
+            apiPort,
+            docsPort,
+            dashboardPort,
+            includeDashboard,
+            options,
+          })
+        }
+        catch (error) {
+          const message = error instanceof Error ? error.message : String(error)
+          console.log(`  ${yellow('⚠')}  ${yellow('HTTPS proxy unavailable')}: ${message}`)
+          console.log(`  ${dim('    ')}${dim('Use http://localhost:3000 or set SUDO_PASSWORD in .env and restart `./buddy dev`')}`)
+          if (options.verbose)
+            console.log(`  ${dim('    ')}${dim(`Trust CA: sh ${join(RPX_SSL_DIR, 'trust-rpx-cert.sh')}`)}`)
+        }
+      }
+
       printDevReadyBanner({
         options,
         nativeMode,
@@ -463,29 +496,6 @@ export async function startDevelopmentServer(_options: DevOptions, _startTime?: 
           ? `ready in ${(elapsedMs / 1000).toFixed(1)}s — ${failed.join(', ')} did not bind within ${readinessTimeoutMs / 1000}s`
           : `ready in ${(elapsedMs / 1000).toFixed(1)}s`
         console.log(`  ${dim(summary)}\n`)
-      }
-
-      if (hasCustomDomain && domain) {
-        try {
-          await rpxTlsPreflight
-          await registerRpxProxiesForDomain({
-            domain,
-            frontendPort,
-            apiPort,
-            docsPort,
-            dashboardPort,
-            includeDashboard,
-            options,
-          })
-        }
-        catch (error) {
-          const message = error instanceof Error ? error.message : String(error)
-          console.log(`  ${yellow('⚠')}  ${yellow('HTTPS proxy unavailable')}: ${message}`)
-          if (options.verbose) {
-            console.log(`  ${dim('    ')}${dim('Set SUDO_PASSWORD in .env and restart `./buddy dev`')}`)
-            console.log(`  ${dim('    ')}${dim(`Trust CA: sh ${join(RPX_SSL_DIR, 'trust-rpx-cert.sh')}`)}`)
-          }
-        }
       }
 
       if (process.env.STACKS_PRINT_ROUTES === '1') {
@@ -557,12 +567,12 @@ function printDevReadyBanner(input: {
     dashboardDomain,
   } = input
   const verbose = options.verbose ?? false
-  const showLocalUrls = verbose || options.withLocalhost === true
+  const showLocalUrls = verbose || options.withLocalhost === true || hasCustomDomain
 
   console.log()
   console.log(`  ${green('➜')}  ${bold('Frontend')}:    ${cyan(frontendUrl)}`)
   if (showLocalUrls)
-    console.log(`  ${dim('➜')}  ${dim('Local')}:       ${dim(`http://localhost:${frontendPort}`)}`)
+    console.log(`  ${dim('➜')}  ${dim('Local')}:       ${dim(`http://localhost:${frontendPort}`)} ${dim('(always works)')}`)
   if (nativeMode)
     console.log(`  ${green('➜')}  ${bold('Native')}:      ${cyan(`Craft → http://localhost:${frontendPort}`)}`)
   console.log(`  ${green('➜')}  ${bold('API')}:         ${cyan(apiUrl)}`)
@@ -917,7 +927,7 @@ function execSudoSh(command: string): void {
   if (sudoPassword)
     execSync(`echo '${sudoPassword}' | sudo -S sh -c '${escaped}' 2>/dev/null`, { stdio: ['pipe', 'pipe', 'pipe'] })
   else
-    execSync(`sudo sh -c '${escaped}'`, { stdio: 'inherit' })
+    execSync(`sudo -n sh -c '${escaped}'`, { stdio: ['pipe', 'pipe', 'pipe'] })
 }
 
 /** Chrome/Edge need SSL + basic trust policies — plain trustRoot often leaves "trust settings: 0". */
@@ -1076,7 +1086,7 @@ async function ensureRpxDevelopmentHttps(
     generateCertificate,
     isDaemonRunning,
     stopDaemon,
-  } = await import('@stacksjs/rpx')
+  } = await importDevelopmentRpx()
 
   const hostnames = buildDevelopmentTlsHostnames(domain, includeDashboard)
   const tlsOptions = buildDevelopmentTlsOptions(domain, includeDashboard, verbose)
@@ -1100,19 +1110,15 @@ async function ensureRpxDevelopmentHttps(
     certRegenerated = true
   }
 
-  const trusted = isRpxRootCaTrustedForSsl(RPX_ROOT_CA_PATH, domain)
+  let trusted = isRpxRootCaTrustedForSsl(RPX_ROOT_CA_PATH, domain)
   if (!trusted) {
-    void (async () => {
-      const nowTrusted = trustRpxRootCaForBrowsers(RPX_ROOT_CA_PATH, domain)
-        || await forceTrustCertificate(RPX_ROOT_CA_PATH)
-        || isRpxRootCaTrustedForSsl(RPX_ROOT_CA_PATH, domain)
-      if (verbose) {
-        if (nowTrusted)
-          console.log(`  ${green('✓')}  ${dim('HTTPS')}:         ${dim('Local certificate trusted for SSL')}`)
-        else
-          console.log(`  ${yellow('⚠')}  ${yellow('HTTPS')}:         ${yellow('Certificate not trusted — browser will warn')}`)
-      }
-    })()
+    trusted = trustRpxRootCaForBrowsers(RPX_ROOT_CA_PATH, domain)
+      || await forceTrustCertificate(RPX_ROOT_CA_PATH, { serverName: domain, verbose })
+      || isRpxRootCaTrustedForSsl(RPX_ROOT_CA_PATH, domain)
+    if (trusted)
+      console.log(`  ${green('✓')}  ${dim('HTTPS')}:         ${dim('Local CA trusted — reload the browser if you still see a warning')}`)
+    else
+      console.log(`  ${yellow('⚠')}  ${yellow('HTTPS')}:         ${yellow(`Local CA not trusted — run: sh ${join(RPX_SSL_DIR, 'trust-rpx-cert.sh')}`)}`)
   }
   else if (verbose) {
     console.log(`  ${green('✓')}  ${dim('HTTPS')}:         ${dim('Local certificate trusted for SSL')}`)
@@ -1133,17 +1139,39 @@ async function ensureRpxDevelopmentHttps(
   }
 }
 
+/**
+ * Working directory for the rpx daemon child. Must NOT be the Stacks app root —
+ * Bun would load the app's `bunfig.toml` / preloader and the daemon never binds :443.
+ */
+function resolveRpxDaemonSpawnCwd(): string {
+  const fromEnv = process.env.RPX_BIN || process.env.STACKS_RPX_BIN
+  if (fromEnv && existsSync(fromEnv))
+    return dirname(fromEnv)
+
+  const toolsPkg = join(homedir(), 'Code/Tools/rpx/packages/rpx')
+  if (existsSync(join(toolsPkg, 'package.json')))
+    return toolsPkg
+
+  const bootstrap = join(dirname(fileURLToPath(import.meta.url)), '../scripts/rpx-daemon-bootstrap.ts')
+  if (existsSync(bootstrap))
+    return dirname(bootstrap)
+
+  return homedir()
+}
+
 async function resolveRpxDaemonSpawnCommand(): Promise<string[]> {
+  // Bootstrap first — never loads the app's Bun preloader.
+  const bootstrap = join(dirname(fileURLToPath(import.meta.url)), '../scripts/rpx-daemon-bootstrap.ts')
+  if (existsSync(bootstrap))
+    return [process.execPath, bootstrap]
+
   const fromEnv = process.env.RPX_BIN || process.env.STACKS_RPX_BIN
   if (fromEnv && existsSync(fromEnv))
     return [fromEnv, 'daemon:start']
 
-  // Prefer the in-repo bootstrap over a global `rpx` binary. The compiled CLI
-  // is often launched from a Stacks app directory and can load that app's Bun
-  // plugins (e.g. preloader.ts), which prevents the daemon from binding :443.
-  const bootstrap = join(dirname(fileURLToPath(import.meta.url)), '../scripts/rpx-daemon-bootstrap.ts')
-  if (existsSync(bootstrap))
-    return [process.execPath, bootstrap]
+  const toolsCli = join(homedir(), 'Code/Tools/rpx/packages/rpx/bin/cli.ts')
+  if (existsSync(toolsCli))
+    return [process.execPath, toolsCli, 'daemon:start']
 
   const toolsBinary = join(homedir(), 'Code/Tools/rpx/packages/rpx/bin/rpx')
   if (existsSync(toolsBinary))
@@ -1201,7 +1229,7 @@ async function unregisterRpxProxies(ids: string[]): Promise<void> {
   if (ids.length === 0)
     return
   try {
-    const { removeEntry } = await import('@stacksjs/rpx')
+    const { removeEntry } = await importDevelopmentRpx()
     for (const id of ids)
       await removeEntry(id).catch(() => { /* already gone */ })
   }
@@ -1226,12 +1254,20 @@ async function prepareRpxTlsForDev(input: {
     ...(includeDashboard ? [`dashboard.${domain}`] : []),
   ]
 
-  const { addHosts } = await import('@stacksjs/rpx')
-
-  await addHosts(hosts, verbose).catch((err) => {
-    log.warn(`Could not update /etc/hosts for ${hosts.join(', ')}: ${(err as Error).message}`)
-    log.warn('Add 127.0.0.1 entries manually or set SUDO_PASSWORD in .env')
+  // `.localhost` resolves to 127.0.0.1 without /etc/hosts (RFC 6761). Only
+  // custom TLDs need hosts entries — and only when we can do so non-interactively.
+  const hostsNeedingFile = hosts.filter((host) => {
+    const h = host.trim().toLowerCase()
+    return h !== 'localhost' && !h.endsWith('.localhost') && !h.endsWith('.localhost.')
   })
+
+  if (hostsNeedingFile.length > 0) {
+    const { addHosts } = await importDevelopmentRpx()
+    await addHosts(hostsNeedingFile, verbose).catch((err) => {
+      log.warn(`Could not update /etc/hosts for ${hostsNeedingFile.join(', ')}: ${(err as Error).message}`)
+      log.warn('Add 127.0.0.1 entries manually or set SUDO_PASSWORD in .env')
+    })
+  }
 
   await ensureRpxDevelopmentHttps(domain, options, includeDashboard)
 }
@@ -1242,28 +1278,24 @@ async function startRpxDaemonIfNeeded(input: {
   verbose: boolean
   stopRpx: (opts: { timeoutMs: number }) => Promise<unknown>
 }): Promise<void> {
-  const { ensureDaemonRunning, isDaemonRunning: isRpxUp } = await import('@stacksjs/rpx')
+  const { ensureDaemonRunning, isDaemonRunning: isRpxUp } = await importDevelopmentRpx()
   if (await isRpxUp())
     return
 
+  const spawnOpts = {
+    spawnCommand: input.spawnCommand,
+    spawnCwd: resolveRpxDaemonSpawnCwd(),
+    startupTimeoutMs: 45_000,
+    spawnEnv: input.spawnEnv,
+    verbose: input.verbose,
+  }
+
   try {
-    await ensureDaemonRunning({
-      spawnCommand: input.spawnCommand,
-      spawnCwd: process.cwd(),
-      startupTimeoutMs: 30000,
-      spawnEnv: input.spawnEnv,
-      verbose: input.verbose,
-    })
+    await ensureDaemonRunning(spawnOpts)
   }
   catch (firstError) {
     await input.stopRpx({ timeoutMs: 5000 }).catch(() => { /* stale */ })
-    await ensureDaemonRunning({
-      spawnCommand: input.spawnCommand,
-      spawnCwd: process.cwd(),
-      startupTimeoutMs: 30000,
-      spawnEnv: input.spawnEnv,
-      verbose: input.verbose,
-    }).catch(() => { throw firstError })
+    await ensureDaemonRunning(spawnOpts).catch(() => { throw firstError })
   }
 }
 
@@ -1285,13 +1317,24 @@ async function registerRpxProxiesForDomain(input: {
   const verbose = options.verbose ?? false
   const proxies = buildRpxProxySpecs({ domain, frontendPort, apiPort, docsPort, dashboardPort, includeDashboard })
 
-  const { stopDaemon: stopRpx, writeEntry } = await import('@stacksjs/rpx')
+  const { stopDaemon: stopRpx, writeEntry } = await importDevelopmentRpx()
   const spawnCommand = await resolveRpxDaemonSpawnCommand()
   const spawnEnv = process.env.SUDO_PASSWORD
     ? { SUDO_PASSWORD: process.env.SUDO_PASSWORD }
     : undefined
 
-  await startRpxDaemonIfNeeded({ spawnCommand, spawnEnv, verbose, stopRpx })
+  try {
+    await startRpxDaemonIfNeeded({ spawnCommand, spawnEnv, verbose, stopRpx })
+  }
+  catch (error) {
+    const { isDaemonRunning } = await importDevelopmentRpx()
+    if (!(await isDaemonRunning()))
+      throw error
+    if (verbose) {
+      const message = error instanceof Error ? error.message : String(error)
+      console.log(`  ${dim('    ')}${dim(`rpx daemon spawn skipped (${message}); reusing existing daemon`)}`)
+    }
+  }
 
   const createdAt = new Date().toISOString()
   for (const proxy of proxies) {
