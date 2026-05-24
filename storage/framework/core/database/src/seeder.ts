@@ -437,6 +437,25 @@ async function seedModel(model: SeederModel, options: SeederConfig): Promise<See
       throw tableErr
     }
 
+    if (!options.fresh) {
+      const existing = await db.selectFrom(model.table as any)
+        .selectAll()
+        .limit(1)
+        .executeTakeFirst()
+      if (existing) {
+        if (options.verbose) {
+          log.info(`  ${model.name}: table already has rows — skipping (use --fresh to replace)`)
+        }
+        return {
+          model: model.name,
+          table: model.table,
+          count: 0,
+          success: true,
+          duration: Date.now() - startTime,
+        }
+      }
+    }
+
     // Generate records
     const records = await generateRecords(model, options.verbose)
 

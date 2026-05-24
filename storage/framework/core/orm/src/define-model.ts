@@ -1,5 +1,6 @@
 import { createModel, type ModelDefinition as BQBModelDefinition, registerModel } from '@stacksjs/query-builder'
 import type { InferRelationNames } from '@stacksjs/query-builder'
+import type { SearchOptions } from '@stacksjs/types'
 import { log } from '@stacksjs/logging'
 import { snakeCase } from '@stacksjs/strings'
 import { AsyncLocalStorage } from 'node:async_hooks'
@@ -322,6 +323,30 @@ function wrapModelInstance<T extends object>(
       if (prop === 'deleteQuietly') {
         return function () {
           return withoutEvents(() => (target as any).delete())
+        }
+      }
+
+      if (prop === 'toSearchableObject') {
+        return function toSearchableObject() {
+          const def = (target as any)._definition as { traits?: { useSearch?: boolean | SearchOptions } } | undefined
+          const search = def?.traits?.useSearch
+          if (!search || typeof search !== 'object') return null
+
+          const attrs = (target as any)._attributes as Record<string, unknown> | undefined
+          if (!attrs) return null
+
+          const doc: Record<string, unknown> = {}
+          const keys = search.displayable?.length
+            ? search.displayable
+            : [...search.searchable ?? [], ...search.filterable ?? [], ...search.sortable ?? [], 'id']
+
+          for (const key of keys) {
+            const snake = snakeCase(key)
+            doc[snake] = attrs[snake] ?? attrs[key]
+          }
+
+          if (attrs.id != null) doc.id = String(attrs.id)
+          return doc
         }
       }
 
@@ -1194,8 +1219,10 @@ import { collectEncryptedAttributes, decryptValue, encryptValue, isEncrypted } f
 export function defineModel<const TDef extends ModelDefinition>(definition: TDef) {
   log.debug(`[orm] Defining model: ${definition.name} (table: ${definition.table})`)
 
-  // Build event hooks from observer configuration
-  const hooks = buildEventHooks(definition as unknown as BQBModelDefinition)
+  // Build event hooks from observer configuration and search indexing
+  const observeHooks = buildEventHooks(definition as unknown as BQBModelDefinition)
+  const searchHooks = buildSearchHooks(definition as unknown as BQBModelDefinition)
+  const hooks = mergeModelHooks(observeHooks, searchHooks)
 
   // Merge hooks into definition
   const defWithHooks = hooks
@@ -1425,6 +1452,71 @@ function buildEventHooks(definition: BQBModelDefinition): BQBModelDefinition['ho
   }
 
   return hooks
+}
+
+function mergeModelHooks(
+  ...sets: Array<BQBModelDefinition['hooks'] | undefined>
+): BQBModelDefinition['hooks'] | undefined {
+  const merged: NonNullable<BQBModelDefinition['hooks']> = {}
+  const names = new Set<string>()
+
+  for (const set of sets) {
+    if (!set) continue
+    for (const name of Object.keys(set)) names.add(name)
+  }
+
+  for (const name of names) {
+    const fns = sets.map(s => s?.[name as keyof NonNullable<BQBModelDefinition['hooks']>]).filter((fn): fn is (...args: any[]) => any => typeof fn === 'function')
+    if (!fns.length) continue
+    ;(merged as Record<string, (...args: any[]) => any>)[name] = async (...args: any[]) => {
+      for (const fn of fns) await fn(...args)
+    }
+  }
+
+  return Object.keys(merged).length ? merged : undefined
+}
+
+/**
+ * Scout-style search index sync when `traits.useSearch` is set.
+ * Indexes on create/update and removes on delete without requiring `observe: true`.
+ */
+function buildSearchHooks(definition: BQBModelDefinition): BQBModelDefinition['hooks'] | undefined {
+  const useSearch = definition.traits?.useSearch
+  if (!useSearch) return undefined
+
+  const tableName = definition.table || snakeCase(`${definition.name}s`)
+
+  const syncDocument = async (model: any) => {
+    if (eventsAreSuppressed()) return
+    try {
+      const { useSearchEngine } = await import('@stacksjs/search-engine')
+      const wrapped = wrapModelInstance(model)
+      const doc = (wrapped as any).toSearchableObject?.()
+      if (doc) await useSearchEngine().addDocument(tableName, doc)
+    }
+    catch (err) {
+      log.warn(`[orm/search] Failed to index ${definition.name}: ${(err as Error).message}`)
+    }
+  }
+
+  const removeDocument = async (model: any) => {
+    if (eventsAreSuppressed()) return
+    const id = model?.id ?? model?._attributes?.id
+    if (id == null) return
+    try {
+      const { useSearchEngine } = await import('@stacksjs/search-engine')
+      await useSearchEngine().deleteDocument(tableName, Number(id))
+    }
+    catch (err) {
+      log.warn(`[orm/search] Failed to remove ${definition.name}#${id}: ${(err as Error).message}`)
+    }
+  }
+
+  return {
+    afterCreate: syncDocument,
+    afterUpdate: syncDocument,
+    afterDelete: removeDocument,
+  }
 }
 
 export interface TraitMethods {
