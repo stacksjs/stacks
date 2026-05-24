@@ -2,6 +2,8 @@ import type { Action as ActionType } from '@stacksjs/actions'
 import type { Result } from '@stacksjs/error-handling'
 import type { ActionOptions, CliOptions, CommandError, Subprocess } from '@stacksjs/types'
 import { existsSync } from 'node:fs'
+import { homedir } from 'node:os'
+import { join } from 'node:path'
 import process from 'node:process'
 import { buddyOptions, runCommand, runCommands } from '@stacksjs/cli'
 import { err } from '@stacksjs/error-handling'
@@ -98,16 +100,19 @@ export async function runAction(action: Action, options?: ActionOptions): Promis
         const apiPort = Number(process.env.PORT_API) || 3008
         const apiBase = `http://127.0.0.1:${apiPort}`
 
-        // Resolve serve(): prefer the project-vendored pantry copy so
-        // framework patches dropped into pantry/ take effect even when
-        // Bun's global install cache has an older bun-plugin-stx
-        // version. Fall back to the standard module resolver.
+        // Resolve serve(): Tools checkout → pantry vendored → npm.
         let serve: any
-        try {
-          ;({ serve } = await import(p.projectPath('pantry/bun-plugin-stx/dist/serve.js')))
+        const toolsServe = join(homedir(), 'Code/Tools/stx/packages/bun-plugin/src/serve.ts')
+        if (existsSync(toolsServe)) {
+          ;({ serve } = await import(toolsServe))
         }
-        catch {
-          ;({ serve } = await import('bun-plugin-stx/serve'))
+        else {
+          try {
+            ;({ serve } = await import(p.projectPath('pantry/bun-plugin-stx/dist/serve.js')))
+          }
+          catch {
+            ;({ serve } = await import('bun-plugin-stx/serve'))
+          }
         }
 
         // Pre-resolve stx the same way. The pantry-vendored serve.js does
@@ -118,12 +123,18 @@ export async function runAction(action: Action, options?: ActionOptions): Promis
         // (@extends('layouts/...') with layoutsDir) matches the patched
         // behaviour the rest of the framework expects.
         let stxModule: any
-        try {
-          const vendoredStx = p.projectPath('pantry/@stacksjs/stx/dist/index.js')
-          if (await Bun.file(vendoredStx).exists())
-            stxModule = await import(vendoredStx)
+        const toolsStx = join(homedir(), 'Code/Tools/stx/packages/stx/src/index.ts')
+        if (existsSync(toolsStx)) {
+          stxModule = await import(toolsStx)
         }
-        catch { /* fall through — serve() will resolve its own */ }
+        else {
+          try {
+            const vendoredStx = p.projectPath('pantry/@stacksjs/stx/dist/index.js')
+            if (await Bun.file(vendoredStx).exists())
+              stxModule = await import(vendoredStx)
+          }
+          catch { /* fall through — serve() will resolve its own */ }
+        }
 
         // Cookie that signals an authenticated session. `setToken()` in
         // the SPA mirrors the bearer token here so the SSR pass can

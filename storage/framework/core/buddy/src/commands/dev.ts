@@ -354,16 +354,16 @@ export async function startDevelopmentServer(_options: DevOptions, _startTime?: 
     ...(includeDashboard ? [dashboardPort] : []),
   ]
 
+  // Signal subprocesses that the main dev server manages the reverse proxy,
+  // so they don't start their own (which would conflict on port 443).
+  // Suppress early Crosswind/STX/auth config noise — `printDevEngineNotes()` prints after URLs.
+  process.env.STACKS_PROXY_MANAGED = '1'
+  process.env.STACKS_DEV_QUIET = '1'
+
   // Minimal header while backends boot — URLs print once everything is ready.
   console.log()
   console.log(`  ${bold(cyan('stacks'))} ${dim(`v${version}`)}  ${dim('starting…')}`)
   console.log()
-
-  // Signal subprocesses that the main dev server manages the reverse proxy,
-  // so they don't start their own (which would conflict on port 443)
-  process.env.STACKS_PROXY_MANAGED = '1'
-  // Suppress early Crosswind/STX console noise — `printDevEngineNotes()` prints after URLs.
-  process.env.STACKS_DEV_QUIET = '1'
 
   // Pre-flight: clean up orphaned bun processes from prior dev runs that
   // didn't shut down cleanly (`pkill -9` from a foreground terminal exits
