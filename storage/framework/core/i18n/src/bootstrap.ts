@@ -39,7 +39,8 @@ export async function ensureLocalesLoaded(): Promise<void> {
 
 /**
  * Resolve the active locale for an HTTP request.
- * Order: `?locale=`, `locale` cookie, Accept-Language, then `config.app.locale`.
+ * Order: STX locale prefix (`/en/...`), `?locale=`, `locale` cookie,
+ * Accept-Language, then `config.app.locale`.
  */
 export function resolveRequestLocale(request?: Request): string {
   const app = (config as { app?: { locale?: string, fallbackLocale?: string } }).app
@@ -62,6 +63,22 @@ export function resolveRequestLocale(request?: Request): string {
     return defaultLocale
 
   const url = new URL(request.url)
+  const pathname = url.pathname
+
+  const fromStx = request.headers.get('x-stx-locale')
+  if (fromStx)
+    return pick(fromStx)
+
+  // Non-default locales are served under `/<code>/…` by stx-serve i18n routing.
+  for (const code of available) {
+    if (code === defaultLocale)
+      continue
+    if (pathname === `/${code}` || pathname === `/${code}/`)
+      return pick(code)
+    if (pathname.startsWith(`/${code}/`))
+      return pick(code)
+  }
+
   const fromQuery = url.searchParams.get('locale')
   if (fromQuery)
     return pick(fromQuery)
