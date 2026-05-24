@@ -35,6 +35,22 @@ if (!existsSync(modelsIndex))
 // the "no imports needed" ergonomics of framework default actions.
 await injectGlobalAutoImports()
 
+// Optional app hook: start Typesense (or other search infra) before the API
+// serves traffic. Projects using SEARCH_ENGINE_DRIVER=typesense can ship
+// `app/Lib/typesense-dev.ts` with `ensureTypesenseRunning()`.
+try {
+  const typesenseDev = path.appPath('Lib/typesense-dev.ts')
+  if (existsSync(typesenseDev)) {
+    const mod = await import(typesenseDev)
+    if (typeof mod.ensureTypesenseRunning === 'function')
+      await mod.ensureTypesenseRunning()
+  }
+}
+catch (err) {
+  const { log } = await import('@stacksjs/cli')
+  log.warn(`[api:dev] search engine bootstrap skipped: ${(err as Error).message}`)
+}
+
 // Boot the user's event listener registry. Without this, every dispatch()
 // inside an action (booking:created, payment:succeeded, car:updated, etc.)
 // is fire-and-silently-forgotten — emitter.on('*') is never registered.
