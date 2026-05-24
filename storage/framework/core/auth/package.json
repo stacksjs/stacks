@@ -46,7 +46,7 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "@stacksjs/ts-auth": "^0.4.1"
+    "@stacksjs/ts-auth": "^0.4.3"
   },
   "devDependencies": {
     "better-dx": "^0.2.12",
