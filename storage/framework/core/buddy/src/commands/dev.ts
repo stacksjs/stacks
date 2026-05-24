@@ -1,6 +1,7 @@
 import type { CLI, DevOptions } from '@stacksjs/types'
 import { execSync } from 'node:child_process'
 import { existsSync, readFileSync } from 'node:fs'
+import readline from 'node:readline'
 import process from 'node:process'
 import { bold, cyan, dim, green, intro, log, onUnknownSubcommand, outro, prompts, runCommand, yellow } from "@stacksjs/cli"
 import { homedir } from 'node:os'
@@ -13,6 +14,18 @@ import { version } from '../../package.json'
 
 /** Local Tools checkout — has non-interactive sudo + `.localhost` hosts skip. */
 const TOOLS_RPX_SRC = join(homedir(), 'Code/Tools/rpx/packages/rpx/src/index.ts')
+
+/** Lines printed before the ready banner (`blank`, `stacks … starting…`, `blank`). */
+const DEV_BOOT_STARTING_LINE_COUNT = 3
+
+function eraseDevBootStartingLines(): void {
+  if (!process.stdout.isTTY)
+    return
+  for (let i = 0; i < DEV_BOOT_STARTING_LINE_COUNT; i++) {
+    readline.moveCursor(process.stdout, 0, -1)
+    readline.clearLine(process.stdout, 0)
+  }
+}
 
 type DevelopmentRpx = typeof import('@stacksjs/rpx')
 
@@ -356,7 +369,7 @@ export async function startDevelopmentServer(_options: DevOptions, _startTime?: 
 
   // Signal subprocesses that the main dev server manages the reverse proxy,
   // so they don't start their own (which would conflict on port 443).
-  // Suppress early Crosswind/STX/auth config noise — `printDevEngineNotes()` prints after URLs.
+  // Suppress early Crosswind/STX/auth config noise — `printDevEngineNotes()` prints after "ready in".
   process.env.STACKS_PROXY_MANAGED = '1'
   process.env.STACKS_DEV_QUIET = '1'
 
@@ -473,6 +486,8 @@ export async function startDevelopmentServer(_options: DevOptions, _startTime?: 
         }
       }
 
+      eraseDevBootStartingLines()
+
       printDevReadyBanner({
         options,
         nativeMode,
@@ -497,7 +512,10 @@ export async function startDevelopmentServer(_options: DevOptions, _startTime?: 
         const summary = failed.length
           ? `ready in ${(elapsedMs / 1000).toFixed(1)}s — ${failed.join(', ')} did not bind within ${readinessTimeoutMs / 1000}s`
           : `ready in ${(elapsedMs / 1000).toFixed(1)}s`
-        console.log(`  ${dim(summary)}\n`)
+        console.log(`  ${dim(summary)}`)
+        console.log()
+        printDevEngineNotes()
+        console.log()
       }
 
       if (process.env.STACKS_PRINT_ROUTES === '1') {
@@ -592,7 +610,6 @@ function printDevReadyBanner(input: {
     if (includeDashboard)
       console.log(`  ${dim('➜')}  ${dim('Proxy')}:       ${dim(`localhost:${dashboardPort} → ${dashboardDomain}`)}`)
   }
-  printDevEngineNotes()
   console.log()
 }
 
