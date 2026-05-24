@@ -1,5 +1,7 @@
 import { AsyncLocalStorage } from 'node:async_hooks'
 import { existsSync } from 'node:fs'
+import { homedir } from 'node:os'
+import { join } from 'node:path'
 import { config, overridesReady } from '@stacksjs/config'
 import { projectPath } from '@stacksjs/path'
 
@@ -29,24 +31,10 @@ import { projectPath } from '@stacksjs/path'
  *      own cookie during SSR.
  */
 
-const projectServe = projectPath('serve.ts')
-
-try {
-  const file = Bun.file(projectServe)
-  if (await file.exists()) {
-    await import(projectServe)
-  }
-  else {
-    await startDefaultServer()
-  }
-}
-catch {
-  await startDefaultServer()
-}
-
 interface StacksRequestContext {
   cookies: Record<string, string>
   url: string
+  locale: string
 }
 
 const requestStore = new AsyncLocalStorage<StacksRequestContext>()
@@ -61,6 +49,24 @@ const requestStore = new AsyncLocalStorage<StacksRequestContext>()
   url(): string {
     return requestStore.getStore()?.url ?? ''
   },
+  locale(): string {
+    return requestStore.getStore()?.locale ?? 'de'
+  },
+}
+
+const projectServe = projectPath('serve.ts')
+
+try {
+  const file = Bun.file(projectServe)
+  if (await file.exists()) {
+    await import(projectServe)
+  }
+  else {
+    await startDefaultServer()
+  }
+}
+catch {
+  await startDefaultServer()
 }
 
 function parseCookies(req: Request): Record<string, string> {
@@ -126,15 +132,28 @@ async function startDefaultServer() {
   await injectGlobalAutoImports()
 
   let serve: any
-  // Prefer the project-vendored pantry copy so framework patches and
-  // bug fixes shipped via `cp` (or `pantry/install`) take effect even
-  // when the global Bun install cache has an older `bun-plugin-stx`.
-  try {
-    ;({ serve } = await import(projectPath('pantry/bun-plugin-stx/dist/serve.js')))
+  let loadedServeFrom: string | undefined
+  // Prefer ~/Code/Tools/stx (local STX worktree), then project pantry.
+  const serveCandidates = [
+    join(homedir(), 'Code/Tools/stx/packages/bun-plugin/dist/serve.js'),
+    projectPath('pantry/bun-plugin-stx/dist/serve.js'),
+  ]
+  for (const entry of serveCandidates) {
+    try {
+      if (existsSync(entry)) {
+        ;({ serve } = await import(entry))
+        loadedServeFrom = entry
+        break
+      }
+    }
+    catch { /* try next */ }
   }
-  catch {
+  if (!serve) {
     ;({ serve } = await import('bun-plugin-stx/serve'))
+    loadedServeFrom = 'bun-plugin-stx/serve'
   }
+  if (loadedServeFrom)
+    console.log(`[stx] dev serve: ${loadedServeFrom}`)
 
   // Pre-resolve the stx module from pantry (if vendored). Bun resolves a
   // bare-specifier `import('@stacksjs/stx')` from the file doing the
@@ -146,6 +165,7 @@ async function startDefaultServer() {
   // and pages render blank. Pass the pantry copy explicitly so serve()
   // uses it instead of letting bare-specifier resolution win.
   const stxModule = await resolveVendoredStxModule()
+  const { site: siteConfig, i18n: i18nConfig } = await loadStxSiteConfig(stxModule)
 
   const userViewsPath = 'resources/views'
   const defaultViewsPath = 'storage/framework/defaults/resources/views'
@@ -185,6 +205,8 @@ async function startDefaultServer() {
     fallbackPartialsDir: defaultViewsPath,
     quiet: true,
     ...(stxModule && { stxModule }),
+    ...(i18nConfig && { i18n: i18nConfig }),
+    ...(siteConfig?.url && { site: siteConfig }),
     auth: {
       cookieName: authCookie,
       redirectTo: '/login',
@@ -213,15 +235,30 @@ async function startDefaultServer() {
       if (url.pathname.startsWith('/api/') || apiMethods.has(req.method))
         return proxyToApi(req, apiBase)
 
+      // Optional `/locale/{code}` redirect (same as default SetLocaleAction).
+      // STX i18n normally switches via `/<code>/…` paths from the injected
+      // lang-picker script; this handles bookmarked `/locale/…` URLs on the
+      // frontend dev server without an app-level `routes/web.ts` entry.
+      if (i18nConfig && req.method === 'GET') {
+        const localeSwitch = url.pathname.match(/^\/locale\/([a-z]{2}(?:-[a-z]{2})?)\/?$/i)
+        if (localeSwitch) {
+          const { createLocaleSwitchResponse } = await import('@stacksjs/i18n')
+          return createLocaleSwitchResponse(req, localeSwitch[1], i18nConfig)
+        }
+      }
+
       // Stash cookies + url so server-script blocks rendering this
       // request can pull them via globalThis.requestContext. We use
       // enterWith() rather than run() because returning here would
       // exit the async context before stx-serve resumes.
-      await applyRequestLocale(req)
+      const locale = await applyRequestLocale(req)
+
+      ;(globalThis as { __stxServeSearch?: string }).__stxServeSearch = url.search
 
       requestStore.enterWith({
         cookies: parseCookies(req),
         url: req.url,
+        locale,
       })
       return null
     },
@@ -243,11 +280,72 @@ async function firstExistingPath(candidates: string[]): Promise<string | null> {
 }
 
 async function resolveVendoredStxModule(): Promise<any | undefined> {
-  try {
-    const vendored = projectPath('pantry/@stacksjs/stx/dist/index.js')
-    if (await Bun.file(vendored).exists())
-      return await import(vendored)
+  const candidates = [
+    join(homedir(), 'Code/Tools/stx/packages/stx/dist/index.js'),
+    projectPath('pantry/@stacksjs/stx/dist/index.js'),
+  ]
+  for (const entry of candidates) {
+    try {
+      if (existsSync(entry))
+        return await import(entry)
+    }
+    catch { /* try next */ }
   }
-  catch { /* fall through — let serve() use its own bare-specifier import */ }
   return undefined
+}
+
+function fallbackI18nFromSite(site: { i18n: { locales: string[], defaultLocale?: string, pickerSelector?: string, labels?: Record<string, string> } }) {
+  const locales = site.i18n.locales
+  const defaultLocale = site.i18n.defaultLocale ?? locales[0]
+  return {
+    locales,
+    defaultLocale,
+    labels: site.i18n.labels ?? Object.fromEntries(locales.map(c => [c, c.toUpperCase()])),
+    translations: {} as Record<string, Record<string, string>>,
+    pickerSelector: site.i18n.pickerSelector ?? '#lang-picker',
+  }
+}
+
+async function resolveSiteI18n(site: { i18n: { locales: string[], defaultLocale?: string, translationsDir?: string | false, format?: string, labels?: Record<string, string>, pickerSelector?: string, translations?: Record<string, Record<string, string>> } }) {
+  const resolverPaths = [
+    join(homedir(), 'Code/Tools/stx/packages/stx/src/site-builder/i18n.ts'),
+    join(homedir(), 'Code/Tools/stx/packages/stx/dist/index.js'),
+    projectPath('pantry/@stacksjs/stx/dist/index.js'),
+  ]
+  for (const resolverPath of resolverPaths) {
+    try {
+      if (!existsSync(resolverPath))
+        continue
+      const resolved = await import(resolverPath)
+      if (typeof resolved.resolveI18n !== 'function')
+        continue
+      const i18n = resolved.resolveI18n(site, projectPath())
+      if (i18n)
+        return i18n
+    }
+    catch { /* try next */ }
+  }
+  return fallbackI18nFromSite(site)
+}
+
+async function loadStxSiteConfig(_stxModule: any): Promise<{ site?: any, i18n?: any }> {
+  const sitePath = projectPath('site.config.ts')
+  if (!existsSync(sitePath))
+    return {}
+
+  try {
+    const mod = await import(sitePath)
+    const site = mod.default
+    if (!site)
+      return {}
+
+    if (!site.i18n)
+      return { site }
+
+    const i18n = await resolveSiteI18n(site)
+    return { site, i18n }
+  }
+  catch { /* no site config */ }
+
+  return {}
 }
