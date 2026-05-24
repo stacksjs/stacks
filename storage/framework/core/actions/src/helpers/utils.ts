@@ -76,208 +76,28 @@ async function resolveActionFile(action: string): Promise<string | null> {
 export async function runAction(action: Action, options?: ActionOptions): Promise<Result<Subprocess, CommandError>> {
   log.debug(`[action] Running: ${action}`)
 
-  // Special case: handle dev/views directly for maximum performance
+  // Special case: hand off to the canonical views entry (STX i18n, /locale proxy, etc.)
   if (action === 'dev/views') {
     try {
-      // Ensure pantry packages are resolvable for compiled dependencies
-      // that import @stacksjs/* packages at runtime
       const pantryPath = p.projectPath('pantry')
       if (!process.env.NODE_PATH?.includes(pantryPath)) {
         process.env.NODE_PATH = process.env.NODE_PATH ? `${pantryPath}:${process.env.NODE_PATH}` : pantryPath
-        // force Bun/Node to re-read module paths
         require('module').Module._initPaths?.()
       }
 
-      // Check if the project has its own serve.ts — if so, use it directly.
-      // This allows projects to define their own API routes, middleware, and config.
-      const projectServe = p.projectPath('serve.ts')
-      const projectServeFile = Bun.file(projectServe)
-      if (await projectServeFile.exists()) {
-        await import(projectServe)
-      }
-      else {
-        const port = Number(process.env.PORT) || 3000
-        const apiPort = Number(process.env.PORT_API) || 3008
-        const apiBase = `http://127.0.0.1:${apiPort}`
-
-        // Resolve serve(): Tools checkout → pantry vendored → npm.
-        let serve: any
-        const toolsServe = join(homedir(), 'Code/Tools/stx/packages/bun-plugin/src/serve.ts')
-        if (existsSync(toolsServe)) {
-          ;({ serve } = await import(toolsServe))
+      const viewsEntries = [
+        p.projectPath('storage/framework/core/actions/src/dev/views.ts'),
+        p.frameworkPath('actions/src/dev/views.ts'),
+      ]
+      for (const entry of viewsEntries) {
+        if (existsSync(entry)) {
+          await import(entry)
+          // eslint-disable-next-line no-unreachable
+          return { ok: true, value: {} as Subprocess } as any
         }
-        else {
-          try {
-            ;({ serve } = await import(p.projectPath('pantry/bun-plugin-stx/dist/serve.js')))
-          }
-          catch {
-            ;({ serve } = await import('bun-plugin-stx/serve'))
-          }
-        }
-
-        // Pre-resolve stx the same way. The pantry-vendored serve.js does
-        // a bare-specifier `import('@stacksjs/stx')` — Bun walks up
-        // node_modules from the importer's location, finds a stale copy
-        // there before pantry, and ships it. Pass the pantry copy
-        // explicitly via the `stxModule` option so layout resolution
-        // (@extends('layouts/...') with layoutsDir) matches the patched
-        // behaviour the rest of the framework expects.
-        let stxModule: any
-        const toolsStx = join(homedir(), 'Code/Tools/stx/packages/stx/src/index.ts')
-        if (existsSync(toolsStx)) {
-          stxModule = await import(toolsStx)
-        }
-        else {
-          try {
-            const vendoredStx = p.projectPath('pantry/@stacksjs/stx/dist/index.js')
-            if (await Bun.file(vendoredStx).exists())
-              stxModule = await import(vendoredStx)
-          }
-          catch { /* fall through — serve() will resolve its own */ }
-        }
-
-        // Cookie that signals an authenticated session. `setToken()` in
-        // the SPA mirrors the bearer token here so the SSR pass can
-        // gate /trips, /favorites, /host/*, /book/*, etc. without
-        // every project having to ship a custom serve.ts.
-        let authCookie = 'auth-token'
-        try {
-          const { config } = await import('@stacksjs/config')
-          authCookie = (config as any)?.auth?.defaultTokenName ?? authCookie
-        }
-        catch { /* config not available — keep default */ }
-
-        // Per-request cookie helper exposed on globalThis for stx
-        // server-script blocks. stx-serve does not pass the raw
-        // Request into template context, so anonymous-cart and
-        // session-aware pages would otherwise have no way to read
-        // their own cookie during SSR.
-        const { AsyncLocalStorage } = await import('node:async_hooks')
-        const requestStore = new AsyncLocalStorage<{ cookies: Record<string, string>, url: string }>()
-        ;(globalThis as any).requestContext = {
-          cookie(name: string): string | null {
-            const ctx = requestStore.getStore()
-            return ctx?.cookies?.[name] ?? null
-          },
-          url(): string {
-            return requestStore.getStore()?.url ?? ''
-          },
-        }
-        const parseCookies = (req: Request): Record<string, string> => {
-          const out: Record<string, string> = {}
-          const header = req.headers.get('cookie') || ''
-          if (!header)
-            return out
-          for (const part of header.split(';')) {
-            const trimmed = part.trim()
-            const eq = trimmed.indexOf('=')
-            if (eq === -1)
-              continue
-            const k = trimmed.slice(0, eq).trim()
-            const v = trimmed.slice(eq + 1).trim()
-            if (!k)
-              continue
-            try { out[k] = decodeURIComponent(v) }
-            catch { out[k] = v }
-          }
-          return out
-        }
-        const proxyToApi = async (req: Request): Promise<Response> => {
-          const incoming = new URL(req.url)
-          const target = `${apiBase}${incoming.pathname}${incoming.search}`
-          const fwd = new Headers(req.headers)
-          fwd.delete('host')
-          fwd.delete('content-length')
-          fwd.set('x-forwarded-host', incoming.host)
-          fwd.set('x-forwarded-proto', incoming.protocol.replace(':', ''))
-          const body = req.method === 'GET' || req.method === 'HEAD'
-            ? undefined
-            : await req.arrayBuffer()
-          const upstream = await fetch(target, {
-            method: req.method,
-            headers: fwd,
-            body,
-            redirect: 'manual',
-          })
-          const out = new Headers(upstream.headers)
-          out.delete('content-length')
-          out.delete('content-encoding')
-          return new Response(upstream.body, {
-            status: upstream.status,
-            statusText: upstream.statusText,
-            headers: out,
-          })
-        }
-
-        // Layouts/partials live alongside views by default
-        // (resources/views/layouts, resources/views/components). Older
-        // scaffolds put them at resources/layouts and resources/components,
-        // so we prefer the new layout when present and fall back to the
-        // legacy paths otherwise.
-        // existsSync, not `Bun.file(dir).exists()` — `Bun.file` is file-only
-        // and returns false for any directory, which would cause every
-        // candidate to fall through to candidates[0] and silently break
-        // projects whose layouts/components live at the legacy paths
-        // (`resources/{layouts,components}/`).
-        const firstExisting = (candidates: [string, ...string[]]): string => {
-          for (const candidate of candidates) {
-            if (existsSync(p.projectPath(candidate)))
-              return candidate
-          }
-          return candidates[0]
-        }
-        const layoutsDir = firstExisting(['resources/views/layouts', 'resources/layouts'])
-        const partialsDir = firstExisting(['resources/views/components', 'resources/components'])
-
-        const { overridesReady } = await import('@stacksjs/config')
-        await overridesReady
-        const { injectGlobalAutoImports } = await import('@stacksjs/server')
-        const { applyRequestLocale } = await import('@stacksjs/i18n')
-        await injectGlobalAutoImports()
-
-        await serve({
-          patterns: ['resources/views', 'storage/framework/defaults/resources/views'],
-          port,
-          // Wider than the dashboard subdir so both Dashboard/* and
-          // Storefront/* (and any future <Namespace>/Component.stx) get
-          // resolved. stx-serve walks one subdirectory deep, so this
-          // gives us discovery without enumerating every namespace.
-          componentsDir: 'storage/framework/defaults/resources/components',
-          layoutsDir,
-          partialsDir,
-          fallbackPartialsDir: 'resources/views',
-          quiet: true,
-          ...(stxModule && { stxModule }),
-          auth: {
-            cookieName: authCookie,
-            redirectTo: '/login',
-          },
-          // /api/** → API dev server. Storefront forms posting to local
-          // routes need this; without it stx-serve answers with a 404
-          // page since it doesn't know about bun-router actions.
-          // We also stash cookies in AsyncLocalStorage so server-script
-          // blocks rendering this request can pull them via
-          // globalThis.requestContext.
-          onRequest: async (req: Request) => {
-            const url = new URL(req.url)
-            const apiMethods = new Set(['POST', 'PUT', 'PATCH', 'DELETE'])
-            if (url.pathname.startsWith('/api/') || apiMethods.has(req.method))
-              return proxyToApi(req)
-
-            await applyRequestLocale(req)
-
-            requestStore.enterWith({
-              cookies: parseCookies(req),
-              url: req.url,
-            })
-            return null
-          },
-        })
       }
 
-      // This will never return since serve runs forever
-      // eslint-disable-next-line no-unreachable
-      return { ok: true, value: {} as Subprocess } as any
+      return err('dev/views entry not found') as any
     }
     catch (error) {
       return err(`Failed to start dev server: ${error}`) as any
