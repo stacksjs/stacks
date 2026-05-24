@@ -353,12 +353,10 @@ export async function startDevelopmentServer(_options: DevOptions, _startTime?: 
   const includeDashboard = process.env.STACKS_DEV_DASHBOARD === '1'
   const hasCustomDomain = !nativeMode && appUrl && appUrl !== 'localhost' && !appUrl.includes('localhost:')
   const domain = hasCustomDomain ? appUrl.replace(/^https?:\/\//, '') : null
-  const apiDomain = domain ? `api.${domain}` : null
-  const docsDomain = domain ? `docs.${domain}` : null
   const dashboardDomain = domain ? `dashboard.${domain}` : null
   const frontendUrl = domain ? `https://${domain}` : `http://localhost:${frontendPort}`
-  const apiUrl = apiDomain ? `https://${apiDomain}` : `http://localhost:${apiPort}`
-  const docsUrl = docsDomain ? `https://${docsDomain}` : `http://localhost:${docsPort}`
+  const apiUrl = domain ? `https://${domain}/api` : `http://localhost:${apiPort}`
+  const docsUrl = domain ? `https://${domain}/docs` : `http://localhost:${docsPort}`
   const dashboardUrl = dashboardDomain ? `https://${dashboardDomain}` : `http://localhost:${dashboardPort}`
   const managedPorts = [
     frontendPort,
@@ -501,8 +499,6 @@ export async function startDevelopmentServer(_options: DevOptions, _startTime?: 
         docsPort,
         includeDashboard,
         domain,
-        apiDomain,
-        docsDomain,
         dashboardPort,
         dashboardDomain,
       })
@@ -563,8 +559,6 @@ function printDevReadyBanner(input: {
   docsPort: number
   includeDashboard: boolean
   domain: string | null
-  apiDomain: string | null
-  docsDomain: string | null
   dashboardPort: number
   dashboardDomain: string | null
 }): void {
@@ -581,8 +575,6 @@ function printDevReadyBanner(input: {
     docsPort,
     includeDashboard,
     domain,
-    apiDomain,
-    docsDomain,
     dashboardPort,
     dashboardDomain,
   } = input
@@ -605,8 +597,8 @@ function printDevReadyBanner(input: {
     console.log(`  ${green('➜')}  ${bold('Dashboard')}:   ${cyan(dashboardUrl)}`)
   if (verbose && domain) {
     console.log(`  ${dim('➜')}  ${dim('Proxy')}:       ${dim(`localhost:${frontendPort} → ${domain}`)}`)
-    console.log(`  ${dim('➜')}  ${dim('Proxy')}:       ${dim(`localhost:${apiPort} → ${apiDomain}`)}`)
-    console.log(`  ${dim('➜')}  ${dim('Proxy')}:       ${dim(`localhost:${docsPort} → ${docsDomain}`)}`)
+    console.log(`  ${dim('➜')}  ${dim('Proxy')}:       ${dim(`${frontendUrl}/api → localhost:${apiPort}`)}`)
+    console.log(`  ${dim('➜')}  ${dim('Proxy')}:       ${dim(`${frontendUrl}/docs → localhost:${docsPort}`)}`)
     if (includeDashboard)
       console.log(`  ${dim('➜')}  ${dim('Proxy')}:       ${dim(`localhost:${dashboardPort} → ${dashboardDomain}`)}`)
   }
@@ -1078,8 +1070,6 @@ function buildDevelopmentTlsHostnames(domain: string, includeDashboard: boolean)
   // “cert is for …” errors even when SANs are present.
   return [
     domain,
-    `api.${domain}`,
-    `docs.${domain}`,
     ...(includeDashboard ? [`dashboard.${domain}`] : []),
     'rpx.localhost',
   ]
@@ -1241,27 +1231,21 @@ function buildRpxProxySpecs(input: {
   includeDashboard: boolean
 }): RpxProxySpec[] {
   const { domain, frontendPort, apiPort, docsPort, dashboardPort, includeDashboard } = input
-  const apiDomain = `api.${domain}`
-  const docsDomain = `docs.${domain}`
   const dashboardDomain = `dashboard.${domain}`
 
   return [
-    // Forward /api/** straight to the API server, preserving the prefix.
-    // Both user routes (registered through `routes/api.ts` — auto-prefixed
-    // with /api by the route-loader, see stacksjs/stacks#1835) and
-    // framework routes (which use explicit `route.group({ prefix: '/api/...' })`)
-    // expect the /api segment to be present at registration time, so
-    // `stripPrefix` must stay `false` or the API would see /cart/add and
-    // 404. The frontend's stx-serve has a fallback proxy for direct
-    // localhost:PORT access.
+    // Path-based routing on the app host (https://app.localhost/api, /docs).
+    // /api: preserve prefix — routes are registered under /api (stacksjs/stacks#1835).
+    // /docs: strip prefix — BunPress serves from / on the docs port.
     {
       id: `${domain}-frontend`,
       from: `localhost:${frontendPort}`,
       to: domain,
-      pathRewrites: [{ from: '/api', to: `localhost:${apiPort}`, stripPrefix: false }],
+      pathRewrites: [
+        { from: '/api', to: `localhost:${apiPort}`, stripPrefix: false },
+        { from: '/docs', to: `localhost:${docsPort}`, stripPrefix: true },
+      ],
     },
-    { id: `${domain}-api`, from: `localhost:${apiPort}`, to: apiDomain },
-    { id: `${domain}-docs`, from: `localhost:${docsPort}`, to: docsDomain },
     ...(includeDashboard
       ? [{ id: `${domain}-dashboard`, from: `localhost:${dashboardPort}`, to: dashboardDomain }]
       : []),
@@ -1292,8 +1276,6 @@ async function prepareRpxTlsForDev(input: {
   const verbose = options.verbose ?? false
   const hosts = [
     domain,
-    `api.${domain}`,
-    `docs.${domain}`,
     ...(includeDashboard ? [`dashboard.${domain}`] : []),
   ]
 
@@ -1359,6 +1341,9 @@ async function registerRpxProxiesForDomain(input: {
   const { domain, frontendPort, apiPort, docsPort, dashboardPort, includeDashboard, options } = input
   const verbose = options.verbose ?? false
   const proxies = buildRpxProxySpecs({ domain, frontendPort, apiPort, docsPort, dashboardPort, includeDashboard })
+
+  // Drop legacy subdomain proxies from older dev sessions (api./docs. hosts).
+  await unregisterRpxProxies([`${domain}-api`, `${domain}-docs`])
 
   const { stopDaemon: stopRpx, writeEntry } = await importDevelopmentRpx()
   const spawnCommand = await resolveRpxDaemonSpawnCommand()

@@ -17,11 +17,9 @@ import { projectPath } from '@stacksjs/path'
  *
  * Two extras the default server bakes in for new scaffolds:
  *
- *   1. /api/** is reverse-proxied to the API dev server (port 3008 by
- *      default). Without this, `<form action="/api/foo">` posts on the
- *      frontend port land on stx-serve, which doesn't know about
- *      bun-router actions, and shoppers see a 404 page instead of
- *      their cart.
+ *   1. /api/** and /docs/** are reverse-proxied to the API and docs dev
+ *      servers. Without this, form posts and doc assets on the frontend
+ *      port land on stx-serve and 404.
  *
  *   2. The raw Request's cookies are exposed to stx server-script
  *      blocks via a per-request AsyncLocalStorage on a stable global
@@ -89,9 +87,13 @@ function parseCookies(req: Request): Record<string, string> {
   return out
 }
 
-async function proxyToApi(req: Request, apiBase: string): Promise<Response> {
+async function proxyToBackend(req: Request, backendBase: string, stripPrefix?: string): Promise<Response> {
   const incoming = new URL(req.url)
-  const target = `${apiBase}${incoming.pathname}${incoming.search}`
+  let pathname = incoming.pathname
+  if (stripPrefix && (pathname === stripPrefix || pathname.startsWith(`${stripPrefix}/`))) {
+    pathname = pathname.slice(stripPrefix.length) || '/'
+  }
+  const target = `${backendBase}${pathname}${incoming.search}`
 
   const fwd = new Headers(req.headers)
   fwd.delete('host')
@@ -185,7 +187,9 @@ async function startDefaultServer() {
   ]) ?? 'resources/views/components'
   const preferredPort = Number(process.env.PORT) || 3000
   const apiPort = Number(process.env.PORT_API) || 3008
+  const docsPort = Number(process.env.PORT_DOCS) || config.ports?.docs || 3006
   const apiBase = `http://127.0.0.1:${apiPort}`
+  const docsBase = `http://127.0.0.1:${docsPort}`
 
   // Cookie name the SPA writes when a user logs in. Defaults to whatever
   // `config.auth.defaultTokenName` is set to, falling back to `auth-token`.
@@ -232,8 +236,11 @@ async function startDefaultServer() {
       // Without (2), `route.post('/subscribe', ...)` declared at the
       // root (no /api prefix) hits stx-serve and 404s.
       const apiMethods = new Set(['POST', 'PUT', 'PATCH', 'DELETE'])
+      if (url.pathname === '/docs' || url.pathname.startsWith('/docs/'))
+        return proxyToBackend(req, docsBase, '/docs')
+
       if (url.pathname.startsWith('/api/') || apiMethods.has(req.method))
-        return proxyToApi(req, apiBase)
+        return proxyToBackend(req, apiBase)
 
       // Optional `/locale/{code}` redirect (same as default SetLocaleAction).
       // STX i18n normally switches via `/<code>/…` paths from the injected
