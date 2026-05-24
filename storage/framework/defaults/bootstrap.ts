@@ -57,6 +57,10 @@ setRbacStore(createBqbRbacStore())
 // to an empty 200, and every route returns `200 OK Content-Length: 0`.
 route.use(MaintenanceMiddleware.toRouterHandler() as any)
 
+// Locale cookie + STX-style path redirect (`/locale/en` → `/en/…`).
+// Overridable by registering the same path in app routes first.
+await route.register(frameworkPath('defaults/routes/core.ts'))
+
 // Feature-gated route registration. The dashboard.ts file currently bundles
 // ~687 lines covering auth, password reset, email subscribe, storefront
 // cart/checkout, reviews, sitemap, AI, voice, and the admin dashboard's
