@@ -6,11 +6,12 @@ import { getModelName, getTableName } from '@stacksjs/orm'
 import { path } from '@stacksjs/path'
 import { useSearchEngine } from '@stacksjs/search-engine'
 import { globSync } from '@stacksjs/storage'
+import { snakeCase } from '@stacksjs/strings'
 
 export async function importModelDocuments(modelOption?: string): Promise<Ok<string, never> | Err<string, any>> {
   try {
     const modelFiles = globSync([path.userModelsPath('*.ts'), path.storagePath('framework/defaults/app/Models/**/*.ts')], { absolute: true })
-    const { addDocument } = useSearchEngine()
+    const { addDocument, updateSettings } = useSearchEngine()
 
     for (const model of modelFiles) {
       const modelInstance = (await import(model)).default as Model
@@ -19,12 +20,28 @@ export async function importModelDocuments(modelOption?: string): Promise<Ok<str
       const tableName = getTableName(modelInstance, model)
       const modelName = getModelName(modelInstance, model)
 
+      if (modelOption && modelName !== modelOption) continue
+
       if (searchable && (typeof searchable === 'boolean' || typeof searchable === 'object')) {
-        const ormModelPath = path.storagePath(`framework/orm/src/models/${modelName}.ts`)
+        if (typeof searchable === 'object') {
+          await updateSettings(tableName, {
+            searchableAttributes: (searchable.searchable ?? []).map(attr => snakeCase(attr)),
+            filterableAttributes: (searchable.filterable ?? []).map(attr => snakeCase(attr)),
+            sortableAttributes: (searchable.sortable ?? []).map(attr => snakeCase(attr)),
+            displayedAttributes: (searchable.displayable ?? []).map(attr => snakeCase(attr)),
+          })
+        }
 
-        const ormModelInstance = (await import(ormModelPath)).default
+        const ModelClass = modelInstance as typeof modelInstance & {
+          all: () => Promise<Array<{ toSearchableObject?: () => Record<string, unknown> | null }>>
+        }
 
-        const documents = await ormModelInstance.all()
+        if (typeof ModelClass.all !== 'function') {
+          log.warn(`[search] ${modelName}: model has no .all() — run generate:model-files or use defineModel`)
+          continue
+        }
+
+        const documents = await ModelClass.all()
 
         // Per-document try/catch so one bad row doesn't abort the entire
         // re-index. The previous behavior was: hit a malformed

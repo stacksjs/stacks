@@ -1,6 +1,6 @@
 import type { Err, Ok } from '@stacksjs/error-handling'
 import type { Model } from '@stacksjs/types'
-import { ok } from '@stacksjs/error-handling'
+import { err, ok } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/logging'
 import { getTableName } from '@stacksjs/orm'
 import { path } from '@stacksjs/path'
@@ -30,9 +30,9 @@ export async function updateIndexSettings(): Promise<Ok<string, never> | Err<str
 
     return ok('Successfully update index settings!') as any
   }
-  catch (err: any) {
-    log.error(err)
+  catch (error: any) {
+    log.error(error)
 
-    return err(err)
+    return err(error?.message || String(error)) as any
   }
 }
