@@ -97,6 +97,7 @@ export enum Action {
   QueueFlush = 'queue/flush',
   QueueMonitor = 'queue/monitor',
   QueueInspect = 'queue/inspect',
+  QueueList = 'queue/list',
   QueueSchedule = 'queue/schedule',
   QueueScheduleList = 'queue/schedule-list',
   Release = 'release', // ✅

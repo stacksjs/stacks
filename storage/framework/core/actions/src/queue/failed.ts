@@ -4,6 +4,11 @@ import { FailedJob } from '@stacksjs/orm'
 
 const options = parseArgs()
 const queueName = options.queue
+const sinceArg = options.since
+// Date filter (stacksjs/stacks#1872 Q-11). Accepts `--since=1h`,
+// `--since=30m`, `--since=2d`. Computed once at startup so the
+// filter window is stable across the query.
+const sinceCutoff = sinceArg ? parseSinceDuration(sinceArg) : null
 
 try {
   log.info('Fetching failed jobs...\n')
@@ -17,8 +22,25 @@ try {
     failedJobs = await FailedJob.all()
   }
 
+  // Time-window filter (stacksjs/stacks#1872 Q-11). Applied in JS
+  // so the underlying ORM call stays driver-portable — date math
+  // in WHERE clauses needs per-driver TZ handling we don't have
+  // a unified helper for yet.
+  if (sinceCutoff) {
+    failedJobs = failedJobs.filter((j: { failed_at?: string | null }) => {
+      if (!j.failed_at) return false
+      const ts = Date.parse(j.failed_at)
+      return Number.isFinite(ts) && ts >= sinceCutoff
+    })
+  }
+
   if (failedJobs.length === 0) {
-    console.log('✓ No failed jobs found')
+    if (sinceCutoff) {
+      console.log(`✓ No failed jobs found since ${sinceArg}`)
+    }
+    else {
+      console.log('✓ No failed jobs found')
+    }
     process.exit(0)
   }
 
@@ -68,4 +90,27 @@ function parseArgs(): { [key: string]: string } {
   })
 
   return args
+}
+
+/**
+ * Parse a `--since` duration like `30s` / `15m` / `2h` / `7d` into
+ * the wall-clock cutoff (ms since epoch). Returns the cutoff so
+ * callers compare `failed_at >= cutoff`. Returns `null` on a
+ * malformed value (silently — the audit explicitly wanted graceful
+ * fallback rather than aborting on a typo). See
+ * stacksjs/stacks#1872 Q-11.
+ */
+function parseSinceDuration(input: string): number | null {
+  const m = /^(\d+)([smhd])$/.exec(input.trim())
+  if (!m) return null
+  const n = Number(m[1])
+  if (!Number.isFinite(n) || n <= 0) return null
+  const mult = m[2] === 's'
+    ? 1_000
+    : m[2] === 'm'
+      ? 60_000
+      : m[2] === 'h'
+        ? 3_600_000
+        : 86_400_000 // 'd'
+  return Date.now() - n * mult
 }

@@ -196,11 +196,18 @@ export async function startProcessor(
 async function getAllQueues(): Promise<string[]> {
   try {
     const { db } = await import('@stacksjs/database')
-    // `rawQuery` is provided by bun-query-builder at runtime but the simplified
-    // `Db` surface in @stacksjs/database doesn't include it.
-    const dbWithRaw = db as unknown as { rawQuery: (q: string) => Promise<any> }
-    const results = await dbWithRaw.rawQuery('SELECT DISTINCT queue FROM jobs')
-    const queues = (results as any[]).map((r: any) => r.queue).filter(Boolean)
+    // Typed equivalent of `SELECT DISTINCT queue FROM jobs`
+    // (stacksjs/stacks#1872 Q-14). Pre-fix this went through a
+    // `rawQuery` cast to escape the simplified `Db` surface — works
+    // at runtime but bypasses every type check, so a `jobs` schema
+    // rename would silently break here. The Kysely builder handles
+    // DISTINCT directly and stays typed end-to-end.
+    const rows = await (db as any)
+      .selectFrom('jobs')
+      .select('queue')
+      .distinct()
+      .execute() as Array<{ queue: string | null }>
+    const queues = rows.map(r => r.queue).filter((q): q is string => Boolean(q))
     return queues.length > 0 ? queues : ['default']
   }
   catch {

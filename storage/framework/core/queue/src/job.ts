@@ -7,6 +7,7 @@
 
 import { appPath } from '@stacksjs/path'
 import { env as envVars } from '@stacksjs/env'
+import { hasDispatchedKey, recordDispatchedKey } from './idempotency'
 
 function getQueueDriver(): string {
   return envVars.QUEUE_DRIVER || 'sync'
@@ -28,6 +29,22 @@ export interface JobDispatchOptions {
   backoff?: number[]
   /** Additional context */
   context?: any
+  /**
+   * Caller-supplied idempotency key (stacksjs/stacks#1872 Q-8).
+   *
+   * When set, `dispatch()` consults the `job_idempotency` dedup
+   * table before enqueuing. A second dispatch with the same key
+   * is a no-op — the framework returns without re-pushing to the
+   * queue. Closes the duplicate-job loophole that double-clicked
+   * buttons and webhook-retry loops opened.
+   *
+   * Construction guidance: derive the key from the business event
+   * (e.g. `process-order:${orderId}`,
+   * `send-welcome:${userId}`), not from job-name + payload (which
+   * would collide across unrelated dispatches and prevent legitimate
+   * re-runs).
+   */
+  idempotencyKey?: string
 }
 
 /**
@@ -90,6 +107,17 @@ class JobBuilder {
   }
 
   /**
+   * Attach an idempotency key so duplicate dispatches are
+   * deduplicated against the `job_idempotency` table
+   * (stacksjs/stacks#1872 Q-8). See {@link JobDispatchOptions.idempotencyKey}
+   * for construction guidance.
+   */
+  withIdempotencyKey(key: string): this {
+    this.options.idempotencyKey = key
+    return this
+  }
+
+  /**
    * Dispatch the job to the queue
    */
   async dispatch(): Promise<void> {
@@ -98,6 +126,15 @@ class JobBuilder {
     if (isFaked()) {
       getFakeQueue()?.dispatch(this.name, this.payload, this.options as any)
       return
+    }
+
+    // Idempotency-key short-circuit (stacksjs/stacks#1872 Q-8). A
+    // second dispatch under the same key returns without enqueuing.
+    // The lookup degrades to "always miss" with a warn when the
+    // dedup table isn't migrated yet — opt-in pattern matching
+    // #1879 Co-3 (orders) and #1871 M-8 (email).
+    if (this.options.idempotencyKey) {
+      if (await hasDispatchedKey(this.options.idempotencyKey)) return
     }
 
     const driver = getQueueDriver()
@@ -129,6 +166,15 @@ class JobBuilder {
         `[queue] Unknown QUEUE_DRIVER "${driver}". `
         + `Allowed values: redis, database, sync.`,
       )
+    }
+
+    // Record AFTER the driver dispatch succeeds so a failed enqueue
+    // (driver down, schema mismatch) doesn't lock the key — the
+    // caller can retry. Sync-driver dispatches are also recorded so
+    // an at-most-once contract holds across drivers (a `sync` retry
+    // with the same key shouldn't re-run either).
+    if (this.options.idempotencyKey) {
+      await recordDispatchedKey(this.options.idempotencyKey, this.name, this.options.queue)
     }
   }
 
@@ -295,6 +341,15 @@ export const Jobs = {
   /** Schedule the job to run after `seconds` of delay. */
   dispatchAfter(seconds: number, name: string, payload?: any): JobBuilder {
     return new JobBuilder(name, payload).delay(seconds)
+  },
+
+  /**
+   * Dispatch with an idempotency key in one call
+   * (stacksjs/stacks#1872 Q-8). Equivalent to
+   * `Jobs.make(name, payload).withIdempotencyKey(key).dispatch()`.
+   */
+  async dispatchOnce(key: string, name: string, payload?: any): Promise<void> {
+    await new JobBuilder(name, payload).withIdempotencyKey(key).dispatch()
   },
 }
 

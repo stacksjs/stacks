@@ -17,6 +17,11 @@ export { Job } from './action'
 export { Jobs, job, jobBatch, runJob } from './job'
 
 // =============================================================================
+// Job dispatch idempotency (stacksjs/stacks#1872 Q-8)
+// =============================================================================
+export { hasDispatchedKey, recordDispatchedKey } from './idempotency'
+
+// =============================================================================
 // Per-job progress + cancellation (cache-backed; safe across processes)
 // =============================================================================
 export { setJobProgress, getJobProgress, cancelJob, isJobCancelled, clearJobState } from './job-progress'
