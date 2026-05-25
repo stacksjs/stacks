@@ -24,5 +24,7 @@ export {
 } from './store'
 
 export {
+  redeem,
   update,
 } from './update'
+export type { CouponRedemptionResult } from './update'

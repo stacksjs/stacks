@@ -167,6 +167,111 @@ export async function adjustInventory(
 }
 
 /**
+ * Discriminated result for `adjustInventoryMany` — `ok: true` when
+ * every per-item adjustment succeeded; `ok: false` with `failedAt`
+ * (the index in the input array that triggered the rollback) when
+ * any single item couldn't be adjusted (out of stock, missing,
+ * etc.). All adjustments roll back as a unit on failure.
+ */
+export type InventoryBatchResult =
+  | { ok: true, products: ProductJsonResponse[] }
+  | { ok: false, failedAt: number, productId: number, reason: 'out-of-stock' | 'not-found' }
+
+/**
+ * Atomic batch inventory adjustment (stacksjs/stacks#1879 Co-2).
+ *
+ * Pre-fix: a multi-item cart called `adjustInventory(id, delta)` N
+ * times sequentially. If item 2 failed (out of stock), item 1's
+ * decrement was already committed with no rollback — the order
+ * persisted with partial stock reservation and the customer saw
+ * a refund-on-next-page-load surprise.
+ *
+ * Post-fix: wraps the per-item loop in `db.transaction`. Any item
+ * that can't be adjusted (the existing `adjustInventory` returns
+ * null on insufficient stock) throws inside the transaction; the
+ * driver rolls every prior decrement back. Returns a discriminated
+ * result so the cart handler can surface "item X was out of stock"
+ * specifically instead of a generic transaction-failed error.
+ *
+ * @example
+ * ```ts
+ * const result = await adjustInventoryMany([
+ *   { id: cart.itemA, delta: -2 },
+ *   { id: cart.itemB, delta: -1 },
+ * ])
+ * if (!result.ok) {
+ *   throw new HttpError(409, `Item ${result.productId} is out of stock`)
+ * }
+ * ```
+ */
+export async function adjustInventoryMany(
+  updates: ReadonlyArray<{ id: number, delta: number }>,
+): Promise<InventoryBatchResult> {
+  if (updates.length === 0) return { ok: true, products: [] }
+
+  try {
+    const products = await db.transaction().execute(async (trx: any) => {
+      const out: ProductJsonResponse[] = []
+      for (let i = 0; i < updates.length; i++) {
+        const { id, delta } = updates[i]!
+        if (!Number.isFinite(delta) || delta === 0)
+          throw new Error('[commerce/inventory] adjustInventoryMany delta must be a non-zero finite number')
+
+        // Same atomic UPDATE as adjustInventory, but routed through
+        // the transaction handle so all decrements share a single
+        // commit boundary.
+        const result: any = await trx
+          .updateTable('products')
+          .set({
+            inventory_count: sql`inventory_count + ${delta}`,
+            updated_at: formatDate(new Date()),
+          })
+          .where('id', '=', id)
+          .where(sql`inventory_count + ${delta}`, '>=', 0)
+          .execute()
+
+        const affected = Number(
+          result?.numUpdatedRows
+          ?? result?.[0]?.numUpdatedRows
+          ?? result?.numAffectedRows
+          ?? 0,
+        )
+
+        if (!affected) {
+          // Throw a structured error the outer try/catch can convert
+          // into a discriminated result. Driver rolls back automatically.
+          const exists = await trx.selectFrom('products').where('id', '=', id).select('id').executeTakeFirst()
+          const reason = exists ? 'out-of-stock' : 'not-found'
+          throw Object.assign(new Error(`adjustInventoryMany failed at index ${i}: ${reason}`), {
+            __batchFail: true,
+            failedAt: i,
+            productId: id,
+            reason,
+          })
+        }
+
+        const refreshed = await trx.selectFrom('products').where('id', '=', id).selectAll().executeTakeFirst()
+        if (refreshed) out.push(refreshed as ProductJsonResponse)
+      }
+      return out
+    })
+    return { ok: true, products }
+  }
+  catch (err: any) {
+    if (err?.__batchFail) {
+      return {
+        ok: false,
+        failedAt: err.failedAt as number,
+        productId: err.productId as number,
+        reason: err.reason as 'out-of-stock' | 'not-found',
+      }
+    }
+    // Real error (network, schema, etc.) — surface to caller.
+    throw err
+  }
+}
+
+/**
  * Update inventory information for a product item
  *
  * @param id The ID of the product item
