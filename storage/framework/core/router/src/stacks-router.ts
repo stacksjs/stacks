@@ -23,6 +23,7 @@ import { applyRequestEnhancements, Router } from '@stacksjs/bun-router'
 import { runWithRequest } from './request-context'
 import { isApiRequest, JSON_CONTENT_TYPE } from './api-shape'
 import { clearTrackedQueries, createErrorResponse, createMiddlewareErrorResponse } from './error-handler'
+import { rateLimit as enforceRateLimit } from './rate-limit'
 
 import type { StacksActionPath } from './action-paths'
 
@@ -92,6 +93,25 @@ interface ChainableRoute {
    * ```
    */
   requireCsrf: () => ChainableRoute
+  /**
+   * Declaratively rate-limit this route (stacksjs/stacks#1870 R-8).
+   * Wraps `rateLimit(routeKey, max).per(window)` so callers don't
+   * have to remember to invoke it inside every action's `handle()`.
+   * The bucket identity is the per-route default (auth user → token
+   * → IP → 'anon'); 429s carry the standard `Retry-After`.
+   *
+   * @example
+   * ```ts
+   * route.post('/login',  'Actions/LoginAction').rateLimit(5, 'minute')
+   * route.post('/search', 'Actions/SearchAction').rateLimit(30, 'minute')
+   * route.post('/upload', 'Actions/UploadAction').rateLimit(3, 900) // 3 per 15 min
+   * ```
+   *
+   * `window` accepts either a named period (`'second'`, `'minute'`,
+   * `'hour'`, `'day'`) or a positive number of seconds for custom
+   * windows.
+   */
+  rateLimit: (max: number, window: 'second' | 'minute' | 'hour' | 'day' | number) => ChainableRoute
 }
 
 /**
@@ -108,6 +128,45 @@ const csrfSkipRegistry = new Set<string>()
  * route's own skip set above and the action-level cache below.
  */
 const csrfRequireRegistry = new Set<string>()
+
+/**
+ * Per-route rate-limit config registered via `.rateLimit(max, window)`
+ * on the chainable route builder (stacksjs/stacks#1870 R-8). The
+ * `createMiddlewareHandler` request entry point reads this once per
+ * call and invokes the shared `rateLimit()` primitive before the
+ * action body. Storing here (instead of as part of the action
+ * definition) lets two routes registered against the same action
+ * apply different limits, mirroring the `.skipCsrf()` /
+ * `.requireCsrf()` split.
+ */
+interface RouteRateLimitConfig {
+  max: number
+  windowSeconds: number
+}
+const routeRateLimitRegistry = new Map<string, RouteRateLimitConfig>()
+
+/**
+ * Resolve a chainable-form `window` arg (`'minute'` or `300`) to a
+ * positive integer of seconds. Throws on malformed input at
+ * registration time so the typo surfaces at boot, not on the first
+ * 429.
+ */
+function rateLimitWindowToSeconds(window: 'second' | 'minute' | 'hour' | 'day' | number): number {
+  if (typeof window === 'number') {
+    if (!Number.isFinite(window) || window <= 0) {
+      throw new Error(`[Router] .rateLimit(): window must be a positive number of seconds, got ${window}`)
+    }
+    return Math.floor(window)
+  }
+  switch (window) {
+    case 'second': return 1
+    case 'minute': return 60
+    case 'hour': return 3600
+    case 'day': return 86_400
+    default:
+      throw new Error(`[Router] .rateLimit(): unknown period '${String(window)}'`)
+  }
+}
 
 /**
  * FIFO-bounded Map. Wraps `Map` with a hard size cap; on overflow,
@@ -761,6 +820,27 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
     // Run the entire request handling within the request context
     // This allows Auth and other services to access the current request
     return runWithRequest<Promise<Response>>(enhancedReq, async () => {
+      // Declarative per-route rate-limit (stacksjs/stacks#1870 R-8).
+      // Read once per request; routes that never called `.rateLimit()`
+      // skip the call entirely. The shared limiter cache inside
+      // `rate-limit.ts` keeps the bucket math coherent across requests
+      // for the same `routeKey:max:window` shape.
+      const rl = routeRateLimitRegistry.get(routeKey)
+      if (rl) {
+        try {
+          await enforceRateLimit(routeKey, rl.max).over(rl.windowSeconds)
+        }
+        catch (err) {
+          // rateLimit() throws HttpError(429) with Retry-After headers
+          // already attached. Route through the shared error responder
+          // so the 429 shape matches every other framework error.
+          return createMiddlewareErrorResponse(
+            err as Error & { statusCode?: number, status?: number, headers?: Record<string, string> },
+            req,
+          )
+        }
+      }
+
       const userMiddleware = routeMiddlewareRegistry.get(routeKey) || []
 
       // Default-on CSRF: every state-mutating method gets `csrf` injected
@@ -1114,6 +1194,19 @@ function createChainableRoute(routeKey: string): ChainableRoute {
       // stacksjs/stacks#1870 R-9.
       csrfRequireRegistry.add(routeKey)
       csrfSkipRegistry.delete(routeKey)
+      return chain
+    },
+
+    rateLimit(max, window) {
+      // Resolve at registration time so a typo (e.g. .rateLimit(5, 'minutes'))
+      // throws on boot, not on the first 429. The check is read once per
+      // request in createMiddlewareHandler — registry lookup keeps the hot
+      // path branch-free for routes that didn't opt in.
+      if (!Number.isFinite(max) || max <= 0) {
+        throw new Error(`[Router] .rateLimit(): max must be a positive number, got ${String(max)}`)
+      }
+      const windowSeconds = rateLimitWindowToSeconds(window)
+      routeRateLimitRegistry.set(routeKey, { max: Math.floor(max), windowSeconds })
       return chain
     },
   }

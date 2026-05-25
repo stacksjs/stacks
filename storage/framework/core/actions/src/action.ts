@@ -140,6 +140,36 @@ interface ActionOptions<
   handle: (
     request: InferRequest<TModel, TValidations, TPath>,
   ) => ActionResult | Promise<ActionResult>
+  /**
+   * Lightweight dependency factory (stacksjs/stacks#1870 R-6).
+   * Returns the deps the action's `handle` / `before` / `authorize`
+   * hooks read via `this.deps`. Resolved lazily on first access and
+   * cached for the lifetime of the action instance.
+   *
+   * Tests swap individual deps via {@link Action.overrideDependencies}
+   * without remounting the action or doing module-level mocking — the
+   * pain point the issue called out (cross-cutting deps had to be
+   * `import`-ed at module top, which the test runner couldn't
+   * intercept short of full module replacement).
+   *
+   * @example
+   * ```ts
+   * export default new Action({
+   *   name: 'CreateUser',
+   *   dependencies: () => ({ db: useDb(), mailer: useMailer() }),
+   *   async handle(req) {
+   *     await this.deps.db.insertInto('users').values(req.body).execute()
+   *     await this.deps.mailer.send({ to: req.body.email, subject: 'Welcome' })
+   *   }
+   * })
+   *
+   * // In test:
+   * action.overrideDependencies({ db: mockDb, mailer: mockMailer })
+   * await action.handle(mockReq)
+   * action.resetDependencies()
+   * ```
+   */
+  dependencies?: () => Record<string, unknown>
 }
 
 /**
@@ -196,6 +226,21 @@ export class Action<
   handle: ActionOptions<TModel, TValidations, TPath>['handle']
   model?: string
 
+  /**
+   * Backing factory for {@link deps} (stacksjs/stacks#1870 R-6).
+   * Held separately from the resolved value so {@link resetDependencies}
+   * can re-run it on the next read.
+   */
+  private _dependenciesFactory?: () => Record<string, unknown>
+  /** Cached factory result. Cleared by {@link resetDependencies}. */
+  private _resolvedDeps?: Record<string, unknown>
+  /**
+   * Per-key overrides applied on top of the factory result. Tests
+   * inject mocks here without disturbing the factory; runtime callers
+   * never set this.
+   */
+  private _depsOverrides?: Record<string, unknown>
+
   constructor({
     name,
     description,
@@ -214,6 +259,7 @@ export class Action<
     csrf,
     authorize,
     before,
+    dependencies,
   }: ActionOptions<TModel, TValidations, TPath>) {
     this.name = name
     this.description = description
@@ -231,6 +277,7 @@ export class Action<
     this.csrf = csrf
     this.authorize = authorize
     this.before = before
+    this._dependenciesFactory = dependencies
 
     // Extract model name string for runtime (route generation, etc.)
     if (model && typeof model === 'object' && 'name' in model) {
@@ -239,5 +286,46 @@ export class Action<
     else if (typeof model === 'string') {
       this.model = model
     }
+  }
+
+  /**
+   * Lazily-resolved dependency bag (stacksjs/stacks#1870 R-6). The
+   * `dependencies:` factory passed to the constructor runs once on
+   * first read; subsequent reads return the cached object merged with
+   * any test-side {@link overrideDependencies} overlay.
+   *
+   * Empty `{}` when no factory was provided — accessing `this.deps`
+   * is always safe even on legacy actions, so handle code can be
+   * migrated incrementally.
+   */
+  get deps(): Record<string, unknown> {
+    if (!this._resolvedDeps) {
+      this._resolvedDeps = this._dependenciesFactory?.() ?? {}
+    }
+    if (this._depsOverrides) {
+      return { ...this._resolvedDeps, ...this._depsOverrides }
+    }
+    return this._resolvedDeps
+  }
+
+  /**
+   * Test-only: replace specific deps with mocks (stacksjs/stacks#1870 R-6).
+   * Merges over the factory result so partial mocks are easy
+   * (`overrideDependencies({ mailer: fakeMailer })` keeps the real
+   * `db` from the factory). Call {@link resetDependencies} in
+   * `afterEach` to restore.
+   */
+  overrideDependencies(overrides: Record<string, unknown>): void {
+    this._depsOverrides = { ...(this._depsOverrides ?? {}), ...overrides }
+  }
+
+  /**
+   * Test-only: clear the override overlay and force the factory to
+   * re-run on next access. Pair with {@link overrideDependencies}
+   * inside `beforeEach` / `afterEach`.
+   */
+  resetDependencies(): void {
+    this._depsOverrides = undefined
+    this._resolvedDeps = undefined
   }
 }

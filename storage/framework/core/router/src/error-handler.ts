@@ -517,7 +517,7 @@ export async function createErrorResponse(
  * which is what we used to ship for `GET /api/me` without a token.
  */
 export async function createMiddlewareErrorResponse(
-  error: Error & { statusCode?: number, status?: number },
+  error: Error & { statusCode?: number, status?: number, headers?: Record<string, string> },
   request: Request | EnhancedRequest,
 ): Promise<Response> {
   const status = error.statusCode ?? error.status ?? 500
@@ -525,13 +525,19 @@ export async function createMiddlewareErrorResponse(
 
   // For 4xx errors, return JSON in both dev and prod
   if (status >= 400 && status < 500) {
+    // Merge in any per-error headers (e.g. `Retry-After` from
+    // rate-limit 429s — stacksjs/stacks#1870 R-8). JSON headers
+    // win on collision so content-type stays correct.
+    const headers = error.headers
+      ? { ...error.headers, ...getJsonHeaders() }
+      : getJsonHeaders()
     return new Response(
       buildErrorJson({
         error: error.name || 'ClientError',
         message: error.message,
         status,
       }),
-      { status, headers: getJsonHeaders() },
+      { status, headers },
     )
   }
 
