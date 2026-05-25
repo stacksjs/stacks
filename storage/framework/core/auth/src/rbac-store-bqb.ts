@@ -288,14 +288,27 @@ export function createBqbRbacStore(): RbacStore {
       // as half-empty rows. `selectAllRelations` or aliased `selectAll`
       // would also work, but the explicit column list keeps the result
       // shape obvious.
+      //
+      // Two bqb API contracts to keep in mind:
+      //   1. `innerJoin(table, onLeft, op, onRight)` is FOUR-arg —
+      //      the `'='` is not optional. The prior 3-arg form silently
+      //      compiled to `ON onLeft onRight undefined`, which SQLite
+      //      rejects with `near "<table>": syntax error`.
+      //   2. `.select(['a','b'])` (array) accumulates a multi-column
+      //      SELECT in one call. Chained `.select('a').select('b')`
+      //      REPLACES the SELECT clause each time — only the last
+      //      column survives. Array form is the correct shape when
+      //      you want >1 column.
       const rows: Array<Record<string, unknown>> = await (db.selectFrom('roles') as any)
-        .innerJoin('user_roles', 'user_roles.role_id', 'roles.id')
-        .select('roles.id as id')
-        .select('roles.name as name')
-        .select('roles.guard_name as guard_name')
-        .select('roles.description as description')
-        .select('roles.created_at as created_at')
-        .select('roles.updated_at as updated_at')
+        .innerJoin('user_roles', 'user_roles.role_id', '=', 'roles.id')
+        .select([
+          'roles.id as id',
+          'roles.name as name',
+          'roles.guard_name as guard_name',
+          'roles.description as description',
+          'roles.created_at as created_at',
+          'roles.updated_at as updated_at',
+        ])
         .where('user_roles.user_id', '=', userId)
         .orderBy('roles.id', 'asc')
         .execute()
@@ -321,14 +334,18 @@ export function createBqbRbacStore(): RbacStore {
     // ─── User-Permission pivot ────────────────────────────────────────
 
     async getUserDirectPermissions(userId: number): Promise<PermissionRecord[]> {
+      // See `getUserRoles` above for the bqb API contracts on
+      // `innerJoin(..., '=', ...)` and array-form `.select([])`.
       const rows: Array<Record<string, unknown>> = await (db.selectFrom('permissions') as any)
-        .innerJoin('user_permissions', 'user_permissions.permission_id', 'permissions.id')
-        .select('permissions.id as id')
-        .select('permissions.name as name')
-        .select('permissions.guard_name as guard_name')
-        .select('permissions.description as description')
-        .select('permissions.created_at as created_at')
-        .select('permissions.updated_at as updated_at')
+        .innerJoin('user_permissions', 'user_permissions.permission_id', '=', 'permissions.id')
+        .select([
+          'permissions.id as id',
+          'permissions.name as name',
+          'permissions.guard_name as guard_name',
+          'permissions.description as description',
+          'permissions.created_at as created_at',
+          'permissions.updated_at as updated_at',
+        ])
         .where('user_permissions.user_id', '=', userId)
         .orderBy('permissions.id', 'asc')
         .execute()
@@ -354,14 +371,18 @@ export function createBqbRbacStore(): RbacStore {
     // ─── Role-Permission pivot ────────────────────────────────────────
 
     async getRolePermissions(roleId: number): Promise<PermissionRecord[]> {
+      // See `getUserRoles` above for the bqb API contracts on
+      // `innerJoin(..., '=', ...)` and array-form `.select([])`.
       const rows: Array<Record<string, unknown>> = await (db.selectFrom('permissions') as any)
-        .innerJoin('role_permissions', 'role_permissions.permission_id', 'permissions.id')
-        .select('permissions.id as id')
-        .select('permissions.name as name')
-        .select('permissions.guard_name as guard_name')
-        .select('permissions.description as description')
-        .select('permissions.created_at as created_at')
-        .select('permissions.updated_at as updated_at')
+        .innerJoin('role_permissions', 'role_permissions.permission_id', '=', 'permissions.id')
+        .select([
+          'permissions.id as id',
+          'permissions.name as name',
+          'permissions.guard_name as guard_name',
+          'permissions.description as description',
+          'permissions.created_at as created_at',
+          'permissions.updated_at as updated_at',
+        ])
         .where('role_permissions.role_id', '=', roleId)
         .orderBy('permissions.id', 'asc')
         .execute()
