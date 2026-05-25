@@ -1,4 +1,5 @@
 type ProductJsonResponse = ModelRow<typeof Product>
+import type { StacksExpressionBuilder } from '@stacksjs/database'
 import { db, sql } from '@stacksjs/database'
 
 /**
@@ -254,7 +255,7 @@ export async function fetchTopProducts(limit: number = 5): Promise<TopProductRow
         'products.id as id',
         'products.name as name',
         'products.inventory_count as inventory_count',
-        ((eb: any) => eb.fn.sum('order_items.quantity').as('units_sold')) as any,
+        ((eb: StacksExpressionBuilder) => eb.fn.sum('order_items.quantity').as('units_sold')) as any,
         // Multiply line-item price × quantity inline. Falls back to the
         // current product price if order_items.price is null (older data).
         sql<number>`SUM(COALESCE(order_items.price, products.price) * order_items.quantity)`.as('revenue') as any,

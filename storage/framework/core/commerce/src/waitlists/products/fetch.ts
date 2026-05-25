@@ -1,3 +1,4 @@
+import type { StacksExpressionBuilder } from '@stacksjs/database'
 import { db } from '@stacksjs/database'
 import { formatDate } from '@stacksjs/orm'
 type WaitlistProductJsonResponse = ModelRow<typeof WaitlistProduct>
@@ -32,7 +33,7 @@ export async function fetchCountBySource(
 ): Promise<Record<string, number>> {
   let query = db
     .selectFrom('waitlist_products')
-    .select(['source', (eb: any) => eb.fn.count('id').as('count')] as any)
+    .select(['source', (eb: StacksExpressionBuilder) => eb.fn.count('id').as('count')] as any)
     .groupBy('source') as any
 
   if (startDate && _endDate) {
@@ -68,7 +69,7 @@ export async function fetchCountByDate(date: Date = new Date()): Promise<number>
 
   const result = await db
     .selectFrom('waitlist_products')
-    .select(((eb: any) => eb.fn.count('id').as('count')) as any)
+    .select(((eb: StacksExpressionBuilder) => eb.fn.count('id').as('count')) as any)
     .where('created_at', '>=', startDateStr)
     .where('created_at', '<=', endDateStr)
     .executeTakeFirst() as { count: number } | undefined
@@ -84,7 +85,7 @@ export async function fetchCountByDate(date: Date = new Date()): Promise<number>
 export async function fetchCountByQuantity(quantity: number): Promise<number> {
   const result = await db
     .selectFrom('waitlist_products')
-    .select(((eb: any) => eb.fn.count('id').as('count')) as any)
+    .select(((eb: StacksExpressionBuilder) => eb.fn.count('id').as('count')) as any)
     .where('quantity', '=', quantity)
     .executeTakeFirst() as { count: number } | undefined
 
@@ -103,7 +104,7 @@ export async function fetchCountByAllQuantities(
 ): Promise<Record<number, number>> {
   let query = db
     .selectFrom('waitlist_products')
-    .select(['quantity', (eb: any) => eb.fn.count('id').as('count')] as any)
+    .select(['quantity', (eb: StacksExpressionBuilder) => eb.fn.count('id').as('count')] as any)
     .groupBy('quantity') as any
 
   if (startDate && _endDate) {
@@ -235,7 +236,7 @@ export async function fetchCountByStatus(
 ): Promise<number> {
   let query = db
     .selectFrom('waitlist_products')
-    .select(((eb: any) => eb.fn.count('id').as('count')) as any)
+    .select(((eb: StacksExpressionBuilder) => eb.fn.count('id').as('count')) as any)
     .where('status', '=', status) as any
 
   if (startDate && _endDate) {
@@ -265,7 +266,7 @@ export async function fetchConversionRates(
   }> {
   let query = db
     .selectFrom('waitlist_products')
-    .select(['status', (eb: any) => eb.fn.count('id').as('count')] as any)
+    .select(['status', (eb: StacksExpressionBuilder) => eb.fn.count('id').as('count')] as any)
     .groupBy('status') as any
 
   if (_startDate && _endDate) {
@@ -315,7 +316,7 @@ export async function fetchCountBetweenDates(
 
   const result = await db
     .selectFrom('waitlist_products')
-    .select(((eb: any) => eb.fn.count('id').as('count')) as any)
+    .select(((eb: StacksExpressionBuilder) => eb.fn.count('id').as('count')) as any)
     .where('created_at', '>=', startDateStr)
     .where('created_at', '<=', endDateStr)
     .executeTakeFirst() as { count: number } | undefined

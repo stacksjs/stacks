@@ -124,3 +124,102 @@ sql.ref = function ref(column: string): { raw: string } {
  * Use the query builder from bun-query-builder instead.
  */
 export type Database = any
+
+/**
+ * Comparison operator accepted by {@link StacksExpressionBuilder.cmpr}
+ * and friends. Mirrors the standard SQL operators the underlying
+ * Kysely-style builder supports.
+ */
+export type ExpressionOperator =
+  | '=' | '!=' | '<>' | '<' | '<=' | '>' | '>='
+  | 'in' | 'not in' | 'is' | 'is not'
+  | 'like' | 'not like' | 'ilike' | 'not ilike'
+
+/**
+ * Reference to a column for use inside an expression. Returned by
+ * {@link StacksExpressionBuilder.ref} and accepted everywhere a value
+ * or column is expected (e.g. inside `sql\`\${ref} > 0\`\`).
+ *
+ * The shape matches `sql.ref()`'s return so a raw fragment from either
+ * source is interoperable.
+ */
+export interface ColumnRef {
+  readonly raw: string
+}
+
+/**
+ * Fluent aggregate-function builder accessible via
+ * `eb.fn.count(...)`, `eb.fn.sum(...)`, etc. The chained `.as(name)`
+ * names the resulting column in the projection; `.filterWhere(...)`
+ * scopes the aggregate to a sub-population (`COUNT(*) FILTER (WHERE
+ * status = 'success')` style).
+ */
+export interface AggregateExpression {
+  as: (alias: string) => AggregateExpression
+  filterWhere: (column: string, op: ExpressionOperator | string, value: unknown) => AggregateExpression
+}
+
+/**
+ * Aggregate-function accessor exposed on the expression builder.
+ *
+ * Covers the call sites in commerce today (`count`, `sum`, `avg`,
+ * `min`, `max`). Other Kysely-side aggregates (`countAll`,
+ * `coalesce`, etc.) can be added here as call sites surface; we
+ * deliberately don't widen to "everything Kysely exposes" because
+ * that surface keeps growing and an `any`-typed escape hatch always
+ * exists (`eb.fn as any).newThing(...)`) if a one-off bypass is
+ * genuinely needed.
+ */
+export interface ExpressionFunctions {
+  count: (column: string) => AggregateExpression
+  sum: (column: string) => AggregateExpression
+  avg: (column: string) => AggregateExpression
+  min: (column: string) => AggregateExpression
+  max: (column: string) => AggregateExpression
+}
+
+/**
+ * Minimal typed expression-builder surface for sub-query / inline-
+ * expression callbacks (stacksjs/stacks#1892, T-2 from #1875).
+ *
+ * Background: the framework's commerce module passed `(eb: any) => …`
+ * to `.where()` / `.select()` callbacks across 80+ sites. The `any`
+ * escape meant typos like `eb.compare(...)` (no such method — it's
+ * `cmpr`) only surfaced at runtime, and any later rename in
+ * bun-query-builder couldn't break here at type-check time.
+ *
+ * This interface declares the methods commerce actually uses today —
+ * `or`, `cmpr`, `ref`, `raw`, plus the `fn` aggregate accessor. It
+ * intentionally does NOT claim to be the full Kysely
+ * `ExpressionBuilder<DB, TB>` type:
+ *
+ *   - Stacks's `Database` is still typed as `any` (no generated
+ *     schema map yet) so the table-aware narrowing Kysely offers
+ *     can't be expressed here yet.
+ *   - bun-query-builder doesn't currently re-export its internal
+ *     `ExpressionBuilder` type, so we can't alias to the canonical
+ *     shape upstream.
+ *
+ * When either of those changes upstream, swap this interface's
+ * implementation in one place rather than re-typing every call site.
+ */
+export interface StacksExpressionBuilder {
+  /** Logical OR over a list of sub-expressions. */
+  or: (expressions: ReadonlyArray<unknown>) => unknown
+  /** Logical AND over a list of sub-expressions. */
+  and?: (expressions: ReadonlyArray<unknown>) => unknown
+  /**
+   * Compare a column / expression against a value or another column
+   * with the given operator. Returns an opaque expression value the
+   * outer query can consume.
+   */
+  cmpr: (left: unknown, op: ExpressionOperator, right: unknown) => unknown
+  /** Reference a column by name. Returns a {@link ColumnRef}. */
+  ref: (column: string) => ColumnRef
+  /** Raw SQL fragment. Use sparingly — bypasses parameterization. */
+  raw: (value: string) => ColumnRef
+  /** Aggregate-function accessor (`eb.fn.count('id')`). */
+  fn: ExpressionFunctions
+  /** Allow optional uncovered methods without forcing every call site to cast. */
+  readonly [extra: string]: unknown
+}

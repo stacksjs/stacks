@@ -1,5 +1,6 @@
 type ManufacturerJsonResponse = ModelRow<typeof Manufacturer>
 import type { FetchManufacturersOptions, ManufacturerResponse } from '../../types'
+import type { StacksExpressionBuilder } from '@stacksjs/database'
 import { db } from '@stacksjs/database'
 
 export function fetchAll(): Promise<ManufacturerJsonResponse[]> {
@@ -52,7 +53,7 @@ export async function fetchByCountry(country: string, options: FetchManufacturer
   // Get total count for pagination
   const countResult = await db
     .selectFrom('manufacturers')
-    .select(((eb: any) => eb.fn.count('id').as('total')) as any)
+    .select(((eb: StacksExpressionBuilder) => eb.fn.count('id').as('total')) as any)
     .where('country', '=', country)
     .executeTakeFirst() as { total: number } | undefined
 
@@ -107,7 +108,7 @@ export async function fetchWithProductCount(options: FetchManufacturersOptions =
       'm.featured',
       'm.created_at',
       'm.updated_at',
-      (eb: any) => eb.fn.count('p.id').as('product_count'),
+      (eb: StacksExpressionBuilder) => eb.fn.count('p.id').as('product_count'),
     ] as any)
     .groupBy('m.id')
 

@@ -4,6 +4,7 @@ import type {
   OrderTypeCount,
   StatusCount,
 } from '../types'
+import type { StacksExpressionBuilder } from '@stacksjs/database'
 import { db } from '@stacksjs/database'
 
 /**
@@ -23,7 +24,7 @@ export async function fetchAll(limit?: number): Promise<OrderJsonResponse[]> {
   const orders = await query.execute()
 
   // Fetch items for each order
-  return await Promise.all(orders.map(async (order: any) => {
+  return await Promise.all(orders.map(async (order: OrderJsonResponse) => {
     const items = await db
       .selectFrom('order_items')
       .where('order_id', '=', order.id)
@@ -65,20 +66,20 @@ export async function fetchStats(): Promise<OrderStats> {
   // Total orders
   const totalOrders = await db
     .selectFrom('orders')
-    .select(((eb: any) => eb.fn.count('id').as('count')) as any)
+    .select(((eb: StacksExpressionBuilder) => eb.fn.count('id').as('count')) as any)
     .executeTakeFirst() as { count: number } | undefined
 
   // Orders by status
   const ordersByStatus = await db
     .selectFrom('orders')
-    .select(['status', (eb: any) => eb.fn.count('id').as('count')] as any)
+    .select(['status', (eb: StacksExpressionBuilder) => eb.fn.count('id').as('count')] as any)
     .groupBy('status')
     .execute() as unknown as StatusCount[]
 
   // Orders by type
   const ordersByType = await db
     .selectFrom('orders')
-    .select(['order_type', (eb: any) => eb.fn.count('id').as('count')] as any)
+    .select(['order_type', (eb: StacksExpressionBuilder) => eb.fn.count('id').as('count')] as any)
     .groupBy('order_type')
     .execute() as unknown as OrderTypeCount[]
 
@@ -91,7 +92,7 @@ export async function fetchStats(): Promise<OrderStats> {
     .execute()
 
   // Fetch items for each recent order
-  const recentOrders = await Promise.all(recentOrdersRaw.map(async (order: any) => {
+  const recentOrders = await Promise.all(recentOrdersRaw.map(async (order: OrderJsonResponse) => {
     const items = await db
       .selectFrom('order_items')
       .where('order_id', '=', order.id)
@@ -107,7 +108,7 @@ export async function fetchStats(): Promise<OrderStats> {
   // Total revenue
   const revenue = await db
     .selectFrom('orders')
-    .select(((eb: any) => eb.fn.sum('total_amount').as('total')) as any)
+    .select(((eb: StacksExpressionBuilder) => eb.fn.sum('total_amount').as('total')) as any)
     .executeTakeFirst() as { total: number } | undefined
 
   return {
@@ -146,7 +147,7 @@ export async function compareOrdersByPeriod(_daysRange: number = 30): Promise<{
   // Get orders for current period
   const currentPeriodOrders = await db
     .selectFrom('orders')
-    .select(((eb: any) => eb.fn.count('id').as('count')) as any)
+    .select(((eb: StacksExpressionBuilder) => eb.fn.count('id').as('count')) as any)
     .where('created_at', '>=', currentPeriodStart.toISOString())
     .where('created_at', '<=', today.toISOString())
     .executeTakeFirst() as { count: number } | undefined
@@ -154,7 +155,7 @@ export async function compareOrdersByPeriod(_daysRange: number = 30): Promise<{
   // Get orders for previous period
   const previousPeriodOrders = await db
     .selectFrom('orders')
-    .select(((eb: any) => eb.fn.count('id').as('count')) as any)
+    .select(((eb: StacksExpressionBuilder) => eb.fn.count('id').as('count')) as any)
     .where('created_at', '>=', previousPeriodStart.toISOString())
     .where('created_at', '<=', previousPeriodEnd.toISOString())
     .executeTakeFirst() as { count: number } | undefined
@@ -229,7 +230,7 @@ export async function calculateOrderMetrics(_daysRange: number = 30): Promise<{
   // Get values for current period
   const currentPeriodValues = await db
     .selectFrom('orders')
-    .select(((eb: any) => [
+    .select(((eb: StacksExpressionBuilder) => [
       eb.fn.count('id').as('total_orders'),
       eb.fn.sum('total_amount').as('total_revenue'),
     ]) as any)
@@ -240,7 +241,7 @@ export async function calculateOrderMetrics(_daysRange: number = 30): Promise<{
   // Get values for previous period
   const previousPeriodValues = await db
     .selectFrom('orders')
-    .select(((eb: any) => [
+    .select(((eb: StacksExpressionBuilder) => [
       eb.fn.count('id').as('total_orders'),
       eb.fn.sum('total_amount').as('total_revenue'),
     ]) as any)
@@ -251,7 +252,7 @@ export async function calculateOrderMetrics(_daysRange: number = 30): Promise<{
   // Get orders by status for current period
   const ordersByStatus = await db
     .selectFrom('orders')
-    .select(['status', (eb: any) => eb.fn.count('id').as('count')] as any)
+    .select(['status', (eb: StacksExpressionBuilder) => eb.fn.count('id').as('count')] as any)
     .where('created_at', '>=', currentPeriodStart.toISOString())
     .where('created_at', '<=', today.toISOString())
     .groupBy('status')
@@ -260,7 +261,7 @@ export async function calculateOrderMetrics(_daysRange: number = 30): Promise<{
   // Get orders by type for current period
   const ordersByType = await db
     .selectFrom('orders')
-    .select(['order_type', (eb: any) => eb.fn.count('id').as('count')] as any)
+    .select(['order_type', (eb: StacksExpressionBuilder) => eb.fn.count('id').as('count')] as any)
     .where('created_at', '>=', currentPeriodStart.toISOString())
     .where('created_at', '<=', today.toISOString())
     .groupBy('order_type')

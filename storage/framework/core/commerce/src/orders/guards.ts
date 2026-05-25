@@ -7,6 +7,7 @@
  * allowed to proceed?"
  */
 
+import type { StacksExpressionBuilder } from '@stacksjs/database'
 import { db } from '@stacksjs/database'
 
 // ============================================================================
@@ -215,7 +216,7 @@ export async function cleanupAbandonedCarts(
     const result: any = await (db as any)
       .deleteFrom('carts')
       .where('updated_at', '<', cutoffAt)
-      .where('id', 'in', (eb: any) =>
+      .where('id', 'in', (eb: StacksExpressionBuilder) =>
         eb.selectFrom('carts')
           .select('id')
           .where('updated_at', '<', cutoffAt)

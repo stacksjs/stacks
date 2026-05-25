@@ -1,3 +1,4 @@
+import type { StacksExpressionBuilder } from '@stacksjs/database'
 import { db } from '@stacksjs/database'
 import { formatDate } from '@stacksjs/orm'
 type GiftCardJsonResponse = ModelRow<typeof GiftCard>
@@ -84,7 +85,7 @@ export async function updateBalance(id: number, amount: number): Promise<GiftCar
     .where('id', '=', id)
     .where('is_active', '=', 1)
     .where('status', '=', 'ACTIVE')
-    .where((eb: any) => eb.cmpr(eb.raw(`current_balance + ${amount}`), '>=', 0))
+    .where((eb: StacksExpressionBuilder) => eb.cmpr(eb.raw(`current_balance + ${amount}`), '>=', 0))
     .executeTakeFirst()
 
   const affected = Number((result as any)?.numUpdatedRows ?? (result as any)?.affectedRows ?? 0)

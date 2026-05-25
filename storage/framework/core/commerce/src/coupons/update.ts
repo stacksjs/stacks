@@ -1,3 +1,4 @@
+import type { StacksExpressionBuilder } from '@stacksjs/database'
 import { db } from '@stacksjs/database'
 import { formatDate } from '@stacksjs/orm'
 type CouponJsonResponse = ModelRow<typeof Coupon>
@@ -104,16 +105,16 @@ export async function redeem(id: number): Promise<CouponRedemptionResult> {
       updated_at: now,
     })
     .where('id', '=', id)
-    .where((eb: any) => eb.or([
+    .where((eb: StacksExpressionBuilder) => eb.or([
       eb('max_uses', 'is', null),
       eb.cmpr('usage_count', '<', eb.ref('max_uses')),
     ]))
     .where('is_active', '=', 1)
-    .where((eb: any) => eb.or([
+    .where((eb: StacksExpressionBuilder) => eb.or([
       eb('start_date', 'is', null),
       eb.cmpr('start_date', '<=', now),
     ]))
-    .where((eb: any) => eb.or([
+    .where((eb: StacksExpressionBuilder) => eb.or([
       eb('end_date', 'is', null),
       eb.cmpr('end_date', '>=', now),
     ]))

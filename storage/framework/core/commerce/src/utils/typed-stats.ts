@@ -12,6 +12,7 @@
  * and a single localized `as any` at the bun-query-builder boundary.
  */
 
+import type { StacksExpressionBuilder } from '@stacksjs/database'
 import { db } from '@stacksjs/database'
 
 /**
@@ -46,7 +47,7 @@ export async function aggregateStats<TKeys extends string>(
   let query: any = (db as any).selectFrom(table)
   if (applyWhere) query = applyWhere(query)
 
-  query = query.select((eb: any) => Object.entries(descriptors).map(([alias, d]) => {
+  query = query.select((eb: StacksExpressionBuilder) => Object.entries(descriptors).map(([alias, d]) => {
     const col = (d as { column?: string }).column ?? 'id'
     let expr = eb.fn[(d as StatsDescriptor).kind](col)
     if ((d as { filter?: unknown }).filter) {

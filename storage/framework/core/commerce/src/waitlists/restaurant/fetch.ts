@@ -1,3 +1,4 @@
+import type { StacksExpressionBuilder } from '@stacksjs/database'
 import { db } from '@stacksjs/database'
 import { formatDate } from '@stacksjs/orm'
 type WaitlistRestaurantJsonResponse = ModelRow<typeof WaitlistRestaurant>
@@ -27,7 +28,7 @@ export async function fetchAll(): Promise<WaitlistRestaurantJsonResponse[]> {
 export async function fetchCountByTablePreference(): Promise<Record<string, number>> {
   const results = await db
     .selectFrom('waitlist_restaurants')
-    .select(['table_preference', (eb: any) => eb.fn.count('id').as('count')] as any)
+    .select(['table_preference', (eb: StacksExpressionBuilder) => eb.fn.count('id').as('count')] as any)
     .groupBy('table_preference')
     .execute() as { table_preference: string, count: number }[]
 
@@ -54,7 +55,7 @@ export async function fetchCountByDate(date: Date = new Date()): Promise<number>
 
   const result = await db
     .selectFrom('waitlist_restaurants')
-    .select(((eb: any) => eb.fn.count('id').as('count')) as any)
+    .select(((eb: StacksExpressionBuilder) => eb.fn.count('id').as('count')) as any)
     .where('created_at', '>=', startDateStr)
     .where('created_at', '<=', endDateStr)
     .executeTakeFirst() as { count: number } | undefined
@@ -70,7 +71,7 @@ export async function fetchCountByDate(date: Date = new Date()): Promise<number>
 export async function fetchCountByPartySize(partySize: number): Promise<number> {
   const result = await db
     .selectFrom('waitlist_restaurants')
-    .select(((eb: any) => eb.fn.count('id').as('count')) as any)
+    .select(((eb: StacksExpressionBuilder) => eb.fn.count('id').as('count')) as any)
     .where('party_size', '=', partySize)
     .executeTakeFirst() as { count: number } | undefined
 
@@ -84,7 +85,7 @@ export async function fetchCountByPartySize(partySize: number): Promise<number> 
 export async function fetchCountByAllPartySizes(): Promise<Record<number, number>> {
   const results = await db
     .selectFrom('waitlist_restaurants')
-    .select(['party_size', (eb: any) => eb.fn.count('id').as('count')] as any)
+    .select(['party_size', (eb: StacksExpressionBuilder) => eb.fn.count('id').as('count')] as any)
     .groupBy('party_size')
     .execute() as { party_size: number, count: number }[]
 
@@ -159,7 +160,7 @@ export async function fetchConversionRates(): Promise<{
 }> {
   const results = await db
     .selectFrom('waitlist_restaurants')
-    .select(['status', (eb: any) => eb.fn.count('id').as('count')] as any)
+    .select(['status', (eb: StacksExpressionBuilder) => eb.fn.count('id').as('count')] as any)
     .groupBy('status')
     .execute() as { status: string, count: number }[]
 
@@ -192,7 +193,7 @@ export async function fetchAverageWaitTimes(): Promise<{
 }> {
   const result = await db
     .selectFrom('waitlist_restaurants')
-    .select([(eb: any) => eb.fn.avg('quoted_wait_time').as('avg_quoted_wait_time'), (eb: any) => eb.fn.avg('actual_wait_time').as('avg_actual_wait_time')] as any)
+    .select([(eb: StacksExpressionBuilder) => eb.fn.avg('quoted_wait_time').as('avg_quoted_wait_time'), (eb: StacksExpressionBuilder) => eb.fn.avg('actual_wait_time').as('avg_actual_wait_time')] as any)
     .executeTakeFirst() as { avg_quoted_wait_time: number, avg_actual_wait_time: number } | undefined
 
   return {
@@ -338,7 +339,7 @@ export async function fetchSeatingRate(
 
   const results = await db
     .selectFrom('waitlist_restaurants')
-    .select(['status', (eb: any) => eb.fn.count('id').as('count')] as any)
+    .select(['status', (eb: StacksExpressionBuilder) => eb.fn.count('id').as('count')] as any)
     .where('check_in_time', '>=', startDateStr)
     .where('check_in_time', '<=', endDateStr)
     .groupBy('status')
@@ -396,7 +397,7 @@ export async function fetchNoShowStats(
   // Build base query for total entries - use expression builder for count
   const totalResult = await db
     .selectFrom('waitlist_restaurants')
-    .select(((eb: any) => eb.fn.count('id').as('count')) as any)
+    .select(((eb: StacksExpressionBuilder) => eb.fn.count('id').as('count')) as any)
     .where('check_in_time', '>=', startDateStr)
     .where('check_in_time', '<=', endDateStr)
     .executeTakeFirst() as { count: number } | undefined

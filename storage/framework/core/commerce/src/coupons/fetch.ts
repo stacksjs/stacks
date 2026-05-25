@@ -1,4 +1,5 @@
 import type { CouponCountStats, CouponRedemptionStats, CouponStats, CouponTimeStats } from '../types'
+import type { StacksExpressionBuilder } from '@stacksjs/database'
 import { db } from '@stacksjs/database'
 import { extractDate, formatDate } from '@stacksjs/orm'
 type CouponJsonResponse = ModelRow<typeof Coupon>
@@ -96,7 +97,7 @@ export async function fetchStats(): Promise<CouponStats> {
   // Total coupons
   const totalCoupons = await db
     .selectFrom('coupons')
-    .select(((eb: any) => eb.fn.count('id').as('count')) as any)
+    .select(((eb: StacksExpressionBuilder) => eb.fn.count('id').as('count')) as any)
     .executeTakeFirst() as { count: number } | undefined
 
   // Active coupons
@@ -106,13 +107,13 @@ export async function fetchStats(): Promise<CouponStats> {
     .where('is_active', '=', true)
     .where('start_date', '<=', currentDate)
     .where('end_date', '>=', currentDate)
-    .select(((eb: any) => eb.fn.count('id').as('count')) as any)
+    .select(((eb: StacksExpressionBuilder) => eb.fn.count('id').as('count')) as any)
     .executeTakeFirst() as { count: number } | undefined
 
   // Coupons by discount type
   const couponsByType = await db
     .selectFrom('coupons')
-    .select(['discount_type', (eb: any) => eb.fn.count('id').as('count')] as any)
+    .select(['discount_type', (eb: StacksExpressionBuilder) => eb.fn.count('id').as('count')] as any)
     .groupBy('discount_type')
     .execute() as { discount_type: string, count: number }[]
 
@@ -205,7 +206,7 @@ async function fetchCountsForPeriod(
 
   // Get total count
   const totalResult = await query
-    .select(((eb: any) => eb.fn.count('id').as('count')) as any)
+    .select(((eb: StacksExpressionBuilder) => eb.fn.count('id').as('count')) as any)
     .executeTakeFirst() as { count: number } | undefined
 
   // Get active count (is_active = true, start_date <= current date, end_date >= current date)
@@ -228,7 +229,7 @@ async function fetchCountsForPeriod(
     .where('end_date', '>=', currentDate)
 
   const activeResult = await activeQuery
-    .select(((eb: any) => eb.fn.count('id').as('count')) as any)
+    .select(((eb: StacksExpressionBuilder) => eb.fn.count('id').as('count')) as any)
     .executeTakeFirst() as { count: number } | undefined
 
   // Calculate counts
@@ -264,7 +265,7 @@ export async function fetchCouponCountsByType(): Promise<Record<string, CouponCo
     const totalResult = await db
       .selectFrom('coupons')
       .where('discount_type', '=', discount_type)
-      .select(((eb: any) => eb.fn.count('id').as('count')) as any)
+      .select(((eb: StacksExpressionBuilder) => eb.fn.count('id').as('count')) as any)
       .executeTakeFirst() as { count: number } | undefined
 
     // Active count for this type - create a new query instead of cloning
@@ -274,7 +275,7 @@ export async function fetchCouponCountsByType(): Promise<Record<string, CouponCo
       .where('is_active', '=', true)
       .where('start_date', '<=', currentDate)
       .where('end_date', '>=', currentDate)
-      .select(((eb: any) => eb.fn.count('id').as('count')) as any)
+      .select(((eb: StacksExpressionBuilder) => eb.fn.count('id').as('count')) as any)
       .executeTakeFirst() as { count: number } | undefined
 
     const total = Number(totalResult?.count || 0)
@@ -297,7 +298,7 @@ export async function fetchRedemptionStats(): Promise<CouponRedemptionStats> {
   // Total redemptions (sum of all usage_count)
   const totalResult = await db
     .selectFrom('coupons')
-    .select(((eb: any) => eb.fn.sum('usage_count').as('total')) as any)
+    .select(((eb: StacksExpressionBuilder) => eb.fn.sum('usage_count').as('total')) as any)
     .executeTakeFirst() as { total: number } | undefined
 
   const currentDate = new Date()
@@ -316,27 +317,27 @@ export async function fetchRedemptionStats(): Promise<CouponRedemptionStats> {
   const weekResult = await db
     .selectFrom('coupons')
     .where('updated_at', '>=', weekStart.toISOString())
-    .select(((eb: any) => eb.fn.sum('usage_count').as('total')) as any)
+    .select(((eb: StacksExpressionBuilder) => eb.fn.sum('usage_count').as('total')) as any)
     .executeTakeFirst() as { total: number } | undefined
 
   // Monthly redemptions
   const monthResult = await db
     .selectFrom('coupons')
     .where('updated_at', '>=', monthStart.toISOString())
-    .select(((eb: any) => eb.fn.sum('usage_count').as('total')) as any)
+    .select(((eb: StacksExpressionBuilder) => eb.fn.sum('usage_count').as('total')) as any)
     .executeTakeFirst() as { total: number } | undefined
 
   // Yearly redemptions
   const yearResult = await db
     .selectFrom('coupons')
     .where('updated_at', '>=', yearStart.toISOString())
-    .select(((eb: any) => eb.fn.sum('usage_count').as('total')) as any)
+    .select(((eb: StacksExpressionBuilder) => eb.fn.sum('usage_count').as('total')) as any)
     .executeTakeFirst() as { total: number } | undefined
 
   // Redemptions by discount type
   const byTypeResults = await db
     .selectFrom('coupons')
-    .select(['discount_type', (eb: any) => eb.fn.sum('usage_count').as('total')] as any)
+    .select(['discount_type', (eb: StacksExpressionBuilder) => eb.fn.sum('usage_count').as('total')] as any)
     .groupBy('discount_type')
     .execute() as { discount_type: string, total: number }[]
 
@@ -432,14 +433,14 @@ export async function fetchConversionRate(): Promise<{
     .where('is_active', '=', true)
     .where('start_date', '<=', currentDate)
     .where('end_date', '>=', currentDate)
-    .select(((eb: any) => eb.fn.count('id').as('count')) as any)
+    .select(((eb: StacksExpressionBuilder) => eb.fn.count('id').as('count')) as any)
     .executeTakeFirst() as { count: number } | undefined
 
   // Get count of coupons with usage > 0
   const redeemedResult = await db
     .selectFrom('coupons')
     .where('usage_count', '>', 0)
-    .select(((eb: any) => eb.fn.count('id').as('count')) as any)
+    .select(((eb: StacksExpressionBuilder) => eb.fn.count('id').as('count')) as any)
     .executeTakeFirst() as { count: number } | undefined
 
   const totalActive = Number(activeResult?.count || 0)
@@ -476,7 +477,7 @@ export async function getActiveCouponsMoMChange(): Promise<{
   // Get active coupons for current month
   const currentMonthActive = await db
     .selectFrom('coupons')
-    .select(((eb: any) => eb.fn.count('id').as('count')) as any)
+    .select(((eb: StacksExpressionBuilder) => eb.fn.count('id').as('count')) as any)
     .where('is_active', '=', true)
     .where('start_date', '<=', today)
     .where('end_date', '>=', currentMonthStart)
@@ -485,7 +486,7 @@ export async function getActiveCouponsMoMChange(): Promise<{
   // Get active coupons for previous month
   const previousMonthActive = await db
     .selectFrom('coupons')
-    .select(((eb: any) => eb.fn.count('id').as('count')) as any)
+    .select(((eb: StacksExpressionBuilder) => eb.fn.count('id').as('count')) as any)
     .where('is_active', '=', true)
     .where('start_date', '<=', previousMonthEnd)
     .where('end_date', '>=', previousMonthStart)

@@ -1,4 +1,5 @@
 import type { GiftCardStats } from '../types'
+import type { StacksExpressionBuilder } from '@stacksjs/database'
 import { db, sql } from '@stacksjs/database'
 import { formatDate, toTimestamp } from '@stacksjs/orm'
 import { aggregateStats } from '../utils/typed-stats'
@@ -68,17 +69,17 @@ export async function fetchStats(): Promise<GiftCardStats> {
     .selectFrom('gift_cards')
     .where('is_active', '=', true)
     .where('status', '=', 'ACTIVE')
-    .where(((eb: any) => eb.or([
+    .where(((eb: StacksExpressionBuilder) => eb.or([
       eb('expiry_date', '>=', currentDate),
       eb('expiry_date', 'is', null),
     ])) as any)
-    .select(((eb: any) => eb.fn.count('id').as('count')) as any)
+    .select(((eb: StacksExpressionBuilder) => eb.fn.count('id').as('count')) as any)
     .executeTakeFirst() as { count: number } | undefined
 
   // Gift cards by status
   const giftCardsByStatus = await db
     .selectFrom('gift_cards')
-    .select(['status', (eb: any) => eb.fn.count('id').as('count')] as any)
+    .select(['status', (eb: StacksExpressionBuilder) => eb.fn.count('id').as('count')] as any)
     .groupBy('status')
     .execute() as { status: string, count: number }[]
 
@@ -86,13 +87,13 @@ export async function fetchStats(): Promise<GiftCardStats> {
   // these stay as direct queries — but we use the typed helper for the
   // `count(id)` expression to avoid the `as any` chain on the result.
   const { count: lowBalanceCount } = await aggregateStats('gift_cards', { count: { kind: 'count' } }, qb =>
-    qb.where(((eb: any) => sql`${eb.ref('current_balance')} / ${eb.ref('initial_balance')} < 0.25`) as any))
+    qb.where(((eb: StacksExpressionBuilder) => sql`${eb.ref('current_balance')} / ${eb.ref('initial_balance')} < 0.25`) as any))
 
   const { count: mediumBalanceCount } = await aggregateStats('gift_cards', { count: { kind: 'count' } }, qb =>
-    qb.where(((eb: any) => sql`${eb.ref('current_balance')} / ${eb.ref('initial_balance')} >= 0.25 AND ${eb.ref('current_balance')} / ${eb.ref('initial_balance')} <= 0.75`) as any))
+    qb.where(((eb: StacksExpressionBuilder) => sql`${eb.ref('current_balance')} / ${eb.ref('initial_balance')} >= 0.25 AND ${eb.ref('current_balance')} / ${eb.ref('initial_balance')} <= 0.75`) as any))
 
   const { count: highBalanceCount } = await aggregateStats('gift_cards', { count: { kind: 'count' } }, qb =>
-    qb.where(((eb: any) => sql`${eb.ref('current_balance')} / ${eb.ref('initial_balance')} > 0.75`) as any))
+    qb.where(((eb: StacksExpressionBuilder) => sql`${eb.ref('current_balance')} / ${eb.ref('initial_balance')} > 0.75`) as any))
 
   // Expiring soon gift cards (next 30 days)
   const thirtyDaysFromNow = new Date()
@@ -201,10 +202,10 @@ export async function compareActiveGiftCards(_daysRange: number = 30): Promise<{
   // Get active gift cards for current period
   const currentPeriodActive = await db
     .selectFrom('gift_cards')
-    .select(((eb: any) => eb.fn.count('id').as('count')) as any)
+    .select(((eb: StacksExpressionBuilder) => eb.fn.count('id').as('count')) as any)
     .where('is_active', '=', true)
     .where('status', '=', 'ACTIVE')
-    .where(((eb: any) => eb.or([
+    .where(((eb: StacksExpressionBuilder) => eb.or([
       eb('expiry_date', '>=', toTimestamp(today)),
       eb('expiry_date', 'is', null),
     ])) as any)
@@ -215,10 +216,10 @@ export async function compareActiveGiftCards(_daysRange: number = 30): Promise<{
   // Get active gift cards for previous period
   const previousPeriodActive = await db
     .selectFrom('gift_cards')
-    .select(((eb: any) => eb.fn.count('id').as('count')) as any)
+    .select(((eb: StacksExpressionBuilder) => eb.fn.count('id').as('count')) as any)
     .where('is_active', '=', true)
     .where('status', '=', 'ACTIVE')
-    .where(((eb: any) => eb.or([
+    .where(((eb: StacksExpressionBuilder) => eb.or([
       eb('expiry_date', '>=', toTimestamp(previousPeriodStart)),
       eb('expiry_date', 'is', null),
     ])) as any)
@@ -299,14 +300,14 @@ export async function calculateGiftCardValues(_daysRange: number = 30): Promise<
   // Get values for current period
   const currentPeriodValues = await db
     .selectFrom('gift_cards')
-    .select(((eb: any) => [
+    .select(((eb: StacksExpressionBuilder) => [
       eb.fn.sum('initial_balance').as('total_initial'),
       eb.fn.sum('current_balance').as('total_balance'),
       eb.fn.count('id').as('card_count'),
     ]) as any)
     .where('is_active', '=', true)
     .where('status', '=', 'ACTIVE')
-    .where(((eb: any) => eb.or([
+    .where(((eb: StacksExpressionBuilder) => eb.or([
       eb('expiry_date', '>=', toTimestamp(today)),
       eb('expiry_date', 'is', null),
     ])) as any)
@@ -317,14 +318,14 @@ export async function calculateGiftCardValues(_daysRange: number = 30): Promise<
   // Get values for previous period
   const previousPeriodValues = await db
     .selectFrom('gift_cards')
-    .select(((eb: any) => [
+    .select(((eb: StacksExpressionBuilder) => [
       eb.fn.sum('initial_balance').as('total_initial'),
       eb.fn.sum('current_balance').as('total_balance'),
       eb.fn.count('id').as('card_count'),
     ]) as any)
     .where('is_active', '=', true)
     .where('status', '=', 'ACTIVE')
-    .where(((eb: any) => eb.or([
+    .where(((eb: StacksExpressionBuilder) => eb.or([
       eb('expiry_date', '>=', toTimestamp(previousPeriodStart)),
       eb('expiry_date', 'is', null),
     ])) as any)

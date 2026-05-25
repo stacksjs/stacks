@@ -31,6 +31,62 @@ import type { Model } from '@stacksjs/types'
 // ============================================================================
 
 /**
+ * DynamoDB AttributeValue discriminated union (stacksjs/stacks#1894 T-8).
+ *
+ * Mirrors the wire format AWS SDK's `DynamoDBClient` produces and
+ * consumes, declared locally so this package doesn't take a hard
+ * dependency on `@aws-sdk/client-dynamodb` just for its types. Each
+ * concrete variant carries its own typed payload; consumers narrow
+ * via `'S' in attr` / etc.
+ *
+ * Why not just import from AWS SDK: the framework's DynamoDB driver
+ * ships as an optional peer integration. Pulling AWS SDK as a type-
+ * level dep would force every Stacks app to install it whether or
+ * not they use the driver.
+ */
+export type DynamoAttributeValue =
+  | { S: string }
+  | { N: string }
+  | { B: Uint8Array | string }
+  | { BOOL: boolean }
+  | { NULL: true }
+  | { L: DynamoAttributeValue[] }
+  | { M: Record<string, DynamoAttributeValue> }
+  | { SS: string[] }
+  | { NS: string[] }
+  | { BS: Array<Uint8Array | string> }
+
+/** Marshalled item — the on-the-wire representation. */
+export type DynamoItem = Record<string, DynamoAttributeValue>
+
+/**
+ * Minimal AWS-SDK `DynamoDBClient` shape — just the methods this
+ * driver calls. Typed locally so callers wiring their own SDK
+ * client into `setClient()` get a clear compile-time contract
+ * instead of a runtime "function not found" surprise.
+ */
+export interface DynamoSdkClient {
+  query: (req: Record<string, unknown>) => Promise<{
+    Items?: DynamoItem[]
+    Count?: number
+    ScannedCount?: number
+    LastEvaluatedKey?: DynamoItem
+  }>
+  scan: (req: Record<string, unknown>) => Promise<{
+    Items?: DynamoItem[]
+    Count?: number
+    ScannedCount?: number
+    LastEvaluatedKey?: DynamoItem
+  }>
+  getItem: (req: Record<string, unknown>) => Promise<{ Item?: DynamoItem }>
+  putItem: (req: Record<string, unknown>) => Promise<unknown>
+  deleteItem: (req: Record<string, unknown>) => Promise<unknown>
+  updateItem: (req: Record<string, unknown>) => Promise<unknown>
+  batchWriteItem: (req: Record<string, unknown>) => Promise<unknown>
+  transactWriteItems: (req: Record<string, unknown>) => Promise<unknown>
+}
+
+/**
  * DynamoDB connection configuration
  */
 export interface DynamoConnectionConfig {
@@ -100,7 +156,7 @@ export interface SortKeyBuilder {
  * Batch write operation
  */
 export interface BatchWriteOperation {
-  put?: { entity: string, item: Record<string, any> }
+  put?: { entity: string, item: Record<string, unknown> }
   delete?: { entity: string, pk: string, sk: string }
 }
 
@@ -108,8 +164,8 @@ export interface BatchWriteOperation {
  * Transact write operation
  */
 export interface TransactWriteOperation {
-  put?: { entity: string, item: Record<string, any>, condition?: string }
-  update?: { entity: string, pk: string, sk?: string, set?: Record<string, any>, add?: Record<string, number>, remove?: string[] }
+  put?: { entity: string, item: Record<string, unknown>, condition?: string }
+  update?: { entity: string, pk: string, sk?: string, set?: Record<string, unknown>, add?: Record<string, number>, remove?: string[] }
   delete?: { entity: string, pk: string, sk: string, condition?: string }
   conditionCheck?: { entity: string, pk: string, sk: string, condition: string }
 }
@@ -117,11 +173,11 @@ export interface TransactWriteOperation {
 /**
  * Query result
  */
-export interface QueryResult<T = any> {
+export interface QueryResult<T = unknown> {
   items: T[]
   count: number
   scannedCount?: number
-  lastKey?: Record<string, any>
+  lastKey?: Record<string, unknown>
 }
 
 // ============================================================================
@@ -131,7 +187,7 @@ export interface QueryResult<T = any> {
 /**
  * Convert JS value to DynamoDB AttributeValue
  */
-function toDynamoValue(value: any): Record<string, any> {
+function toDynamoValue(value: unknown): DynamoAttributeValue {
   if (value === null || value === undefined) {
     return { NULL: true }
   }
@@ -148,8 +204,8 @@ function toDynamoValue(value: any): Record<string, any> {
     return { L: value.map(v => toDynamoValue(v)) }
   }
   if (typeof value === 'object') {
-    const m: Record<string, any> = {}
-    for (const [k, v] of Object.entries(value)) {
+    const m: Record<string, DynamoAttributeValue> = {}
+    for (const [k, v] of Object.entries(value as Record<string, unknown>)) {
       m[k] = toDynamoValue(v)
     }
     return { M: m }
@@ -160,31 +216,31 @@ function toDynamoValue(value: any): Record<string, any> {
 /**
  * Convert DynamoDB AttributeValue to JS value
  */
-function fromDynamoValue(attr: Record<string, any>): any {
-  if (attr.NULL)
+function fromDynamoValue(attr: DynamoAttributeValue): unknown {
+  if ('NULL' in attr && attr.NULL)
     return null
-  if (attr.S !== undefined)
+  if ('S' in attr && attr.S !== undefined)
     return attr.S
-  if (attr.N !== undefined)
+  if ('N' in attr && attr.N !== undefined)
     return Number(attr.N)
-  if (attr.BOOL !== undefined)
+  if ('BOOL' in attr && attr.BOOL !== undefined)
     return attr.BOOL
-  if (attr.L !== undefined)
-    return attr.L.map((v: any) => fromDynamoValue(v))
-  if (attr.M !== undefined) {
-    const obj: Record<string, any> = {}
+  if ('L' in attr && attr.L !== undefined)
+    return attr.L.map(v => fromDynamoValue(v))
+  if ('M' in attr && attr.M !== undefined) {
+    const obj: Record<string, unknown> = {}
     for (const [k, v] of Object.entries(attr.M)) {
-      obj[k] = fromDynamoValue(v as Record<string, any>)
+      obj[k] = fromDynamoValue(v)
     }
     return obj
   }
-  if (attr.SS !== undefined)
+  if ('SS' in attr && attr.SS !== undefined)
     return attr.SS
-  if (attr.NS !== undefined)
-    return attr.NS.map((n: string) => Number(n))
-  if (attr.B !== undefined)
+  if ('NS' in attr && attr.NS !== undefined)
+    return attr.NS.map(n => Number(n))
+  if ('B' in attr && attr.B !== undefined)
     return attr.B
-  if (attr.BS !== undefined)
+  if ('BS' in attr && attr.BS !== undefined)
     return attr.BS
   return null
 }
@@ -192,8 +248,8 @@ function fromDynamoValue(attr: Record<string, any>): any {
 /**
  * Marshall a JS object to DynamoDB format
  */
-function marshall(obj: Record<string, any>): Record<string, any> {
-  const result: Record<string, any> = {}
+function marshall(obj: Record<string, unknown>): DynamoItem {
+  const result: DynamoItem = {}
   for (const [key, value] of Object.entries(obj)) {
     result[key] = toDynamoValue(value)
   }
@@ -203,8 +259,8 @@ function marshall(obj: Record<string, any>): Record<string, any> {
 /**
  * Unmarshall a DynamoDB object to JS format
  */
-function unmarshall(obj: Record<string, any>): Record<string, any> {
-  const result: Record<string, any> = {}
+function unmarshall(obj: DynamoItem): Record<string, unknown> {
+  const result: Record<string, unknown> = {}
   for (const [key, value] of Object.entries(obj)) {
     result[key] = fromDynamoValue(value)
   }
@@ -218,8 +274,8 @@ function unmarshall(obj: Record<string, any>): Record<string, any> {
 /**
  * Entity-centric query builder for DynamoDB
  */
-export class EntityQueryBuilder<T = any> {
-  private client: any
+export class EntityQueryBuilder<T = unknown> {
+  private client: DynamoSdkClient | undefined
   private tableName: string
   private pkAttribute: string
   private skAttribute: string
@@ -231,14 +287,14 @@ export class EntityQueryBuilder<T = any> {
   private _skCondition?: { type: 'eq' | 'begins_with' | 'between' | 'lt' | 'lte' | 'gt' | 'gte', value: string, value2?: string }
   private _indexName?: string
   private _projectionAttrs: string[] = []
-  private _filterConditions: Array<{ attribute: string, operator: string, value?: any, values?: any[] }> = []
+  private _filterConditions: Array<{ attribute: string, operator: string, value?: unknown, values?: unknown[] }> = []
   private _limitValue?: number
   private _scanForward: boolean = true
   private _consistentRead: boolean = false
-  private _startKey?: Record<string, any>
+  private _startKey?: Record<string, unknown>
 
   constructor(
-    client: any,
+    client: DynamoSdkClient | undefined,
     tableName: string,
     config: { pkAttribute: string, skAttribute: string, entityTypeAttribute: string, keyDelimiter: string },
   ) {
@@ -322,7 +378,7 @@ export class EntityQueryBuilder<T = any> {
   /**
    * Add a filter condition
    */
-  filter(attribute: string, operator: string, value?: any): this {
+  filter(attribute: string, operator: string, value?: unknown): this {
     this._filterConditions.push({ attribute, operator, value })
     return this
   }
@@ -330,14 +386,14 @@ export class EntityQueryBuilder<T = any> {
   /**
    * Filter where attribute equals value
    */
-  where(attribute: string, value: any): this {
+  where(attribute: string, value: unknown): this {
     return this.filter(attribute, '=', value)
   }
 
   /**
    * Filter where attribute is in list
    */
-  whereIn(attribute: string, values: any[]): this {
+  whereIn(attribute: string, values: unknown[]): this {
     this._filterConditions.push({ attribute, operator: 'IN', values })
     return this
   }
@@ -377,7 +433,7 @@ export class EntityQueryBuilder<T = any> {
   /**
    * Start from a specific key (for pagination)
    */
-  startFrom(key: Record<string, any>): this {
+  startFrom(key: Record<string, unknown>): this {
     this._startKey = key
     return this
   }
@@ -385,8 +441,8 @@ export class EntityQueryBuilder<T = any> {
   /**
    * Build the DynamoDB Query request
    */
-  toRequest(): Record<string, any> {
-    const request: Record<string, any> = {
+  toRequest(): Record<string, unknown> {
+    const request: Record<string, unknown> = {
       TableName: this.tableName,
     }
 
@@ -397,7 +453,7 @@ export class EntityQueryBuilder<T = any> {
     // Build key condition expression
     const keyConditions: string[] = []
     const exprNames: Record<string, string> = {}
-    const exprValues: Record<string, any> = {}
+    const exprValues: Record<string, DynamoAttributeValue> = {}
     let idx = 0
 
     if (this._pkValue) {
@@ -542,7 +598,7 @@ export class EntityQueryBuilder<T = any> {
       ? await this.client.query(request)
       : await this.client.scan(request)
 
-    return (response.Items ?? []).map((item: any) => unmarshall(item)) as T[]
+    return (response.Items ?? []).map(item => unmarshall(item)) as T[]
   }
 
   /**
@@ -559,7 +615,7 @@ export class EntityQueryBuilder<T = any> {
    */
   async getAll(): Promise<T[]> {
     const allItems: T[] = []
-    let lastKey: Record<string, any> | undefined
+    let lastKey: Record<string, unknown> | undefined
 
     do {
       if (lastKey) {
@@ -572,11 +628,11 @@ export class EntityQueryBuilder<T = any> {
         ? await this.client.query(request)
         : await this.client.scan(request)
 
-      const items = (response.Items ?? []).map((item: any) => unmarshall(item)) as T[]
+      const items = (response.Items ?? []).map(item => unmarshall(item)) as T[]
       allItems.push(...items)
 
       lastKey = response.LastEvaluatedKey
-        ? unmarshall(response.LastEvaluatedKey)
+        ? (unmarshall(response.LastEvaluatedKey) as Record<string, unknown>)
         : undefined
     } while (lastKey)
 
@@ -611,7 +667,7 @@ export class EntityQueryBuilder<T = any> {
  * DynamoDB client with entity-centric API
  */
 class DynamoClient {
-  private client?: any
+  private client?: DynamoSdkClient
   private tableName: string = ''
   private pkAttribute: string = 'pk'
   private skAttribute: string = 'sk'
@@ -642,17 +698,24 @@ class DynamoClient {
   }
 
   /**
-   * Set the AWS SDK DynamoDB client
+   * Set the AWS SDK DynamoDB client. Pass a real `DynamoDBClient`
+   * from `@aws-sdk/client-dynamodb` — the {@link DynamoSdkClient}
+   * interface is structural so the SDK's class fits without any
+   * runtime adapter.
    */
-  setClient(client: any): this {
+  setClient(client: DynamoSdkClient): this {
     this.client = client
     return this
   }
 
   /**
-   * Get the AWS SDK DynamoDB client
+   * Get the AWS SDK DynamoDB client. Returns `undefined` if
+   * {@link setClient} was never called — call sites that hit a
+   * `Cannot read 'query' of undefined` should check
+   * {@link isConfigured} or use the typed methods on this class
+   * which guard for missing client.
    */
-  getClient(): any {
+  getClient(): DynamoSdkClient | undefined {
     return this.client
   }
 
@@ -721,7 +784,7 @@ class DynamoClient {
       throw new Error('DynamoDB not configured. Call dynamo.connection() first.')
     }
 
-    const requestItems: any[] = []
+    const requestItems: Array<Record<string, unknown>> = []
 
     for (const op of operations) {
       if (op.put) {
@@ -767,7 +830,7 @@ class DynamoClient {
       throw new Error('DynamoDB not configured. Call dynamo.connection() first.')
     }
 
-    const transactItems: any[] = []
+    const transactItems: Array<Record<string, unknown>> = []
 
     for (const op of operations) {
       if (op.put) {
@@ -775,19 +838,17 @@ class DynamoClient {
           ...op.put.item,
           [this.entityTypeAttr]: op.put.entity,
         }
-        const transactItem: any = {
-          Put: {
-            TableName: this.tableName,
-            Item: marshall(item),
-          },
+        const putPayload: Record<string, unknown> = {
+          TableName: this.tableName,
+          Item: marshall(item),
         }
         if (op.put.condition) {
-          transactItem.Put.ConditionExpression = op.put.condition
+          putPayload.ConditionExpression = op.put.condition
         }
-        transactItems.push(transactItem)
+        transactItems.push({ Put: putPayload })
       }
       else if (op.update) {
-        const key: Record<string, any> = {
+        const key: Record<string, unknown> = {
           [this.pkAttribute]: op.update.pk,
         }
         if (op.update.sk) {
@@ -796,7 +857,7 @@ class DynamoClient {
 
         const updateParts: string[] = []
         const exprNames: Record<string, string> = {}
-        const exprValues: Record<string, any> = {}
+        const exprValues: Record<string, DynamoAttributeValue> = {}
         let idx = 0
 
         if (op.update.set) {
@@ -851,19 +912,17 @@ class DynamoClient {
         })
       }
       else if (op.delete) {
-        const transactItem: any = {
-          Delete: {
-            TableName: this.tableName,
-            Key: marshall({
-              [this.pkAttribute]: op.delete.pk,
-              [this.skAttribute]: op.delete.sk,
-            }),
-          },
+        const deletePayload: Record<string, unknown> = {
+          TableName: this.tableName,
+          Key: marshall({
+            [this.pkAttribute]: op.delete.pk,
+            [this.skAttribute]: op.delete.sk,
+          }),
         }
         if (op.delete.condition) {
-          transactItem.Delete.ConditionExpression = op.delete.condition
+          deletePayload.ConditionExpression = op.delete.condition
         }
-        transactItems.push(transactItem)
+        transactItems.push({ Delete: deletePayload })
       }
       else if (op.conditionCheck) {
         transactItems.push({
@@ -889,7 +948,7 @@ class DynamoClient {
   /**
    * Put a single item
    */
-  async put(entity: string, item: Record<string, any>): Promise<void> {
+  async put(entity: string, item: Record<string, unknown>): Promise<void> {
     if (!this.client) {
       throw new Error('DynamoDB client not configured. Call setClient() first.')
     }
@@ -913,7 +972,7 @@ class DynamoClient {
       throw new Error('DynamoDB client not configured. Call setClient() first.')
     }
 
-    const key: Record<string, any> = {
+    const key: Record<string, unknown> = {
       [this.pkAttribute]: pk,
     }
     if (sk) {
@@ -940,7 +999,7 @@ class DynamoClient {
       throw new Error('DynamoDB client not configured. Call setClient() first.')
     }
 
-    const key: Record<string, any> = {
+    const key: Record<string, unknown> = {
       [this.pkAttribute]: pk,
     }
     if (sk) {
@@ -956,12 +1015,12 @@ class DynamoClient {
   /**
    * Update a single item
    */
-  async update(pk: string, sk: string | undefined, updates: Record<string, any>): Promise<void> {
+  async update(pk: string, sk: string | undefined, updates: Record<string, unknown>): Promise<void> {
     if (!this.client) {
       throw new Error('DynamoDB client not configured. Call setClient() first.')
     }
 
-    const key: Record<string, any> = {
+    const key: Record<string, unknown> = {
       [this.pkAttribute]: pk,
     }
     if (sk) {
@@ -970,7 +1029,7 @@ class DynamoClient {
 
     const updateParts: string[] = []
     const exprNames: Record<string, string> = {}
-    const exprValues: Record<string, any> = {}
+    const exprValues: Record<string, DynamoAttributeValue> = {}
     let idx = 0
 
     const setParts: string[] = []
