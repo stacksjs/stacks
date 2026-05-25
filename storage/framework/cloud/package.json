@@ -42,8 +42,7 @@
     "dist"
   ],
   "scripts": {
-    "deploy": "bun deploy.ts",
-    "dev": "./dev local"
+    "deploy": "bun deploy.ts"
   },
   "dependencies": {
     "@stacksjs/config": "workspace:*",
