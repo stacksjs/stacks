@@ -1148,6 +1148,28 @@ interface StacksModelDefinition {
   table: string
   primaryKey?: string
   autoIncrement?: boolean
+  /**
+   * Per-model declarative behaviors. Common entries:
+   *   - `observe: true | ['create','update','delete']` — emit
+   *     framework events (`<model>:created` etc.) on lifecycle hooks
+   *   - `useAudit`, `useSoftDeletes`, `useTimestamps`, etc.
+   *   - `broadcastOn(model): string | string[]` — channels to push
+   *     model lifecycle events to via `@stacksjs/realtime`. Requires
+   *     `broadcastWith` to be set too; only fires when `observe` is
+   *     enabled (stacksjs/stacks#1874 F-10).
+   *   - `broadcastWith(model): Record<string, unknown>` — payload
+   *     shape the realtime subscribers receive. Lets you broadcast
+   *     a curated public projection instead of the full row.
+   *
+   * @example
+   * ```ts
+   * traits: {
+   *   observe: true,
+   *   broadcastOn: post => [`user.${post.user_id}`, 'feed'],
+   *   broadcastWith: post => ({ id: post.id, title: post.title, author: post.author?.name }),
+   * }
+   * ```
+   */
   traits?: Record<string, unknown>
   indexes?: Array<{ name: string, columns: string[] }>
   casts?: Record<string, CastType | CasterInterface>
@@ -1381,6 +1403,46 @@ function buildEventHooks(definition: BQBModelDefinition): BQBModelDefinition['ho
     }
   }
 
+  // Model-level broadcasting (stacksjs/stacks#1874 F-10).
+  //
+  // Opt-in via `traits.broadcastOn` (channels) + `traits.broadcastWith`
+  // (payload shape). When both are declared, the post-write hooks
+  // dispatch to `@stacksjs/realtime` with the same event name shape
+  // (`<model>:<verb>`) as the events bus uses, so subscribers see
+  // consistent naming across both channels.
+  //
+  // Errors are LOGGED-AND-SWALLOWED by default — broadcasting is a
+  // notification side-channel, not the source of truth, and a flaky
+  // websocket layer must not break model saves. Opt in to throw via
+  // `STACKS_ORM_BROADCAST_ERRORS=throw` for tests that want to
+  // surface mis-wired broadcasts loudly.
+  const broadcastOnFn = (definition as { traits?: { broadcastOn?: (model: any) => string | string[] } }).traits?.broadcastOn
+  const broadcastWithFn = (definition as { traits?: { broadcastWith?: (model: any) => Record<string, unknown> } }).traits?.broadcastWith
+  const broadcastingEnabled = typeof broadcastOnFn === 'function' && typeof broadcastWithFn === 'function'
+
+  const dispatchBroadcast = async (event: string, model: any): Promise<void> => {
+    if (!broadcastingEnabled) return
+    if (eventsAreSuppressed()) return
+    try {
+      const channelsRaw = broadcastOnFn!(model)
+      const channels = Array.isArray(channelsRaw) ? channelsRaw : [channelsRaw]
+      const payload = broadcastWithFn!(model)
+      const realtime = await import('@stacksjs/realtime').catch(() => null) as { broadcast?: (channel: string, event: string, data: unknown) => Promise<void> | void } | null
+      const broadcast = realtime?.broadcast
+      if (typeof broadcast !== 'function') return
+      for (const channel of channels) {
+        if (typeof channel !== 'string' || channel.length === 0) continue
+        await broadcast(channel, event, payload)
+      }
+    }
+    catch (err) {
+      if (err && typeof err === 'object' && 'code' in err && (err as { code: string }).code === 'MODULE_NOT_FOUND')
+        return
+      console.error(`[ORM] Broadcast '${event}' handler error:`, err)
+      if (process.env.STACKS_ORM_BROADCAST_ERRORS === 'throw') throw err
+    }
+  }
+
   // Dispatches a before-event and returns false if the handler cancels
   // the operation. Same re-throw policy as `dispatchEvent` — a broken
   // `before*` listener used to silently allow the operation through
@@ -1427,6 +1489,9 @@ function buildEventHooks(definition: BQBModelDefinition): BQBModelDefinition['ho
       // already fired for the insert path.
       await dispatchEvent(`${modelName}:created`, model)
       await dispatchEvent(`${modelName}:saved`, model)
+      // Broadcast AFTER the event dispatch so any event-listener-side
+      // mutation of the model is reflected in the broadcast payload.
+      await dispatchBroadcast(`${modelName}:created`, model)
     }
   }
   if (events.includes('update')) {
@@ -1440,6 +1505,7 @@ function buildEventHooks(definition: BQBModelDefinition): BQBModelDefinition['ho
     hooks.afterUpdate = async (model: any) => {
       await dispatchEvent(`${modelName}:updated`, model)
       await dispatchEvent(`${modelName}:saved`, model)
+      await dispatchBroadcast(`${modelName}:updated`, model)
     }
   }
   if (events.includes('delete')) {
@@ -1448,7 +1514,10 @@ function buildEventHooks(definition: BQBModelDefinition): BQBModelDefinition['ho
       const shouldProceed = await dispatchBeforeEvent(`${modelName}:deleting`, model)
       if (!shouldProceed) throw new Error(`[ORM] ${modelName}:deleting event cancelled the operation`)
     }
-    hooks.afterDelete = (model: any) => dispatchEvent(`${modelName}:deleted`, model)
+    hooks.afterDelete = async (model: any) => {
+      await dispatchEvent(`${modelName}:deleted`, model)
+      await dispatchBroadcast(`${modelName}:deleted`, model)
+    }
   }
 
   return hooks
