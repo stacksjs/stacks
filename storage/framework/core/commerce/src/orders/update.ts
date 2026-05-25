@@ -4,6 +4,8 @@ import { formatDate } from '@stacksjs/orm'
 type OrderJsonResponse = ModelRow<typeof Order>
 type OrderUpdate = UpdateModelData<typeof Order>
 import { fetchById } from './fetch'
+import type { OrderStatus } from './events'
+import { canTransition, emitForStatus } from './events'
 
 /**
  * Update an order by ID
@@ -51,13 +53,23 @@ export async function update(id: number, data: Omit<OrderUpdate, 'id'>): Promise
  */
 export async function updateStatus(
   id: number,
-  status: 'PENDING' | 'PROCESSING' | 'SHIPPED' | 'DELIVERED' | 'CANCELLED' | 'REFUNDED',
+  status: OrderStatus,
 ): Promise<OrderJsonResponse | undefined> {
   // Check if order exists
   const order = await fetchById(id)
 
   if (!order) {
     throw new Error(`Order with ID ${id} not found`)
+  }
+
+  // Guard against illegal status transitions (stacksjs/stacks#1879 Co-4).
+  // Pre-fix this accepted any of the 6 enum values without consulting
+  // the current status — admin tooling or buggy webhook handlers could
+  // set SHIPPED → PENDING and downstream refund logic that assumed
+  // status preconditions would silently misbehave.
+  const currentStatus = (order as { status?: OrderStatus }).status ?? 'PENDING'
+  if (!canTransition(currentStatus, status)) {
+    throw new Error(`[commerce/orders] illegal status transition ${currentStatus} → ${status}`)
   }
 
   try {
@@ -72,7 +84,17 @@ export async function updateStatus(
       .execute()
 
     // Fetch the updated order
-    return await fetchById(id)
+    const updated = await fetchById(id)
+
+    // Emit the status-specific event (stacksjs/stacks#1879 Co-18).
+    // Fire-and-forget — emission failures don't undo the write. The
+    // event payload carries the updated order so subscribers don't
+    // need to re-fetch.
+    if (updated) {
+      void emitForStatus(status, updated as unknown as Record<string, unknown>)
+    }
+
+    return updated
   }
   catch (error) {
     if (error instanceof Error) {

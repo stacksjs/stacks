@@ -39,6 +39,7 @@ import { randomUUIDv7 } from 'bun'
 import { db } from '@stacksjs/database'
 import { formatDate } from '@stacksjs/orm'
 import { sql } from '@stacksjs/database'
+import { emitOrderCreated, emitOrderPaid } from './events'
 
 type OrderJsonResponse = ModelRow<typeof Order>
 type NewOrder = NewModelData<typeof Order>
@@ -151,6 +152,19 @@ export async function placeOrder(input: PlaceOrderInput): Promise<PlaceOrderResu
 
       return { order, payment: paymentRow }
     })
+
+    // Fire `order:created` AFTER the transaction commits (#1879
+    // Co-18). If a payment row also landed, also emit `order:paid`
+    // — the placeOrder path is the typical "checkout completed
+    // successfully" entry point. Both fire-and-forget; emission
+    // failures never undo the write.
+    void emitOrderCreated(result.order as unknown as Record<string, unknown>)
+    if (result.payment) {
+      void emitOrderPaid(
+        result.order as unknown as Record<string, unknown>,
+        result.payment as unknown as Record<string, unknown>,
+      )
+    }
 
     return { ok: true, order: result.order, payment: result.payment }
   }
