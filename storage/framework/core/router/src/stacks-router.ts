@@ -24,6 +24,7 @@ import { runWithRequest } from './request-context'
 import { isApiRequest, JSON_CONTENT_TYPE } from './api-shape'
 import { clearTrackedQueries, createErrorResponse, createMiddlewareErrorResponse } from './error-handler'
 import { rateLimit as enforceRateLimit } from './rate-limit'
+import { applySecurityHeaders } from './security-headers'
 
 import type { StacksActionPath } from './action-paths'
 
@@ -1080,6 +1081,7 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
           }
           h.set('Server-Timing', parts.join(', '))
         }
+        applySecurityHeaders(h)
       }
 
       if (response && typeof (response as any).headers?.set === 'function') {
