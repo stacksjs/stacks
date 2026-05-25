@@ -943,6 +943,175 @@ function addStaticHelpers(baseModel: Record<string, unknown>, definition: BQBMod
       }
     }
   }
+
+  // Scout-style search statics (stacksjs/stacks#1891). Installed
+  // only when `traits.useSearch` is set — otherwise these names
+  // stay free for caller-defined statics. Each one is a thin
+  // wrapper around the search-engine driver scoped to the model's
+  // resolved index name.
+  const searchConfig = resolveSearchConfig(definition.traits?.useSearch)
+  if (searchConfig) {
+    const indexName = searchConfig.index ?? definition.table ?? snakeCase(`${definition.name}s`)
+
+    // Model.search(query, params?) — full-text search returning a
+    // builder so callers can chain `.get()`, `.paginate(n)`,
+    // `.hydrate()` (returns model instances) or pass through to the
+    // raw driver response via `.raw()`.
+    if (typeof baseModel.search !== 'function') {
+      baseModel.search = function (query: string, params?: Record<string, unknown>) {
+        return createSearchQueryBuilder(baseModel, indexName, query, params)
+      }
+    }
+
+    // Model.makeAllSearchable() — bulk reindex every row. Uses
+    // `chunk(500)` when available; falls back to `.all()` for
+    // models that don't expose chunking. Returns the total count
+    // indexed.
+    if (typeof baseModel.makeAllSearchable !== 'function') {
+      baseModel.makeAllSearchable = async function (chunkSize: number = 500): Promise<number> {
+        const all = baseModel.all as Function | undefined
+        if (typeof all !== 'function')
+          throw new Error(`[ORM] ${definition.name}.makeAllSearchable cannot run: the underlying query builder did not expose all()`)
+
+        const { useSearchEngine } = await import('@stacksjs/search-engine')
+        const engine = useSearchEngine()
+        let total = 0
+
+        // Try the chunking path first — far cheaper for large
+        // tables. Falls through to .all() if the builder doesn't
+        // expose .query().chunk() (some test mocks).
+        const query = baseModel.query as Function | undefined
+        if (typeof query === 'function') {
+          try {
+            const q = query.call(baseModel) as { chunk?: (size: number, cb: (rows: any[]) => Promise<void>) => Promise<void> }
+            if (q && typeof q.chunk === 'function') {
+              await q.chunk(chunkSize, async (rows: any[]) => {
+                const docs = rows.map(r => projectDocumentFromTrait(r, searchConfig)).filter(Boolean) as Record<string, unknown>[]
+                if (docs.length > 0) await engine.addDocuments(indexName, docs)
+                total += docs.length
+              })
+              return total
+            }
+          }
+          catch {
+            // Fall through to .all() — chunking is an optimization, not a requirement.
+          }
+        }
+
+        const rows = (await all.call(baseModel)) || []
+        const docs = (rows as any[]).map(r => projectDocumentFromTrait(r, searchConfig)).filter(Boolean) as Record<string, unknown>[]
+        if (docs.length > 0) await engine.addDocuments(indexName, docs)
+        return docs.length
+      }
+    }
+
+    // Model.removeAllFromSearch() — drop every document from the
+    // model's index. Useful before a driver swap or schema-shape
+    // change. Idempotent: calling against an empty index is a no-op.
+    if (typeof baseModel.removeAllFromSearch !== 'function') {
+      baseModel.removeAllFromSearch = async function (): Promise<void> {
+        const { useSearchEngine } = await import('@stacksjs/search-engine')
+        const engine = useSearchEngine() as { deleteAllDocuments?: (index: string) => Promise<unknown> }
+        if (typeof engine.deleteAllDocuments === 'function') {
+          await engine.deleteAllDocuments(indexName)
+          return
+        }
+        // Fallback: iterate + delete-by-id when the driver doesn't
+        // expose a bulk-flush primitive. Rare — most engines do.
+        const all = baseModel.all as Function | undefined
+        const rows = typeof all === 'function' ? ((await all.call(baseModel)) || []) : []
+        const e2 = useSearchEngine()
+        for (const r of rows as any[]) {
+          const id = r?.id ?? r?._attributes?.id
+          if (id != null) await e2.deleteDocument(indexName, Number(id))
+        }
+      }
+    }
+  }
+}
+
+/**
+ * Standalone projection helper (#1891) — used by both the lifecycle
+ * sync and the bulk-reindex path so the document shape stays
+ * consistent. Mirrors the closure inside `buildSearchHooks` but
+ * lives at module scope so the static-helpers code can reach it.
+ */
+function projectDocumentFromTrait(
+  model: any,
+  config: SearchableTraitConfig,
+): Record<string, unknown> | null | undefined {
+  if (typeof config.shape === 'function') {
+    try { return config.shape(model) }
+    catch { return undefined }
+  }
+  const fromHook = (model as { toSearchableObject?: () => Record<string, unknown> | null })?.toSearchableObject?.()
+  if (fromHook !== undefined) return fromHook
+  return model?._attributes ?? (typeof model?.toJSON === 'function' ? model.toJSON() : null)
+}
+
+/**
+ * Lightweight search-query builder returned by `Model.search()`
+ * (#1891). Thin wrapper around the search-engine driver — defers
+ * `.get()` / `.paginate()` / `.raw()` to the driver and lets
+ * callers attach filter / facet params via the standard search
+ * payload shape.
+ */
+function createSearchQueryBuilder(
+  _baseModel: Record<string, unknown>,
+  indexName: string,
+  query: string,
+  initialParams?: Record<string, unknown>,
+): {
+  get: () => Promise<unknown[]>
+  paginate: (perPage: number, page?: number) => Promise<{ hits: unknown[], total: number, page: number, perPage: number }>
+  raw: () => Promise<unknown>
+  with: (params: Record<string, unknown>) => ReturnType<typeof createSearchQueryBuilder>
+  where: (filter: string | string[]) => ReturnType<typeof createSearchQueryBuilder>
+} {
+  let params: Record<string, unknown> = { q: query, ...(initialParams ?? {}) }
+
+  const builder = {
+    /** Merge extra search params (filters, facets, attributesToRetrieve, etc.). */
+    with(extra: Record<string, unknown>) {
+      params = { ...params, ...extra }
+      return builder
+    },
+    /** Set a Meilisearch-style `filter` clause; driver-specific syntax. */
+    where(filter: string | string[]) {
+      params = { ...params, filter }
+      return builder
+    },
+    /** Execute and return the hit array. */
+    async get(): Promise<unknown[]> {
+      const { useSearchEngine } = await import('@stacksjs/search-engine')
+      const engine = useSearchEngine()
+      const result = await engine.search(indexName, params)
+      return (result as { hits?: unknown[] })?.hits ?? []
+    },
+    /** Execute with pagination. */
+    async paginate(perPage: number, page: number = 1) {
+      const { useSearchEngine } = await import('@stacksjs/search-engine')
+      const engine = useSearchEngine()
+      const result = await engine.search(indexName, {
+        ...params,
+        limit: perPage,
+        offset: (page - 1) * perPage,
+      }) as { hits?: unknown[], estimatedTotalHits?: number, nbHits?: number, total?: number }
+      return {
+        hits: result.hits ?? [],
+        total: Number(result.estimatedTotalHits ?? result.nbHits ?? result.total ?? 0),
+        page,
+        perPage,
+      }
+    },
+    /** Return the raw driver response (escape hatch for driver-specific fields). */
+    async raw(): Promise<unknown> {
+      const { useSearchEngine } = await import('@stacksjs/search-engine')
+      return await useSearchEngine().search(indexName, params)
+    },
+  }
+
+  return builder
 }
 
 /**
@@ -1549,42 +1718,142 @@ function mergeModelHooks(
  * Scout-style search index sync when `traits.useSearch` is set.
  * Indexes on create/update and removes on delete without requiring `observe: true`.
  */
+/**
+ * Per-model search-trait config (stacksjs/stacks#1891). Accepts
+ * either `true` (legacy boolean — uses the model's
+ * `toSearchableObject()` if defined) OR a declarative object that
+ * spells out index name, document projection, and whether to
+ * dispatch the sync via a queued job.
+ */
+interface SearchableTraitConfig {
+  /** Index name. Defaults to the model's table name. */
+  index?: string
+  /**
+   * Projection function — what gets indexed. Lets you index a
+   * curated subset of fields (or denormalize relations) instead of
+   * the full row. Falls back to the model's `toSearchableObject()`
+   * if both are absent; if neither exists, the whole row is
+   * indexed.
+   */
+  shape?: (model: any) => Record<string, unknown> | null | undefined
+  /**
+   * When `true`, the search-sync runs through a queued job
+   * (`SyncSearchIndexJob`) instead of inline. Recommended for
+   * production where the search backend is on a separate network
+   * and a slow upsert shouldn't block the request.
+   *
+   * Default `false` so tests see the index update immediately and
+   * dev environments don't need a worker running.
+   */
+  queueable?: boolean
+}
+
+function resolveSearchConfig(useSearch: unknown): SearchableTraitConfig | null {
+  if (!useSearch) return null
+  if (useSearch === true) return {}
+  if (typeof useSearch === 'object') return useSearch as SearchableTraitConfig
+  return null
+}
+
 function buildSearchHooks(definition: BQBModelDefinition): BQBModelDefinition['hooks'] | undefined {
-  const useSearch = definition.traits?.useSearch
-  if (!useSearch) return undefined
+  const config = resolveSearchConfig(definition.traits?.useSearch)
+  if (!config) return undefined
 
-  const tableName = definition.table || snakeCase(`${definition.name}s`)
+  const indexName = config.index ?? definition.table ?? snakeCase(`${definition.name}s`)
 
+  /**
+   * Project a model into a searchable document. Resolution order
+   * (stacksjs/stacks#1891):
+   *   1. trait config's `shape(model)` — explicit per-model
+   *      projection, most callers
+   *   2. model's `toSearchableObject()` — legacy hook still
+   *      supported for back-compat
+   *   3. fall back to the raw model attributes
+   */
+  function projectDocument(model: any): Record<string, unknown> | null | undefined {
+    if (typeof config.shape === 'function') {
+      try { return config.shape(model) }
+      catch (err) {
+        log.warn(`[orm/search] shape() threw for ${definition.name}: ${(err as Error).message}`)
+        return undefined
+      }
+    }
+    const wrapped = wrapModelInstance(model)
+    const fromHook = (wrapped as { toSearchableObject?: () => Record<string, unknown> | null }).toSearchableObject?.()
+    if (fromHook !== undefined) return fromHook
+    // Fall back to the model attributes (mirrors `Model.toJSON()`).
+    return model?._attributes ?? (typeof model?.toJSON === 'function' ? model.toJSON() : null)
+  }
+
+  /**
+   * Dispatch through the queue when `queueable` is enabled; runs
+   * inline otherwise. The queue path is fire-and-forget — failures
+   * don't abort the model save (an unreachable Meilisearch shouldn't
+   * roll the user write back). When inline runs throw, log a warn
+   * for diagnostic visibility.
+   */
   const syncDocument = async (model: any) => {
     if (eventsAreSuppressed()) return
-    try {
-      const { useSearchEngine } = await import('@stacksjs/search-engine')
-      const wrapped = wrapModelInstance(model)
-      const doc = (wrapped as any).toSearchableObject?.()
-      if (doc) await useSearchEngine().addDocument(tableName, doc)
+    const doc = projectDocument(model)
+    if (!doc) return
+
+    if (config.queueable) {
+      try {
+        const { Jobs } = await import('@stacksjs/queue')
+        await Jobs.dispatch('SyncSearchIndex', { index: indexName, op: 'upsert', doc })
+      }
+      catch (err) {
+        log.warn(`[orm/search] queue dispatch failed for ${definition.name}; falling back to inline: ${(err as Error).message}`)
+        await indexInline(indexName, doc, definition.name)
+      }
+      return
     }
-    catch (err) {
-      log.warn(`[orm/search] Failed to index ${definition.name}: ${(err as Error).message}`)
-    }
+    await indexInline(indexName, doc, definition.name)
   }
 
   const removeDocument = async (model: any) => {
     if (eventsAreSuppressed()) return
     const id = model?.id ?? model?._attributes?.id
     if (id == null) return
-    try {
-      const { useSearchEngine } = await import('@stacksjs/search-engine')
-      await useSearchEngine().deleteDocument(tableName, Number(id))
+
+    if (config.queueable) {
+      try {
+        const { Jobs } = await import('@stacksjs/queue')
+        await Jobs.dispatch('SyncSearchIndex', { index: indexName, op: 'delete', id: Number(id) })
+      }
+      catch (err) {
+        log.warn(`[orm/search] queue dispatch failed for ${definition.name}#${id}; falling back to inline: ${(err as Error).message}`)
+        await removeInline(indexName, Number(id), definition.name)
+      }
+      return
     }
-    catch (err) {
-      log.warn(`[orm/search] Failed to remove ${definition.name}#${id}: ${(err as Error).message}`)
-    }
+    await removeInline(indexName, Number(id), definition.name)
   }
 
   return {
     afterCreate: syncDocument,
     afterUpdate: syncDocument,
     afterDelete: removeDocument,
+  }
+}
+
+async function indexInline(indexName: string, doc: Record<string, unknown>, modelName: string): Promise<void> {
+  try {
+    const { useSearchEngine } = await import('@stacksjs/search-engine')
+    await useSearchEngine().addDocument(indexName, doc)
+  }
+  catch (err) {
+    log.warn(`[orm/search] Failed to index ${modelName}: ${(err as Error).message}`)
+  }
+}
+
+async function removeInline(indexName: string, id: number, modelName: string): Promise<void> {
+  try {
+    const { useSearchEngine } = await import('@stacksjs/search-engine')
+    await useSearchEngine().deleteDocument(indexName, id)
+  }
+  catch (err) {
+    log.warn(`[orm/search] Failed to remove ${modelName}#${id}: ${(err as Error).message}`)
   }
 }
 

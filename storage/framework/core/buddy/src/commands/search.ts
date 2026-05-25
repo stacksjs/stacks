@@ -93,4 +93,56 @@ export function search(buddy: CLI): void {
 
       process.exit(ExitCode.Success)
     })
+
+  // Scout-style short aliases (stacksjs/stacks#1891). Verb-first
+  // names that read naturally next to the model: `buddy search:reindex
+  // Post` and `buddy search:flush Post`. Both delegate to the
+  // existing `SearchEngineImport` / `SearchEngineFlush` actions.
+  buddy
+    .command('search:reindex [model]', 'Re-index a model (Scout-style alias for search-engine:update)')
+    .option('-p, --project [project]', descriptions.project, { default: false })
+    .option('--verbose', descriptions.verbose, { default: false })
+    .action(async (model: string | undefined, options: SearchCommandOptions) => {
+      const opts = { ...options, model: model ?? '' }
+      log.debug('Running `search:reindex` ...', opts)
+      const perf = await intro(`search:reindex${model ? ` ${model}` : ''}`)
+      const result = await runAction(Action.SearchEngineImport, opts)
+      if (result.isErr) {
+        await outro(
+          'While running the search:reindex command, there was an issue',
+          { startTime: perf, useSeconds: true },
+          result.error,
+        )
+        process.exit(ExitCode.FatalError)
+      }
+      await outro(model ? `Reindexed ${model}.` : 'Reindexed all searchable models.', {
+        startTime: perf,
+        useSeconds: true,
+      })
+      process.exit(ExitCode.Success)
+    })
+
+  buddy
+    .command('search:flush [model]', 'Delete all documents from a model index (Scout-style alias)')
+    .option('-p, --project [project]', descriptions.project, { default: false })
+    .option('--verbose', descriptions.verbose, { default: false })
+    .action(async (model: string | undefined, options: SearchCommandOptions) => {
+      const opts = { ...options, model: model ?? '', flush: true }
+      log.debug('Running `search:flush` ...', opts)
+      const perf = await intro(`search:flush${model ? ` ${model}` : ''}`)
+      const result = await runAction(Action.SearchEngineFlush, opts)
+      if (result.isErr) {
+        await outro(
+          'While running the search:flush command, there was an issue',
+          { startTime: perf, useSeconds: true },
+          result.error,
+        )
+        process.exit(ExitCode.FatalError)
+      }
+      await outro(model ? `Flushed ${model} from search.` : 'Flushed all model indices.', {
+        startTime: perf,
+        useSeconds: true,
+      })
+      process.exit(ExitCode.Success)
+    })
 }
