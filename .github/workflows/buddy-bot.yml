@@ -11,6 +11,10 @@ on:
     - cron: '0 */2 * * *'
     # Update dashboard 15 minutes after dependency updates (ensures updates are reflected)
     - cron: '15 */2 * * *'
+    # Daily cleanup at 4am UTC — runs the check job for orphan-branch cleanup
+    # and obsolete-PR detection. The PR-edited trigger handles rebase requests
+    # in real time, but cleanup needs a scheduled tick or stale branches pile up.
+    - cron: '0 4 * * *'
 
   workflow_dispatch: # Manual trigger
     inputs:
@@ -134,6 +138,8 @@ jobs:
               echo "run_update=true" >> $GITHUB_OUTPUT
             elif [ "${{ github.event.schedule }}" = "15 */2 * * *" ]; then
               echo "run_dashboard=true" >> $GITHUB_OUTPUT
+            elif [ "${{ github.event.schedule }}" = "0 4 * * *" ]; then
+              echo "run_check=true" >> $GITHUB_OUTPUT
             fi
           fi
 
