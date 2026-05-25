@@ -72,3 +72,20 @@ export type {
   RecomputeOrderInput,
   RecomputeOrderResult,
 } from './totals'
+
+// Cart / order policy guards (stacksjs/stacks#1879 Co-7, Co-14, Co-15).
+// Pre-flight the cart through these before placeOrder; abandoned-
+// cart cleanup runs as a scheduled job.
+export {
+  cleanupAbandonedCarts,
+  validateCartQuantities,
+  validateCouponStacking,
+  validateQuantityBounds,
+} from './guards'
+export type {
+  CleanupAbandonedCartsOptions,
+  CleanupAbandonedCartsResult,
+  CouponStackingPolicy,
+  CouponStackingResult,
+  QuantityBoundsResult,
+} from './guards'
