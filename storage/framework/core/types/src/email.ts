@@ -286,6 +286,30 @@ export interface EmailOptions {
   notifications?: EmailNotificationsConfig
 
   default: 'log' | 'ses' | 'sendgrid' | 'mailgun' | 'mailtrap' | 'smtp'
+
+  /**
+   * Suppression-list enforcement policy (stacksjs/stacks#1880).
+   *
+   * - `'strict'`                — block all sends to suppressed
+   *   recipients (default)
+   * - `'transactional-allowed'` — block broadcasts; allow messages
+   *   with `tag: 'transactional'`
+   * - `'off'`                   — never block; the suppression
+   *   table is just a tracking record
+   *
+   * The check is opt-in at the table level — apps that haven't
+   * created the `email_suppressions` table see "always allowed"
+   * with a one-shot warn.
+   */
+  suppressionPolicy?: 'strict' | 'transactional-allowed' | 'off'
+
+  /**
+   * URL prefix the framework's default unsubscribe route mounts
+   * under (stacksjs/stacks#1880). Defaults to
+   * `/_stacks/email/unsubscribe`. The full link is built as
+   * `${app.url}${unsubscribeRoute}/${signed-token}`.
+   */
+  unsubscribeRoute?: string
 }
 
 export type EmailConfig = Partial<EmailOptions>
@@ -399,6 +423,24 @@ export interface EmailMessage {
    * time" so unrelated apps aren't broken by the new behavior.
    */
   idempotencyKey?: string
+  /**
+   * Classification used by the suppression-policy check
+   * (stacksjs/stacks#1880). Set to `'transactional'` for messages
+   * that should bypass suppression when
+   * `email.suppressionPolicy: 'transactional-allowed'` is
+   * configured — password resets, billing receipts, magic-link
+   * sign-ins.
+   *
+   * Set to `'broadcast'` (or omit) for marketing / newsletter
+   * sends; those get blocked when the recipient is suppressed.
+   *
+   * Under the default `'strict'` policy this field has no effect
+   * — both transactional and broadcast sends get blocked. Apps
+   * that need to send password-reset emails to bounced addresses
+   * (rare, but legitimate) opt into `'transactional-allowed'` AND
+   * tag the message.
+   */
+  tag?: 'transactional' | 'broadcast'
 }
 
 // Email interfaces
