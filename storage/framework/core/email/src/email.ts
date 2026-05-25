@@ -2,12 +2,14 @@ import type { EmailDriver, EmailMessage, EmailResult } from '@stacksjs/types'
 import { config } from '@stacksjs/config'
 import { log } from '@stacksjs/logging'
 import type { Message } from './types'
+import { CaptureEmailDriver } from './drivers/capture'
 import { LogEmailDriver } from './drivers/log'
 import { MailgunDriver } from './drivers/mailgun'
 import { MailtrapDriver } from './drivers/mailtrap'
 import { SendGridDriver } from './drivers/sendgrid'
 import { SESDriver } from './drivers/ses'
 import { SMTPDriver } from './drivers/smtp'
+import { findEmailByIdempotencyKey, recordEmailIdempotency } from './idempotency'
 
 /** Result returned by email handler callbacks */
 interface EmailHandlerResult {
@@ -132,6 +134,10 @@ class Mail {
     this.drivers.set('mailgun', new MailgunDriver())
     this.drivers.set('mailtrap', new MailtrapDriver())
     this.drivers.set('smtp', new SMTPDriver())
+    // Tests-only in-memory capture (stacksjs/stacks#1871 M-12). Cheap
+    // to register even when unused — the driver only holds an empty
+    // array until something calls `send()`.
+    this.drivers.set('capture', new CaptureEmailDriver())
   }
 
   public async send(message: EmailMessage): Promise<EmailResult> {
@@ -150,15 +156,35 @@ class Mail {
       )
     }
 
+    // Idempotency-key short-circuit (stacksjs/stacks#1871 M-8). A
+    // retry with the same key returns the cached EmailResult from
+    // the first successful send instead of re-dispatching to the
+    // driver. Both the lookup and the recording silently degrade
+    // when the email_idempotency table isn't migrated yet — same
+    // opt-in pattern as #1879 Co-3's order dedup.
+    if (message.idempotencyKey) {
+      const cached = await findEmailByIdempotencyKey(message.idempotencyKey)
+      if (cached) return cached
+    }
+
     const defaultFrom: EmailFromAddress = {
       name: config.email.from?.name || 'Stacks',
       address: config.email.from?.address || 'no-reply@stacksjs.com',
     }
 
-    return driver.send({
+    const result = await driver.send({
       ...message,
       from: message.from || defaultFrom,
     })
+
+    // Record AFTER the successful dispatch so a driver failure
+    // doesn't lock the key — the caller can retry. Failed results
+    // are filtered inside recordEmailIdempotency.
+    if (message.idempotencyKey) {
+      await recordEmailIdempotency(message.idempotencyKey, message, result)
+    }
+
+    return result
   }
 
   // Create a new Mail instance with a different driver (doesn't mutate the singleton)

@@ -375,6 +375,30 @@ export interface EmailMessage {
   onError?: (error: Error) => Promise<{ message: string }> | { message: string }
   /** Optional custom handler */
   handle?: () => Promise<{ message: string }> | { message: string }
+  /**
+   * Caller-supplied idempotency key (stacksjs/stacks#1871 M-8).
+   *
+   * When set, `mail.send()` consults an `email_idempotency` dedup
+   * table before dispatching to the driver:
+   *   - hit: returns the cached EmailResult from the first send
+   *   - miss: dispatches, then records the result under the key
+   *
+   * Why it matters: queued send retries (the framework retries 3×
+   * with backoff) and external retry loops (webhook handlers that
+   * re-fire on transient failures, request POSTs that the user
+   * double-clicks) can otherwise deliver the same email multiple
+   * times. The key turns those retries into safe no-ops.
+   *
+   * Construction guidance: derive the key from the business event
+   * the email represents — e.g. `welcome:${userId}`,
+   * `order-confirmation:${orderId}:${attempt}`, not from message
+   * content (which would collide across unrelated sends).
+   *
+   * The dedup table is opt-in. When the migration hasn't been run
+   * yet, the framework warns once and falls back to "send every
+   * time" so unrelated apps aren't broken by the new behavior.
+   */
+  idempotencyKey?: string
 }
 
 // Email interfaces

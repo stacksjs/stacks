@@ -1,3 +1,4 @@
+export * as capture from './capture'
 export * as log from './log'
 export * as mailgun from './mailgun'
 export * as mailtrap from './mailtrap'

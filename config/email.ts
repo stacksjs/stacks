@@ -268,5 +268,5 @@ export default {
     complaints: true,
   },
 
-  default: (env.MAIL_MAILER || env.MAIL_DRIVER || 'log') as 'ses' | 'sendgrid' | 'mailgun' | 'mailtrap' | 'smtp' | 'log',
+  default: (env.MAIL_MAILER || env.MAIL_DRIVER || 'log') as 'ses' | 'sendgrid' | 'mailgun' | 'mailtrap' | 'smtp' | 'log' | 'capture',
 } satisfies EmailConfig
