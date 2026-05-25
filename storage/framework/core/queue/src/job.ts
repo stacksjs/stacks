@@ -7,11 +7,30 @@
 
 import { appPath } from '@stacksjs/path'
 import { env as envVars } from '@stacksjs/env'
+import { enqueueAfterCommit, isInTransaction } from '@stacksjs/database'
 import { createEnvelope } from './envelope'
 import { hasDispatchedKey, recordDispatchedKey } from './idempotency'
 
 function getQueueDriver(): string {
   return envVars.QUEUE_DRIVER || 'sync'
+}
+
+/**
+ * One-shot warning when a caller asks for `.afterCommit()` outside
+ * any active transaction (stacksjs/stacks#1882). The dispatch still
+ * fires immediately — silently rewriting the caller's intent would
+ * be worse than the noise.
+ */
+let _warnedAfterCommitNoTx = false
+function warnAfterCommitOutsideTransaction(): void {
+  if (_warnedAfterCommitNoTx) return
+  _warnedAfterCommitNoTx = true
+  // eslint-disable-next-line no-console
+  console.warn(
+    '[queue] .afterCommit() was called outside of `db.transaction(...)`. '
+    + 'Dispatching immediately. Wrap the call in a transaction or drop '
+    + '.afterCommit() to silence this message.',
+  )
 }
 
 /**
@@ -49,10 +68,26 @@ export interface JobDispatchOptions {
 }
 
 /**
+ * Per-builder override of the transaction-context default.
+ * `'auto'` (the default) respects the current transaction scope:
+ * buffers when inside `db.transaction(...)`, dispatches immediately
+ * otherwise. `'after'` forces buffering even outside a transaction
+ * (warn-and-dispatch since there's nothing to buffer against).
+ * `'immediate'` forces immediate dispatch even inside a transaction
+ * — used for fire-and-forget side-effects that legitimately want
+ * to run before the surrounding transaction commits (analytics,
+ * lock probes, etc.).
+ *
+ * See stacksjs/stacks#1882.
+ */
+type TransactionMode = 'auto' | 'after' | 'immediate'
+
+/**
  * Fluent job builder for file-based jobs
  */
 class JobBuilder {
   private options: JobDispatchOptions = {}
+  private txMode: TransactionMode = 'auto'
 
   constructor(
     private name: string,
@@ -119,6 +154,35 @@ class JobBuilder {
   }
 
   /**
+   * Force the dispatch to be buffered until the surrounding
+   * `db.transaction(...)` commits (stacksjs/stacks#1882). Inside a
+   * transaction this is the default behaviour; calling
+   * `.afterCommit()` is mostly useful for documentation. Outside a
+   * transaction the dispatch happens immediately and a one-shot
+   * warning logs — the caller probably wanted the buffering they
+   * asked for, so silently changing semantics is worse than the
+   * noise.
+   */
+  afterCommit(): this {
+    this.txMode = 'after'
+    return this
+  }
+
+  /**
+   * Force the dispatch to fire IMMEDIATELY even inside a
+   * `db.transaction(...)` (stacksjs/stacks#1882). Use for
+   * side-effects that genuinely want to run before commit:
+   *   - analytics events (must fire regardless of commit outcome)
+   *   - distributed lock probes
+   *   - log entries the caller wants visible even if the tx
+   *     rolls back so they can audit the failed attempt
+   */
+  withoutCommit(): this {
+    this.txMode = 'immediate'
+    return this
+  }
+
+  /**
    * Dispatch the job to the queue
    */
   async dispatch(): Promise<void> {
@@ -129,6 +193,45 @@ class JobBuilder {
       return
     }
 
+    // Transaction-aware buffering (stacksjs/stacks#1882). When the
+    // dispatch happens inside `db.transaction(...)`, defer it until
+    // commit so the worker can't pick up a job whose data hasn't
+    // been written yet. `.withoutCommit()` opts out; `.afterCommit()`
+    // forces buffering (no-op when already inside a transaction).
+    //
+    // Outside any transaction, `auto` falls through to immediate
+    // dispatch. `after` warns once and dispatches anyway — caller
+    // asked for "after commit" without a commit to wait on; silently
+    // dropping their intent would surprise them.
+    if (this.txMode !== 'immediate') {
+      const inTx = isInTransaction()
+      if (inTx) {
+        // Buffer — capture `this` state into a closure since the
+        // builder might be reused (it shouldn't be, but defending
+        // against a fluent-API misuse costs nothing).
+        const buffered = this.runDispatchPipeline.bind(this)
+        const enqueued = enqueueAfterCommit(async () => { await buffered() })
+        // Defensive: enqueueAfterCommit returned false means the
+        // scope vanished between `isInTransaction()` and now (can
+        // happen if the user manually escapes the ALS context via
+        // `.bind(null)` etc.). Fall through to immediate dispatch.
+        if (enqueued) return
+      }
+      else if (this.txMode === 'after') {
+        warnAfterCommitOutsideTransaction()
+      }
+    }
+
+    await this.runDispatchPipeline()
+  }
+
+  /**
+   * The driver-routing portion of dispatch — extracted from
+   * `dispatch()` so the transaction-buffering wrapper can call it
+   * either immediately or via the after-commit hook
+   * (stacksjs/stacks#1882).
+   */
+  private async runDispatchPipeline(): Promise<void> {
     // Idempotency-key short-circuit (stacksjs/stacks#1872 Q-8). A
     // second dispatch under the same key returns without enqueuing.
     // The lookup degrades to "always miss" with a warn when the
@@ -371,6 +474,18 @@ export const Jobs = {
    */
   async dispatchOnce(key: string, name: string, payload?: any): Promise<void> {
     await new JobBuilder(name, payload).withIdempotencyKey(key).dispatch()
+  },
+
+  /**
+   * Explicitly defer to the surrounding transaction's commit
+   * (stacksjs/stacks#1882). Equivalent to
+   * `Jobs.make(name, payload).afterCommit().dispatch()`. Inside a
+   * `db.transaction(...)` this is the default behaviour — the
+   * helper exists for callers that want the intent visible at the
+   * call site for readability.
+   */
+  async dispatchAfterCommit(name: string, payload?: any): Promise<void> {
+    await new JobBuilder(name, payload).afterCommit().dispatch()
   },
 }
 

@@ -5,7 +5,7 @@
  * commit on success and rollback on error.
  */
 
-import { db } from '@stacksjs/database'
+import { db, runInTransactionScope } from '@stacksjs/database'
 
 /**
  * Transaction handle. Aliases the project's `db` type so callers get
@@ -49,7 +49,14 @@ export async function transaction<T>(
   // The underlying bun-query-builder transaction() typings refer to its
   // internal QueryBuilder<DB> shape, while we expose the augmented `Db`
   // alias here. They're structurally compatible at runtime.
-  return await (db.transaction as unknown as (cb: (tx: TransactionHandle) => Promise<T>, opts?: TransactionOptions) => Promise<T>)(callback, options)
+  //
+  // Wrap in the transaction-context scope (stacksjs/stacks#1882) so
+  // side-effect emitters (queue dispatch, mailer send) running inside
+  // the callback can buffer themselves until commit — and get dropped
+  // on rollback. Nested calls are detected and share the outer scope.
+  return await runInTransactionScope(async () => {
+    return await (db.transaction as unknown as (cb: (tx: TransactionHandle) => Promise<T>, opts?: TransactionOptions) => Promise<T>)(callback, options)
+  })
 }
 
 /**

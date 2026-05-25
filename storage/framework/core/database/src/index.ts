@@ -96,6 +96,18 @@ export * from './auth-tables'
 export * from './sql-helpers'
 export * from './defaults'
 
+// Transaction context: AsyncLocalStorage-based scope so side-effect
+// emitters (queue dispatch, mailer send) can buffer themselves
+// until the surrounding `db.transaction(...)` commits
+// (stacksjs/stacks#1882).
+export {
+  __flushAfterCommitNow,
+  __pendingAfterCommitCount,
+  enqueueAfterCommit,
+  isInTransaction,
+  runInTransactionScope,
+} from './transaction-context'
+
 // Re-export bun-query-builder functions and types
 export {
   createQueryBuilder,
