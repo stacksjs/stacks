@@ -53,6 +53,17 @@ export interface PlaceOrderInput {
   payment?: NewPayment
   /** Optional inventory decrements to apply (each delta is signed). */
   inventory?: ReadonlyArray<{ id: number, delta: number }>
+  /**
+   * Optional caller-supplied idempotency key (stacksjs/stacks#1879
+   * Co-3). When set, the order is recorded against this key in a
+   * dedup side-table; a retry with the same key returns the
+   * original order id instead of creating a duplicate. Use this
+   * when a user might double-click "place order" (network blip,
+   * impatient retry, mobile background-sync race). UUID per
+   * logical checkout attempt is typical; server-side `userId +
+   * cartId` also works.
+   */
+  idempotencyKey?: string
 }
 
 /**
@@ -62,9 +73,57 @@ export interface PlaceOrderInput {
  */
 export type PlaceOrderResult =
   | { ok: true, order: OrderJsonResponse, payment?: PaymentJsonResponse }
-  | { ok: false, reason: 'out-of-stock' | 'duplicate-payment' | 'unknown', failedAt?: string, error?: unknown }
+  | { ok: false, reason: 'out-of-stock' | 'duplicate-payment' | 'duplicate-idempotency-key' | 'unknown', failedAt?: string, error?: unknown }
+
+/**
+ * Look up an existing order by idempotency key — returns the
+ * original order when this key has been seen before, null when it
+ * hasn't. Degrades to "always null" with a startup warn when the
+ * `order_idempotency` dedup table isn't migrated yet.
+ */
+let warnedAboutMissingOrderIdempotencyTable = false
+async function findOrderByIdempotencyKey(key: string): Promise<OrderJsonResponse | null> {
+  try {
+    const row = await (db as any)
+      .selectFrom('order_idempotency')
+      .where('idempotency_key', '=', key)
+      .selectAll()
+      .executeTakeFirst()
+    if (!row) return null
+    const order = await (db as any)
+      .selectFrom('orders')
+      .where('id', '=', row.order_id)
+      .selectAll()
+      .executeTakeFirst()
+    return (order ?? null) as OrderJsonResponse | null
+  }
+  catch (err: any) {
+    if (err?.message?.includes('no such table') || err?.message?.includes("doesn't exist")) {
+      if (!warnedAboutMissingOrderIdempotencyTable) {
+        warnedAboutMissingOrderIdempotencyTable = true
+        // eslint-disable-next-line no-console
+        console.warn('[commerce/orders] order_idempotency table missing — idempotency keys are accepted but NOT enforced. Run migrations to enable dedup.')
+      }
+      return null
+    }
+    throw err
+  }
+}
 
 export async function placeOrder(input: PlaceOrderInput): Promise<PlaceOrderResult> {
+  // Idempotency-key short-circuit (stacksjs/stacks#1879 Co-3).
+  // Before doing any work, check the dedup side-table — a retry
+  // with the same key returns the original order without
+  // re-running the transaction. Insert-into-dedup happens AFTER
+  // the order successfully commits, so a partial failure (e.g.,
+  // the original placeOrder threw mid-transaction) doesn't
+  // permanently lock the key.
+  if (input.idempotencyKey) {
+    const existing = await findOrderByIdempotencyKey(input.idempotencyKey)
+    if (existing)
+      return { ok: true, order: existing }
+  }
+
   try {
     const result = await db.transaction().execute(async (trx: any) => {
       const now = formatDate(new Date())
@@ -145,7 +204,38 @@ export async function placeOrder(input: PlaceOrderInput): Promise<PlaceOrderResu
         }
       }
 
-      // 4. Refetch the order so callers get the post-write canonical row.
+      // 4. Record the idempotency key inside the transaction so a
+      // concurrent retry of the same key (the classic double-click
+      // scenario) hits the unique constraint and rolls back here
+      // instead of creating a second order. Skipped silently when
+      // the table isn't migrated yet — same opt-in pattern as the
+      // Stripe webhook dedup.
+      if (input.idempotencyKey) {
+        try {
+          await trx
+            .insertInto('order_idempotency')
+            .values({
+              idempotency_key: input.idempotencyKey,
+              order_id: orderId,
+              created_at: now,
+            })
+            .execute()
+        }
+        catch (err: any) {
+          // Unique-constraint collision = concurrent retry won the
+          // race; abort this transaction so the caller falls back
+          // to the existing order via the pre-transaction lookup
+          // on the next attempt (or right now if they re-call).
+          if (err?.message?.includes('UNIQUE constraint') || err?.message?.includes('Duplicate entry'))
+            throw Object.assign(new Error('idempotency-key collision'), { __placeFail: true, failedAt: 'idempotency', reason: 'duplicate-idempotency-key' })
+          // Missing table: degrade silently (the pre-transaction
+          // lookup already warned).
+          if (!(err?.message?.includes('no such table') || err?.message?.includes("doesn't exist")))
+            throw err
+        }
+      }
+
+      // 5. Refetch the order so callers get the post-write canonical row.
       const order = await trx.selectFrom('orders').where('id', '=', orderId).selectAll().executeTakeFirst() as OrderJsonResponse | undefined
       if (!order)
         throw Object.assign(new Error('order disappeared mid-transaction'), { __placeFail: true, failedAt: 'order', reason: 'unknown' })

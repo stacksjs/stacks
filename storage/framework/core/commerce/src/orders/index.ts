@@ -62,3 +62,13 @@ export {
   handlePaymentIntentSucceeded,
   registerCommerceWebhookHandlers,
 } from './webhook'
+
+// Server-side cart-to-order total recompute (stacksjs/stacks#1879 Co-13).
+// Apps pre-flight the cart through this before placeOrder to detect
+// client-supplied drift and reject "price changed" cases.
+export { recomputeOrderTotals } from './totals'
+export type {
+  RecomputeLineItem,
+  RecomputeOrderInput,
+  RecomputeOrderResult,
+} from './totals'
