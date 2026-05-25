@@ -474,7 +474,66 @@ function escapeHtml(str: string): string {
 }
 
 /**
- * Render a simple production error page
+ * Try to load a userland override for a production error page from
+ * `resources/views/errors/`. Resolution order:
+ *
+ *   1. `resources/views/errors/<status>.html`     (e.g., `404.html`)
+ *   2. `resources/views/errors/error.html`        (generic fallback)
+ *
+ * Returns `null` if neither file exists (caller falls back to the
+ * built-in template). Read failures (permission denied, decode error,
+ * etc.) also return `null` rather than throwing — a broken custom
+ * template should never break error rendering itself.
+ *
+ * Template variables (all HTML-escaped):
+ *   - `{{status}}`  e.g. 404
+ *   - `{{title}}`   e.g. "Not Found"
+ *   - `{{message}}` e.g. "The requested resource could not be found."
+ *
+ * stacksjs/stacks#863.
+ */
+function loadCustomErrorPage(status: number, title: string, message: string): string | null {
+  // Lazy-require so a missing/unloadable @stacksjs/path module (e.g.,
+  // when error-handling is consumed outside a Stacks app) doesn't break
+  // built-in error rendering. eslint-disable-next-line over the require.
+  let resourcesPath: ((sub?: string) => string) | undefined
+  try {
+    // eslint-disable-next-line ts/no-require-imports
+    const mod = require('@stacksjs/path') as { path?: { resourcesPath?: (sub?: string) => string }, resourcesPath?: (sub?: string) => string }
+    resourcesPath = mod.resourcesPath ?? mod.path?.resourcesPath
+  }
+  catch { /* path module unavailable — fall through to built-in */ }
+  if (!resourcesPath) return null
+
+  // eslint-disable-next-line ts/no-require-imports
+  const fs = require('node:fs') as typeof import('node:fs')
+
+  const candidates = [
+    resourcesPath(`views/errors/${status}.html`),
+    resourcesPath('views/errors/error.html'),
+  ]
+
+  for (const filePath of candidates) {
+    try {
+      if (!fs.existsSync(filePath)) continue
+      const template = fs.readFileSync(filePath, 'utf-8')
+      return template
+        .replace(/\{\{\s*status\s*\}\}/g, escapeHtml(String(status)))
+        .replace(/\{\{\s*title\s*\}\}/g, escapeHtml(title))
+        .replace(/\{\{\s*message\s*\}\}/g, escapeHtml(message))
+    }
+    catch { /* unreadable file — try the next candidate */ }
+  }
+
+  return null
+}
+
+/**
+ * Render a simple production error page.
+ *
+ * Checks for a userland override at `resources/views/errors/<status>.html`
+ * (or `error.html` as a generic fallback) first; renders the built-in
+ * template only when no custom page is provided. stacksjs/stacks#863.
  */
 export function renderProductionErrorPage(status: number): string {
   const httpError = HTTP_ERRORS[status as HttpStatusCode] || {
@@ -482,6 +541,9 @@ export function renderProductionErrorPage(status: number): string {
     title: 'Error',
     message: 'An unexpected error occurred.',
   }
+
+  const custom = loadCustomErrorPage(httpError.status, httpError.title, httpError.message)
+  if (custom !== null) return custom
 
   return `<!DOCTYPE html>
 <html lang="en">
