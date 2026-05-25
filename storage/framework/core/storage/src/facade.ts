@@ -21,7 +21,7 @@ import { resolve } from 'node:path'
 import process from 'node:process'
 import { filesystems, app as appConfig } from '@stacksjs/config'
 import { S3Client } from '@stacksjs/ts-cloud'
-import type { PresignedUploadUrl, PresignedUploadUrlOptions, PutResult, SignedUrlOptions, StatEntry, StorageAdapter } from './types'
+import type { PresignedUploadPolicy, PresignedUploadPolicyOptions, PresignedUploadUrl, PresignedUploadUrlOptions, PutResult, SignedUrlOptions, StatEntry, StorageAdapter } from './types'
 import { createLocalStorage } from './adapters/local'
 import { S3StorageAdapter } from './adapters/s3'
 import { parseDiskPath } from './path-sanitize'
@@ -383,6 +383,42 @@ class StorageManager {
       throw new Error(`[storage] disk '${this.config.default}' does not support presignedUploadUrl — only S3-style adapters do. Use \`Storage.put(file, opts)\` for local/proxied uploads.`)
     }
     return adapter.presignedUploadUrl(options)
+  }
+
+  /**
+   * Mint an S3 presigned-POST policy with server-side
+   * `Content-Length-Range` enforcement (stacksjs/stacks#1888
+   * Phase B). The browser POSTs a multipart form (not a PUT body),
+   * and S3 rejects anything that violates the embedded conditions
+   * before storing — the missing maxBytes-enforcement piece called
+   * out by the original S-12 doc-only fix.
+   *
+   * Currently S3-only; other adapters throw a clear error. Use
+   * `presignedUploadUrl()` for the PUT-form (no size enforcement)
+   * or `Storage.put(file, opts)` for server-proxied uploads.
+   *
+   * @example
+   * ```ts
+   * const policy = await Storage.presignedUploadPolicy({
+   *   key: { startsWith: 'avatars/' },
+   *   contentType: { startsWith: 'image/' },
+   *   contentLengthRange: { min: 0, max: 5 * 1024 * 1024 },
+   *   expiresIn: 3600,
+   * })
+   *
+   * // Frontend:
+   * const fd = new FormData()
+   * Object.entries(policy.fields).forEach(([k, v]) => fd.append(k, v))
+   * fd.append('file', file)   // MUST be last
+   * await fetch(policy.url, { method: 'POST', body: fd })
+   * ```
+   */
+  async presignedUploadPolicy(options: PresignedUploadPolicyOptions): Promise<PresignedUploadPolicy> {
+    const adapter = this.disk()
+    if (typeof adapter.presignedUploadPolicy !== 'function') {
+      throw new Error(`[storage] disk '${this.config.default}' does not support presignedUploadPolicy — S3-only. Use \`presignedUploadUrl\` for the PUT-form, or \`Storage.put(file, opts)\` for server-proxied uploads.`)
+    }
+    return adapter.presignedUploadPolicy(options)
   }
 
   async size(path: string): Promise<number> {

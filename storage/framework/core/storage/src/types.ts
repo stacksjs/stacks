@@ -130,6 +130,55 @@ export interface SignedUrlOptions {
 }
 
 /**
+ * Options for `presignedUploadPolicy()` — the POST-form upload
+ * primitive that S3 can enforce server-side (stacksjs/stacks#1888
+ * Phase B). Distinct from {@link PresignedUploadUrlOptions} (PUT-
+ * form): the POST policy carries a `Content-Length-Range` condition
+ * that S3 enforces server-side, so this is the right primitive when
+ * you genuinely need a size cap against an untrusted client.
+ */
+export interface PresignedUploadPolicyOptions {
+  /**
+   * Either an exact key the upload must land at, or a `{ startsWith
+   * }` prefix when the client picks the final suffix.
+   */
+  key: string | { startsWith: string }
+  /**
+   * Required Content-Type the upload must submit. Pass an exact
+   * string OR `{ startsWith: 'image/' }` for prefix-matching.
+   */
+  contentType: string | { startsWith: string }
+  /**
+   * S3-enforced size range in bytes. The whole reason to use POST-
+   * form over PUT-form is that S3 actually rejects uploads outside
+   * this range — no post-upload cleanup required.
+   */
+  contentLengthRange?: { min: number, max: number }
+  /** ACL on the resulting object. Default `'private'`. */
+  acl?: 'private' | 'public-read' | 'public-read-write' | 'authenticated-read' | 'bucket-owner-read' | 'bucket-owner-full-control'
+  /** Policy expiry in seconds. Clamped to [60, 7 * 24 * 60 * 60]. */
+  expiresIn: number
+  /**
+   * Extra strict-equality conditions to embed in the policy AND
+   * include in the returned `fields` map.
+   */
+  fields?: Record<string, string>
+}
+
+/**
+ * What the caller hands to the browser. Submit as
+ * `multipart/form-data` to `url` with every entry of `fields` as a
+ * form field, then the actual file LAST under the field name
+ * `'file'`. `key` is what the upload will land at — store on the
+ * domain record.
+ */
+export interface PresignedUploadPolicy {
+  url: string
+  fields: Record<string, string>
+  key: string
+}
+
+/**
  * Options for `presignedUploadUrl()` (stacksjs/stacks#1856 Stage 6).
  */
 export interface PresignedUploadUrlOptions {
@@ -236,10 +285,15 @@ export interface StorageAdapterConfig {
   region?: string
   /** S3 key prefix */
   prefix?: string
-  /** AWS credentials */
+  /**
+   * AWS credentials. When omitted the adapter falls back to the
+   * standard env vars (`AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`,
+   * `AWS_SESSION_TOKEN`) — same source as the S3Client itself.
+   */
   credentials?: {
     accessKeyId: string
     secretAccessKey: string
+    sessionToken?: string
   }
 }
 
@@ -333,6 +387,21 @@ export interface StorageAdapter {
    * what the caller should persist; `url` is for the browser.
    */
   presignedUploadUrl?(options: PresignedUploadUrlOptions): Promise<PresignedUploadUrl>
+
+  /**
+   * Generate a presigned POST policy for direct browser-to-cloud
+   * upload with server-side size enforcement (stacksjs/stacks#1888
+   * Phase B). Distinct from {@link presignedUploadUrl}: the POST
+   * policy embeds a `Content-Length-Range` condition that S3
+   * actually enforces — uploads outside the range are rejected
+   * before any bytes hit storage.
+   *
+   * S3-only today; local / memory / bun adapters don't need this
+   * primitive (they don't expose a public POST endpoint). Callers
+   * fall back to `presignedUploadUrl` when the disk doesn't support
+   * POST policies.
+   */
+  presignedUploadPolicy?(options: PresignedUploadPolicyOptions): Promise<PresignedUploadPolicy>
 
   /** Calculate file checksum */
   checksum(path: string, options?: ChecksumOptions): Promise<string>

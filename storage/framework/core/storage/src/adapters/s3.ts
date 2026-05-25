@@ -7,6 +7,8 @@ import type {
   FileContents,
   ListOptions,
   MimeTypeOptions,
+  PresignedUploadPolicy,
+  PresignedUploadPolicyOptions,
   PresignedUploadUrl,
   PresignedUploadUrlOptions,
   PublicUrlOptions,
@@ -20,6 +22,8 @@ import type {
 } from '../types'
 import { normalizeExpiryToMilliseconds } from '../types'
 import { sanitizePresignedDir, sanitizePresignedFilename } from '../path-sanitize'
+import { signS3PresignedPost } from '../s3-presigned-post'
+import process from 'node:process'
 
 /**
  * AWS S3 storage adapter using ts-cloud S3Client
@@ -29,16 +33,46 @@ export class S3StorageAdapter implements StorageAdapter {
   private bucket: string
   private prefix: string
   private region: string
+  /**
+   * Caller-supplied credentials, kept so we can issue presigned POST
+   * policies (which need access to the signing key — ts-cloud's
+   * S3Client doesn't expose its own credentials via a public method).
+   * When omitted at construction time, falls back to env vars at
+   * sign time. See stacksjs/stacks#1888 Phase B.
+   */
+  private credentials?: StorageAdapterConfig['credentials']
 
   constructor(client: S3Client, config: StorageAdapterConfig) {
     this.client = client
     this.bucket = config.bucket || ''
     this.prefix = config.prefix || ''
     this.region = config.region || 'us-east-1'
+    this.credentials = config.credentials
 
     if (!this.bucket) {
       throw new Error('S3 bucket name is required')
     }
+  }
+
+  /**
+   * Resolve credentials for SigV4 signing in the same order ts-cloud
+   * does: explicit constructor config → env vars. Throws when neither
+   * source supplies a key (the alternative would be silently signing
+   * with an empty key and producing a URL S3 rejects).
+   */
+  private resolveCredentials(): NonNullable<StorageAdapterConfig['credentials']> {
+    if (this.credentials?.accessKeyId && this.credentials.secretAccessKey)
+      return this.credentials
+    const accessKeyId = process.env.AWS_ACCESS_KEY_ID
+    const secretAccessKey = process.env.AWS_SECRET_ACCESS_KEY
+    const sessionToken = process.env.AWS_SESSION_TOKEN
+    if (!accessKeyId || !secretAccessKey) {
+      throw new Error(
+        '[storage/s3] presignedUploadPolicy requires AWS credentials — '
+        + 'pass them via S3DiskConfig.credentials or set AWS_ACCESS_KEY_ID + AWS_SECRET_ACCESS_KEY.',
+      )
+    }
+    return { accessKeyId, secretAccessKey, sessionToken }
   }
 
   private prefixPath(path: string): string {
@@ -432,6 +466,51 @@ export class S3StorageAdapter implements StorageAdapter {
       contentType: options.contentType,
       maxBytes: options.maxBytes,
     }
+  }
+
+  /**
+   * Mint an S3 presigned-POST policy with server-side enforced
+   * `Content-Length-Range` (stacksjs/stacks#1888 Phase B). The
+   * companion to {@link presignedUploadUrl} — use this when you
+   * genuinely need a max-size cap against an untrusted client,
+   * since the PUT-form URL can't carry that condition.
+   *
+   * Browser-side: submit a multipart form to `url` with every
+   * `fields` entry as a form field, then the file LAST under the
+   * field name `'file'`. S3 rejects anything that violates the
+   * embedded conditions before storing.
+   *
+   * @example
+   * ```ts
+   * const policy = await Storage.disk('s3').presignedUploadPolicy?.({
+   *   key: { startsWith: 'avatars/' },
+   *   contentType: { startsWith: 'image/' },
+   *   contentLengthRange: { min: 0, max: 5 * 1024 * 1024 },
+   *   expiresIn: 3600,
+   * })
+   * ```
+   */
+  async presignedUploadPolicy(options: PresignedUploadPolicyOptions): Promise<PresignedUploadPolicy> {
+    const credentials = this.resolveCredentials()
+
+    // Prefix the bucket prefix onto the policy's key so the upload
+    // lands in the same namespace `put()` writes to. Both exact-key
+    // and prefix forms get the same treatment.
+    const scopedKey = typeof options.key === 'string'
+      ? this.prefixPath(options.key)
+      : { startsWith: this.prefixPath(options.key.startsWith) }
+
+    return signS3PresignedPost({
+      bucket: this.bucket,
+      region: this.region,
+      credentials,
+      key: scopedKey,
+      contentType: options.contentType,
+      contentLengthRange: options.contentLengthRange,
+      acl: options.acl,
+      expiresIn: options.expiresIn,
+      fields: options.fields,
+    })
   }
 
   /**

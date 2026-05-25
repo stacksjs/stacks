@@ -49,3 +49,15 @@ export type { ParsedDiskPath } from './path-sanitize'
 // completes since `Content-Type` on a presigned PUT is caller-attested.
 export { detectMimeFromMagicBytes, verifyUploadedMime } from './mime-verify'
 export type { MimeVerifyResult } from './mime-verify'
+
+// S3 presigned-POST policy signer (stacksjs/stacks#1888 Phase B).
+// Exposed as a standalone for callers that have their own S3 client
+// and just need the policy-signing logic; the Storage facade wraps
+// it as `presignedUploadPolicy()`.
+export { signS3PresignedPost } from './s3-presigned-post'
+export type { S3PresignedPostInput, S3PresignedPostResult } from './s3-presigned-post'
+export type {
+  PresignedUploadPolicy,
+  PresignedUploadPolicyOptions,
+  PutResult,
+} from './types'
