@@ -356,8 +356,12 @@ export class InMemoryStorageAdapter implements StorageAdapter {
   }
 
   async publicUrl(path: string, options: PublicUrlOptions = {}): Promise<string> {
-    const domain = options.domain || 'http://localhost'
-    return `${domain}/${this.normalizePath(path)}`
+    // Mirrors local.ts (stacksjs/stacks#1873 S-9): explicit domain
+    // wins, otherwise fall back to APP_URL, otherwise localhost.
+    // Pre-fix the memory driver silently localhost-prefixed every
+    // URL even in production — same bug shape as the local driver.
+    const base = (options.domain || process.env.APP_URL || 'http://localhost').replace(/\/$/, '')
+    return `${base}/${this.normalizePath(path)}`
   }
 
   async temporaryUrl(path: string, options: TemporaryUrlOptions): Promise<string> {

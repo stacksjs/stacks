@@ -90,8 +90,86 @@ export function createSignedStorageToken(path: string, options: SignedUrlOptions
  */
 export interface SignedTokenVerification {
   valid: boolean
-  reason?: 'malformed' | 'bad_signature' | 'expired' | 'path_mismatch'
+  reason?: 'malformed' | 'bad_signature' | 'expired' | 'path_mismatch' | 'revoked'
   claims?: SignedTokenClaims
+}
+
+/**
+ * In-memory set of revoked token signatures (stacksjs/stacks#1873 S-14).
+ *
+ * Pre-fix there was no way to invalidate a Local-driver signed URL
+ * once it had been minted — the only revocation was waiting for the
+ * `exp` claim. Apps that mint long-lived signed URLs (download
+ * portals, embed tokens) had no recourse when a URL leaked, beyond
+ * rotating `APP_KEY` (which kills every URL system-wide).
+ *
+ * The set is process-local and cleared on restart, which is the
+ * right semantic for the Local driver — it's a single-process file-
+ * serving primitive. Distributed setups should use S3 / R2 with
+ * provider-side revocation. Apps that need cross-process revocation
+ * back this with their own cache by listening for the `revoke()`
+ * call and replicating.
+ *
+ * Bounded by entry-count to keep memory predictable; oldest revoked
+ * tokens fall out first (insertion-order). Anything that fell out
+ * has either already expired or is past its useful lifetime.
+ */
+const REVOCATION_LIMIT = 100_000
+const revokedSignatures = new Set<string>()
+
+function rememberRevoked(sigPart: string): void {
+  if (revokedSignatures.has(sigPart)) return
+  if (revokedSignatures.size >= REVOCATION_LIMIT) {
+    // Set preserves insertion order, so the first key is the oldest.
+    const oldest = revokedSignatures.values().next().value
+    if (oldest !== undefined) revokedSignatures.delete(oldest)
+  }
+  revokedSignatures.add(sigPart)
+}
+
+/**
+ * Revoke a signed storage token so subsequent
+ * {@link verifySignedStorageToken} calls return
+ * `{ valid: false, reason: 'revoked' }`. Idempotent — calling
+ * twice is a no-op.
+ *
+ * Pass either the full JWS compact-form token or just the signature
+ * segment (the part after the second `.`); both work because
+ * verification keys off the signature segment.
+ *
+ * @example
+ * ```ts
+ * const url = await Storage.disk('local').signedUrl('reports/q4.pdf', { expiresIn: 3600 })
+ * // ... url is shared, then later leaked
+ * revokeSignedStorageToken(extractTokenFromUrl(url))
+ * // Any further fetch with that URL → 403
+ * ```
+ */
+export function revokeSignedStorageToken(token: string): void {
+  if (typeof token !== 'string' || token.length === 0) return
+  const parts = token.split('.')
+  // Accept both the full compact-form and a bare signature segment.
+  const sig = parts.length === 3 ? parts[2]! : token
+  if (sig) rememberRevoked(sig)
+}
+
+/**
+ * Check whether a signature has been revoked. Exposed for tests
+ * and for distributed-cache replicators that need to peek at the
+ * set; production callers should rely on {@link verifySignedStorageToken}
+ * to consult this automatically.
+ */
+export function isSignedStorageTokenRevoked(sigPart: string): boolean {
+  return revokedSignatures.has(sigPart)
+}
+
+/**
+ * Test-only: clear the revocation set. The set is process-local
+ * and unbounded across tests would let one test's revoke bleed
+ * into another's verification.
+ */
+export function clearRevokedSignedStorageTokens(): void {
+  revokedSignatures.clear()
 }
 
 /**
@@ -128,6 +206,13 @@ export function verifySignedStorageToken(token: string, requestedPath: string): 
   }
   if (providedSig.length !== expectedSig.length || !timingSafeEqual(providedSig, expectedSig)) {
     return { valid: false, reason: 'bad_signature' }
+  }
+  // Revocation check runs AFTER signature verify so unauthenticated
+  // probing of revoked tokens still hits the bad_signature path
+  // (no information leak about what's in the revocation set).
+  // See stacksjs/stacks#1873 S-14.
+  if (revokedSignatures.has(sigPart)) {
+    return { valid: false, reason: 'revoked' }
   }
   let claims: SignedTokenClaims
   try {

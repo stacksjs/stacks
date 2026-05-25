@@ -258,8 +258,16 @@ export class LocalStorageAdapter implements StorageAdapter {
   }
 
   async publicUrl(path: string, options: PublicUrlOptions = {}): Promise<string> {
-    const domain = options.domain || 'http://localhost'
-    return `${domain}/${path}`
+    // Resolution order (stacksjs/stacks#1873 S-9):
+    //   1. explicit `options.domain`  — caller-controlled
+    //   2. `APP_URL` env var          — matches signedUrl() behavior
+    //   3. localhost fallback          — dev-mode safety net
+    // Pre-fix step 2 was missing — production apps that set APP_URL
+    // for every other framework URL got localhost-prefixed public
+    // links pointing at files on disk, which broke whenever the
+    // generated URL was emailed or stored.
+    const base = (options.domain || process.env.APP_URL || 'http://localhost').replace(/\/$/, '')
+    return `${base}/${path}`
   }
 
   async temporaryUrl(path: string, options: TemporaryUrlOptions): Promise<string> {

@@ -128,14 +128,36 @@ export interface PresignedUploadUrlOptions {
   filename?: string
 
   /**
-   * Maximum size in bytes the eventual upload should be. **Not
-   * enforceable on a simple presigned PUT URL** — S3 enforces
-   * Content-Length-Range only via presigned POST policies. Callers
-   * pass this so client-side composables (`useDirectUpload`) can
-   * reject the file before kicking off the PUT, but the server cannot
-   * rely on this being respected by an attacker. For real
-   * size-enforcement against untrusted clients, use a server-side
-   * scan after upload or switch to presigned POST policies.
+   * Maximum size in bytes the eventual upload should be.
+   *
+   * **⚠ ADVISORY ONLY — NOT SERVER-SIDE ENFORCED.** S3's presigned
+   * PUT (the API this method generates) cannot carry a
+   * `Content-Length-Range` constraint. Only S3's presigned POST
+   * policy form can enforce server-side size limits.
+   *
+   * What this field actually does:
+   *   1. Client-side composables (`useDirectUpload`) read it and
+   *      reject the file before kicking off the PUT.
+   *   2. The framework echoes it back on the returned
+   *      {@link PresignedUploadUrl} so callers can record it for
+   *      later post-upload verification.
+   *
+   * What this field does NOT do:
+   *   - Stop an attacker who crafts their own PUT with a larger
+   *     body. They will succeed and your bucket will accept the
+   *     oversized file.
+   *
+   * For real size enforcement against untrusted clients, do one
+   * of:
+   *   - Run a server-side `HEAD` after upload and delete oversized
+   *     objects (most common pattern; cheap because S3 charges by
+   *     storage, not by short-lived blobs)
+   *   - Switch to presigned POST policies (tracked separately —
+   *     see stacksjs/stacks#1873 S-12 follow-up)
+   *   - Front the bucket with a server endpoint that proxies the
+   *     upload and counts bytes
+   *
+   * Audit context: stacksjs/stacks#1873 S-12.
    */
   maxBytes?: number
 }
