@@ -133,6 +133,11 @@ CREATE TABLE IF NOT EXISTS failed_jobs (
 );
 
 -- Create job_batches table
+-- then_handler / catch_handler / finally_handler columns persist
+-- the terminal handlers across worker restarts
+-- (stacksjs/stacks#1883). Each holds JSON for one
+-- PersistentBatchHandler. Nullable so callers that only use the
+-- in-memory `.then(fn)` API don't need to populate them.
 CREATE TABLE IF NOT EXISTS job_batches (
   id TEXT PRIMARY KEY,
   name TEXT NOT NULL DEFAULT '',
@@ -143,7 +148,10 @@ CREATE TABLE IF NOT EXISTS job_batches (
   options TEXT,
   cancelled_at DATETIME,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  finished_at DATETIME
+  finished_at DATETIME,
+  then_handler TEXT,
+  catch_handler TEXT,
+  finally_handler TEXT
 );
 `
         }
@@ -172,6 +180,8 @@ CREATE TABLE IF NOT EXISTS failed_jobs (
 );
 
 -- Create job_batches table
+-- then_handler / catch_handler / finally_handler persist
+-- terminal handlers across worker restarts (stacksjs/stacks#1883).
 CREATE TABLE IF NOT EXISTS job_batches (
   id VARCHAR(255) PRIMARY KEY,
   name VARCHAR(255) NOT NULL DEFAULT '',
@@ -182,7 +192,10 @@ CREATE TABLE IF NOT EXISTS job_batches (
   options LONGTEXT,
   cancelled_at TIMESTAMP NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  finished_at TIMESTAMP NULL
+  finished_at TIMESTAMP NULL,
+  then_handler LONGTEXT,
+  catch_handler LONGTEXT,
+  finally_handler LONGTEXT
 );
 `
         }
@@ -211,6 +224,8 @@ CREATE TABLE IF NOT EXISTS failed_jobs (
 );
 
 -- Create job_batches table
+-- then_handler / catch_handler / finally_handler persist
+-- terminal handlers across worker restarts (stacksjs/stacks#1883).
 CREATE TABLE IF NOT EXISTS job_batches (
   id VARCHAR(255) PRIMARY KEY,
   name VARCHAR(255) NOT NULL DEFAULT '',
@@ -221,7 +236,10 @@ CREATE TABLE IF NOT EXISTS job_batches (
   options TEXT,
   cancelled_at TIMESTAMP,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  finished_at TIMESTAMP
+  finished_at TIMESTAMP,
+  then_handler TEXT,
+  catch_handler TEXT,
+  finally_handler TEXT
 );
 `
         }

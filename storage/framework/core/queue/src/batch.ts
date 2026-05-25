@@ -53,6 +53,34 @@ export interface BatchableJob {
 }
 
 /**
+ * Persistent batch handler shape (stacksjs/stacks#1883).
+ *
+ * Survives worker restart by being JSON-serialized into the
+ * `job_batches.then_handler` / `catch_handler` / `finally_handler`
+ * columns. The winning worker (the one that flips
+ * `pending_jobs = 0 → finished_at`) reads + dispatches these on
+ * completion, so a batch that finishes after the dispatching
+ * process died still fires its terminal callbacks.
+ *
+ * Two shapes:
+ *   - `job`    — dispatch a queued job by name; the worker fires
+ *                the job through `Jobs.dispatch(name, payload)`
+ *   - `module` — load a module and invoke a named export; payload
+ *                is passed through. Useful for in-process side-
+ *                effects that don't warrant their own job (e.g.
+ *                cleanup helpers, simple notifications).
+ *
+ * Inline function callbacks (the existing `.then(fn)` API) stay
+ * supported as a process-local convenience — they continue to live
+ * in the in-memory registry alongside any persistent handler. The
+ * winning worker fires both: any in-memory callbacks AND the
+ * persistent handler if one was registered.
+ */
+export type PersistentBatchHandler =
+  | { kind: 'job', name: string, payload?: unknown }
+  | { kind: 'module', module: string, export: string, payload?: unknown }
+
+/**
  * Batch record stored in the database
  */
 export interface BatchRecord {
@@ -66,6 +94,16 @@ export interface BatchRecord {
   cancelled_at: string | null
   created_at: string
   finished_at: string | null
+  /**
+   * JSON-serialized {@link PersistentBatchHandler} or null.
+   * Optional in the type because the columns are added by the
+   * `job_batches` migration after #1883 landed — older deployments
+   * may have batch rows without these columns. Reads tolerate
+   * absence (treated as `null`).
+   */
+  then_handler?: string | null
+  catch_handler?: string | null
+  finally_handler?: string | null
 }
 
 /**
@@ -79,6 +117,15 @@ export interface BatchOptions {
   catchCallbacks: Array<(batch: PendingBatch | DispatchedBatch, error: Error) => Promise<void> | void>
   finallyCallbacks: Array<(batch: PendingBatch | DispatchedBatch) => Promise<void> | void>
   progressCallbacks: Array<(batch: PendingBatch | DispatchedBatch) => Promise<void> | void>
+  /**
+   * Persistent terminal handlers (stacksjs/stacks#1883). Survives
+   * worker restart by being JSON-serialized into the batch row.
+   * Each slot holds at most one handler — callers needing multiple
+   * actions should fan out from a single job.
+   */
+  thenHandler?: PersistentBatchHandler
+  catchHandler?: PersistentBatchHandler
+  finallyHandler?: PersistentBatchHandler
 }
 
 /**
@@ -154,6 +201,53 @@ export class PendingBatch {
   }
 
   /**
+   * Register a PERSISTENT then-handler that survives worker restart
+   * (stacksjs/stacks#1883). The handler is serialized into the
+   * `job_batches` row so the winning worker can dispatch/invoke it
+   * even if the dispatching process is gone.
+   *
+   * Pass `{ kind: 'job', name, payload? }` to dispatch a queued
+   * job, or `{ kind: 'module', module, export, payload? }` to
+   * invoke a named export from a module file.
+   *
+   * Inline `.then(fn)` callbacks continue to work as a process-
+   * local convenience — the framework fires both when present.
+   *
+   * @example
+   * ```ts
+   * // Queue job — survives worker restart
+   * batch.thenHandler({ kind: 'job', name: 'NotifyComplete', payload: { reportId } })
+   *
+   * // Module export
+   * batch.thenHandler({ kind: 'module', module: './handlers', export: 'onBatchDone' })
+   * ```
+   */
+  thenHandler(handler: PersistentBatchHandler): this {
+    this.options.thenHandler = handler
+    return this
+  }
+
+  /**
+   * Persistent catch-handler. Fires when any job in the batch
+   * fails (unless `allowFailures` is set). See {@link thenHandler}
+   * for shape.
+   */
+  catchHandler(handler: PersistentBatchHandler): this {
+    this.options.catchHandler = handler
+    return this
+  }
+
+  /**
+   * Persistent finally-handler. Fires regardless of success or
+   * failure on batch completion / cancellation. See
+   * {@link thenHandler} for shape.
+   */
+  finallyHandler(handler: PersistentBatchHandler): this {
+    this.options.finallyHandler = handler
+    return this
+  }
+
+  /**
    * Dispatch the batch - creates a batch record and dispatches all jobs
    */
   async dispatch(): Promise<DispatchedBatch> {
@@ -166,7 +260,11 @@ export class PendingBatch {
 
     const driver = getQueueDriver()
 
-    // Store batch record
+    // Store batch record. Persistent handlers are JSON-serialized
+    // into dedicated columns so the worker can fire them after a
+    // restart (stacksjs/stacks#1883). Inline callbacks stay in the
+    // in-memory registry for process-local convenience — both
+    // mechanisms fire on completion.
     await storeBatchRecord({
       id: batchId,
       name: this.options.name || '',
@@ -181,6 +279,9 @@ export class PendingBatch {
       cancelled_at: null,
       created_at: new Date().toISOString().slice(0, 19).replace('T', ' '),
       finished_at: null,
+      then_handler: this.options.thenHandler ? JSON.stringify(this.options.thenHandler) : null,
+      catch_handler: this.options.catchHandler ? JSON.stringify(this.options.catchHandler) : null,
+      finally_handler: this.options.finallyHandler ? JSON.stringify(this.options.finallyHandler) : null,
     })
 
     // Register batch callbacks in memory
@@ -854,6 +955,73 @@ async function pruneBatchesFromRedis(olderThanHours: number): Promise<number> {
 }
 
 // =============================================================================
+// Persistent handler firing (stacksjs/stacks#1883)
+// =============================================================================
+
+/**
+ * Parse a JSON-serialized `PersistentBatchHandler` out of a batch
+ * row. Tolerates malformed JSON (logs once and returns null) so a
+ * legacy row with bad data doesn't crash the completion path.
+ */
+function parsePersistentHandler(raw: string | null | undefined): PersistentBatchHandler | null {
+  if (!raw) return null
+  try {
+    const parsed = JSON.parse(raw)
+    if (parsed && (parsed.kind === 'job' || parsed.kind === 'module'))
+      return parsed as PersistentBatchHandler
+    log.warn(`[Batch] handler JSON has unknown kind '${(parsed as { kind?: unknown })?.kind}' — skipping`)
+    return null
+  }
+  catch (err) {
+    log.warn(`[Batch] failed to parse persistent handler: ${(err as Error).message}`)
+    return null
+  }
+}
+
+/**
+ * Fire a persistent batch handler. Two shapes supported:
+ *
+ *   - `kind: 'job'`    — dispatches a queued job. Idempotent through
+ *                        the standard queue idempotency path if the
+ *                        caller also passed an idempotency key.
+ *   - `kind: 'module'` — imports the named module and invokes the
+ *                        named export. Synchronous-or-async function
+ *                        signature `(payload, batchId): unknown`.
+ *
+ * Errors are caught and logged — the batch already finished, and
+ * throwing here would corrupt the calling worker's view of completion.
+ */
+async function firePersistentHandler(
+  handler: PersistentBatchHandler,
+  batchId: string,
+): Promise<void> {
+  try {
+    if (handler.kind === 'job') {
+      const { Jobs } = await import('./job')
+      await Jobs.dispatch(handler.name, { ...(handler.payload as object | undefined ?? {}), _batchId: batchId })
+      return
+    }
+
+    // kind === 'module' — import + invoke. The user's handler signature
+    // is `(payload, batchId): unknown`. We swallow the return value.
+    const mod = await import(handler.module).catch((err) => {
+      log.warn(`[Batch] persistent handler module not found: ${handler.module} (${(err as Error).message})`)
+      return null
+    })
+    if (!mod) return
+    const fn = (mod as Record<string, unknown>)[handler.export]
+    if (typeof fn !== 'function') {
+      log.warn(`[Batch] persistent handler export '${handler.export}' is not a function on ${handler.module}`)
+      return
+    }
+    await (fn as (payload: unknown, batchId: string) => unknown)(handler.payload, batchId)
+  }
+  catch (err) {
+    log.error(`[Batch] persistent handler threw for batch ${batchId}:`, err)
+  }
+}
+
+// =============================================================================
 // Batch job lifecycle hooks (called from the worker)
 // =============================================================================
 
@@ -924,17 +1092,24 @@ export async function recordBatchJobCompletion(batchId: string): Promise<void> {
       // Events are optional
     }
 
-    if (callbacks) {
-      // Only fire "then" if no failures (or allowFailures is set)
-      const freshRecord = await getBatchRecord(batchId)
-      if (!freshRecord) {
-        removeBatchCallbacks(batchId)
-        return
-      }
-      const opts = JSON.parse(freshRecord.options || '{}')
-      const hasFailed = (freshRecord.failed_jobs || 0) > 0
+    // Read the fresh record once and use it for BOTH the
+    // in-memory callback gating AND the persistent-handler dispatch.
+    // The persistent path is independent of `callbacks` because the
+    // dispatching worker may have died — the in-memory registry can
+    // be empty here but the persistent handler columns still tell
+    // us what to fire (stacksjs/stacks#1883).
+    const freshRecord = await getBatchRecord(batchId)
+    if (!freshRecord) {
+      removeBatchCallbacks(batchId)
+      log.info(`[Batch] Batch ${batchId} finished (record vanished)`)
+      return
+    }
+    const opts = JSON.parse(freshRecord.options || '{}')
+    const hasFailed = (freshRecord.failed_jobs || 0) > 0
+    const succeeded = !hasFailed || opts.allowFailures
 
-      if (!hasFailed || opts.allowFailures) {
+    if (callbacks) {
+      if (succeeded) {
         for (const cb of callbacks.thenCallbacks) {
           try {
             await cb(dispatched)
@@ -954,9 +1129,24 @@ export async function recordBatchJobCompletion(batchId: string): Promise<void> {
         }
       }
 
-      // Clean up callbacks
+      // Clean up in-memory callbacks
       removeBatchCallbacks(batchId)
     }
+
+    // Persistent handlers (stacksjs/stacks#1883). Fired AFTER any
+    // in-memory callbacks so both mechanisms run for batches that
+    // registered both. Independent of `callbacks` — survives a
+    // worker restart between dispatch and completion.
+    if (succeeded) {
+      const thenHandler = parsePersistentHandler(freshRecord.then_handler)
+      if (thenHandler) await firePersistentHandler(thenHandler, batchId)
+    }
+    else {
+      const catchHandler = parsePersistentHandler(freshRecord.catch_handler)
+      if (catchHandler) await firePersistentHandler(catchHandler, batchId)
+    }
+    const finallyHandler = parsePersistentHandler(freshRecord.finally_handler)
+    if (finallyHandler) await firePersistentHandler(finallyHandler, batchId)
 
     log.info(`[Batch] Batch ${batchId} finished`)
   }
