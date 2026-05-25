@@ -7,6 +7,7 @@
 
 import { appPath } from '@stacksjs/path'
 import { env as envVars } from '@stacksjs/env'
+import { createEnvelope } from './envelope'
 import { hasDispatchedKey, recordDispatchedKey } from './idempotency'
 
 function getQueueDriver(): string {
@@ -203,11 +204,17 @@ class JobBuilder {
     const now = Math.floor(Date.now() / 1000)
     const availableAt = this.options.delay ? now + this.options.delay : now
 
-    const payloadObj = {
-      jobName: this.name,
-      payload: this.payload,
-      options: this.options,
-    }
+    // Unified envelope (stacksjs/stacks#1884 Q-6). Both database
+    // and redis drivers write through `createEnvelope` so a worker
+    // processing one driver can deserialize jobs queued under the
+    // other — fixes the silent in-flight job loss when teams
+    // switch QUEUE_DRIVER mid-flight.
+    const envelope = createEnvelope(this.name, this.payload, {
+      queue: this.options.queue,
+      timeout: this.options.timeout,
+      tries: this.options.tries,
+      backoff: this.options.backoff,
+    })
 
     const { db } = await import('@stacksjs/database')
 
@@ -215,7 +222,7 @@ class JobBuilder {
       .insertInto('jobs')
       .values({
         queue: this.options.queue || 'default',
-        payload: JSON.stringify(payloadObj),
+        payload: JSON.stringify(envelope),
         attempts: 0,
         reserved_at: null,
         available_at: availableAt,
@@ -241,11 +248,22 @@ class JobBuilder {
 
     const queue = new RedisQueue(this.options.queue || 'default', redisConfig)
 
+    // Same envelope shape as the database driver writes
+    // (stacksjs/stacks#1884 Q-6). bun-queue's `Queue.add(data, opts)`
+    // takes `data` as opaque `T` — wrapping the framework envelope
+    // inside is transparent to bun-queue. Options stay on bun-queue's
+    // separate opts arg AND inside the envelope so a worker reading
+    // the envelope sees the same retry/timeout/backoff config the
+    // bun-queue layer is already enforcing.
+    const envelope = createEnvelope(this.name, this.payload, {
+      queue: this.options.queue,
+      timeout: this.options.timeout,
+      tries: this.options.tries,
+      backoff: this.options.backoff,
+    })
+
     await queue.add(
-      {
-        jobName: this.name,
-        payload: this.payload,
-      } as any,
+      envelope,
       {
         delay: this.options.delay,
         maxTries: this.options.tries,

@@ -9,6 +9,7 @@ import type { Result } from '@stacksjs/error-handling'
 import { err, ok } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/logging'
 import process from 'node:process'
+import { parseEnvelope } from './envelope'
 
 // Prevent unhandled rejections from crashing the worker
 process.on('unhandledRejection', (reason, _promise) => {
@@ -621,56 +622,35 @@ async function raceWithTimeout<T>(task: Promise<T>, timeoutMs: number, message: 
  * silently leak typos like `payload.payload?.id` reading off undefined
  * properties without a TS hint. (stacksjs/stacks#1872 Q-9.)
  */
-interface JobEnvelope {
-  /** Stacks-native dispatch shape (from `Job.dispatch()`). */
-  jobName?: string
-  payload?: unknown
-  /** Legacy Laravel-style shape (`'App\\Jobs\\Foo'`). */
-  job?: string
-  data?: unknown
-  /** Per-job options the dispatcher attached. */
-  options?: { timeout?: number, tries?: number, backoff?: number | number[] }
-}
-
 /**
- * Narrow `unknown` to {@link JobEnvelope}. Rejects non-objects and
- * envelopes that have neither a `jobName` nor a `job` field — those
- * are unrecognisable shapes that the worker has nothing useful to do
- * with, so failing fast is better than silently dropping the job.
- */
-function asJobEnvelope(payload: unknown): JobEnvelope {
-  if (!payload || typeof payload !== 'object') {
-    throw new Error(`[queue] Job payload is not an object (got ${typeof payload})`)
-  }
-  const envelope = payload as JobEnvelope
-  if (!envelope.jobName && !envelope.job) {
-    throw new Error('[queue] Job payload has neither `jobName` nor `job` — unrecognised dispatch shape')
-  }
-  return envelope
-}
-
-/**
- * Execute a queued job payload. Accepts `unknown` and narrows on
- * entry so a malformed envelope surfaces as a clear error message
- * instead of `cannot read properties of undefined` deep inside the
- * handler. (stacksjs/stacks#1872 Q-9.)
+ * Execute a queued job payload. Accepts `unknown` and routes through
+ * the shared {@link parseEnvelope} (stacksjs/stacks#1884 Q-6) so the
+ * database and redis read paths use exactly the same deserializer.
+ *
+ * Three envelope shapes are accepted:
+ *   - **v1** — current shape, written by `createEnvelope`
+ *   - **v0 implicit** — pre-#1884 `{ jobName, payload, options? }`
+ *   - **Laravel legacy** — `{ job: 'App\\Jobs\\Foo', data }`
+ *
+ * An unknown-but-newer `envelopeVersion` returns an "unknown-version"
+ * error rather than processing — lets a rolling deploy with newer
+ * envelopes coexist with older workers that leave those rows for the
+ * newer build.
+ *
+ * Originally added under stacksjs/stacks#1872 Q-9 (payload validation
+ * at the worker boundary). The branching shape lived inline; the
+ * envelope module is the canonical place now.
  */
 async function executeJobPayload(payload: unknown): Promise<void> {
-  const envelope = asJobEnvelope(payload)
-
-  // Legacy Laravel-import shape from the migrator (App\Jobs\Foo).
-  if (typeof envelope.job === 'string' && envelope.job.startsWith('App\\Jobs\\')) {
-    const jobName = envelope.job.replace('App\\Jobs\\', '')
-    const { runJob } = await import('./job')
-    await runJob(jobName, { payload: envelope.data })
-    return
+  const parsed = parseEnvelope(payload)
+  if (!parsed.ok) {
+    throw new Error(
+      `[queue] Cannot deserialize job envelope: ${parsed.reason}`
+      + (parsed.detail ? ` (${parsed.detail})` : ''),
+    )
   }
-
-  // Native Stacks dispatch shape from `job(...)` / `Job.dispatch()`.
-  if (typeof envelope.jobName === 'string') {
-    const { runJob } = await import('./job')
-    await runJob(envelope.jobName, { payload: envelope.payload })
-  }
+  const { runJob } = await import('./job')
+  await runJob(parsed.envelope.jobName, { payload: parsed.envelope.payload })
 }
 
 /**
@@ -698,10 +678,24 @@ async function processJobsFromRedis(queueName: string, concurrency: number): Pro
     activeJobCount++
     tracker.markActive(workerId)
     const startTime = Date.now()
-    const data = bunJob.data
+    // Parse the bun-queue data shape through the same envelope
+    // parser the database driver uses (stacksjs/stacks#1884 Q-6).
+    // A worker reading redis jobs queued under the old shape (or
+    // database jobs migrated by an external tool into redis) will
+    // hit the parser's v0-implicit fallback rather than silently
+    // dropping the job because of a shape mismatch.
+    const parsed = parseEnvelope(bunJob.data)
+    if (!parsed.ok) {
+      activeJobCount--
+      tracker.markIdle(workerId)
+      log.error(`[Queue] Skipping Redis job ${bunJob.id} - unparseable envelope: ${parsed.reason}${parsed.detail ? ` (${parsed.detail})` : ''}`)
+      return
+    }
+    const data = parsed.envelope
 
-    // Check if this job belongs to a cancelled batch
-    const batchId = data?.payload?._batchId
+    // Check if this job belongs to a cancelled batch. `_batchId` is
+    // carried on the inner payload by the batch dispatcher.
+    const batchId = (data.payload as { _batchId?: string } | undefined)?._batchId
     if (batchId) {
       try {
         const { isBatchCancelled } = await import('./batch')
@@ -723,15 +717,8 @@ async function processJobsFromRedis(queueName: string, concurrency: number): Pro
     })
 
     try {
-      if (data?.jobName) {
-        const { runJob } = await import('./job')
-        await runJob(data.jobName, { payload: data.payload })
-      }
-      else if (data?.job && data.job.startsWith?.('App\\Jobs\\')) {
-        const jobName = data.job.replace('App\\Jobs\\', '')
-        const { runJob } = await import('./job')
-        await runJob(jobName, { payload: data.data })
-      }
+      const { runJob } = await import('./job')
+      await runJob(data.jobName, { payload: data.payload })
 
       tracker.recordCompletion(workerId)
       await emitQueueEvent('job:completed', {
