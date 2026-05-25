@@ -679,13 +679,17 @@ async function executeJobPayload(payload: unknown): Promise<void> {
 async function processJobsFromRedis(queueName: string, concurrency: number): Promise<void> {
   const { RedisQueue } = await import('./drivers/redis')
   const { queue: queueConfig } = await import('@stacksjs/config')
-  const redisConfig = (queueConfig as any)?.connections?.redis
+  // `queueConfig` is typed end-to-end as `StacksOptions['queue']`
+  // (stacksjs/stacks#1875 T-6) — the previous `as any` casts on the
+  // config read AND the RedisQueue constructor arg silently escaped
+  // that typing.
+  const redisConfig = queueConfig?.connections?.redis
 
   if (!redisConfig) {
     throw new Error('Redis queue connection is not configured. Check config/queue.ts')
   }
 
-  const queue = new RedisQueue(queueName, redisConfig as any)
+  const queue = new RedisQueue(queueName, redisConfig)
 
   const { emitQueueEvent, getWorkerTracker } = await import('./events')
   const tracker = getWorkerTracker()

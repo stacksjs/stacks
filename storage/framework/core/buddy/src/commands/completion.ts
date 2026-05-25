@@ -2,6 +2,16 @@ import type { CLI } from '@stacksjs/types'
 import process from 'node:process'
 import { log, onUnknownSubcommand } from "@stacksjs/cli"
 
+/**
+ * Options accepted by `buddy completion` (stacksjs/stacks#1875 T-7).
+ * Was `any` — replaced with an explicit shape so a future flag addition
+ * forces a type-check rather than silently extending an `any`.
+ */
+interface CompletionCommandOptions {
+  /** Shell flavour to emit script for. Mirrored from the positional arg. */
+  shell?: string
+}
+
 export function completion(buddy: CLI): void {
   const descriptions = {
     completion: 'Generate shell completion scripts',
@@ -15,14 +25,17 @@ export function completion(buddy: CLI): void {
     .example('buddy completion zsh')
     .example('buddy completion fish')
     .example('buddy completion bash > /usr/local/etc/bash_completion.d/buddy')
-    .action(async (shell: string, options: any) => {
+    .action(async (shell: string, options: CompletionCommandOptions) => {
       log.debug('Running `buddy completion` ...', options)
 
       const targetShell = shell || options.shell || 'bash'
 
-      // Get all commands from buddy
+      // Get all commands from buddy. `buddy.commands` is the cac CLI
+      // instance's command registry — typed as `Command[]` upstream
+      // but the import surface in @stacksjs/types narrows to the
+      // shape we actually consume.
       const commands = buddy.commands || []
-      const commandNames = commands.map((cmd: any) => cmd.name).filter(Boolean)
+      const commandNames = commands.map((cmd: { name?: string }) => cmd.name).filter(Boolean)
 
       switch (targetShell) {
         case 'bash':

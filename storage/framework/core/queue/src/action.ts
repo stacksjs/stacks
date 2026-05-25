@@ -200,13 +200,16 @@ export class Job {
   private async dispatchToRedis(payload?: any, opts?: { delay?: number }): Promise<void> {
     const { RedisQueue } = await import('./drivers/redis')
     const { queue: queueConfig } = await import('@stacksjs/config')
-    const redisConfig = (queueConfig as any)?.connections?.redis
+    // Typed end-to-end via `StacksOptions['queue']` —
+    // stacksjs/stacks#1875 T-6 dropped the `as any` cast that
+    // escaped that typing.
+    const redisConfig = queueConfig?.connections?.redis
 
     if (!redisConfig) {
       throw new Error('Redis queue connection is not configured. Check config/queue.ts')
     }
 
-    const queue = new RedisQueue(this.queue || 'default', redisConfig as any)
+    const queue = new RedisQueue(this.queue || 'default', redisConfig)
 
     await queue.add(
       {

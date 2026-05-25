@@ -656,20 +656,27 @@ async function pruneBatchesFromDatabase(olderThanHours: number): Promise<number>
 const REDIS_BATCH_PREFIX = 'stacks:batch:'
 const REDIS_BATCH_INDEX = 'stacks:batches'
 
+// The redis-helper functions below all read `queueConfig?.connections?.redis`
+// (and sometimes its nested `.redis`) directly off the typed config. The
+// previous pattern was `(queueConfig as any)?.connections?.redis?.redis`
+// which escaped every type check — stacksjs/stacks#1875 T-6 swept all such
+// casts so a future config-shape rename surfaces here at the type level
+// instead of crashing the redis path at runtime.
+
 async function getRedisClient(): Promise<any> {
   const { RedisQueue } = await import('./drivers/redis')
   const { queue: queueConfig } = await import('@stacksjs/config')
-  const redisConfig = (queueConfig as any)?.connections?.redis
+  const redisConfig = queueConfig?.connections?.redis
   if (!redisConfig) throw new Error('Redis queue connection is not configured')
   // Use a dedicated queue for batch management
-  return new RedisQueue('__batches__', redisConfig as any)
+  return new RedisQueue('__batches__', redisConfig)
 }
 
 async function storeBatchInRedis(record: BatchRecord): Promise<void> {
   try {
     const { createClient } = await import('redis')
     const { queue: queueConfig } = await import('@stacksjs/config')
-    const redisConfig = (queueConfig as any)?.connections?.redis?.redis
+    const redisConfig = queueConfig?.connections?.redis?.redis
     const url = redisConfig?.url || `redis://${redisConfig?.host || 'localhost'}:${redisConfig?.port || 6379}`
 
     const client = createClient({ url })
@@ -701,7 +708,7 @@ async function getBatchFromRedis(id: string): Promise<BatchRecord | null> {
   try {
     const { createClient } = await import('redis')
     const { queue: queueConfig } = await import('@stacksjs/config')
-    const redisConfig = (queueConfig as any)?.connections?.redis?.redis
+    const redisConfig = queueConfig?.connections?.redis?.redis
     const url = redisConfig?.url || `redis://${redisConfig?.host || 'localhost'}:${redisConfig?.port || 6379}`
 
     const client = createClient({ url })
@@ -735,7 +742,7 @@ async function getAllBatchesFromRedis(): Promise<BatchRecord[]> {
   try {
     const { createClient } = await import('redis')
     const { queue: queueConfig } = await import('@stacksjs/config')
-    const redisConfig = (queueConfig as any)?.connections?.redis?.redis
+    const redisConfig = queueConfig?.connections?.redis?.redis
     const url = redisConfig?.url || `redis://${redisConfig?.host || 'localhost'}:${redisConfig?.port || 6379}`
 
     const client = createClient({ url })
@@ -775,7 +782,7 @@ async function updateBatchInRedis(id: string, updates: Partial<BatchRecord>): Pr
   try {
     const { createClient } = await import('redis')
     const { queue: queueConfig } = await import('@stacksjs/config')
-    const redisConfig = (queueConfig as any)?.connections?.redis?.redis
+    const redisConfig = queueConfig?.connections?.redis?.redis
     const url = redisConfig?.url || `redis://${redisConfig?.host || 'localhost'}:${redisConfig?.port || 6379}`
 
     const client = createClient({ url })
@@ -800,7 +807,7 @@ async function deleteBatchFromRedis(id: string): Promise<void> {
   try {
     const { createClient } = await import('redis')
     const { queue: queueConfig } = await import('@stacksjs/config')
-    const redisConfig = (queueConfig as any)?.connections?.redis?.redis
+    const redisConfig = queueConfig?.connections?.redis?.redis
     const url = redisConfig?.url || `redis://${redisConfig?.host || 'localhost'}:${redisConfig?.port || 6379}`
 
     const client = createClient({ url })

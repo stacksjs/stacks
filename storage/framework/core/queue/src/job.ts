@@ -230,13 +230,16 @@ class JobBuilder {
   private async dispatchToRedis(): Promise<void> {
     const { RedisQueue } = await import('./drivers/redis')
     const { queue: queueConfig } = await import('@stacksjs/config')
-    const redisConfig = (queueConfig as any)?.connections?.redis
+    // `queueConfig` is typed as `StacksOptions['queue']` already — the
+    // previous `as any` cast (stacksjs/stacks#1875 T-6) escaped that
+    // typing so a config-shape rename would silently break here.
+    const redisConfig = queueConfig?.connections?.redis
 
     if (!redisConfig) {
       throw new Error('Redis queue connection is not configured. Check config/queue.ts')
     }
 
-    const queue = new RedisQueue(this.options.queue || 'default', redisConfig as any)
+    const queue = new RedisQueue(this.options.queue || 'default', redisConfig)
 
     await queue.add(
       {
