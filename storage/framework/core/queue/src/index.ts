@@ -22,6 +22,36 @@ export { Jobs, job, jobBatch, runJob } from './job'
 export { hasDispatchedKey, recordDispatchedKey } from './idempotency'
 
 // =============================================================================
+// Dead-letter queue + poison detection + circuit breaker
+// (stacksjs/stacks#1885, Q-13 from #1872)
+// =============================================================================
+export {
+  listDeadLetterJobs,
+  moveToDeadLetter,
+  purgeDeadLetterJobs,
+  retryDeadLetterJob,
+} from './dead-letter'
+export type { DeadLetterReason, DeadLetterRecord, ListDeadLetterFilter } from './dead-letter'
+export {
+  hashPayload,
+  isQuarantined,
+  listQuarantined,
+  quarantineJob,
+  recordFailureForPoison,
+  unquarantineJob,
+} from './poison'
+export type { PoisonConfig } from './poison'
+export {
+  isCircuitOpen,
+  listCircuitState,
+  pauseQueue,
+  recordCircuitFailure,
+  recordCircuitSuccess,
+  resumeQueue,
+} from './circuit-breaker'
+export type { CircuitBreakerConfig } from './circuit-breaker'
+
+// =============================================================================
 // Unified job envelope (stacksjs/stacks#1884 — Q-6 from #1872)
 // Single shape across database + redis drivers; back-compat parser
 // handles the pre-#1884 implicit-v0 shape and the Laravel-import

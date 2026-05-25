@@ -153,6 +153,52 @@ CREATE TABLE IF NOT EXISTS job_batches (
   catch_handler TEXT,
   finally_handler TEXT
 );
+
+-- Dead-letter queue (stacksjs/stacks#1885). Jobs that have already
+-- been retried and failed again land here instead of cycling back
+-- through the queue. \`reason\` distinguishes "repeat-failure" from
+-- "poison-detected" / "circuit-broken" for operator triage.
+CREATE TABLE IF NOT EXISTS dead_letter_jobs (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  uuid TEXT NOT NULL,
+  connection TEXT NOT NULL,
+  queue TEXT NOT NULL,
+  payload TEXT NOT NULL,
+  exception TEXT NOT NULL,
+  reason TEXT NOT NULL,
+  total_failures INTEGER NOT NULL DEFAULT 1,
+  first_failed_at DATETIME,
+  last_failed_at DATETIME,
+  dead_lettered_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Poison-message quarantine (stacksjs/stacks#1885). Tracks
+-- failure counts per (jobName + payload-hash) over a rolling
+-- window. When the count breaches the configured threshold, new
+-- dispatches of that exact job+payload combination go directly to
+-- the DLQ instead of the queue.
+CREATE TABLE IF NOT EXISTS job_quarantine (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  job_name TEXT NOT NULL,
+  payload_hash TEXT NOT NULL,
+  failure_count INTEGER NOT NULL DEFAULT 0,
+  window_start DATETIME DEFAULT CURRENT_TIMESTAMP,
+  quarantined_at DATETIME,
+  UNIQUE(job_name, payload_hash)
+);
+
+-- Per-queue circuit-breaker state (stacksjs/stacks#1885). Tracks
+-- success/failure counts in a rolling window so the worker can
+-- pause a queue with a sustained high failure rate. Reads + writes
+-- are best-effort; a missing row means "not tripped".
+CREATE TABLE IF NOT EXISTS queue_circuit_state (
+  queue_name TEXT PRIMARY KEY,
+  success_count INTEGER NOT NULL DEFAULT 0,
+  failure_count INTEGER NOT NULL DEFAULT 0,
+  window_start DATETIME DEFAULT CURRENT_TIMESTAMP,
+  paused_at DATETIME,
+  resume_at DATETIME
+);
 `
         }
         else if (driver === 'mysql') {
@@ -197,6 +243,40 @@ CREATE TABLE IF NOT EXISTS job_batches (
   catch_handler LONGTEXT,
   finally_handler LONGTEXT
 );
+
+-- DLQ + poison-quarantine + circuit-breaker (stacksjs/stacks#1885)
+CREATE TABLE IF NOT EXISTS dead_letter_jobs (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  uuid VARCHAR(255) NOT NULL,
+  connection VARCHAR(255) NOT NULL,
+  queue VARCHAR(255) NOT NULL,
+  payload LONGTEXT NOT NULL,
+  exception LONGTEXT NOT NULL,
+  reason VARCHAR(64) NOT NULL,
+  total_failures INT NOT NULL DEFAULT 1,
+  first_failed_at TIMESTAMP NULL,
+  last_failed_at TIMESTAMP NULL,
+  dead_lettered_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS job_quarantine (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  job_name VARCHAR(255) NOT NULL,
+  payload_hash VARCHAR(64) NOT NULL,
+  failure_count INT NOT NULL DEFAULT 0,
+  window_start TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  quarantined_at TIMESTAMP NULL,
+  UNIQUE KEY job_quarantine_unique (job_name, payload_hash)
+);
+
+CREATE TABLE IF NOT EXISTS queue_circuit_state (
+  queue_name VARCHAR(255) PRIMARY KEY,
+  success_count INT NOT NULL DEFAULT 0,
+  failure_count INT NOT NULL DEFAULT 0,
+  window_start TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  paused_at TIMESTAMP NULL,
+  resume_at TIMESTAMP NULL
+);
 `
         }
         else if (driver === 'postgres') {
@@ -240,6 +320,40 @@ CREATE TABLE IF NOT EXISTS job_batches (
   then_handler TEXT,
   catch_handler TEXT,
   finally_handler TEXT
+);
+
+-- DLQ + poison-quarantine + circuit-breaker (stacksjs/stacks#1885)
+CREATE TABLE IF NOT EXISTS dead_letter_jobs (
+  id SERIAL PRIMARY KEY,
+  uuid VARCHAR(255) NOT NULL,
+  connection VARCHAR(255) NOT NULL,
+  queue VARCHAR(255) NOT NULL,
+  payload TEXT NOT NULL,
+  exception TEXT NOT NULL,
+  reason VARCHAR(64) NOT NULL,
+  total_failures INTEGER NOT NULL DEFAULT 1,
+  first_failed_at TIMESTAMP,
+  last_failed_at TIMESTAMP,
+  dead_lettered_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS job_quarantine (
+  id SERIAL PRIMARY KEY,
+  job_name VARCHAR(255) NOT NULL,
+  payload_hash VARCHAR(64) NOT NULL,
+  failure_count INTEGER NOT NULL DEFAULT 0,
+  window_start TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  quarantined_at TIMESTAMP,
+  UNIQUE (job_name, payload_hash)
+);
+
+CREATE TABLE IF NOT EXISTS queue_circuit_state (
+  queue_name VARCHAR(255) PRIMARY KEY,
+  success_count INTEGER NOT NULL DEFAULT 0,
+  failure_count INTEGER NOT NULL DEFAULT 0,
+  window_start TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  paused_at TIMESTAMP,
+  resume_at TIMESTAMP
 );
 `
         }

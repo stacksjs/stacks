@@ -261,6 +261,16 @@ async function processJobsFromDatabase(initialQueues: string[], concurrency: num
       }
 
       for (const queueName of queues) {
+        // Circuit-breaker gate (stacksjs/stacks#1885). When a queue
+        // is paused (auto-trip or manual `queue:pause`), skip its
+        // job claim entirely until the cooldown expires. The breaker
+        // itself auto-clears once `resume_at` has passed.
+        try {
+          const { isCircuitOpen } = await import('./circuit-breaker')
+          if (await isCircuitOpen(queueName)) continue
+        }
+        catch { /* table missing or read failure — proceed without gating */ }
+
         let jobs: any[] = []
         try {
           jobs = await fetchPendingJobs(queueName, concurrency)
@@ -409,6 +419,13 @@ async function processJob(job: any): Promise<void> {
       await deleteJob(jobId)
       log.info(`[Queue] Job ${jobId} completed`)
       tracker.recordCompletion(workerId)
+      // Feed the circuit breaker so successful jobs offset failures
+      // in the rolling-window failure rate (stacksjs/stacks#1885).
+      try {
+        const { recordCircuitSuccess } = await import('./circuit-breaker')
+        await recordCircuitSuccess(job.queue ?? 'default')
+      }
+      catch { /* best-effort observability */ }
       await emitQueueEvent('job:completed', {
         jobId: String(jobId),
         queueName,
@@ -472,6 +489,21 @@ async function processJob(job: any): Promise<void> {
       }
       catch {
         log.info(`[Queue] Failed to delete failed job ${jobId}`)
+      }
+
+      // Poison-message detection + circuit-breaker accounting
+      // (stacksjs/stacks#1885). Both opt-in via their respective
+      // tables; missing tables = silent no-op so existing deploys
+      // aren't affected until they run the migration.
+      try {
+        const { recordFailureForPoison } = await import('./poison')
+        const { recordCircuitFailure } = await import('./circuit-breaker')
+        const jobName = parsedPayload?.jobName ?? 'unknown'
+        await recordFailureForPoison(jobName, parsedPayload?.payload)
+        await recordCircuitFailure(job.queue ?? 'default')
+      }
+      catch {
+        // Best-effort; failure-tracking is observability, not source-of-truth
       }
 
       // Track batch failure if this job belongs to a batch
