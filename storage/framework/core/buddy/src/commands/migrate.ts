@@ -1,5 +1,5 @@
 import type { CLI, MigrateOptions } from '@stacksjs/types'
-import { closeSync, existsSync, mkdirSync, openSync, readdirSync, rmSync } from 'node:fs'
+import { closeSync, existsSync, mkdirSync, openSync, readdirSync, readFileSync, rmSync } from 'node:fs'
 import process from 'node:process'
 import { intro, log, onUnknownSubcommand, outro } from "@stacksjs/cli"
 import { Action } from '@stacksjs/enums'
@@ -49,6 +49,34 @@ function acquireMigrationLock(): { acquired: boolean, release: () => void } {
       acquired: false,
       release: () => {/* never acquired, nothing to free */},
     }
+  }
+}
+
+/**
+ * Read + clear the marker file the migration subprocess wrote to
+ * communicate how many migrations actually ran. Returns `null` when
+ * the file is missing or malformed — callers fall back to the
+ * generic outro in that case.
+ *
+ * The subprocess writes this from `runDatabaseMigration` in
+ * `@stacksjs/database`. We delete after reading so a later command
+ * doesn't see stale state.
+ */
+function readMigrateMarker(): { appliedCount: number } | null {
+  const file = projectPath('.stacks/last-migrate-result.json')
+  if (!existsSync(file)) return null
+  try {
+    const raw = readFileSync(file, 'utf8')
+    const parsed = JSON.parse(raw) as { appliedCount?: unknown }
+    const n = typeof parsed.appliedCount === 'number' ? parsed.appliedCount : null
+    if (n === null || !Number.isFinite(n)) return null
+    return { appliedCount: Math.max(0, Math.floor(n)) }
+  }
+  catch {
+    return null
+  }
+  finally {
+    try { rmSync(file, { force: true }) } catch { /* ignore */ }
   }
 }
 
@@ -166,7 +194,21 @@ export function migrate(buddy: CLI): void {
 
       const APP_ENV = process.env.APP_ENV || 'local'
 
-      await outro(`Migrated your ${APP_ENV} database.${options.auth !== false ? ' (including auth tables)' : ''}`, {
+      // Pick a message that tells the user what actually happened.
+      // Pre-fix the outro always said "Migrated your <env> database"
+      // even when zero migrations ran — common when re-issuing the
+      // command after `migrate:fresh` or another `migrate`. The
+      // subprocess writes the applied count to a marker file we read
+      // here.
+      const marker = readMigrateMarker()
+      const authSuffix = options.auth !== false ? ' (including auth tables)' : ''
+      const outroMessage = marker == null
+        ? `Migrated your ${APP_ENV} database.${authSuffix}`
+        : marker.appliedCount === 0
+          ? `Nothing to migrate — your ${APP_ENV} database is already up to date.${authSuffix}`
+          : `Applied ${marker.appliedCount} migration${marker.appliedCount === 1 ? '' : 's'} to your ${APP_ENV} database.${authSuffix}`
+
+      await outro(outroMessage, {
         startTime: perf,
         useSeconds: true,
       })
@@ -259,7 +301,18 @@ export function migrate(buddy: CLI): void {
       if (options.seed) parts.push('seeded')
       const suffix = parts.length > 0 ? ` & ${parts.join(' & ')}` : ''
 
-      await outro(`All tables dropped successfully & migrated successfully${suffix}`, {
+      // Surface the applied count when the marker file is available
+      // — `migrate:fresh` drops the schema before migrating, so this
+      // is effectively the total migration count for the project.
+      // Useful confirmation that the rebuild matched expectations.
+      const marker = readMigrateMarker()
+      const countPhrase = marker == null
+        ? ''
+        : marker.appliedCount === 0
+          ? ' (0 applied — no migration files found?)'
+          : ` (${marker.appliedCount} migration${marker.appliedCount === 1 ? '' : 's'} applied)`
+
+      await outro(`All tables dropped successfully & migrated successfully${countPhrase}${suffix}`, {
         startTime: perf,
         useSeconds: true,
       })

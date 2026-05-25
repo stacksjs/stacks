@@ -475,6 +475,65 @@ async function restoreHiddenMigrations(hidden: Array<{ original: string, hidden:
 }
 
 /**
+ * Count how many migrations have been recorded as applied in the
+ * `migrations` table. Returns 0 when the table doesn't exist yet
+ * (fresh database, first ever migration) — bun-query-builder
+ * creates the table during the first `executeMigration` call.
+ *
+ * Used by {@link runDatabaseMigration} before + after the migration
+ * run so the caller can report `applied = afterCount - beforeCount`
+ * — distinguishes the "nothing to migrate" path from a real apply
+ * in the CLI outro (user-reported messaging gap).
+ */
+async function countAppliedMigrations(): Promise<number> {
+  try {
+    const row = await (db as any)
+      .selectFrom('migrations')
+      .select((eb: any) => eb.fn.count<number>('id').as('n'))
+      .executeTakeFirst()
+    if (!row) return 0
+    const n = Number(row.n ?? row.N ?? 0)
+    return Number.isFinite(n) ? n : 0
+  }
+  catch {
+    // Table doesn't exist yet — pre-first-migration state. Treat as
+    // zero so a fresh DB shows "applied N" on the first run rather
+    // than throwing here and pretending nothing happened.
+    return 0
+  }
+}
+
+/**
+ * Persist the last migration outcome for the CLI parent process to
+ * pick up. The migrate / migrate:fresh subprocesses run in a forked
+ * `bun` invocation and exit only with a status code, so the parent
+ * `buddy migrate` command has no in-process way to learn how many
+ * migrations actually ran. This marker file is the handoff.
+ *
+ * Buddy reads + deletes after the subprocess exits. Errors writing
+ * the marker are swallowed — the migration itself succeeded; failing
+ * to record the count just means the outro falls back to the
+ * generic "Migrated your <env> database." message.
+ */
+async function writeMigrateMarker(appliedCount: number): Promise<void> {
+  try {
+    const fs = await import('node:fs/promises')
+    const dir = path.projectPath('.stacks')
+    await fs.mkdir(dir, { recursive: true })
+    const file = `${dir}/last-migrate-result.json`
+    const body = JSON.stringify({
+      appliedCount,
+      completedAt: new Date().toISOString(),
+    })
+    await fs.writeFile(file, body, 'utf8')
+  }
+  catch {
+    // Don't fail the migration because we couldn't write a marker;
+    // the buddy CLI's outro will just use its generic fallback.
+  }
+}
+
+/**
  * Run database migrations
  */
 export async function runDatabaseMigration(): Promise<Result<string, Error>> {
@@ -518,12 +577,24 @@ export async function runDatabaseMigration(): Promise<Result<string, Error>> {
 
     const modelsDir = path.userModelsPath()
 
+    // Count applied-before so we can compute the delta after the
+    // migration run. Lets the buddy CLI distinguish "nothing to
+    // migrate" from "applied N" in the outro (user-reported
+    // messaging gap).
+    const appliedBefore = await countAppliedMigrations()
+
     // Execute existing migration files
     log.debug(`[migration] Running migrations from: ${modelsDir}`)
     await qbExecuteMigration(modelsDir)
 
-    log.debug(`Database migration completed in ${Date.now() - startedAt}ms.`)
-    return ok('Database migration completed.')
+    const appliedAfter = await countAppliedMigrations()
+    const appliedCount = Math.max(0, appliedAfter - appliedBefore)
+    await writeMigrateMarker(appliedCount)
+
+    log.debug(`Database migration completed in ${Date.now() - startedAt}ms (applied ${appliedCount}).`)
+    return ok(appliedCount === 0
+      ? 'Nothing to migrate.'
+      : `Applied ${appliedCount} migration${appliedCount === 1 ? '' : 's'}.`)
   }
   catch (error) {
     // Surface enough context for the user to act on the failure: which
