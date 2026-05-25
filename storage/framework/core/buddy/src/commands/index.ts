@@ -1,6 +1,7 @@
 export * from './about'
 export * from './auth'
 export * from './build'
+export * from './cd'
 export * from './changelog'
 export * from './clean'
 export * from './cloud'

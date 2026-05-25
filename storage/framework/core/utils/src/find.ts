@@ -8,17 +8,24 @@ import { log } from '@stacksjs/logging'
 
 const targetFileName = 'buddy' // The exact name of the target file
 
-const excludePatterns = [
+// Always-excluded — these are noise regardless of where the search root is.
+const alwaysExcludePatterns: Array<string | RegExp> = [
   'node_modules',
   'dist',
   'vendor',
   'storage/framework',
+  /.*out.*/, // exclude any folder with 'out' in the name
+  /.*\/\..*/, // exclude any folder that starts with a dot
+]
+
+// Home-dir noise — only excluded when the search defaults to `os.homedir()`.
+// If the caller passes an explicit `dir`, they've opted in to searching it
+// even when it lives under one of these paths (e.g. `~/Documents/Projects`).
+const homeOnlyExcludePatterns: string[] = [
   `${os.homedir()}/Documents`,
   `${os.homedir()}/Pictures`,
   `${os.homedir()}/Library`,
   `${os.homedir()}/.Trash`,
-  /.*out.*/, // exclude any folder with 'out' in the name
-  /.*\/\..*/, // exclude any folder that starts with a dot
 ]
 
 interface FindStacksProjectsOptions {
@@ -26,7 +33,12 @@ interface FindStacksProjectsOptions {
 }
 
 export async function findStacksProjects(dir?: string, options?: FindStacksProjectsOptions): Promise<string[]> {
+  const dirWasExplicit = !!dir
   dir = dir || os.homedir()
+
+  const excludePatterns: Array<string | RegExp> = dirWasExplicit
+    ? alwaysExcludePatterns
+    : [...alwaysExcludePatterns, ...homeOnlyExcludePatterns]
 
   if (!options?.quiet) {
     log.info(`Searching for Stacks projects in: ${italic(dir)}`)
@@ -38,7 +50,7 @@ export async function findStacksProjects(dir?: string, options?: FindStacksProje
     log.debug(`Excluding directories: ${excludePatterns.join(', ')}`)
   }
 
-  const foundProjects = await searchDirectory(dir)
+  const foundProjects = await searchDirectory(dir, excludePatterns)
 
   if (!foundProjects)
     throw new Error('No Stacks projects found')
@@ -49,7 +61,7 @@ export async function findStacksProjects(dir?: string, options?: FindStacksProje
 // this searches a dir for Stacks projects which we define
 // as a dir that contains a 'buddy' file and a 'storage'
 // dir with a 'framework/core/buddy' structure
-async function searchDirectory(directory: string): Promise<string[]> {
+async function searchDirectory(directory: string, excludePatterns: Array<string | RegExp>): Promise<string[]> {
   const foundProjects: string[] = []
   const isExcluded = excludePatterns.some(pattern =>
     typeof pattern === 'string' ? directory.includes(pattern) : pattern.test(directory),
@@ -91,7 +103,7 @@ async function searchDirectory(directory: string): Promise<string[]> {
       }
 
       // Accumulate results from recursive calls
-      const subDirProjects = await searchDirectory(fullPath)
+      const subDirProjects = await searchDirectory(fullPath, excludePatterns)
       foundProjects.push(...subDirProjects)
     }
   }

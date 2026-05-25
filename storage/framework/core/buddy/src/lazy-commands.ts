@@ -18,6 +18,7 @@ const commandRegistry: Record<string, CommandLoader> = {
   'add': { path: './commands/add.ts', exportName: 'add' },
   'auth': { path: './commands/auth.ts', exportName: 'auth' },
   'build': { path: './commands/build.ts', exportName: 'build' },
+  'cd': { path: './commands/cd.ts', exportName: 'cd' },
   'changelog': { path: './commands/changelog.ts', exportName: 'changelog' },
   'clean': { path: './commands/clean.ts', exportName: 'clean' },
   'cloud': { path: './commands/cloud.ts', exportName: 'cloud' },
