@@ -35,6 +35,39 @@ export interface StatEntry {
 }
 
 /**
+ * Result returned from `Storage.put()` (stacksjs/stacks#1888 S-8).
+ *
+ * Pre-fix `put()` returned `Promise<void>` — callers that wanted to
+ * record an etag for cache-invalidation or a size for storage-quota
+ * accounting had to issue a second `.stat()` round-trip. This shape
+ * carries the metadata back from the write itself.
+ *
+ * Fields beyond `path` are best-effort: drivers that don't expose
+ * (or can't cheaply compute) a value omit it rather than synthesizing
+ * a fake one. Callers should treat them as nullable.
+ */
+export interface PutResult {
+  /** Storage-relative path the file was written to. */
+  path: string
+  /** Bytes written. */
+  size: number
+  /** MIME type recorded for the write (driver-detected or caller-supplied). */
+  contentType?: string
+  /**
+   * Last-modified timestamp the driver reports for the written object,
+   * in milliseconds since epoch. Useful for cache-control headers and
+   * change detection without a follow-up `stat()`.
+   */
+  lastModified?: number
+  /**
+   * Driver-reported strong-validator (S3 ETag, content hash, etc.).
+   * Use for HTTP `If-None-Match` / `If-Match` conditional requests.
+   * Omitted by drivers that don't compute one.
+   */
+  etag?: string
+}
+
+/**
  * Directory listing entry
  */
 export interface DirectoryEntry {
@@ -214,8 +247,17 @@ export interface StorageAdapterConfig {
  * Base storage adapter interface
  */
 export interface StorageAdapter {
-  /** Write file contents */
-  write(path: string, contents: FileContents): Promise<void>
+  /**
+   * Write file contents. Returns a {@link PutResult} carrying the
+   * size + driver-reported metadata so callers don't need a follow-up
+   * `stat()` to record an etag / size against their domain models
+   * (stacksjs/stacks#1888 S-8).
+   *
+   * Drivers that can't cheaply produce a value omit it rather than
+   * synthesizing one — callers should treat the optional fields as
+   * nullable.
+   */
+  write(path: string, contents: FileContents): Promise<PutResult>
 
   /** Read file contents */
   read(path: string): Promise<FileContents>

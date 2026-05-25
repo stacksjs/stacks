@@ -8,6 +8,7 @@
  */
 
 import type { StorageManager } from './facade'
+import type { PutResult } from './types'
 
 /**
  * Optional metadata fields shared by every uploaded-file shape we
@@ -207,7 +208,7 @@ export async function putUploadedFile(
   manager: StorageManager,
   file: UploadedFileLike,
   opts: PutFileOptions,
-): Promise<{ path: string, url: string }> {
+): Promise<PutResult & { url: string }> {
   const disk = manager.disk(opts.disk)
 
   const baseName = await resolveFilename(file, opts.filename ?? 'uuid')
@@ -233,7 +234,11 @@ export async function putUploadedFile(
     contents = await opts.transform(contents)
   }
 
-  await disk.write(fullPath, contents)
+  // `disk.write()` now returns size/lastModified/contentType
+  // (stacksjs/stacks#1888 S-8) — surface that alongside the
+  // public URL so a single upload call carries everything a
+  // caller needs to persist against their domain model.
+  const written = await disk.write(fullPath, contents)
   const url = await disk.publicUrl(fullPath)
-  return { path: fullPath, url }
+  return { ...written, path: fullPath, url }
 }

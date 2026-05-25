@@ -21,9 +21,10 @@ import { resolve } from 'node:path'
 import process from 'node:process'
 import { filesystems, app as appConfig } from '@stacksjs/config'
 import { S3Client } from '@stacksjs/ts-cloud'
-import type { PresignedUploadUrl, PresignedUploadUrlOptions, SignedUrlOptions, StorageAdapter } from './types'
+import type { PresignedUploadUrl, PresignedUploadUrlOptions, PutResult, SignedUrlOptions, StatEntry, StorageAdapter } from './types'
 import { createLocalStorage } from './adapters/local'
 import { S3StorageAdapter } from './adapters/s3'
+import { parseDiskPath } from './path-sanitize'
 import { putUploadedFile } from './put-file'
 import type { PutFileOptions, UploadedFileLike } from './put-file'
 import type {
@@ -191,7 +192,7 @@ class StorageManager {
    * low-level overload — `Storage.put('logs/today.txt', text)` — stays
    * as-is for code that already has a path + bytes.
    */
-  async put(path: string, contents: string | Uint8Array | Buffer): Promise<void>
+  async put(path: string, contents: string | Uint8Array | Buffer): Promise<PutResult>
   /**
    * Write an `UploadedFile` (typically `req.file('avatar')` or one entry
    * from `req.files`) to a disk and return both the storage path and the
@@ -202,20 +203,100 @@ class StorageManager {
    * @example
    * ```ts
    * const file = req.file('avatar')!
-   * const { path, url } = await Storage.put(file, { disk: 'public', dir: 'avatars' })
-   * await db.updateTable('users').set({ avatar: url }).where('id', '=', userId).execute()
+   * const { path, url, size, etag } = await Storage.put(file, { disk: 'public', dir: 'avatars' })
+   * await db.updateTable('users').set({ avatar: url, avatar_size: size }).where('id', '=', userId).execute()
    * ```
    */
-  async put(file: UploadedFileLike, opts?: PutFileOptions): Promise<{ path: string, url: string }>
+  async put(file: UploadedFileLike, opts?: PutFileOptions): Promise<PutResult & { url: string }>
   async put(
     pathOrFile: string | UploadedFileLike,
     contentsOrOpts?: string | Uint8Array | Buffer | PutFileOptions,
-  ): Promise<void | { path: string, url: string }> {
+  ): Promise<PutResult | (PutResult & { url: string })> {
     if (typeof pathOrFile === 'string') {
+      // `write()` now returns PutResult with size/lastModified/contentType
+      // captured at the adapter (stacksjs/stacks#1888 S-8) — callers
+      // that want to record metadata against a domain model no longer
+      // need a follow-up `stat()` round-trip.
       return this.disk().write(pathOrFile, contentsOrOpts as string | Uint8Array | Buffer)
     }
     const opts = (contentsOrOpts as PutFileOptions | undefined) ?? {}
     return putUploadedFile(this, pathOrFile, opts)
+  }
+
+  /**
+   * Return the full {@link StatEntry} for a file (size, mime,
+   * lastModified, visibility, etc.) — convenience wrapper around the
+   * existing per-adapter `stat()`. Use this for callers that need
+   * multiple pieces of metadata in one round-trip; the granular
+   * `size()` / `mimeType()` / `lastModified()` helpers stay for code
+   * that just wants one field.
+   *
+   * stacksjs/stacks#1888 S-8.
+   */
+  async stat(path: string): Promise<StatEntry> {
+    return this.disk().stat(path)
+  }
+
+  /**
+   * Copy a file across disks using the `<disk>:<path>` reference form
+   * (stacksjs/stacks#1888 S-7). Same-disk copies use the adapter's
+   * native `copyFile()`. Cross-disk copies stream the contents from
+   * source to destination through a buffer.
+   *
+   * @example
+   * ```ts
+   * await Storage.copyAcross('s3:user-uploads/foo.jpg', 'local:processed/foo.jpg')
+   * await Storage.copyAcross('s3:src/bar.bin', 's3:dest/bar.bin') // native CopyObject path
+   * ```
+   *
+   * Future enhancement: same-bucket s3→s3 copies should issue
+   * CopyObject (no transit) — tracked alongside the streaming work
+   * in #1886.
+   */
+  async copyAcross(source: string, dest: string): Promise<PutResult> {
+    const src = parseDiskPath(source)
+    const dst = parseDiskPath(dest)
+
+    // Same-disk shortcut — use the adapter's native copy so the disk
+    // can pick the fastest path (S3 CopyObject, local fs.copyFile,
+    // etc.) without a read/write round-trip.
+    if (src.disk === dst.disk) {
+      const adapter = this.disk(src.disk)
+      await adapter.copyFile(src.path, dst.path)
+      return adapter.stat(dst.path).then(entry => ({
+        path: dst.path,
+        size: entry.size,
+        contentType: entry.mimeType,
+        lastModified: entry.lastModified,
+      }))
+    }
+
+    // Cross-disk: read from source then write to destination. The
+    // adapter's `read()` returns a Buffer / Uint8Array; we don't
+    // pre-stream because the streaming surface (#1886) doesn't exist
+    // yet. Once streaming lands, swap this for `getStream` +
+    // `putStream` so the whole file doesn't have to fit in memory.
+    const contents = await this.disk(src.disk).read(src.path)
+    return this.disk(dst.disk).write(dst.path, contents)
+  }
+
+  /**
+   * Move a file across disks. Equivalent to `copyAcross()` followed
+   * by deleting the source. Source delete is best-effort with a
+   * thrown error — the destination write is the commit point, so a
+   * dest-write failure aborts; a source-delete failure surfaces but
+   * the file has already been copied.
+   *
+   * @example
+   * ```ts
+   * await Storage.moveAcross('s3:user-uploads/foo.jpg', 'r2:archive/foo.jpg')
+   * ```
+   */
+  async moveAcross(source: string, dest: string): Promise<PutResult> {
+    const src = parseDiskPath(source)
+    const result = await this.copyAcross(source, dest)
+    await this.disk(src.disk).deleteFile(src.path)
+    return result
   }
 
   async get(path: string): Promise<string> {

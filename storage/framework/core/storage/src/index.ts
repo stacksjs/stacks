@@ -41,7 +41,8 @@ export type { SignedUrlOptions } from './types'
 // Path-sanitization helpers (used internally by S3 presignedUploadUrl;
 // also re-exported so user code can pre-validate input from request
 // bodies and surface 400s with a clean `PathSanitizeError`.)
-export { PathSanitizeError, sanitizePresignedDir, sanitizePresignedFilename } from './path-sanitize'
+export { parseDiskPath, PathSanitizeError, sanitizePresignedDir, sanitizePresignedFilename } from './path-sanitize'
+export type { ParsedDiskPath } from './path-sanitize'
 
 // MIME re-verification — server-side check that uploaded bytes match
 // the claimed content type. Run this after a presigned upload

@@ -10,6 +10,7 @@ import type {
   ListOptions,
   MimeTypeOptions,
   PublicUrlOptions,
+  PutResult,
   SignedUrlOptions,
   StatEntry,
   StorageAdapter,
@@ -39,7 +40,7 @@ export class BunStorageAdapter implements StorageAdapter {
     return resolved
   }
 
-  async write(path: string, contents: FileContents): Promise<void> {
+  async write(path: string, contents: FileContents): Promise<PutResult> {
     const fullPath = this.resolvePath(path)
     const dir = dirname(fullPath)
     await this.createDirectory(relative(this.root, dir))
@@ -80,6 +81,15 @@ export class BunStorageAdapter implements StorageAdapter {
         offset += chunk.length
       }
       await bunWrite(fullPath, result)
+    }
+
+    // Read back size + mtime via Bun.file — same shape as the local
+    // adapter (stacksjs/stacks#1888 S-8).
+    const written = file(fullPath)
+    return {
+      path,
+      size: written.size,
+      lastModified: written.lastModified,
     }
   }
 

@@ -8,6 +8,7 @@ import type {
   ListOptions,
   MimeTypeOptions,
   PublicUrlOptions,
+  PutResult,
   SignedUrlOptions,
   StatEntry,
   StorageAdapter,
@@ -92,7 +93,7 @@ export class InMemoryStorageAdapter implements StorageAdapter {
     }
   }
 
-  async write(path: string, contents: FileContents): Promise<void> {
+  async write(path: string, contents: FileContents): Promise<PutResult> {
     const normalized = this.normalizePath(path)
     const dirPath = this.getDirectoryPath(normalized)
 
@@ -102,13 +103,25 @@ export class InMemoryStorageAdapter implements StorageAdapter {
     }
 
     const data = await this.contentsToUint8Array(contents)
+    const lastModified = Date.now()
+    const mimeType = this.detectMimeType(normalized)
 
     this.files.set(normalized, {
       contents: data,
       visibility: 'private' as Visibility,
-      mimeType: this.detectMimeType(normalized),
-      lastModified: Date.now(),
+      mimeType,
+      lastModified,
     })
+
+    // Return the same metadata we stored — caller can use the
+    // returned size + lastModified without a separate stat() round-
+    // trip (stacksjs/stacks#1888 S-8).
+    return {
+      path: normalized,
+      size: data.length,
+      contentType: mimeType,
+      lastModified,
+    }
   }
 
   async read(path: string): Promise<FileContents> {

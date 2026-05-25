@@ -12,6 +12,7 @@ import type {
   ListOptions,
   MimeTypeOptions,
   PublicUrlOptions,
+  PutResult,
   SignedUrlOptions,
   StatEntry,
   StorageAdapter,
@@ -49,7 +50,7 @@ export class LocalStorageAdapter implements StorageAdapter {
     return resolved
   }
 
-  async write(path: string, contents: FileContents): Promise<void> {
+  async write(path: string, contents: FileContents): Promise<PutResult> {
     const fullPath = this.resolvePath(path)
     const dir = dirname(fullPath)
 
@@ -69,6 +70,17 @@ export class LocalStorageAdapter implements StorageAdapter {
       // ReadableStream
       const writeStream = createWriteStream(fullPath)
       await pipeline(contents as any, writeStream)
+    }
+
+    // Read back size + mtime in one syscall — cheaper than the
+    // caller doing a separate `Storage.stat()` round-trip and lets
+    // streaming writes (where size isn't known up front) still
+    // report the on-disk total. See stacksjs/stacks#1888 S-8.
+    const st = await stat(fullPath)
+    return {
+      path,
+      size: st.size,
+      lastModified: st.mtimeMs,
     }
   }
 

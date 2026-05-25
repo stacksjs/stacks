@@ -166,3 +166,83 @@ export function sanitizePresignedFilename(filename: string): string {
 
   return filename
 }
+
+/**
+ * Parsed `disk:path` reference returned by {@link parseDiskPath}.
+ */
+export interface ParsedDiskPath {
+  /** Storage disk name (e.g. `'s3'`, `'local'`, `'uploads'`). */
+  disk: string
+  /** Storage-relative path on that disk. */
+  path: string
+}
+
+/**
+ * Disk-name format. The framework accepts arbitrary alphanumeric +
+ * dash/underscore disk identifiers from `config/storage.ts` —
+ * mirror that here without being more restrictive.
+ */
+const DISK_NAME_RE = /^[a-z0-9_-]+$/i
+
+/**
+ * Parse a `disk:path` reference used by `Storage.copyAcross()` /
+ * `moveAcross()` (stacksjs/stacks#1888 S-7).
+ *
+ * Format: `<disk>:<path>` where:
+ *   - `<disk>` is an alphanumeric + dash/underscore disk name
+ *   - `<path>` is a storage-relative path (path-traversal /
+ *     null-byte / control-char checks applied)
+ *
+ * Throws {@link PathSanitizeError} on a malformed input — the
+ * cross-disk helpers turn that into a clear "bad source" / "bad
+ * dest" error rather than crashing inside the adapter.
+ *
+ * @example
+ * ```ts
+ * parseDiskPath('s3:user-uploads/foo.jpg')
+ * // → { disk: 's3', path: 'user-uploads/foo.jpg' }
+ * ```
+ */
+export function parseDiskPath(input: string): ParsedDiskPath {
+  if (typeof input !== 'string' || input.length === 0) {
+    throw new PathSanitizeError('disk-path reference is empty', 'empty')
+  }
+  if (input.includes('\0')) {
+    throw new PathSanitizeError('disk-path reference contains a null byte', 'null-byte')
+  }
+  const colonIdx = input.indexOf(':')
+  if (colonIdx <= 0 || colonIdx === input.length - 1) {
+    throw new PathSanitizeError(
+      `disk-path reference must use '<disk>:<path>' format, got '${input}'`,
+      'invalid-char',
+    )
+  }
+  const disk = input.slice(0, colonIdx)
+  const path = input.slice(colonIdx + 1)
+
+  if (!DISK_NAME_RE.test(disk)) {
+    throw new PathSanitizeError(
+      `disk name '${disk}' is invalid (alphanumeric + '-' / '_' only)`,
+      'invalid-char',
+    )
+  }
+
+  if (path.startsWith('/') || /^[A-Za-z]:[\\/]/.test(path)) {
+    throw new PathSanitizeError(`disk-path '${path}' is absolute`, 'absolute-path')
+  }
+  if (path.includes('\0')) {
+    throw new PathSanitizeError('disk-path contains a null byte', 'null-byte')
+  }
+  for (let i = 0; i < path.length; i++) {
+    const code = path.charCodeAt(i)
+    if (code < 0x20 || code === 0x7F) {
+      throw new PathSanitizeError(`disk-path contains a control character at index ${i}`, 'control-char')
+    }
+  }
+  const segments = path.split(/[/\\]/)
+  if (segments.some(seg => seg === '..')) {
+    throw new PathSanitizeError(`disk-path '${path}' contains a '..' segment`, 'traversal')
+  }
+
+  return { disk, path }
+}

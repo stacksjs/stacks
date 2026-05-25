@@ -10,6 +10,7 @@ import type {
   PresignedUploadUrl,
   PresignedUploadUrlOptions,
   PublicUrlOptions,
+  PutResult,
   SignedUrlOptions,
   StatEntry,
   StorageAdapter,
@@ -93,16 +94,29 @@ export class S3StorageAdapter implements StorageAdapter {
     }
   }
 
-  async write(path: string, contents: FileContents): Promise<void> {
+  async write(path: string, contents: FileContents): Promise<PutResult> {
     const key = this.prefixPath(path)
     const body = await this.contentsToBuffer(contents)
+    const contentType = this.detectMimeType(path)
 
+    // ts-cloud's putObject returns void today (the upstream SDK
+    // surface doesn't expose the PutObject response shape yet).
+    // We still report what we can compute locally — size + the
+    // contentType we sent — and synthesize lastModified from wall
+    // clock. ETag stays omitted until ts-cloud exposes the response.
     await this.client.putObject({
       bucket: this.bucket,
       key,
       body,
-      contentType: this.detectMimeType(path),
+      contentType,
     })
+
+    return {
+      path,
+      size: body.length,
+      contentType,
+      lastModified: Date.now(),
+    }
   }
 
   async read(path: string): Promise<FileContents> {
