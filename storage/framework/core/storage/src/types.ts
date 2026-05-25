@@ -35,6 +35,56 @@ export interface StatEntry {
 }
 
 /**
+ * Options for `Storage.getStream(path, options?)`
+ * (stacksjs/stacks#1886).
+ */
+export interface GetStreamOptions {
+  /** Abort signal — cancels the read mid-stream. */
+  signal?: AbortSignal
+}
+
+/**
+ * Options for `Storage.putStream(path, stream, options?)`
+ * (stacksjs/stacks#1886). All fields are optional; the S3 driver
+ * reads them to tune its multipart pipeline, other drivers
+ * generally only honor `contentType` and `signal`.
+ */
+export interface PutStreamOptions {
+  /**
+   * MIME type to record on the upload. Drivers that auto-detect
+   * from the path extension still use that as the default; this
+   * field overrides.
+   */
+  contentType?: string
+  /**
+   * Abort the upload mid-flight. On S3 this triggers
+   * AbortMultipartUpload so partial uploads don't accrue storage
+   * charges.
+   */
+  signal?: AbortSignal
+  /**
+   * S3 multipart part size in bytes. Default 5 MiB (S3's minimum
+   * part size except for the final part). Larger values reduce
+   * the per-part overhead at the cost of more buffered memory
+   * per concurrent upload. Capped at 5 GiB per S3's max part
+   * size.
+   */
+  partSize?: number
+  /**
+   * S3 multipart upload concurrency — how many parts to upload
+   * in parallel. Default 4. Higher values increase throughput on
+   * fast networks but use more memory (`concurrency * partSize`
+   * peak).
+   */
+  concurrency?: number
+  /**
+   * S3 multipart per-part retry attempts before aborting the
+   * whole upload. Default 3.
+   */
+  maxRetries?: number
+}
+
+/**
  * Result returned from `Storage.put()` (stacksjs/stacks#1888 S-8).
  *
  * Pre-fix `put()` returned `Promise<void>` — callers that wanted to
@@ -402,6 +452,38 @@ export interface StorageAdapter {
    * POST policies.
    */
   presignedUploadPolicy?(options: PresignedUploadPolicyOptions): Promise<PresignedUploadPolicy>
+
+  /**
+   * Read a file as a web-standard `ReadableStream<Uint8Array>`
+   * (stacksjs/stacks#1886). Use this for files that don't fit in
+   * memory — the alternative `read()` / `readToBuffer()` methods
+   * load the full contents up front.
+   *
+   * Drivers that genuinely can't stream (memory-only mocks) emit
+   * a single chunk via `new Response(buf).body` rather than
+   * advertising real streaming they can't deliver — the
+   * abstraction still works, but callers shouldn't expect
+   * partial-read behavior from those drivers.
+   */
+  getStream?(path: string, options?: GetStreamOptions): Promise<ReadableStream<Uint8Array>>
+
+  /**
+   * Write a web-standard `ReadableStream<Uint8Array>` to the
+   * adapter (stacksjs/stacks#1886). Returns the same
+   * {@link PutResult} shape as `write()` — size is reported as
+   * the byte count consumed from the stream.
+   *
+   * On S3, streams larger than the configured part size
+   * automatically use multipart upload (CreateMultipartUpload →
+   * UploadPart × N → CompleteMultipartUpload) so files up to 5TB
+   * are supported. Smaller streams use a single putObject for
+   * lower overhead.
+   *
+   * `options.signal` aborts the upload — on S3 that means
+   * issuing AbortMultipartUpload so partial uploads don't accrue
+   * billable storage.
+   */
+  putStream?(path: string, stream: ReadableStream<Uint8Array>, options?: PutStreamOptions): Promise<PutResult>
 
   /** Calculate file checksum */
   checksum(path: string, options?: ChecksumOptions): Promise<string>

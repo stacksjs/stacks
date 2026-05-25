@@ -21,7 +21,7 @@ import { resolve } from 'node:path'
 import process from 'node:process'
 import { filesystems, app as appConfig } from '@stacksjs/config'
 import { S3Client } from '@stacksjs/ts-cloud'
-import type { PresignedUploadPolicy, PresignedUploadPolicyOptions, PresignedUploadUrl, PresignedUploadUrlOptions, PutResult, SignedUrlOptions, StatEntry, StorageAdapter } from './types'
+import type { GetStreamOptions, PresignedUploadPolicy, PresignedUploadPolicyOptions, PresignedUploadUrl, PresignedUploadUrlOptions, PutResult, PutStreamOptions, SignedUrlOptions, StatEntry, StorageAdapter } from './types'
 import { createLocalStorage } from './adapters/local'
 import { S3StorageAdapter } from './adapters/s3'
 import { parseDiskPath } from './path-sanitize'
@@ -235,6 +235,58 @@ class StorageManager {
    */
   async stat(path: string): Promise<StatEntry> {
     return this.disk().stat(path)
+  }
+
+  /**
+   * Read a file as a web-standard `ReadableStream<Uint8Array>`
+   * (stacksjs/stacks#1886). Use this when the file might be too
+   * large to fit in memory — local / bun adapters stream from disk
+   * chunk-by-chunk; S3 currently buffers (single chunk) pending
+   * upstream chunked-read support.
+   *
+   * @example
+   * ```ts
+   * const stream = await Storage.getStream('exports/big.csv')
+   * for await (const chunk of stream) {
+   *   // process bytes
+   * }
+   * ```
+   */
+  async getStream(path: string, options?: GetStreamOptions): Promise<ReadableStream<Uint8Array>> {
+    const adapter = this.disk()
+    if (typeof adapter.getStream !== 'function') {
+      throw new Error(`[storage] disk '${this.config.default}' does not support getStream — adapter is missing the optional method`)
+    }
+    return adapter.getStream(path, options)
+  }
+
+  /**
+   * Stream a `ReadableStream<Uint8Array>` into the configured
+   * disk (stacksjs/stacks#1886). S3 automatically uses multipart
+   * upload for streams larger than `options.partSize` (default 5
+   * MiB), so files up to 5 TB work without buffering the whole
+   * body in memory.
+   *
+   * @example
+   * ```ts
+   * // Pipe a fetch response straight to S3
+   * const res = await fetch(remoteUrl)
+   * if (res.body)
+   *   await Storage.putStream('imports/data.csv', res.body)
+   *
+   * // Cross-disk pipe (combines #1888 with this PR)
+   * const src = await Storage.disk('local').getStream('big.csv')
+   * await Storage.disk('s3').putStream('archive/big.csv', src, {
+   *   partSize: 10 * 1024 * 1024, // 10 MiB parts for big files
+   * })
+   * ```
+   */
+  async putStream(path: string, stream: ReadableStream<Uint8Array>, options?: PutStreamOptions): Promise<PutResult> {
+    const adapter = this.disk()
+    if (typeof adapter.putStream !== 'function') {
+      throw new Error(`[storage] disk '${this.config.default}' does not support putStream — adapter is missing the optional method`)
+    }
+    return adapter.putStream(path, stream, options)
   }
 
   /**

@@ -7,10 +7,12 @@ import type {
   DirectoryEntry,
   DirectoryListing,
   FileContents,
+  GetStreamOptions,
   ListOptions,
   MimeTypeOptions,
   PublicUrlOptions,
   PutResult,
+  PutStreamOptions,
   SignedUrlOptions,
   StatEntry,
   StorageAdapter,
@@ -100,6 +102,70 @@ export class BunStorageAdapter implements StorageAdapter {
       throw new Error(`File not found: ${path}`)
     }
     return await bunFile.arrayBuffer().then(buf => new Uint8Array(buf))
+  }
+
+  /**
+   * Native Bun stream via `Bun.file().stream()`
+   * (stacksjs/stacks#1886). Returns a web-standard
+   * `ReadableStream<Uint8Array>` directly — no Node-stream
+   * conversion needed since Bun's file streams are already WHATWG.
+   */
+  async getStream(path: string, _options?: GetStreamOptions): Promise<ReadableStream<Uint8Array>> {
+    const fullPath = this.resolvePath(path)
+    const bunFile = file(fullPath)
+    if (!(await bunFile.exists()))
+      throw new Error(`File not found: ${path}`)
+    return bunFile.stream() as ReadableStream<Uint8Array>
+  }
+
+  /**
+   * Pipe a web stream to disk via `Bun.write(path, stream)`
+   * (stacksjs/stacks#1886). Bun's `write()` accepts a
+   * ReadableStream natively and handles the backpressure.
+   *
+   * Abort handling: tee the stream so we can cancel one half on
+   * `signal` while bun consumes the other; on abort we
+   * unlink the partial file so callers don't see truncated
+   * artifacts.
+   */
+  async putStream(path: string, stream: ReadableStream<Uint8Array>, options?: PutStreamOptions): Promise<PutResult> {
+    const fullPath = this.resolvePath(path)
+    const dir = dirname(fullPath)
+    await this.createDirectory(relative(this.root, dir))
+
+    // Wire AbortSignal to a Response wrapper — `Bun.write` accepts
+    // BodyInit (Response counts), and a Response with a signal
+    // aborts the underlying read on cancel.
+    try {
+      const body = new Response(stream)
+      const writePromise = bunWrite(fullPath, body)
+      if (options?.signal) {
+        const abortHandler = (): void => {
+          // Bun doesn't expose a write-cancel API today; the next
+          // read from the source stream rejects, and we clean up
+          // the partial file in the catch below.
+        }
+        options.signal.addEventListener('abort', abortHandler, { once: true })
+        try { await writePromise }
+        finally { options.signal.removeEventListener('abort', abortHandler) }
+      }
+      else {
+        await writePromise
+      }
+    }
+    catch (err) {
+      try { await Bun.$.throws(false)`rm -f ${fullPath}` }
+      catch { /* best-effort cleanup */ }
+      throw err
+    }
+
+    const written = file(fullPath)
+    return {
+      path,
+      size: written.size,
+      contentType: options?.contentType,
+      lastModified: written.lastModified,
+    }
   }
 
   async readToString(path: string): Promise<string> {

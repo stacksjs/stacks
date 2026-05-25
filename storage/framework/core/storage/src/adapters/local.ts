@@ -3,16 +3,19 @@ import { createHmac } from 'node:crypto'
 import { createReadStream, createWriteStream } from 'node:fs'
 import { access, chmod, constants, copyFile, lstat, mkdir, readdir, readFile, rename, rm, stat, unlink, writeFile } from 'node:fs/promises'
 import { basename, dirname, join, relative } from 'node:path'
+import { Readable } from 'node:stream'
 import { pipeline } from 'node:stream/promises'
 import type {
   ChecksumOptions,
   DirectoryEntry,
   DirectoryListing,
   FileContents,
+  GetStreamOptions,
   ListOptions,
   MimeTypeOptions,
   PublicUrlOptions,
   PutResult,
+  PutStreamOptions,
   SignedUrlOptions,
   StatEntry,
   StorageAdapter,
@@ -87,6 +90,62 @@ export class LocalStorageAdapter implements StorageAdapter {
   async read(path: string): Promise<FileContents> {
     const fullPath = this.resolvePath(path)
     return await readFile(fullPath)
+  }
+
+  /**
+   * Stream a file from disk (stacksjs/stacks#1886). Wraps Node's
+   * fs.createReadStream into a web-standard `ReadableStream<Uint8Array>`
+   * via `Readable.toWeb`, so callers get a portable type that
+   * pipes cleanly into other adapters' `putStream`.
+   *
+   * Memory footprint is per-chunk (Node defaults to 64 KiB) — the
+   * full file never sits in memory.
+   */
+  async getStream(path: string, options?: GetStreamOptions): Promise<ReadableStream<Uint8Array>> {
+    const fullPath = this.resolvePath(path)
+    // Existence check: createReadStream() is lazy, so a missing
+    // file only surfaces when the consumer reads. Throwing here
+    // matches the eager behavior of read() / readToBuffer().
+    await access(fullPath, constants.R_OK)
+    const nodeStream = createReadStream(fullPath, { signal: options?.signal })
+    return Readable.toWeb(nodeStream) as ReadableStream<Uint8Array>
+  }
+
+  /**
+   * Pipe a web stream into a file on disk
+   * (stacksjs/stacks#1886). Uses `Readable.fromWeb` to bridge
+   * back into Node's stream pipeline so backpressure flows
+   * correctly — the file write paces with the source.
+   *
+   * Cancels via `options.signal` propagate to both the read and
+   * write sides; the partial file gets removed on abort to avoid
+   * leaving truncated artifacts.
+   */
+  async putStream(path: string, stream: ReadableStream<Uint8Array>, options?: PutStreamOptions): Promise<PutResult> {
+    const fullPath = this.resolvePath(path)
+    const dir = dirname(fullPath)
+    await mkdir(dir, { recursive: true })
+
+    const nodeReadable = Readable.fromWeb(stream as unknown as Parameters<typeof Readable.fromWeb>[0])
+    const writeStream = createWriteStream(fullPath)
+    try {
+      await pipeline(nodeReadable, writeStream, { signal: options?.signal })
+    }
+    catch (err) {
+      // Clean up the partial file so subsequent reads don't see
+      // truncated content from a cancelled upload.
+      try { await unlink(fullPath) }
+      catch { /* best-effort cleanup */ }
+      throw err
+    }
+
+    const st = await stat(fullPath)
+    return {
+      path,
+      size: st.size,
+      contentType: options?.contentType,
+      lastModified: st.mtimeMs,
+    }
   }
 
   async readToString(path: string): Promise<string> {

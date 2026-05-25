@@ -57,7 +57,9 @@ export type { MimeVerifyResult } from './mime-verify'
 export { signS3PresignedPost } from './s3-presigned-post'
 export type { S3PresignedPostInput, S3PresignedPostResult } from './s3-presigned-post'
 export type {
+  GetStreamOptions,
   PresignedUploadPolicy,
   PresignedUploadPolicyOptions,
   PutResult,
+  PutStreamOptions,
 } from './types'

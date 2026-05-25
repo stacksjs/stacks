@@ -5,6 +5,7 @@ import type {
   ChecksumOptions,
   DirectoryListing,
   FileContents,
+  GetStreamOptions,
   ListOptions,
   MimeTypeOptions,
   PresignedUploadPolicy,
@@ -13,6 +14,7 @@ import type {
   PresignedUploadUrlOptions,
   PublicUrlOptions,
   PutResult,
+  PutStreamOptions,
   SignedUrlOptions,
   StatEntry,
   StorageAdapter,
@@ -24,6 +26,71 @@ import { normalizeExpiryToMilliseconds } from '../types'
 import { sanitizePresignedDir, sanitizePresignedFilename } from '../path-sanitize'
 import { signS3PresignedPost } from '../s3-presigned-post'
 import process from 'node:process'
+
+const S3_MIN_PART_SIZE = 5 * 1024 * 1024
+const S3_MAX_PART_SIZE = 5 * 1024 * 1024 * 1024
+
+function clampPartSize(requested: number): number {
+  if (!Number.isFinite(requested)) return S3_MIN_PART_SIZE
+  return Math.max(S3_MIN_PART_SIZE, Math.min(Math.floor(requested), S3_MAX_PART_SIZE))
+}
+
+/**
+ * Append-and-take byte buffer used by the multipart pipeline
+ * (stacksjs/stacks#1886). Holds incoming chunks until they reach
+ * the configured part size, then yields them as a single Uint8Array
+ * via `take(n)` or `flush()`.
+ */
+class ChunkBuffer {
+  private chunks: Uint8Array[] = []
+  private total = 0
+  constructor(_partSize: number) { /* size is advisory; the buffer grows as needed */ }
+  get length(): number { return this.total }
+  push(c: Uint8Array): void { this.chunks.push(c); this.total += c.length }
+  take(n: number): Uint8Array {
+    const out = new Uint8Array(n)
+    let written = 0
+    while (written < n && this.chunks.length > 0) {
+      const head = this.chunks[0]!
+      const need = n - written
+      if (head.length <= need) {
+        out.set(head, written)
+        written += head.length
+        this.chunks.shift()
+      }
+      else {
+        out.set(head.subarray(0, need), written)
+        this.chunks[0] = head.subarray(need)
+        written += need
+      }
+    }
+    this.total -= n
+    return out
+  }
+  flush(): Uint8Array {
+    const out = new Uint8Array(this.total)
+    let off = 0
+    for (const c of this.chunks) { out.set(c, off); off += c.length }
+    this.chunks = []
+    this.total = 0
+    return out
+  }
+}
+
+/**
+ * Has the promise already settled (either resolved or rejected)?
+ * Used by the multipart pipeline to prune the `inflight` array
+ * after `Promise.race` so it doesn't grow unbounded across the
+ * upload's lifetime.
+ */
+async function isSettled(p: Promise<unknown>): Promise<boolean> {
+  const sentinel = Symbol('pending')
+  const result = await Promise.race([
+    p.then(() => 'settled' as const, () => 'settled' as const),
+    Promise.resolve(sentinel),
+  ])
+  return result !== sentinel
+}
 
 /**
  * AWS S3 storage adapter using ts-cloud S3Client
@@ -163,6 +230,159 @@ export class S3StorageAdapter implements StorageAdapter {
 
     // getObject returns a string
     return Buffer.from(response)
+  }
+
+  /**
+   * Read an S3 object as a stream (stacksjs/stacks#1886).
+   *
+   * **Today**: ts-cloud's `getObjectBuffer` returns the full body
+   * as a single Buffer; we wrap that as a one-chunk
+   * `ReadableStream<Uint8Array>` so the interface is uniform
+   * across adapters. Memory budget is the full object size.
+   *
+   * **Tomorrow**: when ts-cloud exposes a true chunked-read API
+   * (or we direct-import the AWS SDK's GetObject stream), this
+   * implementation swaps to true chunked streaming without
+   * changing the caller signature.
+   */
+  async getStream(path: string, _options?: GetStreamOptions): Promise<ReadableStream<Uint8Array>> {
+    const key = this.prefixPath(path)
+    const buf = await this.client.getObjectBuffer(this.bucket, key)
+    if (!buf) throw new Error(`Failed to read file: ${path}`)
+    const bytes = new Uint8Array(buf)
+    return new ReadableStream<Uint8Array>({
+      start(controller) {
+        controller.enqueue(bytes)
+        controller.close()
+      },
+    })
+  }
+
+  /**
+   * Stream an upload to S3 with automatic single-PUT vs multipart
+   * selection (stacksjs/stacks#1886). Small streams (≤ part size)
+   * are buffered + sent via `putObject`; larger streams go through
+   * the CreateMultipartUpload → UploadPart × N →
+   * CompleteMultipartUpload pipeline so files up to 5 TB work.
+   *
+   * Part size defaults to 5 MiB (S3's minimum part size); cap at
+   * 5 GiB. Concurrency defaults to 4 parts uploading in parallel.
+   * Failed parts retry up to 3 times before the whole upload
+   * aborts via `AbortMultipartUpload` so partial-upload
+   * artifacts don't accrue storage charges.
+   */
+  async putStream(path: string, stream: ReadableStream<Uint8Array>, options?: PutStreamOptions): Promise<PutResult> {
+    const key = this.prefixPath(path)
+    const contentType = options?.contentType ?? this.detectMimeType(path)
+    const partSize = clampPartSize(options?.partSize ?? 5 * 1024 * 1024)
+    const concurrency = Math.max(1, Math.min(options?.concurrency ?? 4, 100))
+    const maxRetries = Math.max(0, options?.maxRetries ?? 3)
+    const signal = options?.signal
+
+    // Read enough to decide: small body (single PUT) or large (multipart).
+    // We buffer up to one part's worth before committing — if the stream
+    // closes within that window we avoid the multipart overhead.
+    const reader = stream.getReader()
+    let firstChunk: Uint8Array | null = null
+    let firstDone = false
+    {
+      const buf = new ChunkBuffer(partSize)
+      while (!firstDone && buf.length < partSize) {
+        if (signal?.aborted) {
+          try { reader.releaseLock() } catch { /* ignore */ }
+          throw new Error('aborted')
+        }
+        const { value, done } = await reader.read()
+        if (done) { firstDone = true; break }
+        if (value) buf.push(value)
+      }
+      firstChunk = buf.flush()
+    }
+
+    // Single-PUT path: stream fit inside one part.
+    if (firstDone) {
+      try { reader.releaseLock() } catch { /* ignore */ }
+      await this.client.putObject({
+        bucket: this.bucket,
+        key,
+        body: Buffer.from(firstChunk!),
+        contentType,
+      })
+      return { path, size: firstChunk!.length, contentType, lastModified: Date.now() }
+    }
+
+    // Multipart path. Initiate, upload-with-bounded-concurrency,
+    // complete. On any failure (including abort) we MUST issue
+    // AbortMultipartUpload so the partial parts don't accrue
+    // storage charges.
+    const { UploadId: uploadId } = await this.client.createMultipartUpload(this.bucket, key, { contentType })
+    const completedParts: Array<{ PartNumber: number, ETag: string }> = []
+    let totalBytes = 0
+    let partNumber = 1
+    const inflight: Array<Promise<void>> = []
+
+    const uploadOne = async (body: Uint8Array, n: number): Promise<void> => {
+      let attempt = 0
+      while (true) {
+        if (signal?.aborted) throw new Error('aborted')
+        try {
+          const { ETag } = await this.client.uploadPart(this.bucket, key, uploadId, n, Buffer.from(body))
+          completedParts.push({ PartNumber: n, ETag })
+          totalBytes += body.length
+          return
+        }
+        catch (err) {
+          if (attempt >= maxRetries) throw err
+          attempt += 1
+        }
+      }
+    }
+
+    try {
+      // Submit the first chunk (already buffered).
+      inflight.push(uploadOne(firstChunk!, partNumber++))
+      firstChunk = null
+
+      // Stream the rest, buffering to partSize before each upload.
+      const buf = new ChunkBuffer(partSize)
+      // eslint-disable-next-line no-constant-condition
+      while (true) {
+        if (signal?.aborted) throw new Error('aborted')
+        const { value, done } = await reader.read()
+        if (done) break
+        if (value) buf.push(value)
+        while (buf.length >= partSize) {
+          const part = buf.take(partSize)
+          // Bound concurrency: wait for the oldest in-flight task
+          // when at capacity before queuing the next.
+          if (inflight.length >= concurrency) {
+            await Promise.race(inflight.map((p, i) => p.then(() => i)))
+            for (let i = inflight.length - 1; i >= 0; i--) {
+              if (await isSettled(inflight[i]!)) inflight.splice(i, 1)
+            }
+          }
+          inflight.push(uploadOne(part, partNumber++))
+        }
+      }
+      try { reader.releaseLock() } catch { /* ignore */ }
+
+      // Drain any trailing bytes < partSize as the final part.
+      const tail = buf.flush()
+      if (tail.length > 0) inflight.push(uploadOne(tail, partNumber++))
+
+      await Promise.all(inflight)
+      completedParts.sort((a, b) => a.PartNumber - b.PartNumber)
+      await this.client.completeMultipartUpload(this.bucket, key, uploadId, completedParts)
+      return { path, size: totalBytes, contentType, lastModified: Date.now() }
+    }
+    catch (err) {
+      // Best-effort abort. The error from abortMultipartUpload is
+      // swallowed because the original error is more useful to
+      // the caller.
+      try { await this.client.abortMultipartUpload(this.bucket, key, uploadId) }
+      catch { /* best-effort */ }
+      throw err
+    }
   }
 
   async readToString(path: string): Promise<string> {
