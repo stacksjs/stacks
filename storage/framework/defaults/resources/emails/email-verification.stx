@@ -1,0 +1,84 @@
+<script server>
+// Email-verification message — sent after sign-up so the user confirms ownership of the address.
+const appName = props.appName || 'Stacks'
+const verificationUrl = props.verificationUrl || '#'
+const expiryMinutes = props.expiryMinutes || 60
+const userName = props.userName || 'there'
+const primaryColor = props.primaryColor || '#3451b2'
+const primaryColorDark = props.primaryColorDark || '#2a4198'
+const subject = props.subject || `Verify your email for ${appName}`
+const year = props.year || new Date().getFullYear()
+</script>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>{{ subject }}</title>
+  <!--[if mso]>
+  <noscript><xml><o:OfficeDocumentSettings><o:PixelsPerInch>96</o:PixelsPerInch></o:OfficeDocumentSettings></xml></noscript>
+  <![endif]-->
+  <style>
+    body, table, td, p, a, li, blockquote { -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
+    table, td { mso-table-lspace: 0pt; mso-table-rspace: 0pt; }
+    img { -ms-interpolation-mode: bicubic; border: 0; height: auto; line-height: 100%; outline: none; text-decoration: none; }
+    body { height: 100% !important; margin: 0 !important; padding: 0 !important; width: 100% !important; }
+    .button { display: inline-block; padding: 14px 32px; background-color: {{ primaryColor }}; color: #ffffff !important; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 16px; text-align: center; }
+    .button:hover { background-color: {{ primaryColorDark }}; }
+    @media only screen and (max-width: 600px) {
+      .container { width: 100% !important; padding: 20px !important; }
+      .content { padding: 24px !important; }
+      .button { display: block !important; width: 100% !important; }
+    }
+  </style>
+</head>
+<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f4f4f5; line-height: 1.6;">
+  <table role="presentation" cellpadding="0" cellspacing="0" style="width: 100%; border-collapse: collapse;">
+    <tr>
+      <td style="padding: 40px 20px;">
+        <table role="presentation" cellpadding="0" cellspacing="0" class="container" style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);">
+          <tr>
+            <td style="background-color: {{ primaryColor }}; padding: 30px 40px; text-align: center;">
+              <h1 style="margin: 0; color: #ffffff; font-size: 24px; font-weight: 600;">{{ appName }}</h1>
+            </td>
+          </tr>
+          <tr>
+            <td class="content" style="padding: 40px;">
+              <h2 style="margin: 0 0 20px; color: #111827; font-size: 20px; font-weight: 600;">Verify Your Email Address</h2>
+
+              <p style="margin: 0 0 20px; color: #4b5563; font-size: 16px;">Hi {{ userName }}, please verify your email address to complete your <strong>{{ appName }}</strong> account setup. Click the button below to verify.</p>
+
+              <table role="presentation" cellpadding="0" cellspacing="0" style="margin: 30px 0;">
+                <tr>
+                  <td>
+                    <a href="{{ verificationUrl }}" class="button">Verify Email Address</a>
+                  </td>
+                </tr>
+              </table>
+
+              <p style="margin: 0 0 20px; color: #6b7280; font-size: 14px;">This verification link will expire in <strong>{{ expiryMinutes }} minutes</strong>.</p>
+
+              <p style="margin: 0 0 20px; color: #6b7280; font-size: 14px;">If you did not create an account, please ignore this email.</p>
+
+              <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
+
+              <p style="margin: 0; color: #9ca3af; font-size: 12px;">If the button above doesn't work, copy and paste the following URL into your browser:</p>
+              <p style="margin: 10px 0 0; word-break: break-all;">
+                <a href="{{ verificationUrl }}" style="color: {{ primaryColor }}; font-size: 12px;">{{ verificationUrl }}</a>
+              </p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 20px 40px; background-color: #f9fafb; border-top: 1px solid #e5e7eb;">
+              <p style="margin: 0; color: #6b7280; font-size: 12px; text-align: center;">This is an automated message from {{ appName }}. Please do not reply to this email.</p>
+              <p style="margin: 10px 0 0; color: #9ca3af; font-size: 11px; text-align: center;">&copy; {{ year }} {{ appName }}. All rights reserved.</p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

@@ -277,13 +277,15 @@ export async function template(
     return { html: '', text: '' }
   }
 
-  // Use STX engine for .stx templates
+  // Use STX engine for .stx templates. `renderEmail` is the public
+  // entry point from `@stacksjs/stx` (re-exported through the package
+  // root) that handles the full <script server> + props + layout
+  // chain. Dynamic import so test runs / CLI scripts that never load
+  // an email template pay zero startup cost for the stx graph.
   if (resolved.type === 'stx') {
     try {
-      // @ts-ignore - renderEmail may not be exported yet from stx
       const { renderEmail } = await import('@stacksjs/stx')
-      const result = await renderEmail(resolved.path, allVariables)
-      return result
+      return await renderEmail(resolved.path, allVariables)
     }
     catch (error: unknown) {
       log.warn(`[email] STX template rendering failed for ${templateName}: ${error instanceof Error ? error.message : String(error)}`)
