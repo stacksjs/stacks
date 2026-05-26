@@ -119,7 +119,7 @@ export class Email {
   }
 }
 
-class Mail {
+export class Mail {
   private drivers: Map<string, EmailDriver> = new Map()
   private defaultDriver: string
 
