@@ -359,20 +359,31 @@ describe('Action class uses smart InferRequest for model-aware handlers', () => 
 
   test('defines InferRequest type that uses _isStacksModel discriminator', () => {
     const content = readFileSync(actionFile, 'utf-8')
-    expect(content).toContain('InferRequest<TModel>')
+    // Post stacksjs/stacks#1851 the alias takes three generics
+    // (TModel, TValidations, TPath); accept either the original
+    // single-generic shape or the current multi-generic one so this
+    // assertion stays useful without breaking on each refactor.
+    expect(content).toMatch(/type InferRequest<TModel[^=>]*>/)
     expect(content).toContain('_isStacksModel')
-    expect(content).toContain('RequestInstance<TModel>')
-    expect(content).toContain('RequestInstance')
+    // The RequestInstance instantiation now wraps `ResolveBody<TModel,
+    // TValidations>`; pin the structural shape via regex rather than
+    // a literal string.
+    expect(content).toMatch(/RequestInstance<[^>]*TModel[^>]*>/)
   })
 
   test('Action class is generic over TModel', () => {
     const content = readFileSync(actionFile, 'utf-8')
-    expect(content).toContain('class Action<TModel')
+    // Class header is multi-line — allow whitespace/newlines between
+    // `Action<` and the first `TModel` generic.
+    expect(content).toMatch(/class Action<\s*TModel/)
   })
 
   test('handle method uses InferRequest<TModel> for request type', () => {
     const content = readFileSync(actionFile, 'utf-8')
-    expect(content).toContain('handle: (request: InferRequest<TModel>)')
+    // Same multi-generic accommodation as above. The signature wraps
+    // across lines, so allow whitespace between `handle: (` and the
+    // typed `request:` parameter.
+    expect(content).toMatch(/handle:\s*\(\s*request: InferRequest<TModel[^>]*>/)
   })
 
   test('model property is stored as string for runtime', () => {
@@ -431,7 +442,10 @@ describe('RequestInstance<TFields> is generic with model-aware narrowing', () =>
 
   test('RequestInstance has TFields generic parameter', () => {
     const content = readFileSync(requestFile, 'utf-8')
-    expect(content).toContain('interface RequestInstance<TFields extends Record<string, any>')
+    // The interface header is now wrapped across multiple lines and
+    // takes a second TParams generic for typed path params; match
+    // the structure tolerantly.
+    expect(content).toMatch(/interface RequestInstance<\s*TFields extends Record<string, any>/)
   })
 
   test('TFields defaults to Record<string, any> for backward compatibility', () => {

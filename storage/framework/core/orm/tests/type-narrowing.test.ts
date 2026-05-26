@@ -169,10 +169,13 @@ describe('Action class InferRequest type resolution', () => {
   const content = readFileSync(actionFile, 'utf-8')
 
   test('InferRequest resolves RequestInstance<TModel> when _isStacksModel is true', () => {
-    // Pattern: TModel extends { _isStacksModel: true } ? RequestInstance<TModel> : RequestInstance
-    expect(content).toContain("TModel extends { _isStacksModel: true }")
-    expect(content).toContain('? RequestInstance<TModel>')
-    expect(content).toContain(': RequestInstance')
+    // Discriminator stays as a literal string — it's the load-bearing
+    // marker. The InferRequest body now routes through `ResolveBody<
+    // TModel, TValidations>` instead of `TModel` directly, so match
+    // the structural shape (RequestInstance<…something with TModel…>)
+    // rather than the exact one-arg form.
+    expect(content).toContain('TModel extends { _isStacksModel: true }')
+    expect(content).toMatch(/RequestInstance<[^>]*TModel[^>]*>/)
   })
 
   test('ActionOptions model property accepts object references', () => {
@@ -181,12 +184,16 @@ describe('Action class InferRequest type resolution', () => {
   })
 
   test('Action handle uses InferRequest', () => {
-    expect(content).toContain('handle: (request: InferRequest<TModel>)')
+    // Post stacksjs/stacks#1851 InferRequest is three-generic
+    // (TModel, TValidations, TPath) and the signature wraps across
+    // lines; match tolerantly.
+    expect(content).toMatch(/handle:\s*\(\s*request: InferRequest<TModel[^>]*>/)
   })
 
   test('falls back to bare RequestInstance when model is a string', () => {
-    // Default TModel = string, which doesn't have _isStacksModel
-    expect(content).toMatch(/class Action<TModel = string>/)
+    // Default TModel = string. Header is multi-line, so match the
+    // structural shape rather than a single-line regex.
+    expect(content).toMatch(/class Action<\s*TModel\s*=\s*string/)
   })
 })
 
