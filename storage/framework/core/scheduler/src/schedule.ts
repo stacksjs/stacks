@@ -173,7 +173,7 @@ export class Schedule implements UntimedSchedule {
 
   at(time: string): TimedSchedule {
     const parts = time.split(':')
-    if (parts.length !== 2) {
+    if (parts.length !== 2 || parts[0] === '' || parts[1] === '') {
       throw new Error(`Invalid time format "${time}". Expected "HH:MM" (e.g., "14:30")`)
     }
     const [hour, minute] = parts.map(Number) as [number | undefined, number | undefined]
