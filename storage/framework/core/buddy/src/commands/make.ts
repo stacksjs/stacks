@@ -15,6 +15,7 @@ import {
   makeFunction,
   makeJob,
   makeLanguage,
+  makeMail,
   makePage,
   makePolicy,
   makeQueueTable,
@@ -42,6 +43,7 @@ export function make(buddy: CLI): void {
     migration: 'Create a new migration',
     factory: 'Create a new factory',
     notification: 'Create a new notification',
+    mail: 'Create a new Mailable + companion stx template',
     policy: 'Create a new authorization policy',
     resource: 'Create a new API resource',
     name: 'The name of the action',
@@ -114,6 +116,9 @@ export function make(buddy: CLI): void {
             break
           case 'language':
             await makeLanguage(options)
+            break
+          case 'mail':
+            await makeMail(options as any)
             break
           case 'migration':
             await createMigration(options)
@@ -410,6 +415,37 @@ export function make(buddy: CLI): void {
       }
 
       await createModel(options)
+    })
+
+  buddy
+    .command('make:mail [name]', descriptions.mail)
+    .option('-n, --name [name]', descriptions.name, { default: false })
+    .option('-f, --force', 'Overwrite existing files', { default: false })
+    .option('-p, --project [project]', descriptions.project, { default: false })
+    .option('--verbose', descriptions.verbose, { default: false })
+    .example('buddy make:mail OrderShipped')
+    .example('buddy make:mail welcome-back  // PascalCases to WelcomeBack, kebab-cases to welcome-back')
+    .example('buddy make:mail Welcome --force  // overwrite existing files')
+    .action(async (name: string, options: MakeOptions & { force?: boolean }) => {
+      log.debug('Running `buddy make:mail` ...', options)
+
+      const perf = await intro('buddy make:mail')
+
+      name = name ?? options.name
+      options.name = name
+
+      if (!name) {
+        log.error('You need to specify a name (e.g. `buddy make:mail OrderShipped`).')
+        process.exit(ExitCode.FatalError)
+      }
+
+      await makeMail(options as any)
+
+      await outro(`Created your ${italic(name)} mailable.`, {
+        startTime: perf,
+        useSeconds: true,
+      })
+      process.exit(ExitCode.Success)
     })
 
   buddy

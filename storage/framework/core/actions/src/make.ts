@@ -1,6 +1,7 @@
 import type { MakeOptions } from '@stacksjs/types'
 import type { TemplateKey } from './templates'
 import process from 'node:process'
+import { existsSync } from 'node:fs'
 import { italic, runCommand } from '@stacksjs/cli'
 import { ExitCode } from '@stacksjs/types'
 import { localUrl } from '@stacksjs/config'
@@ -9,7 +10,7 @@ import { handleError } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/logging'
 import { frameworkPath, path as p, resolve } from '@stacksjs/path'
 import { createFolder, doesFolderExist, writeTextFile } from '@stacksjs/storage'
-import { template } from '@stacksjs/strings'
+import { kebabCase, pascalCase, template } from '@stacksjs/strings'
 import { runAction } from './helpers'
 import { CODE_TEMPLATES } from './templates'
 
@@ -224,6 +225,82 @@ export async function makeNotification(options: MakeOptions): Promise<void> {
   }
   catch (error) {
     log.error('There was an error creating your notification', error)
+    process.exit(ExitCode.FatalError)
+  }
+}
+
+/**
+ * Scaffold a Mailable + companion stx template
+ * (stacksjs/stacks#1899, A2 from #1904). Pairs:
+ *
+ *   app/Mail/<PascalName>.ts          ← Mailable subclass
+ *   resources/emails/<kebab-name>.stx ← stx template the Mailable resolves
+ *
+ * The name flows through both files: PascalCase for the class, kebab-case
+ * for the template (matching the convention the framework's bundled
+ * emails use — `welcome.stx`, `password-reset.stx`, etc.).
+ *
+ * Idempotent — refuses to overwrite either file when it already exists
+ * unless `options.force` is true. The reason: an accidental
+ * `buddy make:mail Welcome` against a project that already has a
+ * customized `Welcome` mailable would silently nuke the customization
+ * otherwise.
+ */
+export async function createMail(options: MakeOptions & { force?: boolean }): Promise<boolean> {
+  const rawName = String(options.name || '').trim()
+  if (!rawName) {
+    log.error('A mail name is required (e.g. `buddy make:mail OrderShipped`).')
+    return false
+  }
+  const className = pascalCase(rawName)
+  const kebabName = kebabCase(rawName)
+
+  const mailPath = p.userMailPath(`${className}.ts`)
+  const templatePath = p.userEmailsPath(`${kebabName}.stx`)
+
+  // Bail BEFORE writing either file so a partial scaffold can't leave
+  // an orphaned class without its template (or vice versa) when the
+  // user re-runs against a project that already has one of the two.
+  // `console.error` (not log.error) so the message lands on stderr
+  // before the upstream process.exit fires — the framework logger
+  // batches via timers and can lose the final write on rapid exit.
+  if (!options.force) {
+    if (existsSync(mailPath)) {
+      console.error(`${italic(mailPath)} already exists — re-run with --force to overwrite.`)
+      return false
+    }
+    if (existsSync(templatePath)) {
+      console.error(`${italic(templatePath)} already exists — re-run with --force to overwrite.`)
+      return false
+    }
+  }
+
+  if (!doesFolderExist(p.userMailPath()))
+    await createFolder(p.userMailPath())
+  if (!doesFolderExist(p.userEmailsPath()))
+    await createFolder(p.userEmailsPath())
+
+  try {
+    await createFileWithTemplate(mailPath, 'mail', className, kebabName)
+    await createFileWithTemplate(templatePath, 'mailTemplate', className, kebabName)
+    return true
+  }
+  catch (error) {
+    handleError('Error creating mailable', error)
+    return false
+  }
+}
+
+export async function makeMail(options: MakeOptions & { force?: boolean }): Promise<void> {
+  try {
+    const name = options.name
+    log.info(`Creating your ${italic(name)} mailable...`)
+    const ok = await createMail(options)
+    if (!ok) process.exit(ExitCode.FatalError)
+    log.success(`Created ${italic(pascalCase(name))} mailable + ${italic(kebabCase(name))}.stx template`)
+  }
+  catch (error) {
+    log.error('There was an error creating your mailable', error)
     process.exit(ExitCode.FatalError)
   }
 }

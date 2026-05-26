@@ -170,6 +170,35 @@ export function userNotificationsPath(path?: string): string {
   return appPath(`Notifications/${path || ''}`)
 }
 
+/**
+ * Returns the path to the user-defined `Mail` directory.
+ *
+ * Mailable classes live here, one file per email type. The companion
+ * stx template lives in `resources/emails/<kebab-name>.stx` and is
+ * resolved by `@stacksjs/email`'s template loader at send time.
+ *
+ * @param path - The relative path to the file or directory within the `Mail` directory.
+ * @returns The absolute path to the specified file or directory within the user-defined `Mail` directory.
+ * @example
+ * ```ts
+ * import { userMailPath } from '@stacksjs/path'
+ *
+ * console.log(userMailPath('Welcome.ts')) // Outputs the absolute path to 'Welcome.ts' within the user-defined `Mail` directory.
+ * ```
+ */
+export function userMailPath(path?: string): string {
+  return appPath(`Mail/${path || ''}`)
+}
+
+/**
+ * Returns the path to the user-defined `resources/emails` directory
+ * where stx email templates live. The make:mail scaffolder writes a
+ * companion stx file alongside each Mailable class.
+ */
+export function userEmailsPath(path?: string): string {
+  return resourcesPath(`emails/${path || ''}`)
+}
+
 export function userDatabasePath(path?: string): string {
   return projectPath(`database/${path || ''}`)
 }
@@ -1522,6 +1551,8 @@ export interface Path {
   userMiddlewarePath: (path?: string) => string
   userModelsPath: (path?: string) => string
   userNotificationsPath: (path?: string) => string
+  userMailPath: (path?: string) => string
+  userEmailsPath: (path?: string) => string
   utilsPath: (path?: string) => string
   validationPath: (path?: string) => string
   xRayPath: (path?: string) => string
@@ -1659,6 +1690,8 @@ export const path: Path = {
   userMiddlewarePath,
   userModelsPath,
   userNotificationsPath,
+  userMailPath,
+  userEmailsPath,
   utilsPath,
   validationPath,
   xRayPath,
