@@ -13,3 +13,13 @@ export {
   renderFontPreloads,
 } from './fonts'
 export type { FontEntry } from './fonts'
+
+// Pagination view helpers — pure functions consumed by the
+// <Pagination> stx component (defaults/resources/components/Pagination.stx).
+// stacksjs/stacks#1909 P5.
+export {
+  buildPageSequence,
+  paginatorVariant,
+  urlForPage,
+} from './pagination'
+export type { PaginatorView } from './pagination'

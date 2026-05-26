@@ -1,0 +1,149 @@
+<script>
+/**
+ * Pagination component (stacksjs/stacks#1909, P5 from #1910).
+ *
+ * Renders the right shape for whichever paginator variant comes in:
+ *
+ *   - Paginator<T>        → prev / page-numbers / next + first/last jumps
+ *   - SimplePaginator<T>  → prev / next only
+ *   - CursorPaginator<T>  → prev / next only (cursor-based, no page #s)
+ *
+ * The paginator picks up its prev/next URLs from `paginator-request.ts`
+ * (P2) — they include query-string preservation, so search filters
+ * survive across page navigations without extra work here.
+ *
+ * Accessibility: wraps everything in `<nav aria-label="Pagination">`,
+ * sets `aria-current="page"` on the active page, uses real `<a>` tags
+ * (not `<button>`) because pagination is navigation, not action.
+ *
+ * Window-size: the `window` prop controls how many neighbors of the
+ * current page render before the ellipsis kicks in. Default 2 gives
+ * a compact "1 ... 3 4 [5] 6 7 ... 12" shape.
+ *
+ * Algorithm lives in `@stacksjs/ui/pagination` (buildPageSequence /
+ * urlForPage / paginatorVariant) so it's unit-testable independently
+ * of the stx render pipeline.
+ */
+
+import { buildPageSequence, paginatorVariant, urlForPage } from '@stacksjs/ui'
+
+interface PaginationLike {
+  data: unknown[]
+  per_page: number
+  has_more_pages: boolean
+  prev_page_url?: string | null
+  next_page_url?: string | null
+  first_page_url?: string
+  last_page_url?: string
+  // Full paginator only:
+  current_page?: number
+  total?: number
+  last_page?: number
+  from?: number | null
+  to?: number | null
+  // Cursor paginator only:
+  next_cursor?: string | null
+  prev_cursor?: string | null
+}
+
+interface PaginationProps {
+  /** The paginator to render — accepts all three Stacks paginator shapes. */
+  paginator: PaginationLike
+  /**
+   * Page numbers shown on either side of the current page in the full
+   * Paginator variant. `1 ... [3] 4 5 6 7 ... 12` is `window=2`.
+   * @default 2
+   */
+  window?: number
+}
+
+const { paginator, window: windowSize = 2 } = defineProps<PaginationProps>()
+
+const variant = paginatorVariant(paginator)
+const isFull = variant === 'full'
+const isSimple = variant === 'simple'
+const isCursor = variant === 'cursor'
+
+const pages = isFull
+  ? buildPageSequence(paginator.current_page!, paginator.last_page!, windowSize)
+  : []
+
+const baseLink = 'inline-flex items-center px-3 py-2 text-sm font-medium border'
+const activeLink = `${baseLink} border-indigo-500 text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30`
+const inactiveLink = `${baseLink} border-gray-300 dark:border-neutral-600 text-gray-700 dark:text-neutral-300 hover:bg-gray-50 dark:hover:bg-neutral-700`
+const disabledLink = `${baseLink} border-gray-200 dark:border-neutral-700 text-gray-400 dark:text-neutral-500 cursor-not-allowed`
+</script>
+
+<nav aria-label="Pagination" class="flex items-center justify-between gap-2 py-3 select-none">
+  @if(isFull)
+    {{-- Mobile: prev / next only (page numbers hidden) --}}
+    <div class="flex flex-1 justify-between sm:hidden">
+      @if(paginator.prev_page_url)
+        <a href="{{ paginator.prev_page_url }}" class="{{ inactiveLink }} rounded-md">Previous</a>
+      @else
+        <span class="{{ disabledLink }} rounded-md">Previous</span>
+      @endif
+      @if(paginator.next_page_url)
+        <a href="{{ paginator.next_page_url }}" class="{{ inactiveLink }} rounded-md">Next</a>
+      @else
+        <span class="{{ disabledLink }} rounded-md">Next</span>
+      @endif
+    </div>
+
+    {{-- Desktop: prev / page numbers / next + "Showing X to Y of Z" --}}
+    <div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+      <p class="text-sm text-gray-700 dark:text-neutral-300">
+        @if(paginator.from && paginator.to)
+          Showing <span class="font-medium">{{ paginator.from }}</span>
+          to <span class="font-medium">{{ paginator.to }}</span>
+          of <span class="font-medium">{{ paginator.total }}</span> results
+        @else
+          No results
+        @endif
+      </p>
+
+      <div class="isolate inline-flex -space-x-px rounded-md shadow-sm">
+        @if(paginator.prev_page_url)
+          <a href="{{ paginator.prev_page_url }}" rel="prev" class="{{ inactiveLink }} rounded-l-md" aria-label="Previous page">←</a>
+        @else
+          <span class="{{ disabledLink }} rounded-l-md" aria-label="Previous page">←</span>
+        @endif
+
+        @foreach(pages as p)
+          @if(p === '…')
+            <span class="{{ inactiveLink }}">…</span>
+          @else
+            @if(p === paginator.current_page)
+              <a href="{{ urlForPage(paginator, p) }}" aria-current="page" class="{{ activeLink }}">{{ p }}</a>
+            @else
+              <a href="{{ urlForPage(paginator, p) }}" class="{{ inactiveLink }}">{{ p }}</a>
+            @endif
+          @endif
+        @endforeach
+
+        @if(paginator.next_page_url)
+          <a href="{{ paginator.next_page_url }}" rel="next" class="{{ inactiveLink }} rounded-r-md" aria-label="Next page">→</a>
+        @else
+          <span class="{{ disabledLink }} rounded-r-md" aria-label="Next page">→</span>
+        @endif
+      </div>
+    </div>
+  @endif
+
+  @if(isSimple || isCursor)
+    {{-- Simple / cursor: just prev / next. No page numbers because we
+         don't know last_page (simple) or it doesn't apply (cursor). --}}
+    <div class="flex flex-1 justify-between">
+      @if(paginator.prev_page_url)
+        <a href="{{ paginator.prev_page_url }}" rel="prev" class="{{ inactiveLink }} rounded-md">← Previous</a>
+      @else
+        <span class="{{ disabledLink }} rounded-md">← Previous</span>
+      @endif
+      @if(paginator.next_page_url)
+        <a href="{{ paginator.next_page_url }}" rel="next" class="{{ inactiveLink }} rounded-md">Next →</a>
+      @else
+        <span class="{{ disabledLink }} rounded-md">Next →</span>
+      @endif
+    </div>
+  @endif
+</nav>
