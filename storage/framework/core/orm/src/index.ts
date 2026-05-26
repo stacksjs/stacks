@@ -39,6 +39,13 @@ export {
   toSimplePaginator,
 } from './paginator'
 export type { CursorPaginator, Paginator, SimplePaginator } from './paginator'
+// Request-aware pagination helpers (stacksjs/stacks#1906 P2).
+export {
+  enrichPaginatorUrls,
+  resolveCursorArgs,
+  resolvePageArgs,
+} from './paginator-request'
+export type { ResolvedPageArgs } from './paginator-request'
 
 // Auto-configure the ORM database connection from project config.
 // This ensures model queries work without manual configureOrm() calls.

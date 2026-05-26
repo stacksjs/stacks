@@ -5,6 +5,7 @@ import { log } from '@stacksjs/logging'
 import { snakeCase } from '@stacksjs/strings'
 import { AsyncLocalStorage } from 'node:async_hooks'
 import { toCursorPaginator, toPaginator, toSimplePaginator } from './paginator'
+import { enrichPaginatorUrls, resolveCursorArgs, resolvePageArgs } from './paginator-request'
 
 /**
  * Event-suppression scope. When the current async context's store reports
@@ -475,19 +476,37 @@ function wrapQueryBuilder(qb: any, casts?: Record<string, CastType | CasterInter
       if (typeof v !== 'function') return v
       // eslint-disable-next-line pickier/no-unused-vars
       return function (this: any, ...args: any[]) {
-        const result = v.apply(target, args)
+        // P2 — when the caller invokes a pagination terminator without
+        // explicit args, fill them from the active request's query
+        // string (`?page=N&per_page=M`). This is the no-op path outside
+        // any request scope, so CLI / queue / cron callers still see
+        // the same defaults as before.
+        let callArgs = args
+        const propName = String(prop)
+        if (propName === 'paginate' || propName === 'simplePaginate') {
+          const { perPage, page } = resolvePageArgs(args[0], args[1])
+          callArgs = [perPage, page]
+        }
+        else if (propName === 'cursorPaginate') {
+          const { perPage, cursor } = resolveCursorArgs(args[0], args[1])
+          callArgs = [perPage, cursor, args[2], args[3]] // pass thru column + direction
+        }
+
+        const result = v.apply(target, callArgs)
         const finalize = (r: any) => {
-          if (QB_TERMINATORS.has(String(prop))) {
+          if (QB_TERMINATORS.has(propName)) {
             if (Array.isArray(r)) return r.map(x => wrapModelInstance(x, casts))
             // Paginators — wrap data items first, then convert the raw
             // bqb `{ data, meta }` shape to the canonical Stacks
             // paginator. Each adapter preserves the data array, so
             // wrapping the model instances before the conversion is
-            // safe (and saves a re-walk).
-            const adapter = PAGINATE_ADAPTERS[String(prop)]
+            // safe (and saves a re-walk). Finally, enrich with URL
+            // fields from the active request (P2 — no-op when none).
+            const adapter = PAGINATE_ADAPTERS[propName]
             if (adapter && r && Array.isArray((r as any).data)) {
               const wrappedData = (r as any).data.map((x: any) => wrapModelInstance(x, casts))
-              return adapter({ ...r, data: wrappedData })
+              const canonical = adapter({ ...r, data: wrappedData })
+              return enrichPaginatorUrls(canonical as any)
             }
             // Backward-compat: a non-paginator object whose `.data` is
             // an array (custom subquery / search result) — re-wrap items
