@@ -3,12 +3,13 @@ import { notification as _notification } from '@stacksjs/config'
 import type { EmailMessage, EmailResult, NotificationOptions } from '@stacksjs/types'
 import { mail } from '@stacksjs/email'
 import { chat, email, push, sms } from './drivers'
+import { BroadcastNotificationDriver } from './drivers/broadcast'
 import { DatabaseNotificationDriver } from './drivers/database'
 import { filterChannelsByPreferences } from './preferences'
 
 const config = _notification as NotificationOptions | undefined
 
-export type NotificationChannel = 'email' | 'sms' | 'chat' | 'database' | 'push'
+export type NotificationChannel = 'email' | 'sms' | 'chat' | 'database' | 'push' | 'broadcast'
 
 /** Optional flags accepted by {@link notify}. */
 export interface NotifyOptions {
@@ -52,6 +53,13 @@ export interface NotificationRecipient {
    * same way `email` / `phone` are required for their channels.
    */
   pushTokens?: string | string[]
+  /**
+   * WebSocket channel name for the `broadcast` notification channel
+   * (stacksjs/stacks#669). When omitted, the driver derives a default:
+   * `private-user-{userId}` if `userId` is set, otherwise the public
+   * `notifications` channel.
+   */
+  broadcastChannel?: string
 }
 
 export interface NotifyResult {
@@ -112,6 +120,16 @@ export function usePush(): typeof push {
 
 export function useDatabase(): typeof DatabaseNotificationDriver {
   return DatabaseNotificationDriver
+}
+
+/**
+ * Broadcast transport — returns the `BroadcastNotificationDriver` which
+ * fans out a notification payload over the realtime WebSocket layer
+ * (`@stacksjs/realtime` `emit()`). See {@link BroadcastNotificationDriver}
+ * for channel-naming rules. stacksjs/stacks#669.
+ */
+export function useBroadcast(): typeof BroadcastNotificationDriver {
+  return BroadcastNotificationDriver
 }
 
 export function useNotification(typeParam?: string, driverParam?: string): typeof chat[keyof typeof chat] | typeof email[keyof typeof email] | typeof sms[keyof typeof sms] | typeof DatabaseNotificationDriver {
@@ -255,6 +273,19 @@ export async function notify(
           })
           break
         }
+        case 'broadcast': {
+          // Realtime WS fanout (stacksjs/stacks#669). Best-effort:
+          // missing realtime server returns `delivered: false` rather
+          // than throwing, so a broadcast misconfig doesn't break the
+          // rest of the multi-channel dispatch.
+          await BroadcastNotificationDriver.send({
+            channel: recipient.broadcastChannel,
+            userId: recipient.userId,
+            event: payload.subject ?? 'notification',
+            data: { body: payload.body, ...payload.data },
+          })
+          break
+        }
         default:
           throw new Error(`Unsupported notification channel: ${channel}`)
       }
@@ -282,6 +313,8 @@ export function notification(): ReturnType<typeof useNotification> {
   return useNotification()
 }
 
+export { BroadcastNotificationDriver } from './drivers/broadcast'
+export type { BroadcastNotificationOptions, BroadcastNotificationResult } from './drivers/broadcast'
 export { DatabaseNotificationDriver } from './drivers/database'
 export type { CreateNotificationOptions, DatabaseNotification } from './drivers/database'
 export {
