@@ -3,6 +3,7 @@ import { log } from '@stacksjs/logging'
 import { fs } from '@stacksjs/storage'
 import { defaultsResourcesPath, resourcesPath } from '@stacksjs/path'
 import { join } from 'node:path'
+import { inlineCss, shouldInlineByDefault } from './css-inliner'
 
 export interface TemplateResult {
   html: string
@@ -60,6 +61,16 @@ export interface TemplateOptions {
   layout?: string | false
   /** Subject line for the email */
   subject?: string
+  /**
+   * Run the CSS inliner over the rendered HTML before returning.
+   * Defaults to ON when `APP_ENV` / `NODE_ENV` is `production`,
+   * OFF in dev so previews show the un-mutated stx output. Pass
+   * `inline: true` from a one-off send to force inlining outside
+   * prod (useful for staging-deploy email QA).
+   *
+   * stacksjs/stacks#1902 (B2).
+   */
+  inline?: boolean
 }
 
 /**
@@ -260,6 +271,7 @@ export async function template(
     variables = {},
     layout = 'base',
     subject = '',
+    inline = shouldInlineByDefault(),
   } = options
 
   // Merge default variables with provided ones
@@ -292,9 +304,18 @@ export async function template(
   if (resolved.type === 'stx') {
     try {
       const { renderEmail } = await import('@stacksjs/stx')
-      return await renderEmail(resolved.path, allVariables, {
+      const result = await renderEmail(resolved.path, allVariables, {
         componentsDir: defaultsResourcesPath('components/Email'),
       })
+      // CSS inlining pass (stacksjs/stacks#1902 B2). The bundled
+      // <EmailLayout> & co. components are already inline-styled, so
+      // this is mostly for userland `<style>` blocks. `inline: false`
+      // is honoured for dev preview; `shouldInlineByDefault()`
+      // returns true only in production.
+      return {
+        ...result,
+        html: inlineCss(result.html, { inline }),
+      }
     }
     catch (error: unknown) {
       log.warn(`[email] STX template rendering failed for ${templateName}: ${error instanceof Error ? error.message : String(error)}`)
@@ -332,6 +353,9 @@ export async function template(
   else {
     html = content
   }
+
+  // CSS inlining pass — same gate as the stx path (stacksjs/stacks#1902).
+  html = inlineCss(html, { inline })
 
   // Generate plain text version
   const text = htmlToText(html)
