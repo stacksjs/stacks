@@ -1,0 +1,20 @@
+<script server>
+// Email horizontal rule (stacksjs/stacks#1901 B1).
+//
+// `<hr>` renders inconsistently across clients (Outlook draws double
+// lines, Gmail strips the colour). A 1px-tall table row with a forced
+// font-size:1px;line-height:1px; is the safe equivalent.
+interface EmailDividerProps {
+  color?: string
+  spacing?: string
+}
+
+const props = defineProps<EmailDividerProps>()
+const color = props.color || '#e5e7eb'
+const spacing = props.spacing || '24px'
+</script>
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="width:100%;border-collapse:collapse;margin:{{ spacing }} 0;">
+  <tr>
+    <td style="height:1px;font-size:1px;line-height:1px;background-color:{{ color }};">&nbsp;</td>
+  </tr>
+</table>

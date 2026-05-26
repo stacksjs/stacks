@@ -1,0 +1,55 @@
+<script server>
+// Outermost email scaffold (stacksjs/stacks#1901 B1).
+//
+// Wraps content in the table-based body that Outlook + Gmail (Android)
+// require, plus the standard meta block (charset / viewport /
+// X-UA-Compatible / colour-scheme). Two-tone bodyBg / contentBg
+// mirrors the bundled templates: muted page colour outside, white
+// card inside. Named slots: head / header / footer. See README for
+// usage examples.
+//
+// Notes on `defineProps()`: stx fills missing props with an empty
+// string (not `undefined`), so destructure defaults silently no-op
+// for absent props. Use `props.x || fallback` instead — that's the
+// pattern used elsewhere in the bundled email templates.
+interface EmailLayoutProps {
+  title?: string
+  width?: number | string
+  bodyBg?: string
+  contentBg?: string
+}
+
+const props = defineProps<EmailLayoutProps>()
+const title = props.title || ''
+const width = props.width || 600
+const bodyBg = props.bodyBg || '#f4f4f5'
+const contentBg = props.contentBg || '#ffffff'
+</script>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="color-scheme" content="light dark">
+  <meta name="supported-color-schemes" content="light dark">
+  <title>{{ title }}</title>
+  <slot name="head" />
+</head>
+<body style="margin:0;padding:0;background-color:{{ bodyBg }};font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;line-height:1.6;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="width:100%;border-collapse:collapse;background-color:{{ bodyBg }};">
+    <tr>
+      <td align="center" style="padding:40px 20px;">
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="max-width:{{ width }}px;width:100%;background-color:{{ contentBg }};border-radius:8px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.1);">
+          <slot name="header" />
+          <tr><td style="padding:40px;">
+            <slot />
+          </td></tr>
+          <slot name="footer" />
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

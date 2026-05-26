@@ -1,0 +1,22 @@
+<script server>
+// Inline email link (stacksjs/stacks#1901 B1).
+//
+// For inline mentions inside paragraphs / sentences — use
+// `<EmailButton>` for CTAs. The brand colour is set explicitly
+// because Gmail / Outlook ignore `<style>` blocks, so unstyled
+// `<a>` falls back to client-default blue / purple.
+interface EmailLinkProps {
+  href: string
+  color?: string
+  underline?: boolean
+}
+
+const props = defineProps<EmailLinkProps>()
+const href = props.href || '#'
+const color = props.color || '#3451b2'
+const underline = props.underline === false ? false : true
+const decoration = underline ? 'underline' : 'none'
+</script>
+<a href="{{ href }}" style="color:{{ color }};text-decoration:{{ decoration }};">
+  <slot />
+</a>

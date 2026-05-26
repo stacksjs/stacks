@@ -1,0 +1,20 @@
+<script server>
+// Email content section (stacksjs/stacks#1901 B1) — a table row used
+// to group content vertically. Stack several to split an email into
+// header / body / CTA / footer blocks.
+interface EmailSectionProps {
+  padding?: string
+  background?: string
+}
+
+const props = defineProps<EmailSectionProps>()
+const padding = props.padding || '0'
+const background = props.background || 'transparent'
+</script>
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="width:100%;border-collapse:collapse;background-color:{{ background }};">
+  <tr>
+    <td style="padding:{{ padding }};">
+      <slot />
+    </td>
+  </tr>
+</table>

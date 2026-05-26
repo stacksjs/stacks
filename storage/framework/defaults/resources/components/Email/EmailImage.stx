@@ -1,0 +1,24 @@
+<script server>
+// Email image (stacksjs/stacks#1901 B1).
+//
+// Sets the attributes Outlook + Gmail (mobile especially) need to
+// behave: display:block kills the inline whitespace gap, border:0
+// undoes the default link border, -ms-interpolation-mode:bicubic
+// smooths scaling in Outlook on Windows. Always set `alt`: image
+// blocking is the default in many corporate clients.
+interface EmailImageProps {
+  src: string
+  alt: string
+  width?: number | string
+  height?: number | string
+  display?: 'block' | 'inline'
+}
+
+const props = defineProps<EmailImageProps>()
+const src = props.src || ''
+const alt = props.alt || ''
+const width = props.width || ''
+const height = props.height || ''
+const display = props.display || 'block'
+</script>
+<img src="{{ src }}" alt="{{ alt }}" @if(width) width="{{ width }}" @endif @if(height) height="{{ height }}" @endif style="display:{{ display }};border:0;outline:none;text-decoration:none;-ms-interpolation-mode:bicubic;max-width:100%;height:auto;" />

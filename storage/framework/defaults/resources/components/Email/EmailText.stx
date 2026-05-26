@@ -1,0 +1,30 @@
+<script server>
+// Email paragraph (stacksjs/stacks#1901 B1).
+//
+// Wraps text in a paragraph with normalised line-height + colour,
+// and a `size` enum covering the 80% case (sm / md / lg / heading).
+// For arbitrary styling override `color` / `spacing` directly.
+interface EmailTextProps {
+  align?: 'left' | 'center' | 'right'
+  size?: 'sm' | 'md' | 'lg' | 'heading'
+  color?: string
+  spacing?: string
+}
+
+const props = defineProps<EmailTextProps>()
+const align = props.align || 'left'
+const size = props.size || 'md'
+const color = props.color || (size === 'heading' ? '#111827' : '#4b5563')
+const spacing = props.spacing || '16px'
+
+const sizeStyles: Record<string, string> = {
+  sm: 'font-size:14px;line-height:1.5;',
+  md: 'font-size:16px;line-height:1.6;',
+  lg: 'font-size:18px;line-height:1.6;',
+  heading: 'font-size:20px;line-height:1.4;font-weight:600;',
+}
+const sizeStyle = sizeStyles[size] || sizeStyles.md
+</script>
+<p style="margin:0 0 {{ spacing }} 0;text-align:{{ align }};color:{{ color }};{{ sizeStyle }}">
+  <slot />
+</p>

@@ -1,7 +1,7 @@
 import { config } from '@stacksjs/config'
 import { log } from '@stacksjs/logging'
 import { fs } from '@stacksjs/storage'
-import { resourcesPath } from '@stacksjs/path'
+import { defaultsResourcesPath, resourcesPath } from '@stacksjs/path'
 import { join } from 'node:path'
 
 export interface TemplateResult {
@@ -282,10 +282,19 @@ export async function template(
   // root) that handles the full <script server> + props + layout
   // chain. Dynamic import so test runs / CLI scripts that never load
   // an email template pay zero startup cost for the stx graph.
+  //
+  // `componentsDir` points stx at the bundled `<EmailLayout>` /
+  // `<EmailButton>` / etc. component library (stacksjs/stacks#1901)
+  // so email templates can drop them in by name. Userland is free
+  // to define its own components alongside its templates — stx
+  // walks the standard `components/` paths too — but the bundled
+  // set is always reachable from this directory.
   if (resolved.type === 'stx') {
     try {
       const { renderEmail } = await import('@stacksjs/stx')
-      return await renderEmail(resolved.path, allVariables)
+      return await renderEmail(resolved.path, allVariables, {
+        componentsDir: defaultsResourcesPath('components/Email'),
+      })
     }
     catch (error: unknown) {
       log.warn(`[email] STX template rendering failed for ${templateName}: ${error instanceof Error ? error.message : String(error)}`)

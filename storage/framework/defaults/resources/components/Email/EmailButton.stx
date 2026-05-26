@@ -1,0 +1,32 @@
+<script server>
+// Bulletproof email button (stacksjs/stacks#1901 B1).
+//
+// Renders a table-based CTA that works in Outlook 2007-2019, Gmail
+// (web + Android), Apple Mail. The `bg` colour applies to BOTH the
+// table cell (Outlook ignores anchor backgrounds) and the anchor
+// (everywhere else). `mso-padding-alt` is the documented hint that
+// lets Outlook render padding correctly.
+interface EmailButtonProps {
+  href: string
+  color?: string
+  bg?: string
+  padX?: string
+  padY?: string
+}
+
+const props = defineProps<EmailButtonProps>()
+const href = props.href || '#'
+const color = props.color || '#ffffff'
+const bg = props.bg || '#3451b2'
+const padX = props.padX || '32px'
+const padY = props.padY || '14px'
+</script>
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:24px 0;border-collapse:separate;">
+  <tr>
+    <td align="center" style="border-radius:6px;background-color:{{ bg }};mso-padding-alt:0;">
+      <a href="{{ href }}" style="display:inline-block;padding:{{ padY }} {{ padX }};color:{{ color }};text-decoration:none;border-radius:6px;font-weight:600;font-size:16px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;text-align:center;mso-padding-alt:{{ padY }} {{ padX }};">
+        <slot />
+      </a>
+    </td>
+  </tr>
+</table>
