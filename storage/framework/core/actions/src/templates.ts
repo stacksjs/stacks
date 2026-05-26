@@ -132,9 +132,11 @@ function send(): {0} {
 
 /**
  * Props passed into the {0} email. Add the fields your template
- * needs and they'll flow through to the stx template's \`props\`.
+ * needs and they'll flow through to the stx template's \`props\` —
+ * \`Mailable<{0}Props>\` ensures \`.template()\` and \`this.props\`
+ * type-check against this shape (stacksjs/stacks#1903).
  */
-export interface {0}Props {
+export interface {0}Props extends Record<string, unknown> {
   /** Recipient email address. */
   to: string
   /** Display name for the greeting (falls back to 'there'). */
@@ -142,16 +144,16 @@ export interface {0}Props {
 }
 
 /**
- * {0} mailable. Subclass of \`Mailable\` — \`build()\` wires the recipient
- * / subject / template, then \`send()\` (inherited) dispatches via the
- * configured mail driver.
+ * {0} mailable. Subclass of \`Mailable<{0}Props>\` — \`build()\` wires the
+ * recipient / subject / template (props typed against \`{0}Props\`),
+ * then \`send()\` (inherited) dispatches via the configured mail driver.
  *
  * @example
  * \`\`\`ts
  * await new {0}({ to: 'user@example.com', userName: 'Ada' }).send()
  * \`\`\`
  */
-export class {0} extends Mailable {
+export class {0} extends Mailable<{0}Props> {
   constructor(private readonly props: {0}Props) {
     super()
   }
@@ -161,6 +163,7 @@ export class {0} extends Mailable {
       .to(this.props.to)
       .subject('{0}')
       .template('{1}', {
+        to: this.props.to,
         userName: this.props.userName ?? 'there',
       })
   }

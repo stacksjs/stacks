@@ -29,8 +29,12 @@ export interface MailableSendOptions {
  * Read-only snapshot of a Mailable's build state — produced by
  * {@link Mailable.inspect}. Used by the preview server (#1900) so the
  * UI can render what the email WOULD look like without dispatching.
+ *
+ * Generic over `TProps` so typed Mailables expose typed template
+ * props (stacksjs/stacks#1903). Defaults to `Record<string, unknown>`
+ * so untyped usages keep working without changes.
  */
-export interface MailableInspection {
+export interface MailableInspection<TProps extends Record<string, unknown> = Record<string, unknown>> {
   to: string[] | EmailAddress[]
   cc: string[] | EmailAddress[]
   bcc: string[] | EmailAddress[]
@@ -39,14 +43,30 @@ export interface MailableInspection {
   subject?: string
   text?: string
   html?: string
-  template?: { name: string, props: Record<string, unknown> }
+  template?: { name: string, props: TProps }
   attachments: EmailAttachment[]
 }
 
-interface TemplateRef {
+interface TemplateRef<TProps extends Record<string, unknown> = Record<string, unknown>> {
   name: string
-  props: Record<string, unknown>
+  props: TProps
 }
+
+/**
+ * `true` iff `T` is the loose default (`Record<string, unknown>`),
+ * i.e. the caller didn't specialize the generic. Used to make
+ * `Mailable#template(name)` props-optional in the loose case and
+ * props-required when a concrete `TProps` is supplied.
+ */
+type IsLooseProps<T> = Record<string, unknown> extends T ? true : false
+
+/**
+ * Builds the variadic tail of {@link Mailable.template}'s parameter list.
+ * Untyped Mailable accepts `.template('name')`; typed `Mailable<P>` must
+ * pass props matching `P`.
+ */
+type TemplateArgs<T extends Record<string, unknown>> =
+  IsLooseProps<T> extends true ? [props?: T] : [props: T]
 
 /**
  * Laravel-style class-based email definition. Subclass `Mailable`,
@@ -80,7 +100,7 @@ interface TemplateRef {
  * await new WelcomeMail(user).send()
  * ```
  */
-export abstract class Mailable {
+export abstract class Mailable<TProps extends Record<string, unknown> = Record<string, unknown>> {
   /** Recipient list — homogeneous string[] or EmailAddress[] to match `EmailMessage.to`. */
   protected _to: string[] | EmailAddress[] = []
   protected _cc: string[] | EmailAddress[] = []
@@ -90,7 +110,7 @@ export abstract class Mailable {
   protected _subject?: string
   protected _text?: string
   protected _html?: string
-  protected _template?: TemplateRef
+  protected _template?: TemplateRef<TProps>
   protected _attachments: EmailAttachment[] = []
 
   /**
@@ -225,12 +245,26 @@ export abstract class Mailable {
    * via the existing `template()` helper at send time, so it picks up STX
    * directives, layouts, and all configured default variables.
    *
+   * Subclasses of `Mailable<TProps>` type-check `props` against `TProps`.
+   * Subclasses of plain `Mailable` (the default `Record<string, unknown>`
+   * generic) accept any object literal and may also omit `props` entirely.
+   *
    * @example
    * ```ts
-   * this.template('welcome', { name: 'Ada' })
+   * // Untyped (back-compat path):
+   * class Loose extends Mailable {
+   *   build() { return this.template('hello', { anything: 1 }) }
+   * }
+   *
+   * // Typed (stacksjs/stacks#1903):
+   * interface Props { userName: string }
+   * class Welcome extends Mailable<Props> {
+   *   build() { return this.template('welcome', { userName: 'Ada' }) }
+   * }
    * ```
    */
-  template(name: string, props: Record<string, unknown> = {}): this {
+  template(name: string, ...rest: TemplateArgs<TProps>): this {
+    const props = (rest[0] ?? {}) as TProps
     this._template = { name, props }
     return this
   }
@@ -246,7 +280,7 @@ export abstract class Mailable {
    * still be sent). Wraps the access so external preview tooling
    * doesn't need to `as any`-cast through the protected slot.
    */
-  inspect(): MailableInspection {
+  inspect(): MailableInspection<TProps> {
     return {
       to: this._to,
       cc: this._cc,
