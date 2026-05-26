@@ -74,8 +74,32 @@ export interface SelectedQuery<TTable, TJson, K extends string> {
    * Keyset (cursor) pagination — `WHERE id > :cursor`-style. Constant
    * query cost regardless of how deep the user has paged. No
    * random-access ("jump to page 5") — only prev/next.
+   *
+   * `column` defaults to `'id'`. Pass an array for composite-key
+   * cursors (e.g. `['created_at', 'id']` when ordering by `created_at`
+   * needs a tiebreaker on `id`) — the cursor that comes back encodes
+   * the tuple via JSON so it survives a URL query-string round-trip,
+   * and is decoded on the way back in. `direction` controls the
+   * ordering and the comparison operator (`>` for asc, `<` for desc).
+   *
+   * P2 (stacksjs/stacks#1906) reads `?cursor=` from the active request
+   * automatically; pass `null` to force the first page.
+   *
+   * @example
+   * ```ts
+   * // single-column cursor, default ORDER BY id ASC
+   * const feed = await Post.cursorPaginate(20)
+   *
+   * // composite cursor, ORDER BY created_at DESC, id DESC
+   * const feed = await Post.cursorPaginate(20, null, ['created_at', 'id'], 'desc')
+   * ```
    */
-  cursorPaginate(perPage?: number, cursor?: string | null): Promise<CursorPaginator<SelectedResult<TJson, K>>>
+  cursorPaginate(
+    perPage?: number,
+    cursor?: string | number | unknown[] | null,
+    column?: keyof TTable | (keyof TTable)[],
+    direction?: 'asc' | 'desc',
+  ): Promise<CursorPaginator<SelectedResult<TJson, K>>>
   chunk(size: number, callback: (models: SelectedResult<TJson, K>[]) => Promise<void>): Promise<void>
   pluck<PK extends Extract<K | 'id', keyof TJson>>(field: PK): Promise<TJson[PK][]>
 

@@ -72,11 +72,19 @@ export function resolvePageArgs(perPageArg?: number, pageArg?: number): Resolved
 /**
  * Resolve cursor args for `Model.cursorPaginate(...)`. Precedence
  * mirrors {@link resolvePageArgs} — explicit > `?cursor=` > null.
+ *
+ * Cursor values that arrive via the query string (always strings) are
+ * fed through {@link parseCursor} so a composite cursor encoded as
+ * `JSON.stringify([val1, val2])` reaches bqb as a real array — bqb's
+ * `sql(cursor)` interpolation expects an array when the `column` arg
+ * is an array (composite-key pagination). Without this parse, the
+ * cursor round-trip breaks: serialize → string → wire → string →
+ * bqb thinks it's a primitive → wrong query.
  */
 export function resolveCursorArgs(
   perPageArg?: number,
-  cursorArg?: string | null,
-): { perPage: number, cursor: string | null } {
+  cursorArg?: string | number | unknown[] | null,
+): { perPage: number, cursor: unknown } {
   const request = lazyGetCurrentRequest()
   const queryCursor = request ? readStringQuery(request, 'cursor') : undefined
   const queryPerPage = request ? readNumericQuery(request, 'per_page') : undefined
@@ -85,9 +93,43 @@ export function resolveCursorArgs(
     ? Math.max(1, Math.floor(perPageArg))
     : Math.min(DEFAULT_MAX_PER_PAGE, Math.max(1, queryPerPage ?? DEFAULT_PER_PAGE))
 
-  const cursor = cursorArg !== undefined ? cursorArg : (queryCursor ?? null)
+  // Explicit > query > null. Both sources go through parseCursor so the
+  // app code can pass either the wire format (string) or the native form
+  // (array / primitive) without thinking about it.
+  const rawCursor = cursorArg !== undefined ? cursorArg : (queryCursor ?? null)
+  const cursor = parseCursor(rawCursor)
 
   return { perPage, cursor }
+}
+
+/**
+ * Parse a cursor value into the shape bqb's `cursorPaginate` expects.
+ *
+ *   - `null` / `undefined` → `null` (first page, no WHERE clause)
+ *   - Already an array → returned as-is (composite cursor, native form)
+ *   - String starting with `[` → JSON-parsed back into an array
+ *     (composite cursor that was serialized for the wire format)
+ *   - All other strings / primitives → returned as-is (single-column
+ *     cursor)
+ *
+ * This is the missing piece in the wire-format round-trip:
+ * {@link toCursorPaginator} encodes composite cursors with
+ * `JSON.stringify` so they survive a URL query param round-trip, and
+ * this function decodes them on the way back in.
+ */
+export function parseCursor(value: string | number | unknown[] | null | undefined): unknown {
+  if (value === null || value === undefined) return null
+  if (Array.isArray(value)) return value
+  if (typeof value === 'string' && value.startsWith('[')) {
+    try {
+      const parsed = JSON.parse(value)
+      if (Array.isArray(parsed)) return parsed
+    }
+    catch {
+      // Not valid JSON — fall through and treat as a plain string cursor.
+    }
+  }
+  return value
 }
 
 /**

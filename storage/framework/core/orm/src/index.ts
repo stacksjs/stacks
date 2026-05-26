@@ -39,9 +39,10 @@ export {
   toSimplePaginator,
 } from './paginator'
 export type { CursorPaginator, Paginator, SimplePaginator } from './paginator'
-// Request-aware pagination helpers (stacksjs/stacks#1906 P2).
+// Request-aware pagination helpers (stacksjs/stacks#1906 P2 + #1907 P3).
 export {
   enrichPaginatorUrls,
+  parseCursor,
   resolveCursorArgs,
   resolvePageArgs,
 } from './paginator-request'
