@@ -4,6 +4,7 @@ import type { SearchOptions } from '@stacksjs/types'
 import { log } from '@stacksjs/logging'
 import { snakeCase } from '@stacksjs/strings'
 import { AsyncLocalStorage } from 'node:async_hooks'
+import { toCursorPaginator, toPaginator, toSimplePaginator } from './paginator'
 
 /**
  * Event-suppression scope. When the current async context's store reports
@@ -443,7 +444,19 @@ function wrapModelInstance<T extends object>(
  * — `Car.where(...).first()` should return a proxied instance, not a raw
  * one.
  */
-const QB_TERMINATORS = new Set(['get', 'first', 'last', 'firstOrFail', 'find', 'findOrFail', 'all', 'paginate'])
+const QB_TERMINATORS = new Set([
+  'get', 'first', 'last', 'firstOrFail', 'find', 'findOrFail', 'all',
+  // Pagination terminators (stacksjs/stacks#1905 P1) — each one routes
+  // its bqb-shaped return through the matching canonical adapter below
+  // so userland sees `{ data, current_page, per_page, total, ... }`
+  // instead of bqb's internal `{ data, meta: { perPage, page, ... } }`.
+  'paginate', 'simplePaginate', 'cursorPaginate',
+])
+const PAGINATE_ADAPTERS: Record<string, (r: any) => any> = {
+  paginate: toPaginator,
+  simplePaginate: toSimplePaginator,
+  cursorPaginate: toCursorPaginator,
+}
 const STACKS_QB_PROXY_TAG = Symbol.for('stacks.queryBuilderProxy')
 
 function wrapQueryBuilder(qb: any, casts?: Record<string, CastType | CasterInterface>): any {
@@ -466,7 +479,19 @@ function wrapQueryBuilder(qb: any, casts?: Record<string, CastType | CasterInter
         const finalize = (r: any) => {
           if (QB_TERMINATORS.has(String(prop))) {
             if (Array.isArray(r)) return r.map(x => wrapModelInstance(x, casts))
-            // paginate returns an object like { data: [...], meta: {...} }
+            // Paginators — wrap data items first, then convert the raw
+            // bqb `{ data, meta }` shape to the canonical Stacks
+            // paginator. Each adapter preserves the data array, so
+            // wrapping the model instances before the conversion is
+            // safe (and saves a re-walk).
+            const adapter = PAGINATE_ADAPTERS[String(prop)]
+            if (adapter && r && Array.isArray((r as any).data)) {
+              const wrappedData = (r as any).data.map((x: any) => wrapModelInstance(x, casts))
+              return adapter({ ...r, data: wrappedData })
+            }
+            // Backward-compat: a non-paginator object whose `.data` is
+            // an array (custom subquery / search result) — re-wrap items
+            // without touching the surrounding shape.
             if (r && Array.isArray((r as any).data)) {
               return { ...r, data: (r as any).data.map((x: any) => wrapModelInstance(x, casts)) }
             }

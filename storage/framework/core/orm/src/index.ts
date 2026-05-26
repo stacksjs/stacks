@@ -29,6 +29,16 @@ export * from './model-types'
 export * from './types'
 export * from './utils'
 export * from './define-model'
+// Canonical paginator shapes + adapters (stacksjs/stacks#1905 P1).
+export {
+  isCursorPaginator,
+  isPaginator,
+  isSimplePaginator,
+  toCursorPaginator,
+  toPaginator,
+  toSimplePaginator,
+} from './paginator'
+export type { CursorPaginator, Paginator, SimplePaginator } from './paginator'
 
 // Auto-configure the ORM database connection from project config.
 // This ensures model queries work without manual configureOrm() calls.

@@ -1,4 +1,5 @@
 import type { Operator } from './subquery'
+import type { CursorPaginator, Paginator, SimplePaginator } from './paginator'
 
 export interface OrmDriver<T = unknown> {
   find: (id: number) => Promise<T | undefined>
@@ -47,11 +48,34 @@ export interface SelectedQuery<TTable, TJson, K extends string> {
   get(): Promise<SelectedResult<TJson, K>[]>
   latest(column?: keyof TTable): Promise<SelectedResult<TJson, K> | undefined>
   oldest(column?: keyof TTable): Promise<SelectedResult<TJson, K> | undefined>
-  paginate(options?: { limit?: number, offset?: number, page?: number }): Promise<{
-    data: SelectedResult<TJson, K>[]
-    paging: { total_records: number, page: number, total_pages: number }
-    next_cursor: number | null
-  }>
+  /**
+   * Paginate with full count metadata (current_page, last_page, total,
+   * from, to, has_more_pages). Runs a `COUNT(*)` query in addition to
+   * the page query — use {@link simplePaginate} or {@link cursorPaginate}
+   * to skip the count on very large tables.
+   *
+   * P2 (stacksjs/stacks#1906) populates `prev_page_url` / `next_page_url`
+   * automatically when a request is in scope.
+   *
+   * @example
+   * ```ts
+   * const result = await User.where('active', true).paginate(15, 1)
+   * // → { data: User[], current_page: 1, per_page: 15, total: 234,
+   * //     last_page: 16, from: 1, to: 15, has_more_pages: true }
+   * ```
+   */
+  paginate(perPage?: number, page?: number): Promise<Paginator<SelectedResult<TJson, K>>>
+  /**
+   * Paginate without the `COUNT(*)` query — only knows whether more
+   * pages exist. Cheaper than {@link paginate} on large tables.
+   */
+  simplePaginate(perPage?: number, page?: number): Promise<SimplePaginator<SelectedResult<TJson, K>>>
+  /**
+   * Keyset (cursor) pagination — `WHERE id > :cursor`-style. Constant
+   * query cost regardless of how deep the user has paged. No
+   * random-access ("jump to page 5") — only prev/next.
+   */
+  cursorPaginate(perPage?: number, cursor?: string | null): Promise<CursorPaginator<SelectedResult<TJson, K>>>
   chunk(size: number, callback: (models: SelectedResult<TJson, K>[]) => Promise<void>): Promise<void>
   pluck<PK extends Extract<K | 'id', keyof TJson>>(field: PK): Promise<TJson[PK][]>
 
