@@ -280,6 +280,43 @@ function wrapModelInstance<T extends object>(
         }
       }
 
+      // Sync `save()` guard. If a model has `set: { x: async (...) }` and
+      // the user does `inst.x = 'plain'; inst.save()` (no await), the
+      // underlying bqb save() would call the setter and persist its raw
+      // Promise — which surfaces deep in the SQLite driver as a cryptic
+      // "Binding expected string, TypedArray, boolean…" error. We pre-run
+      // each dirty setter, throw a helpful message if any is a Promise,
+      // and otherwise stash the resolved values + suppress the underlying
+      // setter pass so we don't double-apply.
+      if (prop === 'save') {
+        return function () {
+          const def = (target as any)._definition
+          const setters = def?.set as Record<string, (attrs: Record<string, unknown>) => unknown> | undefined
+          if (setters && Object.keys(setters).length > 0 && typeof (target as any).isDirty === 'function') {
+            for (const [key, fn] of Object.entries(setters)) {
+              if (typeof fn !== 'function') continue
+              if (!(target as any).isDirty(key)) continue
+              const result = fn((target as any)._attributes as Record<string, unknown>)
+              if (result && typeof (result as { then?: unknown }).then === 'function') {
+                throw new Error(
+                  `Setter for "${key}" returned a Promise — use \`saveAsync()\` instead of \`save()\` when a model has async setters.`,
+                )
+              }
+              ;(target as any)._attributes[key] = result
+            }
+            const original = def.set
+            def.set = {}
+            try {
+              return (target as any).save()
+            }
+            finally {
+              def.set = original
+            }
+          }
+          return (target as any).save()
+        }
+      }
+
       if (prop === 'updateAsync') {
         return async function (data: Record<string, unknown>) {
           // fill() then saveAsync() — same flow as instance.update() but
