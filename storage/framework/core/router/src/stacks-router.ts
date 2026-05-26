@@ -25,6 +25,7 @@ import { isApiRequest, JSON_CONTENT_TYPE } from './api-shape'
 import { clearTrackedQueries, createErrorResponse, createMiddlewareErrorResponse } from './error-handler'
 import { rateLimit as enforceRateLimit } from './rate-limit'
 import { applySecurityHeaders } from './security-headers'
+import { isCursorPaginator, isPaginator, isSimplePaginator } from '@stacksjs/orm'
 
 import type { StacksActionPath } from './action-paths'
 
@@ -1645,6 +1646,15 @@ function formatResult(result: unknown, req: EnhancedRequest): Response {
   // there's no reasonable HTML representation of `{id: 1}`, and userland
   // that wants HTML should return a `new Response(html, …)` directly.
   if (typeof result === 'object') {
+    // Paginator auto-serialize (stacksjs/stacks#1908 P4). When the
+    // action returns a canonical Paginator / SimplePaginator /
+    // CursorPaginator, emit `Link: <prev>; rel="prev", <next>; rel="next"`
+    // alongside the JSON body — HATEOAS for REST clients + crawlers
+    // who'd otherwise have to dig through the body to find next/prev.
+    const linkHeader = buildPaginatorLinkHeader(result)
+    if (linkHeader) {
+      return Response.json(result, { headers: { Link: linkHeader } })
+    }
     return Response.json(result)
   }
 
@@ -1657,6 +1667,27 @@ function formatResult(result: unknown, req: EnhancedRequest): Response {
   return new Response(String(result), {
     headers: { 'Content-Type': 'text/plain; charset=utf-8' },
   })
+}
+
+/**
+ * Build the RFC 5988 `Link` header from a paginator return value, or
+ * return `null` when the value isn't paginator-shaped (so the caller
+ * skips the header entirely). stacksjs/stacks#1908 P4.
+ *
+ * Both `prev_page_url` and `next_page_url` are surfaced when present —
+ * matches what REST clients (jsonapi.org consumers, HAL, openapi-fetch)
+ * expect from a paginated collection.
+ */
+function buildPaginatorLinkHeader(value: unknown): string | null {
+  if (!isPaginator(value) && !isSimplePaginator(value) && !isCursorPaginator(value))
+    return null
+  const v = value as { prev_page_url?: string | null, next_page_url?: string | null, first_page_url?: string, last_page_url?: string }
+  const parts: string[] = []
+  if (v.prev_page_url) parts.push(`<${v.prev_page_url}>; rel="prev"`)
+  if (v.next_page_url) parts.push(`<${v.next_page_url}>; rel="next"`)
+  if (v.first_page_url) parts.push(`<${v.first_page_url}>; rel="first"`)
+  if (v.last_page_url) parts.push(`<${v.last_page_url}>; rel="last"`)
+  return parts.length > 0 ? parts.join(', ') : null
 }
 
 /**
