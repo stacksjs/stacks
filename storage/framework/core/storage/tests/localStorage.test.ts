@@ -1,9 +1,16 @@
 import { describe, expect, it } from 'bun:test'
 import { Buffer } from 'node:buffer'
 import { rmSync } from 'node:fs'
+import { relative } from 'node:path'
+import process from 'node:process'
 import { local } from '../src/drivers'
 
-const BASE = 'storage/framework/core/storage/tests'
+// The `local` driver resolves every path under `process.cwd()`, so
+// BASE has to be expressed relative to wherever the test runner was
+// invoked from. Computing it from `import.meta.dir` keeps the test
+// working both from the repo root (`bun test` in the monorepo) and
+// from the package dir (`cd … && bun test`).
+const BASE = relative(process.cwd(), import.meta.dir) || '.'
 const dirs = (file: string) => `${BASE}/dirs/${file}`
 
 describe('@stacksjs/storage', () => {
