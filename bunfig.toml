@@ -1,8 +1,24 @@
-# preload these modules before running bun
-preload = [ "./storage/framework/defaults/resources/plugins/preloader.ts" ]
+# preload these modules before running bun.
+#
+# Order matters:
+#   1. env plugin auto-loads `.env` and decrypts dotenvx-style encrypted
+#      values (stacksjs/stacks#1053) so the rest of the boot chain — config
+#      loader, preloader, user routes — reads plaintext from process.env.
+#   2. main preloader wires auto-imports + framework plugins; safe to run
+#      after the env layer because it can now read decrypted secrets too.
+preload = [
+  "./storage/framework/core/env/plugin.ts",
+  "./storage/framework/defaults/resources/plugins/preloader.ts",
+]
 
 [test]
-preload = [ "./tests/setup.ts" ]
+# Tests also get the env layer so encrypted .env values resolve during the
+# suite — match production boot semantics rather than papering over a
+# different decrypt path in test-only code.
+preload = [
+  "./storage/framework/core/env/plugin.ts",
+  "./tests/setup.ts",
+]
 coverage = false
 
 [run]
