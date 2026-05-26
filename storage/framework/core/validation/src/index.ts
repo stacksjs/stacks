@@ -6,6 +6,20 @@
 // `export *` re-exports from `@stacksjs/ts-validation` (which also exports
 // a `schema` symbol) and see whichever binding was registered first.
 export { schema } from './schema'
+// Conditional validation surface — `.when()` / `.sometimes()` mixins +
+// context-aware object validator (stacksjs/stacks#1890).
+export {
+  applyConditionals,
+  objectWithContext,
+  shouldApplyConditional,
+  withConditionals,
+} from './schema'
+export type {
+  ConditionalAPI,
+  ConditionalRecord,
+  ObjectWithContextValidator,
+  ValidatorWithConditionals,
+} from './schema'
 
 // Re-export everything from @stacksjs/ts-validation. The explicit `schema`
 // export above shadows ts-validation's own `schema` for `import { schema }
