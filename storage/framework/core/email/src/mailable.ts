@@ -25,6 +25,24 @@ export interface MailableSendOptions {
  * Internal stash for template rendering — populated by {@link Mailable.template}
  * and consumed in {@link Mailable.send} after `build()` resolves.
  */
+/**
+ * Read-only snapshot of a Mailable's build state — produced by
+ * {@link Mailable.inspect}. Used by the preview server (#1900) so the
+ * UI can render what the email WOULD look like without dispatching.
+ */
+export interface MailableInspection {
+  to: string[] | EmailAddress[]
+  cc: string[] | EmailAddress[]
+  bcc: string[] | EmailAddress[]
+  from?: EmailAddress
+  replyTo?: EmailAddress
+  subject?: string
+  text?: string
+  html?: string
+  template?: { name: string, props: Record<string, unknown> }
+  attachments: EmailAttachment[]
+}
+
 interface TemplateRef {
   name: string
   props: Record<string, unknown>
@@ -215,6 +233,32 @@ export abstract class Mailable {
   template(name: string, props: Record<string, unknown> = {}): this {
     this._template = { name, props }
     return this
+  }
+
+  /**
+   * Read-only snapshot of the Mailable's build state — recipients,
+   * subject, template binding, body, attachments. Used by the
+   * `buddy mail:preview` dev server (stacksjs/stacks#1900) to render
+   * what the email WOULD look like without actually dispatching it.
+   *
+   * Returns the protected fields verbatim (no copies of mutable arrays
+   * — the caller shouldn't mutate the snapshot since the Mailable may
+   * still be sent). Wraps the access so external preview tooling
+   * doesn't need to `as any`-cast through the protected slot.
+   */
+  inspect(): MailableInspection {
+    return {
+      to: this._to,
+      cc: this._cc,
+      bcc: this._bcc,
+      from: this._from,
+      replyTo: this._replyTo,
+      subject: this._subject,
+      text: this._text,
+      html: this._html,
+      template: this._template,
+      attachments: this._attachments,
+    }
   }
 
   /**

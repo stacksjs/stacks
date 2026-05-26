@@ -10,3 +10,12 @@ export * from './webhook-signatures'
 export * from './mailable'
 export * from './template'
 export * from './types'
+
+// Dev-only Mailable preview server (stacksjs/stacks#1900 A3).
+export {
+  discoverMailables,
+  loadSampleProps,
+  renderMailablePreview,
+} from './preview'
+export type { DiscoveredMailable, MailablePreview } from './preview'
+export { renderIndexHtml, renderPreviewHtml } from './preview-ui'

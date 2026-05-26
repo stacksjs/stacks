@@ -654,6 +654,41 @@ export function mailCommands(buddy: CLI): void {
         process.exit(ExitCode.FatalError)
       }
     })
+
+  // Preview-server companion (stacksjs/stacks#1900 A3). The preview
+  // routes themselves live in `defaults/routes/core.ts` so they mount
+  // automatically on any dev server (`./buddy dev:api`); this command
+  // is a convenience that prints the URL + opens it. Reads the API
+  // port from `config.ports.api` with the same env-var override the
+  // dev server uses.
+  buddy
+    .command('mail:preview', 'Open the dev-only Mailable preview UI in your browser')
+    .option('--no-open', 'Print the URL but skip the browser-open step', { default: false })
+    .option('--port <port>', 'Override the API port (default: from config.ports.api / PORT_API)')
+    .example('buddy mail:preview')
+    .example('buddy mail:preview --no-open')
+    .example('buddy mail:preview --port 4000')
+    .action(async (options: { open?: boolean, port?: string }) => {
+      const { config } = await import('@stacksjs/config')
+      const portFromOption = options.port ? Number(options.port) : undefined
+      const portFromEnv = process.env.PORT_API ? Number(process.env.PORT_API) : undefined
+      const port = portFromOption || portFromEnv || config.ports?.api || 3008
+      const url = `http://localhost:${port}/_stacks/mail/preview`
+
+      log.info(`Mailable preview: ${url}`)
+      log.info('(Make sure `./buddy dev:api` is running.)')
+
+      if (options.open !== false) {
+        try {
+          execSync(`open "${url}" 2>/dev/null || xdg-open "${url}" 2>/dev/null || true`, { encoding: 'utf-8' })
+        }
+        catch {
+          /* Silent — printing the URL above is sufficient for headless envs. */
+        }
+      }
+
+      process.exit(ExitCode.Success)
+    })
 }
 
 /**

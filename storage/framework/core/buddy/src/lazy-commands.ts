@@ -57,6 +57,7 @@ const commandRegistry: Record<string, CommandLoader> = {
   'lint': { path: './commands/lint.ts', exportName: 'lint' },
   'list': { path: './commands/list.ts', exportName: 'list' },
   'mail': { path: './commands/mail.ts', exportName: 'mailCommands' },
+  'mail:preview': { path: './commands/mail.ts', exportName: 'mailCommands' },
   'maintenance': { path: './commands/maintenance.ts', exportName: 'maintenance' },
   'down': { path: './commands/maintenance.ts', exportName: 'maintenance' },
   'up': { path: './commands/maintenance.ts', exportName: 'maintenance' },
