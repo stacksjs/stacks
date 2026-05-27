@@ -1,54 +1,7 @@
 import type { CLI, SeedOptions } from '@stacksjs/types'
-import { existsSync, readdirSync } from 'node:fs'
 import process from 'node:process'
-import { runAction } from '@stacksjs/actions'
 import { intro, log, onUnknownSubcommand, outro } from "@stacksjs/cli"
-import { Action } from '@stacksjs/enums'
-import { appPath, frameworkPath } from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types'
-
-/**
- * Count model files in a directory (recursively)
- */
-function countModelFiles(dir: string): number {
-  if (!existsSync(dir)) {
-    return 0
-  }
-
-  let count = 0
-  const entries = readdirSync(dir, { withFileTypes: true })
-
-  for (const entry of entries) {
-    if (entry.isDirectory()) {
-      count += countModelFiles(`${dir}/${entry.name}`)
-    }
-    else if (entry.name.endsWith('.ts') && !entry.name.startsWith('.') && !entry.name.startsWith('index')) {
-      count++
-    }
-  }
-
-  return count
-}
-
-/**
- * Check if models exist in either user directory or defaults directory
- */
-function validateModelsExist(): { valid: boolean, error?: string } {
-  const userModelsPath = appPath('Models')
-  const defaultModelsPath = frameworkPath('defaults/app/Models')
-
-  const userModelCount = countModelFiles(userModelsPath)
-  const defaultModelCount = countModelFiles(defaultModelsPath)
-
-  if (userModelCount === 0 && defaultModelCount === 0) {
-    return {
-      valid: false,
-      error: 'No models found. Please create models in app/Models or ensure framework defaults exist.',
-    }
-  }
-
-  return { valid: true }
-}
 
 export function seed(buddy: CLI): void {
   const descriptions = {
@@ -90,45 +43,49 @@ export function seed(buddy: CLI): void {
         process.exit(result.ran.length > 0 ? ExitCode.Success : ExitCode.FatalError)
       }
 
-      // Validate models exist before running seeders
-      const validation = validateModelsExist()
-      if (!validation.valid) {
-        console.error(`\n❌ Error: ${validation.error!}\n`)
-        process.exit(ExitCode.FatalError)
-      }
+      // stacksjs/stacks#1919 — `./buddy seed` is now class-seeders-only.
+      // The legacy model-attribute auto-walker would double-fire on any
+      // table that had both a `useSeeder` trait and a class seeder file
+      // (N walker rows + class_seeder_count rows, no dedup). Class
+      // seeders own orchestration; if a model wants factory rows, the
+      // class seeder calls `factory.generate(Model, opts)` explicitly.
+      //
+      // Adopters with `useSeeder` traits but no class seeder files
+      // should run `./buddy seed:scaffold` once to codemod a class
+      // seeder per model. We detect that state and tell them.
+      const { injectGlobalAutoImports } = await import('@stacksjs/server')
+      await injectGlobalAutoImports()
+      const { runClassSeeders, listSeedableModels } = await import('@stacksjs/database')
+      const { path } = await import('@stacksjs/path')
+      const { fs } = await import('@stacksjs/storage')
 
-      const result = await runAction(Action.Seed, options)
+      const seedableModels = await listSeedableModels()
+      const seedersDir = path.projectPath('database/seeders')
+      const existingSeederFiles = fs.existsSync(seedersDir)
+        ? new Set(fs.readdirSync(seedersDir).filter((f: string) => f.endsWith('.ts')))
+        : new Set<string>()
 
-      if (result.isErr) {
-        await outro(
-          'While running the seed command, there was an issue',
-          { startTime: perf, useSeconds: true },
-          result.error,
+      const unmigratedModels = seedableModels.filter(
+        m => !existingSeederFiles.has(`${m.name}Seeder.ts`),
+      )
+
+      if (unmigratedModels.length > 0) {
+        log.warn(
+          `[seed] ${unmigratedModels.length} model(s) declare \`useSeeder\` but have no class seeder file: `
+          + `${unmigratedModels.map(m => m.name).join(', ')}. `
+          + `The auto-walker has been removed (stacksjs/stacks#1919) — these models will NOT seed. `
+          + `Run \`./buddy seed:scaffold\` to codemod a class seeder per model, then re-run \`./buddy seed\`.`,
         )
-        process.exit(ExitCode.FatalError)
       }
 
-      // After model auto-seeding, also run class seeders if any exist —
-      // they're usually composition layers on top of the auto-seeded data.
-      try {
-        const { injectGlobalAutoImports } = await import('@stacksjs/server')
-        await injectGlobalAutoImports()
-        const { runClassSeeders } = await import('@stacksjs/database')
-        const classResult = await runClassSeeders()
-        if (classResult.ran.length > 0) {
-          log.info(`Also ran ${classResult.ran.length} class seeder(s): ${classResult.ran.join(', ')}`)
-        }
-      }
-      catch (err) {
-        log.warn('Class seeders failed (non-fatal):', err)
-      }
+      const classResult = await runClassSeeders()
 
       const APP_ENV = process.env.APP_ENV || 'local'
-
-      await outro(`Seeded your ${APP_ENV} database.`, {
-        startTime: perf,
-        useSeconds: true,
-      })
+      const ran = classResult.ran.length
+      await outro(
+        `Seeded your ${APP_ENV} database. Class seeders: ran=${ran}, skipped=${classResult.skipped.length}.`,
+        { startTime: perf, useSeconds: true },
+      )
       process.exit(ExitCode.Success)
     })
 

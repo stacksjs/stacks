@@ -564,6 +564,13 @@ function sortModelsByDependencies(models: SeederModel[]): SeederModel[] {
  * Seeds the database using model factory functions
  * Loads models from both framework defaults and user-defined models,
  * with user models taking precedence.
+ *
+ * @deprecated stacksjs/stacks#1919 — the model auto-walker is no
+ * longer invoked by `./buddy seed`. Migrate each `useSeeder` trait to
+ * a class seeder via `./buddy seed:scaffold`, then call
+ * `factory.generate(Model, opts)` from inside each seeder. This
+ * function remains exported for programmatic back-compat but is
+ * scheduled for removal.
  */
 export async function seed(config: SeederConfig = {}): Promise<SeedSummary> {
   const startTime = Date.now()
