@@ -8,9 +8,14 @@ describe('HttpError', () => {
     expect(error.message).toBe('Not Found')
   })
 
-  it('should have name set to "Server Error!"', () => {
-    const error = new HttpError(500, 'Internal Server Error')
-    expect(error.name).toBe('Server Error!')
+  it('should set name to the HTTP status name', () => {
+    // HttpError maps status → standard name via httpStatusName():
+    // 500 → "Internal Server Error", 404 → "Not Found", etc.
+    // The previous "Server Error!" expectation was a pre-mapping
+    // placeholder that drifted from the actual constructor.
+    expect(new HttpError(500, 'oops').name).toBe('Internal Server Error')
+    expect(new HttpError(404, 'oops').name).toBe('Not Found')
+    expect(new HttpError(400, 'oops').name).toBe('Bad Request')
   })
 
   it('should extend Error', () => {

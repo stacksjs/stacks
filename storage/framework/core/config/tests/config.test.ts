@@ -38,9 +38,16 @@ import {
 
 describe('config', () => {
   describe('config object', () => {
-    test('config is defined and is an object', () => {
+    test('config is defined and exposes properties via the proxy', () => {
       expect(config).toBeDefined()
-      expect(typeof config).toBe('object')
+      // `config` is a Proxy over a function target (the function is
+      // never called — it's just a fresh trap target each time, see
+      // src/config.ts:48). `typeof` therefore reports 'function'
+      // even though the surface behaves like an object. Verify the
+      // proxy actually serves properties instead of pinning the
+      // typeof shape.
+      expect(['object', 'function']).toContain(typeof config)
+      expect('app' in config).toBe(true)
     })
 
     test('getConfig returns the same config object', () => {

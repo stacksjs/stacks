@@ -29,7 +29,9 @@ describe('Error Handling Integration', () => {
       const error = new HttpError(404, 'Page not found')
       expect(error.status).toBe(404)
       expect(error.message).toBe('Page not found')
-      expect(error.name).toBe('Server Error!')
+      // `name` mirrors the HTTP status text via `httpStatusName()`,
+      // not the prior "Server Error!" placeholder.
+      expect(error.name).toBe('Not Found')
     })
 
     test('HttpError is an instance of Error', () => {
