@@ -369,11 +369,25 @@ function wrapModelInstance<T extends object>(
         return function toSearchableObject() {
           const def = (target as any)._definition as { traits?: { useSearch?: boolean | SearchOptions } } | undefined
           const search = def?.traits?.useSearch
-          if (!search || typeof search !== 'object') return null
+          if (!search) return null
 
           const attrs = (target as any)._attributes as Record<string, unknown> | undefined
           if (!attrs) return null
 
+          // Boolean form: `useSearch: true` indexes every attribute on
+          // the row. Pre-fix this branch short-circuited to `null`
+          // because `typeof true === 'boolean'`, which silently no-op'd
+          // both the live observer hook AND `./buddy search-engine:
+          // update` (the latter logged `imported 0, skipped N` and
+          // exited 0). See stacksjs/stacks#1917.
+          if (search === true) {
+            const doc: Record<string, unknown> = { ...attrs }
+            if (attrs.id != null) doc.id = String(attrs.id)
+            return doc
+          }
+
+          // Object form: explicit `searchable` / `displayable` /
+          // `filterable` / `sortable` arrays.
           const doc: Record<string, unknown> = {}
           const keys = search.displayable?.length
             ? search.displayable
