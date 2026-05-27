@@ -130,11 +130,22 @@ function prepareMigrationModelsDir(): { modelsDir: string, skip: boolean } {
  * - Creating duplicate unique indexes on columns that already have UNIQUE constraints
  *   from inline table definitions (the index name differs but the constraint conflicts)
  *
- * Files that would become no-ops are deleted from disk and recorded in the
- * migrations tracking table so they're treated as "executed" — keeping the
- * migrations/ directory clean instead of cluttered with `SELECT 1` stubs.
+ * Two flavours of "no-op on SQLite" need different handling:
+ *
+ *   - **Skip-and-keep** (`skipMigration`): the file is portable — it would
+ *     run cleanly on MySQL/Postgres — but doesn't apply to SQLite. Record
+ *     it as executed in the migrations tracking table so it doesn't replay,
+ *     but **leave the file on disk** so a future `DB_CONNECTION` flip can
+ *     pick it up. This is the right path for FK constraint files and
+ *     unique-index files. (stacksjs/stacks#1916)
+ *
+ *   - **Drop-and-delete** (`deleteMigration`): the file is genuinely dead
+ *     — a duplicate CREATE TABLE created by `buddy generate:migrations`
+ *     regenerating against an already-modeled table, or a DROP COLUMN
+ *     migration whose target column never existed. Removing it keeps the
+ *     directory clean and prevents future runs from re-discovering it.
  */
-function preprocessSqliteMigrations(): void {
+export function preprocessSqliteMigrations(): void {
   const migrationsDir = join(process.cwd(), 'database', 'migrations')
   let files: string[]
   try {
@@ -147,7 +158,14 @@ function preprocessSqliteMigrations(): void {
   // Track which migrations we drop so we can mark them executed in the
   // migrations table (otherwise the next generate run regenerates them).
   const droppedMigrations: string[] = []
-  const dropMigration = (file: string, filePath: string, reason: string): void => {
+  const skipMigration = (file: string, reason: string): void => {
+    // Portable migration that doesn't apply to SQLite — file stays on
+    // disk so it can run if the consumer ever switches to MySQL/Postgres.
+    log.info(`Skipping migration on SQLite (${reason}): ${file}`)
+    droppedMigrations.push(file)
+  }
+  const deleteMigration = (file: string, filePath: string, reason: string): void => {
+    // Genuinely dead file — duplicate or unreachable. Safe to remove.
     log.info(`Dropping no-op migration (${reason}): ${file}`)
     try { unlinkSync(filePath) }
     catch { /* already gone */ }
@@ -204,22 +222,32 @@ function preprocessSqliteMigrations(): void {
 
     // Drop duplicate CREATE TABLE migrations — keep only the earliest one
     // for each table. This handles the case where buddy regenerates a
-    // create-table migration for a table that's already modeled.
+    // create-table migration for a table that's already modeled. These
+    // ARE genuinely dead — the table already exists, the file would
+    // either no-op or error, and we don't want them in a future
+    // MySQL/Postgres replay either. Safe to delete.
     const firstStatement = statements[0]
     const createTableMatch = firstStatement ? firstStatement.match(createTablePattern) : null
     if (createTableMatch && createTableMatch[1]) {
       const tableName = createTableMatch[1]
       const earliest = createTableEarliest.get(tableName)
       if (earliest && earliest !== file) {
-        dropMigration(file, filePath, `duplicate create-table for "${tableName}" (kept ${earliest})`)
+        deleteMigration(file, filePath, `duplicate create-table for "${tableName}" (kept ${earliest})`)
         continue
       }
     }
 
-    // Skip files that only contain ALTER TABLE ADD CONSTRAINT
+    // Skip files that only contain ALTER TABLE ADD CONSTRAINT.
+    //
+    // SQLite cannot execute this — FKs are inline on CREATE TABLE
+    // (stacksjs/bun-query-builder#1019). But the file is perfectly
+    // valid on MySQL/Postgres, so we KEEP IT ON DISK and just mark
+    // it as executed in the migrations table for SQLite. A later
+    // DB_CONNECTION flip can replay these files against the new
+    // backend. (stacksjs/stacks#1916)
     const allAddConstraint = statements.every(s => addConstraintPattern.test(s))
     if (allAddConstraint) {
-      dropMigration(file, filePath, 'SQLite does not support ALTER TABLE ADD CONSTRAINT')
+      skipMigration(file, 'SQLite does not support ALTER TABLE ADD CONSTRAINT')
       continue
     }
 
@@ -227,9 +255,13 @@ function preprocessSqliteMigrations(): void {
     // a UNIQUE constraint from table creation. IF NOT EXISTS only checks
     // by index name, not by column — so a second unique index with a
     // different name triggers SQLITE_CONSTRAINT_UNIQUE.
+    //
+    // Same skip-but-keep rule as FK constraints: MySQL/Postgres need
+    // the explicit `CREATE UNIQUE INDEX` (their indexes are separate
+    // objects, not inline). The file survives a driver switch.
     const allCreateUniqueIndex = statements.every(s => createUniqueIndexPattern.test(s))
     if (allCreateUniqueIndex) {
-      dropMigration(file, filePath, 'unique constraint already inline on table')
+      skipMigration(file, 'unique constraint already inline on table')
       continue
     }
 
@@ -286,7 +318,10 @@ function preprocessSqliteMigrations(): void {
 
       if (modified) {
         if (filteredStatements.length === 0) {
-          dropMigration(file, filePath, 'columns already absent from table')
+          // The entire DROP COLUMN file is unreachable — column already
+          // gone, table never existed. Safe to delete: a future
+          // driver-switch replay wouldn't find the column either.
+          deleteMigration(file, filePath, 'columns already absent from table')
         }
         else {
           writeFileSync(filePath, `${filteredStatements.join(';\n')};\n`)
