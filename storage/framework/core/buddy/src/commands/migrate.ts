@@ -123,6 +123,37 @@ function validateModelsExist(): { valid: boolean, error?: string } {
   return { valid: true }
 }
 
+/**
+ * Post-migrate FK integrity probe (stacksjs/stacks#1915 D-5).
+ *
+ * Catches the silent "you flipped DB_CONNECTION but the FKs didn't
+ * follow" failure mode while the user is still at the `migrate` step,
+ * which is the highest-context moment to surface it. Treats audit
+ * failure as a non-fatal warning so a misconfigured DB driver or a
+ * missing introspection permission doesn't break the migrate command —
+ * the user can always run `buddy doctor` for the structured view.
+ */
+async function reportMissingForeignKeys(): Promise<void> {
+  try {
+    const { auditForeignKeys } = await import('@stacksjs/database')
+    const result = await auditForeignKeys()
+    if (result.missing.length === 0) return
+
+    const sample = result.missing
+      .slice(0, 5)
+      .map(fk => `  • ${fk.fromTable}.${fk.fromColumn} → ${fk.toTable}.${fk.toColumn} (${fk.model})`)
+      .join('\n')
+    const more = result.missing.length > 5 ? `\n  + ${result.missing.length - 5} more — run \`./buddy doctor\` for the full list.` : ''
+    log.warn(
+      `${result.missing.length} of ${result.declared.length} declared foreign keys are missing from the live schema:\n${sample}${more}\n`
+      + `If you just flipped DB_CONNECTION, the FK ALTER migrations may be sitting on disk but unapplied — run \`./buddy migrate:fresh\` against the new database (will reset data) or replay the alter-*.sql files manually.`,
+    )
+  }
+  catch (err) {
+    log.debug(`[migrate] FK integrity check skipped: ${err instanceof Error ? err.message : String(err)}`)
+  }
+}
+
 export function migrate(buddy: CLI): void {
   const descriptions = {
     migrate: 'Migrates your database',
@@ -191,6 +222,12 @@ export function migrate(buddy: CLI): void {
           log.error('Failed to migrate auth tables:', error)
         }
       }
+
+      // Post-migrate FK integrity check (stacksjs/stacks#1915 D-5).
+      // Surfaces the "you flipped DB_CONNECTION and the FKs didn't
+      // follow" failure mode while the user is still at the migrate
+      // command — the highest-context moment to warn.
+      await reportMissingForeignKeys()
 
       const APP_ENV = process.env.APP_ENV || 'local'
 
@@ -266,6 +303,9 @@ export function migrate(buddy: CLI): void {
           log.error('Failed to migrate auth tables:', error)
         }
       }
+
+      // Post-migrate FK integrity check (stacksjs/stacks#1915 D-5).
+      await reportMissingForeignKeys()
 
       // Run seeders if --seed flag is provided.
       //
