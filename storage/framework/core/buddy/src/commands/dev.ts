@@ -905,7 +905,9 @@ async function waitForPort(port: number, timeoutMs: number): Promise<boolean> {
   while (Date.now() < deadline) {
     if (await probeDevServerHttp(port))
       return true
-    await new Promise(r => setTimeout(r, 250))
+    // Tight poll: a refused connection rejects instantly, so this is cheap and
+    // detects "just bound" within ~50ms instead of up to a quarter second.
+    await new Promise(r => setTimeout(r, 50))
   }
   return false
 }
