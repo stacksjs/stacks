@@ -191,7 +191,13 @@ export async function runAction(action: Action, options?: ActionOptions): Promis
     ...options,
     stdout: shouldInherit ? 'inherit' : undefined,
     stderr: shouldInherit ? 'inherit' : undefined,
-    env: { ...options?.env, NODE_PATH: nodePath },
+    // Dev server subprocesses (`bun --watch dev/*.ts`) run the bunfig preloader
+    // with empty argv, so it can't tell them apart from a server boot and runs
+    // the full ~800ms auto-import + package-discovery pass on EVERY server. That
+    // work is redundant for the API (api.ts injects its own globals via
+    // injectGlobalAutoImports) and pure waste for the frontend/docs servers,
+    // which never touch models. Flag the subprocess so the preloader skips it.
+    env: { ...options?.env, NODE_PATH: nodePath, ...(isDevAction ? { STACKS_DEV_SERVER: '1' } : {}) },
   }
 
   const result = await runCommand(cmd, optionsWithCwd)

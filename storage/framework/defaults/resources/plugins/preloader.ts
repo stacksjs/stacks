@@ -279,7 +279,12 @@ export async function loadAutoImports() {
 // Skip for fast commands (dev, build, test, etc.) and CLI info commands.
 // `args[0]` may be undefined when running a script directly (e.g. dev subprocess);
 // guard so .includes() doesn't accidentally treat that as a CLI info command.
-const skipAutoImports = skipPreloader || (args.length > 0 && ['--version', '-v', 'version', '--help', '-h', 'help'].includes(args[0]))
+// `./buddy dev` server subprocesses set STACKS_DEV_SERVER=1. They load only
+// what they need themselves — the API injects globals via injectGlobalAutoImports
+// and reads the cached package-discovery manifest, while the frontend/docs
+// servers never touch models — so the preloader's eager ~800ms auto-import +
+// discoverPackages pass is redundant work on the critical boot path. Skip it.
+const skipAutoImports = skipPreloader || process.env.STACKS_DEV_SERVER === '1' || (args.length > 0 && ['--version', '-v', 'version', '--help', '-h', 'help'].includes(args[0]))
 if (!skipAutoImports) {
   await loadAutoImports()
 
