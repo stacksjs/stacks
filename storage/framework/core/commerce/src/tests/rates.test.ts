@@ -1,5 +1,5 @@
 // import { beforeEach, describe, expect, it } from 'bun:test'
-// import { refreshDatabase } from '@stacksjs/testing'
+// import { refreshDatabase } from '@stacksjs/testing/database'
 // import { bulkDestroy, destroy, destroyByMethod, destroyByZone } from '../shippings/shipping-rates/destroy'
 // import { fetchById, formatShippingRateOptions, getRateByWeightAndZone, getRatesByZone, getShippingRatesByMethod } from '../shippings/shipping-rates/fetch'
 // import { bulkStore, store } from '../shippings/shipping-rates/store'

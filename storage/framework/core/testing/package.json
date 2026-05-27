@@ -35,6 +35,16 @@
       "bun": "./src/index.ts",
       "import": "./dist/index.js"
     },
+    "./database": {
+      "types": "./dist/database.d.ts",
+      "bun": "./src/database.ts",
+      "import": "./dist/database.js"
+    },
+    "./dynamodb": {
+      "types": "./dist/dynamodb.d.ts",
+      "bun": "./src/dynamodb.ts",
+      "import": "./dist/dynamodb.js"
+    },
     "./*": {
       "bun": "./src/*",
       "import": "./dist/*"

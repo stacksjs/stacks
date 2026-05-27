@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'bun:test'
-import { refreshDatabase } from '@stacksjs/testing'
+import { refreshDatabase } from '@stacksjs/testing/database'
 import { destroy } from '../categorizables/destroy'
 import { store } from '../categorizables/store'
 
