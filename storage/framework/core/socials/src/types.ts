@@ -102,6 +102,14 @@ export interface PublishPostInput {
     title: string
     description?: string
   }
+  /**
+   * Attached media. Required by media-only providers such as Instagram, and
+   * ignored by text-first providers (Bluesky, LinkedIn) for now.
+   */
+  media?: Array<{
+    url: string
+    altText?: string
+  }>
 }
 
 export interface PublishedPost {
@@ -122,6 +130,8 @@ export interface TimelineResult {
     uri: string
     authorHandle: string
     authorName?: string
+    authorAvatar?: string
+    postUrl?: string
     body: string
     postedAt: string
     likeCount: number

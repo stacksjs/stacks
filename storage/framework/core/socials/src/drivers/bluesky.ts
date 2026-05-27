@@ -153,7 +153,7 @@ export class BlueskyPublishingDriver implements SocialPublishingDriver {
       feed?: Array<{
         post?: {
           uri: string
-          author?: { handle: string, displayName?: string }
+          author?: { handle: string, displayName?: string, avatar?: string }
           record?: { text?: string, createdAt?: string }
           likeCount?: number
           repostCount?: number
@@ -176,6 +176,8 @@ export class BlueskyPublishingDriver implements SocialPublishingDriver {
           uri: item.uri,
           authorHandle: item.author.handle,
           authorName: item.author.displayName,
+          authorAvatar: item.author.avatar,
+          postUrl: this.toPostUrl(item.author.handle, item.uri),
           body: item.record?.text || '',
           postedAt: item.record?.createdAt || new Date().toISOString(),
           likeCount: item.likeCount || 0,
