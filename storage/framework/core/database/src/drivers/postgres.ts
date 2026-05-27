@@ -413,7 +413,13 @@ async function createPivotTableMigration(model: Model, modelPath: string) {
     migrationContent += `    .addColumn('id', 'serial', (col) => col.primaryKey())\n`
     migrationContent += `    .addColumn('${pivotTable.firstForeignKey}', 'integer', (col) => col.notNull())\n`
     migrationContent += `    .addColumn('${pivotTable.secondForeignKey}', 'integer', (col) => col.notNull())\n`
-    migrationContent += `    .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql.raw('CURRENT_TIMESTAMP')))\n`
+    // Use timestamptz on PostgreSQL to match the parent table
+    // convention (see :275). Cross-table joins on created_at
+    // returned mismatched values when the pivot drifted to plain
+    // `timestamp` (no TZ) while the parent used `timestamptz`.
+    // Same D-5 fix that the upvote table got in #1876; this was the
+    // missed m2m sibling. See stacksjs/stacks#1915.
+    migrationContent += `    .addColumn('created_at', 'timestamptz', col => col.notNull().defaultTo(sql.raw('CURRENT_TIMESTAMP')))\n`
     migrationContent += `    .execute()\n\n`
 
     // Add foreign key constraints
