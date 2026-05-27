@@ -393,6 +393,14 @@ export async function startDevelopmentServer(_options: DevOptions, _startTime?: 
   const rpxTlsPreflight = hasCustomDomain && domain
     ? prepareRpxTlsForDev({ domain, includeDashboard, options })
     : Promise.resolve()
+  // The HTTPS proxy is optional. This preflight is only awaited later (inside the
+  // readiness handler, behind the frontend port probe), so without a handler
+  // attached now an early failure — e.g. falling back to an @stacksjs/rpx build
+  // that predates the TLS helpers `ensureRpxDevelopmentHttps` calls — would
+  // surface as an unhandled rejection and kill the dev server before the frontend
+  // even binds. The no-op catch keeps it "handled"; the await below still warns
+  // and the dev server degrades to http://localhost.
+  void rpxTlsPreflight.catch(() => {})
 
   // Clean up child processes on exit to prevent orphaned processes.
   //
