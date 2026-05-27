@@ -18,8 +18,20 @@ describe('sqlHelpers - return shape', () => {
     expect(h).toHaveProperty('boolFalse')
     expect(h).toHaveProperty('autoIncrement')
     expect(h).toHaveProperty('primaryKey')
+    expect(h).toHaveProperty('pkColumn')
+    expect(h).toHaveProperty('nullableTimestamp')
     expect(typeof h.param).toBe('function')
     expect(typeof h.params).toBe('function')
+  })
+
+  test('pkColumn and nullableTimestamp diverge per dialect (stacksjs/stacks#1915 D-3)', () => {
+    expect(sqlHelpers('postgres').pkColumn).toBe('id SERIAL PRIMARY KEY')
+    expect(sqlHelpers('mysql').pkColumn).toBe('id INTEGER PRIMARY KEY AUTO_INCREMENT')
+    expect(sqlHelpers('sqlite').pkColumn).toBe('id INTEGER PRIMARY KEY AUTOINCREMENT')
+
+    expect(sqlHelpers('postgres').nullableTimestamp).toBe('TIMESTAMP')
+    expect(sqlHelpers('mysql').nullableTimestamp).toBe('TIMESTAMP NULL')
+    expect(sqlHelpers('sqlite').nullableTimestamp).toBe('TIMESTAMP')
   })
 
   test('stores the driver string it was created with', () => {

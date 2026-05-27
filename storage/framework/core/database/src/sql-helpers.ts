@@ -22,6 +22,23 @@ export interface SqlDialectHelpers {
   /** Primary key suffix */
   primaryKey: string
   /**
+   * Full DDL for an `id` primary-key column. Composes the dialect-specific
+   * auto-increment + primary-key fragments so callers can write one CREATE
+   * TABLE per table instead of branching per dialect.
+   * Postgres → `id SERIAL PRIMARY KEY`
+   * MySQL   → `id INTEGER PRIMARY KEY AUTO_INCREMENT`
+   * SQLite  → `id INTEGER PRIMARY KEY AUTOINCREMENT`
+   */
+  pkColumn: string
+  /**
+   * DDL fragment for a nullable timestamp column.
+   * MySQL needs an explicit `NULL` modifier — without it, the column is
+   * implicitly NOT NULL (with `0000-00-00 00:00:00` as the default), which
+   * trips the strict-mode insert path. Postgres and SQLite are nullable by
+   * default, so the modifier is omitted.
+   */
+  nullableTimestamp: string
+  /**
    * Positional parameter placeholder.
    * PostgreSQL uses $1, $2, ...; MySQL/SQLite use ?.
    */
@@ -63,6 +80,12 @@ export function sqlHelpers(driver: string): SqlDialectHelpers {
       : isMysql
         ? 'PRIMARY KEY AUTO_INCREMENT'
         : 'PRIMARY KEY AUTOINCREMENT',
+    pkColumn: isPostgres
+      ? 'id SERIAL PRIMARY KEY'
+      : isMysql
+        ? 'id INTEGER PRIMARY KEY AUTO_INCREMENT'
+        : 'id INTEGER PRIMARY KEY AUTOINCREMENT',
+    nullableTimestamp: isMysql ? 'TIMESTAMP NULL' : 'TIMESTAMP',
 
     param(index: number): string {
       return isPostgres ? `$${index}` : '?'
