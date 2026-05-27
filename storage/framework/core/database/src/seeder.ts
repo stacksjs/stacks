@@ -136,7 +136,7 @@ export interface SeedSummary {
 /**
  * Parsed model with seeding information
  */
-interface SeederModel {
+export interface SeederModel {
   name: string
   table: string
   count: number
@@ -410,6 +410,16 @@ async function generateRecords(model: SeederModel, verbose: boolean = false): Pr
 }
 
 /**
+ * Direct entry point for `factory.generate(Model, opts)` — exported
+ * under a distinct name so the new public API in `factory.ts` can call
+ * into the same insert path the legacy walker uses without leaking the
+ * `SeederModel` type. See stacksjs/stacks#1919.
+ */
+export function seedModelDirect(model: SeederModel, options: SeederConfig): Promise<SeedResult> {
+  return seedModel(model, options)
+}
+
+/**
  * Seed a single model
  */
 async function seedModel(model: SeederModel, options: SeederConfig): Promise<SeedResult> {
@@ -581,6 +591,18 @@ export async function seed(config: SeederConfig = {}): Promise<SeedSummary> {
       duration: Date.now() - startTime,
     }
   }
+
+  // stacksjs/stacks#1919 — the `useSeeder` auto-walker is being
+  // collapsed into `factory.generate(Model, opts)`, which class
+  // seeders invoke explicitly. Emit a one-shot deprecation warning so
+  // users know the dual-pipeline footgun (walker rows + class seeder
+  // rows on the same table) is going away. The walker keeps firing
+  // for now to preserve back-compat; removal lands in a future major.
+  log.warn(
+    `[seed] The \`useSeeder\` trait + auto-walker is deprecated (stacksjs/stacks#1919). `
+    + `Migrate each model to a class seeder that calls \`factory.generate(Model, { count })\` instead. `
+    + `Affected: ${models.map(m => m.name).join(', ')}`,
+  )
 
   // Filter models if only/except is specified
   if (config.only && config.only.length > 0) {

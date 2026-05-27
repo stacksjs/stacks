@@ -83,6 +83,14 @@ export { addColumnSafely, backfillInBatches, renameColumnSafely } from './safe-m
 // Seeding
 export * from './seeder'
 
+// stacksjs/stacks#1919 — public factory API. The canonical replacement
+// for the legacy `useSeeder` trait + auto-walker. Class seeders call
+// `factory.generate(Model, opts)` explicitly so there's one
+// orchestration layer per table, no double-fire on tables that have
+// both a `useSeeder` trait and a class seeder file.
+export { factory, generate as factoryGenerate } from './factory'
+export type { GenerateOptions } from './factory'
+
 // Driver utilities
 export * from './drivers'
 
