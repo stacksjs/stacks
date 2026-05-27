@@ -388,5 +388,111 @@ export function migrate(buddy: CLI): void {
       process.exit(ExitCode.Success)
     })
 
+  // `buddy migrate:switch <driver>` — pre-flight + plan for flipping
+  // DB_CONNECTION between sqlite / mysql / postgres
+  // (stacksjs/stacks#1915 D-4).
+  //
+  // Intentionally does NOT mutate .env or auto-run migrations. The
+  // intent here is to surface the silent traps documented in #1915
+  // (timestamp TZ drift, auth-table boolean mismatch, FK migration
+  // files that need replaying on the new dialect) BEFORE the user
+  // commits to the switch. The output is a checklist they walk
+  // through manually — the actual migration is still `buddy migrate`
+  // (or `migrate:fresh`) once the env is updated.
+  buddy
+    .command('migrate:switch <driver>', 'Pre-flight check + plan for switching DB_CONNECTION between sqlite / mysql / postgres')
+    .action(async (driver: string) => {
+      log.debug(`Running \`buddy migrate:switch ${driver}\` ...`)
+      const perf = await intro('buddy migrate:switch')
+
+      const target = driver.toLowerCase()
+      const allowed = new Set(['sqlite', 'mysql', 'postgres'])
+      if (!allowed.has(target)) {
+        // eslint-disable-next-line no-console
+        console.log(`\n  Unknown target driver "${driver}". Allowed: sqlite, mysql, postgres.\n`)
+        await outro(`Aborted.`, { startTime: perf, useSeconds: true })
+        process.exit(ExitCode.FatalError)
+      }
+
+      const current = (process.env.DB_CONNECTION || 'sqlite').toLowerCase()
+      if (current === target) {
+        // eslint-disable-next-line no-console
+        console.log(`\n  DB_CONNECTION is already "${target}". Nothing to switch.\n`)
+        await outro(`No-op.`, { startTime: perf, useSeconds: true })
+        process.exit(ExitCode.Success)
+      }
+
+      // Pre-flight: the target driver's env vars must be present
+      // before the user kicks off `buddy migrate` against it.
+      const requiredEnv: Record<string, string[]> = {
+        sqlite: ['DB_DATABASE'],
+        mysql: ['DB_HOST', 'DB_PORT', 'DB_USERNAME', 'DB_PASSWORD', 'DB_DATABASE'],
+        postgres: ['DB_HOST', 'DB_PORT', 'DB_USERNAME', 'DB_PASSWORD', 'DB_DATABASE'],
+      }
+      const missingEnv = (requiredEnv[target] ?? []).filter(k => !process.env[k])
+
+      // Count migration files that exist on disk for replay. The
+      // FK ALTER / unique-index files that the SQLite preprocessing
+      // pass skipped (stacksjs/stacks#1916) are exactly the ones
+      // that will run when migrate is re-invoked against the new
+      // driver.
+      let alterCount = 0
+      let uniqueIdxCount = 0
+      try {
+        const migrationsDir = projectPath('database/migrations')
+        if (existsSync(migrationsDir)) {
+          const files = readdirSync(migrationsDir).filter(f => f.endsWith('.sql'))
+          for (const f of files) {
+            const content = readFileSync(`${migrationsDir}/${f}`, 'utf-8').toLowerCase()
+            if (/alter\s+table[\s\S]*add\s+constraint/.test(content)) alterCount++
+            if (/^\s*create\s+unique\s+index/m.test(content)) uniqueIdxCount++
+          }
+        }
+      }
+      catch { /* directory missing — fine */ }
+
+      // The plan is rendered with `console.log` (sync, flushes
+      // before `process.exit`) rather than `log.info` (async-
+      // buffered, can drop on early exit). The `log.*` helpers are
+      // great for the long-running migrate command but the wrong
+      // tool for this short-lived static report.
+      const sqliteFkNote = current === 'sqlite' && alterCount > 0
+        ? `\n    (These were skipped on SQLite per stacksjs/stacks#1916 and survive on disk for replay.)`
+        : ''
+      const boolNote = current === 'sqlite' && (target === 'postgres' || target === 'mysql')
+        ? `\n  • Booleans land as 0/1 on SQLite; ${target} stores them as ${target === 'postgres' ? 'true/false' : '0/1 (compatible)'}.`
+        : ''
+      const tzNote = target === 'postgres'
+        ? `\n  • PostgreSQL uses timestamptz (with TZ) where SQLite/MySQL store plain TIMESTAMP. Existing rows do NOT auto-upgrade — they ride the column's stored type.`
+        : ''
+      const envExtras = target !== 'sqlite' ? `, plus DB_HOST / DB_PORT / DB_USERNAME / DB_PASSWORD / DB_DATABASE` : ``
+      const missingNote = missingEnv.length > 0
+        ? `\n  ⚠ Missing env vars for ${target}: ${missingEnv.join(', ')}`
+        : ''
+
+      // eslint-disable-next-line no-console
+      console.log(`
+  Switch plan: ${current} → ${target}
+  ─────────────────────────────────────────────
+  • ${alterCount} ALTER TABLE ADD CONSTRAINT migration(s) will be applied against ${target}.${sqliteFkNote}
+  • ${uniqueIdxCount} CREATE UNIQUE INDEX migration(s) will be applied against ${target}.
+  • Auth tables (oauth_clients, oauth_access_tokens, oauth_refresh_tokens, password_resets) will be CREATE TABLE IF NOT EXISTS — they re-create cleanly under the new dialect.${boolNote}${tzNote}
+  • Existing row data does NOT auto-migrate. Use \`mysqldump\` / \`pg_dump\` (or your own export) to move it.${missingNote}
+  ─────────────────────────────────────────────
+
+  Next steps:
+    1. Update .env:  DB_CONNECTION=${target}${envExtras}
+    2. (Optional) Export data from the current ${current} database.
+    3. Run \`./buddy migrate\` (or \`migrate:fresh\` to start clean).
+    4. The post-migrate FK audit will report any constraints that didn't replay.
+`)
+
+      await outro(`Plan rendered. Re-run after updating .env to actually switch.`, {
+        startTime: perf,
+        useSeconds: true,
+      })
+      process.exit(ExitCode.Success)
+    })
+
   onUnknownSubcommand(buddy, "migrate")
 }
