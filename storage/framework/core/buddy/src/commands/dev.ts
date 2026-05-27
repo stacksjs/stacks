@@ -1193,7 +1193,7 @@ function resolveRpxDaemonSpawnCwd(): string {
   if (existsSync(join(toolsPkg, 'package.json')))
     return toolsPkg
 
-  const bootstrap = join(dirname(fileURLToPath(import.meta.url)), '../scripts/rpx-daemon-bootstrap.ts')
+  const bootstrap = join(dirname(fileURLToPath(import.meta.url)), '../../scripts/rpx-daemon-bootstrap.ts')
   if (existsSync(bootstrap))
     return dirname(bootstrap)
 
@@ -1202,7 +1202,7 @@ function resolveRpxDaemonSpawnCwd(): string {
 
 async function resolveRpxDaemonSpawnCommand(): Promise<string[]> {
   // Bootstrap first — never loads the app's Bun preloader.
-  const bootstrap = join(dirname(fileURLToPath(import.meta.url)), '../scripts/rpx-daemon-bootstrap.ts')
+  const bootstrap = join(dirname(fileURLToPath(import.meta.url)), '../../scripts/rpx-daemon-bootstrap.ts')
   if (existsSync(bootstrap))
     return [process.execPath, bootstrap]
 
