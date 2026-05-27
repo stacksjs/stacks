@@ -441,11 +441,13 @@ export async function startDevelopmentServer(_options: DevOptions, _startTime?: 
   // a TCP connection so the "ready in N ms" line below reflects the time at
   // which the URLs above actually serve traffic — not just when the spawn
   // calls returned. Probes run in parallel with the servers themselves.
+  // Only the core app servers gate "ready" — the Docs (and Dashboard) servers
+  // still start by default, but they boot in the background and shouldn't hold
+  // up the readiness banner. This keeps `ready in` reporting when the app is
+  // actually usable; the auxiliary URLs come up moments later.
   const ports = [
     { name: 'Frontend', port: frontendPort },
     { name: 'API', port: apiPort },
-    { name: 'Docs', port: docsPort },
-    ...(includeDashboard ? [{ name: 'Dashboard', port: dashboardPort }] : []),
   ]
   const readinessTimeoutMs = 30000
   let readyAnnounced = false
