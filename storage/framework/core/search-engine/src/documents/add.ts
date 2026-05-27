@@ -32,8 +32,14 @@ export async function importModelDocuments(modelOption?: string): Promise<Ok<str
           })
         }
 
+        type SearchableRow = { toSearchableObject?: () => Record<string, unknown> | null, id?: unknown }
+        type QueryBuilder = {
+          with: (...names: string[]) => QueryBuilder
+          get: () => Promise<SearchableRow[]>
+        }
         const ModelClass = modelInstance as typeof modelInstance & {
-          all: () => Promise<Array<{ toSearchableObject?: () => Record<string, unknown> | null }>>
+          all: () => Promise<SearchableRow[]>
+          query?: () => QueryBuilder
         }
 
         if (typeof ModelClass.all !== 'function') {
@@ -41,7 +47,32 @@ export async function importModelDocuments(modelOption?: string): Promise<Ok<str
           continue
         }
 
-        const documents = await ModelClass.all()
+        // stacksjs/stacks#1918 — if the model declared `denormalize`
+        // paths, eager-load the head segment of every path so the
+        // synchronous `toSearchableObject()` can resolve them out of
+        // `_relations` without a per-row round-trip. Falls back to
+        // `.all()` when no denormalize map is set, when the model lacks
+        // a `.query()` entry point, or when `.with(...).get()` fails
+        // (the search index is best-effort; we'd rather index the rows
+        // without the cross-table fields than skip the whole model).
+        const denormalize = typeof searchable === 'object' ? searchable.denormalize : undefined
+        const eagerRelations = denormalize
+          ? Array.from(new Set(Object.values(denormalize).map(path => path.split('.')[0]).filter(Boolean)))
+          : []
+
+        let documents: SearchableRow[]
+        if (eagerRelations.length > 0 && typeof ModelClass.query === 'function') {
+          try {
+            documents = await ModelClass.query().with(...eagerRelations).get()
+          }
+          catch (err) {
+            log.warn(`[search] ${modelName}: eager-load of [${eagerRelations.join(', ')}] failed — falling back to .all(); denormalized fields will be null. (${(err as Error).message})`)
+            documents = await ModelClass.all()
+          }
+        }
+        else {
+          documents = await ModelClass.all()
+        }
 
         // Per-document try/catch so one bad row doesn't abort the entire
         // re-index. The previous behavior was: hit a malformed

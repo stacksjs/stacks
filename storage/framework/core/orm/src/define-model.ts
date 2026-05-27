@@ -200,6 +200,42 @@ const MODEL_INSTANCE_INTERNAL_KEYS = new Set([
 const STACKS_PROXY_TAG = Symbol.for('stacks.modelInstanceProxy')
 
 /**
+ * Walk a dot-separated path against a relations map and return the
+ * resolved value, or `null` if any segment misses. Used by
+ * `toSearchableObject` to pull denormalised cross-table fields out of
+ * `_relations` without an extra database round-trip (the caller is
+ * expected to have eager-loaded the relevant relations via
+ * `.with(...)`). See stacksjs/stacks#1918.
+ */
+function resolveRelationPath(
+  relations: Record<string, unknown> | undefined,
+  path: string,
+): unknown {
+  if (!relations || !path) return null
+  const segments = path.split('.')
+  let current: unknown = relations
+  for (const segment of segments) {
+    if (current == null || typeof current !== 'object') return null
+    const obj = current as Record<string, unknown>
+    // Relations are wrapped instances — read from `_attributes` first
+    // so the path-walk doesn't need to know about the proxy tag.
+    if ('_attributes' in obj && obj._attributes && typeof obj._attributes === 'object') {
+      const attrs = obj._attributes as Record<string, unknown>
+      if (segment in attrs) {
+        current = attrs[segment]
+        continue
+      }
+    }
+    if (segment in obj) {
+      current = obj[segment]
+      continue
+    }
+    return null
+  }
+  return current ?? null
+}
+
+/**
  * Wrap a bun-query-builder ModelInstance in a Proxy that:
  *
  *   1. Forwards attribute reads to `_attributes` so `user.password` /
@@ -393,9 +429,37 @@ function wrapModelInstance<T extends object>(
             ? search.displayable
             : [...search.searchable ?? [], ...search.filterable ?? [], ...search.sortable ?? [], 'id']
 
+          // Pre-resolve any cross-table fields declared in `denormalize`
+          // by walking the dot-path against `_relations`. Eager-loading
+          // is the caller's job (`Model.query().with('court_house').
+          // get()`); this loop just reads the already-loaded relation.
+          // See stacksjs/stacks#1918 for the broader picture.
+          const denormalize = search.denormalize ?? {}
+          const relations = (target as any)._relations as Record<string, unknown> | undefined
+
           for (const key of keys) {
             const snake = snakeCase(key)
-            doc[snake] = attrs[snake] ?? attrs[key]
+
+            // 1) Own attribute on the row — fast path, identical to
+            //    pre-#1918 behaviour.
+            const own = attrs[snake] ?? attrs[key]
+            if (own !== undefined) {
+              doc[snake] = own
+              continue
+            }
+
+            // 2) Denormalised dot-path against `_relations`. Missing
+            //    relation/segment resolves to `null` rather than
+            //    `undefined` so the indexed document keeps the field
+            //    (Meilisearch settings that declare a key as searchable
+            //    expect every doc to carry it).
+            const path = denormalize[key] ?? denormalize[snake]
+            if (path) {
+              doc[snake] = resolveRelationPath(relations, path)
+              continue
+            }
+
+            doc[snake] = undefined
           }
 
           if (attrs.id != null) doc.id = String(attrs.id)

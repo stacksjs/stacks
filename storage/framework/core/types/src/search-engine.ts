@@ -211,6 +211,30 @@ export interface SearchOptions {
   sortable: string[]
   filterable: string[]
   options?: SearchEngineOptions
+  /**
+   * Cross-table denormalisation for searchable fields that live on a
+   * related model (stacksjs/stacks#1918). Maps an indexed-document
+   * field name to a dot-path resolved against the model instance's
+   * `_relations`. Without this, `toSearchableObject` only reads from
+   * `_attributes` and silently emits `undefined` for any field that
+   * exists on a `belongsTo` / `hasOne` / `hasMany` relation.
+   *
+   * Example: a `Judge` belongsTo a `CourtHouse`. To make the court
+   * house's `name` searchable on the judge index:
+   *
+   *   useSearch: {
+   *     searchable:  ['name', 'court_name'],
+   *     displayable: ['id', 'name', 'court_name'],
+   *     denormalize: { court_name: 'court_house.name' },
+   *   }
+   *
+   * The caller is responsible for eager-loading the named relations
+   * (e.g. via `Judge.query().with('court_house').get()`) — the live
+   * observer hook and the CLI bulk-index path do this automatically
+   * for every distinct head segment in the `denormalize` map.
+   * `toSearchableObject` stays synchronous; no per-row database lookup.
+   */
+  denormalize?: Record<string, string>
 }
 
 export type {

@@ -115,4 +115,75 @@ describe('Mailable.toSearchableObject (stacksjs/stacks#1917)', () => {
     const doc = (inst as any).toSearchableObject()
     expect(doc).toBeNull()
   })
+
+  describe('denormalize cross-table fields (stacksjs/stacks#1918)', () => {
+    // Construct a fake model + a fake court-house relation. We do not
+    // create a court_houses table because the audit fix is purely
+    // path-walking — it reads from the already-loaded `_relations`,
+    // never hits the DB itself.
+    const Judge = defineModel({
+      name: 'Judge',
+      table: 'judges',
+      primaryKey: 'id',
+      autoIncrement: true,
+      attributes: {
+        name: { type: 'string', fillable: true },
+        court_id: { type: 'integer', fillable: true },
+      },
+      belongsTo: ['CourtHouse'],
+      traits: {
+        useSearch: {
+          searchable: ['name', 'court_name'],
+          displayable: ['id', 'name', 'court_name'],
+          filterable: [],
+          sortable: [],
+          denormalize: { court_name: 'court_house.name' },
+        },
+      },
+    } as const)
+
+    beforeAll(() => {
+      db.run(`CREATE TABLE judges (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT,
+        court_id INTEGER
+      )`)
+    })
+
+    it('walks `denormalize` dot-paths against pre-loaded `_relations`', async () => {
+      const judge = await (Judge as any).create({ name: 'Hon. Roberts', court_id: 1 })
+      // Simulate `.with('court_house')` having already loaded the
+      // relation by populating `_relations` directly. In production
+      // the caller does this via the bqb query chain.
+      ;(judge as any)._relations = {
+        court_house: { _attributes: { name: 'Supreme Court of the United States' } },
+      }
+
+      const doc = (judge as any).toSearchableObject()
+      expect(doc.name).toBe('Hon. Roberts')
+      expect(doc.court_name).toBe('Supreme Court of the United States')
+    })
+
+    it('emits null (not undefined) when a denormalized relation is not loaded', async () => {
+      const judge = await (Judge as any).create({ name: 'Hon. Kagan', court_id: 1 })
+      // `_relations` empty — caller didn't eager-load.
+      const doc = (judge as any).toSearchableObject()
+      // Meilisearch settings that declare the field as searchable
+      // expect every doc to carry it. Explicit null is the contract.
+      expect(doc.court_name).toBeNull()
+    })
+
+    it('does NOT denormalize when the field exists as an own attribute', async () => {
+      // Pre-loaded relation + own attribute → own wins (the row's own
+      // column is authoritative). This is the happens-rarely case
+      // where a column shadows a relation, but the precedence matters.
+      const judge = await (Judge as any).create({ name: 'Hon. Sotomayor', court_id: 1 })
+      ;(judge as any)._attributes.court_name = 'literal-on-row'
+      ;(judge as any)._relations = {
+        court_house: { _attributes: { name: 'should-be-shadowed' } },
+      }
+      const doc = (judge as any).toSearchableObject()
+      expect(doc.court_name).toBe('literal-on-row')
+    })
+  })
 })
