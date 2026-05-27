@@ -2,8 +2,14 @@ import type { CLI } from '@stacksjs/types'
 import process from 'node:process'
 import { log, onUnknownSubcommand } from "@stacksjs/cli"
 import { config } from '@stacksjs/config'
-import { DnsClient, formatOutput } from '@stacksjs/dnsx'
 import { ExitCode } from '@stacksjs/types'
+
+// `@stacksjs/dnsx` currently publishes only type declarations (no
+// `dist/index.js`), so a top-level `import { DnsClient, formatOutput
+// } from '@stacksjs/dnsx'` blows up the entire commands barrel at
+// module-load time. Defer the resolve until the user actually runs
+// `buddy dns`, and surface a clean error if the runtime still isn't
+// shipped — keeps the rest of the CLI loadable.
 
 interface DnsOptions {
   query?: string
@@ -56,6 +62,22 @@ export function dns(buddy: CLI): void {
       log.debug('Running `buddy dns [domain]` ...', options)
 
       const targetDomain = domain || config.app.url
+
+      let DnsClient: typeof import('@stacksjs/dnsx').DnsClient
+      let formatOutput: typeof import('@stacksjs/dnsx').formatOutput
+      try {
+        const dnsx = await import('@stacksjs/dnsx') as typeof import('@stacksjs/dnsx')
+        DnsClient = dnsx.DnsClient
+        formatOutput = dnsx.formatOutput
+      }
+      catch (err) {
+        log.error(
+          `\`buddy dns\` needs the @stacksjs/dnsx runtime, but only the type declarations are currently published. `
+          + `Install a build with the JS runtime (or wait for the next dnsx release) and re-run.`,
+        )
+        log.debug(`[dns] import failure: ${err instanceof Error ? err.message : String(err)}`)
+        process.exit(ExitCode.FatalError)
+      }
 
       try {
         const client = new DnsClient({

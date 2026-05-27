@@ -17,4 +17,7 @@
 // }
 
 export * from './drivers/aws'
-export * from '@stacksjs/dnsx'
+// `@stacksjs/dnsx` currently ships only `dist/index.d.ts` (types) with
+// no runtime entry — `export * from '@stacksjs/dnsx'` therefore fails
+// at module-resolution time. Re-add this re-export once the upstream
+// publishes a JS build.
