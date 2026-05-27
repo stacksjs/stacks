@@ -21,17 +21,24 @@ import { response, route } from '@stacksjs/router'
 // Auth Routes
 // ============================================================================
 
-route.post('/login', 'Actions/Auth/LoginAction')
-route.post('/register', 'Actions/Auth/RegisterAction')
-route.get('/generate-registration-options', 'Actions/Auth/GenerateRegistrationAction')
-route.post('/verify-registration', 'Actions/Auth/VerifyRegistrationAction')
-route.get('/generate-authentication-options', 'Actions/Auth/GenerateAuthenticationAction')
-route.get('/verify-authentication', 'Actions/Auth/VerifyAuthenticationAction')
+// Rate limits on token-issuance + password-reset endpoints
+// (stacksjs/stacks#1921). `Auth.attempt()` already has a per-email
+// lockout but it doesn't stop credential-stuffing across many emails
+// from one IP, and the token endpoints have no upstream brake at all
+// — a leaked refresh token could be hammered for unlimited access
+// tokens until the row TTL. Userland that overrides any of these in
+// `routes/api.ts` (user routes win) gets to pick its own limits.
+route.post('/login', 'Actions/Auth/LoginAction').rateLimit(5, 'minute')
+route.post('/register', 'Actions/Auth/RegisterAction').rateLimit(3, 'minute')
+route.get('/generate-registration-options', 'Actions/Auth/GenerateRegistrationAction').rateLimit(10, 'minute')
+route.post('/verify-registration', 'Actions/Auth/VerifyRegistrationAction').rateLimit(5, 'minute')
+route.get('/generate-authentication-options', 'Actions/Auth/GenerateAuthenticationAction').rateLimit(10, 'minute')
+route.get('/verify-authentication', 'Actions/Auth/VerifyAuthenticationAction').rateLimit(10, 'minute')
 
 route.group({ prefix: '/auth' }, () => {
-  route.post('/refresh', 'Actions/Auth/RefreshTokenAction')
+  route.post('/refresh', 'Actions/Auth/RefreshTokenAction').rateLimit(10, 'minute')
   route.get('/tokens', 'Actions/Auth/ListTokensAction').middleware('auth')
-  route.post('/token', 'Actions/Auth/CreateTokenAction').middleware('auth')
+  route.post('/token', 'Actions/Auth/CreateTokenAction').middleware('auth').rateLimit(10, 'minute')
   route.delete('/tokens/{id}', 'Actions/Auth/RevokeTokenAction').middleware('auth')
   route.get('/abilities', 'Actions/Auth/TestAbilitiesAction').middleware('auth')
 })
@@ -41,11 +48,12 @@ route.group({ middleware: 'auth' }, () => {
   route.post('/logout', 'Actions/Auth/LogoutAction')
 })
 
-// Password Reset
+// Password Reset. `/forgot` triggers a mailer hop so it's the most
+// abuse-prone — keep that tighter than the verification endpoints.
 route.group({ prefix: '/password' }, () => {
-  route.post('/forgot', 'Actions/Password/SendPasswordResetEmailAction')
-  route.post('/reset', 'Actions/Password/PasswordResetAction')
-  route.post('/verify-token', 'Actions/Password/VerifyResetTokenAction')
+  route.post('/forgot', 'Actions/Password/SendPasswordResetEmailAction').rateLimit(3, 'minute')
+  route.post('/reset', 'Actions/Password/PasswordResetAction').rateLimit(5, 'minute')
+  route.post('/verify-token', 'Actions/Password/VerifyResetTokenAction').rateLimit(10, 'minute')
 })
 
 // ============================================================================
