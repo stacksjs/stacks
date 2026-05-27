@@ -132,6 +132,53 @@ export function seed(buddy: CLI): void {
       process.exit(ExitCode.Success)
     })
 
+  // `./buddy seed:scaffold` — codemod for stacksjs/stacks#1919. Reads
+  // every model with a `useSeeder` trait and emits a corresponding
+  // `database/seeders/<Model>Seeder.ts` file so adopters can migrate
+  // off the deprecated auto-walker. Skips models that already have a
+  // seeder file unless `--force` is passed; `--dry-run` prints what
+  // would be written without touching disk.
+  buddy
+    .command('seed:scaffold', 'Generate class seeders for every model with a useSeeder trait (codemod for stacksjs/stacks#1919)')
+    .option('--force', 'Overwrite existing seeder files', { default: false })
+    .option('--dry-run', 'Print what would be generated without writing files', { default: false })
+    .action(async (options: { force?: boolean, dryRun?: boolean }) => {
+      const perf = await intro('buddy seed:scaffold')
+      try {
+        const { scaffoldClassSeedersFromModels } = await import('@stacksjs/database')
+        const result = await scaffoldClassSeedersFromModels({
+          force: options.force,
+          dryRun: options.dryRun,
+        })
+
+        const generated = result.generated.length
+        const alreadyThere = result.skipped.filter(s => s.reason === 'already-exists').length
+        const errors = result.errors.length
+
+        for (const g of result.generated)
+          console.log(`  + ${g.model} → ${g.file}`)
+        for (const s of result.skipped.filter(s => s.reason === 'already-exists'))
+          console.log(`  · ${s.model}: skipped (file exists; pass --force to overwrite)`)
+        for (const e of result.errors)
+          log.warn(`  ! ${e.model}: ${e.error}`)
+
+        const verb = options.dryRun ? 'would generate' : 'generated'
+        await outro(
+          `Seeder scaffold: ${verb} ${generated}, skipped ${alreadyThere} existing, ${errors} error(s).`,
+          { startTime: perf, useSeconds: true },
+        )
+        process.exit(errors > 0 && generated === 0 ? ExitCode.FatalError : ExitCode.Success)
+      }
+      catch (err) {
+        await outro(
+          'seed:scaffold failed',
+          { startTime: perf, useSeconds: true },
+          err as Error,
+        )
+        process.exit(ExitCode.FatalError)
+      }
+    })
+
   // `./buddy seed:roles` — idempotently seed the default RBAC role packs
   // (admin, dev, client) introduced in stacksjs/stacks#1843. Re-runs are
   // safe — existing rows are skipped, not duplicated.

@@ -600,7 +600,8 @@ export async function seed(config: SeederConfig = {}): Promise<SeedSummary> {
   // for now to preserve back-compat; removal lands in a future major.
   log.warn(
     `[seed] The \`useSeeder\` trait + auto-walker is deprecated (stacksjs/stacks#1919). `
-    + `Migrate each model to a class seeder that calls \`factory.generate(Model, { count })\` instead. `
+    + `Run \`./buddy seed:scaffold\` to generate class seeders for every \`useSeeder\` model, `
+    + `then remove the trait from each model. The walker is scheduled for removal in a future major. `
     + `Affected: ${models.map(m => m.name).join(', ')}`,
   )
 

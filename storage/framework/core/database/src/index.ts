@@ -91,6 +91,12 @@ export * from './seeder'
 export { factory, generate as factoryGenerate } from './factory'
 export type { GenerateOptions } from './factory'
 
+// `buddy seed:scaffold` codemod — generates class-seeder files for
+// every model with a `useSeeder` trait, easing the migration off the
+// auto-walker.
+export { scaffoldClassSeedersFromModels, renderSeederFile } from './seed-scaffold'
+export type { ScaffoldOptions, ScaffoldResult } from './seed-scaffold'
+
 // Driver utilities
 export * from './drivers'
 
