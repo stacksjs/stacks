@@ -158,6 +158,29 @@ export function doctor(buddy: CLI): void {
         return 'Reachable'
       })
 
+      // Foreign-key integrity (stacksjs/stacks#1916). Walks each
+      // model's `belongsTo`, computes the implied FK, queries the
+      // live database for the actual FK list, and reports any
+      // declared-but-missing FK. Catches the silent fallout from
+      // the pre-fix SQLite preprocessing pass — apps deployed on
+      // SQLite have FK declarations in their models but no FKs in
+      // the live schema. After the fix, this should always pass on
+      // a freshly-migrated app.
+      await probe(checks, 'Database FKs', async () => {
+        const { auditForeignKeys } = await import('@stacksjs/database')
+        const result = await auditForeignKeys()
+        if (result.declared.length === 0) return 'No belongsTo declarations'
+        if (result.missing.length === 0) return `${result.declared.length} declared FKs all present`
+        // Compact list of the worst offenders — full output would
+        // dwarf the rest of the doctor results on a large app.
+        const sample = result.missing
+          .slice(0, 5)
+          .map(fk => `${fk.fromTable}.${fk.fromColumn} → ${fk.toTable}.${fk.toColumn}`)
+          .join(', ')
+        const more = result.missing.length > 5 ? ` (+${result.missing.length - 5} more)` : ''
+        throw new Error(`${result.missing.length}/${result.declared.length} declared FKs missing from live schema: ${sample}${more}. Run \`buddy migrate:fresh\` (will reset data) or \`buddy migrate\` against a clean DB.`)
+      })
+
       // Cache connectivity
       await probe(checks, 'Cache', async () => {
         const { cache } = await import('@stacksjs/cache')

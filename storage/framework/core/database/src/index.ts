@@ -96,6 +96,11 @@ export * from './auth-tables'
 export * from './sql-helpers'
 export * from './defaults'
 
+// Foreign-key audit (stacksjs/stacks#1916) — compare declared
+// `belongsTo` relationships against live FKs.
+export { auditForeignKeys, getDeclaredFKs, getLiveFKs } from './fk-audit'
+export type { DeclaredFK, FkAuditResult, LiveFK } from './fk-audit'
+
 // Transaction context: AsyncLocalStorage-based scope so side-effect
 // emitters (queue dispatch, mailer send) can buffer themselves
 // until the surrounding `db.transaction(...)` commits
