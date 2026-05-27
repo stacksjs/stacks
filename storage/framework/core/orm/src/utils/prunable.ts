@@ -15,7 +15,7 @@ export async function prunable(tableName: string, options: PrunableOptions = {})
 
   try {
     if (query) {
-      let qb = db.deleteFrom(tableName as any)
+      let qb = db.deleteFrom(tableName)
       qb = query(qb)
       const result = await qb.execute()
       const rows = Array.isArray(result) ? result : [result]
@@ -28,7 +28,7 @@ export async function prunable(tableName: string, options: PrunableOptions = {})
     cutoffDate.setDate(cutoffDate.getDate() - olderThanDays)
 
     const result = await db
-      .deleteFrom(tableName as any)
+      .deleteFrom(tableName)
       .where(column as any, '<', cutoffDate.toISOString())
       .execute()
 

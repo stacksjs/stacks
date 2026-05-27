@@ -332,14 +332,51 @@ type GenericPassthroughKeys =
   | 'simple'
   | 'file'
 
+/**
+ * Userland-augmentable table registry (stacksjs/stacks#1923).
+ *
+ * Empty by default — the framework can't know an app's tables at its
+ * own build time. `buddy generate:types` walks `app/Models/*.ts` and
+ * emits `database/types.d.ts` containing:
+ *
+ * ```ts
+ * declare module '@stacksjs/database' {
+ *   interface DatabaseSchema {
+ *     court_houses: { columns: { id: number; name: string; ... } }
+ *     judges:       { columns: { id: number; name: string; court_id: number; ... } }
+ *   }
+ * }
+ * ```
+ *
+ * Once that file is loaded into the TS project, `db.selectFrom('co|')`
+ * autocompletes to known table names. Apps without a generated file
+ * still compile — the `(string & {})` branch on `TableName` keeps the
+ * type as a literal-union+escape-hatch, so any string is accepted
+ * but known keys are surfaced first by the language server.
+ */
+// eslint-disable-next-line ts/no-empty-object-type
+export interface DatabaseSchema {}
+
+/**
+ * Accept either a registered table name (from augmented
+ * `DatabaseSchema`) for autocomplete, or any other string for apps
+ * that haven't generated types yet / tables not in a model file.
+ *
+ * The `(string & {})` branch prevents TS from collapsing the union
+ * back to `string` and losing the autocomplete narrowing — a
+ * well-documented LiteralUnion trick.
+ */
+// eslint-disable-next-line ts/no-empty-object-type
+export type TableName = (keyof DatabaseSchema & string) | (string & {})
+
 interface Db extends Pick<Required<RawQueryBuilder>, GenericPassthroughKeys> {
-  selectFrom: (table: string) => FluentChain
-  insertInto: (table: string) => FluentChain
-  updateTable: (table: string) => FluentChain
-  deleteFrom: (table: string) => FluentChain
-  table: (table: string) => FluentChain
+  selectFrom: (table: TableName) => FluentChain
+  insertInto: (table: TableName) => FluentChain
+  updateTable: (table: TableName) => FluentChain
+  deleteFrom: (table: TableName) => FluentChain
+  table: (table: TableName) => FluentChain
   selectFromSub: (sub: any, alias: string) => FluentChain
-  select: (table: string, ...columns: string[]) => FluentChain
+  select: (table: TableName, ...columns: string[]) => FluentChain
   unsafe: (query: string, params?: any[]) => UnsafeReturn
 }
 

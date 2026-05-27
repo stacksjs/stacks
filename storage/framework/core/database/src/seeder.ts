@@ -428,7 +428,7 @@ async function seedModel(model: SeederModel, options: SeederConfig): Promise<See
   try {
     // Check if the table exists before attempting to seed
     try {
-      await db.selectFrom(model.table as any).limit(0).execute()
+      await db.selectFrom(model.table).limit(0).execute()
     }
     catch (tableErr: any) {
       const msg = tableErr?.message || ''
@@ -448,7 +448,7 @@ async function seedModel(model: SeederModel, options: SeederConfig): Promise<See
     }
 
     if (!options.fresh) {
-      const existing = await db.selectFrom(model.table as any)
+      const existing = await db.selectFrom(model.table)
         .selectAll()
         .limit(1)
         .executeTakeFirst()
@@ -482,7 +482,7 @@ async function seedModel(model: SeederModel, options: SeederConfig): Promise<See
     // Truncate table if fresh option is enabled
     if (options.fresh) {
       try {
-        await db.deleteFrom(model.table as any).execute()
+        await db.deleteFrom(model.table).execute()
         if (options.verbose) {
           log.info(`  Truncated table: ${model.table}`)
         }
@@ -499,7 +499,7 @@ async function seedModel(model: SeederModel, options: SeederConfig): Promise<See
     for (let i = 0; i < records.length; i += batchSize) {
       const batch = records.slice(i, i + batchSize)
 
-      await db.insertInto(model.table as any)
+      await db.insertInto(model.table)
         .values(batch as any)
         .execute()
 

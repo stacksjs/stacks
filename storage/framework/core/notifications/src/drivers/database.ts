@@ -22,7 +22,7 @@ export const DatabaseNotificationDriver = {
     const now = new Date().toISOString()
 
     const result = await db
-      .insertInto('notifications' as any)
+      .insertInto('notifications')
       .values({
         user_id: options.userId,
         type: options.type,
@@ -62,7 +62,7 @@ export const DatabaseNotificationDriver = {
 
   async getUserNotifications(userId: number): Promise<DatabaseNotification[]> {
     const notifications = await db
-      .selectFrom('notifications' as any)
+      .selectFrom('notifications')
       .selectAll()
       .where('user_id' as any, '=', userId)
       .orderBy('created_at' as any, 'desc')
@@ -73,7 +73,7 @@ export const DatabaseNotificationDriver = {
 
   async getUnreadNotifications(userId: number): Promise<DatabaseNotification[]> {
     const notifications = await db
-      .selectFrom('notifications' as any)
+      .selectFrom('notifications')
       .selectAll()
       .where('user_id' as any, '=', userId)
       .where('read_at' as any, 'is', null)
@@ -85,7 +85,7 @@ export const DatabaseNotificationDriver = {
 
   async markAsRead(id: number): Promise<void> {
     await db
-      .updateTable('notifications' as any)
+      .updateTable('notifications')
       .set({ read_at: new Date().toISOString() } as any)
       .where('id' as any, '=', id)
       .execute()
@@ -93,7 +93,7 @@ export const DatabaseNotificationDriver = {
 
   async markAllAsRead(userId: number): Promise<void> {
     await db
-      .updateTable('notifications' as any)
+      .updateTable('notifications')
       .set({ read_at: new Date().toISOString() } as any)
       .where('user_id' as any, '=', userId)
       .where('read_at' as any, 'is', null)
@@ -102,7 +102,7 @@ export const DatabaseNotificationDriver = {
 
   async unreadCount(userId: number): Promise<number> {
     const result = await db
-      .selectFrom('notifications' as any)
+      .selectFrom('notifications')
       .select(db.fn.countAll().as('count'))
       .where('user_id' as any, '=', userId)
       .where('read_at' as any, 'is', null)
@@ -113,14 +113,14 @@ export const DatabaseNotificationDriver = {
 
   async deleteNotification(id: number): Promise<void> {
     await db
-      .deleteFrom('notifications' as any)
+      .deleteFrom('notifications')
       .where('id' as any, '=', id)
       .execute()
   },
 
   async deleteAllNotifications(userId: number): Promise<void> {
     await db
-      .deleteFrom('notifications' as any)
+      .deleteFrom('notifications')
       .where('user_id' as any, '=', userId)
       .execute()
   },

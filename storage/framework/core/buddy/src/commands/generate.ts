@@ -85,9 +85,37 @@ export function generate(buddy: CLI): void {
     .action(async (options: GeneratorOptions & { watch?: boolean }) => {
       log.debug('Running `buddy generate:types` ...', options)
       await generateTypes(options)
+      // Also refresh database/types.d.ts so userland's
+      // `db.selectFrom(...)` keeps getting table-name autocomplete
+      // (stacksjs/stacks#1923). Failure is non-fatal — the main
+      // type-gen succeeded, and the augmentation file is purely
+      // additive (its absence falls back to the `(string & {})`
+      // branch in `DatabaseSchema`).
+      try {
+        const { buildDatabaseSchema } = await import('@stacksjs/orm')
+        await buildDatabaseSchema()
+      }
+      catch (err) {
+        log.warn(`[generate:db-types] skipped: ${(err as Error).message}`)
+      }
       if (options.watch) {
         await watchTypes(options)
       }
+    })
+
+  // `./buddy generate:db-types` — scoped subcommand so users (and CI)
+  // can refresh the schema augmentation independently of the broader
+  // type-gen pipeline (stacksjs/stacks#1923).
+  buddy
+    .command('generate:db-types', 'Refresh database/types.d.ts for db.selectFrom autocomplete (stacksjs/stacks#1923)')
+    .option('--dry-run', 'Print the would-be file content without writing', { default: false })
+    .action(async (options: { dryRun?: boolean }) => {
+      const { buildDatabaseSchema } = await import('@stacksjs/orm')
+      const result = await buildDatabaseSchema({ dryRun: options.dryRun })
+      if (options.dryRun) console.log(result.content)
+      for (const e of result.errors)
+        log.warn(`[generate:db-types] ${e.file}: ${e.error}`)
+      log.info(`[generate:db-types] resolved ${result.tables.length} table(s)`)
     })
 
   buddy

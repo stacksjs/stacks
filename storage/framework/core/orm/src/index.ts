@@ -29,6 +29,11 @@ export * from './model-types'
 export * from './types'
 export * from './utils'
 export * from './define-model'
+// Codegen for `database/types.d.ts` — augments
+// `@stacksjs/database`'s `DatabaseSchema` so `db.selectFrom(...)` gets
+// table-name autocomplete (stacksjs/stacks#1923).
+export { buildDatabaseSchema, renderDatabaseTypeFile } from './generate-database-schema'
+export type { GenerateSchemaOptions, GenerateSchemaResult } from './generate-database-schema'
 // Canonical paginator shapes + adapters (stacksjs/stacks#1905 P1).
 export {
   isCursorPaginator,
