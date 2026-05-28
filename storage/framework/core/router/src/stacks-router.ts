@@ -782,15 +782,23 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
   // Create the base handler with skipParsing=true since we'll do it ourselves
   const wrappedBase = wrapHandler(handler, true)
 
-  // Pre-resolve string handlers so action-level flags (skipCsrf, etc.)
-  // are populated in their respective caches before the middleware
-  // chain runs. Without this prefetch, the first request to a webhook
-  // would inject CSRF, fail, and only the SECOND request would see the
-  // populated cache and skip injection. Idempotent: subsequent
-  // resolutions are served from the import cache.
+  // Pre-resolve string handlers so action-level CSRF flags (skipCsrf) are
+  // cached before the middleware chain runs. Without this, the first
+  // request to a skipCsrf webhook would inject CSRF, fail, and only the
+  // SECOND request would see the populated cache and skip injection.
+  //
+  // This only matters for CSRF-protected methods — GET/HEAD/OPTIONS never
+  // get CSRF injected, so prefetching their actions would just front-load
+  // every action import (and its model graph) at registration time for no
+  // benefit. Measured ~90ms of dev-boot time across a route-heavy app;
+  // safe-method actions now resolve lazily on first request instead.
+  // Idempotent: subsequent resolutions are served from the import cache.
   let actionPrefetch: Promise<void> | null = null
   if (typeof handler === 'string') {
-    actionPrefetch = resolveStringHandler(handler).then(() => undefined).catch(() => undefined)
+    const method = routeKey.slice(0, routeKey.indexOf(':')).toUpperCase()
+    if (CSRF_PROTECTED_METHODS.has(method)) {
+      actionPrefetch = resolveStringHandler(handler).then(() => undefined).catch(() => undefined)
+    }
   }
 
   return async (req: EnhancedRequest) => {
