@@ -61,7 +61,7 @@ export interface InstagramAccount {
  * video) reachable at a public URL, supplied via `post.media`.
  */
 export class InstagramPublishingDriver implements SocialPublishingDriver {
-  readonly provider = 'instagram' as const
+  readonly provider: 'instagram' = 'instagram'
   characterLimit = 2200
 
   protected graphVersion: string

@@ -72,6 +72,7 @@ export type SocialPublishingProvider =
   | 'instagram'
   | 'tiktok'
   | 'linkedin'
+  | 'threads'
 
 export interface BlueskySessionCredentials {
   identifier: string

@@ -65,7 +65,7 @@ export interface LinkedInProfile {
  * pasted in from a prior OAuth grant).
  */
 export class LinkedInPublishingDriver implements SocialPublishingDriver {
-  readonly provider = 'linkedin' as const
+  readonly provider: 'linkedin' = 'linkedin'
   characterLimit = 3000
 
   protected apiVersion: string
