@@ -606,9 +606,9 @@ export async function seed(config: SeederConfig = {}): Promise<SeedSummary> {
   // rows on the same table) is going away. The walker keeps firing
   // for now to preserve back-compat; removal lands in a future major.
   log.warn(
-    `[seed] The \`useSeeder\` trait + auto-walker is deprecated (stacksjs/stacks#1919). `
-    + `Run \`./buddy seed:scaffold\` to generate class seeders for every \`useSeeder\` model, `
-    + `then remove the trait from each model. The walker is scheduled for removal in a future major. `
+    `[seed] The \`useSeeder\` trait + auto-walker is deprecated (stacksjs/stacks#1919, #1929). `
+    + `Run \`./buddy seed:scaffold\` to generate a class seeder per \`useSeeder\` model AND strip the trait `
+    + `from the model in one pass. The walker + trait are scheduled for removal in the next major. `
     + `Affected: ${models.map(m => m.name).join(', ')}`,
   )
 

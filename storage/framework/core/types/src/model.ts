@@ -190,7 +190,17 @@ export interface ModelOptions extends Base {
     commentables?: boolean // defaults to false
     useAuth?: boolean | UserAuthOptions // defaults to false
     authenticatable?: boolean | UserAuthOptions // useAuth alias
+    /**
+     * @deprecated stacksjs/stacks#1929 — the `useSeeder` trait only
+     * existed to drive the auto-walker, which is removed from
+     * `./buddy seed` (stacksjs/stacks#1919). Seeding is now owned by
+     * class seeders: a `database/seeders/<Model>Seeder.ts` file calling
+     * `factory.generate(Model, { count })`. Run `./buddy seed:scaffold`
+     * to codemod existing traits into seeder files (and strip the
+     * trait). This field is scheduled for removal in the next major.
+     */
     useSeeder?: boolean | SeedOptions // defaults to a count of 10
+    /** @deprecated alias of {@link useSeeder} — see stacksjs/stacks#1929. */
     seedable?: boolean | SeedOptions // useSeeder alias
     useSearch?: boolean | SearchOptions // defaults to false
     useSocials?: SocialOptions // defaults to false

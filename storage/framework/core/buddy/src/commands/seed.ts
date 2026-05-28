@@ -71,10 +71,10 @@ export function seed(buddy: CLI): void {
 
       if (unmigratedModels.length > 0) {
         log.warn(
-          `[seed] ${unmigratedModels.length} model(s) declare \`useSeeder\` but have no class seeder file: `
+          `[seed] ${unmigratedModels.length} model(s) declare the deprecated \`useSeeder\` trait but have no class seeder file: `
           + `${unmigratedModels.map(m => m.name).join(', ')}. `
           + `The auto-walker has been removed (stacksjs/stacks#1919) — these models will NOT seed. `
-          + `Run \`./buddy seed:scaffold\` to codemod a class seeder per model, then re-run \`./buddy seed\`.`,
+          + `Run \`./buddy seed:scaffold\` to codemod a class seeder per model and strip the trait (stacksjs/stacks#1929), then re-run \`./buddy seed\`.`,
         )
       }
 
@@ -110,18 +110,26 @@ export function seed(buddy: CLI): void {
 
         const generated = result.generated.length
         const alreadyThere = result.skipped.filter(s => s.reason === 'already-exists').length
+        const stripped = result.strippedTrait.length
         const errors = result.errors.length
 
         for (const g of result.generated)
           console.log(`  + ${g.model} → ${g.file}`)
         for (const s of result.skipped.filter(s => s.reason === 'already-exists'))
-          console.log(`  · ${s.model}: skipped (file exists; pass --force to overwrite)`)
+          console.log(`  · ${s.model}: seeder exists (pass --force to overwrite)`)
+        // stacksjs/stacks#1929 — report trait removal + anything that
+        // needs a manual strip (unusual `useSeeder` value shape).
+        for (const t of result.strippedTrait)
+          console.log(`  - ${t.model}: removed useSeeder trait from model`)
+        for (const t of result.traitStripSkipped)
+          log.warn(`  ! ${t.model}: useSeeder value couldn't be auto-removed — strip it manually (${t.file})`)
         for (const e of result.errors)
           log.warn(`  ! ${e.model}: ${e.error}`)
 
         const verb = options.dryRun ? 'would generate' : 'generated'
+        const strippedVerb = options.dryRun ? 'would strip' : 'stripped'
         await outro(
-          `Seeder scaffold: ${verb} ${generated}, skipped ${alreadyThere} existing, ${errors} error(s).`,
+          `Seeder scaffold: ${verb} ${generated}, skipped ${alreadyThere} existing, ${strippedVerb} ${stripped} trait(s), ${errors} error(s).`,
           { startTime: perf, useSeconds: true },
         )
         process.exit(errors > 0 && generated === 0 ? ExitCode.FatalError : ExitCode.Success)

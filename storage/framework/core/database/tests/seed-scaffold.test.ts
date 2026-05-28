@@ -2,7 +2,7 @@ import { afterEach, describe, expect, test } from 'bun:test'
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { renderSeederFile, scaffoldClassSeedersFromModels } from '../src/seed-scaffold'
+import { renderSeederFile, scaffoldClassSeedersFromModels, stripUseSeederTrait } from '../src/seed-scaffold'
 
 /**
  * Tests for the `./buddy seed:scaffold` codemod (stacksjs/stacks#1919
@@ -189,5 +189,158 @@ describe('scaffoldClassSeedersFromModels', () => {
     // poison the rest of the run.
     expect(result.generated).toHaveLength(1)
     expect(result.generated[0]?.model).toBe('Judge')
+  })
+})
+
+describe('stripUseSeederTrait — pure (stacksjs/stacks#1929)', () => {
+  test('removes a multi-line object trait, keeping siblings', () => {
+    const src = [
+      `export default {`,
+      `  name: 'Judge',`,
+      `  traits: {`,
+      `    useTimestamps: true,`,
+      `    useSeeder: { count: 10 },`,
+      `    useSearch: true,`,
+      `  },`,
+      `}`,
+      ``,
+    ].join('\n')
+    const { source, changed } = stripUseSeederTrait(src)
+    expect(changed).toBe(true)
+    expect(source).not.toContain('useSeeder')
+    expect(source).toContain('useTimestamps: true')
+    expect(source).toContain('useSearch: true')
+    // The surviving lines stay intact (no dangling fragments).
+    expect(source).toContain(`    useTimestamps: true,\n    useSearch: true,`)
+  })
+
+  test('removes the boolean form', () => {
+    const src = `export default { name: 'X', traits: { useSeeder: true, useUuid: true } }`
+    const { source, changed } = stripUseSeederTrait(src)
+    expect(changed).toBe(true)
+    expect(source).not.toContain('useSeeder')
+    expect(source).toContain('useUuid: true')
+  })
+
+  test('removes the `seedable` alias too', () => {
+    const src = `export default { name: 'X', traits: { seedable: { count: 3 } } }`
+    const { source, changed } = stripUseSeederTrait(src)
+    expect(changed).toBe(true)
+    expect(source).not.toContain('seedable')
+  })
+
+  test('strips a trailing line comment along with the trait', () => {
+    const src = [
+      `  traits: {`,
+      `    useSeeder: { count: 10 }, // seed ten`,
+      `    taggable: true,`,
+      `  },`,
+    ].join('\n')
+    const { source, changed } = stripUseSeederTrait(src)
+    expect(changed).toBe(true)
+    expect(source).not.toContain('useSeeder')
+    expect(source).not.toContain('seed ten')
+    expect(source).toContain('taggable: true')
+  })
+
+  test('handles a nested object value (fixtures array of objects)', () => {
+    const src = [
+      `  traits: {`,
+      `    useSeeder: { count: 2, fixtures: [{ name: 'a' }, { name: 'b' }] },`,
+      `    useUuid: true,`,
+      `  },`,
+    ].join('\n')
+    const { source, changed } = stripUseSeederTrait(src)
+    expect(changed).toBe(true)
+    expect(source).not.toContain('useSeeder')
+    expect(source).not.toContain('fixtures')
+    expect(source).toContain('useUuid: true')
+  })
+
+  test('leaves unusual value shapes alone and flags skipped', () => {
+    // A trait whose value is an identifier (not true/false/{...}) —
+    // don't risk a mangled edit; signal manual cleanup.
+    const src = `export default { name: 'X', traits: { useSeeder: seedConfig } }`
+    const { source, changed, skipped } = stripUseSeederTrait(src)
+    expect(changed).toBe(false)
+    expect(skipped).toBe(true)
+    expect(source).toBe(src)
+  })
+
+  test('no-op when there is no useSeeder trait', () => {
+    const src = `export default { name: 'X', traits: { useUuid: true } }`
+    const { changed, skipped } = stripUseSeederTrait(src)
+    expect(changed).toBe(false)
+    expect(skipped).toBe(false)
+  })
+})
+
+describe('scaffoldClassSeedersFromModels — strips trait after writing (stacksjs/stacks#1929)', () => {
+  test('removes the useSeeder block from the model file', async () => {
+    const root = mkScratch()
+    const modelsDir = join(root, 'app/Models')
+    const seedersDir = join(root, 'database/seeders')
+
+    writeModel(modelsDir, 'Judge.ts', [
+      `export default {`,
+      `  name: 'Judge',`,
+      `  table: 'judges',`,
+      `  traits: {`,
+      `    useTimestamps: true,`,
+      `    useSeeder: { count: 5 },`,
+      `  },`,
+      `  attributes: {},`,
+      `}`,
+      ``,
+    ].join('\n'))
+
+    const result = await scaffoldClassSeedersFromModels({ modelsDir, seedersDir })
+
+    expect(result.generated).toHaveLength(1)
+    expect(result.strippedTrait.map(s => s.model)).toEqual(['Judge'])
+
+    const modelAfter = readFileSync(join(modelsDir, 'Judge.ts'), 'utf-8')
+    expect(modelAfter).not.toContain('useSeeder')
+    expect(modelAfter).toContain('useTimestamps: true')
+    // Seeder still written with the right count.
+    const seeder = readFileSync(join(seedersDir, 'JudgeSeeder.ts'), 'utf-8')
+    expect(seeder).toContain('factory.generate(Judge, { count: 5 })')
+  })
+
+  test('--dry-run reports the strip but does not modify the model file', async () => {
+    const root = mkScratch()
+    const modelsDir = join(root, 'app/Models')
+    const seedersDir = join(root, 'database/seeders')
+
+    const original = [
+      `export default { name: 'Judge', table: 'judges', traits: { useSeeder: { count: 5 } }, attributes: {} }`,
+      ``,
+    ].join('\n')
+    writeModel(modelsDir, 'Judge.ts', original)
+
+    const result = await scaffoldClassSeedersFromModels({ modelsDir, seedersDir, dryRun: true })
+    expect(result.strippedTrait.map(s => s.model)).toEqual(['Judge'])
+
+    // File untouched in dry-run.
+    expect(readFileSync(join(modelsDir, 'Judge.ts'), 'utf-8')).toBe(original)
+    expect(existsSync(join(seedersDir, 'JudgeSeeder.ts'))).toBe(false)
+  })
+
+  test('strips the trait even when the seeder already exists', async () => {
+    const root = mkScratch()
+    const modelsDir = join(root, 'app/Models')
+    const seedersDir = join(root, 'database/seeders')
+
+    writeModel(modelsDir, 'Judge.ts', `export default { name: 'Judge', table: 'judges', traits: { useSeeder: true }, attributes: {} }\n`)
+    mkdirSync(seedersDir, { recursive: true })
+    writeFileSync(join(seedersDir, 'JudgeSeeder.ts'), '// hand-written, keep me\n', 'utf-8')
+
+    const result = await scaffoldClassSeedersFromModels({ modelsDir, seedersDir })
+
+    // Seeder left untouched (already-exists), but the redundant trait is gone.
+    expect(result.skipped.some(s => s.reason === 'already-exists')).toBe(true)
+    expect(result.strippedTrait.map(s => s.model)).toEqual(['Judge'])
+    expect(readFileSync(join(seedersDir, 'JudgeSeeder.ts'), 'utf-8')).toBe('// hand-written, keep me\n')
+    expect(readFileSync(join(modelsDir, 'Judge.ts'), 'utf-8')).not.toContain('useSeeder')
   })
 })

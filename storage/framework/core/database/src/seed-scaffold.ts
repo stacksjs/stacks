@@ -39,6 +39,85 @@ export interface ScaffoldResult {
   generated: Array<{ model: string, file: string }>
   skipped: Array<{ model: string, file: string, reason: 'already-exists' | 'no-useseeder' }>
   errors: Array<{ model: string, error: string }>
+  /** Models whose `useSeeder`/`seedable` trait was removed from the model file (stacksjs/stacks#1929). */
+  strippedTrait: Array<{ model: string, file: string }>
+  /** Models where the trait couldn't be safely auto-removed (unusual value shape) — strip manually. */
+  traitStripSkipped: Array<{ model: string, file: string }>
+}
+
+/**
+ * Remove a single `useSeeder` / `seedable` object-property from model
+ * source text (stacksjs/stacks#1929). Brace-aware (balances nested
+ * `{}` and skips string literals) and conservative: only strips the
+ * documented value shapes (`true`, `false`, or a `{ … }` object). For
+ * anything else (an identifier, a function call, a spread) it returns
+ * `changed: false` so the caller can flag it for manual cleanup
+ * instead of risking a mangled file.
+ *
+ * Exported for unit tests.
+ */
+export function stripUseSeederTrait(source: string): { source: string, changed: boolean, skipped: boolean } {
+  let out = source
+  let changed = false
+  let skipped = false
+
+  for (const name of ['useSeeder', 'seedable'] as const) {
+    const re = new RegExp(`\\b${name}\\s*:`)
+    const m = re.exec(out)
+    if (!m)
+      continue
+
+    const keyStart = m.index
+    let i = keyStart + m[0].length
+    while (i < out.length && /\s/.test(out[i])) i++
+
+    const valueChar = out[i]
+    if (valueChar === '{') {
+      // Balance braces, respecting string literals.
+      let depth = 0
+      let inStr: string | null = null
+      for (; i < out.length; i++) {
+        const ch = out[i]
+        if (inStr) {
+          if (ch === '\\') { i++; continue }
+          if (ch === inStr) inStr = null
+          continue
+        }
+        if (ch === '"' || ch === '\'' || ch === '`') { inStr = ch; continue }
+        if (ch === '{') { depth++ }
+        else if (ch === '}') { depth--; if (depth === 0) { i++; break } }
+      }
+    }
+    else if (out.startsWith('true', i) || out.startsWith('false', i)) {
+      i += out.startsWith('true', i) ? 4 : 5
+    }
+    else {
+      // Unusual value (identifier / call / spread) — don't risk it.
+      skipped = true
+      continue
+    }
+
+    // Consume a trailing comma + an optional same-line `// comment`.
+    let end = i
+    while (end < out.length && (out[end] === ' ' || out[end] === '\t')) end++
+    if (out[end] === ',') end++
+    while (end < out.length && (out[end] === ' ' || out[end] === '\t')) end++
+    if (out[end] === '/' && out[end + 1] === '/') {
+      while (end < out.length && out[end] !== '\n') end++
+    }
+
+    // Drop the key's leading indentation, and the whole line if it
+    // stood alone (leading newline + trailing newline both present).
+    let start = keyStart
+    while (start > 0 && (out[start - 1] === ' ' || out[start - 1] === '\t')) start--
+    if (start > 0 && out[start - 1] === '\n' && out[end] === '\n')
+      end++
+
+    out = out.slice(0, start) + out.slice(end)
+    changed = true
+  }
+
+  return { source: out, changed, skipped: skipped && !changed }
 }
 
 const SEEDER_TEMPLATE = (modelName: string, modelImportPath: string, count: number): string => `import { factory, Seeder } from '@stacksjs/database'
@@ -69,7 +148,7 @@ export async function scaffoldClassSeedersFromModels(
   const modelsDir = options.modelsDir ?? path.userModelsPath()
   const seedersDir = options.seedersDir ?? path.projectPath('database/seeders')
 
-  const result: ScaffoldResult = { generated: [], skipped: [], errors: [] }
+  const result: ScaffoldResult = { generated: [], skipped: [], errors: [], strippedTrait: [], traitStripSkipped: [] }
 
   if (!fs.existsSync(modelsDir)) {
     log.warn(`[seed:scaffold] No models directory at ${modelsDir}`)
@@ -114,21 +193,43 @@ export async function scaffoldClassSeedersFromModels(
     const seederFileName = `${modelDef.name}Seeder.ts`
     const seederFilePath = path.join(seedersDir, seederFileName)
 
-    if (fs.existsSync(seederFilePath) && !options.force) {
+    const seederAlreadyExists = fs.existsSync(seederFilePath)
+    if (seederAlreadyExists && !options.force) {
       result.skipped.push({ model: modelDef.name, file: seederFilePath, reason: 'already-exists' })
-      continue
-    }
-
-    const importPath = relativeModelImport(seedersDir, modelFilePath)
-    const content = SEEDER_TEMPLATE(modelDef.name, importPath, count)
-
-    if (options.dryRun) {
-      log.info(`[seed:scaffold] would write ${seederFilePath}`)
     }
     else {
-      fs.writeFileSync(seederFilePath, content, 'utf-8')
+      const importPath = relativeModelImport(seedersDir, modelFilePath)
+      const content = SEEDER_TEMPLATE(modelDef.name, importPath, count)
+
+      if (options.dryRun)
+        log.info(`[seed:scaffold] would write ${seederFilePath}`)
+      else
+        fs.writeFileSync(seederFilePath, content, 'utf-8')
+
+      result.generated.push({ model: modelDef.name, file: seederFilePath })
     }
-    result.generated.push({ model: modelDef.name, file: seederFilePath })
+
+    // stacksjs/stacks#1929 — once a class seeder exists (just written
+    // here, or already on disk), the `useSeeder` trait is redundant and
+    // misleading. Strip it from the model file in the same pass so the
+    // migration actually lands instead of leaving a half-migrated state.
+    try {
+      const modelSource = fs.readFileSync(modelFilePath, 'utf-8')
+      const { source: stripped, changed, skipped } = stripUseSeederTrait(modelSource)
+      if (changed) {
+        if (options.dryRun)
+          log.info(`[seed:scaffold] would strip useSeeder trait from ${modelFilePath}`)
+        else
+          fs.writeFileSync(modelFilePath, stripped, 'utf-8')
+        result.strippedTrait.push({ model: modelDef.name, file: modelFilePath })
+      }
+      else if (skipped) {
+        result.traitStripSkipped.push({ model: modelDef.name, file: modelFilePath })
+      }
+    }
+    catch (err) {
+      result.errors.push({ model: modelDef.name, error: `trait strip failed: ${(err as Error).message}` })
+    }
   }
 
   return result
