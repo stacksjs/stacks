@@ -13,11 +13,23 @@ import type {
   RelationConfig,
   TableNames,
 } from '@stacksjs/types'
-import { generator, parser, traverse } from '@stacksjs/build'
 import { path } from '@stacksjs/path'
 import { fs, globSync } from '@stacksjs/storage'
 import { plural, singular, snakeCase } from '@stacksjs/strings'
 import { isString } from '@stacksjs/validation'
+
+// `@stacksjs/build` pulls in Babel (@babel/parser/traverse/generator, ~300ms
+// to load). It is only needed by the two model-file AST helpers below
+// (codegen paths) — never during query serving or route registration. Yet
+// this module is on the eager import path of `@stacksjs/orm` →
+// `@stacksjs/database`, so a top-level import made every dev API boot pay
+// for Babel. Load it lazily (cached) so the common path stays cheap.
+let _buildPromise: Promise<typeof import('@stacksjs/build')> | undefined
+function loadBuild(): Promise<typeof import('@stacksjs/build')> {
+  if (!_buildPromise)
+    _buildPromise = import('@stacksjs/build')
+  return _buildPromise
+}
 
 type ModelPath = string
 
@@ -714,7 +726,8 @@ export function mapEntity(attribute: ModelElement): string | undefined {
   }
 }
 
-export function extractImports(filePath: string): string[] {
+export async function extractImports(filePath: string): Promise<string[]> {
+  const { generator, parser, traverse } = await loadBuild()
   const content = fs.readFileSync(filePath, 'utf8')
   const ast = parser.parse(content, {
     sourceType: 'module',
@@ -734,6 +747,7 @@ export function extractImports(filePath: string): string[] {
 }
 
 export async function extractAttributesFromModel(filePath: string): Promise<AttributesElements> {
+  const { generator, parser, traverse } = await loadBuild()
   const content = fs.readFileSync(filePath, 'utf8')
 
   const ast = parser.parse(content, {
