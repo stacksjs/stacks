@@ -942,16 +942,20 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
         // can show exactly which middleware spent how long. Cheap —
         // hrtime delta per layer.
         const mwStart = process.hrtime.bigint()
+        let mwTimer: ReturnType<typeof setTimeout> | undefined
           try {
             // 30s middleware budget. A misbehaving middleware that hangs
             // (e.g. waits forever on a deadlocked external service) used
             // to lock the entire request handler indefinitely; the
             // timeout surfaces it as a 500 instead, freeing the worker
-            // to keep serving other requests.
+            // to keep serving other requests. The timer is cleared in the
+            // `finally` below — otherwise a settled race leaves a dangling
+            // 30s timer per middleware per request, and they pile up under
+            // load (memory + needless event-loop wakeups).
             const MIDDLEWARE_TIMEOUT_MS = 30_000
-            const timeoutPromise = new Promise<never>((_, reject) =>
-              setTimeout(() => reject(new Error(`Middleware '${middlewareName}' exceeded ${MIDDLEWARE_TIMEOUT_MS}ms`)), MIDDLEWARE_TIMEOUT_MS),
-            )
+            const timeoutPromise = new Promise<never>((_, reject) => {
+              mwTimer = setTimeout(() => reject(new Error(`Middleware '${middlewareName}' exceeded ${MIDDLEWARE_TIMEOUT_MS}ms`)), MIDDLEWARE_TIMEOUT_MS)
+            })
             await Promise.race([middleware.handle(enhancedReq), timeoutPromise])
             const elapsedMs = Number(process.hrtime.bigint() - mwStart) / 1_000_000
             middlewareTimings.push({ name: middlewareName, ms: elapsedMs })
@@ -1016,6 +1020,11 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
             }
             catch { /* immutable headers — leave the response alone */ }
             return await applyCorsIfConfigured(enhancedReq, errorResponse)
+          }
+          finally {
+            // Clear the budget timer so a resolved/rejected race doesn't
+            // leave a dangling 30s timer per middleware per request.
+            clearTimeout(mwTimer)
           }
       }
 
