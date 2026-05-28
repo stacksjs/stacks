@@ -1,6 +1,6 @@
 import { Buffer } from 'node:buffer'
 import { basename } from 'node:path'
-import { S3Client } from '@stacksjs/ts-cloud'
+import type { S3Client } from '@stacksjs/ts-cloud'
 import type {
   ChecksumOptions,
   DirectoryListing,
@@ -96,7 +96,8 @@ async function isSettled(p: Promise<unknown>): Promise<boolean> {
  * AWS S3 storage adapter using ts-cloud S3Client
  */
 export class S3StorageAdapter implements StorageAdapter {
-  private client: S3Client
+  private _client: S3Client | null
+  private _clientPromise: Promise<S3Client> | null = null
   private bucket: string
   private prefix: string
   private region: string
@@ -109,8 +110,12 @@ export class S3StorageAdapter implements StorageAdapter {
    */
   private credentials?: StorageAdapterConfig['credentials']
 
-  constructor(client: S3Client, config: StorageAdapterConfig) {
-    this.client = client
+  // Accepts a pre-built client (back-compat) or `null` to build one lazily
+  // from `config.region` on first use. The lazy path keeps `@stacksjs/ts-cloud`
+  // (and its AWS-shaped client) off the eager import graph of
+  // `@stacksjs/storage`, which sits on the dev-server boot critical path.
+  constructor(client: S3Client | null, config: StorageAdapterConfig) {
+    this._client = client
     this.bucket = config.bucket || ''
     this.prefix = config.prefix || ''
     this.region = config.region || 'us-east-1'
@@ -119,6 +124,18 @@ export class S3StorageAdapter implements StorageAdapter {
     if (!this.bucket) {
       throw new Error('S3 bucket name is required')
     }
+  }
+
+  private async getClient(): Promise<S3Client> {
+    if (this._client)
+      return this._client
+    if (!this._clientPromise) {
+      this._clientPromise = import('@stacksjs/ts-cloud').then((cloud) => {
+        this._client = new cloud.S3Client(this.region)
+        return this._client
+      })
+    }
+    return this._clientPromise
   }
 
   /**
@@ -205,7 +222,7 @@ export class S3StorageAdapter implements StorageAdapter {
     // We still report what we can compute locally — size + the
     // contentType we sent — and synthesize lastModified from wall
     // clock. ETag stays omitted until ts-cloud exposes the response.
-    await this.client.putObject({
+    await (await this.getClient()).putObject({
       bucket: this.bucket,
       key,
       body,
@@ -222,7 +239,7 @@ export class S3StorageAdapter implements StorageAdapter {
 
   async read(path: string): Promise<FileContents> {
     const key = this.prefixPath(path)
-    const response = await this.client.getObject(this.bucket, key)
+    const response = await (await this.getClient()).getObject(this.bucket, key)
 
     if (!response) {
       throw new Error(`Failed to read file: ${path}`)
@@ -247,7 +264,7 @@ export class S3StorageAdapter implements StorageAdapter {
    */
   async getStream(path: string, _options?: GetStreamOptions): Promise<ReadableStream<Uint8Array>> {
     const key = this.prefixPath(path)
-    const buf = await this.client.getObjectBuffer(this.bucket, key)
+    const buf = await (await this.getClient()).getObjectBuffer(this.bucket, key)
     if (!buf) throw new Error(`Failed to read file: ${path}`)
     const bytes = new Uint8Array(buf)
     return new ReadableStream<Uint8Array>({
@@ -302,7 +319,7 @@ export class S3StorageAdapter implements StorageAdapter {
     // Single-PUT path: stream fit inside one part.
     if (firstDone) {
       try { reader.releaseLock() } catch { /* ignore */ }
-      await this.client.putObject({
+      await (await this.getClient()).putObject({
         bucket: this.bucket,
         key,
         body: Buffer.from(firstChunk!),
@@ -315,7 +332,7 @@ export class S3StorageAdapter implements StorageAdapter {
     // complete. On any failure (including abort) we MUST issue
     // AbortMultipartUpload so the partial parts don't accrue
     // storage charges.
-    const { UploadId: uploadId } = await this.client.createMultipartUpload(this.bucket, key, { contentType })
+    const { UploadId: uploadId } = await (await this.getClient()).createMultipartUpload(this.bucket, key, { contentType })
     const completedParts: Array<{ PartNumber: number, ETag: string }> = []
     let totalBytes = 0
     let partNumber = 1
@@ -326,7 +343,7 @@ export class S3StorageAdapter implements StorageAdapter {
       while (true) {
         if (signal?.aborted) throw new Error('aborted')
         try {
-          const { ETag } = await this.client.uploadPart(this.bucket, key, uploadId, n, Buffer.from(body))
+          const { ETag } = await (await this.getClient()).uploadPart(this.bucket, key, uploadId, n, Buffer.from(body))
           completedParts.push({ PartNumber: n, ETag })
           totalBytes += body.length
           return
@@ -372,14 +389,14 @@ export class S3StorageAdapter implements StorageAdapter {
 
       await Promise.all(inflight)
       completedParts.sort((a, b) => a.PartNumber - b.PartNumber)
-      await this.client.completeMultipartUpload(this.bucket, key, uploadId, completedParts)
+      await (await this.getClient()).completeMultipartUpload(this.bucket, key, uploadId, completedParts)
       return { path, size: totalBytes, contentType, lastModified: Date.now() }
     }
     catch (err) {
       // Best-effort abort. The error from abortMultipartUpload is
       // swallowed because the original error is more useful to
       // the caller.
-      try { await this.client.abortMultipartUpload(this.bucket, key, uploadId) }
+      try { await (await this.getClient()).abortMultipartUpload(this.bucket, key, uploadId) }
       catch { /* best-effort */ }
       throw err
     }
@@ -387,7 +404,7 @@ export class S3StorageAdapter implements StorageAdapter {
 
   async readToString(path: string): Promise<string> {
     const key = this.prefixPath(path)
-    const response = await this.client.getObject(this.bucket, key)
+    const response = await (await this.getClient()).getObject(this.bucket, key)
 
     if (!response) {
       throw new Error(`Failed to read file: ${path}`)
@@ -408,21 +425,21 @@ export class S3StorageAdapter implements StorageAdapter {
 
   async deleteFile(path: string): Promise<void> {
     const key = this.prefixPath(path)
-    await this.client.deleteObject(this.bucket, key)
+    await (await this.getClient()).deleteObject(this.bucket, key)
   }
 
   async deleteDirectory(path: string): Promise<void> {
     const prefix = this.prefixPath(path)
     const normalizedPrefix = prefix.endsWith('/') ? prefix : `${prefix}/`
 
-    const objects = await this.client.listAllObjects({ bucket: this.bucket, prefix: normalizedPrefix })
+    const objects = await (await this.getClient()).listAllObjects({ bucket: this.bucket, prefix: normalizedPrefix })
     const keys = (objects as Array<{ Key?: string }>).map(obj => obj.Key).filter((k): k is string => typeof k === 'string')
 
     if (keys.length === 0) {
       return
     }
 
-    await this.client.deleteObjects(this.bucket, keys)
+    await (await this.getClient()).deleteObjects(this.bucket, keys)
   }
 
   async createDirectory(_path: string): Promise<void> {
@@ -438,7 +455,7 @@ export class S3StorageAdapter implements StorageAdapter {
     const fromKey = this.prefixPath(from)
     const toKey = this.prefixPath(to)
 
-    await this.client.copyObject({
+    await (await this.getClient()).copyObject({
       sourceBucket: this.bucket,
       sourceKey: fromKey,
       destinationBucket: this.bucket,
@@ -449,7 +466,7 @@ export class S3StorageAdapter implements StorageAdapter {
   async stat(path: string): Promise<StatEntry> {
     const key = this.prefixPath(path)
 
-    const result = await this.client.headObject(this.bucket, key)
+    const result = await (await this.getClient()).headObject(this.bucket, key)
 
     if (!result) {
       throw new Error(`File not found: ${path}`)
@@ -474,7 +491,7 @@ export class S3StorageAdapter implements StorageAdapter {
     const normalizedPrefix = prefix ? `${prefix}/` : undefined
 
     if (deep) {
-      const objects = await this.client.listAllObjects({ bucket: this.bucket, prefix: normalizedPrefix })
+      const objects = await (await this.getClient()).listAllObjects({ bucket: this.bucket, prefix: normalizedPrefix })
       for (const obj of objects) {
         yield {
           path: this.stripPrefix(obj.Key),
@@ -486,7 +503,7 @@ export class S3StorageAdapter implements StorageAdapter {
       let continuationToken: string | undefined
 
       do {
-        const result = await this.client.listObjects({
+        const result = await (await this.getClient()).listObjects({
           bucket: this.bucket,
           prefix: normalizedPrefix,
           continuationToken,
@@ -524,7 +541,7 @@ export class S3StorageAdapter implements StorageAdapter {
   async changeVisibility(path: string, vis: Visibility): Promise<void> {
     const key = this.prefixPath(path)
     const acl = (vis === ('public' as Visibility)) ? 'public-read' : 'private'
-    await this.client.putObjectAcl(this.bucket, key, acl)
+    await (await this.getClient()).putObjectAcl(this.bucket, key, acl)
   }
 
   /**
@@ -536,7 +553,7 @@ export class S3StorageAdapter implements StorageAdapter {
    */
   async visibility(path: string): Promise<Visibility> {
     const key = this.prefixPath(path)
-    const acl = await this.client.getObjectAcl(this.bucket, key)
+    const acl = await (await this.getClient()).getObjectAcl(this.bucket, key)
     const grants = (acl as { Grants?: Array<{ Grantee?: { URI?: string }; Permission?: string }> })?.Grants ?? []
     const isPublic = grants.some(g =>
       g.Grantee?.URI === 'http://acs.amazonaws.com/groups/global/AllUsers'
@@ -548,7 +565,7 @@ export class S3StorageAdapter implements StorageAdapter {
   async fileExists(path: string): Promise<boolean> {
     const key = this.prefixPath(path)
     try {
-      const result = await this.client.headObject(this.bucket, key)
+      const result = await (await this.getClient()).headObject(this.bucket, key)
       return !!result
     }
     catch (error: any) {
@@ -562,7 +579,7 @@ export class S3StorageAdapter implements StorageAdapter {
 
   async directoryExists(path: string): Promise<boolean> {
     const prefix = this.prefixPath(path)
-    const result = await this.client.listObjects({
+    const result = await (await this.getClient()).listObjects({
       bucket: this.bucket,
       prefix: `${prefix}/`,
       maxKeys: 1,
@@ -591,7 +608,7 @@ export class S3StorageAdapter implements StorageAdapter {
       throw new RangeError(`[storage/s3] temporaryUrl expiresIn must be between 60s and 7 days (got ${expiresIn}s)`)
     }
 
-    return await this.client.getSignedUrl({
+    return await (await this.getClient()).getSignedUrl({
       bucket: this.bucket,
       key,
       expiresIn,
@@ -672,7 +689,7 @@ export class S3StorageAdapter implements StorageAdapter {
     const path = safeDir ? `${safeDir}/${safeFilename}` : safeFilename
     const key = this.prefixPath(path)
 
-    const url = await this.client.getSignedUrl({
+    const url = await (await this.getClient()).getSignedUrl({
       bucket: this.bucket,
       key,
       expiresIn,
@@ -814,6 +831,6 @@ export class S3StorageAdapter implements StorageAdapter {
 /**
  * Create an S3 storage adapter instance
  */
-export function createS3Storage(client: S3Client, config: StorageAdapterConfig): S3StorageAdapter {
+export function createS3Storage(client: S3Client | null, config: StorageAdapterConfig): S3StorageAdapter {
   return new S3StorageAdapter(client, config)
 }

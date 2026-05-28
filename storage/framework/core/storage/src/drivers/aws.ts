@@ -1,18 +1,18 @@
 import type { StorageDriver } from '@stacksjs/types'
 import type { StorageAdapter } from '../types'
-import { S3Client } from '@stacksjs/ts-cloud'
 import { createS3Storage } from '../adapters/s3'
 
 let _adapterPromise: Promise<StorageAdapter> | null = null
 
+// Pass `null` as the client — S3StorageAdapter builds it lazily from the
+// region on first use, so `@stacksjs/ts-cloud` only loads when S3 is
+// actually touched (not at storage import time).
 async function loadConfig(): Promise<StorageAdapter> {
   try {
     const { filesystems } = await import('@stacksjs/config')
     const s3Config = filesystems.s3
 
-    const client = new S3Client(s3Config?.region || 'us-east-1')
-
-    return createS3Storage(client, {
+    return createS3Storage(null, {
       bucket: s3Config?.bucket || 'stacks',
       prefix: s3Config?.prefix || 'stx',
       region: s3Config?.region || 'us-east-1',
@@ -22,9 +22,7 @@ async function loadConfig(): Promise<StorageAdapter> {
     // Config not available, use defaults from env
     const { env } = await import('@stacksjs/env')
 
-    const client = new S3Client(env.AWS_REGION || 'us-east-1')
-
-    return createS3Storage(client, {
+    return createS3Storage(null, {
       bucket: env.AWS_S3_BUCKET || 'stacks',
       prefix: env.AWS_S3_PREFIX || 'stx',
       region: env.AWS_REGION || 'us-east-1',

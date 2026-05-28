@@ -20,7 +20,6 @@
 import { resolve } from 'node:path'
 import process from 'node:process'
 import { filesystems, app as appConfig } from '@stacksjs/config'
-import { S3Client } from '@stacksjs/ts-cloud'
 import type { GetStreamOptions, PresignedUploadPolicy, PresignedUploadPolicyOptions, PresignedUploadUrl, PresignedUploadUrlOptions, PutResult, PutStreamOptions, SignedUrlOptions, StatEntry, StorageAdapter } from './types'
 import { createLocalStorage } from './adapters/local'
 import { S3StorageAdapter } from './adapters/s3'
@@ -96,7 +95,6 @@ function buildConfig(): FilesystemConfig {
 class StorageManager {
   private _config: FilesystemConfig | null = null
   private disks: Map<string, StorageAdapter> = new Map()
-  private s3Clients: Map<string, S3Client> = new Map()
   private customConfig: Partial<FilesystemConfig> | null = null
 
   /**
@@ -123,7 +121,6 @@ class StorageManager {
     this.customConfig = config
     this._config = null // Reset so it rebuilds on next access
     this.disks.clear()
-    this.s3Clients.clear()
     return this
   }
 
@@ -168,15 +165,11 @@ class StorageManager {
     return createLocalStorage({ root: config.root })
   }
 
-  private createS3Adapter(name: string, config: S3DiskConfig): StorageAdapter {
-    let client = this.s3Clients.get(name)
-
-    if (!client) {
-      client = new S3Client(config.region || 'us-east-1')
-      this.s3Clients.set(name, client)
-    }
-
-    return new S3StorageAdapter(client, {
+  private createS3Adapter(_name: string, config: S3DiskConfig): StorageAdapter {
+    // Pass `null` — the adapter builds its S3 client lazily from the region,
+    // so `@stacksjs/ts-cloud` is not loaded until an S3 disk is actually used.
+    // The constructed adapter is cached per disk name in `this.disks`.
+    return new S3StorageAdapter(null, {
       bucket: config.bucket,
       region: config.region,
       prefix: config.prefix,
@@ -513,8 +506,8 @@ class StorageManager {
     // Ensure config is loaded
     const currentConfig = this.config
     currentConfig.disks[name] = config
+    // Dropping the cached adapter also drops its lazily-built S3 client.
     this.disks.delete(name)
-    this.s3Clients.delete(name)
     return this
   }
 
@@ -545,7 +538,6 @@ class StorageManager {
     this._config = null
     this.customConfig = null
     this.disks.clear()
-    this.s3Clients.clear()
     return this
   }
 }
