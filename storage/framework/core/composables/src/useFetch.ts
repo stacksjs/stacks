@@ -1,37 +1,46 @@
 import type { Ref } from '@stacksjs/stx'
 import { ref } from '@stacksjs/stx'
 
-interface UseFetchResult {
-  data: Ref<any>
-  error: Ref<any>
+/**
+ * Result of a terminal `.json()` call. Generic over the success body
+ * `T` (stacksjs/stacks#1924) so `data.value` is typed instead of
+ * `any`. `error` stays `unknown` — it can be a parsed error body OR a
+ * thrown network error, so the caller should narrow before use.
+ */
+export interface UseFetchResult<T = unknown> {
+  data: Ref<T | null>
+  error: Ref<unknown>
   isFetching: Ref<boolean>
-  then: (resolve: (value: { data: Ref<any>, error: Ref<any> }) => void) => Promise<void>
+  then: (resolve: (value: { data: Ref<T | null>, error: Ref<unknown> }) => void) => Promise<void>
 }
 
-export interface FetchBuilder {
-  get: () => FetchBuilder
-  post: (body?: string) => FetchBuilder
-  patch: (body?: string) => FetchBuilder
-  put: (body?: string) => FetchBuilder
-  delete: () => FetchBuilder
-  json: () => UseFetchResult
+export interface FetchBuilder<T = unknown> {
+  get: () => FetchBuilder<T>
+  post: (body?: string) => FetchBuilder<T>
+  patch: (body?: string) => FetchBuilder<T>
+  put: (body?: string) => FetchBuilder<T>
+  delete: () => FetchBuilder<T>
+  json: () => UseFetchResult<T>
 }
 
 /**
- * Chainable reactive fetch composable.
+ * Chainable reactive fetch composable. Pass the expected success body
+ * shape as the type argument to get a typed `data.value`.
  *
  * @example
  * ```ts
- * const { error, data } = await useFetch('/api/posts').get().json()
- * const { error, data } = await useFetch('/api/posts').post(JSON.stringify(body)).json()
- * const { error, data } = await useFetch('/api/posts/1').delete().json()
+ * interface Post { id: number, title: string }
+ * const { error, data } = await useFetch<Post[]>('/api/posts').get().json()
+ * //      data: Ref<Post[] | null>
+ * const { data } = await useFetch<Post>('/api/posts').post(JSON.stringify(body)).json()
+ * const { error } = await useFetch('/api/posts/1').delete().json()
  * ```
  */
-export function useFetch(url: string): FetchBuilder {
+export function useFetch<T = unknown>(url: string): FetchBuilder<T> {
   let method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE' = 'GET'
   let body: string | undefined
 
-  const builder: FetchBuilder = {
+  const builder: FetchBuilder<T> = {
     get() {
       method = 'GET'
       body = undefined
@@ -57,9 +66,9 @@ export function useFetch(url: string): FetchBuilder {
       body = undefined
       return builder
     },
-    json(): UseFetchResult {
-      const data = ref<any>(null)
-      const error = ref<any>(null)
+    json(): UseFetchResult<T> {
+      const data = ref<T | null>(null)
+      const error = ref<unknown>(null)
       const isFetching = ref(true)
 
       const init: RequestInit = {

@@ -147,3 +147,37 @@ describe('createFetch with baseUrl', () => {
     expect(typeof builder.json).toBe('function')
   })
 })
+
+// ---------------------------------------------------------------------------
+//  Response-body generic (stacksjs/stacks#1924)
+//
+//  Compile-time assertions: these exercise the generic so a regression
+//  back to `Ref<any>` surfaces as a type error at test-build time. The
+//  runtime `expect`s keep the cases from being dead code.
+// ---------------------------------------------------------------------------
+describe('useFetch response generic (stacksjs/stacks#1924)', () => {
+  interface Post { id: number, title: string }
+
+  it('threads <T> through to data.value', () => {
+    const { data, error } = useFetch<Post[]>('/api/posts').get().json()
+    // `data.value` is `Post[] | null`, not `any`.
+    const sample: Post[] | null = data.value
+    expect(sample).toBeNull()
+    // `error.value` is `unknown` — must be narrowed before use.
+    const err: unknown = error.value
+    expect(err).toBeNull()
+  })
+
+  it('defaults to unknown when no type arg is given', () => {
+    const { data } = useFetch('/api/anything').get().json()
+    const sample: unknown = data.value
+    expect(sample).toBeNull()
+  })
+
+  it('createFetch preserves the generic at the call site', () => {
+    const useApi = createFetch({ baseUrl: 'https://api.example.com' })
+    const { data } = useApi<Post>('/posts/1').get().json()
+    const sample: Post | null = data.value
+    expect(sample).toBeNull()
+  })
+})

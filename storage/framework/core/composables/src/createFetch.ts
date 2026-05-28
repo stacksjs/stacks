@@ -19,8 +19,10 @@ export interface CreateFetchOptions {
 export function createFetch(config: CreateFetchOptions = {}) {
   const { baseUrl = '' } = config
 
-  return function (url: string) {
+  // Generic preserved at the call site: `useMyFetch<Post[]>('/posts')`
+  // threads `Post[]` through to `data.value` (stacksjs/stacks#1924).
+  return function <T = unknown>(url: string) {
     const fullUrl = baseUrl ? `${baseUrl.replace(/\/$/, '')}/${url.replace(/^\//, '')}` : url
-    return useFetch(fullUrl)
+    return useFetch<T>(fullUrl)
   }
 }

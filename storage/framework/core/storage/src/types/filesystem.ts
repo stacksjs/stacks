@@ -61,6 +61,39 @@ export interface S3DiskConfig extends BaseDiskConfig {
 export type DiskConfig = LocalDiskConfig | S3DiskConfig
 
 /**
+ * Userland-augmentable disk-name registry (stacksjs/stacks#1924).
+ *
+ * Empty by default — the framework can't know an app's configured
+ * disks at its own build time. Apps declare their disks once and get
+ * autocomplete on `Storage.disk('…')` everywhere:
+ *
+ * ```ts
+ * // types/storage.d.ts
+ * declare module '@stacksjs/storage' {
+ *   interface KnownDisks {
+ *     local: true
+ *     public: true
+ *     s3: true
+ *   }
+ * }
+ * ```
+ *
+ * Mirrors the `DatabaseSchema` pattern from stacksjs/stacks#1923.
+ */
+// eslint-disable-next-line ts/no-empty-object-type
+export interface KnownDisks {}
+
+/**
+ * A configured disk name (autocompletes to the keys of an augmented
+ * {@link KnownDisks}) or any other string. The `(string & {})` branch
+ * keeps the union from collapsing back to `string`, so known disks
+ * surface in autocomplete while arbitrary names still type-check —
+ * apps that haven't augmented `KnownDisks` keep compiling unchanged.
+ */
+// eslint-disable-next-line ts/no-empty-object-type
+export type DiskName = (keyof KnownDisks & string) | (string & {})
+
+/**
  * Main filesystem configuration
  *
  * @example

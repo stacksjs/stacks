@@ -9,6 +9,7 @@
 
 import type { StorageManager } from './facade'
 import type { PutResult } from './types'
+import type { DiskName } from './types/filesystem'
 
 /**
  * Optional metadata fields shared by every uploaded-file shape we
@@ -62,7 +63,7 @@ export type FilenameStrategy =
 
 export interface PutFileOptions {
   /** Disk to write to. Defaults to the configured default disk. */
-  disk?: string
+  disk?: DiskName
   /** Sub-directory inside the disk (e.g. `'avatars'`). */
   dir?: string
   /**

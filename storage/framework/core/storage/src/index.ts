@@ -26,6 +26,9 @@ export { UploadedFile, uploadedFile, uploadedFiles } from './uploaded-file'
 
 // Filesystem type helpers
 export { configFromEnv, localDisk, s3Disk } from './types/filesystem'
+// Disk-name autocomplete: userland augments `KnownDisks` to get
+// completion on `Storage.disk('…')` (stacksjs/stacks#1924).
+export type { DiskName, KnownDisks } from './types/filesystem'
 
 // Signed-URL helpers (used by Storage.disk('local').signedUrl())
 export {

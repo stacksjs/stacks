@@ -28,6 +28,7 @@ import { putUploadedFile } from './put-file'
 import type { PutFileOptions, UploadedFileLike } from './put-file'
 import type {
   DiskConfig,
+  DiskName,
   FilesystemConfig,
   LocalDiskConfig,
   S3DiskConfig,
@@ -125,9 +126,11 @@ class StorageManager {
   }
 
   /**
-   * Get a disk instance by name
+   * Get a disk instance by name. The `name` autocompletes to the keys
+   * of an augmented `KnownDisks` interface (stacksjs/stacks#1924) while
+   * still accepting any string for unregistered disks.
    */
-  disk(name?: string): StorageAdapter {
+  disk(name?: DiskName): StorageAdapter {
     const diskName = name || this.config.default
 
     // Return cached disk
