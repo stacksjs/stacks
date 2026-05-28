@@ -1,5 +1,6 @@
 import type { EmailAddress, EmailMessage, EmailResult } from '@stacksjs/types'
 import { Buffer } from 'node:buffer'
+import process from 'node:process'
 import * as tls from 'node:tls'
 import * as net from 'node:net'
 import { config } from '@stacksjs/config'
@@ -45,27 +46,45 @@ export class SMTPDriver extends BaseEmailDriver {
   private static readonly SMTP_TIMEOUT = 30_000 // 30 seconds
 
   public name = 'smtp'
-  private smtpConfig: {
-    host: string
-    port: number
-    username: string
-    password: string
-    encryption: 'tls' | 'ssl' | 'starttls' | null
-  } | null = null
 
+  /**
+   * Resolve SMTP settings fresh on every call (stacksjs/stacks#1925).
+   *
+   * The previous implementation cached the resolved config on the
+   * instance after the first read. If that first `mail.send()` landed
+   * inside the boot window — before `@stacksjs/config`'s async
+   * `overridesReady` finished importing `~/config/services` — then
+   * `config.services.smtp` read as `undefined`, the fallback snapped
+   * `127.0.0.1:587` into the cache, and *every* subsequent send hit
+   * port 587 forever (ECONNREFUSED against a Mailpit on 2525, with no
+   * way to recover short of a restart).
+   *
+   * A property read is cheap next to a multi-RTT SMTP round-trip, so
+   * there was never a reason to cache. Reading every call also makes
+   * the driver correct under hot-reload / per-test config swaps.
+   *
+   * As belt-and-suspenders, fall back to `process.env.MAIL_*` so a
+   * correctly-populated `.env` works even if the config layer hasn't
+   * surfaced the override yet.
+   */
   private getConfig() {
-    if (!this.smtpConfig) {
-      const encryption = config.services.smtp?.encryption
-      this.smtpConfig = {
-        host: config.services.smtp?.host || '127.0.0.1',
-        port: config.services.smtp?.port || 587,
-        username: config.services.smtp?.username || '',
-        password: config.services.smtp?.password || '',
-        // Map 'tls' to 'starttls' for port 587 (STARTTLS), 'ssl' for port 465 (implicit TLS)
-        encryption: encryption === 'tls' ? 'starttls' : encryption || null,
-      }
+    const smtp = config.services?.smtp
+    const env = process.env
+
+    const host = smtp?.host || env.MAIL_HOST || '127.0.0.1'
+    const port = smtp?.port || (env.MAIL_PORT ? Number(env.MAIL_PORT) : undefined) || 587
+    const username = smtp?.username || env.MAIL_USERNAME || ''
+    const password = smtp?.password || env.MAIL_PASSWORD || ''
+    const rawEncryption = smtp?.encryption ?? env.MAIL_ENCRYPTION ?? null
+
+    return {
+      host,
+      port,
+      username,
+      password,
+      // Map 'tls' to 'starttls' for port 587 (STARTTLS), 'ssl' for port 465 (implicit TLS)
+      encryption: (rawEncryption === 'tls' ? 'starttls' : rawEncryption || null) as 'tls' | 'ssl' | 'starttls' | null,
     }
-    return this.smtpConfig
   }
 
   public async send(message: EmailMessage, options?: TemplateOptions): Promise<EmailResult> {
