@@ -195,6 +195,15 @@ export const log: Log = {
   },
 
   debug: async (...args: any[]) => {
+    // Cheap-exit when the configured level suppresses debug (the default is
+    // `info`). Hot paths call `log.debug` freely — per request through the
+    // middleware chain, per route during registration — and without this
+    // every call still ran formatMessage + getLogger + a level-filtered
+    // logger.debug and left a floating Promise, despite emitting nothing.
+    // Mirrors the underlying logger: debug ranks below info/warn/error.
+    const lvl = ((process.env.LOG_LEVEL as string) || 'info').toLowerCase()
+    if (lvl === 'info' || lvl === 'warn' || lvl === 'error')
+      return
     const message = formatMessage(...args)
     const logger = await getLogger()
     await logger.debug(message)
