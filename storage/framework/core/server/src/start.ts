@@ -3,8 +3,27 @@
 
 // IMPORTANT: Import router package first to ensure it's initialized before routes
 import { loadRoutes, serve } from '@stacksjs/router'
+import { log, report } from '@stacksjs/logging'
 import config from './config-production'
 import routeRegistry from '../../../../../app/Routes'
+
+// Process-level safety net (stacksjs/stacks#1933). Without these, an
+// async throw that escapes a request try/catch — a floating promise in
+// middleware, a timer callback — would crash the HTTP server with
+// nothing in storage/logs/. The queue worker already had these; the
+// HTTP entry did not. Route both through the shared report() chokepoint.
+process.on('unhandledRejection', (reason) => {
+  // Log and keep serving — a single rejected promise shouldn't take the
+  // whole API down (Laravel-equivalent behavior).
+  report(reason, { label: '[server] unhandledRejection' })
+})
+
+process.on('uncaughtException', (error) => {
+  // An uncaught exception leaves the runtime in an undefined state — log
+  // it, flush, then exit so a supervisor can restart cleanly.
+  report(error, { label: '[server] uncaughtException' })
+  void log.flush().finally(() => process.exit(1))
+})
 
 console.log('[START] Application starting...')
 console.log('[START] Node version:', process.version)

@@ -16,7 +16,7 @@ import './request-augmentation'
 import process from 'node:process'
 import { Buffer } from 'node:buffer'
 import { timingSafeEqual } from 'node:crypto'
-import { log } from '@stacksjs/logging'
+import { log, report } from '@stacksjs/logging'
 import { path as p } from '@stacksjs/path'
 import { UploadedFile } from '@stacksjs/storage'
 import { applyRequestEnhancements, Router } from '@stacksjs/bun-router'
@@ -1434,15 +1434,13 @@ async function resolveStringHandler(handlerPath: string): Promise<RouteHandlerFn
         return formatResult(result, req)
       }
       catch (handleError) {
-        // Print the full stack so action failures are diagnosable.
-        // The previous form passed the error as the second arg, which
-        // log.error treated as `LogErrorOptions` and dropped — every
-        // 500 from an action looked like an empty `[Router] Error in
-        // action.handle() for 'X':` line with no detail.
-        const errMsg = handleError instanceof Error
-          ? (handleError.stack || handleError.message)
-          : String(handleError)
-        log.error(`[Router] Error in action.handle() for '${handlerPath}': ${errMsg}`)
+        // Single chokepoint (stacksjs/stacks#1933) — normalizes the
+        // error (stack + cause), keeps thrown 4xx HttpErrors out of the
+        // error stream, and folds in the full stack. Replaces the old
+        // hand-rolled stack-concat workaround that existed because the
+        // logger's `LogErrorOptions | any` typing silently dropped the
+        // error (stacksjs/stacks#1932, now fixed).
+        report(handleError, { label: `[Router] action.handle() for '${handlerPath}'` })
         throw handleError
       }
     }
@@ -2085,7 +2083,10 @@ function wrapHandler(handler: StacksHandler, skipParsing = false): RouteHandlerF
         return await resolvedHandler(req)
       }
       catch (error) {
-        log.error(`[Router] Error handling request for '${handlerPath}':`, error)
+        // Single chokepoint (stacksjs/stacks#1933): 5xx + non-HTTP
+        // throws log at error with full stack; thrown 4xx HttpErrors
+        // are kept out of the error stream.
+        report(error, { label: `[Router] ${handlerPath}` })
         // Return Ignition-style error page in development, JSON in production
         return await createErrorResponse(
           error instanceof Error ? error : new Error(String(error)),
