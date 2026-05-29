@@ -97,6 +97,21 @@ describe('Notifications - notify() push channel (F-1)', () => {
   })
 })
 
+describe('Notifications - sms/chat fail loudly (stacksjs/stacks#1936)', () => {
+  test('sms channel without recipient.phone reports failure, not silent success', async () => {
+    const [result] = await notify(
+      { userId: 0 }, // no phone
+      { body: 'hi' },
+      ['sms'],
+      { ignorePreferences: true },
+    )
+    // Before #1936 a misconfigured SMS driver let this resolve as a
+    // (false) success; now a missing channel contact always surfaces.
+    expect(result.success).toBe(false)
+    expect(result.error?.message).toContain('recipient.phone')
+  })
+})
+
 describe('Notifications - useDatabase()', () => {
   test('returns the DatabaseNotificationDriver', () => {
     const driver = useDatabase()

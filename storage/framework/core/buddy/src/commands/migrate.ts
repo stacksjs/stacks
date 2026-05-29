@@ -211,15 +211,22 @@ export function migrate(buddy: CLI): void {
         // every time. Errors still surface via log.error below.
         log.debug('Migrating auth tables...')
         try {
-          const { migrateAuthTables } = await import('@stacksjs/database')
+          const { migrateAuthTables, migrateNotificationTables } = await import('@stacksjs/database')
           const authResult = await migrateAuthTables({ verbose: options.verbose })
 
           if (!authResult.success) {
             log.error(`Failed to migrate auth tables: ${authResult.error}`)
           }
+
+          // Notification tables (stacksjs/stacks#1937) — the `database`
+          // channel + preference layer need these; previously unshipped.
+          const notifResult = await migrateNotificationTables({ verbose: options.verbose })
+          if (!notifResult.success) {
+            log.error(`Failed to migrate notification tables: ${notifResult.error}`)
+          }
         }
         catch (error) {
-          log.error('Failed to migrate auth tables:', error)
+          log.error('Failed to migrate auth/notification tables:', error)
         }
       }
 
@@ -292,15 +299,22 @@ export function migrate(buddy: CLI): void {
         // every time. Errors still surface via log.error below.
         log.debug('Migrating auth tables...')
         try {
-          const { migrateAuthTables } = await import('@stacksjs/database')
+          const { migrateAuthTables, migrateNotificationTables } = await import('@stacksjs/database')
           const authResult = await migrateAuthTables({ verbose: options.verbose })
 
           if (!authResult.success) {
             log.error(`Failed to migrate auth tables: ${authResult.error}`)
           }
+
+          // Notification tables (stacksjs/stacks#1937) — the `database`
+          // channel + preference layer need these; previously unshipped.
+          const notifResult = await migrateNotificationTables({ verbose: options.verbose })
+          if (!notifResult.success) {
+            log.error(`Failed to migrate notification tables: ${notifResult.error}`)
+          }
         }
         catch (error) {
-          log.error('Failed to migrate auth tables:', error)
+          log.error('Failed to migrate auth/notification tables:', error)
         }
       }
 

@@ -177,6 +177,24 @@ export function useNotification(typeParam?: string, driverParam?: string): typeo
  * await notify({ userId: 7, email: 'a@x' }, { body: 'Sale!' }, ['email'], { category: 'marketing' })
  * ```
  */
+/** A driver that can deliver a message (sms/chat transports). */
+interface SendableDriver {
+  send: (message: Record<string, unknown>) => Promise<unknown>
+}
+
+/**
+ * Whether a resolved driver can actually deliver (stacksjs/stacks#1936).
+ * The sms/chat channels previously guarded on this but then silently
+ * `break`'d when it was false — recording a success for an
+ * undeliverable channel. Now the channel throws on a falsy result.
+ */
+function isSendableDriver(driver: unknown): driver is SendableDriver {
+  return !!driver
+    && typeof driver === 'object'
+    && 'send' in driver
+    && typeof (driver as { send?: unknown }).send === 'function'
+}
+
 export async function notify(
   recipient: NotificationRecipient,
   payload: NotificationPayload,
@@ -225,25 +243,26 @@ export async function notify(
           break
         }
         case 'sms': {
-          const driver = useSMS()
-          if (driver && typeof driver === 'object' && 'send' in driver) {
-            if (!recipient.phone) {
-              throw new Error('[notify] sms channel requires recipient.phone')
-            }
-            await (driver as any).send({
-              to: recipient.phone,
-              body: payload.body,
-            })
+          // Fail loudly, not silently (stacksjs/stacks#1936). Previously
+          // a misconfigured SMS driver (one without a `send()`) let the
+          // case fall through and `Promise.allSettled` recorded success —
+          // so a broken SMS config looked like a delivered notification.
+          if (!recipient.phone) {
+            throw new Error('[notify] sms channel requires recipient.phone')
           }
+          const driver = useSMS()
+          if (!isSendableDriver(driver)) {
+            throw new Error('[notify] sms channel is not configured: no usable SMS driver with a send() method')
+          }
+          await driver.send({ to: recipient.phone, body: payload.body })
           break
         }
         case 'chat': {
           const driver = useChat()
-          if (driver && typeof driver === 'object' && 'send' in driver) {
-            await (driver as any).send({
-              body: payload.body,
-            })
+          if (!isSendableDriver(driver)) {
+            throw new Error('[notify] chat channel is not configured: no usable chat driver with a send() method')
           }
+          await driver.send({ body: payload.body })
           break
         }
         case 'database': {

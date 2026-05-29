@@ -106,6 +106,9 @@ export * from './custom'
 // Auth tables migration
 export * from './auth-tables'
 
+// Notification tables migration (stacksjs/stacks#1937)
+export { migrateNotificationTables } from './notification-tables'
+
 // SQL dialect helpers & connection defaults
 export * from './sql-helpers'
 export * from './defaults'
