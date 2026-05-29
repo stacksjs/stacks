@@ -25,6 +25,38 @@ export interface LoggingOptions {
    * @default 'storage/logs/deployments.log'
    */
   deploymentsPath: string
+
+  /**
+   * **Minimum Log Level**
+   *
+   * Messages below this level are suppressed. The `LOG_LEVEL` env var
+   * overrides this when set (stacksjs/stacks#1935).
+   *
+   * @default 'info'
+   */
+  level?: 'debug' | 'info' | 'success' | 'warning' | 'error'
+
+  /**
+   * **Output Format**
+   *
+   * `'json'` for structured output (production), `'text'` for the
+   * human-readable dev view. The `LOG_FORMAT` env var overrides this;
+   * default is `'json'` in production, `'text'` otherwise.
+   *
+   * @default 'text'
+   */
+  format?: 'json' | 'text'
+
+  /**
+   * **Write To File**
+   *
+   * Whether logs are persisted to `logsPath`'s directory as daily
+   * files. Set `false` for console-only output (e.g. when the platform
+   * captures stdout).
+   *
+   * @default true
+   */
+  writeToFile?: boolean
 }
 
 export type LoggingConfig = Partial<LoggingOptions>

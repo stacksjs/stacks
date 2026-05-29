@@ -6,6 +6,7 @@ import {
   parseLogLevel,
   renderNormalizedError,
   report,
+  resolveLogSettings,
 } from '../src/index'
 
 /**
@@ -141,5 +142,62 @@ describe('report() policy (stacksjs/stacks#1933)', () => {
     const ctx = calls[0].args[2] as Record<string, unknown>
     expect(ctx.status).toBe(503)
     expect(ctx.requestId).toBe('r9')
+  })
+})
+
+describe('flush drains in-flight struct writes (stacksjs/stacks#1934)', () => {
+  const realInfo = log.info
+  afterEach(() => { log.info = realInfo })
+
+  it('flush() does not resolve until a tracked struct write settles', async () => {
+    let releaseWrite!: () => void
+    const deferred = new Promise<void>((r) => { releaseWrite = r })
+    // log.struct.request(status 200) emits at info → track(log.info(...)).
+    log.info = (async () => { await deferred }) as typeof log.info
+
+    log.struct.request('GET', '/x', 200, 5)
+
+    let flushed = false
+    const flushP = log.flush().then(() => { flushed = true })
+
+    await new Promise(r => setTimeout(r, 15))
+    expect(flushed).toBe(false) // still waiting on the in-flight write
+
+    releaseWrite()
+    await flushP
+    expect(flushed).toBe(true)
+  })
+})
+
+describe('resolveLogSettings precedence — env > config > default (stacksjs/stacks#1935)', () => {
+  it('env wins over config', () => {
+    const s = resolveLogSettings({ envLevel: 'debug', cfgLevel: 'error', envFormat: 'json', cfgFormat: 'text' })
+    expect(s.level).toBe('debug')
+    expect(s.format).toBe('json')
+  })
+
+  it('config wins over default when env is unset', () => {
+    const s = resolveLogSettings({ cfgLevel: 'warning', cfgFormat: 'json' })
+    expect(s.level).toBe('warning')
+    expect(s.format).toBe('json')
+  })
+
+  it('falls back to defaults when neither is set', () => {
+    const s = resolveLogSettings({ isProduction: false })
+    expect(s.level).toBe('info')
+    expect(s.format).toBe('text')
+    expect(s.writeToFile).toBe(true)
+  })
+
+  it('format default is json in production', () => {
+    expect(resolveLogSettings({ isProduction: true }).format).toBe('json')
+  })
+
+  it('honors writeToFile=false from config', () => {
+    expect(resolveLogSettings({ cfgWriteToFile: false }).writeToFile).toBe(false)
+  })
+
+  it('invalid config level falls back rather than throwing', () => {
+    expect(resolveLogSettings({ cfgLevel: 'bogus' }).level).toBe('info')
   })
 })

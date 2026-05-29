@@ -9,6 +9,35 @@ import { ExitCode } from '@stacksjs/types'
 let _logger: Logger | null = null
 let _loggerInitPromise: Promise<void> | null = null
 
+// In-flight async writes (stacksjs/stacks#1934). The fire-and-forget
+// `log.struct.*` helpers used to `void` their promise, so a write
+// kicked off right before shutdown could be lost — and `log.flush()`
+// had no way to see it. Track every async write here so `flush()` can
+// drain them, and register a `beforeExit` flush so a natural shutdown
+// doesn't truncate buffered output.
+const pendingWrites = new Set<Promise<unknown>>()
+
+function track<T>(p: Promise<T>): Promise<T> {
+  pendingWrites.add(p)
+  // Always detach on settle so the set doesn't grow unbounded.
+  p.finally(() => pendingWrites.delete(p)).catch(() => {})
+  return p
+}
+
+let _flushOnExitRegistered = false
+function registerFlushOnExit(): void {
+  if (_flushOnExitRegistered) return
+  _flushOnExitRegistered = true
+  // `beforeExit` fires when the event loop empties (a natural exit),
+  // and unlike `process.exit()` it can run async work. We drain there.
+  // The explicit-`process.exit` race is intentionally NOT covered here
+  // — that's what the sync escape hatches (`log.syncError`/`log.fatal`)
+  // are for; see their docs.
+  process.on('beforeExit', () => {
+    void log.flush()
+  })
+}
+
 // Request context propagation for structured logging
 export interface LogContext {
   requestId?: string
@@ -44,6 +73,39 @@ export function parseLogFormat(raw: string | undefined): LogFormat {
   if (raw)
     process.stderr.write(`[logging] Ignoring invalid LOG_FORMAT="${raw}" (expected "json" or "text").\n`)
   return process.env.NODE_ENV === 'production' ? 'json' : 'text'
+}
+
+export interface ResolvedLogSettings {
+  level: LogLevel
+  format: LogFormat
+  writeToFile: boolean
+}
+
+/**
+ * Resolve the effective logger settings with precedence
+ * **env var > config file > default** (stacksjs/stacks#1935). Pure +
+ * exported so the precedence is unit-testable without booting the
+ * singleton logger.
+ */
+export function resolveLogSettings(input: {
+  envLevel?: string
+  envFormat?: string
+  cfgLevel?: string
+  cfgFormat?: string
+  cfgWriteToFile?: boolean
+  isProduction?: boolean
+}): ResolvedLogSettings {
+  const level: LogLevel = input.envLevel
+    ? parseLogLevel(input.envLevel)
+    : (input.cfgLevel ? parseLogLevel(input.cfgLevel) : 'info')
+
+  const format: LogFormat = input.envFormat
+    ? parseLogFormat(input.envFormat)
+    : (input.cfgFormat === 'json' || input.cfgFormat === 'text'
+        ? input.cfgFormat
+        : (input.isProduction ? 'json' : 'text'))
+
+  return { level, format, writeToFile: input.cfgWriteToFile ?? true }
 }
 
 /**
@@ -115,34 +177,70 @@ async function initLogger(): Promise<void> {
   if (_logger) return
   if (_loggerInitPromise) return _loggerInitPromise
 
-  _loggerInitPromise = (async () => {
-    // Validated env config (stacksjs/stacks#1932) — no more `as any`.
-    const format = parseLogFormat(process.env.LOG_FORMAT)
-    const level = parseLogLevel(process.env.LOG_LEVEL)
+  // Drain buffered/in-flight writes on a natural shutdown (#1934).
+  registerFlushOnExit()
 
+  _loggerInitPromise = (async () => {
+    // Read the project's `config/logging.ts` so it's the source of
+    // truth (stacksjs/stacks#1935). Best-effort + lazy: any failure
+    // falls back to env + defaults (today's behavior). Precedence is
+    // **env var > config file > default**.
+    let cfgLevel: string | undefined
+    let cfgFormat: string | undefined
+    let cfgLogDir: string | undefined
+    let cfgWriteToFile: boolean | undefined
     try {
-      // Lazy import path to avoid circular dependency (path imports logging)
-      const p = await import('@stacksjs/path')
-      _logger = new Logger('stacks', {
-        level,
-        logDirectory: p.projectPath('storage/logs'),
-        showTags: false,
-        fancy: format !== 'json',
-        format,
-        writeToFile: true,
-      })
+      const cfg = await import('@stacksjs/config') as {
+        logging?: { level?: string, format?: string, writeToFile?: boolean, logsPath?: string }
+      }
+      const logging = cfg.logging
+      if (logging) {
+        cfgLevel = logging.level
+        cfgFormat = logging.format
+        if (typeof logging.writeToFile === 'boolean') cfgWriteToFile = logging.writeToFile
+        if (logging.logsPath) {
+          const np = await import('node:path')
+          cfgLogDir = np.dirname(logging.logsPath)
+        }
+      }
     }
     catch {
-      // Path not available, use default directory
-      _logger = new Logger('stacks', {
-        level,
-        logDirectory: 'storage/logs',
-        showTags: false,
-        fancy: format !== 'json',
-        format,
-        writeToFile: true,
-      })
+      // Config layer unavailable (e.g. compiled binary with config
+      // loading skipped) — env + defaults below still apply.
     }
+
+    // env > config > default
+    const { level, format, writeToFile } = resolveLogSettings({
+      envLevel: process.env.LOG_LEVEL,
+      envFormat: process.env.LOG_FORMAT,
+      cfgLevel,
+      cfgFormat,
+      cfgWriteToFile,
+      isProduction: process.env.NODE_ENV === 'production',
+    })
+
+    // Resolve the log directory: config's `logsPath` dir wins, else the
+    // project's storage/logs, else a relative fallback.
+    let logDirectory = cfgLogDir
+    if (!logDirectory) {
+      try {
+        // Lazy import path to avoid a circular dependency (path imports logging).
+        const p = await import('@stacksjs/path')
+        logDirectory = p.projectPath('storage/logs')
+      }
+      catch {
+        logDirectory = 'storage/logs'
+      }
+    }
+
+    _logger = new Logger('stacks', {
+      level,
+      logDirectory,
+      showTags: false,
+      fancy: format !== 'json',
+      format,
+      writeToFile,
+    })
   })()
 
   return _loggerInitPromise
@@ -368,6 +466,13 @@ export const log: Log = {
   },
 
   flush: async (): Promise<void> => {
+    // First drain any in-flight async writes (e.g. fire-and-forget
+    // `log.struct.*`) so they reach the transport before we flush it
+    // (stacksjs/stacks#1934). Settle, don't reject — a single failed
+    // write must not abort the shutdown drain.
+    if (pendingWrites.size > 0)
+      await Promise.allSettled([...pendingWrites])
+
     // If the logger never initialized there's nothing to flush — `getLogger`
     // would create one we don't need. Same for the init-in-flight case;
     // those callers already have a Promise to await.
@@ -489,11 +594,14 @@ function emit(level: 'debug' | 'info' | 'warn' | 'error', event: string, fields:
   // pass a single object so it prints as JSON in prod and as a
   // pretty key=value pairs view in dev. `warn` is typed as
   // `(string, options?)` so we serialise the payload before handing off.
+  //
+  // Tracked (not `void`-discarded) so `log.flush()` can drain these
+  // before shutdown (stacksjs/stacks#1934).
   if (level === 'warn') {
-    void log.warn(`[${event}]`, payload)
+    track(log.warn(`[${event}]`, payload as LogContext))
   }
   else {
-    void log[level](payload)
+    track(log[level](payload))
   }
 }
 
