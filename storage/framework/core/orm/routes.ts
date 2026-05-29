@@ -8,13 +8,30 @@
 import type { EnhancedRequest } from '@stacksjs/bun-router'
 import { route } from '@stacksjs/router'
 import { projectPath } from '@stacksjs/path'
-import { setConfig, createQueryBuilder } from '@stacksjs/query-builder'
+import { createQueryBuilder, defaultConfig, setConfig } from '@stacksjs/query-builder'
 import { HttpError } from '@stacksjs/error-handling'
+import { log } from '@stacksjs/logging'
 
-// Initialize query builder config from project's config/qb.ts
+// Initialize the query builder config from the project's optional
+// `config/qb.ts` override (stacksjs/stacks#1930).
+//
+// This file is NOT scaffolded by the framework — it's a per-project
+// escape hatch. On a fresh clone / clean container build it's absent,
+// and a hard `await import(...)` here used to throw `Cannot find
+// module config/qb.ts` and abort the entire ORM-route bootstrap (so
+// every model-backed Action 404'd in production while `buddy dev`
+// masked it against stale local state). Fall back to
+// bun-query-builder's `defaultConfig` (env-driven) when the override
+// is missing so a clean environment boots cleanly.
 const qbConfigPath = projectPath('config/qb.ts')
-const qbConfig = (await import(qbConfigPath)).default
-setConfig(qbConfig)
+try {
+  const projectQbConfig = (await import(qbConfigPath)).default
+  setConfig(projectQbConfig ?? defaultConfig)
+}
+catch {
+  log.debug(`[orm] No config/qb.ts override found — using bun-query-builder defaults`)
+  setConfig(defaultConfig)
+}
 
 // Load all models from app/Models/ (individually, so one broken model doesn't block the rest)
 const modelsDir = projectPath('app/Models')
