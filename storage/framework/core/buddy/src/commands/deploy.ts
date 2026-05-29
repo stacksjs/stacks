@@ -738,34 +738,34 @@ async function runHetznerDeploy(args: {
     tarballs.set(siteName, tarballPath)
   }
 
-  let ok: boolean
-  if (docker) {
-    log.info('Shipping release and building Docker image on the server...')
-    ok = await deployHetznerDocker({ ip, slug, sites, tarballs, verbose })
-  }
-  else {
-    log.info('Shipping release to the server...')
-    ok = await deployAllComputeSites({
-      config: tsCloudConfig,
-      environment,
-      driver,
-      sha,
-      runtime: tsCloudConfig.infrastructure?.compute?.runtime || 'bun',
-      tarballForSite: (siteName: string) => {
-        const path = tarballs.get(siteName)
-        if (!path)
-          throw new Error(`Missing tarball for site '${siteName}'`)
-        return path
-      },
-      logger: {
-        info: (m: string) => log.info(m),
-        warn: (m: string) => log.warn(m),
-        error: (m: string) => log.error(m),
-        step: (m: string) => log.info(m),
-        success: (m: string) => log.success(m),
-      },
-    })
-  }
+  // `--docker` builds an OCI container image with pantry's native builder
+  // (no Docker daemon, no deps) from `storage/framework/Dockerfile`, and pushes
+  // it to the pantry registry when a token is present. The site itself still
+  // runs dep-free via bun + systemd below, so the box stays daemon-less.
+  if (docker)
+    await buildContainerImageWithPantry({ slug, sites, verbose })
+
+  log.info('Shipping release to the server...')
+  const ok = await deployAllComputeSites({
+    config: tsCloudConfig,
+    environment,
+    driver,
+    sha,
+    runtime: tsCloudConfig.infrastructure?.compute?.runtime || 'bun',
+    tarballForSite: (siteName: string) => {
+      const path = tarballs.get(siteName)
+      if (!path)
+        throw new Error(`Missing tarball for site '${siteName}'`)
+      return path
+    },
+    logger: {
+      info: (m: string) => log.info(m),
+      warn: (m: string) => log.warn(m),
+      error: (m: string) => log.error(m),
+      step: (m: string) => log.info(m),
+      success: (m: string) => log.success(m),
+    },
+  })
 
   console.log('')
   if (ok) {
@@ -779,106 +779,58 @@ async function runHetznerDeploy(args: {
 }
 
 /**
- * Docker deploy path for Hetzner: ship the source release, then build and run
- * the app as a Docker container (managed by systemd) on the server. The image
- * is built ON the server from the shipped source + repo `Dockerfile`, so the
- * upload stays small and no registry is required. Docker is installed via the
- * official convenience script if absent.
+ * Build an OCI container image for each site using pantry's native, daemon-less
+ * builder — no Docker dependency. The image is built from the framework's
+ * generated `storage/framework/Dockerfile` and pushed to the pantry registry
+ * when `PANTRY_REGISTRY_TOKEN`/`PANTRY_TOKEN` is set, so the container can be
+ * consumed by registries, CDK, or ts-cloud. The site continues to run on the
+ * server via bun + systemd, keeping the box dependency-free.
  */
-async function deployHetznerDocker(args: {
-  ip: string
+async function buildContainerImageWithPantry(args: {
   slug: string
   sites: Record<string, any>
-  tarballs: Map<string, string>
   verbose: boolean
-}): Promise<boolean> {
-  const { ip, slug, sites, tarballs, verbose } = args
+}): Promise<void> {
+  const { slug, sites, verbose } = args
   const { execSync } = await import('node:child_process')
 
-  const sshArgs = [
-    '-o', 'StrictHostKeyChecking=accept-new',
-    '-o', 'BatchMode=yes',
-    `root@${ip}`,
-  ]
-  const sshPrefix = `ssh ${sshArgs.map(a => `'${a}'`).join(' ')}`
-  const runRemote = (script: string): void => {
-    execSync(`${sshPrefix} 'bash -s'`, {
-      input: script,
-      stdio: ['pipe', verbose ? 'inherit' : 'pipe', 'inherit'],
-      maxBuffer: 1024 * 1024 * 256,
-    })
+  // Resolve the pantry CLI (system install preferred; falls back to ts-pantry).
+  let cli: string | undefined
+  for (const candidate of ['pantry', 'ts-pantry']) {
+    try {
+      execSync(`command -v ${candidate}`, { stdio: 'pipe' })
+      cli = candidate
+      break
+    }
+    catch { /* not on PATH */ }
   }
-  const scpUp = (local: string, remote: string): void => {
-    execSync(`scp -o StrictHostKeyChecking=accept-new -o BatchMode=yes '${local}' 'root@${ip}:${remote}'`, {
-      stdio: verbose ? 'inherit' : 'pipe',
-      maxBuffer: 1024 * 1024 * 256,
-    })
+  if (!cli) {
+    log.warn('pantry CLI not found on PATH — skipping container image build. Install pantry to enable `--docker`.')
+    return
   }
+
+  const dockerfile = 'storage/framework/Dockerfile'
+  const canPush = Boolean(process.env.PANTRY_REGISTRY_TOKEN || process.env.PANTRY_TOKEN)
 
   for (const [siteName, site] of Object.entries(sites)) {
     if (!site?.start)
       continue
-    const tarball = tarballs.get(siteName)
-    if (!tarball)
-      throw new Error(`Missing tarball for site '${siteName}'`)
-
-    const appDir = `/var/www/${siteName}`
-    const image = `${slug}-${siteName}:latest`
-    const container = `${slug}-${siteName}`
-    const service = `${slug}-${siteName}-docker.service`
-    const port = site.port || 3000
-    const envFile = Object.entries(site.env || {})
-      .map(([k, v]) => `${k}=${String(v)}`)
-      .join('\n')
-
-    log.info(`[${siteName}] uploading release...`)
-    scpUp(tarball, `/tmp/${siteName}-release.tar.gz`)
-
-    log.info(`[${siteName}] building image + starting container on the server...`)
-    runRemote([
-      'set -euo pipefail',
-      // Install Docker if the box doesn't have it yet.
-      'if ! command -v docker >/dev/null 2>&1; then echo "installing docker..."; curl -fsSL https://get.docker.com | sh; systemctl enable --now docker; fi',
-      `mkdir -p ${appDir}`,
-      `find ${appDir} -mindepth 1 -maxdepth 1 ! -name '.env' -exec rm -rf {} +`,
-      `tar xzf /tmp/${siteName}-release.tar.gz -C ${appDir}`,
-      `cat > ${appDir}/.env <<'TS_ENV_EOF'`,
-      envFile,
-      'TS_ENV_EOF',
-      `chmod 600 ${appDir}/.env`,
-      // Hand the port over from the non-docker (bun systemd) service if a
-      // previous non-docker deploy is holding it.
-      `systemctl disable --now ${slug}-${siteName}.service 2>/dev/null || true`,
-      `cd ${appDir}`,
-      `docker build --pull -t ${image} .`,
-      `cat > /etc/systemd/system/${service} <<'TS_UNIT_EOF'`,
-      '[Unit]',
-      `Description=${siteName} docker (managed by buddy)`,
-      'After=network.target docker.service',
-      'Requires=docker.service',
-      '',
-      '[Service]',
-      'Type=simple',
-      `ExecStartPre=-/usr/bin/docker rm -f ${container}`,
-      `ExecStart=/usr/bin/docker run --rm --name ${container} -p ${port}:${port} --env-file ${appDir}/.env ${image}`,
-      `ExecStop=/usr/bin/docker stop ${container}`,
-      'Restart=always',
-      'RestartSec=5',
-      '',
-      '[Install]',
-      'WantedBy=multi-user.target',
-      'TS_UNIT_EOF',
-      'systemctl daemon-reload',
-      `systemctl enable ${service}`,
-      `systemctl restart ${service}`,
-      'sleep 3',
-      `systemctl is-active ${service}`,
-    ].join('\n'))
-
-    log.success(`[${siteName}] container running (service ${service})`)
+    const tag = `${slug}-${siteName}:latest`
+    log.info(`[${siteName}] building image ${tag} with pantry (native, no Docker daemon)...`)
+    const flags = [
+      'build', '.',
+      '-t', tag,
+      '-f', dockerfile,
+      '--run-mode', 'skip', // build runs locally; deps install on the server
+    ]
+    if (canPush)
+      flags.push('--push')
+    execSync(`${cli} ${flags.map(f => (f.includes(' ') ? `'${f}'` : f)).join(' ')}`, {
+      stdio: verbose ? 'inherit' : 'pipe',
+      maxBuffer: 1024 * 1024 * 512,
+    })
+    log.success(`[${siteName}] image built${canPush ? ' + pushed to the pantry registry' : ''}`)
   }
-
-  return true
 }
 
 export function deploy(buddy: CLI): void {
@@ -901,7 +853,7 @@ export function deploy(buddy: CLI): void {
     .option('--dev', descriptions.development, { default: false })
     .option('--yes', descriptions.yes, { default: false })
     .option('--staging', descriptions.staging, { default: false })
-    .option('--docker', 'Build & run the app as a Docker container on the server (Hetzner only)', { default: false })
+    .option('--docker', 'Also build an OCI image with pantry (native, no Docker daemon) and push it to the pantry registry', { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (envArg: string | undefined, options: DeployOptions & { docker?: boolean }) => {
       log.debug('Running `buddy deploy` ...', options)

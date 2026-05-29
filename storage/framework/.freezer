@@ -1,0 +1,26 @@
+# .freezer — pantry's home-themed .dockerignore.
+# Anything matched here is kept OUT of the build context (and the image).
+# Dependencies are reinstalled inside the image, so never ship them.
+node_modules
+**/node_modules
+pantry
+**/pantry
+
+# VCS / CI / local noise
+.git
+.github
+.cache
+**/.cache
+tmp
+temp
+**/*.log
+.DS_Store
+
+# Local-only env overlays — runtime config is provided at run time
+.env.local
+.env.*.local
+
+# Build artifacts the image rebuilds or doesn't need
+.pantry
+coverage
+.ts-cloud
