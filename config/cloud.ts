@@ -27,6 +27,11 @@ export const tsCloud: TsCloudConfig = {
     region: 'us-east-1', // Default AWS region
   },
 
+  // Deploy compute to Hetzner Cloud (apiToken falls back to HCLOUD_TOKEN env).
+  cloud: {
+    provider: 'hetzner',
+  },
+
   /**
    * Deployment Mode
    *
@@ -539,9 +544,14 @@ export const tsCloud: TsCloudConfig = {
    */
   sites: {
     main: {
-      root: '/var/www/app',
+      // Ship the repo (source only; node_modules/.git excluded by the packager)
+      // and install on the server via preStart, matching the Forge-style deploy.
+      root: '.',
       path: '/',
       domain: env.APP_DOMAIN || 'stacksjs.com',
+      start: 'bun storage/framework/core/buddy/src/cli.ts serve',
+      port: 3000,
+      preStart: ['bun install'],
     },
   },
 }
