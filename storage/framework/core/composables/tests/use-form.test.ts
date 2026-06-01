@@ -306,6 +306,78 @@ describe('useForm — field() accessor', () => {
   })
 })
 
+describe('useForm — Phase 2 binding helpers (a11y + submit + focus)', () => {
+  test('inputProps() returns value + handlers + aria attributes', () => {
+    const form = useForm({
+      initialValues: { email: '' },
+      schema: { email: emailRule },
+      onSubmit: async () => {},
+    })
+    const p = form.field('email').inputProps()
+    expect(p.name).toBe('email')
+    expect(p.value).toBe('')
+    expect(p['aria-invalid']).toBe(false)
+    expect(p['aria-describedby']).toBeUndefined()
+    expect(typeof p.onInput).toBe('function')
+    expect(typeof p.onBlur).toBe('function')
+  })
+
+  test('inputProps().onInput accepts a raw value', () => {
+    const form = useForm({ initialValues: { email: '' }, onSubmit: async () => {} })
+    form.field('email').inputProps().onInput('a@b.com')
+    expect(form.values.value.email).toBe('a@b.com')
+  })
+
+  test('inputProps().onInput accepts a DOM-event-like object', () => {
+    const form = useForm({ initialValues: { email: '' }, onSubmit: async () => {} })
+    form.field('email').inputProps().onInput({ target: { value: 'x@y.com' } })
+    expect(form.values.value.email).toBe('x@y.com')
+  })
+
+  test('aria-invalid + aria-describedby flip on once an error surfaces', () => {
+    const form = useForm({
+      initialValues: { email: '' },
+      schema: { email: emailRule },
+      onSubmit: async () => {},
+    })
+    form.field('email').validate() // produce an error
+    const p = form.field('email').inputProps()
+    expect(p['aria-invalid']).toBe(true)
+    expect(p['aria-describedby']).toBe('email-error')
+    expect(form.field('email').errorId).toBe('email-error')
+  })
+
+  test('submitButtonProps() reflects isSubmitting', async () => {
+    let observed: { disabled: boolean, 'aria-busy': boolean } | undefined
+    const form = useForm({
+      initialValues: { x: 'hi' },
+      onSubmit: async () => {
+        observed = form.submitButtonProps()
+        await tick(5)
+      },
+    })
+    expect(form.submitButtonProps()).toEqual({ type: 'submit', disabled: false, 'aria-busy': false })
+    await form.handleSubmit()
+    expect(observed).toEqual({ type: 'submit', disabled: true, 'aria-busy': true })
+    expect(form.submitButtonProps().disabled).toBe(false)
+  })
+
+  test('firstErrorField() returns the first errored field in initialValues order', async () => {
+    const form = useForm({
+      initialValues: { email: '', password: '' },
+      schema: { email: emailRule, password: minLen(6, 'Min 6') },
+      onSubmit: async () => {},
+    })
+    expect(form.firstErrorField()).toBeNull()
+    await form.handleSubmit() // both invalid
+    expect(form.firstErrorField()).toBe('email')
+
+    form.field('email').setValue('a@b.com')
+    form.field('email').validate()
+    expect(form.firstErrorField()).toBe('password') // email fixed → next error
+  })
+})
+
 describe('useForm — bench-review login flow (integration)', () => {
   test('the bench-review login pattern collapses into the documented shape', async () => {
     const calls: string[] = []

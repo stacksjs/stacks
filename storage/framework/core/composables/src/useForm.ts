@@ -49,6 +49,23 @@ export interface UseFormOptions<TValues extends Record<string, unknown>> {
   validateOn?: ValidationMode
 }
 
+/**
+ * A ready-to-spread bag of input attributes + handlers for one field
+ * (stacksjs/stacks#1940 Phase 2). Encodes the a11y wiring a `<Field>`
+ * component would otherwise re-derive by hand: `aria-invalid` flips on a
+ * surfaced error, and `aria-describedby` points at the error element's
+ * stable id so screen readers announce the message.
+ */
+export interface FieldInputProps<T> {
+  name: string
+  value: T
+  /** Accepts a raw value OR a DOM-event-like `{ target: { value } }`. */
+  onInput: (eventOrValue: unknown) => void
+  onBlur: () => void
+  'aria-invalid': boolean
+  'aria-describedby': string | undefined
+}
+
 export interface FormFieldAccessor<T> {
   /** Current value (use in `x-model` and `:value`). */
   value: T
@@ -58,12 +75,16 @@ export interface FormFieldAccessor<T> {
   touched: boolean
   /** True when the value differs from `initialValues[name]`. */
   dirty: boolean
+  /** Stable id for the field's error element — the `aria-describedby` target. */
+  errorId: string
   /** Set value + (per mode) re-validate. */
   setValue: (next: T) => void
   /** Mark touched + (per mode) re-validate on blur. */
   onBlur: () => void
   /** Force-validate just this field. Returns true if valid. */
   validate: () => boolean
+  /** A spreadable input prop bag (value + handlers + a11y attributes). */
+  inputProps: () => FieldInputProps<T>
 }
 
 export interface UseFormResult<TValues extends Record<string, unknown>> {
@@ -91,6 +112,18 @@ export interface UseFormResult<TValues extends Record<string, unknown>> {
   handleSubmit: () => Promise<void>
   /** Reset every field to its initialValue. */
   reset: () => void
+  /**
+   * A spreadable prop bag for a submit button (stacksjs/stacks#1940 Phase 2):
+   * `disabled` + `aria-busy` while submitting, plus `type: 'submit'`. Closes
+   * the "I forgot to disable the submit button" footgun.
+   */
+  submitButtonProps: () => { type: 'submit', disabled: boolean, 'aria-busy': boolean }
+  /**
+   * The first field (in `initialValues` order) that currently has an error,
+   * or null. For focus-the-first-error-on-failed-submit — the component reads
+   * this and calls `.focus()` on the matching input.
+   */
+  firstErrorField: () => keyof TValues | null
 }
 
 /**
@@ -168,17 +201,40 @@ export function useForm<TValues extends Record<string, unknown>>(
   }
 
   function field<K extends keyof TValues>(name: K): FormFieldAccessor<TValues[K]> {
+    const key = name as string
+    const errorId = `${key}-error`
+    const onBlur = (): void => {
+      setFieldTouched(name, true)
+      if (validateOn === 'blur' || validateOn === 'change') validateField(name)
+    }
     return {
       get value() { return values.value[name] },
-      get error() { return errors.value[name as string] ?? '' },
-      get touched() { return !!touched.value[name as string] },
-      get dirty() { return !!dirty.value[name as string] },
+      get error() { return errors.value[key] ?? '' },
+      get touched() { return !!touched.value[key] },
+      get dirty() { return !!dirty.value[key] },
+      errorId,
       setValue: (next: TValues[K]) => setFieldValue(name, next),
-      onBlur: () => {
-        setFieldTouched(name, true)
-        if (validateOn === 'blur' || validateOn === 'change') validateField(name)
-      },
+      onBlur,
       validate: () => validateField(name),
+      inputProps: (): FieldInputProps<TValues[K]> => {
+        const hasError = !!errors.value[key]
+        return {
+          name: key,
+          value: values.value[name],
+          onInput: (eventOrValue: unknown) => {
+            // Accept a raw value OR a DOM-event-like `{ target: { value } }`.
+            const next = (eventOrValue
+              && typeof eventOrValue === 'object'
+              && 'target' in eventOrValue)
+              ? (eventOrValue as { target: { value: unknown } }).target.value
+              : eventOrValue
+            setFieldValue(name, next as TValues[K])
+          },
+          onBlur,
+          'aria-invalid': hasError,
+          'aria-describedby': hasError ? errorId : undefined,
+        }
+      },
     }
   }
 
@@ -241,6 +297,22 @@ export function useForm<TValues extends Record<string, unknown>>(
     isDirty.value = false
   }
 
+  function submitButtonProps(): { type: 'submit', disabled: boolean, 'aria-busy': boolean } {
+    return {
+      type: 'submit',
+      disabled: isSubmitting.value,
+      'aria-busy': isSubmitting.value,
+    }
+  }
+
+  function firstErrorField(): keyof TValues | null {
+    // initialValues order is the field order; surface the first that errors.
+    for (const k of Object.keys(initial) as Array<keyof TValues>) {
+      if (errors.value[k as string]) return k
+    }
+    return null
+  }
+
   return {
     values,
     errors,
@@ -257,5 +329,7 @@ export function useForm<TValues extends Record<string, unknown>>(
     validate: validateAll,
     handleSubmit,
     reset,
+    submitButtonProps,
+    firstErrorField,
   }
 }
