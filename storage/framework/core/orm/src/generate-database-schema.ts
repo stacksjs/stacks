@@ -110,6 +110,67 @@ function deriveFkColumns(model: Model): Record<string, string> {
   return out
 }
 
+/**
+ * Conventional pivot-table name (stacksjs/stacks#1938) — alphabetical
+ * snake_case join of the two related models, matching Laravel:
+ *   `User` + `Role` → `role_user`. Lets either side of the
+ *   relation produce the same table name so the dedupe is trivial.
+ */
+function pivotTableName(a: string, b: string): string {
+  const [first, second] = [snakeCase(a), snakeCase(b)].sort()
+  return `${first}_${second}`
+}
+
+/**
+ * Read a model's `belongsToMany` declaration and return one pivot-
+ * table entry per relation. Handles both shorthand (array of model
+ * names) and the explicit `BaseBelongsToMany` form (with
+ * `pivotTable` / `firstForeignKey` / `secondForeignKey` overrides).
+ */
+function derivePivotTables(modelName: string, model: Model): Array<{ table: string, columns: Record<string, string> }> {
+  const rel = (model as Model).belongsToMany
+  if (!rel) return []
+  const out: Array<{ table: string, columns: Record<string, string> }> = []
+
+  const list = Array.isArray(rel) ? rel : []
+  for (const entry of list) {
+    let related: string
+    let table: string | undefined
+    let firstFk: string | undefined
+    let secondFk: string | undefined
+    if (typeof entry === 'string') {
+      related = entry
+    }
+    else if (entry && typeof entry === 'object' && 'model' in entry) {
+      const obj = entry as { model: string, pivotTable?: string, firstForeignKey?: string, secondForeignKey?: string }
+      related = obj.model
+      table = obj.pivotTable
+      firstFk = obj.firstForeignKey
+      secondFk = obj.secondForeignKey
+    }
+    else {
+      continue
+    }
+
+    const tableName = table ?? pivotTableName(modelName, related)
+    const fkA = firstFk ?? `${snakeCase(modelName)}_id`
+    const fkB = secondFk ?? `${snakeCase(related)}_id`
+
+    out.push({
+      table: tableName,
+      columns: {
+        id: 'number',
+        [fkA]: 'number',
+        [fkB]: 'number',
+        created_at: 'string',
+        updated_at: 'string | null',
+      },
+    })
+  }
+
+  return out
+}
+
 function deriveSystemColumns(model: Model): Record<string, string> {
   const out: Record<string, string> = { id: 'number' }
   const traits = model.traits ?? {}
@@ -231,6 +292,19 @@ export async function buildDatabaseSchema(options: GenerateSchemaOptions = {}): 
     }
     tables.push({ table: tableName, model: name, columns })
   }
+
+  // belongsToMany pivot tables (stacksjs/stacks#1938). Both sides of
+  // a many-to-many produce the same conventional table name, so dedupe
+  // by table key — `BelongsToMany 'User' on Role` and `BelongsToMany
+  // 'Role' on User` both target `role_user`.
+  const pivotByTable = new Map<string, { table: string, model: string, columns: Record<string, string> }>()
+  for (const [name, { model }] of byName) {
+    for (const pivot of derivePivotTables(name, model)) {
+      if (pivotByTable.has(pivot.table)) continue
+      pivotByTable.set(pivot.table, { table: pivot.table, model: `(${pivot.table} pivot)`, columns: pivot.columns })
+    }
+  }
+  tables.push(...pivotByTable.values())
 
   // Stable alphabetical ordering so diffs are reviewable.
   tables.sort((a, b) => a.table.localeCompare(b.table))

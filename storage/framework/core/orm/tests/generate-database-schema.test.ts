@@ -234,3 +234,110 @@ describe('attribute → TS type mapping', () => {
     expect(file).toContain('rating: number')
   })
 })
+
+describe('belongsToMany pivot tables (stacksjs/stacks#1938)', () => {
+  test('emits a pivot table for a string-form belongsToMany', async () => {
+    const root = mkScratch()
+    const modelsDir = join(root, 'app/Models')
+    const outFile = join(root, 'database/types.d.ts')
+
+    writeModel(modelsDir, 'User.ts', `
+      export default {
+        name: 'User',
+        table: 'users',
+        attributes: { email: { type: 'string' } },
+        belongsToMany: ['Role'],
+      }
+    `)
+    writeModel(modelsDir, 'Role.ts', `
+      export default {
+        name: 'Role',
+        table: 'roles',
+        attributes: { name: { type: 'string' } },
+      }
+    `)
+
+    const result = await buildDatabaseSchema({ modelsDir, defaultsDir: join(root, 'no-defaults'), outFile })
+    // 2 model tables + 1 pivot.
+    expect(result.tables.map(t => t.table).sort()).toEqual(['role_user', 'roles', 'users'])
+    const file = readFileSync(outFile, 'utf-8')
+    expect(file).toContain('role_user:')
+    expect(file).toContain('user_id: number')
+    expect(file).toContain('role_id: number')
+  })
+
+  test('uses alphabetical convention so both sides produce the same table (deduped)', async () => {
+    const root = mkScratch()
+    const modelsDir = join(root, 'app/Models')
+
+    writeModel(modelsDir, 'User.ts', `
+      export default { name: 'User', attributes: {}, belongsToMany: ['Role'] }
+    `)
+    writeModel(modelsDir, 'Role.ts', `
+      export default { name: 'Role', attributes: {}, belongsToMany: ['User'] }
+    `)
+
+    const result = await buildDatabaseSchema({
+      modelsDir,
+      defaultsDir: join(root, 'no-defaults'),
+      outFile: join(root, 'database/types.d.ts'),
+    })
+
+    const pivotTables = result.tables.filter(t => t.model.includes('pivot')).map(t => t.table)
+    expect(pivotTables).toEqual(['role_user']) // exactly one, not duplicated
+  })
+
+  test('respects pivotTable + firstForeignKey + secondForeignKey overrides', async () => {
+    const root = mkScratch()
+    const modelsDir = join(root, 'app/Models')
+
+    writeModel(modelsDir, 'User.ts', `
+      export default {
+        name: 'User',
+        attributes: {},
+        belongsToMany: [{
+          model: 'Role',
+          pivotTable: 'user_role_assignments',
+          firstForeignKey: 'assignee_id',
+          secondForeignKey: 'granted_role_id',
+        }],
+      }
+    `)
+    writeModel(modelsDir, 'Role.ts', `
+      export default { name: 'Role', attributes: {} }
+    `)
+
+    const result = await buildDatabaseSchema({
+      modelsDir,
+      defaultsDir: join(root, 'no-defaults'),
+      outFile: join(root, 'database/types.d.ts'),
+    })
+
+    const pivot = result.tables.find(t => t.table === 'user_role_assignments')
+    expect(pivot).toBeDefined()
+    expect(pivot!.columns).toHaveProperty('assignee_id', 'number')
+    expect(pivot!.columns).toHaveProperty('granted_role_id', 'number')
+  })
+
+  test('pivot rows carry id + timestamps', async () => {
+    const root = mkScratch()
+    const modelsDir = join(root, 'app/Models')
+
+    writeModel(modelsDir, 'User.ts', `
+      export default { name: 'User', attributes: {}, belongsToMany: ['Role'] }
+    `)
+    writeModel(modelsDir, 'Role.ts', `
+      export default { name: 'Role', attributes: {} }
+    `)
+
+    const result = await buildDatabaseSchema({
+      modelsDir,
+      defaultsDir: join(root, 'no-defaults'),
+      outFile: join(root, 'database/types.d.ts'),
+    })
+    const pivot = result.tables.find(t => t.table === 'role_user')!
+    expect(pivot.columns).toHaveProperty('id', 'number')
+    expect(pivot.columns).toHaveProperty('created_at', 'string')
+    expect(pivot.columns).toHaveProperty('updated_at', 'string | null')
+  })
+})

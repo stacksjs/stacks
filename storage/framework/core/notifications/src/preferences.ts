@@ -70,8 +70,9 @@ export async function getNotificationPreferences(
 ): Promise<Map<PreferenceChannel, boolean>> {
   const map = new Map<PreferenceChannel, boolean>()
   try {
-    // eslint-disable-next-line ts/no-explicit-any -- table not in generated DB types
-    let q = (db as any).selectFrom(TABLE).select(['channel', 'enabled', 'category']).where('user_id', '=', userId)
+    // Table is now part of `DatabaseSchema` via
+    // `./database-schema.d.ts` (Notif-3, follow-up to #1937).
+    let q = db.selectFrom(TABLE).select(['channel', 'enabled', 'category']).where('user_id', '=', userId)
     if (category !== undefined)
       q = q.where('category', '=', category)
     const rows = await q.execute() as Array<Pick<NotificationPreferenceRow, 'channel' | 'enabled' | 'category'>>
@@ -110,22 +111,20 @@ export async function setNotificationPreference(
   const now = new Date().toISOString()
   const cat = category ?? null
 
-  // eslint-disable-next-line ts/no-explicit-any -- table not in generated DB types
-  const dbAny = db as any
-
   // Look up an existing row for this (user, channel, category) — cheaper
   // than a dialect-specific ON CONFLICT clause and works the same on
-  // SQLite/MySQL/Postgres.
-  const existing = await dbAny
+  // SQLite/MySQL/Postgres. Table is now declared via
+  // `./database-schema.d.ts` (Notif-3, follow-up to #1937).
+  const existing = await db
     .selectFrom(TABLE)
     .select(['id'])
     .where('user_id', '=', userId)
     .where('channel', '=', channel)
     .where('category', cat === null ? 'is' : '=', cat)
-    .executeTakeFirst()
+    .executeTakeFirst() as { id?: number } | undefined
 
   if (existing?.id) {
-    await dbAny
+    await db
       .updateTable(TABLE)
       .set({ enabled, updated_at: now })
       .where('id', '=', existing.id)
@@ -133,7 +132,7 @@ export async function setNotificationPreference(
     return
   }
 
-  await dbAny
+  await db
     .insertInto(TABLE)
     .values({
       user_id: userId,

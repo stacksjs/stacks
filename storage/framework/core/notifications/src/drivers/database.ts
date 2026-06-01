@@ -1,6 +1,11 @@
 import { log } from '@stacksjs/cli'
 import { db } from '@stacksjs/database'
 
+// `./database-schema.d.ts` augments `@stacksjs/database`'s
+// `DatabaseSchema` with the `notifications` + `notification_preferences`
+// tables so the chain calls below type-check without per-call `as any`
+// (Notif-3 follow-up to #1923 / #1937).
+
 export interface DatabaseNotification {
   id: number
   user_id: number
@@ -14,7 +19,14 @@ export interface DatabaseNotification {
 export interface CreateNotificationOptions {
   userId: number
   type: string
-  data: Record<string, any>
+  data: Record<string, unknown>
+}
+
+/** Shape of a row-insert result across the supported drivers. */
+interface InsertResultLike {
+  insertId?: number | bigint
+  lastInsertRowid?: number | bigint
+  lastInsertId?: number | bigint
 }
 
 export const DatabaseNotificationDriver = {
@@ -30,20 +42,22 @@ export const DatabaseNotificationDriver = {
         read_at: null,
         created_at: now,
         updated_at: now,
-      } as any)
+      })
       .execute()
 
     // Driver-aware insertId extraction. MySQL exposes
     // `result[0].insertId`, Postgres returns `insertId` on the top-level
     // result object (when RETURNING is used), and SQLite reports
-    // `insertId` directly. Coalesce all three so the returned record
-    // carries the actual primary key regardless of driver.
-    const r = result as any
+    // `lastInsertRowid` directly. Coalesce so the returned record
+    // carries the actual primary key regardless of driver. The unknown
+    // cast is intentional: the chain returns `Promise<any>` and the
+    // real shape is driver-specific.
+    const r = result as unknown as InsertResultLike | [InsertResultLike]
+    const arr = Array.isArray(r) ? r[0] : r
     const insertId = Number(
-      r?.[0]?.insertId
-      ?? r?.insertId
-      ?? r?.lastInsertRowid
-      ?? r?.lastInsertId
+      arr?.insertId
+      ?? arr?.lastInsertRowid
+      ?? arr?.lastInsertId
       ?? 0,
     )
 
@@ -64,8 +78,8 @@ export const DatabaseNotificationDriver = {
     const notifications = await db
       .selectFrom('notifications')
       .selectAll()
-      .where('user_id' as any, '=', userId)
-      .orderBy('created_at' as any, 'desc')
+      .where('user_id', '=', userId)
+      .orderBy('created_at', 'desc')
       .execute()
 
     return notifications as unknown as DatabaseNotification[]
@@ -75,9 +89,9 @@ export const DatabaseNotificationDriver = {
     const notifications = await db
       .selectFrom('notifications')
       .selectAll()
-      .where('user_id' as any, '=', userId)
-      .where('read_at' as any, 'is', null)
-      .orderBy('created_at' as any, 'desc')
+      .where('user_id', '=', userId)
+      .where('read_at', 'is', null)
+      .orderBy('created_at', 'desc')
       .execute()
 
     return notifications as unknown as DatabaseNotification[]
@@ -86,17 +100,17 @@ export const DatabaseNotificationDriver = {
   async markAsRead(id: number): Promise<void> {
     await db
       .updateTable('notifications')
-      .set({ read_at: new Date().toISOString() } as any)
-      .where('id' as any, '=', id)
+      .set({ read_at: new Date().toISOString() })
+      .where('id', '=', id)
       .execute()
   },
 
   async markAllAsRead(userId: number): Promise<void> {
     await db
       .updateTable('notifications')
-      .set({ read_at: new Date().toISOString() } as any)
-      .where('user_id' as any, '=', userId)
-      .where('read_at' as any, 'is', null)
+      .set({ read_at: new Date().toISOString() })
+      .where('user_id', '=', userId)
+      .where('read_at', 'is', null)
       .execute()
   },
 
@@ -104,24 +118,24 @@ export const DatabaseNotificationDriver = {
     const result = await db
       .selectFrom('notifications')
       .select(db.fn.countAll().as('count'))
-      .where('user_id' as any, '=', userId)
-      .where('read_at' as any, 'is', null)
+      .where('user_id', '=', userId)
+      .where('read_at', 'is', null)
       .executeTakeFirst()
 
-    return Number((result as any)?.count ?? 0)
+    return Number((result as unknown as { count?: number | string } | undefined)?.count ?? 0)
   },
 
   async deleteNotification(id: number): Promise<void> {
     await db
       .deleteFrom('notifications')
-      .where('id' as any, '=', id)
+      .where('id', '=', id)
       .execute()
   },
 
   async deleteAllNotifications(userId: number): Promise<void> {
     await db
       .deleteFrom('notifications')
-      .where('user_id' as any, '=', userId)
+      .where('user_id', '=', userId)
       .execute()
   },
 }
