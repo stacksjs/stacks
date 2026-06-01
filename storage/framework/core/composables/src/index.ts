@@ -26,6 +26,17 @@ export { useToggle } from './useToggle'
 export { useFetch } from './useFetch'
 export { createFetch } from './createFetch'
 
+// Query / Mutation (stacksjs/stacks#1939)
+export { createQueryClient, queryClient, useMutation, useQuery } from './useQuery'
+export type {
+  QueryClient,
+  QueryKey,
+  UseMutationOptions,
+  UseMutationResult,
+  UseQueryOptions,
+  UseQueryResult,
+} from './useQuery'
+
 // Date / Time
 export { useDateFormat } from './useDateFormat'
 export { useNow } from './useNow'
