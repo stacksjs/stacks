@@ -240,6 +240,31 @@ describe('useForm — setError / clearErrors (server-side surfacing)', () => {
     expect(form.errors.value.form).toBe('Login failed')
   })
 
+  test('setErrors(map) bulk-surfaces a server 422 error map (array → first message)', () => {
+    const form = useForm({
+      initialValues: { email: '', password: '' },
+      onSubmit: async () => {},
+    })
+    form.setErrors({
+      email: ['Already taken', 'second ignored'],
+      password: 'Too weak',
+      form: 'Registration failed',
+    })
+    expect(form.errors.value.email).toBe('Already taken')
+    expect(form.errors.value.password).toBe('Too weak')
+    expect(form.errors.value.form).toBe('Registration failed')
+    expect(form.isValid.value).toBe(false)
+  })
+
+  test('setErrors ignores null/empty entries and merges with existing errors', () => {
+    const form = useForm({ initialValues: { a: '', b: '' }, onSubmit: async () => {} })
+    form.setError('a', 'A bad')
+    form.setErrors({ b: 'B bad', a: undefined, form: [] })
+    expect(form.errors.value.a).toBe('A bad') // untouched (undefined skipped)
+    expect(form.errors.value.b).toBe('B bad')
+    expect(form.errors.value.form).toBeUndefined() // empty array skipped
+  })
+
   test('clearErrors(field) clears one, clearErrors() clears all', () => {
     const form = useForm({
       initialValues: { a: '', b: '' },

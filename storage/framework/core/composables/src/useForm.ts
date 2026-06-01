@@ -102,6 +102,14 @@ export interface UseFormResult<TValues extends Record<string, unknown>> {
   setValue: <K extends keyof TValues>(name: K, value: TValues[K]) => void
   /** Set or clear a single field's error message. */
   setError: (name: keyof TValues | 'form', message: string) => void
+  /**
+   * Bulk-set field errors from a server error map (stacksjs/stacks#1940
+   * Phase 3 foundation). Accepts the canonical 422 shape an Action validator
+   * returns — `{ email: ['Already taken'], password: 'Too short' }` — taking
+   * the first message of an array. The client wiring that calls this on a 422
+   * response is the remaining Phase 3 work.
+   */
+  setErrors: (errorMap: Partial<Record<keyof TValues | 'form', string | string[]>>) => void
   /** Clear errors — either a single field or all of them. */
   clearErrors: (name?: keyof TValues | 'form') => void
   /** Mark a field touched. */
@@ -251,6 +259,20 @@ export function useForm<TValues extends Record<string, unknown>>(
     isValid.value = false
   }
 
+  function setErrors(errorMap: Partial<Record<keyof TValues | 'form', string | string[]>>): void {
+    const next = { ...errors.value }
+    let any = false
+    for (const [key, msg] of Object.entries(errorMap)) {
+      if (msg == null) continue
+      const message = Array.isArray(msg) ? msg[0] : msg
+      if (message == null || message === '') continue
+      next[key] = message
+      any = true
+    }
+    errors.value = next
+    if (any) isValid.value = false
+  }
+
   function clearErrors(name?: keyof TValues | 'form'): void {
     if (name == null) {
       errors.value = {}
@@ -324,6 +346,7 @@ export function useForm<TValues extends Record<string, unknown>>(
     field,
     setValue: setFieldValue,
     setError,
+    setErrors,
     clearErrors,
     setTouched: setFieldTouched,
     validate: validateAll,
