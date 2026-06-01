@@ -37,6 +37,16 @@ export type {
   UseQueryResult,
 } from './useQuery'
 
+// Form primitive (stacksjs/stacks#1940)
+export { useForm } from './useForm'
+export type {
+  FormFieldAccessor,
+  FormValidator,
+  UseFormOptions,
+  UseFormResult,
+  ValidationMode,
+} from './useForm'
+
 // Date / Time
 export { useDateFormat } from './useDateFormat'
 export { useNow } from './useNow'
