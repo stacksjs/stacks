@@ -303,7 +303,7 @@ async function createTableMigration(modelPath: string) {
   if (model.indexes?.length) {
     migrationContent += '\n'
     for (const index of model.indexes) {
-      migrationContent += generateIndexCreationSQL(tableName, index.name, index.columns)
+      migrationContent += generateIndexCreationSQL(tableName, index)
     }
   }
 
@@ -477,7 +477,7 @@ async function createAlterTableMigration(modelPath: string) {
   for (const newIndex of newIndexes) {
     if (!oldIndexes.find(oldIndex => oldIndex.name === newIndex.name)) {
       hasChanged = true
-      migrationContent += generateIndexCreationSQL(tableName, newIndex.name, newIndex.columns)
+      migrationContent += generateIndexCreationSQL(tableName, newIndex)
     }
   }
 
@@ -514,9 +514,22 @@ function reArrangeColumns(attributes: AttributesElements | undefined, tableName:
   return migrationContent
 }
 
-function generateIndexCreationSQL(tableName: string, indexName: string, columns: string[]): string {
-  const columnsStr = columns.map(col => `\`${snakeCase(col)}\``).join(', ')
-  return `  await (db as any).schema.createIndex('${indexName}').on('${tableName}').columns([${columnsStr}]).execute()\n`
+export function generateIndexCreationSQL(
+  tableName: string,
+  index: { name: string, columns: string[], unique?: boolean, where?: string },
+): string {
+  // Partial / multi-column unique indexes (stacksjs/stacks#1943) — emit
+  // raw SQL via `db.unsafe(...)` so we don't have to thread kysely's
+  // `sql` template tag into every generated migration's imports just
+  // to express a WHERE clause.
+  if (index.unique || index.where) {
+    const unique = index.unique ? 'UNIQUE ' : ''
+    const cols = index.columns.map(col => snakeCase(col)).join(', ')
+    const whereClause = index.where ? ` WHERE ${index.where}` : ''
+    return `  await db.unsafe(\`CREATE ${unique}INDEX IF NOT EXISTS "${index.name}" ON "${tableName}" (${cols})${whereClause}\`).execute()\n`
+  }
+  const columnsStr = index.columns.map(col => `\`${snakeCase(col)}\``).join(', ')
+  return `  await (db as any).schema.createIndex('${index.name}').on('${tableName}').columns([${columnsStr}]).execute()\n`
 }
 
 function generatePrimaryKeyIndexSQL(tableName: string): string {

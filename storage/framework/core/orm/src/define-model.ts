@@ -1499,7 +1499,7 @@ interface StacksModelDefinition {
    * ```
    */
   traits?: Record<string, unknown>
-  indexes?: Array<{ name: string, columns: string[] }>
+  indexes?: Array<{ name: string, columns: string[], unique?: boolean, where?: string }>
   casts?: Record<string, CastType | CasterInterface>
   attributes: {
     [key: string]: {

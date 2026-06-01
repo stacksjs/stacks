@@ -268,6 +268,23 @@ export interface Attribute {
 export interface CompositeIndex {
   name: string
   columns: string[]
+  /**
+   * Emit `UNIQUE` on the index — turns a multi-column index into a
+   * multi-column unique constraint. Combine with `where:` for a
+   * partial unique index (stacksjs/stacks#1943).
+   *
+   * @default false
+   */
+  unique?: boolean
+  /**
+   * Partial-index `WHERE` clause as a raw SQL expression — e.g.
+   * `'user_id IS NOT NULL'`. Lets the constraint apply to a subset of
+   * rows; the canonical case is "prevent a logged-in user from flagging
+   * the same review twice, but allow anonymous flags (user_id NULL) to
+   * repeat" (stacksjs/stacks#1943). Emitted verbatim, so don't
+   * interpolate untrusted input.
+   */
+  where?: string
 }
 
 export interface AttributesElements {

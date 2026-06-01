@@ -211,7 +211,7 @@ export function migrate(buddy: CLI): void {
         // every time. Errors still surface via log.error below.
         log.debug('Migrating auth tables...')
         try {
-          const { migrateAuthTables, migrateNotificationTables } = await import('@stacksjs/database')
+          const { migrateAuthTables, migrateNotificationTables, migrateRbacTables } = await import('@stacksjs/database')
           const authResult = await migrateAuthTables({ verbose: options.verbose })
 
           if (!authResult.success) {
@@ -224,9 +224,18 @@ export function migrate(buddy: CLI): void {
           if (!notifResult.success) {
             log.error(`Failed to migrate notification tables: ${notifResult.error}`)
           }
+
+          // RBAC tables (stacksjs/stacks#1941 Phase A) — roles,
+          // permissions, and the three pivot tables the RBAC store
+          // reads. Schema was documented in rbac-store-bqb.ts but the
+          // migration never shipped.
+          const rbacResult = await migrateRbacTables({ verbose: options.verbose })
+          if (!rbacResult.success) {
+            log.error(`Failed to migrate RBAC tables: ${rbacResult.error}`)
+          }
         }
         catch (error) {
-          log.error('Failed to migrate auth/notification tables:', error)
+          log.error('Failed to migrate auth/notification/RBAC tables:', error)
         }
       }
 
@@ -299,7 +308,7 @@ export function migrate(buddy: CLI): void {
         // every time. Errors still surface via log.error below.
         log.debug('Migrating auth tables...')
         try {
-          const { migrateAuthTables, migrateNotificationTables } = await import('@stacksjs/database')
+          const { migrateAuthTables, migrateNotificationTables, migrateRbacTables } = await import('@stacksjs/database')
           const authResult = await migrateAuthTables({ verbose: options.verbose })
 
           if (!authResult.success) {
@@ -312,9 +321,18 @@ export function migrate(buddy: CLI): void {
           if (!notifResult.success) {
             log.error(`Failed to migrate notification tables: ${notifResult.error}`)
           }
+
+          // RBAC tables (stacksjs/stacks#1941 Phase A) — roles,
+          // permissions, and the three pivot tables the RBAC store
+          // reads. Schema was documented in rbac-store-bqb.ts but the
+          // migration never shipped.
+          const rbacResult = await migrateRbacTables({ verbose: options.verbose })
+          if (!rbacResult.success) {
+            log.error(`Failed to migrate RBAC tables: ${rbacResult.error}`)
+          }
         }
         catch (error) {
-          log.error('Failed to migrate auth/notification tables:', error)
+          log.error('Failed to migrate auth/notification/RBAC tables:', error)
         }
       }
 
