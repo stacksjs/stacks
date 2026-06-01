@@ -275,6 +275,153 @@ describe('useMutation — write + optimistic + rollback', () => {
   })
 })
 
+describe('Phase B — predicate invalidation', () => {
+  test('invalidate({ predicate }) refetches only matching keys', async () => {
+    const c = createQueryClient()
+    let aN = 0
+    let bN = 0
+    const qa = useQuery({ queryKey: ['judges', 1], queryFn: async () => ++aN, client: c })
+    const qb = useQuery({ queryKey: ['cases', 1], queryFn: async () => ++bN, client: c })
+    await tick(5)
+    expect(qa.data.value).toBe(1)
+    expect(qb.data.value).toBe(1)
+
+    await c.invalidate({ predicate: key => key[0] === 'judges' })
+    await tick(5)
+    expect(qa.data.value).toBe(2) // matched → refetched
+    expect(qb.data.value).toBe(1) // not matched → untouched
+  })
+
+  test('predicate can match on a tag anywhere in the key', async () => {
+    const c = createQueryClient()
+    let n = 0
+    const q = useQuery({ queryKey: ['list', { entity: 'judge' }], queryFn: async () => ++n, client: c })
+    await tick(5)
+    await c.invalidate({ predicate: key => JSON.stringify(key).includes('judge') })
+    await tick(5)
+    expect(q.data.value).toBe(2)
+  })
+})
+
+describe('Phase B — garbage collection', () => {
+  test('gc() removes entries with no subscribers and no inflight', async () => {
+    const c = createQueryClient()
+    const q = useQuery({ queryKey: ['gc1'], queryFn: async () => 1, client: c })
+    await tick(5)
+    expect(c.get(['gc1'])).toBe(1)
+    expect(c.gc()).toBe(0) // still subscribed — not collectable
+    q.unsubscribe()
+    expect(c.gc()).toBe(1) // now collectable
+    expect(c.get(['gc1'])).toBeUndefined()
+  })
+
+  test('gcTime:0 auto-collects on last unsubscribe', async () => {
+    const c = createQueryClient({ gcTime: 0 })
+    const q = useQuery({ queryKey: ['gc2'], queryFn: async () => 1, client: c })
+    await tick(5)
+    q.unsubscribe()
+    await tick(5)
+    expect(c.get(['gc2'])).toBeUndefined()
+  })
+
+  test('re-subscribing before GC cancels the collection', async () => {
+    const c = createQueryClient({ gcTime: 20 })
+    const q1 = useQuery({ queryKey: ['gc3'], queryFn: async () => 1, client: c })
+    await tick(5)
+    q1.unsubscribe() // schedules GC in 20ms
+    const q2 = useQuery({ queryKey: ['gc3'], queryFn: async () => 2, staleTime: 60_000, client: c }) // re-subscribes, cancels GC
+    await tick(40) // past the original gcTime
+    expect(c.get(['gc3'])).toBe(1) // survived (cached, fresh) — GC was cancelled
+    q2.unsubscribe()
+  })
+
+  test('an entry with an in-flight fetch is not collected', async () => {
+    const c = createQueryClient()
+    const q = useQuery({
+      queryKey: ['gc4'],
+      queryFn: async () => { await tick(30); return 1 },
+      client: c,
+    })
+    q.unsubscribe() // unsubscribe while the fetch is still in flight
+    expect(c.gc()).toBe(0) // inflight → not collectable
+    await tick(40)
+    expect(c.gc()).toBe(1) // settled + no subscribers → collectable
+  })
+})
+
+describe('Phase B — refetch on focus / reconnect', () => {
+  test('refetchOnFocus refetches (when stale) on a focus event', async () => {
+    const c = createQueryClient()
+    const target = new EventTarget()
+    let n = 0
+    const q = useQuery({
+      queryKey: ['focus'],
+      queryFn: async () => ++n,
+      refetchOnFocus: true,
+      window: target,
+      client: c,
+    })
+    await tick(5)
+    expect(q.data.value).toBe(1)
+    target.dispatchEvent(new Event('focus'))
+    await tick(5)
+    expect(q.data.value).toBe(2) // stale (staleTime 0) → refetched
+  })
+
+  test('refetchOnFocus does NOT refetch while data is still fresh', async () => {
+    const c = createQueryClient()
+    const target = new EventTarget()
+    let n = 0
+    const q = useQuery({
+      queryKey: ['focus-fresh'],
+      queryFn: async () => ++n,
+      staleTime: 60_000,
+      refetchOnFocus: true,
+      window: target,
+      client: c,
+    })
+    await tick(5)
+    target.dispatchEvent(new Event('focus'))
+    await tick(5)
+    expect(q.data.value).toBe(1) // fresh → focus is a no-op
+  })
+
+  test('refetchOnReconnect refetches on an online event', async () => {
+    const c = createQueryClient()
+    const target = new EventTarget()
+    let n = 0
+    const q = useQuery({
+      queryKey: ['reconnect'],
+      queryFn: async () => ++n,
+      refetchOnReconnect: true,
+      window: target,
+      client: c,
+    })
+    await tick(5)
+    target.dispatchEvent(new Event('online'))
+    await tick(5)
+    expect(q.data.value).toBe(2)
+  })
+
+  test('unsubscribe removes the focus/online listeners', async () => {
+    const c = createQueryClient()
+    const target = new EventTarget()
+    let n = 0
+    const q = useQuery({
+      queryKey: ['focus-cleanup'],
+      queryFn: async () => ++n,
+      refetchOnFocus: true,
+      window: target,
+      client: c,
+    })
+    await tick(5)
+    q.unsubscribe()
+    target.dispatchEvent(new Event('focus'))
+    await tick(5)
+    expect(n).toBe(1) // listener was removed — no extra fetch
+  })
+})
+
 describe('default queryClient is usable but isolated per test via clear()', () => {
   test('exported queryClient holds + clears state', () => {
     queryClient.clear()

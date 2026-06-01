@@ -44,6 +44,23 @@ interface CacheEntry<T = unknown> {
 }
 
 /**
+ * Matcher for `invalidate`. Either a `QueryKey` (prefix match, the common
+ * case) or a predicate run against every cached key (stacksjs/stacks#1939
+ * Phase B) — e.g. invalidate everything tagged a given entity:
+ * `invalidate({ predicate: k => k.includes('judges') })`.
+ */
+export type QueryMatcher = QueryKey | { predicate: (key: QueryKey) => boolean }
+
+export interface CreateQueryClientOptions {
+  /**
+   * How long (ms) a cache entry survives after its LAST subscriber
+   * unsubscribes before it's garbage-collected. `Infinity` disables
+   * auto-GC (entries live until `clear()`/`gc()`). Default 5 minutes.
+   */
+  gcTime?: number
+}
+
+/**
  * Central cache. Hold one per app (the default `queryClient` export)
  * or create scoped ones for tests.
  */
@@ -53,12 +70,18 @@ export interface QueryClient {
   /** Write the cached value for `key`. Accepts a value or updater fn. */
   set: <T = unknown>(key: QueryKey, value: T | ((old: T | undefined) => T)) => void
   /**
-   * Invalidate every cached key that starts with the given prefix
-   * (segment-wise deep equal). Subscribers of matched keys refetch.
+   * Invalidate matching cached keys (prefix or predicate). Subscribers of
+   * matched keys refetch.
    */
-  invalidate: (key: QueryKey) => Promise<void>
+  invalidate: (matcher: QueryMatcher) => Promise<void>
   /** Remove every cache entry. Mostly for tests. */
   clear: () => void
+  /**
+   * Garbage-collect now: drop every entry with no subscribers and no
+   * in-flight fetch. Returns the number removed. Auto-GC (gcTime) calls
+   * this implicitly; exposed for deterministic control + manual sweeps.
+   */
+  gc: () => number
   /** Internal: subscribe to changes for a key. Returns unsubscribe fn. */
   _subscribe: (hash: string, fn: () => void) => () => void
   /** Internal: get-or-create the entry for a key. */
@@ -67,8 +90,39 @@ export interface QueryClient {
   _notify: (hash: string) => void
 }
 
-export function createQueryClient(): QueryClient {
+export function createQueryClient(options: CreateQueryClientOptions = {}): QueryClient {
   const entries = new Map<string, CacheEntry>()
+  const gcTime = options.gcTime ?? 5 * 60 * 1000
+  const gcTimers = new Map<string, ReturnType<typeof setTimeout>>()
+
+  function collectable(e: CacheEntry): boolean {
+    return e.subscribers.size === 0 && e.inflight === null
+  }
+
+  function removeIfCollectable(hash: string): void {
+    const e = entries.get(hash)
+    if (e && collectable(e)) entries.delete(hash)
+    gcTimers.delete(hash)
+  }
+
+  function scheduleGc(hash: string): void {
+    const existing = gcTimers.get(hash)
+    if (existing) clearTimeout(existing)
+    if (!Number.isFinite(gcTime)) return
+    if (gcTime <= 0) {
+      removeIfCollectable(hash)
+      return
+    }
+    const t = setTimeout(() => removeIfCollectable(hash), gcTime)
+    // Don't keep the process alive just for a cache sweep (Node/Bun).
+    ;(t as { unref?: () => void }).unref?.()
+    gcTimers.set(hash, t)
+  }
+
+  function cancelGc(hash: string): void {
+    const t = gcTimers.get(hash)
+    if (t) { clearTimeout(t); gcTimers.delete(hash) }
+  }
 
   function entry<T>(key: QueryKey): CacheEntry<T> {
     const hash = hashKey(key)
@@ -121,10 +175,13 @@ export function createQueryClient(): QueryClient {
       notify(e.hash)
     },
 
-    async invalidate(prefix: QueryKey): Promise<void> {
+    async invalidate(matcher: QueryMatcher): Promise<void> {
+      const matches = Array.isArray(matcher)
+        ? (key: QueryKey) => prefixMatches(matcher, key)
+        : matcher.predicate
       const refetches: Promise<void>[] = []
       for (const e of entries.values()) {
-        if (!prefixMatches(prefix, e.key)) continue
+        if (!matches(e.key)) continue
         e.updatedAt = 0
         e.invalidated = true
         for (const fn of e.subscribers) {
@@ -138,14 +195,32 @@ export function createQueryClient(): QueryClient {
     },
 
     clear(): void {
+      for (const t of gcTimers.values()) clearTimeout(t)
+      gcTimers.clear()
       entries.clear()
+    },
+
+    gc(): number {
+      let removed = 0
+      for (const [hash, e] of entries) {
+        if (collectable(e)) {
+          entries.delete(hash)
+          cancelGc(hash)
+          removed++
+        }
+      }
+      return removed
     },
 
     _subscribe(hash: string, fn: () => void): () => void {
       const e = entries.get(hash)
       if (!e) return () => {}
+      cancelGc(hash) // a fresh observer cancels any pending collection
       e.subscribers.add(fn)
-      return () => { e.subscribers.delete(fn) }
+      return () => {
+        e.subscribers.delete(fn)
+        if (e.subscribers.size === 0) scheduleGc(hash)
+      }
     },
 
     _entry: entry as <T>(key: QueryKey) => CacheEntry<T>,
@@ -163,6 +238,21 @@ export interface UseQueryOptions<T> {
   staleTime?: number
   /** If false, don't auto-fetch. Caller must call refetch() manually. */
   enabled?: boolean
+  /**
+   * Refetch when the window regains focus (stacksjs/stacks#1939 Phase B).
+   * Only refetches if the cached data is stale per `staleTime`. Default false.
+   */
+  refetchOnFocus?: boolean
+  /**
+   * Refetch when the network reconnects (the `online` event). Only refetches
+   * if stale. Default false.
+   */
+  refetchOnReconnect?: boolean
+  /**
+   * Event target for the focus/online listeners. Defaults to the global
+   * `window`. Inject a target in non-DOM environments (and tests).
+   */
+  window?: EventTarget
   /** Override the default global client (mostly for tests). */
   client?: QueryClient
 }
@@ -263,7 +353,7 @@ export function useQuery<T>(opts: UseQueryOptions<T>): UseQueryResult<T> {
     sync()
   }
 
-  const unsubscribe = client._subscribe(e.hash, () => {
+  const unsubscribeCache = client._subscribe(e.hash, () => {
     if (e.invalidated && enabled && e.status !== 'fetching') {
       void doFetch(true)
     }
@@ -271,6 +361,25 @@ export function useQuery<T>(opts: UseQueryOptions<T>): UseQueryResult<T> {
       sync()
     }
   })
+
+  // Refetch-on-focus / -reconnect (Phase B). A stale-only refetch: respects
+  // staleTime, so a focus event right after a fetch is a cheap no-op.
+  const target: EventTarget | undefined = opts.window
+    ?? (typeof window !== 'undefined' ? window : undefined)
+  const winListeners: Array<[string, () => void]> = []
+  if (target && enabled) {
+    const onWake = (): void => { if (e.status !== 'fetching') void doFetch(false) }
+    if (opts.refetchOnFocus) winListeners.push(['focus', onWake])
+    if (opts.refetchOnReconnect) winListeners.push(['online', onWake])
+    for (const [evt, fn] of winListeners) target.addEventListener(evt, fn)
+  }
+
+  function unsubscribe(): void {
+    unsubscribeCache()
+    if (target) {
+      for (const [evt, fn] of winListeners) target.removeEventListener(evt, fn)
+    }
+  }
 
   if (enabled) void doFetch(false)
   else sync()
