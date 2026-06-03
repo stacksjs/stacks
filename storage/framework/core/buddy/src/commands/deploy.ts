@@ -636,10 +636,10 @@ async function deployToHetzner(tsCloudConfig: any, deployEnv: string, options: D
     process.exit(ExitCode.FatalError)
   }
 
-  const { createCloudDriver, deployAllComputeSites } = await import('@stacksjs/ts-cloud')
+  const { createCloudDriver, deployAllComputeSites, resolveSiteKind } = await import('@stacksjs/ts-cloud')
 
   try {
-    await runHetznerDeploy({ tsCloudConfig, environment, verbose, docker: (options as any).docker === true, createCloudDriver, deployAllComputeSites })
+    await runHetznerDeploy({ tsCloudConfig, environment, verbose, docker: (options as any).docker === true, createCloudDriver, deployAllComputeSites, resolveSiteKind })
   }
   catch (err) {
     log.error('Hetzner deploy failed:')
@@ -655,8 +655,9 @@ async function runHetznerDeploy(args: {
   docker: boolean
   createCloudDriver: any
   deployAllComputeSites: any
+  resolveSiteKind: (site: any) => 'bucket' | 'server-app' | 'server-static'
 }): Promise<void> {
-  const { tsCloudConfig, environment, verbose, docker, createCloudDriver, deployAllComputeSites } = args
+  const { tsCloudConfig, environment, verbose, docker, createCloudDriver, deployAllComputeSites, resolveSiteKind } = args
 
   const startTime = performance.now()
   console.log('')
@@ -724,11 +725,28 @@ async function runHetznerDeploy(args: {
 
   const tarballs = new Map<string, string>()
   for (const [siteName, site] of Object.entries<any>(sites)) {
-    if (!site?.start)
+    if (!site)
       continue
+    // ts-cloud's deployAllComputeSites deploys BOTH server-app sites (`start`)
+    // and server-static sites (no `start`, has `root`) — and it calls
+    // tarballForSite() for each. Bucket sites are handled elsewhere. So we must
+    // produce a tarball for every non-bucket site, not just `start` ones.
+    const kind = resolveSiteKind(site)
+    if (kind === 'bucket')
+      continue
+
+    // server-static: build the site locally first so the tarball contains the
+    // FINAL static files (served verbatim by the reverse proxy's file_server at
+    // /var/www/<site>). server-app sites ship source and build via preStart on
+    // the box, so they are NOT built here.
+    if (kind === 'server-static' && site.build) {
+      log.info(`Building static site '${siteName}': ${site.build}`)
+      execSync(site.build, { stdio: verbose ? 'inherit' : 'pipe' })
+    }
+
     const root = site.root || '.'
     const tarballPath = join(tmpdir(), `${slug}-${siteName}-${sha}.tar.gz`)
-    log.info(`Packaging ${root} (source only, deps install on server) → ${tarballPath}...`)
+    log.info(`Packaging ${root} → ${tarballPath}...`)
     execSync(
       `tar czf "${tarballPath}" ${tarExcludes.join(' ')} -C "${root}" .`,
       { stdio: verbose ? 'inherit' : 'pipe' },

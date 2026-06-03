@@ -80,3 +80,4 @@ storage/framework/cache/
 # kill -9'd run) out of commits.
 .tmp-upgrade/
 .claude/scheduled_tasks.lock
+/storage/framework/frontend-dist

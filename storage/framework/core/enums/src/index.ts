@@ -56,6 +56,7 @@ export enum Action {
   BuildCore = 'build/core',
   BuildDesktop = 'build/desktop',
   BuildDocs = 'build/docs',
+  BuildFrontendStatic = 'build/frontend-static',
   BuildServer = 'build/server',
   Changelog = 'changelog',
   CheckPorts = 'check/ports',

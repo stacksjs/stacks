@@ -28,6 +28,7 @@ export function build(buddy: CLI): void {
     framework: 'Build Stacks framework',
     cli: 'Automagically build the CLI',
     server: 'Build the Stacks cloud server (Docker image)',
+    frontendStatic: 'Build the prerendered marketing/public static site (storage/framework/frontend-dist)',
     select: 'What are you trying to build?',
     project: 'Target a specific project',
     verbose: 'Enable verbose output',
@@ -187,6 +188,17 @@ export function build(buddy: CLI): void {
     .action(async (options: BuildOptions) => {
       log.debug('Running `buddy build:docs` ...', options)
       await runAction(Action.BuildDocs, options)
+    })
+
+  buddy
+    .command('build:frontend-static', descriptions.frontendStatic)
+    .alias('build:public')
+    .alias('prod:frontend-static')
+    .option('-p, --project [project]', descriptions.project, { default: false })
+    .option('--verbose', descriptions.verbose, { default: false })
+    .action(async (options: BuildOptions) => {
+      log.debug('Running `buddy build:frontend-static` ...', options)
+      await runAction(Action.BuildFrontendStatic, options)
     })
 
   buddy
