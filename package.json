@@ -70,7 +70,7 @@
   "dependencies": {
     "@stacksjs/ts-cloud": "^0.2.22",
     "@types/d3": "^7.4.3",
-    "bun-query-builder": "^0.1.21",
+    "bun-query-builder": "^0.1.25",
     "craft-native": "^0.0.37",
     "d3": "^7.9.0",
     "stacks": "workspace:*"
