@@ -1098,8 +1098,19 @@ function readCertCommonName(certPath: string): string | null {
   }
 }
 
-function buildDevelopmentTlsOptions(domain: string, includeDashboard: boolean, verbose: boolean) {
+async function buildDevelopmentTlsOptions(domain: string, includeDashboard: boolean, verbose: boolean) {
   const hostnames = buildDevelopmentTlsHostnames(domain, includeDashboard)
+  try {
+    const { getRegistryDir, readAll } = await importDevelopmentRpx()
+    const entries = await readAll(getRegistryDir(), false)
+    for (const entry of entries) {
+      const host = entry.to?.trim()
+      if (host && !hostnames.includes(host))
+        hostnames.push(host)
+    }
+  }
+  catch { /* registry unreadable — app hostnames only */ }
+
   return {
     https: {
       certPath: RPX_HOST_CERT_PATH,
@@ -1134,7 +1145,7 @@ async function ensureRpxDevelopmentHttps(
   } = await importDevelopmentRpx()
 
   const hostnames = buildDevelopmentTlsHostnames(domain, includeDashboard)
-  const tlsOptions = buildDevelopmentTlsOptions(domain, includeDashboard, verbose)
+  const tlsOptions = await buildDevelopmentTlsOptions(domain, includeDashboard, verbose)
 
   const hostnameInCert = hostnames.every((host) => {
     try {
