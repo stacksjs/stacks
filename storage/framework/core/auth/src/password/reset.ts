@@ -110,27 +110,63 @@ export function passwordResets(email: string): PasswordResetActions {
   }
 
   async function sendEmail(): Promise<void> {
+    // Anti-enumeration: only proceed for a registered account. An unknown
+    // email is a silent no-op — no token row, no send — so the calling
+    // action can always return a uniform "if an account exists, we sent a
+    // link" response without leaking which addresses are registered.
+    const user = await db
+      .selectFrom('users')
+      .where('email', '=', email)
+      .selectAll()
+      .executeTakeFirst()
+    if (!user)
+      return
+
     const token = await createResetToken()
 
-    const url = config.app.url ? `https://${config.app.url}` : `http://localhost:${process.env.PORT || '3000'}`
-    const resetUrl = `${url}/password/reset/${token}?email=${encodeURIComponent(email)}`
     const expireMinutes = getTokenExpireMinutes()
     const appName = config.app.name || 'Stacks'
 
-    const { html, text } = await template('password-reset', {
-      subject: `Reset Your ${appName} Password`,
-      variables: {
-        resetUrl,
-        expireMinutes,
-      },
-    })
+    // Reset URL. Configurable via `config.auth.passwordReset.url` — a
+    // template with `{token}` / `{email}` placeholders — so apps whose
+    // reset page lives on a custom route (e.g. `/reset-password?token=…`)
+    // can reuse this whole flow instead of hand-rolling the send. Falls
+    // back to the framework convention. Absolute templates are used as-is;
+    // path templates are prefixed with the app URL.
+    const base = config.app.url ? `https://${config.app.url}` : `http://localhost:${process.env.PORT || '3000'}`
+    const tpl = config.auth.passwordReset?.url
+      ?? '/password/reset/{token}?email={email}'
+    const filled = tpl.replace('{token}', token).replace('{email}', encodeURIComponent(email))
+    const resetUrl = /^https?:\/\//.test(filled) ? filled : `${base}${filled.startsWith('/') ? '' : '/'}${filled}`
 
-    await mail.send({
-      to: email,
-      subject: `Reset Your ${appName} Password`,
-      text,
-      html,
-    })
+    try {
+      const { html, text } = await template('password-reset', {
+        subject: `Reset Your ${appName} Password`,
+        variables: {
+          resetUrl,
+          expireMinutes,
+        },
+      })
+
+      await mail.send({
+        to: email,
+        subject: `Reset Your ${appName} Password`,
+        text,
+        html,
+      })
+    }
+    catch (templateError) {
+      // Template missing → plain-text fallback so the reset still works
+      // without a configured `password-reset` template (mirrors
+      // sendVerificationEmail). A hard mail-driver failure still throws.
+      const msg = templateError instanceof Error ? templateError.message : String(templateError)
+      console.warn(`[PasswordReset] template render failed, sending plain-text fallback: ${msg}`)
+      await mail.send({
+        to: email,
+        subject: `Reset Your ${appName} Password`,
+        text: `Reset your password by visiting: ${resetUrl}\n\nThis link expires in ${expireMinutes} minutes. If you didn't request this, you can safely ignore this email.`,
+      })
+    }
   }
 
   async function verifyToken(token: string): Promise<boolean> {

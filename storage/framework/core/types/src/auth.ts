@@ -98,6 +98,37 @@ export interface AuthOptions {
      * @default 60
      */
     throttle: number
+
+    /**
+     * Reset-link URL template. Supports `{token}` and `{email}`
+     * placeholders. Absolute templates (`https://…`) are used as-is;
+     * path templates are prefixed with the app URL. Lets apps whose
+     * reset page lives on a custom route reuse `passwordResets().sendEmail()`
+     * instead of hand-rolling the send.
+     * @default '/password/reset/{token}?email={email}'
+     */
+    url?: string
+  }
+
+  /**
+   * Email verification configuration
+   */
+  emailVerification?: {
+    /**
+     * Token expiration time in minutes
+     * @default 60
+     */
+    expire?: number
+
+    /**
+     * Verification-link URL template. Supports `{id}` and `{token}`
+     * placeholders. Absolute templates (`https://…`) are used as-is;
+     * path templates are prefixed with the app URL. Lets apps whose
+     * verify page lives on a custom route reuse `sendVerificationEmail()`
+     * instead of hand-rolling the send.
+     * @default '/verify-email/{id}/{token}'
+     */
+    url?: string
   }
 }
 
