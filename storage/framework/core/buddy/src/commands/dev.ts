@@ -1298,8 +1298,20 @@ async function prepareRpxTlsForDev(input: {
     return h !== 'localhost' && !h.endsWith('.localhost') && !h.endsWith('.localhost.')
   })
 
+  const { addHosts, setupDevelopmentDns } = await importDevelopmentRpx()
+
+  // `.test` / custom dev TLDs: prefer domain-scoped macOS resolver files + the
+  // rpx DNS server on :15353 (RFC 6761 `.localhost` skips this path).
+  const dnsDomains = hostsNeedingFile.length > 0
+    ? hosts
+    : []
+  if (dnsDomains.length > 0) {
+    const dnsReady = await setupDevelopmentDns({ domains: dnsDomains, verbose }).catch(() => false)
+    if (!dnsReady && verbose)
+      log.warn(`Dev DNS not configured for ${dnsDomains.join(', ')} — falling back to /etc/hosts`)
+  }
+
   if (hostsNeedingFile.length > 0) {
-    const { addHosts } = await importDevelopmentRpx()
     await addHosts(hostsNeedingFile, verbose).catch((err) => {
       log.warn(`Could not update /etc/hosts for ${hostsNeedingFile.join(', ')}: ${(err as Error).message}`)
       log.warn('Add 127.0.0.1 entries manually or set SUDO_PASSWORD in .env')
@@ -1357,11 +1369,19 @@ async function registerRpxProxiesForDomain(input: {
   // Drop legacy subdomain proxies from older dev sessions (api./docs. hosts).
   await unregisterRpxProxies([`${domain}-api`, `${domain}-docs`])
 
-  const { stopDaemon: stopRpx, writeEntry } = await importDevelopmentRpx()
+  const {
+    getRegistryDir,
+    readAll,
+    stopDaemon: stopRpx,
+    syncDevelopmentDnsFromRegistry,
+    writeEntry,
+  } = await importDevelopmentRpx()
   const spawnCommand = await resolveRpxDaemonSpawnCommand()
-  const spawnEnv = process.env.SUDO_PASSWORD
-    ? { SUDO_PASSWORD: process.env.SUDO_PASSWORD }
-    : undefined
+  const spawnEnv: Record<string, string> = {}
+  if (process.env.SUDO_PASSWORD)
+    spawnEnv.SUDO_PASSWORD = process.env.SUDO_PASSWORD
+  if (verbose)
+    spawnEnv.RPX_VERBOSE = '1'
 
   try {
     await startRpxDaemonIfNeeded({ spawnCommand, spawnEnv, verbose, stopRpx })
@@ -1391,6 +1411,15 @@ async function registerRpxProxiesForDomain(input: {
     if (verbose)
       console.log(`  ${dim('➜')}  ${dim('Proxy')}:       ${dim(`https://${proxy.to} → ${proxy.from}`)}`)
   }
+
+  const registryDir = getRegistryDir()
+  const entries = await readAll(registryDir, verbose).catch(() => [])
+  await syncDevelopmentDnsFromRegistry(entries, { verbose, ownerPid: process.pid }).catch((err) => {
+    if (verbose) {
+      const message = err instanceof Error ? err.message : String(err)
+      console.log(`  ${dim('    ')}${dim(`Dev DNS sync: ${message}`)}`)
+    }
+  })
 }
 
 function wantsInteractive(options: DevOptions) {
