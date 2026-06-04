@@ -261,16 +261,20 @@ export function useForm<TValues extends Record<string, unknown>>(
 
   function setErrors(errorMap: Partial<Record<keyof TValues | 'form', string | string[]>>): void {
     const next = { ...errors.value }
-    let any = false
-    for (const [key, msg] of Object.entries(errorMap)) {
+    let changed = false
+    // Explicit entry type: a generic-keyed `Partial<Record>` loses the precise
+    // value type through `Object.entries`, so annotate it for `Array.isArray`
+    // to narrow `string[]` → first message.
+    const list = Object.entries(errorMap) as Array<[string, string | string[] | undefined]>
+    for (const [key, msg] of list) {
       if (msg == null) continue
       const message = Array.isArray(msg) ? msg[0] : msg
       if (message == null || message === '') continue
       next[key] = message
-      any = true
+      changed = true
     }
     errors.value = next
-    if (any) isValid.value = false
+    if (changed) isValid.value = false
   }
 
   function clearErrors(name?: keyof TValues | 'form'): void {

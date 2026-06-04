@@ -40,7 +40,7 @@ interface CacheEntry<T = unknown> {
   inflight: Promise<T> | null
   /** Set by invalidate() — subscribers refetch on next notify when true. */
   invalidated: boolean
-  subscribers: Set<() => void>
+  subscribers: Set<() => unknown>
 }
 
 /**
@@ -83,7 +83,7 @@ export interface QueryClient {
    */
   gc: () => number
   /** Internal: subscribe to changes for a key. Returns unsubscribe fn. */
-  _subscribe: (hash: string, fn: () => void) => () => void
+  _subscribe: (hash: string, fn: () => unknown) => () => void
   /** Internal: get-or-create the entry for a key. */
   _entry: <T = unknown>(key: QueryKey) => CacheEntry<T>
   /** Internal: notify subscribers of a key that data changed. */
@@ -176,18 +176,22 @@ export function createQueryClient(options: CreateQueryClientOptions = {}): Query
     },
 
     async invalidate(matcher: QueryMatcher): Promise<void> {
-      const matches = Array.isArray(matcher)
-        ? (key: QueryKey) => prefixMatches(matcher, key)
-        : matcher.predicate
+      // `Array.isArray` doesn't narrow a `readonly unknown[]` union member, so
+      // guard explicitly: a non-array matcher is the `{ predicate }` form.
+      const matches: (key: QueryKey) => boolean = Array.isArray(matcher)
+        ? (key: QueryKey) => prefixMatches(matcher as QueryKey, key)
+        : (matcher as { predicate: (key: QueryKey) => boolean }).predicate
       const refetches: Promise<void>[] = []
       for (const e of entries.values()) {
         if (!matches(e.key)) continue
         e.updatedAt = 0
         e.invalidated = true
         for (const fn of e.subscribers) {
-          const result = fn()
-          if (result && typeof (result as unknown as Promise<void>).then === 'function') {
-            refetches.push(result as unknown as Promise<void>)
+          // Subscribers return `unknown`: a refetching observer returns its
+          // refetch Promise so `invalidate()` can await it; others return void.
+          const result: unknown = fn()
+          if (result && typeof (result as { then?: unknown }).then === 'function') {
+            refetches.push(result as Promise<void>)
           }
         }
       }
@@ -212,7 +216,7 @@ export function createQueryClient(options: CreateQueryClientOptions = {}): Query
       return removed
     },
 
-    _subscribe(hash: string, fn: () => void): () => void {
+    _subscribe(hash: string, fn: () => unknown): () => void {
       const e = entries.get(hash)
       if (!e) return () => {}
       cancelGc(hash) // a fresh observer cancels any pending collection
@@ -355,11 +359,11 @@ export function useQuery<T>(opts: UseQueryOptions<T>): UseQueryResult<T> {
 
   const unsubscribeCache = client._subscribe(e.hash, () => {
     if (e.invalidated && enabled && e.status !== 'fetching') {
-      void doFetch(true)
+      // Return the Promise so `client.invalidate()` can await the refetch.
+      return doFetch(true)
     }
-    else {
-      sync()
-    }
+    sync()
+    return undefined
   })
 
   // Refetch-on-focus / -reconnect (Phase B). A stale-only refetch: respects
