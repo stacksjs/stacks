@@ -12,9 +12,6 @@ import { libsPath, projectPath } from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types'
 import { version } from '../../package.json'
 
-/** Local Tools checkout — has non-interactive sudo + `.localhost` hosts skip. */
-const TOOLS_RPX_SRC = join(homedir(), 'Code/Tools/rpx/packages/rpx/src/index.ts')
-
 /** Lines printed before the ready banner (`blank`, `stacks … starting…`, `blank`). */
 const DEV_BOOT_STARTING_LINE_COUNT = 3
 
@@ -29,10 +26,11 @@ function eraseDevBootStartingLines(): void {
 
 type DevelopmentRpx = typeof import('@stacksjs/rpx')
 
+let developmentRpx: DevelopmentRpx | undefined
+
 async function importDevelopmentRpx(): Promise<DevelopmentRpx> {
-  if (existsSync(TOOLS_RPX_SRC))
-    return await import(TOOLS_RPX_SRC) as DevelopmentRpx
-  return await import('@stacksjs/rpx')
+  developmentRpx ??= await import('@stacksjs/rpx')
+  return developmentRpx
 }
 
 // rpx registry ids written by this `./buddy dev` session — cleared on shutdown.
@@ -1204,10 +1202,6 @@ function resolveRpxDaemonSpawnCwd(): string {
   if (fromEnv && existsSync(fromEnv))
     return dirname(fromEnv)
 
-  const toolsPkg = join(homedir(), 'Code/Tools/rpx/packages/rpx')
-  if (existsSync(join(toolsPkg, 'package.json')))
-    return toolsPkg
-
   const bootstrap = join(dirname(fileURLToPath(import.meta.url)), '../../scripts/rpx-daemon-bootstrap.ts')
   if (existsSync(bootstrap))
     return dirname(bootstrap)
@@ -1224,14 +1218,6 @@ async function resolveRpxDaemonSpawnCommand(): Promise<string[]> {
   const fromEnv = process.env.RPX_BIN || process.env.STACKS_RPX_BIN
   if (fromEnv && existsSync(fromEnv))
     return [fromEnv, 'daemon:start']
-
-  const toolsCli = join(homedir(), 'Code/Tools/rpx/packages/rpx/bin/cli.ts')
-  if (existsSync(toolsCli))
-    return [process.execPath, toolsCli, 'daemon:start']
-
-  const toolsBinary = join(homedir(), 'Code/Tools/rpx/packages/rpx/bin/rpx')
-  if (existsSync(toolsBinary))
-    return [toolsBinary, 'daemon:start']
 
   const pkgUrl = import.meta.resolve('@stacksjs/rpx/package.json')
   const cli = join(dirname(fileURLToPath(pkgUrl)), 'dist/bin/cli.js')
