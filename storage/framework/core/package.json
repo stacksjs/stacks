@@ -338,6 +338,6 @@
     "@stacksjs/utils": "workspace:*",
     "@stacksjs/skills": "workspace:*",
     "@stacksjs/validation": "workspace:*",
-    "bun-query-builder": "^0.1.21"
+    "bun-query-builder": "^0.1.26"
   }
 }
