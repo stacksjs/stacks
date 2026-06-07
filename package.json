@@ -68,16 +68,10 @@
     "sqlite": "^3.47.2"
   },
   "dependencies": {
-    "@stacksjs/ts-cloud": "^0.2.22",
-    "@types/d3": "^7.4.3",
-    "craft-native": "^0.0.37",
-    "d3": "^7.9.0",
     "stacks": "workspace:*"
   },
   "devDependencies": {
-    "@stacksjs/dtsx": "^0.9.23",
-    "better-dx": "^0.2.15",
-    "bun-plugin-dtsx": "^0.9.23"
+    "better-dx": "^0.2.15"
   },
   "workspaces": [
     "storage/framework",
