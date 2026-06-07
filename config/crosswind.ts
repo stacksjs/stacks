@@ -8,6 +8,7 @@ export default {
     './resources/**/*.{stx,html}',
     './storage/framework/defaults/resources/views/**/*.{stx,html}',
     './storage/framework/defaults/resources/components/**/*.{stx,html}',
+    './storage/framework/core/error-handling/src/views/**/*.{stx,html}',
   ],
   preflight: true,
   minify: false,

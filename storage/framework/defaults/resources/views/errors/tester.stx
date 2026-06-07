@@ -1,0 +1,26 @@
+<div class="mx-auto px-6 py-12 max-w-3xl">
+  <h1 class="mb-2 font-semibold text-3xl text-neutral-950 dark:text-white">Error Page Tester</h1>
+  <p class="mb-8 text-neutral-500 text-sm dark:text-neutral-400">
+    Laravel-style debug pages in development. Click a scenario to throw that exception and see the full trace.
+  </p>
+
+  <div class="grid gap-3">
+    @foreach(scenarios as scenario)
+    <a
+      href="{{ scenario.href }}"
+      class="block p-4 bg-white dark:bg-white/[2%] border border-neutral-200 rounded-lg dark:border-white/10 hover:border-rose-500 transition-colors"
+    >
+      <div class="flex gap-4 items-center justify-between mb-1">
+        <span class="font-semibold text-neutral-900 text-sm dark:text-white">{{ scenario.title }}</span>
+        <span class="px-2 py-0.5 font-semibold text-[11px] text-rose-900 tracking-wide uppercase dark:text-rose-100 bg-rose-200 dark:bg-rose-950 rounded">{{ scenario.status }}</span>
+      </div>
+      <p class="mb-2 text-neutral-600 text-xs dark:text-neutral-400">{{ scenario.description }}</p>
+      <code class="font-mono text-[11px] text-neutral-500">{{ scenario.href }}</code>
+    </a>
+    @endforeach
+  </div>
+
+  <div class="mt-8 p-4 text-neutral-500 text-xs dark:text-neutral-400 border border-dashed border-neutral-300 rounded-lg dark:border-white/15">
+    Requires <code class="font-mono">APP_ENV=development</code>. API clients with <code class="font-mono">Accept: application/json</code> receive JSON instead of HTML.
+  </div>
+</div>
