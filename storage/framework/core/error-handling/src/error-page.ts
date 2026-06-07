@@ -256,145 +256,16 @@ export const HTTP_ERRORS: Record<HttpStatusCode, HttpError> = {
   },
 }
 
-// CSS for error pages
-export const ERROR_PAGE_CSS = `
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-    line-height: 1.6;
-    color: #1a1a2e;
-    background: #f8f9fa;
-  }
-  .dark body { background: #1a1a2e; color: #e8e8e8; }
-  .container { max-width: 1200px; margin: 0 auto; padding: 2rem; }
-  .error-header {
-    background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
-    color: white;
-    padding: 2rem;
-    border-radius: 12px;
-    margin-bottom: 1.5rem;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  }
-  .error-title { font-size: 1.5rem; font-weight: 600; margin-bottom: 0.5rem; }
-  .error-message { font-size: 1.1rem; opacity: 0.9; word-break: break-word; }
-  .error-status { font-size: 0.875rem; opacity: 0.75; margin-top: 0.5rem; }
-  .card {
-    background: white;
-    border-radius: 12px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-    margin-bottom: 1.5rem;
-    overflow: hidden;
-  }
-  .dark .card { background: #252540; }
-  .card-header {
-    padding: 1rem 1.5rem;
-    border-bottom: 1px solid #e9ecef;
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-  }
-  .dark .card-header { border-bottom-color: #3a3a5a; }
-  .card-body { padding: 1.5rem; }
-  .stack-frame {
-    padding: 1rem 1.5rem;
-    border-bottom: 1px solid #e9ecef;
-    cursor: pointer;
-    transition: background 0.2s;
-  }
-  .stack-frame:hover { background: #f8f9fa; }
-  .dark .stack-frame:hover { background: #1a1a2e; }
-  .stack-frame:last-child { border-bottom: none; }
-  .stack-frame.expanded { background: #f8f9fa; }
-  .dark .stack-frame.expanded { background: #1a1a2e; }
-  .frame-file { font-family: 'Monaco', 'Menlo', monospace; font-size: 0.875rem; color: #6c757d; }
-  .frame-function { font-weight: 500; color: #495057; }
-  .dark .frame-function { color: #e8e8e8; }
-  .frame-line { color: #dc3545; font-weight: 600; }
-  .code-snippet {
-    background: #282c34;
-    color: #abb2bf;
-    padding: 1rem;
-    margin-top: 0.5rem;
-    border-radius: 8px;
-    overflow-x: auto;
-    font-family: 'Monaco', 'Menlo', monospace;
-    font-size: 0.8125rem;
-    line-height: 1.8;
-  }
-  .code-line { display: flex; }
-  .code-line-number {
-    width: 3rem;
-    text-align: right;
-    padding-right: 1rem;
-    color: #636d83;
-    user-select: none;
-  }
-  .code-line-content { flex: 1; }
-  .code-line.highlight { background: rgba(220, 53, 69, 0.2); }
-  .code-line.highlight .code-line-number { color: #dc3545; }
-  .info-table { width: 100%; border-collapse: collapse; }
-  .info-table td { padding: 0.75rem 0; border-bottom: 1px solid #e9ecef; }
-  .dark .info-table td { border-bottom-color: #3a3a5a; }
-  .info-table td:first-child { font-weight: 500; width: 30%; color: #6c757d; }
-  .info-table tr:last-child td { border-bottom: none; }
-  .query-item {
-    padding: 1rem;
-    background: #f8f9fa;
-    border-radius: 8px;
-    margin-bottom: 0.75rem;
-    font-family: 'Monaco', 'Menlo', monospace;
-    font-size: 0.8125rem;
-  }
-  .dark .query-item { background: #1a1a2e; }
-  .query-time { color: #6c757d; font-size: 0.75rem; margin-top: 0.5rem; }
-  .badge {
-    display: inline-block;
-    padding: 0.25rem 0.5rem;
-    border-radius: 4px;
-    font-size: 0.75rem;
-    font-weight: 500;
-  }
-  .badge-method { background: #e7f5ff; color: #1971c2; }
-  .dark .badge-method { background: #1971c2; color: white; }
-  .production-page {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    min-height: 100vh;
-    text-align: center;
-    padding: 2rem;
-  }
-  .production-status { font-size: 6rem; font-weight: 700; color: #dee2e6; margin-bottom: 1rem; }
-  .production-title { font-size: 1.5rem; font-weight: 600; margin-bottom: 0.5rem; }
-  .production-message { color: #6c757d; margin-bottom: 2rem; }
-  .production-link { color: #0d6efd; text-decoration: none; }
-  .production-link:hover { text-decoration: underline; }
-  .error-hint {
-    border-left: 4px solid #f59f00;
-    background: #fff9db;
-  }
-  .dark .error-hint, .auto .error-hint { background: #2b2410; border-left-color: #f59f00; }
-  .error-hint .card-header { color: #845200; }
-  .dark .error-hint .card-header, .auto .error-hint .card-header { color: #ffd43b; }
-  .error-hint-causes { margin: 0 0 0.75rem 1.25rem; padding: 0; }
-  .error-hint-causes li { margin: 0.2rem 0; }
-  .error-hint-suggestion { font-weight: 500; margin-bottom: 0.75rem; }
-  .error-hint-doc { color: #0d6efd; text-decoration: none; }
-  .error-hint-doc:hover { text-decoration: underline; }
-  @media (prefers-color-scheme: dark) {
-    .auto body { background: #1a1a2e; color: #e8e8e8; }
-    .auto .card { background: #252540; }
-    .auto .card-header { border-bottom-color: #3a3a5a; }
-    .auto .stack-frame:hover { background: #1a1a2e; }
-    .auto .stack-frame.expanded { background: #1a1a2e; }
-    .auto .frame-function { color: #e8e8e8; }
-    .auto .info-table td { border-bottom-color: #3a3a5a; }
-    .auto .query-item { background: #1a1a2e; }
-    .auto .badge-method { background: #1971c2; color: white; }
-  }
-`
+import {
+  buildErrorMarkdown,
+  escapeHtml,
+  renderExceptionTrace,
+  wrapErrorPage,
+  type ParsedFrame,
+} from './error-page-template'
+import { ERROR_PAGE_CSS } from './error-page-styles'
+
+export { ERROR_PAGE_CSS }
 
 /**
  * Parse stack trace into frames
@@ -418,11 +289,11 @@ export function isFrameworkFrame(file: string): boolean {
   return FRAMEWORK_FRAME_FRAGMENTS.some(f => file.includes(f))
 }
 
-function parseStackTrace(stack: string | undefined, basePaths?: string[], options: { includeFrameworkFrames?: boolean } = {}): StackFrame[] {
+function parseStackTrace(stack: string | undefined, basePaths?: string[], options: { includeFrameworkFrames?: boolean } = {}): ParsedFrame[] {
   if (!stack) return []
 
   const lines = stack.split('\n').slice(1) // Skip the error message line
-  const frames: StackFrame[] = []
+  const frames: ParsedFrame[] = []
   const includeAll = options.includeFrameworkFrames === true
 
   for (const line of lines) {
@@ -431,6 +302,7 @@ function parseStackTrace(stack: string | undefined, basePaths?: string[], option
       let file = match[2]
       if (file === undefined) continue
       const original = file
+      const isFramework = isFrameworkFrame(original)
       // Shorten file path if base paths provided
       if (basePaths) {
         for (const basePath of basePaths) {
@@ -440,10 +312,12 @@ function parseStackTrace(stack: string | undefined, basePaths?: string[], option
           }
         }
       }
-      if (!includeAll && isFrameworkFrame(original)) continue
+      if (!includeAll && isFramework) continue
       frames.push({
         function: match[1] || '<anonymous>',
         file,
+        absoluteFile: original,
+        isFramework,
         line: parseInt(match[3] ?? '0', 10),
         column: parseInt(match[4] ?? '0', 10),
       })
@@ -459,18 +333,6 @@ function parseStackTrace(stack: string | undefined, basePaths?: string[], option
   }
 
   return frames
-}
-
-/**
- * Escape HTML special characters
- */
-function escapeHtml(str: string): string {
-  return str
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;')
 }
 
 /**
@@ -496,10 +358,10 @@ function loadCustomErrorPage(status: number, title: string, message: string): st
   // Lazy-require so a missing/unloadable @stacksjs/path module (e.g.,
   // when error-handling is consumed outside a Stacks app) doesn't break
   // built-in error rendering. eslint-disable-next-line over the require.
-  let resourcesPath: ((sub?: string) => string) | undefined
+  let resourcesPath: ((_sub?: string) => string) | undefined
   try {
     // eslint-disable-next-line ts/no-require-imports
-    const mod = require('@stacksjs/path') as { path?: { resourcesPath?: (sub?: string) => string }, resourcesPath?: (sub?: string) => string }
+    const mod = require('@stacksjs/path') as { path?: { resourcesPath?: (_sub?: string) => string }, resourcesPath?: (_sub?: string) => string }
     resourcesPath = mod.resourcesPath ?? mod.path?.resourcesPath
   }
   catch { /* path module unavailable — fall through to built-in */ }
@@ -584,12 +446,12 @@ export function renderHttpErrorHints(status: number): string {
     : ''
   const suggestion = hasSuggestion ? `<p class="error-hint-suggestion">${escapeHtml(info.suggestion!)}</p>` : ''
   const doc = hasDoc
-    ? `<a class="error-hint-doc" href="${escapeHtml(info.docLink!)}" target="_blank" rel="noreferrer noopener">Read the docs →</a>`
+    ? `<a class="text-blue-600 text-sm dark:text-blue-500 hover:underline" href="${escapeHtml(info.docLink!)}" target="_blank" rel="noreferrer noopener">Read the docs →</a>`
     : ''
 
-  return `<section class="card error-hint">
-  <div class="card-header">Likely causes &amp; next steps</div>
-  <div class="card-body">${causes}${suggestion}${doc}</div>
+  return `<section class="p-4 bg-amber-200/30 dark:bg-amber-950/40 border border-amber-200 rounded-xl dark:border-amber-800 shadow-xs">
+  <div class="mb-2 font-semibold text-amber-900 text-sm dark:text-amber-300">Likely causes &amp; next steps</div>
+  <div class="text-neutral-700 text-sm dark:text-neutral-300">${causes}${suggestion}${doc}</div>
 </section>`
 }
 
@@ -655,136 +517,66 @@ export class ErrorPageHandler {
   /**
    * Render error to HTML string
    */
-  render(error: Error, status: number = 500): string {
+  async render(error: Error, status: number = 500): Promise<string> {
+    try {
+      const { renderDevErrorPage } = await import('./error-page-renderer')
+      return await renderDevErrorPage({
+        error,
+        status,
+        config: this.config,
+        framework: this.framework,
+        request: this.request,
+        routing: this.routing,
+        user: this.user,
+        queries: this.queries,
+      })
+    }
+    catch (renderError) {
+      console.error('[ErrorPageHandler] STX render failed, using fallback:', renderError)
+      return this.renderFallback(error, status)
+    }
+  }
+
+  /** Legacy inline fallback when STX/Crosswind rendering is unavailable. */
+  private renderFallback(error: Error, status: number): string {
     const frames = parseStackTrace(error.stack, this.config.basePaths, {
       includeFrameworkFrames: this.config.showFrameworkFrames === true,
     })
-    const themeClass = this.config.theme || 'auto'
+    const httpInfo = HTTP_ERRORS[status as HttpStatusCode]
+    const statusTitle = httpInfo?.title ?? 'Error'
+    const topFrame = frames[0]
 
-    return `<!DOCTYPE html>
-<html lang="en" class="${themeClass}">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${status} - ${escapeHtml(error.name || 'Error')}</title>
-  <style>${ERROR_PAGE_CSS}</style>
-</head>
-<body>
-  <div class="container">
-    <div class="error-header">
-      <div class="error-title">${escapeHtml(error.name || 'Error')}</div>
-      <div class="error-message">${escapeHtml(error.message)}</div>
-      <div class="error-status">${status} • ${this.framework ? `${this.framework.name}${this.framework.version ? ` v${this.framework.version}` : ''}` : 'Application'}</div>
-    </div>
-
+    const body = `
+    <header class="header"><div class="header-title"><span class="header-dot"></span><span>${escapeHtml(statusTitle)}</span></div></header>
+    <section class="summary">
+      <h1>${escapeHtml(error.name || 'Error')}</h1>
+      ${topFrame ? `<div class="summary-file">${escapeHtml(topFrame.file)}:${topFrame.line}</div>` : ''}
+      <p class="summary-message">${escapeHtml(error.message)}</p>
+    </section>
     ${renderHttpErrorHints(status)}
+    ${renderExceptionTrace(frames, this.config.snippetLines ?? 8)}
+    `
 
-    ${frames.length > 0 ? `
-    <div class="card">
-      <div class="card-header">📚 Stack Trace</div>
-      ${frames.map(frame => `
-        <div class="stack-frame" onclick="this.classList.toggle('expanded')">
-          <div class="frame-function">${escapeHtml(frame.function || '<anonymous>')}</div>
-          <div class="frame-file">
-            ${escapeHtml(frame.file)}:<span class="frame-line">${frame.line}</span>${frame.column ? `:${frame.column}` : ''}
-          </div>
-        </div>
-      `).join('')}
-    </div>
-    ` : ''}
+    const markdown = buildErrorMarkdown({
+      statusTitle,
+      errorName: error.name || 'Error',
+      errorMessage: error.message,
+      status,
+      file: topFrame?.file,
+      line: topFrame?.line,
+      request: this.request,
+      framework: this.framework,
+      frames,
+    })
 
-    ${this.config.showRequest && this.request ? `
-    <div class="card">
-      <div class="card-header">🌐 Request</div>
-      <div class="card-body">
-        <table class="info-table">
-          <tr>
-            <td>Method</td>
-            <td><span class="badge badge-method">${escapeHtml(this.request.method)}</span></td>
-          </tr>
-          <tr>
-            <td>URL</td>
-            <td>${escapeHtml(this.request.url)}</td>
-          </tr>
-          ${this.request.queryParams && Object.keys(this.request.queryParams).length > 0 ? `
-          <tr>
-            <td>Query Params</td>
-            <td><code>${escapeHtml(JSON.stringify(this.request.queryParams, null, 2))}</code></td>
-          </tr>
-          ` : ''}
-          ${this.request.body ? `
-          <tr>
-            <td>Body</td>
-            <td><code>${escapeHtml(JSON.stringify(this.request.body, null, 2))}</code></td>
-          </tr>
-          ` : ''}
-        </table>
-      </div>
-    </div>
-    ` : ''}
-
-    ${this.routing ? `
-    <div class="card">
-      <div class="card-header">🛤️ Routing</div>
-      <div class="card-body">
-        <table class="info-table">
-          ${this.routing.controller ? `<tr><td>Controller</td><td>${escapeHtml(this.routing.controller)}</td></tr>` : ''}
-          ${this.routing.routeName ? `<tr><td>Route Name</td><td>${escapeHtml(this.routing.routeName)}</td></tr>` : ''}
-          ${this.routing.middleware?.length ? `<tr><td>Middleware</td><td>${this.routing.middleware.map(m => escapeHtml(m)).join(', ')}</td></tr>` : ''}
-        </table>
-      </div>
-    </div>
-    ` : ''}
-
-    ${this.user ? `
-    <div class="card">
-      <div class="card-header">👤 User</div>
-      <div class="card-body">
-        <table class="info-table">
-          ${this.user.id ? `<tr><td>ID</td><td>${escapeHtml(String(this.user.id))}</td></tr>` : ''}
-          ${this.user.email ? `<tr><td>Email</td><td>${escapeHtml(this.user.email)}</td></tr>` : ''}
-          ${this.user.name ? `<tr><td>Name</td><td>${escapeHtml(this.user.name)}</td></tr>` : ''}
-        </table>
-      </div>
-    </div>
-    ` : ''}
-
-    ${this.config.showQueries && this.queries.length > 0 ? `
-    <div class="card">
-      <div class="card-header">🗄️ Queries (${this.queries.length})</div>
-      <div class="card-body">
-        ${this.queries.map(q => `
-          <div class="query-item">
-            ${escapeHtml(q.query)}
-            ${q.time !== undefined ? `<div class="query-time">${q.time.toFixed(2)}ms${q.connection ? ` • ${escapeHtml(q.connection)}` : ''}</div>` : ''}
-          </div>
-        `).join('')}
-      </div>
-    </div>
-    ` : ''}
-
-    ${this.config.showEnvironment ? `
-    <div class="card">
-      <div class="card-header">⚙️ Environment</div>
-      <div class="card-body">
-        <table class="info-table">
-          <tr><td>Node Version</td><td>${typeof process !== 'undefined' ? process.version : 'N/A'}</td></tr>
-          <tr><td>Platform</td><td>${typeof process !== 'undefined' ? process.platform : 'N/A'}</td></tr>
-          <tr><td>Architecture</td><td>${typeof process !== 'undefined' ? process.arch : 'N/A'}</td></tr>
-        </table>
-      </div>
-    </div>
-    ` : ''}
-  </div>
-</body>
-</html>`
+    return wrapErrorPage(body, markdown)
   }
 
   /**
    * Handle error and return Response
    */
-  handleError(error: Error, status: number = 500): Response {
-    const html = this.render(error, status)
+  async handleError(error: Error, status: number = 500): Promise<Response> {
+    const html = await this.render(error, status)
     return new Response(html, {
       status,
       headers: { 'Content-Type': 'text/html; charset=utf-8' },
@@ -802,7 +594,7 @@ export function createErrorHandler(config?: ErrorPageConfig): ErrorPageHandler {
 /**
  * Render an error page (alias)
  */
-export function renderErrorPage(error: Error, status: number = 500, config?: ErrorPageConfig): string {
+export async function renderErrorPage(error: Error, status: number = 500, config?: ErrorPageConfig): Promise<string> {
   const handler = createErrorHandler(config)
   return handler.render(error, status)
 }
@@ -810,14 +602,14 @@ export function renderErrorPage(error: Error, status: number = 500, config?: Err
 /**
  * Render error (alias)
  */
-export function renderError(error: Error, status: number = 500): string {
+export async function renderError(error: Error, status: number = 500): Promise<string> {
   return renderErrorPage(error, status)
 }
 
 /**
  * Create an error response
  */
-export function errorResponse(error: Error, status: number = 500, config?: ErrorPageConfig): Response {
+export async function errorResponse(error: Error, status: number = 500, config?: ErrorPageConfig): Promise<Response> {
   const handler = createErrorHandler(config)
   return handler.handleError(error, status)
 }

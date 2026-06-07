@@ -1,0 +1,75 @@
+<script>
+function stacksCopy(text) {
+  if (navigator.clipboard) return navigator.clipboard.writeText(text);
+  const ta = document.createElement('textarea');
+  ta.value = text;
+  ta.style.position = 'fixed';
+  ta.style.opacity = '0';
+  document.body.appendChild(ta);
+  ta.select();
+  document.execCommand('copy');
+  document.body.removeChild(ta);
+  return Promise.resolve();
+}
+
+document.querySelectorAll('[data-copy-markdown]').forEach((btn) => {
+  const json = document.querySelector('[data-markdown]');
+  if (!json) return;
+  btn.addEventListener('click', async () => {
+    try {
+      const md = JSON.parse(json.textContent || '""');
+      await stacksCopy(md);
+      const label = btn.querySelector('[data-copy-label]');
+      if (label) {
+        label.textContent = 'Copied to clipboard';
+        setTimeout(() => { label.textContent = 'Copy as Markdown'; }, 2000);
+      }
+    } catch (e) { console.error(e); }
+  });
+});
+
+document.querySelectorAll('[data-copy-url]').forEach((btn) => {
+  btn.addEventListener('click', async () => {
+    const root = btn.closest('[data-copy-url-root]');
+    const url = root?.querySelector('[title]')?.getAttribute('title');
+    if (url) await stacksCopy(url);
+  });
+});
+
+document.querySelectorAll('[data-trace-toggle]').forEach((el) => {
+  el.addEventListener('click', () => {
+    const frame = el.closest('[data-trace-frame]');
+    if (!frame || frame.dataset.hasCode !== '1') return;
+    frame.classList.toggle('is-expanded');
+    const body = frame.querySelector('.trace-frame-body');
+    if (body) body.classList.toggle('hidden');
+    const header = frame.querySelector('.trace-frame-header');
+    if (header) {
+      header.classList.toggle('dark:bg-white/5');
+      header.classList.toggle('rounded-t-lg');
+      header.classList.toggle('rounded-lg');
+    }
+    const dot = frame.querySelector('.size-2.rounded-full');
+    if (dot) {
+      dot.classList.toggle('bg-rose-500');
+      dot.classList.toggle('dark:bg-neutral-400');
+      dot.classList.toggle('bg-rose-200');
+      dot.classList.toggle('dark:bg-neutral-700');
+    }
+  });
+});
+
+document.querySelectorAll('[data-vendor-toggle]').forEach((el) => {
+  el.addEventListener('click', () => {
+    const group = el.closest('[data-vendor-group]');
+    if (!group) return;
+    const frames = group.querySelector('.vendor-frames');
+    if (frames) frames.classList.toggle('hidden');
+    group.classList.toggle('bg-white');
+    group.classList.toggle('dark:bg-white/5');
+    group.classList.toggle('shadow-xs');
+    group.classList.toggle('border-solid');
+    group.classList.toggle('border-dashed');
+  });
+});
+</script>

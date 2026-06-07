@@ -526,7 +526,9 @@
       "name": "@stacksjs/error-handling",
       "version": "0.70.45",
       "dependencies": {
+        "@stacksjs/stx": "^0.2.67",
         "ts-error-handling": "^0.1.1",
+        "ts-syntax-highlighter": "^0.2.1",
       },
       "devDependencies": {
         "@stacksjs/cli": "workspace:*",

@@ -476,7 +476,7 @@ export async function createErrorResponse(
     const corsOrigin = process.env.APP_URL
       ? (process.env.APP_URL.startsWith('http') ? process.env.APP_URL : `https://${process.env.APP_URL}`)
       : (isDebugAllowed() ? '*' : request.headers.get('origin') ?? 'null')
-    const html = handler.render(error, status)
+    const html = await handler.render(error, status)
     return new Response(html, {
       status,
       headers: {

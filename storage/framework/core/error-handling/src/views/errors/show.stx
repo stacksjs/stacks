@@ -1,0 +1,44 @@
+<div class="mx-auto px-6 py-0 sm:py-0 max-w-7xl">
+  @include('./partials/topbar')
+</div>
+
+@include('./partials/separator')
+
+<div class="flex flex-col gap-8 mx-auto px-6 py-0 sm:py-0 max-w-7xl">
+  @include('./partials/header')
+</div>
+
+@include('./partials/separator', { class: '-mt-5 -z-10' })
+
+<div class="flex flex-col gap-8 mx-auto pt-14 px-6 max-w-7xl">
+  @if(hintsHtml)
+  <div>{!! hintsHtml !!}</div>
+  @endif
+  @include('./partials/trace')
+  @if(hasQueries)
+  @include('./partials/query')
+  @endif
+</div>
+
+@include('./partials/separator')
+
+<div class="flex flex-col gap-12 mx-auto pb-14 px-6 max-w-7xl">
+  @if(hasHeaders)
+  @include('./partials/request-header')
+  @endif
+  @if(hasBody)
+  @include('./partials/request-body')
+  @endif
+  @if(hasRouting)
+  @include('./partials/routing')
+  @endif
+  @if(hasRouteParams)
+  @include('./partials/routing-parameters')
+  @endif
+  @if(hasUser)
+  @include('./partials/user')
+  @endif
+  @if(hasEnvironment)
+  @include('./partials/environment')
+  @endif
+</div>

@@ -1,0 +1,33 @@
+<div
+  class="group rounded-lg border border-neutral-200 dark:border-white/10 overflow-hidden shadow-xs trace-frame {{ frame.expanded ? 'is-expanded' : '' }}"
+  data-trace-frame
+  data-has-code="{{ frame.hasCode ? '1' : '0' }}"
+>
+  <div
+    class="flex h-11 items-center gap-3 bg-white pr-2.5 pl-4 overflow-x-auto dark:bg-white/3 trace-frame-header {{ frame.expanded ? 'dark:bg-white/5 rounded-t-lg' : 'rounded-lg' }} {{ frame.hasCode ? 'cursor-pointer hover:bg-white/50 dark:hover:bg-white/5' : '' }}"
+    data-trace-toggle
+  >
+    <div class="flex flex-shrink-0 items-center justify-center size-3">
+      <div class="size-2 rounded-full {{ frame.expanded ? 'bg-rose-500 dark:bg-neutral-400' : 'bg-rose-200 dark:bg-neutral-700' }}"></div>
+    </div>
+
+    <div class="flex flex-1 gap-6 items-center justify-between min-w-0">
+      <div class="font-mono text-neutral-900 text-xs truncate dark:text-neutral-200">{{ frame.function }}</div>
+      <div class="flex-shrink-0 font-mono text-neutral-500 text-xs dark:text-neutral-400">{{ frame.file }}:{{ frame.line }}</div>
+    </div>
+
+    @if(frame.hasCode)
+    <button type="button" class="flex flex-shrink-0 items-center justify-center h-6 w-6 text-neutral-500 dark:text-neutral-500 dark:bg-white/3 rounded-md dark:border dark:border-white/8 trace-chevron" data-trace-toggle>
+      <svg class="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg>
+    </button>
+    @endif
+  </div>
+
+  @if(frame.hasCode)
+  <div class="trace-frame-body {{ frame.expanded ? '' : 'hidden' }}">
+    <div class="overflow-x-auto text-sm bg-neutral-50 dark:bg-neutral-900 border-neutral-100 border-t rounded-b-lg dark:border-white/10">
+      {!! frame.codeHtml !!}
+    </div>
+  </div>
+  @endif
+</div>

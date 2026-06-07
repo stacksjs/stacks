@@ -1,0 +1,24 @@
+<div
+  data-copy-url-root
+  class="flex relative z-50 items-center justify-between px-2 h-10 bg-white dark:bg-[#1a1a1a] border border-neutral-200 rounded-lg dark:border-white/10 shadow-xs"
+>
+  <div class="flex gap-3 items-center min-w-0 w-full">
+    <div class="inline-flex gap-1 items-center justify-center shrink-0 px-1.5 h-6 min-w-5 w-fit font-mono leading-3 text-white text-xs/none uppercase dark:text-white bg-rose-600 dark:bg-rose-600 rounded-md dark:border dark:border-rose-500">
+      {{ statusCode }}
+    </div>
+    <div class="inline-flex gap-1 items-center justify-center shrink-0 px-1.5 h-6 min-w-5 w-fit font-mono leading-3 text-neutral-900 text-xs/none uppercase dark:text-neutral-100 bg-black/8 dark:bg-white/10 rounded-md dark:border dark:border-neutral-700">
+      {{ requestMethod }}
+    </div>
+    <div class="flex-1 min-w-0 font-light text-neutral-950 text-sm truncate dark:text-white" title="{{ requestUrl }}">
+      {{ requestUrl }}
+    </div>
+    <button
+      type="button"
+      data-copy-url
+      class="flex flex-shrink-0 items-center justify-center h-6 w-6 bg-white/5 dark:bg-white/5 hover:bg-neutral-100 dark:hover:bg-white/10 border border-neutral-200 rounded-md dark:border-white/10 duration-200 ease-in-out transition-colors cursor-pointer"
+      title="Copy URL"
+    >
+      <svg class="h-3 w-3 text-neutral-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+    </button>
+  </div>
+</div>

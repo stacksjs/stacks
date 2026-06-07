@@ -63,66 +63,66 @@ describe('Error Handling Integration', () => {
   })
 
   describe('HttpErrorHandler', () => {
-    test('notFound returns 404 response', () => {
+    test('notFound returns 404 response', async () => {
       const handler = createHttpErrorHandler({ isDevelopment: false })
-      const response = handler.notFound()
+      const response = await handler.notFound()
       expect(response.status).toBe(404)
       expect(response.headers.get('Content-Type')).toContain('text/html')
     })
 
-    test('forbidden returns 403 response', () => {
+    test('forbidden returns 403 response', async () => {
       const handler = createHttpErrorHandler({ isDevelopment: false })
-      const response = handler.forbidden('No access')
+      const response = await handler.forbidden('No access')
       expect(response.status).toBe(403)
     })
 
-    test('unauthorized returns 401 response', () => {
+    test('unauthorized returns 401 response', async () => {
       const handler = createHttpErrorHandler({ isDevelopment: false })
-      const response = handler.unauthorized()
+      const response = await handler.unauthorized()
       expect(response.status).toBe(401)
     })
 
-    test('badRequest returns 400 response', () => {
+    test('badRequest returns 400 response', async () => {
       const handler = createHttpErrorHandler({ isDevelopment: false })
-      const response = handler.badRequest('Invalid input')
+      const response = await handler.badRequest('Invalid input')
       expect(response.status).toBe(400)
     })
 
-    test('serverError returns 500 response', () => {
+    test('serverError returns 500 response', async () => {
       const handler = createHttpErrorHandler({ isDevelopment: false })
-      const response = handler.serverError(new Error('boom'))
+      const response = await handler.serverError(new Error('boom'))
       expect(response.status).toBe(500)
     })
 
-    test('validationError returns 422 response', () => {
+    test('validationError returns 422 response', async () => {
       const handler = createHttpErrorHandler({ isDevelopment: false })
-      const response = handler.validationError()
+      const response = await handler.validationError()
       expect(response.status).toBe(422)
     })
 
-    test('tooManyRequests returns 429 response', () => {
+    test('tooManyRequests returns 429 response', async () => {
       const handler = createHttpErrorHandler({ isDevelopment: false })
-      const response = handler.tooManyRequests()
+      const response = await handler.tooManyRequests()
       expect(response.status).toBe(429)
     })
 
-    test('serviceUnavailable returns 503 response', () => {
+    test('serviceUnavailable returns 503 response', async () => {
       const handler = createHttpErrorHandler({ isDevelopment: false })
-      const response = handler.serviceUnavailable()
+      const response = await handler.serviceUnavailable()
       expect(response.status).toBe(503)
     })
 
     test('development mode renders detailed error page', async () => {
       const handler = createHttpErrorHandler({ isDevelopment: true })
-      const response = handler.handle(new Error('Debug error'), 500)
+      const response = await handler.handle(new Error('Debug error'), 500)
       const html = await response.text()
       expect(html).toContain('Debug error')
-      expect(html).toContain('Stack Trace')
+      expect(html).toContain('Exception trace')
     })
 
     test('production mode does not leak error details', async () => {
       const handler = createHttpErrorHandler({ isDevelopment: false })
-      const response = handler.handle(new Error('secret internal detail'), 500)
+      const response = await handler.handle(new Error('secret internal detail'), 500)
       const html = await response.text()
       expect(html).not.toContain('secret internal detail')
       expect(html).toContain('500')
@@ -145,19 +145,32 @@ describe('Error Handling Integration', () => {
       }
     })
 
-    test('renderErrorPage includes error message in dev page', () => {
-      const html = renderErrorPage(new Error('test failure'), 500)
+    test('renderErrorPage includes error message in dev page', async () => {
+      const html = await renderErrorPage(new Error('test failure'), 500)
       expect(html).toContain('test failure')
       expect(html).toContain('<!DOCTYPE html>')
     })
 
-    test('renderError is an alias that works the same', () => {
-      const html = renderError(new Error('alias test'), 400)
+    test('renderErrorPage uses Laravel-style layout', async () => {
+      const handler = new ErrorPageHandler()
+      handler.setFramework('Stacks', '1.0.0')
+      handler.setRequest({ method: 'GET', url: 'http://localhost/test', headers: {} })
+      const html = await handler.render(new Error('layout test'), 500)
+      expect(html).toContain('Internal Server Error')
+      expect(html).toContain('Copy as Markdown')
+      expect(html).toContain('Exception trace')
+      expect(html).toContain('UNHANDLED')
+      expect(html).toContain('STACKS')
+      expect(html).toContain('1.0.0')
+    })
+
+    test('renderError is an alias that works the same', async () => {
+      const html = await renderError(new Error('alias test'), 400)
       expect(html).toContain('alias test')
     })
 
-    test('errorResponse returns a Response object', () => {
-      const resp = errorResponse(new Error('response test'), 500)
+    test('errorResponse returns a Response object', async () => {
+      const resp = await errorResponse(new Error('response test'), 500)
       expect(resp.status).toBe(500)
       expect(resp.headers.get('Content-Type')).toContain('text/html')
     })
@@ -171,44 +184,44 @@ describe('Error Handling Integration', () => {
   })
 
   describe('ErrorPageHandler', () => {
-    test('render includes error name and message', () => {
+    test('render includes error name and message', async () => {
       const handler = new ErrorPageHandler()
-      const html = handler.render(new Error('Custom error'), 500)
+      const html = await handler.render(new Error('Custom error'), 500)
       expect(html).toContain('Custom error')
       expect(html).toContain('500')
     })
 
-    test('setFramework includes framework info', () => {
+    test('setFramework includes framework info', async () => {
       const handler = new ErrorPageHandler()
       handler.setFramework('Stacks', '1.0.0')
-      const html = handler.render(new Error('test'), 500)
-      expect(html).toContain('Stacks')
-      expect(html).toContain('v1.0.0')
+      const html = await handler.render(new Error('test'), 500)
+      expect(html).toContain('STACKS')
+      expect(html).toContain('1.0.0')
     })
 
-    test('setRequest includes request info', () => {
+    test('setRequest includes request info', async () => {
       const handler = new ErrorPageHandler()
       handler.setRequest({
         method: 'POST',
         url: 'https://example.com/api/users',
         headers: { 'content-type': 'application/json' },
       })
-      const html = handler.render(new Error('test'), 500)
+      const html = await handler.render(new Error('test'), 500)
       expect(html).toContain('POST')
       expect(html).toContain('https://example.com/api/users')
     })
 
-    test('addQuery tracks database queries', () => {
+    test('addQuery tracks database queries', async () => {
       const handler = new ErrorPageHandler()
       handler.addQuery('SELECT * FROM users', 12.5, 'mysql')
-      const html = handler.render(new Error('test'), 500)
+      const html = await handler.render(new Error('test'), 500)
       expect(html).toContain('SELECT * FROM users')
       expect(html).toContain('12.50ms')
     })
 
-    test('handleError returns Response with correct status', () => {
+    test('handleError returns Response with correct status', async () => {
       const handler = new ErrorPageHandler()
-      const resp = handler.handleError(new Error('test'), 422)
+      const resp = await handler.handleError(new Error('test'), 422)
       expect(resp.status).toBe(422)
     })
   })
@@ -328,7 +341,7 @@ describe('Error Handling Integration', () => {
   describe('renderHttpError helper', () => {
     test('renders error with request context', async () => {
       const request = new Request('https://example.com/test')
-      const response = renderHttpError(new Error('test'), request, {
+      const response = await renderHttpError(new Error('test'), request, {
         status: 500,
         isDevelopment: true,
       })
@@ -337,8 +350,8 @@ describe('Error Handling Integration', () => {
       expect(response.status).toBe(500)
     })
 
-    test('renders without request', () => {
-      const response = renderHttpError(new Error('no-req'), undefined, { status: 400 })
+    test('renders without request', async () => {
+      const response = await renderHttpError(new Error('no-req'), undefined, { status: 400 })
       expect(response.status).toBe(400)
     })
   })

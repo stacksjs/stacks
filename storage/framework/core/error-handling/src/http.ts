@@ -111,7 +111,7 @@ export class HttpErrorHandler {
   /**
    * Handle an error and return an HTML response
    */
-  handle(error: Error, status: number = 500): Response {
+  async handle(error: Error, status: number = 500): Promise<Response> {
     if (this.isDevelopment) {
       return this.handler.handleError(error, status)
     }
@@ -126,7 +126,7 @@ export class HttpErrorHandler {
   /**
    * Create a 404 Not Found response
    */
-  notFound(message?: string): Response {
+  notFound(message?: string): Promise<Response> {
     const error = new HttpError(404, message || 'The requested resource could not be found.')
     return this.handle(error, 404)
   }
@@ -134,14 +134,14 @@ export class HttpErrorHandler {
   /**
    * Create a 500 Internal Server Error response
    */
-  serverError(error: Error): Response {
+  serverError(error: Error): Promise<Response> {
     return this.handle(error, 500)
   }
 
   /**
    * Create a 403 Forbidden response
    */
-  forbidden(message?: string): Response {
+  forbidden(message?: string): Promise<Response> {
     const error = new HttpError(403, message || 'You do not have permission to access this resource.')
     return this.handle(error, 403)
   }
@@ -149,7 +149,7 @@ export class HttpErrorHandler {
   /**
    * Create a 401 Unauthorized response
    */
-  unauthorized(message?: string): Response {
+  unauthorized(message?: string): Promise<Response> {
     const error = new HttpError(401, message || 'Authentication is required to access this resource.')
     return this.handle(error, 401)
   }
@@ -157,7 +157,7 @@ export class HttpErrorHandler {
   /**
    * Create a 400 Bad Request response
    */
-  badRequest(message?: string): Response {
+  badRequest(message?: string): Promise<Response> {
     const error = new HttpError(400, message || 'The request was malformed or invalid.')
     return this.handle(error, 400)
   }
@@ -165,7 +165,7 @@ export class HttpErrorHandler {
   /**
    * Create a 422 Unprocessable Entity response
    */
-  validationError(message?: string): Response {
+  validationError(message?: string): Promise<Response> {
     const error = new HttpError(422, message || 'The request was well-formed but could not be processed.')
     return this.handle(error, 422)
   }
@@ -173,7 +173,7 @@ export class HttpErrorHandler {
   /**
    * Create a 429 Too Many Requests response
    */
-  tooManyRequests(message?: string): Response {
+  tooManyRequests(message?: string): Promise<Response> {
     const error = new HttpError(429, message || 'You have exceeded the rate limit.')
     return this.handle(error, 429)
   }
@@ -181,7 +181,7 @@ export class HttpErrorHandler {
   /**
    * Create a 503 Service Unavailable response
    */
-  serviceUnavailable(message?: string): Response {
+  serviceUnavailable(message?: string): Promise<Response> {
     const error = new HttpError(503, message || 'The service is temporarily unavailable.')
     return this.handle(error, 503)
   }
@@ -200,7 +200,7 @@ export function createHttpErrorHandler(options?: {
 /**
  * Quick helper to render an error page for HTTP errors
  */
-export function renderHttpError(
+export async function renderHttpError(
   error: Error,
   request?: Request,
   options?: {
@@ -208,7 +208,7 @@ export function renderHttpError(
     isDevelopment?: boolean
     config?: ErrorPageConfig
   },
-): Response {
+): Promise<Response> {
   const handler = createHttpErrorHandler({
     isDevelopment: options?.isDevelopment,
     config: options?.config,

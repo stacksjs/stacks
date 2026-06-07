@@ -1,0 +1,20 @@
+<div class="flex flex-col gap-2.5 p-2.5 bg-neutral-50 dark:bg-white/1 border border-neutral-200 rounded-xl dark:border-neutral-800 shadow-xs">
+  <div class="flex gap-2.5 items-center p-2">
+    <div class="flex items-center justify-center p-1 h-6 w-6 bg-white dark:bg-neutral-800 border border-neutral-200 rounded-md dark:border-white/5">
+      <svg class="h-2.5 w-2.5 text-blue-500 dark:text-emerald-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+    </div>
+    <h3 class="font-semibold text-base text-neutral-900 dark:text-white">Exception trace</h3>
+  </div>
+
+  <div class="flex flex-col gap-1.5">
+    @foreach(traceGroups as group)
+      @if(group.type === 'vendor')
+        @include('./vendor-frames', { frames: group.frames, vendorCount: group.vendorCount })
+      @else
+        @foreach(group.frames as frame)
+          @include('./frame', { frame: frame })
+        @endforeach
+      @endif
+    @endforeach
+  </div>
+</div>

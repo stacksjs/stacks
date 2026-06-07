@@ -1,0 +1,23 @@
+<div class="flex flex-col gap-2.5 p-2.5 bg-neutral-50 dark:bg-white/1 border border-neutral-200 rounded-xl dark:border-neutral-800 shadow-xs" data-query-panel>
+  <div class="flex items-center justify-between p-2">
+    <div class="flex gap-2.5 items-center">
+      <div class="flex items-center justify-center p-1 h-6 w-6 bg-white dark:bg-neutral-800 border border-neutral-200 rounded-md dark:border-white/5">
+        <svg class="h-2.5 w-2.5 text-blue-500 dark:text-emerald-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14c0 1.66 4.03 3 9 3s9-1.34 9-3V5"/><path d="M3 12c0 1.66 4.03 3 9 3s9-1.34 9-3"/></svg>
+      </div>
+      <h3 class="font-semibold text-base text-neutral-900 dark:text-white">Queries</h3>
+    </div>
+    <div class="text-neutral-500 text-sm dark:text-neutral-400">{{ queryCount }} total</div>
+  </div>
+
+  <div class="flex flex-col gap-1">
+    @foreach(queries as query)
+    <div class="flex gap-4 items-center justify-between px-4 py-2 min-h-10 font-mono text-xs bg-white dark:bg-white/[3%] border border-neutral-200 rounded-md dark:border-none shadow-xs">
+      <div class="flex gap-2 items-center min-w-0 truncate">
+        <span class="shrink-0 text-neutral-500 dark:text-neutral-400">{{ query.connection }}</span>
+        <span class="text-neutral-900 truncate dark:text-neutral-200">{{ query.sql }}</span>
+      </div>
+      <div class="flex-shrink-0 text-neutral-500 text-right dark:text-neutral-200">{{ query.time }}ms</div>
+    </div>
+    @endforeach
+  </div>
+</div>

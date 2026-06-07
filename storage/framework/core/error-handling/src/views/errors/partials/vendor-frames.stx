@@ -1,0 +1,17 @@
+<div class="bg-neutral-50 dark:bg-white/1 border border-dashed border-neutral-300 rounded-lg dark:border-white/10 opacity-90 vendor-group" data-vendor-group>
+  <div class="flex gap-3 items-center pl-4 pr-2.5 h-11 hover:bg-white/50 dark:hover:bg-white/2 rounded-lg cursor-pointer vendor-toggle" data-vendor-toggle>
+    <svg class="h-3 w-3 text-neutral-400 vendor-icon-closed" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/></svg>
+    <div class="flex-1 font-mono leading-3 text-neutral-900 text-xs dark:text-neutral-400">
+      {{ vendorCount }} framework {{ vendorCount === 1 ? 'frame' : 'frames' }}
+    </div>
+    <button type="button" class="flex items-center justify-center h-6 w-6 text-neutral-500 dark:bg-white/3 rounded-md dark:border dark:border-white/8 cursor-pointer" data-vendor-toggle>
+      <svg class="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg>
+    </button>
+  </div>
+
+  <div class="flex hidden flex-col border-neutral-200 border-t divide-neutral-200 divide-y rounded-b-lg dark:border-white/5 dark:divide-white/5 vendor-frames">
+    @foreach(frames as frame)
+      @include('./frame', { frame: frame })
+    @endforeach
+  </div>
+</div>

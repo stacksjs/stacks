@@ -1,0 +1,12 @@
+<div class="flex flex-col gap-3">
+  <h2 class="font-semibold text-lg text-neutral-900 dark:text-white">Environment</h2>
+  <div class="flex flex-col">
+    @foreach(environmentRows as row)
+    <div class="flex gap-2 items-baseline h-10 max-w-full font-mono text-sm">
+      <div class="shrink-0 text-neutral-500 uppercase dark:text-neutral-400">{{ row.key }}</div>
+      <div class="grow h-3 min-w-6 border-b-2 border-dotted border-neutral-300 dark:border-white/20"></div>
+      <div class="text-neutral-900 truncate dark:text-white">{{ row.value }}</div>
+    </div>
+    @endforeach
+  </div>
+</div>
