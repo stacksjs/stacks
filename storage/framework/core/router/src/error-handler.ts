@@ -381,11 +381,22 @@ export async function createErrorResponse(
     // missed `Accept: */*` (curl + fetch default) and silently leaked an
     // HTML page to JSON-consuming clients.
     if (isApiRequest(request)) {
+      // 4xx messages are meant for the caller (validation copy, dedupe vs.
+      // invalid, field-level errors), so surface `error.name` / `error.message`
+      // / `details` for client errors and keep masking 5xx to avoid leaking
+      // internals. Mirrors `createMiddlewareErrorResponse` so an
+      // `HttpError(4xx, …)` reads the same whether it's thrown from middleware
+      // or an action handler. See stacksjs/stacks#1946.
+      const isClientError = status >= 400 && status < 500
+      const errDetails = (error as { details?: unknown }).details
       return new Response(
         buildErrorJson({
-          error: 'Internal Server Error',
-          message: 'An unexpected error occurred.',
+          error: isClientError ? (error.name || 'Client Error') : 'Internal Server Error',
+          message: isClientError ? error.message : 'An unexpected error occurred.',
           status,
+          details: isClientError && errDetails && typeof errDetails === 'object'
+            ? errDetails as Record<string, unknown>
+            : undefined,
         }),
         { status, headers: getJsonHeaders() },
       )
