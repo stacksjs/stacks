@@ -34,7 +34,7 @@ async function importDevelopmentRpx(): Promise<DevelopmentRpx> {
 }
 
 // rpx registry ids written by this `./buddy dev` session — cleared on shutdown.
-let activeRpxRegistryIds: string[] = []
+const activeRpxRegistryIds: string[] = []
 
 // Lazy-load @stacksjs/actions to avoid triggering bun-router config warnings at CLI startup
 let _actions: typeof import('@stacksjs/actions') | undefined
@@ -554,6 +554,8 @@ export async function startDevelopmentServer(_options: DevOptions, _startTime?: 
   ])
 }
 
+// `input` IS used (`} = input` below); pickier misparses multi-line object-type params
+// eslint-disable-next-line pickier/no-unused-vars
 function printDevReadyBanner(input: {
   options: DevOptions
   nativeMode: boolean
@@ -1350,6 +1352,8 @@ async function startRpxDaemonIfNeeded(input: {
  * a pid so the daemon's PID-GC does not delete them when a short-lived parent
  * exits — we unregister explicitly on `./buddy dev` shutdown instead.
  */
+// `input` IS used (`= input` below); pickier misparses multi-line object-type params
+// eslint-disable-next-line pickier/no-unused-vars
 async function registerRpxProxiesForDomain(input: {
   domain: string
   frontendPort: number
