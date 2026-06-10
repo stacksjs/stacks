@@ -15,6 +15,7 @@
  * ```
  */
 
+import process from 'node:process'
 import { response, route } from '@stacksjs/router'
 
 // ============================================================================
@@ -107,8 +108,24 @@ route.post('/api/reviews/submit', 'Actions/Storefront/SubmitReviewAction').skipC
 // ============================================================================
 
 route.health()
-route.get('/install', 'Actions/InstallAction')
-route.get('/test-error', 'Actions/TestErrorAction')
+
+// Dev-only diagnostics (stacksjs/stacks#1955). `/install` returns the
+// framework's shell bootstrap script (free stack fingerprinting) and
+// `/test-error` is an on-demand exception generator — `?type=` picks a
+// 401/404/422/500 scenario — so neither belongs on a production app's
+// public API. Same env detection as defaults/routes/dashboard-api.ts:
+// APP_ENV wins over NODE_ENV, and an unset env counts as local so
+// `buddy dev` and test suites keep both endpoints out of the box.
+// Apps that intentionally want either route in production can
+// re-register the path in `routes/api.ts` — user routes load first,
+// so their copy wins.
+const APP_ENV = (process.env.APP_ENV ?? process.env.NODE_ENV ?? '').toLowerCase()
+const IS_LOCAL_ENV = APP_ENV === '' || APP_ENV === 'local' || APP_ENV === 'development' || APP_ENV === 'dev' || APP_ENV === 'test' || APP_ENV === 'testing'
+
+if (IS_LOCAL_ENV) {
+  route.get('/install', 'Actions/InstallAction')
+  route.get('/test-error', 'Actions/TestErrorAction')
+}
 
 // ============================================================================
 // SEO — sitemap.xml + robots.txt

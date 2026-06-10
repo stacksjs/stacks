@@ -7,6 +7,7 @@
 
 import type { EnhancedRequest } from 'bun-router'
 import { dirname, join } from 'node:path'
+import process from 'node:process'
 import { fileURLToPath } from 'node:url'
 
 class DatabaseError extends Error {
@@ -116,6 +117,16 @@ export default {
   description: 'Demonstrates the Laravel-style error page',
 
   async handle(request: EnhancedRequest): Promise<Response> {
+    // Production short-circuits to 404 so even an accidental or userland
+    // re-registration can't expose the exception generator in prod —
+    // mirrors the mailable-preview guard in defaults/routes/core.ts
+    // (stacksjs/stacks#1900 A3; added for #1955). Production-only (not
+    // the registration gate's local-env allowlist) so a deliberate
+    // re-registration in staging still works.
+    const env = (process.env.APP_ENV ?? process.env.NODE_ENV ?? '').toLowerCase()
+    if (env === 'production')
+      return new Response('Not Found', { status: 404 })
+
     const url = new URL(request.url)
     const errorType = url.searchParams.get('type')
 
