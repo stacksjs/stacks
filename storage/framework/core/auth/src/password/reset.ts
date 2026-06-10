@@ -3,6 +3,7 @@ import { config } from '@stacksjs/config'
 import { db } from '@stacksjs/database'
 import { mail, template } from '@stacksjs/email'
 import { makeHash, verifyHash } from '@stacksjs/security'
+import { sessionDestroyAll } from '../session-auth'
 import { revokeAllTokens } from '../tokens'
 
 export interface PasswordResetResult {
@@ -280,6 +281,12 @@ export function passwordResets(email: string): PasswordResetActions {
       // against a held write lock) and must not fire on rollback.
       // See stacksjs/stacks#1947.
       await revokeAllTokens(result.userId)
+
+      // Session cookies are a parallel credential: `sessions` rows are
+      // validated on existence + expires_at alone, never re-checked
+      // against the password hash, so they'd survive the reset for up
+      // to 24h. Same fail-loud, post-commit rationale as above.
+      await sessionDestroyAll(result.userId)
 
       // Send password changed notification (async, non-blocking)
       // This runs after the transaction is committed to ensure the password was actually changed

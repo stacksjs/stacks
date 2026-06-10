@@ -36,6 +36,7 @@ process.env.APP_ENV = 'testing'
 const { db, ensureDatabaseConfigLoaded, initializeDbConfig } = await import('@stacksjs/database')
 const { createToken, findToken, refreshToken, validateRefreshToken } = await import('../src/tokens')
 const { passwordResets } = await import('../src/password/reset')
+const { sessionCheck } = await import('../src/session-auth')
 const { makeHash, verifyHash } = await import('@stacksjs/security')
 
 const VICTIM_EMAIL = 'victim-1947@example.com'
@@ -61,6 +62,16 @@ async function seedResetRow(email: string, plainToken: string): Promise<void> {
     INSERT INTO password_resets (email, token, expires_at, created_at)
     VALUES (?, ?, ?, datetime('now'))
   `, [email, hashedToken, expiresAt]).execute()
+}
+
+// Mirrors the row `sessionLogin()` writes (session-auth.ts) without
+// pulling the User model into this stripped test environment.
+async function seedSessionRow(userId: number, sessionId: string): Promise<void> {
+  const expiresAt = new Date(Date.now() + 24 * 60 * 60_000).toISOString()
+  await db.unsafe(`
+    INSERT INTO sessions (id, user_id, ip_address, user_agent, payload, last_activity, expires_at)
+    VALUES (?, ?, NULL, NULL, '{}', ?, ?)
+  `, [sessionId, userId, Math.floor(Date.now() / 1000), expiresAt]).execute()
 }
 
 beforeAll(async () => {
@@ -135,6 +146,18 @@ beforeAll(async () => {
       revoked BOOLEAN NOT NULL DEFAULT 0,
       expires_at TIMESTAMP,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+  `).execute()
+
+  await db.unsafe(`
+    CREATE TABLE IF NOT EXISTS sessions (
+      id VARCHAR(255) PRIMARY KEY,
+      user_id INTEGER NOT NULL,
+      ip_address VARCHAR(45),
+      user_agent TEXT,
+      payload TEXT NOT NULL,
+      last_activity INTEGER NOT NULL,
+      expires_at TIMESTAMP
     )
   `).execute()
 
@@ -216,5 +239,72 @@ describe('password reset revokes all tokens (#1947)', () => {
 
     expect(await verifyHash('brand-new-password-456', storedHash)).toBe(true)
     expect(await verifyHash('original-password-123', storedHash)).toBe(false)
+  })
+})
+
+describe('password reset destroys session-auth sessions (#1947)', () => {
+  const SESSION_VICTIM_EMAIL = 'session-victim-1947@example.com'
+  const SESSION_CONTROL_EMAIL = 'session-control-1947@example.com'
+
+  test('successful reset deletes every session row for the user — and only theirs', async () => {
+    const victimId = await seedUser(SESSION_VICTIM_EMAIL, 'victim-password-123')
+    const bystanderId = await seedUser(SESSION_CONTROL_EMAIL, 'bystander-password-123')
+
+    // Two live sessions for the victim (attacker's stolen cookie and the
+    // victim's own) plus an unrelated user's session that must survive.
+    await seedSessionRow(victimId, 'stolen-session-id-1947')
+    await seedSessionRow(victimId, 'own-session-id-1947')
+    await seedSessionRow(bystanderId, 'bystander-session-id-1947')
+    expect(await sessionCheck('stolen-session-id-1947')).toBe(true)
+    expect(await sessionCheck('own-session-id-1947')).toBe(true)
+
+    const plainResetToken = 'reset-token-1947-session-victim'
+    await seedResetRow(SESSION_VICTIM_EMAIL, plainResetToken)
+    const result = await passwordResets(SESSION_VICTIM_EMAIL).resetPassword(plainResetToken, 'brand-new-password-789')
+    expect(result.success).toBe(true)
+
+    // The core regression: sessions are validated on row existence +
+    // expires_at alone (never re-checked against the password hash), so
+    // pre-fix a stolen cookie stayed valid for up to 24h after the reset.
+    expect(await sessionCheck('stolen-session-id-1947')).toBe(false)
+    expect(await sessionCheck('own-session-id-1947')).toBe(false)
+    expect(await sessionCheck('bystander-session-id-1947')).toBe(true)
+  })
+
+  test('failed reset (wrong token) destroys no sessions', async () => {
+    await seedResetRow(SESSION_CONTROL_EMAIL, 'the-real-session-reset-token')
+
+    const result = await passwordResets(SESSION_CONTROL_EMAIL).resetPassword('a-wrong-token', 'attacker-password-123')
+    expect(result.success).toBe(false)
+
+    expect(await sessionCheck('bystander-session-id-1947')).toBe(true)
+  })
+
+  test('reset still succeeds when no sessions table exists (default installs)', async () => {
+    // No framework migration creates `sessions` — only userland adopting
+    // session-auth does. The sweep must treat the missing table as a
+    // benign no-op (nothing to revoke), not fail an otherwise-committed
+    // reset.
+    await db.unsafe('DROP TABLE sessions').execute()
+    try {
+      const plainResetToken = 'reset-token-1947-no-table'
+      await seedResetRow(SESSION_VICTIM_EMAIL, plainResetToken)
+
+      const result = await passwordResets(SESSION_VICTIM_EMAIL).resetPassword(plainResetToken, 'brand-new-password-000')
+      expect(result.success).toBe(true)
+    }
+    finally {
+      await db.unsafe(`
+        CREATE TABLE IF NOT EXISTS sessions (
+          id VARCHAR(255) PRIMARY KEY,
+          user_id INTEGER NOT NULL,
+          ip_address VARCHAR(45),
+          user_agent TEXT,
+          payload TEXT NOT NULL,
+          last_activity INTEGER NOT NULL,
+          expires_at TIMESTAMP
+        )
+      `).execute()
+    }
   })
 })

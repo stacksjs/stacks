@@ -137,6 +137,36 @@ export async function sessionLogout(sessionId: string): Promise<void> {
 }
 
 /**
+ * Destroy every session for a user — the credential-change sweep.
+ * Sessions are validated purely on row existence + `expires_at`, never
+ * re-checked against the password hash, so without this a stolen
+ * session cookie survives a password reset for up to 24h
+ * (stacksjs/stacks#1947).
+ *
+ * Unlike `sessionLogout`, real failures propagate (fail loud): a reset
+ * that reports success while the attacker's session lives would be a
+ * lie. A missing `sessions` table alone is a benign no-op — no
+ * framework migration creates it (only userland adopting session-auth
+ * does), and without the table `sessionCheck` can never validate a
+ * session, so there is no credential left to revoke.
+ */
+export async function sessionDestroyAll(userId: number): Promise<void> {
+  try {
+    await db.deleteFrom('sessions')
+      .where('user_id', '=', userId)
+      .execute()
+  }
+  catch (err) {
+    const message = err instanceof Error ? err.message : String(err)
+    // sqlite: `no such table: sessions` / postgres: `relation "sessions"
+    // does not exist` / mysql: `Table '….sessions' doesn't exist`
+    if (message.includes('sessions') && /no such table|does not exist|doesn't exist/i.test(message))
+      return
+    throw err
+  }
+}
+
+/**
  * Get the authenticated user from a session ID.
  */
 export async function sessionUser(sessionId: string): Promise<UserModel | undefined> {
@@ -227,6 +257,7 @@ export async function sessionRefresh(sessionId: string, ttlMs = 24 * 60 * 60 * 1
 export const SessionAuth = {
   login: sessionLogin,
   logout: sessionLogout,
+  destroyAll: sessionDestroyAll,
   user: sessionUser,
   check: sessionCheck,
   refresh: sessionRefresh,
