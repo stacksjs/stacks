@@ -32,6 +32,7 @@ import {
   fetchTables,
   findDifferingKeys,
   getLastMigrationFields,
+  getLikeableForeignKey,
   getUpvoteTableName,
   hasTableBeenMigrated,
   isArrayEqual,
@@ -158,7 +159,11 @@ async function createTableMigration(modelPath: string): Promise<void> {
 
   const useTimestamps = model?.traits?.useTimestamps ?? model?.traits?.timestampable ?? true
   const useSocials = model?.traits?.useSocials && Array.isArray(model.traits.useSocials) && model.traits.useSocials.length > 0
-  const useLikeable = model?.traits?.likeable && Array.isArray(model.traits.likeable) && model.traits.likeable.length > 0
+  // The typed forms are `boolean | LikeableOptions` — neither is an array,
+  // so requiring a non-empty array meant no typed model could ever get a
+  // pivot while the runtime trait activates for any truthy value
+  // (stacksjs/stacks#1954). Legacy empty arrays stay a no-op.
+  const useLikeable = Array.isArray(model?.traits?.likeable) ? model.traits.likeable.length > 0 : Boolean(model?.traits?.likeable)
   const useSoftDeletes = model?.traits?.useSoftDeletes ?? model?.traits?.softDeletable ?? false
 
   const usePasskey = (typeof model.traits?.useAuth === 'object' && model.traits.useAuth.usePasskey) ?? false
@@ -251,19 +256,27 @@ async function createTableMigration(modelPath: string): Promise<void> {
   if (useLikeable) {
     const upvoteTable = getUpvoteTableName(model, tableName)
     if (upvoteTable) {
+      // Singular FK — must match the runtime trait default or like()
+      // can't write to the generated table (see getLikeableForeignKey).
+      const foreignKey = getLikeableForeignKey(model, tableName)
+      // Emitted references must use `db` — the generated up() signature
+      // above is `up(db: Database<any>)`; `_db` was a ReferenceError.
       migrationContent += `\n  // Create upvote table\n`
-      migrationContent += `  await (_db as any).schema\n`
+      migrationContent += `  await (db as any).schema\n`
       migrationContent += `    .createTable('${upvoteTable}')\n`
       migrationContent += `    .addColumn('id', 'integer', col => col.primaryKey().autoIncrement())\n`
-      migrationContent += `    .addColumn('${tableName}_id', 'integer', col => col.notNull())\n`
+      migrationContent += `    .addColumn('${foreignKey}', 'integer', col => col.notNull())\n`
       migrationContent += `    .addColumn('user_id', 'integer', col => col.notNull())\n`
       migrationContent += `    .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql.raw('CURRENT_TIMESTAMP')))\n`
       migrationContent += `    .addColumn('updated_at', 'timestamp')\n`
       migrationContent += `    .execute()\n\n`
       migrationContent += `  // Add indexes for upvote table\n`
-      migrationContent += `  await (_db as any).schema.createIndex('${upvoteTable}_${tableName}_id_index').on('${upvoteTable}').column('${tableName}_id').execute()\n`
-      migrationContent += `  await (_db as any).schema.createIndex('${upvoteTable}_user_id_index').on('${upvoteTable}').column('user_id').execute()\n`
-      migrationContent += `  await (_db as any).schema.createIndex('${upvoteTable}_id_index').on('${upvoteTable}').column('id').execute()\n`
+      migrationContent += `  await (db as any).schema.createIndex('${upvoteTable}_${foreignKey}_index').on('${upvoteTable}').column('${foreignKey}').execute()\n`
+      // Composite UNIQUE (user_id, fk) — backs the trait's idempotent
+      // like(): duplicate inserts throw ER_DUP_ENTRY (errno 1062) and the
+      // catch returns the existing row instead of double-counting.
+      migrationContent += `  await (db as any).schema.createIndex('${upvoteTable}_user_${foreignKey}_unique').on('${upvoteTable}').columns(['user_id', '${foreignKey}']).unique().execute()\n`
+      migrationContent += `  await (db as any).schema.createIndex('${upvoteTable}_id_index').on('${upvoteTable}').column('id').execute()\n`
     }
   }
 

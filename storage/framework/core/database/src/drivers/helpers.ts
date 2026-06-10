@@ -278,9 +278,29 @@ export function getUpvoteTableName(model: Model, tableName: string): string | un
   const defaultTable = `${tableName}_likes`
   const traits = model.traits
 
-  return typeof traits?.likeable === 'object'
+  // The published type is `likeable?: boolean | LikeableOptions` and the
+  // runtime trait activates for ANY truthy value, so `likeable: true` must
+  // resolve to the default table too — not just the object form
+  // (stacksjs/stacks#1954). Legacy arrays hit the object branch and fall
+  // through to the default table, unchanged.
+  if (!traits?.likeable)
+    return undefined
+
+  return typeof traits.likeable === 'object'
     ? traits.likeable.table || defaultTable
-    : undefined
+    : defaultTable
+}
+
+/**
+ * Foreign-key column of the likes pivot. MUST mirror the runtime default in
+ * orm/src/traits/likeable.ts (`${tableName.replace(/s$/, '')}_id`) — a pivot
+ * generated with any other column name is a table `like()` cannot write to.
+ */
+export function getLikeableForeignKey(model: Model, tableName: string): string {
+  const likeable = model.traits?.likeable
+  if (likeable && typeof likeable === 'object' && !Array.isArray(likeable) && likeable.foreignKey)
+    return likeable.foreignKey
+  return `${tableName.replace(/s$/, '')}_id`
 }
 
 export function prepareNumberColumnType(validator: NumberValidatorType, driver = 'mysql'): string {
