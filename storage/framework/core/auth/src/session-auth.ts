@@ -7,6 +7,7 @@ import { verifyHash } from '@stacksjs/security'
 import { db } from '@stacksjs/database'
 import { getCurrentRequest } from '@stacksjs/router'
 import { DUMMY_BCRYPT_HASH } from './internal-constants'
+import { RateLimiter } from './rate-limiter'
 
 function generateSessionId(): string {
   const bytes = crypto.getRandomValues(new Uint8Array(32))
@@ -60,15 +61,31 @@ export async function sessionLogin(
   password: string,
   fingerprint?: { ip?: string | null, userAgent?: string | null },
 ): Promise<{ user: UserModel, sessionId: string }> {
+  // Per-email brute-force lockout. The token-login path (Auth.attempt) has
+  // always gated on RateLimiter; the session path previously did not, leaving
+  // it open to unlimited credential stuffing. Mirror that path exactly,
+  // including the ordering: check lockout state up front but enforce it only
+  // AFTER the unconditional hash below, so a locked-out account and a
+  // wrong-password attempt spend the same CPU and can't be told apart by
+  // response timing (the lockout-timing oracle, stacksjs/stacks#1860 H-9).
+  const normalizedEmail = (email || '').toLowerCase()
+  const isRateLimited = await RateLimiter.isRateLimited(normalizedEmail)
+
   const user = await User.where('email', email).first()
 
   // Always run hash verification to prevent timing-based user enumeration
   const hashToVerify = user?.password || DUMMY_BCRYPT_HASH
   const isValid = await verifyHash(password, hashToVerify)
 
+  if (isRateLimited)
+    throw new HttpError(429, 'Too many login attempts. Please try again later.')
+
   if (!isValid || !user) {
+    await RateLimiter.recordFailedAttempt(normalizedEmail)
     throw new HttpError(401, 'Invalid credentials')
   }
+
+  await RateLimiter.resetAttempts(normalizedEmail)
 
   const sessionId = generateSessionId()
   const expiresAt = new Date(Date.now() + (24 * 60 * 60 * 1000)) // 24 hours

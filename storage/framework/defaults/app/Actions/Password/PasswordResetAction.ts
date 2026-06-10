@@ -29,7 +29,7 @@ export default new Action({
 
     // Rate limit password reset attempts by email
     const rateLimitKey = `password_reset_attempt:${email.toLowerCase()}`
-    if (RateLimiter.isRateLimited(rateLimitKey)) {
+    if (await RateLimiter.isRateLimited(rateLimitKey)) {
       return response.error('Too many password reset attempts. Please try again later.', 429)
     }
 
@@ -39,7 +39,7 @@ export default new Action({
 
     if (!result.success) {
       // Record failed attempt for rate limiting
-      RateLimiter.recordFailedAttempt(rateLimitKey)
+      await RateLimiter.recordFailedAttempt(rateLimitKey)
 
       // Return appropriate error message without leaking user existence
       // Both "user not found" and "invalid token" return the same generic message
@@ -47,7 +47,7 @@ export default new Action({
     }
 
     // Clear rate limit on successful reset
-    RateLimiter.resetAttempts(rateLimitKey)
+    await RateLimiter.resetAttempts(rateLimitKey)
 
     return response.success('Password has been reset successfully')
   },

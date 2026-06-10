@@ -27,13 +27,13 @@ export default new Action({
 
     // Rate limit password reset requests by email
     const rateLimitKey = `password_reset:${email.toLowerCase()}`
-    if (RateLimiter.isRateLimited(rateLimitKey)) {
+    if (await RateLimiter.isRateLimited(rateLimitKey)) {
       console.log('[Action] Rate limited for:', rateLimitKey)
       return response.error('Too many password reset attempts. Please try again later.', 429)
     }
 
     // Record the attempt
-    RateLimiter.recordFailedAttempt(rateLimitKey)
+    await RateLimiter.recordFailedAttempt(rateLimitKey)
     console.log('[Action] Recorded rate limit attempt')
 
     // Check if user exists

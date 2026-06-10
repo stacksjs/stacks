@@ -12,7 +12,12 @@ export default {
     enabled: true,
     countryCodes: ['RU', 'IR'],
     ipAddresses: [],
-    rateLimitPerMinute: 1000,
+    // Per-IP request ceiling. Kept low enough to blunt online brute force /
+    // enumeration against auth, password-reset, and 2FA endpoints (the
+    // per-account lockouts are the second line; this is the first). Raise it
+    // for high-throughput public APIs — but 1000/min/IP let an attacker make
+    // ~16 guesses/sec, which defeats the purpose of a firewall limit.
+    rateLimitPerMinute: 100,
     useIpReputationLists: true,
     useKnownBadInputsRuleSet: true,
     queryString: [],

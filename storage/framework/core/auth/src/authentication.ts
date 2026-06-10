@@ -281,7 +281,7 @@ export class Auth {
     // The per-IP throttle middleware on /api/auth/login is the first
     // line; this is the second (in case the attacker rotates IPs but
     // keeps targeting one inbox).
-    const isRateLimited = RateLimiter.isRateLimited(email)
+    const isRateLimited = await RateLimiter.isRateLimited(email)
 
     const user = await User.where('email', '=', email).first()
     const authPass = credentials[password] || ''
@@ -302,13 +302,13 @@ export class Auth {
       return false
 
     if (hashCheck && user) {
-      RateLimiter.resetAttempts(email)
+      await RateLimiter.resetAttempts(email)
       const state = authStateOrNull()
       if (state) state.authUser = user
       return true
     }
 
-    RateLimiter.recordFailedAttempt(email)
+    await RateLimiter.recordFailedAttempt(email)
     return false
   }
 

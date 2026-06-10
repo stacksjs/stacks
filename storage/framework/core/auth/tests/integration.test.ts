@@ -25,62 +25,63 @@ import { parseScopes } from '../src/tokens'
 // RateLimiter
 // ---------------------------------------------------------------------------
 describe('RateLimiter', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     // Reset state between tests
-    RateLimiter.resetAttempts('test@example.com')
-    RateLimiter.resetAttempts('other@example.com')
+    RateLimiter.useMemoryStore()
+    await RateLimiter.resetAttempts('test@example.com')
+    await RateLimiter.resetAttempts('other@example.com')
   })
 
-  test('new email is not rate limited', () => {
-    expect(RateLimiter.isRateLimited('test@example.com')).toBe(false)
+  test('new email is not rate limited', async () => {
+    expect(await RateLimiter.isRateLimited('test@example.com')).toBe(false)
   })
 
-  test('recording fewer than 5 failed attempts does not trigger lockout', () => {
+  test('recording fewer than 5 failed attempts does not trigger lockout', async () => {
     for (let i = 0; i < 4; i++) {
-      RateLimiter.recordFailedAttempt('test@example.com')
+      await RateLimiter.recordFailedAttempt('test@example.com')
     }
-    expect(RateLimiter.isRateLimited('test@example.com')).toBe(false)
+    expect(await RateLimiter.isRateLimited('test@example.com')).toBe(false)
   })
 
-  test('recording 5 failed attempts triggers lockout', () => {
+  test('recording 5 failed attempts triggers lockout', async () => {
     for (let i = 0; i < 5; i++) {
-      RateLimiter.recordFailedAttempt('test@example.com')
+      await RateLimiter.recordFailedAttempt('test@example.com')
     }
-    expect(RateLimiter.isRateLimited('test@example.com')).toBe(true)
+    expect(await RateLimiter.isRateLimited('test@example.com')).toBe(true)
   })
 
-  test('resetAttempts clears lockout', () => {
+  test('resetAttempts clears lockout', async () => {
     for (let i = 0; i < 5; i++) {
-      RateLimiter.recordFailedAttempt('test@example.com')
+      await RateLimiter.recordFailedAttempt('test@example.com')
     }
-    expect(RateLimiter.isRateLimited('test@example.com')).toBe(true)
-    RateLimiter.resetAttempts('test@example.com')
-    expect(RateLimiter.isRateLimited('test@example.com')).toBe(false)
+    expect(await RateLimiter.isRateLimited('test@example.com')).toBe(true)
+    await RateLimiter.resetAttempts('test@example.com')
+    expect(await RateLimiter.isRateLimited('test@example.com')).toBe(false)
   })
 
-  test('email lookup is case insensitive', () => {
+  test('email lookup is case insensitive', async () => {
     for (let i = 0; i < 5; i++) {
-      RateLimiter.recordFailedAttempt('Test@Example.COM')
+      await RateLimiter.recordFailedAttempt('Test@Example.COM')
     }
-    expect(RateLimiter.isRateLimited('test@example.com')).toBe(true)
+    expect(await RateLimiter.isRateLimited('test@example.com')).toBe(true)
   })
 
-  test('different emails are tracked independently', () => {
+  test('different emails are tracked independently', async () => {
     for (let i = 0; i < 5; i++) {
-      RateLimiter.recordFailedAttempt('test@example.com')
+      await RateLimiter.recordFailedAttempt('test@example.com')
     }
-    expect(RateLimiter.isRateLimited('other@example.com')).toBe(false)
+    expect(await RateLimiter.isRateLimited('other@example.com')).toBe(false)
   })
 
-  test('validateAttempt throws HttpError when rate limited', () => {
+  test('validateAttempt throws HttpError when rate limited', async () => {
     for (let i = 0; i < 5; i++) {
-      RateLimiter.recordFailedAttempt('test@example.com')
+      await RateLimiter.recordFailedAttempt('test@example.com')
     }
-    expect(() => RateLimiter.validateAttempt('test@example.com')).toThrow()
+    await expect(RateLimiter.validateAttempt('test@example.com')).rejects.toThrow()
   })
 
-  test('validateAttempt does not throw when not rate limited', () => {
-    expect(() => RateLimiter.validateAttempt('test@example.com')).not.toThrow()
+  test('validateAttempt does not throw when not rate limited', async () => {
+    await expect(RateLimiter.validateAttempt('test@example.com')).resolves.toBeUndefined()
   })
 })
 

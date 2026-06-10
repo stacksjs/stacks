@@ -47,14 +47,25 @@ export default {
   password: env.AUTH_PASSWORD_FIELD || 'password',
 
   /**
-   * The token expiry time in milliseconds (default: 30 days).
+   * Access-token expiry in milliseconds (default: 1 hour).
+   *
+   * Access tokens are deliberately short-lived: a leaked bearer (logs,
+   * proxy, browser storage) is then usable for an hour, not a month. The
+   * paired refresh token (`refreshTokenExpiry`) carries the long-lived
+   * session and is rotated on use, so UX is unaffected.
    */
-  tokenExpiry: env.AUTH_TOKEN_EXPIRY ||30 * 24 * 60 * 60 * 1000,
+  tokenExpiry: env.AUTH_TOKEN_EXPIRY || 60 * 60 * 1000,
+
+  /**
+   * Refresh-token expiry in milliseconds (default: 30 days). This is the
+   * long-lived credential exchanged for fresh access tokens.
+   */
+  refreshTokenExpiry: env.AUTH_REFRESH_TOKEN_EXPIRY || 30 * 24 * 60 * 60 * 1000,
 
   /**
    * The token rotation time in hours (default: 24 hours).
    */
-  tokenRotation: env.AUTH_TOKEN_ROTATION ||24,
+  tokenRotation: env.AUTH_TOKEN_ROTATION || 24,
 
   /**
    * The token abilities that are granted by default.

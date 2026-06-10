@@ -182,6 +182,7 @@ export interface StacksEnv {
   AUTH_USERNAME_FIELD: string | undefined
   AUTH_PASSWORD_FIELD: string | undefined
   AUTH_TOKEN_EXPIRY: number | undefined
+  AUTH_REFRESH_TOKEN_EXPIRY: number | undefined
   AUTH_TOKEN_ROTATION: number | undefined
   AUTH_PASSWORD_RESET_EXPIRE: number | undefined
   AUTH_PASSWORD_RESET_THROTTLE: number | undefined
