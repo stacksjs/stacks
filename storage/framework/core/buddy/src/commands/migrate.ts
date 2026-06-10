@@ -195,12 +195,17 @@ export function migrate(buddy: CLI): void {
       const result = await runAction(Action.Migrate, options).finally(() => lock.release())
 
       if (result.isErr) {
-        await outro(
-          'While running the migrate command, there was an issue',
-          { startTime: perf, useSeconds: true },
-          result.error,
-        )
-        process.exit(ExitCode.FatalError)
+        // Don't exit yet — the auth/notification/RBAC guarantees below
+        // are independent of the model migrations (#1952): the sqlite
+        // self-heal replays poisoned unique-index migrations, and real
+        // duplicate rows make that replay hard-fail, aborting every
+        // remaining model migration. The legacy apps hitting that are
+        // exactly the ones that still need the guarantee tables (and
+        // #1948's users.email_verified_at ALTER), and all of that SQL
+        // is idempotent CREATE TABLE IF NOT EXISTS / defensive ALTERs —
+        // safe against a partially migrated schema. The command still
+        // exits FatalError below, after the guarantees have run.
+        log.error('Model migrations failed — applying auth/notification/RBAC table guarantees before exiting.')
       }
 
       // Auth/oauth tables migrate by default. Pass --no-auth to opt out.
@@ -237,6 +242,17 @@ export function migrate(buddy: CLI): void {
         catch (error) {
           log.error('Failed to migrate auth/notification/RBAC tables:', error)
         }
+      }
+
+      // Surface the model-migration failure only after the guarantee
+      // tables above have had their chance to run (#1952).
+      if (result.isErr) {
+        await outro(
+          'While running the migrate command, there was an issue',
+          { startTime: perf, useSeconds: true },
+          result.error,
+        )
+        process.exit(ExitCode.FatalError)
       }
 
       // Post-migrate FK integrity check (stacksjs/stacks#1915 D-5).
@@ -292,12 +308,10 @@ export function migrate(buddy: CLI): void {
       const result = await runAction(Action.MigrateFresh, options)
 
       if (result.isErr) {
-        await outro(
-          'While running the migrate:fresh command, there was an issue',
-          { startTime: perf, useSeconds: true },
-          result.error,
-        )
-        process.exit(ExitCode.FatalError)
+        // Same ordering rule as `buddy migrate` (#1952): the guarantee
+        // tables below are independent, idempotent SQL — a failed model
+        // migration must not skip them. Exit comes after they ran.
+        log.error('Model migrations failed — applying auth/notification/RBAC table guarantees before exiting.')
       }
 
       // Auth/oauth tables migrate by default. Pass --no-auth to opt out.
@@ -334,6 +348,17 @@ export function migrate(buddy: CLI): void {
         catch (error) {
           log.error('Failed to migrate auth/notification/RBAC tables:', error)
         }
+      }
+
+      // Surface the model-migration failure only after the guarantee
+      // tables above have had their chance to run (#1952).
+      if (result.isErr) {
+        await outro(
+          'While running the migrate:fresh command, there was an issue',
+          { startTime: perf, useSeconds: true },
+          result.error,
+        )
+        process.exit(ExitCode.FatalError)
       }
 
       // Post-migrate FK integrity check (stacksjs/stacks#1915 D-5).
