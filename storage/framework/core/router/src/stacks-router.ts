@@ -890,9 +890,19 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
         middlewareEntries.unshift('csrf')
       }
 
+      // Only pay for pathname extraction when debug logging is actually on —
+      // this runs per request on every middleware-bearing route. The level
+      // gate mirrors `log.debug`'s own cheap-exit, and the cheap string slice
+      // avoids a full `new URL()` parse on the hot path in production.
       if (middlewareEntries.length > 0) {
-        const urlPath = new URL(req.url).pathname
-        log.debug(`[middleware] Executing chain: [${middlewareEntries.join(', ')}] for ${method} ${urlPath}`)
+        const lvl = (process.env.LOG_LEVEL || 'info').toLowerCase()
+        if (lvl !== 'info' && lvl !== 'warn' && lvl !== 'error') {
+          const schemeEnd = req.url.indexOf('://')
+          const pathStart = schemeEnd === -1 ? 0 : req.url.indexOf('/', schemeEnd + 3)
+          const q = req.url.indexOf('?', pathStart < 0 ? 0 : pathStart)
+          const urlPath = pathStart < 0 ? '/' : req.url.slice(pathStart, q === -1 ? undefined : q)
+          log.debug(`[middleware] Executing chain: [${middlewareEntries.join(', ')}] for ${method} ${urlPath}`)
+        }
       }
 
       // Pre-resolve every entry to its handler + priority. Each
@@ -1288,11 +1298,30 @@ function cachedImport(fullPath: string): Promise<any> {
   return p
 }
 
+// Resolved-handler cache. A string handler resolves to an immutable
+// RouteHandlerFn (module is import-cached, the action wrapper is rebuilt the
+// same way every time), so resolving it once per route and reusing the result
+// removes a per-request `fileExists` stat + closure allocation from the single
+// hottest path. Caches the PROMISE (like `cachedImport`) to collapse concurrent
+// first-resolves; evicts on rejection so a transient failure can be retried.
+// Same lifetime as `cachedImport` — a dev hot-reload restarts the process and
+// clears both, so this never serves a stale handler.
+const _resolvedHandlerCache = new Map<string, Promise<RouteHandlerFn>>()
+function resolveStringHandler(handlerPath: string): Promise<RouteHandlerFn> {
+  let resolved = _resolvedHandlerCache.get(handlerPath)
+  if (!resolved) {
+    resolved = resolveStringHandlerUncached(handlerPath)
+    _resolvedHandlerCache.set(handlerPath, resolved)
+    resolved.catch(() => _resolvedHandlerCache.delete(handlerPath))
+  }
+  return resolved
+}
+
 /**
  * Resolve a string handler to an actual handler function
  * Supports user overrides: checks user's app/ first, then falls back to defaults
  */
-async function resolveStringHandler(handlerPath: string): Promise<RouteHandlerFn> {
+async function resolveStringHandlerUncached(handlerPath: string): Promise<RouteHandlerFn> {
   assertSafeHandlerPath(handlerPath)
   let modulePath = handlerPath
 
@@ -1541,11 +1570,21 @@ async function getRequestInput(
 ): Promise<Record<string, unknown>> {
   const input: Record<string, unknown> = {}
 
-  // Get query parameters (always strings on the wire)
-  const url = new URL(req.url)
-  url.searchParams.forEach((value, key) => {
-    input[key] = value
-  })
+  // Get query parameters (always strings on the wire). Reuse the query
+  // already parsed into `req.query` by enhanceRequest when present; only fall
+  // back to a fresh `new URL()` parse if this runs before enhancement
+  // (defensive — the action path always enhances first). Saves a full URL
+  // parse on every validated request.
+  const q = req.query
+  if (q) {
+    for (const key in q) input[key] = q[key]
+  }
+  else {
+    const url = new URL(req.url)
+    url.searchParams.forEach((value, key) => {
+      input[key] = value
+    })
+  }
 
   // Get route params if available (also strings — bun-router doesn't
   // know the route-pattern type)
@@ -1793,6 +1832,225 @@ export function stream(
   return new Response(body, { status: options.status ?? 200, headers: merged })
 }
 
+// Per-request merged input: query + JSON body + form body + route params, in
+// that precedence order (later sources win). Memoized on the request via
+// `_allInputCache` so repeated `req.all()/get()/input()` calls don't re-merge.
+// A standalone function (not a per-request closure) so the request helpers
+// below can be shared module-level functions rather than re-allocated per
+// request.
+function getAllInputFor(req: EnhancedRequest): Record<string, unknown> {
+  const cached = (req as any)._allInputCache as Record<string, unknown> | undefined
+  if (cached)
+    return cached
+
+  const input: Record<string, unknown> = {}
+  const query = req.query as Record<string, unknown> | undefined
+  if (query) {
+    for (const key in query) input[key] = query[key]
+  }
+  if (req.jsonBody && typeof req.jsonBody === 'object')
+    Object.assign(input, req.jsonBody)
+  if (req.formBody && typeof req.formBody === 'object')
+    Object.assign(input, req.formBody)
+  if (req.params && typeof req.params === 'object')
+    Object.assign(input, req.params)
+
+  ;(req as any)._allInputCache = input
+  return input
+}
+
+// Shared implementations of the Laravel-style request helpers. Assigned onto
+// each request by a single `Object.assign` (reference copy) instead of
+// allocating ~25 fresh closures per request — all per-request state lives on
+// the request object, so each method reads it through `this`. `ThisType`
+// types `this` as the request inside every method.
+const REQUEST_METHODS: Record<string, (...args: any[]) => any> & ThisType<EnhancedRequest> = {
+  get(key: string, defaultValue?: any) {
+    const input = getAllInputFor(this)
+    const value = input[key]
+    return value !== undefined ? value : defaultValue
+  },
+  input(key: string, defaultValue?: any) {
+    const input = getAllInputFor(this)
+    const value = input[key]
+    return value !== undefined ? value : defaultValue
+  },
+  all() {
+    return getAllInputFor(this)
+  },
+  only(keys: string[]) {
+    const input = getAllInputFor(this)
+    const result: Record<string, unknown> = {}
+    for (const key of keys) {
+      if (key in input)
+        result[key] = input[key]
+    }
+    return result
+  },
+  except(keys: string[]) {
+    const input = getAllInputFor(this)
+    const result: Record<string, unknown> = { ...input }
+    for (const key of keys) delete result[key]
+    return result
+  },
+  has(key: string | string[]) {
+    const input = getAllInputFor(this)
+    if (Array.isArray(key))
+      return key.every(k => k in input && input[k] !== undefined)
+    return key in input && input[key] !== undefined
+  },
+  hasAny(keys: string[]) {
+    const input = getAllInputFor(this)
+    return keys.some(k => k in input && input[k] !== undefined)
+  },
+  filled(key: string | string[]) {
+    const input = getAllInputFor(this)
+    const isFilled = (k: string): boolean => {
+      const value = input[k]
+      return value !== undefined && value !== null && value !== '' && !(Array.isArray(value) && value.length === 0)
+    }
+    if (Array.isArray(key))
+      return key.every(isFilled)
+    return isFilled(key)
+  },
+  missing(key: string | string[]) {
+    const input = getAllInputFor(this)
+    if (Array.isArray(key))
+      return key.every(k => !(k in input) || input[k] === undefined)
+    return !(key in input) || input[key] === undefined
+  },
+  string(key: string, defaultValue: string = '') {
+    const input = getAllInputFor(this)
+    const value = input[key]
+    return value !== undefined && value !== null ? String(value) : defaultValue
+  },
+  // Strict numeric parsing: `Number.parseInt('123abc')` returns 123 silently,
+  // so we require the entire string to be a valid number — trailing garbage
+  // falls through to `defaultValue`.
+  integer(key: string, defaultValue: number = 0) {
+    const input = getAllInputFor(this)
+    const value = input[key]
+    if (value === undefined || value === null || value === '')
+      return defaultValue
+    if (typeof value === 'number')
+      return Number.isFinite(value) ? Math.trunc(value) : defaultValue
+    const str = String(value).trim()
+    if (!/^-?\d+$/.test(str))
+      return defaultValue
+    const parsed = Number.parseInt(str, 10)
+    return Number.isFinite(parsed) ? parsed : defaultValue
+  },
+  float(key: string, defaultValue: number = 0) {
+    const input = getAllInputFor(this)
+    const value = input[key]
+    if (value === undefined || value === null || value === '')
+      return defaultValue
+    if (typeof value === 'number')
+      return Number.isFinite(value) ? value : defaultValue
+    const str = String(value).trim()
+    if (!/^-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?$/.test(str))
+      return defaultValue
+    const parsed = Number.parseFloat(str)
+    return Number.isFinite(parsed) ? parsed : defaultValue
+  },
+  boolean(key: string, defaultValue: boolean = false) {
+    const input = getAllInputFor(this)
+    const value = input[key]
+    if (value === undefined || value === null)
+      return defaultValue
+    if (typeof value === 'boolean')
+      return value
+    if (value === 'true' || value === '1' || value === 1)
+      return true
+    if (value === 'false' || value === '0' || value === 0)
+      return false
+    return defaultValue
+  },
+  array(key: string) {
+    const input = getAllInputFor(this)
+    const value = input[key]
+    if (Array.isArray(value))
+      return value
+    return value !== undefined && value !== null ? [value] : []
+  },
+  // File handling — returns UploadedFile with store/storeAs methods.
+  file(key: string) {
+    const files = this.files || {}
+    const file = files[key]
+    if (!file)
+      return null
+    const rawFile = Array.isArray(file) ? file[0] : file
+    return rawFile ? new UploadedFile(rawFile) : null
+  },
+  getFiles(key: string) {
+    const files = this.files || {}
+    const file = files[key]
+    if (!file)
+      return []
+    const fileArray = Array.isArray(file) ? file : [file]
+    return fileArray.map(f => new UploadedFile(f))
+  },
+  hasFile(key: string) {
+    const files = this.files || {}
+    return key in files && files[key] !== undefined
+  },
+  allFiles() {
+    const files = this.files || {}
+    const result: Record<string, UploadedFile | UploadedFile[]> = {}
+    for (const [key, value] of Object.entries(files)) {
+      if (Array.isArray(value))
+        result[key] = value.map(f => new UploadedFile(f as File))
+      else
+        result[key] = new UploadedFile(value as File)
+    }
+    return result
+  },
+  // Auth — returns the authenticated user/token set by middleware.
+  async user() {
+    return this._authenticatedUser
+  },
+  async userToken() {
+    return this._currentAccessToken
+  },
+  // Strict: a missing token, a token without an `abilities` array, or a
+  // non-string ability all fail closed.
+  async tokenCan(ability: string) {
+    if (typeof ability !== 'string' || ability.length === 0)
+      return false
+    const token = this._currentAccessToken as any
+    if (!token || typeof token !== 'object')
+      return false
+    if (!Array.isArray(token.abilities))
+      return false
+    if (token.abilities.includes('*'))
+      return true
+    return token.abilities.includes(ability)
+  },
+  async tokenCant(ability: string) {
+    return !(await this.tokenCan(ability))
+  },
+  // Gate / Policy macros (stacksjs/stacks#1874 F-9). Lazy-import `@stacksjs/auth`
+  // to dodge the router←auth cycle; resolve the user from `_authenticatedUser`,
+  // passing `null` when missing so public-read policies still get a chance.
+  async can(ability: string, ...args: unknown[]) {
+    if (typeof ability !== 'string' || ability.length === 0)
+      return false
+    const { Gate } = await import('@stacksjs/auth')
+    const user = (this._authenticatedUser as Parameters<typeof Gate.allows>[1]) ?? null
+    return Gate.allows(ability, user, ...args)
+  },
+  async cannot(ability: string, ...args: unknown[]) {
+    return !(await this.can(ability, ...args))
+  },
+  // Throw-on-deny variant (Laravel's `$this->authorize(...)`). Throws
+  // AuthorizationException (403) on deny.
+  async authorize(ability: string, ...args: unknown[]) {
+    const { Gate } = await import('@stacksjs/auth')
+    const user = (this._authenticatedUser as Parameters<typeof Gate.authorize>[1]) ?? null
+    await Gate.authorize(ability, user, ...args)
+  },
+}
+
 // Decorate the incoming request with the helpers the framework's middleware
 // and actions assume are always available. Names follow Laravel's convention
 // because that's the API surface Stacks userland expects.
@@ -1810,256 +2068,10 @@ export function enhanceRequest(req: EnhancedRequest): EnhancedRequest {
     ;req.query = query
   }
 
-  // Cached input data — computed once on first access
-  let cachedInput: Record<string, unknown> | null = null
-
-  const getAllInput = (): Record<string, unknown> => {
-    if (cachedInput) return cachedInput
-
-    const input: Record<string, unknown> = {}
-
-    // Query parameters
-    for (const [key, value] of Object.entries(query || {})) {
-      input[key] = value
-    }
-
-    // JSON body
-    if (req.jsonBody && typeof req.jsonBody === 'object') {
-      for (const [key, value] of Object.entries(req.jsonBody)) {
-        input[key] = value
-      }
-    }
-
-    // Form body
-    if (req.formBody && typeof req.formBody === 'object') {
-      for (const [key, value] of Object.entries(req.formBody)) {
-        input[key] = value
-      }
-    }
-
-    // Route params
-    if (req.params && typeof req.params === 'object') {
-      for (const [key, value] of Object.entries(req.params)) {
-        input[key] = value
-      }
-    }
-
-    cachedInput = input
-    return input
-  }
-
-  // Add Laravel-style methods
-  ;req.get = <T = any>(key: string, defaultValue?: T): T => {
-    const input = getAllInput()
-    const value = input[key]
-    return (value !== undefined ? value : defaultValue) as T
-  }
-
-  ;req.input = <T = any>(key: string, defaultValue?: T): T => {
-    const input = getAllInput()
-    const value = input[key]
-    return (value !== undefined ? value : defaultValue) as T
-  }
-
-  ;req.all = (): Record<string, unknown> => getAllInput()
-
-  ;req.only = <T extends Record<string, unknown>>(keys: string[]): T => {
-    const input = getAllInput()
-    const result = {} as T
-    for (const key of keys) {
-      if (key in input) {
-        (result as any)[key] = input[key]
-      }
-    }
-    return result
-  }
-
-  ;req.except = <T extends Record<string, unknown>>(keys: string[]): T => {
-    const input = getAllInput()
-    const result = { ...input } as T
-    for (const key of keys) {
-      delete (result as any)[key]
-    }
-    return result
-  }
-
-  ;req.has = (key: string | string[]): boolean => {
-    const input = getAllInput()
-    if (Array.isArray(key)) {
-      return key.every(k => k in input && input[k] !== undefined)
-    }
-    return key in input && input[key] !== undefined
-  }
-
-  ;req.hasAny = (keys: string[]): boolean => {
-    const input = getAllInput()
-    return keys.some(k => k in input && input[k] !== undefined)
-  }
-
-  ;req.filled = (key: string | string[]): boolean => {
-    const input = getAllInput()
-    const isFilled = (k: string): boolean => {
-      const value = input[k]
-      return value !== undefined && value !== null && value !== '' && !(Array.isArray(value) && value.length === 0)
-    }
-    if (Array.isArray(key)) {
-      return key.every(isFilled)
-    }
-    return isFilled(key)
-  }
-
-  ;req.missing = (key: string | string[]): boolean => {
-    const input = getAllInput()
-    if (Array.isArray(key)) {
-      return key.every(k => !(k in input) || input[k] === undefined)
-    }
-    return !(key in input) || input[key] === undefined
-  }
-
-  ;req.string = (key: string, defaultValue: string = ''): string => {
-    const input = getAllInput()
-    const value = input[key]
-    return value !== undefined && value !== null ? String(value) : defaultValue
-  }
-
-  // Strict numeric parsing: `Number.parseInt('123abc')` returns 123 silently,
-  // which lets callers accept partial numeric input they didn't intend
-  // (e.g. pagination size gets set to the leading digits of a typo'd query
-  // param). We require the entire string to be a valid number — any trailing
-  // garbage falls through to `defaultValue`.
-  ;req.integer = (key: string, defaultValue: number = 0): number => {
-    const input = getAllInput()
-    const value = input[key]
-    if (value === undefined || value === null || value === '') return defaultValue
-    if (typeof value === 'number') return Number.isFinite(value) ? Math.trunc(value) : defaultValue
-    const str = String(value).trim()
-    if (!/^-?\d+$/.test(str)) return defaultValue
-    const parsed = Number.parseInt(str, 10)
-    return Number.isFinite(parsed) ? parsed : defaultValue
-  }
-
-  ;req.float = (key: string, defaultValue: number = 0): number => {
-    const input = getAllInput()
-    const value = input[key]
-    if (value === undefined || value === null || value === '') return defaultValue
-    if (typeof value === 'number') return Number.isFinite(value) ? value : defaultValue
-    const str = String(value).trim()
-    if (!/^-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?$/.test(str)) return defaultValue
-    const parsed = Number.parseFloat(str)
-    return Number.isFinite(parsed) ? parsed : defaultValue
-  }
-
-  ;req.boolean = (key: string, defaultValue: boolean = false): boolean => {
-    const input = getAllInput()
-    const value = input[key]
-    if (value === undefined || value === null) return defaultValue
-    if (typeof value === 'boolean') return value
-    if (value === 'true' || value === '1' || value === 1) return true
-    if (value === 'false' || value === '0' || value === 0) return false
-    return defaultValue
-  }
-
-  ;req.array = <T = unknown>(key: string): T[] => {
-    const input = getAllInput()
-    const value = input[key]
-    if (Array.isArray(value)) return value as T[]
-    return value !== undefined && value !== null ? [value as T] : []
-  }
-
-  // File handling methods - returns UploadedFile with store/storeAs methods
-  ;req.file = (key: string): UploadedFile | null => {
-    const files = req.files || {}
-    const file = files[key]
-    if (!file) return null
-    const rawFile = Array.isArray(file) ? file[0] : file
-    return rawFile ? new UploadedFile(rawFile) : null
-  }
-
-  ;req.getFiles = (key: string): UploadedFile[] => {
-    const files = req.files || {}
-    const file = files[key]
-    if (!file) return []
-    const fileArray = Array.isArray(file) ? file : [file]
-    return fileArray.map(f => new UploadedFile(f))
-  }
-
-  ;req.hasFile = (key: string): boolean => {
-    const files = req.files || {}
-    return key in files && files[key] !== undefined
-  }
-
-  ;req.allFiles = (): Record<string, UploadedFile | UploadedFile[]> => {
-    const files = req.files || {}
-    const result: Record<string, UploadedFile | UploadedFile[]> = {}
-    for (const [key, value] of Object.entries(files)) {
-      if (Array.isArray(value)) {
-        result[key] = value.map(f => new UploadedFile(f as File))
-      } else {
-        result[key] = new UploadedFile(value as File)
-      }
-    }
-    return result
-  }
-
-  // Auth method - returns the authenticated user set by middleware
-  ;req.user = async (): Promise<any> => {
-    // Return user set by auth middleware (e.g., BearerToken middleware)
-    return req._authenticatedUser
-  }
-
-  // Get the current access token instance
-  ;req.userToken = async (): Promise<any> => {
-    return req._currentAccessToken
-  }
-
-  // Check if the current token has an ability.
-  // Strict: a missing token, a token without an `abilities` array, or
-  // a non-string ability all fail-closed. Earlier shape did
-  // `token.abilities?.includes('*')` which silently accepted any object
-  // with a truthy `abilities[Symbol.iterator]` — a malformed token
-  // produced by a partially-completed auth race could grant wildcard
-  // permissions because of how `?.includes` resolves on non-arrays.
-  ;req.tokenCan = async (ability: string): Promise<boolean> => {
-    if (typeof ability !== 'string' || ability.length === 0) return false
-    const token = req._currentAccessToken
-    if (!token || typeof token !== 'object') return false
-    if (!Array.isArray(token.abilities)) return false
-    if (token.abilities.includes('*')) return true
-    return token.abilities.includes(ability)
-  }
-
-  // Check if the current token does NOT have an ability
-  ;req.tokenCant = async (ability: string): Promise<boolean> => {
-    return !(await req.tokenCan(ability))
-  }
-
-  // Gate / Policy macros (stacksjs/stacks#1874 F-9). Lazy-import
-  // `@stacksjs/auth` to dodge the router←auth cycle declared in
-  // `auth/package.json`. Resolve the user from `_authenticatedUser`
-  // (stamped by the Auth middleware) — passing `null` when missing so
-  // gates that explicitly handle the unauthenticated case still get a
-  // chance to allow (e.g. public-read policies).
-  ;req.can = async (ability: string, ...args: unknown[]): Promise<boolean> => {
-    if (typeof ability !== 'string' || ability.length === 0) return false
-    const { Gate } = await import('@stacksjs/auth')
-    const user = (req._authenticatedUser as Parameters<typeof Gate.allows>[1]) ?? null
-    return Gate.allows(ability, user, ...args)
-  }
-
-  ;req.cannot = async (ability: string, ...args: unknown[]): Promise<boolean> => {
-    return !(await req.can(ability, ...args))
-  }
-
-  // Throw-on-deny variant (Laravel's `$this->authorize(...)`). Reuses
-  // the same Gate path so policy `before()` / `after()` hooks fire
-  // consistently regardless of which macro the caller picks. Throws
-  // `AuthorizationException` (status 403) on deny — handlers can let
-  // it bubble to the global error handler or catch and reshape.
-  ;req.authorize = async (ability: string, ...args: unknown[]): Promise<void> => {
-    const { Gate } = await import('@stacksjs/auth')
-    const user = (req._authenticatedUser as Parameters<typeof Gate.authorize>[1]) ?? null
-    await Gate.authorize(ability, user, ...args)
-  }
+  // Assign the shared Laravel-style request helpers by reference (a single
+  // Object.assign), instead of allocating ~25 closures per request. Per-request
+  // input is memoized on the request by getAllInputFor() — see REQUEST_METHODS.
+  Object.assign(req, REQUEST_METHODS)
 
   return req
 }
