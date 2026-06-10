@@ -7,12 +7,14 @@ export default new Action({
   description: 'Create Payment Intent for stripe',
   method: 'POST',
   async handle(request: RequestInstance) {
-    const userId = Number(request.getParam('id'))
     const productId = Number(request.get('productId'))
 
     const product = await Product.find(productId)
 
-    const user = await User.find(userId)
+    const user = await request.user()
+
+    if (!user)
+      return response.unauthorized('Authentication required')
 
     if (!product) {
       throw new HttpError(422, 'Product not found!')

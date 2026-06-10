@@ -17,6 +17,24 @@
 
 import { route } from '@stacksjs/router'
 
+// The `/api/dashboard/*` surface is unauthenticated by design for the local
+// dev dashboard (which gates content client-side via `useRole()`). Client-side
+// gating is no protection for a JSON API, so once the dashboard is reachable
+// off localhost the privilege-bearing endpoints — RBAC role/permission writes
+// (assign-any-role-to-any-user = privilege escalation) and the model-row dump
+// (arbitrary DB read) — must be gated server-side. In a local/dev/test env the
+// guard is a no-op so the dev dashboard keeps working without a token.
+const APP_ENV = (process.env.APP_ENV ?? process.env.NODE_ENV ?? '').toLowerCase()
+const IS_LOCAL_ENV = APP_ENV === '' || APP_ENV === 'local' || APP_ENV === 'development' || APP_ENV === 'dev' || APP_ENV === 'test' || APP_ENV === 'testing'
+
+// Apply auth + admin-role middleware to a sensitive route outside local envs.
+// Returns the route builder so calls read as `guard(route.post(...))`.
+function guard(r: any): any {
+  if (!IS_LOCAL_ENV)
+    r.middleware('auth').middleware('role:admin')
+  return r
+}
+
 route.group({ prefix: '/api/dashboard', apiResponse: true }, () => {
   route.get('/authors', 'Actions/Dashboard/Content/AuthorIndexAction')
   route.get('/posts', 'Actions/Dashboard/Content/PostIndexAction')
@@ -35,27 +53,25 @@ route.group({ prefix: '/api/dashboard', apiResponse: true }, () => {
 
   // RBAC management surface (stacksjs/stacks#1845).
   //
-  // No auth/role middleware at the group level — the wider
-  // `/api/dashboard` group is unauthenticated by design for the dev
-  // dashboard's localhost use case (see the file-level comment).
-  // The page itself wraps content in `useRole().isAdmin()` so the
-  // surface stays gated client-side. Deployments that expose the
-  // dashboard beyond localhost should tighten with
-  // `.middleware('auth').middleware('role:admin')` here.
-  route.get('/rbac/roles', 'Actions/Dashboard/Rbac/RolesIndexAction')
-  route.post('/rbac/roles', 'Actions/Dashboard/Rbac/RoleStoreAction')
-  route.delete('/rbac/roles/{name}', 'Actions/Dashboard/Rbac/RoleDestroyAction')
+  // These endpoints can assign any role to any user (privilege
+  // escalation) and enumerate users, so they are wrapped in `guard()`:
+  // unauthenticated in local/dev (the dashboard gates client-side via
+  // `useRole().isAdmin()`), but `auth` + `role:admin` enforced server-side
+  // in every non-local env (see the guard definition at the top of file).
+  guard(route.get('/rbac/roles', 'Actions/Dashboard/Rbac/RolesIndexAction'))
+  guard(route.post('/rbac/roles', 'Actions/Dashboard/Rbac/RoleStoreAction'))
+  guard(route.delete('/rbac/roles/{name}', 'Actions/Dashboard/Rbac/RoleDestroyAction'))
 
-  route.get('/rbac/permissions', 'Actions/Dashboard/Rbac/PermissionsIndexAction')
-  route.post('/rbac/permissions', 'Actions/Dashboard/Rbac/PermissionStoreAction')
-  route.delete('/rbac/permissions/{name}', 'Actions/Dashboard/Rbac/PermissionDestroyAction')
+  guard(route.get('/rbac/permissions', 'Actions/Dashboard/Rbac/PermissionsIndexAction'))
+  guard(route.post('/rbac/permissions', 'Actions/Dashboard/Rbac/PermissionStoreAction'))
+  guard(route.delete('/rbac/permissions/{name}', 'Actions/Dashboard/Rbac/PermissionDestroyAction'))
 
-  route.get('/rbac/users', 'Actions/Dashboard/Rbac/UsersListAction')
-  route.get('/rbac/users/{id}/roles', 'Actions/Dashboard/Rbac/UserRolesShowAction')
-  route.post('/rbac/users/{id}/roles', 'Actions/Dashboard/Rbac/UserRolesSyncAction')
+  guard(route.get('/rbac/users', 'Actions/Dashboard/Rbac/UsersListAction'))
+  guard(route.get('/rbac/users/{id}/roles', 'Actions/Dashboard/Rbac/UserRolesShowAction'))
+  guard(route.post('/rbac/users/{id}/roles', 'Actions/Dashboard/Rbac/UserRolesSyncAction'))
 
-  route.get('/rbac/roles/{name}/permissions', 'Actions/Dashboard/Rbac/RolePermissionsShowAction')
-  route.post('/rbac/roles/{name}/permissions', 'Actions/Dashboard/Rbac/RolePermissionsSyncAction')
+  guard(route.get('/rbac/roles/{name}/permissions', 'Actions/Dashboard/Rbac/RolePermissionsShowAction'))
+  guard(route.post('/rbac/roles/{name}/permissions', 'Actions/Dashboard/Rbac/RolePermissionsSyncAction'))
   // RBAC identity endpoint (stacksjs/stacks#1843). Returns the
   // authenticated user + their role names so the dashboard's `useRole()`
   // composable can gate dev-mode surfaces. Tolerates unauthenticated
@@ -147,10 +163,10 @@ route.group({ prefix: '/api/dashboard', apiResponse: true }, () => {
   // Models overview. Walks `app/Models/` + framework default models,
   // counts rows for each, returns grouped JSON for the
   // `views/dashboard/models/index.stx` page (stacksjs/stacks#1838).
-  route.get('/models', 'Actions/Dashboard/Models/ModelsIndexAction')
+  guard(route.get('/models', 'Actions/Dashboard/Models/ModelsIndexAction'))
 
   // Per-model row view — first 50 rows + column list, for the
   // dynamic `views/dashboard/models/[model].stx` page. ORM path
   // first, raw SQLite fallback if no model file matches the slug.
-  route.get('/models/{slug}', 'Actions/Dashboard/Models/ModelShowAction')
+  guard(route.get('/models/{slug}', 'Actions/Dashboard/Models/ModelShowAction'))
 })

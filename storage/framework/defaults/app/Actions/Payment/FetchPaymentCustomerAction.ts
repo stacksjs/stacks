@@ -6,9 +6,10 @@ export default new Action({
   description: 'Fetch the payment customer',
   method: 'GET',
   async handle(request: RequestInstance) {
-    const id = Number(request.getParam('id'))
+    const user = await request.user()
 
-    const user = await User.find(id)
+    if (!user)
+      return response.unauthorized('Authentication required')
 
     const customer = await user?.asStripeUser()
 

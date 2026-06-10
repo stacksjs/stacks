@@ -6,8 +6,10 @@ export default new Action({
   description: 'Create Setup Intent for stripe',
   method: 'POST',
   async handle(request: RequestInstance) {
-    const userId = Number(request.getParam('id'))
-    const user = await User.find(userId)
+    const user = await request.user()
+
+    if (!user)
+      return response.unauthorized('Authentication required')
 
     const setupIntent = await user?.createSetupIntent({
       payment_method_types: ['card', 'link', 'us_bank_account'],

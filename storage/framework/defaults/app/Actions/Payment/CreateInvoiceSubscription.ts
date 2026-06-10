@@ -6,9 +6,10 @@ export default new Action({
   description: 'Create Invoice Subscription for Stripe',
   method: 'POST',
   async handle(request: RequestInstance) {
-    const userId = Number(request.getParam('id'))
+    const user = await request.user()
 
-    const user = await User.find(userId)
+    if (!user)
+      return response.unauthorized('Authentication required')
 
     const subscription = await user?.newSubscriptionInvoice('pro', 'stacks_pro_monthly')
 

@@ -6,8 +6,11 @@ export default new Action({
   description: 'Store the customers payment methods',
   method: 'POST',
   async handle(request: RequestInstance) {
-    const userId = Number(request.getParam('id'))
-    const user = await User.find(userId)
+    const user = await request.user()
+
+    if (!user)
+      return response.unauthorized('Authentication required')
+
     const paymentIntent = request.get('setupIntent') as string
 
     const paymentMethod = await user?.addPaymentMethod(paymentIntent)

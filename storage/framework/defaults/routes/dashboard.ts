@@ -199,7 +199,14 @@ route.group({ prefix: '/dashboard', middleware: 'auth' }, () => {
 // Payments
 // ============================================================================
 
-route.group({ prefix: '/payments' }, () => {
+// Auth-gated: every handler reads a `{id}` path param and resolves that user's
+// Stripe customer/payment data. Without `auth` the whole group was an
+// unauthenticated IDOR — anyone could enumerate billing/PII or mutate payment
+// methods by incrementing the id. `auth` closes the unauthenticated hole; each
+// action must STILL scope to the authenticated user (derive the customer from
+// `await request.user()`, never trust the `{id}` path param) to prevent an
+// authenticated user from reaching another user's billing.
+route.group({ prefix: '/payments', middleware: 'auth' }, () => {
   route.get('/fetch-customer/{id}', 'Actions/Payment/FetchPaymentCustomerAction')
   route.get('/fetch-transaction-history/{id}', 'Actions/Payment/FetchTransactionHistoryAction')
   route.get('/fetch-user-subscriptions/{id}', 'Actions/Payment/FetchUserSubscriptionsAction')
@@ -227,11 +234,14 @@ route.group({ prefix: '/payments' }, () => {
 // Queues & Realtime (legacy endpoints)
 // ============================================================================
 
-route.group({ prefix: '/queues' }, () => {
+// Auth-gated to match every other operational dashboard group — these expose
+// internal job/queue and websocket state and were the only siblings missing
+// `auth`, leaking infra telemetry to anonymous callers.
+route.group({ prefix: '/queues', middleware: 'auth' }, () => {
   route.get('/', 'Actions/Queue/FetchQueuesAction')
 })
 
-route.group({ prefix: '/realtime' }, () => {
+route.group({ prefix: '/realtime', middleware: 'auth' }, () => {
   route.get('/websockets', 'Actions/Realtime/FetchWebsocketsAction')
   route.get('/stats', 'Actions/Dashboard/Realtime/RealtimeStatsAction')
 })

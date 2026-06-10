@@ -6,10 +6,12 @@ export default new Action({
   description: 'Cancel Subscription for stripe',
   method: 'POST',
   async handle(request: RequestInstance) {
-    const userId = Number(request.getParam('id'))
     const providerId = request.get('providerId') as string
 
-    const user = await User.find(userId)
+    const user = await request.user()
+
+    if (!user)
+      return response.unauthorized('Authentication required')
 
     const subscription = await user?.cancelSubscription(providerId)
 

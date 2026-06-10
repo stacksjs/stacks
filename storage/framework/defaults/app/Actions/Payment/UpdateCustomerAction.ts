@@ -6,8 +6,10 @@ export default new Action({
   description: 'Update customer detauls',
   method: 'POST',
   async handle(request: RequestInstance) {
-    const userId = Number(request.getParam('id'))
-    const user = await User.find(userId)
+    const user = await request.user()
+
+    if (!user)
+      return response.unauthorized('Authentication required')
 
     const customer = await user?.syncStripeCustomerDetails({ address: {
       line1: '123 Elm St',

@@ -1,13 +1,16 @@
 import { Action } from '@stacksjs/actions'
+import { response } from '@stacksjs/router'
 
 export default new Action({
   name: 'DeleteDefaultPaymentAction',
   description: 'Delete the customers default payment method',
   method: 'POST',
   async handle(request: RequestInstance) {
-    const userId = Number(request.getParam('id'))
+    const user = await request.user()
 
-    const user = await User.find(userId)
+    if (!user)
+      return response.unauthorized('Authentication required')
+
     const paymentMethod = Number(request.get('paymentMethod'))
 
     await user?.deletePaymentMethod(paymentMethod)
