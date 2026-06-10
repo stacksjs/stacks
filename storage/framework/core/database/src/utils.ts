@@ -63,6 +63,14 @@ export function initializeDbConfig(config: any): void {
 
   // Update bun-query-builder config
   updateQueryBuilderConfig()
+
+  // Drop the cached query-builder instance so the next `db` access renders
+  // SQL for the overridden dialect. The connection itself is rebuilt by
+  // bun-query-builder's signature check, but the cached instance keeps
+  // rendering with the dialect captured at creation — a config override
+  // from mysql back to sqlite otherwise executes `NOW()`-style SQL against
+  // the sqlite connection (cross-file test interference).
+  _dbInstance = null
 }
 
 // Simple functions with defensive defaults
