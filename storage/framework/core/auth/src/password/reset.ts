@@ -3,6 +3,7 @@ import { config } from '@stacksjs/config'
 import { db } from '@stacksjs/database'
 import { mail, template } from '@stacksjs/email'
 import { makeHash, verifyHash } from '@stacksjs/security'
+import { revokeAllTokens } from '../tokens'
 
 export interface PasswordResetResult {
   success: boolean
@@ -260,15 +261,35 @@ export function passwordResets(email: string): PasswordResetActions {
         .where('email', '=', email)
         .execute()
 
-      return { success: true as const }
+      return { success: true as const, userId: Number(user.id) }
     })
 
-    // Send password changed notification (async, non-blocking)
-    // This runs after the transaction is committed to ensure the password was actually changed
+    // Post-commit side effects: revocation + notification.
     if (result.success) {
+      // Evict every existing session for the account. Password reset is
+      // the canonical account-recovery action; without this, a previously
+      // stolen refresh token keeps minting fresh access tokens for up to
+      // 30 days after the victim "secures" the account. Must be the
+      // standalone tokens.ts primitive (NOT Auth.revokeAllTokens): the
+      // /auth/refresh exchange checks only the refresh row's `revoked`
+      // flag, so revoking access tokens alone leaves the refresh chain
+      // alive. Awaited un-caught deliberately — if revocation fails, the
+      // request fails loud rather than reporting a "successful" reset
+      // that left the attacker logged in. Runs after the transaction
+      // commits: it uses the global connection (risking SQLITE_BUSY
+      // against a held write lock) and must not fire on rollback.
+      // See stacksjs/stacks#1947.
+      await revokeAllTokens(result.userId)
+
+      // Send password changed notification (async, non-blocking)
+      // This runs after the transaction is committed to ensure the password was actually changed
       sendPasswordChangedNotification(email).catch((err) => {
         console.error('[PasswordReset] Failed to send notification:', err)
       })
+
+      // Strip the internal userId so the public PasswordResetResult
+      // shape stays unchanged.
+      return { success: true }
     }
 
     return result
