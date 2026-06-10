@@ -138,7 +138,11 @@ export function normalizeError(err: unknown, depth = 0): NormalizedError {
   if (err == null)
     return { name: 'Error', message: String(err) }
   try {
-    return { name: 'Error', message: JSON.stringify(err) }
+    // Walk the object first so embedded Errors survive — a bare
+    // `JSON.stringify` would erase them to `{}` (stacksjs/stacks#1956).
+    // This is the path `log.error(msg, contextObject)` and the
+    // `log.struct` error-level emits land on.
+    return { name: 'Error', message: JSON.stringify(normalizeContextValue(err)) }
   }
   catch {
     return { name: 'Error', message: String(err) }
@@ -367,12 +371,21 @@ export interface LogErrorOptions {
   message?: ErrorMessage
 }
 
+const LEGACY_ERROR_OPTION_KEYS: ReadonlySet<string> = new Set(['shouldExit', 'silent', 'message'])
+
 /** Whether a value is the legacy `LogErrorOptions` object (not an Error). */
 function isLegacyErrorOptions(v: unknown): v is LogErrorOptions {
-  return !!v
-    && typeof v === 'object'
-    && !(v instanceof Error)
-    && ('shouldExit' in v || 'silent' in v || ('message' in v && Object.keys(v as object).length <= 3))
+  if (!v || typeof v !== 'object' || v instanceof Error)
+    return false
+  // Legacy options always carry an exit/silence flag. A bare `message`
+  // key is not enough — real contexts like `{ type, message, error }`
+  // matched the old "<= 3 keys with message" heuristic and were
+  // swallowed whole (stacksjs/stacks#1956). Unknown keys also disqualify
+  // so a context that happens to contain `shouldExit` can't trigger the
+  // fatal-exit path.
+  if (!('shouldExit' in v || 'silent' in v))
+    return false
+  return Object.keys(v).every(k => LEGACY_ERROR_OPTION_KEYS.has(k))
 }
 
 export const log: Log = {
