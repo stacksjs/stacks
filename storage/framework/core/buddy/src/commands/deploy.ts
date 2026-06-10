@@ -648,6 +648,42 @@ async function deployToHetzner(tsCloudConfig: any, deployEnv: string, options: D
   }
 }
 
+/**
+ * Loopback-bound server-app sites (e.g. the `api` site: env.HOST=127.0.0.1,
+ * reached only through `buddy serve`'s same-origin /api proxy on :3000 —
+ * stacksjs/stacks#1950) must NOT have their port opened to the internet.
+ * ts-cloud's Hetzner provisioning opens EVERY numeric `site.port` to
+ * 0.0.0.0/0 + ::/0 (collectUpstreamPorts → buildHetznerFirewallRules), which
+ * would leave only the process bind between the public internet and the full
+ * bun-router API. Hand the provision step a copy of the config with those
+ * ports stripped — the unmodified config still drives deployAllComputeSites,
+ * so the systemd unit (ExecStart, Environment=PORT) is unaffected.
+ *
+ * Domain-less sites only: a loopback site WITH a domain feeds the rpx
+ * gateway's route table (which proxies to 127.0.0.1:port on-box), so its
+ * port declaration is left alone.
+ */
+export function scrubLoopbackSitePortsForFirewall(tsCloudConfig: any): any {
+  const sites = tsCloudConfig?.sites
+  if (!sites)
+    return tsCloudConfig
+
+  const loopbackHosts = new Set(['127.0.0.1', '::1', 'localhost'])
+  const scrubbed: Record<string, any> = {}
+  for (const [siteName, site] of Object.entries<any>(sites)) {
+    const host = String(site?.env?.HOST ?? '').toLowerCase()
+    if (site && typeof site.port === 'number' && !site.domain && loopbackHosts.has(host)) {
+      const rest = { ...site }
+      delete rest.port
+      scrubbed[siteName] = rest
+    }
+    else {
+      scrubbed[siteName] = site
+    }
+  }
+  return { ...tsCloudConfig, sites: scrubbed }
+}
+
 async function runHetznerDeploy(args: {
   tsCloudConfig: any
   environment: 'production' | 'staging' | 'development'
@@ -675,7 +711,9 @@ async function runHetznerDeploy(args: {
   }
 
   log.info('Provisioning Hetzner compute infrastructure...')
-  const outputs = await driver.provisionComputeInfrastructure({ config: tsCloudConfig, environment })
+  // Provision with loopback-only site ports stripped so the firewall never
+  // exposes them (#1950); the full config still drives deployAllComputeSites.
+  const outputs = await driver.provisionComputeInfrastructure({ config: scrubLoopbackSitePortsForFirewall(tsCloudConfig), environment })
   const ip = outputs.appPublicIp
   log.success('Hetzner compute infrastructure ready')
   if (ip)

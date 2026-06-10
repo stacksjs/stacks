@@ -586,6 +586,12 @@ export const tsCloud: TsCloudConfig = {
     // Intentionally NO `domain`/`path`: ts-cloud's rpx gateway skips
     // domain-less sites, so the service stays loopback-only and is
     // reached exclusively via the :3000 proxy (stacksjs/stacks#1950).
+    // Loopback isolation is enforced at the firewall too: the Hetzner
+    // deploy strips this port from the provision config
+    // (scrubLoopbackSitePortsForFirewall in buddy's deploy command), so
+    // ts-cloud never opens :3008 to 0.0.0.0/0 — without that, the
+    // HOST=127.0.0.1 bind below would be the only thing keeping the full
+    // API off the public internet.
     api: {
       root: '.',
       start: 'bun storage/framework/core/actions/src/serve/api.ts',
