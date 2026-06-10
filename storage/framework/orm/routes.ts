@@ -100,14 +100,22 @@ function stripHidden(record: any, hiddenFields: string[]): any {
   return result
 }
 
-// Helper: filter request body to only fillable fields
+// Helper: filter request body to only fillable fields. Accepts BOTH the
+// attribute-name spelling and its snake_case column spelling on input, so
+// read-modify-write round-trips work (GET responses expose snake_case
+// columns). The result stays keyed by attribute name — setters, casts and
+// validation rules all look fields up by that spelling.
+// Kept in sync with core/orm/src/auto-crud.ts.
 function filterFillable(body: any, fillableFields: string[]): Record<string, any> {
   if (!body || fillableFields.length === 0) return {}
   const result: Record<string, any> = {}
   for (const field of fillableFields) {
     if (field in body) {
       result[field] = body[field]
+      continue
     }
+    const snake = toSnakeCase(field)
+    if (snake !== field && snake in body) result[field] = body[snake]
   }
   return result
 }
@@ -164,9 +172,22 @@ function validateWriteBody(
 }
 
 // Convert PascalCase model name to snake_case for default relation key
-// + FK convention (HostProfile → host_profile, host_profile_id).
+// + FK convention (HostProfile → host_profile, host_profile_id). Also the
+// write-path key mapper: migration drivers snake_case attribute names into
+// column names, so write payload keys must be mapped the same way.
+// Output-identical to @stacksjs/strings snakeCase for word-shaped names.
 function toSnakeCase(s: string): string {
   return s.replace(/([a-z\d])([A-Z])/g, '$1_$2').replace(/([A-Z])([A-Z][a-z])/g, '$1_$2').toLowerCase()
+}
+
+// Map every key of a write payload to its snake_case column spelling.
+// Applied LAST on the write path — fillable filtering, validation,
+// set-hooks and casts are all keyed by attribute name.
+// Kept in sync with core/orm/src/auto-crud.ts.
+function toSnakeCaseKeys(data: Record<string, any>): Record<string, any> {
+  const out: Record<string, any> = {}
+  for (const [k, v] of Object.entries(data)) out[toSnakeCase(k)] = v
+  return out
 }
 
 // Naive English pluralization for hasMany relation names. Matches
@@ -256,12 +277,34 @@ async function applyIncludes(
 // Drop attribute keys flagged `hidden: true` from an incoming write body.
 // `hidden` already protects the response shape; this protects the request
 // shape so a curious client can't sneak `payment_intent_id` into a PATCH
-// even when the field is fillable for internal callers.
+// even when the field is fillable for internal callers. Must drop BOTH
+// spellings — accepting the snake spelling in filterFillable without this
+// would let `payment_intent_id` sneak past a camelCase hidden marker.
+// Kept in sync with core/orm/src/auto-crud.ts.
 function dropHiddenInputs(data: Record<string, any>, hiddenFields: string[]): Record<string, any> {
   if (!hiddenFields.length) return data
   const out: Record<string, any> = { ...data }
-  for (const f of hiddenFields) delete out[f]
+  for (const f of hiddenFields) {
+    delete out[f]
+    delete out[toSnakeCase(f)]
+  }
   return out
+}
+
+// Resolve middleware lists for a model's `useApi` trait value (which may be
+// `true` or `{ uri, routes, middleware }`). Secure-by-default: mutating
+// routes (store/update/destroy) get `auth` unless the model explicitly
+// declares `useApi.middleware` — an explicit `middleware: []` is a
+// deliberate opt-out and is honored (with a startup warning at the call
+// site). Read routes stay public unless declared.
+// Kept in sync with core/orm/src/auto-crud.ts.
+function resolveApiMiddleware(useApi: unknown): { read: string[], write: string[], declared: boolean } {
+  const declared = typeof useApi === 'object' && useApi !== null && 'middleware' in (useApi as Record<string, unknown>)
+  const raw = (useApi as any)?.middleware
+  const list: string[] = Array.isArray(raw)
+    ? raw.filter((m: unknown) => typeof m === 'string' && m.length > 0)
+    : (typeof raw === 'string' && raw ? [raw] : [])
+  return { read: list, write: declared ? list : ['auth'], declared }
 }
 
 // Apply user-defined `set:` hooks (e.g. User.set.password = bcrypt) before
@@ -540,9 +583,33 @@ for (const [modelName, model] of Object.entries(models)) {
   const hiddenFields = getHiddenFields(model)
   const basePath = `/api/${uri}`
 
+  // Per-model middleware, honoring the `useApi.middleware` field declared
+  // on the model trait (e.g. `middleware: ['auth']` for resources that
+  // should never be browsed anonymously). Read routes (index/show) stay
+  // public by default — fine for catalog tables (products, posts). Mutating
+  // routes (store/update/destroy) are secure-by-default: they get `auth`
+  // unless the model explicitly declares `middleware` (an explicit `[]` is
+  // a deliberate opt-out), because `enabledRoutes` defaults to all five and
+  // a bare `useApi: true` used to expose anonymous POST/PUT/PATCH/DELETE.
+  const { read: readMiddleware, write: writeMiddleware, declared } = resolveApiMiddleware(useApi)
+  const hasMutating = ['store', 'update', 'destroy'].some(r => enabledRoutes.includes(r))
+  if (hasMutating && declared && writeMiddleware.length === 0)
+    console.warn(`[orm] ${modelName}: registering UNAUTHENTICATED mutating routes at ${basePath} (explicit \`middleware: []\` opt-out)`)
+
+  // Local helper: chain `.middleware()` for every entry in `names`.
+  // The chainable return value from `route.get/post/...` accepts one
+  // name per call, so we fold the list into successive calls.
+  const applyMiddleware = (chain: any, names: string[] = readMiddleware): any => {
+    let r = chain
+    for (const name of names) {
+      if (r && typeof r.middleware === 'function') r = r.middleware(name)
+    }
+    return r
+  }
+
   // GET /api/{uri} — list all records (paginated, sortable)
   if (enabledRoutes.includes('index') && !routeExists('GET', basePath)) {
-    route.get(basePath, async (req: EnhancedRequest) => {
+    applyMiddleware(route.get(basePath, async (req: EnhancedRequest) => {
       try {
         const url = new URL(req.url)
         const page = Number.parseInt(url.searchParams.get('page') || '1', 10)
@@ -656,12 +723,12 @@ for (const [modelName, model] of Object.entries(models)) {
         }
         return jsonResponse({ error: `Failed to fetch ${uri}`, detail: String(err) }, 500)
       }
-    })
+    }))
   }
 
   // GET /api/{uri}/{id} — show single record
   if (enabledRoutes.includes('show') && !routeExists('GET', `${basePath}/{id}`)) {
-    route.get(`${basePath}/{id}`, async (req: EnhancedRequest) => {
+    applyMiddleware(route.get(`${basePath}/{id}`, async (req: EnhancedRequest) => {
       try {
         const id = coerceId((req as any).params?.id)
 
@@ -722,12 +789,12 @@ for (const [modelName, model] of Object.entries(models)) {
         }
         return jsonResponse({ error: `Failed to fetch ${modelName}`, detail: String(err) }, 500)
       }
-    })
+    }))
   }
 
   // POST /api/{uri} — create record
   if (enabledRoutes.includes('store') && !routeExists('POST', basePath)) {
-    route.post(basePath, async (req: EnhancedRequest) => {
+    applyMiddleware(route.post(basePath, async (req: EnhancedRequest) => {
       try {
         const body = await getRequestBody(req)
         // Belt-and-suspenders: drop hidden inputs FIRST so a curious client
@@ -770,8 +837,12 @@ for (const [modelName, model] of Object.entries(models)) {
         //    so plaintext inputs never reach the DB on POST /api/users.
         // 2) Then the cast pass so booleans/JSON/dates are coerced to the
         //    column shape (mirror of model.create() write path).
+        // 3) LAST, map attribute-name keys to their snake_case column
+        //    spellings — migration drivers snake_case attribute names into
+        //    columns, so a camelCase fillable like `discountType` would
+        //    otherwise target a nonexistent column and 500 the INSERT.
         const hookedData = await applyDefinedSetters(data, model)
-        const writeData = applySetCasts(hookedData, model)
+        const writeData = toSnakeCaseKeys(applySetCasts(hookedData, model))
 
         const result = await (db as any).insertInto(table).values(writeData).execute()
 
@@ -797,7 +868,7 @@ for (const [modelName, model] of Object.entries(models)) {
         }
         return jsonResponse({ error: `Failed to create ${modelName}`, detail: String(err) }, 500)
       }
-    })
+    }), writeMiddleware)
   }
 
   // PUT/PATCH /api/{uri}/{id} — update record
@@ -852,7 +923,11 @@ for (const [modelName, model] of Object.entries(models)) {
             return jsonResponse({ error: `Not your ${modelName}` }, 403)
           }
           // Also defend against the request trying to re-parent ownership.
-          if (own.field in data && !ownsRow(data[own.field], own.value)) {
+          // Payload keys are attribute names (possibly camelCase) — compare
+          // via the snake_case column spelling so `hostProfileId` can't
+          // sneak past a `host_profile_id` ownership field.
+          const submittedOwnerKey = Object.keys(data).find(k => toSnakeCase(k) === toSnakeCase(own.field))
+          if (submittedOwnerKey !== undefined && !ownsRow(data[submittedOwnerKey], own.value)) {
             return jsonResponse({ error: `Cannot reassign ${modelName} ownership` }, 403)
           }
         }
@@ -864,9 +939,9 @@ for (const [modelName, model] of Object.entries(models)) {
 
         // Same hook+cast pass as the create path — and crucially the set-hooks
         // must run too, otherwise `PATCH /api/users/{id}` with a password
-        // field would store plaintext.
+        // field would store plaintext. Key mapping runs LAST (see store path).
         const hookedData = await applyDefinedSetters(data, model)
-        const writeData = applySetCasts(hookedData, model)
+        const writeData = toSnakeCaseKeys(applySetCasts(hookedData, model))
 
         await (db as any).updateTable(table).set(writeData).where({ id }).execute()
 
@@ -892,17 +967,17 @@ for (const [modelName, model] of Object.entries(models)) {
     }
 
     if (!routeExists('PUT', `${basePath}/{id}`)) {
-      route.put(`${basePath}/{id}`, updateHandler)
+      applyMiddleware(route.put(`${basePath}/{id}`, updateHandler), writeMiddleware)
     }
     if (!routeExists('PATCH', `${basePath}/{id}`)) {
-      route.patch(`${basePath}/{id}`, updateHandler)
+      applyMiddleware(route.patch(`${basePath}/{id}`, updateHandler), writeMiddleware)
     }
   }
 
   // DELETE /api/{uri}/{id} — delete record (or soft-delete if model has useSoftDeletes).
   const usesSoftDeletes = !!model.traits?.useSoftDeletes
   if (enabledRoutes.includes('destroy') && !routeExists('DELETE', `${basePath}/{id}`)) {
-    route.delete(`${basePath}/{id}`, async (req: EnhancedRequest) => {
+    applyMiddleware(route.delete(`${basePath}/{id}`, async (req: EnhancedRequest) => {
       try {
         const id = coerceId((req as any).params?.id)
         if (id == null) {
@@ -949,13 +1024,13 @@ for (const [modelName, model] of Object.entries(models)) {
         }
         return jsonResponse({ error: `Failed to delete ${modelName}`, detail: String(err) }, 500)
       }
-    })
+    }), writeMiddleware)
   }
 
   // POST /api/{uri}/bulk-delete — delete multiple records (also soft-aware,
   // also ownership-checked per row).
   if (enabledRoutes.includes('destroy') && !routeExists('POST', `${basePath}/bulk-delete`)) {
-    route.post(`${basePath}/bulk-delete`, async (req: EnhancedRequest) => {
+    applyMiddleware(route.post(`${basePath}/bulk-delete`, async (req: EnhancedRequest) => {
       try {
         const body = await getRequestBody(req)
         const ids = body?.ids
@@ -1025,7 +1100,7 @@ for (const [modelName, model] of Object.entries(models)) {
         }
         return jsonResponse({ error: `Failed to bulk delete ${uri}`, detail: String(err) }, 500)
       }
-    })
+    }), writeMiddleware)
   }
 }
 
