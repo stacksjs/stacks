@@ -1,3 +1,4 @@
+import process from 'node:process'
 import { Action } from '@stacksjs/actions'
 
 /**
@@ -9,7 +10,17 @@ export default new Action({
   description: 'This action is used to setup the CLI.',
   path: '/install',
 
-  handle(): string {
+  handle(): string | Response {
+    // Production short-circuits to 404 so even an accidental or userland
+    // re-registration can't serve the framework's shell bootstrap script
+    // (free stack fingerprinting) in prod — same defense-in-depth layer as
+    // TestErrorAction's guard (#1955). Production-only (not the
+    // registration gate's local-env allowlist) so a deliberate
+    // re-registration in staging still works.
+    const env = (process.env.APP_ENV ?? process.env.NODE_ENV ?? '').toLowerCase()
+    if (env === 'production')
+      return new Response('Not Found', { status: 404 })
+
     const setupScriptContents = `if [ -n "$1" ]; then
   # Check if the directory exists
   if [ -d "storage/framework/core" ]; then # this is our identifier whether it is a Stacks project

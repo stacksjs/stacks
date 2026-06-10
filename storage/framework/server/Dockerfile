@@ -39,6 +39,15 @@ VOLUME ["/usr/src/storage"]
 # Switch to non-root user
 USER bun
 
+# Fail closed (#1955): this image ships no .env (Bun's cwd auto-load finds
+# nothing in /usr/src) and the dev-only route gate in
+# defaults/routes/dashboard.ts treats an unset APP_ENV/NODE_ENV as local —
+# without these the production container would register /install and
+# /test-error. Mirrors storage/framework/Dockerfile; `docker run -e` still
+# overrides for staging images.
+ENV APP_ENV=production
+ENV NODE_ENV=production
+
 # Expose port and set entrypoint
 EXPOSE 3000/tcp
 ENTRYPOINT ["bun", "run", "dist/index.js"]

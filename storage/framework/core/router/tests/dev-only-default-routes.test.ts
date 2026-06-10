@@ -133,3 +133,69 @@ describe('TestErrorAction — production handler guard (#1955)', () => {
     }
   })
 })
+
+describe('InstallAction — production handler guard (#1955)', () => {
+  let prevAppEnv: string | undefined
+  let prevNodeEnv: string | undefined
+
+  function setEnv(value: string): void {
+    prevAppEnv = process.env.APP_ENV
+    prevNodeEnv = process.env.NODE_ENV
+    process.env.APP_ENV = value
+    process.env.NODE_ENV = value
+  }
+
+  function restoreEnv(): void {
+    if (prevAppEnv === undefined) delete process.env.APP_ENV
+    else process.env.APP_ENV = prevAppEnv
+    if (prevNodeEnv === undefined) delete process.env.NODE_ENV
+    else process.env.NODE_ENV = prevNodeEnv
+  }
+
+  test('production short-circuits to 404 even when re-registered', async () => {
+    setEnv('production')
+    try {
+      const { default: action } = await import('../../../defaults/app/Actions/InstallAction')
+      const res = await action.handle(new Request('http://localhost/install') as any)
+      expect(res).toBeInstanceOf(Response)
+      expect((res as Response).status).toBe(404)
+    }
+    finally {
+      restoreEnv()
+    }
+  })
+
+  test('development still serves the bootstrap script', async () => {
+    setEnv('development')
+    try {
+      const { default: action } = await import('../../../defaults/app/Actions/InstallAction')
+      const res = await action.handle(new Request('http://localhost/install') as any)
+      expect(typeof res).toBe('string')
+      expect(res as string).toContain('git clone https://github.com/stacksjs/stacks.git')
+    }
+    finally {
+      restoreEnv()
+    }
+  })
+})
+
+describe('buddy build server image — fails closed (#1955)', () => {
+  // The registration gate treats an unset APP_ENV/NODE_ENV as local, and the
+  // `buddy build server` image (storage/framework/server/Dockerfile) ships no
+  // .env for Bun's cwd auto-load to find — so unless the image itself pins
+  // APP_ENV=production, that container registers /install and /test-error.
+  // ENV must live in the final (release) stage: multi-stage builds don't
+  // carry builder-stage ENV into the released image.
+  test('server Dockerfile pins APP_ENV/NODE_ENV=production in the release stage', async () => {
+    const dockerfile = await Bun.file(
+      join(projectRoot, 'storage/framework/server/Dockerfile'),
+    ).text()
+    const releaseStage = dockerfile.slice(dockerfile.lastIndexOf('\nFROM '))
+    const directives = releaseStage
+      .split('\n')
+      .map(line => line.trim())
+      .filter(line => line !== '' && !line.startsWith('#'))
+    expect(directives).toContain('ENV APP_ENV=production')
+    expect(directives).toContain('ENV NODE_ENV=production')
+  })
+})
