@@ -195,10 +195,47 @@ export async function ensureDatabaseConfigLoaded(): Promise<void> {
   await ensureConfigLoaded()
 }
 
+/**
+ * Per-connection SQLite bootstrap pragmas (stacksjs/stacks#1951).
+ * `foreign_keys` does not persist in the database file — SQLite ships with
+ * enforcement OFF on every new connection — so the inline
+ * `REFERENCES … ON DELETE CASCADE` emitted by migrations (#1916) is inert
+ * unless the connection bootstrap turns it on. bun-query-builder delegates
+ * this to the consumer.
+ */
+export const SQLITE_BOOTSTRAP_PRAGMAS = [
+  // WAL is also set by bun-query-builder's SQLiteWrapper at connect time;
+  // re-applying is a cheap no-op that guards against upstream drift.
+  'PRAGMA journal_mode = WAL',
+  'PRAGMA foreign_keys = ON',
+  'PRAGMA busy_timeout = 5000',
+] as const
+
+export function applySqlitePragmas(instance: RawQueryBuilder): void {
+  for (const pragma of SQLITE_BOOTSTRAP_PRAGMAS) {
+    try {
+      // bun:sqlite executes synchronously inside `.execute()` (the returned
+      // promise is created already settled), so every pragma is in effect
+      // before this function returns — the first user query can never race
+      // ahead of `foreign_keys = ON`. `.catch` prevents an unhandled
+      // rejection if a pragma fails; failing open matches pre-#1951 behavior.
+      void (instance.unsafe(pragma) as UnsafeReturn).execute().catch(() => {})
+    }
+    catch {
+      // `unsafe()` itself threw — same fail-open rationale as above.
+    }
+  }
+}
+
 function getDb(): ReturnType<typeof createQueryBuilder> {
   if (!_dbInstance) {
     updateQueryBuilderConfig()
     _dbInstance = createQueryBuilder()
+    // stacksjs/stacks#1951 — re-applied on every instance recreation:
+    // config reload nulls `_dbInstance`, and a config change can swap the
+    // underlying connection in bun-query-builder's signature-keyed singleton.
+    if (getDialect() === 'sqlite')
+      applySqlitePragmas(_dbInstance)
   }
   return _dbInstance
 }

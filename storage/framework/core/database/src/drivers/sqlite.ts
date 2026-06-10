@@ -7,7 +7,7 @@ function italic(str: string): string {
 }
 import { app } from '@stacksjs/config'
 // Local relative import — see drivers/mysql.ts for the cycle-deadlock rationale.
-import { db } from '../utils'
+import { db, SQLITE_BOOTSTRAP_PRAGMAS } from '../utils'
 import { ok } from '@stacksjs/error-handling'
 // Deep import to the leaf orm/utils file — see drivers/helpers.ts for why
 // we go around the orm barrel.
@@ -45,20 +45,15 @@ export async function resetSqliteDatabase(): Promise<Ok<string, never>> {
  * cheap to re-apply, but each one is a no-op once set so repeated calls
  * during dev hot-reload don't accumulate state.
  *
- * - WAL journaling: lets readers and a single writer proceed in parallel
- *   instead of serializing every transaction. Critical for dev where the
- *   API server, queue worker, and dashboard all hit the same file.
- * - foreign_keys=ON: SQLite ships with FK enforcement OFF by default.
- *   Without this, FK constraint violations are silently ignored — broken
- *   relations land in the DB and fail later, far from the original write.
- * - busy_timeout: backs off when the file is locked by another writer
- *   instead of failing the whole query immediately.
+ * Connection bootstrap now applies SQLITE_BOOTSTRAP_PRAGMAS automatically
+ * inside `getDb()` (stacksjs/stacks#1951); this export remains for explicit
+ * re-application. See the shared list in `../utils` for what each pragma
+ * does and why it must be set per connection.
  */
 export async function configureSqlitePragmas(): Promise<void> {
   try {
-    await db.unsafe('PRAGMA journal_mode = WAL').execute()
-    await db.unsafe('PRAGMA foreign_keys = ON').execute()
-    await db.unsafe('PRAGMA busy_timeout = 5000').execute()
+    for (const pragma of SQLITE_BOOTSTRAP_PRAGMAS)
+      await db.unsafe(pragma).execute()
   }
   catch (err) {
     log.debug(`[sqlite] Failed to apply pragmas: ${(err as Error).message}`)

@@ -9,6 +9,7 @@
 import type { QueryBuilder, QueryBuilderConfig, SupportedDialect } from '@stacksjs/query-builder'
 import { createQueryBuilder, setConfig } from '@stacksjs/query-builder'
 import { env as stacksEnv } from '@stacksjs/env'
+import { applySqlitePragmas } from './utils'
 
 export interface DatabaseConnectionConfig {
   /** Database name or file path (for SQLite) */
@@ -148,6 +149,9 @@ export class Database {
 
     // Create the query builder instance
     this._queryBuilder = createQueryBuilder()
+    // stacksjs/stacks#1951 — same per-connection FK bootstrap as getDb()
+    if (this._options.driver === 'sqlite')
+      applySqlitePragmas(this._queryBuilder)
     this._initialized = true
   }
 
