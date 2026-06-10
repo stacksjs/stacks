@@ -6,6 +6,7 @@
  */
 
 import type { DatabaseSchema } from '@stacksjs/query-builder'
+import { AsyncLocalStorage } from 'node:async_hooks'
 import { createQueryBuilder, setConfig } from '@stacksjs/query-builder'
 
 // Permissive schema type that accepts any table name with any columns
@@ -211,6 +212,50 @@ export async function ensureDatabaseConfigLoaded(): Promise<void> {
 // backwards compatibility with existing imports.
 export { applySqlitePragmas, SQLITE_BOOTSTRAP_PRAGMAS } from '@stacksjs/query-builder'
 
+/**
+ * SQLite transaction serialization (stacksjs/stacks#1953).
+ *
+ * Bun.SQL's sqlite adapter is a single shared connection and
+ * bun-query-builder tracks transaction depth per-connection, so two
+ * CONCURRENT `db.transaction()` calls interleave: the second BEGIN is
+ * issued as a savepoint inside the first caller's transaction (or fails
+ * outright with "cannot start a transaction within a transaction"), and
+ * the first COMMIT destroys the second caller's savepoint ("no such
+ * savepoint: qb_sp_N"). Either way the loser 500s on perfectly legal
+ * work — e.g. two near-simultaneous registrations for different emails.
+ * Queue transactions through a promise-chain mutex so they run one at a
+ * time instead of colliding. MySQL/Postgres pool connections, so they
+ * are unaffected; the patch is only applied for the sqlite dialect.
+ *
+ * Same-async-context NESTING is exempt from the queue: a nested
+ * `db.transaction()` inside an open transaction's callback is the
+ * sequential savepoint case bun-query-builder handles correctly, and
+ * queueing it would deadlock — the inner call would wait for the outer
+ * transaction (its own caller) to finish.
+ */
+const sqliteTxOwner = new AsyncLocalStorage<true>()
+let sqliteTxTail: Promise<void> = Promise.resolve()
+
+function serializeSqliteTransaction<T>(run: () => Promise<T>): Promise<T> {
+  if (sqliteTxOwner.getStore())
+    return run()
+
+  const result = sqliteTxTail.then(() => sqliteTxOwner.run(true, run))
+  // Keep the chain alive after a rollback — the rejection still surfaces
+  // to this transaction's caller via `result`.
+  sqliteTxTail = result.then(() => undefined, () => undefined)
+  return result
+}
+
+function applySqliteTransactionSerialization(instance: RawQueryBuilder): void {
+  // Patch the instance's own property (not the proxy) so internal callers
+  // like `transactional()` — which invokes `this.transaction(...)` — are
+  // serialized too.
+  const original = (instance.transaction as (...args: any[]) => Promise<any>).bind(instance)
+  ;(instance as any).transaction = (...args: any[]) =>
+    serializeSqliteTransaction(() => original(...args))
+}
+
 function getDb(): ReturnType<typeof createQueryBuilder> {
   if (!_dbInstance) {
     updateQueryBuilderConfig()
@@ -220,6 +265,12 @@ function getDb(): ReturnType<typeof createQueryBuilder> {
     // change can swap bun-query-builder's signature-keyed singleton) is
     // re-bootstrapped without an explicit call here.
     _dbInstance = createQueryBuilder()
+    // stacksjs/stacks#1953 — re-applied on every instance recreation
+    // (config reload nulls `_dbInstance`). Pragmas themselves are applied
+    // inside the wrapped createQueryBuilder (#1951), so only the
+    // transaction serialization patch is needed here.
+    if (getDialect() === 'sqlite')
+      applySqliteTransactionSerialization(_dbInstance)
   }
   return _dbInstance
 }
