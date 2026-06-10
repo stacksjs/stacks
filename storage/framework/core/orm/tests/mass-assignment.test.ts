@@ -7,11 +7,13 @@
  *
  * The fix lives in `define-model.ts` (`applyMassAssignmentRules` +
  * `MassAssignmentException`). These tests lock in:
- *   - Guarded attributes throw on every write entry point
+ *   - Guarded attributes throw on every write entry point (incl. `*_id` FKs)
  *   - Allowlist mode (any attribute marked fillable) blocks non-allowlisted
- *   - Permissive mode (no fillable / guarded markers) preserves backward compat
+ *   - Deny-by-default: a model that declares attributes rejects any column it
+ *     didn't declare, even with no fillable/guarded markers
+ *   - Permissive escape hatch only when a model declares NO attributes
  *   - System columns (`id`, `created_at`, `updated_at`, `uuid`, `deleted_at`)
- *     and `_id`-suffixed FK columns always pass through
+ *     and non-guarded `_id`-suffixed FK columns always pass through
  *   - `forceCreate` / `forceUpdate` escape hatches bypass the rules
  */
 import { describe, expect, it } from 'bun:test'
@@ -40,9 +42,12 @@ const AllowlistOnly = defineModel({
   },
 } as const)
 
-const Permissive = defineModel({
-  name: 'Permissive',
-  table: 'permissive',
+// Declares attributes but marks none fillable/guarded. Under deny-by-default
+// this means: the declared columns (label, value) are assignable, anything
+// undeclared is rejected.
+const DeclaredNoMarkers = defineModel({
+  name: 'DeclaredNoMarkers',
+  table: 'declared_no_markers',
   primaryKey: 'id',
   autoIncrement: true,
   attributes: {
@@ -50,6 +55,7 @@ const Permissive = defineModel({
     value: { type: 'number' },
   },
 } as const)
+
 
 describe('mass-assignment enforcement', () => {
   describe('guarded attributes', () => {
@@ -142,16 +148,25 @@ describe('mass-assignment enforcement', () => {
     })
   })
 
-  describe('permissive mode (no fillable/guarded markers)', () => {
-    it('lets any field through the rule layer (no MassAssignmentException)', async () => {
-      // Backward compat: models that don't opt into either mode keep
-      // their pre-fix permissive behavior so existing apps don't suddenly
-      // start throwing on every write. DB errors are tolerated; the rule
-      // simply must not fire.
+  describe('deny-by-default (declared attributes, no fillable/guarded markers)', () => {
+    it('allows declared columns through the rule layer', async () => {
+      // The declared columns are assignable; only the rule layer is under
+      // test, so a downstream DB error is tolerated.
       let thrown: unknown = null
-      try { await (Permissive as any).create({ label: 'ok', value: 42, anything: 'goes' }) }
+      try { await (DeclaredNoMarkers as any).create({ label: 'ok', value: 42 }) }
       catch (err) { thrown = err }
       expect(thrown).not.toBeInstanceOf(MassAssignmentException)
+    })
+
+    it('rejects an undeclared column (deny-by-default)', async () => {
+      // `anything` is not a declared attribute, so it must be rejected even
+      // though the model marks nothing fillable/guarded. This is the change
+      // from the old permissive default that let arbitrary columns through.
+      let thrown: unknown = null
+      try { await (DeclaredNoMarkers as any).create({ label: 'ok', value: 42, anything: 'goes' }) }
+      catch (err) { thrown = err }
+      expect(thrown).toBeInstanceOf(MassAssignmentException)
+      expect((thrown as MassAssignmentException).reason).toBe('not-fillable')
     })
   })
 

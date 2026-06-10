@@ -401,18 +401,26 @@ function coerceId(raw: unknown): number | string | null {
 // `orderBy` is now compose-aware — chaining multiple calls produces a
 // single `ORDER BY a ASC, b DESC` clause.
 //
+// `sortable` is an allowlist of column names the caller permits ordering by.
+// bun-query-builder interpolates the ORDER BY column *raw and unquoted*, so a
+// shape check (`/^\w+$/`) alone let a client order by ANY word-shaped column —
+// including hidden/sensitive ones (`password_reset_token`, `two_factor_secret`)
+// that are stripped from the response but still leak via order-based blind
+// enumeration. Validating against the model's declared, non-hidden columns
+// closes that channel; unknown tokens are ignored, matching the filter loop.
+//
 // Examples:
 //   ?sort=name             → ORDER BY name ASC
 //   ?sort=-rating          → ORDER BY rating DESC
 //   ?sort=-rating,name     → ORDER BY rating DESC, name ASC
-function applySorting(query: any, sortParam: string | null, _table: string): any {
+function applySorting(query: any, sortParam: string | null, _table: string, sortable: Set<string>): any {
   if (!sortParam) return query
   const tokens = String(sortParam).split(',').map(t => t.trim()).filter(Boolean)
   let q = query
   for (const tok of tokens) {
     const desc = tok.startsWith('-')
     const column = desc ? tok.slice(1) : tok
-    if (!/^\w+$/.test(column)) continue
+    if (!/^\w+$/.test(column) || !sortable.has(column)) continue
     q = q.orderBy(column, desc ? 'desc' : 'asc')
   }
   return q
@@ -540,6 +548,19 @@ for (const [modelName, model] of Object.entries(models)) {
   const hiddenFields = getHiddenFields(model)
   const basePath = `/api/${uri}`
 
+  // Columns a client may ORDER BY: declared model attributes + system columns,
+  // minus anything marked `hidden`. Computed once per model and handed to
+  // applySorting so `?sort=` can't enumerate sensitive/hidden columns.
+  const sortableColumns = new Set<string>([
+    ...Object.keys(model.attributes ?? {}),
+    'id',
+    'uuid',
+    'created_at',
+    'updated_at',
+    'deleted_at',
+  ])
+  for (const f of hiddenFields) sortableColumns.delete(f)
+
   // Per-model middleware list, applied to every CRUD route this model
   // generates. Honors the `useApi.middleware` field declared on the
   // model trait (e.g. `middleware: ['auth']` for resources that should
@@ -575,7 +596,7 @@ for (const [modelName, model] of Object.entries(models)) {
         const sort = url.searchParams.get('sort')
 
         let query = (db as any).selectFrom(table)
-        query = applySorting(query, sort, table)
+        query = applySorting(query, sort, table, sortableColumns)
 
         // Apply query string filters: ?status=active&name=foo filters by column values.
         // Reserved query params (pagination, sort, etc.) are skipped. Filter keys are

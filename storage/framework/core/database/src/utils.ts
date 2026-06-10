@@ -147,7 +147,11 @@ function updateQueryBuilderConfig(): void {
       defaultOrderColumn: 'created_at',
     },
     softDeletes: {
-      enabled: false,
+      // Boot-time default; mirrors config/query-builder.ts. Enabled so the
+      // ORM read path filters out `deleted_at` rows by default (per-model
+      // behavior still gated by the `useSoftDeletes` trait). See the config
+      // file for the full rationale.
+      enabled: true,
       column: 'deleted_at',
       defaultFilter: true,
     },

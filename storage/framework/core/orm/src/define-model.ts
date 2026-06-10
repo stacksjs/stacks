@@ -753,19 +753,22 @@ const MASS_ASSIGNMENT_SYSTEM_COLUMNS = new Set([
  * payload (unchanged) or throws `MassAssignmentException` on the first
  * forbidden field it sees.
  *
- * Mode resolution mirrors Laravel:
+ * Deny-by-default. Once a model declares `attributes`, only those declared
+ * columns may be mass-assigned, so a request body can't smuggle in an
+ * undeclared column like `role` / `is_admin`:
  *
- *   • If any attribute carries `fillable: true` → allowlist mode. Fields
- *     not on the allowlist (or in the system-column / FK exemption set)
- *     throw `not-fillable`.
- *   • Else, `guarded: true` attrs throw `guarded`; everything else passes.
- *   • Else, the model has no opinion on mass assignment → permissive
- *     (matches the framework's pre-fix behavior so existing apps that
- *     declare neither don't suddenly start throwing).
- *
- * `_id`-suffixed columns are always allowed through (FK columns); the
- * model usually doesn't list them in `attributes`, so blocking them
- * would break every belongsTo write.
+ *   • If any attribute carries `fillable: true` → the allowlist is exactly
+ *     that explicit `fillable` subset (Laravel `$fillable`).
+ *   • Else → the allowlist is every declared attribute (minus `guarded`).
+ *   • `guarded: true` always wins — including on foreign-key (`*_id`)
+ *     columns. The old code blanket-exempted every `*_id` key, so a
+ *     `guarded` `owner_id` / `account_id` was still mass-assignable and an
+ *     attacker could re-parent a record or cross tenants. Now guarded FKs
+ *     throw like any other guarded column.
+ *   • Non-guarded `*_id` columns stay assignable even when not separately
+ *     declared in `attributes`, so `belongsTo` writes keep working.
+ *   • A model that declares no `attributes` at all has no column vocabulary
+ *     to validate against → permissive (the only escape hatch left).
  *
  * Callers can opt out per-call via `{ force: true }` — used by the
  * `forceCreate` / `forceUpdate` static helpers.
@@ -781,24 +784,33 @@ function applyMassAssignmentRules(
   const attrs = (definition as any).attributes as Record<string, { fillable?: boolean, guarded?: boolean }> | undefined
   if (!attrs) return data
 
+  const declared = new Set<string>()
   const fillable = new Set<string>()
   const guarded = new Set<string>()
   for (const [k, a] of Object.entries(attrs)) {
     const col = snakeCase(k)
+    declared.add(col)
     if (a?.fillable === true) fillable.add(col)
     if (a?.guarded === true) guarded.add(col)
   }
 
-  const allowlistMode = fillable.size > 0
+  // Explicit `fillable` narrows the allowlist; otherwise every declared,
+  // non-guarded attribute is assignable. Deny-by-default either way.
+  const allowed = fillable.size > 0 ? fillable : declared
 
   for (const key of Object.keys(data)) {
     if (MASS_ASSIGNMENT_SYSTEM_COLUMNS.has(key)) continue
-    if (key.endsWith('_id')) continue // foreign keys
 
+    // Guarded wins for every column, FK included.
     if (guarded.has(key))
       throw new MassAssignmentException(definition.name, key, 'guarded')
 
-    if (allowlistMode && !fillable.has(key))
+    // Non-guarded foreign keys remain assignable so belongsTo writes work
+    // even when the FK column isn't separately declared as an attribute.
+    if (key.endsWith('_id'))
+      continue
+
+    if (!allowed.has(key))
       throw new MassAssignmentException(definition.name, key, 'not-fillable')
   }
 
