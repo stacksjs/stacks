@@ -22,8 +22,20 @@ import { env as envVars } from '@stacksjs/env'
 import { db } from './utils'
 import { sqlHelpers } from './sql-helpers'
 
+type SqlHelpers = ReturnType<typeof sqlHelpers>
+
 function getDbDriver(): string {
   return envVars.DB_CONNECTION || 'sqlite'
+}
+
+/**
+ * Defensive ALTER guaranteeing `users.email_verified_at` — the column
+ * `verifyEmail()` writes and the `verified` middleware reads, but which
+ * no generated users migration ever creates (stacksjs/stacks#1948).
+ * Pure builder so tests can assert per-dialect DDL without a live DB.
+ */
+export function usersEmailVerifiedAtSql(sql: SqlHelpers): string {
+  return `ALTER TABLE users ADD COLUMN email_verified_at ${sql.nullableTimestamp}`
 }
 
 /**
@@ -107,6 +119,20 @@ export async function migrateAuthTables(options: { verbose?: boolean } = {}): Pr
     }
     catch {
       // Index might already exist
+    }
+
+    // users.email_verified_at — `verifyEmail()` writes it and
+    // `isEmailVerified()` / the `verified` middleware read it, but no
+    // generated users migration creates it (stacksjs/stacks#1948).
+    // Model migrations run before this step on the `buddy migrate`
+    // path, so users exists by now; the ALTER fails harmlessly when
+    // the column is already there (or on a bare DB with no users yet).
+    if (options.verbose) log.info('Ensuring users.email_verified_at column exists...')
+    try {
+      await db.unsafe(usersEmailVerifiedAtSql(sql)).execute()
+    }
+    catch {
+      // Column already exists (or users table missing) — safe to ignore
     }
 
     if (options.verbose) log.info('Ensuring personal access client exists...')

@@ -6,7 +6,7 @@ import { makeHash } from '@stacksjs/security'
 
 // Detect database driver from environment
 import { env } from '@stacksjs/env'
-import { sqlHelpers } from '@stacksjs/database'
+import { sqlHelpers, usersEmailVerifiedAtSql } from '@stacksjs/database'
 
 const dbDriver = env.DB_CONNECTION || 'sqlite'
 const sql = sqlHelpers(dbDriver)
@@ -284,6 +284,17 @@ try {
   await db.unsafe(`
     CREATE UNIQUE INDEX IF NOT EXISTS idx_email_verifications_user_id_unique ON email_verifications(user_id)
   `)
+
+  // Defensive ALTER for the column `verifyEmail()` writes. Generated
+  // users migrations omit `email_verified_at` (stacksjs/stacks#1948),
+  // so guarantee it here — same pattern as the password_resets
+  // `expires_at` ALTER above. Fails harmlessly when the column already
+  // exists or when `users` hasn't been migrated yet (`buddy migrate`
+  // also ensures it via migrateAuthTables).
+  try {
+    await db.unsafe(usersEmailVerifiedAtSql(sql))
+  }
+  catch { /* column already exists (or users table missing) — safe to ignore */ }
 
   log.success('Email verifications table ready')
 }
