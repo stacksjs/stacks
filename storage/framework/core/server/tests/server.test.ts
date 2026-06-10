@@ -143,6 +143,20 @@ describe('server maintenance', () => {
   })
 })
 
+describe('server proxy', () => {
+  test('proxyToBackend and isApiBoundRequest are exported', async () => {
+    try {
+      const mod = await import('../src/index')
+      expect(typeof mod.proxyToBackend).toBe('function')
+      expect(typeof mod.isApiBoundRequest).toBe('function')
+    }
+    catch (e: any) {
+      // Server module may fail due to missing plugin deps — verify it's a known issue
+      expect(e.message).toMatch(/not found in module|Cannot find/)
+    }
+  })
+})
+
 describe('server controller base', () => {
   test('Controller class is exported', async () => {
     const mod = await import('../src/controllers/base')

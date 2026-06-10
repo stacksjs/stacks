@@ -581,6 +581,19 @@ export const tsCloud: TsCloudConfig = {
       preStart: ['bun install'],
     },
 
+    // API (bun-router) behind `buddy serve`'s same-origin /api proxy.
+    // server-app: has `start` + `port` → systemd service on :3008.
+    // Intentionally NO `domain`/`path`: ts-cloud's rpx gateway skips
+    // domain-less sites, so the service stays loopback-only and is
+    // reached exclusively via the :3000 proxy (stacksjs/stacks#1950).
+    api: {
+      root: '.',
+      start: 'bun storage/framework/core/actions/src/serve/api.ts',
+      port: 3008,
+      preStart: ['bun install'],
+      env: { HOST: '127.0.0.1', APP_ENV: 'production' },
+    },
+
     // ---- server-static sites (migrated off AWS S3 + CloudFront) ----
     // NO `start`/`port` ⇒ resolveSiteKind() === 'server-static'. The built
     // `root` dir is shipped to /var/www/<key> and served by the reverse proxy's

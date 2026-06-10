@@ -87,49 +87,10 @@ function parseCookies(req: Request): Record<string, string> {
   return out
 }
 
-async function proxyToBackend(req: Request, backendBase: string, stripPrefix?: string): Promise<Response> {
-  const incoming = new URL(req.url)
-  let pathname = incoming.pathname
-  if (stripPrefix && (pathname === stripPrefix || pathname.startsWith(`${stripPrefix}/`))) {
-    pathname = pathname.slice(stripPrefix.length) || '/'
-  }
-  const target = `${backendBase}${pathname}${incoming.search}`
-
-  const fwd = new Headers(req.headers)
-  fwd.delete('host')
-  fwd.delete('content-length')
-  fwd.set('x-forwarded-host', incoming.host)
-  fwd.set('x-forwarded-proto', incoming.protocol.replace(':', ''))
-
-  const body = req.method === 'GET' || req.method === 'HEAD'
-    ? undefined
-    : await req.arrayBuffer()
-
-  const upstream = await fetch(target, {
-    method: req.method,
-    headers: fwd,
-    body,
-    redirect: 'manual',
-  })
-
-  // Re-emit the body without the upstream's content-length /
-  // content-encoding — the body we forward may be re-chunked, and
-  // letting the original headers through breaks the response.
-  const out = new Headers(upstream.headers)
-  out.delete('content-length')
-  out.delete('content-encoding')
-
-  return new Response(upstream.body, {
-    status: upstream.status,
-    statusText: upstream.statusText,
-    headers: out,
-  })
-}
-
 async function startDefaultServer() {
   await overridesReady
 
-  const { injectGlobalAutoImports } = await import('@stacksjs/server')
+  const { injectGlobalAutoImports, isApiBoundRequest, proxyToBackend } = await import('@stacksjs/server')
   const { applyRequestLocale } = await import('@stacksjs/i18n')
   await injectGlobalAutoImports()
 
@@ -235,11 +196,10 @@ async function startDefaultServer() {
       //      a static stx page, so they always belong to bun-router.
       // Without (2), `route.post('/subscribe', ...)` declared at the
       // root (no /api prefix) hits stx-serve and 404s.
-      const apiMethods = new Set(['POST', 'PUT', 'PATCH', 'DELETE'])
       if (url.pathname === '/docs' || url.pathname.startsWith('/docs/'))
         return proxyToBackend(req, docsBase, '/docs')
 
-      if (url.pathname.startsWith('/api/') || apiMethods.has(req.method))
+      if (isApiBoundRequest(req, url.pathname))
         return proxyToBackend(req, apiBase)
 
       // Optional `/locale/{code}` redirect (same as default SetLocaleAction).

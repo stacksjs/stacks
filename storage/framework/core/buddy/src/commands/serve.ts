@@ -14,12 +14,20 @@ import { log } from '@stacksjs/cli'
  * secret-URL + bypass-cookie escape hatch intact. Bun.serve binds 0.0.0.0 by
  * default, so the server is reachable on the host's public interface.
  *
+ * Same-origin `/api/**` requests (and any non-GET/HEAD verb) are
+ * reverse-proxied to the API process — mirroring the dev views server — so
+ * scaffolded `fetch('/api/...')` calls behave identically in production
+ * (stacksjs/stacks#1950). The API runs as a separate process
+ * (core/actions/src/serve/api.ts), deployed as a second systemd service via
+ * the `api` site in config/cloud.ts. Override `API_URL` when the API lives
+ * on another host, or `PORT_API` when only the port differs.
+ *
  * This is the entry the Hetzner deploy runs as a systemd service
  * (`bun storage/framework/core/buddy/src/cli.ts serve`).
  */
 export function serve(buddy: CLI): void {
   buddy
-    .command('serve', 'Start the production HTTP server (STX views + coming-soon/maintenance gate)')
+    .command('serve', 'Start the production HTTP server (STX views + /api proxy + coming-soon/maintenance gate)')
     .option('-p, --port <port>', 'Port to listen on (defaults to PORT env or 3000)')
     .option('--verbose', 'Enable verbose output', { default: false })
     .action(async (options?: { port?: string | number, verbose?: boolean }) => {
@@ -29,7 +37,7 @@ export function serve(buddy: CLI): void {
 
       const port = Number(process.env.PORT) || 3000
 
-      const { overridesReady } = await import('@stacksjs/config')
+      const { config, overridesReady } = await import('@stacksjs/config')
       await overridesReady
 
       const { injectGlobalAutoImports } = await import('@stacksjs/server')
@@ -66,6 +74,14 @@ export function serve(buddy: CLI): void {
       const userLayoutsPath = existsSync('resources/views/layouts') ? 'resources/views/layouts' : 'resources/layouts'
       const userComponentsPath = existsSync('resources/views/components') ? 'resources/views/components' : 'resources/components'
 
+      // Same-origin API target. Scaffolded client code fetches relative
+      // `/api/...` URLs (dashboard stores, CartDrawer, the coming-soon
+      // subscribe form), which the dev server reverse-proxies to the API
+      // process — production must do the same or every login and form
+      // POST 404s on stx-serve (stacksjs/stacks#1950).
+      const apiBase = process.env.API_URL
+        || `http://127.0.0.1:${Number(process.env.PORT_API) || config.ports?.api || 3008}`
+
       log.info(`Starting production server on port ${port}...`)
 
       await stxServe({
@@ -85,8 +101,27 @@ export function serve(buddy: CLI): void {
         // and static assets, so the holding page renders and visitors with a
         // valid bypass cookie pass through.
         onRequest: async (req: Request) => {
-          const { maintenanceGate } = await import('@stacksjs/server')
-          return (await maintenanceGate(req)) ?? undefined
+          const { maintenanceGate, isApiBoundRequest, proxyToBackend } = await import('@stacksjs/server')
+          const gated = await maintenanceGate(req)
+          if (gated)
+            return gated
+
+          // Mirror the dev server's API forwarding: `/api/**` and any
+          // non-GET/HEAD verb belong to bun-router, never stx-serve.
+          // /docs is deliberately NOT proxied — in production it is a
+          // server-static site routed by the rpx gateway, not a dev server.
+          const url = new URL(req.url)
+          if (isApiBoundRequest(req, url.pathname)) {
+            try {
+              return await proxyToBackend(req, apiBase)
+            }
+            catch (error) {
+              log.error(`API proxy to ${apiBase} failed: ${(error as Error).message}`)
+              return new Response('Bad Gateway', { status: 502 })
+            }
+          }
+
+          return undefined
         },
       })
 
