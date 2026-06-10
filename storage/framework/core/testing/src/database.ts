@@ -6,6 +6,9 @@ import {
   dropSqliteTables,
   fetchSqliteFile,
   fetchTables,
+  migrateAuthTables,
+  migrateNotificationTables,
+  migrateRbacTables,
   runDatabaseMigration,
   sql,
 } from '@stacksjs/database'
@@ -28,6 +31,37 @@ function getSnapshotPath(): string {
   return snapshotPath
 }
 
+/**
+ * Auth/oauth, notification, and RBAC tables live outside the generated
+ * model migrations — `buddy migrate` guarantees them as a separate step
+ * after `runDatabaseMigration()` (stacksjs/stacks#1948). Test databases
+ * need the identical guarantee, or feature tests hit "no such table:
+ * oauth_access_tokens" / "no such column: email_verified_at" against a
+ * freshly migrated schema. All three migrators are CREATE TABLE IF NOT
+ * EXISTS plus defensive ALTERs, so reruns are no-ops. Failures surface
+ * on stderr but don't throw — matching `buddy migrate` semantics, so
+ * tests that never touch these tables aren't broken by one failed
+ * guarantee.
+ */
+async function migrateFrameworkTables(): Promise<void> {
+  const steps = [
+    ['auth', migrateAuthTables],
+    ['notification', migrateNotificationTables],
+    ['RBAC', migrateRbacTables],
+  ] as const
+
+  for (const [name, migrateTables] of steps) {
+    try {
+      const result = await migrateTables()
+      if (!result.success)
+        console.error(`[testing] Failed to migrate ${name} tables: ${result.error}`)
+    }
+    catch (error) {
+      console.error(`[testing] Failed to migrate ${name} tables:`, error)
+    }
+  }
+}
+
 export async function setupDatabase(): Promise<void> {
   const dbName = `${database.connections?.mysql?.name ?? 'stacks'}_testing`
 
@@ -35,6 +69,7 @@ export async function setupDatabase(): Promise<void> {
     await (sql`CREATE DATABASE IF NOT EXISTS ${sql.raw(dbName)}` as any).execute(db)
     // TODO: Remove all log.info
     await runDatabaseMigration()
+    await migrateFrameworkTables()
   }
 }
 
@@ -82,6 +117,9 @@ export async function truncateSqlite(): Promise<void> {
   }
 
   await runDatabaseMigration()
+  // Runs before `truncateSqliteFast()` snapshots the schema, so the
+  // fast-restore path keeps the framework tables too.
+  await migrateFrameworkTables()
 }
 
 /**

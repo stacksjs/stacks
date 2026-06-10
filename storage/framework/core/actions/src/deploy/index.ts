@@ -731,6 +731,45 @@ try {
     if (isVerbose) log.debug(`Migration error: ${migrationError.stack}`)
   }
 
+  // Framework-table guarantees (stacksjs/stacks#1948) — the auth/oauth,
+  // notification, and RBAC tables (and the users.email_verified_at ALTER)
+  // ship outside the generated model migrations; `buddy migrate` applies
+  // them as a separate step, so deployed databases need the same step or
+  // verify-email 500s on a column no model migration creates. Runs in its
+  // own try/catch so a model-migration failure above (e.g. a unique-index
+  // replay hitting duplicate legacy rows, stacksjs/stacks#1952) doesn't
+  // also skip these — they're all idempotent CREATE TABLE IF NOT EXISTS
+  // plus defensive ALTERs, independent of the model-migration outcome.
+  const frameworkTablesSpinner = spinner('Ensuring framework tables (auth, notifications, RBAC)...')
+  frameworkTablesSpinner.start()
+  try {
+    const { migrateAuthTables, migrateNotificationTables, migrateRbacTables } = await import('@stacksjs/database')
+
+    const failures: string[] = []
+    const steps = [
+      ['auth', migrateAuthTables],
+      ['notification', migrateNotificationTables],
+      ['RBAC', migrateRbacTables],
+    ] as const
+    for (const [name, migrateTables] of steps) {
+      const result = await migrateTables({ verbose: isVerbose })
+      if (!result.success) failures.push(`${name}: ${result.error}`)
+    }
+
+    if (failures.length > 0) {
+      frameworkTablesSpinner.stop()
+      console.log(`⚠ Some framework tables could not be migrated: ${failures.join('; ')}`)
+    } else {
+      frameworkTablesSpinner.succeed('Framework tables ensured (auth, notifications, RBAC)')
+    }
+  } catch (frameworkTablesError: any) {
+    // Same policy as the model migrations above — the database might not
+    // be accessible from the deploy machine, so don't fail the deployment
+    frameworkTablesSpinner.stop()
+    console.log(`⚠ Framework table migrations skipped: ${frameworkTablesError.message}`)
+    if (isVerbose) log.debug(`Framework table migration error: ${frameworkTablesError.stack}`)
+  }
+
   if (deploymentMode === 'server') {
     // Server mode: show instance IPs from stack outputs
     const serverOutputSpinner = spinner('Retrieving server instance details...')
