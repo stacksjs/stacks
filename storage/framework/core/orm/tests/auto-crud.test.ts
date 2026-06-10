@@ -18,12 +18,14 @@
  *   - filterFillable accepts both attribute and column spellings,
  *     keyed back to attribute names
  *   - dropHiddenInputs strips BOTH spellings of hidden attributes
+ *   - stripHidden strips BOTH spellings on the response side, so a
+ *     camelCase hidden attribute can't leak via its snake column key
  *   - resolveApiMiddleware defaults mutating routes to ['auth'] unless
  *     `middleware` is explicitly declared (explicit `[]` = opt-out)
  */
 import { describe, expect, it } from 'bun:test'
 import { snakeCase } from '@stacksjs/strings'
-import { dropHiddenInputs, filterFillable, resolveApiMiddleware, toSnakeCase, toSnakeCaseKeys } from '../src/auto-crud'
+import { dropHiddenInputs, filterFillable, resolveApiMiddleware, stripHidden, toSnakeCase, toSnakeCaseKeys } from '../src/auto-crud'
 
 describe('toSnakeCaseKeys (write-path column mapping)', () => {
   it('maps camelCase attribute keys to snake_case column keys', () => {
@@ -123,6 +125,34 @@ describe('dropHiddenInputs (dual-spelling stripping)', () => {
     const withHidden = { secretKey: 's', a: 1 }
     dropHiddenInputs(withHidden, ['secretKey'])
     expect(withHidden.secretKey).toBe('s')
+  })
+})
+
+describe('stripHidden (dual-spelling response stripping)', () => {
+  it('removes a camelCase hidden attribute arriving under its snake column key', () => {
+    // DB rows come back snake-keyed — pre-fix, Transaction's hidden
+    // `paymentDetails` leaked as `payment_details` on public reads.
+    const row = { id: 1, amount: 100, payment_details: { last4: '4242', brand: 'visa' } }
+    expect(stripHidden(row, ['paymentDetails'])).toEqual({ id: 1, amount: 100 })
+  })
+
+  it('removes BOTH spellings when both are present', () => {
+    const row = { paymentDetails: 'a', payment_details: 'b', amount: 10 }
+    expect(stripHidden(row, ['paymentDetails'])).toEqual({ amount: 10 })
+  })
+
+  it('removes snake-declared hidden attributes', () => {
+    expect(stripHidden({ password: 'x', name: 'a' }, ['password'])).toEqual({ name: 'a' })
+  })
+
+  it('is a no-op with no hidden fields or no record, and does not mutate the input', () => {
+    const row = { a: 1 }
+    expect(stripHidden(row, [])).toBe(row)
+    expect(stripHidden(null, ['secretKey'])).toBeNull()
+    const withHidden = { secretKey: 's', secret_key: 's2', a: 1 }
+    stripHidden(withHidden, ['secretKey'])
+    expect(withHidden.secretKey).toBe('s')
+    expect(withHidden.secret_key).toBe('s2')
   })
 })
 

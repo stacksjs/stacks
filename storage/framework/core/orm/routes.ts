@@ -11,7 +11,7 @@ import { projectPath } from '@stacksjs/path'
 import { createQueryBuilder, defaultConfig, setConfig } from '@stacksjs/query-builder'
 import { HttpError } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/logging'
-import { dropHiddenInputs, filterFillable, resolveApiMiddleware, toSnakeCase, toSnakeCaseKeys } from './src/auto-crud'
+import { dropHiddenInputs, filterFillable, resolveApiMiddleware, stripHidden, toSnakeCase, toSnakeCaseKeys } from './src/auto-crud'
 
 // Initialize the query builder config from the project's optional
 // `config/qb.ts` override (stacksjs/stacks#1930).
@@ -89,16 +89,6 @@ function getHiddenFields(model: any): string[] {
   return Object.entries(model.attributes)
     .filter(([_, attr]: [string, any]) => attr.hidden === true)
     .map(([name]: [string, any]) => name)
-}
-
-// Helper: strip hidden fields from a record
-function stripHidden(record: any, hiddenFields: string[]): any {
-  if (!record || hiddenFields.length === 0) return record
-  const result = { ...record }
-  for (const field of hiddenFields) {
-    delete result[field]
-  }
-  return result
 }
 
 // Built-in cast resolvers — kept in sync with @stacksjs/orm/define-model.

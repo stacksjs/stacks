@@ -90,12 +90,18 @@ function getHiddenFields(model: any): string[] {
     .map(([name]: [string, any]) => name)
 }
 
-// Helper: strip hidden fields from a record
+// Helper: strip hidden fields from a response record. Drops BOTH the
+// attribute-name spelling and its snake_case column spelling — DB rows come
+// back keyed by snake_case column names, so deleting only the attribute
+// spelling lets a camelCase hidden attribute (Transaction's `paymentDetails`)
+// leak as `payment_details` on public reads.
+// Kept in sync with core/orm/src/auto-crud.ts.
 function stripHidden(record: any, hiddenFields: string[]): any {
   if (!record || hiddenFields.length === 0) return record
   const result = { ...record }
   for (const field of hiddenFields) {
     delete result[field]
+    delete result[toSnakeCase(field)]
   }
   return result
 }
