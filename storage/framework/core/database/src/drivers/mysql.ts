@@ -364,7 +364,9 @@ export async function createAlterTableMigration(modelPath: string): Promise<void
 
   if (fieldsToAdd.length || fieldsToRemove.length) {
     hasChanged = true
-    migrationContent += `  await (_db as any).schema.alterTable('${tableName}')\n`
+    // Emitted references must use `db` — the generated up() signature
+    // above is `up(db: Database<any>)`; `_db` was a ReferenceError.
+    migrationContent += `  await (db as any).schema.alterTable('${tableName}')\n`
   }
 
   const fieldValidations = findDifferingKeys(lastFields, currentFields)
@@ -411,15 +413,17 @@ export function generateIndexCreationSQL(
     return `  await db.unsafe(\`CREATE ${unique}INDEX IF NOT EXISTS \\\`${index.name}\\\` ON \\\`${tableName}\\\` (${cols})${whereClause}\`).execute()\n`
   }
   const columnsStr = index.columns.map(col => `'${snakeCase(col)}'`).join(', ')
-  return `  await (_db as any).schema.createIndex('${index.name}').on('${tableName}').columns([${columnsStr}]).execute()\n`
+  return `  await (db as any).schema.createIndex('${index.name}').on('${tableName}').columns([${columnsStr}]).execute()\n`
 }
 
+// These helpers are spliced into generated up(db) bodies, so the emitted
+// references must use `db` — `_db` was a ReferenceError at migration time.
 function generatePrimaryKeyIndexSQL(tableName: string): string {
-  return `  await (_db as any).schema.createIndex('${tableName}_id_index').on('${tableName}').column('id').execute()\n`
+  return `  await (db as any).schema.createIndex('${tableName}_id_index').on('${tableName}').column('id').execute()\n`
 }
 
 function generateForeignKeyIndexSQL(tableName: string, foreignKey: string): string {
-  return `  await (_db as any).schema.createIndex('${tableName}_${foreignKey}_index').on('${tableName}').column('${foreignKey}').execute()\n\n`
+  return `  await (db as any).schema.createIndex('${tableName}_${foreignKey}_index').on('${tableName}').column('${foreignKey}').execute()\n\n`
 }
 
 function reArrangeColumns(attributes: AttributesElements | undefined, tableName: string): string {

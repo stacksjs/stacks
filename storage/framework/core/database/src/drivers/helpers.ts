@@ -178,9 +178,12 @@ export function compareRanges(range1: Range, range2: Range): boolean {
 }
 
 export async function checkPivotMigration(dynamicPart: string): Promise<boolean> {
-  const files = await (fs.readdir as any)(path.userMigrationsPath())
+  // `fs` is plain node:fs — its callback readdir returns undefined when
+  // awaited, so the promises API is required (the old `as any` cast hid an
+  // unconditional ERR_INVALID_ARG_TYPE crash on every pivot generation).
+  const files = await fs.promises.readdir(path.userMigrationsPath())
 
-  return (files as any).some((migrationFile: string) => {
+  return files.some((migrationFile: string) => {
     // Escape special characters in the dynamic part to ensure it's treated as a literal string
     const escapedDynamicPart = dynamicPart.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 
