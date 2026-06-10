@@ -25,7 +25,7 @@ import { describe, expect, test } from 'bun:test'
 import { Database } from 'bun:sqlite'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { swallowDuplicate, toRecord } from '../src/rbac-store-bqb'
+import { isUniqueViolation, swallowDuplicate, toRecord } from '../src/rbac-store-bqb'
 import type { PermissionRecord, RoleRecord } from '../src/rbac'
 
 const MIGRATION_DIR = join(import.meta.dir, '../../../../../database/migrations')
@@ -73,6 +73,32 @@ describe('swallowDuplicate', () => {
     expect(() => swallowDuplicate(new Error('syntax error near "INSERT"'))).toThrow()
     expect(() => swallowDuplicate({})).toThrow()
     expect(() => swallowDuplicate(null)).toThrow()
+  })
+})
+
+// ─── isUniqueViolation ──────────────────────────────────────────────
+
+// The predicate swallowDuplicate is built on, exported for callers
+// that map duplicates to their own error instead of swallowing them
+// (register()'s 409 — stacksjs/stacks#1953).
+describe('isUniqueViolation', () => {
+  test('true for the dialect-specific duplicate shapes', () => {
+    expect(isUniqueViolation({ code: 'SQLITE_CONSTRAINT_UNIQUE' })).toBe(true)
+    expect(isUniqueViolation({ code: 'SQLITE_CONSTRAINT' })).toBe(true)
+    expect(isUniqueViolation({ errno: 1062 })).toBe(true)
+    expect(isUniqueViolation({ code: '23505' })).toBe(true)
+  })
+
+  test('true for unique/duplicate message text fallbacks', () => {
+    expect(isUniqueViolation({ message: 'UNIQUE constraint failed: users.email' })).toBe(true)
+    expect(isUniqueViolation({ message: 'Duplicate entry for key users.email' })).toBe(true)
+  })
+
+  test('false for anything else', () => {
+    expect(isUniqueViolation({ code: 'ECONNRESET', message: 'connection lost' })).toBe(false)
+    expect(isUniqueViolation(new Error('syntax error near "INSERT"'))).toBe(false)
+    expect(isUniqueViolation({})).toBe(false)
+    expect(isUniqueViolation(null)).toBe(false)
   })
 })
 

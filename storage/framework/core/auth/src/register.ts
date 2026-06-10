@@ -5,6 +5,7 @@ import { HttpError } from '@stacksjs/error-handling'
 import { User } from '@stacksjs/orm'
 import { makeHash } from '@stacksjs/security'
 import { Auth } from './authentication'
+import { isUniqueViolation } from './rbac-store-bqb'
 
 // RFC 5322-ish: a single @ with at least one dot in the domain. Tighter than
 // "any non-empty string" but loose enough to accept IDN/Unicode locals,
@@ -24,30 +25,63 @@ export async function register(credentials: NewUser): Promise<{ token: AuthToken
     throw new HttpError(422, 'Password must be at least 8 characters')
   }
 
-  // Wrap check-then-write in a transaction so two near-simultaneous
-  // signups for the same email don't both pass the existence check
-  // and then both insert. The unique index would catch the second
-  // insert, but only after we'd already hashed two bcrypt passwords
-  // (~250ms each) — the transaction lets us short-circuit on the
-  // committed read instead.
-  const existingUser = await User.where('email', '=', email).first()
-  if (existingUser)
-    throw new HttpError(409, 'Email already exists')
-
-  // Hash the password
+  // Hash before any DB query so duplicate and fresh registrations pay
+  // the same ~250ms bcrypt cost. Checking existence first returned the
+  // 409 in ~1ms — a timing oracle on registered emails on top of the
+  // explicit response body, inconsistent with attempt()'s dummy-hash
+  // hardening and password-reset's silent no-op (stacksjs/stacks#1953).
   const hashedPassword = await makeHash(password, { algorithm: 'bcrypt' })
 
-  // Create the user
-  await db.insertInto('users')
-    .values({
-      email,
-      password: hashedPassword,
-      name,
-    })
-    .execute()
+  // Check + insert + read-back run in one transaction. The in-tx
+  // existence check is best-effort: under READ COMMITTED two
+  // concurrent transactions can both pass it, so the unique-violation
+  // catch on the insert is the authoritative duplicate signal (once
+  // the users.email unique index is enforced — see #1952). The row is
+  // read back inside the trx rather than via insertGetId/RETURNING:
+  // insertGetId escapes the transaction's connection, and MySQL has
+  // no INSERT...RETURNING.
+  const userId = await db.transaction(async (rawTrx) => {
+    // The transaction callback receives bun-query-builder's raw `QueryBuilder<DB>`,
+    // which marks chained fluent methods like `selectAll` as optional. We mirror
+    // the typing of the top-level `db` proxy so chained calls type-check the same way.
+    const trx = rawTrx as unknown as typeof db
 
-  // Get the created user by email (unique field)
-  const user = await User.where('email', '=', email).first()
+    const existingUser = await trx
+      .selectFrom('users')
+      .where('email', '=', email)
+      .selectAll()
+      .executeTakeFirst()
+    if (existingUser)
+      throw new HttpError(409, 'Email already exists')
+
+    try {
+      await trx.insertInto('users')
+        .values({
+          email,
+          password: hashedPassword,
+          name,
+        })
+        .execute()
+    }
+    catch (err) {
+      if (isUniqueViolation(err))
+        throw new HttpError(409, 'Email already exists')
+      throw err
+    }
+
+    const created = await trx
+      .selectFrom('users')
+      .where('email', '=', email)
+      .selectAll()
+      .executeTakeFirst()
+
+    if (!created)
+      throw new Error('Failed to retrieve created user')
+
+    return Number(created.id)
+  })
+
+  const user = await User.find(userId)
 
   if (!user)
     throw new Error('Failed to retrieve created user')

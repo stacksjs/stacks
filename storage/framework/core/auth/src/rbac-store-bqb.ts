@@ -26,9 +26,8 @@ import { db } from '@stacksjs/database'
 interface UniqueViolation { code?: string, errno?: number, message?: string }
 
 /**
- * Swallow unique-constraint violations across SQLite, MySQL, and Postgres.
- * Anything else is re-thrown so a "connection lost" mid-INSERT doesn't get
- * silently treated as "already assigned".
+ * True when the error is a unique-constraint violation, across SQLite,
+ * MySQL, and Postgres:
  *
  * - SQLite: `SQLITE_CONSTRAINT_UNIQUE` / `SQLITE_CONSTRAINT`
  * - MySQL: `errno: 1062` (ER_DUP_ENTRY)
@@ -36,17 +35,27 @@ interface UniqueViolation { code?: string, errno?: number, message?: string }
  * - Generic fallback: message text match — covers wrapped errors from drivers
  *   that lose the structured code.
  *
+ * Exported for direct unit testing and for callers that map duplicates to
+ * their own error (e.g. `register()`'s 409) instead of swallowing them.
+ */
+export function isUniqueViolation(err: unknown): boolean {
+  const e = err as UniqueViolation
+  return e?.code === 'SQLITE_CONSTRAINT_UNIQUE'
+    || e?.code === 'SQLITE_CONSTRAINT'
+    || e?.code === '23505'
+    || e?.errno === 1062
+    || /unique|duplicate/i.test(e?.message ?? '')
+}
+
+/**
+ * Swallow unique-constraint violations. Anything else is re-thrown so a
+ * "connection lost" mid-INSERT doesn't get silently treated as
+ * "already assigned".
+ *
  * Exported for direct unit testing — the live pivot helpers below also use it.
  */
 export function swallowDuplicate(err: unknown): void {
-  const e = err as UniqueViolation
-  const looksLikeDuplicate
-    = e?.code === 'SQLITE_CONSTRAINT_UNIQUE'
-      || e?.code === 'SQLITE_CONSTRAINT'
-      || e?.code === '23505'
-      || e?.errno === 1062
-      || /unique|duplicate/i.test(e?.message ?? '')
-  if (!looksLikeDuplicate)
+  if (!isUniqueViolation(err))
     throw err
 }
 
