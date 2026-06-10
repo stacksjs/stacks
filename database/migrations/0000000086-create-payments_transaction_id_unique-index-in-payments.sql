@@ -1,2 +1,1 @@
--- Skipped: unique constraints already exist from table creation
-SELECT 1;
+CREATE UNIQUE INDEX IF NOT EXISTS "payments_payments_transaction_id_unique" ON "payments" ("transaction_id");

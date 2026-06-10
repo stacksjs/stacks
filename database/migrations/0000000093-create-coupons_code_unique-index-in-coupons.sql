@@ -1,2 +1,1 @@
--- Skipped: unique constraints already exist from table creation
-SELECT 1;
+CREATE UNIQUE INDEX IF NOT EXISTS "coupons_coupons_code_unique" ON "coupons" ("code");

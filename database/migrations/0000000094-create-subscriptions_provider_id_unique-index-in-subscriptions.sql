@@ -1,2 +1,1 @@
--- Skipped: unique constraints already exist from table creation
-SELECT 1;
+CREATE UNIQUE INDEX IF NOT EXISTS "subscriptions_subscriptions_provider_id_unique" ON "subscriptions" ("provider_id");

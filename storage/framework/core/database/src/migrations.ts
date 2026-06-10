@@ -127,8 +127,11 @@ function prepareMigrationModelsDir(): { modelsDir: string, skip: boolean } {
  *
  * SQLite does not support:
  * - ALTER TABLE ADD CONSTRAINT (foreign keys must be defined at table creation)
- * - Creating duplicate unique indexes on columns that already have UNIQUE constraints
- *   from inline table definitions (the index name differs but the constraint conflicts)
+ *
+ * Note: CREATE UNIQUE INDEX files are deliberately NOT skipped — the SQLite
+ * dialect driver never renders inline UNIQUE in CREATE TABLE, so the
+ * standalone index file is the only uniqueness enforcement on SQLite
+ * (stacksjs/stacks#1952).
  *
  * Two flavours of "no-op on SQLite" need different handling:
  *
@@ -136,8 +139,8 @@ function prepareMigrationModelsDir(): { modelsDir: string, skip: boolean } {
  *     run cleanly on MySQL/Postgres — but doesn't apply to SQLite. Record
  *     it as executed in the migrations tracking table so it doesn't replay,
  *     but **leave the file on disk** so a future `DB_CONNECTION` flip can
- *     pick it up. This is the right path for FK constraint files and
- *     unique-index files. (stacksjs/stacks#1916)
+ *     pick it up. This is the right path for FK constraint files.
+ *     (stacksjs/stacks#1916)
  *
  *   - **Drop-and-delete** (`deleteMigration`): the file is genuinely dead
  *     — a duplicate CREATE TABLE created by `buddy generate:migrations`
@@ -172,11 +175,19 @@ export function preprocessSqliteMigrations(): void {
     droppedMigrations.push(file)
   }
 
+  // Unique-index files the old skip logic wrongly recorded as executed.
+  // Their indexes never got created — deleting the row from the
+  // migrations table makes the runner pick the file back up.
+  const replayMigrations: string[] = []
+
   const addConstraintPattern = /^\s*ALTER\s+TABLE\s+.+\s+ADD\s+CONSTRAINT\s+/i
-  // Match CREATE UNIQUE INDEX — these are redundant in SQLite when the table
-  // already defines the UNIQUE constraint inline during CREATE TABLE.
-  // Regular CREATE INDEX is fine and should NOT be skipped.
-  const createUniqueIndexPattern = /^\s*CREATE\s+UNIQUE\s+INDEX\s+/i
+  // Match CREATE UNIQUE INDEX, capturing the index name. These files MUST run
+  // on SQLite — the dialect driver never renders inline UNIQUE in CREATE
+  // TABLE, so this index is the only uniqueness enforcement (#1952).
+  // IF NOT EXISTS makes them idempotent by name; SQLite accepts a unique
+  // index alongside an inline constraint; a genuine SQLITE_CONSTRAINT
+  // failure means duplicate rows already exist and must surface.
+  const createUniqueIndexPattern = /^\s*CREATE\s+UNIQUE\s+INDEX\s+(?:IF\s+NOT\s+EXISTS\s+)?["'`]?(\w+)["'`]?/i
   // Match ALTER TABLE ... DROP COLUMN — SQLite fails if the column doesn't exist
   const dropColumnPattern = /^\s*ALTER\s+TABLE\s+["']?(\w+)["']?\s+DROP\s+COLUMN\s+["']?(\w+)["']?\s*$/i
   // Match CREATE TABLE — used to detect when buddy regenerates a CREATE TABLE
@@ -251,17 +262,22 @@ export function preprocessSqliteMigrations(): void {
       continue
     }
 
-    // CREATE UNIQUE INDEX fails in SQLite when the column already has
-    // a UNIQUE constraint from table creation. IF NOT EXISTS only checks
-    // by index name, not by column — so a second unique index with a
-    // different name triggers SQLITE_CONSTRAINT_UNIQUE.
-    //
-    // Same skip-but-keep rule as FK constraints: MySQL/Postgres need
-    // the explicit `CREATE UNIQUE INDEX` (their indexes are separate
-    // objects, not inline). The file survives a driver switch.
-    const allCreateUniqueIndex = statements.every(s => createUniqueIndexPattern.test(s))
-    if (allCreateUniqueIndex) {
-      skipMigration(file, 'unique constraint already inline on table')
+    // Self-heal databases the old skip logic poisoned: it recorded
+    // unique-index files as executed without ever creating the index, so
+    // `email: { unique: true }` etc. were never enforced. If the index is
+    // missing from sqlite_master, un-record the file so the runner replays
+    // it; indexes that exist stay recorded (no replay churn). Fresh
+    // installs (no DB yet) fall through and run the file normally.
+    const uniqueIndexNames = statements
+      .map(s => s.match(createUniqueIndexPattern)?.[1])
+      .filter((name): name is string => Boolean(name))
+    if (sqliteDb && uniqueIndexNames.length === statements.length) {
+      const indexExists = (sqliteDb as any).prepare(`SELECT name FROM sqlite_master WHERE type = 'index' AND name = ?`)
+      const missing = uniqueIndexNames.filter(name => !indexExists.get(name))
+      if (missing.length > 0) {
+        log.info(`Re-queueing unique-index migration (index missing from database): ${file}`)
+        replayMigrations.push(file)
+      }
       continue
     }
 
@@ -337,9 +353,10 @@ export function preprocessSqliteMigrations(): void {
   }
 
   // Record dropped migrations as executed so they don't get regenerated on
-  // the next `buddy generate:migrations` cycle. Without this, the same
-  // unique-index / add-constraint migrations would reappear every run.
-  if (droppedMigrations.length > 0) {
+  // the next `buddy generate:migrations` cycle, and un-record re-queued
+  // unique-index migrations so the runner replays them (#1952). The DELETE
+  // is a no-op for files that were never recorded.
+  if (droppedMigrations.length > 0 || replayMigrations.length > 0) {
     try {
       const dbPath = join(process.cwd(), dbConfig.connections.sqlite.database || 'stacks.db')
       if (existsSync(dbPath)) {
@@ -353,6 +370,8 @@ export function preprocessSqliteMigrations(): void {
           )`)
           const insert = writeDb.prepare('INSERT OR IGNORE INTO migrations (migration) VALUES (?)')
           for (const migration of droppedMigrations) insert.run(migration)
+          const unrecord = writeDb.prepare('DELETE FROM migrations WHERE migration = ?')
+          for (const migration of replayMigrations) unrecord.run(migration)
         }
         finally { writeDb.close() }
       }
