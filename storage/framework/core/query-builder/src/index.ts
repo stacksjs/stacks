@@ -13,13 +13,86 @@
  * exported below give Stacks code a single chokepoint to validate at.
  */
 
+import type { DatabaseSchema } from 'bun-query-builder'
 import * as bunQueryBuilder from 'bun-query-builder'
+import { config as bunQbConfig, createQueryBuilder as createBunQueryBuilder } from 'bun-query-builder'
 
 // Re-export everything from bun-query-builder
 export * from 'bun-query-builder'
 
+/**
+ * Per-connection SQLite bootstrap pragmas (stacksjs/stacks#1951).
+ * `foreign_keys` does not persist in the database file — SQLite ships with
+ * enforcement OFF on every new connection — so the inline
+ * `REFERENCES … ON DELETE CASCADE` emitted by migrations (#1916) is inert
+ * unless the connection bootstrap turns it on. bun-query-builder delegates
+ * this to the consumer; this wrapper is the one chokepoint every framework
+ * query-builder instance is created through, so applying here covers every
+ * connection — including the ORM auto-CRUD route builders that previously
+ * bypassed the pragma'd `db` proxy in @stacksjs/database.
+ */
+export const SQLITE_BOOTSTRAP_PRAGMAS = [
+  // WAL is also set by bun-query-builder's SQLiteWrapper at connect time;
+  // re-applying is a cheap no-op that guards against upstream drift.
+  'PRAGMA journal_mode = WAL',
+  'PRAGMA foreign_keys = ON',
+  'PRAGMA busy_timeout = 5000',
+] as const
+
+// bun-query-builder types `unsafe()` as returning `Promise<any>`, but at
+// runtime it returns a Bun SQL Statement that has `.execute()`.
+type UnsafeReturn = Promise<any> & { execute: () => Promise<any> }
+
+/**
+ * Apply the bootstrap pragmas to the connection of the CURRENT process-wide
+ * config. bun-query-builder's `qb.unsafe()` routes through its global
+ * lazily-resolved connection — NOT the instance's captured one — so this
+ * only targets `instance`'s connection when called in the same synchronous
+ * tick as `createQueryBuilder()`, before any intervening `setConfig()` can
+ * swap the signature-keyed singleton. The wrapped `createQueryBuilder`
+ * below guarantees that ordering structurally; standalone callers must
+ * preserve it themselves.
+ */
+export function applySqlitePragmas(instance: { unsafe: (query: string, params?: any[]) => any }): void {
+  for (const pragma of SQLITE_BOOTSTRAP_PRAGMAS) {
+    try {
+      // bun:sqlite executes synchronously inside `.execute()` (the returned
+      // promise is created already settled), so every pragma is in effect
+      // before this function returns — the first user query can never race
+      // ahead of `foreign_keys = ON`. `.catch` prevents an unhandled
+      // rejection if a pragma fails; failing open matches pre-#1951 behavior.
+      void (instance.unsafe(pragma) as UnsafeReturn).execute().catch(() => {})
+    }
+    catch {
+      // `unsafe()` itself threw — same fail-open rationale as above.
+    }
+  }
+}
+
+/**
+ * Drop-in replacement for bun-query-builder's `createQueryBuilder` that
+ * bootstraps every fresh SQLite connection with the pragmas above.
+ *
+ * The upstream builder captures its connection eagerly at creation
+ * (`state?.sql ?? getOrCreateBunSql()`) and its `SQLiteWrapper` only sets
+ * `journal_mode = WAL` — never `foreign_keys` — so any instance created
+ * outside this wrapper runs with FK enforcement off. Applying in the same
+ * synchronous tick as creation pins the pragmas to the exact connection the
+ * instance captured (see `applySqlitePragmas`). Skipped when the caller
+ * supplies its own `state.sql` (reserved/transaction connections derive
+ * from an already-bootstrapped parent).
+ */
+export function createQueryBuilder<DB extends DatabaseSchema<any> = DatabaseSchema<any>>(
+  state?: Parameters<typeof createBunQueryBuilder>[0],
+): ReturnType<typeof createBunQueryBuilder<DB>> {
+  const qb = createBunQueryBuilder<DB>(state)
+  if (!state?.sql && bunQbConfig.dialect === 'sqlite')
+    applySqlitePragmas(qb)
+  return qb
+}
+
 // For backwards compatibility, export QueryBuilder as an alias
-export { createQueryBuilder as QueryBuilder } from 'bun-query-builder'
+export { createQueryBuilder as QueryBuilder }
 
 const stacksModelRegistry = new Map<string, unknown>()
 

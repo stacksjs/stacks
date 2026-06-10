@@ -47,9 +47,10 @@ export async function resetSqliteDatabase(): Promise<Ok<string, never>> {
  * during dev hot-reload don't accumulate state.
  *
  * Connection bootstrap now applies SQLITE_BOOTSTRAP_PRAGMAS automatically
- * inside `getDb()` (stacksjs/stacks#1951); this export remains for explicit
- * re-application. See the shared list in `../utils` for what each pragma
- * does and why it must be set per connection.
+ * inside @stacksjs/query-builder's wrapped `createQueryBuilder`
+ * (stacksjs/stacks#1951); this export remains for explicit re-application.
+ * See the shared list in @stacksjs/query-builder for what each pragma does
+ * and why it must be set per connection.
  */
 export async function configureSqlitePragmas(): Promise<void> {
   try {
