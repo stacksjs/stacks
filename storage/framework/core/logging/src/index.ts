@@ -156,6 +156,38 @@ export function renderNormalizedError(n: NormalizedError): string {
   return out
 }
 
+/**
+ * Normalize context values so embedded `Error`s survive JSON
+ * serialization (stacksjs/stacks#1956). `JSON.stringify(new Error())`
+ * yields `{}` (message/stack are non-enumerable), so any Error placed
+ * in a context object — `log.warn('…', { error: err })` — was silently
+ * erased from the log line. Walks plain objects and arrays (bounded)
+ * and converts each Error via {@link normalizeError}; everything else
+ * passes through untouched.
+ */
+function normalizeContextValue(value: unknown, depth = 0): unknown {
+  if (value instanceof Error)
+    return normalizeError(value)
+  if (depth >= 4 || value === null || typeof value !== 'object')
+    return value
+  if (Array.isArray(value))
+    return value.map(v => normalizeContextValue(v, depth + 1))
+  // Only walk plain objects — class instances (Date, Map, …) keep
+  // their existing JSON.stringify behavior.
+  const proto = Object.getPrototypeOf(value)
+  if (proto !== Object.prototype && proto !== null)
+    return value
+  const out: Record<string, unknown> = {}
+  for (const [k, v] of Object.entries(value as Record<string, unknown>))
+    out[k] = normalizeContextValue(v, depth + 1)
+  return out
+}
+
+/** Apply {@link normalizeContextValue} to a structured log context. */
+export function normalizeContext(ctx: LogContext): LogContext {
+  return normalizeContextValue(ctx) as LogContext
+}
+
 const logContextStorage = new AsyncLocalStorage<LogContext>()
 
 /**
@@ -253,9 +285,15 @@ async function getLogger(): Promise<Logger> {
 
 // Helper function to format message for logging, including request context
 function formatMessage(...args: unknown[]): string {
-  const base = args.map(arg =>
-    typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg),
-  ).join(' ')
+  // Errors (bare or nested in object args) need normalizing first —
+  // `JSON.stringify(new Error())` is `{}` (stacksjs/stacks#1956).
+  const base = args.map((arg) => {
+    if (arg instanceof Error)
+      return renderNormalizedError(normalizeError(arg))
+    if (typeof arg === 'object' && arg !== null)
+      return JSON.stringify(normalizeContextValue(arg), null, 2)
+    return String(arg)
+  }).join(' ')
 
   // Prepend request ID if available
   const ctx = logContextStorage.getStore()
@@ -351,7 +389,9 @@ export const log: Log = {
 
   warn: async (message: string, context?: LogContext) => {
     const logger = await getLogger()
-    await logger.warn(message, context as Record<string, unknown> | undefined)
+    // Normalize so Errors in the context survive clarity's JSON.stringify
+    // (stacksjs/stacks#1956).
+    await logger.warn(message, context ? normalizeContext(context) as Record<string, unknown> : undefined)
   },
 
   warning: async (message: string) => {
@@ -385,7 +425,7 @@ export const log: Log = {
     const mergedCtx = { ...getLogContext(), ...context }
     if (Object.keys(mergedCtx).length > 0) {
       try {
-        line = `${line} ${JSON.stringify(mergedCtx)}`
+        line = `${line} ${JSON.stringify(normalizeContext(mergedCtx))}`
       }
       catch {
         // Non-serializable context — skip rather than throw on the error path.
@@ -444,7 +484,7 @@ export const log: Log = {
     return async (metadata?: LogContext) => {
       const duration = performance.now() - start
       const logger = await getLogger()
-      const meta = metadata ? ` ${JSON.stringify(metadata)}` : ''
+      const meta = metadata ? ` ${JSON.stringify(normalizeContext(metadata))}` : ''
       await logger.info(`${label}: ${duration.toFixed(2)}ms${meta}`)
     }
   },
