@@ -28,9 +28,9 @@ You can verify the same domain in multiple regions for redundancy, but the drive
 
 ## Verify a sender identity
 
-1. Open the SES console → **Verified identities** → **Create identity**.
+1. Open the SES console and go to **Verified identities › Create identity**.
 2. Pick **Domain** (recommended) and enter `yourdomain.com`.
-3. Toggle **Easy DKIM** on and **Publish DNS records to Route 53** if your DNS is on Route 53; otherwise SES gives you three CNAME records to paste into your provider.
+3. Toggle **Easy DKIM** on, and enable "Publish DNS records to Route 53" if your DNS is on Route 53; otherwise SES gives you three CNAME records to paste into your provider.
 4. Wait for status to flip to **Verified** (usually <15 min; up to 72h depending on DNS TTL).
 
 For testing without a domain, you can also verify a single email address — but DKIM only works at the domain level, so prod should always use a domain identity.
@@ -56,7 +56,7 @@ Every new SES account starts in **sandbox** mode:
 - 200 emails/day, 1 email/second cap
 - The driver will surface "SES sandbox restriction" in the error message when a send hits this
 
-To request production access: SES console → **Get set up** → **Request production access**. Fill in:
+To request production access, open the SES console and go to **Get set up › Request production access**. Fill in:
 
 - Use case (transactional vs marketing — be honest, both are fine)
 - Website URL
