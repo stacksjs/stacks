@@ -6,7 +6,7 @@ import { makeHash } from '@stacksjs/security'
 
 // Detect database driver from environment
 import { env } from '@stacksjs/env'
-import { sqlHelpers, usersEmailVerifiedAtSql } from '@stacksjs/database'
+import { sqlHelpers, usersEmailVerifiedAtSql, usersPasswordChangedAtSql } from '@stacksjs/database'
 
 const dbDriver = env.DB_CONNECTION || 'sqlite'
 const sql = sqlHelpers(dbDriver)
@@ -293,6 +293,16 @@ try {
   // also ensures it via migrateAuthTables).
   try {
     await db.unsafe(usersEmailVerifiedAtSql(sql))
+  }
+  catch { /* column already exists (or users table missing) — safe to ignore */ }
+
+  // Defensive ALTER for the column `resetPassword()` stamps and the
+  // token-validation paths read to invalidate credentials issued
+  // before a password change (stacksjs/stacks#1957, a #1947 follow-up).
+  // Same pattern + swallow as the email_verified_at ALTER above; also
+  // ensured on the `buddy migrate` path via migrateAuthTables.
+  try {
+    await db.unsafe(usersPasswordChangedAtSql(sql))
   }
   catch { /* column already exists (or users table missing) — safe to ignore */ }
 
