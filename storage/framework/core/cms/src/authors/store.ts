@@ -2,7 +2,8 @@ type AuthorJsonResponse = ModelRow<typeof Author>
 type NewAuthor = NewModelData<typeof Author>
 import { randomUUIDv7 } from 'bun'
 import { getDb } from '../database'
-import { formatDate } from '@stacksjs/orm'
+import { HttpError } from '@stacksjs/error-handling'
+import { formatDate, isUniqueViolation } from '@stacksjs/orm'
 
 interface AuthorData {
   name: string
@@ -80,6 +81,12 @@ export async function findOrCreate(data: AuthorData): Promise<AuthorJsonResponse
     return result as AuthorJsonResponse
   }
   catch (error) {
+    if (error instanceof HttpError)
+      throw error
+    // A concurrent insert can lose the find-then-insert race on the
+    // authors.email / users.email unique index (#1957).
+    if (isUniqueViolation(error))
+      throw new HttpError(409, 'An author with this email already exists')
     if (error instanceof Error)
       throw new TypeError(`Failed to find or create author: ${error.message}`)
 
@@ -131,6 +138,10 @@ export async function store(data: NewAuthor): Promise<AuthorJsonResponse> {
     return result as AuthorJsonResponse
   }
   catch (error) {
+    if (error instanceof HttpError)
+      throw error
+    if (isUniqueViolation(error))
+      throw new HttpError(409, 'An author with this email already exists')
     if (error instanceof Error)
       throw new TypeError(`Failed to find or create author: ${error.message}`)
 

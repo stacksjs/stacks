@@ -1,5 +1,5 @@
 import { Action } from '@stacksjs/actions'
-import { Subscriber, SubscriberEmail } from '@stacksjs/orm'
+import { isUniqueViolation, Subscriber, SubscriberEmail } from '@stacksjs/orm'
 import { rateLimit } from '@stacksjs/router'
 import { sendSubscriptionConfirmation } from '../Mail/SubscriptionConfirmation'
 
@@ -28,8 +28,20 @@ export default new Action({
       return { success: true, message: 'Already subscribed' }
     }
 
-    // Create subscriber record
-    const subscriber = await Subscriber.create({ email, status: 'subscribed', source })
+    // Create subscriber record. The check above is a fast path; two requests
+    // for the same email can still both pass it and race into the
+    // subscribers.email unique index (#1957). Treat the loser's unique
+    // violation as the same "already subscribed" success — the response
+    // contract (and its enumeration semantics) is unchanged.
+    let subscriber: any
+    try {
+      subscriber = await Subscriber.create({ email, status: 'subscribed', source })
+    }
+    catch (err) {
+      if (isUniqueViolation(err))
+        return { success: true, message: 'Already subscribed' }
+      throw err
+    }
 
     // Log the email event
     await SubscriberEmail.create({ email, source })

@@ -1,6 +1,7 @@
 import type { StacksExpressionBuilder } from '@stacksjs/database'
 import { db } from '@stacksjs/database'
-import { formatDate } from '@stacksjs/orm'
+import { HttpError } from '@stacksjs/error-handling'
+import { formatDate, isUniqueViolation } from '@stacksjs/orm'
 type CouponJsonResponse = ModelRow<typeof Coupon>
 type CouponUpdate = UpdateModelData<typeof Coupon>
 import { fetchById } from './fetch'
@@ -53,15 +54,13 @@ export async function update(id: number, data: Omit<CouponUpdate, 'id'>): Promis
     return updatedCoupon
   }
   catch (error) {
-    if (error instanceof Error) {
-      // Handle duplicate code error
-      if (error.message.includes('Duplicate entry') && error.message.includes('code')) {
-        throw new Error('A coupon with this code already exists')
-      }
-
+    if (error instanceof HttpError)
+      throw error
+    // Cross-dialect duplicate detection (#1957).
+    if (isUniqueViolation(error))
+      throw new HttpError(409, 'A coupon with this code already exists')
+    if (error instanceof Error)
       throw new Error(`Failed to update coupon: ${error.message}`)
-    }
-
     throw error
   }
 }

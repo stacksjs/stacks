@@ -1,5 +1,6 @@
 import { db } from '@stacksjs/database'
-import { formatDate } from '@stacksjs/orm'
+import { HttpError } from '@stacksjs/error-handling'
+import { formatDate, isUniqueViolation } from '@stacksjs/orm'
 type CustomerJsonResponse = ModelRow<typeof Customer>
 type CustomerUpdate = UpdateModelData<typeof Customer>
 
@@ -31,14 +32,13 @@ export async function update(id: number, data: Omit<CustomerUpdate, 'id'>): Prom
     return result as CustomerJsonResponse
   }
   catch (error) {
-    if (error instanceof Error) {
-      if (error.message.includes('Duplicate entry') && error.message.includes('email')) {
-        throw new Error('A customer with this email already exists')
-      }
-
+    if (error instanceof HttpError)
+      throw error
+    // Cross-dialect duplicate detection (#1957).
+    if (isUniqueViolation(error))
+      throw new HttpError(409, 'A customer with this email already exists')
+    if (error instanceof Error)
       throw new Error(`Failed to update customer: ${error.message}`)
-    }
-
     throw error
   }
 }

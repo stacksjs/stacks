@@ -1,6 +1,8 @@
 type CustomerJsonResponse = ModelRow<typeof Customer>
 type NewCustomer = NewModelData<typeof Customer>
 import { db } from '@stacksjs/database'
+import { HttpError } from '@stacksjs/error-handling'
+import { isUniqueViolation } from '@stacksjs/orm'
 import { fetchById } from './fetch'
 
 /**
@@ -31,14 +33,13 @@ export async function store(data: NewCustomer): Promise<CustomerJsonResponse> {
     return customerResult
   }
   catch (error) {
-    if (error instanceof Error) {
-      if (error.message.includes('Duplicate entry') && error.message.includes('email')) {
-        throw new Error('A customer with this email already exists')
-      }
-
+    if (error instanceof HttpError)
+      throw error
+    // Cross-dialect duplicate detection (#1957).
+    if (isUniqueViolation(error))
+      throw new HttpError(409, 'A customer with this email already exists')
+    if (error instanceof Error)
       throw new Error(`Failed to create customer: ${error.message}`)
-    }
-
     throw error
   }
 }

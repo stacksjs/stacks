@@ -1,6 +1,7 @@
 import type { StacksExpressionBuilder } from '@stacksjs/database'
 import { db } from '@stacksjs/database'
-import { formatDate } from '@stacksjs/orm'
+import { HttpError } from '@stacksjs/error-handling'
+import { formatDate, isUniqueViolation } from '@stacksjs/orm'
 type GiftCardJsonResponse = ModelRow<typeof GiftCard>
 type GiftCardUpdate = UpdateModelData<typeof GiftCard>
 import { fetchById } from './fetch'
@@ -34,15 +35,13 @@ export async function update(id: number, data: Omit<GiftCardUpdate, 'id'>): Prom
     return await fetchById(id)
   }
   catch (error) {
-    if (error instanceof Error) {
-      // Handle duplicate code error
-      if (error.message.includes('Duplicate entry') && error.message.includes('code')) {
-        throw new Error('A gift card with this code already exists')
-      }
-
+    if (error instanceof HttpError)
+      throw error
+    // Cross-dialect duplicate detection (#1957).
+    if (isUniqueViolation(error))
+      throw new HttpError(409, 'A gift card with this code already exists')
+    if (error instanceof Error)
       throw new Error(`Failed to update gift card: ${error.message}`)
-    }
-
     throw error
   }
 }

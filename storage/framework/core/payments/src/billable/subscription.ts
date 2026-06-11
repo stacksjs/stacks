@@ -1,6 +1,8 @@
 import type { UserModel } from '@stacksjs/orm'
 import type Stripe from 'stripe'
 import { db } from '@stacksjs/database'
+import { HttpError } from '@stacksjs/error-handling'
+import { isUniqueViolation } from '@stacksjs/orm'
 
 type SubscriptionsTable = Record<string, unknown>
 
@@ -213,7 +215,19 @@ export const manageSubscription: SubscriptionManager = (() => {
       last_used_at: (options as unknown as Record<string, unknown>).current_period_end != null ? String((options as unknown as Record<string, unknown>).current_period_end) : undefined,
     })
 
-    const subscriptionModelCreated = await db.insertInto('subscriptions').values(data).executeTakeFirst()
+    // A duplicate provider_id (e.g. a retried Stripe webhook delivery) hits
+    // the subscriptions.provider_id unique index — surface it as a 409 rather
+    // than a raw 500 (#1957). 409 is the conservative mapping; idempotent
+    // return-existing semantics are deferred as a product call.
+    let subscriptionModelCreated: { insertId?: unknown } | undefined
+    try {
+      subscriptionModelCreated = await db.insertInto('subscriptions').values(data).executeTakeFirst()
+    }
+    catch (error) {
+      if (isUniqueViolation(error))
+        throw new HttpError(409, 'A subscription with this provider ID already exists')
+      throw error
+    }
     if (!subscriptionModelCreated)
       throw new Error('Failed to insert subscription record')
 

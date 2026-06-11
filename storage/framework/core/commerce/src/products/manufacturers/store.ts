@@ -2,6 +2,8 @@ type ManufacturerJsonResponse = ModelRow<typeof Manufacturer>
 type NewManufacturer = NewModelData<typeof Manufacturer>
 import { randomUUIDv7 } from 'bun'
 import { db } from '@stacksjs/database'
+import { HttpError } from '@stacksjs/error-handling'
+import { isUniqueViolation } from '@stacksjs/orm'
 
 /**
  * Create a new product manufacturer
@@ -29,14 +31,13 @@ export async function store(data: NewManufacturer): Promise<ManufacturerJsonResp
     return result as ManufacturerJsonResponse
   }
   catch (error) {
-    if (error instanceof Error) {
-      if (error.message.includes('Duplicate entry')) {
-        throw new Error('A manufacturer with this name already exists')
-      }
-
+    if (error instanceof HttpError)
+      throw error
+    // Cross-dialect duplicate detection (#1957).
+    if (isUniqueViolation(error))
+      throw new HttpError(409, 'A manufacturer with this name already exists')
+    if (error instanceof Error)
       throw new Error(`Failed to create manufacturer: ${error.message}`)
-    }
-
     throw error
   }
 }

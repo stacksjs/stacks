@@ -2,6 +2,8 @@ type GiftCardJsonResponse = ModelRow<typeof GiftCard>
 type NewGiftCard = NewModelData<typeof GiftCard>
 import { randomUUIDv7 } from 'bun'
 import { db } from '@stacksjs/database'
+import { HttpError } from '@stacksjs/error-handling'
+import { isUniqueViolation } from '@stacksjs/orm'
 
 /**
  * Create a new gift card
@@ -42,14 +44,13 @@ export async function store(data: NewGiftCard): Promise<GiftCardJsonResponse | u
     return undefined
   }
   catch (error) {
-    if (error instanceof Error) {
-      if (error.message.includes('Duplicate entry') && error.message.includes('code')) {
-        throw new Error('A gift card with this code already exists')
-      }
-
+    if (error instanceof HttpError)
+      throw error
+    // Cross-dialect duplicate detection (#1957).
+    if (isUniqueViolation(error))
+      throw new HttpError(409, 'A gift card with this code already exists')
+    if (error instanceof Error)
       throw new Error(`Failed to create gift card: ${error.message}`)
-    }
-
     throw error
   }
 }

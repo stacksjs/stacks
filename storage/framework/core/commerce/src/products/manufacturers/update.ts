@@ -1,5 +1,6 @@
 import { db } from '@stacksjs/database'
-import { formatDate } from '@stacksjs/orm'
+import { HttpError } from '@stacksjs/error-handling'
+import { formatDate, isUniqueViolation } from '@stacksjs/orm'
 type ManufacturerJsonResponse = ModelRow<typeof Manufacturer>
 type ManufacturerUpdate = UpdateModelData<typeof Manufacturer>
 
@@ -31,14 +32,13 @@ export async function update(id: number, data: ManufacturerUpdate): Promise<Manu
     return result as ManufacturerJsonResponse
   }
   catch (error) {
-    if (error instanceof Error) {
-      if ((error.message.includes('Duplicate entry') || error.message.includes('UNIQUE constraint failed')) && error.message.includes('manufacturer')) {
-        throw new Error('A manufacturer with this name already exists')
-      }
-
+    if (error instanceof HttpError)
+      throw error
+    // Cross-dialect duplicate detection (#1957).
+    if (isUniqueViolation(error))
+      throw new HttpError(409, 'A manufacturer with this name already exists')
+    if (error instanceof Error)
       throw new Error(`Failed to update manufacturer: ${error.message}`)
-    }
-
     throw error
   }
 }
