@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test'
-import Csrf from '../../../../../pantry/@stacksjs/bun-router/src/middleware/csrf'
-import type { EnhancedRequest } from '../../../../../pantry/@stacksjs/bun-router/src/types'
+import type { EnhancedRequest } from '@stacksjs/bun-router'
+import { Csrf } from '@stacksjs/bun-router'
 
 /**
  * Tests for the bearer-token CSRF bypass (stacksjs/stacks#1922).

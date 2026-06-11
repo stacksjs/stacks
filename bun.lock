@@ -754,7 +754,7 @@
       "name": "@stacksjs/router",
       "version": "0.70.45",
       "dependencies": {
-        "@stacksjs/bun-router": "0.0.15",
+        "@stacksjs/bun-router": "0.0.16",
       },
       "devDependencies": {
         "@stacksjs/actions": "workspace:*",
@@ -1065,7 +1065,7 @@
 
     "@stacksjs/bun-queue": ["@stacksjs/bun-queue@0.1.0", "", {}, "sha512-rnIn+Fbh9dHUyrGAnT5VWyX0eUgRKuWaCiOTu2+c+jlGCer3wj25eFWuH5c23NsH4me2wgPFAbHf35K2HwLzgQ=="],
 
-    "@stacksjs/bun-router": ["@stacksjs/bun-router@0.0.15", "", { "dependencies": { "@stacksjs/clapp": "^0.2.0", "ts-rate-limiter": "^0.4.2" }, "bin": { "router": "./bin/cli.ts", "bun-router": "./dist/cli.js" } }, "sha512-LBOknFel8hT41v6YFdstWd3/yB2tScT3lxCxsrhJ1oEO1px8oOUUjvqaIutMKfwrwJDb+Pqi4tF89DewR+ov7A=="],
+    "@stacksjs/bun-router": ["@stacksjs/bun-router@0.0.16", "", { "dependencies": { "@stacksjs/clapp": "^0.2.0", "ts-rate-limiter": "^0.4.2" }, "bin": { "bun-router": "./dist/cli.js", "router": "./bin/cli.ts" } }, "sha512-OdRTIsn2ZfF+lsETqh5nSmoVVNqYuXfUT9BHTImjuMYFPzl9uBNe+dbhohokuRLGTArzgNmdeg61V6bRU+K9TA=="],
 
     "@stacksjs/bunpress": ["@stacksjs/bunpress@0.1.9", "", { "dependencies": { "@stacksjs/clapp": "^0.2.0", "@stacksjs/stx": "^0.2.10", "@stacksjs/ts-cloud": "^0.2.3", "@stacksjs/ts-md": "^0.1.1", "bunfig": "^0.15.6" }, "bin": { "bunpress": "./dist/bin/cli.js" } }, "sha512-q/1G1TrdiAH6LeZrIgmYS+Ri+rGvJ8KrrihyE8SHRjOf/9Yg3SeFifQ8ycLMJfkgQWs7y3f92LiQwcNxEk4N5w=="],
 
