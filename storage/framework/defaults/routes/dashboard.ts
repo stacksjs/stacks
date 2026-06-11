@@ -47,6 +47,9 @@ route.group({ prefix: '/auth' }, () => {
 route.group({ middleware: 'auth' }, () => {
   route.get('/me', 'Actions/Auth/AuthUserAction')
   route.post('/logout', 'Actions/Auth/LogoutAction')
+  // Sign out everywhere: revoke every access/refresh token AND destroy
+  // every session for the authenticated user (stacksjs/stacks#1957).
+  route.post('/logout-all', 'Actions/Auth/LogoutAllAction')
 })
 
 // Password Reset. `/forgot` triggers a mailer hop so it's the most
