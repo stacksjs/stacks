@@ -1,10 +1,19 @@
-import { describe, expect, test } from 'bun:test'
+import { afterEach, describe, expect, test } from 'bun:test'
 import {
+  clearCurrentRequest,
   getCurrentRequest,
   request,
   runWithRequest,
   setCurrentRequest,
 } from '../src/request-context'
+
+// setCurrentRequest uses AsyncLocalStorage.enterWith, which mutates the test
+// runner's own async frame and never restores it. Without this cleanup the
+// leaked frame poisons the next test file bun collects (mis-registered tests,
+// done-callback timeouts, dropped it.each cases).
+afterEach(() => {
+  clearCurrentRequest()
+})
 
 // ---------------------------------------------------------------------------
 // Helpers

@@ -124,6 +124,19 @@ export function setCurrentRequest(req: EnhancedRequest): void {
 }
 
 /**
+ * Clear the current request context.
+ *
+ * `setCurrentRequest` uses `AsyncLocalStorage.enterWith`, which mutates the
+ * caller's async scope and never restores it. Call this in test teardown
+ * (`afterEach`) whenever a test body calls `setCurrentRequest`, so the leaked
+ * frame doesn't poison subsequently-collected test files (bun's runner
+ * mis-registers tests when collected on a foreign async frame).
+ */
+export function clearCurrentRequest(): void {
+  requestStorage.disable()
+}
+
+/**
  * Run a function with a request context
  * All code executed within the callback will have access to the request
  */
