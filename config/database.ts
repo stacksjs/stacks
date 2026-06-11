@@ -9,7 +9,7 @@ import { env } from '@stacksjs/env'
  * you have any questions, feel free to reach out via Discord or GitHub Discussions.
  */
 export default {
-  default: env.DB_CONNECTION as SupportedDialect || 'mysql',
+  default: env.DB_CONNECTION as SupportedDialect || 'sqlite',
 
   connections: {
     sqlite: {

@@ -2,6 +2,8 @@ import { afterEach, beforeEach, describe, expect, test } from 'bun:test'
 import { existsSync, mkdirSync, readFileSync, rmSync, statSync, utimesSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
+import process from 'node:process'
+import { userDatabasePath } from '@stacksjs/path'
 import { acquireMigrationLock } from '../src/migration-lock'
 
 // SQLite lock tests are the easiest to verify deterministically — no
@@ -89,6 +91,33 @@ describe('acquireMigrationLock (sqlite) — stacksjs/stacks#1876 D-1', () => {
     await expect(
       acquireMigrationLock('sqlite', null, { sqliteLockPath: lockPath, timeoutMs: 300 }),
     ).rejects.toThrow(/another migration is in progress/i)
+  })
+})
+
+describe('default sqlite lock path is project-aware', () => {
+  test('acquires from a package-directory cwd without ENOENT', async () => {
+    // From a package cwd (e.g. `bun test` inside storage/framework/
+    // core/*), the old `join(process.cwd(), 'database', '.migration.lock')`
+    // pointed at a nonexistent `<package>/database/` directory, so the
+    // O_CREAT|O_EXCL open threw ENOENT and aborted the migration run.
+    // `userDatabasePath()` resolves the project root regardless of cwd.
+    const packageDir = join(import.meta.dir, '..')
+    const prevCwd = process.cwd()
+    const expected = userDatabasePath('.migration.lock')
+
+    try {
+      process.chdir(packageDir)
+      const handle = await acquireMigrationLock('sqlite', null, { timeoutMs: 500 })
+
+      expect(existsSync(expected)).toBe(true)
+      expect(existsSync(join(packageDir, 'database', '.migration.lock'))).toBe(false)
+
+      await handle.release()
+      expect(existsSync(expected)).toBe(false)
+    }
+    finally {
+      process.chdir(prevCwd)
+    }
   })
 })
 

@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'bun:test'
-import { refreshDatabase } from '@stacksjs/testing/database'
+import { refreshDatabase } from './setup'
 import { destroy } from '../customers/destroy'
 
 beforeEach(async () => {

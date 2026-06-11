@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'bun:test'
-import { refreshDatabase } from '@stacksjs/testing/database'
+import { refreshDatabase } from './setup'
 import { formatZoneOptions, getActiveShippingZones } from '../shippings/shipping-zones/fetch'
 import { bulkStore, store } from '../shippings/shipping-zones/store'
 import { bulkDestroy } from '../shippings/shipping-zones/destroy'

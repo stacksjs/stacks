@@ -30,8 +30,8 @@
 import { Buffer } from 'node:buffer'
 import { createHash } from 'node:crypto'
 import { closeSync, openSync, readFileSync, statSync, unlinkSync, writeFileSync } from 'node:fs'
-import { join } from 'node:path'
 import process from 'node:process'
+import { userDatabasePath } from '@stacksjs/path'
 
 export type Dialect = 'sqlite' | 'mysql' | 'postgres'
 
@@ -198,7 +198,11 @@ async function acquireMySqlLock(
 }
 
 function defaultSqliteLockPath(): string {
-  return join(process.cwd(), 'database', '.migration.lock')
+  // Project-aware: resolves `<project>/database/.migration.lock`
+  // regardless of cwd. The previous `join(process.cwd(), 'database', ...)`
+  // ENOENT'd when migrations ran from a package directory (e.g.
+  // `bun test` inside storage/framework/core/*), aborting the run.
+  return userDatabasePath('.migration.lock')
 }
 
 async function acquireSqliteLock(

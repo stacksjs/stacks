@@ -17,6 +17,16 @@ const tempDir = mkdtempSync(join(tmpdir(), 'stacks-testing-db-'))
 const sqliteFile = join(tempDir, 'test.sqlite')
 writeFileSync(sqliteFile, '')
 
+// `mock.module` is process-wide and bun does NOT restore it between
+// test files (same hazard documented in auth/tests/register.test.ts),
+// so capture the real namespace BEFORE mocking and put it back in
+// afterAll. Without the restore, every test file that evaluates later
+// in the same `bun test` run sees this stub — `db` without `.unsafe`,
+// no `initializeDbConfig`, etc. The spread matters: mocking patches
+// the live namespace in place, so a bare capture would "restore" the
+// mock itself.
+const realDatabase = { ...await import('@stacksjs/database') }
+
 mock.module('@stacksjs/database', () => ({
   copyModelFiles: async () => { calls.push('copyModelFiles') },
   db: {},
@@ -44,6 +54,7 @@ mock.module('@stacksjs/database', () => ({
 }))
 
 afterAll(() => {
+  mock.module('@stacksjs/database', () => realDatabase)
   rmSync(tempDir, { recursive: true, force: true })
 })
 

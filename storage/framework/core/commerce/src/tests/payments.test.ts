@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'bun:test'
 import { formatDate } from '@stacksjs/orm'
-import { refreshDatabase } from '@stacksjs/testing/database'
+import { refreshDatabase } from './setup'
 import { bulkDestroy } from '../payments/destroy'
 import { fetchMonthlyPaymentTrends } from '../payments/fetch'
 import { store } from '../payments/store'

@@ -1,0 +1,6 @@
+# Preload the package test harness so the env pin (sqlite + temp DB
+# file) lands before any test file's imports evaluate. See
+# src/tests/setup.ts for why these suites can't use the repo-root
+# `@stacksjs/testing/database` refresh path.
+[test]
+preload = ["./src/tests/setup.ts"]

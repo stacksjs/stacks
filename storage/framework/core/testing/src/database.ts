@@ -1,4 +1,4 @@
-import { database } from '@stacksjs/config'
+import { config } from '@stacksjs/config'
 import {
   copyModelFiles,
   db,
@@ -10,12 +10,23 @@ import {
   migrateNotificationTables,
   migrateRbacTables,
   runDatabaseMigration,
-  sql,
 } from '@stacksjs/database'
 import { path } from '@stacksjs/path'
 import { fs, globSync } from '@stacksjs/storage'
 
-const driver = database.default || ''
+/**
+ * Resolve the driver at call time off the live `config` proxy.
+ *
+ * The previous module-level `const driver = database.default || ''`
+ * snapshot raced the async config-override loader: `import { database }`
+ * is reassigned only when `overridesReady` resolves, so a helper module
+ * that evaluates early froze whatever driver happened to be merged at
+ * import time. Reading the proxy per call always reflects the merged
+ * (and any test-pinned) value.
+ */
+function currentDriver(): string {
+  return config.database?.default || ''
+}
 
 // Snapshot path used by the fast SQLite reset path. Initialized lazily
 // the first time `refreshDatabase()` runs so test suites that never
@@ -63,11 +74,10 @@ async function migrateFrameworkTables(): Promise<void> {
 }
 
 export async function setupDatabase(): Promise<void> {
-  const dbName = `${database.connections?.mysql?.name ?? 'stacks'}_testing`
+  const dbName = `${config.database?.connections?.mysql?.name ?? 'stacks'}_testing`
 
-  if (driver === 'mysql') {
-    await (sql`CREATE DATABASE IF NOT EXISTS ${sql.raw(dbName)}` as any).execute(db)
-    // TODO: Remove all log.info
+  if (currentDriver() === 'mysql') {
+    await db.unsafe(`CREATE DATABASE IF NOT EXISTS ${dbName}`).execute()
     await runDatabaseMigration()
     await migrateFrameworkTables()
   }
@@ -76,6 +86,7 @@ export async function setupDatabase(): Promise<void> {
 export async function refreshDatabase(): Promise<void> {
   await setupDatabase()
 
+  const driver = currentDriver()
   if (driver === 'mysql')
     await truncateMysql()
   if (driver === 'sqlite')
@@ -90,14 +101,14 @@ export async function truncateMysql(): Promise<void> {
   // "cannot truncate" error and leave half the schema seeded with stale
   // rows. Disabling FK checks for the duration of the truncate is the
   // standard test-fixture pattern.
-  await (sql`SET FOREIGN_KEY_CHECKS = 0` as any).execute(db)
+  await db.unsafe('SET FOREIGN_KEY_CHECKS = 0').execute()
   try {
     for (const table of tables) {
-      await (sql`TRUNCATE TABLE ${sql.raw(table)}` as any).execute(db)
+      await db.unsafe(`TRUNCATE TABLE ${table}`).execute()
     }
   }
   finally {
-    await (sql`SET FOREIGN_KEY_CHECKS = 1` as any).execute(db)
+    await db.unsafe('SET FOREIGN_KEY_CHECKS = 1').execute()
   }
 }
 
@@ -166,6 +177,12 @@ export async function truncateSqliteFast(): Promise<void> {
     // Slow path — same as before, then capture.
     await truncateSqlite()
     try {
+      // In WAL mode the freshly migrated schema may still live in the
+      // `-wal` sidecar; `copyFileSync` only copies the main DB file, so
+      // an un-checkpointed snapshot captures an empty/partial schema
+      // that poisons every fast-path restore. Checkpoint first so the
+      // main file is complete.
+      await db.unsafe('PRAGMA wal_checkpoint(TRUNCATE)').execute()
       fs.copyFileSync(sqlitePath, snapPath)
     }
     catch {
@@ -231,11 +248,11 @@ export function useTransactionalTests(): {
       // already inside a transaction (some drivers wrap CLI commands
       // in implicit transactions on connect).
       const savepoint = `stacks_test_${Date.now()}_${Math.floor(Math.random() * 1e6)}`
-      await (sql`SAVEPOINT ${sql.raw(savepoint)}` as any).execute(db)
+      await db.unsafe(`SAVEPOINT ${savepoint}`).execute()
       active = {
         rollback: async () => {
-          await (sql`ROLLBACK TO SAVEPOINT ${sql.raw(savepoint)}` as any).execute(db)
-          await (sql`RELEASE SAVEPOINT ${sql.raw(savepoint)}` as any).execute(db)
+          await db.unsafe(`ROLLBACK TO SAVEPOINT ${savepoint}`).execute()
+          await db.unsafe(`RELEASE SAVEPOINT ${savepoint}`).execute()
         },
       }
     },

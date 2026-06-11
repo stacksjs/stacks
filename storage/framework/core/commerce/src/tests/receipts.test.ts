@@ -1,6 +1,6 @@
 type ReceiptJsonResponse = ModelRow<typeof Receipt>
 import { beforeEach, describe, expect, it } from 'bun:test'
-import { refreshDatabase } from '@stacksjs/testing/database'
+import { refreshDatabase } from './setup'
 import { bulkDestroy } from '../receipts/destroy'
 import { fetchAll, fetchPrintsPerHour } from '../receipts/fetch'
 import { bulkStore } from '../receipts/store'

@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'bun:test'
 import { formatDate } from '@stacksjs/orm'
-import { refreshDatabase } from '@stacksjs/testing/database'
+import { refreshDatabase } from './setup'
 import { fetchActive, fetchAll } from '../coupons/fetch'
 import { store } from '../coupons/store'
 

@@ -52,7 +52,7 @@ export default defineModel({
     userId: {
       order: 2,
       fillable: true,
-      validation: { rule: schema.number().nullable() },
+      validation: { rule: schema.number() },
       factory: () => null,
     },
 
