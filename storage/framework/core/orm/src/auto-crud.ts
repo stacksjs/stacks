@@ -154,6 +154,128 @@ export function stripHidden(record: any, hiddenFields: string[]): any {
 }
 
 /**
+ * Columns every auto-CRUD table carries regardless of declared attributes.
+ * Members of the read allowlist (sort/filter) alongside the model's own
+ * attribute names.
+ */
+export const SYSTEM_COLUMNS = ['id', 'uuid', 'created_at', 'updated_at', 'deleted_at']
+
+/**
+ * Build the read-path column allowlist for a model: a map from BOTH the
+ * attribute-name spelling and its snake_case column spelling to the real
+ * snake_case column. One map serves `?sort=` and `?<column>=` filters.
+ *
+ * Why a map and not a set: attribute names may be camelCase
+ * (`discountType`) while DB columns are always snake_case (the migration
+ * drivers snake_case them — same contract as `toSnakeCaseKeys` on the
+ * write path). A set keyed by attribute spelling let `?sort=discountType`
+ * through to `orderBy('discountType')` (ghost column → 500) while
+ * REJECTING the real column spelling `discount_type`. The map accepts
+ * either spelling and always emits the column spelling.
+ *
+ * Hidden attributes are removed under BOTH spellings — sorting or
+ * equality-filtering on a hidden column (`?two_factor_secret=x`) is a
+ * blind-enumeration oracle even though the value never appears in the
+ * response body.
+ */
+export function buildReadColumnMap(
+  attributes: Record<string, unknown> | null | undefined,
+  hiddenFields: string[],
+): Map<string, string> {
+  const map = new Map<string, string>()
+  for (const name of [...Object.keys(attributes ?? {}), ...SYSTEM_COLUMNS]) {
+    const column = toSnakeCase(name)
+    // bun-query-builder interpolates ORDER BY / WHERE columns raw and
+    // unquoted — only word-shaped columns may enter the map.
+    if (!/^\w+$/.test(column)) continue
+    map.set(name, column)
+    map.set(column, column)
+  }
+  for (const f of hiddenFields) {
+    map.delete(f)
+    map.delete(toSnakeCase(f))
+  }
+  return map
+}
+
+/**
+ * Apply a `?sort=` parameter to a query builder chain. Comma-separated
+ * tokens, each optionally `-` prefixed for descending. Tokens are resolved
+ * through the `columns` allowlist map (see `buildReadColumnMap`) so either
+ * spelling of a declared, non-hidden attribute works and everything else —
+ * unknown names, hidden attributes, non-word tokens — is silently skipped
+ * (the existing contract, matching the filter loop).
+ *
+ * Examples:
+ *   ?sort=name              → ORDER BY name ASC
+ *   ?sort=-rating           → ORDER BY rating DESC
+ *   ?sort=discountType,name → ORDER BY discount_type ASC, name ASC
+ */
+export function applySorting(query: any, sortParam: string | null, columns: ReadonlyMap<string, string>): any {
+  if (!sortParam) return query
+  const tokens = String(sortParam).split(',').map(t => t.trim()).filter(Boolean)
+  let q = query
+  for (const tok of tokens) {
+    const desc = tok.startsWith('-')
+    const requested = desc ? tok.slice(1) : tok
+    if (!/^\w+$/.test(requested)) continue
+    const column = columns.get(requested)
+    if (!column) continue
+    q = q.orderBy(column, desc ? 'desc' : 'asc')
+  }
+  return q
+}
+
+/**
+ * Built-in cast resolvers — kept in sync with @stacksjs/orm/define-model.
+ * A duplicate here is the simplest way to keep auto-CRUD parity with the
+ * model-driven path without introducing a circular import.
+ */
+export const AUTO_CRUD_CASTERS: Record<string, { get: (v: unknown) => unknown, set: (v: unknown) => unknown }> = {
+  string:   { get: v => v != null ? String(v) : null,                                set: v => v != null ? String(v) : null },
+  number:   { get: v => v != null ? Number(v) : null,                                set: v => v != null ? Number(v) : null },
+  integer:  { get: v => v != null ? Math.trunc(Number(v)) : null,                    set: v => v != null ? Math.trunc(Number(v)) : null },
+  float:    { get: v => v != null ? Number.parseFloat(String(v)) : null,             set: v => v != null ? Number.parseFloat(String(v)) : null },
+  boolean:  { get: v => v === 1 || v === '1' || v === true || v === 'true',         set: v => (v === true || v === 1 || v === '1' || v === 'true') ? 1 : 0 },
+  json:     { get: v => v == null ? null : (typeof v === 'string' ? safeJSON(v) : v), set: v => v == null ? null : typeof v === 'string' ? v : JSON.stringify(v) },
+  datetime: { get: v => v ? new Date(v as string) : null,                            set: v => v instanceof Date ? v.toISOString() : v },
+  date:     { get: v => v ? new Date(v as string) : null,                            set: v => v instanceof Date ? (v.toISOString().split('T')[0] as string) : v },
+  array:    { get: v => v == null ? [] : Array.isArray(v) ? v : (typeof v === 'string' ? safeJSONOrEmpty(v) : []), set: v => v == null ? null : Array.isArray(v) ? JSON.stringify(v) : v },
+}
+
+function safeJSON(s: string): unknown { try { return JSON.parse(s) } catch { return s } }
+function safeJSONOrEmpty(_s: string): unknown { try { return JSON.parse(_s) } catch { return [] } }
+
+/**
+ * Apply a model's `casts` to a record, in either direction:
+ *   - `'get'`  — DB shape → JS-typed values (read responses)
+ *   - `'set'`  — input → DB shape (write payloads)
+ *
+ * Casts are declared keyed by attribute name (possibly camelCase:
+ * `instantBook: 'boolean'`) but DB rows come back keyed by snake_case
+ * column names (`instant_book`) — so each cast is applied under BOTH
+ * spellings, whichever is present. A record keyed by attribute names
+ * (the write path) behaves exactly as before; a snake-keyed DB row (the
+ * read path) now gets its casts instead of leaking raw SQLite `"1"`s.
+ */
+export function applyCasts(
+  record: Record<string, any> | null | undefined,
+  casts: Record<string, string | { get: (v: unknown) => unknown, set: (v: unknown) => unknown }> | null | undefined,
+  direction: 'get' | 'set',
+): any {
+  if (!record || typeof record !== 'object' || !casts || Object.keys(casts).length === 0) return record
+  const out: Record<string, any> = { ...record }
+  for (const [attr, castDef] of Object.entries(casts)) {
+    const caster = typeof castDef === 'string' ? AUTO_CRUD_CASTERS[castDef] : castDef
+    if (!caster || typeof caster[direction] !== 'function') continue
+    if (Object.prototype.hasOwnProperty.call(out, attr)) out[attr] = caster[direction](out[attr])
+    const snake = toSnakeCase(attr)
+    if (snake !== attr && Object.prototype.hasOwnProperty.call(out, snake)) out[snake] = caster[direction](out[snake])
+  }
+  return out
+}
+
+/**
  * Resolve middleware lists for a model's `useApi` trait value (which may be
  * `true` or `{ uri, routes, middleware }`).
  *

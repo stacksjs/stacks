@@ -26,7 +26,7 @@
 import { describe, expect, it } from 'bun:test'
 import { Database } from 'bun:sqlite'
 import { snakeCase } from '@stacksjs/strings'
-import { dropHiddenInputs, filterFillable, isUniqueViolation, mapWriteError, resolveApiMiddleware, stripHidden, toSnakeCase, toSnakeCaseKeys } from '../src/auto-crud'
+import { applyCasts, applySorting, buildReadColumnMap, dropHiddenInputs, filterFillable, isUniqueViolation, mapWriteError, resolveApiMiddleware, stripHidden, toSnakeCase, toSnakeCaseKeys } from '../src/auto-crud'
 
 describe('toSnakeCaseKeys (write-path column mapping)', () => {
   it('maps camelCase attribute keys to snake_case column keys', () => {
@@ -154,6 +154,153 @@ describe('stripHidden (dual-spelling response stripping)', () => {
     stripHidden(withHidden, ['secretKey'])
     expect(withHidden.secretKey).toBe('s')
     expect(withHidden.secret_key).toBe('s2')
+  })
+})
+
+describe('buildReadColumnMap (read-path sort/filter allowlist)', () => {
+  const attributes = {
+    discountType: { fillable: true },
+    code: { fillable: true },
+    paymentDetails: { hidden: true },
+    two_factor_secret: { hidden: true },
+  }
+  const hidden = ['paymentDetails', 'two_factor_secret']
+
+  it('resolves BOTH spellings of a camelCase attribute to the snake column', () => {
+    const map = buildReadColumnMap(attributes, hidden)
+    expect(map.get('discountType')).toBe('discount_type')
+    expect(map.get('discount_type')).toBe('discount_type')
+  })
+
+  it('keeps snake-declared attributes under their single spelling', () => {
+    const map = buildReadColumnMap(attributes, hidden)
+    expect(map.get('code')).toBe('code')
+  })
+
+  it('includes system columns', () => {
+    const map = buildReadColumnMap(attributes, hidden)
+    for (const col of ['id', 'uuid', 'created_at', 'updated_at', 'deleted_at'])
+      expect(map.get(col)).toBe(col)
+  })
+
+  it('excludes hidden attributes under BOTH spellings', () => {
+    const map = buildReadColumnMap(attributes, hidden)
+    expect(map.has('paymentDetails')).toBe(false)
+    expect(map.has('payment_details')).toBe(false)
+    expect(map.has('two_factor_secret')).toBe(false)
+  })
+
+  it('does not contain unknown names', () => {
+    const map = buildReadColumnMap(attributes, hidden)
+    expect(map.has('nope')).toBe(false)
+    expect(map.has('password_reset_token')).toBe(false)
+  })
+
+  it('tolerates a missing attributes object (system columns only)', () => {
+    const map = buildReadColumnMap(undefined, [])
+    expect(map.get('id')).toBe('id')
+    expect(map.size).toBe(5)
+  })
+})
+
+describe('applySorting (allowlist + camel→snake mapping)', () => {
+  const columns = buildReadColumnMap(
+    { discountType: {}, createdAt: {}, name: {}, paymentDetails: { hidden: true } },
+    ['paymentDetails'],
+  )
+
+  function recordingQuery() {
+    const calls: Array<[string, string]> = []
+    const q: any = {
+      orderBy(col: string, dir: string) {
+        calls.push([col, dir])
+        return q
+      },
+    }
+    return { q, calls }
+  }
+
+  it('maps camelCase tokens to snake columns with direction', () => {
+    // Pre-fix headline bug: `?sort=discountType` passed the allowlist but
+    // ordered by the ghost column `discountType` (500), while the REAL
+    // column spelling `discount_type` was rejected by the allowlist.
+    const { q, calls } = recordingQuery()
+    applySorting(q, 'discountType,-createdAt', columns)
+    expect(calls).toEqual([['discount_type', 'asc'], ['created_at', 'desc']])
+  })
+
+  it('accepts the snake column spelling directly', () => {
+    const { q, calls } = recordingQuery()
+    applySorting(q, 'discount_type', columns)
+    expect(calls).toEqual([['discount_type', 'asc']])
+  })
+
+  it('skips unknown attributes', () => {
+    const { q, calls } = recordingQuery()
+    applySorting(q, 'nope,-alsonope', columns)
+    expect(calls).toEqual([])
+  })
+
+  it('skips hidden attributes under BOTH spellings (enumeration oracle stays closed)', () => {
+    const { q, calls } = recordingQuery()
+    applySorting(q, 'paymentDetails,-payment_details', columns)
+    expect(calls).toEqual([])
+  })
+
+  it('skips non-word tokens', () => {
+    const { q, calls } = recordingQuery()
+    applySorting(q, 'name;drop table users,(name),na me', columns)
+    expect(calls).toEqual([])
+  })
+
+  it('returns the query untouched for a null sort param', () => {
+    const { q, calls } = recordingQuery()
+    expect(applySorting(q, null, columns)).toBe(q)
+    expect(calls).toEqual([])
+  })
+})
+
+describe('applyCasts (dual-spelling read/write casts)', () => {
+  it('get-direction applies a camel-keyed cast to a snake-keyed DB row', () => {
+    // Pre-fix headline bug: cast declared `instantBook: 'boolean'` never
+    // matched the row key `instant_book`, leaking raw SQLite "1" to clients.
+    expect(applyCasts({ instant_book: '1' }, { instantBook: 'boolean' }, 'get'))
+      .toEqual({ instant_book: true })
+    expect(applyCasts({ instant_book: '0' }, { instantBook: 'boolean' }, 'get'))
+      .toEqual({ instant_book: false })
+  })
+
+  it('get-direction still applies a snake-keyed cast to a snake row', () => {
+    expect(applyCasts({ is_active: 1 }, { is_active: 'boolean' }, 'get'))
+      .toEqual({ is_active: true })
+  })
+
+  it('set-direction on an attribute-keyed payload is unchanged (write-path regression guard)', () => {
+    expect(applyCasts({ instantBook: true }, { instantBook: 'boolean' }, 'set'))
+      .toEqual({ instantBook: 1 })
+  })
+
+  it('set-direction also matches a snake-keyed payload key', () => {
+    expect(applyCasts({ instant_book: true }, { instantBook: 'boolean' }, 'set'))
+      .toEqual({ instant_book: 1 })
+  })
+
+  it('leaves records without the cast key untouched', () => {
+    expect(applyCasts({ name: 'x' }, { instantBook: 'boolean' }, 'get')).toEqual({ name: 'x' })
+  })
+
+  it('is a no-op for empty casts or nullish records, and does not mutate the input', () => {
+    const row = { instant_book: '1' }
+    expect(applyCasts(row, {}, 'get')).toBe(row)
+    expect(applyCasts(null, { instantBook: 'boolean' }, 'get')).toBeNull()
+    applyCasts(row, { instantBook: 'boolean' }, 'get')
+    expect(row.instant_book).toBe('1')
+  })
+
+  it('supports custom { get, set } cast objects under both spellings', () => {
+    const upper = { get: (v: unknown) => String(v).toUpperCase(), set: (v: unknown) => String(v).toLowerCase() }
+    expect(applyCasts({ promo_code: 'abc' }, { promoCode: upper }, 'get')).toEqual({ promo_code: 'ABC' })
+    expect(applyCasts({ promoCode: 'ABC' }, { promoCode: upper }, 'set')).toEqual({ promoCode: 'abc' })
   })
 })
 

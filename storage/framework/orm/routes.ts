@@ -144,6 +144,62 @@ const AUTO_CRUD_CASTERS: Record<string, { get: (v: unknown) => unknown, set: (v:
 function safeJSON(s: string): unknown { try { return JSON.parse(s) } catch { return s } }
 function safeJSONOrEmpty(_s: string): unknown { try { return JSON.parse(_s) } catch { return [] } }
 
+// Apply a model's `casts` to a record in either direction ('get' = DB shape
+// → JS values on reads, 'set' = input → DB shape on writes). Casts are
+// declared keyed by attribute name (possibly camelCase: `instantBook`) but
+// DB rows come back keyed by snake_case columns (`instant_book`) — so each
+// cast is applied under BOTH spellings, whichever is present.
+// Kept in sync with core/orm/src/auto-crud.ts.
+function applyCasts(
+  record: Record<string, any> | null | undefined,
+  casts: Record<string, string | { get: (v: unknown) => unknown, set: (v: unknown) => unknown }> | null | undefined,
+  direction: 'get' | 'set',
+): any {
+  if (!record || typeof record !== 'object' || !casts || Object.keys(casts).length === 0) return record
+  const out: Record<string, any> = { ...record }
+  for (const [attr, castDef] of Object.entries(casts)) {
+    const caster = typeof castDef === 'string' ? AUTO_CRUD_CASTERS[castDef] : castDef
+    if (!caster || typeof caster[direction] !== 'function') continue
+    if (Object.prototype.hasOwnProperty.call(out, attr)) out[attr] = caster[direction](out[attr])
+    const snake = toSnakeCase(attr)
+    if (snake !== attr && Object.prototype.hasOwnProperty.call(out, snake)) out[snake] = caster[direction](out[snake])
+  }
+  return out
+}
+
+// Columns every auto-CRUD table carries regardless of declared attributes.
+// Kept in sync with core/orm/src/auto-crud.ts.
+const SYSTEM_COLUMNS = ['id', 'uuid', 'created_at', 'updated_at', 'deleted_at']
+
+// Build the read-path column allowlist for a model: a map from BOTH the
+// attribute-name spelling and its snake_case column spelling to the real
+// snake_case column. One map serves `?sort=` and `?<column>=` filters.
+// Attribute names may be camelCase while DB columns are always snake_case
+// (the migration drivers snake_case them — same contract as toSnakeCaseKeys
+// on the write path). Hidden attributes are removed under BOTH spellings —
+// sorting or equality-filtering on a hidden column is a blind-enumeration
+// oracle even though the value never appears in the response body.
+// Kept in sync with core/orm/src/auto-crud.ts.
+function buildReadColumnMap(
+  attributes: Record<string, unknown> | null | undefined,
+  hiddenFields: string[],
+): Map<string, string> {
+  const map = new Map<string, string>()
+  for (const name of [...Object.keys(attributes ?? {}), ...SYSTEM_COLUMNS]) {
+    const column = toSnakeCase(name)
+    // bun-query-builder interpolates ORDER BY / WHERE columns raw and
+    // unquoted — only word-shaped columns may enter the map.
+    if (!/^\w+$/.test(column)) continue
+    map.set(name, column)
+    map.set(column, column)
+  }
+  for (const f of hiddenFields) {
+    map.delete(f)
+    map.delete(toSnakeCase(f))
+  }
+  return map
+}
+
 // Run each declared `validation.rule` against an incoming write payload.
 // Returns { valid: true } or { valid: false, errors }. Per-attribute custom
 // messages from `validation.message` override the rule's default text.
@@ -376,32 +432,17 @@ async function applyDefinedSetters(data: Record<string, any>, model: any): Promi
 
 // Apply set-side casts (input → DB shape) so PATCH /api/cars/{id} with
 // `{ instant_book: true }` writes `1`, matching what model.create() does.
+// applyCasts handles BOTH key spellings (attribute name + snake column).
 function applySetCasts(data: Record<string, any>, model: any): Record<string, any> {
-  const casts: Record<string, string | { get: any, set: any }> = model?.casts ?? {}
-  if (!casts || Object.keys(casts).length === 0 || !data) return data
-  const out: Record<string, any> = { ...data }
-  for (const [attr, castDef] of Object.entries(casts)) {
-    if (Object.prototype.hasOwnProperty.call(out, attr)) {
-      const caster = typeof castDef === 'string' ? AUTO_CRUD_CASTERS[castDef] : castDef
-      if (caster) out[attr] = caster.set(out[attr])
-    }
-  }
-  return out
+  return applyCasts(data, model?.casts, 'set')
 }
 
 // Apply read-side casts (DB shape → JS-typed values) so the auto-CRUD
 // returns `instant_book: true` instead of the raw SQLite text `"1"`.
+// DB rows come back keyed by snake_case columns while casts are declared
+// by attribute name — applyCasts matches either spelling.
 function applyReadCasts(row: any, model: any): any {
-  const casts: Record<string, string | { get: any, set: any }> = model?.casts ?? {}
-  if (!row || typeof row !== 'object' || !casts || Object.keys(casts).length === 0) return row
-  const out: Record<string, any> = { ...row }
-  for (const [attr, castDef] of Object.entries(casts)) {
-    if (Object.prototype.hasOwnProperty.call(out, attr)) {
-      const caster = typeof castDef === 'string' ? AUTO_CRUD_CASTERS[castDef] : castDef
-      if (caster) out[attr] = caster.get(out[attr])
-    }
-  }
-  return out
+  return applyCasts(row, model?.casts, 'get')
 }
 
 // Helper: create JSON response
@@ -490,18 +531,28 @@ function coerceId(raw: unknown): number | string | null {
 // `orderBy` is now compose-aware — chaining multiple calls produces a
 // single `ORDER BY a ASC, b DESC` clause.
 //
+// Tokens are resolved through the `columns` allowlist map (see
+// buildReadColumnMap) so either spelling of a declared, non-hidden
+// attribute works and everything else — unknown names, hidden attributes
+// (`password_reset_token`, `two_factor_secret`, which are stripped from
+// the response but still leak via order-based blind enumeration),
+// non-word tokens — is silently skipped, matching the filter loop.
+// Kept in sync with core/orm/src/auto-crud.ts.
+//
 // Examples:
-//   ?sort=name             → ORDER BY name ASC
-//   ?sort=-rating          → ORDER BY rating DESC
-//   ?sort=-rating,name     → ORDER BY rating DESC, name ASC
-function applySorting(query: any, sortParam: string | null, _table: string): any {
+//   ?sort=name              → ORDER BY name ASC
+//   ?sort=-rating           → ORDER BY rating DESC
+//   ?sort=discountType,name → ORDER BY discount_type ASC, name ASC
+function applySorting(query: any, sortParam: string | null, columns: ReadonlyMap<string, string>): any {
   if (!sortParam) return query
   const tokens = String(sortParam).split(',').map(t => t.trim()).filter(Boolean)
   let q = query
   for (const tok of tokens) {
     const desc = tok.startsWith('-')
-    const column = desc ? tok.slice(1) : tok
-    if (!/^\w+$/.test(column)) continue
+    const requested = desc ? tok.slice(1) : tok
+    if (!/^\w+$/.test(requested)) continue
+    const column = columns.get(requested)
+    if (!column) continue
     q = q.orderBy(column, desc ? 'desc' : 'asc')
   }
   return q
@@ -629,6 +680,14 @@ for (const [modelName, model] of Object.entries(models)) {
   const hiddenFields = getHiddenFields(model)
   const basePath = `/api/${uri}`
 
+  // Read-path column allowlist: declared model attributes + system columns,
+  // minus anything marked `hidden`, mapped from EITHER spelling (attribute
+  // name or snake_case column) to the real snake_case column. Computed once
+  // per model and shared by `?sort=` and the `?<column>=` filter loop so
+  // neither can target a ghost column (camelCase attribute → 500) nor
+  // enumerate sensitive/hidden columns.
+  const readColumns = buildReadColumnMap(model.attributes, hiddenFields)
+
   // Per-model middleware, honoring the `useApi.middleware` field declared
   // on the model trait (e.g. `middleware: ['auth']` for resources that
   // should never be browsed anonymously). Read routes (index/show) stay
@@ -664,44 +723,50 @@ for (const [modelName, model] of Object.entries(models)) {
         const sort = url.searchParams.get('sort')
 
         let query = (db as any).selectFrom(table)
-        query = applySorting(query, sort, table)
+        query = applySorting(query, sort, readColumns)
 
         // Apply query string filters: ?status=active&name=foo filters by column values.
         // Reserved query params (pagination, sort, etc.) are skipped. Filter keys are
-        // validated against the model's declared attribute keys + system columns —
-        // an unknown key is ignored rather than emitted as raw SQL (e.g. `WHERE limit = ?`
-        // would blow up because `limit` is a SQL keyword).
+        // resolved through the readColumns allowlist (either spelling of a declared,
+        // non-hidden attribute → snake_case column) — an unknown key is ignored rather
+        // than emitted as raw SQL (e.g. `WHERE limit = ?` would blow up because `limit`
+        // is a SQL keyword), and hidden columns can't be equality-probed.
         const RESERVED = new Set(['page', 'per_page', 'sort', 'fields', 'search', 'include', 'limit', 'offset', 'with_count', 'withTrashed', 'onlyTrashed'])
-        const SYSTEM_COLUMNS = new Set(['id', 'uuid', 'created_at', 'updated_at', 'deleted_at'])
-        const validColumns = new Set([
-          ...Object.keys(model.attributes ?? {}),
-          ...SYSTEM_COLUMNS,
-        ])
         for (const [key, value] of url.searchParams.entries()) {
           if (RESERVED.has(key) || !value) continue
-          if (validColumns.has(key) && /^[a-z_][a-z0-9_]*$/i.test(key)) {
-            query = query.where(key, '=', value)
+          if (!/^[a-z_][a-z0-9_]*$/i.test(key)) continue
+          const col = readColumns.get(key)
+          if (col) {
+            query = query.where(col, '=', value)
           }
         }
 
-        // Apply search across fillable text fields: ?search=keyword
+        // Apply search across fillable text fields: ?search=keyword.
+        // Fillable names are attribute spellings — map to the snake_case
+        // column so a camelCase fillable doesn't hit a ghost column.
         const searchTerm = url.searchParams.get('search')
         if (searchTerm && fillableFields.length > 0) {
           const textFields = fillableFields.slice(0, 5) // Limit to first 5 fields for performance
           query = query.where((qb: any) => {
             for (const field of textFields) {
-              qb = qb.orWhere(field, 'like', `%${searchTerm}%`)
+              qb = qb.orWhere(toSnakeCase(field), 'like', `%${searchTerm}%`)
             }
             return qb
           })
         }
 
-        // Apply field selection: ?fields=id,name,email
+        // Apply field selection: ?fields=id,name,email. Tokens are mapped
+        // through toSnakeCase so attribute spellings select the real column;
+        // no allowlist here — undeclared-but-real columns (FK `user_id`)
+        // stay selectable, and hidden fields are stripped post-query anyway.
         const fieldsParam = url.searchParams.get('fields')
         if (fieldsParam) {
-          const selectedFields = fieldsParam.split(',').filter(f => /^[a-z_][a-z0-9_]*$/i.test(f.trim()))
+          const selectedFields = fieldsParam.split(',')
+            .map(f => f.trim())
+            .filter(f => /^[a-z_][a-z0-9_]*$/i.test(f))
+            .map(f => toSnakeCase(f))
           if (selectedFields.length > 0) {
-            query = query.select(selectedFields.map((f: string) => f.trim()))
+            query = query.select(selectedFields)
           }
         }
 
