@@ -105,20 +105,20 @@ describe('belongsToMany pivot accessor (audit #8)', () => {
     const coach = await (Coach as any).create({ name: 'Smith' })
     const a1 = await (Athlete as any).create({ name: 'Anna' })
     const a2 = await (Athlete as any).create({ name: 'Bob' })
-    const inserted = (coach as any).athletes().attach([a1.id, a2.id])
+    const inserted = await (coach as any).athletes().attach([a1.id, a2.id])
     expect(inserted).toBe(2)
-    expect((coach as any).athletes().count()).toBe(2)
+    expect(await (coach as any).athletes().count()).toBe(2)
   })
 
   it('detach removes specific pivot rows', async () => {
     const coach = await (Coach as any).create({ name: 'Detacher' })
     const a1 = await (Athlete as any).create({ name: 'X' })
     const a2 = await (Athlete as any).create({ name: 'Y' })
-    ;(coach as any).athletes().attach([a1.id, a2.id])
-    expect((coach as any).athletes().count()).toBe(2)
-    const removed = (coach as any).athletes().detach(a1.id)
+    await (coach as any).athletes().attach([a1.id, a2.id])
+    expect(await (coach as any).athletes().count()).toBe(2)
+    const removed = await (coach as any).athletes().detach(a1.id)
     expect(removed).toBe(1)
-    expect((coach as any).athletes().count()).toBe(1)
+    expect(await (coach as any).athletes().count()).toBe(1)
   })
 
   it('sync returns an attached/detached/updated breakdown', async () => {
@@ -126,8 +126,8 @@ describe('belongsToMany pivot accessor (audit #8)', () => {
     const a1 = await (Athlete as any).create({ name: 'P' })
     const a2 = await (Athlete as any).create({ name: 'Q' })
     const a3 = await (Athlete as any).create({ name: 'R' })
-    ;(coach as any).athletes().attach([a1.id, a2.id])
-    const result = (coach as any).athletes().sync([a2.id, a3.id])
+    await (coach as any).athletes().attach([a1.id, a2.id])
+    const result = await (coach as any).athletes().sync([a2.id, a3.id])
     expect(result.attached).toContain(a3.id)
     expect(result.detached).toContain(a1.id)
     // a2 stays — neither attached nor detached
@@ -138,8 +138,8 @@ describe('belongsToMany pivot accessor (audit #8)', () => {
     const coach = await (Coach as any).create({ name: 'Toggler' })
     const a1 = await (Athlete as any).create({ name: 'M' })
     const a2 = await (Athlete as any).create({ name: 'N' })
-    ;(coach as any).athletes().attach(a1.id)
-    const result = (coach as any).athletes().toggle([a1.id, a2.id])
+    await (coach as any).athletes().attach(a1.id)
+    const result = await (coach as any).athletes().toggle([a1.id, a2.id])
     // a1 was attached → detached now
     expect(result.detached).toContain(a1.id)
     // a2 was missing → attached now
@@ -149,8 +149,8 @@ describe('belongsToMany pivot accessor (audit #8)', () => {
   it('updateExistingPivot mutates extras on a present row', async () => {
     const coach = await (Coach as any).create({ name: 'Updater' })
     const a = await (Athlete as any).create({ name: 'Z' })
-    ;(coach as any).athletes().attach(a.id, { role: 'primary' })
-    const updated = (coach as any).athletes().updateExistingPivot(a.id, { role: 'secondary' })
+    await (coach as any).athletes().attach(a.id, { role: 'primary' })
+    const updated = await (coach as any).athletes().updateExistingPivot(a.id, { role: 'secondary' })
     expect(updated).toBe(1)
     const rows = getDatabase().query(
       'SELECT role FROM coach_athletes WHERE coach_id = ? AND athlete_id = ?',
