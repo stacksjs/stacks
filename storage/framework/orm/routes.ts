@@ -313,6 +313,46 @@ function resolveApiMiddleware(useApi: unknown): { read: string[], write: string[
   return { read: list, write: declared ? list : ['auth'], declared }
 }
 
+// Unique-constraint + write-error classifiers. Inline copies of
+// core/orm/src/auto-crud.ts {isUniqueViolation, mapWriteError} — this generated
+// file must stay importable when @stacksjs/orm is npm-installed, so it can't
+// import from './src/auto-crud'. Kept in sync with that file (#1957).
+function isUniqueViolation(err: unknown): boolean {
+  const e = err as { code?: string, errno?: number, message?: string }
+  return e?.code === 'SQLITE_CONSTRAINT_UNIQUE'
+    || e?.code === 'SQLITE_CONSTRAINT'
+    || e?.code === '23505'
+    || e?.errno === 1062
+    || /unique|duplicate/i.test(e?.message ?? '')
+}
+
+function mapWriteError(
+  err: unknown,
+  modelName: string,
+  op: 'create' | 'update',
+): { status: number, body: Record<string, unknown> } {
+  const e = err as { status?: unknown, message?: unknown, details?: unknown }
+  if (
+    err instanceof Error
+    && typeof e.status === 'number'
+    && Number.isInteger(e.status)
+    && e.status >= 400
+    && e.status < 600
+  ) {
+    const body: Record<string, unknown> = { error: err.message }
+    if (e.details !== undefined) body.details = e.details
+    return { status: e.status, body }
+  }
+
+  if (isUniqueViolation(err))
+    return { status: 409, body: { error: `${modelName} already exists` } }
+
+  return {
+    status: 500,
+    body: { error: `Failed to ${op} ${modelName}`, detail: String(err) },
+  }
+}
+
 // Apply user-defined `set:` hooks (e.g. User.set.password = bcrypt) before
 // raw DB writes so the auto-CRUD store/update endpoints don't end up storing
 // plaintext where the model declared a transformation. Mirrors the helper
@@ -867,12 +907,10 @@ for (const [modelName, model] of Object.entries(models)) {
         return jsonResponse({ data: stripHidden(applyReadCasts(created, model), hiddenFields) }, 201)
       }
       catch (err) {
-        if (err instanceof HttpError) {
-          const body: Record<string, unknown> = { error: err.message }
-          if (err.details !== undefined) body.details = err.details
-          return jsonResponse(body, err.status || 400)
-        }
-        return jsonResponse({ error: `Failed to create ${modelName}`, detail: String(err) }, 500)
+        // Unique violations -> 409 (clean message), HttpError-likes pass
+        // through, everything else -> 500. Mirrors core/orm/routes.ts. #1957.
+        const { status, body } = mapWriteError(err, modelName, 'create')
+        return jsonResponse(body, status)
       }
     }), writeMiddleware)
   }
@@ -963,12 +1001,9 @@ for (const [modelName, model] of Object.entries(models)) {
         return jsonResponse({ data: stripHidden(applyReadCasts(updated, model), hiddenFields) })
       }
       catch (err) {
-        if (err instanceof HttpError) {
-          const body: Record<string, unknown> = { error: err.message }
-          if (err.details !== undefined) body.details = err.details
-          return jsonResponse(body, err.status || 400)
-        }
-        return jsonResponse({ error: `Failed to update ${modelName}`, detail: String(err) }, 500)
+        // See store handler — same classification, 'update' verb. #1957.
+        const { status, body } = mapWriteError(err, modelName, 'update')
+        return jsonResponse(body, status)
       }
     }
 

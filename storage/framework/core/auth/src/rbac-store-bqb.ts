@@ -22,30 +22,15 @@
 
 import type { PermissionRecord, RbacStore, RoleRecord } from './rbac'
 import { db } from '@stacksjs/database'
+// `isUniqueViolation` now lives in the cycle-free `@stacksjs/orm` package so
+// every framework write path (auto-CRUD routes, commerce/cms) can share it —
+// see stacksjs/stacks#1957. Re-exported here so existing consumers
+// (register.ts, rbac-seed.ts, the tests) keep their './rbac-store-bqb'
+// import paths unchanged. auth already statically imports @stacksjs/orm
+// (register.ts imports User), so this adds no new dependency edge.
+import { isUniqueViolation } from '@stacksjs/orm'
 
-interface UniqueViolation { code?: string, errno?: number, message?: string }
-
-/**
- * True when the error is a unique-constraint violation, across SQLite,
- * MySQL, and Postgres:
- *
- * - SQLite: `SQLITE_CONSTRAINT_UNIQUE` / `SQLITE_CONSTRAINT`
- * - MySQL: `errno: 1062` (ER_DUP_ENTRY)
- * - Postgres: `code: '23505'` (unique_violation)
- * - Generic fallback: message text match — covers wrapped errors from drivers
- *   that lose the structured code.
- *
- * Exported for direct unit testing and for callers that map duplicates to
- * their own error (e.g. `register()`'s 409) instead of swallowing them.
- */
-export function isUniqueViolation(err: unknown): boolean {
-  const e = err as UniqueViolation
-  return e?.code === 'SQLITE_CONSTRAINT_UNIQUE'
-    || e?.code === 'SQLITE_CONSTRAINT'
-    || e?.code === '23505'
-    || e?.errno === 1062
-    || /unique|duplicate/i.test(e?.message ?? '')
-}
+export { isUniqueViolation }
 
 /**
  * Swallow unique-constraint violations. Anything else is re-thrown so a

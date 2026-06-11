@@ -2099,11 +2099,23 @@ function wrapHandler(handler: StacksHandler, skipParsing = false): RouteHandlerF
         // throws log at error with full stack; thrown 4xx HttpErrors
         // are kept out of the error stream.
         report(error, { label: `[Router] ${handlerPath}` })
+        // Extract a thrown 4xx/5xx status (HttpError + duck-typed shapes)
+        // and forward it, mirroring createMiddlewareErrorResponse. Without
+        // this, createErrorResponse defaults every handler-thrown error to
+        // 500 (error-handler.ts: `options?.status || 500`), flattening a
+        // thrown HttpError(409) to a masked 500 on the wire. With it, #1946's
+        // production 4xx branch surfaces the clean message. 5xx and plain
+        // Errors stay undefined -> 500 default, still masked. See #1957.
+        const rawStatus = (error as { statusCode?: unknown, status?: unknown })?.statusCode
+          ?? (error as { status?: unknown })?.status
+        const status = typeof rawStatus === 'number' && Number.isInteger(rawStatus) && rawStatus >= 400 && rawStatus < 600
+          ? rawStatus
+          : undefined
         // Return Ignition-style error page in development, JSON in production
         return await createErrorResponse(
           error instanceof Error ? error : new Error(String(error)),
           req,
-          { handlerPath },
+          { handlerPath, status },
         )
       }
     }

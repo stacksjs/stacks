@@ -21,6 +21,12 @@ export { setAuditUser, createAuditMethods } from './traits/audit'
 export type { AuditHelpers } from './traits/audit'
 // Re-export soft-delete option types so user code can `satisfies SoftDeleteOptions`.
 export type { SoftDeleteOptions, SoftDeleteHelpers } from './traits/soft-deletes'
+// Shared write-error classifiers (stacksjs/stacks#1957). Named exports only —
+// `export *` would collide with the snakeCase helpers also exported from
+// './auto-crud' via other barrels. `isUniqueViolation` is re-exported by
+// `@stacksjs/auth`'s './rbac-store-bqb' for back-compat; `mapWriteError`
+// powers the auto-CRUD store/update 409 mapping.
+export { isUniqueViolation, mapWriteError } from './auto-crud'
 export * from './batch-loader'
 export * from './db'
 export * from './subquery'

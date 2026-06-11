@@ -11,7 +11,7 @@ import { projectPath } from '@stacksjs/path'
 import { createQueryBuilder, defaultConfig, setConfig } from '@stacksjs/query-builder'
 import { HttpError } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/logging'
-import { dropHiddenInputs, filterFillable, resolveApiMiddleware, stripHidden, toSnakeCase, toSnakeCaseKeys } from './src/auto-crud'
+import { dropHiddenInputs, filterFillable, mapWriteError, resolveApiMiddleware, stripHidden, toSnakeCase, toSnakeCaseKeys } from './src/auto-crud'
 
 // Initialize the query builder config from the project's optional
 // `config/qb.ts` override (stacksjs/stacks#1930).
@@ -801,12 +801,10 @@ for (const [modelName, model] of Object.entries(models)) {
         return jsonResponse({ data: stripHidden(applyReadCasts(created, model), hiddenFields) }, 201)
       }
       catch (err) {
-        if (err instanceof HttpError) {
-          const body: Record<string, unknown> = { error: err.message }
-          if (err.details !== undefined) body.details = err.details
-          return jsonResponse(body, err.status || 400)
-        }
-        return jsonResponse({ error: `Failed to create ${modelName}`, detail: String(err) }, 500)
+        // Maps HttpError-likes through, unique violations -> 409 (clean
+        // message, no driver text leak), everything else -> 500. See #1957.
+        const { status, body } = mapWriteError(err, modelName, 'create')
+        return jsonResponse(body, status)
       }
     }), writeMiddleware)
   }
@@ -897,12 +895,9 @@ for (const [modelName, model] of Object.entries(models)) {
         return jsonResponse({ data: stripHidden(applyReadCasts(updated, model), hiddenFields) })
       }
       catch (err) {
-        if (err instanceof HttpError) {
-          const body: Record<string, unknown> = { error: err.message }
-          if (err.details !== undefined) body.details = err.details
-          return jsonResponse(body, err.status || 400)
-        }
-        return jsonResponse({ error: `Failed to update ${modelName}`, detail: String(err) }, 500)
+        // See store handler — same classification, 'update' verb. #1957.
+        const { status, body } = mapWriteError(err, modelName, 'update')
+        return jsonResponse(body, status)
       }
     }
 

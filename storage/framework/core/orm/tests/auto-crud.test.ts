@@ -24,8 +24,9 @@
  *     `middleware` is explicitly declared (explicit `[]` = opt-out)
  */
 import { describe, expect, it } from 'bun:test'
+import { Database } from 'bun:sqlite'
 import { snakeCase } from '@stacksjs/strings'
-import { dropHiddenInputs, filterFillable, resolveApiMiddleware, stripHidden, toSnakeCase, toSnakeCaseKeys } from '../src/auto-crud'
+import { dropHiddenInputs, filterFillable, isUniqueViolation, mapWriteError, resolveApiMiddleware, stripHidden, toSnakeCase, toSnakeCaseKeys } from '../src/auto-crud'
 
 describe('toSnakeCaseKeys (write-path column mapping)', () => {
   it('maps camelCase attribute keys to snake_case column keys', () => {
@@ -180,5 +181,104 @@ describe('resolveApiMiddleware (secure-by-default writes)', () => {
   it('filters non-string/empty entries from declared lists', () => {
     expect(resolveApiMiddleware({ middleware: ['auth', '', 42 as any, null as any] }))
       .toEqual({ read: ['auth'], write: ['auth'], declared: true })
+  })
+})
+
+// ─── isUniqueViolation (shared write-error predicate, #1957) ──────────
+//
+// Moved here from @stacksjs/auth so every framework write path can reach
+// it. Mirrors auth/tests/rbac-store-bqb.test.ts's matrix so the behaviour
+// stays byte-identical for register()'s 409 (which re-exports this).
+describe('isUniqueViolation', () => {
+  it('is true for the dialect-specific duplicate shapes', () => {
+    expect(isUniqueViolation({ code: 'SQLITE_CONSTRAINT_UNIQUE' })).toBe(true)
+    expect(isUniqueViolation({ code: 'SQLITE_CONSTRAINT' })).toBe(true)
+    expect(isUniqueViolation({ errno: 1062 })).toBe(true)
+    expect(isUniqueViolation({ code: '23505' })).toBe(true)
+  })
+
+  it('is true for unique/duplicate message-text fallbacks', () => {
+    expect(isUniqueViolation({ message: 'UNIQUE constraint failed: users.email' })).toBe(true)
+    expect(isUniqueViolation({ message: 'Duplicate entry for key users.email' })).toBe(true)
+  })
+
+  it('is false for anything else', () => {
+    expect(isUniqueViolation({ code: 'ECONNRESET', message: 'connection lost' })).toBe(false)
+    expect(isUniqueViolation(new Error('syntax error near "INSERT"'))).toBe(false)
+    expect(isUniqueViolation({})).toBe(false)
+    expect(isUniqueViolation(null)).toBe(false)
+  })
+
+  it('fires on the real bun:sqlite unique-violation shape', () => {
+    const db = new Database(':memory:')
+    db.run('CREATE TABLE cars (id INTEGER PRIMARY KEY, email TEXT)')
+    db.run('CREATE UNIQUE INDEX cars_email_unique ON cars (email)')
+    db.run(`INSERT INTO cars (email) VALUES ('a@b.com')`)
+
+    let caught: unknown
+    try {
+      db.run(`INSERT INTO cars (email) VALUES ('a@b.com')`)
+    }
+    catch (err) {
+      caught = err
+    }
+    expect(caught).toBeDefined()
+    expect(isUniqueViolation(caught)).toBe(true)
+
+    // A non-unique driver error (missing table) must NOT classify as a duplicate.
+    let other: unknown
+    try {
+      db.run('INSERT INTO nope (x) VALUES (1)')
+    }
+    catch (err) {
+      other = err
+    }
+    expect(other).toBeDefined()
+    expect(isUniqueViolation(other)).toBe(false)
+  })
+})
+
+// ─── mapWriteError (auto-CRUD store/update classification, #1957) ─────
+describe('mapWriteError', () => {
+  it('maps a duplicate create to 409 with a clean message (no driver text)', () => {
+    const { status, body } = mapWriteError({ code: 'SQLITE_CONSTRAINT_UNIQUE', message: 'UNIQUE constraint failed: cars.email' }, 'Car', 'create')
+    expect(status).toBe(409)
+    expect(body).toEqual({ error: 'Car already exists' })
+    // The raw driver text (column name) must not leak.
+    expect(JSON.stringify(body)).not.toContain('UNIQUE constraint failed')
+  })
+
+  it('maps a duplicate update to 409', () => {
+    const { status, body } = mapWriteError({ errno: 1062 }, 'Car', 'update')
+    expect(status).toBe(409)
+    expect(body).toEqual({ error: 'Car already exists' })
+  })
+
+  it('passes an HttpError-like through with its status, message and details', () => {
+    const err = Object.assign(new Error('Validation failed'), { status: 422, details: { email: ['required'] } })
+    const { status, body } = mapWriteError(err, 'Car', 'create')
+    expect(status).toBe(422)
+    expect(body).toEqual({ error: 'Validation failed', details: { email: ['required'] } })
+  })
+
+  it('passes a 413 HttpError-like through without details when none set', () => {
+    const err = Object.assign(new Error('Payload Too Large'), { status: 413 })
+    const { status, body } = mapWriteError(err, 'Car', 'create')
+    expect(status).toBe(413)
+    expect(body).toEqual({ error: 'Payload Too Large' })
+  })
+
+  it('maps a non-unique DB error to 500 with the detail preserved', () => {
+    const { status, body } = mapWriteError(new Error('database is locked'), 'Car', 'create')
+    expect(status).toBe(500)
+    expect(body.error).toBe('Failed to create Car')
+    expect(String(body.detail)).toContain('database is locked')
+  })
+
+  it('does not treat a plain Error carrying an out-of-range status as HttpError-like', () => {
+    // status 200 is not 400-599 — falls through to the 500 branch.
+    const err = Object.assign(new Error('weird'), { status: 200 })
+    const { status } = mapWriteError(err, 'Car', 'update')
+    expect(status).toBe(500)
   })
 })

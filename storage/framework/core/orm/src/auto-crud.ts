@@ -8,6 +8,77 @@
  * any behavioral change here must be mirrored there.
  */
 
+interface UniqueViolation { code?: string, errno?: number, message?: string }
+
+/**
+ * True when the error is a unique-constraint violation, across SQLite,
+ * MySQL, and Postgres:
+ *
+ * - SQLite: `SQLITE_CONSTRAINT_UNIQUE` / `SQLITE_CONSTRAINT`
+ * - MySQL: `errno: 1062` (ER_DUP_ENTRY)
+ * - Postgres: `code: '23505'` (unique_violation)
+ * - Generic fallback: message text match — covers wrapped errors from drivers
+ *   that lose the structured code.
+ *
+ * Lives here (cycle-free `@stacksjs/orm`) rather than in `@stacksjs/auth`
+ * because every framework write path needs it: auto-CRUD routes, commerce/cms
+ * write functions, and `@stacksjs/auth`'s `register()` (which re-exports this
+ * via './rbac-store-bqb' for back-compat). `@stacksjs/database` is NOT a valid
+ * home — its drivers statically import `@stacksjs/orm`, so orm routes importing
+ * from database would create a package cycle.
+ *
+ * Exported for direct unit testing and for callers that map duplicates to
+ * their own error (e.g. `register()`'s 409) instead of swallowing them.
+ */
+export function isUniqueViolation(err: unknown): boolean {
+  const e = err as UniqueViolation
+  return e?.code === 'SQLITE_CONSTRAINT_UNIQUE'
+    || e?.code === 'SQLITE_CONSTRAINT'
+    || e?.code === '23505'
+    || e?.errno === 1062
+    || /unique|duplicate/i.test(e?.message ?? '')
+}
+
+/**
+ * Classify a write-path error into an HTTP status + JSON body for the
+ * auto-CRUD store/update handlers. Three branches, in priority order:
+ *
+ * 1. HttpError-like (an Error carrying an integer `status` in 400-599) —
+ *    preserve its status, message and optional `details`. Duck-typed rather
+ *    than `instanceof HttpError` so this helper stays inline-copyable into the
+ *    canonical generated routes file without importing @stacksjs/error-handling.
+ *    Covers the 400/413/422 throws from getRequestBody / validation.
+ * 2. Unique-constraint violation — 409 with a clean `${Model} already exists`
+ *    message (NO raw driver text, which would leak column names in prod).
+ * 3. Anything else — the unchanged 500 contract, including `detail: String(err)`.
+ */
+export function mapWriteError(
+  err: unknown,
+  modelName: string,
+  op: 'create' | 'update',
+): { status: number, body: Record<string, unknown> } {
+  const e = err as { status?: unknown, message?: unknown, details?: unknown }
+  if (
+    err instanceof Error
+    && typeof e.status === 'number'
+    && Number.isInteger(e.status)
+    && e.status >= 400
+    && e.status < 600
+  ) {
+    const body: Record<string, unknown> = { error: err.message }
+    if (e.details !== undefined) body.details = e.details
+    return { status: e.status, body }
+  }
+
+  if (isUniqueViolation(err))
+    return { status: 409, body: { error: `${modelName} already exists` } }
+
+  return {
+    status: 500,
+    body: { error: `Failed to ${op} ${modelName}`, detail: String(err) },
+  }
+}
+
 /**
  * Attribute names in model definitions may be camelCase; the migration
  * drivers (database/src/drivers/{sqlite,mysql,postgres}.ts) snake_case them
