@@ -169,9 +169,9 @@ export function passwordResets(email: string): PasswordResetActions {
       // empty strings instead of throwing (template.ts returns
       // { html: '', text: '' }), which would mail a blank email with no
       // reset link. Treat an empty render as failure so the plain-text
-      // fallback below actually fires (the default install ships
-      // password-reset.stx under storage/framework/defaults/, which
-      // template() does not consult — see stacksjs/stacks#1944).
+      // fallback below actually fires — guards against a deleted/broken
+      // template (template() now resolves the shipped defaults too,
+      // see stacksjs/stacks#1944).
       if (!html && !text)
         throw new Error('password-reset template missing or rendered empty')
 

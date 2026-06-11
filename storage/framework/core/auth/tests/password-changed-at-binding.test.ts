@@ -16,7 +16,7 @@
  * CURRENT_TIMESTAMP's one-second granularity and any clock skew.
  */
 
-import { afterAll, beforeAll, beforeEach, describe, expect, test } from 'bun:test'
+import { afterAll, beforeAll, beforeEach, describe, expect, mock, test } from 'bun:test'
 import { existsSync, unlinkSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
@@ -26,6 +26,23 @@ const DB_PATH = join(tmpdir(), `stacks-1957-binding-${process.pid}.sqlite`)
 process.env.DB_CONNECTION = 'sqlite'
 process.env.DB_DATABASE_PATH = DB_PATH
 process.env.APP_ENV = 'testing'
+
+// ─── Email stub ─────────────────────────────────────────────────────────
+// resetPassword() fires sendPasswordChangedNotification() fire-and-forget
+// (reset.ts intentionally does not await it). Since template() resolves the
+// framework-shipped defaults (stacksjs/stacks#1944), that dangling promise
+// performs a real stx render — slow enough to cross the file boundary and
+// land in a LATER file's email mock (bun runs the whole directory in one
+// process; prebaked-mailers.test.ts records every mail.send it sees). Stub
+// the email namespace with instant fakes so the notification settles within
+// this file; nothing here asserts on the email itself. Capture the real
+// namespace and restore it in afterAll — mock.module is process-wide.
+const realEmail = { ...await import('@stacksjs/email') }
+mock.module('@stacksjs/email', () => ({
+  ...realEmail,
+  template: async () => ({ html: '<p>x</p>', text: 'x' }),
+  mail: { send: async () => {} },
+}))
 
 const { db, ensureDatabaseConfigLoaded, initializeDbConfig } = await import('@stacksjs/database')
 const { createToken, findToken, refreshToken, validateRefreshToken } = await import('../src/tokens')
@@ -166,6 +183,9 @@ beforeAll(async () => {
 })
 
 afterAll(() => {
+  // Restore the real email namespace for later files in this directory run
+  // (mock.module is process-wide and bun does not auto-restore it).
+  mock.module('@stacksjs/email', () => realEmail)
   if (existsSync(DB_PATH))
     unlinkSync(DB_PATH)
 })

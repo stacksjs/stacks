@@ -6,11 +6,14 @@ import { defaultsResourcesPath } from '@stacksjs/path'
 // Renders the bundled stx email templates directly through stx's
 // `renderEmail` with the framework's componentsDir, asserting that
 // the bulletproof scaffold lands in the output. We deliberately go
-// around the `template()` helper here because that resolves files
-// from userland `resources/emails/` (where projects copy templates),
-// not from `defaults/`. The renderer integration with `template()`
-// is exercised by the preview tests, which also wire through the
-// same `componentsDir`.
+// around the `template()` helper here for unit-level isolation —
+// these tests pin the templates/components themselves, independent
+// of path resolution. (Since stacksjs/stacks#1944, `template()`
+// also resolves the `defaults/` dir as a fallback after userland
+// `resources/emails/`; that resolution order is covered by
+// template-resolution.test.ts.) The renderer integration with
+// `template()` is exercised by the preview tests, which also wire
+// through the same `componentsDir`.
 
 async function renderBundled(name: string, vars: Record<string, unknown>): Promise<string> {
   const { renderEmail } = await import('@stacksjs/stx')

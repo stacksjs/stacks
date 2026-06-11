@@ -162,42 +162,64 @@ function renderTemplateValue(value: TemplateVariableValue): string {
 }
 
 /**
- * Resolve a template file path, preferring .stx over .html
+ * Email template lookup roots, in resolution order: userland
+ * `resources/emails/` first, then the framework-shipped defaults in
+ * `storage/framework/defaults/resources/emails/`. Ordering is
+ * dir-major — ANY userland file (either extension) beats the defaults
+ * copy of the same name, so projects can override a shipped .stx
+ * template with their own .html one (stacksjs/stacks#1944).
+ */
+const templateRoots: Array<(relativePath: string) => string> = [
+  relativePath => resourcesPath(join('emails', relativePath)),
+  relativePath => defaultsResourcesPath(join('emails', relativePath)),
+]
+
+/**
+ * Resolve a template file path, preferring .stx over .html within
+ * each lookup root. Probes userland `resources/emails/` first, then
+ * the framework defaults (see {@link templateRoots}).
  * Returns { path, type } where type is 'stx' or 'html'
  */
 function resolveTemplatePath(templateName: string): { path: string, type: 'stx' | 'html' } | null {
-  // If already has extension, use as-is
-  if (templateName.endsWith('.stx')) {
-    const fullPath = resourcesPath(join('emails', templateName))
-    if (fs.existsSync(fullPath)) return { path: fullPath, type: 'stx' }
-    return null
+  for (const root of templateRoots) {
+    // If already has extension, use as-is
+    if (templateName.endsWith('.stx')) {
+      const fullPath = root(templateName)
+      if (fs.existsSync(fullPath)) return { path: fullPath, type: 'stx' }
+      continue
+    }
+
+    if (templateName.endsWith('.html')) {
+      const fullPath = root(templateName)
+      if (fs.existsSync(fullPath)) return { path: fullPath, type: 'html' }
+      continue
+    }
+
+    // Bare name: try .stx first, then .html within this root
+    const stxPath = root(`${templateName}.stx`)
+    if (fs.existsSync(stxPath)) return { path: stxPath, type: 'stx' }
+
+    const htmlPath = root(`${templateName}.html`)
+    if (fs.existsSync(htmlPath)) return { path: htmlPath, type: 'html' }
   }
-
-  if (templateName.endsWith('.html')) {
-    const fullPath = resourcesPath(join('emails', templateName))
-    if (fs.existsSync(fullPath)) return { path: fullPath, type: 'html' }
-    return null
-  }
-
-  // Try .stx first, then .html
-  const stxPath = resourcesPath(join('emails', `${templateName}.stx`))
-  if (fs.existsSync(stxPath)) return { path: stxPath, type: 'stx' }
-
-  const htmlPath = resourcesPath(join('emails', `${templateName}.html`))
-  if (fs.existsSync(htmlPath)) return { path: htmlPath, type: 'html' }
 
   return null
 }
 
 /**
- * Load an HTML template file content
+ * Load an HTML template file content. Probes the same roots as
+ * {@link resolveTemplatePath} (userland first, then framework
+ * defaults) so e.g. `loadLayout('base')` finds the shipped
+ * `defaults/resources/emails/layouts/base.html` when userland has no
+ * `layouts/` directory (stacksjs/stacks#1944).
  */
 function loadHtmlTemplate(templatePath: string): string | null {
   const path = templatePath.endsWith('.html') ? templatePath : `${templatePath}.html`
-  const fullPath = resourcesPath(join('emails', path))
 
-  if (fs.existsSync(fullPath)) {
-    return fs.readFileSync(fullPath, 'utf-8')
+  for (const root of templateRoots) {
+    const fullPath = root(path)
+    if (fs.existsSync(fullPath))
+      return fs.readFileSync(fullPath, 'utf-8')
   }
 
   return null
@@ -242,7 +264,15 @@ function htmlToText(html: string): string {
  * server scripts, etc.). When an .html template is found, it uses
  * simple {{ variable }} replacement with layout wrapping.
  *
- * .stx templates are preferred over .html when both exist.
+ * Templates resolve from userland `resources/emails/` first, then
+ * fall back to the framework-shipped defaults in
+ * `storage/framework/defaults/resources/emails/` — so the prebaked
+ * mailers (password-reset, password-changed, email-verification)
+ * work out of the box on a default install while any userland file
+ * with the same name always wins (stacksjs/stacks#1944).
+ *
+ * Within each directory, .stx templates are preferred over .html
+ * when both exist.
  *
  * @example
  * ```typescript
