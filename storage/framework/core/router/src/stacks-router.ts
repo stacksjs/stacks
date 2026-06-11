@@ -649,7 +649,14 @@ async function resolveMiddlewareName(name: string): Promise<string> {
 }
 
 /**
- * Load a middleware by name
+ * Load a middleware by name.
+ *
+ * Returns null when the alias cannot be resolved to a module with a
+ * usable `handle()` — callers MUST treat null as fatal for the route
+ * (fail closed), never as "skip this middleware". A found-but-broken
+ * file (no default export / no handle method) is cached as null so the
+ * breakage is deterministic; a missing file is NOT cached, so creating
+ * the file in dev fixes the alias without a restart.
  */
 async function loadMiddleware(name: string): Promise<MiddlewareHandler | null> {
   if (middlewareCache.has(name)) {
@@ -659,26 +666,46 @@ async function loadMiddleware(name: string): Promise<MiddlewareHandler | null> {
   const className = await resolveMiddlewareName(name)
 
   // Try loading from app/Middleware first (user overrides)
+  let userPathError: unknown
   try {
     const userPath = p.appPath(`Middleware/${className}.ts`)
     const middleware = await import(userPath)
-    const handler = middleware.default as MiddlewareHandler | null
+    const handler = (middleware.default ?? null) as MiddlewareHandler | null
+    if (!handler || typeof handler.handle !== 'function') {
+      // The file exists and shadows the framework default — a missing
+      // default export here is a bug in the user's middleware, not a
+      // reason to silently fall back to different behavior.
+      log.error(`[Router] Middleware '${name}' resolved to ${userPath}, but the file has no default export with a handle() method`)
+      middlewareCache.set(name, null)
+      return null
+    }
     middlewareCache.set(name, handler)
     return handler
   }
-  catch {
-    // Fall back to framework defaults
-    try {
-      const defaultPath = p.storagePath(`framework/defaults/app/Middleware/${className}.ts`)
-      const middleware = await import(defaultPath)
-      const handler = middleware.default as MiddlewareHandler | null
-      middlewareCache.set(name, handler)
-      return handler
-    }
-    catch (err: unknown) {
-      log.error(`[Router] Failed to load middleware '${name}' (resolved to '${className}'):`, err)
+  catch (err: unknown) {
+    userPathError = err
+  }
+
+  // Fall back to framework defaults
+  try {
+    const defaultPath = p.storagePath(`framework/defaults/app/Middleware/${className}.ts`)
+    const middleware = await import(defaultPath)
+    const handler = (middleware.default ?? null) as MiddlewareHandler | null
+    if (!handler || typeof handler.handle !== 'function') {
+      log.error(`[Router] Middleware '${name}' resolved to ${defaultPath}, but the file has no default export with a handle() method`)
+      middlewareCache.set(name, null)
       return null
     }
+    middlewareCache.set(name, handler)
+    return handler
+  }
+  catch (err: unknown) {
+    // Surface BOTH lookup failures — the user-path error was previously
+    // swallowed, which hid "user file exists but fails to import" behind
+    // a misleading defaults-only message.
+    const userMsg = userPathError instanceof Error ? userPathError.message : String(userPathError)
+    log.error(`[Router] Failed to load middleware '${name}' (resolved to '${className}'). app/Middleware: ${userMsg}; defaults:`, err)
+    return null
   }
 }
 
@@ -773,6 +800,56 @@ function parseMiddlewareName(middleware: string): { name: string, params?: strin
     name: middleware.substring(0, colonIndex),
     params: middleware.substring(colonIndex + 1),
   }
+}
+
+/**
+ * Resolve every middleware alias referenced by a registered route and
+ * report the ones that don't load. `csrf` is always checked too — it's
+ * auto-injected on unsafe methods even when no route lists it.
+ *
+ * Resolution is inherently lazy (`.middleware(name)` is a sync chainable
+ * that just records a string; the alias map and middleware modules load
+ * via async dynamic import), so a throw at literal registration time is
+ * impossible. Calling this after all routes are registered — the end of
+ * `importRoutes()` and the compiled-binary boot in core/server — IS
+ * effectively registration-time validation. See stacksjs/stacks#1957.
+ */
+export async function findUnresolvableRouteMiddleware(): Promise<Array<{ alias: string, routes: string[] }>> {
+  const usage = new Map<string, string[]>()
+  for (const [routeKey, entries] of routeMiddlewareRegistry) {
+    for (const entry of entries) {
+      const { name } = parseMiddlewareName(entry)
+      const routes = usage.get(name) ?? []
+      routes.push(routeKey)
+      usage.set(name, routes)
+    }
+  }
+  if (!usage.has('csrf'))
+    usage.set('csrf', ['(auto-injected on POST/PUT/PATCH/DELETE)'])
+
+  const unresolvable: Array<{ alias: string, routes: string[] }> = []
+  for (const [alias, routes] of usage) {
+    const handler = await loadMiddleware(alias)
+    if (!handler || typeof handler.handle !== 'function')
+      unresolvable.push({ alias, routes })
+  }
+  return unresolvable
+}
+
+/**
+ * Throw when any registered route references a middleware alias that
+ * cannot be resolved. Fail-closed boot validation: a typo'd `auth` alias
+ * must abort startup loudly, not serve the route unprotected (the
+ * request-time guard in createMiddlewareHandler 500s as a backstop).
+ */
+export async function assertRouteMiddlewareResolvable(): Promise<void> {
+  const unresolvable = await findUnresolvableRouteMiddleware()
+  if (unresolvable.length === 0)
+    return
+  const detail = unresolvable
+    .map(u => `"${u.alias}" (used by ${u.routes.join(', ')})`)
+    .join('; ')
+  throw new Error(`[Router] Unresolvable middleware alias(es): ${detail}. Check the alias map in app/Middleware.ts or add app/Middleware/<Class>.ts.`)
 }
 
 /**
@@ -929,7 +1006,19 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
         }
 
         const middleware = await loadMiddleware(middlewareName)
-        if (!middleware || typeof middleware.handle !== 'function') continue
+        if (!middleware || typeof middleware.handle !== 'function') {
+          // Fail CLOSED. The previous `continue` served the route WITHOUT
+          // the middleware — a typo'd `auth` alias silently unprotected the
+          // route. Every entry point (including dev hot-reload cache clears
+          // and late package registrations) must get a 500 instead.
+          // Boot-time validation (assertRouteMiddlewareResolvable) catches
+          // these earlier and louder; this branch is the request-time
+          // guarantee. See stacksjs/stacks#1957.
+          log.error(`[Router] Middleware '${middlewareName}' on ${routeKey} could not be resolved — failing closed`)
+          const failClosedError = new Error(`Middleware '${middlewareName}' could not be resolved`)
+          const failClosedResponse = await createErrorResponse(failClosedError, enhancedReq, { status: 500 })
+          return await applyCorsIfConfigured(enhancedReq, failClosedResponse)
+        }
         // Bounds-check the priority. The chain is sorted by this number; a
         // NaN sneaks past the comparator (NaN comparisons evaluate false) and
         // misorders silently, while a negative value makes a middleware run
@@ -2710,6 +2799,14 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
       catch (error) {
         log.debug('Package route discovery skipped:', error)
       }
+
+      // Fail-closed boot validation (stacksjs/stacks#1957): every
+      // middleware alias referenced by a registered route — including
+      // those from discovered pantry packages above — must resolve NOW.
+      // A typo'd alias aborts boot instead of serving the route
+      // unprotected; the request-time guard in createMiddlewareHandler
+      // is the 500 backstop for anything registered after this point.
+      await assertRouteMiddlewareResolvable()
     },
 
     // Load routes from discovered Stacks packages in pantry

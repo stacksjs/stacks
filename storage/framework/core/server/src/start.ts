@@ -2,7 +2,7 @@
 ;(globalThis as any).__STACKS_BINARY_MODE__ = true
 
 // IMPORTANT: Import router package first to ensure it's initialized before routes
-import { loadRoutes, serve } from '@stacksjs/router'
+import { assertRouteMiddlewareResolvable, loadRoutes, serve } from '@stacksjs/router'
 import { log, report } from '@stacksjs/logging'
 import config from './config-production'
 import routeRegistry from '../../../../../app/Routes'
@@ -53,6 +53,19 @@ loadRoutes(routeRegistry)
       console.log('[START] ORM routes loaded successfully')
     } catch (ormError) {
       console.warn('[START] ORM routes skipped:', ormError instanceof Error ? ormError.message : String(ormError))
+    }
+
+    // Fail closed at boot (stacksjs/stacks#1957): the compiled binary
+    // bypasses route.importRoutes() (and its validation pass), so check
+    // here that every middleware alias referenced by a registered route
+    // resolves. A typo'd `auth` alias must abort startup — serving the
+    // route unprotected is the one unacceptable outcome.
+    try {
+      await assertRouteMiddlewareResolvable()
+      console.log('[START] Route middleware validated')
+    } catch (middlewareError) {
+      console.error('[START] FATAL: unresolvable route middleware — refusing to serve unprotected routes:', middlewareError instanceof Error ? middlewareError.message : String(middlewareError))
+      process.exit(1)
     }
 
     console.log('[START] Calling serve()...')
