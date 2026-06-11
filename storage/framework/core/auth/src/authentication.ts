@@ -60,7 +60,7 @@ function authStateOrNull(): RequestAuthState | null {
 function hashToken(token: string): string {
   return createHash('sha256').update(token).digest('hex')
 }
-import { createToken as createRawToken, parseScopes } from './tokens'
+import { createToken as createRawToken, getPasswordChangedAt, isIssuedBeforePasswordChange, parseScopes } from './tokens'
 
 export class Auth {
   // Per-request state lives on the request object via `authStateOrNull()`
@@ -615,6 +615,12 @@ export class Auth {
     if (accessToken.revoked)
       return false
 
+    // Reject tokens issued before the user last changed their password
+    // (stacksjs/stacks#1957). Binds validity to the durable users row,
+    // so a stolen token survives neither a reset nor the sweep gap.
+    if (isIssuedBeforePasswordChange(accessToken.created_at, await getPasswordChangedAt(accessToken.user_id)))
+      return false
+
     // Mark the token as freshly-used. Used to be a rotation path here
     // (`if (hoursSinceLastUse >= 24h) await this.rotateToken(token)`)
     // but the rotated bearer was **discarded** by the caller —
@@ -671,7 +677,17 @@ export class Auth {
     if (!accessToken?.user_id)
       return undefined
 
-    return await User.find(accessToken.user_id as number)
+    const user = await User.find(accessToken.user_id as number)
+
+    // Reject tokens issued before the user last changed their password
+    // (stacksjs/stacks#1957). Reuses the already-loaded User model — no
+    // extra query. A missing column reads as undefined => legacy-allow.
+    const changedAtRaw = (user as any)?.password_changed_at
+    const changedAt = changedAtRaw ? new Date(String(changedAtRaw)) : null
+    if (isIssuedBeforePasswordChange(accessToken.created_at, changedAt))
+      return undefined
+
+    return user
   }
 
   /**

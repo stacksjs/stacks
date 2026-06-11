@@ -2,6 +2,8 @@ import { randomBytes } from 'node:crypto'
 import { config } from '@stacksjs/config'
 import { db } from '@stacksjs/database'
 import { mail, template } from '@stacksjs/email'
+import { log } from '@stacksjs/logging'
+import { formatDate } from '@stacksjs/orm'
 import { makeHash, verifyHash } from '@stacksjs/security'
 import { sessionDestroyAll } from '../session-auth'
 import { revokeAllTokens } from '../tokens'
@@ -249,12 +251,37 @@ export function passwordResets(email: string): PasswordResetActions {
 
       const hashedPassword = await makeHash(newPassword, { algorithm: 'bcrypt' })
 
-      // Update password
-      await trx
-        .updateTable('users')
-        .set({ password: hashedPassword })
-        .where('email', '=', email)
-        .executeTakeFirst()
+      // Update password AND stamp password_changed_at so every token /
+      // refresh token issued before this moment is rejected at use-time,
+      // not merely by the post-commit sweep (stacksjs/stacks#1957). The
+      // stamp is UTC 'YYYY-MM-DD HH:MM:SS' (formatDate), the same clock
+      // family as the token rows' CURRENT_TIMESTAMP so comparisons stay
+      // coherent. A future authenticated change-password endpoint MUST
+      // stamp this column too. If the column doesn't exist yet (DB not
+      // migrated), retry the update without the stamp — account recovery
+      // must never break on an un-migrated database (the sweep still runs
+      // post-commit; the binding is simply inert until `buddy migrate`).
+      try {
+        await trx
+          .updateTable('users')
+          .set({ password: hashedPassword, password_changed_at: formatDate(new Date()) } as never)
+          .where('email', '=', email)
+          .executeTakeFirst()
+      }
+      catch (err) {
+        const message = err instanceof Error ? err.message : String(err)
+        if (/password_changed_at|no such column|unknown column/i.test(message)) {
+          log.warn('[PasswordReset] password_changed_at column missing — run `buddy migrate`; resetting without the credential-version stamp')
+          await trx
+            .updateTable('users')
+            .set({ password: hashedPassword })
+            .where('email', '=', email)
+            .executeTakeFirst()
+        }
+        else {
+          throw err
+        }
+      }
 
       // Delete the used reset token
       await trx

@@ -22,7 +22,7 @@
  * override is reliable).
  */
 
-import { afterAll, beforeAll, describe, expect, test } from 'bun:test'
+import { afterAll, beforeAll, beforeEach, describe, expect, test } from 'bun:test'
 import { existsSync, unlinkSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
@@ -74,9 +74,23 @@ async function seedSessionRow(userId: number, sessionId: string): Promise<void> 
   `, [sessionId, userId, Math.floor(Date.now() / 1000), expiresAt]).execute()
 }
 
-beforeAll(async () => {
-  // Wait for the one-shot async config reload, then force our temp
-  // SQLite config so it can't be clobbered (see header comment).
+// Re-pin the lazy `db` proxy to THIS file's SQLite path before every test.
+// Two independent forces of the shared `db` singleton make this necessary:
+//
+//   1. @stacksjs/database kicks off a fire-and-forget background config
+//      reload at module load (`ensureConfigLoaded()`); when it resolves it
+//      re-points the proxy at the app's own sqlite file. If that promise
+//      settles MID-TEST (the reset path does bcrypt + a transaction), it
+//      clobbers our temp DB. `await ensureDatabaseConfigLoaded()` drains
+//      that one-shot reload first so it can never fire again after we force.
+//   2. bun runs every test file of a directory in one process sharing the
+//      same singleton, so a sibling file's hooks (e.g.
+//      password-changed-at-binding.test.ts, a DIFFERENT sqlite file) can win
+//      the connection between our tests and route our queries to its DB.
+//
+// Forcing AFTER the drain, before every test, keeps this file pinned to its
+// own schema regardless of cross-file ordering or async timing.
+async function forceConfig(): Promise<void> {
   await ensureDatabaseConfigLoaded()
   initializeDbConfig({
     app: { env: 'testing' },
@@ -85,6 +99,16 @@ beforeAll(async () => {
       connections: { sqlite: { database: DB_PATH, prefix: '' } },
     },
   })
+}
+
+beforeEach(async () => {
+  await forceConfig()
+})
+
+beforeAll(async () => {
+  // Drain the one-shot async config reload, then force our temp SQLite
+  // config so it can't be clobbered (see comment above).
+  await forceConfig()
 
   // Minimal schema: just the five tables the reset + token paths touch.
   await db.unsafe(`

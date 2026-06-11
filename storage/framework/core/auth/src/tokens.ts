@@ -93,6 +93,70 @@ function generateSecureToken(bytes: number = 40): string {
 }
 
 // ============================================================================
+// PASSWORD-CHANGE BINDING (stacksjs/stacks#1957)
+// ============================================================================
+
+/**
+ * Read `users.password_changed_at` for a user.
+ *
+ * Binds a token's validity to the account's credential state: a token
+ * issued before the user last changed their password is no longer
+ * trusted, regardless of its own `revoked`/`expires_at` flags. This is
+ * the durable, use-time backstop behind the post-reset revocation sweep
+ * (#1947) — even a freshly minted pair that the sweep never saw is
+ * rejected on first use.
+ *
+ * Returns `null` on ANY error (missing column / missing table) so a
+ * not-yet-migrated database degrades to legacy-allow rather than locking
+ * everyone out. Accepts an optional query runner so the refresh exchange
+ * can read the stamp inside its own transaction.
+ */
+export async function getPasswordChangedAt(
+  userId: unknown,
+  q: { unsafe: (sql: string, params?: any[]) => any } = db,
+): Promise<Date | null> {
+  if (userId === null || userId === undefined)
+    return null
+  try {
+    const rows = await q.unsafe(`
+      SELECT password_changed_at FROM users WHERE id = ${param(1)} LIMIT 1
+    `, [userId])
+    const value = (rows as any[])[0]?.password_changed_at
+    if (value === null || value === undefined)
+      return null
+    const parsed = new Date(String(value))
+    return Number.isNaN(parsed.getTime()) ? null : parsed
+  }
+  catch {
+    // Column or table missing (legacy / un-migrated DB) — allow.
+    return null
+  }
+}
+
+/**
+ * True when a credential issued at `createdAt` predates the user's last
+ * password change (`changedAt`) and must therefore be rejected.
+ *
+ * Legacy-allow semantics:
+ * - `changedAt` null (no stamp / un-migrated) => never reject.
+ * - `createdAt` missing/unparseable => never reject.
+ *
+ * Strict `<` so a token minted in the SAME second as (or after) the
+ * reset — e.g. the victim's immediate post-reset login — is NOT bricked
+ * by CURRENT_TIMESTAMP's one-second granularity.
+ */
+export function isIssuedBeforePasswordChange(createdAt: unknown, changedAt: Date | null): boolean {
+  if (!changedAt)
+    return false
+  if (createdAt === null || createdAt === undefined)
+    return false
+  const created = new Date(String(createdAt))
+  if (Number.isNaN(created.getTime()))
+    return false
+  return created.getTime() < changedAt.getTime()
+}
+
+// ============================================================================
 // TOKEN RETRIEVAL FUNCTIONS
 // ============================================================================
 
@@ -147,6 +211,12 @@ export async function findToken(plainTextToken: string): Promise<AccessToken | n
 
   const row = (rows as any[])[0]
   if (!row) return null
+
+  // Reject any token issued before the user last changed their password
+  // (stacksjs/stacks#1957). This is the use-time backstop that makes the
+  // post-reset revocation sweep no longer load-bearing.
+  if (isIssuedBeforePasswordChange(row.created_at, await getPasswordChangedAt(row.user_id)))
+    return null
 
   return {
     id: row.id,
@@ -437,106 +507,137 @@ export async function refreshToken(
 
   const hashedRefreshToken = hashToken(refreshTokenPlain)
 
-  // Find the refresh token and its associated access token
-  const refreshRows = await db.unsafe(`
-    SELECT r.*, t.user_id, t.oauth_client_id, t.name, t.scopes
-    FROM oauth_refresh_tokens r
-    JOIN oauth_access_tokens t ON r.access_token_id = t.id
-    WHERE r.token = ${param(1)}
-    AND r.revoked = ${boolFalse}
-    AND (r.expires_at IS NULL OR r.expires_at > ${now})
-    LIMIT 1
-  `, [hashedRefreshToken])
+  // The whole exchange runs in one transaction so it is strictly ordered
+  // against a concurrent password reset (stacksjs/stacks#1957). On the
+  // default sqlite dialect, db.transaction() is serialized through the
+  // #1953 mutex on the single shared connection, so the exchange either
+  // commits entirely before the reset's stamp lands (then the minted
+  // pair has created_at <= password_changed_at and is killed at use-time
+  // by isIssuedBeforePasswordChange — the post-reset sweep is no longer
+  // load-bearing) or it runs after (then the in-transaction stamp read
+  // below sees the committed change and 401s, rolling back the mint).
+  return await db.transaction(async (rawTrx) => {
+    // The transaction callback receives bun-query-builder's raw
+    // QueryBuilder<DB>; `unsafe` is present and returns an awaitable
+    // directly (same call shape as the top-level db proxy used above).
+    const trx = rawTrx as unknown as { unsafe: (sql: string, params?: any[]) => any }
 
-  const refreshRow = (refreshRows as any[])[0]
-  if (!refreshRow) {
-    throw new HttpError(401, 'Invalid or expired refresh token')
-  }
+    // Find the refresh token and its associated access token
+    const refreshRows = await trx.unsafe(`
+      SELECT r.*, t.user_id, t.oauth_client_id, t.name, t.scopes
+      FROM oauth_refresh_tokens r
+      JOIN oauth_access_tokens t ON r.access_token_id = t.id
+      WHERE r.token = ${param(1)}
+      AND r.revoked = ${boolFalse}
+      AND (r.expires_at IS NULL OR r.expires_at > ${now})
+      LIMIT 1
+    `, [hashedRefreshToken])
 
-  // Revoke the old refresh token AND the access token it was bound
-  // to. The previous code revoked only the refresh row, which left
-  // the prior access token valid until its `expires_at` (up to 1h by
-  // default). If the refresh token leaked, the attacker minted a
-  // fresh access token via this endpoint AND the victim's pre-
-  // refresh access token also stayed live — both pointing at the
-  // same user. The atomic revoke-paired-access-token ensures a leaked
-  // refresh produces only one usable access token at a time
-  // (stacksjs/stacks#1860 H-2).
-  await db.unsafe(`
-    UPDATE oauth_refresh_tokens
-    SET revoked = ${boolTrue}
-    WHERE id = ${param(1)}
-  `, [refreshRow.id])
+    const refreshRow = (refreshRows as any[])[0]
+    if (!refreshRow) {
+      throw new HttpError(401, 'Invalid or expired refresh token')
+    }
 
-  await db.unsafe(`
-    UPDATE oauth_access_tokens
-    SET revoked = ${boolTrue}
-    WHERE id = ${param(1)}
-  `, [refreshRow.access_token_id])
+    // Reject a refresh token issued before the user last changed their
+    // password. Same generic message as the not-found branch so the
+    // endpoint never becomes a token-state oracle (#1957).
+    if (isIssuedBeforePasswordChange(refreshRow.created_at, await getPasswordChangedAt(refreshRow.user_id, trx))) {
+      throw new HttpError(401, 'Invalid or expired refresh token')
+    }
 
-  // Create new access token
-  const plainTextToken = generateSecureToken(40)
-  const hashedToken = hashToken(plainTextToken)
+    // Revoke the old refresh token AND the access token it was bound
+    // to. The previous code revoked only the refresh row, which left
+    // the prior access token valid until its `expires_at` (up to 1h by
+    // default). If the refresh token leaked, the attacker minted a
+    // fresh access token via this endpoint AND the victim's pre-
+    // refresh access token also stayed live — both pointing at the
+    // same user. The atomic revoke-paired-access-token ensures a leaked
+    // refresh produces only one usable access token at a time
+    // (stacksjs/stacks#1860 H-2).
+    await trx.unsafe(`
+      UPDATE oauth_refresh_tokens
+      SET revoked = ${boolTrue}
+      WHERE id = ${param(1)}
+    `, [refreshRow.id])
 
-  const expiresAt = new Date()
-  expiresAt.setMinutes(expiresAt.getMinutes() + expiresInMinutes)
+    await trx.unsafe(`
+      UPDATE oauth_access_tokens
+      SET revoked = ${boolTrue}
+      WHERE id = ${param(1)}
+    `, [refreshRow.access_token_id])
 
-  if (isPostgres) {
-    await db.unsafe(`
-      INSERT INTO oauth_access_tokens (user_id, oauth_client_id, token, name, scopes, revoked, expires_at, created_at, updated_at)
-      VALUES ($1, $2, $3, $4, $5, false, $6, NOW(), NOW())
-    `, [refreshRow.user_id, refreshRow.oauth_client_id, hashedToken, refreshRow.name, refreshRow.scopes, expiresAt.toISOString()])
-  } else {
-    await db.unsafe(`
-      INSERT INTO oauth_access_tokens (user_id, oauth_client_id, token, name, scopes, revoked, expires_at, created_at, updated_at)
-      VALUES (?, ?, ?, ?, ?, 0, ?, ${now}, ${now})
-    `, [refreshRow.user_id, refreshRow.oauth_client_id, hashedToken, refreshRow.name, refreshRow.scopes, expiresAt.toISOString()])
-  }
+    // Create new access token
+    const plainTextToken = generateSecureToken(40)
+    const hashedToken = hashToken(plainTextToken)
 
-  // Get the new access token
-  const inserted = await db.unsafe(`
-    SELECT * FROM oauth_access_tokens WHERE token = ${param(1)} LIMIT 1
-  `, [hashedToken])
+    const expiresAt = new Date()
+    expiresAt.setMinutes(expiresAt.getMinutes() + expiresInMinutes)
 
-  const row = (inserted as any[])[0]
+    if (isPostgres) {
+      await trx.unsafe(`
+        INSERT INTO oauth_access_tokens (user_id, oauth_client_id, token, name, scopes, revoked, expires_at, created_at, updated_at)
+        VALUES ($1, $2, $3, $4, $5, false, $6, NOW(), NOW())
+      `, [refreshRow.user_id, refreshRow.oauth_client_id, hashedToken, refreshRow.name, refreshRow.scopes, expiresAt.toISOString()])
+    } else {
+      await trx.unsafe(`
+        INSERT INTO oauth_access_tokens (user_id, oauth_client_id, token, name, scopes, revoked, expires_at, created_at, updated_at)
+        VALUES (?, ?, ?, ?, ?, 0, ?, ${now}, ${now})
+      `, [refreshRow.user_id, refreshRow.oauth_client_id, hashedToken, refreshRow.name, refreshRow.scopes, expiresAt.toISOString()])
+    }
 
-  const accessToken: AccessToken = {
-    id: row.id,
-    userId: row.user_id,
-    clientId: row.oauth_client_id,
-    name: row.name,
-    scopes: parseScopes(row.scopes),
-    revoked: false,
-    expiresAt: expiresAt,
-    createdAt: new Date(row.created_at),
-    updatedAt: new Date(row.updated_at),
-  }
+    // Get the new access token
+    const inserted = await trx.unsafe(`
+      SELECT * FROM oauth_access_tokens WHERE token = ${param(1)} LIMIT 1
+    `, [hashedToken])
 
-  // Create new refresh token
-  const newRefreshTokenPlain = generateSecureToken(40)
-  const newHashedRefreshToken = hashToken(newRefreshTokenPlain)
+    const row = (inserted as any[])[0]
 
-  const refreshExpiresAt = new Date()
-  refreshExpiresAt.setDate(refreshExpiresAt.getDate() + refreshExpiresInDays)
+    const accessToken: AccessToken = {
+      id: row.id,
+      userId: row.user_id,
+      clientId: row.oauth_client_id,
+      name: row.name,
+      scopes: parseScopes(row.scopes),
+      revoked: false,
+      expiresAt: expiresAt,
+      createdAt: new Date(row.created_at),
+      updatedAt: new Date(row.updated_at),
+    }
 
-  if (isPostgres) {
-    await db.unsafe(`
-      INSERT INTO oauth_refresh_tokens (access_token_id, token, revoked, expires_at, created_at)
-      VALUES ($1, $2, false, $3, NOW())
-    `, [accessToken.id, newHashedRefreshToken, refreshExpiresAt.toISOString()])
-  } else {
-    await db.unsafe(`
-      INSERT INTO oauth_refresh_tokens (access_token_id, token, revoked, expires_at, created_at)
-      VALUES (?, ?, 0, ?, ${now})
-    `, [accessToken.id, newHashedRefreshToken, refreshExpiresAt.toISOString()])
-  }
+    // Re-read the stamp once more inside the transaction. If a reset
+    // committed between the first read and the mint, the freshly minted
+    // pair would otherwise survive the sweep — throwing here rolls the
+    // whole exchange back (#1957).
+    if (isIssuedBeforePasswordChange(row.created_at, await getPasswordChangedAt(refreshRow.user_id, trx))) {
+      throw new HttpError(401, 'Invalid or expired refresh token')
+    }
 
-  return {
-    accessToken,
-    plainTextToken,
-    refreshToken: newRefreshTokenPlain,
-    expiresIn: expiresInMinutes * 60,
-  }
+    // Create new refresh token
+    const newRefreshTokenPlain = generateSecureToken(40)
+    const newHashedRefreshToken = hashToken(newRefreshTokenPlain)
+
+    const refreshExpiresAt = new Date()
+    refreshExpiresAt.setDate(refreshExpiresAt.getDate() + refreshExpiresInDays)
+
+    if (isPostgres) {
+      await trx.unsafe(`
+        INSERT INTO oauth_refresh_tokens (access_token_id, token, revoked, expires_at, created_at)
+        VALUES ($1, $2, false, $3, NOW())
+      `, [accessToken.id, newHashedRefreshToken, refreshExpiresAt.toISOString()])
+    } else {
+      await trx.unsafe(`
+        INSERT INTO oauth_refresh_tokens (access_token_id, token, revoked, expires_at, created_at)
+        VALUES (?, ?, 0, ?, ${now})
+      `, [accessToken.id, newHashedRefreshToken, refreshExpiresAt.toISOString()])
+    }
+
+    return {
+      accessToken,
+      plainTextToken,
+      refreshToken: newRefreshTokenPlain,
+      expiresIn: expiresInMinutes * 60,
+    }
+  })
 }
 
 /**

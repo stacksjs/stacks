@@ -39,6 +39,18 @@ export function usersEmailVerifiedAtSql(sql: SqlHelpers): string {
 }
 
 /**
+ * Defensive ALTER guaranteeing `users.password_changed_at` — the column
+ * `resetPassword()` stamps and the token-validation paths read to bind a
+ * token's validity to the user's credential state (stacksjs/stacks#1957,
+ * a #1947 follow-up). No generated users migration creates it, so the
+ * same pure-builder + try/catch-swallow pattern as
+ * {@link usersEmailVerifiedAtSql} guarantees it from both schema paths.
+ */
+export function usersPasswordChangedAtSql(sql: SqlHelpers): string {
+  return `ALTER TABLE users ADD COLUMN password_changed_at ${sql.nullableTimestamp}`
+}
+
+/**
  * Create all authentication tables
  */
 export async function migrateAuthTables(options: { verbose?: boolean } = {}): Promise<{ success: boolean, error?: string }> {
@@ -130,6 +142,20 @@ export async function migrateAuthTables(options: { verbose?: boolean } = {}): Pr
     if (options.verbose) log.info('Ensuring users.email_verified_at column exists...')
     try {
       await db.unsafe(usersEmailVerifiedAtSql(sql)).execute()
+    }
+    catch {
+      // Column already exists (or users table missing) — safe to ignore
+    }
+
+    // users.password_changed_at — `resetPassword()` stamps it and the
+    // token-validation paths read it to invalidate any credential
+    // issued before a password change (stacksjs/stacks#1957, a #1947
+    // follow-up). Same defensive ALTER + swallow as email_verified_at:
+    // fails harmlessly when the column already exists or `users` hasn't
+    // been migrated yet.
+    if (options.verbose) log.info('Ensuring users.password_changed_at column exists...')
+    try {
+      await db.unsafe(usersPasswordChangedAtSql(sql)).execute()
     }
     catch {
       // Column already exists (or users table missing) — safe to ignore
