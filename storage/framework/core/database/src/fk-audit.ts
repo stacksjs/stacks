@@ -11,7 +11,7 @@ import { globSync } from '@stacksjs/storage'
  * audit runs in framework tests or scaffolded apps that haven't
  * created any models yet). Avoids the Bun Glob ENOENT.
  */
-function safeGlob(pattern: string): string[] {
+export function safeGlob(pattern: string): string[] {
   // Pull off the prefix up to the first glob metachar; if that root
   // dir doesn't exist, skip the glob entirely.
   const metaIdx = pattern.search(/[*?[]/)
@@ -177,6 +177,98 @@ export async function auditForeignKeys(): Promise<FkAuditResult> {
   })
 
   return { declared, live, missing }
+}
+
+// stacksjs/stacks#1951 — FK orphan detection. FK enforcement flipped
+// ON (utils.ts bootstrap pragmas) against databases that were written
+// while `foreign_keys = OFF`, so legacy rows can reference parents that
+// no longer exist. Those orphans silently turn previously-working
+// deletes/inserts into runtime FK failures. This READ-ONLY scan finds
+// them so `buddy doctor` can report before they bite.
+//
+// SQLite-specific: MySQL/Postgres enforce FKs natively, so the
+// FK-off-legacy-data failure mode can't arise there — we degrade to
+// `supported: false` rather than run an expensive per-FK anti-join.
+
+export interface FkOrphan {
+  table: string
+  column: string
+  parent: string
+  count: number
+  /** Up to 5 rowids of offending child rows, for triage. */
+  sampleRowids: number[]
+}
+
+export interface FkOrphanReport {
+  /** False on non-sqlite dialects (FKs enforced natively). */
+  supported: boolean
+  total: number
+  orphans: FkOrphan[]
+}
+
+/**
+ * Scan the live database for rows whose foreign key references a
+ * parent row that doesn't exist. SQLite's `PRAGMA foreign_key_check`
+ * does this regardless of the `foreign_keys` pragma state and excludes
+ * NULL-FK rows. The violating column is resolved by joining the
+ * reported `fkid` against `PRAGMA foreign_key_list(table)`.
+ */
+export async function findFkOrphans(dialect?: 'sqlite' | 'mysql' | 'postgres' | 'other'): Promise<FkOrphanReport> {
+  const d = dialect ?? await currentDialect()
+  if (d !== 'sqlite')
+    return { supported: false, total: 0, orphans: [] }
+
+  const { db } = await import('./utils')
+  const rows = await db.unsafe('PRAGMA foreign_key_check').execute()
+  const checkRows = Array.isArray(rows) ? rows : []
+
+  // Cache `foreign_key_list` per table so we resolve fkid → column once.
+  const fkListCache = new Map<string, any[]>()
+  async function fkListFor(table: string): Promise<any[]> {
+    if (fkListCache.has(table)) return fkListCache.get(table)!
+    if (!/^[a-z_]\w*$/i.test(table)) {
+      fkListCache.set(table, [])
+      return []
+    }
+    const list = await db.unsafe(`PRAGMA foreign_key_list("${table}")`).execute()
+    const arr = Array.isArray(list) ? list : []
+    fkListCache.set(table, arr)
+    return arr
+  }
+
+  // Group by table+parent+fkid; accumulate counts and sample rowids.
+  const grouped = new Map<string, FkOrphan>()
+  for (const raw of checkRows) {
+    const r = raw as { table?: string, rowid?: number, parent?: string, fkid?: number }
+    const table = String(r.table ?? '')
+    const parent = String(r.parent ?? '')
+    if (!table || !parent) continue
+    const fkid = Number(r.fkid ?? 0)
+
+    let column = ''
+    const fkList = await fkListFor(table)
+    for (const fk of fkList) {
+      const f = fk as { id?: number, from?: string }
+      if (Number(f.id) === fkid && f.from) {
+        column = String(f.from)
+        break
+      }
+    }
+
+    const key = `${table} ${parent} ${fkid}`
+    let entry = grouped.get(key)
+    if (!entry) {
+      entry = { table, column, parent, count: 0, sampleRowids: [] }
+      grouped.set(key, entry)
+    }
+    entry.count++
+    if (entry.sampleRowids.length < 5 && typeof r.rowid === 'number')
+      entry.sampleRowids.push(r.rowid)
+  }
+
+  const orphans = [...grouped.values()]
+  const total = orphans.reduce((sum, o) => sum + o.count, 0)
+  return { supported: true, total, orphans }
 }
 
 async function currentDialect(): Promise<'sqlite' | 'mysql' | 'postgres' | 'other'> {

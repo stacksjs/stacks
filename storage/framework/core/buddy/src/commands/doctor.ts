@@ -21,14 +21,15 @@ async function probe(
   checks: HealthCheck[],
   name: string,
   fn: () => Promise<string>,
+  timeoutMs = 2000,
 ): Promise<void> {
   const start = Date.now()
   try {
     const ac = new AbortController()
-    const timer = setTimeout(() => ac.abort(), 2000)
+    const timer = setTimeout(() => ac.abort(), timeoutMs)
     const message = await Promise.race([
       fn(),
-      new Promise<never>((_, rej) => ac.signal.addEventListener('abort', () => rej(new Error('timed out (>2s)')))),
+      new Promise<never>((_, rej) => ac.signal.addEventListener('abort', () => rej(new Error(`timed out (>${Math.round(timeoutMs / 1000)}s)`)))),
     ])
     clearTimeout(timer)
     checks.push({ name, status: 'pass', message: `${message} (${Date.now() - start}ms)` })
@@ -45,7 +46,8 @@ async function probe(
 export function doctor(buddy: CLI): void {
   buddy
     .command('doctor', 'Run health checks on your Stacks installation')
-    .action(async () => {
+    .option('--no-fail', 'Print results but always exit 0 (CI ramp-up)')
+    .action(async (options?: { fail?: boolean }) => {
       log.debug('Running `buddy doctor` ...')
       await intro('buddy doctor')
 
@@ -180,6 +182,46 @@ export function doctor(buddy: CLI): void {
         const more = result.missing.length > 5 ? ` (+${result.missing.length - 5} more)` : ''
         throw new Error(`${result.missing.length}/${result.declared.length} declared FKs missing from live schema: ${sample}${more}. Run \`buddy migrate:fresh\` (will reset data) or \`buddy migrate\` against a clean DB.`)
       })
+
+      // Unique-index drift (stacksjs/stacks#1952). Compares each
+      // model's declared uniqueness (`unique: true` attributes /
+      // indexes) against the live UNIQUE indexes, matched by column
+      // set. Catches apps scaffolded during the stub era whose
+      // unique-index migrations never ran. 10s budget — the audit
+      // imports every model file, so cold caches exceed the 2s default.
+      await probe(checks, 'Unique indexes', async () => {
+        const { auditUniqueIndexes } = await import('@stacksjs/database')
+        const result = await auditUniqueIndexes()
+        if (!result.supported) return 'Dialect not audited (skipped)'
+        const skipped = result.skippedTables.length > 0 ? `, ${result.skippedTables.length} tables skipped (not migrated)` : ''
+        if (result.missing.length === 0) return `${result.declared.length} declared unique constraints all indexed${skipped}`
+        const sample = result.missing
+          .slice(0, 5)
+          .map(u => `${u.table}.${u.columns.join('+')}`)
+          .join(', ')
+        const more = result.missing.length > 5 ? ` (+${result.missing.length - 5} more)` : ''
+        const first = result.missing[0]
+        const example = `CREATE UNIQUE INDEX IF NOT EXISTS "${first.table}_${first.columns.join('_')}_unique" ON "${first.table}" ("${first.columns.join('", "')}")`
+        throw new Error(`${result.missing.length}/${result.declared.length} declared unique constraints have no UNIQUE index: ${sample}${more}. Run \`buddy migrate\` (re-queues missing unique-index migrations, #1952) — dedupe duplicate rows first or migrate hard-fails; if no migration file exists run \`buddy generate:migrations\`, or create manually: ${example}`)
+      }, 10000)
+
+      // FK orphans (stacksjs/stacks#1951). FK enforcement flipped ON
+      // against databases written under `foreign_keys = OFF`, so legacy
+      // rows can reference parents that no longer exist. READ-ONLY scan
+      // via `PRAGMA foreign_key_check`. 10s budget — O(all child rows).
+      await probe(checks, 'FK orphans', async () => {
+        const { findFkOrphans } = await import('@stacksjs/database')
+        const result = await findFkOrphans()
+        if (!result.supported) return 'Dialect not audited (skipped)'
+        if (result.total === 0) return 'No orphan rows (PRAGMA foreign_key_check clean)'
+        const sample = result.orphans
+          .slice(0, 5)
+          .map(o => `${o.table}.${o.column} → ${o.parent} (${o.count})`)
+          .join(', ')
+        const more = result.orphans.length > 5 ? ` (+${result.orphans.length - 5} more)` : ''
+        const first = result.orphans[0]
+        throw new Error(`${result.total} orphan rows violate FKs: ${sample}${more}. Legacy rows written under foreign_keys=OFF (#1951). Review and clean manually, e.g. DELETE FROM ${first.table} WHERE ${first.column} IS NOT NULL AND ${first.column} NOT IN (SELECT id FROM ${first.parent}) — doctor never deletes data.`)
+      }, 10000)
 
       // Cache connectivity
       await probe(checks, 'Cache', async () => {
@@ -364,7 +406,9 @@ export function doctor(buddy: CLI): void {
       // Summary
       if (hasFailures) {
         log.error('Some critical checks failed. Please address the issues above.')
-        process.exit(1)
+        // `--no-fail` (options.fail === false) keeps exit 0 for CI ramp-up;
+        // default behavior exits 1 so doctor gates upgrades/CI out of the box.
+        if (options?.fail !== false) process.exit(1)
       }
       else if (hasWarnings) {
         log.info(yellow('Some checks have warnings. Your system should work but may have issues.'))

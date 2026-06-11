@@ -118,8 +118,13 @@ export * from './defaults'
 
 // Foreign-key audit (stacksjs/stacks#1916) — compare declared
 // `belongsTo` relationships against live FKs.
-export { auditForeignKeys, getDeclaredFKs, getLiveFKs } from './fk-audit'
-export type { DeclaredFK, FkAuditResult, LiveFK } from './fk-audit'
+export { auditForeignKeys, findFkOrphans, getDeclaredFKs, getLiveFKs } from './fk-audit'
+export type { DeclaredFK, FkAuditResult, FkOrphan, FkOrphanReport, LiveFK } from './fk-audit'
+
+// Unique-index drift audit (stacksjs/stacks#1952) — compare declared
+// `unique: true` attributes / indexes against live UNIQUE indexes.
+export { auditUniqueIndexes, getDeclaredUniques, getLiveUniqueIndexes } from './unique-audit'
+export type { DeclaredUnique, LiveUniqueIndex, UniqueAuditResult } from './unique-audit'
 
 // Transaction context: AsyncLocalStorage-based scope so side-effect
 // emitters (queue dispatch, mailer send) can buffer themselves
