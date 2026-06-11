@@ -66,6 +66,19 @@ async function sendPasswordChangedNotification(userEmail: string): Promise<void>
       },
     })
 
+    // template() swallows missing-template and STX-render failures into
+    // empty strings instead of throwing (template.ts returns
+    // { html: '', text: '' }), which would mail a blank notification with
+    // no information. Send a plain-text notification instead.
+    if (!html && !text) {
+      await mail.send({
+        to: userEmail,
+        subject: `Your ${appName} password has been changed`,
+        text: `Your ${appName} password was changed on ${changedAt}.${supportEmail ? ` If this wasn't you, contact ${supportEmail}.` : ''}`,
+      })
+      return
+    }
+
     await mail.send({
       to: userEmail,
       subject: `Your ${appName} password has been changed`,
@@ -151,6 +164,16 @@ export function passwordResets(email: string): PasswordResetActions {
           expireMinutes,
         },
       })
+
+      // template() swallows missing-template and STX-render failures into
+      // empty strings instead of throwing (template.ts returns
+      // { html: '', text: '' }), which would mail a blank email with no
+      // reset link. Treat an empty render as failure so the plain-text
+      // fallback below actually fires (the default install ships
+      // password-reset.stx under storage/framework/defaults/, which
+      // template() does not consult — see stacksjs/stacks#1944).
+      if (!html && !text)
+        throw new Error('password-reset template missing or rendered empty')
 
       await mail.send({
         to: email,

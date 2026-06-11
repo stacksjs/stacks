@@ -143,6 +143,14 @@ export async function sendVerificationEmail(user: { id: number, email: string, n
       },
     })
 
+    // template() swallows missing-template and STX-render failures into
+    // empty strings instead of throwing (template.ts returns
+    // { html: '', text: '' }), which would mail a blank email with no
+    // verification link. Treat an empty render as failure so the
+    // plain-text fallback below actually fires (stacksjs/stacks#1944).
+    if (!html && !text)
+      throw new Error('email-verification template missing or rendered empty')
+
     await mail.send({
       to: user.email,
       subject: `Verify Your ${appName} Email Address`,
