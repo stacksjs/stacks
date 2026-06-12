@@ -73,6 +73,19 @@ catch (err) {
   log.warn(`[api:dev] failed to bootstrap event listeners — dispatched events will be ignored: ${(err as Error).message}`)
 }
 
+// Auto-migrate on model edits: keep the dev database in sync with the models
+// without a manual `buddy migrate`. Non-destructive changes apply silently;
+// destructive ones are logged and left for `buddy migrate`. Opt out with
+// STACKS_DEV_AUTO_MIGRATE=0. Wrapped so a watch failure can't crash the API.
+try {
+  const { startModelMigrationWatcher } = await import('./migrate-watcher')
+  startModelMigrationWatcher()
+}
+catch (err) {
+  const { log } = await import('@stacksjs/cli')
+  log.debug(`[api:dev] auto-migrate watcher not started: ${(err as Error).message}`)
+}
+
 // Enable CORS middleware.
 //
 // Uses the **Stacks** Cors middleware (defaults/app/Middleware/Cors.ts)
