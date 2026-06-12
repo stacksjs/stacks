@@ -1,8 +1,9 @@
 import type { CLI, MigrateOptions } from '@stacksjs/types'
 import { closeSync, existsSync, mkdirSync, openSync, readdirSync, readFileSync, rmSync } from 'node:fs'
 import process from 'node:process'
-import { intro, log, onUnknownSubcommand, outro } from "@stacksjs/cli"
+import { confirm, intro, log, onUnknownSubcommand, outro } from "@stacksjs/cli"
 import { Action } from '@stacksjs/enums'
+import { hasTTY, isCI } from '@stacksjs/env'
 import { appPath, frameworkPath, projectPath } from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types'
 
@@ -154,12 +155,87 @@ async function reportMissingForeignKeys(): Promise<void> {
   }
 }
 
+interface MigrationOpLike {
+  kind: string
+  table: string
+  column?: string
+  from?: string
+  to?: string
+  destructive: boolean
+}
+
+/** Human-readable one-liner for a pending operation. */
+function describeOp(op: MigrationOpLike): string {
+  switch (op.kind) {
+    case 'drop_table':
+      return `drop table "${op.table}" (all rows lost)`
+    case 'drop_column':
+      return `drop column "${op.table}"."${op.column}" (column data lost)`
+    case 'modify_column':
+      return `change type of "${op.table}"."${op.column}" (possible data loss)`
+    case 'rebuild_table':
+      return `rebuild table "${op.table}" (type/constraint change)`
+    case 'rename_column':
+      return `rename "${op.table}"."${op.from}" → "${op.to}"`
+    case 'rename_table':
+      return `rename table "${op.from}" → "${op.to}"`
+    default:
+      return `${op.kind} on "${op.table}"${op.column ? `."${op.column}"` : ''}`
+  }
+}
+
+/**
+ * Gate destructive schema changes behind confirmation. Returns true to proceed,
+ * false to abort. Runs in the interactive PARENT process (the migrate action
+ * subprocess has no TTY), previewing the pending operations without applying.
+ */
+async function confirmDestructiveMigrations(opts: { force?: boolean, fromDb?: boolean, applyRenames?: boolean }): Promise<boolean> {
+  let operations: MigrationOpLike[] = []
+  try {
+    const { previewPendingMigrations } = await import('@stacksjs/database')
+    operations = (await previewPendingMigrations({ fromDb: opts.fromDb, applyRenames: opts.applyRenames })) as MigrationOpLike[]
+  }
+  catch (error) {
+    // If preview fails we can't classify changes — don't block; the real
+    // generate runs next with full error handling.
+    log.debug(`Migration preview unavailable: ${error instanceof Error ? error.message : String(error)}`)
+    return true
+  }
+
+  // Report data-preserving renames so the user knows data was kept.
+  const renames = operations.filter(o => o.kind === 'rename_column' || o.kind === 'rename_table')
+  for (const r of renames)
+    log.info(`Detected ${describeOp(r)} — applying as a rename (data preserved). Use --no-rename to drop + add instead.`)
+
+  const destructive = operations.filter(o => o.destructive)
+  if (destructive.length === 0)
+    return true
+
+  log.warn(`This migration includes ${destructive.length} potentially destructive change${destructive.length === 1 ? '' : 's'}:`)
+  for (const op of destructive)
+    log.warn(`  • ${describeOp(op)}`)
+
+  if (opts.force)
+    return true
+
+  // Non-interactive (CI or no TTY): never silently drop data.
+  if (isCI || !hasTTY) {
+    log.error('Refusing to apply destructive changes in a non-interactive environment. Re-run with --force to proceed.')
+    return false
+  }
+
+  return confirm({ message: 'Apply these destructive changes?', initial: false })
+}
+
 export function migrate(buddy: CLI): void {
   const descriptions = {
     migrate: 'Migrates your database',
     project: 'Target a specific project',
     verbose: 'Enable verbose output',
     auth: 'Also migrate auth tables (oauth_clients, oauth_access_tokens, oauth_refresh_tokens, password_resets)',
+    force: 'Apply destructive changes (drop column/table, lossy type change) without confirmation',
+    fromDb: 'Diff against the live database schema instead of the snapshot (self-heal drift)',
+    noRename: 'Treat renamed columns as drop + add instead of a data-preserving rename',
   }
 
   buddy
@@ -169,8 +245,11 @@ export function migrate(buddy: CLI): void {
     .option('-p, --project [project]', descriptions.project, { default: false })
     .option('-a, --auth', descriptions.auth, { default: true })
     .option('--no-auth', 'Skip auth/oauth table migrations')
+    .option('-f, --force', descriptions.force, { default: false })
+    .option('--from-db', descriptions.fromDb, { default: false })
+    .option('--no-rename', descriptions.noRename)
     .option('--verbose', descriptions.verbose, { default: false })
-    .action(async (options: MigrateOptions & { auth?: boolean }) => {
+    .action(async (options: MigrateOptions & { auth?: boolean, force?: boolean, fromDb?: boolean, rename?: boolean }) => {
       log.debug('Running `buddy migrate` ...', options)
 
       const perf = await intro('buddy migrate')
@@ -182,6 +261,37 @@ export function migrate(buddy: CLI): void {
         process.exit(ExitCode.FatalError)
       }
 
+      // Thread the rename / from-db decisions across the action subprocess
+      // boundary via env (the child inherits process.env). cac maps
+      // `--no-rename` to `rename === false` and `--from-db` to `fromDb`.
+      const applyRenames = options.rename === false ? false : undefined
+      if (options.fromDb)
+        process.env.STACKS_MIGRATE_FROM_DB = '1'
+      if (applyRenames === false)
+        process.env.STACKS_MIGRATE_NO_RENAME = '1'
+
+      // --diff: dry-run only. Preview the pending operations + SQL and exit
+      // without writing files or applying anything.
+      if (options.diff) {
+        try {
+          const { previewPendingMigrations } = await import('@stacksjs/database')
+          const ops = await previewPendingMigrations({ fromDb: options.fromDb, applyRenames })
+          if (ops.length === 0) {
+            log.info('No pending schema changes — your models match the database.')
+          }
+          else {
+            log.info(`${ops.length} pending change${ops.length === 1 ? '' : 's'}:`)
+            for (const op of ops as MigrationOpLike[])
+              log.info(`  • ${describeOp(op)}${op.destructive ? '  [destructive]' : ''}`)
+          }
+        }
+        catch (error) {
+          log.error('Failed to preview migrations:', error)
+        }
+        await outro('Diff complete — no changes applied.', { startTime: perf, useSeconds: true })
+        process.exit(ExitCode.Success)
+      }
+
       // Acquire a project-local migration lock to prevent two concurrent
       // runs from interleaving DDL on the same database. Two parallel
       // `buddy migrate` invocations on the same project used to corrupt
@@ -190,6 +300,16 @@ export function migrate(buddy: CLI): void {
       if (!lock.acquired) {
         log.error('Another migration is already running (.stacks/migrations.lock exists). Wait for it to finish, or remove the lockfile if it is stale.')
         process.exit(ExitCode.FatalError)
+      }
+
+      // Gate destructive changes (drop column/table, lossy type change) behind
+      // confirmation while we still have the interactive TTY — the migrate
+      // action runs in a non-interactive subprocess.
+      const proceed = await confirmDestructiveMigrations({ force: options.force, fromDb: options.fromDb, applyRenames })
+      if (!proceed) {
+        lock.release()
+        await outro('Migration cancelled — no changes applied.', { startTime: perf, useSeconds: true })
+        process.exit(ExitCode.Success)
       }
 
       const result = await runAction(Action.Migrate, options).finally(() => lock.release())
