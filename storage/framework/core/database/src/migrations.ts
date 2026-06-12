@@ -23,6 +23,7 @@ const log = {
 }
 import { err, handleError, ok } from '@stacksjs/error-handling'
 import { path } from '@stacksjs/path'
+import type { MigrationOperation } from '@stacksjs/query-builder'
 import {
   createQueryBuilder,
   executeMigration as qbExecuteMigration,
@@ -801,7 +802,53 @@ async function dropFrameworkTables(dialect: 'sqlite' | 'mysql' | 'postgres'): Pr
  * the runner never sees it, so model edits silently no-op'd — defeating
  * the "models are the source of truth" promise.
  */
-export async function generateMigrations(): Promise<Result<string, Error>> {
+export interface GenerateMigrationsOptions {
+  /**
+   * Emit data-preserving `RENAME COLUMN` for unambiguous detected renames
+   * (default true). False forces literal DROP + ADD. Falls back to the
+   * `STACKS_MIGRATE_NO_RENAME` env flag (set by the `buddy migrate` command
+   * across the action subprocess boundary).
+   */
+  applyRenames?: boolean
+  /**
+   * Diff against the live database instead of the snapshot. Falls back to the
+   * `STACKS_MIGRATE_FROM_DB` env flag.
+   */
+  fromDb?: boolean
+}
+
+function resolveGenerateOptions(options: GenerateMigrationsOptions): { applyRenames?: boolean, fromDb?: boolean } {
+  const applyRenames = options.applyRenames ?? (process.env.STACKS_MIGRATE_NO_RENAME === '1' ? false : undefined)
+  const fromDb = options.fromDb ?? (process.env.STACKS_MIGRATE_FROM_DB === '1' ? true : undefined)
+  return { applyRenames, fromDb }
+}
+
+/**
+ * Preview the pending migration as a list of structured operations WITHOUT
+ * writing any files or advancing the snapshot. The `buddy migrate` command
+ * uses this (in the interactive parent process) to gate destructive changes
+ * behind confirmation before spawning the non-interactive migrate action.
+ */
+export async function previewPendingMigrations(options: GenerateMigrationsOptions = {}): Promise<MigrationOperation[]> {
+  try {
+    configureQueryBuilder()
+    const dialect = getDialect()
+    const { modelsDir, skip } = prepareMigrationModelsDir()
+    if (skip)
+      return []
+    const { applyRenames, fromDb } = resolveGenerateOptions(options)
+    const result = await qbGenerateMigration(modelsDir, { dialect, dryRun: true, applyRenames, fromDb })
+    return result.operations ?? []
+  }
+  catch (error) {
+    // A preview must never block the migrate flow on its own failure — the
+    // real generate (with proper error handling) runs right after.
+    log.debug(`[migration] preview failed: ${error instanceof Error ? error.message : String(error)}`)
+    return []
+  }
+}
+
+export async function generateMigrations(options: GenerateMigrationsOptions = {}): Promise<Result<string, Error>> {
   try {
     // Step-progress at debug — buddy's intro/outro carries the user-
     // visible signal. On a no-op generate we want zero lines between
@@ -819,8 +866,9 @@ export async function generateMigrations(): Promise<Result<string, Error>> {
       return ok('Migrations generated')
     }
 
+    const { applyRenames, fromDb } = resolveGenerateOptions(options)
     log.debug(`[migration] Generating migrations for dialect: ${dialect}, models: ${modelsDir}`)
-    const result = await qbGenerateMigration(modelsDir, { dialect })
+    const result = await qbGenerateMigration(modelsDir, { dialect, applyRenames, fromDb })
 
     if (result.hasChanges) {
       const written = persistGeneratedMigrations(result.sqlStatements ?? [])
