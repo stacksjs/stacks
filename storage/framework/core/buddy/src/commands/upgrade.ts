@@ -9,8 +9,8 @@ export function upgrade(buddy: CLI): void {
   const descriptions = {
     upgrade: 'Upgrade the Stacks framework to the latest version',
     version: 'Install a specific version (e.g., 0.70.23)',
-    canary: 'Upgrade to the latest canary (development) build',
-    stable: 'Switch back to the latest stable release',
+    canary: 'Upgrade to the latest canary (bleeding-edge `main`) build',
+    stable: 'Switch to the latest vetted stable release',
     force: 'Force re-download, bypassing cache and version checks',
     from: 'Sync from a local stacks checkout (e.g. ~/Code/stacks). Skips GitHub.',
     noPostinstall: 'Skip post-sync hooks (auto-imports, bun install, migrate)',
@@ -40,6 +40,7 @@ export function upgrade(buddy: CLI): void {
     .option('--verbose', descriptions.verbose, { default: false })
     .alias('update')
     .example('buddy upgrade')
+    .example('buddy update')
     .example('buddy upgrade --from ~/Code/stacks')
     .example('buddy upgrade --version 0.70.23')
     .example('buddy upgrade --canary')
