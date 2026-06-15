@@ -318,7 +318,7 @@ async function getRemoteSha(context: UpgradeContext, fromLocal: boolean, stacksR
     if ((await proc.exited) !== 0)
       return null
     const m = out.match(/^([0-9a-f]{40})\s/i)
-    return m ? m[1].toLowerCase() : null
+    return m?.[1] ? m[1].toLowerCase() : null
   }
   catch {
     // git missing or other failure — fail open to sync.

@@ -132,7 +132,7 @@ export function readSyncedVersion(versionFilePath: string): SyncedVersion | null
     if (existsSync(versionFilePath)) {
       const content = readFileSync(versionFilePath, 'utf-8').trim()
       const [ch, sha] = content.split(/\s+/)
-      if ((ch === 'stable' || ch === 'canary') && /^[0-9a-f]{40}$/i.test(sha ?? ''))
+      if ((ch === 'stable' || ch === 'canary') && sha && /^[0-9a-f]{40}$/i.test(sha))
         return { channel: ch, sha: sha.toLowerCase() }
     }
   }
