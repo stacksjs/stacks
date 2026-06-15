@@ -411,9 +411,10 @@ function mapWriteError(
 
 // Index pagination helpers. Inline copies of core/orm/src/auto-crud.ts
 // {INDEX_DEFAULT_PER_PAGE, INDEX_MAX_PER_PAGE, resolveIndexPageArgs,
-// IndexPageMeta, buildIndexMeta} — this generated file must stay importable
-// when @stacksjs/orm is npm-installed, so it can't import from
-// './src/auto-crud'. Kept in sync with that file (#1957, #1959).
+// IndexPageMeta, buildIndexMeta, IndexPaginator, buildIndexPaginator} — this
+// generated file must stay importable when @stacksjs/orm is npm-installed, so
+// it can't import from './src/auto-crud'. Kept in sync with that file
+// (#1957, #1959, #1960).
 const INDEX_DEFAULT_PER_PAGE = 15
 const INDEX_MAX_PER_PAGE = 100
 
@@ -472,6 +473,32 @@ function buildIndexMeta(
     meta.last_page_url = pageUrl(url, lastPage)
   }
   return meta
+}
+
+interface IndexPaginator {
+  current_page: number
+  per_page: number
+  from: number | null
+  to: number | null
+  has_more_pages: boolean
+  prev_page_url: string | null
+  next_page_url: string | null
+  total?: number
+  last_page?: number
+  first_page_url?: string
+  last_page_url?: string
+}
+
+function buildIndexPaginator(
+  url: URL,
+  page: number,
+  perPage: number,
+  rowCount: number,
+  hasMore: boolean,
+  total?: number,
+): IndexPaginator {
+  const { page: currentPage, ...rest } = buildIndexMeta(url, page, perPage, rowCount, hasMore, total)
+  return { current_page: currentPage, ...rest }
 }
 
 // Apply user-defined `set:` hooks (e.g. User.set.password = bcrypt) before
@@ -888,8 +915,13 @@ for (const [modelName, model] of Object.entries(models)) {
         respHeaders['Cache-Control'] = 'public, max-age=15, must-revalidate'
         respHeaders.Vary = 'Authorization'
 
+        const paginator = buildIndexPaginator(url, page, perPage, records.length, hasMore, total)
         return new Response(JSON.stringify({
           data: records,
+          ...paginator,
+          // DEPRECATED: `meta` is kept for one transition release for backward
+          // compat. Read the top-level fields instead (note: meta.page ===
+          // current_page). Removed in a future release. (#1960)
           meta: buildIndexMeta(url, page, perPage, records.length, hasMore, total),
         }), { status: 200, headers: respHeaders })
       }

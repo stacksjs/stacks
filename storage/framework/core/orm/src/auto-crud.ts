@@ -386,3 +386,45 @@ export function buildIndexMeta(
   }
   return meta
 }
+
+/**
+ * Flat Laravel paginator shape lifted to the index response top level.
+ * Mirrors {@link IndexPageMeta} minus `data`/`path` (the route spreads this
+ * alongside its own `data`), but keys the current page as `current_page`
+ * instead of `page` so a generated-endpoint list response deep-equals a
+ * `Model.paginate()` envelope. `total` / `last_page` / `first_page_url` /
+ * `last_page_url` stay gated on `total` (`?with_count=true`), matching
+ * {@link SimplePaginator} when absent.
+ */
+export interface IndexPaginator {
+  current_page: number
+  per_page: number
+  from: number | null
+  to: number | null
+  has_more_pages: boolean
+  prev_page_url: string | null
+  next_page_url: string | null
+  total?: number
+  last_page?: number
+  first_page_url?: string
+  last_page_url?: string
+}
+
+/**
+ * Flat Laravel paginator shape for the index response top level. Same values
+ * as {@link buildIndexMeta} but keyed `current_page` (not `page`) so a
+ * generated-endpoint list response deep-equals a `Model.paginate()` envelope.
+ * The `page` -> `current_page` rename is the only delta; the value math lives
+ * solely in `buildIndexMeta`.
+ */
+export function buildIndexPaginator(
+  url: URL,
+  page: number,
+  perPage: number,
+  rowCount: number,
+  hasMore: boolean,
+  total?: number,
+): IndexPaginator {
+  const { page: currentPage, ...rest } = buildIndexMeta(url, page, perPage, rowCount, hasMore, total)
+  return { current_page: currentPage, ...rest }
+}

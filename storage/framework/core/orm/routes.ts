@@ -11,7 +11,7 @@ import { projectPath } from '@stacksjs/path'
 import { createQueryBuilder, defaultConfig, setConfig } from '@stacksjs/query-builder'
 import { HttpError } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/logging'
-import { applyCasts, applySorting, buildIndexMeta, buildReadColumnMap, dropHiddenInputs, filterFillable, mapWriteError, resolveApiMiddleware, resolveIndexPageArgs, stripHidden, toSnakeCase, toSnakeCaseKeys } from './src/auto-crud'
+import { applyCasts, applySorting, buildIndexMeta, buildIndexPaginator, buildReadColumnMap, dropHiddenInputs, filterFillable, mapWriteError, resolveApiMiddleware, resolveIndexPageArgs, stripHidden, toSnakeCase, toSnakeCaseKeys } from './src/auto-crud'
 
 // Initialize the query builder config from the project's optional
 // `config/qb.ts` override (stacksjs/stacks#1930).
@@ -590,8 +590,13 @@ for (const [modelName, model] of Object.entries(models)) {
         respHeaders['Cache-Control'] = 'public, max-age=15, must-revalidate'
         respHeaders.Vary = 'Authorization'
 
+        const paginator = buildIndexPaginator(url, page, perPage, records.length, hasMore, total)
         return new Response(JSON.stringify({
           data: records,
+          ...paginator,
+          // DEPRECATED: `meta` is kept for one transition release for backward
+          // compat. Read the top-level fields instead (note: meta.page ===
+          // current_page). Removed in a future release. (#1960)
           meta: buildIndexMeta(url, page, perPage, records.length, hasMore, total),
         }), { status: 200, headers: respHeaders })
       }

@@ -202,6 +202,36 @@ Inspect the resulting line, or grep recent logs for `"stack":`.
 
 Update parser schemas to read the new fields. Scrub stack paths if your logs leave the host.
 
+## Auto-CRUD index responses are now flat (#1960)
+
+### What changed
+
+The generated auto-CRUD list endpoints (`GET /api/{model}`) now return pagination fields at the **top level**, matching the shape `Model.paginate()` already returned. The previous `meta` object is kept for this release but deprecated, and will be removed in a future release.
+
+New top-level fields: `current_page`, `per_page`, `from`, `to`, `has_more_pages`, `prev_page_url`, `next_page_url`, plus (only with `?with_count=true`) `total`, `last_page`, `first_page_url`, `last_page_url`.
+
+Field rename: `meta.page` is now `current_page` at the top level. The rest keep their names; they are simply lifted out of `meta`.
+
+### Scope note
+
+Applies only to generated auto-CRUD endpoints. Custom actions that return `Model.paginate()` / `simplePaginate()` / `cursorPaginate()` were always flat and are unchanged.
+
+### Who is affected
+
+Clients reading `response.meta.page` or other `response.meta.*` fields from a generated list endpoint.
+
+### Detect
+
+```sh
+curl -s http://localhost:3000/api/<model> | jq 'keys'
+```
+
+This now shows `current_page` and friends at the top level alongside `meta`.
+
+### Remediate
+
+Read the top-level fields. Replace `res.meta.page` with `res.current_page`, and `res.meta.*` with `res.*`. The `total` / `last_page` fields remain opt-in behind `?with_count=true` (omitted otherwise, like a simple paginator). Stop depending on `meta`; it will be removed.
+
 ## Verifying the upgrade
 
 Run through this checklist after upgrading:
@@ -210,3 +240,4 @@ Run through this checklist after upgrading:
 - `./buddy doctor` — runs the `Database` and `Database FKs` probes today. A unique-index/duplicate-row check is a planned follow-up; until it ships, use the SQL in the [#1952 section](#unique-indexes-are-now-enforced-on-sqlite-1952) for duplicate detection.
 - `sqlite3 database/stacks.sqlite "PRAGMA foreign_key_check;"` — expect empty output on a clean, freshly migrated database.
 - Anonymous-write spot check: `curl -i -X POST http://localhost:3000/api/<model> -d '{}'` should return `401`.
+- Generated list endpoint: `curl -s http://localhost:3000/api/<model> | jq 'keys'` now exposes `current_page` at the top level.

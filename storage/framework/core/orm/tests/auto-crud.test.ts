@@ -26,7 +26,8 @@
 import { describe, expect, it } from 'bun:test'
 import { Database } from 'bun:sqlite'
 import { snakeCase } from '@stacksjs/strings'
-import { applyCasts, applySorting, buildIndexMeta, buildReadColumnMap, dropHiddenInputs, filterFillable, INDEX_DEFAULT_PER_PAGE, INDEX_MAX_PER_PAGE, isUniqueViolation, mapWriteError, resolveApiMiddleware, resolveIndexPageArgs, stripHidden, toSnakeCase, toSnakeCaseKeys } from '../src/auto-crud'
+import { applyCasts, applySorting, buildIndexMeta, buildIndexPaginator, buildReadColumnMap, dropHiddenInputs, filterFillable, INDEX_DEFAULT_PER_PAGE, INDEX_MAX_PER_PAGE, isUniqueViolation, mapWriteError, resolveApiMiddleware, resolveIndexPageArgs, stripHidden, toSnakeCase, toSnakeCaseKeys } from '../src/auto-crud'
+import { toPaginator } from '../src/paginator'
 
 describe('toSnakeCaseKeys (write-path column mapping)', () => {
   it('maps camelCase attribute keys to snake_case column keys', () => {
@@ -530,5 +531,97 @@ describe('buildIndexMeta (index pagination meta)', () => {
     const meta = buildIndexMeta(new URL('http://x/api/cars?page=1'), 1, 15, 15, true)
     expect(meta.next_page_url).toMatch(/^\/api\/cars\?/)
     expect(meta.next_page_url).not.toContain('http://')
+  })
+
+  it('#1960: top-level flat fields are emitted alongside the (deprecated) meta', () => {
+    // The index route now dual-emits: flat Laravel fields at the top level
+    // (current_page etc.) PLUS the deprecated `meta`. Both come from the same
+    // inputs, so meta stays valid during the transition. Simulate the route's
+    // emit and assert the top-level flat fields match meta for the same inputs.
+    const url = new URL('http://x/api/cars?page=2')
+    const meta = buildIndexMeta(url, 2, 15, 15, true, 100)
+    const envelope = { data: [], ...buildIndexPaginator(url, 2, 15, 15, true, 100), meta }
+    expect(envelope.current_page).toBe(meta.page)
+    expect(envelope.per_page).toBe(meta.per_page)
+    expect(envelope.from).toBe(meta.from)
+    expect(envelope.to).toBe(meta.to)
+    expect(envelope.has_more_pages).toBe(meta.has_more_pages)
+    expect(envelope.prev_page_url).toBe(meta.prev_page_url)
+    expect(envelope.next_page_url).toBe(meta.next_page_url)
+    expect(envelope.total).toBe(meta.total)
+    expect(envelope.last_page).toBe(meta.last_page)
+    // meta is preserved verbatim for backward compat this release.
+    expect(envelope.meta).toEqual(meta)
+  })
+})
+
+describe('buildIndexPaginator (flat Laravel index shape)', () => {
+  it('exposes current_page at the top level, equal to the old meta.page', () => {
+    const url = new URL('http://x/api/cars?page=2')
+    const p = buildIndexPaginator(url, 2, 15, 15, true)
+    const meta = buildIndexMeta(url, 2, 15, 15, true)
+    expect(p.current_page).toBe(2)
+    expect(p.current_page).toBe(meta.page)
+    // The flat shape renames page -> current_page; there is no `page` key.
+    expect((p as any).page).toBeUndefined()
+  })
+
+  it('carries the same per_page/from/to/has_more_pages/prev/next as buildIndexMeta', () => {
+    const url = new URL('http://x/api/cars?page=3&status=active')
+    const p = buildIndexPaginator(url, 3, 15, 7, false)
+    const meta = buildIndexMeta(url, 3, 15, 7, false)
+    // Deep-equal minus the page->current_page rename.
+    const { page: _page, ...metaRest } = meta
+    const { current_page: _current, ...pRest } = p
+    expect(pRest).toEqual(metaRest)
+    expect(p.per_page).toBe(15)
+    expect(p.from).toBe(31)
+    expect(p.to).toBe(37)
+    expect(p.has_more_pages).toBe(false)
+    expect(p.next_page_url).toBeNull()
+    expect(p.prev_page_url).toContain('page=2')
+  })
+
+  it('without with_count: total/last_page/first_page_url/last_page_url stay undefined', () => {
+    const p = buildIndexPaginator(new URL('http://x/api/cars?page=1'), 1, 15, 15, true)
+    expect(p.total).toBeUndefined()
+    expect(p.last_page).toBeUndefined()
+    expect(p.first_page_url).toBeUndefined()
+    expect(p.last_page_url).toBeUndefined()
+  })
+
+  it('with_count adds total, last_page and first/last URLs (last_page floors at 1)', () => {
+    const p = buildIndexPaginator(new URL('http://x/api/cars?page=2'), 2, 15, 15, true, 100)
+    expect(p.total).toBe(100)
+    expect(p.last_page).toBe(7) // Math.max(1, ceil(100 / 15)) = 7
+    expect(p.first_page_url).toContain('page=1')
+    expect(p.last_page_url).toContain('page=7')
+
+    const empty = buildIndexPaginator(new URL('http://x/api/cars?page=1'), 1, 15, 0, false, 0)
+    expect(empty.last_page).toBe(1) // Math.max(1, ceil(0 / 15)) = 1, not 0
+  })
+
+  it('empty page: from/to null and no next page', () => {
+    const p = buildIndexPaginator(new URL('http://x/api/cars?page=5'), 5, 15, 0, false)
+    expect(p.from).toBeNull()
+    expect(p.to).toBeNull()
+    expect(p.next_page_url).toBeNull()
+  })
+
+  it('deep-equals the shared fields of a Model.paginate() envelope', () => {
+    // A full page of 15 rows on page 2 of a 100-row table (last_page 7).
+    const rows = Array.from({ length: 15 }, (_, i) => ({ id: i + 16 }))
+    const expected = toPaginator({ data: rows, meta: { perPage: 15, page: 2, total: 100, lastPage: 7 } })
+    const p = buildIndexPaginator(new URL('http://x/api/cars?page=2'), 2, 15, rows.length, true, 100)
+    // Prove a client can treat a generated-endpoint list response and a
+    // Model.paginate() response identically across the shared paginator fields
+    // (the flat shape omits `path`, so compare shared keys, not strict equality).
+    expect(p.current_page).toBe(expected.current_page)
+    expect(p.per_page).toBe(expected.per_page)
+    expect(p.total).toBe(expected.total)
+    expect(p.last_page).toBe(expected.last_page)
+    expect(p.from).toBe(expected.from)
+    expect(p.to).toBe(expected.to)
+    expect(p.has_more_pages).toBe(expected.has_more_pages)
   })
 })
