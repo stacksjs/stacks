@@ -13,6 +13,12 @@ export interface UpgradeContext {
 /**
  * Resolve the target channel and git ref from CLI options and persisted channel.
  * Priority: --version > --canary > --stable > persisted channel
+ *
+ * Branch model: `main` is the bleeding-edge "dump everything" branch; `stable`
+ * is the vetted branch that PRs are merged into from `main` once main is proven.
+ * So the `stable` channel tracks the `stable` branch (vetted) and the `canary`
+ * channel tracks the `main` branch (bleeding edge). A pinned `--version` still
+ * resolves to the matching `vX` tag.
  */
 export function resolveUpgradeContext(options: {
   version?: string
@@ -29,19 +35,22 @@ export function resolveUpgradeContext(options: {
   }
 
   if (options.canary) {
-    return { channel: 'canary', ref: 'canary' }
+    // canary tracks `main` — main IS the bleeding edge.
+    return { channel: 'canary', ref: 'main' }
   }
 
   if (options.stable) {
-    return { channel: 'stable', ref: 'main' }
+    // stable tracks the vetted `stable` branch.
+    return { channel: 'stable', ref: 'stable' }
   }
 
   if (currentChannel === 'canary') {
-    // Stay on canary if already on canary (like bun upgrade on canary stays on canary)
-    return { channel: 'canary', ref: 'canary' }
+    // Stay on canary if already on canary (like bun upgrade on canary stays on
+    // canary). canary tracks `main` — main IS the bleeding edge.
+    return { channel: 'canary', ref: 'main' }
   }
 
-  return { channel: 'stable', ref: 'main' }
+  return { channel: 'stable', ref: 'stable' }
 }
 
 /**
@@ -97,6 +106,82 @@ export function writeChannel(channelFilePath: string, ch: 'stable' | 'canary'): 
   catch {
     // best-effort
   }
+}
+
+/**
+ * The last-synced channel + commit sha, persisted to `.stacks-version` so
+ * `buddy update` can short-circuit when the project is already on the latest
+ * commit of its channel.
+ */
+export interface SyncedVersion {
+  channel: 'stable' | 'canary'
+  /** Lowercased 40-hex commit sha of the branch HEAD at last sync. */
+  sha: string
+}
+
+/**
+ * Read the last-synced `{ channel, sha }` from `.stacks-version`.
+ *
+ * Returns null on absence or any malformed content — callers treat null as
+ * "no prior sync", which always falls through to a sync (first-run safe). The
+ * stored format is a single line: `"<channel> <40-hex-sha>"`. A bare sha
+ * (legacy) or unknown channel parses to null so it never wrongly short-circuits.
+ */
+export function readSyncedVersion(versionFilePath: string): SyncedVersion | null {
+  try {
+    if (existsSync(versionFilePath)) {
+      const content = readFileSync(versionFilePath, 'utf-8').trim()
+      const [ch, sha] = content.split(/\s+/)
+      if ((ch === 'stable' || ch === 'canary') && /^[0-9a-f]{40}$/i.test(sha ?? ''))
+        return { channel: ch, sha: sha.toLowerCase() }
+    }
+  }
+  catch {
+    // best-effort
+  }
+
+  return null
+}
+
+/**
+ * Persist the last-synced channel + sha to `.stacks-version`.
+ */
+export function writeSyncedVersion(versionFilePath: string, ch: 'stable' | 'canary', sha: string): void {
+  try {
+    writeFileSync(versionFilePath, `${ch} ${sha}`, 'utf-8')
+  }
+  catch {
+    // best-effort
+  }
+}
+
+/**
+ * Pure decision for the "already up to date" short-circuit. Returns true only
+ * when a sync can be safely skipped: no override flags, not a pinned version,
+ * a resolved remote sha, a prior sync on the SAME channel, and the synced sha
+ * equals the remote sha. Any of:
+ *   - `force` (explicit re-sync)
+ *   - `targetVersion` (pinned tag — always install)
+ *   - `remoteSha === null` (network/git failure → fail open to sync)
+ *   - `synced === null` (first run → always sync)
+ *   - channel mismatch (channel switch never short-circuits)
+ *   - sha mismatch (a newer commit is available)
+ * yields false (proceed with the sync).
+ */
+export function shouldShortCircuit(args: {
+  force: boolean
+  targetVersion?: string
+  remoteSha: string | null
+  synced: SyncedVersion | null
+  channel: 'stable' | 'canary'
+}): boolean {
+  const { force, targetVersion, remoteSha, synced, channel } = args
+  if (force || targetVersion)
+    return false
+  if (!remoteSha || !synced)
+    return false
+
+  return synced.channel === channel && synced.sha === remoteSha.toLowerCase()
 }
 
 /**

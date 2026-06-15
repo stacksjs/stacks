@@ -75,6 +75,10 @@ storage/framework/cache/
 # doesn't need to be shared across team members or CI.
 .stacks-channel
 
+# Persisted by `buddy update`: last-synced channel + commit sha for the
+# up-to-date short-circuit. Local-only — like the channel, it's per-checkout.
+.stacks-version
+
 # Temp directory used during a `buddy update` GitHub fetch. Cleaned up by the
 # upgrade action on success but listed here to keep stray copies (e.g. from a
 # kill -9'd run) out of commits.

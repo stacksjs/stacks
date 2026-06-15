@@ -9,6 +9,9 @@ const {
   readVersion,
   readChannel,
   writeChannel,
+  readSyncedVersion,
+  writeSyncedVersion,
+  shouldShortCircuit,
   resolveUpgradeMessage,
   resolveSuccessMessage,
 } = await import('../src/upgrade/framework-utils')
@@ -33,46 +36,46 @@ afterEach(() => {
 
 describe('resolveUpgradeContext', () => {
   describe('default behavior', () => {
-    it('should default to stable/main when no options and channel is stable', () => {
+    it('should default to the stable channel + stable branch when no options and channel is stable', () => {
       const ctx = resolveUpgradeContext({}, 'stable')
       expect(ctx.channel).toBe('stable')
-      expect(ctx.ref).toBe('main')
+      expect(ctx.ref).toBe('stable')
       expect(ctx.targetVersion).toBeUndefined()
     })
 
-    it('should stay on canary if current channel is canary and no flags', () => {
+    it('should stay on canary (main branch) if current channel is canary and no flags', () => {
       const ctx = resolveUpgradeContext({}, 'canary')
       expect(ctx.channel).toBe('canary')
-      expect(ctx.ref).toBe('canary')
+      expect(ctx.ref).toBe('main')
       expect(ctx.targetVersion).toBeUndefined()
     })
   })
 
   describe('--canary flag', () => {
-    it('should switch to canary when --canary is set', () => {
+    it('should switch to canary (main branch) when --canary is set', () => {
       const ctx = resolveUpgradeContext({ canary: true }, 'stable')
       expect(ctx.channel).toBe('canary')
-      expect(ctx.ref).toBe('canary')
+      expect(ctx.ref).toBe('main')
     })
 
-    it('should stay on canary when already on canary and --canary is set', () => {
+    it('should stay on canary (main branch) when already on canary and --canary is set', () => {
       const ctx = resolveUpgradeContext({ canary: true }, 'canary')
       expect(ctx.channel).toBe('canary')
-      expect(ctx.ref).toBe('canary')
+      expect(ctx.ref).toBe('main')
     })
   })
 
   describe('--stable flag', () => {
-    it('should switch to stable when --stable is set from canary', () => {
+    it('should switch to the stable branch when --stable is set from canary', () => {
       const ctx = resolveUpgradeContext({ stable: true }, 'canary')
       expect(ctx.channel).toBe('stable')
-      expect(ctx.ref).toBe('main')
+      expect(ctx.ref).toBe('stable')
     })
 
-    it('should stay on stable when already stable and --stable is set', () => {
+    it('should stay on the stable branch when already stable and --stable is set', () => {
       const ctx = resolveUpgradeContext({ stable: true }, 'stable')
       expect(ctx.channel).toBe('stable')
-      expect(ctx.ref).toBe('main')
+      expect(ctx.ref).toBe('stable')
     })
   })
 
@@ -281,6 +284,168 @@ describe('readChannel and writeChannel round-trip', () => {
     const file = join(testDir, '.stacks-channel')
     writeChannel(file, 'canary')
     expect(readChannel(file)).toBe('canary')
+  })
+})
+
+// ─── readSyncedVersion / writeSyncedVersion ──────────────────────────────────
+
+const SHA_A = 'a'.repeat(40)
+const SHA_B = 'b'.repeat(40)
+
+describe('readSyncedVersion', () => {
+  it('should return null when the file does not exist (first run)', () => {
+    expect(readSyncedVersion(join(testDir, 'nonexistent'))).toBeNull()
+  })
+
+  it('should parse "stable <sha>"', () => {
+    const file = join(testDir, '.stacks-version')
+    writeFileSync(file, `stable ${SHA_A}`)
+    expect(readSyncedVersion(file)).toEqual({ channel: 'stable', sha: SHA_A })
+  })
+
+  it('should parse "canary <sha>"', () => {
+    const file = join(testDir, '.stacks-version')
+    writeFileSync(file, `canary ${SHA_B}`)
+    expect(readSyncedVersion(file)).toEqual({ channel: 'canary', sha: SHA_B })
+  })
+
+  it('should lowercase an uppercase sha', () => {
+    const file = join(testDir, '.stacks-version')
+    writeFileSync(file, `stable ${SHA_A.toUpperCase()}`)
+    expect(readSyncedVersion(file)).toEqual({ channel: 'stable', sha: SHA_A })
+  })
+
+  it('should tolerate extra whitespace and a trailing newline', () => {
+    const file = join(testDir, '.stacks-version')
+    writeFileSync(file, `  canary   ${SHA_A}  \n`)
+    expect(readSyncedVersion(file)).toEqual({ channel: 'canary', sha: SHA_A })
+  })
+
+  it('should return null for a malformed (too short) sha', () => {
+    const file = join(testDir, '.stacks-version')
+    writeFileSync(file, 'stable abc')
+    expect(readSyncedVersion(file)).toBeNull()
+  })
+
+  it('should return null for an unknown channel', () => {
+    const file = join(testDir, '.stacks-version')
+    writeFileSync(file, `beta ${SHA_A}`)
+    expect(readSyncedVersion(file)).toBeNull()
+  })
+
+  it('should return null for a bare sha (legacy format)', () => {
+    const file = join(testDir, '.stacks-version')
+    writeFileSync(file, SHA_A)
+    expect(readSyncedVersion(file)).toBeNull()
+  })
+
+  it('should return null for an empty file', () => {
+    const file = join(testDir, '.stacks-version')
+    writeFileSync(file, '')
+    expect(readSyncedVersion(file)).toBeNull()
+  })
+})
+
+describe('writeSyncedVersion', () => {
+  it('should write "stable <sha>"', () => {
+    const file = join(testDir, '.stacks-version')
+    writeSyncedVersion(file, 'stable', SHA_A)
+    expect(readFileSync(file, 'utf-8')).toBe(`stable ${SHA_A}`)
+  })
+
+  it('should round-trip through readSyncedVersion', () => {
+    const file = join(testDir, '.stacks-version')
+    writeSyncedVersion(file, 'canary', SHA_B)
+    expect(readSyncedVersion(file)).toEqual({ channel: 'canary', sha: SHA_B })
+  })
+
+  it('should not throw when the directory does not exist', () => {
+    const file = join(testDir, 'nonexistent-dir', '.stacks-version')
+    expect(() => writeSyncedVersion(file, 'stable', SHA_A)).not.toThrow()
+  })
+})
+
+// ─── shouldShortCircuit ──────────────────────────────────────────────────────
+
+describe('shouldShortCircuit', () => {
+  it('should short-circuit when sha + channel match and no flags', () => {
+    expect(shouldShortCircuit({
+      force: false,
+      targetVersion: undefined,
+      remoteSha: SHA_A,
+      synced: { channel: 'stable', sha: SHA_A },
+      channel: 'stable',
+    })).toBe(true)
+  })
+
+  it('should match a remote sha case-insensitively', () => {
+    expect(shouldShortCircuit({
+      force: false,
+      targetVersion: undefined,
+      remoteSha: SHA_A.toUpperCase(),
+      synced: { channel: 'stable', sha: SHA_A },
+      channel: 'stable',
+    })).toBe(true)
+  })
+
+  it('should NOT short-circuit on a channel switch even when shas are equal', () => {
+    expect(shouldShortCircuit({
+      force: false,
+      targetVersion: undefined,
+      remoteSha: SHA_A,
+      synced: { channel: 'stable', sha: SHA_A },
+      channel: 'canary',
+    })).toBe(false)
+  })
+
+  it('should NOT short-circuit with --force', () => {
+    expect(shouldShortCircuit({
+      force: true,
+      targetVersion: undefined,
+      remoteSha: SHA_A,
+      synced: { channel: 'stable', sha: SHA_A },
+      channel: 'stable',
+    })).toBe(false)
+  })
+
+  it('should NOT short-circuit with a pinned --version', () => {
+    expect(shouldShortCircuit({
+      force: false,
+      targetVersion: '0.70.23',
+      remoteSha: SHA_A,
+      synced: { channel: 'stable', sha: SHA_A },
+      channel: 'stable',
+    })).toBe(false)
+  })
+
+  it('should NOT short-circuit when the remote sha is null (network/git failure)', () => {
+    expect(shouldShortCircuit({
+      force: false,
+      targetVersion: undefined,
+      remoteSha: null,
+      synced: { channel: 'stable', sha: SHA_A },
+      channel: 'stable',
+    })).toBe(false)
+  })
+
+  it('should NOT short-circuit on first run (no persisted sync)', () => {
+    expect(shouldShortCircuit({
+      force: false,
+      targetVersion: undefined,
+      remoteSha: SHA_A,
+      synced: null,
+      channel: 'stable',
+    })).toBe(false)
+  })
+
+  it('should NOT short-circuit when the sha differs', () => {
+    expect(shouldShortCircuit({
+      force: false,
+      targetVersion: undefined,
+      remoteSha: SHA_B,
+      synced: { channel: 'stable', sha: SHA_A },
+      channel: 'stable',
+    })).toBe(false)
   })
 })
 

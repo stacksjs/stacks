@@ -16,15 +16,19 @@ import {
   diffSnapshots,
   MANAGED_PATHS,
   readChannel,
+  readSyncedVersion,
   readVersion,
   resolveSuccessMessage,
   resolveUpgradeContext,
   resolveUpgradeMessage,
+  shouldShortCircuit,
   snapshotTree,
   writeChannel,
+  writeSyncedVersion,
   type ChangeSummary,
   type ManagedPath,
   type SnapshotEntry,
+  type UpgradeContext,
 } from './framework-utils'
 
 interface UpgradeOptions {
@@ -44,6 +48,7 @@ const options = parseOptions() as UpgradeOptions
 
 const projectRoot = p.projectPath()
 const channelFile = join(projectRoot, '.stacks-channel')
+const versionFile = join(projectRoot, '.stacks-version')
 const currentChannel = readChannel(channelFile)
 const ctx = resolveUpgradeContext(options, currentChannel)
 
@@ -79,6 +84,26 @@ if (!options.force) {
     console.warn('\n  Aborting to avoid clobbering your edits.')
     console.warn('  Re-run with --force to overwrite, or commit / stash the changes first.\n')
     process.exit(ExitCode.FatalError)
+  }
+}
+
+// Already-up-to-date short-circuit. We compare the resolved channel's remote
+// branch HEAD sha against the sha persisted at the last successful sync
+// (.stacks-version). If they match — same channel, same commit — there's
+// nothing to do, so we skip the entire download + re-exec + hooks pipeline.
+//
+// Skipped for --force (explicit re-sync) and --version pins (explicit tag
+// intent — always install the pinned tag). Fails OPEN: if the remote sha can't
+// be read (offline, no git), we fall through and let the (cache-preferring)
+// sync run rather than block the update on a network blip. Stashed in an outer
+// binding so we can record it post-sync without a second ls-remote.
+let resolvedRemoteSha: string | null = null
+if (!options.force && !ctx.targetVersion) {
+  resolvedRemoteSha = await getRemoteSha(ctx, usingLocal, detectedLocal)
+  const synced = readSyncedVersion(versionFile)
+  if (shouldShortCircuit({ force: !!options.force, targetVersion: ctx.targetVersion, remoteSha: resolvedRemoteSha, synced, channel: ctx.channel })) {
+    console.log(`✔ Already on the latest ${ctx.channel} (${resolvedRemoteSha!.slice(0, 7)}).`)
+    process.exit(ExitCode.Success)
   }
 }
 
@@ -166,9 +191,21 @@ if (ownHashBefore !== 0n && ownHashAfter !== 0n && ownHashBefore !== ownHashAfte
   process.exit(code ?? 0)
 }
 
-// Persist channel choice (not when pinning a specific version).
-if (!ctx.targetVersion)
+// Persist channel choice (not when pinning a specific version). We also record
+// the synced commit sha so the next `buddy update` can short-circuit when
+// nothing has moved. This runs only in the FINAL executing instance: when the
+// upgrade re-execs (above), the parent exits before reaching here, so the
+// re-exec'd child is the one that writes both files exactly once.
+//
+// The --force path skips the precheck, so `resolvedRemoteSha` may be null here
+// — re-fetch once so a forced sync still records a fresh sha.
+if (!ctx.targetVersion) {
   writeChannel(channelFile, ctx.channel)
+  if (!resolvedRemoteSha)
+    resolvedRemoteSha = await getRemoteSha(ctx, usingLocal, detectedLocal)
+  if (resolvedRemoteSha)
+    writeSyncedVersion(versionFile, ctx.channel, resolvedRemoteSha)
+}
 
 console.log(`✔ ${resolveSuccessMessage(ctx, currentVersion, newVersion, currentChannel, !!options.force)}`)
 
@@ -237,6 +274,55 @@ async function detectDirtyManagedPaths(root: string): Promise<string[]> {
   catch {
     // git missing or other failure — don't block the update.
     return []
+  }
+}
+
+/**
+ * Resolve the commit sha of the channel's branch HEAD for the up-to-date
+ * short-circuit. For a local checkout we `git rev-parse <ref>` in that repo
+ * (falling back to HEAD if the named branch doesn't exist locally). For the
+ * GitHub path we `git ls-remote` for `refs/heads/<ref>`. Fails OPEN: any
+ * failure (no git, offline, unknown ref) returns null so the caller proceeds
+ * with the sync rather than blocking on a network blip.
+ */
+async function getRemoteSha(context: UpgradeContext, fromLocal: boolean, stacksRoot: string | null): Promise<string | null> {
+  const SHA_RE = /^[0-9a-f]{40}$/i
+  try {
+    if (fromLocal && stacksRoot) {
+      const proc = Bun.spawn({
+        cmd: ['git', '-C', stacksRoot, 'rev-parse', context.ref],
+        stdout: 'pipe',
+        stderr: 'pipe',
+      })
+      const out = (await new Response(proc.stdout).text()).trim()
+      if ((await proc.exited) === 0 && SHA_RE.test(out))
+        return out.toLowerCase()
+
+      // Named ref absent in the checkout — fall back to its current HEAD.
+      const head = Bun.spawn({
+        cmd: ['git', '-C', stacksRoot, 'rev-parse', 'HEAD'],
+        stdout: 'pipe',
+        stderr: 'pipe',
+      })
+      const h = (await new Response(head.stdout).text()).trim()
+      return (await head.exited) === 0 && SHA_RE.test(h) ? h.toLowerCase() : null
+    }
+
+    // GitHub: ls-remote prints "<sha>\trefs/heads/<ref>" lines.
+    const proc = Bun.spawn({
+      cmd: ['git', 'ls-remote', 'https://github.com/stacksjs/stacks.git', `refs/heads/${context.ref}`],
+      stdout: 'pipe',
+      stderr: 'pipe',
+    })
+    const out = await new Response(proc.stdout).text()
+    if ((await proc.exited) !== 0)
+      return null
+    const m = out.match(/^([0-9a-f]{40})\s/i)
+    return m ? m[1].toLowerCase() : null
+  }
+  catch {
+    // git missing or other failure — fail open to sync.
+    return null
   }
 }
 
