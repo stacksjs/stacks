@@ -26,7 +26,7 @@
 import { describe, expect, it } from 'bun:test'
 import { Database } from 'bun:sqlite'
 import { snakeCase } from '@stacksjs/strings'
-import { applyCasts, applySorting, buildReadColumnMap, dropHiddenInputs, filterFillable, isUniqueViolation, mapWriteError, resolveApiMiddleware, stripHidden, toSnakeCase, toSnakeCaseKeys } from '../src/auto-crud'
+import { applyCasts, applySorting, buildIndexMeta, buildReadColumnMap, dropHiddenInputs, filterFillable, INDEX_DEFAULT_PER_PAGE, INDEX_MAX_PER_PAGE, isUniqueViolation, mapWriteError, resolveApiMiddleware, resolveIndexPageArgs, stripHidden, toSnakeCase, toSnakeCaseKeys } from '../src/auto-crud'
 
 describe('toSnakeCaseKeys (write-path column mapping)', () => {
   it('maps camelCase attribute keys to snake_case column keys', () => {
@@ -427,5 +427,108 @@ describe('mapWriteError', () => {
     const err = Object.assign(new Error('weird'), { status: 200 })
     const { status } = mapWriteError(err, 'Car', 'update')
     expect(status).toBe(500)
+  })
+})
+
+describe('resolveIndexPageArgs (index ?page / ?per_page clamping)', () => {
+  const args = (qs: string) => resolveIndexPageArgs(new URLSearchParams(qs))
+
+  it('defaults to page 1 and per_page 15 (matches Model.paginate)', () => {
+    expect(INDEX_DEFAULT_PER_PAGE).toBe(15)
+    const { page, perPage, offset } = args('')
+    expect(page).toBe(1)
+    expect(perPage).toBe(15)
+    expect(offset).toBe(0)
+  })
+
+  it('clamps page to >= 1 so ?page=0 / negatives never produce a negative OFFSET', () => {
+    expect(args('page=0').page).toBe(1)
+    expect(args('page=-5').page).toBe(1)
+    expect(args('page=0').offset).toBe(0)
+  })
+
+  it('honors a valid page and computes offset = (page - 1) * perPage', () => {
+    const { page, perPage, offset } = args('page=3&per_page=20')
+    expect(page).toBe(3)
+    expect(perPage).toBe(20)
+    expect(offset).toBe(40)
+  })
+
+  it('caps per_page at the 100 max', () => {
+    expect(INDEX_MAX_PER_PAGE).toBe(100)
+    expect(args('per_page=500').perPage).toBe(100)
+  })
+
+  it('clamps per_page to >= 1 and falls back to the default on NaN', () => {
+    expect(args('per_page=0').perPage).toBe(1)
+    expect(args('per_page=abc').perPage).toBe(15)
+    expect(args('page=abc').page).toBe(1)
+  })
+})
+
+describe('buildIndexMeta (index pagination meta)', () => {
+  it('full first page with more to come: from/to set, prev null, next -> page=2', () => {
+    const meta = buildIndexMeta(new URL('http://x/api/cars?page=1'), 1, 15, 15, true)
+    expect(meta.has_more_pages).toBe(true)
+    expect(meta.page).toBe(1)
+    expect(meta.per_page).toBe(15)
+    expect(meta.from).toBe(1)
+    expect(meta.to).toBe(15)
+    expect(meta.prev_page_url).toBeNull()
+    expect(meta.next_page_url).toContain('page=2')
+    // total-gated fields stay absent without with_count.
+    expect(meta.total).toBeUndefined()
+    expect(meta.last_page).toBeUndefined()
+    expect(meta.first_page_url).toBeUndefined()
+    expect(meta.last_page_url).toBeUndefined()
+  })
+
+  it('last/partial page: hasMore false -> next null, from/to reflect the offset', () => {
+    const meta = buildIndexMeta(new URL('http://x/api/cars?page=3'), 3, 15, 7, false)
+    expect(meta.has_more_pages).toBe(false)
+    expect(meta.from).toBe(31)
+    expect(meta.to).toBe(37)
+    expect(meta.next_page_url).toBeNull()
+    expect(meta.prev_page_url).toContain('page=2')
+  })
+
+  it('empty page: from/to null and no next', () => {
+    const meta = buildIndexMeta(new URL('http://x/api/cars?page=5'), 5, 15, 0, false)
+    expect(meta.from).toBeNull()
+    expect(meta.to).toBeNull()
+    expect(meta.next_page_url).toBeNull()
+    expect(meta.prev_page_url).toContain('page=4')
+  })
+
+  it('prev/next preserve every OTHER query param, overriding only page', () => {
+    const meta = buildIndexMeta(new URL('http://x/api/cars?page=2&status=active&sort=-name'), 2, 15, 15, true)
+    expect(meta.next_page_url).toContain('status=active')
+    expect(meta.next_page_url).toContain('sort=-name')
+    expect(meta.next_page_url).toContain('page=3')
+    expect(meta.prev_page_url).toContain('status=active')
+    expect(meta.prev_page_url).toContain('sort=-name')
+    expect(meta.prev_page_url).toContain('page=1')
+  })
+
+  it('with_count (total known) adds total, last_page and first/last URLs', () => {
+    const meta = buildIndexMeta(new URL('http://x/api/cars?page=2'), 2, 15, 15, true, 100)
+    expect(meta.total).toBe(100)
+    expect(meta.last_page).toBe(7) // Math.max(1, ceil(100 / 15)) = 7
+    expect(meta.first_page_url).toContain('page=1')
+    expect(meta.last_page_url).toContain('page=7')
+  })
+
+  it('last_page floors at 1 for an empty table (matches Paginator interface)', () => {
+    const meta = buildIndexMeta(new URL('http://x/api/cars?page=1'), 1, 15, 0, false, 0)
+    expect(meta.total).toBe(0)
+    expect(meta.last_page).toBe(1) // Math.max(1, ceil(0 / 15)) = 1, not 0
+    expect(meta.first_page_url).toContain('page=1')
+    expect(meta.last_page_url).toContain('page=1')
+  })
+
+  it('returns relative pathname+search URLs (no host leak)', () => {
+    const meta = buildIndexMeta(new URL('http://x/api/cars?page=1'), 1, 15, 15, true)
+    expect(meta.next_page_url).toMatch(/^\/api\/cars\?/)
+    expect(meta.next_page_url).not.toContain('http://')
   })
 })

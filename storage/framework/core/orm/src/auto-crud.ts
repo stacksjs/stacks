@@ -292,3 +292,97 @@ export function resolveApiMiddleware(useApi: unknown): { read: string[], write: 
     : (typeof raw === 'string' && raw ? [raw] : [])
   return { read: list, write: declared ? list : ['auth'], declared }
 }
+
+// Default page size for the auto-CRUD index route. Matches the
+// request-aware Model.paginate() / resolvePageArgs default (15) so the
+// REST list endpoint and the in-process paginator agree out of the box.
+export const INDEX_DEFAULT_PER_PAGE = 15
+// Upper bound on ?per_page= so a single request can't ask for an
+// unbounded page and exhaust memory.
+export const INDEX_MAX_PER_PAGE = 100
+
+/**
+ * Resolve `?page=` / `?per_page=` for the index route into a clamped,
+ * NaN-safe `{ page, perPage, offset }`.
+ *
+ * - `page` is clamped to `>= 1` (a `?page=0` / negative would otherwise
+ *   produce a negative OFFSET), defaulting to 1 on missing/NaN.
+ * - `perPage` defaults to {@link INDEX_DEFAULT_PER_PAGE}, is clamped to
+ *   `>= 1`, and capped at {@link INDEX_MAX_PER_PAGE}.
+ */
+export function resolveIndexPageArgs(params: URLSearchParams): { page: number, perPage: number, offset: number } {
+  const pageRaw = Number.parseInt(params.get('page') || String(1), 10)
+  const page = Number.isFinite(pageRaw) ? Math.max(1, pageRaw) : 1
+  const perPageRaw = Number.parseInt(params.get('per_page') || String(INDEX_DEFAULT_PER_PAGE), 10)
+  const perPage = Math.min(Number.isFinite(perPageRaw) ? Math.max(1, perPageRaw) : INDEX_DEFAULT_PER_PAGE, INDEX_MAX_PER_PAGE)
+  return { page, perPage, offset: (page - 1) * perPage }
+}
+
+/**
+ * Pagination `meta` for the auto-CRUD index envelope (`{ data, meta }`).
+ *
+ * Always carries `page` / `per_page` / `from` / `to` / `has_more_pages`
+ * plus `prev_page_url` / `next_page_url`. `total` / `last_page` and the
+ * `first_page_url` / `last_page_url` are added only when a total is known
+ * (`?with_count=true`).
+ */
+export interface IndexPageMeta {
+  page: number
+  per_page: number
+  from: number | null
+  to: number | null
+  has_more_pages: boolean
+  prev_page_url: string | null
+  next_page_url: string | null
+  total?: number
+  last_page?: number
+  first_page_url?: string
+  last_page_url?: string
+}
+
+// Build a URL string preserving every existing query param on `url`,
+// overriding only `page`. Returns `pathname + search` (relative) so the
+// caller doesn't leak the host. Standalone (not the request-context-coupled
+// buildUrl in paginator-request.ts) because the index route already holds
+// `new URL(req.url)` and the canonical routes.ts copy can't import ./src/*.
+function pageUrl(url: URL, page: number): string {
+  const out = new URL(url.toString())
+  out.searchParams.set('page', String(page))
+  return `${out.pathname}${out.search}`
+}
+
+/**
+ * Build the index pagination `meta`. `hasMore` is the source of truth for
+ * "is there a next page" (derived by the route from a `LIMIT perPage + 1`
+ * probe fetch), so `next_page_url` stays consistent whether or not a total
+ * was counted. When `total` is known, `last_page` uses the
+ * `Math.max(1, ceil(total / perPage))` floor from the Paginator interface.
+ */
+export function buildIndexMeta(
+  url: URL,
+  page: number,
+  perPage: number,
+  rowCount: number,
+  hasMore: boolean,
+  total?: number,
+): IndexPageMeta {
+  const offset = (page - 1) * perPage
+  const empty = rowCount === 0
+  const meta: IndexPageMeta = {
+    page,
+    per_page: perPage,
+    from: empty ? null : offset + 1,
+    to: empty ? null : offset + rowCount,
+    has_more_pages: hasMore,
+    prev_page_url: page > 1 ? pageUrl(url, page - 1) : null,
+    next_page_url: hasMore ? pageUrl(url, page + 1) : null,
+  }
+  if (total !== undefined && !Number.isNaN(total)) {
+    const lastPage = Math.max(1, Math.ceil(total / perPage))
+    meta.total = total
+    meta.last_page = lastPage
+    meta.first_page_url = pageUrl(url, 1)
+    meta.last_page_url = pageUrl(url, lastPage)
+  }
+  return meta
+}

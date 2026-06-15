@@ -11,7 +11,7 @@ import { projectPath } from '@stacksjs/path'
 import { createQueryBuilder, defaultConfig, setConfig } from '@stacksjs/query-builder'
 import { HttpError } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/logging'
-import { applyCasts, applySorting, buildReadColumnMap, dropHiddenInputs, filterFillable, mapWriteError, resolveApiMiddleware, stripHidden, toSnakeCase, toSnakeCaseKeys } from './src/auto-crud'
+import { applyCasts, applySorting, buildIndexMeta, buildReadColumnMap, dropHiddenInputs, filterFillable, mapWriteError, resolveApiMiddleware, resolveIndexPageArgs, stripHidden, toSnakeCase, toSnakeCaseKeys } from './src/auto-crud'
 
 // Initialize the query builder config from the project's optional
 // `config/qb.ts` override (stacksjs/stacks#1930).
@@ -484,9 +484,9 @@ for (const [modelName, model] of Object.entries(models)) {
     applyMiddleware(route.get(basePath, async (req: EnhancedRequest) => {
       try {
         const url = new URL(req.url)
-        const page = Number.parseInt(url.searchParams.get('page') || '1', 10)
-        const perPage = Math.min(Number.parseInt(url.searchParams.get('per_page') || '25', 10), 100)
-        const offset = (page - 1) * perPage
+        // Clamped, NaN-safe page/perPage (page >= 1, perPage in [1, 100],
+        // default perPage 15 to match Model.paginate() / resolvePageArgs).
+        const { page, perPage, offset } = resolveIndexPageArgs(url.searchParams)
         const sort = url.searchParams.get('sort')
 
         let query = (db as any).selectFrom(table)
@@ -547,8 +547,14 @@ for (const [modelName, model] of Object.entries(models)) {
           query = onlyTrashed ? query.whereNotNull('deleted_at') : query.whereNull('deleted_at')
         }
 
-        const results = await query.limit(perPage).offset(offset).get()
-        let records = (results || []).map((r: any) => stripHidden(applyReadCasts(r, model), hiddenFields))
+        // Simple-paginate probe: fetch one extra row so `has_more_pages`
+        // is known without a COUNT. Slice the probe row off BEFORE casts /
+        // includes so applyIncludes doesn't fire N+1 relation queries for a
+        // row that's about to be discarded.
+        const rawResults = (await query.limit(perPage + 1).offset(offset).get()) || []
+        const hasMore = rawResults.length > perPage
+        const pageRows = hasMore ? rawResults.slice(0, perPage) : rawResults
+        let records = pageRows.map((r: any) => stripHidden(applyReadCasts(r, model), hiddenFields))
 
         const includeParam = url.searchParams.get('include')
         if (includeParam)
@@ -586,11 +592,7 @@ for (const [modelName, model] of Object.entries(models)) {
 
         return new Response(JSON.stringify({
           data: records,
-          meta: {
-            page,
-            per_page: perPage,
-            ...(total !== undefined && !Number.isNaN(total) ? { total, last_page: Math.ceil(total / perPage) } : {}),
-          },
+          meta: buildIndexMeta(url, page, perPage, records.length, hasMore, total),
         }), { status: 200, headers: respHeaders })
       }
       catch (err) {

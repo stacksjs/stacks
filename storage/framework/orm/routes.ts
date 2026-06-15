@@ -409,6 +409,71 @@ function mapWriteError(
   }
 }
 
+// Index pagination helpers. Inline copies of core/orm/src/auto-crud.ts
+// {INDEX_DEFAULT_PER_PAGE, INDEX_MAX_PER_PAGE, resolveIndexPageArgs,
+// IndexPageMeta, buildIndexMeta} — this generated file must stay importable
+// when @stacksjs/orm is npm-installed, so it can't import from
+// './src/auto-crud'. Kept in sync with that file (#1957, #1959).
+const INDEX_DEFAULT_PER_PAGE = 15
+const INDEX_MAX_PER_PAGE = 100
+
+function resolveIndexPageArgs(params: URLSearchParams): { page: number, perPage: number, offset: number } {
+  const pageRaw = Number.parseInt(params.get('page') || String(1), 10)
+  const page = Number.isFinite(pageRaw) ? Math.max(1, pageRaw) : 1
+  const perPageRaw = Number.parseInt(params.get('per_page') || String(INDEX_DEFAULT_PER_PAGE), 10)
+  const perPage = Math.min(Number.isFinite(perPageRaw) ? Math.max(1, perPageRaw) : INDEX_DEFAULT_PER_PAGE, INDEX_MAX_PER_PAGE)
+  return { page, perPage, offset: (page - 1) * perPage }
+}
+
+interface IndexPageMeta {
+  page: number
+  per_page: number
+  from: number | null
+  to: number | null
+  has_more_pages: boolean
+  prev_page_url: string | null
+  next_page_url: string | null
+  total?: number
+  last_page?: number
+  first_page_url?: string
+  last_page_url?: string
+}
+
+function pageUrl(url: URL, page: number): string {
+  const out = new URL(url.toString())
+  out.searchParams.set('page', String(page))
+  return `${out.pathname}${out.search}`
+}
+
+function buildIndexMeta(
+  url: URL,
+  page: number,
+  perPage: number,
+  rowCount: number,
+  hasMore: boolean,
+  total?: number,
+): IndexPageMeta {
+  const offset = (page - 1) * perPage
+  const empty = rowCount === 0
+  const meta: IndexPageMeta = {
+    page,
+    per_page: perPage,
+    from: empty ? null : offset + 1,
+    to: empty ? null : offset + rowCount,
+    has_more_pages: hasMore,
+    prev_page_url: page > 1 ? pageUrl(url, page - 1) : null,
+    next_page_url: hasMore ? pageUrl(url, page + 1) : null,
+  }
+  if (total !== undefined && !Number.isNaN(total)) {
+    const lastPage = Math.max(1, Math.ceil(total / perPage))
+    meta.total = total
+    meta.last_page = lastPage
+    meta.first_page_url = pageUrl(url, 1)
+    meta.last_page_url = pageUrl(url, lastPage)
+  }
+  return meta
+}
+
 // Apply user-defined `set:` hooks (e.g. User.set.password = bcrypt) before
 // raw DB writes so the auto-CRUD store/update endpoints don't end up storing
 // plaintext where the model declared a transformation. Mirrors the helper
@@ -717,9 +782,9 @@ for (const [modelName, model] of Object.entries(models)) {
     applyMiddleware(route.get(basePath, async (req: EnhancedRequest) => {
       try {
         const url = new URL(req.url)
-        const page = Number.parseInt(url.searchParams.get('page') || '1', 10)
-        const perPage = Math.min(Number.parseInt(url.searchParams.get('per_page') || '25', 10), 100)
-        const offset = (page - 1) * perPage
+        // Clamped, NaN-safe page/perPage (page >= 1, perPage in [1, 100],
+        // default perPage 15 to match Model.paginate() / resolvePageArgs).
+        const { page, perPage, offset } = resolveIndexPageArgs(url.searchParams)
         const sort = url.searchParams.get('sort')
 
         let query = (db as any).selectFrom(table)
@@ -780,8 +845,14 @@ for (const [modelName, model] of Object.entries(models)) {
           query = onlyTrashed ? query.whereNotNull('deleted_at') : query.whereNull('deleted_at')
         }
 
-        const results = await query.limit(perPage).offset(offset).get()
-        let records = (results || []).map((r: any) => stripHidden(applyReadCasts(r, model), hiddenFields))
+        // Simple-paginate probe: fetch one extra row so `has_more_pages`
+        // is known without a COUNT. Slice the probe row off BEFORE casts /
+        // includes so applyIncludes doesn't fire N+1 relation queries for a
+        // row that's about to be discarded.
+        const rawResults = (await query.limit(perPage + 1).offset(offset).get()) || []
+        const hasMore = rawResults.length > perPage
+        const pageRows = hasMore ? rawResults.slice(0, perPage) : rawResults
+        let records = pageRows.map((r: any) => stripHidden(applyReadCasts(r, model), hiddenFields))
 
         const includeParam = url.searchParams.get('include')
         if (includeParam)
@@ -819,11 +890,7 @@ for (const [modelName, model] of Object.entries(models)) {
 
         return new Response(JSON.stringify({
           data: records,
-          meta: {
-            page,
-            per_page: perPage,
-            ...(total !== undefined && !Number.isNaN(total) ? { total, last_page: Math.ceil(total / perPage) } : {}),
-          },
+          meta: buildIndexMeta(url, page, perPage, records.length, hasMore, total),
         }), { status: 200, headers: respHeaders })
       }
       catch (err) {
