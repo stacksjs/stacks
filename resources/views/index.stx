@@ -9,8 +9,8 @@ const navLinks = [
   { label: 'Features', url: '#platform' },
   { label: 'CMS', url: '#cms' },
   { label: 'Cloud', url: '#deploy' },
-  { label: 'Docs', url: '/docs' },
-  { label: 'Blog', url: '/blog' },
+  { label: 'Docs', url: '/docs', native: true },
+  { label: 'Blog', url: '/blog', native: true },
   { label: 'GitHub', url: 'https://github.com/stacksjs/stacks' },
 ]
 
@@ -262,6 +262,13 @@ const stackLayers = [
         color: rgba(255, 247, 225, 0.78);
         font-size: 1.08rem;
         line-height: 1.65;
+      }
+
+      .mode-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.85rem;
+        margin-top: 2rem;
       }
 
       .mode-note {
@@ -1107,8 +1114,12 @@ const stackLayers = [
           <h1 id="coming-soon-heading" class="script-title mode-title">{{ appName }}</h1>
           <p class="mode-lead">The trailhead is almost ready.</p>
           <p class="mode-copy">
-            We are getting the framework, docs, blog, CMS, and deployment path ready for public visitors. The build crew can still preview the site with the coming soon pass.
+            We are getting the framework, docs, CMS, and deployment path ready for public visitors. The blog is already live — read our launch post while we finish the rest. The build crew can still preview the full site with the coming soon pass.
           </p>
+          <div class="mode-actions">
+            <a class="button primary" href="/blog/introducing-stacks" data-no-router>Read “Introducing Stacks”</a>
+            <a class="button" href="/blog" data-no-router>Visit the blog</a>
+          </div>
           <span class="mode-note">Coming soon mode is active</span>
         </div>
       </div>
@@ -1123,7 +1134,7 @@ const stackLayers = [
           </a>
           <div class="nav-links" aria-label="Primary navigation">
             @foreach (navLinks as link)
-              <a href="{{ link.url }}">{{ link.label }}</a>
+              <a href="{{ link.url }}" {{ link.native ? 'data-no-router' : '' }}>{{ link.label }}</a>
             @endforeach
           </div>
         </div>
@@ -1139,7 +1150,7 @@ const stackLayers = [
               Stacks gives TypeScript teams the web framework essentials in one place: routing, STX views, models, auth, CMS, queues, mail, storage, tests, docs, blog, APIs, and cloud deployment through Buddy.
             </p>
             <div class="hero-actions">
-              <a class="button primary" href="/docs">Read the docs</a>
+              <a class="button primary" href="/docs" data-no-router>Read the docs</a>
               <a class="button" href="#platform">Explore features</a>
             </div>
             <div class="hero-metrics" aria-label="Stacks platform coverage">

@@ -618,17 +618,18 @@ export const tsCloud: TsCloudConfig = {
       pathRewriteStyle: 'directory',
     },
 
-    // Blog (Stacks CMS builder). ~0.4 MB.
-    // There is no `buddy build:blog` command — the blog is produced by the
-    // `buildBlogSite` CMS builder (the same one the AWS deploy action calls).
-    // Invoke it directly so the per-site build is self-contained and produces
-    // `dist/blog` before packaging.
+    // Blog (BunPress static build of content/blog/, same engine as /docs).
+    // `buildBlog` renders the markdown posts with the custom Stacks theme into
+    // clean-URL pages (`<slug>/index.html`) plus the listing, feed.xml, and
+    // sitemap.xml — the static twin of the dev-server's onRequest renderer.
     blog: {
       deploy: 'server',
       root: 'dist/blog',
       path: '/blog',
       domain: env.APP_DOMAIN || 'stacksjs.com',
-      build: 'bun -e "const c=(await import(\'./config/blog\')).default; const {buildBlogSite}=await import(\'./storage/framework/core/cms/src/build\'); await buildBlogSite({config:c,outDir:\'./dist/blog\'})"',
+      build: 'bun -e "const {buildBlog}=await import(\'./storage/framework/core/actions/src/blog\'); await buildBlog({outDir:\'./dist/blog\', baseUrl: (process.env.APP_URL?(/^https?:/.test(process.env.APP_URL)?process.env.APP_URL:\'https://\'+process.env.APP_URL):\'https://stacksjs.com\')})"',
+      // Extensionless blog URLs resolve to <path>/index.html.
+      pathRewriteStyle: 'directory',
     },
 
     // Marketing / public site (prerendered resources/views/index.stx + public/

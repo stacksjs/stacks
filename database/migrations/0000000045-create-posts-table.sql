@@ -1,5 +1,6 @@
 CREATE TABLE IF NOT EXISTS "posts" (
   "id" INTEGER PRIMARY KEY AUTOINCREMENT,
+  "uuid" TEXT,
   "title" TEXT,
   "poster" TEXT,
   "content" TEXT,

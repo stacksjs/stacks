@@ -17,9 +17,8 @@ export default defineModel({
       filterable: ['status'],
     },
 
-    useSeeder: {
-      count: 20,
-    },
+    // No faker seeding. The public blog is markdown-based (content/blog/*.md)
+    // rendered by BunPress; this model backs the CMS dashboard only.
     categorizable: true,
     taggable: true,
     commentables: true,

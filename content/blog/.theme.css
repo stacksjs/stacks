@@ -1,0 +1,338 @@
+/*
+ * Stacks Blog — custom BunPress theme, "national-park" outdoors look.
+ *
+ * Re-skins BunPress's VitePress theme (driven by --vp-c-* vars) to the Stacks
+ * park palette + NPS fonts, and adds outdoors chrome (topography texture, a
+ * ridge + river footer, a wooden trail-sign masthead). Three themes via
+ * `data-theme` on <html>: light (NPS brochure), colored (pine immersive), dark.
+ */
+
+/* ── NPS fonts (see ~/Code/nps-fonts) ──────────────────────────────────── */
+@font-face { font-family: 'Campmate Script'; src: url('/assets/fonts/nps/CampmateScript-Regular.woff2') format('woff2'); font-weight: 400; font-display: swap; }
+@font-face { font-family: 'NPS 2026'; src: url('/assets/fonts/nps/NPS_2026-variable.woff2') format('woff2'); font-weight: 100 900; font-display: swap; }
+@font-face { font-family: 'Sequoia Sans'; src: url('/assets/fonts/nps/SequoiaSans-Regular.woff2') format('woff2'); font-weight: 400; font-display: swap; }
+@font-face { font-family: 'Redwood Serif'; src: url('/assets/fonts/nps/RedwoodSerif-Regular.woff2') format('woff2'); font-weight: 400; font-display: swap; }
+
+/* ── Themes ─────────────────────────────────────────────────────────────── */
+:root,
+:root[data-theme='light'] {
+  --vp-c-bg: #fbf3df;
+  --vp-c-bg-alt: #fff8e7;
+  --vp-c-bg-soft: #f3e7c8;
+  --vp-c-bg-elv: #fff8e7;
+  --vp-c-text-1: #1f3026;
+  --vp-c-text-2: #4c5a49;
+  --vp-c-text-3: #7c8a74;
+  --vp-c-brand-1: #275f3c;
+  --vp-c-brand-2: #a85f35;
+  --vp-c-brand-3: #163824;
+  --vp-c-brand-soft: rgba(39, 95, 60, 0.12);
+  --vp-c-divider: #e0cfa3;
+  --vp-c-gutter: #ead9b1;
+  --vp-code-color: #a85f35;
+  --vp-code-bg: #f0e2bf;
+  --vp-code-block-bg: #15241a;
+  --park-ridge: #275f3c;
+  --park-river: #3f8e88;
+  --park-wood: #8a5a35;
+  --park-flag: #df9a2f;
+  --topo-color: #275f3c;
+  --topo-opacity: 0.05;
+  --park-poster-a: #f5dfb8;
+  --park-poster-b: #e8d6ac;
+}
+
+:root[data-theme='colored'] {
+  color-scheme: dark;
+  --vp-c-bg: #122a1d;
+  --vp-c-bg-alt: #173726;
+  --vp-c-bg-soft: #1d4129;
+  --vp-c-bg-elv: #173726;
+  --vp-c-text-1: #fff7e1;
+  --vp-c-text-2: #d2e2c6;
+  --vp-c-text-3: #9fb79a;
+  --vp-c-brand-1: #b6d089;
+  --vp-c-brand-2: #e7ad4f;
+  --vp-c-brand-3: #7fb8ae;
+  --vp-c-brand-soft: rgba(170, 196, 125, 0.16);
+  --vp-c-divider: #2f5d3a;
+  --vp-c-gutter: #24492f;
+  --vp-code-color: #e7ad4f;
+  --vp-code-bg: #1d4129;
+  --vp-code-block-bg: #0c1d14;
+  --park-ridge: #0c1d14;
+  --park-river: #7fb8ae;
+  --park-wood: #df9a2f;
+  --park-flag: #df9a2f;
+  --topo-color: #aac47d;
+  --topo-opacity: 0.07;
+  --park-poster-a: #1d4129;
+  --park-poster-b: #16301f;
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --vp-c-bg: #0b1310;
+  --vp-c-bg-alt: #111c16;
+  --vp-c-bg-soft: #17241b;
+  --vp-c-bg-elv: #111c16;
+  --vp-c-text-1: #eef1e7;
+  --vp-c-text-2: #b9c4b2;
+  --vp-c-text-3: #7e8b78;
+  --vp-c-brand-1: #8fd6a6;
+  --vp-c-brand-2: #e0a84f;
+  --vp-c-brand-3: #7fb8ae;
+  --vp-c-brand-soft: rgba(143, 214, 166, 0.14);
+  --vp-c-divider: #26332a;
+  --vp-c-gutter: #1c271f;
+  --vp-code-color: #e0a84f;
+  --vp-code-bg: #17241b;
+  --vp-code-block-bg: #050907;
+  --park-ridge: #050907;
+  --park-river: #5fa39b;
+  --park-wood: #c98a4a;
+  --park-flag: #e0a84f;
+  --topo-color: #8fd6a6;
+  --topo-opacity: 0.05;
+  --park-poster-a: #17241b;
+  --park-poster-b: #101911;
+}
+
+/*
+ * Font roles. The NPS faces are display/signage cuts:
+ *   - Campmate Script — the hero (cursive, has lowercase)
+ *   - NPS 2026 — headings (art-deco, has true lowercase)
+ *   - Sequoia Sans / Redwood Serif — CAPS-ONLY; only for signage-style labels
+ * Long-form body copy stays on a clean system humanist sans for readability.
+ */
+:root {
+  --font-body: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-hero: 'Campmate Script', ui-serif, Georgia, serif;
+  --font-head: 'NPS 2026', var(--font-body);
+  --font-label: 'Sequoia Sans', var(--font-body);
+}
+
+/* ── Base + topography texture ──────────────────────────────────────────── */
+/* Page background lives on <html> so the fixed topography layer (body::before,
+ * z-index -1) shows above it but behind content; keep the layout chrome
+ * transparent so both read through. */
+html { background-color: var(--vp-c-bg); }
+body, .Layout, .BPContent, .BPPage { background-color: transparent; }
+.BPNavBar { background-color: var(--vp-c-bg-alt); border-bottom: 1px solid var(--vp-c-divider); }
+.BPNavBar .title, .BPNavBar a { color: var(--vp-c-text-1); }
+.BPNavBar a:hover { color: var(--vp-c-brand-1); }
+body {
+  font-family: var(--font-body);
+  color: var(--vp-c-text-1);
+}
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-color: var(--topo-color);
+  -webkit-mask: url('/assets/images/topography.svg') center / 620px auto;
+  mask: url('/assets/images/topography.svg') center / 620px auto;
+  opacity: var(--topo-opacity);
+}
+
+.bp-doc {
+  font-family: var(--font-body);
+  font-size: 1.0625rem;
+  line-height: 1.78;
+}
+.bp-doc h1, .bp-doc h2, .bp-doc h3, .bp-doc h4 {
+  font-family: var(--font-head);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.bp-doc a.blog-card,
+.bp-doc a.blog-card:hover,
+.bp-doc a.blog-back,
+.bp-doc a.blog-back:hover { text-decoration: none; }
+
+/* ── Theme toggle ───────────────────────────────────────────────────────── */
+.blog-theme-toggle {
+  position: fixed;
+  bottom: 1.1rem;
+  right: 1.1rem;
+  z-index: 60;
+  display: inline-flex;
+  gap: 2px;
+  padding: 3px;
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 999px;
+  background: var(--vp-c-bg-alt);
+  box-shadow: 0 6px 18px -12px rgba(0, 0, 0, 0.5);
+}
+.blog-theme-toggle button {
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--vp-c-text-2);
+  font-size: 15px;
+  cursor: pointer;
+  line-height: 1;
+}
+.blog-theme-toggle button:hover { color: var(--vp-c-text-1); }
+:root[data-theme='light'] .blog-theme-toggle button[data-t='light'],
+:root[data-theme='colored'] .blog-theme-toggle button[data-t='colored'],
+:root[data-theme='dark'] .blog-theme-toggle button[data-t='dark'] {
+  background: var(--vp-c-brand-soft);
+  color: var(--vp-c-brand-1);
+}
+
+/* ── Masthead (wooden trail sign) ───────────────────────────────────────── */
+.blog-listing-head { margin: 0 0 2rem; text-align: center; }
+.blog-listing-head .sign {
+  display: block;
+  width: 320px;
+  max-width: 82%;
+  height: 132px;
+  margin: 0 auto -0.6rem;
+  background-color: var(--park-wood);
+  -webkit-mask: url('/assets/images/wood-sign.svg') center / contain no-repeat;
+  mask: url('/assets/images/wood-sign.svg') center / contain no-repeat;
+}
+.blog-listing-head h1 {
+  margin: 0 0 0.3rem;
+  font-family: var(--font-hero);
+  font-weight: 400;
+  font-size: clamp(2.8rem, 6vw, 4.4rem);
+  line-height: 0.95;
+  letter-spacing: 0;
+  color: var(--vp-c-text-1);
+}
+.blog-listing-head p {
+  margin: 0 auto;
+  max-width: 38rem;
+  color: var(--vp-c-text-2);
+  font-size: 1.08rem;
+}
+
+/* ── Post header ────────────────────────────────────────────────────────── */
+.blog-post-head { margin: 0 0 1.5rem; }
+.blog-post-head h1 {
+  margin: 0 0 0.6rem;
+  font-family: var(--font-hero);
+  font-weight: 400;
+  font-size: clamp(2.6rem, 5vw, 3.8rem);
+  line-height: 0.98;
+  color: var(--vp-c-text-1);
+}
+.blog-post-meta {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem;
+  margin: 0; color: var(--vp-c-text-2); font-size: 0.95rem;
+}
+.blog-post-meta .dot { color: var(--vp-c-divider); }
+.blog-post-meta .author { font-weight: 650; color: var(--vp-c-text-1); }
+
+.blog-post-poster {
+  margin: 1.75rem 0 0.5rem;
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 0.75rem;
+  overflow: hidden;
+  background: linear-gradient(135deg, var(--park-poster-a), var(--park-poster-b));
+}
+.blog-post-poster img { display: block; width: 100%; height: 300px; object-fit: contain; padding: 2rem; }
+
+.blog-back {
+  display: inline-flex; align-items: center; gap: 0.35rem;
+  margin-bottom: 1.5rem; font-size: 0.9rem; font-weight: 600; color: var(--vp-c-brand-1);
+}
+.blog-back:hover { color: var(--vp-c-brand-2); }
+
+.blog-author-card {
+  display: flex; gap: 1rem; align-items: flex-start;
+  margin: 3rem 0 0; padding: 1.4rem 1.5rem;
+  border: 1px solid var(--vp-c-divider); border-left: 4px solid var(--park-flag);
+  border-radius: 0.6rem; background: var(--vp-c-bg-alt);
+}
+.blog-author-card .avatar {
+  flex: 0 0 auto; width: 3rem; height: 3rem; display: grid; place-items: center;
+  border-radius: 50%; background: var(--vp-c-brand-1); color: var(--vp-c-bg); font-weight: 800; font-size: 1.2rem;
+}
+.blog-author-card .name { font-weight: 700; color: var(--vp-c-text-1); }
+.blog-author-card .bio { margin: 0.25rem 0 0; color: var(--vp-c-text-2); line-height: 1.55; }
+
+/* ── Listing cards ──────────────────────────────────────────────────────── */
+.blog-cards { display: grid; gap: 1.5rem; }
+.blog-card {
+  display: grid; grid-template-columns: 220px 1fr; gap: 1.5rem; padding: 1.1rem;
+  border: 1px solid var(--vp-c-divider); border-left: 4px solid var(--vp-c-brand-1);
+  border-radius: 0.7rem; background: var(--vp-c-bg-alt); text-decoration: none;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.blog-card:hover { transform: translateY(-2px); box-shadow: 0 18px 38px -26px rgba(0, 0, 0, 0.55); }
+.blog-card.is-featured { border-left-color: var(--park-flag); }
+.blog-card-media {
+  border-radius: 0.5rem; overflow: hidden; border: 1px solid var(--vp-c-divider);
+  background: linear-gradient(135deg, var(--park-poster-a), var(--park-poster-b));
+}
+.blog-card-media img { display: block; width: 100%; height: 140px; object-fit: contain; padding: 1rem; }
+.blog-card-title {
+  margin: 0.1rem 0 0.4rem; font-family: var(--font-head);
+  font-size: 1.45rem; font-weight: 600; color: var(--vp-c-text-1); line-height: 1.18; letter-spacing: -0.01em;
+}
+.blog-card:hover .blog-card-title { color: var(--vp-c-brand-1); }
+.blog-card-excerpt { margin: 0 0 0.7rem; color: var(--vp-c-text-2); line-height: 1.55; }
+.blog-card-meta { color: var(--vp-c-text-3); font-size: 0.875rem; }
+.blog-card-flag {
+  display: inline-block; margin-bottom: 0.5rem; padding: 0.2rem 0.65rem; border-radius: 999px;
+  background: var(--vp-c-brand-soft); color: var(--park-wood);
+  font-family: var(--font-label); font-size: 0.74rem; font-weight: 400;
+  letter-spacing: 0.12em; text-transform: uppercase;
+}
+.bp-doc .blog-card-title,
+.bp-doc .blog-listing-head h1,
+.bp-doc .blog-post-head h1 { border-top: 0; padding-top: 0; }
+
+/* ── Post footer: share + read-next ─────────────────────────────────────── */
+.blog-share {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 1rem;
+  margin: 2.5rem 0 0; padding-top: 1.5rem; border-top: 1px solid var(--vp-c-divider); font-size: 0.95rem;
+}
+.blog-share-label { font-weight: 700; color: var(--vp-c-text-1); }
+.blog-share a { color: var(--vp-c-brand-1); font-weight: 600; }
+.blog-share a:hover { color: var(--vp-c-brand-2); }
+.blog-more { margin: 2.5rem 0 0; }
+.blog-more h2 {
+  margin: 0 0 0.75rem; font-family: var(--font-head); font-size: 1.2rem;
+  font-weight: 600; color: var(--vp-c-text-1); border-top: 0; padding-top: 0;
+}
+.bp-doc .blog-more h2 { border-top: 0; padding-top: 0; margin: 0 0 0.75rem; }
+.blog-more ul { list-style: none; margin: 0; padding: 0; }
+.blog-more li { margin: 0.35rem 0; }
+.blog-more a { color: var(--vp-c-brand-1); font-weight: 600; }
+.blog-more a:hover { color: var(--vp-c-brand-2); }
+
+/* ── Footer landscape: ridge + river ────────────────────────────────────── */
+.blog-landscape { position: relative; margin-top: 4rem; padding-top: 2rem; }
+.blog-landscape .ridge {
+  display: block; width: 100%; height: 90px; background: var(--park-ridge);
+  -webkit-mask: url('/assets/images/park-ridge.svg') bottom center / cover no-repeat;
+  mask: url('/assets/images/park-ridge.svg') bottom center / cover no-repeat;
+  opacity: 0.85;
+}
+.blog-landscape .river {
+  display: block; width: 100%; height: 70px; margin-top: -12px;
+  background-color: var(--park-river);
+  -webkit-mask: url('/assets/images/river.svg') center / 1200px 140px repeat-x;
+  mask: url('/assets/images/river.svg') center / 1200px 140px repeat-x;
+  opacity: 0.85;
+}
+.blog-landscape .colophon {
+  text-align: center; margin-top: 0.75rem; color: var(--vp-c-text-3);
+  font-size: 0.82rem; letter-spacing: 0.04em;
+}
+.blog-landscape .colophon a { color: var(--vp-c-brand-1); }
+
+@media (max-width: 640px) {
+  .blog-card { grid-template-columns: 1fr; }
+}

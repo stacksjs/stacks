@@ -1,6 +1,6 @@
 import type { CLI, DevOptions } from '@stacksjs/types'
 import { execSync } from 'node:child_process'
-import { existsSync, readFileSync } from 'node:fs'
+import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import readline from 'node:readline'
 import process from 'node:process'
 import { bold, cyan, dim, green, intro, log, onUnknownSubcommand, outro, prompts, runCommand, yellow } from "@stacksjs/cli"
@@ -28,8 +28,34 @@ type DevelopmentRpx = typeof import('@stacksjs/rpx')
 
 let developmentRpx: DevelopmentRpx | undefined
 
+/**
+ * Resolve the on-disk entry for `@stacksjs/rpx`.
+ *
+ * A *bare* `import('@stacksjs/rpx')` resolves from the importing file's
+ * directory (storage/framework/core/buddy/src/commands, and the spawned daemon
+ * bootstrap in buddy/scripts) — where rpx isn't on the resolution path — so it
+ * throws "Cannot find module" even though the app root has it. That breaks BOTH
+ * the in-process proxy helpers AND the spawned daemon (which then never binds
+ * :443, so the pretty URL refuses to connect). Returning an explicit path lets
+ * us load it reliably and hand the daemon the same path. Prefer the project's
+ * installed copy (a local Tools worktree's dist can lag behind), then Tools,
+ * then pantry.
+ */
+function resolveRpxEntryPath(): string | null {
+  const candidates = [
+    projectPath('node_modules/@stacksjs/rpx/dist/index.js'),
+    join(homedir(), 'Code/Tools/rpx/packages/rpx/dist/index.js'),
+    projectPath('pantry/@stacksjs/rpx/dist/src/index.js'),
+  ]
+  return candidates.find(entry => existsSync(entry)) ?? null
+}
+
 async function importDevelopmentRpx(): Promise<DevelopmentRpx> {
-  developmentRpx ??= await import('@stacksjs/rpx')
+  if (developmentRpx)
+    return developmentRpx
+
+  const entry = resolveRpxEntryPath()
+  developmentRpx = (entry ? await import(entry) : await import('@stacksjs/rpx')) as DevelopmentRpx
   return developmentRpx
 }
 
@@ -462,6 +488,8 @@ export async function startDevelopmentServer(_options: DevOptions, _startTime?: 
     : Promise.resolve()
 
   Promise.all(ports.map(p => waitForPort(p.port, readinessTimeoutMs)))
+    // `results` IS used (in `failed` below); pickier misparses the multi-line arrow.
+    // eslint-disable-next-line pickier/no-unused-vars
     .then(async (results) => {
       if (readyAnnounced) return
       readyAnnounced = true
@@ -470,23 +498,39 @@ export async function startDevelopmentServer(_options: DevOptions, _startTime?: 
         .map((ok, i) => ok ? null : ports[i].name)
         .filter((x): x is string => x !== null)
 
+      // Bring up the HTTPS reverse proxy (rpx + tlsx) for the pretty domain.
+      // `proxyReachable` decides whether the banner advertises the pretty URLs
+      // or falls back to the working http://localhost ones — a pretty URL that
+      // refuses to connect is worse than an honest localhost link.
+      let proxyReachable = false
       if (hasCustomDomain && domain) {
-        try {
-          await rpxTlsPreflight
-          await registerRpxProxiesForDomain({
-            domain,
-            frontendPort,
-            apiPort,
-            docsPort,
-            dashboardPort,
-            includeDashboard,
-            options,
-          })
-        }
-        catch (error) {
-          const message = error instanceof Error ? error.message : String(error)
-          console.log(`  ${yellow('⚠')}  ${yellow('HTTPS proxy unavailable')}: ${message}`)
-          console.log(`  ${dim('    ')}${dim('Use http://localhost:3000 or set SUDO_PASSWORD in .env and restart `./buddy dev`')}`)
+        // Kick off the proxy/TLS/daemon setup; don't await it directly — instead
+        // wait on the real signal: :443 actually accepting connections. The
+        // first run mints certs and re-execs the daemon through sudo to bind the
+        // privileged port (rpx allows up to ~15s for that), but the root daemon
+        // persists across sessions, so later runs detect :443 almost instantly.
+        // The cap also keeps a failed elevation (wrong sudo) from hanging the
+        // banner; the setup keeps running in the background regardless.
+        void (async () => {
+          try {
+            await rpxTlsPreflight
+            await registerRpxProxiesForDomain({
+              domain,
+              frontendPort,
+              apiPort,
+              docsPort,
+              dashboardPort,
+              includeDashboard,
+              options,
+            })
+          }
+          catch { /* surfaced below via the :443 reachability probe */ }
+        })()
+
+        proxyReachable = await waitForHttpsProxy(443, 16_000)
+        if (!proxyReachable) {
+          console.log(`  ${yellow('⚠')}  ${yellow('HTTPS proxy not reachable on :443')} — serving ${cyan(`http://localhost:${frontendPort}`)} instead`)
+          console.log(`  ${dim('    ')}${dim('rpx needs a valid SUDO_PASSWORD in .env to bind :443; trust the local CA, then restart `./buddy dev`.')}`)
           if (options.verbose)
             console.log(`  ${dim('    ')}${dim(`Trust CA: sh ${join(RPX_SSL_DIR, 'trust-rpx-cert.sh')}`)}`)
         }
@@ -498,6 +542,7 @@ export async function startDevelopmentServer(_options: DevOptions, _startTime?: 
         options,
         nativeMode,
         hasCustomDomain,
+        proxyReachable,
         frontendUrl,
         apiUrl,
         docsUrl,
@@ -556,10 +601,41 @@ export async function startDevelopmentServer(_options: DevOptions, _startTime?: 
 
 // `input` IS used (`} = input` below); pickier misparses multi-line object-type params
 // eslint-disable-next-line pickier/no-unused-vars
+/**
+ * True when the app is in "coming soon" mode — either the `./buddy coming-soon`
+ * gate (state file) is active, or the holding page is baked into the homepage
+ * view (`siteMode = 'coming-soon'` in resources/views/index.stx).
+ */
+function isComingSoonMode(): boolean {
+  if (existsSync(projectPath('storage/framework/coming-soon')))
+    return true
+  try {
+    const idx = projectPath('resources/views/index.stx')
+    return existsSync(idx) && /siteMode\s*=\s*['"]coming-soon['"]/.test(readFileSync(idx, 'utf8'))
+  }
+  catch {
+    return false
+  }
+}
+
+/** True when a markdown blog exists at content/blog/ (served at /blog by BunPress). */
+function blogIsConfigured(): boolean {
+  try {
+    const dir = projectPath('content/blog')
+    return existsSync(dir) && readdirSync(dir).some(f => f.endsWith('.md'))
+  }
+  catch {
+    return false
+  }
+}
+
+// `input` IS used (destructured below); pickier misparses the multi-line object param.
+// eslint-disable-next-line pickier/no-unused-vars
 function printDevReadyBanner(input: {
   options: DevOptions
   nativeMode: boolean
   hasCustomDomain: boolean
+  proxyReachable: boolean
   frontendUrl: string
   apiUrl: string
   docsUrl: string
@@ -576,6 +652,7 @@ function printDevReadyBanner(input: {
     options,
     nativeMode,
     hasCustomDomain,
+    proxyReachable,
     frontendUrl,
     apiUrl,
     docsUrl,
@@ -591,20 +668,34 @@ function printDevReadyBanner(input: {
   const verbose = options.verbose ?? false
   const showLocalUrls = verbose || options.withLocalhost === true
 
+  // Advertise the pretty https://<domain> URLs only when the proxy is actually
+  // up; otherwise show the working http://localhost links so nothing 404s.
+  const useProxy = hasCustomDomain && proxyReachable
+  const feUrl = useProxy ? frontendUrl : `http://localhost:${frontendPort}`
+  const apUrl = useProxy ? apiUrl : `http://localhost:${apiPort}`
+  const dcUrl = useProxy ? docsUrl : `http://localhost:${docsPort}`
+  const blogUrl = `${feUrl.replace(/\/$/, '')}/blog`
+
   console.log()
-  console.log(`  ${green('➜')}  ${bold('Frontend')}:    ${cyan(frontendUrl)}`)
-  if (showLocalUrls)
+  console.log(`  ${green('➜')}  ${bold('Frontend')}:    ${cyan(feUrl)}`)
+  if (showLocalUrls && useProxy)
     console.log(`  ${dim('➜')}  ${dim('Local')}:       ${dim(`http://localhost:${frontendPort}`)}`)
   if (nativeMode)
     console.log(`  ${green('➜')}  ${bold('Native')}:      ${cyan(`Craft → http://localhost:${frontendPort}`)}`)
-  console.log(`  ${green('➜')}  ${bold('API')}:         ${cyan(apiUrl)}`)
-  if (showLocalUrls)
+  console.log(`  ${green('➜')}  ${bold('API')}:         ${cyan(apUrl)}`)
+  if (showLocalUrls && useProxy)
     console.log(`  ${dim('➜')}  ${dim('Local API')}:   ${dim(`http://localhost:${apiPort}`)}`)
-  console.log(`  ${green('➜')}  ${bold('Docs')}:        ${cyan(docsUrl)}`)
-  if (showLocalUrls)
+  console.log(`  ${green('➜')}  ${bold('Docs')}:        ${cyan(dcUrl)}`)
+  if (showLocalUrls && useProxy)
     console.log(`  ${dim('➜')}  ${dim('Local docs')}:  ${dim(`http://localhost:${docsPort}`)}`)
+  if (blogIsConfigured())
+    console.log(`  ${green('➜')}  ${bold('Blog')}:        ${cyan(blogUrl)}`)
   if (includeDashboard)
     console.log(`  ${green('➜')}  ${bold('Dashboard')}:   ${cyan(dashboardUrl)}`)
+  if (isComingSoonMode()) {
+    console.log()
+    console.log(`  ${yellow('●')}  ${bold(yellow('Coming soon mode'))} ${dim('— visitors see the holding page; bypass with the coming-soon secret.')}`)
+  }
   if (verbose && domain) {
     console.log(`  ${dim('➜')}  ${dim('Proxy')}:       ${dim(`localhost:${frontendPort} → ${domain}`)}`)
     console.log(`  ${dim('➜')}  ${dim('Proxy')}:       ${dim(`${frontendUrl}/api → localhost:${apiPort}`)}`)
@@ -910,6 +1001,33 @@ async function waitForPort(port: number, timeoutMs: number): Promise<boolean> {
     // Tight poll: a refused connection rejects instantly, so this is cheap and
     // detects "just bound" within ~50ms instead of up to a quarter second.
     await new Promise(r => setTimeout(r, 50))
+  }
+  return false
+}
+
+/**
+ * Wait for the rpx HTTPS proxy to be listening on `port`. Uses a raw TCP
+ * connect (not the HTTP probe `waitForPort` uses) — :443 speaks TLS, so an
+ * HTTP probe would always fail there even when the proxy is up.
+ */
+async function waitForHttpsProxy(port: number, timeoutMs: number): Promise<boolean> {
+  const { connect } = await import('node:net')
+  const deadline = Date.now() + timeoutMs
+  while (Date.now() < deadline) {
+    const ok = await new Promise<boolean>((resolve) => {
+      const socket = connect({ port, host: '127.0.0.1' })
+      const finish = (v: boolean) => {
+        try { socket.destroy() }
+        catch { /* ignore */ }
+        resolve(v)
+      }
+      socket.once('connect', () => finish(true))
+      socket.once('error', () => finish(false))
+      setTimeout(() => finish(false), 800).unref?.()
+    })
+    if (ok)
+      return true
+    await new Promise(r => setTimeout(r, 200))
   }
   return false
 }
@@ -1383,6 +1501,11 @@ async function registerRpxProxiesForDomain(input: {
     spawnEnv.SUDO_PASSWORD = process.env.SUDO_PASSWORD
   if (verbose)
     spawnEnv.RPX_VERBOSE = '1'
+  // The daemon bootstrap runs from buddy/scripts where a bare `@stacksjs/rpx`
+  // import fails the same way — hand it the resolved entry so it can start.
+  const rpxEntry = resolveRpxEntryPath()
+  if (rpxEntry)
+    spawnEnv.RPX_MODULE = rpxEntry
 
   try {
     await startRpxDaemonIfNeeded({ spawnCommand, spawnEnv, verbose, stopRpx })

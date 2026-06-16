@@ -189,6 +189,14 @@ async function startDefaultServer() {
       if (gated)
         return gated
 
+      // The blog is rendered by BunPress with a custom Stacks theme (see
+      // ./blog.ts). Intercept /blog and /blog/<slug> here so BunPress wins
+      // over the stx page layer; anything else (feeds, assets) falls through.
+      const { renderBlog } = await import('../blog')
+      const blogResponse = await renderBlog(req)
+      if (blogResponse)
+        return blogResponse
+
       // Forward to the API dev server when this request can't possibly
       // be a stx page render. Two cases:
       //   1. `/api/**` — the canonical API prefix.
