@@ -56,6 +56,86 @@ export const tsCloud: TsCloudConfig = {
         NODE_ENV: 'production',
         LOG_LEVEL: 'info',
       },
+
+      /**
+       * Serverless Application (Vapor-style) — optional
+       *
+       * Deploy one codebase as three AWS Lambda functions sharing one artifact:
+       * HTTP (API Gateway v2), a queue worker (SQS, one job per invocation), and
+       * a CLI function (EventBridge scheduler + on-demand commands / migrations).
+       *
+       * Defining `app` opts this environment into the serverless deploy pipeline
+       * (`buddy deploy --serverless`). Leave it commented to keep the default
+       * server/container deployment. Every option is shown below.
+       *
+       * @see https://ts-cloud.stacksjs.com/features/serverless
+       */
+      // app: {
+      //   // Runtime + application kind.
+      //   kind: 'node', // 'node' | 'bun' | 'php'
+      //   runtime: 'nodejs20.x', // or 'provided.al2023' for PHP / Bun
+      //   entry: 'server.ts', // entry exporting { fetch, queue, cli } (node/bun)
+      //
+      //   // HTTP function.
+      //   memory: 1024, // MB
+      //   timeout: 28, // seconds (API Gateway v2 caps at 29)
+      //   concurrency: undefined, // reserved concurrency, optional
+      //   gatewayVersion: 2, // 2 = HTTP API (default), 1 = REST API
+      //   warm: 2, // keep N containers warm via scheduled pings
+      //
+      //   // CLI function (scheduler + commands/migrations).
+      //   cliMemory: 1024,
+      //   cliTimeout: 900,
+      //
+      //   // Queue worker.
+      //   queues: true, // true = single default queue; or ['emails', { invoices: 10 }]; false = disabled
+      //   queueConcurrency: 1000,
+      //   queueTimeout: 120,
+      //   queueMemory: 1024,
+      //   queueTries: 3, // max receives before DLQ
+      //
+      //   // Scheduler: 'on' | 'off' | 'sub-minute'.
+      //   scheduler: 'on',
+      //
+      //   // Build hooks (local, before packaging) + deploy hooks (remote, via CLI fn).
+      //   build: ['bun install', 'bun run build'],
+      //   deploy: ['migrate'],
+      //
+      //   // Persistent mode (Laravel Octane / long-lived server). Lower latency.
+      //   octane: false,
+      //
+      //   // Packaging: 'zip' (default) or 'image' (ECR container, for >250MB apps).
+      //   packaging: 'zip',
+      //
+      //   // Static assets → S3 + CloudFront, exposed as ASSET_URL.
+      //   assets: 'public',
+      //
+      //   // Custom domain + ACM certificate.
+      //   domain: 'app.stacksjs.com',
+      //   // certificateArn: 'arn:aws:acm:us-east-1:...:certificate/...',
+      //
+      //   // Managed data (require vpc.subnets — private subnets):
+      //   // vpc: { subnets: ['subnet-aaa', 'subnet-bbb'], securityGroups: [] },
+      //   // database: { connection: 'aurora-serverless' },
+      //   // rdsProxy: true,
+      //   cache: { driver: 'dynamodb' }, // 'dynamodb' (zero-NAT default) | 'elasticache'
+      //   // storage: { bucket: 'stacks-production-app' },
+      //
+      //   // Managed WAF in front of the HTTP API.
+      //   // firewall: { enabled: true, rateLimit: 2000, rules: ['common', 'sqlInjection'] },
+      //
+      //   // Env vars + secrets (secrets resolved from Secrets Manager / SSM at deploy).
+      //   env: { APP_ENV: 'production' },
+      //   // secrets: ['APP_KEY', 'DB_PASSWORD'],
+      //
+      //   // Ephemeral /tmp size in MB (512–10240).
+      //   tmpStorage: 512,
+      //
+      //   // PHP-only (kind: 'php'):
+      //   // phpVersion: '8.3',
+      //   // architecture: 'x86_64', // or 'arm64'
+      //   // layers: ['arn:aws:lambda:us-east-1:...:layer:tscloud-php-83-x86_64:1'],
+      // },
     },
     staging: {
       type: 'staging',
