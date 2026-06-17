@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 132" fill="#000" fill-rule="evenodd">
+  <!-- Carved trail guidepost used as a single-colour CSS mask. A plank with a
+       pointed (direction) right end, a routed inner border groove, and two
+       mounting holes — the groove and holes are even-odd cut-outs so the wood
+       colour reads as a real routed sign. -->
+  <path d="
+    M44 26 H250 L298 66 L250 106 H44 A18 18 0 0 1 26 88 V44 A18 18 0 0 1 44 26 Z
+    M58 40 H244 L274 66 L244 92 H58 A9 9 0 0 0 49 101 V49 A9 9 0 0 0 58 40 Z
+    M62 46 H241 L266 66 L241 86 H62 A4 4 0 0 1 58 82 V50 A4 4 0 0 1 62 46 Z
+    M40 60 a6 6 0 1 0 0.1 0 Z
+    M40 78 a6 6 0 1 0 0.1 0 Z
+  "/>
+</svg>

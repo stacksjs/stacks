@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 440 560" role="img" aria-label="100 Releases in 100 Days — geyser at sunset">
+  <defs>
+    <linearGradient id="g-sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#3a1f3a"/>
+      <stop offset="0.4" stop-color="#a85f35"/>
+      <stop offset="0.7" stop-color="#df9a2f"/>
+      <stop offset="1" stop-color="#f5dfb8"/>
+    </linearGradient>
+    <linearGradient id="g-plume" x1="0" y1="1" x2="0" y2="0">
+      <stop offset="0" stop-color="#fbf3df" stop-opacity="0.95"/>
+      <stop offset="1" stop-color="#fbf3df" stop-opacity="0.15"/>
+    </linearGradient>
+    <clipPath id="g-scene"><rect x="26" y="26" width="388" height="508" rx="14"/></clipPath>
+  </defs>
+
+  <!-- frame -->
+  <rect x="6" y="6" width="428" height="548" rx="22" fill="#fbf3df"/>
+  <rect x="16" y="16" width="408" height="528" rx="18" fill="none" stroke="#a85f35" stroke-width="3"/>
+
+  <g clip-path="url(#g-scene)">
+    <rect x="26" y="26" width="388" height="508" fill="url(#g-sky)"/>
+    <!-- sun -->
+    <circle cx="220" cy="250" r="66" fill="#f4c869"/>
+    <!-- sun rays -->
+    <g stroke="#f4c869" stroke-width="6" stroke-linecap="round" opacity="0.55">
+      <path d="M220 150 V120"/><path d="M220 350 V380"/>
+      <path d="M120 250 H90"/><path d="M320 250 H350"/>
+      <path d="M149 179 L128 158"/><path d="M291 321 L312 342"/>
+      <path d="M291 179 L312 158"/><path d="M149 321 L128 342"/>
+    </g>
+    <circle cx="220" cy="250" r="66" fill="#f4c869"/>
+    <!-- geyser plume -->
+    <path d="M220 470 C198 400 196 360 210 300 C216 274 224 274 230 300 C244 360 242 400 220 470 Z" fill="url(#g-plume)"/>
+    <path d="M220 360 C210 330 212 312 220 292 C228 312 230 330 220 360 Z" fill="#fbf3df" opacity="0.85"/>
+    <!-- steam puffs -->
+    <g fill="#fbf3df" opacity="0.5">
+      <circle cx="200" cy="306" r="10"/><circle cx="242" cy="316" r="12"/><circle cx="216" cy="288" r="9"/>
+    </g>
+    <!-- ridge -->
+    <path d="M26 392 L104 344 L176 388 L246 340 L322 386 L414 348 V534 H26 Z" fill="#7a3f24"/>
+    <path d="M26 444 L120 404 L210 446 L300 402 L414 442 V534 H26 Z" fill="#5a2c1a"/>
+    <!-- basin / terraces -->
+    <ellipse cx="220" cy="486" rx="120" ry="26" fill="#3a1f14"/>
+    <ellipse cx="220" cy="480" rx="78" ry="16" fill="#27508a" opacity="0.65"/>
+    <ellipse cx="220" cy="478" rx="44" ry="9" fill="#7fb8ae" opacity="0.7"/>
+  </g>
+
+  <!-- banner -->
+  <g>
+    <rect x="56" y="60" width="328" height="62" rx="8" fill="#163824"/>
+    <rect x="56" y="60" width="328" height="62" rx="8" fill="none" stroke="#df9a2f" stroke-width="2"/>
+    <text x="220" y="96" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="30" font-weight="700" letter-spacing="3" fill="#fbf3df">100 DAYS</text>
+    <text x="220" y="114" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="9" letter-spacing="4" fill="#df9a2f">· ONE HUNDRED RELEASES ·</text>
+  </g>
+</svg>

@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 140" fill="#000">
+  <!-- Flowing-water bands, tiled with repeat-x (period = 1200). Each wave starts
+       and ends at the same y so horizontal repeats are seamless. Used as a
+       single-colour CSS mask; partial opacities give the water some depth. -->
+  <path d="M0 30 C100 10 200 50 300 30 C400 10 500 50 600 30 C700 10 800 50 900 30 C1000 10 1100 50 1200 30 V44 C1100 64 1000 24 900 44 C800 64 700 24 600 44 C500 64 400 24 300 44 C200 64 100 24 0 44 Z" opacity="0.9"/>
+  <path d="M0 70 C110 52 190 88 300 70 C410 52 490 88 600 70 C710 52 790 88 900 70 C1010 52 1090 88 1200 70 V82 C1090 100 1010 64 900 82 C790 100 710 64 600 82 C490 100 410 64 300 82 C190 100 110 64 0 82 Z" opacity="0.7"/>
+  <path d="M0 108 C95 92 205 124 300 108 C395 92 505 124 600 108 C695 92 805 124 900 108 C995 92 1105 124 1200 108 V118 C1105 134 995 102 900 118 C805 134 695 102 600 118 C505 134 395 102 300 118 C205 134 95 102 0 118 Z" opacity="0.5"/>
+</svg>

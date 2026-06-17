@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 440 560" role="img" aria-label="Stacks National Park — trail at dawn">
+  <defs>
+    <linearGradient id="t-sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1d4129"/>
+      <stop offset="0.45" stop-color="#3f7d5a"/>
+      <stop offset="0.72" stop-color="#e7ad4f"/>
+      <stop offset="1" stop-color="#f5dfb8"/>
+    </linearGradient>
+    <linearGradient id="t-trail" x1="0" y1="1" x2="0" y2="0">
+      <stop offset="0" stop-color="#f3e7c8"/>
+      <stop offset="1" stop-color="#c89a5f"/>
+    </linearGradient>
+    <clipPath id="t-scene"><rect x="26" y="26" width="388" height="508" rx="14"/></clipPath>
+  </defs>
+
+  <!-- frame -->
+  <rect x="6" y="6" width="428" height="548" rx="22" fill="#fbf3df"/>
+  <rect x="16" y="16" width="408" height="528" rx="18" fill="none" stroke="#275f3c" stroke-width="3"/>
+
+  <g clip-path="url(#t-scene)">
+    <rect x="26" y="26" width="388" height="508" fill="url(#t-sky)"/>
+    <!-- sun -->
+    <circle cx="220" cy="300" r="58" fill="#f4c869"/>
+    <circle cx="220" cy="300" r="58" fill="none" stroke="#fbf3df" stroke-width="2" opacity="0.5"/>
+    <!-- far ridge -->
+    <path d="M26 320 L96 270 L150 300 L214 250 L286 300 L344 262 L414 308 V534 H26 Z" fill="#2f5d3a" opacity="0.85"/>
+    <!-- mid ridge -->
+    <path d="M26 372 L110 318 L188 366 L262 312 L338 360 L414 330 V534 H26 Z" fill="#275f3c"/>
+    <!-- snow caps (clean triangles hugging each peak, wavy snow line) -->
+    <path d="M262 312 l15 21 l-7 -1 l-8 3 l-8 -3 l-7 1 Z" fill="#fbf3df" opacity="0.9"/>
+    <path d="M110 318 l13 18 l-6 -1 l-7 3 l-7 -3 l-6 1 Z" fill="#fbf3df" opacity="0.85"/>
+    <!-- front hills -->
+    <path d="M26 470 C120 420 150 470 240 452 C320 436 360 472 414 452 V534 H26 Z" fill="#163824"/>
+    <!-- winding trail -->
+    <path d="M214 534 C206 500 250 486 244 458 C238 432 196 430 206 404 C214 384 246 384 240 366" fill="none" stroke="url(#t-trail)" stroke-width="22" stroke-linecap="round"/>
+    <path d="M214 534 C206 500 250 486 244 458 C238 432 196 430 206 404 C214 384 246 384 240 366" fill="none" stroke="#fbf3df" stroke-width="22" stroke-linecap="round" stroke-dasharray="2 20" opacity="0.5"/>
+    <!-- pines -->
+    <g fill="#102a1b">
+      <path d="M70 500 l16 34 h-32 z M70 480 l13 26 h-26 z M70 466 l10 20 h-20 z"/>
+      <path d="M360 506 l18 38 h-36 z M360 484 l14 30 h-28 z M360 468 l11 22 h-22 z"/>
+      <path d="M120 514 l12 26 h-24 z M120 500 l9 18 h-18 z"/>
+    </g>
+  </g>
+
+  <!-- banner -->
+  <g>
+    <rect x="56" y="468" width="328" height="58" rx="8" fill="#163824"/>
+    <rect x="56" y="468" width="328" height="58" rx="8" fill="none" stroke="#df9a2f" stroke-width="2"/>
+    <text x="220" y="496" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="26" font-weight="700" letter-spacing="6" fill="#fbf3df">STACKS</text>
+    <text x="220" y="514" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="9" letter-spacing="4" fill="#df9a2f">· EST. 2026 · TYPESCRIPT &amp; BUN ·</text>
+  </g>
+</svg>
