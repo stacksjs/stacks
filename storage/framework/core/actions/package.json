@@ -55,7 +55,7 @@
   },
   "dependencies": {
     "@stacksjs/bunpress": "^0.1.5",
-    "@stacksjs/ts-cloud": "^0.2.15",
+    "@stacksjs/ts-cloud": "^0.3.1",
     "@stacksjs/ts-md": "^0.1.1"
   },
   "devDependencies": {
