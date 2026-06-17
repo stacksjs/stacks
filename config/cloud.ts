@@ -71,9 +71,13 @@ export const tsCloud: TsCloudConfig = {
        * @see https://ts-cloud.stacksjs.com/features/serverless
        */
       // app: {
-      //   // Runtime + application kind.
+      //   // Runtime + application kind. Common Node versions use the AWS managed
+      //   // runtime; Bun and newer Node (e.g. 24) run on a ts-cloud-built
+      //   // provided.al2023 custom layer (built once via `buddy cloud` / the
+      //   // `serverless:build-{node,bun,php}-layer` ts-cloud CLI commands).
       //   kind: 'node', // 'node' | 'bun' | 'php'
-      //   runtime: 'nodejs20.x', // or 'provided.al2023' for PHP / Bun
+      //   runtimeVersion: '22', // node: 18/20/22 (managed) or 24+ (custom layer); bun: a release
+      //   // runtime: 'provided.al2023', // override (usually derived from kind + runtimeVersion)
       //   entry: 'server.ts', // entry exporting { fetch, queue, cli } (node/bun)
       //
       //   // HTTP function.

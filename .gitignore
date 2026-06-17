@@ -85,3 +85,4 @@ storage/framework/cache/
 .tmp-upgrade/
 .claude/scheduled_tasks.lock
 /storage/framework/frontend-dist
+/.stacks
