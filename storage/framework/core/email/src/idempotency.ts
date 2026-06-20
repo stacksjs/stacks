@@ -51,8 +51,18 @@ function warnOnceAboutMissingTable(): void {
 }
 
 function isMissingTableError(err: unknown): boolean {
-  const msg = (err as { message?: string } | null)?.message ?? ''
-  return msg.includes('no such table') || msg.includes("doesn't exist")
+  const msg = ((err as { message?: string } | null)?.message ?? '').toLowerCase()
+  // Missing table OR the backing store being unavailable (no DB configured,
+  // connection dropped, file unopenable) — idempotency is a best-effort dedup
+  // guard and must never take down an otherwise-valid send.
+  return msg.includes('no such table')
+    || msg.includes("doesn't exist")
+    || msg.includes('connection closed')
+    || msg.includes('unable to open database')
+    || msg.includes('econnrefused')
+    || msg.includes('connection terminated')
+    || msg.includes('no database')
+    || msg.includes('database connection')
 }
 
 /**

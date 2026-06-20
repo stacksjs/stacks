@@ -58,6 +58,25 @@ function isMissingTableError(err: unknown): boolean {
 }
 
 /**
+ * The suppression list is a best-effort compliance safeguard, not a hard
+ * dependency of sending. When its backing store is simply unavailable — the
+ * DB connection dropped, the file can't be opened, no database is configured —
+ * we must NOT let that take down every outbound email. Treat those the same
+ * way as a missing table: warn once, then proceed (fail-open).
+ */
+function isSuppressionStoreUnavailable(err: unknown): boolean {
+  if (isMissingTableError(err))
+    return true
+  const msg = ((err as { message?: string } | null)?.message ?? '').toLowerCase()
+  return msg.includes('connection closed')
+    || msg.includes('unable to open database')
+    || msg.includes('econnrefused')
+    || msg.includes('connection terminated')
+    || msg.includes('no database')
+    || msg.includes('database connection')
+}
+
+/**
  * Normalize an email address for comparison. Lowercases + trims —
  * matches the canonicalization most providers do. Doesn't apply
  * provider-specific tricks (Gmail's `+`-tag stripping, dot-folding)
@@ -89,7 +108,7 @@ export async function isSuppressed(email: string, type?: SuppressionType): Promi
     return Boolean(row)
   }
   catch (err) {
-    if (isMissingTableError(err)) {
+    if (isSuppressionStoreUnavailable(err)) {
       warnOnceAboutMissingTable()
       return false
     }
@@ -114,7 +133,7 @@ export async function getSuppressions(email: string): Promise<SuppressionRecord[
     return rows ?? []
   }
   catch (err) {
-    if (isMissingTableError(err)) {
+    if (isSuppressionStoreUnavailable(err)) {
       warnOnceAboutMissingTable()
       return []
     }
@@ -151,7 +170,7 @@ export async function suppress(
       .execute()
   }
   catch (err) {
-    if (isMissingTableError(err)) {
+    if (isSuppressionStoreUnavailable(err)) {
       warnOnceAboutMissingTable()
       return
     }
@@ -177,7 +196,7 @@ export async function unsuppress(email: string, type: SuppressionType): Promise<
       .execute()
   }
   catch (err) {
-    if (isMissingTableError(err)) {
+    if (isSuppressionStoreUnavailable(err)) {
       warnOnceAboutMissingTable()
       return
     }

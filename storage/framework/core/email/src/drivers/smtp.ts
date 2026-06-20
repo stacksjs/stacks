@@ -176,6 +176,10 @@ export class SMTPDriver extends BaseEmailDriver {
       const _currentCommand = ''
       const commandQueue: Array<{ cmd: string, resolve: (response: string) => void, reject: (error: Error) => void }> = []
       const _isProcessing = false
+      // Set once the message has been accepted by the server (250 after the
+      // final "."). After this point a socket close/error is expected (the
+      // server hangs up after QUIT) and must NOT reject the delivered message.
+      let completed = false
 
       const processResponse = (response: string) => {
         log.debug(`[SMTP] Server: ${response.trim()}`)
@@ -295,13 +299,25 @@ export class SMTPDriver extends BaseEmailDriver {
             commandQueue.push({ cmd: 'DATA_END', resolve: res, reject: rej })
           })
 
-          await sendCommand('QUIT')
-          socket.end()
-
+          // The message is accepted once the server replies 250 to the final
+          // ".". Mark complete and resolve now; QUIT is best-effort courtesy.
+          // Many servers (incl. the self-hosted Stacks mail server) drop the
+          // socket right after the message is queued, which would otherwise
+          // race the 'close' handler and reject an already-delivered message.
+          completed = true
           const messageId = `${Date.now()}.${Math.random().toString(36).substring(2)}@${smtpConfig.host}`
+          try {
+            socket.write('QUIT\r\n')
+          }
+          catch {}
+          socket.end()
           resolve(messageId)
         }
         catch (error) {
+          if (completed) {
+            socket.end()
+            return
+          }
           socket.end()
           reject(error)
         }
@@ -336,11 +352,16 @@ export class SMTPDriver extends BaseEmailDriver {
         socket.destroy(new Error(`SMTP socket timed out after ${SMTPDriver.SMTP_TIMEOUT}ms`))
       })
       socket.on('error', (error) => {
+        // A reset/close after the message was accepted is expected — ignore it.
+        if (completed)
+          return
         log.error(`[SMTP] Connection error to ${smtpConfig.host}:${smtpConfig.port}:`, error)
         reject(error)
       })
       socket.on('close', (hadError) => {
         log.debug(`[SMTP] Connection closed (hadError: ${hadError})`)
+        if (completed)
+          return
         // Reject any pending commands
         while (commandQueue.length > 0) {
           const pending = commandQueue.shift()
