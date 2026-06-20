@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 440 560" role="img" aria-label="The Road to v1.0s — switchback trail to the summit">
+  <defs>
+    <linearGradient id="s-sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#163824"/>
+      <stop offset="0.38" stop-color="#2f6f52"/>
+      <stop offset="0.66" stop-color="#e7ad4f"/>
+      <stop offset="1" stop-color="#f5dfb8"/>
+    </linearGradient>
+    <linearGradient id="s-trail" x1="0" y1="1" x2="0" y2="0">
+      <stop offset="0" stop-color="#f3e7c8"/>
+      <stop offset="1" stop-color="#c89a5f"/>
+    </linearGradient>
+    <clipPath id="s-scene"><rect x="26" y="26" width="388" height="508" rx="14"/></clipPath>
+  </defs>
+
+  <!-- frame -->
+  <rect x="6" y="6" width="428" height="548" rx="22" fill="#fbf3df"/>
+  <rect x="16" y="16" width="408" height="528" rx="18" fill="none" stroke="#275f3c" stroke-width="3"/>
+
+  <g clip-path="url(#s-scene)">
+    <rect x="26" y="26" width="388" height="508" fill="url(#s-sky)"/>
+
+    <!-- sun low behind the summit -->
+    <circle cx="220" cy="206" r="52" fill="#f4c869"/>
+    <circle cx="220" cy="206" r="52" fill="none" stroke="#fbf3df" stroke-width="2" opacity="0.45"/>
+
+    <!-- far range -->
+    <path d="M26 286 L96 232 L150 268 L214 214 L286 268 L344 230 L414 276 V534 H26 Z" fill="#2f5d3a" opacity="0.8"/>
+
+    <!-- the summit massif (the goal) -->
+    <path d="M26 470 L150 320 L220 150 L290 320 L414 470 V534 H26 Z" fill="#275f3c"/>
+    <!-- summit snow cap -->
+    <path d="M220 150 l34 82 l-15 -3 l-19 7 l-19 -7 l-15 3 Z" fill="#fbf3df" opacity="0.92"/>
+    <!-- shaded face -->
+    <path d="M220 150 L290 320 L414 470 V534 H220 Z" fill="#163824" opacity="0.45"/>
+
+    <!-- switchback trail climbing the massif -->
+    <path d="M196 534
+             C150 500 300 486 264 452
+             C232 422 150 430 178 396
+             C206 364 282 372 250 338
+             C226 312 196 318 210 290
+             C220 270 224 252 220 232"
+          fill="none" stroke="url(#s-trail)" stroke-width="15" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M196 534
+             C150 500 300 486 264 452
+             C232 422 150 430 178 396
+             C206 364 282 372 250 338
+             C226 312 196 318 210 290
+             C220 270 224 252 220 232"
+          fill="none" stroke="#fbf3df" stroke-width="15" stroke-linecap="round" stroke-dasharray="1.5 16" opacity="0.5"/>
+
+    <!-- summit marker: a cairn + 1.0 flag at trail's end -->
+    <g>
+      <!-- flag pole -->
+      <rect x="217" y="188" width="3.5" height="48" rx="1.75" fill="#163824"/>
+      <!-- pennant -->
+      <path d="M220.5 190 l40 12 l-40 12 Z" fill="#df9a2f"/>
+      <path d="M220.5 190 l40 12 l-40 12 Z" fill="none" stroke="#163824" stroke-width="1.5" opacity="0.35"/>
+      <text x="236" y="206.5" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="13" font-weight="700" fill="#163824">1.0</text>
+      <!-- cairn stones -->
+      <ellipse cx="216" cy="238" rx="14" ry="5.5" fill="#3a3026"/>
+      <ellipse cx="217" cy="230" rx="10" ry="4.5" fill="#4c4030"/>
+      <ellipse cx="218" cy="224" rx="6.5" ry="3.5" fill="#5d4d38"/>
+    </g>
+
+    <!-- front hills -->
+    <path d="M26 492 C120 452 150 496 240 480 C320 466 360 498 414 480 V534 H26 Z" fill="#0f2a1b"/>
+
+    <!-- pines on the foreground ridge -->
+    <g fill="#0a1f12">
+      <path d="M74 504 l16 34 h-32 z M74 484 l13 26 h-26 z M74 470 l10 20 h-20 z"/>
+      <path d="M360 508 l18 38 h-36 z M360 486 l14 30 h-28 z M360 470 l11 22 h-22 z"/>
+      <path d="M120 516 l12 26 h-24 z M120 502 l9 18 h-18 z"/>
+    </g>
+  </g>
+
+  <!-- banner -->
+  <g>
+    <rect x="48" y="468" width="344" height="58" rx="8" fill="#163824"/>
+    <rect x="48" y="468" width="344" height="58" rx="8" fill="none" stroke="#df9a2f" stroke-width="2"/>
+    <text x="220" y="496" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="24" font-weight="700" letter-spacing="3" fill="#fbf3df">THE ROAD TO V1.0</text>
+    <text x="220" y="514" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="9" letter-spacing="4" fill="#df9a2f">· STABLE · SUPPORTED · SHIPPING ·</text>
+  </g>
+</svg>

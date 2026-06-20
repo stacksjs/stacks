@@ -89,15 +89,16 @@ function formatDate(d: string): string {
  * Outdoors chrome injected into every blog page:
  *   - an early (head-ish) script that applies the saved theme before paint and
  *     defines the toggle handler, then
- *   - a fixed 3-way theme switcher (light / colored / dark).
- * Default theme is `light` (the NPS-brochure look); the script only diverges
- * from it when the visitor has previously chosen another.
+ *   - a fixed 3-way theme switcher (colored / light / dark).
+ * Default theme is `colored` (the warm NPS-brochure look — the signature Stacks
+ * blog palette); the script only diverges from it when the visitor has
+ * previously chosen another, or when a `?theme=` override is present.
  */
 function blogChrome(): string {
-  return `<script>(function(){function ok(t){return t==='light'||t==='colored'||t==='dark'}var q='';try{q=new URLSearchParams(location.search).get('theme')||''}catch(e){}var s='';try{s=localStorage.getItem('stacks-blog-theme')||''}catch(e){}var t=ok(q)?q:(ok(s)?s:'light');document.documentElement.setAttribute('data-theme',t);window.stxBlogTheme=function(v){try{localStorage.setItem('stacks-blog-theme',v)}catch(e){}document.documentElement.setAttribute('data-theme',v)}})()</script>
+  return `<script>(function(){function ok(t){return t==='light'||t==='colored'||t==='dark'}var q='';try{q=new URLSearchParams(location.search).get('theme')||''}catch(e){}var s='';try{s=localStorage.getItem('stacks-blog-theme')||''}catch(e){}var t=ok(q)?q:(ok(s)?s:'colored');document.documentElement.setAttribute('data-theme',t);window.stxBlogTheme=function(v){try{localStorage.setItem('stacks-blog-theme',v)}catch(e){}document.documentElement.setAttribute('data-theme',v)}})()</script>
     <div class="blog-theme-toggle" role="group" aria-label="Theme">
+      <button type="button" data-t="colored" title="Park (default)" aria-label="Park theme" onclick="stxBlogTheme('colored')">🌲</button>
       <button type="button" data-t="light" title="Light" aria-label="Light theme" onclick="stxBlogTheme('light')">☀</button>
-      <button type="button" data-t="colored" title="Park" aria-label="Park theme" onclick="stxBlogTheme('colored')">🌲</button>
       <button type="button" data-t="dark" title="Dark" aria-label="Dark theme" onclick="stxBlogTheme('dark')">🌙</button>
     </div>`
 }
@@ -159,9 +160,10 @@ function listPosts(): { slug: string, fm: Record<string, string> }[] {
 async function notFoundHtml(bp: BunPress): Promise<string> {
   const body = `
     <a class="blog-back" href="/blog">← All posts</a>
-    <div class="blog-listing-head">
-      <h1>Post not found</h1>
-      <p>That post doesn't exist (or moved). Head back to <a href="/blog">the blog</a>.</p>
+    <div class="blog-404">
+      <span class="blog-404-art" aria-hidden="true"></span>
+      <h1>You've wandered off the trail</h1>
+      <p>This post isn't on the map (or it moved camp). Head back to <a href="/blog">the trailhead</a>.</p>
     </div>`
   return bp.wrapInLayout(blogChrome() + body + blogFooter(), blogConfig(bp, { title: 'Not found' }), '/blog', 'page')
 }

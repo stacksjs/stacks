@@ -33,17 +33,17 @@ One throughline ties every post together:
 
 > **Stacks owns its entire stack.** Five years of building. The only runtime
 > dependencies are TypeScript and Bun. We compete with the whole Laravel
-> *ecosystem*, not just the framework — and we're proving it in public with
-> **100 Releases in 100 Days**.
+> *ecosystem*, not just the framework — and we're proving it in public by
+> taking every package to a stable `1.0`: **The Road to v1.0s**.
 
 Every post should ladder back to that thesis and, where natural, link to the
-`100 Releases in 100 Days` campaign and `/docs`.
+`The Road to v1.0s` campaign and `/docs`.
 
 ## Cadence
 
-Aligned to **100 Releases in 100 Days**: ship a post each time a notable
-package steps into the open. Target **2 posts/week** — one "deep dive" (why we
-built X) and one "shipping" note (what released this week, what's next).
+Aligned to **The Road to v1.0s**: ship a post each time a notable package
+reaches the summit (a stable `1.0`). Target **2 posts/week** — one "deep dive"
+(why we built X) and one "shipping" note (what graduated this week, what's next).
 
 ---
 
@@ -52,7 +52,7 @@ built X) and one "shipping" note (what released this week, what's next).
 ### 1. Introducing Stacks — `introducing-stacks`
 The thesis post. What Stacks is, the 5-year journey, the
 own-the-stack philosophy, the catalog of first-party packages, the Laravel
-ecosystem comparison, and the 100-Releases-in-100-Days announcement.
+ecosystem comparison, and the Road-to-v1.0s announcement.
 
 **Planned follow-ups (each expands one thread from the launch post):**
 
@@ -87,15 +87,14 @@ Suggested order (highest "they actually built THAT?" factor first):
 `pickier` → `dtsx` → `stx` → `crosswind` → `bun-query-builder` → `bunpress` →
 `bun-queue` → `ts-validation` → `ts-collect` → `ts-cloud`.
 
-## Series: "100 Releases in 100 Days" (the shipping log)
+## Series: "The Road to v1.0s" (the shipping log)
 
-Short, regular cadence posts. Each entry: what shipped, the changelog
-highlights, what's next. Cross-link to the relevant deep dive.
+Short, regular cadence posts. Each entry: what graduated to `1.0`, the changelog
+highlights, what's next on the climb. Cross-link to the relevant deep dive.
 
-- **Campaign index — `100-releases-in-100-days` — LIVE.** The pinned manifesto
-  the launch post links to (and which links back) —
-  `content/blog/100-releases-in-100-days.md`. Future shipping-log entries should
-  link back to it.
+- **Campaign index — `the-road-to-v1` — LIVE.** The pinned manifesto the launch
+  post links to (and which links back) — `content/blog/the-road-to-v1.md`.
+  Future shipping-log entries should link back to it.
 
 ## Series: "Coming from Laravel"
 

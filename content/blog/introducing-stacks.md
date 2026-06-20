@@ -10,7 +10,7 @@ featured: true
 
 Five years ago, we started building a TypeScript framework. The goal sounded simple: make shipping a full product — app, API, content, docs, and cloud — feel like one tool instead of forty. The reality was harder. To get there, we had to stop borrowing the ecosystem and start building it. Today, almost every part of Stacks is something we wrote ourselves, and the only runtime dependencies we ship are **TypeScript** and **Bun**.
 
-This is the story of how we got here — and what we mean when we say [100 Releases in 100 Days](/blog/100-releases-in-100-days).
+This is the story of how we got here — and what we mean by [The Road to v1.0s](/blog/the-road-to-v1).
 
 ## What Stacks is
 
@@ -70,20 +70,22 @@ Every one of these is a package we created and maintain. Most are useful on thei
 
 Image codecs (PNG, JPEG, WebP, AVIF, GIF, BMP), charts, maps, spreadsheets, QR codes, countries, numbers, VAT, syntax highlighting, web scraping, XML — dozens more libraries that most projects reach for as third-party dependencies, all first-party here. We're even exploring native implementations in Zig for the hottest paths.
 
-Add it up and it's well over a hundred packages. Which brings us to the campaign.
+Add it up and it's well over a hundred packages. Which brings us to what comes next.
 
-## 100 Releases in 100 Days
+## The Road to v1.0s
 
 We've been heads-down for a long time. The pieces are real, they're in production, and they're ready to come out into the open — properly versioned, documented, and supported.
 
-So starting now, we're committing to [**100 Releases in 100 Days**](/blog/100-releases-in-100-days): a sustained, public cadence of shipping. New versions, new docs, new packages stepping out of the monorepo and into the open as tools you can adopt one at a time — even if you never use the rest of Stacks. A linter here, a query builder there, a docs engine, a CSS engine. Take the pieces you want. [Read the campaign post →](/blog/100-releases-in-100-days)
+So starting now, we're walking [**The Road to v1.0s**](/blog/the-road-to-v1): a sustained, public push to take every package in the catalog to a stable, semver-backed `1.0`. New versions, new docs, new packages stepping out of the monorepo and into the open as tools you can adopt one at a time — even if you never use the rest of Stacks. A linter here, a query builder there, a docs engine, a CSS engine. Take the pieces you want. [Read the full map →](/blog/the-road-to-v1)
 
-It's an ambitious number. That's the point. After five years of building quietly, the work now is to ship loudly and consistently — and to do it in public.
+It's more than a hundred summits. That's the point. After five years of building quietly, the work now is to ship loudly and consistently — and to put a number behind it that you can build on.
 
 ## What's next
 
 This is the first post on the Stacks blog, and the first of a series. Over the coming weeks we'll go deep on the decisions behind the framework — why we built our own linter, what it takes to write a `.d.ts` emitter, how the deploy path collapses into a single command, and what "owning the stack" actually costs and pays back.
 
 If you want to follow along, the docs are at [/docs](/docs), the source is on [GitHub](https://github.com/stacksjs/stacks), and you can subscribe for field notes from the homepage. The trail is just getting started.
+
+---
 
 — The Stacks team
