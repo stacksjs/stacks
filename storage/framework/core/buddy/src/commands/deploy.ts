@@ -823,6 +823,15 @@ async function runHetznerDeploy(args: {
     },
   })
 
+  // Reconcile DNS for every site that declares a public domain. Hetzner deploys
+  // historically had NO DNS step (Route53 reconciliation only ran on the AWS
+  // path), so domains had to be pointed by hand. We now resolve a DNS provider
+  // per-domain via ts-cloud's factory (Porkbun/Route53/Cloudflare/GoDaddy from
+  // env) and upsert A records → the box IP. Non-fatal: a DNS hiccup shouldn't
+  // fail an otherwise-successful release.
+  if (ok)
+    await reconcileHetznerDns(sites, ip, log)
+
   console.log('')
   if (ok) {
     await outro(`Deployed to Hetzner. Your site is live at http://${ip}:3000`, { startTime, useSeconds: true })
@@ -831,6 +840,64 @@ async function runHetznerDeploy(args: {
   else {
     await outro('Hetzner deploy reported a failure — see the per-instance output above.', { startTime, useSeconds: true })
     process.exit(ExitCode.FatalError)
+  }
+}
+
+/**
+ * Point every site's public domain (apex + `www`) at the Hetzner box via the
+ * appropriate DNS provider. Providers are resolved per-domain from the
+ * environment (Porkbun, Route53, Cloudflare, GoDaddy) using ts-cloud's
+ * `detectDnsProvider`, so whichever registrar actually hosts the zone is used.
+ * Idempotent (upsert) and best-effort — failures are logged, not thrown.
+ */
+async function reconcileHetznerDns(sites: Record<string, any>, ip: string, logger: typeof log): Promise<void> {
+  // Collect the apex domains declared by sites (skip loopback/domain-less sites).
+  const domains = new Set<string>()
+  for (const site of Object.values(sites)) {
+    if (site?.domain && typeof site.domain === 'string')
+      domains.add(site.domain.replace(/^www\./, ''))
+  }
+  if (domains.size === 0)
+    return
+
+  // Candidate provider configs, built from whatever credentials are present.
+  const providerConfigs: any[] = []
+  if (process.env.PORKBUN_API_KEY && process.env.PORKBUN_SECRET_KEY)
+    providerConfigs.push({ provider: 'porkbun', apiKey: process.env.PORKBUN_API_KEY, secretKey: process.env.PORKBUN_SECRET_KEY })
+  if (process.env.CLOUDFLARE_API_TOKEN)
+    providerConfigs.push({ provider: 'cloudflare', apiToken: process.env.CLOUDFLARE_API_TOKEN })
+  if (process.env.AWS_ACCESS_KEY_ID || process.env.AWS_PROFILE)
+    providerConfigs.push({ provider: 'route53' })
+
+  if (providerConfigs.length === 0) {
+    logger.warn('DNS: no DNS provider credentials found (PORKBUN_API_KEY/…); skipping DNS reconciliation.')
+    for (const d of domains)
+      logger.info(`  Point manually:  A ${d} → ${ip}   and   A www.${d} → ${ip}`)
+    return
+  }
+
+  const { detectDnsProvider } = await import('@stacksjs/ts-cloud') as any
+  logger.info('Reconciling DNS records...')
+
+  for (const domain of domains) {
+    try {
+      const provider = await detectDnsProvider(domain, providerConfigs)
+      if (!provider) {
+        logger.warn(`  DNS: no configured provider can manage ${domain} — point it manually: A ${domain} → ${ip}`)
+        continue
+      }
+      for (const sub of ['', 'www']) {
+        const fqdn = sub ? `${sub}.${domain}` : domain
+        const res = await provider.upsertRecord(domain, { name: sub, type: 'A', content: ip, ttl: 600 })
+        if (res?.success === false)
+          logger.warn(`  DNS: ${fqdn} → ${ip} failed: ${res.error || 'unknown error'}`)
+        else
+          logger.success(`  DNS: ${fqdn} → ${ip} (${provider.name})`)
+      }
+    }
+    catch (err: any) {
+      logger.warn(`  DNS: ${domain} reconciliation failed: ${err?.message || err}`)
+    }
   }
 }
 
