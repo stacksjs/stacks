@@ -308,7 +308,7 @@
     "@stacksjs/config": "workspace:*",
     "@stacksjs/database": "workspace:*",
     "@stacksjs/desktop": "workspace:*",
-    "better-dx": "^0.2.12",
+    "better-dx": "^0.2.15",
     "@stacksjs/dns": "workspace:*",
     "@stacksjs/email": "workspace:*",
     "@stacksjs/enums": "workspace:*",
@@ -331,13 +331,13 @@
     "@stacksjs/server": "workspace:*",
     "@stacksjs/storage": "workspace:*",
     "@stacksjs/strings": "workspace:*",
-    "@stacksjs/tlsx": "^0.13.0",
+    "@stacksjs/tlsx": "^0.13.8",
     "@stacksjs/tunnel": "workspace:*",
     "@stacksjs/types": "workspace:*",
     "@stacksjs/ui": "workspace:*",
     "@stacksjs/utils": "workspace:*",
     "@stacksjs/skills": "workspace:*",
     "@stacksjs/validation": "workspace:*",
-    "bun-query-builder": "^0.1.26"
+    "bun-query-builder": "^0.1.38"
   }
 }
