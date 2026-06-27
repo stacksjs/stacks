@@ -44,12 +44,12 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "ts-pantry": "^0.8.16"
+    "ts-pantry": "^0.9.37"
   },
   "devDependencies": {
     "@stacksjs/alias": "workspace:*",
     "better-dx": "^0.2.12",
     "@stacksjs/types": "workspace:*",
-    "bunfig": "^0.15.11"
+    "bunfig": "^0.15.14"
   }
 }

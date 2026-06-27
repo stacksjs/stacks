@@ -47,7 +47,7 @@
     "prepublishOnly": "bun run build"
   },
   "devDependencies": {
-    "@stacksjs/collections": "workspace:*",
+    "@stacksjs/collections": "workspace:*0.70.45",
     "better-dx": "^0.2.12",
     "@stacksjs/types": "workspace:*",
     "@stacksjs/utils": "workspace:*",

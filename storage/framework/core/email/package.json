@@ -50,7 +50,7 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "@stacksjs/ts-cloud": "^0.5.4"
+    "@stacksjs/ts-cloud": "^0.5.18"
   },
   "devDependencies": {
     "@stacksjs/cli": "workspace:*",
