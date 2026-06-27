@@ -50,7 +50,7 @@
     "prepublishOnly": "bun run build"
   },
   "devDependencies": {
-    "@stacksjs/config": "workspace:*",
+    "@stacksjs/config": "workspace:*0.70.45",
     "better-dx": "^0.2.12",
     "@stacksjs/utils": "workspace:*",
     "@stripe/stripe-js": "^8.7.0",
