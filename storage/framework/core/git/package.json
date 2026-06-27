@@ -48,8 +48,8 @@
     "prepublishOnly": "bun run build"
   },
   "devDependencies": {
-    "@stacksjs/gitlint": "^0.1.5",
+    "@stacksjs/gitlint": "^0.1.6",
     "@stacksjs/gitit": "^0.2.5",
-    "bun-git-hooks": "^0.3.1"
+    "bun-git-hooks": "^0.3.2"
   }
 }

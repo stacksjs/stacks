@@ -61,7 +61,7 @@
   },
   "devDependencies": {
     "@stacksjs/alias": "workspace:*",
-    "better-dx": "^0.2.12",
+    "better-dx": "^0.2.15",
     "@stacksjs/types": "workspace:*"
   },
   "sideEffects": false
