@@ -733,6 +733,15 @@ export const tsCloud: TsCloudConfig = {
       // TODO(operator): replace with the extracted static-frontend build command.
       build: 'bun storage/framework/core/buddy/src/cli.ts build:frontend-static',
     },
+
+    verygoodadblock: {
+      deploy: 'server',
+      root: '../adblock/dist/site',
+      path: '/',
+      domain: 'verygoodadblock.org',
+      build: 'cd ../adblock && bun run site:build',
+      pathRewriteStyle: 'directory',
+    },
   },
 }
 
