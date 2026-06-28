@@ -24,8 +24,8 @@ const THEME_FILE = join(CONTENT_DIR, '.theme.css')
 interface BunPress {
   markdownToHtml: (md: string, root?: string) => Promise<{ html: string, frontmatter: Record<string, any> }>
   wrapInLayout: (content: string, config: any, currentPath: string, layout?: string) => Promise<string>
-  buildRssFeed: (docsDir: string, config: any, rssConfig?: any) => Promise<string>
-  buildSitemap: (docsDir: string, config: any) => Promise<string>
+  buildRssFeed?: (docsDir: string, config: any, rssConfig?: any) => Promise<string>
+  buildSitemap?: (docsDir: string, config: any) => Promise<string>
   defaultConfig: any
 }
 
@@ -54,6 +54,57 @@ async function loadBunPress(): Promise<BunPress | null> {
 
 function escapeHtml(s: string): string {
   return String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]!))
+}
+
+function escapeXml(s: string): string {
+  return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', '\'': '&apos;' }[c]!))
+}
+
+function postUrl(baseUrl: string, slug: string): string {
+  return `${baseUrl.replace(/\/$/, '')}/blog/${slug}`
+}
+
+function rssDate(date: string): string {
+  const parsed = new Date(date)
+  return Number.isNaN(parsed.getTime()) ? date : parsed.toUTCString()
+}
+
+function fallbackFeedXml(baseUrl: string): string {
+  const origin = baseUrl || 'https://stacksjs.com'
+  const posts = listPosts().slice(0, 50)
+  const items = posts.map((p) => {
+    const url = postUrl(origin, p.slug)
+
+    return `    <item>
+      <title>${escapeXml(p.fm.title || p.slug)}</title>
+      <link>${escapeXml(url)}</link>
+      <guid>${escapeXml(url)}</guid>
+      <pubDate>${escapeXml(rssDate(p.fm.date))}</pubDate>
+      <description>${escapeXml(p.fm.description || '')}</description>
+    </item>`
+  }).join('\n')
+
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+  <channel>
+    <title>The Stacks Blog</title>
+    <link>${escapeXml(`${origin}/blog`)}</link>
+    <description>Field notes from building a full-stack TypeScript framework whose only dependencies are TypeScript and Bun.</description>
+${items}
+  </channel>
+</rss>`
+}
+
+function fallbackSitemapXml(baseUrl: string): string {
+  const origin = baseUrl || 'https://stacksjs.com'
+  const urls = [`${origin}/blog`, ...listPosts().map(p => postUrl(origin, p.slug))]
+    .map(url => `  <url><loc>${escapeXml(url)}</loc></url>`)
+    .join('\n')
+
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${urls}
+</urlset>`
 }
 
 /** Minimal single-line `key: value` frontmatter parser (sufficient for posts). */
@@ -254,18 +305,22 @@ async function indexHtml(bp: BunPress): Promise<string> {
 /** RSS feed (BunPress's own builder). `baseUrl` is the site origin (no /blog). */
 function feedXml(bp: BunPress, baseUrl: string): Promise<string> {
   const cfg = { ...blogConfig(bp, { title: 'The Stacks Blog' }), sitemap: { enabled: true, baseUrl: `${baseUrl}/blog` } }
-  return bp.buildRssFeed(CONTENT_DIR, cfg, {
-    enabled: true,
-    title: 'The Stacks Blog',
-    description: 'Field notes from building a full-stack TypeScript framework whose only dependencies are TypeScript and Bun.',
-    maxItems: 50,
-  })
+  return typeof bp.buildRssFeed === 'function'
+    ? bp.buildRssFeed(CONTENT_DIR, cfg, {
+        enabled: true,
+        title: 'The Stacks Blog',
+        description: 'Field notes from building a full-stack TypeScript framework whose only dependencies are TypeScript and Bun.',
+        maxItems: 50,
+      })
+    : Promise.resolve(fallbackFeedXml(baseUrl))
 }
 
 /** XML sitemap (BunPress's own builder). `baseUrl` is the site origin (no /blog). */
 function sitemapXml(bp: BunPress, baseUrl: string): Promise<string> {
   const cfg = { ...blogConfig(bp, { title: 'Blog' }), sitemap: { enabled: true, baseUrl: `${baseUrl}/blog` } }
-  return bp.buildSitemap(CONTENT_DIR, cfg)
+  return typeof bp.buildSitemap === 'function'
+    ? bp.buildSitemap(CONTENT_DIR, cfg)
+    : Promise.resolve(fallbackSitemapXml(baseUrl))
 }
 
 // ── Dynamic path (dev server onRequest) ──────────────────────────────────────

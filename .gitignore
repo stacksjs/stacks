@@ -86,3 +86,4 @@ storage/framework/cache/
 .claude/scheduled_tasks.lock
 /storage/framework/frontend-dist
 /.stacks
+/.ts-cloud
