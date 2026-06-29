@@ -207,6 +207,12 @@ export const tsCloud: TsCloudConfig = {
         type: 'ssd', // Provider-agnostic: 'standard', 'ssd', 'premium'
         encrypted: true,
       },
+      webServer: 'rpx',
+      proxy: {
+        engine: 'rpx',
+        onDemandTls: true,
+        onDemandTlsEmail: 'hello@stacksjs.com',
+      },
       // Uncomment for auto-scaling:
       // autoScaling: {
       //   min: 1,
