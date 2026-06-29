@@ -1,7 +1,5 @@
 import { AsyncLocalStorage } from 'node:async_hooks'
 import { existsSync } from 'node:fs'
-import { homedir } from 'node:os'
-import { join } from 'node:path'
 import { config, overridesReady } from '@stacksjs/config'
 import { projectPath } from '@stacksjs/path'
 
@@ -94,41 +92,12 @@ async function startDefaultServer() {
   const { applyRequestLocale } = await import('@stacksjs/i18n')
   await injectGlobalAutoImports()
 
-  let serve: any
-  let loadedServeFrom: string | undefined
-  // Prefer ~/Code/Tools/stx (local STX worktree), then project pantry.
-  const serveCandidates = [
-    join(homedir(), 'Code/Tools/stx/packages/bun-plugin/dist/serve.js'),
-    projectPath('pantry/bun-plugin-stx/dist/serve.js'),
-  ]
-  for (const entry of serveCandidates) {
-    try {
-      if (existsSync(entry)) {
-        ;({ serve } = await import(entry))
-        loadedServeFrom = entry
-        break
-      }
-    }
-    catch { /* try next */ }
-  }
-  if (!serve) {
-    ;({ serve } = await import('bun-plugin-stx/serve'))
-    loadedServeFrom = 'bun-plugin-stx/serve'
-  }
-  if (loadedServeFrom)
-    console.log(`[stx] dev serve: ${loadedServeFrom}`)
+  // The stx dev server resolves like any other dependency. To develop against
+  // a local STX build, `bun link` it into the project — bare resolution then
+  // picks the link up the same as any other node module.
+  const { serve } = await import('bun-plugin-stx/serve')
 
-  // Pre-resolve the stx module from pantry (if vendored). Bun resolves a
-  // bare-specifier `import('@stacksjs/stx')` from the file doing the
-  // import — for the pantry-vendored serve.js that's pantry/bun-plugin-stx,
-  // and Bun walks up node_modules from there, finding the cwd's
-  // `node_modules/@stacksjs/stx` first. If that copy is older than the
-  // pantry-vendored stx (common when bun-plugin-stx in node_modules pinned
-  // an older peer), the @extends/layoutsDir resolver behaves incorrectly
-  // and pages render blank. Pass the pantry copy explicitly so serve()
-  // uses it instead of letting bare-specifier resolution win.
-  const stxModule = await resolveVendoredStxModule()
-  const { site: siteConfig, i18n: i18nConfig } = await loadStxSiteConfig(stxModule)
+  const { site: siteConfig, i18n: i18nConfig } = await loadStxSiteConfig()
 
   const userViewsPath = 'resources/views'
   const defaultViewsPath = 'storage/framework/defaults/resources/views'
@@ -169,7 +138,6 @@ async function startDefaultServer() {
     fallbackLayoutsDir: defaultLayoutsPath,
     fallbackPartialsDir: defaultViewsPath,
     quiet: true,
-    ...(stxModule && { stxModule }),
     ...(i18nConfig && { i18n: i18nConfig }),
     ...(siteConfig?.url && { site: siteConfig }),
     auth: {
@@ -254,21 +222,6 @@ async function firstExistingPath(candidates: string[]): Promise<string | null> {
   return null
 }
 
-async function resolveVendoredStxModule(): Promise<any | undefined> {
-  const candidates = [
-    join(homedir(), 'Code/Tools/stx/packages/stx/dist/index.js'),
-    projectPath('pantry/@stacksjs/stx/dist/index.js'),
-  ]
-  for (const entry of candidates) {
-    try {
-      if (existsSync(entry))
-        return await import(entry)
-    }
-    catch { /* try next */ }
-  }
-  return undefined
-}
-
 function fallbackI18nFromSite(site: { i18n: { locales: string[], defaultLocale?: string, pickerSelector?: string, labels?: Record<string, string> } }) {
   const locales = site.i18n.locales
   const defaultLocale = site.i18n.defaultLocale ?? locales[0]
@@ -282,28 +235,20 @@ function fallbackI18nFromSite(site: { i18n: { locales: string[], defaultLocale?:
 }
 
 async function resolveSiteI18n(site: { i18n: { locales: string[], defaultLocale?: string, translationsDir?: string | false, format?: string, labels?: Record<string, string>, pickerSelector?: string, translations?: Record<string, Record<string, string>> } }) {
-  const resolverPaths = [
-    join(homedir(), 'Code/Tools/stx/packages/stx/src/site-builder/i18n.ts'),
-    join(homedir(), 'Code/Tools/stx/packages/stx/dist/index.js'),
-    projectPath('pantry/@stacksjs/stx/dist/index.js'),
-  ]
-  for (const resolverPath of resolverPaths) {
-    try {
-      if (!existsSync(resolverPath))
-        continue
-      const resolved = await import(resolverPath)
-      if (typeof resolved.resolveI18n !== 'function')
-        continue
-      const i18n = resolved.resolveI18n(site, projectPath())
+  // `resolveI18n` is exported by @stacksjs/stx — resolve it as a normal dep.
+  try {
+    const { resolveI18n } = await import('@stacksjs/stx') as { resolveI18n?: (site: unknown, root: string) => unknown }
+    if (typeof resolveI18n === 'function') {
+      const i18n = resolveI18n(site, projectPath())
       if (i18n)
         return i18n
     }
-    catch { /* try next */ }
   }
+  catch { /* fall back to the site config's own i18n block */ }
   return fallbackI18nFromSite(site)
 }
 
-async function loadStxSiteConfig(_stxModule: any): Promise<{ site?: any, i18n?: any }> {
+async function loadStxSiteConfig(): Promise<{ site?: any, i18n?: any }> {
   const sitePath = projectPath('site.config.ts')
   if (!existsSync(sitePath))
     return {}
