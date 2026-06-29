@@ -8,7 +8,7 @@ poster: /assets/images/marketing-park-trail.svg
 featured: true
 ---
 
-Five years ago, we started building a TypeScript framework. The goal sounded simple: make shipping a full product — app, API, content, docs, and cloud — feel like one tool instead of forty. The reality was harder. To get there, we had to stop borrowing the ecosystem and start building it. Today, almost every part of Stacks is something we wrote ourselves, and the only runtime dependencies we ship are **TypeScript** and **Bun**.
+Five years ago, we started building a TypeScript framework. The goal sounded simple: make shipping a full product — app, API, content, docs, and cloud — feel like one tool instead of forty. The reality was harder. To get there, we had to stop borrowing the ecosystem and start building it. Today, almost every part of Stacks is something we wrote ourselves, and the only runtime dependencies we ship are TypeScript and Bun.
 
 This is the story of how we got here — and what we mean by [The Road to v1.0s](/blog/the-road-to-v1).
 
@@ -36,35 +36,35 @@ Every one of these is a package we created and maintain. Most are useful on thei
 
 ### Developer tooling
 
-- **pickier** — our linter and formatter. This is the one people don't believe at first: we replaced ESLint *and* Prettier with a single fast tool.
-- **dtsx** — our TypeScript declaration (`.d.ts`) generator, built for isolated declarations and speed.
-- **bunpress** — our documentation engine, the way we build docs sites (our answer to VitePress). _This very page is rendered by it._
-- **stx** — our templating engine: server-rendered, component-driven views with signals and directives.
-- **crosswind** — our CSS engine, a utility-first system in the Tailwind tradition that we own top to bottom.
-- **buddy-bot** — our dependency update bot (instead of Renovate or Dependabot).
-- **bumpx**, **gitlint**, **bun-git-hooks** — version bumping, commit linting, and git hooks.
+- `pickier` — our linter and formatter. This is the one people don't believe at first: we replaced ESLint and Prettier with a single fast tool.
+- `dtsx` — our TypeScript declaration (`.d.ts`) generator, built for isolated declarations and speed.
+- `bunpress` — our documentation engine, the way we build docs sites (our answer to VitePress). This very page is rendered by it.
+- `stx` — our templating engine: server-rendered, component-driven views with signals and directives.
+- `crosswind` — our CSS engine, a utility-first system in the Tailwind tradition that we own top to bottom.
+- `buddy-bot` — our dependency update bot (instead of Renovate or Dependabot).
+- `bumpx`, `gitlint`, and `bun-git-hooks` — version bumping, commit linting, and git hooks.
 
 ### Application building blocks
 
-- **bun-router** — the HTTP router.
-- **bun-query-builder** & **ts-query-builder** — the query layer under our ORM.
-- **bun-queue** — jobs, batches, and background work.
-- **ts-collect** — Laravel-style collections.
-- **ts-validation** — schema validation.
-- **ts-auth**, **ts-security** — authentication, hashing, and encryption.
-- **ts-cache**, **ts-i18n**, **ts-datetime**, **ts-slug**, **ts-http**, **mail** — caching, localization, a Carbon-like date library, slugs, an HTTP client, and mail.
-- **ts-faker** — fake data for factories and seeders.
+- `bun-router` — the HTTP router.
+- `bun-query-builder` and `ts-query-builder` — the query layer under our ORM.
+- `bun-queue` — jobs, batches, and background work.
+- `ts-collect` — Laravel-style collections.
+- `ts-validation` — schema validation.
+- `ts-auth` and `ts-security` — authentication, hashing, and encryption.
+- `ts-cache`, `ts-i18n`, `ts-datetime`, `ts-slug`, `ts-http`, and `mail` — caching, localization, a Carbon-like date library, slugs, an HTTP client, and mail.
+- `ts-faker` — fake data for factories and seeders.
 
 ### Infrastructure & local dev
 
-- **ts-cloud** — infrastructure-as-TypeScript for AWS deploys.
-- **rpx** — a reverse proxy for pretty local domains.
-- **tlsx** — local TLS certificates.
-- **dnsx** — DNS tooling.
-- **localtunnels** — share your local server publicly (our take on ngrok).
-- **logsmith**, **clarity** — logging and diagnostics.
-- **pantry** — system dependency management.
-- **very-happy-dom** — a DOM implementation for tests.
+- `ts-cloud` — infrastructure-as-TypeScript for AWS deploys.
+- `rpx` — a reverse proxy for pretty local domains.
+- `tlsx` — local TLS certificates.
+- `dnsx` — DNS tooling.
+- `localtunnels` — share your local server publicly (our take on ngrok).
+- `logsmith` and `clarity` — logging and diagnostics.
+- `pantry` — system dependency management.
+- `very-happy-dom` — a DOM implementation for tests.
 
 ### And the long tail
 

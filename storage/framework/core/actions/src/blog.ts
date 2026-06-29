@@ -146,7 +146,35 @@ function formatDate(d: string): string {
  * previously chosen another, or when a `?theme=` override is present.
  */
 function blogChrome(): string {
-  return `<script>(function(){function ok(t){return t==='light'||t==='colored'||t==='dark'}var q='';try{q=new URLSearchParams(location.search).get('theme')||''}catch(e){}var s='';try{s=localStorage.getItem('stacks-blog-theme')||''}catch(e){}var t=ok(q)?q:(ok(s)?s:'colored');document.documentElement.setAttribute('data-theme',t);window.stxBlogTheme=function(v){try{localStorage.setItem('stacks-blog-theme',v)}catch(e){}document.documentElement.setAttribute('data-theme',v)}})()</script>
+  return `<script>
+    (function () {
+      function ok(theme) {
+        return theme === 'light' || theme === 'colored' || theme === 'dark'
+      }
+
+      var queryTheme = ''
+      try {
+        queryTheme = new URLSearchParams(location.search).get('theme') || ''
+      }
+      catch {}
+
+      var savedTheme = ''
+      try {
+        savedTheme = localStorage.getItem('stacks-blog-theme') || ''
+      }
+      catch {}
+
+      var theme = ok(queryTheme) ? queryTheme : (ok(savedTheme) ? savedTheme : 'colored')
+      document.documentElement.setAttribute('data-theme', theme)
+      window.stxBlogTheme = function (nextTheme) {
+        try {
+          localStorage.setItem('stacks-blog-theme', nextTheme)
+        }
+        catch {}
+        document.documentElement.setAttribute('data-theme', nextTheme)
+      }
+    })()
+  </script>
     <div class="blog-theme-toggle" role="group" aria-label="Theme">
       <button type="button" data-t="colored" title="Park (default)" aria-label="Park theme" onclick="stxBlogTheme('colored')">🌲</button>
       <button type="button" data-t="light" title="Light" aria-label="Light theme" onclick="stxBlogTheme('light')">☀</button>

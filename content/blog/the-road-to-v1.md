@@ -46,32 +46,32 @@ The catalog spans the whole stack, and different parts of it are at different al
 
 These run in production today and are closest to earning the number:
 
-- **`pickier`** — our linter *and* formatter, replacing ESLint and Prettier with one fast tool.
-- **`dtsx`** — the `.d.ts` generator, built for isolated declarations and speed.
-- **`bunpress`** — the documentation engine. _This very page is rendered by it._
-- **`stx`** — the templating engine: server-rendered, component-driven views with signals and directives.
-- **`crosswind`** — the CSS engine, a utility-first system in the Tailwind tradition.
+- `pickier` — our linter and formatter, replacing ESLint and Prettier with one fast tool.
+- `dtsx` — the `.d.ts` generator, built for isolated declarations and speed.
+- `bunpress` — the documentation engine. This very page is rendered by it.
+- `stx` — the templating engine: server-rendered, component-driven views with signals and directives.
+- `crosswind` — the CSS engine, a utility-first system in the Tailwind tradition.
 
 ### Climbing — solid, finishing docs and edges
 
 The application building blocks — battle-tested inside the framework, getting their standalone docs and final API polish before they graduate:
 
-- **`bun-router`** — the HTTP router.
-- **`bun-query-builder`** & **`ts-query-builder`** — the query layer under the ORM.
-- **`bun-queue`** — jobs, batches, and background work.
-- **`ts-collect`** — Laravel-style collections.
-- **`ts-validation`**, **`ts-auth`**, **`ts-security`** — validation, authentication, hashing, and encryption.
-- **`ts-cache`**, **`ts-i18n`**, **`ts-datetime`**, **`ts-slug`**, **`ts-http`**, **`mail`** — caching, localization, a Carbon-like date library, slugs, an HTTP client, and mail.
+- `bun-router` — the HTTP router.
+- `bun-query-builder` and `ts-query-builder` — the query layer under the ORM.
+- `bun-queue` — jobs, batches, and background work.
+- `ts-collect` — Laravel-style collections.
+- `ts-validation`, `ts-auth`, and `ts-security` — validation, authentication, hashing, and encryption.
+- `ts-cache`, `ts-i18n`, `ts-datetime`, `ts-slug`, `ts-http`, and `mail` — caching, localization, a Carbon-like date library, slugs, an HTTP client, and mail.
 
 ### Base camp — infrastructure, local dev, and the long tail
 
 The deploy story, the local-dev tooling, and the dozens of smaller libraries most projects pull from third parties:
 
-- **`ts-cloud`** — infrastructure-as-TypeScript for AWS deploys.
-- **`rpx`**, **`tlsx`**, **`dnsx`**, **`localtunnels`** — pretty local domains, local TLS, DNS tooling, and public tunnels.
-- **`logsmith`**, **`clarity`** — logging and diagnostics.
-- **`buddy-bot`**, **`bumpx`**, **`gitlint`**, **`bun-git-hooks`** — dependency updates, version bumping, commit linting, and git hooks.
-- **The long tail** — image codecs (PNG, JPEG, WebP, AVIF, GIF, BMP), charts, maps, spreadsheets, QR codes, countries, numbers, VAT, syntax highlighting, web scraping, and XML.
+- `ts-cloud` — infrastructure-as-TypeScript for AWS deploys.
+- `rpx`, `tlsx`, `dnsx`, and `localtunnels` — pretty local domains, local TLS, DNS tooling, and public tunnels.
+- `logsmith` and `clarity` — logging and diagnostics.
+- `buddy-bot`, `bumpx`, `gitlint`, and `bun-git-hooks` — dependency updates, version bumping, commit linting, and git hooks.
+- The long tail — image codecs (PNG, JPEG, WebP, AVIF, GIF, BMP), charts, maps, spreadsheets, QR codes, countries, numbers, VAT, syntax highlighting, web scraping, and XML.
 
 Each one is independently useful. You can take `pickier` without adopting the framework, or `dtsx` on its own, or the query builder by itself. That's the whole idea of owning the stack: the pieces are coherent together, but they aren't a cage.
 
