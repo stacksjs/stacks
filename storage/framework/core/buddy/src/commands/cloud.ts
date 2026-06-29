@@ -204,6 +204,10 @@ export function cloud(buddy: CLI): void {
     cleanUp: 'Remove all resources that were retained during the cloud deletion',
     invalidateCache: 'Invalidate the CloudFront cache',
     diff: 'Show the diff of the current, undeployed cloud changes ',
+    dashboard: 'Run the local Stacks Cloud management cockpit (servers, sites, deploys)',
+    host: 'Host to bind the dashboard to',
+    port: 'Port to bind the dashboard to',
+    env: 'Environment to manage',
     paths: 'The paths to invalidate',
     project: 'Target a specific project',
     verbose: 'Enable verbose output',
@@ -740,6 +744,52 @@ export function cloud(buddy: CLI): void {
 
       await outro('Cloud diff complete', { startTime, useSeconds: true })
       process.exit(ExitCode.Success)
+    })
+
+  buddy
+    .command('cloud:dashboard', descriptions.dashboard)
+    .alias('cloud:cockpit')
+    .option('--host [host]', descriptions.host, { default: '127.0.0.1' })
+    .option('--port [port]', descriptions.port, { default: '7676' })
+    .option('--env [env]', descriptions.env)
+    .option('--verbose', descriptions.verbose, { default: false })
+    .action(async (options: CloudCliOptions & { host?: string, port?: string, env?: string }) => {
+      log.debug('Running `buddy cloud:dashboard` ...', options)
+      const startTime = await intro('buddy cloud:dashboard')
+
+      // The cockpit (server management UI) lives in ts-cloud; it builds the stx
+      // dashboard with this project's LIVE data and serves it locally with a small
+      // control API (run deploys, manage SSH keys + sites, restart services).
+      const tsCloud = await import('@stacksjs/ts-cloud') as { startLocalDashboardServer?: (opts: any) => Promise<{ url: string }> }
+      if (typeof tsCloud.startLocalDashboardServer !== 'function') {
+        await outro(
+          'The installed @stacksjs/ts-cloud does not provide the local cockpit yet',
+          { startTime, useSeconds: true },
+          'Update your dependencies (requires @stacksjs/ts-cloud >= 0.5.27).',
+        )
+        process.exit(ExitCode.FatalError)
+      }
+
+      try {
+        const server = await tsCloud.startLocalDashboardServer({
+          host: options.host ? String(options.host) : undefined,
+          port: options.port ? Number(options.port) : undefined,
+          environment: options.env,
+          verbose: !!options.verbose,
+        })
+        log.success(`Stacks Cloud cockpit running at ${underline(server.url)}`)
+        log.info(italic('Manage servers, sites, SSH keys and deploys. Press Ctrl+C to stop.'))
+        // Hold the process open while the dashboard server runs.
+        await new Promise(() => {})
+      }
+      catch (error: any) {
+        await outro(
+          'While starting the cloud dashboard, there was an issue',
+          { startTime, useSeconds: true },
+          error?.message ?? String(error),
+        )
+        process.exit(ExitCode.FatalError)
+      }
     })
 
   onUnknownSubcommand(buddy, "cloud")
