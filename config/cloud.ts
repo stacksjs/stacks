@@ -648,7 +648,7 @@ export const tsCloud: TsCloudConfig = {
    *    to `/var/www/<siteName>`, served by the reverse proxy's `file_server`)
    *  - `bucket`            → upload built `root` to object storage + CDN
    *
-   * The three static sites below (`docs`, `blog`, `public`) are the Hetzner
+   * The static sites below (`docs`, `blog`, and external marketing sites) are the Hetzner
    * server-static replacement for the AWS website-hosting buckets in
    * `infrastructure.storage` (see the supersede note there). `buddy deploy`'s
    * Hetzner path (`deployAllComputeSites`) builds each site's `root`, tars it,
@@ -656,7 +656,9 @@ export const tsCloud: TsCloudConfig = {
    * created. Each site's key maps 1:1 to `/var/www/<key>`:
    *   - `docs`   → /var/www/docs   → served at /docs   on stacksjs.com
    *   - `blog`   → /var/www/blog   → served at /blog   on stacksjs.com
-   *   - `public` → /var/www/public → served at /        on stacksjs.com
+   *
+   * The Stacks root is served by the `main` server app; do not add a second
+   * static `/` site for stacksjs.com or it will compete with the app route.
    */
   sites: {
     main: {
@@ -722,29 +724,20 @@ export const tsCloud: TsCloudConfig = {
       pathRewriteStyle: 'directory',
     },
 
-    // Marketing / public site (prerendered resources/views/index.stx + public/
-    // assets). ~6.6 MB. The built static dir is storage/framework/frontend-dist.
-    // WARNING: there is currently NO standalone build command that emits this
-    // directory — the prerender + asset-copy logic lives INLINE in the AWS
-    // deploy action (storage/framework/core/actions/src/deploy/index.ts, the
-    // "Deploy frontend to S3" block). That logic must be extracted into a real
-    // command (e.g. `buddy build:frontend-static`) before this site can deploy
-    // to Hetzner. Until then, pre-build storage/framework/frontend-dist by hand
-    // or this site's `build` is a no-op placeholder. See the report.
-    public: {
-      deploy: 'server',
-      root: 'storage/framework/frontend-dist',
-      path: '/',
-      domain: env.APP_DOMAIN || 'stacksjs.com',
-      // TODO(operator): replace with the extracted static-frontend build command.
-      build: 'bun storage/framework/core/buddy/src/cli.ts build:frontend-static',
-    },
-
     verygoodadblock: {
       deploy: 'server',
       root: '../adblock/dist/site',
       path: '/',
       domain: 'verygoodadblock.org',
+      build: 'cd ../adblock && bun run site:build',
+      pathRewriteStyle: 'directory',
+    },
+
+    verygoodadblockWww: {
+      deploy: 'server',
+      root: '../adblock/dist/site',
+      path: '/',
+      domain: 'www.verygoodadblock.org',
       build: 'cd ../adblock && bun run site:build',
       pathRewriteStyle: 'directory',
     },
