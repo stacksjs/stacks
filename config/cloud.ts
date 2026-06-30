@@ -741,6 +741,12 @@ export const tsCloud: TsCloudConfig = {
       build: 'cd ../adblock && bun run site:build',
       pathRewriteStyle: 'directory',
     },
+
+    // Redirect-only sites (gateway answers with a 301; nothing is shipped).
+    // The alternate adblock domain → canonical, and www → apex for stacksjs.com.
+    veryGoodAdblock: { domain: 'very-good-adblock.org', redirect: 'https://verygoodadblock.org' },
+    veryGoodAdblockWww: { domain: 'www.very-good-adblock.org', redirect: 'https://verygoodadblock.org' },
+    wwwStacksjs: { domain: 'www.stacksjs.com', redirect: 'https://stacksjs.com' },
   },
 }
 

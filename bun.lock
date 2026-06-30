@@ -5,9 +5,9 @@
     "": {
       "name": "stacks",
       "dependencies": {
-        "@stacksjs/ts-cloud": "^0.5.26",
-        "@ts-cloud/aws-types": "^0.5.26",
-        "@ts-cloud/core": "^0.5.26",
+        "@stacksjs/ts-cloud": "^0.5.29",
+        "@ts-cloud/aws-types": "^0.5.29",
+        "@ts-cloud/core": "^0.5.29",
         "stacks": "workspace:*",
       },
       "devDependencies": {
@@ -1222,7 +1222,7 @@
 
     "@stacksjs/ts-cache": ["@stacksjs/ts-cache@0.1.4", "", { "dependencies": { "@stacksjs/clapp": "^0.2.5", "bunfig": "^0.15.11", "clone": "^2.1.2" }, "bin": { "cache": "./dist/bin/cli.js" } }, "sha512-ABSWu0Re/vzIW9yXmUPJGpkkw7tV0dObjIfyjl3s0yrWBhnq3jBda6h0X8NEQPXhVk+vwkkbg+Uy0mN8AG/z2w=="],
 
-    "@stacksjs/ts-cloud": ["@stacksjs/ts-cloud@0.5.26", "", { "dependencies": { "@stacksjs/ts-xml": "^0.1.0", "@ts-cloud/aws-types": "0.5.26", "@ts-cloud/core": "0.5.26" }, "bin": { "cloud": "./dist/bin/cli.js" } }, "sha512-R4DwwtULz40OyYzMO6xqqn42+cof1ifsZk9zAC66/IadFg+y9bGjEg0v33wq8CN/GFIhoBjbKi8dSI79kSWI2Q=="],
+    "@stacksjs/ts-cloud": ["@stacksjs/ts-cloud@0.5.29", "", { "dependencies": { "@stacksjs/ts-xml": "^0.1.0", "@ts-cloud/aws-types": "0.5.29", "@ts-cloud/core": "0.5.29" }, "bin": { "cloud": "./dist/bin/cli.js" } }, "sha512-NyYSW4pOO6Lko5PXhgqqENRPXCS2yQY9EqLxFnHDOTIFEdrlO1Tv29V60534ZwBk8KStBiSxMpkDJp20jirPHQ=="],
 
     "@stacksjs/ts-craft": ["@stacksjs/ts-craft@0.0.2", "", { "dependencies": { "archiver": "^7.0.1" }, "bin": { "craft": "./bin/cli.ts" } }, "sha512-09vAI4BJuXXNClFoOE6f1acrKqV77U7lObmOjnRteSqDoX7WZJU0HnMhrjaX96lF9EdPIozfIp59kPq7EZwLYQ=="],
 
@@ -1280,9 +1280,9 @@
 
     "@ts-charts/time-format": ["@ts-charts/time-format@0.2.0", "", { "dependencies": { "@ts-charts/time": "0.2.0" } }, "sha512-oRFQvr0++AnvWMsyyOfVd1J1Ibv2YOz29n23SzeJNxayyW6zMzsuZ+svnab7h5ijR0nB15YD6mSKXrcZZWMi+g=="],
 
-    "@ts-cloud/aws-types": ["@ts-cloud/aws-types@0.5.26", "", {}, "sha512-r1WmRdxH9Rhoxoqfiq8biRkbSv0AS2+mjshpI7EOTcNy8OFerd7DzlvYecW6PWZbg07axdKjUcvn6MsIzRTsRw=="],
+    "@ts-cloud/aws-types": ["@ts-cloud/aws-types@0.5.29", "", {}, "sha512-wBy8XvCjEsyw4hmI5xLc++Dc5ncb5HZBPlZMnacKsDw7ZEon4x/vhFhbmGRIBhOUB5xpejXVIS4YvpN6OWhxyw=="],
 
-    "@ts-cloud/core": ["@ts-cloud/core@0.5.26", "", { "dependencies": { "@ts-cloud/aws-types": "0.5.26" } }, "sha512-hagOjZPLE9zelwJ2gHm7a/8w4cS/kzbKbo8QEjSBrBX3VDOZKqJSlcwb8Bm7KSULSZUlP82mUv911YEaJTXLGQ=="],
+    "@ts-cloud/core": ["@ts-cloud/core@0.5.29", "", { "dependencies": { "@ts-cloud/aws-types": "0.5.29" } }, "sha512-3lpJJ3/aXNxK7Pw9IwiIwXW4zZXRLZUogsPKC6tfElctD5E+OpXgOi3mqt7FGSThrifux+oS+4q+bZvwgIOwpg=="],
 
     "@types/bun": ["@types/bun@1.3.14", "", { "dependencies": { "bun-types": "1.3.14" } }, "sha512-h1hFqFVcvAvD9j9K7ZW7vd82aSA+rTdznZa+5bwvCwqSB1jmmfLcbIWhOLx1/+boy/xmjgCs/OMUL8hRJSmnPw=="],
 
