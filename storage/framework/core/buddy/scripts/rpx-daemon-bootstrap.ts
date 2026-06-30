@@ -18,10 +18,11 @@ import { homedir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
+// This file lives at <root>/storage/framework/core/buddy/scripts/.
+const here = dirname(fileURLToPath(import.meta.url))
+const projectRoot = join(here, '..', '..', '..', '..', '..')
+
 function resolveRpxEntry(): string | null {
-  // This file lives at <root>/storage/framework/core/buddy/scripts/.
-  const here = dirname(fileURLToPath(import.meta.url))
-  const projectRoot = join(here, '..', '..', '..', '..', '..')
   const candidates = [
     process.env.RPX_MODULE,
     join(projectRoot, 'node_modules/@stacksjs/rpx/dist/index.js'),
@@ -31,9 +32,35 @@ function resolveRpxEntry(): string | null {
   return candidates.find(p => existsSync(p)) ?? null
 }
 
+/**
+ * On-demand sites are ON by default for Stacks: the shared daemon lazily boots a
+ * sibling app's dev server the first time you open its `<name>.localhost` URL, so
+ * you never start them by hand. The default scan root is the folder this app
+ * lives in (its siblings), derived from this file's location so it survives the
+ * sudo re-exec that binds :443. Override the roots with `STACKS_RPX_SITE_ROOTS`
+ * (comma-separated) or turn the whole thing off with `STACKS_RPX_ON_DEMAND=0`.
+ *
+ * Typed loosely so this compiles against any installed `@stacksjs/rpx` version
+ * (the field is ignored by older builds that predate on-demand sites).
+ */
+function resolveOnDemandSites(): { enabled: boolean, roots: string[] } | undefined {
+  if (process.env.STACKS_RPX_ON_DEMAND === '0')
+    return undefined
+  const rootsEnv = process.env.STACKS_RPX_SITE_ROOTS
+  const roots = rootsEnv
+    ? rootsEnv.split(',').map(r => r.trim()).filter(Boolean)
+    : [dirname(projectRoot)] // the directory your app lives in → its siblings boot on demand
+  return { enabled: true, roots }
+}
+
 const entry = resolveRpxEntry()
 const rpx = entry ? await import(entry) : await import('@stacksjs/rpx')
 const { runDaemon } = rpx as typeof import('@stacksjs/rpx')
 
-const handle = await runDaemon({ verbose: process.env.RPX_VERBOSE === '1' })
+const daemonOptions: Record<string, unknown> = { verbose: process.env.RPX_VERBOSE === '1' }
+const onDemandSites = resolveOnDemandSites()
+if (onDemandSites)
+  daemonOptions.onDemandSites = onDemandSites
+
+const handle = await runDaemon(daemonOptions as Parameters<typeof runDaemon>[0])
 await handle.done
