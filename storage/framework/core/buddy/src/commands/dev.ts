@@ -365,6 +365,13 @@ export async function startDevelopmentServer(_options: DevOptions, _startTime?: 
   const startedAt = _startTime
   const appUrl = process.env.APP_URL
   const nativeMode = options.native === true
+  // When rpx's on-demand sites launch `./buddy dev`, rpx already owns the reverse
+  // proxy, TLS and the shared :443 daemon — and injects PORT/PORT_API/PORT_DOCS
+  // for us to bind. Detect that at entry (before we set the same flag for our own
+  // children below) so we boot the backends but skip every proxy/TLS/daemon step,
+  // which would otherwise fight rpx and could even restart the daemon that's
+  // serving the request that booted us.
+  const proxyManagedExternally = process.env.STACKS_PROXY_MANAGED === '1'
   const frontendPort = Number(process.env.PORT) || 3000
   const apiPort = Number(process.env.PORT_API) || 3008
   const docsPort = Number(process.env.PORT_DOCS) || 3006
@@ -375,8 +382,10 @@ export async function startDevelopmentServer(_options: DevOptions, _startTime?: 
   // `STACKS_DEV_DASHBOARD=1 ./buddy dev` (or `./buddy dev:dashboard` to
   // run it standalone) when you actually want the dashboard up.
   const includeDashboard = process.env.STACKS_DEV_DASHBOARD === '1'
-  const hasCustomDomain = !nativeMode && appUrl && appUrl !== 'localhost' && !appUrl.includes('localhost:')
-  const domain = hasCustomDomain ? appUrl.replace(/^https?:\/\//, '') : null
+  const appLooksCustom = !nativeMode && appUrl && appUrl !== 'localhost' && !appUrl.includes('localhost:')
+  const domain = appLooksCustom ? appUrl.replace(/^https?:\/\//, '') : null
+  // Only manage the proxy/TLS/daemon ourselves when rpx isn't already doing it.
+  const hasCustomDomain = appLooksCustom && !proxyManagedExternally
   const dashboardDomain = domain ? `dashboard.${domain}` : null
   const frontendUrl = domain ? `https://${domain}` : `http://localhost:${frontendPort}`
   const apiUrl = domain ? `https://${domain}/api` : `http://localhost:${apiPort}`
@@ -541,8 +550,10 @@ export async function startDevelopmentServer(_options: DevOptions, _startTime?: 
       printDevReadyBanner({
         options,
         nativeMode,
-        hasCustomDomain,
-        proxyReachable,
+        // Under rpx management we don't probe :443 ourselves, but rpx *is* serving
+        // the pretty https URLs — advertise them rather than the localhost fallback.
+        hasCustomDomain: !!appLooksCustom,
+        proxyReachable: proxyManagedExternally ? true : proxyReachable,
         frontendUrl,
         apiUrl,
         docsUrl,
