@@ -28,6 +28,11 @@ import { acquireSchedulerLock } from './scheduler-lock'
  */
 export class Schedule implements UntimedSchedule {
   private static jobs = new Map<string, ScheduledJob>()
+  // Dedupe registry: normalized job name + cron pattern → the timer already
+  // started for it, so scheduling the same job on the same cadence twice (a
+  // Job's `rate` auto-scheduled by the runner + an explicit Scheduler.ts entry)
+  // creates ONE timer, not two. See start().
+  private static scheduledKeys = new Map<string, ScheduledJob>()
   private cronPattern = ''
   private intervalMs: number | null = null
   private timezone: Timezone = 'America/Los_Angeles'
@@ -595,6 +600,22 @@ export class Schedule implements UntimedSchedule {
       return { stop: () => {}, nextRun: () => null }
     }
 
+    // Dedupe: the same job scheduled on the same cadence twice — e.g. a Job's
+    // `rate` auto-scheduled by the runner AND an explicit `schedule.job(...)` in
+    // the app's Scheduler.ts — must create ONE timer, not two (else it fires
+    // twice). Key on the normalized name + pattern, so a job intentionally
+    // scheduled on two DIFFERENT cadences still gets both timers.
+    const dedupeKey = this.options.name
+      ? `${this.options.name.toLowerCase().replace(/[^a-z0-9]+/g, '')}::${this.cronPattern || `every:${this.intervalMs}`}`
+      : null
+    if (dedupeKey) {
+      const existing = Schedule.scheduledKeys.get(dedupeKey)
+      if (existing) {
+        log.debug(`[scheduler] duplicate schedule for "${this.options.name}" (${this.cronPattern || `every ${this.intervalMs}ms`}) skipped`)
+        return existing
+      }
+    }
+
     const task = this.wrapTask(this.task)
     let stopped = false
     let timer: ReturnType<typeof setTimeout> | ReturnType<typeof setInterval> | null = null
@@ -713,6 +734,9 @@ export class Schedule implements UntimedSchedule {
 
     if (this.options.name) {
       Schedule.jobs.set(this.options.name, job)
+    }
+    if (dedupeKey) {
+      Schedule.scheduledKeys.set(dedupeKey, job)
     }
 
     log.info(`Scheduled task with pattern: ${this.cronPattern} in timezone: ${this.timezone}`)
