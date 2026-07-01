@@ -49,6 +49,6 @@
   },
   "devDependencies": {
     "better-dx": "^0.2.12",
-    "@stacksjs/notifications": "workspace:*"
+    "@stacksjs/notifications": "workspace:*0.70.45"
   }
 }

@@ -58,7 +58,7 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "@stacksjs/clapp": "^0.2.8"
+    "@stacksjs/clapp": "^0.2.10"
   },
   "devDependencies": {
     "@stacksjs/collections": "workspace:*",

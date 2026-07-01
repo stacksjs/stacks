@@ -69,8 +69,8 @@
   },
   "dependencies": {
     "@stacksjs/ts-cloud": "^0.5.29",
-    "@ts-cloud/aws-types": "^0.5.29",
-    "@ts-cloud/core": "^0.5.29",
+    "@ts-cloud/aws-types": "^0.5.35",
+    "@ts-cloud/core": "^0.5.35",
     "stacks": "workspace:*"
   },
   "devDependencies": {

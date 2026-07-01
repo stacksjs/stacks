@@ -47,12 +47,12 @@
     "prepublishOnly": "bun run build"
   },
   "devDependencies": {
-    "@stacksjs/cli": "workspace:*",
-    "@stacksjs/database": "workspace:*",
+    "@stacksjs/cli": "workspace:*0.70.45",
+    "@stacksjs/database": "workspace:*0.70.45",
     "better-dx": "^0.2.12",
-    "@stacksjs/path": "workspace:*",
-    "@stacksjs/strings": "workspace:*",
-    "@stacksjs/utils": "workspace:*"
+    "@stacksjs/path": "workspace:*0.70.45",
+    "@stacksjs/strings": "workspace:*0.70.45",
+    "@stacksjs/utils": "workspace:*0.70.45"
   },
   "sideEffects": false
 }
