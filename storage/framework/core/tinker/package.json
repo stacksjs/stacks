@@ -49,6 +49,6 @@
     "typecheck": "bun tsc --noEmit"
   },
   "devDependencies": {
-    "better-dx": "^0.2.12"
+    "better-dx": "^0.2.15"
   }
 }

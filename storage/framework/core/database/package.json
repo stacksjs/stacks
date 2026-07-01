@@ -57,7 +57,7 @@
     "@stacksjs/config": "workspace:*",
     "@stacksjs/logging": "workspace:*",
     "@stacksjs/router": "workspace:*",
-    "better-dx": "^0.2.12",
+    "better-dx": "^0.2.15",
     "@stacksjs/path": "workspace:*",
     "@stacksjs/query-builder": "workspace:*",
     "@stacksjs/storage": "workspace:*",
