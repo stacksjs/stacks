@@ -161,6 +161,20 @@ describe('@stacksjs/scheduler', () => {
     })
   })
 
+  describe('dedupe — same job + same cadence scheduled twice (double-fire fix)', () => {
+    it('creates one timer, not two (e.g. a Job `rate` + an explicit Scheduler.ts entry)', async () => {
+      const taskFn = mock(() => {})
+      new Schedule(taskFn).everySecond().withName('dupe-fix')
+      new Schedule(taskFn).everySecond().withName('dupe-fix')
+
+      await new Promise(resolve => setTimeout(resolve, 2300))
+
+      // One timer → ~2 ticks in 2.3s; the bug (two timers) would be ~4.
+      expect(taskFn.mock.calls.length).toBeLessThanOrEqual(3)
+      expect(taskFn).toHaveBeenCalled()
+    })
+  })
+
   describe('Static action() method', () => {
     it('should return an UntimedSchedule', () => {
       const result = Schedule.action('CleanupFiles')
