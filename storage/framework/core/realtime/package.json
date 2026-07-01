@@ -51,6 +51,6 @@
     "ts-broadcasting": "^0.0.5"
   },
   "devDependencies": {
-    "better-dx": "^0.2.12"
+    "better-dx": "^0.2.15"
   }
 }

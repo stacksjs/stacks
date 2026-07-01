@@ -33,7 +33,7 @@
     "logo.png"
   ],
   "engines": {
-    "vscode": "^1.109.5"
+    "vscode": "^1.127.0"
   },
   "scripts": {
     "package": "bunx --bun vsce package",
@@ -61,6 +61,6 @@
     "vue.volar"
   ],
   "devDependencies": {
-    "@vscode/vsce": "^3.7.2-12"
+    "@vscode/vsce": "^3.9.2"
   }
 }

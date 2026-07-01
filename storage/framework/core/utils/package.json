@@ -59,7 +59,7 @@
     "@stacksjs/arrays": "workspace:*",
     "@stacksjs/cli": "workspace:*",
     "@stacksjs/config": "workspace:*",
-    "better-dx": "^0.2.12",
+    "better-dx": "^0.2.15",
     "@stacksjs/lint": "workspace:*",
     "@stacksjs/path": "workspace:*",
     "@stacksjs/storage": "workspace:*",
