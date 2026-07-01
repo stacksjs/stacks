@@ -548,11 +548,63 @@ function resolveProvider(tsCloudConfig: any): string {
     || 'aws'
 }
 
+/** Parse a positive-integer seconds env var, falling back to a default. */
+function readWaitSecs(name: string, defaultSecs: number): number {
+  const secs = process.env[name] ? Number.parseInt(process.env[name] as string, 10) : Number.NaN
+  return Number.isFinite(secs) && secs > 0 ? secs : defaultSecs
+}
+
+/** Human-friendly duration, e.g. `8m` or `1m30s`. */
+function fmtDuration(secs: number): string {
+  const m = Math.floor(secs / 60)
+  const s = secs % 60
+  return m ? (s ? `${m}m${s}s` : `${m}m`) : `${s}s`
+}
+
+/**
+ * Poll `check()` until it stops throwing or the timeout elapses, emitting a
+ * heartbeat every ~30s so a multi-minute wait never looks frozen (and, when
+ * backgrounded, so the caller can see it is still alive).
+ */
+async function pollUntil(opts: {
+  label: string
+  timeoutSecs: number
+  intervalMs?: number
+  check: () => void
+  timeoutMessage: (elapsedSecs: number) => string
+}): Promise<void> {
+  log.info(`${opts.label} (up to ${fmtDuration(opts.timeoutSecs)})...`)
+  const started = Date.now()
+  const deadline = started + opts.timeoutSecs * 1000
+  let lastHeartbeat = 0
+  for (;;) {
+    try {
+      opts.check()
+      return
+    }
+    catch {
+      const elapsedSecs = Math.floor((Date.now() - started) / 1000)
+      if (Date.now() > deadline)
+        throw new Error(opts.timeoutMessage(elapsedSecs))
+      if (elapsedSecs - lastHeartbeat >= 30) {
+        log.info(`  … still waiting (${elapsedSecs}s elapsed)`)
+        lastHeartbeat = elapsedSecs
+      }
+      await new Promise(r => setTimeout(r, opts.intervalMs ?? 5000))
+    }
+  }
+}
+
 /**
  * Wait until cloud-init finishes on the freshly provisioned host and the bun
  * runtime is on PATH. Cloud-init runs asynchronously after the server reports
  * "running", so deploying immediately would race the bun install and the
  * systemd unit's ExecStart (`/usr/local/bin/bun …`) would not exist yet.
+ *
+ * Timeouts are generous — cold Hetzner boots plus cloud-init installing
+ * bun/caddy can take several minutes — and overridable per environment:
+ *   TS_CLOUD_SSH_WAIT_SECS   (default 480 = 8m)  — SSH reachability
+ *   TS_CLOUD_BOOT_WAIT_SECS  (default 720 = 12m) — cloud-init + bun on PATH
  */
 async function waitForRemoteReady(ip: string, verbose: boolean): Promise<void> {
   const { execSync } = await import('node:child_process')
@@ -570,19 +622,15 @@ async function waitForRemoteReady(ip: string, verbose: boolean): Promise<void> {
     })
 
   // 1) Wait for SSH to accept connections (server may still be booting).
-  log.info('Waiting for SSH to come up...')
-  const sshDeadline = Date.now() + 3 * 60_000
-  for (;;) {
-    try {
-      run('true')
-      break
-    }
-    catch {
-      if (Date.now() > sshDeadline)
-        throw new Error(`SSH did not become reachable on ${ip} within 3 minutes`)
-      await new Promise(r => setTimeout(r, 5000))
-    }
-  }
+  const sshWaitSecs = readWaitSecs('TS_CLOUD_SSH_WAIT_SECS', 8 * 60)
+  await pollUntil({
+    label: 'Waiting for SSH to come up',
+    timeoutSecs: sshWaitSecs,
+    check: () => { run('true') },
+    timeoutMessage: elapsed =>
+      `SSH did not become reachable on ${ip} within ${fmtDuration(sshWaitSecs)} (waited ${elapsed}s). `
+      + `The box may still be booting — raise TS_CLOUD_SSH_WAIT_SECS and retry.`,
+  })
   log.success('SSH is up')
 
   // 2) Block on cloud-init, then confirm bun landed on PATH.
@@ -594,18 +642,16 @@ async function waitForRemoteReady(ip: string, verbose: boolean): Promise<void> {
     log.debug('cloud-init status --wait returned non-zero (continuing):', err)
   }
 
-  const bunDeadline = Date.now() + 5 * 60_000
-  for (;;) {
-    try {
-      run('test -x /usr/local/bin/bun')
-      break
-    }
-    catch {
-      if (Date.now() > bunDeadline)
-        throw new Error('bun runtime did not appear at /usr/local/bin/bun within 5 minutes (cloud-init may have failed — check /var/log/cloud-init-output.log)')
-      await new Promise(r => setTimeout(r, 5000))
-    }
-  }
+  const bootWaitSecs = readWaitSecs('TS_CLOUD_BOOT_WAIT_SECS', 12 * 60)
+  await pollUntil({
+    label: 'Waiting for the bun runtime',
+    timeoutSecs: bootWaitSecs,
+    check: () => { run('test -x /usr/local/bin/bun') },
+    timeoutMessage: elapsed =>
+      `bun runtime did not appear at /usr/local/bin/bun within ${fmtDuration(bootWaitSecs)} (waited ${elapsed}s). `
+      + `cloud-init may have failed — SSH in and check /var/log/cloud-init-output.log; `
+      + `raise TS_CLOUD_BOOT_WAIT_SECS for slow regions.`,
+  })
   log.success('Server is ready (bun installed)')
 }
 
@@ -1059,6 +1105,15 @@ export function deploy(buddy: CLI): void {
 }
 
 async function confirmProductionDeployment() {
+  // In a non-interactive shell (CI, a background job, piped stdin) there is no
+  // one to answer the prompt — `prompts.confirm` would hang forever. Fail fast
+  // with a clear instruction instead of stalling the pipeline.
+  if (!process.stdin.isTTY) {
+    log.error('Refusing to deploy to production from a non-interactive shell without confirmation.')
+    log.info('   ➡️  Re-run with `--yes` to confirm (e.g. in CI): `buddy deploy --prod --yes`')
+    process.exit(ExitCode.InvalidArgument)
+  }
+
   const confirmed = await prompts.confirm({
     message: 'Are you sure you want to deploy to production?',
     initial: true,
