@@ -46,7 +46,7 @@ before doing non-trivial work in that area rather than guessing an API.
 | `config/` | ~44 typed config files (`app.ts`, `database.ts`, `auth.ts`, `api` via `services.ts`, `queue.ts`, `cache.ts`, `email.ts`, `commerce.ts`, `cms.ts`, `payment.ts`, `ai.ts`, `cloud.ts`, `ui.ts`, `crosswind.ts`, ...) |
 | `database/` | `migrations/`, seeders, and the local SQLite files |
 | `resources/` | stx frontend: `views/`, `components/`, `layouts/`, `partials/` |
-| `storage/framework/` | Framework internals and **defaults** (`defaults/app/`, `models/`, `orm/`, `server/`, `dashboard`); read-only reference, do not edit unless working on the framework |
+| `storage/framework/` | Framework internals + **defaults** (`defaults/app/` including the 60+ built-in `Models/`, `core/` packages, `server/`, dashboard, and the auto-import manifests); read-only reference, do not edit unless working on the framework |
 | `tests/` | Test suites (Bun test) |
 | `cloud/` | AWS infrastructure (CDK / CloudFormation) for deploys |
 | `content/`, `docs/`, `locales/`, `public/` | CMS/markdown content, docs site, i18n strings, static assets |
@@ -106,19 +106,178 @@ Read the skill before building. Full list of skills is in `.claude/skills/`.
 | Testing (DB test utils, feature tests, config) | `stacks-testing` |
 | Dev server, HMR, reverse proxy, SSL | `stacks-development`, `stacks-server` |
 
-### Common CLI (see `stacks-buddy` for the full set)
-```bash
-buddy dev                 # start the dev server (buddy dev:components for the component playground)
-buddy make:model Post     # scaffold a model (also make:action, make:migration, make:component,
-                          #   make:job, make:middleware, make:notification, make:command, ...)
-buddy migrate             # run migrations (buddy migrate:fresh to drop + recreate + seed)
-buddy build               # build the project
-buddy test                # run the test suite
-buddy deploy              # deploy (build then deploy)
-```
-
 The recommended order for a new feature is **model, migration, action, route, test** (see
 `stacks-new-feature`).
+
+---
+
+## Auto-imports
+
+Auto-imports let app code skip many `import` statements, but the rules differ by context and the
+framework's own code is the source of truth (verified against the manifests, not just the docs).
+Manifests: `storage/framework/{browser,server}-auto-imports.json`. Generated types:
+`storage/framework/types/*auto-imports.d.ts`. Regenerate with `buddy generate` (`--types` for the
+declarations). Full reference: `stacks-auto-imports`.
+
+**stx templates (browser)** - available with no import:
+- Vue reactivity + 200+ VueUse-style composables: `ref`, `computed`, `watch`, `reactive`,
+  `watchEffect`, `useFetch`, `useDark` / `useColorMode`, `useStorage`, `useLocalStorage`, `useToggle`,
+  `useCounter`, `useIntersectionObserver`, `useScroll`, `useMouse`, `useParallax`,
+  `usePreferredReducedMotion`, plus utilities (`debounce`, `throttle`, `sleep`, `clamp`), `useAuth`,
+  and the Stripe helpers (`loadCardElement`, `confirmPayment`, ...).
+- Your components under `resources/components/` (write `<Card />` directly, resolved by the stx
+  plugin) and your functions under `resources/functions/` (e.g. `increment`, `toggleDark`).
+
+**Server** (routes, `app/Actions/`, `app/Jobs/`, models) - injected into `globalThis`:
+- All 60+ models (`User`, `Product`, `Order`, ...) with their `Model` / `Request` / `RequestModel`
+  variants, so `await User.find(1)` works with no import.
+- Everything exported from `app/Jobs/` and `resources/functions/`.
+
+**Import these explicitly (the framework does).** `types/auto-imports.d.ts` also declares `Action`,
+`route`, `response`, `schema`, `slug`, `path`, `storage`, `log`, and `Auth` as ambient global types,
+but the built-in actions and models import them from their packages anyway (`@stacksjs/actions`,
+`@stacksjs/router`, `@stacksjs/validation`, ...), and so should you. `defineModel` is always imported
+from `@stacksjs/orm`. When unsure, copy the import pattern from `storage/framework/defaults/app/`.
+Add your own auto-imports by exporting from `resources/functions/` (browser) or the auto-import
+barrel, then run `buddy generate`.
+
+---
+
+## Data layer: models, ORM, query builder, migrations
+
+Stacks is Laravel-like (models, relationships, traits, factories, a fluent query builder), with one
+big difference: **migrations are derived from your models, not hand-written.** You describe the
+schema once in the model; Stacks diffs it against the database and generates the SQL. See
+`stacks-orm`, `stacks-models`, `stacks-migrations`, `stacks-database`, `stacks-query-builder`.
+
+### Define a model
+Models live in `app/Models/` (your custom models and overrides) and
+`storage/framework/defaults/app/Models/` (60+ built-ins, grouped into `commerce/`, `Content/`, etc.).
+Use `defineModel()`; the whole schema, validation, factory, relationships, and behavior traits are
+declared in one place.
+
+```ts
+// app/Models/Product.ts
+// Models and app/Jobs are auto-imported as server globals; stx composables and
+// resources/components are auto-imported in templates. In a model file you still
+// import defineModel and schema explicitly, exactly as the built-in models do.
+import { defineModel } from '@stacksjs/orm'
+import { schema } from '@stacksjs/validation'
+
+export default defineModel({
+  name: 'Product',
+  table: 'products',
+
+  traits: {
+    useUuid: true,
+    useTimestamps: true,          // created_at / updated_at
+    useSeeder: { count: 20 },     // factory-backed seeding
+    useApi: {                     // auto-generate REST actions + routes
+      uri: 'products',
+      routes: ['index', 'store', 'show', 'update', 'destroy'],
+    },
+    useSearch: { searchable: ['name'], filterable: ['status'] },
+    observe: true,                // emit product:created / :updated / :deleted events
+  },
+
+  belongsTo: ['Category'],
+  hasMany: ['Review'],
+
+  attributes: {
+    name: {
+      fillable: true,
+      required: true,
+      validation: { rule: schema.string().maxLength(100) },
+      factory: faker => faker.lorem.word(),
+    },
+    price: {
+      fillable: true,
+      validation: { rule: schema.number().min(1) },
+      factory: faker => faker.datatype.number({ min: 100, max: 10000 }),
+    },
+    status: {
+      fillable: true,
+      default: 'draft',
+      validation: { rule: schema.enum(['draft', 'published', 'archived']) },
+    },
+  },
+})
+```
+
+Traits do real work: `useApi` generates the REST actions and routes for the model, `useAuth` adds
+auth columns + passkeys, `useSearch` wires search-engine indexing, `useSeeder` enables factory
+seeding, and `billable` / `taggable` / `categorizable` / `commentable` / `likeable` add their
+relations and methods. See `stacks-models` for the full trait and attribute reference.
+
+### Model-driven migration workflow
+```bash
+# 1. Define or change a model in app/Models/ (or storage/framework/defaults/app/Models/)
+buddy generate:migrations     # 2. diff models vs current schema, emit SQL into database/migrations/
+                              # 3. review the generated migration file
+buddy migrate                 # 4. apply pending migrations   (--diff to preview SQL, --auth for auth tables)
+buddy migrate:fresh --seed    #    (dev) drop everything, re-migrate, then seed
+```
+`buddy make:migration <name>` still exists for hand-written migrations, and 96+ migrations ship for
+the built-in models. `buddy migrate` verifies models exist before running.
+
+### Query builder
+Models expose a fluent, chainable query API (backed by `bun-query-builder`) plus create/update/delete
+and eager loading. Exact method surface is in `stacks-query-builder` / `stacks-orm`; typical shape:
+
+```ts
+const published = await Product.where('status', 'published').orderByDesc('created_at').all()
+const product = await Product.find(id)
+const created = await Product.create({ name: 'Widget', price: 1200 })
+await transaction(async () => { /* ... atomic work ... */ })
+```
+Eager loading, pagination, and the full method set are in `stacks-query-builder` / `stacks-orm`.
+
+---
+
+## The buddy CLI
+
+All of `./buddy`, `bud`, `stacks`, and `stx` invoke the same CLI. Run `buddy list` for everything and
+`buddy <command> --help` for flags. Full reference with every flag: `stacks-buddy`.
+
+**Develop & serve**
+- `buddy dev [frontend|api|docs|dashboard|desktop]` start dev server(s) + reverse proxy; `buddy dev:components` component playground
+- `buddy down` / `buddy up` enter / exit maintenance mode
+
+**Build & generate**
+- `buddy build [components|functions|views|docs|cli|server|stacks]` production builds
+- `buddy generate[:types|:openapi|:migrations|:entries|:ide-helpers]` types, OpenAPI spec, migration diffs, IDE helpers
+
+**Database**
+- `buddy migrate [--diff|--auth]`, `buddy migrate:fresh [--seed]`, `buddy seed`, `buddy generate:migrations`
+
+**Scaffold (`make:*`)**
+- `make:model`, `make:migration`, `make:action`, `make:component`, `make:view` (`make:page`), `make:job`, `make:middleware`, `make:notification`, `make:policy`, `make:resource`, `make:command`, `make:factory`, `make:function`, `make:lang`, `make:database`, `make:queue-table`, `make:stack`, `make:certificate`
+
+**Quality & test**
+- `buddy lint [--fix]` / `buddy lint:fix` / `buddy format[:check]` (pickier)
+- `buddy test [--unit|--feature]` / `test:unit` / `test:feature` / `test:ui` / `test:types` (`typecheck`)
+
+**Environment**
+- `buddy env:get|set|encrypt|decrypt|keypair|rotate|check` manage and encrypt `.env` values
+
+**Cloud & deploy**
+- `buddy deploy` full deploy workflow (prereqs, env, APP_KEY, AWS, DNS, mail records)
+- `buddy cloud [--ssh|--diff|--invalidate-cache]`, `cloud:add --jump-box`, `cloud:remove`, `cloud:cleanup`, `cloud:optimize-cost`
+
+**Domains & DNS**
+- `buddy domains:purchase|add|remove` (Route 53), `buddy dns [domain]` DNS query tool
+
+**Email & mail server**
+- `buddy email:verify|test|list|logs|status|inbox|reprocess` (SES / S3)
+- `buddy mail:user:add|list|delete`, `mail:proxy`, `mail:test`, `mail:credentials`, `mail:logs`, `mail:status`, `mail:server`, `mail:port25:*`
+
+**Project & framework**
+- `buddy install` / `fresh` / `clean` / `add` / `outdated`
+- `buddy upgrade[:all|:dependencies|:bun|:shell|:binary]` upgrade framework, deps, or Bun
+- `buddy about` / `buddy doctor` / `buddy list` info and health checks
+
+Custom commands live in `app/Commands/` and register via `app/Commands.ts` (`make:command` scaffolds
+one). See `stacks-cli` for building commands.
 
 ---
 
