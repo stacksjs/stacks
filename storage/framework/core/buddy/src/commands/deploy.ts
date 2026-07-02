@@ -750,6 +750,26 @@ async function runHetznerDeploy(args: {
   log.info(`Location: ${tsCloudConfig.hetzner?.location || process.env.HCLOUD_LOCATION || 'fsn1'}`)
   log.info(`Size: ${tsCloudConfig.infrastructure?.compute?.size || 'small'}`)
 
+  // Auto-inject the ts-cloud management dashboard (a `dashboard.<apex>` site,
+  // behind Basic auth) BEFORE provisioning, so the dashboard flows through the
+  // WHOLE deploy: rpx routing + on-demand TLS, the DNS A record, the release
+  // tarball, and the file deploy. (ts-cloud's deployAllComputeSites would inject
+  // it too, but only AFTER provisioning/DNS, leaving it unreachable.) Idempotent
+  // and best-effort: a UI-resolution hiccup or an older ts-cloud without the
+  // export never blocks the app deploy. Set TS_CLOUD_UI_DISABLE=1 to opt out.
+  try {
+    const { ensureManagementDashboard } = (await import('@stacksjs/ts-cloud')) as any
+    if (typeof ensureManagementDashboard === 'function') {
+      ensureManagementDashboard(tsCloudConfig, {
+        cwd: process.cwd(),
+        logger: { info: (m: string) => log.info(m), warn: (m: string) => log.warn(m) },
+      })
+    }
+  }
+  catch (err) {
+    log.warn(`Management dashboard injection skipped: ${getErrorMessage(err)}`)
+  }
+
   const driver = createCloudDriver({ config: tsCloudConfig, provider: 'hetzner' })
   if (!driver.provisionComputeInfrastructure) {
     log.error('Hetzner driver does not support compute provisioning (update @stacksjs/ts-cloud).')
