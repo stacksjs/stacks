@@ -312,23 +312,18 @@ export function migrate(buddy: CLI): void {
         process.exit(ExitCode.Success)
       }
 
-      const result = await runAction(Action.Migrate, options).finally(() => lock.release())
-
-      if (result.isErr) {
-        // Don't exit yet — the auth/notification/RBAC guarantees below
-        // are independent of the model migrations (#1952): the sqlite
-        // self-heal replays poisoned unique-index migrations, and real
-        // duplicate rows make that replay hard-fail, aborting every
-        // remaining model migration. The legacy apps hitting that are
-        // exactly the ones that still need the guarantee tables (and
-        // #1948's users.email_verified_at ALTER), and all of that SQL
-        // is idempotent CREATE TABLE IF NOT EXISTS / defensive ALTERs —
-        // safe against a partially migrated schema. The command still
-        // exits FatalError below, after the guarantees have run.
-        log.error('Model migrations failed — applying auth/notification/RBAC table guarantees before exiting.')
-      }
-
-      // Auth/oauth tables migrate by default. Pass --no-auth to opt out.
+      // Auth/oauth/notification/RBAC tables migrate by default, and run
+      // BEFORE the numbered model migrations (not after — see
+      // stacksjs/stacks#1952 for why this used to run last). Migration
+      // 0000000098-revoke-legacy-long-lived-tokens.sql (and any future
+      // migration touching oauth_access_tokens/oauth_refresh_tokens)
+      // assumes these framework tables already exist; on a brand new
+      // `buddy new` project there is no prior `buddy migrate --auth` run
+      // to have created them, so that migration hard-failed with
+      // "no such table: oauth_access_tokens" on every fresh install. The
+      // SQL here is all idempotent `CREATE TABLE IF NOT EXISTS` /
+      // defensive `ALTER`, so running it first is a no-op on databases
+      // that already have these tables. Pass --no-auth to opt out.
       if (options.auth !== false) {
         // Step-progress at debug — the auth-tables SQL is all
         // `CREATE TABLE IF NOT EXISTS`, so re-runs are no-ops and the
@@ -362,6 +357,12 @@ export function migrate(buddy: CLI): void {
         catch (error) {
           log.error('Failed to migrate auth/notification/RBAC tables:', error)
         }
+      }
+
+      const result = await runAction(Action.Migrate, options).finally(() => lock.release())
+
+      if (result.isErr) {
+        log.error('Model migrations failed.')
       }
 
       // Surface the model-migration failure only after the guarantee
