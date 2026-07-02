@@ -2,7 +2,18 @@
   "extends": "./storage/framework/core/tsconfig.json",
   "compilerOptions": {
     "lib": ["esnext", "dom"],
+    // `compilerOptions.paths` is not merged with the base config it
+    // extends (storage/framework/core/tsconfig.json) — TypeScript replaces
+    // the whole object when a child re-declares it. That base config's
+    // `@stacksjs/*` -> `storage/framework/core/*/src` mapping is how every
+    // `import ... from '@stacksjs/orm'` (etc.) in app/Models, app/Jobs, ...
+    // resolves; without restating it here, `buddy test:types`/
+    // `generate:types` fails "Cannot find module '@stacksjs/orm'" on every
+    // file under app/ that imports a framework package (i.e. nearly all of
+    // them) the moment app/Models has any real content.
     "paths": {
+      "@stacksjs/*": ["./storage/framework/core/*/src"],
+      "stacks/*": ["./storage/framework/core/*/src"],
       "Actions/*": ["./app/Actions/*"],
       "Commands/*": ["./app/Commands/*"],
       "Jobs/*": ["./app/Jobs/*"],
