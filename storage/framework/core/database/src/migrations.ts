@@ -868,7 +868,16 @@ export async function generateMigrations(options: GenerateMigrationsOptions = {}
 
     const { applyRenames, fromDb } = resolveGenerateOptions(options)
     log.debug(`[migration] Generating migrations for dialect: ${dialect}, models: ${modelsDir}`)
-    const result = await qbGenerateMigration(modelsDir, { dialect, applyRenames, fromDb })
+    // dryRun: true — bun-query-builder's own file writer numbers migrations
+    // from its own internal counter (1, 2, 3, ...), unaware of any already-
+    // committed migration files. On a project with existing migrations that
+    // collided with committed files (e.g. a fresh 0000000001-*.sql next to
+    // the real 0000000001-*.sql), and `persistGeneratedMigrations` below —
+    // which numbers correctly, continuing from the highest existing file —
+    // then saw its own content already on disk and silently skipped writing
+    // anything. Keeping the qb call dry-run makes `persistGeneratedMigrations`
+    // the single place that ever writes a migration file.
+    const result = await qbGenerateMigration(modelsDir, { dialect, dryRun: true, applyRenames, fromDb })
 
     if (result.hasChanges) {
       const written = persistGeneratedMigrations(result.sqlStatements ?? [])
@@ -1007,7 +1016,10 @@ export async function generateMigrations2(): Promise<Result<string, Error>> {
       return ok('Migrations generated')
     }
 
-    await qbGenerateMigration(modelsDir, { dialect, full: true })
+    // dryRun: true — see the comment on the equivalent call in
+    // generateMigrations() above; bun-query-builder's own file writer
+    // doesn't know about already-committed migration numbering.
+    await qbGenerateMigration(modelsDir, { dialect, full: true, dryRun: true })
 
     log.success('Migrations generated')
     return ok('Migrations generated')
