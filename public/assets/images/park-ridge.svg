@@ -1,14 +1,20 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 200" preserveAspectRatio="none" fill="#000">
-  <!-- Layered mountain skyline used as a CSS mask (single-colour silhouette).
-       Back range is lower, front range taller, with a few pine trees on the
-       crest for that national-park trail feel. -->
-  <path d="M0 200 V120 L70 96 L150 116 L235 70 L320 104 L420 58 L520 100 L620 66 L720 104 L820 72 L930 110 L1030 80 L1130 112 L1200 92 V200 Z" opacity="0.55"/>
-  <path d="M0 200 V150 L90 126 L180 150 L280 104 L360 138 L470 92 L560 132 L660 96 L770 138 L880 108 L990 146 L1090 116 L1200 150 V200 Z"/>
-  <!-- pine trees standing on the front ridge -->
+  <!-- Layered park skyline used as a single-colour silhouette (mask/background).
+       Two soft hill ranges, then a natural, uneven treeline: pines of varied
+       height, width and spacing so no two sit at the same rhythm. -->
+  <path d="M0 200 V132 L80 112 L170 128 L250 96 L340 120 L430 86 L540 118 L640 92 L740 122 L840 98 L950 124 L1050 104 L1140 126 L1200 110 V200 Z" opacity="0.5"/>
+  <path d="M0 200 V158 L100 140 L190 160 L290 122 L370 150 L470 112 L560 146 L660 118 L770 150 L880 126 L990 156 L1090 132 L1200 158 V200 Z"/>
   <g>
-    <path d="M150 150 l11 22 h-6 l9 18 h-8 l9 17 h-30 l9-17 h-8 l9-18 h-6 z"/>
-    <path d="M470 130 l13 26 h-7 l11 21 h-9 l11 20 h-36 l11-20 h-9 l11-21 h-7 z"/>
-    <path d="M660 134 l10 20 h-5 l8 16 h-7 l8 15 h-26 l8-15 h-7 l8-16 h-5 z"/>
-    <path d="M990 148 l12 24 h-6 l10 19 h-8 l10 19 h-34 l10-19 h-8 l10-19 h-6 z"/>
+    <path d="M92 162 l16 24 h-7 l13 20 h-8 l13 18 h-40 l13-18 h-8 l13-20 h-7 z"/>
+    <path d="M158 168 l10 15 h-5 l8 13 h-6 l9 13 h-27 l9-13 h-6 l8-13 h-5 z"/>
+    <path d="M247 150 l21 30 h-9 l17 25 h-11 l17 23 h-51 l17-23 h-11 l17-25 h-9 z"/>
+    <path d="M338 166 l12 18 h-6 l10 15 h-7 l10 15 h-31 l10-15 h-7 l10-15 h-6 z"/>
+    <path d="M470 142 l24 34 h-10 l19 28 h-12 l19 25 h-58 l19-25 h-12 l19-28 h-10 z"/>
+    <path d="M548 170 l9 14 h-5 l8 12 h-6 l8 12 h-25 l8-12 h-6 l8-12 h-4 z"/>
+    <path d="M660 154 l18 26 h-8 l14 21 h-9 l15 20 h-44 l15-20 h-9 l14-21 h-8 z"/>
+    <path d="M742 172 l11 16 h-6 l9 14 h-6 l9 13 h-29 l9-13 h-6 l9-14 h-6 z"/>
+    <path d="M872 150 l22 32 h-9 l18 26 h-11 l18 24 h-54 l18-24 h-11 l18-26 h-9 z"/>
+    <path d="M968 168 l13 19 h-6 l11 16 h-7 l11 16 h-34 l11-16 h-7 l11-16 h-6 z"/>
+    <path d="M1088 158 l17 25 h-8 l14 20 h-9 l14 19 h-42 l14-19 h-9 l14-20 h-7 z"/>
   </g>
 </svg>

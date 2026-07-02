@@ -1,15 +1,20 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="360" viewBox="0 0 1440 360" fill="none">
-  <path d="M0 238c70-34 122-86 188-88 64-2 99 44 160 42 75-3 108-78 188-80 82-2 121 84 198 80 71-4 110-83 184-82 82 2 130 96 214 96 74 0 111-58 178-56 50 2 91 37 130 66v144H0V238Z" fill="#142419"/>
-  <path d="M0 274c61-26 110-56 174-54 78 2 118 51 192 48 84-4 116-66 196-65 76 1 118 67 195 68 87 1 128-83 216-79 83 4 119 81 205 83 84 2 126-63 198-59 25 1 46 8 64 18v126H0v-86Z" fill="#24472d"/>
-  <g opacity=".88">
-    <path d="M93 206l28-52 28 52h-19l26 50h-70l26-50H93Z" fill="#326d43"/>
-    <path d="M211 208l22-44 22 44h-14l20 39h-56l20-39h-14Z" fill="#326d43"/>
-    <path d="M361 200l31-61 31 61h-20l28 55h-78l28-55h-20Z" fill="#326d43"/>
-    <path d="M510 213l23-48 23 48h-15l22 43h-60l22-43h-15Z" fill="#326d43"/>
-    <path d="M806 206l29-57 29 57h-19l27 52h-74l27-52h-19Z" fill="#326d43"/>
-    <path d="M1022 210l25-50 25 50h-16l23 46h-64l23-46h-16Z" fill="#326d43"/>
-    <path d="M1204 204l34-66 34 66h-22l31 61h-86l31-61h-22Z" fill="#326d43"/>
-    <path d="M1334 213l23-46 23 46h-15l21 42h-58l21-42h-15Z" fill="#326d43"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 200" preserveAspectRatio="none" fill="#000">
+  <!-- Layered park skyline used as a single-colour silhouette (mask/background).
+       Two soft hill ranges, then a natural, uneven treeline: pines of varied
+       height, width and spacing so no two sit at the same rhythm. -->
+  <path d="M0 200 V132 L80 112 L170 128 L250 96 L340 120 L430 86 L540 118 L640 92 L740 122 L840 98 L950 124 L1050 104 L1140 126 L1200 110 V200 Z" opacity="0.5"/>
+  <path d="M0 200 V158 L100 140 L190 160 L290 122 L370 150 L470 112 L560 146 L660 118 L770 150 L880 126 L990 156 L1090 132 L1200 158 V200 Z"/>
+  <g>
+    <path d="M92 162 l16 24 h-7 l13 20 h-8 l13 18 h-40 l13-18 h-8 l13-20 h-7 z"/>
+    <path d="M158 168 l10 15 h-5 l8 13 h-6 l9 13 h-27 l9-13 h-6 l8-13 h-5 z"/>
+    <path d="M247 150 l21 30 h-9 l17 25 h-11 l17 23 h-51 l17-23 h-11 l17-25 h-9 z"/>
+    <path d="M338 166 l12 18 h-6 l10 15 h-7 l10 15 h-31 l10-15 h-7 l10-15 h-6 z"/>
+    <path d="M470 142 l24 34 h-10 l19 28 h-12 l19 25 h-58 l19-25 h-12 l19-28 h-10 z"/>
+    <path d="M548 170 l9 14 h-5 l8 12 h-6 l8 12 h-25 l8-12 h-6 l8-12 h-4 z"/>
+    <path d="M660 154 l18 26 h-8 l14 21 h-9 l15 20 h-44 l15-20 h-9 l14-21 h-8 z"/>
+    <path d="M742 172 l11 16 h-6 l9 14 h-6 l9 13 h-29 l9-13 h-6 l9-14 h-6 z"/>
+    <path d="M872 150 l22 32 h-9 l18 26 h-11 l18 24 h-54 l18-24 h-11 l18-26 h-9 z"/>
+    <path d="M968 168 l13 19 h-6 l11 16 h-7 l11 16 h-34 l11-16 h-7 l11-16 h-6 z"/>
+    <path d="M1088 158 l17 25 h-8 l14 20 h-9 l14 19 h-42 l14-19 h-9 l14-20 h-7 z"/>
   </g>
-  <path d="M0 314c176-20 307-6 457 11 191 22 355 33 595 1 165-22 268-21 388-2v36H0v-46Z" fill="#0f1a12" opacity=".72"/>
 </svg>
