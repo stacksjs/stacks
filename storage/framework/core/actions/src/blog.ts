@@ -89,7 +89,7 @@ function fallbackFeedXml(baseUrl: string): string {
   <channel>
     <title>The Stacks Blog</title>
     <link>${escapeXml(`${origin}/blog`)}</link>
-    <description>Field notes from building a full-stack TypeScript framework whose only dependencies are TypeScript and Bun.</description>
+    <description>Notes from building a full-stack TypeScript framework whose only dependencies are TypeScript and Bun.</description>
 ${items}
   </channel>
 </rss>`
@@ -323,7 +323,7 @@ async function indexHtml(bp: BunPress): Promise<string> {
     <div class="blog-listing-head">
       <span class="sign" aria-hidden="true"></span>
       <h1>The Stacks Blog</h1>
-      <p>Field notes from building a full-stack TypeScript framework whose only dependencies are TypeScript and Bun.</p>
+      <p>Notes from building a full-stack TypeScript framework whose only dependencies are TypeScript and Bun.</p>
     </div>
     <div class="blog-cards">${cards || '<p>No posts yet.</p>'}</div>`
 
@@ -337,7 +337,7 @@ function feedXml(bp: BunPress, baseUrl: string): Promise<string> {
     ? bp.buildRssFeed(CONTENT_DIR, cfg, {
         enabled: true,
         title: 'The Stacks Blog',
-        description: 'Field notes from building a full-stack TypeScript framework whose only dependencies are TypeScript and Bun.',
+        description: 'Notes from building a full-stack TypeScript framework whose only dependencies are TypeScript and Bun.',
         maxItems: 50,
       })
     : Promise.resolve(fallbackFeedXml(baseUrl))

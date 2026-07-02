@@ -1,10 +1,10 @@
 /*
- * Stacks Blog — custom BunPress theme, "national-park" outdoors look.
+ * Stacks Blog - custom BunPress theme, "national-park" outdoors look.
  *
  * Re-skins BunPress's VitePress theme (driven by --vp-c-* vars) to the Stacks
  * park palette + NPS fonts, and adds outdoors chrome (topography texture, a
  * ridge + river footer, a wooden trail-sign masthead). Three themes via
- * `data-theme` on <html>: colored (DEFAULT — warm NPS brochure, cream + pine),
+ * `data-theme` on <html>: colored (DEFAULT - warm NPS brochure, cream + pine),
  * light (clean neutral paper-white), dark (forest-floor near-black).
  */
 
@@ -16,10 +16,10 @@
 
 /*
  * Three themes, switched via `data-theme` on <html>:
- *   - colored (DEFAULT) — the warm NPS-brochure look: cream paper + pine green.
+ *   - colored (DEFAULT) - the warm NPS-brochure look: cream paper + pine green.
  *     This is the signature Stacks blog palette.
- *   - light — a clean, neutral paper-white reading mode (green accents).
- *   - dark — near-black forest-floor mode.
+ *   - light - a clean, neutral paper-white reading mode (green accents).
+ *   - dark - near-black forest-floor mode.
  */
 
 /* ── Themes ─────────────────────────────────────────────────────────────── */
@@ -108,9 +108,9 @@
 
 /*
  * Font roles. The NPS faces are display/signage cuts:
- *   - Campmate Script — the hero (cursive, has lowercase)
- *   - NPS 2026 — headings (art-deco, has true lowercase)
- *   - Sequoia Sans / Redwood Serif — CAPS-ONLY; only for signage-style labels
+ *   - Campmate Script - the hero (cursive, has lowercase)
+ *   - NPS 2026 - headings (art-deco, has true lowercase)
+ *   - Sequoia Sans / Redwood Serif - CAPS-ONLY; only for signage-style labels
  * Long-form body copy stays on a clean system humanist sans for readability.
  */
 :root {
@@ -203,7 +203,7 @@ body::before {
   width: 320px;
   max-width: 82%;
   height: 132px;
-  margin: 0 auto -0.4rem;
+  margin: 0 auto 0.2rem;
   background-color: var(--park-wood);
   -webkit-mask: url('/assets/images/wood-sign.svg') center / contain no-repeat;
   mask: url('/assets/images/wood-sign.svg') center / contain no-repeat;
@@ -213,8 +213,8 @@ body::before {
   margin: 0 0 0.55rem;
   font-family: var(--font-hero);
   font-weight: 400;
-  font-size: clamp(2.8rem, 6vw, 4.4rem);
-  line-height: 0.95;
+  font-size: clamp(2.6rem, 5.5vw, 4.4rem);
+  line-height: 0.98;
   letter-spacing: 0;
   color: var(--vp-c-text-1);
 }
@@ -232,8 +232,9 @@ body::before {
   margin: 0 0 0.6rem;
   font-family: var(--font-hero);
   font-weight: 400;
-  font-size: clamp(2.6rem, 5vw, 3.8rem);
-  line-height: 0.98;
+  font-size: clamp(2.6rem, 5vw, 4rem);
+  line-height: 1.02;
+  letter-spacing: 0;
   color: var(--vp-c-text-1);
 }
 .blog-post-meta {
@@ -244,7 +245,7 @@ body::before {
 .blog-post-meta .author { font-weight: 650; color: var(--vp-c-text-1); }
 
 /* The poster is a self-framed NPS print (rounded, transparent corners), so we
- * float it as a centered hero rather than boxing it in a mat — a drop-shadow
+ * float it as a centered hero rather than boxing it in a mat - a drop-shadow
  * follows its rounded edge and gives it a "pinned print" feel. */
 .blog-post-poster {
   margin: 2rem auto 0.75rem;
@@ -295,7 +296,7 @@ body::before {
 }
 .blog-card.is-featured { border-left-color: var(--park-flag); }
 .blog-card.is-featured:hover { border-color: var(--park-flag); }
-/* Poster shows as a small floating print — its own NPS frame supplies the
+/* Poster shows as a small floating print - its own NPS frame supplies the
  * border, so we skip the mat and just lift it with a shadow. */
 .blog-card-media { align-self: center; }
 .blog-card-media img {
