@@ -201,14 +201,18 @@ const stackLayers = [
 
       .mode-card {
         position: relative;
-        width: min(980px, 100%);
+        width: min(1140px, 100%);
+        min-height: min(760px, 86vh);
+        display: flex;
+        align-items: center;
         overflow: hidden;
         border: 1px solid var(--line-strong);
-        border-top: 6px solid var(--gold);
-        border-radius: 8px;
-        padding: clamp(2rem, 7vw, 5rem);
+        border-top: 5px solid var(--gold);
+        border-radius: 18px;
+        padding: clamp(2.25rem, 6vw, 5.5rem);
         background:
-          linear-gradient(180deg, rgba(39, 95, 60, 0.86), rgba(13, 30, 22, 0.96)),
+          radial-gradient(120% 92% at 84% -12%, rgba(223, 154, 47, 0.20), transparent 46%),
+          linear-gradient(178deg, rgba(39, 95, 60, 0.80), rgba(13, 30, 22, 0.98) 78%),
           var(--pine);
         box-shadow: var(--shadow);
       }
@@ -218,72 +222,144 @@ const stackLayers = [
         inset: 0;
         content: "";
         background-image: url("/assets/images/topography.svg");
-        background-size: 680px auto;
-        opacity: 0.09;
+        background-size: 720px auto;
+        opacity: 0.08;
+        pointer-events: none;
       }
 
+      /* layered scenery band across the bottom */
       .mode-card::after {
         position: absolute;
-        inset: auto 0 0;
-        height: 42%;
+        inset: auto -1% -1px;
+        height: 48%;
         content: "";
-        background: url("/assets/images/park-ridge.svg") center bottom / cover no-repeat;
-        opacity: 0.34;
+        background: url("/assets/images/park-ridge.svg") center bottom / 102% 100% no-repeat;
+        opacity: 0.3;
+        height: 40%;
         pointer-events: none;
+      }
+
+      /* the sun disc */
+      .mode-sun {
+        position: absolute;
+        top: clamp(2rem, 9%, 5.5rem);
+        right: clamp(2rem, 10%, 7rem);
+        width: clamp(58px, 8vw, 108px);
+        height: clamp(58px, 8vw, 108px);
+        border-radius: 50%;
+        background: radial-gradient(circle at 38% 34%, #ffe6a6, var(--gold) 60%, #bd7d21);
+        box-shadow: 0 0 64px rgba(223, 154, 47, 0.42);
+        opacity: 0.92;
+        z-index: 0;
       }
 
       .mode-content {
         position: relative;
         z-index: 1;
-        max-width: 660px;
+        max-width: 620px;
       }
 
       .mode-title {
-        margin: 0;
+        margin: 0 0 1.4rem;
         color: var(--cream);
-        font-size: clamp(4.2rem, 13vw, 7.6rem);
-        line-height: 0.9;
+        font-family: "Campmate Script", ui-serif, Georgia, serif;
+        font-weight: 400;
+        font-size: clamp(3.6rem, 11vw, 6.4rem);
+        line-height: 1.02;
+      }
+
+      .mode-content > * {
+        animation: mode-in 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+      }
+      .mode-content > *:nth-child(2) { animation-delay: 0.06s; }
+      .mode-content > *:nth-child(3) { animation-delay: 0.12s; }
+      .mode-content > *:nth-child(4) { animation-delay: 0.18s; }
+      .mode-content > *:nth-child(5) { animation-delay: 0.24s; }
+
+      @keyframes mode-in {
+        from { opacity: 0; transform: translateY(18px); }
+        to { opacity: 1; transform: none; }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .mode-content > * { animation: none; }
       }
 
       .mode-lead {
-        max-width: 760px;
-        margin: 1.5rem 0 0;
+        margin: 1rem 0 0;
         color: var(--sky);
         font-family: "NPS 2026", "Switchback", ui-sans-serif, system-ui, sans-serif;
-        font-size: clamp(1.08rem, 2vw, 1.45rem);
+        font-size: clamp(1.1rem, 2vw, 1.5rem);
         font-weight: 850;
-        line-height: 1.32;
+        line-height: 1.24;
+        letter-spacing: 0.01em;
         text-transform: uppercase;
       }
 
       .mode-copy {
-        max-width: 580px;
-        margin: 1rem 0 0;
-        color: rgba(255, 247, 225, 0.78);
-        font-size: 1.08rem;
-        line-height: 1.65;
+        max-width: 30rem;
+        margin: 1.05rem 0 0;
+        color: rgba(255, 247, 225, 0.82);
+        font-size: 1.05rem;
+        line-height: 1.62;
       }
 
-      .mode-actions {
+      .mode-subscribe {
         display: flex;
         flex-wrap: wrap;
-        gap: 0.85rem;
-        margin-top: 2rem;
+        gap: 0.7rem;
+        margin-top: 1.9rem;
+        max-width: 30rem;
+      }
+      .mode-subscribe input {
+        flex: 1 1 15rem;
+        min-height: 50px;
+        padding: 0 1rem;
+        border: 1px solid rgba(255, 240, 200, 0.26);
+        border-radius: 10px;
+        color: var(--cream);
+        font-size: 1rem;
+        background: rgba(8, 23, 15, 0.5);
+      }
+      .mode-subscribe input::placeholder { color: rgba(255, 247, 225, 0.5); }
+      .mode-subscribe input:focus {
+        outline: none;
+        border-color: var(--gold);
+        box-shadow: 0 0 0 3px rgba(223, 154, 47, 0.24);
+      }
+      .mode-subscribe button {
+        flex: 0 0 auto;
+        min-height: 50px;
+        border-radius: 10px;
       }
 
-      .mode-note {
-        display: inline-flex;
-        margin-top: 2rem;
-        padding: 0.65rem 0.8rem;
-        border: 1px solid rgba(255, 240, 200, 0.22);
-        border-radius: 7px;
-        color: var(--moss);
-        font-family: "Switchback", ui-sans-serif, system-ui, sans-serif;
-        font-size: 0.82rem;
-        font-weight: 800;
-        text-transform: uppercase;
-        background: rgba(8, 23, 15, 0.44);
+      .mode-meta {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 1rem 1.4rem;
+        margin-top: 1.6rem;
       }
+      .mode-textlink {
+        color: var(--moss);
+        font-weight: 700;
+        font-size: 0.95rem;
+        border-bottom: 1px solid rgba(170, 196, 125, 0.4);
+        padding-bottom: 1px;
+      }
+      .mode-textlink:hover { color: var(--gold); border-color: var(--gold); }
+      .mode-social { display: inline-flex; gap: 0.55rem; }
+      .mode-social a {
+        display: grid;
+        place-items: center;
+        width: 40px;
+        height: 40px;
+        border: 1px solid rgba(255, 240, 200, 0.22);
+        border-radius: 50%;
+        color: var(--cream);
+      }
+      .mode-social a:hover { color: var(--gold); border-color: var(--gold); }
+      .mode-social svg { width: 19px; height: 19px; fill: currentColor; }
 
       .site-shell {
         width: min(1220px, calc(100% - 40px));
@@ -326,14 +402,11 @@ const stackLayers = [
         font-weight: 950;
       }
 
-      .brand-name,
-      .script-title {
-        font-family: "Campmate Script", ui-serif, Georgia, serif;
-        font-weight: 400;
-      }
-
       .brand-name {
-        font-size: 1.55rem;
+        font-family: "Switchback", ui-sans-serif, system-ui, sans-serif;
+        font-size: 1.4rem;
+        font-weight: 800;
+        letter-spacing: -0.01em;
         line-height: 1;
       }
 
@@ -380,12 +453,12 @@ const stackLayers = [
       }
 
       .hero-title {
-        margin: 0 0 0.2rem;
+        margin: 0 0 0.4rem;
         color: var(--cream);
         font-family: "Campmate Script", ui-serif, Georgia, serif;
-        font-size: clamp(3.9rem, 6.4vw, 5.8rem);
+        font-size: clamp(3.4rem, 6.4vw, 5.6rem);
         font-weight: 400;
-        line-height: 0.92;
+        line-height: 0.95;
       }
 
       .hero-headline {
@@ -1109,18 +1182,28 @@ const stackLayers = [
   <body data-site-mode="{{ siteMode }}" data-coming-soon-bypass-enabled="{{ comingSoonBypassEnabled }}" data-coming-soon-bypass="{{ comingSoonBypassToken }}">
     <section class="mode-screen" aria-labelledby="coming-soon-heading">
       <div class="mode-card">
+        <span class="mode-sun" aria-hidden="true"></span>
         <div class="mode-content">
-          <span class="kicker">Stacks basecamp</span>
-          <h1 id="coming-soon-heading" class="script-title mode-title">{{ appName }}</h1>
+          <h1 id="coming-soon-heading" class="mode-title">{{ appName }}</h1>
           <p class="mode-lead">The trailhead is almost ready.</p>
           <p class="mode-copy">
-            We are getting the framework, docs, CMS, and deployment path ready for public visitors. The blog is already live — read our launch post while we finish the rest. The build crew can still preview the full site with the coming soon pass.
+            We are clearing the last stretch: framework, docs, CMS, and the deploy path. Leave your email and we will let you know the moment the trail opens.
           </p>
-          <div class="mode-actions">
-            <a class="button primary" href="/blog/introducing-stacks" data-no-router>Read “Introducing Stacks”</a>
-            <a class="button" href="/blog" data-no-router>Visit the blog</a>
+          <form class="mode-subscribe" action="/api/email/subscribe" method="POST">
+            <input type="email" name="email" placeholder="you@example.com" autocomplete="email" aria-label="Email address" required>
+            <button class="button primary" type="submit">Notify me</button>
+          </form>
+          <div class="mode-meta">
+            <a class="mode-textlink" href="/blog/introducing-stacks" data-no-router>Read “Introducing Stacks”</a>
+            <span class="mode-social">
+              <a href="https://bsky.app/profile/stacksjs.com" target="_blank" rel="noopener" aria-label="Stacks on Bluesky">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 10.8c-1.087-2.114-4.046-6.053-6.798-7.995C2.566.944 1.561 1.266.902 1.565.139 1.908 0 3.08 0 3.768c0 .69.378 5.65.624 6.479.815 2.736 3.713 3.66 6.383 3.364.136-.02.275-.038.415-.056-.138.022-.276.04-.415.056-3.912.58-7.387 2.005-2.83 7.078 5.013 5.19 6.87-1.113 7.823-4.308.953 3.195 2.05 9.271 7.733 4.308 4.267-4.308 1.172-6.498-2.74-7.078a8.741 8.741 0 0 1-.415-.056c.14.017.279.036.415.056 2.67.297 5.568-.628 6.383-3.364.246-.828.624-5.789.624-6.478 0-.69-.139-1.861-.902-2.206-.658-.298-1.664-.62-4.3 1.24C16.046 4.748 13.087 8.687 12 10.8Z"/></svg>
+              </a>
+              <a href="https://github.com/stacksjs" target="_blank" rel="noopener" aria-label="Stacks on GitHub">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
+              </a>
+            </span>
           </div>
-          <span class="mode-note">Coming soon mode is active</span>
         </div>
       </div>
     </section>
@@ -1143,8 +1226,8 @@ const stackLayers = [
       <main>
         <section class="site-shell hero">
           <div>
-            <span class="kicker">Full-stack framework v{{ appVersion }}</span>
-            <h1 class="script-title hero-title">{{ appName }}</h1>
+            <span class="kicker">Full-stack TypeScript framework</span>
+            <h1 class="hero-title">{{ appName }}</h1>
             <p class="hero-headline">The TypeScript framework for product teams.</p>
             <p class="hero-copy">
               Stacks gives TypeScript teams the web framework essentials in one place: routing, STX views, models, auth, CMS, queues, mail, storage, tests, docs, blog, APIs, and cloud deployment through Buddy.
@@ -1183,16 +1266,16 @@ const stackLayers = [
                 </div>
                 <div class="content-table">
                   <div class="content-row">
-                    <div><strong>Introducing Stacks</strong><span>Post · stacks-team · Markdown</span></div>
-                    <span class="row-state">Published</span>
+                    <div><strong>Marketing, docs, blog</strong><span>Static and server-rendered pages</span></div>
+                    <span class="row-state">Live</span>
                   </div>
                   <div class="content-row">
-                    <div><strong>Deploying with Buddy</strong><span>Guide · docs + blog</span></div>
+                    <div><strong>CMS API and dashboard</strong><span>Generated from your models</span></div>
                     <span class="row-state">Ready</span>
                   </div>
                   <div class="content-row">
-                    <div><strong>Framework Concepts</strong><span>Page · generated route</span></div>
-                    <span class="row-state">Draft</span>
+                    <div><strong>App, queues, mail, cloud</strong><span>One deploy on Bun and AWS</span></div>
+                    <span class="row-state">Shipped</span>
                   </div>
                 </div>
                 <div class="terminal-strip">$ ./buddy dev --dashboard
@@ -1210,7 +1293,6 @@ Marketing, docs, blog, CMS, API, mail, and cloud.</div>
         <section id="platform" class="site-shell section" aria-labelledby="platform-heading">
         <div class="section-heading">
           <div>
-            <span class="kicker">Platform</span>
             <h2 id="platform-heading" class="section-title">A complete web framework.</h2>
           </div>
           <p class="section-copy">Routing, views, models, auth, queues, storage, tests, content, and deployment are first-party. The pieces are designed to move together instead of arriving as separate projects.</p>
@@ -1241,7 +1323,6 @@ Marketing, docs, blog, CMS, API, mail, and cloud.</div>
         <section class="site-shell section" aria-labelledby="stack-heading">
         <div class="stack-band">
           <div>
-            <span class="kicker">System</span>
             <h2 id="stack-heading" class="section-title">From idea to release.</h2>
             <p class="section-copy">Build product surfaces, operate the dashboard, scale background work, and deploy the public site from the same project. Stacks keeps the application, CMS, docs, blog, APIs, and cloud config on one route.</p>
           </div>
@@ -1259,7 +1340,6 @@ Marketing, docs, blog, CMS, API, mail, and cloud.</div>
         <section id="cms" class="site-shell section" aria-labelledby="cms-heading">
         <div class="cms-panel">
           <div>
-            <span class="kicker">CMS</span>
             <h2 id="cms-heading" class="section-title">Built-in CMS.</h2>
             <p class="section-copy">Markdown stays friendly for developers, while the dashboard gives editors real resource management for posts, pages, taxonomy, media, docs, blog content, and model-backed custom resources.</p>
           </div>
@@ -1274,7 +1354,6 @@ Marketing, docs, blog, CMS, API, mail, and cloud.</div>
         <section id="deploy" class="site-shell section" aria-labelledby="deploy-heading">
         <div class="deploy-panel">
           <div>
-            <span class="kicker">Deploy</span>
             <h2 id="deploy-heading" class="section-title">Deploy every surface.</h2>
             <p class="section-copy">The same deploy path builds the homepage, docs, blog, CMS API, application server, mail service, DNS, CDN, storage, and static assets.</p>
             <div class="route-list">
@@ -1302,8 +1381,7 @@ Marketing, docs, blog, CMS, API, mail, and cloud.</div>
         <section class="site-shell section" aria-labelledby="signup-heading">
         <div class="signup-panel">
           <div>
-            <span class="kicker">Field notes</span>
-            <h2 id="signup-heading" class="section-title">Get field notes.</h2>
+            <h2 id="signup-heading" class="section-title">Get product updates.</h2>
             <p>Framework updates, CMS improvements, and deployment notes by email.</p>
           </div>
           <form action="/api/email/subscribe" method="POST">
