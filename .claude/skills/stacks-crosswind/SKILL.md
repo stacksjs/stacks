@@ -10,6 +10,10 @@ allowed-tools: Read Edit Write Bash Grep Glob
 
 Crosswind (`@cwcss/crosswind`) is the utility-first CSS engine for Stacks — similar to Tailwind CSS but built for Bun.
 
+## Design & anti-slop skills
+
+For taste-level guidance on *which* utilities to reach for (layout variance, spacing rhythm, color calibration, motion), see the design-taste family: `stacks-design-taste` (flagship), the presets `stacks-design-soft` / `stacks-design-minimalist` / `stacks-design-brutalist`, `stacks-redesign`, `stacks-design-output`, and the image-first `stacks-image-to-code` / `stacks-imagegen-web` / `stacks-imagegen-mobile` / `stacks-brandkit`.
+
 ## Key Paths
 - Package: `node_modules/@cwcss/crosswind/`
 - UI config: `config/ui.ts` (Crosswind options referencing Crosswind)

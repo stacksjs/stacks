@@ -10,6 +10,10 @@ allowed-tools: Read Edit Write Bash Grep Glob
 
 STX is the full-stack templating and component framework for Stacks. It handles template rendering, reactivity, SSR, streaming, hydration, and more.
 
+## Design & anti-slop skills
+
+When the task is how a page should *look* (not just how stx renders), pair this skill with the design-taste family: `stacks-design-taste` (flagship), the aesthetic presets `stacks-design-soft` / `stacks-design-minimalist` / `stacks-design-brutalist`, `stacks-redesign`, `stacks-design-output`, and the image-first `stacks-image-to-code` / `stacks-imagegen-web` / `stacks-imagegen-mobile` / `stacks-brandkit`. They translate premium design rules into stx + Crosswind + composables.
+
 ## Key Paths
 - STX config: `config/stx.ts`
 - STX plugin: `bun-plugin-stx` (loaded via bunfig.toml)

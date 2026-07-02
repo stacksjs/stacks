@@ -8,6 +8,14 @@ allowed-tools: Read Edit Write Bash Grep Glob
 
 # Stacks UI
 
+## Design & anti-slop skills
+
+For premium, non-templated UI (layout, typography, color, motion) built on stx + Crosswind, reach for the design-taste skill family:
+- `stacks-design-taste` - flagship anti-slop frontend skill (brief inference, the three dials, layout/type/color discipline, strict pre-flight check)
+- Aesthetic presets: `stacks-design-soft`, `stacks-design-minimalist`, `stacks-design-brutalist`
+- `stacks-redesign` - audit-first upgrade of an existing UI; `stacks-design-output` - full-output enforcement (no placeholder or truncated components)
+- Image-first: `stacks-image-to-code`, plus reference-image generators `stacks-imagegen-web`, `stacks-imagegen-mobile`, `stacks-brandkit`
+
 ## Key Paths
 - Core package: `storage/framework/core/ui/src/`
 - Components: `storage/framework/core/ui/src/components/`

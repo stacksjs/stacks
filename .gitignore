@@ -87,3 +87,4 @@ storage/framework/cache/
 /storage/framework/frontend-dist
 /.stacks
 /.ts-cloud
+.claude/settings.local.json
