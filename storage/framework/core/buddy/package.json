@@ -103,6 +103,7 @@
     "@stacksjs/error-handling": "^0.70.23",
     "@stacksjs/events": "^0.70.23",
     "@stacksjs/git": "^0.70.23",
+    "@stacksjs/gitit": "^0.2.5",
     "@stacksjs/health": "^0.70.23",
     "@stacksjs/dnsx": "^0.2.3",
     "@stacksjs/httx": "^0.1.10",

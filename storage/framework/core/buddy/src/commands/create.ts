@@ -105,12 +105,25 @@ function onlineCheck() {
   }
 }
 
-async function download(name: string, path: string, options: CreateOptions) {
+/**
+ * Uses `@stacksjs/gitit`'s library API directly rather than shelling out to
+ * `bunx --bun @stacksjs/gitit`. `bunx` always resolves the published npm
+ * package into an ephemeral install, bypassing whatever gitit version is
+ * actually installed in this project, and adds a registry round-trip that
+ * has no benefit here since gitit is already a direct dependency.
+ */
+async function download(name: string, path: string, _options: CreateOptions) {
   log.info('Setting up your stack.')
-  const result = await runCommand(`bunx --bun @stacksjs/gitit stacks ${name}`, options)
-  log.success(`Successfully scaffolded your project at ${cyan(path)}`)
 
-  return result
+  try {
+    const { downloadTemplate } = await import('@stacksjs/gitit')
+    await downloadTemplate('stacks', { dir: name })
+    log.success(`Successfully scaffolded your project at ${cyan(path)}`)
+    return { isErr: false as const }
+  }
+  catch (error) {
+    return { isErr: true as const, error: error instanceof Error ? error.message : String(error) }
+  }
 }
 
 function ensureExecutableScripts(path: string) {
