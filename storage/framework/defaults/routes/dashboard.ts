@@ -31,8 +31,17 @@ import { response, route } from '@stacksjs/router'
 // `routes/api.ts` (user routes win) gets to pick its own limits.
 route.post('/login', 'Actions/Auth/LoginAction').rateLimit(5, 'minute')
 route.post('/register', 'Actions/Auth/RegisterAction').rateLimit(3, 'minute')
-route.get('/generate-registration-options', 'Actions/Auth/GenerateRegistrationAction').rateLimit(10, 'minute')
-route.post('/verify-registration', 'Actions/Auth/VerifyRegistrationAction').rateLimit(5, 'minute')
+// Passkey ENROLLMENT (attaching a new credential to an account) must be
+// auth-gated — it's not a login flow, it's a logged-in user adding a
+// second factor to their own account. Previously unauthenticated and
+// keyed off a client-supplied `email` field: anyone who knew a victim's
+// email could register a passkey against that account and log in as
+// them, no password required. GenerateRegistrationAction/
+// VerifyRegistrationAction now derive identity from request.user().
+route.get('/generate-registration-options', 'Actions/Auth/GenerateRegistrationAction').middleware('auth').rateLimit(10, 'minute')
+route.post('/verify-registration', 'Actions/Auth/VerifyRegistrationAction').middleware('auth').rateLimit(5, 'minute')
+// Passkey AUTHENTICATION (logging in) is correctly unauthenticated —
+// the caller doesn't have a session yet, that's the point.
 route.get('/generate-authentication-options', 'Actions/Auth/GenerateAuthenticationAction').rateLimit(10, 'minute')
 route.get('/verify-authentication', 'Actions/Auth/VerifyAuthenticationAction').rateLimit(10, 'minute')
 
