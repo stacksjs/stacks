@@ -1,6 +1,7 @@
-import { beforeAll, describe, expect, it } from 'bun:test'
+import { afterAll, beforeAll, describe, expect, it } from 'bun:test'
 import { Database } from 'bun:sqlite'
 import { configureOrm, getDatabase } from 'bun-query-builder'
+import { acquireDbConfigLock } from '@stacksjs/database'
 import { defineModel } from '../src/define-model'
 
 // stacksjs/stacks#1917 — `toSearchableObject` used to early-return
@@ -11,8 +12,14 @@ import { defineModel } from '../src/define-model'
 
 describe('Mailable.toSearchableObject (stacksjs/stacks#1917)', () => {
   let db: Database
+  // `configureOrm()` mutates the same process-wide bun-query-builder config
+  // singleton `initializeDbConfig()` does (stacksjs/stacks#1862) — hold the
+  // lock for this file's entire lifetime so a sibling file's own config
+  // call (via either entry point) can't repoint our connection mid-run.
+  let releaseDbConfigLock: () => void
 
-  beforeAll(() => {
+  beforeAll(async () => {
+    releaseDbConfigLock = await acquireDbConfigLock()
     configureOrm({ database: ':memory:' })
     db = getDatabase()
     db.run(`CREATE TABLE simple_users (
@@ -31,6 +38,10 @@ describe('Mailable.toSearchableObject (stacksjs/stacks#1917)', () => {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       email TEXT
     )`)
+  })
+
+  afterAll(() => {
+    releaseDbConfigLock()
   })
 
   const SimpleUser = defineModel({

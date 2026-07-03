@@ -12,17 +12,25 @@ process.env.DB_DATABASE_PATH = ':memory:'
 
 import { afterAll, beforeAll, describe, expect, it } from 'bun:test'
 
+// Holds `initializeDbConfig`'s process-wide config mutex for this file's
+// entire lifetime (stacksjs/stacks#1862) — acquired first thing below in
+// `beforeAll`, released last thing here so a sibling test file's own
+// `initializeDbConfig` call can't repoint our connection mid-run.
+let releaseDbConfigLock: () => void
+
 afterAll(() => {
   if (originalDbConnection === undefined) delete process.env.DB_CONNECTION
   else process.env.DB_CONNECTION = originalDbConnection
   if (originalDbDatabasePath === undefined) delete process.env.DB_DATABASE_PATH
   else process.env.DB_DATABASE_PATH = originalDbDatabasePath
+  releaseDbConfigLock?.()
 })
 
-const { db, ensureDatabaseConfigLoaded, initializeDbConfig } = await import('../src/utils')
+const { acquireDbConfigLock, db, ensureDatabaseConfigLoaded, initializeDbConfig } = await import('../src/utils')
 const { findFkOrphans } = await import('../src/fk-audit')
 
 beforeAll(async () => {
+  releaseDbConfigLock = await acquireDbConfigLock()
   await ensureDatabaseConfigLoaded()
   initializeDbConfig({
     database: {

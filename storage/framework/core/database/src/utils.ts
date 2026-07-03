@@ -51,6 +51,39 @@ let dbConfig: DbConfig = {
   },
 }
 
+// Test-only config mutex (stacksjs/stacks#1862 follow-up) ------------------
+//
+// `initializeDbConfig` mutates process-wide state (`dbConfig`, `dbDriver`,
+// `appEnv`, and the cached `_dbInstance` below). Bun's test runner evaluates
+// multiple test files' top-level code — including their `beforeAll`/`it`
+// callbacks — concurrently in one process, so two files that each want
+// their own isolated sqlite database and both call `initializeDbConfig()`
+// can interleave: file B's call clobbers file A's config (and nulls the
+// shared `_dbInstance`) while file A's own hooks/tests are still mid-flight,
+// silently pointing file A's queries at file B's database instead.
+//
+// There's no per-file isolation of this state today — that would need
+// AsyncLocalStorage-scoped config threaded through bun:test's hook
+// scheduling, which bun:test doesn't expose a seam for — so instead, any
+// test file that calls `initializeDbConfig` with its own database should
+// hold this lock for its *entire* lifetime: acquire first thing in
+// `beforeAll`, release last thing in `afterAll` (wrap the release in a
+// `finally` so a thrown cleanup error can't leave the lock stuck and hang
+// every subsequent file). That serializes just the subset of files that
+// mutate this shared config against each other, while every other test
+// file keeps running fully concurrently.
+let dbConfigLockTail: Promise<void> = Promise.resolve()
+
+export function acquireDbConfigLock(): Promise<() => void> {
+  let release: () => void = () => {}
+  const held = new Promise<void>((resolve) => {
+    release = resolve
+  })
+  const acquired = dbConfigLockTail.then(() => release)
+  dbConfigLockTail = dbConfigLockTail.then(() => held)
+  return acquired
+}
+
 // Function to initialize the config when it's available
 export function initializeDbConfig(config: any): void {
   if (config?.app?.env)

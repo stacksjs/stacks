@@ -50,7 +50,7 @@ mock.module('@stacksjs/email', () => ({
   mail: { send: async () => {} },
 }))
 
-const { db, ensureDatabaseConfigLoaded, initializeDbConfig } = await import('@stacksjs/database')
+const { acquireDbConfigLock, db, ensureDatabaseConfigLoaded, initializeDbConfig } = await import('@stacksjs/database')
 const { createToken, findToken, refreshToken, validateRefreshToken } = await import('../src/tokens')
 const { passwordResets } = await import('../src/password/reset')
 const { sessionCheck } = await import('../src/session-auth')
@@ -122,7 +122,13 @@ beforeEach(async () => {
   await forceConfig()
 })
 
+// Holds `initializeDbConfig`'s process-wide config mutex for this file's
+// entire lifetime (stacksjs/stacks#1862) — released in `afterAll` below.
+let releaseDbConfigLock: () => void
+
 beforeAll(async () => {
+  releaseDbConfigLock = await acquireDbConfigLock()
+
   // Drain the one-shot async config reload, then force our temp SQLite
   // config so it can't be clobbered (see comment above).
   await forceConfig()
@@ -215,6 +221,7 @@ afterAll(() => {
   mock.module('@stacksjs/email', () => realEmail)
   if (existsSync(DB_PATH))
     unlinkSync(DB_PATH)
+  releaseDbConfigLock?.()
 })
 
 describe('password reset revokes all tokens (#1947)', () => {

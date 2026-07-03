@@ -19,16 +19,25 @@ process.env.DB_DATABASE_PATH = ':memory:'
 
 import { afterAll, beforeAll, describe, expect, it } from 'bun:test'
 
+// Holds `initializeDbConfig`'s process-wide config mutex for this file's
+// entire lifetime (stacksjs/stacks#1862) — acquired first thing below in
+// `beforeAll`, released last thing here so a sibling test file's own
+// `initializeDbConfig` call can't repoint our connection mid-run.
+let releaseDbConfigLock: () => void
+
 afterAll(() => {
   if (originalDbConnection === undefined) delete process.env.DB_CONNECTION
   else process.env.DB_CONNECTION = originalDbConnection
   if (originalDbDatabasePath === undefined) delete process.env.DB_DATABASE_PATH
   else process.env.DB_DATABASE_PATH = originalDbDatabasePath
+  releaseDbConfigLock?.()
 })
 
-const { db, ensureDatabaseConfigLoaded, initializeDbConfig } = await import('../src/utils')
+const { acquireDbConfigLock, db, ensureDatabaseConfigLoaded, initializeDbConfig } = await import('../src/utils')
 
 beforeAll(async () => {
+  releaseDbConfigLock = await acquireDbConfigLock()
+
   // Settle the background config reload, then force the dialect back to
   // sqlite — a sibling test file may have flipped the process-wide config.
   await ensureDatabaseConfigLoaded()

@@ -19,16 +19,25 @@ process.env.DB_DATABASE_PATH = ':memory:'
 
 import { afterAll, beforeAll, describe, expect, it } from 'bun:test'
 
+// Holds `initializeDbConfig`'s process-wide config mutex for this file's
+// entire lifetime (stacksjs/stacks#1862) — acquired first thing below in
+// `beforeAll`, released last thing here so a sibling test file's own
+// `initializeDbConfig` call can't repoint our connection mid-run.
+let releaseDbConfigLock: () => void
+
 afterAll(() => {
   if (originalDbConnection === undefined) delete process.env.DB_CONNECTION
   else process.env.DB_CONNECTION = originalDbConnection
   if (originalDbDatabasePath === undefined) delete process.env.DB_DATABASE_PATH
   else process.env.DB_DATABASE_PATH = originalDbDatabasePath
+  releaseDbConfigLock?.()
 })
 
-const { applySqlitePragmas, db, ensureDatabaseConfigLoaded, initializeDbConfig, SQLITE_BOOTSTRAP_PRAGMAS } = await import('../src/utils')
+const { acquireDbConfigLock, applySqlitePragmas, db, ensureDatabaseConfigLoaded, initializeDbConfig, SQLITE_BOOTSTRAP_PRAGMAS } = await import('../src/utils')
 
 beforeAll(async () => {
+  releaseDbConfigLock = await acquireDbConfigLock()
+
   // The background config reload nulls `_dbInstance`; settle it first so
   // the in-memory connection isn't swapped out mid-test. Then force the
   // driver back to sqlite — the loaded project config (or a sibling test

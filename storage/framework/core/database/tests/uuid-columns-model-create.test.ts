@@ -1,5 +1,6 @@
-import { beforeAll, describe, expect, it } from 'bun:test'
+import { afterAll, beforeAll, describe, expect, it } from 'bun:test'
 import { configureOrm, getDatabase } from 'bun-query-builder'
+import { acquireDbConfigLock } from '@stacksjs/database'
 import { defineModel } from '@stacksjs/orm'
 import { sqlHelpers } from '../src/sql-helpers'
 import { uuidColumnSql } from '../src/uuid-columns'
@@ -27,7 +28,14 @@ import { uuidColumnSql } from '../src/uuid-columns'
  */
 
 describe('Model.create() on a useUuid model — end-to-end regression (stacksjs/status#1 Phase 9)', () => {
-  beforeAll(() => {
+  // `configureOrm()` mutates the same process-wide bun-query-builder config
+  // singleton `initializeDbConfig()` does (stacksjs/stacks#1862) — hold the
+  // lock for this file's entire lifetime so a sibling file's own config
+  // call (via either entry point) can't repoint our connection mid-run.
+  let releaseDbConfigLock: () => void
+
+  beforeAll(async () => {
+    releaseDbConfigLock = await acquireDbConfigLock()
     configureOrm({ database: ':memory:' })
     const db = getDatabase()
     // Mirrors the real `users` migration's shape: a create-table
@@ -35,6 +43,10 @@ describe('Model.create() on a useUuid model — end-to-end regression (stacksjs/
     // ever a concern — no `uuid` column, same as every drifted
     // create-*-table migration this fix targets.
     db.run(`CREATE TABLE regress_uuid_widgets (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT)`)
+  })
+
+  afterAll(() => {
+    releaseDbConfigLock()
   })
 
   const Widget = defineModel({

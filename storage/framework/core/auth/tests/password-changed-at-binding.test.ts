@@ -44,7 +44,7 @@ mock.module('@stacksjs/email', () => ({
   mail: { send: async () => {} },
 }))
 
-const { db, ensureDatabaseConfigLoaded, initializeDbConfig } = await import('@stacksjs/database')
+const { acquireDbConfigLock, db, ensureDatabaseConfigLoaded, initializeDbConfig } = await import('@stacksjs/database')
 const { createToken, findToken, refreshToken, validateRefreshToken } = await import('../src/tokens')
 const { passwordResets } = await import('../src/password/reset')
 const { makeHash } = await import('@stacksjs/security')
@@ -90,7 +90,12 @@ async function setStamp(userId: number, sqlExpr: string): Promise<void> {
 //   2. bun runs every test file of a directory in one process sharing the
 //      same singleton, so a sibling file's hooks (e.g.
 //      password-reset-revocation.test.ts, a DIFFERENT sqlite file WITHOUT
-//      password_changed_at) can win the connection between tests.
+//      password_changed_at) can win the connection between tests. The
+//      `acquireDbConfigLock()` mutex (held for this file's whole lifetime,
+//      see `beforeAll`/`afterAll` below) is what actually closes this: no
+//      sibling file's `initializeDbConfig` can run while we hold it. The
+//      per-test `forceConfig()` stays as defense-in-depth against the
+//      background reload in point 1, which the lock doesn't cover.
 //
 // Forcing AFTER the drain, before every test, makes this file the last
 // writer for its own tests regardless of ordering or async timing.
@@ -109,7 +114,12 @@ beforeEach(async () => {
   await forceConfig()
 })
 
+// Holds `initializeDbConfig`'s process-wide config mutex for this file's
+// entire lifetime (stacksjs/stacks#1862) — released in `afterAll` below.
+let releaseDbConfigLock: () => void
+
 beforeAll(async () => {
+  releaseDbConfigLock = await acquireDbConfigLock()
   await forceConfig()
 
   // users INCLUDES password_changed_at — the new credential-version column.
@@ -188,6 +198,7 @@ afterAll(() => {
   mock.module('@stacksjs/email', () => realEmail)
   if (existsSync(DB_PATH))
     unlinkSync(DB_PATH)
+  releaseDbConfigLock?.()
 })
 
 describe('token validity bound to password_changed_at (#1957)', () => {

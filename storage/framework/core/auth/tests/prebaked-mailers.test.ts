@@ -76,7 +76,7 @@ const fakeMail = {
 mock.module('@stacksjs/email', () => ({ ...realEmail, template: fakeTemplate, mail: fakeMail }))
 
 // ─── SUT + collaborators (imported AFTER the mock is installed) ──────────
-const { db, ensureDatabaseConfigLoaded, initializeDbConfig } = await import('@stacksjs/database')
+const { acquireDbConfigLock, db, ensureDatabaseConfigLoaded, initializeDbConfig } = await import('@stacksjs/database')
 const { overrides, overridesReady } = await import('@stacksjs/config')
 const { passwordResets } = await import('../src/password/reset')
 const { sendVerificationEmail } = await import('../src/email-verification')
@@ -99,7 +99,14 @@ async function seedUser(email: string): Promise<number> {
   return Number((rows as any[])[0].id)
 }
 
+// Holds `initializeDbConfig`'s process-wide config mutex for this file's
+// entire lifetime (stacksjs/stacks#1862) — acquired first thing below in
+// `beforeAll`, released last thing in `afterAll` so a sibling test file's
+// own `initializeDbConfig` call can't repoint our connection mid-run.
+let releaseDbConfigLock: () => void
+
 beforeAll(async () => {
+  releaseDbConfigLock = await acquireDbConfigLock()
   await ensureDatabaseConfigLoaded()
   initializeDbConfig({
     app: { env: 'testing' },
@@ -169,6 +176,7 @@ afterAll(() => {
   ;(overrides as any).auth = originalAuth
   if (existsSync(DB_PATH))
     unlinkSync(DB_PATH)
+  releaseDbConfigLock?.()
 })
 
 beforeEach(() => {

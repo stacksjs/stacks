@@ -21,15 +21,22 @@
  *     returns a Promise.
  *   - Sync setters still work as before (regression guard).
  */
-import { describe, expect, it, beforeAll } from 'bun:test'
+import { afterAll, beforeAll, describe, expect, it } from 'bun:test'
 import { Database } from 'bun:sqlite'
 import { configureOrm, getDatabase } from 'bun-query-builder'
+import { acquireDbConfigLock } from '@stacksjs/database'
 import { defineModel } from '../src/define-model'
 
 describe('instance mutator pipeline', () => {
   let db: Database
+  // `configureOrm()` mutates the same process-wide bun-query-builder config
+  // singleton `initializeDbConfig()` does (stacksjs/stacks#1862) — hold the
+  // lock for this file's entire lifetime so a sibling file's own config
+  // call (via either entry point) can't repoint our connection mid-run.
+  let releaseDbConfigLock: () => void
 
-  beforeAll(() => {
+  beforeAll(async () => {
+    releaseDbConfigLock = await acquireDbConfigLock()
     configureOrm({ database: ':memory:' })
     db = getDatabase()
     db.run(`CREATE TABLE async_set_users (
@@ -41,6 +48,10 @@ describe('instance mutator pipeline', () => {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       email TEXT
     )`)
+  })
+
+  afterAll(() => {
+    releaseDbConfigLock()
   })
 
   const AsyncSetUser = defineModel({

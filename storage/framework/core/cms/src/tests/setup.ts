@@ -31,7 +31,13 @@ process.env.APP_ENV = 'testing'
 
 // Dynamic import AFTER the env pin so the lazy `db` proxy and the
 // config loader can't capture a different connection first.
-const { db, ensureDatabaseConfigLoaded, initializeDbConfig } = await import('@stacksjs/database')
+const { acquireDbConfigLock, db, ensureDatabaseConfigLoaded, initializeDbConfig } = await import('@stacksjs/database')
+
+// Holds `initializeDbConfig`'s process-wide config mutex (stacksjs/stacks#1862)
+// for this module's entire lifetime — no `describe`/`afterAll` boundary exists
+// here (this is a shared fixture imported by many test files, not a test file
+// itself), so it's released on process exit alongside the file cleanup below.
+const releaseDbConfigLock = await acquireDbConfigLock()
 
 /**
  * Drain the one-shot async config reload, then force our temp SQLite
@@ -110,4 +116,5 @@ process.on('exit', () => {
       // Best effort — pid-named file in tmpdir, the OS reclaims it.
     }
   }
+  releaseDbConfigLock()
 })

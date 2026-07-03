@@ -23,7 +23,7 @@ process.env.DB_CONNECTION = 'sqlite'
 process.env.DB_DATABASE_PATH = DB_PATH
 process.env.APP_ENV = 'testing'
 
-const { db, ensureDatabaseConfigLoaded, initializeDbConfig } = await import('@stacksjs/database')
+const { acquireDbConfigLock, db, ensureDatabaseConfigLoaded, initializeDbConfig } = await import('@stacksjs/database')
 const { createToken, findToken, revokeAllTokens, validateRefreshToken } = await import('../src/tokens')
 const { sessionCheck, sessionDestroyAll } = await import('../src/session-auth')
 const { makeHash } = await import('@stacksjs/security')
@@ -46,7 +46,14 @@ async function seedSessionRow(userId: number, sessionId: string): Promise<void> 
   `, [sessionId, userId, Math.floor(Date.now() / 1000), expiresAt]).execute()
 }
 
+// Holds `initializeDbConfig`'s process-wide config mutex for this file's
+// entire lifetime (stacksjs/stacks#1862) — acquired first thing below in
+// `beforeAll`, released last thing in `afterAll` so a sibling test file's
+// own `initializeDbConfig` call can't repoint our connection mid-run.
+let releaseDbConfigLock: () => void
+
 beforeAll(async () => {
+  releaseDbConfigLock = await acquireDbConfigLock()
   await ensureDatabaseConfigLoaded()
   initializeDbConfig({
     app: { env: 'testing' },
@@ -130,6 +137,7 @@ beforeAll(async () => {
 afterAll(() => {
   if (existsSync(DB_PATH))
     unlinkSync(DB_PATH)
+  releaseDbConfigLock?.()
 })
 
 describe('logout-all primitives (#1957)', () => {

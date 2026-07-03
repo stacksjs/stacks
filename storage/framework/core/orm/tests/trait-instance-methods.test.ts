@@ -24,18 +24,50 @@
  * underlying DB side effect actually happened (proving the id/model was
  * bound correctly, not just that a callable stub exists).
  */
-import { beforeAll, describe, expect, it, mock } from 'bun:test'
+import { afterAll, beforeAll, describe, expect, it, mock } from 'bun:test'
 import { mkdtempSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { db as appDb, initializeDbConfig } from '@stacksjs/database'
-import { defineModel } from '../src/define-model'
+import process from 'node:process'
+
+// Pin env BEFORE importing anything that transitively touches
+// bun-query-builder's own config loader (`defineModel()`'s executor reads
+// it independently of `@stacksjs/database`'s `db` proxy — see the comment
+// in `beforeAll` below). That loader lazily resolves `config/query-builder.ts`
+// on its FIRST call anywhere in the process, reading `process.env.DB_DATABASE_PATH`
+// directly; if it fires after this file's `initializeDbConfig()` override (e.g.
+// this file is the first in the process to run a real query), the fresh load
+// wins and silently repoints every model query at the real dev database
+// instead of this test's throwaway file. Setting the env vars up front,
+// before any import, guarantees that first load — whenever it happens —
+// resolves to the same file this test's `initializeDbConfig()` also targets.
+const dir = mkdtempSync(join(tmpdir(), 'stacks-trait-instance-'))
+const dbFile = join(dir, 'trait-instance.sqlite')
+process.env.DB_CONNECTION = 'sqlite'
+process.env.DB_DATABASE_PATH = dbFile
+
+const { acquireDbConfigLock, db: appDb, ensureDatabaseConfigLoaded, initializeDbConfig } = await import('@stacksjs/database')
+const { configureOrm } = await import('bun-query-builder')
+const { defineModel } = await import('../src/define-model')
 
 describe('trait methods are wired onto hydrated instances (not just the static model)', () => {
-  const dir = mkdtempSync(join(tmpdir(), 'stacks-trait-instance-'))
-  const dbFile = join(dir, 'trait-instance.sqlite')
+  let releaseDbConfigLock: () => void
 
   beforeAll(async () => {
+    // `initializeDbConfig` mutates process-wide state that bun's
+    // concurrently-evaluated test files all share — hold the lock for this
+    // file's entire lifetime so a sibling file's own `initializeDbConfig`
+    // call can't repoint our `db`/`_dbInstance` mid-run (see the lock's
+    // doc comment in storage/framework/core/database/src/utils.ts).
+    releaseDbConfigLock = await acquireDbConfigLock()
+
+    // Drain the one-shot background config reload (`@stacksjs/database`
+    // kicks it off at module load) before forcing our own config — otherwise
+    // it can resolve mid-run and silently repoint `db`/`_dbInstance` at the
+    // real app database, matching the pattern every other file with its own
+    // `initializeDbConfig()` call already follows.
+    await ensureDatabaseConfigLoaded()
+
     // Real file-backed sqlite (not `:memory:`) — `@stacksjs/database`'s `db`
     // (used inside the trait implementations) and `defineModel()`'s
     // bun-query-builder executor are two independently-created connections;
@@ -53,6 +85,18 @@ describe('trait methods are wired onto hydrated instances (not just the static m
         },
       },
     })
+
+    // `initializeDbConfig()` only repoints `@stacksjs/database`'s own `db`
+    // proxy. `defineModel()`'s bun-query-builder executor reads a SEPARATE,
+    // stickier override: once any test file (in-process) calls
+    // `configureOrm()`, its `globalDb` takes permanent precedence over
+    // `setConfig()`-based resolution for the rest of the process — no
+    // subsequent `initializeDbConfig()` call anywhere can undo that. Call
+    // `configureOrm()` ourselves, while holding the lock, so `globalDb`
+    // points at our own file for as long as we hold it, regardless of
+    // whether a sibling file (e.g. instance-mutator.test.ts,
+    // belongs-to-many.test.ts) called `configureOrm()` before us.
+    configureOrm({ database: dbFile })
 
     const run = (sql: string) => (appDb as any).unsafe(sql).execute()
 
@@ -82,6 +126,10 @@ describe('trait methods are wired onto hydrated instances (not just the static m
     await run(`CREATE TABLE users (
       id INTEGER PRIMARY KEY AUTOINCREMENT, email TEXT, stripe_id TEXT, two_factor_secret TEXT
     )`)
+  })
+
+  afterAll(() => {
+    releaseDbConfigLock()
   })
 
   const Post = defineModel({

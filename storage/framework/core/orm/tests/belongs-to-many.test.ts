@@ -16,13 +16,21 @@
  * surface so that regression is caught at the orm test boundary, not
  * after a downstream Stacks app starts throwing at runtime.
  */
-import { beforeAll, describe, expect, it } from 'bun:test'
+import { afterAll, beforeAll, describe, expect, it } from 'bun:test'
 import { Database } from 'bun:sqlite'
 import { configureOrm, getDatabase } from 'bun-query-builder'
+import { acquireDbConfigLock } from '@stacksjs/database'
 import { defineModel } from '../src/define-model'
 
 describe('belongsToMany pivot accessor (audit #8)', () => {
-  beforeAll(() => {
+  // `configureOrm()` mutates the same process-wide bun-query-builder config
+  // singleton `initializeDbConfig()` does (stacksjs/stacks#1862) — hold the
+  // lock for this file's entire lifetime so a sibling file's own config
+  // call (via either entry point) can't repoint our connection mid-run.
+  let releaseDbConfigLock: () => void
+
+  beforeAll(async () => {
+    releaseDbConfigLock = await acquireDbConfigLock()
     configureOrm({ database: ':memory:' })
     const db = getDatabase()
     db.run('CREATE TABLE coaches (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT)')
@@ -34,6 +42,10 @@ describe('belongsToMany pivot accessor (audit #8)', () => {
       role TEXT DEFAULT 'shared',
       status TEXT DEFAULT 'active'
     )`)
+  })
+
+  afterAll(() => {
+    releaseDbConfigLock()
   })
 
   const Athlete = defineModel({
