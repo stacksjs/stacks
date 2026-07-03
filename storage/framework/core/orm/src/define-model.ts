@@ -1810,6 +1810,30 @@ function buildEventHooks(definition: BQBModelDefinition): BQBModelDefinition['ho
 
   const modelName = definition.name.toLowerCase()
 
+  // Model events deliver a PLAIN attribute object, not the raw
+  // bun-query-builder ModelInstance the hooks receive. The instance
+  // exposes columns only through `.get()` / `.attributes` (plus an `id`
+  // getter) — arbitrary column properties are undefined on it — while
+  // every listener registered in app/Events.ts reads
+  // `payload.monitor_id`-style snake_case keys straight off the payload.
+  // Dispatching the raw instance meant every such listener resolved
+  // undefined, found nothing, and silently no-oped: incident:created /
+  // incident:updated notifications and checkresult:created webhooks were
+  // dead code end-to-end (found wiring statusreportupdate:created in
+  // stacksjs/status). `.attributes` is the full snake_case column map
+  // (including the primary key after insert), which is exactly the shape
+  // listeners expect. Broadcast callbacks (broadcastOn/broadcastWith)
+  // keep receiving the instance — they are user-supplied functions with
+  // their own contract, not property-reading listeners.
+  const toEventPayload = (model: any): any => {
+    const attributes = model?.attributes
+    if (!attributes || typeof attributes !== 'object') return model
+    const pk = definition.primaryKey || 'id'
+    const payload: Record<string, unknown> = { ...attributes }
+    if (payload[pk] === undefined && model[pk] !== undefined) payload[pk] = model[pk]
+    return payload
+  }
+
   // Lazy import to avoid circular dependency. Suppression check is done
   // INSIDE the dispatcher (rather than at the hook caller) so even
   // explicit `dispatchEvent` calls from elsewhere honour the
@@ -1925,8 +1949,9 @@ function buildEventHooks(definition: BQBModelDefinition): BQBModelDefinition['ho
       // Order: `created` first (specific), then `saved` (general) — same
       // as Eloquent so a `saved` listener can rely on `created` having
       // already fired for the insert path.
-      await dispatchEvent(`${modelName}:created`, model)
-      await dispatchEvent(`${modelName}:saved`, model)
+      const payload = toEventPayload(model)
+      await dispatchEvent(`${modelName}:created`, payload)
+      await dispatchEvent(`${modelName}:saved`, payload)
       // Broadcast AFTER the event dispatch so any event-listener-side
       // mutation of the model is reflected in the broadcast payload.
       await dispatchBroadcast(`${modelName}:created`, model)
@@ -1941,8 +1966,9 @@ function buildEventHooks(definition: BQBModelDefinition): BQBModelDefinition['ho
       if (!updatingOk) throw new Error(`[ORM] ${modelName}:updating event cancelled the operation`)
     }
     hooks.afterUpdate = async (model: any) => {
-      await dispatchEvent(`${modelName}:updated`, model)
-      await dispatchEvent(`${modelName}:saved`, model)
+      const payload = toEventPayload(model)
+      await dispatchEvent(`${modelName}:updated`, payload)
+      await dispatchEvent(`${modelName}:saved`, payload)
       await dispatchBroadcast(`${modelName}:updated`, model)
     }
   }
@@ -1953,7 +1979,7 @@ function buildEventHooks(definition: BQBModelDefinition): BQBModelDefinition['ho
       if (!shouldProceed) throw new Error(`[ORM] ${modelName}:deleting event cancelled the operation`)
     }
     hooks.afterDelete = async (model: any) => {
-      await dispatchEvent(`${modelName}:deleted`, model)
+      await dispatchEvent(`${modelName}:deleted`, toEventPayload(model))
       await dispatchBroadcast(`${modelName}:deleted`, model)
     }
   }
