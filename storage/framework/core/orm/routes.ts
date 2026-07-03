@@ -7,6 +7,7 @@
 
 import type { EnhancedRequest } from '@stacksjs/bun-router'
 import { route } from '@stacksjs/router'
+import { env } from '@stacksjs/env'
 import { projectPath } from '@stacksjs/path'
 import { createQueryBuilder, defaultConfig, setConfig } from '@stacksjs/query-builder'
 import { HttpError } from '@stacksjs/error-handling'
@@ -21,17 +22,40 @@ import { applyCasts, applySorting, buildIndexMeta, buildIndexPaginator, buildRea
 // and a hard `await import(...)` here used to throw `Cannot find
 // module config/qb.ts` and abort the entire ORM-route bootstrap (so
 // every model-backed Action 404'd in production while `buddy dev`
-// masked it against stale local state). Fall back to
-// bun-query-builder's `defaultConfig` (env-driven) when the override
-// is missing so a clean environment boots cleanly.
+// masked it against stale local state).
+//
+// The fallback used to be bun-query-builder's own `defaultConfig`, whose
+// doc comment claims it's "env-driven" but is actually a hardcoded
+// `dialect: 'postgres'` literal — every project running the framework's
+// own zero-config SQLite default (any fresh `buddy new`, since no
+// config/qb.ts is ever scaffolded) got every useApi-generated REST route
+// silently pointed at Postgres, failing with "role \"postgres\" does not
+// exist" the moment anything hit GET /api/{resource}. Derive the fallback
+// from the same DB_CONNECTION / DB_DATABASE_PATH env vars every other
+// data-layer entry point (migrations, the ORM itself) already reads,
+// instead of a package-level default that has never matched this
+// framework's own default database.
 const qbConfigPath = projectPath('config/qb.ts')
 try {
   const projectQbConfig = (await import(qbConfigPath)).default
   setConfig(projectQbConfig ?? defaultConfig)
 }
 catch {
-  log.debug(`[orm] No config/qb.ts override found — using bun-query-builder defaults`)
-  setConfig(defaultConfig)
+  log.debug(`[orm] No config/qb.ts override found — deriving config from DB_CONNECTION`)
+  const dialect = (env.DB_CONNECTION as 'sqlite' | 'mysql' | 'postgres' | undefined) || 'sqlite'
+  setConfig({
+    ...defaultConfig,
+    dialect,
+    database: dialect === 'sqlite'
+      ? { database: env.DB_DATABASE_PATH || 'database/stacks.sqlite' }
+      : {
+          database: env.DB_DATABASE || 'stacks',
+          host: env.DB_HOST || '127.0.0.1',
+          port: env.DB_PORT || (dialect === 'postgres' ? 5432 : 3306),
+          username: env.DB_USERNAME || (dialect === 'postgres' ? 'postgres' : 'root'),
+          password: env.DB_PASSWORD || '',
+        },
+  })
 }
 
 // Load all models from app/Models/ (individually, so one broken model doesn't block the rest)
