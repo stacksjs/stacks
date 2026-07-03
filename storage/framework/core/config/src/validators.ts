@@ -132,7 +132,12 @@ const SCHEMA: Partial<Record<keyof StacksConfig, SchemaSection>> = {
   },
   email: {
     rules: {
-      'default': checkOneOf(['ses', 'sendgrid', 'mailgun', 'mailtrap', 'smtp', 'log']),
+      // Every driver Mail.registerDefaultDrivers() ships, including the
+      // tests-only in-memory 'capture' driver — its own docblock tells
+      // tests to set `config.email.default = 'capture'`, which this list
+      // used to reject (and a failed validation degrades unrelated boot
+      // consumers like the ORM search hook).
+      'default': checkOneOf(['ses', 'sendgrid', 'mailgun', 'mailtrap', 'smtp', 'log', 'capture']),
     },
   },
 }
