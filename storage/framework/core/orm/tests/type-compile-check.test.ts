@@ -214,7 +214,11 @@ describe('define-model.ts exports defineModel and type re-exports', () => {
     expect(content).not.toContain('BaseOrm')
     expect(content).not.toContain('orm/src/models')
     expect(content).not.toContain('orm/src/types')
-    expect(content).not.toContain('generate')
+    // Import-path style check (matches the sibling assertions above) rather
+    // than a bare `'generate'` substring — the latter also matches
+    // legitimate runtime identifiers like the twoFactor trait's
+    // `generateTwoFactorForModel`, which has nothing to do with codegen.
+    expect(content).not.toContain('orm/src/generate')
   })
 })
 

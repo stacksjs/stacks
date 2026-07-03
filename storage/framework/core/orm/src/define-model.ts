@@ -200,6 +200,79 @@ const MODEL_INSTANCE_INTERNAL_KEYS = new Set([
 const STACKS_PROXY_TAG = Symbol.for('stacks.modelInstanceProxy')
 
 /**
+ * Maps each trait-bag method name to how it must be invoked when called on
+ * a hydrated model instance (`user.checkout(...)`, `post.like(userId)`)
+ * instead of the static bag (`User._billable.checkout(user, ...)`).
+ *
+ * `buildTraitMethods()` builds two shapes of trait function depending on
+ * the trait:
+ *   - 'id'    — taggable/categorizable/commentable/likeable functions take
+ *               the row's primary key as their first argument.
+ *   - 'model' — billable/twoFactor functions take the whole model (so they
+ *               can read arbitrary columns like `stripe_id` and call
+ *               `model.update(...)`) as their first argument.
+ *
+ * `likedBy` is intentionally omitted: it looks up every row liked *by* a
+ * given user — a reverse, cross-row query unrelated to any single
+ * instance's own id — so it stays reachable only via the static bag
+ * (`Model._likeable.likedBy(userId)`).
+ */
+const TRAIT_INSTANCE_METHOD_BINDINGS: Record<string, { bag: keyof TraitMethods, mode: 'id' | 'model' }> = {
+  tags: { bag: '_taggable', mode: 'id' },
+  tagCount: { bag: '_taggable', mode: 'id' },
+  addTag: { bag: '_taggable', mode: 'id' },
+  activeTags: { bag: '_taggable', mode: 'id' },
+  inactiveTags: { bag: '_taggable', mode: 'id' },
+  removeTag: { bag: '_taggable', mode: 'id' },
+
+  categories: { bag: '_categorizable', mode: 'id' },
+  categoryCount: { bag: '_categorizable', mode: 'id' },
+  addCategory: { bag: '_categorizable', mode: 'id' },
+  activeCategories: { bag: '_categorizable', mode: 'id' },
+  inactiveCategories: { bag: '_categorizable', mode: 'id' },
+  removeCategory: { bag: '_categorizable', mode: 'id' },
+
+  comments: { bag: '_commentable', mode: 'id' },
+  commentCount: { bag: '_commentable', mode: 'id' },
+  addComment: { bag: '_commentable', mode: 'id' },
+  approvedComments: { bag: '_commentable', mode: 'id' },
+  pendingComments: { bag: '_commentable', mode: 'id' },
+  rejectedComments: { bag: '_commentable', mode: 'id' },
+
+  likes: { bag: '_likeable', mode: 'id' },
+  likeCount: { bag: '_likeable', mode: 'id' },
+  like: { bag: '_likeable', mode: 'id' },
+  unlike: { bag: '_likeable', mode: 'id' },
+  isLiked: { bag: '_likeable', mode: 'id' },
+
+  createStripeUser: { bag: '_billable', mode: 'model' },
+  updateStripeUser: { bag: '_billable', mode: 'model' },
+  deleteStripeUser: { bag: '_billable', mode: 'model' },
+  createOrGetStripeUser: { bag: '_billable', mode: 'model' },
+  retrieveStripeUser: { bag: '_billable', mode: 'model' },
+  defaultPaymentMethod: { bag: '_billable', mode: 'model' },
+  setDefaultPaymentMethod: { bag: '_billable', mode: 'model' },
+  addPaymentMethod: { bag: '_billable', mode: 'model' },
+  paymentMethods: { bag: '_billable', mode: 'model' },
+  newSubscription: { bag: '_billable', mode: 'model' },
+  updateSubscription: { bag: '_billable', mode: 'model' },
+  cancelSubscription: { bag: '_billable', mode: 'model' },
+  activeSubscription: { bag: '_billable', mode: 'model' },
+  checkout: { bag: '_billable', mode: 'model' },
+  createSetupIntent: { bag: '_billable', mode: 'model' },
+  subscriptionHistory: { bag: '_billable', mode: 'model' },
+  transactionHistory: { bag: '_billable', mode: 'model' },
+  connectAccount: { bag: '_billable', mode: 'model' },
+  createConnectAccount: { bag: '_billable', mode: 'model' },
+  connectOnboardLink: { bag: '_billable', mode: 'model' },
+  syncConnectStatus: { bag: '_billable', mode: 'model' },
+  chargeWithSplit: { bag: '_billable', mode: 'model' },
+
+  generateTwoFactorForModel: { bag: '_twoFactor', mode: 'model' },
+  verifyTwoFactorCode: { bag: '_twoFactor', mode: 'model' },
+}
+
+/**
  * Walk a dot-separated path against a relations map and return the
  * resolved value, or `null` if any segment misses. Used by
  * `toSearchableObject` to pull denormalised cross-table fields out of
@@ -480,6 +553,24 @@ function wrapModelInstance<T extends object>(
           const related = rels[prop]
           if (Array.isArray(related)) return related.map(x => wrapModelInstance(x, casts))
           return wrapModelInstance(related, casts)
+        }
+
+        // Trait instance methods (taggable/categorizable/commentable/
+        // likeable/billable/twoFactor) — see TRAIT_INSTANCE_METHOD_BINDINGS.
+        // `_definition.__traitMethods` is stamped per-model by
+        // `defineModel()`, so a relation-traversed instance of a
+        // *different* model (reached via `_relations` above) still
+        // resolves its *own* model's trait bag here, not the parent's.
+        const binding = TRAIT_INSTANCE_METHOD_BINDINGS[prop]
+        if (binding) {
+          const traitBags = (target as any)._definition?.__traitMethods as TraitMethods | undefined
+          const bag = traitBags?.[binding.bag] as Record<string, (...args: any[]) => any> | undefined
+          const fn = bag?.[prop]
+          if (typeof fn === 'function') {
+            return binding.mode === 'model'
+              ? (...args: any[]) => fn(recv, ...args)
+              : (...args: any[]) => fn((target as any).id, ...args)
+          }
         }
       }
       const v = Reflect.get(target, prop, target)
@@ -1586,6 +1677,16 @@ export function defineModel<const TDef extends ModelDefinition>(definition: TDef
   const searchHooks = buildSearchHooks(definition as unknown as BQBModelDefinition)
   const hooks = mergeModelHooks(observeHooks, searchHooks)
 
+  // Build trait methods based on model config. Computed early (before
+  // `defWithHooks`/`createModel`) and stamped onto `definition` itself so
+  // every `ModelInstance` built from it — including relation-traversed
+  // instances of *this* model reached via a different model's `.with()`,
+  // which construct with their own model's definition — can find its own
+  // trait bag via `_definition.__traitMethods` in `wrapModelInstance`'s
+  // proxy `get` trap. See TRAIT_INSTANCE_METHOD_BINDINGS.
+  const traitMethods = buildTraitMethods(definition as unknown as BQBModelDefinition)
+  ;(definition as any).__traitMethods = traitMethods
+
   // Merge hooks into definition
   const defWithHooks = hooks
     ? { ...definition, hooks: { ...(definition as any).hooks, ...hooks } }
@@ -1656,9 +1757,6 @@ export function defineModel<const TDef extends ModelDefinition>(definition: TDef
     const auditOpts = resolveAuditOptions(useAuditDecl)
     applyAudit(baseModel, definition.name, definition.primaryKey || 'id', auditOpts)
   }
-
-  // Build trait methods based on model config
-  const traitMethods = buildTraitMethods(definition as unknown as BQBModelDefinition)
 
   // Static-level event suppression helpers. `Model.withoutEvents(fn)`
   // runs `fn` with the lifecycle-event ALS scope marked suppressed —
