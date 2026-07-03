@@ -22,14 +22,14 @@ export default defineModel({
     useAuth: {
       usePasskey: true,
     },
-    // Enables the checkout()/createStripeUser()/activeSubscription()
-    // etc. methods (createBillableMethods in orm/define-model.ts) used
-    // by the Stripe billing checkout Actions in
-    // storage/framework/defaults/app/Actions/Payment/*. Without this
-    // trait those methods don't exist on a User instance at all — see
-    // ensureUsersAuthColumns' `stripe_id` guarantee-ALTER for the
-    // matching schema-side half of this fix (stacksjs/status#1 Phase 9).
-    billable: true,
+    // Not every app bills through the User model — leave `billable`
+    // off by default here. An app that wants checkout()/
+    // createStripeUser()/activeSubscription() etc. (createBillableMethods
+    // in orm/define-model.ts) should `buddy publish:model User` and
+    // enable the trait on its own app/Models/User.ts override, alongside
+    // the matching users.stripe_id guarantee-ALTER already provided by
+    // ensureUsersAuthColumns() regardless of this flag.
+    billable: false,
     useUuid: true,
     useTimestamps: true, // defaults to true, `timestampable` used as an alias
     useSocials: ['github'],

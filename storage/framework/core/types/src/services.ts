@@ -169,6 +169,14 @@ export interface ServicesOptions {
     secretKey?: string
     publicKey?: string
     /**
+     * Signing secret for verifying inbound Stripe webhook requests
+     * (`whsec_...`, from the Stripe dashboard's webhook endpoint
+     * config). Required by any app receiving Stripe webhooks —
+     * without it, `stripe.webhooks.constructEvent` has nothing to
+     * verify the `stripe-signature` header against.
+     */
+    webhookSecret?: string
+    /**
      * Pinned Stripe API version. Defaults to whatever the bundled SDK
      * was compiled against; override here when rolling forward without
      * a code change. Format: 'YYYY-MM-DD' or 'YYYY-MM-DD.preview'.

@@ -66,9 +66,16 @@ describe('users.stripe_id defensive ALTER (stacksjs/status#1 Phase 9)', () => {
       expect(body).toMatch(/CREATE UNIQUE INDEX IF NOT EXISTS idx_users_stripe_id ON users\(stripe_id\)/)
     })
 
-    test('User model default enables the billable trait', () => {
+    // The framework default deliberately leaves `billable` off — not
+    // every app bills through the User model. Apps that want
+    // checkout()/createStripeUser()/etc. publish their own override
+    // (`buddy publish:model User`) and enable the trait there — see
+    // ~/Code/status's app/Models/User.ts for a real example. The
+    // schema-side guarantee (stripe_id column + index, asserted above)
+    // applies regardless of whether any given app enables the trait.
+    test('User model default leaves the billable trait off', () => {
       const source = readFileSync(resolve(__dirname, '../../../defaults/app/Models/User.ts'), 'utf-8')
-      expect(source).toMatch(/billable:\s*true/)
+      expect(source).toMatch(/billable:\s*false/)
     })
   })
 })
