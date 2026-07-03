@@ -15,7 +15,7 @@ const isAuthenticated = ref(false)
 export function useAuth(): AuthComposable {
   async function fetchAuthUser(): Promise<UserData | null> {
     try {
-      if (!token) {
+      if (!token.value) {
         isAuthenticated.value = false
         user.value = null
         return null
@@ -23,7 +23,7 @@ export function useAuth(): AuthComposable {
 
       const response = await fetch(`${baseUrl}/me`, {
         headers: {
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${token.value}`,
           Accept: 'application/json',
         },
       })
