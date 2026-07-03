@@ -656,6 +656,82 @@ async function waitForRemoteReady(ip: string, verbose: boolean): Promise<void> {
 }
 
 /**
+ * Resolve (and decrypt) the deploy-target's environment file into a flat
+ * key/value map, so its values can be shipped to the server as each site's
+ * systemd `.env` content.
+ *
+ * ts-cloud's `buildSiteDeployScript` treats `site.env` as the COMPLETE
+ * content of the deployed `.env` — it doesn't read or merge in anything
+ * from the packaged release tarball (ts-cloud is a generic deploy tool; it
+ * has no idea `.env.production`/dotenvx encryption exist, that's entirely a
+ * Stacks convention). Left unaddressed, every Hetzner site deploys with
+ * ONLY whatever's in that site's own `env` override (often nothing at all)
+ * — confirmed against a real deploy (stacksjs/status#1 Phase 9): the `main`
+ * site (no `env` override) came up logging "loaded 0 variables from .env",
+ * and `api` (which only declares `{ HOST, APP_ENV }` to force the loopback
+ * bind) came up with just those 2 keys and none of its real production
+ * config, failing config validation on the still-`encrypted:...` APP_ENV
+ * ciphertext it never had a chance to decrypt (no DOTENV_PRIVATE_KEY_* in
+ * that 2-key set).
+ *
+ * Returns `{}` (not an error) when the file doesn't exist or fails to
+ * parse — an app with no `.env.production` yet shouldn't block deploying
+ * with whatever `site.env` overrides it does have.
+ */
+export async function resolveDeployEnvValues(environment: 'production' | 'staging' | 'development'): Promise<Record<string, string>> {
+  const fileName = environment === 'production' ? '.env.production' : environment === 'staging' ? '.env.staging' : '.env'
+  const filePath = p.projectPath(fileName)
+  if (!existsSync(filePath))
+    return {}
+
+  try {
+    const { getEnv } = await import('@stacksjs/env')
+    const result = getEnv(undefined, { file: fileName, format: 'json' })
+    if (!result.success || !result.output) {
+      log.debug(`[deploy] Could not read ${fileName} for site env merging: ${result.error ?? 'unknown error'}`)
+      return {}
+    }
+
+    const parsed = JSON.parse(result.output) as Record<string, string>
+    const values: Record<string, string> = {}
+    for (const [key, value] of Object.entries(parsed)) {
+      // dotenvx crypto metadata, not application config — never ship it.
+      if (/^DOTENV_(PUBLIC|PRIVATE)_KEY/.test(key))
+        continue
+      values[key] = String(value)
+    }
+    return values
+  }
+  catch (error) {
+    log.debug(`[deploy] Failed to resolve ${fileName} for site env merging:`, error)
+    return {}
+  }
+}
+
+/**
+ * Merge the deploy-target's resolved env values underneath each site's own
+ * explicit `env` overrides, stripping a general `PORT` when the site
+ * declares its own `port` (the generated systemd unit already sets
+ * `Environment=PORT=${site.port}` — see buildSiteDeployScript in ts-cloud —
+ * so a leftover PORT in the shipped `.env` would otherwise silently win
+ * over it once the app's own dotenv loading applies file values on top of
+ * the process env).
+ */
+export function mergeSiteDeployEnv(sites: Record<string, any>, resolvedDeployEnv: Record<string, string>): Record<string, any> {
+  return Object.fromEntries(
+    Object.entries(sites).map(([siteName, site]) => {
+      if (!site)
+        return [siteName, site]
+
+      const base = { ...resolvedDeployEnv }
+      if (site.port !== undefined)
+        delete base.PORT
+      return [siteName, { ...site, env: { ...base, ...(site.env || {}) } }]
+    }),
+  )
+}
+
+/**
  * Forge-style deploy to a Hetzner Cloud server via ts-cloud:
  *   1. provision (or reuse) the compute server + firewall + SSH key,
  *   2. wait for cloud-init to finish installing bun,
@@ -737,7 +813,7 @@ async function runHetznerDeploy(args: {
   docker: boolean
   createCloudDriver: any
   deployAllComputeSites: any
-  resolveSiteKind: (site: any) => 'bucket' | 'server-app' | 'server-static'
+  resolveSiteKind: (site: any) => 'bucket' | 'server-app' | 'server-static' | 'server-php' | 'redirect'
   /** Deploy ONLY this site (multi-tenant surgical add). Provisioning still uses
    *  the full config so rpx keeps every existing route; only this site's files
    *  are rebuilt/shipped and only its domain gets a DNS record. */
@@ -846,10 +922,19 @@ async function runHetznerDeploy(args: {
       continue
     // ts-cloud's deployAllComputeSites deploys BOTH server-app sites (`start`)
     // and server-static sites (no `start`, has `root`) — and it calls
-    // tarballForSite() for each. Bucket sites are handled elsewhere. So we must
-    // produce a tarball for every non-bucket site, not just `start` ones.
+    // tarballForSite() for each. Bucket and redirect sites are NOT shipped (it
+    // filters them out), so we produce a tarball for every server-* site but
+    // skip bucket/redirect below.
     const kind = resolveSiteKind(site)
     if (kind === 'bucket')
+      continue
+
+    // Redirect-only sites (a `redirect` with no `root`/`build`/`start`, e.g.
+    // veryGoodAdblock, wwwStacksjs) ship NOTHING: deployAllComputeSites filters
+    // them out (never calls tarballForSite) and the rpx gateway answers their
+    // domain with a 301. Packaging one would tar the entire repo (~73MB) that is
+    // uploaded but never served — pure wasted bandwidth and deploy time. Skip.
+    if (kind === 'redirect')
       continue
 
     // server-static: build the site locally first so the tarball contains the
@@ -880,13 +965,20 @@ async function runHetznerDeploy(args: {
   if (docker)
     await buildContainerImageWithPantry({ slug, sites, verbose })
 
+  // Merge each site's real production config underneath its own explicit
+  // `env` overrides — see resolveDeployEnvValues' doc comment for why this
+  // has to happen here (ts-cloud has no idea .env.production/decryption
+  // exist) rather than inside ts-cloud itself.
+  const resolvedDeployEnv = await resolveDeployEnvValues(environment)
+  const sitesWithResolvedEnv = mergeSiteDeployEnv(sites, resolvedDeployEnv)
+
   log.info(onlySite ? `Shipping site '${onlySite}' to the server...` : 'Shipping release to the server...')
   // For a single-site deploy, hand ts-cloud a config whose sites are narrowed to
   // just that one so it ships only it (provisioning already reloaded rpx with the
   // full route set, so nothing else is touched).
   const deployConfig = onlySite
-    ? { ...tsCloudConfig, sites: { [onlySite]: sites[onlySite] } }
-    : tsCloudConfig
+    ? { ...tsCloudConfig, sites: { [onlySite]: sitesWithResolvedEnv[onlySite] } }
+    : { ...tsCloudConfig, sites: sitesWithResolvedEnv }
   const ok = await deployAllComputeSites({
     config: deployConfig,
     // The rpx gateway is ALWAYS regenerated from the full site model, never the
