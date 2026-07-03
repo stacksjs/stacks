@@ -685,7 +685,7 @@ async function deployToHetzner(tsCloudConfig: any, deployEnv: string, options: D
   const { createCloudDriver, deployAllComputeSites, resolveSiteKind } = await import('@stacksjs/ts-cloud')
 
   try {
-    await runHetznerDeploy({ tsCloudConfig, environment, verbose, docker: (options as any).docker === true, createCloudDriver, deployAllComputeSites, resolveSiteKind })
+    await runHetznerDeploy({ tsCloudConfig, environment, verbose, docker: (options as any).docker === true, createCloudDriver, deployAllComputeSites, resolveSiteKind, onlySite: (options as any).site || undefined })
   }
   catch (err) {
     log.error('Hetzner deploy failed:')
@@ -738,8 +738,12 @@ async function runHetznerDeploy(args: {
   createCloudDriver: any
   deployAllComputeSites: any
   resolveSiteKind: (site: any) => 'bucket' | 'server-app' | 'server-static'
+  /** Deploy ONLY this site (multi-tenant surgical add). Provisioning still uses
+   *  the full config so rpx keeps every existing route; only this site's files
+   *  are rebuilt/shipped and only its domain gets a DNS record. */
+  onlySite?: string
 }): Promise<void> {
-  const { tsCloudConfig, environment, verbose, docker, createCloudDriver, deployAllComputeSites, resolveSiteKind } = args
+  const { tsCloudConfig, environment, verbose, docker, createCloudDriver, deployAllComputeSites, resolveSiteKind, onlySite } = args
 
   const startTime = performance.now()
   console.log('')
@@ -827,9 +831,18 @@ async function runHetznerDeploy(args: {
     '.env.production.bak',
   ].flatMap(p => [`--exclude='${p}'`, `--exclude='*/${p}'`])
 
+  if (onlySite && !sites[onlySite]) {
+    log.error(`--site '${onlySite}' is not a configured site. Available: ${Object.keys(sites).join(', ')}`)
+    process.exit(ExitCode.FatalError)
+  }
+
   const tarballs = new Map<string, string>()
   for (const [siteName, site] of Object.entries<any>(sites)) {
     if (!site)
+      continue
+    // Surgical single-site deploy: build/ship only the requested site (the box
+    // already holds every other site; provisioning above kept their rpx routes).
+    if (onlySite && siteName !== onlySite)
       continue
     // ts-cloud's deployAllComputeSites deploys BOTH server-app sites (`start`)
     // and server-static sites (no `start`, has `root`) — and it calls
@@ -867,9 +880,15 @@ async function runHetznerDeploy(args: {
   if (docker)
     await buildContainerImageWithPantry({ slug, sites, verbose })
 
-  log.info('Shipping release to the server...')
+  log.info(onlySite ? `Shipping site '${onlySite}' to the server...` : 'Shipping release to the server...')
+  // For a single-site deploy, hand ts-cloud a config whose sites are narrowed to
+  // just that one so it ships only it (provisioning already reloaded rpx with the
+  // full route set, so nothing else is touched).
+  const deployConfig = onlySite
+    ? { ...tsCloudConfig, sites: { [onlySite]: sites[onlySite] } }
+    : tsCloudConfig
   const ok = await deployAllComputeSites({
-    config: tsCloudConfig,
+    config: deployConfig,
     environment,
     driver,
     sha,
@@ -896,7 +915,7 @@ async function runHetznerDeploy(args: {
   // env) and upsert A records → the box IP. Non-fatal: a DNS hiccup shouldn't
   // fail an otherwise-successful release.
   if (ok)
-    await reconcileHetznerDns(sites, ip, log)
+    await reconcileHetznerDns(onlySite ? { [onlySite]: sites[onlySite] } : sites, ip, log)
 
   console.log('')
   if (ok) {
@@ -1041,6 +1060,7 @@ export function deploy(buddy: CLI): void {
     .option('--prod', descriptions.production, { default: true })
     .option('--dev', descriptions.development, { default: false })
     .option('--yes', descriptions.yes, { default: false })
+    .option('--site <name>', 'Deploy only this one site to the existing server (multi-tenant surgical add)', { default: undefined })
     .option('--staging', descriptions.staging, { default: false })
     .option('--docker', 'Also build an OCI image with pantry (native, no Docker daemon) and push it to the pantry registry', { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
