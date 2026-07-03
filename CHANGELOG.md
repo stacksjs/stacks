@@ -1,5 +1,17 @@
 # Stacks Changelog
 
+## v0.70.49
+
+[compare changes](https://github.com/stacksjs/stacks/compare/v0.70.48...v0.70.49)
+
+### 🩹 Fixes
+
+- **billing:** Create users.stripe_id column, enable billable trait on User ([c04ccf122](https://github.com/stacksjs/stacks/commit/c04ccf122))
+
+### ❤️ Contributors
+
+- Chris ([@chrisbbreuer](https://github.com/chrisbbreuer))
+
 ## v0.70.48
 
 [compare changes](https://github.com/stacksjs/stacks/compare/v0.70.47...v0.70.48)
