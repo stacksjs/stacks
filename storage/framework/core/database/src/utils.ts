@@ -217,7 +217,18 @@ function ensureConfigLoaded(): Promise<void> {
   if (!_configInitPromise) {
     _configInitPromise = (async () => {
       try {
-        const { config } = await import('@stacksjs/config')
+        const { config, overridesReady } = await import('@stacksjs/config')
+        // `config.database` is a Proxy read (see `readMerged()` in
+        // @stacksjs/config) that falls back to framework defaults until the
+        // project's own `config/database.ts` has actually finished loading.
+        // `overridesReady` is the signal for that — awaiting it here closes
+        // a race where a fast one-shot script (e.g. a `bun -e` script or a
+        // CLI command issuing its first query very early in boot) reads the
+        // proxy before the project override lands, locks in the framework's
+        // default connection settings via `initializeDbConfig`, and never
+        // retries since `_dbInstance` is only invalidated from inside
+        // `initializeDbConfig` itself.
+        await overridesReady
         if (config) {
           initializeDbConfig(config)
           // Reset instance so next access uses updated config
