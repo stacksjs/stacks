@@ -889,6 +889,10 @@ async function runHetznerDeploy(args: {
     : tsCloudConfig
   const ok = await deployAllComputeSites({
     config: deployConfig,
+    // The rpx gateway is ALWAYS regenerated from the full site model, never the
+    // narrowed single-site `deployConfig`, so a `--site` deploy can never drop the
+    // other sites' routes (the production-incident guard).
+    rpxConfig: tsCloudConfig,
     environment,
     driver,
     sha,
