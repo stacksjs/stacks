@@ -36,10 +36,10 @@ export function useAuth(): AuthComposable {
       }
 
       const data = await response.json() as MeResponse
-      user.value = data.user
+      user.value = data
       isAuthenticated.value = true
 
-      return data.user
+      return data
     }
     catch (error) {
       console.error('Error fetching user:', error)
@@ -78,7 +78,7 @@ export function useAuth(): AuthComposable {
     }
 
     if (isRegisterResponse(data)) {
-      token.value = data.data.token
+      token.value = data.token
       return data
     }
 
@@ -90,7 +90,7 @@ export function useAuth(): AuthComposable {
   }
 
   function isRegisterResponse(data: RegisterResponse | RegisterError): data is RegisterResponse {
-    return 'data' in data && 'token' in data.data
+    return 'token' in data && 'user' in data
   }
 
   async function login(user: AuthUser): Promise<LoginResponse | LoginError> {
@@ -110,7 +110,7 @@ export function useAuth(): AuthComposable {
       }
 
       const data = await response.json() as LoginResponse
-      token.value = data.data.token
+      token.value = data.token
       await fetchAuthUser() // Fetch user data after successful login
       return data
     }
