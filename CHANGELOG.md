@@ -1,5 +1,21 @@
 # Stacks Changelog
 
+## v0.70.50
+
+[compare changes](https://github.com/stacksjs/stacks/compare/v0.70.49...v0.70.50)
+
+### 🩹 Fixes
+
+- **auth:** Read the flat token/user shape LoginAction/RegisterAction/AuthUserAction actually return ([acd8f8eda](https://github.com/stacksjs/stacks/commit/acd8f8eda))
+- **browser:** Read token.value instead of Ref in useAuth fetchAuthUser ([bb7d6246d](https://github.com/stacksjs/stacks/commit/bb7d6246d))
+- **database:** Guarantee-ALTER the `uuid` column for every `useUuid` model ([f86c1bfb2](https://github.com/stacksjs/stacks/commit/f86c1bfb2))
+- **orm:** Wire trait methods onto hydrated model instances, not just the static class ([e5b7fb562](https://github.com/stacksjs/stacks/commit/e5b7fb562))
+- **billing:** Leave billable trait off the default User model ([2cb73fd06](https://github.com/stacksjs/stacks/commit/2cb73fd06))
+
+### ❤️ Contributors
+
+- Chris ([@chrisbbreuer](https://github.com/chrisbbreuer))
+
 ## v0.70.49
 
 [compare changes](https://github.com/stacksjs/stacks/compare/v0.70.48...v0.70.49)
