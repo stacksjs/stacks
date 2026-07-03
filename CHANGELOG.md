@@ -1,5 +1,17 @@
 # Stacks Changelog
 
+## v0.70.48
+
+[compare changes](https://github.com/stacksjs/stacks/compare/v0.70.47...v0.70.48)
+
+### 🚀 Enhancements
+
+- **auth:** Wire TOTP 2FA — setup/enable/disable + login enforcement ([986f88351](https://github.com/stacksjs/stacks/commit/986f88351))
+
+### ❤️ Contributors
+
+- Chris ([@chrisbbreuer](https://github.com/chrisbbreuer))
+
 ## v0.70.47
 
 [compare changes](https://github.com/stacksjs/stacks/compare/v0.70.46...v0.70.47)
