@@ -95,6 +95,33 @@ async function loadActionValidations(handlerPath: string): Promise<Record<string
  */
 export async function generateOpenApi(): Promise<OpenApiSpec> {
   const { listRegisteredRoutes } = await import('@stacksjs/router')
+
+  // `buddy generate:openapi` runs as its own one-shot CLI process — unlike
+  // the real dev/prod server (see storage/framework/core/server/src/start.ts),
+  // nothing has imported routes/api.ts (or the framework defaults, or the
+  // useApi-generated ORM routes) yet, so routeMiddlewareRegistry is empty
+  // and listRegisteredRoutes() below returns nothing. Load routes the same
+  // way the server does, just without actually calling serve(). Best-effort
+  // and idempotent-safe: if this ever runs inside an already-booted process
+  // (routes already loaded), re-importing is a silent no-op per each
+  // module's own import-cache semantics, not a duplicate-registration error.
+  try {
+    const { loadRoutes } = await import('@stacksjs/router')
+    const { default: routeRegistry } = await import('../../../../../app/Routes')
+    await loadRoutes(routeRegistry)
+  }
+  catch (error) {
+    const message = error instanceof Error ? error.message : String(error)
+    console.warn(`[generateOpenApi] Failed to load routes/api.ts + framework routes: ${message}`)
+  }
+  try {
+    await import('../../orm/routes')
+  }
+  catch (error) {
+    const message = error instanceof Error ? error.message : String(error)
+    console.warn(`[generateOpenApi] Failed to load useApi-generated ORM routes: ${message}`)
+  }
+
   const routes = listRegisteredRoutes()
 
   const spec: OpenApiSpec = {
