@@ -1,5 +1,21 @@
 # Stacks Changelog
 
+## v0.70.51
+
+[compare changes](https://github.com/stacksjs/stacks/compare/v0.70.50...v0.70.51)
+
+### 🩹 Fixes
+
+- **test:** Serialize process-wide db config mutations across concurrent test files ([ab37aa2ac](https://github.com/stacksjs/stacks/commit/ab37aa2ac))
+- **orm:** Dispatch model events with plain attribute payloads, not raw ModelInstances ([3722b031b](https://github.com/stacksjs/stacks/commit/3722b031b))
+- **config:** Allow the tests-only capture email driver in validation ([ed50c2efc](https://github.com/stacksjs/stacks/commit/ed50c2efc))
+- **api:** Generated OpenAPI spec title uses config.app.name, not 'Stacks API' ([3e7a46610](https://github.com/stacksjs/stacks/commit/3e7a46610))
+
+### ❤️ Contributors
+
+- Chris ([@chrisbbreuer](https://github.com/chrisbbreuer))
+- Glennmichael123 ([@glennmichael123](https://github.com/glennmichael123))
+
 ## v0.70.50
 
 [compare changes](https://github.com/stacksjs/stacks/compare/v0.70.49...v0.70.50)

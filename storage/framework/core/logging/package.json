@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/logging",
   "type": "module",
-  "version": "0.70.50",
+  "version": "0.70.51",
   "description": "The Stacks logging system.",
   "author": "Chris Breuer",
   "contributors": [
