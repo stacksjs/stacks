@@ -124,9 +124,20 @@ export async function generateOpenApi(): Promise<OpenApiSpec> {
 
   const routes = listRegisteredRoutes()
 
+  // Was a hardcoded 'Stacks API' — every app generating an OpenAPI spec
+  // (via `buddy generate:openapi` or the live GET /__openapi.json route)
+  // got the framework's own name instead of its own, regardless of
+  // config/app.ts's `name`.
+  let appName = 'Stacks API'
+  try {
+    const { config } = await import('@stacksjs/config')
+    if (config.app?.name) appName = `${config.app.name} API`
+  }
+  catch { /* best-effort — keep the generic fallback */ }
+
   const spec: OpenApiSpec = {
     openapi: '3.0.0',
-    info: { title: 'Stacks API', version: '1.0.0' },
+    info: { title: appName, version: '1.0.0' },
     paths: {},
     components: { schemas: {} },
   }
