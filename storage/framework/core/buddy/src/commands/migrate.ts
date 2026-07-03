@@ -396,6 +396,22 @@ export function migrate(buddy: CLI): void {
         }
       }
 
+      // uuid guarantee — every model with `useUuid: true` needs a `uuid`
+      // column, but most committed create-table migrations were generated
+      // before the trait was added to their model (or predate the model
+      // entirely) and nothing ever regenerates them (stacksjs/status#1
+      // Phase 9, see uuid-columns.ts). Unlike the block above this isn't
+      // gated behind --auth: the affected models span the whole app, not
+      // just `users`.
+      try {
+        const { ensureUuidColumns, sqlHelpers } = await import('@stacksjs/database')
+        const driver = process.env.DB_CONNECTION || 'sqlite'
+        await ensureUuidColumns(sqlHelpers(driver), { verbose: options.verbose })
+      }
+      catch (error) {
+        log.error('Failed to ensure uuid columns post-migration:', error)
+      }
+
       // Post-migrate FK integrity check (stacksjs/stacks#1915 D-5).
       // Surfaces the "you flipped DB_CONNECTION and the FKs didn't
       // follow" failure mode while the user is still at the migrate
@@ -489,6 +505,18 @@ export function migrate(buddy: CLI): void {
         catch (error) {
           log.error('Failed to migrate auth/notification/RBAC tables:', error)
         }
+      }
+
+      // uuid guarantee (stacksjs/status#1 Phase 9, see uuid-columns.ts) —
+      // not gated behind --auth, same reasoning as the `buddy migrate` call
+      // site above.
+      try {
+        const { ensureUuidColumns, sqlHelpers } = await import('@stacksjs/database')
+        const driver = process.env.DB_CONNECTION || 'sqlite'
+        await ensureUuidColumns(sqlHelpers(driver), { verbose: options.verbose })
+      }
+      catch (error) {
+        log.error('Failed to ensure uuid columns post-migration:', error)
       }
 
       // Surface the model-migration failure only after the guarantee
