@@ -1,5 +1,17 @@
 # Stacks Changelog
 
+## v0.70.47
+
+[compare changes](https://github.com/stacksjs/stacks/compare/v0.70.46...v0.70.47)
+
+### 🩹 Fixes
+
+- **auth:** Close passkey-enrollment account takeover, require session auth ([65d20b4bf](https://github.com/stacksjs/stacks/commit/65d20b4bf))
+
+### ❤️ Contributors
+
+- Chris ([@chrisbbreuer](https://github.com/chrisbbreuer))
+
 ## v0.70.46
 
 [compare changes](https://github.com/stacksjs/stacks/compare/v0.70.45...v0.70.46)
