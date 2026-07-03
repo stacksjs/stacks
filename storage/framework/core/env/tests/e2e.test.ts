@@ -511,6 +511,89 @@ API_KEY=sk_test_123
   })
 })
 
+describe('E2E - setEnv key safety', () => {
+  beforeEach(() => {
+    setupTestDir()
+  })
+
+  afterEach(() => {
+    cleanupTestDir()
+  })
+
+  it('should not reuse an existing public key that has no matching private key on disk', () => {
+    const envPath = join(TEST_DIR, '.env-orphaned-key')
+    const keysPath = join(TEST_DIR, '.env.keys')
+
+    // Simulate a scaffolded .env that ships a demo public key with no
+    // corresponding .env.keys file anywhere (the real-world repro: `buddy
+    // new` writes DOTENV_PUBLIC_KEY but .env.keys is never generated/committed).
+    const orphanedPublicKey = generateKeypair().publicKey
+    writeFileSync(envPath, `DOTENV_PUBLIC_KEY="${orphanedPublicKey}"\n`)
+    expect(existsSync(keysPath)).toBe(false)
+
+    const result = setEnv('API_KEY', 'sk_live_should_be_recoverable', {
+      file: envPath,
+      keysFile: keysPath,
+      cwd: TEST_DIR,
+    })
+
+    expect(result.success).toBe(true)
+    expect(existsSync(keysPath)).toBe(true)
+
+    // The value must round-trip through decryption — proving it was NOT
+    // encrypted with the orphaned public key that has no saved private key.
+    const getResult = getEnv('API_KEY', { file: envPath, keysFile: keysPath, cwd: TEST_DIR })
+    expect(getResult.success).toBe(true)
+    expect(getResult.output).toBe('sk_live_should_be_recoverable')
+  })
+
+  it('should not reuse an existing env-suffixed public key that has no matching private key on disk', () => {
+    const envPath = join(TEST_DIR, '.env.production')
+    const keysPath = join(TEST_DIR, '.env.keys')
+
+    // Same scenario but for a keyed file (e.g. `.env.production`), whose
+    // public key line is `DOTENV_PUBLIC_KEY_PRODUCTION`, not the bare name.
+    const orphanedPublicKey = generateKeypair().publicKey
+    writeFileSync(envPath, `DOTENV_PUBLIC_KEY_PRODUCTION="${orphanedPublicKey}"\n`)
+    expect(existsSync(keysPath)).toBe(false)
+
+    const result = setEnv('HCLOUD_TOKEN', 'super-secret-token', {
+      file: envPath,
+      keysFile: keysPath,
+      cwd: TEST_DIR,
+    })
+
+    expect(result.success).toBe(true)
+
+    const getResult = getEnv('HCLOUD_TOKEN', { file: envPath, keysFile: keysPath, cwd: TEST_DIR })
+    expect(getResult.success).toBe(true)
+    expect(getResult.output).toBe('super-secret-token')
+  })
+
+  it('should keep reusing an existing public key when its private key is present', () => {
+    const envPath = join(TEST_DIR, '.env')
+    const keysPath = join(TEST_DIR, '.env.keys')
+
+    // First call generates and saves a real keypair.
+    setEnv('FIRST', 'first-value', { file: envPath, keysFile: keysPath, cwd: TEST_DIR })
+
+    const publicKeyAfterFirstSet = readFileSync(envPath, 'utf-8').match(/DOTENV_PUBLIC_KEY="([^"]+)"/)?.[1]
+    expect(publicKeyAfterFirstSet).toBeDefined()
+
+    // Second call should reuse the same keypair rather than generating a new one.
+    setEnv('SECOND', 'second-value', { file: envPath, keysFile: keysPath, cwd: TEST_DIR })
+
+    const publicKeyMatches = [...readFileSync(envPath, 'utf-8').matchAll(/DOTENV_PUBLIC_KEY="([^"]+)"/g)]
+    expect(publicKeyMatches).toHaveLength(1)
+    expect(publicKeyMatches[0]?.[1]).toBe(publicKeyAfterFirstSet)
+
+    const firstGet = getEnv('FIRST', { file: envPath, keysFile: keysPath, cwd: TEST_DIR })
+    const secondGet = getEnv('SECOND', { file: envPath, keysFile: keysPath, cwd: TEST_DIR })
+    expect(firstGet.output).toBe('first-value')
+    expect(secondGet.output).toBe('second-value')
+  })
+})
+
 describe('E2E - Error Scenarios', () => {
   beforeEach(() => {
     setupTestDir()
