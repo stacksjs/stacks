@@ -376,6 +376,26 @@ export function migrate(buddy: CLI): void {
         process.exit(ExitCode.FatalError)
       }
 
+      // `users` doesn't exist yet when migrateAuthTables() runs above
+      // (that step intentionally runs BEFORE model migrations — other
+      // numbered migrations reference oauth_access_tokens, see #1952)
+      // — so its users.* guarantee-column ALTERs (email_verified_at,
+      // password_changed_at, two_factor_secret, two_factor_enabled) all
+      // fail harmlessly against a table that isn't there yet. Run them
+      // again now that the numbered migration creating `users` has had
+      // its chance. Only when a project's model migrations actually run
+      // `users` through (still gated behind --auth, same flag as above).
+      if (options.auth !== false) {
+        try {
+          const { ensureUsersAuthColumns, sqlHelpers } = await import('@stacksjs/database')
+          const driver = process.env.DB_CONNECTION || 'sqlite'
+          await ensureUsersAuthColumns(sqlHelpers(driver), { verbose: options.verbose })
+        }
+        catch (error) {
+          log.error('Failed to ensure users auth columns post-migration:', error)
+        }
+      }
+
       // Post-migrate FK integrity check (stacksjs/stacks#1915 D-5).
       // Surfaces the "you flipped DB_CONNECTION and the FKs didn't
       // follow" failure mode while the user is still at the migrate

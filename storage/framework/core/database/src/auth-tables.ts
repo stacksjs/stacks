@@ -51,6 +51,52 @@ export function usersPasswordChangedAtSql(sql: SqlHelpers): string {
 }
 
 /**
+ * Defensive ALTER guaranteeing `users.two_factor_secret` and
+ * `users.two_factor_enabled` — storage/framework/core/auth/src/
+ * authenticator.ts's TOTP helpers (generateTwoFactorSecret,
+ * verifyTwoFactorCode) have existed since early in the framework's
+ * history, but nothing ever created the columns a caller would persist
+ * them to, or the `passkeys`/`webauthn_challenges` tables
+ * storage/framework/core/auth/src/passkey.ts's WebAuthn helpers
+ * unconditionally query against — every passkey/2FA call site was
+ * dead code pointed at tables that never existed on any install,
+ * `buddy new` included. Same defensive ALTER + swallow pattern as
+ * {@link usersEmailVerifiedAtSql}.
+ */
+export function usersTwoFactorColumnsSql(sql: SqlHelpers): string[] {
+  return [
+    `ALTER TABLE users ADD COLUMN two_factor_secret VARCHAR(255)`,
+    `ALTER TABLE users ADD COLUMN two_factor_enabled BOOLEAN NOT NULL DEFAULT ${sql.boolFalse}`,
+  ]
+}
+
+/**
+ * Runs every `users` guarantee-column ALTER (email_verified_at,
+ * password_changed_at, two_factor_secret, two_factor_enabled), each
+ * independently try/catch-swallowed so one already-existing column (or
+ * a not-yet-existing `users` table) never skips the others. Exported so
+ * `buddy migrate`/`migrate:fresh` can call it a second time after the
+ * numbered model migrations run — see the call site in
+ * {@link migrateAuthTables} for why a single call isn't enough.
+ */
+export async function ensureUsersAuthColumns(sql: SqlHelpers, options: { verbose?: boolean } = {}): Promise<void> {
+  const alters = [
+    usersEmailVerifiedAtSql(sql),
+    usersPasswordChangedAtSql(sql),
+    ...usersTwoFactorColumnsSql(sql),
+  ]
+  for (const alterSql of alters) {
+    try {
+      await db.unsafe(alterSql).execute()
+    }
+    catch {
+      // Column already exists (or users table missing) — safe to ignore
+      if (options.verbose) log.debug(`[auth-tables] Skipped (already applied or users missing): ${alterSql}`)
+    }
+  }
+}
+
+/**
  * Create all authentication tables
  */
 export async function migrateAuthTables(options: { verbose?: boolean } = {}): Promise<{ success: boolean, error?: string }> {
@@ -133,33 +179,82 @@ export async function migrateAuthTables(options: { verbose?: boolean } = {}): Pr
       // Index might already exist
     }
 
-    // users.email_verified_at — `verifyEmail()` writes it and
-    // `isEmailVerified()` / the `verified` middleware read it, but no
-    // generated users migration creates it (stacksjs/stacks#1948).
-    // Model migrations run before this step on the `buddy migrate`
-    // path, so users exists by now; the ALTER fails harmlessly when
-    // the column is already there (or on a bare DB with no users yet).
-    if (options.verbose) log.info('Ensuring users.email_verified_at column exists...')
+    // `passkeys` — id is the WebAuthn credential ID itself (a
+    // server-opaque string the authenticator generates), not an
+    // auto-increment integer, so this table doesn't use `pkColumn`.
+    // Schema matches storage/framework/core/auth/src/passkey.ts's
+    // PasskeyAttribute interface exactly — that file has been querying
+    // this table's columns since it was written, with nothing here to
+    // create them until now.
+    if (options.verbose) log.info('Creating passkeys table...')
+    await db.unsafe(`
+      CREATE TABLE IF NOT EXISTS passkeys (
+        id VARCHAR(255) PRIMARY KEY,
+        cred_public_key TEXT NOT NULL,
+        user_id INTEGER NOT NULL,
+        webauthn_user_id VARCHAR(255) NOT NULL,
+        counter INTEGER NOT NULL DEFAULT 0,
+        credential_type VARCHAR(50),
+        device_type VARCHAR(50),
+        backup_eligible BOOLEAN NOT NULL DEFAULT ${sql.boolFalse},
+        backup_status BOOLEAN NOT NULL DEFAULT ${sql.boolFalse},
+        transports TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        last_used_at ${nullableTimestamp}
+      )
+    `).execute()
+
     try {
-      await db.unsafe(usersEmailVerifiedAtSql(sql)).execute()
+      await db.unsafe(`
+        CREATE INDEX IF NOT EXISTS idx_passkeys_user_id ON passkeys(user_id)
+      `).execute()
     }
     catch {
-      // Column already exists (or users table missing) — safe to ignore
+      // Index might already exist
     }
 
-    // users.password_changed_at — `resetPassword()` stamps it and the
-    // token-validation paths read it to invalidate any credential
-    // issued before a password change (stacksjs/stacks#1957, a #1947
-    // follow-up). Same defensive ALTER + swallow as email_verified_at:
-    // fails harmlessly when the column already exists or `users` hasn't
-    // been migrated yet.
-    if (options.verbose) log.info('Ensuring users.password_changed_at column exists...')
+    // `webauthn_challenges` — server-issued nonces for the WebAuthn
+    // registration/authentication handshake (stacksjs/stacks#1866).
+    // The unique (user_id, purpose) index is what makes
+    // storeWebAuthnChallenge's delete-then-insert in passkey.ts safe as
+    // a single-outstanding-challenge-per-purpose upsert.
+    if (options.verbose) log.info('Creating webauthn_challenges table...')
+    await db.unsafe(`
+      CREATE TABLE IF NOT EXISTS webauthn_challenges (
+        ${pkColumn},
+        user_id INTEGER NOT NULL,
+        challenge TEXT NOT NULL,
+        purpose VARCHAR(20) NOT NULL,
+        expires_at TIMESTAMP NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `).execute()
+
     try {
-      await db.unsafe(usersPasswordChangedAtSql(sql)).execute()
+      await db.unsafe(`
+        CREATE UNIQUE INDEX IF NOT EXISTS idx_webauthn_challenges_user_purpose ON webauthn_challenges(user_id, purpose)
+      `).execute()
     }
     catch {
-      // Column already exists (or users table missing) — safe to ignore
+      // Index might already exist
     }
+
+    // users.email_verified_at / password_changed_at / two_factor_* — see
+    // {@link ensureUsersAuthColumns}. This first attempt runs before
+    // `users` exists on a `buddy migrate`/`migrate:fresh` (the numbered
+    // model migration that creates it hasn't run yet at this point in
+    // the command — auth tables intentionally migrate first, since
+    // other numbered migrations reference oauth_access_tokens), so on a
+    // fresh install every ALTER here fails harmlessly and is swallowed.
+    // The caller (buddy migrate/migrate:fresh) calls
+    // ensureUsersAuthColumns() a second time after model migrations
+    // complete, which is what actually lands these columns on a fresh
+    // install — see stacksjs/status#1 Phase 9 for how this gap was found
+    // (empirically: `users` was missing all four guarantee columns on a
+    // fresh `buddy migrate` despite this function's own prior claim that
+    // "users exists by now").
+    if (options.verbose) log.info('Ensuring users auth columns exist (users may not exist yet on a fresh install — see ensureUsersAuthColumns)...')
+    await ensureUsersAuthColumns(sql, options)
 
     if (options.verbose) log.info('Ensuring personal access client exists...')
 

@@ -72,14 +72,25 @@ describe('users.email_verified_at defensive ALTER (stacksjs/stacks#1948)', () =>
   })
 
   describe('wiring', () => {
-    test('migrateAuthTables executes the builder inside a try block', () => {
+    test('migrateAuthTables delegates the guarantee-column ALTERs to ensureUsersAuthColumns', () => {
       const source = readFileSync(resolve(__dirname, '../src/auth-tables.ts'), 'utf-8')
       const fnIdx = source.indexOf('export async function migrateAuthTables')
       expect(fnIdx).toBeGreaterThan(-1)
       const body = source.slice(fnIdx)
-      // Guarded execution: the ALTER must be swallowed so reruns (or a
-      // missing users table) don't fail the whole migrate step.
-      expect(body).toMatch(/try\s*\{\s*await db\.unsafe\(usersEmailVerifiedAtSql\(sql\)\)/)
+      // stacksjs/status#1 Phase 9: migrateAuthTables() runs before `users`
+      // exists on a fresh `buddy migrate`, so this call always fails
+      // harmlessly here — the caller re-runs ensureUsersAuthColumns() a
+      // second time after model migrations land `users`. See migrate.ts.
+      expect(body).toMatch(/await ensureUsersAuthColumns\(sql, options\)/)
+    })
+
+    test('ensureUsersAuthColumns executes the builder inside a guarded (try/catch-swallowed) loop', () => {
+      const source = readFileSync(resolve(__dirname, '../src/auth-tables.ts'), 'utf-8')
+      const fnIdx = source.indexOf('export async function ensureUsersAuthColumns')
+      expect(fnIdx).toBeGreaterThan(-1)
+      const body = source.slice(fnIdx, source.indexOf('export async function migrateAuthTables'))
+      expect(body).toMatch(/usersEmailVerifiedAtSql\(sql\)/)
+      expect(body).toMatch(/try\s*\{\s*await db\.unsafe\(alterSql\)/)
     })
   })
 })
