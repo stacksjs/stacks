@@ -68,9 +68,9 @@
     "sqlite": "^3.47.2"
   },
   "dependencies": {
-    "@stacksjs/ts-cloud": "^0.6.1",
-    "@ts-cloud/aws-types": "^0.6.1",
-    "@ts-cloud/core": "^0.6.1",
+    "@stacksjs/ts-cloud": "^0.6.2",
+    "@ts-cloud/aws-types": "^0.6.2",
+    "@ts-cloud/core": "^0.6.2",
     "stacks": "workspace:*"
   },
   "devDependencies": {
