@@ -2,11 +2,11 @@
 
 @section('content')
 {{-- Catch-all 404. Inlined instead of using <PageLayout> because the
-     filename's route-param `...all` leaks into component prop scopes
-     and stx's @if evaluator parses it as a rest parameter, breaking
-     every @if in components that consume it. --}}
-<div class="flex items-center justify-center min-h-[80vh] px-6 pt-6 pb-12">
-  <div class="mx-auto w-full max-w-7xl space-y-6">
+    filename's route-param `...all` leaks into component prop scopes
+    and stx's @if evaluator parses it as a rest parameter, breaking
+    every @if in components that consume it. --}}
+<div class="flex items-center justify-center pb-12 pt-6 px-6 min-h-[80vh]">
+  <div class="mx-auto space-y-6 max-w-7xl w-full">
   <div class="text-center">
     <div class="flex justify-center">
       <div class="mb-6 h-24 w-24 text-gray-400 dark:text-neutral-500 i-hugeicons-alert-circle"></div>

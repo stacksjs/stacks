@@ -332,10 +332,10 @@ async function getPostgresLiveFKs(db: any): Promise<LiveFK[]> {
     FROM information_schema.referential_constraints rc
     JOIN information_schema.key_column_usage kcu
       ON kcu.constraint_name = rc.constraint_name
-     AND kcu.constraint_schema = rc.constraint_schema
+    AND kcu.constraint_schema = rc.constraint_schema
     JOIN information_schema.constraint_column_usage ccu
       ON ccu.constraint_name = rc.constraint_name
-     AND ccu.constraint_schema = rc.constraint_schema
+    AND ccu.constraint_schema = rc.constraint_schema
     WHERE rc.constraint_schema = 'public'
   `)
   return (Array.isArray(rows) ? rows : []).map((row: any) => ({

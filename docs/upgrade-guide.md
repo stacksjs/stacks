@@ -70,13 +70,13 @@ Find duplicates per table before migrating (users/email shown; repeat for the ot
 
 ```bash
 sqlite3 database/stacks.sqlite \
-  "SELECT email, COUNT(*) c, GROUP_CONCAT(id) ids FROM users GROUP BY email HAVING c > 1;"
+  "SELECT email, COUNT(_) c, GROUP_CONCAT(id) ids FROM users GROUP BY email HAVING c > 1;"
 ```
 
 Find stub-era migration files that need restoring:
 
 ```bash
-grep -l "SELECT 1" database/migrations/*unique-index*.sql
+grep -l "SELECT 1" database/migrations/_unique-index_.sql
 ```
 
 Confirm which unique indexes are actually live:
@@ -101,7 +101,7 @@ Worked example for `users.email`:
      "DELETE FROM users WHERE id NOT IN (SELECT MIN(id) FROM users GROUP BY email);"
    ```
 
-4. Restore any stub-era files the `grep` above flagged by copying the real `CREATE UNIQUE INDEX` statement from the framework repo into your app's matching `database/migrations/*.sql` file.
+4. Restore any stub-era files the `grep` above flagged by copying the real `CREATE UNIQUE INDEX` statement from the framework repo into your app's matching `database/migrations/_.sql` file.
 5. Re-run `./buddy migrate`.
 
 ### Behavior note
@@ -218,7 +218,7 @@ Applies only to generated auto-CRUD endpoints. Custom actions that return `Model
 
 ### Who is affected
 
-Clients reading `response.meta.page` or other `response.meta.*` fields from a generated list endpoint.
+Clients reading `response.meta.page` or other `response.meta._` fields from a generated list endpoint.
 
 ### Detect
 
@@ -230,7 +230,7 @@ This now shows `current_page` and friends at the top level alongside `meta`.
 
 ### Remediate
 
-Read the top-level fields. Replace `res.meta.page` with `res.current_page`, and `res.meta.*` with `res.*`. The `total` / `last_page` fields remain opt-in behind `?with_count=true` (omitted otherwise, like a simple paginator). Stop depending on `meta`; it will be removed.
+Read the top-level fields. Replace `res.meta.page` with `res.current_page`, and `res.meta._` with `res.*`. The `total` / `last_page` fields remain opt-in behind `?with_count=true` (omitted otherwise, like a simple paginator). Stop depending on `meta`; it will be removed.
 
 ## Verifying the upgrade
 

@@ -36,8 +36,8 @@ reassign `const` vars (always threw in strict-mode JS) and called
 `useRouter()` (a Nuxt-ism, no-op in stx).
 
 Remaining work for #1838: the 78 in-page `window.`/`document.` lines
-(mostly pre-existing vanilla event wiring under `content/*` and
-`commerce/*`) and deliverable #4 (component lift to
+(mostly pre-existing vanilla event wiring under `content/_` and
+`commerce/_`) and deliverable #4 (component lift to
 `@stacksjs/components`) are the open targets.
 
 Three new pages landed since the original audit (kanban index, kanban
@@ -47,7 +47,7 @@ pages outpaced the new arrivals.
 
 The remaining 78 DOM-access lines cluster in two patterns: pre-existing
 `document.getElementById(...)` event wiring in vanilla `<script>` blocks
-(largely under `content/*`, `commerce/*`), and the layout's own
+(largely under `content/_`, `commerce/_`), and the layout's own
 import-map / role-filter installer where direct DOM is appropriate. The
 in-page DOM references are the next sweep target.
 

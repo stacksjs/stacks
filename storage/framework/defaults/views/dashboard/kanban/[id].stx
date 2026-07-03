@@ -443,12 +443,12 @@
 </script>
 
 <div class="mx-auto px-6 py-6 max-w-full">
-  <div :if="!canView" class="rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 px-5 py-8 text-center mx-auto max-w-2xl">
+  <div :if="!canView" class="mx-auto px-5 py-8 max-w-2xl text-center bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 rounded-lg dark:border-zinc-800">
     <p class="text-sm text-zinc-600 dark:text-zinc-400">Kanban boards require the dev role.</p>
   </div>
 
   <div :if="canView">
-    <a href="/kanban" class="inline-flex items-center gap-1 text-xs text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300 no-underline mb-4" data-mpa="true">
+    <a href="/kanban" class="inline-flex gap-1 items-center mb-4 no-underline text-xs text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300" data-mpa="true">
       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6" /></svg>
       All boards
     </a>
@@ -461,9 +461,9 @@
     </div>
 
     <!-- Error -->
-    <div :if="error && !loading" class="rounded-lg border border-red-200 dark:border-red-900/40 bg-red-50 dark:bg-red-950/30 px-5 py-4">
-      <p class="text-sm font-medium text-red-700 dark:text-red-300">Board operation failed</p>
-      <p class="mt-1 text-xs text-red-600 dark:text-red-400" :text="error"></p>
+    <div :if="error && !loading" class="px-5 py-4 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900/40">
+      <p class="font-medium text-red-700 text-sm dark:text-red-300">Board operation failed</p>
+      <p class="mt-1 text-red-600 text-xs dark:text-red-400" :text="error"></p>
     </div>
 
     <!-- Loaded -->
@@ -481,23 +481,23 @@
       </header>
 
       <!-- The board itself. Horizontal scroll for wide boards;
-           each column is a vertical card stack. -->
-      <div data-kanban-root class="flex gap-3 overflow-x-auto pb-4" style="min-height: 60vh">
+          each column is a vertical card stack. -->
+      <div data-kanban-root class="flex overflow-x-auto gap-3 pb-4" style="min-height: 60vh">
         <div
           :for="col in columns"
           :data-column-id="col.id"
-          class="flex-shrink-0 w-72 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 flex flex-col"
+          class="flex flex-col flex-shrink-0 w-72 bg-white dark:bg-zinc-950 border border-zinc-200 rounded-lg dark:border-zinc-800"
           style="max-height: calc(100vh - 220px)"
         >
           <!-- Column header -->
           <div :class="`px-3 py-2 border-b border-zinc-100 dark:border-zinc-900 ${columnAccentClass(col.color)}`">
-            <div class="flex items-center justify-between gap-2">
-              <p class="text-sm font-medium text-zinc-700 dark:text-zinc-200 truncate" :text="col.name"></p>
-              <div class="flex items-center gap-1">
-                <span class="text-xs text-zinc-500 font-mono" :text="col.cards.length"></span>
+            <div class="flex gap-2 items-center justify-between">
+              <p class="font-medium text-sm text-zinc-700 truncate dark:text-zinc-200" :text="col.name"></p>
+              <div class="flex gap-1 items-center">
+                <span class="font-mono text-xs text-zinc-500" :text="col.cards.length"></span>
                 <button
                   @click="deleteColumnClicked(col.id, col.cards.length > 0)"
-                  class="text-zinc-400 hover:text-red-500 p-1 -m-1"
+                  class="-m-1 p-1 text-zinc-400 hover:text-red-500"
                   title="Delete column"
                 >
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -510,13 +510,13 @@
           </div>
 
           <!-- Cards (scrollable) -->
-          <div class="p-2 space-y-1 overflow-y-auto flex-1" style="min-height: 40px">
+          <div class="overflow-y-auto flex-1 p-2 space-y-1" style="min-height: 40px">
             <div
               :for="card in col.cards"
               :data-card-id="card.id"
               :data-card-column-id="col.id"
               @click="openDetail(card.id)"
-              class="rounded border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 px-3 py-2 cursor-grab hover:border-violet-300 dark:hover:border-violet-700 transition-colors group"
+              class="px-3 py-2 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 rounded dark:border-zinc-800 hover:border-violet-300 dark:hover:border-violet-700 transition-colors cursor-grab group"
             >
               <!-- Label chips strip -->
               <div :if="card.labels && card.labels.length > 0" class="flex flex-wrap gap-1 mb-1">
@@ -527,8 +527,8 @@
                 ></span>
               </div>
 
-              <div class="flex items-start justify-between gap-2">
-                <p class="text-xs text-zinc-800 dark:text-zinc-200 leading-snug flex-1" :text="card.title"></p>
+              <div class="flex gap-2 items-start justify-between">
+                <p class="flex-1 leading-snug text-xs text-zinc-800 dark:text-zinc-200" :text="card.title"></p>
                 <button
                   @click.stop="deleteCardClicked(card.id)"
                   class="text-zinc-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
@@ -542,8 +542,8 @@
               </div>
 
               <!-- Footer: due date + assignee avatars -->
-              <div :if="card.dueDate || (card.assignees && card.assignees.length > 0)" class="flex items-center justify-between gap-2 mt-1.5 pt-1.5 border-t border-zinc-200/50 dark:border-zinc-800/50">
-                <div :if="card.dueDate" class="flex items-center gap-1 text-[10px] text-zinc-500">
+              <div :if="card.dueDate || (card.assignees && card.assignees.length > 0)" class="flex gap-2 items-center justify-between mt-1.5 pt-1.5 border-t border-zinc-200/50 dark:border-zinc-800/50">
+                <div :if="card.dueDate" class="flex gap-1 items-center text-[10px] text-zinc-500">
                   <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <rect x="3" y="4" width="18" height="18" rx="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" />
                   </svg>
@@ -553,7 +553,7 @@
                 <div :if="card.assignees && card.assignees.length > 0" class="flex -space-x-1">
                   <span
                     :for="asg in card.assignees"
-                    class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-violet-500 text-white text-[9px] font-medium ring-1 ring-white dark:ring-zinc-950"
+                    class="inline-flex items-center justify-center h-5 w-5 font-medium text-[9px] text-white bg-violet-500 ring-1 ring-white rounded-full dark:ring-zinc-950"
                     :title="asg.name || asg.email || 'Assignee'"
                     :text="initialsOf(asg.name, asg.email)"
                   ></span>
@@ -572,18 +572,18 @@
                 @keydown.escape="closeCardComposer()"
                 placeholder="Card title…"
                 rows="2"
-                class="w-full px-2 py-1 text-xs rounded border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-800 dark:text-zinc-100 resize-none focus:outline-none focus:border-violet-500"
+                class="px-2 py-1 w-full text-xs text-zinc-800 dark:text-zinc-100 bg-white dark:bg-zinc-900 border border-zinc-300 rounded dark:border-zinc-700 focus:border-violet-500 focus:outline-none resize-none"
               ></textarea>
               <div class="flex gap-1">
                 <button
                   @click="submitCard(col.id)"
-                  class="px-2 py-1 text-xs rounded bg-violet-600 hover:bg-violet-700 text-white"
+                  class="px-2 py-1 text-white text-xs bg-violet-600 hover:bg-violet-700 rounded"
                 >
                   Add
                 </button>
                 <button
                   @click="closeCardComposer()"
-                  class="px-2 py-1 text-xs rounded text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"
+                  class="px-2 py-1 text-xs text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300 rounded"
                 >
                   Cancel
                 </button>
@@ -592,7 +592,7 @@
             <button
               :if="!isComposingFor(col.id)"
               @click="openCardComposer(col.id)"
-              class="w-full px-2 py-1 text-xs text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-900 rounded text-left"
+              class="px-2 py-1 w-full text-left text-xs text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-900 rounded"
             >
               + Add card
             </button>
@@ -601,26 +601,26 @@
 
         <!-- Add column trailing slot -->
         <div class="flex-shrink-0 w-72">
-          <div :if="composingNewColumn()" class="rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-950 p-3 space-y-2">
+          <div :if="composingNewColumn()" class="p-3 space-y-2 bg-white dark:bg-zinc-950 border border-zinc-300 rounded-lg dark:border-zinc-700">
             <input
               :value="draftColumnName()"
               @input="(e) => draftColumnName.set(e.target.value)"
               @keydown.enter="submitColumn()"
               @keydown.escape="closeColumnComposer()"
               placeholder="Column name…"
-              class="w-full px-2 py-1 text-sm rounded border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-800 dark:text-zinc-100 focus:outline-none focus:border-violet-500"
+              class="px-2 py-1 w-full text-sm text-zinc-800 dark:text-zinc-100 bg-white dark:bg-zinc-900 border border-zinc-300 rounded dark:border-zinc-700 focus:border-violet-500 focus:outline-none"
               autofocus
             />
             <div class="flex gap-1">
               <button
                 @click="submitColumn()"
-                class="px-2 py-1 text-xs rounded bg-violet-600 hover:bg-violet-700 text-white"
+                class="px-2 py-1 text-white text-xs bg-violet-600 hover:bg-violet-700 rounded"
               >
                 Add column
               </button>
               <button
                 @click="closeColumnComposer()"
-                class="px-2 py-1 text-xs rounded text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"
+                class="px-2 py-1 text-xs text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300 rounded"
               >
                 Cancel
               </button>
@@ -629,7 +629,7 @@
           <button
             :if="!composingNewColumn()"
             @click="openColumnComposer()"
-            class="w-full h-12 rounded-lg border border-dashed border-zinc-300 dark:border-zinc-700 text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300 hover:border-zinc-400 dark:hover:border-zinc-600 text-sm"
+            class="h-12 w-full text-sm text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300 border border-dashed border-zinc-300 rounded-lg dark:border-zinc-700 hover:border-zinc-400 dark:hover:border-zinc-600"
           >
             + Add column
           </button>
@@ -640,31 +640,31 @@
 
   <!-- ───────────── Card detail modal (Phase 3) ───────────── -->
   <!-- Opens on card click. Fixed positioned with a backdrop; closes
-       on backdrop click + Escape. Sections (top → bottom):
-         · Title (inline-editable, blurs to commit)
-         · Description (textarea, blurs to commit)
-         · Sidebar: labels picker, assignees picker, due date, archive
-         · Comments thread + composer
-       All mutations route through the store, which fires optimistic
-       updates with rollback on failure. -->
+      on backdrop click + Escape. Sections (top → bottom):
+        · Title (inline-editable, blurs to commit)
+        · Description (textarea, blurs to commit)
+        · Sidebar: labels picker, assignees picker, due date, archive
+        · Comments thread + composer
+      All mutations route through the store, which fires optimistic
+      updates with rollback on failure. -->
   <div
     :if="openCard()"
-    class="fixed inset-0 z-50 flex items-start justify-center bg-black/50 px-4 py-8 overflow-y-auto"
+    class="flex fixed inset-0 overflow-y-auto z-50 items-start justify-center px-4 py-8 bg-black/50"
     @click="closeDetail()"
     @keydown.escape.window="closeDetail()"
   >
     <div
       @click.stop
-      class="w-full max-w-3xl rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-xl my-8"
+      class="my-8 max-w-3xl w-full bg-white dark:bg-zinc-900 border border-zinc-200 rounded-lg dark:border-zinc-800 shadow-xl"
     >
       <!-- Header: title + close -->
-      <div class="px-6 py-4 border-b border-zinc-200 dark:border-zinc-800 flex items-start gap-3">
+      <div class="flex gap-3 items-start px-6 py-4 border-b border-zinc-200 dark:border-zinc-800">
         <input
           :value="titleDraft()"
           @input="(e) => titleDraft.set(e.target.value)"
           @blur="commitTitle()"
           @keydown.enter.prevent="(e) => e.target.blur()"
-          class="flex-1 text-lg font-semibold text-zinc-900 dark:text-zinc-100 bg-transparent focus:outline-none focus:bg-zinc-50 dark:focus:bg-zinc-800 rounded px-2 -mx-2 py-1 -my-1"
+          class="flex-1 -mx-2 -my-1 px-2 py-1 font-semibold text-lg text-zinc-900 dark:text-zinc-100 bg-transparent focus:bg-zinc-50 dark:focus:bg-zinc-800 rounded focus:outline-none"
         />
         <button
           @click="closeDetail()"
@@ -682,28 +682,28 @@
       </div>
 
       <div :if="errorCard()" class="px-6 py-3 bg-red-50 dark:bg-red-950/30 border-b border-red-200 dark:border-red-900/40">
-        <p class="text-xs text-red-700 dark:text-red-300" :text="errorCard()"></p>
+        <p class="text-red-700 text-xs dark:text-red-300" :text="errorCard()"></p>
       </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 px-6 py-5">
+      <div class="grid gap-6 grid-cols-1 md:grid-cols-3 px-6 py-5">
         <!-- Main column: description + comments -->
         <div class="md:col-span-2 space-y-6">
           <!-- Description -->
           <section>
-            <h4 class="text-xs font-medium uppercase tracking-wide text-zinc-500 mb-2">Description</h4>
+            <h4 class="mb-2 font-medium text-xs text-zinc-500 tracking-wide uppercase">Description</h4>
             <textarea
               :value="descDraft()"
               @input="(e) => descDraft.set(e.target.value)"
               @blur="commitDescription()"
               rows="4"
               placeholder="Add a more detailed description…"
-              class="w-full px-3 py-2 text-sm rounded border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-zinc-800 dark:text-zinc-200 resize-y focus:outline-none focus:border-violet-400 dark:focus:border-violet-600"
+              class="px-3 py-2 w-full text-sm text-zinc-800 dark:text-zinc-200 bg-white dark:bg-zinc-950 border border-zinc-200 rounded dark:border-zinc-800 focus:border-violet-400 focus:outline-none dark:focus:border-violet-600 resize-y"
             ></textarea>
           </section>
 
           <!-- Comments -->
           <section>
-            <h4 class="text-xs font-medium uppercase tracking-wide text-zinc-500 mb-2">Activity</h4>
+            <h4 class="mb-2 font-medium text-xs text-zinc-500 tracking-wide uppercase">Activity</h4>
 
             <!-- Composer -->
             <div class="mb-4">
@@ -713,13 +713,13 @@
                 @keydown.metaCmd.enter.prevent="submitComment()"
                 rows="2"
                 placeholder="Add a comment… (⌘+Enter to send)"
-                class="w-full px-3 py-2 text-sm rounded border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-zinc-800 dark:text-zinc-200 resize-none focus:outline-none focus:border-violet-400 dark:focus:border-violet-600"
+                class="px-3 py-2 w-full text-sm text-zinc-800 dark:text-zinc-200 bg-white dark:bg-zinc-950 border border-zinc-200 rounded dark:border-zinc-800 focus:border-violet-400 focus:outline-none dark:focus:border-violet-600 resize-none"
               ></textarea>
               <div class="flex justify-end mt-2">
                 <button
                   @click="submitComment()"
                   :disabled="!commentDraft().trim()"
-                  class="px-3 py-1 text-xs rounded bg-violet-600 hover:bg-violet-700 text-white disabled:opacity-40 disabled:cursor-not-allowed"
+                  class="px-3 py-1 text-white text-xs bg-violet-600 hover:bg-violet-700 rounded disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   Comment
                 </button>
@@ -727,7 +727,7 @@
             </div>
 
             <!-- Thread -->
-            <div :if="openCard().comments.length === 0 && !loadingCard()" class="text-xs text-zinc-400 italic">
+            <div :if="openCard().comments.length === 0 && !loadingCard()" class="italic text-xs text-zinc-400">
               No comments yet.
             </div>
             <ul class="space-y-3">
@@ -735,17 +735,17 @@
                 :for="cm in openCard().comments"
                 class="flex gap-3"
               >
-                <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-violet-500 text-white text-[10px] font-medium flex-shrink-0" :text="initialsOf(cm.authorName, cm.authorEmail)"></span>
+                <span class="inline-flex flex-shrink-0 items-center justify-center h-7 w-7 font-medium text-[10px] text-white bg-violet-500 rounded-full" :text="initialsOf(cm.authorName, cm.authorEmail)"></span>
                 <div class="flex-1 min-w-0">
-                  <div class="flex items-baseline gap-2">
-                    <span class="text-xs font-medium text-zinc-700 dark:text-zinc-200" :text="cm.authorName || cm.authorEmail || 'Unknown'"></span>
+                  <div class="flex gap-2 items-baseline">
+                    <span class="font-medium text-xs text-zinc-700 dark:text-zinc-200" :text="cm.authorName || cm.authorEmail || 'Unknown'"></span>
                     <span class="text-[10px] text-zinc-400" :text="formatTimestamp(cm.createdAt)"></span>
                     <button
                       @click="deleteCommentClicked(cm.id)"
-                      class="text-[10px] text-zinc-400 hover:text-red-500 ml-auto"
+                      class="ml-auto text-[10px] text-zinc-400 hover:text-red-500"
                     >Delete</button>
                   </div>
-                  <p class="mt-0.5 text-xs text-zinc-700 dark:text-zinc-300 whitespace-pre-wrap" :text="cm.body"></p>
+                  <p class="mt-0.5 text-xs text-zinc-700 whitespace-pre-wrap dark:text-zinc-300" :text="cm.body"></p>
                 </div>
               </li>
             </ul>
@@ -757,10 +757,10 @@
           <!-- Labels -->
           <section>
             <div class="flex items-center justify-between mb-2">
-              <h4 class="text-xs font-medium uppercase tracking-wide text-zinc-500">Labels</h4>
+              <h4 class="font-medium text-xs text-zinc-500 tracking-wide uppercase">Labels</h4>
               <button
                 @click="showLabelPicker.set(!showLabelPicker())"
-                class="text-xs text-violet-600 dark:text-violet-400 hover:underline"
+                class="text-violet-600 text-xs dark:text-violet-400 hover:underline"
               >
                 <span :if="!showLabelPicker()">Edit</span>
                 <span :if="showLabelPicker()">Done</span>
@@ -774,7 +774,7 @@
                 :class="`px-2 py-0.5 text-xs font-medium rounded ${labelChipClass(lbl.color)}`"
                 :text="lbl.name"
               ></span>
-              <span :if="openCard().labels.length === 0" class="text-xs text-zinc-400 italic">None</span>
+              <span :if="openCard().labels.length === 0" class="italic text-xs text-zinc-400">None</span>
             </div>
 
             <!-- Picker -->
@@ -785,7 +785,7 @@
                 :class="`w-full flex items-center justify-between px-2 py-1 rounded text-xs ${labelChipClass(lbl.color)} hover:opacity-90`"
               >
                 <span :text="lbl.name"></span>
-                <span class="flex items-center gap-1">
+                <span class="flex gap-1 items-center">
                   <svg :if="openCard().labels.some(l => l.id === lbl.id)" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
                     <polyline points="20 6 9 17 4 12" />
                   </svg>
@@ -800,15 +800,15 @@
               </button>
 
               <!-- New label composer -->
-              <div :if="showNewLabelComposer()" class="space-y-2 pt-2 border-t border-zinc-200 dark:border-zinc-800">
+              <div :if="showNewLabelComposer()" class="pt-2 space-y-2 border-t border-zinc-200 dark:border-zinc-800">
                 <input
                   :value="newLabelName()"
                   @input="(e) => newLabelName.set(e.target.value)"
                   @keydown.enter.prevent="submitNewLabel()"
                   placeholder="Label name"
-                  class="w-full px-2 py-1 text-xs rounded border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-950 focus:outline-none focus:border-violet-500"
+                  class="px-2 py-1 w-full text-xs bg-white dark:bg-zinc-950 border border-zinc-300 rounded dark:border-zinc-700 focus:border-violet-500 focus:outline-none"
                 />
-                <div class="flex items-center gap-1">
+                <div class="flex gap-1 items-center">
                   <button
                     :for="c in labelColors"
                     @click="newLabelColor.set(c)"
@@ -817,14 +817,14 @@
                   ></button>
                 </div>
                 <div class="flex gap-1">
-                  <button @click="submitNewLabel()" class="px-2 py-0.5 text-xs rounded bg-violet-600 hover:bg-violet-700 text-white">Create</button>
+                  <button @click="submitNewLabel()" class="px-2 py-0.5 text-white text-xs bg-violet-600 hover:bg-violet-700 rounded">Create</button>
                   <button @click="showNewLabelComposer.set(false)" class="px-2 py-0.5 text-xs text-zinc-500 hover:text-zinc-700">Cancel</button>
                 </div>
               </div>
               <button
                 :if="!showNewLabelComposer()"
                 @click="showNewLabelComposer.set(true)"
-                class="w-full px-2 py-1 text-xs text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded border border-dashed border-zinc-300 dark:border-zinc-700"
+                class="px-2 py-1 w-full text-xs text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 border border-dashed border-zinc-300 rounded dark:border-zinc-700"
               >
                 + New label
               </button>
@@ -834,10 +834,10 @@
           <!-- Assignees -->
           <section>
             <div class="flex items-center justify-between mb-2">
-              <h4 class="text-xs font-medium uppercase tracking-wide text-zinc-500">Assignees</h4>
+              <h4 class="font-medium text-xs text-zinc-500 tracking-wide uppercase">Assignees</h4>
               <button
                 @click="showAssigneePicker.set(!showAssigneePicker())"
-                class="text-xs text-violet-600 dark:text-violet-400 hover:underline"
+                class="text-violet-600 text-xs dark:text-violet-400 hover:underline"
               >
                 <span :if="!showAssigneePicker()">Edit</span>
                 <span :if="showAssigneePicker()">Done</span>
@@ -847,23 +847,23 @@
             <div :if="!showAssigneePicker()" class="flex flex-wrap gap-2">
               <div
                 :for="asg in openCard().assignees"
-                class="flex items-center gap-1.5 text-xs text-zinc-700 dark:text-zinc-200"
+                class="flex gap-1.5 items-center text-xs text-zinc-700 dark:text-zinc-200"
               >
-                <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-violet-500 text-white text-[10px] font-medium" :text="initialsOf(asg.name, asg.email)"></span>
+                <span class="inline-flex items-center justify-center h-6 w-6 font-medium text-[10px] text-white bg-violet-500 rounded-full" :text="initialsOf(asg.name, asg.email)"></span>
                 <span :text="asg.name || asg.email || 'Unknown'"></span>
               </div>
-              <span :if="openCard().assignees.length === 0" class="text-xs text-zinc-400 italic">Unassigned</span>
+              <span :if="openCard().assignees.length === 0" class="italic text-xs text-zinc-400">Unassigned</span>
             </div>
 
-            <div :if="showAssigneePicker()" class="space-y-1 max-h-48 overflow-y-auto">
-              <p :if="kanban.users().length === 0" class="text-xs text-zinc-400 italic">No users to assign.</p>
+            <div :if="showAssigneePicker()" class="overflow-y-auto space-y-1 max-h-48">
+              <p :if="kanban.users().length === 0" class="italic text-xs text-zinc-400">No users to assign.</p>
               <button
                 :for="u in kanban.users()"
                 @click="toggleAssignee(u.id)"
-                class="w-full flex items-center gap-2 px-2 py-1.5 rounded text-xs hover:bg-zinc-100 dark:hover:bg-zinc-800 text-left"
+                class="flex gap-2 items-center px-2 py-1.5 w-full text-left text-xs hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded"
               >
-                <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-violet-500 text-white text-[10px] font-medium flex-shrink-0" :text="initialsOf(u.name, u.email)"></span>
-                <span class="flex-1 truncate text-zinc-700 dark:text-zinc-200" :text="u.name || u.email"></span>
+                <span class="inline-flex flex-shrink-0 items-center justify-center h-6 w-6 font-medium text-[10px] text-white bg-violet-500 rounded-full" :text="initialsOf(u.name, u.email)"></span>
+                <span class="flex-1 text-zinc-700 truncate dark:text-zinc-200" :text="u.name || u.email"></span>
                 <svg :if="openCard().assignees.some(a => a.userId === u.id)" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="text-violet-500">
                   <polyline points="20 6 9 17 4 12" />
                 </svg>
@@ -873,12 +873,12 @@
 
           <!-- Due date -->
           <section>
-            <h4 class="text-xs font-medium uppercase tracking-wide text-zinc-500 mb-2">Due date</h4>
+            <h4 class="mb-2 font-medium text-xs text-zinc-500 tracking-wide uppercase">Due date</h4>
             <input
               type="date"
               :value="openCard().dueDate ? openCard().dueDate.slice(0, 10) : ''"
               @change="(e) => commitDueDate(e.target.value)"
-              class="w-full px-2 py-1 text-xs rounded border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-zinc-800 dark:text-zinc-200 focus:outline-none focus:border-violet-400"
+              class="px-2 py-1 w-full text-xs text-zinc-800 dark:text-zinc-200 bg-white dark:bg-zinc-950 border border-zinc-200 rounded dark:border-zinc-800 focus:border-violet-400 focus:outline-none"
             />
           </section>
 

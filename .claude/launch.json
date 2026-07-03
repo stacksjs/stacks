@@ -1,0 +1,12 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "frontend",
+      "runtimeExecutable": "./buddy",
+      "runtimeArgs": ["dev:frontend"],
+      "port": 3100,
+      "autoPort": true
+    }
+  ]
+}

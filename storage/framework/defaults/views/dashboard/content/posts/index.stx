@@ -1,52 +1,52 @@
 @extends('layouts/default')
 
 @section('content')
-<div class="min-h-screen bg-neutral-50 p-6 text-neutral-950 dark:bg-neutral-950 dark:text-neutral-100">
-  <div class="mx-auto flex max-w-7xl flex-col gap-6">
-    <header class="flex flex-col gap-4 border-b border-neutral-200 pb-5 dark:border-neutral-800 md:flex-row md:items-end md:justify-between">
+<div class="p-6 min-h-screen text-neutral-950 dark:text-neutral-100 bg-neutral-50 dark:bg-neutral-950">
+  <div class="flex flex-col gap-6 mx-auto max-w-7xl">
+    <header class="flex flex-col gap-4 md:flex-row md:items-end md:justify-between pb-5 border-b border-neutral-200 dark:border-neutral-800">
       <div>
-        <p class="text-xs font-semibold uppercase tracking-wide text-blue-600 dark:text-blue-400">CMS</p>
-        <h1 class="mt-1 text-2xl font-semibold tracking-tight">Posts</h1>
-        <p class="mt-1 text-sm text-neutral-500 dark:text-neutral-400">Create, edit, publish, and remove content backed by the Stacks CMS tables.</p>
+        <p class="font-semibold text-blue-600 text-xs tracking-wide uppercase dark:text-blue-400">CMS</p>
+        <h1 class="mt-1 font-semibold text-2xl tracking-tight">Posts</h1>
+        <p class="mt-1 text-neutral-500 text-sm dark:text-neutral-400">Create, edit, publish, and remove content backed by the Stacks CMS tables.</p>
       </div>
       <div class="flex flex-wrap gap-2">
-        <a href="/blog" target="_blank" class="inline-flex items-center gap-2 rounded-md border border-neutral-300 px-3 py-2 text-sm font-medium hover:bg-white dark:border-neutral-700 dark:hover:bg-neutral-900">
-          <span class="i-hugeicons-view h-4 w-4"></span>
+        <a href="/blog" target="_blank" class="inline-flex gap-2 items-center px-3 py-2 font-medium text-sm hover:bg-white dark:hover:bg-neutral-900 border border-neutral-300 rounded-md dark:border-neutral-700">
+          <span class="h-4 w-4 i-hugeicons-view"></span>
           View Blog
         </a>
-        <button id="new-post-button" type="button" class="inline-flex items-center gap-2 rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500">
-          <span class="i-hugeicons-plus-sign h-4 w-4"></span>
+        <button id="new-post-button" type="button" class="inline-flex gap-2 items-center px-3 py-2 font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md shadow-sm">
+          <span class="h-4 w-4 i-hugeicons-plus-sign"></span>
           New Post
         </button>
       </div>
     </header>
 
     <section class="grid gap-4 md:grid-cols-4">
-      <div class="rounded-lg border border-neutral-200 bg-white p-4 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
-        <p class="text-sm text-neutral-500 dark:text-neutral-400">Total Posts</p>
-        <p id="stat-total" class="mt-2 text-3xl font-semibold">0</p>
+      <div class="p-4 bg-white dark:bg-neutral-900 border border-neutral-200 rounded-lg dark:border-neutral-800 shadow-sm">
+        <p class="text-neutral-500 text-sm dark:text-neutral-400">Total Posts</p>
+        <p id="stat-total" class="mt-2 font-semibold text-3xl">0</p>
       </div>
-      <div class="rounded-lg border border-neutral-200 bg-white p-4 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
-        <p class="text-sm text-neutral-500 dark:text-neutral-400">Published</p>
-        <p id="stat-published" class="mt-2 text-3xl font-semibold text-green-600 dark:text-green-400">0</p>
+      <div class="p-4 bg-white dark:bg-neutral-900 border border-neutral-200 rounded-lg dark:border-neutral-800 shadow-sm">
+        <p class="text-neutral-500 text-sm dark:text-neutral-400">Published</p>
+        <p id="stat-published" class="mt-2 font-semibold text-3xl text-green-600 dark:text-green-400">0</p>
       </div>
-      <div class="rounded-lg border border-neutral-200 bg-white p-4 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
-        <p class="text-sm text-neutral-500 dark:text-neutral-400">Drafts</p>
-        <p id="stat-drafts" class="mt-2 text-3xl font-semibold text-amber-600 dark:text-amber-400">0</p>
+      <div class="p-4 bg-white dark:bg-neutral-900 border border-neutral-200 rounded-lg dark:border-neutral-800 shadow-sm">
+        <p class="text-neutral-500 text-sm dark:text-neutral-400">Drafts</p>
+        <p id="stat-drafts" class="mt-2 font-semibold text-3xl text-amber-600 dark:text-amber-400">0</p>
       </div>
-      <div class="rounded-lg border border-neutral-200 bg-white p-4 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
-        <p class="text-sm text-neutral-500 dark:text-neutral-400">Views</p>
-        <p id="stat-views" class="mt-2 text-3xl font-semibold">0</p>
+      <div class="p-4 bg-white dark:bg-neutral-900 border border-neutral-200 rounded-lg dark:border-neutral-800 shadow-sm">
+        <p class="text-neutral-500 text-sm dark:text-neutral-400">Views</p>
+        <p id="stat-views" class="mt-2 font-semibold text-3xl">0</p>
       </div>
     </section>
 
-    <section class="rounded-lg border border-neutral-200 bg-white shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
-      <div class="flex flex-col gap-3 border-b border-neutral-200 p-4 dark:border-neutral-800 md:flex-row md:items-center md:justify-between">
-        <div class="relative max-w-md flex-1">
-          <span class="i-hugeicons-search-01 pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400"></span>
-          <input id="post-search" type="search" placeholder="Search posts..." class="w-full rounded-md border border-neutral-300 bg-white py-2 pl-9 pr-3 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-neutral-700 dark:bg-neutral-950" />
+    <section class="bg-white dark:bg-neutral-900 border border-neutral-200 rounded-lg dark:border-neutral-800 shadow-sm">
+      <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between p-4 border-b border-neutral-200 dark:border-neutral-800">
+        <div class="relative flex-1 max-w-md">
+          <span class="absolute left-3 top-1/2 h-4 w-4 text-neutral-400 pointer-events-none -translate-y-1/2 i-hugeicons-search-01"></span>
+          <input id="post-search" type="search" placeholder="Search posts..." class="pl-9 pr-3 py-2 w-full text-sm bg-white dark:bg-neutral-950 border border-neutral-300 outline-none rounded-md dark:border-neutral-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20" />
         </div>
-        <select id="post-status-filter" class="rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm dark:border-neutral-700 dark:bg-neutral-950">
+        <select id="post-status-filter" class="px-3 py-2 text-sm bg-white dark:bg-neutral-950 border border-neutral-300 rounded-md dark:border-neutral-700">
           <option value="">All statuses</option>
           <option value="published">Published</option>
           <option value="draft">Draft</option>
@@ -55,8 +55,8 @@
       </div>
 
       <div class="overflow-x-auto">
-        <table class="min-w-full divide-y divide-neutral-200 text-sm dark:divide-neutral-800">
-          <thead class="bg-neutral-50 text-left text-xs font-semibold uppercase text-neutral-500 dark:bg-neutral-900 dark:text-neutral-400">
+        <table class="min-w-full text-sm divide-neutral-200 divide-y dark:divide-neutral-800">
+          <thead class="font-semibold text-left text-neutral-500 text-xs uppercase dark:text-neutral-400 bg-neutral-50 dark:bg-neutral-900">
             <tr>
               <th class="px-4 py-3">Title</th>
               <th class="px-4 py-3">Status</th>
@@ -65,57 +65,57 @@
               <th class="px-4 py-3 text-right">Actions</th>
             </tr>
           </thead>
-          <tbody id="posts-table" class="divide-y divide-neutral-200 dark:divide-neutral-800"></tbody>
+          <tbody id="posts-table" class="divide-neutral-200 divide-y dark:divide-neutral-800"></tbody>
         </table>
       </div>
 
       <div id="posts-empty" class="hidden p-10 text-center">
         <div class="mx-auto h-10 w-10 text-neutral-400 i-hugeicons-quill-write-02"></div>
-        <h2 class="mt-3 text-sm font-semibold">No posts found</h2>
-        <p class="mt-1 text-sm text-neutral-500 dark:text-neutral-400">Create a draft to get the CMS moving.</p>
+        <h2 class="mt-3 font-semibold text-sm">No posts found</h2>
+        <p class="mt-1 text-neutral-500 text-sm dark:text-neutral-400">Create a draft to get the CMS moving.</p>
       </div>
     </section>
   </div>
 </div>
 
-<dialog id="post-dialog" class="w-full max-w-3xl rounded-lg border border-neutral-200 bg-white p-0 text-neutral-950 shadow-xl backdrop:bg-black/40 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-100">
+<dialog id="post-dialog" class="p-0 max-w-3xl w-full text-neutral-950 dark:text-neutral-100 bg-white backdrop:bg-black/40 dark:bg-neutral-900 border border-neutral-200 rounded-lg dark:border-neutral-800 shadow-xl">
   <form id="post-form" method="dialog" class="flex flex-col">
-    <div class="border-b border-neutral-200 px-5 py-4 dark:border-neutral-800">
-      <h2 id="post-dialog-title" class="text-lg font-semibold">New Post</h2>
-      <p class="mt-1 text-sm text-neutral-500 dark:text-neutral-400">Markdown works well here; the public blog reads from the same content field.</p>
+    <div class="px-5 py-4 border-b border-neutral-200 dark:border-neutral-800">
+      <h2 id="post-dialog-title" class="font-semibold text-lg">New Post</h2>
+      <p class="mt-1 text-neutral-500 text-sm dark:text-neutral-400">Markdown works well here; the public blog reads from the same content field.</p>
     </div>
     <div class="grid gap-4 p-5">
       <input id="post-id" type="hidden" />
-      <label class="grid gap-1 text-sm font-medium">
+      <label class="grid gap-1 font-medium text-sm">
         Title
-        <input id="post-title" required class="rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-neutral-700 dark:bg-neutral-950" />
+        <input id="post-title" required class="px-3 py-2 text-sm bg-white dark:bg-neutral-950 border border-neutral-300 outline-none rounded-md dark:border-neutral-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20" />
       </label>
-      <label class="grid gap-1 text-sm font-medium">
+      <label class="grid gap-1 font-medium text-sm">
         Excerpt
-        <textarea id="post-excerpt" rows="2" class="rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-neutral-700 dark:bg-neutral-950"></textarea>
+        <textarea id="post-excerpt" rows="2" class="px-3 py-2 text-sm bg-white dark:bg-neutral-950 border border-neutral-300 outline-none rounded-md dark:border-neutral-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"></textarea>
       </label>
       <div class="grid gap-4 md:grid-cols-2">
-        <label class="grid gap-1 text-sm font-medium">
+        <label class="grid gap-1 font-medium text-sm">
           Status
-          <select id="post-status" class="rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm dark:border-neutral-700 dark:bg-neutral-950">
+          <select id="post-status" class="px-3 py-2 text-sm bg-white dark:bg-neutral-950 border border-neutral-300 rounded-md dark:border-neutral-700">
             <option value="draft">Draft</option>
             <option value="published">Published</option>
             <option value="archived">Archived</option>
           </select>
         </label>
-        <label class="grid gap-1 text-sm font-medium">
+        <label class="grid gap-1 font-medium text-sm">
           Poster URL
-          <input id="post-poster" class="rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-neutral-700 dark:bg-neutral-950" />
+          <input id="post-poster" class="px-3 py-2 text-sm bg-white dark:bg-neutral-950 border border-neutral-300 outline-none rounded-md dark:border-neutral-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20" />
         </label>
       </div>
-      <label class="grid gap-1 text-sm font-medium">
+      <label class="grid gap-1 font-medium text-sm">
         Content
-        <textarea id="post-content" rows="12" class="rounded-md border border-neutral-300 bg-white px-3 py-2 font-mono text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-neutral-700 dark:bg-neutral-950"></textarea>
+        <textarea id="post-content" rows="12" class="px-3 py-2 font-mono text-sm bg-white dark:bg-neutral-950 border border-neutral-300 outline-none rounded-md dark:border-neutral-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"></textarea>
       </label>
     </div>
-    <div class="flex justify-end gap-2 border-t border-neutral-200 px-5 py-4 dark:border-neutral-800">
-      <button id="post-cancel" type="button" class="rounded-md border border-neutral-300 px-3 py-2 text-sm font-medium hover:bg-neutral-50 dark:border-neutral-700 dark:hover:bg-neutral-800">Cancel</button>
-      <button type="submit" class="rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white hover:bg-blue-500">Save Post</button>
+    <div class="flex gap-2 justify-end px-5 py-4 border-neutral-200 border-t dark:border-neutral-800">
+      <button id="post-cancel" type="button" class="px-3 py-2 font-medium text-sm hover:bg-neutral-50 dark:hover:bg-neutral-800 border border-neutral-300 rounded-md dark:border-neutral-700">Cancel</button>
+      <button type="submit" class="px-3 py-2 font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md">Save Post</button>
     </div>
   </form>
 </dialog>
@@ -172,13 +172,13 @@
     empty.classList.toggle('hidden', rows.length > 0)
     table.innerHTML = rows.map(function (post) {
       return '<tr class="hover:bg-neutral-50 dark:hover:bg-neutral-950/70">' +
-        '<td class="px-4 py-3"><div class="font-medium">' + escapeHtml(post.title) + '</div><div class="mt-1 max-w-xl truncate text-xs text-neutral-500 dark:text-neutral-400">' + escapeHtml(post.excerpt || post.content || '') + '</div></td>' +
-        '<td class="px-4 py-3"><span class="inline-flex rounded-full px-2 py-0.5 text-xs font-medium ' + statusClass(post.status) + '">' + escapeHtml(post.status || 'draft') + '</span></td>' +
+        '<td class="px-4 py-3"><div class="font-medium">' + escapeHtml(post.title) + '</div><div class="mt-1 max-w-xl text-neutral-500 text-xs truncate dark:text-neutral-400">' + escapeHtml(post.excerpt || post.content || '') + '</div></td>' +
+        '<td class="px-4 py-3"><span class="inline-flex px-2 py-0.5 font-medium text-xs rounded-full ' ' + + statusClass(post.status)">' + escapeHtml(post.status || 'draft') + '</span></td>' +
         '<td class="px-4 py-3 text-neutral-600 dark:text-neutral-300">' + Number(post.views || 0).toLocaleString() + '</td>' +
         '<td class="px-4 py-3 text-neutral-600 dark:text-neutral-300">' + fmtDate(post.published_at || post.created_at) + '</td>' +
-        '<td class="px-4 py-3"><div class="flex justify-end gap-1">' +
-        '<button type="button" class="rounded p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800" data-action="edit" data-id="' + post.id + '" title="Edit"><span class="block h-4 w-4 i-hugeicons-edit-01"></span></button>' +
-        '<button type="button" class="rounded p-2 text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/40" data-action="delete" data-id="' + post.id + '" title="Delete"><span class="block h-4 w-4 i-hugeicons-waste"></span></button>' +
+        '<td class="px-4 py-3"><div class="flex gap-1 justify-end">' +
+        '<button type="button" class="p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded" data-action="edit" data-id="' + post.id + '" title="Edit"><span class="block h-4 w-4 i-hugeicons-edit-01"></span></button>' +
+        '<button type="button" class="p-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 rounded" data-action="delete" data-id="' + post.id + '" title="Delete"><span class="block h-4 w-4 i-hugeicons-waste"></span></button>' +
         '</div></td>' +
       '</tr>'
     }).join('')

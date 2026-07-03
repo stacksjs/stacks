@@ -276,9 +276,9 @@ async function postHtml(bp: BunPress, slug: string, origin: string): Promise<str
 
   const authorCard = fm.authorBio
     ? `<aside class="blog-author-card">
-         <div class="avatar">${initial}</div>
-         <div><span class="name">${escapeHtml(fm.author || 'The Stacks Team')}</span><p class="bio">${escapeHtml(fm.authorBio)}</p></div>
-       </aside>`
+        <div class="avatar">${initial}</div>
+        <div><span class="name">${escapeHtml(fm.author || 'The Stacks Team')}</span><p class="bio">${escapeHtml(fm.authorBio)}</p></div>
+      </aside>`
     : ''
 
   const postUrl = `${origin}/blog/${slug}`
@@ -292,9 +292,9 @@ async function postHtml(bp: BunPress, slug: string, origin: string): Promise<str
   const others = listPosts().filter(p => p.slug !== slug).slice(0, 3)
   const more = others.length
     ? `<nav class="blog-more">
-         <h2>More from the blog</h2>
-         <ul>${others.map(p => `<li><a href="/blog/${escapeHtml(p.slug)}">${escapeHtml(p.fm.title || p.slug)}</a></li>`).join('')}</ul>
-       </nav>`
+        <h2>More from the blog</h2>
+        <ul>${others.map(p => `<li><a href="/blog/${escapeHtml(p.slug)}">${escapeHtml(p.fm.title || p.slug)}</a></li>`).join('')}</ul>
+      </nav>`
     : ''
 
   return bp.wrapInLayout(blogChrome() + header + html + authorCard + share + more + blogFooter(), blogConfig(bp, fm), `/blog/${slug}`, 'page')

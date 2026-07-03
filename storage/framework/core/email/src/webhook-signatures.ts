@@ -20,7 +20,7 @@
  *   - SendGrid: ECDSA over `timestamp + body` with the public key
  *               from their dashboard. P-256 curve, DER signature.
  *
- * Each function takes the bits it needs (request body, headers,
+ * Each function takes the bits it needs (request body, _headers,
  * configured secret) and returns a discriminated `{ ok, reason? }`
  * — the route handler maps `ok: false` to a 401/403 without
  * touching the rest of the pipeline.

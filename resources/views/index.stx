@@ -1210,7 +1210,7 @@ const stackLayers = [
 
     <div class="site-content">
       <nav class="site-nav">
-        <div class="site-shell nav-inner">
+        <div class="nav-inner site-shell">
           <a class="brand" href="/" aria-label="Stacks home">
             <span class="brand-mark">S</span>
             <span class="brand-name">{{ appName }}</span>
@@ -1224,7 +1224,7 @@ const stackLayers = [
       </nav>
 
       <main>
-        <section class="site-shell hero">
+        <section class="hero site-shell">
           <div>
             <span class="kicker">Full-stack TypeScript framework</span>
             <h1 class="hero-title">{{ appName }}</h1>
@@ -1250,7 +1250,7 @@ const stackLayers = [
                   <img src="/assets/images/marketing-park-camp.svg" alt="">
                   <span>CMS</span>
                 </div>
-                <span class="side-pill active">Content</span>
+                <span class="active side-pill">Content</span>
                 <span class="side-pill">Models</span>
                 <span class="side-pill">Docs</span>
                 <span class="side-pill">Deploys</span>
@@ -1290,7 +1290,7 @@ Marketing, docs, blog, CMS, API, mail, and cloud.</div>
           </aside>
         </section>
 
-        <section id="platform" class="site-shell section" aria-labelledby="platform-heading">
+        <section id="platform" class="section site-shell" aria-labelledby="platform-heading">
         <div class="section-heading">
           <div>
             <h2 id="platform-heading" class="section-title">A complete web framework.</h2>
@@ -1320,7 +1320,7 @@ Marketing, docs, blog, CMS, API, mail, and cloud.</div>
         </div>
         </section>
 
-        <section class="site-shell section" aria-labelledby="stack-heading">
+        <section class="section site-shell" aria-labelledby="stack-heading">
         <div class="stack-band">
           <div>
             <h2 id="stack-heading" class="section-title">From idea to release.</h2>
@@ -1337,7 +1337,7 @@ Marketing, docs, blog, CMS, API, mail, and cloud.</div>
         </div>
         </section>
 
-        <section id="cms" class="site-shell section" aria-labelledby="cms-heading">
+        <section id="cms" class="section site-shell" aria-labelledby="cms-heading">
         <div class="cms-panel">
           <div>
             <h2 id="cms-heading" class="section-title">Built-in CMS.</h2>
@@ -1351,7 +1351,7 @@ Marketing, docs, blog, CMS, API, mail, and cloud.</div>
         </div>
         </section>
 
-        <section id="deploy" class="site-shell section" aria-labelledby="deploy-heading">
+        <section id="deploy" class="section site-shell" aria-labelledby="deploy-heading">
         <div class="deploy-panel">
           <div>
             <h2 id="deploy-heading" class="section-title">Deploy every surface.</h2>
@@ -1378,7 +1378,7 @@ Marketing, docs, blog, CMS, API, mail, and cloud.</div>
         </div>
         </section>
 
-        <section class="site-shell section" aria-labelledby="signup-heading">
+        <section class="section site-shell" aria-labelledby="signup-heading">
         <div class="signup-panel">
           <div>
             <h2 id="signup-heading" class="section-title">Get product updates.</h2>
@@ -1392,7 +1392,7 @@ Marketing, docs, blog, CMS, API, mail, and cloud.</div>
         </section>
       </main>
 
-      <footer class="site-shell site-footer">
+      <footer class="site-footer site-shell">
         <div class="footer-inner">
           <span>© 2026 Stacks</span>
           <a class="footer-link" href="https://github.com/stacksjs/stacks">Source on GitHub</a>

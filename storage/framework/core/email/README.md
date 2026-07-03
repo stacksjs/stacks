@@ -111,7 +111,7 @@ EMAILJS*HOST=example.com
 EMAILJS*USERNAME=username
 EMAILJS*PASSWORD=password
 EMAILJS*PORT=25
-EMAILJS_SECURE=true
+EMAILJS*SECURE=true
 ```
 
 Learn more in the docs.
@@ -163,7 +163,7 @@ or ignore `<style>` blocks, so styles have to ride on each element via
 `style="…"`. Stacks ships a pass-through inliner that runs after
 `renderEmail()` and before the result hands back:
 
-- **On by default in production** (`APP_ENV` or `NODE_ENV` is
+- **On by default in production** (`APP*ENV` or `NODE_ENV` is
   `production`). Off in dev so previews show the un-mutated stx
   output.
 - **Per-call opt-out** via `template(name, { inline: false })`.

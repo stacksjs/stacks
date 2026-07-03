@@ -18,7 +18,7 @@ before doing non-trivial work in that area rather than guessing an API.
 - For unused-variable warnings, prefer `// eslint-disable-next-line` over prefixing with `_`.
 
 ### Frontend
-- Use **stx** for templating, never vanilla JS (`var`, `document.*`, `window.*`) in stx templates.
+- Use **stx** for templating, never vanilla JS (`var`, `document._`, `window._`) in stx templates.
 - Use **Crosswind** as the CSS framework (Tailwind-like utility classes).
 - stx `<script>` tags may only contain stx-compatible code (signals, composables, directives).
 
@@ -213,7 +213,7 @@ relations and methods. See `stacks-models` for the full trait and attribute refe
 ```bash
 # 1. Define or change a model in app/Models/ (or storage/framework/defaults/app/Models/)
 buddy generate:migrations     # 2. diff models vs current schema, emit SQL into database/migrations/
-                              # 3. review the generated migration file
+# 3. review the generated migration file
 buddy migrate                 # 4. apply pending migrations   (--diff to preview SQL, --auth for auth tables)
 buddy migrate:fresh --seed    #    (dev) drop everything, re-migrate, then seed
 ```
@@ -228,7 +228,7 @@ and eager loading. Exact method surface is in `stacks-query-builder` / `stacks-o
 const published = await Product.where('status', 'published').orderByDesc('created_at').all()
 const product = await Product.find(id)
 const created = await Product.create({ name: 'Widget', price: 1200 })
-await transaction(async () => { /* ... atomic work ... */ })
+await transaction(async () => { /_ ... atomic work ... _/ })
 ```
 Eager loading, pagination, and the full method set are in `stacks-query-builder` / `stacks-orm`.
 
@@ -285,7 +285,7 @@ one). See `stacks-cli` for building commands.
 
 - **Templating:** stx `.stx` Single File Components (`<script server|client>`, `<template>`,
   `<style>`; Blade directives `@if` / `@foreach` / `@layout`; `{{ x }}`; filters `{{ x | currency }}`).
-- **Never** use `var`, `document.*`, or `window.*` in stx `<script>` blocks. Use signals
+- **Never** use `var`, `document._`, or `window._` in stx `<script>` blocks. Use signals
   (`state` / `derived` / `effect`) and composables. See `stacks-stx`, `stacks-composables`.
 - **CSS:** Crosswind utilities, `dark:` variant, arbitrary values; dark mode via `useColorMode()` /
   `useDark()`. See `stacks-crosswind`, `stacks-ui`.

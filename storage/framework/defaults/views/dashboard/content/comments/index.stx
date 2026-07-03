@@ -1,16 +1,16 @@
 @extends('layouts/default')
 
 @section('content')
-<div class="min-h-screen bg-neutral-50 p-6 text-neutral-950 dark:bg-neutral-950 dark:text-neutral-100">
-  <div class="mx-auto flex max-w-7xl flex-col gap-6">
-    <header class="flex flex-col gap-4 border-b border-neutral-200 pb-5 dark:border-neutral-800 md:flex-row md:items-end md:justify-between">
+<div class="p-6 min-h-screen text-neutral-950 dark:text-neutral-100 bg-neutral-50 dark:bg-neutral-950">
+  <div class="flex flex-col gap-6 mx-auto max-w-7xl">
+    <header class="flex flex-col gap-4 md:flex-row md:items-end md:justify-between pb-5 border-b border-neutral-200 dark:border-neutral-800">
       <div>
-        <p class="text-xs font-semibold uppercase tracking-wide text-blue-600 dark:text-blue-400">CMS</p>
-        <h1 class="mt-1 text-2xl font-semibold tracking-tight">Comments</h1>
-        <p class="mt-1 text-sm text-neutral-500 dark:text-neutral-400">Moderate reader comments from the CMS comments table.</p>
+        <p class="font-semibold text-blue-600 text-xs tracking-wide uppercase dark:text-blue-400">CMS</p>
+        <h1 class="mt-1 font-semibold text-2xl tracking-tight">Comments</h1>
+        <p class="mt-1 text-neutral-500 text-sm dark:text-neutral-400">Moderate reader comments from the CMS comments table.</p>
       </div>
       <div class="flex flex-wrap gap-2">
-        <select id="comment-status-filter" class="rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm dark:border-neutral-700 dark:bg-neutral-950">
+        <select id="comment-status-filter" class="px-3 py-2 text-sm bg-white dark:bg-neutral-950 border border-neutral-300 rounded-md dark:border-neutral-700">
           <option value="">All statuses</option>
           <option value="approved">Approved</option>
           <option value="pending">Pending</option>
@@ -21,31 +21,31 @@
     </header>
 
     <section class="grid gap-4 md:grid-cols-4">
-      <div class="rounded-lg border border-neutral-200 bg-white p-4 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
-        <p class="text-sm text-neutral-500 dark:text-neutral-400">Total Comments</p>
-        <p id="comment-total" class="mt-2 text-3xl font-semibold">0</p>
+      <div class="p-4 bg-white dark:bg-neutral-900 border border-neutral-200 rounded-lg dark:border-neutral-800 shadow-sm">
+        <p class="text-neutral-500 text-sm dark:text-neutral-400">Total Comments</p>
+        <p id="comment-total" class="mt-2 font-semibold text-3xl">0</p>
       </div>
-      <div class="rounded-lg border border-neutral-200 bg-white p-4 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
-        <p class="text-sm text-neutral-500 dark:text-neutral-400">Approved</p>
-        <p id="comment-approved" class="mt-2 text-3xl font-semibold text-green-600 dark:text-green-400">0</p>
+      <div class="p-4 bg-white dark:bg-neutral-900 border border-neutral-200 rounded-lg dark:border-neutral-800 shadow-sm">
+        <p class="text-neutral-500 text-sm dark:text-neutral-400">Approved</p>
+        <p id="comment-approved" class="mt-2 font-semibold text-3xl text-green-600 dark:text-green-400">0</p>
       </div>
-      <div class="rounded-lg border border-neutral-200 bg-white p-4 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
-        <p class="text-sm text-neutral-500 dark:text-neutral-400">Pending</p>
-        <p id="comment-pending" class="mt-2 text-3xl font-semibold text-amber-600 dark:text-amber-400">0</p>
+      <div class="p-4 bg-white dark:bg-neutral-900 border border-neutral-200 rounded-lg dark:border-neutral-800 shadow-sm">
+        <p class="text-neutral-500 text-sm dark:text-neutral-400">Pending</p>
+        <p id="comment-pending" class="mt-2 font-semibold text-3xl text-amber-600 dark:text-amber-400">0</p>
       </div>
-      <div class="rounded-lg border border-neutral-200 bg-white p-4 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
-        <p class="text-sm text-neutral-500 dark:text-neutral-400">Spam</p>
-        <p id="comment-spam" class="mt-2 text-3xl font-semibold text-red-600 dark:text-red-400">0</p>
+      <div class="p-4 bg-white dark:bg-neutral-900 border border-neutral-200 rounded-lg dark:border-neutral-800 shadow-sm">
+        <p class="text-neutral-500 text-sm dark:text-neutral-400">Spam</p>
+        <p id="comment-spam" class="mt-2 font-semibold text-3xl text-red-600 dark:text-red-400">0</p>
       </div>
     </section>
 
-    <section class="rounded-lg border border-neutral-200 bg-white shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
-      <div class="border-b border-neutral-200 p-4 dark:border-neutral-800">
-        <input id="comment-search" type="search" placeholder="Search comments..." class="w-full max-w-md rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-neutral-700 dark:bg-neutral-950" />
+    <section class="bg-white dark:bg-neutral-900 border border-neutral-200 rounded-lg dark:border-neutral-800 shadow-sm">
+      <div class="p-4 border-b border-neutral-200 dark:border-neutral-800">
+        <input id="comment-search" type="search" placeholder="Search comments..." class="px-3 py-2 max-w-md w-full text-sm bg-white dark:bg-neutral-950 border border-neutral-300 outline-none rounded-md dark:border-neutral-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20" />
       </div>
       <div class="overflow-x-auto">
-        <table class="min-w-full divide-y divide-neutral-200 text-sm dark:divide-neutral-800">
-          <thead class="bg-neutral-50 text-left text-xs font-semibold uppercase text-neutral-500 dark:bg-neutral-900 dark:text-neutral-400">
+        <table class="min-w-full text-sm divide-neutral-200 divide-y dark:divide-neutral-800">
+          <thead class="font-semibold text-left text-neutral-500 text-xs uppercase dark:text-neutral-400 bg-neutral-50 dark:bg-neutral-900">
             <tr>
               <th class="px-4 py-3">Author</th>
               <th class="px-4 py-3">Comment</th>
@@ -55,10 +55,10 @@
               <th class="px-4 py-3 text-right">Actions</th>
             </tr>
           </thead>
-          <tbody id="comments-table" class="divide-y divide-neutral-200 dark:divide-neutral-800"></tbody>
+          <tbody id="comments-table" class="divide-neutral-200 divide-y dark:divide-neutral-800"></tbody>
         </table>
       </div>
-      <div id="comments-empty" class="hidden p-10 text-center text-sm text-neutral-500 dark:text-neutral-400">No comments found.</div>
+      <div id="comments-empty" class="hidden p-10 text-center text-neutral-500 text-sm dark:text-neutral-400">No comments found.</div>
     </section>
   </div>
 </div>
@@ -116,15 +116,15 @@
     empty.classList.toggle('hidden', rows.length > 0)
     table.innerHTML = rows.map(function (comment) {
       return '<tr class="hover:bg-neutral-50 dark:hover:bg-neutral-950/70">' +
-        '<td class="px-4 py-3"><div class="font-medium">' + escapeHtml(comment.authorName) + '</div><div class="text-xs text-neutral-500">' + escapeHtml(comment.authorEmail) + '</div></td>' +
+        '<td class="px-4 py-3"><div class="font-medium">' + escapeHtml(comment.authorName) + '</div><div class="text-neutral-500 text-xs">' + escapeHtml(comment.authorEmail) + '</div></td>' +
         '<td class="px-4 py-3 text-neutral-600 dark:text-neutral-300">' + escapeHtml(truncate(comment.content, 120)) + '</td>' +
         '<td class="px-4 py-3 text-neutral-600 dark:text-neutral-300">' + escapeHtml(comment.postTitle || '-') + '</td>' +
-        '<td class="px-4 py-3"><span class="inline-flex rounded-full px-2 py-0.5 text-xs font-medium ' + statusClass(comment.status) + '">' + escapeHtml(comment.status) + '</span></td>' +
+        '<td class="px-4 py-3"><span class="inline-flex px-2 py-0.5 font-medium text-xs rounded-full ' ' + + statusClass(comment.status)">' + escapeHtml(comment.status) + '</span></td>' +
         '<td class="px-4 py-3 text-neutral-600 dark:text-neutral-300">' + formatDate(comment.createdAt) + '</td>' +
-        '<td class="px-4 py-3 text-right"><div class="flex justify-end gap-1">' +
-          '<button type="button" data-action="approved" data-id="' + comment.id + '" class="rounded p-2 text-green-600 hover:bg-green-50 dark:text-green-400 dark:hover:bg-green-950/40"><span class="block h-4 w-4 i-hugeicons-checkmark-circle-02"></span></button>' +
-          '<button type="button" data-action="spam" data-id="' + comment.id + '" class="rounded p-2 text-amber-600 hover:bg-amber-50 dark:text-amber-400 dark:hover:bg-amber-950/40"><span class="block h-4 w-4 i-hugeicons-alert-02"></span></button>' +
-          '<button type="button" data-action="delete" data-id="' + comment.id + '" class="rounded p-2 text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/40"><span class="block h-4 w-4 i-hugeicons-waste"></span></button>' +
+        '<td class="px-4 py-3 text-right"><div class="flex gap-1 justify-end">' +
+          '<button type="button" data-action="approved" data-id="' + comment.id + '" class="p-2 text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-950/40 rounded"><span class="block h-4 w-4 i-hugeicons-checkmark-circle-02"></span></button>' +
+          '<button type="button" data-action="spam" data-id="' + comment.id + '" class="p-2 text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/40 rounded"><span class="block h-4 w-4 i-hugeicons-alert-02"></span></button>' +
+          '<button type="button" data-action="delete" data-id="' + comment.id + '" class="p-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 rounded"><span class="block h-4 w-4 i-hugeicons-waste"></span></button>' +
         '</div></td>' +
       '</tr>'
     }).join('')

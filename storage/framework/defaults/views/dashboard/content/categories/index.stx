@@ -1,42 +1,42 @@
 @extends('layouts/default')
 
 @section('content')
-<div class="min-h-screen bg-neutral-50 p-6 text-neutral-950 dark:bg-neutral-950 dark:text-neutral-100">
-  <div class="mx-auto flex max-w-6xl flex-col gap-6">
-    <header class="flex flex-col gap-4 border-b border-neutral-200 pb-5 dark:border-neutral-800 md:flex-row md:items-end md:justify-between">
+<div class="p-6 min-h-screen text-neutral-950 dark:text-neutral-100 bg-neutral-50 dark:bg-neutral-950">
+  <div class="flex flex-col gap-6 mx-auto max-w-6xl">
+    <header class="flex flex-col gap-4 md:flex-row md:items-end md:justify-between pb-5 border-b border-neutral-200 dark:border-neutral-800">
       <div>
-        <p class="text-xs font-semibold uppercase tracking-wide text-blue-600 dark:text-blue-400">CMS</p>
-        <h1 class="mt-1 text-2xl font-semibold tracking-tight">Categories</h1>
-        <p class="mt-1 text-sm text-neutral-500 dark:text-neutral-400">Organize posts and markdown content into public blog categories.</p>
+        <p class="font-semibold text-blue-600 text-xs tracking-wide uppercase dark:text-blue-400">CMS</p>
+        <h1 class="mt-1 font-semibold text-2xl tracking-tight">Categories</h1>
+        <p class="mt-1 text-neutral-500 text-sm dark:text-neutral-400">Organize posts and markdown content into public blog categories.</p>
       </div>
-      <button id="new-category-button" type="button" class="inline-flex items-center gap-2 rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500">
-        <span class="i-hugeicons-plus-sign h-4 w-4"></span>
+      <button id="new-category-button" type="button" class="inline-flex gap-2 items-center px-3 py-2 font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md shadow-sm">
+        <span class="h-4 w-4 i-hugeicons-plus-sign"></span>
         New Category
       </button>
     </header>
 
     <section class="grid gap-4 md:grid-cols-3">
-      <div class="rounded-lg border border-neutral-200 bg-white p-4 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
-        <p class="text-sm text-neutral-500 dark:text-neutral-400">Total Categories</p>
-        <p id="category-total" class="mt-2 text-3xl font-semibold">0</p>
+      <div class="p-4 bg-white dark:bg-neutral-900 border border-neutral-200 rounded-lg dark:border-neutral-800 shadow-sm">
+        <p class="text-neutral-500 text-sm dark:text-neutral-400">Total Categories</p>
+        <p id="category-total" class="mt-2 font-semibold text-3xl">0</p>
       </div>
-      <div class="rounded-lg border border-neutral-200 bg-white p-4 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
-        <p class="text-sm text-neutral-500 dark:text-neutral-400">Newest</p>
-        <p id="category-newest" class="mt-2 truncate text-2xl font-semibold">-</p>
+      <div class="p-4 bg-white dark:bg-neutral-900 border border-neutral-200 rounded-lg dark:border-neutral-800 shadow-sm">
+        <p class="text-neutral-500 text-sm dark:text-neutral-400">Newest</p>
+        <p id="category-newest" class="mt-2 font-semibold text-2xl truncate">-</p>
       </div>
-      <div class="rounded-lg border border-neutral-200 bg-white p-4 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
-        <p class="text-sm text-neutral-500 dark:text-neutral-400">Active</p>
-        <p id="category-active" class="mt-2 text-3xl font-semibold text-green-600 dark:text-green-400">0</p>
+      <div class="p-4 bg-white dark:bg-neutral-900 border border-neutral-200 rounded-lg dark:border-neutral-800 shadow-sm">
+        <p class="text-neutral-500 text-sm dark:text-neutral-400">Active</p>
+        <p id="category-active" class="mt-2 font-semibold text-3xl text-green-600 dark:text-green-400">0</p>
       </div>
     </section>
 
-    <section class="rounded-lg border border-neutral-200 bg-white shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
-      <div class="border-b border-neutral-200 p-4 dark:border-neutral-800">
-        <input id="category-search" type="search" placeholder="Search categories..." class="w-full max-w-md rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-neutral-700 dark:bg-neutral-950" />
+    <section class="bg-white dark:bg-neutral-900 border border-neutral-200 rounded-lg dark:border-neutral-800 shadow-sm">
+      <div class="p-4 border-b border-neutral-200 dark:border-neutral-800">
+        <input id="category-search" type="search" placeholder="Search categories..." class="px-3 py-2 max-w-md w-full text-sm bg-white dark:bg-neutral-950 border border-neutral-300 outline-none rounded-md dark:border-neutral-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20" />
       </div>
       <div class="overflow-x-auto">
-        <table class="min-w-full divide-y divide-neutral-200 text-sm dark:divide-neutral-800">
-          <thead class="bg-neutral-50 text-left text-xs font-semibold uppercase text-neutral-500 dark:bg-neutral-900 dark:text-neutral-400">
+        <table class="min-w-full text-sm divide-neutral-200 divide-y dark:divide-neutral-800">
+          <thead class="font-semibold text-left text-neutral-500 text-xs uppercase dark:text-neutral-400 bg-neutral-50 dark:bg-neutral-900">
             <tr>
               <th class="px-4 py-3">Name</th>
               <th class="px-4 py-3">Slug</th>
@@ -44,27 +44,27 @@
               <th class="px-4 py-3 text-right">Actions</th>
             </tr>
           </thead>
-          <tbody id="categories-table" class="divide-y divide-neutral-200 dark:divide-neutral-800"></tbody>
+          <tbody id="categories-table" class="divide-neutral-200 divide-y dark:divide-neutral-800"></tbody>
         </table>
       </div>
-      <div id="categories-empty" class="hidden p-10 text-center text-sm text-neutral-500 dark:text-neutral-400">No categories found.</div>
+      <div id="categories-empty" class="hidden p-10 text-center text-neutral-500 text-sm dark:text-neutral-400">No categories found.</div>
     </section>
   </div>
 </div>
 
-<dialog id="category-dialog" class="w-full max-w-lg rounded-lg border border-neutral-200 bg-white p-0 text-neutral-950 shadow-xl backdrop:bg-black/40 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-100">
+<dialog id="category-dialog" class="p-0 max-w-lg w-full text-neutral-950 dark:text-neutral-100 bg-white backdrop:bg-black/40 dark:bg-neutral-900 border border-neutral-200 rounded-lg dark:border-neutral-800 shadow-xl">
   <form id="category-form" method="dialog">
-    <div class="border-b border-neutral-200 px-5 py-4 dark:border-neutral-800">
-      <h2 class="text-lg font-semibold">New Category</h2>
+    <div class="px-5 py-4 border-b border-neutral-200 dark:border-neutral-800">
+      <h2 class="font-semibold text-lg">New Category</h2>
     </div>
     <div class="grid gap-4 p-5">
-      <label class="grid gap-1 text-sm font-medium">Name <input id="category-name" required class="rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm dark:border-neutral-700 dark:bg-neutral-950" /></label>
-      <label class="grid gap-1 text-sm font-medium">Slug <input id="category-slug" class="rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm dark:border-neutral-700 dark:bg-neutral-950" /></label>
-      <label class="grid gap-1 text-sm font-medium">Description <textarea id="category-description" rows="3" class="rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm dark:border-neutral-700 dark:bg-neutral-950"></textarea></label>
+      <label class="grid gap-1 font-medium text-sm">Name <input id="category-name" required class="px-3 py-2 text-sm bg-white dark:bg-neutral-950 border border-neutral-300 rounded-md dark:border-neutral-700" /></label>
+      <label class="grid gap-1 font-medium text-sm">Slug <input id="category-slug" class="px-3 py-2 text-sm bg-white dark:bg-neutral-950 border border-neutral-300 rounded-md dark:border-neutral-700" /></label>
+      <label class="grid gap-1 font-medium text-sm">Description <textarea id="category-description" rows="3" class="px-3 py-2 text-sm bg-white dark:bg-neutral-950 border border-neutral-300 rounded-md dark:border-neutral-700"></textarea></label>
     </div>
-    <div class="flex justify-end gap-2 border-t border-neutral-200 px-5 py-4 dark:border-neutral-800">
-      <button id="category-cancel" type="button" class="rounded-md border border-neutral-300 px-3 py-2 text-sm font-medium dark:border-neutral-700">Cancel</button>
-      <button type="submit" class="rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white hover:bg-blue-500">Create Category</button>
+    <div class="flex gap-2 justify-end px-5 py-4 border-neutral-200 border-t dark:border-neutral-800">
+      <button id="category-cancel" type="button" class="px-3 py-2 font-medium text-sm border border-neutral-300 rounded-md dark:border-neutral-700">Cancel</button>
+      <button type="submit" class="px-3 py-2 font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md">Create Category</button>
     </div>
   </form>
 </dialog>
@@ -100,7 +100,7 @@
         '<td class="px-4 py-3 font-medium">' + escapeHtml(category.name) + '</td>' +
         '<td class="px-4 py-3 text-neutral-600 dark:text-neutral-300">' + escapeHtml(category.slug) + '</td>' +
         '<td class="px-4 py-3 text-neutral-600 dark:text-neutral-300">' + escapeHtml(category.description) + '</td>' +
-        '<td class="px-4 py-3 text-right"><button type="button" data-id="' + category.id + '" class="rounded p-2 text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/40"><span class="block h-4 w-4 i-hugeicons-waste"></span></button></td>' +
+        '<td class="px-4 py-3 text-right"><button type="button" data-id="' + category.id + '" class="p-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 rounded"><span class="block h-4 w-4 i-hugeicons-waste"></span></button></td>' +
       '</tr>'
     }).join('')
   }

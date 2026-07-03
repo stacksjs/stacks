@@ -74,10 +74,10 @@ const inactiveLink = `${baseLink} border-gray-300 dark:border-neutral-600 text-g
 const disabledLink = `${baseLink} border-gray-200 dark:border-neutral-700 text-gray-400 dark:text-neutral-500 cursor-not-allowed`
 </script>
 
-<nav aria-label="Pagination" class="flex items-center justify-between gap-2 py-3 select-none">
+<nav aria-label="Pagination" class="flex gap-2 items-center justify-between py-3 select-none">
   @if(isFull)
     {{-- Mobile: prev / next only (page numbers hidden) --}}
-    <div class="flex flex-1 justify-between sm:hidden">
+    <div class="flex sm:hidden flex-1 justify-between">
       @if(paginator.prev_page_url)
         <a href="{{ paginator.prev_page_url }}" class="{{ inactiveLink }} rounded-md">Previous</a>
       @else
@@ -92,7 +92,7 @@ const disabledLink = `${baseLink} border-gray-200 dark:border-neutral-700 text-g
 
     {{-- Desktop: prev / page numbers / next + "Showing X to Y of Z" --}}
     <div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
-      <p class="text-sm text-gray-700 dark:text-neutral-300">
+      <p class="text-gray-700 text-sm dark:text-neutral-300">
         @if(paginator.from && paginator.to)
           Showing <span class="font-medium">{{ paginator.from }}</span>
           to <span class="font-medium">{{ paginator.to }}</span>
@@ -102,7 +102,7 @@ const disabledLink = `${baseLink} border-gray-200 dark:border-neutral-700 text-g
         @endif
       </p>
 
-      <div class="isolate inline-flex -space-x-px rounded-md shadow-sm">
+      <div class="inline-flex -space-x-px rounded-md shadow-sm isolate">
         @if(paginator.prev_page_url)
           <a href="{{ paginator.prev_page_url }}" rel="prev" class="{{ inactiveLink }} rounded-l-md" aria-label="Previous page">←</a>
         @else
@@ -132,7 +132,7 @@ const disabledLink = `${baseLink} border-gray-200 dark:border-neutral-700 text-g
 
   @if(isSimple || isCursor)
     {{-- Simple / cursor: just prev / next. No page numbers because we
-         don't know last_page (simple) or it doesn't apply (cursor). --}}
+        don't know last_page (simple) or it doesn't apply (cursor). --}}
     <div class="flex flex-1 justify-between">
       @if(paginator.prev_page_url)
         <a href="{{ paginator.prev_page_url }}" rel="prev" class="{{ inactiveLink }} rounded-md">← Previous</a>

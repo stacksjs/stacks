@@ -191,7 +191,7 @@ export default {
   'admin': { path: 'admin', middleware: ['auth'] },
 
   // No prefix override - loads routes/internal.ts at /* (no prefix)
-  // 'web' is the only key in the route-loader's NO_PREFIX_KEYS list;
+  // 'web' is the only key in the route-loader's NO*PREFIX*KEYS list;
   // for other no-prefix routes, pass an explicit empty string.
   'internal': { path: 'internal', prefix: '' },
 } satisfies RouteRegistry

@@ -56,50 +56,50 @@ const ship = {
 </script>
 
 @section('content')
-  <div class="mx-auto max-w-5xl px-6 py-12">
+  <div class="mx-auto px-6 py-12 max-w-5xl">
     <CheckoutSteps current="shipping" />
 
     @if (items.length === 0 || !cart?.email)
-      <div class="rounded-3xl border border-dashed border-stone-300 p-12 text-center">
+      <div class="p-12 text-center border border-dashed border-stone-300 rounded-3xl">
         <p class="text-stone-500">Start at the contact step.</p>
-        <a href="/checkout/contact" class="mt-6 inline-flex rounded-full bg-stone-900 text-stone-50 px-6 py-3 text-sm font-semibold hover:bg-stone-800">Go to contact</a>
+        <a href="/checkout/contact" class="inline-flex mt-6 px-6 py-3 font-semibold text-sm text-stone-50 bg-stone-900 hover:bg-stone-800 rounded-full">Go to contact</a>
       </div>
     @else
-      <div class="grid md:grid-cols-[1fr_360px] gap-10 items-start">
+      <div class="grid gap-10 items-start md:grid-cols-[1fr_360px]">
         <div>
-          <h1 class="text-3xl font-bold tracking-tight text-stone-900">Shipping address</h1>
+          <h1 class="font-bold text-3xl text-stone-900 tracking-tight">Shipping address</h1>
           <p class="mt-2 text-stone-600">Where should we send the bowl?</p>
 
           <form action="/api/checkout/shipping" method="POST" class="mt-8 space-y-5">
             <div>
-              <label class="text-xs font-semibold uppercase tracking-wider text-stone-500">Full name</label>
-              <input type="text" name="shipping_name" required autocomplete="name" value="{{ ship.name }}" class="mt-1 w-full rounded-2xl border border-stone-300 px-4 py-3 text-sm focus:outline-none focus:border-stone-900">
+              <label class="font-semibold text-stone-500 text-xs tracking-wider uppercase">Full name</label>
+              <input type="text" name="shipping_name" required autocomplete="name" value="{{ ship.name }}" class="mt-1 px-4 py-3 w-full text-sm border border-stone-300 rounded-2xl focus:border-stone-900 focus:outline-none">
             </div>
 
             <div>
-              <label class="text-xs font-semibold uppercase tracking-wider text-stone-500">Street address</label>
-              <input type="text" name="shipping_address" required autocomplete="street-address" value="{{ ship.address }}" class="mt-1 w-full rounded-2xl border border-stone-300 px-4 py-3 text-sm focus:outline-none focus:border-stone-900">
+              <label class="font-semibold text-stone-500 text-xs tracking-wider uppercase">Street address</label>
+              <input type="text" name="shipping_address" required autocomplete="street-address" value="{{ ship.address }}" class="mt-1 px-4 py-3 w-full text-sm border border-stone-300 rounded-2xl focus:border-stone-900 focus:outline-none">
             </div>
 
-            <div class="grid grid-cols-2 gap-4">
+            <div class="grid gap-4 grid-cols-2">
               <div>
-                <label class="text-xs font-semibold uppercase tracking-wider text-stone-500">City</label>
-                <input type="text" name="shipping_city" required autocomplete="address-level2" value="{{ ship.city }}" class="mt-1 w-full rounded-2xl border border-stone-300 px-4 py-3 text-sm focus:outline-none focus:border-stone-900">
+                <label class="font-semibold text-stone-500 text-xs tracking-wider uppercase">City</label>
+                <input type="text" name="shipping_city" required autocomplete="address-level2" value="{{ ship.city }}" class="mt-1 px-4 py-3 w-full text-sm border border-stone-300 rounded-2xl focus:border-stone-900 focus:outline-none">
               </div>
               <div>
-                <label class="text-xs font-semibold uppercase tracking-wider text-stone-500">State</label>
-                <input type="text" name="shipping_state" required autocomplete="address-level1" value="{{ ship.state }}" class="mt-1 w-full rounded-2xl border border-stone-300 px-4 py-3 text-sm focus:outline-none focus:border-stone-900">
+                <label class="font-semibold text-stone-500 text-xs tracking-wider uppercase">State</label>
+                <input type="text" name="shipping_state" required autocomplete="address-level1" value="{{ ship.state }}" class="mt-1 px-4 py-3 w-full text-sm border border-stone-300 rounded-2xl focus:border-stone-900 focus:outline-none">
               </div>
             </div>
 
             <div class="max-w-[200px]">
-              <label class="text-xs font-semibold uppercase tracking-wider text-stone-500">ZIP / Postal</label>
-              <input type="text" name="shipping_zip" required autocomplete="postal-code" value="{{ ship.zip }}" class="mt-1 w-full rounded-2xl border border-stone-300 px-4 py-3 text-sm focus:outline-none focus:border-stone-900">
+              <label class="font-semibold text-stone-500 text-xs tracking-wider uppercase">ZIP / Postal</label>
+              <input type="text" name="shipping_zip" required autocomplete="postal-code" value="{{ ship.zip }}" class="mt-1 px-4 py-3 w-full text-sm border border-stone-300 rounded-2xl focus:border-stone-900 focus:outline-none">
             </div>
 
-            <div class="flex items-center justify-between gap-4 pt-2">
+            <div class="flex gap-4 items-center justify-between pt-2">
               <a href="/checkout/contact" class="text-sm text-stone-500 hover:text-stone-900">← Back</a>
-              <button type="submit" class="rounded-full bg-stone-900 text-stone-50 px-6 py-3 text-sm font-semibold hover:bg-stone-800 transition-colors">
+              <button type="submit" class="px-6 py-3 font-semibold text-sm text-stone-50 bg-stone-900 hover:bg-stone-800 rounded-full transition-colors">
                 Continue to payment
               </button>
             </div>
