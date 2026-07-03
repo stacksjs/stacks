@@ -40,3 +40,6 @@ export {
   generateTOTPSecret,
   totpKeyUri,
 } from '@stacksjs/ts-auth'
+
+// TOTP setup/enable/disable + login-challenge persistence
+export * from './two-factor'

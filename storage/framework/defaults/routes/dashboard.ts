@@ -45,6 +45,16 @@ route.post('/verify-registration', 'Actions/Auth/VerifyRegistrationAction').midd
 route.get('/generate-authentication-options', 'Actions/Auth/GenerateAuthenticationAction').rateLimit(10, 'minute')
 route.get('/verify-authentication', 'Actions/Auth/VerifyAuthenticationAction').rateLimit(10, 'minute')
 
+// TOTP 2FA. Setup/enable/disable act on the caller's own authenticated
+// account (auth-gated, same identity rule as passkey enrollment above).
+// verify-two-factor-login is the second step of LoginAction's flow and
+// is correctly unauthenticated — the caller only has a short-lived
+// challenge token at that point, not a session yet.
+route.post('/generate-two-factor-secret', 'Actions/Auth/GenerateTwoFactorSecretAction').middleware('auth').rateLimit(10, 'minute')
+route.post('/enable-two-factor', 'Actions/Auth/EnableTwoFactorAction').middleware('auth').rateLimit(10, 'minute')
+route.post('/disable-two-factor', 'Actions/Auth/DisableTwoFactorAction').middleware('auth').rateLimit(10, 'minute')
+route.post('/verify-two-factor-login', 'Actions/Auth/VerifyTwoFactorLoginAction').rateLimit(10, 'minute')
+
 route.group({ prefix: '/auth' }, () => {
   route.post('/refresh', 'Actions/Auth/RefreshTokenAction').rateLimit(10, 'minute')
   route.get('/tokens', 'Actions/Auth/ListTokensAction').middleware('auth')
