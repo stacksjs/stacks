@@ -71,19 +71,37 @@ export function usersTwoFactorColumnsSql(sql: SqlHelpers): string[] {
 }
 
 /**
+ * Defensive ALTER guaranteeing `users.stripe_id` — the `billable`
+ * model trait's methods (createStripeCustomer/createOrGetStripeUser,
+ * used by `user.checkout(...)`) read and write this column
+ * unconditionally, but it's runtime-mixin-only (createBillableMethods
+ * in orm/define-model.ts, gated behind `traits.billable`): nothing in
+ * migration codegen ever creates the column itself, on any model, with
+ * or without the trait enabled. Every Stripe checkout call site was
+ * dead code pointed at a column that never existed, `buddy new`
+ * included — same shape as the passkeys/two_factor gap above (see
+ * stacksjs/status#1 Phase 9).
+ */
+export function usersStripeIdSql(): string {
+  return `ALTER TABLE users ADD COLUMN stripe_id VARCHAR(255)`
+}
+
+/**
  * Runs every `users` guarantee-column ALTER (email_verified_at,
- * password_changed_at, two_factor_secret, two_factor_enabled), each
- * independently try/catch-swallowed so one already-existing column (or
- * a not-yet-existing `users` table) never skips the others. Exported so
- * `buddy migrate`/`migrate:fresh` can call it a second time after the
- * numbered model migrations run — see the call site in
- * {@link migrateAuthTables} for why a single call isn't enough.
+ * password_changed_at, two_factor_secret, two_factor_enabled,
+ * stripe_id), each independently try/catch-swallowed so one
+ * already-existing column (or a not-yet-existing `users` table) never
+ * skips the others. Exported so `buddy migrate`/`migrate:fresh` can
+ * call it a second time after the numbered model migrations run — see
+ * the call site in {@link migrateAuthTables} for why a single call
+ * isn't enough.
  */
 export async function ensureUsersAuthColumns(sql: SqlHelpers, options: { verbose?: boolean } = {}): Promise<void> {
   const alters = [
     usersEmailVerifiedAtSql(sql),
     usersPasswordChangedAtSql(sql),
     ...usersTwoFactorColumnsSql(sql),
+    usersStripeIdSql(),
   ]
   for (const alterSql of alters) {
     try {
@@ -93,6 +111,13 @@ export async function ensureUsersAuthColumns(sql: SqlHelpers, options: { verbose
       // Column already exists (or users table missing) — safe to ignore
       if (options.verbose) log.debug(`[auth-tables] Skipped (already applied or users missing): ${alterSql}`)
     }
+  }
+
+  try {
+    await db.unsafe(`CREATE UNIQUE INDEX IF NOT EXISTS idx_users_stripe_id ON users(stripe_id)`).execute()
+  }
+  catch {
+    if (options.verbose) log.debug(`[auth-tables] Skipped users.stripe_id unique index (already applied or users missing)`)
   }
 }
 
