@@ -6,6 +6,60 @@ import process from 'node:process'
 import { log } from '@stacksjs/cli'
 
 /**
+ * Request-scoped context (query string + parsed cookies) for `<script
+ * server>` blocks in `.stx` pages — mirrors `dev/views.ts`'s dev-only
+ * setup of the same globals. Without this, `globalThis.requestContext`
+ * and `__stxServeSearch` are simply undefined in production: every
+ * cookie-aware or query-param-aware page (auth+team resolution on the
+ * dashboard, filter params on monitors/incidents, etc.) silently reads
+ * nothing and falls back to its unauthenticated/no-filter state, even
+ * for a legitimately signed-in request. `dev/views.ts` sets these up
+ * for `buddy dev`, but `buddy serve` (this file, the actual Hetzner
+ * entrypoint) never did — this was found by an end-to-end login +
+ * dashboard smoke test, not by inspection.
+ *
+ * Plain globals, not `AsyncLocalStorage` — tried that first (mirroring
+ * dev/views.ts's own approach) and confirmed via the same e2e test that
+ * the store is empty by the time a `<script server>` block reads it:
+ * bun-plugin-stx's internal request handling doesn't preserve the async
+ * context across whatever it does between `onRequest` returning and the
+ * page actually rendering. `__stxServeSearch` already uses a plain
+ * global for the exact same reason (and already accepts the same
+ * concurrent-request race this shares) — `__stxServeCookies` follows
+ * that precedent instead of a mechanism that demonstrably doesn't work
+ * in this server.
+ */
+;(globalThis as any).requestContext = {
+  cookie(name: string): string | null {
+    const cookies = (globalThis as { __stxServeCookies?: Record<string, string> }).__stxServeCookies
+    return cookies?.[name] ?? null
+  },
+  url(): string {
+    return (globalThis as { __stxServeSearch?: string }).__stxServeSearch ?? ''
+  },
+}
+
+function parseCookies(req: Request): Record<string, string> {
+  const out: Record<string, string> = {}
+  const header = req.headers.get('cookie') || ''
+  if (!header)
+    return out
+  for (const part of header.split(';')) {
+    const trimmed = part.trim()
+    const eq = trimmed.indexOf('=')
+    if (eq === -1)
+      continue
+    const k = trimmed.slice(0, eq).trim()
+    const v = trimmed.slice(eq + 1).trim()
+    if (!k)
+      continue
+    try { out[k] = decodeURIComponent(v) }
+    catch { out[k] = v }
+  }
+  return out
+}
+
+/**
  * `buddy serve` — boot the production HTTP server.
  *
  * Renders the project's STX views (resources/views) via stx-serve and applies
@@ -120,6 +174,12 @@ export function serve(buddy: CLI): void {
               return new Response('Bad Gateway', { status: 502 })
             }
           }
+
+          // Stash cookies + query string so server-script blocks rendering
+          // this request can pull them via globalThis.requestContext /
+          // __stxServeSearch — see the doc comment above this function.
+          ;(globalThis as { __stxServeSearch?: string }).__stxServeSearch = url.search
+          ;(globalThis as { __stxServeCookies?: Record<string, string> }).__stxServeCookies = parseCookies(req)
 
           return undefined
         },
