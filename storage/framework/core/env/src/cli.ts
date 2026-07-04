@@ -440,16 +440,26 @@ export function getEnv(
     let privateKey: string | undefined
     const keysPath = resolve(cwd, options.keysFile || '.env.keys')
 
+    const envFileName = options.file || '.env'
+    const baseName = envFileName.split('/').pop() || ''
+    const env = baseName.replace(/^\.env\./, '').replace(/^\.env$/, '').toUpperCase()
+    const privateKeyName = env ? `DOTENV_PRIVATE_KEY_${env}` : 'DOTENV_PRIVATE_KEY'
+
     if (existsSync(keysPath)) {
       const keysContent = readFileSync(keysPath, 'utf-8')
       const { parsed: keys } = parse(keysContent)
-
-      const envFileName = options.file || '.env'
-      const baseName = envFileName.split('/').pop() || ''
-      const env = baseName.replace(/^\.env\./, '').replace(/^\.env$/, '').toUpperCase()
-      const privateKeyName = env ? `DOTENV_PRIVATE_KEY_${env}` : 'DOTENV_PRIVATE_KEY'
       privateKey = keys[privateKeyName]
     }
+
+    // No .env.keys (or it lacks this env's key): fall back to the process
+    // env, the dotenvx convention for CI runners and servers, where
+    // .env.keys must never exist (it's the one file that can't be
+    // committed). Without this fallback, `buddy deploy` from GitHub
+    // Actions shipped still-encrypted `encrypted:...` ciphertext as every
+    // site's .env and the app crash-looped on config validation
+    // (stacksjs/status, 2026-07-04).
+    if (!privateKey)
+      privateKey = process.env[privateKeyName]
 
     // Load and parse .env file
     const envContent = readFileSync(envPath, 'utf-8')
