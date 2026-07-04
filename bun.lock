@@ -5,9 +5,9 @@
     "": {
       "name": "stacks",
       "dependencies": {
-        "@stacksjs/ts-cloud": "^0.6.1",
-        "@ts-cloud/aws-types": "^0.6.1",
-        "@ts-cloud/core": "^0.6.1",
+        "@stacksjs/ts-cloud": "^0.7.4",
+        "@ts-cloud/aws-types": "^0.7.0",
+        "@ts-cloud/core": "^0.7.0",
         "stacks": "workspace:*",
       },
       "devDependencies": {
@@ -16,11 +16,11 @@
     },
     "storage/framework": {
       "name": "stacks-framework",
-      "version": "0.70.45",
+      "version": "0.70.52",
     },
     "storage/framework/core": {
       "name": "stacks",
-      "version": "0.70.45",
+      "version": "0.70.52",
       "dependencies": {
         "@stacksjs/actions": "workspace:*",
         "@stacksjs/ai": "workspace:*",
@@ -71,7 +71,7 @@
     },
     "storage/framework/core/actions": {
       "name": "@stacksjs/actions",
-      "version": "0.70.45",
+      "version": "0.70.52",
       "dependencies": {
         "@stacksjs/bunpress": "^0.1.5",
         "@stacksjs/ts-cloud": "^0.5.4",
@@ -99,7 +99,7 @@
     },
     "storage/framework/core/ai": {
       "name": "@stacksjs/ai",
-      "version": "0.70.45",
+      "version": "0.70.52",
       "dependencies": {
         "@stacksjs/ts-cloud": "^0.5.4",
       },
@@ -115,7 +115,7 @@
     },
     "storage/framework/core/alias": {
       "name": "@stacksjs/alias",
-      "version": "0.70.45",
+      "version": "0.70.52",
       "devDependencies": {
         "@stacksjs/path": "workspace:*",
         "better-dx": "^0.2.12",
@@ -123,14 +123,14 @@
     },
     "storage/framework/core/analytics": {
       "name": "@stacksjs/analytics",
-      "version": "0.70.45",
+      "version": "0.70.52",
       "devDependencies": {
         "better-dx": "^0.2.12",
       },
     },
     "storage/framework/core/api": {
       "name": "@stacksjs/api",
-      "version": "0.70.45",
+      "version": "0.70.52",
       "devDependencies": {
         "@stacksjs/utils": "workspace:*",
         "better-dx": "^0.2.12",
@@ -138,7 +138,7 @@
     },
     "storage/framework/core/arrays": {
       "name": "@stacksjs/arrays",
-      "version": "0.70.45",
+      "version": "0.70.52",
       "devDependencies": {
         "@stacksjs/utils": "workspace:*",
         "better-dx": "^0.2.12",
@@ -146,7 +146,7 @@
     },
     "storage/framework/core/auth": {
       "name": "@stacksjs/auth",
-      "version": "0.70.45",
+      "version": "0.70.52",
       "dependencies": {
         "@stacksjs/ts-auth": "^0.4.3",
       },
@@ -158,7 +158,7 @@
     },
     "storage/framework/core/browser": {
       "name": "@stacksjs/browser",
-      "version": "0.70.45",
+      "version": "0.70.52",
       "dependencies": {
         "@stacksjs/composables": "workspace:*",
         "@stacksjs/stx": "^0.2.40",
@@ -173,7 +173,7 @@
     },
     "storage/framework/core/buddy": {
       "name": "@stacksjs/buddy",
-      "version": "0.70.45",
+      "version": "0.70.52",
       "bin": {
         "stacks": "dist/cli.js",
         "stx": "dist/cli.js",
@@ -220,7 +220,7 @@
         "@stacksjs/storage": "^0.70.23",
         "@stacksjs/strings": "^0.70.23",
         "@stacksjs/testing": "^0.70.23",
-        "@stacksjs/ts-cloud": "^0.5.4",
+        "@stacksjs/ts-cloud": "^0.7.4",
         "@stacksjs/tunnel": "^0.70.23",
         "@stacksjs/types": "^0.70.23",
         "@stacksjs/ui": "^0.70.23",
@@ -233,7 +233,7 @@
     },
     "storage/framework/core/build": {
       "name": "@stacksjs/build",
-      "version": "0.70.45",
+      "version": "0.70.52",
       "dependencies": {
         "@babel/generator": "^7.29.1",
         "@babel/traverse": "^7.29.0",
@@ -247,42 +247,42 @@
     },
     "storage/framework/core/bun-create/bud": {
       "name": "@bun-examples/bud",
-      "version": "0.70.45",
+      "version": "0.70.52",
       "dependencies": {
         "stacks": "workspace:*",
       },
     },
     "storage/framework/core/bun-create/buddy": {
       "name": "@bun-examples/buddy",
-      "version": "0.70.45",
+      "version": "0.70.52",
       "dependencies": {
         "stacks": "workspace:*",
       },
     },
     "storage/framework/core/bun-create/stack": {
       "name": "@bun-examples/stack",
-      "version": "0.70.45",
+      "version": "0.70.52",
       "dependencies": {
         "stacks": "workspace:*",
       },
     },
     "storage/framework/core/bun-create/stacks": {
       "name": "@bun-examples/stacks",
-      "version": "0.70.45",
+      "version": "0.70.52",
       "dependencies": {
         "stacks": "workspace:*",
       },
     },
     "storage/framework/core/bun-create/stx": {
       "name": "@bun-examples/stx",
-      "version": "0.70.45",
+      "version": "0.70.52",
       "dependencies": {
         "stacks": "workspace:*",
       },
     },
     "storage/framework/core/cache": {
       "name": "@stacksjs/cache",
-      "version": "0.70.45",
+      "version": "0.70.52",
       "devDependencies": {
         "@stacksjs/config": "workspace:*",
         "@stacksjs/ts-cache": "^0.1.4",
@@ -290,7 +290,7 @@
     },
     "storage/framework/core/calendar-api": {
       "name": "@stacksjs/calendar-api",
-      "version": "0.70.45",
+      "version": "0.70.52",
       "devDependencies": {
         "@stacksjs/browser": "workspace:*",
         "@stacksjs/security": "workspace:*",
@@ -299,7 +299,7 @@
     },
     "storage/framework/core/charts": {
       "name": "@stacksjs/charts",
-      "version": "0.70.45",
+      "version": "0.70.52",
       "dependencies": {
         "@ts-charts/format": "^0.2.0",
         "@ts-charts/scale": "^0.2.0",
@@ -311,7 +311,7 @@
     },
     "storage/framework/core/chat": {
       "name": "@stacksjs/chat",
-      "version": "0.70.45",
+      "version": "0.70.52",
       "devDependencies": {
         "@stacksjs/cli": "workspace:*",
         "@stacksjs/config": "workspace:*",
@@ -322,7 +322,7 @@
     },
     "storage/framework/core/cli": {
       "name": "@stacksjs/cli",
-      "version": "0.70.45",
+      "version": "0.70.52",
       "dependencies": {
         "@stacksjs/clapp": "^0.2.8",
       },
@@ -340,7 +340,7 @@
     },
     "storage/framework/core/cloud": {
       "name": "@stacksjs/cloud",
-      "version": "0.70.45",
+      "version": "0.70.52",
       "dependencies": {
         "@stacksjs/ts-cloud": "^0.5.4",
       },
@@ -360,7 +360,7 @@
     },
     "storage/framework/core/cms": {
       "name": "@stacksjs/cms",
-      "version": "0.70.45",
+      "version": "0.70.52",
       "dependencies": {
         "ts-slug": "^0.1.0",
         "ts-spreadsheets": "^0.2.0",
@@ -371,7 +371,7 @@
     },
     "storage/framework/core/collections": {
       "name": "@stacksjs/collections",
-      "version": "0.70.45",
+      "version": "0.70.52",
       "devDependencies": {
         "better-dx": "^0.2.12",
         "ts-collect": "^0.4.0",
@@ -379,7 +379,7 @@
     },
     "storage/framework/core/commerce": {
       "name": "@stacksjs/commerce",
-      "version": "0.70.45",
+      "version": "0.70.52",
       "dependencies": {
         "ts-spreadsheets": "^0.2.0",
       },
@@ -389,7 +389,7 @@
     },
     "storage/framework/core/composables": {
       "name": "@stacksjs/composables",
-      "version": "0.70.45",
+      "version": "0.70.52",
       "dependencies": {
         "@stacksjs/datetime": "workspace:*",
         "@stacksjs/stx": "^0.2.40",
@@ -400,7 +400,7 @@
     },
     "storage/framework/core/config": {
       "name": "@stacksjs/config",
-      "version": "0.70.45",
+      "version": "0.70.52",
       "dependencies": {
         "ts-pantry": "^0.8.16",
       },
@@ -413,14 +413,14 @@
     },
     "storage/framework/core/cron": {
       "name": "@stacksjs/cron",
-      "version": "0.70.45",
+      "version": "0.70.52",
       "devDependencies": {
         "better-dx": "^0.2.12",
       },
     },
     "storage/framework/core/database": {
       "name": "@stacksjs/database",
-      "version": "0.70.45",
+      "version": "0.70.52",
       "dependencies": {
         "bun-query-builder": "^0.1.38",
       },
@@ -439,7 +439,7 @@
     },
     "storage/framework/core/datetime": {
       "name": "@stacksjs/datetime",
-      "version": "0.70.45",
+      "version": "0.70.52",
       "devDependencies": {
         "@stacksjs/utils": "workspace:*",
         "better-dx": "^0.2.12",
@@ -447,14 +447,14 @@
     },
     "storage/framework/core/deploy": {
       "name": "@stacksjs/deploy",
-      "version": "0.70.45",
+      "version": "0.70.52",
       "dependencies": {
         "@stacksjs/ts-cloud": "^0.5.4",
       },
     },
     "storage/framework/core/desktop": {
       "name": "@stacksjs/desktop",
-      "version": "0.70.45",
+      "version": "0.70.52",
       "devDependencies": {
         "@stacksjs/build": "workspace:*",
         "@stacksjs/server": "workspace:*",
@@ -463,11 +463,11 @@
     },
     "storage/framework/core/development": {
       "name": "@stacksjs/development",
-      "version": "0.70.45",
+      "version": "0.70.52",
     },
     "storage/framework/core/dns": {
       "name": "@stacksjs/dns",
-      "version": "0.70.45",
+      "version": "0.70.52",
       "dependencies": {
         "@stacksjs/dnsx": "^0.2.3",
         "@stacksjs/ts-cloud": "^0.5.4",
@@ -484,7 +484,7 @@
     },
     "storage/framework/core/docs": {
       "name": "@stacksjs/docs",
-      "version": "0.70.45",
+      "version": "0.70.52",
       "dependencies": {
         "@stacksjs/bunpress": "^0.1.5",
       },
@@ -498,7 +498,7 @@
     },
     "storage/framework/core/email": {
       "name": "@stacksjs/email",
-      "version": "0.70.45",
+      "version": "0.70.52",
       "dependencies": {
         "@stacksjs/ts-cloud": "^0.5.4",
       },
@@ -512,14 +512,14 @@
     },
     "storage/framework/core/enums": {
       "name": "@stacksjs/enums",
-      "version": "0.70.45",
+      "version": "0.70.52",
       "devDependencies": {
         "better-dx": "^0.2.12",
       },
     },
     "storage/framework/core/env": {
       "name": "@stacksjs/env",
-      "version": "0.70.45",
+      "version": "0.70.52",
       "devDependencies": {
         "@stacksjs/path": "workspace:*",
         "@stacksjs/validation": "workspace:*",
@@ -528,7 +528,7 @@
     },
     "storage/framework/core/error-handling": {
       "name": "@stacksjs/error-handling",
-      "version": "0.70.45",
+      "version": "0.70.52",
       "dependencies": {
         "@stacksjs/stx": "^0.2.67",
         "ts-error-handling": "^0.1.1",
@@ -545,14 +545,14 @@
     },
     "storage/framework/core/events": {
       "name": "@stacksjs/events",
-      "version": "0.70.45",
+      "version": "0.70.52",
       "devDependencies": {
         "better-dx": "^0.2.12",
       },
     },
     "storage/framework/core/faker": {
       "name": "@stacksjs/faker",
-      "version": "0.70.45",
+      "version": "0.70.52",
       "devDependencies": {
         "@stacksjs/cli": "workspace:*",
         "@stacksjs/config": "workspace:*",
@@ -562,7 +562,7 @@
     },
     "storage/framework/core/git": {
       "name": "@stacksjs/git",
-      "version": "0.70.45",
+      "version": "0.70.52",
       "devDependencies": {
         "@stacksjs/gitit": "^0.2.5",
         "@stacksjs/gitlint": "^0.1.5",
@@ -571,14 +571,14 @@
     },
     "storage/framework/core/github": {
       "name": "@stacksjs/github",
-      "version": "0.70.45",
+      "version": "0.70.52",
       "devDependencies": {
         "better-dx": "^0.2.12",
       },
     },
     "storage/framework/core/health": {
       "name": "@stacksjs/health",
-      "version": "0.70.45",
+      "version": "0.70.52",
       "devDependencies": {
         "@stacksjs/notifications": "workspace:*",
         "better-dx": "^0.2.12",
@@ -586,7 +586,7 @@
     },
     "storage/framework/core/http": {
       "name": "@stacksjs/http",
-      "version": "0.70.45",
+      "version": "0.70.52",
       "dependencies": {
         "@stacksjs/httx": "^0.1.10",
       },
@@ -596,7 +596,7 @@
     },
     "storage/framework/core/i18n": {
       "name": "@stacksjs/i18n",
-      "version": "0.70.45",
+      "version": "0.70.52",
       "dependencies": {
         "@stacksjs/ts-i18n": "^0.1.9",
       },
@@ -606,7 +606,7 @@
     },
     "storage/framework/core/lint": {
       "name": "@stacksjs/lint",
-      "version": "0.70.45",
+      "version": "0.70.52",
       "devDependencies": {
         "@stacksjs/gitlint": "^0.1.5",
         "better-dx": "^0.2.12",
@@ -615,7 +615,7 @@
     },
     "storage/framework/core/logging": {
       "name": "@stacksjs/logging",
-      "version": "0.70.45",
+      "version": "0.70.52",
       "devDependencies": {
         "@stacksjs/clarity": "^0.3.24",
         "@stacksjs/cli": "workspace:*",
@@ -629,7 +629,7 @@
     },
     "storage/framework/core/newsletter": {
       "name": "@stacksjs/newsletter",
-      "version": "0.70.45",
+      "version": "0.70.52",
       "devDependencies": {
         "@stacksjs/cli": "workspace:*",
         "@stacksjs/config": "workspace:*",
@@ -640,7 +640,7 @@
     },
     "storage/framework/core/notifications": {
       "name": "@stacksjs/notifications",
-      "version": "0.70.45",
+      "version": "0.70.52",
       "devDependencies": {
         "@stacksjs/chat": "workspace:*",
         "@stacksjs/cli": "workspace:*",
@@ -655,7 +655,7 @@
     },
     "storage/framework/core/objects": {
       "name": "@stacksjs/objects",
-      "version": "0.70.45",
+      "version": "0.70.52",
       "devDependencies": {
         "@stacksjs/collections": "workspace:*",
         "@stacksjs/types": "workspace:*",
@@ -666,7 +666,7 @@
     },
     "storage/framework/core/orm": {
       "name": "@stacksjs/orm",
-      "version": "0.70.45",
+      "version": "0.70.52",
       "dependencies": {
         "@stacksjs/ts-validation": "^0.5.0",
         "bun-query-builder": "^0.1.38",
@@ -681,14 +681,14 @@
     },
     "storage/framework/core/path": {
       "name": "@stacksjs/path",
-      "version": "0.70.45",
+      "version": "0.70.52",
       "devDependencies": {
         "better-dx": "^0.2.12",
       },
     },
     "storage/framework/core/payments": {
       "name": "@stacksjs/payments",
-      "version": "0.70.45",
+      "version": "0.70.52",
       "devDependencies": {
         "@stacksjs/config": "workspace:*",
         "@stacksjs/utils": "workspace:*",
@@ -699,7 +699,7 @@
     },
     "storage/framework/core/push": {
       "name": "@stacksjs/push",
-      "version": "0.70.45",
+      "version": "0.70.52",
       "devDependencies": {
         "@stacksjs/cli": "workspace:*",
         "@stacksjs/config": "workspace:*",
@@ -709,7 +709,7 @@
     },
     "storage/framework/core/query-builder": {
       "name": "@stacksjs/query-builder",
-      "version": "0.70.45",
+      "version": "0.70.52",
       "dependencies": {
         "bun-query-builder": "^0.1.38",
       },
@@ -721,7 +721,7 @@
     },
     "storage/framework/core/queue": {
       "name": "@stacksjs/queue",
-      "version": "0.70.45",
+      "version": "0.70.52",
       "dependencies": {
         "@stacksjs/bun-queue": "^0.1.0",
       },
@@ -731,7 +731,7 @@
     },
     "storage/framework/core/realtime": {
       "name": "@stacksjs/realtime",
-      "version": "0.70.45",
+      "version": "0.70.52",
       "dependencies": {
         "ts-broadcasting": "^0.0.5",
       },
@@ -741,14 +741,14 @@
     },
     "storage/framework/core/registry": {
       "name": "@stacksjs/registry",
-      "version": "0.70.45",
+      "version": "0.70.52",
       "devDependencies": {
         "better-dx": "^0.2.12",
       },
     },
     "storage/framework/core/repl": {
       "name": "@stacksjs/repl",
-      "version": "0.70.45",
+      "version": "0.70.52",
       "devDependencies": {
         "@stacksjs/tinker": "workspace:*",
         "better-dx": "^0.2.12",
@@ -756,7 +756,7 @@
     },
     "storage/framework/core/router": {
       "name": "@stacksjs/router",
-      "version": "0.70.45",
+      "version": "0.70.52",
       "dependencies": {
         "@stacksjs/bun-router": "0.0.16",
       },
@@ -775,7 +775,7 @@
     },
     "storage/framework/core/scheduler": {
       "name": "@stacksjs/scheduler",
-      "version": "0.70.45",
+      "version": "0.70.52",
       "devDependencies": {
         "@stacksjs/actions": "workspace:*",
         "@stacksjs/cron": "workspace:*",
@@ -784,7 +784,7 @@
     },
     "storage/framework/core/search-engine": {
       "name": "@stacksjs/search-engine",
-      "version": "0.70.45",
+      "version": "0.70.52",
       "devDependencies": {
         "@stacksjs/config": "workspace:*",
         "better-dx": "^0.2.12",
@@ -792,7 +792,7 @@
     },
     "storage/framework/core/security": {
       "name": "@stacksjs/security",
-      "version": "0.70.45",
+      "version": "0.70.52",
       "dependencies": {
         "ts-security-crypto": "0.0.2",
       },
@@ -806,7 +806,7 @@
     },
     "storage/framework/core/server": {
       "name": "@stacksjs/server",
-      "version": "0.70.45",
+      "version": "0.70.52",
       "devDependencies": {
         "@stacksjs/config": "workspace:*",
         "@stacksjs/path": "workspace:*",
@@ -818,14 +818,14 @@
     },
     "storage/framework/core/shell": {
       "name": "@stacksjs/shell",
-      "version": "0.70.45",
+      "version": "0.70.52",
       "devDependencies": {
         "better-dx": "^0.2.12",
       },
     },
     "storage/framework/core/skills": {
       "name": "@stacksjs/skills",
-      "version": "0.70.45",
+      "version": "0.70.52",
       "dependencies": {
         "@stacksjs/path": "workspace:*",
         "@stacksjs/storage": "workspace:*",
@@ -837,7 +837,7 @@
     },
     "storage/framework/core/slug": {
       "name": "@stacksjs/slug",
-      "version": "0.70.45",
+      "version": "0.70.52",
       "devDependencies": {
         "@stacksjs/cli": "workspace:*",
         "@stacksjs/database": "workspace:*",
@@ -849,14 +849,14 @@
     },
     "storage/framework/core/slugs": {
       "name": "@stacksjs/slugs",
-      "version": "0.70.45",
+      "version": "0.70.52",
       "devDependencies": {
         "better-dx": "^0.2.12",
       },
     },
     "storage/framework/core/sms": {
       "name": "@stacksjs/sms",
-      "version": "0.70.45",
+      "version": "0.70.52",
       "devDependencies": {
         "@stacksjs/cli": "workspace:*",
         "@stacksjs/config": "workspace:*",
@@ -867,7 +867,7 @@
     },
     "storage/framework/core/socials": {
       "name": "@stacksjs/socials",
-      "version": "0.70.45",
+      "version": "0.70.52",
       "devDependencies": {
         "@stacksjs/error-handling": "workspace:*",
         "@stacksjs/router": "workspace:*",
@@ -876,7 +876,7 @@
     },
     "storage/framework/core/storage": {
       "name": "@stacksjs/storage",
-      "version": "0.70.45",
+      "version": "0.70.52",
       "dependencies": {
         "@stacksjs/ts-cloud": "^0.5.4",
       },
@@ -891,7 +891,7 @@
     },
     "storage/framework/core/strings": {
       "name": "@stacksjs/strings",
-      "version": "0.70.45",
+      "version": "0.70.52",
       "devDependencies": {
         "@stacksjs/alias": "workspace:*",
         "@stacksjs/types": "workspace:*",
@@ -900,7 +900,7 @@
     },
     "storage/framework/core/testing": {
       "name": "@stacksjs/testing",
-      "version": "0.70.45",
+      "version": "0.70.52",
       "dependencies": {
         "@stacksjs/ts-cloud": "^0.5.4",
       },
@@ -912,14 +912,14 @@
     },
     "storage/framework/core/tinker": {
       "name": "@stacksjs/tinker",
-      "version": "0.70.45",
+      "version": "0.70.52",
       "devDependencies": {
         "better-dx": "^0.2.12",
       },
     },
     "storage/framework/core/tunnel": {
       "name": "@stacksjs/tunnel",
-      "version": "0.70.45",
+      "version": "0.70.52",
       "dependencies": {
         "localtunnels": "^0.2.7",
       },
@@ -929,7 +929,7 @@
     },
     "storage/framework/core/types": {
       "name": "@stacksjs/types",
-      "version": "0.70.45",
+      "version": "0.70.52",
       "dependencies": {
         "@stacksjs/bunpress": "^0.1.4",
         "@stacksjs/ts-validation": "^0.5.0",
@@ -943,7 +943,7 @@
     },
     "storage/framework/core/ui": {
       "name": "@stacksjs/ui",
-      "version": "0.70.45",
+      "version": "0.70.52",
       "devDependencies": {
         "@stacksjs/build": "workspace:*",
         "@stacksjs/config": "workspace:*",
@@ -954,7 +954,7 @@
     },
     "storage/framework/core/utils": {
       "name": "@stacksjs/utils",
-      "version": "0.70.45",
+      "version": "0.70.52",
       "dependencies": {
         "@stacksjs/browser": "workspace:*",
       },
@@ -973,7 +973,7 @@
     },
     "storage/framework/core/validation": {
       "name": "@stacksjs/validation",
-      "version": "0.70.45",
+      "version": "0.70.52",
       "dependencies": {
         "@stacksjs/ts-validation": "^0.5.0",
       },
@@ -985,14 +985,14 @@
     },
     "storage/framework/core/whois": {
       "name": "@stacksjs/whois",
-      "version": "0.70.45",
+      "version": "0.70.52",
       "devDependencies": {
         "better-dx": "^0.2.12",
       },
     },
     "storage/framework/libs/functions": {
       "name": "hello-world-fx",
-      "version": "0.70.45",
+      "version": "0.70.52",
       "devDependencies": {
         "stacks": "workspace:*",
       },
@@ -1223,7 +1223,7 @@
 
     "@stacksjs/ts-cache": ["@stacksjs/ts-cache@0.1.4", "", { "dependencies": { "@stacksjs/clapp": "^0.2.5", "bunfig": "^0.15.11", "clone": "^2.1.2" }, "bin": { "cache": "./dist/bin/cli.js" } }, "sha512-ABSWu0Re/vzIW9yXmUPJGpkkw7tV0dObjIfyjl3s0yrWBhnq3jBda6h0X8NEQPXhVk+vwkkbg+Uy0mN8AG/z2w=="],
 
-    "@stacksjs/ts-cloud": ["@stacksjs/ts-cloud@0.6.1", "", { "dependencies": { "@stacksjs/ts-xml": "^0.1.0", "@ts-cloud/aws-types": "0.6.1", "@ts-cloud/core": "0.6.1" }, "bin": { "cloud": "./dist/bin/cli.js" } }, "sha512-WwUdjKwU4m5LbFkk5CI/ulDwHgJti/FekMhzQw7GNRRuZ816/1PZ0QuFxTyxcKZnkJHoWsAx1HbWuRrKZY0D/Q=="],
+    "@stacksjs/ts-cloud": ["@stacksjs/ts-cloud@0.7.4", "", { "dependencies": { "@stacksjs/ts-xml": "^0.1.0", "@ts-cloud/aws-types": "0.7.4", "@ts-cloud/core": "0.7.4" }, "bin": { "cloud": "./dist/bin/cli.js" } }, "sha512-ViGcfCZCrTOoYndVLPS8iqGkuMJLyhhoOogWwV7eJ6Nq/Qk+Fj7c3hP00vwxDNQhTXTOm2gvvA0XkpbYeLPRpQ=="],
 
     "@stacksjs/ts-craft": ["@stacksjs/ts-craft@0.0.2", "", { "dependencies": { "archiver": "^7.0.1" }, "bin": { "craft": "./bin/cli.ts" } }, "sha512-09vAI4BJuXXNClFoOE6f1acrKqV77U7lObmOjnRteSqDoX7WZJU0HnMhrjaX96lF9EdPIozfIp59kPq7EZwLYQ=="],
 
@@ -1281,9 +1281,9 @@
 
     "@ts-charts/time-format": ["@ts-charts/time-format@0.2.0", "", { "dependencies": { "@ts-charts/time": "0.2.0" } }, "sha512-oRFQvr0++AnvWMsyyOfVd1J1Ibv2YOz29n23SzeJNxayyW6zMzsuZ+svnab7h5ijR0nB15YD6mSKXrcZZWMi+g=="],
 
-    "@ts-cloud/aws-types": ["@ts-cloud/aws-types@0.6.1", "", {}, "sha512-Ee38hXnvEwyV6vDeStRNvg5iTa12AMRTAZ0IFr0W9IJOascvfgLGoWRy+x1dgxAkDp8iZHHCyFwyiugpRCbsXA=="],
+    "@ts-cloud/aws-types": ["@ts-cloud/aws-types@0.7.4", "", {}, "sha512-UHUv1rLfjj9dSjyo7L3O2Mpf9Wc2aFE4XF4U8cQmA0ZYrFkPIOxj1+wAl16l/79/16RKbyNSDQ5wiWg7XUyVEQ=="],
 
-    "@ts-cloud/core": ["@ts-cloud/core@0.6.1", "", { "dependencies": { "@ts-cloud/aws-types": "0.6.1" } }, "sha512-D49uE8OszzW0NKTK80dHqrTPJ4V07lgJ9chjwECDmg/byJbdZ7tI8+rFssWnunILY2jiSDbzKugDpW3r4c6F7A=="],
+    "@ts-cloud/core": ["@ts-cloud/core@0.7.4", "", { "dependencies": { "@ts-cloud/aws-types": "0.7.4" } }, "sha512-PHHBTqb+/sweA1yuBRJMpM+ddAV5qrnSC+vb8iezEdQA5Q0s/TzGtD/HqkaxXj+sXVMwEHj1DAQwPLciFDjHxw=="],
 
     "@types/bun": ["@types/bun@1.3.14", "", { "dependencies": { "bun-types": "1.3.14" } }, "sha512-h1hFqFVcvAvD9j9K7ZW7vd82aSA+rTdznZa+5bwvCwqSB1jmmfLcbIWhOLx1/+boy/xmjgCs/OMUL8hRJSmnPw=="],
 
@@ -1557,8 +1557,6 @@
 
     "@stacksjs/ai/@stacksjs/ts-cloud": ["@stacksjs/ts-cloud@0.5.29", "", { "dependencies": { "@stacksjs/ts-xml": "^0.1.0", "@ts-cloud/aws-types": "0.5.29", "@ts-cloud/core": "0.5.29" }, "bin": { "cloud": "./dist/bin/cli.js" } }, "sha512-NyYSW4pOO6Lko5PXhgqqENRPXCS2yQY9EqLxFnHDOTIFEdrlO1Tv29V60534ZwBk8KStBiSxMpkDJp20jirPHQ=="],
 
-    "@stacksjs/buddy/@stacksjs/ts-cloud": ["@stacksjs/ts-cloud@0.5.29", "", { "dependencies": { "@stacksjs/ts-xml": "^0.1.0", "@ts-cloud/aws-types": "0.5.29", "@ts-cloud/core": "0.5.29" }, "bin": { "cloud": "./dist/bin/cli.js" } }, "sha512-NyYSW4pOO6Lko5PXhgqqENRPXCS2yQY9EqLxFnHDOTIFEdrlO1Tv29V60534ZwBk8KStBiSxMpkDJp20jirPHQ=="],
-
     "@stacksjs/bunpress/@stacksjs/ts-cloud": ["@stacksjs/ts-cloud@0.2.26", "", { "dependencies": { "@stacksjs/ts-xml": "^0.1.0", "@ts-cloud/aws-types": "0.2.26", "@ts-cloud/core": "0.2.26" }, "bin": { "cloud": "./dist/bin/cli.js" } }, "sha512-8xfHOyX/kEMN3Hw8/j21W1aVyuh5iJiB6fW0CloVhbuL9qwj53iSrSIVikS0izaKLw7p+MQyFKpsZW2+GscRng=="],
 
     "@stacksjs/cloud/@stacksjs/ts-cloud": ["@stacksjs/ts-cloud@0.5.29", "", { "dependencies": { "@stacksjs/ts-xml": "^0.1.0", "@ts-cloud/aws-types": "0.5.29", "@ts-cloud/core": "0.5.29" }, "bin": { "cloud": "./dist/bin/cli.js" } }, "sha512-NyYSW4pOO6Lko5PXhgqqENRPXCS2yQY9EqLxFnHDOTIFEdrlO1Tv29V60534ZwBk8KStBiSxMpkDJp20jirPHQ=="],
@@ -1608,10 +1606,6 @@
     "@stacksjs/ai/@stacksjs/ts-cloud/@ts-cloud/aws-types": ["@ts-cloud/aws-types@0.5.29", "", {}, "sha512-wBy8XvCjEsyw4hmI5xLc++Dc5ncb5HZBPlZMnacKsDw7ZEon4x/vhFhbmGRIBhOUB5xpejXVIS4YvpN6OWhxyw=="],
 
     "@stacksjs/ai/@stacksjs/ts-cloud/@ts-cloud/core": ["@ts-cloud/core@0.5.29", "", { "dependencies": { "@ts-cloud/aws-types": "0.5.29" } }, "sha512-3lpJJ3/aXNxK7Pw9IwiIwXW4zZXRLZUogsPKC6tfElctD5E+OpXgOi3mqt7FGSThrifux+oS+4q+bZvwgIOwpg=="],
-
-    "@stacksjs/buddy/@stacksjs/ts-cloud/@ts-cloud/aws-types": ["@ts-cloud/aws-types@0.5.29", "", {}, "sha512-wBy8XvCjEsyw4hmI5xLc++Dc5ncb5HZBPlZMnacKsDw7ZEon4x/vhFhbmGRIBhOUB5xpejXVIS4YvpN6OWhxyw=="],
-
-    "@stacksjs/buddy/@stacksjs/ts-cloud/@ts-cloud/core": ["@ts-cloud/core@0.5.29", "", { "dependencies": { "@ts-cloud/aws-types": "0.5.29" } }, "sha512-3lpJJ3/aXNxK7Pw9IwiIwXW4zZXRLZUogsPKC6tfElctD5E+OpXgOi3mqt7FGSThrifux+oS+4q+bZvwgIOwpg=="],
 
     "@stacksjs/bunpress/@stacksjs/ts-cloud/@ts-cloud/aws-types": ["@ts-cloud/aws-types@0.2.26", "", {}, "sha512-G1hfwwRRmEV7hi06ol5l3ScwHSTPWXnwti8fLwdRuHtN85UVyUtwsJDuMd9bBet4hOvdN6WVbJq6gQUBZtTxpg=="],
 
