@@ -277,6 +277,23 @@ export interface EmailOptions {
   }
 
   mailboxes: string[] | MailboxConfig[]
+
+  /**
+   * Auto-forwarding rules for received mail, provisioned to the mail server's
+   * readable `forwards.json` (re-read on every message — edits take effect
+   * with no restart).
+   *
+   * Key   = the delivered mailbox: the full address for a per-domain isolated
+   *         mailbox (e.g. `'no-reply@acme.com'`), or a bare local-part for a
+   *         legacy role mailbox (e.g. `'postmaster'`).
+   * Value = destination addresses. Targets on a local domain are written
+   *         straight to that mailbox's Maildir; external targets are relayed.
+   *         A copy also stays in the source mailbox.
+   *
+   * @example { 'no-reply@acme.com': ['chris@acme.com'] }
+   */
+  forwards?: Record<string, string[]>
+
   domain?: string
 
   url: string
