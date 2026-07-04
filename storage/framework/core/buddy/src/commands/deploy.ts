@@ -806,6 +806,147 @@ export function scrubLoopbackSitePortsForFirewall(tsCloudConfig: any): any {
   return { ...tsCloudConfig, sites: scrubbed }
 }
 
+/**
+ * GitHub Deployments integration for the Hetzner deploy path (best-effort).
+ *
+ * Records each server-* site's release as a GitHub Deployment against the repo
+ * that produced it — derived from the site's own git worktree (`root`), so no
+ * per-site config is needed: a site whose files come from `../adblock/dist/site`
+ * records against `chrisbbreuer/very-good-adblock`, a stacks-served site against
+ * `stacksjs/stacks`, etc. Deploys then show up under the repo's Deployments tab
+ * and the Deployments API — for MANUAL local deploys too, not just CI.
+ *
+ * Uses the `gh` CLI (already authenticated on the deploying machine). Skipped when
+ * running inside GitHub Actions (the workflow's own `environment:` records the
+ * deployment natively, so doing it here would duplicate), when opted out with
+ * `TS_CLOUD_GITHUB_DEPLOYMENTS=0`, or when `gh`/a GitHub remote is unavailable.
+ * Every failure is logged and swallowed — recording a deployment must never fail
+ * an otherwise-successful release.
+ */
+interface GithubDeploymentRecord {
+  repo: string
+  id: number
+  environment: string
+  environmentUrl?: string
+}
+
+function githubDeploymentsEnabled(): boolean {
+  return process.env.GITHUB_ACTIONS !== 'true' && process.env.TS_CLOUD_GITHUB_DEPLOYMENTS !== '0'
+}
+
+async function ghCliAvailable(): Promise<boolean> {
+  try {
+    const { execSync } = await import('node:child_process')
+    execSync('gh --version', { stdio: 'ignore' })
+    return true
+  }
+  catch {
+    return false
+  }
+}
+
+/**
+ * owner/repo + HEAD sha for the git worktree a site's files come from, or null
+ * when `root` is missing or has no GitHub remote. Git resolves from any subdir of
+ * a worktree, including a gitignored build dir like `../adblock/dist/site`.
+ */
+async function resolveSiteGithubSource(root: string): Promise<{ repo: string, ref: string } | null> {
+  try {
+    const { execSync } = await import('node:child_process')
+    const run = (cmd: string) => execSync(cmd, { cwd: root, stdio: ['ignore', 'pipe', 'ignore'] }).toString().trim()
+    const match = run('git config --get remote.origin.url').match(/github\.com[:/]([^/]+\/[^/]+?)(?:\.git)?$/)
+    if (!match)
+      return null
+    return { repo: match[1], ref: run('git rev-parse HEAD') }
+  }
+  catch {
+    return null
+  }
+}
+
+/** POST a deployment status. Best-effort; a failure here never fails the deploy. */
+async function setGithubDeploymentStatus(record: GithubDeploymentRecord, state: 'in_progress' | 'success' | 'failure'): Promise<void> {
+  try {
+    const { execSync } = await import('node:child_process')
+    const body = JSON.stringify({
+      state,
+      environment: record.environment,
+      ...(record.environmentUrl ? { environment_url: record.environmentUrl } : {}),
+      description: state === 'success' ? 'Deployed' : state === 'failure' ? 'Deploy failed' : 'Deploying',
+    })
+    execSync(`gh api -X POST repos/${record.repo}/deployments/${record.id}/statuses --input -`, { input: body, stdio: ['pipe', 'ignore', 'ignore'] })
+  }
+  catch (err) {
+    log.warn(`GitHub deployment status (${state}) skipped for ${record.repo}: ${getErrorMessage(err)}`)
+  }
+}
+
+/** POST a GitHub deployment + mark it in_progress. Best-effort → null on failure. */
+async function startGithubDeployment(source: { repo: string, ref: string }, environment: string, environmentUrl?: string): Promise<GithubDeploymentRecord | null> {
+  try {
+    const { execSync } = await import('node:child_process')
+    const body = JSON.stringify({
+      ref: source.ref,
+      environment,
+      description: `buddy deploy (${environment})`,
+      auto_merge: false,
+      required_contexts: [],
+      production_environment: environment === 'production',
+    })
+    const out = execSync(`gh api -X POST repos/${source.repo}/deployments --input - --jq '.id'`, { input: body, stdio: ['pipe', 'pipe', 'ignore'] }).toString().trim()
+    const id = Number(out)
+    if (!out || !Number.isInteger(id) || id <= 0)
+      return null
+    const record: GithubDeploymentRecord = { repo: source.repo, id, environment, environmentUrl }
+    await setGithubDeploymentStatus(record, 'in_progress')
+    return record
+  }
+  catch (err) {
+    log.warn(`GitHub deployment record skipped for ${source.repo}: ${getErrorMessage(err)}`)
+    return null
+  }
+}
+
+/**
+ * Record a GitHub Deployment for each server-* site being shipped, against the
+ * repo its files come from (deduped by repo+ref so the apex/www pair, or several
+ * stacks-served sites, collapse to one). Returns the records to finalize once the
+ * release succeeds or fails. See {@link githubDeploymentsEnabled}.
+ */
+async function startGithubDeployments(args: {
+  sites: Record<string, any>
+  onlySite: string | undefined
+  environment: string
+  resolveSiteKind: (site: any) => 'bucket' | 'server-app' | 'server-static' | 'server-php' | 'redirect'
+}): Promise<GithubDeploymentRecord[]> {
+  const { sites, onlySite, environment, resolveSiteKind } = args
+  const records: GithubDeploymentRecord[] = []
+  if (!githubDeploymentsEnabled() || !(await ghCliAvailable()))
+    return records
+
+  const seen = new Set<string>()
+  for (const [siteName, site] of Object.entries<any>(sites)) {
+    if (!site || (onlySite && siteName !== onlySite))
+      continue
+    const kind = resolveSiteKind(site)
+    if (kind === 'bucket' || kind === 'redirect')
+      continue
+    const source = await resolveSiteGithubSource(site.root || '.')
+    if (!source)
+      continue
+    const key = `${source.repo}@${source.ref}`
+    if (seen.has(key))
+      continue
+    seen.add(key)
+    const record = await startGithubDeployment(source, environment, site.domain ? `https://${site.domain}` : undefined)
+    if (record) {
+      records.push(record)
+      log.info(`GitHub deployment ${record.repo}#${record.id} → ${environment}`)
+    }
+  }
+  return records
+}
+
 async function runHetznerDeploy(args: {
   tsCloudConfig: any
   environment: 'production' | 'staging' | 'development'
@@ -984,6 +1125,12 @@ async function runHetznerDeploy(args: {
       process.env[envKey] = envValue
   }
 
+  // Open a GitHub Deployment per shipped site (best-effort, non-fatal). Done here
+  // — after the static builds ran (so each site's `root` exists to derive its
+  // repo/ref) and before shipping — so the deployment shows as `in_progress`
+  // while the release is uploaded, then success/failure below.
+  const githubDeployments = await startGithubDeployments({ sites, onlySite, environment, resolveSiteKind })
+
   log.info(onlySite ? `Shipping site '${onlySite}' to the server...` : 'Shipping release to the server...')
   // For a single-site deploy, hand ts-cloud a config whose sites are narrowed to
   // just that one so it ships only it (provisioning already reloaded rpx with the
@@ -1024,6 +1171,12 @@ async function runHetznerDeploy(args: {
   // fail an otherwise-successful release.
   if (ok)
     await reconcileHetznerDns(onlySite ? { [onlySite]: sites[onlySite] } : sites, ip, log)
+
+  // Close out every GitHub Deployment we opened (before the failure branch's
+  // process.exit below, so a failed release is recorded as failed, not left
+  // dangling in_progress).
+  for (const record of githubDeployments)
+    await setGithubDeploymentStatus(record, ok ? 'success' : 'failure')
 
   console.log('')
   if (ok) {
