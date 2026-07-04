@@ -1172,6 +1172,13 @@ async function runHetznerDeploy(args: {
   if (ok)
     await reconcileHetznerDns(onlySite ? { [onlySite]: sites[onlySite] } : sites, ip, log)
 
+  // Reconcile this app's mail routing onto the (shared) mail server from
+  // config/email.ts: register its local domain and provision its auto-forward
+  // rules (forwards.json). Idempotent, merge-based and best-effort — it never
+  // removes another tenant's domains/forwards and never fails the release.
+  if (ok)
+    await provisionMailTenant(ip, log)
+
   // Close out every GitHub Deployment we opened (before the failure branch's
   // process.exit below, so a failed release is recorded as failed, not left
   // dangling in_progress).
@@ -1186,6 +1193,105 @@ async function runHetznerDeploy(args: {
   else {
     await outro('Hetzner deploy reported a failure — see the per-instance output above.', { startTime, useSeconds: true })
     process.exit(ExitCode.FatalError)
+  }
+}
+
+/**
+ * Reconcile this app's mail configuration onto the mail server running on the
+ * box, straight from `config/email.ts`. Two declarative, additive things:
+ *
+ *   1. `config.email.domain` is registered as a local delivery domain
+ *      (merged into `SMTP_LOCAL_DOMAINS` in `/etc/mail/mail.env`).
+ *   2. `config.email.forwards` is merged into the server's `forwards.json`
+ *      (auto-forward rules, e.g. `no-reply@app.com → chris@app.com`).
+ *
+ * Everything is MERGE-based so a shared mail server keeps every other tenant's
+ * domains and forward rules untouched. It is idempotent (a steady-state deploy
+ * is a no-op) and best-effort (a hiccup is logged, never fails the release).
+ * The server re-reads `forwards.json` on every message, so a forwards-only
+ * change needs no restart; only a new local domain (read from env at startup)
+ * triggers one `systemctl restart mail`.
+ */
+async function provisionMailTenant(ip: string, logger: typeof log): Promise<void> {
+  const cfg: any = emailConfig || {}
+  const domain: string | undefined = cfg.domain
+    || (typeof cfg.from?.address === 'string' && cfg.from.address.includes('@') ? cfg.from.address.split('@')[1] : undefined)
+  const forwards: Record<string, string[]> = (cfg.forwards && typeof cfg.forwards === 'object') ? cfg.forwards : {}
+  const hasForwards = Object.keys(forwards).length > 0
+
+  // Nothing declarative to reconcile — skip silently (most apps).
+  if (!domain && !hasForwards)
+    return
+
+  const { execSync } = await import('node:child_process')
+  const sshArgs = ['-o', 'StrictHostKeyChecking=accept-new', '-o', 'BatchMode=yes', '-o', 'ConnectTimeout=15', `root@${ip}`]
+
+  // Compact forwards JSON, base64'd so it survives the SSH shell hop untouched.
+  const forwardsB64 = hasForwards ? Buffer.from(JSON.stringify(forwards)).toString('base64') : ''
+  const readme = 'Auto-forwarding rules, re-read on every message (edits take effect immediately, no restart). '
+    + 'KEY = the delivered mailbox: the FULL address for per-domain isolated mailboxes (e.g. no-reply@app.com), '
+    + 'or a bare local-part for legacy role mailboxes. VALUE = list of destination addresses; targets on a local '
+    + 'domain are written straight to that mailbox Maildir, external targets are relayed. Managed by buddy deploy '
+    + 'from config/email.ts (merge-based — hand edits to other keys are preserved).'
+  const readmeB64 = Buffer.from(readme).toString('base64')
+
+  // One idempotent, merge-based reconcile script. Emits MAILTENANT:<state>.
+  const script = `set -e
+DOMAIN=${domain ? `'${domain}'` : "''"}
+FWD_B64='${forwardsB64}'
+README_B64='${readmeB64}'
+ENVF=/etc/mail/mail.env
+FJSON=/opt/mail/forwards.json
+ENV_CHANGED=0
+# 1) Register the local delivery domain (merge into SMTP_LOCAL_DOMAINS).
+if [ -n "$DOMAIN" ] && [ -f "$ENVF" ]; then
+  cur=$(grep -E '^SMTP_LOCAL_DOMAINS=' "$ENVF" | head -1 | cut -d= -f2- || true)
+  case ",$cur," in
+    *",$DOMAIN,"*) : ;;
+    *) if grep -qE '^SMTP_LOCAL_DOMAINS=' "$ENVF"; then
+         sed -i "s|^SMTP_LOCAL_DOMAINS=.*|SMTP_LOCAL_DOMAINS=\${cur:+$cur,}$DOMAIN|" "$ENVF"
+       else
+         echo "SMTP_LOCAL_DOMAINS=$DOMAIN" >> "$ENVF"
+       fi
+       ENV_CHANGED=1 ;;
+  esac
+fi
+# 2) Merge auto-forward rules into forwards.json (live-reloaded; no restart).
+if [ -n "$FWD_B64" ] && [ -x /usr/local/bin/bun ]; then
+  echo "$FWD_B64" | base64 -d > /tmp/.mailtenant-fwd.json
+  echo "$README_B64" | base64 -d > /tmp/.mailtenant-readme.txt
+  /usr/local/bin/bun --bun -e '
+    const fs=require("fs"); const f="/opt/mail/forwards.json";
+    let cur={}; try{cur=JSON.parse(fs.readFileSync(f,"utf8"))}catch{}
+    const add=JSON.parse(fs.readFileSync("/tmp/.mailtenant-fwd.json","utf8"));
+    const readme=fs.readFileSync("/tmp/.mailtenant-readme.txt","utf8");
+    const merged={...cur}; delete merged._readme;
+    for(const [k,v] of Object.entries(add)) merged[k]=v;
+    const out={_readme:readme,...merged};
+    const s=JSON.stringify(out,null,2)+"\\n";
+    let prev=""; try{prev=fs.readFileSync(f,"utf8")}catch{}
+    if(s!==prev){ fs.writeFileSync(f,s); process.stdout.write("FWDCHANGED"); }
+  ' > /tmp/.mailtenant-res 2>/dev/null || true
+  chown mail-server:mail-server "$FJSON" 2>/dev/null || true
+  chmod 644 "$FJSON" 2>/dev/null || true
+  rm -f /tmp/.mailtenant-fwd.json /tmp/.mailtenant-readme.txt
+fi
+FWD_STATE=nochange; grep -q FWDCHANGED /tmp/.mailtenant-res 2>/dev/null && FWD_STATE=updated; rm -f /tmp/.mailtenant-res
+# 3) Restart only when the startup-read env actually changed.
+if [ "$ENV_CHANGED" = 1 ]; then systemctl restart mail 2>/dev/null || true; echo "MAILTENANT:domain-added+restarted,forwards=$FWD_STATE"; else echo "MAILTENANT:domain-current,forwards=$FWD_STATE"; fi`
+
+  try {
+    const out = execSync(`ssh ${sshArgs.map(a => `'${a}'`).join(' ')} bash -s`, {
+      input: script,
+      encoding: 'utf8',
+      stdio: ['pipe', 'pipe', 'pipe'],
+    })
+    const line = (out.match(/MAILTENANT:[^\n]*/) || [])[0] || 'MAILTENANT:done'
+    logger.success(`Mail routing reconciled (${line.replace('MAILTENANT:', '')})`)
+  }
+  catch (err) {
+    // Never fail a release on a mail-reconcile hiccup — it's additive config.
+    logger.warn(`Mail routing reconcile skipped: ${getErrorMessage(err)}`)
   }
 }
 
