@@ -2779,17 +2779,27 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
         p.frameworkPath('orm/routes.ts'),
         p.frameworkPath('core/orm/routes.ts'),
       ]
+      let ormRoutesLoaded = false
       for (const candidate of ormRoutesCandidates) {
         try {
           if (await Bun.file(candidate).exists()) {
             await import(candidate)
+            ormRoutesLoaded = true
             break
           }
         }
         catch (error) {
-          log.debug(`ORM routes load failed for ${candidate}:`, error)
+          // WARN, not debug: a throwing candidate is a real problem. This
+          // loader tries the canonical copy first and falls through to the
+          // legacy one on ANY error — so a canonical file that throws at
+          // import (e.g. a hard `import config/qb.ts` on a project without
+          // one) silently serves the STALE legacy copy, and every edit to
+          // the canonical file appears to do nothing. Make that visible.
+          log.warn(`[router] ORM routes candidate failed to load, falling back to next: ${candidate}\n`, error)
         }
       }
+      if (!ormRoutesLoaded)
+        log.warn('[router] No ORM routes candidate loaded — model useApi endpoints are unavailable.')
 
       // Load routes from discovered packages
       log.debug('[router] Loading discovered package routes...')

@@ -7,14 +7,49 @@
 
 import type { EnhancedRequest } from '@stacksjs/bun-router'
 import { route } from '@stacksjs/router'
+import { env } from '@stacksjs/env'
 import { projectPath } from '@stacksjs/path'
-import { setConfig, createQueryBuilder } from '@stacksjs/query-builder'
+import { createQueryBuilder, defaultConfig, setConfig } from '@stacksjs/query-builder'
 import { HttpError } from '@stacksjs/error-handling'
 
-// Initialize query builder config from project's config/qb.ts
+// Initialize the query builder config from the project's optional
+// `config/qb.ts` override (stacksjs/stacks#1930).
+//
+// This file is NOT scaffolded by the framework — it's a per-project
+// escape hatch. On a fresh clone / clean container build it's absent, so
+// a hard `await import(...)` here MUST NOT be used: it throws `Cannot find
+// module config/qb.ts` and aborts the entire ORM-route bootstrap. Because
+// the router's loader (stacks-router.ts) then silently falls back to the
+// legacy `core/orm/routes.ts` copy, that failure is invisible — every edit
+// to THIS file appears to do nothing. Keep the import soft.
+//
+// The fallback derives from the same DB_CONNECTION / DB_DATABASE_PATH env
+// vars every other data-layer entry point (migrations, the ORM itself)
+// already reads — NOT bun-query-builder's `defaultConfig`, whose "env-driven"
+// doc comment is a lie (it's a hardcoded `dialect: 'postgres'` literal), which
+// would silently point every useApi route at Postgres on a SQLite project.
 const qbConfigPath = projectPath('config/qb.ts')
-const qbConfig = (await import(qbConfigPath)).default
-setConfig(qbConfig)
+try {
+  const projectQbConfig = (await import(qbConfigPath)).default
+  setConfig(projectQbConfig ?? defaultConfig)
+}
+catch {
+  console.debug(`[orm] No config/qb.ts override found — deriving config from DB_CONNECTION`)
+  const dialect = (env.DB_CONNECTION as 'sqlite' | 'mysql' | 'postgres' | undefined) || 'sqlite'
+  setConfig({
+    ...defaultConfig,
+    dialect,
+    database: dialect === 'sqlite'
+      ? { database: env.DB_DATABASE_PATH || 'database/stacks.sqlite' }
+      : {
+          database: env.DB_DATABASE || 'stacks',
+          host: env.DB_HOST || '127.0.0.1',
+          port: env.DB_PORT || (dialect === 'postgres' ? 5432 : 3306),
+          username: env.DB_USERNAME || (dialect === 'postgres' ? 'postgres' : 'root'),
+          password: env.DB_PASSWORD || '',
+        },
+  })
+}
 
 // Load all models from app/Models/ (individually, so one broken model doesn't block the rest).
 //
