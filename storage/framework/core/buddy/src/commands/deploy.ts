@@ -1331,11 +1331,34 @@ async function reconcileHetznerDns(sites: Record<string, any>, ip: string, logge
   const { detectDnsProvider } = await import('@stacksjs/ts-cloud') as any
   logger.info('Reconciling DNS records...')
 
+  // Best-effort A-record lookup so externally managed domains that already
+  // point at the box read as healthy instead of warning on every deploy.
+  const resolveA = async (fqdn: string): Promise<string[]> => {
+    try {
+      const { resolve4 } = await import('node:dns/promises')
+      return await resolve4(fqdn)
+    }
+    catch {
+      return []
+    }
+  }
+
   for (const domain of domains) {
     try {
       const provider = await detectDnsProvider(domain, providerConfigs)
       if (!provider) {
-        logger.warn(`  DNS: no configured provider can manage ${domain} — point it manually: A ${domain} → ${ip}`)
+        // No configured provider owns this zone — the records may still be
+        // correct (managed at the registrar). Only warn when they aren't.
+        for (const sub of ['', 'www']) {
+          const fqdn = sub ? `${sub}.${domain}` : domain
+          const current = await resolveA(fqdn)
+          if (current.includes(ip))
+            logger.success(`  DNS: ${fqdn} → ${ip} (externally managed, already correct)`)
+          else if (current.length === 0)
+            logger.warn(`  DNS: ${fqdn} does not resolve and no configured provider manages ${domain} — create it manually: A ${fqdn} → ${ip}`)
+          else
+            logger.warn(`  DNS: ${fqdn} resolves to ${current.join(', ')} but this deploy targets ${ip}, and no configured provider manages ${domain} — update it manually: A ${fqdn} → ${ip}`)
+        }
         continue
       }
       for (const sub of ['', 'www']) {
