@@ -10,6 +10,7 @@ import { err, ok } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/logging'
 import process from 'node:process'
 import { parseEnvelope } from './envelope'
+import { updatedRowCount } from './utils'
 
 // Prevent unhandled rejections from crashing the worker
 process.on('unhandledRejection', (reason, _promise) => {
@@ -98,7 +99,7 @@ async function sweepStaleReservations(): Promise<number> {
       .set({ reserved_at: null, available_at: now })
       .where('reserved_at', '<=', cutoff)
       .executeTakeFirst()
-    const requeued = Number((result as { numUpdatedRows?: number | bigint })?.numUpdatedRows ?? 0)
+    const requeued = updatedRowCount(result)
     if (requeued > 0) {
       log.warn(
         `[queue] Requeued ${requeued} job(s) whose reservation exceeded the `
@@ -332,7 +333,7 @@ async function fetchPendingJobs(queueName: string, limit: number): Promise<any[]
       .where('reserved_at', 'is', null)
       .executeTakeFirst()
 
-    const updated = Number((result as any)?.numUpdatedRows ?? 0)
+    const updated = updatedRowCount(result)
     if (updated > 0) {
       claimed.push(job)
     }

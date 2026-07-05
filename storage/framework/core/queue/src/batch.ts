@@ -34,6 +34,7 @@
 import { log } from '@stacksjs/logging'
 import { env as envVars } from '@stacksjs/env'
 import type { Job } from './action'
+import { updatedRowCount } from './utils'
 
 function getQueueDriver(): string {
   return envVars.QUEUE_DRIVER || 'sync'
@@ -1063,7 +1064,7 @@ export async function recordBatchJobCompletion(batchId: string): Promise<void> {
     .where('pending_jobs', '=', 0)
     .where('finished_at', 'is', null)
     .executeTakeFirst()
-  const completed = Number((completeResult as { numUpdatedRows?: number | bigint })?.numUpdatedRows ?? 0) > 0
+  const completed = updatedRowCount(completeResult) > 0
 
   // Progress callbacks fire on EVERY observed job completion. The
   // callback map is in-process; each worker fires its own copy
