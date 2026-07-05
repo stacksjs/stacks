@@ -407,12 +407,69 @@ function ownsRow(rowField: unknown, ownerValue: unknown): boolean {
   return String(rowField) === String(ownerValue)
 }
 
+// Does this model carry a direct `team_id` column? Declared attributes are
+// keyed by attribute name (camelCase `teamId`) but the DB column is
+// snake_case `team_id` — accept either spelling, always return the column.
+function teamColumnOf(model: any): string | null {
+  const attrs = model?.attributes || {}
+  const has = (k: string) => Object.prototype.hasOwnProperty.call(attrs, k)
+  return (has('teamId') || has('team_id')) ? 'team_id' : null
+}
+
+// Adapt a raw EnhancedRequest to the `{ bearerToken, cookies }` shape
+// @stacksjs/auth's team resolver expects. The handler can't rely on
+// `req.bearerToken()` being wired here (the auto-CRUD paths read the
+// Authorization header directly via bearerOf), so surface the credential
+// from the header and parse the Cookie header for the session/token cookie.
+function teamAuthRequest(req: EnhancedRequest): { bearerToken: () => string | null, cookies: { get: (name: string) => string | null } } {
+  const token = bearerOf(req)
+  const cookieHeader = (req.headers?.get?.('cookie') as string | null) || ''
+  return {
+    bearerToken: () => token,
+    cookies: {
+      get: (name: string) => {
+        for (const part of cookieHeader.split(';')) {
+          const eq = part.indexOf('=')
+          if (eq === -1) continue
+          if (part.slice(0, eq).trim() === name)
+            return decodeURIComponent(part.slice(eq + 1).trim())
+        }
+        return null
+      },
+    },
+  }
+}
+
+// The ownership config actually enforced for a model. An explicit
+// `model.ownership` always wins. Otherwise any model with a `team_id`
+// column is auto-scoped to the caller's active team — tenant tables are
+// row-isolated with zero per-model config, while a public catalog table
+// (no team_id, no ownership) resolves to `null` and stays un-scoped.
+//
+// The team is resolved from the request's REAL credential (bearer token or
+// session cookie) via @stacksjs/auth — never from a client-supplied field —
+// so a caller can't widen their own scope by POSTing or ?team_id=-ing another
+// team's id. Lazy import mirrors authedUserFromRequest: avoids a boot-time
+// cycle through @stacksjs/auth.
+function effectiveOwnershipConfig(model: any): any | null {
+  if (model?.ownership) return model.ownership
+  const teamCol = teamColumnOf(model)
+  if (!teamCol) return null
+  return {
+    field: teamCol,
+    resolve: async (_user: any, req: EnhancedRequest) => {
+      const { resolveAuthenticatedTeamId } = await import('@stacksjs/auth')
+      return resolveAuthenticatedTeamId(teamAuthRequest(req) as any)
+    },
+  }
+}
+
 async function resolveOwnership(
   model: any,
   user: any,
   req: EnhancedRequest,
 ): Promise<{ enforced: boolean, value: unknown, field: string, bypass: boolean }> {
-  const cfg = model?.ownership
+  const cfg = effectiveOwnershipConfig(model)
   if (!cfg || !cfg.field || typeof cfg.resolve !== 'function')
     return { enforced: false, value: null, field: '', bypass: false }
   const bypass = typeof cfg.bypass === 'function' ? !!cfg.bypass(user, req) : false
@@ -487,10 +544,21 @@ for (const [modelName, model] of Object.entries(models)) {
   // unless the model explicitly declares `middleware` (an explicit `[]` is
   // a deliberate opt-out), because `enabledRoutes` defaults to all five and
   // a bare `useApi: true` used to expose anonymous POST/PUT/PATCH/DELETE.
-  const { read: readMiddleware, write: writeMiddleware, declared } = resolveApiMiddleware(useApi)
+  const { read: readMiddleware0, write: writeMiddleware, declared } = resolveApiMiddleware(useApi)
   const hasMutating = ['store', 'update', 'destroy'].some(r => enabledRoutes.includes(r))
   if (hasMutating && declared && writeMiddleware.length === 0)
     log.warn(`[orm] ${modelName}: registering UNAUTHENTICATED mutating routes at ${basePath} (explicit \`middleware: []\` opt-out)`)
+
+  // Row-scoped resource? (explicit `ownership`, or a model with a team_id
+  // column that's auto-team-scoped). If so its index/show handlers below
+  // restrict every row to the caller's team — which requires knowing who is
+  // calling, so force `auth` onto the read routes even though catalog tables
+  // (no team_id, no ownership) stay anonymously browsable. Computed once and
+  // reused by the handlers to gate the (DB-hitting) ownership resolution.
+  const rowScoped = !!effectiveOwnershipConfig(model)
+  const readMiddleware = (rowScoped && !readMiddleware0.includes('auth'))
+    ? ['auth', ...readMiddleware0]
+    : readMiddleware0
 
   // Local helper: chain `.middleware()` for every entry in `names`.
   // The chainable return value from `route.get/post/...` accepts one
@@ -571,6 +639,31 @@ for (const [modelName, model] of Object.entries(models)) {
           query = onlyTrashed ? query.whereNotNull('deleted_at') : query.whereNull('deleted_at')
         }
 
+        // Row-level ownership scoping. For owned/team tables, restrict the
+        // listing to rows the caller owns — applied AFTER the ?<col>= filter
+        // loop so a `?team_id=<other>` probe can only narrow, never widen,
+        // the caller's own scope. Public tables (rowScoped === false) skip
+        // this entirely and pay no auth-resolution cost.
+        const own = rowScoped
+          ? await resolveOwnership(model, await authedUserFromRequest(req), req)
+          : { enforced: false, value: null as unknown, field: '', bypass: false }
+        if (own.enforced && !own.bypass) {
+          if (own.value == null || (Array.isArray(own.value) && own.value.length === 0)) {
+            // Authed but owns nothing (e.g. no active team membership) — an
+            // empty page, never another tenant's rows. `private, no-store`
+            // so a shared cache can't hand this to a different caller.
+            const emptyPaginator = buildIndexPaginator(url, page, perPage, 0, false, undefined)
+            return new Response(JSON.stringify({
+              data: [],
+              ...emptyPaginator,
+              meta: buildIndexMeta(url, page, perPage, 0, false, undefined),
+            }), { status: 200, headers: { 'Content-Type': 'application/json', 'Cache-Control': 'private, no-store', Vary: 'Authorization' } })
+          }
+          query = Array.isArray(own.value)
+            ? query.where(own.field, 'in', own.value)
+            : query.where(own.field, '=', own.value)
+        }
+
         // Simple-paginate probe: fetch one extra row so `has_more_pages`
         // is known without a COUNT. Slice the probe row off BEFORE casts /
         // includes so applyIncludes doesn't fire N+1 relation queries for a
@@ -596,7 +689,17 @@ for (const [modelName, model] of Object.entries(models)) {
             // not to a builder you call executeTakeFirst() on. The previous
             // shape silently swallowed a TypeError in this try/catch and
             // total stayed `undefined`, defeating the whole opt-in.
-            const raw = await (db as any).selectFrom(table).count()
+            //
+            // Scope the count to the caller's rows too — an unscoped COUNT
+            // would leak the cross-tenant total even though the page data is
+            // team-filtered.
+            let countQuery = (db as any).selectFrom(table)
+            if (own.enforced && !own.bypass && own.value != null) {
+              countQuery = Array.isArray(own.value)
+                ? countQuery.where(own.field, 'in', own.value)
+                : countQuery.where(own.field, '=', own.value)
+            }
+            const raw = await countQuery.count()
             const n = typeof raw === 'number' ? raw : Number(raw?.count ?? raw)
             if (Number.isFinite(n)) total = n
           } catch {
@@ -610,8 +713,11 @@ for (const [modelName, model] of Object.entries(models)) {
         // less frequently than detail views and SPAs naturally re-hit them
         // on navigation. Authed lists (which include user-specific filter
         // results) carry a `Vary: Authorization` so caches don't merge
-        // them with the public response.
-        respHeaders['Cache-Control'] = 'public, max-age=15, must-revalidate'
+        // them with the public response. Team-scoped listings are per-caller
+        // and must NEVER land in a shared cache, so they go `private, no-store`.
+        respHeaders['Cache-Control'] = (own.enforced && !own.bypass)
+          ? 'private, no-store'
+          : 'public, max-age=15, must-revalidate'
         respHeaders.Vary = 'Authorization'
 
         const paginator = buildIndexPaginator(url, page, perPage, records.length, hasMore, total)
@@ -661,6 +767,18 @@ for (const [modelName, model] of Object.entries(models)) {
           return jsonResponse({ error: `${modelName} not found` }, 404)
         }
 
+        // Row-level ownership enforcement for owned/team tables. A row that
+        // belongs to another tenant is reported as 404 (not 403) so this
+        // endpoint can't be used to probe which ids exist in other teams.
+        const own = rowScoped
+          ? await resolveOwnership(model, await authedUserFromRequest(req), req)
+          : { enforced: false, value: null as unknown, field: '', bypass: false }
+        if (own.enforced && !own.bypass) {
+          if (own.value == null || !ownsRow((result as Record<string, unknown>)[own.field], own.value)) {
+            return jsonResponse({ error: `${modelName} not found` }, 404)
+          }
+        }
+
         let payload: any = stripHidden(applyReadCasts(result, model), hiddenFields)
 
         // ?include=user,host_profile,car_photos hydrates declared relations.
@@ -687,7 +805,11 @@ for (const [modelName, model] of Object.entries(models)) {
         if (etag) headers.ETag = etag
         // Public caches default to a short TTL — long enough for SPA list/detail
         // hops to share, short enough that a stale row clears within a minute.
-        headers['Cache-Control'] = 'public, max-age=30, must-revalidate'
+        // Team-scoped rows are per-caller and must never be shared-cached.
+        headers['Cache-Control'] = (own.enforced && !own.bypass)
+          ? 'private, no-store'
+          : 'public, max-age=30, must-revalidate'
+        headers.Vary = 'Authorization'
         return new Response(JSON.stringify({ data: payload }), { status: 200, headers })
       }
       catch (err) {
