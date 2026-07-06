@@ -141,6 +141,11 @@ export function serve(buddy: CLI): void {
       await stxServe({
         patterns: [userViewsPath, defaultViewsPath],
         port,
+        // Never silently drift off the configured port: the reverse
+        // proxy/gateway routes to exactly this port, so stx's fallback bind
+        // on port+1 would serve nothing. Fail loudly instead (systemd
+        // restarts / the deploy health gate catches it).
+        autoIncrementPort: false,
         componentsDir: 'storage/framework/defaults/resources/components',
         layoutsDir: userLayoutsPath,
         partialsDir: userComponentsPath,

@@ -49,10 +49,26 @@ route.use(corsMiddleware.toRouterHandler())
 // Import routes
 await route.importRoutes()
 
-// Start server
-await route.serve({
+// Start server. `reusePort` (SO_REUSEPORT, Linux) lets a new release's
+// instance bind the same port while the old one still serves — the
+// overlap ts-cloud's zero-downtime cutover relies on. Off outside
+// production so two local servers fighting over one port still fail
+// loudly with EADDRINUSE. bun-router spreads these options into
+// Bun.serve verbatim.
+const server = await route.serve({
   port,
   hostname,
+  reusePort: isProduction,
+} as Parameters<typeof route.serve>[0])
+
+// Graceful drain for the zero-downtime cutover: when systemd stops the
+// old release's instance (SIGTERM), stop accepting new connections but
+// let in-flight requests finish; hard-exit after a grace window so a
+// stuck keep-alive can't ride into systemd's SIGKILL mid-request.
+process.on('SIGTERM', () => {
+  const graceMs = Number(process.env.SHUTDOWN_GRACE_MS) || 15_000
+  setTimeout(() => process.exit(0), graceMs).unref()
+  Promise.resolve(server?.stop()).then(() => process.exit(0))
 })
 
 log.info(`[Stacks API] Server running at http://${hostname}:${port}`)
