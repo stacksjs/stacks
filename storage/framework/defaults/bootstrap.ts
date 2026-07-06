@@ -34,9 +34,24 @@ import MaintenanceMiddleware from './app/Middleware/Maintenance'
 // Registered unconditionally because the auth middleware + Role middleware
 // both reach for the helpers at request time regardless of which feature
 // the project opts into.
-import { createBqbRbacStore, setRbacStore } from '@stacksjs/auth'
-
-setRbacStore(createBqbRbacStore())
+// DEFERRED, non-blocking wiring on purpose. This file is dynamically
+// imported by the route loader while other entrypoints (a test file, the
+// API server) may still be mid-way through evaluating the @stacksjs/auth
+// async module graph. With a static `import { setRbacStore } ...`, Bun
+// could execute this module against auth's partially-evaluated record:
+// the exported function exists (hoisted) but rbac.ts's module-level
+// `let store` hadn't initialized, so calling it threw
+// `Cannot access 'store' before initialization`, the whole bootstrap
+// import failed, and EVERY framework default route (auth, 2FA, passkeys,
+// dashboard) silently vanished — the loader logs one line and carries
+// on. A blocking `await import('@stacksjs/auth')` here deadlocks instead
+// (auth's evaluation can be waiting on the same route-loading pass that
+// is importing this file), so the wiring is fire-and-forget: routes
+// register immediately, and the RBAC store lands the moment auth's
+// evaluation completes — before any real request needs it.
+import('@stacksjs/auth')
+  .then(({ createBqbRbacStore, setRbacStore }) => setRbacStore(createBqbRbacStore()))
+  .catch(err => console.error('[bootstrap] RBAC store wiring failed:', err))
 
 // Global maintenance / coming-soon gate. Registered first so the
 // `buddy down` / `buddy coming-soon` (and their env-var equivalents)

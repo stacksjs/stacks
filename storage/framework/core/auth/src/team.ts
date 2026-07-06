@@ -45,13 +45,7 @@ export interface TeamMembershipResult {
  * "fall back to a default team."
  */
 export async function resolveAuthenticatedMembership(request: TeamAuthRequest): Promise<TeamMembershipResult | null> {
-  const guardName = config.auth?.default || 'api'
-  const guard = config.auth?.guards?.[guardName] || { driver: 'token' }
-  const driver = guard.driver || 'token'
-
-  const user = driver === 'session'
-    ? await resolveSessionUser(request)
-    : await resolveTokenUser(request)
+  const user = await resolveAuthenticatedUser(request)
 
   if (!user?.id)
     return null
@@ -81,6 +75,28 @@ export async function resolveAuthenticatedMembership(request: TeamAuthRequest): 
 export async function resolveAuthenticatedTeamId(request: TeamAuthRequest): Promise<number | null> {
   const membership = await resolveAuthenticatedMembership(request)
   return membership ? membership.teamId : null
+}
+
+/**
+ * The authenticated USER (not team) from a request's real auth
+ * credential — bearer header first, then the login cookie, driver-aware
+ * like {@link resolveAuthenticatedMembership} (which builds on this).
+ * For dashboard form actions that operate on the requester themselves
+ * (security settings, profile) rather than on team-scoped rows: plain
+ * HTML POSTs carry no Authorization header, so `request.user()` (stamped
+ * by the auth middleware from a bearer/session) is undefined there and
+ * the login cookie is the only credential available.
+ */
+export async function resolveAuthenticatedUser(request: TeamAuthRequest): Promise<{ id: number, email?: string } | undefined> {
+  const guardName = config.auth?.default || 'api'
+  const guard = config.auth?.guards?.[guardName] || { driver: 'token' }
+  const driver = guard.driver || 'token'
+
+  const user = driver === 'session'
+    ? await resolveSessionUser(request)
+    : await resolveTokenUser(request)
+
+  return user?.id ? user as { id: number, email?: string } : undefined
 }
 
 async function resolveSessionUser(request: TeamAuthRequest) {
