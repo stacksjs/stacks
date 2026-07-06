@@ -9,7 +9,7 @@ import type { EnhancedRequest } from '@stacksjs/bun-router'
 import { route } from '@stacksjs/router'
 import { env } from '@stacksjs/env'
 import { projectPath } from '@stacksjs/path'
-import { createQueryBuilder, defaultConfig, setConfig } from '@stacksjs/query-builder'
+import { buildDatabaseSchema, createQueryBuilder, defaultConfig, setConfig } from '@stacksjs/query-builder'
 import { HttpError } from '@stacksjs/error-handling'
 
 // Initialize the query builder config from the project's optional
@@ -36,8 +36,16 @@ try {
 catch {
   console.debug(`[orm] No config/qb.ts override found — deriving config from DB_CONNECTION`)
   const dialect = (env.DB_CONNECTION as 'sqlite' | 'mysql' | 'postgres' | undefined) || 'sqlite'
+  // Pass ONLY dialect + database — deliberately NOT `...defaultConfig`.
+  // setConfig merges section-by-section onto the process-wide (globalThis)
+  // config singleton, and @stacksjs/database's boot config arms the
+  // soft-delete read filter (softDeletes.enabled, the banned/GDPR-erased
+  // row guard) on that same singleton. Spreading defaultConfig here
+  // clobbered that back to `enabled: false` whenever this file loaded
+  // after the database layer — i.e. whichever of the two happened to run
+  // last won, silently flipping a security-relevant setting per load
+  // order (root-caused via stacksjs/status's api-team-scoping test).
   setConfig({
-    ...defaultConfig,
     dialect,
     database: dialect === 'sqlite'
       ? { database: env.DB_DATABASE_PATH || 'database/stacks.sqlite' }
@@ -99,8 +107,17 @@ catch (err: any) {
   }
 }
 
-// Create a query builder instance (uses the config set above)
-const db = createQueryBuilder()
+// Create a query builder instance (uses the config set above). The schema
+// meta built from the loaded models is load-bearing, not an optimization:
+// with the global soft-delete read filter armed (softDeletes.defaultFilter
+// in config/query-builder.ts, the banned/GDPR-erased row guard), a
+// schema-less builder ASSUMES every table has a `deleted_at` column and
+// appends `WHERE deleted_at IS NULL` to the already-finalized SQL — after
+// LIMIT/OFFSET, i.e. a guaranteed `near "WHERE": syntax error` 500 on every
+// index route for a model without the column. With schema meta present the
+// filter only applies where the column actually exists. Root-caused via
+// stacksjs/status's api-team-scoping test (order-dependent full-suite 500).
+const db = createQueryBuilder({ schema: buildDatabaseSchema(models) as any })
 
 // Helper: check if a route is already registered (user-defined routes take priority)
 function routeExists(method: string, path: string): boolean {
