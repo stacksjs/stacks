@@ -146,6 +146,12 @@ export function serve(buddy: CLI): void {
         // on port+1 would serve nothing. Fail loudly instead (systemd
         // restarts / the deploy health gate catches it).
         autoIncrementPort: false,
+        // SO_REUSEPORT (stx >= 0.2.81): lets the next release's instance
+        // bind the same port while this one still serves — the overlap
+        // ts-cloud's zero-downtime cutover needs. Production only: in local
+        // runs two servers fighting over one port should fail loudly.
+        // Ignored harmlessly by older stx versions.
+        reusePort: (process.env.APP_ENV || '').toLowerCase() === 'production',
         componentsDir: 'storage/framework/defaults/resources/components',
         layoutsDir: userLayoutsPath,
         partialsDir: userComponentsPath,
