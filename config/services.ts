@@ -35,6 +35,18 @@ export default {
     scopes: ['profile', 'email'],
   },
 
+  // Sign in with Apple has no static client secret — the AppleProvider
+  // signs a short-lived ES256 JWT from teamId + keyId + privateKey (the
+  // .p8 file's contents) on every token exchange.
+  apple: {
+    clientId: String(env.APPLE_CLIENT_ID || ''), // the Services ID, e.g. org.example.web
+    teamId: String(env.APPLE_TEAM_ID || ''),
+    keyId: String(env.APPLE_KEY_ID || ''),
+    privateKey: String(env.APPLE_PRIVATE_KEY || ''), // literal \n newlines allowed
+    redirectUrl: String(env.APPLE_REDIRECT_URL || 'http://localhost:3000/auth/apple/callback'),
+    scopes: ['name', 'email'],
+  },
+
   facebook: {
     clientId: String(env.FACEBOOK_CLIENT_ID || ''),
     clientSecret: String(env.FACEBOOK_CLIENT_SECRET || ''),

@@ -253,6 +253,8 @@ async function createTableMigration(modelPath: string) {
       migrationContent += `    .addColumn('google_id', 'text')\n`
     if (socials.includes('github'))
       migrationContent += `    .addColumn('github_id', 'text')\n`
+    if (socials.includes('apple'))
+      migrationContent += `    .addColumn('apple_id', 'text')\n`
     if (socials.includes('twitter'))
       migrationContent += `    .addColumn('twitter_id', 'text')\n`
     if (socials.includes('facebook'))

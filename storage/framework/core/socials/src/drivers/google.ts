@@ -28,20 +28,25 @@ export class GoogleProvider extends AbstractProvider implements ProviderInterfac
   protected apiUrl = 'https://www.googleapis.com'
 
   private getConfig() {
+    // Instance values (constructor args or set*() calls) win over the
+    // global config — otherwise setRedirectUrl()/setScopes() are
+    // silently ignored, which breaks per-request redirect URIs.
     const providerConfig = {
-      clientId: config.services.google?.clientId ?? '',
-      clientSecret: config.services.google?.clientSecret ?? '',
-      redirectUrl: config.services.google?.redirectUrl ?? '',
+      clientId: this.clientId || (config.services.google?.clientId ?? ''),
+      clientSecret: this.clientSecret || (config.services.google?.clientSecret ?? ''),
+      redirectUrl: this.redirectUrl || (config.services.google?.redirectUrl ?? ''),
       // Minimal default scopes: openid + email is enough to identify a
       // returning user. The previous default also requested
       // userinfo.profile, which grants `name`, `picture`, `locale`, and
       // `gender`. Apps that actually need those should opt in via
       // config.services.google.scopes — silently collecting it on every
       // signin violated GDPR's data-minimization principle.
-      scopes: config.services.google?.scopes ?? [
-        'openid',
-        'email',
-      ],
+      scopes: this._scopes.length > 0
+        ? this._scopes
+        : (config.services.google?.scopes ?? [
+            'openid',
+            'email',
+          ]),
     }
 
     this.setScopes(providerConfig.scopes)
@@ -52,7 +57,7 @@ export class GoogleProvider extends AbstractProvider implements ProviderInterfac
    * Get the authentication URL for Google.
    */
   public async getAuthUrl(): Promise<string> {
-    const state = this.getState()
+    const state = this.resolveState()
     const { clientId, redirectUrl, scopes } = this.getConfig()
     this.validateConfig()
 
@@ -64,6 +69,7 @@ export class GoogleProvider extends AbstractProvider implements ProviderInterfac
       response_type: 'code',
       access_type: 'offline',
       prompt: 'consent',
+      ...this.parameters,
     }).toString()}`
   }
 
@@ -106,6 +112,7 @@ export class GoogleProvider extends AbstractProvider implements ProviderInterfac
       nickname: response.data.given_name,
       name: response.data.name,
       email: response.data.email,
+      emailVerified: typeof response.data.verified_email === 'boolean' ? response.data.verified_email : null,
       avatar: response.data.picture,
       token,
       raw: response.data,

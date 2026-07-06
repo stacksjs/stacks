@@ -25,6 +25,24 @@ export interface ServicesOptions {
     scopes?: string[]
   }
 
+  /**
+   * Sign in with Apple. Apple has no static client secret — the driver
+   * signs a short-lived ES256 JWT from teamId + keyId + privateKey
+   * (the .p8 file's contents) instead.
+   */
+  apple?: {
+    /** The Services ID identifier, e.g. `org.example.web` */
+    clientId: string
+    /** Apple Developer Team ID (10 chars) */
+    teamId: string
+    /** Key ID of the "Sign in with Apple" key */
+    keyId: string
+    /** Contents of the downloaded .p8 private key */
+    privateKey: string
+    redirectUrl: string
+    scopes?: string[]
+  }
+
   facebook?: {
     clientId: string
     clientSecret: string

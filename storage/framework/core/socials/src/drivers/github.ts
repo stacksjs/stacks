@@ -9,11 +9,16 @@ export class GitHubProvider extends AbstractProvider implements ProviderInterfac
   protected apiUrl = 'https://api.github.com'
 
   private getConfig() {
+    // Instance values (constructor args or set*() calls) win over the
+    // global config — otherwise setRedirectUrl()/setScopes() are
+    // silently ignored, which breaks per-request redirect URIs.
     const providerConfig = {
-      clientId: config.services.github?.clientId ?? '',
-      clientSecret: config.services.github?.clientSecret ?? '',
-      redirectUrl: config.services.github?.redirectUrl ?? '',
-      scopes: config.services.github?.scopes ?? ['read:user', 'user:email'],
+      clientId: this.clientId || (config.services.github?.clientId ?? ''),
+      clientSecret: this.clientSecret || (config.services.github?.clientSecret ?? ''),
+      redirectUrl: this.redirectUrl || (config.services.github?.redirectUrl ?? ''),
+      scopes: this._scopes.length > 0
+        ? this._scopes
+        : (config.services.github?.scopes ?? ['read:user', 'user:email']),
     }
     this.setScopes(providerConfig.scopes)
     return providerConfig
@@ -23,7 +28,7 @@ export class GitHubProvider extends AbstractProvider implements ProviderInterfac
    * Get the authentication URL for GitHub.
    */
   public async getAuthUrl(): Promise<string> {
-    const state = this.getState()
+    const state = this.resolveState()
     const { clientId, redirectUrl, scopes } = this.getConfig()
     this.validateConfig()
 
@@ -33,6 +38,7 @@ export class GitHubProvider extends AbstractProvider implements ProviderInterfac
       scope: scopes.join(' '),
       state,
       response_type: 'code',
+      ...this.parameters,
     }).toString()}`
   }
 
@@ -79,15 +85,19 @@ export class GitHubProvider extends AbstractProvider implements ProviderInterfac
         .get<GitHubEmail[]>(`${this.apiUrl}/user/emails`),
     ])
 
+    // Fall back to the public profile email when /user/emails returns
+    // nothing — that endpoint can be empty (no `user:email` scope, or
+    // the user hides every address). The profile's email field, when
+    // present, is the publicly-listed one which is fine for sign-up,
+    // but its verified status is unknown.
+    const picked = this.pickEmail(emailsResponse.data)
+
     return {
       id: userResponse.data.id.toString(),
       nickname: userResponse.data.login,
       name: userResponse.data.name ?? userResponse.data.login,
-      // Fall back to the public profile email when /user/emails returns
-      // nothing — that endpoint can be empty (no `user:email` scope, or
-      // the user hides every address). The profile's email field, when
-      // present, is the publicly-listed one which is fine for sign-up.
-      email: this.getEmail(emailsResponse.data) ?? userResponse.data.email ?? null,
+      email: picked?.email ?? userResponse.data.email ?? null,
+      emailVerified: picked ? picked.verified : null,
       avatar: userResponse.data.avatar_url,
       token,
       raw: userResponse.data,
@@ -95,18 +105,25 @@ export class GitHubProvider extends AbstractProvider implements ProviderInterfac
   }
 
   /**
-   * Get the primary email from the list of emails.
+   * Pick the best email from the list of emails.
    *
-   * Order of preference: primary AND verified > primary > verified > first.
+   * Order of preference: primary AND verified > verified > primary > first.
    * Verifiedness matters for security — using an unverified email lets
    * an attacker register it on GitHub and then impersonate the owner
    * via "sign in with GitHub".
    */
-  protected getEmail(emails: GitHubEmail[]): string | null {
+  protected pickEmail(emails: GitHubEmail[]): GitHubEmail | null {
     if (!Array.isArray(emails) || emails.length === 0) return null
     const primaryAndVerified = emails.find(e => e.primary && e.verified)
     const verified = emails.find(e => e.verified)
-    return (primaryAndVerified || verified || emails.find(e => e.primary) || emails[0])?.email ?? null
+    return primaryAndVerified ?? verified ?? emails.find(e => e.primary) ?? emails[0] ?? null
+  }
+
+  /**
+   * Get the primary email from the list of emails (see pickEmail).
+   */
+  protected getEmail(emails: GitHubEmail[]): string | null {
+    return this.pickEmail(emails)?.email ?? null
   }
 
   /**

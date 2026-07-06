@@ -103,7 +103,7 @@ type Action = ActionPath | ActionName | undefined
 
 export type ApiRoutes = 'index' | 'show' | 'store' | 'update' | 'destroy'
 
-export type SocialProviders = 'google' | 'github' | 'twitter' | 'facebook'
+export type SocialProviders = 'google' | 'github' | 'apple' | 'twitter' | 'facebook'
 
 export interface SeedOptions {
   count: number

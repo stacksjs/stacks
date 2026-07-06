@@ -7,6 +7,13 @@ export interface SocialUser {
   nickname: string | null
   name: string
   email: string | null
+  /**
+   * Whether the provider vouches for `email`. `false` means the provider
+   * explicitly reports it unverified — applications must not link such an
+   * identity to an existing local account by email (account-takeover
+   * vector). `null`/undefined means the provider didn't say.
+   */
+  emailVerified?: boolean | null
   avatar: string | null
   token: string
   raw?: any
@@ -62,6 +69,37 @@ export interface TwitterUser {
   name: string
   email?: string
   profile_image_url?: string
+}
+
+/**
+ * Apple-specific token response from https://appleid.apple.com/auth/token
+ */
+export interface AppleTokenResponse {
+  access_token: string
+  token_type: string
+  expires_in: number
+  refresh_token?: string
+  id_token: string
+  error?: string
+  error_description?: string
+}
+
+/**
+ * Claims Apple places in the id_token. `email_verified` and
+ * `is_private_email` arrive as booleans or the strings 'true'/'false'
+ * depending on the API era.
+ */
+export interface AppleIdTokenClaims {
+  iss: string
+  aud: string | string[]
+  exp: number
+  iat: number
+  sub: string
+  nonce?: string
+  email?: string
+  email_verified?: boolean | 'true' | 'false'
+  is_private_email?: boolean | 'true' | 'false'
+  [key: string]: any
 }
 
 export type SocialPublishingProvider =

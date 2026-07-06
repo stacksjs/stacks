@@ -16,6 +16,7 @@ export abstract class AbstractProvider implements ProviderInterface {
   protected scopeSeparator: string = ','
   protected _stateless: boolean = false
   protected _usesPKCE: boolean = false
+  protected _state: string | null = null
   protected user: SocialUser | null = null
 
   constructor(config: ProviderConfig) {
@@ -130,6 +131,29 @@ export abstract class AbstractProvider implements ProviderInterface {
     }
     this.redirectUrl = url
     return this
+  }
+
+  /**
+   * Supply the OAuth `state` to embed in the next getAuthUrl() call
+   * instead of letting the provider mint one internally. Without this,
+   * the state a driver generates is unrecoverable by the caller, so
+   * there is nothing to persist (session/cookie) and compare against on
+   * the callback — the CSRF check `validateState()` exists for becomes
+   * impossible to perform.
+   */
+  public withState(state: string): this {
+    if (typeof state !== 'string' || state.length === 0)
+      throw new Error('[socials] withState requires a non-empty string')
+    this._state = state
+    return this
+  }
+
+  /**
+   * The state for the next auth URL: caller-supplied via withState(),
+   * otherwise a fresh random one.
+   */
+  protected resolveState(): string {
+    return this._state ?? this.getState()
   }
 
   /**
