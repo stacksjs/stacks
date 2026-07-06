@@ -43,6 +43,14 @@ const server = Bun.serve({
   port,
   development,
 
+  // SO_REUSEPORT (Linux) lets a new release's instance bind the same
+  // port while the old one still serves — the kernel balances between
+  // them — which is what makes zero-downtime deploys possible (ts-cloud
+  // starts the new unit, health-gates it, then stops the old one).
+  // Deliberately off in dev: there, two servers fighting over one port
+  // should fail loudly with EADDRINUSE, not silently split traffic.
+  reusePort: !development,
+
   async fetch(request: Request, server: Server<any>): Promise<Response | undefined> {
     if (server.upgrade(request)) {
       return
@@ -64,6 +72,17 @@ const server = Bun.serve({
       // WebSocket connection closed
     },
   },
+})
+
+// Graceful drain for zero-downtime deploys: when systemd stops the old
+// release's instance (SIGTERM), stop accepting new connections but let
+// in-flight requests finish; hard-exit after a grace window so a stuck
+// keep-alive can't outlive systemd's TimeoutStopSec and get SIGKILLed
+// mid-request anyway.
+process.on('SIGTERM', () => {
+  const graceMs = Number(process.env.SHUTDOWN_GRACE_MS) || 15_000
+  setTimeout(() => process.exit(0), graceMs).unref()
+  Promise.resolve(server.stop()).then(() => process.exit(0))
 })
 
 console.log(`Listening on http://localhost:${server.port} ...`)
