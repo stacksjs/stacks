@@ -6,8 +6,8 @@
  */
 
 import type { Result } from '@stacksjs/error-handling'
-import { existsSync, readdirSync, readFileSync, unlinkSync, writeFileSync } from 'node:fs'
-import { join } from 'node:path'
+import { existsSync, mkdirSync, readdirSync, readFileSync, unlinkSync, writeFileSync } from 'node:fs'
+import { dirname, join } from 'node:path'
 import { log as _log } from '@stacksjs/logging'
 
 // Defensive log wrapper to handle cases where log methods might not be initialized.
@@ -128,6 +128,8 @@ function prepareMigrationModelsDir(): { modelsDir: string, skip: boolean } {
  *
  * SQLite does not support:
  * - ALTER TABLE ADD CONSTRAINT (foreign keys must be defined at table creation)
+ * - CREATE TYPE ... AS ENUM (SQLite has no user-defined types; enum columns
+ *   are plain TEXT, with the allowed values enforced at the validation layer)
  *
  * Note: CREATE UNIQUE INDEX files are deliberately NOT skipped — the SQLite
  * dialect driver never renders inline UNIQUE in CREATE TABLE, so the
@@ -182,6 +184,7 @@ export function preprocessSqliteMigrations(): void {
   const replayMigrations: string[] = []
 
   const addConstraintPattern = /^\s*ALTER\s+TABLE\s+.+\s+ADD\s+CONSTRAINT\s+/i
+  const createTypePattern = /^\s*CREATE\s+TYPE\s+/i
   // Match CREATE UNIQUE INDEX, capturing the index name. These files MUST run
   // on SQLite — the dialect driver never renders inline UNIQUE in CREATE
   // TABLE, so this index is the only uniqueness enforcement (#1952).
@@ -260,6 +263,20 @@ export function preprocessSqliteMigrations(): void {
     const allAddConstraint = statements.every(s => addConstraintPattern.test(s))
     if (allAddConstraint) {
       skipMigration(file, 'SQLite does not support ALTER TABLE ADD CONSTRAINT')
+      continue
+    }
+
+    // Skip files that only contain CREATE TYPE ... AS ENUM (Postgres enum
+    // types). SQLite has no user-defined types — enum columns are plain
+    // TEXT, with the allowed values enforced at the model/validation layer
+    // — so `buddy generate:migrations`' enum-type "auto-misc" files are
+    // dead on SQLite and their `CREATE TYPE` syntax otherwise dies a fresh
+    // migrate with `near "TYPE": syntax error`. Same skip-and-keep policy
+    // as ADD CONSTRAINT above: the file is valid on MySQL/Postgres, so
+    // leave it on disk and just mark it executed for SQLite. (#1916)
+    const allCreateType = statements.every(s => createTypePattern.test(s))
+    if (allCreateType) {
+      skipMigration(file, 'SQLite does not support CREATE TYPE (enum types)')
       continue
     }
 
@@ -360,22 +377,30 @@ export function preprocessSqliteMigrations(): void {
   if (droppedMigrations.length > 0 || replayMigrations.length > 0) {
     try {
       const dbPath = join(process.cwd(), dbConfig.connections.sqlite.database || 'stacks.db')
-      if (existsSync(dbPath)) {
-        const { Database } = require('bun:sqlite')
-        const writeDb = new Database(dbPath)
-        try {
-          writeDb.exec(`CREATE TABLE IF NOT EXISTS migrations (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            migration TEXT NOT NULL UNIQUE,
-            executed_at DATETIME DEFAULT CURRENT_TIMESTAMP
-          )`)
-          const insert = writeDb.prepare('INSERT OR IGNORE INTO migrations (migration) VALUES (?)')
-          for (const migration of droppedMigrations) insert.run(migration)
-          const unrecord = writeDb.prepare('DELETE FROM migrations WHERE migration = ?')
-          for (const migration of replayMigrations) unrecord.run(migration)
-        }
-        finally { writeDb.close() }
+      // Record the skips even when the DB file does NOT exist yet. On a
+      // fresh SQLite install ensureDatabaseExists() is a no-op (SQLite
+      // auto-creates on open), so the file is absent here — and if we
+      // bailed on that, the skip records would never land and the runner
+      // would then execute the very ALTER TABLE ADD CONSTRAINT / CREATE
+      // TYPE files we just skipped, dying with a "near CONSTRAINT/TYPE"
+      // syntax error on the first fresh migrate. `new Database()` creates
+      // the file; qbExecuteMigration opens the same one next and honors
+      // these records. (stacksjs/stacks#1916 fresh-install gap.)
+      mkdirSync(dirname(dbPath), { recursive: true })
+      const { Database } = require('bun:sqlite')
+      const writeDb = new Database(dbPath)
+      try {
+        writeDb.exec(`CREATE TABLE IF NOT EXISTS migrations (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          migration TEXT NOT NULL UNIQUE,
+          executed_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )`)
+        const insert = writeDb.prepare('INSERT OR IGNORE INTO migrations (migration) VALUES (?)')
+        for (const migration of droppedMigrations) insert.run(migration)
+        const unrecord = writeDb.prepare('DELETE FROM migrations WHERE migration = ?')
+        for (const migration of replayMigrations) unrecord.run(migration)
       }
+      finally { writeDb.close() }
     }
     catch (e) {
       log.debug(`[migration] Could not record dropped migrations as executed: ${e}`)
