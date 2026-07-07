@@ -58,6 +58,6 @@
     "@stacksjs/config": "workspace:*",
     "better-dx": "^0.2.12",
     "@stacksjs/router": "workspace:*",
-    "@stacksjs/stx": "^0.2.40"
+    "@stacksjs/stx": "^0.2.82"
   }
 }

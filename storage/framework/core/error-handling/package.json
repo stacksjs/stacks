@@ -47,7 +47,7 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "@stacksjs/stx": "^0.2.67",
+    "@stacksjs/stx": "^0.2.82",
     "ts-error-handling": "^0.1.1",
     "ts-syntax-highlighter": "^0.2.1"
   },
