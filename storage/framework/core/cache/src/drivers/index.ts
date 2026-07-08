@@ -6,7 +6,9 @@
  */
 
 import type { CacheDriver, CacheStats } from '@stacksjs/types'
+import type { SingleStoreCacheOptions } from './singlestore'
 import { CacheManager, createCache as createTsCache, MemoryDriver, RedisDriver } from '@stacksjs/ts-cache'
+import { SingleStoreCacheStore } from './singlestore'
 
 /**
  * Memory cache options
@@ -496,16 +498,33 @@ export function createRedisCache(options: RedisOptions = {}): CacheDriver {
 }
 
 /**
+ * Create a SingleStore cache driver.
+ *
+ * Wraps a SingleStore-backed store in the same `StacksCache` façade the memory
+ * and Redis drivers use, so it inherits the stampede-protection + tag logic.
+ * The store implements the `CacheManager` surface `StacksCache` consumes; the
+ * cast bridges the structural gap (it is not a literal `CacheManager` subclass).
+ */
+export function createSingleStoreCache(options: SingleStoreCacheOptions = {}): CacheDriver {
+  const store = new SingleStoreCacheStore(options)
+  return new StacksCache(store as unknown as CacheManager)
+}
+
+/**
  * Create a cache driver based on the specified type
  */
 export function createCache(driver: 'memory', options?: MemoryOptions): CacheDriver
 export function createCache(driver: 'redis', options?: RedisOptions): CacheDriver
+export function createCache(driver: 'singlestore', options?: SingleStoreCacheOptions): CacheDriver
 export function createCache(
-  driver: 'memory' | 'redis',
-  options?: MemoryOptions | RedisOptions,
+  driver: 'memory' | 'redis' | 'singlestore',
+  options?: MemoryOptions | RedisOptions | SingleStoreCacheOptions,
 ): CacheDriver {
   if (driver === 'redis') {
     return createRedisCache(options as RedisOptions)
+  }
+  if (driver === 'singlestore') {
+    return createSingleStoreCache(options as SingleStoreCacheOptions)
   }
   return createMemoryCache(options as MemoryOptions)
 }
@@ -528,6 +547,10 @@ export const memory: CacheDriver = new StacksCache(defaultMemoryManager)
  * Default cache instance (memory)
  */
 export const cache: CacheDriver = memory
+
+// Re-export the SingleStore store + its options for advanced usage
+export type { SingleStoreCacheOptions } from './singlestore'
+export { SingleStoreCacheStore } from './singlestore'
 
 // Re-export ts-cache utilities for advanced usage
 export {

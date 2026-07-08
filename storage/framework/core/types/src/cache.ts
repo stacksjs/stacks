@@ -6,11 +6,15 @@ export interface CacheOptions {
    * **Cache Driver**
    *
    * The cache driver that will be used by your application to store
-   * cached data. Supports 'memory' and 'redis' drivers.
+   * cached data. Supports 'memory', 'redis', and 'singlestore' drivers.
+   *
+   * The 'singlestore' driver persists cache entries in a SingleStore
+   * rowstore table (with epoch-based TTL) — useful when you want a single
+   * SingleStore cluster to back both your primary data and your cache.
    *
    * @default "memory"
    */
-  driver: 'memory' | 'redis'
+  driver: 'memory' | 'redis' | 'singlestore'
 
   /**
    * **Cache Prefix**
@@ -116,6 +120,49 @@ export interface CacheOptions {
        * @default true
        */
       deleteOnExpire?: boolean
+    }
+
+    singlestore?: {
+      /**
+       * SingleStore host (MySQL wire protocol)
+       * @default "127.0.0.1"
+       */
+      host?: string
+
+      /**
+       * SingleStore port
+       * @default 3306
+       */
+      port?: number
+
+      /**
+       * SingleStore username
+       * @default "root"
+       */
+      username?: string
+
+      /**
+       * SingleStore password
+       */
+      password?: string
+
+      /**
+       * Database that holds the cache table
+       * @default "stacks"
+       */
+      database?: string
+
+      /**
+       * Table used to store cache entries
+       * @default "stacks_cache"
+       */
+      table?: string
+
+      /**
+       * Enable TLS (required by managed SingleStore / Helios)
+       * @default false
+       */
+      ssl?: boolean
     }
   }
 }

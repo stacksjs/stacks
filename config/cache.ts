@@ -54,5 +54,21 @@ export default {
       database: 0,
       tls: false,
     },
+
+    /**
+     * SingleStore driver configuration
+     *
+     * Persists cache entries in a SingleStore rowstore table (MySQL wire
+     * protocol, port 3306). Set `ssl: true` for managed SingleStore (Helios).
+     */
+    singlestore: {
+      host: '127.0.0.1',
+      port: 3306,
+      username: 'root',
+      password: '',
+      database: 'stacks',
+      table: 'stacks_cache',
+      ssl: false,
+    },
   },
 } satisfies CacheConfig
