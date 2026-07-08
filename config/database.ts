@@ -35,6 +35,17 @@ export default {
       prefix: '',
     },
 
+    // SingleStore speaks the MySQL wire protocol on port 3306. Managed
+    // SingleStore (Helios) endpoints require TLS — set DB_SSL=true.
+    singlestore: {
+      name: env.DB_DATABASE || 'stacks',
+      host: env.DB_HOST || '127.0.0.1',
+      port: env.DB_PORT || 3306,
+      username: env.DB_USERNAME || 'root',
+      password: env.DB_PASSWORD || '',
+      prefix: '',
+    },
+
     postgres: {
       name: env.DB_DATABASE || 'stacks',
       host: env.DB_HOST || '127.0.0.1',

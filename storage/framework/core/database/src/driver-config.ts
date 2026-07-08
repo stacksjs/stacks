@@ -42,6 +42,33 @@ export interface MysqlConfig {
 }
 
 /**
+ * SingleStore specific configuration.
+ *
+ * SingleStore (formerly MemSQL) speaks the MySQL wire protocol, so it shares
+ * MySQL's connection shape. It diverges only in DDL (distributed tables with
+ * SHARD KEY / SORT KEY, no foreign keys) — handled by the migration generator,
+ * not by the connection layer.
+ */
+export interface SinglestoreConfig {
+  /** Database name */
+  name: string
+  /** Database host (e.g. the SingleStore Helios/managed endpoint) */
+  host?: string
+  /** Database port (SingleStore listens on 3306, the MySQL port) */
+  port?: number
+  /** Database username */
+  username?: string
+  /** Database password */
+  password?: string
+  /** Table prefix */
+  prefix?: string
+  /** Character set */
+  charset?: string
+  /** Whether to require TLS — managed SingleStore (Helios) requires it */
+  ssl?: boolean
+}
+
+/**
  * PostgreSQL specific configuration
  */
 export interface PostgresConfig {
@@ -102,6 +129,7 @@ export interface DynamoDbConfig {
 export interface DatabaseConnections {
   sqlite?: SqliteConfig
   mysql?: MysqlConfig
+  singlestore?: SinglestoreConfig
   postgres?: PostgresConfig
   dynamodb?: DynamoDbConfig
 }
@@ -138,6 +166,16 @@ export const driverDefaults: Record<SupportedDialect, Partial<SqliteConfig | Mys
     charset: 'utf8mb4',
     collation: 'utf8mb4_unicode_ci',
   },
+  singlestore: {
+    name: 'stacks',
+    host: '127.0.0.1',
+    port: 3306,
+    username: 'root',
+    password: '',
+    prefix: '',
+    charset: 'utf8mb4',
+    ssl: false,
+  },
   postgres: {
     name: 'stacks',
     host: '127.0.0.1',
@@ -166,6 +204,13 @@ export function getConnectionString(driver: SupportedDialect, config: DatabaseCo
     case 'mysql': {
       const mysqlConfig = config as MysqlConfig
       const { name, host = '127.0.0.1', port = 3306, username = 'root', password = '' } = mysqlConfig
+      return `mysql://${username}:${password}@${host}:${port}/${name}`
+    }
+
+    // SingleStore is MySQL wire-compatible, so it dials over `mysql://`.
+    case 'singlestore': {
+      const ssConfig = config as SinglestoreConfig
+      const { name, host = '127.0.0.1', port = 3306, username = 'root', password = '' } = ssConfig
       return `mysql://${username}:${password}@${host}:${port}/${name}`
     }
 
@@ -199,6 +244,14 @@ export function validateDriverConfig(driver: SupportedDialect, config: DatabaseC
       const mysqlConfig = config as MysqlConfig
       if (!mysqlConfig.name) {
         errors.push('MySQL requires a database name')
+      }
+      break
+    }
+
+    case 'singlestore': {
+      const ssConfig = config as SinglestoreConfig
+      if (!ssConfig.name) {
+        errors.push('SingleStore requires a database name')
       }
       break
     }
@@ -253,6 +306,17 @@ export function getConfigFromEnv(driver: SupportedDialect): DatabaseConnections[
         password: env.DB_PASSWORD || '',
         prefix: env.DB_PREFIX || '',
       } as MysqlConfig
+
+    case 'singlestore':
+      return {
+        name: env.DB_DATABASE || 'stacks',
+        host: env.DB_HOST || '127.0.0.1',
+        port: env.DB_PORT ?? 3306,
+        username: env.DB_USERNAME || 'root',
+        password: env.DB_PASSWORD || '',
+        prefix: env.DB_PREFIX || '',
+        ssl: ((env as Record<string, string | undefined>).DB_SSL) === 'true' || ((env as Record<string, string | undefined>).DB_SSL) === '1',
+      } as SinglestoreConfig
 
     case 'postgres':
       return {

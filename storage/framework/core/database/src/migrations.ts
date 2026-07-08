@@ -74,6 +74,11 @@ function getDriver(): string {
 function getDialect(): 'sqlite' | 'mysql' | 'postgres' {
   const driver = getDriver()
   if (driver === 'sqlite' || driver === 'mysql' || driver === 'postgres') return driver
+  // SingleStore is MySQL wire-compatible and reuses the MySQL DDL generator.
+  // The generator emits no foreign-key constraints (which SingleStore rejects),
+  // and bun-query-builder's SingleStore driver drops any FKs from its own plan,
+  // so the MySQL path produces valid SingleStore DDL as-is.
+  if (driver === 'singlestore') return 'mysql'
   if (driver === 'dynamodb') {
     throw new Error(
       '[database] DB_CONNECTION=dynamodb is not compatible with the SQL migration runner. '

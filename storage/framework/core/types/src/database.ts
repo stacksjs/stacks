@@ -13,6 +13,20 @@ export interface DatabaseOptions {
       prefix?: string
     }
 
+    // SingleStore is MySQL wire-compatible (port 3306); it shares MySQL's
+    // connection shape and adds an optional `ssl` flag for managed (Helios)
+    // endpoints, which require TLS.
+    singlestore?: {
+      url?: string
+      host?: string
+      port?: number
+      name?: string
+      username?: string
+      password?: string
+      prefix?: string
+      ssl?: boolean
+    }
+
     sqlite: {
       url?: string
       database?: string

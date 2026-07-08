@@ -198,6 +198,7 @@ export class Database {
     connections: {
       sqlite?: { database: string }
       mysql?: { name: string, host?: string, port?: number, username?: string, password?: string }
+      singlestore?: { name: string, host?: string, port?: number, username?: string, password?: string }
       postgres?: { name: string, host?: string, port?: number, username?: string, password?: string }
     }
   }, env?: string): Database {
@@ -221,6 +222,22 @@ export class Database {
           port: mysql?.port || 3306,
           username: mysql?.username || 'root',
           password: mysql?.password || '',
+        }
+        break
+      }
+
+      // SingleStore connects over the MySQL wire protocol (port 3306). The
+      // dialect stays 'singlestore' end-to-end so bun-query-builder's
+      // SingleStore driver + isMysqlLike behavior apply, and the migration
+      // generator emits distributed-table DDL (no FKs, SHARD KEY).
+      case 'singlestore': {
+        const singlestore = config.connections.singlestore
+        connection = {
+          database: singlestore?.name || 'stacks',
+          host: singlestore?.host || '127.0.0.1',
+          port: singlestore?.port || 3306,
+          username: singlestore?.username || 'root',
+          password: singlestore?.password || '',
         }
         break
       }
@@ -285,6 +302,9 @@ export class Database {
         break
 
       case 'mysql':
+      // SingleStore uses the MySQL port/wire, so its env-derived connection
+      // is identical to MySQL's.
+      case 'singlestore':
         connection = {
           database: stacksEnv.DB_DATABASE || 'stacks',
           host: stacksEnv.DB_HOST || '127.0.0.1',

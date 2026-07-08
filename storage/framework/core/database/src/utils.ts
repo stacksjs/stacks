@@ -123,10 +123,13 @@ function getDatabaseConfig(): DbConfig {
 /**
  * Get the dialect type for bun-query-builder
  */
-function getDialect(): 'sqlite' | 'mysql' | 'postgres' {
+function getDialect(): 'sqlite' | 'mysql' | 'singlestore' | 'postgres' {
   const driver = getDriver()
   if (driver === 'sqlite') return 'sqlite'
   if (driver === 'mysql') return 'mysql'
+  // Pass 'singlestore' through to bun-query-builder (>=0.1.42), which shares
+  // MySQL's runtime DML behavior for the dialect via isMysqlLike.
+  if (driver === 'singlestore') return 'singlestore'
   if (driver === 'postgres') return 'postgres'
   return 'sqlite' // default fallback
 }
@@ -153,6 +156,17 @@ function getDbConfig(): { database: string, username?: string, password?: string
       username: database.connections?.mysql?.username ?? 'root',
       password: database.connections?.mysql?.password ?? '',
       port: database.connections?.mysql?.port ?? 3306,
+    }
+  }
+
+  // SingleStore reuses the MySQL connection shape (wire protocol + port 3306).
+  if (driver === 'singlestore') {
+    return {
+      database: database.connections?.singlestore?.name || 'stacks',
+      host: database.connections?.singlestore?.host ?? '127.0.0.1',
+      username: database.connections?.singlestore?.username ?? 'root',
+      password: database.connections?.singlestore?.password ?? '',
+      port: database.connections?.singlestore?.port ?? 3306,
     }
   }
 
