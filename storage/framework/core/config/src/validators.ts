@@ -117,7 +117,7 @@ const SCHEMA: Partial<Record<keyof StacksConfig, SchemaSection>> = {
   },
   cache: {
     rules: {
-      'driver': checkOneOf(['memory', 'redis']),
+      'driver': checkOneOf(['memory', 'redis', 'singlestore']),
     },
   },
   queue: {
