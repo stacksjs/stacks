@@ -74,10 +74,11 @@ function getDriver(): string {
 function getDialect(): 'sqlite' | 'mysql' | 'postgres' {
   const driver = getDriver()
   if (driver === 'sqlite' || driver === 'mysql' || driver === 'postgres') return driver
-  // SingleStore is MySQL wire-compatible and reuses the MySQL DDL generator.
-  // The generator emits no foreign-key constraints (which SingleStore rejects),
-  // and bun-query-builder's SingleStore driver drops any FKs from its own plan,
-  // so the MySQL path produces valid SingleStore DDL as-is.
+  // SingleStore is MySQL wire-compatible, so all of the internal migration
+  // plumbing that needs a concrete engine (connection ports, admin database,
+  // DROP TABLE) treats it as MySQL. DDL *generation* is different — it must
+  // use the real 'singlestore' dialect so bun-query-builder's SingleStore
+  // driver drops foreign keys (which SingleStore rejects). See getQbDialect.
   if (driver === 'singlestore') return 'mysql'
   if (driver === 'dynamodb') {
     throw new Error(
@@ -89,6 +90,16 @@ function getDialect(): 'sqlite' | 'mysql' | 'postgres' {
   throw new Error(
     `[database] Unknown DB_CONNECTION "${driver}". Allowed values: sqlite, mysql, postgres, dynamodb.`,
   )
+}
+
+/**
+ * The dialect handed to bun-query-builder's DDL generator. Identical to
+ * `getDialect()` except SingleStore is preserved (not collapsed to MySQL) so
+ * bqb selects its SingleStore driver — which drops foreign-key constraints
+ * (unsupported by SingleStore) and can emit distributed-table clauses.
+ */
+function getQbDialect(): 'sqlite' | 'mysql' | 'singlestore' | 'postgres' {
+  return getDriver() === 'singlestore' ? 'singlestore' : getDialect()
 }
 
 /**
@@ -867,7 +878,7 @@ export async function previewPendingMigrations(options: GenerateMigrationsOption
     if (skip)
       return []
     const { applyRenames, fromDb } = resolveGenerateOptions(options)
-    const result = await qbGenerateMigration(modelsDir, { dialect, dryRun: true, applyRenames, fromDb })
+    const result = await qbGenerateMigration(modelsDir, { dialect: getQbDialect(), dryRun: true, applyRenames, fromDb })
     return result.operations ?? []
   }
   catch (error) {
@@ -907,7 +918,7 @@ export async function generateMigrations(options: GenerateMigrationsOptions = {}
     // then saw its own content already on disk and silently skipped writing
     // anything. Keeping the qb call dry-run makes `persistGeneratedMigrations`
     // the single place that ever writes a migration file.
-    const result = await qbGenerateMigration(modelsDir, { dialect, dryRun: true, applyRenames, fromDb })
+    const result = await qbGenerateMigration(modelsDir, { dialect: getQbDialect(), dryRun: true, applyRenames, fromDb })
 
     if (result.hasChanges) {
       const written = persistGeneratedMigrations(result.sqlStatements ?? [])
@@ -1049,7 +1060,7 @@ export async function generateMigrations2(): Promise<Result<string, Error>> {
     // dryRun: true — see the comment on the equivalent call in
     // generateMigrations() above; bun-query-builder's own file writer
     // doesn't know about already-committed migration numbering.
-    await qbGenerateMigration(modelsDir, { dialect, full: true, dryRun: true })
+    await qbGenerateMigration(modelsDir, { dialect: getQbDialect(), full: true, dryRun: true })
 
     log.success('Migrations generated')
     return ok('Migrations generated')

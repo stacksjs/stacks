@@ -112,7 +112,7 @@ const SCHEMA: Partial<Record<keyof StacksConfig, SchemaSection>> = {
   },
   database: {
     rules: {
-      'default': checkOneOf(['sqlite', 'mysql', 'postgres', 'dynamodb']),
+      'default': checkOneOf(['sqlite', 'mysql', 'singlestore', 'postgres', 'dynamodb']),
     },
   },
   cache: {
