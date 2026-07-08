@@ -41,19 +41,20 @@ function assertSameOriginUrl(url: string | undefined, label: string): void {
 
 export const manageCheckout: Checkout = (() => {
   async function create(user: UserModel, params: Stripe.Checkout.SessionCreateParams): Promise<Stripe.Response<Stripe.Checkout.Session>> {
-    if (!user.hasStripeId()) {
-      throw new Error('Customer does not exist in Stripe')
-    }
-
-    if (!user.stripe_id) {
-      throw new Error('User has no Stripe ID')
+    // The billable `checkout()` resolves/creates the Stripe customer first and
+    // passes it in `params.customer`; fall back to the persisted `stripe_id`.
+    // (`user.hasStripeId()` is not bound onto the model by the billable trait,
+    // so calling it throws — use the resolved id instead.)
+    const customerId = (params as { customer?: string }).customer || user.stripe_id
+    if (!customerId) {
+      throw new Error('User has no Stripe customer')
     }
 
     assertSameOriginUrl(params.success_url, 'success_url')
     assertSameOriginUrl(params.cancel_url, 'cancel_url')
 
     const defaultParams: Partial<Stripe.Checkout.SessionCreateParams> = {
-      customer: user.stripe_id,
+      customer: customerId,
       mode: 'payment',
       success_url: params.success_url,
       cancel_url: params.cancel_url,
