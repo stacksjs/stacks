@@ -63,7 +63,10 @@ export interface SqlDialectHelpers {
  */
 export function sqlHelpers(driver: string): SqlDialectHelpers {
   const isPostgres = driver === 'postgres'
-  const isMysql = driver === 'mysql'
+  // SingleStore speaks the MySQL wire protocol and uses MySQL DDL, so it must
+  // take the MySQL path here — otherwise it falls through to SQLite DDL
+  // (datetime('now'), AUTOINCREMENT) emitted against a MySQL server.
+  const isMysql = driver === 'mysql' || driver === 'singlestore'
   const isSqlite = !isPostgres && !isMysql
 
   return {
