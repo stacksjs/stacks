@@ -2247,6 +2247,10 @@ async function parseRequestBody(req: EnhancedRequest): Promise<void> {
       // empty string → no parse attempt). See stacksjs/stacks#1859 H-5.
       const cloned = req.clone()
       const raw = await cloned.text()
+      // Stash the exact unparsed bytes so `request.rawBody()` can return them
+      // for webhook signature verification (Stripe/GitHub/Slack). A
+      // re-serialized `jsonBody` is NOT byte-identical and fails HMAC checks.
+      ;req._rawBody = raw
       if (raw.length === 0) {
         ;req.jsonBody = {}
       }
