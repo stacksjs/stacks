@@ -85,6 +85,26 @@ export function constructEvent(
 }
 
 /**
+ * Async variant of {@link constructEvent}. Some runtimes (notably Bun) resolve
+ * the Stripe SDK's crypto provider to WebCrypto's `SubtleCrypto`, which is
+ * async-only — the synchronous `constructEvent` then throws
+ * "SubtleCryptoProvider cannot be used in a synchronous context". Verifying via
+ * `constructEventAsync` works across Node and Bun, so webhook processing uses
+ * this path.
+ */
+export async function constructEventAsync(
+  payload: string | Buffer,
+  signature: string,
+  secret: string,
+  tolerance?: number,
+): Promise<Stripe.Event> {
+  if (tolerance != null && Number.isFinite(tolerance) && tolerance > 0) {
+    return await stripe.webhooks.constructEventAsync(payload, signature, secret, tolerance)
+  }
+  return await stripe.webhooks.constructEventAsync(payload, signature, secret)
+}
+
+/**
  * Handle an incoming webhook event
  */
 export async function handleWebhookEvent(event: Stripe.Event): Promise<{ handled: boolean, eventType: string, errors?: string[] }> {
@@ -121,8 +141,19 @@ export async function processWebhook(
   config: WebhookConfig,
 ): Promise<{ success: boolean, eventType?: string, error?: string }> {
   try {
-    const event = constructEvent(payload, signature, config.secret, config.tolerance)
+    const event = await constructEventAsync(payload, signature, config.secret, config.tolerance)
     const result = await handleWebhookEvent(event)
+
+    // A verified event whose handler threw is NOT a success — returning 200
+    // here would tell Stripe to stop retrying while the local state never
+    // synced. Surface the handler error so the caller can respond non-2xx.
+    if (result.errors && result.errors.length > 0) {
+      return {
+        success: false,
+        eventType: result.eventType,
+        error: result.errors.join('; '),
+      }
+    }
 
     return {
       success: true,
@@ -280,6 +311,7 @@ export const manageWebhook = {
   onWebhookEvent,
   registerWebhookHandlers,
   constructEvent,
+  constructEventAsync,
   handleWebhookEvent,
   processWebhook,
   onPaymentIntent,
