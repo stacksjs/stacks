@@ -615,8 +615,14 @@ async function pollUntil(opts: {
  */
 async function waitForRemoteReady(ip: string, verbose: boolean): Promise<void> {
   const { execSync } = await import('node:child_process')
+  // Cloud providers recycle IPs, so a freshly-provisioned box often reuses an IP
+  // whose OLD host key is still in ~/.ssh/known_hosts. `accept-new` only accepts
+  // brand-new hosts — a *changed* key fails verification and the readiness check
+  // wrongly reports "SSH not reachable". Ignore the known_hosts file entirely for
+  // this ephemeral check (matches the actual deploy's SSH args).
   const sshArgs = [
-    '-o', 'StrictHostKeyChecking=accept-new',
+    '-o', 'StrictHostKeyChecking=no',
+    '-o', 'UserKnownHostsFile=/dev/null',
     '-o', 'BatchMode=yes',
     '-o', 'ConnectTimeout=10',
     `root@${ip}`,
