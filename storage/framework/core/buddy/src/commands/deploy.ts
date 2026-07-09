@@ -528,9 +528,14 @@ async function uploadMailServerToS3(bucketName: string, region: string, mode: st
  * Returns undefined if the project has no ts-cloud config (older projects /
  * pure AWS setups that only export the legacy `CloudConfig`).
  */
-async function loadTsCloudConfig(): Promise<any | undefined> {
+async function loadTsCloudConfig(envName?: string): Promise<any | undefined> {
   try {
-    const mod = await import(p.projectPath('config/cloud.ts'))
+    const base = p.projectPath('config/cloud.ts')
+    // Cache-bust for non-production so the config module re-evaluates against
+    // the env-specific secrets just loaded into process.env (bun caches the
+    // first import; a distinct query string forces a fresh evaluation).
+    const spec = envName && envName !== 'production' ? `${base}?env=${envName}` : base
+    const mod = await import(spec)
     return mod.tsCloud
   }
   catch (err) {
@@ -1728,10 +1733,30 @@ export function deploy(buddy: CLI): void {
 
       const deployEnv = envArg || 'production'
 
+      // Environment-aware secret resolution: for a non-production deploy, load
+      // the target environment's decrypted secrets into process.env BEFORE the
+      // config is evaluated, so config/cloud.ts resolves each app's per-env
+      // APP_KEY / DB / Stripe from `.env.<environment>` rather than the base
+      // `.env`. Production is untouched (zero risk to the prod path).
+      const deployEnvName = deployEnv === 'prod' ? 'production' : deployEnv
+      if (deployEnvName !== 'production') {
+        process.env.APP_ENV = deployEnvName
+        const envFile = `.env.${deployEnvName}`
+        if (existsSync(p.projectPath(envFile))) {
+          try {
+            const { loadEnv } = await import('@stacksjs/env')
+            loadEnv({ path: envFile, env: deployEnvName, keysFile: '.env.keys', overload: true, quiet: true })
+          }
+          catch (err) {
+            log.warn(`Could not load ${envFile}: ${getErrorMessage(err)}`)
+          }
+        }
+      }
+
       // Non-AWS providers (currently Hetzner) provision + deploy over SSH via
       // ts-cloud and have nothing to do with the AWS CloudFormation path below.
       // Route them off early, before any AWS credential / domain checks run.
-      const tsCloudConfig = await loadTsCloudConfig()
+      const tsCloudConfig = await loadTsCloudConfig(deployEnvName)
       if (tsCloudConfig && resolveProvider(tsCloudConfig) === 'hetzner') {
         await deployToHetzner(tsCloudConfig, deployEnv, options)
         return
