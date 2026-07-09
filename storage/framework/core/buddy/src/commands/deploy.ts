@@ -1,5 +1,5 @@
 import type { CLI, DeployOptions } from '@stacksjs/types'
-import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs'
+import { existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { join } from 'node:path'
 import process from 'node:process'
@@ -1086,17 +1086,54 @@ async function runHetznerDeploy(args: {
     process.exit(ExitCode.FatalError)
   }
 
-  log.info('Provisioning Hetzner compute infrastructure...')
-  // Provision with loopback-only site ports stripped so the firewall never
-  // exposes them (#1950); the full config still drives deployAllComputeSites.
-  const outputs = await driver.provisionComputeInfrastructure({ config: scrubLoopbackSitePortsForFirewall(tsCloudConfig), environment })
-  const ip = outputs.appPublicIp
-  log.success('Hetzner compute infrastructure ready')
+  // Attach mode: this project deploys ITS sites onto a box owned by another
+  // project (`cloud.attachTo`), instead of provisioning its own. The owner
+  // (e.g. stacks) manages the box, gateway, firewall and shared services; we
+  // only ship our site(s), add our own rpx `sites.d/<slug>.json` (additive —
+  // rpx merges every project's fragment) and our domain's DNS. Site ports are
+  // localhost-only (rpx is the sole public entry), so no firewall change is
+  // needed. Implemented purely by pinning the shared box in THIS project's
+  // ts-cloud driver state, which getComputeOutputs/findComputeTargets already
+  // honour ("record its serverId there" — for a shared box).
+  const attachTo: string | undefined = tsCloudConfig.cloud?.attachTo
+  let ip: string | undefined
+  if (attachTo) {
+    const box = await resolveAttachTargetBox(attachTo, environment)
+    if (!box?.publicIp) {
+      log.error(`Attach target '${attachTo}' has no reachable box for '${environment}'. Is '${attachTo}-${environment}-app' provisioned (by its owner)?`)
+      process.exit(ExitCode.FatalError)
+    }
+    ip = box.publicIp
+    log.info(`Attaching to '${attachTo}' box '${box.serverName}' (${ip}) — skipping provisioning`)
+    // Pin the shared box in OUR own driver state so ts-cloud's deploy targets it
+    // (keyed by our slug's stack name — we never touch the owner's state file).
+    // This is the exact shape ts-cloud's readDriverState expects; writing it
+    // directly avoids depending on a ts-cloud export.
+    const stackName = `${tsCloudConfig.project?.slug || 'app'}-${environment}-app`
+    const stateDir = join(process.cwd(), '.ts-cloud', 'state')
+    mkdirSync(stateDir, { recursive: true })
+    writeFileSync(join(stateDir, `${stackName}.json`), `${JSON.stringify({
+      stackName,
+      serverId: box.serverId,
+      serverName: box.serverName,
+      publicIp: ip,
+      sshUser: 'root',
+      deployStoragePath: '/var/ts-cloud/staging',
+    }, null, 2)}\n`)
+  }
+  else {
+    log.info('Provisioning Hetzner compute infrastructure...')
+    // Provision with loopback-only site ports stripped so the firewall never
+    // exposes them (#1950); the full config still drives deployAllComputeSites.
+    const outputs = await driver.provisionComputeInfrastructure({ config: scrubLoopbackSitePortsForFirewall(tsCloudConfig), environment })
+    ip = outputs.appPublicIp
+    log.success('Hetzner compute infrastructure ready')
+    if (outputs.appInstanceId)
+      log.info(`Server ID: ${outputs.appInstanceId}`)
+  }
+
   if (ip)
     log.info(`Server IP: ${ip}`)
-  if (outputs.appInstanceId)
-    log.info(`Server ID: ${outputs.appInstanceId}`)
-
   if (!ip) {
     log.error('Provisioned server has no public IP — cannot deploy over SSH.')
     process.exit(ExitCode.FatalError)
@@ -1371,6 +1408,45 @@ export interface MailTenantResult {
  *      (`mail-server user:local create <lp>@<domain>`), skipping any that exist.
  *   4. `config.email.forwards` → merged into `forwards.json` (live-reloaded).
  *
+/**
+ * Resolve the shared box owned by another project (`cloud.attachTo`) so this
+ * project can deploy its sites onto it without provisioning. Looks the box up
+ * by the owner's ts-cloud labels (`ts-cloud/project=<owner>`,
+ * `environment=<env>`, `role=app`) — the same labels ts-cloud stamps on every
+ * app server — falling back to the conventional `<owner>-<env>-app` name. Needs
+ * only read access via HCLOUD_TOKEN (the same token the owner provisions with).
+ */
+async function resolveAttachTargetBox(
+  owner: string,
+  environment: string,
+): Promise<{ serverId: number, serverName: string, publicIp?: string } | null> {
+  const token = process.env.HCLOUD_TOKEN
+  if (!token)
+    return null
+  const pick = (servers: any[]): any | undefined =>
+    servers.find(s => s?.status !== 'off' && s?.public_net?.ipv4?.ip) || servers[0]
+  const req = async (qs: string): Promise<any[]> => {
+    try {
+      const res = await fetch(`https://api.hetzner.cloud/v1/servers?${qs}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      if (!res.ok)
+        return []
+      return ((await res.json()) as any).servers || []
+    }
+    catch {
+      return []
+    }
+  }
+  // Label match first (robust to renames), then the conventional name.
+  const byLabel = await req(`label_selector=${encodeURIComponent(`ts-cloud/project=${owner},ts-cloud/environment=${environment},ts-cloud/role=app`)}`)
+  const chosen = pick(byLabel) || pick(await req(`name=${encodeURIComponent(`${owner}-${environment}-app`)}`))
+  if (!chosen)
+    return null
+  return { serverId: chosen.id, serverName: chosen.name, publicIp: chosen.public_net?.ipv4?.ip }
+}
+
+/**
  * Everything is MERGE-based so a shared mail server keeps every other tenant's
  * domains, keys, users, and forward rules untouched. Best-effort — a hiccup is
  * logged, never fails the release. Returns what the DNS step needs (mail host +
