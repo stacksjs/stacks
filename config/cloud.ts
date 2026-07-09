@@ -726,6 +726,20 @@ export const tsCloud: TsCloudConfig = {
         GITHUB_CLIENT_SECRET: env.BUGHQ_GITHUB_CLIENT_SECRET || '',
         GOOGLE_CLIENT_ID: env.BUGHQ_GOOGLE_CLIENT_ID || '',
         GOOGLE_CLIENT_SECRET: env.BUGHQ_GOOGLE_CLIENT_SECRET || '',
+        // Outbound mail → the shared self-hosted mail server. The SMTP driver
+        // authenticates as MAIL_FROM_ADDRESS (the default sender), resolving its
+        // password from MAIL_PASSWORD_<LOCALPART>; switch the sender by changing
+        // MAIL_FROM_ADDRESS to any provisioned mailbox that has a password here.
+        MAIL_MAILER: 'smtp',
+        MAIL_HOST: 'mail.stacksjs.com',
+        MAIL_PORT: '587',
+        MAIL_ENCRYPTION: 'tls',
+        MAIL_DOMAIN: 'bughq.org',
+        MAIL_FROM_NAME: 'BugHQ',
+        MAIL_FROM_ADDRESS: 'noreply@bughq.org',
+        MAIL_PASSWORD_NOREPLY: env.BUGHQ_MAIL_PASSWORD_NOREPLY || '',
+        MAIL_PASSWORD_HELLO: env.BUGHQ_MAIL_PASSWORD_HELLO || '',
+        MAIL_PASSWORD_CHRIS: env.BUGHQ_MAIL_PASSWORD_CHRIS || '',
       },
     },
     // bughq API (loopback only; the :3022 serve proxies /api + non-GET to it).
@@ -754,6 +768,20 @@ export const tsCloud: TsCloudConfig = {
         GITHUB_CLIENT_SECRET: env.BUGHQ_GITHUB_CLIENT_SECRET || '',
         GOOGLE_CLIENT_ID: env.BUGHQ_GOOGLE_CLIENT_ID || '',
         GOOGLE_CLIENT_SECRET: env.BUGHQ_GOOGLE_CLIENT_SECRET || '',
+        // Outbound mail → the shared self-hosted mail server. The SMTP driver
+        // authenticates as MAIL_FROM_ADDRESS (the default sender), resolving its
+        // password from MAIL_PASSWORD_<LOCALPART>; switch the sender by changing
+        // MAIL_FROM_ADDRESS to any provisioned mailbox that has a password here.
+        MAIL_MAILER: 'smtp',
+        MAIL_HOST: 'mail.stacksjs.com',
+        MAIL_PORT: '587',
+        MAIL_ENCRYPTION: 'tls',
+        MAIL_DOMAIN: 'bughq.org',
+        MAIL_FROM_NAME: 'BugHQ',
+        MAIL_FROM_ADDRESS: 'noreply@bughq.org',
+        MAIL_PASSWORD_NOREPLY: env.BUGHQ_MAIL_PASSWORD_NOREPLY || '',
+        MAIL_PASSWORD_HELLO: env.BUGHQ_MAIL_PASSWORD_HELLO || '',
+        MAIL_PASSWORD_CHRIS: env.BUGHQ_MAIL_PASSWORD_CHRIS || '',
       },
     },
 
@@ -787,6 +815,20 @@ export const tsCloud: TsCloudConfig = {
         GITHUB_CLIENT_SECRET: env.GHOST_GITHUB_CLIENT_SECRET || '',
         GOOGLE_CLIENT_ID: env.GHOST_GOOGLE_CLIENT_ID || '',
         GOOGLE_CLIENT_SECRET: env.GHOST_GOOGLE_CLIENT_SECRET || '',
+        // Outbound mail → the shared self-hosted mail server. The SMTP driver
+        // authenticates as MAIL_FROM_ADDRESS (the default sender), resolving its
+        // password from MAIL_PASSWORD_<LOCALPART>; switch the sender by changing
+        // MAIL_FROM_ADDRESS to any provisioned mailbox that has a password here.
+        MAIL_MAILER: 'smtp',
+        MAIL_HOST: 'mail.stacksjs.com',
+        MAIL_PORT: '587',
+        MAIL_ENCRYPTION: 'tls',
+        MAIL_DOMAIN: 'ghostanalytics.org',
+        MAIL_FROM_NAME: 'Ghost Analytics',
+        MAIL_FROM_ADDRESS: 'noreply@ghostanalytics.org',
+        MAIL_PASSWORD_NOREPLY: env.GHOST_MAIL_PASSWORD_NOREPLY || '',
+        MAIL_PASSWORD_HELLO: env.GHOST_MAIL_PASSWORD_HELLO || '',
+        MAIL_PASSWORD_CHRIS: env.GHOST_MAIL_PASSWORD_CHRIS || '',
       },
     },
     // ghostanalytics API (loopback; serves /collect ingest + /api + auth).
@@ -816,6 +858,20 @@ export const tsCloud: TsCloudConfig = {
         GITHUB_CLIENT_SECRET: env.GHOST_GITHUB_CLIENT_SECRET || '',
         GOOGLE_CLIENT_ID: env.GHOST_GOOGLE_CLIENT_ID || '',
         GOOGLE_CLIENT_SECRET: env.GHOST_GOOGLE_CLIENT_SECRET || '',
+        // Outbound mail → the shared self-hosted mail server. The SMTP driver
+        // authenticates as MAIL_FROM_ADDRESS (the default sender), resolving its
+        // password from MAIL_PASSWORD_<LOCALPART>; switch the sender by changing
+        // MAIL_FROM_ADDRESS to any provisioned mailbox that has a password here.
+        MAIL_MAILER: 'smtp',
+        MAIL_HOST: 'mail.stacksjs.com',
+        MAIL_PORT: '587',
+        MAIL_ENCRYPTION: 'tls',
+        MAIL_DOMAIN: 'ghostanalytics.org',
+        MAIL_FROM_NAME: 'Ghost Analytics',
+        MAIL_FROM_ADDRESS: 'noreply@ghostanalytics.org',
+        MAIL_PASSWORD_NOREPLY: env.GHOST_MAIL_PASSWORD_NOREPLY || '',
+        MAIL_PASSWORD_HELLO: env.GHOST_MAIL_PASSWORD_HELLO || '',
+        MAIL_PASSWORD_CHRIS: env.GHOST_MAIL_PASSWORD_CHRIS || '',
       },
     },
 
