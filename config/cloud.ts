@@ -734,6 +734,10 @@ export const tsCloud: TsCloudConfig = {
         MAIL_HOST: 'mail.stacksjs.com',
         MAIL_PORT: '587',
         MAIL_ENCRYPTION: 'tls',
+        // Cleared so the driver auths as MAIL_FROM_ADDRESS (from-based, single
+        // knob). Set these to pin an explicit SMTP identity instead.
+        MAIL_USERNAME: '',
+        MAIL_PASSWORD: '',
         MAIL_DOMAIN: 'bughq.org',
         MAIL_FROM_NAME: 'BugHQ',
         MAIL_FROM_ADDRESS: 'noreply@bughq.org',
@@ -776,6 +780,10 @@ export const tsCloud: TsCloudConfig = {
         MAIL_HOST: 'mail.stacksjs.com',
         MAIL_PORT: '587',
         MAIL_ENCRYPTION: 'tls',
+        // Cleared so the driver auths as MAIL_FROM_ADDRESS (from-based, single
+        // knob). Set these to pin an explicit SMTP identity instead.
+        MAIL_USERNAME: '',
+        MAIL_PASSWORD: '',
         MAIL_DOMAIN: 'bughq.org',
         MAIL_FROM_NAME: 'BugHQ',
         MAIL_FROM_ADDRESS: 'noreply@bughq.org',
@@ -823,6 +831,10 @@ export const tsCloud: TsCloudConfig = {
         MAIL_HOST: 'mail.stacksjs.com',
         MAIL_PORT: '587',
         MAIL_ENCRYPTION: 'tls',
+        // Cleared so the driver auths as MAIL_FROM_ADDRESS (from-based, single
+        // knob). Set these to pin an explicit SMTP identity instead.
+        MAIL_USERNAME: '',
+        MAIL_PASSWORD: '',
         MAIL_DOMAIN: 'ghostanalytics.org',
         MAIL_FROM_NAME: 'Ghost Analytics',
         MAIL_FROM_ADDRESS: 'noreply@ghostanalytics.org',
@@ -866,6 +878,10 @@ export const tsCloud: TsCloudConfig = {
         MAIL_HOST: 'mail.stacksjs.com',
         MAIL_PORT: '587',
         MAIL_ENCRYPTION: 'tls',
+        // Cleared so the driver auths as MAIL_FROM_ADDRESS (from-based, single
+        // knob). Set these to pin an explicit SMTP identity instead.
+        MAIL_USERNAME: '',
+        MAIL_PASSWORD: '',
         MAIL_DOMAIN: 'ghostanalytics.org',
         MAIL_FROM_NAME: 'Ghost Analytics',
         MAIL_FROM_ADDRESS: 'noreply@ghostanalytics.org',
