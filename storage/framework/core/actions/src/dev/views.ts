@@ -37,16 +37,24 @@ const requestStore = new AsyncLocalStorage<StacksRequestContext>()
 
 // Stable global so server-script blocks (which run inside stx serve's
 // fetch handler but without the raw Request) can read cookies.
+//
+// The AsyncLocalStorage context set via enterWith() in the fetch pre-handler
+// does NOT survive into stx-serve's later render of the server script (a
+// different async continuation), so we ALSO stash the context on a plain global
+// (`__stxServeContext`) — the same mechanism `__stxServeSearch` already relies
+// on — and fall back to it when the ALS store is empty.
+function currentRequestContext(): StacksRequestContext | undefined {
+  return requestStore.getStore() ?? (globalThis as { __stxServeContext?: StacksRequestContext }).__stxServeContext
+}
 ;(globalThis as any).requestContext = {
   cookie(name: string): string | null {
-    const ctx = requestStore.getStore()
-    return ctx?.cookies?.[name] ?? null
+    return currentRequestContext()?.cookies?.[name] ?? null
   },
   url(): string {
-    return requestStore.getStore()?.url ?? ''
+    return currentRequestContext()?.url ?? ''
   },
   locale(): string {
-    return requestStore.getStore()?.locale ?? 'de'
+    return currentRequestContext()?.locale ?? 'de'
   },
 }
 
@@ -190,19 +198,19 @@ async function startDefaultServer() {
         }
       }
 
-      // Stash cookies + url so server-script blocks rendering this
-      // request can pull them via globalThis.requestContext. We use
-      // enterWith() rather than run() because returning here would
-      // exit the async context before stx-serve resumes.
+      // Stash cookies + url so server-script blocks rendering this request can
+      // pull them via globalThis.requestContext. We use enterWith() rather than
+      // run() because returning here would exit the async context before
+      // stx-serve resumes — but enterWith()'s context is also lost across that
+      // boundary, so we additionally stash a plain global (read as a fallback by
+      // requestContext, mirroring __stxServeSearch).
       const locale = await applyRequestLocale(req)
+      const ctx: StacksRequestContext = { cookies: parseCookies(req), url: req.url, locale }
 
       ;(globalThis as { __stxServeSearch?: string }).__stxServeSearch = url.search
+      ;(globalThis as { __stxServeContext?: StacksRequestContext }).__stxServeContext = ctx
 
-      requestStore.enterWith({
-        cookies: parseCookies(req),
-        url: req.url,
-        locale,
-      })
+      requestStore.enterWith(ctx)
       return null
     },
   } as any)
