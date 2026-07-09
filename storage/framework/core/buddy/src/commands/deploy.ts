@@ -1,4 +1,5 @@
 import type { CLI, DeployOptions } from '@stacksjs/types'
+import { randomBytes } from 'node:crypto'
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { join } from 'node:path'
@@ -1181,8 +1182,13 @@ async function runHetznerDeploy(args: {
   // config/email.ts: register its local domain and provision its auto-forward
   // rules (forwards.json). Idempotent, merge-based and best-effort — it never
   // removes another tenant's domains/forwards and never fails the release.
-  if (ok)
-    await provisionMailTenant(ip, log)
+  if (ok) {
+    const mailRes = await provisionMailTenant(ip, log)
+    // Publish the domain's mail DNS (MX/SPF/DKIM/DMARC) so the mailboxes can
+    // actually send + receive. Best-effort, same as the tenant reconcile.
+    if (mailRes)
+      await reconcileMailDns(mailRes, ip, log)
+  }
 
   // Close out every GitHub Deployment we opened (before the failure branch's
   // process.exit below, so a failed release is recorded as failed, not left
@@ -1201,35 +1207,93 @@ async function runHetznerDeploy(args: {
   }
 }
 
+/** A mailbox resolved from `config/email.ts` to a concrete address + password. */
+interface ResolvedMailbox {
+  /** Full address, always `<local-part>@<domain>` (per-domain isolated mailbox). */
+  address: string
+  /** Local-part, uppercased for the `MAIL_PASSWORD_<LP>` env lookup. */
+  localPart: string
+  /** Plaintext password (from config/env, else freshly generated). */
+  password: string
+  /** True when the password was generated here (so the caller reports it). */
+  generated: boolean
+}
+
+/**
+ * Resolve `config.email.mailboxes` — which may be bare local-parts (`'chris'`),
+ * full addresses (`'chris@app.com'`), or objects (`{ email, password }`) — into
+ * concrete `<local-part>@<domain>` mailboxes with a password each. A password is
+ * taken from the entry, else `MAIL_PASSWORD_<LOCALPART>` in the env, else a
+ * strong one is generated (and flagged so the deploy prints it once).
+ */
+function resolveMailboxes(mailboxes: unknown, domain: string): ResolvedMailbox[] {
+  if (!Array.isArray(mailboxes))
+    return []
+  const out: ResolvedMailbox[] = []
+  for (const entry of mailboxes) {
+    let raw: string | undefined
+    let explicitPw: string | undefined
+    if (typeof entry === 'string')
+      raw = entry
+    else if (entry && typeof entry === 'object') {
+      raw = (entry as any).email ?? (entry as any).username
+      explicitPw = (entry as any).password
+    }
+    if (!raw || typeof raw !== 'string')
+      continue
+    const localPart = (raw.includes('@') ? raw.split('@')[0] : raw).trim()
+    if (!localPart)
+      continue
+    const address = `${localPart}@${domain}`
+    const envPw = process.env[`MAIL_PASSWORD_${localPart.toUpperCase().replace(/[^A-Z0-9]/g, '_')}`]
+    const password = explicitPw || envPw || randomBytes(18).toString('base64url')
+    out.push({ address, localPart: localPart.toUpperCase(), password, generated: !explicitPw && !envPw })
+  }
+  return out
+}
+
+/** What a mail-tenant reconcile resolved + provisioned, for the DNS step. */
+export interface MailTenantResult {
+  domain: string
+  /** The mail server's own hostname (SMTP_HOSTNAME) — the MX target. */
+  mailHost: string
+  /** base64(DER) of the domain's DKIM public key, for the `mail._domainkey` TXT. */
+  dkimPubB64?: string
+  /** Mailboxes newly created this run (address + password), for reporting. */
+  created: Array<{ address: string, password: string }>
+}
+
 /**
  * Reconcile this app's mail configuration onto the mail server running on the
- * box, straight from `config/email.ts`. Two declarative, additive things:
+ * box, straight from `config/email.ts`. Declarative, additive, idempotent:
  *
- *   1. `config.email.domain` is registered as a local delivery domain
- *      (merged into `SMTP_LOCAL_DOMAINS` in `/etc/mail/mail.env`).
- *   2. `config.email.forwards` is merged into the server's `forwards.json`
- *      (auto-forward rules, e.g. `no-reply@app.com → chris@app.com`).
+ *   1. `config.email.domain` → registered as a local delivery domain
+ *      (`SMTP_LOCAL_DOMAINS` in `/etc/mail/mail.env`).
+ *   2. A per-domain DKIM key is generated on first sight (`/opt/mail/dkim/<domain>.private`)
+ *      and registered in `DKIM_EXTRA_KEYS` so outbound mail is signed AS the domain.
+ *   3. `config.email.mailboxes` → created as per-domain isolated users
+ *      (`mail-server user:local create <lp>@<domain>`), skipping any that exist.
+ *   4. `config.email.forwards` → merged into `forwards.json` (live-reloaded).
  *
  * Everything is MERGE-based so a shared mail server keeps every other tenant's
- * domains and forward rules untouched. It is idempotent (a steady-state deploy
- * is a no-op) and best-effort (a hiccup is logged, never fails the release).
- * The server re-reads `forwards.json` on every message, so a forwards-only
- * change needs no restart; only a new local domain (read from env at startup)
- * triggers one `systemctl restart mail`.
+ * domains, keys, users, and forward rules untouched. Best-effort — a hiccup is
+ * logged, never fails the release. Returns what the DNS step needs (mail host +
+ * DKIM public key), or null when there is nothing to reconcile / it failed.
  */
-async function provisionMailTenant(ip: string, logger: typeof log): Promise<void> {
+export async function provisionMailTenant(ip: string, logger: typeof log): Promise<MailTenantResult | null> {
   const cfg: any = emailConfig || {}
   const domain: string | undefined = cfg.domain
     || (typeof cfg.from?.address === 'string' && cfg.from.address.includes('@') ? cfg.from.address.split('@')[1] : undefined)
   const forwards: Record<string, string[]> = (cfg.forwards && typeof cfg.forwards === 'object') ? cfg.forwards : {}
   const hasForwards = Object.keys(forwards).length > 0
+  const boxes = domain ? resolveMailboxes(cfg.mailboxes, domain) : []
 
   // Nothing declarative to reconcile — skip silently (most apps).
   if (!domain && !hasForwards)
-    return
+    return null
 
   const { execSync } = await import('node:child_process')
-  const sshArgs = ['-o', 'StrictHostKeyChecking=accept-new', '-o', 'BatchMode=yes', '-o', 'ConnectTimeout=15', `root@${ip}`]
+  const sshArgs = ['-o', 'StrictHostKeyChecking=accept-new', '-o', 'BatchMode=yes', '-o', 'ConnectTimeout=20', `root@${ip}`]
 
   // Compact forwards JSON, base64'd so it survives the SSH shell hop untouched.
   const forwardsB64 = hasForwards ? Buffer.from(JSON.stringify(forwards)).toString('base64') : ''
@@ -1239,15 +1303,27 @@ async function provisionMailTenant(ip: string, logger: typeof log): Promise<void
     + 'domain are written straight to that mailbox Maildir, external targets are relayed. Managed by buddy deploy '
     + 'from config/email.ts (merge-based — hand edits to other keys are preserved).'
   const readmeB64 = Buffer.from(readme).toString('base64')
+  // address<TAB>password per mailbox, base64'd as one blob for the shell hop.
+  const boxesB64 = boxes.length ? Buffer.from(boxes.map(b => `${b.address}\t${b.password}`).join('\n')).toString('base64') : ''
 
-  // One idempotent, merge-based reconcile script. Emits MAILTENANT:<state>.
+  // One idempotent, merge-based reconcile script. Emits keyed lines the caller
+  // parses: MAILHOST:, DKIMPUB:, MADE:<addr>, and a final MAILTENANT:<state>.
   const script = `set -e
 DOMAIN=${domain ? `'${domain}'` : "''"}
 FWD_B64='${forwardsB64}'
 README_B64='${readmeB64}'
+BOXES_B64='${boxesB64}'
 ENVF=/etc/mail/mail.env
 FJSON=/opt/mail/forwards.json
+DKIMDIR=/opt/mail/dkim
+MS=/opt/mail/mail-server
 ENV_CHANGED=0
+# The 'user:local' CLI is direct-DB and does NOT read /etc/mail/mail.env, so
+# without SMTP_DB_PATH it writes to ./smtp.db (the SSH cwd) — a phantom DB the
+# running server never reads, and auth silently 535s. Point it at the real DB.
+export SMTP_DB_PATH="$(grep -E '^SMTP_DB_PATH=' "$ENVF" 2>/dev/null | head -1 | cut -d= -f2- || true)"
+[ -z "$SMTP_DB_PATH" ] && export SMTP_DB_PATH=/opt/mail/smtp.db
+echo "MAILHOST:$(grep -E '^SMTP_HOSTNAME=' "$ENVF" 2>/dev/null | head -1 | cut -d= -f2- || true)"
 # 1) Register the local delivery domain (merge into SMTP_LOCAL_DOMAINS).
 if [ -n "$DOMAIN" ] && [ -f "$ENVF" ]; then
   cur=$(grep -E '^SMTP_LOCAL_DOMAINS=' "$ENVF" | head -1 | cut -d= -f2- || true)
@@ -1261,7 +1337,42 @@ if [ -n "$DOMAIN" ] && [ -f "$ENVF" ]; then
        ENV_CHANGED=1 ;;
   esac
 fi
-# 2) Merge auto-forward rules into forwards.json (live-reloaded; no restart).
+# 2) Per-domain DKIM key: generate on first sight, register in DKIM_EXTRA_KEYS.
+if [ -n "$DOMAIN" ] && [ -f "$ENVF" ]; then
+  mkdir -p "$DKIMDIR"
+  KEY="$DKIMDIR/$DOMAIN.private"
+  if [ ! -f "$KEY" ]; then
+    openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:2048 -out "$KEY" 2>/dev/null
+    chown mail-server:mail-server "$KEY" 2>/dev/null || true
+    chmod 600 "$KEY" 2>/dev/null || true
+  fi
+  ex=$(grep -E '^DKIM_EXTRA_KEYS=' "$ENVF" | head -1 | cut -d= -f2- || true)
+  ENTRY="$DOMAIN:mail:$KEY"
+  case ",$ex," in
+    *"$DOMAIN:mail:"*) : ;;
+    *) if grep -qE '^DKIM_EXTRA_KEYS=' "$ENVF"; then
+         sed -i "s|^DKIM_EXTRA_KEYS=.*|DKIM_EXTRA_KEYS=\${ex:+$ex,}$ENTRY|" "$ENVF"
+       else
+         echo "DKIM_EXTRA_KEYS=$ENTRY" >> "$ENVF"
+       fi
+       ENV_CHANGED=1 ;;
+  esac
+  echo "DKIMPUB:$(openssl rsa -in "$KEY" -pubout -outform DER 2>/dev/null | base64 -w0)"
+fi
+# 3) Create the configured mailboxes as per-domain isolated users (skip existing).
+if [ -n "$BOXES_B64" ] && [ -x "$MS" ]; then
+  echo "$BOXES_B64" | base64 -d | while IFS=$'\t' read -r addr pw; do
+    [ -z "$addr" ] && continue
+    # NOTE: 'user:local info' exits 0 even when the user is absent (it only
+    # prints "not found"), so existence is decided from the OUTPUT, not $?.
+    if "$MS" user:local info "$addr" 2>&1 | grep -qi 'not found'; then
+      if "$MS" user:local create "$addr" "$pw" "$addr" >/dev/null 2>&1; then echo "MADE:$addr"; else echo "FAIL:$addr"; fi
+    else
+      echo "EXISTS:$addr"
+    fi
+  done
+fi
+# 4) Merge auto-forward rules into forwards.json (live-reloaded; no restart).
 if [ -n "$FWD_B64" ] && [ -x /usr/local/bin/bun ]; then
   echo "$FWD_B64" | base64 -d > /tmp/.mailtenant-fwd.json
   echo "$README_B64" | base64 -d > /tmp/.mailtenant-readme.txt
@@ -1282,8 +1393,8 @@ if [ -n "$FWD_B64" ] && [ -x /usr/local/bin/bun ]; then
   rm -f /tmp/.mailtenant-fwd.json /tmp/.mailtenant-readme.txt
 fi
 FWD_STATE=nochange; grep -q FWDCHANGED /tmp/.mailtenant-res 2>/dev/null && FWD_STATE=updated; rm -f /tmp/.mailtenant-res
-# 3) Restart only when the startup-read env actually changed.
-if [ "$ENV_CHANGED" = 1 ]; then systemctl restart mail 2>/dev/null || true; echo "MAILTENANT:domain-added+restarted,forwards=$FWD_STATE"; else echo "MAILTENANT:domain-current,forwards=$FWD_STATE"; fi`
+# 5) Restart only when the startup-read env actually changed (domain or DKIM key).
+if [ "$ENV_CHANGED" = 1 ]; then systemctl restart mail 2>/dev/null || true; echo "MAILTENANT:env-changed+restarted,forwards=$FWD_STATE"; else echo "MAILTENANT:current,forwards=$FWD_STATE"; fi`
 
   try {
     const out = execSync(`ssh ${sshArgs.map(a => `'${a}'`).join(' ')} bash -s`, {
@@ -1292,11 +1403,79 @@ if [ "$ENV_CHANGED" = 1 ]; then systemctl restart mail 2>/dev/null || true; echo
       stdio: ['pipe', 'pipe', 'pipe'],
     })
     const line = (out.match(/MAILTENANT:[^\n]*/) || [])[0] || 'MAILTENANT:done'
+    const mailHost = (out.match(/MAILHOST:([^\n]*)/) || [])[1]?.trim() || `mail.${domain}`
+    const dkimPubB64 = (out.match(/DKIMPUB:([^\n]*)/) || [])[1]?.trim() || undefined
+    const madeAddrs = new Set([...out.matchAll(/MADE:([^\n]+)/g)].map(m => m[1].trim()))
+    const created = boxes.filter(b => madeAddrs.has(b.address)).map(b => ({ address: b.address, password: b.password }))
+
     logger.success(`Mail routing reconciled (${line.replace('MAILTENANT:', '')})`)
+    if (created.length) {
+      logger.info(`Mail: created ${created.length} mailbox(es) — credentials below (save them; shown once):`)
+      for (const b of created)
+        logger.info(`  ${b.address}  ${b.password}`)
+    }
+    return domain ? { domain, mailHost, dkimPubB64, created } : null
   }
   catch (err) {
     // Never fail a release on a mail-reconcile hiccup — it's additive config.
     logger.warn(`Mail routing reconcile skipped: ${getErrorMessage(err)}`)
+    return null
+  }
+}
+
+/**
+ * Publish the mail DNS for a hosted domain via Porkbun (idempotent delete+create
+ * per record): MX → the mail host, SPF authorizing the box IP, the domain's DKIM
+ * public key at `mail._domainkey`, and a DMARC policy. Best-effort — logged, not
+ * thrown. No-op without Porkbun credentials (the records are printed to add by
+ * hand). MX targets the shared mail host (`mail.stacksjs.com`), so no per-domain
+ * mail A record or extra TLS SAN is needed.
+ */
+export async function reconcileMailDns(res: MailTenantResult, ip: string, logger: typeof log): Promise<void> {
+  const { domain, mailHost, dkimPubB64 } = res
+  const spf = `v=spf1 ip4:${ip} ~all`
+  const dmarc = `v=DMARC1; p=quarantine; rua=mailto:chris@${domain}`
+  const dkim = dkimPubB64 ? `v=DKIM1; k=rsa; p=${dkimPubB64}` : undefined
+
+  const apiKey = process.env.PORKBUN_API_KEY
+  const secretKey = process.env.PORKBUN_SECRET_KEY
+  if (!apiKey || !secretKey) {
+    logger.warn(`Mail DNS: no Porkbun credentials — add these records for ${domain} by hand:`)
+    logger.info(`  MX    @                 10 ${mailHost}`)
+    logger.info(`  TXT   @                 ${spf}`)
+    if (dkim) logger.info(`  TXT   mail._domainkey   ${dkim}`)
+    logger.info(`  TXT   _dmarc            ${dmarc}`)
+    return
+  }
+
+  const auth = { apikey: apiKey, secretapikey: secretKey }
+  const call = async (path: string, body: Record<string, unknown>): Promise<any> => {
+    const r = await fetch(`https://api.porkbun.com/api/json/v3/${path}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...auth, ...body }),
+    })
+    return r.json().catch(() => ({}))
+  }
+  // Idempotent upsert: delete every record of this name+type, then recreate.
+  const upsert = async (type: string, name: string, content: string, extra: Record<string, unknown> = {}): Promise<void> => {
+    const sub = name === '@' ? '' : `/${name}`
+    await call(`dns/deleteByNameType/${domain}/${type}${sub}`, {})
+    const created = await call(`dns/create/${domain}`, { name: name === '@' ? '' : name, type, content, ttl: '600', ...extra })
+    if (created?.status !== 'SUCCESS')
+      throw new Error(`${type} ${name}: ${created?.message || 'unknown Porkbun error'}`)
+  }
+
+  try {
+    await upsert('MX', '@', mailHost, { prio: '10' })
+    await upsert('TXT', '@', spf)
+    if (dkim)
+      await upsert('TXT', 'mail._domainkey', dkim)
+    await upsert('TXT', '_dmarc', dmarc)
+    logger.success(`Mail DNS published for ${domain} (MX→${mailHost}, SPF, DKIM, DMARC)`)
+  }
+  catch (err) {
+    logger.warn(`Mail DNS reconcile skipped for ${domain}: ${getErrorMessage(err)}`)
   }
 }
 

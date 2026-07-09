@@ -8,6 +8,40 @@ import { execSync } from 'node:child_process'
 
 export function mailCommands(buddy: CLI): void {
   buddy
+    .command('mail:provision', 'Provision this app\'s mail from config/email.ts onto the shared mail server (domain + DKIM + mailboxes + MX/SPF/DKIM/DMARC DNS). Reusable + idempotent; the same reconcile buddy deploy runs.')
+    .option('--ip <ip>', 'Mail server IP (defaults to the A record of config.email.domain)')
+    .action(async (options: { ip?: string }) => {
+      const { email: emailConfig } = await import('@stacksjs/config')
+      const domain: string | undefined = (emailConfig as any)?.domain
+      if (!domain) {
+        log.error('config/email.ts has no `domain` — set it (e.g. domain: \'bughq.org\') and add `mailboxes`.')
+        process.exit(ExitCode.FatalError)
+      }
+
+      // The mailboxes live on the shared mail server, which is co-located with
+      // the app on the same box — so the app domain's A record is the box IP.
+      let ip = options.ip
+      if (!ip) {
+        try {
+          const dns = await import('node:dns')
+          ip = (await dns.promises.resolve4(domain))[0]
+        }
+        catch {
+          log.error(`Could not resolve an IP for ${domain}. Deploy the site first, or pass --ip <mail-server-ip>.`)
+          process.exit(ExitCode.FatalError)
+        }
+      }
+
+      const { provisionMailTenant, reconcileMailDns } = await import('./deploy')
+      log.info(`Provisioning mail for ${domain} on ${ip}...`)
+      const res = await provisionMailTenant(ip!, log)
+      if (res)
+        await reconcileMailDns(res, ip!, log)
+      log.success(`Mail provisioned for ${domain}. Add MAIL_PASSWORD_<LOCALPART> env vars to pin mailbox passwords.`)
+      process.exit(ExitCode.Success)
+    })
+
+  buddy
     .command('mail:user:add <email>', 'Add a mail user')
     .option('--password <password>', 'User password (generated if not provided)')
     .action(async (email: string, options: { password?: string }) => {
