@@ -204,6 +204,32 @@ export function serve(buddy: CLI): void {
     })
 }
 
+/**
+ * `buddy serve:api` — boot the production API server (bun-router routes).
+ *
+ * The twin of `buddy serve`: where that serves the STX frontend, this runs the
+ * loopback API the frontend proxies `/api` + non-GET requests to. The entry
+ * (`@stacksjs/actions/serve/api`) is resolved through the module graph, so it
+ * works whether the framework is vendored at `storage/framework/core` OR only
+ * installed under `node_modules/@stacksjs/actions`. This keeps deployments from
+ * having to hardcode a `storage/framework/core/...` path in their `start`
+ * command — `./buddy serve:api` resolves the framework wherever it lives.
+ */
+export function serveApi(buddy: CLI): void {
+  buddy
+    .command('serve:api', 'Start the production API server (bun-router routes the frontend proxies /api to)')
+    .option('-p, --port <port>', 'Port to listen on (defaults to PORT env or 3008)')
+    .action(async (options?: { port?: string | number }) => {
+      if (options?.port)
+        process.env.PORT = String(options.port)
+      process.env.APP_ENV = process.env.APP_ENV || 'production'
+
+      // The api entry is a self-booting server script; importing it starts it.
+      // Resolved from node_modules (or the vendored core) via the package name.
+      await import('@stacksjs/actions/serve/api')
+    })
+}
+
 async function resolveVendoredStxModule(): Promise<any | undefined> {
   const candidates = [
     join(homedir(), 'Code/Tools/stx/packages/stx/dist/index.js'),

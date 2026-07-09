@@ -51,14 +51,16 @@ await route.importRoutes()
 
 // Start server. `reusePort` (SO_REUSEPORT, Linux) lets a new release's
 // instance bind the same port while the old one still serves — the
-// overlap ts-cloud's zero-downtime cutover relies on. Off outside
-// production so two local servers fighting over one port still fail
-// loudly with EADDRINUSE. bun-router spreads these options into
-// Bun.serve verbatim.
+// overlap ts-cloud's zero-downtime cutover relies on. Enabled for every
+// *deployed* environment (production, staging, development), each of which
+// cuts over via the same templated systemd unit; off for local runs, where
+// two servers fighting over one port should fail loudly with EADDRINUSE.
+// bun-router spreads these options into Bun.serve verbatim.
+const isDeployed = ['production', 'staging', 'development'].includes((process.env.APP_ENV || '').toLowerCase())
 const server = await route.serve({
   port,
   hostname,
-  reusePort: isProduction,
+  reusePort: isDeployed,
 } as Parameters<typeof route.serve>[0])
 
 // Graceful drain for the zero-downtime cutover: when systemd stops the
