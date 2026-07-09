@@ -92,6 +92,16 @@ jobs:
             rm -rf "$2"
             git clone --depth 1 "https://github.com/$1.git" "$2"
           done
+          # The Stacks apps vendor the framework at storage/framework (gitignored:
+          # it's the `stacks` workspace dependency, not app source), so a fresh
+          # clone lacks it and the shipped release can't resolve `buddy … serve`.
+          # Populate it from THIS checkout — the single source of truth — so the
+          # apps ship the same (fixed) framework the main site runs.
+          for app in bughq ghostanalytics; do
+            rm -rf "$app/storage/framework"
+            mkdir -p "$app/storage"
+            cp -a "$GITHUB_WORKSPACE/storage/framework" "$app/storage/framework"
+          done
           # verygoodadblock ships a pre-built static site (dist/site).
           cd adblock
           bun install --frozen-lockfile
