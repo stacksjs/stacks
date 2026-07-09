@@ -178,62 +178,49 @@ export function email(buddy: CLI): void {
     .command('email:test [recipient]', descriptions.test)
     .action(async (recipient?: string) => {
       const to = recipient || emailConfig?.from?.address || 'test@example.com'
-      console.log(`\n📧 Sending Test Email to ${to}...\n`)
-      await loadAwsCredentials()
+
+      // Send via the mailer the app is ACTUALLY configured to use
+      // (config.email.default ← MAIL_MAILER/MAIL_DRIVER), not a hardcoded
+      // provider — so `email:test` exercises the real send path (e.g. the
+      // self-hosted SMTP server) instead of always hitting SES.
+      const { config } = await import('@stacksjs/config')
+      const driver = (config as any)?.email?.default || 'ses'
+      console.log(`\n📧 Sending Test Email to ${to} via the configured mailer ('${driver}')...\n`)
 
       try {
-        const { SESClient } = await import('@stacksjs/ts-cloud')
-        const ses = new SESClient(process.env.AWS_REGION || 'us-east-1')
+        const { mail } = await import('@stacksjs/email')
+        const from = {
+          name: emailConfig?.from?.name || 'Stacks',
+          address: emailConfig?.from?.address || `hello@${(emailConfig as any)?.domain || 'stacksjs.com'}`,
+        }
+        const result: any = await mail.send({
+          to: [to],
+          from,
+          subject: 'Test Email from Stacks',
+          text: 'This is a test email sent from your Stacks application. If you received this, your mail setup is working.',
+          html: `<!doctype html><html><body style="font-family: sans-serif; padding: 20px;">
+            <h1>🚀 Test Email from Stacks</h1>
+            <p>This is a test email sent from your Stacks application.</p>
+            <p>If you received this, your mail setup is working correctly!</p>
+            <hr><p style="color:#666;font-size:12px;">Sent from ${from.address} via the '${driver}' mailer.</p>
+          </body></html>`,
+        })
 
-        const emailDomain = (emailConfig?.from?.address?.includes('@') ? emailConfig.from.address.split('@')[1] : undefined) || 'stacksjs.com'
-        const from = `noreply@${emailDomain}`
+        if (result?.success === false)
+          throw new Error(result?.message || 'send returned success=false')
 
-        const result = await withTimeout(ses.sendEmail({
-          FromEmailAddress: from,
-          Destination: {
-            ToAddresses: [to],
-          },
-          Content: {
-            Simple: {
-              Subject: {
-                Data: 'Test Email from Stacks',
-                Charset: 'UTF-8',
-              },
-              Body: {
-                Text: {
-                  Data: 'This is a test email sent from your Stacks application.',
-                  Charset: 'UTF-8',
-                },
-                Html: {
-                  Data: `
-                    <html>
-                      <body style="font-family: sans-serif; padding: 20px;">
-                        <h1>🚀 Test Email from Stacks</h1>
-                        <p>This is a test email sent from your Stacks application.</p>
-                        <p>If you received this, your email server is working correctly!</p>
-                        <hr>
-                        <p style="color: #666; font-size: 12px;">
-                          Sent from ${emailDomain} via Amazon SES
-                        </p>
-                      </body>
-                    </html>
-                  `,
-                  Charset: 'UTF-8',
-                },
-              },
-            },
-          },
-        }))
-
-        console.log('✅ Test email sent successfully!')
-        console.log(`   Message ID: ${(result as any).MessageId}`)
+        console.log(`✅ Test email sent via '${driver}'!`)
+        if (result?.messageId)
+          console.log(`   Message ID: ${result.messageId}`)
+        if (driver === 'log' || driver === 'capture')
+          console.log(`\n💡 The '${driver}' mailer does not deliver mail — set MAIL_MAILER=smtp (or ses) to send for real.`)
       }
       catch (error: unknown) {
-        console.error('\n❌ Error sending test email:', getErrorMessage(error))
-        if (getErrorMessage(error).includes('not verified')) {
-          console.log('\n💡 Tip: Make sure your domain is verified in SES.')
-          console.log('   Run `buddy email:verify` to check status.')
-        }
+        console.error(`\n❌ Error sending test email via '${driver}':`, getErrorMessage(error))
+        if (driver === 'smtp')
+          console.log('\n💡 Check MAIL_HOST/MAIL_PORT/MAIL_USERNAME/MAIL_PASSWORD/MAIL_ENCRYPTION in your .env.')
+        else if (getErrorMessage(error).includes('not verified'))
+          console.log('\n💡 Tip: make sure your domain is verified in SES (`buddy email:verify`).')
       }
       process.exit(0)
     })
