@@ -679,7 +679,13 @@ async function waitForRemoteReady(ip: string, verbose: boolean): Promise<void> {
  * with whatever `site.env` overrides it does have.
  */
 export async function resolveDeployEnvValues(environment: 'production' | 'staging' | 'development'): Promise<Record<string, string>> {
-  const fileName = environment === 'production' ? '.env.production' : environment === 'staging' ? '.env.staging' : '.env'
+  const fileName = environment === 'production'
+    ? '.env.production'
+    : environment === 'staging'
+      ? '.env.staging'
+      : existsSync(p.projectPath('.env.development'))
+        ? '.env.development'
+        : '.env'
   const filePath = p.projectPath(fileName)
   if (!existsSync(filePath))
     return {}
