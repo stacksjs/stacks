@@ -1,5 +1,4 @@
 import type { CLI, DeployOptions } from '@stacksjs/types'
-import { randomBytes } from 'node:crypto'
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { join } from 'node:path'
@@ -1245,9 +1244,14 @@ function resolveMailboxes(mailboxes: unknown, domain: string): ResolvedMailbox[]
     if (!localPart)
       continue
     const address = `${localPart}@${domain}`
-    const envPw = process.env[`MAIL_PASSWORD_${localPart.toUpperCase().replace(/[^A-Z0-9]/g, '_')}`]
-    const password = explicitPw || envPw || randomBytes(18).toString('base64url')
-    out.push({ address, localPart: localPart.toUpperCase(), password, generated: !explicitPw && !envPw })
+    const envPw = explicitPw || process.env[`MAIL_PASSWORD_${localPart.toUpperCase().replace(/[^A-Z0-9]/g, '_')}`]
+    // Only provision a mailbox whose password is explicitly supplied (config
+    // object or MAIL_PASSWORD_<LOCALPART> env). A routine deploy must never
+    // conjure random-password mailboxes the operator never asked for and can't
+    // retrieve — declare the password to opt a mailbox in.
+    if (!envPw)
+      continue
+    out.push({ address, localPart: localPart.toUpperCase(), password: envPw, generated: false })
   }
   return out
 }
