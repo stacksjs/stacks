@@ -51,6 +51,9 @@ export const tsCloud: TsCloudConfig = {
   environments: {
     production: {
       type: 'production',
+      // Branch that deploys here (main = prod). `domainPrefix` is omitted, so
+      // production sites keep their bare apex domains.
+      deployBranch: 'main',
       region: 'us-east-1',
       variables: {
         NODE_ENV: 'production',
@@ -143,6 +146,10 @@ export const tsCloud: TsCloudConfig = {
     },
     staging: {
       type: 'staging',
+      // Push to `stage` → deploy here. Sites are served at `staging.<domain>`
+      // (own Hetzner box `stacks-staging-app`, provisioned on first deploy).
+      deployBranch: 'stage',
+      domainPrefix: 'staging',
       region: 'us-east-1',
       variables: {
         NODE_ENV: 'staging',
@@ -151,6 +158,10 @@ export const tsCloud: TsCloudConfig = {
     },
     development: {
       type: 'development',
+      // Push to `dev` → deploy here, served at `dev.<domain>`. Set
+      // `server: 'staging'` to share the staging box instead of a separate one.
+      deployBranch: 'dev',
+      domainPrefix: 'dev',
       region: 'us-east-1',
       variables: {
         NODE_ENV: 'development',

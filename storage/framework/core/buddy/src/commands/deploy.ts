@@ -732,6 +732,76 @@ export function mergeSiteDeployEnv(sites: Record<string, any>, resolvedDeployEnv
 }
 
 /**
+ * Prefix a public host for a non-production environment: `acme.com` →
+ * `staging.acme.com`, and `www.acme.com` → `www.staging.acme.com` (keep the www
+ * label leading). Idempotent — an already-prefixed host is returned unchanged.
+ */
+function prefixHostForEnv(host: string, prefix: string): string {
+  if (host.startsWith(`${prefix}.`) || host.startsWith(`www.${prefix}.`))
+    return host
+  if (host.startsWith('www.'))
+    return `www.${prefix}.${host.slice(4)}`
+  return `${prefix}.${host}`
+}
+
+/**
+ * Make the site model environment-aware. For a non-production environment that
+ * declares a `domainPrefix` (staging → `staging`, development → `dev`), every
+ * site's public domain becomes `<prefix>.<domain>`, and URL values that point at
+ * those hosts (APP_URL, OAuth redirect URLs, redirect targets, …) are rewritten
+ * to match — so one config drives prod + staging + dev from their own branches
+ * without duplicating site blocks. Only `//<host>` URL occurrences are rewritten;
+ * bare `user@host` (e.g. mail identities) is left alone. Production is untouched.
+ */
+export function applyEnvironmentToSites(sites: Record<string, any>, environment: string, config: any): Record<string, any> {
+  const prefix: string | undefined = config?.environments?.[environment]?.domainPrefix
+  if (!prefix || environment === 'production')
+    return sites
+
+  // Every site's public host(s), longest-first so a redirect/URL that points at
+  // one site from another (e.g. www.stacksjs.com → https://stacksjs.com) is also
+  // rewritten to the prefixed target, and the most-specific host wins.
+  const allHosts: string[] = []
+  for (const site of Object.values(sites)) {
+    const d = (site as any)?.domain
+    if (typeof d === 'string') allHosts.push(d)
+    else if (Array.isArray(d)) for (const x of d) if (typeof x === 'string') allHosts.push(x)
+  }
+  allHosts.sort((a, b) => b.length - a.length)
+
+  const rewrite = (val: string): string => {
+    let r = val
+    for (const h of allHosts) {
+      const esc = h.replace(/[.]/g, '\\.')
+      r = r.replace(new RegExp(`//${esc}(?=[/:?#]|$)`, 'g'), `//${prefixHostForEnv(h, prefix)}`)
+    }
+    return r
+  }
+
+  const out: Record<string, any> = {}
+  for (const [name, site] of Object.entries(sites)) {
+    if (!site) {
+      out[name] = site
+      continue
+    }
+    const s: any = { ...site }
+    if (typeof s.domain === 'string')
+      s.domain = prefixHostForEnv(s.domain, prefix)
+    else if (Array.isArray(s.domain))
+      s.domain = s.domain.map((d: any) => (typeof d === 'string' ? prefixHostForEnv(d, prefix) : d))
+    if (typeof s.redirect === 'string')
+      s.redirect = rewrite(s.redirect)
+    if (s.env && typeof s.env === 'object') {
+      const e: Record<string, any> = { ...s.env }
+      for (const k of Object.keys(e)) if (typeof e[k] === 'string') e[k] = rewrite(e[k])
+      s.env = e
+    }
+    out[name] = s
+  }
+  return out
+}
+
+/**
  * Forge-style deploy to a Hetzner Cloud server via ts-cloud:
  *   1. provision (or reuse) the compute server + firewall + SSH key,
  *   2. wait for cloud-init to finish installing bun,
@@ -1021,7 +1091,9 @@ async function runHetznerDeploy(args: {
   // tiny (tens of MB instead of ~800MB of node_modules + pantry).
   const { execSync } = await import('node:child_process')
   const { tmpdir } = await import('node:os')
-  const sites = tsCloudConfig.sites || {}
+  // Environment-aware site model: staging/dev get `<prefix>.<domain>` hosts (+
+  // rewritten URL env values), so one config serves prod + staging + dev.
+  const sites = applyEnvironmentToSites(tsCloudConfig.sites || {}, environment, tsCloudConfig)
   const slug = tsCloudConfig.project?.slug || 'app'
   let sha: string
   try {
@@ -1147,8 +1219,9 @@ async function runHetznerDeploy(args: {
     config: deployConfig,
     // The rpx gateway is ALWAYS regenerated from the full site model, never the
     // narrowed single-site `deployConfig`, so a `--site` deploy can never drop the
-    // other sites' routes (the production-incident guard).
-    rpxConfig: tsCloudConfig,
+    // other sites' routes (the production-incident guard). Use the environment-
+    // aware full model so staging/dev route their `<prefix>.<domain>` hosts.
+    rpxConfig: { ...tsCloudConfig, sites: sitesWithResolvedEnv },
     environment,
     driver,
     sha,
