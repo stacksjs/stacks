@@ -84,6 +84,9 @@ jobs:
       - name: Deploy (${{ needs.determine-environment.outputs.environment }})
         run: ./buddy deploy ${{ needs.determine-environment.outputs.flag }} --yes
         env:
+          # Selects .env.<environment> for the env core + the per-app secrets the
+          # config resolves (so staging/dev use their own APP_KEY, DB, Stripe, …).
+          APP_ENV: ${{ needs.determine-environment.outputs.environment }}
           # dotenvx/@stacksjs/env keys to decrypt .env.<environment> (all drivers).
           DOTENV_PRIVATE_KEY_PRODUCTION: ${{ secrets.DOTENV_PRIVATE_KEY_PRODUCTION }}
           DOTENV_PRIVATE_KEY_STAGING: ${{ secrets.DOTENV_PRIVATE_KEY_STAGING }}
