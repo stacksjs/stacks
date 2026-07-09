@@ -1040,6 +1040,11 @@ async function runHetznerDeploy(args: {
     '.git',
     '.github',
     '.cache',
+    // stx's build cache + generated route manifest (`.stx/routes.ts`). It MUST
+    // be regenerated on the server from the shipped `resources/views` — shipping
+    // a stale/empty manifest makes production `stx serve` trust it and serve 404
+    // on every view route (e.g. `/`). Absent, stx-serve rescans and rebuilds it.
+    '.stx',
     'tmp',
     'temp',
     '.DS_Store',
