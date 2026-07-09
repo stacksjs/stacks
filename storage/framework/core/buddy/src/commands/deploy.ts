@@ -531,10 +531,12 @@ async function uploadMailServerToS3(bucketName: string, region: string, mode: st
 async function loadTsCloudConfig(envName?: string): Promise<any | undefined> {
   try {
     const base = p.projectPath('config/cloud.ts')
-    // Cache-bust for non-production so the config module re-evaluates against
-    // the env-specific secrets just loaded into process.env (bun caches the
-    // first import; a distinct query string forces a fresh evaluation).
-    const spec = envName && envName !== 'production' ? `${base}?env=${envName}` : base
+    // Always cache-bust when an environment is known so the config module
+    // re-evaluates against the env-specific secrets just loaded into process.env
+    // — including production, whose values must win over any .env.development the
+    // env plugin auto-loaded at startup (bun caches the first import; a distinct
+    // query string forces a fresh evaluation).
+    const spec = envName ? `${base}?env=${envName}` : base
     const mod = await import(spec)
     return mod.tsCloud
   }
@@ -1731,17 +1733,23 @@ export function deploy(buddy: CLI): void {
 
       await ensureDeployPrerequisites(options.verbose === true)
 
-      const deployEnv = envArg || 'production'
+      // Resolve the target environment from the positional arg or the
+      // --staging/--dev/--prod flags (the flags were previously ignored, so
+      // `buddy deploy --staging` silently deployed production).
+      const deployEnv = envArg
+        || (options.staging ? 'staging' : options.dev ? 'development' : 'production')
+      const deployEnvName = deployEnv === 'prod' ? 'production' : deployEnv === 'dev' ? 'development' : deployEnv
 
-      // Environment-aware secret resolution: for a non-production deploy, load
-      // the target environment's decrypted secrets into process.env BEFORE the
-      // config is evaluated, so config/cloud.ts resolves each app's per-env
-      // APP_KEY / DB / Stripe from `.env.<environment>` rather than the base
-      // `.env`. Production is untouched (zero risk to the prod path).
-      const deployEnvName = deployEnv === 'prod' ? 'production' : deployEnv
-      if (deployEnvName !== 'production') {
-        process.env.APP_ENV = deployEnvName
-        const envFile = `.env.${deployEnvName}`
+      // Deterministic, environment-aware secret resolution. Explicitly load the
+      // TARGET environment's decrypted secrets into process.env BEFORE the config
+      // is evaluated, overriding whatever the env plugin auto-loaded at startup
+      // (which prefers .env.development when present). This is what makes each
+      // app's per-env APP_KEY/DB/Stripe come from `.env.<environment>` — and,
+      // crucially, keeps a plain `buddy deploy` pinned to `.env.production`
+      // regardless of which .env* files exist locally.
+      process.env.APP_ENV = deployEnvName
+      {
+        const envFile = deployEnvName === 'production' ? '.env.production' : `.env.${deployEnvName}`
         if (existsSync(p.projectPath(envFile))) {
           try {
             const { loadEnv } = await import('@stacksjs/env')
