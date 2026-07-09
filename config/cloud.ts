@@ -679,7 +679,10 @@ export const tsCloud: TsCloudConfig = {
       root: '.',
       path: '/',
       domain: env.APP_DOMAIN || 'stacksjs.com',
-      start: 'bun storage/framework/core/buddy/src/cli.ts serve',
+      // `./buddy serve` resolves the framework CLI from the vendored
+      // storage/framework/core when present, else from node_modules — so the
+      // start command never hardcodes a source path.
+      start: './buddy serve',
       port: 3000,
       preStart: ['bun install'],
     },
@@ -697,209 +700,10 @@ export const tsCloud: TsCloudConfig = {
     // API off the public internet.
     api: {
       root: '.',
-      start: 'bun storage/framework/core/actions/src/serve/api.ts',
+      start: './buddy serve:api',
       port: 3008,
       preStart: ['bun install'],
       env: { HOST: '127.0.0.1', APP_ENV: 'production' },
-    },
-
-    // ---- Co-located Stacks apps (their own domains, own loopback API) ----
-    // Deployed surgically with `buddy deploy --site <name>` from this repo. Each
-    // ships its own repo (`root: '../<app>'`) + installs on the server. Secrets
-    // come from BUGHQ_*/GHOST_* vars in this project's encrypted .env.production.
-
-    // bughq — error tracking on the co-located pantry Postgres (127.0.0.1:5432).
-    'bughq': {
-      root: '../bughq',
-      path: '/',
-      domain: 'bughq.org',
-      start: 'bun storage/framework/core/buddy/src/cli.ts serve',
-      port: 3022,
-      preStart: ['bun install'],
-      env: {
-        APP_ENV: 'production',
-        APP_URL: 'https://bughq.org',
-        APP_COMING_SOON: 'false',
-        API_URL: 'http://127.0.0.1:3023',
-        APP_KEY: env.BUGHQ_APP_KEY || '',
-        DB_CONNECTION: 'postgres',
-        DB_HOST: '127.0.0.1',
-        DB_PORT: '5432',
-        DB_DATABASE: 'bughq',
-        DB_USERNAME: 'bughq',
-        DB_PASSWORD: env.BUGHQ_DB_PASSWORD || '',
-        STRIPE_SECRET_KEY: env.BUGHQ_STRIPE_SECRET_KEY || '',
-        STRIPE_PUBLISHABLE_KEY: env.BUGHQ_STRIPE_PUBLISHABLE_KEY || '',
-        STRIPE_WEBHOOK_SECRET: env.BUGHQ_STRIPE_WEBHOOK_SECRET || '',
-        GITHUB_REDIRECT_URL: 'https://bughq.org/api/auth/github/callback',
-        GOOGLE_REDIRECT_URL: 'https://bughq.org/api/auth/google/callback',
-        GITHUB_CLIENT_ID: env.BUGHQ_GITHUB_CLIENT_ID || '',
-        GITHUB_CLIENT_SECRET: env.BUGHQ_GITHUB_CLIENT_SECRET || '',
-        GOOGLE_CLIENT_ID: env.BUGHQ_GOOGLE_CLIENT_ID || '',
-        GOOGLE_CLIENT_SECRET: env.BUGHQ_GOOGLE_CLIENT_SECRET || '',
-        // Outbound mail → the shared self-hosted mail server. The SMTP driver
-        // authenticates as MAIL_FROM_ADDRESS (the default sender), resolving its
-        // password from MAIL_PASSWORD_<LOCALPART>; switch the sender by changing
-        // MAIL_FROM_ADDRESS to any provisioned mailbox that has a password here.
-        MAIL_MAILER: 'smtp',
-        MAIL_HOST: 'mail.stacksjs.com',
-        MAIL_PORT: '587',
-        MAIL_ENCRYPTION: 'tls',
-        // Cleared so the driver auths as MAIL_FROM_ADDRESS (from-based, single
-        // knob). Set these to pin an explicit SMTP identity instead.
-        MAIL_USERNAME: '',
-        MAIL_PASSWORD: '',
-        MAIL_DOMAIN: 'bughq.org',
-        MAIL_FROM_NAME: 'BugHQ',
-        MAIL_FROM_ADDRESS: 'noreply@bughq.org',
-        MAIL_PASSWORD_NOREPLY: env.BUGHQ_MAIL_PASSWORD_NOREPLY || '',
-        MAIL_PASSWORD_HELLO: env.BUGHQ_MAIL_PASSWORD_HELLO || '',
-        MAIL_PASSWORD_CHRIS: env.BUGHQ_MAIL_PASSWORD_CHRIS || '',
-      },
-    },
-    // bughq API (loopback only; the :3022 serve proxies /api + non-GET to it).
-    'bughq-api': {
-      root: '../bughq',
-      start: 'bun storage/framework/core/actions/src/serve/api.ts',
-      port: 3023,
-      preStart: ['bun install'],
-      env: {
-        HOST: '127.0.0.1',
-        APP_ENV: 'production',
-        APP_URL: 'https://bughq.org',
-        APP_COMING_SOON: 'false',
-        APP_KEY: env.BUGHQ_APP_KEY || '',
-        DB_CONNECTION: 'postgres',
-        DB_HOST: '127.0.0.1',
-        DB_PORT: '5432',
-        DB_DATABASE: 'bughq',
-        DB_USERNAME: 'bughq',
-        DB_PASSWORD: env.BUGHQ_DB_PASSWORD || '',
-        STRIPE_SECRET_KEY: env.BUGHQ_STRIPE_SECRET_KEY || '',
-        STRIPE_WEBHOOK_SECRET: env.BUGHQ_STRIPE_WEBHOOK_SECRET || '',
-        GITHUB_REDIRECT_URL: 'https://bughq.org/api/auth/github/callback',
-        GOOGLE_REDIRECT_URL: 'https://bughq.org/api/auth/google/callback',
-        GITHUB_CLIENT_ID: env.BUGHQ_GITHUB_CLIENT_ID || '',
-        GITHUB_CLIENT_SECRET: env.BUGHQ_GITHUB_CLIENT_SECRET || '',
-        GOOGLE_CLIENT_ID: env.BUGHQ_GOOGLE_CLIENT_ID || '',
-        GOOGLE_CLIENT_SECRET: env.BUGHQ_GOOGLE_CLIENT_SECRET || '',
-        // Outbound mail → the shared self-hosted mail server. The SMTP driver
-        // authenticates as MAIL_FROM_ADDRESS (the default sender), resolving its
-        // password from MAIL_PASSWORD_<LOCALPART>; switch the sender by changing
-        // MAIL_FROM_ADDRESS to any provisioned mailbox that has a password here.
-        MAIL_MAILER: 'smtp',
-        MAIL_HOST: 'mail.stacksjs.com',
-        MAIL_PORT: '587',
-        MAIL_ENCRYPTION: 'tls',
-        // Cleared so the driver auths as MAIL_FROM_ADDRESS (from-based, single
-        // knob). Set these to pin an explicit SMTP identity instead.
-        MAIL_USERNAME: '',
-        MAIL_PASSWORD: '',
-        MAIL_DOMAIN: 'bughq.org',
-        MAIL_FROM_NAME: 'BugHQ',
-        MAIL_FROM_ADDRESS: 'noreply@bughq.org',
-        MAIL_PASSWORD_NOREPLY: env.BUGHQ_MAIL_PASSWORD_NOREPLY || '',
-        MAIL_PASSWORD_HELLO: env.BUGHQ_MAIL_PASSWORD_HELLO || '',
-        MAIL_PASSWORD_CHRIS: env.BUGHQ_MAIL_PASSWORD_CHRIS || '',
-      },
-    },
-
-    // ghostanalytics — cookieless web analytics on external SingleStore (cloud).
-    'ghostanalytics': {
-      root: '../ghostanalytics',
-      path: '/',
-      domain: 'ghostanalytics.org',
-      start: 'bun storage/framework/core/buddy/src/cli.ts serve',
-      port: 3024,
-      preStart: ['bun install'],
-      env: {
-        APP_ENV: 'production',
-        APP_URL: 'https://ghostanalytics.org',
-        APP_COMING_SOON: 'false',
-        API_URL: 'http://127.0.0.1:3025',
-        APP_KEY: env.GHOST_APP_KEY || '',
-        DB_CONNECTION: 'singlestore',
-        DB_HOST: env.GHOST_DB_HOST || '',
-        DB_PORT: env.GHOST_DB_PORT || '3306',
-        DB_DATABASE: env.GHOST_DB_DATABASE || '',
-        DB_USERNAME: env.GHOST_DB_USERNAME || '',
-        DB_PASSWORD: env.GHOST_DB_PASSWORD || '',
-        DB_SSL: env.GHOST_DB_SSL || '',
-        STRIPE_SECRET_KEY: env.GHOST_STRIPE_SECRET_KEY || '',
-        STRIPE_PUBLISHABLE_KEY: env.GHOST_STRIPE_PUBLISHABLE_KEY || '',
-        STRIPE_WEBHOOK_SECRET: env.GHOST_STRIPE_WEBHOOK_SECRET || '',
-        GITHUB_REDIRECT_URL: 'https://ghostanalytics.org/api/auth/github/callback',
-        GOOGLE_REDIRECT_URL: 'https://ghostanalytics.org/api/auth/google/callback',
-        GITHUB_CLIENT_ID: env.GHOST_GITHUB_CLIENT_ID || '',
-        GITHUB_CLIENT_SECRET: env.GHOST_GITHUB_CLIENT_SECRET || '',
-        GOOGLE_CLIENT_ID: env.GHOST_GOOGLE_CLIENT_ID || '',
-        GOOGLE_CLIENT_SECRET: env.GHOST_GOOGLE_CLIENT_SECRET || '',
-        // Outbound mail → the shared self-hosted mail server. The SMTP driver
-        // authenticates as MAIL_FROM_ADDRESS (the default sender), resolving its
-        // password from MAIL_PASSWORD_<LOCALPART>; switch the sender by changing
-        // MAIL_FROM_ADDRESS to any provisioned mailbox that has a password here.
-        MAIL_MAILER: 'smtp',
-        MAIL_HOST: 'mail.stacksjs.com',
-        MAIL_PORT: '587',
-        MAIL_ENCRYPTION: 'tls',
-        // Cleared so the driver auths as MAIL_FROM_ADDRESS (from-based, single
-        // knob). Set these to pin an explicit SMTP identity instead.
-        MAIL_USERNAME: '',
-        MAIL_PASSWORD: '',
-        MAIL_DOMAIN: 'ghostanalytics.org',
-        MAIL_FROM_NAME: 'Ghost Analytics',
-        MAIL_FROM_ADDRESS: 'noreply@ghostanalytics.org',
-        MAIL_PASSWORD_NOREPLY: env.GHOST_MAIL_PASSWORD_NOREPLY || '',
-        MAIL_PASSWORD_HELLO: env.GHOST_MAIL_PASSWORD_HELLO || '',
-        MAIL_PASSWORD_CHRIS: env.GHOST_MAIL_PASSWORD_CHRIS || '',
-      },
-    },
-    // ghostanalytics API (loopback; serves /collect ingest + /api + auth).
-    'ghostanalytics-api': {
-      root: '../ghostanalytics',
-      start: 'bun storage/framework/core/actions/src/serve/api.ts',
-      port: 3025,
-      preStart: ['bun install'],
-      env: {
-        HOST: '127.0.0.1',
-        APP_ENV: 'production',
-        APP_URL: 'https://ghostanalytics.org',
-        APP_COMING_SOON: 'false',
-        APP_KEY: env.GHOST_APP_KEY || '',
-        DB_CONNECTION: 'singlestore',
-        DB_HOST: env.GHOST_DB_HOST || '',
-        DB_PORT: env.GHOST_DB_PORT || '3306',
-        DB_DATABASE: env.GHOST_DB_DATABASE || '',
-        DB_USERNAME: env.GHOST_DB_USERNAME || '',
-        DB_PASSWORD: env.GHOST_DB_PASSWORD || '',
-        DB_SSL: env.GHOST_DB_SSL || '',
-        STRIPE_SECRET_KEY: env.GHOST_STRIPE_SECRET_KEY || '',
-        STRIPE_WEBHOOK_SECRET: env.GHOST_STRIPE_WEBHOOK_SECRET || '',
-        GITHUB_REDIRECT_URL: 'https://ghostanalytics.org/api/auth/github/callback',
-        GOOGLE_REDIRECT_URL: 'https://ghostanalytics.org/api/auth/google/callback',
-        GITHUB_CLIENT_ID: env.GHOST_GITHUB_CLIENT_ID || '',
-        GITHUB_CLIENT_SECRET: env.GHOST_GITHUB_CLIENT_SECRET || '',
-        GOOGLE_CLIENT_ID: env.GHOST_GOOGLE_CLIENT_ID || '',
-        GOOGLE_CLIENT_SECRET: env.GHOST_GOOGLE_CLIENT_SECRET || '',
-        // Outbound mail → the shared self-hosted mail server. The SMTP driver
-        // authenticates as MAIL_FROM_ADDRESS (the default sender), resolving its
-        // password from MAIL_PASSWORD_<LOCALPART>; switch the sender by changing
-        // MAIL_FROM_ADDRESS to any provisioned mailbox that has a password here.
-        MAIL_MAILER: 'smtp',
-        MAIL_HOST: 'mail.stacksjs.com',
-        MAIL_PORT: '587',
-        MAIL_ENCRYPTION: 'tls',
-        // Cleared so the driver auths as MAIL_FROM_ADDRESS (from-based, single
-        // knob). Set these to pin an explicit SMTP identity instead.
-        MAIL_USERNAME: '',
-        MAIL_PASSWORD: '',
-        MAIL_DOMAIN: 'ghostanalytics.org',
-        MAIL_FROM_NAME: 'Ghost Analytics',
-        MAIL_FROM_ADDRESS: 'noreply@ghostanalytics.org',
-        MAIL_PASSWORD_NOREPLY: env.GHOST_MAIL_PASSWORD_NOREPLY || '',
-        MAIL_PASSWORD_HELLO: env.GHOST_MAIL_PASSWORD_HELLO || '',
-        MAIL_PASSWORD_CHRIS: env.GHOST_MAIL_PASSWORD_CHRIS || '',
-      },
     },
 
     // ---- server-static sites (migrated off AWS S3 + CloudFront) ----
@@ -934,28 +738,8 @@ export const tsCloud: TsCloudConfig = {
       pathRewriteStyle: 'directory',
     },
 
-    verygoodadblock: {
-      deploy: 'server',
-      root: '../adblock/dist/site',
-      path: '/',
-      domain: 'verygoodadblock.org',
-      build: 'cd ../adblock && bun run site:build',
-      pathRewriteStyle: 'directory',
-    },
-
-    verygoodadblockWww: {
-      deploy: 'server',
-      root: '../adblock/dist/site',
-      path: '/',
-      domain: 'www.verygoodadblock.org',
-      build: 'cd ../adblock && bun run site:build',
-      pathRewriteStyle: 'directory',
-    },
-
     // Redirect-only sites (gateway answers with a 301; nothing is shipped).
     // The alternate adblock domain → canonical, and www → apex for stacksjs.com.
-    veryGoodAdblock: { domain: 'very-good-adblock.org', redirect: 'https://verygoodadblock.org' },
-    veryGoodAdblockWww: { domain: 'www.very-good-adblock.org', redirect: 'https://verygoodadblock.org' },
     wwwStacksjs: { domain: 'www.stacksjs.com', redirect: 'https://stacksjs.com' },
   },
 }

@@ -76,37 +76,6 @@ jobs:
             chmod 644 ~/.ssh/id_ed25519.pub
           fi
 
-      # Multi-repo sites: config/cloud.ts ships some sites from sibling repos
-      # (`root: '../bughq'`, `'../ghostanalytics'`, `'../adblock/dist/site'`).
-      # Those repos are public, so clone them next to the stacks checkout (the
-      # same `../<name>` layout the deploy expects locally). The apps are built
-      # on the server from source; only the adblock *static site* is built here.
-      - name: Checkout sibling app sources
-        run: |
-          cd "$GITHUB_WORKSPACE/.."
-          for spec in \
-            "stacksjs/bughq bughq" \
-            "stacksjs/ghostanalytics ghostanalytics" \
-            "chrisbbreuer/very-good-adblock adblock"; do
-            set -- $spec
-            rm -rf "$2"
-            git clone --depth 1 "https://github.com/$1.git" "$2"
-          done
-          # The Stacks apps vendor the framework at storage/framework (gitignored:
-          # it's the `stacks` workspace dependency, not app source), so a fresh
-          # clone lacks it and the shipped release can't resolve `buddy … serve`.
-          # Populate it from THIS checkout — the single source of truth — so the
-          # apps ship the same (fixed) framework the main site runs.
-          for app in bughq ghostanalytics; do
-            rm -rf "$app/storage/framework"
-            mkdir -p "$app/storage"
-            cp -a "$GITHUB_WORKSPACE/storage/framework" "$app/storage/framework"
-          done
-          # verygoodadblock ships a pre-built static site (dist/site).
-          cd adblock
-          bun install --frozen-lockfile
-          bun run site:build
-
       # AWS drivers: assume a role via OIDC when the AWS_ROLE_ARN repo *variable*
       # is set (vars — not secrets — are allowed in `if:`). No-op for Hetzner.
       - name: Configure AWS credentials (OIDC)
