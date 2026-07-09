@@ -73,8 +73,19 @@ export class SMTPDriver extends BaseEmailDriver {
 
     const host = smtp?.host || env.MAIL_HOST || '127.0.0.1'
     const port = smtp?.port || (env.MAIL_PORT ? Number(env.MAIL_PORT) : undefined) || 587
-    const username = smtp?.username || env.MAIL_USERNAME || ''
-    const password = smtp?.password || env.MAIL_PASSWORD || ''
+
+    // Auth identity: an explicit SMTP username/password wins; otherwise fall
+    // back to the app's configured SENDER mailbox (config.email.from.address),
+    // with its password resolved by the MAIL_PASSWORD_<LOCALPART> convention —
+    // the same one mailbox provisioning uses. This makes the sending mailbox a
+    // single config knob: point `from.address` (or MAIL_FROM_ADDRESS) at
+    // noreply@, hello@, … and, as long as that mailbox's MAIL_PASSWORD_<LP> is
+    // present, SMTP auth follows automatically — no second set of creds to keep
+    // in sync.
+    const fromAddress = typeof config.email?.from?.address === 'string' ? config.email.from.address : ''
+    const username = smtp?.username || env.MAIL_USERNAME || fromAddress || ''
+    const localPart = (username.includes('@') ? username.split('@')[0] : username).toUpperCase().replace(/[^A-Z0-9]/g, '_')
+    const password = smtp?.password || env.MAIL_PASSWORD || (localPart ? env[`MAIL_PASSWORD_${localPart}`] : undefined) || ''
     const rawEncryption = smtp?.encryption ?? env.MAIL_ENCRYPTION ?? null
 
     return {
