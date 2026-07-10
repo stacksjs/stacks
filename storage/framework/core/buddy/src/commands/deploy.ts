@@ -1105,6 +1105,17 @@ async function runHetznerDeploy(args: {
     }
     ip = box.publicIp
     log.info(`Attaching to '${attachTo}' box '${box.serverName}' (${ip}) — skipping provisioning`)
+
+    // The attached-to box is fronted by the owner's rpx gateway (it owns :80/:443
+    // and terminates TLS). Force rpx for our sites regardless of what the config
+    // says, so we NEVER try to stand up our own nginx + certbot — on a shared box
+    // that collides with rpx (`bind() 0.0.0.0:80: Address already in use`) and
+    // fails the deploy even though rpx already serves the site. Applies to both
+    // server-app and server-static sites: static sites become additive rpx
+    // file_server routes, not a separate nginx vhost.
+    const compute = ((tsCloudConfig.infrastructure ??= {}).compute ??= {}) as Record<string, any>
+    compute.webServer = 'rpx'
+    compute.proxy = { ...(compute.proxy ?? {}), engine: 'rpx' }
     // Pin the shared box in OUR own driver state so ts-cloud's deploy targets it
     // (keyed by our project's stack name — we never touch the owner's state file).
     // This is the exact shape ts-cloud's readDriverState expects; writing it
