@@ -25,6 +25,9 @@ jobs:
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
 
+      - name: Setup Pantry
+        uses: home-lang/pantry/packages/action@main
+
       - name: Use Cached node_modules
         uses: actions/cache@v5
         with:
@@ -36,11 +39,30 @@ jobs:
       - name: Install Dependencies
         run: bun install
 
+      # Build each publishable framework package's dist BEFORE publishing.
+      # We publish with `pantry --ignore-scripts` (skips prepublishOnly `tsc`
+      # steps that fail in-workspace), so dist must already exist here.
+      - name: Build framework packages
+        run: |
+          for dir in storage/framework/core/*/ storage/framework/core; do
+            pkg="${dir%/}/package.json"
+            [ -f "$pkg" ] || continue
+            grep -q '"private": *true' "$pkg" && continue
+            grep -q '"build"' "$pkg" || continue
+            echo "Building ${dir%/}"
+            (cd "${dir%/}" && bun run build) || echo "::warning::build failed for ${dir%/}"
+          done
+
+      # Publish the whole framework workspace via pantry: every core/* member
+      # AND the `stacks` meta-package (storage/framework/core) — the meta the
+      # old bash script never published. pantry resolves workspace:* → concrete
+      # versions, topo-orders, skips already-published versions, and
+      # authenticates via npm trusted publishing (OIDC; id-token: write above),
+      # falling back to NPM_TOKEN outside OIDC.
       - name: Publish Framework
-        run: ./storage/framework/scripts/publish
+        run: pantry publish --npm --access public --ignore-scripts 'storage/framework/core/*' 'storage/framework/core'
         env:
-          BUN_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-          NPM_CONFIG_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish Dummy Libraries
         run: ./storage/framework/scripts/publish-dummy-libs
