@@ -88,3 +88,7 @@ storage/framework/cache/
 /.stacks
 /.ts-cloud
 .claude/settings.local.json
+
+# Per-package runtime logs created when building a core package in place
+storage/framework/core/**/storage/logs/
+storage/framework/**/storage/logs/
