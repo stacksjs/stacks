@@ -1,5 +1,17 @@
 # Stacks Changelog
 
+## v0.70.65
+
+[compare changes](https://github.com/stacksjs/stacks/compare/v0.70.64...v0.70.65)
+
+### 🚀 Enhancements
+
+- **browser-extension:** First-class MV3 extension builds in Stacks ([e0f570526](https://github.com/stacksjs/stacks/commit/e0f570526))
+
+### ❤️ Contributors
+
+- Chris ([@chrisbbreuer](https://github.com/chrisbbreuer))
+
 ## v0.70.64
 
 [compare changes](https://github.com/stacksjs/stacks/compare/v0.70.63...v0.70.64)
