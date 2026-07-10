@@ -1,5 +1,7 @@
-import { execSync, log, parseOptions, runCommand } from '@stacksjs/cli'
+#!/usr/bin/env bun
+import { execSync, log, parseOptions } from '@stacksjs/cli'
 import { projectPath } from '@stacksjs/path'
+import { generateChangelog, loadLogsmithConfig } from '@stacksjs/logsmith'
 
 type ChangelogOptions = {
   dryRun?: boolean
@@ -20,32 +22,36 @@ const sanitizeRevision = (revision: string): string => {
   return value
 }
 
-const sanitizeVersion = (version: string): string => {
-  const value = version.trim().replace(/^v/, '')
-
-  if (!/^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/.test(value))
-    throw new Error(`Invalid changelog version: ${value}`)
-
-  return value
-}
-
 // when log.debug is used, only log to file in production
 log.debug('Generating changelog')
 const options = parseOptions() as ChangelogOptions | undefined
-const fromRevision = sanitizeRevision(options?.from?.toString() ?? await execSync('git describe --abbrev=0 --tags HEAD^'))
+const fromRevision = sanitizeRevision(options?.from?.toString() ?? await execSync('git describe --abbrev=0 --tags HEAD^').catch(() => ''))
 log.debug('FromRevision', fromRevision)
-const toRevision = sanitizeRevision(options?.to?.toString() ?? await execSync('git describe'))
+const toRevision = sanitizeRevision(options?.to?.toString() ?? 'HEAD')
 log.debug('ToRevision', toRevision)
 log.debug('Changelog Options', options)
 
-const version = options?.version ?? options?.r
-const versionFlag = version ? ` -r ${sanitizeVersion(version.toString())}` : ''
-const command = options?.dryRun
-  ? `bunx --bun changelogen --no-output --from ${fromRevision} --to ${toRevision}${versionFlag}`
-  : `bunx --bun changelogen --output CHANGELOG.md --from ${fromRevision} --to ${toRevision}${versionFlag}`
+// `--version` was a changelogen concept (its `-r` release header). logsmith
+// derives the section header from the `from…to` compare range instead, so the
+// flag is accepted for backward compatibility but no longer needed.
+if (options?.version ?? options?.r)
+  log.debug('Ignoring --version: logsmith headers the section from the from…to range')
 
-await runCommand(command, {
-  cwd: projectPath(),
-  quiet: options?.quiet,
-  verbose: options?.verbose,
+const isDryRun = options?.dryRun === true
+
+// Generate through logsmith's SDK rather than shelling out to changelogen. The
+// `github` theme matches the repo's committed changelog style; on a dry run we
+// render to the console (`output: false`) instead of writing the file.
+const config = await loadLogsmithConfig({
+  dir: projectPath(),
+  from: fromRevision || undefined,
+  to: toRevision,
+  output: isDryRun ? false : 'CHANGELOG.md',
+  theme: 'github',
+  verbose: options?.verbose === true,
 })
+
+const result = await generateChangelog(config)
+
+if (isDryRun && !options?.quiet)
+  log.info(result.content)

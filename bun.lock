@@ -102,7 +102,9 @@
       "name": "@stacksjs/actions",
       "version": "0.70.73",
       "dependencies": {
+        "@stacksjs/bumpx": "^0.2.6",
         "@stacksjs/bunpress": "^0.1.11",
+        "@stacksjs/logsmith": "^0.2.3",
         "@stacksjs/ts-cloud": "^0.7.12",
         "@stacksjs/ts-md": "^0.1.1",
       },
