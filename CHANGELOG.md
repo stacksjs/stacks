@@ -1,5 +1,17 @@
 # Stacks Changelog
 
+## v0.70.62
+
+[compare changes](https://github.com/stacksjs/stacks/compare/v0.70.61...v0.70.62)
+
+### 🩹 Fixes
+
+- **router:** Resolve default app files from @stacksjs/defaults on node_modules ([3078050b6](https://github.com/stacksjs/stacks/commit/3078050b6))
+
+### ❤️ Contributors
+
+- Chris ([@chrisbbreuer](https://github.com/chrisbbreuer))
+
 ## v0.70.61
 
 [compare changes](https://github.com/stacksjs/stacks/compare/v0.70.60...v0.70.61)

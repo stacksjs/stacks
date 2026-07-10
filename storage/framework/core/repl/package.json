@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/repl",
   "type": "module",
-  "version": "0.70.61",
+  "version": "0.70.62",
   "description": "A Stacks optimized TypeScript REPL.",
   "author": "Chris Breuer",
   "contributors": [
