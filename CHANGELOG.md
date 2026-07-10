@@ -1,5 +1,17 @@
 # Stacks Changelog
 
+## v0.70.64
+
+[compare changes](https://github.com/stacksjs/stacks/compare/v0.70.63...v0.70.64)
+
+### 🩹 Fixes
+
+- **meta:** Depend on all 13 remaining core packages ([4b63fac74](https://github.com/stacksjs/stacks/commit/4b63fac74))
+
+### ❤️ Contributors
+
+- Chris ([@chrisbbreuer](https://github.com/chrisbbreuer))
+
 ## v0.70.63
 
 [compare changes](https://github.com/stacksjs/stacks/compare/v0.70.62...v0.70.63)
