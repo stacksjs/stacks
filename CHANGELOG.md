@@ -1,5 +1,17 @@
 # Stacks Changelog
 
+## v0.70.72
+
+[compare changes](https://github.com/stacksjs/stacks/compare/v0.70.71...v0.70.72)
+
+### 🩹 Fixes
+
+- **release:** Pin meta core deps to release version; buddy upgrade uses bun update ([72951ced1](https://github.com/stacksjs/stacks/commit/72951ced1))
+
+### ❤️ Contributors
+
+- Chris ([@chrisbbreuer](https://github.com/chrisbbreuer))
+
 ## v0.70.71
 
 [compare changes](https://github.com/stacksjs/stacks/compare/v0.70.70...v0.70.71)
