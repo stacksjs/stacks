@@ -45,13 +45,14 @@ export async function buildExtension(config: ExtensionConfig, options: BuildOpti
   // 2. stx pages → HTML (+ their chunked assets).
   const pageEntries = collectPages(config, cwd)
   if (pageEntries.length) {
+    // bun-plugin-stx's default export is a factory — call it to get the plugin.
     const { default: stxPlugin } = await import('bun-plugin-stx')
     await Bun.build({
       entrypoints: pageEntries,
       outdir,
       target: 'browser',
       minify,
-      plugins: [stxPlugin as any],
+      plugins: [(stxPlugin as unknown as () => any)()],
     })
   }
 
