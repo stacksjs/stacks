@@ -1,5 +1,18 @@
 # Stacks Changelog
 
+## v0.70.61
+
+[compare changes](https://github.com/stacksjs/stacks/compare/v0.70.60...v0.70.61)
+
+### 🩹 Fixes
+
+- **scaffold:** Preloader detects deploy env flags + overloads decrypted env ([fc057eb9a](https://github.com/stacksjs/stacks/commit/fc057eb9a))
+- **buddy:** Make deploy work without pantry + surface fatal errors ([13bac3a24](https://github.com/stacksjs/stacks/commit/13bac3a24))
+
+### ❤️ Contributors
+
+- Chris ([@chrisbbreuer](https://github.com/chrisbbreuer))
+
 ## v0.70.60
 
 [compare changes](https://github.com/stacksjs/stacks/compare/v0.70.59...v0.70.60)
