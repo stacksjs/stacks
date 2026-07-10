@@ -1,5 +1,17 @@
 # Stacks Changelog
 
+## v0.70.71
+
+[compare changes](https://github.com/stacksjs/stacks/compare/v0.70.70...v0.70.71)
+
+### 🚀 Enhancements
+
+- **buddy:** Node_modules-app framework upgrades via buddy upgrade ([c68b3ea12](https://github.com/stacksjs/stacks/commit/c68b3ea12))
+
+### ❤️ Contributors
+
+- Chris ([@chrisbbreuer](https://github.com/chrisbbreuer))
+
 ## v0.70.70
 
 [compare changes](https://github.com/stacksjs/stacks/compare/v0.70.69...v0.70.70)
