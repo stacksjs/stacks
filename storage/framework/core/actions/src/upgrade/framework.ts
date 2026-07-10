@@ -47,6 +47,23 @@ interface UpgradeOptions {
 const options = parseOptions() as UpgradeOptions
 
 const projectRoot = p.projectPath()
+
+// Node-modules app model: there is no vendored `storage/framework/core` to
+// sync framework source into. Such an app upgrades by bumping its published
+// `stacks` + `@stacksjs/*` dependency versions and reinstalling. Branch here,
+// before any vendored-core paths are read.
+if (!existsSync(p.projectPath('storage/framework/core'))) {
+  const { upgradeStacksPackages } = await import('./packages')
+  await upgradeStacksPackages(projectRoot, {
+    version: options.version,
+    canary: options.canary,
+    stable: options.stable,
+    force: options.force,
+    dryRun: (options as { dryRun?: boolean }).dryRun,
+    noPostinstall: options.noPostinstall ?? options.postinstall === false,
+  })
+}
+
 const channelFile = join(projectRoot, '.stacks-channel')
 const versionFile = join(projectRoot, '.stacks-version')
 const currentChannel = readChannel(channelFile)
