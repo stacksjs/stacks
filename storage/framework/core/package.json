@@ -307,6 +307,7 @@
     "@stacksjs/collections": "^0.70.53",
     "@stacksjs/config": "^0.70.53",
     "@stacksjs/database": "^0.70.53",
+    "@stacksjs/defaults": "^0.70.53",
     "@stacksjs/desktop": "^0.70.53",
     "better-dx": "^0.2.12",
     "@stacksjs/dns": "^0.70.53",

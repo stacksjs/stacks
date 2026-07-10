@@ -8,7 +8,8 @@
   "homepage": "https://github.com/stacksjs/stacks/tree/main/storage/framework/defaults",
   "files": [
     "README.md",
-    "resources"
+    "resources",
+    "app"
   ],
   "exports": {
     "./*": "./*",

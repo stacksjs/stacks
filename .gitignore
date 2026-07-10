@@ -93,5 +93,6 @@ storage/framework/cache/
 storage/framework/core/**/storage/logs/
 storage/framework/**/storage/logs/
 
-# @stacksjs/defaults copies resources from storage/framework/defaults at build time
+# @stacksjs/defaults copies resources + app from storage/framework/defaults at build time
 storage/framework/core/defaults/resources/
+storage/framework/core/defaults/app/

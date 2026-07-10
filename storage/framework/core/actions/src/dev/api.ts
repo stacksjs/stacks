@@ -98,7 +98,21 @@ catch (err) {
 // reads `config.cors` (when defined) or falls back to safe defaults:
 // no credentials, no wildcard-with-credentials. See
 // stacksjs/stacks#1859 R-1.
-const corsMod = await import(path.frameworkPath('defaults/app/Middleware/Cors.ts'))
+// Vendored checkout wins; a node_modules app falls back to @stacksjs/defaults
+// (which ships the `app/` scaffold) — see resolveDefaultsCorsPath below.
+function resolveDefaultsCorsPath(): string {
+  const vendored = path.frameworkPath('defaults/app/Middleware/Cors.ts')
+  if (existsSync(vendored))
+    return vendored
+  try {
+    const pkgJson = Bun.resolveSync('@stacksjs/defaults/package.json', process.cwd())
+    return `${pkgJson.replace(/package\.json$/, '')}app/Middleware/Cors.ts`
+  }
+  catch {
+    return vendored
+  }
+}
+const corsMod = await import(resolveDefaultsCorsPath())
 const corsMiddleware: Middleware = corsMod.default
 route.use(corsMiddleware.toRouterHandler())
 
