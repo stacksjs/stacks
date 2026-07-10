@@ -49,17 +49,23 @@ const needsFullSetup = !isVersionOnly
 
 // Setup global error handlers (skip for minimal commands for performance)
 if (needsFullSetup) {
-  process.on('uncaughtException', (error: Error) => {
-    log.debug('Buddy uncaughtException')
-    log.error(error)
-    process.exit(1)
-  })
+  // Write the stack synchronously to stderr BEFORE exiting. `log.error` alone
+  // can be lost when stdout/stderr is block-buffered (piped, e.g. in CI) and
+  // the process exits immediately after — which made a thrown deploy
+  // prerequisite look like a silent `exit 1` with zero output. The direct
+  // `process.stderr.write` flushes; `log.error` still provides the styled line.
+  const reportFatal = (label: string, error: unknown): never => {
+    log.debug(`Buddy ${label}`)
+    try {
+      process.stderr.write(`\n[buddy] ${label}: ${(error as any)?.stack ?? String(error)}\n`)
+    }
+    catch {}
+    log.error(error as Error)
+    return process.exit(1)
+  }
 
-  process.on('unhandledRejection', (error: Error) => {
-    log.debug('Buddy unhandledRejection')
-    log.error(error)
-    process.exit(1)
-  })
+  process.on('uncaughtException', error => reportFatal('uncaughtException', error))
+  process.on('unhandledRejection', error => reportFatal('unhandledRejection', error))
 }
 
 async function main() {

@@ -107,15 +107,21 @@ export function setup(buddy: CLI): void {
 }
 
 async function isPantryInstalled(): Promise<boolean> {
-  const result = await runCommand('pantry --version', {
-    silent: true,
-    timeoutMs: PANTRY_CHECK_TIMEOUT_MS,
-  })
+  try {
+    const result = await runCommand('pantry --version', {
+      silent: true,
+      timeoutMs: PANTRY_CHECK_TIMEOUT_MS,
+    })
 
-  if (result.isOk)
-    return true
-
-  return false
+    return result.isOk
+  }
+  catch {
+    // runCommand/spawn throws (not a soft error result) when the `pantry`
+    // executable isn't on PATH — e.g. a node_modules app on a CI runner that
+    // never installed pantry. Treat that as "not installed" rather than letting
+    // the throw bubble up as an unhandled rejection that silently exits the CLI.
+    return false
+  }
 }
 
 async function installPantry(): Promise<void> {
@@ -131,11 +137,33 @@ async function installPantry(): Promise<void> {
 }
 
 export async function ensurePantryInstalled(): Promise<void> {
-  if (!(await isPantryInstalled()))
-    await installPantry()
+  if (await isPantryInstalled())
+    return
+
+  // A node_modules-based app has no vendored `scripts/pantry-install`
+  // (storage/framework isn't checked out). Pantry isn't required to run the
+  // buddy CLI or to deploy — the CLI's deps come from node_modules, and the
+  // target box provisions its own system deps over SSH — so skip rather than
+  // fatally exit when there's nothing to bootstrap with.
+  const installer = p.frameworkPath('scripts/pantry-install')
+  if (!existsSync(installer)) {
+    log.debug('Pantry is not installed and no bundled installer is present; continuing without it.')
+    return
+  }
+
+  await installPantry()
 }
 
 export async function ensurePantryDependencies(cwd: string): Promise<void> {
+  // Only meaningful when pantry is actually installed (vendored/dev layout). A
+  // node_modules app resolves its dependencies through `bun install`, so there
+  // are no pantry deps to install — skip silently rather than shelling out to a
+  // missing `pantry` executable (which throws and silently kills the deploy).
+  if (!(await isPantryInstalled())) {
+    log.debug('Pantry not installed; skipping pantry dependency install (deps come from node_modules).')
+    return
+  }
+
   log.info('Installing Pantry dependencies...')
 
   const result = await runCommand('pantry install', {
@@ -162,7 +190,11 @@ function hasAppKey(cwd: string): boolean {
 }
 
 export async function ensureAppKey(cwd: string): Promise<void> {
-  if (hasAppKey(cwd)) {
+  // A node_modules app keeps APP_KEY in its encrypted `.env.<env>`, which the
+  // preloader decrypts into process.env at boot — there may be no plaintext
+  // `.env` file with an APP_KEY line. Honor the already-set env value so we
+  // don't needlessly (and, via the ./buddy wrapper, unreliably) regenerate it.
+  if (hasAppKey(cwd) || (process.env.APP_KEY && process.env.APP_KEY.length > 0)) {
     log.success('APP_KEY existed')
     return
   }
