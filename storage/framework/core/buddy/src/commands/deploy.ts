@@ -1106,10 +1106,18 @@ async function runHetznerDeploy(args: {
     ip = box.publicIp
     log.info(`Attaching to '${attachTo}' box '${box.serverName}' (${ip}) — skipping provisioning`)
     // Pin the shared box in OUR own driver state so ts-cloud's deploy targets it
-    // (keyed by our slug's stack name — we never touch the owner's state file).
+    // (keyed by our project's stack name — we never touch the owner's state file).
     // This is the exact shape ts-cloud's readDriverState expects; writing it
     // directly avoids depending on a ts-cloud export.
-    const stackName = `${tsCloudConfig.project?.slug || 'app'}-${environment}-app`
+    //
+    // The name MUST match ts-cloud's `resolveProjectStackName` (`<slug>-<env>`,
+    // or an explicit `project.stackName`) — that's the key findComputeTargets
+    // reads. A previous `<slug>-<env>-app` name mismatched, so the pin was never
+    // found: staging still deployed (findComputeTargets adopts the unique
+    // env=staging box) but production failed whenever a second env=production
+    // ts-cloud app server existed (e.g. uptime-status), making adoption
+    // ambiguous and leaving the pin the only resolver.
+    const stackName = tsCloudConfig.project?.stackName || `${tsCloudConfig.project?.slug || 'app'}-${environment}`
     const stateDir = join(process.cwd(), '.ts-cloud', 'state')
     mkdirSync(stateDir, { recursive: true })
     writeFileSync(join(stateDir, `${stackName}.json`), `${JSON.stringify({
