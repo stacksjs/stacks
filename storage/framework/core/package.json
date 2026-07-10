@@ -356,6 +356,19 @@
     "@stacksjs/sms": "^0.70.53",
     "@stacksjs/testing": "^0.70.53",
     "@stacksjs/tinker": "^0.70.53",
+    "@stacksjs/composables": "^0.70.53",
+    "@stacksjs/shell": "^0.70.53",
+    "@stacksjs/charts": "^0.70.53",
+    "@stacksjs/whois": "^0.70.53",
+    "@stacksjs/browser": "^0.70.53",
+    "@stacksjs/calendar-api": "^0.70.53",
+    "@stacksjs/github": "^0.70.53",
+    "@stacksjs/http": "^0.70.53",
+    "@stacksjs/registry": "^0.70.53",
+    "@stacksjs/socials": "^0.70.53",
+    "@stacksjs/newsletter": "^0.70.53",
+    "@stacksjs/i18n": "^0.70.53",
+    "@stacksjs/cron": "^0.70.53",
     "bun-query-builder": "^0.1.26"
   }
 }
