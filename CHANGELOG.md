@@ -1,5 +1,26 @@
 # Stacks Changelog
 
+## v0.70.54
+
+[compare changes](https://github.com/stacksjs/stacks/compare/v0.70.53...v0.70.54)
+
+### 🚀 Enhancements
+
+- **defaults:** Publish scaffold defaults as @stacksjs/defaults ([95aea9de8](https://github.com/stacksjs/stacks/commit/95aea9de8))
+
+### 🩹 Fixes
+
+- **cloud:** Revert stacks start commands to bun-runnable entries ([cdac4bb95](https://github.com/stacksjs/stacks/commit/cdac4bb95))
+- **env:** Build + ship plugin.js (not just types) ([c2f75cdfa](https://github.com/stacksjs/stacks/commit/c2f75cdfa))
+
+### 🏡 Chore
+
+- **slugs:** Remove @stacksjs/slugs placeholder (use @stacksjs/slug) ([feecb01bb](https://github.com/stacksjs/stacks/commit/feecb01bb))
+
+### ❤️ Contributors
+
+- Chris ([@chrisbbreuer](https://github.com/chrisbbreuer))
+
 ## v0.70.53
 
 [compare changes](https://github.com/stacksjs/stacks/compare/v0.70.52...v0.70.53)

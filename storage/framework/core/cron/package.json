@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/cron",
   "type": "module",
-  "version": "0.70.53",
+  "version": "0.70.54",
   "description": "The Stacks cron.",
   "author": "Chris Breuer",
   "contributors": [
