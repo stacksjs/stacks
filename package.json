@@ -73,6 +73,9 @@
   "devDependencies": {
     "better-dx": "^0.2.15"
   },
+  "overrides": {
+    "typescript": "^7.0.2"
+  },
   "workspaces": [
     "storage/framework",
     "storage/framework/libs/*",

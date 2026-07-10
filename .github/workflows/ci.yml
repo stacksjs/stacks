@@ -41,7 +41,7 @@ jobs:
             node-modules-
 
       - name: Install dependencies
-        run: bun install
+        run: bun install --frozen-lockfile
 
       - name: Lint
         run: bun buddy lint
@@ -70,7 +70,7 @@ jobs:
             node-modules-
 
       - name: Install dependencies
-        run: bun install
+        run: bun install --frozen-lockfile
 
       - name: Typecheck
         run: bunx --bun tsc --noEmit
@@ -122,7 +122,7 @@ jobs:
             node-modules-
 
       - name: Install Dependencies
-        run: bun install
+        run: bun install --frozen-lockfile
 
       - name: Test Suite
         env:
@@ -170,7 +170,7 @@ jobs:
             node-modules-
 
       - name: Install Dependencies
-        run: bun install
+        run: bun install --frozen-lockfile
 
       # set the .env file
       - name: Ensure .env Set
@@ -219,7 +219,7 @@ jobs:
             node-modules-
 
       - name: Install Dependencies
-        run: bun install
+        run: bun install --frozen-lockfile
 
       - name: Ensure .env Set
         run: cp .env.example .env
@@ -266,7 +266,7 @@ jobs:
             node-modules-
 
       - name: Install Dependencies
-        run: bun install
+        run: bun install --frozen-lockfile
 
       - name: Ensure .env Set
         run: cp .env.example .env
@@ -310,7 +310,7 @@ jobs:
             node-modules-
 
       - name: Install Dependencies
-        run: bun install
+        run: bun install --frozen-lockfile
 
       - name: Build
         run: bun run build
