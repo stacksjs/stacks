@@ -1,5 +1,17 @@
 # Stacks Changelog
 
+## v0.70.66
+
+[compare changes](https://github.com/stacksjs/stacks/compare/v0.70.65...v0.70.66)
+
+### 🩹 Fixes
+
+- **deploy:** Attach mode forces rpx (no self-hosted nginx/certbot) ([b52faf76d](https://github.com/stacksjs/stacks/commit/b52faf76d))
+
+### ❤️ Contributors
+
+- Chris ([@chrisbbreuer](https://github.com/chrisbbreuer))
+
 ## v0.70.65
 
 [compare changes](https://github.com/stacksjs/stacks/compare/v0.70.64...v0.70.65)
