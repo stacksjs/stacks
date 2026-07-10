@@ -54,6 +54,10 @@ async function resolveActionFile(action: string): Promise<string | null> {
     if (pkgUrl) {
       const pkgPath = new URL(pkgUrl).pathname
       const pkgRoot = pkgPath.slice(0, pkgPath.lastIndexOf('/'))
+      // The build emits a flat `dist/` (root: './src'), so `dist/<action>.js`
+      // is the current layout. `dist/src/<action>.js` is kept as a fallback for
+      // older published packages that shipped the nested layout.
+      candidates.push(`${pkgRoot}/dist/${action}.js`)
       candidates.push(`${pkgRoot}/dist/src/${action}.js`)
       candidates.push(`${pkgRoot}/src/${action}.ts`)
     }
