@@ -26,22 +26,35 @@ export interface ContentScript {
   excludeMatches?: string[]
 }
 
-/** A declarativeNetRequest static ruleset. */
+/**
+ * A declarativeNetRequest static ruleset. Either point `path` at a pre-built
+ * JSON file, or give `source` — a module whose default export is a function (or
+ * value) producing the rules array, which the build compiles to
+ * `rules/<id>.json`.
+ */
 export interface RuleResource {
   id: string
-  /** Path (relative to outdir) to the compiled ruleset JSON. @default `rules/<id>.json` */
+  /** Path (relative to outdir) the manifest references. @default `rules/<id>.json` */
   path?: string
   enabled?: boolean
+  /** Module whose default export builds the rules array (compiled at build). */
+  source?: string
 }
 
-/** An stx page bundled to HTML (popup, options, …). */
+/** An extension page: an stx template + an optional companion script. */
+export interface ExtensionPage {
+  /** stx template, bundled to `<name>.html`. */
+  template: string
+  /** Companion script (`.ts`) bundled to `<name>.js` and referenced by the page. */
+  script?: string
+}
+
+/** stx pages bundled to HTML (popup, options, …). A bare string = template only. */
 export interface ExtensionPages {
-  /** Toolbar popup (`action.default_popup`). */
-  popup?: string
-  /** Options page (`options_page`). */
-  options?: string
-  /** Extra `<name, entry>` stx pages bundled to `<name>.html`. */
-  extra?: Record<string, string>
+  popup?: string | ExtensionPage
+  options?: string | ExtensionPage
+  /** Extra `<name, page>` pages bundled to `<name>.html` (+ `<name>.js`). */
+  extra?: Record<string, string | ExtensionPage>
 }
 
 /** Overrides merged verbatim into the generated manifest, per target. */
@@ -56,6 +69,16 @@ export interface ManifestOverrides {
   webAccessibleResources?: Array<{ resources: string[], matches: string[] }>
   /** Anything else spread into the manifest as-is. */
   extra?: Record<string, unknown>
+}
+
+/** Context passed to build hooks. */
+export interface BuildContext {
+  config: ExtensionConfig
+  target: ExtensionTarget
+  /** Absolute output directory. */
+  outdir: string
+  version: string
+  cwd: string
 }
 
 export interface ExtensionConfig {
@@ -77,6 +100,8 @@ export interface ExtensionConfig {
   icons?: Record<number, string>
   /** Directory of static assets copied verbatim into the build (icons, stubs, …). */
   public?: string
+  /** Extra `<destInOutdir, srcPath>` files copied into the build (e.g. shared CSS). */
+  assets?: Record<string, string>
   /** declarativeNetRequest static rulesets. */
   rules?: RuleResource[]
 
@@ -84,6 +109,12 @@ export interface ExtensionConfig {
 
   /** Per-target output dir. @default chrome→`dist`, firefox→`dist-firefox` */
   outdir?: Partial<Record<ExtensionTarget, string>> | string
+
+  /** Hooks for app-specific post-processing the generic build can't express. */
+  hooks?: {
+    /** Runs after everything is built + written (before packaging). */
+    postBuild?: (ctx: BuildContext) => void | Promise<void>
+  }
 }
 
 export interface BuildOptions {
