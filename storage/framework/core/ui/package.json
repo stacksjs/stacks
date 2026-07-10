@@ -49,13 +49,15 @@
   "types": "dist/index.d.ts",
   "files": [
     "README.md",
-    "dist",
-    "src"
+    "dist"
   ],
   "scripts": {
     "build": "bun build.ts",
     "typecheck": "bun tsc --noEmit",
     "prepublishOnly": "bun run build"
+  },
+  "dependencies": {
+    "@cwcss/crosswind": "^0.2.6"
   },
   "devDependencies": {
     "@stacksjs/build": "workspace:*",

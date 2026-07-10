@@ -1,29 +1,20 @@
-import { dts } from 'bun-plugin-dtsx'
-import { frameworkExternal, intro, outro } from '../build/src'
+import { frameworkExternal, intro, outro, transpilePackage } from '../build/src'
 
 const { startTime } = await intro({
   dir: import.meta.dir,
 })
 
-const result = await Bun.build({
-  entrypoints: ['./src/index.ts'],
-  outdir: './dist',
-  target: 'bun',
-  format: 'esm',
-  target: 'browser',
-  // sourcemap: 'linked',
+// Transpile file-by-file (see transpilePackage) instead of bundling: this
+// barrel re-exports named bindings from external sources (e.g.
+// `export { useOnline } from '@stacksjs/composables'`) that Bun's bundler
+// drops/mangles, so the published dist ends up missing those named exports.
+await transpilePackage({
+  dir: import.meta.dir,
   external: frameworkExternal(),
-  // minify: true,
-  plugins: [
-    dts({
-      root: './src',
-      outdir: './dist',
-    }),
-  ],
 })
 
 await outro({
   dir: import.meta.dir,
   startTime,
-  result,
+  result: { errors: [], warnings: [] },
 })

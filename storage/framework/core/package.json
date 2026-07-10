@@ -181,7 +181,7 @@
       "import": "./objects/dist/index.js"
     },
     "./orm": {
-      "types": "./orm/dist/src/index.d.ts",
+      "types": "./orm/dist/index.d.ts",
       "import": "./orm/dist/index.js"
     },
     "./path": {
@@ -338,6 +338,23 @@
     "@stacksjs/utils": "^0.70.53",
     "@stacksjs/skills": "^0.70.53",
     "@stacksjs/validation": "^0.70.53",
+    "@stacksjs/api": "^0.70.53",
+    "@stacksjs/analytics": "^0.70.53",
+    "@stacksjs/chat": "^0.70.53",
+    "@stacksjs/cms": "^0.70.53",
+    "@stacksjs/commerce": "^0.70.53",
+    "@stacksjs/datetime": "^0.70.53",
+    "@stacksjs/docs": "^0.70.53",
+    "@stacksjs/faker": "^0.70.53",
+    "@stacksjs/push": "^0.70.53",
+    "@stacksjs/query-builder": "^0.70.53",
+    "@stacksjs/queue": "^0.70.53",
+    "@stacksjs/repl": "^0.70.53",
+    "@stacksjs/scheduler": "^0.70.53",
+    "@stacksjs/slug": "^0.70.53",
+    "@stacksjs/sms": "^0.70.53",
+    "@stacksjs/testing": "^0.70.53",
+    "@stacksjs/tinker": "^0.70.53",
     "bun-query-builder": "^0.1.26"
   }
 }
