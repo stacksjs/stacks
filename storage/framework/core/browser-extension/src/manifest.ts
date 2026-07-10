@@ -25,6 +25,7 @@ export interface GeneratedManifest {
   content_scripts?: Array<{
     matches: string[]
     js: string[]
+    css?: string[]
     run_at?: string
     world?: string
     all_frames?: boolean
