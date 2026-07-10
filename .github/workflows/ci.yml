@@ -3,27 +3,38 @@ name: CI
 on:
   push:
     branches:
-      - main # deploys to prod
+      - main
+      - stage
+      - dev
 
     tags:
-      - '*-beta.*' # ensures it is deployed to stage in case `main`` is not pushed to
+      - '*-beta.*'
 
   pull_request:
     branches:
-      - main # deploys to dev
+      - main
+
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Environment to deploy after CI passes
+        type: choice
+        options:
+          - production
+          - staging
+          - development
+        default: staging
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
-  cancel-in-progress: true
+  group: ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
 
 jobs:
   lint:
-    strategy:
-      matrix:
-        os: [ubuntu-latest]
-      fail-fast: false
-
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
@@ -47,12 +58,7 @@ jobs:
         run: bun buddy lint
 
   typecheck:
-    runs-on: ${{ matrix.os }}
-
-    strategy:
-      matrix:
-        os: [ubuntu-latest]
-      fail-fast: false
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout Code
@@ -76,14 +82,7 @@ jobs:
         run: bunx --bun tsc --noEmit
 
   test:
-    runs-on: ${{ matrix.os }}
-    permissions:
-      id-token: write
-      contents: read
-    strategy:
-      matrix:
-        os: [ubuntu-latest]
-      fail-fast: false
+    runs-on: ubuntu-latest
 
     services:
       redis:
@@ -129,79 +128,27 @@ jobs:
           AWS_DYNAMODB_ENDPOINT: http://localhost:8000
         run: bun run test
 
-  release-check:
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
-
-    outputs:
-      contains_release: ${{ steps.check_release.outputs.contains_release }}
-
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v6
-      - name: Release Check
-        id: check_release
-        run: |
-          if git log --format=%B -n 1 "${{ github.event.after }}" | grep -qi 'release'; then
-            echo "contains_release=1" >> "$GITHUB_OUTPUT"
-          else
-            echo "contains_release=0" >> "$GITHUB_OUTPUT"
-          fi
-
-  deploy-prod:
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.release-check.outputs.contains_release == '0'
-    needs: [lint, typecheck, test, release-check]
-    runs-on: ubuntu-latest
-    environment: production
-
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v6
-
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v2
-
-      - name: Use cached node_modules
-        uses: actions/cache@v5
-        with:
-          path: node_modules
-          key: node-modules-${{ hashFiles('**/bun.lock') }}
-          restore-keys: |
-            node-modules-
-
-      - name: Install Dependencies
-        run: bun install --frozen-lockfile
-
-      # set the .env file
-      - name: Ensure .env Set
-        run: |
-          cp .env.example .env
-
-      - name: Check AWS Credentials
-        id: aws-credentials
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        run: |
-          if [ -z "$AWS_ACCESS_KEY_ID" ] || [ -z "$AWS_SECRET_ACCESS_KEY" ]; then
-            echo "available=false" >> "$GITHUB_OUTPUT"
-            echo "AWS credentials are not configured; skipping production deploy."
-          else
-            echo "available=true" >> "$GITHUB_OUTPUT"
-          fi
-
-      - name: Deploy
-        if: steps.aws-credentials.outputs.available == 'true'
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        run: bun buddy deploy production --yes
-
-  deploy-stage:
-    if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || (startsWith(github.ref, 'refs/tags/') && contains(github.ref, '-beta.'))
+  deploy:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'push' && (
+        github.ref == 'refs/heads/main' ||
+        github.ref == 'refs/heads/stage' ||
+        github.ref == 'refs/heads/dev' ||
+        (startsWith(github.ref, 'refs/tags/') && contains(github.ref, '-beta.'))
+      ))
     needs: [lint, typecheck, test]
     runs-on: ubuntu-latest
-    environment: staging
+    timeout-minutes: 30
+    environment:
+      name: ${{ github.event_name == 'workflow_dispatch' && inputs.environment || github.ref == 'refs/heads/dev' && 'development' || (github.ref == 'refs/heads/stage' || startsWith(github.ref, 'refs/tags/')) && 'staging' || 'production' }}
+    permissions:
+      contents: read
+      deployments: write
+      id-token: write
+    env:
+      DEPLOY_ENVIRONMENT: ${{ github.event_name == 'workflow_dispatch' && inputs.environment || github.ref == 'refs/heads/dev' && 'development' || (github.ref == 'refs/heads/stage' || startsWith(github.ref, 'refs/tags/')) && 'staging' || 'production' }}
+      DEPLOY_FLAG: ${{ ((github.event_name == 'workflow_dispatch' && inputs.environment == 'development') || github.ref == 'refs/heads/dev') && '--dev' || ((github.event_name == 'workflow_dispatch' && inputs.environment == 'staging') || github.ref == 'refs/heads/stage' || startsWith(github.ref, 'refs/tags/')) && '--staging' || '--prod' }}
 
     steps:
       - name: Checkout Code
@@ -221,78 +168,58 @@ jobs:
       - name: Install Dependencies
         run: bun install --frozen-lockfile
 
-      - name: Ensure .env Set
-        run: cp .env.example .env
-
-      - name: Check AWS Credentials
-        id: aws-credentials
+      - name: Validate Deployment Credentials
         env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          HCLOUD_TOKEN: ${{ secrets.HCLOUD_TOKEN }}
         run: |
-          if [ -z "$AWS_ACCESS_KEY_ID" ] || [ -z "$AWS_SECRET_ACCESS_KEY" ]; then
-            echo "available=false" >> "$GITHUB_OUTPUT"
-            echo "AWS credentials are not configured; skipping staging deploy."
-          else
-            echo "available=true" >> "$GITHUB_OUTPUT"
+          if [ -z "$DEPLOY_SSH_KEY" ]; then
+            echo "::error::DEPLOY_SSH_KEY is not configured for $DEPLOY_ENVIRONMENT."
+            exit 1
+          fi
+          if [ -z "$HCLOUD_TOKEN" ]; then
+            echo "::error::HCLOUD_TOKEN is not configured for $DEPLOY_ENVIRONMENT."
+            exit 1
           fi
 
-      - name: Deploy
-        if: steps.aws-credentials.outputs.available == 'true'
+      - name: Add Deploy SSH Key
         env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        run: bun buddy deploy staging --yes
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+        run: |
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          printf '%s\n' "$DEPLOY_SSH_KEY" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keygen -y -f ~/.ssh/id_ed25519 > ~/.ssh/id_ed25519.pub
+          chmod 644 ~/.ssh/id_ed25519.pub
 
-  deploy-dev:
-    if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || (github.event_name == 'pull_request' && github.base_ref == 'main')
-    needs: [lint, typecheck, test]
-    runs-on: ubuntu-latest
-    environment: development
-
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v6
-
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v2
-
-      - name: Use cached node_modules
-        uses: actions/cache@v5
+      - name: Configure AWS Credentials
+        if: ${{ vars.AWS_ROLE_ARN != '' }}
+        uses: aws-actions/configure-aws-credentials@v4
         with:
-          path: node_modules
-          key: node-modules-${{ hashFiles('**/bun.lock') }}
-          restore-keys: |
-            node-modules-
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION || 'us-east-1' }}
 
-      - name: Install Dependencies
-        run: bun install --frozen-lockfile
-
-      - name: Ensure .env Set
-        run: cp .env.example .env
-
-      - name: Check AWS Credentials
-        id: aws-credentials
+      - name: Deploy ${{ env.DEPLOY_ENVIRONMENT }}
+        run: ./buddy deploy "$DEPLOY_FLAG" --yes
         env:
+          APP_ENV: ${{ env.DEPLOY_ENVIRONMENT }}
+          DOTENV_PRIVATE_KEY_PRODUCTION: ${{ secrets.DOTENV_PRIVATE_KEY_PRODUCTION }}
+          DOTENV_PRIVATE_KEY_STAGING: ${{ secrets.DOTENV_PRIVATE_KEY_STAGING }}
+          DOTENV_PRIVATE_KEY_DEVELOPMENT: ${{ secrets.DOTENV_PRIVATE_KEY_DEVELOPMENT }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PORKBUN_API_KEY: ${{ secrets.PORKBUN_API_KEY }}
+          PORKBUN_SECRET_KEY: ${{ secrets.PORKBUN_SECRET_KEY }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          HCLOUD_TOKEN: ${{ secrets.HCLOUD_TOKEN }}
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        run: |
-          if [ -z "$AWS_ACCESS_KEY_ID" ] || [ -z "$AWS_SECRET_ACCESS_KEY" ]; then
-            echo "available=false" >> "$GITHUB_OUTPUT"
-            echo "AWS credentials are not configured; skipping development deploy."
-          else
-            echo "available=true" >> "$GITHUB_OUTPUT"
-          fi
-
-      - name: Deploy
-        if: steps.aws-credentials.outputs.available == 'true'
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        run: bun buddy deploy development --yes
+          AWS_REGION: ${{ vars.AWS_REGION || 'us-east-1' }}
+          COPYFILE_DISABLE: '1'
 
   publish-commit:
     if: github.event_name == 'pull_request'
+    needs: [lint, typecheck, test]
     runs-on: ubuntu-latest
 
     steps:
