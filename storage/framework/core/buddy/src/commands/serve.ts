@@ -1,7 +1,7 @@
 import type { CLI } from '@stacksjs/types'
 import { existsSync } from 'node:fs'
 import { homedir } from 'node:os'
-import { join } from 'node:path'
+import { dirname, join } from 'node:path'
 import process from 'node:process'
 import { log } from '@stacksjs/cli'
 
@@ -124,7 +124,12 @@ export function serve(buddy: CLI): void {
       const { site: siteConfig, i18n: i18nConfig } = await loadStxSiteConfig()
 
       const userViewsPath = 'resources/views'
-      const defaultViewsPath = 'storage/framework/defaults/resources/views'
+      // Framework fallback resources (default views/layouts/components). A
+      // vendored checkout has them at storage/framework/defaults; an app that
+      // consumes the framework from node_modules gets them from the published
+      // @stacksjs/defaults package. Vendored wins so behaviour is unchanged.
+      const defaultsResources = resolveDefaultsResources()
+      const defaultViewsPath = join(defaultsResources, 'views')
       const userLayoutsPath = existsSync('resources/views/layouts') ? 'resources/views/layouts' : 'resources/layouts'
       const userComponentsPath = existsSync('resources/views/components') ? 'resources/views/components' : 'resources/components'
 
@@ -156,10 +161,10 @@ export function serve(buddy: CLI): void {
         // fail loudly. Ignored harmlessly by older stx versions.
         reusePort: ['production', 'staging', 'development']
           .includes((process.env.APP_ENV || '').toLowerCase()),
-        componentsDir: 'storage/framework/defaults/resources/components',
+        componentsDir: join(defaultsResources, 'components'),
         layoutsDir: userLayoutsPath,
         partialsDir: userComponentsPath,
-        fallbackLayoutsDir: 'storage/framework/defaults/resources/layouts',
+        fallbackLayoutsDir: join(defaultsResources, 'layouts'),
         fallbackPartialsDir: defaultViewsPath,
         quiet: options?.verbose !== true,
         ...(stxModule && { stxModule }),
@@ -228,6 +233,28 @@ export function serveApi(buddy: CLI): void {
       // Resolved from node_modules (or the vendored core) via the package name.
       await import('@stacksjs/actions/serve/api')
     })
+}
+
+/**
+ * Resolve the framework's default resources root (fallback views/layouts/
+ * components + preloader). A vendored checkout has them at
+ * `storage/framework/defaults/resources` (the source of truth), which wins so
+ * a full checkout behaves exactly as before. An app that consumes the framework
+ * from node_modules has no vendored copy, so fall back to the published
+ * `@stacksjs/defaults` package. Returns the vendored path if neither resolves,
+ * letting stx surface a clear missing-directory error.
+ */
+function resolveDefaultsResources(): string {
+  const vendored = 'storage/framework/defaults/resources'
+  if (existsSync(vendored))
+    return vendored
+  try {
+    const pkgJson = Bun.resolveSync('@stacksjs/defaults/package.json', process.cwd())
+    return join(dirname(pkgJson), 'resources')
+  }
+  catch {
+    return vendored
+  }
 }
 
 async function resolveVendoredStxModule(): Promise<any | undefined> {

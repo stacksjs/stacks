@@ -92,3 +92,6 @@ storage/framework/cache/
 # Per-package runtime logs created when building a core package in place
 storage/framework/core/**/storage/logs/
 storage/framework/**/storage/logs/
+
+# @stacksjs/defaults copies resources from storage/framework/defaults at build time
+storage/framework/core/defaults/resources/

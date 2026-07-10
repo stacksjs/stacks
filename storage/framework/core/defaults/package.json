@@ -1,0 +1,20 @@
+{
+  "name": "@stacksjs/defaults",
+  "type": "module",
+  "version": "0.70.53",
+  "description": "Default Stacks scaffold resources (views, layouts, components, preloader) — shipped so apps consuming the framework from node_modules get the same fallback resources a vendored checkout provides. Source of truth: storage/framework/defaults.",
+  "author": "Chris Breuer",
+  "license": "MIT",
+  "homepage": "https://github.com/stacksjs/stacks/tree/main/storage/framework/defaults",
+  "files": [
+    "README.md",
+    "resources"
+  ],
+  "exports": {
+    "./*": "./*",
+    "./package.json": "./package.json"
+  },
+  "scripts": {
+    "build": "bun build.ts"
+  }
+}
