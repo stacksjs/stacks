@@ -116,6 +116,13 @@ if [ -d "${PANTRY_DIR}" ] && command -v bun >/dev/null 2>&1 && [ "${STACKS_FORCE
   run_buddy bun "$@"
 fi
 
+# node_modules layout (framework from npm, not vendored): there is no per-project
+# pantry to bootstrap and none is needed to run the CLI — if a bun runtime is on
+# PATH and the pantry installer is absent, just use it.
+if command -v bun >/dev/null 2>&1 && [ "${STACKS_FORCE_PANTRY:-}" != "1" ] && [ ! -x "${PANTRY_INSTALLER}" ]; then
+  run_buddy bun "$@"
+fi
+
 # Pantry not set up — bootstrap it
 if ! command -v pantry >/dev/null 2>&1; then
   if [ ! -x "${PANTRY_INSTALLER}" ]; then
