@@ -1,8 +1,8 @@
 {
   "name": "@stacksjs/newsletter",
   "type": "module",
-  "version": "0.70.54",
-  "description": "Promotional email & newsletter primitives for Stacks. Lists, campaigns, subscribers, and one-click unsubscribe \u2014 sent through @stacksjs/email.",
+  "version": "0.70.55",
+  "description": "Promotional email & newsletter primitives for Stacks. Lists, campaigns, subscribers, and one-click unsubscribe — sent through @stacksjs/email.",
   "author": "Chris Breuer",
   "contributors": [
     "Chris Breuer <chris@stacksjs.com>"

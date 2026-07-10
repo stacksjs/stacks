@@ -1,5 +1,18 @@
 # Stacks Changelog
 
+## v0.70.55
+
+[compare changes](https://github.com/stacksjs/stacks/compare/v0.70.54...v0.70.55)
+
+### 🩹 Fixes
+
+- **exports:** Point subpath bun exports at ./src/* (not ./*) ([fd37ad243](https://github.com/stacksjs/stacks/commit/fd37ad243))
+- **exports:** Publish dist, keep src for build-free dev via a condition ([30c993164](https://github.com/stacksjs/stacks/commit/30c993164))
+
+### ❤️ Contributors
+
+- Chris ([@chrisbbreuer](https://github.com/chrisbbreuer))
+
 ## v0.70.54
 
 [compare changes](https://github.com/stacksjs/stacks/compare/v0.70.53...v0.70.54)
