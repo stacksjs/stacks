@@ -168,37 +168,20 @@ jobs:
       - name: Install Dependencies
         run: bun install --frozen-lockfile
 
-      - name: Validate Deployment Credentials
+      - name: Prepare Deploy SSH Key
         env:
           DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
-          HCLOUD_TOKEN: ${{ secrets.HCLOUD_TOKEN }}
         run: |
           if [ -z "$DEPLOY_SSH_KEY" ]; then
-            echo "::error::DEPLOY_SSH_KEY is not configured for $DEPLOY_ENVIRONMENT."
-            exit 1
+            echo "No deploy SSH key configured; continuing without one."
+            exit 0
           fi
-          if [ -z "$HCLOUD_TOKEN" ]; then
-            echo "::error::HCLOUD_TOKEN is not configured for $DEPLOY_ENVIRONMENT."
-            exit 1
-          fi
-
-      - name: Add Deploy SSH Key
-        env:
-          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
-        run: |
           mkdir -p ~/.ssh
           chmod 700 ~/.ssh
           printf '%s\n' "$DEPLOY_SSH_KEY" > ~/.ssh/id_ed25519
           chmod 600 ~/.ssh/id_ed25519
           ssh-keygen -y -f ~/.ssh/id_ed25519 > ~/.ssh/id_ed25519.pub
           chmod 644 ~/.ssh/id_ed25519.pub
-
-      - name: Configure AWS Credentials
-        if: ${{ vars.AWS_ROLE_ARN != '' }}
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
-          aws-region: ${{ vars.AWS_REGION || 'us-east-1' }}
 
       - name: Deploy ${{ env.DEPLOY_ENVIRONMENT }}
         run: ./buddy deploy "$DEPLOY_FLAG" --yes
@@ -208,13 +191,6 @@ jobs:
           DOTENV_PRIVATE_KEY_STAGING: ${{ secrets.DOTENV_PRIVATE_KEY_STAGING }}
           DOTENV_PRIVATE_KEY_DEVELOPMENT: ${{ secrets.DOTENV_PRIVATE_KEY_DEVELOPMENT }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PORKBUN_API_KEY: ${{ secrets.PORKBUN_API_KEY }}
-          PORKBUN_SECRET_KEY: ${{ secrets.PORKBUN_SECRET_KEY }}
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          HCLOUD_TOKEN: ${{ secrets.HCLOUD_TOKEN }}
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: ${{ vars.AWS_REGION || 'us-east-1' }}
           COPYFILE_DISABLE: '1'
 
   publish-commit:
