@@ -1,26 +1,21 @@
-import { dts } from 'bun-plugin-dtsx'
-import { frameworkExternal, intro, outro } from '../build/src'
+import { frameworkExternal, intro, outro, transpilePackage } from '../build/src'
 import { version } from './package.json'
 
 const { startTime } = await intro({
   dir: import.meta.dir,
 })
 
-const result = await Bun.build({
-  entrypoints: [
-    './src/index.ts',
-    './src/cli.ts',
-  ],
-
-  outdir: './dist',
-  format: 'esm',
-  target: 'bun',
-  // sourcemap: 'linked',
-  minify: true,
-
+// Transpile file-by-file rather than bundling. The CLI lazy-loads its
+// commands through a name→path map (`import(cmd.path)` in lazy-commands.ts):
+// Bun's bundler can't follow a variable dynamic import, so a 2-entrypoint
+// bundle emitted only cli.js + index.js and every command except the
+// statically-imported `setup` was missing from dist — `buddy deploy` (and dev,
+// build, …) failed with "Command not found" for node_modules consumers.
+// Transpiling every src file to a matching dist file makes the lazy imports
+// resolve to their sibling `dist/commands/*.js`.
+await transpilePackage({
+  dir: import.meta.dir,
   external: frameworkExternal(['ts-security-crypto', 'bun-query-builder']),
-
-  plugins: [dts({ root: './src', outdir: './dist' })],
 })
 
 // Update the package.json workspace:* references to the specific version
@@ -47,5 +42,5 @@ await Bun.write(packageJsonPath, JSON.stringify(packageJson, null, 2))
 await outro({
   dir: import.meta.dir,
   startTime,
-  result,
+  result: { errors: [], warnings: [] },
 })

@@ -133,7 +133,15 @@ export async function transpilePackage(options: {
   // 2. Clean 1:1 transpile of every src file — preserves re-exports verbatim.
   const transpiler = new Bun.Transpiler({ loader: 'ts', target: 'bun' })
   for (const f of srcFiles) {
-    const js = transpiler.transformSync(await Bun.file(p.resolve(srcDir, f)).text())
+    let js = transpiler.transformSync(await Bun.file(p.resolve(srcDir, f)).text())
+    // The transpiler leaves import specifiers verbatim, so an explicit
+    // `./x.ts` extension survives into the .js output and fails to resolve
+    // against the sibling `./x.js`. Rewrite relative `.ts`/`.tsx` specifiers
+    // to `.js`. This covers both real import specifiers AND string literals
+    // that are later fed to `import()` (e.g. buddy's lazy-command map:
+    // `{ path: './commands/deploy.ts' }` → `import(cmd.path)`), which is why
+    // we match any `./`-or-`../`-rooted quoted string, not just import forms.
+    js = js.replace(/(['"])(\.\.?\/[^'"]+?)\.tsx?\1/g, '$1$2.js$1')
     const out = p.resolve(distDir, f.replace(/\.ts$/, '.js'))
     await mkdir(p.dirname(out), { recursive: true })
     await Bun.write(out, js)

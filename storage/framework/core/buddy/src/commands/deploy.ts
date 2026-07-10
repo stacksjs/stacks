@@ -6,7 +6,7 @@ import process from 'node:process'
 import { runAction } from '@stacksjs/actions'
 import { italic, onUnknownSubcommand, outro, prompts, runCommand } from "@stacksjs/cli"
 import { app, email as emailConfig, cloud as cloudConfig } from '@stacksjs/config'
-import { addDomain, hasUserDomainBeenAddedToCloud } from '../../../dns/src/drivers/aws'
+import { addDomain, hasUserDomainBeenAddedToCloud } from '@stacksjs/dns'
 import { encryptEnv, env } from '@stacksjs/env'
 import { Action } from '@stacksjs/enums'
 import { path as p } from '@stacksjs/path'
