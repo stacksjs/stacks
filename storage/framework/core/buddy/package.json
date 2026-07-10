@@ -49,7 +49,7 @@
       "import": "./dist/cli.js"
     },
     "./*": {
-      "bun": "./*"
+      "bun": "./src/*"
     }
   },
   "module": "dist/index.js",

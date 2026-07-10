@@ -30,7 +30,10 @@
       "bun": "./src/index.ts",
       "import": "./dist/index.js"
     },
-    "./*": "./*"
+    "./*": {
+      "bun": "./src/*",
+      "import": "./dist/*"
+    }
   },
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
