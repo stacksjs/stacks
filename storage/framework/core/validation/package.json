@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/validation",
   "type": "module",
-  "version": "0.70.62",
+  "version": "0.70.63",
   "description": "The Stacks Validation ways.",
   "author": "Chris Breuer",
   "contributors": [
