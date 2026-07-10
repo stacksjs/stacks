@@ -1,5 +1,21 @@
 # Stacks Changelog
 
+## v0.70.73
+
+[compare changes](https://github.com/stacksjs/stacks/compare/v0.70.72...v0.70.73)
+
+### 🩹 Fixes
+
+- **browser-extension:** Allow css in generated content_scripts type ([31bf75a3a](https://github.com/stacksjs/stacks/commit/31bf75a3a))
+
+### 💅 Refactors
+
+- **lint:** Drive pickier via its SDK, export lint/format as functions ([6c38363a7](https://github.com/stacksjs/stacks/commit/6c38363a7))
+
+### ❤️ Contributors
+
+- Chris ([@chrisbbreuer](https://github.com/chrisbbreuer))
+
 ## v0.70.72
 
 [compare changes](https://github.com/stacksjs/stacks/compare/v0.70.71...v0.70.72)
