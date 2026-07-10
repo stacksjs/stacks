@@ -1,8 +1,33 @@
 import type { CLI, LintOptions } from '@stacksjs/types'
+import { existsSync } from 'node:fs'
 import process from 'node:process'
 import { intro, log, onUnknownSubcommand, outro, runCommand } from "@stacksjs/cli"
 import { path } from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types'
+
+/**
+ * Resolve the lint action script. A vendored monorepo runs the TS source under
+ * `storage/framework/core/actions/src/lint/*`; a node_modules app has no
+ * vendored core, so fall back to the published `@stacksjs/actions` dist
+ * (`dist/lint/*.js`). Returns a `bun <path>` command string for runCommand.
+ */
+function lintActionCommand(entry: 'index' | 'fix'): string {
+  const vendored = path.projectPath(`storage/framework/core/actions/src/lint/${entry}.ts`)
+  if (existsSync(vendored))
+    return `bun storage/framework/core/actions/src/lint/${entry}.ts`
+
+  try {
+    const pkgJson = Bun.resolveSync('@stacksjs/actions/package.json', path.projectPath())
+    const dist = path.resolve(path.dirname(pkgJson), `dist/lint/${entry}.js`)
+    if (existsSync(dist))
+      return `bun ${dist}`
+  }
+  catch {
+    // fall through to the vendored path below
+  }
+
+  return `bun storage/framework/core/actions/src/lint/${entry}.ts`
+}
 
 /**
  * Treat a runCommand Result as a CI/CD-friendly status: any failure (exec
@@ -45,8 +70,8 @@ export function lint(buddy: CLI): void {
       const startTime = await intro('buddy lint')
 
       const result = options.fix
-        ? await runCommand('bun storage/framework/core/actions/src/lint/fix.ts', { cwd: path.projectPath() })
-        : await runCommand('bun storage/framework/core/actions/src/lint/index.ts', { cwd: path.projectPath() })
+        ? await runCommand(lintActionCommand('fix'), { cwd: path.projectPath() })
+        : await runCommand(lintActionCommand('index'), { cwd: path.projectPath() })
       exitOnFailure(result, 'lint')
 
       await outro('Linted your project', { startTime, useSeconds: true })
@@ -62,7 +87,7 @@ export function lint(buddy: CLI): void {
       const startTime = await intro('buddy lint:fix')
 
       log.info('Fixing lint errors...')
-      const result = await runCommand('bun storage/framework/core/actions/src/lint/fix.ts', { cwd: path.projectPath() })
+      const result = await runCommand(lintActionCommand('fix'), { cwd: path.projectPath() })
       exitOnFailure(result, 'lint:fix')
 
       await outro('Fixed lint errors', { startTime, useSeconds: true })
