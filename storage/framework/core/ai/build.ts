@@ -6,7 +6,7 @@ const { startTime } = await intro({
 })
 
 const result = await Bun.build({
-  root: '.',
+  root: './src',
   entrypoints: ['./src/index.ts'],
   outdir: './dist',
   format: 'esm',
@@ -16,7 +16,7 @@ const result = await Bun.build({
   external: frameworkExternal(['@anthropic-ai/claude-agent-sdk']),
   plugins: [
     dts({
-      root: '.',
+      root: './src',
       outdir: './dist',
     }),
   ],

@@ -16,7 +16,7 @@ const result = await Bun.build({
   external: frameworkExternal(['~/config/*']),
   plugins: [
     dts({
-      root: '.',
+      root: './src',
       outdir: './dist',
     }),
   ],

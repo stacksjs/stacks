@@ -45,7 +45,7 @@ const entrypoints = await listEntrypoints()
 console.log(`[actions/build] ${entrypoints.length} entrypoints discovered under src/`)
 
 const result = await Bun.build({
-  root: '.',
+  root: './src',
   outdir: './dist',
   format: 'esm',
   target: 'bun',

@@ -20,7 +20,7 @@ const result = await Bun.build({
 
   external: frameworkExternal(['ts-security-crypto', 'bun-query-builder']),
 
-  plugins: [dts({ root: '.', outdir: './dist' })],
+  plugins: [dts({ root: './src', outdir: './dist' })],
 })
 
 // Update the package.json workspace:* references to the specific version
