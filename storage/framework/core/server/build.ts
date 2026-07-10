@@ -1,3 +1,4 @@
+import { dts } from 'bun-plugin-dtsx'
 import { frameworkExternal, intro, outro } from '../build/src'
 
 const { startTime } = await intro({
@@ -88,6 +89,21 @@ console.log(`✓ Server compiled for: ${successes.join(', ')}`)
 if (failures.length > 0) {
   console.log(`  (skipped: ${failures.join(', ')})`)
 }
+
+// The standalone binary above is one artifact; the package also has a library
+// entry (`@stacksjs/server`'s `.` export — maintenanceGate, proxyToBackend,
+// injectGlobalAutoImports, …) that `buddy serve` imports. Build it to
+// dist/index.js so npm consumers resolve it.
+console.log('[server/build] building library entry → ./dist/index.js')
+await Bun.build({
+  entrypoints: ['./src/index.ts'],
+  outdir: './dist',
+  root: './src',
+  target: 'bun',
+  format: 'esm',
+  external: frameworkExternal(),
+  plugins: [dts({ root: './src', outdir: './dist' })],
+})
 
 await outro({
   dir: import.meta.dir,
