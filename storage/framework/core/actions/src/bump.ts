@@ -1,5 +1,6 @@
 import { execSync, log, parseOptions, runCommand } from '@stacksjs/cli'
 import { path as p } from '@stacksjs/path'
+import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { join, relative } from 'node:path'
 
 const options = parseOptions() as { dryRun?: boolean, bump?: string } | undefined
@@ -155,6 +156,61 @@ await runOrFail(changelogCommand, {
   cwd: p.projectPath(),
   stdin: 'inherit',
 })
+
+// Pin the `stacks` meta package's lockstep core dependencies to the freshly
+// bumped version. bumpx only rewrites each manifest's `version`, leaving the
+// meta's `@stacksjs/*` ranges frozen at whatever floor they were last written
+// with (e.g. `^0.70.53`). That floor lets a consumer's stale lockfile keep old
+// framework versions forever — `stacks@X` would happily resolve `@stacksjs/*`
+// to a much older release. Re-pinning to `^<nextVersion>` makes a published
+// `stacks@X` deterministically require the matching core versions, so a plain
+// `bun install` upgrades the whole framework. Only lockstep core packages (a
+// sibling dir under core/ that bumpx just moved to nextVersion) are pinned;
+// independently-versioned scoped deps (tlsx, dnsx, gitit, …) are left alone.
+if (!isDryRun)
+  pinMetaCoreDeps(nextVersion)
+
+function pinMetaCoreDeps(version: string): void {
+  const metaPath = p.frameworkPath('core/package.json')
+  const meta = JSON.parse(readFileSync(metaPath, 'utf-8')) as {
+    dependencies?: Record<string, string>
+    devDependencies?: Record<string, string>
+  }
+
+  let pinned = 0
+  for (const field of ['dependencies', 'devDependencies'] as const) {
+    const deps = meta[field]
+    if (!deps)
+      continue
+
+    for (const name of Object.keys(deps)) {
+      if (!name.startsWith('@stacksjs/'))
+        continue
+
+      const dir = name.slice('@stacksjs/'.length)
+      const localPkgPath = p.frameworkPath(`core/${dir}/package.json`)
+      if (!existsSync(localPkgPath))
+        continue
+
+      // Only pin packages the bump just moved to this version (true lockstep
+      // core packages); an external scoped dep vendored elsewhere won't match.
+      const localVersion = (JSON.parse(readFileSync(localPkgPath, 'utf-8')) as { version?: string }).version
+      if (localVersion !== version)
+        continue
+
+      const next = `^${version}`
+      if (deps[name] !== next) {
+        deps[name] = next
+        pinned++
+      }
+    }
+  }
+
+  if (pinned > 0) {
+    writeFileSync(metaPath, `${JSON.stringify(meta, null, 2)}\n`)
+    log.debug(`Pinned ${pinned} lockstep core dep(s) in the stacks meta to ^${version}`)
+  }
+}
 
 if (!isDryRun) {
   await git(['add', '--all'])

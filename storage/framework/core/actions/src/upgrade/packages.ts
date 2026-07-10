@@ -156,13 +156,24 @@ export async function upgradeStacksPackages(projectRoot: string, options: Packag
     console.log('✔ Updated package.json')
   }
 
+  // The lockstep framework packages to refresh. The `stacks` meta pins its
+  // core deps with caret ranges (e.g. `^0.70.53`), so a plain `bun install`
+  // leaves stale-but-in-range transitive versions in the lockfile untouched —
+  // the app would keep running the OLD buddy/actions. `bun update <names>`
+  // moves each named package (including transitive ones) to the newest version
+  // that satisfies the range, rewriting the lockfile. We scope it to `stacks`
+  // + the scoped core packages so independent deps (ts-cloud, better-dx) and
+  // the rest of the tree are left alone.
+  const frameworkPkgs = ['stacks', ...[...coreDeps].filter(n => n.startsWith('@stacksjs/'))]
+
   if (options.noPostinstall) {
-    console.log('  --no-postinstall: skipping `bun install`. Run it yourself to pull the new versions.\n')
+    console.log('  --no-postinstall: skipping install. Run this to pull the new versions:')
+    console.log(`    bun update ${frameworkPkgs.slice(0, 3).join(' ')} …\n`)
     process.exit(0)
   }
 
   console.log('  Installing…\n')
-  const result = await runCommand('bun install', { cwd: projectRoot })
+  const result = await runCommand(`bun update ${frameworkPkgs.join(' ')}`, { cwd: projectRoot })
   const isErr = result && typeof result === 'object' && 'isErr' in result
     ? (typeof (result as { isErr: unknown }).isErr === 'function'
         ? (result as { isErr: () => boolean }).isErr()
@@ -170,7 +181,7 @@ export async function upgradeStacksPackages(projectRoot: string, options: Packag
     : false
 
   if (isErr) {
-    console.error('\n✗ `bun install` failed. Your package.json was updated — resolve the install error and re-run `bun install`.\n')
+    console.error('\n✗ The install step failed. Your package.json was updated — resolve the error and re-run `bun update`.\n')
     process.exit(1)
   }
 
