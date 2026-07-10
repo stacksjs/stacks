@@ -1,26 +1,18 @@
-import { dts } from 'bun-plugin-dtsx'
-import { frameworkExternal, intro, outro } from '../build/src'
+import { frameworkExternal, intro, outro, transpilePackage } from '../build/src'
 
 const { startTime } = await intro({
   dir: import.meta.dir,
 })
 
-const result = await Bun.build({
-  entrypoints: ['./src/index.ts'],
-  outdir: './dist',
-  format: 'esm',
-  target: 'bun',
-  external: frameworkExternal(),
-  plugins: [
-    dts({
-      root: './src',
-      outdir: './dist',
-    }),
-  ],
+// Transpile file-by-file (see transpilePackage) instead of bundling: this
+// barrel re-exports named bindings that Bun's bundler mangles.
+await transpilePackage({
+  dir: import.meta.dir,
+  external: frameworkExternal([]),
 })
 
 await outro({
   dir: import.meta.dir,
   startTime,
-  result,
+  result: { errors: [], warnings: [] },
 })
