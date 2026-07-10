@@ -1,5 +1,17 @@
 # Stacks Changelog
 
+## v0.70.67
+
+[compare changes](https://github.com/stacksjs/stacks/compare/v0.70.66...v0.70.67)
+
+### 🩹 Fixes
+
+- **browser-extension:** Call bun-plugin-stx factory when building pages ([e07aa4fe4](https://github.com/stacksjs/stacks/commit/e07aa4fe4))
+
+### ❤️ Contributors
+
+- Chris ([@chrisbbreuer](https://github.com/chrisbbreuer))
+
 ## v0.70.66
 
 [compare changes](https://github.com/stacksjs/stacks/compare/v0.70.65...v0.70.66)
