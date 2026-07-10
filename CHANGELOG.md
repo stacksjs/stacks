@@ -1,5 +1,18 @@
 # Stacks Changelog
 
+## v0.70.60
+
+[compare changes](https://github.com/stacksjs/stacks/compare/v0.70.59...v0.70.60)
+
+### 🩹 Fixes
+
+- **buddy:** Ship all CLI commands + fix cross-package import for node_modules ([fe2a1d720](https://github.com/stacksjs/stacks/commit/fe2a1d720))
+- **actions:** Resolve action files from flat dist/ (not dist/src/) ([a13445bbd](https://github.com/stacksjs/stacks/commit/a13445bbd))
+
+### ❤️ Contributors
+
+- Chris ([@chrisbbreuer](https://github.com/chrisbbreuer))
+
 ## v0.70.59
 
 [compare changes](https://github.com/stacksjs/stacks/compare/v0.70.58...v0.70.59)
