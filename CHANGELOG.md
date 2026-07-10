@@ -1,5 +1,18 @@
 # Stacks Changelog
 
+## v0.70.59
+
+[compare changes](https://github.com/stacksjs/stacks/compare/v0.70.58...v0.70.59)
+
+### 🩹 Fixes
+
+- **pkg:** Declare runtime deps + complete meta package deps ([509c83394](https://github.com/stacksjs/stacks/commit/509c83394))
+- **actions:** Resolve default Cors middleware from @stacksjs/defaults ([43c919b0d](https://github.com/stacksjs/stacks/commit/43c919b0d))
+
+### ❤️ Contributors
+
+- Chris ([@chrisbbreuer](https://github.com/chrisbbreuer))
+
 ## v0.70.58
 
 [compare changes](https://github.com/stacksjs/stacks/compare/v0.70.57...v0.70.58)
