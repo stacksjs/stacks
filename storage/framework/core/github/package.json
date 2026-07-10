@@ -28,8 +28,10 @@
   ],
   "exports": {
     ".": {
-      "bun": "./src/index.ts",
-      "import": "./dist/index.js"
+      "development": "./src/index.ts",
+      "bun": "./dist/index.js",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
     }
   },
   "module": "dist/index.js",

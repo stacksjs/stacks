@@ -682,7 +682,7 @@ export const tsCloud: TsCloudConfig = {
       // Bun-runnable entry (ts-cloud prepends the runtime, so this must be a
       // JS/TS file bun can execute — NOT the ./buddy shell wrapper). stacks
       // vendors storage/framework, so the CLI resolves here directly.
-      start: 'bun storage/framework/core/buddy/src/cli.ts serve',
+      start: 'bun --conditions development storage/framework/core/buddy/src/cli.ts serve',
       port: 3000,
       preStart: ['bun install'],
     },
@@ -700,7 +700,7 @@ export const tsCloud: TsCloudConfig = {
     // API off the public internet.
     api: {
       root: '.',
-      start: 'bun storage/framework/core/actions/src/serve/api.ts',
+      start: 'bun --conditions development storage/framework/core/actions/src/serve/api.ts',
       port: 3008,
       preStart: ['bun install'],
       env: { HOST: '127.0.0.1', APP_ENV: 'production' },

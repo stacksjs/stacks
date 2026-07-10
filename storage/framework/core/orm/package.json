@@ -26,16 +26,23 @@
   "exports": {
     ".": {
       "types": "./dist/src/index.d.ts",
-      "bun": "./src/index.ts",
-      "import": "./dist/index.js"
+      "development": "./src/index.ts",
+      "bun": "./dist/index.js",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
     },
     "./traits/*": {
-      "bun": "./src/traits/*.ts",
-      "types": "./dist/src/traits/*.d.ts"
+      "types": "./dist/src/traits/*.d.ts",
+      "development": "./src/traits/*.ts",
+      "bun": "./dist/traits/*.js",
+      "import": "./dist/traits/*.js",
+      "default": "./dist/traits/*.js"
     },
     "./*": {
-      "bun": "./src/*",
-      "import": "./dist/*"
+      "development": "./src/*",
+      "bun": "./dist/*",
+      "import": "./dist/*",
+      "default": "./dist/*"
     }
   },
   "module": "dist/index.js",

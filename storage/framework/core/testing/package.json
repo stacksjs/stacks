@@ -32,22 +32,30 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "bun": "./src/index.ts",
-      "import": "./dist/index.js"
+      "development": "./src/index.ts",
+      "bun": "./dist/index.js",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
     },
     "./database": {
       "types": "./dist/database.d.ts",
-      "bun": "./src/database.ts",
-      "import": "./dist/database.js"
+      "development": "./src/database.ts",
+      "bun": "./dist/database.js",
+      "import": "./dist/database.js",
+      "default": "./dist/database.js"
     },
     "./dynamodb": {
       "types": "./dist/dynamodb.d.ts",
-      "bun": "./src/dynamodb.ts",
-      "import": "./dist/dynamodb.js"
+      "development": "./src/dynamodb.ts",
+      "bun": "./dist/dynamodb.js",
+      "import": "./dist/dynamodb.js",
+      "default": "./dist/dynamodb.js"
     },
     "./*": {
-      "bun": "./src/*",
-      "import": "./dist/*"
+      "development": "./src/*",
+      "bun": "./dist/*",
+      "import": "./dist/*",
+      "default": "./dist/*"
     }
   },
   "module": "dist/index.js",

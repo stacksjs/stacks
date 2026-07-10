@@ -32,13 +32,17 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "bun": "./src/index.ts",
-      "import": "./dist/index.js"
+      "development": "./src/index.ts",
+      "bun": "./dist/index.js",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
     },
     "./components": {
       "types": "./dist/components.d.ts",
-      "bun": "./src/components.ts",
-      "import": "./dist/components.js"
+      "development": "./src/components.ts",
+      "bun": "./dist/components.js",
+      "import": "./dist/components.js",
+      "default": "./dist/components.js"
     }
   },
   "module": "dist/index.js",

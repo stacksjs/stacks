@@ -79,11 +79,27 @@ run_with_timeout() {
   return "${status}"
 }
 
-# Run buddy with the correct PATH and NODE_PATH for pantry resolution
+# Run buddy with the correct PATH and NODE_PATH for pantry resolution.
 run_buddy() {
   BUN_CMD="$1"
   shift
-  exec env PATH="${PANTRY_LOCAL_BIN}:${USER_LOCAL_BIN}:${PATH}" NODE_PATH="${PANTRY_DIR}:${NODE_PATH:-}" "${BUN_CMD}" "${BUDDY_ENTRY}" "$@"
+
+  # When the framework SOURCE is vendored here (storage/framework/core), resolve
+  # @stacksjs/* from src via the `development` export condition, so the monorepo
+  # runs build-free (a fresh checkout has no dist yet). A node_modules-based app
+  # has no vendored core, so it omits the flag and resolves the published dist.
+  CONDITIONS=""
+  if [ -d "${ROOT_DIR}/storage/framework/core" ]; then
+    CONDITIONS="--conditions development"
+  fi
+
+  # Only prepend the pantry dir to NODE_PATH when it exists: for a node_modules
+  # app there is no ./pantry, and pointing NODE_PATH at a missing dir makes bun
+  # miss node_modules (e.g. `Cannot find module '@stacksjs/env'` from a preload).
+  if [ -d "${PANTRY_DIR}" ]; then
+    exec env PATH="${PANTRY_LOCAL_BIN}:${USER_LOCAL_BIN}:${PATH}" NODE_PATH="${PANTRY_DIR}:${NODE_PATH:-}" "${BUN_CMD}" ${CONDITIONS} "${BUDDY_ENTRY}" "$@"
+  fi
+  exec env PATH="${PANTRY_LOCAL_BIN}:${USER_LOCAL_BIN}:${PATH}" "${BUN_CMD}" ${CONDITIONS} "${BUDDY_ENTRY}" "$@"
 }
 
 # Fast path: if pantry is already set up, run immediately. We deliberately

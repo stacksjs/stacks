@@ -40,16 +40,23 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "bun": "./src/index.ts",
-      "import": "./dist/index.js"
+      "development": "./src/index.ts",
+      "bun": "./dist/index.js",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
     },
     "./cli": {
       "types": "./dist/cli.d.ts",
-      "bun": "./src/cli.ts",
-      "import": "./dist/cli.js"
+      "development": "./src/cli.ts",
+      "bun": "./dist/cli.js",
+      "import": "./dist/cli.js",
+      "default": "./dist/cli.js"
     },
     "./*": {
-      "bun": "./src/*"
+      "development": "./src/*",
+      "bun": "./dist/*",
+      "import": "./dist/*",
+      "default": "./dist/*"
     }
   },
   "module": "dist/index.js",
