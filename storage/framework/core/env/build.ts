@@ -6,7 +6,17 @@ const { startTime } = await intro({
 })
 
 const result = await Bun.build({
-  entrypoints: ['./src/index.ts'],
+  // Build every entry (not just index) so subpath imports like
+  // `@stacksjs/env/plugin` (used as a bunfig `preload`) resolve to real JS in
+  // `dist/`, not just a `.d.ts`. The export map maps `./*` → `./dist/*`.
+  entrypoints: [
+    './src/index.ts',
+    './src/plugin.ts',
+    './src/parser.ts',
+    './src/crypto.ts',
+    './src/cli.ts',
+    './src/utils.ts',
+  ],
   outdir: './dist',
   format: 'esm',
   target: 'bun',
