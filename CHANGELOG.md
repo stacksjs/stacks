@@ -1,5 +1,91 @@
 # Stacks Changelog
 
+## v0.70.53
+
+[compare changes](https://github.com/stacksjs/stacks/compare/v0.70.52...v0.70.53)
+
+### 🚀 Enhancements
+
+- **deploy:** Record GitHub Deployments from the Hetzner deploy path ([cf89ff077](https://github.com/stacksjs/stacks/commit/cf89ff077))
+- **email:** Add typed `forwards` auto-forwarding config ([8165cfcf1](https://github.com/stacksjs/stacks/commit/8165cfcf1))
+- **deploy:** Reconcile mail domain + forwards onto the box on Hetzner deploy ([3c5eda19a](https://github.com/stacksjs/stacks/commit/3c5eda19a))
+- **auth:** Team resolution from auth credentials ([d1c859a1a](https://github.com/stacksjs/stacks/commit/d1c859a1a))
+- **orm:** Auto-scope useApi auto-CRUD reads/writes to the caller's team ([19f39c28e](https://github.com/stacksjs/stacks/commit/19f39c28e))
+- **socials:** Sign in with Apple provider + provider-flow fixes ([863ccf57c](https://github.com/stacksjs/stacks/commit/863ccf57c))
+- **auth:** Workspace/team switcher core — selectActiveTeam + resolveTeamContext ([72a3d8194](https://github.com/stacksjs/stacks/commit/72a3d8194))
+- **server:** SO_REUSEPORT in production + graceful SIGTERM drain ([35cd3a3c2](https://github.com/stacksjs/stacks/commit/35cd3a3c2))
+- **deploy:** Zero-downtime prerequisites for the ts-cloud cutover ([abb642945](https://github.com/stacksjs/stacks/commit/abb642945))
+- **buddy:** Serve binds with SO_REUSEPORT in production ([c9474f5e5](https://github.com/stacksjs/stacks/commit/c9474f5e5))
+- **database:** Add SingleStore driver ([8ed85a577](https://github.com/stacksjs/stacks/commit/8ed85a577))
+- **cache:** Add SingleStore cache driver ([a3bf83e3b](https://github.com/stacksjs/stacks/commit/a3bf83e3b))
+- **router:** Stash raw request body for webhook signature verification ([03c007e6e](https://github.com/stacksjs/stacks/commit/03c007e6e))
+- **cloud:** Co-locate ghostanalytics + bughq as sites on the stacks server ([911399c3d](https://github.com/stacksjs/stacks/commit/911399c3d))
+- **mail:** Provision mailboxes, DKIM & mail DNS from config/email.ts ([d75c46c43](https://github.com/stacksjs/stacks/commit/d75c46c43))
+- **email:** SMTP driver authenticates as the configured sender mailbox ([bcd7661ca](https://github.com/stacksjs/stacks/commit/bcd7661ca))
+- **mail:** Route ghostanalytics + bughq outbound through the mail server ([71a694859](https://github.com/stacksjs/stacks/commit/71a694859))
+- **deploy:** Environment-aware domains + per-env deploy branches ([237bd258e](https://github.com/stacksjs/stacks/commit/237bd258e))
+- **ci:** Driver-agnostic push-to-deploy workflow (branch → environment) ([8eeb67185](https://github.com/stacksjs/stacks/commit/8eeb67185))
+- **env:** Add encrypted .env.staging + .env.development ([9afdbd6ac](https://github.com/stacksjs/stacks/commit/9afdbd6ac))
+- **deploy:** Resolve per-environment secrets from .env.<env> ([2f3d6d66d](https://github.com/stacksjs/stacks/commit/2f3d6d66d))
+- **serve:** Add `buddy serve:api` + node_modules-resolvable entrypoints ([657282551](https://github.com/stacksjs/stacks/commit/657282551))
+- **deploy:** Attach mode — deploy sites onto another project's box ([90178cff6](https://github.com/stacksjs/stacks/commit/90178cff6))
+
+### 🔥 Performance
+
+- **sqlite:** Checkpoint WAL after every commit (wal_autocheckpoint=1) ([f98b7edf5](https://github.com/stacksjs/stacks/commit/f98b7edf5))
+
+### 🩹 Fixes
+
+- **deploy:** Apply decrypted .env.production values to the local process too ([5642c4c9f](https://github.com/stacksjs/stacks/commit/5642c4c9f))
+- **database:** Await overridesReady before locking in db config ([12c663a6b](https://github.com/stacksjs/stacks/commit/12c663a6b))
+- **env:** Pass keysFile to autoLoadEnv in the top-level plugin.ts entry point ([1e6f92c7f](https://github.com/stacksjs/stacks/commit/1e6f92c7f))
+- **server:** Wire up requestContext/query-string globals in buddy serve ([ad644cebc](https://github.com/stacksjs/stacks/commit/ad644cebc))
+- **defaults:** Remove legacy commerce/products.ts duplicated by products/products.ts ([167dfc51c](https://github.com/stacksjs/stacks/commit/167dfc51c))
+- **query-builder:** Bootstrap the model-executor sqlite connection ([78aac491b](https://github.com/stacksjs/stacks/commit/78aac491b))
+- **env:** Fall back to process env for the dotenvx private key ([efca0b85a](https://github.com/stacksjs/stacks/commit/efca0b85a))
+- **queue:** Tolerate every UPDATE-result shape in row-count checks ([013c012cb](https://github.com/stacksjs/stacks/commit/013c012cb))
+- **orm:** Stop the canonical orm/routes.ts silently falling back to the legacy copy ([2a249a9ab](https://github.com/stacksjs/stacks/commit/2a249a9ab))
+- **deploy:** Only warn about unmanaged DNS when the records are wrong ([5509f17df](https://github.com/stacksjs/stacks/commit/5509f17df))
+- **orm:** Give the auto-CRUD query builder schema meta from the loaded models ([5cbc79e62](https://github.com/stacksjs/stacks/commit/5cbc79e62))
+- **router:** Defer bootstrap RBAC wiring so framework routes survive module-eval races ([ccf130057](https://github.com/stacksjs/stacks/commit/ccf130057))
+- **auth:** Authenticate cookie-only form posts in the Auth middleware ([dc7cfca1a](https://github.com/stacksjs/stacks/commit/dc7cfca1a))
+- **database:** SQLite migrate skips CREATE TYPE and records skips on a fresh install ([ec2765662](https://github.com/stacksjs/stacks/commit/ec2765662))
+- **database:** Generate FK-free SingleStore DDL from migrations ([2fc80b734](https://github.com/stacksjs/stacks/commit/2fc80b734))
+- **config:** Allow 'singlestore' cache driver in validator ([f1db7be68](https://github.com/stacksjs/stacks/commit/f1db7be68))
+- **database:** Treat singlestore as mysql in sqlHelpers ([5ca40f904](https://github.com/stacksjs/stacks/commit/5ca40f904))
+- **payments:** Don't call unbound user.hasStripeId() in checkout ([0402f6f02](https://github.com/stacksjs/stacks/commit/0402f6f02))
+- **payments:** Verify webhooks via constructEventAsync; surface handler errors ([6c67a2ebc](https://github.com/stacksjs/stacks/commit/6c67a2ebc))
+- **dev:** Make requestContext cookie/url/locale work in stx server scripts ([8d218c880](https://github.com/stacksjs/stacks/commit/8d218c880))
+- **deploy:** Exclude stx build cache (.stx) from release tarballs ([007fd7771](https://github.com/stacksjs/stacks/commit/007fd7771))
+- **email:** Send email:test via the configured mailer, not hardcoded SES ([675999e7d](https://github.com/stacksjs/stacks/commit/675999e7d))
+- **mail:** Clear inherited MAIL_USERNAME/PASSWORD so from-based auth wins ([fcbaaf1dd](https://github.com/stacksjs/stacks/commit/fcbaaf1dd))
+- **mail:** Only provision mailboxes with an explicit password ([82ba8d312](https://github.com/stacksjs/stacks/commit/82ba8d312))
+- **deploy:** Map --staging/--dev flags to environment + pin env deterministically ([1d3b88329](https://github.com/stacksjs/stacks/commit/1d3b88329))
+- **deploy:** Make SSH readiness check tolerant of recycled cloud IPs ([9faefbf92](https://github.com/stacksjs/stacks/commit/9faefbf92))
+- **ci:** Derive the SSH public key in the deploy workflow ([0898881a5](https://github.com/stacksjs/stacks/commit/0898881a5))
+- **ci:** Clone sibling app repos before multi-site deploy ([e62bdb219](https://github.com/stacksjs/stacks/commit/e62bdb219))
+- **deploy:** Reliable non-prod redeploys (reusePort + ts-cloud 0.7.11) ([ac68b1e5a](https://github.com/stacksjs/stacks/commit/ac68b1e5a))
+- **deploy:** Bump all workspace ts-cloud pins to 0.7.11 ([2cc85e2fd](https://github.com/stacksjs/stacks/commit/2cc85e2fd))
+- **ci:** Vendor the framework into sibling app clones ([8879bc0e0](https://github.com/stacksjs/stacks/commit/8879bc0e0))
+
+### 💅 Refactors
+
+- **cloud:** Stacks deploys only stacks; apps own their configs ([bc7e25a43](https://github.com/stacksjs/stacks/commit/bc7e25a43))
+
+### 🏡 Chore
+
+- **ci:** Set APP_ENV per environment so the env core loads .env.<env> ([a335c76dc](https://github.com/stacksjs/stacks/commit/a335c76dc))
+- Gitignore per-package build logs (storage/logs) ([cdc387dd9](https://github.com/stacksjs/stacks/commit/cdc387dd9))
+
+### 🤖 CI
+
+- **release:** Publish framework via pantry (incl. the stacks meta) ([31d33cd0d](https://github.com/stacksjs/stacks/commit/31d33cd0d))
+
+### ❤️ Contributors
+
+- Chris ([@chrisbbreuer](https://github.com/chrisbbreuer))
+- Glennmichael123 ([@glennmichael123](https://github.com/glennmichael123))
+
 ## v0.70.51
 
 [compare changes](https://github.com/stacksjs/stacks/compare/v0.70.50...v0.70.51)

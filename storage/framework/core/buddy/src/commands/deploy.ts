@@ -1502,11 +1502,11 @@ if [ -n "$DOMAIN" ] && [ -f "$ENVF" ]; then
   case ",$cur," in
     *",$DOMAIN,"*) : ;;
     *) if grep -qE '^SMTP_LOCAL_DOMAINS=' "$ENVF"; then
-         sed -i "s|^SMTP_LOCAL_DOMAINS=.*|SMTP_LOCAL_DOMAINS=\${cur:+$cur,}$DOMAIN|" "$ENVF"
-       else
-         echo "SMTP_LOCAL_DOMAINS=$DOMAIN" >> "$ENVF"
-       fi
-       ENV_CHANGED=1 ;;
+        sed -i "s|^SMTP_LOCAL_DOMAINS=.*|SMTP_LOCAL_DOMAINS=\${cur:+$cur,}$DOMAIN|" "$ENVF"
+      else
+        echo "SMTP_LOCAL_DOMAINS=$DOMAIN" >> "$ENVF"
+      fi
+      ENV_CHANGED=1 ;;
   esac
 fi
 # 2) Per-domain DKIM key: generate on first sight, register in DKIM_EXTRA_KEYS.
@@ -1523,11 +1523,11 @@ if [ -n "$DOMAIN" ] && [ -f "$ENVF" ]; then
   case ",$ex," in
     *"$DOMAIN:mail:"*) : ;;
     *) if grep -qE '^DKIM_EXTRA_KEYS=' "$ENVF"; then
-         sed -i "s|^DKIM_EXTRA_KEYS=.*|DKIM_EXTRA_KEYS=\${ex:+$ex,}$ENTRY|" "$ENVF"
-       else
-         echo "DKIM_EXTRA_KEYS=$ENTRY" >> "$ENVF"
-       fi
-       ENV_CHANGED=1 ;;
+        sed -i "s|^DKIM_EXTRA_KEYS=.*|DKIM_EXTRA_KEYS=\${ex:+$ex,}$ENTRY|" "$ENVF"
+      else
+        echo "DKIM_EXTRA_KEYS=$ENTRY" >> "$ENVF"
+      fi
+      ENV_CHANGED=1 ;;
   esac
   echo "DKIMPUB:$(openssl rsa -in "$KEY" -pubout -outform DER 2>/dev/null | base64 -w0)"
 fi
@@ -1550,14 +1550,14 @@ if [ -n "$FWD_B64" ] && [ -x /usr/local/bin/bun ]; then
   echo "$README_B64" | base64 -d > /tmp/.mailtenant-readme.txt
   /usr/local/bin/bun --bun -e '
     const fs=require("fs"); const f="/opt/mail/forwards.json";
-    let cur={}; try{cur=JSON.parse(fs.readFileSync(f,"utf8"))}catch{}
+    const cur={}; try{cur=JSON.parse(fs.readFileSync(f,"utf8"))}catch{}
     const add=JSON.parse(fs.readFileSync("/tmp/.mailtenant-fwd.json","utf8"));
     const readme=fs.readFileSync("/tmp/.mailtenant-readme.txt","utf8");
     const merged={...cur}; delete merged._readme;
     for(const [k,v] of Object.entries(add)) merged[k]=v;
     const out={_readme:readme,...merged};
     const s=JSON.stringify(out,null,2)+"\\n";
-    let prev=""; try{prev=fs.readFileSync(f,"utf8")}catch{}
+    const prev=""; try{prev=fs.readFileSync(f,"utf8")}catch{}
     if(s!==prev){ fs.writeFileSync(f,s); process.stdout.write("FWDCHANGED"); }
   ' > /tmp/.mailtenant-res 2>/dev/null || true
   chown mail-server:mail-server "$FJSON" 2>/dev/null || true
