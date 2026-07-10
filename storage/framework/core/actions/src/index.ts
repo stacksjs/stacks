@@ -5,6 +5,11 @@ export * from './dev'
 
 export * from './generate'
 export * from './helpers'
+// Code-style actions, exported so commands import + call them directly
+// (`import { lintProject, lintFix } from '@stacksjs/actions'`) instead of
+// spawning a deep dist path. Exported from ./lint/lint — the pure module — so
+// importing the barrel never pulls the process-exiting ./lint/index script.
+export { formatProject, lintFix, lintProject } from './lint/lint'
 export * from './setup'
 
 // makeFactory,

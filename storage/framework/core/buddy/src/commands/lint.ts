@@ -1,49 +1,24 @@
 import type { CLI, LintOptions } from '@stacksjs/types'
-import { existsSync } from 'node:fs'
 import process from 'node:process'
-import { intro, log, onUnknownSubcommand, outro, runCommand } from "@stacksjs/cli"
-import { path } from '@stacksjs/path'
+import { intro, log, onUnknownSubcommand, outro } from "@stacksjs/cli"
 import { ExitCode } from '@stacksjs/types'
 
 /**
- * Resolve the lint action script. A vendored monorepo runs the TS source under
- * `storage/framework/core/actions/src/lint/*`; a node_modules app has no
- * vendored core, so fall back to the published `@stacksjs/actions` dist
- * (`dist/lint/*.js`). Returns a `bun <path>` command string for runCommand.
+ * Run a code-style action from `@stacksjs/actions`. The package's export
+ * conditions resolve to its TS source in a vendored monorepo and to its built
+ * output from node_modules, so a single clean import works in both layouts —
+ * no reaching into `dist/`, and the action drives pickier through its SDK
+ * rather than spawning `bunx pickier`. Exits non-zero on failure so the
+ * commands drop straight into CI.
  */
-function lintActionCommand(entry: 'index' | 'fix'): string {
-  const vendored = path.projectPath(`storage/framework/core/actions/src/lint/${entry}.ts`)
-  if (existsSync(vendored))
-    return `bun storage/framework/core/actions/src/lint/${entry}.ts`
-
-  try {
-    const pkgJson = Bun.resolveSync('@stacksjs/actions/package.json', path.projectPath())
-    const dist = path.resolve(path.dirname(pkgJson), `dist/lint/${entry}.js`)
-    if (existsSync(dist))
-      return `bun ${dist}`
-  }
-  catch {
-    // fall through to the vendored path below
-  }
-
-  return `bun storage/framework/core/actions/src/lint/${entry}.ts`
-}
-
-/**
- * Treat a runCommand Result as a CI/CD-friendly status: any failure (exec
- * error or non-zero exit code from the underlying child) translates into
- * `process.exit(FatalError)` so `buddy lint` can be wired into CI without
- * having to remember to wrap `--ci` flags. Previously a non-zero exit from
- * pickier was silently dropped and the parent process always exited 0.
- */
-function exitOnFailure(result: Awaited<ReturnType<typeof runCommand>>, label: string): void {
-  if (!result || typeof result !== 'object' || !('isErr' in result))
-    return
-
-  const marker = (result as { isErr?: boolean | (() => boolean) }).isErr
-  const isErr = typeof marker === 'function' ? marker() : marker === true
-
-  if (isErr) {
+async function runStyleAction(
+  entry: 'lintProject' | 'lintFix' | 'formatProject',
+  label: string,
+  options?: { write?: boolean, check?: boolean },
+): Promise<void> {
+  const actions = await import('@stacksjs/actions')
+  const { ok } = await actions[entry](options as never)
+  if (!ok) {
     log.error(`${label} reported failure`)
     process.exit(ExitCode.FatalError)
   }
@@ -69,10 +44,7 @@ export function lint(buddy: CLI): void {
 
       const startTime = await intro('buddy lint')
 
-      const result = options.fix
-        ? await runCommand(lintActionCommand('fix'), { cwd: path.projectPath() })
-        : await runCommand(lintActionCommand('index'), { cwd: path.projectPath() })
-      exitOnFailure(result, 'lint')
+      await runStyleAction(options.fix ? 'lintFix' : 'lintProject', 'lint')
 
       await outro('Linted your project', { startTime, useSeconds: true })
     })
@@ -87,8 +59,7 @@ export function lint(buddy: CLI): void {
       const startTime = await intro('buddy lint:fix')
 
       log.info('Fixing lint errors...')
-      const result = await runCommand(lintActionCommand('fix'), { cwd: path.projectPath() })
-      exitOnFailure(result, 'lint:fix')
+      await runStyleAction('lintFix', 'lint:fix')
 
       await outro('Fixed lint errors', { startTime, useSeconds: true })
     })
@@ -103,10 +74,7 @@ export function lint(buddy: CLI): void {
 
       const startTime = await intro('buddy format')
 
-      const result = options.check
-        ? await runCommand('bunx --bun pickier run --mode format --config ./pickier.config.ts --check', { cwd: path.projectPath() })
-        : await runCommand('bunx --bun pickier run --mode format --config ./pickier.config.ts --write', { cwd: path.projectPath() })
-      exitOnFailure(result, 'format')
+      await runStyleAction('formatProject', 'format', options.check ? { check: true } : { write: true })
 
       await outro('Formatted your project', { startTime, useSeconds: true })
     })
@@ -119,8 +87,7 @@ export function lint(buddy: CLI): void {
 
       const startTime = await intro('buddy format:check')
 
-      const result = await runCommand('bunx --bun pickier run --mode format --config ./pickier.config.ts --check', { cwd: path.projectPath() })
-      exitOnFailure(result, 'format:check')
+      await runStyleAction('formatProject', 'format:check', { check: true })
 
       await outro('Format check complete', { startTime, useSeconds: true })
     })

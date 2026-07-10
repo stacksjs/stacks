@@ -82,5 +82,13 @@
     "@stacksjs/strings": "workspace:*",
     "@stacksjs/utils": "workspace:*",
     "@stacksjs/validation": "workspace:*"
+  },
+  "peerDependencies": {
+    "pickier": "^0.1.28"
+  },
+  "peerDependenciesMeta": {
+    "pickier": {
+      "optional": true
+    }
   }
 }
