@@ -1,5 +1,17 @@
 # Stacks Changelog
 
+## v0.70.57
+
+[compare changes](https://github.com/stacksjs/stacks/compare/v0.70.56...v0.70.57)
+
+### 🩹 Fixes
+
+- **build:** Add target:'bun' (9 pkgs) + build server library entry ([3f68cb6ed](https://github.com/stacksjs/stacks/commit/3f68cb6ed))
+
+### ❤️ Contributors
+
+- Chris ([@chrisbbreuer](https://github.com/chrisbbreuer))
+
 ## v0.70.56
 
 [compare changes](https://github.com/stacksjs/stacks/compare/v0.70.55...v0.70.56)
