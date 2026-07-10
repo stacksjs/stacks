@@ -1,5 +1,17 @@
 # Stacks Changelog
 
+## v0.70.68
+
+[compare changes](https://github.com/stacksjs/stacks/compare/v0.70.67...v0.70.68)
+
+### 🚀 Enhancements
+
+- **browser-extension:** Full build parity — pages+scripts, sanitize, rules, hooks ([a16ef1da9](https://github.com/stacksjs/stacks/commit/a16ef1da9))
+
+### ❤️ Contributors
+
+- Chris ([@chrisbbreuer](https://github.com/chrisbbreuer))
+
 ## v0.70.67
 
 [compare changes](https://github.com/stacksjs/stacks/compare/v0.70.66...v0.70.67)
