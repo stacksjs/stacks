@@ -1,5 +1,17 @@
 # Stacks Changelog
 
+## v0.70.69
+
+[compare changes](https://github.com/stacksjs/stacks/compare/v0.70.68...v0.70.69)
+
+### 🚀 Enhancements
+
+- **browser-extension:** Buddy extension:init scaffolder + README ([590e188bc](https://github.com/stacksjs/stacks/commit/590e188bc))
+
+### ❤️ Contributors
+
+- Chris ([@chrisbbreuer](https://github.com/chrisbbreuer))
+
 ## v0.70.68
 
 [compare changes](https://github.com/stacksjs/stacks/compare/v0.70.67...v0.70.68)
