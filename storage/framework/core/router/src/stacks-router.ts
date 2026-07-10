@@ -15,11 +15,36 @@ import { Middleware } from './middleware'
 import './request-augmentation'
 import process from 'node:process'
 import { Buffer } from 'node:buffer'
+import { existsSync } from 'node:fs'
 import { timingSafeEqual } from 'node:crypto'
 import { log, report } from '@stacksjs/logging'
 import { path as p } from '@stacksjs/path'
 import { UploadedFile } from '@stacksjs/storage'
 import { applyRequestEnhancements, Router } from '@stacksjs/bun-router'
+
+// Resolve a scaffold-defaults file (under storage/framework/defaults). A
+// vendored checkout has it on disk and wins; a node_modules app has no
+// storage/framework, so fall back to the published @stacksjs/defaults package
+// (which ships the app/ + resources/ trees). Without this the router can't load
+// default Actions/Middleware/Controllers on a node_modules deploy and the API
+// server fails to boot.
+let __defaultsPkgRoot: string | null | undefined
+function resolveDefaultsPath(rel: string): string {
+  const vendored = p.storagePath(`framework/defaults/${rel}`)
+  if (existsSync(vendored))
+    return vendored
+  if (__defaultsPkgRoot === undefined) {
+    try {
+      const pkgJson = Bun.resolveSync('@stacksjs/defaults/package.json', process.cwd())
+      __defaultsPkgRoot = pkgJson.slice(0, pkgJson.lastIndexOf('/'))
+    }
+    catch {
+      __defaultsPkgRoot = null
+    }
+  }
+  return __defaultsPkgRoot ? `${__defaultsPkgRoot}/${rel}` : vendored
+}
+
 import { runWithRequest } from './request-context'
 import { isApiRequest, JSON_CONTENT_TYPE } from './api-shape'
 import { clearTrackedQueries, createErrorResponse, createMiddlewareErrorResponse } from './error-handler'
@@ -276,7 +301,7 @@ function isExposeRoutesAuthorized(req: Request): boolean {
 async function applyCorsIfConfigured(req: EnhancedRequest, response: Response): Promise<Response> {
   if (!req._corsConfig || !response) return response
   try {
-    const { applyCorsHeaders } = await import(p.storagePath('framework/defaults/app/Middleware/Cors.ts'))
+    const { applyCorsHeaders } = await import(resolveDefaultsPath('app/Middleware/Cors.ts'))
     return (applyCorsHeaders as (req: Request, res: Response, cfg?: unknown) => Response)(
       req as unknown as Request,
       response,
@@ -600,7 +625,7 @@ async function getMiddlewareAliases(): Promise<Record<string, string>> {
     }
     catch {
       try {
-        const defaultModule = await import(p.storagePath('framework/defaults/app/Middleware.ts'))
+        const defaultModule = await import(resolveDefaultsPath('app/Middleware.ts'))
         return defaultModule.default || {}
       }
       catch {
@@ -688,7 +713,7 @@ async function loadMiddleware(name: string): Promise<MiddlewareHandler | null> {
 
   // Fall back to framework defaults
   try {
-    const defaultPath = p.storagePath(`framework/defaults/app/Middleware/${className}.ts`)
+    const defaultPath = resolveDefaultsPath(`app/Middleware/${className}.ts`)
     const middleware = await import(defaultPath)
     const handler = (middleware.default ?? null) as MiddlewareHandler | null
     if (!handler || typeof handler.handle !== 'function') {
@@ -1155,7 +1180,7 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
         const safeMethod = req.method === 'GET' || req.method === 'HEAD' || req.method === 'OPTIONS'
         if (safeMethod) {
           try {
-            const { seedCsrfCookieIfMissing } = await import(p.storagePath('framework/defaults/app/Middleware/Csrf.ts'))
+            const { seedCsrfCookieIfMissing } = await import(resolveDefaultsPath('app/Middleware/Csrf.ts'))
             response = (seedCsrfCookieIfMissing as (req: Request, res: Response) => Response)(
               enhancedReq as unknown as Request,
               response,
@@ -1252,7 +1277,7 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
       // compression don't pay the load cost.
       if (enhancedReq._compress === true && response) {
         try {
-          const { applyCompression } = await import(p.storagePath('framework/defaults/app/Middleware/Compress.ts'))
+          const { applyCompression } = await import(resolveDefaultsPath('app/Middleware/Compress.ts'))
           return await (applyCompression as (req: Request, res: Response) => Promise<Response>)(enhancedReq as unknown as Request, response)
         }
         catch (err) {
@@ -1423,7 +1448,7 @@ async function resolveStringHandlerUncached(handlerPath: string): Promise<RouteH
 
     // Try user path first, then fall back to defaults
     const userPath = p.appPath(`${controllerPath}.ts`)
-    const defaultPath = p.storagePath(`framework/defaults/app/${controllerPath}.ts`)
+    const defaultPath = resolveDefaultsPath(`app/${controllerPath}.ts`)
     const fullPath = await fileExists(userPath) ? userPath : defaultPath
 
     try {
@@ -1463,13 +1488,13 @@ async function resolveStringHandlerUncached(handlerPath: string): Promise<RouteH
   else if (modulePath.includes('Actions')) {
     // Try user path first, then fall back to defaults
     const userPath = p.projectPath(`app/${modulePath}.ts`)
-    const defaultPath = p.storagePath(`framework/defaults/app/${modulePath}.ts`)
+    const defaultPath = resolveDefaultsPath(`app/${modulePath}.ts`)
     fullPath = await fileExists(userPath) ? userPath : defaultPath
   }
   else {
     // Generic app path - try user first, then defaults
     const userPath = p.appPath(`${modulePath}.ts`)
-    const defaultPath = p.storagePath(`framework/defaults/app/${modulePath}.ts`)
+    const defaultPath = resolveDefaultsPath(`app/${modulePath}.ts`)
     fullPath = await fileExists(userPath) ? userPath : defaultPath
   }
 
