@@ -1,5 +1,17 @@
 # Stacks Changelog
 
+## v0.70.70
+
+[compare changes](https://github.com/stacksjs/stacks/compare/v0.70.69...v0.70.70)
+
+### 🩹 Fixes
+
+- **buddy:** Resolve lint action from node_modules when core isn't vendored ([5b757fa9a](https://github.com/stacksjs/stacks/commit/5b757fa9a))
+
+### ❤️ Contributors
+
+- Chris ([@chrisbbreuer](https://github.com/chrisbbreuer))
+
 ## v0.70.69
 
 [compare changes](https://github.com/stacksjs/stacks/compare/v0.70.68...v0.70.69)
