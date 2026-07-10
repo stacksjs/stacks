@@ -1,5 +1,18 @@
 # Stacks Changelog
 
+## v0.70.56
+
+[compare changes](https://github.com/stacksjs/stacks/compare/v0.70.55...v0.70.56)
+
+### 🩹 Fixes
+
+- **buddy:** Keep system-bun fallback for node_modules apps ([a71e2347e](https://github.com/stacksjs/stacks/commit/a71e2347e))
+- **build:** Output dist/ not dist/src/ (root ./src, matching exports) ([742c2d65d](https://github.com/stacksjs/stacks/commit/742c2d65d))
+
+### ❤️ Contributors
+
+- Chris ([@chrisbbreuer](https://github.com/chrisbbreuer))
+
 ## v0.70.55
 
 [compare changes](https://github.com/stacksjs/stacks/compare/v0.70.54...v0.70.55)
@@ -323,7 +336,7 @@
 - **auth:** Cluster-safe rate limiting, session lockout, TOTP replay protection ([53d06ac4e](https://github.com/stacksjs/stacks/commit/53d06ac4e))
 - **orm:** Soft-delete read filter, deny-by-default mass assignment, sort allowlist ([c62348413](https://github.com/stacksjs/stacks/commit/c62348413))
 - **database:** Doctor checks for unique-index drift and FK orphans ([#1957](https://github.com/stacksjs/stacks/pull/1957))
-- **auth:** Bind token validity to password_changed_at ([#1957](https://github.com/stacksjs/stacks/pull/1957))
+- **auth:** Bind token validity to password*changed*at ([#1957](https://github.com/stacksjs/stacks/pull/1957))
 - **auth:** Add POST /logout-all sign-out-everywhere endpoint ([#1957](https://github.com/stacksjs/stacks/pull/1957))
 - **database:** Expose migration operations + preview, thread rename/from-db options ([70effb893](https://github.com/stacksjs/stacks/commit/70effb893))
 - **buddy:** Gate destructive migrations behind confirmation ([2af14078a](https://github.com/stacksjs/stacks/commit/2af14078a))
@@ -339,7 +352,7 @@
 - **dev:** Defer to rpx when it manages the proxy ([4b130e455](https://github.com/stacksjs/stacks/commit/4b130e455))
 - **dev:** Enable rpx on-demand sites by default ([6d2c6ac3a](https://github.com/stacksjs/stacks/commit/6d2c6ac3a))
 - Redirect sites + ts-cloud 0.5.29 (registry/zero-downtime/managed-TLS) ([f46d316d0](https://github.com/stacksjs/stacks/commit/f46d316d0))
-- **deploy:** Forgiving + configurable readiness timeouts (SSH 3m→8m, bun 5m→12m via TS_CLOUD_SSH_WAIT_SECS/TS_CLOUD_BOOT_WAIT_SECS) with a heartbeat; fail fast (not hang) on prod confirm in a non-interactive shell ([3cd543de3](https://github.com/stacksjs/stacks/commit/3cd543de3))
+- **deploy:** Forgiving + configurable readiness timeouts (SSH 3m→8m, bun 5m→12m via TS*CLOUD*SSH*WAIT*SECS/TS*CLOUD*BOOT*WAIT*SECS) with a heartbeat; fail fast (not hang) on prod confirm in a non-interactive shell ([3cd543de3](https://github.com/stacksjs/stacks/commit/3cd543de3))
 - Improve design skills ([1efa929c2](https://github.com/stacksjs/stacks/commit/1efa929c2))
 - **marketing:** Rebuild coming-soon into a full hero, polish landing ([3bd986d68](https://github.com/stacksjs/stacks/commit/3bd986d68))
 - **marketing:** Natural, varied treeline in the park-ridge scenery ([1b2eb8208](https://github.com/stacksjs/stacks/commit/1b2eb8208))
@@ -387,7 +400,7 @@
 - **auth:** Hash oauth_clients.secret at rest (#1861 M-1) ([#1861](https://github.com/stacksjs/stacks/issues/1861))
 - **router,csrf:** Seed X-CSRF-Token cookie on safe-method responses ([#1859](https://github.com/stacksjs/stacks/pull/1859))
 - **router:** Centralize CORS apply for error + success paths (#1859 R-3, H-3) ([#1859](https://github.com/stacksjs/stacks/issues/1859))
-- **router:** Require shared-secret token for STACKS_EXPOSE_ROUTES in prod (#1859 R-4) ([#1859](https://github.com/stacksjs/stacks/issues/1859))
+- **router:** Require shared-secret token for STACKS*EXPOSE*ROUTES in prod (#1859 R-4) ([#1859](https://github.com/stacksjs/stacks/issues/1859))
 - **router:** Stop leaking stack traces + recent queries in staging (#1859 H-10) ([#1859](https://github.com/stacksjs/stacks/issues/1859))
 - **actions:** Mount Stacks Cors middleware instead of bun-router default (#1859 R-1) ([#1859](https://github.com/stacksjs/stacks/issues/1859))
 - **router:** Return 400 on malformed JSON bodies instead of swallowing (#1859 H-5) ([#1859](https://github.com/stacksjs/stacks/issues/1859))
@@ -443,7 +456,7 @@
 - **router:** Surface 4xx HttpError messages in production createErrorResponse ([#1946](https://github.com/stacksjs/stacks/pull/1946))
 - **logging:** Normalize Errors in structured log contexts ([#1956](https://github.com/stacksjs/stacks/pull/1956))
 - **auth:** Revoke all access and refresh tokens on password reset ([#1947](https://github.com/stacksjs/stacks/pull/1947))
-- **database:** Guarantee users.email_verified_at column exists ([#1948](https://github.com/stacksjs/stacks/pull/1948))
+- **database:** Guarantee users.email*verified*at column exists ([#1948](https://github.com/stacksjs/stacks/pull/1948))
 - **serve:** Proxy same-origin /api traffic to the API process in production ([#1950](https://github.com/stacksjs/stacks/pull/1950))
 - **database:** Apply SQLite bootstrap pragmas on connection creation ([#1951](https://github.com/stacksjs/stacks/pull/1951))
 - **orm:** Secure auto-CRUD writes by default and snake_case write payload keys ([#1949](https://github.com/stacksjs/stacks/pull/1949))
