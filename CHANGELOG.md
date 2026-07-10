@@ -1,5 +1,17 @@
 # Stacks Changelog
 
+## v0.70.58
+
+[compare changes](https://github.com/stacksjs/stacks/compare/v0.70.57...v0.70.58)
+
+### 🩹 Fixes
+
+- **build:** Transpile barrel packages file-by-file to dodge bun re-export bug ([f213b5158](https://github.com/stacksjs/stacks/commit/f213b5158))
+
+### ❤️ Contributors
+
+- Chris ([@chrisbbreuer](https://github.com/chrisbbreuer))
+
 ## v0.70.57
 
 [compare changes](https://github.com/stacksjs/stacks/compare/v0.70.56...v0.70.57)
