@@ -34,6 +34,8 @@ const commandRegistry: Record<string, CommandLoader> = {
   'domains': { path: './commands/domains.ts', exportName: 'domains' },
   'email': { path: './commands/email.ts', exportName: 'email' },
   'env': { path: './commands/env.ts', exportName: 'env' },
+  'extension:build': { path: './commands/extension.ts', exportName: 'extension' },
+  'extension:package': { path: './commands/extension.ts', exportName: 'extension' },
   // Feature install / uninstall — single file registers all pairs.
   'dashboard:install': { path: './commands/features.ts', exportName: 'features' },
   'dashboard:uninstall': { path: './commands/features.ts', exportName: 'features' },

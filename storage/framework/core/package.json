@@ -80,6 +80,10 @@
       "types": "./build/dist/index.d.ts",
       "import": "./build/dist/index.js"
     },
+    "./browser-extension": {
+      "types": "./browser-extension/dist/index.d.ts",
+      "import": "./browser-extension/dist/index.js"
+    },
     "./cache": {
       "types": "./cache/dist/index.d.ts",
       "import": "./cache/dist/index.js"
@@ -300,6 +304,7 @@
     "@stacksjs/arrays": "^0.70.53",
     "@stacksjs/auth": "^0.70.53",
     "@stacksjs/buddy": "^0.70.53",
+    "@stacksjs/browser-extension": "^0.70.53",
     "@stacksjs/build": "^0.70.53",
     "@stacksjs/cache": "^0.70.53",
     "@stacksjs/cli": "^0.70.53",
