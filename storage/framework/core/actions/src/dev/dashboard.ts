@@ -1014,27 +1014,38 @@ console.log()
 // config loading which prints warnings before our console.log override is
 // active. We also let it be missing — the native window is a nicety, not a
 // requirement; the dashboard runs fine as a plain web server in that case.
-let createApp: ((_opts: any) => { show: () => Promise<void>, close: () => void }) | null = null
-try {
-  const localCraftSdk = process.env.HOME
-    ? `${process.env.HOME}/Code/Tools/craft/packages/typescript/src/index.ts`
-    : undefined
-
-  ;({ createApp } = localCraftSdk && existsSync(localCraftSdk)
-    ? await import(localCraftSdk)
-    : await import('craft-native'))
+interface CraftApplication {
+  show: () => Promise<void>
+  close: () => void
 }
-catch {
+
+type CraftCreateApp = (options: Record<string, unknown>) => CraftApplication
+
+let createApp: CraftCreateApp | undefined
+const localCraftSdk = process.env.HOME
+  ? `${process.env.HOME}/Code/Tools/craft/packages/typescript/src/index.ts`
+  : undefined
+
+if (localCraftSdk && existsSync(localCraftSdk)) {
   try {
-    ;({ createApp } = await import('@craft-native/craft'))
+    ;({ createApp } = await import(localCraftSdk) as { createApp?: CraftCreateApp })
   }
   catch {
+    // Continue with installed package candidates below.
+  }
+}
+
+if (!createApp) {
+  const packageNames = ['craft-native', '@craft-native/craft', '@stacksjs/ts-craft'] as const
+  for (const packageName of packageNames) {
     try {
-      ;({ createApp } = await import('@stacksjs/ts-craft'))
+      ;({ createApp } = await import(packageName) as { createApp?: CraftCreateApp })
+      if (createApp)
+        break
     }
     catch {
       // The Craft SDK isn't installed (or its native bindings failed to
-      // load on this platform). Fall through to web-only mode below.
+      // load on this platform). Continue to the next compatible package.
     }
   }
 }
@@ -1100,7 +1111,7 @@ if (createApp) {
   // exits. Skip native-window mode entirely instead and let the web fallback
   // below handle it.
   if (!craftBinaryPath) {
-    createApp = null
+    createApp = undefined
   }
 
   if (!createApp) {
