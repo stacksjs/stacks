@@ -6,8 +6,7 @@ const result = await runCommand('zip -r ./dist.zip dist/origin-request.js packag
   cwd: import.meta.dir,
 })
 
-// Check for error - result.isErr may be a property or function depending on the Result implementation
-if ((typeof result.isErr === 'function' && result.isErr) || result.isErr === true) {
+if (result.isErr) {
   log.error('Zip failed')
   process.exit(1)
 }

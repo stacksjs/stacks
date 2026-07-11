@@ -473,13 +473,15 @@ export class ImapServer {
     let buffer = ''
 
     socket.on('data', async (data) => {
+      const chunk = typeof data === 'string' ? Buffer.from(data) : data
+
       // If we're collecting literal data for APPEND
       if (session.pendingLiteral) {
         const pending = session.pendingLiteral
-        const bytesToRead = Math.min(data.length, pending.size - pending.collected)
+        const bytesToRead = Math.min(chunk.length, pending.size - pending.collected)
 
         // Copy bytes to the literal data buffer
-        data.copy(pending.data, pending.collected, 0, bytesToRead)
+        chunk.copy(pending.data, pending.collected, 0, bytesToRead)
         pending.collected += bytesToRead
 
         // Check if we have all the literal data
@@ -495,14 +497,14 @@ export class ImapServer {
           session.pendingLiteral = undefined
 
           // Any remaining data after the literal goes back to the buffer
-          if (bytesToRead < data.length) {
-            buffer += data.subarray(bytesToRead).toString()
+          if (bytesToRead < chunk.length) {
+            buffer += chunk.subarray(bytesToRead).toString()
           }
         }
         return
       }
 
-      buffer += data.toString()
+      buffer += chunk.toString()
 
       // Process complete lines
       let lineEnd: number
@@ -561,7 +563,7 @@ export class ImapServer {
       return
     }
 
-    const [, tag, command, args] = match
+    const [, tag = '', command = '', args] = match
     const cmd = command.toUpperCase()
 
     switch (cmd) {
@@ -700,7 +702,7 @@ export class ImapServer {
       return
     }
 
-    const [, username, password] = match
+    const [, username = '', password = ''] = match
     const user = this.config.users[username]
 
     if (!user || user.password !== password) {
@@ -777,12 +779,12 @@ export class ImapServer {
   private async handleNoop(session: ImapSession, tag: string): Promise<void> {
     if (session.state === 'selected' && session.selectedMailbox === 'INBOX') {
       // Get old message count
-      const oldMessages = this.messageCache.get(session.email || '') || []
+      const oldMessages = this.getMessagesForFolder(session.email || '', session.selectedMailbox)
       const oldCount = oldMessages.length
 
       // Force refresh to check for new messages
       await this.loadMessages(session, true)
-      const newMessages = this.messageCache.get(session.email || '') || []
+      const newMessages = this.getMessagesForFolder(session.email || '', session.selectedMailbox)
       const newCount = newMessages.length
 
       // Notify client of changes
@@ -802,7 +804,7 @@ export class ImapServer {
     // CHECK requests a checkpoint, we use it to refresh the cache
     if (session.state === 'selected') {
       await this.loadMessages(session, true)
-      const messages = this.messageCache.get(session.email || '') || []
+      const messages = this.getMessagesForFolder(session.email || '', session.selectedMailbox || 'INBOX')
       this.send(session, `* ${messages.length} EXISTS`)
     }
     this.send(session, `${tag} OK CHECK completed`)
@@ -824,7 +826,7 @@ export class ImapServer {
       return
     }
 
-    const [, reference, pattern] = match
+    const [, reference = '', pattern = ''] = match
 
     // Return standard mailboxes with SPECIAL-USE attributes
     // These attributes help email clients identify folder purposes
@@ -896,7 +898,7 @@ export class ImapServer {
       return
     }
 
-    const [, reference, pattern] = match
+    const [, reference = '', pattern = ''] = match
 
     // Return all folders as subscribed
     if (pattern === '*' || pattern === '%' || pattern === '') {
@@ -930,7 +932,7 @@ export class ImapServer {
       return
     }
 
-    const [, mailbox, itemsStr] = match
+    const [, mailbox = '', itemsStr = ''] = match
 
     // Load messages for the requested mailbox
     await this.loadMessagesForFolder(session, mailbox)
@@ -979,7 +981,7 @@ export class ImapServer {
       return
     }
 
-    const [, sequenceSet, itemsStr] = match
+    const [, sequenceSet = '', itemsStr = ''] = match
     const folder = session.selectedMailbox || 'INBOX'
     const messages = this.getMessagesForFolder(session.email || '', folder)
     const indices = this.parseSequenceSet(sequenceSet, messages.length)
@@ -1011,7 +1013,7 @@ export class ImapServer {
       return
     }
 
-    const [, subCommand, subArgs] = match
+    const [, subCommand = '', subArgs = ''] = match
 
     switch (subCommand.toUpperCase()) {
       case 'FETCH':
@@ -1047,7 +1049,7 @@ export class ImapServer {
       return
     }
 
-    const [, uidSet, itemsStr] = match
+    const [, uidSet = '', itemsStr = ''] = match
     const folder = session.selectedMailbox || 'INBOX'
     const messages = this.getMessagesForFolder(session.email || '', folder)
 
@@ -1061,6 +1063,9 @@ export class ImapServer {
         continue
 
       const msg = messages[idx]
+      if (!msg)
+        continue
+
       const fetchData = await this.buildFetchResponse(session, msg, idx + 1, itemsStr, true)
       this.send(session, `* ${idx + 1} FETCH ${fetchData}`)
     }
@@ -1127,7 +1132,7 @@ export class ImapServer {
       return
     }
 
-    const [, sequenceSet, operation, flagsStr] = match
+    const [, sequenceSet = '', operation = '', flagsStr = ''] = match
     const folder = session.selectedMailbox || 'INBOX'
     const messages = this.getMessagesForFolder(session.email || '', folder)
     const indices = this.parseSequenceSet(sequenceSet, messages.length)
@@ -1190,7 +1195,7 @@ export class ImapServer {
       return
     }
 
-    const [, uidSet, operation, flagsStr] = match
+    const [, uidSet = '', operation = '', flagsStr = ''] = match
     const folder = session.selectedMailbox || 'INBOX'
     const messages = this.getMessagesForFolder(session.email || '', folder)
     const maxUid = messages.length > 0 ? Math.max(...messages.map((m: any) => m.uid)) : 0
@@ -1207,6 +1212,7 @@ export class ImapServer {
       if (idx === -1) continue
 
       const msg = messages[idx]
+      if (!msg) continue
 
       // Update flags based on operation
       if (operation.startsWith('+')) {
@@ -1256,7 +1262,7 @@ export class ImapServer {
       return
     }
 
-    const [, sequenceSet, destMailbox] = match
+    const [, sequenceSet = '', destMailbox = ''] = match
     const sourceFolder = session.selectedMailbox || 'INBOX'
     const messages = this.getMessagesForFolder(session.email || '', sourceFolder)
     const indices = this.parseSequenceSet(sequenceSet, messages.length)
@@ -1311,7 +1317,7 @@ export class ImapServer {
       return
     }
 
-    const [, uidSet, destMailbox] = match
+    const [, uidSet = '', destMailbox = ''] = match
     const sourceFolder = session.selectedMailbox || 'INBOX'
     const messages = this.getMessagesForFolder(session.email || '', sourceFolder)
     const maxUid = messages.length > 0 ? Math.max(...messages.map((m: any) => m.uid)) : 0
@@ -1367,7 +1373,7 @@ export class ImapServer {
       return
     }
 
-    const [, sequenceSet, destMailbox] = match
+    const [, sequenceSet = '', destMailbox = ''] = match
     const sourceFolder = session.selectedMailbox || 'INBOX'
     const messages = this.getMessagesForFolder(session.email || '', sourceFolder)
     const indices = this.parseSequenceSet(sequenceSet, messages.length)
@@ -1435,7 +1441,7 @@ export class ImapServer {
       return
     }
 
-    const [, uidSet, destMailbox] = match
+    const [, uidSet = '', destMailbox = ''] = match
     const sourceFolder = session.selectedMailbox || 'INBOX'
     const messages = this.getMessagesForFolder(session.email || '', sourceFolder)
     const maxUid = messages.length > 0 ? Math.max(...messages.map((m: any) => m.uid)) : 0
@@ -1450,6 +1456,7 @@ export class ImapServer {
       if (idx === -1) continue
 
       const msg = messages[idx]
+      if (!msg) continue
 
       try {
         const content = msg.raw || await this.s3.getObject(this.config.bucket, msg.key)
@@ -1513,6 +1520,8 @@ export class ImapServer {
     // Find messages with specified UIDs that are marked as \Deleted
     for (let i = messages.length - 1; i >= 0; i--) {
       const msg = messages[i]
+      if (!msg) continue
+
       if (uids.includes(msg.uid) && msg.flags.includes('\\Deleted')) {
         indicesToExpunge.push(i + 1) // 1-indexed
         keysToDelete.push(msg.key)
@@ -1572,9 +1581,10 @@ export class ImapServer {
 
     // Find messages marked with \Deleted (in reverse order for correct EXPUNGE responses)
     for (let i = messages.length - 1; i >= 0; i--) {
-      if (messages[i].flags.includes('\\Deleted')) {
+      const message = messages[i]
+      if (message?.flags.includes('\\Deleted')) {
         indicesToExpunge.push(i + 1) // 1-indexed
-        keysToDelete.push(messages[i].key)
+        keysToDelete.push(message.key)
       }
     }
 
@@ -1631,7 +1641,6 @@ export class ImapServer {
     const tlsOptions: tls.TlsOptions = {
       key: fs.readFileSync(this.config.tls.key),
       cert: fs.readFileSync(this.config.tls.cert),
-      isServer: true,
     }
 
     const tlsSocket = new tls.TLSSocket(session.socket, tlsOptions)
@@ -1730,7 +1739,7 @@ export class ImapServer {
           }
 
           // Auto-categorize new emails in INBOX
-          if (this.config.autoCategorize) {
+          if (this.config.categorization?.enabled) {
             await this.autoCategorizeEmail(email, obj.Key, headers.from || '', headers, raw)
           }
         }
@@ -2358,7 +2367,7 @@ export class ImapServer {
 
     for (const part of set.split(',')) {
       if (part.includes(':')) {
-        const [start, end] = part.split(':')
+        const [start = '', end = ''] = part.split(':')
         const s = start === '*' ? max : Number.parseInt(start, 10)
         const e = end === '*' ? max : Number.parseInt(end, 10)
         for (let i = Math.min(s, e); i <= Math.max(s, e); i++) {
@@ -2476,7 +2485,7 @@ export class ImapServer {
     raw: string
   ): Promise<EmailCategory> {
     // Skip if auto-categorization is disabled
-    if (!this.config.autoCategorize) {
+    if (!this.config.categorization?.enabled) {
       return 'primary'
     }
 
@@ -2757,7 +2766,7 @@ export class ImapServer {
       return
     }
 
-    const [, reference, pattern] = match
+    const [, reference = '', pattern = ''] = match
 
     // Return folders with Gmail-style XLIST attributes
     if (pattern === '*' || pattern === '%' || pattern === '') {
@@ -2848,7 +2857,7 @@ export class ImapServer {
       return
     }
 
-    const oldName = match[1].toUpperCase()
+    const oldName = (match[1] || '').toUpperCase()
     const systemFolders = ['INBOX', 'SENT', 'DRAFTS', 'TRASH', 'JUNK', 'ARCHIVE', 'ALL MAIL']
 
     if (systemFolders.includes(oldName)) {
@@ -2882,7 +2891,7 @@ export class ImapServer {
       return
     }
 
-    const literalSize = Number.parseInt(literalMatch[1], 10)
+    const literalSize = Number.parseInt(literalMatch[1] || '0', 10)
     const argsWithoutLiteral = args.substring(0, args.lastIndexOf('{')).trim()
 
     // Parse mailbox name (may be quoted)
@@ -2914,7 +2923,7 @@ export class ImapServer {
     let flags: string[] = []
     const flagsMatch = rest.match(/^\(([^)]*)\)/)
     if (flagsMatch) {
-      flags = flagsMatch[1].split(/\s+/).filter(f => f.length > 0)
+      flags = (flagsMatch[1] || '').split(/\s+/).filter(f => f.length > 0)
       rest = rest.substring(flagsMatch[0].length).trim()
     }
 
@@ -2985,13 +2994,14 @@ export class ImapServer {
     const uidMapping = await this.loadUidMapping(userKey)
     const uid = uidMapping.nextUid++
     uidMapping.mapping[s3Key] = uid
-    await this.saveUidMapping(userKey, uidMapping)
+    this.nextUidCache.set(userKey, uidMapping.nextUid)
+    await this.saveUidMapping(userKey)
 
     // Save flags if any (including \Seen which Mail.app often sets)
     if (flags && flags.length > 0) {
       const allFlags = await this.loadFlags(userKey)
       allFlags[s3Key] = flags
-      await this.saveFlags(userKey, allFlags)
+      await this.saveFlags(userKey)
     }
 
     // Get UIDVALIDITY (use a fixed value for consistency)
