@@ -1,7 +1,9 @@
 {
   "extends": "./storage/framework/core/tsconfig.json",
   "compilerOptions": {
+    "incremental": true,
     "lib": ["esnext", "dom"],
+    "tsBuildInfoFile": "./node_modules/.cache/typescript/app.tsbuildinfo",
     // `compilerOptions.paths` is not merged with the base config it
     // extends (storage/framework/core/tsconfig.json) — TypeScript replaces
     // the whole object when a child re-declares it. That base config's

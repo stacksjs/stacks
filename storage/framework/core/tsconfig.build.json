@@ -36,5 +36,12 @@
     "verbatimModuleSyntax": true,
     "skipDefaultLibCheck": true,
     "skipLibCheck": true
-  }
+  },
+  "exclude": [
+    "./*/dist/**",
+    "./*/tests/**",
+    "./*/build.ts",
+    "./*/*.test.ts",
+    "./*/*.spec.ts"
+  ]
 }

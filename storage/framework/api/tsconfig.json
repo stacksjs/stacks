@@ -1,3 +1,8 @@
 {
-  "extends": "../core/tsconfig.json"
+  "extends": "../core/tsconfig.json",
+  "compilerOptions": {
+    "tsBuildInfoFile": "../../../node_modules/.cache/typescript/framework-api.tsbuildinfo"
+  },
+  "include": ["*.ts", "src/**/*.ts"],
+  "exclude": ["dist/**", "tests/**", "**/*.test.ts", "**/*.spec.ts"]
 }

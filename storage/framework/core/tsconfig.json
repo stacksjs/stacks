@@ -1,9 +1,5 @@
 {
   "compilerOptions": {
-    // `baseUrl` was deprecated in TS 6.0 and will be removed in TS 7.0.
-    // Path mappings below resolve relative to this file's directory
-    // automatically (TS 4.1+ behavior) so removing baseUrl is a no-op
-    // for resolution but unblocks the next major TypeScript upgrade.
     "incremental": true,
     "target": "esnext",
     "jsx": "preserve",
@@ -46,51 +42,5 @@
     "forceConsistentCasingInFileNames": true,
     "isolatedModules": true,
     "skipLibCheck": true
-  },
-  "include": [
-    "../../../*.stx",
-    "../../../**/*.stx",
-    "../../../*.ts",
-    "../../../**/*.ts",
-    "../../../*.yaml",
-    "../../../**/*.yaml",
-    "../../../*.yml",
-    "../../../**/*.yml",
-    "../../../*.d.ts",
-    "../../../**/*.d.ts"
-  ],
-  "exclude": [
-    "../../../dist",
-    "../../../dist/**",
-    "../../../pantry",
-    "../../../pantry/**",
-    "../**/cdk.out",
-    "../**/dist",
-    "../defaults/**",
-    "../**/fixtures",
-    "../frontend-dist/**",
-    "../libs/entries/**",
-    "**/node_modules",
-    "../**/out",
-    "../server/app",
-    "../server/config",
-    "../server/core",
-    "../server/docs",
-    "../server/routes",
-    "../server/storage",
-    "../**/tests/**",
-    "../**/*.test.ts",
-    "../**/*.spec.ts",
-    "../models/**",
-    "../../../resources/assets/**",
-    "../../../cloud/**",
-    "./cloud/**",
-    "./deploy/**",
-    "../../../config/**",
-    "../views/**",
-    "./defaults/resources/assets/**",
-    "../auto-imports/**",
-    "../requests/**",
-    "../**/build.ts"
-  ]
+  }
 }
