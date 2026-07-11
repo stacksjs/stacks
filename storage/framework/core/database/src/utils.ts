@@ -191,7 +191,7 @@ function updateQueryBuilderConfig(): void {
   const dbConfigForQb = getDbConfig()
 
   setConfig({
-    dialect,
+    dialect: dialect as Parameters<typeof setConfig>[0]['dialect'],
     database: dbConfigForQb as any,
     verbose: getEnv() !== 'production',
     timestamps: {

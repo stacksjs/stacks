@@ -19,6 +19,7 @@ import { config as bunQbConfig, createQueryBuilder as createBunQueryBuilder } fr
 
 // Re-export everything from bun-query-builder
 export * from 'bun-query-builder'
+export type StacksDialect = import('bun-query-builder').SupportedDialect | 'singlestore'
 
 /**
  * Per-connection SQLite bootstrap pragmas (stacksjs/stacks#1951).

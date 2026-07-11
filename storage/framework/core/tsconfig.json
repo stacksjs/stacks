@@ -13,6 +13,7 @@
     "moduleResolution": "bundler",
     "paths": {
       "@stacksjs/actions/*": ["./actions/src/*"],
+      "bun-query-builder": ["../vendor/bun-query-builder/index.d.ts"],
       "@stacksjs/*": ["./*/src"],
       "stacks/*": ["./*/src"],
       "buddy": ["./buddy/src/index.ts"],

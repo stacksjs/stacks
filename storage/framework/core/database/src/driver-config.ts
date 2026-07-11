@@ -6,7 +6,7 @@
  * SQLite, MySQL, and PostgreSQL.
  */
 
-import type { SupportedDialect } from '@stacksjs/query-builder'
+import type { StacksDialect } from '@stacksjs/query-builder'
 import { env } from '@stacksjs/env'
 
 /**
@@ -139,7 +139,7 @@ export interface DatabaseConnections {
  */
 export interface FullDatabaseConfig {
   /** Default database driver */
-  default: SupportedDialect
+  default: StacksDialect
   /** Connection configurations */
   connections: DatabaseConnections
   /** Migrations table name */
@@ -151,7 +151,7 @@ export interface FullDatabaseConfig {
 /**
  * Default configuration values for each driver
  */
-export const driverDefaults: Record<SupportedDialect, Partial<SqliteConfig | MysqlConfig | SinglestoreConfig | PostgresConfig | DynamoDbConfig>> = {
+export const driverDefaults: Record<StacksDialect, Partial<SqliteConfig | MysqlConfig | SinglestoreConfig | PostgresConfig | DynamoDbConfig>> = {
   sqlite: {
     database: 'database/stacks.sqlite',
     prefix: '',
@@ -191,7 +191,7 @@ export const driverDefaults: Record<SupportedDialect, Partial<SqliteConfig | Mys
 /**
  * Get the connection string for a given driver and configuration
  */
-export function getConnectionString(driver: SupportedDialect, config: DatabaseConnections[keyof DatabaseConnections]): string {
+export function getConnectionString(driver: StacksDialect, config: DatabaseConnections[keyof DatabaseConnections]): string {
   switch (driver) {
     case 'sqlite': {
       const sqliteConfig = config as SqliteConfig
@@ -228,7 +228,7 @@ export function getConnectionString(driver: SupportedDialect, config: DatabaseCo
 /**
  * Validate driver configuration
  */
-export function validateDriverConfig(driver: SupportedDialect, config: DatabaseConnections[keyof DatabaseConnections]): { valid: boolean, errors: string[] } {
+export function validateDriverConfig(driver: StacksDialect, config: DatabaseConnections[keyof DatabaseConnections]): { valid: boolean, errors: string[] } {
   const errors: string[] = []
 
   switch (driver) {
@@ -281,14 +281,14 @@ export function mergeWithDefaults<T extends keyof DatabaseConnections>(
   driver: T,
   config: Partial<DatabaseConnections[T]>,
 ): DatabaseConnections[T] {
-  const defaults = driverDefaults[driver as SupportedDialect]
+  const defaults = driverDefaults[driver as StacksDialect]
   return { ...defaults, ...config } as DatabaseConnections[T]
 }
 
 /**
  * Get the appropriate configuration for a driver from environment variables
  */
-export function getConfigFromEnv(driver: SupportedDialect): DatabaseConnections[keyof DatabaseConnections] {
+export function getConfigFromEnv(driver: StacksDialect): DatabaseConnections[keyof DatabaseConnections] {
 
   switch (driver) {
     case 'sqlite':
@@ -337,10 +337,10 @@ export function getConfigFromEnv(driver: SupportedDialect): DatabaseConnections[
 /**
  * Detect the best available driver based on environment
  */
-export function detectDriver(): SupportedDialect {
+export function detectDriver(): StacksDialect {
   // Check for explicit configuration
   if (env.DB_CONNECTION) {
-    return env.DB_CONNECTION as SupportedDialect
+    return env.DB_CONNECTION as StacksDialect
   }
 
   // Check for PostgreSQL connection info
