@@ -1,0 +1,40 @@
+{
+  "extends": "./core/tsconfig.json",
+  "compilerOptions": {
+    "incremental": true,
+    "lib": ["esnext", "dom"],
+    "tsBuildInfoFile": "../../node_modules/.cache/typescript/app.tsbuildinfo",
+    "paths": {
+      "@stacksjs/actions/*": ["./core/actions/src/*"],
+      "@stacksjs/*": ["./core/*/src"],
+      "stacks/*": ["./core/*/src"],
+      "buddy": ["./core/buddy/src/index.ts"],
+      "buddy/*": ["./core/buddy/src/*"],
+      "Actions/*": ["../../app/Actions/*"],
+      "Commands/*": ["../../app/Commands/*"],
+      "Jobs/*": ["../../app/Jobs/*"],
+      "Middleware/*": ["../../app/Middleware/*"],
+      "Models/*": ["../../app/Models/*"],
+      "Notifications/*": ["../../app/Notifications/*"],
+      "~/*": ["../../*"],
+      "@/*": ["../../resources/*"]
+    }
+  },
+  "include": [
+    "../../*.ts",
+    "../../*.d.ts",
+    "../../types/**/*.d.ts",
+    "../../app/**/*.ts",
+    "../../config/**/*.ts",
+    "../../resources/**/*.ts",
+    "../../routes/**/*.ts"
+  ],
+  "exclude": [
+    "../../cloud/**",
+    "../../dist/**",
+    "../../node_modules/**",
+    "../../pantry/**",
+    "./**",
+    "../../resources/assets/**"
+  ]
+}

@@ -1,0 +1,40 @@
+{
+  "extends": "./core/tsconfig.json",
+  "compilerOptions": {
+    "declaration": false,
+    "declarationMap": false,
+    "incremental": true,
+    "noEmit": true,
+    "rootDir": "../..",
+    "tsBuildInfoFile": "../../node_modules/.cache/typescript/framework.tsbuildinfo"
+  },
+  "include": [
+    "./**/*.ts",
+    "./**/*.d.ts"
+  ],
+  "exclude": [
+    "./**/cdk.out/**",
+    "./**/dist/**",
+    "./**/fixtures/**",
+    "./**/out/**",
+    "./**/tests/**",
+    "./**/*.test.ts",
+    "./**/*.spec.ts",
+    "./**/build.ts",
+    "./auto-imports/**",
+    "./core/deploy/**",
+    "./core/defaults/resources/assets/**",
+    "./core/models/**",
+    "./core/requests/**",
+    "./defaults/**",
+    "./frontend-dist/**",
+    "./libs/entries/**",
+    "./server/app/**",
+    "./server/config/**",
+    "./server/core/**",
+    "./server/docs/**",
+    "./server/routes/**",
+    "./server/storage/**",
+    "./views/**"
+  ]
+}
