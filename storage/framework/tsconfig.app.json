@@ -24,10 +24,9 @@
     "../../*.ts",
     "../../*.d.ts",
     "../../types/**/*.d.ts",
-    "../../app/**/*.ts",
-    "../../config/**/*.ts",
-    "../../resources/**/*.ts",
-    "../../routes/**/*.ts"
+    "../../app/Models/**/*.ts",
+    "../../app/Services/**/*.ts",
+    "../../app/Support/**/*.ts"
   ],
   "exclude": [
     "../../cloud/**",
