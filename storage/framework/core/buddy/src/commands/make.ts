@@ -90,7 +90,7 @@ export function make(buddy: CLI): void {
       setDryRun(Boolean((options as any).dryRun || (options as any)['dry-run']))
 
       if (make) {
-        options.name = buddy.args[1]
+        options.name = buddy.args[1] ?? make
 
         switch (make) {
           case 'action':

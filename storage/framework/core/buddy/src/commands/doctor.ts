@@ -201,6 +201,7 @@ export function doctor(buddy: CLI): void {
           .join(', ')
         const more = result.missing.length > 5 ? ` (+${result.missing.length - 5} more)` : ''
         const first = result.missing[0]
+        if (!first) throw new Error('Unique-index audit reported missing entries without details')
         const example = `CREATE UNIQUE INDEX IF NOT EXISTS "${first.table}_${first.columns.join('_')}_unique" ON "${first.table}" ("${first.columns.join('", "')}")`
         throw new Error(`${result.missing.length}/${result.declared.length} declared unique constraints have no UNIQUE index: ${sample}${more}. Run \`buddy migrate\` (re-queues missing unique-index migrations, #1952) — dedupe duplicate rows first or migrate hard-fails; if no migration file exists run \`buddy generate:migrations\`, or create manually: ${example}`)
       }, 10000)
@@ -220,6 +221,7 @@ export function doctor(buddy: CLI): void {
           .join(', ')
         const more = result.orphans.length > 5 ? ` (+${result.orphans.length - 5} more)` : ''
         const first = result.orphans[0]
+        if (!first) throw new Error('Foreign-key audit reported orphan rows without details')
         throw new Error(`${result.total} orphan rows violate FKs: ${sample}${more}. Legacy rows written under foreign_keys=OFF (#1951). Review and clean manually, e.g. DELETE FROM ${first.table} WHERE ${first.column} IS NOT NULL AND ${first.column} NOT IN (SELECT id FROM ${first.parent}) — doctor never deletes data.`)
       }, 10000)
 

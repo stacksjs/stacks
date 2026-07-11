@@ -186,7 +186,8 @@ export class SmtpServer {
     const trimmedLine = line.trim()
     if (!trimmedLine) return
 
-    const command = trimmedLine.split(' ')[0].toUpperCase()
+    const command = trimmedLine.split(' ')[0]?.toUpperCase()
+    if (!command) return
     const args = trimmedLine.slice(command.length).trim()
 
     console.log(`SMTP CMD [${session.username || 'anon'}]: ${command} ${args.includes('AUTH') ? '***' : args}`)
@@ -300,7 +301,11 @@ export class SmtpServer {
    */
   private async handleAuth(session: SmtpSession, args: string): Promise<void> {
     const parts = args.split(' ')
-    const mechanism = parts[0].toUpperCase()
+    const mechanism = parts[0]?.toUpperCase()
+    if (!mechanism) {
+      this.send(session, '504 Authentication mechanism required')
+      return
+    }
 
     if (mechanism === 'PLAIN') {
       // AUTH PLAIN [base64-credentials]
@@ -362,6 +367,7 @@ export class SmtpServer {
       // Format can be: \0username\0password or authzid\0authcid\0password
       const username = parts.length === 3 ? parts[1] : parts[0]
       const password = parts.length === 3 ? parts[2] : parts[1]
+      if (!username || password === undefined) throw new Error('Malformed AUTH PLAIN credentials')
 
       await this.authenticateUser(session, username, password)
     } catch (err) {
@@ -374,7 +380,7 @@ export class SmtpServer {
    */
   private async authenticateUser(session: SmtpSession, username: string, password: string): Promise<void> {
     // Strip domain from username if present (chris@stacksjs.com -> chris)
-    const cleanUsername = username.includes('@') ? username.split('@')[0] : username
+    const cleanUsername = username.includes('@') ? username.split('@')[0] ?? '' : username
 
     const user = this.config.users[cleanUsername]
 
@@ -429,6 +435,10 @@ export class SmtpServer {
     }
 
     const fromAddress = match[1]
+    if (!fromAddress) {
+      this.send(session, '501 Syntax error in MAIL FROM')
+      return
+    }
 
     // Verify the sender is allowed (must be from their domain)
     if (!fromAddress.endsWith(`@${this.config.domain}`)) {
@@ -462,7 +472,12 @@ export class SmtpServer {
       return
     }
 
-    session.rcptTo.push(match[1])
+    const recipient = match[1]
+    if (!recipient) {
+      this.send(session, '501 Syntax error in RCPT TO')
+      return
+    }
+    session.rcptTo.push(recipient)
     session.state = 'rcpt'
     this.send(session, '250 OK')
   }

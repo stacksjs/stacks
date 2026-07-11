@@ -2,4 +2,4 @@ export {
   RadioGroup,
   RadioGroupLabel,
   RadioGroupOption,
-} from '@stacksjs/stx'
+} from '@stacksjs/components'

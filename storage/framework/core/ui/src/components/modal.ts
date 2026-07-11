@@ -3,4 +3,4 @@ export {
   DialogDescription,
   DialogPanel,
   DialogTitle,
-} from '@stacksjs/stx'
+} from '@stacksjs/components'

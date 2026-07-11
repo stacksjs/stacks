@@ -1,5 +1,4 @@
 import type { Buffer } from 'node:buffer'
-import type { ReadableStream } from 'node:stream/web'
 
 /**
  * File contents can be a string, Buffer, Uint8Array, or ReadableStream

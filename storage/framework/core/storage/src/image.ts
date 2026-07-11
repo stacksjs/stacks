@@ -62,7 +62,7 @@ async function loadSharp(): Promise<SharpFactory> {
   if (cachedSharp) return cachedSharp
   try {
     const mod = await import('sharp')
-    cachedSharp = (mod as { default?: SharpFactory }).default ?? (mod as unknown as SharpFactory)
+    cachedSharp = (mod as unknown as { default?: SharpFactory }).default ?? (mod as unknown as SharpFactory)
     return cachedSharp!
   }
   catch (err) {

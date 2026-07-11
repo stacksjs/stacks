@@ -174,11 +174,7 @@ export async function upgradeStacksPackages(projectRoot: string, options: Packag
 
   console.log('  Installing…\n')
   const result = await runCommand(`bun update ${frameworkPkgs.join(' ')}`, { cwd: projectRoot })
-  const isErr = result && typeof result === 'object' && 'isErr' in result
-    ? (typeof (result as { isErr: unknown }).isErr === 'function'
-        ? (result as { isErr: () => boolean }).isErr()
-        : (result as { isErr: boolean }).isErr === true)
-    : false
+  const isErr = result.isErr
 
   if (isErr) {
     console.error('\n✗ The install step failed. Your package.json was updated — resolve the error and re-run `bun update`.\n')

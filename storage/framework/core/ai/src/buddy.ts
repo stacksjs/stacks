@@ -346,8 +346,8 @@ export async function applyChanges(aiResponse: string): Promise<string[]> {
   const filePattern = /FILE:\s*([^\n]+)\n```\w*\n([\s\S]*?)```/g
 
   for (const match of aiResponse.matchAll(filePattern)) {
-    const filePath = match[1].trim()
-    const content = match[2]
+    const filePath = match[1]!.trim()
+    const content = match[2]!
 
     const fullPath = join(currentState.repo.path, filePath)
 

@@ -98,6 +98,8 @@ export async function fetchGrouped(): Promise<GroupedError[]> {
 
   for (const [_, group] of groupMap) {
     const representative = group.errors[0]
+    if (!representative)
+      continue
     // Determine status - use latest non-null status or default to 'unresolved'
     const latestStatus = group.errors.find(e => e.status !== null)?.status
     let statusLabel = 'unresolved'

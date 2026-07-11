@@ -9,7 +9,7 @@ export interface ManageCustomer {
   stripeId: (user: UserModel) => string
   hasStripeId: (user: UserModel) => boolean
   createStripeCustomer: (user: UserModel, options: Stripe.CustomerCreateParams) => Promise<Stripe.Response<Stripe.Customer>>
-  updateStripeCustomer: (user: UserModel, options: Stripe.CustomerCreateParams) => Promise<Stripe.Response<Stripe.Customer>>
+  updateStripeCustomer: (user: UserModel, options: Stripe.CustomerUpdateParams) => Promise<Stripe.Response<Stripe.Customer>>
   createOrGetStripeUser: (user: UserModel, options: Stripe.CustomerCreateParams) => Promise<Stripe.Response<Stripe.Customer>>
   retrieveStripeUser: (user: UserModel) => Promise<Stripe.Response<Stripe.Customer> | undefined>
   createOrUpdateStripeUser: (user: UserModel, options: Stripe.CustomerCreateParams) => Promise<Stripe.Response<Stripe.Customer>>
@@ -77,7 +77,7 @@ export const manageCustomer: ManageCustomer = (() => {
     return customer
   }
 
-  async function updateStripeCustomer(user: UserModel, options: Stripe.CustomerCreateParams = {}): Promise<Stripe.Response<Stripe.Customer>> {
+  async function updateStripeCustomer(user: UserModel, options: Stripe.CustomerUpdateParams = {}): Promise<Stripe.Response<Stripe.Customer>> {
     if (!user.stripe_id) {
       throw new Error('User does not have a Stripe customer ID. Create a customer first.')
     }

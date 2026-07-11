@@ -35,7 +35,7 @@ export function completion(buddy: CLI): void {
       // but the import surface in @stacksjs/types narrows to the
       // shape we actually consume.
       const commands = buddy.commands || []
-      const commandNames = commands.map((cmd: { name?: string }) => cmd.name).filter(Boolean)
+      const commandNames = commands.map((cmd: { name?: string }) => cmd.name).filter((name): name is string => Boolean(name))
 
       switch (targetShell) {
         case 'bash':

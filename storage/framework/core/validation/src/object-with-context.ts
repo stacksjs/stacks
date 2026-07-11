@@ -33,7 +33,7 @@ import type { ConditionalAPI } from './conditional'
  *     and other introspection passes can walk the per-field validators
  *     (and their `__conditionals` arrays).
  */
-export interface ObjectWithContextValidator<T extends Record<string, Validator<any>>> {
+export interface ObjectWithContextValidator<T extends Record<string, Validator<any>>> extends Validator<Record<string, unknown>> {
   readonly name: 'object'
   /**
    * Run validation against `value`. Conditionals on child validators
@@ -45,9 +45,9 @@ export interface ObjectWithContextValidator<T extends Record<string, Validator<a
   /** Surface the shape map for introspection. */
   getShape: () => T
   /** Mark the whole object as required (mirrors ts-validation). */
-  required: () => ObjectWithContextValidator<T> & ConditionalAPI<ObjectWithContextValidator<T>>
+  required: () => this
   /** Mark the whole object as optional (mirrors ts-validation). */
-  optional: () => ObjectWithContextValidator<T> & ConditionalAPI<ObjectWithContextValidator<T>>
+  optional: () => this
   /** Internal flag set when nested inside another object's shape. */
   isPartOfShape: boolean
   /** Replace or extend the shape after construction. */
@@ -77,6 +77,13 @@ export function objectWithContext<T extends Record<string, Validator<any>>>(
 
   const validator: ObjectWithContextValidator<T> = {
     name: 'object',
+    get isRequired() {
+      return isRequired
+    },
+    getRules: () => [],
+    test(value: Record<string, unknown>) {
+      return this.validate(value).valid
+    },
     // Public + settable: a parent shape-walker (or legacy ObjectValidator
     // wrapper) can flip this via `validator.isPartOfShape = true` to opt
     // into the error-map error shape. `validate()` reads via `this.` so

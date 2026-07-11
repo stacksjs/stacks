@@ -7,7 +7,7 @@ import type {
   Index,
   IndexesResults,
   IndexOptions,
-  MeiliSearch,
+  Meilisearch,
   Settings as MeilisearchOptions,
   PaginationSettings,
   DocumentOptions as RecordOptions,
@@ -85,7 +85,7 @@ export interface SearchEngineOptions {
 export type SearchEngineConfig = Partial<SearchEngineOptions>
 
 export interface SearchEngineDriver {
-  client: () => MeiliSearch
+  client: () => Meilisearch
   resetClient?: () => void
 
   search: (index: string, params: any) => Promise<SearchResponse<Record<string, any>>>
@@ -243,7 +243,7 @@ export type {
   Index,
   IndexesResults,
   IndexOptions,
-  MeiliSearch,
+  Meilisearch,
   MeilisearchOptions,
   RecordOptions,
   SearchParams,

@@ -171,7 +171,7 @@ export function applyConditionals<V extends Validator<any>>(
   // actually fires — non-matching predicates pay zero clone cost.
   let working: V | null = null
   for (const record of records) {
-    if (!shouldApplyConditional(record, parent)) continue
+    if (!shouldApplyConditional(record as unknown as ConditionalRecord<Validator<any>>, parent)) continue
     if (working === null) working = cloneValidator(base)
     working = record.refine(working)
   }

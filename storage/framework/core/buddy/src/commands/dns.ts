@@ -81,7 +81,7 @@ export function dns(buddy: CLI): void {
 
       try {
         const client = new DnsClient({
-          domains: [targetDomain],
+          domains: [targetDomain!],
           type: options.type,
           nameserver: options.nameserver,
           class: options.class,

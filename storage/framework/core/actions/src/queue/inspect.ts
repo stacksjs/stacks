@@ -60,7 +60,7 @@ try {
       process.exit(1)
     }
 
-    const job = failedResult as FailedJobRecord
+    const job = failedResult as unknown as FailedJobRecord
 
     console.log('\n┌────────────────────────────────────────────────────────────────┐')
     console.log('│                    Failed Job Details                          │')
@@ -128,7 +128,7 @@ try {
       process.exit(1)
     }
 
-    const job = jobResult as JobRecord
+    const job = jobResult as unknown as JobRecord
 
     const now = Math.floor(Date.now() / 1000)
     let status = 'Pending'

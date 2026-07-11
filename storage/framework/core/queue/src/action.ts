@@ -174,8 +174,8 @@ export class Job {
 
     // Unified envelope (stacksjs/stacks#1884 Q-6) — see job.ts for
     // the full rationale.
-    const envelope = createEnvelope(this.name, payload, {
-      queue: this.queue,
+    const envelope = createEnvelope(this.name ?? this.constructor.name, payload, {
+      queue: this.queue ?? 'default',
       tries: typeof this.tries === 'number' ? this.tries : undefined,
       timeout: this.timeout,
       backoff: Array.isArray(this.backoff) ? this.backoff : undefined,
@@ -208,13 +208,13 @@ export class Job {
       throw new Error('Redis queue connection is not configured. Check config/queue.ts')
     }
 
-    const queue = new RedisQueue(this.queue || 'default', redisConfig)
+    const queue = new RedisQueue(this.queue || 'default', redisConfig as ConstructorParameters<typeof RedisQueue>[1])
 
     // Same envelope as the database path (stacksjs/stacks#1884 Q-6) —
     // bun-queue takes the envelope as opaque data; the worker side
     // parses through `parseEnvelope` regardless of driver.
-    const envelope = createEnvelope(this.name, payload, {
-      queue: this.queue,
+    const envelope = createEnvelope(this.name ?? this.constructor.name, payload, {
+      queue: this.queue ?? 'default',
       tries: typeof this.tries === 'number' ? this.tries : undefined,
       timeout: this.timeout,
       backoff: Array.isArray(this.backoff) ? this.backoff : undefined,

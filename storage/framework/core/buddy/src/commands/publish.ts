@@ -275,6 +275,8 @@ async function publishResource(ctx: PublishContext): Promise<void> {
   }
 
   const sourcePath = matches[0]
+  if (!sourcePath)
+    throw new Error(`Could not resolve default ${kind}: ${fileName}`)
   const targetPath = `${userDir.replace(/\/$/, '')}/${fileName}`
 
   if (existsSync(targetPath) && !force) {

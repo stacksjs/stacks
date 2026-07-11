@@ -69,7 +69,7 @@ async function migrateMigrations(req: MigrateProjectRequest): Promise<ReportEntr
 
   const out: ReportEntry[] = []
   for (let i = 0; i < files.length; i++) {
-    const file = files[i]
+    const file = files[i]!
     const rel = `database/migrations/${file}`
     try {
       const body = await readFile(join(dir, file), 'utf8')

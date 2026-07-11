@@ -90,7 +90,7 @@ declare global {
 // Dynamically import all model definitions from app/Models/
 // Uses import.meta.glob in Vite context (build time), or empty map in Bun/Node context
 const modelModules: Record<string, { default: BrowserModelDefinition }> = typeof (import.meta as { glob?: unknown }).glob === 'function'
-  ? (import.meta as { glob: (pattern: string, opts?: { eager?: boolean }) => Record<string, { default: BrowserModelDefinition }> }).glob('~/app/Models/*.ts', { eager: true })
+  ? (import.meta as unknown as { glob: (pattern: string, opts?: { eager?: boolean }) => Record<string, { default: BrowserModelDefinition }> }).glob('~/app/Models/*.ts', { eager: true })
   : {}
 
 /**
@@ -122,7 +122,7 @@ export function loadBrowserModels(): void {
       // Create browser model from definition
       const browserModel = createBrowserModel({
         name: definition.name,
-        table: definition.table,
+        table: definition.table ?? definition.name.toLowerCase(),
         primaryKey: definition.primaryKey || 'id',
         traits: {
           useUuid: definition.traits?.useUuid ?? false,

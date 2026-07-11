@@ -2662,7 +2662,7 @@ export async function undeployStack(options: UndeployStackOptions): Promise<void
     }
 
     // Handle DELETE_FAILED - need to retain some resources
-    if (error.code === 'DELETE_FAILED' || errorStr.includes('DELETE_FAILED')) {
+    if ((error as { code?: string }).code === 'DELETE_FAILED' || errorStr.includes('DELETE_FAILED')) {
       console.log('')
       console.log('Some resources could not be deleted automatically')
       console.log('Identifying resources to retain...')

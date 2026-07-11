@@ -41,10 +41,23 @@ export class VonageDriver implements SmsDriver, SmsVerificationDriver {
       const results = await this.sendBulk(
         recipients.map(to => ({ ...message, to })),
       )
-      return results[0]
+      return results[0] ?? {
+        success: false,
+        to: recipients[0] ?? '',
+        error: 'No recipients supplied',
+        provider: 'vonage',
+      }
     }
 
     const to = recipients[0]
+    if (!to) {
+      return {
+        success: false,
+        to: '',
+        error: 'No recipient supplied',
+        provider: 'vonage',
+      }
+    }
     const from = message.from || this.config.from
 
     if (!from) {
@@ -114,8 +127,8 @@ export class VonageDriver implements SmsDriver, SmsVerificationDriver {
 
     const data = await response.json() as VonageSmsResponse
 
-    if (data.messages && data.messages.length > 0) {
-      const msg = data.messages[0]
+    const [msg] = data.messages ?? []
+    if (msg) {
 
       if (msg.status !== '0') {
         return {
@@ -208,7 +221,7 @@ export class VonageDriver implements SmsDriver, SmsVerificationDriver {
    */
   async sendBulk(messages: SmsMessage[]): Promise<SmsSendResult[]> {
     return Promise.all(
-      messages.map(msg => this.send({ ...msg, to: Array.isArray(msg.to) ? msg.to[0] : msg.to })),
+      messages.map(msg => this.send(msg)),
     )
   }
 

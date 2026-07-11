@@ -129,7 +129,7 @@ export async function runAction(action: Action, options?: ActionOptions): Promis
       if (relativePath === action || file.endsWith(`${action}.ts`) || file.endsWith(`${action}.js`)) {
         // Direct filename match - import and execute immediately
         log.debug(`[action] Resolved: ${action} → ${file}`)
-        return await ((await import(file)).default as ActionType).handle(undefined as unknown as Parameters<ActionType['handle']>[0])
+        return await ((await import(file)).default as ActionType).handle(undefined as unknown as Parameters<ActionType['handle']>[0]) as unknown as Result<Subprocess, CommandError>
       }
       // Collect all files for potential name matching (only if direct match fails)
       matchingFiles.push(file)
@@ -142,7 +142,7 @@ export async function runAction(action: Action, options?: ActionOptions): Promis
         const a = await import(file)
         if (a.name === action) {
           log.debug(`[action] Resolved: ${action} → ${file}`)
-          return await a.handle()
+          return await a.handle() as Result<Subprocess, CommandError>
         }
       }
       // eslint-disable-next-line unused-imports/no-unused-vars

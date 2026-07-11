@@ -47,6 +47,10 @@ function deriveAppDefaults(): { name: string, url: string } {
 const appDefaults = deriveAppDefaults()
 
 export const defaults: StacksOptions = {
+  cms: { enabled: false },
+  commerce: { enabled: false },
+  marketing: { enabled: false },
+  monitoring: { enabled: false },
   ai: {
     deploy: false,
     models: [

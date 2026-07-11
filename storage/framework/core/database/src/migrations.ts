@@ -585,7 +585,7 @@ async function countAppliedMigrations(): Promise<number> {
   try {
     const row = await (db as any)
       .selectFrom('migrations')
-      .select((eb: any) => eb.fn.count<number>('id').as('n'))
+      .select((eb: any) => eb.fn.count('id').as('n'))
       .executeTakeFirst()
     if (!row) return 0
     const n = Number(row.n ?? row.N ?? 0)

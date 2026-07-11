@@ -92,7 +92,7 @@ export class I18n implements I18nInstance {
    * Get translation message
    */
   tm = (key: string, locale?: string): TranslationMessages | string | undefined => {
-    return this.getMessage(key, locale)
+    return this.getMessage(key, locale ?? this.locale)
   }
 
   /**
@@ -478,7 +478,8 @@ function deepMerge(target: TranslationMessages, source: TranslationMessages): Tr
       )
     }
     else {
-      result[key] = sourceValue
+      if (sourceValue !== undefined)
+        result[key] = sourceValue
     }
   }
 

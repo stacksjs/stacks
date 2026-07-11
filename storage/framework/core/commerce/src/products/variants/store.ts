@@ -120,8 +120,8 @@ export function generateVariantCombinations(optionSets: Record<string, string[]>
     if (currentIndex === keys.length)
       return [currentCombination]
 
-    const currentKey = keys[currentIndex]
-    const currentOptions = optionSets[currentKey]
+    const currentKey = keys[currentIndex]!
+    const currentOptions = optionSets[currentKey] ?? []
     const combinations: Record<string, string>[] = []
 
     for (const option of currentOptions) {

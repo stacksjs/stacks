@@ -1106,10 +1106,10 @@ if (createApp) {
   if (!createApp) {
     // eslint-disable-next-line no-console
     console.log(`  ${dim('Native window unavailable. Set CRAFT_BIN to a craft binary, or open the URL above in a browser.')}\n`)
-    await new Promise(() => {})
+    await new Promise<never>(() => {})
   }
 
-  const app = createApp({
+  const app = createApp!({
     url: initialUrl,
     quiet: !verbose,
     ...(craftBinaryPath && { craftPath: craftBinaryPath }),

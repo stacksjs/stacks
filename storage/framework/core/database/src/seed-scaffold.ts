@@ -69,7 +69,7 @@ export function stripUseSeederTrait(source: string): { source: string, changed: 
 
     const keyStart = m.index
     let i = keyStart + m[0].length
-    while (i < out.length && /\s/.test(out[i])) i++
+    while (i < out.length && /\s/.test(out[i]!)) i++
 
     const valueChar = out[i]
     if (valueChar === '{') {

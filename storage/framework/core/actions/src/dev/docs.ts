@@ -21,6 +21,7 @@ const bunPressConfig: BunPressConfig = {
   docsDir: projectPath('docs'),
   outDir: projectPath('dist/docs'),
   ...docs,
+  markdown: docs.markdown ?? {},
   ...(devBaseUrl && {
     sitemap: {
       ...docs.sitemap,

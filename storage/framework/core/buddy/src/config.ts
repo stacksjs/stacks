@@ -280,7 +280,7 @@ export async function loadBuddyConfig(): Promise<BuddyConfig> {
         }
 
         cachedConfig = config
-        return cachedConfig
+        return config
       }
       catch (error) {
         log.warn(`Failed to load buddy config from ${configPath}:`, error)

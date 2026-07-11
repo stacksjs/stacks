@@ -6,7 +6,7 @@
  * driver switching between SQLite, MySQL, and PostgreSQL.
  */
 
-import type { QueryBuilder, QueryBuilderConfig, SupportedDialect } from '@stacksjs/query-builder'
+import type { QueryBuilderConfig, SupportedDialect } from '@stacksjs/query-builder'
 import { createQueryBuilder, setConfig } from '@stacksjs/query-builder'
 import { env as stacksEnv } from '@stacksjs/env'
 
@@ -76,7 +76,7 @@ export interface DatabaseOptions {
  * ```
  */
 export class Database {
-  private _queryBuilder: QueryBuilder<any> | null = null
+  private _queryBuilder: ReturnType<typeof createQueryBuilder> | null = null
   private _options: DatabaseOptions
   private _initialized = false
 
@@ -122,7 +122,7 @@ export class Database {
    * Get the query builder instance
    * Lazily initializes the connection on first access
    */
-  get query(): QueryBuilder<any> {
+  get query(): ReturnType<typeof createQueryBuilder> {
     if (!this._queryBuilder) {
       this.initialize()
     }

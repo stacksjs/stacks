@@ -91,7 +91,7 @@ export async function handleWebSocketRequest(req: Request, server: Server<any>):
       // Pass the auth data through to the upgraded socket so
       // downstream handlers (channel auth callbacks, presence
       // tracking) can read it via `ws.data` without re-parsing.
-      const upgraded = server.upgrade(req, result.data ? { data: result.data } : undefined)
+      const upgraded = (server.upgrade as any)(req, result.data ? { data: result.data } : undefined)
       if (upgraded) return undefined
       return new Response('WebSocket upgrade failed', { status: 400 })
     }

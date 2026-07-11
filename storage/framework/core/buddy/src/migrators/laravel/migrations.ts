@@ -46,7 +46,7 @@ interface Column {
  */
 export function parseLaravelMigration(source: string): ParsedMigration | null {
   const createMatch = source.match(/Schema::create\(\s*['"]([a-z0-9_]+)['"]\s*,\s*function\s*\([^)]*\)\s*\{([\s\S]*?)\}\s*\)\s*;/i)
-  if (!createMatch) return null
+  if (!createMatch?.[1] || createMatch[2] === undefined) return null
 
   const table = createMatch[1]
   const body = createMatch[2]
@@ -102,7 +102,7 @@ type ParsedLine =
 function parseColumnLine(line: string): ParsedLine | null {
   // Match: $table->method(args)->mod1()->mod2(args)...
   const methodMatch = line.match(/^\$table->([a-zA-Z_]+)\s*\(([^)]*)\)(.*)$/)
-  if (!methodMatch) return null
+  if (!methodMatch?.[1] || methodMatch[2] === undefined || methodMatch[3] === undefined) return null
 
   const method = methodMatch[1]
   const args = methodMatch[2].trim()
@@ -187,7 +187,8 @@ function applyModifiers(rest: string, column: Column): void {
   let match: RegExpExecArray | null
   while ((match = modRegex.exec(rest)) !== null) {
     const mod = match[1]
-    const args = match[2].trim()
+    const args = match[2]?.trim() ?? ''
+    if (!mod) continue
 
     switch (mod) {
       case 'nullable':
@@ -224,7 +225,7 @@ function applyModifiers(rest: string, column: Column): void {
 
 function parseStringArg(args: string): string | null {
   const m = args.match(/^['"]([^'"]+)['"]/)
-  return m ? m[1] : null
+  return m?.[1] ?? null
 }
 
 function parseIndexArg(args: string): string[] {
@@ -232,7 +233,7 @@ function parseIndexArg(args: string): string[] {
   const single = parseStringArg(args)
   if (single) return [single]
   const arr = args.match(/\[([^\]]*)\]/)
-  if (!arr) return []
+  if (!arr?.[1]) return []
   return arr[1]
     .split(',')
     .map(s => s.trim().replace(/^['"]|['"]$/g, ''))
@@ -241,7 +242,7 @@ function parseIndexArg(args: string): string[] {
 
 function parseDefaultArg(args: string): string {
   const stringMatch = args.match(/^['"]([^'"]*)['"]/)
-  if (stringMatch) return `'${stringMatch[1].replace(/'/g, '\'\'')}'`
+  if (stringMatch?.[1] !== undefined) return `'${stringMatch[1].replace(/'/g, '\'\'')}'`
 
   const trimmed = args.trim()
   if (trimmed === 'true') return '1'

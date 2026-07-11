@@ -141,7 +141,7 @@ export function createOllamaDriver(config: OllamaDriverConfig = {}): AIDriver {
         embeddings.push(data.embedding)
       }
 
-      return Array.isArray(input) ? embeddings : embeddings[0]
+      return Array.isArray(input) ? embeddings : embeddings[0]!
     },
   }
 }
@@ -343,7 +343,7 @@ export async function embed(
     embeddings.push(data.embedding)
   }
 
-  return Array.isArray(input) ? embeddings : embeddings[0]
+  return Array.isArray(input) ? embeddings : embeddings[0]!
 }
 
 /**
@@ -417,7 +417,7 @@ export async function pullModel(
       try {
         const data = JSON.parse(line) as { status?: string; completed?: number; total?: number }
         if (onProgress) {
-          onProgress(data.status, data.completed, data.total)
+          onProgress(data.status ?? '', data.completed, data.total)
         }
       }
       catch {

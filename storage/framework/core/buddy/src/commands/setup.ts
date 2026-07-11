@@ -273,7 +273,7 @@ function detectDbPackage(cwd: string): string | undefined {
   if (!match)
     return undefined
 
-  const value = match[1].trim().replace(/['"]/g, '')
+  const value = match[1]!.trim().replace(/['"]/g, '')
 
   return DB_CONNECTION_PACKAGES[value]
 }

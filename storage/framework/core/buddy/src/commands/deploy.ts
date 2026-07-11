@@ -158,7 +158,7 @@ function loadAwsCredentialsFromFile(): { accessKeyId?: string, secretAccessKey?:
 
       // Check for profile header
       const profileMatch = trimmed.match(/^\[(.+)\]$/)
-      if (profileMatch) {
+      if (profileMatch?.[1]) {
         currentProfile = profileMatch[1]
         profileCredentials[currentProfile] = {}
         continue
@@ -168,11 +168,13 @@ function loadAwsCredentialsFromFile(): { accessKeyId?: string, secretAccessKey?:
       const keyValue = trimmed.match(/^(\w+)\s*=\s*(.+)$/)
       if (keyValue && currentProfile) {
         const [, key, value] = keyValue
+        const target = profileCredentials[currentProfile]
+        if (!target || value === undefined) continue
         if (key === 'aws_access_key_id') {
-          profileCredentials[currentProfile].accessKeyId = value
+          target.accessKeyId = value
         }
         else if (key === 'aws_secret_access_key') {
-          profileCredentials[currentProfile].secretAccessKey = value
+          target.secretAccessKey = value
         }
       }
     }
@@ -202,7 +204,7 @@ function loadAwsCredentialsFromFile(): { accessKeyId?: string, secretAccessKey?:
     if (existsSync(configPath)) {
       const configContent = readFileSync(configPath, 'utf-8')
       const regionMatch = configContent.match(/region\s*=\s*(.+)/)
-      if (regionMatch) {
+      if (regionMatch?.[1]) {
         region = regionMatch[1].trim()
       }
     }
@@ -944,7 +946,7 @@ async function resolveSiteGithubSource(root: string): Promise<{ repo: string, re
     const { execSync } = await import('node:child_process')
     const run = (cmd: string) => execSync(cmd, { cwd: root, stdio: ['ignore', 'pipe', 'ignore'] }).toString().trim()
     const match = run('git config --get remote.origin.url').match(/github\.com[:/]([^/]+\/[^/]+?)(?:\.git)?$/)
-    if (!match)
+    if (!match?.[1])
       return null
     return { repo: match[1], ref: run('git rev-parse HEAD') }
   }
@@ -1388,7 +1390,7 @@ function resolveMailboxes(mailboxes: unknown, domain: string): ResolvedMailbox[]
     }
     if (!raw || typeof raw !== 'string')
       continue
-    const localPart = (raw.includes('@') ? raw.split('@')[0] : raw).trim()
+    const localPart = (raw.includes('@') ? raw.split('@')[0] ?? '' : raw).trim()
     if (!localPart)
       continue
     const address = `${localPart}@${domain}`
@@ -1596,7 +1598,7 @@ if [ "$ENV_CHANGED" = 1 ]; then systemctl restart mail 2>/dev/null || true; echo
     const line = (out.match(/MAILTENANT:[^\n]*/) || [])[0] || 'MAILTENANT:done'
     const mailHost = (out.match(/MAILHOST:([^\n]*)/) || [])[1]?.trim() || `mail.${domain}`
     const dkimPubB64 = (out.match(/DKIMPUB:([^\n]*)/) || [])[1]?.trim() || undefined
-    const madeAddrs = new Set([...out.matchAll(/MADE:([^\n]+)/g)].map(m => m[1].trim()))
+    const madeAddrs = new Set([...out.matchAll(/MADE:([^\n]+)/g)].flatMap(m => m[1] ? [m[1].trim()] : []))
     const created = boxes.filter(b => madeAddrs.has(b.address)).map(b => ({ address: b.address, password: b.password }))
 
     logger.success(`Mail routing reconciled (${line.replace('MAILTENANT:', '')})`)
@@ -1890,7 +1892,7 @@ export function deploy(buddy: CLI): void {
         if (existsSync(prodEnvPath)) {
           const prodEnvContent = readFileSync(prodEnvPath, 'utf-8')
           const urlMatch = prodEnvContent.match(/^APP_URL=(.+)$/m)
-          if (urlMatch) {
+          if (urlMatch?.[1]) {
             productionUrl = urlMatch[1].trim()
             log.debug('Using APP_URL from .env.production:', productionUrl)
           }
@@ -2317,6 +2319,9 @@ async function checkIfAwsIsBootstrapped(options?: DeployOptions) {
       }
     }
     catch (error: unknown) {
+      const caught = error && typeof error === 'object'
+        ? error as { message?: string, code?: string }
+        : { message: String(error) }
       log.debug(`Stack not found: ${getErrorMessage(error)}`)
       // Stack doesn't exist, we'll create it below
     }
@@ -3854,6 +3859,9 @@ echo "Mail server setup complete at $(date)"
       }
     }
     catch (error: unknown) {
+      const caught = error && typeof error === 'object'
+        ? error as { message?: string, code?: string }
+        : { message: String(error) }
       // Handle case where stack already exists (shouldn't happen now with our check)
       if (getErrorCode(error) === 'AlreadyExistsException') {
         handlingAlreadyExists = true
@@ -3873,17 +3881,17 @@ echo "Mail server setup complete at $(date)"
       }
 
       // Handle no updates needed
-      if (error.message?.includes('No updates are to be performed')) {
+      if (caught.message?.includes('No updates are to be performed')) {
         log.success('Stack is already up to date')
         return true
       }
 
       // Handle other errors
       log.error('Failed to create/update cloud infrastructure')
-      log.error(`Error: ${error.message || error}`)
+      log.error(`Error: ${caught.message || String(error)}`)
 
-      if (error.code) {
-        log.error(`AWS Error Code: ${error.code}`)
+      if (caught.code) {
+        log.error(`AWS Error Code: ${caught.code}`)
       }
 
       if (options?.verbose) {

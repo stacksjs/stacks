@@ -56,7 +56,7 @@ catch {
           username: env.DB_USERNAME || (dialect === 'postgres' ? 'postgres' : 'root'),
           password: env.DB_PASSWORD || '',
         },
-  })
+  } as Parameters<typeof setConfig>[0])
 }
 
 // Load all models from app/Models/ (individually, so one broken model doesn't block the rest).

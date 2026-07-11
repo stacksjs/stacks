@@ -288,7 +288,7 @@ export function mailCommands(buddy: CLI): void {
       const domain = process.env.APP_DOMAIN || process.env.MAIL_DOMAIN || 'stacksjs.com'
       const mailHost = `mail.${domain}`
       const email = emailAddress || `chris@${domain}`
-      const username = email.includes('@') ? email.split('@')[0] : email
+      const username = email.includes('@') ? email.split('@')[0]! : email
       const envKey = `MAIL_PASSWORD_${username.toUpperCase()}`
       const password = process.env[envKey]
 

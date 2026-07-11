@@ -154,12 +154,12 @@ export async function resolveAuthenticatedMembership(request: TeamAuthRequest): 
   // highest-priority membership. All team-scoped actions built on
   // resolveAuthenticatedTeamId therefore follow the switch automatically.
   const picked = selectActiveTeam({
-    memberships: memberships.map(m => ({ team_id: Number(m.team_id), role: String(m.role) })),
+    memberships: memberships.map((m: any) => ({ team_id: Number(m.team_id), role: String(m.role) })),
     activeTeamId: getActiveTeamPreference(request),
   })
 
   return picked.teamId != null
-    ? { teamId: picked.teamId, role: picked.role ?? String(memberships[0].role) }
+    ? { teamId: picked.teamId, role: picked.role ?? String(memberships[0]!.role) }
     : null
 }
 
@@ -197,13 +197,13 @@ export async function resolveTeamContext(
   const allowAny = opts.allowAnyTeam ? !!opts.allowAnyTeam(user) : false
   const activeTeamId = getActiveTeamPreference(request)
   const picked = selectActiveTeam({
-    memberships: memberships.map(m => ({ team_id: Number(m.team_id), role: String(m.role) })),
+    memberships: memberships.map((m: any) => ({ team_id: Number(m.team_id), role: String(m.role) })),
     activeTeamId,
     allowAnyTeam: allowAny,
   })
 
   // Switchable teams: the user's own teams, or every team for an operator.
-  const roleByTeam = new Map(memberships.map(m => [Number(m.team_id), String(m.role)]))
+  const roleByTeam = new Map<number, string>(memberships.map((m: any) => [Number(m.team_id), String(m.role)]))
   let teamRows: Array<{ id: number | string, name: string }> = []
   if (allowAny) {
     teamRows = await db.selectFrom('teams').select(['id', 'name']).execute()

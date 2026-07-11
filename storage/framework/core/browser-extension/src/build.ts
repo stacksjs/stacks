@@ -48,7 +48,10 @@ async function buildScript(entry: string, out: string, outdir: string, cwd: stri
   })
   if (!result.success)
     throw new Error(`[browser-extension] failed to build ${entry}: ${result.logs.join('\n')}`)
-  await Bun.write(join(outdir, out), await result.outputs[0].text())
+  const output = result.outputs[0]
+  if (!output)
+    throw new Error(`[browser-extension] build produced no output for ${entry}`)
+  await Bun.write(join(outdir, out), await output.text())
 }
 
 /**

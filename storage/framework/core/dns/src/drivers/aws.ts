@@ -186,9 +186,9 @@ export async function findHostedZone(domain: string): Promise<Result<string | nu
     const hostedZone = HostedZones[0]
 
     if (hostedZone && hostedZone.Name === `${domain}.`)
-      return ok(hostedZone.Id)
+      return ok(hostedZone.Id) as unknown as Result<string | null | undefined, Error>
 
-    return ok(null)
+    return ok(null) as unknown as Result<string | null | undefined, Error>
   }
   catch (error) {
     return err(handleError(`Failed to find hosted zone for domain ${domain}`, error))
@@ -281,7 +281,7 @@ export async function updateNameservers(
       const route53Domains = new Route53DomainsClient()
 
       await route53Domains.updateDomainNameservers({
-        DomainName: domainName,
+        DomainName: domainName!,
         Nameservers: hostedZoneNameservers.map((ns: any) => ({ Name: ns })),
       })
 

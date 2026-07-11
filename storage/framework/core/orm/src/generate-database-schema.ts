@@ -273,12 +273,12 @@ export async function buildDatabaseSchema(options: GenerateSchemaOptions = {}): 
   // User models override defaults for the same model name.
   const byName = new Map<string, { filePath: string, model: Model }>()
   for (const item of allModels) {
-    byName.set(item.model.name ?? path.basename(item.filePath, '.ts'), item)
+    byName.set(item.model.name ?? path.basename(item.filePath).replace(/\.ts$/, ''), item)
   }
   // Re-walk userland last so it wins on collisions.
   for (const item of allModels) {
     if (item.filePath.startsWith(modelsDir)) {
-      byName.set(item.model.name ?? path.basename(item.filePath, '.ts'), item)
+      byName.set(item.model.name ?? path.basename(item.filePath).replace(/\.ts$/, ''), item)
     }
   }
 

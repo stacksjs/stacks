@@ -730,8 +730,8 @@ function parseRawEmailHeaders(rawEmail: string): Record<string, string> {
     } else {
       const match = line.match(/^([^:]+):\s*(.*)$/)
       if (match) {
-        currentKey = match[1].toLowerCase()
-        currentValue = match[2]
+        currentKey = match[1]!.toLowerCase()
+        currentValue = match[2] ?? ''
         headers[currentKey] = currentValue
       }
     }
@@ -744,12 +744,12 @@ function parseRawEmailHeaders(rawEmail: string): Record<string, string> {
 function extractEmailAddress(str: string): string {
   if (!str) return ''
   const match = str.match(/<([^>]+)>/)
-  return (match ? match[1] : str).toLowerCase().trim()
+  return (match?.[1] ?? str).toLowerCase().trim()
 }
 
 // Helper: extract display name from "Name <email>" format
 function extractEmailName(str: string): string {
   if (!str) return ''
   const match = str.match(/^"?([^"<]+)"?\s*</)
-  return match ? match[1].trim() : ''
+  return match?.[1]?.trim() ?? ''
 }

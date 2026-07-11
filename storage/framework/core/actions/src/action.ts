@@ -16,7 +16,7 @@ import type { ExtractParams, InferValidations, JobOptions, RequestInstance } fro
  */
 export interface ActionValidations {
   [key: string]: {
-    rule: { validate: (value: unknown) => { valid: boolean, errors?: Array<{ message: string }> } }
+    rule: { validate: (value: any) => any }
     message?: string | Record<string, string>
   }
 }
@@ -137,9 +137,11 @@ interface ActionOptions<
   before?: (
     request: InferRequest<TModel, TValidations, TPath>,
   ) => void | Response | Promise<void | Response>
-  handle: (
-    request: InferRequest<TModel, TValidations, TPath>,
-  ) => ActionResult | Promise<ActionResult>
+  handle: {
+    bivarianceHack: (
+      request: InferRequest<TModel, TValidations, TPath>,
+    ) => ActionResult | Promise<ActionResult>
+  }['bivarianceHack']
   /**
    * Lightweight dependency factory (stacksjs/stacks#1870 R-6).
    * Returns the deps the action's `handle` / `before` / `authorize`
@@ -196,7 +198,7 @@ export type ActionResult =
   | string
   | number
   | boolean
-  | Record<string, unknown>
+  | object
   | unknown[]
 
 export class Action<
@@ -213,7 +215,7 @@ export class Action<
   enabled?: ActionOptions['enabled']
   path?: ActionOptions<TModel, TValidations, TPath>['path']
   method?: ActionOptions['method']
-  validations?: ActionOptions['validations']
+  validations?: TValidations
   requestFile?: string
   /** @see {@link ActionOptions.skipCsrf} */
   skipCsrf?: boolean

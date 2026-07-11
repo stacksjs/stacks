@@ -1,5 +1,12 @@
 type ReviewJsonResponse = ModelRow<typeof Review>
 type NewReview = NewModelData<typeof Review>
+type NewReviewInput = NewReview & Partial<{
+  is_verified_purchase: boolean
+  is_approved: boolean
+  helpful_votes: number
+  unhelpful_votes: number
+  is_featured: boolean
+}>
 import { randomUUIDv7 } from 'bun'
 import { db } from '@stacksjs/database'
 
@@ -9,7 +16,7 @@ import { db } from '@stacksjs/database'
  * @param data The review data to store
  * @returns The newly created review record
  */
-export async function store(data: NewReview): Promise<ReviewJsonResponse> {
+export async function store(data: NewReviewInput): Promise<ReviewJsonResponse> {
   try {
     const reviewData = {
       ...data,

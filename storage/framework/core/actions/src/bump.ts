@@ -59,7 +59,9 @@ async function resolveBumpArg(bump: string | null): Promise<string | null> {
   if (!match)
     return bump
 
-  const [, major, minor, patch] = match.map(Number)
+  const major = Number(match[1])
+  const minor = Number(match[2])
+  const patch = Number(match[3])
   if (bump === 'major')
     return `${major + 1}.0.0`
 

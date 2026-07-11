@@ -184,12 +184,15 @@ export function share(buddy: CLI): void {
           unmuteOutput()
 
           for (let i = 0; i < companions.length; i++) {
-            if (results[i].status === 'fulfilled') {
-              startedCompanions.push(companions[i])
-              s.succeed(`${bold(companions[i].label)} ready ${dim(`on :${companions[i].port}`)}`)
+            const result = results[i]
+            const companion = companions[i]
+            if (!result || !companion) continue
+            if (result.status === 'fulfilled') {
+              startedCompanions.push(companion)
+              s.succeed(`${bold(companion.label)} ready ${dim(`on :${companion.port}`)}`)
             }
             else {
-              s.fail(`${companions[i].label} failed to start ${dim(`on :${companions[i].port}`)}`)
+              s.fail(`${companion.label} failed to start ${dim(`on :${companion.port}`)}`)
             }
           }
         }
@@ -282,17 +285,18 @@ export function share(buddy: CLI): void {
       catch (error: unknown) {
         unmuteOutput()
         s.fail(getErrorMessage(error))
+        const caught = error instanceof Error ? error : new Error(String(error))
 
-        if (error.message?.includes('timeout') || error.message?.includes('ECONNREFUSED')) {
+        if (caught.message.includes('timeout') || caught.message.includes('ECONNREFUSED')) {
           log.error(`Could not reach tunnel server at ${server}`)
           log.info(`Verify with: curl -sk https://${server}/status`)
         }
         else {
-          log.error(`Failed to create tunnel: ${error.message}`)
+          log.error(`Failed to create tunnel: ${caught.message}`)
         }
 
         if (options.verbose)
-          log.error(error.stack)
+          log.error(caught.stack)
 
         for (const t of tunnels) t.close()
         await outro('Share failed', { startTime: perf, useSeconds: true })

@@ -1,4 +1,4 @@
-import { createModel, type ModelDefinition as BQBModelDefinition, registerModel } from '@stacksjs/query-builder'
+import { createModel, type OrmModelDefinition as BQBModelDefinition, type OrmModelStatic, registerModel } from '@stacksjs/query-builder'
 import type { InferRelationNames } from '@stacksjs/query-builder'
 import type { SearchOptions } from '@stacksjs/types'
 import { log } from '@stacksjs/logging'
@@ -1574,7 +1574,7 @@ function wrapQueryMethodsWithCasts(baseModel: Record<string, unknown>, casts: Re
   }
 }
 
-interface StacksModelDefinition {
+interface StacksModelDefinition extends Omit<BQBModelDefinition, 'attributes' | 'indexes' | 'traits'> {
   name: string
   table: string
   primaryKey?: string
@@ -1601,7 +1601,7 @@ interface StacksModelDefinition {
    * }
    * ```
    */
-  traits?: Record<string, unknown>
+  traits?: NonNullable<BQBModelDefinition['traits']> & Record<string, unknown>
   indexes?: Array<{ name: string, columns: string[], unique?: boolean, where?: string }>
   casts?: Record<string, CastType | CasterInterface>
   attributes: {
@@ -1669,7 +1669,15 @@ import { collectEncryptedAttributes, decryptValue, encryptValue, isEncrypted } f
  * // Result: Post.with('author') — 'author' narrowed to valid relations
  * ```
  */
-export function defineModel<const TDef extends ModelDefinition>(definition: TDef) {
+export type StacksModelStatic<TDef extends ModelDefinition> = OrmModelStatic<TDef> & TDef & TraitMethods & {
+  update: (id: number | string, data: Record<string, unknown>) => ReturnType<OrmModelStatic<TDef>['find']>
+  forceUpdate: (id: number | string, data: Record<string, unknown>) => ReturnType<OrmModelStatic<TDef>['find']>
+  forceCreate: (data: Record<string, unknown>) => ReturnType<OrmModelStatic<TDef>['create']>
+  delete: (id: number | string) => Promise<boolean>
+  withoutEvents: <T>(fn: () => T | Promise<T>) => Promise<T>
+}
+
+export function defineModel<const TDef extends ModelDefinition>(definition: TDef): StacksModelStatic<TDef> {
   log.debug(`[orm] Defining model: ${definition.name} (table: ${definition.table})`)
 
   // Build event hooks from observer configuration and search indexing
@@ -1694,7 +1702,7 @@ export function defineModel<const TDef extends ModelDefinition>(definition: TDef
 
   // Create the base model from bun-query-builder (provides all typed query methods)
   // Note: createModel's return type is declared as void in .d.ts but actually returns an object at runtime
-  const baseModel = createModel(defWithHooks as TDef & BQBModelDefinition) as unknown as Record<string, unknown>
+  const baseModel = createModel(defWithHooks as TDef) as OrmModelStatic<TDef> & Record<string, unknown>
 
   // Make ModelInstance attribute access ergonomic: `user.password`,
   // `car.slug`, `{ ...booking }` all do the right thing instead of
@@ -1801,7 +1809,7 @@ export function defineModel<const TDef extends ModelDefinition>(definition: TDef
   // the result of `createModel`.
   registerModel(definition.name, finalModel)
 
-  return finalModel
+  return finalModel as unknown as StacksModelStatic<TDef>
 }
 
 function buildEventHooks(definition: BQBModelDefinition): BQBModelDefinition['hooks'] | undefined {
@@ -1932,7 +1940,7 @@ function buildEventHooks(definition: BQBModelDefinition): BQBModelDefinition['ho
     ? ['create', 'update', 'delete']
     : Array.isArray(observe) ? observe : []
 
-  const hooks: NonNullable<BQBModelDefinition['hooks']> = {}
+  const hooks: { -readonly [K in keyof NonNullable<BQBModelDefinition['hooks']>]: NonNullable<BQBModelDefinition['hooks']>[K] } = {}
 
   if (events.includes('create')) {
     hooks.beforeCreate = async (model: any) => {
@@ -2053,8 +2061,9 @@ function resolveSearchConfig(useSearch: unknown): SearchableTraitConfig | null {
 function buildSearchHooks(definition: BQBModelDefinition): BQBModelDefinition['hooks'] | undefined {
   const config = resolveSearchConfig(definition.traits?.useSearch)
   if (!config) return undefined
+  const searchConfig = config
 
-  const indexName = config.index ?? definition.table ?? snakeCase(`${definition.name}s`)
+  const indexName = searchConfig.index ?? definition.table ?? snakeCase(`${definition.name}s`)
 
   /**
    * Project a model into a searchable document. Resolution order
@@ -2066,8 +2075,8 @@ function buildSearchHooks(definition: BQBModelDefinition): BQBModelDefinition['h
    *   3. fall back to the raw model attributes
    */
   function projectDocument(model: any): Record<string, unknown> | null | undefined {
-    if (typeof config.shape === 'function') {
-      try { return config.shape(model) }
+    if (typeof searchConfig.shape === 'function') {
+      try { return searchConfig.shape(model) }
       catch (err) {
         log.warn(`[orm/search] shape() threw for ${definition.name}: ${(err as Error).message}`)
         return undefined

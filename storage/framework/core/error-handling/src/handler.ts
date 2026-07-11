@@ -159,27 +159,27 @@ export async function writeToLogFile(message: string, options?: WriteOptions): P
 
 export function handleError(
   err: string | Error | object | unknown,
-  options?: LogErrorOptions | Record<string, any>,
+  options?: unknown,
 ): Error {
   let errorMessage: string
   let contextData: Record<string, any> | undefined
+  let errorOptions: LogErrorOptions | undefined
 
-  // Check if options is a context object (not an ErrorOptions)
-  if (options
-    && typeof options === 'object'
-    && !('shouldExit' in options)
-    && !('silent' in options)
-    && !('message' in options)) {
-    contextData = options as Record<string, any>
-    options = undefined
+  if (options && typeof options === 'object' && ('shouldExit' in options || 'silent' in options)) {
+    errorOptions = options as LogErrorOptions
+  }
+  else if (options !== undefined) {
+    contextData = options && typeof options === 'object'
+      ? options as Record<string, any>
+      : { error: options }
   }
 
   // Get the error message from the error object first
   const errMsg = err instanceof Error ? err.message : (typeof err === 'string' ? err : JSON.stringify(err))
 
-  if (options && 'message' in options) {
+  if (errorOptions?.message) {
     // If options is provided with a message, put the context message first
-    errorMessage = `${errMsg}: ${options.message}`
+    errorMessage = `${errMsg}: ${errorOptions.message}`
   }
   else {
     // If options is not provided or doesn't have a message, use the error message
@@ -202,5 +202,5 @@ export function handleError(
     Object.assign(error, err)
   }
 
-  return ErrorHandler.handle(error, { ...options as LogErrorOptions, message: errorMessage })
+  return ErrorHandler.handle(error, errorOptions)
 }

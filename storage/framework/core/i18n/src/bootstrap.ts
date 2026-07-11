@@ -54,7 +54,7 @@ export function resolveRequestLocale(request?: Request): string {
     if (available.has(normalized))
       return normalized
     const short = normalized.split('-')[0]
-    if (available.has(short))
+    if (short && available.has(short))
       return short
     return defaultLocale
   }

@@ -269,7 +269,7 @@ export function getCommandsToLoad(args: string[]): string[] {
     return Object.keys(commandRegistry)
 
   // Extract base command (before ':')
-  const baseCommand = requestedCommand.split(':')[0]
+  const baseCommand = requestedCommand.split(':')[0]!
 
   // Special case: 'list' command needs all commands to display them
   if (baseCommand === 'list') {

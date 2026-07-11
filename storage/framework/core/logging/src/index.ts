@@ -324,7 +324,7 @@ export interface Log {
    * works for back-compat but is deprecated — see {@link LogErrorOptions}.
    */
   error: (message: string | Error | unknown, error?: unknown, context?: LogContext) => Promise<void>
-  warn: (arg: string, context?: LogContext) => Promise<void>
+  warn: (arg: string, context?: unknown) => Promise<void>
   warning: (arg: string) => Promise<void>
   debug: (...args: unknown[]) => Promise<void>
   dump: (...args: unknown[]) => Promise<void>
@@ -400,11 +400,14 @@ export const log: Log = {
     await logger.success(message)
   },
 
-  warn: async (message: string, context?: LogContext) => {
+  warn: async (message: string, context?: unknown) => {
     const logger = await getLogger()
     // Normalize so Errors in the context survive clarity's JSON.stringify
     // (stacksjs/stacks#1956).
-    await logger.warn(message, context ? normalizeContext(context) as Record<string, unknown> : undefined)
+    const normalized = context === undefined
+      ? undefined
+      : normalizeContextValue(context) as Record<string, unknown>
+    await logger.warn(message, normalized)
   },
 
   warning: async (message: string) => {

@@ -17,7 +17,7 @@ export { getServer, setServer, createServer, stopServer } from './server-instanc
 // Stacks-specific exports
 export { emit, emitToUser, emitToUsers } from './emit'
 export type { EmitOptions } from './emit'
-export { channel as createChannel, Channel as StacksChannel } from './channel'
+export { channel, channel as createChannel, Channel as StacksChannel } from './channel'
 export { broadcast as dispatchBroadcast, runBroadcast, Broadcast as LegacyBroadcast } from './broadcast'
 export type { BroadcastInstance } from './broadcast'
 // Backpressure guard for slow consumers (stacksjs/stacks#1877 R-2).

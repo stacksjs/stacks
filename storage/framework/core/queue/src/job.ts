@@ -349,7 +349,7 @@ class JobBuilder {
       throw new Error('Redis queue connection is not configured. Check config/queue.ts')
     }
 
-    const queue = new RedisQueue(this.options.queue || 'default', redisConfig)
+    const queue = new RedisQueue(this.options.queue || 'default', redisConfig as ConstructorParameters<typeof RedisQueue>[1])
 
     // Same envelope shape as the database driver writes
     // (stacksjs/stacks#1884 Q-6). bun-queue's `Queue.add(data, opts)`

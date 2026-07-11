@@ -114,8 +114,9 @@ export function serve(buddy: CLI): void {
         }
         catch { /* try next */ }
       }
-      if (!stxServe)
+      if (!stxServe) {
         ;({ serve: stxServe } = await import('bun-plugin-stx/serve'))
+      }
 
       // Pre-resolve the vendored stx module + site/i18n config so `{t:…}`
       // translation tokens and the lang picker render in production exactly

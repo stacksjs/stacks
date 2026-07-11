@@ -164,7 +164,7 @@ export function useAuth(): AuthComposable {
       console.error('Error during logout:', error)
     }
     finally {
-      token.value = null
+      token.value = ''
       user.value = null
       isAuthenticated.value = false
     }

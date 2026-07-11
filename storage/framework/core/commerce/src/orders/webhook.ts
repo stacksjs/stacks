@@ -127,7 +127,7 @@ async function handlePaymentIntentSucceeded(event: { id: string, data: { object:
   const paymentIntentId = paymentIntent?.id as string | undefined
   if (!paymentIntentId) return
 
-  await db.transaction().execute(async (trx: any) => {
+  await db.transaction(async (trx: any) => {
     const isNew = await recordEventOrSkip(event.id, trx)
     if (!isNew) return // already processed
 
@@ -184,7 +184,7 @@ async function handlePaymentIntentFailed(event: { id: string, data: { object: an
   const lastError = paymentIntent?.last_payment_error
   const reason = (lastError?.message as string | undefined) ?? 'payment failed'
 
-  await db.transaction().execute(async (trx: any) => {
+  await db.transaction(async (trx: any) => {
     const isNew = await recordEventOrSkip(event.id, trx)
     if (!isNew) return
 
@@ -231,7 +231,7 @@ async function handleChargeRefunded(event: { id: string, data: { object: any } }
 
   const refundAmount = (charge?.amount_refunded as number | undefined) ?? 0
 
-  await db.transaction().execute(async (trx: any) => {
+  await db.transaction(async (trx: any) => {
     const isNew = await recordEventOrSkip(event.id, trx)
     if (!isNew) return
 

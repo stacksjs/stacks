@@ -108,7 +108,7 @@ export class LocalStorageAdapter implements StorageAdapter {
     // matches the eager behavior of read() / readToBuffer().
     await access(fullPath, constants.R_OK)
     const nodeStream = createReadStream(fullPath, { signal: options?.signal })
-    return Readable.toWeb(nodeStream) as ReadableStream<Uint8Array>
+    return Readable.toWeb(nodeStream) as unknown as ReadableStream<Uint8Array>
   }
 
   /**

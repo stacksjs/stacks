@@ -46,7 +46,7 @@ export async function authUser(): Promise<UserModel | undefined> {
     return undefined
   }
 
-  return await Auth.getUserFromToken(token)
+  return await Auth.getUserFromToken(token) as UserModel | undefined
 }
 
 /**

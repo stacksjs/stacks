@@ -1,6 +1,8 @@
 import { format } from '@ts-charts/format'
 import { scaleLinear } from '@ts-charts/scale'
 
+const createLinearScale = scaleLinear as unknown as (...args: unknown[]) => any
+
 /**
  * Compute "nice" tick values for a numeric range.
  *
@@ -11,7 +13,7 @@ export function niceTicks(min: number, max: number, count: number = 8): number[]
   if (!Number.isFinite(min) || !Number.isFinite(max) || max <= min)
     return [Number.isFinite(min) ? min : 0]
 
-  const scale = scaleLinear().domain([min, max]).nice(count)
+  const scale = createLinearScale().domain([min, max]).nice(count)
   const ticks = scale.ticks(count)
   if (ticks.length === 0)
     return [min, max]

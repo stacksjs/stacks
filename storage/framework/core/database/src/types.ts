@@ -145,6 +145,7 @@ export type ExpressionOperator =
  */
 export interface ColumnRef {
   readonly raw: string
+  as: (alias: string) => ColumnRef
 }
 
 /**
@@ -171,6 +172,7 @@ export interface AggregateExpression {
  * genuinely needed.
  */
 export interface ExpressionFunctions {
+  countAll: () => AggregateExpression
   count: (column: string) => AggregateExpression
   sum: (column: string) => AggregateExpression
   avg: (column: string) => AggregateExpression
@@ -204,6 +206,7 @@ export interface ExpressionFunctions {
  * implementation in one place rather than re-typing every call site.
  */
 export interface StacksExpressionBuilder {
+  (left: unknown, op: ExpressionOperator | string, right: unknown): unknown
   /** Logical OR over a list of sub-expressions. */
   or: (expressions: ReadonlyArray<unknown>) => unknown
   /** Logical AND over a list of sub-expressions. */

@@ -89,7 +89,10 @@ export class EncryptedSessionStore implements SessionStore<SessionData> {
 
   async touch(sid: string, session: SessionData, ttl?: number): Promise<void> {
     const envelope = await this.wrap(sid, session)
-    await this.inner.touch(sid, envelope as unknown as SessionData, ttl)
+    if (this.inner.touch)
+      await this.inner.touch(sid, envelope as unknown as SessionData, ttl)
+    else
+      await this.inner.set(sid, envelope as unknown as SessionData, ttl)
   }
 
   /**
@@ -111,7 +114,7 @@ export class EncryptedSessionStore implements SessionStore<SessionData> {
   }
 
   async all(): Promise<Record<string, SessionData>> {
-    const wrapped = await this.inner.all()
+    const wrapped = await this.inner.all?.() ?? {}
     const out: Record<string, SessionData> = {}
     for (const [sid, envelope] of Object.entries(wrapped)) {
       const decrypted = await this.unwrap(envelope)
@@ -120,12 +123,15 @@ export class EncryptedSessionStore implements SessionStore<SessionData> {
     return out
   }
 
-  length(): Promise<number> {
-    return this.inner.length()
+  async length(): Promise<number> {
+    if (this.inner.length) return this.inner.length()
+    return Object.keys(await this.all()).length
   }
 
-  clear(): Promise<void> {
-    return this.inner.clear()
+  async clear(): Promise<void> {
+    if (this.inner.clear) return this.inner.clear()
+    const sessions = await this.inner.all?.() ?? {}
+    await Promise.all(Object.keys(sessions).map(sid => this.inner.destroy(sid)))
   }
 
   // ---- Internal helpers ----

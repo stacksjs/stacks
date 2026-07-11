@@ -164,7 +164,7 @@ Include ALL provided labels in allLabels with their confidence scores, sorted by
   }
   catch {
     return {
-      label: labels[0],
+      label: labels[0] ?? '',
       confidence: 0.5,
       allLabels: labels.map(l => ({ label: l, confidence: 1 / labels.length })),
     }

@@ -1547,7 +1547,7 @@ async function resolveStringHandlerUncached(handlerPath: string): Promise<RouteH
             // resolves to an older `@stacksjs/bun-router`.
             return Response.json(
               { error: 'Validation failed', errors: validationResult.errors },
-              422,
+              { status: 422 },
             )
           }
         }
@@ -1562,7 +1562,7 @@ async function resolveStringHandlerUncached(handlerPath: string): Promise<RouteH
           const auth = await action.authorize(req)
           if (auth instanceof Response) return auth
           if (auth === false) {
-            return Response.json({ error: 'Forbidden' }, 403)
+            return Response.json({ error: 'Forbidden' }, { status: 403 })
           }
         }
 
@@ -2089,7 +2089,7 @@ const REQUEST_METHODS: Record<string, (...args: any[]) => any> & ThisType<Enhanc
   },
   // File handling — returns UploadedFile with store/storeAs methods.
   file(key: string) {
-    const files = this.files || {}
+    const files = (this.files || {}) as Record<string, File | File[]>
     const file = files[key]
     if (!file)
       return null
@@ -2097,7 +2097,7 @@ const REQUEST_METHODS: Record<string, (...args: any[]) => any> & ThisType<Enhanc
     return rawFile ? new UploadedFile(rawFile) : null
   },
   getFiles(key: string) {
-    const files = this.files || {}
+    const files = (this.files || {}) as Record<string, File | File[]>
     const file = files[key]
     if (!file)
       return []
@@ -2105,11 +2105,11 @@ const REQUEST_METHODS: Record<string, (...args: any[]) => any> & ThisType<Enhanc
     return fileArray.map(f => new UploadedFile(f))
   },
   hasFile(key: string) {
-    const files = this.files || {}
+    const files = (this.files || {}) as Record<string, File | File[]>
     return key in files && files[key] !== undefined
   },
   allFiles() {
-    const files = this.files || {}
+    const files = (this.files || {}) as Record<string, File | File[]>
     const result: Record<string, UploadedFile | UploadedFile[]> = {}
     for (const [key, value] of Object.entries(files)) {
       if (Array.isArray(value))
@@ -2141,7 +2141,7 @@ const REQUEST_METHODS: Record<string, (...args: any[]) => any> & ThisType<Enhanc
     return token.abilities.includes(ability)
   },
   async tokenCant(ability: string) {
-    return !(await this.tokenCan(ability))
+    return !(await this.tokenCan!(ability))
   },
   // Gate / Policy macros (stacksjs/stacks#1874 F-9). Lazy-import `@stacksjs/auth`
   // to dodge the router←auth cycle; resolve the user from `_authenticatedUser`,
@@ -2154,7 +2154,7 @@ const REQUEST_METHODS: Record<string, (...args: any[]) => any> & ThisType<Enhanc
     return Gate.allows(ability, user, ...args)
   },
   async cannot(ability: string, ...args: unknown[]) {
-    return !(await this.can(ability, ...args))
+    return !(await this.can!(ability, ...args))
   },
   // Throw-on-deny variant (Laravel's `$this->authorize(...)`). Throws
   // AuthorizationException (403) on deny.
@@ -2324,8 +2324,8 @@ async function parseRequestBody(req: EnhancedRequest): Promise<void> {
         }
       })
 
-      ;req.formBody = formBody
-      ;req.files = files
+      Reflect.set(req, 'formBody', formBody)
+      Reflect.set(req, 'files', files)
     }
   }
   catch (e) {
@@ -2618,7 +2618,7 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
           checks,
           timestamp: Date.now(),
         }
-        return Response.json(body, healthy ? 200 : 503)
+        return Response.json(body, { status: healthy ? 200 : 503 })
       })
       // Internal route-introspection endpoint. Powers `buddy dev` route
       // listing on startup and future `buddy route:list` consumers.
@@ -2636,7 +2636,7 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
       // no auth gate, publishing the full route table + action paths
       // to anyone who learned the URL.
       bunRouter.get('/__routes', (req: Request) => {
-        if (!isExposeRoutesAuthorized(req)) return Response.json({ error: 'disabled' }, 404)
+        if (!isExposeRoutesAuthorized(req)) return Response.json({ error: 'disabled' }, { status: 404 })
         return Response.json(listRegisteredRoutes())
       })
 
@@ -2653,7 +2653,7 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
         // decodeURIComponent because the signer URL-encodes the path
         // (slashes, spaces, etc.) when minting the URL — the JWT
         // claim is the raw path, so we must decode here to compare.
-        const params = req.params as Record<string, string> | undefined
+        const params = (req as Request & { params?: Record<string, string> }).params
         const rawPath = params?.path
           ? decodeURIComponent(params.path)
           : decodeURIComponent(url.pathname.replace(/^\/__storage\//, ''))
@@ -2706,7 +2706,7 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
       // exposing the route table. SwaggerUI/Insomnia/Postman can point
       // straight at this URL in dev for instant docs.
       bunRouter.get('/__openapi.json', async (req: Request) => {
-        if (!isExposeRoutesAuthorized(req)) return Response.json({ error: 'disabled' }, 404)
+        if (!isExposeRoutesAuthorized(req)) return Response.json({ error: 'disabled' }, { status: 404 })
         try {
           const { generateOpenApi } = await import('@stacksjs/api')
           const spec = await (generateOpenApi as () => Promise<unknown>)()
@@ -2715,7 +2715,7 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
         catch (err) {
           return Response.json(
             { error: 'OpenAPI generation failed', message: err instanceof Error ? err.message : String(err) },
-            500,
+            { status: 500 },
           )
         }
       })
@@ -2733,10 +2733,10 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
     //   downstream route silently breaks. See stacksjs/stacks#1870 R-2.
     // - any other handler-shaped object with a `handle()` method — also wrapped,
     //   under the same contract.
-    use(middleware: ActionHandler | Middleware | { handle: (req: EnhancedRequest) => void | Promise<void> }) {
+    use(middleware: ActionHandler | ((req: EnhancedRequest, next: () => Promise<Response>) => Response | Promise<Response>) | Middleware | { handle: (req: EnhancedRequest) => void | Promise<void> }) {
       // bunRouter.use() is async, so we need to call it properly
       // For synchronous chaining, we push directly to globalMiddleware
-      const adapted = adaptMiddlewareForBunRouter(middleware)
+      const adapted = adaptMiddlewareForBunRouter(middleware as ActionHandler)
       bunRouter.globalMiddleware.push(adapted as any)
       return stacksRouter
     },
@@ -2905,7 +2905,7 @@ export interface StacksRouterInstance {
   resource: (name: string, handler: string, options?: ResourceRouteOptions) => StacksRouterInstance
   match: (methods: string[], path: string, handler: StacksHandler) => ChainableRoute
   health: () => StacksRouterInstance
-  use: (middleware: ActionHandler) => StacksRouterInstance
+  use: (middleware: ActionHandler | ((req: EnhancedRequest, next: () => Promise<Response>) => Response | Promise<Response>)) => StacksRouterInstance
   register: (routePath: string, options?: { prefix?: string, middleware?: string | string[] }) => Promise<StacksRouterInstance>
   serve: (options?: ServerOptions) => Promise<Server<unknown>>
   handleRequest: (req: Request) => Promise<Response>

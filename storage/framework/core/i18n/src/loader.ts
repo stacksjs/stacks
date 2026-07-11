@@ -250,6 +250,7 @@ function setNested(
 
   for (let i = 0; i < parts.length - 1; i++) {
     const part = parts[i]
+    if (!part) continue
     if (!current[part] || typeof current[part] === 'string') {
       current[part] = {}
     }
@@ -257,7 +258,7 @@ function setNested(
   }
 
   const lastPart = parts[parts.length - 1]
-  current[lastPart] = value
+  if (lastPart) current[lastPart] = value
 }
 
 /**
@@ -268,6 +269,7 @@ function deepMerge(target: TranslationMessages, source: TranslationMessages): Tr
 
   for (const key of Object.keys(source)) {
     const sourceValue = source[key]
+    if (sourceValue === undefined) continue
     const targetValue = result[key]
 
     if (

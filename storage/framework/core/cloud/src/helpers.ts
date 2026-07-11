@@ -307,7 +307,7 @@ export async function deleteIamUsers(): Promise<Result<string, string>> {
   }
   catch (error) {
     console.error(error)
-    return err(handleError('Error deleting Stacks IAM users'))
+    return err(handleError('Error deleting Stacks IAM users').message)
   }
 
   return ok(`Stacks IAM users deleted for team ${teamName}`)
@@ -468,7 +468,7 @@ export async function deleteStacksFunctions(): Promise<Result<string, string>> {
       log.info('Function is replicated, skipping...')
       return ok('CloudFront is still deleting the some functions. Try again later.')
     }
-    return err(handleError('Error deleting stacks functions', e))
+    return err(handleError('Error deleting stacks functions', e).message)
   }
 
   return ok('Stacks functions deleted')
@@ -537,7 +537,7 @@ export async function deleteParameterStore(): Promise<Result<string, string>> {
     await Promise.all(promises)
   }
   catch (error) {
-    return err(handleError('Error deleting parameter store', error as Error))
+    return err(handleError('Error deleting parameter store', error as Error).message)
   }
 
   return ok('Parameter store deleted')
@@ -685,7 +685,7 @@ export async function hasBeenDeployed(): Promise<Result<boolean, Error>> {
   }
 }
 
-export async function getJumpBoxInstanceProfileName(): Promise<Result<string | undefined, string>> {
+export async function getJumpBoxInstanceProfileName(): Promise<Result<string, string>> {
   const iam = new IAMClient('us-east-1')
   const data = await iam.listInstanceProfiles()
   const instanceProfile = data.InstanceProfiles?.find((profile: unknown) => {
@@ -693,10 +693,11 @@ export async function getJumpBoxInstanceProfileName(): Promise<Result<string | u
     return (p.InstanceProfileName as string | undefined)?.includes('JumpBox')
   })
 
-  if (!instanceProfile)
+  const profileName = instanceProfile?.InstanceProfileName
+  if (!profileName)
     return err('Jump-box IAM instance profile not found')
 
-  return ok(instanceProfile?.InstanceProfileName)
+  return ok(profileName)
 }
 
 export async function addJumpBox(stackName?: string): Promise<Result<string, string>> {

@@ -771,7 +771,7 @@ async function getRedisClient(): Promise<any> {
   const redisConfig = queueConfig?.connections?.redis
   if (!redisConfig) throw new Error('Redis queue connection is not configured')
   // Use a dedicated queue for batch management
-  return new RedisQueue('__batches__', redisConfig)
+  return new RedisQueue('__batches__', redisConfig as ConstructorParameters<typeof RedisQueue>[1])
 }
 
 async function storeBatchInRedis(record: BatchRecord): Promise<void> {

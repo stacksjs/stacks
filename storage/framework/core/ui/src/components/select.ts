@@ -3,4 +3,4 @@ export {
   ComboboxInput,
   ComboboxOption,
   ComboboxOptions,
-} from '@stacksjs/stx'
+} from '@stacksjs/components'

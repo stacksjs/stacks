@@ -67,7 +67,7 @@ export function createBillableMethods(_tableName: string) {
       return await manageCustomer.retrieveStripeUser(model)
     },
 
-    async defaultPaymentMethod(model: any): Promise<Stripe.PaymentMethod | null> {
+    async defaultPaymentMethod(model: any) {
       const { managePaymentMethod } = await import('@stacksjs/payments')
       return await managePaymentMethod.retrieveDefaultPaymentMethod(model)
     },
@@ -82,7 +82,7 @@ export function createBillableMethods(_tableName: string) {
       return await managePaymentMethod.addPaymentMethod(model, paymentMethodId)
     },
 
-    async paymentMethods(model: any, cardType?: string): Promise<Stripe.PaymentMethod[]> {
+    async paymentMethods(model: any, cardType?: string) {
       const { managePaymentMethod } = await import('@stacksjs/payments')
       return await managePaymentMethod.listPaymentMethods(model, cardType)
     },
@@ -162,7 +162,7 @@ export function createBillableMethods(_tableName: string) {
       return await manageInvoice.list(model)
     },
 
-    async transactionHistory(model: any): Promise<Stripe.ApiList<Stripe.BalanceTransaction>> {
+    async transactionHistory(model: any) {
       const { manageTransaction } = await import('@stacksjs/payments')
       return await manageTransaction.list(model)
     },
@@ -328,5 +328,5 @@ async function getStripe(): Promise<Stripe> {
   const secret = (globalThis as { process?: { env?: { STRIPE_SECRET_KEY?: string } } }).process?.env?.STRIPE_SECRET_KEY
   if (!secret) throw new Error('Stripe Connect: STRIPE_SECRET_KEY not configured')
   const StripeCtor = (await import('stripe')).default
-  return new StripeCtor(secret, { apiVersion: '2024-06-20' } as Stripe.StripeConfig)
+  return new StripeCtor(secret, { apiVersion: '2026-03-25.dahlia' })
 }

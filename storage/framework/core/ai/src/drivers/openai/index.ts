@@ -86,7 +86,7 @@ export function createOpenAIDriver(config: OpenAIDriverConfig): AIDriver {
       if (!data.choices || data.choices.length === 0) {
         throw new Error('OpenAI API returned empty choices')
       }
-      return data.choices[0].message.content
+      return data.choices[0]!.message.content
     },
 
     async *stream(command: string, systemPrompt: string, history: AIMessage[]): AsyncGenerator<string> {
@@ -198,7 +198,7 @@ export function createOpenAIDriver(config: OpenAIDriverConfig): AIDriver {
       if (Array.isArray(input)) {
         return data.data.map(d => d.embedding)
       }
-      return data.data[0].embedding
+      return data.data[0]!.embedding
     },
   }
 }
@@ -379,7 +379,7 @@ export async function embed(
   if (Array.isArray(input)) {
     return data.data.map(d => d.embedding)
   }
-  return data.data[0].embedding
+  return data.data[0]!.embedding
 }
 
 /**

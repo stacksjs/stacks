@@ -57,7 +57,7 @@ function fakeTask(indexUid: string): EnqueuedTask {
     status: 'succeeded',
     type: 'documentAddition',
     enqueuedAt: new Date(),
-  } as EnqueuedTask
+  } as unknown as EnqueuedTask
 }
 
 async function request<T>(method: string, path: string, body?: unknown): Promise<T> {
@@ -130,7 +130,10 @@ async function ensureCollection(indexName: string, sampleDoc?: Record<string, un
   const sortable = settings?.sortableAttributes ?? []
   const displayed = settings?.displayedAttributes ?? []
 
-  for (const f of [...searchable, ...filterable, ...sortable, ...displayed]) fieldNames.add(f)
+  for (const f of [...searchable, ...filterable, ...sortable, ...displayed]) {
+    if (typeof f === 'string') fieldNames.add(f)
+    else for (const pattern of f.attributePatterns) fieldNames.add(pattern)
+  }
 
   if (sampleDoc) {
     for (const key of Object.keys(sampleDoc)) fieldNames.add(key)
@@ -308,8 +311,8 @@ const typesense: SearchEngineDriver = {
   createIndex,
   deleteIndex,
   updateIndex: notImplemented,
-  listAllIndexes: async () => ({ results: [] } as IndexesResults<Index[]>),
-  listAllIndices: async () => ({ results: [] } as IndexesResults<Index[]>),
+  listAllIndexes: async () => ({ results: [] } as unknown as IndexesResults<Index[]>),
+  listAllIndices: async () => ({ results: [] } as unknown as IndexesResults<Index[]>),
 
   addDocument,
   addDocuments,

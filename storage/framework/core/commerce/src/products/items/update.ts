@@ -210,7 +210,7 @@ export async function adjustInventoryMany(
   if (updates.length === 0) return { ok: true, products: [] }
 
   try {
-    const products = await db.transaction().execute(async (trx: any) => {
+    const products = await db.transaction(async (trx: any) => {
       const out: ProductJsonResponse[] = []
       for (let i = 0; i < updates.length; i++) {
         const { id, delta } = updates[i]!

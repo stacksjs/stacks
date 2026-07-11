@@ -186,11 +186,11 @@ export const FEATURE_TABLES: Record<FeatureName, readonly string[]> = {
  */
 export function migrationTable(filename: string): string | null {
   const inMatch = filename.match(/-in-([a-z0-9_]+)\.sql$/i)
-  if (inMatch) return inMatch[1]
+  if (inMatch) return inMatch[1] ?? null
   const createMatch = filename.match(/-create-([a-z0-9_]+)-table\.sql$/i)
-  if (createMatch) return createMatch[1]
+  if (createMatch) return createMatch[1] ?? null
   const alterMatch = filename.match(/-alter-([a-z0-9_]+)-/i)
-  if (alterMatch) return alterMatch[1]
+  if (alterMatch) return alterMatch[1] ?? null
   return null
 }
 

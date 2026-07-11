@@ -125,7 +125,7 @@ export async function placeOrder(input: PlaceOrderInput): Promise<PlaceOrderResu
   }
 
   try {
-    const result = await db.transaction().execute(async (trx: any) => {
+    const result = await db.transaction(async (trx: any) => {
       const now = formatDate(new Date())
 
       // 1. Insert the order row.
@@ -262,7 +262,7 @@ export async function placeOrder(input: PlaceOrderInput): Promise<PlaceOrderResu
     if (err?.__placeFail) {
       return {
         ok: false,
-        reason: err.reason as PlaceOrderResult['reason'] extends infer R ? R : never,
+        reason: err.reason as Extract<PlaceOrderResult, { ok: false }>['reason'],
         failedAt: err.failedAt,
         error: err,
       }

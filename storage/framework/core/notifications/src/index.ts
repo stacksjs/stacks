@@ -132,7 +132,7 @@ export function useBroadcast(): typeof BroadcastNotificationDriver {
   return BroadcastNotificationDriver
 }
 
-export function useNotification(typeParam?: string, driverParam?: string): typeof chat[keyof typeof chat] | typeof email[keyof typeof email] | typeof sms[keyof typeof sms] | typeof DatabaseNotificationDriver {
+export function useNotification(typeParam?: string, driverParam?: string): ReturnType<typeof useEmail> | ReturnType<typeof useChat> | ReturnType<typeof useSMS> | typeof DatabaseNotificationDriver {
   const type = typeParam || config?.default || 'email'
   const driver = driverParam
 
@@ -236,7 +236,7 @@ export async function notify(
           // the floor by every driver.
           await driver.send({
             to: recipient.email,
-            subject: payload.subject,
+            subject: payload.subject ?? '',
             text: payload.body,
             html: `<p>${escapeBodyHtml(payload.body)}</p>`,
           })
@@ -313,6 +313,8 @@ export async function notify(
 
   return results.map((result, index) => {
     const channel = effectiveChannels[index]
+    if (!channel)
+      throw new Error(`Missing notification channel for result ${index}`)
     if (result.status === 'rejected') {
       // Surface channel failures in the log even when the caller doesn't
       // inspect the returned NotifyResult[] — silently failing fan-out

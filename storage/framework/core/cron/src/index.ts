@@ -13,13 +13,13 @@ import { parseCron } from './parser'
 //   parse('0 0 * * *')          → next midnight UTC
 //   parse('@hourly')            → next hour
 //   parse('0,15,30,45 * * * *') → next 15-min mark
-export function parse(expression: string, relativeDate?: Date | number): Date | null {
+export function parse(expression: string, relativeDate?: Date | number, options: import('./parser').ParseCronOptions = {}): Date | null {
   // Use native Bun.cron.parse when available (ships with Bun.cron PR)
   if (typeof Bun !== 'undefined' && Bun.cron?.parse) {
     return Bun.cron.parse(expression, relativeDate)
   }
 
-  return parseCron(expression, relativeDate)
+  return parseCron(expression, relativeDate, options)
 }
 
 /**

@@ -328,7 +328,7 @@ export class S3Client {
       // Create canonical request
       const canonicalHeaders = Object.keys(requestHeaders)
         .sort()
-        .map((key: any) => `${key.toLowerCase()}:${requestHeaders[key].trim()}\n`)
+        .map((key: any) => `${key.toLowerCase()}:${requestHeaders[key]!.trim()}\n`)
         .join('')
 
       const signedHeaders = Object.keys(requestHeaders)
@@ -634,7 +634,7 @@ export class S3Client {
 
     const canonicalHeaders = Object.keys(requestHeaders)
       .sort()
-      .map((key: any) => `${key.toLowerCase()}:${requestHeaders[key].trim()}\n`)
+      .map((key: any) => `${key.toLowerCase()}:${requestHeaders[key]!.trim()}\n`)
       .join('')
 
     const signedHeaders = Object.keys(requestHeaders)
@@ -715,7 +715,7 @@ export class S3Client {
 
     const canonicalHeaders = Object.keys(requestHeaders)
       .sort()
-      .map((key: any) => `${key.toLowerCase()}:${requestHeaders[key].trim()}\n`)
+      .map((key: any) => `${key.toLowerCase()}:${requestHeaders[key]!.trim()}\n`)
       .join('')
 
     const signedHeaders = Object.keys(requestHeaders)
@@ -1795,7 +1795,7 @@ export class S3Client {
 
     const canonicalHeaders = Object.keys(requestHeaders)
       .sort()
-      .map((k: any) => `${k.toLowerCase()}:${requestHeaders[k].trim()}\n`)
+      .map((k: any) => `${k.toLowerCase()}:${requestHeaders[k]!.trim()}\n`)
       .join('')
 
     const signedHeaders = Object.keys(requestHeaders)

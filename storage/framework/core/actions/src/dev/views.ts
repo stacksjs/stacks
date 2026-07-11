@@ -194,7 +194,7 @@ async function startDefaultServer() {
         const localeSwitch = url.pathname.match(/^\/locale\/([a-z]{2}(?:-[a-z]{2})?)\/?$/i)
         if (localeSwitch) {
           const { createLocaleSwitchResponse } = await import('@stacksjs/i18n')
-          return createLocaleSwitchResponse(req, localeSwitch[1], i18nConfig)
+          return createLocaleSwitchResponse(req, localeSwitch[1]!, i18nConfig)
         }
       }
 

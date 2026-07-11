@@ -252,6 +252,8 @@ export interface ModelOptions extends Base {
 }
 
 export interface Attribute {
+  type?: string
+  nullable?: boolean
   default?: string | number | boolean | Date
   unique?: boolean
   order?: number

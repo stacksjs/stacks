@@ -84,7 +84,7 @@ export class SMTPDriver extends BaseEmailDriver {
     // in sync.
     const fromAddress = typeof config.email?.from?.address === 'string' ? config.email.from.address : ''
     const username = smtp?.username || env.MAIL_USERNAME || fromAddress || ''
-    const localPart = (username.includes('@') ? username.split('@')[0] : username).toUpperCase().replace(/[^A-Z0-9]/g, '_')
+    const localPart = (username.includes('@') ? username.split('@')[0]! : username).toUpperCase().replace(/[^A-Z0-9]/g, '_')
     const password = smtp?.password || env.MAIL_PASSWORD || (localPart ? env[`MAIL_PASSWORD_${localPart}`] : undefined) || ''
     const rawEncryption = smtp?.encryption ?? env.MAIL_ENCRYPTION ?? null
 

@@ -542,6 +542,8 @@ export class MCPManager {
   async callTool(toolPath: string, args: Record<string, unknown> = {}): Promise<MCPToolCallResult> {
     if (toolPath.includes('/')) {
       const [serverName, toolName] = toolPath.split('/', 2)
+      if (!serverName || !toolName)
+        throw new Error(`Invalid MCP tool path: ${toolPath}`)
       const client = this.clients.get(serverName)
       if (!client) throw new Error(`MCP server not found: ${serverName}`)
       return client.callTool(toolName, args)

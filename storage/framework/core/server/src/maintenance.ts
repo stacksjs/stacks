@@ -539,7 +539,7 @@ function parseCookieHeader(header: string | null): Record<string, string> {
 function clientIp(req: Request): string {
   const fwd = req.headers.get('x-forwarded-for')
   if (fwd)
-    return fwd.split(',')[0].trim()
+    return fwd.split(',')[0]?.trim() ?? '127.0.0.1'
   const real = req.headers.get('x-real-ip')
   if (real)
     return real

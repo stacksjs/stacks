@@ -57,7 +57,7 @@ export async function importModelDocuments(modelOption?: string): Promise<Ok<str
         // without the cross-table fields than skip the whole model).
         const denormalize = typeof searchable === 'object' ? searchable.denormalize : undefined
         const eagerRelations = denormalize
-          ? Array.from(new Set(Object.values(denormalize).map(path => path.split('.')[0]).filter(Boolean)))
+          ? Array.from(new Set(Object.values(denormalize).map(path => path.split('.')[0]).filter((path): path is string => Boolean(path))))
           : []
 
         let documents: SearchableRow[]

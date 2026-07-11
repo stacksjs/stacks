@@ -137,7 +137,7 @@ CREATE TABLE IF NOT EXISTS failed_jobs (
 -- the terminal handlers across worker restarts
 -- (stacksjs/stacks#1883). Each holds JSON for one
 -- PersistentBatchHandler. Nullable so callers that only use the
--- in-memory `.then(fn)` API don't need to populate them.
+-- in-memory then(fn) API does not need to populate them.
 CREATE TABLE IF NOT EXISTS job_batches (
   id TEXT PRIMARY KEY,
   name TEXT NOT NULL DEFAULT '',

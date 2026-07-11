@@ -28,7 +28,7 @@ export function install(buddy: CLI): void {
       // halt when dependencies don't resolve. The previous version awaited
       // and discarded the result, leaving the parent process at exit 0
       // even when bun install crashed.
-      if (result && typeof result === 'object' && 'isErr' in result && (result as { isErr?: () => boolean }).isErr?.()) {
+      if (result.isErr) {
         log.error('bun install failed')
         process.exit(ExitCode.FatalError)
       }

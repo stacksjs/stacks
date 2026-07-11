@@ -41,7 +41,7 @@ const RELATION_KINDS = ['belongsTo', 'hasMany', 'hasOne', 'belongsToMany'] as co
 
 export function parseLaravelModel(source: string): ParsedModel | null {
   const classMatch = source.match(/\bclass\s+([A-Z][A-Za-z0-9_]*)\b/)
-  if (!classMatch) return null
+  if (!classMatch?.[1]) return null
   const className = classMatch[1]
 
   const table = extractStringProperty(source, 'table') ?? snakeCasePlural(className)
@@ -66,13 +66,13 @@ export function parseLaravelModel(source: string): ParsedModel | null {
 function extractStringProperty(source: string, name: string): string | null {
   const re = new RegExp(`protected\\s+\\$${name}\\s*=\\s*['"]([^'"]+)['"]`)
   const m = source.match(re)
-  return m ? m[1] : null
+  return m?.[1] ?? null
 }
 
 function extractArrayProperty(source: string, name: string): string[] {
   const re = new RegExp(`protected\\s+\\$${name}\\s*=\\s*\\[([^\\]]*)\\]`, 's')
   const m = source.match(re)
-  if (!m) return []
+  if (!m?.[1]) return []
   return m[1]
     .split(',')
     .map(s => s.trim().replace(/^['"]|['"]$/g, ''))
@@ -82,12 +82,12 @@ function extractArrayProperty(source: string, name: string): string[] {
 function extractKeyedArrayProperty(source: string, name: string): Record<string, string> {
   const re = new RegExp(`protected\\s+\\$${name}\\s*=\\s*\\[([^\\]]*)\\]`, 's')
   const m = source.match(re)
-  if (!m) return {}
+  if (!m?.[1]) return {}
   const out: Record<string, string> = {}
   const pairs = m[1].split(',')
   for (const pair of pairs) {
     const kv = pair.match(/['"]([^'"]+)['"]\s*=>\s*['"]([^'"]+)['"]/)
-    if (kv) out[kv[1]] = kv[2]
+    if (kv?.[1] && kv[2] !== undefined) out[kv[1]] = kv[2]
   }
   return out
 }
@@ -104,6 +104,7 @@ function extractRelationships(source: string): ParsedRelationship[] {
     const name = m[1]
     const kind = m[2] as (typeof RELATION_KINDS)[number]
     const target = m[3]
+    if (!name || !kind || !target) continue
     found.push({ name, kind, target })
   }
   return found

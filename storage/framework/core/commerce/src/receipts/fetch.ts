@@ -210,7 +210,7 @@ export async function fetchPrintsPerHour(
   receipts.forEach((receipt: any) => {
     const date = new Date(Number(receipt.timestamp))
     const hour = date.getHours()
-    hourlyBreakdown[hour].count++
+    hourlyBreakdown[hour]!.count++
   })
 
   return {

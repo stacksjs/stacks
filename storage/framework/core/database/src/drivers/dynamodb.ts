@@ -256,6 +256,12 @@ function marshall(obj: Record<string, unknown>): DynamoItem {
   return result
 }
 
+function marshallValue(value: unknown): DynamoAttributeValue {
+  const marshalled = marshall({ value }).value
+  if (!marshalled) throw new Error('Failed to marshal DynamoDB attribute value')
+  return marshalled
+}
+
 /**
  * Unmarshall a DynamoDB object to JS format
  */
@@ -483,6 +489,8 @@ export class EntityQueryBuilder<T = unknown> {
           break
         }
         case 'between': {
+          if (this._skCondition.value2 === undefined)
+            throw new Error('DynamoDB between condition requires a second value')
           const valueKey1 = `:sk${idx}a`
           const valueKey2 = `:sk${idx}b`
           exprValues[valueKey1] = { S: this._skCondition.value }
@@ -532,13 +540,13 @@ export class EntityQueryBuilder<T = unknown> {
         if (cond.operator === 'IN' && cond.values) {
           const valueKeys = cond.values.map((_, i) => `:flt${idx}_${i}`)
           cond.values.forEach((val, i) => {
-            exprValues[`:flt${idx}_${i}`] = marshall({ v: val }).v
+            exprValues[`:flt${idx}_${i}`] = marshallValue(val)
           })
           filterParts.push(`${nameKey} IN (${valueKeys.join(', ')})`)
         }
         else {
           const valueKey = `:flt${idx}`
-          exprValues[valueKey] = marshall({ v: cond.value }).v
+          exprValues[valueKey] = marshallValue(cond.value)
           filterParts.push(`${nameKey} ${cond.operator} ${valueKey}`)
         }
         idx++
@@ -623,10 +631,12 @@ export class EntityQueryBuilder<T = unknown> {
       }
 
       const request = this.toRequest()
+      const client = this.client
+      if (!client) throw new Error('DynamoDB client is not configured')
       const isQuery = this._pkValue !== undefined
       const response = isQuery
-        ? await this.client.query(request)
-        : await this.client.scan(request)
+        ? await client.query(request)
+        : await client.scan(request)
 
       const items = (response.Items ?? []).map(item => unmarshall(item)) as T[]
       allItems.push(...items)
@@ -866,7 +876,7 @@ class DynamoClient {
             const nameKey = `#set${idx}`
             const valueKey = `:set${idx}`
             exprNames[nameKey] = attr
-            exprValues[valueKey] = marshall({ v: value }).v
+            exprValues[valueKey] = marshallValue(value)
             setParts.push(`${nameKey} = ${valueKey}`)
             idx++
           }
@@ -1037,7 +1047,7 @@ class DynamoClient {
       const nameKey = `#upd${idx}`
       const valueKey = `:upd${idx}`
       exprNames[nameKey] = attr
-      exprValues[valueKey] = marshall({ v: value }).v
+      exprValues[valueKey] = marshallValue(value)
       setParts.push(`${nameKey} = ${valueKey}`)
       idx++
     }

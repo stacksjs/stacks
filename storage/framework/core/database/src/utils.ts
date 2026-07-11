@@ -5,13 +5,8 @@
  * configured using the stacks database config.
  */
 
-import type { DatabaseSchema } from '@stacksjs/query-builder'
 import { AsyncLocalStorage } from 'node:async_hooks'
 import { createQueryBuilder, setConfig } from '@stacksjs/query-builder'
-
-// Permissive schema type that accepts any table name with any columns
-// This allows the query builder to work before model types are generated
-type AnySchema = DatabaseSchema<any> & Record<string, { columns: Record<string, any>, primaryKey: string }>
 
 // Use default values to avoid circular dependencies initially
 // These can be overridden later once config is fully loaded
@@ -33,6 +28,7 @@ interface DbConfig {
   connections: {
     sqlite: DbConnectionConfig
     mysql: DbConnectionConfig
+    singlestore: DbConnectionConfig
     postgres: DbConnectionConfig
   }
 }
@@ -47,6 +43,7 @@ let dbConfig: DbConfig = {
   connections: {
     sqlite: { database: sqliteDefaults.database, prefix: '' },
     mysql: { name: mysqlDefaults.database, host: mysqlDefaults.host, username: mysqlDefaults.username, password: mysqlDefaults.password, port: mysqlDefaults.port, prefix: '' },
+    singlestore: { name: mysqlDefaults.database, host: mysqlDefaults.host, username: mysqlDefaults.username, password: mysqlDefaults.password, port: mysqlDefaults.port, prefix: '' },
     postgres: { name: postgresDefaults.database, host: postgresDefaults.host, username: postgresDefaults.username, password: postgresDefaults.password, port: postgresDefaults.port, prefix: '' },
   },
 }
@@ -355,7 +352,8 @@ type UnsafeReturn = Promise<any> & { execute: () => Promise<any> }
  * with no schema). Tests cover the runtime semantics.
  */
 export interface FluentChain {
-  where: (...args: any[]) => FluentChain
+  where(callback: (eb: import('./types').StacksExpressionBuilder) => unknown): FluentChain
+  where(...args: any[]): FluentChain
   whereNull: (...args: any[]) => FluentChain
   whereNotNull: (...args: any[]) => FluentChain
   whereIn: (...args: any[]) => FluentChain
@@ -383,7 +381,8 @@ export interface FluentChain {
   orderBy: (...args: any[]) => FluentChain
   limit: (...args: any[]) => FluentChain
   offset: (...args: any[]) => FluentChain
-  select: (...args: any[]) => FluentChain
+  select(selection: ((eb: import('./types').StacksExpressionBuilder) => unknown) | ReadonlyArray<string | ((eb: import('./types').StacksExpressionBuilder) => unknown) | unknown>): FluentChain
+  select(...args: any[]): FluentChain
   selectAll: () => FluentChain
   selectAllRelations: () => FluentChain
   selectRaw: (...args: any[]) => FluentChain
@@ -419,6 +418,7 @@ export interface FluentChain {
   max: (...args: any[]) => Promise<any>
   exists: () => Promise<boolean>
   doesntExist: () => Promise<boolean>
+  $call: (callback: (query: FluentChain) => FluentChain) => FluentChain
   // Allow indexing for dynamic where${Column} helpers that bun-query-builder
   // generates at the type level via mapped templates.
   [key: string]: any
@@ -504,6 +504,7 @@ export interface DatabaseSchema {}
 export type TableName = (keyof DatabaseSchema & string) | (string & {})
 
 interface Db extends Pick<Required<RawQueryBuilder>, GenericPassthroughKeys> {
+  fn: import('./types').ExpressionFunctions
   selectFrom: (table: TableName) => FluentChain
   insertInto: (table: TableName) => FluentChain
   updateTable: (table: TableName) => FluentChain

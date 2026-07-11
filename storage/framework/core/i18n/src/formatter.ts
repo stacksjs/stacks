@@ -383,7 +383,7 @@ function toDate(date: Date | number | string): Date {
  */
 export function getTextDirection(locale?: string): 'ltr' | 'rtl' {
   const targetLocale = locale || getLocale()
-  const lang = targetLocale.split('-')[0].toLowerCase()
+  const lang = (targetLocale.split('-')[0] ?? targetLocale).toLowerCase()
 
   // RTL languages
   const rtlLanguages = ['ar', 'he', 'fa', 'ur', 'yi', 'ps', 'sd', 'ug', 'ku', 'ckb']

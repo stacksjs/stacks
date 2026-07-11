@@ -1,5 +1,5 @@
 
-type UserModel = InstanceType<typeof User>
+type UserModel = NonNullable<Awaited<ReturnType<typeof User.find>>>
 import type {
   AuthCredentials,
   AuthToken,

@@ -82,7 +82,7 @@ export function createAnthropicDriver(config: AnthropicDriverConfig): AIDriver {
       if (!data.content || data.content.length === 0) {
         throw new Error('Claude API returned empty content')
       }
-      return data.content[0].text
+      return data.content[0]!.text
     },
 
     async *stream(command: string, systemPrompt: string, history: AIMessage[]): AsyncGenerator<string> {

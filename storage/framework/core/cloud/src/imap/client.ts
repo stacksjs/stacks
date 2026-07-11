@@ -431,7 +431,7 @@ export class AWSClient {
     )
 
     const canonicalHeaders = sortedHeaderKeys
-      .map((key: any) => `${key.toLowerCase()}:${headers[key].trim()}\n`)
+      .map((key: any) => `${key.toLowerCase()}:${headers[key]!.trim()}\n`)
       .join('')
 
     const signedHeaders = sortedHeaderKeys
@@ -530,7 +530,7 @@ export class AWSClient {
       // Remove XML wrapper nodes to get to actual data
       const keys = Object.keys(parsed)
       if (keys.length === 1) {
-        return parsed[keys[0]]
+        return parsed[keys[0]!]
       }
 
       return parsed

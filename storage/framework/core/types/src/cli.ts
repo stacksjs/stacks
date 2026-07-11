@@ -442,4 +442,4 @@ export interface TypesOptions extends CliOptions {}
 
 export type LibEntryType = 'web-components' | 'functions' | 'all'
 
-export type { CAC as CLI } from 'cac'
+export type { CLI } from '@stacksjs/clapp'

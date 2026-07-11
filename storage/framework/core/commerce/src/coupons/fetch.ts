@@ -400,7 +400,7 @@ export async function fetchRedemptionTrend(days: number = 30): Promise<any[]> {
   coupons.forEach((coupon: any) => {
     // Format date as YYYY-MM-DD
     const dateString = coupon.updated_at
-      ? new Date(coupon.updated_at).toISOString().split('T')[0]
+      ? new Date(coupon.updated_at).toISOString().split('T')[0] ?? 'unknown-date'
       : 'unknown-date' // Fallback for undefined date
 
     // Add or increment the count for this date

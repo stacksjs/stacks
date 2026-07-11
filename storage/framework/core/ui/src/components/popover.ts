@@ -1,1 +1,1 @@
-export { Popover, PopoverButton, PopoverPanel } from '@stacksjs/stx'
+export { Popover, PopoverButton, PopoverPanel } from '@stacksjs/components'

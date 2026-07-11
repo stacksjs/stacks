@@ -138,8 +138,8 @@ export function detectRunnerPressure(
     // sample is at least `windowMinutes` old. If the org just
     // started reporting, the window is shorter than required and
     // we can't prove sustained pressure yet.
-    const oldestMs = Date.parse(orgSamples[0].sampledAt)
-    const newestMs = Date.parse(orgSamples[orgSamples.length - 1].sampledAt)
+    const oldestMs = Date.parse(orgSamples[0]!.sampledAt)
+    const newestMs = Date.parse(orgSamples[orgSamples.length - 1]!.sampledAt)
     const sustainedMs = newestMs - oldestMs
     if (sustainedMs < windowMs - 1000) {
       // -1000ms tolerance — the very first sample of a fresh window
@@ -154,7 +154,7 @@ export function detectRunnerPressure(
     const allBelow = orgSamples.every(s => s.queued < options.queuedThreshold)
     const state = alertStates.get(org)
     const isAlerting = state?.alerting ?? false
-    const current = orgSamples[orgSamples.length - 1]
+    const current = orgSamples[orgSamples.length - 1]!
 
     if (isAlerting) {
       if (allBelow) {

@@ -1,5 +1,5 @@
 
-type UserModel = InstanceType<typeof User>
+type UserModel = NonNullable<Awaited<ReturnType<typeof User.find>>>
 import { HttpError } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/logging'
 import { User } from '@stacksjs/orm'

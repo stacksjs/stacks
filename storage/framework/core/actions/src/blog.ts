@@ -64,7 +64,9 @@ function postUrl(baseUrl: string, slug: string): string {
   return `${baseUrl.replace(/\/$/, '')}/blog/${slug}`
 }
 
-function rssDate(date: string): string {
+function rssDate(date?: string): string {
+  if (!date)
+    return ''
   const parsed = new Date(date)
   return Number.isNaN(parsed.getTime()) ? date : parsed.toUTCString()
 }
@@ -113,7 +115,8 @@ function parseFrontmatter(md: string): { data: Record<string, string>, body: str
   if (!m)
     return { data: {}, body: md }
   const data: Record<string, string> = {}
-  for (const line of m[1].split('\n')) {
+  const frontmatter = m[1] ?? ''
+  for (const line of frontmatter.split('\n')) {
     const i = line.indexOf(':')
     if (i === -1)
       continue
@@ -123,10 +126,10 @@ function parseFrontmatter(md: string): { data: Record<string, string>, body: str
       val = val.slice(1, -1)
     data[key] = val
   }
-  return { data, body: m[2] }
+  return { data, body: m[2] ?? '' }
 }
 
-function formatDate(d: string): string {
+function formatDate(d?: string): string {
   if (!d)
     return ''
   const date = new Date(d)

@@ -29,7 +29,7 @@ export async function renderDevErrorPage(opts: {
   const renderTemplate = await getRenderTemplate()
 
   return renderTemplate(join(VIEWS_DIR, 'show.stx'), {
-    context: viewModel,
+    context: viewModel as unknown as Record<string, unknown>,
     layout: join(VIEWS_DIR, 'layout.stx'),
     injectCSS: true,
     templateOnly: true,

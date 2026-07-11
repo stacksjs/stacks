@@ -1,0 +1,10 @@
+{
+  "extends": "./storage/framework/core/tsconfig.json",
+  "compilerOptions": {
+    "declaration": false,
+    "declarationMap": false,
+    "incremental": false,
+    "noEmit": true,
+    "rootDir": "."
+  }
+}

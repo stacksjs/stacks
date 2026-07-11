@@ -330,6 +330,8 @@ export class EmailSDK {
       }
 
       const email = inbox[emailIndex]
+      if (!email)
+        return false
 
       // Delete the email files from S3
       // Note: In production, you might want to use S3 delete objects API
@@ -400,7 +402,7 @@ export class EmailSDK {
         return false
       }
 
-      Object.assign(inbox[emailIndex], updates)
+      Object.assign(inbox[emailIndex]!, updates)
 
       await s3.putObject({
         bucket: this.bucket,
@@ -421,7 +423,7 @@ export class EmailSDK {
     if (typeof addr === 'string') {
       const match = addr.match(/^(.+?)\s*<(.+)>$/)
       if (match) {
-        return { name: match[1].trim(), address: match[2].trim() }
+        return { name: match[1]!.trim(), address: match[2]!.trim() }
       }
       return { address: addr }
     }

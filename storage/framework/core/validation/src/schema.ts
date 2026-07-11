@@ -18,8 +18,9 @@ import type { ObjectWithContextValidator } from './object-with-context'
  * and every primitive factory wrapped to attach `.when()` / `.sometimes()`
  * to the returned validator.
  */
-export interface SchemaWithFile extends ValidationInstance {
+export type SchemaWithFile = Omit<ValidationInstance, 'object'> & {
   file: () => FileValidator
+  object: typeof objectWithContext
 }
 
 /**
@@ -49,7 +50,7 @@ function wrapFactory<F extends (...args: any[]) => Validator<any>>(factory: F): 
   return ((...args: Parameters<F>) => {
     const validator = factory(...args)
     return withConditionals(validator)
-  }) as F
+  }) as unknown as F
 }
 
 /**

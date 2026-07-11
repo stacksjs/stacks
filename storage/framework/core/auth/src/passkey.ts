@@ -5,12 +5,13 @@
  */
 
 import type { VerifiedRegistrationResponse } from '@stacksjs/ts-auth'
+import { Buffer } from 'node:buffer'
 import type { Insertable } from '@stacksjs/database'
 
 import { db } from '@stacksjs/database'
 import { User } from '@stacksjs/orm'
 
-type UserModel = InstanceType<typeof User>
+type UserModel = NonNullable<Awaited<ReturnType<typeof User.find>>>
 
 // Re-export WebAuthn functions from ts-auth
 export {
@@ -190,11 +191,14 @@ const DEFAULT_CHALLENGE_TTL_SECONDS = 5 * 60
  */
 export async function storeWebAuthnChallenge(
   userId: number,
-  challenge: string,
+  challenge: string | Uint8Array,
   purpose: WebAuthnChallengePurpose,
   ttlSeconds: number = DEFAULT_CHALLENGE_TTL_SECONDS,
 ): Promise<void> {
   const expiresAt = new Date(Date.now() + ttlSeconds * 1000).toISOString()
+  const encodedChallenge = typeof challenge === 'string'
+    ? challenge
+    : Buffer.from(challenge).toString('base64url')
 
   await db
     .deleteFrom('webauthn_challenges')
@@ -206,7 +210,7 @@ export async function storeWebAuthnChallenge(
     .insertInto('webauthn_challenges')
     .values({
       user_id: userId,
-      challenge,
+      challenge: encodedChallenge,
       purpose,
       expires_at: expiresAt,
     } as never)
@@ -226,7 +230,7 @@ export async function storeWebAuthnChallenge(
 export async function consumeWebAuthnChallenge(
   userId: number,
   purpose: WebAuthnChallengePurpose,
-): Promise<string | null> {
+): Promise<Uint8Array | null> {
   const row = await db
     .selectFrom('webauthn_challenges')
     .where('user_id', '=', userId)
@@ -247,5 +251,5 @@ export async function consumeWebAuthnChallenge(
   const expiresAt = row.expires_at ? new Date(String(row.expires_at)).getTime() : 0
   if (Date.now() > expiresAt) return null
 
-  return String(row.challenge)
+  return Buffer.from(String(row.challenge), 'base64url')
 }

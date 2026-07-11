@@ -303,7 +303,7 @@ export class SmsBuilder {
     if (!this.message.body) {
       return {
         success: false,
-        to: Array.isArray(this.message.to) ? this.message.to[0] : this.message.to,
+        to: Array.isArray(this.message.to) ? this.message.to[0] ?? '' : this.message.to,
         error: 'Message body is required',
         provider: this.provider || smsConfig.provider || 'twilio',
       }
@@ -340,7 +340,7 @@ export async function sendTemplate(
   if (!template) {
     return {
       success: false,
-      to: Array.isArray(to) ? to[0] : to,
+      to: Array.isArray(to) ? to[0] ?? '' : to,
       error: `Template not found: ${templateName}`,
       provider: smsConfig.provider || 'twilio',
     }

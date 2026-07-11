@@ -91,7 +91,7 @@ export function list(buddy: CLI): void {
           // Extract group from command name (e.g., "env:get" -> "env", "make:model" -> "make")
           let group = 'General'
           if (name.includes(':')) {
-            group = name.split(':')[0]
+            group = name.split(':')[0] ?? 'General'
           }
           else if (['dev', 'build', 'test', 'lint'].includes(name)) {
             group = 'Development'

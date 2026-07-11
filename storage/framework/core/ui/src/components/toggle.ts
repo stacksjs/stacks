@@ -1,1 +1,1 @@
-export { Switch } from '@stacksjs/stx'
+export { Switch } from '@stacksjs/components'

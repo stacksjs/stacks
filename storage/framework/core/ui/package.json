@@ -57,13 +57,13 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "@cwcss/crosswind": "^0.2.6"
+    "@cwcss/crosswind": "^0.2.6",
+    "@stacksjs/components": "^0.2.82"
   },
   "devDependencies": {
     "@stacksjs/build": "workspace:*",
     "@stacksjs/config": "workspace:*",
     "better-dx": "^0.2.12",
-    "@stacksjs/router": "workspace:*",
-    "@stacksjs/stx": "^0.2.82"
+    "@stacksjs/router": "workspace:*"
   }
 }

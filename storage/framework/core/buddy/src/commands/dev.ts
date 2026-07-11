@@ -504,7 +504,7 @@ export async function startDevelopmentServer(_options: DevOptions, _startTime?: 
       readyAnnounced = true
 
       const failed = results
-        .map((ok, i) => ok ? null : ports[i].name)
+        .map((ok, i) => ok ? null : ports[i]?.name ?? null)
         .filter((x): x is string => x !== null)
 
       // Bring up the HTTPS reverse proxy (rpx + tlsx) for the pretty domain.
@@ -1291,7 +1291,7 @@ async function ensureRpxDevelopmentHttps(
   const existing = await checkExistingCertificates(tlsOptions)
   if (!existing || !hostnameInCert || !cnMatchesApp) {
     clearSslConfigCache()
-    await generateCertificate({ ...tlsOptions, forceRegenerate: true } as Parameters<typeof generateCertificate>[0])
+    await generateCertificate({ ...tlsOptions, forceRegenerate: true } as unknown as Parameters<typeof generateCertificate>[0])
     certRegenerated = true
   }
 

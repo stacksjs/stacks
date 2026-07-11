@@ -11,6 +11,9 @@ import {
 import { paletteColor, withAlpha } from './colors'
 import { formatTick, niceTicks } from './ticks'
 
+const createLinearScale = scaleLinear as unknown as (...args: unknown[]) => any
+const createBandScale = scaleBand as unknown as (...args: unknown[]) => any
+
 interface Box {
   x: number
   y: number
@@ -339,7 +342,7 @@ export class Chart {
   private scaleX(plot: Box, count: number, i: number): number {
     if (count <= 1)
       return plot.x + plot.w / 2
-    const s = scaleLinear().domain([0, count - 1]).range([plot.x, plot.x + plot.w])
+    const s = createLinearScale().domain([0, count - 1]).range([plot.x, plot.x + plot.w])
     return s(i)
   }
 
@@ -351,7 +354,7 @@ export class Chart {
   private scaleY(plot: Box, axis: AxisLayout, value: number): number {
     if (axis.max === axis.min)
       return plot.y + plot.h / 2
-    const s = scaleLinear().domain([axis.min, axis.max]).range([plot.y + plot.h, plot.y])
+    const s = createLinearScale().domain([axis.min, axis.max]).range([plot.y + plot.h, plot.y])
     return s(value)
   }
 
@@ -455,7 +458,7 @@ export class Chart {
     // padding ratio d3-scale uses by default. Each band is then split
     // among datasets in unstacked mode.
     const indices = Array.from({ length: count }, (_, i) => i)
-    const xBand = scaleBand().domain(indices).range([plot.x, plot.x + plot.w]).paddingInner(0.3)
+    const xBand = createBandScale().domain(indices).range([plot.x, plot.x + plot.w]).paddingInner(0.3)
     const groupWidth = xBand.bandwidth() as number
     const barWidth = stacked ? groupWidth : groupWidth / Math.max(1, datasets.length)
 

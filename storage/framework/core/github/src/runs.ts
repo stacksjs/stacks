@@ -12,12 +12,12 @@ async function fillLatestCommit(base: RepoStatus, owner: string, name: string, b
       commit: { message: string, author: { name: string, date: string } | null }
       author: { login: string } | null
     }>
-    if (commits.length === 0)
+    const [c] = commits
+    if (!c)
       return
 
-    const c = commits[0]
     base.commitSha = c.sha.slice(0, 7)
-    base.commitMessage = c.commit.message.split('\n')[0]
+    base.commitMessage = c.commit.message.split('\n')[0] ?? null
     base.commitUrl = `https://github.com/${owner}/${name}/commit/${c.sha}`
     base.commitAuthor = c.commit.author?.name ?? c.author?.login ?? null
     base.updatedAt = c.commit.author?.date ?? null
@@ -90,12 +90,12 @@ export async function fetchRepoStatus(owner: string, name: string, defaultBranch
       }>
     }
 
-    if (!data.workflow_runs || data.workflow_runs.length === 0) {
+    const [run] = data.workflow_runs ?? []
+    if (!run) {
       await fillLatestCommit(base, owner, name, defaultBranch)
       return base
     }
 
-    const run = data.workflow_runs[0]
     base.workflowName = run.name
     base.commitSha = run.head_sha.slice(0, 7)
     base.commitMessage = run.head_commit?.message.split('\n')[0] ?? null

@@ -217,7 +217,7 @@ export async function cleanupAbandonedCarts(
       .deleteFrom('carts')
       .where('updated_at', '<', cutoffAt)
       .where('id', 'in', (eb: StacksExpressionBuilder) =>
-        eb.selectFrom('carts')
+        (eb.selectFrom as any)('carts')
           .select('id')
           .where('updated_at', '<', cutoffAt)
           .limit(limit),

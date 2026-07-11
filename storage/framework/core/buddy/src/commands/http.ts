@@ -24,6 +24,8 @@ export function http(buddy: CLI): void {
       log.debug('Running `buddy http [domain]` ...', options)
 
       const url = domain || config.app.url
+      if (!url)
+        throw new Error('No domain configured. Pass a domain or set config.app.url.')
       const client = new HttxClient({ verbose: options.verbose })
 
       log.info(`GET ${url}`)

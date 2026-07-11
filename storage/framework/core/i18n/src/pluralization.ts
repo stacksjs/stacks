@@ -22,7 +22,7 @@ export function getPluralCategory(n: number, locale: string): PluralCategory {
  */
 export function getPluralRule(locale: string): PluralRule {
   // Get base language code
-  const lang = locale.split('-')[0].toLowerCase()
+  const lang = locale.split('-')[0]?.toLowerCase() ?? locale.toLowerCase()
 
   const rule = pluralRules[lang]
   if (rule) return rule
@@ -48,22 +48,25 @@ export function parsePluralForms(
   const forms = new Map<PluralCategory, string>()
 
   if (parts.length === 1) {
-    forms.set('other', parts[0])
+    forms.set('other', parts[0] ?? '')
   }
   else if (parts.length === 2) {
-    forms.set('one', parts[0])
-    forms.set('other', parts[1])
+    forms.set('one', parts[0] ?? '')
+    forms.set('other', parts[1] ?? '')
   }
   else if (parts.length === 3) {
-    forms.set('zero', parts[0])
-    forms.set('one', parts[1])
-    forms.set('other', parts[2])
+    forms.set('zero', parts[0] ?? '')
+    forms.set('one', parts[1] ?? '')
+    forms.set('other', parts[2] ?? '')
   }
   else if (parts.length >= 4) {
     // Extended format: zero | one | two | few | many | other
     const categories: PluralCategory[] = ['zero', 'one', 'two', 'few', 'many', 'other']
     for (let i = 0; i < parts.length && i < categories.length; i++) {
-      forms.set(categories[i], parts[i])
+      const category = categories[i]
+      const part = parts[i]
+      if (category !== undefined && part !== undefined)
+        forms.set(category, part)
     }
   }
 
@@ -274,7 +277,7 @@ export function getSupportedPluralLocales(): string[] {
  * Check if a locale has custom plural rules
  */
 export function hasPluralRule(locale: string): boolean {
-  const lang = locale.split('-')[0].toLowerCase()
+  const lang = locale.split('-')[0]?.toLowerCase() ?? locale.toLowerCase()
   return lang in pluralRules
 }
 
@@ -282,6 +285,6 @@ export function hasPluralRule(locale: string): boolean {
  * Add a custom plural rule for a locale
  */
 export function addPluralRule(locale: string, rule: PluralRule): void {
-  const lang = locale.split('-')[0].toLowerCase()
+  const lang = locale.split('-')[0]?.toLowerCase() ?? locale.toLowerCase()
   pluralRules[lang] = rule
 }

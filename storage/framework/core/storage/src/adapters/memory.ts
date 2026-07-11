@@ -71,7 +71,7 @@ export class InMemoryStorageAdapter implements StorageAdapter {
         )
       }
 
-      const reader = stream.getReader.call(contents as ReadableStream)
+      const reader = (contents as ReadableStream<Uint8Array>).getReader()
       const chunks: Uint8Array[] = []
 
       while (true) {

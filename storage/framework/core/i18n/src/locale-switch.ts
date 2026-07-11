@@ -14,7 +14,7 @@ function normalizeLocale(code: string, config: LocaleSwitchConfig): string | nul
   if (config.locales.includes(normalized))
     return normalized
   const short = normalized.split('-')[0]
-  if (config.locales.includes(short))
+  if (short && config.locales.includes(short))
     return short
   return null
 }

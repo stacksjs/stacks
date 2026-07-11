@@ -58,10 +58,23 @@ export class TwilioDriver implements SmsDriver, SmsVerificationDriver {
       const results = await this.sendBulk(
         recipients.map(to => ({ ...message, to })),
       )
-      return results[0]
+      return results[0] ?? {
+        success: false,
+        to: recipients[0] ?? '',
+        error: 'No recipients supplied',
+        provider: 'twilio',
+      }
     }
 
     const to = recipients[0]
+    if (!to) {
+      return {
+        success: false,
+        to: '',
+        error: 'No recipient supplied',
+        provider: 'twilio',
+      }
+    }
     const from = message.from || this.config.from
 
     if (!from && !this.config.messagingServiceSid) {
@@ -144,7 +157,7 @@ export class TwilioDriver implements SmsDriver, SmsVerificationDriver {
    */
   async sendBulk(messages: SmsMessage[]): Promise<SmsSendResult[]> {
     return Promise.all(
-      messages.map(msg => this.send({ ...msg, to: Array.isArray(msg.to) ? msg.to[0] : msg.to })),
+      messages.map(msg => this.send(msg)),
     )
   }
 

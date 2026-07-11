@@ -54,6 +54,10 @@ export interface RAGResult extends AIResult {
 /**
  * Generate embeddings for text input.
  */
+// eslint-disable-next-line pickier/no-unused-vars
+export function createEmbedding(input: string, options?: EmbeddingOptions): Promise<number[]>
+// eslint-disable-next-line pickier/no-unused-vars
+export function createEmbedding(input: string[], options?: EmbeddingOptions): Promise<number[][]>
 export async function createEmbedding(
   input: string | string[],
   options: EmbeddingOptions = {},
@@ -94,7 +98,9 @@ async function createEmbeddingOpenAI(input: string | string[], model: string): P
   if (Array.isArray(input)) {
     return data.data.map(d => d.embedding)
   }
-  return data.data[0].embedding
+  const first = data.data[0]
+  if (!first) throw new Error('OpenAI Embeddings API returned no embedding')
+  return first.embedding
 }
 
 async function createEmbeddingOllama(input: string | string[], model: string): Promise<number[] | number[][]> {
@@ -118,7 +124,10 @@ async function createEmbeddingOllama(input: string | string[], model: string): P
     embeddings.push(data.embedding)
   }
 
-  return Array.isArray(input) ? embeddings : embeddings[0]
+  if (Array.isArray(input)) return embeddings
+  const first = embeddings[0]
+  if (!first) throw new Error('Ollama Embeddings API returned no embedding')
+  return first
 }
 
 // ============================================================================
@@ -138,9 +147,11 @@ export function cosineSimilarity(a: number[], b: number[]): number {
   let normB = 0
 
   for (let i = 0; i < a.length; i++) {
-    dotProduct += a[i] * b[i]
-    normA += a[i] * a[i]
-    normB += b[i] * b[i]
+    const av = a[i]!
+    const bv = b[i]!
+    dotProduct += av * bv
+    normA += av * av
+    normB += bv * bv
   }
 
   const denominator = Math.sqrt(normA) * Math.sqrt(normB)
@@ -159,7 +170,7 @@ export function dotProduct(a: number[], b: number[]): number {
 
   let result = 0
   for (let i = 0; i < a.length; i++) {
-    result += a[i] * b[i]
+    result += a[i]! * b[i]!
   }
   return result
 }
@@ -174,7 +185,7 @@ export function euclideanDistance(a: number[], b: number[]): number {
 
   let sum = 0
   for (let i = 0; i < a.length; i++) {
-    const diff = a[i] - b[i]
+    const diff = a[i]! - b[i]!
     sum += diff * diff
   }
   return Math.sqrt(sum)
@@ -205,16 +216,13 @@ export class VectorIndex {
     const contents = documents.map(d => d.content)
     const embeddings = await createEmbedding(contents, this.embeddingOptions)
 
-    // createEmbedding returns number[][] for array input, number[] for single input
-    // Since we always pass an array, we get number[][]
-    const embeddingsList = contents.length === 1
-      ? [embeddings as number[]]
-      : (embeddings as number[][])
-
     for (let i = 0; i < documents.length; i++) {
+      const document = documents[i]
+      const embedding = embeddings[i]
+      if (!document || !embedding) continue
       this.documents.push({
-        ...documents[i],
-        embedding: embeddingsList[i],
+        ...document,
+        embedding,
       })
     }
   }

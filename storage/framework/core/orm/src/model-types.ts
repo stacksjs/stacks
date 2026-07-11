@@ -17,19 +17,18 @@
  *   const post = await Post.find(id) // already fully typed!
  */
 import type {
-  AttributeKeys,
-  ColumnName,
-  FillableKeys,
-  InferModelAttributes,
-  ModelAttributes,
-  ModelDefinition,
+  InferAttributes as QueryInferAttributes,
+  InferColumnNames as QueryInferColumnNames,
+  InferFillableAttributes as QueryInferFillableAttributes,
+  InferNumericColumns as QueryInferNumericColumns,
+  ModelRow as QueryModelRow,
 } from '@stacksjs/query-builder'
 
 /**
  * Extract the raw ModelDefinition from a defineModel() return value.
  * Uses the getDefinition() accessor that defineModel() provides.
  */
-export type Def<T> = T extends { getDefinition: () => infer D extends ModelDefinition } ? D : never
+export type Def<T> = T extends { getDefinition: () => infer D } ? D : never
 
 /**
  * Extract foreign key columns from belongsTo relations.
@@ -49,7 +48,7 @@ export type BelongsToForeignKeys<TDef> =
  * import type Post from '../models/Post'
  * type PostJsonResponse = ModelRow<typeof Post>
  */
-export type ModelRow<T> = ModelAttributes<Def<T>> & BelongsToForeignKeys<Def<T>>
+export type ModelRow<T> = QueryModelRow<T> & BelongsToForeignKeys<Def<T>>
 
 /**
  * Same as {@link ModelRow} but with every field optional. Useful for
@@ -66,7 +65,7 @@ export type ModelRowLoose<T> = Partial<ModelRow<T>>
  * import type Post from '../models/Post'
  * type NewPost = NewModelData<typeof Post>
  */
-export type NewModelData<T> = Partial<InferModelAttributes<Def<T>> & BelongsToForeignKeys<Def<T>>>
+export type NewModelData<T> = Partial<QueryInferAttributes<T> & BelongsToForeignKeys<Def<T>>>
 
 /**
  * Strict insertable shape: only attributes marked `fillable: true` in
@@ -77,7 +76,7 @@ export type NewModelData<T> = Partial<InferModelAttributes<Def<T>> & BelongsToFo
  * can't pass non-fillable fields to `create()` / `insert()`.
  * {@link NewModelData} is the looser sibling that allows any attribute.
  */
-export type ModelCreateData<T> = Partial<Pick<InferModelAttributes<Def<T>>, Extract<FillableKeys<Def<T>>, keyof InferModelAttributes<Def<T>>>> & BelongsToForeignKeys<Def<T>>>
+export type ModelCreateData<T> = Partial<QueryInferFillableAttributes<T>> & BelongsToForeignKeys<Def<T>>
 
 /** Loose variant of {@link ModelCreateData} — same shape as {@link NewModelData}, aliased for naming-parity with the row types. */
 export type ModelCreateDataLoose<T> = NewModelData<T>
@@ -90,7 +89,7 @@ export type ModelCreateDataLoose<T> = NewModelData<T>
  * import type Post from '../models/Post'
  * type PostUpdate = UpdateModelData<typeof Post>
  */
-export type UpdateModelData<T> = Partial<InferModelAttributes<Def<T>> & BelongsToForeignKeys<Def<T>>>
+export type UpdateModelData<T> = Partial<QueryInferAttributes<T> & BelongsToForeignKeys<Def<T>>>
 
 /**
  * Just the attribute records flagged `fillable: true` — useful for
@@ -98,7 +97,9 @@ export type UpdateModelData<T> = Partial<InferModelAttributes<Def<T>> & BelongsT
  * model's fillable-attribute config (e.g., admin form schemas).
  */
 export type InferFillableAttributes<T> = {
-  [K in Extract<FillableKeys<Def<T>>, keyof Def<T>['attributes']>]: Def<T>['attributes'][K]
+  [K in keyof QueryInferFillableAttributes<T>]: Def<T> extends { attributes: infer A }
+    ? K extends keyof A ? A[K] : never
+    : never
 }
 
 /**
@@ -106,7 +107,7 @@ export type InferFillableAttributes<T> = {
  * added by traits like `id`, `uuid`, `created_at`). Useful for
  * constraining query builders that accept a `column` parameter.
  */
-export type InferColumnNames<T> = ColumnName<Def<T>>
+export type InferColumnNames<T> = QueryInferColumnNames<T>
 
 /**
  * Attribute keys whose `type` is declared as `'number'` in the model
@@ -119,8 +120,4 @@ export type InferColumnNames<T> = ColumnName<Def<T>>
  * `AttributeKeys<Def<T>>` here. Tighten by declaring `type: 'number'`
  * on the attribute spec when narrowing matters.
  */
-export type InferNumericColumns<T> = {
-  [K in AttributeKeys<Def<T>>]: Def<T>['attributes'][K] extends { type: 'number' } ? K : never
-}[AttributeKeys<Def<T>>] extends infer R
-  ? [R] extends [never] ? AttributeKeys<Def<T>> : R
-  : never
+export type InferNumericColumns<T> = QueryInferNumericColumns<T>

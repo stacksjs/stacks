@@ -702,7 +702,7 @@ async function processJobsFromRedis(queueName: string, concurrency: number): Pro
     throw new Error('Redis queue connection is not configured. Check config/queue.ts')
   }
 
-  const queue = new RedisQueue(queueName, redisConfig)
+  const queue = new RedisQueue(queueName, redisConfig as ConstructorParameters<typeof RedisQueue>[1])
 
   const { emitQueueEvent, getWorkerTracker } = await import('./events')
   const tracker = getWorkerTracker()

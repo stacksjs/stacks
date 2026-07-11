@@ -57,6 +57,9 @@
     "typecheck": "bun tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
+  "dependencies": {
+    "meilisearch": "^0.59.0"
+  },
   "devDependencies": {
     "@stacksjs/config": "workspace:*",
     "better-dx": "^0.2.12"

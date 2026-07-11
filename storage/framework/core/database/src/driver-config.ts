@@ -151,7 +151,7 @@ export interface FullDatabaseConfig {
 /**
  * Default configuration values for each driver
  */
-export const driverDefaults: Record<SupportedDialect, Partial<SqliteConfig | MysqlConfig | PostgresConfig | DynamoDbConfig>> = {
+export const driverDefaults: Record<SupportedDialect, Partial<SqliteConfig | MysqlConfig | SinglestoreConfig | PostgresConfig | DynamoDbConfig>> = {
   sqlite: {
     database: 'database/stacks.sqlite',
     prefix: '',

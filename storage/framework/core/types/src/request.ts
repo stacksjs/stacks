@@ -1,4 +1,3 @@
-import type { ModelRow } from '@stacksjs/orm'
 import { User } from '@stacksjs/orm'
 import type { UploadedFile } from '@stacksjs/storage'
 import type { AuthToken, RouteParam } from '@stacksjs/types'
@@ -7,7 +6,10 @@ import type { AuthToken, RouteParam } from '@stacksjs/types'
 // keeps this package free of a runtime ts-validation dependency.
 import type { Infer } from '@stacksjs/ts-validation'
 
-type UserJsonResponse = ModelRow<typeof User>
+// Trait methods are attached dynamically by the Stacks model proxy. The
+// open member bag reflects application-level traits that the framework's
+// default User definition cannot know about ahead of time.
+type UserJsonResponse = NonNullable<Awaited<ReturnType<typeof User.find>>> & Record<string, any>
 
 interface RequestData {
   [key: string]: any
@@ -218,6 +220,11 @@ export type InferValidations<V extends Record<string, { rule: any }>> = {
   [K in keyof V]: Infer<V[K]['rule']>
 }
 
+export type RequestValidationRules = Record<string, string | {
+  rule: { validate: (value: any) => any }
+  message?: string | Record<string, string>
+}>
+
 export interface RequestInstance<
   TFields extends Record<string, any> = Record<string, any>,
   TParams extends Record<string, string> = Record<string, string>,
@@ -267,12 +274,14 @@ export interface RequestInstance<
    * @example request.get('title')           // returns string (when model-aware)
    * @example request.get('views', 0)        // returns number with default
    */
-  get: <K extends keyof TFields & string>(key: K, defaultValue?: TFields[K]) => TFields[K]
+  get<K extends keyof TFields & string>(key: K, defaultValue?: TFields[K]): TFields[K]
+  get<T = any>(key: string, defaultValue?: T): T
 
   /**
    * Alias for get() - Laravel compatibility
    */
-  input: <K extends keyof TFields & string>(key: K, defaultValue?: TFields[K]) => TFields[K]
+  input<K extends keyof TFields & string>(key: K, defaultValue?: TFields[K]): TFields[K]
+  input<T = any>(key: string, defaultValue?: T): T
 
   /**
    * Get all input data (typed to model fields when model-aware)
@@ -296,25 +305,25 @@ export interface RequestInstance<
    * @example request.has('title')
    * @example request.has(['title', 'views'])
    */
-  has: (key: (keyof TFields & string) | (keyof TFields & string)[]) => boolean
+  has: (key: string | string[]) => boolean
 
   /**
    * Check if input has any of the specified keys
    * @example request.hasAny(['title', 'views'])
    */
-  hasAny: (keys: (keyof TFields & string)[]) => boolean
+  hasAny: (keys: string[]) => boolean
 
   /**
    * Check if input is filled (present and not empty)
    * @example request.filled('title')
    */
-  filled: (key: (keyof TFields & string) | (keyof TFields & string)[]) => boolean
+  filled: (key: string | string[]) => boolean
 
   /**
    * Check if input is missing
    * @example request.missing('title')
    */
-  missing: (key: (keyof TFields & string) | (keyof TFields & string)[]) => boolean
+  missing: (key: string | string[]) => boolean
 
   /**
    * Merge additional data into input — accepts partial model fields
@@ -390,7 +399,7 @@ export interface RequestInstance<
    * @example await request.validate()                    // uses model rules
    * @example await request.validate({ name: 'required' }) // custom rules
    */
-  validate: (rules?: Record<string, string>, messages?: Record<string, string>) => Promise<TFields>
+  validate: (rules?: RequestValidationRules, messages?: Record<string, string>) => Promise<TFields>
 
   /**
    * Get previously validated data, typed to model fields

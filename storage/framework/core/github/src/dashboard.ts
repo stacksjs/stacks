@@ -104,8 +104,8 @@ async function buildDashboardData(opts: DashboardOptions): Promise<DashboardData
   for (const c of runnerCounts) {
     if (!runners[c.owner])
       runners[c.owner] = { running: 0, queued: 0, cap: runnerCaps[c.owner] ?? defaultRunnerCap }
-    runners[c.owner].running += c.running
-    runners[c.owner].queued += c.queued
+    runners[c.owner]!.running += c.running
+    runners[c.owner]!.queued += c.queued
   }
 
   // failures float to the top of the feed so the dashboard's eye-line lands

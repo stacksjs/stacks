@@ -30,7 +30,7 @@ export const manageCharge: ManageCharge = (() => {
     }
 
     if (user.hasStripeId()) {
-      defaultOptions.customer = user.stripe_id
+      defaultOptions.customer = user.stripe_id ?? undefined
     }
 
     const mergedOptions = { ...defaultOptions, ...options }

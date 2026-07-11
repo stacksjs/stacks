@@ -63,7 +63,7 @@ const cfn = new CloudFormationClient(region)
 let stackExists = false
 try {
   const result = await cfn.describeStacks({ stackName })
-  stackExists = (result as Record<string, unknown[]>).Stacks?.length > 0
+  stackExists = ((result as Record<string, unknown[]>).Stacks?.length ?? 0) > 0
 }
 catch {
   stackExists = false

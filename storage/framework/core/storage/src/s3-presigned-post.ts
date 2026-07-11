@@ -158,7 +158,7 @@ export function signS3PresignedPost(input: S3PresignedPostInput): S3PresignedPos
 
   // Build the conditions list. Order doesn't matter to S3 but we
   // emit a stable ordering so signatures are deterministic for tests.
-  const conditions: Array<Record<string, string> | [string, string, string | number]> = []
+  const conditions: Array<Record<string, string> | [string, string | number, string | number]> = []
   conditions.push({ bucket: input.bucket })
 
   if (typeof input.key === 'string') {

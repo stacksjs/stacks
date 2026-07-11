@@ -208,5 +208,9 @@ export type StacksRequestExtensions = StacksRequestMarkers & StacksRequestMacros
 
 declare module '@stacksjs/bun-router' {
   // eslint-disable-next-line ts/no-empty-object-type
-  interface EnhancedRequest extends StacksRequestExtensions {}
+  interface EnhancedRequest extends StacksRequestMarkers {
+    allFiles?: StacksRequestMacros['allFiles']
+    tokenCan?: StacksRequestMacros['tokenCan']
+    can?: StacksRequestMacros['can']
+  }
 }
