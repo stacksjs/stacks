@@ -79,6 +79,10 @@ run_with_timeout() {
   return "${status}"
 }
 
+is_usable_bun() {
+  [ -x "$1" ] && "$1" --version >/dev/null 2>&1
+}
+
 # Run buddy with the correct PATH and NODE_PATH for pantry resolution.
 run_buddy() {
   BUN_CMD="$1"
@@ -108,7 +112,7 @@ run_buddy() {
 # unusable). Once the pantry directory exists and a bun is on PATH, we
 # trust that state until the user explicitly runs `bun install` or
 # `buddy install`. To force a refresh, set STACKS_FORCE_PANTRY=1.
-if [ -x "${PANTRY_LOCAL_BIN}/bun" ] && [ "${STACKS_FORCE_PANTRY:-}" != "1" ]; then
+if is_usable_bun "${PANTRY_LOCAL_BIN}/bun" && [ "${STACKS_FORCE_PANTRY:-}" != "1" ]; then
   run_buddy "${PANTRY_LOCAL_BIN}/bun" "$@"
 fi
 
@@ -137,7 +141,7 @@ fi
 run_with_timeout "${PANTRY_DEPENDENCIES_TIMEOUT_SECONDS}" pantry install
 
 # After install, try again
-if [ -x "${PANTRY_LOCAL_BIN}/bun" ]; then
+if is_usable_bun "${PANTRY_LOCAL_BIN}/bun"; then
   run_buddy "${PANTRY_LOCAL_BIN}/bun" "$@"
 fi
 
