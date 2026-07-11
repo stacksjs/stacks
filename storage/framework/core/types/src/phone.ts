@@ -48,6 +48,21 @@ export interface PhoneNotificationsConfig {
   voicemail?: PhoneNotificationConfig
 }
 
+export type CallForwardingCondition = 'always' | 'business_hours' | 'after_hours'
+
+export interface CallForwardingRule {
+  name: string
+  condition: CallForwardingCondition
+  forwardTo: string
+  ringTimeout: number
+  priority: number
+}
+
+export interface CallForwardingConfig {
+  enabled: boolean
+  rules: CallForwardingRule[]
+}
+
 export interface PhoneOptions {
   enabled: boolean
   provider: 'connect' // Amazon Connect
@@ -56,6 +71,7 @@ export interface PhoneOptions {
   phoneNumbers: PhoneNumberConfig[]
   notifications: PhoneNotificationsConfig
   voicemail: VoicemailConfig
+  forwarding?: CallForwardingConfig
   businessHours?: BusinessHoursConfig
 }
 

@@ -302,7 +302,7 @@ export interface EmailOptions {
   server: EmailServerConfig
   notifications?: EmailNotificationsConfig
 
-  default: 'log' | 'ses' | 'sendgrid' | 'mailgun' | 'mailtrap' | 'smtp'
+  default: 'log' | 'capture' | 'ses' | 'sendgrid' | 'mailgun' | 'mailtrap' | 'smtp'
 
   /**
    * Suppression-list enforcement policy (stacksjs/stacks#1880).
