@@ -3,6 +3,7 @@
   "compilerOptions": {
     "incremental": true,
     "lib": ["esnext", "dom"],
+    "rootDir": "../..",
     "tsBuildInfoFile": "../../node_modules/.cache/typescript/app.tsbuildinfo",
     "paths": {
       "@stacksjs/actions/*": ["./core/actions/src/*"],
@@ -24,16 +25,17 @@
     "../../*.ts",
     "../../*.d.ts",
     "../../types/**/*.d.ts",
-    "../../app/Models/**/*.ts",
-    "../../app/Services/**/*.ts",
-    "../../app/Support/**/*.ts"
+    "./types/**/*.d.ts",
+    "../../app/**/*.ts",
+    "../../config/**/*.ts",
+    "../../resources/**/*.ts",
+    "../../routes/**/*.ts"
   ],
   "exclude": [
     "../../cloud/**",
     "../../dist/**",
     "../../node_modules/**",
     "../../pantry/**",
-    "./**",
     "../../resources/assets/**"
   ]
 }
