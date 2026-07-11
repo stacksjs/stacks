@@ -741,7 +741,7 @@ function printDevEngineNotes(): void {
 }
 
 async function launchNativeAppWindow(url: string, options: DevOptions): Promise<(() => void) | undefined> {
-  let createApp: ((_opts: any) => { show: () => Promise<void>, close: () => void }) | undefined
+  let createApp: CraftSdk['createApp']
 
   try {
     const craft = await importCraftSdk()
@@ -791,30 +791,35 @@ async function launchNativeAppWindow(url: string, options: DevOptions): Promise<
   return () => app.close()
 }
 
-async function importCraftSdk(): Promise<{ createApp?: (_opts: any) => { show: () => Promise<void>, close: () => void } }> {
+interface CraftApplication {
+  show: () => Promise<void>
+  close: () => void
+}
+
+interface CraftSdk {
+  createApp?: (options: Record<string, unknown>) => CraftApplication
+}
+
+async function importCraftSdk(): Promise<CraftSdk> {
   const localCraftSdk = process.env.HOME
     ? `${process.env.HOME}/Code/Tools/craft/packages/typescript/src/index.ts`
     : undefined
 
   if (localCraftSdk && existsSync(localCraftSdk))
-    return await import(localCraftSdk)
+    return await import(localCraftSdk) as CraftSdk
 
-  try {
-    return await import('craft-native')
-  }
-  catch (primaryError) {
+  const packageNames = ['craft-native', '@craft-native/craft', '@stacksjs/ts-craft'] as const
+  let primaryError: unknown
+  for (const packageName of packageNames) {
     try {
-      return await import('@craft-native/craft')
+      return await import(packageName) as CraftSdk
     }
-    catch {
-      try {
-        return await import('@stacksjs/ts-craft')
-      }
-      catch {
-        throw primaryError
-      }
+    catch (error) {
+      primaryError ??= error
     }
   }
+
+  throw primaryError
 }
 
 async function cleanupStaleDevProcesses(ports: number[]): Promise<void> {
