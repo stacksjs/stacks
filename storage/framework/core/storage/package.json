@@ -63,7 +63,7 @@
   },
   "devDependencies": {
     "@stacksjs/arrays": "workspace:*",
-    "better-dx": "^0.2.12",
+    "better-dx": "^0.2.16",
     "@stacksjs/error-handling": "workspace:*",
     "@stacksjs/path": "workspace:*",
     "@stacksjs/strings": "workspace:*",

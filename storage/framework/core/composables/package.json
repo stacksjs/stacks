@@ -55,6 +55,6 @@
     "@stacksjs/datetime": "workspace:*"
   },
   "devDependencies": {
-    "better-dx": "^0.2.12"
+    "better-dx": "^0.2.16"
   }
 }

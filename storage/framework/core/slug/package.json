@@ -53,7 +53,7 @@
   "devDependencies": {
     "@stacksjs/cli": "workspace:*",
     "@stacksjs/database": "workspace:*",
-    "better-dx": "^0.2.12",
+    "better-dx": "^0.2.16",
     "@stacksjs/path": "workspace:*",
     "@stacksjs/strings": "workspace:*",
     "@stacksjs/utils": "workspace:*"

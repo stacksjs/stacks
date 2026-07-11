@@ -73,11 +73,7 @@
     "stacks": "workspace:*"
   },
   "devDependencies": {
-    "better-dx": "^0.2.15"
-  },
-  "overrides": {
-    "bun-query-builder": "^0.1.46",
-    "typescript": "^7.0.2"
+    "better-dx": "^0.2.16"
   },
   "workspaces": [
     "storage/framework",

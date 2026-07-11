@@ -54,11 +54,11 @@
     "@stacksjs/composables": "workspace:*",
     "@stacksjs/stx": "^0.2.82",
     "@stripe/stripe-js": "^9.0.0",
-    "bun-query-builder": "^0.1.38",
+    "bun-query-builder": "^0.1.46",
     "magic-regexp": "^0.11.0"
   },
   "devDependencies": {
-    "better-dx": "^0.2.12",
+    "better-dx": "^0.2.16",
     "@stacksjs/utils": "workspace:*"
   }
 }

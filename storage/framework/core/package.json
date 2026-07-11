@@ -314,7 +314,7 @@
     "@stacksjs/database": "^0.70.73",
     "@stacksjs/defaults": "^0.70.73",
     "@stacksjs/desktop": "^0.70.73",
-    "better-dx": "^0.2.12",
+    "better-dx": "^0.2.16",
     "@stacksjs/dns": "^0.70.73",
     "@stacksjs/email": "^0.70.73",
     "@stacksjs/enums": "^0.70.73",
@@ -374,6 +374,6 @@
     "@stacksjs/newsletter": "^0.70.73",
     "@stacksjs/i18n": "^0.70.73",
     "@stacksjs/cron": "^0.70.73",
-    "bun-query-builder": "^0.1.26"
+    "bun-query-builder": "^0.1.46"
   }
 }
