@@ -73,7 +73,8 @@
     "stacks": "workspace:*"
   },
   "devDependencies": {
-    "better-dx": "^0.2.16"
+    "better-dx": "^0.2.16",
+    "cz-git": "^1.13.1"
   },
   "workspaces": [
     "storage/framework",

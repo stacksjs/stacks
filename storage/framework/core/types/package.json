@@ -52,10 +52,10 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "@stacksjs/bunpress": "^0.1.11",
+    "@stacksjs/bunpress": "^0.1.12",
     "@stacksjs/clapp": "^0.2.10",
     "@stacksjs/ts-validation": "^0.5.0",
-    "bun-query-builder": "^0.1.46",
+    "bun-query-builder": "^0.1.47",
     "meilisearch": "^0.59.0"
   },
   "devDependencies": {
