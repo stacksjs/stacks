@@ -1,5 +1,57 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.73...v0.70.74)
+
+## ✨ Features
+
+- **release**: wrap bumpx & logsmith via SDK; make buddy release consumer-app aware ([a6465f0](https://github.com/stacksjs/stacks/commit/a6465f0)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🐛 Bug Fixes
+
+- **actions**: expose subpath declarations ([0cbbdb6](https://github.com/stacksjs/stacks/commit/0cbbdb6)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **homebrew**: consume packaged Buddy assets ([3d81fb4](https://github.com/stacksjs/stacks/commit/3d81fb4)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **release**: publish packaged Buddy assets ([253e4bc](https://github.com/stacksjs/stacks/commit/253e4bc)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **utils**: avoid eager resource discovery ([9a7e050](https://github.com/stacksjs/stacks/commit/9a7e050)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **actions**: type optional Craft dashboard integration ([db59f87](https://github.com/stacksjs/stacks/commit/db59f87)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **ci**: validate Pantry Bun runtime ([a25240d](https://github.com/stacksjs/stacks/commit/a25240d)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **buddy**: type optional Craft integration ([9934f04](https://github.com/stacksjs/stacks/commit/9934f04)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **utils**: export core utility helpers ([064071a](https://github.com/stacksjs/stacks/commit/064071a)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **types**: align communication config surfaces ([25bc9f5](https://github.com/stacksjs/stacks/commit/25bc9f5)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **types**: cover complete application source tree ([62b3ea9](https://github.com/stacksjs/stacks/commit/62b3ea9)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **deps**: replace overrides with direct constraints ([10f3e11](https://github.com/stacksjs/stacks/commit/10f3e11)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **deps**: upgrade bun-query-builder ([4ab505a](https://github.com/stacksjs/stacks/commit/4ab505a)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **cloud**: satisfy strict TypeScript checks ([38dc3ae](https://github.com/stacksjs/stacks/commit/38dc3ae)) _(by Chris <chrisbreuer93@gmail.com>)_
+- make TypeScript 7 checks reproducible ([0a33544](https://github.com/stacksjs/stacks/commit/0a33544)) _(by Chris <chrisbreuer93@gmail.com>)_
+- eliminate TypeScript 7 framework errors ([2539d0a](https://github.com/stacksjs/stacks/commit/2539d0a)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **security**: rotate deployment credentials ([9290d63](https://github.com/stacksjs/stacks/commit/9290d63)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **deps**: upgrade ts-cloud security patch ([f19fde6](https://github.com/stacksjs/stacks/commit/f19fde6)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **ci**: support mixed-provider deployment credentials ([f5b38f8](https://github.com/stacksjs/stacks/commit/f5b38f8)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **ci**: correct encrypted deployment credentials ([de705b6](https://github.com/stacksjs/stacks/commit/de705b6)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## ♻️ Code Refactoring
+
+- **types**: limit consumer project scope ([c281261](https://github.com/stacksjs/stacks/commit/c281261)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **types**: keep consumer configs minimal ([93da892](https://github.com/stacksjs/stacks/commit/93da892)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **types**: isolate incremental typecheck projects ([8245468](https://github.com/stacksjs/stacks/commit/8245468)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **types**: remove vendored declarations ([eb5221f](https://github.com/stacksjs/stacks/commit/eb5221f)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 💚 Continuous Integration
+
+- keep deployments provider agnostic ([cb43ea3](https://github.com/stacksjs/stacks/commit/cb43ea3)) _(by Chris <chrisbreuer93@gmail.com>)_
+- consolidate environment deployments ([91424e9](https://github.com/stacksjs/stacks/commit/91424e9)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🔧 Chores
+
+- **deps**: update declaration tooling ([d86e36c](https://github.com/stacksjs/stacks/commit/d86e36c)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **deps**: update framework query builder ([25e9775](https://github.com/stacksjs/stacks/commit/25e9775)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **deps**: adopt fixed TypeScript packages ([79a2c0a](https://github.com/stacksjs/stacks/commit/79a2c0a)) _(by Chris <chrisbreuer93@gmail.com>)_
+- upgrade framework to TypeScript 7 ([a7a7b48](https://github.com/stacksjs/stacks/commit/a7a7b48)) _(by Chris <chrisbreuer93@gmail.com>)_
+- root app depends on the stacks meta only ([7b3da9c](https://github.com/stacksjs/stacks/commit/7b3da9c)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 ## v0.70.73
 
 [compare changes](https://github.com/stacksjs/stacks/compare/v0.70.72...v0.70.73)
