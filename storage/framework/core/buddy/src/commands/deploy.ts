@@ -1244,9 +1244,12 @@ async function runHetznerDeploy(args: {
     const root = site.root || '.'
     const tarballPath = join(tmpdir(), `${slug}-${siteName}-${sha}.tar.gz`)
     log.info(`Packaging ${root} → ${tarballPath}...`)
+    // COPYFILE_DISABLE stops macOS bsdtar from embedding AppleDouble (._*)
+    // resource-fork files — on the server those shadow real files and break
+    // anything that globs a directory (e.g. `._0001-….sql` crashes migrate).
     execSync(
       `tar czf "${tarballPath}" ${tarExcludes.join(' ')} -C "${root}" .`,
-      { stdio: verbose ? 'inherit' : 'pipe' },
+      { stdio: verbose ? 'inherit' : 'pipe', env: { ...process.env, COPYFILE_DISABLE: '1' } },
     )
     const sizeMb = Math.max(1, Math.round((statSync(tarballPath).size) / 1048576))
     log.info(`Release tarball: ~${sizeMb} MB`)
