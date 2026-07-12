@@ -168,6 +168,16 @@ async function install(path: string, options: CreateOptions) {
     process.exit(ExitCode.FatalError)
   }
 
+  // The template ships .env.development/.staging/.production encrypted with
+  // the UPSTREAM repo's dotenvx keys (and no .env.keys), so a fresh app can
+  // never decrypt them — they only leak "encrypted:..." garbage into config
+  // (e.g. `email.default: expected one of [...], got "encrypted:..."`).
+  // Drop them; `buddy env:encrypt` regenerates per-project files when needed.
+  log.info('Removing template-encrypted env files...')
+  const { rm } = await import('node:fs/promises')
+  for (const stale of ['.env.development', '.env.staging', '.env.production', '.env.keys'])
+    await rm(`${path}/${stale}`, { force: true })
+
   log.info('Generating application key...')
   const keyResult = await runAction(Action.KeyGenerate, { ...options, cwd: path })
   if (keyResult.isErr) {
