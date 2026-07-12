@@ -1641,13 +1641,32 @@ if [ "$ENV_CHANGED" = 1 ]; then systemctl restart mail 2>/dev/null || true; echo
  * per record): MX → the mail host, SPF authorizing the box IP, the domain's DKIM
  * public key at `mail._domainkey`, and a DMARC policy. Best-effort — logged, not
  * thrown. No-op without Porkbun credentials (the records are printed to add by
- * hand). MX targets the shared mail host (`mail.stacksjs.com`), so no per-domain
- * mail A record or extra TLS SAN is needed.
+ * hand). MX targets the tenant's own `mail.<domain>` when that name already
+ * resolves to the box (own-brand mail host; requires the mail cert to cover it
+ * as a SAN), and falls back to the shared mail host (`mail.stacksjs.com`)
+ * otherwise, where no per-domain mail A record or extra TLS SAN is needed.
  */
 export async function reconcileMailDns(res: MailTenantResult, ip: string, logger: typeof log): Promise<void> {
-  const { domain, mailHost, dkimPubB64 } = res
+  const { domain, dkimPubB64 } = res
+  let { mailHost } = res
+
+  // Prefer the tenant's own mail hostname when it already points at this box.
+  try {
+    const dns = await import('node:dns')
+    const own = `mail.${domain}`
+    if (own !== mailHost && (await dns.promises.resolve4(own)).includes(ip))
+      mailHost = own
+  }
+  catch { /* keep the shared mail host */ }
+
   const spf = `v=spf1 ip4:${ip} ~all`
-  const dmarc = `v=DMARC1; p=quarantine; rua=mailto:chris@${domain}`
+  // DMARC aggregate reports go to the configured from-address (falling back to
+  // the first declared mailbox, then chris@) so reports reach a real inbox.
+  const cfg: any = emailConfig || {}
+  const firstBox = resolveMailboxes(cfg.mailboxes, domain)[0]?.address
+  const fromAddress = typeof cfg.from?.address === 'string' && cfg.from.address.includes('@') ? cfg.from.address : undefined
+  const rua = fromAddress || firstBox || `chris@${domain}`
+  const dmarc = `v=DMARC1; p=quarantine; rua=mailto:${rua}`
   const dkim = dkimPubB64 ? `v=DKIM1; k=rsa; p=${dkimPubB64}` : undefined
 
   const apiKey = process.env.PORKBUN_API_KEY
