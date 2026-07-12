@@ -17,6 +17,9 @@
 // }
 
 export * from './drivers/aws'
+// Declarative `config/dns.ts` reconciliation (pull + additive sync), used by the
+// `buddy dns:*` commands and the deploy step.
+export * from './sync'
 // `@stacksjs/dnsx` currently ships only `dist/index.d.ts` (types) with
 // no runtime entry — `export * from '@stacksjs/dnsx'` therefore fails
 // at module-resolution time. Re-add this re-export once the upstream

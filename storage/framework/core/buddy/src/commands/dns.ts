@@ -2,6 +2,7 @@ import type { CLI } from '@stacksjs/types'
 import process from 'node:process'
 import { log, onUnknownSubcommand } from "@stacksjs/cli"
 import { config } from '@stacksjs/config'
+import { renderDnsConfig, resolveLiveRecords, syncDnsConfig } from '@stacksjs/dns'
 import { ExitCode } from '@stacksjs/types'
 
 // `@stacksjs/dnsx` currently publishes only type declarations (no
@@ -114,6 +115,67 @@ export function dns(buddy: CLI): void {
       }
 
       process.exit(ExitCode.Success)
+    })
+
+  // Strip protocol/path/port from a configured app URL down to a bare zone.
+  const bareDomain = (input?: string): string =>
+    (input || config.app.url || '').replace(/^[a-z]+:\/\//i, '').replace(/[/:].*$/, '')
+
+  buddy
+    .command('dns:pull [domain]', 'Print a domain\'s live DNS records as a config/dns.ts block')
+    .option('--verbose', descriptions.verbose, { default: false })
+    .action(async (domain: string | undefined, options: { verbose?: boolean }) => {
+      const target = bareDomain(domain)
+      log.debug(`Running \`buddy dns:pull ${target}\` ...`, options)
+
+      const records = await resolveLiveRecords(target)
+      if (!records.length) {
+        log.error(`No DNS records resolved for ${target}.`)
+        process.exit(ExitCode.FatalError)
+      }
+
+      console.log(renderDnsConfig(target, records))
+      process.exit(ExitCode.Success)
+    })
+
+  buddy
+    .command('dns:diff [domain]', 'Show which config/dns.ts records are missing from the live zone')
+    .option('--verbose', descriptions.verbose, { default: false })
+    .action(async (domain: string | undefined, options: { verbose?: boolean }) => {
+      const target = bareDomain(domain)
+      log.debug(`Running \`buddy dns:diff ${target}\` ...`, options)
+
+      const { plan, provider } = await syncDnsConfig(target, config.dns, { dryRun: true })
+      for (const item of plan.items) {
+        const detail = item.record.type === 'TXT' || item.record.type === 'MX' ? ` ${item.record.content}` : ` → ${item.record.content}`
+        console.log(`  ${item.action === 'create' ? '+ create' : '  keep  '} ${item.record.type.padEnd(5)} ${item.record.name}${detail}`)
+      }
+      console.log(`\n${plan.create.length} to create, ${plan.keep.length} already present (${provider ? `registrar: ${provider}` : 'public DNS'})`)
+      process.exit(ExitCode.Success)
+    })
+
+  buddy
+    .command('dns:sync [domain]', 'Additively sync config/dns.ts to the registrar (creates missing records; never deletes or overwrites)')
+    .option('--dry-run', 'Show the plan without writing any records', { default: false })
+    .option('--verbose', descriptions.verbose, { default: false })
+    .action(async (domain: string | undefined, options: { dryRun?: boolean, verbose?: boolean }) => {
+      const target = bareDomain(domain)
+      log.debug(`Running \`buddy dns:sync ${target}\` ...`, options)
+
+      const result = await syncDnsConfig(target, config.dns, { dryRun: options.dryRun })
+
+      if (!result.provider && !options.dryRun) {
+        log.warn(`No DNS provider credentials found (e.g. PORKBUN_API_KEY / PORKBUN_SECRET_KEY) — nothing was synced. ${result.plan.create.length} record(s) would be created.`)
+        process.exit(ExitCode.Success)
+      }
+
+      for (const record of result.plan.create)
+        console.log(`  ${result.applied ? 'created' : 'would create'} ${record.type.padEnd(5)} ${record.name} → ${record.content}`)
+
+      const verb = result.applied ? 'created' : 'to create'
+      const count = result.applied ? result.created : result.plan.create.length
+      console.log(`\ndns:sync ${target}: ${count} ${verb}, ${result.kept} kept${result.failed ? `, ${result.failed} failed` : ''}${result.provider ? ` (${result.provider})` : ''}`)
+      process.exit(result.failed > 0 ? ExitCode.FatalError : ExitCode.Success)
     })
 
   onUnknownSubcommand(buddy, "dns")

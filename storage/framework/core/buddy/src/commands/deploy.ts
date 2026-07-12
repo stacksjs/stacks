@@ -5,8 +5,8 @@ import { join } from 'node:path'
 import process from 'node:process'
 import { runAction } from '@stacksjs/actions'
 import { italic, onUnknownSubcommand, outro, prompts, runCommand } from "@stacksjs/cli"
-import { app, email as emailConfig, cloud as cloudConfig } from '@stacksjs/config'
-import { addDomain, hasUserDomainBeenAddedToCloud } from '@stacksjs/dns'
+import { app, dns as dnsConfig, email as emailConfig, cloud as cloudConfig } from '@stacksjs/config'
+import { addDomain, hasUserDomainBeenAddedToCloud, syncDnsConfig } from '@stacksjs/dns'
 import { encryptEnv, env } from '@stacksjs/env'
 import { Action } from '@stacksjs/enums'
 import { path as p } from '@stacksjs/path'
@@ -1327,6 +1327,13 @@ async function runHetznerDeploy(args: {
   if (ok)
     await reconcileHetznerDns(onlySite ? { [onlySite]: sites[onlySite] } : sites, ip, log)
 
+  // Reconcile the app's declared DNS records (config/dns.ts) beyond the apex/www
+  // A records above — e.g. verification TXT, extra CNAMEs. Strictly additive:
+  // only creates declared records that are missing (and never a private IP),
+  // never deletes or overwrites. Best-effort, same as the reconcilers around it.
+  if (ok)
+    await reconcileConfigDns(onlySite ? { [onlySite]: sites[onlySite] } : sites, log)
+
   // Reconcile this app's mail routing onto the (shared) mail server from
   // config/email.ts: register its local domain and provision its auto-forward
   // rules (forwards.json). Idempotent, merge-based and best-effort — it never
@@ -1679,6 +1686,36 @@ export async function reconcileMailDns(res: MailTenantResult, ip: string, logger
  * `detectDnsProvider`, so whichever registrar actually hosts the zone is used.
  * Idempotent (upsert) and best-effort — failures are logged, not thrown.
  */
+// Additively reconcile the app's config/dns.ts records (verification TXT, extra
+// records) for every site domain, using the shared provider-agnostic
+// syncDnsConfig from @stacksjs/dns. Create-only and never destructive, so it is
+// safe to run on every deploy; a no-op when config/dns.ts declares no records.
+async function reconcileConfigDns(sites: Record<string, any>, logger: typeof log): Promise<void> {
+  const declared = (['a', 'aaaa', 'cname', 'mx', 'txt'] as const)
+    .reduce((total, key) => total + (Array.isArray((dnsConfig as any)?.[key]) ? (dnsConfig as any)[key].length : 0), 0)
+  if (declared === 0)
+    return
+
+  const domains = new Set<string>()
+  for (const site of Object.values(sites)) {
+    if (site?.domain && typeof site.domain === 'string')
+      domains.add(site.domain.replace(/^www\./, ''))
+  }
+
+  for (const domain of domains) {
+    try {
+      const result = await syncDnsConfig(domain, dnsConfig)
+      if (!result.provider)
+        continue // no registrar credentials resolved for this domain; skip quietly
+      if (result.created || result.failed)
+        logger.info(`DNS (config/dns.ts) ${domain}: ${result.created} created, ${result.kept} kept${result.failed ? `, ${result.failed} failed` : ''}`)
+    }
+    catch (err) {
+      logger.warn(`DNS (config/dns.ts) reconcile for ${domain} failed: ${err instanceof Error ? err.message : String(err)}`)
+    }
+  }
+}
+
 async function reconcileHetznerDns(sites: Record<string, any>, ip: string, logger: typeof log): Promise<void> {
   // Collect the apex domains declared by sites (skip loopback/domain-less sites).
   const domains = new Set<string>()
