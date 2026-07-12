@@ -42,6 +42,7 @@
       "default": "./dist/run-action.js"
     },
     "./*": {
+      "types": "./dist/*.d.ts",
       "development": "./src/*",
       "bun": "./dist/*",
       "import": "./dist/*",
