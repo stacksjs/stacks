@@ -15,7 +15,7 @@ jobs:
     name: npm
     runs-on: ubuntu-latest
     outputs:
-      version: ${{ env.VERSION }}
+      version: ${{ steps.get_version.outputs.version }}
     steps:
       - name: Checkout Code
         uses: actions/checkout@v6
@@ -82,7 +82,10 @@ jobs:
 
       - name: Extract tag version
         id: get_version
-        run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+        run: |
+          version=${GITHUB_REF#refs/tags/}
+          echo "VERSION=$version" >> "$GITHUB_ENV"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
 
       - name: Build Buddy Release Assets
         run: |
@@ -91,21 +94,19 @@ jobs:
           bun run zip:all
 
       - name: Create GitHub Release
-        uses: stacksjs/action-releaser@v1.2.9
+        uses: home-lang/pantry/packages/action@main
         with:
-          files: |
-            storage/framework/core/buddy/bin/buddy-linux-x64
-            storage/framework/core/buddy/bin/buddy-linux-arm64
-            storage/framework/core/buddy/bin/buddy-windows-x64.exe
-            storage/framework/core/buddy/bin/buddy-darwin-x64
-            storage/framework/core/buddy/bin/buddy-darwin-arm64
+          install: 'false'
+          release: 'true'
+          release-tag: ${{ steps.get_version.outputs.version }}
+          release-files: |
             storage/framework/core/buddy/bin/buddy-linux-x64.zip
             storage/framework/core/buddy/bin/buddy-linux-arm64.zip
             storage/framework/core/buddy/bin/buddy-windows-x64.zip
             storage/framework/core/buddy/bin/buddy-darwin-x64.zip
             storage/framework/core/buddy/bin/buddy-darwin-arm64.zip
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          release-changelog: auto
+          release-token: ${{ secrets.GITHUB_TOKEN }}
 
   homebrew:
     needs: npm
@@ -158,7 +159,7 @@ jobs:
           START_TIME=$(date +%s)
 
           while [ $(( $(date +%s) - START_TIME )) -lt $TIMEOUT ]; do
-            HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" https://github.com/stacksjs/stacks/releases/download/$VERSION/buddy-darwin-arm64)
+            HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" https://github.com/stacksjs/stacks/releases/download/$VERSION/buddy-darwin-arm64.zip)
             echo "HTTP response code: $HTTP_CODE"
 
             if [ "$HTTP_CODE" = "200" ] || [ "$HTTP_CODE" = "302" ]; then
@@ -206,10 +207,10 @@ jobs:
             return 1
           }
 
-          download_with_retry "https://github.com/stacksjs/stacks/releases/download/$VERSION/buddy-darwin-arm64" "buddy-darwin-arm64"
-          download_with_retry "https://github.com/stacksjs/stacks/releases/download/$VERSION/buddy-darwin-x64" "buddy-darwin-x64"
-          download_with_retry "https://github.com/stacksjs/stacks/releases/download/$VERSION/buddy-linux-arm64" "buddy-linux-arm64"
-          download_with_retry "https://github.com/stacksjs/stacks/releases/download/$VERSION/buddy-linux-x64" "buddy-linux-x64"
+          download_with_retry "https://github.com/stacksjs/stacks/releases/download/$VERSION/buddy-darwin-arm64.zip" "buddy-darwin-arm64.zip"
+          download_with_retry "https://github.com/stacksjs/stacks/releases/download/$VERSION/buddy-darwin-x64.zip" "buddy-darwin-x64.zip"
+          download_with_retry "https://github.com/stacksjs/stacks/releases/download/$VERSION/buddy-linux-arm64.zip" "buddy-linux-arm64.zip"
+          download_with_retry "https://github.com/stacksjs/stacks/releases/download/$VERSION/buddy-linux-x64.zip" "buddy-linux-x64.zip"
 
           cd ../..
 
