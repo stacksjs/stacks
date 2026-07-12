@@ -1115,9 +1115,19 @@ async function runHetznerDeploy(args: {
     // fails the deploy even though rpx already serves the site. Applies to both
     // server-app and server-static sites: static sites become additive rpx
     // file_server routes, not a separate nginx vhost.
+    //
+    // Also default managed TLS ON (a tenant can still opt out with an explicit
+    // `proxy.onDemandTls: false`). ts-cloud's rpx provisioning only emits the
+    // per-project cert issuance/renewal units (`/etc/rpx/renew-certs-<slug>.sh`
+    // + `rpx-cert-renew-<slug>.{service,timer}`, one idempotent set per tenant
+    // slug covering that tenant's site domains) when `proxy.onDemandTls` is set.
+    // Owner deploys set it in their own config, so their domains get certs —
+    // but an attached tenant that didn't declare it got only the sites.d
+    // fragment: its routes worked while its domain served the box's fallback
+    // cert forever, with no unit to ever issue the real one.
     const compute = ((tsCloudConfig.infrastructure ??= {}).compute ??= {}) as Record<string, any>
     compute.webServer = 'rpx'
-    compute.proxy = { ...(compute.proxy ?? {}), engine: 'rpx' }
+    compute.proxy = { onDemandTls: true, ...(compute.proxy ?? {}), engine: 'rpx' }
     // Pin the shared box in OUR own driver state so ts-cloud's deploy targets it
     // (keyed by our project's stack name — we never touch the owner's state file).
     // This is the exact shape ts-cloud's readDriverState expects; writing it
