@@ -51,6 +51,10 @@ interface BlogSiteConfig {
   defaultTheme: BlogThemeMode
   /** Raw HTML for the footer colophon line. */
   colophon: string
+  /** Empty-state heading shown when no posts exist yet. */
+  emptyTitle: string
+  /** Empty-state copy shown under the heading (plain text). */
+  emptyText: string
 }
 
 const STACKS_DEFAULTS: BlogSiteConfig = {
@@ -67,6 +71,8 @@ const STACKS_DEFAULTS: BlogSiteConfig = {
   themes: ['colored', 'light', 'dark'],
   defaultTheme: 'colored',
   colophon: 'Built with Stacks · TypeScript &amp; Bun · <a href="/blog/feed.xml">RSS</a>',
+  emptyTitle: 'No posts yet',
+  emptyText: 'The first one is in the works. Leave your email and it will land in your inbox the moment it ships.',
 }
 
 let sitePromise: Promise<BlogSiteConfig> | null = null
@@ -400,13 +406,63 @@ async function indexHtml(bp: BunPress): Promise<string> {
     </a>`
   }).join('\n')
 
+  // Empty state doubles as an email-capture moment: every Stacks app ships the
+  // public `/api/email/subscribe` endpoint, so the form works out of the box.
+  const emptyState = `
+    <div class="blog-empty">
+      <h2>${escapeHtml(cfg.emptyTitle)}</h2>
+      <p>${escapeHtml(cfg.emptyText)}</p>
+      <form class="blog-subscribe" method="POST" action="/api/email/subscribe">
+        <input type="email" name="email" placeholder="you@example.com" autocomplete="email" aria-label="Email address" required>
+        <input type="hidden" name="source" value="blog-empty">
+        <button type="submit">Subscribe</button>
+        <p class="blog-form-note" role="status" aria-live="polite"></p>
+      </form>
+    </div>
+    <script>
+      (function () {
+        var form = document.querySelector('.blog-subscribe')
+        if (!form) return
+        var note = form.querySelector('.blog-form-note')
+        var button = form.querySelector('button[type="submit"]')
+        var say = function (text) { if (note) note.textContent = text }
+        form.addEventListener('submit', function (event) {
+          event.preventDefault()
+          var input = form.querySelector('input[name="email"]')
+          if (!input || !input.value) { say('Enter an email address first.'); return }
+          if (button) button.disabled = true
+          say('Subscribing...')
+          var body = new URLSearchParams()
+          body.set('email', input.value)
+          body.set('source', 'blog-empty')
+          fetch('/api/email/subscribe', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: body.toString(),
+          })
+            .then(function (res) { return res.json().catch(function () { return {} }) })
+            .then(function (data) {
+              if (data && data.success) {
+                say(data.message === 'Already subscribed' ? 'You are already on the list.' : 'Subscribed. Check your inbox to confirm.')
+                form.reset()
+              }
+              else {
+                say((data && data.message) || 'Something went wrong. Try again.')
+              }
+            })
+            .catch(function () { say('Network error. Try again in a moment.') })
+            .finally(function () { if (button) button.disabled = false })
+        })
+      })()
+    </script>`
+
   const body = `
     <div class="blog-listing-head">
       <span class="sign" aria-hidden="true"></span>
       <h1>${escapeHtml(cfg.title)}</h1>
       <p>${escapeHtml(cfg.description)}</p>
     </div>
-    <div class="blog-cards">${cards || '<p>No posts yet.</p>'}</div>`
+    <div class="blog-cards">${cards || emptyState}</div>`
 
   return bp.wrapInLayout(await blogChrome() + body + await blogFooter(), await blogConfig(bp, { title: cfg.title, description: cfg.description }), '/blog', 'page')
 }
