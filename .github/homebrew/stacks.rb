@@ -6,20 +6,20 @@ class Stacks < Formula
 
   on_macos do
     if Hardware::CPU.arm?
-      url "https://github.com/stacksjs/stacks/releases/download/v#{version}/buddy-darwin-arm64"
+      url "https://github.com/stacksjs/stacks/releases/download/v#{version}/buddy-darwin-arm64.zip"
       sha256 "PLACEHOLDER_SHA_ARM64"
     else
-      url "https://github.com/stacksjs/stacks/releases/download/v#{version}/buddy-darwin-x64"
+      url "https://github.com/stacksjs/stacks/releases/download/v#{version}/buddy-darwin-x64.zip"
       sha256 "PLACEHOLDER_SHA_X64"
     end
   end
 
   on_linux do
     if Hardware::CPU.arm?
-      url "https://github.com/stacksjs/stacks/releases/download/v#{version}/buddy-linux-arm64"
+      url "https://github.com/stacksjs/stacks/releases/download/v#{version}/buddy-linux-arm64.zip"
       sha256 "PLACEHOLDER_SHA_LINUX_ARM64"
     else
-      url "https://github.com/stacksjs/stacks/releases/download/v#{version}/buddy-linux-x64"
+      url "https://github.com/stacksjs/stacks/releases/download/v#{version}/buddy-linux-x64.zip"
       sha256 "PLACEHOLDER_SHA_LINUX_X64"
     end
   end

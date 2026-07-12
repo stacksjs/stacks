@@ -24,7 +24,7 @@ if [ ! -f "$FORMULA_FILE" ]; then
 fi
 
 # Check if files were already downloaded by the GitHub workflow
-if [ -f ".github/temp/buddy-darwin-arm64" ] && [ -f ".github/temp/buddy-darwin-x64" ] && [ -f ".github/temp/buddy-linux-arm64" ] && [ -f ".github/temp/buddy-linux-x64" ]; then
+if [ -f ".github/temp/buddy-darwin-arm64.zip" ] && [ -f ".github/temp/buddy-darwin-x64.zip" ] && [ -f ".github/temp/buddy-linux-arm64.zip" ] && [ -f ".github/temp/buddy-linux-x64.zip" ]; then
   echo "Using pre-downloaded binaries in .github/temp/"
   cd .github/temp
 else
@@ -34,13 +34,13 @@ else
   cd .github/temp
 
   echo "Downloading binaries from GitHub release"
-  curl -sL "https://github.com/stacksjs/stacks/releases/download/$VERSION/buddy-darwin-arm64" -o buddy-darwin-arm64
-  curl -sL "https://github.com/stacksjs/stacks/releases/download/$VERSION/buddy-darwin-x64" -o buddy-darwin-x64
-  curl -sL "https://github.com/stacksjs/stacks/releases/download/$VERSION/buddy-linux-arm64" -o buddy-linux-arm64
-  curl -sL "https://github.com/stacksjs/stacks/releases/download/$VERSION/buddy-linux-x64" -o buddy-linux-x64
+  curl -sL "https://github.com/stacksjs/stacks/releases/download/$VERSION/buddy-darwin-arm64.zip" -o buddy-darwin-arm64.zip
+  curl -sL "https://github.com/stacksjs/stacks/releases/download/$VERSION/buddy-darwin-x64.zip" -o buddy-darwin-x64.zip
+  curl -sL "https://github.com/stacksjs/stacks/releases/download/$VERSION/buddy-linux-arm64.zip" -o buddy-linux-arm64.zip
+  curl -sL "https://github.com/stacksjs/stacks/releases/download/$VERSION/buddy-linux-x64.zip" -o buddy-linux-x64.zip
 
   # Verify downloads
-  for file in buddy-darwin-arm64 buddy-darwin-x64 buddy-linux-arm64 buddy-linux-x64; do
+  for file in buddy-darwin-arm64.zip buddy-darwin-x64.zip buddy-linux-arm64.zip buddy-linux-x64.zip; do
     if [ ! -f "$file" ] || [ ! -s "$file" ]; then
       echo "Error: Failed to download $file"
       exit 1
@@ -50,10 +50,10 @@ fi
 
 echo "Calculating SHA256 checksums"
 # Calculate SHA256 checksums
-SHA_ARM64=$(shasum -a 256 buddy-darwin-arm64 | cut -d ' ' -f 1)
-SHA_X64=$(shasum -a 256 buddy-darwin-x64 | cut -d ' ' -f 1)
-SHA_LINUX_ARM64=$(shasum -a 256 buddy-linux-arm64 | cut -d ' ' -f 1)
-SHA_LINUX_X64=$(shasum -a 256 buddy-linux-x64 | cut -d ' ' -f 1)
+SHA_ARM64=$(shasum -a 256 buddy-darwin-arm64.zip | cut -d ' ' -f 1)
+SHA_X64=$(shasum -a 256 buddy-darwin-x64.zip | cut -d ' ' -f 1)
+SHA_LINUX_ARM64=$(shasum -a 256 buddy-linux-arm64.zip | cut -d ' ' -f 1)
+SHA_LINUX_X64=$(shasum -a 256 buddy-linux-x64.zip | cut -d ' ' -f 1)
 
 cd ../..
 
