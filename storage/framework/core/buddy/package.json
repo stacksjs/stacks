@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/buddy",
   "type": "module",
-  "version": "0.70.76",
+  "version": "0.70.77",
   "description": "Meet Buddy. The Stacks runtime.",
   "author": "Chris Breuer",
   "contributors": [
@@ -135,7 +135,7 @@
     "@stacksjs/ui": "^0.70.23",
     "@stacksjs/utils": "^0.70.23",
     "@stacksjs/validation": "^0.70.23",
-    "@stacksjs/ts-cloud": "^0.7.15"
+    "@stacksjs/ts-cloud": "^0.7.16"
   },
   "devDependencies": {
     "better-dx": "^0.2.16"

@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/email",
   "type": "module",
-  "version": "0.70.76",
+  "version": "0.70.77",
   "description": "The Stacks Email integration. Painlessly create & manage your inboxes, templates, and send emails.",
   "author": "Chris Breuer",
   "contributors": [
@@ -54,7 +54,7 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "@stacksjs/ts-cloud": "^0.7.15"
+    "@stacksjs/ts-cloud": "^0.7.16"
   },
   "devDependencies": {
     "@stacksjs/cli": "workspace:*",
