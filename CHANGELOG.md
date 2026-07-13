@@ -1,5 +1,31 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.75...v0.70.76)
+
+## ✨ Features
+
+- **blog**: email-capture empty state on the blog listing ([a033173](https://github.com/stacksjs/stacks/commit/a033173)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **deploy**: prefer tenant-owned mail.<domain> MX and configurable DMARC rua ([3a30791](https://github.com/stacksjs/stacks/commit/3a30791)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **blog**: drive blog branding, nav, author, and theme modes from config/blog.ts ([8fde2cd](https://github.com/stacksjs/stacks/commit/8fde2cd)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dns**: declarative config/dns.ts reconciliation via buddy dns:* + deploy ([56150c4](https://github.com/stacksjs/stacks/commit/56150c4)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🐛 Bug Fixes
+
+- **cloud**: declare fast-xml-parser dependency used by the aws api client ([fe569fc](https://github.com/stacksjs/stacks/commit/fe569fc)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **setup**: post-setup model types command is generate:db-types, not generate:model-files ([d6b31e6](https://github.com/stacksjs/stacks/commit/d6b31e6)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **deploy**: emit per-tenant rpx TLS cert-renew units on attachTo deploys ([47b9a19](https://github.com/stacksjs/stacks/commit/47b9a19)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **deploy**: exclude macOS AppleDouble files from release tarballs ([c233de3](https://github.com/stacksjs/stacks/commit/c233de3)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **buddy**: remove template-encrypted env files when scaffolding a new app ([73a4dc4](https://github.com/stacksjs/stacks/commit/73a4dc4)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **notifications**: replace hardcoded slack webhook with env var in test ([4b9bec6](https://github.com/stacksjs/stacks/commit/4b9bec6)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## ♻️ Code Refactoring
+
+- **cloud**: replace fast-xml-parser with @stacksjs/ts-xml ([504666e](https://github.com/stacksjs/stacks/commit/504666e)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.74...v0.70.75)
 
 ## 🐛 Bug Fixes

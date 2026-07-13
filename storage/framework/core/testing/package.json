@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/testing",
   "type": "module",
-  "version": "0.70.75",
+  "version": "0.70.76",
   "description": "The Stacks way of testing.",
   "author": "Chris Breuer",
   "contributors": [
@@ -70,7 +70,7 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "@stacksjs/ts-cloud": "^0.7.14"
+    "@stacksjs/ts-cloud": "^0.7.15"
   },
   "devDependencies": {
     "@stacksjs/config": "workspace:*",
