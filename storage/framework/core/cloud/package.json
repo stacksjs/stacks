@@ -53,7 +53,8 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "@stacksjs/ts-cloud": "^0.7.14"
+    "@stacksjs/ts-cloud": "^0.7.14",
+    "fast-xml-parser": "^5.10.0"
   },
   "devDependencies": {
     "@stacksjs/cli": "workspace:*",
