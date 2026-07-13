@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/actions",
   "type": "module",
-  "version": "0.70.77",
+  "version": "0.70.78",
   "description": "The Stacks actions.",
   "author": "Chris Breuer",
   "contributors": [
@@ -64,7 +64,7 @@
     "@stacksjs/bumpx": "^0.2.6",
     "@stacksjs/bunpress": "^0.1.12",
     "@stacksjs/logsmith": "^0.2.3",
-    "@stacksjs/ts-cloud": "^0.7.16",
+    "@stacksjs/ts-cloud": "^0.7.17",
     "@stacksjs/ts-md": "^0.1.1"
   },
   "devDependencies": {

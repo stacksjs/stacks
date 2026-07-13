@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/storage",
   "type": "module",
-  "version": "0.70.77",
+  "version": "0.70.78",
   "description": "The Stacks file system.",
   "author": "Chris Breuer",
   "contributors": [
@@ -51,7 +51,7 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "@stacksjs/ts-cloud": "^0.7.16"
+    "@stacksjs/ts-cloud": "^0.7.17"
   },
   "peerDependencies": {
     "sharp": "^0.35.3"

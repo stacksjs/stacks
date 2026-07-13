@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/dns",
   "type": "module",
-  "version": "0.70.77",
+  "version": "0.70.78",
   "description": "Easily manage your DNS.",
   "author": "Chris Breuer",
   "contributors": [
@@ -56,7 +56,7 @@
   },
   "dependencies": {
     "@stacksjs/dnsx": "^0.2.3",
-    "@stacksjs/ts-cloud": "^0.7.16"
+    "@stacksjs/ts-cloud": "^0.7.17"
   },
   "devDependencies": {
     "@stacksjs/actions": "workspace:*",

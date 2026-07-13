@@ -1,5 +1,28 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.77...v0.70.78)
+
+## ✨ Features
+
+- **dev**: yield /blog to stx views when the app provides them ([dc59888](https://github.com/stacksjs/stacks/commit/dc59888)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **buddy**: add safety guards for migrate and migrate:fresh (#1977) ([f3e5944](https://github.com/stacksjs/stacks/commit/f3e5944)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#1977](https://github.com/stacksjs/stacks/issues/1977), [#1977](https://github.com/stacksjs/stacks/issues/1977))
+
+## 🐛 Bug Fixes
+
+- **orm**: retry .default reads that hit a mid-cycle TDZ during model warmup (#1974) ([28b1297](https://github.com/stacksjs/stacks/commit/28b1297)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#1974](https://github.com/stacksjs/stacks/issues/1974), [#1974](https://github.com/stacksjs/stacks/issues/1974))
+- **buddy**: gate --conditions development on packages shipping src (#1973) ([30e4e56](https://github.com/stacksjs/stacks/commit/30e4e56)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#1973](https://github.com/stacksjs/stacks/issues/1973), [#1973](https://github.com/stacksjs/stacks/issues/1973))
+- **queue**: import from @stacksjs/bun-queue, not the unscoped bun-queue (#1972) ([4a08e19](https://github.com/stacksjs/stacks/commit/4a08e19)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#1972](https://github.com/stacksjs/stacks/issues/1972), [#1972](https://github.com/stacksjs/stacks/issues/1972))
+- **env**: drop committed PORT from .env.production ([b375b5c](https://github.com/stacksjs/stacks/commit/b375b5c)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## ⚡ Performance Improvements
+
+- **deploy**: exclude compiled binaries + build outputs from release tarballs ([dc2c4e3](https://github.com/stacksjs/stacks/commit/dc2c4e3)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+- _Glenn Michael Torregosa <gtorregosa@gmail.com>_
+
 ## v0.70.77
 
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.75...v0.70.76)
