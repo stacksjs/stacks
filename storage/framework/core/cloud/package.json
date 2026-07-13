@@ -54,7 +54,7 @@
   },
   "dependencies": {
     "@stacksjs/ts-cloud": "^0.7.14",
-    "fast-xml-parser": "^5.10.0"
+    "@stacksjs/ts-xml": "^0.1.0"
   },
   "devDependencies": {
     "@stacksjs/cli": "workspace:*",

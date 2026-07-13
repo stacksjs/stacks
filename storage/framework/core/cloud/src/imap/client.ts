@@ -4,7 +4,7 @@
  */
 
 import * as crypto from 'node:crypto'
-import { XMLParser } from 'fast-xml-parser'
+import { XMLParser } from '@stacksjs/ts-xml'
 
 export interface AWSCredentials {
   accessKeyId: string
@@ -516,7 +516,7 @@ export class AWSClient {
   }
 
   /**
-   * Parse XML response using fast-xml-parser
+   * Parse XML response using @stacksjs/ts-xml
    */
   private parseXmlResponse(xml: string): any {
     try {
