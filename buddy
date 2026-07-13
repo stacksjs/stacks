@@ -88,12 +88,19 @@ run_buddy() {
   BUN_CMD="$1"
   shift
 
-  # When the framework SOURCE is vendored here (storage/framework/core), resolve
-  # @stacksjs/* from src via the `development` export condition, so the monorepo
-  # runs build-free (a fresh checkout has no dist yet). A node_modules-based app
-  # has no vendored core, so it omits the flag and resolves the published dist.
+  # When the framework SOURCE is vendored here (storage/framework/core) AND the
+  # installed @stacksjs/* packages actually ship src (a workspace/source-linked
+  # checkout), resolve them from src via the `development` export condition so the
+  # monorepo runs build-free (a fresh checkout has no dist yet).
+  #
+  # Guard on a representative package having src: an app that vendors the core but
+  # installs the PUBLISHED (dist-only) packages has no src, so the `development`
+  # condition would resolve to ./src/* files that were never shipped (`error:
+  # preload not found "@stacksjs/env/plugin.js"`, then Cannot-find-module for
+  # every other import). In that case omit the flag and let bun/import/default
+  # resolve the dist.
   CONDITIONS=""
-  if [ -d "${ROOT_DIR}/storage/framework/core" ]; then
+  if [ -d "${ROOT_DIR}/storage/framework/core" ] && [ -f "${ROOT_DIR}/node_modules/@stacksjs/env/src/index.ts" ]; then
     CONDITIONS="--conditions development"
   fi
 
