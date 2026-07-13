@@ -165,13 +165,18 @@ async function startDefaultServer() {
       if (gated)
         return gated
 
-      // The blog is rendered by BunPress with a custom Stacks theme (see
-      // ./blog.ts). Intercept /blog and /blog/<slug> here so BunPress wins
-      // over the stx page layer; anything else (feeds, assets) falls through.
-      const { renderBlog } = await import('../blog')
-      const blogResponse = await renderBlog(req)
-      if (blogResponse)
-        return blogResponse
+      // Blog rendering. By default the blog is rendered by BunPress with a
+      // custom Stacks theme (see ./blog.ts) — intercept /blog and /blog/<slug>
+      // so BunPress wins over the stx page layer. BUT when the app ships its
+      // own stx blog views (resources/views/blog.stx), the blog is stx-native:
+      // skip BunPress entirely so /blog and /blog/<slug> fall through to the
+      // stx page layer and render consistently with the rest of the site.
+      if (!existsSync(projectPath('resources/views/blog.stx'))) {
+        const { renderBlog } = await import('../blog')
+        const blogResponse = await renderBlog(req)
+        if (blogResponse)
+          return blogResponse
+      }
 
       // Forward to the API dev server when this request can't possibly
       // be a stx page render. Two cases:
