@@ -171,7 +171,16 @@ async function startDefaultServer() {
       // own stx blog views (resources/views/blog.stx), the blog is stx-native:
       // skip BunPress entirely so /blog and /blog/<slug> fall through to the
       // stx page layer and render consistently with the rest of the site.
-      if (!existsSync(projectPath('resources/views/blog.stx'))) {
+      if (existsSync(projectPath('resources/views/blog.stx'))) {
+        // stx-native blog: BunPress is skipped for /blog and /blog/<slug>
+        // (they render as stx pages), but the feed + sitemap are still served
+        // from content/blog markdown with no BunPress dependency.
+        const { renderBlogFeed } = await import('../blog')
+        const feed = await renderBlogFeed(req)
+        if (feed)
+          return feed
+      }
+      else {
         const { renderBlog } = await import('../blog')
         const blogResponse = await renderBlog(req)
         if (blogResponse)

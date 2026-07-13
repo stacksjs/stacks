@@ -525,6 +525,26 @@ export async function renderBlog(req: Request): Promise<Response | null> {
   return post ? html(post) : html(await notFoundHtml(bp), 404)
 }
 
+/**
+ * RSS + sitemap for an stx-native blog. When an app renders /blog with its own
+ * stx views (so BunPress is skipped for the HTML pages), it still wants
+ * /blog/feed.xml and /blog/sitemap.xml — these are generated straight from the
+ * `content/blog/*.md` frontmatter with NO BunPress dependency, so they work in
+ * dev and production alike. Returns null for any non-feed path (the stx page
+ * layer then handles /blog and /blog/<slug>). Absolute URLs use the configured
+ * site url (blog config), never the loopback request origin.
+ */
+export async function renderBlogFeed(req: Request): Promise<Response | null> {
+  if (req.method !== 'GET' && req.method !== 'HEAD')
+    return null
+  const { pathname } = new URL(req.url)
+  if (pathname === '/blog/feed.xml')
+    return new Response(await fallbackFeedXml(''), { headers: { 'Content-Type': 'application/rss+xml; charset=utf-8' } })
+  if (pathname === '/blog/sitemap.xml')
+    return new Response(await fallbackSitemapXml(''), { headers: { 'Content-Type': 'application/xml; charset=utf-8' } })
+  return null
+}
+
 // ── Static path (deploy-time build → dist/blog) ──────────────────────────────
 
 /**

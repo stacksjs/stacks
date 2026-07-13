@@ -196,6 +196,16 @@ export function serve(buddy: CLI): void {
             }
           }
 
+          // stx-native blog: /blog and /blog/<slug> render as stx pages, but
+          // the feed + sitemap are served from content/blog markdown here (no
+          // BunPress). HTML paths return null and fall through to stx.
+          if (existsSync(join(process.cwd(), 'resources/views/blog.stx'))) {
+            const { renderBlogFeed } = await import('@stacksjs/actions/blog')
+            const feed = await renderBlogFeed(req)
+            if (feed)
+              return feed
+          }
+
           // Stash cookies + query string so server-script blocks rendering
           // this request can pull them via globalThis.requestContext /
           // __stxServeSearch — see the doc comment above this function.
