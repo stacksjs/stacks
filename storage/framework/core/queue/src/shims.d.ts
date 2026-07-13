@@ -3,9 +3,9 @@ declare module 'redis' {
   export function createClient(options?: { url?: string }): RedisClient
 }
 
-declare module 'bun-queue' {
-  // Wide ambient: bun-queue isn't installed in node_modules; this shim
-  // exists so that imports type-check. The actual values are resolved
+declare module '@stacksjs/bun-queue' {
+  // Wide ambient: @stacksjs/bun-queue may not be installed in node_modules; this
+  // shim exists so that imports type-check. The actual values are resolved
   // by Bun's module resolver at runtime. Each name is declared as both
   // a class (so it can be used as a type and a value) and via `any`
   // semantics inside.

@@ -19,7 +19,7 @@ import {
   getQueueManager,
   QueueManager,
   setQueueManager,
-} from 'bun-queue'
+} from '@stacksjs/bun-queue'
 import { log } from '@stacksjs/logging'
 
 // Re-export bun-queue types and utilities
