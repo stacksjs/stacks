@@ -95,6 +95,32 @@ autoConfigureOrm()
 //   - installed: `node_modules/@stacksjs/orm/src/index.ts` → 4 ups
 // projectPath() handles both because it walks up looking for the project
 // root (package.json with no parent), so the same code works regardless.
+/**
+ * `(await import(path)).default`, resilient to a temporal-dead-zone read.
+ *
+ * A framework-default model statically imports `{ defineModel }` from this
+ * module, so importing one during the deferred warmup forms a cycle. If the
+ * model is still mid-evaluation when we read `.default`, the getter throws
+ * `ReferenceError: Cannot access 'default' before initialization`. Yielding a
+ * macrotask lets the in-flight evaluation settle; the module is already cached,
+ * so re-reading doesn't re-import. Bounded retries avoid any spin.
+ */
+async function importDefault(modulePath: string): Promise<any> {
+  for (let attempt = 0; ; attempt++) {
+    const mod = await import(modulePath)
+    try {
+      return mod.default
+    }
+    catch (err) {
+      if (attempt < 5 && err instanceof ReferenceError && /before initialization/.test(err.message)) {
+        await new Promise(resolve => setTimeout(resolve, 0))
+        continue
+      }
+      throw err
+    }
+  }
+}
+
 async function loadUserlandModel(modelName: string, subdirs: string[] = ['']): Promise<any> {
   const { path } = await import('@stacksjs/path')
   // 1) User override at app/Models/<Name>.ts (always wins, no subdir search
@@ -102,7 +128,7 @@ async function loadUserlandModel(modelName: string, subdirs: string[] = ['']): P
   const userPath = path.userModelsPath(`${modelName}.ts`)
   try {
     if (await Bun.file(userPath).exists()) {
-      return (await import(userPath)).default
+      return await importDefault(userPath)
     }
   }
   catch (err) {
@@ -121,7 +147,7 @@ async function loadUserlandModel(modelName: string, subdirs: string[] = ['']): P
     const defaultPath = path.frameworkPath(`defaults/app/Models/${prefix}${modelName}.ts`)
     try {
       if (await Bun.file(defaultPath).exists()) {
-        return (await import(defaultPath)).default
+        return await importDefault(defaultPath)
       }
     }
     catch (err) {
