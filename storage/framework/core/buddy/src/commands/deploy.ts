@@ -1199,6 +1199,17 @@ async function runHetznerDeploy(args: {
     '.git',
     '.github',
     '.cache',
+    // Compiled CLI binaries (e.g. storage/framework/core/buddy/bin/buddy-linux-x64,
+    // ~110MB each × platforms = ~680MB): release/distribution artifacts, never a
+    // runtime dep — server-app sites launch from source (`bun … cli.ts serve`).
+    // Shipping them made the stacks self-deploy tarball ~476MB and stall uploads.
+    'bin',
+    // Build outputs. server-app sites ship source and (re)build on the box via
+    // preStart; server-static sites are packaged from INSIDE their built root
+    // (`-C dist/<site>/… .`), so excluding `dist` never drops a static site's
+    // files — it only strips the ~130MB of built docs/blog from source tarballs
+    // that never serve them. (frontend-dist is kept: `dist` != `frontend-dist`.)
+    'dist',
     // stx's build cache + generated route manifest (`.stx/routes.ts`). It MUST
     // be regenerated on the server from the shipped `resources/views` — shipping
     // a stale/empty manifest makes production `stx serve` trust it and serve 404
