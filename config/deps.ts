@@ -82,7 +82,7 @@ export const config: PantryConfig = {
       {
         name: "Generate model files",
         command: "./buddy",
-        args: ["generate:model-files"],
+        args: ["generate:db-types"],
         description: "Generate TypeScript model files from database schema",
         required: false,
       },
