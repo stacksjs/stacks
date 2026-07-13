@@ -1,7 +1,7 @@
 import type { CLI, MigrateOptions } from '@stacksjs/types'
 import { closeSync, existsSync, mkdirSync, openSync, readdirSync, readFileSync, rmSync } from 'node:fs'
 import process from 'node:process'
-import { confirm, intro, log, onUnknownSubcommand, outro } from "@stacksjs/cli"
+import { confirm, intro, log, onUnknownSubcommand, outro, text } from "@stacksjs/cli"
 import { Action } from '@stacksjs/enums'
 import { hasTTY, isCI } from '@stacksjs/env'
 import { appPath, frameworkPath, projectPath } from '@stacksjs/path'
@@ -227,6 +227,70 @@ async function confirmDestructiveMigrations(opts: { force?: boolean, fromDb?: bo
   return confirm({ message: 'Apply these destructive changes?', initial: false })
 }
 
+type FreshGuard = 'allow' | 'confirm' | 'disabled'
+
+interface MigrationGuards {
+  confirmMigrate: boolean
+  migrateFresh: FreshGuard
+}
+
+/** Coerce an env string like "0"/"false"/"no" to a boolean, else undefined. */
+function parseGuardBool(raw: string | undefined): boolean | undefined {
+  if (raw == null || raw === '') return undefined
+  const v = raw.toLowerCase().trim()
+  if (v === '1' || v === 'true' || v === 'yes' || v === 'on') return true
+  if (v === '0' || v === 'false' || v === 'no' || v === 'off') return false
+  return undefined
+}
+
+function parseFreshGuard(raw: string | undefined): FreshGuard | undefined {
+  const v = raw?.toLowerCase().trim()
+  return v === 'allow' || v === 'confirm' || v === 'disabled' ? v : undefined
+}
+
+/**
+ * Resolve the effective migration safety guards. Precedence (highest first):
+ *   1. env var override (DB_MIGRATE_CONFIRM / DB_MIGRATE_FRESH) — the CI escape hatch
+ *   2. config/database.ts `safety` block
+ *   3. built-in default (confirm on; migrate:fresh disabled in prod, allow elsewhere)
+ *
+ * Config is read via `awaitConfig()` so the user's `config/database.ts` has
+ * definitely merged over the framework defaults before we look. A failure to
+ * load config falls back to the safe built-in defaults rather than throwing —
+ * a broken config must not turn the guards off.
+ */
+async function resolveMigrationGuards(): Promise<MigrationGuards> {
+  const isProd = /^prod/i.test(process.env.APP_ENV || 'local')
+
+  let cfg: { confirmMigrate?: boolean, migrateFresh?: FreshGuard } = {}
+  try {
+    const { awaitConfig } = await import('@stacksjs/config')
+    const resolved = await awaitConfig()
+    cfg = (resolved.database as { safety?: typeof cfg })?.safety ?? {}
+  }
+  catch (error) {
+    log.debug(`[migrate] safety config unavailable, using defaults: ${error instanceof Error ? error.message : String(error)}`)
+  }
+
+  const confirmMigrate = parseGuardBool(process.env.DB_MIGRATE_CONFIRM)
+    ?? cfg.confirmMigrate
+    ?? true
+
+  const migrateFresh = parseFreshGuard(process.env.DB_MIGRATE_FRESH)
+    ?? cfg.migrateFresh
+    ?? (isProd ? 'disabled' : 'allow')
+
+  return { confirmMigrate, migrateFresh }
+}
+
+/** Human-friendly label for the database `migrate:fresh` is about to drop. */
+function currentDatabaseLabel(): string {
+  const driver = (process.env.DB_CONNECTION || 'sqlite').toLowerCase()
+  if (driver === 'sqlite')
+    return process.env.DB_DATABASE_PATH || 'database/stacks.sqlite'
+  return process.env.DB_DATABASE || 'stacks'
+}
+
 export function migrate(buddy: CLI): void {
   const descriptions = {
     migrate: 'Migrates your database',
@@ -290,6 +354,29 @@ export function migrate(buddy: CLI): void {
         }
         await outro('Diff complete — no changes applied.', { startTime: perf, useSeconds: true })
         process.exit(ExitCode.Success)
+      }
+
+      // Safety guard: confirm before touching the database at all. This is
+      // separate from (and runs before) the destructive-change gate below —
+      // it catches "wrong database / wrong env" mistakes even for additive
+      // migrations. `--force` bypasses it, and non-interactive runs (CI /
+      // no TTY) proceed automatically so deploy pipelines aren't blocked.
+      const guards = await resolveMigrationGuards()
+      if (guards.confirmMigrate && !options.force) {
+        if (isCI || !hasTTY) {
+          log.debug('[migrate] confirmMigrate guard skipped — non-interactive environment.')
+        }
+        else {
+          const APP_ENV = process.env.APP_ENV || 'local'
+          const proceed = await confirm({
+            message: `Run migrations against the ${APP_ENV} database "${currentDatabaseLabel()}"?`,
+            initial: true,
+          })
+          if (!proceed) {
+            await outro('Migration cancelled — no changes applied.', { startTime: perf, useSeconds: true })
+            process.exit(ExitCode.Success)
+          }
+        }
       }
 
       // Acquire a project-local migration lock to prevent two concurrent
@@ -449,8 +536,9 @@ export function migrate(buddy: CLI): void {
     .option('-s, --seed', 'Run database seeders after migration', { default: false })
     .option('-a, --auth', descriptions.auth, { default: true })
     .option('--no-auth', 'Skip auth/oauth table migrations')
+    .option('-f, --force', 'Skip the drop-database confirmation (only honored when the migrateFresh guard is "allow")', { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
-    .action(async (options: MigrateOptions & { seed?: boolean, auth?: boolean }) => {
+    .action(async (options: MigrateOptions & { seed?: boolean, auth?: boolean, force?: boolean }) => {
       log.debug('Running `buddy migrate:fresh` ...', options)
 
       const perf = await intro('buddy migrate:fresh')
@@ -460,6 +548,46 @@ export function migrate(buddy: CLI): void {
       if (!validation.valid) {
         console.error(`\n❌ Error: ${validation.error!}\n`)
         process.exit(ExitCode.FatalError)
+      }
+
+      // Safety guard. migrate:fresh DROPS every table, so it is gated far
+      // more strictly than `migrate`: a hard kill-switch plus a typed
+      // confirmation that no accidental keystroke can satisfy.
+      const guards = await resolveMigrationGuards()
+      const dbLabel = currentDatabaseLabel()
+      const APP_ENV = process.env.APP_ENV || 'local'
+
+      // Hard kill-switch — the command refuses to run at all.
+      if (guards.migrateFresh === 'disabled') {
+        log.error(
+          `\`buddy migrate:fresh\` is disabled by your migration safety guards (it DROPS every table).\n`
+          + `  Target: ${APP_ENV} database "${dbLabel}"\n`
+          + `  To allow it, set database.safety.migrateFresh to 'allow' in config/database.ts,\n`
+          + `  or run once with: DB_MIGRATE_FRESH=allow ./buddy migrate:fresh`,
+        )
+        await outro('migrate:fresh refused — the migrateFresh guard is set to "disabled".', { startTime: perf, useSeconds: true })
+        process.exit(ExitCode.FatalError)
+      }
+
+      // Typed confirmation. `--force` bypasses it ONLY when the guard is
+      // 'allow'; under 'confirm' a human must always type the name.
+      const canBypass = guards.migrateFresh === 'allow' && options.force === true
+      if (!canBypass) {
+        if (isCI || !hasTTY) {
+          const hint = guards.migrateFresh === 'confirm'
+            ? 'Guard is "confirm": migrate:fresh must be run interactively.'
+            : 'Re-run with --force to drop the database non-interactively.'
+          log.error(`Refusing to drop the ${APP_ENV} database "${dbLabel}" in a non-interactive environment. ${hint}`)
+          await outro('migrate:fresh cancelled.', { startTime: perf, useSeconds: true })
+          process.exit(ExitCode.FatalError)
+        }
+
+        log.warn(`This will DROP ALL TABLES in the ${APP_ENV} database "${dbLabel}" and rebuild them from scratch. All data will be lost.`)
+        const typed = await text({ message: `Type the database name "${dbLabel}" to confirm (blank to cancel):` })
+        if (typed.trim() !== dbLabel) {
+          await outro('migrate:fresh cancelled — confirmation did not match.', { startTime: perf, useSeconds: true })
+          process.exit(ExitCode.Success)
+        }
       }
 
       const result = await runAction(Action.MigrateFresh, options)

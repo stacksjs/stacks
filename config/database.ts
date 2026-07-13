@@ -60,6 +60,28 @@ export default {
   migrationLocks: 'migration_locks',
 
   /**
+   * Migration Safety Guards
+   *
+   * Gate the destructive migration commands behind human confirmation so an
+   * accidental command can't wipe a database. Override per-run with the
+   * DB_MIGRATE_CONFIRM / DB_MIGRATE_FRESH env vars.
+   */
+  safety: {
+    /**
+     * Prompt for confirmation before `buddy migrate` applies changes.
+     * `--force` skips it; non-interactive runs (CI) proceed automatically.
+     */
+    confirmMigrate: env.DB_MIGRATE_CONFIRM ?? true,
+
+    /**
+     * Guard for `buddy migrate:fresh` (drops ALL tables):
+     * 'allow' | 'confirm' | 'disabled'. Defaults to a hard 'disabled' in
+     * production and 'allow' (typed confirmation) everywhere else.
+     */
+    migrateFresh: env.DB_MIGRATE_FRESH ?? (env.APP_ENV === 'production' || env.APP_ENV === 'prod' ? 'disabled' : 'allow'),
+  },
+
+  /**
    * Query Logging Configuration
    *
    * This section configures the database query monitoring system.
