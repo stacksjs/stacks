@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/socials",
   "type": "module",
-  "version": "0.70.81",
+  "version": "0.70.82",
   "description": "A simple and elegant social authentication package for Stacks.",
   "author": "Chris Breuer",
   "contributors": [

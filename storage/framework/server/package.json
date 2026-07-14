@@ -1,7 +1,7 @@
 {
   "name": "stacks-server",
   "type": "module",
-  "version": "0.70.81",
+  "version": "0.70.82",
   "description": "The Stacks server.",
   "author": "Chris Breuer",
   "license": "MIT",

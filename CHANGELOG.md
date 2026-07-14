@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.81...v0.70.82)
+
+## 🔧 Chores
+
+- **config**: restore ts-pantry for config/deps.ts typing ([1324410](https://github.com/stacksjs/stacks/commit/1324410)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.80...v0.70.81)
 
 ## 🔧 Chores
