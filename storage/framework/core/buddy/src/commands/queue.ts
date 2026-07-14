@@ -27,30 +27,36 @@ export function queue(buddy: CLI): void {
     .action(async (options: CliQueueOptions & { concurrency?: string }) => {
       log.debug('Running `buddy queue:work` ...', options)
 
-      // Two-phase shutdown for queue workers. SIGTERM signals
-      // `stopProcessor()` to drain in-flight jobs within the grace
-      // window (stacksjs/stacks#1872 Q-10 — previously the worker
-      // exited immediately and left jobs mid-handle); a follow-up
-      // SIGKILL after the timeout prevents a misbehaving job from
-      // holding the process forever. Jobs that don't finish in time
-      // are released by the next worker's reservation sweep (Q-2).
-      const SHUTDOWN_GRACE_MS = 10_000
+      // Graceful shutdown for queue workers (stacksjs/stacks#1872 Q-10,
+      // corrected in #1984). The worker loop runs in a SPAWNED CHILD
+      // (`runAction(Action.QueueWork)` → `bun queue/work.ts`), so the drain has
+      // to happen in that child — which now installs its own SIGTERM/SIGINT
+      // handler that calls `stopProcessor()` (see actions/src/queue/work.ts).
+      // Previously THIS parent process called `stopProcessor()` in-process,
+      // draining an empty state while the child was killed mid-handle. Under a
+      // terminal Ctrl+C (SIGINT → process group) or systemd's default
+      // KillMode=control-group (SIGTERM → cgroup) the child receives the signal
+      // directly and drains. This handler's job is only to keep the parent
+      // alive so the awaited `runAction` can observe the child's graceful exit,
+      // with a backstop that force-exits if the child overruns its grace.
+      // (Docker PID-1 / KillMode=process, where only the parent is signalled,
+      // still needs the parent to forward the signal to the child — tracked in
+      // #1984 as a follow-up; it needs the child handle threaded through
+      // runCommand + real multi-process signal testing.)
+      const SHUTDOWN_GRACE_MS = Number(process.env.STACKS_QUEUE_SHUTDOWN_GRACE_MS) || 10_000
+      const PARENT_BACKSTOP_MS = SHUTDOWN_GRACE_MS + 5_000
       let shuttingDown = false
-      const cleanup = (signal: NodeJS.Signals) => {
+      const onSignal = (signal: NodeJS.Signals) => {
         if (shuttingDown) return
         shuttingDown = true
-        log.info(`[queue] Received ${signal}, draining workers (max ${SHUTDOWN_GRACE_MS / 1000}s)…`)
-        // Fire the in-process drain in parallel with the kill timer
-        // so an unresponsive handler can't out-wait the timeout.
-        import('@stacksjs/queue').then(({ stopProcessor }) => stopProcessor({ graceMs: SHUTDOWN_GRACE_MS }))
-          .catch(error => log.error('[queue] stopProcessor failed', error))
+        log.info(`[queue] Received ${signal}; waiting for the worker to drain…`)
         setTimeout(() => {
-          log.warn('[queue] Drain timeout exceeded — forcing shutdown.')
+          log.warn('[queue] Worker drain overran its window — forcing shutdown.')
           process.exit(ExitCode.FatalError)
-        }, SHUTDOWN_GRACE_MS).unref()
+        }, PARENT_BACKSTOP_MS).unref()
       }
-      process.on('SIGINT', () => cleanup('SIGINT'))
-      process.on('SIGTERM', () => cleanup('SIGTERM'))
+      process.on('SIGINT', () => onSignal('SIGINT'))
+      process.on('SIGTERM', () => onSignal('SIGTERM'))
 
       const perf = await intro('buddy queue:work')
       const result = await runAction(Action.QueueWork, options)
