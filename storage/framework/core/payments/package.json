@@ -57,7 +57,7 @@
     "@stacksjs/config": "workspace:*",
     "better-dx": "^0.2.16",
     "@stacksjs/utils": "workspace:*",
-    "@stripe/stripe-js": "^8.7.0",
+    "@stripe/stripe-js": "^9.10.0",
     "stripe": "^21.0.1"
   }
 }
