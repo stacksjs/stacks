@@ -1,5 +1,19 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.78...v0.70.79)
+
+## ✨ Features
+
+- **blog**: stx-native blog keeps RSS feed + sitemap (no BunPress) ([6ad7ab9](https://github.com/stacksjs/stacks/commit/6ad7ab9)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## ⚡ Performance Improvements
+
+- **server**: don't ship the 90MB compiled binary in the npm package ([6b6cfd9](https://github.com/stacksjs/stacks/commit/6b6cfd9)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.77...v0.70.78)
 
 ## ✨ Features
