@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.80...v0.70.81)
+
+## 🔧 Chores
+
+- **config**: drop dead ts-pantry dependency ([8b2f2fd](https://github.com/stacksjs/stacks/commit/8b2f2fd)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.78...v0.70.80)
 
 ## ✨ Features
