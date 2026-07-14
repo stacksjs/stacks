@@ -11,8 +11,17 @@ import process from 'node:process'
 import { AsyncLocalStorage } from 'node:async_hooks'
 import { log } from '@stacksjs/logging'
 
-// AsyncLocalStorage for request context
-const requestStorage = new AsyncLocalStorage<EnhancedRequest>()
+// AsyncLocalStorage for request context.
+//
+// Keyed on a process-global Symbol so that if two physically distinct
+// @stacksjs/router modules load in one process (the dist-only-app split of
+// stacksjs/stacks#1975 / #1982), request context set by one copy is visible to
+// the other — a server serving from one copy while user handlers import
+// `getCurrentRequest` from another must still see the same request. In the
+// normal single-copy case `??=` allocates exactly once, so this is identical
+// to a plain module-local `new AsyncLocalStorage()`.
+const REQUEST_STORAGE_KEY = Symbol.for('stacks.router.requestStorage')
+const requestStorage = ((globalThis as Record<symbol, unknown>)[REQUEST_STORAGE_KEY] ??= new AsyncLocalStorage<EnhancedRequest>()) as AsyncLocalStorage<EnhancedRequest>
 
 /**
  * Trace-ID propagation. A separate ALS slot from the request itself
@@ -25,7 +34,8 @@ const requestStorage = new AsyncLocalStorage<EnhancedRequest>()
  *      response has been sent (e.g. fire-and-forget analytics calls)
  *      should still carry the same id.
  */
-const traceStorage = new AsyncLocalStorage<string>()
+const TRACE_STORAGE_KEY = Symbol.for('stacks.router.traceStorage')
+const traceStorage = ((globalThis as Record<symbol, unknown>)[TRACE_STORAGE_KEY] ??= new AsyncLocalStorage<string>()) as AsyncLocalStorage<string>
 
 /**
  * Read the active trace id, or `undefined` outside any traced scope.

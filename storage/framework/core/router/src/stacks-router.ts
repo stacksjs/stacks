@@ -22,38 +22,47 @@ import { path as p } from '@stacksjs/path'
 import { UploadedFile } from '@stacksjs/storage'
 import { applyRequestEnhancements, Router } from '@stacksjs/bun-router'
 
-// --- Split-router-instance guard (stacksjs/stacks#1975) --------------------
-// If two physically distinct @stacksjs/router modules load in one process,
-// user routes register on one `route` singleton while the server serves the
-// other — every route 404s with NO error logged. The classic trigger: an app
-// vendors storage/framework/core AND installs the published dist package, and a
-// tsconfig `paths` mismatch (`@stacksjs/* -> ./*/src`) resolves core files to
-// ./router/src while root files (routes/, app/) resolve to node_modules dist.
+// --- Split-router-instance detection (stacksjs/stacks#1975 / #1982) ---------
+// Two physically distinct @stacksjs/router modules can load in one process: an
+// app vendors storage/framework/core AND installs the published dist package,
+// and a tsconfig `paths` mapping (`@stacksjs/* -> ./*/src`) resolves core files
+// to ./router/src while root files (routes/, app/) resolve to node_modules
+// dist. Historically that split user routes onto one `route` instance while the
+// server served another's empty table — every route 404'd with NO error logged.
 //
-// Each loaded router module records its own path on a process-global set (keyed
-// by a well-known Symbol so the src and dist copies share it). serve() then
-// asserts the set has exactly one entry and fails loudly on a split.
+// That split is now HARMLESS: the `route` singleton (below) and the
+// request-context ALS (request-context.ts) are keyed on process-global Symbols,
+// so every loaded copy shares one route table and one request context. We still
+// record each loaded module and warn once — a duplicated install is wasteful
+// and worth fixing — but it no longer breaks routing, so we do NOT throw.
 const ROUTER_INSTANCES_KEY = Symbol.for('@stacksjs/router:loaded-instances')
 const loadedRouterInstances: Set<string> = ((globalThis as Record<symbol, unknown>)[ROUTER_INSTANCES_KEY] ??= new Set<string>()) as Set<string>
 loadedRouterInstances.add(import.meta.path)
+const MULTI_INSTANCE_WARNED_KEY = Symbol.for('@stacksjs/router:multi-instance-warned')
 
 /**
- * Throw if more than one @stacksjs/router module has loaded in this process
- * (stacksjs/stacks#1975). Called at serve() boot so the otherwise-silent
- * split-router 404 becomes a loud, actionable error naming the culprit files.
+ * Warn (once per process) when more than one @stacksjs/router module has loaded
+ * (stacksjs/stacks#1975 / #1982). Routing still works — the route table and
+ * request context are process-global singletons — but a duplicated install is
+ * worth surfacing. Called at serve() boot. Returns whether a split was detected
+ * so callers/tests can assert on it without capturing logs.
  */
-export function assertSingleRouterInstance(): void {
+export function warnOnMultipleRouterInstances(): boolean {
   if (loadedRouterInstances.size <= 1)
-    return
-  const paths = [...loadedRouterInstances].map(p => `    - ${p}`).join('\n')
-  throw new Error(
-    `[router] ${loadedRouterInstances.size} distinct @stacksjs/router instances loaded in one process. `
-    + `User routes register on one instance while the server serves another, so every route 404s silently. `
-    + `This usually means an app vendors storage/framework/core AND installs the published @stacksjs/* dist, and a `
-    + `tsconfig \`paths\` mapping (\`@stacksjs/* -> ./*/src\`) splits module resolution between core files and root files. `
-    + `Unify resolution so root files and core files load the same @stacksjs/router. See stacksjs/stacks#1975.\n`
-    + `Loaded instances:\n${paths}`,
-  )
+    return false
+  const g = globalThis as Record<symbol, unknown>
+  if (!g[MULTI_INSTANCE_WARNED_KEY]) {
+    g[MULTI_INSTANCE_WARNED_KEY] = true
+    const paths = [...loadedRouterInstances].map(p => `    - ${p}`).join('\n')
+    log.warn(
+      `${loadedRouterInstances.size} distinct @stacksjs/router modules loaded in one process; they now share one route `
+      + `table (stacksjs/stacks#1982) so routing still works, but this is a duplicated install worth fixing. It usually `
+      + `means an app vendors storage/framework/core AND installs the published @stacksjs/* dist, and a tsconfig \`paths\` `
+      + `mapping (\`@stacksjs/* -> ./*/src\`) splits module resolution between core files and root files. See stacksjs/stacks#1975.\n`
+      + `Loaded instances:\n${paths}`,
+    )
+  }
+  return true
 }
 
 // Resolve a scaffold-defaults file (under storage/framework/defaults). A
@@ -2777,10 +2786,12 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
 
     // Serve the router
     async serve(options: ServerOptions = {}): Promise<Server<unknown>> {
-      // Fail loudly on a split router (#1975) instead of serving an empty
-      // route table. By now importRoutes() has run, so any second instance
-      // pulled in by user route files is already registered.
-      assertSingleRouterInstance()
+      // Warn (don't crash) on a split router (#1975/#1982). The route table is
+      // now a process-global singleton, so a second instance pulled in by user
+      // route files shares the same table — routing works — but a duplicated
+      // install is still worth flagging. By now importRoutes() has run, so any
+      // second instance is already registered.
+      warnOnMultipleRouterInstances()
       return bunRouter.serve(options)
     },
 
@@ -2959,8 +2970,19 @@ export interface StacksRouterInstance {
   loadDiscoveredRoutes: () => Promise<void>
 }
 
-// Create and export a default router instance
-export const route = createStacksRouter()
+// Create and export a default router instance.
+//
+// Promoted to a process-global singleton (keyed by a well-known Symbol) so
+// that if two physically distinct @stacksjs/router modules ever load in one
+// process — the dist-only-app-that-also-vendors-core split of
+// stacksjs/stacks#1975 / #1982 — they SHARE one route table instead of
+// registering user routes on one instance while the server serves another's
+// (empty) table (every route 404s). In the normal single-instance case `??=`
+// runs createStacksRouter() exactly once, so this is byte-identical to the
+// previous module-local singleton. Pairs with the request-context ALS, which
+// is globalized the same way so request state is shared across copies too.
+const ROUTE_SINGLETON_KEY = Symbol.for('@stacksjs/router:route-singleton')
+export const route: StacksRouterInstance = ((globalThis as Record<symbol, unknown>)[ROUTE_SINGLETON_KEY] ??= createStacksRouter()) as StacksRouterInstance
 
 // Promise-based route loading to prevent race conditions under concurrency
 let routesLoadPromise: Promise<void> | null = null
