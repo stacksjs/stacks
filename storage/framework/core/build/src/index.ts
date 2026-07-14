@@ -64,7 +64,6 @@ export async function intro(options: { dir: string, pkgName?: string, styled?: b
   return { startTime: Date.now() }
 }
 
-export * from './utils'
 
 /**
  * Standard `external` list for framework package bundlers.

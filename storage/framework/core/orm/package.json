@@ -61,7 +61,6 @@
     "bun-query-builder": "^0.1.47"
   },
   "devDependencies": {
-    "@stacksjs/build": "workspace:*",
     "@stacksjs/config": "workspace:*",
     "better-dx": "^0.2.16",
     "@stacksjs/query-builder": "workspace:*",

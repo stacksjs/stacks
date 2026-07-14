@@ -18,19 +18,6 @@ import { fs, globSync } from '@stacksjs/storage'
 import { plural, singular, snakeCase } from '@stacksjs/strings'
 import { isString } from '@stacksjs/validation'
 
-// `@stacksjs/build` pulls in Babel (@babel/parser/traverse/generator, ~300ms
-// to load). It is only needed by the two model-file AST helpers below
-// (codegen paths) — never during query serving or route registration. Yet
-// this module is on the eager import path of `@stacksjs/orm` →
-// `@stacksjs/database`, so a top-level import made every dev API boot pay
-// for Babel. Load it lazily (cached) so the common path stays cheap.
-let _buildPromise: Promise<typeof import('@stacksjs/build')> | undefined
-function loadBuild(): Promise<typeof import('@stacksjs/build')> {
-  if (!_buildPromise)
-    _buildPromise = import('@stacksjs/build')
-  return _buildPromise
-}
-
 type ModelPath = string
 
 export async function modelTableName(model: Model | ModelPath): Promise<string> {
@@ -724,56 +711,6 @@ export function mapEntity(attribute: ModelElement): string | undefined {
     default:
       return entity
   }
-}
-
-export async function extractImports(filePath: string): Promise<string[]> {
-  const { generator, parser, traverse } = await loadBuild()
-  const content = fs.readFileSync(filePath, 'utf8')
-  const ast = parser.parse(content, {
-    sourceType: 'module',
-    plugins: ['typescript', 'classProperties', 'decorators-legacy'],
-  })
-
-  const imports: string[] = []
-
-  traverse(ast, {
-    ImportDeclaration(path: any) {
-      const generated = generator(path.node, {}, content)
-      imports.push(generated.code)
-    },
-  })
-
-  return imports
-}
-
-export async function extractAttributesFromModel(filePath: string): Promise<AttributesElements> {
-  const { generator, parser, traverse } = await loadBuild()
-  const content = fs.readFileSync(filePath, 'utf8')
-
-  const ast = parser.parse(content, {
-    sourceType: 'module',
-    plugins: ['typescript', 'classProperties', 'decorators-legacy'],
-  })
-
-  let fields: AttributesElements | undefined
-  traverse(ast, {
-    ObjectExpression(path: any) {
-      const fieldsProperty = path.node.properties.find(
-        (property: any) =>
-          property.type === 'ObjectProperty'
-          && property.key.type === 'Identifier'
-          && property.key.name === 'attributes',
-      )
-
-      if (fieldsProperty && fieldsProperty.type === 'ObjectProperty' && fieldsProperty.value) {
-        const generated = generator(fieldsProperty.value, {}, content)
-        fields = generated.code as unknown as AttributesElements
-        path.stop()
-      }
-    },
-  })
-
-  return fields as AttributesElements
 }
 
 export function findCoreModel(modelName: string): string {
