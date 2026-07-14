@@ -48,7 +48,9 @@
     "typecheck": "bun tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
-  "dependencies": {},
+  "dependencies": {
+    "ts-pantry": "^0.10.11"
+  },
   "devDependencies": {
     "@stacksjs/alias": "workspace:*",
     "better-dx": "^0.2.16",
