@@ -281,16 +281,23 @@ async function processJobsFromDatabase(initialQueues: string[], concurrency: num
           continue
         }
 
-        for (const job of jobs) {
+        // Process the reserved batch CONCURRENTLY (stacksjs/stacks#1984).
+        // Previously this awaited each job in a for-loop, so `--concurrency=N`
+        // reserved N jobs but ran them one at a time — the flag delivered no
+        // parallelism, and if the worker died mid-batch the reserved-but-
+        // unstarted jobs sat `reserved_at` (a burned attempt each) until the
+        // sweep. Running them together starts every reserved job at once.
+        // Default `concurrency=1` → a single-element batch, so the common case
+        // is unchanged. processJob catches internally, but guard anyway.
+        await Promise.all(jobs.map(async (job) => {
           try {
             log.info(`Processing job ${job.id} from queue "${queueName}"`)
             await trackInFlight(processJob(job))
           }
           catch {
-            // processJob should never throw, but just in case
             log.error(`Unexpected error processing job ${job.id}`)
           }
-        }
+        }))
       }
 
       // Sleep between polling cycles

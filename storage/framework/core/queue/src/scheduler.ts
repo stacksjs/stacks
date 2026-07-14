@@ -82,24 +82,75 @@ function warnSecondsIgnored(expression: string, seconds: string): void {
 /**
  * Parse a cron expression and check if it should run now
  */
-function shouldRunNow(cronExpression: string, lastRun: Date | null): boolean {
-  const now = new Date()
-  const currentMinute = now.getMinutes()
-  const currentHour = now.getHours()
-  const currentDay = now.getDate()
-  const currentMonth = now.getMonth() + 1
-  const currentDayOfWeek = now.getDay()
+interface CronParts { minute: number, hour: number, day: number, month: number, dayOfWeek: number }
 
-  // Skip if already run this minute
+let warnedBadTimezone = false
+
+/**
+ * Extract the wall-clock fields a cron expression matches against, in the
+ * configured timezone (stacksjs/stacks#1984). `SchedulerConfig.timezone` was
+ * documented ("Timezone for cron expressions") but never applied — cron ran in
+ * the server's local time regardless, so `0 9 * * *` fired at 9am server-local
+ * rather than 9am in the configured zone. With no timezone set we keep
+ * local-time semantics; an invalid zone warns once and falls back to local.
+ */
+export function getCronParts(date: Date, timeZone?: string): CronParts {
+  if (timeZone && timeZone !== 'local' && timeZone !== 'system') {
+    try {
+      const parts = new Intl.DateTimeFormat('en-US', {
+        timeZone,
+        hour12: false,
+        month: 'numeric',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: 'numeric',
+        weekday: 'short',
+      }).formatToParts(date)
+      const get = (t: string): string => parts.find(p => p.type === t)?.value ?? ''
+      const weekday: Record<string, number> = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 }
+      let hour = Number(get('hour'))
+      if (hour === 24)
+        hour = 0 // some engines emit '24' for midnight under hour12:false
+      return {
+        minute: Number(get('minute')),
+        hour,
+        day: Number(get('day')),
+        month: Number(get('month')),
+        dayOfWeek: weekday[get('weekday')] ?? date.getDay(),
+      }
+    }
+    catch {
+      if (!warnedBadTimezone) {
+        warnedBadTimezone = true
+        log.warn(`[scheduler] Invalid timezone "${timeZone}"; falling back to system local time.`)
+      }
+    }
+  }
+  return {
+    minute: date.getMinutes(),
+    hour: date.getHours(),
+    day: date.getDate(),
+    month: date.getMonth() + 1,
+    dayOfWeek: date.getDay(),
+  }
+}
+
+function shouldRunNow(cronExpression: string, lastRun: Date | null, timeZone?: string): boolean {
+  const now = getCronParts(new Date(), timeZone)
+  const currentMinute = now.minute
+  const currentHour = now.hour
+  const currentDay = now.day
+  const currentMonth = now.month
+  const currentDayOfWeek = now.dayOfWeek
+
+  // Skip if already run this minute (compared in the same timezone)
   if (lastRun) {
-    const lastMinute = lastRun.getMinutes()
-    const lastHour = lastRun.getHours()
-    const lastDay = lastRun.getDate()
+    const last = getCronParts(lastRun, timeZone)
 
     if (
-      lastMinute === currentMinute
-      && lastHour === currentHour
-      && lastDay === currentDay
+      last.minute === currentMinute
+      && last.hour === currentHour
+      && last.day === currentDay
     ) {
       return false
     }
@@ -340,8 +391,8 @@ async function checkScheduledJobs(): Promise<void> {
     const cronExpression = parseScheduleString(schedule)
     if (!cronExpression) continue
 
-    // Check if job should run
-    if (shouldRunNow(cronExpression, state.lastRun)) {
+    // Check if job should run (in the configured timezone, if any)
+    if (shouldRunNow(cronExpression, state.lastRun, schedulerState.config.timezone)) {
       // Check overlapping
       if (schedulerState.config.preventOverlapping && state.isRunning) {
         log.debug(`Skipping ${name}: previous execution still running`)
