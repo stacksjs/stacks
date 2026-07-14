@@ -684,7 +684,23 @@ export const tsCloud: TsCloudConfig = {
       // vendors storage/framework, so the CLI resolves here directly.
       start: 'bun --conditions development storage/framework/core/buddy/src/cli.ts serve',
       port: 3000,
-      preStart: ['bun install'],
+      // preStart runs (in order) after the repo is shipped + the resolved
+      // production env is in place, before the systemd service starts.
+      //   1. install deps
+      //   2. migrate the database (stacksjs/stacks#1950) — without this a fresh
+      //      box served the API against a schema-less / stale-dev SQLite file.
+      //
+      // Migrate runs ONLY on `main`, the single DB owner: the `api` site shares
+      // the same box + SQLite file, so migrating from both would race two
+      // writers on one file (the file lock would make one fail; see the
+      // "SQLite migrate gotchas" — `busy_timeout`/single-writer). Same
+      // `bun --conditions development … cli.ts` entry as `start` so resolution
+      // matches. No `--force`: additive migrations apply on every deploy (a
+      // no-op when none pend). A *destructive* change is refused in this
+      // non-interactive context — migrate logs the refusal and skips it
+      // (leaving prod data intact) rather than dropping columns/tables
+      // unattended; apply those deliberately with `--force`.
+      preStart: ['bun install', 'bun --conditions development storage/framework/core/buddy/src/cli.ts migrate'],
     },
 
     // API (bun-router) behind `buddy serve`'s same-origin /api proxy.
