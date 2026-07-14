@@ -1,5 +1,42 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.78...v0.70.80)
+
+## ✨ Features
+
+- **blog**: stx-native blog keeps RSS feed + sitemap (no BunPress) ([6ad7ab9](https://github.com/stacksjs/stacks/commit/6ad7ab9)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🐛 Bug Fixes
+
+- **queue**: scheduler drift + real next-run + redis backoff array (#1984) ([0b34c3f](https://github.com/stacksjs/stacks/commit/0b34c3f)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#1984](https://github.com/stacksjs/stacks/issues/1984), [#1984](https://github.com/stacksjs/stacks/issues/1984))
+- **queue**: apply scheduler timezone + process DB batch concurrently (#1984) ([4f66c40](https://github.com/stacksjs/stacks/commit/4f66c40)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#1984](https://github.com/stacksjs/stacks/issues/1984), [#1984](https://github.com/stacksjs/stacks/issues/1984))
+- **queue**: drain in-flight jobs in the worker process on shutdown (#1984) ([fdbfbba](https://github.com/stacksjs/stacks/commit/fdbfbba)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#1984](https://github.com/stacksjs/stacks/issues/1984), [#1984](https://github.com/stacksjs/stacks/issues/1984))
+- **queue**: persist scheduler run-marker so a restart can't double-fire (#1984) ([1061258](https://github.com/stacksjs/stacks/commit/1061258)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#1984](https://github.com/stacksjs/stacks/issues/1984), [#1984](https://github.com/stacksjs/stacks/issues/1984))
+- **queue**: close dispatch-idempotency TOCTOU with atomic claim-then-compensate (#1984) ([0d1c402](https://github.com/stacksjs/stacks/commit/0d1c402)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#1984](https://github.com/stacksjs/stacks/issues/1984), [#1984](https://github.com/stacksjs/stacks/issues/1984))
+- **queue**: wire up the dead-letter queue + quarantine enforcement (#1984) ([2af97b1](https://github.com/stacksjs/stacks/commit/2af97b1)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#1984](https://github.com/stacksjs/stacks/issues/1984), [#1984](https://github.com/stacksjs/stacks/issues/1984))
+- **queue**: close silent-job-loss + batch lost-update on failure paths (#1957) ([fcd2110](https://github.com/stacksjs/stacks/commit/fcd2110)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#1957](https://github.com/stacksjs/stacks/issues/1957), [#1957](https://github.com/stacksjs/stacks/issues/1957))
+- **deploy**: run migrations before the server-app serves (#1950) ([db38a11](https://github.com/stacksjs/stacks/commit/db38a11)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#1950](https://github.com/stacksjs/stacks/issues/1950), [#1950](https://github.com/stacksjs/stacks/issues/1950))
+- **router**: share route table + request context across split instances (#1982) ([a8c8d1a](https://github.com/stacksjs/stacks/commit/a8c8d1a)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#1982](https://github.com/stacksjs/stacks/issues/1982), [#1982](https://github.com/stacksjs/stacks/issues/1982))
+- **migrate**: surface pre-existing FK orphan rows at migrate time (#1951) (#1983) ([ecc4cfc](https://github.com/stacksjs/stacks/commit/ecc4cfc)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#1951](https://github.com/stacksjs/stacks/issues/1951), [#1983](https://github.com/stacksjs/stacks/issues/1983), [#1951](https://github.com/stacksjs/stacks/issues/1951), [#1983](https://github.com/stacksjs/stacks/issues/1983))
+- **router**: fail loudly on split @stacksjs/router instances instead of silent 404s (#1981) ([cc3c33e](https://github.com/stacksjs/stacks/commit/cc3c33e)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#1981](https://github.com/stacksjs/stacks/issues/1981), [#1981](https://github.com/stacksjs/stacks/issues/1981))
+- **email,commerce**: fail-open missing-table guards miss Postgres phrasing (#1980) ([eb5bffe](https://github.com/stacksjs/stacks/commit/eb5bffe)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#1980](https://github.com/stacksjs/stacks/issues/1980), [#1980](https://github.com/stacksjs/stacks/issues/1980))
+- **ci**: migrate labeler config to actions/labeler@v6 format (#1978) ([06fd755](https://github.com/stacksjs/stacks/commit/06fd755)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#1978](https://github.com/stacksjs/stacks/issues/1978), [#1978](https://github.com/stacksjs/stacks/issues/1978))
+
+## ⚡ Performance Improvements
+
+- drop Babel from the framework ([64d8183](https://github.com/stacksjs/stacks/commit/64d8183)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **server**: don't ship the 90MB compiled binary in the npm package ([7f58be3](https://github.com/stacksjs/stacks/commit/7f58be3)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🔧 Chores
+
+- release v0.70.79 ([64c34ba](https://github.com/stacksjs/stacks/commit/64c34ba)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+- _Glenn Michael Torregosa <gtorregosa@gmail.com>_
+- _glennmichael123 <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.78...v0.70.79)
 
 ## ✨ Features
