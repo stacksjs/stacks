@@ -22,7 +22,7 @@ export * from '@stacksjs/bun-router'
 export type { StacksRequestExtensions, StacksRequestMacros, StacksRequestMarkers } from './request-augmentation'
 
 // Export Stacks-specific action resolver and URL helper
-export { assertRouteMiddlewareResolvable, clearMiddlewareCache, createStacksRouter, findUnresolvableRouteMiddleware, installMiddlewareHotReload, route, serve, serverResponse, url } from './stacks-router'
+export { assertRouteMiddlewareResolvable, assertSingleRouterInstance, clearMiddlewareCache, createStacksRouter, findUnresolvableRouteMiddleware, installMiddlewareHotReload, route, serve, serverResponse, url } from './stacks-router'
 
 // Export request context helpers
 export { cacheRequestQuery, getCurrentRequest, getTraceId, request, runWithRequest, setCurrentRequest, withTraceId } from './request-context'
