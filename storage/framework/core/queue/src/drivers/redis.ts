@@ -39,7 +39,10 @@ export type { BunJob }
 interface BunJobOptions {
   delay?: number
   attempts?: number
-  backoff?: { type: 'fixed' | 'exponential', delay: number }
+  // bun-queue takes a per-attempt array of delays (ms). The object form is
+  // kept only so the config-sourced `defaultJobOptions.backoff` still type-
+  // checks; per-job dispatch passes the array through (see `add`).
+  backoff?: number[] | { type: 'fixed' | 'exponential', delay: number }
   removeOnComplete?: boolean | number
   removeOnFail?: boolean | number
   priority?: number
@@ -124,8 +127,12 @@ export class RedisQueue<T = any> {
       attempts: options?.maxTries,
       priority: options?.priority,
       timeout: options?.timeout ? options.timeout * 1000 : undefined,
+      // Pass the per-attempt backoff array straight through (bun-queue takes
+      // `number[]` in ms), instead of collapsing it to a single fixed delay
+      // (stacksjs/stacks#1984). Stacks backoff is in seconds → ms, matching the
+      // delay/timeout conversions above.
       backoff: Array.isArray(options?.backoff)
-        ? { type: 'fixed', delay: (options.backoff[0] || 1) * 1000 }
+        ? options.backoff.map(s => (Number(s) || 1) * 1000)
         : options?.backoff,
     }
 

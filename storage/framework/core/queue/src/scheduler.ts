@@ -86,6 +86,27 @@ interface CronParts { minute: number, hour: number, day: number, month: number, 
 
 let warnedBadTimezone = false
 
+// Cache one Intl.DateTimeFormat per timezone. getCronParts runs per-job-per-tick
+// and inside calculateNextRun's minute-walk, so re-constructing a formatter each
+// call would be needlessly expensive.
+const tzFormatterCache = new Map<string, Intl.DateTimeFormat>()
+function tzFormatter(timeZone: string): Intl.DateTimeFormat {
+  let f = tzFormatterCache.get(timeZone)
+  if (!f) {
+    f = new Intl.DateTimeFormat('en-US', {
+      timeZone,
+      hour12: false,
+      month: 'numeric',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: 'numeric',
+      weekday: 'short',
+    })
+    tzFormatterCache.set(timeZone, f)
+  }
+  return f
+}
+
 /**
  * Extract the wall-clock fields a cron expression matches against, in the
  * configured timezone (stacksjs/stacks#1984). `SchedulerConfig.timezone` was
@@ -97,15 +118,7 @@ let warnedBadTimezone = false
 export function getCronParts(date: Date, timeZone?: string): CronParts {
   if (timeZone && timeZone !== 'local' && timeZone !== 'system') {
     try {
-      const parts = new Intl.DateTimeFormat('en-US', {
-        timeZone,
-        hour12: false,
-        month: 'numeric',
-        day: 'numeric',
-        hour: 'numeric',
-        minute: 'numeric',
-        weekday: 'short',
-      }).formatToParts(date)
+      const parts = tzFormatter(timeZone).formatToParts(date)
       const get = (t: string): string => parts.find(p => p.type === t)?.value ?? ''
       const weekday: Record<string, number> = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 }
       let hour = Number(get('hour'))
@@ -286,21 +299,39 @@ function parseScheduleString(schedule: string): string | null {
 /**
  * Calculate next run time for a cron expression
  */
-function calculateNextRun(cronExpression: string): Date | null {
-  const now = new Date()
+export function calculateNextRun(cronExpression: string, timeZone?: string): Date | null {
   const parts = cronExpression.trim().split(/\s+/)
-
-  if (parts.length < 5) {
+  // Support the optional 6-field (seconds-prefixed) form by dropping seconds —
+  // the scheduler ticks per minute, same as shouldRunNow.
+  const fields = parts.length === 6 ? parts.slice(1) : parts
+  if (fields.length < 5)
     return null
+  const [minute, hour, day, month, dayOfWeek] = fields as [string, string, string, string, string]
+
+  // Walk forward minute-by-minute from the next minute boundary until every
+  // cron field matches, in the configured timezone (so `nextRun` lines up with
+  // when the job actually fires). Bounded to ~366 days so an expression with no
+  // upcoming match (e.g. a far-future Feb-29) returns null instead of looping
+  // forever. Was previously a stub that always returned now+60s regardless of
+  // the expression (stacksjs/stacks#1984). The tz formatter is cached, so the
+  // common case (a match within a day) is a few hundred cheap iterations.
+  const start = new Date()
+  start.setSeconds(0, 0)
+  const MAX_MINUTES = 366 * 24 * 60
+  for (let i = 1; i <= MAX_MINUTES; i++) {
+    const candidate = new Date(start.getTime() + i * 60_000)
+    const p = getCronParts(candidate, timeZone)
+    if (
+      matchesCronPart(minute, p.minute, 0, 59)
+      && matchesCronPart(hour, p.hour, 0, 23)
+      && matchesCronPart(day, p.day, 1, 31)
+      && matchesCronPart(month, p.month, 1, 12)
+      && matchesCronPart(dayOfWeek, p.dayOfWeek, 0, 6)
+    ) {
+      return candidate
+    }
   }
-
-  // Simple calculation: add 1 minute and check
-  // For more accurate calculation, you'd need a proper cron parser
-  const next = new Date(now.getTime() + 60000)
-  next.setSeconds(0)
-  next.setMilliseconds(0)
-
-  return next
+  return null
 }
 
 /**
@@ -337,7 +368,7 @@ export async function startScheduler(config: Partial<SchedulerConfig> = {}): Pro
         schedulerState.jobs.set(job.name, {
           job,
           lastRun,
-          nextRun: calculateNextRun(cronExpression),
+          nextRun: calculateNextRun(cronExpression, schedulerState.config.timezone),
           isRunning: false,
         })
         log.info(`Registered scheduled job: ${job.name} (${cronExpression})`)
@@ -359,21 +390,35 @@ export async function startScheduler(config: Partial<SchedulerConfig> = {}): Pro
   process.on('SIGINT', () => stopScheduler())
   process.on('SIGTERM', () => stopScheduler())
 
-  // Start checking
+  // Start checking with a self-rescheduling timer aligned to the top of each
+  // interval, instead of a plain setInterval (stacksjs/stacks#1984). A fixed
+  // setInterval is not drift-corrected and each tick adds async work, so ticks
+  // slowly slip; once a tick lands off the cron minute (e.g. HH:31:xx for a
+  // `30 * * * *` job) that run is skipped entirely, and accumulated drift
+  // eventually drops a daily job on some days. Re-arming to `interval - (now %
+  // interval)` keeps every wall-clock minute covered.
   let isChecking = false
-  schedulerState.checkInterval = setInterval(() => {
-    if (!schedulerState.isShuttingDown && !isChecking) {
-      isChecking = true
-      checkScheduledJobs()
-        .catch(err => log.error('Scheduler check failed:', err))
-        .finally(() => { isChecking = false })
-    }
-  }, schedulerState.config.checkInterval)
-  // Without .unref(), this timer keeps the event loop alive — every
-  // CLI command that imports scheduler keeps Bun running indefinitely
-  // even after the command logic has returned. .unref() lets the
-  // process exit when nothing else is pending.
-  schedulerState.checkInterval?.unref?.()
+  const scheduleNextTick = (): void => {
+    if (schedulerState.isShuttingDown)
+      return
+    const interval = schedulerState.config.checkInterval
+    const delay = interval - (Date.now() % interval)
+    schedulerState.checkInterval = setTimeout(() => {
+      if (!schedulerState.isShuttingDown && !isChecking) {
+        isChecking = true
+        checkScheduledJobs()
+          .catch(err => log.error('Scheduler check failed:', err))
+          .finally(() => { isChecking = false })
+      }
+      scheduleNextTick()
+    }, delay)
+    // Without .unref(), this timer keeps the event loop alive — every CLI
+    // command that imports scheduler keeps Bun running indefinitely even after
+    // the command logic returned. .unref() lets the process exit when nothing
+    // else is pending.
+    schedulerState.checkInterval?.unref?.()
+  }
+  scheduleNextTick()
 
   // Run initial check
   await checkScheduledJobs()
@@ -409,7 +454,7 @@ async function checkScheduledJobs(): Promise<void> {
       try {
         state.isRunning = true
         state.lastRun = new Date()
-        state.nextRun = calculateNextRun(cronExpression)
+        state.nextRun = calculateNextRun(cronExpression, schedulerState.config.timezone)
 
         // Persist the run marker so a restart this minute won't re-dispatch
         // (stacksjs/stacks#1984). Best-effort; matches the in-memory guard's
@@ -457,7 +502,9 @@ export async function stopScheduler(): Promise<void> {
   schedulerState.isShuttingDown = true
 
   if (schedulerState.checkInterval) {
-    clearInterval(schedulerState.checkInterval)
+    // The tick is now a self-rescheduling setTimeout; isShuttingDown (set
+    // above) stops it from re-arming, and clearTimeout cancels the pending one.
+    clearTimeout(schedulerState.checkInterval)
     schedulerState.checkInterval = null
   }
 
