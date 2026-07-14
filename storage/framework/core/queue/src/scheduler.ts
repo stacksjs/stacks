@@ -11,6 +11,7 @@
 import { log } from '@stacksjs/logging'
 import { discoverJobs, getScheduledJobs, type DiscoveredJob } from './discovery'
 import { emitQueueEvent } from './events'
+import { loadPersistedLastRun, persistLastRun } from './scheduler-persistence'
 import { storeJob } from './utils'
 
 /**
@@ -277,9 +278,14 @@ export async function startScheduler(config: Partial<SchedulerConfig> = {}): Pro
       const cronExpression = parseScheduleString(schedule)
 
       if (cronExpression) {
+        // Seed lastRun from persistence (stacksjs/stacks#1984) so a restart
+        // within the same clock-minute a job fires doesn't re-dispatch it.
+        // Falls back to null (today's behavior) when persistence is
+        // unavailable.
+        const lastRun = await loadPersistedLastRun(job.name)
         schedulerState.jobs.set(job.name, {
           job,
-          lastRun: null,
+          lastRun,
           nextRun: calculateNextRun(cronExpression),
           isRunning: false,
         })
@@ -353,6 +359,11 @@ async function checkScheduledJobs(): Promise<void> {
         state.isRunning = true
         state.lastRun = new Date()
         state.nextRun = calculateNextRun(cronExpression)
+
+        // Persist the run marker so a restart this minute won't re-dispatch
+        // (stacksjs/stacks#1984). Best-effort; matches the in-memory guard's
+        // "marked at dispatch time" semantics.
+        await persistLastRun(name, state.lastRun)
 
         log.info(`Dispatching scheduled job: ${name}`)
 
