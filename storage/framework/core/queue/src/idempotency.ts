@@ -111,3 +111,62 @@ export async function recordDispatchedKey(
     throw err
   }
 }
+
+export type DispatchKeyClaim = 'claimed' | 'duplicate' | 'unenforced'
+
+/**
+ * Atomically claim an idempotency key by INSERTing its dedup row UP FRONT and
+ * letting the UNIQUE constraint be the concurrency gate:
+ *   - `'claimed'`    this caller owns the key; proceed to dispatch (and call
+ *                    {@link releaseDispatchKey} if the dispatch then fails).
+ *   - `'duplicate'`  another dispatch already claimed it; skip — do NOT dispatch.
+ *   - `'unenforced'` the `job_idempotency` table isn't migrated; dedup is off,
+ *                    proceed to dispatch (degrade, warn-once).
+ *
+ * Replaces the previous check-then-act (`hasDispatchedKey` → dispatch →
+ * `recordDispatchedKey`), which let two concurrent dispatches both pass the
+ * SELECT and both enqueue — precisely the double-dispatch the feature exists
+ * to prevent (stacksjs/stacks#1984).
+ */
+export async function claimDispatchKey(key: string, jobName: string, queue?: string): Promise<DispatchKeyClaim> {
+  try {
+    const { db } = await import('@stacksjs/database')
+    await (db as any)
+      .insertInto('job_idempotency')
+      .values({
+        idempotency_key: key,
+        job_name: jobName,
+        queue: queue ?? 'default',
+        dispatched_at: new Date().toISOString().slice(0, 19).replace('T', ' '),
+      })
+      .execute()
+    return 'claimed'
+  }
+  catch (err) {
+    if (isMissingTableError(err)) {
+      warnOnceAboutMissingTable()
+      return 'unenforced'
+    }
+    const msg = (err as { message?: string } | null)?.message ?? ''
+    if (msg.includes('UNIQUE constraint') || msg.includes('Duplicate entry'))
+      return 'duplicate'
+    throw err
+  }
+}
+
+/**
+ * Release a previously-claimed key — the compensating action when the dispatch
+ * that claimed it subsequently fails. Preserves the "failed dispatches are NOT
+ * recorded" contract so a retry with the same key can re-claim and land.
+ * Best-effort: a lingering key only over-dedups (never loses work), so a delete
+ * failure is swallowed rather than masking the original dispatch error.
+ */
+export async function releaseDispatchKey(key: string): Promise<void> {
+  try {
+    const { db } = await import('@stacksjs/database')
+    await (db as any).deleteFrom('job_idempotency').where('idempotency_key', '=', key).execute()
+  }
+  catch {
+    // best-effort compensation
+  }
+}

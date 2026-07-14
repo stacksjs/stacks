@@ -32,7 +32,7 @@ describe('DLQ + quarantine wiring (#1984)', () => {
 
     it('routes a quarantined job to moveToDeadLetter and returns (does not enqueue)', () => {
       expect(pipeline).toContain('moveToDeadLetter(')
-      expect(pipeline).toMatch(/if \(moved\) \{[\s\S]*?return/)
+      expect(pipeline).toMatch(/if \(moved\)\s*\n\s*return/)
     })
   })
 

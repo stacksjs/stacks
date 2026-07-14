@@ -19,7 +19,8 @@ export { Jobs, job, jobBatch, runJob } from './job'
 // =============================================================================
 // Job dispatch idempotency (stacksjs/stacks#1872 Q-8)
 // =============================================================================
-export { hasDispatchedKey, recordDispatchedKey } from './idempotency'
+export { claimDispatchKey, hasDispatchedKey, recordDispatchedKey, releaseDispatchKey } from './idempotency'
+export type { DispatchKeyClaim } from './idempotency'
 
 // =============================================================================
 // Dead-letter queue + poison detection + circuit breaker

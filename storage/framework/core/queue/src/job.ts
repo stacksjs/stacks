@@ -10,7 +10,7 @@ import { env as envVars } from '@stacksjs/env'
 import { enqueueAfterCommit, isInTransaction } from '@stacksjs/database'
 import { moveToDeadLetter } from './dead-letter'
 import { createEnvelope } from './envelope'
-import { hasDispatchedKey, recordDispatchedKey } from './idempotency'
+import { claimDispatchKey, releaseDispatchKey } from './idempotency'
 import { isQuarantined } from './poison'
 
 function getQueueDriver(): string {
@@ -234,79 +234,85 @@ class JobBuilder {
    * (stacksjs/stacks#1882).
    */
   private async runDispatchPipeline(): Promise<void> {
-    // Idempotency-key short-circuit (stacksjs/stacks#1872 Q-8). A
-    // second dispatch under the same key returns without enqueuing.
-    // The lookup degrades to "always miss" with a warn when the
-    // dedup table isn't migrated yet — opt-in pattern matching
-    // #1879 Co-3 (orders) and #1871 M-8 (email).
+    // Idempotency-key claim (stacksjs/stacks#1872 Q-8, hardened in #1984). We
+    // INSERT the dedup row UP FRONT and let the UNIQUE constraint be the gate,
+    // instead of the old check-then-act (SELECT → dispatch → INSERT), under
+    // which two concurrent dispatches both passed the SELECT and both enqueued
+    // — the exact double-dispatch the key exists to prevent. `duplicate` means
+    // someone else already claimed it → skip. `unenforced` means the table
+    // isn't migrated → dedup off, proceed (opt-in degrade). On a `claimed`
+    // key we release it if the dispatch below throws, preserving the "failed
+    // dispatches are not recorded" contract so a retry can re-claim.
+    let claimedKey = false
     if (this.options.idempotencyKey) {
-      if (await hasDispatchedKey(this.options.idempotencyKey)) return
+      const claim = await claimDispatchKey(this.options.idempotencyKey, this.name, this.options.queue)
+      if (claim === 'duplicate')
+        return
+      claimedKey = claim === 'claimed'
     }
 
-    // Quarantine short-circuit (stacksjs/stacks#1885 / #1984). A job+payload
-    // that a poison-detector or an operator (`queue:quarantine`) has
-    // quarantined skips the queue and lands directly in the DLQ, instead of
-    // being enqueued to churn through retry→fail→retry. Opt-in: if the DLQ
-    // table isn't migrated, `moveToDeadLetter` returns false and we fall
-    // through to a normal dispatch (quarantine stays inert until migrated),
-    // matching the degrade-when-missing pattern the rest of the queue uses.
-    if (await isQuarantined(this.name, this.payload)) {
-      const envelope = createEnvelope(this.name, this.payload, {
-        queue: this.options.queue,
-        timeout: this.options.timeout,
-        tries: this.options.tries,
-        backoff: this.options.backoff,
-      })
-      const moved = await moveToDeadLetter({
-        queue: this.options.queue || 'default',
-        payload: JSON.stringify(envelope),
-        exception: `quarantined: ${this.name}`,
-      }, 'poison-detected')
-      if (moved) {
-        if (this.options.idempotencyKey)
-          await recordDispatchedKey(this.options.idempotencyKey, this.name, this.options.queue)
-        return
+    try {
+      // Quarantine short-circuit (stacksjs/stacks#1885 / #1984). A job+payload
+      // that a poison-detector or an operator (`queue:quarantine`) has
+      // quarantined skips the queue and lands directly in the DLQ, instead of
+      // being enqueued to churn through retry→fail→retry. Opt-in: if the DLQ
+      // table isn't migrated, `moveToDeadLetter` returns false and we fall
+      // through to a normal dispatch (quarantine stays inert until migrated).
+      // A quarantined job that lands in the DLQ keeps its claimed key — it WAS
+      // handled, so a re-dispatch under the same key should still skip.
+      if (await isQuarantined(this.name, this.payload)) {
+        const envelope = createEnvelope(this.name, this.payload, {
+          queue: this.options.queue,
+          timeout: this.options.timeout,
+          tries: this.options.tries,
+          backoff: this.options.backoff,
+        })
+        const moved = await moveToDeadLetter({
+          queue: this.options.queue || 'default',
+          payload: JSON.stringify(envelope),
+          exception: `quarantined: ${this.name}`,
+        }, 'poison-detected')
+        if (moved)
+          return
+      }
+
+      const driver = getQueueDriver()
+
+      if (driver === 'database') {
+        await this.dispatchToDatabase()
+      }
+      else if (driver === 'redis') {
+        await this.dispatchToRedis()
+      }
+      else if (driver === 'sync') {
+        await runJob(this.name, { payload: this.payload, context: this.options.context })
+      }
+      else if (driver === 'sqs' || driver === 'memory' || driver === 'beanstalkd') {
+        // Listed in config schemas but never implemented (stacksjs/stacks#1872 Q-1).
+        // The previous fallback ran the job inline via `runJob` — same behavior
+        // as `sync` but without telling the caller their background pipeline
+        // had silently degraded to blocking sends. Loud-fail instead.
+        throw new Error(
+          `[queue] Driver "${driver}" is not implemented yet. `
+          + `Set QUEUE_DRIVER to one of: redis, database, sync.`,
+        )
+      }
+      else {
+        // Genuinely unknown driver — also loud-fail. A typo in QUEUE_DRIVER
+        // used to silently run jobs synchronously, which is the worst kind
+        // of "it works on my machine" surprise.
+        throw new Error(
+          `[queue] Unknown QUEUE_DRIVER "${driver}". `
+          + `Allowed values: redis, database, sync.`,
+        )
       }
     }
-
-    const driver = getQueueDriver()
-
-    if (driver === 'database') {
-      await this.dispatchToDatabase()
-    }
-    else if (driver === 'redis') {
-      await this.dispatchToRedis()
-    }
-    else if (driver === 'sync') {
-      await runJob(this.name, { payload: this.payload, context: this.options.context })
-    }
-    else if (driver === 'sqs' || driver === 'memory' || driver === 'beanstalkd') {
-      // Listed in config schemas but never implemented (stacksjs/stacks#1872 Q-1).
-      // The previous fallback ran the job inline via `runJob` — same behavior
-      // as `sync` but without telling the caller their background pipeline
-      // had silently degraded to blocking sends. Loud-fail instead.
-      throw new Error(
-        `[queue] Driver "${driver}" is not implemented yet. `
-        + `Set QUEUE_DRIVER to one of: redis, database, sync.`,
-      )
-    }
-    else {
-      // Genuinely unknown driver — also loud-fail. A typo in QUEUE_DRIVER
-      // used to silently run jobs synchronously, which is the worst kind
-      // of "it works on my machine" surprise.
-      throw new Error(
-        `[queue] Unknown QUEUE_DRIVER "${driver}". `
-        + `Allowed values: redis, database, sync.`,
-      )
-    }
-
-    // Record AFTER the driver dispatch succeeds so a failed enqueue
-    // (driver down, schema mismatch) doesn't lock the key — the
-    // caller can retry. Sync-driver dispatches are also recorded so
-    // an at-most-once contract holds across drivers (a `sync` retry
-    // with the same key shouldn't re-run either).
-    if (this.options.idempotencyKey) {
-      await recordDispatchedKey(this.options.idempotencyKey, this.name, this.options.queue)
+    catch (err) {
+      // Compensate: a failed dispatch must not leave the key claimed, or a
+      // legitimate retry with the same key would be wrongly deduped.
+      if (claimedKey && this.options.idempotencyKey)
+        await releaseDispatchKey(this.options.idempotencyKey)
+      throw err
     }
   }
 
