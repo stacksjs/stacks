@@ -22,6 +22,40 @@ import { path as p } from '@stacksjs/path'
 import { UploadedFile } from '@stacksjs/storage'
 import { applyRequestEnhancements, Router } from '@stacksjs/bun-router'
 
+// --- Split-router-instance guard (stacksjs/stacks#1975) --------------------
+// If two physically distinct @stacksjs/router modules load in one process,
+// user routes register on one `route` singleton while the server serves the
+// other — every route 404s with NO error logged. The classic trigger: an app
+// vendors storage/framework/core AND installs the published dist package, and a
+// tsconfig `paths` mismatch (`@stacksjs/* -> ./*/src`) resolves core files to
+// ./router/src while root files (routes/, app/) resolve to node_modules dist.
+//
+// Each loaded router module records its own path on a process-global set (keyed
+// by a well-known Symbol so the src and dist copies share it). serve() then
+// asserts the set has exactly one entry and fails loudly on a split.
+const ROUTER_INSTANCES_KEY = Symbol.for('@stacksjs/router:loaded-instances')
+const loadedRouterInstances: Set<string> = ((globalThis as Record<symbol, unknown>)[ROUTER_INSTANCES_KEY] ??= new Set<string>()) as Set<string>
+loadedRouterInstances.add(import.meta.path)
+
+/**
+ * Throw if more than one @stacksjs/router module has loaded in this process
+ * (stacksjs/stacks#1975). Called at serve() boot so the otherwise-silent
+ * split-router 404 becomes a loud, actionable error naming the culprit files.
+ */
+export function assertSingleRouterInstance(): void {
+  if (loadedRouterInstances.size <= 1)
+    return
+  const paths = [...loadedRouterInstances].map(p => `    - ${p}`).join('\n')
+  throw new Error(
+    `[router] ${loadedRouterInstances.size} distinct @stacksjs/router instances loaded in one process. `
+    + `User routes register on one instance while the server serves another, so every route 404s silently. `
+    + `This usually means an app vendors storage/framework/core AND installs the published @stacksjs/* dist, and a `
+    + `tsconfig \`paths\` mapping (\`@stacksjs/* -> ./*/src\`) splits module resolution between core files and root files. `
+    + `Unify resolution so root files and core files load the same @stacksjs/router. See stacksjs/stacks#1975.\n`
+    + `Loaded instances:\n${paths}`,
+  )
+}
+
 // Resolve a scaffold-defaults file (under storage/framework/defaults). A
 // vendored checkout has it on disk and wins; a node_modules app has no
 // storage/framework, so fall back to the published @stacksjs/defaults package
@@ -2743,6 +2777,10 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
 
     // Serve the router
     async serve(options: ServerOptions = {}): Promise<Server<unknown>> {
+      // Fail loudly on a split router (#1975) instead of serving an empty
+      // route table. By now importRoutes() has run, so any second instance
+      // pulled in by user route files is already registered.
+      assertSingleRouterInstance()
       return bunRouter.serve(options)
     },
 
