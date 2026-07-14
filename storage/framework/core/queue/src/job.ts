@@ -8,8 +8,10 @@
 import { appPath } from '@stacksjs/path'
 import { env as envVars } from '@stacksjs/env'
 import { enqueueAfterCommit, isInTransaction } from '@stacksjs/database'
+import { moveToDeadLetter } from './dead-letter'
 import { createEnvelope } from './envelope'
 import { hasDispatchedKey, recordDispatchedKey } from './idempotency'
+import { isQuarantined } from './poison'
 
 function getQueueDriver(): string {
   return envVars.QUEUE_DRIVER || 'sync'
@@ -239,6 +241,32 @@ class JobBuilder {
     // #1879 Co-3 (orders) and #1871 M-8 (email).
     if (this.options.idempotencyKey) {
       if (await hasDispatchedKey(this.options.idempotencyKey)) return
+    }
+
+    // Quarantine short-circuit (stacksjs/stacks#1885 / #1984). A job+payload
+    // that a poison-detector or an operator (`queue:quarantine`) has
+    // quarantined skips the queue and lands directly in the DLQ, instead of
+    // being enqueued to churn through retry→fail→retry. Opt-in: if the DLQ
+    // table isn't migrated, `moveToDeadLetter` returns false and we fall
+    // through to a normal dispatch (quarantine stays inert until migrated),
+    // matching the degrade-when-missing pattern the rest of the queue uses.
+    if (await isQuarantined(this.name, this.payload)) {
+      const envelope = createEnvelope(this.name, this.payload, {
+        queue: this.options.queue,
+        timeout: this.options.timeout,
+        tries: this.options.tries,
+        backoff: this.options.backoff,
+      })
+      const moved = await moveToDeadLetter({
+        queue: this.options.queue || 'default',
+        payload: JSON.stringify(envelope),
+        exception: `quarantined: ${this.name}`,
+      }, 'poison-detected')
+      if (moved) {
+        if (this.options.idempotencyKey)
+          await recordDispatchedKey(this.options.idempotencyKey, this.name, this.options.queue)
+        return
+      }
     }
 
     const driver = getQueueDriver()

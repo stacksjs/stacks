@@ -145,10 +145,14 @@ export async function recordFailureForPoison(
 export async function isQuarantined(jobName: string, payload: unknown): Promise<boolean> {
   const payloadHash = hashPayload(payload)
   try {
+    // Match either this exact payload hash OR the class-wide wildcard `*`
+    // that `quarantineJob(name)` writes when called without a payload —
+    // without the `*` arm a manual `queue:quarantine <name>` stored a row
+    // that nothing ever matched, so class-wide quarantine never blocked.
     const row = await (db as any)
       .selectFrom('job_quarantine')
       .where('job_name', '=', jobName)
-      .where('payload_hash', '=', payloadHash)
+      .where('payload_hash', 'in', [payloadHash, '*'])
       .where('quarantined_at', 'is not', null)
       .select(['id'])
       .executeTakeFirst()

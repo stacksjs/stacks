@@ -478,20 +478,44 @@ async function processJob(job: any): Promise<void> {
 
     if (currentAttempts >= maxAttempts) {
       // Move to failed jobs
-      log.info(`[Queue] Job ${jobId} exceeded max attempts (${currentAttempts}/${maxAttempts}), moving to failed_jobs`)
-      // Only delete the job from `jobs` once it is durably recorded in
-      // `failed_jobs`. Previously `deleteJob` ran unconditionally even when
-      // the failed_jobs insert failed (missing table, lock, disk) — the
-      // exhausted job was then gone from `jobs`, absent from `failed_jobs`,
-      // and never dead-lettered: silent, permanent payload loss. If we can't
-      // persist it, leave the row in place so the reservation sweep re-picks
-      // it up (a slow retry beats losing the data). (stacksjs/stacks#1957)
+      log.info(`[Queue] Job ${jobId} exceeded max attempts (${currentAttempts}/${maxAttempts})`)
+      // Only delete the job from `jobs` once it is durably recorded somewhere.
+      // Previously `deleteJob` ran unconditionally even when the failed_jobs
+      // insert failed (missing table, lock, disk) — the exhausted job was then
+      // gone from `jobs`, absent from `failed_jobs`, and never dead-lettered:
+      // silent, permanent payload loss. If we can't persist it, leave the row
+      // in place so the reservation sweep re-picks it up (a slow retry beats
+      // losing the data). (stacksjs/stacks#1957)
+      //
+      // A job re-queued from `failed_jobs` (marked `_retriedFromFailed` by
+      // retryFailedJob) that exhausts its retries AGAIN dead-letters instead
+      // of looping back into failed_jobs forever (stacksjs/stacks#1885/#1984).
+      // If the DLQ table isn't migrated, moveToDeadLetter returns false and we
+      // fall back to failed_jobs (today's behavior).
       let persisted = false
-      try {
-        persisted = await moveToFailedJobs(job, jobError)
+      if (parsedPayload?._retriedFromFailed === true) {
+        try {
+          const { moveToDeadLetter } = await import('./dead-letter')
+          persisted = await moveToDeadLetter({
+            queue: job.queue,
+            payload: job.payload,
+            exception: jobError.stack || jobError.message,
+          }, 'repeat-failure', 2)
+          if (persisted)
+            log.info(`[Queue] Job ${jobId} re-failed after retry — moved to dead_letter_jobs`)
+        }
+        catch {
+          persisted = false
+        }
       }
-      catch {
-        persisted = false
+      if (!persisted) {
+        log.info(`[Queue] Moving job ${jobId} to failed_jobs`)
+        try {
+          persisted = await moveToFailedJobs(job, jobError)
+        }
+        catch {
+          persisted = false
+        }
       }
       if (persisted) {
         try {
@@ -928,12 +952,27 @@ export async function retryFailedJob(id: number): Promise<void> {
     throw new Error(`Failed job ${id} not found`)
   }
 
+  // Mark the re-queued payload so that if it fails AGAIN it dead-letters
+  // instead of looping back into failed_jobs forever (stacksjs/stacks#1885 /
+  // #1984). The marker is a reserved envelope key the worker's terminal-
+  // failure path reads; if the payload isn't parseable JSON we re-queue it
+  // verbatim (no marker — same as before).
+  let payloadToRequeue = failedJob.payload
+  try {
+    const env = JSON.parse(failedJob.payload || '{}')
+    env._retriedFromFailed = true
+    payloadToRequeue = JSON.stringify(env)
+  }
+  catch {
+    // unparseable payload — re-queue as-is
+  }
+
   // Re-queue the job
   await db
     .insertInto('jobs')
     .values({
       queue: failedJob.queue,
-      payload: failedJob.payload,
+      payload: payloadToRequeue,
       attempts: 0,
       reserved_at: null,
       available_at: now,
