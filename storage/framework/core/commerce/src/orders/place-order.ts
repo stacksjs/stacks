@@ -82,6 +82,23 @@ export type PlaceOrderResult =
  * `order_idempotency` dedup table isn't migrated yet.
  */
 let warnedAboutMissingOrderIdempotencyTable = false
+
+/**
+ * True when the error is just "table not migrated yet". Each dialect phrases
+ * it differently; the Postgres form (`relation "..." does not exist` / SQLSTATE
+ * 42P01) was previously missed, so this fail-open guard hard-failed on an
+ * un-migrated Postgres DB instead of degrading (stacksjs/stacks#1976). Scoped
+ * to `undefined_table` so a real `column ... does not exist` bug still throws.
+ */
+function isMissingTableError(err: unknown): boolean {
+  const e = err as { message?: string, code?: string } | null
+  const msg = e?.message ?? ''
+  return e?.code === '42P01' // postgres SQLSTATE: undefined_table
+    || msg.includes('no such table') // sqlite
+    || msg.includes("doesn't exist") // mysql
+    || /relation "[^"]*" does not exist/i.test(msg) // postgres wording
+}
+
 async function findOrderByIdempotencyKey(key: string): Promise<OrderJsonResponse | null> {
   try {
     const row = await (db as any)
@@ -98,7 +115,7 @@ async function findOrderByIdempotencyKey(key: string): Promise<OrderJsonResponse
     return (order ?? null) as OrderJsonResponse | null
   }
   catch (err: any) {
-    if (err?.message?.includes('no such table') || err?.message?.includes("doesn't exist")) {
+    if (isMissingTableError(err)) {
       if (!warnedAboutMissingOrderIdempotencyTable) {
         warnedAboutMissingOrderIdempotencyTable = true
         // eslint-disable-next-line no-console
@@ -230,7 +247,7 @@ export async function placeOrder(input: PlaceOrderInput): Promise<PlaceOrderResu
             throw Object.assign(new Error('idempotency-key collision'), { __placeFail: true, failedAt: 'idempotency', reason: 'duplicate-idempotency-key' })
           // Missing table: degrade silently (the pre-transaction
           // lookup already warned).
-          if (!(err?.message?.includes('no such table') || err?.message?.includes("doesn't exist")))
+          if (!isMissingTableError(err))
             throw err
         }
       }

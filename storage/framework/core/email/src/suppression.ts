@@ -52,9 +52,25 @@ function warnOnceAboutMissingTable(): void {
   )
 }
 
-function isMissingTableError(err: unknown): boolean {
-  const msg = (err as { message?: string } | null)?.message ?? ''
-  return msg.includes('no such table') || msg.includes("doesn't exist")
+/**
+ * Does this error mean the backing table simply hasn't been migrated yet?
+ * Exported for direct unit coverage across dialects.
+ *
+ * Each supported database phrases "missing table" differently, and the
+ * suppression layer is fail-open — so a matcher that only knows sqlite/mysql
+ * would let Postgres's wording slip through and hard-fail every send on an
+ * un-migrated Postgres DB (stacksjs/stacks#1976). We scope the Postgres check
+ * to `undefined_table` specifically (SQLSTATE 42P01 / `relation "..." does not
+ * exist`) rather than a bare `does not exist`, so a genuine `column ... does
+ * not exist` schema bug still surfaces instead of being silently swallowed.
+ */
+export function isMissingTableError(err: unknown): boolean {
+  const e = err as { message?: string, code?: string } | null
+  const msg = e?.message ?? ''
+  return e?.code === '42P01' // postgres SQLSTATE: undefined_table
+    || msg.includes('no such table') // sqlite
+    || msg.includes("doesn't exist") // mysql: Table '...' doesn't exist
+    || /relation "[^"]*" does not exist/i.test(msg) // postgres wording
 }
 
 /**

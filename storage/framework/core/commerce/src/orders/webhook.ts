@@ -88,6 +88,23 @@ async function findOrderByPaymentIntent(paymentIntentId: string): Promise<Record
  * table get a warn-once at startup.
  */
 let warnedAboutMissingDedupTable = false
+
+/**
+ * True when the error is just "table not migrated yet". Each dialect phrases
+ * it differently; the Postgres form (`relation "..." does not exist` / SQLSTATE
+ * 42P01) was previously missed, so this fail-open guard hard-failed on an
+ * un-migrated Postgres DB instead of degrading (stacksjs/stacks#1976). Scoped
+ * to `undefined_table` so a real `column ... does not exist` bug still throws.
+ */
+function isMissingTableError(err: unknown): boolean {
+  const e = err as { message?: string, code?: string } | null
+  const msg = e?.message ?? ''
+  return e?.code === '42P01' // postgres SQLSTATE: undefined_table
+    || msg.includes('no such table') // sqlite
+    || msg.includes("doesn't exist") // mysql
+    || /relation "[^"]*" does not exist/i.test(msg) // postgres wording
+}
+
 async function recordEventOrSkip(eventId: string, trx: any): Promise<boolean> {
   try {
     await trx
@@ -105,7 +122,7 @@ async function recordEventOrSkip(eventId: string, trx: any): Promise<boolean> {
       return false
     // Missing table → degrade to "process every time" with a warn
     // on first occurrence so ops can spot the missing migration.
-    if (err?.message?.includes('no such table') || err?.message?.includes("doesn't exist")) {
+    if (isMissingTableError(err)) {
       if (!warnedAboutMissingDedupTable) {
         warnedAboutMissingDedupTable = true
         // eslint-disable-next-line no-console
