@@ -479,17 +479,30 @@ async function processJob(job: any): Promise<void> {
     if (currentAttempts >= maxAttempts) {
       // Move to failed jobs
       log.info(`[Queue] Job ${jobId} exceeded max attempts (${currentAttempts}/${maxAttempts}), moving to failed_jobs`)
+      // Only delete the job from `jobs` once it is durably recorded in
+      // `failed_jobs`. Previously `deleteJob` ran unconditionally even when
+      // the failed_jobs insert failed (missing table, lock, disk) — the
+      // exhausted job was then gone from `jobs`, absent from `failed_jobs`,
+      // and never dead-lettered: silent, permanent payload loss. If we can't
+      // persist it, leave the row in place so the reservation sweep re-picks
+      // it up (a slow retry beats losing the data). (stacksjs/stacks#1957)
+      let persisted = false
       try {
-        await moveToFailedJobs(job, jobError)
+        persisted = await moveToFailedJobs(job, jobError)
       }
       catch {
-        log.info(`[Queue] Failed to move job ${jobId} to failed_jobs`)
+        persisted = false
       }
-      try {
-        await deleteJob(jobId)
+      if (persisted) {
+        try {
+          await deleteJob(jobId)
+        }
+        catch {
+          log.info(`[Queue] Failed to delete failed job ${jobId}`)
+        }
       }
-      catch {
-        log.info(`[Queue] Failed to delete failed job ${jobId}`)
+      else {
+        log.error(`[Queue] Job ${jobId} exhausted its retries but could NOT be persisted to failed_jobs — leaving it in the queue to avoid data loss (the reservation sweep will retry it). Check that the failed_jobs table exists and is writable.`)
       }
 
       // Poison-message detection + circuit-breaker accounting
@@ -531,6 +544,15 @@ async function processJob(job: any): Promise<void> {
       else if (typeof backoffDelays === 'number' && backoffDelays > 0) {
         retryDelay = backoffDelays
       }
+
+      // Clamp to a finite, non-negative delay. A bad backoff entry — a
+      // non-numeric, NaN, or negative value in a user-supplied `backoff`
+      // array — would otherwise flow into `available_at = now + retryDelay`,
+      // making the job due immediately (or never), i.e. a hot retry loop
+      // instead of the intended backoff (stacksjs/stacks#1957 queue sweep).
+      retryDelay = Number(retryDelay)
+      if (!Number.isFinite(retryDelay) || retryDelay < 0)
+        retryDelay = 30
 
       log.info(`[Queue] Job ${jobId} will be retried in ${retryDelay}s (attempt ${currentAttempts}/${maxAttempts})`)
       try {
@@ -579,7 +601,14 @@ async function releaseJob(jobId: number, delaySeconds: number = 30): Promise<voi
 /**
  * Move a job to the failed_jobs table
  */
-async function moveToFailedJobs(job: any, error: Error): Promise<void> {
+/**
+ * Persist an exhausted job to `failed_jobs`. Returns `true` only when the row
+ * was durably written — the caller uses that to decide whether it's safe to
+ * delete the job from `jobs`. Returning `false` (instead of swallowing the
+ * error) is what keeps a persistence failure from silently destroying the
+ * payload (stacksjs/stacks#1957).
+ */
+async function moveToFailedJobs(job: any, error: Error): Promise<boolean> {
   try {
     const failedAt = new Date().toISOString().slice(0, 19).replace('T', ' ')
     const uuid = crypto.randomUUID()
@@ -597,9 +626,11 @@ async function moveToFailedJobs(job: any, error: Error): Promise<void> {
         failed_at: failedAt,
       })
       .execute()
+    return true
   }
   catch (insertError) {
     log.error('Failed to log failed job:', insertError)
+    return false
   }
 }
 

@@ -1158,45 +1158,55 @@ export async function recordBatchJobCompletion(batchId: string): Promise<void> {
  * Called by the worker when a batch job fails its final attempt.
  */
 export async function recordBatchJobFailure(batchId: string, jobId: string, error: Error): Promise<void> {
+  const { db, sql } = await import('@stacksjs/database')
+
   const record = await getBatchRecord(batchId)
   if (!record) return
-
-  // Update failed job IDs
-  let failedIds: string[] = []
-  try {
-    failedIds = JSON.parse(record.failed_job_ids || '[]')
-  }
-  catch {
-    failedIds = []
-  }
-  failedIds.push(jobId)
-
-  const newPending = Math.max(0, record.pending_jobs - 1)
-  const newFailed = record.failed_jobs + 1
-
-  const updates: Partial<BatchRecord> = {
-    pending_jobs: newPending,
-    failed_jobs: newFailed,
-    failed_job_ids: JSON.stringify(failedIds),
-  }
-
   const opts = JSON.parse(record.options || '{}')
 
-  // If failures are not allowed, cancel the batch
-  if (!opts.allowFailures) {
-    updates.cancelled_at = new Date().toISOString().slice(0, 19).replace('T', ' ')
-    updates.finished_at = new Date().toISOString().slice(0, 19).replace('T', ' ')
+  // Step 1: atomic decrement pending + increment failed. This path used to
+  // read pending_jobs and write back an ABSOLUTE value, which clobbered a
+  // concurrent completion's atomic decrement (lost update → the batch could
+  // strand with pending_jobs > 0 and never finalize, so terminal callbacks
+  // never fired). Mirror the atomic completion path (#1872 Q-7).
+  // (stacksjs/stacks#1957)
+  await (db as any)
+    .updateTable('job_batches')
+    .set({
+      pending_jobs: sql`GREATEST(pending_jobs - 1, 0)`,
+      failed_jobs: sql`failed_jobs + 1`,
+    })
+    .where('id', '=', batchId)
+    .where('pending_jobs', '>', 0)
+    .execute()
+
+  // Best-effort append of the failed job id (diagnostic JSON list). This read-
+  // modify-write can lose an id under heavy concurrency, but the correctness-
+  // critical counters above are atomic and the id list is only for triage, so
+  // we accept the minor race rather than a schema change.
+  try {
+    const fresh = await getBatchRecord(batchId)
+    if (fresh) {
+      let failedIds: string[] = []
+      try {
+        failedIds = JSON.parse(fresh.failed_job_ids || '[]')
+      }
+      catch {
+        failedIds = []
+      }
+      failedIds.push(jobId)
+      await updateBatchRecord(batchId, { failed_job_ids: JSON.stringify(failedIds) })
+    }
   }
-  else if (newPending === 0) {
-    updates.finished_at = new Date().toISOString().slice(0, 19).replace('T', ' ')
+  catch {
+    // diagnostic-only field
   }
 
-  await updateBatchRecord(batchId, updates)
-
-  // Fire catch callbacks
-  const callbacks = getBatchCallbacks(batchId)
   const dispatched = new DispatchedBatch(batchId)
+  const callbacks = getBatchCallbacks(batchId)
 
+  // Per-failure `catch` callbacks fire on every observed failure (analogous to
+  // the completion path's per-observe progress callbacks).
   if (callbacks) {
     for (const cb of callbacks.catchCallbacks) {
       try {
@@ -1210,29 +1220,39 @@ export async function recordBatchJobFailure(batchId: string, jobId: string, erro
 
   try {
     const { emitQueueEvent } = await import('./events')
-    await emitQueueEvent('batch:failed', {
-      jobId: batchId,
-      error,
-    })
+    await emitQueueEvent('batch:failed', { jobId: batchId, error })
   }
   catch {
     // Events are optional
   }
 
-  // Check if batch is now finished
-  const isFinished = !opts.allowFailures || newPending === 0
-  if (isFinished && callbacks) {
-    for (const cb of callbacks.finallyCallbacks) {
-      try {
-        await cb(dispatched)
-      }
-      catch (e) {
-        log.error(`[Batch] Error in finally callback for batch ${batchId}:`, e)
-      }
-    }
+  // Step 2: atomic finalize — the `finished_at IS NULL` guard means exactly
+  // one worker wins, so terminal callbacks fire exactly once.
+  //  - allowFailures=false: cancel on the FIRST failure (no pending guard).
+  //  - allowFailures=true : finish only when pending hits 0, sharing the same
+  //    guard as the completion path so completion-or-failure (whichever sees
+  //    0 first) finalizes exactly once.
+  const finishedAt = new Date().toISOString().slice(0, 19).replace('T', ' ')
+  let finalize = (db as any)
+    .updateTable('job_batches')
+    .set(opts.allowFailures
+      ? { finished_at: finishedAt }
+      : { finished_at: finishedAt, cancelled_at: finishedAt })
+    .where('id', '=', batchId)
+    .where('finished_at', 'is', null)
+  if (opts.allowFailures)
+    finalize = finalize.where('pending_jobs', '=', 0)
+  const finalizeResult = await finalize.executeTakeFirst()
+  if (updatedRowCount(finalizeResult) === 0)
+    return
 
-    // If allowFailures and all jobs done, also fire then callbacks
-    if (opts.allowFailures && newPending === 0) {
+  // Terminal winner: fire terminal in-memory callbacks + persistent handlers,
+  // mirroring recordBatchJobCompletion. This also closes the gap where a
+  // failure-terminated batch never fired its persistent (#1883) handlers.
+  // `succeeded` is always false-by-failure unless failures are allowed.
+  const succeeded = !!opts.allowFailures
+  if (callbacks) {
+    if (succeeded) {
       for (const cb of callbacks.thenCallbacks) {
         try {
           await cb(dispatched)
@@ -1242,10 +1262,32 @@ export async function recordBatchJobFailure(batchId: string, jobId: string, erro
         }
       }
     }
-
+    for (const cb of callbacks.finallyCallbacks) {
+      try {
+        await cb(dispatched)
+      }
+      catch (e) {
+        log.error(`[Batch] Error in finally callback for batch ${batchId}:`, e)
+      }
+    }
     removeBatchCallbacks(batchId)
-    log.info(`[Batch] Batch ${batchId} finished with ${newFailed} failure(s)`)
   }
+
+  const freshRecord = await getBatchRecord(batchId)
+  if (freshRecord) {
+    if (succeeded) {
+      const thenHandler = parsePersistentHandler(freshRecord.then_handler)
+      if (thenHandler) await firePersistentHandler(thenHandler, batchId)
+    }
+    else {
+      const catchHandler = parsePersistentHandler(freshRecord.catch_handler)
+      if (catchHandler) await firePersistentHandler(catchHandler, batchId)
+    }
+    const finallyHandler = parsePersistentHandler(freshRecord.finally_handler)
+    if (finallyHandler) await firePersistentHandler(finallyHandler, batchId)
+  }
+
+  log.info(`[Batch] Batch ${batchId} finished with failure(s)`)
 }
 
 /**
