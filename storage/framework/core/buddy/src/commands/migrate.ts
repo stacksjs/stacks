@@ -155,6 +155,41 @@ async function reportMissingForeignKeys(): Promise<void> {
   }
 }
 
+/**
+ * Post-migrate orphan-row scan (stacksjs/stacks#1951, follow-up from #1957).
+ *
+ * SQLite now boots with `foreign_keys = ON`, so a database written under the
+ * old `foreign_keys = OFF` default can carry child rows pointing at parents
+ * that no longer exist. Those orphans turn previously-working deletes/inserts
+ * into runtime FK failures. `buddy doctor` already surfaces them, but migrate
+ * is the highest-context moment — it's the step that first flips enforcement on
+ * against the legacy data — so warn here too. Read-only (`PRAGMA
+ * foreign_key_check`) and non-fatal: a failed scan must never break migrate,
+ * and we never delete data (the operator cleans up manually).
+ */
+async function reportFkOrphans(): Promise<void> {
+  try {
+    const { findFkOrphans } = await import('@stacksjs/database')
+    const result = await findFkOrphans()
+    if (!result.supported || result.total === 0) return
+
+    const sample = result.orphans
+      .slice(0, 5)
+      .map(o => `  • ${o.table}.${o.column} → ${o.parent} (${o.count} row${o.count === 1 ? '' : 's'})`)
+      .join('\n')
+    const more = result.orphans.length > 5 ? `\n  + ${result.orphans.length - 5} more — run \`./buddy doctor\` for the full list.` : ''
+    const first = result.orphans[0]!
+    log.warn(
+      `${result.total} row${result.total === 1 ? '' : 's'} violate foreign keys (orphaned parents), now that SQLite enforces \`foreign_keys = ON\`:\n${sample}${more}\n`
+      + `These were written under the old \`foreign_keys = OFF\` default (#1951). Review and clean up manually — e.g. `
+      + `DELETE FROM ${first.table} WHERE ${first.column} IS NOT NULL AND ${first.column} NOT IN (SELECT id FROM ${first.parent}). migrate never deletes data.`,
+    )
+  }
+  catch (err) {
+    log.debug(`[migrate] FK orphan scan skipped: ${err instanceof Error ? err.message : String(err)}`)
+  }
+}
+
 interface MigrationOpLike {
   kind: string
   table: string
@@ -504,6 +539,13 @@ export function migrate(buddy: CLI): void {
       // follow" failure mode while the user is still at the migrate
       // command — the highest-context moment to warn.
       await reportMissingForeignKeys()
+
+      // Post-migrate orphan-row scan (stacksjs/stacks#1951). migrate is the
+      // step that flips `foreign_keys = ON` against legacy data, so it's the
+      // right place to surface pre-existing orphans (read-only, non-fatal).
+      // migrate:fresh rebuilds from scratch, so it can't have orphans — this
+      // scan is intentionally only on the plain `migrate` path.
+      await reportFkOrphans()
 
       const APP_ENV = process.env.APP_ENV || 'local'
 
