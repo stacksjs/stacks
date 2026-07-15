@@ -1,6 +1,7 @@
 {
   "name": "@stacksjs/cms",
   "type": "module",
+  "sideEffects": false,
   "version": "0.70.84",
   "description": "Stacks cms utilities.",
   "author": "Chris Breuer",

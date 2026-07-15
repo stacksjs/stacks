@@ -39,6 +39,14 @@ for (const section of ['dependencies', 'devDependencies', 'peerDependencies']) {
 // Write the updated package.json back to the file
 await Bun.write(packageJsonPath, JSON.stringify(packageJson, null, 2))
 
+// Ensure the published CLI entry starts with a shebang so it is directly
+// executable (npm marks bin files executable when they begin with one).
+// The transpiler drops any shebang from source, so re-add it post-build.
+const cliPath = './dist/cli.js'
+const cliSource = await Bun.file(cliPath).text()
+if (!cliSource.startsWith('#!'))
+  await Bun.write(cliPath, `#!/usr/bin/env bun\n${cliSource}`)
+
 await outro({
   dir: import.meta.dir,
   startTime,

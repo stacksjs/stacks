@@ -3,6 +3,7 @@
   "version": "0.70.84",
   "description": "Internationalization system for Stacks.js applications",
   "type": "module",
+  "sideEffects": false,
   "license": "MIT",
   "homepage": "https://github.com/stacksjs/stacks/tree/main/storage/framework/core/i18n#readme",
   "repository": {

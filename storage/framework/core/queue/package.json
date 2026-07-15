@@ -1,6 +1,7 @@
 {
   "name": "@stacksjs/queue",
   "type": "module",
+  "sideEffects": false,
   "version": "0.70.84",
   "description": "The Stacks Queue system powered by bun-queue.",
   "author": "Chris Breuer",
