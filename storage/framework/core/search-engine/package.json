@@ -57,11 +57,17 @@
     "typecheck": "bun tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
-  "dependencies": {
+  "peerDependencies": {
     "meilisearch": "^0.59.0"
+  },
+  "peerDependenciesMeta": {
+    "meilisearch": {
+      "optional": true
+    }
   },
   "devDependencies": {
     "@stacksjs/config": "workspace:*",
-    "better-dx": "^0.2.16"
+    "better-dx": "^0.2.16",
+    "meilisearch": "^0.59.0"
   }
 }

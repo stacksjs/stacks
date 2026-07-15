@@ -53,6 +53,18 @@
     "typecheck": "bun tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
+  "peerDependencies": {
+    "@stripe/stripe-js": "^8.7.0",
+    "stripe": "^21.0.1"
+  },
+  "peerDependenciesMeta": {
+    "@stripe/stripe-js": {
+      "optional": true
+    },
+    "stripe": {
+      "optional": true
+    }
+  },
   "devDependencies": {
     "@stacksjs/config": "workspace:*",
     "better-dx": "^0.2.16",

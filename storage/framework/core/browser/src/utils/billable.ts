@@ -1,9 +1,25 @@
-import { loadStripe } from '@stripe/stripe-js'
-
 const stacksConfig = (globalThis as any).__STACKS_CONFIG__ || {}
 export const publishableKey: string = stacksConfig.FRONTEND_STRIPE_PUBLIC_KEY || ''
 
 let client: any
+
+// `@stripe/stripe-js` is an opt-in dependency, loaded lazily only when a
+// Stripe card/payment element is actually mounted. Install it (`bun add
+// @stripe/stripe-js`) when you enable Stripe payments in your config.
+async function loadStripe(key: string): Promise<any> {
+  let stripeJs: typeof import('@stripe/stripe-js')
+  try {
+    stripeJs = await import('@stripe/stripe-js')
+  }
+  catch {
+    throw new Error(
+      'Stripe is being used but the `@stripe/stripe-js` package is not installed. '
+      + 'It is an opt-in dependency — run `bun add @stripe/stripe-js` to enable Stripe payments in the browser.',
+    )
+  }
+
+  return stripeJs.loadStripe(key)
+}
 
 export async function loadCardElement(clientSecret: string): Promise<any> {
   client = await loadStripe(publishableKey)

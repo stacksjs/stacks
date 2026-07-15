@@ -1,12 +1,30 @@
+import type { Dictionary, DocumentOptions, EnqueuedTask, Faceting, Index, IndexesResults, IndexOptions, Meilisearch, PaginationSettings, SearchResponse, Settings, Synonyms, TypoTolerance } from 'meilisearch'
 import type { SearchEngineDriver } from '@stacksjs/types'
-import type { Dictionary, DocumentOptions, EnqueuedTask, Faceting, Index, IndexesResults, IndexOptions, PaginationSettings, SearchResponse, Settings, Synonyms, TypoTolerance } from 'meilisearch'
 import { searchEngine } from '@stacksjs/config'
 import { log } from '@stacksjs/logging'
-import { Meilisearch } from 'meilisearch'
+
+// `meilisearch` is an opt-in dependency: it is only installed when the
+// `meilisearch` search driver is selected in `config/search-engine.ts`.
+// The constructor is resolved lazily so merely importing this module (e.g.
+// as the default driver) never hard-requires the package.
+let MeilisearchCtor: typeof import('meilisearch').Meilisearch | undefined
+try {
+  ({ Meilisearch: MeilisearchCtor } = await import('meilisearch'))
+}
+catch {
+  // package not installed — client() throws a helpful opt-in error on use
+}
 
 let _client: Meilisearch | null = null
 
 function client(): Meilisearch {
+  if (!MeilisearchCtor) {
+    throw new Error(
+      'The `meilisearch` search driver is selected but the `meilisearch` package is not installed. '
+      + 'It is an opt-in dependency — run `bun add meilisearch` to enable it, or switch drivers in `config/search-engine.ts`.',
+    )
+  }
+
   if (!_client) {
     const host = searchEngine.meilisearch?.host || 'http://127.0.0.1:7700'
     const apiKey = searchEngine.meilisearch?.apiKey || ''
@@ -15,7 +33,7 @@ function client(): Meilisearch {
       throw new Error('Meilisearch host is not configured. Please specify a search engine host.')
     }
 
-    _client = new Meilisearch({ host, apiKey })
+    _client = new MeilisearchCtor({ host, apiKey })
   }
 
   return _client
