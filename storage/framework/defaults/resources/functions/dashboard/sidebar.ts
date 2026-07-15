@@ -308,6 +308,20 @@ export function buildSidebarNavHtml(
   discoveredModels: DiscoveredModel[] = [],
   toggles: DashboardSectionToggles = DEFAULT_TOGGLES,
 ): string {
+  return buildNavSections(discoveredModels, toggles)
+    .map(([key, label, items]) => renderSection(key, label, items))
+    .join('')
+}
+
+/**
+ * The sidebar's navigation tree as data: `[sectionKey, sectionLabel, items]`
+ * per section, with all toggle/model logic applied. Shared by the legacy
+ * HTML renderer above and the macOS web sidebar below.
+ */
+export function buildNavSections(
+  discoveredModels: DiscoveredModel[] = [],
+  toggles: DashboardSectionToggles = DEFAULT_TOGGLES,
+): Array<[string, string, NavItem[]]> {
   const sections: Array<[string, string, NavItem[]]> = []
 
   // Library section: views live at the project root (e.g. `/functions`,
@@ -515,7 +529,131 @@ export function buildSidebarNavHtml(
     ]])
   }
 
-  return sections.map(([key, label, items]) => renderSection(key, label, items)).join('')
+  return sections
+}
+
+// ============================================================================
+// macOS web sidebar (@stacksjs/components' <Sidebar theme="macos">)
+// ============================================================================
+
+/**
+ * The legacy icon keys above, as SF-Symbol-style iconify classes (f7 icons
+ * mirror SF Symbols) for the macOS web sidebar.
+ */
+const NAV_ICON_CLASSES: Record<string, string> = {
+  'home': 'i-f7-house',
+  'function': 'i-f7-function',
+  'list-number': 'i-f7-list-number',
+  'package': 'i-f7-cube-box',
+  'dashboard': 'i-f7-square-grid-2x2',
+  'files': 'i-f7-folder',
+  'file': 'i-f7-doc',
+  'post': 'i-f7-doc-text',
+  'tags': 'i-f7-tag',
+  'tag': 'i-f7-tag',
+  'comment': 'i-f7-chat-bubble',
+  'user-edit': 'i-f7-person',
+  'seo': 'i-f7-search',
+  'rocket': 'i-f7-rocket',
+  'api': 'i-f7-globe',
+  'link': 'i-f7-link',
+  'bolt': 'i-f7-bolt',
+  'terminal': 'i-f7-chevron-left-slash-chevron-right',
+  'queue': 'i-f7-list-bullet',
+  'briefcase': 'i-f7-briefcase',
+  'clock': 'i-f7-clock',
+  'search': 'i-f7-search',
+  'log': 'i-f7-doc-plaintext',
+  'bell': 'i-f7-bell',
+  'mail': 'i-f7-envelope',
+  'mailbox': 'i-f7-tray',
+  'activity': 'i-f7-waveform',
+  'settings': 'i-f7-gear-alt',
+  'users': 'i-f7-person-2',
+  'user': 'i-f7-person',
+  'group': 'i-f7-person-3',
+  'table': 'i-f7-table',
+  'cart': 'i-f7-cart',
+  'check-circle': 'i-f7-checkmark-circle',
+  'cloud': 'i-f7-cloud',
+  'coupon': 'i-f7-ticket',
+  'document': 'i-f7-doc-text',
+  'gift': 'i-f7-gift',
+  'globe': 'i-f7-globe',
+  'globe-search': 'i-f7-globe',
+  'invoice': 'i-f7-money-dollar-circle',
+  'lock': 'i-f7-lock',
+  'list-settings': 'i-f7-list-bullet-below-rectangle',
+  'megaphone': 'i-f7-speaker-2',
+  'orders': 'i-f7-bag',
+  'percent': 'i-f7-percent',
+  'puzzle': 'i-f7-square-on-square',
+  'sale-tag': 'i-f7-tag',
+  'server': 'i-f7-rectangle-stack',
+  'star': 'i-f7-star',
+  'truck': 'i-f7-car-fill',
+  'zap': 'i-f7-bolt',
+}
+
+/** One row for `@stacksjs/components`' <Sidebar :sections>. */
+export interface WebSidebarItem {
+  id: string
+  label: string
+  icon: string
+  /** macOS system color name or CSS color for the icon tint. */
+  iconColor: string
+  href: string
+  roles?: string[]
+}
+
+export interface WebSidebarSection {
+  id: string
+  label: string
+  items: WebSidebarItem[]
+}
+
+/** Stable row id derived from the route (e.g. `/content/posts` → `content-posts`). */
+function navItemId(to: string): string {
+  return to.replace(/^\//, '').replace(/\//g, '-') || 'home'
+}
+
+function titleCase(label: string): string {
+  return label.charAt(0).toUpperCase() + label.slice(1)
+}
+
+/**
+ * The dashboard navigation shaped for the macOS web sidebar. Reads the
+ * discovered-models manifest synchronously (stx server-script friendly)
+ * and reuses the exact section/toggle logic of the legacy HTML builder.
+ */
+export function buildWebSidebarSections(): WebSidebarSection[] {
+  const manifest = loadDiscoveredManifest()
+  const sections = buildNavSections(manifest.models, manifest.sections)
+
+  return [
+    {
+      id: 'top',
+      label: '',
+      items: [{ id: 'home', label: 'Home', icon: NAV_ICON_CLASSES.home, iconColor: 'blue', href: '/' }],
+    },
+    ...sections.map(([key, label, items]) => ({
+      id: key,
+      label: titleCase(label),
+      items: items.map(item => ({
+        id: navItemId(item.to),
+        label: item.text,
+        icon: NAV_ICON_CLASSES[item.icon] ?? NAV_ICON_CLASSES.file,
+        iconColor: 'blue',
+        href: item.to,
+        ...(item.roles && item.roles.length > 0 ? { roles: item.roles } : {}),
+      })),
+    })),
+    {
+      id: 'system',
+      label: '',
+      items: [{ id: 'settings', label: 'Settings', icon: NAV_ICON_CLASSES.settings, iconColor: 'blue', href: '/settings/billing' }],
+    },
+  ]
 }
 
 /**

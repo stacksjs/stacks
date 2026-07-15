@@ -1,3 +1,19 @@
+<script server>
+// macOS-style web sidebar (@stacksjs/components' <Sidebar theme="macos">).
+// Sections come from the discovered-models manifest + config/dashboard.ts
+// toggles — the same data that used to drive the native NSOutlineView.
+import { buildWebSidebarSections } from '../../../resources/functions/dashboard/sidebar'
+
+export const sidebarSections = buildWebSidebarSections()
+
+// itemId → roles, for the client-side role filter below.
+export const sidebarRoleAttrs = JSON.stringify(
+  sidebarSections.flatMap(section => section.items
+    .filter(item => item.roles && item.roles.length > 0)
+    .map(item => ({ id: item.id, roles: item.roles }))),
+)
+</script>
+
 <style>
 /*
  * Make every chart canvas fill its wrapper. @stacksjs/charts sizes its
@@ -222,7 +238,63 @@ effect(() => {
 })
 </script>
 
-<main data-stx-content>
+<Sidebar
+  :sections="sidebarSections"
+  theme="macos"
+  width="250"
+  collapseMode="hidden"
+  shellSelector="[data-stx-shell]"
+  persistKey="dashboard-sidebar-collapsed"
+>
+  <template #header>
+    <!-- Traffic lights are native (titlebarHidden window) — this strip only
+         reserves their space and acts as the window drag region. -->
+    <SidebarHeader :showWindowControls="false" />
+  </template>
+</Sidebar>
+
+<!-- Role map for the wiring script below; interpolated server-side. The
+     div is display:none and holds JSON as text — a <script type="json">
+     would get rewritten by the layout script processor (see the importmap
+     comment above). -->
+<div data-sidebar-roles hidden>{{ sidebarRoleAttrs }}</div>
+
+<script client>
+// Web sidebar wiring: SPA navigation, initial selection, role gating.
+onMount(() => {
+  const roleNode = document.querySelector('div[data-sidebar-roles]')
+  let sidebarRoleList = []
+  try { sidebarRoleList = JSON.parse(roleNode?.textContent || '[]') } catch {}
+
+  const pane = document.querySelector('[data-stx-sidebar]')
+  if (!pane) return
+
+  // Role-gate rows (picked up by the applyRoleFilter effect above).
+  for (const entry of sidebarRoleList) {
+    const row = pane.querySelector(`[data-sidebar-row][data-item-id="${entry.id}"]`)
+    if (row) row.setAttribute('data-required-roles', entry.roles.join(','))
+  }
+
+  // Highlight the row for the current route on hard loads.
+  const activeClasses = (pane.dataset.activeClass || '').split(' ').filter(Boolean)
+  const current = pane.querySelector(`[data-sidebar-item][href="${window.location.pathname}"]`)
+  if (current && !pane.querySelector('[data-sidebar-item][data-active="true"]')) {
+    current.setAttribute('data-active', 'true')
+    current.classList.add(...activeClasses)
+  }
+
+  // SPA-navigate sidebar links; fall back to full loads when the router
+  // isn't available.
+  pane.addEventListener('click', (event) => {
+    const link = event.target.closest('a[data-sidebar-item]')
+    if (!link || typeof navigate !== 'function') return
+    event.preventDefault()
+    navigate(link.getAttribute('href'))
+  })
+})
+</script>
+
+<main data-stx-content data-stx-shell style="margin-left: var(--stx-sidebar-width, 250px); transition: margin-left 0.3s ease-out">
   @slot('content')
 </main>
 
