@@ -1,5 +1,18 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.82...v0.70.83)
+
+## ✨ Features
+
+- **deps**: make stripe & meilisearch opt-in instead of default installs ([cbaa5d9](https://github.com/stacksjs/stacks/commit/cbaa5d9)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: back the web sidebar with native material ([6350e5e](https://github.com/stacksjs/stacks/commit/6350e5e)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: render the sidebar as a macOS-style stx web sidebar ([64760ae](https://github.com/stacksjs/stacks/commit/64760ae)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **stx**: expose @stacksjs/components to tag resolution ([1af21f7](https://github.com/stacksjs/stacks/commit/1af21f7)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.81...v0.70.82)
 
 ## 🔧 Chores
