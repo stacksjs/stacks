@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { Gate } from '../src/gate'
 import { BasePolicy } from '../src/policy'
+import { selectActiveTeam } from '../src/team'
 
 // Auth correctness sweep (stacksjs/stacks#1985). One functional test for the
 // fail-open policy-helper-exposure fix, plus source-shape checks for the
@@ -52,6 +53,59 @@ describe('gate policy resolution rejects inherited BasePolicy helpers (#1985)', 
   it('an unknown ability still denies by default', async () => {
     Gate.policy(Post, PostPolicy)
     expect(await Gate.allows('nonexistent', owner as any, new Post(1))).toBe(false)
+  })
+})
+
+// ─── #1985 follow-ups: after-callbacks on all paths + team role scoping ────
+
+describe('gate after-callbacks apply to policy + default paths (#1985)', () => {
+  afterEach(() => Gate.flush())
+
+  it('a Gate.after() deny kill-switch overrides a policy ALLOW', async () => {
+    Gate.policy(Post, PostPolicy)
+    expect(await Gate.allows('view', { id: 1 } as any, new Post(1))).toBe(true)
+    // lockdown: deny everything, including policy-resolved abilities (was bypassed)
+    Gate.after(() => false)
+    expect(await Gate.allows('view', { id: 1 } as any, new Post(1))).toBe(false)
+  })
+
+  it('a Gate.after() allow override flips a policy DENY', async () => {
+    Gate.policy(Post, PostPolicy)
+    expect(await Gate.allows('view', { id: 999 } as any, new Post(1))).toBe(false)
+    Gate.after(() => true)
+    expect(await Gate.allows('view', { id: 999 } as any, new Post(1))).toBe(true)
+  })
+
+  it('after-callbacks also run on the default-deny path', async () => {
+    Gate.after(() => true)
+    expect(await Gate.allows('unregistered', { id: 1 } as any, new Post(1))).toBe(true)
+  })
+
+  it('an after-callback returning void leaves the underlying result intact', async () => {
+    Gate.policy(Post, PostPolicy)
+    Gate.after(() => undefined)
+    expect(await Gate.allows('view', { id: 1 } as any, new Post(1))).toBe(true)
+    expect(await Gate.allows('view', { id: 2 } as any, new Post(1))).toBe(false)
+  })
+})
+
+describe('team role resolution never borrows another team\'s role (#1985)', () => {
+  it('selectActiveTeam returns the PICKED team role, not the highest-priority one', () => {
+    const res = selectActiveTeam({
+      memberships: [
+        { team_id: 1, role: 'owner' }, // team A: owner
+        { team_id: 2, role: null }, //    team B: no role
+      ],
+      activeTeamId: 2, // switch to team B
+    })
+    expect(res.teamId).toBe(2)
+    expect(res.role).toBeNull() // must NOT be 'owner' borrowed from team A
+  })
+
+  it('resolveAuthenticatedMembership degrades a null role to "" instead of borrowing memberships[0]', () => {
+    const s = src('team.ts')
+    expect(s).toContain('role: picked.role ?? \'\'')
+    expect(s).not.toContain('String(memberships[0]!.role)')
   })
 })
 

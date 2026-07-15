@@ -154,12 +154,23 @@ export async function resolveAuthenticatedMembership(request: TeamAuthRequest): 
   // highest-priority membership. All team-scoped actions built on
   // resolveAuthenticatedTeamId therefore follow the switch automatically.
   const picked = selectActiveTeam({
-    memberships: memberships.map((m: any) => ({ team_id: Number(m.team_id), role: String(m.role) })),
+    // Preserve a genuinely null role as null (don't coerce it to the string
+    // "null", which is truthy and would pass a bare `if (role)` check).
+    memberships: memberships.map((m: any) => ({
+      team_id: Number(m.team_id),
+      role: m.role == null ? null : String(m.role),
+    })),
     activeTeamId: getActiveTeamPreference(request),
   })
 
+  // Use the PICKED team's role, never another team's. The old fallback
+  // borrowed `memberships[0].role` — the highest-priority membership, which
+  // belongs to a different team — so a user who is owner of team A and a
+  // bare member of team B could resolve as "owner" while scoped to B. A
+  // genuinely absent role degrades to '' (no elevated privilege) instead.
+  // stacksjs/stacks#1985.
   return picked.teamId != null
-    ? { teamId: picked.teamId, role: picked.role ?? String(memberships[0]!.role) }
+    ? { teamId: picked.teamId, role: picked.role ?? '' }
     : null
 }
 
