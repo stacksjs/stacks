@@ -54,7 +54,7 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "@stacksjs/bun-router": "0.0.17"
+    "@stacksjs/bun-router": "^0.0.19"
   },
   "devDependencies": {
     "@stacksjs/actions": "workspace:*",
