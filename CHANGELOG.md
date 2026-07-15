@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.86...v0.70.87)
+
+## ⚡ Performance Improvements
+
+- **pkg**: stop shipping src for types/i18n/lint; publish dist-only ([196c25a](https://github.com/stacksjs/stacks/commit/196c25a)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.85...v0.70.86)
 
 ## 🐛 Bug Fixes
