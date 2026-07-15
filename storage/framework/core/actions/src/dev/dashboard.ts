@@ -2,7 +2,7 @@ import process from 'node:process'
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { bold, cyan, dim, green } from '@stacksjs/cli'
 import { projectPath, storagePath } from '@stacksjs/path'
-import { buildDashboardUrl, buildManifest, buildSidebarConfig, discoverModels, findAvailablePort, waitForServer } from './dashboard-utils'
+import { buildDashboardUrl, buildManifest, discoverModels, findAvailablePort, waitForServer } from './dashboard-utils'
 
 // buddyOptions serializes `verbose: false` as `--verbose false`, so
 // process.argv.includes('--verbose') would always match. Check the value too.
@@ -522,12 +522,26 @@ async function startStxServer(): Promise<void> {
   // dashboard's layout resolution stays consistent with the other dev
   // servers.
   let stxModule: any
+  // Local stx checkout first (same convention as the Craft SDK resolution
+  // below) so framework development picks up engine fixes before a release;
+  // STX_SRC overrides the default location.
   try {
-    const vendoredStx = projectPath('pantry/@stacksjs/stx/dist/index.js')
-    if (await Bun.file(vendoredStx).exists())
-      stxModule = await import(vendoredStx)
+    const localStx = process.env.STX_SRC
+      || `${process.env.HOME}/Code/Tools/stx/packages/stx/src/index.ts`
+    if (await Bun.file(localStx).exists())
+      stxModule = await import(localStx)
   }
   catch { /* fall through */ }
+  if (stxModule && verbose)
+    console.log('[Dashboard] Using local stx checkout')
+  if (!stxModule) {
+    try {
+      const vendoredStx = projectPath('pantry/@stacksjs/stx/dist/index.js')
+      if (await Bun.file(vendoredStx).exists())
+        stxModule = await import(vendoredStx)
+    }
+    catch { /* fall through */ }
+  }
 
   // Mount the config-editor API routes. The settings UI talks to these
   // to list config files, read their resolved values, and write edits
@@ -962,9 +976,7 @@ const dashboardHttpsUrl = dashboardDomain ? `https://${dashboardDomain}` : null
 const dashboardLocalUrl = `http://localhost:${dashboardPort}`
 
 // Use local HTTP URL — Craft webview loads directly, no proxy needed
-const baseRoute = dashboardLocalUrl
-const sidebarConfig = buildSidebarConfig(baseRoute, discoveredModels, dashboardToggles)
-const initialUrl = `http://localhost:${dashboardPort}/?native-sidebar=1`
+const initialUrl = `http://localhost:${dashboardPort}/`
 
 // Print vite-style output
 const elapsedMs = (Bun.nanoseconds() - startTime) / 1_000_000
@@ -1129,9 +1141,11 @@ if (createApp) {
       width: 1400,
       height: 900,
       titlebarHidden: true,
-      nativeSidebar: true,
-      sidebarWidth: 240,
-      sidebarConfig,
+      // Real vibrancy behind the stx-rendered macOS sidebar (see
+      // views/dashboard/layouts/default.stx). The native NSOutlineView
+      // sidebar is retired — the web one owns rendering and behavior.
+      webSidebarMaterial: true,
+      webSidebarWidth: 250,
       ...(appIconPath && { icon: appIconPath }),
     },
   })

@@ -73,6 +73,7 @@
     "stacks": "workspace:*"
   },
   "devDependencies": {
+    "@iconify-json/f7": "^1.2.2",
     "better-dx": "^0.2.17",
     "cz-git": "^1.13.1"
   },
