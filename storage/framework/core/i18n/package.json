@@ -27,8 +27,7 @@
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "files": [
-    "dist",
-    "src"
+    "dist"
   ],
   "scripts": {
     "build": "bun build.ts",
@@ -42,5 +41,15 @@
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*"
+  },
+  "publishConfig": {
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "bun": "./dist/index.js",
+        "import": "./dist/index.js",
+        "default": "./dist/index.js"
+      }
+    }
   }
 }

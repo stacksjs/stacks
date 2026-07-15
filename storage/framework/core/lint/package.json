@@ -46,8 +46,7 @@
   "types": "dist/index.d.ts",
   "files": [
     "README.md",
-    "dist",
-    "src"
+    "dist"
   ],
   "scripts": {
     "build": "bun build.ts",
@@ -58,5 +57,20 @@
     "better-dx": "^0.2.16",
     "@stacksjs/gitlint": "^0.1.5",
     "bun-git-hooks": "^0.3.1"
+  },
+  "publishConfig": {
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "bun": "./dist/index.js",
+        "import": "./dist/index.js",
+        "default": "./dist/index.js"
+      },
+      "./*": {
+        "bun": "./dist/*",
+        "import": "./dist/*",
+        "default": "./dist/*"
+      }
+    }
   }
 }
