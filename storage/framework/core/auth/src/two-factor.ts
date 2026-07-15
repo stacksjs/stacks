@@ -35,8 +35,18 @@
 import { randomBytes } from 'node:crypto'
 import { db } from '@stacksjs/database'
 import { generateTwoFactorSecret, generateTwoFactorUri, verifyTwoFactorCode } from './authenticator'
+import { RateLimiter } from './rate-limiter'
 
 const DEFAULT_CHALLENGE_TTL_SECONDS = 5 * 60
+
+/**
+ * Rate-limit key prefix for the SECOND factor. Deliberately distinct from the
+ * password-step limiter (which is keyed by bare email and reset on a correct
+ * password) so a valid password can never clear an in-progress 2FA lockout —
+ * that reset was exactly what let a password-holding attacker brute-force
+ * TOTP by looping fresh challenges. stacksjs/stacks#1985.
+ */
+const TWO_FACTOR_RATE_LIMIT_PREFIX = '2fa:'
 
 export interface TwoFactorUser {
   id: number
@@ -158,9 +168,29 @@ export async function disableTwoFactor(userId: number): Promise<void> {
  * already-persisted secret.
  */
 export async function verifyTwoFactorLoginCode(userId: number, code: string): Promise<boolean> {
+  // Account-scoped throttle on the SECOND factor. Without it, an attacker who
+  // already holds the victim's password could brute-force the 6-digit TOTP by
+  // looping LoginAction (fresh challenge each time) — the per-IP route limit
+  // is bypassable via IP rotation, and the password-step limiter is reset by
+  // the correct password. Throws HttpError(429) when locked out, exactly like
+  // the password step (Auth.attempt). stacksjs/stacks#1985.
+  const rateKey = `${TWO_FACTOR_RATE_LIMIT_PREFIX}${userId}`
+  await RateLimiter.validateAttempt(rateKey)
+
   const { secret, enabled } = await getTwoFactorState(userId)
-  if (!enabled || !secret) return false
-  return verifyTwoFactorCode(code, secret)
+  if (!enabled || !secret)
+    return false
+
+  const valid = await verifyTwoFactorCode(code, secret)
+  if (!valid) {
+    // Only a genuine wrong code counts toward the lockout; a fresh valid code
+    // clears the counter so a legitimate user is never progressively locked.
+    await RateLimiter.recordFailedAttempt(rateKey)
+    return false
+  }
+
+  await RateLimiter.resetAttempts(rateKey)
+  return true
 }
 
 /**

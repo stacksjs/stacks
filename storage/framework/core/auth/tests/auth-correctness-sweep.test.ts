@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { Gate } from '../src/gate'
 import { BasePolicy } from '../src/policy'
+import { RateLimiter } from '../src/rate-limiter'
 import { selectActiveTeam } from '../src/team'
 
 // Auth correctness sweep (stacksjs/stacks#1985). One functional test for the
@@ -106,6 +107,41 @@ describe('team role resolution never borrows another team\'s role (#1985)', () =
     const s = src('team.ts')
     expect(s).toContain('role: picked.role ?? \'\'')
     expect(s).not.toContain('String(memberships[0]!.role)')
+  })
+})
+
+// ─── #1985: account-scoped 2FA rate limit ──────────────────────────────────
+
+describe('2FA verify has an account-scoped lockout independent of the password step (#1985)', () => {
+  const twoFaKey = '2fa:42'
+  const email = 'user@example.com'
+
+  it('locks the 2FA key after MAX_ATTEMPTS failed codes', async () => {
+    RateLimiter.useMemoryStore()
+    await RateLimiter.resetAttempts(twoFaKey)
+    for (let i = 0; i < 5; i++)
+      await RateLimiter.recordFailedAttempt(twoFaKey)
+    expect(await RateLimiter.isRateLimited(twoFaKey)).toBe(true)
+    await expect(RateLimiter.validateAttempt(twoFaKey)).rejects.toThrow()
+  })
+
+  it('a correct password (resets the email key) does NOT clear the 2FA lockout', async () => {
+    RateLimiter.useMemoryStore()
+    await RateLimiter.resetAttempts(twoFaKey)
+    for (let i = 0; i < 5; i++)
+      await RateLimiter.recordFailedAttempt(twoFaKey)
+    expect(await RateLimiter.isRateLimited(twoFaKey)).toBe(true)
+    // password success clears the bare-email key — must not touch the 2fa: key
+    await RateLimiter.resetAttempts(email)
+    expect(await RateLimiter.isRateLimited(twoFaKey)).toBe(true)
+  })
+
+  it('verifyTwoFactorLoginCode wires validate/record/reset with the 2fa: key', () => {
+    const s = src('two-factor.ts')
+    expect(s).toContain('RateLimiter.validateAttempt(rateKey)')
+    expect(s).toContain('RateLimiter.recordFailedAttempt(rateKey)')
+    expect(s).toContain('RateLimiter.resetAttempts(rateKey)')
+    expect(s).toContain('const TWO_FACTOR_RATE_LIMIT_PREFIX = \'2fa:\'')
   })
 })
 
