@@ -25,6 +25,25 @@ export type GateCallback<T = any> = (_user: UserModel | null, ..._args: T[]) => 
 export type PolicyMethod<T = any> = (_user: UserModel | null, _model?: T, ..._args: any[]) => boolean | null | Promise<boolean | null> | AuthorizationResponse
 
 /**
+ * Method names that live on `BasePolicy.prototype` (or `Object`) and must
+ * NEVER be resolvable as an ability. Without this guard, `policyInstance[ability]`
+ * (unrestricted bracket access) would resolve inherited helpers like `allow`
+ * / `allowIf` / `before` when the ability string is caller-influenced (e.g. a
+ * generic `/can/:ability` route), and calling `allow()` returns an
+ * unconditional ALLOW — a fail-open authorization bypass. See the auth
+ * correctness sweep (stacksjs/stacks#1985).
+ */
+const RESERVED_POLICY_MEMBERS: ReadonlySet<string> = new Set([
+  'before',
+  'allow',
+  'deny',
+  'denyIf',
+  'denyUnless',
+  'allowIf',
+  'constructor',
+])
+
+/**
  * Authorization response for detailed allow/deny
  */
 export class AuthorizationResponse {
@@ -295,9 +314,14 @@ export async function inspect(ability: string, user: UserModel | null, ...args: 
         }
       }
 
-      // Check policy method
-      const method = policyInstance[ability] as PolicyMethod | undefined
-      if (method) {
+      // Resolve the ability to a policy method, but never to an inherited
+      // BasePolicy/Object helper (see RESERVED_POLICY_MEMBERS) — that path
+      // is a fail-open bypass when the ability string is caller-influenced.
+      // Require an own function too, so only real ability methods run.
+      const method = RESERVED_POLICY_MEMBERS.has(ability)
+        ? undefined
+        : policyInstance[ability] as PolicyMethod | undefined
+      if (typeof method === 'function') {
         const result = await method.call(policyInstance, user, ...args)
         // null is treated as "no opinion" — fall through to deny here since
         // we already exhausted the policy resolution path for this ability.

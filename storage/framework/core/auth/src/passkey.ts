@@ -98,7 +98,14 @@ export async function updatePasskeyCounter(
   if (!passkey) return false
 
   const stored = Number(passkey.counter ?? 0)
-  if (newCounter !== 0 && newCounter <= stored) {
+  // Reject any counter that fails to advance — that is the clone/replay
+  // signal. The ONLY exception is the genuine no-counter authenticator,
+  // which reports 0 and whose stored value is therefore also 0. The old
+  // `newCounter !== 0 && ...` form accepted an incoming 0 unconditionally,
+  // so a cloned authenticator replaying counter 0 against a stored value of
+  // (say) 50 passed the check AND reset the stored counter to 0, defeating
+  // the anti-cloning backstop. See stacksjs/stacks#1985.
+  if (newCounter <= stored && !(newCounter === 0 && stored === 0)) {
     return false
   }
 

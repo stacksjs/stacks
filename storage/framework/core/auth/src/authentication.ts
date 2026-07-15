@@ -680,11 +680,16 @@ export class Auth {
     const user = await User.find(accessToken.user_id as number)
 
     // Reject tokens issued before the user last changed their password
-    // (stacksjs/stacks#1957). Reuses the already-loaded User model — no
-    // extra query. A missing column reads as undefined => legacy-allow.
-    const changedAtRaw = (user as any)?.password_changed_at
-    const changedAt = changedAtRaw ? new Date(String(changedAtRaw)) : null
-    if (isIssuedBeforePasswordChange(accessToken.created_at, changedAt))
+    // (stacksjs/stacks#1957). The previous code read
+    // `(user as any).password_changed_at` off the ORM instance, but that
+    // column is undeclared (added by a defensive ALTER in auth-tables, not
+    // part of the model schema), so the ORM never exposes it as a bare
+    // property — the read was ALWAYS undefined and this backstop was inert
+    // on the primary `authMiddleware` / `Auth.user()` path while the
+    // `validateToken` path (query-backed) worked. Query the durable users
+    // row exactly like `validateToken`; getPasswordChangedAt degrades to
+    // legacy-allow on a missing column/table. See stacksjs/stacks#1985.
+    if (isIssuedBeforePasswordChange(accessToken.created_at, await getPasswordChangedAt(accessToken.user_id)))
       return undefined
 
     return user

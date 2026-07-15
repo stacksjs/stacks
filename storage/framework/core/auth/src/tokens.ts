@@ -40,7 +40,7 @@ const dbDriver: DatabaseDriver = (env.DB_CONNECTION as DatabaseDriver) || 'sqlit
 
 /** Cross-database SQL helpers */
 const sql = sqlHelpers(dbDriver)
-const { isPostgres, isMysql: _isMysql, now, boolTrue, boolFalse } = sql
+const { isPostgres, isMysql, now, boolTrue, boolFalse } = sql
 
 /** Shorthand for sql.param */
 function param(index: number): string {
@@ -522,7 +522,17 @@ export async function refreshToken(
     // directly (same call shape as the top-level db proxy used above).
     const trx = rawTrx as unknown as { unsafe: (sql: string, params?: any[]) => any }
 
-    // Find the refresh token and its associated access token
+    // Find the refresh token and its associated access token.
+    //
+    // On Postgres/MySQL the SQLite mutex (#1953) does not apply, so two
+    // requests presenting the SAME refresh token could both pass this
+    // `revoked = false` SELECT and each mint a fresh pair — a refresh-token
+    // double-spend that breaks single-use rotation (#1860 H-2). Take a row
+    // lock so a concurrent exchange blocks here and then re-reads the row as
+    // `revoked = true` (its WHERE no longer matches → 401). SQLite has no
+    // `FOR UPDATE` and does not need it, so it is appended only for the
+    // server dialects. See stacksjs/stacks#1985.
+    const forUpdate = (isPostgres || isMysql) ? ' FOR UPDATE' : ''
     const refreshRows = await trx.unsafe(`
       SELECT r.*, t.user_id, t.oauth_client_id, t.name, t.scopes
       FROM oauth_refresh_tokens r
@@ -530,7 +540,7 @@ export async function refreshToken(
       WHERE r.token = ${param(1)}
       AND r.revoked = ${boolFalse}
       AND (r.expires_at IS NULL OR r.expires_at > ${now})
-      LIMIT 1
+      LIMIT 1${forUpdate}
     `, [hashedRefreshToken])
 
     const refreshRow = (refreshRows as any[])[0]

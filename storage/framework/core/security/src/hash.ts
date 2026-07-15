@@ -159,7 +159,11 @@ export function needsRehash(hash: string, options?: HashMakeOptions): boolean {
 
   // Check cost/rounds for bcrypt
   if (currentAlgorithm === 'bcrypt') {
-    const configuredRounds = options?.rounds || config.bcrypt?.rounds || 10
+    // Default must match hash creation (`bcryptEncode` uses 12). With 10
+    // here, any config that omits `bcrypt.rounds` created hashes at cost 12
+    // but compared against 10, so needsRehash returned true forever and
+    // every successful login re-hashed the password endlessly. #1985.
+    const configuredRounds = options?.rounds || config.bcrypt?.rounds || 12
     if (hashInfo.options.rounds !== configuredRounds) {
       return true
     }
