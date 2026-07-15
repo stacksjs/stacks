@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.84...v0.70.85)
+
+## 🔧 Chores
+
+- **pkg**: publint fixes — sideEffects:false + executable CLI shebang ([5948936](https://github.com/stacksjs/stacks/commit/5948936)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.83...v0.70.84)
 
 ## ⚡ Performance Improvements
