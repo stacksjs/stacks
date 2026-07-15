@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.85...v0.70.86)
+
+## 🐛 Bug Fixes
+
+- **shell**: point main export at built JS, not unshipped src ([0ed56b4](https://github.com/stacksjs/stacks/commit/0ed56b4)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.84...v0.70.85)
 
 ## 🔧 Chores
