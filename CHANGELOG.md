@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.83...v0.70.84)
+
+## ⚡ Performance Improvements
+
+- **defaults**: ship default background as JPEG (2.6MB PNG -> 477KB) ([072f62e](https://github.com/stacksjs/stacks/commit/072f62e)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.82...v0.70.83)
 
 ## ✨ Features

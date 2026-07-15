@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/defaults",
   "type": "module",
-  "version": "0.70.83",
+  "version": "0.70.84",
   "description": "Default Stacks scaffold resources (views, layouts, components, preloader) — shipped so apps consuming the framework from node_modules get the same fallback resources a vendored checkout provides. Source of truth: storage/framework/defaults.",
   "author": "Chris Breuer",
   "license": "MIT",
