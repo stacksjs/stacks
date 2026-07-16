@@ -1,71 +1,36 @@
 /**
  * Build the @stacksjs/actions package.
  *
- * Each `src/**\/*.ts` file is its own entrypoint because `runAction()`
- * shells out to `bun <path>` per command — there's no single bundle that
- * covers them all. Auto-discovery beats the old hand-maintained list,
- * which had drifted (route/list, queue/*, dev/api, database/migrate, etc.
- * were all missing, so `bun install`-only consumers couldn't run them).
+ * Every `src/**\/*.ts` file is transpiled 1:1 to a matching `dist/**\/*.js`
+ * (NOT bundled). Two consumers depend on that per-file layout surviving:
+ *   - `runAction()` shells out to `bun <dist/…>` per command, and
+ *   - apps import subpaths directly, e.g.
+ *     `@stacksjs/actions/dist/serve/api.js`.
  *
- * Output is minified for cold-start perf: each subprocess invocation pays
- * the parse cost once, and minified JS is materially faster than transpiling
- * TS source on every spawn.
+ * Why NOT `Bun.build` bundling: auto-discovering every command as an
+ * entrypoint forces `splitting: true`, and Bun's minifier+splitter mangles
+ * the barrel/cross-chunk re-exports into `export { x as y }` where `x` is
+ * never declared — the "Exported binding 'X' needs to refer to a top-level
+ * declared variable" crash that shipped in stacks 0.70.85–0.70.88 and broke
+ * every consumer on import. `transpilePackage` (Bun.Transpiler) strips types
+ * and leaves each import/export statement verbatim, so the re-exports stay
+ * valid and the file structure is preserved. See core/build/src/index.ts for
+ * the full rationale — this package is on its "Affected" list.
  */
 
-import { readdir } from 'node:fs/promises'
-import { join, relative } from 'node:path'
-import { dts } from 'bun-plugin-dtsx'
-import { frameworkExternal, intro, outro } from '../build/src'
+import { frameworkExternal, intro, outro, transpilePackage } from '../build/src'
 
 const { startTime } = await intro({
   dir: import.meta.dir,
 })
 
-const SRC_ROOT = `${import.meta.dir}/src`
-
-async function listEntrypoints(): Promise<string[]> {
-  const out: string[] = []
-  async function walk(dir: string): Promise<void> {
-    for (const entry of await readdir(dir, { withFileTypes: true })) {
-      const full = join(dir, entry.name)
-      if (entry.isDirectory()) {
-        await walk(full)
-        continue
-      }
-      if (!entry.isFile()) continue
-      if (!entry.name.endsWith('.ts') || entry.name.endsWith('.d.ts')) continue
-      out.push(`./${relative(import.meta.dir, full)}`)
-    }
-  }
-  await walk(SRC_ROOT)
-  return out.sort()
-}
-
-const entrypoints = await listEntrypoints()
-console.log(`[actions/build] ${entrypoints.length} entrypoints discovered under src/`)
-
-const result = await Bun.build({
-  root: './src',
-  outdir: './dist',
-  format: 'esm',
-  target: 'bun',
-  minify: true,
-  splitting: true,
-
-  entrypoints,
-
+await transpilePackage({
+  dir: import.meta.dir,
   external: frameworkExternal(['bun', 'bun:*', 'node:*']),
-
-  plugins: [
-    dts({
-      root: './src',
-      outdir: './dist',
-    }),
-  ],
 })
 
 await outro({
   dir: import.meta.dir,
   startTime,
-  result,
+  result: { errors: [], warnings: [] },
 })

@@ -1,5 +1,4 @@
-import { dts } from 'bun-plugin-dtsx'
-import { frameworkExternal, intro, outro } from '../build/src'
+import { frameworkExternal, intro, outro, transpilePackage } from '../build/src'
 
 const { startTime } = await intro({
   dir: import.meta.dir,
@@ -100,16 +99,15 @@ if (failures.length > 0) {
 // The standalone binary above is one artifact; the package also has a library
 // entry (`@stacksjs/server`'s `.` export — maintenanceGate, proxyToBackend,
 // injectGlobalAutoImports, …) that `buddy serve` imports. Build it to
-// dist/index.js so npm consumers resolve it.
-console.log('[server/build] building library entry → ./dist/index.js')
-await Bun.build({
-  entrypoints: ['./src/index.ts'],
-  outdir: './dist',
-  root: './src',
-  target: 'bun',
-  format: 'esm',
+// dist/index.js so npm consumers resolve it. Transpile file-by-file rather
+// than bundle: Bun.build mangled this package's barrel re-exports into an
+// invalid `export { config as … }` (SyntaxError: Exported binding 'config'
+// needs to refer to a top-level declared variable) that crashed consumers on
+// import. See core/build/src/index.ts.
+console.log('[server/build] transpiling library entry → ./dist/index.js')
+await transpilePackage({
+  dir: import.meta.dir,
   external: frameworkExternal(),
-  plugins: [dts({ root: './src', outdir: './dist' })],
 })
 
 await outro({
