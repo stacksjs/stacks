@@ -889,6 +889,34 @@ export async function previewPendingMigrations(options: GenerateMigrationsOption
   }
 }
 
+/**
+ * Detect a dialect/snapshot mismatch in `.qb/`. Returns the name of an existing
+ * snapshot's dialect when the resolved `dialect` has no snapshot of its own but
+ * some OTHER dialect does — the signature of a misconfigured environment that
+ * would make `generateMigrations` emit a duplicate migration set. Returns null
+ * when there is no `.qb/` yet (fresh project — nothing to protect) or when the
+ * resolved dialect already has history.
+ */
+function detectSnapshotDialectMismatch(dialect: string): string | null {
+  const qbDir = join(process.cwd(), '.qb')
+  let files: string[]
+  try {
+    files = readdirSync(qbDir)
+  }
+  catch {
+    return null // no .qb dir yet — first-ever generate, nothing to clobber
+  }
+  const snapshotFor = (d: string): string => `model-snapshot.${d}.json`
+  if (files.includes(snapshotFor(dialect)))
+    return null // resolved dialect already has a snapshot — normal incremental generate
+  for (const f of files) {
+    const m = /^model-snapshot\.(\w+)\.json$/.exec(f)
+    if (m?.[1] && m[1] !== dialect)
+      return m[1]
+  }
+  return null // no snapshots at all for any dialect — nothing to conflict with
+}
+
 export async function generateMigrations(options: GenerateMigrationsOptions = {}): Promise<Result<string, Error>> {
   try {
     // Step-progress at debug — buddy's intro/outro carries the user-
@@ -901,6 +929,28 @@ export async function generateMigrations(options: GenerateMigrationsOptions = {}
     configureQueryBuilder()
 
     const dialect = getDialect()
+
+    // Guard against the dialect footgun (stacksjs/stacks#1927): the qb generator
+    // diffs models against `.qb/model-snapshot.<dialect>.json`. If the resolved
+    // dialect has NO snapshot but another dialect does, the environment is almost
+    // certainly misconfigured — most commonly there is no `.env`, so
+    // `DB_CONNECTION` defaults to 'sqlite' even though the project's committed
+    // migrations + snapshot are Postgres. Generating anyway emits a FULL, second
+    // migration set in the wrong dialect (the per-statement dedup in
+    // persistGeneratedMigrations is textual and can't match across dialects), which
+    // silently collides with the committed migrations. Refuse loudly instead of
+    // clobbering; the fix is to set DB_CONNECTION (or add the `.env`).
+    const mismatch = detectSnapshotDialectMismatch(dialect)
+    if (mismatch) {
+      return err(new Error(
+        `Refusing to generate migrations: resolved dialect "${dialect}" has no snapshot in `
+        + `.qb/, but "${mismatch}" does. DB_CONNECTION is likely unset or wrong (missing .env?) — `
+        + `generating now would write a full duplicate migration set in the wrong dialect. `
+        + `Set DB_CONNECTION=${mismatch} (or your intended dialect) and retry. To intentionally `
+        + `start a new dialect from scratch, remove .qb/model-snapshot.${mismatch}.json first.`,
+      ))
+    }
+
     const { modelsDir, skip } = prepareMigrationModelsDir()
     if (skip) {
       log.debug('No app/Models directory found; using committed framework migrations')
