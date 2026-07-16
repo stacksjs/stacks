@@ -1,5 +1,7 @@
 import type { CategorizableTable } from '@stacksjs/orm'
 import { getDb } from '../database'
+import { fetchById } from './fetch'
+import { isRow } from '../results'
 import { slugify } from 'ts-slug'
 
 interface UpdateCategoryData {
@@ -43,10 +45,16 @@ export async function update(data: UpdateCategoryData): Promise<CategorizableTab
       .returningAll()
       .executeTakeFirst()
 
-    if (!result)
+    // SQLite ignores RETURNING on UPDATE, so re-select by the known id.
+    if (isRow<CategorizableTable>(result))
+      return result
+
+    const category = await fetchById(id)
+
+    if (!category)
       throw new Error('Failed to update category')
 
-    return result as unknown as CategorizableTable
+    return category as unknown as CategorizableTable
   }
   catch (error) {
     if (error instanceof Error)

@@ -1,5 +1,7 @@
 import type { TaggableTable } from '@stacksjs/orm'
 import { getDb } from '../database'
+import { fetchTagById } from './fetch'
+import { isRow } from '../results'
 import { uniqueSlug } from '@stacksjs/slug'
 
 interface UpdateTagData {
@@ -60,10 +62,16 @@ export async function update(data: UpdateTagData): Promise<TaggableTable> {
       .returningAll()
       .executeTakeFirst()
 
-    if (!result)
+    // SQLite ignores RETURNING on UPDATE, so re-select by the known id.
+    if (isRow<TaggableTable>(result))
+      return result
+
+    const tag = await fetchTagById(id)
+
+    if (!tag)
       throw new Error('Failed to update tag')
 
-    return result as unknown as TaggableTable
+    return tag as unknown as TaggableTable
   }
   catch (error) {
     if (error instanceof Error)

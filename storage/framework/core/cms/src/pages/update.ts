@@ -1,6 +1,8 @@
 type PageJsonResponse = ModelRow<typeof Page>
 type PageUpdate = UpdateModelData<typeof Page>
 import { getDb } from '../database'
+import { fetchById } from './fetch'
+import { isRow } from '../results'
 import { formatDate } from '@stacksjs/orm'
 
 /**
@@ -25,10 +27,17 @@ export async function update(id: number, data: Partial<PageUpdate>): Promise<Pag
       .returningAll()
       .executeTakeFirst()
 
-    if (!result)
+    // SQLite ignores RETURNING on UPDATE (result is { changes, ... }, and its
+    // lastInsertRowid is stale), so re-select by the id we already have.
+    if (isRow<PageJsonResponse>(result))
+      return result
+
+    const page = await fetchById(id)
+
+    if (!page)
       throw new Error('Failed to update page')
 
-    return result as PageJsonResponse
+    return page as PageJsonResponse
   }
   catch (error) {
     if (error instanceof Error)

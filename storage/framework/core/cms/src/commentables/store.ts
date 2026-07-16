@@ -1,5 +1,19 @@
 import type { CommentablesTable } from '@stacksjs/orm'
 import { getDb } from '../database'
+import { resolveWrittenRow } from '../results'
+
+// SQLite returns only { changes, lastInsertRowid } from an insert/update, not
+// the row, so `.returningAll()` cannot be trusted across drivers. After a write
+// we re-read the row by its id: for a create, resolveWrittenRow derives the id
+// from the write result; for an update we already hold it.
+async function readComment(db: any, id: number): Promise<CommentablesTable> {
+  const row = await db.selectFrom('commentables').where('id', '=', id).selectAll().executeTakeFirst()
+
+  if (!row)
+    throw new Error(`Comment ${id} not found after write`)
+
+  return row as CommentablesTable
+}
 
 export interface CreateCommentInput {
   title: string
@@ -27,11 +41,18 @@ export async function createComment(data: CreateCommentInput): Promise<Commentab
     created_at: now.toISOString(),
   }
 
-  return db
+  const written = await db
     .insertInto('commentables')
     .values(commentData)
     .returningAll()
-    .executeTakeFirstOrThrow() as unknown as Promise<CommentablesTable>
+    .executeTakeFirst()
+
+  const comment = await resolveWrittenRow<CommentablesTable>(db, 'commentables', written)
+
+  if (!comment)
+    throw new Error('Failed to create comment')
+
+  return comment
 }
 
 export async function updateComment(
@@ -39,20 +60,21 @@ export async function updateComment(
   input: UpdateCommentInput,
 ): Promise<CommentablesTable> {
   const db = await getDb()
-  return db
+  await db
     .updateTable('commentables')
     .set({
       ...input,
       updated_at: new Date().toISOString(),
     })
     .where('id', '=', id)
-    .returningAll()
-    .executeTakeFirstOrThrow() as unknown as Promise<CommentablesTable>
+    .execute()
+
+  return readComment(db, id)
 }
 
 export async function approveComment(id: number): Promise<CommentablesTable> {
   const db = await getDb()
-  return db
+  await db
     .updateTable('commentables')
     .set({
       status: 'approved',
@@ -60,13 +82,14 @@ export async function approveComment(id: number): Promise<CommentablesTable> {
       updated_at: new Date().toISOString(),
     })
     .where('id', '=', id)
-    .returningAll()
-    .executeTakeFirstOrThrow() as unknown as Promise<CommentablesTable>
+    .execute()
+
+  return readComment(db, id)
 }
 
 export async function rejectComment(id: number): Promise<CommentablesTable> {
   const db = await getDb()
-  return db
+  await db
     .updateTable('commentables')
     .set({
       status: 'rejected',
@@ -74,8 +97,9 @@ export async function rejectComment(id: number): Promise<CommentablesTable> {
       updated_at: new Date().toISOString(),
     })
     .where('id', '=', id)
-    .returningAll()
-    .executeTakeFirstOrThrow() as unknown as Promise<CommentablesTable>
+    .execute()
+
+  return readComment(db, id)
 }
 
 export async function deleteComment(id: number): Promise<void> {
@@ -134,17 +158,19 @@ export async function store(data: CommentStore): Promise<CommentablesTable> {
       is_active: data.is_active,
     }
 
-    const result = await db
+    const written = await db
       .insertInto('commentables')
       .values(commentData)
       .returningAll()
       .executeTakeFirst()
 
+    const result = await resolveWrittenRow<CommentablesTable>(db, 'commentables', written)
+
     if (!result) {
       throw new Error('Failed to create comment')
     }
 
-    return result as unknown as CommentablesTable
+    return result
   }
   catch (error) {
     if (error instanceof Error) {

@@ -1,6 +1,8 @@
 type AuthorJsonResponse = ModelRow<typeof Author>
 type NewAuthor = NewModelData<typeof Author>
 import { getDb } from '../database'
+import { fetchById } from './fetch'
+import { isRow } from '../results'
 import { HttpError } from '@stacksjs/error-handling'
 import { formatDate, isUniqueViolation } from '@stacksjs/orm'
 
@@ -26,7 +28,11 @@ export async function update(id: number, data: Partial<NewAuthor>): Promise<Auth
       .returningAll()
       .executeTakeFirst()
 
-    return result as AuthorJsonResponse | undefined
+    // SQLite ignores RETURNING on UPDATE, so re-select by the known id.
+    if (isRow<AuthorJsonResponse>(result))
+      return result
+
+    return await fetchById(id)
   }
   catch (error) {
     if (error instanceof HttpError)

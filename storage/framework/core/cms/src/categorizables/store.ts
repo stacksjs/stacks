@@ -1,5 +1,6 @@
 import type { CategorizableModelsTable, CategorizableTable } from '@stacksjs/orm'
 import { getDb } from '../database'
+import { resolveWrittenRow } from '../results'
 import { slugify } from 'ts-slug'
 
 interface CategoryData {
@@ -39,16 +40,21 @@ export async function store(data: CategoryData): Promise<CategorizableTable> {
       is_active: data.is_active ?? true,
     }
 
-    const category = await db
+    const written = await db
       .insertInto('categorizables')
       .values(categoryData)
       .returningAll()
       .executeTakeFirst()
 
+    // On SQLite, insert returns only { changes, lastInsertRowid }, not the row.
+    // resolveWrittenRow returns the RETURNING row when a driver provides one and
+    // re-selects by inserted id otherwise, so this works on every driver.
+    const category = await resolveWrittenRow<CategorizableTable>(db, 'categorizables', written)
+
     if (!category)
       throw new Error('Failed to create category')
 
-    return category as unknown as CategorizableTable
+    return category
   }
   catch (error) {
     if (error instanceof Error)
@@ -72,16 +78,18 @@ export async function storeCategorizableModel(data: CategorizableModelData): Pro
       categorizable_type: data.categorizable_type,
     }
 
-    const result = await db
+    const written = await db
       .insertInto('categorizable_models')
       .values(modelData)
       .returningAll()
       .executeTakeFirst()
 
+    const result = await resolveWrittenRow<CategorizableModelsTable>(db, 'categorizable_models', written)
+
     if (!result)
       throw new Error('Failed to create categorizable model relationship')
 
-    return result as unknown as CategorizableModelsTable
+    return result
   }
   catch (error) {
     if (error instanceof Error)
@@ -114,16 +122,18 @@ export async function bulkStore(data: CategoryData[]): Promise<CategorizableTabl
         }
 
         // Insert into categorizable table
-        const category = await trx
+        const written = await trx
           .insertInto('categorizables')
           .values(categoryData)
           .returningAll()
           .executeTakeFirst()
 
+        const category = await resolveWrittenRow<CategorizableTable>(trx, 'categorizables', written)
+
         if (!category)
           throw new Error(`Failed to create category: ${item.name}`)
 
-        categories.push(category as CategorizableTable)
+        categories.push(category)
       }
 
       return categories

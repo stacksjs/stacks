@@ -1,6 +1,7 @@
 type PageJsonResponse = ModelRow<typeof Page>
 type NewPage = NewModelData<typeof Page>
 import { getDb } from '../database'
+import { resolveWrittenRow } from '../results'
 import { formatDate } from '@stacksjs/orm'
 
 /**
@@ -22,16 +23,18 @@ export async function store(data: NewPage): Promise<PageJsonResponse> {
       updated_at: formatDate(new Date()),
     }
 
-    const result = await db
+    const written = await db
       .insertInto('pages')
       .values(pageData)
       .returningAll()
       .executeTakeFirst()
 
+    const result = await resolveWrittenRow<PageJsonResponse>(db, 'pages', written)
+
     if (!result)
       throw new Error('Failed to create page')
 
-    return result as PageJsonResponse
+    return result
   }
   catch (error) {
     if (error instanceof Error)

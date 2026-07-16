@@ -1,5 +1,6 @@
 import type { TaggableTable } from '@stacksjs/orm'
 import { getDb } from '../database'
+import { resolveWrittenRow } from '../results'
 import { slugify } from 'ts-slug'
 
 interface TagData {
@@ -100,17 +101,19 @@ export async function store(data: TagData): Promise<TaggableTable> {
       tagData.taggable_id = data.taggable_id
     }
 
-    const result = await db
+    const written = await db
       .insertInto('taggables')
       .values(tagData)
       .returningAll()
       .executeTakeFirst()
 
+    const result = await resolveWrittenRow<TaggableTable>(db, 'taggables', written)
+
     if (!result) {
       throw new Error('Failed to create tag')
     }
 
-    return result as unknown as TaggableTable
+    return result
   }
   catch (error) {
     if (error instanceof Error) {
