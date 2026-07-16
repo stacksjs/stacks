@@ -2,7 +2,22 @@
 
 @section('content')
 @title('Dashboard - File Manager')
+<script server>
+// Seed the grid from a real Storage disk (stacksjs/stacks#245). Defaults to the
+// `public` disk, which carries real media + public URLs so image/video previews
+// render. Best-effort: any failure leaves the payload empty and the client
+// script falls back to the built-in demo tree below.
+let serverFileTreeJson = ''
+try {
+  const { buildStorageFileTree } = await import('../../../../resources/functions/dashboard/files-tree')
+  const tree = await buildStorageFileTree({ disk: 'public' })
+  if (tree)
+    serverFileTreeJson = JSON.stringify(tree)
+}
+catch {}
+</script>
 <div class="flex flex-col h-full">
+  <div data-file-tree hidden>{{ serverFileTreeJson }}</div>
   <div class="flex flex-1">
     <div :class="sidePanelClass()">
       <div :show="showSidePanel" class="flex flex-col h-full">
@@ -277,6 +292,10 @@ interface FileItem {
   lastModified: string
   starred: boolean
   shared: boolean
+  // Present on real Storage-backed items (#245) so MediaCard can render true
+  // previews; absent on the demo tree.
+  mime_type?: string
+  url?: string
   items?: FileItem[]
 }
 
@@ -324,8 +343,27 @@ const rootFolder: FileItem = {
   ],
 }
 
-const root = state<FileItem>(rootFolder)
-const currentFolderId = state<number>(rootFolder.id)
+// Prefer the server-injected real Storage tree (stacksjs/stacks#245); fall back
+// to the demo tree above when it's absent (empty disk, listing failed, or the
+// server block couldn't resolve). The payload is HTML-escaped JSON in a hidden
+// element — same server->client hand-off the dashboard sidebar uses.
+function readInjectedFileTree(): FileItem | null {
+  try {
+    const node = document.querySelector('[data-file-tree]')
+    const raw = node?.textContent?.trim()
+    if (!raw)
+      return null
+    const parsed = JSON.parse(raw)
+    return parsed && Array.isArray(parsed.items) && parsed.items.length > 0 ? parsed as FileItem : null
+  }
+  catch {
+    return null
+  }
+}
+
+const initialRoot = readInjectedFileTree() ?? rootFolder
+const root = state<FileItem>(initialRoot)
+const currentFolderId = state<number>(initialRoot.id)
 const searchQuery = state('')
 const sortBy = state<'name' | 'lastModified' | 'size'>('name')
 const sortOrder = state<'asc' | 'desc'>('asc')
