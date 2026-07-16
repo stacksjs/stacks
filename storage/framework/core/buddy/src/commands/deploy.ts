@@ -1617,7 +1617,60 @@ if [ -n "$FWD_B64" ] && [ -x /usr/local/bin/bun ]; then
   rm -f /tmp/.mailtenant-fwd.json /tmp/.mailtenant-readme.txt
 fi
 FWD_STATE=nochange; grep -q FWDCHANGED /tmp/.mailtenant-res 2>/dev/null && FWD_STATE=updated; rm -f /tmp/.mailtenant-res
-# 5) Restart only when the startup-read env actually changed (domain or DKIM key).
+# 5) Keep the shared daemon recoverable if it crashes or stops accepting mail.
+mkdir -p /etc/systemd/system/mail.service.d
+cat > /etc/systemd/system/mail.service.d/reliability.conf <<'EOF'
+[Unit]
+StartLimitIntervalSec=60
+StartLimitBurst=10
+
+[Service]
+Restart=always
+RestartSec=2
+TimeoutStartSec=30
+TimeoutStopSec=30
+LimitCORE=infinity
+EOF
+cat > /usr/local/sbin/mail-health-check <<'EOF'
+#!/bin/sh
+set -eu
+exec 9>/run/mail-health-check.lock
+flock -n 9 || exit 0
+systemctl is-active --quiet mail || { systemctl restart mail; exit 0; }
+for port in 25 143 587 993; do
+  ss -H -ltn "sport = :$port" | grep -q . || {
+    logger -t mail-health "required TCP port $port is not listening; restarting mail"
+    systemctl restart mail
+    exit 0
+  }
+done
+EOF
+chmod 755 /usr/local/sbin/mail-health-check
+cat > /etc/systemd/system/mail-health.service <<'EOF'
+[Unit]
+Description=Check the Stacks mail daemon listeners
+After=mail.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/mail-health-check
+EOF
+cat > /etc/systemd/system/mail-health.timer <<'EOF'
+[Unit]
+Description=Check the Stacks mail daemon every minute
+
+[Timer]
+OnBootSec=2min
+OnUnitActiveSec=1min
+AccuracySec=10s
+Persistent=true
+
+[Install]
+WantedBy=timers.target
+EOF
+systemctl daemon-reload
+systemctl enable --now mail-health.timer >/dev/null 2>&1
+# 6) Restart only when the startup-read env actually changed (domain or DKIM key).
 if [ "$ENV_CHANGED" = 1 ]; then systemctl restart mail 2>/dev/null || true; echo "MAILTENANT:env-changed+restarted,forwards=$FWD_STATE"; else echo "MAILTENANT:current,forwards=$FWD_STATE"; fi`
 
   try {
