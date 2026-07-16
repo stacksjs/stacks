@@ -1,0 +1,119 @@
+<!--
+  MediaCard — Meema-style visual file preview
+
+  Ported from meemalabs/file-manager (MediaCard/{Image,Video,Audio,Document}.vue)
+  to stx + Crosswind. Presentational: it renders the preview + label for one
+  file item and derives the media "kind" from `mime_type` (preferred) or the
+  file extension in `type`. Real thumbnails render when the item carries a
+  `thumbnail`/`url`; otherwise a kind-appropriate placeholder is shown, so it
+  works with both live storage listings and demo data.
+
+  The parent supplies the card frame (border, rounded, hover, click, overflow)
+  and any hover action buttons; this component only fills the interior.
+
+  Usage:
+    <MediaCard :item="item" />
+-->
+
+<script>
+interface FileItem {
+  id: number
+  name: string
+  type: string
+  size?: number
+  mime_type?: string
+  url?: string
+  thumbnail?: string
+}
+
+interface Props {
+  item: FileItem
+}
+
+const { item } = defineProps<Props>()
+
+const IMAGE_EXT = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'avif', 'svg', 'bmp', 'heic']
+const VIDEO_EXT = ['mp4', 'mov', 'webm', 'mkv', 'avi', 'm4v']
+const AUDIO_EXT = ['mp3', 'wav', 'ogg', 'flac', 'm4a', 'aac']
+const ARCHIVE_EXT = ['zip', 'rar', 'gz', 'tar', '7z']
+const DOC_EXT = ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'txt', 'md', 'csv', 'key', 'pages']
+
+function kindOf(it: FileItem): string {
+  if (it.type === 'folder')
+    return 'folder'
+  const mime = (it.mime_type || '').toLowerCase()
+  if (mime.startsWith('image/'))
+    return 'image'
+  if (mime.startsWith('video/'))
+    return 'video'
+  if (mime.startsWith('audio/'))
+    return 'audio'
+  const ext = (it.type || '').toLowerCase()
+  if (IMAGE_EXT.includes(ext))
+    return 'image'
+  if (VIDEO_EXT.includes(ext))
+    return 'video'
+  if (AUDIO_EXT.includes(ext))
+    return 'audio'
+  if (ARCHIVE_EXT.includes(ext))
+    return 'archive'
+  if (DOC_EXT.includes(ext))
+    return 'document'
+  return 'other'
+}
+
+const kind = kindOf(item)
+const ext = (item.type || '').toUpperCase()
+const previewUrl = item.thumbnail || item.url || ''
+const hasImage = kind === 'image' && !!previewUrl
+
+// A soft, kind-specific backdrop for the preview area (Meema uses colored
+// treatments per media type). Assembled as full class strings because stx
+// binds dynamic classes via :class, not via {{ }} inside class attributes.
+const backdropByKind: Record<string, string> = {
+  image: 'bg-gradient-to-br from-sky-50 to-indigo-100 dark:from-neutral-800 dark:to-neutral-900',
+  video: 'bg-gradient-to-br from-neutral-800 to-neutral-950',
+  audio: 'bg-gradient-to-br from-fuchsia-50 to-purple-100 dark:from-neutral-800 dark:to-neutral-900',
+  document: 'bg-gradient-to-br from-stone-50 to-stone-200 dark:from-neutral-800 dark:to-neutral-900',
+  archive: 'bg-gradient-to-br from-amber-50 to-amber-100 dark:from-neutral-800 dark:to-neutral-900',
+  folder: 'bg-gradient-to-br from-indigo-50 to-indigo-100 dark:from-neutral-800 dark:to-neutral-900',
+  other: 'bg-gradient-to-br from-stone-50 to-stone-200 dark:from-neutral-800 dark:to-neutral-900',
+}
+const glyphByKind: Record<string, string> = {
+  image: 'i-hugeicons-image-01 text-indigo-400/80 dark:text-indigo-300/70',
+  audio: 'i-hugeicons-music-note-01 text-purple-400/80 dark:text-purple-300/70',
+  document: 'i-hugeicons-file-01 text-stone-400 dark:text-neutral-400',
+  archive: 'i-hugeicons-folder-file-storage text-amber-500/80 dark:text-amber-300/70',
+  folder: 'i-hugeicons-folder-02 text-indigo-400 dark:text-indigo-300',
+  other: 'i-hugeicons-file-02 text-stone-400 dark:text-neutral-400',
+}
+
+const previewClass = `relative flex items-center justify-center h-32 w-full overflow-hidden ${backdropByKind[kind] || backdropByKind.other}`
+const glyphClass = `h-10 w-10 ${glyphByKind[kind] || glyphByKind.other}`
+const badgeClass = kind === 'video'
+  ? 'bg-black/55 text-white'
+  : 'bg-white/85 text-stone-600 dark:bg-black/40 dark:text-neutral-200'
+</script>
+
+<div class="flex flex-col">
+  <div :class="previewClass">
+    @if (hasImage)
+      <img src="{{ previewUrl }}" alt="{{ item.name }}" loading="lazy" class="object-cover h-full w-full" />
+    @elseif (kind === 'video')
+      <div class="flex items-center justify-center h-12 w-12 bg-white/90 rounded-full shadow-md">
+        <div class="ml-0.5 h-5 w-5 text-neutral-900 i-hugeicons-play"></div>
+      </div>
+    @else
+      <div :class="glyphClass"></div>
+    @endif
+
+    @if (item.type !== 'folder' && ext)
+      <span class="{{ badgeClass }} absolute left-2 top-2 px-1.5 py-0.5 font-semibold text-[10px] tracking-wide rounded">{{ ext }}</span>
+    @endif
+  </div>
+
+  <div class="px-3 py-2.5">
+    <p class="font-medium text-[13px] text-stone-800 truncate dark:text-white" title="{{ item.name }}">{{ item.name }}</p>
+    <p class="mt-0.5 capitalize text-[11px] text-stone-400 dark:text-neutral-500">{{ item.type === 'folder' ? 'Folder' : kind }}</p>
+  </div>
+</div>

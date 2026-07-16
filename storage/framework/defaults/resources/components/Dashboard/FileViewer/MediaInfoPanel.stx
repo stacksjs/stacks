@@ -1,0 +1,143 @@
+<!--
+  MediaInfoPanel — file preview + metadata
+
+  Ported from meemalabs/file-manager (MediaInformation/{FilePreviewSection,
+  MetaDataSection,SharingSection}.vue) to stx + Crosswind. Presentational: it
+  renders a large preview and a metadata list for one selected file. The parent
+  owns the slide-over shell (visibility, positioning, close button) and passes
+  the current item in.
+
+  Usage:
+    <MediaInfoPanel :item="selectedItem()" />
+-->
+
+<script>
+interface FileItem {
+  id: number
+  name: string
+  type: string
+  size?: number
+  path?: string
+  mime_type?: string
+  url?: string
+  thumbnail?: string
+  lastModified?: string
+  starred?: boolean
+  shared?: boolean
+}
+
+interface Props {
+  item: FileItem
+}
+
+const { item } = defineProps<Props>()
+
+const IMAGE_EXT = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'avif', 'svg', 'bmp', 'heic']
+const VIDEO_EXT = ['mp4', 'mov', 'webm', 'mkv', 'avi', 'm4v']
+const AUDIO_EXT = ['mp3', 'wav', 'ogg', 'flac', 'm4a', 'aac']
+
+function kindOf(it: FileItem): string {
+  if (it.type === 'folder')
+    return 'folder'
+  const mime = (it.mime_type || '').toLowerCase()
+  if (mime.startsWith('image/'))
+    return 'image'
+  if (mime.startsWith('video/'))
+    return 'video'
+  if (mime.startsWith('audio/'))
+    return 'audio'
+  const ext = (it.type || '').toLowerCase()
+  if (IMAGE_EXT.includes(ext))
+    return 'image'
+  if (VIDEO_EXT.includes(ext))
+    return 'video'
+  if (AUDIO_EXT.includes(ext))
+    return 'audio'
+  return 'document'
+}
+
+const kind = kindOf(item)
+const previewUrl = item.thumbnail || item.url || ''
+const hasImage = kind === 'image' && !!previewUrl
+
+const glyphByKind: Record<string, string> = {
+  image: 'i-hugeicons-image-01 text-indigo-300',
+  video: 'i-hugeicons-video-01 text-neutral-300',
+  audio: 'i-hugeicons-music-note-01 text-purple-300',
+  folder: 'i-hugeicons-folder-02 text-indigo-300',
+  document: 'i-hugeicons-file-01 text-stone-300',
+}
+const glyphClass = `h-14 w-14 ${glyphByKind[kind] || glyphByKind.document}`
+const previewBg = kind === 'video'
+  ? 'bg-gradient-to-br from-neutral-800 to-neutral-950'
+  : 'bg-gradient-to-br from-stone-100 to-stone-200 dark:from-neutral-800 dark:to-neutral-900'
+
+function formatBytes(bytes: number): string {
+  if (!bytes)
+    return '0 Bytes'
+  const k = 1024
+  const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB']
+  const i = Math.floor(Math.log(bytes) / Math.log(k))
+  return `${Number.parseFloat((bytes / k ** i).toFixed(2))} ${sizes[i]}`
+}
+
+function formatWhen(value?: string): string {
+  if (!value)
+    return '-'
+  const d = new Date(value)
+  return Number.isNaN(d.getTime())
+    ? '-'
+    : d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
+}
+
+const sizeLabel = item.type === 'folder' ? '-' : formatBytes(item.size ?? 0)
+const modifiedLabel = formatWhen(item.lastModified)
+const locationLabel = item.path || '/'
+const kindLabel = item.type === 'folder' ? 'Folder' : `${kind}${item.type ? ` (.${item.type})` : ''}`
+</script>
+
+<div class="flex flex-col">
+  <div :class="previewBg" class="flex overflow-hidden items-center justify-center h-48 rounded-xl">
+    @if (hasImage)
+      <img src="{{ previewUrl }}" alt="{{ item.name }}" class="object-contain h-full w-full" />
+    @elseif (kind === 'video')
+      <div class="flex items-center justify-center h-14 w-14 bg-white/90 rounded-full shadow-md">
+        <div class="ml-0.5 h-6 w-6 text-neutral-900 i-hugeicons-play"></div>
+      </div>
+    @else
+      <div :class="glyphClass"></div>
+    @endif
+  </div>
+
+  <h4 class="mt-4 break-words font-semibold text-[15px] text-stone-800 dark:text-white">{{ item.name }}</h4>
+
+  <dl class="mt-4 space-y-3 text-[13px]">
+    <div class="flex gap-4 items-start justify-between">
+      <dt class="text-stone-400 dark:text-neutral-500">Type</dt>
+      <dd class="capitalize font-medium text-right text-stone-700 dark:text-neutral-200">{{ kindLabel }}</dd>
+    </div>
+    <div class="flex gap-4 items-start justify-between">
+      <dt class="text-stone-400 dark:text-neutral-500">Size</dt>
+      <dd class="font-medium text-right text-stone-700 dark:text-neutral-200">{{ sizeLabel }}</dd>
+    </div>
+    <div class="flex gap-4 items-start justify-between">
+      <dt class="text-stone-400 dark:text-neutral-500">Location</dt>
+      <dd class="break-all font-medium text-right text-stone-700 dark:text-neutral-200">{{ locationLabel }}</dd>
+    </div>
+    <div class="flex gap-4 items-start justify-between">
+      <dt class="text-stone-400 dark:text-neutral-500">Modified</dt>
+      <dd class="font-medium text-right text-stone-700 dark:text-neutral-200">{{ modifiedLabel }}</dd>
+    </div>
+  </dl>
+
+  <div class="flex gap-2 mt-5">
+    <span :show="item.starred" class="inline-flex gap-1 items-center px-2 py-1 font-medium text-[11px] text-yellow-700 dark:text-yellow-300 bg-yellow-100 dark:bg-yellow-500/15 rounded-full">
+      <div class="h-3 w-3 i-hugeicons-star"></div>
+      Starred
+    </span>
+    <span :show="item.shared" class="inline-flex gap-1 items-center px-2 py-1 font-medium text-[11px] text-indigo-700 dark:text-indigo-300 bg-indigo-100 dark:bg-indigo-500/15 rounded-full">
+      <div class="h-3 w-3 i-hugeicons-share-01"></div>
+      Shared
+    </span>
+  </div>
+</div>

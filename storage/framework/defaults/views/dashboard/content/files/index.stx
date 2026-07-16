@@ -138,14 +138,8 @@
 
         <div :show="filteredItems().length > 0 && viewMode() === 'grid'" class="grid gap-4 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
           <template :for="item in filteredItems()">
-            <div @click="onItemClick(item)" class="relative p-4 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700 hover:border-gray-300 duration-200 transition-all cursor-pointer group">
-              <div class="flex justify-center mb-4">
-                <div :class="gridIconClass(item)"></div>
-              </div>
-              <div class="text-center">
-                <p class="font-medium text-gray-900 text-sm truncate dark:text-white">{{ item.name }}</p>
-                <p :show="item.type !== 'folder'" class="mt-1 text-gray-500 text-xs dark:text-neutral-400">{{ formatFileSize(item.size ?? 0) }}</p>
-              </div>
+            <div @click="onItemClick(item)" class="overflow-hidden relative bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700 hover:border-indigo-300 dark:hover:border-indigo-500/50 shadow-sm hover:shadow-lg duration-200 transition-all cursor-pointer group">
+              <MediaCard :item="item" />
               <div class="flex absolute right-2 top-2 space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
                 <button @click="onStarClick(item, $event)" :class="gridStarButtonClass(item)">
                   <div class="h-4 w-4 i-hugeicons-star"></div>
@@ -193,6 +187,22 @@
         </div>
       </div>
     </div>
+  </div>
+
+  <!-- Meema-style file info / preview slide-over -->
+  <div :show="showInfoPanel" class="fixed inset-0 z-20">
+    <div class="absolute inset-0 bg-gray-900/40 dark:bg-black/50" @click="closeInfoPanel()"></div>
+    <aside class="flex absolute inset-y-0 right-0 flex-col max-w-sm w-full bg-white dark:bg-neutral-900 shadow-xl">
+      <div class="flex items-center justify-between p-4 border-b border-stone-200/60 dark:border-neutral-700">
+        <h3 class="font-semibold text-sm text-stone-500 tracking-wider uppercase dark:text-neutral-400">Details</h3>
+        <button @click="closeInfoPanel()" class="p-1.5 text-gray-400 dark:text-neutral-500 hover:text-gray-600 dark:hover:text-neutral-300 hover:bg-gray-100 dark:hover:bg-neutral-700 rounded-md">
+          <div class="h-5 w-5 i-hugeicons-cancel-01"></div>
+        </button>
+      </div>
+      <div class="overflow-auto flex-1 p-5">
+        <MediaInfoPanel :item="selectedItem()" />
+      </div>
+    </aside>
   </div>
 
   <div :show="showCreateFolderModal" class="fixed inset-0 overflow-y-auto z-10">
@@ -325,6 +335,11 @@ const showCreateFolderModal = state(false)
 const showDeleteConfirmation = state(false)
 const newFolderName = state('')
 const itemToDelete = state<FileItem | null>(null)
+// Selected file for the Meema-style info/preview panel. Defaults to a neutral
+// placeholder (never null) so the panel component always receives a valid item
+// even while hidden; onItemClick swaps in the real file.
+const selectedItem = state<FileItem>({ id: 0, name: '', type: 'file', path: '/', lastModified: '', starred: false } as FileItem)
+const showInfoPanel = state(false)
 
 const storageStats = { total: 100 * 1024 ** 3, used: 45 * 1024 ** 3, available: 55 * 1024 ** 3 }
 const storageByType = { documents: 15 * 1024 ** 3, images: 10 * 1024 ** 3, videos: 18 * 1024 ** 3, other: 2 * 1024 ** 3 }
@@ -408,7 +423,6 @@ const listViewClass = derived(() => viewMode() === 'list'
   ? 'relative inline-flex items-center px-3 py-2 rounded-r-md border border-indigo-600 text-sm font-medium bg-indigo-600 text-white'
   : 'relative inline-flex items-center px-3 py-2 rounded-r-md border border-gray-300 dark:border-neutral-600 text-sm font-medium bg-white dark:bg-neutral-700 text-gray-700 dark:text-neutral-200 hover:bg-gray-50 dark:hover:bg-neutral-600')
 
-const gridIconClass = (item: FileItem) => `${itemIconClass(item)} h-12 w-12`
 const rowIconClass = (item: FileItem) => `${itemIconClass(item)} h-5 w-5 mr-3`
 const gridStarButtonClass = (item: FileItem) => `p-1 hover:bg-gray-100 dark:hover:bg-neutral-700 rounded-full ${starButtonClass(item)}`
 const gridShareButtonClass = (item: FileItem) => `p-1 hover:bg-gray-100 dark:hover:bg-neutral-700 rounded-full ${shareButtonClass(item)}`
@@ -490,8 +504,16 @@ function toggleSortOrder() {
 }
 
 function onItemClick(item: FileItem) {
-  if (item.type === 'folder')
+  if (item.type === 'folder') {
     navigateToFolder(item)
+    return
+  }
+  selectedItem.set(item)
+  showInfoPanel.set(true)
+}
+
+function closeInfoPanel() {
+  showInfoPanel.set(false)
 }
 
 function onStarClick(item: FileItem, event: Event) {
