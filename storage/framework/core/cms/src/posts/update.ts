@@ -1,6 +1,8 @@
 type PostJsonResponse = ModelRow<typeof Post>
 type PostUpdate = UpdateModelData<typeof Post>
 import { getDb } from '../database'
+import { fetchById } from './fetch'
+import { isRow } from '../results'
 
 /**
  * Update a post
@@ -32,10 +34,16 @@ export async function update(id: number, data: Partial<PostUpdate>): Promise<Pos
       .returningAll()
       .executeTakeFirst()
 
-    if (!result)
-      throw new Error('Failed to update post')
+    if (isRow<PostJsonResponse>(result))
+      return result
 
-    return result as PostJsonResponse
+    // The SQLite driver ignores RETURNING, so re-select the row it wrote.
+    const post = await fetchById(id)
+
+    if (!post)
+      throw new Error(`Post with ID ${id} not found`)
+
+    return post
   }
   catch (error) {
     if (error instanceof Error)

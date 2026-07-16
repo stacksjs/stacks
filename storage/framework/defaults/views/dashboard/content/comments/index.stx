@@ -65,7 +65,7 @@
 
 <script>
 ;(function () {
-  var api = '/api/dashboard/cms'
+  var api = '/api/dashboard/comments'
   var comments = []
   var table = document.getElementById('comments-table')
   var empty = document.getElementById('comments-empty')
@@ -73,6 +73,17 @@
   var statusFilter = document.getElementById('comment-status-filter')
 
   function $(id) { return document.getElementById(id) }
+  // CSRF is default-on for POST/PATCH/DELETE via a stateless double-submit
+  // cookie: the server seeds a non-HttpOnly X-CSRF-Token cookie on safe
+  // responses and the client echoes it back in the header. The list request on
+  // page load seeds it, so the token is present by the time a moderation write
+  // can happen. See defaults/app/Middleware/Csrf.ts.
+  function writeHeaders() {
+    var headers = { 'content-type': 'application/json' }
+    var match = document.cookie.match(/(?:^|;\s*)X-CSRF-Token=([^;]*)/)
+    if (match) headers['X-CSRF-Token'] = decodeURIComponent(match[1])
+    return headers
+  }
   function escapeHtml(value) {
     return String(value || '').replace(/[&<>"']/g, function (ch) {
       return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[ch]
@@ -131,27 +142,30 @@
   }
   async function load() {
     var res = await fetch(api)
+    if (!res.ok) throw new Error('Unable to load CMS comments (' + res.status + ').')
     var json = await res.json()
     comments = Array.isArray(json.comments) ? json.comments.map(normalize) : []
     render()
   }
   async function updateStatus(id, status) {
-    var res = await fetch(api + '/comments/' + id, {
+    var res = await fetch(api + '/' + id, {
       method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
+      headers: writeHeaders(),
       body: JSON.stringify({ status: status }),
     })
     if (!res.ok) {
-      alert((await res.json()).error || 'Could not update comment')
+      var err = await res.json().catch(function () { return {} })
+      alert(err.message || err.error || 'Could not update comment')
       return
     }
     await load()
   }
   async function deleteComment(id) {
     if (!confirm('Delete this comment?')) return
-    var res = await fetch(api + '/comments/' + id, { method: 'DELETE' })
+    var res = await fetch(api + '/' + id, { method: 'DELETE', headers: writeHeaders() })
     if (!res.ok) {
-      alert((await res.json()).error || 'Could not delete comment')
+      var err = await res.json().catch(function () { return {} })
+      alert(err.message || err.error || 'Could not delete comment')
       return
     }
     await load()
@@ -164,7 +178,11 @@
   })
   search.addEventListener('input', render)
   statusFilter.addEventListener('change', render)
-  load()
+
+  load().catch(function (error) {
+    empty.classList.remove('hidden')
+    empty.textContent = error.message || 'Unable to load CMS comments.'
+  })
 })()
 </script>
 

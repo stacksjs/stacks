@@ -48,11 +48,11 @@ export async function fetchByCategory(category: string): Promise<PostJsonRespons
 /**
  * Fetch posts by author
  */
-export async function fetchByAuthor(author: string): Promise<PostJsonResponse[]> {
+export async function fetchByAuthor(authorId: number): Promise<PostJsonResponse[]> {
   const db = await getDb()
   return await db
     .selectFrom('posts')
-    .where('author', '=', author)
+    .where('author_id', '=', authorId)
     .selectAll()
     .execute() as PostJsonResponse[]
 }

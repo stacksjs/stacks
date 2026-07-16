@@ -1,5 +1,8 @@
 import type { RequestInstance } from '@stacksjs/types'
 import { db } from '@stacksjs/database'
+import { str } from './content-input'
+
+export { insertedId, timestamp } from './content-input'
 
 export interface PostPayload {
   title: string
@@ -7,10 +10,6 @@ export interface PostPayload {
   content: string
   poster: string
   status: string
-}
-
-function str(value: unknown): string {
-  return value == null ? '' : String(value)
 }
 
 /**
@@ -22,11 +21,6 @@ export function normalizeStatus(value: unknown): string {
   const status = str(value).toLowerCase()
 
   return status === 'published' || status === 'archived' ? status : 'draft'
-}
-
-/** `YYYY-MM-DD HH:MM:SS`, matching the table's CURRENT_TIMESTAMP default. */
-export function timestamp(): string {
-  return new Date().toISOString().slice(0, 19).replace('T', ' ')
 }
 
 /**
@@ -43,22 +37,9 @@ export function publishedAtFor(status: string, existing: string | null, now: str
   return existing || now
 }
 
-/**
- * Reads a post row back after a write.
- *
- * The SQLite driver in use does not honour `RETURNING` — `.returningAll()`
- * resolves to a `{ changes, lastInsertRowid }` summary rather than the row — so
- * writes re-select instead of trusting the insert/update result.
- */
+/** Reads a post row back after a write — see `findRow` for why writes re-select. */
 export async function findPost(id: number): Promise<unknown> {
   return await db.selectFrom('posts').selectAll().where('id', '=', id).executeTakeFirst()
-}
-
-/** The new row's id, across the driver shapes we may get back from an insert. */
-export function insertedId(result: unknown): number {
-  const row = result as { lastInsertRowid?: number | bigint, insertId?: number | bigint } | undefined
-
-  return Number(row?.lastInsertRowid ?? row?.insertId ?? 0)
 }
 
 /** Maps a dashboard request body onto the writable post columns. */

@@ -1,41 +1,56 @@
 import { Action } from '@stacksjs/actions'
-import { Comment } from '@stacksjs/orm'
+import { db } from '@stacksjs/database'
+import { normalizeCommentStatus } from './comment-input'
 
+interface CommentRow {
+  id: number
+  author_name: string | null
+  author_email: string | null
+  content: string | null
+  body: string | null
+  post_title: string | null
+  status: string | null
+  is_approved: number | null
+  created_at: string | null
+  updated_at: string | null
+}
+
+/**
+ * `GET /api/dashboard/comments` — backs `views/dashboard/content/comments/index.stx`.
+ *
+ * Reads the `comments` table via `db`. The previous `Comment.orderBy(...)` call
+ * threw on every request (the ORM model exposes no query methods) and the catch
+ * turned that into an empty list, so a broken read looked like a CMS with no
+ * comments. It also mapped `author` / `email` / `ip` / `post_id`, none of which
+ * this table has — the columns are `author_name`, `author_email`, `ip_address`,
+ * and there is no post foreign key, only the denormalized `post_title`.
+ *
+ * Column names are returned as-is; the page normalizes them client-side.
+ */
 export default new Action({
   name: 'CommentIndexAction',
-  description: 'Returns comments data for the dashboard.',
+  description: 'Returns CMS comments for the dashboard.',
   method: 'GET',
+  apiResponse: true,
   async handle() {
-    try {
-      const allComments = await Comment.orderBy('created_at', 'desc').get()
-      const totalCount = await Comment.count()
+    const rows = await db
+      .selectFrom('comments')
+      .selectAll()
+      .orderBy('created_at', 'desc')
+      .execute() as unknown as CommentRow[]
 
-      const comments = allComments.map(c => ({
-        id: Number(c.get('id')),
-        author: String(c.get('author') || c.get('name') || ''),
-        email: String(c.get('email') || ''),
-        content: String(c.get('content') || c.get('body') || ''),
-        status: String(c.get('status') || 'pending'),
-        date: String(c.get('created_at') || ''),
-        postTitle: String(c.get('post_title') || ''),
-        postId: Number(c.get('post_id') || 0),
-        ip: String(c.get('ip') || ''),
-      }))
+    const comments = rows.map(row => ({
+      id: Number(row.id),
+      author_name: String(row.author_name || ''),
+      author_email: String(row.author_email || ''),
+      content: String(row.content || row.body || ''),
+      post_title: String(row.post_title || ''),
+      status: normalizeCommentStatus(row.status),
+      is_approved: Boolean(row.is_approved),
+      created_at: row.created_at || null,
+      updated_at: row.updated_at || null,
+    }))
 
-      const pending = comments.filter(c => c.status === 'pending').length
-      const approved = comments.filter(c => c.status === 'approved').length
-      const spam = comments.filter(c => c.status === 'spam').length
-
-      return {
-        comments,
-        stats: { total: totalCount, pending, approved, spam },
-      }
-    }
-    catch {
-      return {
-        comments: [],
-        stats: { total: 0, pending: 0, approved: 0, spam: 0 },
-      }
-    }
+    return { comments }
   },
 })

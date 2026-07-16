@@ -2,6 +2,7 @@ type AuthorJsonResponse = ModelRow<typeof Author>
 type NewAuthor = NewModelData<typeof Author>
 import { randomUUIDv7 } from 'bun'
 import { getDb } from '../database'
+import { resolveWrittenRow } from '../results'
 import { HttpError } from '@stacksjs/error-handling'
 import { formatDate, isUniqueViolation } from '@stacksjs/orm'
 
@@ -54,10 +55,10 @@ export async function findOrCreate(data: AuthorData): Promise<AuthorJsonResponse
         .returningAll()
         .executeTakeFirst()
 
-      if (!result)
-        throw new Error('Failed to create user')
+      user = await resolveWrittenRow(db, 'users', result)
 
-      user = result
+      if (!user)
+        throw new Error('Failed to create user')
     }
 
     // Create a new author with the user_id
@@ -75,10 +76,12 @@ export async function findOrCreate(data: AuthorData): Promise<AuthorJsonResponse
       .returningAll()
       .executeTakeFirst()
 
-    if (!result)
+    const author = await resolveWrittenRow(db, 'authors', result)
+
+    if (!author)
       throw new Error('Failed to create author')
 
-    return result as AuthorJsonResponse
+    return author as AuthorJsonResponse
   }
   catch (error) {
     if (error instanceof HttpError)
@@ -132,10 +135,12 @@ export async function store(data: NewAuthor): Promise<AuthorJsonResponse> {
       .returningAll()
       .executeTakeFirst()
 
-    if (!result)
+    const author = await resolveWrittenRow(db, 'authors', result)
+
+    if (!author)
       throw new Error('Failed to create author')
 
-    return result as AuthorJsonResponse
+    return author as AuthorJsonResponse
   }
   catch (error) {
     if (error instanceof HttpError)

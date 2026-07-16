@@ -2,11 +2,14 @@ type PostJsonResponse = ModelRow<typeof Post>
 type NewPost = NewModelData<typeof Post>
 import { randomUUIDv7 } from 'bun'
 import { getDb } from '../database'
+import { fetchById } from './fetch'
+import { insertedId, isRow } from '../results'
 import { formatDate } from '@stacksjs/orm'
 
-export const POST_STATUS_DRAFT = 'Draft'
-export const POST_STATUS_PUBLISHED = 'Published'
-export const POST_STATUS_ARCHIVED = 'Archived'
+// Must match the CHECK constraint on posts.status.
+export const POST_STATUS_DRAFT = 'draft'
+export const POST_STATUS_PUBLISHED = 'published'
+export const POST_STATUS_ARCHIVED = 'archived'
 
 /**
  * Create a new post
@@ -25,19 +28,20 @@ export async function store(data: NewPost & { body?: string, category?: string }
     const content = data.content || data.body
 
     const d = data as Record<string, unknown>
+    const status = data.status || POST_STATUS_DRAFT
+
     const postData: Record<string, unknown> = {
       author_id: d.author_id,
       uuid: randomUUIDv7(),
       title: data.title,
       poster: data.poster,
       content,
-      body: data.body,
-      category: data.category,
       excerpt: data.excerpt,
       is_featured: d.is_featured ? Date.now() : undefined,
       views: data.views || 0,
-      published_at: d.published_at || Date.now(),
-      status: data.status || POST_STATUS_DRAFT,
+      // Only published posts carry a publish date; a draft must not be stamped.
+      published_at: d.published_at ?? (status === POST_STATUS_PUBLISHED ? Date.now() : undefined),
+      status,
     }
 
     const result = await db
@@ -46,10 +50,17 @@ export async function store(data: NewPost & { body?: string, category?: string }
       .returningAll()
       .executeTakeFirst()
 
-    if (!result)
+    if (isRow<PostJsonResponse>(result))
+      return result
+
+    // The SQLite driver ignores RETURNING, so re-select the row it wrote.
+    const id = insertedId(result)
+    const post = id === undefined ? undefined : await fetchById(id)
+
+    if (!post)
       throw new Error('Failed to create post')
 
-    return result as PostJsonResponse & { body?: string, category?: string }
+    return post
   }
   catch (error) {
     if (error instanceof Error)

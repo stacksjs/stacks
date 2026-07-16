@@ -10,9 +10,10 @@
  * `/api/dashboard/*` requests to the Stacks router; user-defined routes in
  * `routes/api.ts` still take priority because they load first.
  *
- * No auth middleware is applied — these endpoints back the local dev
- * dashboard. If/when the dashboard is exposed beyond localhost, gate the
- * group with the appropriate middleware.
+ * Routes that mutate data or expose unpublished content are wrapped in
+ * `guard()` (see below): a no-op locally so the dev dashboard works without a
+ * token, `auth` + `role:admin` everywhere else. The remaining reads are
+ * unauthenticated by design.
  */
 
 import { route } from '@stacksjs/router'
@@ -36,23 +37,42 @@ function guard(r: any): any {
 }
 
 route.group({ prefix: '/api/dashboard', apiResponse: true }, () => {
-  route.get('/authors', 'Actions/Dashboard/Content/AuthorIndexAction')
-
-  // CMS posts admin — backs `views/dashboard/content/posts/index.stx`.
+  // CMS admin — backs the pages under `views/dashboard/content/`.
   //
-  // This is the dashboard-reachable surface for post CRUD. The `/cms/posts`
-  // group in `defaults/routes/dashboard.ts` is the public authoring API and is
-  // NOT usable from here: the dev dashboard server only delegates `/api/*` to
-  // the Stacks router on GET (a GET `/cms/posts` renders the STX 404 page
-  // instead), and that group is `middleware: 'auth'` while the dashboard server
-  // runs with `auth: false` and sends no credentials.
+  // This is the dashboard-reachable surface for CMS CRUD. The `/cms/*` group in
+  // `defaults/routes/dashboard.ts` is the public authoring API and is NOT usable
+  // from here: the dev dashboard server only delegates `/api/*` to the Stacks
+  // router on GET (a GET `/cms/posts` renders the STX 404 page instead), and
+  // that group is `middleware: 'auth'` while the dashboard server runs with
+  // `auth: false` and sends no credentials.
   //
   // Guarded for the same reason as the blog routes below: the writes mutate the
-  // database and the read exposes unpublished drafts.
+  // database and the reads expose unpublished drafts and unmoderated comments.
   guard(route.get('/posts', 'Actions/Dashboard/Content/PostIndexAction'))
   guard(route.post('/posts', 'Actions/Dashboard/Content/PostStoreAction'))
   guard(route.patch('/posts/{id}', 'Actions/Dashboard/Content/PostUpdateAction'))
   guard(route.delete('/posts/{id}', 'Actions/Dashboard/Content/PostDestroyAction'))
+
+  guard(route.get('/authors', 'Actions/Dashboard/Content/AuthorIndexAction'))
+  guard(route.post('/authors', 'Actions/Dashboard/Content/AuthorStoreAction'))
+  guard(route.delete('/authors/{id}', 'Actions/Dashboard/Content/AuthorDestroyAction'))
+
+  guard(route.get('/categories', 'Actions/Dashboard/Content/CategoryIndexAction'))
+  guard(route.post('/categories', 'Actions/Dashboard/Content/CategoryStoreAction'))
+  guard(route.delete('/categories/{id}', 'Actions/Dashboard/Content/CategoryDestroyAction'))
+
+  guard(route.get('/tags', 'Actions/Dashboard/Content/TagIndexAction'))
+  guard(route.post('/tags', 'Actions/Dashboard/Content/TagStoreAction'))
+  guard(route.delete('/tags/{id}', 'Actions/Dashboard/Content/TagDestroyAction'))
+
+  guard(route.get('/pages', 'Actions/Dashboard/Content/PageIndexAction'))
+  guard(route.post('/pages', 'Actions/Dashboard/Content/PageStoreAction'))
+  guard(route.delete('/pages/{id}', 'Actions/Dashboard/Content/PageDestroyAction'))
+
+  // No store route: comments arrive from readers, the dashboard only moderates.
+  guard(route.get('/comments', 'Actions/Dashboard/Content/CommentIndexAction'))
+  guard(route.patch('/comments/{id}', 'Actions/Dashboard/Content/CommentUpdateAction'))
+  guard(route.delete('/comments/{id}', 'Actions/Dashboard/Content/CommentDestroyAction'))
 
   route.get('/ci/status', 'Actions/Dashboard/Ci/StatusAction')
   // CI drilldown (stacksjs/stacks#1848): per-repo run history + per-run

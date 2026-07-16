@@ -1,5 +1,6 @@
 import { getDb } from '../database'
 import { fetchById } from './fetch'
+import { affectedRows } from '../results'
 
 /**
  * Delete a post by ID
@@ -17,20 +18,12 @@ export async function destroy(id: number): Promise<boolean> {
       throw new Error(`Post with ID ${id} not found`)
     }
 
-    // Delete related categorizable_models entries first
-    await db
-      .deleteFrom('categorizable_models')
-      .where('categorizable_id', '=', id)
-      .where('categorizable_type', '=', 'posts')
-      .execute()
-
-    // Delete the post
     const result = await db
       .deleteFrom('posts')
       .where('id', '=', id)
       .executeTakeFirst()
 
-    return (result as { numDeletedRows?: number })?.numDeletedRows ? (result as { numDeletedRows: number }).numDeletedRows > 0 : false
+    return affectedRows(result, 'numDeletedRows') > 0
   }
   catch (error) {
     if (error instanceof Error) {
@@ -65,20 +58,20 @@ export async function bulkDestroy(ids: number[]): Promise<number> {
     if (!existingIds.length)
       return 0
 
-    // Delete related categorizable_models entries first
-    await db
-      .deleteFrom('categorizable_models')
-      .where('categorizable_id', 'in', existingIds)
-      .where('categorizable_type', '=', 'posts')
-      .execute()
+    // Deleted one at a time: the query builder's delete grammar does not
+    // support an `in` predicate (it renders invalid SQL).
+    let deleted = 0
 
-    // Delete all existing posts
-    const result = await db
-      .deleteFrom('posts')
-      .where('id', 'in', existingIds)
-      .executeTakeFirst()
+    for (const existingId of existingIds) {
+      const result = await db
+        .deleteFrom('posts')
+        .where('id', '=', existingId)
+        .executeTakeFirst()
 
-    return Number((result as { numDeletedRows?: number })?.numDeletedRows) || 0
+      deleted += affectedRows(result, 'numDeletedRows')
+    }
+
+    return deleted
   }
   catch (error) {
     if (error instanceof Error) {

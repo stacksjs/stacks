@@ -71,15 +71,26 @@
 
 <script>
 ;(function () {
-  var api = '/api/dashboard/cms'
+  var api = '/api/dashboard/authors'
   var authors = []
-  var posts = []
+  var assignedPostCount = 0
   var table = document.getElementById('authors-table')
   var empty = document.getElementById('authors-empty')
   var dialog = document.getElementById('author-dialog')
   var search = document.getElementById('author-search')
 
   function $(id) { return document.getElementById(id) }
+  // CSRF is default-on for POST/PATCH/DELETE via a stateless double-submit
+  // cookie: the server seeds a non-HttpOnly X-CSRF-Token cookie on safe
+  // responses and the client echoes it back in the header. The list request on
+  // page load seeds it, so the token is present by the time a save can happen.
+  // See defaults/app/Middleware/Csrf.ts.
+  function writeHeaders() {
+    var headers = { 'content-type': 'application/json' }
+    var match = document.cookie.match(/(?:^|;\s*)X-CSRF-Token=([^;]*)/)
+    if (match) headers['X-CSRF-Token'] = decodeURIComponent(match[1])
+    return headers
+  }
   function escapeHtml(value) {
     return String(value || '').replace(/[&<>"']/g, function (ch) {
       return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[ch]
@@ -89,23 +100,20 @@
     if (!value) return '-'
     return new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(new Date(value))
   }
-  function postCount(author) {
-    return posts.filter(function (post) { return Number(post.author_id) === Number(author.id) }).length
-  }
   function render() {
     var q = search.value.toLowerCase()
     var rows = authors.filter(function (author) {
       return !q || [author.name, author.email].join(' ').toLowerCase().indexOf(q) !== -1
     })
     $('author-total').textContent = String(authors.length)
-    $('author-posts').textContent = String(posts.filter(function (post) { return post.author_id != null }).length)
+    $('author-posts').textContent = String(assignedPostCount)
     $('author-newest').textContent = authors[0] ? authors[0].name : '-'
     empty.classList.toggle('hidden', rows.length > 0)
     table.innerHTML = rows.map(function (author) {
       return '<tr class="hover:bg-neutral-50 dark:hover:bg-neutral-950/70">' +
         '<td class="px-4 py-3 font-medium">' + escapeHtml(author.name) + '</td>' +
         '<td class="px-4 py-3 text-neutral-600 dark:text-neutral-300">' + escapeHtml(author.email) + '</td>' +
-        '<td class="px-4 py-3 text-neutral-600 dark:text-neutral-300">' + postCount(author) + '</td>' +
+        '<td class="px-4 py-3 text-neutral-600 dark:text-neutral-300">' + Number(author.postCount || 0) + '</td>' +
         '<td class="px-4 py-3 text-neutral-600 dark:text-neutral-300">' + formatDate(author.created_at) + '</td>' +
         '<td class="px-4 py-3 text-right"><button type="button" data-id="' + author.id + '" class="p-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 rounded"><span class="block h-4 w-4 i-hugeicons-waste"></span></button></td>' +
       '</tr>'
@@ -113,9 +121,10 @@
   }
   async function load() {
     var res = await fetch(api)
+    if (!res.ok) throw new Error('Unable to load CMS authors (' + res.status + ').')
     var json = await res.json()
     authors = Array.isArray(json.authors) ? json.authors : []
-    posts = Array.isArray(json.posts) ? json.posts : []
+    assignedPostCount = Number(json.assignedPostCount || 0)
     render()
   }
   document.getElementById('new-author-button').addEventListener('click', function () {
@@ -126,13 +135,14 @@
   $('author-cancel').addEventListener('click', function () { dialog.close() })
   document.getElementById('author-form').addEventListener('submit', async function (event) {
     event.preventDefault()
-    var res = await fetch(api + '/authors', {
+    var res = await fetch(api, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: writeHeaders(),
       body: JSON.stringify({ name: $('author-name').value, email: $('author-email').value }),
     })
     if (!res.ok) {
-      alert((await res.json()).error || 'Could not create author')
+      var err = await res.json().catch(function () { return {} })
+      alert(err.message || err.error || 'Could not create author')
       return
     }
     dialog.close()
@@ -140,16 +150,21 @@
   })
   table.addEventListener('click', async function (event) {
     var button = event.target.closest('button[data-id]')
-    if (!button || !confirm('Delete this author?')) return
-    var res = await fetch(api + '/authors/' + button.dataset.id, { method: 'DELETE' })
+    if (!button || !confirm('Delete this author? Their posts are kept but left without an author.')) return
+    var res = await fetch(api + '/' + button.dataset.id, { method: 'DELETE', headers: writeHeaders() })
     if (!res.ok) {
-      alert((await res.json()).error || 'Could not delete author')
+      var err = await res.json().catch(function () { return {} })
+      alert(err.message || err.error || 'Could not delete author')
       return
     }
     await load()
   })
   search.addEventListener('input', render)
-  load()
+
+  load().catch(function (error) {
+    empty.classList.remove('hidden')
+    empty.textContent = error.message || 'Unable to load CMS authors.'
+  })
 })()
 </script>
 

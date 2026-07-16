@@ -1,51 +1,65 @@
 import { Action } from '@stacksjs/actions'
-import { Author } from '@stacksjs/orm'
+import { db } from '@stacksjs/database'
 
-// Mock data used when the ORM is unavailable (e.g. dashboard dev with no DB
-// seeded). Shape matches the `Author` interface in
-// storage/framework/defaults/views/dashboard/content/authors/index.stx so
-// the page can hydrate directly from this response.
-const mockAuthors = [
-  { id: 1, name: 'Jane Doe', email: 'jane@example.com', role: 'Editor', avatar: 'https://i.pravatar.cc/150?img=1', bio: 'Tech writer with 10+ years of experience covering web frameworks and performance.', postCount: 24, totalViews: 145000, totalComments: 312, created_at: '2022-01-15' },
-  { id: 2, name: 'John Smith', email: 'john@example.com', role: 'Author', avatar: 'https://i.pravatar.cc/150?img=2', bio: 'Specialist in TypeScript and frontend tooling.', postCount: 18, totalViews: 98000, totalComments: 220, created_at: '2022-04-08' },
-  { id: 3, name: 'Michael Brown', email: 'michael@example.com', role: 'Author', avatar: 'https://i.pravatar.cc/150?img=3', bio: 'Reviews hardware and software for developers.', postCount: 12, totalViews: 64000, totalComments: 145, created_at: '2022-09-21' },
-  { id: 4, name: 'Emily Davis', email: 'emily@example.com', role: 'Author', avatar: 'https://i.pravatar.cc/150?img=4', bio: 'Accessibility advocate and design systems engineer.', postCount: 9, totalViews: 41000, totalComments: 88, created_at: '2023-02-14' },
-  { id: 5, name: 'Sarah Williams', email: 'sarah@example.com', role: 'Author', avatar: 'https://i.pravatar.cc/150?img=5', bio: 'Backend engineer focused on API design and databases.', postCount: 6, totalViews: 22000, totalComments: 47, created_at: '2023-06-30' },
-]
+interface AuthorRow {
+  id: number
+  name: string | null
+  email: string | null
+  bio: string | null
+  avatar: string | null
+  created_at: string | null
+  updated_at: string | null
+}
 
+/**
+ * `GET /api/dashboard/authors` — backs `views/dashboard/content/authors/index.stx`.
+ *
+ * Reads straight from the `authors` table via `db` rather than the ORM model:
+ * `Author` from `@stacksjs/orm` exposes no query methods today, so the previous
+ * `Author.all()` call threw on every request — and the action caught it and
+ * served five hardcoded "Jane Doe" rows, which made an empty (or broken)
+ * dashboard look populated. There is deliberately no fallback now: a failure
+ * here must surface as a failure.
+ *
+ * `postCount` is derived here rather than read off the row. The `authors` table
+ * has no counter column, and nothing would maintain one if it did.
+ */
 export default new Action({
   name: 'AuthorIndexAction',
-  description: 'Returns authors data for the dashboard.',
+  description: 'Returns CMS authors for the dashboard.',
   method: 'GET',
+  apiResponse: true,
   async handle() {
-    try {
-      const allAuthors = await Author.all()
+    const [rows, postAuthors] = await Promise.all([
+      db.selectFrom('authors').selectAll().orderBy('created_at', 'desc').execute() as unknown as Promise<AuthorRow[]>,
+      db.selectFrom('posts').select(['author_id']).execute() as unknown as Promise<Array<{ author_id: number | null }>>,
+    ])
 
-      // Empty result from a real ORM still falls through to mock data so the
-      // dev dashboard always has something to render.
-      if (!allAuthors || allAuthors.length === 0)
-        return { authors: mockAuthors }
+    const postCounts = new Map<number, number>()
+    for (const post of postAuthors) {
+      if (post.author_id == null)
+        continue
 
-      const authors = allAuthors.map((a, idx) => {
-        const name = String(a.get('name') || '')
-        return {
-          id: Number(a.get('id') || idx + 1),
-          name,
-          email: String(a.get('email') || ''),
-          role: String(a.get('role') || 'Writer'),
-          avatar: String(a.get('avatar') || `https://i.pravatar.cc/150?img=${idx + 1}`),
-          bio: String(a.get('bio') || ''),
-          postCount: Number(a.get('post_count') || a.get('posts') || 0),
-          totalViews: Number(a.get('total_views') || 0),
-          totalComments: Number(a.get('total_comments') || 0),
-          created_at: String(a.get('created_at') || ''),
-        }
-      })
-
-      return { authors }
+      const id = Number(post.author_id)
+      postCounts.set(id, (postCounts.get(id) || 0) + 1)
     }
-    catch {
-      return { authors: mockAuthors }
-    }
+
+    const authors = rows.map(row => ({
+      id: Number(row.id),
+      name: String(row.name || ''),
+      email: String(row.email || ''),
+      bio: String(row.bio || ''),
+      avatar: String(row.avatar || ''),
+      postCount: postCounts.get(Number(row.id)) || 0,
+      created_at: row.created_at || null,
+      updated_at: row.updated_at || null,
+    }))
+
+    // Posts whose author no longer exists are not counted: the stat means
+    // "posts reachable from this list", which is what the page's Assigned Posts
+    // tile claims to show.
+    const assignedPostCount = authors.reduce((sum, author) => sum + author.postCount, 0)
+
+    return { authors, assignedPostCount }
   },
 })

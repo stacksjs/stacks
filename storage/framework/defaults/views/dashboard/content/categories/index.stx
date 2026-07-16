@@ -71,13 +71,24 @@
 
 <script>
 ;(function () {
-  var api = '/api/dashboard/cms'
+  var api = '/api/dashboard/categories'
   var categories = []
   var table = document.getElementById('categories-table')
   var empty = document.getElementById('categories-empty')
   var dialog = document.getElementById('category-dialog')
   var search = document.getElementById('category-search')
   function $(id) { return document.getElementById(id) }
+  // CSRF is default-on for POST/PATCH/DELETE via a stateless double-submit
+  // cookie: the server seeds a non-HttpOnly X-CSRF-Token cookie on safe
+  // responses and the client echoes it back in the header. The list request on
+  // page load seeds it, so the token is present by the time a save can happen.
+  // See defaults/app/Middleware/Csrf.ts.
+  function writeHeaders() {
+    var headers = { 'content-type': 'application/json' }
+    var match = document.cookie.match(/(?:^|;\s*)X-CSRF-Token=([^;]*)/)
+    if (match) headers['X-CSRF-Token'] = decodeURIComponent(match[1])
+    return headers
+  }
   function escapeHtml(value) {
     return String(value || '').replace(/[&<>"']/g, function (ch) {
       return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[ch]
@@ -106,6 +117,7 @@
   }
   async function load() {
     var res = await fetch(api)
+    if (!res.ok) throw new Error('Unable to load CMS categories (' + res.status + ').')
     var json = await res.json()
     categories = Array.isArray(json.categories) ? json.categories : []
     render()
@@ -123,24 +135,34 @@
   $('category-slug').addEventListener('input', function () { $('category-slug').dataset.touched = '1' })
   document.getElementById('category-form').addEventListener('submit', async function (event) {
     event.preventDefault()
-    var res = await fetch(api + '/categories', {
+    var res = await fetch(api, {
       method: 'POST',
-      headers: { 'content-type': 'application/json' },
+      headers: writeHeaders(),
       body: JSON.stringify({ name: $('category-name').value, slug: $('category-slug').value, description: $('category-description').value }),
     })
-    if (!res.ok) return alert('Could not create category')
+    if (!res.ok) {
+      var err = await res.json().catch(function () { return {} })
+      return alert(err.message || err.error || 'Could not create category')
+    }
     dialog.close()
     await load()
   })
   table.addEventListener('click', async function (event) {
     var button = event.target.closest('button[data-id]')
     if (!button || !confirm('Delete this category?')) return
-    var res = await fetch(api + '/categories/' + button.getAttribute('data-id'), { method: 'DELETE' })
-    if (!res.ok) return alert('Could not delete category')
+    var res = await fetch(api + '/' + button.getAttribute('data-id'), { method: 'DELETE', headers: writeHeaders() })
+    if (!res.ok) {
+      var err = await res.json().catch(function () { return {} })
+      return alert(err.message || err.error || 'Could not delete category')
+    }
     await load()
   })
   search.addEventListener('input', render)
-  load()
+
+  load().catch(function (error) {
+    empty.classList.remove('hidden')
+    empty.textContent = error.message || 'Unable to load CMS categories.'
+  })
 })()
 </script>
 

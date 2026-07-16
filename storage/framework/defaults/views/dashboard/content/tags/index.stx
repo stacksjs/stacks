@@ -15,7 +15,10 @@
       </button>
     </header>
 
-    <section class="grid gap-4 md:grid-cols-3">
+    <!-- Two tiles, not three: the third used to be an "Active" count filtered on
+         `is_active`, a column the tags table does not have. Every tag passed, so
+         it always rendered the same number as Total Tags. -->
+    <section class="grid gap-4 md:grid-cols-2">
       <div class="p-4 bg-white dark:bg-neutral-900 border border-neutral-200 rounded-lg dark:border-neutral-800 shadow-sm">
         <p class="text-neutral-500 text-sm dark:text-neutral-400">Total Tags</p>
         <p id="tag-total" class="mt-2 font-semibold text-3xl">0</p>
@@ -23,10 +26,6 @@
       <div class="p-4 bg-white dark:bg-neutral-900 border border-neutral-200 rounded-lg dark:border-neutral-800 shadow-sm">
         <p class="text-neutral-500 text-sm dark:text-neutral-400">Newest</p>
         <p id="tag-newest" class="mt-2 font-semibold text-2xl truncate">-</p>
-      </div>
-      <div class="p-4 bg-white dark:bg-neutral-900 border border-neutral-200 rounded-lg dark:border-neutral-800 shadow-sm">
-        <p class="text-neutral-500 text-sm dark:text-neutral-400">Active</p>
-        <p id="tag-active" class="mt-2 font-semibold text-3xl text-green-600 dark:text-green-400">0</p>
       </div>
     </section>
 
@@ -71,13 +70,24 @@
 
 <script>
 ;(function () {
-  var api = '/api/dashboard/cms'
+  var api = '/api/dashboard/tags'
   var tags = []
   var table = document.getElementById('tags-table')
   var empty = document.getElementById('tags-empty')
   var dialog = document.getElementById('tag-dialog')
   var search = document.getElementById('tag-search')
   function $(id) { return document.getElementById(id) }
+  // CSRF is default-on for POST/PATCH/DELETE via a stateless double-submit
+  // cookie: the server seeds a non-HttpOnly X-CSRF-Token cookie on safe
+  // responses and the client echoes it back in the header. The list request on
+  // page load seeds it, so the token is present by the time a save can happen.
+  // See defaults/app/Middleware/Csrf.ts.
+  function writeHeaders() {
+    var headers = { 'content-type': 'application/json' }
+    var match = document.cookie.match(/(?:^|;\s*)X-CSRF-Token=([^;]*)/)
+    if (match) headers['X-CSRF-Token'] = decodeURIComponent(match[1])
+    return headers
+  }
   function escapeHtml(value) {
     return String(value || '').replace(/[&<>"']/g, function (ch) {
       return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[ch]
@@ -92,7 +102,6 @@
       return !q || [tag.name, tag.slug, tag.description].join(' ').toLowerCase().indexOf(q) !== -1
     })
     $('tag-total').textContent = String(tags.length)
-    $('tag-active').textContent = String(tags.filter(function (t) { return t.is_active !== false && t.is_active !== 0 }).length)
     $('tag-newest').textContent = tags[0] ? tags[0].name : '-'
     empty.classList.toggle('hidden', rows.length > 0)
     table.innerHTML = rows.map(function (tag) {
@@ -106,6 +115,7 @@
   }
   async function load() {
     var res = await fetch(api)
+    if (!res.ok) throw new Error('Unable to load CMS tags (' + res.status + ').')
     var json = await res.json()
     tags = Array.isArray(json.tags) ? json.tags : []
     render()
@@ -123,24 +133,34 @@
   $('tag-slug').addEventListener('input', function () { $('tag-slug').dataset.touched = '1' })
   document.getElementById('tag-form').addEventListener('submit', async function (event) {
     event.preventDefault()
-    var res = await fetch(api + '/tags', {
+    var res = await fetch(api, {
       method: 'POST',
-      headers: { 'content-type': 'application/json' },
+      headers: writeHeaders(),
       body: JSON.stringify({ name: $('tag-name').value, slug: $('tag-slug').value, description: $('tag-description').value }),
     })
-    if (!res.ok) return alert('Could not create tag')
+    if (!res.ok) {
+      var err = await res.json().catch(function () { return {} })
+      return alert(err.message || err.error || 'Could not create tag')
+    }
     dialog.close()
     await load()
   })
   table.addEventListener('click', async function (event) {
     var button = event.target.closest('button[data-id]')
     if (!button || !confirm('Delete this tag?')) return
-    var res = await fetch(api + '/tags/' + button.getAttribute('data-id'), { method: 'DELETE' })
-    if (!res.ok) return alert('Could not delete tag')
+    var res = await fetch(api + '/' + button.getAttribute('data-id'), { method: 'DELETE', headers: writeHeaders() })
+    if (!res.ok) {
+      var err = await res.json().catch(function () { return {} })
+      return alert(err.message || err.error || 'Could not delete tag')
+    }
     await load()
   })
   search.addEventListener('input', render)
-  load()
+
+  load().catch(function (error) {
+    empty.classList.remove('hidden')
+    empty.textContent = error.message || 'Unable to load CMS tags.'
+  })
 })()
 </script>
 
