@@ -5,6 +5,42 @@ const siteMode = 'coming-soon'
 const comingSoonBypassEnabled = true
 const comingSoonBypassToken = 'trailhead'
 
+const siteUrl = 'https://stacksjs.com'
+const siteDescription = 'Stacks is a full-stack TypeScript framework for web apps, CMS content, docs, APIs, queues, mail, tests, and cloud deployment.'
+
+// Structured data. Built as a string here so the @-prefixed schema.org keys
+// (@context, @type) never reach the stx directive scanner; emitted raw in the
+// head with {!! jsonLd !!}.
+const jsonLd = JSON.stringify({
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'Organization',
+      '@id': `${siteUrl}/#org`,
+      name: appName,
+      url: `${siteUrl}/`,
+      logo: `${siteUrl}/images/logos/logo.png`,
+      sameAs: ['https://github.com/stacksjs/stacks'],
+    },
+    {
+      '@type': 'WebSite',
+      '@id': `${siteUrl}/#website`,
+      name: appName,
+      url: `${siteUrl}/`,
+      publisher: { '@id': `${siteUrl}/#org` },
+    },
+    {
+      '@type': 'SoftwareApplication',
+      name: appName,
+      applicationCategory: 'DeveloperApplication',
+      operatingSystem: 'Cross-platform',
+      description: siteDescription,
+      url: `${siteUrl}/`,
+      offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+    },
+  ],
+})
+
 const navLinks = [
   { label: 'Features', url: '#platform' },
   { label: 'CMS', url: '#cms' },
@@ -78,8 +114,40 @@ const stackLayers = [
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="Stacks is a full-stack TypeScript framework for web apps, CMS content, docs, APIs, queues, mail, tests, and cloud deployment.">
+    <meta name="description" content="{{ siteDescription }}">
     <title>Stacks - Full-stack TypeScript framework</title>
+
+    <link rel="canonical" href="https://stacksjs.com/">
+    <meta name="color-scheme" content="light dark">
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#0a0f1c" media="(prefers-color-scheme: dark)">
+    <link rel="icon" href="/images/logos/favicon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="/images/logos/logo.png">
+
+    <!-- Open Graph. Defining og:title here makes stx skip its default SEO
+         injection, which would otherwise stamp placeholder "stx Project" tags. -->
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Stacks">
+    <meta property="og:url" content="https://stacksjs.com/">
+    <meta property="og:title" content="Stacks - Full-stack TypeScript framework">
+    <meta property="og:description" content="{{ siteDescription }}">
+    <meta property="og:image" content="https://stacksjs.com/images/og-image.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="600">
+    <meta property="og:image:alt" content="Stacks - develop modern apps, clouds, and framework-agnostic libraries, faster.">
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:site" content="@stacksjs">
+    <meta name="twitter:title" content="Stacks - Full-stack TypeScript framework">
+    <meta name="twitter:description" content="{{ siteDescription }}">
+    <meta name="twitter:image" content="https://stacksjs.com/images/og-image.png">
+
+    <!-- Brand type: Geist + Geist Mono. Preconnect so the hero paints fast. -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&family=Geist+Mono:wght@400;500;600&display=swap">
+
+    <script type="application/ld+json">{!! jsonLd !!}</script>
     <script>
       /*
        * Theme, applied before first paint so the page never flashes the wrong
@@ -107,7 +175,7 @@ const stackLayers = [
         try { prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches }
         catch {}
 
-        var theme = ok(queryTheme) ? queryTheme : (ok(savedTheme) ? savedTheme : (prefersDark ? 'dark' : 'colored'))
+        var theme = ok(queryTheme) ? queryTheme : (ok(savedTheme) ? savedTheme : (prefersDark ? 'dark' : 'light'))
         document.documentElement.setAttribute('data-theme', theme)
 
         window.stxTheme = function (next) {
@@ -125,29 +193,10 @@ const stackLayers = [
       })()
     </script>
     <style>
-      @font-face {
-        font-display: swap;
-        font-family: "Campmate Script";
-        font-style: normal;
-        font-weight: 400;
-        src: url("/assets/fonts/nps/CampmateScript-Regular.woff2") format("woff2");
-      }
-
-      @font-face {
-        font-display: swap;
-        font-family: "NPS 2026";
-        font-style: normal;
-        font-weight: 100 900;
-        src: url("/assets/fonts/nps/NPS_2026-variable.woff2") format("woff2");
-      }
-
-      @font-face {
-        font-display: swap;
-        font-family: "Redwood Serif";
-        font-style: normal;
-        font-weight: 400;
-        src: url("/assets/fonts/nps/RedwoodSerif-Regular.woff2") format("woff2");
-      }
+      /* Type is Geist (display + body) and Geist Mono (labels, code), loaded
+         from Google Fonts in the <link> above. Geist is the brand sans that
+         matches the wordmark on the social card; Geist Mono carries the
+         eyebrows, code window, and terminal. */
 
       /*
        * Three themes, switched by `data-theme` on <html>, matching the blog
@@ -246,61 +295,57 @@ const stackLayers = [
 
       :root[data-theme='dark'] {
         color-scheme: dark;
-        --bg: #0d1e16;
-        --surface: #163824;
-        --badge-bg: #fff0c8;
-        --field-bg: #fff7e1;
-        --text: #fff7e1;
-        --muted: #b9c4b2;
-        --canopy: #275f3c;
-        --moss: #aac47d;
-        --river: #7fb8ae;
-        --sky: #b8d9cf;
-        --gold: #df9a2f;
-        --clay: #a85f35;
-        --on-accent: #102218;
-        --on-moss: #112117;
-        --on-field: #18261d;
-        --ink-rgb: 255, 247, 225;
-        --deep-rgb: 8, 23, 15;
-        --canopy-rgb: 39, 95, 60;
-        --moss-rgb: 170, 196, 125;
-        --river-rgb: 127, 184, 174;
-        --gold-rgb: 223, 154, 47;
+        --bg: #0a0f1c;
+        --surface: #121a2e;
+        --badge-bg: #16223c;
+        --field-bg: #0f1728;
+        --text: #eaf0fb;
+        --muted: #9fb0c8;
+        --canopy: #60a5fa;
+        --moss: #93c5fd;
+        --river: #7cb2ff;
+        --sky: #bcd7ff;
+        --gold: #3b82f6;
+        --clay: #2563eb;
+        --on-accent: #ffffff;
+        --on-moss: #0a0f1c;
+        --on-field: #eaf0fb;
+        --ink-rgb: 234, 240, 251;
+        --deep-rgb: 8, 14, 28;
+        --canopy-rgb: 18, 26, 46;
+        --moss-rgb: 147, 197, 253;
+        --river-rgb: 124, 178, 255;
+        --gold-rgb: 59, 130, 246;
         --shadow-rgb: 0, 0, 0;
-        --line: rgba(var(--ink-rgb), 0.2);
-        --line-strong: rgba(var(--ink-rgb), 0.34);
-        --shadow: 0 30px 80px rgba(var(--shadow-rgb), 0.36);
-        --page-a: #0c1e15;
-        --page-b: #10271b;
-        --page-c: #0d1b14;
-        --panel-a: rgba(var(--canopy-rgb), 0.84);
-        --panel-b: rgba(var(--deep-rgb), 0.96);
+        --line: rgba(var(--ink-rgb), 0.16);
+        --line-strong: rgba(var(--ink-rgb), 0.30);
+        --shadow: 0 30px 80px rgba(var(--shadow-rgb), 0.42);
+        --page-a: #0a0f1c;
+        --page-b: #0e1730;
+        --page-c: #090e1a;
+        --panel-a: rgba(var(--canopy-rgb), 0.90);
+        --panel-b: rgba(var(--deep-rgb), 0.94);
       }
 
       /*
-       * Font roles, mirroring content/blog/.theme.css so / and /blog agree on
-       * what each NPS face is for. The faces are display/signage cuts, and
-       * long-form body copy stays on a system humanist sans for readability.
-       *
-       * There used to be an @font-face for "Switchback" here, used as the body
-       * font. That file has never existed in public/assets/fonts/nps, so every
-       * visit 404'd and silently fell back to the system stack below. The
-       * fallback is what the blog asks for anyway, so this only drops the
-       * failed request and makes the intent explicit.
+       * Font roles, mirroring content/blog/.theme.css so / and /blog agree.
+       * Geist is one family across hero, headings, and body (weight carries the
+       * hierarchy, not a second family); Geist Mono carries eyebrows, labels,
+       * the code window, and the terminal.
        */
       :root {
-        --font-body: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-        --font-hero: "Campmate Script", ui-serif, Georgia, serif;
-        --font-head: "NPS 2026", var(--font-body);
-        --font-label: "Redwood Serif", Georgia, ui-serif, serif;
+        --font-body: "Geist", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        --font-hero: "Geist", var(--font-body);
+        --font-head: "Geist", var(--font-body);
+        --font-label: "Geist", var(--font-body);
+        --font-mono: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
       }
 
-      /* The terminal stays dark in every theme, the way a real one is, and the
-         way the blog renders its code blocks. */
+      /* The code window and terminal stay dark in every theme, the way an
+         editor and a shell are. */
       :root {
-        --term-bg: #07130d;
-        --term-fg: #c8f5dd;
+        --term-bg: #0b1220;
+        --term-fg: #86efac;
       }
 
       /* Theme toggle. Mirrors .blog-theme-toggle in content/blog/.theme.css. */
@@ -496,7 +541,8 @@ const stackLayers = [
         margin: 0 0 1.4rem;
         color: var(--text);
         font-family: var(--font-hero);
-        font-weight: 400;
+        font-weight: 800;
+        letter-spacing: -0.035em;
         font-size: clamp(3.6rem, 11vw, 6.4rem);
         line-height: 1.02;
       }
@@ -673,8 +719,10 @@ const stackLayers = [
         align-items: center;
         margin-bottom: 1rem;
         color: var(--moss);
-        font-size: 0.78rem;
-        font-weight: 950;
+        font-family: var(--font-mono);
+        font-size: 0.74rem;
+        font-weight: 600;
+        letter-spacing: 0.14em;
         text-transform: uppercase;
       }
 
@@ -686,23 +734,24 @@ const stackLayers = [
       }
 
       .hero-title {
-        margin: 0 0 0.4rem;
+        margin: 0 0 0.5rem;
         color: var(--text);
         font-family: var(--font-hero);
         font-size: clamp(3.4rem, 6.4vw, 5.6rem);
-        font-weight: 400;
+        font-weight: 800;
+        letter-spacing: -0.035em;
         line-height: 0.95;
       }
 
       .hero-headline {
-        max-width: 620px;
+        max-width: 640px;
         margin: 0;
         color: var(--sky);
         font-family: var(--font-head);
-        font-size: clamp(1.22rem, 1.62vw, 1.58rem);
-        font-weight: 850;
-        line-height: 1.2;
-        text-transform: uppercase;
+        font-size: clamp(1.3rem, 1.7vw, 1.68rem);
+        font-weight: 700;
+        letter-spacing: -0.01em;
+        line-height: 1.16;
       }
 
       .hero-copy {
@@ -811,139 +860,84 @@ const stackLayers = [
         opacity: 0.08;
       }
 
-      .dashboard-shell {
+      /* Real code, not a fake dashboard: an authentic defineModel() as you
+         would actually write it. The code + terminal panels stay dark in every
+         theme, the way an editor and a shell are. */
+      .code-window {
         position: relative;
         z-index: 1;
-        display: grid;
-        grid-template-columns: 9.4rem minmax(0, 1fr);
-        min-height: 340px;
         overflow: hidden;
-        border: 1px solid rgba(var(--ink-rgb), 0.2);
-        border-radius: 7px;
-        font-family: var(--font-body);
-        background: rgba(var(--deep-rgb), 0.82);
+        border: 1px solid rgba(0, 0, 0, 0.45);
+        border-radius: 9px;
+        background: #0b1220;
+        box-shadow: 0 12px 34px rgba(3, 8, 22, 0.30);
       }
 
-      .dashboard-side {
-        padding: 1rem;
-        border-right: 1px solid var(--line);
-        background: rgba(var(--deep-rgb), 0.86);
-      }
-
-      .dashboard-logo {
+      .code-titlebar {
         display: flex;
-        gap: 0.65rem;
+        gap: 0.7rem;
         align-items: center;
-        margin-bottom: 1.2rem;
-        color: var(--text);
-        font-size: 0.7rem;
-        font-weight: 950;
-        line-height: 1;
-        text-transform: uppercase;
+        padding: 0.6rem 0.85rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        background: rgba(255, 255, 255, 0.03);
       }
 
-      .dashboard-logo img {
-        width: 34px;
-        height: 34px;
-        padding: 0.3rem;
-        border-radius: 6px;
-        background: var(--badge-bg);
+      .code-dots {
+        display: inline-flex;
+        gap: 0.42rem;
       }
 
-      .side-pill {
-        display: block;
-        margin-bottom: 0.5rem;
-        padding: 0.62rem 0.7rem;
-        border: 1px solid transparent;
-        border-radius: 6px;
-        color: rgba(var(--ink-rgb), 0.66);
-        font-size: 0.66rem;
-        font-weight: 900;
-        text-transform: uppercase;
+      .code-dots i {
+        width: 11px;
+        height: 11px;
+        border-radius: 50%;
+        background: #ff5f57;
       }
 
-      .side-pill.active {
-        border-color: rgba(var(--gold-rgb), 0.46);
-        color: var(--text);
-        background: rgba(var(--gold-rgb), 0.14);
+      .code-dots i:nth-child(2) { background: #febc2e; }
+      .code-dots i:nth-child(3) { background: #28c840; }
+
+      .code-file {
+        color: #8aa0b8;
+        font-family: var(--font-mono);
+        font-size: 0.76rem;
+        font-weight: 500;
+        letter-spacing: 0.01em;
       }
 
-      .dashboard-main {
-        padding: 1rem;
-      }
-
-      .dashboard-top {
-        display: flex;
-        justify-content: space-between;
-        gap: 1rem;
-        align-items: start;
-        margin-bottom: 1rem;
-      }
-
-      .dashboard-top h2 {
+      .code-body {
         margin: 0;
-        color: var(--text);
-        font-size: 1.18rem;
-        line-height: 1.1;
+        padding: 1.05rem 1.15rem;
+        overflow-x: auto;
+        color: #ccd6e6;
+        font-family: var(--font-mono);
+        font-size: 0.8rem;
+        line-height: 1.62;
+        white-space: pre;
+        tab-size: 2;
       }
 
-      .status-chip {
-        flex: 0 0 auto;
-        padding: 0.38rem 0.55rem;
-        border-radius: 999px;
-        color: var(--on-moss);
-        font-size: 0.58rem;
-        font-weight: 950;
-        text-transform: uppercase;
-        background: var(--moss);
-      }
-
-      .content-table {
-        display: grid;
-        gap: 0.55rem;
-      }
-
-      .content-row {
-        display: grid;
-        grid-template-columns: minmax(0, 1fr);
-        gap: 0.35rem;
-        padding: 0.66rem;
-        border: 1px solid rgba(var(--ink-rgb), 0.13);
-        border-radius: 6px;
-        background: rgba(var(--ink-rgb), 0.05);
-      }
-
-      .content-row strong {
-        display: block;
-        color: var(--text);
-        font-size: 0.88rem;
-      }
-
-      .content-row span {
-        color: rgba(var(--ink-rgb), 0.58);
-        font-size: 0.72rem;
-        font-weight: 800;
-      }
-
-      .row-state {
-        color: var(--gold);
-        font-size: 0.68rem;
-        font-weight: 950;
-        text-transform: uppercase;
-      }
+      .tok-key { color: #6ea8fe; }
+      .tok-str { color: #7fdca4; }
+      .tok-fn { color: #e6b673; }
+      .tok-prop { color: #d7e0ec; }
+      .tok-bool { color: #c792ea; }
+      .tok-com { color: #5f7488; font-style: italic; }
 
       .terminal-strip {
-        margin-top: 1rem;
-        padding: 0.72rem;
-        border: 1px solid rgba(var(--river-rgb), 0.22);
-        border-radius: 6px;
+        margin-top: 0.85rem;
+        padding: 0.8rem 0.9rem;
+        border: 1px solid rgba(var(--river-rgb), 0.28);
+        border-radius: 9px;
         color: var(--term-fg);
-        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-        font-size: 0.74rem;
-        line-height: 1.5;
+        font-family: var(--font-mono);
+        font-size: 0.76rem;
+        line-height: 1.55;
         background: var(--term-bg);
         white-space: pre-wrap;
       }
+
+      .term-com { color: #5f7488; }
 
       .section {
         padding: 4rem 0;
@@ -964,10 +958,11 @@ const stackLayers = [
       .section-title {
         margin: 0;
         color: var(--text);
-        font-family: var(--font-label);
+        font-family: var(--font-head);
         font-size: clamp(1.72rem, 2.45vw, 2.62rem);
-        font-weight: 400;
-        line-height: 1.08;
+        font-weight: 700;
+        letter-spacing: -0.025em;
+        line-height: 1.06;
         overflow-wrap: anywhere;
       }
 
@@ -1022,10 +1017,11 @@ const stackLayers = [
       .signup-panel h2 {
         margin: 0;
         color: var(--text);
-        font-family: var(--font-label);
+        font-family: var(--font-head);
         font-size: 1.12rem;
-        font-weight: 400;
-        line-height: 1.18;
+        font-weight: 650;
+        letter-spacing: -0.01em;
+        line-height: 1.2;
       }
 
       .area-card p,
@@ -1341,21 +1337,6 @@ const stackLayers = [
           display: none;
         }
 
-        .dashboard-shell {
-          grid-template-columns: 1fr;
-          min-height: auto;
-        }
-
-        .dashboard-side {
-          border-right: 0;
-          border-bottom: 1px solid var(--line);
-        }
-
-        .side-pill {
-          display: inline-block;
-          margin: 0 0.35rem 0.45rem 0;
-        }
-
         .section {
           padding: 2.75rem 0;
         }
@@ -1399,8 +1380,6 @@ const stackLayers = [
           padding: 0.7rem;
         }
 
-        .dashboard-top,
-        .content-row,
         .route {
           grid-template-columns: 1fr;
           flex-direction: column;
@@ -1476,50 +1455,30 @@ const stackLayers = [
             </div>
           </div>
 
-          <aside class="product-preview" aria-label="Stacks dashboard preview">
-            <div class="dashboard-shell">
-              <div class="dashboard-side">
-                <div class="dashboard-logo">
-                  <img src="/assets/images/park-emblem.svg" alt="" width="34" height="34">
-                  <span>CMS</span>
-                </div>
-                <span class="active side-pill">Content</span>
-                <span class="side-pill">Models</span>
-                <span class="side-pill">Docs</span>
-                <span class="side-pill">Deploys</span>
-                <span class="side-pill">Mail</span>
+          <aside class="product-preview" aria-label="Define a model in Stacks">
+            <div class="code-window">
+              <div class="code-titlebar">
+                <span class="code-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+                <span class="code-file">app/Models/Post.ts</span>
               </div>
-              <div class="dashboard-main">
-                <div class="dashboard-top">
-                  <div>
-                    <h2>Framework dashboard</h2>
-                    <p class="section-copy">Edit CMS resources, inspect generated APIs, review models, and run the app from the same local command center.</p>
-                  </div>
-                  <span class="status-chip">Local</span>
-                </div>
-                <div class="content-table">
-                  <div class="content-row">
-                    <div><strong>Marketing, docs, blog</strong><span>Static and server-rendered pages</span></div>
-                    <span class="row-state">Live</span>
-                  </div>
-                  <div class="content-row">
-                    <div><strong>CMS API and dashboard</strong><span>Generated from your models</span></div>
-                    <span class="row-state">Ready</span>
-                  </div>
-                  <div class="content-row">
-                    <div><strong>App, queues, mail, cloud</strong><span>One deploy on Bun and AWS</span></div>
-                    <span class="row-state">Shipped</span>
-                  </div>
-                </div>
-                <div class="terminal-strip">$ ./buddy dev --dashboard
-CMS API:      /api/cms/posts
-Dashboard:    /dashboard/content
-Docs:         /docs
+              <pre class="code-body"><code><span class="tok-key">import</span> { defineModel } <span class="tok-key">from</span> <span class="tok-str">'&#64;stacksjs/orm'</span>
 
-$ ./buddy deploy
-Marketing, docs, blog, CMS, API, mail, and cloud.</div>
-              </div>
+<span class="tok-key">export default</span> <span class="tok-fn">defineModel</span>({
+  <span class="tok-prop">name</span>: <span class="tok-str">'Post'</span>,
+  <span class="tok-prop">traits</span>: {
+    <span class="tok-prop">useUuid</span>: <span class="tok-bool">true</span>,
+    <span class="tok-prop">useTimestamps</span>: <span class="tok-bool">true</span>,
+    <span class="tok-prop">useApi</span>: { <span class="tok-prop">uri</span>: <span class="tok-str">'posts'</span> },     <span class="tok-com">// REST routes + actions</span>
+    <span class="tok-prop">useSearch</span>: { <span class="tok-prop">searchable</span>: [<span class="tok-str">'title'</span>] },
+  },
+  <span class="tok-prop">attributes</span>: {
+    <span class="tok-prop">title</span>: { <span class="tok-prop">fillable</span>: <span class="tok-bool">true</span>, <span class="tok-prop">required</span>: <span class="tok-bool">true</span> },
+    <span class="tok-prop">status</span>: { <span class="tok-prop">default</span>: <span class="tok-str">'draft'</span> },
+  },
+})</code></pre>
             </div>
+            <div class="terminal-strip">$ ./buddy migrate      <span class="term-com"># models to migrations, applied</span>
+$ ./buddy deploy       <span class="term-com"># web, docs, blog, API, cloud</span></div>
           </aside>
         </section>
 

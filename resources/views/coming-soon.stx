@@ -1,0 +1,271 @@
+<script server>
+// App-level override of the framework holding page. The framework default
+// (defaults/resources/views/coming-soon.stx -> <ComingSoon />) could not
+// resolve its <Logo /> component in this app and rendered an error, so this
+// self-contained page replaces it. It matches the marketing brand: white +
+// Stacks blue, Geist type, auto dark. The email form posts to the same
+// rate-limited endpoint the framework form used (/api/email/subscribe).
+const appName = 'Stacks'
+const siteDescription = 'Stacks is a full-stack TypeScript framework for web apps, CMS content, docs, APIs, queues, mail, tests, and cloud deployment. The public launch is almost here.'
+</script>
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Stacks - Opening soon</title>
+    <meta name="description" content="{{ siteDescription }}">
+    <meta name="robots" content="noindex">
+    <meta name="color-scheme" content="light dark">
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#0a0f1c" media="(prefers-color-scheme: dark)">
+    <link rel="icon" href="/images/logos/favicon.svg" type="image/svg+xml">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&family=Geist+Mono:wght@400;500;600&display=swap">
+
+    <style>
+      :root {
+        --font-body: "Geist", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        --font-mono: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+        --bg: #ffffff;
+        --surface: #f5f8ff;
+        --text: #0f1b2d;
+        --muted: #4a5568;
+        --brand: #2563eb;
+        --brand-strong: #1d4ed8;
+        --on-brand: #ffffff;
+        --line: rgba(15, 27, 45, 0.12);
+        --field-bg: #ffffff;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #0a0f1c;
+          --surface: #121a2e;
+          --text: #eaf0fb;
+          --muted: #9fb0c8;
+          --brand: #3b82f6;
+          --brand-strong: #2563eb;
+          --on-brand: #ffffff;
+          --line: rgba(234, 240, 251, 0.16);
+          --field-bg: #0f1728;
+        }
+      }
+
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+
+      body {
+        min-height: 100dvh;
+        display: grid;
+        place-items: center;
+        padding: clamp(1.25rem, 5vw, 3rem);
+        color: var(--text);
+        font-family: var(--font-body);
+        background:
+          radial-gradient(120% 90% at 88% -8%, rgba(37, 99, 235, 0.10), transparent 46%),
+          var(--bg);
+        -webkit-font-smoothing: antialiased;
+      }
+
+      .card {
+        width: min(620px, 100%);
+      }
+
+      .brand {
+        display: inline-flex;
+        gap: 0.6rem;
+        align-items: center;
+        margin-bottom: 2.4rem;
+      }
+
+      .brand-mark {
+        display: grid;
+        place-items: center;
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        border: 1.5px solid var(--brand);
+        color: var(--brand);
+        font-weight: 800;
+        font-size: 1.25rem;
+        line-height: 1;
+      }
+
+      .brand-name {
+        font-size: 1.4rem;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+      }
+
+      .eyebrow {
+        display: inline-block;
+        margin-bottom: 1rem;
+        color: var(--brand);
+        font-family: var(--font-mono);
+        font-size: 0.74rem;
+        font-weight: 600;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+      }
+
+      h1 {
+        font-size: clamp(2.4rem, 6vw, 3.6rem);
+        font-weight: 800;
+        letter-spacing: -0.035em;
+        line-height: 1.02;
+      }
+
+      .lead {
+        max-width: 42ch;
+        margin-top: 1.1rem;
+        color: var(--muted);
+        font-size: 1.08rem;
+        line-height: 1.6;
+      }
+
+      form {
+        display: flex;
+        gap: 0.6rem;
+        margin-top: 2rem;
+        max-width: 460px;
+      }
+
+      .cs-input {
+        flex: 1 1 auto;
+        min-width: 0;
+        min-height: 50px;
+        padding: 0 1rem;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        color: var(--text);
+        font: inherit;
+        background: var(--field-bg);
+      }
+
+      .cs-input::placeholder { color: var(--muted); opacity: 0.75; }
+
+      .cs-input:focus-visible {
+        outline: 2px solid var(--brand);
+        outline-offset: 1px;
+        border-color: var(--brand);
+      }
+
+      .cs-btn {
+        flex: 0 0 auto;
+        min-height: 50px;
+        padding: 0 1.35rem;
+        border: 0;
+        border-radius: 10px;
+        color: var(--on-brand);
+        font: inherit;
+        font-weight: 700;
+        background: var(--brand);
+        cursor: pointer;
+        transition: background 0.16s ease, transform 0.12s ease;
+      }
+
+      .cs-btn:hover { background: var(--brand-strong); }
+      .cs-btn:active { transform: translateY(1px); }
+
+      .form-note {
+        min-height: 1.25rem;
+        margin-top: 0.7rem;
+        color: var(--muted);
+        font-size: 0.9rem;
+      }
+      .form-note[data-state="ok"] { color: var(--brand); }
+      .form-note[data-state="err"] { color: #dc2626; }
+
+      .links {
+        display: flex;
+        gap: 1.4rem;
+        align-items: center;
+        margin-top: 2.4rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid var(--line);
+        font-size: 0.92rem;
+        font-weight: 600;
+      }
+
+      .links a {
+        color: var(--brand);
+        text-decoration: none;
+      }
+      .links a:hover { color: var(--brand-strong); text-decoration: underline; }
+
+      @media (max-width: 520px) {
+        form { flex-direction: column; }
+        .cs-btn { width: 100%; }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="card">
+      <span class="brand">
+        <span class="brand-mark" aria-hidden="true">S</span>
+        <span class="brand-name">{{ appName }}</span>
+      </span>
+
+      <span class="eyebrow">Opening soon</span>
+      <h1>The trailhead is almost ready.</h1>
+      <p class="lead">
+        We are clearing the last stretch: framework, docs, CMS, and the deploy path.
+        Leave your email and we will let you know the moment it opens.
+      </p>
+
+      <form id="subscribe-form" novalidate>
+        <label for="subscribe-email" class="visually-hidden" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">Email address</label>
+        <input id="subscribe-email" class="cs-input" type="email" name="email" autocomplete="email" placeholder="you@example.com" required>
+        <button class="cs-btn" type="submit">Notify me</button>
+      </form>
+      <p id="form-note" class="form-note" role="status" aria-live="polite"></p>
+
+      <nav class="links">
+        <a href="/docs" data-no-router>Read the docs</a>
+        <a href="https://github.com/stacksjs/stacks">GitHub</a>
+      </nav>
+    </main>
+
+    <script>
+      // Plain holding-page script (not an stx SFC block): posts the email to
+      // the same rate-limited endpoint the framework form used.
+      ;(function () {
+        var form = document.getElementById('subscribe-form')
+        var input = document.getElementById('subscribe-email')
+        var note = document.getElementById('form-note')
+        if (!form || !input || !note) return
+
+        function setNote(message, state) {
+          note.textContent = message
+          note.setAttribute('data-state', state)
+        }
+
+        form.addEventListener('submit', function (event) {
+          event.preventDefault()
+          var email = input.value ? input.value.trim() : ''
+          if (!email || email.indexOf('@') === -1) {
+            setNote('Please enter a valid email address.', 'err')
+            return
+          }
+          setNote('Signing you up...', '')
+          fetch('/api/email/subscribe', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: email }),
+          })
+            .then(function (res) { return res.ok ? res.json().catch(function () { return {} }) : Promise.reject(res) })
+            .then(function () {
+              setNote('You are on the list. See you at the trailhead.', 'ok')
+              form.reset()
+            })
+            .catch(function () {
+              setNote('Something went wrong. Please try again in a moment.', 'err')
+            })
+        })
+      })()
+    </script>
+  </body>
+</html>
