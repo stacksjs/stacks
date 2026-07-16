@@ -24,6 +24,10 @@ jobs:
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
+        with:
+          # Pin Bun so the bundler/minifier can't float to a build that
+          # mangles cross-chunk re-exports (the corruption behind 0.70.85–87).
+          bun-version: '1.4.0'
 
       - name: Setup Pantry
         uses: home-lang/pantry/packages/action@main
@@ -44,14 +48,53 @@ jobs:
       # steps that fail in-workspace), so dist must already exist here.
       - name: Build framework packages
         run: |
+          failed=""
           for dir in storage/framework/core/*/ storage/framework/core; do
             pkg="${dir%/}/package.json"
             [ -f "$pkg" ] || continue
             grep -q '"private": *true' "$pkg" && continue
             grep -q '"build"' "$pkg" || continue
             echo "Building ${dir%/}"
-            (cd "${dir%/}" && bun run build) || echo "::warning::build failed for ${dir%/}"
+            if (cd "${dir%/}" && bun run build); then :; else
+              echo "::error::build failed for ${dir%/}"
+              failed="${failed} ${dir%/}"
+            fi
           done
+          # Fail the release on ANY build failure — a swallowed failure here is
+          # exactly how 0.70.88 shipped dist-less (publish runs --ignore-scripts,
+          # so a missing dist is never rebuilt).
+          if [ -n "$failed" ]; then
+            echo "::error::One or more package builds failed:${failed}"
+            exit 1
+          fi
+
+      # Belt-and-suspenders against a dist-less publish: every publishable
+      # package must have a non-empty dist/ (at least one .js) before we publish
+      # with --ignore-scripts. A build that "succeeds" but emits nothing is
+      # caught here instead of shipping an empty tarball to npm.
+      - name: Verify built dist
+        run: |
+          missing=""
+          for dir in storage/framework/core/*/ storage/framework/core; do
+            pkg="${dir%/}/package.json"
+            [ -f "$pkg" ] || continue
+            grep -q '"private": *true' "$pkg" && continue
+            grep -q '"build"' "$pkg" || continue
+            # Packages that intentionally ship no JS dist: the `stacks` meta
+            # (its exports point at sibling packages' dist), `defaults` (ships
+            # resources/app, not dist), and `lint` (config only, no-op build).
+            case "${dir%/}" in
+              storage/framework/core|storage/framework/core/defaults|storage/framework/core/lint) continue ;;
+            esac
+            if [ -z "$(find "${dir%/}/dist" -name '*.js' -type f 2>/dev/null | head -1)" ]; then
+              echo "::error::no built dist/*.js for ${dir%/}"
+              missing="${missing} ${dir%/}"
+            fi
+          done
+          if [ -n "$missing" ]; then
+            echo "::error::Refusing to publish — dist missing for:${missing}"
+            exit 1
+          fi
 
       # Publish the whole framework workspace via pantry: every core/* member
       # AND the `stacks` meta-package (storage/framework/core) — the meta the
