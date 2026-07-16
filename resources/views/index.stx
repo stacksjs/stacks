@@ -168,7 +168,6 @@ const stackLayers = [
        * (rgba(...)) for lines, scrims, and glows; theming those means theming
        * the channel, not each call site.
        */
-      :root,
       :root[data-theme='colored'] {
         color-scheme: light;
         --bg: #fbf3df;
@@ -203,38 +202,46 @@ const stackLayers = [
         --panel-b: rgba(var(--deep-rgb), 0.42);
       }
 
+      /*
+       * Light (white + Stacks blue) is the default brand look. It is the first
+       * theme a new visitor sees and the values the bare :root carries, so a
+       * no-JS render is already on-brand. The nature "colored" mode and the
+       * dark mode are opt-in from the toggle. Blue is the primary accent
+       * everywhere except the colored (park) theme, which keeps green + gold.
+       */
+      :root,
       :root[data-theme='light'] {
         color-scheme: light;
-        --bg: #fcfdfb;
-        --surface: #f4f6f1;
-        --badge-bg: #ffffff;
+        --bg: #ffffff;
+        --surface: #f5f8ff;
+        --badge-bg: #eaf1ff;
         --field-bg: #ffffff;
-        --text: #1a2620;
-        --muted: #46514a;
-        --canopy: #1f6a40;
-        --moss: #3f6b2c;
-        --river: #2f6f68;
-        --sky: #3f8e88;
-        --gold: #a85f35;
-        --clay: #8a5a35;
+        --text: #0f1b2d;
+        --muted: #4a5568;
+        --canopy: #1d4ed8;
+        --moss: #2563eb;
+        --river: #2563eb;
+        --sky: #3b82f6;
+        --gold: #2563eb;
+        --clay: #1d4ed8;
         --on-accent: #ffffff;
         --on-moss: #ffffff;
-        --on-field: #1a2620;
-        --ink-rgb: 26, 38, 32;
-        --deep-rgb: 228, 231, 223;
-        --canopy-rgb: 31, 106, 64;
-        --moss-rgb: 63, 107, 44;
-        --river-rgb: 47, 111, 104;
-        --gold-rgb: 168, 95, 53;
-        --shadow-rgb: 26, 38, 32;
-        --line: rgba(var(--ink-rgb), 0.14);
-        --line-strong: rgba(var(--ink-rgb), 0.26);
+        --on-field: #0f1b2d;
+        --ink-rgb: 15, 27, 45;
+        --deep-rgb: 219, 231, 253;
+        --canopy-rgb: 37, 99, 235;
+        --moss-rgb: 37, 99, 235;
+        --river-rgb: 37, 99, 235;
+        --gold-rgb: 37, 99, 235;
+        --shadow-rgb: 30, 58, 138;
+        --line: rgba(var(--ink-rgb), 0.12);
+        --line-strong: rgba(var(--ink-rgb), 0.22);
         --shadow: 0 24px 60px rgba(var(--shadow-rgb), 0.10);
-        --page-a: #fcfdfb;
-        --page-b: #f4f6f1;
-        --page-c: #fcfdfb;
+        --page-a: #ffffff;
+        --page-b: #f2f6fe;
+        --page-c: #ffffff;
         --panel-a: rgba(var(--canopy-rgb), 0.05);
-        --panel-b: rgba(var(--deep-rgb), 0.55);
+        --panel-b: rgba(var(--deep-rgb), 0.50);
       }
 
       :root[data-theme='dark'] {

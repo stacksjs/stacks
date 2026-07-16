@@ -1,5 +1,67 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.87...v0.70.90)
+
+## ✨ Features
+
+- **dashboard**: wire the File Manager grid to real @stacksjs/storage (#245) ([59102c1](https://github.com/stacksjs/stacks/commit/59102c1)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#245](https://github.com/stacksjs/stacks/issues/245), [#245](https://github.com/stacksjs/stacks/issues/245))
+- **dashboard**: native macOS look for the File Manager (sidebar + chrome) ([98f8b4f](https://github.com/stacksjs/stacks/commit/98f8b4f)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **dashboard**: Meema-style file viewer in the File Manager ([8adc587](https://github.com/stacksjs/stacks/commit/8adc587)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- add technical diagram skill ([a4acaba](https://github.com/stacksjs/stacks/commit/a4acaba)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **marketing**: light and dark themes, and fix what was silently broken ([c32fa55](https://github.com/stacksjs/stacks/commit/c32fa55)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **blog**: manage the markdown blog from the dashboard ([8ab53de](https://github.com/stacksjs/stacks/commit/8ab53de)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **core**: expose feature flag facade ([f31ec2b](https://github.com/stacksjs/stacks/commit/f31ec2b)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **config**: add feature flag configuration ([55e3b2c](https://github.com/stacksjs/stacks/commit/55e3b2c)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **feature-flags**: add scoped flag engine ([ba55cc8](https://github.com/stacksjs/stacks/commit/ba55cc8)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🐛 Bug Fixes
+
+- **build**: transpile re-export-heavy core packages file-by-file ([ca141ca](https://github.com/stacksjs/stacks/commit/ca141ca)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **orm**: make the categorizable/taggable/commentable model traits work ([260dd3d](https://github.com/stacksjs/stacks/commit/260dd3d)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **cms**: make the trait-backed CMS features migrate and work on sqlite ([d8880ee](https://github.com/stacksjs/stacks/commit/d8880ee)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **auth**: opt-in session fingerprint enforcement + registration enumeration guard (#1985) ([4ec12d6](https://github.com/stacksjs/stacks/commit/4ec12d6)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#1985](https://github.com/stacksjs/stacks/issues/1985), [#1985](https://github.com/stacksjs/stacks/issues/1985))
+- **auth**: TOTP replay protection within the validity window (#1985) ([e521bac](https://github.com/stacksjs/stacks/commit/e521bac)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#1985](https://github.com/stacksjs/stacks/issues/1985), [#1985](https://github.com/stacksjs/stacks/issues/1985))
+- **env**: let decrypted values beat pre-set ciphertext ([5a6070b](https://github.com/stacksjs/stacks/commit/5a6070b)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **deps**: take the fixed bun-router and ts-collect, drop the pins ([ef73a02](https://github.com/stacksjs/stacks/commit/ef73a02)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **blog**: stop an undecrypted APP_URL from poisoning feed and sitemap URLs ([f584d17](https://github.com/stacksjs/stacks/commit/f584d17)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: repair comments page mangled by pickier autofix ([0cb59b9](https://github.com/stacksjs/stacks/commit/0cb59b9)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **deps**: pin bun-router to 0.0.18 so the app boots in production ([087a27a](https://github.com/stacksjs/stacks/commit/087a27a)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **ci**: unblock typecheck and tests so the deploy gate can open ([a26771b](https://github.com/stacksjs/stacks/commit/a26771b)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **deps**: sync bun.lock with package.json so CI can install ([d3a2509](https://github.com/stacksjs/stacks/commit/d3a2509)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: wire CMS Posts page to real endpoints ([dc6fda6](https://github.com/stacksjs/stacks/commit/dc6fda6)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **deps**: bump bun-router & ts-broadcasting to dedupe ([e80bafd](https://github.com/stacksjs/stacks/commit/e80bafd)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **auth**: account-scoped rate limit on the 2FA verify step (#1985) ([934d5fa](https://github.com/stacksjs/stacks/commit/934d5fa)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#1985](https://github.com/stacksjs/stacks/issues/1985), [#1985](https://github.com/stacksjs/stacks/issues/1985))
+- **auth**: gate after-callbacks + team role scoping (#1985 follow-ups) ([f587907](https://github.com/stacksjs/stacks/commit/f587907)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#1985](https://github.com/stacksjs/stacks/issues/1985), [#1985](https://github.com/stacksjs/stacks/issues/1985))
+- **auth,security**: correctness sweep — 6 verified fixes (#1985) ([f925c8b](https://github.com/stacksjs/stacks/commit/f925c8b)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#1985](https://github.com/stacksjs/stacks/issues/1985), [#1985](https://github.com/stacksjs/stacks/issues/1985))
+
+## ♻️ Code Refactoring
+
+- **cms**: back the dashboard content pages with real actions ([301c40d](https://github.com/stacksjs/stacks/commit/301c40d)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 📝 Documentation
+
+- **feature-flags**: add framework guide ([799518f](https://github.com/stacksjs/stacks/commit/799518f)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## ✅ Tests
+
+- **feature-flags**: cover rollout and storage behavior ([e3418ba](https://github.com/stacksjs/stacks/commit/e3418ba)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 💚 Continuous Integration
+
+- **release**: drop the bun-version pin ([a7ee27b](https://github.com/stacksjs/stacks/commit/a7ee27b)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **release**: fail on build errors and verify dist before publishing ([dafbd7e](https://github.com/stacksjs/stacks/commit/dafbd7e)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🔧 Chores
+
+- release v0.70.89 ([a41f07d](https://github.com/stacksjs/stacks/commit/a41f07d)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: refresh the discovered-models manifest ([f3fc31b](https://github.com/stacksjs/stacks/commit/f3fc31b)) _(by Chris <chrisbreuer93@gmail.com>)_
+- release v0.70.88 ([2ffbe3d](https://github.com/stacksjs/stacks/commit/2ffbe3d)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+- _glennmichael123 <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.87...v0.70.89)
 
 ## ✨ Features
