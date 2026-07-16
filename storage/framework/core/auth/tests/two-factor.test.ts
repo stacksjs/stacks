@@ -73,6 +73,7 @@ beforeAll(async () => {
       password VARCHAR(255) NOT NULL,
       two_factor_secret VARCHAR(255),
       two_factor_enabled BOOLEAN NOT NULL DEFAULT 0,
+      two_factor_last_used_step BIGINT,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       updated_at TIMESTAMP
     )
@@ -149,6 +150,18 @@ describe('TOTP setup + enable/disable', () => {
     const freshCode = await generateTwoFactorToken(secret)
     expect(await verifyTwoFactorLoginCode(userId, freshCode)).toBe(true)
     expect(await verifyTwoFactorLoginCode(userId, '000000')).toBe(false)
+  })
+
+  test('a valid TOTP code cannot be replayed within its step (#1985)', async () => {
+    const userId = await seedUser('replay-guard@example.com')
+    const { secret } = generateTwoFactorSetup('replay-guard@example.com', 'Status')
+    await enableTwoFactor(userId, secret, await generateTwoFactorToken(secret))
+
+    const code = await generateTwoFactorToken(secret)
+    // first use accepted; the consumed step is recorded
+    expect(await verifyTwoFactorLoginCode(userId, code)).toBe(true)
+    // same code, same ~30s step -> replay rejected (not a wrong-code lockout)
+    expect(await verifyTwoFactorLoginCode(userId, code)).toBe(false)
   })
 
   test('verifyTwoFactorLoginCode is false when 2FA was never enabled', async () => {

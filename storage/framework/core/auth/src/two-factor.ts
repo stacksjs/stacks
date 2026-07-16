@@ -48,6 +48,42 @@ const DEFAULT_CHALLENGE_TTL_SECONDS = 5 * 60
  */
 const TWO_FACTOR_RATE_LIMIT_PREFIX = '2fa:'
 
+// TOTP step in seconds — matches ts-auth's default (verifyTwoFactorCode calls
+// verifyTOTP with no override, so the period is 30s).
+const TWO_FACTOR_STEP_SECONDS = 30
+
+/** Current TOTP time-step, i.e. ts-auth's `floor(now / step)` counter. */
+function currentTotpStep(): number {
+  return Math.floor(Date.now() / 1000 / TWO_FACTOR_STEP_SECONDS)
+}
+
+/**
+ * Best-effort read of `users.two_factor_last_used_step`. Returns null on any
+ * error or a missing column (un-migrated DB) so replay protection degrades to
+ * "allow" rather than locking anyone out — same legacy-allow stance as
+ * getPasswordChangedAt (stacksjs/stacks#1985).
+ */
+async function getLastUsedTwoFactorStep(userId: number): Promise<number | null> {
+  try {
+    const row: any = await db.selectFrom('users').where('id', '=', userId).selectAll().executeTakeFirst()
+    const value = row?.two_factor_last_used_step
+    return value == null ? null : Number(value)
+  }
+  catch {
+    return null
+  }
+}
+
+/** Best-effort persist of the consumed TOTP step; no-op on an un-migrated DB. */
+async function setLastUsedTwoFactorStep(userId: number, step: number): Promise<void> {
+  try {
+    await db.updateTable('users').set({ two_factor_last_used_step: step } as any).where('id', '=', userId).executeTakeFirst()
+  }
+  catch {
+    // Column missing (un-migrated) — skip; replay protection stays off.
+  }
+}
+
 export interface TwoFactorUser {
   id: number
   email?: string
@@ -189,6 +225,19 @@ export async function verifyTwoFactorLoginCode(userId: number, code: string): Pr
     return false
   }
 
+  // TOTP replay guard (stacksjs/stacks#1985): a code stays valid for its whole
+  // ~30s step (plus ts-auth's ±1 verify window), so the same 6 digits would
+  // otherwise be reusable until they expire. Reject any code whose step we've
+  // already consumed. Not counted against the rate limiter (it's a replayed
+  // *valid* code, not a wrong guess — e.g. a double-submitted form). Residual:
+  // a code accepted via the +1 future window isn't covered, acceptable since
+  // every verify already needs a fresh single-use challenge.
+  const step = currentTotpStep()
+  const lastStep = await getLastUsedTwoFactorStep(userId)
+  if (lastStep !== null && step <= lastStep)
+    return false
+
+  await setLastUsedTwoFactorStep(userId, step)
   await RateLimiter.resetAttempts(rateKey)
   return true
 }

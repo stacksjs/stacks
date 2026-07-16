@@ -67,6 +67,11 @@ export function usersTwoFactorColumnsSql(sql: SqlHelpers): string[] {
   return [
     `ALTER TABLE users ADD COLUMN two_factor_secret VARCHAR(255)`,
     `ALTER TABLE users ADD COLUMN two_factor_enabled BOOLEAN NOT NULL DEFAULT ${sql.boolFalse}`,
+    // TOTP replay guard (stacksjs/stacks#1985): the last consumed time-step,
+    // so a valid code can't be reused within its ~30s validity window. NULL =
+    // never used (accepted on first verify). BIGINT for headroom on the
+    // floor(unixSeconds / 30) counter.
+    `ALTER TABLE users ADD COLUMN two_factor_last_used_step BIGINT`,
   ]
 }
 

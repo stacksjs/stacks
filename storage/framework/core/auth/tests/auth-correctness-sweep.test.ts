@@ -145,6 +145,20 @@ describe('2FA verify has an account-scoped lockout independent of the password s
   })
 })
 
+describe('TOTP replay guard - migration column + verify wiring (#1985)', () => {
+  it('the two_factor_last_used_step column is guaranteed on users', () => {
+    const s = src('../../database/src/auth-tables.ts')
+    expect(s).toContain('ADD COLUMN two_factor_last_used_step BIGINT')
+  })
+
+  it('verifyTwoFactorLoginCode rejects a code whose step was already consumed', () => {
+    const s = src('two-factor.ts')
+    expect(s).toContain('const step = currentTotpStep()')
+    expect(s).toContain('if (lastStep !== null && step <= lastStep)')
+    expect(s).toContain('await setLastUsedTwoFactorStep(userId, step)')
+  })
+})
+
 // ─── source-shape checks for the DB/config-heavy fixes ─────────────────────
 
 describe('auth correctness sweep source-shape (#1985)', () => {
