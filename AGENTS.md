@@ -105,6 +105,7 @@ Read the skill before building. Full list of skills is in `.claude/skills/`.
 | Deploying (server vs serverless, hooks, first deploy) and cloud infra (EC2/Lambda/CDK/Route53/SES/S3) | `stacks-deploy`, `stacks-cloud` |
 | Testing (DB test utils, feature tests, config) | `stacks-testing` |
 | Dev server, HMR, reverse proxy, SSL | `stacks-development`, `stacks-server` |
+| Technical diagrams (architecture, workflow, sequence, data flow, lifecycle) | `stacks-technical-diagrams` |
 
 The recommended order for a new feature is **model, migration, action, route, test** (see
 `stacks-new-feature`).

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Stacks Technical Diagrams"
+  short_description: "Create dependency-free technical diagrams"
+  default_prompt: "Use $stacks-technical-diagrams to map this Stacks application runtime architecture."
