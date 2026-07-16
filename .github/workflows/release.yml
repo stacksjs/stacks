@@ -24,10 +24,6 @@ jobs:
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
-        with:
-          # Pin Bun so the bundler/minifier can't float to a build that
-          # mangles cross-chunk re-exports (the corruption behind 0.70.85–87).
-          bun-version: '1.4.0'
 
       - name: Setup Pantry
         uses: home-lang/pantry/packages/action@main
