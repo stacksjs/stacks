@@ -57,7 +57,9 @@
     "better-dx": "^0.2.16",
     "@stacksjs/path": "workspace:*",
     "@stacksjs/router": "workspace:*",
-    "@stacksjs/validation": "workspace:*",
+    "@stacksjs/validation": "workspace:*"
+  },
+  "dependencies": {
     "bun-plugin-auto-imports": "^0.4.0"
   }
 }
