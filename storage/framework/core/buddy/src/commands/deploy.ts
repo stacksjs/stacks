@@ -1141,7 +1141,7 @@ async function runHetznerDeploy(args: {
     // ts-cloud app server existed (e.g. uptime-status), making adoption
     // ambiguous and leaving the pin the only resolver.
     const stackName = tsCloudConfig.project?.stackName || `${tsCloudConfig.project?.slug || 'app'}-${environment}`
-    const stateDir = join(process.cwd(), '.ts-cloud', 'state')
+    const stateDir = join(process.cwd(), 'storage', 'cloud', 'state')
     mkdirSync(stateDir, { recursive: true })
     writeFileSync(join(stateDir, `${stackName}.json`), `${JSON.stringify({
       stackName,
