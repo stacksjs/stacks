@@ -7,6 +7,7 @@ import { bold, cyan, dim, green, intro, log, onUnknownSubcommand, outro, prompts
 import { homedir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { promises as dns } from 'node:dns'
 import { Action } from '@stacksjs/enums'
 import { libsPath, projectPath } from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types'
@@ -1419,6 +1420,19 @@ async function prepareRpxTlsForDev(input: {
 }): Promise<void> {
   const { domain, includeDashboard, options } = input
   const verbose = options.verbose ?? false
+
+  // Never shadow a live public domain with rpx's loopback resolver unless the
+  // operator explicitly opts in. A crashed dev session can otherwise leave a
+  // root-owned /etc/resolver entry behind and break production services such as
+  // mail.<domain> for every application on this Mac.
+  if (process.env.STACKS_DEV_ALLOW_PUBLIC_DOMAIN !== '1') {
+    const publicAddresses = await dns.resolve4(domain).catch(() => [])
+    if (publicAddresses.some(address => !address.startsWith('127.'))) {
+      log.warn(`Skipping local DNS override for public domain ${domain}; use a .localhost/.test domain for development`)
+      return
+    }
+  }
+
   const hosts = [
     domain,
     ...(includeDashboard ? [`dashboard.${domain}`] : []),
