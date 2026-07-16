@@ -23,7 +23,9 @@ const productAreas = [
   {
     title: 'Content workspace',
     text: 'Markdown posts, pages, docs, tags, authors, custom resources, generated APIs, and a local dashboard move together.',
-    image: '/assets/images/marketing-park-camp.svg',
+    // Was marketing-park-camp.svg, which has never existed in public/assets and
+    // rendered as a broken image. summit is a real asset; the blog uses it too.
+    image: '/assets/images/marketing-park-summit.svg',
   },
   {
     title: 'Production path',
@@ -78,6 +80,50 @@ const stackLayers = [
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="Stacks is a full-stack TypeScript framework for web apps, CMS content, docs, APIs, queues, mail, tests, and cloud deployment.">
     <title>Stacks - Full-stack TypeScript framework</title>
+    <script>
+      /*
+       * Theme, applied before first paint so the page never flashes the wrong
+       * one. Shares its storage key with the blog (see blogChrome() in
+       * core/actions/src/blog.ts), so a choice made here follows the reader to
+       * /blog and back.
+       *
+       * Precedence: ?theme= override, then a saved choice, then the operating
+       * system preference. Only a visitor who has never chosen gets the OS
+       * answer, which is what `prefers-color-scheme` is for.
+       */
+      ;(function () {
+        var modes = ['colored', 'light', 'dark']
+        var ok = function (t) { return modes.indexOf(t) !== -1 }
+
+        var queryTheme = ''
+        try { queryTheme = new URLSearchParams(location.search).get('theme') || '' }
+        catch {}
+
+        var savedTheme = ''
+        try { savedTheme = localStorage.getItem('stacks-theme') || localStorage.getItem('stacks-blog-theme') || '' }
+        catch {}
+
+        var prefersDark = false
+        try { prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches }
+        catch {}
+
+        var theme = ok(queryTheme) ? queryTheme : (ok(savedTheme) ? savedTheme : (prefersDark ? 'dark' : 'colored'))
+        document.documentElement.setAttribute('data-theme', theme)
+
+        window.stxTheme = function (next) {
+          if (!ok(next)) return
+          try { localStorage.setItem('stacks-theme', next) }
+          catch {}
+          document.documentElement.setAttribute('data-theme', next)
+          var group = document.querySelector('.theme-toggle')
+          if (group) {
+            group.querySelectorAll('button').forEach(function (b) {
+              b.setAttribute('aria-pressed', String(b.getAttribute('data-t') === next))
+            })
+          }
+        }
+      })()
+    </script>
     <style>
       @font-face {
         font-display: swap;
@@ -85,14 +131,6 @@ const stackLayers = [
         font-style: normal;
         font-weight: 400;
         src: url("/assets/fonts/nps/CampmateScript-Regular.woff2") format("woff2");
-      }
-
-      @font-face {
-        font-display: swap;
-        font-family: "Switchback";
-        font-style: normal;
-        font-weight: 400;
-        src: url("/assets/fonts/nps/Switchback-Regular.woff2") format("woff2");
       }
 
       @font-face {
@@ -111,21 +149,209 @@ const stackLayers = [
         src: url("/assets/fonts/nps/RedwoodSerif-Regular.woff2") format("woff2");
       }
 
-      :root {
+      /*
+       * Three themes, switched by `data-theme` on <html>, matching the blog
+       * exactly (content/blog/.theme.css) so / and /blog are one product and a
+       * reader's choice follows them across both:
+       *
+       *   colored (default) - the warm NPS-brochure look: cream paper + pine.
+       *   light             - clean neutral paper-white.
+       *   dark              - forest-floor near-black, the original hero look.
+       *
+       * Tokens are ROLES (--bg, --text, --surface), not colour names. The park
+       * palette used to be addressed by colour (--cream for text, --ranger for
+       * the page), which cannot survive a light mode: "cream" text has to be
+       * dark ink on paper. The names below say what a token is FOR, so each
+       * theme can answer differently without lying.
+       *
+       * The *-rgb triplets exist because the page layers dozens of alpha washes
+       * (rgba(...)) for lines, scrims, and glows; theming those means theming
+       * the channel, not each call site.
+       */
+      :root,
+      :root[data-theme='colored'] {
+        color-scheme: light;
+        --bg: #fbf3df;
+        --surface: #fff8e7;
+        --badge-bg: #fff0c8;
+        --field-bg: #fff8e7;
+        --text: #1f3026;
+        --muted: #4c5a49;
+        --canopy: #275f3c;
+        --moss: #4d7a33;
+        --river: #2f6f68;
+        --sky: #3f8e88;
+        --gold: #b06a38;
+        --clay: #a85f35;
+        --on-accent: #fff8e7;
+        --on-moss: #fff8e7;
+        --on-field: #1f3026;
+        --ink-rgb: 31, 48, 38;
+        --deep-rgb: 224, 207, 163;
+        --canopy-rgb: 39, 95, 60;
+        --moss-rgb: 77, 122, 51;
+        --river-rgb: 47, 111, 104;
+        --gold-rgb: 176, 106, 56;
+        --shadow-rgb: 90, 74, 40;
+        --line: rgba(var(--ink-rgb), 0.16);
+        --line-strong: rgba(var(--ink-rgb), 0.28);
+        --shadow: 0 24px 60px rgba(var(--shadow-rgb), 0.14);
+        --page-a: #fbf3df;
+        --page-b: #f7edd2;
+        --page-c: #fbf3df;
+        --panel-a: rgba(var(--canopy-rgb), 0.07);
+        --panel-b: rgba(var(--deep-rgb), 0.42);
+      }
+
+      :root[data-theme='light'] {
+        color-scheme: light;
+        --bg: #fcfdfb;
+        --surface: #f4f6f1;
+        --badge-bg: #ffffff;
+        --field-bg: #ffffff;
+        --text: #1a2620;
+        --muted: #46514a;
+        --canopy: #1f6a40;
+        --moss: #3f6b2c;
+        --river: #2f6f68;
+        --sky: #3f8e88;
+        --gold: #a85f35;
+        --clay: #8a5a35;
+        --on-accent: #ffffff;
+        --on-moss: #ffffff;
+        --on-field: #1a2620;
+        --ink-rgb: 26, 38, 32;
+        --deep-rgb: 228, 231, 223;
+        --canopy-rgb: 31, 106, 64;
+        --moss-rgb: 63, 107, 44;
+        --river-rgb: 47, 111, 104;
+        --gold-rgb: 168, 95, 53;
+        --shadow-rgb: 26, 38, 32;
+        --line: rgba(var(--ink-rgb), 0.14);
+        --line-strong: rgba(var(--ink-rgb), 0.26);
+        --shadow: 0 24px 60px rgba(var(--shadow-rgb), 0.10);
+        --page-a: #fcfdfb;
+        --page-b: #f4f6f1;
+        --page-c: #fcfdfb;
+        --panel-a: rgba(var(--canopy-rgb), 0.05);
+        --panel-b: rgba(var(--deep-rgb), 0.55);
+      }
+
+      :root[data-theme='dark'] {
         color-scheme: dark;
-        --ranger: #0d1e16;
-        --pine: #163824;
+        --bg: #0d1e16;
+        --surface: #163824;
+        --badge-bg: #fff0c8;
+        --field-bg: #fff7e1;
+        --text: #fff7e1;
+        --muted: #b9c4b2;
         --canopy: #275f3c;
         --moss: #aac47d;
-        --paper: #fff0c8;
-        --cream: #fff7e1;
         --river: #7fb8ae;
         --sky: #b8d9cf;
         --gold: #df9a2f;
         --clay: #a85f35;
-        --line: rgba(255, 240, 200, 0.2);
-        --line-strong: rgba(255, 240, 200, 0.34);
-        --shadow: 0 30px 80px rgba(0, 0, 0, 0.36);
+        --on-accent: #102218;
+        --on-moss: #112117;
+        --on-field: #18261d;
+        --ink-rgb: 255, 247, 225;
+        --deep-rgb: 8, 23, 15;
+        --canopy-rgb: 39, 95, 60;
+        --moss-rgb: 170, 196, 125;
+        --river-rgb: 127, 184, 174;
+        --gold-rgb: 223, 154, 47;
+        --shadow-rgb: 0, 0, 0;
+        --line: rgba(var(--ink-rgb), 0.2);
+        --line-strong: rgba(var(--ink-rgb), 0.34);
+        --shadow: 0 30px 80px rgba(var(--shadow-rgb), 0.36);
+        --page-a: #0c1e15;
+        --page-b: #10271b;
+        --page-c: #0d1b14;
+        --panel-a: rgba(var(--canopy-rgb), 0.84);
+        --panel-b: rgba(var(--deep-rgb), 0.96);
+      }
+
+      /*
+       * Font roles, mirroring content/blog/.theme.css so / and /blog agree on
+       * what each NPS face is for. The faces are display/signage cuts, and
+       * long-form body copy stays on a system humanist sans for readability.
+       *
+       * There used to be an @font-face for "Switchback" here, used as the body
+       * font. That file has never existed in public/assets/fonts/nps, so every
+       * visit 404'd and silently fell back to the system stack below. The
+       * fallback is what the blog asks for anyway, so this only drops the
+       * failed request and makes the intent explicit.
+       */
+      :root {
+        --font-body: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        --font-hero: "Campmate Script", ui-serif, Georgia, serif;
+        --font-head: "NPS 2026", var(--font-body);
+        --font-label: "Redwood Serif", Georgia, ui-serif, serif;
+      }
+
+      /* The terminal stays dark in every theme, the way a real one is, and the
+         way the blog renders its code blocks. */
+      :root {
+        --term-bg: #07130d;
+        --term-fg: #c8f5dd;
+      }
+
+      /* Theme toggle. Mirrors .blog-theme-toggle in content/blog/.theme.css. */
+      .theme-toggle {
+        position: fixed;
+        right: 1.1rem;
+        bottom: 1.1rem;
+        z-index: 60;
+        display: inline-flex;
+        gap: 2px;
+        padding: 3px;
+        border: 1px solid var(--line-strong);
+        border-radius: 999px;
+        background: var(--surface);
+        box-shadow: var(--shadow);
+      }
+
+      .theme-toggle button {
+        display: grid;
+        place-items: center;
+        width: 30px;
+        height: 30px;
+        padding: 0;
+        border: 0;
+        border-radius: 999px;
+        color: inherit;
+        font-size: 0.85rem;
+        line-height: 1;
+        background: transparent;
+        cursor: pointer;
+        transition: background 0.18s ease, transform 0.18s ease;
+      }
+
+      .theme-toggle button:hover {
+        background: rgba(var(--ink-rgb), 0.1);
+      }
+
+      .theme-toggle button:active {
+        transform: scale(0.94);
+      }
+
+      /* The active mode reads as pressed, not just hovered. */
+      .theme-toggle button[aria-pressed='true'] {
+        background: rgba(var(--ink-rgb), 0.16);
+      }
+
+      .theme-toggle button:focus-visible {
+        outline: 2px solid var(--gold);
+        outline-offset: 2px;
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .theme-toggle button {
+          transition: none;
+        }
+        .theme-toggle button:active {
+          transform: none;
+        }
       }
 
       * {
@@ -133,22 +359,22 @@ const stackLayers = [
       }
 
       html {
-        background: var(--ranger);
+        background: var(--bg);
         overflow-x: hidden;
         scroll-behavior: smooth;
       }
 
       body {
         min-width: 320px;
-        min-height: 100vh;
+        min-height: 100dvh;
         margin: 0;
         overflow-x: hidden;
-        color: var(--cream);
-        font-family: "Switchback", ui-sans-serif, system-ui, sans-serif;
+        color: var(--text);
+        font-family: var(--font-body);
         background:
-          radial-gradient(circle at 18% 16%, rgba(223, 154, 47, 0.2), transparent 24rem),
-          radial-gradient(circle at 88% 6%, rgba(127, 184, 174, 0.2), transparent 28rem),
-          linear-gradient(180deg, #0c1e15 0%, #10271b 48%, #0d1b14 100%);
+          radial-gradient(circle at 18% 16%, rgba(var(--gold-rgb), 0.2), transparent 24rem),
+          radial-gradient(circle at 88% 6%, rgba(var(--river-rgb), 0.2), transparent 28rem),
+          linear-gradient(180deg, var(--page-a) 0%, var(--page-b) 48%, var(--page-c) 100%);
       }
 
       body::before {
@@ -168,7 +394,7 @@ const stackLayers = [
         height: min(34vh, 24rem);
         content: "";
         background:
-          linear-gradient(180deg, transparent 0%, rgba(13, 30, 22, 0.64) 46%, rgba(13, 30, 22, 0.94) 100%),
+          linear-gradient(180deg, transparent 0%, rgba(var(--deep-rgb), 0.64) 46%, rgba(var(--deep-rgb), 0.94) 100%),
           url("/assets/images/park-ridge.svg") center bottom / cover no-repeat;
         opacity: 0.25;
         pointer-events: none;
@@ -193,7 +419,7 @@ const stackLayers = [
       }
 
       .mode-screen {
-        min-height: 100vh;
+        min-height: 100dvh;
         display: grid;
         place-items: center;
         padding: clamp(1rem, 4vw, 3rem);
@@ -211,9 +437,9 @@ const stackLayers = [
         border-radius: 18px;
         padding: clamp(2.25rem, 6vw, 5.5rem);
         background:
-          radial-gradient(120% 92% at 84% -12%, rgba(223, 154, 47, 0.20), transparent 46%),
-          linear-gradient(178deg, rgba(39, 95, 60, 0.80), rgba(13, 30, 22, 0.98) 78%),
-          var(--pine);
+          radial-gradient(120% 92% at 84% -12%, rgba(var(--gold-rgb), 0.20), transparent 46%),
+          linear-gradient(178deg, var(--panel-a), var(--panel-b) 78%),
+          var(--surface);
         box-shadow: var(--shadow);
       }
 
@@ -248,7 +474,7 @@ const stackLayers = [
         height: clamp(58px, 8vw, 108px);
         border-radius: 50%;
         background: radial-gradient(circle at 38% 34%, #ffe6a6, var(--gold) 60%, #bd7d21);
-        box-shadow: 0 0 64px rgba(223, 154, 47, 0.42);
+        box-shadow: 0 0 64px rgba(var(--gold-rgb), 0.42);
         opacity: 0.92;
         z-index: 0;
       }
@@ -261,8 +487,8 @@ const stackLayers = [
 
       .mode-title {
         margin: 0 0 1.4rem;
-        color: var(--cream);
-        font-family: "Campmate Script", ui-serif, Georgia, serif;
+        color: var(--text);
+        font-family: var(--font-hero);
         font-weight: 400;
         font-size: clamp(3.6rem, 11vw, 6.4rem);
         line-height: 1.02;
@@ -288,7 +514,7 @@ const stackLayers = [
       .mode-lead {
         margin: 1rem 0 0;
         color: var(--sky);
-        font-family: "NPS 2026", "Switchback", ui-sans-serif, system-ui, sans-serif;
+        font-family: var(--font-head);
         font-size: clamp(1.1rem, 2vw, 1.5rem);
         font-weight: 850;
         line-height: 1.24;
@@ -299,7 +525,7 @@ const stackLayers = [
       .mode-copy {
         max-width: 30rem;
         margin: 1.05rem 0 0;
-        color: rgba(255, 247, 225, 0.82);
+        color: rgba(var(--ink-rgb), 0.82);
         font-size: 1.05rem;
         line-height: 1.62;
       }
@@ -315,17 +541,17 @@ const stackLayers = [
         flex: 1 1 15rem;
         min-height: 50px;
         padding: 0 1rem;
-        border: 1px solid rgba(255, 240, 200, 0.26);
+        border: 1px solid rgba(var(--ink-rgb), 0.26);
         border-radius: 10px;
-        color: var(--cream);
+        color: var(--text);
         font-size: 1rem;
-        background: rgba(8, 23, 15, 0.5);
+        background: rgba(var(--deep-rgb), 0.5);
       }
-      .mode-subscribe input::placeholder { color: rgba(255, 247, 225, 0.5); }
+      .mode-subscribe input::placeholder { color: rgba(var(--ink-rgb), 0.5); }
       .mode-subscribe input:focus {
         outline: none;
         border-color: var(--gold);
-        box-shadow: 0 0 0 3px rgba(223, 154, 47, 0.24);
+        box-shadow: 0 0 0 3px rgba(var(--gold-rgb), 0.24);
       }
       .mode-subscribe button {
         flex: 0 0 auto;
@@ -344,7 +570,7 @@ const stackLayers = [
         color: var(--moss);
         font-weight: 700;
         font-size: 0.95rem;
-        border-bottom: 1px solid rgba(170, 196, 125, 0.4);
+        border-bottom: 1px solid rgba(var(--moss-rgb), 0.4);
         padding-bottom: 1px;
       }
       .mode-textlink:hover { color: var(--gold); border-color: var(--gold); }
@@ -354,9 +580,9 @@ const stackLayers = [
         place-items: center;
         width: 40px;
         height: 40px;
-        border: 1px solid rgba(255, 240, 200, 0.22);
+        border: 1px solid rgba(var(--ink-rgb), 0.22);
         border-radius: 50%;
-        color: var(--cream);
+        color: var(--text);
       }
       .mode-social a:hover { color: var(--gold); border-color: var(--gold); }
       .mode-social svg { width: 19px; height: 19px; fill: currentColor; }
@@ -371,7 +597,7 @@ const stackLayers = [
         top: 0;
         z-index: 30;
         border-bottom: 1px solid var(--line);
-        background: rgba(13, 30, 22, 0.9);
+        background: rgba(var(--deep-rgb), 0.9);
         backdrop-filter: blur(18px);
       }
 
@@ -403,7 +629,7 @@ const stackLayers = [
       }
 
       .brand-name {
-        font-family: "Switchback", ui-sans-serif, system-ui, sans-serif;
+        font-family: var(--font-body);
         font-size: 1.4rem;
         font-weight: 800;
         letter-spacing: -0.01em;
@@ -414,8 +640,8 @@ const stackLayers = [
         display: flex;
         gap: 1rem;
         align-items: center;
-        color: rgba(255, 247, 225, 0.78);
-        font-family: "Switchback", ui-sans-serif, system-ui, sans-serif;
+        color: rgba(var(--ink-rgb), 0.78);
+        font-family: var(--font-body);
         font-size: 0.74rem;
         font-weight: 900;
         text-transform: uppercase;
@@ -454,8 +680,8 @@ const stackLayers = [
 
       .hero-title {
         margin: 0 0 0.4rem;
-        color: var(--cream);
-        font-family: "Campmate Script", ui-serif, Georgia, serif;
+        color: var(--text);
+        font-family: var(--font-hero);
         font-size: clamp(3.4rem, 6.4vw, 5.6rem);
         font-weight: 400;
         line-height: 0.95;
@@ -465,7 +691,7 @@ const stackLayers = [
         max-width: 620px;
         margin: 0;
         color: var(--sky);
-        font-family: "NPS 2026", "Switchback", ui-sans-serif, system-ui, sans-serif;
+        font-family: var(--font-head);
         font-size: clamp(1.22rem, 1.62vw, 1.58rem);
         font-weight: 850;
         line-height: 1.2;
@@ -475,7 +701,7 @@ const stackLayers = [
       .hero-copy {
         max-width: 690px;
         margin: 1.3rem 0 0;
-        color: rgba(255, 247, 225, 0.82);
+        color: rgba(var(--ink-rgb), 0.82);
         font-size: 1.06rem;
         line-height: 1.66;
       }
@@ -495,23 +721,23 @@ const stackLayers = [
         padding: 0 1.1rem;
         border: 1px solid var(--line-strong);
         border-radius: 7px;
-        color: var(--cream);
-        font-family: "Switchback", ui-sans-serif, system-ui, sans-serif;
+        color: var(--text);
+        font-family: var(--font-body);
         font-size: 0.78rem;
         font-weight: 950;
         text-transform: uppercase;
-        background: rgba(255, 247, 225, 0.06);
+        background: rgba(var(--ink-rgb), 0.06);
       }
 
       .button.primary {
         border-color: var(--gold);
-        color: #102218;
+        color: var(--on-accent);
         background: var(--gold);
       }
 
       .button:hover {
         transform: translateY(-1px);
-        box-shadow: 0 16px 34px rgba(0, 0, 0, 0.22);
+        box-shadow: 0 16px 34px rgba(var(--shadow-rgb), 0.22);
       }
 
       .hero-metrics {
@@ -525,19 +751,19 @@ const stackLayers = [
         padding: 0.8rem;
         border: 1px solid var(--line);
         border-radius: 7px;
-        background: rgba(255, 247, 225, 0.045);
+        background: rgba(var(--ink-rgb), 0.045);
       }
 
       .metric strong {
         display: block;
         color: var(--gold);
-        font-family: "Switchback", ui-sans-serif, system-ui, sans-serif;
+        font-family: var(--font-body);
         font-size: 1.2rem;
       }
 
       .metric span {
-        color: rgba(255, 247, 225, 0.7);
-        font-family: "Switchback", ui-sans-serif, system-ui, sans-serif;
+        color: rgba(var(--ink-rgb), 0.7);
+        font-family: var(--font-body);
         font-size: 0.7rem;
         font-weight: 900;
         text-transform: uppercase;
@@ -550,8 +776,8 @@ const stackLayers = [
         border-top: 5px solid var(--gold);
         border-radius: 8px;
         background:
-          linear-gradient(180deg, rgba(39, 95, 60, 0.88), rgba(15, 42, 28, 0.94)),
-          var(--pine);
+          linear-gradient(180deg, var(--panel-a), var(--panel-b)),
+          var(--surface);
         box-shadow: var(--shadow);
         overflow: hidden;
       }
@@ -585,16 +811,16 @@ const stackLayers = [
         grid-template-columns: 9.4rem minmax(0, 1fr);
         min-height: 340px;
         overflow: hidden;
-        border: 1px solid rgba(255, 247, 225, 0.2);
+        border: 1px solid rgba(var(--ink-rgb), 0.2);
         border-radius: 7px;
-        font-family: "Switchback", ui-sans-serif, system-ui, sans-serif;
-        background: rgba(8, 23, 15, 0.82);
+        font-family: var(--font-body);
+        background: rgba(var(--deep-rgb), 0.82);
       }
 
       .dashboard-side {
         padding: 1rem;
         border-right: 1px solid var(--line);
-        background: rgba(12, 31, 21, 0.86);
+        background: rgba(var(--deep-rgb), 0.86);
       }
 
       .dashboard-logo {
@@ -602,7 +828,7 @@ const stackLayers = [
         gap: 0.65rem;
         align-items: center;
         margin-bottom: 1.2rem;
-        color: var(--cream);
+        color: var(--text);
         font-size: 0.7rem;
         font-weight: 950;
         line-height: 1;
@@ -614,7 +840,7 @@ const stackLayers = [
         height: 34px;
         padding: 0.3rem;
         border-radius: 6px;
-        background: var(--paper);
+        background: var(--badge-bg);
       }
 
       .side-pill {
@@ -623,16 +849,16 @@ const stackLayers = [
         padding: 0.62rem 0.7rem;
         border: 1px solid transparent;
         border-radius: 6px;
-        color: rgba(255, 247, 225, 0.66);
+        color: rgba(var(--ink-rgb), 0.66);
         font-size: 0.66rem;
         font-weight: 900;
         text-transform: uppercase;
       }
 
       .side-pill.active {
-        border-color: rgba(223, 154, 47, 0.46);
-        color: var(--cream);
-        background: rgba(223, 154, 47, 0.14);
+        border-color: rgba(var(--gold-rgb), 0.46);
+        color: var(--text);
+        background: rgba(var(--gold-rgb), 0.14);
       }
 
       .dashboard-main {
@@ -649,7 +875,7 @@ const stackLayers = [
 
       .dashboard-top h2 {
         margin: 0;
-        color: var(--cream);
+        color: var(--text);
         font-size: 1.18rem;
         line-height: 1.1;
       }
@@ -658,7 +884,7 @@ const stackLayers = [
         flex: 0 0 auto;
         padding: 0.38rem 0.55rem;
         border-radius: 999px;
-        color: #112117;
+        color: var(--on-moss);
         font-size: 0.58rem;
         font-weight: 950;
         text-transform: uppercase;
@@ -675,19 +901,19 @@ const stackLayers = [
         grid-template-columns: minmax(0, 1fr);
         gap: 0.35rem;
         padding: 0.66rem;
-        border: 1px solid rgba(255, 247, 225, 0.13);
+        border: 1px solid rgba(var(--ink-rgb), 0.13);
         border-radius: 6px;
-        background: rgba(255, 247, 225, 0.05);
+        background: rgba(var(--ink-rgb), 0.05);
       }
 
       .content-row strong {
         display: block;
-        color: var(--cream);
+        color: var(--text);
         font-size: 0.88rem;
       }
 
       .content-row span {
-        color: rgba(255, 247, 225, 0.58);
+        color: rgba(var(--ink-rgb), 0.58);
         font-size: 0.72rem;
         font-weight: 800;
       }
@@ -702,13 +928,13 @@ const stackLayers = [
       .terminal-strip {
         margin-top: 1rem;
         padding: 0.72rem;
-        border: 1px solid rgba(127, 184, 174, 0.22);
+        border: 1px solid rgba(var(--river-rgb), 0.22);
         border-radius: 6px;
-        color: #c8f5dd;
+        color: var(--term-fg);
         font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
         font-size: 0.74rem;
         line-height: 1.5;
-        background: #07130d;
+        background: var(--term-bg);
         white-space: pre-wrap;
       }
 
@@ -730,8 +956,8 @@ const stackLayers = [
 
       .section-title {
         margin: 0;
-        color: var(--cream);
-        font-family: "Redwood Serif", Georgia, ui-serif, serif;
+        color: var(--text);
+        font-family: var(--font-label);
         font-size: clamp(1.72rem, 2.45vw, 2.62rem);
         font-weight: 400;
         line-height: 1.08;
@@ -740,7 +966,7 @@ const stackLayers = [
 
       .section-copy {
         margin: 0;
-        color: rgba(255, 247, 225, 0.72);
+        color: rgba(var(--ink-rgb), 0.72);
         font-size: 1.04rem;
         line-height: 1.7;
       }
@@ -757,7 +983,7 @@ const stackLayers = [
       .signup-panel {
         border: 1px solid var(--line);
         border-radius: 8px;
-        background: rgba(8, 23, 15, 0.68);
+        background: rgba(var(--deep-rgb), 0.68);
         box-shadow: var(--shadow);
       }
 
@@ -773,7 +999,7 @@ const stackLayers = [
         height: 78px;
         margin-bottom: 1.25rem;
         border-radius: 7px;
-        background: var(--paper);
+        background: var(--badge-bg);
       }
 
       .area-icon img {
@@ -788,8 +1014,8 @@ const stackLayers = [
       .deploy-panel h3,
       .signup-panel h2 {
         margin: 0;
-        color: var(--cream);
-        font-family: "Redwood Serif", Georgia, ui-serif, serif;
+        color: var(--text);
+        font-family: var(--font-label);
         font-size: 1.12rem;
         font-weight: 400;
         line-height: 1.18;
@@ -799,7 +1025,7 @@ const stackLayers = [
       .cms-panel p,
       .deploy-panel p,
       .signup-panel p {
-        color: rgba(255, 247, 225, 0.7);
+        color: rgba(var(--ink-rgb), 0.7);
         font-size: 1rem;
         line-height: 1.65;
       }
@@ -814,9 +1040,9 @@ const stackLayers = [
       .feature-item {
         min-height: 154px;
         padding: 0.95rem;
-        border: 1px solid rgba(255, 247, 225, 0.14);
+        border: 1px solid rgba(var(--ink-rgb), 0.14);
         border-radius: 7px;
-        background: rgba(255, 247, 225, 0.045);
+        background: rgba(var(--ink-rgb), 0.045);
       }
 
       .feature-item strong {
@@ -830,7 +1056,7 @@ const stackLayers = [
       .feature-item span {
         display: block;
         margin-top: 0.55rem;
-        color: rgba(255, 247, 225, 0.72);
+        color: rgba(var(--ink-rgb), 0.72);
         font-size: 0.88rem;
         line-height: 1.5;
       }
@@ -845,8 +1071,8 @@ const stackLayers = [
         border-top: 5px solid var(--gold);
         border-radius: 8px;
         background:
-          linear-gradient(135deg, rgba(17, 45, 30, 0.95), rgba(8, 23, 15, 0.92)),
-          var(--pine);
+          linear-gradient(135deg, var(--panel-b), var(--panel-b)),
+          var(--surface);
         box-shadow: var(--shadow);
       }
 
@@ -861,9 +1087,9 @@ const stackLayers = [
         gap: 1rem;
         align-items: center;
         padding: 0.85rem;
-        border: 1px solid rgba(255, 247, 225, 0.14);
+        border: 1px solid rgba(var(--ink-rgb), 0.14);
         border-radius: 7px;
-        background: rgba(255, 247, 225, 0.05);
+        background: rgba(var(--ink-rgb), 0.05);
       }
 
       .stack-layer strong {
@@ -874,7 +1100,7 @@ const stackLayers = [
       }
 
       .stack-layer span {
-        color: rgba(255, 247, 225, 0.78);
+        color: rgba(var(--ink-rgb), 0.78);
         line-height: 1.45;
       }
 
@@ -893,15 +1119,15 @@ const stackLayers = [
 
       .resource {
         padding: 1rem;
-        border: 1px solid rgba(255, 247, 225, 0.14);
+        border: 1px solid rgba(var(--ink-rgb), 0.14);
         border-radius: 7px;
-        background: rgba(255, 247, 225, 0.045);
+        background: rgba(var(--ink-rgb), 0.045);
       }
 
       .resource strong {
         display: block;
         color: var(--gold);
-        font-family: "Switchback", ui-sans-serif, system-ui, sans-serif;
+        font-family: var(--font-body);
         font-size: 0.72rem;
         text-transform: uppercase;
       }
@@ -909,7 +1135,7 @@ const stackLayers = [
       .resource span {
         display: block;
         margin-top: 0.35rem;
-        color: rgba(255, 247, 225, 0.72);
+        color: rgba(var(--ink-rgb), 0.72);
         line-height: 1.45;
       }
 
@@ -932,11 +1158,11 @@ const stackLayers = [
         justify-content: space-between;
         gap: 1rem;
         padding: 0.75rem 0;
-        border-bottom: 1px solid rgba(255, 247, 225, 0.12);
+        border-bottom: 1px solid rgba(var(--ink-rgb), 0.12);
       }
 
       .route span {
-        color: rgba(255, 247, 225, 0.66);
+        color: rgba(var(--ink-rgb), 0.66);
       }
 
       .route strong {
@@ -953,28 +1179,28 @@ const stackLayers = [
         grid-template-columns: 3.5rem minmax(0, 1fr);
         gap: 0.9rem;
         padding: 0.9rem;
-        border: 1px solid rgba(255, 247, 225, 0.14);
+        border: 1px solid rgba(var(--ink-rgb), 0.14);
         border-radius: 7px;
-        background: rgba(255, 247, 225, 0.045);
+        background: rgba(var(--ink-rgb), 0.045);
       }
 
       .workflow-step em {
         color: var(--gold);
         font-style: normal;
-        font-family: "Switchback", ui-sans-serif, system-ui, sans-serif;
+        font-family: var(--font-body);
         font-size: 1.2rem;
         font-weight: 950;
       }
 
       .workflow-step strong {
         display: block;
-        color: var(--cream);
+        color: var(--text);
       }
 
       .workflow-step span {
         display: block;
         margin-top: 0.3rem;
-        color: rgba(255, 247, 225, 0.66);
+        color: rgba(var(--ink-rgb), 0.66);
         line-height: 1.45;
       }
 
@@ -986,8 +1212,8 @@ const stackLayers = [
         padding: clamp(1.25rem, 4vw, 2rem);
         background:
           url("/assets/images/topography.svg") center / 620px auto,
-          linear-gradient(135deg, rgba(39, 95, 60, 0.92), rgba(18, 50, 32, 0.96)),
-          var(--pine);
+          linear-gradient(135deg, var(--panel-a), var(--panel-b)),
+          var(--surface);
         background-blend-mode: soft-light, normal, normal;
       }
 
@@ -1001,22 +1227,22 @@ const stackLayers = [
         width: 100%;
         min-height: 48px;
         padding: 0 0.9rem;
-        border: 1px solid rgba(16, 34, 24, 0.28);
+        border: 1px solid rgba(var(--deep-rgb), 0.28);
         border-radius: 7px;
-        color: #18261d;
+        color: var(--on-field);
         font: inherit;
         font-weight: 850;
-        background: var(--cream);
+        background: var(--field-bg);
       }
 
       input:focus {
         border-color: var(--gold);
-        outline: 3px solid rgba(223, 154, 47, 0.25);
+        outline: 3px solid rgba(var(--gold-rgb), 0.25);
       }
 
       .site-footer {
         padding: 2rem 0 3rem;
-        color: rgba(255, 247, 225, 0.64);
+        color: rgba(var(--ink-rgb), 0.64);
         font-size: 0.78rem;
         font-weight: 850;
         text-transform: uppercase;
@@ -1247,7 +1473,7 @@ const stackLayers = [
             <div class="dashboard-shell">
               <div class="dashboard-side">
                 <div class="dashboard-logo">
-                  <img src="/assets/images/marketing-park-camp.svg" alt="">
+                  <img src="/assets/images/park-emblem.svg" alt="" width="34" height="34">
                   <span>CMS</span>
                 </div>
                 <span class="active side-pill">Content</span>
@@ -1302,7 +1528,7 @@ Marketing, docs, blog, CMS, API, mail, and cloud.</div>
           @foreach (productAreas as area)
             <article class="area-card">
               <div class="area-icon">
-                <img src="{{ area.image }}" alt="">
+                <img src="{{ area.image }}" alt="" width="54" height="54" loading="lazy" decoding="async">
               </div>
               <h3>{{ area.title }}</h3>
               <p>{{ area.text }}</p>
@@ -1399,6 +1625,23 @@ Marketing, docs, blog, CMS, API, mail, and cloud.</div>
         </div>
       </footer>
     </div>
+    <!-- Same control, position, and glyphs as the blog's, so switching theme
+         feels like one site rather than two that happen to share a palette. -->
+    <div class="theme-toggle" role="group" aria-label="Theme">
+      <button type="button" data-t="colored" title="Park theme" aria-label="Park theme" onclick="stxTheme('colored')">🌲</button>
+      <button type="button" data-t="light" title="Light theme" aria-label="Light theme" onclick="stxTheme('light')">☀</button>
+      <button type="button" data-t="dark" title="Dark theme" aria-label="Dark theme" onclick="stxTheme('dark')">🌙</button>
+    </div>
+    <script>
+      // Mark the active button once the toggle exists (the theme itself was
+      // applied pre-paint by the head script).
+      ;(function () {
+        var current = document.documentElement.getAttribute('data-theme')
+        document.querySelectorAll('.theme-toggle button').forEach(function (b) {
+          b.setAttribute('aria-pressed', String(b.getAttribute('data-t') === current))
+        })
+      })()
+    </script>
     <script src="/assets/scripts/site-mode.js" defer></script>
   </body>
 </html>

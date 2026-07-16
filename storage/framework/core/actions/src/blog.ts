@@ -285,17 +285,30 @@ async function blogChrome(): Promise<string> {
       }
       catch {}
 
+      // 'stacks-theme' is the shared key; the marketing page writes it too, so a
+      // choice made on / carries to /blog. 'stacks-blog-theme' is the old
+      // blog-only key, read once so an existing choice is not thrown away.
       var savedTheme = ''
       try {
-        savedTheme = localStorage.getItem('stacks-blog-theme') || ''
+        savedTheme = localStorage.getItem('stacks-theme') || localStorage.getItem('stacks-blog-theme') || ''
       }
       catch {}
 
-      var theme = ok(queryTheme) ? queryTheme : (ok(savedTheme) ? savedTheme : ${JSON.stringify(fallback)})
+      // A visitor who has never chosen gets their OS preference rather than a
+      // hard-coded default, which is what prefers-color-scheme is for. The
+      // configured default still answers for everyone who prefers light.
+      var prefersDark = false
+      try {
+        prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+      }
+      catch {}
+
+      var systemTheme = (prefersDark && ok('dark')) ? 'dark' : ${JSON.stringify(fallback)}
+      var theme = ok(queryTheme) ? queryTheme : (ok(savedTheme) ? savedTheme : systemTheme)
       document.documentElement.setAttribute('data-theme', theme)
       window.stxBlogTheme = function (nextTheme) {
         try {
-          localStorage.setItem('stacks-blog-theme', nextTheme)
+          localStorage.setItem('stacks-theme', nextTheme)
         }
         catch {}
         document.documentElement.setAttribute('data-theme', nextTheme)
