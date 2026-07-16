@@ -21,7 +21,10 @@ export default defineModel({
     // rendered by BunPress; this model backs the CMS dashboard only.
     categorizable: true,
     taggable: true,
-    commentables: true,
+    // `commentable`, not `commentables`: define-model checks the singular key,
+    // so the plural spelling left the trait inert. Now that the commentable
+    // trait targets the real `commentables` table, activating it is correct.
+    commentable: true,
     useApi: {
       uri: 'posts',
       routes: ['index', 'store', 'show', 'update', 'destroy'],

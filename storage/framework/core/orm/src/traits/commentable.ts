@@ -13,7 +13,7 @@ export function createCommentableMethods(tableName: string) {
     async comments(id: number): Promise<any[]> {
       assertId(id, 'comments')
       return await db
-        .selectFrom('comments')
+        .selectFrom('commentables')
         .where('commentables_id', '=', id)
         .where('commentables_type', '=', tableName)
         .selectAll()
@@ -22,7 +22,7 @@ export function createCommentableMethods(tableName: string) {
 
     async commentCount(id: number): Promise<number> {
       const result = await db
-        .selectFrom('comments')
+        .selectFrom('commentables')
         .select(sql`count(*) as count`)
         .where('commentables_id', '=', id)
         .where('commentables_type', '=', tableName)
@@ -39,8 +39,8 @@ export function createCommentableMethods(tableName: string) {
       if (typeof comment.body !== 'string' || comment.body.trim().length === 0) {
         throw new Error('[orm/commentable] addComment requires a non-empty comment.body')
       }
-      return await db
-        .insertInto('comments')
+      const written = await db
+        .insertInto('commentables')
         .values({
           ...comment,
           commentables_id: id,
@@ -51,11 +51,27 @@ export function createCommentableMethods(tableName: string) {
         })
         .returningAll()
         .executeTakeFirst()
+
+      // A RETURNING-capable driver hands back the row directly; SQLite hands
+      // back { changes, lastInsertRowid }, so read the row by that id. Comments
+      // have no natural unique key, hence the id rather than a re-query by value.
+      if (written && typeof written === 'object' && 'id' in written)
+        return written
+
+      const insertedId = (written as any)?.lastInsertRowid
+      if (insertedId == null)
+        return written
+
+      return await db
+        .selectFrom('commentables')
+        .where('id', '=', Number(insertedId))
+        .selectAll()
+        .executeTakeFirst()
     },
 
     async approvedComments(id: number): Promise<any[]> {
       return await db
-        .selectFrom('comments')
+        .selectFrom('commentables')
         .where('commentables_id', '=', id)
         .where('commentables_type', '=', tableName)
         .where('status', '=', 'approved')
@@ -65,7 +81,7 @@ export function createCommentableMethods(tableName: string) {
 
     async pendingComments(id: number): Promise<any[]> {
       return await db
-        .selectFrom('comments')
+        .selectFrom('commentables')
         .where('commentables_id', '=', id)
         .where('commentables_type', '=', tableName)
         .where('status', '=', 'pending')
@@ -75,7 +91,7 @@ export function createCommentableMethods(tableName: string) {
 
     async rejectedComments(id: number): Promise<any[]> {
       return await db
-        .selectFrom('comments')
+        .selectFrom('commentables')
         .where('commentables_id', '=', id)
         .where('commentables_type', '=', tableName)
         .where('status', '=', 'rejected')

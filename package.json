@@ -70,6 +70,7 @@
     "sqlite": "^3.47.2"
   },
   "dependencies": {
+    "bun-query-builder": "^0.1.50",
     "stacks": "workspace:*"
   },
   "devDependencies": {

@@ -18,7 +18,7 @@ export function createTaggableMethods(tableName: string) {
     async tags(id: number): Promise<any[]> {
       assertId(id, 'tags')
       return await db
-        .selectFrom('taggable')
+        .selectFrom('taggables')
         .where('taggable_id', '=', id)
         .where('taggable_type', '=', tableName)
         .selectAll()
@@ -28,7 +28,7 @@ export function createTaggableMethods(tableName: string) {
     async tagCount(id: number): Promise<number> {
       assertId(id, 'tagCount')
       const result = await db
-        .selectFrom('taggable')
+        .selectFrom('taggables')
         .select(sql`count(*) as count`)
         .where('taggable_id', '=', id)
         .where('taggable_type', '=', tableName)
@@ -42,25 +42,34 @@ export function createTaggableMethods(tableName: string) {
       if (!tag || typeof tag.name !== 'string' || tag.name.trim().length === 0) {
         throw new Error('[orm/taggable] addTag requires a non-empty tag.name')
       }
-      return await db
-        .insertInto('taggable')
+
+      await db
+        .insertInto('taggables')
         .values({
           ...tag,
           taggable_id: id,
           taggable_type: tableName,
           slug: tag.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
-          order: 0,
           is_active: true,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
         })
-        .returningAll()
+        .execute()
+
+      // Re-select rather than trust the write's return value (SQLite may return
+      // only { changes, lastInsertRowid }).
+      return await db
+        .selectFrom('taggables')
+        .where('taggable_id', '=', id)
+        .where('taggable_type', '=', tableName)
+        .where('name', '=', tag.name)
+        .selectAll()
         .executeTakeFirst()
     },
 
     async activeTags(id: number): Promise<any[]> {
       return await db
-        .selectFrom('taggable')
+        .selectFrom('taggables')
         .where('taggable_id', '=', id)
         .where('taggable_type', '=', tableName)
         .where('is_active', '=', true)
@@ -70,7 +79,7 @@ export function createTaggableMethods(tableName: string) {
 
     async inactiveTags(id: number): Promise<any[]> {
       return await db
-        .selectFrom('taggable')
+        .selectFrom('taggables')
         .where('taggable_id', '=', id)
         .where('taggable_type', '=', tableName)
         .where('is_active', '=', false)
@@ -80,7 +89,7 @@ export function createTaggableMethods(tableName: string) {
 
     async removeTag(id: number, tagId: number): Promise<void> {
       await db
-        .deleteFrom('taggable')
+        .deleteFrom('taggables')
         .where('taggable_id', '=', id)
         .where('taggable_type', '=', tableName)
         .where('id', '=', tagId)

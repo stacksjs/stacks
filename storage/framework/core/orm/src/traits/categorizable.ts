@@ -24,7 +24,7 @@ export function createCategorizableMethods(tableName: string) {
       if (categoryIds.length === 0) return []
 
       return await db
-        .selectFrom('categorizable')
+        .selectFrom('categorizables')
         .where('id', 'in', categoryIds)
         .selectAll()
         .execute()
@@ -36,28 +36,41 @@ export function createCategorizableMethods(tableName: string) {
     },
 
     async addCategory(id: number, category: { name: string, description?: string }): Promise<any> {
-      let categoryRecord = await db
-        .selectFrom('categorizable')
+      // Categories are scoped by owner type, so look up (and later create)
+      // within this `categorizable_type`.
+      const findCategory = () => db
+        .selectFrom('categorizables')
         .where('name', '=', category.name)
+        .where('categorizable_type', '=', tableName)
         .selectAll()
         .executeTakeFirst()
 
+      let categoryRecord = await findCategory()
+
       if (!categoryRecord) {
-        categoryRecord = await db
-          .insertInto('categorizable')
+        await db
+          .insertInto('categorizables')
           .values({
             name: category.name,
             description: category.description,
             slug: category.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+            // categorizables.categorizable_type is NOT NULL: it scopes the
+            // category to the owning model type, the same way the CMS module's
+            // categorizables.store() sets it.
+            categorizable_type: tableName,
             is_active: true,
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString(),
           })
-          .returningAll()
-          .executeTakeFirst()
+          .execute()
+
+        // Re-select rather than trust the write's return value: on SQLite an
+        // insert can surface only { changes, lastInsertRowid }, so reading the
+        // row back is the driver-agnostic way to get its id for the link below.
+        categoryRecord = await findCategory()
       }
 
-      return await db
+      await db
         .insertInto('categorizable_models')
         .values({
           categorizable_id: id,
@@ -66,8 +79,9 @@ export function createCategorizableMethods(tableName: string) {
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
         })
-        .returningAll()
-        .executeTakeFirst()
+        .execute()
+
+      return categoryRecord
     },
 
     async activeCategories(id: number): Promise<any[]> {
@@ -75,7 +89,7 @@ export function createCategorizableMethods(tableName: string) {
       if (categoryIds.length === 0) return []
 
       return await db
-        .selectFrom('categorizable')
+        .selectFrom('categorizables')
         .where('id', 'in', categoryIds)
         .where('is_active', '=', true)
         .selectAll()
@@ -87,7 +101,7 @@ export function createCategorizableMethods(tableName: string) {
       if (categoryIds.length === 0) return []
 
       return await db
-        .selectFrom('categorizable')
+        .selectFrom('categorizables')
         .where('id', 'in', categoryIds)
         .where('is_active', '=', false)
         .selectAll()
