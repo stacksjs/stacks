@@ -1,102 +1,83 @@
 import { Action } from '@stacksjs/actions'
-import { Post, Category, Tag } from '@stacksjs/orm'
+import { db } from '@stacksjs/database'
 
-// Mock data used when the ORM is unavailable or has no posts (e.g. dev
-// dashboard with no DB seeded). Shape matches the `BlogPost` interface in
-// storage/framework/defaults/views/dashboard/content/posts/index.stx so
-// the page can hydrate directly from this response.
-const mockPosts = [
-  { id: 1, title: '10 Tips for Better Code Quality', excerpt: 'Improve your code quality with these essential tips.', slug: '10-tips-for-better-code-quality', category: 'Tutorials', tags: ['Coding', 'Best Practices'], author: 'Jane Doe', views: 12450, comments: 78, published: '2023-12-01', status: 'Published', featured: true, poster: 'https://picsum.photos/seed/1/280/160' },
-  { id: 2, title: 'The Future of JavaScript Frameworks', excerpt: 'Exploring what\'s next for JS frameworks.', slug: 'future-of-javascript-frameworks', category: 'Technology', tags: ['JavaScript', 'Frameworks'], author: 'John Smith', views: 9870, comments: 124, published: '2023-11-28', status: 'Published', featured: true, poster: 'https://picsum.photos/seed/2/280/160' },
-  { id: 3, title: 'Getting Started with Vue 3', excerpt: 'A comprehensive guide to Vue 3 composition API.', slug: 'getting-started-with-vue-3', category: 'Tutorials', tags: ['Vue', 'JavaScript'], author: 'Jane Doe', views: 8760, comments: 45, published: '2023-11-25', status: 'Published', featured: false, poster: 'https://picsum.photos/seed/3/280/160' },
-  { id: 4, title: 'Review: Latest MacBook Pro', excerpt: 'In-depth review for developers.', slug: 'review-latest-macbook-pro', category: 'Reviews', tags: ['Hardware', 'Apple'], author: 'Michael Brown', views: 7650, comments: 92, published: '2023-11-20', status: 'Published', featured: false, poster: 'https://picsum.photos/seed/4/280/160' },
-  { id: 5, title: 'Understanding Web Accessibility', excerpt: 'Why accessibility matters and how to implement it.', slug: 'understanding-web-accessibility', category: 'Tutorials', tags: ['Accessibility', 'UX'], author: 'Emily Davis', views: 6540, comments: 31, published: '2023-11-15', status: 'Published', featured: false, poster: 'https://picsum.photos/seed/5/280/160' },
-  { id: 6, title: 'Introduction to TypeScript', excerpt: 'Learn the basics of TypeScript.', slug: 'introduction-to-typescript', category: 'Tutorials', tags: ['TypeScript', 'JavaScript'], author: 'Jane Doe', views: 0, comments: 0, published: '', status: 'Draft', featured: false, poster: 'https://picsum.photos/seed/6/280/160' },
-  { id: 7, title: 'Building a REST API with Node.js', excerpt: 'Step-by-step guide to building REST APIs.', slug: 'building-rest-api-nodejs', category: 'Tutorials', tags: ['Node.js', 'API'], author: 'John Smith', views: 0, comments: 0, published: '', status: 'Draft', featured: false, poster: 'https://picsum.photos/seed/7/280/160' },
-  { id: 8, title: 'The Impact of AI on Software Development', excerpt: 'How AI is changing software development.', slug: 'ai-impact-software-development', category: 'Technology', tags: ['AI', 'Future Tech'], author: 'Michael Brown', views: 5430, comments: 67, published: '2023-11-10', status: 'Published', featured: false, poster: 'https://picsum.photos/seed/8/280/160' },
-]
+interface PostRow {
+  id: number
+  title: string
+  excerpt: string | null
+  content: string | null
+  poster: string | null
+  status: string | null
+  views: number | null
+  published_at: string | null
+  created_at: string | null
+  updated_at: string | null
+  author_id: number | null
+  is_featured: number | null
+}
 
-const mockCategories = [
-  { id: 1, name: 'Tutorials', slug: 'tutorials' },
-  { id: 2, name: 'Technology', slug: 'technology' },
-  { id: 3, name: 'Reviews', slug: 'reviews' },
-]
+// `status` is stored lowercase (the posts table has a CHECK constraint on
+// 'published' | 'draft' | 'archived'), but older rows and hand-written seeds
+// have been seen with 'Draft'/'Published'. Normalize on read so the dashboard
+// filter and badge styling only ever deal with one casing.
+function normalizeStatus(status: string | null): string {
+  const value = String(status || 'draft').toLowerCase()
 
-const mockTags = [
-  { id: 1, name: 'Coding', slug: 'coding' },
-  { id: 2, name: 'JavaScript', slug: 'javascript' },
-  { id: 3, name: 'Vue', slug: 'vue' },
-  { id: 4, name: 'TypeScript', slug: 'typescript' },
-]
+  return value === 'published' || value === 'archived' ? value : 'draft'
+}
 
 function counts(posts: Array<{ status: string }>) {
   return {
-    publishedCount: posts.filter(p => p.status.toLowerCase() === 'published').length,
-    draftCount: posts.filter(p => p.status.toLowerCase() === 'draft').length,
-    scheduledCount: posts.filter(p => p.status.toLowerCase() === 'scheduled').length,
+    publishedCount: posts.filter(p => p.status === 'published').length,
+    draftCount: posts.filter(p => p.status === 'draft').length,
+    archivedCount: posts.filter(p => p.status === 'archived').length,
   }
 }
 
+/**
+ * `GET /api/dashboard/posts` — backs `views/dashboard/content/posts/index.stx`.
+ *
+ * Reads straight from the `posts` table via `db` rather than the ORM model:
+ * `Post` from `@stacksjs/orm` exposes no query methods today, so the previous
+ * `Post.orderBy(...)` call threw on every request.
+ *
+ * There is deliberately no mock-data fallback. This action used to catch every
+ * error and serve placeholder rows, which made a page that was 404ing against
+ * an unregistered endpoint look like it was working. A failure here must
+ * surface as a failure.
+ */
 export default new Action({
   name: 'PostIndexAction',
-  description: 'Returns posts data for the dashboard.',
+  description: 'Returns CMS posts for the dashboard.',
   method: 'GET',
+  apiResponse: true,
   async handle() {
-    try {
-      const [allPosts, allCategories, allTags] = await Promise.all([
-        Post.orderBy('created_at', 'desc').get(),
-        Category.all(),
-        Tag.all(),
-      ])
+    const rows = await db
+      .selectFrom('posts')
+      .selectAll()
+      .orderBy('created_at', 'desc')
+      .execute() as unknown as PostRow[]
 
-      // Empty result from a real ORM still falls through to mock data so
-      // the dev dashboard always has something to render.
-      if (!allPosts || allPosts.length === 0) {
-        return {
-          posts: mockPosts,
-          categories: mockCategories,
-          tags: mockTags,
-          ...counts(mockPosts),
-        }
-      }
+    const posts = rows.map(row => ({
+      id: Number(row.id),
+      title: String(row.title || ''),
+      excerpt: String(row.excerpt || ''),
+      content: String(row.content || ''),
+      poster: String(row.poster || ''),
+      status: normalizeStatus(row.status),
+      views: Number(row.views || 0),
+      published_at: row.published_at || null,
+      created_at: row.created_at || null,
+      updated_at: row.updated_at || null,
+      author_id: row.author_id ?? null,
+      featured: Boolean(row.is_featured),
+    }))
 
-      const posts = allPosts.map((p, idx) => ({
-        id: Number(p.get('id') || idx + 1),
-        title: String(p.get('title') || ''),
-        excerpt: String(p.get('excerpt') || ''),
-        slug: String(p.get('slug') || ''),
-        category: String(p.get('category') || ''),
-        tags: Array.isArray(p.get('tags')) ? p.get('tags') as string[] : [],
-        author: String(p.get('author') || ''),
-        views: Number(p.get('views') || 0),
-        comments: Number(p.get('comments') || 0),
-        published: String(p.get('published_at') || p.get('published') || p.get('created_at') || ''),
-        status: String(p.get('status') || 'Draft'),
-        featured: Boolean(p.get('featured')),
-        poster: String(p.get('poster') || ''),
-      }))
+    const [categories, tags] = await Promise.all([
+      db.selectFrom('categories').select(['id', 'name', 'slug']).execute(),
+      db.selectFrom('tags').select(['id', 'name', 'slug']).execute(),
+    ])
 
-      const categories = allCategories.map(c => ({
-        id: Number(c.get('id')),
-        name: String(c.get('name') || ''),
-        slug: String(c.get('slug') || ''),
-      }))
-
-      const tags = allTags.map(t => ({
-        id: Number(t.get('id')),
-        name: String(t.get('name') || ''),
-        slug: String(t.get('slug') || ''),
-      }))
-
-      return { posts, categories, tags, ...counts(posts) }
-    }
-    catch {
-      return {
-        posts: mockPosts,
-        categories: mockCategories,
-        tags: mockTags,
-        ...counts(mockPosts),
-      }
-    }
+    return { posts, categories, tags, ...counts(posts) }
   },
 })

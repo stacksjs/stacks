@@ -122,7 +122,7 @@
 
 <script>
 ;(function () {
-  var api = '/api/dashboard/cms'
+  var api = '/api/dashboard/posts'
   var posts = []
   var table = document.getElementById('posts-table')
   var empty = document.getElementById('posts-empty')
@@ -132,6 +132,17 @@
   var statusFilter = document.getElementById('post-status-filter')
 
   function $(id) { return document.getElementById(id) }
+  // CSRF is default-on for POST/PATCH/DELETE via a stateless double-submit
+  // cookie: the server seeds a non-HttpOnly X-CSRF-Token cookie on safe
+  // responses and the client echoes it back in the header. The list request on
+  // page load seeds it, so the token is present by the time a save can happen.
+  // See defaults/app/Middleware/Csrf.ts.
+  function writeHeaders() {
+    var headers = { 'content-type': 'application/json' }
+    var match = document.cookie.match(/(?:^|;\s*)X-CSRF-Token=([^;]*)/)
+    if (match) headers['X-CSRF-Token'] = decodeURIComponent(match[1])
+    return headers
+  }
   function text(value) { return value == null || value === '' ? '-' : String(value) }
   function statusClass(status) {
     if (status === 'published') return 'bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-200'
@@ -173,7 +184,7 @@
     table.innerHTML = rows.map(function (post) {
       return '<tr class="hover:bg-neutral-50 dark:hover:bg-neutral-950/70">' +
         '<td class="px-4 py-3"><div class="font-medium">' + escapeHtml(post.title) + '</div><div class="mt-1 max-w-xl text-neutral-500 text-xs truncate dark:text-neutral-400">' + escapeHtml(post.excerpt || post.content || '') + '</div></td>' +
-        '<td class="px-4 py-3"><span class="inline-flex px-2 py-0.5 font-medium text-xs rounded-full ' ' + + statusClass(post.status)">' + escapeHtml(post.status || 'draft') + '</span></td>' +
+        '<td class="px-4 py-3"><span class="inline-flex px-2 py-0.5 font-medium text-xs rounded-full ' + statusClass(post.status) + '">' + escapeHtml(post.status || 'draft') + '</span></td>' +
         '<td class="px-4 py-3 text-neutral-600 dark:text-neutral-300">' + Number(post.views || 0).toLocaleString() + '</td>' +
         '<td class="px-4 py-3 text-neutral-600 dark:text-neutral-300">' + fmtDate(post.published_at || post.created_at) + '</td>' +
         '<td class="px-4 py-3"><div class="flex gap-1 justify-end">' +
@@ -185,6 +196,7 @@
   }
   async function load() {
     var res = await fetch(api)
+    if (!res.ok) throw new Error('Unable to load CMS posts (' + res.status + ').')
     var json = await res.json()
     posts = Array.isArray(json.posts) ? json.posts : []
     render()
@@ -209,14 +221,14 @@
       poster: $('post-poster').value,
       content: $('post-content').value,
     }
-    var res = await fetch(id ? api + '/posts/' + id : api + '/posts', {
+    var res = await fetch(id ? api + '/' + id : api, {
       method: id ? 'PATCH' : 'POST',
-      headers: { 'content-type': 'application/json' },
+      headers: writeHeaders(),
       body: JSON.stringify(payload),
     })
     if (!res.ok) {
       var err = await res.json().catch(function () { return {} })
-      alert(err.error || 'Could not save post')
+      alert(err.message || err.error || 'Could not save post')
       return
     }
     dialog.close()
@@ -224,7 +236,7 @@
   }
   async function deletePost(id) {
     if (!confirm('Delete this post?')) return
-    var res = await fetch(api + '/posts/' + id, { method: 'DELETE' })
+    var res = await fetch(api + '/' + id, { method: 'DELETE', headers: writeHeaders() })
     if (!res.ok) {
       alert('Could not delete post')
       return

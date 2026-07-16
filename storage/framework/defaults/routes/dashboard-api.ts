@@ -37,7 +37,23 @@ function guard(r: any): any {
 
 route.group({ prefix: '/api/dashboard', apiResponse: true }, () => {
   route.get('/authors', 'Actions/Dashboard/Content/AuthorIndexAction')
-  route.get('/posts', 'Actions/Dashboard/Content/PostIndexAction')
+
+  // CMS posts admin — backs `views/dashboard/content/posts/index.stx`.
+  //
+  // This is the dashboard-reachable surface for post CRUD. The `/cms/posts`
+  // group in `defaults/routes/dashboard.ts` is the public authoring API and is
+  // NOT usable from here: the dev dashboard server only delegates `/api/*` to
+  // the Stacks router on GET (a GET `/cms/posts` renders the STX 404 page
+  // instead), and that group is `middleware: 'auth'` while the dashboard server
+  // runs with `auth: false` and sends no credentials.
+  //
+  // Guarded for the same reason as the blog routes below: the writes mutate the
+  // database and the read exposes unpublished drafts.
+  guard(route.get('/posts', 'Actions/Dashboard/Content/PostIndexAction'))
+  guard(route.post('/posts', 'Actions/Dashboard/Content/PostStoreAction'))
+  guard(route.patch('/posts/{id}', 'Actions/Dashboard/Content/PostUpdateAction'))
+  guard(route.delete('/posts/{id}', 'Actions/Dashboard/Content/PostDestroyAction'))
+
   route.get('/ci/status', 'Actions/Dashboard/Ci/StatusAction')
   // CI drilldown (stacksjs/stacks#1848): per-repo run history + per-run
   // job detail. On-demand reads so the polled snapshot stays cheap.
