@@ -425,7 +425,7 @@
       "name": "@stacksjs/collections",
       "version": "0.70.88",
       "dependencies": {
-        "ts-collect": "^0.4.0",
+        "ts-collect": "0.4.0",
       },
       "devDependencies": {
         "better-dx": "^0.2.16",

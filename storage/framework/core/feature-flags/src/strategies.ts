@@ -25,7 +25,11 @@ export function percentage(percent: number): FeatureResolver {
 /** Deterministically assign every scope to one weighted variant. */
 export function variants<const Name extends string>(weights: Record<Name, number>): FeatureResolver<unknown> {
   const entries = Object.entries(weights) as Array<[Name, number]>
-  if (entries.length === 0) throw new RangeError('At least one feature variant is required.')
+  // Reading the last entry up front rather than indexing again in the resolver
+  // lets the non-empty invariant carry to the fallback return below, which
+  // otherwise cannot be proven to be defined.
+  const lastEntry = entries[entries.length - 1]
+  if (!lastEntry) throw new RangeError('At least one feature variant is required.')
   let total = 0
   for (const [name, weight] of entries) {
     if (!Number.isFinite(weight) || weight <= 0)
@@ -40,6 +44,7 @@ export function variants<const Name extends string>(weights: Record<Name, number
       cursor += weight
       if (target < cursor) return name
     }
-    return entries[entries.length - 1][0]
+    // Only reachable when float rounding puts `target` exactly at `total`.
+    return lastEntry[0]
   }
 }

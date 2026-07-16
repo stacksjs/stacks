@@ -1005,7 +1005,10 @@ console.log(`  ${dim(`ready in ${elapsedMs.toFixed(0)} ms`)}`)
 
 if (verbose) {
   console.log()
-  console.log(`  ${dim('➜')}  ${dim('Sidebar')}:  ${dim(`${sidebarConfig.sections.length} sections, 240px`)}`)
+  // The `Sidebar` line was dropped along with `sidebarConfig`: the native
+  // sidebar is retired and the web one owns rendering, so there is no section
+  // count to report here any more. The reference outlived the variable and
+  // failed typecheck.
   console.log(`  ${dim('➜')}  ${dim('URL')}:      ${dim(initialUrl)}`)
   if (dashboardDomain) {
     console.log(`  ${dim('➜')}  ${dim('SSL')}:      ${dim(sslBasePath)}`)
