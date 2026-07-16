@@ -169,4 +169,17 @@ route.group({ prefix: '/api/dashboard', apiResponse: true }, () => {
   // dynamic `views/dashboard/models/[model].stx` page. ORM path
   // first, raw SQLite fallback if no model file matches the slug.
   guard(route.get('/models/{slug}', 'Actions/Dashboard/Models/ModelShowAction'))
+
+  // Markdown blog admin — the write side of the BunPress blog that /blog
+  // renders from `content/blog/*.md` (storage/framework/core/actions/src/blog.ts).
+  // Backs `views/dashboard/content/blog/index.stx`.
+  //
+  // Every route is guarded: the writes put files on disk, and the reads expose
+  // unpublished drafts. Neither belongs on an unauthenticated endpoint once the
+  // dashboard is reachable off localhost.
+  guard(route.get('/blog', 'Actions/Blog/BlogIndexAction'))
+  guard(route.get('/blog/{slug}', 'Actions/Blog/BlogShowAction'))
+  guard(route.post('/blog', 'Actions/Blog/BlogStoreAction'))
+  guard(route.patch('/blog/{slug}', 'Actions/Blog/BlogUpdateAction'))
+  guard(route.delete('/blog/{slug}', 'Actions/Blog/BlogDestroyAction'))
 })

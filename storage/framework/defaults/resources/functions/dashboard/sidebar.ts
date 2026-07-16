@@ -341,6 +341,7 @@ export function buildNavSections(
     sections.push(['content', 'content', [
       { to: '/content/dashboard', icon: 'dashboard', text: 'Dashboard' },
       { to: '/content/files', icon: 'files', text: 'Files' },
+      { to: '/content/blog', icon: 'post', text: 'Blog' },
       { to: '/content/pages', icon: 'file', text: 'Pages' },
       { to: '/content/posts', icon: 'post', text: 'Posts' },
       { to: '/content/categories', icon: 'tags', text: 'Categories' },

@@ -1,0 +1,493 @@
+@extends('layouts/default')
+
+@section('content')
+@title('Dashboard - Blog')
+<div class="p-6 min-h-screen text-neutral-950 dark:text-neutral-100 bg-neutral-50 dark:bg-neutral-950">
+  <div class="flex flex-col gap-6 mx-auto max-w-7xl">
+
+    <header class="flex flex-col gap-4 md:flex-row md:items-end md:justify-between pb-5 border-b border-neutral-200 dark:border-neutral-800">
+      <div>
+        <h1 class="font-semibold text-2xl tracking-tight">Blog</h1>
+        <p class="mt-1 text-neutral-500 text-sm dark:text-neutral-400">
+          Posts are markdown files in <code class="px-1 py-0.5 text-xs bg-neutral-200 rounded dark:bg-neutral-800">content/blog</code>. Saving writes the file. Commit and push to publish.
+        </p>
+      </div>
+      <div class="flex flex-wrap gap-2">
+        <a href="/blog" target="_blank" rel="noopener" class="inline-flex gap-2 items-center px-3 py-2 font-medium text-sm text-neutral-800 dark:text-neutral-100 hover:bg-white dark:hover:bg-neutral-900 border border-neutral-300 rounded-md dark:border-neutral-700">
+          <span class="h-4 w-4 i-hugeicons-view"></span>
+          View blog
+        </a>
+        <button type="button" @click="openEditor(null)" class="inline-flex gap-2 items-center px-3 py-2 font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md shadow-sm">
+          <span class="h-4 w-4 i-hugeicons-plus-sign"></span>
+          New post
+        </button>
+      </div>
+    </header>
+
+    <section class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div class="p-4 bg-white dark:bg-neutral-900 border border-neutral-200 rounded-md dark:border-neutral-800">
+        <p class="text-neutral-500 text-sm dark:text-neutral-400">Total</p>
+        <p class="mt-2 font-semibold text-3xl">{{ posts().length }}</p>
+      </div>
+      <div class="p-4 bg-white dark:bg-neutral-900 border border-neutral-200 rounded-md dark:border-neutral-800">
+        <p class="text-neutral-500 text-sm dark:text-neutral-400">Published</p>
+        <p class="mt-2 font-semibold text-3xl text-green-600 dark:text-green-400">{{ publishedCount() }}</p>
+      </div>
+      <div class="p-4 bg-white dark:bg-neutral-900 border border-neutral-200 rounded-md dark:border-neutral-800">
+        <p class="text-neutral-500 text-sm dark:text-neutral-400">Drafts</p>
+        <p class="mt-2 font-semibold text-3xl text-amber-600 dark:text-amber-400">{{ draftCount() }}</p>
+      </div>
+      <div class="p-4 bg-white dark:bg-neutral-900 border border-neutral-200 rounded-md dark:border-neutral-800">
+        <p class="text-neutral-500 text-sm dark:text-neutral-400">Featured</p>
+        <p class="mt-2 font-semibold text-3xl">{{ featuredCount() }}</p>
+      </div>
+    </section>
+
+    <section class="bg-white dark:bg-neutral-900 border border-neutral-200 rounded-md dark:border-neutral-800">
+      <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between p-4 border-b border-neutral-200 dark:border-neutral-800">
+        <div class="relative flex-1 max-w-md">
+          <span class="absolute left-3 top-1/2 h-4 w-4 text-neutral-500 pointer-events-none -translate-y-1/2 i-hugeicons-search-01"></span>
+          <label for="blog-search" class="sr-only">Search posts</label>
+          <input
+            id="blog-search"
+            type="search"
+            x-model="searchQuery"
+            placeholder="Search posts"
+            class="pl-9 pr-3 py-2 w-full text-sm text-neutral-900 dark:text-neutral-100 placeholder-neutral-500 bg-white dark:bg-neutral-950 border border-neutral-300 outline-none rounded-md dark:border-neutral-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30"
+          />
+        </div>
+        <div>
+          <label for="blog-status" class="sr-only">Filter by status</label>
+          <select
+            id="blog-status"
+            x-model="statusFilter"
+            class="px-3 py-2 text-sm text-neutral-900 dark:text-neutral-100 bg-white dark:bg-neutral-950 border border-neutral-300 rounded-md dark:border-neutral-700"
+          >
+            <option value="all">All statuses</option>
+            <option value="published">Published</option>
+            <option value="draft">Draft</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Error: the list request failed. Offers a retry rather than a dead end. -->
+      <div x-show="loadError()" class="flex flex-col gap-3 items-center px-6 py-12 text-center">
+        <span class="h-8 w-8 text-red-500 i-hugeicons-alert-02"></span>
+        <p class="font-medium">Couldn't load posts</p>
+        <p class="max-w-md text-neutral-500 text-sm dark:text-neutral-400">{{ loadError() }}</p>
+        <button type="button" @click="load()" class="mt-1 px-3 py-2 font-medium text-sm text-neutral-800 dark:text-neutral-100 border border-neutral-300 rounded-md dark:border-neutral-700">
+          Try again
+        </button>
+      </div>
+
+      <!-- Loading: skeleton rows matching the table's shape. -->
+      <div x-show="isLoading()" class="p-4 space-y-3">
+        @foreach(skeletonRows as row)
+          <div class="flex gap-4 items-center animate-pulse">
+            <div class="flex-1 space-y-2">
+              <div class="h-3.5 w-1/3 bg-neutral-200 rounded dark:bg-neutral-800"></div>
+              <div class="h-3 w-2/3 bg-neutral-200 rounded dark:bg-neutral-800"></div>
+            </div>
+            <div class="h-5 w-16 bg-neutral-200 rounded-full dark:bg-neutral-800"></div>
+            <div class="h-3 w-20 bg-neutral-200 rounded dark:bg-neutral-800"></div>
+          </div>
+        @endforeach
+      </div>
+
+      <div x-show="!isLoading() && !loadError() && filteredPosts().length > 0" class="overflow-x-auto">
+        <table class="min-w-full text-sm divide-neutral-200 divide-y dark:divide-neutral-800">
+          <thead class="font-semibold text-left text-neutral-600 text-xs uppercase dark:text-neutral-300 bg-neutral-50 dark:bg-neutral-950/60">
+            <tr>
+              <th scope="col" class="px-4 py-3">Post</th>
+              <th scope="col" class="px-4 py-3">Status</th>
+              <th scope="col" class="px-4 py-3">Date</th>
+              <th scope="col" class="px-4 py-3">Length</th>
+              <th scope="col" class="px-4 py-3"><span class="sr-only">Actions</span></th>
+            </tr>
+          </thead>
+          <tbody class="divide-neutral-200 divide-y dark:divide-neutral-800">
+            @foreach(filteredPosts() as post)
+              <tr class="hover:bg-neutral-50 dark:hover:bg-neutral-950/60">
+                <td class="px-4 py-3">
+                  <div class="flex gap-2 items-center">
+                    <span class="font-medium">{{ post.title }}</span>
+                    <span x-show="post.featured" class="inline-flex px-1.5 py-0.5 font-medium text-[11px] text-blue-700 dark:text-blue-300 bg-blue-100 rounded dark:bg-blue-900/40">Featured</span>
+                  </div>
+                  <div class="mt-1 max-w-xl text-neutral-500 text-xs truncate dark:text-neutral-400">{{ post.description || post.slug }}</div>
+                </td>
+                <td class="px-4 py-3">
+                  <span :class="statusClass(post.draft)" class="inline-flex px-2 py-0.5 font-medium text-xs rounded-full">
+                    {{ post.draft ? 'Draft' : 'Published' }}
+                  </span>
+                </td>
+                <td class="px-4 py-3 text-neutral-600 dark:text-neutral-300">{{ formatDate(post.date) }}</td>
+                <td class="px-4 py-3 text-neutral-600 dark:text-neutral-300">{{ post.readingTime }} min read</td>
+                <td class="px-4 py-3">
+                  <div class="flex gap-1 justify-end">
+                    <a
+                      x-show="!post.draft"
+                      :href="'/blog/' + post.slug"
+                      target="_blank"
+                      rel="noopener"
+                      :title="'View ' + post.title"
+                      class="p-2 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded"
+                    >
+                      <span class="block h-4 w-4 i-hugeicons-view"></span>
+                    </a>
+                    <button type="button" @click="openEditor(post)" :title="'Edit ' + post.title" class="p-2 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded">
+                      <span class="block h-4 w-4 i-hugeicons-edit-01"></span>
+                    </button>
+                    <button type="button" @click="askDelete(post)" :title="'Delete ' + post.title" class="p-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 rounded">
+                      <span class="block h-4 w-4 i-hugeicons-waste"></span>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            @endforeach
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Empty: distinguishes "no posts yet" from "nothing matched the filter". -->
+      <div x-show="!isLoading() && !loadError() && filteredPosts().length === 0" class="flex flex-col gap-3 items-center px-6 py-16 text-center">
+        <span class="h-8 w-8 text-neutral-400 i-hugeicons-quill-write-02"></span>
+        <p class="font-medium">{{ posts().length === 0 ? 'No posts yet' : 'No posts match your filters' }}</p>
+        <p class="max-w-sm text-neutral-500 text-sm dark:text-neutral-400">
+          {{ posts().length === 0 ? 'Your first post becomes a markdown file in content/blog.' : 'Try a different search term or status.' }}
+        </p>
+        <button x-show="posts().length === 0" type="button" @click="openEditor(null)" class="mt-1 px-3 py-2 font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md">
+          Write your first post
+        </button>
+        <button x-show="posts().length > 0" type="button" @click="clearFilters()" class="mt-1 px-3 py-2 font-medium text-sm text-neutral-800 dark:text-neutral-100 border border-neutral-300 rounded-md dark:border-neutral-700">
+          Clear filters
+        </button>
+      </div>
+    </section>
+  </div>
+
+  <!-- Editor -->
+  <div x-show="isEditorOpen()" class="fixed inset-0 z-40 flex items-start justify-center p-4 overflow-y-auto sm:p-6">
+    <div class="fixed inset-0 bg-neutral-950/60" @click="closeEditor()"></div>
+
+    <div role="dialog" aria-modal="true" aria-labelledby="editor-title" class="relative z-10 my-8 w-full max-w-3xl bg-white dark:bg-neutral-900 border border-neutral-200 rounded-lg dark:border-neutral-800 shadow-xl">
+      <div class="flex items-center justify-between px-5 py-4 border-b border-neutral-200 dark:border-neutral-800">
+        <h2 id="editor-title" class="font-semibold text-lg">{{ editingSlug() ? 'Edit post' : 'New post' }}</h2>
+        <button type="button" @click="closeEditor()" aria-label="Close editor" class="p-2 text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded">
+          <span class="block h-4 w-4 i-hugeicons-cancel-01"></span>
+        </button>
+      </div>
+
+      <div class="p-5 space-y-4 max-h-[70vh] overflow-y-auto">
+        <div x-show="formError()" class="flex gap-2 items-start px-3 py-2 text-red-800 text-sm dark:text-red-200 bg-red-50 border border-red-200 rounded-md dark:bg-red-950/40 dark:border-red-900">
+          <span class="mt-0.5 h-4 w-4 shrink-0 i-hugeicons-alert-02"></span>
+          <span>{{ formError() }}</span>
+        </div>
+
+        <div class="grid gap-4 sm:grid-cols-2">
+          <div class="flex flex-col gap-2 sm:col-span-2">
+            <label for="post-title" class="font-medium text-sm">Title</label>
+            <input id="post-title" type="text" x-model="formTitle" class="px-3 py-2 text-sm text-neutral-900 dark:text-neutral-100 bg-white dark:bg-neutral-950 border border-neutral-300 outline-none rounded-md dark:border-neutral-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30" />
+          </div>
+
+          <div class="flex flex-col gap-2 sm:col-span-2">
+            <label for="post-slug" class="font-medium text-sm">Slug</label>
+            <input id="post-slug" type="text" x-model="formSlug" :placeholder="suggestedSlug()" class="px-3 py-2 font-mono text-sm text-neutral-900 dark:text-neutral-100 placeholder-neutral-500 bg-white dark:bg-neutral-950 border border-neutral-300 outline-none rounded-md dark:border-neutral-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30" />
+            <p class="text-neutral-500 text-xs dark:text-neutral-400">The file name and public URL: /blog/{{ formSlug() || suggestedSlug() || 'your-post' }}</p>
+          </div>
+
+          <div class="flex flex-col gap-2 sm:col-span-2">
+            <label for="post-description" class="font-medium text-sm">Description</label>
+            <input id="post-description" type="text" x-model="formDescription" class="px-3 py-2 text-sm text-neutral-900 dark:text-neutral-100 bg-white dark:bg-neutral-950 border border-neutral-300 outline-none rounded-md dark:border-neutral-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30" />
+            <p class="text-neutral-500 text-xs dark:text-neutral-400">Used as the excerpt, the meta description, and the RSS summary.</p>
+          </div>
+
+          <div class="flex flex-col gap-2">
+            <label for="post-date" class="font-medium text-sm">Date</label>
+            <input id="post-date" type="date" x-model="formDate" class="px-3 py-2 text-sm text-neutral-900 dark:text-neutral-100 bg-white dark:bg-neutral-950 border border-neutral-300 outline-none rounded-md dark:border-neutral-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30" />
+          </div>
+
+          <div class="flex flex-col gap-2">
+            <label for="post-author" class="font-medium text-sm">Author</label>
+            <input id="post-author" type="text" x-model="formAuthor" class="px-3 py-2 text-sm text-neutral-900 dark:text-neutral-100 bg-white dark:bg-neutral-950 border border-neutral-300 outline-none rounded-md dark:border-neutral-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30" />
+          </div>
+
+          <div class="flex flex-col gap-2 sm:col-span-2">
+            <label for="post-poster" class="font-medium text-sm">Poster image</label>
+            <input id="post-poster" type="text" x-model="formPoster" placeholder="/assets/images/example.svg" class="px-3 py-2 text-sm text-neutral-900 dark:text-neutral-100 placeholder-neutral-500 bg-white dark:bg-neutral-950 border border-neutral-300 outline-none rounded-md dark:border-neutral-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30" />
+          </div>
+
+          <div class="flex flex-col gap-2 sm:col-span-2">
+            <label for="post-body" class="font-medium text-sm">Content</label>
+            <textarea id="post-body" x-model="formBody" rows="14" class="px-3 py-2 font-mono text-sm text-neutral-900 dark:text-neutral-100 bg-white dark:bg-neutral-950 border border-neutral-300 outline-none rounded-md resize-y dark:border-neutral-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30"></textarea>
+            <p class="text-neutral-500 text-xs dark:text-neutral-400">Markdown. {{ bodyWordCount() }} words, about {{ bodyReadingTime() }} min read.</p>
+          </div>
+        </div>
+
+        <div class="flex flex-col gap-3 pt-2 border-t border-neutral-200 sm:flex-row sm:gap-6 dark:border-neutral-800">
+          <label class="flex gap-2 items-center text-sm">
+            <input type="checkbox" x-model="formDraft" class="h-4 w-4 text-blue-600 border-neutral-300 rounded dark:border-neutral-600" />
+            <span>Draft, keep off the public blog</span>
+          </label>
+          <label class="flex gap-2 items-center text-sm">
+            <input type="checkbox" x-model="formFeatured" class="h-4 w-4 text-blue-600 border-neutral-300 rounded dark:border-neutral-600" />
+            <span>Feature at the top of the listing</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="flex gap-2 justify-end px-5 py-4 border-t border-neutral-200 dark:border-neutral-800">
+        <button type="button" @click="closeEditor()" class="px-3 py-2 font-medium text-sm text-neutral-800 dark:text-neutral-100 border border-neutral-300 rounded-md dark:border-neutral-700">Cancel</button>
+        <button type="button" @click="submit()" :disabled="isSaving()" class="inline-flex gap-2 items-center px-3 py-2 font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 disabled:opacity-60 rounded-md">
+          <span x-show="isSaving()" class="h-4 w-4 animate-spin i-hugeicons-loading-03"></span>
+          {{ isSaving() ? 'Saving' : 'Save post' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete confirmation -->
+  <div x-show="postToDelete()" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div class="fixed inset-0 bg-neutral-950/60" @click="cancelDelete()"></div>
+
+    <div role="dialog" aria-modal="true" aria-labelledby="delete-title" class="relative z-10 w-full max-w-md p-5 bg-white dark:bg-neutral-900 border border-neutral-200 rounded-lg dark:border-neutral-800 shadow-xl">
+      <h2 id="delete-title" class="font-semibold text-lg">Delete this post?</h2>
+      <p class="mt-2 text-neutral-600 text-sm dark:text-neutral-300">
+        This deletes the file <code class="px-1 py-0.5 text-xs bg-neutral-100 rounded dark:bg-neutral-800">content/blog/{{ deleteTargetSlug() }}.md</code>. It stays in git history until you commit the deletion.
+      </p>
+      <div class="flex gap-2 justify-end mt-5">
+        <button type="button" @click="cancelDelete()" class="px-3 py-2 font-medium text-sm text-neutral-800 dark:text-neutral-100 border border-neutral-300 rounded-md dark:border-neutral-700">Cancel</button>
+        <button type="button" @click="confirmDelete()" class="px-3 py-2 font-semibold text-sm text-white bg-red-600 hover:bg-red-500 rounded-md">Delete post</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script client>
+// Plain async transport for /api/dashboard/blog, which reads and writes the
+// markdown files in content/blog. It owns no state; the signals below do.
+import { deleteBlogPost, fetchBlogPost, fetchBlogPosts, saveBlogPost } from '../../../../functions/blog'
+
+// Fixed-length list purely to render the loading skeleton rows.
+const skeletonRows = [1, 2, 3, 4]
+
+const posts = state([])
+const isLoading = state(true)
+const isSaving = state(false)
+const loadError = state('')
+const searchQuery = state('')
+const statusFilter = state('all')
+
+// Editor state. `editingSlug` doubles as the mode flag: empty means "new post",
+// and it holds the ORIGINAL slug so a slug edit is sent as a rename.
+const isEditorOpen = state(false)
+const editingSlug = state('')
+const formError = state('')
+const formTitle = state('')
+const formSlug = state('')
+const formDescription = state('')
+const formDate = state('')
+const formAuthor = state('')
+const formPoster = state('')
+const formBody = state('')
+const formDraft = state(false)
+const formFeatured = state(false)
+
+const postToDelete = state(null)
+
+// Read by the delete dialog's copy; kept as a derived signal so the template
+// never has to reach through a possibly-null post.
+const deleteTargetSlug = derived(() => {
+  const post = postToDelete()
+
+  return post ? post.slug : ''
+})
+
+const publishedCount = derived(() => posts().filter(p => !p.draft).length)
+const draftCount = derived(() => posts().filter(p => p.draft).length)
+const featuredCount = derived(() => posts().filter(p => p.featured).length)
+
+const filteredPosts = derived(() => {
+  const q = searchQuery().trim().toLowerCase()
+  const status = statusFilter()
+
+  return posts().filter((post) => {
+    if (status === 'draft' && !post.draft)
+      return false
+    if (status === 'published' && post.draft)
+      return false
+    if (!q)
+      return true
+
+    return `${post.title} ${post.description} ${post.slug}`.toLowerCase().includes(q)
+  })
+})
+
+// Mirrors slugify() in blog-admin.ts so the placeholder matches what the server
+// will actually write when the slug field is left empty.
+function slugify(input) {
+  return String(input)
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 80)
+}
+
+const suggestedSlug = derived(() => slugify(formTitle()))
+const bodyWordCount = derived(() => formBody().split(/\s+/).filter(Boolean).length)
+const bodyReadingTime = derived(() => Math.max(1, Math.round(bodyWordCount() / 200)))
+
+function statusClass(draft) {
+  return draft
+    ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-200'
+    : 'bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-200'
+}
+
+function formatDate(value) {
+  if (!value)
+    return 'No date'
+
+  const date = new Date(value)
+
+  return Number.isNaN(date.getTime())
+    ? value
+    : date.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })
+}
+
+function clearFilters() {
+  searchQuery.set('')
+  statusFilter.set('all')
+}
+
+async function openEditor(post) {
+  formError.set('')
+  editingSlug.set(post ? post.slug : '')
+  isEditorOpen.set(true)
+
+  if (!post) {
+    formTitle.set('')
+    formSlug.set('')
+    formDescription.set('')
+    formDate.set(new Date().toISOString().slice(0, 10))
+    formAuthor.set('')
+    formPoster.set('')
+    formBody.set('')
+    formDraft.set(true)
+    formFeatured.set(false)
+    return
+  }
+
+  // The list omits the markdown body, so fetch the full post. Seed the fields
+  // from the list row first so the editor is never blank while that request
+  // is in flight.
+  formTitle.set(post.title)
+  formSlug.set(post.slug)
+  formDescription.set(post.description)
+  formDate.set(post.date)
+  formAuthor.set(post.author)
+  formPoster.set(post.poster)
+  formDraft.set(post.draft)
+  formFeatured.set(post.featured)
+  formBody.set('')
+
+  try {
+    const full = await fetchBlogPost(post.slug)
+
+    // Ignore a late response if the user already closed or switched posts.
+    if (isEditorOpen() && editingSlug() === post.slug)
+      formBody.set(full.body)
+  }
+  catch (error) {
+    formError.set(`Couldn't load this post's content: ${error.message}`)
+  }
+}
+
+function closeEditor() {
+  isEditorOpen.set(false)
+  editingSlug.set('')
+  formError.set('')
+}
+
+async function submit() {
+  if (!formTitle().trim()) {
+    formError.set('A title is required.')
+    return
+  }
+
+  isSaving.set(true)
+  formError.set('')
+
+  try {
+    const saved = await saveBlogPost({
+      slug: formSlug().trim() || suggestedSlug(),
+      title: formTitle().trim(),
+      description: formDescription().trim(),
+      date: formDate(),
+      author: formAuthor().trim(),
+      authorBio: '',
+      poster: formPoster().trim(),
+      featured: formFeatured(),
+      draft: formDraft(),
+      body: formBody(),
+    }, editingSlug())
+
+    const original = editingSlug()
+
+    posts.update(list => (original
+      ? list.map(p => (p.slug === original ? saved : p))
+      : [saved, ...list]))
+
+    closeEditor()
+  }
+  catch (error) {
+    // Keep the editor open on failure so the author's work is not thrown away.
+    formError.set(error.message)
+  }
+  finally {
+    isSaving.set(false)
+  }
+}
+
+function askDelete(post) {
+  postToDelete.set(post)
+}
+
+function cancelDelete() {
+  postToDelete.set(null)
+}
+
+async function confirmDelete() {
+  const post = postToDelete()
+  if (!post)
+    return
+
+  postToDelete.set(null)
+
+  try {
+    await deleteBlogPost(post.slug)
+    posts.update(list => list.filter(p => p.slug !== post.slug))
+  }
+  catch (error) {
+    loadError.set(`Couldn't delete "${post.title}": ${error.message}`)
+  }
+}
+
+async function load() {
+  loadError.set('')
+
+  try {
+    const { posts: list } = await fetchBlogPosts()
+    posts.set(list)
+  }
+  catch (error) {
+    loadError.set(error.message)
+  }
+  finally {
+    isLoading.set(false)
+  }
+}
+
+// onMount, not effect: load() writes the same `posts` signal the derived signals
+// read, so an effect would re-trigger itself on every load.
+onMount(load)
+</script>
+@endsection

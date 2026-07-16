@@ -1,5 +1,18 @@
 export * from './action'
 export { add as runAdd } from './add'
+// The write side of the markdown blog (content/blog/*.md), used by the
+// dashboard's blog actions. The read/render side lives in ./blog and stays out
+// of this barrel because it lazy-loads BunPress.
+export {
+  type BlogPost,
+  BlogAdminError,
+  type BlogPostInput,
+  deleteBlogPost,
+  getBlogPost,
+  listBlogPosts,
+  saveBlogPost,
+  slugify as blogSlugify,
+} from './blog-admin'
 export { commit as runCommit } from './commit'
 export * from './dev'
 

@@ -6,8 +6,13 @@
  * `content/blog/*.md`; BunPress handles markdown → HTML (syntax highlighting,
  * containers, heading anchors, GFM) and wraps it in its themed document shell.
  * We re-skin its VitePress theme via `content/blog/.theme.css` and add blog
- * chrome (post header, author card, share, listing cards). RSS + sitemap come
- * from BunPress's own `buildRssFeed` / `buildSitemap`.
+ * chrome (post header, author card, share, listing cards). RSS + sitemap are
+ * generated here from `listPosts()`, not by BunPress's `buildRssFeed` /
+ * `buildSitemap` — see the note on `feedXml` for why.
+ *
+ * A post with `draft: true` in its frontmatter is written by the dashboard
+ * (see ./blog-admin.ts) and is excluded from the listing, the feed, the sitemap,
+ * and its own URL, so unpublished work has no public surface.
  *
  * Branding (titles, nav, author fallback, colophon, theme modes) is read from
  * the app's `config/blog.ts`; the defaults below match the Stacks blog so an
@@ -305,9 +310,11 @@ function listPosts(): { slug: string, fm: Record<string, string> }[] {
       const { data } = parseFrontmatter(readFileSync(join(CONTENT_DIR, f), 'utf-8'))
       return { slug: f.replace(/\.md$/, ''), fm: data }
     })
-    // A real post needs a title + date; this skips docs/drafts like STRATEGY.md
-    // (and matches what BunPress's RSS collector requires).
-    .filter(p => !!p.fm.title && !!p.fm.date)
+    // A real post needs a title + date; this skips docs like STRATEGY.md
+    // (and matches what BunPress's RSS collector requires). `draft: true` is
+    // set by the dashboard to hold a post back from the listing, feed, and
+    // sitemap; a post with no `draft` key is published.
+    .filter(p => !!p.fm.title && !!p.fm.date && p.fm.draft !== 'true')
     .sort((a, b) => {
       // Featured first, then newest date first.
       const fa = a.fm.featured === 'true' ? 1 : 0
@@ -341,9 +348,12 @@ async function postHtml(bp: BunPress, slug: string, origin: string): Promise<str
   const raw = readFileSync(file, 'utf-8')
   const { html, frontmatter: fm } = await bp.markdownToHtml(raw, CONTENT_DIR)
 
-  // Only real posts (title + date) are served; docs/drafts in content/blog/
-  // (e.g. STRATEGY.md) are not addressable as posts.
-  if (!fm.title || !fm.date)
+  // Only real posts (title + date) are served; prose docs in content/blog/
+  // (e.g. STRATEGY.md) are not addressable as posts. `draft: true` 404s here as
+  // well as hiding from the listing, so an unpublished post has no public URL.
+  // BunPress parses YAML, so `draft` arrives as a boolean, not the string the
+  // single-line parser in `listPosts` sees.
+  if (!fm.title || !fm.date || fm.draft === true || fm.draft === 'true')
     return null
 
   const author = fm.author || cfg.author
@@ -467,26 +477,21 @@ async function indexHtml(bp: BunPress): Promise<string> {
   return bp.wrapInLayout(await blogChrome() + body + await blogFooter(), await blogConfig(bp, { title: cfg.title, description: cfg.description }), '/blog', 'page')
 }
 
-/** RSS feed (BunPress's own builder). `baseUrl` is the site origin (no /blog). */
-async function feedXml(bp: BunPress, baseUrl: string): Promise<string> {
-  const site_ = await site()
-  const cfg = { ...await blogConfig(bp, { title: site_.title }), sitemap: { enabled: true, baseUrl: `${baseUrl}/blog` } }
-  return typeof bp.buildRssFeed === 'function'
-    ? bp.buildRssFeed(CONTENT_DIR, cfg, {
-        enabled: true,
-        title: site_.title,
-        description: site_.description,
-        maxItems: 50,
-      })
-    : fallbackFeedXml(baseUrl)
+/**
+ * RSS feed and XML sitemap. `baseUrl` is the site origin (no /blog).
+ *
+ * Both are generated from `listPosts()` rather than BunPress's `buildRssFeed` /
+ * `buildSitemap`. Those scan `content/blog/*.md` themselves and have no concept
+ * of our `draft` flag, so they published an unfinished post's title, description,
+ * and link even though the listing hid it and its own URL 404'd. Driving every
+ * public surface off `listPosts()` keeps one answer to "what is published".
+ */
+async function feedXml(baseUrl: string): Promise<string> {
+  return fallbackFeedXml(baseUrl)
 }
 
-/** XML sitemap (BunPress's own builder). `baseUrl` is the site origin (no /blog). */
-async function sitemapXml(bp: BunPress, baseUrl: string): Promise<string> {
-  const cfg = { ...await blogConfig(bp, { title: 'Blog' }), sitemap: { enabled: true, baseUrl: `${baseUrl}/blog` } }
-  return typeof bp.buildSitemap === 'function'
-    ? bp.buildSitemap(CONTENT_DIR, cfg)
-    : fallbackSitemapXml(baseUrl)
+async function sitemapXml(baseUrl: string): Promise<string> {
+  return fallbackSitemapXml(baseUrl)
 }
 
 // ── Dynamic path (dev server onRequest) ──────────────────────────────────────
@@ -514,9 +519,9 @@ export async function renderBlog(req: Request): Promise<Response | null> {
   const html = (s: string, status = 200) => new Response(s, { status, headers: { 'Content-Type': 'text/html; charset=utf-8' } })
 
   if (isFeed)
-    return new Response(await feedXml(bp, url.origin), { headers: { 'Content-Type': 'application/rss+xml; charset=utf-8' } })
+    return new Response(await feedXml(url.origin), { headers: { 'Content-Type': 'application/rss+xml; charset=utf-8' } })
   if (isSitemap)
-    return new Response(await sitemapXml(bp, url.origin), { headers: { 'Content-Type': 'application/xml; charset=utf-8' } })
+    return new Response(await sitemapXml(url.origin), { headers: { 'Content-Type': 'application/xml; charset=utf-8' } })
   if (pathname === '/blog' || pathname === '/blog/')
     return html(await indexHtml(bp))
 
@@ -580,8 +585,8 @@ export async function buildBlog(options: { outDir: string, baseUrl?: string } = 
   }
 
   // SEO
-  write('feed.xml', await feedXml(bp, baseUrl))
-  write('sitemap.xml', await sitemapXml(bp, baseUrl))
+  write('feed.xml', await feedXml(baseUrl))
+  write('sitemap.xml', await sitemapXml(baseUrl))
 
   // eslint-disable-next-line no-console
   console.log(`[blog] built ${posts.length} post(s) + listing, feed.xml, sitemap.xml → ${outDir}`)

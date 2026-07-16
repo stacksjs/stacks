@@ -2,7 +2,11 @@
 // macOS-style web sidebar (@stacksjs/components' <Sidebar theme="macos">).
 // Sections come from the discovered-models manifest + config/dashboard.ts
 // toggles — the same data that used to drive the native NSOutlineView.
-import { buildWebSidebarSections } from '../../../resources/functions/dashboard/sidebar'
+// Project-root-anchored (`~/`), not relative. The stx client bundler resolves a
+// relative import against the PAGE that extends this layout, not against this
+// file, so `../../..` silently pointed somewhere different for every page depth
+// and the bundle failed for any page more than one level under views/dashboard.
+import { buildWebSidebarSections } from '~/storage/framework/defaults/resources/functions/dashboard/sidebar'
 
 export const sidebarSections = buildWebSidebarSections()
 
@@ -103,6 +107,7 @@ const sidebarRoutes = {
   'packages': '/packages',
   'content-dashboard': '/content/dashboard',
   'files': '/content/files',
+  'blog': '/content/blog',
   'pages': '/content/pages',
   'posts': '/content/posts',
   'categories': '/content/categories',
@@ -174,7 +179,8 @@ window.craft._sidebarSelectHandler = (event) => {
 // network requests fail or succeed; that signal is rendered in the
 // fixed-position container below the <main> slot. Mounted in the
 // layout so every dashboard page picks it up without opting in.
-import { useToasts, dismissToast } from '../../../functions/toasts'
+// `~/`-anchored for the same reason as the sidebar import above.
+import { useToasts, dismissToast } from '~/storage/framework/defaults/functions/toasts'
 const { toasts } = useToasts()
 
 // Helpers below return COMPLETE class strings (static + dynamic) and are
@@ -206,12 +212,26 @@ const toastWrapperClass = (type) => `pointer-events-auto overflow-hidden bg-whit
 // In production deployments where `/api/dashboard/*` sits behind auth,
 // the endpoint returns real role data and the filter hides what the
 // viewer can't reach.
-const auth = useStore('auth')
-auth.load()
+// Guarded: `useStore('auth')` THROWS when the store was never registered, and a
+// throw here aborts scope registration for the entire page, leaving every signal
+// on every dashboard page unbound. A missing auth store must degrade to the
+// permissive default described above, not take the dashboard down with it.
+const auth = (() => {
+  try {
+    const store = useStore('auth')
+    store.load()
+    return store
+  }
+  catch {
+    return null
+  }
+})()
 
 function applyRoleFilter() {
-  const roleList = auth.roles()
-  const unauth = auth.unauthenticated()
+  // No auth store means no role data, which is the unauthenticated case: show
+  // every gated row rather than hiding the whole sidebar.
+  const roleList = auth ? auth.roles() : []
+  const unauth = auth ? auth.unauthenticated() : true
   const nodes = document.querySelectorAll('[data-required-roles]')
   for (const el of nodes) {
     const required = (el.getAttribute('data-required-roles') || '')
@@ -253,10 +273,13 @@ effect(() => {
   </template>
 </Sidebar>
 
-<!-- Role map for the wiring script below; interpolated server-side. The
-     div is display:none and holds JSON as text — a <script type="json">
-     would get rewritten by the layout script processor (see the importmap
-     comment above). -->
+<!-- Role map for the wiring script below; interpolated server-side. The div is
+     hidden and holds JSON as text, because a JSON-typed script tag would get
+     rewritten by the layout script processor (see the importmap comment above).
+
+     Do not name that tag literally here. The script processor rewrites script
+     tags inside comments too, and eating this comment's closing marker turns
+     everything below into comment text, blanking the page. -->
 <div data-sidebar-roles hidden>{{ sidebarRoleAttrs }}</div>
 
 <script client>
