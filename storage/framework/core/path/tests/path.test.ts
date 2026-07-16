@@ -10,6 +10,7 @@ import {
   corePath,
   dirname,
   extname,
+  featureFlagsPath,
   frameworkPath,
   join,
   libsPath,
@@ -72,6 +73,12 @@ describe('corePath', () => {
   it('should join a subpath', () => {
     const result = corePath('strings')
     expect(result).toContain('storage/framework/core/strings')
+  })
+})
+
+describe('featureFlagsPath', () => {
+  it('resolves the feature-flags core package', () => {
+    expect(featureFlagsPath('src/index.ts')).toContain('core/feature-flags/src/index.ts')
   })
 })
 

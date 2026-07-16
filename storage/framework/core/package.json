@@ -160,6 +160,10 @@
       "types": "./faker/dist/index.d.ts",
       "import": "./faker/dist/index.js"
     },
+    "./feature-flags": {
+      "types": "./feature-flags/dist/index.d.ts",
+      "import": "./feature-flags/dist/index.js"
+    },
     "./git": {
       "types": "./git/dist/index.d.ts",
       "import": "./git/dist/index.js"
@@ -321,6 +325,7 @@
     "@stacksjs/env": "^0.70.88",
     "@stacksjs/error-handling": "^0.70.88",
     "@stacksjs/events": "^0.70.88",
+    "@stacksjs/feature-flags": "^0.70.88",
     "@stacksjs/git": "^0.70.88",
     "@stacksjs/health": "^0.70.88",
     "@stacksjs/lint": "^0.70.88",

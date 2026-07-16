@@ -725,6 +725,11 @@ export function eventsPath(path?: string): string {
   return corePath(`events/${path || ''}`)
 }
 
+/** Returns the path to the feature-flags core package. */
+export function featureFlagsPath(path?: string): string {
+  return corePath(`feature-flags/${path || ''}`)
+}
+
 /**
  * Returns the path to the `env` directory within the core directory.
  *
@@ -1501,6 +1506,7 @@ export interface Path {
   eslintPluginPath: (path?: string) => string
   errorHandlingPath: (path?: string) => string
   eventsPath: (path?: string) => string
+  featureFlagsPath: (path?: string) => string
   coreEnvPath: (path?: string) => string
   healthPath: (path?: string) => string
   examplesPath: (type?: 'web-components') => string
@@ -1640,6 +1646,7 @@ export const path: Path = {
   eslintPluginPath,
   errorHandlingPath,
   eventsPath,
+  featureFlagsPath,
   coreEnvPath,
   healthPath,
   examplesPath,

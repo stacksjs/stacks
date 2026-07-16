@@ -381,6 +381,7 @@ export async function injectGlobalAutoImports(): Promise<void> {
     ['@stacksjs/actions', ['Action']],
     ['@stacksjs/auth', ['Auth', 'register', 'sessionCheck']],
     ['@stacksjs/events', ['dispatch', 'listen', 'emitter']],
+    ['@stacksjs/feature-flags', ['Feature']],
     ['@stacksjs/security', ['makeHash', 'verifyHash']],
     ['@stacksjs/collections', ['collect']],
     ['@stacksjs/cli', ['quotes']],

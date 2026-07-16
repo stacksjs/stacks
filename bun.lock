@@ -56,6 +56,7 @@
         "@stacksjs/error-handling": "^0.70.73",
         "@stacksjs/events": "^0.70.73",
         "@stacksjs/faker": "^0.70.73",
+        "@stacksjs/feature-flags": "^0.70.88",
         "@stacksjs/git": "^0.70.73",
         "@stacksjs/github": "^0.70.73",
         "@stacksjs/health": "^0.70.73",
@@ -609,6 +610,16 @@
         "@stacksjs/config": "workspace:*",
         "@stacksjs/ts-faker": "^0.1.7",
         "better-dx": "^0.2.16",
+      },
+    },
+    "storage/framework/core/feature-flags": {
+      "name": "@stacksjs/feature-flags",
+      "version": "0.70.88",
+      "devDependencies": {
+        "@stacksjs/config": "workspace:*",
+        "@stacksjs/database": "workspace:*",
+        "@stacksjs/query-builder": "workspace:*",
+        "better-dx": "^0.2.17",
       },
     },
     "storage/framework/core/git": {
@@ -1276,6 +1287,8 @@
     "@stacksjs/events": ["@stacksjs/events@workspace:storage/framework/core/events"],
 
     "@stacksjs/faker": ["@stacksjs/faker@workspace:storage/framework/core/faker"],
+
+    "@stacksjs/feature-flags": ["@stacksjs/feature-flags@workspace:storage/framework/core/feature-flags"],
 
     "@stacksjs/git": ["@stacksjs/git@workspace:storage/framework/core/git"],
 

@@ -3,6 +3,12 @@ import path from 'node:path'
 import { alias } from '../src/index'
 
 describe('@stacksjs/alias', () => {
+  it('resolves feature flag package aliases', () => {
+    expect(alias['@stacksjs/feature-flags']).toContain('core/feature-flags/src/index.ts')
+    expect(alias['stacks/feature-flags']).toBe(alias['@stacksjs/feature-flags'])
+    expect(alias['@stacksjs/feature-flags/*']).toContain('core/feature-flags/src/*')
+  })
+
   it('should have non-empty path values for all aliases', () => {
     Object.entries(alias).forEach(([key, value]) => {
       expect(value.length).toBeGreaterThan(0)
