@@ -4,6 +4,7 @@ import { resolve } from 'node:path'
 import { Gate } from '../src/gate'
 import { BasePolicy } from '../src/policy'
 import { RateLimiter } from '../src/rate-limiter'
+import { fingerprintMismatch } from '../src/session-auth'
 import { selectActiveTeam } from '../src/team'
 
 // Auth correctness sweep (stacksjs/stacks#1985). One functional test for the
@@ -156,6 +157,55 @@ describe('TOTP replay guard - migration column + verify wiring (#1985)', () => {
     expect(s).toContain('const step = currentTotpStep()')
     expect(s).toContain('if (lastStep !== null && step <= lastStep)')
     expect(s).toContain('await setLastUsedTwoFactorStep(userId, step)')
+  })
+})
+
+// ─── #1985: opt-in session fingerprint enforcement ─────────────────────────
+
+describe('fingerprintMismatch — session hijack detection logic (#1985)', () => {
+  const stored = { ip: '1.1.1.1', userAgent: 'Mozilla/5.0' }
+  const same = { ip: '1.1.1.1', userAgent: 'Mozilla/5.0' }
+  const otherIp = { ip: '9.9.9.9', userAgent: 'Mozilla/5.0' }
+  const otherUa = { ip: '1.1.1.1', userAgent: 'curl/8' }
+
+  it('off by default: no enforcement means never a mismatch', () => {
+    expect(fingerprintMismatch(false, stored, otherIp)).toBe(false)
+    expect(fingerprintMismatch(undefined, stored, otherIp)).toBe(false)
+    expect(fingerprintMismatch(null, stored, otherIp)).toBe(false)
+  })
+
+  it('enforce=true: matching fingerprint passes, either field differing is a mismatch', () => {
+    expect(fingerprintMismatch(true, stored, same)).toBe(false)
+    expect(fingerprintMismatch(true, stored, otherIp)).toBe(true)
+    expect(fingerprintMismatch(true, stored, otherUa)).toBe(true)
+  })
+
+  it('per-field: userAgent-only ignores an IP change (the mobile-safe setting)', () => {
+    expect(fingerprintMismatch({ userAgent: true }, stored, otherIp)).toBe(false)
+    expect(fingerprintMismatch({ userAgent: true }, stored, otherUa)).toBe(true)
+    expect(fingerprintMismatch({ ip: true }, stored, otherIp)).toBe(true)
+    expect(fingerprintMismatch({ ip: true }, stored, otherUa)).toBe(false)
+  })
+
+  it('never a mismatch when either side of a field is absent (no spurious lockout)', () => {
+    expect(fingerprintMismatch(true, { ip: null, userAgent: null }, otherIp)).toBe(false)
+    expect(fingerprintMismatch(true, stored, { ip: null, userAgent: null })).toBe(false)
+  })
+})
+
+describe('registration + session enforcement wiring (#1985)', () => {
+  it('duplicate-email error is generic under preventEnumeration, specific otherwise', () => {
+    const s = src('register.ts')
+    expect(s).toContain('registration?.preventEnumeration')
+    expect(s).toContain('throw duplicateEmailError()')
+    // the raw specific throw is no longer inline (routed through the gate)
+    expect(s).not.toContain('throw new HttpError(409, \'Email already exists\')')
+  })
+
+  it('sessionUser/check/refresh all consult the fingerprint guard', () => {
+    const s = src('session-auth.ts')
+    expect((s.match(/sessionFingerprintRejected\(session\)/g) || []).length).toBeGreaterThanOrEqual(3)
+    expect(s).toContain('session?.enforceFingerprint')
   })
 })
 

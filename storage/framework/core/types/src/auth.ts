@@ -130,6 +130,38 @@ export interface AuthOptions {
      */
     url?: string
   }
+
+  /**
+   * Session-auth hardening options (stacksjs/stacks#1985).
+   */
+  session?: {
+    /**
+     * Reject a session request whose IP / User-Agent no longer matches the
+     * fingerprint captured at login (basic hijack detection). Off by default
+     * because a changing client IP (mobile networks, VPNs) would otherwise
+     * log the real user out. `true` enforces both fields; the object form
+     * enforces each independently — enforcing only `userAgent` (stable)
+     * avoids most false positives.
+     * @default false
+     */
+    enforceFingerprint?: boolean | { ip?: boolean, userAgent?: boolean }
+  }
+
+  /**
+   * Registration hardening options (stacksjs/stacks#1985).
+   */
+  registration?: {
+    /**
+     * When true, a duplicate-email registration returns a generic error
+     * instead of "Email already exists", so the endpoint no longer confirms
+     * whether an address is registered. Off by default (the specific message
+     * is friendlier). Reduces the disclosure; a fully non-enumerable flow
+     * (always respond success + notify the existing account out-of-band) is
+     * a larger, separate opt-in.
+     * @default false
+     */
+    preventEnumeration?: boolean
+  }
 }
 
 export type AuthConfig = Partial<AuthOptions>

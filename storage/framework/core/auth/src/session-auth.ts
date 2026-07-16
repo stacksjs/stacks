@@ -4,6 +4,7 @@ import { HttpError } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/logging'
 import { User } from '@stacksjs/orm'
 import { verifyHash } from '@stacksjs/security'
+import { config } from '@stacksjs/config'
 import { db } from '@stacksjs/database'
 import { getCurrentRequest } from '@stacksjs/router'
 import { DUMMY_BCRYPT_HASH } from './internal-constants'
@@ -47,6 +48,55 @@ function readRequestFingerprint(
   const ip = (fwd ? fwd.split(',')[0]!.trim() : '') || realIp || null
   const userAgent = headers?.get?.('user-agent') || headers?.get?.('User-Agent') || null
   return { ip, userAgent }
+}
+
+/**
+ * Decide whether a stored session must be rejected because its captured
+ * fingerprint no longer matches the current request (basic hijack detection,
+ * stacksjs/stacks#1985 — H-6 stored these fields but never compared them).
+ *
+ * OFF by default: a legitimately changing client IP (mobile/VPN) would
+ * otherwise lock the real user out. Opt in via
+ * `config.auth.session.enforceFingerprint` — `true` enforces both fields, or
+ * `{ ip, userAgent }` enforces each independently (userAgent-only is the
+ * safest, since it rarely changes for a real user).
+ *
+ * A field is compared ONLY when both the stored value and a current-request
+ * value are present, so a check outside request scope, or a session logged in
+ * without headers, is never a false "mismatch". On mismatch we reject THIS
+ * request but leave the session row intact — the real owner (original
+ * fingerprint) keeps working; we don't punish them for an attacker's attempt.
+ */
+export function fingerprintMismatch(
+  enforce: boolean | { ip?: boolean, userAgent?: boolean } | undefined | null,
+  stored: { ip?: unknown, userAgent?: unknown },
+  current: { ip: string | null, userAgent: string | null },
+): boolean {
+  if (!enforce)
+    return false
+
+  const enforceIp = enforce === true || !!enforce.ip
+  const enforceUa = enforce === true || !!enforce.userAgent
+  if (!enforceIp && !enforceUa)
+    return false
+
+  // Compare a field ONLY when both sides are present — a missing stored value
+  // (login without headers) or missing current value (out-of-request check) is
+  // never treated as a mismatch, so it can't lock anyone out spuriously.
+  if (enforceIp && current.ip != null && stored.ip != null && String(stored.ip) !== current.ip)
+    return true
+  if (enforceUa && current.userAgent != null && stored.userAgent != null && String(stored.userAgent) !== current.userAgent)
+    return true
+
+  return false
+}
+
+function sessionFingerprintRejected(session: { ip_address?: unknown, user_agent?: unknown }): boolean {
+  return fingerprintMismatch(
+    (config.auth as any)?.session?.enforceFingerprint,
+    { ip: session.ip_address, userAgent: session.user_agent },
+    readRequestFingerprint(),
+  )
 }
 
 /**
@@ -185,6 +235,11 @@ export async function sessionUser(sessionId: string): Promise<UserModel | undefi
       return undefined
     }
 
+    if (sessionFingerprintRejected(session)) {
+      log.warn(`[auth] Session fingerprint mismatch — rejecting request (possible hijack, session left intact)`)
+      return undefined
+    }
+
     return await User.find(session.user_id as number)
   }
   catch {
@@ -212,6 +267,9 @@ export async function sessionCheck(sessionId: string): Promise<boolean> {
       return false
     }
 
+    if (sessionFingerprintRejected(session))
+      return false
+
     return true
   }
   catch {
@@ -237,6 +295,9 @@ export async function sessionRefresh(sessionId: string, ttlMs = 24 * 60 * 60 * 1
       await db.deleteFrom('sessions').where('id', '=', sessionId).execute()
       return false
     }
+
+    if (sessionFingerprintRejected(session))
+      return false
 
     const newExpiry = new Date(Date.now() + ttlMs)
     await db.updateTable('sessions')

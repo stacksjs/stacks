@@ -1,11 +1,27 @@
 import type { NewUser } from '@stacksjs/orm'
 import type { AuthToken } from './token'
+import { config } from '@stacksjs/config'
 import { db } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
 import { User } from '@stacksjs/orm'
 import { makeHash } from '@stacksjs/security'
 import { Auth } from './authentication'
 import { isUniqueViolation } from './rbac-store-bqb'
+
+/**
+ * The error thrown when a registration collides with an existing email.
+ *
+ * By default it says so plainly (friendlier UX). With
+ * `config.auth.registration.preventEnumeration` enabled it returns a generic
+ * 422 that an attacker can't use to confirm an address is registered
+ * (stacksjs/stacks#1985). Timing is already equalized (the bcrypt hash runs
+ * before any existence check), so the response body was the last oracle.
+ */
+function duplicateEmailError(): HttpError {
+  if ((config.auth as any)?.registration?.preventEnumeration)
+    return new HttpError(422, 'Registration could not be completed. Please check your details and try again.')
+  return new HttpError(409, 'Email already exists')
+}
 
 // RFC 5322-ish: a single @ with at least one dot in the domain. Tighter than
 // "any non-empty string" but loose enough to accept IDN/Unicode locals,
@@ -52,7 +68,7 @@ export async function register(credentials: NewUser): Promise<{ token: AuthToken
       .selectAll()
       .executeTakeFirst()
     if (existingUser)
-      throw new HttpError(409, 'Email already exists')
+      throw duplicateEmailError()
 
     try {
       await trx.insertInto('users')
@@ -65,7 +81,7 @@ export async function register(credentials: NewUser): Promise<{ token: AuthToken
     }
     catch (err) {
       if (isUniqueViolation(err))
-        throw new HttpError(409, 'Email already exists')
+        throw duplicateEmailError()
       throw err
     }
 
