@@ -16,7 +16,7 @@ process.chdir(root)
 // BunPress dependency, which makes it the honest test target for what the public
 // SEO surfaces expose. `buildBlog` covers the same generators but hard-requires
 // BunPress on disk.
-const { renderBlogFeed } = await import('../storage/framework/core/actions/src/blog')
+const { renderBlogFeed, usableOrigin } = await import('../storage/framework/core/actions/src/blog')
 
 afterAll(() => {
   process.chdir(originalCwd)
@@ -88,6 +88,32 @@ describe('sitemap', () => {
 
     expect(xml).toContain('/blog/shipped')
     expect(xml).not.toContain('/blog/unfinished')
+  })
+})
+
+// Regression: the deploy-time build takes its baseUrl from APP_URL, and a
+// release that could not decrypt its env file left the literal ciphertext there.
+// `https://` + that string was baked into every feed and sitemap URL on the live
+// site (https://encrypted:tLq7…==/blog/introducing-stacks).
+describe('usableOrigin', () => {
+  it('rejects an undecrypted APP_URL', () => {
+    expect(usableOrigin('encrypted:tLq7mqCcSg2Wec6pVueYbsTZYjJnAxC/7/+HNqq3Aq46pG07u2Hcg+P8PyM82n343iJIiA==')).toBe('')
+    expect(usableOrigin('https://encrypted:tLq7mqCcSg2Wec6pVueYbsTZYjJnAxC+P8PyM82n343iJIiA==')).toBe('')
+  })
+
+  it('rejects values that are not a real origin', () => {
+    expect(usableOrigin('')).toBe('')
+    expect(usableOrigin(undefined)).toBe('')
+    expect(usableOrigin('localhost')).toBe('') // no dot, not a public origin
+    expect(usableOrigin('file:///etc/passwd')).toBe('')
+    expect(usableOrigin('javascript:alert(1)')).toBe('')
+  })
+
+  it('accepts real origins, with or without a scheme', () => {
+    expect(usableOrigin('https://stacksjs.com')).toBe('https://stacksjs.com')
+    expect(usableOrigin('stacksjs.com')).toBe('https://stacksjs.com')
+    expect(usableOrigin('https://stacksjs.com/')).toBe('https://stacksjs.com')
+    expect(usableOrigin('http://stacks.localhost:3000')).toBe('http://stacks.localhost:3000')
   })
 })
 

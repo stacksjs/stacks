@@ -133,6 +133,35 @@ function escapeXml(s: string): string {
   return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', '\'': '&apos;' }[c]!))
 }
 
+/**
+ * An origin safe to bake into absolute links, or '' when it is not usable.
+ *
+ * The deploy-time build takes its baseUrl from `APP_URL`, which is not always
+ * plaintext: a release that loads an env file it cannot decrypt leaves the
+ * literal ciphertext there, and prefixing it with `https://` produced feed and
+ * sitemap URLs like `https://encrypted:tLq7…==/blog/introducing-stacks` on the
+ * live site. Anything that is not a parseable http(s) origin with a dotted
+ * hostname is rejected here so callers fall back to the configured site url.
+ */
+export function usableOrigin(value?: string): string {
+  if (!value)
+    return ''
+
+  try {
+    const url = new URL(/^https?:\/\//.test(value) ? value : `https://${value}`)
+
+    if (url.protocol !== 'http:' && url.protocol !== 'https:')
+      return ''
+    if (!url.hostname.includes('.') || !/^[a-z0-9.-]+$/i.test(url.hostname))
+      return ''
+
+    return url.origin
+  }
+  catch {
+    return ''
+  }
+}
+
 function postUrl(baseUrl: string, slug: string): string {
   return `${baseUrl.replace(/\/$/, '')}/blog/${slug}`
 }
@@ -146,7 +175,7 @@ function rssDate(date?: string): string {
 
 async function fallbackFeedXml(baseUrl: string): Promise<string> {
   const cfg = await site()
-  const origin = baseUrl || cfg.url
+  const origin = usableOrigin(baseUrl) || usableOrigin(cfg.url) || cfg.url
   const posts = listPosts().slice(0, 50)
   const items = posts.map((p) => {
     const url = postUrl(origin, p.slug)
@@ -176,7 +205,7 @@ ${items}
 
 async function fallbackSitemapXml(baseUrl: string): Promise<string> {
   const cfg = await site()
-  const origin = baseUrl || cfg.url
+  const origin = usableOrigin(baseUrl) || usableOrigin(cfg.url) || cfg.url
   const urls = [`${origin}/blog`, ...listPosts().map(p => postUrl(origin, p.slug))]
     .map(url => `  <url><loc>${escapeXml(url)}</loc></url>`)
     .join('\n')
@@ -563,7 +592,16 @@ export async function renderBlogFeed(req: Request): Promise<Response | null> {
  */
 export async function buildBlog(options: { outDir: string, baseUrl?: string } = { outDir: 'dist/blog' }): Promise<void> {
   const outDir = options.outDir || 'dist/blog'
-  const baseUrl = (options.baseUrl || (await site()).url).replace(/\/$/, '')
+  // `options.baseUrl` comes from APP_URL at deploy time and is not trusted: see
+  // `usableOrigin`. An unusable value falls back to the configured site url
+  // rather than being baked into every absolute link.
+  const siteUrl = (await site()).url
+  const baseUrl = usableOrigin(options.baseUrl) || usableOrigin(siteUrl) || siteUrl.replace(/\/$/, '')
+
+  if (options.baseUrl && !usableOrigin(options.baseUrl)) {
+    // eslint-disable-next-line no-console
+    console.warn(`[blog] ignoring unusable baseUrl ${JSON.stringify(options.baseUrl)} — falling back to ${baseUrl}`)
+  }
 
   const bp = await loadBunPress()
   if (!bp)
