@@ -237,6 +237,7 @@ const sidebar = {
             { text: 'Database', link: '/packages/database' },
             { text: 'Error Handling', link: '/packages/error-handling' },
             { text: 'Events', link: '/packages/events' },
+            { text: 'Feature Flags', link: '/packages/feature-flags' },
             { text: 'Logging', link: '/packages/logging' },
             { text: 'Middleware', link: '/guide/middleware' },
             {
@@ -528,6 +529,7 @@ const sidebar = {
         { text: 'Error Handling', link: '/packages/error-handling' },
         { text: 'Events', link: '/packages/events' },
         { text: 'Faker', link: '/packages/faker' },
+        { text: 'Feature Flags', link: '/packages/feature-flags' },
         { text: 'Git', link: '/packages/git' },
         { text: 'Glob', link: '/packages/glob' },
         { text: 'Health', link: '/packages/health' },
