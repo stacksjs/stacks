@@ -121,22 +121,43 @@ export function loadEnv(options: EnvPluginOptions = {}): { loaded: number, error
       errors.push(...parseErrors)
 
       // Inject parsed values into process.env
+      let applied = 0
       for (const [key, value] of Object.entries(parsed)) {
         // Skip DOTENV_PUBLIC_KEY
         if (key === 'DOTENV_PUBLIC_KEY') {
           continue
         }
 
-        // Only set if not already set (unless overload is true)
-        if (overload || process.env[key] === undefined) {
+        const existing = process.env[key]
+
+        // Bun natively loads `.env` / `.env.<mode>` into process.env before
+        // any preload script runs, and it knows nothing about dotenvx-style
+        // encryption — so on an encrypted file it leaves raw `encrypted:...`
+        // ciphertext in process.env before this plugin ever executes. The
+        // `undefined` check below then treated that ciphertext as a
+        // pre-existing value and skipped the decrypted one, so every secret
+        // stayed encrypted process-wide with no error: config validation
+        // reported `database.default: got "encrypted:..."`, DB_CONNECTION
+        // never resolved to a real driver, and auth-table creation silently
+        // wrote nowhere. Ciphertext is unusable to every consumer, so it
+        // never wins; genuine external overrides (shell/CI) still do.
+        const isStaleCiphertext = typeof existing === 'string'
+          && (existing.startsWith('encrypted:') || existing.startsWith('enc:'))
+          && value !== existing
+
+        if (overload || existing === undefined || isStaleCiphertext) {
           process.env[key] = value
           loaded++
+          applied++
         }
       }
 
-      // Only log once per process to avoid duplicate messages
+      // Only log once per process to avoid duplicate messages. Report what
+      // was actually applied, not the parsed count — the old message said
+      // "loaded 64 variables" even when it had injected none of them, which
+      // is precisely what hid the decryption failure above.
       if (!quiet && !process.env.__ENV_LOADED__) {
-        console.log(`[env] loaded ${Object.keys(parsed).length} variables from ${envPath}`)
+        console.log(`[env] loaded ${applied}/${Object.keys(parsed).length} variables from ${envPath}`)
         process.env.__ENV_LOADED__ = '1'
       }
     }
