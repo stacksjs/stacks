@@ -151,17 +151,20 @@ async function fallbackFeedXml(baseUrl: string): Promise<string> {
   const items = posts.map((p) => {
     const url = postUrl(origin, p.slug)
 
+    // `dc:creator` is carried over from the BunPress-built feed this replaced,
+    // so readers that show a byline keep showing one.
     return `    <item>
       <title>${escapeXml(p.fm.title || p.slug)}</title>
       <link>${escapeXml(url)}</link>
       <guid>${escapeXml(url)}</guid>
       <pubDate>${escapeXml(rssDate(p.fm.date))}</pubDate>
       <description>${escapeXml(p.fm.description || '')}</description>
+      <dc:creator>${escapeXml(p.fm.author || cfg.author)}</dc:creator>
     </item>`
   }).join('\n')
 
   return `<?xml version="1.0" encoding="UTF-8"?>
-<rss version="2.0">
+<rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/">
   <channel>
     <title>${escapeXml(cfg.title)}</title>
     <link>${escapeXml(`${origin}/blog`)}</link>
