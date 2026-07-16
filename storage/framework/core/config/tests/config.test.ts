@@ -15,6 +15,7 @@ import {
   docs,
   email,
   errors,
+  featureFlags,
   filesystems,
   getConfig,
   git,
@@ -100,6 +101,7 @@ describe('config', () => {
       expect(dns).toBeDefined()
       expect(docs).toBeDefined()
       expect(errors).toBeDefined()
+      expect(featureFlags).toBeDefined()
       expect(git).toBeDefined()
       expect(hashing).toBeDefined()
       expect(library).toBeDefined()

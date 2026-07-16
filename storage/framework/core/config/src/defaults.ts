@@ -148,6 +148,15 @@ export const defaults: StacksOptions = {
     },
   },
 
+  featureFlags: {
+    default: 'memory',
+    missing: 'false',
+    drivers: {
+      memory: { cloneValues: true },
+      database: { table: 'feature_flags', autoCreate: false },
+    },
+  },
+
   cloud: {
     infrastructure: {
       type: 'serverless',

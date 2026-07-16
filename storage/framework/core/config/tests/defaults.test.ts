@@ -71,6 +71,14 @@ describe('config defaults', () => {
     })
   })
 
+  describe('feature flag defaults', () => {
+    test('uses isolated memory storage without runtime DDL', () => {
+      expect(defaults.featureFlags.default).toBe('memory')
+      expect(defaults.featureFlags.missing).toBe('false')
+      expect(defaults.featureFlags.drivers?.database?.autoCreate).toBe(false)
+    })
+  })
+
   describe('security defaults', () => {
     test('has firewall config', () => {
       expect(defaults.security).toBeDefined()

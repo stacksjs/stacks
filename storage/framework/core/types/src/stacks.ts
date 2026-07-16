@@ -15,6 +15,7 @@ import type {
   DocsConfig,
   EmailConfig,
   ErrorConfig,
+  FeatureFlagsConfig,
   FilesystemsConfig,
   GitConfig,
   HashingConfig,
@@ -174,6 +175,13 @@ export interface StacksOptions {
    * have any questions, feel free to reach out via Discord or GitHub Discussions.
    */
   email: EmailConfig
+
+  /**
+   * **Feature Flag Options**
+   *
+   * Controls storage and missing-flag behavior for `@stacksjs/feature-flags`.
+   */
+  featureFlags: FeatureFlagsConfig
 
   /**
    * **Errors Options**

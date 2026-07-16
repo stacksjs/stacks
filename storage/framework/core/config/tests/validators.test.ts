@@ -88,6 +88,20 @@ describe('validateConfig (stacksjs/stacks#1874 F-6)', () => {
     expect(issues[0].path).toBe('queue.default')
   })
 
+  test('validates feature flag driver and missing behavior', () => {
+    expect(validateConfig({
+      featureFlags: { default: 'memory', missing: 'throw' },
+    } as any)).toEqual([])
+
+    const issues = validateConfig({
+      featureFlags: { default: 'redis', missing: 'ignore' },
+    } as any)
+    expect(issues.map(issue => issue.path)).toEqual([
+      'featureFlags.default',
+      'featureFlags.missing',
+    ])
+  })
+
   test('accumulates issues from multiple sections', () => {
     const issues = validateConfig({
       ports: { api: 'bad' as any },

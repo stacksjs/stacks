@@ -10,6 +10,7 @@ import type {
   EmailConfig,
   Events,
   FilesystemsConfig,
+  FeatureFlagsConfig,
   GitConfig,
   HashingConfig,
   LibraryConfig,
@@ -213,6 +214,10 @@ export function defineStorage(config: StorageConfig): StorageConfig {
 }
 
 export function defineFilesystems(config: FilesystemsConfig): FilesystemsConfig {
+  return config
+}
+
+export function defineFeatureFlags(config: FeatureFlagsConfig): FeatureFlagsConfig {
   return config
 }
 

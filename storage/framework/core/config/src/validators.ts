@@ -120,6 +120,12 @@ const SCHEMA: Partial<Record<keyof StacksConfig, SchemaSection>> = {
       'driver': checkOneOf(['memory', 'redis', 'singlestore']),
     },
   },
+  featureFlags: {
+    rules: {
+      'default': checkOneOf(['memory', 'database']),
+      'missing': checkOneOf(['false', 'throw']),
+    },
+  },
   queue: {
     rules: {
       'default': checkOneOf(['sync', 'database', 'redis']),
