@@ -6,7 +6,7 @@
   <div class="flex flex-1">
     <div :class="sidePanelClass()">
       <div :show="showSidePanel" class="flex flex-col h-full">
-        <div class="p-4 border-b border-stone-200/60 dark:border-neutral-700">
+        <div class="p-4 border-b border-black/5 dark:border-white/10">
           <h3 class="font-semibold text-sm text-stone-500 tracking-wider uppercase dark:text-neutral-400">Storage</h3>
           <div class="mt-2" style="height: 120px;"><canvas id="files_storage_chart"></canvas></div>
           <div class="mt-2 text-stone-500 text-xs dark:text-neutral-400">
@@ -16,7 +16,7 @@
           </div>
         </div>
 
-        <div class="p-4 border-b border-stone-200/60 dark:border-neutral-700">
+        <div class="p-4 border-b border-black/5 dark:border-white/10">
           <h3 class="font-semibold text-sm text-stone-500 tracking-wider uppercase dark:text-neutral-400">Storage by Type</h3>
           <div class="mt-2" style="height: 120px;"><canvas id="files_type_chart"></canvas></div>
           <div class="mt-2 text-stone-500 text-xs dark:text-neutral-400">
@@ -27,38 +27,39 @@
           </div>
         </div>
 
-        <nav class="overflow-y-auto flex-1 p-2">
-          <div class="space-y-0.5">
-            <button @click="navigateToRoot()" class="flex items-center px-2.5 py-1.5 w-full font-medium text-[13px] text-stone-600 dark:text-neutral-300 hover:bg-stone-200/50 dark:hover:bg-neutral-700 rounded-md transition-colors">
-              <div class="mr-2.5 h-4 w-4 text-stone-500 dark:text-neutral-500 i-hugeicons-home-02"></div>
+        <nav class="overflow-y-auto flex-1 px-2 py-2">
+          <div class="space-y-px">
+            <button @click="navigateToRoot()" :class="navRowClass(currentFolderId() === root().id)">
+              <div class="h-[18px] w-[18px] text-blue-500 i-hugeicons-home-02"></div>
               Home
             </button>
-            <button class="flex items-center px-2.5 py-1.5 w-full font-medium text-[13px] text-stone-600 dark:text-neutral-300 hover:bg-stone-200/50 dark:hover:bg-neutral-700 rounded-md">
-              <div class="mr-2.5 h-4 w-4 text-stone-500 dark:text-neutral-500 i-hugeicons-star"></div>
+            <button :class="navRowClass(false)">
+              <div class="h-[18px] w-[18px] text-amber-400 i-hugeicons-star"></div>
               Starred
-              <span class="ml-auto px-2 py-0.5 text-stone-600 text-xs dark:text-neutral-300 bg-stone-200/60 dark:bg-neutral-700 rounded-full">{{ starredCount }}</span>
+              <span class="ml-auto tabular-nums text-[12px] text-stone-400 dark:text-neutral-500">{{ starredCount }}</span>
             </button>
-            <button class="flex items-center px-2.5 py-1.5 w-full font-medium text-[13px] text-stone-600 dark:text-neutral-300 hover:bg-stone-200/50 dark:hover:bg-neutral-700 rounded-md">
-              <div class="mr-2.5 h-4 w-4 text-stone-500 dark:text-neutral-500 i-hugeicons-share-01"></div>
+            <button :class="navRowClass(false)">
+              <div class="h-[18px] w-[18px] text-emerald-500 i-hugeicons-share-01"></div>
               Shared
-              <span class="ml-auto px-2 py-0.5 text-stone-600 text-xs dark:text-neutral-300 bg-stone-200/60 dark:bg-neutral-700 rounded-full">{{ sharedCount }}</span>
+              <span class="ml-auto tabular-nums text-[12px] text-stone-400 dark:text-neutral-500">{{ sharedCount }}</span>
             </button>
           </div>
-          <div class="mt-6">
-            <h3 class="px-2.5 font-semibold text-stone-500 text-xs tracking-wider uppercase dark:text-neutral-400">Folders</h3>
-            <div class="mt-1 space-y-0.5">
+          <div class="mt-5">
+            <h3 class="mb-1 px-2.5 font-semibold text-[11px] text-stone-400 dark:text-neutral-500">Folders</h3>
+            <div class="space-y-px">
               <template :for="folder in topLevelFolders()">
-                <button @click="navigateToFolder(folder)" class="flex items-center px-2.5 py-1.5 w-full font-medium text-[13px] text-stone-600 dark:text-neutral-300 hover:bg-stone-200/50 dark:hover:bg-neutral-700 rounded-md">
-                  <div class="mr-2.5 h-4 w-4 text-stone-500 dark:text-neutral-500 i-hugeicons-folder-02"></div>
+                <button @click="navigateToFolder(folder)" :class="navRowClass(currentFolderId() === folder.id)">
+                  <div class="h-[18px] w-[18px] text-amber-400 i-hugeicons-folder-02"></div>
                   {{ folder.name }}
+                  <span class="ml-auto tabular-nums text-[12px] text-stone-400 dark:text-neutral-500">{{ (folder.items ?? []).length }}</span>
                 </button>
               </template>
             </div>
           </div>
         </nav>
 
-        <div class="p-4 border-stone-200/60 border-t dark:border-neutral-700">
-          <button @click="openUploadModal()" class="flex items-center justify-center px-4 py-2 w-full font-medium text-sm text-white bg-indigo-600 hover:bg-indigo-700 rounded-md shadow-sm">
+        <div class="p-3 border-black/5 border-t dark:border-white/10">
+          <button @click="openUploadModal()" class="flex gap-2 items-center justify-center px-4 py-2 w-full font-medium text-[13px] text-white bg-blue-500 hover:bg-blue-600 rounded-lg shadow-sm">
             <div class="mr-2 h-5 w-5 i-hugeicons-upload-01"></div>
             Upload Files
           </button>
@@ -67,7 +68,7 @@
     </div>
 
     <div class="flex flex-1 flex-col bg-white dark:bg-neutral-900">
-      <div class="p-4 bg-white dark:bg-neutral-900 border-b border-stone-200/60 dark:border-neutral-700">
+      <div class="p-4 bg-white/70 dark:bg-neutral-900/50 border-b border-black/5 dark:border-white/10 backdrop-blur-xl">
         <div class="flex items-center justify-between">
           <button @click="toggleSidePanel()" class="p-2 text-gray-500 dark:text-neutral-400 hover:bg-gray-100 dark:hover:bg-neutral-700 rounded-md">
             <div class="h-5 w-5 i-hugeicons-menu-01"></div>
@@ -83,7 +84,7 @@
           </div>
 
           <div class="flex items-center space-x-2">
-            <div class="flex rounded-md shadow-sm">
+            <div class="flex gap-0.5 p-0.5 bg-black/[0.05] dark:bg-white/[0.06] rounded-lg">
               <button @click="setViewMode('grid')" :class="gridViewClass()">
                 <div class="h-5 w-5 i-hugeicons-grid-view"></div>
               </button>
@@ -138,7 +139,7 @@
 
         <div :show="filteredItems().length > 0 && viewMode() === 'grid'" class="grid gap-4 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
           <template :for="item in filteredItems()">
-            <div @click="onItemClick(item)" class="overflow-hidden relative bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700 hover:border-indigo-300 dark:hover:border-indigo-500/50 shadow-sm hover:shadow-lg duration-200 transition-all cursor-pointer group">
+            <div @click="onItemClick(item)" :class="gridCardClass(item)">
               <MediaCard :item="item" />
               <div class="flex absolute right-2 top-2 space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
                 <button @click="onStarClick(item, $event)" :class="gridStarButtonClass(item)">
@@ -192,8 +193,8 @@
   <!-- Meema-style file info / preview slide-over -->
   <div :show="showInfoPanel" class="fixed inset-0 z-20">
     <div class="absolute inset-0 bg-gray-900/40 dark:bg-black/50" @click="closeInfoPanel()"></div>
-    <aside class="flex absolute inset-y-0 right-0 flex-col max-w-sm w-full bg-white dark:bg-neutral-900 shadow-xl">
-      <div class="flex items-center justify-between p-4 border-b border-stone-200/60 dark:border-neutral-700">
+    <aside class="flex absolute inset-y-0 right-0 flex-col max-w-sm w-full bg-white/80 dark:bg-neutral-900/70 border-black/5 border-l dark:border-white/10 shadow-xl backdrop-blur-2xl">
+      <div class="flex items-center justify-between p-4 border-b border-black/5 dark:border-white/10">
         <h3 class="font-semibold text-sm text-stone-500 tracking-wider uppercase dark:text-neutral-400">Details</h3>
         <button @click="closeInfoPanel()" class="p-1.5 text-gray-400 dark:text-neutral-500 hover:text-gray-600 dark:hover:text-neutral-300 hover:bg-gray-100 dark:hover:bg-neutral-700 rounded-md">
           <div class="h-5 w-5 i-hugeicons-cancel-01"></div>
@@ -411,17 +412,38 @@ const topLevelFolders = derived(() => (root().items ?? []).filter(i => i.type ==
 // attribute — only inside text content. The `:class="fn()"` directive is the
 // supported reactive form, so any class that mixes static and dynamic tokens
 // has to be assembled in JS and applied via :class.
-const sidePanelBase = 'border-r border-stone-200/60 dark:border-neutral-700 bg-[#F5F3EE]/80 dark:bg-neutral-800 transition-all duration-300'
+// Native macOS sidebar vibrancy: a translucent material over the window
+// background rather than a flat fill, matching the desktop shell's macos-themed
+// global sidebar (titlebarHidden window). stacksjs — native File Manager.
+const sidePanelBase = 'border-r border-black/[0.06] dark:border-white/[0.08] bg-[#F5F3EE]/70 dark:bg-neutral-900/40 backdrop-blur-2xl transition-all duration-300'
 const sidePanelClass = derived(() => `${sidePanelBase} ${showSidePanel() ? 'w-64' : 'w-0 overflow-hidden'}`)
 
 const sortOrderIconClass = derived(() => `${sortOrder() === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02'} h-5 w-5`)
 
-const gridViewClass = derived(() => viewMode() === 'grid'
-  ? 'relative inline-flex items-center px-3 py-2 rounded-l-md border border-indigo-600 text-sm font-medium bg-indigo-600 text-white'
-  : 'relative inline-flex items-center px-3 py-2 rounded-l-md border border-gray-300 dark:border-neutral-600 text-sm font-medium bg-white dark:bg-neutral-700 text-gray-700 dark:text-neutral-200 hover:bg-gray-50 dark:hover:bg-neutral-600')
-const listViewClass = derived(() => viewMode() === 'list'
-  ? 'relative inline-flex items-center px-3 py-2 rounded-r-md border border-indigo-600 text-sm font-medium bg-indigo-600 text-white'
-  : 'relative inline-flex items-center px-3 py-2 rounded-r-md border border-gray-300 dark:border-neutral-600 text-sm font-medium bg-white dark:bg-neutral-700 text-gray-700 dark:text-neutral-200 hover:bg-gray-50 dark:hover:bg-neutral-600')
+// Native macOS segmented control: the active segment is an elevated white pill
+// on a recessed track (see the track container in the toolbar), not a filled
+// accent button.
+const segmentBase = 'inline-flex items-center px-2.5 py-1.5 rounded-md text-sm font-medium transition-colors'
+const segmentActive = 'bg-white dark:bg-neutral-700 text-stone-800 dark:text-white shadow-sm'
+const segmentInactive = 'text-stone-500 dark:text-neutral-400 hover:text-stone-700 dark:hover:text-neutral-200'
+const gridViewClass = derived(() => `${segmentBase} ${viewMode() === 'grid' ? segmentActive : segmentInactive}`)
+const listViewClass = derived(() => `${segmentBase} ${viewMode() === 'list' ? segmentActive : segmentInactive}`)
+
+// Native macOS source-list row: a rounded selection pill on the active row
+// (light translucent fill), colored SF-style icons, plain trailing counts.
+const navRowBase = 'group flex items-center gap-2.5 px-2.5 py-1.5 w-full text-left font-medium text-[13px] rounded-lg transition-colors'
+function navRowClass(active: boolean): string {
+  return active
+    ? `${navRowBase} bg-black/[0.06] dark:bg-white/[0.09] text-stone-900 dark:text-white`
+    : `${navRowBase} text-stone-600 dark:text-neutral-300 hover:bg-black/[0.04] dark:hover:bg-white/[0.06]`
+}
+
+// Native selection: the open file gets a Finder-style accent ring, updated
+// reactively as the info panel opens/closes on different items.
+const gridCardBase = 'group relative overflow-hidden rounded-lg border shadow-sm hover:shadow-lg duration-200 transition-all cursor-pointer bg-white dark:bg-neutral-800'
+const gridCardClass = (item: FileItem) => `${gridCardBase} ${showInfoPanel() && selectedItem().id === item.id
+  ? 'border-indigo-400 dark:border-indigo-500 ring-2 ring-indigo-500/30'
+  : 'border-gray-200 dark:border-neutral-700 hover:border-indigo-300 dark:hover:border-indigo-500/50'}`
 
 const rowIconClass = (item: FileItem) => `${itemIconClass(item)} h-5 w-5 mr-3`
 const gridStarButtonClass = (item: FileItem) => `p-1 hover:bg-gray-100 dark:hover:bg-neutral-700 rounded-full ${starButtonClass(item)}`
