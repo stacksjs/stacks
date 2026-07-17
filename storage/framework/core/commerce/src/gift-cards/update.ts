@@ -1,4 +1,3 @@
-import type { StacksExpressionBuilder } from '@stacksjs/database'
 import { db } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
 import { formatDate, isUniqueViolation } from '@stacksjs/orm'
@@ -66,6 +65,9 @@ export async function update(id: number, data: Omit<GiftCardUpdate, 'id'>): Prom
  * @returns The updated gift card with new balance
  */
 export async function updateBalance(id: number, amount: number): Promise<GiftCardJsonResponse | undefined> {
+  if (!Number.isFinite(amount))
+    throw new Error(`Gift card balance adjustment must be a finite number, got ${amount}`)
+
   const now = formatDate(new Date())
 
   // Single atomic UPDATE — the arithmetic happens server-side via
@@ -73,21 +75,26 @@ export async function updateBalance(id: number, amount: number): Promise<GiftCar
   // The new status flips to USED when the resulting balance is 0,
   // computed inline via CASE so the status update is part of the
   // same statement.
-  const result = await db
-    .updateTable('gift_cards')
-    .set({
-      current_balance: (db as any).raw(`current_balance + ${amount}`),
-      last_used_date: now,
-      status: (db as any).raw(`CASE WHEN current_balance + ${amount} = 0 THEN 'USED' ELSE 'ACTIVE' END`),
-      updated_at: now,
-    })
-    .where('id', '=', id)
-    .where('is_active', '=', 1)
-    .where('status', '=', 'ACTIVE')
-    .where((eb: StacksExpressionBuilder) => eb.cmpr(eb.raw(`current_balance + ${amount}`), '>=', 0))
-    .executeTakeFirst()
+  //
+  // Issued via `db.unsafe` with bound parameters: the fluent update
+  // builder binds every `.set()` value (raw expressions arrive as
+  // unbindable objects) and silently drops where-callbacks, which
+  // would lose the over-spend guard entirely.
+  const statement = await (db as any).unsafe(
+    `UPDATE gift_cards
+    SET current_balance = current_balance + ?,
+        last_used_date = ?,
+        status = CASE WHEN current_balance + ? = 0 THEN 'USED' ELSE 'ACTIVE' END,
+        updated_at = ?
+    WHERE id = ?
+      AND is_active = 1
+      AND status = 'ACTIVE'
+      AND current_balance + ? >= 0`,
+    [amount, now, amount, now, id, amount],
+  )
+  const result = typeof statement?.execute === 'function' ? await statement.execute() : statement
 
-  const affected = Number((result as any)?.numUpdatedRows ?? (result as any)?.affectedRows ?? 0)
+  const affected = Number(result?.changes ?? result?.numUpdatedRows ?? result?.affectedRows ?? 0)
   if (affected > 0) {
     return await fetchById(id)
   }
