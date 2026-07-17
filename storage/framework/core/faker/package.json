@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/faker",
   "type": "module",
-  "version": "0.70.103",
+  "version": "0.70.104",
   "description": "Faker functions.",
   "author": "Chris Breuer",
   "contributors": [
