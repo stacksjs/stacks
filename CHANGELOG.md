@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.102...v0.70.103)
+
+## 🐛 Bug Fixes
+
+- **defaults**: skip runtime preload during postinstall ([985e6f6](https://github.com/stacksjs/stacks/commit/985e6f6)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.101...v0.70.102)
 
 ## 🐛 Bug Fixes
