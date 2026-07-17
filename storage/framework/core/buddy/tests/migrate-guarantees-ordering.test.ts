@@ -33,6 +33,15 @@ describe('buddy migrate guarantee-table ordering (stacksjs/stacks#1952)', () => 
     expect(failureExit).toBeGreaterThan(authCall)
   })
 
+  it('migrate: lets model migrations create notification tables before framework guarantees', () => {
+    const modelMigrate = migrateSection.indexOf('await runAction(Action.Migrate, options)')
+    const notificationCall = migrateSection.indexOf('await migrateNotificationTables')
+    const failureExit = migrateSection.indexOf('While running the migrate command, there was an issue')
+    expect(modelMigrate).toBeGreaterThan(-1)
+    expect(notificationCall).toBeGreaterThan(modelMigrate)
+    expect(failureExit).toBeGreaterThan(notificationCall)
+  })
+
   it('migrate:fresh: runs migrateAuthTables before the isErr FatalError exit', () => {
     const authCall = freshSection.indexOf('await migrateAuthTables')
     const failureExit = freshSection.indexOf('While running the migrate:fresh command, there was an issue')
