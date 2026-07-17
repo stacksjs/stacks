@@ -1,5 +1,46 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.112...v0.70.113)
+
+## ✨ Features
+
+- **buddy**: audit stale rpx dev-domain overrides in doctor ([eb1df28](https://github.com/stacksjs/stacks/commit/eb1df28)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **database**: add Sql.as, sql.literal, and a real db.fn aggregate surface ([b3e5078](https://github.com/stacksjs/stacks/commit/b3e5078)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: add email inbox API actions and routes ([f9c59c8](https://github.com/stacksjs/stacks/commit/f9c59c8)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **email-sdk**: add inbox stats and unread count helpers ([6b45dd4](https://github.com/stacksjs/stacks/commit/6b45dd4)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🐛 Bug Fixes
+
+- **dev**: stamp rpx registry entries with the dev process pid ([7d0a55c](https://github.com/stacksjs/stacks/commit/7d0a55c)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dev**: deregister rpx proxies before the shutdown kill ([4e9f18f](https://github.com/stacksjs/stacks/commit/4e9f18f)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: repair query controller against the real query-builder runtime ([0c9d9fc](https://github.com/stacksjs/stacks/commit/0c9d9fc)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **cms**: replace dropped or-callback in author find-or-create ([00f547d](https://github.com/stacksjs/stacks/commit/00f547d)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **commerce**: run abandoned-cart cleanup sub-select through db.unsafe ([cc67185](https://github.com/stacksjs/stacks/commit/cc67185)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **commerce**: replace silently-dropped callback filters in gift cards ([de1703a](https://github.com/stacksjs/stacks/commit/de1703a)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **commerce**: repair coupon redeem atomicity and camelCase responses ([9a21ba6](https://github.com/stacksjs/stacks/commit/9a21ba6)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **database**: narrow alter-table regex captures in migration grouping ([afca7fe](https://github.com/stacksjs/stacks/commit/afca7fe)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **build**: drop d.ts repair pass, fixed at source in dtsx 0.10.9 ([ff7161f](https://github.com/stacksjs/stacks/commit/ff7161f)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **email-sdk**: use production email bucket by default ([8c4efef](https://github.com/stacksjs/stacks/commit/8c4efef)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **buddy**: fall back to system bun when pantry bootstrap fails ([4ba4f15](https://github.com/stacksjs/stacks/commit/4ba4f15)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: wire inbox view to real email API ([2e03cbf](https://github.com/stacksjs/stacks/commit/2e03cbf)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## ♻️ Code Refactoring
+
+- **commerce**: replace eb.fn select callbacks with db.fn fragments ([bd27e10](https://github.com/stacksjs/stacks/commit/bd27e10)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 💚 Continuous Integration
+
+- keep framework tsbuildinfo out of the cached node_modules path ([724d16d](https://github.com/stacksjs/stacks/commit/724d16d)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🔧 Chores
+
+- **deps**: update Stripe and Bun runtime ([73b5392](https://github.com/stacksjs/stacks/commit/73b5392)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **deps**: bump @stacksjs/rpx to ^0.11.29 ([da27b28](https://github.com/stacksjs/stacks/commit/da27b28)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.111...v0.70.112)
 
 ## 🔧 Chores
