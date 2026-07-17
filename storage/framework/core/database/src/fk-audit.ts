@@ -1,7 +1,7 @@
 import type { Model } from '@stacksjs/types'
 import { existsSync } from 'node:fs'
 import { dirname } from 'node:path'
-import { plural, singular, snakeCase } from '@stacksjs/strings'
+import { plural, snakeCase } from '@stacksjs/strings'
 import { path } from '@stacksjs/path'
 import { globSync } from '@stacksjs/storage'
 
@@ -64,6 +64,86 @@ export interface FkAuditResult {
   missing: DeclaredFK[]
 }
 
+function modelTable(model: Model): string {
+  return (model.table as string) || plural(snakeCase((model.name as string) || ''))
+}
+
+function modelNameForColumn(column: string): string {
+  return column
+    .replace(/_id$/, '')
+    .split('_')
+    .map(part => part.charAt(0).toUpperCase() + part.slice(1))
+    .join('')
+}
+
+/** Build the same FK shapes as bun-query-builder's model migration plan. */
+export function getDeclaredFKsFromModels(models: Model[]): DeclaredFK[] {
+  const meta = new Map(models.map(model => [String(model.name ?? ''), {
+    primaryKey: String(model.primaryKey ?? 'id'),
+    table: modelTable(model),
+  }]))
+  const declared: DeclaredFK[] = []
+  const seen = new Set<string>()
+
+  const push = (fk: DeclaredFK): void => {
+    const key = `${fk.fromTable}.${fk.fromColumn}→${fk.toTable}.${fk.toColumn}`.toLowerCase()
+    if (seen.has(key)) return
+    seen.add(key)
+    declared.push(fk)
+  }
+
+  for (const model of models) {
+    const fromTable = modelTable(model)
+    const modelName = String(model.name ?? '')
+    const attributes = (model.attributes ?? {}) as Record<string, { foreignKey?: boolean | { table: string, column?: string } }>
+
+    for (const [attributeName, attribute] of Object.entries(attributes)) {
+      const fromColumn = snakeCase(attributeName)
+      if (!fromColumn.endsWith('_id') || attribute.foreignKey === false)
+        continue
+
+      if (attribute.foreignKey && typeof attribute.foreignKey === 'object') {
+        push({
+          fromTable,
+          fromColumn,
+          toTable: attribute.foreignKey.table,
+          toColumn: attribute.foreignKey.column ?? 'id',
+          model: modelName,
+        })
+        continue
+      }
+
+      const related = meta.get(modelNameForColumn(fromColumn))
+      if (related) {
+        push({ fromTable, fromColumn, toTable: related.table, toColumn: related.primaryKey, model: modelName })
+      }
+    }
+
+    const belongsTo = (model as { belongsTo?: unknown }).belongsTo
+    const relations = Array.isArray(belongsTo)
+      ? belongsTo
+      : (belongsTo && typeof belongsTo === 'object'
+          ? Object.keys(belongsTo).map(name => ({ model: name }))
+          : [])
+    for (const entry of relations) {
+      const relatedName = typeof entry === 'string' ? entry : String((entry as { model?: string }).model ?? '')
+      if (!relatedName) continue
+      const fromColumn = typeof entry === 'object' && (entry as { foreignKey?: string }).foreignKey
+        ? String((entry as { foreignKey: string }).foreignKey)
+        : `${snakeCase(relatedName)}_id`
+      // An explicit attribute is already authoritative above, just as it is
+      // in the migration planner.
+      if (Object.keys(attributes).some(attribute => snakeCase(attribute) === fromColumn))
+        continue
+      const related = meta.get(relatedName)
+      if (related)
+        push({ fromTable, fromColumn, toTable: related.table, toColumn: related.primaryKey, model: modelName })
+    }
+  }
+
+  return declared
+}
+
 /**
  * Walk every model file (user + framework defaults) and return the
  * full list of declared `belongsTo` foreign keys.
@@ -76,12 +156,15 @@ export interface FkAuditResult {
  * `belongsTo` here for the simplest, highest-signal audit.
  */
 export async function getDeclaredFKs(): Promise<DeclaredFK[]> {
-  const modelFiles = [
-    ...safeGlob(path.userModelsPath('*.ts')),
-    ...safeGlob(path.storagePath('framework/defaults/app/Models/**/*.ts')),
-  ]
+  const userModelFiles = safeGlob(path.userModelsPath('*.ts'))
+  // Match migration generation: an app model set is authoritative. Framework
+  // defaults are the fallback for a scaffold with no app/Models yet, not an
+  // additional schema silently audited alongside the app.
+  const modelFiles = userModelFiles.length > 0
+    ? userModelFiles
+    : safeGlob(path.storagePath('framework/defaults/app/Models/**/*.ts'))
 
-  const declared: DeclaredFK[] = []
+  const models: Model[] = []
   for (const modelFile of modelFiles) {
     let model: Model
     try {
@@ -93,45 +176,10 @@ export async function getDeclaredFKs(): Promise<DeclaredFK[]> {
       // checks (typecheck, lint) will catch the underlying issue.
       continue
     }
-    if (!model || typeof model !== 'object') continue
-
-    const fromTable = (model.table as string) || plural(snakeCase((model.name as string) || ''))
-    const belongsTo = (model as { belongsTo?: unknown }).belongsTo
-
-    if (Array.isArray(belongsTo)) {
-      for (const entry of belongsTo) {
-        const related = typeof entry === 'string' ? entry : ((entry as { model?: string })?.model ?? '')
-        if (!related) continue
-        const fromColumn = `${snakeCase(singular(related))}_id`
-        const toTable = plural(snakeCase(related))
-        declared.push({
-          fromTable,
-          fromColumn,
-          toTable,
-          toColumn: 'id',
-          model: (model.name as string) || '',
-        })
-      }
-    }
-    else if (belongsTo && typeof belongsTo === 'object') {
-      // Object form: `belongsTo: { Post: 'Post', User: 'User' }`
-      // (the `as any` shape some scaffolds emit). Each key is a
-      // related model name.
-      for (const related of Object.keys(belongsTo)) {
-        const fromColumn = `${snakeCase(singular(related))}_id`
-        const toTable = plural(snakeCase(related))
-        declared.push({
-          fromTable,
-          fromColumn,
-          toTable,
-          toColumn: 'id',
-          model: (model.name as string) || '',
-        })
-      }
-    }
+    if (model && typeof model === 'object') models.push(model)
   }
 
-  return declared
+  return getDeclaredFKsFromModels(models)
 }
 
 /**

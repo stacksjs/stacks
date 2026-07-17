@@ -147,7 +147,7 @@ async function reportMissingForeignKeys(): Promise<void> {
     const more = result.missing.length > 5 ? `\n  + ${result.missing.length - 5} more — run \`./buddy doctor\` for the full list.` : ''
     log.warn(
       `${result.missing.length} of ${result.declared.length} declared foreign keys are missing from the live schema:\n${sample}${more}\n`
-      + `If you just flipped DB_CONNECTION, the FK ALTER migrations may be sitting on disk but unapplied — run \`./buddy migrate:fresh\` against the new database (will reset data) or replay the alter-*.sql files manually.`,
+      + `The model-backed create migrations may be stale for this database — run \`./buddy migrate:fresh\` to regenerate and replay them from the model attributes (this resets data).`,
     )
   }
   catch (err) {

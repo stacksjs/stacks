@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test'
-import { getDeclaredFKs } from '../src/fk-audit'
+import { getDeclaredFKs, getDeclaredFKsFromModels } from '../src/fk-audit'
 
 // stacksjs/stacks#1916 — Declared-FK enumeration smoke test.
 //
@@ -11,6 +11,33 @@ import { getDeclaredFKs } from '../src/fk-audit'
 // expected FK list.
 
 describe('getDeclaredFKs (stacksjs/stacks#1916)', () => {
+  it('uses actual model tables and explicit attribute foreign keys', () => {
+    const fks = getDeclaredFKsFromModels([
+      { name: 'User', table: 'users', primaryKey: 'id', attributes: {} },
+      {
+        name: 'CheckIn',
+        table: 'checkins',
+        primaryKey: 'id',
+        attributes: { user_id: { foreignKey: { table: 'users', nullable: false }, validation: { rule: {} } } },
+      },
+      {
+        name: 'AccessEvent',
+        table: 'access_events',
+        attributes: { check_in_id: { foreignKey: { table: 'checkins' }, validation: { rule: {} } } },
+        belongsTo: ['CheckIn'],
+      },
+    ] as any)
+
+    expect(fks).toContainEqual({
+      fromTable: 'access_events',
+      fromColumn: 'check_in_id',
+      toTable: 'checkins',
+      toColumn: 'id',
+      model: 'AccessEvent',
+    })
+    expect(fks.some(fk => fk.toTable === 'check_ins')).toBe(false)
+  })
+
   it('returns an array of declared FKs without throwing on partial model load', async () => {
     const fks = await getDeclaredFKs()
     expect(Array.isArray(fks)).toBe(true)
