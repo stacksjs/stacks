@@ -10,7 +10,7 @@
  *
  * Environment variables:
  *   - PORT: Server port (default: 3008)
- *   - HOST: Server hostname (default: 0.0.0.0 for production)
+ *   - API_HOST / HOST: Server hostname (default: 0.0.0.0 for production)
  *   - APP_ENV: Environment (production, staging, development)
  */
 
@@ -22,6 +22,7 @@ import { config } from '@stacksjs/config'
 import { log } from '@stacksjs/logging'
 import { frameworkPath } from '@stacksjs/path'
 import { route } from '@stacksjs/router'
+import { resolveApiHost } from '../helpers/api-host'
 
 /**
  * Resolve a file from the scaffold defaults tree. A vendored checkout has it at
@@ -42,11 +43,9 @@ function resolveDefaultsFile(rel: string): string {
   }
 }
 
-const isProduction = process.env.APP_ENV === 'production' || process.env.NODE_ENV === 'production'
-
 // Production defaults
 const port = Number(process.env.PORT) || config.ports?.api || 3008
-const hostname = process.env.HOST || (isProduction ? '0.0.0.0' : '127.0.0.1')
+const hostname = resolveApiHost()
 
 log.info(`[Stacks API] Starting server...`)
 log.info(`[Stacks API] Environment: ${process.env.APP_ENV || 'development'}`)

@@ -12,6 +12,7 @@ import { path } from '@stacksjs/path'
 import type { Middleware } from '@stacksjs/router'
 import { route } from '@stacksjs/router'
 import { generateAutoImportFiles, generateServerAutoImportTypes, injectGlobalAutoImports } from '@stacksjs/server'
+import { resolveApiHost } from '../helpers/api-host'
 
 const _options = parseOptions()
 
@@ -26,6 +27,7 @@ await generateServerAutoImportTypes()
 // resolved yet. Env var wins so users can override via .env / shell.
 await overridesReady
 const port = Number(process.env.PORT_API) || config.ports?.api || 3008
+const hostname = resolveApiHost()
 
 // Regenerate the model + function auto-import manifest ONLY when missing —
 // regenerating on every boot (and thus every hot-reload cycle) triggers an
@@ -185,11 +187,11 @@ await route.importRoutes()
 try {
   await route.serve({
     port,
-    hostname: '127.0.0.1',
+    hostname,
   })
   // Most terminals turn `http://localhost:3008` into a click-through
   // link; the leading newline gives the previous output room to breathe.
-  console.log(`\n  ➜  API server ready: http://localhost:${port}\n`)
+  console.log(`\n  ➜  API server ready: http://${hostname}:${port}\n`)
 }
 catch (err: any) {
   const code = err?.code || err?.errno
