@@ -469,21 +469,39 @@ export async function startDevelopmentServer(_options: DevOptions, _startTime?: 
     if (isExiting) return
     isExiting = true
     closeNativeApp?.()
-    void unregisterRpxProxies(activeRpxRegistryIds)
-    activeRpxRegistryIds.length = 0
-    try { process.kill(-process.pid, 'SIGTERM') }
-    catch {
-      // Process group may not exist (e.g., not session leader) — try the
-      // current process only. Worst case the inner SIGKILL below cleans up.
-      try { process.kill(0, 'SIGTERM') } catch { /* ignore */ }
-    }
-    setTimeout(() => {
-      try { process.kill(0, 'SIGKILL') }
-      catch { process.exit(1) }
-    }, SHUTDOWN_GRACE_MS).unref()
+    // Teardown order matters: an unawaited deregistration loses the race
+    // against the group SIGTERM, leaving this session's rpx registry entry
+    // behind - the root daemon then re-applies the /etc/hosts + resolver
+    // overrides on every restart and a public APP_URL stays pointed at this
+    // machine (and its dead proxy) after the dev session ended. Give the
+    // deregistration and the public-domain override removal a bounded head
+    // start, then proceed with the group kill.
+    const rpxTeardown = (async () => {
+      try {
+        await unregisterRpxProxies(activeRpxRegistryIds)
+        activeRpxRegistryIds.length = 0
+        if (hasCustomDomain && domain)
+          await removeStalePublicDomainOverrides(domain, includeDashboard, options.verbose ?? false)
+      }
+      catch { /* best-effort teardown */ }
+    })()
+    const teardownDeadline = new Promise<void>(resolve => setTimeout(resolve, SHUTDOWN_GRACE_MS))
+    void Promise.race([rpxTeardown, teardownDeadline]).finally(() => {
+      try { process.kill(-process.pid, 'SIGTERM') }
+      catch {
+        // Process group may not exist (e.g., not session leader) - try the
+        // current process only. Worst case the inner SIGKILL below cleans up.
+        try { process.kill(0, 'SIGTERM') } catch { /* ignore */ }
+      }
+      setTimeout(() => {
+        try { process.kill(0, 'SIGKILL') }
+        catch { process.exit(1) }
+      }, SHUTDOWN_GRACE_MS).unref()
+    })
   }
   process.on('SIGINT', cleanup)
   process.on('SIGTERM', cleanup)
+  process.on('SIGHUP', cleanup)
 
   // Start all servers silently — unified banner above handles output
   const quietOpts = { ...options, quiet: true }
