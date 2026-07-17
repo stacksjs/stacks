@@ -20,6 +20,7 @@ export * from './tokens'
 export * from './gate'
 export * from './policy'
 export * from './authorizable'
+export * from './permissions'
 
 // Role-Based Access Control (RBAC)
 export * from './rbac'

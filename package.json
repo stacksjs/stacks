@@ -71,7 +71,7 @@
   },
   "dependencies": {
     "@stacksjs/ts-cloud": "^0.7.29",
-    "bun-query-builder": "^0.1.51",
+    "bun-query-builder": "^0.1.52",
     "stacks": "workspace:*"
   },
   "devDependencies": {
