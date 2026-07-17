@@ -159,22 +159,22 @@ describe('local framework source selection', () => {
 describe('buildTemplateString', () => {
   it('should build template for main branch', () => {
     expect(buildTemplateString('main'))
-      .toBe('github:stacksjs/stacks#main/storage/framework/core')
+      .toBe('github:stacksjs/stacks/storage/framework/core#main')
   })
 
   it('should build template for canary branch', () => {
     expect(buildTemplateString('canary'))
-      .toBe('github:stacksjs/stacks#canary/storage/framework/core')
+      .toBe('github:stacksjs/stacks/storage/framework/core#canary')
   })
 
   it('should build template for a version tag', () => {
     expect(buildTemplateString('v0.70.23'))
-      .toBe('github:stacksjs/stacks#v0.70.23/storage/framework/core')
+      .toBe('github:stacksjs/stacks/storage/framework/core#v0.70.23')
   })
 
   it('should build template for a pre-release tag', () => {
     expect(buildTemplateString('v1.0.0-beta.1'))
-      .toBe('github:stacksjs/stacks#v1.0.0-beta.1/storage/framework/core')
+      .toBe('github:stacksjs/stacks/storage/framework/core#v1.0.0-beta.1')
   })
 })
 

@@ -58,7 +58,7 @@ export function resolveUpgradeContext(options: {
  * `subPath` is relative to the repo root (e.g. `storage/framework/core`).
  */
 export function buildTemplateString(ref: string, subPath = 'storage/framework/core'): string {
-  return `github:stacksjs/stacks#${ref}/${subPath}`
+  return `github:stacksjs/stacks/${subPath}#${ref}`
 }
 
 /**
