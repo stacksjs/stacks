@@ -7,7 +7,6 @@
  * allowed to proceed?"
  */
 
-import type { StacksExpressionBuilder } from '@stacksjs/database'
 import { db } from '@stacksjs/database'
 
 // ============================================================================
@@ -209,22 +208,19 @@ export async function cleanupAbandonedCarts(
 
   // The pattern below uses a sub-select to apply the LIMIT because
   // most SQL drivers don't accept LIMIT on DELETE directly. SQLite
-  // and MySQL both accept the DELETE-from-subselect form; PG needs
-  // a CTE-style alternative. Fall back via try/catch so the helper
-  // works across drivers without driver-detect plumbing.
+  // and Postgres accept the DELETE-from-subselect form; MySQL rejects
+  // LIMIT inside an IN subquery, so we fall back via try/catch to a
+  // select-then-delete pass. Issued via db.unsafe with bound params:
+  // the fluent delete builder cannot express IN-subquery predicates.
   try {
-    const result: any = await (db as any)
-      .deleteFrom('carts')
-      .where('updated_at', '<', cutoffAt)
-      .where('id', 'in', (eb: StacksExpressionBuilder) =>
-        (eb.selectFrom as any)('carts')
-          .select('id')
-          .where('updated_at', '<', cutoffAt)
-          .limit(limit),
-      )
-      .execute()
+    const statement = await (db as any).unsafe(
+      `DELETE FROM carts WHERE updated_at < ? AND id IN (SELECT id FROM carts WHERE updated_at < ? LIMIT ?)`,
+      [cutoffAt, cutoffAt, limit],
+    )
+    const result: any = typeof statement?.execute === 'function' ? await statement.execute() : statement
     const deleted = Number(
-      result?.numDeletedRows
+      result?.changes
+      ?? result?.numDeletedRows
       ?? result?.[0]?.numDeletedRows
       ?? result?.affectedRows
       ?? 0,
