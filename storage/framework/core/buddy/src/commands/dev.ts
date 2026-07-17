@@ -1410,6 +1410,68 @@ async function unregisterRpxProxies(ids: string[]): Promise<void> {
 }
 
 /**
+ * Undo rpx overrides a previous dev session left behind for a PUBLIC domain:
+ * the `127.0.0.1 <domain>` lines in /etc/hosts and the root-owned
+ * /etc/resolver/<domain> file pointing at rpx's local DNS. The public-domain
+ * guard only prevents NEW overrides; without this cleanup one stale install
+ * keeps the live domain hijacked on this Mac (every browser and curl hits a
+ * dead local proxy instead of production). Best-effort throughout: removal
+ * needs sudo (SUDO_PASSWORD or cached credentials), never throws, and logs the
+ * exact manual command when it cannot finish.
+ */
+async function removeStalePublicDomainOverrides(domain: string, includeDashboard: boolean, verbose: boolean): Promise<void> {
+  const { checkHosts, removeHosts, resolverFilePath, contentLooksLikeRpxResolver } = await importDevelopmentRpx()
+
+  const hosts = [domain, ...(includeDashboard ? [`dashboard.${domain}`] : [])]
+
+  // /etc/hosts is world-readable, so checking first keeps a deliberately
+  // hand-written (non-rpx) entry from being rewritten for no reason.
+  const present = await checkHosts(hosts, verbose).catch(() => hosts.map(() => false))
+  const staleHosts = hosts.filter((_, i) => present[i] === true)
+  if (staleHosts.length > 0) {
+    await removeHosts(staleHosts, verbose).catch(() => { /* best-effort */ })
+    const remaining = await checkHosts(staleHosts, verbose).catch(() => staleHosts.map(() => true))
+    if (remaining.some(Boolean))
+      log.warn(`Stale /etc/hosts entries still point ${staleHosts.join(', ')} at loopback. Remove them with: sudo nano /etc/hosts`)
+    else
+      log.info(`Removed stale /etc/hosts entries for ${staleHosts.join(', ')} (left by a previous dev session)`)
+  }
+
+  // /etc/resolver/<domain> is root-owned. rpx exposes the path and the
+  // ownership probe but no per-domain remover, so unlink it here, and only
+  // when the content proves rpx manages the file. rpx scopes resolver files
+  // to the last two domain labels (dashboard.<apex> shares the apex file).
+  if (process.platform !== 'darwin')
+    return
+
+  const labels = domain.split('.')
+  const basename = labels.length >= 2 ? labels.slice(-2).join('.') : domain
+  const resolverPath = resolverFilePath(basename)
+  let isRpxManaged = false
+  try {
+    isRpxManaged = contentLooksLikeRpxResolver(readFileSync(resolverPath, 'utf8'))
+  }
+  catch { /* no stale resolver file */ }
+  if (!isRpxManaged)
+    return
+
+  const quotedPath = `'${resolverPath.replace(/'/g, `'\\''`)}'`
+  const rm = process.env.SUDO_PASSWORD
+    ? `printf '%s\n' "$SUDO_PASSWORD" | sudo -S rm -f ${quotedPath}`
+    : `sudo -n rm -f ${quotedPath}`
+  try {
+    execSync(rm, { stdio: ['pipe', 'ignore', 'ignore'] })
+    log.info(`Removed stale rpx DNS resolver ${resolverPath} (left by a previous dev session)`)
+    // Make the live domain resolve again immediately instead of waiting out
+    // the system DNS cache. Best-effort on the cached sudo timestamp.
+    execSync('sudo -n dscacheutil -flushcache; sudo -n killall -HUP mDNSResponder; true', { stdio: ['pipe', 'ignore', 'ignore'] })
+  }
+  catch {
+    log.warn(`A stale rpx DNS resolver still hijacks ${domain}. Remove it with: sudo rm ${resolverPath}`)
+  }
+}
+
+/**
  * Update /etc/hosts and align TLS material while backends boot. The daemon is
  * started in `registerRpxProxiesForDomain` once HTTP ports are ready.
  */
@@ -1429,6 +1491,7 @@ async function prepareRpxTlsForDev(input: {
     const publicAddresses = await dns.resolve4(domain).catch(() => [])
     if (publicAddresses.some(address => !address.startsWith('127.'))) {
       log.warn(`Skipping local DNS override for public domain ${domain}; use a .localhost/.test domain for development`)
+      await removeStalePublicDomainOverrides(domain, includeDashboard, verbose)
       return
     }
   }
