@@ -1657,6 +1657,7 @@ async function registerRpxProxiesForDomain(input: {
       to: proxy.to,
       cwd: process.cwd(),
       createdAt,
+      pid: process.pid,
       pathRewrites: proxy.pathRewrites,
     }, undefined, verbose)
     if (!activeRpxRegistryIds.includes(proxy.id))
