@@ -330,6 +330,125 @@ export function doctor(buddy: CLI): void {
         })
       }
 
+      // Dev-domain overrides (rpx). A `buddy dev` session maps custom
+      // domains to loopback through /etc/hosts lines and /etc/resolver
+      // files. When a session dies without cleanup, those overrides
+      // persist and keep hijacking the domain (production traffic
+      // included) even though the proxy is long gone. Read-only audit:
+      // doctor never edits system files, it only points at the exact
+      // leftovers and their removal commands.
+      try {
+        if (process.platform !== 'darwin') {
+          checks.push({ name: 'Dev domains (rpx)', status: 'pass', message: 'Not macOS (skipped)' })
+        }
+        else {
+          const fs = await import('node:fs')
+          const os = await import('node:os')
+          const path = await import('node:path')
+
+          const isAlive = (pid: number): boolean => {
+            try {
+              process.kill(pid, 0)
+              return true
+            }
+            catch (err) {
+              return (err as NodeJS.ErrnoException).code === 'EPERM'
+            }
+          }
+
+          // Hosts a live dev session currently owns (registry is the
+          // source of truth the rpx daemon routes from).
+          const registryDir = path.join(os.homedir(), '.stacks', 'rpx', 'registry.d')
+          const registered = new Set<string>()
+          const deadRegistryFiles: string[] = []
+          if (fs.existsSync(registryDir)) {
+            for (const file of fs.readdirSync(registryDir)) {
+              if (!file.endsWith('.json')) continue
+              try {
+                const entry = JSON.parse(fs.readFileSync(path.join(registryDir, file), 'utf8')) as { to?: string, pid?: number }
+                if (entry.to && (entry.pid === undefined || isAlive(entry.pid)))
+                  registered.add(entry.to.toLowerCase())
+                if (typeof entry.pid === 'number' && !isAlive(entry.pid))
+                  deadRegistryFiles.push(file)
+              }
+              catch { /* malformed entry: the daemon prunes it on its next sweep */ }
+            }
+          }
+
+          const staleHosts = new Set<string>()
+          const staleResolvers: string[] = []
+
+          // /etc/hosts: rpx-owned loopback lines, pid-stamped
+          // (`# rpx:pid=N`) or legacy `# Added by rpx` blocks.
+          const hostsPath = '/etc/hosts'
+          const hostsLines = fs.existsSync(hostsPath) ? fs.readFileSync(hostsPath, 'utf8').split('\n') : []
+          for (let i = 0; i < hostsLines.length; i++) {
+            const line = hostsLines[i] as string
+            if (line.trim() === '# Added by rpx') {
+              for (let j = i + 1; j < hostsLines.length; j++) {
+                const blockLine = (hostsLines[j] as string).trim()
+                if (blockLine === '' || blockLine.startsWith('#')) break
+                const names = blockLine.split('#')[0]?.trim().split(/\s+/).slice(1) ?? []
+                for (const name of names) {
+                  if (!registered.has(name.toLowerCase()))
+                    staleHosts.add(name)
+                }
+              }
+              continue
+            }
+            const hash = line.indexOf('#')
+            if (hash === -1) continue
+            const marker = /^rpx(?::pid=(\d+))?$/.exec(line.slice(hash + 1).trim())
+            if (!marker) continue
+            const names = line.slice(0, hash).trim().split(/\s+/).slice(1)
+            const pid = marker[1] ? Number.parseInt(marker[1], 10) : null
+            const stale = pid !== null ? !isAlive(pid) : names.every(n => !registered.has(n.toLowerCase()))
+            if (stale) {
+              for (const name of names) staleHosts.add(name)
+            }
+          }
+
+          // /etc/resolver/<domain>: rpx DNS files (nameserver 127.0.0.1,
+          // port 15353) whose domain no live registry entry claims.
+          const resolverDir = '/etc/resolver'
+          if (fs.existsSync(resolverDir)) {
+            for (const file of fs.readdirSync(resolverDir)) {
+              try {
+                const content = fs.readFileSync(path.join(resolverDir, file), 'utf8')
+                if (!content.includes('127.0.0.1') || !content.includes('15353')) continue
+                const domain = file.toLowerCase()
+                const claimed = [...registered].some(host => host === domain || host.endsWith(`.${domain}`))
+                if (!claimed)
+                  staleResolvers.push(file)
+              }
+              catch { /* unreadable resolver file: skip */ }
+            }
+          }
+
+          if (staleHosts.size > 0 || staleResolvers.length > 0 || deadRegistryFiles.length > 0) {
+            const parts: string[] = []
+            if (staleHosts.size > 0) parts.push(`hosts(${[...staleHosts].join(', ')})`)
+            if (staleResolvers.length > 0) parts.push(`resolver(${staleResolvers.join(', ')})`)
+            if (deadRegistryFiles.length > 0) parts.push(`registry(${deadRegistryFiles.join(', ')})`)
+            checks.push({
+              name: 'Dev domains (rpx)',
+              status: 'warn',
+              message: `Stale loopback overrides from dead dev sessions: ${parts.join(' ')}. These keep pointing the domain at 127.0.0.1. Remove with: sudo nano /etc/hosts; sudo rm /etc/resolver/<name>; rm ~/.stacks/rpx/registry.d/<file>. Updating @stacksjs/rpx lets the daemon sweep pid-stamped entries automatically.`,
+            })
+          }
+          else {
+            checks.push({ name: 'Dev domains (rpx)', status: 'pass', message: 'No stale dev-domain overrides' })
+          }
+        }
+      }
+      catch (err) {
+        checks.push({
+          name: 'Dev domains (rpx)',
+          status: 'warn',
+          message: `Could not audit dev-domain overrides: ${err instanceof Error ? err.message : String(err)}`,
+        })
+      }
+
       // Feature scaffolding orphans — files belonging to a disabled feature
       // are still on disk. Spec: `./buddy doctor` should warn so the user
       // can decide whether to `<feature>:uninstall` (delete them) or
