@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.107...v0.70.108)
+
+## 🐛 Bug Fixes
+
+- **database**: honor explicit model column types ([4ff61f5](https://github.com/stacksjs/stacks/commit/4ff61f5)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.106...v0.70.107)
 
 ## 🐛 Bug Fixes
