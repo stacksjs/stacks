@@ -1123,6 +1123,122 @@ interface GeneratedGroup {
   statements: string[]
 }
 
+interface GeneratedCreateStatement {
+  statement: string
+  table: string
+}
+
+interface GeneratedConstraintStatement {
+  body: string
+  references: string[]
+  statement: string
+  table: string
+}
+
+/**
+ * bun-query-builder emits foreign keys as `ALTER TABLE ... ADD CONSTRAINT`
+ * statements after its CREATE statements. For a brand-new model that used to
+ * become a second `alter-*.sql` migration even though the relationship was
+ * present when the table was first defined.
+ *
+ * Fold acyclic constraints into the owning CREATE TABLE and dependency-sort
+ * those creates so referenced tables exist first. Cyclic relationships cannot
+ * be declared inline before both tables exist, so retain only those constraints
+ * as a final create-time constraint group.
+ */
+function normalizeCreateStatements(sqlStatements: string[]): string[] {
+  const creates: GeneratedCreateStatement[] = []
+  const constraints: GeneratedConstraintStatement[] = []
+  const passthrough: string[] = []
+
+  for (const raw of sqlStatements) {
+    const statement = raw.trim()
+    if (!statement)
+      continue
+
+    const create = statement.match(/^CREATE\s+TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?["`]?(\w+)["`]?/i)
+    if (create?.[1]) {
+      creates.push({ statement, table: create[1] })
+      continue
+    }
+
+    const constraint = statement.match(/^ALTER\s+TABLE\s+["`]?(\w+)["`]?\s+ADD\s+CONSTRAINT\s+([\s\S]+?);?$/i)
+    if (constraint?.[1] && constraint[2]) {
+      const references = [...constraint[2].matchAll(/REFERENCES\s+["`]?(\w+)["`]?/gi)]
+        .flatMap(match => match[1] ? [match[1]] : [])
+      constraints.push({ body: `CONSTRAINT ${constraint[2].replace(/;\s*$/, '')}`, references, statement, table: constraint[1] })
+      continue
+    }
+
+    passthrough.push(statement)
+  }
+
+  if (creates.length === 0)
+    return sqlStatements.map(statement => statement.trim()).filter(Boolean)
+
+  const createdTables = new Set(creates.map(create => create.table))
+  const createOrder = new Map(creates.map((create, index) => [create.table, index]))
+  const relevantConstraints = constraints.filter(constraint => createdTables.has(constraint.table))
+  const unrelatedConstraints = constraints.filter(constraint => !createdTables.has(constraint.table))
+  const dependencies = new Map(creates.map(create => [
+    create.table,
+    new Set(relevantConstraints
+      .filter(constraint => constraint.table === create.table)
+      .flatMap(constraint => constraint.references)
+      .filter(reference => reference !== create.table && createdTables.has(reference))),
+  ]))
+
+  const sortTables = (ignoredEdges = new Set<string>()): string[] => {
+    const remaining = new Set(createdTables)
+    const sorted: string[] = []
+    while (remaining.size > 0) {
+      const ready = [...remaining]
+        .filter(table => [...(dependencies.get(table) ?? [])].every((dependency) => {
+          return !remaining.has(dependency) || ignoredEdges.has(`${table}->${dependency}`)
+        }))
+        .sort((a, b) => (createOrder.get(a) ?? 0) - (createOrder.get(b) ?? 0))
+      if (ready.length === 0)
+        break
+      for (const table of ready) {
+        remaining.delete(table)
+        sorted.push(table)
+      }
+    }
+    return sorted
+  }
+
+  const initiallySorted = sortTables()
+  const cyclicTables = new Set([...createdTables].filter(table => !initiallySorted.includes(table)))
+  const deferred = relevantConstraints.filter(constraint => constraint.references.some((reference) => {
+    return reference !== constraint.table && cyclicTables.has(constraint.table) && cyclicTables.has(reference)
+  }))
+  const deferredStatements = new Set(deferred.map(constraint => constraint.statement))
+  const ignoredEdges = new Set(deferred.flatMap(constraint => constraint.references.map(reference => `${constraint.table}->${reference}`)))
+  const orderedTables = sortTables(ignoredEdges)
+  const byTable = new Map(creates.map(create => [create.table, create]))
+
+  const normalizedCreates = orderedTables.map((table) => {
+    const create = byTable.get(table)!
+    const inline = relevantConstraints.filter(constraint => constraint.table === table && !deferredStatements.has(constraint.statement))
+    if (inline.length === 0)
+      return create.statement
+
+    const closing = create.statement.lastIndexOf(')')
+    if (closing < 0)
+      return create.statement
+    const before = create.statement.slice(0, closing).trimEnd()
+    const after = create.statement.slice(closing)
+    return `${before},\n  ${inline.map(constraint => constraint.body).join(',\n  ')}\n${after}`
+  })
+
+  return [
+    ...normalizedCreates,
+    ...passthrough,
+    ...unrelatedConstraints.map(constraint => constraint.statement),
+    ...deferred.map(constraint => constraint.statement),
+  ]
+}
+
 /**
  * Group generated SQL by the migration filename style the runner already
  * uses for hand-written files: `create-<table>-table`,
@@ -1130,6 +1246,7 @@ interface GeneratedGroup {
  * `drop-<table>-table`. Anything we can't match falls back to `auto-misc`.
  */
 export function groupGeneratedStatements(sqlStatements: string[]): GeneratedGroup[] {
+  const normalizedStatements = normalizeCreateStatements(sqlStatements)
   const groups = new Map<string, string[]>()
   const push = (label: string, stmt: string): void => {
     const list = groups.get(label) ?? []
@@ -1137,12 +1254,12 @@ export function groupGeneratedStatements(sqlStatements: string[]): GeneratedGrou
     groups.set(label, list)
   }
 
-  const createdTables = new Set(sqlStatements.flatMap((raw) => {
+  const createdTables = new Set(normalizedStatements.flatMap((raw) => {
     const match = raw.trim().match(/^\s*CREATE\s+TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?["`]?(\w+)["`]?/i)
     return match?.[1] ? [match[1]] : []
   }))
 
-  for (const raw of sqlStatements) {
+  for (const raw of normalizedStatements) {
     const stmt = raw.trim()
     if (!stmt) continue
 
@@ -1150,7 +1267,11 @@ export function groupGeneratedStatements(sqlStatements: string[]): GeneratedGrou
     if (create) { push(`create-${create[1]}-table`, stmt); continue }
 
     const alter = stmt.match(/^\s*ALTER\s+TABLE\s+["`]?(\w+)["`]?\s+(?:ADD\s+COLUMN\s+["`]?(\w+)["`]?|DROP\s+COLUMN\s+["`]?(\w+)["`]?|ADD\s+CONSTRAINT)/i)
-    if (alter) { push(`alter-${alter[1]}-${alter[2] || alter[3] || 'constraint'}`, stmt); continue }
+    if (alter) {
+      const isCreateTimeConstraint = createdTables.has(alter[1]) && !alter[2] && !alter[3]
+      push(isCreateTimeConstraint ? 'create-foreign-key-constraints' : `alter-${alter[1]}-${alter[2] || alter[3] || 'constraint'}`, stmt)
+      continue
+    }
 
     const idx = stmt.match(/^\s*CREATE\s+(?:UNIQUE\s+)?INDEX\s+(?:IF\s+NOT\s+EXISTS\s+)?["`]?(\w+)["`]?\s+ON\s+["`]?(\w+)["`]?/i)
     const idxName = idx?.[1]

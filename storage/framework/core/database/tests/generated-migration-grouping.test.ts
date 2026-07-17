@@ -21,4 +21,32 @@ describe('generated migration grouping', () => {
 
     expect(groups[0]?.label).toBe('create-users_email_idx-index-in-users')
   })
+
+  it('folds model foreign keys into dependency-ordered create migrations', () => {
+    const groups = groupGeneratedStatements([
+      'CREATE TABLE IF NOT EXISTS "memberships" ("id" BIGSERIAL PRIMARY KEY, "user_id" integer);',
+      'CREATE TABLE IF NOT EXISTS "users" ("id" BIGSERIAL PRIMARY KEY);',
+      'ALTER TABLE "memberships" ADD CONSTRAINT "memberships_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "users"("id");',
+    ])
+
+    expect(groups.map(group => group.label)).toEqual(['create-users-table', 'create-memberships-table'])
+    expect(groups[1]?.statements[0]).toContain('CONSTRAINT "memberships_user_id_fk" FOREIGN KEY')
+    expect(groups.flatMap(group => group.statements).some(statement => statement.startsWith('ALTER TABLE'))).toBe(false)
+  })
+
+  it('defers only cyclic foreign keys until every new table exists', () => {
+    const groups = groupGeneratedStatements([
+      'CREATE TABLE "teams" ("id" BIGSERIAL PRIMARY KEY, "captain_id" integer);',
+      'CREATE TABLE "users" ("id" BIGSERIAL PRIMARY KEY, "team_id" integer);',
+      'ALTER TABLE "teams" ADD CONSTRAINT "teams_captain_fk" FOREIGN KEY ("captain_id") REFERENCES "users"("id");',
+      'ALTER TABLE "users" ADD CONSTRAINT "users_team_fk" FOREIGN KEY ("team_id") REFERENCES "teams"("id");',
+    ])
+
+    expect(groups.map(group => group.label)).toEqual([
+      'create-teams-table',
+      'create-users-table',
+      'create-foreign-key-constraints',
+    ])
+    expect(groups[2]?.statements).toHaveLength(2)
+  })
 })
