@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.100...v0.70.101)
+
+## 🐛 Bug Fixes
+
+- **notifications**: handle uncategorized preferences on postgres ([7f428a9](https://github.com/stacksjs/stacks/commit/7f428a9)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.99...v0.70.100)
 
 ## 🐛 Bug Fixes
