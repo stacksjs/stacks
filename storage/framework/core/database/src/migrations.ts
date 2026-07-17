@@ -1122,13 +1122,18 @@ interface GeneratedGroup {
  * `alter-<table>-<col>`, `create-<index>-index-in-<table>`, or
  * `drop-<table>-table`. Anything we can't match falls back to `auto-misc`.
  */
-function groupGeneratedStatements(sqlStatements: string[]): GeneratedGroup[] {
+export function groupGeneratedStatements(sqlStatements: string[]): GeneratedGroup[] {
   const groups = new Map<string, string[]>()
   const push = (label: string, stmt: string): void => {
     const list = groups.get(label) ?? []
     list.push(stmt)
     groups.set(label, list)
   }
+
+  const createdTables = new Set(sqlStatements.flatMap((raw) => {
+    const match = raw.trim().match(/^\s*CREATE\s+TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?["`]?(\w+)["`]?/i)
+    return match?.[1] ? [match[1]] : []
+  }))
 
   for (const raw of sqlStatements) {
     const stmt = raw.trim()
@@ -1141,7 +1146,10 @@ function groupGeneratedStatements(sqlStatements: string[]): GeneratedGroup[] {
     if (alter) { push(`alter-${alter[1]}-${alter[2] || alter[3] || 'constraint'}`, stmt); continue }
 
     const idx = stmt.match(/^\s*CREATE\s+(?:UNIQUE\s+)?INDEX\s+(?:IF\s+NOT\s+EXISTS\s+)?["`]?(\w+)["`]?\s+ON\s+["`]?(\w+)["`]?/i)
-    if (idx) { push(`create-${idx[1]}-index-in-${idx[2]}`, stmt); continue }
+    if (idx) {
+      push(createdTables.has(idx[2]) ? `create-${idx[2]}-table` : `create-${idx[1]}-index-in-${idx[2]}`, stmt)
+      continue
+    }
 
     const drop = stmt.match(/^\s*DROP\s+TABLE\s+(?:IF\s+EXISTS\s+)?["`]?(\w+)["`]?/i)
     if (drop) { push(`drop-${drop[1]}-table`, stmt); continue }

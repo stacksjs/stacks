@@ -13,6 +13,16 @@ import type { SearchOptions } from './search-engine'
  */
 export type Model = Partial<ModelOptions>
 
+export type OnForeignKeyAction = 'cascade' | 'set null' | 'restrict' | 'no action'
+
+export interface ForeignKeyConfig {
+  table: string
+  column?: string
+  onDelete?: OnForeignKeyAction
+  onUpdate?: OnForeignKeyAction
+  nullable?: boolean
+}
+
 export interface BaseRelation {
   foreignKey?: string
   relationName?: string
@@ -252,6 +262,10 @@ export interface ModelOptions extends Base {
 }
 
 export interface Attribute {
+  /** Require a value and emit a NOT NULL database column. */
+  required?: boolean
+  /** Explicit database nullability override. */
+  nullable?: boolean
   type?: string
   nullable?: boolean
   default?: string | number | boolean | Date
@@ -260,6 +274,8 @@ export interface Attribute {
   hidden?: boolean
   fillable?: boolean
   guarded?: boolean
+  /** Disable, infer, or explicitly configure a foreign-key constraint. */
+  foreignKey?: boolean | ForeignKeyConfig
   factory?: (faker: Faker) => any
   validation: {
     rule: ValidationType

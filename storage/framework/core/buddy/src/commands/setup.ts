@@ -248,17 +248,30 @@ async function initializeProject(options: SetupOptions): Promise<void> {
 /**
  * Maps DB_CONNECTION values to pantry package domains
  */
-const DB_CONNECTION_PACKAGES: Record<string, string> = {
-  postgres: 'postgresql.org',
-  mysql: 'mysql.com',
-  sqlite: 'sqlite.org',
+interface DatabasePackage {
+  name: string
+  version: string
+}
+
+const DB_CONNECTION_PACKAGES: Record<string, DatabasePackage> = {
+  // PostgreSQL data directories are not cross-major compatible. Keeping an
+  // unconstrained `*` here let Pantry upgrade a live v17 cluster to v18 and
+  // made the service unbootable. Pin the supported major while allowing
+  // security and patch releases within it.
+  postgres: { name: 'postgresql.org', version: '^17.10' },
+  mysql: { name: 'mysql.com', version: '*' },
+  sqlite: { name: 'sqlite.org', version: '^3.47.2' },
+}
+
+export function pantryDatabasePackage(connection: string): DatabasePackage | undefined {
+  return DB_CONNECTION_PACKAGES[connection]
 }
 
 /**
  * Reads DB_CONNECTION from .env or .env.example and returns the corresponding
  * pantry package domain, if any.
  */
-function detectDbPackage(cwd: string): string | undefined {
+function detectDbPackage(cwd: string): DatabasePackage | undefined {
   const envPath = join(cwd, '.env')
   const envExamplePath = join(cwd, '.env.example')
 
@@ -275,7 +288,7 @@ function detectDbPackage(cwd: string): string | undefined {
 
   const value = match[1]!.trim().replace(/['"]/g, '')
 
-  return DB_CONNECTION_PACKAGES[value]
+  return pantryDatabasePackage(value)
 }
 
 /**
@@ -310,11 +323,11 @@ export async function optimizePantryDeps(): Promise<void> {
   const dbPackage = detectDbPackage(cwd)
 
   if (dbPackage) {
-    const alreadyHasDb = Object.keys(configDeps).some(key => key === dbPackage || key.startsWith(`${dbPackage}/`))
+    const alreadyHasDb = Object.keys(configDeps).some(key => key === dbPackage.name || key.startsWith(`${dbPackage.name}/`))
 
     if (!alreadyHasDb) {
-      log.info(`Detected DB_CONNECTION requires ${dbPackage}, adding to dependencies`)
-      configDeps[dbPackage] = '*'
+      log.info(`Detected DB_CONNECTION requires ${dbPackage.name}, adding to dependencies`)
+      configDeps[dbPackage.name] = dbPackage.version
     }
   }
 
