@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.99...v0.70.100)
+
+## 🐛 Bug Fixes
+
+- **database**: advance model snapshots after generation ([267d9cc](https://github.com/stacksjs/stacks/commit/267d9cc)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.98...v0.70.99)
 
 ## 🐛 Bug Fixes
