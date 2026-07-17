@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.108...v0.70.109)
+
+## 🐛 Bug Fixes
+
+- **database**: audit model-backed foreign keys ([38c4a3b](https://github.com/stacksjs/stacks/commit/38c4a3b)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.107...v0.70.108)
 
 ## 🐛 Bug Fixes
