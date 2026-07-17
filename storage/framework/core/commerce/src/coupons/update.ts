@@ -1,4 +1,3 @@
-import type { StacksExpressionBuilder } from '@stacksjs/database'
 import { db } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
 import { formatDate, isUniqueViolation } from '@stacksjs/orm'
@@ -42,16 +41,9 @@ export async function update(id: number, data: Omit<CouponUpdate, 'id'>): Promis
       .where('id', '=', id)
       .execute()
 
-    // Fetch and return the updated coupon
-    const updatedCoupon = await fetchById(id)
-
-    if (updatedCoupon) {
-      // Convert SQLite integer boolean to actual boolean
-      const c = updatedCoupon as Record<string, unknown>
-      c.is_active = Boolean(c.is_active)
-    }
-
-    return updatedCoupon
+    // Fetch and return the updated coupon. `fetchById` already runs
+    // `processCouponData`, which coerces `isActive` to a real boolean.
+    return await fetchById(id)
   }
   catch (error) {
     if (error instanceof HttpError)
@@ -96,51 +88,45 @@ export async function redeem(id: number): Promise<CouponRedemptionResult> {
   // redemption precondition in the WHERE clause. `max_uses IS NULL`
   // means "unlimited" so coupons without an explicit cap aren't
   // accidentally rejected.
+  //
+  // Issued via `db.unsafe` with bound parameters: the fluent update
+  // builder can neither render raw SET expressions (`usage_count + 1`)
+  // nor OR-grouped WHERE predicates, and its where-callback form is
+  // silently dropped by the runtime — which would drop the max_uses
+  // guard entirely. One parameterized statement keeps the whole
+  // precondition set atomic and injection-safe.
   const now = formatDate(new Date())
-  const result = await db
-    .updateTable('coupons')
-    .set({
-      usage_count: (db as any).raw(`COALESCE(usage_count, 0) + 1`),
-      updated_at: now,
-    })
-    .where('id', '=', id)
-    .where((eb: StacksExpressionBuilder) => eb.or([
-      eb('max_uses', 'is', null),
-      eb.cmpr('usage_count', '<', eb.ref('max_uses')),
-    ]))
-    .where('is_active', '=', 1)
-    .where((eb: StacksExpressionBuilder) => eb.or([
-      eb('start_date', 'is', null),
-      eb.cmpr('start_date', '<=', now),
-    ]))
-    .where((eb: StacksExpressionBuilder) => eb.or([
-      eb('end_date', 'is', null),
-      eb.cmpr('end_date', '>=', now),
-    ]))
-    .executeTakeFirst()
+  const statement = await (db as any).unsafe(
+    `UPDATE coupons
+    SET usage_count = COALESCE(usage_count, 0) + 1, updated_at = ?
+    WHERE id = ?
+      AND (max_uses IS NULL OR usage_count < max_uses)
+      AND is_active = 1
+      AND (start_date IS NULL OR start_date <= ?)
+      AND (end_date IS NULL OR end_date >= ?)`,
+    [now, id, now, now],
+  )
+  const result = typeof statement?.execute === 'function' ? await statement.execute() : statement
 
-  // bun-query-builder's executeTakeFirst returns metadata describing
-  // affected rows. If the UPDATE matched zero rows, the redemption
-  // failed (precondition mismatch); diagnose which one to give the
-  // caller a useful reason.
-  const affected = Number((result as any)?.numUpdatedRows ?? (result as any)?.affectedRows ?? 0)
+  // If the UPDATE matched zero rows, the redemption failed
+  // (precondition mismatch); diagnose which one to give the caller a
+  // useful reason.
+  const affected = Number(result?.changes ?? result?.numUpdatedRows ?? result?.affectedRows ?? 0)
   if (affected > 0) {
     const refreshed = await fetchById(id)
-    if (refreshed) {
-      // Convert SQLite integer boolean to actual boolean.
-      const c = refreshed as Record<string, unknown>
-      c.is_active = Boolean(c.is_active)
+    if (refreshed)
       return { ok: true, coupon: refreshed }
-    }
     return { ok: false, reason: 'not-found' }
   }
 
   // UPDATE matched zero rows — figure out which precondition failed.
+  // `fetchById` rows are camelCase (`isActive` / `startDate` / `endDate`)
+  // with `isActive` already coerced to boolean by `processCouponData`.
   const existing = await fetchById(id)
   if (!existing) return { ok: false, reason: 'not-found' }
-  if (!existing.is_active) return { ok: false, reason: 'inactive' }
-  const startOk = !existing.start_date || existing.start_date <= now
-  const endOk = !existing.end_date || existing.end_date >= now
+  if (!existing.isActive) return { ok: false, reason: 'inactive' }
+  const startOk = !existing.startDate || existing.startDate <= now
+  const endOk = !existing.endDate || existing.endDate >= now
   if (!startOk || !endOk) return { ok: false, reason: 'expired' }
   // Fell through every other check → limit must have been reached.
   return { ok: false, reason: 'limit-reached' }
