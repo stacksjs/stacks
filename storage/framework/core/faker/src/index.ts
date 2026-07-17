@@ -6,8 +6,17 @@ import type { Faker as BaseFaker } from '@stacksjs/ts-faker'
  * @stacksjs/ts-faker uses different module names, so we create aliases
  */
 
+interface DatatypeCompatibility {
+  boolean: () => boolean
+  number: (options?: { min?: number; max?: number }) => number
+  float: (options?: { min?: number; max?: number; precision?: number }) => number
+  uuid: () => string
+  string: (length?: number) => string
+  array: <T>(generator: () => T, length?: number) => T[]
+}
+
 // datatype module for boolean, number generation (compatibility with @faker-js/faker)
-const datatype = {
+const datatype: DatatypeCompatibility = {
   boolean(): boolean {
     return baseFaker.random.boolean()
   },
@@ -74,6 +83,14 @@ const location = {
 }
 
 // company module enhancements
+interface CompanyCompatibility {
+  name: () => string
+  catchPhrase: () => string
+  buzzPhrase: () => string
+}
+
+type EnhancedCompany = Omit<typeof baseFaker.company, keyof CompanyCompatibility> & CompanyCompatibility
+
 const company = {
   ...baseFaker.company,
   name(): string {
@@ -88,9 +105,22 @@ const company = {
     const co = baseFaker.company as { buzzPhrase?: () => string }
     return co.buzzPhrase?.() ?? baseFaker.lorem.sentence(3)
   },
-}
+} as EnhancedCompany
 
 // vehicle module enhancements
+interface VehicleCompatibility {
+  vrm: () => string
+  vehicle: () => string
+  type: () => string
+  manufacturer: () => string
+  model: () => string
+  fuel: () => string
+  vin: () => string
+  color: () => string
+}
+
+type EnhancedVehicle = Omit<typeof baseFaker.vehicle, keyof VehicleCompatibility> & VehicleCompatibility
+
 const vehicle = {
   ...baseFaker.vehicle,
   vrm(): string {
@@ -134,10 +164,23 @@ const vehicle = {
     const colors = ['Black', 'White', 'Silver', 'Gray', 'Red', 'Blue', 'Green', 'Brown', 'Orange', 'Yellow']
     return colors[Math.floor(Math.random() * colors.length)] ?? 'Black'
   },
+} as EnhancedVehicle
+
+interface HelpersCompatibility {
+  arrayElement: <T>(array: T[]) => T
+  arrayElements: <T>(array: T[], count?: number) => T[]
+  shuffle: <T>(array: T[]) => T[]
+  maybe: <T>(callback: () => T, options?: { probability?: number }) => T | undefined
+  objectKey: <T extends object>(obj: T) => keyof T
+  objectValue: <T extends object>(obj: T) => T[keyof T]
 }
 
+type EnhancedHelpers = Omit<typeof baseFaker.helpers, keyof HelpersCompatibility> & HelpersCompatibility
+
 // helpers module enhancements for @faker-js/faker compatibility
-const helpers = {
+// Keep this annotation explicit. bun-plugin-dtsx cannot reliably infer a
+// declaration for a spread object that also contains documented generic methods.
+const helpers: EnhancedHelpers = {
   ...baseFaker.helpers,
   arrayElement<T>(array: T[]): T {
     if (array.length === 0) throw new Error('arrayElement: cannot pick from an empty array')
@@ -181,11 +224,25 @@ const helpers = {
     if (values.length === 0) throw new Error('objectValue: object has no values')
     return values[Math.floor(Math.random() * values.length)] as T[keyof T]
   },
-}
+} as EnhancedHelpers
 
 /**
  * Enhanced lorem module with better API
  */
+interface LoremCompatibility {
+  word: () => string
+  words: (count?: number) => string
+  sentence: (maxWords?: number) => string
+  sentences: (count?: number, separator?: string) => string
+  paragraph: (sentenceCount?: number) => string
+  paragraphs: (count?: number, separator?: string) => string
+  text: (length?: number) => string
+  slug: (wordCount?: number) => string
+  lines: (count?: number) => string
+}
+
+type EnhancedLorem = Omit<typeof baseFaker.lorem, keyof LoremCompatibility> & LoremCompatibility
+
 const enhancedLorem = {
   ...baseFaker.lorem,
 
@@ -267,11 +324,22 @@ const enhancedLorem = {
   lines(count?: number): string {
     return baseFaker.lorem.lines(count ?? 3)
   },
-}
+} as EnhancedLorem
 
 /**
  * Enhanced faker instance with improved lorem API and @faker-js/faker compatibility
  */
+interface FakerCompatibility {
+  lorem: typeof enhancedLorem
+  datatype: typeof datatype
+  location: typeof location
+  company: typeof company
+  vehicle: typeof vehicle
+  helpers: typeof helpers
+}
+
+type EnhancedFaker = Omit<typeof baseFaker, keyof FakerCompatibility> & FakerCompatibility
+
 export const faker = {
   ...baseFaker,
   lorem: enhancedLorem,
@@ -280,6 +348,6 @@ export const faker = {
   company,
   vehicle,
   helpers,
-}
+} as EnhancedFaker
 
 export type Faker = BaseFaker
