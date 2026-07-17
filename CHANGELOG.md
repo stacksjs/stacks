@@ -1,5 +1,16 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.104...v0.70.105)
+
+## 🐛 Bug Fixes
+
+- **actions**: honor pinned upgrade sources ([4db0c2f](https://github.com/stacksjs/stacks/commit/4db0c2f)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **actions**: support container API hosts ([44e1563](https://github.com/stacksjs/stacks/commit/44e1563)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.103...v0.70.104)
 
 ## 🐛 Bug Fixes
