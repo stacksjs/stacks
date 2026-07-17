@@ -18,6 +18,11 @@ describe('query-builder module', () => {
     expect(typeof mod.createQueryBuilder).toBe('function')
   })
 
+  test('saveMigrationSnapshot is exported for framework-owned writers', async () => {
+    const mod = await import('../src/index')
+    expect(typeof mod.saveMigrationSnapshot).toBe('function')
+  })
+
   test('QueryBuilder and createQueryBuilder reference the same function', async () => {
     const mod = await import('../src/index')
     expect(mod.QueryBuilder).toBe(mod.createQueryBuilder)

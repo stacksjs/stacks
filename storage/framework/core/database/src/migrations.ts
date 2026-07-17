@@ -30,6 +30,7 @@ import {
   generateMigration as qbGenerateMigration,
   resetConnection,
   resetDatabase as qbResetDatabase,
+  saveMigrationSnapshot,
   setConfig,
 } from '@stacksjs/query-builder'
 import { db } from './utils'
@@ -1058,6 +1059,12 @@ export async function generateMigrations(options: GenerateMigrationsOptions = {}
     else {
       log.debug('No changes detected')
     }
+
+    // BQB is intentionally called in dry-run mode because Stacks owns file
+    // naming/persistence. Advance its model snapshot only after that writer
+    // succeeds, otherwise every run diffs against stale model state and model
+    // removals can never be observed.
+    saveMigrationSnapshot(result.plan, { dialect: getQbDialect() })
 
     return ok('Migrations generated')
   }
