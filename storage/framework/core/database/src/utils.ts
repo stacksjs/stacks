@@ -13,6 +13,7 @@ import { createQueryBuilder, setConfig } from '@stacksjs/query-builder'
 // Read from environment variables first
 import { env as envVars } from '@stacksjs/env'
 import { getConnectionDefaults } from './defaults'
+import { aggregateFunctions } from './types'
 
 interface DbConnectionConfig {
   database?: string
@@ -521,6 +522,11 @@ interface Db extends Pick<Required<RawQueryBuilder>, GenericPassthroughKeys> {
  */
 export const db = new Proxy({} as Db, {
   get(_target, prop) {
+    // `fn` is our own aggregate surface (`aggregateFunctions`) -
+    // bun-query-builder has no top-level `fn`, so serve it directly
+    // instead of forwarding `undefined` from the wrapped instance.
+    if (prop === 'fn')
+      return aggregateFunctions
     const instance = getDb()
     const value = (instance as any)[prop]
     if (typeof value === 'function') {

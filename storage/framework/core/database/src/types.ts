@@ -60,6 +60,51 @@ export interface Sql {
   readonly sql: string
   /** Parameters for the SQL query */
   readonly parameters: unknown[]
+  /**
+   * Alias the fragment for use in a SELECT projection. Returns a new
+   * fragment rendering as `<sql> AS <alias>`.
+   *
+   * The alias is interpolated as text - fragments flow through the
+   * query builder's select pipeline as verbatim `.sql` text, never as
+   * parameters - so it must be a plain SQL identifier. Anything else
+   * throws instead of risking SQL injection.
+   */
+  as: (alias: string) => Sql
+  /**
+   * Render the fragment as its SQL text. Lets join-based builder APIs
+   * (`groupBy`, `orderBy`) consume fragments via `String(fragment)`.
+   */
+  toString: () => string
+}
+
+/**
+ * Identifier shapes we are willing to interpolate into SQL text.
+ * Aliases and aggregate columns go in as TEXT (the fragment pipeline
+ * renders `.sql` verbatim), so anything outside a plain identifier is
+ * rejected rather than escaped. Mirrors the defense-in-depth posture of
+ * `@stacksjs/query-builder`'s `assertSafeIdentifier` (#1858).
+ */
+const SAFE_ALIAS = /^[A-Z_][A-Z0-9_]*$/i
+const SAFE_COLUMN = /^[A-Z_][A-Z0-9_]*(\.[A-Z_][A-Z0-9_]*)?$/i
+
+function assertSqlTextIdentifier(value: string, kind: 'alias' | 'column'): void {
+  const safe = kind === 'column' ? SAFE_COLUMN : SAFE_ALIAS
+  if (!safe.test(value))
+    throw new TypeError(`[database] refusing to interpolate unsafe ${kind} ${JSON.stringify(value)} into SQL text - expected a plain identifier (letters, digits, underscores)`)
+}
+
+function createSqlFragment(text: string, parameters: unknown[]): Sql {
+  return {
+    sql: text,
+    parameters,
+    as(alias: string): Sql {
+      assertSqlTextIdentifier(alias, 'alias')
+      return createSqlFragment(`${text} AS ${alias}`, parameters)
+    },
+    toString(): string {
+      return text
+    },
+  }
 }
 
 /**
@@ -88,10 +133,7 @@ export function sql(strings: TemplateStringsArray, ...values: unknown[]): Sql {
     }
   }
 
-  return {
-    sql: sqlParts.join(''),
-    parameters,
-  }
+  return createSqlFragment(sqlParts.join(''), parameters)
 }
 
 /**
@@ -117,6 +159,26 @@ sql.raw = function raw(value: string): { raw: string } {
  */
 sql.ref = function ref(column: string): { raw: string } {
   return { raw: column }
+}
+
+/**
+ * Inline a JS value into a `sql` fragment as a SQL literal (numbers and
+ * booleans bare, everything else single-quoted with standard `''`
+ * escaping). Returns the raw marker the template splices in as text.
+ *
+ * Use ONLY where the query pipeline cannot bind parameters - raw WHERE
+ * fragments on the select builder render their `.sql` text verbatim and
+ * drop `parameters`, so bound placeholders would arrive unbound.
+ * Everywhere a bound parameter is supported, prefer it.
+ *
+ * @example
+ * ```ts
+ * db.selectFrom('gift_cards')
+ *   .whereRaw(sql`(expiry_date >= ${sql.literal(now)} OR expiry_date IS NULL)`)
+ * ```
+ */
+sql.literal = function literal(value: unknown): { raw: string } {
+  return { raw: inlineSqlLiteral(value) }
 }
 
 /**
@@ -154,8 +216,14 @@ export interface ColumnRef {
  * names the resulting column in the projection; `.filterWhere(...)`
  * scopes the aggregate to a sub-population (`COUNT(*) FILTER (WHERE
  * status = 'success')` style).
+ *
+ * The `sql` text is part of the contract: bun-query-builder's select
+ * pipeline renders fragments from their `.sql` property, so every
+ * chain step returns a fresh expression with the fully rendered text.
  */
 export interface AggregateExpression {
+  /** The rendered SQL text, e.g. `COUNT(id) FILTER (WHERE status = 1) AS count`. */
+  readonly sql: string
   as: (alias: string) => AggregateExpression
   filterWhere: (column: string, op: ExpressionOperator | string, value: unknown) => AggregateExpression
 }
@@ -178,6 +246,85 @@ export interface ExpressionFunctions {
   avg: (column: string) => AggregateExpression
   min: (column: string) => AggregateExpression
   max: (column: string) => AggregateExpression
+}
+
+/**
+ * Operators allowed inside `filterWhere`. The rendered text is
+ * interpolated verbatim into the fragment, so the operator is validated
+ * against this allowlist rather than escaped (#1858). Array semantics
+ * (`in` / `not in`) are intentionally excluded: values are inlined as
+ * single literals, which cannot express an IN-list.
+ */
+const SAFE_FILTER_OPERATORS = new Set([
+  '=', '!=', '<>', '<', '<=', '>', '>=',
+  'like', 'not like', 'ilike', 'not ilike',
+  'is', 'is not',
+])
+
+/**
+ * Inline a JS value as a SQL literal. Fragments passed to `select()`
+ * lose their `parameters` (the builder renders only their `.sql`
+ * text), so filtered aggregates inline values instead - safely, with
+ * strict typing and standard `''` quote escaping.
+ */
+function inlineSqlLiteral(value: unknown): string {
+  if (value === null || value === undefined)
+    return 'NULL'
+  if (typeof value === 'number') {
+    if (!Number.isFinite(value))
+      throw new TypeError(`[database] refusing to inline non-finite number into SQL: ${value}`)
+    return String(value)
+  }
+  if (typeof value === 'boolean')
+    return value ? '1' : '0'
+  if (typeof value === 'bigint')
+    return value.toString()
+  return `'${String(value).replace(/'/g, "''")}'`
+}
+
+function createAggregateExpression(text: string): AggregateExpression {
+  return {
+    sql: text,
+    as(alias: string): AggregateExpression {
+      assertSqlTextIdentifier(alias, 'alias')
+      return createAggregateExpression(`${text} AS ${alias}`)
+    },
+    filterWhere(column: string, op: ExpressionOperator | string, value: unknown): AggregateExpression {
+      assertSqlTextIdentifier(column, 'column')
+      if (!SAFE_FILTER_OPERATORS.has(op.toLowerCase()))
+        throw new TypeError(`[database] refusing unsafe aggregate filter operator ${JSON.stringify(op)} - allowed: ${[...SAFE_FILTER_OPERATORS].join(', ')}`)
+      return createAggregateExpression(`${text} FILTER (WHERE ${column} ${op} ${inlineSqlLiteral(value)})`)
+    },
+  }
+}
+
+function aggregate(name: string, column?: string): AggregateExpression {
+  if (column !== undefined)
+    assertSqlTextIdentifier(column, 'column')
+  return createAggregateExpression(column === undefined ? `${name}(*)` : `${name}(${column})`)
+}
+
+/**
+ * Runtime implementation behind `db.fn`. bun-query-builder has no
+ * top-level `fn` accessor (its select pipeline consumes plain SQL
+ * fragments), so the `db` proxy serves this object directly. Every
+ * aggregate renders to a fragment whose `.sql` text the select /
+ * groupBy machinery picks up verbatim, e.g.:
+ *
+ * ```ts
+ * db.selectFrom('query_logs')
+ *   .select(db.fn.count('id').as('count'))
+ *   .execute()
+ * // SELECT COUNT(id) AS count FROM query_logs
+ * ```
+ */
+export const aggregateFunctions: ExpressionFunctions = {
+  countAll: () => aggregate('COUNT'),
+  count: column => aggregate('COUNT', column),
+  sum: column => aggregate('SUM', column),
+  avg: column => aggregate('AVG', column),
+  min: column => aggregate('MIN', column),
+  max: column => aggregate('MAX', column),
 }
 
 /**
