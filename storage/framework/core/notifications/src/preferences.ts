@@ -48,6 +48,18 @@ export type PreferenceChannel = NotificationChannel | 'push'
 
 const TABLE = 'notification_preferences'
 
+/** Apply the nullable preference category without generating `IS $n` SQL.
+ * Postgres requires `IS NULL`; query builders correctly express that through
+ * `whereNull()`, while a bound value remains a normal equality predicate. */
+export function wherePreferenceCategory<T extends {
+  where: (column: string, operator: string, value: string) => T
+  whereNull: (column: string) => T
+}>(query: T, category: string | null): T {
+  return category === null
+    ? query.whereNull('category')
+    : query.where('category', '=', category)
+}
+
 /**
  * Load all notification preferences for a user as a Map keyed by channel.
  * Returns `Map<channel, enabled>` — channels with no row recorded are
@@ -115,12 +127,12 @@ export async function setNotificationPreference(
   // than a dialect-specific ON CONFLICT clause and works the same on
   // SQLite/MySQL/Postgres. Table is now declared via
   // `./database-schema.d.ts` (Notif-3, follow-up to #1937).
-  const existing = await db
+  const baseQuery = db
     .selectFrom(TABLE)
     .select(['id'])
     .where('user_id', '=', userId)
     .where('channel', '=', channel)
-    .where('category', cat === null ? 'is' : '=', cat)
+  const existing = await wherePreferenceCategory(baseQuery as any, cat)
     .executeTakeFirst() as { id?: number } | undefined
 
   if (existing?.id) {

@@ -343,6 +343,7 @@ export {
   filterChannelsByPreferences,
   getNotificationPreferences,
   setNotificationPreference,
+  wherePreferenceCategory,
 } from './preferences'
 export type { NotificationPreferenceRow, PreferenceChannel } from './preferences'
 

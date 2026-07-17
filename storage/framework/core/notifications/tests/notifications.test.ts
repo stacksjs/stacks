@@ -15,6 +15,7 @@ const {
   useNotification,
   notify,
   notification,
+  wherePreferenceCategory,
 } = await import('../src/index')
 
 // ---------------------------------------------------------------------------
@@ -155,5 +156,27 @@ describe('Notifications - notify()', () => {
 describe('Notifications - notification()', () => {
   test('notification function is exported', () => {
     expect(typeof notification).toBe('function')
+  })
+})
+
+describe('Notifications - nullable preference categories', () => {
+  test('uses whereNull for an uncategorized preference (Postgres-safe)', () => {
+    const calls: unknown[][] = []
+    const query: any = {
+      where: (...args: unknown[]) => { calls.push(['where', ...args]); return query },
+      whereNull: (...args: unknown[]) => { calls.push(['whereNull', ...args]); return query },
+    }
+    expect(wherePreferenceCategory(query, null)).toBe(query)
+    expect(calls).toEqual([['whereNull', 'category']])
+  })
+
+  test('uses equality for a named category', () => {
+    const calls: unknown[][] = []
+    const query: any = {
+      where: (...args: unknown[]) => { calls.push(['where', ...args]); return query },
+      whereNull: (...args: unknown[]) => { calls.push(['whereNull', ...args]); return query },
+    }
+    wherePreferenceCategory(query, 'marketing')
+    expect(calls).toEqual([['where', 'category', '=', 'marketing']])
   })
 })
