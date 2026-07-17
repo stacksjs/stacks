@@ -1,5 +1,17 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.95...v0.70.96)
+
+## 🐛 Bug Fixes
+
+- **actions**: preserve source conditions in subprocesses ([2adf56d](https://github.com/stacksjs/stacks/commit/2adf56d)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **database**: narrow index regex captures in migration grouping ([5c2eaad](https://github.com/stacksjs/stacks/commit/5c2eaad)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **types**: remove duplicate nullable on Attribute ([101b59d](https://github.com/stacksjs/stacks/commit/101b59d)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.94...v0.70.95)
 
 ## ✨ Features
