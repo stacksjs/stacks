@@ -6,7 +6,7 @@
     "incremental": true,
     "noEmit": true,
     "rootDir": "../..",
-    "tsBuildInfoFile": "../../node_modules/.cache/typescript/framework.tsbuildinfo"
+    "tsBuildInfoFile": "./.cache/typescript/framework.tsbuildinfo"
   },
   "include": [
     "./**/*.ts",
