@@ -632,6 +632,73 @@ async function writeMigrateMarker(appliedCount: number): Promise<void> {
 /**
  * Run database migrations
  */
+/**
+ * Rewrite a migration's SQL to idempotent form (Postgres). `buddy generate` emits
+ * plain `ADD COLUMN`/`ADD CONSTRAINT` alters, and the framework marks some as
+ * "transient" (applied-but-not-recorded, then deleted) — so replaying them (a
+ * re-run of `buddy migrate`, or a restored committed file) fails with
+ * "column/constraint already exists". Making them idempotent removes that whole
+ * class of failure:
+ *   ADD COLUMN "x"        → ADD COLUMN IF NOT EXISTS "x"
+ *   ADD CONSTRAINT "c" …  → DROP CONSTRAINT IF EXISTS "c"; ADD CONSTRAINT "c" …
+ * The transform is itself idempotent (re-applying is a no-op) and only touches
+ * ALTER statements; CREATE TABLE/INDEX already use IF NOT EXISTS.
+ */
+function idempotentSql(sql: string): string {
+  const stmts = sql.split(';').map(s => s.trim()).filter(Boolean)
+  if (stmts.length === 0)
+    return sql
+  const out: string[] = []
+  for (const raw of stmts) {
+    const stmt = raw.replace(/\bADD\s+COLUMN\s+(?!IF\s+NOT\s+EXISTS\b)/gi, 'ADD COLUMN IF NOT EXISTS ')
+    const m = /^ALTER\s+TABLE\s+("?\w+"?)\s+ADD\s+CONSTRAINT\s+("?\w+"?)/i.exec(stmt)
+    if (m) {
+      const drop = `ALTER TABLE ${m[1]} DROP CONSTRAINT IF EXISTS ${m[2]}`
+      if ((out[out.length - 1] ?? '').toUpperCase() !== drop.toUpperCase())
+        out.push(drop)
+    }
+    out.push(stmt)
+  }
+  return `${out.join(';\n')};\n`
+}
+
+/**
+ * Rewrite every ALTER migration on disk to idempotent form (Postgres only) before
+ * they run. Mirrors the `preprocessSqliteMigrations` file-rewrite pattern; runs
+ * under the migration lock so concurrent runners can't race the disk. Skips files
+ * with no ADD COLUMN/CONSTRAINT and files that are already idempotent.
+ */
+function makeMigrationsIdempotent(): void {
+  const migrationsDir = join(process.cwd(), 'database', 'migrations')
+  let files: string[]
+  try {
+    files = readdirSync(migrationsDir).filter(f => f.endsWith('.sql'))
+  }
+  catch {
+    return
+  }
+  for (const f of files) {
+    const p = join(migrationsDir, f)
+    let sql: string
+    try {
+      sql = readFileSync(p, 'utf8')
+    }
+    catch {
+      continue
+    }
+    if (!/\bADD\s+(?:COLUMN|CONSTRAINT)\b/i.test(sql))
+      continue
+    const next = idempotentSql(sql)
+    if (next !== sql) {
+      try {
+        writeFileSync(p, next)
+        log.debug(`[migration] made idempotent: ${f}`)
+      }
+      catch { /* read-only fs — leave as-is */ }
+    }
+  }
+}
+
 export async function runDatabaseMigration(): Promise<Result<string, Error>> {
   const startedAt = Date.now()
   const hidden = await hideDisabledFeatureMigrations()
@@ -669,6 +736,11 @@ export async function runDatabaseMigration(): Promise<Result<string, Error>> {
     // other's disk state (stacksjs/stacks#1876 D-2).
     if (dialect === 'sqlite') {
       preprocessSqliteMigrations()
+    }
+    else if (dialect === 'postgres') {
+      // Make ALTER migrations idempotent so re-runs / replays of "transient"
+      // ADD COLUMN/CONSTRAINT alters don't fail on "already exists".
+      makeMigrationsIdempotent()
     }
 
     const modelsDir = path.userModelsPath()
