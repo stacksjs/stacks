@@ -1,5 +1,16 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.105...v0.70.106)
+
+## 🐛 Bug Fixes
+
+- **actions**: resolve versioned framework templates ([e635fe5](https://github.com/stacksjs/stacks/commit/e635fe5)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **defaults**: preload from vendored framework sources ([38d5f5f](https://github.com/stacksjs/stacks/commit/38d5f5f)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.104...v0.70.105)
 
 ## 🐛 Bug Fixes
