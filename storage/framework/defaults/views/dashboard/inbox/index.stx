@@ -46,7 +46,9 @@
           </div>
 
           <div class="overflow-y-auto flex-1">
-            <ul class="divide-gray-200 divide-y dark:divide-neutral-600">
+            <div :if="isLoading()" class="p-8 text-center text-gray-500 dark:text-neutral-400">Loading…</div>
+            <div :if="loadError() && !isLoading()" class="p-8 text-center text-red-500">{{ loadError() }}</div>
+            <ul :if="!isLoading() && !loadError()" class="divide-gray-200 divide-y dark:divide-neutral-600">
               <template :for="email in filteredEmails()">
                 <li @click="openEmail(email)" class="{{ emailRowClass(email) }}">
                   <div class="px-4 py-3">
@@ -203,7 +205,7 @@ const folders = [
 ]
 
 interface Email {
-  id: number
+  id: string
   from: string
   email: string
   subject: string
@@ -217,25 +219,13 @@ interface Email {
   labels?: string[]
 }
 
-const initialEmails: Email[] = [
-  { id: 1, from: 'William Smith', email: 'williamsmith@example.com', subject: 'Meeting Tomorrow', preview: "Hi, let's have a meeting tomorrow to discuss the project. I've been reviewing the project details and have some ideas I'd like to share...", body: "<p>Hi, let's have a meeting tomorrow to discuss the project. I've been reviewing the project details and have some ideas I'd like to share. It's crucial that we align on our next steps to ensure the project's success.</p><p>Please come prepared with any questions or insights you may have. Looking forward to our meeting!</p><p>Best regards,<br>William</p>", date: '2023-10-22T09:00:00', read: false, starred: false, folder: 'inbox', attachment: false, labels: ['meeting', 'work', 'important'] },
-  { id: 2, from: 'Alice Smith', email: 'alice@example.com', subject: 'Re: Project Update', preview: 'Thank you for the project update. It looks great! I\'ve gone through the report, and the progress is impressive. The team has done a...', body: "<p>Thank you for the project update. It looks great!</p><p>I've gone through the report, and the progress is impressive. The team has done a fantastic job meeting all the milestones so far.</p><p>Let's discuss the next phase during our weekly meeting.</p><p>Regards,<br>Alice</p>", date: '2023-10-20T14:30:00', read: true, starred: false, folder: 'inbox', attachment: false, labels: ['work', 'important'] },
-  { id: 3, from: 'Bob Johnson', email: 'bob@example.com', subject: 'Weekend Plans', preview: 'Any plans for the weekend? I was thinking of going hiking in the nearby mountains.', body: "<p>Hey,</p><p>Any plans for the weekend? I was thinking of going hiking in the nearby mountains.</p><p>Cheers,<br>Bob</p>", date: '2022-05-15T09:45:00', read: true, starred: false, folder: 'inbox', attachment: false, labels: ['personal'] },
-  { id: 4, from: 'Emily Davis', email: 'emily@example.com', subject: 'Re: Question about Budget', preview: 'I have a question about the budget for the upcoming project.', body: "<p>Hello,</p><p>I have a question about the budget for the upcoming project.</p><p>Thanks,<br>Emily</p>", date: '2022-05-14T11:20:00', read: false, starred: false, folder: 'inbox', attachment: false, labels: ['work', 'budget'] },
-  { id: 5, from: 'Michael Wilson', email: 'michael@example.com', subject: 'Important Announcement', preview: 'I have an important announcement to make during our team meeting.', body: '<p>Team,</p><p>I have an important announcement to make during our team meeting.</p><p>Best,<br>Michael</p>', date: '2022-05-13T15:00:00', read: true, starred: true, folder: 'inbox', attachment: false, labels: ['meeting', 'work', 'important'] },
-  { id: 6, from: 'Calendar', email: 'calendar@stacksjs.com', subject: 'Reminder: Sprint Planning', preview: 'This is a reminder for your Sprint Planning meeting tomorrow at 10:00 AM...', body: '<p>Reminder:</p><p><strong>Sprint Planning Meeting</strong></p><p>Date: Tomorrow</p><p>Time: 10:00 AM - 11:30 AM</p>', date: '2024-02-23T09:00:00', read: true, starred: false, folder: 'inbox', attachment: false },
-  { id: 7, from: 'Kevin Adams', email: 'kevin@stacksjs.com', subject: 'Draft: Marketing Email', preview: "Here's the draft for our next marketing email. Let me know what you think...", body: "<p>Hi team,</p><p>Here's the draft for our next marketing email.</p><p>Thanks!<br>Kevin</p>", date: '2024-02-22T15:20:00', read: false, starred: false, folder: 'drafts', attachment: false },
-  { id: 8, from: 'Support', email: 'support@stacksjs.com', subject: 'New Support Ticket #1234', preview: 'A new support ticket has been assigned to your team.', body: '<p>Ticket #1234</p><p>Priority: Medium</p>', date: '2024-02-21T08:45:00', read: true, starred: true, folder: 'inbox', attachment: false },
-  { id: 9, from: 'Newsletter', email: 'newsletter@tech-updates.com', subject: 'This Week in Web Development', preview: 'Top stories: New Vue.js 4 Features, The Future of CSS, TypeScript Best Practices...', body: '<h2>This Week in Web Development</h2>', date: '2024-02-20T07:30:00', read: false, starred: false, folder: 'spam', attachment: false },
-  { id: 10, from: 'Alex Morgan', email: 'alex@stacksjs.com', subject: 'Sent: Project Status Update', preview: 'Just sent the project status update to the client.', body: '<p>Team,</p><p>I\'ve just sent the project status update to the client.</p><p>Regards,<br>Alex</p>', date: '2024-02-19T16:00:00', read: true, starred: false, folder: 'sent', attachment: false },
-]
-
-const emails = state<Email[]>(initialEmails)
+const emails = state<Email[]>([])
 const activeFolder = state('inbox')
-const selectedEmailId = state<number | null>(null)
+const selectedEmailId = state<string | null>(null)
 const searchQuery = state('')
 const isComposing = state(false)
 const isLoading = state(false)
+const loadError = state<string | null>(null)
 const replyText = state('')
 const newEmailTo = state('')
 const newEmailSubject = state('')
@@ -275,6 +265,83 @@ const unreadCounts = derived(() => {
   return counts
 })
 
+function parseSender(from: string): { name: string; email: string } {
+  const match = from.match(/^"?([^"<]+)"?\s*<([^>]+)>$/)
+  if (match) {
+    return { name: match[1].trim(), email: match[2].trim() }
+  }
+  return { name: from, email: from }
+}
+
+function mapInboxEmail(item: any): Email {
+  const sender = parseSender(item.from || '')
+  return {
+    id: item.messageId,
+    from: sender.name || sender.email,
+    email: sender.email,
+    subject: item.subject || '(no subject)',
+    preview: item.preview || '',
+    body: '',
+    date: item.date,
+    read: item.read === true,
+    starred: false,
+    folder: 'inbox',
+    attachment: item.hasAttachments === true,
+    labels: [],
+  }
+}
+
+async function loadInbox() {
+  isLoading.set(true)
+  loadError.set(null)
+  try {
+    const res = await fetch('/api/dashboard/email/inbox', {
+      headers: { accept: 'application/json' },
+    })
+    if (!res.ok) throw new Error(`HTTP ${res.status}`)
+    const data = await res.json()
+    const mapped = (data.emails || []).map(mapInboxEmail)
+    emails.set(mapped)
+  }
+  catch (e) {
+    loadError.set(e instanceof Error ? e.message : String(e))
+    emails.set([])
+  }
+  finally {
+    isLoading.set(false)
+  }
+}
+
+async function loadEmailBody(id: string) {
+  try {
+    const res = await fetch(`/api/dashboard/email/inbox/${encodeURIComponent(id)}`, {
+      headers: { accept: 'application/json' },
+    })
+    if (!res.ok) return
+    const data = await res.json()
+    const body = data.html || data.text || ''
+    emails.set(emails().map(e => e.id === id ? { ...e, body } : e))
+  }
+  catch (e) {
+    console.error('Failed to load email body:', e)
+  }
+}
+
+async function markAsRead(id: string) {
+  try {
+    const res = await fetch('/api/dashboard/email/read', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ messageId: id }),
+    })
+    if (!res.ok) throw new Error(`HTTP ${res.status}`)
+    emails.set(emails().map(e => e.id === id ? { ...e, read: true } : e))
+  }
+  catch (e) {
+    console.error('Failed to mark email as read:', e)
+  }
+}
+
 function formatDate(dateString: string) {
   const date = new Date(dateString)
   const now = new Date()
@@ -309,19 +376,27 @@ function labelClass(label: string) {
 
 function openEmail(email: Email) {
   selectedEmailId.set(email.id)
+  void loadEmailBody(email.id)
   if (!email.read)
-    toggleRead(email.id)
+    void markAsRead(email.id)
 }
 
 function closeEmail() {
   selectedEmailId.set(null)
 }
 
-function toggleRead(id: number) {
-  emails.set(emails().map(e => e.id === id ? { ...e, read: !e.read } : e))
+function toggleRead(id: string) {
+  const email = emails().find(e => e.id === id)
+  if (!email) return
+  if (email.read) {
+    emails.set(emails().map(e => e.id === id ? { ...e, read: false } : e))
+  }
+  else {
+    void markAsRead(id)
+  }
 }
 
-function toggleStar(id: number) {
+function toggleStar(id: string) {
   emails.set(emails().map(e => e.id === id ? { ...e, starred: !e.starred } : e))
 }
 
@@ -344,7 +419,7 @@ function sendEmail() {
   emails.set([
     ...emails(),
     {
-      id: emails().length + 1,
+      id: `sent-${Date.now()}`,
       from: 'Me',
       email: 'me@stacksjs.com',
       subject: newEmailSubject(),
@@ -365,14 +440,12 @@ function sendReply() {
 }
 
 onMount(async () => {
-  isLoading.set(true)
   const route = useRoute()
   if (route.query.folder && typeof route.query.folder === 'string')
     activeFolder.set(route.query.folder)
   if (route.query.compose === 'true')
     isComposing.set(true)
-  await new Promise(resolve => setTimeout(resolve, 500))
-  isLoading.set(false)
+  await loadInbox()
 })
 </script>
 
