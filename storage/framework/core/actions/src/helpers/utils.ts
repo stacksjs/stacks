@@ -14,6 +14,13 @@ type ActionPath = string // TODO: narrow this by automating its generation
 type ActionName = string // TODO: narrow this by automating its generation
 type Action = ActionPath | ActionName | string
 
+export function developmentConditionForProject(projectRoot: string): string {
+  return existsSync(join(projectRoot, 'storage/framework/core'))
+    && existsSync(join(projectRoot, 'node_modules/@stacksjs/env/src/index.ts'))
+    ? '--conditions development'
+    : ''
+}
+
 /**
  * Resolve a core-action name (e.g. `route/list`, `queue/status`, `dev/api`) to
  * an on-disk file path that `bun` can execute.
@@ -175,9 +182,14 @@ export async function runAction(action: Action, options?: ActionOptions): Promis
   // Use --watch for dev actions to enable hot reloading
   const isDevAction = action.startsWith('dev/')
   const watchFlag = isDevAction ? '--watch' : ''
+  // Match the top-level `buddy` launcher: vendored workspace packages ship
+  // source but may not have been built yet, so their `bun` export can point at
+  // a missing/stale dist file. Keep the development condition on child action
+  // processes instead of silently dropping it at this spawn boundary.
+  const developmentCondition = developmentConditionForProject(p.projectPath())
   // Dev actions manage their own config — don't pass CLI flags that trigger dep loading
   const opts = isDevAction ? '' : (buddyOptions(options) || '')
-  const cmd = `bun ${watchFlag} ${path} ${opts}`.trimEnd()
+  const cmd = ['bun', developmentCondition, watchFlag, path, opts].filter(Boolean).join(' ')
 
   // Ensure pantry packages are resolvable via NODE_PATH
   // This allows compiled pantry packages (e.g., bun-plugin-stx/serve.js) to
