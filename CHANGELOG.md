@@ -1,5 +1,19 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.91...v0.70.92)
+
+## 🐛 Bug Fixes
+
+- **faker**: emit valid declarations ([f4c97dd](https://github.com/stacksjs/stacks/commit/f4c97dd)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🔧 Chores
+
+- **deps**: bump @stacksjs/ts-cloud to 0.7.29 for per-host dashboard ports ([73b825e](https://github.com/stacksjs/stacks/commit/73b825e)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.90...v0.70.91)
 
 ## ✨ Features
