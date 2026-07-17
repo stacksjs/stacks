@@ -1,5 +1,5 @@
 import type { CLI } from '@stacksjs/types'
-import { existsSync } from 'node:fs'
+import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import { cp, rm } from 'node:fs/promises'
 import { join } from 'node:path'
 import process from 'node:process'
@@ -206,6 +206,30 @@ export function migrationFeature(filename: string): FeatureName | null {
     if (FEATURE_TABLES[f].includes(table)) return f
   }
   return null
+}
+
+/**
+ * True when an application-owned, top-level model explicitly declares a table.
+ * This lets apps intentionally use generic names such as `payments` without
+ * their migrations being mistaken for disabled framework-feature scaffolding.
+ * Root models listed in FEATURE_FILES remain feature-owned and do not override
+ * the gate.
+ */
+export function appModelClaimsTable(table: string, root: string = projectPath()): boolean {
+  const modelsDir = join(root, 'app/Models')
+  if (!existsSync(modelsDir)) return false
+  const featureModelFiles = new Set(
+    FEATURE_NAMES.flatMap(feature => FEATURE_FILES[feature])
+      .filter(path => path.startsWith('app/Models/') && !path.endsWith('/')),
+  )
+  const escaped = table.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  const declaration = new RegExp(`\\btable\\s*:\\s*['"]${escaped}['"]`)
+  for (const entry of readdirSync(modelsDir, { withFileTypes: true })) {
+    if (!entry.isFile() || !/\.[cm]?[jt]s$/.test(entry.name)) continue
+    if (featureModelFiles.has(`app/Models/${entry.name}`)) continue
+    if (declaration.test(readFileSync(join(modelsDir, entry.name), 'utf8'))) return true
+  }
+  return false
 }
 
 /**

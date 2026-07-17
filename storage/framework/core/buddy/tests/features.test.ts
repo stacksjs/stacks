@@ -4,6 +4,7 @@ import { mkdir, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import {
+  appModelClaimsTable,
   copyFeatureFiles,
   deleteFeatureFiles,
   FEATURE_FILES,
@@ -293,6 +294,20 @@ describe('migrationTable() — filename → table parser', () => {
     expect(migrationTable('0000000098-revoke-legacy-long-lived-tokens.sql')).toBeNull()
     expect(migrationTable('random.sql')).toBeNull()
     expect(migrationTable('not-a-migration.txt')).toBeNull()
+  })
+})
+
+describe('appModelClaimsTable()', () => {
+  it('lets an app-owned root model override a generic feature table name', async () => {
+    await touch('app/Models/Payment.ts')
+    await writeFile(join(root, 'app/Models/Payment.ts'), "export default { table: 'payments' }\n")
+    expect(appModelClaimsTable('payments', root)).toBe(true)
+  })
+
+  it('does not treat manifest-owned root models as app overrides', async () => {
+    await touch('app/Models/Tag.ts')
+    await writeFile(join(root, 'app/Models/Tag.ts'), "export default { table: 'tags' }\n")
+    expect(appModelClaimsTable('tags', root)).toBe(false)
   })
 })
 

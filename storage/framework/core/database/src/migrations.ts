@@ -520,7 +520,7 @@ async function ensureDatabaseExists(): Promise<void> {
 async function hideDisabledFeatureMigrations(): Promise<Array<{ original: string, hidden: string, feature: string }>> {
   const hidden: Array<{ original: string, hidden: string, feature: string }> = []
   try {
-    const { FEATURE_NAMES, migrationFeature } = await import('@stacksjs/buddy')
+    const { appModelClaimsTable, FEATURE_NAMES, migrationFeature, migrationTable } = await import('@stacksjs/buddy')
     const { feature: isFeatureEnabled } = await import('@stacksjs/config')
     const fs = await import('node:fs/promises')
 
@@ -536,6 +536,8 @@ async function hideDisabledFeatureMigrations(): Promise<Array<{ original: string
     for (const file of files) {
       const owner = (migrationFeature as (filename: string) => string | null)(file)
       if (!owner || !disabledFeatures.has(owner)) continue
+      const table = (migrationTable as (filename: string) => string | null)(file)
+      if (table && (appModelClaimsTable as (table: string) => boolean)(table)) continue
       const original = join(migrationsDir, file)
       const hiddenPath = `${original}.disabled`
       await fs.rename(original, hiddenPath)
