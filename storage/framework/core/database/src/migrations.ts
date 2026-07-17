@@ -1146,8 +1146,10 @@ export function groupGeneratedStatements(sqlStatements: string[]): GeneratedGrou
     if (alter) { push(`alter-${alter[1]}-${alter[2] || alter[3] || 'constraint'}`, stmt); continue }
 
     const idx = stmt.match(/^\s*CREATE\s+(?:UNIQUE\s+)?INDEX\s+(?:IF\s+NOT\s+EXISTS\s+)?["`]?(\w+)["`]?\s+ON\s+["`]?(\w+)["`]?/i)
-    if (idx) {
-      push(createdTables.has(idx[2]) ? `create-${idx[2]}-table` : `create-${idx[1]}-index-in-${idx[2]}`, stmt)
+    const idxName = idx?.[1]
+    const idxTable = idx?.[2]
+    if (idxName && idxTable) {
+      push(createdTables.has(idxTable) ? `create-${idxTable}-table` : `create-${idxName}-index-in-${idxTable}`, stmt)
       continue
     }
 
