@@ -72,8 +72,15 @@ if (!skipPreloader) {
     process.env.NODE_ENV = 'production'
   }
 
-  // Load .env files with encryption support using our native Bun plugin
-  const { autoLoadEnv } = await import('@stacksjs/env')
+  // Load .env files with encryption support using the vendored source first.
+  // The preloader runs before Bun has necessarily linked workspace packages
+  // (fresh installs and minimal Linux/Docker checkouts are the important
+  // cases), so resolving @stacksjs/env here creates a bootstrap cycle. The
+  // source plugin is self-contained; retain the package fallback for contexts
+  // where defaults is consumed outside the standard framework layout.
+  const envPackage = '@stacksjs/' + 'env'
+  const { autoLoadEnv } = await import('../../../core/env/src/plugin.ts')
+    .catch(() => import(envPackage))
 
   // Auto-load .env files based on environment
   // Set quiet: true to prevent duplicate logging across multiple processes

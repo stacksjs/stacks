@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from 'bun:test'
-import { mkdtemp, rm } from 'node:fs/promises'
+import { mkdir, mkdtemp, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { resolve } from 'node:path'
 
@@ -31,5 +31,41 @@ describe('default preloader', () => {
     const stderr = await new Response(child.stderr).text()
     expect(await child.exited).toBe(0)
     expect(stderr).toBe('')
+  })
+
+  it('loads without workspace packages being linked', async () => {
+    const tempDir = await mkdtemp(resolve(tmpdir(), 'stacks-preloader-'))
+    tempDirs.push(tempDir)
+
+    const defaultsRoot = resolve(import.meta.dir, '../../../defaults')
+    const envRoot = resolve(import.meta.dir, '../../env/src')
+    const isolatedRunner = resolve(tempDir, 'run.ts')
+    const isolatedPreloader = resolve(tempDir, 'storage/framework/defaults/resources/plugins/preloader.ts')
+    const isolatedEnvRoot = resolve(tempDir, 'storage/framework/core/env/src')
+
+    await mkdir(resolve(isolatedPreloader, '..'), { recursive: true })
+    await mkdir(isolatedEnvRoot, { recursive: true })
+    const source = await Bun.file(resolve(defaultsRoot, 'resources/plugins/preloader.ts')).text()
+    const bootstrapSource = source.split('// stx template engine plugin')[0]
+    await Bun.write(isolatedPreloader, bootstrapSource)
+    await Promise.all(['plugin.ts', 'crypto.ts', 'parser.ts'].map(file =>
+      Bun.write(resolve(isolatedEnvRoot, file), Bun.file(resolve(envRoot, file))),
+    ))
+    await Bun.write(isolatedRunner, `await import('./storage/framework/defaults/resources/plugins/preloader.ts')\n`)
+
+    const child = Bun.spawn([process.execPath, isolatedRunner], {
+      cwd: tempDir,
+      env: { ...process.env },
+      stderr: 'pipe',
+      stdout: 'pipe',
+    })
+
+    const [stderr, stdout] = await Promise.all([
+      new Response(child.stderr).text(),
+      new Response(child.stdout).text(),
+    ])
+    expect(stderr).toBe('')
+    expect(stdout).toBe('')
+    expect(await child.exited).toBe(0)
   })
 })
