@@ -1267,9 +1267,10 @@ export function groupGeneratedStatements(sqlStatements: string[]): GeneratedGrou
     if (create) { push(`create-${create[1]}-table`, stmt); continue }
 
     const alter = stmt.match(/^\s*ALTER\s+TABLE\s+["`]?(\w+)["`]?\s+(?:ADD\s+COLUMN\s+["`]?(\w+)["`]?|DROP\s+COLUMN\s+["`]?(\w+)["`]?|ADD\s+CONSTRAINT)/i)
-    if (alter) {
-      const isCreateTimeConstraint = createdTables.has(alter[1]) && !alter[2] && !alter[3]
-      push(isCreateTimeConstraint ? 'create-foreign-key-constraints' : `alter-${alter[1]}-${alter[2] || alter[3] || 'constraint'}`, stmt)
+    const alterTable = alter?.[1]
+    if (alter && alterTable) {
+      const isCreateTimeConstraint = createdTables.has(alterTable) && !alter[2] && !alter[3]
+      push(isCreateTimeConstraint ? 'create-foreign-key-constraints' : `alter-${alterTable}-${alter[2] || alter[3] || 'constraint'}`, stmt)
       continue
     }
 
