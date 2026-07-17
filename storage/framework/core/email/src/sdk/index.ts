@@ -80,7 +80,8 @@ export class EmailSDK {
   private domain: string
 
   constructor(options?: { bucket?: string; region?: string; domain?: string }) {
-    this.bucket = options?.bucket || `${process.env.APP_NAME?.toLowerCase() || 'stacks'}-emails`
+    const appName = (process.env.APP_NAME || 'stacks').toLowerCase().replace(/[^a-z0-9-]/g, '-')
+    this.bucket = options?.bucket || process.env.AWS_BUCKET || `${appName}-production-email`
     this.region = options?.region || process.env.AWS_REGION || 'us-east-1'
     const fromAddress = emailConfig?.from?.address
     const parsedDomain = fromAddress?.includes('@') ? fromAddress.split('@')[1] : undefined
