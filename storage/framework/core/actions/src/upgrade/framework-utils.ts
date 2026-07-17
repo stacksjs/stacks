@@ -258,6 +258,8 @@ export interface ManagedPath {
   subPath: string
   /** True for single-file targets (e.g. the root `buddy` script). */
   isFile?: boolean
+  /** Restore executable mode after archive extraction/copy. */
+  executable?: boolean
   /** Directory entries to skip when copying — generated/cache files we don't want to overwrite. */
   skip?: string[]
   /** Human label shown in the upgrade summary. */
@@ -280,8 +282,8 @@ export const MANAGED_PATHS: ManagedPath[] = [
     // Don't clobber it during update.
     skip: ['node_modules', 'dist', '.DS_Store', '.discovered-models.json'],
   },
-  { localPath: 'buddy', subPath: 'buddy', label: 'buddy', isFile: true },
-  { localPath: 'bootstrap', subPath: 'bootstrap', label: 'bootstrap', isFile: true },
+  { localPath: 'buddy', subPath: 'buddy', label: 'buddy', isFile: true, executable: true },
+  { localPath: 'bootstrap', subPath: 'bootstrap', label: 'bootstrap', isFile: true, executable: true },
 ]
 
 /**

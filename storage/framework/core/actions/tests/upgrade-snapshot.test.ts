@@ -2,7 +2,7 @@ import { describe, expect, it } from 'bun:test'
 import { mkdirSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { diffSnapshots, snapshotTree } from '../src/upgrade/framework-utils'
+import { diffSnapshots, MANAGED_PATHS, snapshotTree } from '../src/upgrade/framework-utils'
 
 // Pin the hash-based diff. Pre-fix, the snapshot was keyed on size+mtime,
 // so `cpSync` (which always touches mtimes) made every no-op upgrade
@@ -20,6 +20,12 @@ function makeFixture(): string {
 }
 
 describe('snapshotTree + diffSnapshots', () => {
+  it('marks root launchers executable after archive-based upgrades', () => {
+    for (const launcher of ['buddy', 'bootstrap']) {
+      expect(MANAGED_PATHS.find(path => path.localPath === launcher)?.executable).toBe(true)
+    }
+  })
+
   it('reports 0 changed when content is identical (mtime touched, bytes same)', async () => {
     const dir = makeFixture()
     try {

@@ -3,7 +3,7 @@
 // `@stacksjs/logging`'s async writes flush) and rely on top-level await
 // to drive the sync pipeline.
 /* eslint-disable no-console, ts/no-top-level-await */
-import { copyFileSync, cpSync, existsSync, mkdirSync, readFileSync, rmSync } from 'node:fs'
+import { chmodSync, copyFileSync, cpSync, existsSync, mkdirSync, readFileSync, rmSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import process from 'node:process'
 import { parseOptions } from '@stacksjs/cli'
@@ -381,6 +381,7 @@ async function syncFromLocal(stacksRoot: string, managed: ManagedPath, localTarg
   if (managed.isFile) {
     mkdirSync(dirname(localTarget), { recursive: true })
     copyFileSync(src, localTarget)
+    if (managed.executable) chmodSync(localTarget, 0o755)
     return
   }
 
@@ -428,8 +429,10 @@ async function syncRootFilesFromGitHub(ref: string): Promise<void> {
       const src = join(tmpDir, managed.subPath)
       const dest = p.projectPath(managed.localPath)
       try {
-        if (existsSync(src) && existsSync(dest))
+        if (existsSync(src) && existsSync(dest)) {
           copyFileSync(src, dest)
+          if (managed.executable) chmodSync(dest, 0o755)
+        }
       }
       catch {
         // best-effort

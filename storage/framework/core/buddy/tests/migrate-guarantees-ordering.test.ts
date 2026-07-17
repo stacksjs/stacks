@@ -25,6 +25,7 @@ describe('buddy migrate guarantee-table ordering (stacksjs/stacks#1952)', () => 
   const dnsIdx = source.indexOf(`.command('migrate:dns'`)
   const migrateSection = source.slice(0, freshIdx)
   const freshSection = source.slice(freshIdx, dnsIdx)
+  const freshAction = readFileSync(resolve(__dirname, '../../actions/src/migrate/fresh.ts'), 'utf-8')
 
   it('migrate: runs migrateAuthTables before the isErr FatalError exit', () => {
     const authCall = migrateSection.indexOf('await migrateAuthTables')
@@ -47,6 +48,17 @@ describe('buddy migrate guarantee-table ordering (stacksjs/stacks#1952)', () => 
     const failureExit = freshSection.indexOf('While running the migrate:fresh command, there was an issue')
     expect(authCall).toBeGreaterThan(-1)
     expect(failureExit).toBeGreaterThan(authCall)
+  })
+
+  it('migrate:fresh action lets model migrations own notification tables', () => {
+    const authCall = freshAction.indexOf('await migrateAuthTables')
+    const modelMigrate = freshAction.indexOf('await runDatabaseMigration')
+    const notificationCall = freshAction.indexOf('await migrateNotificationTables')
+    const failureExit = freshAction.indexOf("log.error('runDatabaseMigration failed')")
+    expect(authCall).toBeGreaterThan(-1)
+    expect(modelMigrate).toBeGreaterThan(authCall)
+    expect(notificationCall).toBeGreaterThan(modelMigrate)
+    expect(failureExit).toBeGreaterThan(notificationCall)
   })
 
   it('both commands still exit FatalError after a failed model migration', () => {
