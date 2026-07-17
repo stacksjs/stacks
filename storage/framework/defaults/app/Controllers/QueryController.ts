@@ -49,7 +49,7 @@ export default class QueryController extends Controller {
           db.fn.count('id').as('count'),
         ])
         .where('status', '=', 'slow')
-        .where('executed_at', '>=', sql`datetime("now", "-1 day")` as any)
+        .whereRaw(sql`executed_at >= datetime("now", "-1 day")`)
         .groupBy(sql`strftime("%Y-%m-%d %H:00:00", executed_at)`)
         .orderBy('hour')
         .execute()
@@ -84,8 +84,39 @@ export default class QueryController extends Controller {
     search = '',
   }) {
     try {
-      let query = db
-        .selectFrom('query_logs')
+      // The wrapped builder is mutable: every chained call rewrites the
+      // same statement text, so a count projection would clobber the
+      // data projection on a shared instance. Route both queries
+      // through one filter helper over independent builders instead.
+      const applyFilters = (q: any): any => {
+        if (connection !== 'all')
+          q = q.where('connection', '=', connection)
+
+        if (status !== 'all')
+          q = q.where('status', '=', status as any)
+
+        if (type !== 'all')
+          q = q.where('tags', 'like', `%"${type}"%`)
+
+        if (search) {
+          // Parenthesized OR-group with bound parameters.
+          q = q.whereAny(['query', 'model', 'method', 'affected_tables'], 'like', `%${search}%`)
+        }
+
+        return q
+      }
+
+      // Get total count for pagination
+      const totalResult = await applyFilters(db.selectFrom('query_logs'))
+        .select(db.fn.count('id').as('count'))
+        .executeTakeFirstOrThrow()
+      const total = Number(totalResult.count)
+
+      // Apply pagination
+      const offset = (page - 1) * perPage
+
+      // Execute paginated query
+      const results = await applyFilters(db.selectFrom('query_logs'))
         .select([
           'id',
           'query',
@@ -100,37 +131,9 @@ export default class QueryController extends Controller {
           'tags',
         ])
         .orderBy('executed_at', 'desc')
-
-      // Apply filters
-      if (connection !== 'all')
-        query = query.where('connection', '=', connection)
-
-      if (status !== 'all')
-        query = query.where('status', '=', status as any)
-
-      if (type !== 'all')
-        query = query.where('tags', 'like', `%"${type}"%`)
-
-      if (search) {
-        query = query.where(eb => eb.or([
-          eb('query', 'like', `%${search}%`),
-          eb('model', 'like', `%${search}%`),
-          eb('method', 'like', `%${search}%`),
-          eb('affected_tables', 'like', `%${search}%`),
-        ]))
-      }
-
-      // Get total count for pagination
-      const countQuery = query.$call(q => q.select(db.fn.count('id').as('count')))
-      const totalResult = await countQuery.executeTakeFirstOrThrow()
-      const total = Number(totalResult.count)
-
-      // Apply pagination
-      const offset = (page - 1) * perPage
-      query = query.limit(perPage).offset(offset)
-
-      // Execute paginated query
-      const results = await query.execute()
+        .limit(perPage)
+        .offset(offset)
+        .execute()
 
       return {
         data: results,
@@ -163,8 +166,29 @@ export default class QueryController extends Controller {
       if (slowThreshold < 0)
         slowThreshold = config.database?.queryLogging?.slowThreshold || 100
 
-      let query = db
-        .selectFrom('query_logs')
+      // Mutable builder: see getRecentQueries for why count and data
+      // queries are independent builders sharing one filter helper.
+      const applyFilters = (q: any): any => {
+        q = q.where('duration', '>=', slowThreshold)
+
+        if (connection !== 'all')
+          q = q.where('connection', '=', connection)
+
+        if (search) {
+          q = q.whereAny(['query', 'model', 'method', 'affected_tables'], 'like', `%${search}%`)
+        }
+
+        return q
+      }
+
+      const totalResult = await applyFilters(db.selectFrom('query_logs'))
+        .select(db.fn.count('id').as('count'))
+        .executeTakeFirstOrThrow()
+      const total = Number(totalResult.count)
+
+      const offset = (page - 1) * perPage
+
+      const results = await applyFilters(db.selectFrom('query_logs'))
         .select([
           'id',
           'query',
@@ -181,29 +205,10 @@ export default class QueryController extends Controller {
           'indexes_used',
           'missing_indexes',
         ])
-        .where('duration', '>=', slowThreshold)
         .orderBy('duration', 'desc')
-
-      if (connection !== 'all')
-        query = query.where('connection', '=', connection)
-
-      if (search) {
-        query = query.where(eb => eb.or([
-          eb('query', 'like', `%${search}%`),
-          eb('model', 'like', `%${search}%`),
-          eb('method', 'like', `%${search}%`),
-          eb('affected_tables', 'like', `%${search}%`),
-        ]))
-      }
-
-      const countQuery = query.$call(q => q.select(db.fn.count('id').as('count')))
-      const totalResult = await countQuery.executeTakeFirstOrThrow()
-      const total = Number(totalResult.count)
-
-      const offset = (page - 1) * perPage
-      query = query.limit(perPage).offset(offset)
-
-      const results = await query.execute()
+        .limit(perPage)
+        .offset(offset)
+        .execute()
 
       return {
         data: results,
@@ -289,11 +294,11 @@ export default class QueryController extends Controller {
       let query = db
         .selectFrom('query_logs')
         .select([
-          sql`strftime("${interval}", executed_at)`.as('time_interval'),
+          sql`strftime(${sql.literal(interval)}, executed_at)`.as('time_interval'),
           db.fn.count('id').as('count'),
           db.fn.avg('duration').as('avg_duration'),
         ])
-        .where('executed_at', '>=', sql`datetime("now", "${timeConstraint}")` as any)
+        .whereRaw(sql`executed_at >= datetime("now", ${sql.literal(timeConstraint)})`)
         .groupBy('time_interval')
         .orderBy('time_interval')
 
@@ -355,13 +360,16 @@ export default class QueryController extends Controller {
     try {
       const retentionDays = config.database?.queryLogging?.retention || 7
 
-      const result = await db
-        .deleteFrom('query_logs')
-        .where('executed_at', '<', sql`datetime("now", "-${retentionDays} day")` as any)
-        .executeTakeFirst()
+      // Parameterized via db.unsafe: the delete builder can neither
+      // bind a datetime() expression nor render raw WHERE fragments.
+      const statement = await (db as any).unsafe(
+        `DELETE FROM query_logs WHERE executed_at < datetime("now", ?)`,
+        [`-${retentionDays} day`],
+      )
+      const result = typeof statement?.execute === 'function' ? await statement.execute() : statement
 
       return {
-        pruned: result.numDeletedRows,
+        pruned: Number(result?.changes ?? result?.numDeletedRows ?? 0),
         retentionDays,
       }
     }
