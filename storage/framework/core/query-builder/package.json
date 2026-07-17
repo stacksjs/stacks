@@ -56,6 +56,6 @@
     "@stacksjs/types": "workspace:*"
   },
   "dependencies": {
-    "bun-query-builder": "https://registry.pantry.dev/bun-query-builder@21c0e89"
+    "bun-query-builder": "^0.1.51"
   }
 }
