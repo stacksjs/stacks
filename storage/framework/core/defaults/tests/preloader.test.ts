@@ -42,15 +42,27 @@ describe('default preloader', () => {
     const isolatedRunner = resolve(tempDir, 'run.ts')
     const isolatedPreloader = resolve(tempDir, 'storage/framework/defaults/resources/plugins/preloader.ts')
     const isolatedEnvRoot = resolve(tempDir, 'storage/framework/core/env/src')
+    const isolatedPathRoot = resolve(tempDir, 'storage/framework/core/path/src')
 
     await mkdir(resolve(isolatedPreloader, '..'), { recursive: true })
     await mkdir(isolatedEnvRoot, { recursive: true })
-    const source = await Bun.file(resolve(defaultsRoot, 'resources/plugins/preloader.ts')).text()
-    const bootstrapSource = source.split('// stx template engine plugin')[0]
-    await Bun.write(isolatedPreloader, bootstrapSource)
+    await mkdir(isolatedPathRoot, { recursive: true })
+    await Promise.all([
+      'resources/functions',
+      'app/Models',
+      'app/Jobs',
+      'app/Controllers',
+      'storage/framework/defaults/app/Models',
+      'storage/framework/defaults/app/Controllers',
+    ].map(path => mkdir(resolve(tempDir, path), { recursive: true })))
+    await Bun.write(isolatedPreloader, Bun.file(resolve(defaultsRoot, 'resources/plugins/preloader.ts')))
     await Promise.all(['plugin.ts', 'crypto.ts', 'parser.ts'].map(file =>
       Bun.write(resolve(isolatedEnvRoot, file), Bun.file(resolve(envRoot, file))),
     ))
+    await Bun.write(
+      resolve(isolatedPathRoot, 'index.ts'),
+      Bun.file(resolve(import.meta.dir, '../../path/src/index.ts')),
+    )
     await Bun.write(isolatedRunner, `await import('./storage/framework/defaults/resources/plugins/preloader.ts')\n`)
 
     const child = Bun.spawn([process.execPath, isolatedRunner], {

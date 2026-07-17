@@ -21,7 +21,8 @@ import process from 'node:process'
 // Lazy import logging to avoid circular dependency (logging imports path)
 async function debugLog(message: string) {
   try {
-    const { log } = await import('@stacksjs/logging')
+    const loggingPackage = '@stacksjs/' + 'logging'
+    const { log } = await import(loggingPackage)
     log.debug(message)
   }
   catch {

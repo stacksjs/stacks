@@ -105,7 +105,9 @@ if (!skipPreloader) {
 // explicitly when needed — see #1835 root cause 3.
 export async function loadAutoImports() {
   const { Glob } = await import('bun')
-  const path = await import('@stacksjs/path')
+  const pathPackage = '@stacksjs/' + 'path'
+  const path = await import('../../../core/path/src/index.ts')
+    .catch(() => import(pathPackage))
 
   // CRITICAL: Never overwrite these built-in globals
   const protectedGlobals = new Set([
@@ -317,7 +319,8 @@ if (!skipAutoImports) {
 
   // Run package auto-discovery after all imports are loaded
   try {
-    const { discoverPackages } = await import('@stacksjs/actions')
+    const actionsPackage = '@stacksjs/' + 'actions'
+    const { discoverPackages } = await import(actionsPackage)
     await discoverPackages()
   }
   catch {
