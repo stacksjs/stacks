@@ -48,6 +48,12 @@ export interface InboxEmail {
   path: string
 }
 
+export interface InboxStats {
+  total: number
+  unread: number
+  read: number
+}
+
 export interface EmailSearchOptions {
   from?: string
   to?: string
@@ -199,6 +205,27 @@ export class EmailSDK {
       }
       throw error
     }
+  }
+
+  /**
+   * Get aggregate inbox statistics for a mailbox
+   */
+  async getInboxStats(mailbox: string): Promise<InboxStats> {
+    const inbox = await this.getInbox(mailbox, { limit: 1000 })
+    const unread = inbox.filter(e => !e.read).length
+    return {
+      total: inbox.length,
+      unread,
+      read: inbox.length - unread,
+    }
+  }
+
+  /**
+   * Get the number of unread messages in a mailbox
+   */
+  async getUnreadCount(mailbox: string): Promise<number> {
+    const stats = await this.getInboxStats(mailbox)
+    return stats.unread
   }
 
   /**
@@ -456,6 +483,8 @@ export const emailSDK = new EmailSDK()
 export const sendEmail = (message: EmailMessage) => emailSDK.send(message)
 export const getInbox = (mailbox: string, options?: { limit?: number; offset?: number }) =>
   emailSDK.getInbox(mailbox, options)
+export const getInboxStats = (mailbox: string) => emailSDK.getInboxStats(mailbox)
+export const getUnreadCount = (mailbox: string) => emailSDK.getUnreadCount(mailbox)
 export const searchEmails = (mailbox: string, options: EmailSearchOptions) => emailSDK.search(mailbox, options)
 export const deleteEmail = (mailbox: string, messageId: string) => emailSDK.delete(mailbox, messageId)
 
