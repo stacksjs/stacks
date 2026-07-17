@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.110...v0.70.111)
+
+## 🐛 Bug Fixes
+
+- **database**: preserve model schema on fresh migrations ([386c406](https://github.com/stacksjs/stacks/commit/386c406)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.109...v0.70.110)
 
 ## 🐛 Bug Fixes
