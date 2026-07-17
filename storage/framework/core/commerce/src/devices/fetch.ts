@@ -1,6 +1,5 @@
 type PrintDeviceJsonResponse = ModelRow<typeof PrintDevice>
 type ReceiptJsonResponse = ModelRow<typeof Receipt>
-import type { StacksExpressionBuilder } from '@stacksjs/database'
 import { db } from '@stacksjs/database'
 
 /**
@@ -27,7 +26,7 @@ export async function fetchAll(): Promise<PrintDeviceJsonResponse[]> {
 export async function countAll(): Promise<number> {
   const result = await db
     .selectFrom('print_devices')
-    .select(((eb: StacksExpressionBuilder) => eb.fn.count('id').as('count')) as any)
+    .select(db.fn.count('id').as('count'))
     .executeTakeFirst() as { count: number } | undefined
   return result?.count ?? 0
 }
@@ -63,10 +62,10 @@ export async function countPrintsByDeviceId(printDeviceId: number): Promise<numb
 export async function calculateErrorRate(): Promise<number> {
   const result = await db
     .selectFrom('receipts')
-    .select(((eb: StacksExpressionBuilder) => [
-      eb.fn.count('id').as('total'),
-      eb.fn.count('id').filterWhere('status', '=', 'error').as('error_count'),
-    ]) as any)
+    .select([
+      db.fn.count('id').as('total'),
+      db.fn.count('id').filterWhere('status', '=', 'error').as('error_count'),
+    ])
     .executeTakeFirst()
 
   if (!(result as any)?.total || (result as any).total === 0) {
@@ -94,10 +93,10 @@ export async function fetchErrorsByDeviceId(printDeviceId: number): Promise<Rece
 export async function calculatePrinterHealth(): Promise<number> {
   const result = await db
     .selectFrom('print_devices')
-    .select(((eb: StacksExpressionBuilder) => [
-      eb.fn.count('id').as('total'),
-      eb.fn.count('id').filterWhere('status', '=', 'online').as('online_count'),
-    ]) as any)
+    .select([
+      db.fn.count('id').as('total'),
+      db.fn.count('id').filterWhere('status', '=', 'online').as('online_count'),
+    ])
     .executeTakeFirst()
 
   if (!(result as any)?.total || (result as any).total === 0) {
@@ -113,7 +112,7 @@ export async function calculatePrinterHealth(): Promise<number> {
 export async function getPrinterStatusCounts(): Promise<Record<string, number>> {
   const result = await db
     .selectFrom('print_devices')
-    .select(['status', (eb: StacksExpressionBuilder) => eb.fn.count('id').as('count')] as any)
+    .select(['status', db.fn.count('id').as('count')])
     .groupBy('status')
     .execute() as { status: string, count: number }[]
 

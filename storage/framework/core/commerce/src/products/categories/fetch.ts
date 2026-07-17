@@ -1,5 +1,4 @@
 import type { CategoryStats } from '../../types'
-import type { StacksExpressionBuilder } from '@stacksjs/database'
 import { db } from '@stacksjs/database'
 import { formatDate } from '@stacksjs/orm'
 type CategoryJsonResponse = ModelRow<typeof Category>
@@ -103,28 +102,28 @@ export async function fetchStats(): Promise<CategoryStats> {
   // Total categories
   const totalCategories = await db
     .selectFrom('categories')
-    .select(((eb: StacksExpressionBuilder) => eb.fn.count('id').as('count')) as any)
+    .select(db.fn.count('id').as('count'))
     .executeTakeFirst() as { count: number } | undefined
 
   // Active categories
   const activeCategories = await db
     .selectFrom('categories')
     .where('is_active', '=', true)
-    .select(((eb: StacksExpressionBuilder) => eb.fn.count('id').as('count')) as any)
+    .select(db.fn.count('id').as('count'))
     .executeTakeFirst() as { count: number } | undefined
 
   // Root vs child categories
   const rootCategories = await db
     .selectFrom('categories')
     .where('parent_category_id', 'is', null)
-    .select(((eb: StacksExpressionBuilder) => eb.fn.count('id').as('count')) as any)
+    .select(db.fn.count('id').as('count'))
     .executeTakeFirst() as { count: number } | undefined
 
   // Categories with images
   const categoriesWithImages = await db
     .selectFrom('categories')
     .where('image_url', 'is not', null)
-    .select(((eb: StacksExpressionBuilder) => eb.fn.count('id').as('count')) as any)
+    .select(db.fn.count('id').as('count'))
     .executeTakeFirst() as { count: number } | undefined
 
   // Recently added categories (last 30 days)
@@ -147,8 +146,8 @@ export async function fetchStats(): Promise<CategoryStats> {
     .select([
       'c.parent_category_id',
       'parent.name as parent_name',
-      (eb: StacksExpressionBuilder) => eb.fn.count('c.id').as('child_count'),
-    ] as any)
+      db.fn.count('c.id').as('child_count'),
+    ])
     .groupBy(['c.parent_category_id', 'parent.name'] as any)
     .orderBy('child_count', 'desc')
     .limit(5)
@@ -200,7 +199,7 @@ export async function compareCategoryGrowth(_daysRange: number = 30): Promise<{
   // Get categories for current period
   const currentPeriodCategories = await db
     .selectFrom('categories')
-    .select(((eb: StacksExpressionBuilder) => eb.fn.count('id').as('count')) as any)
+    .select(db.fn.count('id').as('count'))
     .where('created_at', '>=', currentPeriodStartStr)
     .where('created_at', '<=', todayStr)
     .executeTakeFirst() as { count: number } | undefined
@@ -208,7 +207,7 @@ export async function compareCategoryGrowth(_daysRange: number = 30): Promise<{
   // Get categories for previous period
   const previousPeriodCategories = await db
     .selectFrom('categories')
-    .select(((eb: StacksExpressionBuilder) => eb.fn.count('id').as('count')) as any)
+    .select(db.fn.count('id').as('count'))
     .where('created_at', '>=', previousPeriodStartStr)
     .where('created_at', '<=', previousPeriodEndStr)
     .executeTakeFirst() as { count: number } | undefined

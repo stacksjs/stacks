@@ -1,19 +1,13 @@
 /**
  * Typed helpers for the aggregate-stats queries the commerce package uses
- * heavily. The bun-query-builder `eb` expression-builder callback is
- * effectively `any` from the consumer side (its return type is the
- * builder's internal `SelectExpressionList`, not exported), so without a
- * thin wrapper every call site has to `as any` both the callback param
- * and the awaited result. That dropped *all* type safety for column
- * names, bindings, and result shapes — fields like `averageSize` could
- * be renamed in one place and silently break another.
- *
- * These helpers give us a typed result shape (caller declares the keys)
- * and a single localized `as any` at the bun-query-builder boundary.
+ * heavily. Built on `aggregateFunctions` (`db.fn`), which render plain
+ * SQL fragments the select pipeline consumes directly - no expression-
+ * builder callback needed, so the result keeps full type safety for
+ * column names, bindings, and result shapes.
  */
 
-import type { StacksExpressionBuilder } from '@stacksjs/database'
-import { db } from '@stacksjs/database'
+import { aggregateFunctions, db } from '@stacksjs/database'
+import type { AggregateExpression } from '@stacksjs/database'
 
 /**
  * Stats descriptors map: each key is the result-row alias; each value is
@@ -47,13 +41,11 @@ export async function aggregateStats<TKeys extends string>(
   let query: any = (db as any).selectFrom(table)
   if (applyWhere) query = applyWhere(query)
 
-  query = query.select((eb: StacksExpressionBuilder) => Object.entries(descriptors).map(([alias, d]) => {
+  query = query.select((Object.entries(descriptors) as [TKeys, StatsDescriptor][]).map(([alias, d]) => {
     const col = (d as { column?: string }).column ?? 'id'
-    let expr = eb.fn[(d as StatsDescriptor).kind](col)
-    if ((d as { filter?: unknown }).filter) {
-      const f = (d as StatsDescriptor & { filter: NonNullable<StatsDescriptor['filter']> }).filter
-      expr = expr.filterWhere(f.column, f.op, f.value)
-    }
+    let expr: AggregateExpression = aggregateFunctions[d.kind](col)
+    if (d.filter)
+      expr = expr.filterWhere(d.filter.column, d.filter.op, d.filter.value)
     return expr.as(alias)
   }))
 

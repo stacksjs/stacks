@@ -1,4 +1,3 @@
-import type { StacksExpressionBuilder } from '@stacksjs/database'
 import { db } from '@stacksjs/database'
 import { formatDate } from '@stacksjs/orm'
 type PaymentJsonResponse = ModelRow<typeof Payment>
@@ -67,10 +66,10 @@ export async function fetchPaymentStats(daysRange: number = 30): Promise<Payment
   // Get current period stats for completed payments
   const currentStats = await db
     .selectFrom('payments')
-    .select(((eb: StacksExpressionBuilder) => [
-      eb.fn.count('id').as('transaction_count'),
-      eb.fn.sum('amount').as('total_revenue'),
-    ]) as any)
+    .select([
+      db.fn.count('id').as('transaction_count'),
+      db.fn.sum('amount').as('total_revenue'),
+    ])
     .where('created_at', '>=', formatDate(currentPeriodStart))
     .where('created_at', '<=', formatDate(today))
     .where('status', '=', 'completed')
@@ -79,10 +78,10 @@ export async function fetchPaymentStats(daysRange: number = 30): Promise<Payment
   // Get previous period stats for completed payments
   const previousStats = await db
     .selectFrom('payments')
-    .select(((eb: StacksExpressionBuilder) => [
-      eb.fn.count('id').as('transaction_count'),
-      eb.fn.sum('amount').as('total_revenue'),
-    ]) as any)
+    .select([
+      db.fn.count('id').as('transaction_count'),
+      db.fn.sum('amount').as('total_revenue'),
+    ])
     .where('created_at', '>=', formatDate(previousPeriodStart))
     .where('created_at', '<=', formatDate(previousPeriodEnd))
     .where('status', '=', 'completed')
@@ -91,7 +90,7 @@ export async function fetchPaymentStats(daysRange: number = 30): Promise<Payment
   // Get total transactions count (including non-completed ones) for calculating success rate
   const totalTransactions = await db
     .selectFrom('payments')
-    .select(((eb: StacksExpressionBuilder) => eb.fn.count('id').as('count')) as any)
+    .select(db.fn.count('id').as('count'))
     .where('created_at', '>=', formatDate(currentPeriodStart))
     .where('created_at', '<=', formatDate(today))
     .executeTakeFirst() as { count: number } | undefined
@@ -173,10 +172,10 @@ export async function fetchPaymentStatsByMethod(_daysRange: number = 30): Promis
   // Get total stats for the period
   const totalStats = await db
     .selectFrom('payments')
-    .select(((eb: StacksExpressionBuilder) => [
-      eb.fn.count('id').as('total_count'),
-      eb.fn.sum('amount').as('total_revenue'),
-    ]) as any)
+    .select([
+      db.fn.count('id').as('total_count'),
+      db.fn.sum('amount').as('total_revenue'),
+    ])
     .where('created_at', '>=', formatDate(startDate))
     .where('created_at', '<=', formatDate(today))
     .where('status', '=', 'completed')
@@ -189,9 +188,9 @@ export async function fetchPaymentStatsByMethod(_daysRange: number = 30): Promis
     .selectFrom('payments')
     .select([
       'method',
-      (eb: StacksExpressionBuilder) => eb.fn.count('id').as('count'),
-      (eb: StacksExpressionBuilder) => eb.fn.sum('amount').as('revenue'),
-    ] as any)
+      db.fn.count('id').as('count'),
+      db.fn.sum('amount').as('revenue'),
+    ])
     .where('created_at', '>=', formatDate(startDate))
     .where('created_at', '<=', formatDate(today))
     .where('status', '=', 'completed')
