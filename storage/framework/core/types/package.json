@@ -54,7 +54,7 @@
     "@stacksjs/bunpress": "^0.1.12",
     "@stacksjs/clapp": "^0.2.10",
     "@stacksjs/ts-validation": "^0.5.0",
-    "bun-query-builder": "^0.1.52"
+    "bun-query-builder": "^0.1.53"
   },
   "peerDependencies": {
     "meilisearch": "^0.59.0"
