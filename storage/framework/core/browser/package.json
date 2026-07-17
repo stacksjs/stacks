@@ -2,7 +2,7 @@
   "name": "@stacksjs/browser",
   "type": "module",
   "sideEffects": false,
-  "version": "0.70.92",
+  "version": "0.70.93",
   "description": "Stacks core frontend/browser functionalities.",
   "author": "Chris Breuer",
   "contributors": [

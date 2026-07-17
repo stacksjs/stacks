@@ -1,5 +1,17 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.92...v0.70.93)
+
+## 🐛 Bug Fixes
+
+- **buddy**: externalize scoped queue runtime ([debb498](https://github.com/stacksjs/stacks/commit/debb498)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **database**: preserve app-owned feature table migrations ([583c111](https://github.com/stacksjs/stacks/commit/583c111)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **database**: make Postgres ALTER migrations idempotent before running ([effa747](https://github.com/stacksjs/stacks/commit/effa747)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.91...v0.70.92)
 
 ## 🐛 Bug Fixes
