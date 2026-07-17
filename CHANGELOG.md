@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.94...v0.70.95)
+
+## ✨ Features
+
+- **auth**: add typed role permission resolver ([702c063](https://github.com/stacksjs/stacks/commit/702c063)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.93...v0.70.94)
 
 ## 🐛 Bug Fixes
