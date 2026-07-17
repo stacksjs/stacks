@@ -21,6 +21,7 @@ import {
   resolveSuccessMessage,
   resolveUpgradeContext,
   resolveUpgradeMessage,
+  shouldAutoDetectLocalStacks,
   shouldShortCircuit,
   snapshotTree,
   writeChannel,
@@ -76,7 +77,7 @@ const currentVersion = readVersion(corePkgPath)
 // stacks checkout for instant offline updates. If neither is available,
 // fall back to gitit (GitHub).
 const explicitLocal = options.from ? p.projectPath(options.from) : null
-const detectedLocal = explicitLocal ?? detectLocalStacks(projectRoot)
+const detectedLocal = explicitLocal ?? (shouldAutoDetectLocalStacks(options) ? detectLocalStacks(projectRoot) : null)
 const usingLocal = !!detectedLocal
 
 // User-facing status output. We use `console.log` directly (not the

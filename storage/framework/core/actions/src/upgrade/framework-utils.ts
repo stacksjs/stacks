@@ -322,6 +322,17 @@ export function detectLocalStacks(projectRoot: string): string | null {
 }
 
 /**
+ * Local checkout auto-detection is a development convenience for channel
+ * upgrades. A pinned version must resolve the published git tag instead: the
+ * local checkout may be ahead of that tag while still reporting the same
+ * package version, which would install unreleased code under a released label.
+ * An explicit --from remains authoritative because the caller selected it.
+ */
+export function shouldAutoDetectLocalStacks(options: { from?: string, version?: string }): boolean {
+  return !options.from && !options.version
+}
+
+/**
  * Snapshot entry. We capture size + content hash at snapshot time so the
  * before/after diff can detect "actually changed" vs "just re-copied with
  * fresh mtimes". `cpSync` and `downloadTemplate` always touch mtimes,

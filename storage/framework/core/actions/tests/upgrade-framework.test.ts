@@ -14,6 +14,7 @@ const {
   shouldShortCircuit,
   resolveUpgradeMessage,
   resolveSuccessMessage,
+  shouldAutoDetectLocalStacks,
 } = await import('../src/upgrade/framework-utils')
 
 // Temp directory for isolated file operations
@@ -138,6 +139,18 @@ describe('resolveUpgradeContext', () => {
       const s = resolveUpgradeContext({ stable: true }, 'canary')
       expect(s.channel).toBe('stable')
     })
+  })
+})
+
+describe('local framework source selection', () => {
+  it('does not auto-detect a checkout for an exact version pin', () => {
+    expect(shouldAutoDetectLocalStacks({ version: '0.70.104' })).toBe(false)
+  })
+
+  it('auto-detects for channel upgrades and respects explicit --from', () => {
+    expect(shouldAutoDetectLocalStacks({})).toBe(true)
+    expect(shouldAutoDetectLocalStacks({ from: '/tmp/stacks' })).toBe(false)
+    expect(shouldAutoDetectLocalStacks({ from: '/tmp/stacks', version: '0.70.104' })).toBe(false)
   })
 })
 
