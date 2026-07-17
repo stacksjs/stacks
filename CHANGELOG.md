@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.97...v0.70.98)
+
+## ✨ Features
+
+- **dev**: self-heal stale rpx overrides for public domains ([c96691d](https://github.com/stacksjs/stacks/commit/c96691d)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.96...v0.70.97)
 
 ## 🐛 Bug Fixes
