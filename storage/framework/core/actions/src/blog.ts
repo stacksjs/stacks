@@ -247,7 +247,7 @@ function formatDate(d?: string): string {
 }
 
 const THEME_BUTTONS: Record<BlogThemeMode, { label: string, glyph: string }> = {
-  colored: { label: 'Park theme', glyph: '🌲' },
+  colored: { label: 'Glacier theme', glyph: '🌲' },
   light: { label: 'Light theme', glyph: '☀' },
   dark: { label: 'Dark theme', glyph: '🌙' },
 }

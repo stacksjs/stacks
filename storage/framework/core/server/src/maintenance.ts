@@ -255,14 +255,16 @@ export async function launch(): Promise<void> {
  * Check if an IP address is allowed during maintenance
  */
 export function isAllowedIp(ip: string, allowed: string[] = []): boolean {
-  if (allowed.length === 0) {
-    return false
-  }
-
-  // Always allow localhost
+  // Always allow localhost — including when no allowlist is configured. The
+  // empty-list early-return used to sit above this check, which gated the
+  // developer's own `buddy dev` session behind the coming-soon page.
   const localhostIps = ['127.0.0.1', '::1', 'localhost']
   if (localhostIps.includes(ip)) {
     return true
+  }
+
+  if (allowed.length === 0) {
+    return false
   }
 
   return allowed.includes(ip)

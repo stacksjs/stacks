@@ -385,8 +385,26 @@ export async function startDevelopmentServer(_options: DevOptions, _startTime?: 
   const includeDashboard = process.env.STACKS_DEV_DASHBOARD === '1'
   const appLooksCustom = !nativeMode && appUrl && appUrl !== 'localhost' && !appUrl.includes('localhost:')
   const domain = appLooksCustom ? appUrl.replace(/^https?:\/\//, '') : null
+  // A production domain (APP_URL pointing at the live site) is never a dev
+  // domain. prepareRpxTlsForDev already refuses to override DNS for public
+  // domains, so https://<domain> keeps resolving to the LIVE site: printing
+  // it in the dev banner would send the developer to production, and
+  // registering rpx proxies for it risks shadowing prod DNS. When APP_URL is
+  // public we skip every proxy step and the banner shows the localhost dev
+  // servers instead. Note dns.resolve4 queries DNS directly (no /etc/hosts),
+  // so local .test/.localhost domains never resolve here and stay unaffected.
+  const isLocalDevTld = (host: string): boolean =>
+    host === 'localhost'
+    || host.endsWith('.localhost')
+    || host.endsWith('.test')
+    || host.endsWith('.invalid')
+  const domainIsPublic = Boolean(domain)
+    && process.env.STACKS_DEV_ALLOW_PUBLIC_DOMAIN !== '1'
+    && !isLocalDevTld(domain!)
+    && (await dns.resolve4(domain!).catch(() => [] as string[]))
+      .some(address => !address.startsWith('127.'))
   // Only manage the proxy/TLS/daemon ourselves when rpx isn't already doing it.
-  const hasCustomDomain = appLooksCustom && !proxyManagedExternally
+  const hasCustomDomain = appLooksCustom && !proxyManagedExternally && !domainIsPublic
   const dashboardDomain = domain ? `dashboard.${domain}` : null
   const frontendUrl = domain ? `https://${domain}` : `http://localhost:${frontendPort}`
   const apiUrl = domain ? `https://${domain}/api` : `http://localhost:${apiPort}`
@@ -678,32 +696,32 @@ function printDevReadyBanner(input: {
     dashboardDomain,
   } = input
   const verbose = options.verbose ?? false
-  const showLocalUrls = verbose || options.withLocalhost === true
 
-  // Advertise the pretty https://<domain> URLs only when the proxy is actually
-  // up; otherwise show the working http://localhost links so nothing 404s.
+  // Advertise the pretty https://<domain> URL only when the proxy is actually
+  // up — and even then only as a secondary line. The localhost dev servers are
+  // always the source of truth in `buddy dev`, so they are the primary URLs:
+  // an unreachable (or production) domain must never be the headline.
   const useProxy = hasCustomDomain && proxyReachable
-  const feUrl = useProxy ? frontendUrl : `http://localhost:${frontendPort}`
-  const apUrl = useProxy ? apiUrl : `http://localhost:${apiPort}`
-  const dcUrl = useProxy ? docsUrl : `http://localhost:${docsPort}`
-  const blogUrl = `${feUrl.replace(/\/$/, '')}/blog`
+  const feUrl = `http://localhost:${frontendPort}`
+  const apUrl = `http://localhost:${apiPort}`
+  const dcUrl = `http://localhost:${docsPort}`
+  const dbUrl = `http://localhost:${dashboardPort}`
+  const blogUrl = `${feUrl}/blog`
 
   console.log()
   console.log(`  ${green('➜')}  ${bold('Frontend')}:    ${cyan(feUrl)}`)
-  if (showLocalUrls && useProxy)
-    console.log(`  ${dim('➜')}  ${dim('Local')}:       ${dim(`http://localhost:${frontendPort}`)}`)
   if (nativeMode)
     console.log(`  ${green('➜')}  ${bold('Native')}:      ${cyan(`Craft → http://localhost:${frontendPort}`)}`)
   console.log(`  ${green('➜')}  ${bold('API')}:         ${cyan(apUrl)}`)
-  if (showLocalUrls && useProxy)
-    console.log(`  ${dim('➜')}  ${dim('Local API')}:   ${dim(`http://localhost:${apiPort}`)}`)
   console.log(`  ${green('➜')}  ${bold('Docs')}:        ${cyan(dcUrl)}`)
-  if (showLocalUrls && useProxy)
-    console.log(`  ${dim('➜')}  ${dim('Local docs')}:  ${dim(`http://localhost:${docsPort}`)}`)
   if (blogIsConfigured())
     console.log(`  ${green('➜')}  ${bold('Blog')}:        ${cyan(blogUrl)}`)
   if (includeDashboard)
-    console.log(`  ${green('➜')}  ${bold('Dashboard')}:   ${cyan(dashboardUrl)}`)
+    console.log(`  ${green('➜')}  ${bold('Dashboard')}:   ${cyan(dbUrl)}`)
+  if (useProxy && domain)
+    console.log(`  ${dim('➜')}  ${dim('Proxy')}:       ${dim(`${frontendUrl} (local HTTPS via rpx)`)}`)
+  if (useProxy && includeDashboard && dashboardDomain)
+    console.log(`  ${dim('➜')}  ${dim('Proxy')}:       ${dim(`${dashboardUrl} (local HTTPS via rpx)`)}`)
   if (isComingSoonMode()) {
     console.log()
     console.log(`  ${yellow('●')}  ${bold(yellow('Coming soon mode'))} ${dim('— visitors see the holding page; bypass with the coming-soon secret.')}`)

@@ -52,6 +52,28 @@ export interface EnvPluginOptions {
   cwd?: string
 }
 
+function isEncryptedValue(value: string | undefined): boolean {
+  return typeof value === 'string' && (value.startsWith('encrypted:') || value.startsWith('enc:'))
+}
+
+function normalizeEnvName(value: string | undefined): string | undefined {
+  if (!value || isEncryptedValue(value))
+    return undefined
+
+  const normalized = value.trim().toLowerCase()
+  if (!/^[a-z0-9_-]+$/.test(normalized))
+    return undefined
+
+  if (normalized === 'prod')
+    return 'production'
+  if (normalized === 'stage')
+    return 'staging'
+  if (normalized === 'dev')
+    return 'development'
+
+  return normalized
+}
+
 /**
  * Load .env files and inject into process.env
  */
@@ -61,7 +83,7 @@ export function loadEnv(options: EnvPluginOptions = {}): { loaded: number, error
     overload = false,
     env: envName,
     privateKey: customPrivateKey,
-    keysFile,
+    keysFile = '.env.keys',
     quiet = false,
     cwd = process.cwd(),
   } = options
@@ -69,6 +91,16 @@ export function loadEnv(options: EnvPluginOptions = {}): { loaded: number, error
   const paths = Array.isArray(envPaths) ? envPaths : [envPaths]
   const errors: string[] = []
   let loaded = 0
+
+  // Snapshot genuine shell/CI overrides before loading any files. Values that
+  // Bun preloaded as ciphertext are not usable overrides and may be replaced.
+  // Values loaded from an earlier file in this call are also not external, so
+  // a later, more-specific file can override them without `overload: true`.
+  const externalOverrides = new Set(
+    Object.entries(process.env)
+      .filter(([, value]) => value !== undefined && !isEncryptedValue(value))
+      .map(([key]) => key),
+  )
 
   // Determine which private key to use
   let privateKey = customPrivateKey
@@ -141,11 +173,9 @@ export function loadEnv(options: EnvPluginOptions = {}): { loaded: number, error
         // never resolved to a real driver, and auth-table creation silently
         // wrote nowhere. Ciphertext is unusable to every consumer, so it
         // never wins; genuine external overrides (shell/CI) still do.
-        const isStaleCiphertext = typeof existing === 'string'
-          && (existing.startsWith('encrypted:') || existing.startsWith('enc:'))
-          && value !== existing
+        const isStaleCiphertext = isEncryptedValue(existing) && value !== existing
 
-        if (overload || existing === undefined || isStaleCiphertext) {
+        if (overload || !externalOverrides.has(key) || isStaleCiphertext) {
           process.env[key] = value
           loaded++
           applied++
@@ -186,32 +216,29 @@ export function envPlugin(options: EnvPluginOptions = {}): BunPlugin {
  * Auto-detect and load .env files based on environment
  */
 export function autoLoadEnv(options: Omit<EnvPluginOptions, 'path'> = {}): { loaded: number, errors: string[] } {
-  const env = options.env || process.env.NODE_ENV || process.env.DOTENV_ENV || 'development'
+  const env = normalizeEnvName(options.env)
+    || normalizeEnvName(process.env.NODE_ENV)
+    || normalizeEnvName(process.env.DOTENV_ENV)
+    || normalizeEnvName(process.env.APP_ENV)
+    || 'development'
   const cwd = options.cwd || process.cwd()
 
-  // Determine which .env files to load based on environment
+  // Load from least to most specific. loadEnv preserves variables that were
+  // present before this call while allowing later files in this list to
+  // override values loaded from earlier files.
   const paths: string[] = []
+  const addIfPresent = (file: string): void => {
+    if (!paths.includes(file) && existsSync(resolve(cwd, file)))
+      paths.push(file)
+  }
 
-  // Check for environment-specific files
+  addIfPresent('.env')
+  addIfPresent('.env.local')
+
   const envFile = `.env.${env}`
   const envLocalFile = `.env.${env}.local`
-
-  if (existsSync(resolve(cwd, envLocalFile))) {
-    paths.push(envLocalFile)
-  }
-
-  if (existsSync(resolve(cwd, envFile))) {
-    paths.push(envFile)
-  }
-
-  // Always try to load .env.local and .env
-  if (existsSync(resolve(cwd, '.env.local'))) {
-    paths.push('.env.local')
-  }
-
-  if (existsSync(resolve(cwd, '.env'))) {
-    paths.push('.env')
-  }
+  addIfPresent(envFile)
+  addIfPresent(envLocalFile)
 
   return loadEnv({
     ...options,

@@ -58,11 +58,13 @@ Reports: `title`, HTTP `status` of the main document, `loadMs`, `consoleErrors`,
 
 ### Screenshot
 ```bash
-bun .claude/skills/stacks-browse/scripts/browse.ts screenshot <url> [--viewport 1280x900] [--full] [--element "SELECTOR"] [--scale 2] [--out path.png]
+bun .claude/skills/stacks-browse/scripts/browse.ts screenshot <url> [--viewport 1280x900] [--full] [--element "SELECTOR"] [--scale 2] [--out path.png] [--cookie "name=value"] [--settle 1500]
 ```
 - `--full` captures the entire scroll height (via `Page.getLayoutMetrics` + `captureBeyondViewport`).
 - `--element` clips to a CSS selector's bounding box.
 - `--scale 2` renders at 2× (retina).
+- `--cookie` pre-seeds cookies before navigation (repeatable). Use it for gated pages, e.g. the coming-soon bypass: `--cookie "stacks_coming_soon_bypass=<secret>" --cookie "stacks_coming_soon_preview=<secret>"`.
+- `--settle` waits N ms after the load event before capturing (default 700). Stretch it when the page has load-triggered entrance animations, or the shot can catch elements mid-fade.
 - Default output: `.stacks/shots/<path>.png`.
 
 ### Responsive

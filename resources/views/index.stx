@@ -1,6 +1,5 @@
 <script server>
 const appName = 'Stacks'
-const appVersion = '0.1.0'
 const siteMode = 'coming-soon'
 const comingSoonBypassEnabled = true
 const comingSoonBypassToken = 'trailhead'
@@ -47,65 +46,71 @@ const navLinks = [
   { label: 'Cloud', url: '#deploy' },
   { label: 'Docs', url: '/docs', native: true },
   { label: 'Blog', url: '/blog', native: true },
-  { label: 'GitHub', url: 'https://github.com/stacksjs/stacks' },
 ]
 
-const productAreas = [
+// Platform bento. Eight cells, three visual treatments (image / tint /
+// gradient). Consolidated from the old twelve-item spec grid.
+const platformCells = [
   {
     title: 'Application core',
-    text: 'Routes, STX views, layouts, components, validation, auth, sessions, and assets live in one TypeScript application.',
+    text: 'Routing, STX views, models, actions, middleware, and validation in one typed application.',
     image: '/assets/images/marketing-park-trail.svg',
+    span: 'wide',
   },
   {
-    title: 'Content workspace',
-    text: 'Markdown posts, pages, docs, tags, authors, custom resources, generated APIs, and a local dashboard move together.',
-    // Was marketing-park-camp.svg, which has never existed in public/assets and
-    // rendered as a broken image. summit is a real asset; the blog uses it too.
-    image: '/assets/images/marketing-park-summit.svg',
+    title: 'Queues and mail',
+    text: 'Jobs, batches, schedules, events, notifications, and worker-ready background workflows.',
+    span: 'tall',
   },
   {
-    title: 'Production path',
-    text: 'Buddy builds the app, docs, blog, CMS API, mail service, static assets, DNS, CDN, and AWS infrastructure in one deploy.',
-    image: '/assets/images/marketing-park-geyser.svg',
+    title: 'CMS',
+    text: 'Posts, pages, taxonomy, media, a real dashboard, and generated content APIs.',
+    tone: 'tint',
+  },
+  {
+    title: 'Auth',
+    text: 'Sessions, tokens, passkeys, policies, guards, and rate limiting.',
+  },
+  {
+    title: 'Storage',
+    text: 'Local, S3, signed URLs, uploads, visibility, and file utilities.',
+  },
+  {
+    title: 'Testing',
+    text: 'Unit, feature, HTTP, browser, and database tests with factories and helpers.',
+  },
+  {
+    title: 'Realtime and search',
+    text: 'Channels, broadcasts, websocket drivers, and app-level search workflows.',
+  },
+  {
+    title: 'Cloud deploys',
+    text: 'AWS, DNS, CDN, TLS, and mail, described in TypeScript config and shipped by Buddy.',
+    tone: 'gradient',
   },
 ]
 
 const workflowSteps = [
-  { label: '01', title: 'Build the product', text: 'Create STX views, API routes, models, actions, queues, mail, and content resources in the app.' },
-  { label: '02', title: 'Run the command center', text: './buddy dev --dashboard gives teams a local CMS and framework operations surface.' },
-  { label: '03', title: 'Ship the whole trail', text: './buddy deploy publishes the marketing site, docs, blog, API, app server, and cloud.' },
-]
-
-const platformFeatures = [
-  { title: 'Routing', text: 'Expressive web and API routes, middleware, controllers, actions, JSON resources, and OpenAPI output.' },
-  { title: 'STX views', text: 'Server-rendered layouts and components with a Blade-like authoring model and TypeScript nearby.' },
-  { title: 'ORM', text: 'Typed models, traits, relationships, factories, seeders, generated migrations, and query tooling.' },
-  { title: 'Auth', text: 'Authentication, authorization, sessions, tokens, policies, passkeys, rate limiting, and guards.' },
-  { title: 'CMS', text: 'Posts, pages, authors, tags, categories, comments, media, dashboard screens, and generated CMS APIs.' },
-  { title: 'Queues', text: 'Jobs, batches, schedules, events, notifications, mail, and worker-friendly background workflows.' },
-  { title: 'Storage', text: 'Local, memory, S3, signed URLs, uploads, public assets, visibility, hashes, and file utilities.' },
-  { title: 'Testing', text: 'Unit, feature, HTTP, browser, database, DynamoDB, factories, assertions, and test helpers.' },
-  { title: 'Realtime', text: 'Channels, broadcasts, websocket drivers, server instances, and product events.' },
-  { title: 'Search', text: 'Search documents, settings, drivers, flushes, imports, and app-level search workflows.' },
-  { title: 'Docs and blog', text: 'BunPress docs, Markdown blog posts, RSS, sitemap, canonical URLs, and path-mounted deploys.' },
-  { title: 'Cloud', text: 'AWS infrastructure, DNS, CDN, email, compute, storage, security, and deploys from TypeScript config.' },
+  { title: 'Scaffold', text: 'buddy make:model Post generates the model, migration, factory, and REST actions in one pass.' },
+  { title: 'Build', text: 'buddy dev serves the app, docs, blog, and dashboard locally with hot reload and typed routes.' },
+  { title: 'Ship', text: 'buddy deploy builds every surface and publishes the AWS infrastructure from the same config.' },
 ]
 
 const cmsResources = [
-  { title: 'Posts', text: 'Markdown body, excerpt, author, tags, featured state, publication date, and generated CMS API.' },
-  { title: 'Pages', text: 'Structured site content with stable slugs, generated routes, and dashboard editing.' },
-  { title: 'Taxonomy', text: 'Tags, categories, relationships, search metadata, and editorial filters.' },
-  { title: 'Media', text: 'First-party storage hooks for images, attachments, public assets, and generated paths.' },
-  { title: 'Custom resources', text: 'Model-backed CMS resources can expose generated API endpoints and dashboard management.' },
-  { title: 'Docs', text: 'BunPress-powered documentation published at /docs beside the product site.' },
-  { title: 'Blog', text: 'Nature-park styled posts, feed, sitemap, and newsletter capture published at /blog.' },
+  { title: 'Posts', text: 'Markdown body, excerpt, author, tags, and a generated API.' },
+  { title: 'Pages', text: 'Structured content with stable slugs and dashboard editing.' },
+  { title: 'Taxonomy', text: 'Tags, categories, and editorial filters that stay searchable.' },
+  { title: 'Media', text: 'First-party storage hooks for images, attachments, and assets.' },
+  { title: 'Custom resources', text: 'Model-backed resources with generated endpoints and screens.' },
+  { title: 'Docs and blog', text: 'BunPress docs at /docs, Markdown blog with RSS at /blog.' },
 ]
 
-const stackLayers = [
-  { label: 'Create', value: 'Buddy generators, STX views, components, models, actions, routes' },
-  { label: 'Operate', value: 'Dashboard, CMS resources, auth, queue monitor, settings, APIs' },
-  { label: 'Scale', value: 'Jobs, schedules, mail, storage, realtime, search, analytics' },
-  { label: 'Deploy', value: 'CloudFront, S3, DNS, compute, TLS, mail, docs, blog, app server' },
+const deployRoutes = [
+  { label: 'Marketing', url: 'stacksjs.com' },
+  { label: 'Docs', url: 'stacksjs.com/docs' },
+  { label: 'Blog', url: 'stacksjs.com/blog' },
+  { label: 'API', url: 'stacksjs.com/api' },
+  { label: 'Dashboard', url: 'stacksjs.com/dashboard' },
 ]
 </script>
 
@@ -120,7 +125,7 @@ const stackLayers = [
     <link rel="canonical" href="https://stacksjs.com/">
     <meta name="color-scheme" content="light dark">
     <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
-    <meta name="theme-color" content="#0a0f1c" media="(prefers-color-scheme: dark)">
+    <meta name="theme-color" content="#070c17" media="(prefers-color-scheme: dark)">
     <link rel="icon" href="/images/logos/favicon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="/images/logos/logo.png">
 
@@ -193,159 +198,134 @@ const stackLayers = [
       })()
     </script>
     <style>
-      /* Type is Geist (display + body) and Geist Mono (labels, code), loaded
-         from Google Fonts in the <link> above. Geist is the brand sans that
-         matches the wordmark on the social card; Geist Mono carries the
-         eyebrows, code window, and terminal. */
-
       /*
+       * Stacks marketing design system, 2026 refresh.
+       *
+       * Direction: minimal modern developer-framework page with a nature
+       * motif. ONE accent (Stacks blue) across every theme and section;
+       * the nature reads come from the line-art (topography + park ridge)
+       * and the tinted surfaces, never from a second hue.
+       *
        * Three themes, switched by `data-theme` on <html>, matching the blog
-       * exactly (content/blog/.theme.css) so / and /blog are one product and a
-       * reader's choice follows them across both:
+       * (content/blog/.theme.css) so / and /blog stay one product:
        *
-       *   colored (default) - the warm NPS-brochure look: cream paper + pine.
-       *   light             - clean neutral paper-white.
-       *   dark              - forest-floor near-black, the original hero look.
+       *   colored - glacier: misty blue paper, the nature-forward default.
+       *   light   - clean paper-white with the same blue accent.
+       *   dark    - midnight lake: deep navy, brighter blue accent.
        *
-       * Tokens are ROLES (--bg, --text, --surface), not colour names. The park
-       * palette used to be addressed by colour (--cream for text, --ranger for
-       * the page), which cannot survive a light mode: "cream" text has to be
-       * dark ink on paper. The names below say what a token is FOR, so each
-       * theme can answer differently without lying.
-       *
-       * The *-rgb triplets exist because the page layers dozens of alpha washes
-       * (rgba(...)) for lines, scrims, and glows; theming those means theming
-       * the channel, not each call site.
+       * Shape rule (one radius system): panels and cards 16px, code windows
+       * and chips 10px, buttons and the theme toggle full pill. Nothing else.
        */
+
       :root[data-theme='colored'] {
         color-scheme: light;
-        --bg: #fbf3df;
-        --surface: #fff8e7;
-        --badge-bg: #fff0c8;
-        --field-bg: #fff8e7;
-        --text: #1f3026;
-        --muted: #4c5a49;
-        --canopy: #275f3c;
-        --moss: #4d7a33;
-        --river: #2f6f68;
-        --sky: #3f8e88;
-        --gold: #b06a38;
-        --clay: #a85f35;
-        --on-accent: #fff8e7;
-        --on-moss: #fff8e7;
-        --on-field: #1f3026;
-        --ink-rgb: 31, 48, 38;
-        --deep-rgb: 224, 207, 163;
-        --canopy-rgb: 39, 95, 60;
-        --moss-rgb: 77, 122, 51;
-        --river-rgb: 47, 111, 104;
-        --gold-rgb: 176, 106, 56;
-        --shadow-rgb: 90, 74, 40;
-        --line: rgba(var(--ink-rgb), 0.16);
-        --line-strong: rgba(var(--ink-rgb), 0.28);
-        --shadow: 0 24px 60px rgba(var(--shadow-rgb), 0.14);
-        --page-a: #fbf3df;
-        --page-b: #f7edd2;
-        --page-c: #fbf3df;
-        --panel-a: rgba(var(--canopy-rgb), 0.07);
-        --panel-b: rgba(var(--deep-rgb), 0.42);
+        --bg: #e9f1fb;
+        --surface: #ffffff;
+        --badge-bg: #d9e8fb;
+        --field-bg: #ffffff;
+        --text: #0d1f38;
+        --muted: #49607f;
+        --accent: #1d4ed8;
+        --accent-strong: #1e40af;
+        --button-bg: #1d4ed8;
+        --on-accent: #ffffff;
+        --on-field: #0d1f38;
+        --ink-rgb: 13, 31, 56;
+        --accent-rgb: 29, 78, 216;
+        --line: rgba(13, 31, 56, 0.12);
+        --line-strong: rgba(13, 31, 56, 0.22);
+        --shadow: 0 24px 60px rgba(30, 58, 138, 0.14);
+        --page-a: #e9f1fb;
+        --page-b: #ddeafa;
+        --page-c: #e9f1fb;
+        --panel-a: rgba(29, 78, 216, 0.07);
+        --panel-b: rgba(217, 232, 251, 0.55);
+        --nav-bg: rgba(233, 241, 251, 0.82);
+        --grad-a: #1e40af;
+        --grad-b: #2563eb;
+        --ridge-opacity: 0.28;
+        --topo-opacity: 0.05;
       }
 
       /*
-       * Light (white + Stacks blue) is the default brand look. It is the first
-       * theme a new visitor sees and the values the bare :root carries, so a
-       * no-JS render is already on-brand. The nature "colored" mode and the
-       * dark mode are opt-in from the toggle. Blue is the primary accent
-       * everywhere except the colored (park) theme, which keeps green + gold.
+       * Light (white + Stacks blue) is the no-JS default: the bare :root
+       * carries these values so a first paint is already on-brand.
        */
       :root,
       :root[data-theme='light'] {
         color-scheme: light;
         --bg: #ffffff;
-        --surface: #f5f8ff;
-        --badge-bg: #eaf1ff;
+        --surface: #f5f8fe;
+        --badge-bg: #e8f0fe;
         --field-bg: #ffffff;
-        --text: #0f1b2d;
-        --muted: #4a5568;
-        --canopy: #1d4ed8;
-        --moss: #2563eb;
-        --river: #2563eb;
-        --sky: #3b82f6;
-        --gold: #2563eb;
-        --clay: #1d4ed8;
+        --text: #0c1626;
+        --muted: #4f5f7a;
+        --accent: #2563eb;
+        --accent-strong: #1d4ed8;
+        --button-bg: #2563eb;
         --on-accent: #ffffff;
-        --on-moss: #ffffff;
-        --on-field: #0f1b2d;
-        --ink-rgb: 15, 27, 45;
-        --deep-rgb: 219, 231, 253;
-        --canopy-rgb: 37, 99, 235;
-        --moss-rgb: 37, 99, 235;
-        --river-rgb: 37, 99, 235;
-        --gold-rgb: 37, 99, 235;
-        --shadow-rgb: 30, 58, 138;
-        --line: rgba(var(--ink-rgb), 0.12);
-        --line-strong: rgba(var(--ink-rgb), 0.22);
-        --shadow: 0 24px 60px rgba(var(--shadow-rgb), 0.10);
+        --on-field: #0c1626;
+        --ink-rgb: 12, 22, 38;
+        --accent-rgb: 37, 99, 235;
+        --line: rgba(12, 22, 38, 0.10);
+        --line-strong: rgba(12, 22, 38, 0.20);
+        --shadow: 0 24px 60px rgba(30, 58, 138, 0.10);
         --page-a: #ffffff;
         --page-b: #f2f6fe;
         --page-c: #ffffff;
-        --panel-a: rgba(var(--canopy-rgb), 0.05);
-        --panel-b: rgba(var(--deep-rgb), 0.50);
+        --panel-a: rgba(37, 99, 235, 0.05);
+        --panel-b: rgba(219, 231, 253, 0.50);
+        --nav-bg: rgba(255, 255, 255, 0.80);
+        --grad-a: #1d4ed8;
+        --grad-b: #2563eb;
+        --ridge-opacity: 0.20;
+        --topo-opacity: 0.035;
       }
 
       :root[data-theme='dark'] {
         color-scheme: dark;
-        --bg: #0a0f1c;
-        --surface: #121a2e;
-        --badge-bg: #16223c;
-        --field-bg: #0f1728;
-        --text: #eaf0fb;
-        --muted: #9fb0c8;
-        --canopy: #60a5fa;
-        --moss: #93c5fd;
-        --river: #7cb2ff;
-        --sky: #bcd7ff;
-        --gold: #3b82f6;
-        --clay: #2563eb;
-        --on-accent: #ffffff;
-        --on-moss: #0a0f1c;
-        --on-field: #eaf0fb;
-        --ink-rgb: 234, 240, 251;
-        --deep-rgb: 8, 14, 28;
-        --canopy-rgb: 18, 26, 46;
-        --moss-rgb: 147, 197, 253;
-        --river-rgb: 124, 178, 255;
-        --gold-rgb: 59, 130, 246;
-        --shadow-rgb: 0, 0, 0;
-        --line: rgba(var(--ink-rgb), 0.16);
-        --line-strong: rgba(var(--ink-rgb), 0.30);
-        --shadow: 0 30px 80px rgba(var(--shadow-rgb), 0.42);
-        --page-a: #0a0f1c;
-        --page-b: #0e1730;
-        --page-c: #090e1a;
-        --panel-a: rgba(var(--canopy-rgb), 0.90);
-        --panel-b: rgba(var(--deep-rgb), 0.94);
+        --bg: #070c17;
+        --surface: #0e1728;
+        --badge-bg: #13203a;
+        --field-bg: #0c1424;
+        --text: #e9effc;
+        --muted: #97a6c4;
+        --accent: #60a5fa;
+        --accent-strong: #93c5fd;
+        --button-bg: #3b82f6;
+        --on-accent: #071021;
+        --on-field: #e9effc;
+        --ink-rgb: 233, 239, 252;
+        --accent-rgb: 96, 165, 250;
+        --line: rgba(233, 239, 252, 0.10);
+        --line-strong: rgba(233, 239, 252, 0.22);
+        --shadow: 0 30px 80px rgba(0, 0, 0, 0.45);
+        --page-a: #070c17;
+        --page-b: #0a1226;
+        --page-c: #060b14;
+        --panel-a: rgba(19, 32, 58, 0.85);
+        --panel-b: rgba(8, 14, 28, 0.92);
+        --nav-bg: rgba(7, 12, 23, 0.78);
+        --grad-a: #1e40af;
+        --grad-b: #2563eb;
+        --ridge-opacity: 0.22;
+        --topo-opacity: 0.05;
       }
 
-      /*
-       * Font roles, mirroring content/blog/.theme.css so / and /blog agree.
-       * Geist is one family across hero, headings, and body (weight carries the
-       * hierarchy, not a second family); Geist Mono carries eyebrows, labels,
-       * the code window, and the terminal.
-       */
+      /* Font roles: Geist carries display and body (weight builds the
+         hierarchy); Geist Mono carries the kicker, chips, code, terminal. */
       :root {
         --font-body: "Geist", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        --font-mono: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
         --font-hero: "Geist", var(--font-body);
         --font-head: "Geist", var(--font-body);
-        --font-label: "Geist", var(--font-body);
-        --font-mono: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
       }
 
       /* The code window and terminal stay dark in every theme, the way an
          editor and a shell are. */
       :root {
         --term-bg: #0b1220;
-        --term-fg: #86efac;
+        --term-fg: #93c5fd;
       }
 
       /* Theme toggle. Mirrors .blog-theme-toggle in content/blog/.theme.css. */
@@ -393,17 +373,8 @@ const stackLayers = [
       }
 
       .theme-toggle button:focus-visible {
-        outline: 2px solid var(--gold);
+        outline: 2px solid var(--accent);
         outline-offset: 2px;
-      }
-
-      @media (prefers-reduced-motion: reduce) {
-        .theme-toggle button {
-          transition: none;
-        }
-        .theme-toggle button:active {
-          transform: none;
-        }
       }
 
       * {
@@ -424,11 +395,13 @@ const stackLayers = [
         color: var(--text);
         font-family: var(--font-body);
         background:
-          radial-gradient(circle at 18% 16%, rgba(var(--gold-rgb), 0.2), transparent 24rem),
-          radial-gradient(circle at 88% 6%, rgba(var(--river-rgb), 0.2), transparent 28rem),
-          linear-gradient(180deg, var(--page-a) 0%, var(--page-b) 48%, var(--page-c) 100%);
+          radial-gradient(circle at 85% 4%, rgba(var(--accent-rgb), 0.14), transparent 30rem),
+          radial-gradient(circle at 8% 20%, rgba(var(--accent-rgb), 0.08), transparent 26rem),
+          linear-gradient(180deg, var(--page-a) 0%, var(--page-b) 52%, var(--page-c) 100%);
+        -webkit-font-smoothing: antialiased;
       }
 
+      /* Topographic survey lines, fixed and quiet. */
       body::before {
         position: fixed;
         inset: 0;
@@ -436,19 +409,18 @@ const stackLayers = [
         content: "";
         background-image: url("/assets/images/topography.svg");
         background-size: 760px auto;
-        opacity: 0.045;
+        opacity: var(--topo-opacity);
       }
 
+      /* The ridge line the whole site stands on. */
       body::after {
         position: fixed;
         inset: auto 0 0;
         z-index: -1;
-        height: min(34vh, 24rem);
+        height: min(30vh, 22rem);
         content: "";
-        background:
-          linear-gradient(180deg, transparent 0%, rgba(var(--deep-rgb), 0.64) 46%, rgba(var(--deep-rgb), 0.94) 100%),
-          url("/assets/images/park-ridge.svg") center bottom / cover no-repeat;
-        opacity: 0.25;
+        background: url("/assets/images/park-ridge.svg") center bottom / cover no-repeat;
+        opacity: var(--ridge-opacity);
         pointer-events: none;
       }
 
@@ -456,6 +428,46 @@ const stackLayers = [
         color: inherit;
         text-decoration: none;
       }
+
+      /* Entrance motion (MOTION 5): hero rises on load, sections rise into
+         view on scroll via CSS view() timelines. Transform + opacity only,
+         and everything collapses to static under reduced motion. */
+      @keyframes rise-in {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: none; }
+      }
+
+      .hero-animate > * {
+        animation: rise-in 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+      }
+      .hero-animate > *:nth-child(2) { animation-delay: 0.07s; }
+      .hero-animate > *:nth-child(3) { animation-delay: 0.14s; }
+      .hero-animate > *:nth-child(4) { animation-delay: 0.21s; }
+
+      .rise {
+        animation: rise-in 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+        animation-timeline: view();
+        animation-range: entry 0% entry 45%;
+      }
+
+      @supports not (animation-timeline: view()) {
+        .rise { animation: none; }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .hero-animate > *,
+        .rise {
+          animation: none;
+        }
+        .theme-toggle button {
+          transition: none;
+        }
+        .theme-toggle button:active {
+          transform: none;
+        }
+      }
+
+      /* ── Coming-soon holding card ─────────────────────────────────── */
 
       body[data-site-mode="coming-soon"] .site-content {
         display: none;
@@ -480,16 +492,15 @@ const stackLayers = [
       .mode-card {
         position: relative;
         width: min(1140px, 100%);
-        min-height: min(760px, 86vh);
+        min-height: min(720px, 86vh);
         display: flex;
         align-items: center;
         overflow: hidden;
         border: 1px solid var(--line-strong);
-        border-top: 5px solid var(--gold);
-        border-radius: 18px;
+        border-radius: 16px;
         padding: clamp(2.25rem, 6vw, 5.5rem);
         background:
-          radial-gradient(120% 92% at 84% -12%, rgba(var(--gold-rgb), 0.20), transparent 46%),
+          radial-gradient(120% 92% at 84% -12%, rgba(var(--accent-rgb), 0.16), transparent 46%),
           linear-gradient(178deg, var(--panel-a), var(--panel-b) 78%),
           var(--surface);
         box-shadow: var(--shadow);
@@ -501,33 +512,32 @@ const stackLayers = [
         content: "";
         background-image: url("/assets/images/topography.svg");
         background-size: 720px auto;
-        opacity: 0.08;
+        opacity: 0.07;
         pointer-events: none;
       }
 
-      /* layered scenery band across the bottom */
+      /* Layered ridge across the bottom of the card. */
       .mode-card::after {
         position: absolute;
         inset: auto -1% -1px;
-        height: 48%;
+        height: 40%;
         content: "";
         background: url("/assets/images/park-ridge.svg") center bottom / 102% 100% no-repeat;
         opacity: 0.3;
-        height: 40%;
         pointer-events: none;
       }
 
-      /* the sun disc */
-      .mode-sun {
+      /* Soft alpine glow where the sun would sit. */
+      .mode-glow {
         position: absolute;
         top: clamp(2rem, 9%, 5.5rem);
         right: clamp(2rem, 10%, 7rem);
         width: clamp(58px, 8vw, 108px);
         height: clamp(58px, 8vw, 108px);
         border-radius: 50%;
-        background: radial-gradient(circle at 38% 34%, #ffe6a6, var(--gold) 60%, #bd7d21);
-        box-shadow: 0 0 64px rgba(var(--gold-rgb), 0.42);
-        opacity: 0.92;
+        background: radial-gradient(circle at 38% 34%, #cfe4ff, var(--accent) 62%, var(--accent-strong));
+        box-shadow: 0 0 64px rgba(var(--accent-rgb), 0.38);
+        opacity: 0.9;
         z-index: 0;
       }
 
@@ -536,6 +546,14 @@ const stackLayers = [
         z-index: 1;
         max-width: 620px;
       }
+
+      .mode-content > * {
+        animation: rise-in 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+      }
+      .mode-content > *:nth-child(2) { animation-delay: 0.06s; }
+      .mode-content > *:nth-child(3) { animation-delay: 0.12s; }
+      .mode-content > *:nth-child(4) { animation-delay: 0.18s; }
+      .mode-content > *:nth-child(5) { animation-delay: 0.24s; }
 
       .mode-title {
         margin: 0 0 1.4rem;
@@ -547,32 +565,14 @@ const stackLayers = [
         line-height: 1.02;
       }
 
-      .mode-content > * {
-        animation: mode-in 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
-      }
-      .mode-content > *:nth-child(2) { animation-delay: 0.06s; }
-      .mode-content > *:nth-child(3) { animation-delay: 0.12s; }
-      .mode-content > *:nth-child(4) { animation-delay: 0.18s; }
-      .mode-content > *:nth-child(5) { animation-delay: 0.24s; }
-
-      @keyframes mode-in {
-        from { opacity: 0; transform: translateY(18px); }
-        to { opacity: 1; transform: none; }
-      }
-
-      @media (prefers-reduced-motion: reduce) {
-        .mode-content > * { animation: none; }
-      }
-
       .mode-lead {
         margin: 1rem 0 0;
-        color: var(--sky);
+        color: var(--accent);
         font-family: var(--font-head);
         font-size: clamp(1.1rem, 2vw, 1.5rem);
-        font-weight: 850;
+        font-weight: 700;
         line-height: 1.24;
-        letter-spacing: 0.01em;
-        text-transform: uppercase;
+        letter-spacing: -0.01em;
       }
 
       .mode-copy {
@@ -590,27 +590,6 @@ const stackLayers = [
         margin-top: 1.9rem;
         max-width: 30rem;
       }
-      .mode-subscribe input {
-        flex: 1 1 15rem;
-        min-height: 50px;
-        padding: 0 1rem;
-        border: 1px solid rgba(var(--ink-rgb), 0.26);
-        border-radius: 10px;
-        color: var(--text);
-        font-size: 1rem;
-        background: rgba(var(--deep-rgb), 0.5);
-      }
-      .mode-subscribe input::placeholder { color: rgba(var(--ink-rgb), 0.5); }
-      .mode-subscribe input:focus {
-        outline: none;
-        border-color: var(--gold);
-        box-shadow: 0 0 0 3px rgba(var(--gold-rgb), 0.24);
-      }
-      .mode-subscribe button {
-        flex: 0 0 auto;
-        min-height: 50px;
-        border-radius: 10px;
-      }
 
       .mode-meta {
         display: flex;
@@ -620,13 +599,13 @@ const stackLayers = [
         margin-top: 1.6rem;
       }
       .mode-textlink {
-        color: var(--moss);
+        color: var(--accent);
         font-weight: 700;
         font-size: 0.95rem;
-        border-bottom: 1px solid rgba(var(--moss-rgb), 0.4);
+        border-bottom: 1px solid rgba(var(--accent-rgb), 0.4);
         padding-bottom: 1px;
       }
-      .mode-textlink:hover { color: var(--gold); border-color: var(--gold); }
+      .mode-textlink:hover { color: var(--accent-strong); border-color: var(--accent-strong); }
       .mode-social { display: inline-flex; gap: 0.55rem; }
       .mode-social a {
         display: grid;
@@ -637,11 +616,13 @@ const stackLayers = [
         border-radius: 50%;
         color: var(--text);
       }
-      .mode-social a:hover { color: var(--gold); border-color: var(--gold); }
+      .mode-social a:hover { color: var(--accent); border-color: var(--accent); }
       .mode-social svg { width: 19px; height: 19px; fill: currentColor; }
 
+      /* ── Chrome: nav, shell, footer ───────────────────────────────── */
+
       .site-shell {
-        width: min(1220px, calc(100% - 40px));
+        width: min(1180px, calc(100% - 48px));
         margin: 0 auto;
       }
 
@@ -650,21 +631,22 @@ const stackLayers = [
         top: 0;
         z-index: 30;
         border-bottom: 1px solid var(--line);
-        background: rgba(var(--deep-rgb), 0.9);
+        background: var(--nav-bg);
         backdrop-filter: blur(18px);
+        -webkit-backdrop-filter: blur(18px);
       }
 
       .nav-inner {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        min-height: 70px;
+        min-height: 64px;
         gap: 1rem;
       }
 
       .brand {
         display: inline-flex;
-        gap: 0.75rem;
+        gap: 0.65rem;
         align-items: center;
         min-width: 0;
       }
@@ -673,204 +655,185 @@ const stackLayers = [
         display: grid;
         flex: 0 0 auto;
         place-items: center;
-        width: 40px;
-        height: 40px;
-        border: 2px solid var(--gold);
-        border-radius: 7px;
-        color: var(--gold);
-        font-weight: 950;
+        width: 34px;
+        height: 34px;
+        border-radius: 10px;
+        color: var(--on-accent);
+        font-weight: 800;
+        font-size: 1rem;
+        background: linear-gradient(150deg, var(--accent), var(--accent-strong));
       }
 
       .brand-name {
-        font-family: var(--font-body);
-        font-size: 1.4rem;
-        font-weight: 800;
-        letter-spacing: -0.01em;
+        font-size: 1.2rem;
+        font-weight: 750;
+        letter-spacing: -0.02em;
         line-height: 1;
       }
 
       .nav-links {
         display: flex;
-        gap: 1rem;
+        gap: 1.4rem;
         align-items: center;
-        color: rgba(var(--ink-rgb), 0.78);
-        font-family: var(--font-body);
-        font-size: 0.74rem;
-        font-weight: 900;
-        text-transform: uppercase;
+        color: var(--muted);
+        font-size: 0.86rem;
+        font-weight: 550;
       }
 
-      .nav-links a:hover,
-      .footer-link:hover {
-        color: var(--gold);
+      .nav-links a {
+        transition: color 0.15s ease;
       }
+
+      .nav-links a:hover {
+        color: var(--accent);
+      }
+
+      .nav-cta {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.45rem;
+        min-height: 36px;
+        padding: 0 0.95rem;
+        border: 1px solid var(--line-strong);
+        border-radius: 999px;
+        color: var(--text);
+        font-size: 0.82rem;
+        font-weight: 600;
+        transition: border-color 0.15s ease, transform 0.15s ease;
+      }
+
+      .nav-cta:hover {
+        border-color: var(--accent);
+        color: var(--accent);
+        transform: translateY(-1px);
+      }
+
+      /* ── Hero ─────────────────────────────────────────────────────── */
 
       .hero {
         display: grid;
-        grid-template-columns: minmax(0, 1fr) minmax(360px, 0.92fr);
-        gap: clamp(2rem, 4vw, 4rem);
+        grid-template-columns: minmax(0, 1.02fr) minmax(380px, 0.98fr);
+        gap: clamp(2rem, 4.5vw, 4.5rem);
         align-items: center;
-        padding: clamp(2.2rem, 4vw, 4rem) 0 clamp(1rem, 2vw, 1.5rem);
+        padding: clamp(2.5rem, 4.5vw, 4.5rem) 0 clamp(2.25rem, 3.5vw, 3.5rem);
       }
 
       .kicker {
         display: inline-flex;
         gap: 0.55rem;
         align-items: center;
-        margin-bottom: 1rem;
-        color: var(--moss);
+        margin-bottom: 1.1rem;
+        color: var(--accent);
         font-family: var(--font-mono);
         font-size: 0.74rem;
         font-weight: 600;
-        letter-spacing: 0.14em;
+        letter-spacing: 0.16em;
         text-transform: uppercase;
       }
 
       .kicker::before {
-        width: 42px;
+        width: 34px;
         height: 2px;
         content: "";
-        background: var(--gold);
+        background: var(--accent);
       }
 
       .hero-title {
-        margin: 0 0 0.5rem;
+        max-width: 18ch;
+        margin: 0;
         color: var(--text);
         font-family: var(--font-hero);
-        font-size: clamp(3.4rem, 6.4vw, 5.6rem);
-        font-weight: 800;
+        font-size: clamp(2.6rem, 4.2vw, 3.9rem);
+        font-weight: 780;
         letter-spacing: -0.035em;
-        line-height: 0.95;
+        line-height: 1.06;
       }
 
-      .hero-headline {
-        max-width: 640px;
-        margin: 0;
-        color: var(--sky);
-        font-family: var(--font-head);
-        font-size: clamp(1.3rem, 1.7vw, 1.68rem);
-        font-weight: 700;
-        letter-spacing: -0.01em;
-        line-height: 1.16;
+      .hero-title em {
+        color: var(--accent);
+        font-style: normal;
       }
 
       .hero-copy {
-        max-width: 690px;
-        margin: 1.3rem 0 0;
-        color: rgba(var(--ink-rgb), 0.82);
-        font-size: 1.06rem;
-        line-height: 1.66;
+        max-width: 34rem;
+        margin: 1.25rem 0 0;
+        color: var(--muted);
+        font-size: 1.08rem;
+        line-height: 1.62;
       }
 
       .hero-actions {
         display: flex;
         flex-wrap: wrap;
-        gap: 0.85rem;
-        margin-top: 2rem;
+        gap: 0.75rem;
+        margin-top: 1.9rem;
       }
 
       .button {
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        min-height: 48px;
-        padding: 0 1.1rem;
+        gap: 0.5rem;
+        min-height: 46px;
+        padding: 0 1.35rem;
         border: 1px solid var(--line-strong);
-        border-radius: 7px;
+        border-radius: 999px;
         color: var(--text);
         font-family: var(--font-body);
-        font-size: 0.78rem;
-        font-weight: 950;
-        text-transform: uppercase;
-        background: rgba(var(--ink-rgb), 0.06);
+        font-size: 0.9rem;
+        font-weight: 620;
+        white-space: nowrap;
+        background: transparent;
+        cursor: pointer;
+        transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease;
       }
 
       .button.primary {
-        border-color: var(--gold);
+        border-color: var(--button-bg);
         color: var(--on-accent);
-        background: var(--gold);
+        background: var(--button-bg);
       }
 
       .button:hover {
         transform: translateY(-1px);
-        box-shadow: 0 16px 34px rgba(var(--shadow-rgb), 0.22);
+        box-shadow: 0 14px 30px rgba(var(--accent-rgb), 0.22);
       }
 
-      .hero-metrics {
-        display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 0.75rem;
-        margin-top: 2rem;
+      .button:not(.primary):hover {
+        border-color: var(--accent);
+        color: var(--accent);
+        box-shadow: none;
       }
 
-      .metric {
-        padding: 0.8rem;
-        border: 1px solid var(--line);
-        border-radius: 7px;
-        background: rgba(var(--ink-rgb), 0.045);
+      .button:active {
+        transform: translateY(0) scale(0.98);
       }
 
-      .metric strong {
-        display: block;
-        color: var(--gold);
-        font-family: var(--font-body);
-        font-size: 1.2rem;
-      }
-
-      .metric span {
-        color: rgba(var(--ink-rgb), 0.7);
-        font-family: var(--font-body);
-        font-size: 0.7rem;
-        font-weight: 900;
-        text-transform: uppercase;
-      }
-
+      /* Real code, not a fake dashboard: an authentic defineModel() as you
+         would actually write it. The code + terminal panels stay dark in
+         every theme, the way an editor and a shell are. */
       .product-preview {
         position: relative;
-        padding: 1rem;
-        border: 1px solid var(--line-strong);
-        border-top: 5px solid var(--gold);
-        border-radius: 8px;
-        background:
-          linear-gradient(180deg, var(--panel-a), var(--panel-b)),
-          var(--surface);
-        box-shadow: var(--shadow);
-        overflow: hidden;
-      }
-
-      .product-preview::after {
-        position: absolute;
-        right: -1rem;
-        bottom: -2.4rem;
-        width: 14rem;
-        height: 14rem;
-        content: "";
-        background: url("/assets/images/marketing-park-trail.svg") center / contain no-repeat;
-        filter: invert(92%) sepia(17%) saturate(576%) hue-rotate(336deg) brightness(102%) contrast(100%);
-        opacity: 0.08;
-        pointer-events: none;
+        z-index: 1;
       }
 
       .product-preview::before {
         position: absolute;
-        inset: 0;
+        inset: -12% -14% auto auto;
+        width: 22rem;
+        height: 22rem;
         content: "";
-        background-image: url("/assets/images/topography.svg");
-        background-size: 520px auto;
-        opacity: 0.08;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(var(--accent-rgb), 0.20), transparent 65%);
+        z-index: -1;
       }
 
-      /* Real code, not a fake dashboard: an authentic defineModel() as you
-         would actually write it. The code + terminal panels stay dark in every
-         theme, the way an editor and a shell are. */
       .code-window {
-        position: relative;
-        z-index: 1;
         overflow: hidden;
-        border: 1px solid rgba(0, 0, 0, 0.45);
-        border-radius: 9px;
+        border: 1px solid rgba(96, 165, 250, 0.22);
+        border-radius: 10px;
         background: #0b1220;
-        box-shadow: 0 12px 34px rgba(3, 8, 22, 0.30);
+        box-shadow: 0 24px 60px rgba(3, 8, 22, 0.35);
       }
 
       .code-titlebar {
@@ -927,8 +890,8 @@ const stackLayers = [
       .terminal-strip {
         margin-top: 0.85rem;
         padding: 0.8rem 0.9rem;
-        border: 1px solid rgba(var(--river-rgb), 0.28);
-        border-radius: 9px;
+        border: 1px solid rgba(96, 165, 250, 0.25);
+        border-radius: 10px;
         color: var(--term-fg);
         font-family: var(--font-mono);
         font-size: 0.76rem;
@@ -939,415 +902,397 @@ const stackLayers = [
 
       .term-com { color: #5f7488; }
 
+      /* ── Sections ─────────────────────────────────────────────────── */
+
       .section {
-        padding: 4rem 0;
+        padding: clamp(2.5rem, 5vw, 4.25rem) 0;
       }
 
-      .hero + .section {
-        padding-top: 1.2rem;
-      }
-
-      .section-heading {
-        display: grid;
-        grid-template-columns: minmax(0, 0.96fr) minmax(280px, 0.72fr);
-        gap: 2rem;
-        align-items: end;
-        margin-bottom: 1.5rem;
+      .section-head {
+        max-width: 40rem;
+        margin-bottom: 1.75rem;
       }
 
       .section-title {
         margin: 0;
         color: var(--text);
         font-family: var(--font-head);
-        font-size: clamp(1.72rem, 2.45vw, 2.62rem);
-        font-weight: 700;
-        letter-spacing: -0.025em;
-        line-height: 1.06;
-        overflow-wrap: anywhere;
+        font-size: clamp(1.7rem, 2.6vw, 2.4rem);
+        font-weight: 720;
+        letter-spacing: -0.028em;
+        line-height: 1.1;
       }
 
       .section-copy {
-        margin: 0;
-        color: rgba(var(--ink-rgb), 0.72);
+        margin: 0.85rem 0 0;
+        color: var(--muted);
         font-size: 1.04rem;
-        line-height: 1.7;
-      }
-
-      .area-grid {
-        display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 1rem;
-      }
-
-      .area-card,
-      .cms-panel,
-      .deploy-panel,
-      .signup-panel {
-        border: 1px solid var(--line);
-        border-radius: 8px;
-        background: rgba(var(--deep-rgb), 0.68);
-        box-shadow: var(--shadow);
-      }
-
-      .area-card {
-        min-height: 272px;
-        padding: 1.25rem;
-      }
-
-      .area-icon {
-        display: grid;
-        place-items: center;
-        width: 78px;
-        height: 78px;
-        margin-bottom: 1.25rem;
-        border-radius: 7px;
-        background: var(--badge-bg);
-      }
-
-      .area-icon img {
-        width: 54px;
-        height: 54px;
-        object-fit: contain;
-        opacity: 0.86;
-      }
-
-      .area-card h3,
-      .cms-panel h3,
-      .deploy-panel h3,
-      .signup-panel h2 {
-        margin: 0;
-        color: var(--text);
-        font-family: var(--font-head);
-        font-size: 1.12rem;
-        font-weight: 650;
-        letter-spacing: -0.01em;
-        line-height: 1.2;
-      }
-
-      .area-card p,
-      .cms-panel p,
-      .deploy-panel p,
-      .signup-panel p {
-        color: rgba(var(--ink-rgb), 0.7);
-        font-size: 1rem;
         line-height: 1.65;
       }
 
-      .feature-grid {
+      /* Platform bento: 12-col grid, mixed spans, three cell treatments
+         (image / tint / gradient) so the grid has rhythm instead of rows
+         of identical white cards. */
+      .bento {
         display: grid;
-        grid-template-columns: repeat(4, minmax(0, 1fr));
-        gap: 0.75rem;
-        margin-top: 1rem;
+        grid-template-columns: repeat(12, minmax(0, 1fr));
+        gap: 0.9rem;
       }
 
-      .feature-item {
-        min-height: 154px;
-        padding: 0.95rem;
-        border: 1px solid rgba(var(--ink-rgb), 0.14);
-        border-radius: 7px;
-        background: rgba(var(--ink-rgb), 0.045);
-      }
-
-      .feature-item strong {
-        display: block;
-        color: var(--sky);
-        font-size: 0.76rem;
-        font-weight: 950;
-        text-transform: uppercase;
-      }
-
-      .feature-item span {
-        display: block;
-        margin-top: 0.55rem;
-        color: rgba(var(--ink-rgb), 0.72);
-        font-size: 0.88rem;
-        line-height: 1.5;
-      }
-
-      .stack-band {
-        display: grid;
-        grid-template-columns: minmax(0, 0.82fr) minmax(340px, 1.18fr);
-        gap: 1.5rem;
-        align-items: stretch;
-        padding: clamp(1.25rem, 4vw, 2rem);
+      .cell {
+        position: relative;
+        grid-column: span 4;
+        min-height: 168px;
+        overflow: hidden;
+        padding: 1.35rem;
         border: 1px solid var(--line);
-        border-top: 5px solid var(--gold);
-        border-radius: 8px;
-        background:
-          linear-gradient(135deg, var(--panel-b), var(--panel-b)),
-          var(--surface);
+        border-radius: 16px;
+        background: var(--surface);
+        transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+      }
+
+      .cell:hover {
+        transform: translateY(-2px);
+        border-color: rgba(var(--accent-rgb), 0.45);
         box-shadow: var(--shadow);
       }
 
-      .stack-map {
+      .cell--wide {
+        grid-column: span 8;
+      }
+
+      .cell--tint {
+        background:
+          radial-gradient(120% 120% at 100% 0%, rgba(var(--accent-rgb), 0.12), transparent 55%),
+          var(--surface);
+      }
+
+      .cell--gradient {
+        border-color: transparent;
+        color: #f4f8ff;
+        background: linear-gradient(135deg, var(--grad-a), var(--grad-b));
+      }
+
+      .cell--gradient p {
+        color: rgba(244, 248, 255, 0.82);
+      }
+
+      .cell h3 {
+        position: relative;
+        margin: 0 0 0.5rem;
+        font-family: var(--font-head);
+        font-size: 1.06rem;
+        font-weight: 680;
+        letter-spacing: -0.012em;
+      }
+
+      .cell p {
+        position: relative;
+        max-width: 26rem;
+        margin: 0;
+        color: var(--muted);
+        font-size: 0.94rem;
+        line-height: 1.58;
+      }
+
+      .cell-art {
+        position: absolute;
+        right: -1.5rem;
+        bottom: -2rem;
+        width: 15rem;
+        height: 15rem;
+        opacity: 0.16;
+        pointer-events: none;
+      }
+
+      .cell-art img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+      }
+
+      /* Workflow: three verb-led steps, horizontal on desktop, with a
+         connecting hairline that the numbers sit on. */
+      .steps {
         display: grid;
-        gap: 0.75rem;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 0.9rem;
       }
 
-      .stack-layer {
-        display: grid;
-        grid-template-columns: 7.2rem minmax(0, 1fr);
-        gap: 1rem;
-        align-items: center;
-        padding: 0.85rem;
-        border: 1px solid rgba(var(--ink-rgb), 0.14);
-        border-radius: 7px;
-        background: rgba(var(--ink-rgb), 0.05);
+      .step {
+        position: relative;
+        padding: 1.35rem;
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        background: var(--surface);
       }
 
-      .stack-layer strong {
-        color: var(--gold);
-        font-size: 0.72rem;
-        font-weight: 950;
-        text-transform: uppercase;
+      .step em {
+        display: inline-grid;
+        place-items: center;
+        width: 40px;
+        height: 40px;
+        margin-bottom: 0.95rem;
+        border-radius: 999px;
+        color: var(--accent);
+        font-style: normal;
+        font-family: var(--font-mono);
+        font-size: 0.85rem;
+        font-weight: 600;
+        background: var(--badge-bg);
       }
 
-      .stack-layer span {
-        color: rgba(var(--ink-rgb), 0.78);
-        line-height: 1.45;
+      .step h3 {
+        margin: 0 0 0.45rem;
+        font-family: var(--font-head);
+        font-size: 1.05rem;
+        font-weight: 680;
+        letter-spacing: -0.012em;
       }
 
+      .step p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 0.92rem;
+        line-height: 1.58;
+      }
+
+      .step p code,
+      .section-copy code {
+        padding: 0.08em 0.38em;
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        color: var(--accent);
+        font-family: var(--font-mono);
+        font-size: 0.85em;
+        background: var(--badge-bg);
+      }
+
+      /* CMS: split copy + compact resource grid. */
       .cms-panel {
         display: grid;
-        grid-template-columns: minmax(0, 0.82fr) minmax(320px, 1.18fr);
-        gap: 1.5rem;
-        padding: clamp(1.25rem, 4vw, 2rem);
+        grid-template-columns: minmax(0, 0.85fr) minmax(340px, 1.15fr);
+        gap: clamp(1.5rem, 3.5vw, 3rem);
+        align-items: center;
+        padding: clamp(1.5rem, 3.5vw, 2.75rem);
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        background:
+          radial-gradient(140% 120% at 0% 0%, rgba(var(--accent-rgb), 0.08), transparent 50%),
+          var(--surface);
+        box-shadow: var(--shadow);
       }
 
       .resource-grid {
         display: grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 0.75rem;
+        gap: 0.7rem;
       }
 
       .resource {
-        padding: 1rem;
-        border: 1px solid rgba(var(--ink-rgb), 0.14);
-        border-radius: 7px;
-        background: rgba(var(--ink-rgb), 0.045);
+        padding: 0.95rem 1rem;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        background: rgba(var(--ink-rgb), 0.03);
       }
 
       .resource strong {
         display: block;
-        color: var(--gold);
-        font-family: var(--font-body);
-        font-size: 0.72rem;
-        text-transform: uppercase;
+        color: var(--accent);
+        font-size: 0.82rem;
+        font-weight: 680;
       }
 
       .resource span {
         display: block;
-        margin-top: 0.35rem;
-        color: rgba(var(--ink-rgb), 0.72);
-        line-height: 1.45;
+        margin-top: 0.3rem;
+        color: var(--muted);
+        font-size: 0.85rem;
+        line-height: 1.5;
       }
 
+      /* Deploy: full-width band, route chips in mono, terminal proof. */
       .deploy-panel {
         display: grid;
-        grid-template-columns: minmax(0, 0.92fr) minmax(330px, 1.08fr);
-        gap: 1.25rem;
-        padding: clamp(1.25rem, 4vw, 2rem);
-        overflow: hidden;
+        grid-template-columns: minmax(0, 1.05fr) minmax(320px, 0.95fr);
+        gap: clamp(1.5rem, 3.5vw, 3rem);
+        align-items: center;
+        padding: clamp(1.5rem, 3.5vw, 2.75rem);
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        background:
+          radial-gradient(140% 130% at 100% 0%, rgba(var(--accent-rgb), 0.10), transparent 52%),
+          var(--surface);
+        box-shadow: var(--shadow);
       }
 
-      .route-list {
-        display: grid;
-        gap: 0.7rem;
-        margin-top: 1rem;
-      }
-
-      .route {
+      .route-chips {
         display: flex;
-        justify-content: space-between;
-        gap: 1rem;
-        padding: 0.75rem 0;
-        border-bottom: 1px solid rgba(var(--ink-rgb), 0.12);
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-top: 1.4rem;
       }
 
-      .route span {
-        color: rgba(var(--ink-rgb), 0.66);
+      .chip {
+        display: inline-flex;
+        align-items: center;
+        min-height: 34px;
+        padding: 0 0.85rem;
+        border: 1px solid var(--line-strong);
+        border-radius: 999px;
+        color: var(--accent);
+        font-family: var(--font-mono);
+        font-size: 0.78rem;
+        font-weight: 500;
+        background: var(--badge-bg);
       }
 
-      .route strong {
-        color: var(--river);
+      .deploy-terminal {
+        padding: 1.1rem 1.2rem;
+        border: 1px solid rgba(96, 165, 250, 0.25);
+        border-radius: 10px;
+        color: #ccd6e6;
+        font-family: var(--font-mono);
+        font-size: 0.8rem;
+        line-height: 1.75;
+        background: var(--term-bg);
+        white-space: pre-wrap;
       }
 
-      .workflow {
-        display: grid;
-        gap: 0.8rem;
-      }
+      .term-ok { color: #7fdca4; }
+      .term-dim { color: #5f7488; }
 
-      .workflow-step {
-        display: grid;
-        grid-template-columns: 3.5rem minmax(0, 1fr);
-        gap: 0.9rem;
-        padding: 0.9rem;
-        border: 1px solid rgba(var(--ink-rgb), 0.14);
-        border-radius: 7px;
-        background: rgba(var(--ink-rgb), 0.045);
-      }
-
-      .workflow-step em {
-        color: var(--gold);
-        font-style: normal;
-        font-family: var(--font-body);
-        font-size: 1.2rem;
-        font-weight: 950;
-      }
-
-      .workflow-step strong {
-        display: block;
-        color: var(--text);
-      }
-
-      .workflow-step span {
-        display: block;
-        margin-top: 0.3rem;
-        color: rgba(var(--ink-rgb), 0.66);
-        line-height: 1.45;
-      }
-
+      /* Signup: one quiet centered band. */
       .signup-panel {
         display: grid;
         grid-template-columns: minmax(0, 1fr) auto;
-        gap: 1rem;
+        gap: 1.25rem;
         align-items: center;
-        padding: clamp(1.25rem, 4vw, 2rem);
+        padding: clamp(1.5rem, 3.5vw, 2.5rem);
+        border: 1px solid var(--line);
+        border-radius: 16px;
         background:
-          url("/assets/images/topography.svg") center / 620px auto,
-          linear-gradient(135deg, var(--panel-a), var(--panel-b)),
+          radial-gradient(120% 140% at 8% 0%, rgba(var(--accent-rgb), 0.09), transparent 46%),
           var(--surface);
-        background-blend-mode: soft-light, normal, normal;
+        box-shadow: var(--shadow);
       }
 
       .signup-panel form {
         display: flex;
-        gap: 0.75rem;
-        width: min(440px, 100%);
+        gap: 0.6rem;
+        width: min(430px, 100%);
       }
 
-      input {
+      input[type="email"] {
         width: 100%;
-        min-height: 48px;
-        padding: 0 0.9rem;
-        border: 1px solid rgba(var(--deep-rgb), 0.28);
-        border-radius: 7px;
+        min-height: 46px;
+        padding: 0 1rem;
+        border: 1px solid var(--line-strong);
+        border-radius: 999px;
         color: var(--on-field);
         font: inherit;
-        font-weight: 850;
+        font-size: 0.92rem;
         background: var(--field-bg);
       }
 
-      input:focus {
-        border-color: var(--gold);
-        outline: 3px solid rgba(var(--gold-rgb), 0.25);
+      input[type="email"]::placeholder {
+        color: var(--muted);
+      }
+
+      input[type="email"]:focus {
+        border-color: var(--accent);
+        outline: 3px solid rgba(var(--accent-rgb), 0.22);
       }
 
       .site-footer {
-        padding: 2rem 0 3rem;
-        color: rgba(var(--ink-rgb), 0.64);
-        font-size: 0.78rem;
-        font-weight: 850;
-        text-transform: uppercase;
+        padding: 1.5rem 0 3rem;
+        color: var(--muted);
+        font-size: 0.84rem;
       }
 
       .footer-inner {
         display: flex;
+        flex-wrap: wrap;
         justify-content: space-between;
-        gap: 1rem;
+        gap: 0.75rem 1.5rem;
         border-top: 1px solid var(--line);
         padding-top: 1.25rem;
       }
+
+      .footer-link {
+        color: var(--muted);
+        font-weight: 550;
+      }
+
+      .footer-link:hover {
+        color: var(--accent);
+      }
+
+      /* ── Responsive ───────────────────────────────────────────────── */
 
       @media (max-width: 920px) {
         .site-shell {
           width: min(100% - 32px, 720px);
         }
 
-        .nav-inner {
-          min-height: 64px;
-        }
-
-        .nav-links {
-          gap: 0.7rem;
-          font-size: 0.66rem;
-        }
-
         .hero,
-        .section-heading,
         .cms-panel,
         .deploy-panel,
-        .signup-panel,
-        .stack-band {
+        .signup-panel {
           grid-template-columns: minmax(0, 1fr);
         }
 
         .hero {
-          gap: 1.5rem;
-          padding: 2rem 0 2.25rem;
+          gap: 2rem;
+          padding: 2.25rem 0 2.5rem;
         }
 
         .hero-title {
-          font-size: clamp(4.4rem, 22vw, 7rem);
+          max-width: 100%;
+          font-size: clamp(2.4rem, 9vw, 3.4rem);
         }
 
-        .kicker {
-          font-size: 0.68rem;
+        .cell,
+        .cell--wide {
+          grid-column: span 6;
         }
 
-        .kicker::before {
-          width: 36px;
+        .steps {
+          grid-template-columns: minmax(0, 1fr);
         }
 
-        .hero-headline {
-          font-size: clamp(1.2rem, 5.4vw, 1.74rem);
-        }
-
-        .hero-copy {
-          font-size: 1.02rem;
-          line-height: 1.55;
-        }
-
-        .hero-actions {
-          display: grid;
-          grid-template-columns: 1fr;
-          gap: 0.6rem;
-          margin-top: 1.25rem;
-        }
-
-        .button {
+        .signup-panel form {
           width: 100%;
-          min-height: 44px;
-          padding: 0 0.85rem;
-          font-size: 0.72rem;
+        }
+      }
+
+      @media (max-width: 600px) {
+        .nav-inner {
+          min-height: 58px;
         }
 
-        .hero-metrics,
-        .area-grid,
-        .resource-grid {
-          grid-template-columns: 1fr;
+        .nav-links {
+          gap: 0.9rem;
+          font-size: 0.78rem;
         }
 
-        .feature-grid {
-          grid-template-columns: repeat(2, minmax(0, 1fr));
-        }
-
-        .hero-metrics,
-        .product-preview {
+        .nav-cta {
           display: none;
         }
 
-        .section {
-          padding: 2.75rem 0;
+        .cell,
+        .cell--wide {
+          grid-column: span 12;
+          min-height: 0;
         }
 
-        .hero + .section {
-          padding-top: 1.5rem;
+        .resource-grid {
+          grid-template-columns: minmax(0, 1fr);
         }
 
-        .section-title {
-          font-size: clamp(1.85rem, 9vw, 2.7rem);
-          line-height: 1.05;
+        .hero-actions {
+          flex-direction: column;
+          align-items: stretch;
         }
 
         .signup-panel form {
@@ -1355,46 +1300,12 @@ const stackLayers = [
         }
       }
 
-      @media (max-width: 560px) {
-        .nav-inner {
-          flex-wrap: wrap;
-          justify-content: center;
-          padding: 0.8rem 0;
-        }
-
-        .brand,
-        .nav-links {
-          width: 100%;
-          justify-content: center;
-        }
-
-        .nav-links {
-          flex-wrap: wrap;
-        }
-
-        .feature-grid {
-          grid-template-columns: 1fr;
-        }
-
-        .product-preview {
-          padding: 0.7rem;
-        }
-
-        .route {
-          grid-template-columns: 1fr;
-          flex-direction: column;
-        }
-
-        .terminal-strip {
-          font-size: 0.72rem;
-        }
-      }
     </style>
   </head>
   <body data-site-mode="{{ siteMode }}" data-coming-soon-bypass-enabled="{{ comingSoonBypassEnabled }}" data-coming-soon-bypass="{{ comingSoonBypassToken }}">
     <section class="mode-screen" aria-labelledby="coming-soon-heading">
       <div class="mode-card">
-        <span class="mode-sun" aria-hidden="true"></span>
+        <span class="mode-glow" aria-hidden="true"></span>
         <div class="mode-content">
           <h1 id="coming-soon-heading" class="mode-title">{{ appName }}</h1>
           <p class="mode-lead">The trailhead is almost ready.</p>
@@ -1432,26 +1343,21 @@ const stackLayers = [
               <a href="{{ link.url }}" {{ link.native ? 'data-no-router' : '' }}>{{ link.label }}</a>
             @endforeach
           </div>
+          <a class="nav-cta" href="https://github.com/stacksjs/stacks">GitHub</a>
         </div>
       </nav>
 
       <main>
         <section class="hero site-shell">
-          <div>
+          <div class="hero-animate">
             <span class="kicker">Full-stack TypeScript framework</span>
-            <h1 class="hero-title">{{ appName }}</h1>
-            <p class="hero-headline">The TypeScript framework for product teams.</p>
+            <h1 class="hero-title">The whole stack, <em>one framework.</em></h1>
             <p class="hero-copy">
-              Stacks gives TypeScript teams the web framework essentials in one place: routing, STX views, models, auth, CMS, queues, mail, storage, tests, docs, blog, APIs, and cloud deployment through Buddy.
+              Routing, views, models, auth, CMS, queues, mail, and cloud deploys. First-party, fully typed, and designed to work together.
             </p>
             <div class="hero-actions">
               <a class="button primary" href="/docs" data-no-router>Read the docs</a>
               <a class="button" href="#platform">Explore features</a>
-            </div>
-            <div class="hero-metrics" aria-label="Stacks platform coverage">
-              <div class="metric"><strong>12+</strong><span>First-party systems</span></div>
-              <div class="metric"><strong>CMS</strong><span>Content and APIs</span></div>
-              <div class="metric"><strong>Cloud</strong><span>One deploy path</span></div>
             </div>
           </div>
 
@@ -1477,110 +1383,89 @@ const stackLayers = [
   },
 })</code></pre>
             </div>
-            <div class="terminal-strip">$ ./buddy migrate      <span class="term-com"># models to migrations, applied</span>
-$ ./buddy deploy       <span class="term-com"># web, docs, blog, API, cloud</span></div>
+            <div class="terminal-strip">$ buddy migrate      <span class="term-com"># models to migrations, applied</span>
+$ buddy deploy       <span class="term-com"># web, docs, blog, API, cloud</span></div>
           </aside>
         </section>
 
         <section id="platform" class="section site-shell" aria-labelledby="platform-heading">
-        <div class="section-heading">
-          <div>
-            <h2 id="platform-heading" class="section-title">A complete web framework.</h2>
+          <div class="section-head rise">
+            <h2 id="platform-heading" class="section-title">One install, every layer.</h2>
+            <p class="section-copy">Each system is first-party and shares the same types, config, and tooling. No glue code, no plugin roulette.</p>
           </div>
-          <p class="section-copy">Routing, views, models, auth, queues, storage, tests, content, and deployment are first-party. The pieces are designed to move together instead of arriving as separate projects.</p>
-        </div>
-
-        <div class="area-grid">
-          @foreach (productAreas as area)
-            <article class="area-card">
-              <div class="area-icon">
-                <img src="{{ area.image }}" alt="" width="54" height="54" loading="lazy" decoding="async">
-              </div>
-              <h3>{{ area.title }}</h3>
-              <p>{{ area.text }}</p>
-            </article>
-          @endforeach
-        </div>
-
-        <div class="feature-grid">
-          @foreach (platformFeatures as feature)
-            <div class="feature-item">
-              <strong>{{ feature.title }}</strong>
-              <span>{{ feature.text }}</span>
-            </div>
-          @endforeach
-        </div>
+          <div class="bento">
+            @foreach (platformCells as cell)
+              <article class="cell rise {{ cell.span === 'wide' ? 'cell--wide' : '' }} {{ cell.tone === 'tint' ? 'cell--tint' : '' }} {{ cell.tone === 'gradient' ? 'cell--gradient' : '' }}">
+                @if (cell.image)
+                  <span class="cell-art" aria-hidden="true"><img src="{{ cell.image }}" alt="" width="240" height="240" loading="lazy" decoding="async"></span>
+                @endif
+                <h3>{{ cell.title }}</h3>
+                <p>{{ cell.text }}</p>
+              </article>
+            @endforeach
+          </div>
         </section>
 
-        <section class="section site-shell" aria-labelledby="stack-heading">
-        <div class="stack-band">
-          <div>
-            <h2 id="stack-heading" class="section-title">From idea to release.</h2>
-            <p class="section-copy">Build product surfaces, operate the dashboard, scale background work, and deploy the public site from the same project. Stacks keeps the application, CMS, docs, blog, APIs, and cloud config on one route.</p>
+        <section class="section site-shell" aria-labelledby="workflow-heading">
+          <div class="section-head rise">
+            <h2 id="workflow-heading" class="section-title">From first commit to production.</h2>
+            <p class="section-copy">Buddy is the command center. It scaffolds, serves, tests, builds, and deploys the whole project.</p>
           </div>
-          <div class="stack-map">
-            @foreach (stackLayers as layer)
-              <div class="stack-layer">
-                <strong>{{ layer.label }}</strong>
-                <span>{{ layer.value }}</span>
+          <div class="steps">
+            @foreach (workflowSteps as step)
+              <div class="step rise">
+                <em aria-hidden="true">{{ step.label }}</em>
+                <h3>{{ step.title }}</h3>
+                <p>{{ step.text }}</p>
               </div>
             @endforeach
           </div>
-        </div>
         </section>
 
         <section id="cms" class="section site-shell" aria-labelledby="cms-heading">
-        <div class="cms-panel">
-          <div>
-            <h2 id="cms-heading" class="section-title">Built-in CMS.</h2>
-            <p class="section-copy">Markdown stays friendly for developers, while the dashboard gives editors real resource management for posts, pages, taxonomy, media, docs, blog content, and model-backed custom resources.</p>
+          <div class="cms-panel rise">
+            <div class="section-head" style="margin-bottom: 0">
+              <h2 id="cms-heading" class="section-title">A CMS your editors will actually use.</h2>
+              <p class="section-copy">Markdown for developers, a real dashboard for editors. Content ships with generated APIs, so the site, docs, and blog stay in the same repo.</p>
+            </div>
+            <div class="resource-grid">
+              @foreach (cmsResources as resource)
+                <div class="resource"><strong>{{ resource.title }}</strong><span>{{ resource.text }}</span></div>
+              @endforeach
+            </div>
           </div>
-          <div class="resource-grid">
-            @foreach (cmsResources as resource)
-              <div class="resource"><strong>{{ resource.title }}</strong><span>{{ resource.text }}</span></div>
-            @endforeach
-          </div>
-        </div>
         </section>
 
         <section id="deploy" class="section site-shell" aria-labelledby="deploy-heading">
-        <div class="deploy-panel">
-          <div>
-            <h2 id="deploy-heading" class="section-title">Deploy every surface.</h2>
-            <p class="section-copy">The same deploy path builds the homepage, docs, blog, CMS API, application server, mail service, DNS, CDN, storage, and static assets.</p>
-            <div class="route-list">
-              <div class="route"><span>Marketing</span><strong>stacksjs.com</strong></div>
-              <div class="route"><span>Docs</span><strong>stacksjs.com/docs</strong></div>
-              <div class="route"><span>Blog</span><strong>stacksjs.com/blog</strong></div>
-              <div class="route"><span>API</span><strong>stacksjs.com/api</strong></div>
-              <div class="route"><span>Dashboard</span><strong>stacksjs.com/dashboard</strong></div>
-            </div>
-          </div>
-          <div class="workflow">
-            @foreach (workflowSteps as step)
-              <div class="workflow-step">
-                <em>{{ step.label }}</em>
-                <div>
-                  <strong>{{ step.title }}</strong>
-                  <span>{{ step.text }}</span>
-                </div>
+          <div class="deploy-panel rise">
+            <div class="section-head" style="margin-bottom: 0">
+              <h2 id="deploy-heading" class="section-title">One command to production.</h2>
+              <p class="section-copy"><code>buddy deploy</code> builds the site, docs, blog, and API, then publishes DNS, CDN, storage, and mail from the same config.</p>
+              <div class="route-chips" aria-label="Deployed surfaces">
+                @foreach (deployRoutes as route)
+                  <span class="chip">{{ route.url }}</span>
+                @endforeach
               </div>
-            @endforeach
+            </div>
+            <div class="deploy-terminal">$ buddy deploy
+<span class="term-ok">✓</span> web      <span class="term-dim">built and uploaded</span>
+<span class="term-ok">✓</span> docs     <span class="term-dim">mounted at /docs</span>
+<span class="term-ok">✓</span> blog     <span class="term-dim">feed and sitemap live</span>
+<span class="term-ok">✓</span> cloud    <span class="term-dim">DNS, CDN, TLS, mail</span></div>
           </div>
-        </div>
         </section>
 
         <section class="section site-shell" aria-labelledby="signup-heading">
-        <div class="signup-panel">
-          <div>
-            <h2 id="signup-heading" class="section-title">Get product updates.</h2>
-            <p>Framework updates, CMS improvements, and deployment notes by email.</p>
+          <div class="signup-panel rise">
+            <div class="section-head" style="margin-bottom: 0">
+              <h2 id="signup-heading" class="section-title">Release notes, occasionally.</h2>
+              <p class="section-copy">Framework updates and deployment notes by email. No noise.</p>
+            </div>
+            <form action="/api/email/subscribe" method="POST">
+              <input type="email" name="email" placeholder="you@example.com" autocomplete="email" aria-label="Email address" required>
+              <button class="button primary" type="submit">Subscribe</button>
+            </form>
           </div>
-          <form action="/api/email/subscribe" method="POST">
-            <input type="email" name="email" placeholder="you@example.com" autocomplete="email" required>
-            <button class="button primary" type="submit">Subscribe</button>
-          </form>
-        </div>
         </section>
       </main>
 
@@ -1591,10 +1476,11 @@ $ ./buddy deploy       <span class="term-com"># web, docs, blog, API, cloud</spa
         </div>
       </footer>
     </div>
+
     <!-- Same control, position, and glyphs as the blog's, so switching theme
          feels like one site rather than two that happen to share a palette. -->
     <div class="theme-toggle" role="group" aria-label="Theme">
-      <button type="button" data-t="colored" title="Park theme" aria-label="Park theme" onclick="stxTheme('colored')">🌲</button>
+      <button type="button" data-t="colored" title="Glacier theme" aria-label="Glacier theme" onclick="stxTheme('colored')">🌲</button>
       <button type="button" data-t="light" title="Light theme" aria-label="Light theme" onclick="stxTheme('light')">☀</button>
       <button type="button" data-t="dark" title="Dark theme" aria-label="Dark theme" onclick="stxTheme('dark')">🌙</button>
     </div>

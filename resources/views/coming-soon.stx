@@ -65,13 +65,42 @@ const siteDescription = 'Stacks is a full-stack TypeScript framework for web app
         color: var(--text);
         font-family: var(--font-body);
         background:
-          radial-gradient(120% 90% at 88% -8%, rgba(37, 99, 235, 0.10), transparent 46%),
-          var(--bg);
+          radial-gradient(120% 90% at 88% -8%, rgba(37, 99, 235, 0.12), transparent 46%),
+          linear-gradient(180deg, var(--bg) 0%, var(--surface) 55%, var(--bg) 100%);
         -webkit-font-smoothing: antialiased;
       }
 
+      /* Nature motif, same as the marketing page: quiet topography lines
+         behind everything and the park ridge the page stands on. */
+      body::before {
+        position: fixed;
+        inset: 0;
+        z-index: -2;
+        content: "";
+        background-image: url("/assets/images/topography.svg");
+        background-size: 760px auto;
+        opacity: 0.045;
+      }
+
+      body::after {
+        position: fixed;
+        inset: auto 0 0;
+        z-index: -1;
+        height: min(30vh, 22rem);
+        content: "";
+        background: url("/assets/images/park-ridge.svg") center bottom / cover no-repeat;
+        opacity: 0.22;
+        pointer-events: none;
+      }
+
       .card {
-        width: min(620px, 100%);
+        position: relative;
+        width: min(640px, 100%);
+        padding: clamp(1.75rem, 4vw, 2.75rem);
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        background: var(--surface);
+        box-shadow: 0 24px 60px rgba(30, 58, 138, 0.12);
       }
 
       .brand {
@@ -87,11 +116,11 @@ const siteDescription = 'Stacks is a full-stack TypeScript framework for web app
         width: 40px;
         height: 40px;
         border-radius: 10px;
-        border: 1.5px solid var(--brand);
-        color: var(--brand);
+        color: #ffffff;
         font-weight: 800;
         font-size: 1.25rem;
         line-height: 1;
+        background: linear-gradient(150deg, var(--brand), var(--brand-strong));
       }
 
       .brand-name {
@@ -137,9 +166,9 @@ const siteDescription = 'Stacks is a full-stack TypeScript framework for web app
         flex: 1 1 auto;
         min-width: 0;
         min-height: 50px;
-        padding: 0 1rem;
+        padding: 0 1.15rem;
         border: 1px solid var(--line);
-        border-radius: 10px;
+        border-radius: 999px;
         color: var(--text);
         font: inherit;
         background: var(--field-bg);
@@ -156,9 +185,9 @@ const siteDescription = 'Stacks is a full-stack TypeScript framework for web app
       .cs-btn {
         flex: 0 0 auto;
         min-height: 50px;
-        padding: 0 1.35rem;
+        padding: 0 1.5rem;
         border: 0;
-        border-radius: 10px;
+        border-radius: 999px;
         color: var(--on-brand);
         font: inherit;
         font-weight: 700;

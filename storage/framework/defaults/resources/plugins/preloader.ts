@@ -72,20 +72,11 @@ if (!skipPreloader) {
   // Auto-load .env files based on environment
   // Set quiet: true to prevent duplicate logging across multiple processes
   //
-  // keysFile MUST be passed here: autoLoadEnv only resolves a decryption
-  // private key from a keys FILE when explicitly told which one to read —
-  // without it, an encrypted .env.production (DOTENV_PUBLIC_KEY_PRODUCTION
-  // + `encrypted:...` values) loads with every encrypted value left as raw
-  // ciphertext in process.env, silently breaking anything that reads
-  // process.env.SOME_SECRET directly (e.g. deploy-time credentials like
-  // HCLOUD_TOKEN/PORKBUN_API_KEY) with no error — it just looks like a
-  // bogus/expired credential downstream.
-  // Pass the resolved env so autoLoadEnv reads `.env.<env>` with the matching
-  // `DOTENV_PRIVATE_KEY_<ENV>` (it defaults to `development` otherwise), and
-  // overload so this decrypted pass overrides the still-encrypted values the
-  // earlier `@stacksjs/env/plugin.js` bunfig preload seeds into process.env
-  // (loadEnv won't overwrite already-set vars without it).
-  autoLoadEnv({ quiet: true, keysFile: '.env.keys', env: process.env.APP_ENV, overload: true })
+  // Pass the resolved env so deploy commands deterministically select their
+  // matching `.env.<env>` file. autoLoadEnv discovers `.env.keys` by default,
+  // replaces ciphertext that Bun preloaded, and preserves genuine shell/CI
+  // overrides while applying environment-specific file precedence.
+  autoLoadEnv({ quiet: true, env: process.env.APP_ENV })
 }
 
 // stx template engine plugin

@@ -221,7 +221,7 @@ function kill(s: Session): void {
 
 interface PageState { consoleErrors: string[], console: string[], responses: { url: string, status: number, ms: number, type: string }[], mainStatus: number | null }
 
-async function gotoAndInstrument(cdp: Cdp, url: string, opts: { viewport?: { w: number, h: number }, scale?: number, timeoutMs?: number } = {}): Promise<PageState> {
+async function gotoAndInstrument(cdp: Cdp, url: string, opts: { viewport?: { w: number, h: number }, scale?: number, timeoutMs?: number, cookies?: string[], settleMs?: number } = {}): Promise<PageState> {
   const state: PageState = { consoleErrors: [], console: [], responses: [], mainStatus: null }
   const startById = new Map<string, number>()
 
@@ -229,6 +229,23 @@ async function gotoAndInstrument(cdp: Cdp, url: string, opts: { viewport?: { w: 
   await cdp.send('Runtime.enable')
   await cdp.send('Log.enable')
   await cdp.send('Network.enable')
+
+  // Pre-seed cookies (e.g. maintenance/coming-soon bypass tokens) so gated
+  // pages can be QA'd headlessly. Each entry is a `name=value` pair scoped
+  // to the target origin.
+  if (opts.cookies?.length) {
+    const origin = new URL(url)
+    for (const entry of opts.cookies) {
+      const eq = entry.indexOf('=')
+      if (eq === -1) continue
+      await cdp.send('Network.setCookie', {
+        name: entry.slice(0, eq).trim(),
+        value: entry.slice(eq + 1).trim(),
+        domain: origin.hostname,
+        path: '/',
+      })
+    }
+  }
 
   if (opts.viewport) {
     await cdp.send('Emulation.setDeviceMetricsOverride', {
@@ -268,7 +285,9 @@ async function gotoAndInstrument(cdp: Cdp, url: string, opts: { viewport?: { w: 
   await cdp.send('Page.navigate', { url })
   try { await cdp.waitFor('Page.loadEventFired', () => true, opts.timeoutMs ?? 15_000) }
   catch { /* SSE/long-poll pages may never fire load; proceed after a settle */ }
-  await Bun.sleep(700)
+  // Settle after load so load-triggered entrance animations finish before a
+  // screenshot; pages with longer motion pass --settle to stretch it.
+  await Bun.sleep(opts.settleMs ?? 700)
   return state
 }
 
@@ -304,20 +323,35 @@ async function captureScreenshot(cdp: Cdp, opts: { full?: boolean, element?: str
 
 // ── CLI ─────────────────────────────────────────────────────────────────────
 
-function parseFlags(args: string[]): { positional: string[], flags: Record<string, string | boolean> } {
+function parseFlags(args: string[]): { positional: string[], flags: Record<string, string | boolean | Array<string | boolean>> } {
   const positional: string[] = []
-  const flags: Record<string, string | boolean> = {}
+  const flags: Record<string, string | boolean | Array<string | boolean>> = {}
   for (let i = 0; i < args.length; i++) {
     const a = args[i]
     if (a.startsWith('--')) {
       const key = a.slice(2)
       const next = args[i + 1]
-      if (next && !next.startsWith('--')) { flags[key] = next; i++ }
-      else flags[key] = true
+      const value: string | boolean = (next && !next.startsWith('--')) ? next : true
+      if (typeof value === 'string') i++
+      // Repeated flags (--cookie a=1 --cookie b=2) collect into an array.
+      if (key in flags) {
+        const prev = flags[key]
+        flags[key] = Array.isArray(prev) ? [...prev, value] : [prev as string | boolean, value]
+      }
+      else {
+        flags[key] = value
+      }
     }
     else { positional.push(a) }
   }
   return { positional, flags }
+}
+
+/** Normalize a (possibly repeated) flag into a flat string list. */
+function flagList(value: string | boolean | Array<string | boolean> | undefined): string[] {
+  if (value == null || value === false) return []
+  const arr = Array.isArray(value) ? value : [value]
+  return arr.filter((v): v is string => typeof v === 'string')
 }
 
 const BREAKPOINTS = [
@@ -335,15 +369,19 @@ async function main() {
 
   if (!command || command === 'help' || !url) {
     console.log('Usage: bun browse.ts <navigate|screenshot|responsive|monitor|snapshot> <url> [flags]')
+    console.log('  --cookie "name=value"   repeatable; pre-seeds cookies (e.g. coming-soon bypass)')
+    console.log('  --settle 1500           ms to wait after load before acting (default 700; stretch for entrance animations)')
     process.exit(url ? 0 : 1)
   }
 
   const session = await launch()
+  const cookies = flagList(flags.cookie)
+  const settleMs = flags.settle ? Number(flags.settle) : undefined
   try {
     if (command === 'navigate' || command === 'go') {
       const cdp = await openPage(session.port)
       const t0 = performance.now()
-      const state = await gotoAndInstrument(cdp, url)
+      const state = await gotoAndInstrument(cdp, url, { cookies, settleMs })
       const loadMs = Math.round(performance.now() - t0)
       console.log(JSON.stringify({
         browser: session.browser,
@@ -363,7 +401,7 @@ async function main() {
       const scale = flags.scale ? Number(flags.scale) : 1
       const out = (flags.out as string) || `.stacks/shots/${new URL(url).pathname.replace(/[^a-z0-9]+/gi, '-').replace(/^-|-$/g, '') || 'home'}.png`
       mkdirSync(out.split('/').slice(0, -1).join('/') || '.', { recursive: true })
-      await gotoAndInstrument(cdp, url, { viewport: { w: vp[0], h: vp[1] }, scale })
+      await gotoAndInstrument(cdp, url, { viewport: { w: vp[0], h: vp[1] }, scale, cookies, settleMs })
       const png = await captureScreenshot(cdp, { full: !!flags.full, element: flags.element as string | undefined })
       await Bun.write(out, png)
       console.log(JSON.stringify({ url, out, viewport: `${vp[0]}x${vp[1]}`, scale, full: !!flags.full, element: flags.element ?? null, bytes: png.length }, null, 2))
@@ -376,7 +414,7 @@ async function main() {
       const results: any[] = []
       for (const bp of BREAKPOINTS) {
         const cdp = await openPage(session.port)
-        await gotoAndInstrument(cdp, url, { viewport: { w: bp.w, h: bp.h } })
+        await gotoAndInstrument(cdp, url, { viewport: { w: bp.w, h: bp.h }, cookies, settleMs })
         const overflow = await cdp.send('Runtime.evaluate', {
           expression: 'document.documentElement.scrollWidth > window.innerWidth ? document.documentElement.scrollWidth - window.innerWidth : 0',
           returnByValue: true,
@@ -392,7 +430,7 @@ async function main() {
     else if (command === 'monitor') {
       const cdp = await openPage(session.port)
       const ms = flags.ms ? Number(flags.ms) : 5000
-      const state = await gotoAndInstrument(cdp, url)
+      const state = await gotoAndInstrument(cdp, url, { cookies, settleMs })
       await Bun.sleep(ms)
       const failed = state.responses.filter(r => r.status >= 400)
       const slow = state.responses.filter(r => r.ms > 3000)
@@ -409,7 +447,7 @@ async function main() {
 
     else if (command === 'snapshot') {
       const cdp = await openPage(session.port)
-      await gotoAndInstrument(cdp, url)
+      await gotoAndInstrument(cdp, url, { cookies, settleMs })
       const expr = `(() => {
         const sel = (q) => Array.from(document.querySelectorAll(q));
         const txt = (e) => (e.innerText || e.textContent || '').trim().slice(0, 80);

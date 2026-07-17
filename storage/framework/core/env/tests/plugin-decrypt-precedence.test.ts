@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import process from 'node:process'
 import { encryptValue, generateKeypair } from '../src/crypto'
-import { loadEnv } from '../src/plugin'
+import { autoLoadEnv, loadEnv } from '../src/plugin'
 
 // Bun natively loads `.env` / `.env.<mode>` into process.env before any
 // preload script runs, and it knows nothing about dotenvx-style encryption.
@@ -91,5 +91,83 @@ describe('loadEnv - decrypted values beat pre-set ciphertext', () => {
 
     expect(process.env.PRECEDENCE_DB).toBe(ciphertext)
     expect(loaded).toBe(0)
+  })
+})
+
+describe('autoLoadEnv - encrypted environment files', () => {
+  let dir: string
+  let originalNodeEnv: string | undefined
+  let originalAppEnv: string | undefined
+  let originalDotenvEnv: string | undefined
+  let originalValue: string | undefined
+
+  beforeEach(() => {
+    dir = mkdtempSync(join(tmpdir(), 'env-auto-load-'))
+    originalNodeEnv = process.env.NODE_ENV
+    originalAppEnv = process.env.APP_ENV
+    originalDotenvEnv = process.env.DOTENV_ENV
+    originalValue = process.env.AUTOLOAD_VALUE
+    delete process.env.NODE_ENV
+    delete process.env.APP_ENV
+    delete process.env.DOTENV_ENV
+    delete process.env.AUTOLOAD_VALUE
+    delete process.env.__ENV_LOADED__
+  })
+
+  afterEach(() => {
+    const restore = (key: string, value: string | undefined): void => {
+      if (value === undefined)
+        delete process.env[key]
+      else
+        process.env[key] = value
+    }
+
+    restore('NODE_ENV', originalNodeEnv)
+    restore('APP_ENV', originalAppEnv)
+    restore('DOTENV_ENV', originalDotenvEnv)
+    restore('AUTOLOAD_VALUE', originalValue)
+    delete process.env.__ENV_LOADED__
+    rmSync(dir, { recursive: true, force: true })
+  })
+
+  test('discovers .env.keys and applies environment-specific precedence', () => {
+    const keys = generateKeypair()
+    writeFileSync(join(dir, '.env.keys'), [
+      `DOTENV_PUBLIC_KEY_PRODUCTION="${keys.publicKey}"`,
+      `DOTENV_PRIVATE_KEY_PRODUCTION="${keys.privateKey}"`,
+    ].join('\n'))
+    writeFileSync(join(dir, '.env'), 'AUTOLOAD_VALUE=base')
+    writeFileSync(
+      join(dir, '.env.production'),
+      `AUTOLOAD_VALUE=${encryptValue('production', keys.publicKey)}`,
+    )
+    process.env.APP_ENV = 'production'
+
+    const result = autoLoadEnv({ cwd: dir, quiet: true })
+
+    expect(result.errors).toHaveLength(0)
+    expect(process.env.AUTOLOAD_VALUE).toBe('production')
+  })
+
+  test('preserves external overrides unless overload is requested', () => {
+    writeFileSync(join(dir, '.env'), 'AUTOLOAD_VALUE=base')
+    writeFileSync(join(dir, '.env.production'), 'AUTOLOAD_VALUE=production')
+    process.env.NODE_ENV = 'production'
+    process.env.AUTOLOAD_VALUE = 'shell'
+
+    autoLoadEnv({ cwd: dir, quiet: true })
+    expect(process.env.AUTOLOAD_VALUE).toBe('shell')
+
+    autoLoadEnv({ cwd: dir, quiet: true, overload: true })
+    expect(process.env.AUTOLOAD_VALUE).toBe('production')
+  })
+
+  test('rejects ciphertext as an environment name', () => {
+    writeFileSync(join(dir, '.env.development'), 'AUTOLOAD_VALUE=development')
+    process.env.APP_ENV = 'encrypted:not-an-environment-name'
+
+    autoLoadEnv({ cwd: dir, quiet: true })
+
+    expect(process.env.AUTOLOAD_VALUE).toBe('development')
   })
 })

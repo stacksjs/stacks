@@ -1,50 +1,47 @@
 /*
- * Stacks Blog - custom BunPress theme, "national-park" outdoors look.
+ * Stacks Blog - custom BunPress theme, matching the 2026 marketing design
+ * system: minimal modern developer-framework look with a nature motif.
  *
  * Re-skins BunPress's VitePress theme (driven by --vp-c-* vars) to the Stacks
- * park palette + NPS fonts, and adds outdoors chrome (topography texture, a
- * ridge + river footer, a wooden trail-sign masthead). Three themes via
- * `data-theme` on <html>: colored (DEFAULT - warm NPS brochure, cream + pine),
- * light (clean neutral paper-white), dark (forest-floor near-black).
+ * blue palette + Geist type, and adds the outdoors chrome (topography texture,
+ * a ridge + river footer, a trail-sign masthead). One accent (Stacks blue)
+ * across all three themes; the nature reads come from the line-art, never
+ * from a second hue. Three themes via `data-theme` on <html>:
+ *   - colored - glacier: misty blue paper, the nature-forward default.
+ *   - light   - clean paper-white with the same blue accent.
+ *   - dark    - midnight lake: deep navy, brighter blue accent.
  */
 
 /* ── Brand type: Geist + Geist Mono (matches the marketing site) ────────── */
 @import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&family=Geist+Mono:wght@400;500;600&display=swap');
 
-/*
- * Three themes, switched via `data-theme` on <html>:
- *   - colored (DEFAULT) - the warm NPS-brochure look: cream paper + pine green.
- *     This is the signature Stacks blog palette.
- *   - light - a clean, neutral paper-white reading mode (green accents).
- *   - dark - near-black forest-floor mode.
- */
-
 /* ── Themes ─────────────────────────────────────────────────────────────── */
 :root[data-theme='colored'] {
-  --vp-c-bg: #fbf3df;
-  --vp-c-bg-alt: #fff8e7;
-  --vp-c-bg-soft: #f3e7c8;
-  --vp-c-bg-elv: #fff8e7;
-  --vp-c-text-1: #1f3026;
-  --vp-c-text-2: #4c5a49;
-  --vp-c-text-3: #7c8a74;
-  --vp-c-brand-1: #275f3c;
-  --vp-c-brand-2: #a85f35;
-  --vp-c-brand-3: #163824;
-  --vp-c-brand-soft: rgba(39, 95, 60, 0.12);
-  --vp-c-divider: #e0cfa3;
-  --vp-c-gutter: #ead9b1;
-  --vp-code-color: #a85f35;
-  --vp-code-bg: #f0e2bf;
-  --vp-code-block-bg: #15241a;
-  --park-ridge: #275f3c;
-  --park-river: #3f8e88;
-  --park-wood: #8a5a35;
-  --park-flag: #df9a2f;
-  --topo-color: #275f3c;
+  --vp-c-bg: #e9f1fb;
+  --vp-c-bg-alt: #ffffff;
+  --vp-c-bg-soft: #ddeafa;
+  --vp-c-bg-elv: #ffffff;
+  --vp-c-text-1: #0d1f38;
+  --vp-c-text-2: #49607f;
+  --vp-c-text-3: #6e82a0;
+  --vp-c-brand-1: #1d4ed8;
+  --vp-c-brand-2: #2563eb;
+  --vp-c-brand-3: #1e40af;
+  --vp-c-brand-soft: rgba(29, 78, 216, 0.12);
+  --vp-c-divider: #c8d9f0;
+  --vp-c-gutter: #dce8f8;
+  --vp-code-color: #1d4ed8;
+  --vp-code-bg: #dbe9fb;
+  --vp-code-block-bg: #0b1220;
+  --park-ridge: #1d4ed8;
+  --park-river: #2563eb;
+  --park-wood: #4a6785;
+  --park-flag: #1d4ed8;
+  --topo-color: #1d4ed8;
   --topo-opacity: 0.05;
-  --park-poster-a: #f5dfb8;
-  --park-poster-b: #e8d6ac;
+  --park-poster-a: #ddeafa;
+  --park-poster-b: #cfe1f8;
+  --shadow-rgb: 30, 58, 138;
 }
 
 /* Light (white + Stacks blue) is the default brand look for the blog too, so /
@@ -52,11 +49,11 @@
 :root,
 :root[data-theme='light'] {
   --vp-c-bg: #ffffff;
-  --vp-c-bg-alt: #f5f8ff;
+  --vp-c-bg-alt: #f5f8fe;
   --vp-c-bg-soft: #eef3fe;
   --vp-c-bg-elv: #ffffff;
-  --vp-c-text-1: #0f1b2d;
-  --vp-c-text-2: #4a5568;
+  --vp-c-text-1: #0c1626;
+  --vp-c-text-2: #4f5f7a;
   --vp-c-text-3: #7787a0;
   --vp-c-brand-1: #2563eb;
   --vp-c-brand-2: #1d4ed8;
@@ -75,34 +72,36 @@
   --topo-opacity: 0.04;
   --park-poster-a: #eef3fe;
   --park-poster-b: #e2e9f8;
+  --shadow-rgb: 30, 58, 138;
 }
 
 :root[data-theme='dark'] {
   color-scheme: dark;
-  --vp-c-bg: #0a0f1c;
-  --vp-c-bg-alt: #121a2e;
-  --vp-c-bg-soft: #16213a;
-  --vp-c-bg-elv: #121a2e;
-  --vp-c-text-1: #eaf0fb;
-  --vp-c-text-2: #9fb0c8;
+  --vp-c-bg: #070c17;
+  --vp-c-bg-alt: #0e1728;
+  --vp-c-bg-soft: #13203a;
+  --vp-c-bg-elv: #0e1728;
+  --vp-c-text-1: #e9effc;
+  --vp-c-text-2: #97a6c4;
   --vp-c-text-3: #6b7c98;
   --vp-c-brand-1: #60a5fa;
   --vp-c-brand-2: #93c5fd;
   --vp-c-brand-3: #7cb2ff;
   --vp-c-brand-soft: rgba(96, 165, 250, 0.14);
-  --vp-c-divider: #23304a;
-  --vp-c-gutter: #18223a;
+  --vp-c-divider: #1c2942;
+  --vp-c-gutter: #101b31;
   --vp-code-color: #93c5fd;
-  --vp-code-bg: #16213a;
-  --vp-code-block-bg: #070d18;
-  --park-ridge: #070d18;
-  --park-river: #3b82f6;
+  --vp-code-bg: #13203a;
+  --vp-code-block-bg: #060b14;
+  --park-ridge: #040810;
+  --park-river: #2563eb;
   --park-wood: #7c92b0;
   --park-flag: #60a5fa;
   --topo-color: #60a5fa;
   --topo-opacity: 0.06;
-  --park-poster-a: #16213a;
-  --park-poster-b: #101a30;
+  --park-poster-a: #13203a;
+  --park-poster-b: #0e1830;
+  --shadow-rgb: 0, 0, 0;
 }
 
 /*
@@ -170,7 +169,7 @@ body::before {
   border: 1px solid var(--vp-c-divider);
   border-radius: 999px;
   background: var(--vp-c-bg-alt);
-  box-shadow: 0 6px 18px -12px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 6px 18px -12px rgba(var(--shadow-rgb), 0.5);
 }
 .blog-theme-toggle button {
   width: 30px;
@@ -204,7 +203,7 @@ body::before {
   background-color: var(--park-wood);
   -webkit-mask: url('/assets/images/wood-sign.svg') center / contain no-repeat;
   mask: url('/assets/images/wood-sign.svg') center / contain no-repeat;
-  filter: drop-shadow(0 8px 16px rgba(11, 19, 16, 0.16));
+  filter: drop-shadow(0 8px 16px rgba(var(--shadow-rgb), 0.16));
 }
 .blog-listing-head h1 {
   margin: 0 0 0.55rem;
@@ -255,7 +254,7 @@ body::before {
   width: 100%;
   height: auto;
   border-radius: 0.6rem;
-  filter: drop-shadow(0 24px 44px rgba(11, 19, 16, 0.3));
+  filter: drop-shadow(0 24px 44px rgba(var(--shadow-rgb), 0.3));
 }
 
 .blog-back {
@@ -289,7 +288,7 @@ body::before {
 .blog-card:hover {
   transform: translateY(-3px);
   border-color: var(--vp-c-brand-1);
-  box-shadow: 0 22px 44px -28px rgba(0, 0, 0, 0.6);
+  box-shadow: 0 22px 44px -28px rgba(var(--shadow-rgb), 0.55);
 }
 .blog-card.is-featured { border-left-color: var(--park-flag); }
 .blog-card.is-featured:hover { border-color: var(--park-flag); }
@@ -299,7 +298,7 @@ body::before {
 .blog-card-media img {
   display: block; width: 100%; height: auto;
   border-radius: 0.45rem;
-  filter: drop-shadow(0 12px 24px rgba(11, 19, 16, 0.22));
+  filter: drop-shadow(0 12px 24px rgba(var(--shadow-rgb), 0.22));
   transition: transform 0.18s ease;
 }
 .blog-card:hover .blog-card-media img { transform: scale(1.02); }
@@ -389,7 +388,7 @@ body::before {
 .bp-doc blockquote p { margin: 0; }
 .bp-doc blockquote p + p { margin-top: 0.6rem; }
 
-/* Trail-green list markers. */
+/* Blue trail-marker list bullets. */
 .bp-doc ul { list-style: none; padding-left: 1.4rem; }
 .bp-doc ul > li { position: relative; }
 .bp-doc ul > li::before {
