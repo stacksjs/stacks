@@ -51,10 +51,12 @@ const TABLE = 'notification_preferences'
 /** Apply the nullable preference category without generating `IS $n` SQL.
  * Postgres requires `IS NULL`; query builders correctly express that through
  * `whereNull()`, while a bound value remains a normal equality predicate. */
-export function wherePreferenceCategory<T extends {
+interface PreferenceCategoryQuery<T> {
   where: (column: string, operator: string, value: string) => T
   whereNull: (column: string) => T
-}>(query: T, category: string | null): T {
+}
+
+export function wherePreferenceCategory<T extends PreferenceCategoryQuery<T>>(query: T, category: string | null): T {
   return category === null
     ? query.whereNull('category')
     : query.where('category', '=', category)
