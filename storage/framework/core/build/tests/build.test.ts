@@ -80,17 +80,17 @@ describe('build module', () => {
     }
   })
 
-  test('normalizes known invalid declaration generator output', async () => {
-    const { normalizeDeclarations } = await import('../src/index')
+  test('accepts valid declarations unchanged', async () => {
+    const { validateDeclarations } = await import('../src/index')
     const tmpDir = `/tmp/stacks-build-declarations-${Date.now()}`
     const fs = await import('node:fs')
     fs.mkdirSync(`${tmpDir}/dist`, { recursive: true })
-    fs.writeFileSync(`${tmpDir}/dist/index.d.ts`, `export declare const Arr: {\n  toArray<T>: (value: T) => T;\n}\ndeclare module 'pkg' {\n  interface Requestextends Base {}\n}\n`)
+    const valid = `export declare const Arr: {\n  toArray: <T>(value: T) => T;\n}\ndeclare module 'pkg' {\n  interface Request extends Base {}\n}\n`
+    fs.writeFileSync(`${tmpDir}/dist/index.d.ts`, valid)
     try {
-      await normalizeDeclarations(tmpDir)
-      const output = fs.readFileSync(`${tmpDir}/dist/index.d.ts`, 'utf8')
-      expect(output).toContain('toArray: <T>(value: T) => T')
-      expect(output).toContain('interface Request extends Base')
+      await validateDeclarations(tmpDir)
+      // Valid files are left byte-for-byte intact — no repair pass exists.
+      expect(fs.readFileSync(`${tmpDir}/dist/index.d.ts`, 'utf8')).toBe(valid)
     }
     finally {
       fs.rmSync(tmpDir, { recursive: true, force: true })
@@ -98,13 +98,13 @@ describe('build module', () => {
   })
 
   test('rejects declarations that remain invalid', async () => {
-    const { normalizeDeclarations } = await import('../src/index')
+    const { validateDeclarations } = await import('../src/index')
     const tmpDir = `/tmp/stacks-build-invalid-declarations-${Date.now()}`
     const fs = await import('node:fs')
     fs.mkdirSync(`${tmpDir}/dist`, { recursive: true })
     fs.writeFileSync(`${tmpDir}/dist/index.d.ts`, 'export interface Broken { value: string value2: number }')
     try {
-      expect(normalizeDeclarations(tmpDir)).rejects.toThrow('Invalid declaration generated')
+      expect(validateDeclarations(tmpDir)).rejects.toThrow('Invalid declaration generated')
     }
     finally {
       fs.rmSync(tmpDir, { recursive: true, force: true })

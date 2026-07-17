@@ -4,30 +4,21 @@ import { path as p } from '@stacksjs/path'
 import { glob } from '@stacksjs/storage'
 
 /**
- * Repair declaration shapes that bun-plugin-dtsx currently emits with invalid
- * TypeScript syntax, then parse every declaration before a package can report a
- * successful build. Keep this centralized so all Stacks packages receive the
- * same publish-time safety net.
+ * Parse every generated declaration before a package can report a successful
+ * build. The invalid emission shapes this used to repair (`method<T>: (…) => …`
+ * and `interface Nameextends Base`) were fixed at the source in dtsx; what
+ * remains here is a pure publish-time safety net that fails the build if any
+ * `.d.ts` does not parse.
  */
-export async function normalizeDeclarations(dir: string): Promise<void> {
+export async function validateDeclarations(dir: string): Promise<void> {
   const files = await glob([p.resolve(dir, 'dist', '**/*.d.ts')], { absolute: true })
   const transpiler = new Bun.Transpiler({ loader: 'ts', target: 'bun' })
 
   for (const file of files) {
     const source = await Bun.file(file).text()
-    const normalized = source
-      // `method<T>: (value: T) => T` is invalid; it must be a generic
-      // function-valued property: `method: <T>(value: T) => T`.
-      .replace(/^(\s*)([$A-Z_a-z][$\w]*)(<[^:\n]+>):\s+\(/gm, '$1$2: $3(')
-      // The generator can collapse the separator before `extends` inside
-      // ambient module declarations.
-      .replace(/\b(interface|class)\s+([$A-Z_a-z][$\w]*)extends\b/g, '$1 $2 extends')
-
-    if (normalized !== source)
-      await Bun.write(file, normalized)
 
     try {
-      transpiler.transformSync(normalized)
+      transpiler.transformSync(source)
     }
     catch (cause) {
       throw new Error(`Invalid declaration generated at ${file}: ${cause instanceof Error ? cause.message : String(cause)}`)
@@ -60,7 +51,7 @@ export async function outro(options: {
     throw new Error(`Build failed: ${firstLog}`)
   }
 
-  await normalizeDeclarations(options.dir)
+  await validateDeclarations(options.dir)
 
   // loop over all the files in the dist directory and log them and their size
   const files = await glob([p.resolve(options.dir, 'dist', '**/*')], { absolute: true })
