@@ -218,4 +218,14 @@ route.group({ prefix: '/api/dashboard', apiResponse: true }, () => {
   guard(route.post('/blog', 'Actions/Blog/BlogStoreAction'))
   guard(route.patch('/blog/{slug}', 'Actions/Blog/BlogUpdateAction'))
   guard(route.delete('/blog/{slug}', 'Actions/Blog/BlogDestroyAction'))
+
+  // Email inbox — real inbound mailbox data from S3.
+  //
+  // Reads expose recipient/subject metadata; the mark-read endpoint mutates
+  // the per-mailbox inbox.json index. Both are guarded outside local/dev
+  // because they touch real mailbox state and PII.
+  guard(route.get('/email/inbox', 'Actions/Dashboard/Email/InboxIndexAction'))
+  guard(route.get('/email/inbox/{id}', 'Actions/Dashboard/Email/InboxShowAction'))
+  guard(route.get('/email/stats', 'Actions/Dashboard/Email/InboxStatsAction'))
+  guard(route.post('/email/read', 'Actions/Dashboard/Email/InboxMarkReadAction'))
 })
