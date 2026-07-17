@@ -58,7 +58,7 @@
     "magic-regexp": "^0.11.0"
   },
   "peerDependencies": {
-    "@stripe/stripe-js": "^9.0.0"
+    "@stripe/stripe-js": "^9.10.0"
   },
   "peerDependenciesMeta": {
     "@stripe/stripe-js": {
@@ -68,6 +68,6 @@
   "devDependencies": {
     "better-dx": "^0.2.16",
     "@stacksjs/utils": "workspace:*",
-    "@stripe/stripe-js": "^9.0.0"
+    "@stripe/stripe-js": "^9.10.0"
   }
 }
