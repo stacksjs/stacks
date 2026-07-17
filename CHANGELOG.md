@@ -1,5 +1,31 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.90...v0.70.91)
+
+## ✨ Features
+
+- **marketing**: rebrand site + blog to Stacks blue with Geist type ([86144c1](https://github.com/stacksjs/stacks/commit/86144c1)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🐛 Bug Fixes
+
+- **database**: guard generate:migrations against dialect/snapshot mismatch ([0f7782f](https://github.com/stacksjs/stacks/commit/0f7782f)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **server**: make bun-plugin-auto-imports a runtime dependency ([9cc054d](https://github.com/stacksjs/stacks/commit/9cc054d)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dev**: protect public domains from local DNS ([801a103](https://github.com/stacksjs/stacks/commit/801a103)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **mail**: add daemon health recovery ([2b3bf85](https://github.com/stacksjs/stacks/commit/2b3bf85)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **mail**: support Hetzner operations ([7abb8b9](https://github.com/stacksjs/stacks/commit/7abb8b9)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## ♻️ Code Refactoring
+
+- **deploy**: write attach-box state under storage/cloud/state ([07e3a7f](https://github.com/stacksjs/stacks/commit/07e3a7f)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🔧 Chores
+
+- **deps**: bump @stacksjs/ts-cloud to 0.7.27 for atomic gateway writes ([a34581e](https://github.com/stacksjs/stacks/commit/a34581e)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.87...v0.70.90)
 
 ## ✨ Features
