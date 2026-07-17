@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.109...v0.70.110)
+
+## 🐛 Bug Fixes
+
+- **database**: preserve model-owned framework tables ([f1e55a0](https://github.com/stacksjs/stacks/commit/f1e55a0)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.108...v0.70.109)
 
 ## 🐛 Bug Fixes
