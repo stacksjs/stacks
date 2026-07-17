@@ -379,6 +379,6 @@
     "@stacksjs/newsletter": "^0.70.93",
     "@stacksjs/i18n": "^0.70.93",
     "@stacksjs/cron": "^0.70.93",
-    "bun-query-builder": "^0.1.47"
+    "bun-query-builder": "https://registry.pantry.dev/bun-query-builder@21c0e89"
   }
 }
