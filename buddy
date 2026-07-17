@@ -6,6 +6,7 @@ PANTRY_LOCAL_BIN="${ROOT_DIR}/pantry/.bin"
 PANTRY_DIR="${ROOT_DIR}/pantry"
 USER_LOCAL_BIN="${HOME}/.local/bin"
 PANTRY_INSTALLER="${ROOT_DIR}/storage/framework/scripts/pantry-install"
+PANTRY_SETUP_DONE="${PANTRY_DIR}/.postsetup-done"
 PANTRY_BOOTSTRAP_TIMEOUT_SECONDS="${PANTRY_BOOTSTRAP_TIMEOUT_SECONDS:-600}"
 PANTRY_DEPENDENCIES_TIMEOUT_SECONDS="${PANTRY_DEPENDENCIES_TIMEOUT_SECONDS:-1200}"
 
@@ -104,10 +105,11 @@ run_buddy() {
     CONDITIONS="--conditions development"
   fi
 
-  # Only prepend the pantry dir to NODE_PATH when it exists: for a node_modules
-  # app there is no ./pantry, and pointing NODE_PATH at a missing dir makes bun
-  # miss node_modules (e.g. `Cannot find module '@stacksjs/env'` from a preload).
-  if [ -d "${PANTRY_DIR}" ]; then
+  # Only prepend the pantry dir to NODE_PATH when the setup completed: for a
+  # node_modules app there is no ./pantry, and pointing NODE_PATH at a missing
+  # (or half-installed, after a failed bootstrap) dir makes bun miss
+  # node_modules (e.g. `Cannot find module '@stacksjs/env'` from a preload).
+  if [ -f "${PANTRY_SETUP_DONE}" ]; then
     exec env PATH="${PANTRY_LOCAL_BIN}:${USER_LOCAL_BIN}:${PATH}" NODE_PATH="${PANTRY_DIR}:${NODE_PATH:-}" "${BUN_CMD}" ${CONDITIONS} "${BUDDY_ENTRY}" "$@"
   fi
   exec env PATH="${PANTRY_LOCAL_BIN}:${USER_LOCAL_BIN}:${PATH}" "${BUN_CMD}" ${CONDITIONS} "${BUDDY_ENTRY}" "$@"
@@ -134,18 +136,28 @@ if command -v bun >/dev/null 2>&1 && [ "${STACKS_FORCE_PANTRY:-}" != "1" ] && [ 
   run_buddy bun "$@"
 fi
 
-# Pantry not set up — bootstrap it
+# Pantry not set up (or an earlier bootstrap died halfway) - bootstrap it.
+# Every step is failure-tolerant on purpose: a pantry download/install hiccup
+# (a registry outage, or an unpublished release winning the race against CI)
+# must not abort this script under `set -e` before the bun fallbacks below
+# run. With a bun on PATH and node_modules present, the CLI runs identically
+# without pantry.
+pantry_bootstrap_failed=0
 if ! command -v pantry >/dev/null 2>&1; then
-  if [ ! -x "${PANTRY_INSTALLER}" ]; then
+  if [ -x "${PANTRY_INSTALLER}" ]; then
+    run_with_timeout "${PANTRY_BOOTSTRAP_TIMEOUT_SECONDS}" "${PANTRY_INSTALLER}" || pantry_bootstrap_failed=1
+    export PATH="${USER_LOCAL_BIN}:${PATH}"
+  else
     echo "Pantry installer not found at ${PANTRY_INSTALLER}" >&2
-    exit 1
+    pantry_bootstrap_failed=1
   fi
-
-  run_with_timeout "${PANTRY_BOOTSTRAP_TIMEOUT_SECONDS}" "${PANTRY_INSTALLER}"
-  export PATH="${USER_LOCAL_BIN}:${PATH}"
 fi
 
-run_with_timeout "${PANTRY_DEPENDENCIES_TIMEOUT_SECONDS}" pantry install
+if command -v pantry >/dev/null 2>&1; then
+  run_with_timeout "${PANTRY_DEPENDENCIES_TIMEOUT_SECONDS}" pantry install || pantry_bootstrap_failed=1
+else
+  pantry_bootstrap_failed=1
+fi
 
 # After install, try again
 if is_usable_bun "${PANTRY_LOCAL_BIN}/bun"; then
@@ -153,6 +165,9 @@ if is_usable_bun "${PANTRY_LOCAL_BIN}/bun"; then
 fi
 
 if command -v bun >/dev/null 2>&1; then
+  if [ "${pantry_bootstrap_failed}" = "1" ]; then
+    echo "buddy: pantry bootstrap incomplete; falling back to the bun on PATH." >&2
+  fi
   run_buddy bun "$@"
 fi
 
