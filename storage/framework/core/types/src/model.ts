@@ -267,7 +267,6 @@ export interface Attribute {
   /** Explicit database nullability override. */
   nullable?: boolean
   type?: string
-  nullable?: boolean
   default?: string | number | boolean | Date
   unique?: boolean
   order?: number
