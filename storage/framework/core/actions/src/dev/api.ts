@@ -11,9 +11,14 @@ import { config, overridesReady } from '@stacksjs/config'
 import { path } from '@stacksjs/path'
 import type { Middleware } from '@stacksjs/router'
 import { route } from '@stacksjs/router'
-import { generateAutoImportFiles, injectGlobalAutoImports } from '@stacksjs/server'
+import { generateAutoImportFiles, generateServerAutoImportTypes, injectGlobalAutoImports } from '@stacksjs/server'
 
 const _options = parseOptions()
+
+// Keep TypeScript's global declarations aligned with the runtime primitives
+// and current models without registering a catch-all bundler plugin in this
+// watched process.
+await generateServerAutoImportTypes()
 
 // Wait for the user's config/*.ts files to land before reading the port.
 // Without this, `config.ports?.api` returns the framework default (3008)
