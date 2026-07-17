@@ -36,7 +36,13 @@ const fastCommands = [
   'scaffold:crud',
 ]
 const isRepl = !process.argv[1]
-const skipPreloader = isRepl || (args.length > 0 && fastCommands.some(cmd => args[0] === cmd || args[0].startsWith(`${cmd}:`)))
+// Dependency installation runs package lifecycle scripts before Bun has finished
+// linking every workspace package. Loading @stacksjs/env (or the wider auto-import
+// graph) from a postinstall script can therefore fail even though the install is
+// otherwise valid. Postinstall scripts are bootstrap work and must stay independent
+// of the application runtime preloader.
+const isPostinstall = process.env.npm_lifecycle_event === 'postinstall'
+const skipPreloader = isRepl || isPostinstall || (args.length > 0 && fastCommands.some(cmd => args[0] === cmd || args[0].startsWith(`${cmd}:`)))
 
 if (!skipPreloader) {
   // Detect production/deployment commands and set environment accordingly BEFORE loading env files
