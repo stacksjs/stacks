@@ -1,5 +1,17 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.93...v0.70.94)
+
+## 🐛 Bug Fixes
+
+- **migrations**: install published schema engine ([9edf733](https://github.com/stacksjs/stacks/commit/9edf733)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **migrations**: pin model-driven schema engine ([127f556](https://github.com/stacksjs/stacks/commit/127f556)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **migrations**: preserve model create boundaries ([9e7c9bd](https://github.com/stacksjs/stacks/commit/9e7c9bd)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.92...v0.70.93)
 
 ## 🐛 Bug Fixes
