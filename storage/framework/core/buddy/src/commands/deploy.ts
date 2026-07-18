@@ -1812,6 +1812,33 @@ async function reconcileConfigDns(sites: Record<string, any>, logger: typeof log
   }
 }
 
+/**
+ * Best-effort post-write check that an A record for `fqdn → ip` exists at
+ * the provider. Returns true when the provider offers no list API or the
+ * listing itself fails — verification must never turn a possibly-good
+ * write into a false alarm; it exists to catch phantom successes (an
+ * upsert that edited the wrong record) at providers that CAN list their
+ * zone (Porkbun at minimum).
+ */
+async function verifyDnsRecord(provider: any, domain: string, fqdn: string, ip: string): Promise<boolean> {
+  try {
+    if (typeof provider?.listRecords !== 'function')
+      return true
+
+    const res = await provider.listRecords(domain, 'A')
+    if (!res?.success || !Array.isArray(res.records))
+      return true
+
+    return res.records.some((r: any) => {
+      const name = typeof r?.name === 'string' ? r.name.replace(/\.$/, '') : ''
+      return name === fqdn && r?.content === ip
+    })
+  }
+  catch {
+    return true
+  }
+}
+
 async function reconcileHetznerDns(sites: Record<string, any>, ip: string, logger: typeof log): Promise<void> {
   // Collect the apex domains declared by sites (skip loopback/domain-less sites).
   const domains = new Set<string>()
@@ -1873,11 +1900,29 @@ async function reconcileHetznerDns(sites: Record<string, any>, ip: string, logge
       }
       for (const sub of ['', 'www']) {
         const fqdn = sub ? `${sub}.${domain}` : domain
-        const res = await provider.upsertRecord(domain, { name: sub, type: 'A', content: ip, ttl: 600 })
-        if (res?.success === false)
-          logger.warn(`  DNS: ${fqdn} → ${ip} failed: ${res.error || 'unknown error'}`)
-        else
+        // Pass the full fqdn as the record name — the provider derives the
+        // zone root from `domain` and strips it back off the name. Passing
+        // '' for the apex made subdomain sites (dashboard.hq.training)
+        // upsert the ZONE APEX instead of their own record: the provider
+        // edited hq.training's A record, returned success, and deploy
+        // printed a phantom ✓ for a record that never existed (this was
+        // the hq.training production TLS blocker — LE could not resolve
+        // the host to validate http-01).
+        const res = await provider.upsertRecord(domain, { name: fqdn, type: 'A', content: ip, ttl: 600 })
+        if (res?.success === false) {
+          // ts-cloud providers report failures as { success: false,
+          // message } — read both fields before giving up on detail.
+          logger.warn(`  DNS: ${fqdn} → ${ip} failed: ${res.error || res.message || 'unknown error'}`)
+          continue
+        }
+        // Post-write verification against the provider API. Upsert paths
+        // have produced phantom successes, so only print ✓ once the
+        // record is confirmed to exist. Best-effort: providers without a
+        // usable list API are trusted (see verifyDnsRecord).
+        if (await verifyDnsRecord(provider, domain, fqdn, ip))
           logger.success(`  DNS: ${fqdn} → ${ip} (${provider.name})`)
+        else
+          logger.warn(`  DNS: ${fqdn} → ${ip} reported success at ${provider.name} but no matching A record exists — create it manually: A ${fqdn} → ${ip}`)
       }
     }
     catch (err: any) {
