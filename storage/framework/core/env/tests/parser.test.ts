@@ -339,12 +339,16 @@ SUPPORT_EMAIL=support+test@example.co.uk
 })
 
 describe('Parser - Encrypted Values', () => {
-  it('should preserve encrypted values without private key', () => {
+  it('should skip encrypted values without private key', () => {
     const src = `SECRET="encrypted:ABC123DEF456"`
 
-    const { parsed } = parse(src)
+    const { parsed, skippedEncrypted } = parse(src)
 
-    expect(parsed.SECRET).toBe('encrypted:ABC123DEF456')
+    // Raw ciphertext is never useful to consumers — the entry is skipped
+    // (not injected) so config defaults apply instead of validating
+    // against the literal "encrypted:..." string.
+    expect(parsed.SECRET).toBeUndefined()
+    expect(skippedEncrypted).toEqual(['SECRET'])
   })
 
   it('should attempt to decrypt with private key', () => {
@@ -425,7 +429,9 @@ DATABASE_URL=postgres://\${DB_USER}:\${DB_PASSWORD}@\${DB_HOST}:\${DB_PORT}/\${D
     expect(errors).toHaveLength(0)
     expect(parsed.DB_HOST).toBe('localhost')
     expect(parsed.DB_PASSWORD).toBe('p@ssw0rd123')
-    expect(parsed.API_KEY).toBe('encrypted:abc123')
+    // No private key in play: the encrypted API_KEY entry is skipped, not
+    // injected as raw ciphertext.
+    expect(parsed.API_KEY).toBeUndefined()
     expect(parsed.ENABLE_FEATURE_X).toBe('true')
     expect(parsed.DATABASE_URL).toBe('postgres://admin:p@ssw0rd123@localhost:5432/myapp')
   })

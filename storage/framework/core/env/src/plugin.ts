@@ -145,12 +145,31 @@ export function loadEnv(options: EnvPluginOptions = {}): { loaded: number, error
 
     try {
       const content = readFileSync(fullPath, 'utf-8')
-      const { parsed, errors: parseErrors } = parse(content, {
+      const { parsed, errors: parseErrors, skippedEncrypted } = parse(content, {
         privateKey,
         processEnv: process.env as Record<string, string>,
       })
 
       errors.push(...parseErrors)
+
+      // Encrypted entries with no available key were skipped by the parser.
+      // Scrub any ciphertext Bun preloaded natively for the same keys (Bun
+      // auto-loads .env/.env.<NODE_ENV> without knowing about encryption),
+      // so config falls back to defaults instead of validating against
+      // unusable ciphertext. Then warn — once per file per process, even in
+      // quiet mode, because running on defaults in what the user believes
+      // is a configured environment is a correctness issue, not noise.
+      if (skippedEncrypted.length > 0) {
+        for (const key of skippedEncrypted) {
+          if (isEncryptedValue(process.env[key]))
+            delete process.env[key]
+        }
+
+        const keyName = envName ? `DOTENV_PRIVATE_KEY_${envName.toUpperCase()}` : 'DOTENV_PRIVATE_KEY'
+        const preview = skippedEncrypted.slice(0, 5).join(', ')
+        const rest = skippedEncrypted.length > 5 ? `, … +${skippedEncrypted.length - 5} more` : ''
+        console.warn(`[env] warning: skipped ${skippedEncrypted.length} encrypted value(s) in ${envPath} (${keyName} not set; defaults apply): ${preview}${rest}`)
+      }
 
       // Inject parsed values into process.env
       let applied = 0

@@ -75,13 +75,15 @@ describe('loadEnv - decrypted values beat pre-set ciphertext', () => {
     expect(process.env.PRECEDENCE_PLAIN).toBe('from-shell')
   })
 
-  test('leaves ciphertext untouched when no private key is configured', () => {
+  test('scrubs stale ciphertext when no private key is configured', () => {
     const ciphertext = encryptValue('sqlite', publicKey)
     writeEnvFile({ PRECEDENCE_DB: ciphertext })
     process.env.PRECEDENCE_DB = ciphertext
 
-    // No privateKey: nothing can be decrypted, so there is no better value to
-    // install and the ciphertext must not be counted as an applied variable.
+    // No privateKey: nothing can be decrypted. The parser skips the
+    // entry, and the loader removes the ciphertext Bun may have preloaded
+    // so config falls back to defaults instead of validating against an
+    // unusable "encrypted:..." string.
     const { loaded } = loadEnv({
       path: ['.env.development'],
       cwd: dir,
@@ -89,7 +91,7 @@ describe('loadEnv - decrypted values beat pre-set ciphertext', () => {
       quiet: true,
     })
 
-    expect(process.env.PRECEDENCE_DB).toBe(ciphertext)
+    expect(process.env.PRECEDENCE_DB).toBeUndefined()
     expect(loaded).toBe(0)
   })
 })

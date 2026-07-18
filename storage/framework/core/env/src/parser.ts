@@ -13,6 +13,12 @@ export interface ParseOptions {
 export interface ParseResult {
   parsed: Record<string, string>
   errors: string[]
+  /**
+   * Keys holding encrypted values that were skipped because no private
+   * key was available to decrypt them. Surfaced so callers can warn and
+   * scrub stale ciphertext from process.env.
+   */
+  skippedEncrypted: string[]
 }
 
 /**
@@ -21,6 +27,7 @@ export interface ParseResult {
 export function parse(src: string, options: ParseOptions = {}): ParseResult {
   const parsed: Record<string, string> = {}
   const errors: string[] = []
+  const skippedEncrypted: string[] = []
   const lines = src.split('\n')
 
   for (const rawLine of lines) {
@@ -63,9 +70,18 @@ export function parse(src: string, options: ParseOptions = {}): ParseResult {
     // Handle encrypted values. Both prefixes are accepted:
     //   - `encrypted:<b64>` (verbose, mirrors dotenvx)
     //   - `enc:<b64>` (short alias for ergonomics in long .env files)
-    // Without a privateKey configured, the value is returned untouched
-    // so dev workflows that rely on plaintext .env files continue to work.
-    if (options.privateKey && (value.startsWith('encrypted:') || value.startsWith('enc:'))) {
+    // Without a privateKey the entry is SKIPPED entirely: injecting raw
+    // ciphertext is never useful — every consumer treats it as a literal
+    // string, so it fails config validation with opaque errors
+    // (`expected integer, got string ("encrypted:...")`) or, worse,
+    // silently connects to the wrong endpoint. Plaintext values are
+    // unaffected, so dev workflows on plaintext .env files keep working.
+    if (value.startsWith('encrypted:') || value.startsWith('enc:')) {
+      if (!options.privateKey) {
+        skippedEncrypted.push(key)
+        continue
+      }
+
       try {
         const normalized = value.startsWith('enc:')
           ? `encrypted:${value.slice(4)}`
@@ -86,7 +102,7 @@ export function parse(src: string, options: ParseOptions = {}): ParseResult {
     parsed[key] = value
   }
 
-  return { parsed, errors }
+  return { parsed, errors, skippedEncrypted }
 }
 
 /**
@@ -182,6 +198,7 @@ export async function loadEnvFiles(
 ): Promise<ParseResult> {
   const allParsed: Record<string, string> = {}
   const allErrors: string[] = []
+  const allSkipped: string[] = []
 
   for (const file of files) {
     try {
@@ -191,9 +208,10 @@ export async function loadEnvFiles(
       }
 
       const src = await content.text()
-      const { parsed, errors } = parse(src, options)
+      const { parsed, errors, skippedEncrypted } = parse(src, options)
 
       allErrors.push(...errors)
+      allSkipped.push(...skippedEncrypted)
 
       // Merge parsed values
       for (const [key, value] of Object.entries(parsed)) {
@@ -213,5 +231,5 @@ export async function loadEnvFiles(
     }
   }
 
-  return { parsed: allParsed, errors: allErrors }
+  return { parsed: allParsed, errors: allErrors, skippedEncrypted: allSkipped }
 }
