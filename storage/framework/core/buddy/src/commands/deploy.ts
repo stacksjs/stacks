@@ -1839,13 +1839,19 @@ async function verifyDnsRecord(provider: any, domain: string, fqdn: string, ip: 
     if (typeof provider?.listRecords !== 'function')
       return true
 
-    const res = await provider.listRecords(domain, 'A')
+    // List WITHOUT a type filter: the typed listing maps to provider
+    // endpoints like Porkbun's retrieveByNameType, whose subdomain-less
+    // form returns apex records only — filtering by 'A' server-side made
+    // verification blind to every non-apex record and produced false
+    // "record is missing" warnings on healthy zones. Retrieve the full
+    // zone and match type/name/content client-side instead.
+    const res = await provider.listRecords(domain)
     if (!res?.success || !Array.isArray(res.records))
       return true
 
     return res.records.some((r: any) => {
       const name = typeof r?.name === 'string' ? r.name.replace(/\.$/, '') : ''
-      return name === fqdn && r?.content === ip
+      return r?.type === 'A' && name === fqdn && r?.content === ip
     })
   }
   catch {
