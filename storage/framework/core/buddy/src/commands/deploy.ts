@@ -1219,8 +1219,14 @@ async function runHetznerDeploy(args: {
     'temp',
     '.DS_Store',
     '*.log',
+    // Local env files are machine-local secrets — never ship them. The box
+    // gets its env from ts-cloud's generated EnvironmentFile (merged decrypted
+    // .env.production + site env), symlinked over release/.env at deploy time.
+    '.env',
     '.env.local',
+    '.env.keys',
     '.env.production.bak',
+    '.env.production.plain',
   ].flatMap(p => [`--exclude='${p}'`, `--exclude='*/${p}'`])
 
   if (onlySite && !sites[onlySite]) {
@@ -1506,6 +1512,14 @@ async function resolveAttachTargetBox(
  */
 export async function provisionMailTenant(ip: string, logger: typeof log): Promise<MailTenantResult | null> {
   const cfg: any = emailConfig || {}
+  // Mail explicitly disabled for this app (config/email.ts `server.enabled:
+  // false`): skip the shared-mail tenant reconcile entirely — no local-domain
+  // registration, DKIM key, mailboxes, or mail DNS. Without this gate the
+  // reconcile keyed off `cfg.domain`/`from.address` alone, so an app with no
+  // mail intent still mutated the SHARED mail server + its own MX records.
+  if (cfg.server?.enabled === false)
+    return null
+
   const domain: string | undefined = cfg.domain
     || (typeof cfg.from?.address === 'string' && cfg.from.address.includes('@') ? cfg.from.address.split('@')[1] : undefined)
   const forwards: Record<string, string[]> = (cfg.forwards && typeof cfg.forwards === 'object') ? cfg.forwards : {}
