@@ -218,9 +218,16 @@ try {
   // Defensive ALTER for installs that ran an earlier `auth:setup`
   // before the `expires_at` column existed. The column has a
   // CURRENT_TIMESTAMP default so existing rows aren't orphaned, but
-  // application-issued tokens always set an explicit value.
+  // application-issued tokens always set an explicit value. Postgres
+  // gets ADD COLUMN IF NOT EXISTS — a plain ADD COLUMN succeeds
+  // client-side (the error is caught) but still logs an ERROR
+  // server-side on every fresh run, which reads exactly like a failed
+  // migration in CI logs.
   try {
-    await db.unsafe(`ALTER TABLE password_resets ADD COLUMN expires_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP`)
+    if (isPostgres)
+      await db.unsafe(`ALTER TABLE password_resets ADD COLUMN IF NOT EXISTS expires_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP`)
+    else
+      await db.unsafe(`ALTER TABLE password_resets ADD COLUMN expires_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP`)
   }
   catch { /* column already exists — safe to ignore */ }
 
