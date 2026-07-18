@@ -42,8 +42,17 @@ export function outro(text: string, options?: OutroOptions, error?: Error | stri
   opts.message = options?.message || text
 
   return new Promise((resolve) => {
-    if (error)
-      return handleError(error)
+    if (error) {
+      // Log the failure, then RESOLVE — previously this branch returned
+      // `handleError(error)` without ever settling the promise, so every
+      // `await outro(msg, opts, err)` hung at the await. With the event
+      // loop drained the process then exited 0, masking real failures:
+      // `buddy migrate` (and ~10 other commands) reported success when the
+      // underlying action had failed. Resolving lets the caller reach its
+      // own `process.exit(ExitCode.FatalError)` on the next line.
+      handleError(error)
+      return resolve(ExitCode.FatalError)
+    }
 
     if (opts?.startTime) {
       let time = performance.now() - opts.startTime
