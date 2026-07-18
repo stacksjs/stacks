@@ -136,7 +136,7 @@
     "@stacksjs/ui": "^0.70.23",
     "@stacksjs/utils": "^0.70.23",
     "@stacksjs/validation": "^0.70.23",
-    "@stacksjs/ts-cloud": "^0.7.17"
+    "@stacksjs/ts-cloud": "^0.7.31"
   },
   "devDependencies": {
     "better-dx": "^0.2.16"

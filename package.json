@@ -70,7 +70,7 @@
     "sqlite": "^3.47.2"
   },
   "dependencies": {
-    "@stacksjs/ts-cloud": "^0.7.29",
+    "@stacksjs/ts-cloud": "^0.7.31",
     "bun-query-builder": "^0.1.56",
     "stacks": "workspace:*"
   },
