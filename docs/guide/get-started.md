@@ -1,6 +1,45 @@
 ---
 title: Quick Start
 ---
+
+# Quick Start
+
+This guide takes you from zero to a running Stacks application in a few minutes.
+
+## Prerequisites
+
+- [Bun](https://bun.sh) v1.3 or higher - install with `curl -fsSL https://bun.sh/install | bash`, or upgrade an existing install with `bun upgrade`
+- macOS, Linux, or Windows (WSL2)
+- Node.js is **not** required - Bun handles the runtime, package management, and bundling
+
+## Create a New Project
+
+```bash
+bunx @stacksjs/buddy new my-app
+```
+
+The installer downloads the project template, installs dependencies, creates your `.env` file, and generates an application key.
+
+## Start Developing
+
+```bash
+cd my-app
+./buddy dev
+```
+
+This starts:
+
+- **API server** at `http://localhost:3000`
+- **Frontend dev server** with hot module replacement
+- **File watchers** for automatic rebuilds
+
+If anything looks off, run `./buddy doctor` - it checks your Bun version, environment file, application key, database connectivity, and more.
+
+## Your First Action
+
+Actions hold your business logic. Create `app/Actions/SubscribeAction.ts`:
+
+```ts
 import { Action } from '@stacksjs/actions'
 import { response } from '@stacksjs/router'
 import { schema } from '@stacksjs/validation'
@@ -35,7 +74,6 @@ export default new Action({
     })
   },
 })
-
 ```
 
 ## Your First Component
@@ -45,7 +83,6 @@ Stacks uses `.stx` files for components, which combine HTML with minimal JavaScr
 Create a new component in `resources/components/WelcomeCard.stx`:
 
 ```html
-
 <script server>
 // Props with defaults
 const title = props.title || 'Welcome'
@@ -65,7 +102,6 @@ const showButton = props.showButton ?? true
     </button>
   @endif
 </div>
-
 ```
 
 ### Using Your Component
@@ -73,68 +109,36 @@ const showButton = props.showButton ?? true
 Use the component in any view or other component:
 
 ```html
-
 <WelcomeCard
   title="Hello, Developer!"
   description="Start building amazing things with Stacks."
   :showButton="true"
 />
-
 ```
 
-## Running the Development Server
-
-Start your development server with:
+## Other Useful Commands
 
 ```bash
-
-./buddy dev
-
-```
-
-Or use the npm script:
-
-```bash
-
-bun run dev
-
-```
-
-This will start:
-
-- **API server** at `<http://localhost:3000>`
-- **Frontend dev server** with hot module replacement
-- **File watchers** for automatic rebuilds
-
-### Other Useful Commands
-
-```bash
-
 # Run tests
-
 ./buddy test
 
 # Lint your code
-
 ./buddy lint
 
 # Format code
-
 ./buddy format
 
 # Generate types
-
 ./buddy generate
 
 # Build for production
-
 ./buddy build
 
 # Deploy to cloud
-
 ./buddy deploy
-
 ```
+
+Run `./buddy --help` for the full command list.
 
 ## Next Steps
 
