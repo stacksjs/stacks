@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.114...v0.70.115)
+
+## 💚 Continuous Integration
+
+- **release**: verify public framework installs ([580270c](https://github.com/stacksjs/stacks/commit/580270c)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.113...v0.70.114)
 
 ## ✨ Features
