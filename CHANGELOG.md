@@ -1,5 +1,19 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.123...v0.70.124)
+
+## 🐛 Bug Fixes
+
+- **release**: refresh registry metadata on retries ([a71c073](https://github.com/stacksjs/stacks/commit/a71c073)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🔧 Chores
+
+- **deps**: update stx to 0.2.99 ([ede3cb7](https://github.com/stacksjs/stacks/commit/ede3cb7)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.122...v0.70.123)
 
 ## 🐛 Bug Fixes
