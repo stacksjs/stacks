@@ -100,6 +100,32 @@ describe('server maintenance', () => {
       process.env.APP_COMING_SOON_SECRET = previousSecret
   })
 
+  test('maintenanceGate secret path sets bypass cookie and redirects', async () => {
+    const { maintenanceGate } = await import('../src/maintenance')
+    const previousMode = process.env.APP_COMING_SOON
+    const previousSecret = process.env.APP_COMING_SOON_SECRET
+
+    process.env.APP_COMING_SOON = 'true'
+    process.env.APP_COMING_SOON_SECRET = 'trailhead'
+
+    // Coming-soon mode lands on `/?preview=<secret>` so the client-side
+    // site-mode gate unlocks in the same visit.
+    const comingSoonResp = await maintenanceGate(new Request('http://localhost/trailhead'))
+    expect(comingSoonResp?.status).toBe(302)
+    expect(comingSoonResp?.headers.get('Location')).toBe('/?preview=trailhead')
+    expect(comingSoonResp?.headers.get('Set-Cookie')).toContain('stacks_coming_soon_bypass=trailhead')
+
+    delete process.env.APP_COMING_SOON
+
+    if (previousMode !== undefined)
+      process.env.APP_COMING_SOON = previousMode
+
+    if (previousSecret === undefined)
+      delete process.env.APP_COMING_SOON_SECRET
+    else
+      process.env.APP_COMING_SOON_SECRET = previousSecret
+  })
+
   test('maintenanceHtml includes retry info when provided', async () => {
     const { maintenanceHtml } = await import('../src/maintenance')
     const html = maintenanceHtml({ time: Date.now(), retry: 300 })

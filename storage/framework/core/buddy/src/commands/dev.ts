@@ -7,7 +7,6 @@ import { bold, cyan, dim, green, intro, log, onUnknownSubcommand, outro, prompts
 import { homedir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { promises as dns } from 'node:dns'
 import { Action } from '@stacksjs/enums'
 import { libsPath, projectPath } from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types'
@@ -385,26 +384,15 @@ export async function startDevelopmentServer(_options: DevOptions, _startTime?: 
   const includeDashboard = process.env.STACKS_DEV_DASHBOARD === '1'
   const appLooksCustom = !nativeMode && appUrl && appUrl !== 'localhost' && !appUrl.includes('localhost:')
   const domain = appLooksCustom ? appUrl.replace(/^https?:\/\//, '') : null
-  // A production domain (APP_URL pointing at the live site) is never a dev
-  // domain. prepareRpxTlsForDev already refuses to override DNS for public
-  // domains, so https://<domain> keeps resolving to the LIVE site: printing
-  // it in the dev banner would send the developer to production, and
-  // registering rpx proxies for it risks shadowing prod DNS. When APP_URL is
-  // public we skip every proxy step and the banner shows the localhost dev
-  // servers instead. Note dns.resolve4 queries DNS directly (no /etc/hosts),
-  // so local .test/.localhost domains never resolve here and stay unaffected.
-  const isLocalDevTld = (host: string): boolean =>
-    host === 'localhost'
-    || host.endsWith('.localhost')
-    || host.endsWith('.test')
-    || host.endsWith('.invalid')
-  const domainIsPublic = Boolean(domain)
-    && process.env.STACKS_DEV_ALLOW_PUBLIC_DOMAIN !== '1'
-    && !isLocalDevTld(domain!)
-    && (await dns.resolve4(domain!).catch(() => [] as string[]))
-      .some(address => !address.startsWith('127.'))
+  // Pretty https URLs from APP_URL are the default dev experience, even when
+  // the domain is public: rpx maps it to 127.0.0.1 (/etc/hosts plus a
+  // domain-scoped resolver) and serves it with a locally trusted cert,
+  // Valet-style. `STACKS_DEV_LOCALHOST=1` opts out (CI, or when the live
+  // domain must keep resolving to production from this machine) and the
+  // banner falls back to plain localhost URLs.
+  const localhostOnly = process.env.STACKS_DEV_LOCALHOST === '1'
   // Only manage the proxy/TLS/daemon ourselves when rpx isn't already doing it.
-  const hasCustomDomain = appLooksCustom && !proxyManagedExternally && !domainIsPublic
+  const hasCustomDomain = appLooksCustom && !proxyManagedExternally && !localhostOnly
   const dashboardDomain = domain ? `dashboard.${domain}` : null
   const frontendUrl = domain ? `https://${domain}` : `http://localhost:${frontendPort}`
   const apiUrl = domain ? `https://${domain}/api` : `http://localhost:${apiPort}`
@@ -445,6 +433,10 @@ export async function startDevelopmentServer(_options: DevOptions, _startTime?: 
   const rpxTlsPreflight = hasCustomDomain && domain
     ? prepareRpxTlsForDev({ domain, includeDashboard, options })
     : Promise.resolve()
+  // Opted out of pretty URLs: make sure no loopback override from a previous
+  // pretty-URL session keeps the domain pointed at this machine.
+  if (localhostOnly && domain && !proxyManagedExternally)
+    void removeStalePublicDomainOverrides(domain, includeDashboard, options.verbose ?? false).catch(() => { /* best-effort */ })
   // The HTTPS proxy is optional. This preflight is only awaited later (inside the
   // readiness handler, behind the frontend port probe), so without a handler
   // attached now an early failure — e.g. falling back to an @stacksjs/rpx build
@@ -589,7 +581,7 @@ export async function startDevelopmentServer(_options: DevOptions, _startTime?: 
         nativeMode,
         // Under rpx management we don't probe :443 ourselves, but rpx *is* serving
         // the pretty https URLs — advertise them rather than the localhost fallback.
-        hasCustomDomain: !!appLooksCustom,
+        hasCustomDomain: !!appLooksCustom && !localhostOnly,
         proxyReachable: proxyManagedExternally ? true : proxyReachable,
         frontendUrl,
         apiUrl,
@@ -715,31 +707,32 @@ function printDevReadyBanner(input: {
   } = input
   const verbose = options.verbose ?? false
 
-  // Advertise the pretty https://<domain> URL only when the proxy is actually
-  // up — and even then only as a secondary line. The localhost dev servers are
-  // always the source of truth in `buddy dev`, so they are the primary URLs:
-  // an unreachable (or production) domain must never be the headline.
+  // The pretty https://<domain> URLs are the headline whenever the proxy is
+  // actually serving them; the raw localhost ports drop to a dim fallback line
+  // for bypassing the proxy. Without a reachable proxy the localhost dev
+  // servers stay the primary, honest URLs.
   const useProxy = hasCustomDomain && proxyReachable
-  const feUrl = `http://localhost:${frontendPort}`
-  const apUrl = `http://localhost:${apiPort}`
-  const dcUrl = `http://localhost:${docsPort}`
-  const dbUrl = `http://localhost:${dashboardPort}`
+  const feUrl = useProxy ? frontendUrl : `http://localhost:${frontendPort}`
+  const apUrl = useProxy ? apiUrl : `http://localhost:${apiPort}`
+  const dcUrl = useProxy ? docsUrl : `http://localhost:${docsPort}`
+  const dbUrl = useProxy ? dashboardUrl : `http://localhost:${dashboardPort}`
   const blogUrl = `${feUrl}/blog`
 
   console.log()
   console.log(`  ${green('➜')}  ${bold('Frontend')}:    ${cyan(feUrl)}`)
   if (nativeMode)
-    console.log(`  ${green('➜')}  ${bold('Native')}:      ${cyan(`Craft → http://localhost:${frontendPort}`)}`)
+    console.log(`  ${green('➜')}  ${bold('Native')}:      ${cyan(`Craft → ${feUrl}`)}`)
   console.log(`  ${green('➜')}  ${bold('API')}:         ${cyan(apUrl)}`)
   console.log(`  ${green('➜')}  ${bold('Docs')}:        ${cyan(dcUrl)}`)
   if (blogIsConfigured())
     console.log(`  ${green('➜')}  ${bold('Blog')}:        ${cyan(blogUrl)}`)
   if (includeDashboard)
     console.log(`  ${green('➜')}  ${bold('Dashboard')}:   ${cyan(dbUrl)}`)
-  if (useProxy && domain)
-    console.log(`  ${dim('➜')}  ${dim('Proxy')}:       ${dim(`${frontendUrl} (local HTTPS via rpx)`)}`)
-  if (useProxy && includeDashboard && dashboardDomain)
-    console.log(`  ${dim('➜')}  ${dim('Proxy')}:       ${dim(`${dashboardUrl} (local HTTPS via rpx)`)}`)
+  if (useProxy) {
+    console.log(`  ${dim('➜')}  ${dim('Direct')}:      ${dim(`http://localhost:${frontendPort} (bypasses the proxy)`)}`)
+    if (includeDashboard && dashboardDomain)
+      console.log(`  ${dim('➜')}  ${dim('Direct')}:      ${dim(`http://localhost:${dashboardPort} (dashboard, bypasses the proxy)`)}`)
+  }
   if (isComingSoonMode()) {
     console.log()
     console.log(`  ${yellow('●')}  ${bold(yellow('Coming soon mode'))} ${dim('— visitors see the holding page; bypass with the coming-soon secret.')}`)
@@ -1519,19 +1512,6 @@ async function prepareRpxTlsForDev(input: {
   const { domain, includeDashboard, options } = input
   const verbose = options.verbose ?? false
 
-  // Never shadow a live public domain with rpx's loopback resolver unless the
-  // operator explicitly opts in. A crashed dev session can otherwise leave a
-  // root-owned /etc/resolver entry behind and break production services such as
-  // mail.<domain> for every application on this Mac.
-  if (process.env.STACKS_DEV_ALLOW_PUBLIC_DOMAIN !== '1') {
-    const publicAddresses = await dns.resolve4(domain).catch(() => [])
-    if (publicAddresses.some(address => !address.startsWith('127.'))) {
-      log.warn(`Skipping local DNS override for public domain ${domain}; use a .localhost/.test domain for development`)
-      await removeStalePublicDomainOverrides(domain, includeDashboard, verbose)
-      return
-    }
-  }
-
   const hosts = [
     domain,
     ...(includeDashboard ? [`dashboard.${domain}`] : []),
@@ -1574,8 +1554,15 @@ async function startRpxDaemonIfNeeded(input: {
   stopRpx: (opts: { timeoutMs: number }) => Promise<unknown>
 }): Promise<void> {
   const { ensureDaemonRunning, isDaemonRunning: isRpxUp } = await importDevelopmentRpx()
-  if (await isRpxUp())
-    return
+  if (await isRpxUp()) {
+    // A live pid file is not proof the daemon serves :443 — a previous run can
+    // leave a bootstrap process that never elevated (bad sudo, port busy), and
+    // reusing it means the proxy simply never comes up. Only reuse the daemon
+    // when the port actually answers; otherwise stop it and respawn below.
+    if (await waitForHttpsProxy(443, 1500))
+      return
+    await input.stopRpx({ timeoutMs: 5000 }).catch(() => { /* stale */ })
+  }
 
   const spawnOpts = {
     spawnCommand: input.spawnCommand,

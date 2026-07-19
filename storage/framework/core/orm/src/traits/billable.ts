@@ -328,5 +328,5 @@ async function getStripe(): Promise<Stripe> {
   const secret = (globalThis as { process?: { env?: { STRIPE_SECRET_KEY?: string } } }).process?.env?.STRIPE_SECRET_KEY
   if (!secret) throw new Error('Stripe Connect: STRIPE_SECRET_KEY not configured')
   const StripeCtor = (await import('stripe')).default
-  return new StripeCtor(secret, { apiVersion: '2026-03-25.dahlia' })
+  return new StripeCtor(secret, { apiVersion: '2026-06-24.dahlia' })
 }

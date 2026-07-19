@@ -565,7 +565,8 @@ function clientIp(req: Request): string {
  *   2. Path is always-allowed (the holding page itself, email
  *      subscribe, static assets) → pass through.
  *   3. Path matches the secret token → set mode-aware bypass cookie,
- *      redirect home.
+ *      redirect home (coming-soon lands on `/?preview=<secret>` so the
+ *      client-side gate unlocks in the same visit when tokens match).
  *   4. Bypass cookie present OR client IP allowed → pass through.
  *   5. Otherwise → return the active mode's response (redirect for
  *      coming-soon when a redirect URL is configured; HTML page for
@@ -585,11 +586,19 @@ export async function maintenanceGate(req: Request): Promise<Response | null> {
 
   // Secret bypass URL: visiting `/the-secret` sets the bypass cookie
   // and bounces the visitor to home (or to the page they wanted).
+  // In coming-soon mode the landing URL carries `?preview=<secret>` so the
+  // client-side site-mode gate (resources/assets/scripts/site-mode.js)
+  // unlocks in the same visit when its token matches the server secret;
+  // the script strips the param from the address bar afterwards.
   if (payload.secret && isSecretPath(path, payload.secret)) {
+    const location = mode === 'coming-soon'
+      ? `/?preview=${encodeURIComponent(payload.secret)}`
+      : '/'
+
     return new Response(null, {
       status: 302,
       headers: {
-        'Location': '/',
+        'Location': location,
         'Set-Cookie': bypassCookieValue(payload.secret, mode),
       },
     })

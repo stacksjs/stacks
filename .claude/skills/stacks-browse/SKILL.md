@@ -65,6 +65,7 @@ bun .claude/skills/stacks-browse/scripts/browse.ts screenshot <url> [--viewport 
 - `--scale 2` renders at 2× (retina).
 - `--cookie` pre-seeds cookies before navigation (repeatable). Use it for gated pages, e.g. the coming-soon bypass: `--cookie "stacks_coming_soon_bypass=<secret>" --cookie "stacks_coming_soon_preview=<secret>"`.
 - `--settle` waits N ms after the load event before capturing (default 700). Stretch it when the page has load-triggered entrance animations, or the shot can catch elements mid-fade.
+- `--scheme light|dark` emulates `prefers-color-scheme`, so theme-aware pages (auto dark mode) can be captured in both schemes without changing the host OS setting.
 - Default output: `.stacks/shots/<path>.png`.
 
 ### Responsive

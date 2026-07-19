@@ -221,7 +221,7 @@ function kill(s: Session): void {
 
 interface PageState { consoleErrors: string[], console: string[], responses: { url: string, status: number, ms: number, type: string }[], mainStatus: number | null }
 
-async function gotoAndInstrument(cdp: Cdp, url: string, opts: { viewport?: { w: number, h: number }, scale?: number, timeoutMs?: number, cookies?: string[], settleMs?: number } = {}): Promise<PageState> {
+async function gotoAndInstrument(cdp: Cdp, url: string, opts: { viewport?: { w: number, h: number }, scale?: number, timeoutMs?: number, cookies?: string[], settleMs?: number, scheme?: string } = {}): Promise<PageState> {
   const state: PageState = { consoleErrors: [], console: [], responses: [], mainStatus: null }
   const startById = new Map<string, number>()
 
@@ -253,6 +253,14 @@ async function gotoAndInstrument(cdp: Cdp, url: string, opts: { viewport?: { w: 
       height: opts.viewport.h,
       deviceScaleFactor: opts.scale ?? 1,
       mobile: opts.viewport.w < 600,
+    })
+  }
+
+  // Emulate light/dark so prefers-color-scheme pages can be QA'd in both
+  // schemes without flipping the host OS setting.
+  if (opts.scheme === 'light' || opts.scheme === 'dark') {
+    await cdp.send('Emulation.setEmulatedMedia', {
+      features: [{ name: 'prefers-color-scheme', value: opts.scheme }],
     })
   }
 
@@ -371,17 +379,19 @@ async function main() {
     console.log('Usage: bun browse.ts <navigate|screenshot|responsive|monitor|snapshot> <url> [flags]')
     console.log('  --cookie "name=value"   repeatable; pre-seeds cookies (e.g. coming-soon bypass)')
     console.log('  --settle 1500           ms to wait after load before acting (default 700; stretch for entrance animations)')
+    console.log('  --scheme dark           emulate prefers-color-scheme (light|dark) for QA of theme-aware pages')
     process.exit(url ? 0 : 1)
   }
 
   const session = await launch()
   const cookies = flagList(flags.cookie)
   const settleMs = flags.settle ? Number(flags.settle) : undefined
+  const scheme = typeof flags.scheme === 'string' ? flags.scheme : undefined
   try {
     if (command === 'navigate' || command === 'go') {
       const cdp = await openPage(session.port)
       const t0 = performance.now()
-      const state = await gotoAndInstrument(cdp, url, { cookies, settleMs })
+      const state = await gotoAndInstrument(cdp, url, { cookies, settleMs, scheme })
       const loadMs = Math.round(performance.now() - t0)
       console.log(JSON.stringify({
         browser: session.browser,
@@ -401,7 +411,7 @@ async function main() {
       const scale = flags.scale ? Number(flags.scale) : 1
       const out = (flags.out as string) || `.stacks/shots/${new URL(url).pathname.replace(/[^a-z0-9]+/gi, '-').replace(/^-|-$/g, '') || 'home'}.png`
       mkdirSync(out.split('/').slice(0, -1).join('/') || '.', { recursive: true })
-      await gotoAndInstrument(cdp, url, { viewport: { w: vp[0], h: vp[1] }, scale, cookies, settleMs })
+      await gotoAndInstrument(cdp, url, { viewport: { w: vp[0], h: vp[1] }, scale, cookies, settleMs, scheme })
       const png = await captureScreenshot(cdp, { full: !!flags.full, element: flags.element as string | undefined })
       await Bun.write(out, png)
       console.log(JSON.stringify({ url, out, viewport: `${vp[0]}x${vp[1]}`, scale, full: !!flags.full, element: flags.element ?? null, bytes: png.length }, null, 2))
@@ -414,7 +424,7 @@ async function main() {
       const results: any[] = []
       for (const bp of BREAKPOINTS) {
         const cdp = await openPage(session.port)
-        await gotoAndInstrument(cdp, url, { viewport: { w: bp.w, h: bp.h }, cookies, settleMs })
+        await gotoAndInstrument(cdp, url, { viewport: { w: bp.w, h: bp.h }, cookies, settleMs, scheme })
         const overflow = await cdp.send('Runtime.evaluate', {
           expression: 'document.documentElement.scrollWidth > window.innerWidth ? document.documentElement.scrollWidth - window.innerWidth : 0',
           returnByValue: true,
@@ -430,7 +440,7 @@ async function main() {
     else if (command === 'monitor') {
       const cdp = await openPage(session.port)
       const ms = flags.ms ? Number(flags.ms) : 5000
-      const state = await gotoAndInstrument(cdp, url, { cookies, settleMs })
+      const state = await gotoAndInstrument(cdp, url, { cookies, settleMs, scheme })
       await Bun.sleep(ms)
       const failed = state.responses.filter(r => r.status >= 400)
       const slow = state.responses.filter(r => r.ms > 3000)
@@ -447,7 +457,7 @@ async function main() {
 
     else if (command === 'snapshot') {
       const cdp = await openPage(session.port)
-      await gotoAndInstrument(cdp, url, { cookies, settleMs })
+      await gotoAndInstrument(cdp, url, { cookies, settleMs, scheme })
       const expr = `(() => {
         const sel = (q) => Array.from(document.querySelectorAll(q));
         const txt = (e) => (e.innerText || e.textContent || '').trim().slice(0, 80);

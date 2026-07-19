@@ -2,9 +2,12 @@
 // App-level override of the framework holding page. The framework default
 // (defaults/resources/views/coming-soon.stx -> <ComingSoon />) could not
 // resolve its <Logo /> component in this app and rendered an error, so this
-// self-contained page replaces it. It matches the marketing brand: white +
-// Stacks blue, Geist type, auto dark. The email form posts to the same
-// rate-limited endpoint the framework form used (/api/email/subscribe).
+// self-contained page replaces it. Concept: dawn at the trailhead. The scene
+// is Laravel 5.7's 503 illustration (MIT) recolored to the Stacks blue
+// palette, which turns its rising sun into a blue sun over the dunes; a dark
+// variant renders as a night camp under the same sun. The email form posts
+// to the same rate-limited endpoint the framework form used
+// (/api/email/subscribe).
 const appName = 'Stacks'
 const siteDescription = 'Stacks is a full-stack TypeScript framework for web apps, CMS content, docs, APIs, queues, mail, tests, and cloud deployment. The public launch is almost here.'
 </script>
@@ -18,8 +21,8 @@ const siteDescription = 'Stacks is a full-stack TypeScript framework for web app
     <meta name="description" content="{{ siteDescription }}">
     <meta name="robots" content="noindex">
     <meta name="color-scheme" content="light dark">
-    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
-    <meta name="theme-color" content="#0a0f1c" media="(prefers-color-scheme: dark)">
+    <meta name="theme-color" content="#eef4ff" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#04070f" media="(prefers-color-scheme: dark)">
     <link rel="icon" href="/images/logos/favicon.svg" type="image/svg+xml">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -30,28 +33,36 @@ const siteDescription = 'Stacks is a full-stack TypeScript framework for web app
       :root {
         --font-body: "Geist", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         --font-mono: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
-        --bg: #ffffff;
-        --surface: #f5f8ff;
+        --bg: #eef4ff;
+        --surface: #ffffff;
         --text: #0f1b2d;
         --muted: #4a5568;
         --brand: #2563eb;
         --brand-strong: #1d4ed8;
         --on-brand: #ffffff;
-        --line: rgba(15, 27, 45, 0.12);
-        --field-bg: #ffffff;
+        --line: rgba(15, 27, 45, 0.10);
+        --field-bg: rgba(255, 255, 255, 0.85);
+        --icon-bg: rgba(37, 99, 235, 0.10);
+        --icon-bg-hover: rgba(37, 99, 235, 0.18);
+        --icon-fg: #1d4ed8;
+        --card-shadow: 0 30px 90px rgba(30, 58, 138, 0.22);
       }
 
       @media (prefers-color-scheme: dark) {
         :root {
-          --bg: #0a0f1c;
-          --surface: #121a2e;
+          --bg: #04070f;
+          --surface: #0b1220;
           --text: #eaf0fb;
           --muted: #9fb0c8;
           --brand: #3b82f6;
-          --brand-strong: #2563eb;
+          --brand-strong: #60a5fa;
           --on-brand: #ffffff;
-          --line: rgba(234, 240, 251, 0.16);
-          --field-bg: #0f1728;
+          --line: rgba(234, 240, 251, 0.12);
+          --field-bg: rgba(11, 18, 32, 0.72);
+          --icon-bg: rgba(59, 130, 246, 0.14);
+          --icon-bg-hover: rgba(59, 130, 246, 0.24);
+          --icon-fg: #93c5fd;
+          --card-shadow: 0 30px 90px rgba(2, 6, 23, 0.65);
         }
       }
 
@@ -59,55 +70,72 @@ const siteDescription = 'Stacks is a full-stack TypeScript framework for web app
 
       body {
         min-height: 100dvh;
-        display: grid;
-        place-items: center;
+        display: flex;
+        align-items: center;
         padding: clamp(1.25rem, 5vw, 3rem);
         color: var(--text);
         font-family: var(--font-body);
-        background:
-          radial-gradient(120% 90% at 88% -8%, rgba(37, 99, 235, 0.12), transparent 46%),
-          linear-gradient(180deg, var(--bg) 0%, var(--surface) 55%, var(--bg) 100%);
+        background: var(--bg);
         -webkit-font-smoothing: antialiased;
       }
 
-      /* Nature motif, same as the marketing page: quiet topography lines
-         behind everything and the park ridge the page stands on. */
-      body::before {
+      /* The dawn scene: Laravel 5.7's 503 illustration, recolored so its
+         rising sun is a Stacks blue sun over blue dunes. Dark mode swaps in
+         the night variant. Edges blend into the page background. */
+      .scene {
         position: fixed;
         inset: 0;
-        z-index: -2;
-        content: "";
-        background-image: url("/assets/images/topography.svg");
-        background-size: 760px auto;
-        opacity: 0.045;
+        z-index: -1;
+        background: url("/assets/images/coming-soon-dawn.svg") center bottom / cover no-repeat;
+        animation: scene-in 1.4s ease-out both;
       }
 
-      body::after {
-        position: fixed;
-        inset: auto 0 0;
-        z-index: -1;
-        height: min(30vh, 22rem);
+      .scene::after {
+        position: absolute;
+        inset: 0;
         content: "";
-        background: url("/assets/images/park-ridge.svg") center bottom / cover no-repeat;
-        opacity: 0.22;
-        pointer-events: none;
+        background:
+          linear-gradient(90deg, var(--bg) 0%, transparent 36%),
+          linear-gradient(180deg, var(--bg) 0%, transparent 14%, transparent 86%, var(--bg) 100%);
+      }
+
+      @media (prefers-color-scheme: dark) {
+        .scene { background-image: url("/assets/images/coming-soon-dawn-dark.svg"); }
       }
 
       .card {
         position: relative;
-        width: min(640px, 100%);
+        overflow: hidden;
+        width: min(560px, 100%);
+        margin-left: clamp(0rem, 6vw, 8rem);
         padding: clamp(1.75rem, 4vw, 2.75rem);
         border: 1px solid var(--line);
-        border-radius: 16px;
-        background: var(--surface);
-        box-shadow: 0 24px 60px rgba(30, 58, 138, 0.12);
+        border-radius: 20px;
+        background: color-mix(in srgb, var(--surface) 86%, transparent);
+        box-shadow: var(--card-shadow);
+        backdrop-filter: blur(16px) saturate(1.15);
+        -webkit-backdrop-filter: blur(16px) saturate(1.15);
+        animation: card-in 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.15s both;
+      }
+
+      /* The nature motif, tinted brand blue instead of gray: quiet contour
+         lines inside the card, behind its content. */
+      .card::before {
+        position: absolute;
+        inset: 0;
+        z-index: -1;
+        content: "";
+        background-image: url("/assets/images/topography-blue.svg");
+        background-size: 680px auto;
+        opacity: 0.05;
       }
 
       .brand {
-        display: inline-flex;
+        display: flex;
         gap: 0.6rem;
         align-items: center;
-        margin-bottom: 2.4rem;
+        width: 100%;
+        margin-bottom: 2.2rem;
       }
 
       .brand-mark {
@@ -121,6 +149,7 @@ const siteDescription = 'Stacks is a full-stack TypeScript framework for web app
         font-size: 1.25rem;
         line-height: 1;
         background: linear-gradient(150deg, var(--brand), var(--brand-strong));
+        box-shadow: 0 8px 20px rgba(37, 99, 235, 0.35);
       }
 
       .brand-name {
@@ -130,7 +159,9 @@ const siteDescription = 'Stacks is a full-stack TypeScript framework for web app
       }
 
       .eyebrow {
-        display: inline-block;
+        display: inline-flex;
+        gap: 0.55rem;
+        align-items: center;
         margin-bottom: 1rem;
         color: var(--brand);
         font-family: var(--font-mono);
@@ -140,7 +171,19 @@ const siteDescription = 'Stacks is a full-stack TypeScript framework for web app
         text-transform: uppercase;
       }
 
-      h1 {
+      /* A small echo of the blue sun from the scene behind the card. */
+      .eyebrow::before {
+        width: 9px;
+        height: 9px;
+        border-radius: 999px;
+        content: "";
+        background: var(--brand);
+        box-shadow: 0 0 12px 2px rgba(59, 130, 246, 0.65);
+      }
+
+      /* Class selector on purpose: the pipeline's preflight resets bare h1
+         typography, and a class always wins over an element selector. */
+      .title {
         font-size: clamp(2.4rem, 6vw, 3.6rem);
         font-weight: 800;
         letter-spacing: -0.035em;
@@ -148,11 +191,11 @@ const siteDescription = 'Stacks is a full-stack TypeScript framework for web app
       }
 
       .lead {
-        max-width: 42ch;
+        max-width: 44ch;
         margin-top: 1.1rem;
         color: var(--muted);
-        font-size: 1.08rem;
-        line-height: 1.6;
+        font-size: 1.06rem;
+        line-height: 1.65;
       }
 
       form {
@@ -191,12 +234,13 @@ const siteDescription = 'Stacks is a full-stack TypeScript framework for web app
         color: var(--on-brand);
         font: inherit;
         font-weight: 700;
-        background: var(--brand);
+        background: linear-gradient(150deg, var(--brand), var(--brand-strong));
+        box-shadow: 0 10px 24px rgba(37, 99, 235, 0.35);
         cursor: pointer;
-        transition: background 0.16s ease, transform 0.12s ease;
+        transition: box-shadow 0.16s ease, transform 0.12s ease, filter 0.16s ease;
       }
 
-      .cs-btn:hover { background: var(--brand-strong); }
+      .cs-btn:hover { filter: brightness(1.08); box-shadow: 0 12px 28px rgba(37, 99, 235, 0.45); }
       .cs-btn:active { transform: translateY(1px); }
 
       .form-note {
@@ -208,22 +252,64 @@ const siteDescription = 'Stacks is a full-stack TypeScript framework for web app
       .form-note[data-state="ok"] { color: var(--brand); }
       .form-note[data-state="err"] { color: #dc2626; }
 
-      .links {
+      .footer {
         display: flex;
-        gap: 1.4rem;
+        gap: 1rem;
         align-items: center;
-        margin-top: 2.4rem;
+        justify-content: space-between;
+        margin-top: 2.2rem;
         padding-top: 1.5rem;
         border-top: 1px solid var(--line);
-        font-size: 0.92rem;
-        font-weight: 600;
       }
 
-      .links a {
+      .socials { display: flex; gap: 0.6rem; }
+
+      .icon-btn {
+        display: grid;
+        place-items: center;
+        width: 42px;
+        height: 42px;
+        border: 1px solid transparent;
+        border-radius: 999px;
+        color: var(--icon-fg);
+        background: var(--icon-bg);
+        transition: background 0.16s ease, transform 0.12s ease, border-color 0.16s ease;
+      }
+
+      .icon-btn:hover {
+        border-color: var(--line);
+        background: var(--icon-bg-hover);
+        transform: translateY(-1px);
+      }
+
+      .icon-btn svg { width: 19px; height: 19px; fill: currentColor; }
+
+      .docs-link {
         color: var(--brand);
+        font-size: 0.92rem;
+        font-weight: 600;
         text-decoration: none;
       }
-      .links a:hover { color: var(--brand-strong); text-decoration: underline; }
+      .docs-link:hover { color: var(--brand-strong); text-decoration: underline; }
+
+      @keyframes card-in {
+        from { opacity: 0; transform: translateY(16px); }
+        to { opacity: 1; transform: none; }
+      }
+
+      @keyframes scene-in {
+        from { opacity: 0; }
+        to { opacity: 1; }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after { animation: none !important; transition: none !important; }
+      }
+
+      @media (max-width: 760px) {
+        body { display: grid; place-items: center; }
+        .card { margin-left: 0; }
+      }
 
       @media (max-width: 520px) {
         form { flex-direction: column; }
@@ -232,6 +318,8 @@ const siteDescription = 'Stacks is a full-stack TypeScript framework for web app
     </style>
   </head>
   <body>
+    <div class="scene" aria-hidden="true"></div>
+
     <main class="card">
       <span class="brand">
         <span class="brand-mark" aria-hidden="true">S</span>
@@ -239,10 +327,11 @@ const siteDescription = 'Stacks is a full-stack TypeScript framework for web app
       </span>
 
       <span class="eyebrow">Opening soon</span>
-      <h1>The trailhead is almost ready.</h1>
+      <h1 class="title">The trailhead is almost ready.</h1>
       <p class="lead">
-        We are clearing the last stretch: framework, docs, CMS, and the deploy path.
-        Leave your email and we will let you know the moment it opens.
+        Stacks is a full-stack TypeScript framework in the spirit of Laravel and Rails:
+        one typed codebase for routing, models, queues, mail, and deploys. We are clearing
+        the last stretch. Leave your email and we will write the moment the trail opens.
       </p>
 
       <form id="subscribe-form" novalidate>
@@ -252,10 +341,17 @@ const siteDescription = 'Stacks is a full-stack TypeScript framework for web app
       </form>
       <p id="form-note" class="form-note" role="status" aria-live="polite"></p>
 
-      <nav class="links">
-        <a href="/docs" data-no-router>Read the docs</a>
-        <a href="https://github.com/stacksjs/stacks">GitHub</a>
-      </nav>
+      <div class="footer">
+        <div class="socials">
+          <a class="icon-btn" href="https://github.com/stacksjs/stacks" aria-label="Stacks on GitHub" title="GitHub">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
+          </a>
+          <a class="icon-btn" href="https://bsky.app/profile/stacksjs.com" aria-label="Stacks on Bluesky" title="Bluesky">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 10.8c-1.087-2.114-4.046-6.053-6.798-7.995C2.566.944 1.561 1.266.902 1.565.139 1.908 0 3.08 0 3.768c0 .69.378 5.65.624 6.479.815 2.736 3.713 3.66 6.383 3.364.136-.02.275-.039.415-.056-.138.022-.276.04-.415.056-3.912.58-7.387 2.005-2.83 7.078 5.013 5.19 6.87-1.113 7.823-4.308.953 3.195 2.05 9.271 7.733 4.308 4.267-4.308 1.172-6.498-2.74-7.078a8.741 8.741 0 0 1-.415-.056c.14.017.279.036.415.056 2.67.297 5.568-.628 6.383-3.364.246-.828.624-5.79.624-6.478 0-.69-.139-1.861-.902-2.206-.659-.298-1.664-.62-4.3 1.24C16.046 4.748 13.087 8.687 12 10.8Z"/></svg>
+          </a>
+        </div>
+        <a class="docs-link" href="/docs" data-no-router>Read the docs</a>
+      </div>
     </main>
 
     <script>

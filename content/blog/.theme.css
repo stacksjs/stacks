@@ -1,13 +1,10 @@
 /*
  * Stacks Blog - custom BunPress theme, matching the 2026 marketing design
- * system: minimal modern developer-framework look with a nature motif.
- *
- * Re-skins BunPress's VitePress theme (driven by --vp-c-* vars) to the Stacks
- * blue palette + Geist type, and adds the outdoors chrome (topography texture,
- * a ridge + river footer, a trail-sign masthead). One accent (Stacks blue)
- * across all three themes; the nature reads come from the line-art, never
- * from a second hue. Three themes via `data-theme` on <html>:
- *   - colored - glacier: misty blue paper, the nature-forward default.
+ * system: minimal modern developer-framework look. Same blue palette + Geist
+ * type as the marketing site, one accent across all three themes, and an
+ * editorial layout (lead story + hairline index) carried by type, rules, and
+ * whitespace alone. No illustration chrome. Three themes via `data-theme`:
+ *   - colored - glacier: misty blue paper.
  *   - light   - clean paper-white with the same blue accent.
  *   - dark    - midnight lake: deep navy, brighter blue accent.
  */
@@ -33,14 +30,6 @@
   --vp-code-color: #1d4ed8;
   --vp-code-bg: #dbe9fb;
   --vp-code-block-bg: #0b1220;
-  --park-ridge: #1d4ed8;
-  --park-river: #2563eb;
-  --park-wood: #4a6785;
-  --park-flag: #1d4ed8;
-  --topo-color: #1d4ed8;
-  --topo-opacity: 0.05;
-  --park-poster-a: #ddeafa;
-  --park-poster-b: #cfe1f8;
   --shadow-rgb: 30, 58, 138;
 }
 
@@ -64,14 +53,6 @@
   --vp-code-color: #2563eb;
   --vp-code-bg: #eef3fe;
   --vp-code-block-bg: #0b1220;
-  --park-ridge: #2563eb;
-  --park-river: #3b82f6;
-  --park-wood: #64748b;
-  --park-flag: #2563eb;
-  --topo-color: #2563eb;
-  --topo-opacity: 0.04;
-  --park-poster-a: #eef3fe;
-  --park-poster-b: #e2e9f8;
   --shadow-rgb: 30, 58, 138;
 }
 
@@ -93,14 +74,6 @@
   --vp-code-color: #93c5fd;
   --vp-code-bg: #13203a;
   --vp-code-block-bg: #060b14;
-  --park-ridge: #040810;
-  --park-river: #2563eb;
-  --park-wood: #7c92b0;
-  --park-flag: #60a5fa;
-  --topo-color: #60a5fa;
-  --topo-opacity: 0.06;
-  --park-poster-a: #13203a;
-  --park-poster-b: #0e1830;
   --shadow-rgb: 0, 0, 0;
 }
 
@@ -112,14 +85,13 @@
   --font-body: 'Geist', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   --font-hero: 'Geist', var(--font-body);
   --font-head: 'Geist', var(--font-body);
-  --font-label: 'Geist', var(--font-body);
+  --font-label: 'Geist Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
   --font-mono: 'Geist Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 
-/* ── Base + topography texture ──────────────────────────────────────────── */
-/* Page background lives on <html> so the fixed topography layer (body::before,
- * z-index -1) shows above it but behind content; keep the layout chrome
- * transparent so both read through. */
+/* ── Base ───────────────────────────────────────────────────────────────── */
+/* Page background lives on <html>; keep the layout chrome transparent so it
+ * reads through. */
 html { background-color: var(--vp-c-bg); }
 body, .Layout, .BPContent, .BPPage { background-color: transparent; }
 .BPNavBar { background-color: var(--vp-c-bg-alt); border-bottom: 1px solid var(--vp-c-divider); }
@@ -128,17 +100,6 @@ body, .Layout, .BPContent, .BPPage { background-color: transparent; }
 body {
   font-family: var(--font-body);
   color: var(--vp-c-text-1);
-}
-body::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  background-color: var(--topo-color);
-  -webkit-mask: url('/assets/images/topography.svg') center / 620px auto;
-  mask: url('/assets/images/topography.svg') center / 620px auto;
-  opacity: var(--topo-opacity);
 }
 
 .bp-doc {
@@ -152,10 +113,21 @@ body::before {
   letter-spacing: -0.01em;
 }
 
-.bp-doc a.blog-card,
-.bp-doc a.blog-card:hover,
+.bp-doc a.blog-feature,
+.bp-doc a.blog-feature:hover,
+.bp-doc a.blog-row,
+.bp-doc a.blog-row:hover,
 .bp-doc a.blog-back,
 .bp-doc a.blog-back:hover { text-decoration: none; }
+
+/* The blog's own headings must not inherit VitePress's h2 hairline. */
+.bp-doc .blog-head h1,
+.bp-doc .blog-feature h2,
+.bp-doc .blog-row h2,
+.bp-doc .blog-post-head h1,
+.bp-doc .blog-more h2,
+.bp-doc .blog-empty h2,
+.bp-doc .blog-404 h1 { border-top: 0; padding-top: 0; margin-top: 0; }
 
 /* ── Theme toggle ───────────────────────────────────────────────────────── */
 .blog-theme-toggle {
@@ -192,194 +164,277 @@ body::before {
   color: var(--vp-c-brand-1);
 }
 
-/* ── Masthead (wooden trail sign) ───────────────────────────────────────── */
-.blog-listing-head { margin: 1rem 0 2.75rem; text-align: center; }
-.blog-listing-head .sign {
-  display: block;
-  width: 320px;
-  max-width: 82%;
-  height: 132px;
-  margin: 0 auto 0.2rem;
-  background-color: var(--park-wood);
-  -webkit-mask: url('/assets/images/wood-sign.svg') center / contain no-repeat;
-  mask: url('/assets/images/wood-sign.svg') center / contain no-repeat;
-  filter: drop-shadow(0 8px 16px rgba(var(--shadow-rgb), 0.16));
-}
-.blog-listing-head h1 {
-  margin: 0 0 0.55rem;
+/* ── Listing masthead ───────────────────────────────────────────────────── */
+.blog-head { margin: 3.5rem 0 0; }
+.blog-head h1 {
+  margin: 0;
   font-family: var(--font-hero);
   font-weight: 800;
-  font-size: clamp(2.6rem, 5.5vw, 4.4rem);
-  line-height: 0.98;
-  letter-spacing: -0.03em;
-  color: var(--vp-c-text-1);
-}
-.blog-listing-head p {
-  margin: 0 auto;
-  max-width: 38rem;
-  color: var(--vp-c-text-2);
-  font-size: 1.08rem;
-  line-height: 1.6;
-}
-
-/* ── Post header ────────────────────────────────────────────────────────── */
-.blog-post-head { margin: 0 0 1.5rem; }
-.blog-post-head h1 {
-  margin: 0 0 0.6rem;
-  font-family: var(--font-hero);
-  font-weight: 800;
-  font-size: clamp(2.6rem, 5vw, 4rem);
+  font-size: clamp(2.8rem, 6vw, 4.25rem);
   line-height: 1.02;
   letter-spacing: -0.03em;
   color: var(--vp-c-text-1);
 }
-.blog-post-meta {
-  display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem;
-  margin: 0; color: var(--vp-c-text-2); font-size: 0.95rem;
+.blog-head-sub {
+  margin: 1rem 0 0;
+  max-width: 36rem;
+  color: var(--vp-c-text-2);
+  font-size: 1.1rem;
+  line-height: 1.6;
 }
-.blog-post-meta .dot { color: var(--vp-c-divider); }
-.blog-post-meta .author { font-weight: 650; color: var(--vp-c-text-1); }
+.blog-count {
+  margin: 1.4rem 0 0;
+  font-family: var(--font-label);
+  font-size: 0.75rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--vp-c-text-3);
+}
 
-/* The poster is a self-framed NPS print (rounded, transparent corners), so we
- * float it as a centered hero rather than boxing it in a mat - a drop-shadow
- * follows its rounded edge and gives it a "pinned print" feel. */
-.blog-post-poster {
-  margin: 2rem auto 0.75rem;
-  max-width: 360px;
-  border: 0;
-  background: none;
-}
-.blog-post-poster img {
+/* ── Lead story (featured / newest post) ────────────────────────────────── */
+.blog-feature {
   display: block;
-  width: 100%;
-  height: auto;
-  border-radius: 0.6rem;
-  filter: drop-shadow(0 24px 44px rgba(var(--shadow-rgb), 0.3));
+  margin-top: 2.5rem;
+  padding: 2.75rem 0 2.5rem;
+  border-top: 1px solid var(--vp-c-divider);
+  color: inherit;
+}
+.blog-feature-meta {
+  display: flex; align-items: center; gap: 0.75rem;
+  margin: 0;
+  font-family: var(--font-label);
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--vp-c-text-3);
+}
+.blog-feature-meta .chip {
+  padding: 0.18rem 0.65rem;
+  border-radius: 999px;
+  background: var(--vp-c-brand-soft);
+  color: var(--vp-c-brand-1);
+  font-weight: 600;
+}
+.blog-feature h2 {
+  margin: 1rem 0 0.9rem;
+  font-family: var(--font-hero);
+  font-weight: 750;
+  font-size: clamp(1.9rem, 3.8vw, 2.75rem);
+  line-height: 1.08;
+  letter-spacing: -0.022em;
+  color: var(--vp-c-text-1);
+  transition: color 0.15s ease;
+}
+.blog-feature-excerpt {
+  margin: 0 0 1.4rem;
+  max-width: 42rem;
+  color: var(--vp-c-text-2);
+  font-size: 1.05rem;
+  line-height: 1.65;
+}
+.blog-read {
+  color: var(--vp-c-brand-1);
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+.blog-read .arrow {
+  display: inline-block;
+  transition: transform 0.15s ease;
+}
+.blog-feature:hover h2 { color: var(--vp-c-brand-1); }
+.blog-feature:hover .blog-read .arrow { transform: translateX(4px); }
+
+/* ── Post index (hairline rows) ─────────────────────────────────────────── */
+.blog-index { border-top: 1px solid var(--vp-c-divider); }
+.blog-row {
+  display: grid;
+  grid-template-columns: 9.5rem minmax(0, 1fr) 1.5rem;
+  gap: 2rem;
+  align-items: start;
+  padding: 1.75rem 0;
+  border-bottom: 1px solid var(--vp-c-divider);
+  color: inherit;
+}
+.blog-row > time {
+  padding-top: 0.4rem;
+  font-family: var(--font-label);
+  font-size: 0.8rem;
+  white-space: nowrap;
+  color: var(--vp-c-text-3);
+}
+.blog-row h2 {
+  margin: 0 0 0.45rem;
+  font-family: var(--font-head);
+  font-size: 1.28rem;
+  font-weight: 650;
+  line-height: 1.25;
+  letter-spacing: -0.014em;
+  color: var(--vp-c-text-1);
+  transition: color 0.15s ease;
+}
+.blog-row-main > p {
+  margin: 0;
+  color: var(--vp-c-text-2);
+  font-size: 0.95rem;
+  line-height: 1.6;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+.blog-row-arrow {
+  padding-top: 0.3rem;
+  color: var(--vp-c-text-3);
+  font-size: 1.05rem;
+  transition: color 0.15s ease, transform 0.15s ease;
+}
+.blog-row:hover h2 { color: var(--vp-c-brand-1); }
+.blog-row:hover .blog-row-arrow { color: var(--vp-c-brand-1); transform: translateX(4px); }
+
+/* ── Empty state (doubles as email capture) ─────────────────────────────── */
+.blog-empty {
+  margin: 2.5rem 0 0;
+  padding: 2.5rem 0;
+  border-top: 1px solid var(--vp-c-divider);
+  border-bottom: 1px solid var(--vp-c-divider);
+}
+.blog-empty h2 {
+  margin: 0 0 0.6rem;
+  font-family: var(--font-head);
+  font-size: 1.6rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--vp-c-text-1);
+}
+.blog-empty > p { margin: 0; max-width: 30rem; color: var(--vp-c-text-2); line-height: 1.6; }
+.blog-subscribe { display: flex; flex-wrap: wrap; gap: 0.6rem; margin-top: 1.4rem; }
+.blog-subscribe input[type='email'] {
+  min-width: 260px;
+  padding: 0.7rem 1.1rem;
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 999px;
+  background: var(--vp-c-bg-alt);
+  color: var(--vp-c-text-1);
+  font-family: inherit;
+  font-size: 0.95rem;
+}
+.blog-subscribe input[type='email']:focus {
+  outline: 2px solid var(--vp-c-brand-1);
+  outline-offset: 1px;
+}
+.blog-subscribe button {
+  padding: 0.7rem 1.4rem;
+  border: 0;
+  border-radius: 999px;
+  background: var(--vp-c-brand-1);
+  color: var(--vp-c-bg);
+  font-family: inherit;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+.blog-subscribe button:hover { background: var(--vp-c-brand-2); }
+.blog-form-note {
+  flex-basis: 100%;
+  margin: 0.6rem 0 0;
+  font-family: var(--font-label);
+  font-size: 0.8rem;
+  color: var(--vp-c-text-3);
+}
+
+/* ── Post header ────────────────────────────────────────────────────────── */
+.blog-post-head { margin: 2.75rem 0 2rem; }
+.blog-post-meta {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 0.6rem;
+  margin: 0 0 1rem;
+  font-family: var(--font-label);
+  font-size: 0.82rem;
+  color: var(--vp-c-text-3);
+}
+.blog-post-meta .author { font-weight: 600; color: var(--vp-c-text-2); }
+.blog-post-head h1 {
+  margin: 0;
+  font-family: var(--font-hero);
+  font-weight: 800;
+  font-size: clamp(2.5rem, 5vw, 3.75rem);
+  line-height: 1.04;
+  letter-spacing: -0.03em;
+  color: var(--vp-c-text-1);
 }
 
 .blog-back {
-  display: inline-flex; align-items: center; gap: 0.35rem;
-  margin-bottom: 1.5rem; font-size: 0.9rem; font-weight: 600; color: var(--vp-c-brand-1);
+  display: inline-block;
+  margin-bottom: 2rem;
+  font-family: var(--font-label);
+  font-size: 0.85rem;
+  color: var(--vp-c-brand-1);
 }
 .blog-back:hover { color: var(--vp-c-brand-2); }
 
+/* ── Post footer pieces: author, share, read-next ───────────────────────── */
 .blog-author-card {
   display: flex; gap: 1rem; align-items: flex-start;
-  margin: 3rem 0 0; padding: 1.4rem 1.5rem;
-  border: 1px solid var(--vp-c-divider); border-left: 4px solid var(--park-flag);
-  border-radius: 0.6rem; background: var(--vp-c-bg-alt);
+  margin: 3.5rem 0 0;
+  padding: 1.75rem 0 0;
+  border-top: 1px solid var(--vp-c-divider);
 }
 .blog-author-card .avatar {
-  flex: 0 0 auto; width: 3rem; height: 3rem; display: grid; place-items: center;
-  border-radius: 50%; background: var(--vp-c-brand-1); color: var(--vp-c-bg); font-weight: 800; font-size: 1.2rem;
+  flex: 0 0 auto; width: 2.75rem; height: 2.75rem; display: grid; place-items: center;
+  border-radius: 50%; background: var(--vp-c-brand-1); color: var(--vp-c-bg); font-weight: 800; font-size: 1.1rem;
 }
 .blog-author-card .name { font-weight: 700; color: var(--vp-c-text-1); }
-.blog-author-card .bio { margin: 0.25rem 0 0; color: var(--vp-c-text-2); line-height: 1.55; }
+.blog-author-card .bio { margin: 0.25rem 0 0; color: var(--vp-c-text-2); font-size: 0.95rem; line-height: 1.6; }
 
-/* ── Listing cards ──────────────────────────────────────────────────────── */
-.blog-cards { display: grid; gap: 1.75rem; }
-.blog-card {
-  display: grid; grid-template-columns: 188px 1fr; gap: 1.75rem; align-items: center;
-  padding: 1.4rem 1.5rem;
-  border: 1px solid var(--vp-c-divider); border-left: 4px solid var(--vp-c-brand-1);
-  border-radius: 0.7rem; background: var(--vp-c-bg-alt); text-decoration: none;
-  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
-}
-.blog-card:hover {
-  transform: translateY(-3px);
-  border-color: var(--vp-c-brand-1);
-  box-shadow: 0 22px 44px -28px rgba(var(--shadow-rgb), 0.55);
-}
-.blog-card.is-featured { border-left-color: var(--park-flag); }
-.blog-card.is-featured:hover { border-color: var(--park-flag); }
-/* Poster shows as a small floating print - its own NPS frame supplies the
- * border, so we skip the mat and just lift it with a shadow. */
-.blog-card-media { align-self: center; }
-.blog-card-media img {
-  display: block; width: 100%; height: auto;
-  border-radius: 0.45rem;
-  filter: drop-shadow(0 12px 24px rgba(var(--shadow-rgb), 0.22));
-  transition: transform 0.18s ease;
-}
-.blog-card:hover .blog-card-media img { transform: scale(1.02); }
-.blog-card-title {
-  margin: 0.1rem 0 0.45rem; font-family: var(--font-head);
-  font-size: 1.5rem; font-weight: 600; color: var(--vp-c-text-1); line-height: 1.16; letter-spacing: -0.01em;
-}
-.blog-card:hover .blog-card-title { color: var(--vp-c-brand-1); }
-.blog-card-excerpt { margin: 0 0 0.85rem; color: var(--vp-c-text-2); line-height: 1.6; }
-.blog-card-meta { color: var(--vp-c-text-3); font-size: 0.875rem; }
-.blog-card-flag {
-  display: inline-block; margin-bottom: 0.5rem; padding: 0.2rem 0.65rem; border-radius: 999px;
-  background: var(--vp-c-brand-soft); color: var(--park-wood);
-  font-family: var(--font-label); font-size: 0.74rem; font-weight: 400;
-  letter-spacing: 0.12em; text-transform: uppercase;
-}
-.bp-doc .blog-card-title,
-.bp-doc .blog-listing-head h1,
-.bp-doc .blog-post-head h1 { border-top: 0; padding-top: 0; }
-
-/* ── Post footer: share + read-next ─────────────────────────────────────── */
 .blog-share {
   display: flex; flex-wrap: wrap; align-items: center; gap: 1rem;
-  margin: 2.5rem 0 0; padding-top: 1.5rem; border-top: 1px solid var(--vp-c-divider); font-size: 0.95rem;
+  margin: 2.5rem 0 0; padding-top: 1.5rem; border-top: 1px solid var(--vp-c-divider);
 }
-.blog-share-label { font-weight: 700; color: var(--vp-c-text-1); }
-.blog-share a { color: var(--vp-c-brand-1); font-weight: 600; }
+.blog-share-label {
+  font-family: var(--font-label);
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--vp-c-text-3);
+}
+.blog-share a { color: var(--vp-c-brand-1); font-weight: 600; font-size: 0.92rem; }
 .blog-share a:hover { color: var(--vp-c-brand-2); }
-.blog-more { margin: 2.5rem 0 0; }
+
+.blog-more { margin: 3rem 0 0; }
 .blog-more h2 {
-  display: flex; align-items: center; gap: 0.55rem;
-  margin: 0 0 0.75rem; font-family: var(--font-head); font-size: 1.2rem;
-  font-weight: 600; color: var(--vp-c-text-1); border-top: 0; padding-top: 0;
+  margin: 0 0 0.9rem;
+  font-family: var(--font-label);
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--vp-c-text-3);
 }
-.blog-more h2::before {
-  content: ''; flex: 0 0 auto;
-  width: 24px; height: 20px;
-  background-color: var(--vp-c-brand-1);
-  -webkit-mask: url('/assets/images/park-emblem.svg') center / contain no-repeat;
-  mask: url('/assets/images/park-emblem.svg') center / contain no-repeat;
-  opacity: 0.75;
-}
-.bp-doc .blog-more h2 { border-top: 0; padding-top: 0; margin: 0 0 0.75rem; }
+.bp-doc .blog-more h2 { border-top: 0; padding-top: 0; margin: 0 0 0.9rem; }
 .blog-more ul { list-style: none; margin: 0; padding: 0; }
-.blog-more li { margin: 0.35rem 0; }
+.blog-more li { margin: 0.4rem 0; }
+.blog-more li::before { content: none; }
 .blog-more a { color: var(--vp-c-brand-1); font-weight: 600; }
 .blog-more a:hover { color: var(--vp-c-brand-2); }
 
-/* ── Footer landscape: ridge + river ────────────────────────────────────── */
-.blog-landscape { position: relative; margin-top: 4rem; padding-top: 2rem; }
-.blog-landscape .ridge {
-  display: block; width: 100%; height: 90px; background: var(--park-ridge);
-  -webkit-mask: url('/assets/images/park-ridge.svg') bottom center / cover no-repeat;
-  mask: url('/assets/images/park-ridge.svg') bottom center / cover no-repeat;
-  opacity: 0.85;
+/* ── Footer ─────────────────────────────────────────────────────────────── */
+.blog-foot {
+  margin-top: 4.5rem;
+  padding: 1.5rem 0 3rem;
+  border-top: 1px solid var(--vp-c-divider);
 }
-.blog-landscape .river {
-  display: block; width: 100%; height: 70px; margin-top: -12px;
-  background-color: var(--park-river);
-  -webkit-mask: url('/assets/images/river.svg') center / 1200px 140px repeat-x;
-  mask: url('/assets/images/river.svg') center / 1200px 140px repeat-x;
-  opacity: 0.85;
+.blog-foot .colophon {
+  margin: 0;
+  color: var(--vp-c-text-3);
+  font-size: 0.85rem;
+  letter-spacing: 0.02em;
 }
-.blog-landscape .colophon {
-  text-align: center; margin-top: 0.75rem; color: var(--vp-c-text-3);
-  font-size: 0.82rem; letter-spacing: 0.04em;
-}
-.blog-landscape .colophon::before {
-  content: ''; display: inline-block; vertical-align: -3px;
-  width: 17px; height: 17px; margin-right: 0.5rem;
-  background-color: var(--vp-c-text-3);
-  -webkit-mask: url('/assets/images/park-bison.svg') center / contain no-repeat;
-  mask: url('/assets/images/park-bison.svg') center / contain no-repeat;
-}
-.blog-landscape .colophon a { color: var(--vp-c-brand-1); }
+.blog-foot .colophon a { color: var(--vp-c-brand-1); }
 
-/* ── Long-form prose polish (park-themed markdown body) ─────────────────── */
+/* ── Long-form prose polish ─────────────────────────────────────────────── */
 .bp-doc blockquote {
   margin: 1.75rem 0;
   padding: 0.85rem 1.35rem;
-  border-left: 4px solid var(--park-flag);
+  border-left: 3px solid var(--vp-c-brand-1);
   border-radius: 0 0.4rem 0.4rem 0;
   background: var(--vp-c-brand-soft);
   color: var(--vp-c-text-1);
@@ -388,7 +443,7 @@ body::before {
 .bp-doc blockquote p { margin: 0; }
 .bp-doc blockquote p + p { margin-top: 0.6rem; }
 
-/* Blue trail-marker list bullets. */
+/* Blue marker dots for unordered lists. */
 .bp-doc ul { list-style: none; padding-left: 1.4rem; }
 .bp-doc ul > li { position: relative; }
 .bp-doc ul > li::before {
@@ -403,55 +458,42 @@ body::before {
 .bp-doc ol { padding-left: 1.4rem; }
 .bp-doc ol > li::marker { color: var(--vp-c-brand-1); font-weight: 700; }
 
-/* Section rules read like a trail divider, with a small NPS wing emblem set
- * into the middle of the line. (line in the bg, a bg-coloured chip breaks the
- * line, the emblem mask sits on top.) */
+/* Section rules are a plain hairline. */
 .bp-doc hr {
-  position: relative;
-  height: 1px; border: 0; margin: 3rem 0; overflow: visible;
-  background: linear-gradient(to right, transparent, var(--vp-c-divider) 18%, var(--vp-c-divider) 82%, transparent);
-}
-.bp-doc hr::after,
-.bp-doc hr::before {
-  content: ''; position: absolute; top: 50%; left: 50%;
-  transform: translate(-50%, -50%);
-}
-.bp-doc hr::after { width: 54px; height: 24px; background: var(--vp-c-bg); }
-.bp-doc hr::before {
-  z-index: 1; width: 30px; height: 24px;
-  background-color: var(--vp-c-brand-1);
-  -webkit-mask: url('/assets/images/park-emblem.svg') center / contain no-repeat;
-  mask: url('/assets/images/park-emblem.svg') center / contain no-repeat;
-  opacity: 0.8;
+  height: 1px; border: 0; margin: 3rem 0;
+  background: var(--vp-c-divider);
 }
 
-/* ── Off-trail (404) ────────────────────────────────────────────────────── */
-.blog-404 { text-align: center; margin: 2.5rem auto 1rem; max-width: 32rem; }
-.blog-404-art {
-  display: block; width: 116px; height: 116px; margin: 0 auto 1.25rem;
-  background-color: var(--vp-c-brand-1);
-  -webkit-mask: url('/assets/images/park-hiker.svg') center / contain no-repeat;
-  mask: url('/assets/images/park-hiker.svg') center / contain no-repeat;
-  opacity: 0.9;
+/* ── 404 ────────────────────────────────────────────────────────────────── */
+.blog-404 { margin: 3rem 0 1rem; max-width: 32rem; }
+.blog-kicker {
+  margin: 0 0 0.8rem;
+  font-family: var(--font-label);
+  font-size: 0.8rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--vp-c-brand-1);
 }
 .bp-doc .blog-404 h1 {
-  margin: 0 0 0.5rem; border-top: 0; padding-top: 0;
+  margin: 0 0 0.6rem; border-top: 0; padding-top: 0;
   font-family: var(--font-hero); font-weight: 800; letter-spacing: -0.03em;
-  font-size: clamp(2rem, 5vw, 3rem); color: var(--vp-c-text-1);
+  font-size: clamp(2.2rem, 5vw, 3.2rem); color: var(--vp-c-text-1);
 }
 .blog-404 p { margin: 0; color: var(--vp-c-text-2); }
+.blog-404 p a { color: var(--vp-c-brand-1); }
 
 /* Headings get a little more air above them than the base theme gives. */
 .bp-doc h2 { margin-top: 2.6rem; }
 .bp-doc h3 { margin-top: 1.9rem; }
 
 @media (max-width: 640px) {
-  .blog-card {
-    grid-template-columns: 1fr;
-    gap: 1.1rem;
-    padding: 1.1rem;
+  .blog-head { margin-top: 2.5rem; }
+  .blog-feature { padding: 2rem 0; }
+  .blog-row {
+    grid-template-columns: minmax(0, 1fr) 1.5rem;
+    gap: 1rem;
+    padding: 1.4rem 0;
   }
-  .blog-card-media { max-width: 240px; margin: 0.2rem auto 0.3rem; }
-  .blog-post-poster { max-width: 300px; }
-  .blog-listing-head { margin-bottom: 1.5rem; }
+  .blog-row > time { grid-column: 1 / -1; padding-top: 0; }
+  .blog-subscribe input[type='email'] { min-width: 0; flex: 1 1 100%; }
 }

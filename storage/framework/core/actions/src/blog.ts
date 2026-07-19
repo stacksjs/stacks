@@ -318,14 +318,12 @@ async function blogChrome(): Promise<string> {
     ${toggle}`
 }
 
-/** Landscape footer that closes out every blog page (shapes styled by the theme CSS). */
+/** Minimal hairline footer that closes out every blog page. */
 async function blogFooter(): Promise<string> {
   const cfg = await site()
-  return `<div class="blog-landscape" aria-hidden="true">
-      <span class="ridge"></span>
-      <span class="river"></span>
+  return `<footer class="blog-foot">
       <p class="colophon">${cfg.colophon}</p>
-    </div>`
+    </footer>`
 }
 
 async function blogConfig(bp: BunPress, fm: Record<string, any>) {
@@ -376,7 +374,7 @@ async function notFoundHtml(bp: BunPress): Promise<string> {
   const body = `
     <a class="blog-back" href="/blog">← All posts</a>
     <div class="blog-404">
-      <span class="blog-404-art" aria-hidden="true"></span>
+      <p class="blog-kicker">404</p>
       <h1>Nothing here</h1>
       <p>This post doesn't exist (or it moved). Head back to <a href="/blog">all posts</a>.</p>
     </div>`
@@ -406,13 +404,12 @@ async function postHtml(bp: BunPress, slug: string, origin: string): Promise<str
   const header = `
     <a class="blog-back" href="/blog">← All posts</a>
     <div class="blog-post-head">
-      <h1>${escapeHtml(fm.title || slug)}</h1>
       <p class="blog-post-meta">
-        <span class="author">${escapeHtml(author)}</span>
-        <span class="dot">·</span>
         <time>${escapeHtml(formatDate(fm.date))}</time>
+        <span class="dot">·</span>
+        <span class="author">${escapeHtml(author)}</span>
       </p>
-      ${fm.poster ? `<figure class="blog-post-poster"><img src="${escapeHtml(fm.poster)}" alt="${escapeHtml(fm.title || '')}"></figure>` : ''}
+      <h1>${escapeHtml(fm.title || slug)}</h1>
     </div>`
 
   const authorCard = fm.authorBio
@@ -445,21 +442,28 @@ async function postHtml(bp: BunPress, slug: string, origin: string): Promise<str
 async function indexHtml(bp: BunPress): Promise<string> {
   const cfg = await site()
   const posts = listPosts()
-  const cards = posts.map((p) => {
-    const featured = p.fm.featured === 'true'
-    const media = p.fm.poster
-      ? `<div class="blog-card-media"><img src="${escapeHtml(p.fm.poster)}" alt="" loading="lazy"></div>`
-      : ''
-    return `<a class="blog-card${featured ? ' is-featured' : ''}" href="/blog/${escapeHtml(p.slug)}">
-      ${media}
-      <div>
-        ${featured ? '<span class="blog-card-flag">Featured</span>' : ''}
-        <h2 class="blog-card-title">${escapeHtml(p.fm.title || p.slug)}</h2>
-        <p class="blog-card-excerpt">${escapeHtml((p.fm.description || '').slice(0, 180))}</p>
-        <div class="blog-card-meta">${escapeHtml(p.fm.author || cfg.author)} · ${escapeHtml(formatDate(p.fm.date))}</div>
+
+  // Editorial index: the lead post (featured first, otherwise newest) gets a
+  // hero treatment, everything after it is a hairline row. No thumbnails;
+  // type, rules, and whitespace carry the page.
+  const [lead, ...rest] = posts
+  const leadHtml = lead
+    ? `<a class="blog-feature" href="/blog/${escapeHtml(lead.slug)}">
+        <p class="blog-feature-meta">${lead.fm.featured === 'true' ? '<span class="chip">Featured</span>' : ''}<time>${escapeHtml(formatDate(lead.fm.date))}</time></p>
+        <h2>${escapeHtml(lead.fm.title || lead.slug)}</h2>
+        <p class="blog-feature-excerpt">${escapeHtml((lead.fm.description || '').slice(0, 200))}</p>
+        <span class="blog-read">Read the post <span class="arrow" aria-hidden="true">→</span></span>
+      </a>`
+    : ''
+  const rows = rest.map(p => `<a class="blog-row" href="/blog/${escapeHtml(p.slug)}">
+      <time>${escapeHtml(formatDate(p.fm.date))}</time>
+      <div class="blog-row-main">
+        <h2>${escapeHtml(p.fm.title || p.slug)}</h2>
+        <p>${escapeHtml((p.fm.description || '').slice(0, 160))}</p>
       </div>
-    </a>`
-  }).join('\n')
+      <span class="blog-row-arrow" aria-hidden="true">→</span>
+    </a>`).join('\n')
+  const cards = leadHtml + (rest.length ? `<div class="blog-index">${rows}</div>` : '')
 
   // Empty state doubles as an email-capture moment: every Stacks app ships the
   // public `/api/email/subscribe` endpoint, so the form works out of the box.
@@ -512,12 +516,12 @@ async function indexHtml(bp: BunPress): Promise<string> {
     </script>`
 
   const body = `
-    <div class="blog-listing-head">
-      <span class="sign" aria-hidden="true"></span>
+    <div class="blog-head">
       <h1>${escapeHtml(cfg.title)}</h1>
-      <p>${escapeHtml(cfg.description)}</p>
+      <p class="blog-head-sub">${escapeHtml(cfg.description)}</p>
+      ${posts.length ? `<p class="blog-count">${posts.length} ${posts.length === 1 ? 'post' : 'posts'}</p>` : ''}
     </div>
-    <div class="blog-cards">${cards || emptyState}</div>`
+    <div class="blog-list">${cards || emptyState}</div>`
 
   return bp.wrapInLayout(await blogChrome() + body + await blogFooter(), await blogConfig(bp, { title: cfg.title, description: cfg.description }), '/blog', 'page')
 }

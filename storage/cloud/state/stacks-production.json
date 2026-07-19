@@ -1,0 +1,9 @@
+{
+  "provider": "hetzner",
+  "stackName": "stacks-production",
+  "serverId": 133793977,
+  "serverName": "stacks-production-app",
+  "publicIp": "178.105.248.188",
+  "deployStoragePath": "/var/ts-cloud/staging",
+  "sshUser": "root"
+}
