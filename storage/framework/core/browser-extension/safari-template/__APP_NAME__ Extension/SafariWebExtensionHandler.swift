@@ -21,7 +21,7 @@ class SafariWebExtensionHandler: NSObject, NSExtensionRequestHandling {
 
         let response = NSExtensionItem()
         if #available(macOS 15.4, *) {
-            response.userInfo = [SFExtensionResponseKey: ["Response to": message]]
+            response.userInfo = [SFExtensionMessageKey: ["Response to": message]]
         }
         else {
             response.userInfo = ["message": ["Response to": message]]

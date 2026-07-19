@@ -27,7 +27,7 @@ struct ContentView: View {
                 .fixedSize(horizontal: false, vertical: true)
 
             Button("Open Safari Extension Settings…") {
-                SFSafariApplication.showPreferencesForExtension(with: extensionBundleIdentifier) { error in
+                SFSafariApplication.showPreferencesForExtension(withIdentifier: extensionBundleIdentifier) { error in
                     if let error {
                         NSLog("Failed to open Safari extension settings: \(error.localizedDescription)")
                     }
