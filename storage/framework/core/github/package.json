@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/github",
   "type": "module",
-  "version": "0.70.125",
+  "version": "0.70.126",
   "description": "GitHub API client used by Stacks framework features (dashboard CI surface, notifications, runner alerts).",
   "author": "Chris Breuer",
   "contributors": [

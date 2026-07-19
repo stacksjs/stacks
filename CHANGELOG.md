@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.125...v0.70.126)
+
+## 🐛 Bug Fixes
+
+- **dns**: infer provider from authoritative nameservers ([17deaf8](https://github.com/stacksjs/stacks/commit/17deaf8)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.124...v0.70.125)
 
 ## 🐛 Bug Fixes
