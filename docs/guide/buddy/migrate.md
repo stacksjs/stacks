@@ -277,5 +277,5 @@ buddy migrate --diff
 ## Related Commands
 
 - [buddy seed](/guide/buddy/seed) - Seed database with test data
-- [buddy generate:model-files](/guide/buddy/generate) - Generate model files
+- [buddy generate:migrations](/guide/buddy/generate) - Generate migrations from your models
 - [buddy make:model](/guide/buddy/generate) - Create a new model

@@ -286,28 +286,6 @@ afterAll(async () => {
 })
 ```
 
-## Coverage Reports
-
-Generate test coverage:
-
-```bash
-buddy test --coverage
-# or
-buddy test:coverage
-```
-
-Coverage output:
-
-```
-Coverage:
-  Statements: 85.5%
-  Branches: 78.2%
-  Functions: 90.1%
-  Lines: 85.5%
-
-Detailed report: coverage/index.html
-```
-
 ## CI/CD Integration
 
 ### GitHub Actions

@@ -513,19 +513,10 @@ page.on('pageerror', error => console.error('PAGE ERROR:', error))
 
 ```bash
 # Run all browser tests
-buddy test:browser
+buddy test:ui
 
 # Run specific test file
 bun test tests/Browser/HomePageTest.ts
-
-# Run in headed mode (see the browser)
-buddy test:browser --headed
-
-# Run with slow motion
-buddy test:browser --slow-mo=500
-
-# Generate screenshots on failure
-buddy test:browser --screenshot-on-failure
 ```
 
 ## Best Practices

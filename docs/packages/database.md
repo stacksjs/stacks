@@ -431,14 +431,8 @@ table.softDeletes()           // deleted_at column
 # Run all pending migrations
 buddy migrate
 
-# Rollback last batch
-buddy migrate:rollback
-
 # Reset and re-run all migrations
 buddy migrate:fresh
-
-# Check migration status
-buddy migrate:status
 ```
 
 ## Seeding

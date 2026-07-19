@@ -353,12 +353,11 @@ const features = {
 
 ### Cache Configuration
 
-```bash
-# Cache all configuration for production
-bun run buddy config:cache
+Stacks does not ship a config cache command today. The only config-related CLI applies config-shape codemods when you upgrade:
 
-# Clear cached configuration
-bun run buddy config:clear
+```bash
+# Apply config-shape codemods for the latest Stacks version
+buddy config:migrate
 ```
 
 ### Manual Caching

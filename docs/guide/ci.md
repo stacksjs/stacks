@@ -14,19 +14,11 @@ Stacks CI features:
 
 ## Quick Start
 
-### Initialize CI
+### Create a Workflow
 
-```bash
-# Generate CI configuration files
-buddy ci:init
-```
-
-This creates configuration files for:
-
-- GitHub Actions
-- GitLab CI
-- CircleCI
-- Jenkins
+Stacks does not scaffold CI files via a buddy command yet. Create a workflow file
+for your CI platform by hand; the sections below cover GitHub Actions, GitLab CI,
+CircleCI, and Jenkins.
 
 ## GitHub Actions
 
@@ -530,13 +522,13 @@ Run CI checks locally before pushing:
 
 ```bash
 # Run all CI checks
-buddy ci
+buddy lint && buddy test:types && buddy test && buddy build
 
 # Run specific checks
-buddy ci:lint
-buddy ci:typecheck
-buddy ci:test
-buddy ci:build
+buddy lint
+buddy test:types
+buddy test
+buddy build
 ```
 
 ## Pre-commit Hooks
@@ -544,8 +536,8 @@ buddy ci:build
 Set up automatic checks before commits:
 
 ```bash
-# Install hooks
-buddy hooks:install
+# Install hooks (no buddy command for this; use husky directly)
+bunx husky init
 ```
 
 ```typescript

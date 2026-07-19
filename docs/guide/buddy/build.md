@@ -22,7 +22,7 @@ buddy build [type] [options]
 
 | Argument | Description |
 |----------|-------------|
-| `type` | Optional. Specify build target (components, vue, web-components, functions, views, docs, buddy, cli, stacks, server) |
+| `type` | Optional. Specify build target (components, web-components, functions, views, docs, buddy, cli, stacks, server) |
 
 ### Options
 
@@ -144,18 +144,17 @@ buddy build:core
 
 ## Production Aliases
 
-The `prod` command is an alias for `build`:
+Several `build:*` commands ship a matching `prod:*` alias (there is no bare `prod` command):
 
 ```bash
-buddy prod              # Same as buddy build
-buddy prod:components   # Same as buddy build:components
-buddy prod:desktop      # Same as buddy build:desktop
-buddy prod:library      # Same as buddy build:library
-buddy prod:views        # Same as buddy build:views
-buddy prod:functions    # Same as buddy build:functions
-buddy prod:web-components
-buddy prod:all
-buddy production        # Same as buddy prod
+buddy prod:components       # Same as buddy build:components
+buddy prod:desktop          # Same as buddy build:desktop
+buddy prod:web-components   # Same as buddy build:web-components
+buddy prod:frontend         # Same as buddy build:frontend (build:views)
+buddy prod:cli              # Same as buddy build:cli
+buddy prod:server           # Same as buddy build:server
+buddy prod:docs             # Same as buddy build:docs
+buddy prod:frontend-static  # Same as buddy build:frontend-static
 ```
 
 ## Examples
@@ -169,10 +168,7 @@ buddy build:components --verbose
 ### Build Multiple Targets
 
 ```bash
-# Build everything
-buddy build:all
-
-# Or build specific targets sequentially
+# Build specific targets sequentially
 buddy build:components && buddy build:functions && buddy build:docs
 ```
 

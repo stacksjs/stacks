@@ -414,7 +414,7 @@ Register a POST route.
 Start the docs development server:
 
 ```bash
-buddy docs:dev
+buddy dev:docs
 ```
 
 This starts a hot-reloading server, typically at `<http://localhost:5173/docs>`.
@@ -424,18 +424,14 @@ This starts a hot-reloading server, typically at `<http://localhost:5173/docs>`.
 Build the documentation for production:
 
 ```bash
-buddy docs:build
+buddy build:docs
 ```
 
 Output is generated to the `outDir` specified in your config (default: `./dist/docs`).
 
 ### Preview Production Build
 
-Preview the production build locally:
-
-```bash
-buddy docs:preview
-```
+There is no docs preview command; serve the generated `./dist/docs` folder with any static file server.
 
 ## Advanced Configuration
 
@@ -519,7 +515,7 @@ markdown: {
 
 The built documentation is static and can be deployed to any static hosting:
 
-- **Vercel**: Connect your repo, set build command to `buddy docs:build`
+- **Vercel**: Connect your repo, set build command to `buddy build:docs`
 - **Netlify**: Similar setup with build command
 - **GitHub Pages**: Deploy the `dist/docs` folder
 - **AWS S3 + CloudFront**: Upload static files

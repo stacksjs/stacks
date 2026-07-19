@@ -30,7 +30,6 @@ buddy generate:<type> [options]
 | `-i, --ide-helpers` | Generate IDE helpers |
 | `--component-meta` | Generate component metadata |
 | `-p, --pantry` | Generate pantry configuration |
-| `-m, --model-files` | Generate model files |
 | `-o, --openapi` | Generate OpenAPI specification |
 | `--core-symlink` | Generate core framework symlink |
 | `-p, --project [project]` | Target a specific project |
@@ -96,12 +95,12 @@ Generate pantry configuration file:
 buddy generate:pantry-config
 ```
 
-### Model Files
+### Migrations
 
-Generate ORM model files:
+Diff your models against the current schema and emit SQL migration files into `database/migrations/`:
 
 ```bash
-buddy generate:model-files
+buddy generate:migrations
 ```
 
 ### OpenAPI Specification
@@ -146,17 +145,13 @@ Generated OpenAPI specification
 Completed in 1.23s
 ```
 
-### Generate Model Files
+### Generate Migrations
 
 ```bash
-buddy generate:model-files
+buddy generate:migrations
 ```
 
-This reads your model definitions and generates:
-
-- TypeScript interfaces
-- Database migration helpers
-- Model instance types
+This reads your model definitions, diffs them against the current database schema, and writes the resulting SQL migration files into `database/migrations/`.
 
 ### Generate with Verbose Output
 
@@ -245,9 +240,9 @@ declare module '@stacksjs/functions' {
 }
 ```
 
-## Model File Generation
+## Model Type Generation
 
-The model file generator creates:
+The type generator (`buddy generate:types`) also creates model types, for example:
 
 ### Instance Types
 
@@ -363,7 +358,7 @@ Include generated files in version control for:
 
 After modifying:
 
-- Models: `buddy generate:model-files`
+- Models: `buddy generate:migrations`
 - Components: `buddy generate:types`
 - API routes: `buddy generate:openapi`
 

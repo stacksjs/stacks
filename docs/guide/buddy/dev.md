@@ -22,7 +22,7 @@ buddy dev [server] [options]
 
 | Argument | Description |
 |----------|-------------|
-| `server` | Optional. Specify which server to start (frontend, api, components, dashboard, desktop, docs, system-tray) |
+| `server` | Optional. Specify which server to start (frontend, api, components, dashboard, desktop, native, docs, system-tray) |
 
 ### Options
 
@@ -33,7 +33,8 @@ buddy dev [server] [options]
 | `-e, --email` | Start the Email development server |
 | `-c, --components` | Start the Components development server |
 | `-d, --dashboard` | Start the Dashboard development server |
-| `-t, --desktop` | Start the Desktop App development server |
+| `-k, --desktop` | Start the Desktop App development server |
+| `-n, --native` | Start the app in a native Craft window |
 | `--docs` | Start the Documentation development server |
 | `--system-tray` | Start the System Tray development server |
 | `-i, --interactive` | Get prompted to select which server to start |
@@ -135,22 +136,20 @@ Which development server are you trying to start?
   Backend
   Dashboard
   Desktop
+  Native App
   Email
   Components
   Documentation
 ```
 
-## Aliases
+## Production Servers
 
-For Laravel developers familiar with `artisan serve`:
+`buddy serve` is not a dev alias: it boots the production HTTP server, and it is
+the same entry the deploy target runs as a service. Only two serve commands exist:
 
 ```bash
-buddy serve              # alias for buddy dev
-buddy serve:components   # alias for buddy dev:components
-buddy serve:desktop      # alias for buddy dev:desktop
-buddy serve:views        # alias for buddy dev:views
-buddy serve:functions    # alias for buddy dev:functions
-buddy serve:docs         # alias for buddy dev:docs
+buddy serve      # start the production HTTP server (STX views + /api proxy)
+buddy serve:api  # start the production API server
 ```
 
 ## Examples

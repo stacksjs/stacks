@@ -40,8 +40,7 @@ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 Initialize Tauri in your Stacks project:
 
 ```bash
-buddy desktop:init
-# Or manually
+# No buddy command for this; initialize Tauri directly
 bunx tauri init
 ```
 
@@ -555,7 +554,7 @@ const unlistenComplete = await listen('complete', (event) => {
 Run the desktop app in development:
 
 ```bash
-buddy desktop:dev
+buddy dev:desktop
 # Or
 bunx tauri dev
 ```
@@ -567,7 +566,7 @@ This starts the Stacks dev server and opens the app in a native window.
 Build distributable binaries:
 
 ```bash
-buddy desktop:build
+buddy build:desktop
 # Or
 bunx tauri build
 ```

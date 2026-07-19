@@ -24,12 +24,6 @@ buddy test
 buddy test:unit
 buddy test:feature
 buddy test:types
-
-# Run tests in watch mode
-buddy test --watch
-
-# Run tests with coverage
-buddy test --coverage
 ```
 
 ### Writing Your First Test

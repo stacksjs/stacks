@@ -24,10 +24,13 @@ bun install
 
 ### Option 2: Add to Existing Project
 
-Add library support to your existing Stacks project:
+Add library support to your existing Stacks project. There is no dedicated
+scaffolding command for this; create the library structure shown below and
+scaffold the individual pieces as needed:
 
 ```bash
-buddy make:library
+buddy make:component MyComponent
+buddy make:function my-function
 ```
 
 ## Project Structure
@@ -194,10 +197,11 @@ This opens a development environment at `<http://localhost:3333>` where you can:
 
 ### Watch Mode
 
-Build continuously during development:
+The library build commands have no `--watch` flag today; re-run the builds as you develop:
 
 ```bash
-buddy build:lib --watch
+buddy build:components
+buddy build:functions
 ```
 
 ## Testing
@@ -264,7 +268,8 @@ bun test --watch
 ### Production Build
 
 ```bash
-buddy build:lib
+buddy build:components
+buddy build:functions
 ```
 
 This generates:
@@ -345,8 +350,8 @@ export default defineLibraryConfig({
 ### Generate Docs
 
 ```bash
-buddy docs:generate
-buddy docs:dev
+buddy build:docs   # generate the documentation site
+buddy dev:docs     # serve it locally while you write
 ```
 
 ### Component Docs

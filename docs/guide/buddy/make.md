@@ -15,7 +15,7 @@ buddy make:policy       # Create a new authorization policy
 buddy make:resource     # Create a new API resource
 buddy make:job          # Create a new job
 buddy make:factory      # Create a new factory
-buddy make:database     # Create a new database
+buddy make:database     # Print database setup guidance
 buddy make:lang         # Create a new language file
 buddy make:stack        # Create a new stack project
 buddy make:view         # Create a new page/view
@@ -77,7 +77,7 @@ buddy make:model Comment
 buddy make:migration <name>
 ```
 
-Creates a new database migration file.
+Creates a new database migration file in `database/migrations/`, prefixed with a `Date.now()` timestamp so migrations sort in creation order.
 
 ### Options
 
@@ -258,7 +258,15 @@ buddy make:job GenerateReport --tries=5 --backoff=10
 buddy make:database <name>
 ```
 
-Creates a new database.
+Does not create anything on disk. Stacks has no standalone "create a database" step: the default SQLite connection is a single file that `buddy migrate` creates on demand, and every table is derived from a model. The command prints guidance for the real workflow instead:
+
+```bash
+buddy make:model <Name>
+buddy generate:migrations
+buddy migrate
+```
+
+To use a different database engine or file, edit the connections in `config/database.ts`.
 
 ### Options
 

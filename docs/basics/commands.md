@@ -315,8 +315,8 @@ import { runCommand } from '@stacksjs/cli'
 export default new Action({
   async handle() {
     // Run a CLI command
-    await runCommand('buddy cache:clear')
-    await runCommand('buddy queue:restart')
+    await runCommand('buddy queue:failed')
+    await runCommand('buddy queue:retry --all')
 
     return response.json({ message: 'Maintenance complete' })
   },
@@ -333,8 +333,8 @@ export default function (cli: CLI) {
     .action(async () => {
       const { runCommand } = await import('@stacksjs/cli')
 
-      log.info('Clearing cache...')
-      await runCommand('buddy cache:clear')
+      log.info('Clearing the queue...')
+      await runCommand('buddy queue:clear --force')
 
       log.info('Running migrations...')
       await runCommand('buddy migrate:fresh')

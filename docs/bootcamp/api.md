@@ -224,9 +224,7 @@ Controllers group related request handlers. Use them when you have multiple rela
 
 ### Generate a Controller
 
-```bash
-buddy make:controller User
-```
+There is no `make:controller` command today; create the file by hand in `app/Controllers/`:
 
 ### Controller Structure
 

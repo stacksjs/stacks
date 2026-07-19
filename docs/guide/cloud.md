@@ -24,10 +24,7 @@ Stacks Cloud offers:
 ### First Deployment
 
 ```bash
-# Configure cloud settings
-buddy cloud:init
-
-# Deploy to production
+# Deploy to production (the first run provisions the cloud resources)
 buddy deploy
 ```
 
@@ -256,27 +253,15 @@ Stacks automatically provisions and renews SSL certificates via AWS Certificate 
 
 ## Environment Variables
 
-### Setting Variables
+Buddy does not ship cloud environment commands yet. Manage your app's environment
+variables locally (or via your platform's secret store), then redeploy:
 
 ```bash
-# Set a single variable
-buddy cloud:env APP_KEY=secret123
+# Set a variable in your .env
+buddy env:set APP_KEY secret123
 
-# Set multiple variables
-buddy cloud:env APP_KEY=secret123 DB_PASSWORD=dbpass
-
-# From .env file
-buddy cloud:env --file=.env.production
-```
-
-### Viewing Variables
-
-```bash
-# List all environment variables
-buddy cloud:env:list
-
-# Get a specific variable
-buddy cloud:env:get APP_KEY
+# Read a variable back
+buddy env:get APP_KEY
 ```
 
 ## Scaling
@@ -297,13 +282,7 @@ scaling: {
 
 ### Manual Scaling
 
-```bash
-# Scale to specific count
-buddy cloud:scale 5
-
-# Scale based on environment
-buddy cloud:scale 10 --env=production
-```
+Manual scaling from the CLI is not implemented yet; scaling is configured through `config/cloud.ts` as shown above.
 
 ## Monitoring
 
@@ -330,16 +309,7 @@ monitoring: {
 
 ### Logs
 
-```bash
-# View recent logs
-buddy cloud:logs
-
-# Follow logs in real-time
-buddy cloud:logs --follow
-
-# Filter by function/service
-buddy cloud:logs --function=api
-```
+A `buddy cloud:logs` command is not implemented yet; view logs in CloudWatch or via your server's journal (e.g. `journalctl -u <service>` on the deploy target).
 
 ## Deployments
 
@@ -349,28 +319,19 @@ buddy cloud:logs --function=api
 # Default deployment (zero-downtime)
 buddy deploy
 
-# Force immediate deployment
-buddy deploy --force
+# Skip the confirmation prompt (e.g. in CI)
+buddy deploy --yes
 ```
 
 ### Rollback
 
-```bash
-# Rollback to previous version
-buddy cloud:rollback
-
-# Rollback to specific version
-buddy cloud:rollback v1.2.3
-```
+A `buddy cloud:rollback` command is not implemented yet; redeploy the previous release to roll back.
 
 ### Deployment History
 
 ```bash
-# View deployment history
-buddy cloud:deployments
-
-# View specific deployment
-buddy cloud:deployment abc123
+# Inspect servers, sites & deploys in the local cloud cockpit
+buddy cloud:dashboard
 ```
 
 ## CI/CD Integration
@@ -429,11 +390,8 @@ jobs:
 ### General
 
 ```bash
-# View estimated costs
-buddy cloud:costs
-
-# View cost breakdown
-buddy cloud:costs --breakdown
+# Remove cost-heavy resources that can be re-applied later
+buddy cloud:optimize-cost
 ```
 
 ## Security
@@ -467,26 +425,26 @@ waf: {
 ## Commands Reference
 
 ```bash
-# Initialize cloud configuration
-buddy cloud:init
-
 # Deploy application
 buddy deploy
 
-# View deployment status
-buddy cloud:status
+# Show the diff of the current, undeployed cloud changes
+buddy cloud:diff
 
-# View logs
-buddy cloud:logs
+# Add a resource to your cloud (e.g. a jump box)
+buddy cloud:add --jump-box
 
-# Scale application
-buddy cloud:scale <count>
+# Inspect servers, sites & deploys in the local cloud cockpit
+buddy cloud:dashboard
 
-# Rollback deployment
-buddy cloud:rollback
+# Invalidate the CloudFront cache
+buddy cloud:invalidate-cache
 
-# Destroy infrastructure
-buddy cloud:destroy
+# Remove cost-heavy resources that can be re-applied later
+buddy cloud:optimize-cost
+
+# Destroy infrastructure (alias: buddy undeploy)
+buddy cloud:remove
 ```
 
 ## Best Practices

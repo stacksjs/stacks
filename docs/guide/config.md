@@ -401,17 +401,11 @@ if (env('APP_ENV') === 'staging') {
 
 ## Configuration Caching
 
-For production, cache your configuration for better performance:
+Stacks does not ship a config cache command today. The only config-related CLI applies config-shape codemods when you upgrade:
 
 ```bash
-# Cache configuration
-buddy config:cache
-
-# Clear cached configuration
-buddy config:clear
-
-# Show current configuration
-buddy config:show
+# Apply config-shape codemods for the latest Stacks version
+buddy config:migrate
 ```
 
 ## Validation

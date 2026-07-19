@@ -295,8 +295,8 @@ Create `.vscode/settings.json`:
 ### Setup with Husky
 
 ```bash
-# Install hooks
-buddy hooks:install
+# Install hooks (no buddy command for this; use husky directly)
+bunx husky init
 ```
 
 ```typescript

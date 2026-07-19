@@ -18,7 +18,7 @@ Stacks app types:
 
 ```bash
 # Create SPA
-buddy make:app web --spa
+bunx @stacksjs/buddy new my-app
 
 # Development server
 buddy dev
@@ -31,7 +31,7 @@ buddy build
 
 ```bash
 # Create SSR app
-buddy make:app web --ssr
+bunx @stacksjs/buddy new my-app
 
 # Development
 buddy dev
@@ -73,18 +73,13 @@ Stacks uses Tauri for building native desktop apps with web technologies.
 
 ```bash
 # Create desktop app
-buddy make:app desktop
+bunx @stacksjs/buddy new my-app
 
 # Development mode
 buddy dev:desktop
 
-# Build for all platforms
+# Build
 buddy build:desktop
-
-# Build for specific platform
-buddy build:desktop --target macos
-buddy build:desktop --target windows
-buddy build:desktop --target linux
 ```
 
 ### Desktop Configuration
@@ -190,22 +185,16 @@ export default defineDesktopConfig({
 Build native mobile apps with Capacitor.
 
 ```bash
-# Create mobile app
-buddy make:app mobile
+# The buddy mobile:* commands are not implemented yet.
+# Use the Capacitor CLI directly in the meantime:
 
 # Add platforms
-buddy mobile:add ios
-buddy mobile:add android
+bunx cap add ios
+bunx cap add android
 
-# Development
-buddy dev:mobile
-
-# Build
-buddy build:mobile
-
-# Open in native IDE
-buddy mobile:open ios
-buddy mobile:open android
+# Sync & open in the native IDE
+bunx cap sync
+bunx cap open ios
 ```
 
 ### Mobile Configuration
@@ -278,7 +267,7 @@ PushNotifications.addListener('pushNotificationReceived', (notification) => {
 
 ```bash
 # Create CLI app
-buddy make:app cli
+bunx @stacksjs/buddy new my-cli
 
 # Run CLI
 bun run cli
@@ -459,13 +448,9 @@ const storage = await import(
 ### Building All Platforms
 
 ```bash
-# Build everything
-buddy build:all
-
-# Build specific platforms
-buddy build:web
+# Build the platforms you ship
+buddy build:frontend
 buddy build:desktop
-buddy build:mobile
 buddy build:cli
 ```
 
@@ -475,14 +460,11 @@ buddy build:cli
 # Web - Deploy to cloud
 buddy deploy
 
-# Desktop - Create installers
-buddy build:desktop --release
-
-# Mobile - Build for app stores
-buddy build:mobile --release
+# Desktop - Create the production build
+buddy build:desktop
 
 # CLI - Publish to npm
-buddy publish:cli
+buddy publish
 ```
 
 ## Best Practices

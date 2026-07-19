@@ -459,10 +459,7 @@ throw new ResourceNotFoundException('Post')
 
 ```bash
 # Generate OpenAPI spec
-buddy api:docs
-
-# Serve documentation UI
-buddy api:docs --serve
+buddy generate:openapi-spec
 ```
 
 ### Annotating Endpoints

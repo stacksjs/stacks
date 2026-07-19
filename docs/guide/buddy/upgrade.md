@@ -5,11 +5,11 @@ The `buddy upgrade` command upgrades your project's dependencies, the Stacks fra
 ## Basic Usage
 
 ```bash
-# Interactive upgrade selection
+# Upgrade the Stacks framework
 buddy upgrade
 
-# Upgrade everything
-buddy upgrade --all
+# Upgrade everything (framework, dependencies, Bun & binary)
+buddy upgrade:all
 ```
 
 ## Command Syntax
@@ -19,45 +19,36 @@ buddy upgrade [options]
 buddy upgrade:<type> [options]
 ```
 
+`buddy update` is an alias for `buddy upgrade`.
+
 ### Options
 
 | Option | Description |
 |--------|-------------|
-| `-d, --dependencies` | Upgrade dependencies (pantry.yaml & package.json) |
-| `-b, --bun` | Upgrade Bun to the latest version |
-| `-a, --all` | Upgrade everything |
-| `-f, --force` | Overwrite local updates with remote framework updates |
-| `--framework` | Upgrade the Stacks framework |
-| `-s, --shell` | Upgrade shell integration (Oh My Zsh) |
-| `--binary` | Upgrade the `stacks` binary |
-| `-p, --project [project]` | Target a specific project |
+| `-v, --version <version>` | Install a specific version (e.g., 0.70.23) |
+| `--canary` | Upgrade to the latest canary (bleeding-edge `main`) build |
+| `--stable` | Switch to the latest vetted stable release |
+| `--dry-run` | Preview which dependencies would change without writing or installing |
+| `-f, --force` | Force re-download, bypassing cache and version checks |
+| `--from <path>` | Sync from a local stacks checkout (e.g. ~/Code/stacks), skips GitHub |
+| `--no-postinstall` | Skip post-sync hooks (auto-imports, bun install, migrate) |
 | `--verbose` | Enable verbose output |
 
 ## Available Upgrade Commands
 
-### Interactive Upgrade
+### Upgrade Framework
 
-When run without options, presents a selection menu:
+Run without a subcommand to upgrade the Stacks framework to the latest version:
 
 ```bash
 buddy upgrade
 ```
 
-Menu options:
-
-- Dependencies
-- Framework
-- Bun
-- Shell
-- Binary
-
 ### Upgrade All
 
-Upgrade everything at once:
+Upgrade framework, dependencies, Bun, and binary at once:
 
 ```bash
-buddy upgrade --all
-# or
 buddy upgrade:all
 ```
 
@@ -66,20 +57,9 @@ buddy upgrade:all
 Update package.json and pantry.yaml dependencies:
 
 ```bash
-buddy upgrade --dependencies
-# or
 buddy upgrade:dependencies
-buddy upgrade:deps
-```
-
-### Upgrade Framework
-
-Update the Stacks framework:
-
-```bash
-buddy upgrade --framework
 # or
-buddy upgrade:framework
+buddy upgrade:deps
 ```
 
 ### Upgrade Bun
@@ -87,8 +67,6 @@ buddy upgrade:framework
 Upgrade to the latest Bun version:
 
 ```bash
-buddy upgrade --bun
-# or
 buddy upgrade:bun
 ```
 
@@ -97,18 +75,14 @@ buddy upgrade:bun
 Update shell completions and aliases:
 
 ```bash
-buddy upgrade --shell
-# or
 buddy upgrade:shell
 ```
 
 ### Upgrade Binary
 
-Upgrade the global `stacks` binary:
+Upgrade the global `stacks` binary (requires sudo):
 
 ```bash
-buddy upgrade --binary
-# or
 sudo buddy upgrade:binary
 ```
 
@@ -117,19 +91,19 @@ sudo buddy upgrade:binary
 ### Full Upgrade
 
 ```bash
-buddy upgrade --all
+buddy upgrade:all
 ```
 
 Output:
 
 ```
-buddy upgrade
+buddy upgrade:all
 
 Upgrading dependencies...
 Upgrading framework...
 Upgrading Bun...
 
-Upgrade complete.
+All upgrades complete.
 
 Completed in 45.23s
 ```
@@ -137,21 +111,21 @@ Completed in 45.23s
 ### Upgrade with Verbose Output
 
 ```bash
-buddy upgrade --all --verbose
+buddy upgrade:all --verbose
 ```
 
 ### Force Framework Update
 
-Override local changes with upstream:
+Force a re-download of the framework, bypassing cache and version checks:
 
 ```bash
-buddy upgrade --framework --force
+buddy upgrade --force
 ```
 
 ### Upgrade Specific Project
 
 ```bash
-buddy upgrade -p my-project --dependencies
+buddy upgrade:dependencies -p my-project
 ```
 
 ## What Gets Upgraded
@@ -427,7 +401,7 @@ Update dependencies regularly (weekly/monthly) to:
 Always run tests after upgrading:
 
 ```bash
-buddy upgrade --dependencies && buddy test
+buddy upgrade:dependencies && buddy test
 ```
 
 ### Review Changelogs
@@ -444,11 +418,11 @@ Test upgrades in staging before production:
 
 ```bash
 # Staging
-APP*ENV=staging buddy upgrade --all
+APP_ENV=staging buddy upgrade:all
 buddy test
 
 # Production (after verification)
-APP*ENV=production buddy upgrade --all
+APP_ENV=production buddy upgrade:all
 ```
 
 ## Related Commands

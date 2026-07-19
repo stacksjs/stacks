@@ -75,7 +75,7 @@ export default {
     "LICENSE"
   ],
   "scripts": {
-    "build": "buddy build:lib",
+    "build": "buddy build:components && buddy build:functions",
     "prepublishOnly": "bun run build"
   },
   "keywords": ["stacks", "typescript", "library"],
@@ -100,13 +100,8 @@ export default {
 
 ```bash
 # Build the library
-buddy build:lib
-
-# Build with watch mode
-buddy build:lib --watch
-
-# Build specific format
-buddy build:lib --format=esm
+buddy build:components
+buddy build:functions
 ```
 
 ### Build Configuration
@@ -367,11 +362,11 @@ jobs:
 ### Generating API Docs
 
 ```bash
-# Generate TypeDoc documentation
-buddy docs:api
+# Generate the OpenAPI spec for your API
+buddy generate:openapi-spec
 
 # Serve docs locally
-buddy docs:serve
+buddy dev:docs
 ```
 
 ### TypeDoc Configuration

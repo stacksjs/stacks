@@ -246,21 +246,20 @@ export default defineLibraryConfig({
 ### Development Build
 
 ```bash
-# Watch mode for development
-buddy build:lib --watch
+# Re-run the library builds as you develop (no --watch flag today)
+buddy build:components
+buddy build:functions
 
-# Build with type checking
-buddy build:lib --typecheck
+# Type checking
+buddy test:types
 ```
 
 ### Production Build
 
 ```bash
 # Full production build
-buddy build:lib
-
-# Build specific entry
-buddy build:lib --entry components
+buddy build:components
+buddy build:functions
 ```
 
 ### Build Output
@@ -289,10 +288,10 @@ dist/
 
 ```bash
 # Generate documentation site
-buddy docs:generate
+buddy build:docs
 
 # Serve documentation locally
-buddy docs:dev
+buddy dev:docs
 ```
 
 ### Component Documentation

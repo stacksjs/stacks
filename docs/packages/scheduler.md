@@ -297,10 +297,10 @@ process.on('SIGTERM', async () => {
 buddy schedule:run
 
 # Start with verbose output
-buddy schedule:run -v
+buddy schedule:run --verbose
 
-# Run specific scheduled task immediately
-buddy schedule:test SendDailyReport
+# List all scheduled jobs
+buddy schedule:list
 ```
 
 ### Programmatic

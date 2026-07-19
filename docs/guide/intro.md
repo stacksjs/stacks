@@ -73,7 +73,7 @@ const posts = await Post.query()
   .paginate(15)
 
 // Artisan-style CLI
-buddy make:model Post --migration --controller
+buddy make:model Post
 
 // Laravel-style routing
 router.get('/posts', PostController.index)

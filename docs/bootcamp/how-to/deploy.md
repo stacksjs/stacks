@@ -129,17 +129,15 @@ buddy deploy --config=./custom-cloud.ts
 
 ### First-Time Setup
 
-For first-time deployments, run the setup command:
+For first-time deployments, just deploy. The first run provisions everything:
 
 ```bash
-# Initialize cloud infrastructure
-buddy cloud:init
-
-# This will
-# - Create necessary cloud resources
-# - Set up IAM roles and permissions
-# - Configure DNS records
-# - Provision SSL certificates
+# Deploy; the first run
+# - Creates the necessary cloud resources
+# - Sets up IAM roles and permissions
+# - Configures DNS records
+# - Provisions SSL certificates
+buddy deploy
 ```
 
 ## Environment Variables
@@ -176,20 +174,15 @@ STRIPE_SECRET=sk_test_xxx
 Set production variables using the CLI:
 
 ```bash
-# Set individual variable
-buddy env:set API_KEY=your-production-api-key --env=production
+# Set individual variables
+buddy env:set API_KEY your-production-api-key
+buddy env:set DB_HOST prod-db.example.com
 
-# Set multiple variables
-buddy env:set DB_HOST=prod-db.example.com DB_USER=admin --env=production
+# Target a specific env file
+buddy env:set DB_USER admin --file .env.production
 
-# Import from file
-buddy env:import .env.production --env=production
-
-# List all variables
-buddy env:list --env=production
-
-# Remove a variable
-buddy env:remove API_KEY --env=production
+# Read a variable back
+buddy env:get API_KEY
 ```
 
 #### Environment Files by Stage
@@ -221,17 +214,14 @@ const allowedHosts = env.array('ALLOWED_HOSTS', ['localhost'])
 
 ### Secrets Management
 
-For sensitive data, use the secrets manager:
+For sensitive data, encrypt the values in your env files:
 
 ```bash
-# Store a secret
-buddy secret:set DATABASE_PASSWORD "super-secret" --env=production
+# Encrypt a sensitive env value
+buddy env:encrypt DATABASE_PASSWORD
 
-# Secrets are encrypted at rest and only decrypted at runtime
-buddy secret:list --env=production
-
-# Rotate a secret
-buddy secret:rotate DATABASE_PASSWORD --env=production
+# Rotate the encryption keypair
+buddy env:rotate
 ```
 
 ## Domain Setup
@@ -256,26 +246,18 @@ export default {
 
 #### Step 2: Configure DNS
 
-Add the following DNS records with your domain registrar:
+Add the required DNS records with your domain registrar:
 
 ```bash
-# View required DNS records
-buddy domain:dns
-
-# Output
-# Type    Name    Value                          TTL
-# A       @       76.76.21.21                   300
-# CNAME   www     cname.myapp.stacks.cloud      300
+# View the current DNS records for your domain
+buddy dns example.com
 ```
 
 #### Step 3: Verify Domain
 
 ```bash
 # Verify DNS propagation
-buddy domain:verify
-
-# Check domain status
-buddy domain:status
+buddy dns example.com
 ```
 
 ### SSL Certificates
@@ -379,27 +361,19 @@ deployment: {
 ### Deployment Status
 
 ```bash
-# Check deployment status
-buddy deploy:status
+# Inspect servers, sites & deploys in the local cloud cockpit
+buddy cloud:dashboard
 
-# View deployment logs
-buddy deploy:logs
-
-# View deployment history
-buddy deploy:history
+# Show the diff of the current, undeployed cloud changes
+buddy cloud:diff
 ```
 
 ### Rollback
 
+A `deploy:rollback` command is not implemented yet; redeploy the previous release to roll back:
+
 ```bash
-# Rollback to previous version
-buddy deploy:rollback
-
-# Rollback to specific version
-buddy deploy:rollback --version=v1.2.2
-
-# View available rollback versions
-buddy deploy:versions
+buddy deploy
 ```
 
 ## CI/CD Integration
@@ -561,34 +535,28 @@ export default {
 **Deployment fails with permission error:**
 
 ```bash
-# Check AWS credentials
-buddy cloud:check-credentials
-
-# Verify IAM permissions
-buddy cloud:check-permissions
+# Run health checks on your Stacks installation
+buddy doctor
 ```
 
 **Domain not resolving:**
 
 ```bash
 # Check DNS propagation
-buddy domain:verify --verbose
+buddy dns example.com
 
 # Clear CDN cache
-buddy cdn:purge
+buddy cloud:invalidate-cache
 ```
 
 **Application errors after deployment:**
 
 ```bash
-# View application logs
-buddy logs --env=production
+# Inspect servers, sites & deploys in the local cloud cockpit
+buddy cloud:dashboard
 
-# Check health status
-buddy health:check --env=production
-
-# Quick rollback
-buddy deploy:rollback
+# Roll back by redeploying the previous release
+buddy deploy
 ```
 
 ## Next Steps

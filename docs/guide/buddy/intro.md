@@ -44,12 +44,13 @@ Buddy respects your project's configuration files located in the `config/` direc
 
 ## CLI Aliases
 
-Buddy can be invoked using any of the following aliases:
+The published `@stacksjs/buddy` package ships `buddy`, `bud`, and `stx` bins, so
+any command can be run under any of the three names. Inside this repository the
+CLI is invoked as `./buddy`:
 
 ```bash
-buddy fresh    # Full command name
-bud fresh      # Short alias
-stx fresh      # Alternative alias
+./buddy fresh   # inside this repo
+buddy fresh     # via the published package (bud and stx work too)
 ```
 
 ## Command Structure
