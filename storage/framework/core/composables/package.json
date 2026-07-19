@@ -52,10 +52,10 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "@stacksjs/stx": "^0.2.82",
+    "@stacksjs/stx": "catalog:",
     "@stacksjs/datetime": "workspace:*"
   },
   "devDependencies": {
-    "better-dx": "^0.2.16"
+    "better-dx": "catalog:"
   }
 }

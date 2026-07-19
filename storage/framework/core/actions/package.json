@@ -65,7 +65,7 @@
     "@stacksjs/bumpx": "^0.2.6",
     "@stacksjs/bunpress": "^0.1.12",
     "@stacksjs/logsmith": "^0.2.3",
-    "@stacksjs/ts-cloud": "^0.7.32",
+    "@stacksjs/ts-cloud": "catalog:",
     "@stacksjs/ts-md": "^0.1.1"
   },
   "devDependencies": {
@@ -74,7 +74,7 @@
     "@stacksjs/config": "workspace:*",
     "@stacksjs/database": "workspace:*",
     "@stacksjs/tlsx": "^0.13.2",
-    "better-dx": "^0.2.16",
+    "better-dx": "catalog:",
     "@stacksjs/dns": "workspace:*",
     "@stacksjs/enums": "workspace:*",
     "@stacksjs/env": "workspace:*",
@@ -88,7 +88,7 @@
     "@stacksjs/validation": "workspace:*"
   },
   "peerDependencies": {
-    "pickier": "^0.1.28"
+    "pickier": "catalog:"
   },
   "peerDependenciesMeta": {
     "pickier": {

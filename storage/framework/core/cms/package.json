@@ -57,6 +57,6 @@
     "ts-spreadsheets": "^0.2.0"
   },
   "devDependencies": {
-    "better-dx": "^0.2.16"
+    "better-dx": "catalog:"
   }
 }

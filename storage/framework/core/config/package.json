@@ -54,7 +54,7 @@
   },
   "devDependencies": {
     "@stacksjs/alias": "workspace:*",
-    "better-dx": "^0.2.16",
+    "better-dx": "catalog:",
     "@stacksjs/types": "workspace:*",
     "bunfig": "^0.15.11"
   }

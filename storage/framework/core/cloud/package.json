@@ -54,13 +54,13 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "@stacksjs/ts-cloud": "^0.7.32",
+    "@stacksjs/ts-cloud": "catalog:",
     "@stacksjs/ts-xml": "^0.1.0"
   },
   "devDependencies": {
     "@stacksjs/cli": "workspace:*",
     "@stacksjs/config": "workspace:*",
-    "better-dx": "^0.2.16",
+    "better-dx": "catalog:",
     "@stacksjs/dns": "workspace:*",
     "@stacksjs/env": "workspace:*",
     "@stacksjs/logging": "workspace:*",

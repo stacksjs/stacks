@@ -52,7 +52,7 @@
   },
   "devDependencies": {
     "@stacksjs/collections": "workspace:*",
-    "better-dx": "^0.2.16",
+    "better-dx": "catalog:",
     "@stacksjs/types": "workspace:*",
     "@stacksjs/utils": "workspace:*",
     "@stacksjs/validation": "workspace:*"

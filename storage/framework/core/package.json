@@ -318,7 +318,7 @@
     "@stacksjs/database": "^0.70.113",
     "@stacksjs/defaults": "^0.70.113",
     "@stacksjs/desktop": "^0.70.113",
-    "better-dx": "^0.2.16",
+    "better-dx": "catalog:",
     "@stacksjs/dns": "^0.70.113",
     "@stacksjs/email": "^0.70.113",
     "@stacksjs/enums": "^0.70.113",
@@ -343,7 +343,7 @@
     "@stacksjs/storage": "^0.70.113",
     "@stacksjs/strings": "^0.70.113",
     "@stacksjs/tlsx": "^0.13.0",
-    "@stacksjs/ts-cloud": "^0.7.32",
+    "@stacksjs/ts-cloud": "catalog:",
     "@stacksjs/tunnel": "^0.70.113",
     "@stacksjs/types": "^0.70.113",
     "@stacksjs/ui": "^0.70.113",
@@ -380,6 +380,6 @@
     "@stacksjs/newsletter": "^0.70.113",
     "@stacksjs/i18n": "^0.70.113",
     "@stacksjs/cron": "^0.70.113",
-    "bun-query-builder": "^0.1.56"
+    "bun-query-builder": "catalog:"
   }
 }

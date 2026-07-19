@@ -56,6 +56,6 @@
     "@stacksjs/config": "workspace:*",
     "@stacksjs/database": "workspace:*",
     "@stacksjs/query-builder": "workspace:*",
-    "better-dx": "^0.2.16"
+    "better-dx": "catalog:"
   }
 }

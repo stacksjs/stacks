@@ -55,6 +55,6 @@
   "devDependencies": {
     "@stacksjs/actions": "workspace:*",
     "@stacksjs/cron": "workspace:*",
-    "better-dx": "^0.2.16"
+    "better-dx": "catalog:"
   }
 }

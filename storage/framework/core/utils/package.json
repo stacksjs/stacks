@@ -65,7 +65,7 @@
     "@stacksjs/arrays": "workspace:*",
     "@stacksjs/cli": "workspace:*",
     "@stacksjs/config": "workspace:*",
-    "better-dx": "^0.2.16",
+    "better-dx": "catalog:",
     "filesize": "^11.0.22",
     "markdown-table": "^3.0.4",
     "@stacksjs/lint": "workspace:*",

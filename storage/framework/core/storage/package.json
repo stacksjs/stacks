@@ -52,7 +52,7 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "@stacksjs/ts-cloud": "^0.7.32"
+    "@stacksjs/ts-cloud": "catalog:"
   },
   "peerDependencies": {
     "sharp": "^0.35.3"
@@ -64,7 +64,7 @@
   },
   "devDependencies": {
     "@stacksjs/arrays": "workspace:*",
-    "better-dx": "^0.2.16",
+    "better-dx": "catalog:",
     "@stacksjs/error-handling": "workspace:*",
     "@stacksjs/path": "workspace:*",
     "@stacksjs/strings": "workspace:*",

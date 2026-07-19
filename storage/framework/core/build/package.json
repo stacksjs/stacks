@@ -55,7 +55,7 @@
   "dependencies": {},
   "devDependencies": {
     "@stacksjs/cli": "workspace:*",
-    "better-dx": "^0.2.16",
+    "better-dx": "catalog:",
     "@stacksjs/path": "workspace:*",
     "@stacksjs/storage": "workspace:*",
     "vue-docgen-web-types": "^0.1.8"

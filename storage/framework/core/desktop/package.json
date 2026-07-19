@@ -64,7 +64,7 @@
   },
   "devDependencies": {
     "@stacksjs/build": "workspace:*",
-    "better-dx": "^0.2.16",
+    "better-dx": "catalog:",
     "@stacksjs/server": "workspace:*"
   }
 }

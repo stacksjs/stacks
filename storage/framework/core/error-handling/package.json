@@ -52,14 +52,14 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "@stacksjs/stx": "^0.2.82",
+    "@stacksjs/stx": "catalog:",
     "ts-error-handling": "^0.1.1",
     "ts-syntax-highlighter": "^0.2.1"
   },
   "devDependencies": {
     "@stacksjs/cli": "workspace:*",
     "@stacksjs/config": "workspace:*",
-    "better-dx": "^0.2.16",
+    "better-dx": "catalog:",
     "@stacksjs/path": "workspace:*",
     "@stacksjs/types": "workspace:*",
     "@stacksjs/validation": "workspace:*"

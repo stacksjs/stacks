@@ -68,7 +68,7 @@
   },
   "devDependencies": {
     "@stacksjs/config": "workspace:*",
-    "better-dx": "^0.2.16",
+    "better-dx": "catalog:",
     "meilisearch": "^0.59.0"
   }
 }
