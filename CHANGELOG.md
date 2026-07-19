@@ -1,5 +1,19 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.117...v0.70.118)
+
+## 🐛 Bug Fixes
+
+- **actions**: resolve library config in published packages ([b0d9648](https://github.com/stacksjs/stacks/commit/b0d9648)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 💚 Continuous Integration
+
+- **release**: smoke test the published Buddy CLI ([b6488da](https://github.com/stacksjs/stacks/commit/b6488da)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.116...v0.70.117)
 
 ## 🔧 Chores
