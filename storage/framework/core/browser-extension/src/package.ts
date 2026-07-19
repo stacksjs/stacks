@@ -8,7 +8,7 @@ export interface PackageOptions {
   target?: ExtensionTarget
   version: string
   cwd?: string
-  /** Output .zip path. @default `<slug>-<version>[-firefox].zip` */
+  /** Output .zip path. @default `<slug>-<version>[-<target>].zip` */
   outfile?: string
   /** Rebuild before zipping. @default true */
   build?: boolean
@@ -36,7 +36,7 @@ export async function packageExtension(config: ExtensionConfig, options: Package
   if (!existsSync(outdir))
     throw new Error(`[browser-extension] nothing to package: ${outdir} does not exist`)
 
-  const suffix = target === 'firefox' ? '-firefox' : ''
+  const suffix = target === 'chrome' ? '' : `-${target}`
   const outfile = resolve(cwd, options.outfile ?? `${slug(config.name)}-${options.version}${suffix}.zip`)
   await mkdir(dirname(outfile), { recursive: true })
 

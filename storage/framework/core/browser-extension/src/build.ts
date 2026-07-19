@@ -14,7 +14,27 @@ export function resolveOutdir(config: ExtensionConfig, target: ExtensionTarget, 
     return config.outdir
   if (config.outdir?.[target])
     return config.outdir[target] as string
-  return target === 'firefox' ? 'dist-firefox' : 'dist'
+  return target === 'chrome' ? 'dist' : `dist-${target}`
+}
+
+/**
+ * The complete promise-style `chrome.*` API surface a built extension can
+ * hold (audited across background/content/page bundles). Safari's `chrome.*`
+ * namespace is callback-flavoured while its `browser.*` namespace is
+ * promise-native, so Safari builds rewrite `chrome.<ns>.` to `browser.<ns>.`.
+ * The rewrite is anchored to this known-namespace list, so string literals
+ * (UA labels, docs) can never match. `[?.]` also covers optional-chained
+ * namespaces (`chrome.alarms?.create`).
+ */
+const browserApiNamespaces = ['runtime', 'tabs', 'declarativeNetRequest', 'storage', 'action', 'alarms', 'scripting', 'webNavigation', 'cookies', 'contextMenus', 'notifications', 'i18n', 'downloads', 'permissions', 'windows', 'bookmarks', 'history', 'search', 'sidePanel', 'omnibox', 'idle', 'management', 'commands', 'sessions', 'topSites', 'extension', 'types', 'devtools', 'offscreen', 'clipboard']
+const browserNamespacePattern = new RegExp(`\\bchrome\\.(?=(?:${browserApiNamespaces.join('|')})[?.])`, 'g')
+
+/** Rewrite promise-style `chrome.*` API access in `code` to `browser.*`. */
+export function rewriteBrowserNamespace(code: string): { code: string, replacements: number } {
+  const replacements = (code.match(browserNamespacePattern) ?? []).length
+  if (!replacements)
+    return { code, replacements: 0 }
+  return { code: code.replace(browserNamespacePattern, 'browser.'), replacements }
 }
 
 function normalizePage(page: string | ExtensionPage): ExtensionPage {
@@ -128,6 +148,18 @@ export async function buildExtension(config: ExtensionConfig, options: BuildOpti
   for (const cs of config.content ?? [])
     scripts.push({ entry: cs.entry, out: contentScriptOut(cs.entry, cs.out) })
   await Promise.all(scripts.map(s => buildScript(s.entry, s.out, outdir, cwd, minify)))
+
+  // 4b. Safari: promise-style chrome.* does not exist there (Safari's chrome.*
+  //     is callback-flavoured; browser.* is promise-native), so every shipped
+  //     bundle is rewritten to the browser.* namespace.
+  if (target === 'safari') {
+    for await (const file of new Glob('*.js').scan(outdir)) {
+      const path = join(outdir, file)
+      const { code, replacements } = rewriteBrowserNamespace(await Bun.file(path).text())
+      if (replacements)
+        await Bun.write(path, code)
+    }
+  }
 
   // 5. Compile declarativeNetRequest rulesets from their source modules.
   for (const rule of config.rules ?? []) {
