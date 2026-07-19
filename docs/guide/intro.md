@@ -89,7 +89,7 @@ router.group({ middleware: ['auth', 'verified'] }, () => {
 
 ### Prerequisites
 
-- [Bun](https://bun.sh) v1.0 or higher
+- [Bun](https://bun.sh) v1.3 or higher
 - macOS, Linux, or Windows (WSL2)
 
 ### Quick Start

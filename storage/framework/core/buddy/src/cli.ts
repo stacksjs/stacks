@@ -3,6 +3,24 @@ import process from 'node:process'
 import { cli, log } from '@stacksjs/cli'
 import { path as p } from '@stacksjs/path'
 
+// Enforce the minimum supported Bun version before anything else runs, so an
+// outdated runtime fails fast with a clear message instead of an obscure error
+// deep inside a command. Fail open when the version cannot be determined: the
+// guard must never brick an exotic setup.
+try {
+  const { isSupportedBunVersion, minimumBunVersion } = await import('@stacksjs/utils')
+  const currentBunVersion = typeof Bun !== 'undefined' ? Bun.version : process.versions.bun
+
+  if (currentBunVersion && !isSupportedBunVersion(currentBunVersion)) {
+    console.error(`[buddy] Bun v${minimumBunVersion} or later is required (current: v${currentBunVersion}). Run: bun upgrade`)
+    process.exit(1)
+  }
+}
+catch {
+  // Version could not be determined or compared; let the CLI continue and
+  // surface real errors if the runtime is genuinely too old.
+}
+
 // Get the command being run to determine what to load
 const args = process.argv.slice(2)
 const requestedCommand = args[0] || 'help'

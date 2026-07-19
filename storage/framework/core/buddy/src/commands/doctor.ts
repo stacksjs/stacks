@@ -3,6 +3,7 @@ import process from 'node:process'
 import { bold, dim, green, intro, log, onUnknownSubcommand, red, yellow } from "@stacksjs/cli"
 import { feature } from '@stacksjs/config'
 import { storage } from '@stacksjs/storage'
+import { isSupportedBunVersion, minimumBunVersion } from '@stacksjs/utils'
 import { FEATURE_NAMES, featurePathsPresent } from './features'
 
 interface HealthCheck {
@@ -53,24 +54,21 @@ export function doctor(buddy: CLI): void {
 
       const checks: HealthCheck[] = []
 
-      // Check Bun version
+      // Check Bun version against the framework minimum
       const bunVersion = process.versions.bun
-      if (bunVersion) {
-        const bunMajor = Number.parseInt(bunVersion.split('.')[0] || '0', 10)
-        if (bunMajor >= 1) {
-          checks.push({
-            name: 'Bun Runtime',
-            status: 'pass',
-            message: `v${bunVersion}`,
-          })
-        }
-        else {
-          checks.push({
-            name: 'Bun Runtime',
-            status: 'warn',
-            message: `v${bunVersion} (v1.0+ recommended)`,
-          })
-        }
+      if (bunVersion && isSupportedBunVersion(bunVersion)) {
+        checks.push({
+          name: 'Bun Runtime',
+          status: 'pass',
+          message: `v${bunVersion}`,
+        })
+      }
+      else if (bunVersion) {
+        checks.push({
+          name: 'Bun Runtime',
+          status: 'fail',
+          message: `v${bunVersion} (requires v${minimumBunVersion} or later, run: bun upgrade)`,
+        })
       }
       else {
         checks.push({

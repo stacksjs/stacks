@@ -34,7 +34,7 @@ As a developer, Stacks helps you every step along the way—in beginner & expert
 
 Stacks runs on [Bun](https://bun.sh). You'll need:
 
-- **Bun ≥ 1.3.11** — install with `curl -fsSL https://bun.sh/install | bash`, or upgrade an existing install with `bun upgrade`.
+- **Bun ≥ 1.3.0** — install with `curl -fsSL https://bun.sh/install | bash`, or upgrade an existing install with `bun upgrade`.
 - **macOS, Linux, or WSL** — Windows-native is on the roadmap; today the toolchain assumes a POSIX shell.
 - **Node.js is NOT required.** Bun handles the JS/TS runtime, package management, and bundling.
 
