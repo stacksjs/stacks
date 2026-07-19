@@ -257,16 +257,20 @@ export async function buildSafariApp(config: ExtensionConfig, options: SafariApp
   const configuration = options.release ? 'Release' : 'Debug'
   const derivedData = join(dir, 'build')
 
-  // xcodebuild needs full Xcode, not just the Command Line Tools.
-  const developerDir = (await Bun.$`xcode-select -p`.text()).trim()
-  if (!developerDir.includes('Xcode.app')) {
+  // xcodebuild needs full Xcode, not just the Command Line Tools. DEVELOPER_DIR
+  // overrides xcode-select (e.g. /Applications/Xcode-beta.app/Contents/Developer).
+  const developerDir = (process.env.DEVELOPER_DIR ?? (await Bun.$`xcode-select -p`.text()).trim()).replace(/\/$/, '')
+  if (!developerDir.includes('.app/Contents/Developer')) {
     console.error(`[browser-extension] full Xcode is required to build the app (active developer directory: ${developerDir}).`)
     console.error('Install Xcode, then: sudo xcode-select -s /Applications/Xcode.app/Contents/Developer')
+    console.error('or point DEVELOPER_DIR at any Xcode toolchain (betas included) for this shell.')
     console.error(`The extension payload is built and synced at ${resources}`)
     return { resources }
   }
 
-  const signing = options.signed ? [] : ['CODE_SIGNING_ALLOWED=NO']
+  // Signed builds let Xcode fetch or create provisioning profiles and
+  // certificates for the Apple ID added in Xcode → Settings → Accounts.
+  const signing = options.signed ? ['-allowProvisioningUpdates'] : ['CODE_SIGNING_ALLOWED=NO']
   await Bun.$`xcodebuild -project ${join(dir, `${appName}.xcodeproj`)} -scheme ${appName} -configuration ${configuration} -derivedDataPath ${derivedData} ${signing} build`
 
   return { appPath: join(derivedData, 'Build', 'Products', configuration, `${appName}.app`), resources }
