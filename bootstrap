@@ -3,9 +3,9 @@ set -e
 
 ## To learn more, visit https://stacksjs.com/docs/guide/bootstrap
 ## Usage:
-##   curl -fsSL https://stacksjs.com/install | bash                # bootstrap in current dir
-##   curl -fsSL https://stacksjs.com/install | bash -s my-project  # clone + bootstrap
-##   ./bootstrap                                                   # local bootstrap
+##   ./bootstrap                                                   # local bootstrap (supported today)
+##   curl -fsSL https://stacksjs.com/install | bash                # coming soon: bootstrap in current dir
+##   curl -fsSL https://stacksjs.com/install | bash -s my-project  # coming soon: clone + bootstrap
 
 # --- Pantry installer (inlined so it works via curl-pipe-bash before clone) ---
 ensure_pantry() {

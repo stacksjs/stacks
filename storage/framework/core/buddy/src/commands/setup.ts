@@ -27,6 +27,7 @@ function getTimeoutMs(envVar: string, fallbackMs: number): number {
 const PANTRY_CHECK_TIMEOUT_MS = getTimeoutMs('PANTRY_CHECK_TIMEOUT_MS', 15_000)
 const PANTRY_INSTALL_TIMEOUT_MS = getTimeoutMs('PANTRY_INSTALL_TIMEOUT_MS', 10 * 60_000)
 const PANTRY_DEPENDENCIES_TIMEOUT_MS = getTimeoutMs('PANTRY_DEPENDENCIES_TIMEOUT_MS', 20 * 60_000)
+const BUN_INSTALL_TIMEOUT_MS = getTimeoutMs('BUN_INSTALL_TIMEOUT_MS', 10 * 60_000)
 const KEYGEN_TIMEOUT_MS = getTimeoutMs('KEYGEN_TIMEOUT_MS', 2 * 60_000)
 const AWS_CONFIG_TIMEOUT_MS = getTimeoutMs('AWS_CONFIG_TIMEOUT_MS', 15 * 60_000)
 
@@ -180,6 +181,36 @@ export async function ensurePantryDependencies(cwd: string): Promise<void> {
   process.exit(ExitCode.FatalError)
 }
 
+export async function ensureNodeDependencies(cwd: string): Promise<void> {
+  // A fresh repo-zip extraction has no node_modules at all. Every later
+  // setup step (key generation, migration, AWS configuration) shells out
+  // through code that resolves via node_modules, so unlike the rest of
+  // setup a failed install here is fatal: nothing after it can work.
+  if (existsSync(join(cwd, 'node_modules'))) {
+    log.success('node_modules existed, skipping bun install')
+    return
+  }
+
+  log.info('Running bun install...')
+
+  const result = await runCommand('bun install', {
+    cwd,
+    timeoutMs: BUN_INSTALL_TIMEOUT_MS,
+  }).catch((error: unknown) => {
+    // runCommand/spawn throws (rather than resolving an Err result) when the
+    // executable itself cannot be launched, e.g. no bun on PATH yet.
+    handleError(error)
+    process.exit(ExitCode.FatalError)
+  })
+
+  if (result.isErr) {
+    handleError(result.error)
+    process.exit(ExitCode.FatalError)
+  }
+
+  log.success('Installed node dependencies')
+}
+
 function hasAppKey(cwd: string): boolean {
   const envPath = join(cwd, '.env')
 
@@ -212,10 +243,47 @@ export async function ensureAppKey(cwd: string): Promise<void> {
   log.success('Generated application key')
 }
 
+async function runInitialMigration(cwd: string): Promise<void> {
+  // Setup also runs on deploy/CI targets, where onboarding must not touch
+  // the database. Only a local/dev context gets the automatic first pass.
+  const appEnv = (process.env.APP_ENV || process.env.NODE_ENV || 'local').toLowerCase()
+
+  if (!['local', 'development', 'dev', 'test'].includes(appEnv)) {
+    log.info(`Skipping initial migration in the ${appEnv} environment`)
+    return
+  }
+
+  log.info('Running initial database migration...')
+
+  try {
+    // The migrate action is non-interactive (the confirmation guards live in
+    // the `buddy migrate` command, not the action), so this is safe to run
+    // unattended. Best-effort either way: a fresh project may have no models
+    // or no reachable database yet, and neither should fail onboarding.
+    const result = await runAction(Action.Migrate, { cwd })
+
+    if (result.isErr) {
+      log.warn('Initial migration did not complete - you can run it later via ./buddy migrate')
+      log.debug(result.error)
+      return
+    }
+
+    log.success('Database is migrated')
+  }
+  catch (error) {
+    log.warn('Initial migration did not complete - you can run it later via ./buddy migrate')
+    log.debug(error)
+  }
+}
+
 async function initializeProject(options: SetupOptions): Promise<void> {
   const cwd = options.cwd || p.projectPath()
 
   await ensurePantryDependencies(cwd)
+
+  // Node dependencies come right after the pantry toolchain: pantry
+  // provisions bun itself, and every later step resolves via node_modules.
+  await ensureNodeDependencies(cwd)
 
   await ensureEnvIsSet(options)
 
@@ -223,20 +291,31 @@ async function initializeProject(options: SetupOptions): Promise<void> {
     await ensureAppKey(cwd)
   }
 
+  await runInitialMigration(cwd)
+
   if (!options.skipAws) {
     log.info('Ensuring AWS is connected...')
 
-    const awsResult = await runCommand('./buddy configure:aws', {
-      cwd,
-      timeoutMs: AWS_CONFIG_TIMEOUT_MS,
-    })
+    try {
+      const awsResult = await runCommand('./buddy configure:aws', {
+        cwd,
+        timeoutMs: AWS_CONFIG_TIMEOUT_MS,
+      })
 
-    if (awsResult.isErr) {
-      handleError(awsResult.error)
-      process.exit(ExitCode.FatalError)
+      if (awsResult.isErr) {
+        // AWS is only needed for deploys, so a missing/canceled configuration
+        // downgrades to a warning instead of aborting the whole setup.
+        log.warn('AWS not configured - you can do this later via ./buddy configure:aws')
+        log.debug(awsResult.error)
+      }
+      else {
+        log.success('Configured AWS')
+      }
     }
-
-    log.success('Configured AWS')
+    catch (error) {
+      log.warn('AWS not configured - you can do this later via ./buddy configure:aws')
+      log.debug(error)
+    }
   }
 
   // TODO: ensure the IDE is setup by making sure .vscode etc exists, and if not, copy them over
