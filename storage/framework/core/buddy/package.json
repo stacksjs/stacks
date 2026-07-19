@@ -100,6 +100,7 @@
     "@stacksjs/build": "^0.70.23",
     "@stacksjs/cache": "^0.70.23",
     "@stacksjs/cli": "^0.70.23",
+    "@stacksjs/clapp": "^0.2.10",
     "@stacksjs/cloud": "^0.70.23",
     "@stacksjs/collections": "^0.70.23",
     "@stacksjs/config": "^0.70.23",

@@ -55,7 +55,9 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "bun-query-builder": "^0.1.56"
+    "@stacksjs/ts-validation": "^0.5.0",
+    "bun-query-builder": "^0.1.56",
+    "dynamodb-tooling": "^0.3.2"
   },
   "devDependencies": {
     "@stacksjs/cli": "workspace:*",

@@ -59,6 +59,14 @@
   "dependencies": {
     "@stacksjs/bun-queue": "^0.1.0"
   },
+  "peerDependencies": {
+    "redis": ">=4.0.0"
+  },
+  "peerDependenciesMeta": {
+    "redis": {
+      "optional": true
+    }
+  },
   "devDependencies": {
     "better-dx": "^0.2.16"
   }

@@ -185,6 +185,7 @@
       "name": "@stacksjs/auth",
       "version": "0.70.113",
       "dependencies": {
+        "@stacksjs/bun-router": "^0.0.20",
         "@stacksjs/ts-auth": "^0.4.3",
       },
       "devDependencies": {
@@ -238,6 +239,7 @@
         "@stacksjs/auth": "^0.70.23",
         "@stacksjs/build": "^0.70.23",
         "@stacksjs/cache": "^0.70.23",
+        "@stacksjs/clapp": "^0.2.10",
         "@stacksjs/cli": "^0.70.23",
         "@stacksjs/cloud": "^0.70.23",
         "@stacksjs/collections": "^0.70.23",
@@ -303,6 +305,9 @@
     "storage/framework/core/calendar-api": {
       "name": "@stacksjs/calendar-api",
       "version": "0.70.113",
+      "dependencies": {
+        "@stacksjs/stx": "^0.2.82",
+      },
       "devDependencies": {
         "@stacksjs/browser": "workspace:*",
         "@stacksjs/security": "workspace:*",
@@ -437,7 +442,9 @@
       "name": "@stacksjs/database",
       "version": "0.70.113",
       "dependencies": {
+        "@stacksjs/ts-validation": "^0.5.0",
         "bun-query-builder": "^0.1.56",
+        "dynamodb-tooling": "^0.3.2",
       },
       "devDependencies": {
         "@stacksjs/cli": "workspace:*",
@@ -770,6 +777,12 @@
       "devDependencies": {
         "better-dx": "^0.2.16",
       },
+      "peerDependencies": {
+        "redis": ">=4.0.0",
+      },
+      "optionalPeers": [
+        "redis",
+      ],
     },
     "storage/framework/core/realtime": {
       "name": "@stacksjs/realtime",
@@ -801,6 +814,7 @@
       "version": "0.70.113",
       "dependencies": {
         "@stacksjs/bun-router": "^0.0.20",
+        "ts-rate-limiter": "^0.4.2",
       },
       "devDependencies": {
         "@stacksjs/actions": "workspace:*",
@@ -889,6 +903,9 @@
     "storage/framework/core/slug": {
       "name": "@stacksjs/slug",
       "version": "0.70.113",
+      "dependencies": {
+        "ts-slug": "^0.1.0",
+      },
       "devDependencies": {
         "@stacksjs/cli": "workspace:*",
         "@stacksjs/database": "workspace:*",
@@ -984,6 +1001,7 @@
       "dependencies": {
         "@stacksjs/bunpress": "^0.1.12",
         "@stacksjs/clapp": "^0.2.10",
+        "@stacksjs/stx": "^0.2.82",
         "@stacksjs/ts-validation": "^0.5.0",
         "bun-query-builder": "^0.1.56",
       },

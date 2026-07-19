@@ -51,6 +51,9 @@
     "typecheck": "bun tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
+  "dependencies": {
+    "@stacksjs/stx": "^0.2.82"
+  },
   "devDependencies": {
     "@stacksjs/browser": "workspace:*",
     "better-dx": "^0.2.16",

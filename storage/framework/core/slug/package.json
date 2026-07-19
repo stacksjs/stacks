@@ -50,6 +50,9 @@
     "typecheck": "bun tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
+  "dependencies": {
+    "ts-slug": "^0.1.0"
+  },
   "devDependencies": {
     "@stacksjs/cli": "workspace:*",
     "@stacksjs/database": "workspace:*",
