@@ -1,0 +1,194 @@
+name: Publish browser extension
+
+on:
+  workflow_call:
+    inputs:
+      chrome-publisher-id:
+        description: Chrome Web Store publisher ID
+        required: true
+        type: string
+      safari-enabled:
+        description: Build and upload the Safari container app
+        default: false
+        required: false
+        type: boolean
+    secrets:
+      CHROME_WEB_STORE_SERVICE_ACCOUNT_JSON:
+        required: true
+      AMO_JWT_ISSUER:
+        required: true
+      AMO_JWT_SECRET:
+        required: true
+      APP_STORE_CONNECT_API_KEY:
+        required: false
+      APP_STORE_CONNECT_API_KEY_ID:
+        required: false
+      APP_STORE_CONNECT_API_ISSUER_ID:
+        required: false
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Pantry
+        uses: home-lang/pantry/packages/action@main
+        with:
+          install: 'false'
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Build store packages
+        run: bun node_modules/@stacksjs/buddy/dist/cli.js extension:package
+
+      - name: Upload validated packages
+        uses: actions/upload-artifact@v4
+        with:
+          name: browser-extension-packages
+          path: '*.zip'
+          if-no-files-found: error
+
+  publish-chrome:
+    needs: validate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Pantry
+        uses: home-lang/pantry/packages/action@main
+        with:
+          install: 'false'
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Configure Chrome Web Store credentials
+        env:
+          SERVICE_ACCOUNT_JSON: ${{ secrets.CHROME_WEB_STORE_SERVICE_ACCOUNT_JSON }}
+        run: |
+          test -n "$SERVICE_ACCOUNT_JSON"
+          printf '%s' "$SERVICE_ACCOUNT_JSON" > "$RUNNER_TEMP/chrome-web-store-service-account.json"
+          chmod 600 "$RUNNER_TEMP/chrome-web-store-service-account.json"
+
+      - name: Publish Chrome extension
+        env:
+          CHROME_WEB_STORE_PUBLISHER_ID: ${{ inputs.chrome-publisher-id }}
+          CHROME_WEB_STORE_SERVICE_ACCOUNT_PATH: ${{ runner.temp }}/chrome-web-store-service-account.json
+        run: |
+          test -n "$CHROME_WEB_STORE_PUBLISHER_ID"
+          bun node_modules/@stacksjs/buddy/dist/cli.js extension:chrome:publish
+
+  publish-firefox:
+    needs: validate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Pantry
+        uses: home-lang/pantry/packages/action@main
+        with:
+          install: 'false'
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Archive human-readable source
+        run: git archive --format=zip --output "$RUNNER_TEMP/browser-extension-source.zip" HEAD
+
+      - name: Publish Firefox extension
+        env:
+          AMO_JWT_ISSUER: ${{ secrets.AMO_JWT_ISSUER }}
+          AMO_JWT_SECRET: ${{ secrets.AMO_JWT_SECRET }}
+        run: |
+          test -n "$AMO_JWT_ISSUER"
+          test -n "$AMO_JWT_SECRET"
+          bun node_modules/@stacksjs/buddy/dist/cli.js extension:firefox:publish --source-code "$RUNNER_TEMP/browser-extension-source.zip"
+
+  publish-safari:
+    if: inputs.safari-enabled
+    needs: validate
+    runs-on: macos-15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Select stable Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+
+      - name: Setup Pantry
+        uses: home-lang/pantry/packages/action@main
+        with:
+          install: 'false'
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Configure App Store Connect credentials
+        env:
+          APP_STORE_CONNECT_API_KEY: ${{ secrets.APP_STORE_CONNECT_API_KEY }}
+        run: |
+          test -n "$APP_STORE_CONNECT_API_KEY"
+          printf '%s\n' "$APP_STORE_CONNECT_API_KEY" > "$RUNNER_TEMP/AuthKey.p8"
+          chmod 600 "$RUNNER_TEMP/AuthKey.p8"
+
+      - name: Publish Safari extension
+        env:
+          APP_STORE_CONNECT_API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
+          APP_STORE_CONNECT_API_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_ISSUER_ID }}
+          APP_STORE_CONNECT_API_KEY_PATH: ${{ runner.temp }}/AuthKey.p8
+        run: |
+          test -n "$APP_STORE_CONNECT_API_KEY_ID"
+          test -n "$APP_STORE_CONNECT_API_ISSUER_ID"
+          bun node_modules/@stacksjs/buddy/dist/cli.js extension:safari:publish
+
+  github-release:
+    if: >-
+      always() &&
+      needs.validate.result == 'success' &&
+      needs.publish-chrome.result == 'success' &&
+      needs.publish-firefox.result == 'success' &&
+      (needs.publish-safari.result == 'success' || needs.publish-safari.result == 'skipped')
+    needs:
+      - validate
+      - publish-chrome
+      - publish-firefox
+      - publish-safari
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download validated packages
+        uses: actions/download-artifact@v4
+        with:
+          name: browser-extension-packages
+          path: release-artifacts
+
+      - name: Create GitHub Release
+        uses: home-lang/pantry/packages/action@main
+        with:
+          install: 'false'
+          release: 'true'
+          release-changelog: auto
+          release-checksums: 'true'
+          release-files: release-artifacts/*.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

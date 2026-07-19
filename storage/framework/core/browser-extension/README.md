@@ -40,6 +40,29 @@ email to the publisher account. Firefox reads `AMO_JWT_ISSUER` and
 `AMO_JWT_SECRET`; `web-ext` can create the initial listing when
 `firefoxAddons.license` and `firefoxAddons.categories` are configured.
 
+For tag-driven publication, call Stacks' reusable workflow from the extension
+repository instead of duplicating store orchestration:
+
+```yaml
+jobs:
+  publish:
+    uses: stacksjs/stacks/.github/workflows/browser-extension-release.yml@v0.70.122
+    with:
+      chrome-publisher-id: ${{ vars.CHROME_WEB_STORE_PUBLISHER_ID }}
+      safari-enabled: ${{ vars.ENABLE_SAFARI_PUBLISH == 'true' }}
+    secrets:
+      CHROME_WEB_STORE_SERVICE_ACCOUNT_JSON: ${{ secrets.CHROME_WEB_STORE_SERVICE_ACCOUNT_JSON }}
+      AMO_JWT_ISSUER: ${{ secrets.AMO_JWT_ISSUER }}
+      AMO_JWT_SECRET: ${{ secrets.AMO_JWT_SECRET }}
+      APP_STORE_CONNECT_API_KEY: ${{ secrets.APP_STORE_CONNECT_API_KEY }}
+      APP_STORE_CONNECT_API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
+      APP_STORE_CONNECT_API_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_ISSUER_ID }}
+```
+
+It packages every configured target, publishes Chrome and Firefox in
+independent jobs, optionally uploads Safari with stable Xcode, and creates the
+GitHub Release only after the enabled stores succeed.
+
 ## Safari
 
 Safari Web Extensions ship inside a macOS app, so the safari target has two
