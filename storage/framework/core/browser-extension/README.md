@@ -29,9 +29,14 @@ Safari with MAIN-world content scripts + `match_about_blank`).
 ```sh
 buddy extension:safari:init   # scaffold the Xcode container app into safari/
 buddy extension:safari:app    # build + sync into the appex + xcodebuild
+buddy extension:safari:publish # signed archive + App Store Connect upload
 ```
 
 Set `safariBundleId` in the config (the appex gets `<safariBundleId>.Extension`)
+and `safariTeamId` to the Apple Developer team used for signing. Publishing
+reads `APP_STORE_CONNECT_API_KEY_ID`, `APP_STORE_CONNECT_API_ISSUER_ID`, and
+`APP_STORE_CONNECT_API_KEY_PATH` from the environment. Run with
+`--validate-only` to exercise Apple's validation without uploading a build.
 and list any build output that is not part of the extension (marketing pages,
 etc.) in `safariExclude` so it stays out of the appex. The scaffold mirrors
 what `xcrun safari-web-extension-converter` generates, so day-to-day work

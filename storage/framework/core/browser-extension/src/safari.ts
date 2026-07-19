@@ -45,6 +45,7 @@ interface ScaffoldVars {
   bundleId: string
   extBundleId: string
   version: string
+  teamId: string
 }
 
 function fillTemplate(text: string, vars: ScaffoldVars): string {
@@ -54,6 +55,7 @@ function fillTemplate(text: string, vars: ScaffoldVars): string {
     .replaceAll('__APP_DISPLAY_NAME__', vars.displayName)
     .replaceAll('__APP_NAME__', vars.appName)
     .replaceAll('__MARKETING_VERSION__', vars.version)
+    .replaceAll('__DEVELOPMENT_TEAM__', vars.teamId)
     .replaceAll('__YEAR__', String(new Date().getFullYear()))
 }
 
@@ -76,6 +78,8 @@ export interface SafariScaffoldOptions {
   version?: string
   /** Directory of source PNG icons for the AppIcon set. @default the built chrome outdir's icons, else `public/icons` */
   iconsDir?: string
+  /** Apple Developer team used for automatic signing. @default config.safariTeamId */
+  teamId?: string
   cwd?: string
 }
 
@@ -96,6 +100,7 @@ export async function scaffoldSafariApp(config: ExtensionConfig, options: Safari
     bundleId,
     extBundleId: `${bundleId}.Extension`,
     version: options.version ?? '0.1.0',
+    teamId: options.teamId ?? config.safariTeamId ?? '',
   }
 
   if (!options.bundleId && !config.safariBundleId)
@@ -274,4 +279,113 @@ export async function buildSafariApp(config: ExtensionConfig, options: SafariApp
   await Bun.$`xcodebuild -project ${join(dir, `${appName}.xcodeproj`)} -scheme ${appName} -configuration ${configuration} -derivedDataPath ${derivedData} ${signing} build`
 
   return { appPath: join(derivedData, 'Build', 'Products', configuration, `${appName}.app`), resources }
+}
+
+export interface AppStoreConnectAuth {
+  /** App Store Connect API key ID. @default APP_STORE_CONNECT_API_KEY_ID */
+  keyId?: string
+  /** App Store Connect API issuer ID. @default APP_STORE_CONNECT_API_ISSUER_ID */
+  issuerId?: string
+  /** Filesystem path to the AuthKey_*.p8 file. @default APP_STORE_CONNECT_API_KEY_PATH */
+  keyPath?: string
+}
+
+export interface SafariPublishOptions extends SafariSyncOptions, AppStoreConnectAuth {
+  /** Extension marketing version. */
+  version: string
+  /** Monotonically increasing CFBundleVersion. @default GITHUB_RUN_NUMBER or current Unix time */
+  buildNumber?: string
+  /** Apple Developer team. @default config.safariTeamId */
+  teamId?: string
+  /** Build and validate without uploading to App Store Connect. @default false */
+  validateOnly?: boolean
+  /** Rebuild the Safari web-extension payload before archiving. @default true */
+  build?: boolean
+}
+
+function appStoreConnectAuth(options: AppStoreConnectAuth): Required<AppStoreConnectAuth> {
+  const keyId = options.keyId ?? process.env.APP_STORE_CONNECT_API_KEY_ID
+  const issuerId = options.issuerId ?? process.env.APP_STORE_CONNECT_API_ISSUER_ID
+  const keyPath = options.keyPath ?? process.env.APP_STORE_CONNECT_API_KEY_PATH
+  const missing = [
+    !keyId && 'APP_STORE_CONNECT_API_KEY_ID',
+    !issuerId && 'APP_STORE_CONNECT_API_ISSUER_ID',
+    !keyPath && 'APP_STORE_CONNECT_API_KEY_PATH',
+  ].filter(Boolean)
+  if (missing.length)
+    throw new Error(`[browser-extension] missing App Store Connect credentials: ${missing.join(', ')}`)
+  if (!existsSync(resolve(keyPath!)))
+    throw new Error(`[browser-extension] App Store Connect API key not found: ${resolve(keyPath!)}`)
+  return { keyId: keyId!, issuerId: issuerId!, keyPath: resolve(keyPath!) }
+}
+
+function xcodeAuthArgs(auth: Required<AppStoreConnectAuth>): string[] {
+  return [
+    '-allowProvisioningUpdates',
+    '-authenticationKeyPath', auth.keyPath,
+    '-authenticationKeyID', auth.keyId,
+    '-authenticationKeyIssuerID', auth.issuerId,
+  ]
+}
+
+function exportOptionsPlist(method: 'app-store-connect' | 'validation', teamId: string): string {
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>destination</key>
+  <string>upload</string>
+  <key>manageAppVersionAndBuildNumber</key>
+  <false/>
+  <key>method</key>
+  <string>${method}</string>
+  <key>signingStyle</key>
+  <string>automatic</string>
+  <key>teamID</key>
+  <string>${teamId}</string>
+  <key>uploadSymbols</key>
+  <true/>
+</dict>
+</plist>
+`
+}
+
+/**
+ * Create a signed Release archive and either validate it or upload it to App
+ * Store Connect. Xcode owns certificate/profile creation and the upload so the
+ * same command works locally and in macOS CI with an API key.
+ */
+export async function publishSafariApp(config: ExtensionConfig, options: SafariPublishOptions): Promise<{ archivePath: string, exportPath: string, buildNumber: string }> {
+  const cwd = options.cwd ?? process.cwd()
+  const teamId = options.teamId ?? config.safariTeamId
+  if (!teamId)
+    throw new Error('[browser-extension] Safari publishing needs safariTeamId in config/extension.ts or --team-id')
+  const auth = appStoreConnectAuth(options)
+  const buildNumber = options.buildNumber ?? process.env.GITHUB_RUN_NUMBER ?? String(Math.floor(Date.now() / 1000))
+  if (!/^\d+(?:\.\d+){0,2}$/.test(buildNumber))
+    throw new Error(`[browser-extension] invalid Safari build number ${buildNumber}; use one to three dot-separated integers`)
+
+  if (options.build !== false)
+    await buildExtension(config, { target: 'safari', version: options.version, cwd })
+  await syncSafariResources(config, options)
+
+  const appName = safariAppName(config)
+  const dir = safariProjectDir(cwd, options.dir)
+  const buildDir = join(dir, 'build')
+  const archivePath = join(buildDir, `${appName}.xcarchive`)
+  const exportPath = join(buildDir, options.validateOnly ? 'validation' : 'upload')
+  const plistPath = join(buildDir, options.validateOnly ? 'ExportOptions.validation.plist' : 'ExportOptions.app-store.plist')
+  const authArgs = xcodeAuthArgs(auth)
+  await mkdir(buildDir, { recursive: true })
+  await rm(archivePath, { recursive: true, force: true })
+  await rm(exportPath, { recursive: true, force: true })
+
+  const project = join(dir, `${appName}.xcodeproj`)
+  await Bun.$`xcodebuild -project ${project} -scheme ${appName} -configuration Release -destination generic/platform=macOS -archivePath ${archivePath} MARKETING_VERSION=${options.version} CURRENT_PROJECT_VERSION=${buildNumber} DEVELOPMENT_TEAM=${teamId} ${authArgs} archive`
+
+  const method = options.validateOnly ? 'validation' : 'app-store-connect'
+  await Bun.write(plistPath, exportOptionsPlist(method, teamId))
+  await Bun.$`xcodebuild -exportArchive -archivePath ${archivePath} -exportPath ${exportPath} -exportOptionsPlist ${plistPath} ${authArgs}`
+
+  return { archivePath, exportPath, buildNumber }
 }

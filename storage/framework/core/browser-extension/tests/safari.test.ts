@@ -13,6 +13,7 @@ const config: ExtensionConfig = {
   description: 'Fixture config for the safari target.',
   geckoId: 'extension@example.com',
   safariBundleId: 'com.example.TestExtension',
+  safariTeamId: 'TEAM123456',
   safariExclude: ['marketing.html', 'marketing.js'],
   background: 'src/background/index.ts',
   content: [
@@ -114,6 +115,7 @@ describe('safari scaffold + sync', () => {
     expect(pbxproj).toContain('PRODUCT_BUNDLE_IDENTIFIER = com.example.TestExtension;')
     expect(pbxproj).toContain('PRODUCT_BUNDLE_IDENTIFIER = com.example.TestExtension.Extension;')
     expect(pbxproj).toContain('MARKETING_VERSION = 1.2.3;')
+    expect(pbxproj).toContain('DEVELOPMENT_TEAM = "TEAM123456";')
     expect(pbxproj).not.toContain('__APP_NAME__')
 
     const appPlist = await Bun.file(join(dir, 'TestExtension', 'Info.plist')).text()

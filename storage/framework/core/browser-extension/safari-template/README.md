@@ -36,7 +36,8 @@ Safari > Settings > Extensions, granting it website access.
 
 ## Signing
 
-The project ships with `DEVELOPMENT_TEAM` empty so anyone can build.
+The project uses `safariTeamId` when configured and otherwise leaves
+`DEVELOPMENT_TEAM` empty so anyone can build.
 
 Local, unsigned (no Apple account): the default build uses
 `CODE_SIGNING_ALLOWED=NO`. Unsigned extensions require

@@ -93,13 +93,15 @@ export function extension(buddy: CLI): void {
     .option('--bundle-id <id>', 'Base bundle identifier (defaults to config safariBundleId)')
     .option('--dir <dir>', 'Output directory for the Xcode project (default safari)')
     .option('--force', 'Overwrite existing scaffold files')
-    .action(async (options: { bundleId?: string, dir?: string, force?: boolean }) => {
+    .option('--team-id <id>', 'Apple Developer team used for signing')
+    .action(async (options: { bundleId?: string, dir?: string, force?: boolean, teamId?: string }) => {
       const { scaffoldSafariApp } = await import('@stacksjs/browser-extension')
       const { config } = await load()
       const { dir, written, skipped } = await scaffoldSafariApp(config, {
         bundleId: options.bundleId,
         dir: options.dir,
         force: Boolean(options.force),
+        teamId: options.teamId,
       })
       log.success(`Scaffolded the Safari container app → ${dir} (${written.length} files)`)
       if (skipped.length)
@@ -128,5 +130,31 @@ export function extension(buddy: CLI): void {
       else {
         log.success(`Extension payload synced → ${resources}`)
       }
+    })
+
+  buddy
+    .command('extension:safari:publish', 'Archive and validate or upload the Safari app to App Store Connect')
+    .option('--version <version>', 'Override the marketing version (defaults to package.json)')
+    .option('--build-number <number>', 'CFBundleVersion (defaults to GITHUB_RUN_NUMBER or Unix time)')
+    .option('--team-id <id>', 'Apple Developer team (defaults to config safariTeamId)')
+    .option('--api-key-id <id>', 'App Store Connect API key ID')
+    .option('--api-issuer-id <id>', 'App Store Connect API issuer ID')
+    .option('--api-key-path <path>', 'Path to the App Store Connect AuthKey_*.p8 file')
+    .option('--validate-only', 'Create and validate the archive without uploading it')
+    .action(async (options: { version?: string, buildNumber?: string, teamId?: string, apiKeyId?: string, apiIssuerId?: string, apiKeyPath?: string, validateOnly?: boolean }) => {
+      const { publishSafariApp } = await import('@stacksjs/browser-extension')
+      const { config, version } = await load()
+      const result = await publishSafariApp(config, {
+        version: options.version ?? version,
+        buildNumber: options.buildNumber,
+        teamId: options.teamId,
+        keyId: options.apiKeyId,
+        issuerId: options.apiIssuerId,
+        keyPath: options.apiKeyPath,
+        validateOnly: Boolean(options.validateOnly),
+      })
+      log.success(options.validateOnly
+        ? `Validated Safari archive ${result.archivePath} (build ${result.buildNumber})`
+        : `Uploaded Safari build ${result.buildNumber} to App Store Connect`)
     })
 }

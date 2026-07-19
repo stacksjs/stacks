@@ -371,7 +371,7 @@
 				CODE_SIGN_ENTITLEMENTS = __APP_NAME__/__APP_NAME__.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = "__DEVELOPMENT_TEAM__";
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST = NO;
 				INFOPLIST_FILE = __APP_NAME__/Info.plist;
@@ -394,7 +394,7 @@
 				CODE_SIGN_ENTITLEMENTS = __APP_NAME__/__APP_NAME__.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = "__DEVELOPMENT_TEAM__";
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST = NO;
 				INFOPLIST_FILE = __APP_NAME__/Info.plist;
@@ -415,7 +415,7 @@
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = "__APP_NAME__ Extension/__APP_NAME___Extension.entitlements";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = "__DEVELOPMENT_TEAM__";
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST = NO;
 				INFOPLIST_FILE = "__APP_NAME__ Extension/Info.plist";
@@ -437,7 +437,7 @@
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = "__APP_NAME__ Extension/__APP_NAME___Extension.entitlements";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = "__DEVELOPMENT_TEAM__";
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST = NO;
 				INFOPLIST_FILE = "__APP_NAME__ Extension/Info.plist";

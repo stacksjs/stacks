@@ -97,6 +97,8 @@ export interface ExtensionConfig {
    * (`extension:safari:init`); the appex uses `<safariBundleId>.Extension`.
    */
   safariBundleId?: string
+  /** Apple Developer team used to sign and publish the Safari container app. */
+  safariTeamId?: string
   /**
    * Build-output files to keep out of the Safari appex Resources when syncing
    * (e.g. marketing-site pages that are built into dist but are not part of
