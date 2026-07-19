@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.119...v0.70.120)
+
+## ✨ Features
+
+- **browser-extension**: automate Safari provisioning ([fcfdc48](https://github.com/stacksjs/stacks/commit/fcfdc48)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.118...v0.70.119)
 
 ## 🐛 Bug Fixes

@@ -2,7 +2,7 @@
   "name": "@stacksjs/skills",
   "type": "module",
   "sideEffects": false,
-  "version": "0.70.119",
+  "version": "0.70.120",
   "description": "Agent skills for the Stacks framework, following the agentskills.io standard.",
   "author": "Chris Breuer",
   "contributors": [
