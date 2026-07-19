@@ -523,7 +523,7 @@ export function doctor(buddy: CLI): void {
       await probe(checks, 'Dev ports', async () => {
         const net = await import('node:net')
         const { config } = await import('@stacksjs/config')
-        const configured = ((config as { ports?: Record<string, unknown> }).ports ?? {})
+        const configured = (config.ports ?? {}) as unknown as Record<string, number | undefined>
         const targets = [
           { name: 'frontend', key: 'frontend', envVar: 'PORT', fallback: 3000 },
           { name: 'api', key: 'api', envVar: 'PORT_API', fallback: 3008 },
