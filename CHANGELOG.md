@@ -1,5 +1,68 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.113...v0.70.114)
+
+## ✨ Features
+
+- **browser-extension**: publish Safari apps to App Store Connect ([2625fad](https://github.com/stacksjs/stacks/commit/2625fad)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **browser-extension**: add Safari extension target + container app tooling (#2008) ([3963ab6](https://github.com/stacksjs/stacks/commit/3963ab6)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2008](https://github.com/stacksjs/stacks/issues/2008), [#2008](https://github.com/stacksjs/stacks/issues/2008))
+- **deps**: adopt a bun workspace catalog for shared dependencies ([ba04291](https://github.com/stacksjs/stacks/commit/ba04291)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **deps**: depend only on stacks at the app root ([1d46551](https://github.com/stacksjs/stacks/commit/1d46551)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **buddy**: point onboarding at buddy doctor ([6d328aa](https://github.com/stacksjs/stacks/commit/6d328aa)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **buddy**: strengthen doctor with real DB, sqlite, and port probes ([4f7c6f6](https://github.com/stacksjs/stacks/commit/4f7c6f6)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **buddy**: add extension:safari:init and extension:safari:app commands ([f01f221](https://github.com/stacksjs/stacks/commit/f01f221)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **browser-extension**: scaffold and build the safari container app ([2ed9c0c](https://github.com/stacksjs/stacks/commit/2ed9c0c)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **browser-extension**: add a safari extension target ([1e5c982](https://github.com/stacksjs/stacks/commit/1e5c982)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🐛 Bug Fixes
+
+- **buddy**: type dev port configuration safely ([4bbc4f4](https://github.com/stacksjs/stacks/commit/4bbc4f4)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **browser-extension**: make the scaffolded safari app compile and build on real toolchains (#2011) ([cead50c](https://github.com/stacksjs/stacks/commit/cead50c)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2011](https://github.com/stacksjs/stacks/issues/2011), [#2011](https://github.com/stacksjs/stacks/issues/2011))
+- **browser-extension**: support beta toolchains and first-time signing ([3d2cce2](https://github.com/stacksjs/stacks/commit/3d2cce2)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **browser-extension**: use valid SafariServices APIs in the safari template ([01e2cdf](https://github.com/stacksjs/stacks/commit/01e2cdf)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **actions**: camelCase the identifier in make:function templates ([28e0ff8](https://github.com/stacksjs/stacks/commit/28e0ff8)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **deps**: declare phantom imports in framework packages ([0548fb4](https://github.com/stacksjs/stacks/commit/0548fb4)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **buddy**: friendly outside-project guard, honest build results, real descriptions ([dbbd1cc](https://github.com/stacksjs/stacks/commit/dbbd1cc)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **actions**: make upgrade --dry-run side-effect free ([ea31e0e](https://github.com/stacksjs/stacks/commit/ea31e0e)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **buddy**: render CLI usage errors without stack traces ([082a169](https://github.com/stacksjs/stacks/commit/082a169)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **buddy**: install deps, migrate, and tolerate AWS failures in setup ([182cab8](https://github.com/stacksjs/stacks/commit/182cab8)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **buddy**: unify and enforce the Bun >= 1.3.0 minimum version ([c65ddbc](https://github.com/stacksjs/stacks/commit/c65ddbc)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **buddy**: resolve full colon command names in the lazy loader ([97646d1](https://github.com/stacksjs/stacks/commit/97646d1)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **buddy**: guard destructive commands behind confirmations ([3a357b6](https://github.com/stacksjs/stacks/commit/3a357b6)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **buddy**: repair the make:* scaffolders ([7760647](https://github.com/stacksjs/stacks/commit/7760647)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **buddy**: harden buddy new template source, offline check, flags, outro ([d243b36](https://github.com/stacksjs/stacks/commit/d243b36)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **deps**: require ts-cloud ^0.7.32 for socket-based postgres admin ([4eec9fb](https://github.com/stacksjs/stacks/commit/4eec9fb)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **deps**: require ts-cloud ^0.7.31 across remaining framework manifests ([e107a6b](https://github.com/stacksjs/stacks/commit/e107a6b)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **deps**: require ts-cloud ^0.7.31 for attach-mode db + verbose gateway ([fd26424](https://github.com/stacksjs/stacks/commit/fd26424)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **buddy**: verify DNS writes against the full zone listing ([7ba2bdf](https://github.com/stacksjs/stacks/commit/7ba2bdf)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **buddy**: never ship env files in release tarballs, gate mail reconcile ([b2654eb](https://github.com/stacksjs/stacks/commit/b2654eb)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **auth**: make defensive password_resets ALTER idempotent on postgres ([fb4fdcb](https://github.com/stacksjs/stacks/commit/fb4fdcb)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **buddy**: stop phantom DNS success and verify records after upsert ([a4df4f0](https://github.com/stacksjs/stacks/commit/a4df4f0)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **env**: skip encrypted entries when no private key is available ([cc6fc6b](https://github.com/stacksjs/stacks/commit/cc6fc6b)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **cli**: resolve outro's error branch instead of hanging the process ([fac509e](https://github.com/stacksjs/stacks/commit/fac509e)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 📝 Documentation
+
+- remove stale command references and document the real CLI surface ([3e356d3](https://github.com/stacksjs/stacks/commit/3e356d3)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **browser-extension**: document the safari target and app commands ([91ec7e3](https://github.com/stacksjs/stacks/commit/91ec7e3)) _(by Chris <chrisbreuer93@gmail.com>)_
+- repair the corrupted Quick Start page ([374a7f4](https://github.com/stacksjs/stacks/commit/374a7f4)) _(by Chris <chrisbreuer93@gmail.com>)_
+- use bunx @stacksjs/buddy new as the supported install command ([9edc062](https://github.com/stacksjs/stacks/commit/9edc062)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## ✅ Tests
+
+- **browser-extension**: cover the safari target and app tooling ([7f367a3](https://github.com/stacksjs/stacks/commit/7f367a3)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🔧 Chores
+
+- wip ([6cbba90](https://github.com/stacksjs/stacks/commit/6cbba90)) _(by Chris <chrisbreuer93@gmail.com>)_
+- remove the unpublished bun-create scaffold packages ([6305c59](https://github.com/stacksjs/stacks/commit/6305c59)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **deps**: bump @stacksjs/stx + components 0.2.84 -> 0.2.98 (native sidebar) ([1df28c1](https://github.com/stacksjs/stacks/commit/1df28c1)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+- _glennmichael123 <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.112...v0.70.113)
 
 ## ✨ Features
