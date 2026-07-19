@@ -1801,6 +1801,21 @@ export async function reconcileMailDns(res: MailTenantResult, ip: string, logger
 // records) for every site domain, using the shared provider-agnostic
 // syncDnsConfig from @stacksjs/dns. Create-only and never destructive, so it is
 // safe to run on every deploy; a no-op when config/dns.ts declares no records.
+/**
+ * Return the application zones that should receive config/dns.ts records.
+ * Redirect-only domains still receive their managed apex/www A records through
+ * reconcileHetznerDns, but must not inherit the primary app's MX, SPF, or site
+ * verification records.
+ */
+export function configDnsDomains(sites: Record<string, any>): string[] {
+  const domains = new Set<string>()
+  for (const site of Object.values(sites)) {
+    if (!site?.redirect && site?.domain && typeof site.domain === 'string')
+      domains.add(site.domain.replace(/^www\./, ''))
+  }
+  return [...domains]
+}
+
 async function reconcileConfigDns(sites: Record<string, any>, logger: typeof log): Promise<void> {
   const projectDnsConfig = await loadProjectDnsConfig(dnsConfig)
   const declared = (['a', 'aaaa', 'cname', 'mx', 'txt'] as const)
@@ -1808,13 +1823,7 @@ async function reconcileConfigDns(sites: Record<string, any>, logger: typeof log
   if (declared === 0)
     return
 
-  const domains = new Set<string>()
-  for (const site of Object.values(sites)) {
-    if (site?.domain && typeof site.domain === 'string')
-      domains.add(site.domain.replace(/^www\./, ''))
-  }
-
-  for (const domain of domains) {
+  for (const domain of configDnsDomains(sites)) {
     try {
       const result = await syncDnsConfig(domain, projectDnsConfig)
       if (!result.provider)
