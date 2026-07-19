@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.124...v0.70.125)
+
+## 🐛 Bug Fixes
+
+- **build**: pin Redis for Buddy binaries ([3d837e1](https://github.com/stacksjs/stacks/commit/3d837e1)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.123...v0.70.124)
 
 ## 🐛 Bug Fixes
