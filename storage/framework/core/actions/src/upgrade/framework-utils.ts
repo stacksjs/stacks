@@ -444,6 +444,57 @@ export function diffSnapshots(
   return { added, changed, removed, unchanged }
 }
 
+export interface DetailedChangeSummary extends ChangeSummary {
+  /** Relative paths present upstream but not locally (a sync would add them). */
+  addedFiles: string[]
+  /** Relative paths whose upstream content differs from local (a sync would change them). */
+  changedFiles: string[]
+  /** Relative paths no longer shipped upstream. The sync never deletes, so these stay in place. */
+  removedFiles: string[]
+}
+
+/**
+ * Like `diffSnapshots`, but also returns the sorted relative file lists behind
+ * the counts. Used by the `--dry-run` preview, which diffs the local target
+ * against the upgrade SOURCE (local checkout or temp-dir download) instead of
+ * against a post-sync tree, so it can show exactly which files a real sync
+ * would add or change without writing anything.
+ */
+export function diffSnapshotsDetailed(
+  before: Map<string, SnapshotEntry>,
+  after: Map<string, SnapshotEntry>,
+): DetailedChangeSummary {
+  const addedFiles: string[] = []
+  const changedFiles: string[] = []
+  const removedFiles: string[] = []
+  let unchanged = 0
+
+  for (const [rel, info] of after) {
+    const prev = before.get(rel)
+    if (!prev) addedFiles.push(rel)
+    else if (prev.size !== info.size || prev.hash !== info.hash) changedFiles.push(rel)
+    else unchanged++
+  }
+
+  for (const rel of before.keys()) {
+    if (!after.has(rel)) removedFiles.push(rel)
+  }
+
+  addedFiles.sort()
+  changedFiles.sort()
+  removedFiles.sort()
+
+  return {
+    added: addedFiles.length,
+    changed: changedFiles.length,
+    removed: removedFiles.length,
+    unchanged,
+    addedFiles,
+    changedFiles,
+    removedFiles,
+  }
+}
+
 async function hashFile(absPath: string): Promise<bigint> {
   try {
     const buf = await Bun.file(absPath).arrayBuffer()
