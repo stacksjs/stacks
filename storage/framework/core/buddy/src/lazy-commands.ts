@@ -27,6 +27,8 @@ const commandRegistry: Record<string, CommandLoader> = {
   'config:migrate': { path: './commands/config-migrate.ts', exportName: 'configMigrate' },
   'configure': { path: './commands/configure.ts', exportName: 'configure' },
   'create': { path: './commands/create.ts', exportName: 'create' },
+  // create.ts registers the command as `new [name]`.
+  'new': { path: './commands/create.ts', exportName: 'create' },
   'deploy': { path: './commands/deploy.ts', exportName: 'deploy' },
   'dev': { path: './commands/dev.ts', exportName: 'dev' },
   'dns': { path: './commands/dns.ts', exportName: 'dns' },
@@ -61,6 +63,9 @@ const commandRegistry: Record<string, CommandLoader> = {
   'install': { path: './commands/install.ts', exportName: 'install' },
   'key': { path: './commands/key.ts', exportName: 'key' },
   'lint': { path: './commands/lint.ts', exportName: 'lint' },
+  // lint.ts also registers the `format` pair (pickier formatter).
+  'format': { path: './commands/lint.ts', exportName: 'lint' },
+  'format:check': { path: './commands/lint.ts', exportName: 'lint' },
   'list': { path: './commands/list.ts', exportName: 'list' },
   'mail': { path: './commands/mail.ts', exportName: 'mailCommands' },
   'mail:preview': { path: './commands/mail.ts', exportName: 'mailCommands' },
@@ -68,7 +73,13 @@ const commandRegistry: Record<string, CommandLoader> = {
   'down': { path: './commands/maintenance.ts', exportName: 'maintenance' },
   'up': { path: './commands/maintenance.ts', exportName: 'maintenance' },
   'status': { path: './commands/maintenance.ts', exportName: 'maintenance' },
+  // maintenance.ts also registers the coming-soon pair and `launch`.
+  'coming-soon': { path: './commands/maintenance.ts', exportName: 'maintenance' },
+  'coming-soon:status': { path: './commands/maintenance.ts', exportName: 'maintenance' },
+  'launch': { path: './commands/maintenance.ts', exportName: 'maintenance' },
   'make': { path: './commands/make.ts', exportName: 'make' },
+  // make.ts also registers `scaffold:crud`.
+  'scaffold:crud': { path: './commands/make.ts', exportName: 'make' },
   'migrate': { path: './commands/migrate.ts', exportName: 'migrate' },
   'migrate:fresh': { path: './commands/migrate.ts', exportName: 'migrate' },
   'migrate:switch': { path: './commands/migrate.ts', exportName: 'migrate' },
@@ -90,8 +101,13 @@ const commandRegistry: Record<string, CommandLoader> = {
   'release': { path: './commands/release.ts', exportName: 'release' },
   'route': { path: './commands/route.ts', exportName: 'route' },
   'saas': { path: './commands/saas.ts', exportName: 'saas' },
+  // saas.ts registers the command as `stripe:setup`.
+  'stripe:setup': { path: './commands/saas.ts', exportName: 'saas' },
   'schedule': { path: './commands/schedule.ts', exportName: 'schedule' },
   'search': { path: './commands/search.ts', exportName: 'search' },
+  // search.ts also registers the `search-engine` pair.
+  'search-engine:update': { path: './commands/search.ts', exportName: 'search' },
+  'search-engine:settings': { path: './commands/search.ts', exportName: 'search' },
   'seed': { path: './commands/seed.ts', exportName: 'seed' },
   // `seed:roles` alias also lazy-loads commands/seed.ts (which registers
   // both `seed` and `seed:roles` subcommands when its exported `seed()`
@@ -280,17 +296,19 @@ export function getCommandsToLoad(args: string[]): string[] {
     return ['list', ...Object.keys(commandRegistry).filter(k => k !== 'list')]
   }
 
-  // Check if it's a known command
-  if (commandRegistry[baseCommand]) {
-    return [baseCommand]
+  // Check the exact full command name first. Colon commands can live in a
+  // different module than their base command (e.g. `queue:install` is
+  // registered by features.ts while `queue` loads queue.ts, and
+  // `migrate:project` lives in migrate-project.ts), so the full name must
+  // win over the base-name fallback below.
+  if (commandRegistry[requestedCommand]) {
+    return [requestedCommand]
   }
 
-  // Check if it's a namespaced command like 'make:model'
-  if (requestedCommand.includes(':')) {
-    const namespace = baseCommand
-    if (commandRegistry[namespace]) {
-      return [namespace]
-    }
+  // Fall back to the base command's module for namespaced commands like
+  // 'make:model' whose subcommands are all registered by make.ts.
+  if (commandRegistry[baseCommand]) {
+    return [baseCommand]
   }
 
   // Unknown command — load full surface so the user sees every option in the
