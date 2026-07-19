@@ -16,6 +16,9 @@
     "./*": "./*",
     "./package.json": "./package.json"
   },
+  "dependencies": {
+    "@iconify-json/f7": "^1.2.2"
+  },
   "scripts": {
     "build": "bun build.ts"
   }

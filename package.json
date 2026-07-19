@@ -70,14 +70,7 @@
     "sqlite": "^3.47.2"
   },
   "dependencies": {
-    "@stacksjs/ts-cloud": "^0.7.32",
-    "bun-query-builder": "^0.1.56",
     "stacks": "workspace:*"
-  },
-  "devDependencies": {
-    "@iconify-json/f7": "^1.2.2",
-    "better-dx": "^0.2.17",
-    "cz-git": "^1.13.1"
   },
   "workspaces": [
     "storage/framework",

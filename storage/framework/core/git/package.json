@@ -52,6 +52,9 @@
     "typecheck": "bun tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
+  "dependencies": {
+    "cz-git": "^1.13.1"
+  },
   "devDependencies": {
     "@stacksjs/gitlint": "^0.1.5",
     "@stacksjs/gitit": "^0.2.5",
