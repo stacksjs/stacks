@@ -68,6 +68,7 @@
     }
   },
   "devDependencies": {
-    "better-dx": "catalog:"
+    "better-dx": "catalog:",
+    "redis": "catalog:"
   }
 }
