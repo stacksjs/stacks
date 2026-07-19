@@ -49,6 +49,7 @@ export function make(buddy: CLI): void {
     resource: 'Create a new API resource',
     name: 'The name of the action',
     queue: 'Make queue migration',
+    queueTable: 'Create the queue jobs table migration',
     stack: 'Create a new stack',
     certificate: 'Create a new SSL Certificate',
     select: 'What are you trying to make?',
@@ -586,7 +587,7 @@ export function make(buddy: CLI): void {
     })
 
   buddy
-    .command('make:queue-table', descriptions.migration)
+    .command('make:queue-table', descriptions.queueTable)
     .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: MakeOptions) => {

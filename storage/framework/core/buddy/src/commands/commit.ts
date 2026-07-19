@@ -6,7 +6,7 @@ import { onUnknownSubcommand } from "@stacksjs/cli"
 
 export function commit(buddy: CLI): void {
   const descriptions = {
-    commit: 'Commit your stashed changes',
+    commit: 'Commit your staged changes',
     project: 'Target a specific project',
     verbose: 'Enable verbose output',
   }

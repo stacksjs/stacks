@@ -1,7 +1,8 @@
 import type { BuildOptions, CLI } from '@stacksjs/types'
 import process from 'node:process'
-import { intro, log, onUnknownSubcommand, outro } from "@stacksjs/cli"
+import { intro, log, multiselect, onUnknownSubcommand, outro } from "@stacksjs/cli"
 import { Action } from '@stacksjs/enums'
+import { hasTTY, isCI } from '@stacksjs/env'
 import { ExitCode } from '@stacksjs/types'
 
 // Lazy-load @stacksjs/actions — importing it at module level forces every
@@ -84,26 +85,64 @@ export function build(buddy: CLI): void {
       }
 
       if (hasNoOptions(options)) {
-        // Default to building stacks when no specific option is provided
-        options.stacks = true
+        // Bare `buddy build`: ask interactively when a TTY is available.
+        if (!isCI && hasTTY && process.stdin.isTTY) {
+          const answers = await multiselect({
+            message: descriptions.select,
+            choices: [
+              { label: 'Frontend (views)', value: 'views' },
+              { label: 'Components', value: 'components' },
+              { label: 'Web Components', value: 'webComponents' },
+              { label: 'Functions', value: 'functions' },
+              { label: 'Documentation', value: 'docs' },
+              { label: 'Stacks framework', value: 'stacks' },
+              { label: 'Buddy CLI', value: 'buddy' },
+              { label: 'Server (Docker image)', value: 'server' },
+            ],
+          })
+
+          const selected = new Set(answers)
+          if (selected.has('views')) options.views = true
+          if (selected.has('components')) options.components = true
+          if (selected.has('webComponents')) options.webComponents = true
+          if (selected.has('functions')) options.functions = true
+          if (selected.has('docs')) options.docs = true
+          if (selected.has('stacks')) options.stacks = true
+          if (selected.has('buddy')) options.buddy = true
+          if (selected.has('server')) options.server = true
+        }
+
+        // Non-interactive shells (CI, pipes) and empty prompt selections fall
+        // back to the app default: the frontend. Building the framework stays
+        // opt-in via `buddy build --stacks` / `buddy build:stacks`.
+        if (hasNoOptions(options)) {
+          options.views = true
+          log.info('No build target specified, defaulting to the frontend (views). See `buddy build --help` for all targets.')
+        }
       }
 
+      let succeeded = true
+
       if (options.docs)
-        await runAction(Action.BuildDocs)
+        succeeded = (await runBuildAction(Action.BuildDocs, 'documentation')) && succeeded
       if (options.components)
-        await runAction(Action.BuildComponentLibs)
+        succeeded = (await runBuildAction(Action.BuildComponentLibs, 'component libraries')) && succeeded
       if (options.webComponents)
-        await runAction(Action.BuildWebComponentLib)
+        succeeded = (await runBuildAction(Action.BuildWebComponentLib, 'web component library')) && succeeded
       if (options.functions)
-        await runAction(Action.BuildFunctionLib)
+        succeeded = (await runBuildAction(Action.BuildFunctionLib, 'function library')) && succeeded
       if (options.views)
-        await runAction(Action.BuildViews)
+        succeeded = (await runBuildAction(Action.BuildViews, 'frontend')) && succeeded
       if (options.stacks)
-        await runAction(Action.BuildStacks)
+        succeeded = (await runBuildAction(Action.BuildStacks, 'Stacks framework')) && succeeded
       if (options.buddy)
-        await runAction(Action.BuildCli)
+        succeeded = (await runBuildAction(Action.BuildCli, 'Buddy CLI')) && succeeded
       if (options.server)
-        await runAction(Action.BuildServer)
+        succeeded = (await runBuildAction(Action.BuildServer, 'server')) && succeeded
+
+      if (!succeeded)
+        process.exit(ExitCode.FatalError)
+
       process.exit(ExitCode.Success)
     })
 
@@ -281,4 +320,19 @@ function hasNoOptions(options: BuildOptions) {
     && !options.buddy
     && !options.server
   )
+}
+
+/**
+ * Runs a build action and reports failures instead of letting them exit 0.
+ * Returns true when the build succeeded.
+ */
+async function runBuildAction(action: Action, target: string): Promise<boolean> {
+  const result = await runAction(action)
+
+  if (result.isErr) {
+    log.error(`Failed to build ${target}.`, result.error)
+    return false
+  }
+
+  return true
 }

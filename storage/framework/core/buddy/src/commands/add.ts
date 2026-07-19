@@ -7,7 +7,7 @@ import { onUnknownSubcommand } from "@stacksjs/cli"
 
 export function add(buddy: CLI): void {
   const descriptions = {
-    add: 'Add a stack to your project (coming soon)',
+    add: 'Add a stack to your project (table and calendar available, more coming soon)',
     table: 'Add the Table Stack to your project',
     calendar: 'Add the Calendar Stack to your project',
     all: 'Add all stacks',

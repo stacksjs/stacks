@@ -7,7 +7,7 @@ import { onUnknownSubcommand } from "@stacksjs/cli"
 export function types(buddy: CLI): void {
   const descriptions = {
     generate: 'Generate the types of & for your library/libraries',
-    fix: 'wip',
+    fix: 'Fix the generated types of & for your library/libraries (not yet implemented)',
     project: 'Target a specific project',
     verbose: 'Enable verbose output',
   }

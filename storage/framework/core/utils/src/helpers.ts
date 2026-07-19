@@ -2,6 +2,7 @@ import type { NpmScript } from '@stacksjs/enums'
 import type { Result } from '@stacksjs/error-handling'
 import type { CliOptions, Manifest, Subprocess } from '@stacksjs/types'
 import type { AddressInfo } from 'node:net'
+import process from 'node:process'
 import { runAction } from '@stacksjs/actions'
 import { log, runCommand } from '@stacksjs/cli'
 import { app, ui } from '@stacksjs/config'
@@ -34,6 +35,13 @@ export async function initProject(): Promise<Result<Subprocess, Error>> {
 }
 
 export async function ensureProjectIsInitialized(): Promise<boolean> {
+  if (!isStacksProject()) {
+    // sync console.error (not async-buffered log.error) so the message
+    // reaches stderr before process.exit fires.
+    console.error('This command must be run inside a Stacks project; create one with: bunx @stacksjs/buddy new my-app')
+    process.exit(1)
+  }
+
   // if (storage.isFile(projectPath('.env')))
   if (fs.existsSync(projectPath('.env')))
     return await isAppKeySet()
@@ -44,6 +52,20 @@ export async function ensureProjectIsInitialized(): Promise<boolean> {
   else console.error('no .env.example file found')
 
   return await isAppKeySet()
+}
+
+/**
+ * Determines whether the current working directory is a Stacks project.
+ *
+ * A Stacks project has a package.json plus either a config/ directory or the
+ * vendored framework at storage/framework/core (the same marker the bootstrap
+ * script uses to detect a source checkout).
+ */
+export function isStacksProject(): boolean {
+  if (!fs.existsSync(projectPath('package.json')))
+    return false
+
+  return fs.existsSync(projectPath('config')) || fs.existsSync(projectPath('storage/framework/core'))
 }
 
 export async function installIfVersionMismatch(): Promise<void> {
@@ -60,11 +82,17 @@ export async function frameworkVersion(): Promise<string> {
 }
 
 export async function isAppKeySet(): Promise<boolean> {
-  const env = await readTextFile('.env', projectPath())
-  const lines = env.data.split('\n')
-  const appKey = lines.find(line => line.startsWith('APP_KEY='))
+  try {
+    const env = await readTextFile('.env', projectPath())
+    const lines = env.data.split('\n')
+    const appKey = lines.find(line => line.startsWith('APP_KEY='))
 
-  return !!(appKey && appKey.length > 16)
+    return !!(appKey && appKey.length > 16)
+  }
+  catch {
+    // a missing or unreadable .env simply means no APP_KEY is set yet
+    return false
+  }
 }
 
 /**
