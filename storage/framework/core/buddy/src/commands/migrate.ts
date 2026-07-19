@@ -329,6 +329,7 @@ function currentDatabaseLabel(): string {
 export function migrate(buddy: CLI): void {
   const descriptions = {
     migrate: 'Migrates your database',
+    fresh: 'Drop all tables and re-run every migration (destroys all data)',
     project: 'Target a specific project',
     verbose: 'Enable verbose output',
     auth: 'Also migrate auth tables (oauth_clients, oauth_access_tokens, oauth_refresh_tokens, password_resets)',
@@ -579,7 +580,7 @@ export function migrate(buddy: CLI): void {
     })
 
   buddy
-    .command('migrate:fresh', descriptions.migrate)
+    .command('migrate:fresh', descriptions.fresh)
     .alias('db:fresh')
     .option('-d, --diff', 'Show the SQL that would be run', { default: false })
     .option('-p, --project [project]', descriptions.project, { default: false })

@@ -1,6 +1,6 @@
 import type { CLI, CloudCliOptions } from '@stacksjs/types'
 import process from 'node:process'
-import { intro, italic, log, onUnknownSubcommand, outro, prompts, runCommand, underline } from "@stacksjs/cli"
+import { intro, italic, log, onUnknownSubcommand, outro, prompts, runCommand, text, underline } from "@stacksjs/cli"
 import {
   addJumpBox,
   deleteCdkRemnants,
@@ -15,6 +15,7 @@ import {
   getCloudFrontDistributionId,
   getJumpBoxInstanceId,
 } from '@stacksjs/cloud'
+import { hasTTY, isCI } from '@stacksjs/env'
 import { path as p } from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types'
 
@@ -399,16 +400,35 @@ export function cloud(buddy: CLI): void {
 
       const startTime = await intro('buddy cloud:remove')
 
-      if (options.jumpBox) {
-        const { confirm } = await (prompts as any)({
-          name: 'confirm',
-          type: 'confirm',
-          message: 'Would you like to remove your jump-box for now?',
-        })
+      // Determine environment first, the confirmation guard below names it.
+      const environment = process.env.APP_ENV || process.env.NODE_ENV || 'production'
 
-        if (!confirm) {
-          await outro('Exited', { startTime, useSeconds: true })
-          process.exit(ExitCode.Success)
+      // Safety guard (stacksjs/stacks#2002): this command deletes real cloud
+      // infrastructure and previously did so with no confirmation at all,
+      // leaving the declared `--yes` flag inert. Now `--yes` is the explicit
+      // bypass; without it, a non-interactive shell (CI, piped stdin) refuses
+      // to run instead of hanging on a prompt no one can answer, and an
+      // interactive shell must confirm before any AWS call is made.
+      if (!options.yes && (isCI || !hasTTY || !process.stdin.isTTY)) {
+        log.syncError(`Refusing to remove the "${environment}" cloud infrastructure from a non-interactive shell without confirmation.`)
+        log.syncError(`   ➡️  Re-run with \`--yes\` to confirm (e.g. in CI): \`buddy cloud:remove --yes\``)
+        await outro('cloud:remove cancelled.', { startTime, useSeconds: true })
+        await log.flush()
+        process.exit(ExitCode.FatalError)
+      }
+
+      if (options.jumpBox) {
+        if (!options.yes) {
+          const { confirm } = await (prompts as any)({
+            name: 'confirm',
+            type: 'confirm',
+            message: 'Would you like to remove your jump-box for now?',
+          })
+
+          if (!confirm) {
+            await outro('Exited', { startTime, useSeconds: true })
+            process.exit(ExitCode.Success)
+          }
         }
 
         const result = await deleteJumpBox()
@@ -425,13 +445,22 @@ export function cloud(buddy: CLI): void {
         process.exit(ExitCode.Success)
       }
 
+      // Typed confirmation for a full infrastructure teardown, mirroring the
+      // `migrate:fresh` guard: no accidental keystroke may delete production.
+      // Only `--yes` skips this.
+      if (!options.yes) {
+        log.warning(`This will permanently delete the "${environment}" cloud infrastructure (compute, storage, CDN, and DNS managed by Stacks). This cannot be undone.`)
+        const typed = await text({ message: `Type the environment name "${environment}" to confirm (blank to cancel):` })
+        if (typed.trim() !== environment) {
+          await outro('cloud:remove cancelled - confirmation did not match.', { startTime, useSeconds: true })
+          process.exit(ExitCode.Success)
+        }
+      }
+
       console.log('')
       console.log('Removing cloud infrastructure...')
       console.log(`   ${italic('This typically takes 2-5 minutes.')}`)
       console.log('')
-
-      // Determine environment first
-      const environment = process.env.APP_ENV || process.env.NODE_ENV || 'production'
 
       // Load AWS credentials from environment-specific .env file if not already set
       if (!process.env.AWS_ACCESS_KEY_ID || !process.env.AWS_SECRET_ACCESS_KEY) {

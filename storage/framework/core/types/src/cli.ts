@@ -368,7 +368,9 @@ export type DomainsOptions = CliOptions & {
   contactType?: string
 }
 
-export interface CleanOptions extends CliOptions {}
+export interface CleanOptions extends CliOptions {
+  force?: boolean
+}
 
 export interface CloudCliOptions extends CliOptions {
   ssh?: boolean
@@ -377,10 +379,13 @@ export interface CloudCliOptions extends CliOptions {
   invalidateCache?: boolean
   paths?: string
   diff?: boolean
+  force?: boolean
+  yes?: boolean
 }
 export interface CommitOptions extends CliOptions {}
 export interface FreshOptions extends CliOptions {
   dryRun?: boolean
+  force?: boolean
   quiet?: boolean
 }
 
