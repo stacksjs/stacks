@@ -2,7 +2,7 @@
   "name": "@stacksjs/chat",
   "type": "module",
   "sideEffects": false,
-  "version": "0.70.116",
+  "version": "0.70.117",
   "description": "Easily interact with chat APIs.",
   "author": "Chris Breuer",
   "contributors": [
