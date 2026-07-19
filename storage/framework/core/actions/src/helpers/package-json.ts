@@ -1,7 +1,7 @@
+import { library } from '@stacksjs/config'
 import { log } from '@stacksjs/logging'
 import { packageJsonPath } from '@stacksjs/path'
 import { writeTextFile } from '@stacksjs/storage'
-import library from '~/config/library'
 
 type PackageJsonType = 'web-components' | 'functions'
 

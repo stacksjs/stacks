@@ -1,9 +1,9 @@
 import type { Result } from '@stacksjs/error-handling'
+import { library } from '@stacksjs/config'
 import { err, ok } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/logging'
 import { customElementsDataPath } from '@stacksjs/path'
 import { writeTextFile } from '@stacksjs/storage'
-import library from '~/config/library'
 
 function generateComponentInfoData(): string {
   const componentsData = JSON.stringify(library.webComponents?.tags)

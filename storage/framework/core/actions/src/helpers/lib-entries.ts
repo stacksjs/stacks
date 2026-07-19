@@ -1,12 +1,12 @@
 import type { LibraryType } from '@stacksjs/path'
 import process from 'node:process'
+import { library } from '@stacksjs/config'
 import { log } from '@stacksjs/logging'
 import { componentsPath, functionsPath, libraryEntryPath } from '@stacksjs/path'
 import { writeTextFile } from '@stacksjs/storage'
 import { kebabCase } from '@stacksjs/strings'
 import { ExitCode } from '@stacksjs/types'
 import { determineResetPreset } from '@stacksjs/utils'
-import library from '~/config/library'
 
 /**
  * Based on the config values, this method

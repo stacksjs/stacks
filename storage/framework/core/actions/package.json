@@ -62,6 +62,7 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
+    "@stacksjs/config": "workspace:*",
     "@stacksjs/bumpx": "^0.2.6",
     "@stacksjs/bunpress": "^0.1.12",
     "@stacksjs/logsmith": "^0.2.3",
