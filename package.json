@@ -83,7 +83,7 @@
     "@stacksjs/clapp": "^0.2.10",
     "@stacksjs/components": "^0.2.82",
     "@stacksjs/gitlint": "^0.1.5",
-    "@stacksjs/stx": "^0.2.82",
+    "@stacksjs/stx": "^0.2.99",
     "@stacksjs/ts-cloud": "^0.7.36",
     "better-dx": "^0.2.17",
     "bun-git-hooks": "^0.3.2",
