@@ -1,5 +1,20 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.120...v0.70.121)
+
+## ✨ Features
+
+- **browser-extension**: automate store publishing ([248c191](https://github.com/stacksjs/stacks/commit/248c191)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🐛 Bug Fixes
+
+- **release**: refresh lockfile before tagging ([0efd4c9](https://github.com/stacksjs/stacks/commit/0efd4c9)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **charts**: require valid shape declarations ([4ed2b00](https://github.com/stacksjs/stacks/commit/4ed2b00)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.119...v0.70.120)
 
 ## ✨ Features
