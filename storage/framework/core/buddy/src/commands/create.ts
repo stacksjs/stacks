@@ -80,6 +80,7 @@ export function create(buddy: CLI): void {
 
       log.info(bold('Welcome to the Stacks Framework! ⚛️'))
       log.info(`Get started: ${cyan(`cd ${name}`)} and then ${cyan('./buddy dev')}`)
+      log.info(`Run ${cyan('./buddy doctor')} anytime to check your setup`)
       log.info('To learn more, visit https://stacksjs.com')
 
       process.exit(ExitCode.Success)

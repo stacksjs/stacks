@@ -321,7 +321,7 @@ async function initializeProject(options: SetupOptions): Promise<void> {
   // TODO: ensure the IDE is setup by making sure .vscode etc exists, and if not, copy them over
 
   log.success('Project is setup')
-  log.info('Happy coding! 💙')
+  log.info('Run `./buddy doctor` anytime to check your setup. Happy coding! 💙')
 }
 
 /**
