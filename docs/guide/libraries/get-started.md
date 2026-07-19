@@ -16,7 +16,7 @@ Before creating a library, ensure you have:
 Create a dedicated library project:
 
 ```bash
-bunx create-stacks my-library --library
+bunx @stacksjs/buddy new my-library
 
 cd my-library
 bun install

@@ -18,10 +18,7 @@ Stacks library features:
 
 ```bash
 # Create a new library project
-bunx create-stacks my-library --library
-
-# Or add library support to existing project
-buddy make:library
+bunx @stacksjs/buddy new my-library
 ```
 
 ### Project Structure

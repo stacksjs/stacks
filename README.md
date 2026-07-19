@@ -45,7 +45,7 @@ That's it for the framework itself. Individual features (Postgres, Redis, AWS de
 The fastest path, assuming Bun is installed:
 
 ```bash
-bunx buddy new my-project
+bunx @stacksjs/buddy new my-project
 ```
 
 A one-line installer (`curl -Ssf stacksjs.com/install | sh`) is also planned and will appear here once it lands; for now the `bunx` form above is the supported install path.
@@ -150,7 +150,7 @@ buddy make:factory cars # creates a Car factory file
 buddy make:table cars # bootstraps a cars data table
 buddy make:notification welcome-email # bootstraps a welcome-email notification
 buddy make:lang de # bootstraps a lang/de.yml language file
-buddy make:stack my-project # shares logic with `bunx --bun stacks new my-project`
+buddy make:stack my-plugin # scaffolds a publishable stack/plugin (new project? use `bunx @stacksjs/buddy new`)
 
 buddy migrate # runs database migrations
 buddy migrate:dns # sets the ./config/dns.ts file

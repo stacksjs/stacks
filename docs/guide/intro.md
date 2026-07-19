@@ -96,7 +96,7 @@ router.group({ middleware: ['auth', 'verified'] }, () => {
 
 ```bash
 # Create a new project
-bunx create-stacks my-app
+bunx @stacksjs/buddy new my-app
 
 # Navigate to project
 cd my-app
@@ -237,7 +237,7 @@ defineEmits<{
 
 ## What's Next
 
-1. **[Installation](/guide/getting-started)** - Set up your development environment
+1. **[Installation](/guide/get-started)** - Set up your development environment
 2. **[Configuration](/guide/config)** - Configure your application
 3. **[Routing](/basics/routing)** - Define your routes
 4. **[Models](/basics/models)** - Work with your database
