@@ -1816,6 +1816,30 @@ export function configDnsDomains(sites: Record<string, any>): string[] {
   return [...domains]
 }
 
+/**
+ * Infer a DNS provider from a zone's authoritative nameservers.
+ *
+ * Provider API probes are intentionally the primary detection mechanism, but
+ * some registrars disable record API access per-domain. In that state the
+ * provider still owns the zone and should receive the attempted write so the
+ * deploy reports the real authorization error instead of incorrectly calling
+ * the zone externally managed.
+ */
+export function dnsProviderNameFromNameservers(nameservers: string[]): 'porkbun' | 'cloudflare' | 'route53' | 'godaddy' | null {
+  const normalized = nameservers.map(name => name.toLowerCase().replace(/\.$/, ''))
+
+  if (normalized.some(name => name.endsWith('.porkbun.com')))
+    return 'porkbun'
+  if (normalized.some(name => name.endsWith('.ns.cloudflare.com')))
+    return 'cloudflare'
+  if (normalized.some(name => /(^|\.)awsdns-\d+\.(?:com|net|org|co\.uk)$/.test(name)))
+    return 'route53'
+  if (normalized.some(name => name.endsWith('.domaincontrol.com')))
+    return 'godaddy'
+
+  return null
+}
+
 async function reconcileConfigDns(sites: Record<string, any>, logger: typeof log): Promise<void> {
   const projectDnsConfig = await loadProjectDnsConfig(dnsConfig)
   const declared = (['a', 'aaaa', 'cname', 'mx', 'txt'] as const)
@@ -1886,6 +1910,8 @@ async function reconcileHetznerDns(sites: Record<string, any>, ip: string, logge
     providerConfigs.push({ provider: 'porkbun', apiKey: process.env.PORKBUN_API_KEY, secretKey: process.env.PORKBUN_SECRET_KEY })
   if (process.env.CLOUDFLARE_API_TOKEN)
     providerConfigs.push({ provider: 'cloudflare', apiToken: process.env.CLOUDFLARE_API_TOKEN })
+  if (process.env.GODADDY_API_KEY && process.env.GODADDY_API_SECRET)
+    providerConfigs.push({ provider: 'godaddy', apiKey: process.env.GODADDY_API_KEY, apiSecret: process.env.GODADDY_API_SECRET, environment: process.env.GODADDY_ENVIRONMENT })
   if (process.env.AWS_ACCESS_KEY_ID || process.env.AWS_PROFILE)
     providerConfigs.push({ provider: 'route53' })
 
@@ -1896,7 +1922,7 @@ async function reconcileHetznerDns(sites: Record<string, any>, ip: string, logge
     return
   }
 
-  const { detectDnsProvider } = await import('@stacksjs/ts-cloud') as any
+  const { createDnsProvider, detectDnsProvider } = await import('@stacksjs/ts-cloud') as any
   logger.info('Reconciling DNS records...')
 
   // Best-effort A-record lookup so externally managed domains that already
@@ -1911,9 +1937,25 @@ async function reconcileHetznerDns(sites: Record<string, any>, ip: string, logge
     }
   }
 
+  const resolveAuthoritativeNameservers = async (domain: string): Promise<string[]> => {
+    try {
+      const { resolveNs } = await import('node:dns/promises')
+      return await resolveNs(domain)
+    }
+    catch {
+      return []
+    }
+  }
+
   for (const domain of domains) {
     try {
-      const provider = await detectDnsProvider(domain, providerConfigs)
+      let provider = await detectDnsProvider(domain, providerConfigs)
+      if (!provider) {
+        const providerName = dnsProviderNameFromNameservers(await resolveAuthoritativeNameservers(domain))
+        const providerConfig = providerConfigs.find(config => config.provider === providerName)
+        if (providerConfig)
+          provider = createDnsProvider(providerConfig)
+      }
       if (!provider) {
         // No configured provider owns this zone — the records may still be
         // correct (managed at the registrar). Only warn when they aren't.
