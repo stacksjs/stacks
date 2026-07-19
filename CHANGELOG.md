@@ -1,5 +1,7 @@
 # Stacks Changelog
 
+## v0.70.116
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.114...v0.70.115)
 
 ## 💚 Continuous Integration

@@ -218,11 +218,26 @@ export const tsCloud: TsCloudConfig = {
         type: 'ssd', // Provider-agnostic: 'standard', 'ssd', 'premium'
         encrypted: true,
       },
+      // This shared box also hosts mail.stacksjs.com. Hetzner firewalls are
+      // reconciled to this declaration on every deploy, so omitting these
+      // ports silently removes public mail access even while mail.service is
+      // healthy. Keep the mail and DAV listeners explicit and source-owned.
+      firewall: {
+        enabled: true,
+        allowedPorts: [25, 143, 465, 587, 993, 8008, 8443],
+      },
+      // Deploy-time Bun installs can briefly exceed physical headroom on this
+      // shared host. Low-swappiness swap prevents a box-wide OOM cascade.
+      swapGb: 2,
       webServer: 'rpx',
       proxy: {
         engine: 'rpx',
         onDemandTls: true,
         onDemandTlsEmail: 'hello@stacksjs.com',
+        // rpx normally stays below 100M. Contain abnormal growth in its own
+        // cgroup so it cannot compete with the mail server for the last RAM.
+        memoryHigh: '512M',
+        memoryMax: '768M',
       },
       // Uncomment for auto-scaling:
       // autoScaling: {
