@@ -3,7 +3,7 @@ import process from 'node:process'
 import { bold, dim, green, intro, log, onUnknownSubcommand, red, yellow } from "@stacksjs/cli"
 import { feature } from '@stacksjs/config'
 import { storage } from '@stacksjs/storage'
-import { isSupportedBunVersion, minimumBunVersion } from '@stacksjs/utils'
+import { isSupportedBunVersion, isVersionGreaterThanOrEqual, minimumBunVersion } from '@stacksjs/utils'
 import { FEATURE_NAMES, featurePathsPresent } from './features'
 
 interface HealthCheck {
@@ -13,10 +13,26 @@ interface HealthCheck {
 }
 
 /**
+ * The minimum SQLite version required to run Stacks. Keep in sync with
+ * the `system.sqlite` range in the root `package.json` and the
+ * prerequisites in the README and docs.
+ */
+const minimumSqliteVersion = '3.47.2'
+
+/**
+ * Throw inside a probe fn to record a warning instead of a failure.
+ * Used when a check cannot run to completion (e.g. the driver exposes
+ * no raw query method, so there is nothing to probe with) or when the
+ * finding is advisory rather than fatal (e.g. a busy dev port).
+ */
+class ProbeWarning extends Error {}
+
+/**
  * Run a check that may throw, recording the result in `checks`. Each
  * probe gets a 2-second budget — long enough to catch transient
  * latency, short enough that `buddy doctor` returns in a few seconds
- * even when every dependency is dead.
+ * even when every dependency is dead. Throwing a `ProbeWarning`
+ * records a warning instead of a failure.
  */
 async function probe(
   checks: HealthCheck[],
@@ -25,22 +41,26 @@ async function probe(
   timeoutMs = 2000,
 ): Promise<void> {
   const start = Date.now()
+  const ac = new AbortController()
+  const timer = setTimeout(() => ac.abort(), timeoutMs)
   try {
-    const ac = new AbortController()
-    const timer = setTimeout(() => ac.abort(), timeoutMs)
     const message = await Promise.race([
       fn(),
       new Promise<never>((_, rej) => ac.signal.addEventListener('abort', () => rej(new Error(`timed out (>${Math.round(timeoutMs / 1000)}s)`)))),
     ])
-    clearTimeout(timer)
     checks.push({ name, status: 'pass', message: `${message} (${Date.now() - start}ms)` })
   }
   catch (err) {
     checks.push({
       name,
-      status: 'fail',
+      status: err instanceof ProbeWarning ? 'warn' : 'fail',
       message: err instanceof Error ? err.message : String(err),
     })
+  }
+  finally {
+    // Clear on every path: on a fast failure the pending timer would
+    // otherwise keep the event loop alive until it fires.
+    clearTimeout(timer)
   }
 }
 
@@ -151,10 +171,51 @@ export function doctor(buddy: CLI): void {
         })
       }
 
-      // Database connectivity
+      // SQLite engine version (project requirement: >= 3.47.2, the
+      // `system.sqlite` range in package.json). Stacks reaches SQLite
+      // exclusively through Bun's embedded engine (bun:sqlite), so an
+      // in-memory database reports the exact version every query will
+      // run against, independent of the configured database file.
+      await probe(checks, 'SQLite Engine', async () => {
+        const { Database } = await import('bun:sqlite')
+        const memory = new Database(':memory:')
+        let version: string | undefined
+        try {
+          const row = memory.query('SELECT sqlite_version() AS version').get() as { version?: unknown } | null
+          if (typeof row?.version === 'string')
+            version = row.version
+        }
+        finally {
+          memory.close()
+        }
+        if (!version)
+          throw new ProbeWarning('could not read sqlite_version() (skipped)')
+        if (!isVersionGreaterThanOrEqual(version, minimumSqliteVersion))
+          throw new Error(`v${version} is below the required v${minimumSqliteVersion} (system.sqlite in package.json); upgrade Bun for a newer bundled SQLite`)
+        return `v${version}`
+      })
+
+      // Database connectivity. Asserts an actual round-trip: run a real
+      // query and inspect what comes back. The previous
+      // `db.unsafe?.('SELECT 1')` passed vacuously when the driver
+      // exposed no `unsafe` (the optional call no-ops) and never
+      // verified a result. A driver without raw-query surface
+      // downgrades the check to a warning (it cannot run); a query
+      // that executes but yields nothing is a genuine failure.
       await probe(checks, 'Database', async () => {
         const { db } = await import('@stacksjs/database')
-        await (db as any).unsafe?.('SELECT 1')
+        type RawStatement = Promise<unknown> & { execute?: () => Promise<unknown> }
+        const unsafe = (db as { unsafe?: (query: string) => RawStatement }).unsafe
+        if (typeof unsafe !== 'function')
+          throw new ProbeWarning('driver exposes no raw query method (skipped)')
+        const statement = unsafe('SELECT 1')
+        if (!statement || (typeof statement.then !== 'function' && typeof statement.execute !== 'function'))
+          throw new ProbeWarning('driver returned a non-executable statement (skipped)')
+        const result = typeof statement.execute === 'function' ? await statement.execute() : await statement
+        if (result === undefined || result === null)
+          throw new Error('probe query returned no result')
+        if (Array.isArray(result) && result.length === 0)
+          throw new Error('probe query returned no rows')
         return 'Reachable'
       })
 
@@ -446,6 +507,55 @@ export function doctor(buddy: CLI): void {
           message: `Could not audit dev-domain overrides: ${err instanceof Error ? err.message : String(err)}`,
         })
       }
+
+      // Dev-port availability (stacksjs/stacks#2006). `buddy dev` binds
+      // the frontend / API / docs ports on every run (dashboard too
+      // when STACKS_DEV_DASHBOARD=1), reading the same env vars and
+      // defaults as config/ports.ts. A listener left behind by a
+      // killed session, or any unrelated process holding the port,
+      // makes the next boot fail with an opaque EADDRINUSE. Read-only
+      // probe: attempt a TCP connect on both loopback stacks; a
+      // refused connection means the port is free. Stays sub-second:
+      // loopback refuses instantly and each socket carries a 400ms
+      // guard. A bind test would be unreliable here because
+      // SO_REUSEADDR lets a wildcard bind succeed next to a stale
+      // 127.0.0.1 listener.
+      await probe(checks, 'Dev ports', async () => {
+        const net = await import('node:net')
+        const { config } = await import('@stacksjs/config')
+        const configured = ((config as { ports?: Record<string, unknown> }).ports ?? {})
+        const targets = [
+          { name: 'frontend', key: 'frontend', envVar: 'PORT', fallback: 3000 },
+          { name: 'api', key: 'api', envVar: 'PORT_API', fallback: 3008 },
+          { name: 'docs', key: 'docs', envVar: 'PORT_DOCS', fallback: 3006 },
+          { name: 'dashboard', key: 'admin', envVar: 'PORT_ADMIN', fallback: 3002 },
+        ].map(t => ({ ...t, port: Number(configured[t.key]) || t.fallback }))
+
+        const canConnect = (port: number, host: string): Promise<boolean> => new Promise((resolve) => {
+          const socket = net.createConnection({ port, host })
+          socket.setTimeout(400)
+          const done = (occupied: boolean) => {
+            socket.destroy()
+            resolve(occupied)
+          }
+          socket.once('connect', () => done(true))
+          socket.once('timeout', () => done(false))
+          socket.once('error', () => done(false))
+        })
+
+        const occupied = new Set<number>()
+        await Promise.all([...new Set(targets.map(t => t.port))].map(async (port) => {
+          if (await canConnect(port, '127.0.0.1') || await canConnect(port, '::1'))
+            occupied.add(port)
+        }))
+
+        const busy = targets.filter(t => occupied.has(t.port))
+        if (busy.length > 0) {
+          const list = busy.map(t => `${t.name} :${t.port} (${t.envVar})`).join(', ')
+          throw new ProbeWarning(`in use: ${list}. buddy dev will fail to bind; stop the process holding the port or set the override env var`)
+        }
+        return `All free: ${targets.map(t => `${t.name} :${t.port}`).join(', ')}`
+      })
 
       // Feature scaffolding orphans — files belonging to a disabled feature
       // are still on disk. Spec: `./buddy doctor` should warn so the user
