@@ -1,9 +1,11 @@
 # @stacksjs/browser-extension
 
-Build MV3 browser extensions (Chrome + Firefox) the Stacks way — the manifest,
-content/background scripts, stx pages, `declarativeNetRequest` rulesets, and
-store-ready packaging are all derived from a single `config/extension.ts`. No
-hand-written `manifest.json`, no per-project build script.
+Build MV3 browser extensions (Chrome + Firefox + Safari) the Stacks way — the
+manifest, content/background scripts, stx pages, `declarativeNetRequest`
+rulesets, and store-ready packaging are all derived from a single
+`config/extension.ts`. No hand-written `manifest.json`, no per-project build
+script. Safari additionally gets the macOS container app: a checked-in Xcode
+scaffold, appex resource sync, and an xcodebuild pipeline.
 
 ## Quick start
 
@@ -11,8 +13,30 @@ hand-written `manifest.json`, no per-project build script.
 buddy extension:init          # scaffold config/extension.ts + starter files
 buddy extension:build         # build all targets → dist/ (+ dist-firefox/)
 buddy extension:build --target chrome
+buddy extension:build --target safari   # → dist-safari/ (browser.* namespace, safari manifest)
 buddy extension:package       # build + zip store-ready archives
 ```
+
+## Safari
+
+Safari Web Extensions ship inside a macOS app, so the safari target has two
+halves: the web bundle (`extension:build --target safari`) and the container
+app. The build rewrites promise-style `chrome.*` to `browser.*` (Safari's
+`chrome.*` is callback-flavoured) and pins
+`browser_specific_settings.safari.strict_min_version` (default 18.4, the first
+Safari with MAIN-world content scripts + `match_about_blank`).
+
+```sh
+buddy extension:safari:init   # scaffold the Xcode container app into safari/
+buddy extension:safari:app    # build + sync into the appex + xcodebuild
+```
+
+Set `safariBundleId` in the config (the appex gets `<safariBundleId>.Extension`)
+and list any build output that is not part of the extension (marketing pages,
+etc.) in `safariExclude` so it stays out of the appex. The scaffold mirrors
+what `xcrun safari-web-extension-converter` generates, so day-to-day work
+never needs the converter; `--signed` builds need an Apple Development
+identity selected in Xcode.
 
 ## Configure
 
@@ -24,6 +48,7 @@ export default defineExtension({
   name: 'My Extension',
   description: 'Does something useful.',
   geckoId: 'my-ext@example.com',      // required to ship on Firefox
+  safariBundleId: 'com.example.MyExtension', // Safari container app bundle id
   targets: ['chrome', 'firefox'],
 
   background: 'src/background/index.ts',
@@ -49,6 +74,7 @@ export default defineExtension({
     hostPermissions: ['http://*/*', 'https://*/*'],
     minimumChromeVersion: '111',
     firefoxMinVersion: '140.0',
+    safariMinVersion: '18.4',
     webAccessibleResources: [{ resources: ['stubs/*.js'], matches: ['<all_urls>'] }],
   },
 
@@ -73,5 +99,14 @@ vs Firefox event-page + `browser_specific_settings.gecko`), and runs your
 ## Programmatic API
 
 ```ts
-import { buildExtension, buildAllTargets, packageExtension, generateManifest } from '@stacksjs/browser-extension'
+import {
+  buildExtension,
+  buildAllTargets,
+  packageExtension,
+  generateManifest,
+  rewriteBrowserNamespace,
+  scaffoldSafariApp,
+  syncSafariResources,
+  buildSafariApp,
+} from '@stacksjs/browser-extension'
 ```
