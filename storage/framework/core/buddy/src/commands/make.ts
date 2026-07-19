@@ -1,6 +1,7 @@
 import type { CLI, MakeOptions } from '@stacksjs/types'
 import process from 'node:process'
 import {
+  createFactory,
   createMiddleware,
   createMigration,
   createModel,
@@ -61,12 +62,12 @@ export function make(buddy: CLI): void {
     .option('-c, --component [component]', descriptions.component, { default: false })
     .option('-d, --database [database]', descriptions.database, { default: false })
     .option('-f, --factory [factory]', descriptions.factory, { default: false })
-    .option('-f, --function [function]', descriptions.function, { default: false })
+    .option('-fn, --function [function]', descriptions.function, { default: false })
     .option('-l, --language [language]', descriptions.language, { default: false })
     .option('-m, --model [model]', descriptions.model, { default: false })
     .option('-mw, --middleware [middleware]', descriptions.middleware, { default: false })
     .option('-p, --page [page]', descriptions.page, { default: false })
-    .option('-m, --migration [migration]', descriptions.migration, { default: false })
+    .option('-mg, --migration [migration]', descriptions.migration, { default: false })
     .option('-n, --notification [notification]', descriptions.notification, { default: false })
     .option('-qt, --queue-table', descriptions.queue, { default: false })
     .option('-s, --stack [stack]', descriptions.stack, { default: false })
@@ -80,7 +81,7 @@ export function make(buddy: CLI): void {
       const name = buddy.args[0]
 
       if (!name) {
-        log.error('You need to specify a name. Read more about the documentation here.')
+        console.error('You need to specify a name. Read more about the documentation here.')
         process.exit(ExitCode.FatalError)
       }
 
@@ -147,7 +148,16 @@ export function make(buddy: CLI): void {
           case 'stack':
             await makeStack(options)
             break
-          default:
+          case 'factory':
+            await createFactory(options)
+            break
+          default: {
+            // console.error (sync) rather than log.error (async-buffered):
+            // the message must reach stderr before process.exit fires.
+            console.error(`Unknown make subcommand: ${make}`)
+            console.error('Valid subcommands: action, certificate, command, component, database, factory, function, job, language, mail, middleware, migration, model, notification, page, policy, queue-table, resource, stack')
+            process.exit(ExitCode.InvalidArgument)
+          }
         }
       }
 
@@ -199,7 +209,7 @@ export function make(buddy: CLI): void {
       options.name = name
 
       if (!name) {
-        log.error('You need to specify a name. Read more about the documentation here.')
+        console.error('You need to specify a name. Read more about the documentation here.')
         process.exit(ExitCode.FatalError)
       }
 
@@ -233,7 +243,7 @@ export function make(buddy: CLI): void {
     .action(async (name: string, options: MakeOptions & { fields?: string }) => {
       name = name ?? options.name
       if (!name) {
-        log.error('scaffold:crud requires a resource name. Example: buddy scaffold:crud Post --fields=title:string,body:text')
+        console.error('scaffold:crud requires a resource name. Example: buddy scaffold:crud Post --fields=title:string,body:text')
         process.exit(ExitCode.FatalError)
       }
 
@@ -243,7 +253,7 @@ export function make(buddy: CLI): void {
         await scaffoldCrud(name, options)
       }
       catch (err) {
-        log.error('scaffold:crud failed:', err)
+        console.error('scaffold:crud failed:', err)
         process.exit(ExitCode.FatalError)
       }
     })
@@ -267,8 +277,8 @@ export function make(buddy: CLI): void {
       options.name = name
 
       if (!name) {
-        log.error('You need to specify a command name.')
-        log.info('Example: buddy make:command SendEmails')
+        console.error('You need to specify a command name.')
+        console.error('Example: buddy make:command SendEmails')
         process.exit(ExitCode.FatalError)
       }
 
@@ -301,7 +311,7 @@ export function make(buddy: CLI): void {
       options.name = name
 
       if (!name) {
-        log.error('You need to specify a name. Read more about the documentation here.')
+        console.error('You need to specify a name. Read more about the documentation here.')
         process.exit(ExitCode.FatalError)
       }
 
@@ -320,10 +330,10 @@ export function make(buddy: CLI): void {
       options.name = name
 
       if (!name) {
-        log.error('You need to specify a database name via the `--name` option, or as the command’s argument.')
-        log.info('Example: `buddy make:database my-cool-database`')
-        log.info('Or: `buddy make:database --name=my-cool-database`')
-        log.info('Read more about the documentation here: https://stacksjs.com/docs/make/database')
+        console.error('You need to specify a database name via the `--name` option, or as the command’s argument.')
+        console.error('Example: `buddy make:database my-cool-database`')
+        console.error('Or: `buddy make:database --name=my-cool-database`')
+        console.error('Read more about the documentation here: https://stacksjs.com/docs/make/database')
         process.exit(ExitCode.FatalError)
       }
 
@@ -335,18 +345,18 @@ export function make(buddy: CLI): void {
     .option('-n, --name [name]', descriptions.name, { default: false })
     .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
-    .action((name: string, options: MakeOptions) => {
+    .action(async (name: string, options: MakeOptions) => {
       log.debug('Running `buddy make:factory` ...', options)
 
       name = name ?? options.name
       options.name = name
 
       if (!name) {
-        log.error('You need to specify a name. Read more about the documentation here.')
+        console.error('You need to specify a name. Read more about the documentation here.')
         process.exit(ExitCode.FatalError)
       }
 
-      // makeFactory(options)
+      await createFactory(options)
     })
 
   buddy
@@ -354,8 +364,16 @@ export function make(buddy: CLI): void {
     .option('-n, --name [name]', descriptions.name, { default: false })
     .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
-    .action(async (options: MakeOptions) => {
+    .action(async (name: string, options: MakeOptions) => {
       log.debug('Running `buddy make:function` ...', options)
+
+      name = name ?? options.name
+      options.name = name
+
+      if (!name) {
+        console.error('You need to specify a name. Read more about the documentation here.')
+        process.exit(ExitCode.FatalError)
+      }
 
       await makeFunction(options)
     })
@@ -372,7 +390,7 @@ export function make(buddy: CLI): void {
       options.name = name
 
       if (!name) {
-        log.error('You need to specify a name. Read more about the documentation here.')
+        console.error('You need to specify a name. Read more about the documentation here.')
         process.exit(ExitCode.FatalError)
       }
 
@@ -384,18 +402,18 @@ export function make(buddy: CLI): void {
     .option('-n, --name [name]', descriptions.name, { default: false })
     .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
-    .action((name: string, options: MakeOptions) => {
+    .action(async (name: string, options: MakeOptions) => {
       log.debug('Running `buddy make:migration` ...', options)
 
       name = name ?? options.name
       options.name = name
 
       if (!name) {
-        log.error('You need to specify a migration name')
+        console.error('You need to specify a migration name')
         process.exit(ExitCode.FatalError)
       }
 
-      // log.info(path)
+      await createMigration(options)
     })
 
   buddy
@@ -410,7 +428,7 @@ export function make(buddy: CLI): void {
       options.name = name
 
       if (!name) {
-        log.error('You need to specify a model name')
+        console.error('You need to specify a model name')
         process.exit(ExitCode.FatalError)
       }
 
@@ -435,7 +453,7 @@ export function make(buddy: CLI): void {
       options.name = name
 
       if (!name) {
-        log.error('You need to specify a name (e.g. `buddy make:mail OrderShipped`).')
+        console.error('You need to specify a name (e.g. `buddy make:mail OrderShipped`).')
         process.exit(ExitCode.FatalError)
       }
 
@@ -465,7 +483,7 @@ export function make(buddy: CLI): void {
       options.name = name
 
       if (!name) {
-        log.error('You need to specify a name. Read more about the documentation here.')
+        console.error('You need to specify a name. Read more about the documentation here.')
         process.exit(ExitCode.FatalError)
       }
 
@@ -504,8 +522,8 @@ export function make(buddy: CLI): void {
       ;(options as any).name = name
 
       if (!name) {
-        log.error('You need to specify a policy name.')
-        log.info('Example: buddy make:policy PostPolicy')
+        console.error('You need to specify a policy name.')
+        console.error('Example: buddy make:policy PostPolicy')
         process.exit(ExitCode.FatalError)
       }
 
@@ -545,8 +563,8 @@ export function make(buddy: CLI): void {
       ;(options as any).name = name
 
       if (!name) {
-        log.error('You need to specify a resource name.')
-        log.info('Example: buddy make:resource UserResource')
+        console.error('You need to specify a resource name.')
+        console.error('Example: buddy make:resource UserResource')
         process.exit(ExitCode.FatalError)
       }
 
@@ -589,7 +607,7 @@ export function make(buddy: CLI): void {
       options.name = name
 
       if (!name) {
-        log.error('You need to specify a name. Read more about the documentation here.')
+        console.error('You need to specify a name. Read more about the documentation here.')
         process.exit(ExitCode.FatalError)
       }
 
@@ -609,7 +627,7 @@ export function make(buddy: CLI): void {
       options.name = name
 
       if (!name) {
-        log.error('You need to specify a name. Read more about the documentation here.')
+        console.error('You need to specify a name. Read more about the documentation here.')
         process.exit(ExitCode.FatalError)
       }
 
@@ -634,8 +652,8 @@ export function make(buddy: CLI): void {
       options.name = name
 
       if (!name) {
-        log.error('You need to specify a job name.')
-        log.info('Example: buddy make:job SendWelcomeEmail')
+        console.error('You need to specify a job name.')
+        console.error('Example: buddy make:job SendWelcomeEmail')
         process.exit(ExitCode.FatalError)
       }
 
