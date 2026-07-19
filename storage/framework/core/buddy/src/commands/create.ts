@@ -7,7 +7,6 @@ import { Action } from '@stacksjs/enums'
 import { resolve } from '@stacksjs/path'
 import { isFolder } from '@stacksjs/storage'
 import { ExitCode } from '@stacksjs/types'
-import { useOnline } from '@stacksjs/utils'
 import { uninstallAllFeatures } from './features'
 import { ensurePantryDependencies, ensurePantryInstalled } from './setup'
 
@@ -45,7 +44,7 @@ export function create(buddy: CLI): void {
     .option('-d, --database', descriptions.database, { default: true })
     .option('-ca, --cache', descriptions.cache, { default: false })
     .option('-e, --email', descriptions.email, { default: false })
-    .option('-p, --project [project]', descriptions.project, { default: false })
+    .option('-P, --project [project]', descriptions.project, { default: false })
     .option('-m, --minimal', descriptions.minimal, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     // .option('--auth', 'Scaffold an authentication?', { default: true })
@@ -58,7 +57,7 @@ export function create(buddy: CLI): void {
       const path = resolve(process.cwd(), name)
 
       isFolderCheck(path)
-      onlineCheck()
+      await onlineCheck()
 
       const result = await download(name, path, options)
 
@@ -80,6 +79,7 @@ export function create(buddy: CLI): void {
       }
 
       log.info(bold('Welcome to the Stacks Framework! ⚛️'))
+      log.info(`Get started: ${cyan(`cd ${name}`)} and then ${cyan('./buddy dev')}`)
       log.info('To learn more, visit https://stacksjs.com')
 
       process.exit(ExitCode.Success)
@@ -95,13 +95,25 @@ function isFolderCheck(path: string) {
   }
 }
 
-function onlineCheck() {
-  const online = useOnline()
-  if (!online) {
-    log.info('It appears you are disconnected from the internet.')
-    log.info('The Stacks setup requires a brief internet connection for setup.')
-    log.info('For instance, it installs your dependencies from.')
-    process.exit(ExitCode.FatalError)
+async function onlineCheck() {
+  if (await isOnline())
+    return
+
+  log.info('It appears you are disconnected from the internet.')
+  log.info('Creating a new project requires a brief internet connection to download the template and install dependencies.')
+  process.exit(ExitCode.FatalError)
+}
+
+async function isOnline(): Promise<boolean> {
+  try {
+    const response = await fetch('https://github.com', {
+      method: 'HEAD',
+      signal: AbortSignal.timeout(3000),
+    })
+    return response.ok
+  }
+  catch {
+    return false
   }
 }
 
@@ -111,13 +123,19 @@ function onlineCheck() {
  * package into an ephemeral install, bypassing whatever gitit version is
  * actually installed in this project, and adds a registry round-trip that
  * has no benefit here since gitit is already a direct dependency.
+ *
+ * The source is pinned to `gh:stacksjs/stacks` on purpose: gitit's default
+ * template registry still points the bare `stacks` name at the old org and
+ * only reaches us via GitHub's repo-transfer redirect. Resolving the GitHub
+ * provider directly removes that third-party lookup (and its supply-chain
+ * risk) entirely.
  */
 async function download(name: string, path: string, _options: CreateOptions) {
   log.info('Setting up your stack.')
 
   try {
     const { downloadTemplate } = await import('@stacksjs/gitit')
-    await downloadTemplate('stacks', { dir: name })
+    await downloadTemplate('gh:stacksjs/stacks', { dir: name })
     log.success(`Successfully scaffolded your project at ${cyan(path)}`)
     return { isErr: false as const }
   }
