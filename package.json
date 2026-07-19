@@ -84,8 +84,7 @@
     "storage/framework/libs/*",
     "storage/framework/views/*",
     "storage/framework/core",
-    "storage/framework/core/*",
-    "storage/framework/core/bun-create/*"
+    "storage/framework/core/*"
   ],
   "git-hooks": {
     "pre-commit": {
