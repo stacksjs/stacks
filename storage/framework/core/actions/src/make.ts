@@ -10,7 +10,7 @@ import { handleError } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/logging'
 import { path as p, resolve } from '@stacksjs/path'
 import { createFolder, doesFolderExist, writeTextFile } from '@stacksjs/storage'
-import { kebabCase, pascalCase, template } from '@stacksjs/strings'
+import { camelCase, kebabCase, pascalCase, template } from '@stacksjs/strings'
 import { runAction } from './helpers'
 import { CODE_TEMPLATES } from './templates'
 
@@ -352,7 +352,10 @@ export async function makeFunction(options: MakeOptions): Promise<void> {
 
 export async function createFunction(options: MakeOptions): Promise<void> {
   const name = options.name
-  await createFileWithTemplate(p.userFunctionsPath(`${name}.ts`), 'function', name)
+  // The template interpolates the name as a JS identifier, so a kebab-case
+  // name like `hello-world` would produce invalid code (`const hello-world`).
+  // The file keeps the kebab name; the identifier is camelCased.
+  await createFileWithTemplate(p.userFunctionsPath(`${name}.ts`), 'function', camelCase(name))
 }
 
 export async function makeLanguage(options: MakeOptions): Promise<void> {
