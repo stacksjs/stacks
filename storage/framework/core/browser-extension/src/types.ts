@@ -7,7 +7,7 @@
  * or per-project build script.
  */
 
-export type ExtensionTarget = 'chrome' | 'firefox'
+export type ExtensionTarget = 'chrome' | 'firefox' | 'safari'
 
 /** A content script mapped into the manifest's `content_scripts`. */
 export interface ContentScript {
@@ -65,6 +65,11 @@ export interface ManifestOverrides {
   minimumChromeVersion?: string
   /** Firefox `browser_specific_settings.gecko.strict_min_version`. */
   firefoxMinVersion?: string
+  /**
+   * Safari `browser_specific_settings.safari.strict_min_version`.
+   * @default '18.4' (first Safari with MAIN-world content scripts + match_about_blank)
+   */
+  safariMinVersion?: string
   contentSecurityPolicy?: string
   webAccessibleResources?: Array<{ resources: string[], matches: string[] }>
   /** Anything else spread into the manifest as-is. */
@@ -87,6 +92,17 @@ export interface ExtensionConfig {
   description: string
   /** Firefox add-on id (`browser_specific_settings.gecko.id`). Required to ship on Firefox. */
   geckoId?: string
+  /**
+   * Base bundle identifier of the Safari container app
+   * (`extension:safari:init`); the appex uses `<safariBundleId>.Extension`.
+   */
+  safariBundleId?: string
+  /**
+   * Build-output files to keep out of the Safari appex Resources when syncing
+   * (e.g. marketing-site pages that are built into dist but are not part of
+   * the extension). Paths relative to the outdir.
+   */
+  safariExclude?: string[]
   /** Targets to build. @default ['chrome', 'firefox'] */
   targets?: ExtensionTarget[]
 
@@ -107,7 +123,7 @@ export interface ExtensionConfig {
 
   manifest?: ManifestOverrides
 
-  /** Per-target output dir. @default chrome→`dist`, firefox→`dist-firefox` */
+  /** Per-target output dir. @default chrome→`dist`, firefox→`dist-firefox`, safari→`dist-safari` */
   outdir?: Partial<Record<ExtensionTarget, string>> | string
 
   /** Hooks for app-specific post-processing the generic build can't express. */
