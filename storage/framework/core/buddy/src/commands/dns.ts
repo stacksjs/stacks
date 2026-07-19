@@ -4,6 +4,7 @@ import { log, onUnknownSubcommand } from "@stacksjs/cli"
 import { config } from '@stacksjs/config'
 import { renderDnsConfig, resolveLiveRecords, syncDnsConfig } from '@stacksjs/dns'
 import { ExitCode } from '@stacksjs/types'
+import { loadProjectDnsConfig } from '../config'
 
 // `@stacksjs/dnsx` currently publishes only type declarations (no
 // `dist/index.js`), so a top-level `import { DnsClient, formatOutput
@@ -145,7 +146,8 @@ export function dns(buddy: CLI): void {
       const target = bareDomain(domain)
       log.debug(`Running \`buddy dns:diff ${target}\` ...`, options)
 
-      const { plan, provider } = await syncDnsConfig(target, config.dns, { dryRun: true })
+      const dnsConfig = await loadProjectDnsConfig(config.dns)
+      const { plan, provider } = await syncDnsConfig(target, dnsConfig, { dryRun: true })
       for (const item of plan.items) {
         const detail = item.record.type === 'TXT' || item.record.type === 'MX' ? ` ${item.record.content}` : ` → ${item.record.content}`
         console.log(`  ${item.action === 'create' ? '+ create' : '  keep  '} ${item.record.type.padEnd(5)} ${item.record.name}${detail}`)
@@ -162,7 +164,8 @@ export function dns(buddy: CLI): void {
       const target = bareDomain(domain)
       log.debug(`Running \`buddy dns:sync ${target}\` ...`, options)
 
-      const result = await syncDnsConfig(target, config.dns, { dryRun: options.dryRun })
+      const dnsConfig = await loadProjectDnsConfig(config.dns)
+      const result = await syncDnsConfig(target, dnsConfig, { dryRun: options.dryRun })
 
       if (!result.provider && !options.dryRun) {
         log.warn(`No DNS provider credentials found (e.g. PORKBUN_API_KEY / PORKBUN_SECRET_KEY) — nothing was synced. ${result.plan.create.length} record(s) would be created.`)

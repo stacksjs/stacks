@@ -7,6 +7,7 @@ import { runAction } from '@stacksjs/actions'
 import { italic, onUnknownSubcommand, outro, prompts, runCommand } from "@stacksjs/cli"
 import { app, dns as dnsConfig, email as emailConfig, cloud as cloudConfig } from '@stacksjs/config'
 import { addDomain, hasUserDomainBeenAddedToCloud, syncDnsConfig } from '@stacksjs/dns'
+import { loadProjectDnsConfig } from '../config'
 import { encryptEnv, env } from '@stacksjs/env'
 import { Action } from '@stacksjs/enums'
 import { path as p } from '@stacksjs/path'
@@ -1801,8 +1802,9 @@ export async function reconcileMailDns(res: MailTenantResult, ip: string, logger
 // syncDnsConfig from @stacksjs/dns. Create-only and never destructive, so it is
 // safe to run on every deploy; a no-op when config/dns.ts declares no records.
 async function reconcileConfigDns(sites: Record<string, any>, logger: typeof log): Promise<void> {
+  const projectDnsConfig = await loadProjectDnsConfig(dnsConfig)
   const declared = (['a', 'aaaa', 'cname', 'mx', 'txt'] as const)
-    .reduce((total, key) => total + (Array.isArray((dnsConfig as any)?.[key]) ? (dnsConfig as any)[key].length : 0), 0)
+    .reduce((total, key) => total + (Array.isArray((projectDnsConfig as any)?.[key]) ? (projectDnsConfig as any)[key].length : 0), 0)
   if (declared === 0)
     return
 
@@ -1814,7 +1816,7 @@ async function reconcileConfigDns(sites: Record<string, any>, logger: typeof log
 
   for (const domain of domains) {
     try {
-      const result = await syncDnsConfig(domain, dnsConfig)
+      const result = await syncDnsConfig(domain, projectDnsConfig)
       if (!result.provider)
         continue // no registrar credentials resolved for this domain; skip quietly
       if (result.created || result.failed)
