@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.118...v0.70.119)
+
+## 🐛 Bug Fixes
+
+- **buddy**: load consumer DNS configuration ([a8804e0](https://github.com/stacksjs/stacks/commit/a8804e0)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.117...v0.70.118)
 
 ## 🐛 Bug Fixes
