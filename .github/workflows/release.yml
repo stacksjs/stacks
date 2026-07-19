@@ -103,6 +103,27 @@ jobs:
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
+      # Publishing succeeded is not enough: registry manifests can still carry
+      # monorepo-only protocols that make the package impossible to install.
+      # Exercise the public artifact from a clean, non-workspace directory.
+      - name: Verify published framework install
+        run: |
+          version="${GITHUB_REF#refs/tags/v}"
+          smoke_dir="$(mktemp -d)"
+          trap 'rm -rf "$smoke_dir"' EXIT
+          cd "$smoke_dir"
+          echo '{"name":"stacks-release-smoke","private":true}' > package.json
+          for attempt in 1 2 3 4 5 6; do
+            if bun add "stacks@$version"; then
+              exit 0
+            fi
+            if [ "$attempt" -eq 6 ]; then
+              echo "::error::stacks@$version is published but cannot be installed from a clean project"
+              exit 1
+            fi
+            sleep 10
+          done
+
       - name: Publish Dummy Libraries
         run: ./storage/framework/scripts/publish-dummy-libs
         env:
