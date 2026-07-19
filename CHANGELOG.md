@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.122...v0.70.123)
+
+## 🐛 Bug Fixes
+
+- **dns**: isolate redirect-only zones ([823fbff](https://github.com/stacksjs/stacks/commit/823fbff)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.121...v0.70.122)
 
 ## ✨ Features
