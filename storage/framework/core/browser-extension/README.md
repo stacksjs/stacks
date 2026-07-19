@@ -28,6 +28,7 @@ Safari with MAIN-world content scripts + `match_about_blank`).
 
 ```sh
 buddy extension:safari:init   # scaffold the Xcode container app into safari/
+buddy extension:safari:provision # register both Bundle IDs + check the app record
 buddy extension:safari:app    # build + sync into the appex + xcodebuild
 buddy extension:safari:publish # signed archive + App Store Connect upload
 ```

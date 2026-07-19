@@ -8,6 +8,7 @@
  * app scaffold, appex resource sync, and xcodebuild pipeline.
  */
 export * from './build'
+export * from './app-store-connect'
 export * from './config'
 export * from './manifest'
 export * from './package'

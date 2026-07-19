@@ -303,7 +303,8 @@ export interface SafariPublishOptions extends SafariSyncOptions, AppStoreConnect
   build?: boolean
 }
 
-function appStoreConnectAuth(options: AppStoreConnectAuth): Required<AppStoreConnectAuth> {
+/** Resolve and validate App Store Connect credentials from options or environment variables. */
+export function resolveAppStoreConnectAuth(options: AppStoreConnectAuth): Required<AppStoreConnectAuth> {
   const keyId = options.keyId ?? process.env.APP_STORE_CONNECT_API_KEY_ID
   const issuerId = options.issuerId ?? process.env.APP_STORE_CONNECT_API_ISSUER_ID
   const keyPath = options.keyPath ?? process.env.APP_STORE_CONNECT_API_KEY_PATH
@@ -360,7 +361,7 @@ export async function publishSafariApp(config: ExtensionConfig, options: SafariP
   const teamId = options.teamId ?? config.safariTeamId
   if (!teamId)
     throw new Error('[browser-extension] Safari publishing needs safariTeamId in config/extension.ts or --team-id')
-  const auth = appStoreConnectAuth(options)
+  const auth = resolveAppStoreConnectAuth(options)
   const buildNumber = options.buildNumber ?? process.env.GITHUB_RUN_NUMBER ?? String(Math.floor(Date.now() / 1000))
   if (!/^\d+(?:\.\d+){0,2}$/.test(buildNumber))
     throw new Error(`[browser-extension] invalid Safari build number ${buildNumber}; use one to three dot-separated integers`)

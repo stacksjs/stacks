@@ -43,6 +43,7 @@ const commandRegistry: Record<string, CommandLoader> = {
   'extension:build': { path: './commands/extension.ts', exportName: 'extension' },
   'extension:package': { path: './commands/extension.ts', exportName: 'extension' },
   'extension:safari:init': { path: './commands/extension.ts', exportName: 'extension' },
+  'extension:safari:provision': { path: './commands/extension.ts', exportName: 'extension' },
   'extension:safari:app': { path: './commands/extension.ts', exportName: 'extension' },
   'extension:safari:publish': { path: './commands/extension.ts', exportName: 'extension' },
   // Feature install / uninstall — single file registers all pairs.

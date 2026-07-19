@@ -1,0 +1,183 @@
+import type { ExtensionConfig } from './types'
+import type { AppStoreConnectAuth } from './safari'
+import { createPrivateKey, sign } from 'node:crypto'
+import { readFileSync } from 'node:fs'
+import { resolveAppStoreConnectAuth } from './safari'
+
+const appStoreConnectBaseUrl = 'https://api.appstoreconnect.apple.com/v1'
+
+export type BundleIdPlatform = 'IOS' | 'MAC_OS' | 'UNIVERSAL'
+
+export interface AppStoreConnectResource<T extends Record<string, unknown>> {
+  type: string
+  id: string
+  attributes: T
+}
+
+export interface BundleIdAttributes extends Record<string, unknown> {
+  identifier: string
+  name: string
+  platform: BundleIdPlatform
+  seedId?: string
+}
+
+export interface AppAttributes extends Record<string, unknown> {
+  bundleId: string
+  name: string
+  primaryLocale: string
+  sku: string
+}
+
+export interface AppStoreConnectClientOptions extends AppStoreConnectAuth {
+  /** Override the API base URL, primarily for tests. */
+  baseUrl?: string
+  /** Override fetch, primarily for tests. */
+  fetch?: typeof globalThis.fetch
+  /** Override the current Unix time, primarily for tests. */
+  now?: () => number
+}
+
+interface ApiListResponse<T extends Record<string, unknown>> {
+  data: Array<AppStoreConnectResource<T>>
+}
+
+interface ApiResourceResponse<T extends Record<string, unknown>> {
+  data: AppStoreConnectResource<T>
+}
+
+interface ApiErrorResponse {
+  errors?: Array<{ status?: string, code?: string, title?: string, detail?: string }>
+}
+
+function base64urlJson(value: unknown): string {
+  return Buffer.from(JSON.stringify(value)).toString('base64url')
+}
+
+/** Generate the short-lived ES256 team token required by App Store Connect. */
+export function appStoreConnectToken(auth: Required<AppStoreConnectAuth>, now = Math.floor(Date.now() / 1000)): string {
+  const header = { alg: 'ES256', kid: auth.keyId, typ: 'JWT' }
+  const payload = {
+    iss: auth.issuerId,
+    iat: now,
+    exp: now + 120,
+    aud: 'appstoreconnect-v1',
+  }
+  const input = `${base64urlJson(header)}.${base64urlJson(payload)}`
+
+  let key: ReturnType<typeof createPrivateKey>
+  try {
+    key = createPrivateKey(readFileSync(auth.keyPath, 'utf8'))
+  }
+  catch (error) {
+    throw new Error(`[browser-extension] App Store Connect API key could not be parsed: ${error instanceof Error ? error.message : String(error)}`)
+  }
+
+  const signature = sign('sha256', Buffer.from(input), { key, dsaEncoding: 'ieee-p1363' })
+  return `${input}.${signature.toString('base64url')}`
+}
+
+/** Minimal official App Store Connect client for Safari provisioning checks. */
+export class AppStoreConnectClient {
+  private readonly auth: Required<AppStoreConnectAuth>
+  private readonly baseUrl: string
+  private readonly fetcher: typeof globalThis.fetch
+  private readonly now: () => number
+
+  constructor(options: AppStoreConnectClientOptions = {}) {
+    this.auth = resolveAppStoreConnectAuth(options)
+    this.baseUrl = (options.baseUrl ?? appStoreConnectBaseUrl).replace(/\/$/, '')
+    this.fetcher = options.fetch ?? globalThis.fetch
+    this.now = options.now ?? (() => Math.floor(Date.now() / 1000))
+  }
+
+  private async request<T>(path: string, init: RequestInit = {}): Promise<T> {
+    const response = await this.fetcher(`${this.baseUrl}${path}`, {
+      ...init,
+      headers: {
+        Accept: 'application/json',
+        Authorization: `Bearer ${appStoreConnectToken(this.auth, this.now())}`,
+        ...(init.body ? { 'Content-Type': 'application/json' } : {}),
+        ...init.headers,
+      },
+    })
+    if (!response.ok) {
+      const body = await response.json().catch(() => ({})) as ApiErrorResponse
+      const details = body.errors?.map(error => error.detail ?? error.title ?? error.code).filter(Boolean).join('; ')
+      throw new Error(`[browser-extension] App Store Connect ${init.method ?? 'GET'} ${path} failed (${response.status})${details ? `: ${details}` : ''}`)
+    }
+    return await response.json() as T
+  }
+
+  async findBundleId(identifier: string): Promise<AppStoreConnectResource<BundleIdAttributes> | undefined> {
+    const query = new URLSearchParams({ 'filter[identifier]': identifier })
+    const response = await this.request<ApiListResponse<BundleIdAttributes>>(`/bundleIds?${query}`)
+    return response.data.find(bundleId => bundleId.attributes.identifier === identifier)
+  }
+
+  async registerBundleId(identifier: string, name: string, platform: BundleIdPlatform = 'MAC_OS'): Promise<AppStoreConnectResource<BundleIdAttributes>> {
+    const response = await this.request<ApiResourceResponse<BundleIdAttributes>>('/bundleIds', {
+      method: 'POST',
+      body: JSON.stringify({
+        data: {
+          type: 'bundleIds',
+          attributes: { identifier, name, platform },
+        },
+      }),
+    })
+    return response.data
+  }
+
+  async ensureBundleId(identifier: string, name: string, options: { checkOnly?: boolean, platform?: BundleIdPlatform } = {}): Promise<{ bundleId?: AppStoreConnectResource<BundleIdAttributes>, created: boolean }> {
+    const existing = await this.findBundleId(identifier)
+    if (existing)
+      return { bundleId: existing, created: false }
+    if (options.checkOnly)
+      return { created: false }
+    return {
+      bundleId: await this.registerBundleId(identifier, name, options.platform),
+      created: true,
+    }
+  }
+
+  async findApp(bundleId: string): Promise<AppStoreConnectResource<AppAttributes> | undefined> {
+    const query = new URLSearchParams({ 'filter[bundleId]': bundleId })
+    const response = await this.request<ApiListResponse<AppAttributes>>(`/apps?${query}`)
+    return response.data.find(app => app.attributes.bundleId === bundleId)
+  }
+}
+
+export interface SafariProvisionOptions extends AppStoreConnectClientOptions {
+  /** Only report missing resources; do not register Bundle IDs. @default false */
+  checkOnly?: boolean
+  /** Bundle ID platform used when registering. @default MAC_OS */
+  platform?: BundleIdPlatform
+}
+
+export interface SafariProvisionResult {
+  container: { identifier: string, exists: boolean, created: boolean }
+  extension: { identifier: string, exists: boolean, created: boolean }
+  appRecord: { exists: boolean, id?: string }
+}
+
+/**
+ * Register the explicit container and extension Bundle IDs required by a
+ * Safari Web Extension, then check for the manually-created App Store Connect
+ * app record. Apple does not expose an official API for creating that record.
+ */
+export async function provisionSafariApp(config: ExtensionConfig, options: SafariProvisionOptions = {}): Promise<SafariProvisionResult> {
+  if (!config.safariBundleId)
+    throw new Error('[browser-extension] Safari provisioning needs safariBundleId in config/extension.ts')
+
+  const client = new AppStoreConnectClient(options)
+  const identifier = config.safariBundleId
+  const extensionIdentifier = `${identifier}.Extension`
+  const container = await client.ensureBundleId(identifier, config.name, options)
+  const extension = await client.ensureBundleId(extensionIdentifier, `${config.name} Safari Extension`, options)
+  const app = await client.findApp(identifier)
+
+  return {
+    container: { identifier, exists: Boolean(container.bundleId), created: container.created },
+    extension: { identifier: extensionIdentifier, exists: Boolean(extension.bundleId), created: extension.created },
+    appRecord: { exists: Boolean(app), id: app?.id },
+  }
+}

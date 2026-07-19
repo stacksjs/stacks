@@ -89,6 +89,35 @@ export function extension(buddy: CLI): void {
     })
 
   buddy
+    .command('extension:safari:provision', 'Register Safari Bundle IDs and check the App Store Connect app record')
+    .option('--api-key-id <id>', 'App Store Connect API key ID')
+    .option('--api-issuer-id <id>', 'App Store Connect API issuer ID')
+    .option('--api-key-path <path>', 'Path to the App Store Connect AuthKey_*.p8 file')
+    .option('--check', 'Report missing resources without creating Bundle IDs')
+    .action(async (options: { apiKeyId?: string, apiIssuerId?: string, apiKeyPath?: string, check?: boolean }) => {
+      const { provisionSafariApp } = await import('@stacksjs/browser-extension')
+      const { config } = await load()
+      const result = await provisionSafariApp(config, {
+        keyId: options.apiKeyId,
+        issuerId: options.apiIssuerId,
+        keyPath: options.apiKeyPath,
+        checkOnly: Boolean(options.check),
+      })
+      for (const resource of [result.container, result.extension]) {
+        if (resource.created)
+          log.success(`Registered Bundle ID ${resource.identifier}`)
+        else if (resource.exists)
+          log.success(`Bundle ID exists: ${resource.identifier}`)
+        else
+          log.warn(`Bundle ID is missing: ${resource.identifier}`)
+      }
+      if (result.appRecord.exists)
+        log.success(`App Store Connect app record exists (${result.appRecord.id})`)
+      else
+        log.warn('App Store Connect app record is missing. Apple requires creating it in the App Store Connect website.')
+    })
+
+  buddy
     .command('extension:safari:init', 'Scaffold the Safari container app (Xcode project) from the template')
     .option('--bundle-id <id>', 'Base bundle identifier (defaults to config safariBundleId)')
     .option('--dir <dir>', 'Output directory for the Xcode project (default safari)')
