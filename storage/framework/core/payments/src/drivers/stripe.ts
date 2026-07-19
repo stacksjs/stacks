@@ -39,7 +39,7 @@ export const stripe: Stripe = new Proxy({} as Stripe, {
       // pantry-vendored Stripe SDK types are compiled against — bumping
       // it here without bumping the SDK would mean responses include
       // fields the SDK doesn't know about. Update both at once.
-      const apiVersion: Stripe.LatestApiVersion = '2026-03-25.dahlia'
+      const apiVersion: Stripe.LatestApiVersion = '2026-06-24.dahlia'
       const configuredVersion = services?.stripe?.apiVersion
       if (configuredVersion && configuredVersion !== apiVersion)
         throw new Error(`Stripe API version ${configuredVersion} does not match the installed SDK version ${apiVersion}`)
