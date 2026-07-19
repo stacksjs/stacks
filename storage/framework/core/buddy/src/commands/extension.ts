@@ -3,7 +3,7 @@ import process from 'node:process'
 import { log } from '@stacksjs/cli'
 
 interface ExtensionOptions {
-  target?: 'chrome' | 'firefox'
+  target?: 'chrome' | 'firefox' | 'safari'
   version?: string
 }
 
@@ -27,8 +27,8 @@ export function extension(buddy: CLI): void {
   }
 
   buddy
-    .command('extension:build', 'Build the browser extension (Chrome + Firefox) from config/extension.ts')
-    .option('--target <target>', 'Build a single target (chrome | firefox); omit to build all')
+    .command('extension:build', 'Build the browser extension (Chrome + Firefox + Safari) from config/extension.ts')
+    .option('--target <target>', 'Build a single target (chrome | firefox | safari); omit to build all')
     .option('--version <version>', 'Override the extension version (defaults to package.json)')
     .action(async (options: ExtensionOptions) => {
       const { buildExtension, buildAllTargets } = await import('@stacksjs/browser-extension')
@@ -75,7 +75,7 @@ export function extension(buddy: CLI): void {
 
   buddy
     .command('extension:package', 'Build + zip the browser extension into store-ready archives')
-    .option('--target <target>', 'Package a single target (chrome | firefox); omit to package all')
+    .option('--target <target>', 'Package a single target (chrome | firefox | safari); omit to package all')
     .option('--version <version>', 'Override the extension version (defaults to package.json)')
     .action(async (options: ExtensionOptions) => {
       const { packageExtension } = await import('@stacksjs/browser-extension')
@@ -85,6 +85,48 @@ export function extension(buddy: CLI): void {
       for (const target of targets) {
         const out = await packageExtension(config, { target, version: v })
         log.success(`Packaged ${config.name} (${target}) → ${out}`)
+      }
+    })
+
+  buddy
+    .command('extension:safari:init', 'Scaffold the Safari container app (Xcode project) from the template')
+    .option('--bundle-id <id>', 'Base bundle identifier (defaults to config safariBundleId)')
+    .option('--dir <dir>', 'Output directory for the Xcode project (default safari)')
+    .option('--force', 'Overwrite existing scaffold files')
+    .action(async (options: { bundleId?: string, dir?: string, force?: boolean }) => {
+      const { scaffoldSafariApp } = await import('@stacksjs/browser-extension')
+      const { config } = await load()
+      const { dir, written, skipped } = await scaffoldSafariApp(config, {
+        bundleId: options.bundleId,
+        dir: options.dir,
+        force: Boolean(options.force),
+      })
+      log.success(`Scaffolded the Safari container app → ${dir} (${written.length} files)`)
+      if (skipped.length)
+        log.info(`kept ${skipped.length} existing files (use --force to overwrite)`)
+    })
+
+  buddy
+    .command('extension:safari:app', 'Build the extension, sync it into the appex, and xcodebuild the container app')
+    .option('--release', 'Build the Release configuration (default Debug)')
+    .option('--signed', 'Allow code signing (needs an Apple Development identity)')
+    .option('--skip-xcodebuild', 'Only build + sync the extension payload')
+    .option('--version <version>', 'Override the extension version (defaults to package.json)')
+    .action(async (options: { release?: boolean, signed?: boolean, skipXcodebuild?: boolean, version?: string }) => {
+      const { buildSafariApp } = await import('@stacksjs/browser-extension')
+      const { config, version } = await load()
+      const { appPath, resources } = await buildSafariApp(config, {
+        version: options.version ?? version,
+        release: Boolean(options.release),
+        signed: Boolean(options.signed),
+        skipXcodebuild: Boolean(options.skipXcodebuild),
+      })
+      if (appPath) {
+        log.success(`Built ${appPath}`)
+        log.info('Open the app once, then enable the extension in Safari > Settings > Extensions.')
+      }
+      else {
+        log.success(`Extension payload synced → ${resources}`)
       }
     })
 }
