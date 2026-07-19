@@ -115,7 +115,12 @@ jobs:
           echo '{"name":"stacks-release-smoke","private":true}' > package.json
           installed=false
           for attempt in 1 2 3 4 5 6; do
-            if bun add "stacks@$version"; then
+            # A package published near the end of the workspace can still be
+            # absent from registry metadata cached by the first failed install.
+            # Force each retry to fetch fresh manifests so eventual consistency
+            # can recover without turning a successful publish into a false
+            # release failure.
+            if bun add --no-cache "stacks@$version"; then
               installed=true
               break
             fi
