@@ -235,6 +235,17 @@ await writeChangelog()
 if (!isDryRun && isFrameworkRelease)
   pinMetaCoreDeps(nextVersion)
 
+// The package-version fan-out above changes hundreds of workspace manifests.
+// Keep the root Bun lockfile synchronized in the same release commit; otherwise
+// every post-release CI job using `bun install --frozen-lockfile` fails before
+// lint, typecheck, or tests can run.
+if (!isDryRun && existsSync(p.projectPath('bun.lock'))) {
+  await execSync(['bun', 'install', '--lockfile-only'], {
+    cwd: p.projectPath(),
+    stdin: 'inherit',
+  })
+}
+
 function pinMetaCoreDeps(version: string): void {
   const metaPath = p.frameworkPath('core/package.json')
   const meta = JSON.parse(readFileSync(metaPath, 'utf-8')) as {
