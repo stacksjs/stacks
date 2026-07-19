@@ -154,7 +154,7 @@ async function main() {
     await showInteractiveMenu(buddy)
   }
   else {
-    buddy.parse()
+    await parseOrExit(buddy)
   }
 
   // Apply theme if specified
@@ -206,7 +206,32 @@ async function showInteractiveMenu(buddy: CLI) {
   else {
     // Run the selected command
     process.argv = ['bun', 'buddy', choice]
-    buddy.parse()
+    await parseOrExit(buddy)
+  }
+}
+
+/**
+ * clapp throws ClappError for usage problems (unknown option, missing
+ * argument). Left unhandled, the rejection lands in the process-level
+ * handler and prints a full stack trace for a simple typo. Render usage
+ * errors as a one-line message plus the command's usage line instead.
+ * The duck-typed check works against every clapp version that carries
+ * exitCode/isUsageError (the isClappError() export only exists in newer
+ * releases).
+ */
+async function parseOrExit(buddy: CLI): Promise<void> {
+  try {
+    await buddy.parse()
+  }
+  catch (error: any) {
+    const isUsageError = error?.name === 'ClappError' || error?.isUsageError === true
+    if (!isUsageError)
+      throw error
+
+    process.stderr.write(`${error.message}\n`)
+    if (error.usage)
+      process.stderr.write(`${error.usage}\n`)
+    process.exit(typeof error.exitCode === 'number' ? error.exitCode : 2)
   }
 }
 
