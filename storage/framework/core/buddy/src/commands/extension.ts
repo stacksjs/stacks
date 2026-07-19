@@ -89,6 +89,69 @@ export function extension(buddy: CLI): void {
     })
 
   buddy
+    .command('extension:chrome:status', 'Fetch the Chrome Web Store item status')
+    .option('--service-account-path <path>', 'Google service-account JSON key path')
+    .option('--access-token <token>', 'Short-lived Chrome Web Store OAuth access token')
+    .action(async (options: { serviceAccountPath?: string, accessToken?: string }) => {
+      const { ChromeWebStoreClient } = await import('@stacksjs/browser-extension')
+      const { config } = await load()
+      if (!config.chromeWebStore)
+        throw new Error('Chrome status needs chromeWebStore.publisherId and chromeWebStore.itemId in config/extension.ts')
+      const status = await new ChromeWebStoreClient(options).fetchStatus(config.chromeWebStore)
+      log.info(`Chrome Web Store item ${status.itemId}`)
+      log.info(`published: ${status.publishedItemRevisionStatus?.state ?? 'none'}`)
+      log.info(`submitted: ${status.submittedItemRevisionStatus?.state ?? 'none'}`)
+      if (status.warned)
+        log.warn('Chrome has warned this item for a policy violation.')
+      if (status.takenDown)
+        log.error('Chrome has taken this item down for a policy violation.')
+    })
+
+  buddy
+    .command('extension:chrome:publish', 'Build, upload, and submit the Chrome extension through Web Store API v2')
+    .option('--version <version>', 'Override the extension version (defaults to package.json)')
+    .option('--service-account-path <path>', 'Google service-account JSON key path')
+    .option('--access-token <token>', 'Short-lived Chrome Web Store OAuth access token')
+    .option('--upload-only', 'Upload without submitting the item for review')
+    .option('--allow-warnings', 'Submit even when Chrome reports validation warnings')
+    .action(async (options: { version?: string, serviceAccountPath?: string, accessToken?: string, uploadOnly?: boolean, allowWarnings?: boolean }) => {
+      const { publishChromeExtension } = await import('@stacksjs/browser-extension')
+      const { config, version } = await load()
+      const result = await publishChromeExtension(config, {
+        version: options.version ?? version,
+        serviceAccountPath: options.serviceAccountPath,
+        accessToken: options.accessToken,
+        uploadOnly: Boolean(options.uploadOnly),
+        blockOnWarnings: !options.allowWarnings,
+      })
+      log.success(`Uploaded Chrome package ${result.packagePath} (${result.upload.crxVersion ?? 'processing complete'})`)
+      if (result.publish)
+        log.success(`Submitted Chrome Web Store item ${result.publish.itemId}: ${result.publish.state}`)
+    })
+
+  buddy
+    .command('extension:firefox:publish', 'Build and submit the Firefox extension through Mozilla Add-ons')
+    .option('--version <version>', 'Override the extension version (defaults to package.json)')
+    .option('--api-key <issuer>', 'AMO JWT issuer')
+    .option('--api-secret <secret>', 'AMO JWT secret')
+    .option('--source-code <path>', 'Human-readable source archive for AMO review')
+    .option('--approval-timeout <milliseconds>', 'How long to wait for human approval (default 0)')
+    .action(async (options: { version?: string, apiKey?: string, apiSecret?: string, sourceCode?: string, approvalTimeout?: string }) => {
+      const { publishFirefoxExtension } = await import('@stacksjs/browser-extension')
+      const { config, version } = await load()
+      const result = await publishFirefoxExtension(config, {
+        version: options.version ?? version,
+        issuer: options.apiKey,
+        secret: options.apiSecret,
+        sourceCodePath: options.sourceCode,
+        approvalTimeout: options.approvalTimeout === undefined ? undefined : Number(options.approvalTimeout),
+      })
+      log.success(`Submitted Firefox extension (${result.channel}) → ${result.artifactsDir}`)
+      if (result.artifacts.length)
+        log.info(`new artifacts: ${result.artifacts.join(', ')}`)
+    })
+
+  buddy
     .command('extension:safari:provision', 'Register Safari Bundle IDs and check the App Store Connect app record')
     .option('--api-key-id <id>', 'App Store Connect API key ID')
     .option('--api-issuer-id <id>', 'App Store Connect API issuer ID')

@@ -17,6 +17,29 @@ buddy extension:build --target safari   # → dist-safari/ (browser.* namespace,
 buddy extension:package       # build + zip store-ready archives
 ```
 
+## Store publishing
+
+Stacks owns the store-specific upload clients as well as the builds. Chrome
+uses Web Store API v2 with a service account; Firefox uses Mozilla's official
+`web-ext` client and AMO v5 API; Safari uses App Store Connect and Xcode.
+
+```sh
+buddy extension:chrome:status
+buddy extension:chrome:publish          # build, zip, upload, submit for review
+buddy extension:chrome:publish --upload-only
+buddy extension:firefox:publish         # build, submit, sign through AMO
+buddy extension:safari:provision        # register Bundle IDs + check app record
+buddy extension:safari:publish
+```
+
+Chrome reads `CHROME_WEB_STORE_SERVICE_ACCOUNT_PATH` (or
+`GOOGLE_APPLICATION_CREDENTIALS`) and the configured
+`chromeWebStore.publisherId`/`itemId`. The API only updates existing items, so
+create the initial Developer Dashboard item once and link the service-account
+email to the publisher account. Firefox reads `AMO_JWT_ISSUER` and
+`AMO_JWT_SECRET`; `web-ext` can create the initial listing when
+`firefoxAddons.license` and `firefoxAddons.categories` are configured.
+
 ## Safari
 
 Safari Web Extensions ship inside a macOS app, so the safari target has two
@@ -54,6 +77,8 @@ export default defineExtension({
   name: 'My Extension',
   description: 'Does something useful.',
   geckoId: 'my-ext@example.com',      // required to ship on Firefox
+  chromeWebStore: { publisherId: 'publisher-id', itemId: 'extension-id' },
+  firefoxAddons: { license: 'MIT', categories: ['privacy-security'] },
   safariBundleId: 'com.example.MyExtension', // Safari container app bundle id
   targets: ['chrome', 'firefox'],
 
@@ -109,6 +134,8 @@ import {
   buildExtension,
   buildAllTargets,
   packageExtension,
+  publishChromeExtension,
+  publishFirefoxExtension,
   generateManifest,
   rewriteBrowserNamespace,
   scaffoldSafariApp,

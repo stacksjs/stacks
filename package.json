@@ -88,7 +88,8 @@
     "better-dx": "^0.2.17",
     "bun-git-hooks": "^0.3.2",
     "bun-query-builder": "^0.1.56",
-    "pickier": "^0.1.35"
+    "pickier": "^0.1.35",
+    "web-ext": "^10.5.0"
   },
   "git-hooks": {
     "pre-commit": {

@@ -59,5 +59,8 @@
   },
   "devDependencies": {
     "better-dx": "catalog:"
+  },
+  "dependencies": {
+    "web-ext": "catalog:"
   }
 }

@@ -86,12 +86,46 @@ export interface BuildContext {
   cwd: string
 }
 
+export interface ChromeWebStoreConfig {
+  /** Publisher identifier from the Chrome Web Store Developer Dashboard. */
+  publisherId: string
+  /** Existing Chrome Web Store item/extension identifier. */
+  itemId: string
+  /** Publish immediately after approval or leave staged. @default DEFAULT_PUBLISH */
+  publishType?: 'DEFAULT_PUBLISH' | 'STAGED_PUBLISH'
+  /** Initial percentage rollout. @default the dashboard's current setting */
+  deployPercentage?: number
+  /** Request expedited review for an eligible DNR-only update. @default false */
+  skipReview?: boolean
+}
+
+export interface FirefoxAddonsConfig {
+  /** AMO publication channel. @default listed */
+  channel?: 'listed' | 'unlisted'
+  /** SPDX-style AMO license slug used for a new listing, for example MIT. */
+  license?: string
+  /** AMO Firefox category slugs used for a new listing. */
+  categories?: string[]
+  /** Localized listing homepage. */
+  homepage?: string
+  /** Localized support email. */
+  supportEmail?: string
+  /** Whether the extension requires payment. @default false */
+  requiresPayment?: boolean
+  /** Directory for signed XPI and submission artifacts. @default web-ext-artifacts */
+  artifactsDir?: string
+}
+
 export interface ExtensionConfig {
   /** Display name (`manifest.name`). */
   name: string
   description: string
   /** Firefox add-on id (`browser_specific_settings.gecko.id`). Required to ship on Firefox. */
   geckoId?: string
+  /** Chrome Web Store API v2 publication settings. */
+  chromeWebStore?: ChromeWebStoreConfig
+  /** Mozilla Add-ons (AMO) v5 publication settings. */
+  firefoxAddons?: FirefoxAddonsConfig
   /**
    * Base bundle identifier of the Safari container app
    * (`extension:safari:init`); the appex uses `<safariBundleId>.Extension`.
