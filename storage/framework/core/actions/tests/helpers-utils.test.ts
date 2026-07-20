@@ -2,7 +2,7 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, describe, expect, it } from 'bun:test'
-import { developmentConditionForProject } from '../src/helpers/utils'
+import { developmentConditionForProject, publishedActionCandidates } from '../src/helpers/utils'
 
 const roots: string[] = []
 
@@ -31,5 +31,15 @@ describe('developmentConditionForProject', () => {
     mkdirSync(join(root, 'storage/framework/core'), { recursive: true })
 
     expect(developmentConditionForProject(root)).toBe('')
+  })
+})
+
+describe('publishedActionCandidates', () => {
+  it('resolves flat, legacy nested, and source package layouts', () => {
+    expect(publishedActionCandidates('bump', '/app/node_modules/@stacksjs/actions')).toEqual([
+      '/app/node_modules/@stacksjs/actions/dist/bump.js',
+      '/app/node_modules/@stacksjs/actions/dist/src/bump.js',
+      '/app/node_modules/@stacksjs/actions/src/bump.ts',
+    ])
   })
 })

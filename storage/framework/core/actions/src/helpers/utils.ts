@@ -14,6 +14,32 @@ type ActionPath = string // TODO: narrow this by automating its generation
 type ActionName = string // TODO: narrow this by automating its generation
 type Action = ActionPath | ActionName | string
 
+export function publishedActionCandidates(action: string, packageRoot?: string): string[] {
+  let root = packageRoot
+
+  if (!root) {
+    try {
+      const pkgUrl = import.meta.resolve('@stacksjs/actions/package.json')
+      if (pkgUrl) {
+        const pkgPath = new URL(pkgUrl).pathname
+        root = pkgPath.slice(0, pkgPath.lastIndexOf('/'))
+      }
+    }
+    catch {
+      return []
+    }
+  }
+
+  if (!root)
+    return []
+
+  return [
+    `${root}/dist/${action}.js`,
+    `${root}/dist/src/${action}.js`,
+    `${root}/src/${action}.ts`,
+  ]
+}
+
 export function developmentConditionForProject(projectRoot: string): string {
   return existsSync(join(projectRoot, 'storage/framework/core'))
     && existsSync(join(projectRoot, 'node_modules/@stacksjs/env/src/index.ts'))
@@ -56,20 +82,10 @@ async function resolveActionFile(action: string): Promise<string | null> {
   // 2/3) Find the @stacksjs/actions package root, then look for a built
   //      action JS alongside its TS source. Wrapped in try/catch because
   //      the package may not be installed at all in some layouts.
-  try {
-    const pkgUrl = import.meta.resolve('@stacksjs/actions/package.json')
-    if (pkgUrl) {
-      const pkgPath = new URL(pkgUrl).pathname
-      const pkgRoot = pkgPath.slice(0, pkgPath.lastIndexOf('/'))
-      // The build emits a flat `dist/` (root: './src'), so `dist/<action>.js`
-      // is the current layout. `dist/src/<action>.js` is kept as a fallback for
-      // older published packages that shipped the nested layout.
-      candidates.push(`${pkgRoot}/dist/${action}.js`)
-      candidates.push(`${pkgRoot}/dist/src/${action}.js`)
-      candidates.push(`${pkgRoot}/src/${action}.ts`)
-    }
-  }
-  catch { /* package not installed — skip, fall through to override only */ }
+  // The build emits a flat `dist/` (root: './src'), so `dist/<action>.js`
+  // is the current layout. `dist/src/<action>.js` is kept as a fallback for
+  // older published packages that shipped the nested layout.
+  candidates.push(...publishedActionCandidates(action))
 
   for (const candidate of candidates) {
     if (await Bun.file(candidate).exists()) return candidate
@@ -271,6 +287,7 @@ export function hasAction(action: Action): boolean {
   const candidates = [
     ...userActionPatterns.map(pattern => p.userActionsPath(pattern)),
     ...actionPatterns.map(pattern => p.actionsPath(pattern)),
+    ...publishedActionCandidates(action),
   ]
 
   return candidates.some(candidate => existsSync(candidate))
