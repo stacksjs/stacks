@@ -13,7 +13,7 @@ import { Action } from '@stacksjs/enums'
 import { path as p } from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types'
 import { getErrorCode, getErrorMessage } from '@stacksjs/utils'
-import { ensureAppKey, ensureEnvIsSet, ensurePantryDependencies, ensurePantryInstalled } from './setup'
+import { ensureAppKey, ensureEnvIsSet } from './setup'
 
 // Use console.log for clean output without timestamps
 const log = {
@@ -124,9 +124,6 @@ async function findPantryMailBinary(): Promise<string | null> {
 
 async function ensureDeployPrerequisites(verbose = false): Promise<void> {
   const cwd = p.projectPath()
-
-  await ensurePantryInstalled()
-  await ensurePantryDependencies(cwd)
 
   await ensureEnvIsSet({ cwd, verbose })
   await ensureAppKey(cwd)
