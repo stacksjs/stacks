@@ -17,6 +17,21 @@ on:
         default: true
         required: false
         type: boolean
+      publish-chrome:
+        description: Publish or retry the Chrome Web Store release
+        default: true
+        required: false
+        type: boolean
+      publish-firefox:
+        description: Publish or retry the Firefox Add-ons release
+        default: true
+        required: false
+        type: boolean
+      publish-safari:
+        description: Publish or retry the Safari App Store release
+        default: true
+        required: false
+        type: boolean
       release-tag:
         description: GitHub release tag; defaults to the pushed tag or v<package.json version>
         default: ''
@@ -74,7 +89,7 @@ jobs:
           if-no-files-found: error
 
   publish-chrome:
-    if: inputs.publish-stores
+    if: inputs.publish-stores && inputs.publish-chrome
     needs: validate
     runs-on: ubuntu-latest
     steps:
@@ -108,7 +123,7 @@ jobs:
           bun node_modules/@stacksjs/buddy/dist/cli.js extension:chrome:publish
 
   publish-firefox:
-    if: inputs.publish-stores
+    if: inputs.publish-stores && inputs.publish-firefox
     needs: validate
     runs-on: ubuntu-latest
     steps:
@@ -139,7 +154,7 @@ jobs:
           bun node_modules/@stacksjs/buddy/dist/cli.js extension:firefox:publish --source-code "$RUNNER_TEMP/browser-extension-source.zip"
 
   publish-safari:
-    if: inputs.publish-stores && inputs.safari-enabled
+    if: inputs.publish-stores && inputs.publish-safari && inputs.safari-enabled
     needs: validate
     runs-on: macos-15
     steps:
