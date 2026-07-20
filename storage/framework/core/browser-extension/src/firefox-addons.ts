@@ -1,6 +1,7 @@
 import type { ExtensionConfig, FirefoxAddonsConfig } from './types'
-import { existsSync, readdirSync } from 'node:fs'
+import { existsSync, readFileSync, readdirSync } from 'node:fs'
 import { mkdir, mkdtemp, rm } from 'node:fs/promises'
+import { createRequire } from 'node:module'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import { buildExtension, resolveOutdir } from './build'
@@ -57,6 +58,27 @@ export function firefoxListingMetadata(config: ExtensionConfig, store: FirefoxAd
   }
 }
 
+/** Resolve web-ext from PATH or from this package's declared dependency. */
+export function resolveWebExtExecutable(which: (command: string) => string | null = Bun.which): string | undefined {
+  const fromPath = which('web-ext')
+  if (fromPath)
+    return fromPath
+
+  try {
+    const require = createRequire(import.meta.url)
+    const packagePath = require.resolve('web-ext/package.json')
+    const packageJson = JSON.parse(readFileSync(packagePath, 'utf8')) as { bin?: string | Record<string, string> }
+    const relativeBin = typeof packageJson.bin === 'string' ? packageJson.bin : packageJson.bin?.['web-ext']
+    if (!relativeBin)
+      return undefined
+    const executable = resolve(packagePath, '..', relativeBin)
+    return existsSync(executable) ? executable : undefined
+  }
+  catch {
+    return undefined
+  }
+}
+
 /** Build and submit a Firefox extension through Mozilla's official web-ext/AMO v5 flow. */
 export async function publishFirefoxExtension(config: ExtensionConfig, options: FirefoxPublishOptions): Promise<FirefoxPublishResult> {
   if (!config.geckoId)
@@ -69,7 +91,7 @@ export async function publishFirefoxExtension(config: ExtensionConfig, options: 
 
   const sourceDir = resolve(cwd, resolveOutdir(config, 'firefox'))
   const artifactsDir = resolve(cwd, store.artifactsDir ?? 'web-ext-artifacts')
-  const executable = Bun.which('web-ext')
+  const executable = resolveWebExtExecutable()
   if (!executable)
     throw new Error('[browser-extension] web-ext is unavailable; reinstall @stacksjs/browser-extension dependencies')
   await mkdir(artifactsDir, { recursive: true })

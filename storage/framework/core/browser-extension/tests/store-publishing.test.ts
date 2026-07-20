@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, beforeEach, describe, expect, it } from 'bun:test'
 import { ChromeWebStoreClient, chromeWebStoreServiceAccountAssertion } from '../src/chrome-web-store'
-import { firefoxListingMetadata } from '../src/firefox-addons'
+import { firefoxListingMetadata, resolveWebExtExecutable } from '../src/firefox-addons'
 
 const chromeConfig: ChromeWebStoreConfig = {
   publisherId: 'publisher-123',
@@ -106,5 +106,10 @@ describe('Firefox Add-ons metadata', () => {
   it('allows metadata-free updates and rejects incomplete first-listing metadata', () => {
     expect(firefoxListingMetadata(config, {})).toBeUndefined()
     expect(() => firefoxListingMetadata(config, { license: 'MIT' })).toThrow('both firefoxAddons.license and firefoxAddons.categories')
+  })
+
+  it('resolves the declared web-ext dependency when it is absent from PATH', () => {
+    const executable = resolveWebExtExecutable(() => null)
+    expect(executable).toEndWith('/web-ext/bin/web-ext.js')
   })
 })
