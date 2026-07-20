@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.129...v0.70.130)
+
+## 🐛 Bug Fixes
+
+- **release**: retry Homebrew tap discovery ([00ed0b5](https://github.com/stacksjs/stacks/commit/00ed0b5)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.128...v0.70.129)
 
 ## 🐛 Bug Fixes

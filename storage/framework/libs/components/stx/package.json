@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/hello-world-vue",
   "type": "module",
-  "version": "0.70.129",
+  "version": "0.70.130",
   "description": "Your Vue component library description",
   "author": "Chris Breuer",
   "contributors": [
