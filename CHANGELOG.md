@@ -1,5 +1,20 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.143...v0.70.144)
+
+## 🐛 Bug Fixes
+
+- **browser-extension**: support current web-ext ([ebe1f05](https://github.com/stacksjs/stacks/commit/ebe1f05)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **buddy**: link the current release workflow ([7ff84ac](https://github.com/stacksjs/stacks/commit/7ff84ac)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 💚 Continuous Integration
+
+- **browser-extension**: skip releases on manual retries ([e7540c5](https://github.com/stacksjs/stacks/commit/e7540c5)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.142...v0.70.143)
 
 ## 🐛 Bug Fixes
