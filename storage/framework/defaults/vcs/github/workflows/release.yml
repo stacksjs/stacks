@@ -21,8 +21,10 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v2
+      - name: Setup Pantry
+        uses: home-lang/pantry/packages/action@main
+        with:
+          install: 'false'
 
       - name: Use Cached node_modules
         uses: actions/cache@v5

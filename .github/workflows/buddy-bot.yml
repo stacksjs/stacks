@@ -157,8 +157,10 @@ jobs:
           fetch-depth: 0 # Fetch full history for rebasing
           persist-credentials: true
 
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v2
+      - name: Setup Pantry
+        uses: home-lang/pantry/packages/action@main
+        with:
+          install: 'false'
 
       - name: Setup PHP and Composer (if needed)
         if: ${{ hashFiles('composer.json') != '' }}
@@ -195,8 +197,10 @@ jobs:
           fetch-depth: 0
           persist-credentials: true
 
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v2
+      - name: Setup Pantry
+        uses: home-lang/pantry/packages/action@main
+        with:
+          install: 'false'
 
       - name: Install dependencies
         run: bun install
@@ -277,8 +281,10 @@ jobs:
           fetch-depth: 0
           persist-credentials: true
 
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v2
+      - name: Setup Pantry
+        uses: home-lang/pantry/packages/action@main
+        with:
+          install: 'false'
 
       - name: Setup PHP and Composer (if needed)
         if: ${{ hashFiles('composer.json') != '' }}
@@ -385,8 +391,10 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v2
+      - name: Setup Pantry
+        uses: home-lang/pantry/packages/action@main
+        with:
+          install: 'false'
 
       - name: Install dependencies
         run: bun install

@@ -26,8 +26,10 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v1
+      - name: Setup Pantry
+        uses: home-lang/pantry/packages/action@main
+        with:
+          install: 'false'
 
       - name: Use cached node_modules
         uses: actions/cache@v4
@@ -55,8 +57,10 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v1
+      - name: Setup Pantry
+        uses: home-lang/pantry/packages/action@main
+        with:
+          install: 'false'
 
       - name: Use cached node_modules
         uses: actions/cache@v4
@@ -87,8 +91,10 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v1
+      - name: Setup Pantry
+        uses: home-lang/pantry/packages/action@main
+        with:
+          install: 'false'
 
       - name: Use cached node_modules
         uses: actions/cache@v4

@@ -19,5 +19,7 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v3
 
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v1
+      - name: Setup Pantry
+        uses: home-lang/pantry/packages/action@main
+        with:
+          install: 'false'
