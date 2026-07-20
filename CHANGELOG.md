@@ -1,5 +1,16 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.145...v0.70.146)
+
+## ✨ Features
+
+- **buddy**: add Safari App Review command ([ebb72f9](https://github.com/stacksjs/stacks/commit/ebb72f9)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **browser-extension**: automate Safari App Store review ([1a76dbb](https://github.com/stacksjs/stacks/commit/1a76dbb)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.144...v0.70.145)
 
 ## 🐛 Bug Fixes
