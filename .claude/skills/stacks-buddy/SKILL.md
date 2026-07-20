@@ -267,6 +267,22 @@ buddy make:stack [name]       # create full stack
 buddy make:view [name]        # create page/view (alias: make:page)
 ```
 
+### Browser extensions
+
+```bash
+buddy extension:init
+# Chrome + Firefox + Safari starter, including a universal Safari Xcode app
+
+buddy extension:init --target safari --name "My Extension" \
+  --bundle-id com.example.MyExtension --team-id TEAM123456 --platform all
+buddy extension:build
+buddy extension:safari:app --platform all --signed
+```
+
+`extension:init` defaults to all three browser targets. Generated views,
+scripts, and partials follow the standard `resources/` layout. Selecting Safari
+also scaffolds the macOS, iPhone, and iPad container project in the same step.
+
 ---
 
 ## Code Generation (generate)

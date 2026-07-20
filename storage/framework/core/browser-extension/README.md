@@ -11,7 +11,8 @@ packaging owned by the framework.
 ## Quick start
 
 ```sh
-buddy extension:init          # scaffold config/extension.ts + starter files
+buddy extension:init          # scaffold Chrome + Firefox + Safari, including the Xcode app
+buddy extension:init --target safari --name "My Extension" --bundle-id com.example.MyExtension
 buddy extension:build         # build all targets → dist/ (+ dist-firefox/)
 buddy extension:build --target chrome
 buddy extension:build --target safari   # → dist-safari/ (browser.* namespace, safari manifest)

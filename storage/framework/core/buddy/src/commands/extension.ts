@@ -57,32 +57,33 @@ export function extension(buddy: CLI): void {
     })
 
   buddy
-    .command('extension:init', 'Scaffold a browser extension (config/extension.ts + starter background/content/pages)')
+    .command('extension:init', 'Scaffold a Chrome, Firefox, or Safari extension, including the Safari Xcode app')
     .option('--name <name>', 'Extension display name')
-    .action(async (options: { name?: string }) => {
-      const { existsSync } = await import('node:fs')
-      const { mkdir, writeFile } = await import('node:fs/promises')
-      const { dirname, join } = await import('node:path')
-      const cwd = process.cwd()
-      const name = options.name ?? 'My Extension'
-
-      const write = async (rel: string, content: string) => {
-        const abs = join(cwd, rel)
-        if (existsSync(abs)) {
-          log.info(`skip (exists): ${rel}`)
-          return
-        }
-        await mkdir(dirname(abs), { recursive: true })
-        await writeFile(abs, content)
-        log.success(`created ${rel}`)
-      }
-
-      await write('config/extension.ts', `import { defineExtension } from '@stacksjs/browser-extension'\n\nexport default defineExtension({\n  name: ${JSON.stringify(name)},\n  description: 'A browser extension built with Stacks.',\n  targets: ['chrome', 'firefox'],\n  background: 'src/background/index.ts',\n  content: [\n    { entry: 'src/content/index.ts', matches: ['<all_urls>'], runAt: 'document_start' },\n  ],\n  pages: {\n    popup: { template: 'pages/popup.stx', script: 'src/ui/popup.ts' },\n  },\n  icons: { 16: 'icons/icon-16.png', 48: 'icons/icon-48.png', 128: 'icons/icon-128.png' },\n  public: 'public',\n  manifest: {\n    permissions: ['storage', 'tabs'],\n  },\n})\n`)
-      await write('src/background/index.ts', `// Background service worker (MV3).\nconsole.log('[${name}] background ready')\n`)
-      await write('src/content/index.ts', `// Content script — runs on matched pages.\nconsole.log('[${name}] content script loaded')\n`)
-      await write('src/ui/popup.ts', `// Popup script.\nconsole.log('[${name}] popup')\n`)
-      await write('pages/popup.stx', `<div class="popup">\n  <h1>${name}</h1>\n  <p>Edit pages/popup.stx to build your popup.</p>\n  <script src="/popup.js"></script>\n</div>\n`)
-      log.info('Next: add icons under public/icons, then `buddy extension:build`.')
+    .option('--target <target>', 'Scaffold chrome, firefox, safari, or all (default all)')
+    .option('--bundle-id <id>', 'Safari container bundle identifier')
+    .option('--team-id <id>', 'Apple Developer team used for Safari signing')
+    .option('--platform <platform>', 'Safari platform: macos, ios, or all (default all)')
+    .option('--force', 'Overwrite existing starter and Safari scaffold files')
+    .action(async (options: { name?: string, target?: string, bundleId?: string, teamId?: string, platform?: string, force?: boolean }) => {
+      const target = options.target ?? 'all'
+      if (!['chrome', 'firefox', 'safari', 'all'].includes(target))
+        throw new Error(`Invalid extension target ${target}; use chrome, firefox, safari, or all`)
+      const { scaffoldExtensionProject } = await import('@stacksjs/browser-extension')
+      const result = await scaffoldExtensionProject({
+        name: options.name,
+        target: target as 'chrome' | 'firefox' | 'safari' | 'all',
+        bundleId: options.bundleId,
+        teamId: options.teamId,
+        platforms: parseSafariPlatforms(options.platform) ?? ['macos', 'ios'],
+        force: Boolean(options.force),
+      })
+      for (const file of result.written)
+        log.success(`created ${file}`)
+      for (const file of result.skipped)
+        log.info(`skip (exists): ${file}`)
+      if (result.safari)
+        log.success(`Scaffolded the Safari container app → ${result.safari.dir}`)
+      log.info('Next: add icons under public/icons, then run `buddy extension:build`.')
     })
 
   buddy
