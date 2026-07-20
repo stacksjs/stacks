@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.144...v0.70.145)
+
+## 🐛 Bug Fixes
+
+- **browser-extension**: select processed Safari builds ([75509cc](https://github.com/stacksjs/stacks/commit/75509cc)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.143...v0.70.144)
 
 ## 🐛 Bug Fixes

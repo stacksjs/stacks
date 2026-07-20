@@ -2,7 +2,7 @@
   "name": "@stacksjs/buddy",
   "type": "module",
   "sideEffects": false,
-  "version": "0.70.144",
+  "version": "0.70.145",
   "description": "Meet Buddy. The Stacks runtime.",
   "author": "Chris Breuer",
   "contributors": [
