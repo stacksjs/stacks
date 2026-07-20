@@ -1,5 +1,16 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.139...v0.70.140)
+
+## 🐛 Bug Fixes
+
+- **browser-extension**: flatten Safari bundle resources ([90113d0](https://github.com/stacksjs/stacks/commit/90113d0)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **browser-extension**: resolve bundled web-ext binary ([08636f5](https://github.com/stacksjs/stacks/commit/08636f5)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.138...v0.70.139)
 
 ## 🐛 Bug Fixes
