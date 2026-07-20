@@ -2,7 +2,7 @@
   "name": "@stacksjs/desktop",
   "type": "module",
   "sideEffects": false,
-  "version": "0.70.146",
+  "version": "0.70.147",
   "description": "The Stacks Desktop engine.",
   "author": "Chris Breuer",
   "contributors": [

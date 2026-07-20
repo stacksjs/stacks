@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.146...v0.70.147)
+
+## 🐛 Bug Fixes
+
+- **browser-extension**: always create GitHub releases ([ed98c0e](https://github.com/stacksjs/stacks/commit/ed98c0e)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.145...v0.70.146)
 
 ## ✨ Features
