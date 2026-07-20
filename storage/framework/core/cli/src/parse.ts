@@ -170,7 +170,11 @@ export function buddyOptions(options?: string[] | Record<string, any>): string {
 
   if (typeof options === 'object' && options !== null) {
     return Object.entries(options)
-      .filter(([, value]) => value !== false && value !== undefined && value !== null)
+      // cac reserves `--` for arguments after the option separator and some
+      // callers use `_` for positional arguments. Neither is a CLI option.
+      // Serializing `--` as a regular key produces a literal `----` argument
+      // and breaks chained actions such as `buddy release --bump patch`.
+      .filter(([key, value]) => key !== '--' && key !== '_' && value !== false && value !== undefined && value !== null)
       .map(([key, value]) => {
         if (value === true)
           return `--${key}`

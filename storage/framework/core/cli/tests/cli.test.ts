@@ -86,6 +86,17 @@ describe('@stacksjs/cli', () => {
       const result = buddyOptions(['--dry-run', '--verbose'])
       expect(result).toBe('--dry-run --verbose')
     })
+
+    it('omits parser-reserved positional argument keys', () => {
+      const result = buddyOptions({
+        '--': [],
+        _: ['release'],
+        bump: 'patch',
+        dryRun: false,
+      })
+
+      expect(result).toBe('--bump patch')
+    })
   })
 
   describe('function exports', () => {
