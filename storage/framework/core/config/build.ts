@@ -11,7 +11,7 @@ const { startTime } = await intro({
 // consumer on import (stacks 0.70.85–0.70.88). See core/build/src/index.ts.
 await transpilePackage({
   dir: import.meta.dir,
-  external: frameworkExternal(['~/config/*']),
+  external: frameworkExternal(),
 })
 
 await outro({

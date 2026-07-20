@@ -7,6 +7,8 @@
  */
 
 import type { StacksConfig } from '@stacksjs/types'
+import { resolve } from 'node:path'
+import { pathToFileURL } from 'node:url'
 import { validateConfig } from './validators'
 
 // PRODUCTION BINARY MODE: Skip runtime config loading
@@ -94,40 +96,44 @@ export const overrides: StacksConfig = sharedOverrides ?? (() => {
 // Files we attempt to load. The key on the left is the property name on
 // `overrides`; the path on the right is the project-local config file.
 const userConfigs: Array<[keyof StacksConfig, string]> = [
-  ['ai', '~/config/ai'],
-  ['analytics', '~/config/analytics'],
-  ['app', '~/config/app'],
-  ['auth', '~/config/auth'],
-  ['cache', '~/config/cache'],
-  ['cli', '~/config/cli'],
-  ['cloud', '~/config/cloud'],
-  ['cms', '~/config/cms'],
-  ['commerce', '~/config/commerce'],
-  ['dashboard', '~/config/dashboard'],
-  ['database', '~/config/database'],
-  ['dns', '~/config/dns'],
-  ['email', '~/config/email'],
-  ['errors', '~/config/errors'],
-  ['featureFlags', '~/config/feature-flags'],
-  ['git', '~/config/git'],
-  ['hashing', '~/config/hashing'],
-  ['library', '~/config/library'],
-  ['logging', '~/config/logging'],
-  ['marketing', '~/config/marketing'],
-  ['monitoring', '~/config/monitoring'],
-  ['notification', '~/config/notification'],
-  ['payment', '~/config/payment'],
-  ['ports', '~/config/ports'],
-  ['queue', '~/config/queue'],
-  ['realtime', '~/config/realtime'],
-  ['saas', '~/config/saas'],
-  ['searchEngine', '~/config/search-engine'],
-  ['security', '~/config/security'],
-  ['services', '~/config/services'],
-  ['filesystems', '~/config/filesystems'],
-  ['team', '~/config/team'],
-  ['ui', '~/config/ui'],
+  ['ai', 'ai'],
+  ['analytics', 'analytics'],
+  ['app', 'app'],
+  ['auth', 'auth'],
+  ['cache', 'cache'],
+  ['cli', 'cli'],
+  ['cloud', 'cloud'],
+  ['cms', 'cms'],
+  ['commerce', 'commerce'],
+  ['dashboard', 'dashboard'],
+  ['database', 'database'],
+  ['dns', 'dns'],
+  ['email', 'email'],
+  ['errors', 'errors'],
+  ['featureFlags', 'feature-flags'],
+  ['git', 'git'],
+  ['hashing', 'hashing'],
+  ['library', 'library'],
+  ['logging', 'logging'],
+  ['marketing', 'marketing'],
+  ['monitoring', 'monitoring'],
+  ['notification', 'notification'],
+  ['payment', 'payment'],
+  ['ports', 'ports'],
+  ['queue', 'queue'],
+  ['realtime', 'realtime'],
+  ['saas', 'saas'],
+  ['searchEngine', 'search-engine'],
+  ['security', 'security'],
+  ['services', 'services'],
+  ['filesystems', 'filesystems'],
+  ['team', 'team'],
+  ['ui', 'ui'],
 ]
+
+export function userConfigUrl(name: string, cwd = process.cwd()): string {
+  return pathToFileURL(resolve(cwd, 'config', `${name}.ts`)).href
+}
 
 /**
  * Load the project's `config/*.ts` files into `overrides` in the background.
@@ -146,7 +152,8 @@ const sharedReady = globalScope[READY_KEY] as Promise<StacksConfig> | undefined
 export const overridesReady: Promise<StacksConfig> = sharedReady ?? (() => {
   const promise = skipConfigLoading
     ? Promise.resolve(overrides)
-    : Promise.all(userConfigs.map(async ([key, modulePath]) => {
+    : Promise.all(userConfigs.map(async ([key, name]) => {
+      const modulePath = userConfigUrl(name)
       try {
         const mod = await import(modulePath)
         if (mod?.default !== undefined) {

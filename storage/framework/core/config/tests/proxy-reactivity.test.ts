@@ -1,5 +1,17 @@
-import { describe, expect, it } from 'bun:test'
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
+import { pathToFileURL } from 'node:url'
+import { afterEach, describe, expect, it } from 'bun:test'
 import { config, defaults, overrides, overridesReady } from '../src'
+import { userConfigUrl } from '../src/overrides'
+
+const temporaryProjects: string[] = []
+
+afterEach(() => {
+  for (const project of temporaryProjects.splice(0))
+    rmSync(project, { recursive: true, force: true })
+})
 
 // Regression coverage for the config proxy / live-binding fix.
 //
@@ -16,6 +28,36 @@ import { config, defaults, overrides, overridesReady } from '../src'
 // These tests pin both behaviours so a future "tidy up the index"
 // refactor can't silently regress either of them.
 describe('config proxy', () => {
+  it('resolves installed-project config without a tsconfig alias', () => {
+    expect(userConfigUrl('database', '/app')).toBe('file:///app/config/database.ts')
+  })
+
+  it('loads config from an installed project without a tsconfig alias', () => {
+    const project = mkdtempSync(join(tmpdir(), 'stacks-config-project-'))
+    temporaryProjects.push(project)
+    mkdirSync(join(project, 'config'))
+    writeFileSync(join(project, 'config/database.ts'), 'export default { default: "sqlite", marker: "project-config" }\n')
+
+    const overridesUrl = pathToFileURL(join(import.meta.dir, '../src/overrides.ts')).href
+    writeFileSync(join(project, 'verify.ts'), [
+      `const { overrides, overridesReady } = await import(${JSON.stringify(overridesUrl)})`,
+      'await overridesReady',
+      'console.log(overrides.database.marker)',
+    ].join('\n'))
+
+    const result = Bun.spawnSync({
+      cmd: ['bun', 'verify.ts'],
+      cwd: project,
+      env: { ...process.env, SKIP_CONFIG_VALIDATION: 'true' },
+      stdout: 'pipe',
+      stderr: 'pipe',
+    })
+
+    expect(result.exitCode).toBe(0)
+    expect(result.stdout.toString().trim()).toBe('project-config')
+    expect(result.stderr.toString()).toBe('')
+  })
+
   it('exposes a live, mutating proxy under `config`', async () => {
     await overridesReady
 
