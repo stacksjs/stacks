@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'bun:test'
-import { configDnsDomains, dnsProviderNameFromNameservers } from '../src/commands/deploy'
+import { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
+import { configDnsDomains, dnsProviderNameFromNameservers, hasExplicitEmailConfig } from '../src/commands/deploy'
 
 describe('configDnsDomains', () => {
   it('keeps application zones and normalizes www aliases', () => {
@@ -35,5 +38,22 @@ describe('dnsProviderNameFromNameservers', () => {
 
   it('does not guess for an unknown nameserver network', () => {
     expect(dnsProviderNameFromNameservers(['ns1.example.net.'])).toBeNull()
+  })
+})
+
+describe('hasExplicitEmailConfig', () => {
+  it('does not treat framework email defaults as application mail intent', () => {
+    const root = mkdtempSync(join(tmpdir(), 'stacks-email-config-'))
+
+    try {
+      expect(hasExplicitEmailConfig(root)).toBe(false)
+      mkdirSync(join(root, 'config'))
+      writeFileSync(join(root, 'config', 'email.ts'), 'export default {}\n')
+      expect(existsSync(join(root, 'config', 'email.ts'))).toBe(true)
+      expect(hasExplicitEmailConfig(root)).toBe(true)
+    }
+    finally {
+      rmSync(root, { recursive: true, force: true })
+    }
   })
 })

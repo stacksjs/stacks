@@ -1456,6 +1456,16 @@ export interface MailTenantResult {
 }
 
 /**
+ * Mail tenancy is an explicit deployment capability. The merged Stacks config
+ * always contains framework email defaults, so checking `emailConfig` alone
+ * would register the framework's own default domain for every application that
+ * does not provide `config/email.ts`.
+ */
+export function hasExplicitEmailConfig(projectRoot = p.projectPath()): boolean {
+  return existsSync(join(projectRoot, 'config', 'email.ts'))
+}
+
+/**
  * Reconcile this app's mail configuration onto the mail server running on the
  * box, straight from `config/email.ts`. Declarative, additive, idempotent:
  *
@@ -1512,6 +1522,9 @@ async function resolveAttachTargetBox(
  * DKIM public key), or null when there is nothing to reconcile / it failed.
  */
 export async function provisionMailTenant(ip: string, logger: typeof log): Promise<MailTenantResult | null> {
+  if (!hasExplicitEmailConfig())
+    return null
+
   const cfg: any = emailConfig || {}
   // Mail explicitly disabled for this app (config/email.ts `server.enabled:
   // false`): skip the shared-mail tenant reconcile entirely — no local-domain
