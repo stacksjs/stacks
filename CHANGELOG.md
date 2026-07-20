@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.135...v0.70.136)
+
+## 🐛 Bug Fixes
+
+- **deploy**: skip redundant Pantry bootstrap ([834ab9a](https://github.com/stacksjs/stacks/commit/834ab9a)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.134...v0.70.135)
 
 ## 🐛 Bug Fixes
