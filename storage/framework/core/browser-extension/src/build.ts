@@ -118,12 +118,15 @@ export async function buildExtension(config: ExtensionConfig, options: BuildOpti
   // 3. stx pages → HTML, then sanitize each for the extension CSP.
   if (pages.length) {
     const { default: stxPlugin } = await import('bun-plugin-stx')
+    const resourcesPartials = resolve(cwd, 'resources/partials')
+    const legacyPartials = resolve(cwd, 'partials')
+    const partialsDir = existsSync(resourcesPartials) ? resourcesPartials : legacyPartials
     const result = await Bun.build({
       entrypoints: pages.map(p => resolve(cwd, p.page.template)),
       outdir,
       minify,
       naming: { entry: '[name].html' },
-      plugins: [(stxPlugin as unknown as () => any)()],
+      plugins: [(stxPlugin as unknown as (options: { partialsDir: string }) => any)({ partialsDir })],
     })
     if (!result.success)
       throw new Error(`[browser-extension] failed to build pages: ${result.logs.join('\n')}`)

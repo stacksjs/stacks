@@ -65,6 +65,7 @@ describe('makeStack', () => {
         'resources/views',
         'resources/components',
         'resources/functions',
+        'resources/partials',
         'routes',
         'public',
       ]

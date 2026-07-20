@@ -132,7 +132,11 @@ export function serve(buddy: CLI): void {
       const defaultsResources = resolveDefaultsResources()
       const defaultViewsPath = join(defaultsResources, 'views')
       const userLayoutsPath = existsSync('resources/views/layouts') ? 'resources/views/layouts' : 'resources/layouts'
-      const userComponentsPath = existsSync('resources/views/components') ? 'resources/views/components' : 'resources/components'
+      const userPartialsPath = existsSync('resources/partials')
+        ? 'resources/partials'
+        : existsSync('resources/views/partials')
+          ? 'resources/views/partials'
+          : existsSync('partials') ? 'partials' : 'resources/partials'
 
       // Same-origin API target. Scaffolded client code fetches relative
       // `/api/...` URLs (dashboard stores, CartDrawer, the coming-soon
@@ -164,7 +168,7 @@ export function serve(buddy: CLI): void {
           .includes((process.env.APP_ENV || '').toLowerCase()),
         componentsDir: join(defaultsResources, 'components'),
         layoutsDir: userLayoutsPath,
-        partialsDir: userComponentsPath,
+        partialsDir: userPartialsPath,
         fallbackLayoutsDir: join(defaultsResources, 'layouts'),
         fallbackPartialsDir: defaultViewsPath,
         quiet: options?.verbose !== true,

@@ -389,7 +389,7 @@ export async function makeStack(options: MakeOptions): Promise<void> {
 
     // Create directory structure
     await createFolder(stackDir)
-    const dirs = ['app/Actions', 'app/Models', 'config', 'database/migrations', 'resources/views', 'resources/components', 'resources/functions', 'routes', 'public']
+    const dirs = ['app/Actions', 'app/Models', 'config', 'database/migrations', 'resources/views', 'resources/components', 'resources/functions', 'resources/partials', 'routes', 'public']
     for (const dir of dirs) {
       await createFolder(resolve(stackDir, dir))
     }

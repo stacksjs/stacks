@@ -109,20 +109,19 @@ async function startDefaultServer() {
 
   const userViewsPath = 'resources/views'
   const defaultViewsPath = 'storage/framework/defaults/resources/views'
-  // Layouts and partials live alongside views by default
-  // (resources/views/layouts, resources/views/components). The legacy
-  // resources/layouts and resources/components paths still exist on
-  // older scaffolds, so we let stx-serve fall back to those via the
-  // `fallbackLayoutsDir` / `fallbackPartialsDir` options.
+  // Layouts and partials are distinct resources. Prefer the
+  // framework-standard resources/* paths while retaining the older
+  // resources/views/* and root partials locations for existing apps.
   const userLayoutsPath = await firstExistingPath([
     'resources/views/layouts',
     'resources/layouts',
   ]) ?? 'resources/views/layouts'
   const defaultLayoutsPath = 'storage/framework/defaults/resources/layouts'
-  const userComponentsPath = await firstExistingPath([
-    'resources/views/components',
-    'resources/components',
-  ]) ?? 'resources/views/components'
+  const userPartialsPath = await firstExistingPath([
+    'resources/partials',
+    'resources/views/partials',
+    'partials',
+  ]) ?? 'resources/partials'
   const preferredPort = Number(process.env.PORT) || 3000
   const apiPort = Number(process.env.PORT_API) || 3008
   const docsPort = Number(process.env.PORT_DOCS) || config.ports?.docs || 3006
@@ -142,7 +141,7 @@ async function startDefaultServer() {
     // gives us discovery without enumerating every namespace.
     componentsDir: 'storage/framework/defaults/resources/components',
     layoutsDir: userLayoutsPath,
-    partialsDir: userComponentsPath,
+    partialsDir: userPartialsPath,
     fallbackLayoutsDir: defaultLayoutsPath,
     fallbackPartialsDir: defaultViewsPath,
     quiet: true,
