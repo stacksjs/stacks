@@ -43,15 +43,34 @@ email to the publisher account. Firefox reads `AMO_JWT_ISSUER` and
 `firefoxAddons.license` and `firefoxAddons.categories` are configured.
 
 For tag-driven publication, call Stacks' reusable workflow from the extension
-repository instead of duplicating store orchestration:
+repository instead of duplicating store orchestration. Expose the optional
+manual inputs so a failed or missing GitHub Release can be repaired without
+resubmitting builds to the browser stores:
 
 ```yaml
+on:
+  workflow_dispatch:
+    inputs:
+      github-release-only:
+        description: Build packages and create or repair the GitHub Release only
+        type: boolean
+        default: false
+      release-tag:
+        description: Existing tag to repair; defaults to v<package.json version>
+        type: string
+        required: false
+  push:
+    tags:
+      - 'v*'
+
 jobs:
   publish:
-    uses: stacksjs/stacks/.github/workflows/browser-extension-release.yml@v0.70.142
+    uses: stacksjs/stacks/.github/workflows/browser-extension-release.yml@v0.70.147
     with:
       chrome-publisher-id: ${{ vars.CHROME_WEB_STORE_PUBLISHER_ID }}
       safari-enabled: ${{ vars.ENABLE_SAFARI_PUBLISH == 'true' }}
+      publish-stores: ${{ !inputs.github-release-only }}
+      release-tag: ${{ inputs.release-tag || '' }}
     secrets:
       CHROME_WEB_STORE_SERVICE_ACCOUNT_JSON: ${{ secrets.CHROME_WEB_STORE_SERVICE_ACCOUNT_JSON }}
       AMO_JWT_ISSUER: ${{ secrets.AMO_JWT_ISSUER }}
@@ -62,8 +81,11 @@ jobs:
 ```
 
 It packages every configured target, publishes Chrome and Firefox in
-independent jobs, optionally uploads Safari with stable Xcode, and creates the
-GitHub Release only after the enabled stores succeed.
+independent jobs, optionally uploads Safari with stable Xcode, and creates an
+idempotent GitHub Release with checksummed packages as soon as validation
+succeeds. Store failures cannot suppress the GitHub Release. A manual run with
+`github-release-only` skips every store and creates or repairs the release for
+the requested existing tag.
 
 ## Safari
 

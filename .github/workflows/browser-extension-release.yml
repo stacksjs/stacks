@@ -12,18 +12,34 @@ on:
         default: false
         required: false
         type: boolean
+      publish-stores:
+        description: Publish Chrome, Firefox, and enabled Safari builds
+        default: true
+        required: false
+        type: boolean
+      release-tag:
+        description: GitHub release tag; defaults to the pushed tag or v<package.json version>
+        default: ''
+        required: false
+        type: string
     secrets:
       CHROME_WEB_STORE_SERVICE_ACCOUNT_JSON:
-        required: true
+        description: Chrome Web Store service account JSON
+        required: false
       AMO_JWT_ISSUER:
-        required: true
+        description: Mozilla Add-ons API JWT issuer
+        required: false
       AMO_JWT_SECRET:
-        required: true
+        description: Mozilla Add-ons API JWT secret
+        required: false
       APP_STORE_CONNECT_API_KEY:
+        description: App Store Connect API private key contents
         required: false
       APP_STORE_CONNECT_API_KEY_ID:
+        description: App Store Connect API key ID
         required: false
       APP_STORE_CONNECT_API_ISSUER_ID:
+        description: App Store Connect API issuer ID
         required: false
 
 permissions:
@@ -37,6 +53,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          ref: ${{ inputs.release-tag || github.ref }}
 
       - name: Setup Pantry
         uses: home-lang/pantry/packages/action@main
@@ -57,11 +74,14 @@ jobs:
           if-no-files-found: error
 
   publish-chrome:
+    if: inputs.publish-stores
     needs: validate
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.release-tag || github.ref }}
 
       - name: Setup Pantry
         uses: home-lang/pantry/packages/action@main
@@ -88,6 +108,7 @@ jobs:
           bun node_modules/@stacksjs/buddy/dist/cli.js extension:chrome:publish
 
   publish-firefox:
+    if: inputs.publish-stores
     needs: validate
     runs-on: ubuntu-latest
     steps:
@@ -95,6 +116,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          ref: ${{ inputs.release-tag || github.ref }}
 
       - name: Setup Pantry
         uses: home-lang/pantry/packages/action@main
@@ -117,12 +139,14 @@ jobs:
           bun node_modules/@stacksjs/buddy/dist/cli.js extension:firefox:publish --source-code "$RUNNER_TEMP/browser-extension-source.zip"
 
   publish-safari:
-    if: inputs.safari-enabled
+    if: inputs.publish-stores && inputs.safari-enabled
     needs: validate
     runs-on: macos-15
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.release-tag || github.ref }}
 
       - name: Select stable Xcode
         uses: maxim-lobanov/setup-xcode@v1
@@ -157,17 +181,9 @@ jobs:
 
   github-release:
     if: >-
-      always() &&
-      github.ref_type == 'tag' &&
       needs.validate.result == 'success' &&
-      needs.publish-chrome.result == 'success' &&
-      needs.publish-firefox.result == 'success' &&
-      (needs.publish-safari.result == 'success' || needs.publish-safari.result == 'skipped')
-    needs:
-      - validate
-      - publish-chrome
-      - publish-firefox
-      - publish-safari
+      (github.ref_type == 'tag' || github.event_name == 'workflow_dispatch')
+    needs: validate
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -176,6 +192,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          ref: ${{ inputs.release-tag || github.ref }}
 
       - name: Download validated packages
         uses: actions/download-artifact@v4
@@ -183,13 +200,35 @@ jobs:
           name: browser-extension-packages
           path: release-artifacts
 
+      - name: Resolve release tag
+        id: release
+        env:
+          REQUESTED_TAG: ${{ inputs.release-tag }}
+        run: |
+          if test -n "$REQUESTED_TAG"; then
+            tag="$REQUESTED_TAG"
+          elif test "$GITHUB_REF_TYPE" = "tag"; then
+            tag="$GITHUB_REF_NAME"
+          else
+            version="$(node -p "require('./package.json').version")"
+            test -n "$version"
+            tag="v${version#v}"
+          fi
+
+          if ! git rev-parse --verify --quiet "refs/tags/$tag^{commit}" >/dev/null; then
+            echo "::error::Release tag '$tag' does not exist. Push the tag first or pass release-tag."
+            exit 1
+          fi
+
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+
       - name: Create GitHub Release
         uses: home-lang/pantry/packages/action@main
         with:
           install: 'false'
           release: 'true'
+          release-tag: ${{ steps.release.outputs.tag }}
           release-changelog: auto
           release-checksums: 'true'
           release-files: release-artifacts/*.zip
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          release-token: ${{ github.token }}
