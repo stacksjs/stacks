@@ -85,6 +85,12 @@ function safariResourceCopyBuildPhase(appName: string): string {
 
 /** Upgrade a Stacks-generated project that copied Resources as a nested folder. */
 export function migrateSafariResourceBuildPhase(project: string, appName: string): string {
+  if (project.includes("resources_prefix='$(SRCROOT)")) {
+    return project.replace(
+      /\/\* Begin PBXShellScriptBuildPhase section \*\/[\s\S]*?\/\* End PBXShellScriptBuildPhase section \*\/\n/,
+      safariResourceCopyBuildPhase(appName),
+    )
+  }
   if (project.includes('SCRIPT_INPUT_FILE_LIST_0'))
     return project
   if (project.includes('0D0000000000000000000023 /* Copy Web Extension Resources */')) {
@@ -281,7 +287,7 @@ export async function syncSafariResources(config: ExtensionConfig, options: Safa
     files += 1
   }
 
-  const inputs = synced.map(rel => join(resources, rel)).join('\n')
+  const inputs = synced.map(rel => `$(SRCROOT)/${appName} Extension/Resources/${rel}`).join('\n')
   const outputs = synced.map(rel => `$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/${rel}`).join('\n')
   await Bun.write(join(projectDir, `${appName} Extension`, 'Resources.inputs.xcfilelist'), `${inputs}\n`)
   await Bun.write(join(projectDir, `${appName} Extension`, 'Resources.outputs.xcfilelist'), `${outputs}\n`)

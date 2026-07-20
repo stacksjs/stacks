@@ -176,9 +176,9 @@ describe('safari scaffold + sync', () => {
     const inputs = await Bun.file(join(cwd, 'safari', 'TestExtension Extension', 'Resources.inputs.xcfilelist')).text()
     const outputs = await Bun.file(join(cwd, 'safari', 'TestExtension Extension', 'Resources.outputs.xcfilelist')).text()
     expect(inputs.trim().split('\n')).toEqual([
-      join(resources, 'background.js'),
-      join(resources, 'manifest.json'),
-      join(resources, 'rules', 'static.json'),
+      '$(SRCROOT)/TestExtension Extension/Resources/background.js',
+      '$(SRCROOT)/TestExtension Extension/Resources/manifest.json',
+      '$(SRCROOT)/TestExtension Extension/Resources/rules/static.json',
     ])
     expect(outputs.trim().split('\n')).toEqual([
       '$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/background.js',
