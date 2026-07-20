@@ -32,6 +32,28 @@ export interface FirefoxPublishResult {
   channel: 'listed' | 'unlisted'
 }
 
+interface FirefoxSignArgsOptions {
+  executable: string
+  sourceDir: string
+  artifactsDir: string
+  channel: 'listed' | 'unlisted'
+  timeout: number
+  approvalTimeout: number
+}
+
+export function firefoxSignArgs(options: FirefoxSignArgsOptions): string[] {
+  return [
+    options.executable,
+    'sign',
+    '--source-dir', options.sourceDir,
+    '--artifacts-dir', options.artifactsDir,
+    '--channel', options.channel,
+    '--timeout', String(options.timeout),
+    '--approval-timeout', String(options.approvalTimeout),
+    '--no-input',
+  ]
+}
+
 function resolveFirefoxAuth(options: FirefoxAddonsAuth): Required<FirefoxAddonsAuth> {
   const issuer = options.issuer ?? process.env.AMO_JWT_ISSUER ?? process.env.WEB_EXT_API_KEY
   const secret = options.secret ?? process.env.AMO_JWT_SECRET ?? process.env.WEB_EXT_API_SECRET
@@ -99,17 +121,14 @@ export async function publishFirefoxExtension(config: ExtensionConfig, options: 
   const tempDir = await mkdtemp(join(tmpdir(), 'stacks-firefox-publish-'))
 
   try {
-    const args = [
+    const args = firefoxSignArgs({
       executable,
-      'sign',
-      '--source-dir', sourceDir,
-      '--artifacts-dir', artifactsDir,
-      '--channel', store.channel ?? 'listed',
-      '--timeout', String(options.timeout ?? 300000),
-      '--approval-timeout', String(options.approvalTimeout ?? 0),
-      '--no-input',
-      '--boring',
-    ]
+      sourceDir,
+      artifactsDir,
+      channel: store.channel ?? 'listed',
+      timeout: options.timeout ?? 300000,
+      approvalTimeout: options.approvalTimeout ?? 0,
+    })
     const metadata = firefoxListingMetadata(config, store)
     if (metadata) {
       const metadataPath = join(tempDir, 'amo-metadata.json')

@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, beforeEach, describe, expect, it } from 'bun:test'
 import { ChromeWebStoreClient, chromeWebStoreServiceAccountAssertion } from '../src/chrome-web-store'
-import { firefoxListingMetadata, resolveWebExtExecutable } from '../src/firefox-addons'
+import { firefoxListingMetadata, firefoxSignArgs, resolveWebExtExecutable } from '../src/firefox-addons'
 
 const chromeConfig: ChromeWebStoreConfig = {
   publisherId: 'publisher-123',
@@ -111,5 +111,25 @@ describe('Firefox Add-ons metadata', () => {
   it('resolves the declared web-ext dependency when it is absent from PATH', () => {
     const executable = resolveWebExtExecutable(() => null)
     expect(executable).toEndWith('/web-ext/bin/web-ext.js')
+  })
+
+  it('uses only options supported by current web-ext releases', () => {
+    expect(firefoxSignArgs({
+      executable: '/bin/web-ext',
+      sourceDir: '/extension',
+      artifactsDir: '/artifacts',
+      channel: 'listed',
+      timeout: 300000,
+      approvalTimeout: 0,
+    })).toEqual([
+      '/bin/web-ext',
+      'sign',
+      '--source-dir', '/extension',
+      '--artifacts-dir', '/artifacts',
+      '--channel', 'listed',
+      '--timeout', '300000',
+      '--approval-timeout', '0',
+      '--no-input',
+    ])
   })
 })
