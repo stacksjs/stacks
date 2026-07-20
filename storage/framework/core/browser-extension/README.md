@@ -4,8 +4,9 @@ Build MV3 browser extensions (Chrome + Firefox + Safari) the Stacks way — the
 manifest, content/background scripts, stx pages, `declarativeNetRequest`
 rulesets, and store-ready packaging are all derived from a single
 `config/extension.ts`. No hand-written `manifest.json`, no per-project build
-script. Safari additionally gets the macOS container app: a checked-in Xcode
-scaffold, appex resource sync, and an xcodebuild pipeline.
+script. Safari additionally gets macOS, iPhone, and iPad container apps from
+one web bundle, with checked-in macOS development and universal App Store
+packaging owned by the framework.
 
 ## Quick start
 
@@ -46,7 +47,7 @@ repository instead of duplicating store orchestration:
 ```yaml
 jobs:
   publish:
-    uses: stacksjs/stacks/.github/workflows/browser-extension-release.yml@v0.70.122
+    uses: stacksjs/stacks/.github/workflows/browser-extension-release.yml@v0.70.142
     with:
       chrome-publisher-id: ${{ vars.CHROME_WEB_STORE_PUBLISHER_ID }}
       safari-enabled: ${{ vars.ENABLE_SAFARI_PUBLISH == 'true' }}
@@ -65,9 +66,9 @@ GitHub Release only after the enabled stores succeed.
 
 ## Safari
 
-Safari Web Extensions ship inside a macOS app, so the safari target has two
-halves: the web bundle (`extension:build --target safari`) and the container
-app. The build rewrites promise-style `chrome.*` to `browser.*` (Safari's
+Safari Web Extensions ship inside Apple container apps, so the safari target
+has two halves: the web bundle (`extension:build --target safari`) and the
+macOS/iOS apps. The build rewrites promise-style `chrome.*` to `browser.*` (Safari's
 `chrome.*` is callback-flavoured) and pins
 `browser_specific_settings.safari.strict_min_version` (default 18.4, the first
 Safari with MAIN-world content scripts + `match_about_blank`).
@@ -75,12 +76,17 @@ Safari with MAIN-world content scripts + `match_about_blank`).
 ```sh
 buddy extension:safari:init   # scaffold the Xcode container app into safari/
 buddy extension:safari:provision # register both Bundle IDs + check the app record
-buddy extension:safari:app    # build + sync into the appex + xcodebuild
-buddy extension:safari:publish # signed archive + App Store Connect upload
+buddy extension:safari:app    # build configured macOS/iOS apps
+buddy extension:safari:app --platform ios # build for iPhone/iPad Simulator
+buddy extension:safari:publish # archive + upload every configured Apple platform
 ```
 
 Set `safariBundleId` in the config (the appex gets `<safariBundleId>.Extension`)
-and `safariTeamId` to the Apple Developer team used for signing. Publishing
+and `safariTeamId` to the Apple Developer team used for signing. Set
+`safariPlatforms: ['macos', 'ios']` for a universal extension; iOS covers both
+iPhone and iPad. Stacks generates the current Apple-supported universal Xcode
+project from the same built extension, archives both platforms, and uploads
+both to the same App Store Connect app record. Publishing
 reads `APP_STORE_CONNECT_API_KEY_ID`, `APP_STORE_CONNECT_API_ISSUER_ID`, and
 `APP_STORE_CONNECT_API_KEY_PATH` from the environment. Run with
 `--validate-only` to exercise Apple's validation without uploading a build.
@@ -89,6 +95,11 @@ etc.) in `safariExclude` so it stays out of the appex. The scaffold mirrors
 what `xcrun safari-web-extension-converter` generates, so day-to-day work
 never needs the converter; `--signed` builds need an Apple Development
 identity selected in Xcode.
+
+For device testing, install the generated iOS app from Xcode, then enable the
+extension in Settings > Apps > Safari > Extensions. The iOS target supports
+iPhone and iPad from iOS 15 onward; the extension's configured Safari minimum
+version can require a newer OS.
 
 ## Configure
 
@@ -103,6 +114,9 @@ export default defineExtension({
   chromeWebStore: { publisherId: 'publisher-id', itemId: 'extension-id' },
   firefoxAddons: { license: 'MIT', categories: ['privacy-security'] },
   safariBundleId: 'com.example.MyExtension', // Safari container app bundle id
+  safariTeamId: 'TEAM123456',
+  safariPlatforms: ['macos', 'ios'], // iOS includes iPhone and iPad
+  safariAppCategory: 'public.app-category.utilities',
   targets: ['chrome', 'firefox'],
 
   background: 'src/background/index.ts',
@@ -164,5 +178,7 @@ import {
   scaffoldSafariApp,
   syncSafariResources,
   buildSafariApp,
+  buildSafariUniversalApp,
+  createSafariUniversalProject,
 } from '@stacksjs/browser-extension'
 ```

@@ -1,4 +1,4 @@
-import type { ExtensionConfig } from './types'
+import type { ExtensionConfig, SafariPlatform } from './types'
 import type { AppStoreConnectAuth } from './safari'
 import { createPrivateKey, sign } from 'node:crypto'
 import { readFileSync } from 'node:fs'
@@ -26,6 +26,14 @@ export interface AppAttributes extends Record<string, unknown> {
   name: string
   primaryLocale: string
   sku: string
+}
+
+export type AppStoreVersionPlatform = 'IOS' | 'MAC_OS'
+
+export interface AppStoreVersionAttributes extends Record<string, unknown> {
+  platform: AppStoreVersionPlatform
+  versionString: string
+  appStoreState: string
 }
 
 export interface AppStoreConnectClientOptions extends AppStoreConnectAuth {
@@ -144,6 +152,84 @@ export class AppStoreConnectClient {
     const response = await this.request<ApiListResponse<AppAttributes>>(`/apps?${query}`)
     return response.data.find(app => app.attributes.bundleId === bundleId)
   }
+
+  async listAppStoreVersions(appId: string): Promise<Array<AppStoreConnectResource<AppStoreVersionAttributes>>> {
+    const response = await this.request<ApiListResponse<AppStoreVersionAttributes>>(`/apps/${appId}/appStoreVersions?limit=200`)
+    return response.data
+  }
+
+  async createAppStoreVersion(appId: string, platform: AppStoreVersionPlatform, versionString: string): Promise<AppStoreConnectResource<AppStoreVersionAttributes>> {
+    const response = await this.request<ApiResourceResponse<AppStoreVersionAttributes>>('/appStoreVersions', {
+      method: 'POST',
+      body: JSON.stringify({
+        data: {
+          type: 'appStoreVersions',
+          attributes: { platform, versionString },
+          relationships: { app: { data: { type: 'apps', id: appId } } },
+        },
+      }),
+    })
+    return response.data
+  }
+
+  async updateAppStoreVersion(versionId: string, versionString: string): Promise<AppStoreConnectResource<AppStoreVersionAttributes>> {
+    const response = await this.request<ApiResourceResponse<AppStoreVersionAttributes>>(`/appStoreVersions/${versionId}`, {
+      method: 'PATCH',
+      body: JSON.stringify({
+        data: {
+          type: 'appStoreVersions',
+          id: versionId,
+          attributes: { versionString },
+        },
+      }),
+    })
+    return response.data
+  }
+}
+
+const editableVersionStates = new Set([
+  'PREPARE_FOR_SUBMISSION',
+  'DEVELOPER_REJECTED',
+  'REJECTED',
+  'METADATA_REJECTED',
+])
+
+function appStorePlatform(platform: SafariPlatform): AppStoreVersionPlatform {
+  return platform === 'ios' ? 'IOS' : 'MAC_OS'
+}
+
+export interface SafariAppStoreVersionResult {
+  platform: SafariPlatform
+  version: string
+  created: boolean
+  updated: boolean
+  id: string
+}
+
+async function ensureConfiguredAppStoreVersions(client: AppStoreConnectClient, appId: string, platforms: SafariPlatform[], version: string): Promise<SafariAppStoreVersionResult[]> {
+  const versions = await client.listAppStoreVersions(appId)
+  const results: SafariAppStoreVersionResult[] = []
+  for (const platform of [...new Set(platforms)]) {
+    const applePlatform = appStorePlatform(platform)
+    const exact = versions.find(item => item.attributes.platform === applePlatform && item.attributes.versionString === version)
+    if (exact) {
+      results.push({ platform, version, created: false, updated: false, id: exact.id })
+      continue
+    }
+
+    const editable = versions.find(item => item.attributes.platform === applePlatform && editableVersionStates.has(item.attributes.appStoreState))
+    if (editable) {
+      const updated = await client.updateAppStoreVersion(editable.id, version)
+      editable.attributes.versionString = version
+      results.push({ platform, version, created: false, updated: true, id: updated.id })
+      continue
+    }
+
+    const created = await client.createAppStoreVersion(appId, applePlatform, version)
+    versions.push(created)
+    results.push({ platform, version, created: true, updated: false, id: created.id })
+  }
+  return results
 }
 
 export interface SafariProvisionOptions extends AppStoreConnectClientOptions {
@@ -151,12 +237,17 @@ export interface SafariProvisionOptions extends AppStoreConnectClientOptions {
   checkOnly?: boolean
   /** Bundle ID platform used when registering. @default MAC_OS */
   platform?: BundleIdPlatform
+  /** Create or align editable App Store versions for the selected platforms. */
+  version?: string
+  /** App Store platforms to provision. @default config.safariPlatforms ?? ['macos'] */
+  platforms?: SafariPlatform[]
 }
 
 export interface SafariProvisionResult {
   container: { identifier: string, exists: boolean, created: boolean }
   extension: { identifier: string, exists: boolean, created: boolean }
   appRecord: { exists: boolean, id?: string }
+  appStoreVersions: SafariAppStoreVersionResult[]
 }
 
 /**
@@ -171,13 +262,20 @@ export async function provisionSafariApp(config: ExtensionConfig, options: Safar
   const client = new AppStoreConnectClient(options)
   const identifier = config.safariBundleId
   const extensionIdentifier = `${identifier}.Extension`
-  const container = await client.ensureBundleId(identifier, config.name, options)
-  const extension = await client.ensureBundleId(extensionIdentifier, `${config.name} Safari Extension`, options)
+  const platforms = options.platforms ?? config.safariPlatforms ?? ['macos']
+  const bundleIdPlatform = options.platform ?? (platforms.includes('ios') ? 'UNIVERSAL' : 'MAC_OS')
+  const bundleOptions = { checkOnly: options.checkOnly, platform: bundleIdPlatform }
+  const container = await client.ensureBundleId(identifier, config.name, bundleOptions)
+  const extension = await client.ensureBundleId(extensionIdentifier, `${config.name} Safari Extension`, bundleOptions)
   const app = await client.findApp(identifier)
+  const appStoreVersions = app && options.version && !options.checkOnly
+    ? await ensureConfiguredAppStoreVersions(client, app.id, platforms, options.version)
+    : []
 
   return {
     container: { identifier, exists: Boolean(container.bundleId), created: container.created },
     extension: { identifier: extensionIdentifier, exists: Boolean(extension.bundleId), created: extension.created },
     appRecord: { exists: Boolean(app), id: app?.id },
+    appStoreVersions,
   }
 }

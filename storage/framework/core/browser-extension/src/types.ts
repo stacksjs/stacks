@@ -8,6 +8,7 @@
  */
 
 export type ExtensionTarget = 'chrome' | 'firefox' | 'safari'
+export type SafariPlatform = 'macos' | 'ios'
 
 /** A content script mapped into the manifest's `content_scripts`. */
 export interface ContentScript {
@@ -133,6 +134,10 @@ export interface ExtensionConfig {
   safariBundleId?: string
   /** Apple Developer team used to sign and publish the Safari container app. */
   safariTeamId?: string
+  /** Apple platforms packaged for Safari. iOS also covers iPadOS. @default ['macos'] */
+  safariPlatforms?: SafariPlatform[]
+  /** macOS App Store category UTI, for example public.app-category.utilities. */
+  safariAppCategory?: string
   /**
    * Build-output files to keep out of the Safari appex Resources when syncing
    * (e.g. marketing-site pages that are built into dist but are not part of

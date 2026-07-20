@@ -7,6 +7,18 @@ interface ExtensionOptions {
   version?: string
 }
 
+type SafariPlatform = 'macos' | 'ios'
+
+function parseSafariPlatforms(platform?: string): SafariPlatform[] | undefined {
+  if (!platform)
+    return undefined
+  if (platform === 'all')
+    return ['macos', 'ios']
+  if (platform === 'macos' || platform === 'ios')
+    return [platform]
+  throw new Error(`Invalid Safari platform ${platform}; use macos, ios, or all`)
+}
+
 /**
  * `buddy extension:*` — build & package MV3 browser extensions from the
  * project's `config/extension.ts` (see @stacksjs/browser-extension). Zero
@@ -157,14 +169,18 @@ export function extension(buddy: CLI): void {
     .option('--api-issuer-id <id>', 'App Store Connect API issuer ID')
     .option('--api-key-path <path>', 'Path to the App Store Connect AuthKey_*.p8 file')
     .option('--check', 'Report missing resources without creating Bundle IDs')
-    .action(async (options: { apiKeyId?: string, apiIssuerId?: string, apiKeyPath?: string, check?: boolean }) => {
+    .option('--version <version>', 'Create or align App Store versions (defaults to package.json)')
+    .option('--platform <platform>', 'Provision macos, ios, or all (defaults to config safariPlatforms)')
+    .action(async (options: { apiKeyId?: string, apiIssuerId?: string, apiKeyPath?: string, check?: boolean, version?: string, platform?: string }) => {
       const { provisionSafariApp } = await import('@stacksjs/browser-extension')
-      const { config } = await load()
+      const { config, version } = await load()
       const result = await provisionSafariApp(config, {
         keyId: options.apiKeyId,
         issuerId: options.apiIssuerId,
         keyPath: options.apiKeyPath,
         checkOnly: Boolean(options.check),
+        version: options.version ?? version,
+        platforms: parseSafariPlatforms(options.platform),
       })
       for (const resource of [result.container, result.extension]) {
         if (resource.created)
@@ -178,6 +194,10 @@ export function extension(buddy: CLI): void {
         log.success(`App Store Connect app record exists (${result.appRecord.id})`)
       else
         log.warn('App Store Connect app record is missing. Apple requires creating it in the App Store Connect website.')
+      for (const appStoreVersion of result.appStoreVersions) {
+        const action = appStoreVersion.created ? 'Created' : appStoreVersion.updated ? 'Updated' : 'Ready'
+        log.success(`${action} Safari ${appStoreVersion.platform} App Store version ${appStoreVersion.version}`)
+      }
     })
 
   buddy
@@ -201,14 +221,38 @@ export function extension(buddy: CLI): void {
     })
 
   buddy
-    .command('extension:safari:app', 'Build the extension, sync it into the appex, and xcodebuild the container app')
+    .command('extension:safari:app', 'Build the extension and its macOS, iPhone, and iPad Safari container apps')
     .option('--release', 'Build the Release configuration (default Debug)')
     .option('--signed', 'Allow code signing (needs an Apple Development identity)')
     .option('--skip-xcodebuild', 'Only build + sync the extension payload')
     .option('--version <version>', 'Override the extension version (defaults to package.json)')
-    .action(async (options: { release?: boolean, signed?: boolean, skipXcodebuild?: boolean, version?: string }) => {
-      const { buildSafariApp } = await import('@stacksjs/browser-extension')
+    .option('--platform <platform>', 'Build macos, ios, or all (defaults to config safariPlatforms)')
+    .action(async (options: { release?: boolean, signed?: boolean, skipXcodebuild?: boolean, version?: string, platform?: string }) => {
+      const { buildSafariApp, buildSafariUniversalApp } = await import('@stacksjs/browser-extension')
       const { config, version } = await load()
+      const platforms = parseSafariPlatforms(options.platform) ?? config.safariPlatforms ?? ['macos']
+      if (platforms.includes('ios')) {
+        const result = await buildSafariUniversalApp(config, {
+          version: options.version ?? version,
+          release: Boolean(options.release),
+          signed: Boolean(options.signed),
+          skipXcodebuild: Boolean(options.skipXcodebuild),
+          platforms,
+        })
+        for (const platform of platforms) {
+          const appPath = result.appPaths[platform]
+          if (appPath)
+            log.success(`Built Safari ${platform} app ${appPath}`)
+        }
+        if (options.skipXcodebuild)
+          log.success(`Generated universal Safari project → ${result.project}`)
+        if (result.appPaths.macos)
+          log.info('Open the macOS app once, then enable the extension in Safari > Settings > Extensions.')
+        if (result.appPaths.ios)
+          log.info('Install the iOS app on an iPhone, iPad, or Simulator, then enable it in Settings > Apps > Safari > Extensions.')
+        return
+      }
+
       const { appPath, resources } = await buildSafariApp(config, {
         version: options.version ?? version,
         release: Boolean(options.release),
@@ -233,7 +277,8 @@ export function extension(buddy: CLI): void {
     .option('--api-issuer-id <id>', 'App Store Connect API issuer ID')
     .option('--api-key-path <path>', 'Path to the App Store Connect AuthKey_*.p8 file')
     .option('--validate-only', 'Create and validate the archive without uploading it')
-    .action(async (options: { version?: string, buildNumber?: string, teamId?: string, apiKeyId?: string, apiIssuerId?: string, apiKeyPath?: string, validateOnly?: boolean }) => {
+    .option('--platform <platform>', 'Publish macos, ios, or all (defaults to config safariPlatforms)')
+    .action(async (options: { version?: string, buildNumber?: string, teamId?: string, apiKeyId?: string, apiIssuerId?: string, apiKeyPath?: string, validateOnly?: boolean, platform?: string }) => {
       const { publishSafariApp } = await import('@stacksjs/browser-extension')
       const { config, version } = await load()
       const result = await publishSafariApp(config, {
@@ -244,9 +289,10 @@ export function extension(buddy: CLI): void {
         issuerId: options.apiIssuerId,
         keyPath: options.apiKeyPath,
         validateOnly: Boolean(options.validateOnly),
+        platforms: parseSafariPlatforms(options.platform),
       })
       log.success(options.validateOnly
-        ? `Validated Safari archive ${result.archivePath} (build ${result.buildNumber})`
-        : `Uploaded Safari build ${result.buildNumber} to App Store Connect`)
+        ? `Validated Safari ${result.artifacts.map(artifact => artifact.platform).join(' + ')} archives (build ${result.buildNumber})`
+        : `Uploaded Safari ${result.artifacts.map(artifact => artifact.platform).join(' + ')} build ${result.buildNumber} to App Store Connect`)
     })
 }

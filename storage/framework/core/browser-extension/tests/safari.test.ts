@@ -6,7 +6,7 @@ import { join } from 'node:path'
 import { afterEach, beforeEach, describe, expect, it } from 'bun:test'
 import { resolveOutdir, rewriteBrowserNamespace } from '../src/build'
 import { generateManifest } from '../src/manifest'
-import { migrateSafariResourceBuildPhase, scaffoldSafariApp, safariAppName, syncSafariResources } from '../src/safari'
+import { migrateSafariResourceBuildPhase, resolveSafariPlatforms, safariPackagerArgs, scaffoldSafariApp, safariAppName, syncSafariResources } from '../src/safari'
 
 const config: ExtensionConfig = {
   name: 'Test Extension',
@@ -14,6 +14,7 @@ const config: ExtensionConfig = {
   geckoId: 'extension@example.com',
   safariBundleId: 'com.example.TestExtension',
   safariTeamId: 'TEAM123456',
+  safariPlatforms: ['macos', 'ios'],
   safariExclude: ['marketing.html', 'marketing.js'],
   background: 'src/background/index.ts',
   content: [
@@ -92,6 +93,25 @@ describe('safariAppName', () => {
   it('strips spaces and punctuation', () => {
     expect(safariAppName(config)).toBe('TestExtension')
     expect(safariAppName({ ...config, name: 'Very Good AdBlock' })).toBe('VeryGoodAdBlock')
+  })
+})
+
+describe('Safari universal platforms', () => {
+  it('uses configured platforms and de-duplicates explicit overrides', () => {
+    expect(resolveSafariPlatforms(config)).toEqual(['macos', 'ios'])
+    expect(resolveSafariPlatforms(config, ['ios', 'macos', 'ios'])).toEqual(['ios', 'macos'])
+    expect(resolveSafariPlatforms({ ...config, safariPlatforms: undefined })).toEqual(['macos'])
+  })
+
+  it('lets the Apple packager create both platforms from one web bundle', () => {
+    const base = safariPackagerArgs('/tmp/input', '/tmp/output', 'TestExtension', 'com.example.TestExtension', ['macos', 'ios'])
+    expect(base[0]).toBe('safari-web-extension-packager')
+    expect(base).not.toContain('--macos-only')
+    expect(base).not.toContain('--ios-only')
+    expect(base.at(-1)).toBe('/tmp/input')
+
+    expect(safariPackagerArgs('/tmp/input', '/tmp/output', 'TestExtension', 'com.example.TestExtension', ['ios'])).toContain('--ios-only')
+    expect(safariPackagerArgs('/tmp/input', '/tmp/output', 'TestExtension', 'com.example.TestExtension', ['macos'])).toContain('--macos-only')
   })
 })
 

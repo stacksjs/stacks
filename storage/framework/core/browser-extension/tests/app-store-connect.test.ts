@@ -127,4 +127,74 @@ describe('App Store Connect Safari provisioning', () => {
     expect(result.container).toEqual({ identifier: 'com.example.TestExtension', exists: false, created: false })
     expect(result.extension).toEqual({ identifier: 'com.example.TestExtension.Extension', exists: false, created: false })
   })
+
+  it('aligns an editable macOS version and creates the iOS platform version', async () => {
+    interface WriteBody {
+      data: {
+        type: string
+        attributes?: Record<string, unknown>
+        relationships?: Record<string, unknown>
+      }
+    }
+    const writes: Array<{ method: string, url: string, body: WriteBody }> = []
+    const fetcher = (async (input: string | URL | Request, init?: RequestInit) => {
+      const url = String(input)
+      if (url.includes('/bundleIds?')) {
+        const identifier = new URL(url).searchParams.get('filter[identifier]')
+        return Response.json({ data: [{ type: 'bundleIds', id: identifier, attributes: { identifier, name: 'existing', platform: 'UNIVERSAL' } }] })
+      }
+      if (url.includes('/apps?')) {
+        return Response.json({ data: [{
+          type: 'apps',
+          id: 'app-123',
+          attributes: { bundleId: config.safariBundleId, name: config.name, primaryLocale: 'en-US', sku: 'test' },
+        }] })
+      }
+      if (url.endsWith('/apps/app-123/appStoreVersions?limit=200')) {
+        return Response.json({ data: [{
+          type: 'appStoreVersions',
+          id: 'mac-version',
+          attributes: { platform: 'MAC_OS', versionString: '1.0', appStoreState: 'PREPARE_FOR_SUBMISSION' },
+        }] })
+      }
+
+      const body = JSON.parse(String(init?.body)) as WriteBody
+      writes.push({ method: init?.method ?? 'GET', url, body })
+      if (init?.method === 'PATCH') {
+        return Response.json({ data: {
+          type: 'appStoreVersions',
+          id: 'mac-version',
+          attributes: { platform: 'MAC_OS', versionString: '0.2.0', appStoreState: 'PREPARE_FOR_SUBMISSION' },
+        } })
+      }
+      return Response.json({ data: {
+        type: 'appStoreVersions',
+        id: 'ios-version',
+        attributes: { platform: 'IOS', versionString: '0.2.0', appStoreState: 'PREPARE_FOR_SUBMISSION' },
+      } }, { status: 201 })
+    }) as typeof fetch
+
+    const result = await provisionSafariApp({ ...config, safariPlatforms: ['macos', 'ios'] }, {
+      keyId: 'KEY123',
+      issuerId: 'issuer-123',
+      keyPath,
+      fetch: fetcher,
+      baseUrl: 'https://example.test/v1',
+      version: '0.2.0',
+    })
+
+    expect(result.appStoreVersions).toEqual([
+      { platform: 'macos', version: '0.2.0', created: false, updated: true, id: 'mac-version' },
+      { platform: 'ios', version: '0.2.0', created: true, updated: false, id: 'ios-version' },
+    ])
+    expect(writes.map(write => ({ method: write.method, path: new URL(write.url).pathname }))).toEqual([
+      { method: 'PATCH', path: '/v1/appStoreVersions/mac-version' },
+      { method: 'POST', path: '/v1/appStoreVersions' },
+    ])
+    expect(writes.at(1)?.body.data).toMatchObject({
+      type: 'appStoreVersions',
+      attributes: { platform: 'IOS', versionString: '0.2.0' },
+      relationships: { app: { data: { type: 'apps', id: 'app-123' } } },
+    })
+  })
 })

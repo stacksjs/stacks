@@ -1,4 +1,4 @@
-import type { ExtensionConfig } from './types'
+import type { ExtensionConfig, SafariPlatform } from './types'
 import { cpSync, existsSync, readdirSync, statSync } from 'node:fs'
 import { mkdir, rm } from 'node:fs/promises'
 import { dirname, join, resolve } from 'node:path'
@@ -31,6 +31,35 @@ export function safariAppName(config: ExtensionConfig): string {
 /** Directory the container app is scaffolded into. */
 export function safariProjectDir(cwd = process.cwd(), dir = 'safari'): string {
   return resolve(cwd, dir)
+}
+
+/** Safari platforms selected in config, de-duplicated in stable order. */
+export function resolveSafariPlatforms(config: ExtensionConfig, platforms?: SafariPlatform[]): SafariPlatform[] {
+  const selected = platforms ?? config.safariPlatforms ?? ['macos']
+  return [...new Set(selected)]
+}
+
+function safariPlatformFlag(platforms: SafariPlatform[]): string | undefined {
+  if (platforms.length !== 1)
+    return undefined
+  return platforms[0] === 'ios' ? '--ios-only' : '--macos-only'
+}
+
+export function safariPackagerArgs(input: string, projectLocation: string, appName: string, bundleId: string, platforms: SafariPlatform[]): string[] {
+  const platformFlag = safariPlatformFlag(platforms)
+  return [
+    'safari-web-extension-packager',
+    '--project-location', projectLocation,
+    '--app-name', appName,
+    '--bundle-identifier', bundleId,
+    '--swift',
+    '--copy-resources',
+    '--no-open',
+    '--no-prompt',
+    '--force',
+    ...(platformFlag ? [platformFlag] : []),
+    input,
+  ]
 }
 
 function templateRoot(): string {
@@ -242,6 +271,25 @@ export interface SafariSyncOptions {
   cwd?: string
 }
 
+async function mirrorSafariResources(config: ExtensionConfig, outdir: string, resources: string, keepPlaceholder = false): Promise<string[]> {
+  const exclude = new Set(config.safariExclude ?? [])
+  await rm(resources, { recursive: true, force: true })
+  await mkdir(resources, { recursive: true })
+  if (keepPlaceholder)
+    await Bun.write(join(resources, '.gitkeep'), '')
+
+  const synced: string[] = []
+  for (const rel of walk(outdir)) {
+    if (exclude.has(rel) || rel.split('/').includes('.DS_Store'))
+      continue
+    const dest = join(resources, rel)
+    await mkdir(dirname(dest), { recursive: true })
+    cpSync(join(outdir, rel), dest)
+    synced.push(rel)
+  }
+  return synced
+}
+
 /**
  * Mirror the built safari bundle into the appex `Resources/` folder. The
  * project references Resources as a folder, so everything synced here ships
@@ -265,34 +313,119 @@ export async function syncSafariResources(config: ExtensionConfig, options: Safa
   }
 
   const resources = join(projectDir, `${appName} Extension`, 'Resources')
-  const exclude = new Set(config.safariExclude ?? [])
-
-  if (existsSync(resources)) {
-    for (const entry of readdirSync(resources)) {
-      if (entry !== '.gitkeep')
-        await rm(join(resources, entry), { recursive: true, force: true })
-    }
-  }
-  await mkdir(resources, { recursive: true })
-
-  let files = 0
-  const synced: string[] = []
-  for (const rel of walk(outdir)) {
-    if (exclude.has(rel) || rel.split('/').includes('.DS_Store'))
-      continue
-    const dest = join(resources, rel)
-    await mkdir(dirname(dest), { recursive: true })
-    cpSync(join(outdir, rel), dest)
-    synced.push(rel)
-    files += 1
-  }
+  const synced = await mirrorSafariResources(config, outdir, resources, true)
 
   const inputs = synced.map(rel => `$(SRCROOT)/${appName} Extension/Resources/${rel}`).join('\n')
   const outputs = synced.map(rel => `$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/${rel}`).join('\n')
   await Bun.write(join(projectDir, `${appName} Extension`, 'Resources.inputs.xcfilelist'), `${inputs}\n`)
   await Bun.write(join(projectDir, `${appName} Extension`, 'Resources.outputs.xcfilelist'), `${outputs}\n`)
 
-  return { resources, files }
+  return { resources, files: synced.length }
+}
+
+export interface SafariUniversalProjectOptions extends SafariSyncOptions {
+  /** Apple platforms included in the generated project. @default config.safariPlatforms ?? ['macos'] */
+  platforms?: SafariPlatform[]
+  /** Build the Safari web bundle before packaging. */
+  build?: boolean
+  /** Extension version, required when build is enabled. */
+  version?: string
+}
+
+export interface SafariUniversalProject {
+  dir: string
+  project: string
+  resources: string
+  platforms: SafariPlatform[]
+}
+
+/** Generate a clean Apple-supported Safari project for macOS, iOS, or both. */
+export async function createSafariUniversalProject(config: ExtensionConfig, options: SafariUniversalProjectOptions = {}): Promise<SafariUniversalProject> {
+  const cwd = options.cwd ?? process.cwd()
+  if (options.build !== false) {
+    if (!options.version)
+      throw new Error('[browser-extension] createSafariUniversalProject needs a version to build the extension')
+    await buildExtension(config, { target: 'safari', version: options.version, cwd })
+  }
+
+  const outdir = resolve(cwd, options.outdir ?? resolveOutdir(config, 'safari'))
+  if (!existsSync(join(outdir, 'manifest.json')))
+    throw new Error(`[browser-extension] ${outdir}/manifest.json is missing. Run extension:build --target safari first.`)
+
+  const appName = safariAppName(config)
+  const bundleId = config.safariBundleId
+  if (!bundleId)
+    throw new Error('[browser-extension] universal Safari packaging needs safariBundleId in config/extension.ts')
+  const platforms = resolveSafariPlatforms(config, options.platforms)
+  if (!platforms.length)
+    throw new Error('[browser-extension] universal Safari packaging needs at least one platform')
+
+  const buildDir = join(safariProjectDir(cwd, options.dir), 'build')
+  const resources = join(buildDir, 'universal-resources')
+  const projectLocation = join(buildDir, 'universal-project')
+  await mirrorSafariResources(config, outdir, resources)
+  await rm(projectLocation, { recursive: true, force: true })
+  await mkdir(projectLocation, { recursive: true })
+
+  const args = safariPackagerArgs(resources, projectLocation, appName, bundleId, platforms)
+  const child = Bun.spawn(['xcrun', ...args], { cwd, stdout: 'inherit', stderr: 'inherit' })
+  const exitCode = await child.exited
+  if (exitCode !== 0)
+    throw new Error(`[browser-extension] Safari web extension packager failed (${exitCode})`)
+
+  const dir = join(projectLocation, appName)
+  const project = join(dir, `${appName}.xcodeproj`)
+  if (!existsSync(project))
+    throw new Error(`[browser-extension] Safari packager did not create ${project}`)
+  return { dir, project, resources, platforms }
+}
+
+export interface SafariUniversalBuildOptions extends SafariUniversalProjectOptions {
+  /** Build the Release configuration. @default false */
+  release?: boolean
+  /** Allow signing for the macOS app. iOS local builds target Simulator. @default false */
+  signed?: boolean
+  /** Generate the universal project without invoking xcodebuild. @default false */
+  skipXcodebuild?: boolean
+}
+
+export interface SafariUniversalBuildResult extends SafariUniversalProject {
+  appPaths: Partial<Record<SafariPlatform, string>>
+}
+
+/** Build Apple-supported macOS and iOS Safari containers from one web bundle. */
+export async function buildSafariUniversalApp(config: ExtensionConfig, options: SafariUniversalBuildOptions = {}): Promise<SafariUniversalBuildResult> {
+  const generated = await createSafariUniversalProject(config, options)
+  const appPaths: Partial<Record<SafariPlatform, string>> = {}
+  if (options.skipXcodebuild)
+    return { ...generated, appPaths }
+
+  const appName = safariAppName(config)
+  const configuration = options.release ? 'Release' : 'Debug'
+  const derivedData = join(safariProjectDir(options.cwd ?? process.cwd(), options.dir), 'build', 'universal-derived')
+  await rm(derivedData, { recursive: true, force: true })
+
+  for (const platform of generated.platforms) {
+    const ios = platform === 'ios'
+    const args = [
+      'xcodebuild',
+      '-project', generated.project,
+      '-scheme', `${appName} (${ios ? 'iOS' : 'macOS'})`,
+      '-configuration', configuration,
+      '-destination', ios ? 'generic/platform=iOS Simulator' : 'generic/platform=macOS',
+      '-derivedDataPath', derivedData,
+      ...(ios ? ['-sdk', 'iphonesimulator', 'CODE_SIGNING_ALLOWED=NO'] : options.signed ? ['-allowProvisioningUpdates'] : ['CODE_SIGNING_ALLOWED=NO']),
+      'build',
+    ]
+    const child = Bun.spawn(args, { cwd: generated.dir, stdout: 'inherit', stderr: 'inherit' })
+    const exitCode = await child.exited
+    if (exitCode !== 0)
+      throw new Error(`[browser-extension] Safari ${platform} app build failed (${exitCode})`)
+    const products = ios ? `${configuration}-iphonesimulator` : configuration
+    appPaths[platform] = join(derivedData, 'Build', 'Products', products, `${appName}.app`)
+  }
+
+  return { ...generated, appPaths }
 }
 
 export interface SafariAppBuildOptions extends SafariSyncOptions {
@@ -370,6 +503,23 @@ export interface SafariPublishOptions extends SafariSyncOptions, AppStoreConnect
   validateOnly?: boolean
   /** Rebuild the Safari web-extension payload before archiving. @default true */
   build?: boolean
+  /** Apple platforms to archive and upload. @default config.safariPlatforms ?? ['macos'] */
+  platforms?: SafariPlatform[]
+}
+
+export interface SafariPublishedArtifact {
+  platform: SafariPlatform
+  archivePath: string
+  exportPath: string
+}
+
+export interface SafariPublishResult {
+  /** First archive, kept for compatibility with macOS-only callers. */
+  archivePath: string
+  /** First export directory, kept for compatibility with macOS-only callers. */
+  exportPath: string
+  buildNumber: string
+  artifacts: SafariPublishedArtifact[]
 }
 
 /** Resolve and validate App Store Connect credentials from options or environment variables. */
@@ -396,6 +546,13 @@ function xcodeAuthArgs(auth: Required<AppStoreConnectAuth>): string[] {
     '-authenticationKeyID', auth.keyId,
     '-authenticationKeyIssuerID', auth.issuerId,
   ]
+}
+
+async function runXcodebuild(args: string[], cwd: string, operation: string): Promise<void> {
+  const child = Bun.spawn(['xcodebuild', ...args], { cwd, stdout: 'inherit', stderr: 'inherit' })
+  const exitCode = await child.exited
+  if (exitCode !== 0)
+    throw new Error(`[browser-extension] ${operation} failed (${exitCode})`)
 }
 
 function exportOptionsPlist(method: 'app-store-connect' | 'validation', teamId: string): string {
@@ -425,7 +582,7 @@ function exportOptionsPlist(method: 'app-store-connect' | 'validation', teamId: 
  * Store Connect. Xcode owns certificate/profile creation and the upload so the
  * same command works locally and in macOS CI with an API key.
  */
-export async function publishSafariApp(config: ExtensionConfig, options: SafariPublishOptions): Promise<{ archivePath: string, exportPath: string, buildNumber: string }> {
+export async function publishSafariApp(config: ExtensionConfig, options: SafariPublishOptions): Promise<SafariPublishResult> {
   const cwd = options.cwd ?? process.cwd()
   const teamId = options.teamId ?? config.safariTeamId
   if (!teamId)
@@ -434,28 +591,94 @@ export async function publishSafariApp(config: ExtensionConfig, options: SafariP
   const buildNumber = options.buildNumber ?? process.env.GITHUB_RUN_NUMBER ?? String(Math.floor(Date.now() / 1000))
   if (!/^\d+(?:\.\d+){0,2}$/.test(buildNumber))
     throw new Error(`[browser-extension] invalid Safari build number ${buildNumber}; use one to three dot-separated integers`)
+  const platforms = resolveSafariPlatforms(config, options.platforms)
+  if (!platforms.length)
+    throw new Error('[browser-extension] Safari publishing needs at least one platform')
+
+  const { provisionSafariApp } = await import('./app-store-connect')
+  const provisioned = await provisionSafariApp(config, {
+    ...auth,
+    version: options.version,
+    platforms,
+  })
+  if (!provisioned.appRecord.exists)
+    throw new Error('[browser-extension] the App Store Connect app record is missing; create it once in App Store Connect before publishing')
 
   if (options.build !== false)
     await buildExtension(config, { target: 'safari', version: options.version, cwd })
-  await syncSafariResources(config, options)
 
   const appName = safariAppName(config)
   const dir = safariProjectDir(cwd, options.dir)
   const buildDir = join(dir, 'build')
-  const archivePath = join(buildDir, `${appName}.xcarchive`)
-  const exportPath = join(buildDir, options.validateOnly ? 'validation' : 'upload')
-  const plistPath = join(buildDir, options.validateOnly ? 'ExportOptions.validation.plist' : 'ExportOptions.app-store.plist')
+
+  // The checked-in scaffold remains the fast macOS-only path. iOS uses
+  // Apple's current packager so one generated project owns matching macOS,
+  // iPhone, and iPad targets under the same app record and bundle IDs.
+  const universal = platforms.includes('ios')
+  let project: string
+  let projectCwd: string
+  if (universal) {
+    const generated = await createSafariUniversalProject(config, {
+      ...options,
+      build: false,
+      platforms,
+    })
+    project = generated.project
+    projectCwd = generated.dir
+  }
+  else {
+    await syncSafariResources(config, options)
+    project = join(dir, `${appName}.xcodeproj`)
+    projectCwd = dir
+  }
+
   const authArgs = xcodeAuthArgs(auth)
   await mkdir(buildDir, { recursive: true })
-  await rm(archivePath, { recursive: true, force: true })
-  await rm(exportPath, { recursive: true, force: true })
-
-  const project = join(dir, `${appName}.xcodeproj`)
-  await Bun.$`xcodebuild -project ${project} -scheme ${appName} -configuration Release -destination generic/platform=macOS -archivePath ${archivePath} MARKETING_VERSION=${options.version} CURRENT_PROJECT_VERSION=${buildNumber} DEVELOPMENT_TEAM=${teamId} ${authArgs} archive`
 
   const method = options.validateOnly ? 'validation' : 'app-store-connect'
-  await Bun.write(plistPath, exportOptionsPlist(method, teamId))
-  await Bun.$`xcodebuild -exportArchive -archivePath ${archivePath} -exportPath ${exportPath} -exportOptionsPlist ${plistPath} ${authArgs}`
+  const artifacts: SafariPublishedArtifact[] = []
+  for (const platform of platforms) {
+    const suffix = universal ? `-${platform}` : ''
+    const archivePath = join(buildDir, `${appName}${suffix}.xcarchive`)
+    const exportPath = join(buildDir, `${options.validateOnly ? 'validation' : 'upload'}${suffix}`)
+    const plistPath = join(buildDir, `ExportOptions.${method}${suffix}.plist`)
+    const scheme = universal ? `${appName} (${platform === 'ios' ? 'iOS' : 'macOS'})` : appName
+    const destination = platform === 'ios' ? 'generic/platform=iOS' : 'generic/platform=macOS'
+    await rm(archivePath, { recursive: true, force: true })
+    await rm(exportPath, { recursive: true, force: true })
 
-  return { archivePath, exportPath, buildNumber }
+    await runXcodebuild([
+      '-project', project,
+      '-scheme', scheme,
+      '-configuration', 'Release',
+      '-destination', destination,
+      '-archivePath', archivePath,
+      `MARKETING_VERSION=${options.version}`,
+      `CURRENT_PROJECT_VERSION=${buildNumber}`,
+      `DEVELOPMENT_TEAM=${teamId}`,
+      // A development-signed device archive needs a registered UDID. Keep the
+      // iOS archive unsigned so export can use API-key-backed cloud signing.
+      ...(platform === 'ios' ? ['CODE_SIGNING_ALLOWED=NO'] : []),
+      ...(platform === 'macos' && config.safariAppCategory ? [`INFOPLIST_KEY_LSApplicationCategoryType=${config.safariAppCategory}`] : []),
+      ...authArgs,
+      'archive',
+    ], projectCwd, `Safari ${platform} archive`)
+
+    await Bun.write(plistPath, exportOptionsPlist(method, teamId))
+    await runXcodebuild([
+      '-exportArchive',
+      '-archivePath', archivePath,
+      '-exportPath', exportPath,
+      '-exportOptionsPlist', plistPath,
+      ...authArgs,
+    ], projectCwd, `Safari ${platform} export`)
+    artifacts.push({ platform, archivePath, exportPath })
+  }
+
+  return {
+    archivePath: artifacts[0].archivePath,
+    exportPath: artifacts[0].exportPath,
+    buildNumber,
+    artifacts,
+  }
 }
