@@ -141,7 +141,7 @@ export default defineExtension({
     permissions: ['declarativeNetRequest', 'storage', 'tabs'],
     hostPermissions: ['http://*/*', 'https://*/*'],
     minimumChromeVersion: '111',
-    firefoxMinVersion: '140.0',
+    firefoxMinVersion: '142.0',
     safariMinVersion: '18.4',
     webAccessibleResources: [{ resources: ['stubs/*.js'], matches: ['<all_urls>'] }],
   },

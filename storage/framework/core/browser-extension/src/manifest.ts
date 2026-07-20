@@ -88,7 +88,7 @@ export function generateManifest(config: ExtensionConfig, opts: { version: strin
     manifest.browser_specific_settings = {
       gecko: {
         id: config.geckoId,
-        strict_min_version: m.firefoxMinVersion ?? '128.0',
+        strict_min_version: m.firefoxMinVersion ?? '142.0',
         // AMO requires a data-collection declaration for new add-ons.
         data_collection_permissions: { required: ['none'] },
       },

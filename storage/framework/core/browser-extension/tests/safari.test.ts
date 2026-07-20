@@ -25,7 +25,7 @@ const config: ExtensionConfig = {
   manifest: {
     permissions: ['declarativeNetRequest', 'storage'],
     minimumChromeVersion: '111',
-    firefoxMinVersion: '140.0',
+    firefoxMinVersion: '142.0',
   },
 }
 
@@ -59,6 +59,17 @@ describe('generateManifest (safari)', () => {
     expect(generateManifest(config, { version: '1', target: 'chrome' }).browser_specific_settings).toBeUndefined()
     const firefox = generateManifest(config, { version: '1', target: 'firefox' }).browser_specific_settings
     expect(firefox && 'gecko' in firefox).toBe(true)
+  })
+
+  it('defaults Firefox to the first version supporting data collection declarations', () => {
+    const firefox = generateManifest({ ...config, manifest: { ...config.manifest, firefoxMinVersion: undefined } }, { version: '1', target: 'firefox' })
+    expect(firefox.browser_specific_settings).toEqual({
+      gecko: {
+        id: 'extension@example.com',
+        strict_min_version: '142.0',
+        data_collection_permissions: { required: ['none'] },
+      },
+    })
   })
 })
 

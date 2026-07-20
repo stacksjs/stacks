@@ -64,7 +64,7 @@ export interface ManifestOverrides {
   hostPermissions?: string[]
   optionalPermissions?: string[]
   minimumChromeVersion?: string
-  /** Firefox `browser_specific_settings.gecko.strict_min_version`. */
+  /** Firefox `browser_specific_settings.gecko.strict_min_version`. @default '142.0' */
   firefoxMinVersion?: string
   /**
    * Safari `browser_specific_settings.safari.strict_min_version`.
