@@ -207,11 +207,32 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GH_PAT }}
         run: |
-          if ! gh repo view stacksjs/homebrew-tap &>/dev/null; then
-            echo "Creating homebrew-tap repository..."
-            gh repo create stacksjs/homebrew-tap --public --description "Homebrew tap for Stacks packages"
-          else
-            echo "homebrew-tap repository already exists"
+          tap_ready=false
+          for attempt in $(seq 1 240); do
+            if output=$(gh api repos/stacksjs/homebrew-tap 2>&1); then
+              tap_ready=true
+              echo "homebrew-tap repository already exists"
+              break
+            fi
+
+            if echo "$output" | grep -q 'HTTP 404'; then
+              echo "Creating homebrew-tap repository..."
+              if gh repo create stacksjs/homebrew-tap --public --description "Homebrew tap for Stacks packages"; then
+                tap_ready=true
+                break
+              fi
+              echo "::warning::Repository creation was not confirmed; reconciling before retry"
+            else
+              echo "::warning::Homebrew tap lookup failed transiently; retrying (attempt $attempt/240)"
+            fi
+
+            delay=$((attempt < 7 ? attempt * 5 : 30))
+            sleep "$delay"
+          done
+
+          if [ "$tap_ready" != true ]; then
+            echo "::error::Could not confirm the Homebrew tap after extended retries"
+            exit 1
           fi
 
       - name: Authenticate GitHub CLI with App Token
