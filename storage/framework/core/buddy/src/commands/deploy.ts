@@ -1922,7 +1922,11 @@ async function reconcileHetznerDns(sites: Record<string, any>, ip: string, logge
     return
   }
 
-  const { createDnsProvider, detectDnsProvider } = await import('@stacksjs/ts-cloud') as any
+  const {
+    createDnsProvider,
+    detectDnsProvider,
+    removeStaleServerAddressRecords,
+  } = await import('@stacksjs/ts-cloud') as any
   logger.info('Reconciling DNS records...')
 
   // Best-effort A-record lookup so externally managed domains that already
@@ -1988,6 +1992,12 @@ async function reconcileHetznerDns(sites: Record<string, any>, ip: string, logge
           logger.warn(`  DNS: ${fqdn} → ${ip} failed: ${res.error || res.message || 'unknown error'}`)
           continue
         }
+        // An upsert may update only one of multiple records with the same
+        // hostname. Remove the remaining stale addresses so DNS cannot
+        // round-robin traffic back to an old host (and its stale TLS cert).
+        const cleanupWarnings = await removeStaleServerAddressRecords(provider, domain, fqdn, ip)
+        for (const warning of cleanupWarnings)
+          logger.warn(`  DNS: ${fqdn} cleanup: ${warning}`)
         // Post-write verification against the provider API. Upsert paths
         // have produced phantom successes, so only print ✓ once the
         // record is confirmed to exist. Best-effort: providers without a
