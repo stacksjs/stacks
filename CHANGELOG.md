@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.126...v0.70.127)
+
+## 🔧 Chores
+
+- **deps**: update ts-cloud to 0.7.37 ([bcae486](https://github.com/stacksjs/stacks/commit/bcae486)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.125...v0.70.126)
 
 ## 🐛 Bug Fixes
