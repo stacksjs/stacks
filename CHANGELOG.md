@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.138...v0.70.139)
+
+## 🐛 Bug Fixes
+
+- **actions**: execute resolved action files ([38ebaf4](https://github.com/stacksjs/stacks/commit/38ebaf4)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.137...v0.70.138)
 
 ## 🐛 Bug Fixes
