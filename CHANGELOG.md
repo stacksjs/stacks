@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.150...v0.70.151)
+
+## 🐛 Bug Fixes
+
+- **server**: enforce site mode behind proxies ([ecc1588](https://github.com/stacksjs/stacks/commit/ecc1588)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.149...v0.70.150)
 
 ## ✨ Features
