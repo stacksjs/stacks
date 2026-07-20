@@ -136,7 +136,15 @@ export function extension(buddy: CLI): void {
         uploadOnly: Boolean(options.uploadOnly),
         blockOnWarnings: !options.allowWarnings,
       })
-      log.success(`Uploaded Chrome package ${result.packagePath} (${result.upload.crxVersion ?? 'processing complete'})`)
+      if (result.deferred) {
+        log.warn(`${result.deferred.reason}. Version ${options.version ?? version} remains queued for the next automated retry.`)
+        return
+      }
+      if (result.alreadyPublished) {
+        log.success(result.alreadyPublished.reason)
+        return
+      }
+      log.success(`Uploaded Chrome package ${result.packagePath} (${result.upload?.crxVersion ?? 'processing complete'})`)
       if (result.publish)
         log.success(`Submitted Chrome Web Store item ${result.publish.itemId}: ${result.publish.state}`)
     })
@@ -291,9 +299,15 @@ export function extension(buddy: CLI): void {
         validateOnly: Boolean(options.validateOnly),
         platforms: parseSafariPlatforms(options.platform),
       })
-      log.success(options.validateOnly
-        ? `Validated Safari ${result.artifacts.map(artifact => artifact.platform).join(' + ')} archives (build ${result.buildNumber})`
-        : `Uploaded and selected Safari ${result.attachments.map(attachment => attachment.platform).join(' + ')} build ${result.buildNumber} in App Store Connect`)
+      for (const deferred of result.deferred)
+        log.warn(`${deferred.reason}. Version ${deferred.version} remains queued for the next automated retry.`)
+      for (const published of result.alreadyPublished)
+        log.success(`Safari ${published.platform} version ${published.version} is already published${published.state ? ` (${published.state})` : ''}`)
+      if (result.artifacts.length) {
+        log.success(options.validateOnly
+          ? `Validated Safari ${result.artifacts.map(artifact => artifact.platform).join(' + ')} archives (build ${result.buildNumber})`
+          : `Uploaded and selected Safari ${result.attachments.map(attachment => attachment.platform).join(' + ')} build ${result.buildNumber} in App Store Connect`)
+      }
       if (result.appStoreSubmission?.reviewSubmissionIds.length)
         log.success(`Submitted ${result.appStoreSubmission.reviewSubmissionIds.length} Safari version(s) to App Review`)
     })

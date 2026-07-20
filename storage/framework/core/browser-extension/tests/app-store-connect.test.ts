@@ -185,8 +185,8 @@ describe('App Store Connect Safari provisioning', () => {
     })
 
     expect(result.appStoreVersions).toEqual([
-      { platform: 'macos', version: '0.2.0', created: false, updated: true, id: 'mac-version' },
-      { platform: 'ios', version: '0.2.0', created: true, updated: false, id: 'ios-version' },
+      { platform: 'macos', version: '0.2.0', created: false, updated: true, id: 'mac-version', status: 'ready', appStoreState: 'PREPARE_FOR_SUBMISSION' },
+      { platform: 'ios', version: '0.2.0', created: true, updated: false, id: 'ios-version', status: 'ready', appStoreState: 'PREPARE_FOR_SUBMISSION' },
     ])
     expect(writes.map(write => ({ method: write.method, path: new URL(write.url).pathname }))).toEqual([
       { method: 'PATCH', path: '/v1/appStoreVersions/mac-version' },
@@ -197,6 +197,52 @@ describe('App Store Connect Safari provisioning', () => {
       attributes: { platform: 'IOS', versionString: '0.2.0' },
       relationships: { app: { data: { type: 'apps', id: 'app-123' } } },
     })
+  })
+
+  it('queues a new version behind an active App Review submission', async () => {
+    let writes = 0
+    const fetcher = (async (input: string | URL | Request, init?: RequestInit) => {
+      if (init?.method && init.method !== 'GET')
+        writes += 1
+      const url = String(input)
+      if (url.includes('/bundleIds?')) {
+        const identifier = new URL(url).searchParams.get('filter[identifier]')
+        return Response.json({ data: [{ type: 'bundleIds', id: identifier, attributes: { identifier, name: 'existing', platform: 'UNIVERSAL' } }] })
+      }
+      if (url.includes('/apps?')) {
+        return Response.json({ data: [{
+          type: 'apps',
+          id: 'app-123',
+          attributes: { bundleId: config.safariBundleId, name: config.name, primaryLocale: 'en-US', sku: 'test' },
+        }] })
+      }
+      return Response.json({ data: [{
+        type: 'appStoreVersions',
+        id: 'mac-version',
+        attributes: { platform: 'MAC_OS', versionString: '0.2.0', appStoreState: 'WAITING_FOR_REVIEW' },
+      }] })
+    }) as typeof fetch
+
+    const result = await provisionSafariApp({ ...config, safariPlatforms: ['macos'] }, {
+      keyId: 'KEY123',
+      issuerId: 'issuer-123',
+      keyPath,
+      fetch: fetcher,
+      baseUrl: 'https://example.test/v1',
+      version: '0.2.1',
+    })
+
+    expect(writes).toBe(0)
+    expect(result.appStoreVersions).toEqual([{
+      platform: 'macos',
+      version: '0.2.1',
+      created: false,
+      updated: false,
+      id: 'mac-version',
+      status: 'deferred',
+      appStoreState: 'WAITING_FOR_REVIEW',
+      reason: 'Safari macos version 0.2.1 is queued behind 0.2.0 (WAITING_FOR_REVIEW)',
+    }])
   })
 
   it('waits for processed builds and selects each Apple platform version', async () => {

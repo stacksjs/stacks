@@ -51,6 +51,28 @@ export interface ChromePublishResult {
   warningInfo?: { warnings?: Array<{ reason: string, description: string }> }
 }
 
+export interface ChromeDeferredPublishResult {
+  state: string
+  submittedVersion?: string
+  reason: string
+}
+
+export interface ChromePublishedVersionResult {
+  state: string
+  version: string
+  reason: string
+}
+
+export interface ChromeWebStorePublishResult {
+  packagePath: string
+  upload?: ChromeUploadResult
+  publish?: ChromePublishResult
+  /** The requested release is queued behind a revision that Google is reviewing. */
+  deferred?: ChromeDeferredPublishResult
+  /** The requested release is already live in the configured distribution channel. */
+  alreadyPublished?: ChromePublishedVersionResult
+}
+
 interface GoogleTokenResponse {
   access_token?: string
   error?: string
@@ -207,13 +229,48 @@ export interface ChromeWebStorePublishOptions extends ChromeWebStoreClientOption
   blockOnWarnings?: boolean
 }
 
+function pendingReview(status: ChromeWebStoreStatus): ChromeDeferredPublishResult | undefined {
+  if (status.submittedItemRevisionStatus?.state !== 'PENDING_REVIEW')
+    return undefined
+
+  const submittedVersion = status.submittedItemRevisionStatus.distributionChannels?.[0]?.crxVersion
+  return {
+    state: status.submittedItemRevisionStatus.state,
+    submittedVersion,
+    reason: submittedVersion
+      ? `Chrome Web Store version ${submittedVersion} is already pending review`
+      : 'A Chrome Web Store revision is already pending review',
+  }
+}
+
+function publishedVersion(status: ChromeWebStoreStatus, version: string): ChromePublishedVersionResult | undefined {
+  const published = status.publishedItemRevisionStatus
+  if (!published || !['PUBLISHED', 'PUBLISHED_TO_TESTERS'].includes(published.state))
+    return undefined
+  if (!published.distributionChannels?.some(channel => channel.crxVersion === version))
+    return undefined
+  return {
+    state: published.state,
+    version,
+    reason: `Chrome Web Store version ${version} is already ${published.state.toLowerCase().replaceAll('_', ' ')}`,
+  }
+}
+
 /** Build, package, upload, and optionally submit an existing Chrome Web Store item. */
-export async function publishChromeExtension(config: ExtensionConfig, options: ChromeWebStorePublishOptions): Promise<{ packagePath: string, upload: ChromeUploadResult, publish?: ChromePublishResult }> {
+export async function publishChromeExtension(config: ExtensionConfig, options: ChromeWebStorePublishOptions): Promise<ChromeWebStorePublishResult> {
   if (!config.chromeWebStore)
     throw new Error('[browser-extension] Chrome publishing needs chromeWebStore.publisherId and chromeWebStore.itemId in config/extension.ts')
   const cwd = options.cwd ?? process.cwd()
   const packagePath = options.packagePath ?? await packageExtension(config, { target: 'chrome', version: options.version, cwd })
   const client = new ChromeWebStoreClient(options)
+  const status = await client.fetchStatus(config.chromeWebStore)
+  const alreadyPublished = publishedVersion(status, options.version)
+  if (alreadyPublished)
+    return { packagePath, alreadyPublished }
+  const deferred = pendingReview(status)
+  if (deferred)
+    return { packagePath, deferred }
+
   const upload = await client.upload(config.chromeWebStore, packagePath)
   if (upload.uploadState === 'IN_PROGRESS')
     await client.waitForUpload(config.chromeWebStore)

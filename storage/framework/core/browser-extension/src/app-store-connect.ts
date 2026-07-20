@@ -283,6 +283,14 @@ const editableVersionStates = new Set([
   'DEVELOPER_REJECTED',
   'REJECTED',
   'METADATA_REJECTED',
+  'INVALID_BINARY',
+])
+
+const releasedVersionStates = new Set([
+  'READY_FOR_DISTRIBUTION',
+  'READY_FOR_SALE',
+  'DEVELOPER_REMOVED_FROM_SALE',
+  'REMOVED_FROM_SALE',
 ])
 
 function appStorePlatform(platform: SafariPlatform): AppStoreVersionPlatform {
@@ -295,6 +303,9 @@ export interface SafariAppStoreVersionResult {
   created: boolean
   updated: boolean
   id: string
+  status?: 'ready' | 'deferred' | 'published'
+  appStoreState?: string
+  reason?: string
 }
 
 export interface SafariBuildAttachmentResult {
@@ -365,7 +376,22 @@ async function ensureConfiguredAppStoreVersions(client: AppStoreConnectClient, a
     const applePlatform = appStorePlatform(platform)
     const exact = versions.find(item => item.attributes.platform === applePlatform && item.attributes.versionString === version)
     if (exact) {
-      results.push({ platform, version, created: false, updated: false, id: exact.id })
+      const appStoreState = exact.attributes.appStoreState
+      const status = editableVersionStates.has(appStoreState)
+        ? 'ready'
+        : releasedVersionStates.has(appStoreState)
+          ? 'published'
+          : 'deferred'
+      results.push({
+        platform,
+        version,
+        created: false,
+        updated: false,
+        id: exact.id,
+        status,
+        appStoreState,
+        ...(status === 'deferred' ? { reason: `Safari ${platform} version ${version} is already ${appStoreState}` } : {}),
+      })
       continue
     }
 
@@ -373,13 +399,28 @@ async function ensureConfiguredAppStoreVersions(client: AppStoreConnectClient, a
     if (editable) {
       const updated = await client.updateAppStoreVersion(editable.id, version)
       editable.attributes.versionString = version
-      results.push({ platform, version, created: false, updated: true, id: updated.id })
+      results.push({ platform, version, created: false, updated: true, id: updated.id, status: 'ready', appStoreState: updated.attributes.appStoreState })
+      continue
+    }
+
+    const blocking = versions.find(item => item.attributes.platform === applePlatform && !releasedVersionStates.has(item.attributes.appStoreState))
+    if (blocking) {
+      results.push({
+        platform,
+        version,
+        created: false,
+        updated: false,
+        id: blocking.id,
+        status: 'deferred',
+        appStoreState: blocking.attributes.appStoreState,
+        reason: `Safari ${platform} version ${version} is queued behind ${blocking.attributes.versionString} (${blocking.attributes.appStoreState})`,
+      })
       continue
     }
 
     const created = await client.createAppStoreVersion(appId, applePlatform, version)
     versions.push(created)
-    results.push({ platform, version, created: true, updated: false, id: created.id })
+    results.push({ platform, version, created: true, updated: false, id: created.id, status: 'ready', appStoreState: created.attributes.appStoreState })
   }
   return results
 }

@@ -524,6 +524,10 @@ export interface SafariPublishResult {
   exportPath: string
   buildNumber: string
   artifacts: SafariPublishedArtifact[]
+  /** Platforms queued behind an App Store version that is already in review. */
+  deferred: Array<{ platform: SafariPlatform, version: string, state?: string, reason: string }>
+  /** Platforms for which this marketing version is already live. */
+  alreadyPublished: Array<{ platform: SafariPlatform, version: string, state?: string }>
   /** App Store version/build relationships selected after upload processing. */
   attachments: Array<{ platform: SafariPlatform, versionId: string, buildId: string, buildNumber: string }>
   /** Metadata and App Review submissions created after upload, when configured. */
@@ -609,11 +613,38 @@ export async function publishSafariApp(config: ExtensionConfig, options: SafariP
   const { AppStoreConnectClient, attachSafariBuilds, provisionSafariApp } = await import('./app-store-connect')
   const provisioned = await provisionSafariApp(config, {
     ...auth,
-    version: options.version,
+    version: options.validateOnly ? undefined : options.version,
     platforms,
   })
   if (!provisioned.appRecord.exists)
     throw new Error('[browser-extension] the App Store Connect app record is missing; create it once in App Store Connect before publishing')
+
+  const publishablePlatforms = options.validateOnly
+    ? platforms
+    : platforms.filter(platform => provisioned.appStoreVersions.some(version => version.platform === platform && version.status !== 'deferred' && version.status !== 'published'))
+  const deferred = provisioned.appStoreVersions
+    .filter(version => version.status === 'deferred')
+    .map(version => ({
+      platform: version.platform,
+      version: version.version,
+      state: version.appStoreState,
+      reason: version.reason ?? `Safari ${version.platform} publication is deferred`,
+    }))
+  const alreadyPublished = provisioned.appStoreVersions
+    .filter(version => version.status === 'published')
+    .map(version => ({ platform: version.platform, version: version.version, state: version.appStoreState }))
+
+  if (!publishablePlatforms.length) {
+    return {
+      archivePath: '',
+      exportPath: '',
+      buildNumber,
+      artifacts: [],
+      attachments: [],
+      deferred,
+      alreadyPublished,
+    }
+  }
 
   if (options.build !== false)
     await buildExtension(config, { target: 'safari', version: options.version, cwd })
@@ -625,14 +656,14 @@ export async function publishSafariApp(config: ExtensionConfig, options: SafariP
   // The checked-in scaffold remains the fast macOS-only path. iOS uses
   // Apple's current packager so one generated project owns matching macOS,
   // iPhone, and iPad targets under the same app record and bundle IDs.
-  const universal = platforms.includes('ios')
+  const universal = publishablePlatforms.includes('ios')
   let project: string
   let projectCwd: string
   if (universal) {
     const generated = await createSafariUniversalProject(config, {
       ...options,
       build: false,
-      platforms,
+      platforms: publishablePlatforms,
     })
     project = generated.project
     projectCwd = generated.dir
@@ -648,7 +679,7 @@ export async function publishSafariApp(config: ExtensionConfig, options: SafariP
 
   const method = options.validateOnly ? 'validation' : 'app-store-connect'
   const artifacts: SafariPublishedArtifact[] = []
-  for (const platform of platforms) {
+  for (const platform of publishablePlatforms) {
     const suffix = universal ? `-${platform}` : ''
     const archivePath = join(buildDir, `${appName}${suffix}.xcarchive`)
     const exportPath = join(buildDir, `${options.validateOnly ? 'validation' : 'upload'}${suffix}`)
@@ -692,7 +723,7 @@ export async function publishSafariApp(config: ExtensionConfig, options: SafariP
     : await attachSafariBuilds(
         new AppStoreConnectClient(auth),
         provisioned.appRecord.id!,
-        provisioned.appStoreVersions,
+        provisioned.appStoreVersions.filter(version => version.status !== 'deferred' && version.status !== 'published'),
         buildNumber,
         {
           timeoutMs: options.processingTimeoutMs,
@@ -720,6 +751,8 @@ export async function publishSafariApp(config: ExtensionConfig, options: SafariP
     exportPath: firstArtifact.exportPath,
     buildNumber,
     artifacts,
+    deferred,
+    alreadyPublished,
     attachments,
     appStoreSubmission: appStoreSubmission
       ? { versions: appStoreSubmission.versions, reviewSubmissionIds: appStoreSubmission.reviewSubmissionIds }

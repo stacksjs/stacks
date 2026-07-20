@@ -4,7 +4,7 @@ import { mkdtempSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, beforeEach, describe, expect, it } from 'bun:test'
-import { ChromeWebStoreClient, chromeWebStoreServiceAccountAssertion } from '../src/chrome-web-store'
+import { ChromeWebStoreClient, chromeWebStoreServiceAccountAssertion, publishChromeExtension } from '../src/chrome-web-store'
 import { firefoxListingMetadata, firefoxSignArgs, resolveWebExtExecutable } from '../src/firefox-addons'
 
 const chromeConfig: ChromeWebStoreConfig = {
@@ -77,6 +77,67 @@ describe('Chrome Web Store API v2', () => {
       blockOnWarnings: true,
       deployInfos: [{ deployPercentage: 25 }],
     })
+  })
+
+  it('queues a new package without uploading while an earlier revision is under review', async () => {
+    const packagePath = join(dir, 'extension.zip')
+    await Bun.write(packagePath, 'zip-fixture')
+    let requests = 0
+    const result = await publishChromeExtension({
+      name: 'Test Extension',
+      description: 'Private and fast.',
+      chromeWebStore: chromeConfig,
+    }, {
+      version: '1.2.4',
+      packagePath,
+      accessToken: 'test-access-token',
+      baseUrl: 'https://chrome.example.test',
+      fetch: (async () => {
+        requests += 1
+        return Response.json({
+          name: 'item',
+          itemId: chromeConfig.itemId,
+          submittedItemRevisionStatus: {
+            state: 'PENDING_REVIEW',
+            distributionChannels: [{ deployPercentage: 100, crxVersion: '1.2.3' }],
+          },
+        })
+      }) as typeof fetch,
+    })
+
+    expect(requests).toBe(1)
+    expect(result.upload).toBeUndefined()
+    expect(result.deferred).toEqual({
+      state: 'PENDING_REVIEW',
+      submittedVersion: '1.2.3',
+      reason: 'Chrome Web Store version 1.2.3 is already pending review',
+    })
+  })
+
+  it('does not upload a version that is already published', async () => {
+    const packagePath = join(dir, 'extension.zip')
+    await Bun.write(packagePath, 'zip-fixture')
+    const result = await publishChromeExtension({
+      name: 'Test Extension',
+      description: 'Private and fast.',
+      chromeWebStore: chromeConfig,
+    }, {
+      version: '1.2.3',
+      packagePath,
+      accessToken: 'test-access-token',
+      baseUrl: 'https://chrome.example.test',
+      fetch: (async () => Response.json({
+        name: 'item',
+        itemId: chromeConfig.itemId,
+        publishedItemRevisionStatus: {
+          state: 'PUBLISHED',
+          distributionChannels: [{ deployPercentage: 100, crxVersion: '1.2.3' }],
+        },
+      })) as typeof fetch,
+    })
+
+    expect(result.upload).toBeUndefined()
+    expect(result.alreadyPublished?.version).toBe('1.2.3')
   })
 })
 
