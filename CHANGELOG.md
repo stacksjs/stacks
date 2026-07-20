@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.140...v0.70.141)
+
+## 🐛 Bug Fixes
+
+- **browser-extension**: keep Safari resource lists portable ([a6dc738](https://github.com/stacksjs/stacks/commit/a6dc738)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.139...v0.70.140)
 
 ## 🐛 Bug Fixes
