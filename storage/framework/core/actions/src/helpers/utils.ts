@@ -5,7 +5,7 @@ import { existsSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { join } from 'node:path'
 import process from 'node:process'
-import { buddyOptions, runCommand, runCommands } from '@stacksjs/cli'
+import { buddyOptions, runCommand } from '@stacksjs/cli'
 import { err } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/logging'
 import * as p from '@stacksjs/path'
@@ -256,16 +256,23 @@ export async function runActions(
       return err(`The specified action "${action}" does not exist`)
   }
 
-  const opts = buddyOptions(options) || ''
+  return await runActionSequence(actions, options)
+}
 
-  const o = {
-    cwd: options?.cwd || p.projectPath(),
-    ...options,
+export async function runActionSequence(
+  actions: Action[],
+  options: ActionOptions | undefined,
+  runner: typeof runAction = runAction,
+): Promise<any> {
+  let result: any
+
+  for (const action of actions) {
+    result = await runner(action, options)
+    if (result?.isErr)
+      return result
   }
 
-  const commands = actions.map(action => `bun ${p.relativeActionsPath(`src/${action}.ts`)} ${opts}`)
-
-  return await runCommands(commands, o)
+  return result
 }
 
 // looks in most common locations
