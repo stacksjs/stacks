@@ -1,5 +1,19 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.127...v0.70.128)
+
+## 💚 Continuous Integration
+
+- install Bun through Pantry ([76f9f7a](https://github.com/stacksjs/stacks/commit/76f9f7a)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🔧 Chores
+
+- **deps**: update ts-cloud to 0.7.40 ([deb7b40](https://github.com/stacksjs/stacks/commit/deb7b40)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.126...v0.70.127)
 
 ## 🔧 Chores
