@@ -158,6 +158,7 @@ jobs:
   github-release:
     if: >-
       always() &&
+      github.ref_type == 'tag' &&
       needs.validate.result == 'success' &&
       needs.publish-chrome.result == 'success' &&
       needs.publish-firefox.result == 'success' &&
