@@ -31,6 +31,7 @@ buddy extension:chrome:publish --upload-only
 buddy extension:firefox:publish         # build, submit, sign through AMO
 buddy extension:safari:provision        # register Bundle IDs + check app record
 buddy extension:safari:publish
+buddy extension:safari:submit           # submit an already-uploaded version
 ```
 
 Chrome reads `CHROME_WEB_STORE_SERVICE_ACCOUNT_PATH` (or
@@ -79,6 +80,7 @@ buddy extension:safari:provision # register both Bundle IDs + check the app reco
 buddy extension:safari:app    # build configured macOS/iOS apps
 buddy extension:safari:app --platform ios # build for iPhone/iPad Simulator
 buddy extension:safari:publish # archive + upload every configured Apple platform
+buddy extension:safari:submit  # sync listing metadata and submit existing builds
 ```
 
 Set `safariBundleId` in the config (the appex gets `<safariBundleId>.Extension`)
@@ -91,11 +93,18 @@ selects each processed build on its matching App Store version. Publishing
 reads `APP_STORE_CONNECT_API_KEY_ID`, `APP_STORE_CONNECT_API_ISSUER_ID`, and
 `APP_STORE_CONNECT_API_KEY_PATH` from the environment. Run with
 `--validate-only` to exercise Apple's validation without uploading a build.
-and list any build output that is not part of the extension (marketing pages,
+List any build output that is not part of the extension (marketing pages,
 etc.) in `safariExclude` so it stays out of the appex. The scaffold mirrors
 what `xcrun safari-web-extension-converter` generates, so day-to-day work
 never needs the converter; `--signed` builds need an Apple Development
 identity selected in Xcode.
+
+When `safariAppStore` is configured, publishing also synchronizes the app
+description, category, content-rights declaration, pricing, age rating,
+territory availability, review contact, export compliance, and required
+screenshots. With `submitForReview: true`, the macOS and iOS versions are then
+submitted independently to App Review. The workflow is resumable and keeps an
+existing active review submission intact.
 
 For device testing, install the generated iOS app from Xcode, then enable the
 extension in Settings > Apps > Safari > Extensions. The iOS target supports
@@ -118,6 +127,27 @@ export default defineExtension({
   safariTeamId: 'TEAM123456',
   safariPlatforms: ['macos', 'ios'], // iOS includes iPhone and iPad
   safariAppCategory: 'public.app-category.utilities',
+  safariAppStore: {
+    subtitle: 'Fast, private blocking',
+    privacyPolicyUrl: 'https://example.com/privacy',
+    description: 'A private Safari extension.',
+    keywords: 'privacy,blocking',
+    supportUrl: 'https://example.com/support',
+    copyright: '2026 Example',
+    primaryCategory: 'UTILITIES',
+    contentRightsDeclaration: 'DOES_NOT_USE_THIRD_PARTY_CONTENT',
+    price: '0',
+    reviewContact: {
+      firstName: 'App', lastName: 'Reviewer',
+      phone: '+1 555-555-0100', email: 'review@example.com',
+    },
+    screenshots: {
+      APP_DESKTOP: ['resources/store/macos.png'],
+      APP_IPHONE_67: ['resources/store/iphone.png'],
+      APP_IPAD_PRO_3GEN_129: ['resources/store/ipad.png'],
+    },
+    submitForReview: true,
+  },
   targets: ['chrome', 'firefox'],
 
   background: 'src/background/index.ts',

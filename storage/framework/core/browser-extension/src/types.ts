@@ -117,6 +117,84 @@ export interface FirefoxAddonsConfig {
   artifactsDir?: string
 }
 
+export type SafariScreenshotDisplayType = 'APP_DESKTOP' | 'APP_IPHONE_67' | 'APP_IPAD_PRO_3GEN_129'
+export type SafariAppStoreReleaseType = 'MANUAL' | 'AFTER_APPROVAL' | 'SCHEDULED'
+export type SafariAgeRatingFrequency = 'NONE' | 'INFREQUENT_OR_MILD' | 'FREQUENT_OR_INTENSE'
+
+export interface SafariAppStoreReviewContact {
+  firstName: string
+  lastName: string
+  phone: string
+  email: string
+  /** Instructions that help App Review find and exercise the extension. */
+  notes?: string
+}
+
+/** App Store age-rating answers. Omitted answers default to no content. */
+export interface SafariAppStoreAgeRating {
+  advertising?: boolean
+  alcoholTobaccoOrDrugUseOrReferences?: SafariAgeRatingFrequency
+  contests?: SafariAgeRatingFrequency
+  gambling?: boolean
+  gamblingSimulated?: SafariAgeRatingFrequency
+  gunsOrOtherWeapons?: SafariAgeRatingFrequency
+  healthOrWellnessTopics?: boolean
+  lootBox?: boolean
+  medicalOrTreatmentInformation?: SafariAgeRatingFrequency
+  messagingAndChat?: boolean
+  parentalControls?: boolean
+  profanityOrCrudeHumor?: SafariAgeRatingFrequency
+  ageAssurance?: boolean
+  sexualContentGraphicAndNudity?: SafariAgeRatingFrequency
+  sexualContentOrNudity?: SafariAgeRatingFrequency
+  socialMedia?: boolean
+  socialMediaAgeRestricted?: boolean
+  horrorOrFearThemes?: SafariAgeRatingFrequency
+  matureOrSuggestiveThemes?: SafariAgeRatingFrequency
+  unrestrictedWebAccess?: boolean
+  userGeneratedContent?: boolean
+  violenceCartoonOrFantasy?: SafariAgeRatingFrequency
+  violenceRealisticProlongedGraphicOrSadistic?: SafariAgeRatingFrequency
+  violenceRealistic?: SafariAgeRatingFrequency
+}
+
+/** Metadata and assets managed through the official App Store Connect API. */
+export interface SafariAppStoreConfig {
+  /** Metadata locale. @default the app's primary locale */
+  locale?: string
+  subtitle: string
+  privacyPolicyUrl: string
+  description: string
+  keywords: string
+  supportUrl: string
+  marketingUrl?: string
+  promotionalText?: string
+  whatsNew?: string
+  copyright: string
+  /** App Store category identifier, for example UTILITIES. */
+  primaryCategory: string
+  /** Whether the app displays or accesses third-party content. */
+  contentRightsDeclaration: 'DOES_NOT_USE_THIRD_PARTY_CONTENT' | 'USES_THIRD_PARTY_CONTENT'
+  /** Customer price in the base territory. Use '0' for a free app. */
+  price: string
+  /** ISO 3166-1 alpha-3 base territory. @default USA */
+  baseTerritory?: string
+  /** Automatically release once App Review approves the version. @default AFTER_APPROVAL */
+  releaseType?: SafariAppStoreReleaseType
+  /** Make the app available in every current and future territory. @default true */
+  availableInNewTerritories?: boolean
+  /** Declare that the app does not use the advertising identifier. @default false */
+  usesIdfa?: boolean
+  /** Export-compliance answer applied to uploaded builds. @default false */
+  usesNonExemptEncryption?: boolean
+  ageRating?: SafariAppStoreAgeRating
+  reviewContact: SafariAppStoreReviewContact
+  /** Screenshot files keyed by Apple's display type. Paths are relative to the project root. */
+  screenshots: Partial<Record<SafariScreenshotDisplayType, string[]>>
+  /** Submit complete versions to App Review after upload. @default false */
+  submitForReview?: boolean
+}
+
 export interface ExtensionConfig {
   /** Display name (`manifest.name`). */
   name: string
@@ -138,6 +216,8 @@ export interface ExtensionConfig {
   safariPlatforms?: SafariPlatform[]
   /** macOS App Store category UTI, for example public.app-category.utilities. */
   safariAppCategory?: string
+  /** App Store listing metadata, screenshots, compliance, and review automation. */
+  safariAppStore?: SafariAppStoreConfig
   /**
    * Build-output files to keep out of the Safari appex Resources when syncing
    * (e.g. marketing-site pages that are built into dist but are not part of

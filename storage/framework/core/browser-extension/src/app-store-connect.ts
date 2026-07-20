@@ -75,8 +75,25 @@ interface ApiResourceResponse<T extends Record<string, unknown>> {
   data: AppStoreConnectResource<T>
 }
 
+interface ApiError {
+  status?: string
+  code?: string
+  title?: string
+  detail?: string
+  meta?: { associatedErrors?: Record<string, ApiError[]> }
+}
+
 interface ApiErrorResponse {
-  errors?: Array<{ status?: string, code?: string, title?: string, detail?: string }>
+  errors?: ApiError[]
+}
+
+function apiErrorMessages(error: ApiError): string[] {
+  const messages = [error.detail ?? error.title ?? error.code].filter((message): message is string => Boolean(message))
+  for (const associated of Object.values(error.meta?.associatedErrors ?? {})) {
+    for (const nested of associated)
+      messages.push(...apiErrorMessages(nested))
+  }
+  return messages
 }
 
 function base64urlJson(value: unknown): string {
@@ -120,8 +137,13 @@ export class AppStoreConnectClient {
     this.now = options.now ?? (() => Math.floor(Date.now() / 1000))
   }
 
-  private async request<T>(path: string, init: RequestInit = {}): Promise<T> {
-    const response = await this.fetcher(`${this.baseUrl}${path}`, {
+  async request<T>(path: string, init: RequestInit = {}): Promise<T> {
+    const url = /^https?:\/\//.test(path)
+      ? path
+      : /^\/v\d+\//.test(path)
+        ? `${new URL(this.baseUrl).origin}${path}`
+        : `${this.baseUrl}${path}`
+    const response = await this.fetcher(url, {
       ...init,
       headers: {
         Accept: 'application/json',
@@ -132,12 +154,19 @@ export class AppStoreConnectClient {
     })
     if (!response.ok) {
       const body = await response.json().catch(() => ({})) as ApiErrorResponse
-      const details = body.errors?.map(error => error.detail ?? error.title ?? error.code).filter(Boolean).join('; ')
+      const details = [...new Set(body.errors?.flatMap(apiErrorMessages) ?? [])].join('; ')
       throw new Error(`[browser-extension] App Store Connect ${init.method ?? 'GET'} ${path} failed (${response.status})${details ? `: ${details}` : ''}`)
     }
     if (response.status === 204)
       return undefined as T
     return await response.json() as T
+  }
+
+  /** Upload one reserved asset part to Apple's signed storage URL. */
+  async upload(url: string, init: RequestInit): Promise<void> {
+    const response = await this.fetcher(url, init)
+    if (!response.ok)
+      throw new Error(`[browser-extension] App Store Connect asset upload failed (${response.status})`)
   }
 
   async findBundleId(identifier: string): Promise<AppStoreConnectResource<BundleIdAttributes> | undefined> {

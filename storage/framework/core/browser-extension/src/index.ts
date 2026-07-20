@@ -9,6 +9,7 @@
  */
 export * from './build'
 export * from './app-store-connect'
+export * from './app-store-submission'
 export * from './chrome-web-store'
 export * from './config'
 export * from './firefox-addons'

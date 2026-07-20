@@ -526,6 +526,11 @@ export interface SafariPublishResult {
   artifacts: SafariPublishedArtifact[]
   /** App Store version/build relationships selected after upload processing. */
   attachments: Array<{ platform: SafariPlatform, versionId: string, buildId: string, buildNumber: string }>
+  /** Metadata and App Review submissions created after upload, when configured. */
+  appStoreSubmission?: {
+    versions: Array<{ platform: SafariPlatform, versionId: string, localizationId: string }>
+    reviewSubmissionIds: string[]
+  }
 }
 
 /** Resolve and validate App Store Connect credentials from options or environment variables. */
@@ -662,6 +667,7 @@ export async function publishSafariApp(config: ExtensionConfig, options: SafariP
       `MARKETING_VERSION=${options.version}`,
       `CURRENT_PROJECT_VERSION=${buildNumber}`,
       `DEVELOPMENT_TEAM=${teamId}`,
+      'INFOPLIST_KEY_ITSAppUsesNonExemptEncryption=NO',
       // A development-signed device archive needs a registered UDID. Keep the
       // iOS archive unsigned so export can use API-key-backed cloud signing.
       ...(platform === 'ios' ? ['CODE_SIGNING_ALLOWED=NO'] : []),
@@ -694,6 +700,20 @@ export async function publishSafariApp(config: ExtensionConfig, options: SafariP
         },
       )
 
+  const appStoreSubmission = !options.validateOnly && config.safariAppStore
+    ? await (await import('./app-store-submission')).prepareSafariAppStoreSubmission(
+        new AppStoreConnectClient(auth),
+        config,
+        provisioned.appRecord.id!,
+        attachments.map(attachment => ({
+          platform: attachment.platform,
+          id: attachment.versionId,
+          buildId: attachment.buildId,
+        })),
+        { cwd },
+      )
+    : undefined
+
   const firstArtifact = artifacts[0]!
   return {
     archivePath: firstArtifact.archivePath,
@@ -701,5 +721,8 @@ export async function publishSafariApp(config: ExtensionConfig, options: SafariP
     buildNumber,
     artifacts,
     attachments,
+    appStoreSubmission: appStoreSubmission
+      ? { versions: appStoreSubmission.versions, reviewSubmissionIds: appStoreSubmission.reviewSubmissionIds }
+      : undefined,
   }
 }
