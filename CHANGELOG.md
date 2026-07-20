@@ -1,5 +1,19 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.128...v0.70.129)
+
+## 🐛 Bug Fixes
+
+- **dns**: clean duplicate server addresses ([54e4047](https://github.com/stacksjs/stacks/commit/54e4047)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🔧 Chores
+
+- **deps**: update ts-cloud to 0.7.41 ([98b0ad1](https://github.com/stacksjs/stacks/commit/98b0ad1)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.127...v0.70.128)
 
 ## 💚 Continuous Integration
