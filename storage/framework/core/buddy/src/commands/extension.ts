@@ -294,5 +294,31 @@ export function extension(buddy: CLI): void {
       log.success(options.validateOnly
         ? `Validated Safari ${result.artifacts.map(artifact => artifact.platform).join(' + ')} archives (build ${result.buildNumber})`
         : `Uploaded and selected Safari ${result.attachments.map(attachment => attachment.platform).join(' + ')} build ${result.buildNumber} in App Store Connect`)
+      if (result.appStoreSubmission?.reviewSubmissionIds.length)
+        log.success(`Submitted ${result.appStoreSubmission.reviewSubmissionIds.length} Safari version(s) to App Review`)
+    })
+
+  buddy
+    .command('extension:safari:submit', 'Synchronize metadata and submit an existing Safari version to App Review')
+    .option('--version <version>', 'Marketing version to submit (defaults to package.json)')
+    .option('--api-key-id <id>', 'App Store Connect API key ID')
+    .option('--api-issuer-id <id>', 'App Store Connect API issuer ID')
+    .option('--api-key-path <path>', 'Path to the App Store Connect AuthKey_*.p8 file')
+    .option('--platform <platform>', 'Submit macos, ios, or all (defaults to config safariPlatforms)')
+    .option('--prepare-only', 'Synchronize the listing without submitting it for review')
+    .action(async (options: { version?: string, apiKeyId?: string, apiIssuerId?: string, apiKeyPath?: string, platform?: string, prepareOnly?: boolean }) => {
+      const { submitSafariAppStore } = await import('@stacksjs/browser-extension')
+      const { config, version } = await load()
+      const result = await submitSafariAppStore(config, {
+        version: options.version ?? version,
+        keyId: options.apiKeyId,
+        issuerId: options.apiIssuerId,
+        keyPath: options.apiKeyPath,
+        platforms: parseSafariPlatforms(options.platform),
+        submit: !options.prepareOnly,
+      })
+      log.success(`Synchronized ${result.versions.map(item => item.platform).join(' + ')} App Store listings`)
+      if (result.reviewSubmissionIds.length)
+        log.success(`Submitted ${result.reviewSubmissionIds.length} Safari version(s) to App Review`)
     })
 }
