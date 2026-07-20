@@ -254,12 +254,13 @@ export async function launch(): Promise<void> {
 /**
  * Check if an IP address is allowed during maintenance
  */
-export function isAllowedIp(ip: string, allowed: string[] = []): boolean {
-  // Always allow localhost — including when no allowlist is configured. The
-  // empty-list early-return used to sit above this check, which gated the
-  // developer's own `buddy dev` session behind the coming-soon page.
+export function isAllowedIp(ip: string, allowed: string[] = [], trustLocalhost = true): boolean {
+  // Localhost is convenient in development, but deployed reverse proxies
+  // commonly reach the app over loopback. Production/staging callers must
+  // opt out or every proxied visitor can inherit this bypass when the proxy
+  // does not forward a client-IP header.
   const localhostIps = ['127.0.0.1', '::1', 'localhost']
-  if (localhostIps.includes(ip)) {
+  if (trustLocalhost && localhostIps.includes(ip)) {
     return true
   }
 
@@ -606,7 +607,9 @@ export async function maintenanceGate(req: Request): Promise<Response | null> {
 
   const cookies = parseCookieHeader(req.headers.get('cookie'))
   const hasCookie = !!payload.secret && hasValidBypassCookie(cookies, payload.secret, mode)
-  const ipAllowed = isAllowedIp(clientIp(req), payload.allowed)
+  const appEnv = (process.env.APP_ENV || process.env.NODE_ENV || '').toLowerCase()
+  const trustLocalhost = !['production', 'staging'].includes(appEnv)
+  const ipAllowed = isAllowedIp(clientIp(req), payload.allowed, trustLocalhost)
 
   if (hasCookie || ipAllowed)
     return null

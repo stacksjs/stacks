@@ -39,6 +39,13 @@ describe('server maintenance', () => {
     expect(isAllowedIp('localhost', ['10.0.0.1'])).toBe(true)
   })
 
+  test('isAllowedIp can reject proxy loopback outside development', async () => {
+    const { isAllowedIp } = await import('../src/maintenance')
+    expect(isAllowedIp('127.0.0.1', [], false)).toBe(false)
+    expect(isAllowedIp('::1', [], false)).toBe(false)
+    expect(isAllowedIp('127.0.0.1', ['127.0.0.1'], false)).toBe(true)
+  })
+
   test('isAllowedIp checks against allowed list', async () => {
     const { isAllowedIp } = await import('../src/maintenance')
     expect(isAllowedIp('10.0.0.1', ['10.0.0.1', '10.0.0.2'])).toBe(true)
@@ -124,6 +131,29 @@ describe('server maintenance', () => {
       delete process.env.APP_COMING_SOON_SECRET
     else
       process.env.APP_COMING_SOON_SECRET = previousSecret
+  })
+
+  test('maintenanceGate does not treat a production proxy as a localhost bypass', async () => {
+    const { maintenanceGate } = await import('../src/maintenance')
+    const previousMode = process.env.APP_COMING_SOON
+    const previousAppEnv = process.env.APP_ENV
+
+    process.env.APP_COMING_SOON = 'true'
+    process.env.APP_ENV = 'production'
+
+    const response = await maintenanceGate(new Request('http://127.0.0.1/'))
+    expect(response?.status).toBe(302)
+    expect(response?.headers.get('Location')).toBe('/coming-soon')
+
+    if (previousMode === undefined)
+      delete process.env.APP_COMING_SOON
+    else
+      process.env.APP_COMING_SOON = previousMode
+
+    if (previousAppEnv === undefined)
+      delete process.env.APP_ENV
+    else
+      process.env.APP_ENV = previousAppEnv
   })
 
   test('maintenanceHtml includes retry info when provided', async () => {
