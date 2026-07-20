@@ -1,7 +1,8 @@
 import type { CLI, ReleaseOptions } from '@stacksjs/types'
+import { execFileSync } from 'node:child_process'
 import process from 'node:process'
 import { runAction } from '@stacksjs/actions'
-import { intro, italic, log, onUnknownSubcommand, outro } from "@stacksjs/cli"
+import { intro, italic, log, onUnknownSubcommand, outro } from '@stacksjs/cli'
 import { Action } from '@stacksjs/enums'
 import { ExitCode } from '@stacksjs/types'
 
@@ -39,8 +40,26 @@ export function release(buddy: CLI): void {
         useSeconds: true,
       })
 
-      log.info(`Follow along: ${italic('https://github.com/stacksjs/stacks/actions')}`)
+      log.info(`Follow along: ${italic(resolveGitHubActionsUrl(readOriginRemote()))}`)
     })
 
-  onUnknownSubcommand(buddy, "release")
+  onUnknownSubcommand(buddy, 'release')
+}
+
+export function resolveGitHubActionsUrl(
+  remoteUrl?: string,
+  repository = process.env.GITHUB_REPOSITORY,
+  serverUrl = process.env.GITHUB_SERVER_URL ?? 'https://github.com',
+): string {
+  const repo = repository?.trim() || remoteUrl?.trim().match(/github\.com[/:]([^/\s]+\/[^/\s]+?)(?:\.git)?$/)?.[1]
+  return repo ? `${serverUrl.replace(/\/$/, '')}/${repo}/actions` : 'https://github.com/stacksjs/stacks/actions'
+}
+
+function readOriginRemote(): string | undefined {
+  try {
+    return execFileSync('git', ['config', '--get', 'remote.origin.url'], { encoding: 'utf8' }).trim()
+  }
+  catch {
+    return undefined
+  }
 }
