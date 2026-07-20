@@ -59,8 +59,55 @@ function fillTemplate(text: string, vars: ScaffoldVars): string {
     .replaceAll('__YEAR__', String(new Date().getFullYear()))
 }
 
+function safariResourceCopyBuildPhase(appName: string): string {
+  return `/* Begin PBXShellScriptBuildPhase section */
+\t\t0D0000000000000000000023 /* Copy Web Extension Resources */ = {
+\t\t\tisa = PBXShellScriptBuildPhase;
+\t\t\talwaysOutOfDate = 1;
+\t\t\tbuildActionMask = 2147483647;
+\t\t\tfiles = (
+\t\t\t);
+\t\t\tinputFileListPaths = (
+\t\t\t\t"$(SRCROOT)/${appName} Extension/Resources.inputs.xcfilelist",
+\t\t\t);
+\t\t\tname = "Copy Web Extension Resources";
+\t\t\toutputFileListPaths = (
+\t\t\t\t"$(SRCROOT)/${appName} Extension/Resources.outputs.xcfilelist",
+\t\t\t);
+\t\t\trunOnlyForDeploymentPostprocessing = 0;
+\t\t\tshellPath = /bin/sh;
+\t\t\tshellScript = "set -e\\nresources_root=\\"\${SRCROOT}/${appName} Extension/Resources/\\"\\nwhile IFS= read -r source_file; do\\n  relative_path=\\"\${source_file#$resources_root}\\"\\n  output_file=\\"\${TARGET_BUILD_DIR}/\${UNLOCALIZED_RESOURCES_FOLDER_PATH}/\${relative_path}\\"\\n  /bin/mkdir -p \\"$(/usr/bin/dirname \\\"$output_file\\\")\\"\\n  /bin/cp \\"$source_file\\" \\"$output_file\\"\\ndone < \\"$SCRIPT_INPUT_FILE_LIST_0\\"\\n";
+\t\t};
+/* End PBXShellScriptBuildPhase section */
+
+`
+}
+
+/** Upgrade a Stacks-generated project that copied Resources as a nested folder. */
+export function migrateSafariResourceBuildPhase(project: string, appName: string): string {
+  if (project.includes('SCRIPT_INPUT_FILE_LIST_0'))
+    return project
+  if (project.includes('0D0000000000000000000023 /* Copy Web Extension Resources */')) {
+    return project.replace(
+      /\/\* Begin PBXShellScriptBuildPhase section \*\/[\s\S]*?\/\* End PBXShellScriptBuildPhase section \*\/\n/,
+      safariResourceCopyBuildPhase(appName),
+    )
+  }
+  if (!project.includes('0C0000000000000000000023 /* Resources in Resources */'))
+    return project
+
+  return project
+    .replace(/^\s*0C0000000000000000000023 \/\* Resources in Resources \*\/.*\n/m, '')
+    .replace(/^\s*0C0000000000000000000023 \/\* Resources in Resources \*\/,\n/mg, '')
+    .replace(
+      '\t\t\t\t0D0000000000000000000022 /* Resources */,\n',
+      '\t\t\t\t0D0000000000000000000022 /* Resources */,\n\t\t\t\t0D0000000000000000000023 /* Copy Web Extension Resources */,\n',
+    )
+    .replace('/* Begin PBXSourcesBuildPhase section */', `${safariResourceCopyBuildPhase(appName)}/* Begin PBXSourcesBuildPhase section */`)
+}
+
 function* walk(dir: string, prefix = ''): Generator<string> {
-  for (const entry of readdirSync(dir)) {
+  for (const entry of readdirSync(dir).sort()) {
     const rel = prefix ? `${prefix}/${entry}` : entry
     if (statSync(join(dir, entry)).isDirectory()) yield* walk(join(dir, entry), rel)
     else yield rel
@@ -202,7 +249,16 @@ export async function syncSafariResources(config: ExtensionConfig, options: Safa
     throw new Error(`[browser-extension] ${outdir}/manifest.json is missing. Run extension:build --target safari first.`)
 
   const appName = safariAppName(config)
-  const resources = join(safariProjectDir(cwd, options.dir), `${appName} Extension`, 'Resources')
+  const projectDir = safariProjectDir(cwd, options.dir)
+  const projectPath = join(projectDir, `${appName}.xcodeproj`, 'project.pbxproj')
+  if (existsSync(projectPath)) {
+    const project = await Bun.file(projectPath).text()
+    const migrated = migrateSafariResourceBuildPhase(project, appName)
+    if (migrated !== project)
+      await Bun.write(projectPath, migrated)
+  }
+
+  const resources = join(projectDir, `${appName} Extension`, 'Resources')
   const exclude = new Set(config.safariExclude ?? [])
 
   if (existsSync(resources)) {
@@ -214,14 +270,21 @@ export async function syncSafariResources(config: ExtensionConfig, options: Safa
   await mkdir(resources, { recursive: true })
 
   let files = 0
+  const synced: string[] = []
   for (const rel of walk(outdir)) {
-    if (exclude.has(rel))
+    if (exclude.has(rel) || rel.split('/').includes('.DS_Store'))
       continue
     const dest = join(resources, rel)
     await mkdir(dirname(dest), { recursive: true })
     cpSync(join(outdir, rel), dest)
+    synced.push(rel)
     files += 1
   }
+
+  const inputs = synced.map(rel => join(resources, rel)).join('\n')
+  const outputs = synced.map(rel => `$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/${rel}`).join('\n')
+  await Bun.write(join(projectDir, `${appName} Extension`, 'Resources.inputs.xcfilelist'), `${inputs}\n`)
+  await Bun.write(join(projectDir, `${appName} Extension`, 'Resources.outputs.xcfilelist'), `${outputs}\n`)
 
   return { resources, files }
 }

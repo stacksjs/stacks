@@ -11,7 +11,6 @@
 		0C0000000000000000000011 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B0000000000000000000011 /* ContentView.swift */; };
 		0C0000000000000000000012 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 0B0000000000000000000012 /* Assets.xcassets */; };
 		0C0000000000000000000020 /* SafariWebExtensionHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B0000000000000000000020 /* SafariWebExtensionHandler.swift */; };
-		0C0000000000000000000023 /* Resources in Resources */ = {isa = PBXBuildFile; fileRef = 0B0000000000000000000023 /* Resources */; };
 		0C0000000000000000000030 /* __APP_NAME__ Extension.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = 0B0000000000000000000002 /* __APP_NAME__ Extension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
@@ -141,6 +140,7 @@
 				0D0000000000000000000020 /* Sources */,
 				0D0000000000000000000021 /* Frameworks */,
 				0D0000000000000000000022 /* Resources */,
+				0D0000000000000000000023 /* Copy Web Extension Resources */,
 			);
 			buildRules = (
 			);
@@ -201,11 +201,30 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				0C0000000000000000000023 /* Resources in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		0D0000000000000000000023 /* Copy Web Extension Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"$(SRCROOT)/__APP_NAME__ Extension/Resources.inputs.xcfilelist",
+			);
+			name = "Copy Web Extension Resources";
+			outputFileListPaths = (
+				"$(SRCROOT)/__APP_NAME__ Extension/Resources.outputs.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "set -e\nresources_root=\"${SRCROOT}/__APP_NAME__ Extension/Resources/\"\nwhile IFS= read -r source_file; do\n  relative_path=\"${source_file#$resources_root}\"\n  output_file=\"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/${relative_path}\"\n  /bin/mkdir -p \"$(/usr/bin/dirname \"$output_file\")\"\n  /bin/cp \"$source_file\" \"$output_file\"\ndone < \"$SCRIPT_INPUT_FILE_LIST_0\"\n";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		0D0000000000000000000010 /* Sources */ = {

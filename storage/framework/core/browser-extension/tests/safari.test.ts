@@ -6,7 +6,7 @@ import { join } from 'node:path'
 import { afterEach, beforeEach, describe, expect, it } from 'bun:test'
 import { resolveOutdir, rewriteBrowserNamespace } from '../src/build'
 import { generateManifest } from '../src/manifest'
-import { scaffoldSafariApp, safariAppName, syncSafariResources } from '../src/safari'
+import { migrateSafariResourceBuildPhase, scaffoldSafariApp, safariAppName, syncSafariResources } from '../src/safari'
 
 const config: ExtensionConfig = {
   name: 'Test Extension',
@@ -117,6 +117,10 @@ describe('safari scaffold + sync', () => {
     expect(pbxproj).toContain('MARKETING_VERSION = 1.2.3;')
     expect(pbxproj).toContain('DEVELOPMENT_TEAM = "TEAM123456";')
     expect(pbxproj).not.toContain('__APP_NAME__')
+    expect(pbxproj).toContain('Copy Web Extension Resources')
+    expect(pbxproj).toContain('Resources.inputs.xcfilelist')
+    expect(pbxproj).toContain('Resources.outputs.xcfilelist')
+    expect(pbxproj).not.toContain('Resources in Resources')
 
     const appPlist = await Bun.file(join(dir, 'TestExtension', 'Info.plist')).text()
     expect(appPlist).toContain('<string>Test Extension</string>')
@@ -168,6 +172,19 @@ describe('safari scaffold + sync', () => {
     expect(existsSync(join(resources, 'rules', 'static.json'))).toBe(true)
     expect(existsSync(join(resources, 'marketing.html'))).toBe(false)
     expect(existsSync(join(resources, 'marketing.js'))).toBe(false)
+
+    const inputs = await Bun.file(join(cwd, 'safari', 'TestExtension Extension', 'Resources.inputs.xcfilelist')).text()
+    const outputs = await Bun.file(join(cwd, 'safari', 'TestExtension Extension', 'Resources.outputs.xcfilelist')).text()
+    expect(inputs.trim().split('\n')).toEqual([
+      join(resources, 'background.js'),
+      join(resources, 'manifest.json'),
+      join(resources, 'rules', 'static.json'),
+    ])
+    expect(outputs.trim().split('\n')).toEqual([
+      '$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/background.js',
+      '$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/manifest.json',
+      '$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/rules/static.json',
+    ])
   })
 
   it('sync clears stale files from previous runs', async () => {
@@ -180,5 +197,19 @@ describe('safari scaffold + sync', () => {
     await syncSafariResources(config, { cwd })
     expect(existsSync(join(resources, 'stale.js'))).toBe(false)
     expect(existsSync(join(resources, 'manifest.json'))).toBe(true)
+  })
+
+  it('migrates legacy projects that nested the web extension resources', () => {
+    const legacy = `
+0C0000000000000000000023 /* Resources in Resources */ = {isa = PBXBuildFile; fileRef = 0B0000000000000000000023 /* Resources */; };
+\t\t\t\t0D0000000000000000000022 /* Resources */,
+\t\t\t\t0C0000000000000000000023 /* Resources in Resources */,
+/* Begin PBXSourcesBuildPhase section */
+`
+    const migrated = migrateSafariResourceBuildPhase(legacy, 'TestExtension')
+    expect(migrated).toContain('Copy Web Extension Resources')
+    expect(migrated).toContain('Resources.inputs.xcfilelist')
+    expect(migrated).toContain('Resources.outputs.xcfilelist')
+    expect(migrated).not.toContain('Resources in Resources')
   })
 })
