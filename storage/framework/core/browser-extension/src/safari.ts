@@ -505,6 +505,10 @@ export interface SafariPublishOptions extends SafariSyncOptions, AppStoreConnect
   build?: boolean
   /** Apple platforms to archive and upload. @default config.safariPlatforms ?? ['macos'] */
   platforms?: SafariPlatform[]
+  /** Maximum time to wait for uploaded binaries to process. @default 20 minutes */
+  processingTimeoutMs?: number
+  /** Delay between App Store Connect processing checks. @default 15 seconds */
+  processingPollIntervalMs?: number
 }
 
 export interface SafariPublishedArtifact {
@@ -520,6 +524,8 @@ export interface SafariPublishResult {
   exportPath: string
   buildNumber: string
   artifacts: SafariPublishedArtifact[]
+  /** App Store version/build relationships selected after upload processing. */
+  attachments: Array<{ platform: SafariPlatform, versionId: string, buildId: string, buildNumber: string }>
 }
 
 /** Resolve and validate App Store Connect credentials from options or environment variables. */
@@ -595,7 +601,7 @@ export async function publishSafariApp(config: ExtensionConfig, options: SafariP
   if (!platforms.length)
     throw new Error('[browser-extension] Safari publishing needs at least one platform')
 
-  const { provisionSafariApp } = await import('./app-store-connect')
+  const { AppStoreConnectClient, attachSafariBuilds, provisionSafariApp } = await import('./app-store-connect')
   const provisioned = await provisionSafariApp(config, {
     ...auth,
     version: options.version,
@@ -675,10 +681,25 @@ export async function publishSafariApp(config: ExtensionConfig, options: SafariP
     artifacts.push({ platform, archivePath, exportPath })
   }
 
+  const attachments = options.validateOnly
+    ? []
+    : await attachSafariBuilds(
+        new AppStoreConnectClient(auth),
+        provisioned.appRecord.id!,
+        provisioned.appStoreVersions,
+        buildNumber,
+        {
+          timeoutMs: options.processingTimeoutMs,
+          pollIntervalMs: options.processingPollIntervalMs,
+        },
+      )
+
+  const firstArtifact = artifacts[0]!
   return {
-    archivePath: artifacts[0].archivePath,
-    exportPath: artifacts[0].exportPath,
+    archivePath: firstArtifact.archivePath,
+    exportPath: firstArtifact.exportPath,
     buildNumber,
     artifacts,
+    attachments,
   }
 }

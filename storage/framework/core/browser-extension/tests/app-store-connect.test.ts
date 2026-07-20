@@ -4,7 +4,7 @@ import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, beforeEach, describe, expect, it } from 'bun:test'
-import { appStoreConnectToken, provisionSafariApp } from '../src/app-store-connect'
+import { AppStoreConnectClient, appStoreConnectToken, attachSafariBuilds, provisionSafariApp } from '../src/app-store-connect'
 
 const config: ExtensionConfig = {
   name: 'Test Extension',
@@ -196,5 +196,66 @@ describe('App Store Connect Safari provisioning', () => {
       attributes: { platform: 'IOS', versionString: '0.2.0' },
       relationships: { app: { data: { type: 'apps', id: 'app-123' } } },
     })
+  })
+
+  it('waits for processed builds and selects each Apple platform version', async () => {
+    const attached: Array<{ path: string, body: unknown }> = []
+    const fetcher = (async (input: string | URL | Request, init?: RequestInit) => {
+      const url = new URL(String(input))
+      if (url.pathname.endsWith('/builds')) {
+        expect(url.searchParams.get('filter[app]')).toBe('app-123')
+        expect(url.searchParams.get('filter[version]')).toBe('42')
+        return Response.json({
+          data: [
+            {
+              type: 'builds',
+              id: 'mac-build',
+              attributes: { version: '42', uploadedDate: '2026-01-01T00:00:00Z', expired: false, processingState: 'VALID' },
+              relationships: { preReleaseVersion: { data: { type: 'preReleaseVersions', id: 'mac-prerelease' } } },
+            },
+            {
+              type: 'builds',
+              id: 'ios-build',
+              attributes: { version: '42', uploadedDate: '2026-01-01T00:00:00Z', expired: false, processingState: 'VALID' },
+              relationships: { preReleaseVersion: { data: { type: 'preReleaseVersions', id: 'ios-prerelease' } } },
+            },
+          ],
+          included: [
+            { type: 'preReleaseVersions', id: 'mac-prerelease', attributes: { version: '0.2.0', platform: 'MAC_OS' } },
+            { type: 'preReleaseVersions', id: 'ios-prerelease', attributes: { version: '0.2.0', platform: 'IOS' } },
+          ],
+        })
+      }
+
+      attached.push({ path: url.pathname, body: JSON.parse(String(init?.body)) })
+      return new Response(null, { status: 204 })
+    }) as typeof fetch
+    const client = new AppStoreConnectClient({
+      keyId: 'KEY123',
+      issuerId: 'issuer-123',
+      keyPath,
+      fetch: fetcher,
+      baseUrl: 'https://example.test/v1',
+    })
+
+    const result = await attachSafariBuilds(client, 'app-123', [
+      { platform: 'macos', version: '0.2.0', created: false, updated: false, id: 'mac-version' },
+      { platform: 'ios', version: '0.2.0', created: false, updated: false, id: 'ios-version' },
+    ], '42')
+
+    expect(result).toEqual([
+      { platform: 'macos', versionId: 'mac-version', buildId: 'mac-build', buildNumber: '42' },
+      { platform: 'ios', versionId: 'ios-version', buildId: 'ios-build', buildNumber: '42' },
+    ])
+    expect(attached).toEqual([
+      {
+        path: '/v1/appStoreVersions/mac-version/relationships/build',
+        body: { data: { type: 'builds', id: 'mac-build' } },
+      },
+      {
+        path: '/v1/appStoreVersions/ios-version/relationships/build',
+        body: { data: { type: 'builds', id: 'ios-build' } },
+      },
+    ])
   })
 })

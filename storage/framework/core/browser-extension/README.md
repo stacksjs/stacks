@@ -85,8 +85,9 @@ Set `safariBundleId` in the config (the appex gets `<safariBundleId>.Extension`)
 and `safariTeamId` to the Apple Developer team used for signing. Set
 `safariPlatforms: ['macos', 'ios']` for a universal extension; iOS covers both
 iPhone and iPad. Stacks generates the current Apple-supported universal Xcode
-project from the same built extension, archives both platforms, and uploads
-both to the same App Store Connect app record. Publishing
+project from the same built extension, archives both platforms, uploads them
+to the same App Store Connect app record, waits for Apple processing, and
+selects each processed build on its matching App Store version. Publishing
 reads `APP_STORE_CONNECT_API_KEY_ID`, `APP_STORE_CONNECT_API_ISSUER_ID`, and
 `APP_STORE_CONNECT_API_KEY_PATH` from the environment. Run with
 `--validate-only` to exercise Apple's validation without uploading a build.

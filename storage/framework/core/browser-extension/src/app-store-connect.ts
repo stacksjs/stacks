@@ -12,6 +12,7 @@ export interface AppStoreConnectResource<T extends Record<string, unknown>> {
   type: string
   id: string
   attributes: T
+  relationships?: Record<string, { data?: { type: string, id: string } | null }>
 }
 
 export interface BundleIdAttributes extends Record<string, unknown> {
@@ -36,6 +37,26 @@ export interface AppStoreVersionAttributes extends Record<string, unknown> {
   appStoreState: string
 }
 
+export interface BuildAttributes extends Record<string, unknown> {
+  version: string
+  uploadedDate: string
+  expired: boolean
+  processingState: string
+}
+
+export interface PreReleaseVersionAttributes extends Record<string, unknown> {
+  version: string
+  platform: AppStoreVersionPlatform
+}
+
+export interface AppStoreBuildResult {
+  id: string
+  buildNumber: string
+  version: string
+  platform: AppStoreVersionPlatform
+  processingState: string
+}
+
 export interface AppStoreConnectClientOptions extends AppStoreConnectAuth {
   /** Override the API base URL, primarily for tests. */
   baseUrl?: string
@@ -47,6 +68,7 @@ export interface AppStoreConnectClientOptions extends AppStoreConnectAuth {
 
 interface ApiListResponse<T extends Record<string, unknown>> {
   data: Array<AppStoreConnectResource<T>>
+  included?: Array<AppStoreConnectResource<Record<string, unknown>>>
 }
 
 interface ApiResourceResponse<T extends Record<string, unknown>> {
@@ -113,6 +135,8 @@ export class AppStoreConnectClient {
       const details = body.errors?.map(error => error.detail ?? error.title ?? error.code).filter(Boolean).join('; ')
       throw new Error(`[browser-extension] App Store Connect ${init.method ?? 'GET'} ${path} failed (${response.status})${details ? `: ${details}` : ''}`)
     }
+    if (response.status === 204)
+      return undefined as T
     return await response.json() as T
   }
 
@@ -185,6 +209,44 @@ export class AppStoreConnectClient {
     })
     return response.data
   }
+
+  async listBuilds(appId: string, buildNumber: string): Promise<AppStoreBuildResult[]> {
+    const query = new URLSearchParams({
+      'filter[app]': appId,
+      'filter[version]': buildNumber,
+      'include': 'preReleaseVersion',
+      'limit': '20',
+      'fields[builds]': 'version,uploadedDate,expired,processingState,preReleaseVersion',
+      'fields[preReleaseVersions]': 'version,platform',
+    })
+    const response = await this.request<ApiListResponse<BuildAttributes>>(`/builds?${query}`)
+    const preReleaseVersions = new Map(
+      (response.included ?? [])
+        .filter(item => item.type === 'preReleaseVersions')
+        .map(item => [item.id, item.attributes as PreReleaseVersionAttributes]),
+    )
+
+    return response.data.flatMap((build) => {
+      const preReleaseVersionId = build.relationships?.preReleaseVersion?.data?.id
+      const preReleaseVersion = preReleaseVersionId ? preReleaseVersions.get(preReleaseVersionId) : undefined
+      if (!preReleaseVersion)
+        return []
+      return [{
+        id: build.id,
+        buildNumber: build.attributes.version,
+        version: preReleaseVersion.version,
+        platform: preReleaseVersion.platform,
+        processingState: build.attributes.processingState,
+      }]
+    })
+  }
+
+  async attachBuild(versionId: string, buildId: string): Promise<void> {
+    await this.request<void>(`/appStoreVersions/${versionId}/relationships/build`, {
+      method: 'PATCH',
+      body: JSON.stringify({ data: { type: 'builds', id: buildId } }),
+    })
+  }
 }
 
 const editableVersionStates = new Set([
@@ -204,6 +266,67 @@ export interface SafariAppStoreVersionResult {
   created: boolean
   updated: boolean
   id: string
+}
+
+export interface SafariBuildAttachmentResult {
+  platform: SafariPlatform
+  versionId: string
+  buildId: string
+  buildNumber: string
+}
+
+export interface AttachSafariBuildsOptions {
+  /** Maximum time to wait for App Store Connect processing. @default 20 minutes */
+  timeoutMs?: number
+  /** Delay between App Store Connect processing checks. @default 15 seconds */
+  pollIntervalMs?: number
+}
+
+/** Wait for the uploaded binaries to process, then select them for their App Store versions. */
+export async function attachSafariBuilds(
+  client: AppStoreConnectClient,
+  appId: string,
+  versions: SafariAppStoreVersionResult[],
+  buildNumber: string,
+  options: AttachSafariBuildsOptions = {},
+): Promise<SafariBuildAttachmentResult[]> {
+  const timeoutMs = options.timeoutMs ?? 20 * 60_000
+  const pollIntervalMs = options.pollIntervalMs ?? 15_000
+  const deadline = Date.now() + timeoutMs
+  const pending = new Map(versions.map(version => [appStorePlatform(version.platform), version]))
+
+  while (true) {
+    const builds = await client.listBuilds(appId, buildNumber)
+    const attachments: SafariBuildAttachmentResult[] = []
+
+    for (const [platform, version] of pending) {
+      const build = builds.find(item => item.platform === platform && item.version === version.version)
+      if (!build)
+        continue
+      if (build.processingState === 'FAILED' || build.processingState === 'INVALID')
+        throw new Error(`[browser-extension] Safari ${version.platform} build ${buildNumber} failed App Store Connect processing (${build.processingState})`)
+      if (build.processingState !== 'VALID')
+        continue
+      attachments.push({
+        platform: version.platform,
+        versionId: version.id,
+        buildId: build.id,
+        buildNumber,
+      })
+    }
+
+    if (attachments.length === pending.size) {
+      for (const attachment of attachments)
+        await client.attachBuild(attachment.versionId, attachment.buildId)
+      return attachments
+    }
+
+    if (Date.now() >= deadline) {
+      const waiting = [...pending.values()].map(item => item.platform).join(', ')
+      throw new Error(`[browser-extension] timed out waiting for Safari ${waiting} build ${buildNumber} to finish App Store Connect processing`)
+    }
+    await Bun.sleep(pollIntervalMs)
+  }
 }
 
 async function ensureConfiguredAppStoreVersions(client: AppStoreConnectClient, appId: string, platforms: SafariPlatform[], version: string): Promise<SafariAppStoreVersionResult[]> {

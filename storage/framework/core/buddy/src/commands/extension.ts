@@ -293,6 +293,6 @@ export function extension(buddy: CLI): void {
       })
       log.success(options.validateOnly
         ? `Validated Safari ${result.artifacts.map(artifact => artifact.platform).join(' + ')} archives (build ${result.buildNumber})`
-        : `Uploaded Safari ${result.artifacts.map(artifact => artifact.platform).join(' + ')} build ${result.buildNumber} to App Store Connect`)
+        : `Uploaded and selected Safari ${result.attachments.map(attachment => attachment.platform).join(' + ')} build ${result.buildNumber} in App Store Connect`)
     })
 }
