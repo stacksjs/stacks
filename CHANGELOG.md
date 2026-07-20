@@ -1,5 +1,19 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.147...v0.70.148)
+
+## ✨ Features
+
+- **browser-extension**: support targeted store retries ([4a95dee](https://github.com/stacksjs/stacks/commit/4a95dee)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🐛 Bug Fixes
+
+- **browser-extension**: queue releases during store review ([aa2cd69](https://github.com/stacksjs/stacks/commit/aa2cd69)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.146...v0.70.147)
 
 ## 🐛 Bug Fixes
