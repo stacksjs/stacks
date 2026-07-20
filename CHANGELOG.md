@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.136...v0.70.137)
+
+## 🐛 Bug Fixes
+
+- **cli**: omit parser metadata from action flags ([dd6be23](https://github.com/stacksjs/stacks/commit/dd6be23)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.135...v0.70.136)
 
 ## 🐛 Bug Fixes
