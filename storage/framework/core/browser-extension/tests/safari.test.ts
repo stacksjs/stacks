@@ -22,6 +22,7 @@ const config: ExtensionConfig = {
   ],
   pages: { popup: { template: 'pages/popup.stx', script: 'src/ui/popup.ts' } },
   icons: { 128: 'icons/icon-128.png' },
+  actionIcons: { 16: 'icons/toolbar-16.png', 32: 'icons/toolbar-32.png' },
   manifest: {
     permissions: ['declarativeNetRequest', 'storage'],
     minimumChromeVersion: '111',
@@ -53,6 +54,14 @@ describe('generateManifest (safari)', () => {
     expect(manifest.permissions).toEqual(['declarativeNetRequest', 'storage'])
     expect(manifest.content_scripts?.[0]).toMatchObject({ world: 'MAIN', match_about_blank: true })
     expect(manifest.icons).toEqual({ 128: 'icons/icon-128.png' })
+    expect(manifest.action).toEqual({
+      default_title: 'Test Extension',
+      default_popup: 'popup.html',
+      default_icon: {
+        16: 'icons/toolbar-16.png',
+        32: 'icons/toolbar-32.png',
+      },
+    })
   })
 
   it('does not leak safari settings into chrome/firefox manifests', () => {

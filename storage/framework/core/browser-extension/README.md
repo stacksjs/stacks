@@ -19,6 +19,16 @@ buddy extension:build --target safari   # → dist-safari/ (browser.* namespace,
 buddy extension:package       # build + zip store-ready archives
 ```
 
+Use `icons` for full-color store/app branding and `actionIcons` for separate,
+usually neutral artwork in the browser toolbar:
+
+```ts
+defineExtension({
+  icons: { 16: 'icons/icon-16.png', 128: 'icons/icon-128.png' },
+  actionIcons: { 16: 'icons/toolbar-16.png', 32: 'icons/toolbar-32.png' },
+})
+```
+
 ## Store publishing
 
 Stacks owns the store-specific upload clients as well as the builds. Chrome

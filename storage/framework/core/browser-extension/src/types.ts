@@ -235,6 +235,8 @@ export interface ExtensionConfig {
   pages?: ExtensionPages
   /** `<size, path>` icons (paths relative to outdir, sourced from `public`). */
   icons?: Record<number, string>
+  /** Neutral browser-toolbar icons (`action.default_icon`), separate from store/app branding. */
+  actionIcons?: Record<number, string>
   /** Directory of static assets copied verbatim into the build (icons, stubs, …). */
   public?: string
   /** Extra `<destInOutdir, srcPath>` files copied into the build (e.g. shared CSS). */

@@ -8,7 +8,7 @@ export interface GeneratedManifest {
   description: string
   version: string
   minimum_chrome_version?: string
-  action?: { default_title?: string, default_popup?: string }
+  action?: { default_title?: string, default_popup?: string, default_icon?: Record<string, string> }
   options_page?: string
   background?: { service_worker: string, type?: 'module' } | { scripts: string[], type?: 'module' }
   browser_specific_settings?: {
@@ -71,8 +71,15 @@ export function generateManifest(config: ExtensionConfig, opts: { version: strin
   if (!isFirefox && !isSafari && m.minimumChromeVersion)
     manifest.minimum_chrome_version = m.minimumChromeVersion
 
-  if (config.pages?.popup)
-    manifest.action = { default_title: config.name, default_popup: 'popup.html' }
+  if (config.pages?.popup || config.actionIcons) {
+    manifest.action = {
+      default_title: config.name,
+      ...(config.pages?.popup ? { default_popup: 'popup.html' } : {}),
+      ...(config.actionIcons
+        ? { default_icon: Object.fromEntries(Object.entries(config.actionIcons).map(([size, path]) => [String(size), path])) }
+        : {}),
+    }
+  }
   if (config.pages?.options)
     manifest.options_page = 'options.html'
 
