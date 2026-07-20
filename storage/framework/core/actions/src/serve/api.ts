@@ -18,7 +18,7 @@ import type { Middleware } from '@stacksjs/router'
 import { existsSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import process from 'node:process'
-import { config } from '@stacksjs/config'
+import { config, overridesReady } from '@stacksjs/config'
 import { log } from '@stacksjs/logging'
 import { frameworkPath } from '@stacksjs/path'
 import { route } from '@stacksjs/router'
@@ -42,6 +42,10 @@ function resolveDefaultsFile(rel: string): string {
     return vendored
   }
 }
+
+// Installed projects load config/*.ts asynchronously. Wait before reading any
+// section so production uses the same project config as dev and migrations.
+await overridesReady
 
 // Production defaults
 const port = Number(process.env.PORT) || config.ports?.api || 3008
