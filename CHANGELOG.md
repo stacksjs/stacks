@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.131...v0.70.132)
+
+## 🔧 Chores
+
+- **deps**: update ts-cloud to 0.7.44 ([707f368](https://github.com/stacksjs/stacks/commit/707f368)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.130...v0.70.131)
 
 ## 🔧 Chores
