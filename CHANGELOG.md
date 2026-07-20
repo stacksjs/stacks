@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.142...v0.70.143)
+
+## 🐛 Bug Fixes
+
+- **browser-extension**: require Firefox 142 by default ([3a03c4f](https://github.com/stacksjs/stacks/commit/3a03c4f)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.141...v0.70.142)
 
 ## ✨ Features
