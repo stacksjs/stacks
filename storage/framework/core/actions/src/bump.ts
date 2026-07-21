@@ -3,7 +3,7 @@ import { execSync, log, parseOptions } from '@stacksjs/cli'
 import { path as p } from '@stacksjs/path'
 import { versionBump } from '@stacksjs/bumpx'
 import { generateChangelog, loadLogsmithConfig } from '@stacksjs/logsmith'
-import { existsSync, readFileSync, writeFileSync } from 'node:fs'
+import { existsSync, readFileSync, unlinkSync, writeFileSync } from 'node:fs'
 import { join, relative } from 'node:path'
 
 const options = parseOptions() as { dryRun?: boolean, bump?: string, verbose?: boolean } | undefined
@@ -240,10 +240,24 @@ if (!isDryRun && isFrameworkRelease)
 // every post-release CI job using `bun install --frozen-lockfile` fails before
 // lint, typecheck, or tests can run.
 if (!isDryRun && existsSync(p.projectPath('bun.lock'))) {
-  await execSync(['bun', 'install', '--lockfile-only'], {
-    cwd: p.projectPath(),
-    stdin: 'inherit',
-  })
+  const lockPath = p.projectPath('bun.lock')
+  const previousLock = readFileSync(lockPath)
+
+  // Bun updates package resolutions in place, but it does not rewrite stale
+  // workspace manifest snapshots after the release changes lockstep ranges.
+  // Regenerate the canonical lockfile so frozen installs see the same workspace
+  // state as the manifests. Restore the previous lock if resolution fails.
+  unlinkSync(lockPath)
+  try {
+    await execSync(['bun', 'install', '--lockfile-only'], {
+      cwd: p.projectPath(),
+      stdin: 'inherit',
+    })
+  }
+  catch (error) {
+    writeFileSync(lockPath, previousLock)
+    throw error
+  }
 }
 
 function pinMetaCoreDeps(version: string): void {

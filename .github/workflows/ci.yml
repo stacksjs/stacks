@@ -39,6 +39,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
 
       - name: Setup Pantry
         uses: home-lang/pantry/packages/action@main
@@ -55,6 +57,12 @@ jobs:
 
       - name: Install dependencies
         run: bun install --frozen-lockfile
+
+      - name: Check dependency state
+        env:
+          DEPENDENCY_BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+          DEPENDENCY_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: bun scripts/check-dependency-commits.ts
 
       - name: Lint
         run: bun buddy lint

@@ -19,7 +19,7 @@
     "url": "https://github.com/stacksjs/stacks/issues"
   },
   "scripts": {
-    "build:reset": "rm -rf node_modules pantry.lock && pantry install && ./buddy generate:types && ./buddy lint:fix && cd storage/framework && bun run build && cd ../../",
+    "build:reset": "rm -rf node_modules && pantry install && bun install && ./buddy generate:types && ./buddy lint:fix && cd storage/framework && bun run build && cd ../../",
     "buddy": "bun ./storage/framework/core/buddy/src/cli.ts",
     "stacks": "./buddy",
     "setup": "./bootstrap",

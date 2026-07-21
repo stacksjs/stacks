@@ -5,7 +5,7 @@ export default new Action({
   description: 'Returns dependency data for the dashboard.',
   method: 'GET',
   async handle() {
-    const { readFileSync, readdirSync } = await import('node:fs')
+    const { readFileSync } = await import('node:fs')
     const { join } = await import('node:path')
     const projectRoot = process.cwd()
 
@@ -18,8 +18,11 @@ export default new Action({
 
     try {
       const declaredSet: Record<string, boolean> = {}
-      const lockPath = join(projectRoot, 'pantry.lock')
-      const lockfile = JSON.parse(readFileSync(lockPath, 'utf-8'))
+      const lockPath = join(projectRoot, 'bun.lock')
+      const lockfile = Bun.JSONC.parse(readFileSync(lockPath, 'utf-8')) as {
+        workspaces?: Record<string, { dependencies?: Record<string, string>, devDependencies?: Record<string, string> }>
+        packages?: Record<string, [string, ...unknown[]]>
+      }
       const workspaces = lockfile.workspaces || {}
 
       for (const wsKey of Object.keys(workspaces)) {
@@ -35,36 +38,19 @@ export default new Action({
       }
       declared.sort((a, b) => String(a.name).localeCompare(String(b.name)))
 
-      // Scan pantry directory for transitive deps
-      const pantryDir = join(projectRoot, 'pantry')
-      const entries = readdirSync(pantryDir, { withFileTypes: true })
-      for (const entry of entries) {
-        if (!entry.isDirectory()) continue
-        if (entry.name.startsWith('@')) {
-          const scopeDir = join(pantryDir, entry.name)
-          try {
-            const scopedEntries = readdirSync(scopeDir, { withFileTypes: true })
-            for (const se of scopedEntries) {
-              if (!se.isDirectory()) continue
-              const pkgName = `${entry.name}/${se.name}`
-              if (!declaredSet[pkgName]) {
-                let ver = '0.0.0'
-                try { ver = JSON.parse(readFileSync(join(scopeDir, se.name, 'package.json'), 'utf-8')).version || '0.0.0' }
-                catch { /* ignore */ }
-                transitive.push({ name: pkgName, version: ver, isScoped: true })
-              }
-            }
-          }
-          catch { /* ignore */ }
-        }
-        else if (entry.name !== '.bin' && entry.name !== 'node_modules') {
-          if (!declaredSet[entry.name]) {
-            let ver = '0.0.0'
-            try { ver = JSON.parse(readFileSync(join(pantryDir, entry.name, 'package.json'), 'utf-8')).version || '0.0.0' }
-            catch { /* ignore */ }
-            transitive.push({ name: entry.name, version: ver, isScoped: false })
-          }
-        }
+      const transitiveSet = new Set<string>()
+      for (const value of Object.values(lockfile.packages || {})) {
+        const resolution = value[0]
+        if (resolution.includes('@workspace:')) continue
+        const versionSeparator = resolution.startsWith('@')
+          ? resolution.indexOf('@', 1)
+          : resolution.lastIndexOf('@')
+        if (versionSeparator <= 0) continue
+        const name = resolution.slice(0, versionSeparator)
+        const version = resolution.slice(versionSeparator + 1)
+        if (declaredSet[name] || transitiveSet.has(name)) continue
+        transitiveSet.add(name)
+        transitive.push({ name, version, isScoped: name.includes('/') })
       }
       transitive.sort((a, b) => String(a.name).localeCompare(String(b.name)))
 
@@ -74,7 +60,7 @@ export default new Action({
       totalCount = declared.length + transitiveCount
     }
     catch {
-      // pantry.lock or pantry/ may not exist
+      // bun.lock may not exist yet
     }
 
     const thirdParty = declared.filter(p => !p.isWorkspace)

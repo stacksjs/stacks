@@ -16,6 +16,9 @@
 # Dependencies
 node_modules
 /pantry
+# Pantry manages local system tools from config/deps.ts. Bun owns JavaScript
+# dependency resolution through the committed bun.lock.
+pantry.lock
 
 # QA
 test-results
