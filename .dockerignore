@@ -1,0 +1,13 @@
+.git
+.github
+.claude
+.idea
+.vscode
+node_modules
+pantry
+storage/logs
+storage/framework/**/node_modules
+storage/framework/**/storage/logs
+coverage
+*.log
+.DS_Store

@@ -1,5 +1,8 @@
-# Build stage
-FROM oven/bun:1.3.11 AS builder
+ARG BUN_VERSION=1.3.14
+
+# Keep the build and runtime distributions identical. Alpine avoids carrying
+# Debian's package database and shell utilities into the production image.
+FROM oven/bun:${BUN_VERSION}-alpine AS builder
 WORKDIR /usr/src
 
 # Copy source files
@@ -14,29 +17,20 @@ COPY ./tsconfig.docker.json ./tsconfig.json
 # RUN bun test
 # RUN bun run build
 
-# Final stage
-FROM oven/bun:1.3.11 AS release
+FROM oven/bun:${BUN_VERSION}-alpine AS release
 WORKDIR /usr/src
 
 # Copy built files from builder stage
-COPY --from=builder /usr/src/app ./app
-COPY --from=builder /usr/src/config ./config
-COPY --from=builder /usr/src/docs ./docs
-COPY --from=builder /usr/src/dist ./dist
-COPY --from=builder /usr/src/tsconfig.json ./tsconfig.json
-
-# Set up storage directory
-USER root
-RUN mkdir -p ./storage
+COPY --chown=bun:bun --from=builder /usr/src/app ./app
+COPY --chown=bun:bun --from=builder /usr/src/config ./config
+COPY --chown=bun:bun --from=builder /usr/src/docs ./docs
+COPY --chown=bun:bun --from=builder /usr/src/dist ./dist
+COPY --chown=bun:bun --from=builder /usr/src/tsconfig.json ./tsconfig.json
 COPY --chown=bun:bun ./storage ./storage
-
-# Install curl for the healthcheck
-RUN apt-get update && apt-get install -y --no-install-recommends curl && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Add storage volume for logs and other files
 VOLUME ["/usr/src/storage"]
 
-# Switch to non-root user
 USER bun
 
 # Expose port and set entrypoint
