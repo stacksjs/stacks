@@ -14,6 +14,7 @@ export function stacks(buddy: CLI): void {
     dryRun: 'Show what would be installed without making changes',
     conflict: 'Conflict resolution strategy: skip, overwrite, or backup',
     verbose: 'Enable verbose output',
+    project: 'Target a specific Stacks project',
   }
 
   buddy
@@ -21,17 +22,18 @@ export function stacks(buddy: CLI): void {
     .option('--force', descriptions.force, { default: false })
     .option('--dry-run', descriptions.dryRun, { default: false })
     .option('--conflict <strategy>', descriptions.conflict, { default: 'skip' })
+    .option('-p, --project <path>', descriptions.project)
     .option('--verbose', descriptions.verbose, { default: false })
-    .example('buddy stack:install @stacksjs/blog')
-    .example('buddy stack:install blog --force')
-    .example('buddy stack:install blog --conflict backup --verbose')
-    .example('buddy stack:install blog --dry-run')
-    .action(async (name: string, options: { force?: boolean, dryRun?: boolean, conflict?: string, verbose?: boolean }) => {
+    .example('buddy add calendar')
+    .example('buddy add table --force')
+    .example('buddy add calendar --conflict backup --verbose')
+    .example('buddy add table --dry-run')
+    .action(async (name: string, options: { force?: boolean, dryRun?: boolean, conflict?: string, project?: string, verbose?: boolean }) => {
       const perf = await intro('buddy stack:install')
 
       if (!name) {
         log.error('You need to specify a stack name.')
-        log.info('Example: buddy stack:install @stacksjs/blog')
+        log.info('Example: buddy add calendar')
         process.exit(ExitCode.FatalError)
       }
 
@@ -40,6 +42,7 @@ export function stacks(buddy: CLI): void {
         force: options.force,
         dryRun: options.dryRun,
         conflict: (options.conflict as ConflictStrategy) || 'skip',
+        project: options.project,
         verbose: options.verbose,
       })
 
@@ -55,10 +58,11 @@ export function stacks(buddy: CLI): void {
   buddy
     .command('stack:uninstall <name>', descriptions.uninstall)
     .option('--force', descriptions.force, { default: false })
+    .option('-p, --project <path>', descriptions.project)
     .option('--verbose', descriptions.verbose, { default: false })
     .example('buddy stack:uninstall blog')
     .example('buddy stack:uninstall blog --force')
-    .action(async (name: string, options: { force?: boolean, verbose?: boolean }) => {
+    .action(async (name: string, options: { force?: boolean, project?: string, verbose?: boolean }) => {
       const perf = await intro('buddy stack:uninstall')
 
       if (!name) {
@@ -69,6 +73,7 @@ export function stacks(buddy: CLI): void {
       const result = await uninstallStack({
         name,
         force: options.force,
+        project: options.project,
         verbose: options.verbose,
       })
 
@@ -84,14 +89,15 @@ export function stacks(buddy: CLI): void {
   buddy
     .command('stack:list', descriptions.list)
     .alias('stack:ls')
+    .option('-p, --project <path>', descriptions.project)
     .example('buddy stack:list')
-    .action(async () => {
+    .action(async (options: { project?: string }) => {
       const perf = await intro('buddy stack:list')
 
-      const entries = await listStacks()
+      const entries = await listStacks(options.project)
 
       if (entries.length === 0) {
-        log.info('No stacks found. Install one with: buddy stack:install <name>')
+        log.info('No stacks found. Install one with: buddy add <name>')
       }
       else {
         log.info(`Found ${entries.length} stack(s):`)

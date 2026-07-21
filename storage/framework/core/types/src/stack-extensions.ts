@@ -20,21 +20,21 @@ export type StackDirectory =
 // autocomplete and type safety for the new stack name.
 //
 // To add your stack, add a new entry below following the pattern:
-//   'your-stack-name': { package: '@your-org/your-stack', description: '...' },
+//   'your-stack-name': { github: 'your-org/your-stack', description: '...' },
 //
 // Requirements for PRs:
-//   - The package must be published to npm
-//   - The package.json must contain a valid `stacks` field with a `name`
+//   - The source repository must use the Stacks project directory structure
+//   - The package.json must contain a valid `stacks` field with a matching `name`
 //   - The description should be concise (under 80 chars)
 // ─────────────────────────────────────────────────────────────────────────────
 
-interface StackRegistryEntry {
-  /** The npm package name */
-  package: string
+export interface StackRegistryEntry {
+  /** GitHub repository containing the project-shaped stack source. */
+  github: string
+  /** The npm package name, when the stack is also published as a library. */
+  package?: string
   /** A short description of what this stack provides */
   description: string
-  /** GitHub repository (e.g. 'stacksjs/blog-stack') */
-  github?: string
 }
 
 /**
@@ -44,11 +44,16 @@ interface StackRegistryEntry {
  * Once merged, all Stacks users will get autocomplete for your stack name.
  */
 export const stackExtensionRegistry = {
-  // ── Community Stacks ────────────────────────────────────────────────────
-  // Add your stack here via PR! Follow the pattern:
-  //   'your-stack': { package: '@your-org/your-stack', description: 'What it does' },
-  //
-  // Once merged, all Stacks users get autocomplete for your stack name.
+  calendar: {
+    github: 'stacksjs/calendar',
+    package: '@stacksjs/calendar',
+    description: 'Calendar links, ICS generation, and an STX calendar component',
+  },
+  table: {
+    github: 'stacksjs/table',
+    package: '@stacksjs/table',
+    description: 'Typed table drivers and an STX data table component',
+  },
 } as const satisfies Record<string, StackRegistryEntry>
 
 /**
@@ -104,6 +109,10 @@ export interface StackManifestEntry {
   installedAt: string
   /** All files that were copied into the project, relative to project root */
   files: string[]
+  /** SHA-256 of each installed file, used to protect application edits on uninstall. */
+  checksums: Record<string, string>
+  /** GitHub repository the source was pulled from. */
+  source: string
   /** Files that were skipped due to conflicts */
   skipped: string[]
   /** The conflict strategy used during this install */
@@ -128,6 +137,8 @@ export interface StackInstallOptions {
   dryRun?: boolean
   /** Enable verbose output */
   verbose?: boolean
+  /** Target Stacks project. Defaults to the current working directory. */
+  project?: string
 }
 
 export interface StackUninstallOptions {
@@ -137,6 +148,8 @@ export interface StackUninstallOptions {
   force?: boolean
   /** Enable verbose output */
   verbose?: boolean
+  /** Target Stacks project. Defaults to the current working directory. */
+  project?: string
 }
 
 /** Display format for the `stack:list` command */
@@ -175,6 +188,8 @@ export interface StackExtensionEntry {
   github?: string
   /** npm package name if different from the name */
   package?: string
+  /** Concise description shown by `buddy stack:list`. */
+  description?: string
 }
 
 /**

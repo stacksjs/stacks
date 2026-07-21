@@ -1,19 +1,59 @@
-import { afterEach, describe, expect, it } from 'bun:test'
-import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
+import { afterAll, afterEach, describe, expect, it } from 'bun:test'
+import { cpSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 
-const { installStack, uninstallStack, listStacks } = await import('../src/stacks')
+const { registry } = await import('@stacksjs/registry')
 const p = await import('@stacksjs/path')
 
 const pantryDir = p.projectPath('pantry')
+const registryLength = registry.length
+const testSources = new Map<string, string>()
+const originalSpawn = Bun.spawn
+
+Bun.spawn = ((command: string[]) => {
+  const source = command.at(-2)
+  const checkoutPath = command.at(-1)
+  const github = source?.replace('https://github.com/', '').replace(/\.git$/, '')
+  const stackPath = github ? testSources.get(github) : undefined
+
+  if (!stackPath || !checkoutPath)
+    return originalSpawn(command)
+
+  cpSync(stackPath, checkoutPath, { recursive: true })
+  return { exited: Promise.resolve(0) } as ReturnType<typeof Bun.spawn>
+}) as typeof Bun.spawn
+
+const {
+  installStack: installRegistryStack,
+  uninstallStack: uninstallRegistryStack,
+  listStacks: listRegistryStacks,
+} = await import('../src/stacks')
+
+const installStack = (options: Parameters<typeof installRegistryStack>[0]) => installRegistryStack({
+  ...options,
+  project: p.projectPath(),
+})
+const uninstallStack = (options: Parameters<typeof uninstallRegistryStack>[0]) => uninstallRegistryStack({
+  ...options,
+  project: p.projectPath(),
+})
+const listStacks = () => listRegistryStacks(p.projectPath())
 
 // Track everything we create for cleanup
 const createdPaths: string[] = []
 
 function createTestStack(name: string, stackName: string, files: Record<string, string> = {}): string {
   const stackDir = join(pantryDir, name)
+  const github = `stacksjs-tests/${stackName}`
   mkdirSync(stackDir, { recursive: true })
   createdPaths.push(stackDir)
+  testSources.set(github, stackDir)
+  registry.push({
+    name: stackName,
+    package: name,
+    github,
+    description: `Test ${stackName} stack`,
+  })
 
   writeFileSync(join(stackDir, 'package.json'), JSON.stringify({
     name,
@@ -59,6 +99,8 @@ function cleanup() {
     catch {}
   }
   createdPaths.length = 0
+  registry.splice(registryLength)
+  testSources.clear()
 
   // Clean up lock file
   try {
@@ -76,10 +118,13 @@ function cleanup() {
 }
 
 afterEach(cleanup)
+afterAll(() => {
+  Bun.spawn = originalSpawn
+})
 
 describe('Stack Extensions', () => {
   describe('installStack', () => {
-    it('should return null when stack is not found in pantry', async () => {
+    it('should return null when stack is not found in the registry', async () => {
       const result = await installStack({ name: 'nonexistent-test-stack-xyz' })
       expect(result).toBeNull()
     })
@@ -200,7 +245,8 @@ describe('Stack Extensions', () => {
 
       const result = await installStack({ name: '__test-dry-stack', dryRun: true })
 
-      expect(result).toBeNull()
+      expect(result).not.toBeNull()
+      expect(result!.files).toContain('config/__test-dry.ts')
       expect(existsSync(p.projectPath('config/__test-dry.ts'))).toBe(false)
       expect(existsSync(p.stacksLockPath())).toBe(false)
     })
@@ -256,8 +302,16 @@ describe('Stack Extensions', () => {
 
     it('should handle scoped package names', async () => {
       const scopedDir = join(pantryDir, '@__test-scope', 'blog')
+      const github = 'stacksjs-tests/testscoped'
       mkdirSync(scopedDir, { recursive: true })
       createdPaths.push(join(pantryDir, '@__test-scope'))
+      testSources.set(github, scopedDir)
+      registry.push({
+        name: 'testscoped',
+        package: '@__test-scope/blog',
+        github,
+        description: 'Scoped stack',
+      })
 
       writeFileSync(join(scopedDir, 'package.json'), JSON.stringify({
         name: '@__test-scope/blog',
@@ -277,8 +331,16 @@ describe('Stack Extensions', () => {
 
     it('should return null for package without stacks field', async () => {
       const pkgDir = join(pantryDir, '__test-no-stacks')
+      const github = 'stacksjs-tests/no-metadata'
       mkdirSync(pkgDir, { recursive: true })
       createdPaths.push(pkgDir)
+      testSources.set(github, pkgDir)
+      registry.push({
+        name: 'no-metadata',
+        package: '__test-no-stacks',
+        github,
+        description: 'Stack without metadata',
+      })
       writeFileSync(join(pkgDir, 'package.json'), JSON.stringify({
         name: '__test-no-stacks',
         version: '1.0.0',
@@ -325,19 +387,21 @@ describe('Stack Extensions', () => {
       })
 
       await installStack({ name: '__test-modified-stack' })
+      trackProjectFile('config/__test-modified.ts')
 
       // Modify the installed file
       writeFileSync(p.projectPath('config/__test-modified.ts'), 'export default { userChanged: true }')
 
       const result = await uninstallStack({ name: 'testmodified' })
-      expect(result).toBe(true)
+      expect(result).toBe(false)
 
       // Modified file should still exist
       expect(existsSync(p.projectPath('config/__test-modified.ts'))).toBe(true)
       const content = readFileSync(p.projectPath('config/__test-modified.ts'), 'utf-8')
       expect(content).toBe('export default { userChanged: true }')
 
-      trackProjectFile('config/__test-modified.ts')
+      const lock = JSON.parse(readFileSync(p.stacksLockPath(), 'utf-8'))
+      expect(lock.stacks['__test-modified-stack'].files).toEqual(['config/__test-modified.ts'])
     })
 
     it('should remove user-modified files with force', async () => {
@@ -346,6 +410,7 @@ describe('Stack Extensions', () => {
       })
 
       await installStack({ name: '__test-force-rm-stack' })
+      trackProjectFile('config/__test-force-rm.ts')
       writeFileSync(p.projectPath('config/__test-force-rm.ts'), 'export default { modified: true }')
 
       const result = await uninstallStack({ name: 'testforcerm', force: true })

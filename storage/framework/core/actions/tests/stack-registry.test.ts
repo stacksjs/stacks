@@ -13,10 +13,10 @@ describe('Stack Extension Registry', () => {
 
     it('should not contain core framework modules', () => {
       const coreModules = [
-        'analytics', 'api', 'auth', 'cache', 'calendar', 'chat', 'cli',
+        'analytics', 'api', 'auth', 'cache', 'chat', 'cli',
         'cloud', 'cms', 'commerce', 'database', 'deploy', 'dns', 'email',
         'events', 'notifications', 'orm', 'payments', 'queue', 'realtime',
-        'router', 'search', 'security', 'storage', 'table', 'validation',
+        'router', 'search', 'security', 'storage', 'validation',
       ]
 
       for (const mod of coreModules) {
@@ -31,6 +31,18 @@ describe('Stack Extension Registry', () => {
         expect(typeof (entry as any).package).toBe('string')
         expect((entry as any).package.length).toBeGreaterThan(0)
       }
+    })
+
+    it('every entry should point to a GitHub repository', () => {
+      for (const entry of Object.values(stackExtensionRegistry)) {
+        expect(typeof entry.github).toBe('string')
+        expect(entry.github).toMatch(/^[\w.-]+\/[\w.-]+$/)
+      }
+    })
+
+    it('registers the project-shaped Calendar and Table stacks', () => {
+      expect(stackExtensionRegistry.calendar.github).toBe('stacksjs/calendar')
+      expect(stackExtensionRegistry.table.github).toBe('stacksjs/table')
     })
 
     it('every entry should have a description field', () => {

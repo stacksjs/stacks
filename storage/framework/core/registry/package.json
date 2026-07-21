@@ -37,6 +37,9 @@
     "README.md",
     "dist"
   ],
+  "dependencies": {
+    "@stacksjs/types": "workspace:*"
+  },
   "scripts": {
     "build": "bun build.ts",
     "typecheck": "bun tsc --noEmit",

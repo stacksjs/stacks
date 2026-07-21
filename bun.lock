@@ -105,6 +105,7 @@
         "@stacksjs/bunpress": "^0.1.18",
         "@stacksjs/config": "workspace:*",
         "@stacksjs/logsmith": "^0.2.3",
+        "@stacksjs/registry": "workspace:*",
         "@stacksjs/ts-cloud": "catalog:",
         "@stacksjs/ts-md": "^0.1.1",
       },
@@ -801,6 +802,9 @@
     "storage/framework/core/registry": {
       "name": "@stacksjs/registry",
       "version": "0.70.161",
+      "dependencies": {
+        "@stacksjs/types": "workspace:*",
+      },
       "devDependencies": {
         "better-dx": "catalog:",
       },

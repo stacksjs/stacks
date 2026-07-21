@@ -412,10 +412,10 @@ export async function makeStack(options: MakeOptions): Promise<void> {
     log.info('')
     log.info(`  cd ${name}`)
     log.info('  # Add your models, actions, views, etc.')
-    log.info('  # Then publish: bun publish')
+    log.info('  # Push the repository, then submit its GitHub source to the Stacks registry.')
     log.info('')
     log.info('  Users install it with:')
-    log.info(`  buddy stack:install ${name}`)
+    log.info(`  buddy add ${shortName}`)
   }
   catch (error) {
     log.error('There was an error creating your stack', error)

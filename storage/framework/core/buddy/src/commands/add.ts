@@ -1,69 +1,50 @@
-import type { AddOptions, BuildOptions, CLI } from '@stacksjs/types'
+import type { CLI, ConflictStrategy } from '@stacksjs/types'
 import process from 'node:process'
-import { runAdd } from '@stacksjs/actions'
-import { log } from '@stacksjs/logging'
+import { installStack } from '@stacksjs/actions'
+import { intro, italic, log, onUnknownSubcommand, outro } from '@stacksjs/cli'
 import { ExitCode } from '@stacksjs/types'
-import { onUnknownSubcommand } from "@stacksjs/cli"
+
+interface AddStackOptions {
+  force?: boolean
+  dryRun?: boolean
+  conflict?: ConflictStrategy
+  project?: string
+  verbose?: boolean
+}
 
 export function add(buddy: CLI): void {
-  const descriptions = {
-    add: 'Add a stack to your project (table and calendar available, more coming soon)',
-    table: 'Add the Table Stack to your project',
-    calendar: 'Add the Calendar Stack to your project',
-    all: 'Add all stacks',
-    select: 'Which stack/s are you trying to add?',
-    project: 'Target a specific project',
-    verbose: 'Enable verbose output',
-  }
-
   buddy
-    .command('add', descriptions.add)
-    .option('-t, --table', descriptions.table, { default: false })
-    .option('-c, --calendar', descriptions.calendar, { default: false })
-    .option('-a, --all', descriptions.all, { default: false })
-    .option('-p, --project [project]', descriptions.project, { default: false })
-    .option('--verbose', descriptions.verbose, { default: false })
-    .action(async (options: BuildOptions) => {
-      log.debug('Running `buddy add`...', options)
+    .command('add <stack>', 'Pull a registered stack and merge its project files into this Stacks application')
+    .option('--force', 'Overwrite existing files', { default: false })
+    .option('--dry-run', 'Show which files would be installed without changing the project', { default: false })
+    .option('--conflict <strategy>', 'Resolve existing files with skip, overwrite, or backup', { default: 'skip' })
+    .option('-p, --project <path>', 'Target a specific Stacks project')
+    .option('--verbose', 'Show every file copied or skipped', { default: false })
+    .example('buddy add calendar')
+    .example('buddy add table --dry-run')
+    .example('buddy add calendar --conflict backup')
+    .action(async (stack: string, options: AddStackOptions) => {
+      const perf = await intro('buddy add')
+      const result = await installStack({
+        name: stack,
+        force: options.force,
+        dryRun: options.dryRun,
+        conflict: options.conflict,
+        project: options.project,
+        verbose: options.verbose,
+      })
 
-      if (hasNoOptions(options)) {
-        // const answers = await log.prompt(descriptions.select, {
-        //   type: 'multiselect',
-        //   options: [
-        //     { label: 'Calendar', value: 'calendar' },
-        //     { label: 'Table', value: 'table' },
-        //   ],
-        // })
-        // // creates an object out of array and sets answers to true
-        // options = answers.reduce((a: any, v: any) => ({ ...a, [v]: true }), {})
+      if (!result) {
+        await outro(`Could not add stack ${italic(stack)}.`, { startTime: perf, useSeconds: true })
+        process.exit(ExitCode.FatalError)
       }
 
-      await runAdd(options)
+      if (options.dryRun)
+        log.info('Dry run complete. No project files were changed.')
 
+      await outro(`Stack ${italic(stack)} added.`, { startTime: perf, useSeconds: true })
       process.exit(ExitCode.Success)
     })
 
-  buddy
-    .command('add:table', descriptions.table)
-    .option('-t, --table', descriptions.table, { default: true })
-    .option('-p, --project [project]', descriptions.project, { default: false })
-    .option('--verbose', descriptions.verbose, { default: false })
-    .action(async (options: BuildOptions) => {
-      await runAdd(options)
-    })
-
-  buddy
-    .command('add:calendar', descriptions.calendar)
-    .option('-t, --calendar', descriptions.calendar, { default: true })
-    .option('-p, --project [project]', descriptions.project, { default: false })
-    .option('--verbose', descriptions.verbose, { default: false })
-    .action(async (options: BuildOptions) => {
-      await runAdd(options)
-    })
-
-  onUnknownSubcommand(buddy, "add")
-}
-
-function hasNoOptions(options: AddOptions) {
-  return !options.all && !options.table && !options.calendar
+  onUnknownSubcommand(buddy, 'add')
 }
