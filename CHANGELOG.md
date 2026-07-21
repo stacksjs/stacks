@@ -1,5 +1,7 @@
 # Stacks Changelog
 
+## v0.70.159
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.157...v0.70.158)
 
 ## 🐛 Bug Fixes
