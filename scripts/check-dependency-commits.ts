@@ -7,6 +7,7 @@ export function isDependencyCommit(subject: string): boolean {
 export function hasDependencyStateChange(files: string[]): boolean {
   return files.some(file =>
     file === 'bun.lock'
+    || file === 'pantry.lock'
     || file === 'config/deps.ts'
     || file === 'package.json'
     || file.endsWith('/package.json'),
@@ -50,15 +51,10 @@ export function checkDependencyCommits(range: string): string[] {
 }
 
 if (import.meta.main) {
-  if (git('ls-files', 'pantry.lock')) {
-    console.error('pantry.lock must not be tracked. Bun owns JavaScript dependency locking.')
-    process.exit(1)
-  }
-
   const range = resolveRange()
   const errors = checkDependencyCommits(range)
   if (errors.length > 0) {
-    console.error('Dependency commits must change package.json, config/deps.ts, or bun.lock:')
+    console.error('Dependency commits must change a manifest, bun.lock, or pantry.lock:')
     for (const error of errors)
       console.error(`  ${error}`)
     process.exit(1)
