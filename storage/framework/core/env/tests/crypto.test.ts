@@ -4,11 +4,11 @@
  */
 
 import { describe, expect, it } from 'bun:test'
-import { aesDecrypt, aesEncrypt, decryptValue, encryptValue, generateKeypair, getPrivateKey, parseEnvFromKey } from '../src/crypto'
+import { createHash } from 'node:crypto'
+import { aesDecrypt, aesEncrypt, decryptValue, encryptValue, generateKeypair, getPrivateKey, isLegacyEncryptedValue, migrateEncryptedValue, parseEnvFromKey } from '../src/crypto'
 
 // Hardcoded test keys for deterministic testing
 const TEST_PRIVATE_KEY = 'a4547dcd9d3429615a3649bb79e87edb62ee6a74b007075e9141ae44f5fb412c'
-const TEST_PUBLIC_KEY = 'c8e2a4e1f3c8b4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9'
 
 describe('Crypto - AES Encryption/Decryption', () => {
   it('should encrypt and decrypt a simple string', () => {
@@ -103,8 +103,8 @@ describe('Crypto - Keypair Generation', () => {
 
     expect(publicKey).toBeDefined()
     expect(privateKey).toBeDefined()
-    expect(publicKey.length).toBe(64) // 32 bytes in hex
-    expect(privateKey.length).toBe(64) // 32 bytes in hex
+    expect(publicKey).toStartWith('x25519-public:')
+    expect(privateKey).toStartWith('x25519-private:')
     expect(publicKey).not.toBe(privateKey)
   })
 
@@ -116,11 +116,11 @@ describe('Crypto - Keypair Generation', () => {
     expect(keypair1.privateKey).not.toBe(keypair2.privateKey)
   })
 
-  it('should generate keypair with valid hex characters', () => {
+  it('should generate canonical versioned key encodings', () => {
     const { publicKey, privateKey } = generateKeypair()
 
-    expect(publicKey).toMatch(/^[0-9a-f]{64}$/)
-    expect(privateKey).toMatch(/^[0-9a-f]{64}$/)
+    expect(publicKey.slice('x25519-public:'.length)).toMatch(/^[A-Za-z0-9_-]+$/)
+    expect(privateKey.slice('x25519-private:'.length)).toMatch(/^[A-Za-z0-9_-]+$/)
   })
 })
 
@@ -130,7 +130,7 @@ describe('Crypto - Value Encryption/Decryption', () => {
     const { publicKey, privateKey } = generateKeypair()
 
     const encrypted = encryptValue(value, publicKey)
-    expect(encrypted).toStartWith('encrypted:')
+    expect(encrypted).toStartWith('encrypted:v2:')
     expect(encrypted).not.toContain(value)
 
     const decrypted = decryptValue(encrypted, privateKey)
@@ -197,11 +197,11 @@ describe('Crypto - E2E with Hardcoded Keys', () => {
 
     const encrypted = encryptValue(value, publicKey)
 
-    expect(encrypted).toStartWith('encrypted:')
+    expect(encrypted).toStartWith('encrypted:v2:')
     expect(encrypted.length).toBeGreaterThan(20)
     // Encrypted value should be base64 after "encrypted:" prefix
-    const base64Part = encrypted.slice(10)
-    expect(base64Part).toMatch(/^[A-Za-z0-9+/]+=*$/)
+    const base64Part = encrypted.slice('encrypted:v2:'.length)
+    expect(base64Part).toMatch(/^[A-Za-z0-9_-]+$/)
   })
 
   it('should decrypt with known key', () => {
@@ -258,6 +258,48 @@ describe('Crypto - E2E with Hardcoded Keys', () => {
       const decrypted = decryptValue(encrypted, privateKey)
       expect(decrypted).toBe(testCase)
     }
+  })
+})
+
+describe('Crypto - Versioned Envelope Security', () => {
+  function mutate(encrypted: string, field: string): string {
+    const prefix = 'encrypted:v2:'
+    const envelope = JSON.parse(Buffer.from(encrypted.slice(prefix.length), 'base64url').toString('utf8'))
+    envelope[field] = field === 'v' ? 3 : `${envelope[field]}A`
+    return `${prefix}${Buffer.from(JSON.stringify(envelope)).toString('base64url')}`
+  }
+
+  it('rejects wrong recipients and modified authenticated components generically', () => {
+    const recipient = generateKeypair()
+    const foreign = generateKeypair()
+    const encrypted = encryptValue('secret', recipient.publicKey)
+    expect(() => decryptValue(encrypted, foreign.privateKey)).toThrow('authentication or format error')
+    for (const field of ['epk', 'salt', 'nonce', 'ciphertext', 'tag', 'v'])
+      expect(() => decryptValue(mutate(encrypted, field), recipient.privateKey)).toThrow('authentication or format error')
+  })
+
+  it('rejects malformed envelopes and unknown fields', () => {
+    const keys = generateKeypair()
+    expect(() => decryptValue('encrypted:v2:not+base64', keys.privateKey)).toThrow('authentication or format error')
+    const envelope = JSON.parse(Buffer.from(encryptValue('secret', keys.publicKey).slice('encrypted:v2:'.length), 'base64url').toString('utf8'))
+    envelope.debug = true
+    const value = `encrypted:v2:${Buffer.from(JSON.stringify(envelope)).toString('base64url')}`
+    expect(() => decryptValue(value, keys.privateKey)).toThrow('authentication or format error')
+  })
+
+  it('reads and migrates legacy ciphertext but never writes it', () => {
+    const legacyPrivate = TEST_PRIVATE_KEY
+    const legacyPublic = createHash('sha256').update(Buffer.from(legacyPrivate, 'hex')).digest()
+    const legacyKey = createHash('sha256').update(legacyPublic).digest()
+    const { ciphertext, iv, authTag } = aesEncrypt('legacy-secret', legacyKey)
+    const legacy = `encrypted:${Buffer.concat([Buffer.from(iv, 'hex'), Buffer.from(authTag, 'hex'), Buffer.from(ciphertext, 'hex')]).toString('base64')}`
+    expect(isLegacyEncryptedValue(legacy)).toBe(true)
+    expect(decryptValue(legacy, legacyPrivate)).toBe('legacy-secret')
+    const replacement = generateKeypair()
+    const migrated = migrateEncryptedValue(legacy, legacyPrivate, replacement.publicKey)
+    expect(migrated).toStartWith('encrypted:v2:')
+    expect(decryptValue(migrated, replacement.privateKey)).toBe('legacy-secret')
+    expect(() => encryptValue('new-secret', legacyPublic.toString('hex'))).toThrow('env:rotate')
   })
 })
 

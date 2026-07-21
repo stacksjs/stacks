@@ -6,13 +6,10 @@ import { decryptValue, encryptValue, generateKeypair } from '../src/crypto'
 // key decrypts back through the matching private key.
 
 describe('generateKeypair (#1053 default-encryption keypair)', () => {
-  test('returns hex-encoded public + private keys', () => {
+  test('returns versioned X25519 public + private keys', () => {
     const { publicKey, privateKey } = generateKeypair()
-    expect(publicKey).toMatch(/^[0-9a-f]+$/)
-    expect(privateKey).toMatch(/^[0-9a-f]+$/)
-    // 32-byte keys → 64 hex chars
-    expect(publicKey).toHaveLength(64)
-    expect(privateKey).toHaveLength(64)
+    expect(publicKey).toMatch(/^x25519-public:[A-Za-z0-9_-]+$/)
+    expect(privateKey).toMatch(/^x25519-private:[A-Za-z0-9_-]+$/)
   })
 
   test('every keypair is unique', () => {
@@ -27,7 +24,7 @@ describe('generateKeypair (#1053 default-encryption keypair)', () => {
     const secret = 'sk_live_top_secret_value'
 
     const encrypted = encryptValue(secret, publicKey)
-    expect(encrypted.startsWith('encrypted:')).toBe(true)
+    expect(encrypted.startsWith('encrypted:v2:')).toBe(true)
 
     const recovered = decryptValue(encrypted, privateKey)
     expect(recovered).toBe(secret)
