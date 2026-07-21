@@ -2,6 +2,18 @@ import { describe, expect, it } from 'bun:test'
 import { groupGeneratedStatements } from '../src/migrations'
 
 describe('generated migration grouping', () => {
+  it('writes PostgreSQL enum types before tables that consume them', () => {
+    const groups = groupGeneratedStatements([
+      'CREATE TABLE IF NOT EXISTS "subscribers" ("id" BIGSERIAL PRIMARY KEY, "status" "subscribers_status_type" NOT NULL);',
+      'CREATE TYPE "subscribers_status_type" AS ENUM (\'subscribed\', \'unsubscribed\');',
+    ])
+
+    expect(groups.map(group => group.label)).toEqual([
+      'create-database-types',
+      'create-subscribers-table',
+    ])
+  })
+
   it('keeps a new model table and its indexes in one create migration', () => {
     const groups = groupGeneratedStatements([
       'CREATE TABLE IF NOT EXISTS "packages" ("id" BIGSERIAL PRIMARY KEY);',

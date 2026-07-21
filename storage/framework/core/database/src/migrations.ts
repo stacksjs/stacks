@@ -1266,6 +1266,13 @@ export function groupGeneratedStatements(sqlStatements: string[]): GeneratedGrou
     const create = stmt.match(/^\s*CREATE\s+TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?["`]?(\w+)["`]?/i)
     if (create) { push(`create-${create[1]}-table`, stmt); continue }
 
+    // PostgreSQL enum types must exist before any CREATE TABLE that names
+    // them. Keep all generated types in a dedicated prerequisite migration;
+    // the priority sort below guarantees it receives the first migration
+    // number even though bun-query-builder emits type statements last.
+    const createType = stmt.match(/^\s*CREATE\s+TYPE\s+/i)
+    if (createType) { push('create-database-types', stmt); continue }
+
     const alter = stmt.match(/^\s*ALTER\s+TABLE\s+["`]?(\w+)["`]?\s+(?:ADD\s+COLUMN\s+["`]?(\w+)["`]?|DROP\s+COLUMN\s+["`]?(\w+)["`]?|ADD\s+CONSTRAINT)/i)
     const alterTable = alter?.[1]
     if (alter && alterTable) {
@@ -1288,7 +1295,9 @@ export function groupGeneratedStatements(sqlStatements: string[]): GeneratedGrou
     push('auto-misc', stmt)
   }
 
-  return [...groups.entries()].map(([label, statements]) => ({ label, statements }))
+  return [...groups.entries()]
+    .map(([label, statements]) => ({ label, statements }))
+    .sort((a, b) => Number(b.label === 'create-database-types') - Number(a.label === 'create-database-types'))
 }
 
 function nextMigrationNumber(migrationsDir: string): number {
