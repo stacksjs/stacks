@@ -36,23 +36,26 @@ As a developer, Stacks helps you every step along the way—in beginner & expert
 
 ## Prerequisites
 
-Stacks runs on [Bun](https://bun.sh). You'll need:
+Stacks uses [Pantry](https://pantry.dev) to provision Bun, Git, SQLite, and the project-specific tools declared by the framework. You'll need:
 
-- **Bun ≥ 1.3.0** — install with `curl -fsSL https://bun.sh/install | bash`, or upgrade an existing install with `bun upgrade`.
-- **macOS, Linux, or WSL** — Windows-native is on the roadmap; today the toolchain assumes a POSIX shell.
-- **Node.js is NOT required.** Bun handles the JS/TS runtime, package management, and bundling.
+- **Pantry** - install it with `curl -fsSL https://pantry.dev | bash`, then run `pantry bootstrap` once to configure your shell.
+- **macOS, Linux, or WSL** - Windows-native support is on the roadmap. The current toolchain assumes a POSIX shell.
 
-That's it for the framework itself. Individual features (Postgres, Redis, AWS deploys, etc.) bring their own prereqs — each is called out where it matters in the docs.
+Pantry installs and pins Bun 1.3 or newer for each Stacks project, then keeps the rest of the machine and project dependencies in sync. Features such as PostgreSQL, Redis, and cloud deployment add their requirements through the same Pantry manifest where possible, with feature-specific configuration documented alongside them.
 
 ## Get Started
 
-The fastest path, assuming Bun is installed:
+The fastest path after Pantry is installed:
 
 ```bash
-bunx @stacksjs/buddy new my-project
+panx @stacksjs/buddy new my-project
 ```
 
-A one-line installer (`curl -Ssf stacksjs.com/install | sh`) is also planned and will appear here once it lands; for now the `bunx` form above is the supported install path.
+Pantry executes Buddy in an isolated environment and provisions the generated project's declared toolchain during setup.
+
+For frontend experiments in the browser, open the live stx starter:
+
+[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/fork/github/stacksjs/stacks/tree/main/examples/stackblitz?startScript=dev&title=Stacks%20Starter)
 
 ## Usage
 
@@ -80,7 +83,7 @@ buddy --help # view help menu
 
 buddy new my-project # creates a new Stacks project
 buddy install # installs dependencies
-buddy add # adds a stack or dependency
+buddy add calendar # pulls a registered project-shaped stack into this project
 buddy fresh # fresh reinstall of all deps (--force skips the confirmation)
 buddy clean # removes all deps (--force skips the confirmation)
 buddy setup # sets up the project initially
@@ -117,7 +120,7 @@ buddy build # select a specific build (follow CLI prompts)
 buddy build:frontend # builds the frontend (aliases: build:views, build:pages)
 buddy build:desktop # builds Desktop application
 buddy build:functions # builds function library
-buddy build:components # builds Vue component library & Web Component library
+buddy build:components # builds the STX component library and Web Component library
 buddy build:web-components # builds framework agnostic Web Component library (i.e. Custom Elements)
 buddy build:cli # builds the Buddy CLI binary
 buddy build:server # builds the Stacks cloud server (Docker image)
@@ -145,7 +148,7 @@ buddy make:migration create_cars_table # creates a cars migration file
 buddy make:factory cars # creates a Car factory file
 buddy make:notification welcome-email # bootstraps a welcome-email notification
 buddy make:lang de # bootstraps a lang/de.yml language file
-buddy make:stack my-plugin # scaffolds a publishable stack/plugin (new project? use `bunx @stacksjs/buddy new`)
+buddy make:stack my-plugin # scaffolds a project-shaped registry stack (new project? use `panx @stacksjs/buddy new`)
 
 buddy migrate # runs database migrations
 buddy migrate:fresh # drops all tables & re-runs migrations (destroys all data; --seed reseeds)
@@ -309,7 +312,7 @@ Convention over configuration, while staying wholly configurable. _No more boile
 - 🚗 **Auto Imports** _your components & functions, including date, string, array, & object helpers_
 - ⏩ **Code Snippets** _goodbye to the boilerplate code—thank you Sarah Drasner_
 - 🔤 **Spell Checker** _be notified once there are typos_
-- 🛠️ **Essential Utilities** _powers at your fingertips. Collections, VueUse, and more_
+- 🛠️ **Essential Utilities** _powers at your fingertips. Collections, STX composables, and more_
 - 👥 **Team Management** _manage your team & their permissions_
 - 🧪 **Streamlined Testing** _unit & e2e tests powered by Bun, Vitest & Playwright_
 

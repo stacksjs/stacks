@@ -1,3 +1,7 @@
+---
+title: TypeScript Realtime Package
+description: "A powerful and flexible realtime communication library for TypeScript that provides multiple drivers (Pusher, Socket.IO, and Bun WebSocket) for handling re..."
+---
 # TypeScript Realtime Package
 
 A powerful and flexible realtime communication library for TypeScript that provides multiple drivers (Pusher, Socket.IO, and Bun WebSocket) for handling realtime events and broadcasting.

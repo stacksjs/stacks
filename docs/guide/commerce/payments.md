@@ -1,3 +1,7 @@
+---
+title: Commerce Payments
+description: "The Payments module in the Commerce package provides a robust set of functions to manage and interact with your payment data. This guide will walk you thro..."
+---
 # Payments
 
 The Payments module in the Commerce package provides a robust set of functions to manage and interact with your payment data. This guide will walk you through the various operations you can perform with payments.

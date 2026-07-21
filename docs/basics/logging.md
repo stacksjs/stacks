@@ -1,3 +1,7 @@
+---
+title: Application Logging
+description: "Stacks provides a powerful logging system built on Clarity, offering structured logging, multiple output channels, and beautiful console formatting."
+---
 # Logging
 
 Stacks provides a powerful logging system built on [Clarity](https://github.com/stacksjs/clarity), offering structured logging, multiple output channels, and beautiful console formatting.
@@ -241,4 +245,4 @@ export async function loggingMiddleware(request, next) {
 ### Related Guides
 
 - **[Error Handling](/basics/error-handling)** - Handling and logging errors
-- **[Debugging](/guide/debugging)** - Debug techniques
+- **[Debugging](/basics/logging)** - Debug techniques

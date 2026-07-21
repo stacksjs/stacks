@@ -1,3 +1,7 @@
+---
+title: Project Roadmap
+description: "This document outlines the planned development direction for Stacks. Our roadmap is community-driven and subject to change based on feedback and priorities..."
+---
 # Roadmap
 
 This document outlines the planned development direction for Stacks. Our roadmap is community-driven and subject to change based on feedback and priorities.

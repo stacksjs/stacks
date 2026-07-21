@@ -71,7 +71,7 @@ ecosystem comparison, and the Road-to-v1.0s announcement.
 - **Deploy every surface with one command** → the `buddy deploy` path
   (marketing, docs, blog, API, app server, AWS via `ts-cloud`).
   - *Follow-up:* "From `bun create` to production URL in N minutes."
-- **Docs as a first-party concern** → `bunpress` (our VitePress).
+- **Docs as a first-party concern** → `bunpress`, our STX documentation engine.
 - **Local dev that feels like prod** → `rpx`, `tlsx`, `dnsx`, `localtunnels`.
 
 ---

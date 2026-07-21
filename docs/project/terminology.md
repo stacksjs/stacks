@@ -1,3 +1,7 @@
+---
+title: Terminology
+description: This glossary defines the key terms and concepts used throughout Stacks documentation.
+---
 # Terminology
 
 This glossary defines the key terms and concepts used throughout Stacks documentation.
@@ -68,7 +72,7 @@ Reusable stx UI components. Components can also compile to standards-based Web C
 
 ### Web Components
 
-Framework-agnostic custom elements built from Vue components. Work in any HTML context.
+Framework-agnostic custom elements built from STX components. Work in any HTML context.
 
 ### Composables
 

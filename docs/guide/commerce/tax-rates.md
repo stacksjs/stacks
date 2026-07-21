@@ -1,3 +1,7 @@
+---
+title: Commerce Tax Rates
+description: "The Tax Rates module in the Commerce package provides a comprehensive set of functions to manage tax rates for your e-commerce system. This module helps yo..."
+---
 # Tax Rates
 
 The Tax Rates module in the Commerce package provides a comprehensive set of functions to manage tax rates for your e-commerce system. This module helps you handle tax calculations, regional tax rules, and tax rate management.

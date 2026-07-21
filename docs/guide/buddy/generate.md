@@ -1,3 +1,7 @@
+---
+title: Generate Command
+description: "The  command provides code generation capabilities for various project artifacts, from TypeScript types to IDE helpers and component metadata."
+---
 # Generate Command
 
 The `buddy generate` command provides code generation capabilities for various project artifacts, from TypeScript types to IDE helpers and component metadata.
@@ -215,7 +219,7 @@ Auto-triggered generators:
 
 ### Component Types
 
-Generates types for your Vue components:
+Generates types for your STX components:
 
 ```typescript
 // Generated types
@@ -304,8 +308,8 @@ Error: No components found
 ```
 app/
   Components/
-    Button.vue
-    Modal.vue
+    Button.stx
+    Modal.stx
 ```
 
 ### Generation Fails

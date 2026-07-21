@@ -1,6 +1,10 @@
+---
+title: Radio Group
+description: "A modern, accessible radio group component for STX applications."
+---
 # Radio Group
 
-A modern, accessible radio group component for Vue applications.
+A modern, accessible radio group component for STX applications.
 
 <RadioGroupDemo />
 
@@ -45,9 +49,9 @@ yarn add @stacksjs/radio-group
 
 The radio group component is composed of several sub-components that work together to create a fully functional and accessible radio group:
 
-```vue
-<script setup>
-import { ref } from 'vue'
+```html
+<script>
+import { ref } from '@stacksjs/stx'
 import {
   RadioGroup,
   RadioGroupLabel,
@@ -127,7 +131,7 @@ The radio group components can be styled using standard CSS classes. Each compon
 
 For dynamic styling based on state, use the slot props provided by RadioGroupOption:
 
-```vue
+```html
 <RadioGroupOption v-slot="{ checked, active }">
   <div :class="!checked, 'bg-blue-500 'bg-white 'ring-2 { } active checked, ring-blue-500': text-black': text-white':">
     {{ option.name }}

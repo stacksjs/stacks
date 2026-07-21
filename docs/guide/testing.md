@@ -1,3 +1,7 @@
+---
+title: Application Testing
+description: "Stacks provides a comprehensive testing framework built on Bun's native test runner. Write unit tests, integration tests, and end-to-end tests with excelle..."
+---
 # Testing
 
 Stacks provides a comprehensive testing framework built on Bun's native test runner. Write unit tests, integration tests, and end-to-end tests with excellent developer experience.

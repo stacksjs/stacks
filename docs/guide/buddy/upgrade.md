@@ -1,3 +1,7 @@
+---
+title: Upgrade Command
+description: "The  command upgrades your project's dependencies, the Stacks framework, Bun runtime, and shell integrations to their latest versions."
+---
 # Upgrade Command
 
 The `buddy upgrade` command upgrades your project's dependencies, the Stacks framework, Bun runtime, and shell integrations to their latest versions.

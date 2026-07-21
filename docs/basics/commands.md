@@ -1,5 +1,5 @@
 ---
-title: Commands
+title: Custom Commands
 description: Learn how to create and use CLI commands in Stacks applications
 ---
 
@@ -212,7 +212,7 @@ export default function (cli: CLI) {
 
       // Single selection
       const framework = await select('Choose a framework:', [
-        'Vue',
+        'STX',
         'React',
         'Svelte',
       ])

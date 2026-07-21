@@ -1,3 +1,7 @@
+---
+title: Database Package
+description: "A powerful database abstraction layer providing seamless driver switching between SQLite, MySQL, and PostgreSQL, built on top of bun-query-builder."
+---
 # Database Package
 
 A powerful database abstraction layer providing seamless driver switching between SQLite, MySQL, and PostgreSQL, built on top of bun-query-builder.

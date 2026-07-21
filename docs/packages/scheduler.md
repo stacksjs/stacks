@@ -1,3 +1,7 @@
+---
+title: Scheduler Package
+description: "A powerful task scheduling system for running recurring jobs, commands, and actions with cron-like syntax, timezone support, and overlapping prevention."
+---
 # Scheduler Package
 
 A powerful task scheduling system for running recurring jobs, commands, and actions with cron-like syntax, timezone support, and overlapping prevention.

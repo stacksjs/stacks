@@ -1,3 +1,7 @@
+---
+title: HTTP Tests
+description: HTTP tests verify your API endpoints respond correctly to requests. Stacks provides a fluent testing API for making requests and asserting responses.
+---
 # HTTP Tests
 
 HTTP tests verify your API endpoints respond correctly to requests. Stacks provides a fluent testing API for making requests and asserting responses.

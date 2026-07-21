@@ -1,3 +1,7 @@
+---
+title: Events Package
+description: "A lightweight (200b) functional event emitter and pub/sub system, providing a simple yet powerful event bus for application-wide communication."
+---
 # Events Package
 
 A lightweight (~200b) functional event emitter and pub/sub system, providing a simple yet powerful event bus for application-wide communication.

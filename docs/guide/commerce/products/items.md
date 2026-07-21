@@ -1,3 +1,7 @@
+---
+title: Product Items
+description: "The Product Items module in the Commerce package provides a robust set of functions to manage and interact with your product item data. This guide will wal..."
+---
 # Product Items
 
 The Product Items module in the Commerce package provides a robust set of functions to manage and interact with your product item data. This guide will walk you through the various operations you can perform with product items.

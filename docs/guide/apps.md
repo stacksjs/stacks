@@ -1,3 +1,7 @@
+---
+title: Application Types
+description: "Stacks enables you to build multiple types of applications from a single codebase: web apps, desktop apps, mobile apps, and CLI tools. Share code between p..."
+---
 # Apps
 
 Stacks enables you to build multiple types of applications from a single codebase: web apps, desktop apps, mobile apps, and CLI tools. Share code between platforms while optimizing for each target.
@@ -18,7 +22,7 @@ Stacks app types:
 
 ```bash
 # Create SPA
-bunx @stacksjs/buddy new my-app
+panx @stacksjs/buddy new my-app
 
 # Development server
 buddy dev
@@ -31,7 +35,7 @@ buddy build
 
 ```bash
 # Create SSR app
-bunx @stacksjs/buddy new my-app
+panx @stacksjs/buddy new my-app
 
 # Development
 buddy dev
@@ -73,7 +77,7 @@ Stacks uses the first-party Craft runtime for native desktop apps. Craft opens t
 
 ```bash
 # Create desktop app
-bunx @stacksjs/buddy new my-app
+panx @stacksjs/buddy new my-app
 
 # Development mode
 buddy dev:desktop
@@ -235,7 +239,7 @@ PushNotifications.addListener('pushNotificationReceived', (notification) => {
 
 ```bash
 # Create CLI app
-bunx @stacksjs/buddy new my-cli
+panx @stacksjs/buddy new my-cli
 
 # Run CLI
 bun run cli

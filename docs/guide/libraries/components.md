@@ -1,6 +1,10 @@
+---
+title: Component Libraries
+description: Build reusable STX component libraries that work across projects with Stacks.
+---
 # Component Libraries
 
-Build reusable Vue component libraries that work across projects with Stacks.
+Build reusable STX component libraries that work across projects with Stacks.
 
 ## Component Architecture
 
@@ -11,29 +15,29 @@ Organize components by feature or complexity:
 ```
 components/
 ├── Button/
-│   ├── Button.vue           # Main component
+│   ├── Button.stx           # Main component
 │   ├── Button.test.ts       # Tests
 │   └── index.ts             # Export
 ├── Modal/
-│   ├── Modal.vue
-│   ├── ModalHeader.vue
-│   ├── ModalBody.vue
-│   ├── ModalFooter.vue
+│   ├── Modal.stx
+│   ├── ModalHeader.stx
+│   ├── ModalBody.stx
+│   ├── ModalFooter.stx
 │   └── index.ts
 ├── Form/
-│   ├── Input.vue
-│   ├── Select.vue
-│   ├── Checkbox.vue
+│   ├── Input.stx
+│   ├── Select.stx
+│   ├── Checkbox.stx
 │   └── index.ts
 └── index.ts                  # Main export
 ```
 
 ### Single File Components
 
-Use Vue SFCs with TypeScript:
+Use STX SFCs with TypeScript:
 
-```vue
-<!-- components/Card/Card.vue -->
+```html
+<!-- components/Card/Card.stx -->
 <template>
   <div :class="cardClasses">
     <header v-if="$slots.header || title" class="card-header">
@@ -52,8 +56,8 @@ Use Vue SFCs with TypeScript:
   </div>
 </template>
 
-<script setup lang="ts">
-import { computed } from 'vue'
+<script>
+import { computed } from '@stacksjs/stx'
 
 export interface CardProps {
   title?: string
@@ -143,9 +147,9 @@ const props = withDefaults(defineProps<ButtonProps>(), {
 
 Add runtime validation for complex props:
 
-```vue
-<script setup lang="ts">
-import { computed, warn } from 'vue'
+```html
+<script>
+import { computed, warn } from '@stacksjs/stx'
 
 export interface InputProps {
   type?: 'text' | 'email' | 'password' | 'number' | 'tel'
@@ -173,8 +177,8 @@ if (props.type === 'number') {
 
 Define event types explicitly:
 
-```vue
-<script setup lang="ts">
+```html
+<script>
 const emit = defineEmits<{
   click: [event: MouseEvent]
   change: [value: string]
@@ -194,8 +198,8 @@ function handleClick(event: MouseEvent) {
 
 Support two-way binding:
 
-```vue
-<!-- components/Input.vue -->
+```html
+<!-- components/Input.stx -->
 <template>
   <input
     :value="modelValue"
@@ -207,7 +211,7 @@ Support two-way binding:
   />
 </template>
 
-<script setup lang="ts">
+<script>
 export interface InputProps {
   modelValue?: string
   type?: string
@@ -238,8 +242,8 @@ function handleInput(event: Event) {
 
 Provide flexibility with slots:
 
-```vue
-<!-- components/Modal.vue -->
+```html
+<!-- components/Modal.stx -->
 <template>
   <Teleport to="body">
     <div v-if="modelValue" class="modal-overlay" @click.self="close">
@@ -265,7 +269,7 @@ Provide flexibility with slots:
   </Teleport>
 </template>
 
-<script setup lang="ts">
+<script>
 export interface ModalProps {
   modelValue: boolean
   title?: string
@@ -292,8 +296,8 @@ function close() {
 
 Pass data to slot content:
 
-```vue
-<!-- components/DataTable.vue -->
+```html
+<!-- components/DataTable.stx -->
 <template>
   <table class="data-table">
     <thead>
@@ -317,7 +321,7 @@ Pass data to slot content:
   </table>
 </template>
 
-<script setup lang="ts" generic="T extends Record<string, any>">
+<script>
 export interface Column {
   key: string
   label: string
@@ -340,7 +344,7 @@ Move reusable logic to composables:
 
 ```typescript
 // composables/useClickOutside.ts
-import { onMounted, onUnmounted, type Ref } from 'vue'
+import { onMounted, onUnmounted, type Ref } from '@stacksjs/stx'
 
 export function useClickOutside(
   elementRef: Ref<HTMLElement | null>,
@@ -364,8 +368,8 @@ export function useClickOutside(
 
 ### Using in Components
 
-```vue
-<!-- components/Dropdown.vue -->
+```html
+<!-- components/Dropdown.stx -->
 <template>
   <div ref="dropdownRef" class="dropdown">
     <button @click="toggle">
@@ -378,8 +382,8 @@ export function useClickOutside(
   </div>
 </template>
 
-<script setup lang="ts">
-import { ref } from 'vue'
+<script>
+import { ref } from '@stacksjs/stx'
 import { useClickOutside } from '../composables/useClickOutside'
 
 const dropdownRef = ref<HTMLElement | null>(null)
@@ -403,7 +407,7 @@ useClickOutside(dropdownRef, close)
 
 Use CSS custom properties for theming:
 
-```vue
+```html
 <style>
 .button {
   --button-bg: var(--color-primary, #3b82f6);
@@ -424,7 +428,7 @@ Use CSS custom properties for theming:
 
 Optionally support Tailwind:
 
-```vue
+```html
 <template>
   <button
     :class="[
@@ -438,8 +442,8 @@ Optionally support Tailwind:
   </button>
 </template>
 
-<script setup lang="ts">
-import { computed } from 'vue'
+<script>
+import { computed } from '@stacksjs/stx'
 
 const props = defineProps<{
   variant?: 'primary' | 'secondary' | 'outline'
@@ -466,8 +470,8 @@ const sizeClasses = computed(() => ({
 
 Include proper accessibility:
 
-```vue
-<!-- components/Alert.vue -->
+```html
+<!-- components/Alert.stx -->
 <template>
   <div
     :class="['alert', `alert--${variant}`]"
@@ -496,8 +500,8 @@ Include proper accessibility:
 
 Support keyboard users:
 
-```vue
-<script setup lang="ts">
+```html
+<script>
 function handleKeydown(event: KeyboardEvent) {
   switch (event.key) {
     case 'Enter':
@@ -528,8 +532,8 @@ function handleKeydown(event: KeyboardEvent) {
 ```typescript
 // components/Button/Button.test.ts
 import { describe, it, expect } from 'bun:test'
-import { mount } from '@vue/test-utils'
-import Button from './Button.vue'
+import { mount } from '@stacksjs/stx/testing'
+import Button from './Button.stx'
 
 describe('Button', () => {
   it('renders slot content', () => {

@@ -1,3 +1,7 @@
+---
+title: CMS Content Pages
+description: "The Pages module in the CMS package provides a set of functions to manage and interact with your static pages. This guide will walk you through the various..."
+---
 # Pages
 
 The Pages module in the CMS package provides a set of functions to manage and interact with your static pages. This guide will walk you through the various operations you can perform with pages.

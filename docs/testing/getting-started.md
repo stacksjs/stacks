@@ -1,3 +1,7 @@
+---
+title: Testing Overview
+description: "Stacks provides a powerful, batteries-included testing framework built on besting. Write expressive tests with a familiar Jest/Vitest-like syntax while lev..."
+---
 # Testing
 
 Stacks provides a powerful, batteries-included testing framework built on [besting](https://github.com/stacksjs/besting). Write expressive tests with a familiar Jest/Vitest-like syntax while leveraging Bun's native test runner for maximum performance.

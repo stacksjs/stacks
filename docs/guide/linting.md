@@ -1,439 +1,86 @@
-# Linting & Formatting
+---
+title: Linting and formatting
+description: Enforce TypeScript, STX, Markdown, JSON, and configuration style with Pickier and Buddy.
+---
 
-Stacks provides built-in linting and formatting tools to maintain consistent code quality across your project. Based on ESLint and Prettier with sensible defaults.
+# Linting and formatting
 
-## Overview
+Stacks uses Pickier as its single linting and formatting entrypoint. The same commands run locally and in CI.
 
-Stacks linting features:
-
-- **Zero configuration** - Works out of the box
-- **TypeScript-first** - Full TypeScript support
-- **Vue support** - Lint Vue SFC files
-- **Auto-fix** - Fix issues automatically
-- **IDE integration** - Real-time feedback
-
-## Quick Start
-
-### Run Linting
+## Commands
 
 ```bash
-# Check for issues
 buddy lint
-
-# Fix auto-fixable issues
 buddy lint --fix
-
-# Lint specific files
-buddy lint src/components/
-
-# Check formatting only
-buddy format:check
-
-# Fix formatting
+buddy lint:fix
 buddy format
+buddy format:check
 ```
 
-## ESLint Configuration
-
-### Default Rules
-
-Stacks uses a curated set of ESLint rules:
-
-```typescript
-// eslint.config.ts
-import { defineConfig } from '@stacksjs/eslint'
-
-export default defineConfig({
-  // Default configuration
-})
-```
-
-### Customizing Rules
-
-```typescript
-// eslint.config.ts
-import { defineConfig } from '@stacksjs/eslint'
-
-export default defineConfig({
-  rules: {
-    // Override rules
-    'no-console': 'warn',
-    '@typescript-eslint/no-unused-vars': ['error', {
-      argsIgnorePattern: '^_',
-    }],
-  },
-
-  ignores: [
-    'dist/**',
-    'node_modules/**',
-    '_.gen.ts',
-  ],
-})
-```
-
-### Extending Configuration
-
-```typescript
-import { defineConfig, presets } from '@stacksjs/eslint'
-
-export default defineConfig({
-  extends: [
-    presets.recommended,
-    presets.vue,
-    presets.typescript,
-  ],
-
-  rules: {
-    // Your custom rules
-  },
-})
-```
-
-## TypeScript Rules
-
-### Strict Type Checking
-
-```typescript
-export default defineConfig({
-  typescript: {
-    strict: true,
-    typeChecked: true,
-  },
-
-  rules: {
-    '@typescript-eslint/explicit-function-return-type': 'error',
-    '@typescript-eslint/no-explicit-any': 'error',
-    '@typescript-eslint/strict-boolean-expressions': 'error',
-  },
-})
-```
-
-### Common TypeScript Rules
-
-```typescript
-rules: {
-  // Require explicit return types
-  '@typescript-eslint/explicit-function-return-type': 'warn',
-
-  // Disallow any type
-  '@typescript-eslint/no-explicit-any': 'error',
-
-  // Require type annotations
-  '@typescript-eslint/typedef': ['error', {
-    parameter: true,
-    propertyDeclaration: true,
-  }],
-
-  // Prefer interfaces over type aliases
-  '@typescript-eslint/consistent-type-definitions': ['error', 'interface'],
-
-  // Enforce consistent type imports
-  '@typescript-eslint/consistent-type-imports': ['error', {
-    prefer: 'type-imports',
-  }],
-}
-```
-
-## Vue Rules
-
-### Vue-Specific Linting
-
-```typescript
-export default defineConfig({
-  vue: {
-    version: 3,
-    scriptSetup: true,
-  },
-
-  rules: {
-    // Component naming
-    'vue/component-name-in-template-casing': ['error', 'PascalCase'],
-
-    // Prop naming
-    'vue/prop-name-casing': ['error', 'camelCase'],
-
-    // Event naming
-    'vue/custom-event-name-casing': ['error', 'camelCase'],
-
-    // No unused refs
-    'vue/no-unused-refs': 'error',
-
-    // Require default props
-    'vue/require-default-prop': 'error',
-
-    // Order of component options
-    'vue/order-in-components': 'error',
-  },
-})
-```
-
-### Vue Template Rules
-
-```typescript
-rules: {
-  // Self-closing tags
-  'vue/html-self-closing': ['error', {
-    html: { normal: 'never', void: 'always' },
-    svg: 'always',
-    math: 'always',
-  }],
-
-  // Max attributes per line
-  'vue/max-attributes-per-line': ['error', {
-    singleline: 3,
-    multiline: 1,
-  }],
-
-  // Attribute order
-  'vue/attributes-order': ['error', {
-    order: [
-      'DEFINITION',
-      'LIST_RENDERING',
-      'CONDITIONALS',
-      'RENDER_MODIFIERS',
-      'GLOBAL',
-      'UNIQUE',
-      'TWO_WAY_BINDING',
-      'OTHER_DIRECTIVES',
-      'OTHER_ATTR',
-      'EVENTS',
-      'CONTENT',
-    ],
-  }],
-}
-```
-
-## Prettier Integration
-
-### Formatting Configuration
-
-```typescript
-// prettier.config.ts
-import { defineConfig } from '@stacksjs/prettier'
-
-export default defineConfig({
-  // Defaults
-  semi: false,
-  singleQuote: true,
-  tabWidth: 2,
-  trailingComma: 'all',
-  printWidth: 100,
-
-  // Override per file type
-  overrides: [
-    {
-      files: '_.md',
-      options: {
-        proseWrap: 'always',
-      },
-    },
-    {
-      files: '*.json',
-      options: {
-        tabWidth: 2,
-      },
-    },
-  ],
-})
-```
-
-### Running Prettier
+Run Pickier directly when working on framework internals:
 
 ```bash
-# Check formatting
-buddy format:check
-
-# Fix formatting
-buddy format
-
-# Format specific files
-buddy format src/**/*.ts
+bunx --bun pickier .
+bunx --bun pickier . --fix
 ```
 
-## IDE Integration
+## Covered files
 
-### VS Code
+Pickier checks TypeScript, JavaScript, STX templates, Markdown, JSON, YAML, TOML, and other project configuration. STX files use the same TypeScript and markup rules as the application build.
 
-Create `.vscode/settings.json`:
+## Configuration
 
-```json
-{
-  "editor.formatOnSave": true,
-  "editor.codeActionsOnSave": {
-    "source.fixAll.eslint": "explicit"
+Application defaults live in `config/code-style.ts`. Standalone packages commonly expose `.config/pickier.ts`:
+
+```ts
+import type { PickierConfig } from 'pickier'
+
+export default {
+  rules: {
+    'style/semi': ['error', 'never'],
+    'style/quotes': ['error', 'single'],
   },
-  "eslint.validate": [
-    "javascript",
-    "typescript",
-    "vue"
-  ],
-  "typescript.preferences.importModuleSpecifier": "relative"
-}
+} satisfies PickierConfig
 ```
 
-### Recommended Extensions
+Use the smallest override necessary. Shared defaults come from `better-dx`, so do not install a second linter or formatter beside it.
 
-```json
-// .vscode/extensions.json
-{
-  "recommendations": [
-    "dbaeumer.vscode-eslint",
-    "esbenp.prettier-vscode",
-    "vue.volar"
-  ]
+## STX rules
+
+STX templates must use `.stx` files and STX-compatible scripts:
+
+```html
+<script>
+const count = ref(0)
+
+function increment() {
+  count.value++
 }
+</script>
+
+<template>
+  <button @click="increment">{{ count }}</button>
+</template>
 ```
 
-### WebStorm / IntelliJ
+Direct DOM scripting and components from another UI runtime are not part of a Stacks application.
 
-1. Go to **Settings > Languages & Frameworks > JavaScript > Code Quality Tools > ESLint**
-2. Enable **Automatic ESLint configuration**
-3. Check **Run eslint --fix on save**
+## CI
 
-## Pre-commit Hooks
-
-### Setup with Husky
+Use a frozen install, then run lint, types, tests, and build:
 
 ```bash
-# Install hooks (no buddy command for this; use husky directly)
-bunx husky init
+bun install --frozen-lockfile
+buddy lint
+buddy test:types
+buddy test
+buddy build
 ```
 
-```typescript
-// .husky/pre-commit
-# !/bin/sh
-bun run lint-staged
-```
+Warnings should be reviewed rather than silently ignored. Fix generated output at its source so regeneration does not reintroduce the same finding.
 
-### Lint-Staged Configuration
+## Related commands
 
-```json
-// package.json
-{
-  "lint-staged": {
-    "_.{ts,tsx,vue}": [
-      "eslint --fix",
-      "prettier --write"
-    ],
-    "_.{json,md,yml}": [
-      "prettier --write"
-    ]
-  }
-}
-```
-
-## CI Integration
-
-### GitHub Actions
-
-```yaml
-# .github/workflows/lint.yml
-name: Lint
-
-on: [push, pull_request]
-
-jobs:
-  lint:
-    runs-on: ubuntu-latest
-    steps:
-
-      - uses: actions/checkout@v4
-      - uses: oven-sh/setup-bun@v1
-      - run: bun install
-      - run: bun run lint
-      - run: bun run format:check
-
-```
-
-## Common Rules
-
-### Import Ordering
-
-```typescript
-rules: {
-  'import/order': ['error', {
-    groups: [
-      'builtin',
-      'external',
-      'internal',
-      'parent',
-      'sibling',
-      'index',
-    ],
-    'newlines-between': 'always',
-    alphabetize: {
-      order: 'asc',
-      caseInsensitive: true,
-    },
-  }],
-}
-```
-
-### Naming Conventions
-
-```typescript
-rules: {
-  '@typescript-eslint/naming-convention': [
-    'error',
-    // Variables: camelCase
-    { selector: 'variable', format: ['camelCase', 'UPPER_CASE'] },
-    // Functions: camelCase
-    { selector: 'function', format: ['camelCase'] },
-    // Classes: PascalCase
-    { selector: 'class', format: ['PascalCase'] },
-    // Interfaces: PascalCase with I prefix optional
-    { selector: 'interface', format: ['PascalCase'] },
-    // Types: PascalCase
-    { selector: 'typeAlias', format: ['PascalCase'] },
-    // Enums: PascalCase
-    { selector: 'enum', format: ['PascalCase'] },
-  ],
-}
-```
-
-## Disable Rules
-
-### Per-Line
-
-```typescript
-// eslint-disable-next-line no-console
-console.log('Debug output')
-
-const value = 42 // eslint-disable-line no-magic-numbers
-```
-
-### Per-File
-
-```typescript
-/_ eslint-disable no-console _/
-// All console statements allowed in this file
-
-console.log('Hello')
-console.log('World')
-
-/_ eslint-enable no-console _/
-```
-
-### For Block
-
-```typescript
-/_ eslint-disable _/
-// All rules disabled
-const messy = code
-/_ eslint-enable _/
-```
-
-## Best Practices
-
-1. **Start strict** - Begin with strict rules, relax as needed
-2. **Fix gradually** - Use `--fix` to auto-fix, review changes
-3. **Consistent formatting** - Let Prettier handle formatting
-4. **IDE integration** - Get real-time feedback
-5. **Pre-commit hooks** - Catch issues before commit
-6. **CI enforcement** - Fail builds on lint errors
-
-## Related
-
-- [Testing](/guide/testing) - Testing your code
-- [CI](/guide/ci) - Continuous integration
-- [Configuration](/guide/config) - Project configuration
+- [Buddy lint](/guide/buddy/lint)
+- [Buddy test](/guide/buddy/test)
+- [STX templates](/packages/stx)

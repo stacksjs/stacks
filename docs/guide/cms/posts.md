@@ -1,3 +1,7 @@
+---
+title: CMS Content Posts
+description: "The Posts module in the CMS package provides a robust set of functions to manage and interact with your content. This guide will walk you through the vario..."
+---
 # Posts
 
 The Posts module in the CMS package provides a robust set of functions to manage and interact with your content. This guide will walk you through the various operations you can perform with posts.

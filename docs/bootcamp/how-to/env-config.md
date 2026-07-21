@@ -1,3 +1,7 @@
+---
+title: Environment Configuration
+description: "This guide covers managing environment configuration and secrets in your Stacks application, including environment files, configuration validation, and sec..."
+---
 # Environment Configuration
 
 This guide covers managing environment configuration and secrets in your Stacks application, including environment files, configuration validation, and secure secrets management.

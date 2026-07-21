@@ -1,3 +1,7 @@
+---
+title: ORM Package
+description: "A powerful and elegant Object-Relational Mapping (ORM) for TypeScript applications, providing intuitive model definitions, relationships, and query buildin..."
+---
 # ORM Package
 
 A powerful and elegant Object-Relational Mapping (ORM) for TypeScript applications, providing intuitive model definitions, relationships, and query building capabilities.

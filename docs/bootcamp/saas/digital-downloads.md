@@ -1,3 +1,7 @@
+---
+title: Digital Downloads
+description: "The Digital Downloads module provides functionality for selling and securely delivering digital products such as software, ebooks, media files, and other d..."
+---
 # Digital Downloads
 
 The Digital Downloads module provides functionality for selling and securely delivering digital products such as software, ebooks, media files, and other downloadable content. This guide covers product setup, secure delivery, and download management.

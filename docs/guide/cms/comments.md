@@ -1,3 +1,7 @@
+---
+title: CMS Comments
+description: "The Comments module in the CMS package provides a robust set of functions to manage and interact with comments across your content. This guide will walk yo..."
+---
 # Comments
 
 The Comments module in the CMS package provides a robust set of functions to manage and interact with comments across your content. This guide will walk you through the various operations you can perform with comments.

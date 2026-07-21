@@ -976,7 +976,7 @@ With Stacks, you get a **unified, batteries-included framework** that handles ev
 Getting started with Stacks is simple:
 
 \`\`\`bash
-bunx stacks new my-app
+panx @stacksjs/buddy new my-app
 cd my-app
 ./buddy dev
 \`\`\`

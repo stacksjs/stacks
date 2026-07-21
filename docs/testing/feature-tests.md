@@ -1,3 +1,7 @@
+---
+title: Feature Tests
+description: "Feature tests (also known as integration tests) verify that multiple parts of your application work together correctly. They test complete user workflows r..."
+---
 # Feature Tests
 
 Feature tests (also known as integration tests) verify that multiple parts of your application work together correctly. They test complete user workflows rather than isolated units.

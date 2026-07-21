@@ -1,6 +1,10 @@
+---
+title: Dropdown Component
+description: "A modern, accessible dropdown component for STX applications."
+---
 # Dropdown
 
-A modern, accessible dropdown component for Vue applications.
+A modern, accessible dropdown component for STX applications.
 
 <DropdownDemo />
 
@@ -47,9 +51,9 @@ yarn add @stacksjs/dropdown
 
 The dropdown component is composed of several sub-components that work together to create a fully functional and accessible dropdown:
 
-```vue
-<script setup>
-import { ref } from 'vue'
+```html
+<script>
+import { ref } from '@stacksjs/stx'
 import {
   Dropdown,
   DropdownButton,
@@ -89,7 +93,7 @@ import {
       </DropdownItem>
       <DropdownItem disabled>
         <span class="block px-4 py-2 text-gray-400 text-sm">
-          Invite a friend (coming soon!)
+          Invite a friend
         </span>
       </DropdownItem>
     </DropdownItems>
@@ -150,7 +154,7 @@ The dropdown components can be styled using standard CSS classes. Each component
 
 For dynamic styling based on state, use the slot props provided by DropdownItem:
 
-```vue
+```html
 <DropdownItem v-slot="{ active }">
   <a
     href="#"
@@ -184,7 +188,7 @@ The dropdown component includes full TypeScript support:
 
 ```ts
 import type { DropdownItemProps } from '@stacksjs/dropdown'
-import { ref } from 'vue'
+import { ref } from '@stacksjs/stx'
 
 interface MenuItem {
   name: string

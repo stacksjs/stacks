@@ -1,3 +1,7 @@
+---
+title: Waitlist Products
+description: "The Waitlist Products module in the Commerce package provides a comprehensive set of functions to manage product waitlists. This module helps you handle cu..."
+---
 # Waitlist Products
 
 The Waitlist Products module in the Commerce package provides a comprehensive set of functions to manage product waitlists. This module helps you handle customer waitlists for products, track notifications, and manage conversions from waitlist to purchase.

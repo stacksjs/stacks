@@ -1,3 +1,7 @@
+---
+title: Authentication How-To
+description: "This guide covers implementing authentication in your Stacks application, including user registration, login, token management, and protected routes."
+---
 # Authentication How-To
 
 This guide covers implementing authentication in your Stacks application, including user registration, login, token management, and protected routes.

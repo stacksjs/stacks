@@ -1,3 +1,7 @@
+---
+title: Build an API
+description: "This tutorial will guide you through building a RESTful API with Stacks. You will learn how to create routes, actions, controllers, handle validation, impl..."
+---
 # Build an API
 
 This tutorial will guide you through building a RESTful API with Stacks. You will learn how to create routes, actions, controllers, handle validation, implement authentication, and interact with the database.

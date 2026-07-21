@@ -1,3 +1,7 @@
+---
+title: Digital Delivery
+description: "The Digital Delivery module in the Commerce package provides a comprehensive set of functions to manage and interact with your digital product deliveries. ..."
+---
 # Digital Delivery
 
 The Digital Delivery module in the Commerce package provides a comprehensive set of functions to manage and interact with your digital product deliveries. This module handles the delivery of digital products such as downloads, software licenses, digital content, and other non-physical items.

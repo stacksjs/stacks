@@ -1,3 +1,7 @@
+---
+title: AI Package
+description: "An AI integration package providing unified access to multiple AI providers including Anthropic (Claude), OpenAI, Ollama, and AWS Bedrock."
+---
 # AI Package
 
 An AI integration package providing unified access to multiple AI providers including Anthropic (Claude), OpenAI, Ollama, and AWS Bedrock.

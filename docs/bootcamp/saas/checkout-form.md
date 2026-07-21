@@ -1,3 +1,7 @@
+---
+title: Checkout Form
+description: "The Checkout Form module provides UI components and functionality for building shopping carts, checkout flows, and payment forms. This guide covers cart ma..."
+---
 # Checkout Form
 
 The Checkout Form module provides UI components and functionality for building shopping carts, checkout flows, and payment forms. This guide covers cart management, checkout UI components, and integration with payment processing.
@@ -191,8 +195,8 @@ async function applyCoupon(
 
 ### Cart Summary Component
 
-```vue
-<!-- components/CartSummary.vue -->
+```html
+<!-- components/CartSummary.stx -->
 <template>
   <div class="cart-summary">
     <h2>Order Summary</h2>
@@ -249,8 +253,8 @@ async function applyCoupon(
   </div>
 </template>
 
-<script setup>
-import { ref, onMounted } from 'vue'
+<script>
+import { ref, onMounted } from '@stacksjs/stx'
 
 const cart = ref({})
 const cartItems = ref([])
@@ -310,8 +314,8 @@ onMounted(loadCart)
 
 ### Checkout Form Component
 
-```vue
-<!-- components/CheckoutForm.vue -->
+```html
+<!-- components/CheckoutForm.stx -->
 <template>
   <form @submit.prevent="submitCheckout" class="checkout-form">
     <!-- Contact Information -->
@@ -412,8 +416,8 @@ onMounted(loadCart)
   </form>
 </template>
 
-<script setup>
-import { ref, onMounted } from 'vue'
+<script>
+import { ref, onMounted } from '@stacksjs/stx'
 import { loadStripe } from '@stripe/stripe-js'
 
 const stripe = ref(null)

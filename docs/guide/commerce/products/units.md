@@ -1,3 +1,7 @@
+---
+title: Product Units
+description: "The Product Units module in the Commerce package provides a robust set of functions to manage and interact with your product unit data. This guide will wal..."
+---
 # Product Units
 
 The Product Units module in the Commerce package provides a robust set of functions to manage and interact with your product unit data. This guide will walk you through the various operations you can perform with product units.

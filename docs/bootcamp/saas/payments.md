@@ -1,3 +1,7 @@
+---
+title: Payment Processing
+description: "The Payments module provides comprehensive payment processing capabilities using Stripe as the payment provider. This guide covers setting up payments, han..."
+---
 # Payment Processing
 
 The Payments module provides comprehensive payment processing capabilities using Stripe as the payment provider. This guide covers setting up payments, handling transactions, webhooks, and invoices.

@@ -1,3 +1,7 @@
+---
+title: Scaffolding Commands (Make)
+description: The  commands generate boilerplate code and scaffold new files for your Stacks application.
+---
 # Scaffolding Commands (Make)
 
 The `make` commands generate boilerplate code and scaffold new files for your Stacks application.
@@ -29,7 +33,7 @@ buddy make:certificate  # Create a new SSL certificate
 buddy make:component <name>
 ```
 
-Creates a new Vue/Stacks component.
+Creates a new STX/Stacks component.
 
 ### Options
 
@@ -363,7 +367,7 @@ buddy make:function calculate-tax
 buddy make:stack <name>
 ```
 
-Creates a new Stacks project. This is similar to running `bunx stacks new <name>`.
+Creates a project-shaped stack repository with `app`, `config`, `database`, `resources`, `routes`, and `public` directories. After pushing the repository and registering its GitHub source, users install it with `buddy add <registry-name>`.
 
 ### Options
 

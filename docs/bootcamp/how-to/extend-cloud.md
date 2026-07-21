@@ -1,3 +1,7 @@
+---
+title: Extend Cloud
+description: "This guide covers extending Stacks cloud functionality with custom cloud providers, infrastructure configurations, and advanced cloud resources."
+---
 # Extend Cloud
 
 This guide covers extending Stacks cloud functionality with custom cloud providers, infrastructure configurations, and advanced cloud resources.

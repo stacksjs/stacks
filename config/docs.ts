@@ -55,6 +55,7 @@ const config: BunPressOptions = {
           items: [
             { text: 'Introduction', link: '/guide/intro' },
             { text: 'Quick Start', link: '/guide/get-started' },
+            { text: 'StackBlitz', link: '/guide/stackblitz' },
           ],
         },
         {
@@ -104,6 +105,7 @@ const config: BunPressOptions = {
           collapsed: true,
           items: [
             { text: 'Introduction', link: '/guide/buddy/intro' },
+            { text: 'Add Stacks', link: '/guide/buddy/add' },
             { text: 'Dev', link: '/guide/buddy/dev' },
             { text: 'Build', link: '/guide/buddy/build' },
             { text: 'Deploy', link: '/guide/buddy/deploy' },
@@ -116,6 +118,7 @@ const config: BunPressOptions = {
           text: 'Packages',
           collapsed: true,
           items: [
+            { text: 'STX', link: '/packages/stx' },
             { text: 'Actions', link: '/packages/actions' },
             { text: 'AI', link: '/packages/ai' },
             { text: 'Auth', link: '/packages/auth' },
@@ -146,7 +149,7 @@ const config: BunPressOptions = {
           collapsed: true,
           items: [
             { text: 'Roadmap', link: '/project/roadmap' },
-            { text: 'Contributing', link: '/project/contributing' },
+            { text: 'Contributing', link: '/contribution-guide' },
             { text: 'License', link: '/project/license' },
           ],
         },

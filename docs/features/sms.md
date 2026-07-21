@@ -1,3 +1,7 @@
+---
+title: SMS Service
+description: Stacks provides SMS capabilities powered by AWS Pinpoint.
+---
 # SMS Service
 
 Stacks provides SMS capabilities powered by AWS Pinpoint.

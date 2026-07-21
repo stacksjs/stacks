@@ -1,3 +1,7 @@
+---
+title: Composability-First Design
+description: "What is the Composability-First Design pattern? Also known as \"Atomic-First Design,\" read along for an explanation and to learn more about how these design..."
+---
 # Composability-First Design
 
 What is the Composability-First Design pattern? Also known as "Atomic-First Design," read along for an explanation and to learn more about how these design principles to improve your development experience (DX).
@@ -6,7 +10,7 @@ What is the Composability-First Design pattern? Also known as "Atomic-First Desi
 
 ## The Why
 
-Building complex components is oftentimes difficult using traditional development & design approaches. In addition to the already many questions a developer has to answer: _should I use Vue? React? Svelte, Solid, or Angular? How do I distribute it via a package manager, like npm?_ Over time, questions like these become exhausting to answer, while trying to find "the best tech stack."
+Building complex components is oftentimes difficult using traditional development & design approaches. In addition to the already many questions a developer has to answer: _should I use STX? React? Svelte, Solid, or Angular? How do I distribute it via a package manager, like npm?_ Over time, questions like these become exhausting to answer, while trying to find "the best tech stack."
 
 It is interesting to note that this is not necessarily due to the complexity of the development tasks required but rather due to the sheer amount of moving pieces required to build & engineer truly composable libraries. You may have already asked yourself one or many of the following questions/scenarios:
 

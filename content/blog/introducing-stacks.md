@@ -38,7 +38,7 @@ Every one of these is a package we created and maintain. Most are useful on thei
 
 - `pickier` - our linter and formatter. This is the one people don't believe at first: we replaced ESLint and Prettier with a single fast tool.
 - `dtsx` - our TypeScript declaration (`.d.ts`) generator, built for isolated declarations and speed.
-- `bunpress` - our documentation engine, the way we build docs sites (our answer to VitePress). This very page is rendered by it.
+- `bunpress` - our STX documentation engine and the way we build docs sites. This very page is rendered by it.
 - `stx` - our templating engine: server-rendered, component-driven views with signals and directives.
 - `crosswind` - our CSS engine, a utility-first system in the Tailwind tradition that we own top to bottom.
 - `buddy-bot` - our dependency update bot (instead of Renovate or Dependabot).

@@ -1,3 +1,7 @@
+---
+title: Team Management
+description: "The Team Management module provides comprehensive multi-tenant team functionality for SaaS applications. This guide covers creating teams, managing members..."
+---
 # Team Management
 
 The Team Management module provides comprehensive multi-tenant team functionality for SaaS applications. This guide covers creating teams, managing members, sending invitations, and configuring roles and permissions.

@@ -1,3 +1,7 @@
+---
+title: Gift Cards
+description: "The Gift Cards module in the Commerce package provides a robust set of functions to manage and interact with your gift card data. This guide will walk you ..."
+---
 # Gift Cards
 
 The Gift Cards module in the Commerce package provides a robust set of functions to manage and interact with your gift card data. This guide will walk you through the various operations you can perform with gift cards.

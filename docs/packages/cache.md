@@ -1,3 +1,7 @@
+---
+title: Cache Package
+description: "A high-performance, type-safe caching library powered by ts-cache, supporting memory and Redis drivers with advanced caching patterns."
+---
 # Cache Package
 
 A high-performance, type-safe caching library powered by ts-cache, supporting memory and Redis drivers with advanced caching patterns.
@@ -512,14 +516,14 @@ try {
 
 The Stacks cache package is built on top of these zero-dependency libraries from the Stacks ecosystem:
 
-- **[ts-cache](https://github.com/stacksjs/ts-cache)** - The core caching library that powers `@stacksjs/cache`. For advanced use cases or standalone usage, see the [ts-cache documentation](/docs/libraries/ts-cache).
+- **[ts-cache](https://github.com/stacksjs/ts-cache)** - The core caching library that powers `@stacksjs/cache`, including its standalone documentation.
 
 ### Related Stacks Packages
 
 - **[Queue Package](/packages/queue)** - Job queues often work alongside caching for deferred operations
 - **[Database Package](/packages/database)** - Cache-aside patterns commonly cache database query results
 - **[Config Package](/packages/config)** - Configure cache drivers and settings
-- **[Rate Limiter](/packages/rate-limiter)** - For more advanced rate limiting, see the dedicated [ts-rate-limiter](https://github.com/stacksjs/ts-rate-limiter) library
+- **[ts-rate-limiter](https://github.com/stacksjs/ts-rate-limiter)** - Dedicated rate limiting primitives for standalone and Stacks applications
 
 ### External Resources
 

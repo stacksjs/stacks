@@ -1,3 +1,7 @@
+---
+title: Storage Package
+description: A Laravel-style file storage abstraction supporting local filesystem and cloud storage (S3) with a unified API.
+---
 # Storage Package
 
 A Laravel-style file storage abstraction supporting local filesystem and cloud storage (S3) with a unified API.

@@ -1,6 +1,10 @@
+---
+title: Popover Component
+description: "A modern, accessible popover component for STX applications."
+---
 # Popover
 
-A modern, accessible popover component for Vue applications.
+A modern, accessible popover component for STX applications.
 
 <PopoverDemo />
 
@@ -47,9 +51,9 @@ yarn add @stacksjs/popover
 
 The popover component is composed of several sub-components that work together to create a fully functional and accessible popover:
 
-```vue
-<script setup>
-import { ref } from 'vue'
+```html
+<script>
+import { ref } from '@stacksjs/stx'
 import {
   Popover,
   PopoverButton,
@@ -129,7 +133,7 @@ The popover components can be styled using standard CSS classes. Each component 
 
 For dynamic positioning and transitions:
 
-```vue
+```html
 <PopoverPanel
   class="absolute z-10 mt-3"
   v-slot="{ open }"
@@ -164,7 +168,7 @@ The popover component includes full TypeScript support:
 
 ```ts
 import type { PopoverSlotProps } from '@stacksjs/popover'
-import { ref } from 'vue'
+import { ref } from '@stacksjs/stx'
 
 const panelOpen = ref<boolean>(false)
 ```

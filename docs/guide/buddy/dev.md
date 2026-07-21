@@ -1,3 +1,7 @@
+---
+title: Development Server
+description: The  command starts development servers for your Stacks application with hot module replacement (HMR) and live reload capabilities.
+---
 # Development Server
 
 The `buddy dev` command starts development servers for your Stacks application with hot module replacement (HMR) and live reload capabilities.
@@ -69,7 +73,7 @@ buddy dev:api
 
 ### Components Server
 
-Start the Vue components development server:
+Start the STX components development server:
 
 ```bash
 buddy dev components

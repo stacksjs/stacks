@@ -1,5 +1,5 @@
 ---
-title: Actions
+title: Server Actions
 description: Learn how to create and use Actions in Stacks applications
 ---
   // Get specific keys only

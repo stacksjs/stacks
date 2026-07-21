@@ -1,3 +1,7 @@
+---
+title: Shipping Methods
+description: "The Shipping Methods module in the Commerce package provides a comprehensive set of functions to manage and interact with your shipping method data. This g..."
+---
 # Shipping Methods
 
 The Shipping Methods module in the Commerce package provides a comprehensive set of functions to manage and interact with your shipping method data. This guide will walk you through the various operations you can perform with shipping methods.

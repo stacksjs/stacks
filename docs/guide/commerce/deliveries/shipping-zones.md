@@ -1,3 +1,7 @@
+---
+title: Shipping Zones
+description: "The Shipping Zones module in the Commerce package provides a comprehensive set of functions to manage and interact with your shipping zones. Shipping zones..."
+---
 # Shipping Zones
 
 The Shipping Zones module in the Commerce package provides a comprehensive set of functions to manage and interact with your shipping zones. Shipping zones allow you to define geographic areas where specific shipping methods and rates apply.

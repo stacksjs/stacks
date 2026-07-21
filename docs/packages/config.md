@@ -1,3 +1,7 @@
+---
+title: Config Package
+description: "A configuration management system providing type-safe configuration loading, environment variable handling, defaults, overrides, and runtime configuration ..."
+---
 # Config Package
 
 A configuration management system providing type-safe configuration loading, environment variable handling, defaults, overrides, and runtime configuration access.

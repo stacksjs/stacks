@@ -1,3 +1,7 @@
+---
+title: Affiliates Program
+description: "The Affiliates Program module provides functionality for creating and managing affiliate marketing programs. This guide covers affiliate tracking, commissi..."
+---
 # Affiliates Program
 
 The Affiliates Program module provides functionality for creating and managing affiliate marketing programs. This guide covers affiliate tracking, commission management, and payout processing.

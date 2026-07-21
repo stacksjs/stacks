@@ -1,3 +1,7 @@
+---
+title: Commerce Orders
+description: "The Orders module in the Commerce package provides a robust set of functions to manage and interact with your order data. This guide will walk you through ..."
+---
 # Orders
 
 The Orders module in the Commerce package provides a robust set of functions to manage and interact with your order data. This guide will walk you through the various operations you can perform with orders.

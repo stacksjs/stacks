@@ -1,6 +1,10 @@
+---
+title: Notification
+description: "A modern, accessible notification component for STX applications."
+---
 # Notification
 
-A modern, accessible notification component for Vue applications.
+A modern, accessible notification component for STX applications.
 
 <NotificationDemo />
 
@@ -44,11 +48,11 @@ yarn add @stacksjs/notification
 
 ## Usage
 
-The notification component can be easily integrated into your Vue application:
+The notification component can be easily integrated into your STX application:
 
-```vue
-<script setup>
-import { ref } from 'vue'
+```html
+<script>
+import { ref } from '@stacksjs/stx'
 import { Notification } from '@stacksjs/notification'
 
 const position = ref('top-right')
@@ -99,7 +103,7 @@ The notification component supports various positioning options:
 
 The component supports both light and dark themes out of the box:
 
-```vue
+```html
 <Notification :theme="isDarkMode ? 'dark' : 'light'" />
 ```
 
@@ -107,7 +111,7 @@ The component supports both light and dark themes out of the box:
 
 The notification component can be styled using standard CSS classes and supports custom styling:
 
-```vue
+```html
 <Notification class="custom-notification">
   <!-- Your notification content -->
 </Notification>

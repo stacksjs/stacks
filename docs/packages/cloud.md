@@ -1,3 +1,7 @@
+---
+title: Cloud Package
+description: "Comprehensive cloud deployment and infrastructure management for AWS, featuring automated provisioning, serverless deployment, CDN configuration, and manag..."
+---
 # Cloud Package
 
 Comprehensive cloud deployment and infrastructure management for AWS, featuring automated provisioning, serverless deployment, CDN configuration, and managed services integration.

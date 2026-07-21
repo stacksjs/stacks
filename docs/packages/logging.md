@@ -1,3 +1,7 @@
+---
+title: Logging Package
+description: "A comprehensive logging system powered by Clarity, providing structured logging, multiple output channels, log levels, file rotation, and debugging utiliti..."
+---
 # Logging Package
 
 A comprehensive logging system powered by Clarity, providing structured logging, multiple output channels, log levels, file rotation, and debugging utilities.

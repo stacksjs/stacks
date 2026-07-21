@@ -1,3 +1,7 @@
+---
+title: Configuration
+description: "Stacks provides a powerful, type-safe configuration system that centralizes all your application settings. Configure everything from database connections t..."
+---
 # Configuration
 
 Stacks provides a powerful, type-safe configuration system that centralizes all your application settings. Configure everything from database connections to cloud deployments in one place.

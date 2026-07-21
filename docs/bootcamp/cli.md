@@ -1,3 +1,7 @@
+---
+title: Build a CLI
+description: "This tutorial will guide you through building command-line interfaces (CLIs) with Stacks. You will learn how to create commands, handle options and argumen..."
+---
 # Build a CLI
 
 This tutorial will guide you through building command-line interfaces (CLIs) with Stacks. You will learn how to create commands, handle options and arguments, display prompts, and format output.
@@ -199,7 +203,7 @@ cli
 Usage:
 
 ```bash
-buddy install lodash axios vue
+buddy install lodash axios @stacksjs/stx
 ```
 
 ## Interactive Prompts

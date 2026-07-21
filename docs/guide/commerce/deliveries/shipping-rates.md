@@ -1,3 +1,7 @@
+---
+title: Shipping Rates
+description: "The Shipping Rates module in the Commerce package provides a comprehensive set of functions to manage and interact with your shipping rates. This module al..."
+---
 # Shipping Rates
 
 The Shipping Rates module in the Commerce package provides a comprehensive set of functions to manage and interact with your shipping rates. This module allows you to define specific rates based on shipping zones, methods, and weight ranges.

@@ -1,6 +1,10 @@
+---
+title: Library Development
+description: "Stacks enables you to build and publish reusable component and function libraries with zero configuration. Create framework-agnostic packages that work acr..."
+---
 # Libraries
 
-Stacks enables you to build and publish reusable component and function libraries with zero configuration. Create framework-agnostic packages that work across Vue, React, and vanilla JavaScript.
+Stacks enables you to build and publish reusable component and function libraries with zero configuration. Create framework-agnostic packages that work across STX, React, and vanilla JavaScript.
 
 ## Overview
 
@@ -18,16 +22,16 @@ Stacks library features:
 
 ```bash
 # Create a new library project
-bunx @stacksjs/buddy new my-library
+panx @stacksjs/buddy new my-library
 ```
 
 ### Project Structure
 
 ```
 my-library/
-├── components/           # Vue components
-│   ├── Button.vue
-│   └── Modal.vue
+├── components/           # STX components
+│   ├── Button.stx
+│   └── Modal.stx
 ├── functions/            # TypeScript functions
 │   ├── useCounter.ts
 │   └── formatDate.ts
@@ -44,8 +48,8 @@ my-library/
 
 ### Creating Components
 
-```vue
-<!-- components/Button.vue -->
+```html
+<!-- components/Button.stx -->
 <template>
   <button
     :class="['btn', `btn-${variant}`, { 'btn-loading': loading }]"
@@ -56,7 +60,7 @@ my-library/
   </button>
 </template>
 
-<script setup lang="ts">
+<script>
 export interface ButtonProps {
   variant?: 'primary' | 'secondary' | 'danger'
   loading?: boolean
@@ -97,13 +101,13 @@ function handleClick(event: MouseEvent) {
 
 ```typescript
 // index.ts
-export { default as Button } from './components/Button.vue'
-export { default as Modal } from './components/Modal.vue'
-export { default as Input } from './components/Input.vue'
+export { default as Button } from './components/Button.stx'
+export { default as Modal } from './components/Modal.stx'
+export { default as Input } from './components/Input.stx'
 
 // Export types
-export type { ButtonProps } from './components/Button.vue'
-export type { ModalProps } from './components/Modal.vue'
+export type { ButtonProps } from './components/Button.stx'
+export type { ModalProps } from './components/Modal.stx'
 ```
 
 ## Function Libraries
@@ -112,7 +116,7 @@ export type { ModalProps } from './components/Modal.vue'
 
 ```typescript
 // functions/useCounter.ts
-import { ref, computed } from 'vue'
+import { ref, computed } from '@stacksjs/stx'
 
 export function useCounter(initial = 0) {
   const count = ref(initial)
@@ -195,7 +199,7 @@ export default defineLibraryConfig({
   formats: ['esm', 'cjs', 'iife'],
 
   // External dependencies
-  external: ['vue', 'react'],
+  external: ['@stacksjs/stx', 'react'],
 
   // Global name for IIFE
   globalName: 'MyLibrary',
@@ -274,8 +278,8 @@ dist/
 │   ├── index.mjs
 │   ├── index.cjs
 │   ├── index.d.ts
-│   ├── Button.vue.mjs
-│   └── Button.vue.d.ts
+│   ├── Button.stx.mjs
+│   └── Button.stx.d.ts
 └── functions/
     ├── index.mjs
     ├── index.cjs
@@ -296,8 +300,8 @@ buddy dev:docs
 
 ### Component Documentation
 
-```vue
-<!-- components/Button.vue -->
+```html
+<!-- components/Button.stx -->
 <docs>
 # Button
 
@@ -305,7 +309,7 @@ A customizable button component.
 
 ## Usage
 
-```vue
+```html
 
 <Button variant="primary" @click="handleClick">
   Click me

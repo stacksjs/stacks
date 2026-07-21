@@ -1,6 +1,10 @@
+---
+title: Components
+description: "Stacks provides a powerful component system for building reusable UI elements. Components in Stacks use a STX-like syntax with TypeScript support, compiled..."
+---
 # Components
 
-Stacks provides a powerful component system for building reusable UI elements. Components in Stacks use a Vue-like syntax with TypeScript support, compiled through the Stacks templating engine.
+Stacks provides a powerful component system for building reusable UI elements. Components in Stacks use a STX-like syntax with TypeScript support, compiled through the Stacks templating engine.
 
 ## Overview
 
@@ -19,7 +23,7 @@ Components live in `resources/components/`:
 
 ```html
 <!-- resources/components/Button.stx -->
-<script setup lang="ts">
+<script>
 interface Props {
   variant?: 'primary' | 'secondary' | 'danger'
   size?: 'sm' | 'md' | 'lg'
@@ -101,8 +105,8 @@ const emit = defineEmits<{
   </div>
 </template>
 
-<script setup lang="ts">
-import { ref } from 'vue'
+<script>
+import { ref } from '@stacksjs/stx'
 
 const isLoading = ref(false)
 
@@ -117,7 +121,7 @@ function handleClick(event: MouseEvent) {
 ### Defining Props
 
 ```html
-<script setup lang="ts">
+<script>
 // Simple props
 const props = defineProps<{
   title: string
@@ -142,7 +146,7 @@ const props = withDefaults(defineProps<Props>(), {
 ### Complex Props
 
 ```html
-<script setup lang="ts">
+<script>
 interface User {
   id: number
   name: string
@@ -171,7 +175,7 @@ const props = defineProps<Props>()
 ### Prop Validation
 
 ```html
-<script setup lang="ts">
+<script>
 const props = defineProps({
   // Required string
   title: {
@@ -199,7 +203,7 @@ const props = defineProps({
 ### Emitting Events
 
 ```html
-<script setup lang="ts">
+<script>
 // Define emitted events with types
 const emit = defineEmits<{
   'update:modelValue': [value: string]
@@ -233,7 +237,7 @@ function handleCancel() {
 
 ```html
 <!-- Input.stx -->
-<script setup lang="ts">
+<script>
 const props = defineProps<{
   modelValue: string
   placeholder?: string
@@ -320,7 +324,7 @@ const emit = defineEmits<{
 
 ```html
 <!-- DataList.stx -->
-<script setup lang="ts">
+<script>
 interface Props {
   items: any[]
 }
@@ -351,7 +355,7 @@ const props = defineProps<Props>()
 ### Using Composables
 
 ```html
-<script setup lang="ts">
+<script>
 import { useAuth } from '@/composables/useAuth'
 import { useFetch } from '@/composables/useFetch'
 
@@ -379,7 +383,7 @@ const { data: posts, loading, error, refresh } = useFetch('/api/posts')
 
 ```typescript
 // composables/useCounter.ts
-import { computed, ref } from 'vue'
+import { computed, ref } from '@stacksjs/stx'
 
 export function useCounter(initial = 0) {
   const count = ref(initial)
@@ -414,8 +418,8 @@ export function useCounter(initial = 0) {
 
 ```html
 <!-- UserListContainer.stx (Smart Component) -->
-<script setup lang="ts">
-import { onMounted, ref } from 'vue'
+<script>
+import { onMounted, ref } from '@stacksjs/stx'
 import UserList from './UserList.stx'
 
 const users = ref([])
@@ -432,7 +436,7 @@ onMounted(async () => {
 </template>
 
 <!-- UserList.stx (Presentational Component) -->
-<script setup lang="ts">
+<script>
 interface User {
   id: number
   name: string
@@ -458,8 +462,8 @@ defineProps<{
 
 ```html
 <!-- Tabs.stx -->
-<script setup lang="ts">
-import { provide, ref } from 'vue'
+<script>
+import { provide, ref } from '@stacksjs/stx'
 
 const activeTab = ref(0)
 
@@ -485,8 +489,8 @@ provide('tabs', {
 </template>
 
 <!-- Tab.stx -->
-<script setup lang="ts">
-import { inject } from 'vue'
+<script>
+import { inject } from '@stacksjs/stx'
 
 const props = defineProps<{ index: number }>()
 const { activeTab, setActiveTab } = inject('tabs')
@@ -502,8 +506,8 @@ const { activeTab, setActiveTab } = inject('tabs')
 </template>
 
 <!-- TabPanels.stx -->
-<script setup lang="ts">
-import { inject } from 'vue'
+<script>
+import { inject } from '@stacksjs/stx'
 const { activeTab } = inject('tabs')
 </script>
 
@@ -610,5 +614,5 @@ const { activeTab } = inject('tabs')
 
 - **[Views](/basics/views)** - Page templates
 - **[Functions](/basics/functions)** - Server-side logic
-- **[Styling](/guide/styling)** - CSS and styling guide
-- **[State Management](/guide/state)** - Managing component state
+- **[Styling](/basics/views#styling)** - CSS and styling guide
+- **[State Management](/basics/views#events-and-state)** - Managing component state

@@ -1,3 +1,7 @@
+---
+title: Print Devices
+description: "The Print Devices module in the Commerce package provides a comprehensive set of functions to manage print devices for receipt printing and monitoring. Thi..."
+---
 # Print Devices
 
 The Print Devices module in the Commerce package provides a comprehensive set of functions to manage print devices for receipt printing and monitoring. This module helps you handle printer management, status tracking, and performance analytics.

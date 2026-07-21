@@ -1,3 +1,7 @@
+---
+title: Domains Command
+description: "The  command provides comprehensive domain management capabilities, including purchasing, adding, and removing domains from your cloud infrastructure."
+---
 # Domains Command
 
 The `buddy domains` command provides comprehensive domain management capabilities, including purchasing, adding, and removing domains from your cloud infrastructure.

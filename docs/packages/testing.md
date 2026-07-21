@@ -1,3 +1,7 @@
+---
+title: Testing Package
+description: "A comprehensive testing framework built on Bun's native test runner, providing assertions, database testing utilities, feature testing, factories, and mock..."
+---
 # Testing Package
 
 A comprehensive testing framework built on Bun's native test runner, providing assertions, database testing utilities, feature testing, factories, and mocking capabilities.

@@ -1,3 +1,7 @@
+---
+title: License Key Management
+description: "The License Key Management module provides comprehensive software licensing capabilities for selling and managing software licenses. This guide covers key ..."
+---
 # License Key Management
 
 The License Key Management module provides comprehensive software licensing capabilities for selling and managing software licenses. This guide covers key generation, validation, activation management, and license types.

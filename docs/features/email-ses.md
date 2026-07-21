@@ -1,3 +1,7 @@
+---
+title: Sending email via AWS SES
+description: "This page is the practical checklist for routing outgoing mail through AWS SES from a Stacks app. The companion Email Server page covers the EC2-based mail..."
+---
 # Sending email via AWS SES
 
 This page is the practical checklist for routing outgoing mail through AWS SES from a Stacks app. The companion [Email Server](./email.md) page covers the EC2-based mail-os receive surface; the two layers are independent and most setups end up using both (mail-os for `MX`/inbox, SES for outbound).

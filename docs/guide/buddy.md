@@ -1,3 +1,7 @@
+---
+title: The Buddy CLI
+description: Use Buddy to develop, build, test, deploy, and maintain a Stacks application.
+---
 # The Buddy CLI
 
 ```bash
@@ -8,7 +12,7 @@ buddy --help # view help menu
 
 buddy new my-project # creates a new Stacks project
 buddy install # installs dependencies
-buddy add # adds a stack or dependency
+buddy add calendar # pulls a registered project-shaped stack into this project
 buddy fresh # fresh reinstall of all deps (--force skips the confirmation)
 buddy clean # removes all deps (--force skips the confirmation)
 
@@ -41,7 +45,7 @@ buddy build # select a specific build (follow CLI prompts)
 buddy build:frontend # builds the frontend (aliases: build:views, build:pages)
 buddy build:desktop # builds Desktop application
 buddy build:functions # builds function library
-buddy build:components # builds Vue component library & Web Component library
+buddy build:components # builds STX component library & Web Component library
 buddy build:web-components # builds framework agnostic Web Component library (i.e. Custom Elements)
 buddy build:cli # builds the Buddy CLI binary
 buddy build:server # builds the Stacks cloud server (Docker image)
@@ -69,7 +73,7 @@ buddy make:migration create_cars_table # creates a cars migration file
 buddy make:factory cars # creates a Car factory file
 buddy make:notification welcome-email # bootstraps a welcome-email notification
 buddy make:lang de # bootstraps a lang/de.yml language file
-buddy make:stack my-plugin # scaffolds a publishable stack/plugin (new project? use `bunx @stacksjs/buddy new`)
+buddy make:stack my-plugin # scaffolds a project-shaped registry stack (new project? use `panx @stacksjs/buddy new`)
 
 buddy migrate # runs database migrations
 buddy migrate:fresh # drops all tables & re-runs migrations (destroys all data; --seed reseeds)

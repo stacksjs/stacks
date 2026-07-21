@@ -1,3 +1,7 @@
+---
+title: Router Package
+description: "A powerful routing system built on bun-router with Stacks-specific enhancements including action/controller resolution, middleware support, and Laravel-sty..."
+---
 # Router Package
 
 A powerful routing system built on bun-router with Stacks-specific enhancements including action/controller resolution, middleware support, and Laravel-style request helpers.

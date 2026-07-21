@@ -1,5 +1,6 @@
 ---
-title: Routing
+title: Application Routing
+description: "// Points to app/Controllers/ComingSoonController.ts, index method\nroute.get('/coming-soon', 'Controllers/ComingSoonController@index')"
 ---
 // Points to app/Controllers/ComingSoonController.ts, index method
 route.get('/coming-soon', 'Controllers/ComingSoonController@index')
@@ -299,5 +300,5 @@ const url = route.url('users.show', { id: 123 })
 
 - [Middleware](/basics/middleware) - Learn about request middleware
 - [Actions](/basics/actions) - Creating action handlers
-- [Controllers](/basics/controllers) - Using controllers
+- [Controllers](/basics/actions) - Using controllers
 - [Validation](/packages/validation) - Request validation

@@ -1,3 +1,7 @@
+---
+title: Release Command
+description: "The  command creates and publishes new versions of your libraries and packages, triggering the CI/CD release workflow."
+---
 # Release Command
 
 The `buddy release` command creates and publishes new versions of your libraries and packages, triggering the CI/CD release workflow.

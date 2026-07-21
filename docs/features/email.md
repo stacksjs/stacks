@@ -1,3 +1,7 @@
+---
+title: Email Server
+description: "Stacks provides a fully serverless email infrastructure powered by AWS SES, S3, and Lambda."
+---
 # Email Server
 
 Stacks provides a fully serverless email infrastructure powered by AWS SES, S3, and Lambda.

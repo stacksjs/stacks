@@ -1,11 +1,11 @@
-# Terminology
+---
+title: MIT License
+description: Stacks is open source software distributed under the MIT License.
+---
+# License
 
-This part of the documentation defines the terminology used throughout the Stacks domain. wip.
+Stacks is distributed under the MIT License. You may use, copy, modify, publish, distribute, sublicense, and sell copies of the software subject to the license terms.
 
-- Atomic Design
-- Cloud
-- Components
-- Desktop Engine
-- Functions
-- Stacks
-- UI Engine
+Include the copyright and permission notice when redistributing substantial portions of the software. The software is provided without warranty.
+
+Read the complete [LICENSE](https://github.com/stacksjs/stacks/blob/main/LICENSE.md) before redistributing Stacks.

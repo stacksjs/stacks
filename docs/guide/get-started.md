@@ -1,5 +1,6 @@
 ---
 title: Quick Start
+description: This guide takes you from zero to a running Stacks application in a few minutes.
 ---
 
 # Quick Start
@@ -8,17 +9,18 @@ This guide takes you from zero to a running Stacks application in a few minutes.
 
 ## Prerequisites
 
-- [Bun](https://bun.sh) v1.3 or higher - install with `curl -fsSL https://bun.sh/install | bash`, or upgrade an existing install with `bun upgrade`
-- macOS, Linux, or Windows (WSL2)
-- Node.js is **not** required - Bun handles the runtime, package management, and bundling
+- [Pantry](https://pantry.dev) - install with `curl -fsSL https://pantry.dev | bash`, then run `pantry bootstrap`
+- macOS, Linux, or Windows through WSL2
+
+Pantry provisions Bun 1.3 or newer, Git, SQLite, and the rest of the project toolchain from the versioned Stacks dependency manifest.
 
 ## Create a New Project
 
 ```bash
-bunx @stacksjs/buddy new my-app
+panx @stacksjs/buddy new my-app
 ```
 
-The installer downloads the project template, installs dependencies, creates your `.env` file, and generates an application key.
+The installer downloads the project template. Buddy and Pantry then install the declared machine and project dependencies, create your `.env` file, and generate an application key.
 
 ## Start Developing
 

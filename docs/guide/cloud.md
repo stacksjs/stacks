@@ -1,3 +1,7 @@
+---
+title: Cloud Deployment
+description: Stacks provides first-class cloud deployment support with automated infrastructure provisioning. Deploy your applications to AWS with a single command.
+---
 # Cloud
 
 Stacks provides first-class cloud deployment support with automated infrastructure provisioning. Deploy your applications to AWS with a single command.

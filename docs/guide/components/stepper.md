@@ -1,6 +1,10 @@
+---
+title: Stepper Component
+description: "A modern, accessible stepper component for STX applications."
+---
 # Stepper
 
-A modern, accessible stepper component for Vue applications.
+A modern, accessible stepper component for STX applications.
 
 <StepperDemo />
 
@@ -43,9 +47,9 @@ yarn add @stacksjs/stepper
 
 Here's a basic example of how to use the stepper component:
 
-```vue
-<script setup>
-import { ref } from 'vue'
+```html
+<script>
+import { ref } from '@stacksjs/stx'
 import { Stepper } from '@stacksjs/stepper'
 
 const currentStep = ref(0)
@@ -80,9 +84,9 @@ const steps = [
 
 Here's a more complete example with form integration and navigation:
 
-```vue
-<script setup>
-import { ref, computed } from 'vue'
+```html
+<script>
+import { ref, computed } from '@stacksjs/stx'
 import { Stepper } from '@stacksjs/stepper'
 
 const currentStep = ref(0)

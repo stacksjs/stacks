@@ -1,3 +1,7 @@
+---
+title: Buddy CLI Overview
+description: "Buddy is the official command-line interface for the Stacks framework. It provides a comprehensive set of commands to help you develop, build, test, and de..."
+---
 # Buddy CLI
 
 Buddy is the official command-line interface for the Stacks framework. It provides a comprehensive set of commands to help you develop, build, test, and deploy your Stacks applications with ease.
@@ -12,7 +16,7 @@ Buddy comes pre-installed with every Stacks project. When you create a new Stack
 
 ```bash
 # Create a new Stacks project
-bunx stacks new my-project
+panx @stacksjs/buddy new my-project
 
 # Navigate to your project
 cd my-project
@@ -21,12 +25,12 @@ cd my-project
 buddy --help
 ```
 
-### Global Installation
+### Pantry Execution
 
-You can also install Buddy globally for system-wide access:
+Run Buddy without a project through Pantry's isolated package executor:
 
 ```bash
-bun install -g @stacksjs/buddy
+panx @stacksjs/buddy --help
 ```
 
 ## Configuration

@@ -1,3 +1,7 @@
+---
+title: Categories
+description: "The Categories module in the CMS package provides a comprehensive set of functions to manage and organize your content through categories. This guide will ..."
+---
 # Categories
 
 The Categories module in the CMS package provides a comprehensive set of functions to manage and organize your content through categories. This guide will walk you through the various operations you can perform with categories.
@@ -179,7 +183,7 @@ const deletedCount = await bulkDestroy([1, 2, 3]) // Array of category IDs
 
 ## Working with Category Storage
 
-The categories system uses VueUse's `useStorage` for client-side persistence:
+The categories system uses STX composables's `useStorage` for client-side persistence:
 
 ```ts
 // Access the reactive categories array

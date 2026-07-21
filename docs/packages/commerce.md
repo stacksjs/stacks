@@ -1,3 +1,7 @@
+---
+title: Commerce Package
+description: "A comprehensive e-commerce solution providing products, orders, payments, shipping, inventory management, and customer handling capabilities."
+---
 # Commerce Package
 
 A comprehensive e-commerce solution providing products, orders, payments, shipping, inventory management, and customer handling capabilities.

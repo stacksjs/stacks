@@ -1,3 +1,7 @@
+---
+title: Auth Package
+description: "A comprehensive authentication system providing Laravel Passport-style token management, OAuth2 support, authorization gates/policies, WebAuthn/Passkey sup..."
+---
 # Auth Package
 
 A comprehensive authentication system providing Laravel Passport-style token management, OAuth2 support, authorization gates/policies, WebAuthn/Passkey support, and two-factor authentication.

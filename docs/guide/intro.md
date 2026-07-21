@@ -1,3 +1,7 @@
+---
+title: Introduction
+description: "Stacks is a batteries-included framework for building TypeScript applications. Think of it as the Laravel of TypeScript - a complete ecosystem for building..."
+---
 # Introduction
 
 Stacks is a batteries-included framework for building TypeScript applications. Think of it as the Laravel of TypeScript - a complete ecosystem for building web apps, APIs, desktop apps, CLIs, and libraries.
@@ -89,14 +93,16 @@ router.group({ middleware: ['auth', 'verified'] }, () => {
 
 ### Prerequisites
 
-- [Bun](https://bun.sh) v1.3 or higher
-- macOS, Linux, or Windows (WSL2)
+- [Pantry](https://pantry.dev), installed with `curl -fsSL https://pantry.dev | bash`
+- macOS, Linux, or Windows through WSL2
+
+Run `pantry bootstrap` once. Pantry then provisions Bun 1.3 or newer and the complete Stacks toolchain from the project dependency manifest.
 
 ### Quick Start
 
 ```bash
 # Create a new project
-bunx @stacksjs/buddy new my-app
+panx @stacksjs/buddy new my-app
 
 # Navigate to project
 cd my-app
@@ -118,7 +124,7 @@ my-app/
 │   ├── Events/          # Event classes
 │   ├── Jobs/            # Queue jobs
 │   └── Middleware/      # HTTP middleware
-├── components/          # Vue components
+├── components/          # STX components
 ├── config/              # Configuration files
 ├── database/
 │   ├── migrations/      # Database migrations
@@ -209,10 +215,10 @@ export class CreateOrderAction extends Action {
 
 ### Components
 
-Build UI with Vue components:
+Build UI with STX components:
 
-```vue
-<!-- components/UserCard.vue -->
+```html
+<!-- components/UserCard.stx -->
 <template>
   <div class="user-card">
     <img :src="user.avatar" :alt="user.name">
@@ -222,7 +228,7 @@ Build UI with Vue components:
   </div>
 </template>
 
-<script setup lang="ts">
+<script>
 import type { User } from '@/models/User'
 
 defineProps<{

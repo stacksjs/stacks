@@ -1,3 +1,7 @@
+---
+title: Database Testing
+description: "Stacks provides powerful utilities for testing database operations, including automatic transaction rollback, factories, seeders, and assertions for verify..."
+---
 # Database Testing
 
 Stacks provides powerful utilities for testing database operations, including automatic transaction rollback, factories, seeders, and assertions for verifying database state.
@@ -578,5 +582,5 @@ DEBUG=sql buddy test
 
 - **[Testing Overview](/testing/getting-started)** - Getting started with testing
 - **[Unit Tests](/testing/unit-tests)** - Testing isolated functions
-- **[Database Guide](/guide/database)** - Database queries and models
-- **[Migrations](/guide/migrations)** - Database schema management
+- **[Database Guide](/packages/database)** - Database queries and models
+- **[Migrations](/guide/buddy/migrate)** - Database schema management

@@ -1,3 +1,7 @@
+---
+title: Product Reviews
+description: "The Reviews module in the Commerce package provides a robust set of functions to manage and interact with your product review data. This guide will walk yo..."
+---
 # Reviews
 
 The Reviews module in the Commerce package provides a robust set of functions to manage and interact with your product review data. This guide will walk you through the various operations you can perform with reviews.

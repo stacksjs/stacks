@@ -1,3 +1,7 @@
+---
+title: Continuous Integration
+description: "Continuous Integration (CI) ensures your code is tested and validated before merging. Stacks provides built-in CI support and integrates seamlessly with po..."
+---
 # CI
 
 Continuous Integration (CI) ensures your code is tested and validated before merging. Stacks provides built-in CI support and integrates seamlessly with popular CI/CD platforms.
@@ -282,15 +286,12 @@ stages:
   - build
   - deploy
 
-variables:
-  BUN_VERSION: "1.1"
-
 .setup: &setup
   before_script:
-
-    - curl -fsSL https://bun.sh/install | bash
-    - export PATH="$HOME/.bun/bin:$PATH"
-    - bun install
+    - curl -fsSL https://pantry.dev | bash
+    - export PATH="$HOME/.local/bin:$PATH"
+    - pantry install
+    - eval "$(pantry env)"
 
 lint:
   stage: test

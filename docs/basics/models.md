@@ -1,5 +1,5 @@
 ---
-title: Models
+title: Data Models
 description: Learn how to define and use ORM models in Stacks applications
 ---
 
@@ -729,7 +729,7 @@ await transaction(async (trx) => {
 
 ## Related Documentation
 
-- [Database](/features/database) - Database configuration
-- [Migrations](/features/migrations) - Database migrations
+- [Database](/packages/database) - Database configuration
+- [Migrations](/guide/buddy/migrate) - Database migrations
 - [Validation](/packages/validation) - Validation rules
 - [Actions](/basics/actions) - Using models in actions

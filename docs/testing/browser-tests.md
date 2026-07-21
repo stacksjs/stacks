@@ -1,3 +1,7 @@
+---
+title: Browser Tests
+description: "Browser tests (also known as end-to-end tests) verify your application works correctly from a user's perspective, testing the full stack including UI inter..."
+---
 # Browser Tests
 
 Browser tests (also known as end-to-end tests) verify your application works correctly from a user's perspective, testing the full stack including UI interactions, navigation, and JavaScript functionality.

@@ -1,3 +1,7 @@
+---
+title: Build a Desktop App
+description: "Stacks desktop applications use Craft, the first-party native runtime shared by the dashboard and system tray. Your UI remains stx, your HTTP routes remain..."
+---
 # Build a Desktop App
 
 Stacks desktop applications use [Craft](https://github.com/home-lang/craft), the first-party native runtime shared by the dashboard and system tray. Your UI remains stx, your HTTP routes remain Stacks routes, and the native window opens the same pretty HTTPS URL that rpx and tlsx provide to the browser.

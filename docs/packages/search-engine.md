@@ -1,3 +1,7 @@
+---
+title: Search Engine Package
+description: "A powerful search integration supporting Meilisearch and Algolia, providing full-text search, indexing, faceted search, and real-time updates for your appl..."
+---
 # Search Engine Package
 
 A powerful search integration supporting Meilisearch and Algolia, providing full-text search, indexing, faceted search, and real-time updates for your application.

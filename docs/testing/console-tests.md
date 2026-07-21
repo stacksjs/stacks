@@ -1,3 +1,7 @@
+---
+title: Console Tests
+description: "Console tests verify that your CLI commands work correctly. Stacks provides utilities for testing Artisan-style commands, including argument parsing, outpu..."
+---
 # Console Tests
 
 Console tests verify that your CLI commands work correctly. Stacks provides utilities for testing Artisan-style commands, including argument parsing, output verification, and interactive prompts.

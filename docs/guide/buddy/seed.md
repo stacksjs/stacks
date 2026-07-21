@@ -1,3 +1,7 @@
+---
+title: Seed Command
+description: "The  command populates your database with test data using model factories, making it easy to generate realistic data for development and testing."
+---
 # Seed Command
 
 The `buddy seed` command populates your database with test data using model factories, making it easy to generate realistic data for development and testing.

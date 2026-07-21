@@ -1,3 +1,7 @@
+---
+title: Commerce Coupons
+description: "The Coupons module in the Commerce package provides a robust set of functions to manage and interact with your coupon data. This guide will walk you throug..."
+---
 # Coupons
 
 The Coupons module in the Commerce package provides a robust set of functions to manage and interact with your coupon data. This guide will walk you through the various operations you can perform with coupons.

@@ -1,3 +1,7 @@
+---
+title: HTTP Command
+description: "The  command sends a GET request to a URL and prints the response, handy for smoke-testing an endpoint from the terminal. It is powered by httx."
+---
 # HTTP Command
 
 The `buddy http` command sends a GET request to a URL and prints the response, handy for smoke-testing an endpoint from the terminal. It is powered by [httx](https://github.com/stacksjs/httx).

@@ -1,3 +1,7 @@
+---
+title: Upgrade Guide
+description: "This guide covers the June 2026 security and correctness batch (issues #1947 through #1956). These changes harden authentication, database integrity, and l..."
+---
 # Upgrade Guide
 
 This guide covers the June 2026 security and correctness batch (issues #1947 through #1956). These changes harden authentication, database integrity, and logging. Several are breaking for apps that relied on the previous, looser behavior.

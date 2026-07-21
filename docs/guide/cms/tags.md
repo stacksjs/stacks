@@ -1,3 +1,7 @@
+---
+title: CMS Content Tags
+description: "The Tags module in the CMS package provides a comprehensive set of functions to manage and interact with your content tags. This guide will walk you throug..."
+---
 # Tags
 
 The Tags module in the CMS package provides a comprehensive set of functions to manage and interact with your content tags. This guide will walk you through the various operations you can perform with tags.
@@ -163,7 +167,7 @@ const tagsWithCounts = await fetchTagsWithPostCounts()
 
 ## Working with Tag Storage
 
-The tags system uses VueUse's `useStorage` for client-side persistence:
+The tags system uses STX composables's `useStorage` for client-side persistence:
 
 ```ts
 // Access the reactive tags array

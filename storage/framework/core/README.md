@@ -35,7 +35,7 @@ curl -Ssf stacksjs.com/install | sh # wip
 
 # alternatively, if Bun >= v1.1.11 is installed already
 # you may also get started via
-bunx stacks new my-project
+panx @stacksjs/buddy new my-project
 ```
 
 ## Usage
@@ -79,7 +79,7 @@ buddy --help # view help menu
 # `command --help` flag to review the help menu
 
 buddy install # installs dependencies
-buddy add # adds a stack or dependency
+buddy add calendar # pulls a registered project-shaped stack into this project
 buddy fresh # fresh reinstall of all deps
 buddy clean # removes all deps
 buddy setup # sets up the project initially
@@ -154,7 +154,7 @@ buddy make:factory cars # creates a Car factory file
 buddy make:table cars # bootstraps a cars data table
 buddy make:notification welcome-email # bootstraps a welcome-email notification
 buddy make:lang de # bootstraps a lang/de.yml language file
-buddy make:stack my-project # shares logic with `bunx stacks new my-project`
+buddy make:stack my-project # scaffolds a project-shaped registry stack
 
 buddy migrate # runs database migrations
 buddy migrate:dns # sets the ./config/dns.ts file

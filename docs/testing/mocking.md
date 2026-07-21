@@ -1,3 +1,7 @@
+---
+title: Test Mocking
+description: "Mocking allows you to replace dependencies with controlled substitutes during testing. Stacks provides comprehensive mocking utilities for functions, modul..."
+---
 # Mocking
 
 Mocking allows you to replace dependencies with controlled substitutes during testing. Stacks provides comprehensive mocking utilities for functions, modules, HTTP requests, and more.

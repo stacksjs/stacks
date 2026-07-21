@@ -1,3 +1,7 @@
+---
+title: Build Command
+description: "The  command compiles your Stacks application and libraries for production use, optimizing assets for deployment to npm, CDNs, or cloud providers."
+---
 # Build Command
 
 The `buddy build` command compiles your Stacks application and libraries for production use, optimizing assets for deployment to npm, CDNs, or cloud providers.
@@ -45,7 +49,7 @@ buddy build [type] [options]
 
 ### Components Library
 
-Build both Vue and Web Component libraries:
+Build both STX and Web Component libraries:
 
 ```bash
 buddy build:components
@@ -184,7 +188,7 @@ Build outputs are placed in the following locations:
 
 | Target | Output Directory |
 |--------|-----------------|
-| Vue Components | `dist/vue/` |
+| STX Components | `dist/stx/` |
 | Web Components | `dist/web-components/` |
 | Functions | `dist/functions/` |
 | Views | `dist/views/` |

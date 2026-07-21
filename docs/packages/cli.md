@@ -1,3 +1,7 @@
+---
+title: CLI Package
+description: "A powerful command-line interface framework for building interactive CLI applications, featuring command parsing, prompts, spinners, and beautiful output f..."
+---
 # CLI Package
 
 A powerful command-line interface framework for building interactive CLI applications, featuring command parsing, prompts, spinners, and beautiful output formatting.
@@ -136,11 +140,11 @@ if (confirmed) {
 const framework = await prompt.select({
   message: 'Choose a framework:',
   options: [
-    { value: 'vue', label: 'Vue.js', hint: 'Recommended' },
+    { value: 'stx', label: 'STX', hint: 'Recommended' },
     { value: 'react', label: 'React' },
     { value: 'svelte', label: 'Svelte' },
   ],
-  initialValue: 'vue'
+  initialValue: 'stx'
 })
 ```
 

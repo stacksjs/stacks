@@ -1,3 +1,7 @@
+---
+title: Queue Package
+description: "A powerful job queue system built on bun-queue, providing job dispatching, workers, failed job management, and scheduling capabilities."
+---
 # Queue Package
 
 A powerful job queue system built on bun-queue, providing job dispatching, workers, failed job management, and scheduling capabilities.

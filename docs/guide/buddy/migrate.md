@@ -1,3 +1,7 @@
+---
+title: Migrate Command
+description: "The  command runs database migrations based on your model definitions, creating and updating database tables to match your application's data structure."
+---
 # Migrate Command
 
 The `buddy migrate` command runs database migrations based on your model definitions, creating and updating database tables to match your application's data structure.

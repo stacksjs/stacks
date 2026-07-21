@@ -1,3 +1,7 @@
+---
+title: CMS Authors
+description: "The Authors module in the CMS package provides functionality to manage content authors. This guide will walk you through the various operations you can per..."
+---
 # Authors
 
 The Authors module in the CMS package provides functionality to manage content authors. This guide will walk you through the various operations you can perform with authors.

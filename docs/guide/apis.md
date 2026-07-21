@@ -1,3 +1,7 @@
+---
+title: Application APIs
+description: "Stacks makes it easy to build robust APIs with automatic route generation, request validation, authentication, and documentation. Create RESTful or GraphQL..."
+---
 # APIs
 
 Stacks makes it easy to build robust APIs with automatic route generation, request validation, authentication, and documentation. Create RESTful or GraphQL APIs with minimal boilerplate.
@@ -518,5 +522,5 @@ describe('Posts API', () => {
 
 - [Routing](/basics/routing) - Route definitions
 - [Models](/basics/models) - Data models
-- [Authentication](/basics/authentication) - Auth system
+- [Authentication](/guide/auth) - Auth system
 - [Middleware](/basics/middleware) - Request middleware

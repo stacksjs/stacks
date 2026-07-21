@@ -1,3 +1,7 @@
+---
+title: Key Command
+description: "The  command generates and sets a cryptographically secure application key for your Stacks project, used for encryption and security purposes."
+---
 # Key Command
 
 The `buddy key:generate` command generates and sets a cryptographically secure application key for your Stacks project, used for encryption and security purposes.
@@ -79,7 +83,7 @@ APP_KEY=base64:xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 Generate a key when setting up a new project:
 
 ```bash
-bunx stacks new my-project
+panx @stacksjs/buddy new my-project
 cd my-project
 buddy key:generate
 ```

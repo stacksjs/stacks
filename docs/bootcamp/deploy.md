@@ -1,9 +1,18 @@
+---
+title: How to deploy
+description: Validate and deploy a Stacks application and its cloud infrastructure.
+---
 # How to deploy
 
-Usually when a deployment is happening and it requires a CDN update _(or creation)_,
+Start with the health check and a production build. Preview infrastructure changes before applying them.
 
-wip
+```bash
+./buddy doctor
+./buddy build
+./buddy cloud --diff
+./buddy deploy
+```
 
-## Get Started
+The deploy command verifies environment settings, application keys, AWS access, DNS, and mail prerequisites before updating the stack. CDN invalidation is part of the deployment flow when the configured resources require it.
 
-wip
+See [Cloud deployment](/guide/cloud/deployment) for first-deploy requirements and rollback guidance.

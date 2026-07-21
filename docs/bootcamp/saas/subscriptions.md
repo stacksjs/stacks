@@ -1,3 +1,7 @@
+---
+title: Subscription Billing
+description: "The Subscriptions module provides comprehensive subscription billing functionality using Stripe. This guide covers creating subscription plans, managing tr..."
+---
 # Subscription Billing
 
 The Subscriptions module provides comprehensive subscription billing functionality using Stripe. This guide covers creating subscription plans, managing trials, handling upgrades/downgrades, and tracking subscription status.

@@ -1,3 +1,7 @@
+---
+title: Create Mailbox
+description: "This guide covers setting up email functionality in your Stacks application, including SMTP configuration, sending emails, and creating custom mailboxes us..."
+---
 # Create Mailbox
 
 This guide covers setting up email functionality in your Stacks application, including SMTP configuration, sending emails, and creating custom mailboxes using AWS SES and S3.

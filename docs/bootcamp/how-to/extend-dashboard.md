@@ -1,3 +1,7 @@
+---
+title: Extend Dashboard
+description: "This guide covers customizing and extending the Stacks dashboard with custom widgets, pages, themes, and plugins."
+---
 # Extend Dashboard
 
 This guide covers customizing and extending the Stacks dashboard with custom widgets, pages, themes, and plugins.

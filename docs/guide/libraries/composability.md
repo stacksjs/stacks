@@ -1,3 +1,7 @@
+---
+title: Composability
+description: Design composable libraries that provide maximum flexibility and reusability.
+---
 # Composability
 
 Design composable libraries that provide maximum flexibility and reusability.
@@ -12,7 +16,7 @@ Composability is a design principle where small, focused pieces combine to creat
 
 Break complex components into composable pieces:
 
-```vue
+```html
 <!-- Instead of one monolithic component -->
 <Modal
   title="Confirm"
@@ -41,8 +45,8 @@ Break complex components into composable pieces:
 
 ### Implementation
 
-```vue
-<!-- components/Modal/Modal.vue -->
+```html
+<!-- components/Modal/Modal.stx -->
 <template>
   <Teleport to="body">
     <Transition name="modal">
@@ -55,8 +59,8 @@ Break complex components into composable pieces:
   </Teleport>
 </template>
 
-<script setup lang="ts">
-import { provide, readonly, ref } from 'vue'
+<script>
+import { provide, readonly, ref } from '@stacksjs/stx'
 
 const props = defineProps<{
   modelValue: boolean
@@ -80,29 +84,29 @@ provide('modal', {
 </script>
 ```
 
-```vue
-<!-- components/Modal/ModalHeader.vue -->
+```html
+<!-- components/Modal/ModalHeader.stx -->
 <template>
   <header class="modal-header">
     <slot />
   </header>
 </template>
 
-<!-- components/Modal/ModalTitle.vue -->
+<!-- components/Modal/ModalTitle.stx -->
 <template>
   <h2 class="modal-title">
     <slot />
   </h2>
 </template>
 
-<!-- components/Modal/ModalClose.vue -->
+<!-- components/Modal/ModalClose.stx -->
 <template>
   <button class="modal-close" aria-label="Close" @click="modal.close">
     &times;
   </button>
 </template>
 
-<script setup lang="ts">
+<script>
 const modal = inject('modal')
 </script>
 ```
@@ -278,10 +282,10 @@ function useSelection<T>(items: Ref<T[]>) {
 
 Components that provide logic without UI:
 
-```vue
-<!-- components/Renderless/MouseTracker.vue -->
-<script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+```html
+<!-- components/Renderless/MouseTracker.stx -->
+<script>
+import { ref, onMounted, onUnmounted } from '@stacksjs/stx'
 
 const x = ref(0)
 const y = ref(0)
@@ -302,7 +306,7 @@ onUnmounted(() => window.removeEventListener('mousemove', update))
 
 ### Usage
 
-```vue
+```html
 <template>
   <MouseTracker v-slot="{ x, y }">
     <div class="cursor-indicator" :style="{ left: `${x}px`, top: `${y}px` }">
@@ -314,10 +318,10 @@ onUnmounted(() => window.removeEventListener('mousemove', update))
 
 ### Data Provider Pattern
 
-```vue
-<!-- components/Renderless/DataProvider.vue -->
-<script setup lang="ts" generic="T">
-import { ref, onMounted } from 'vue'
+```html
+<!-- components/Renderless/DataProvider.stx -->
+<script>
+import { ref, onMounted } from '@stacksjs/stx'
 
 const props = defineProps<{
   fetch: () => Promise<T>

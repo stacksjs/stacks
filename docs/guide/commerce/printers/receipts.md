@@ -1,3 +1,7 @@
+---
+title: Printed Receipts
+description: "The Receipts module in the Commerce package provides a comprehensive set of functions to manage receipt printing logs and analytics. This module helps you ..."
+---
 # Receipts
 
 The Receipts module in the Commerce package provides a comprehensive set of functions to manage receipt printing logs and analytics. This module helps you track print jobs, monitor success rates, and analyze printing performance.

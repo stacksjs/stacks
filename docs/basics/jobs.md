@@ -1,3 +1,7 @@
+---
+title: Jobs & Queues
+description: "Stacks provides a powerful job queue system for handling background tasks, built on bun-queue. Process emails, notifications, reports, and other time-consu..."
+---
 # Jobs & Queues
 
 Stacks provides a powerful job queue system for handling background tasks, built on [bun-queue](https://github.com/stacksjs/bun-queue). Process emails, notifications, reports, and other time-consuming tasks asynchronously.

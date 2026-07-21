@@ -1,3 +1,7 @@
+---
+title: Stacks Architecture
+description: "Stacks is a full-stack TypeScript framework for web, API, desktop, CLI, and cloud applications. Bun is the runtime, package manager, test runner, and bundl..."
+---
 # Stacks Architecture
 
 Stacks is a full-stack TypeScript framework for web, API, desktop, CLI, and cloud applications. Bun is the runtime, package manager, test runner, and bundler. Framework packages are first-party and available under `storage/framework/core/`.
@@ -113,7 +117,7 @@ const doubled = derived(() => count() * 2)
 </button>
 ```
 
-Use stx signals and composables in templates. Do not add Vue, React, or direct DOM scripting to a Stacks view.
+Use stx signals and composables in templates. Do not add STX, React, or direct DOM scripting to a Stacks view.
 
 ## Background work
 

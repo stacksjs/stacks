@@ -1,3 +1,7 @@
+---
+title: Function Libraries
+description: Build reusable TypeScript function libraries with Stacks.
+---
 # Function Libraries
 
 Build reusable TypeScript function libraries with Stacks.
@@ -122,7 +126,7 @@ export function unique<T>(array: T[], key?: (item: T) => unknown): T[] {
 }
 ```
 
-## Vue Composables
+## STX Composables
 
 ### Stateful Composables
 
@@ -130,7 +134,7 @@ Create composables with reactive state:
 
 ```typescript
 // functions/composables/useCounter.ts
-import { ref, computed, type Ref, type ComputedRef } from 'vue'
+import { ref, computed, type Ref, type ComputedRef } from '@stacksjs/stx'
 
 export interface UseCounterOptions {
   min?: number
@@ -192,7 +196,7 @@ Handle side effects cleanly:
 
 ```typescript
 // functions/composables/useDebounce.ts
-import { ref, watch, type Ref } from 'vue'
+import { ref, watch, type Ref } from '@stacksjs/stx'
 
 export function useDebounce<T>(
   value: Ref<T>,
@@ -214,7 +218,7 @@ export function useDebounce<T>(
 }
 
 // functions/composables/useThrottle.ts
-import { ref, watch, type Ref } from 'vue'
+import { ref, watch, type Ref } from '@stacksjs/stx'
 
 export function useThrottle<T>(
   value: Ref<T>,
@@ -241,7 +245,7 @@ Handle async operations:
 
 ```typescript
 // functions/composables/useFetch.ts
-import { ref, shallowRef, type Ref, type ShallowRef } from 'vue'
+import { ref, shallowRef, type Ref, type ShallowRef } from '@stacksjs/stx'
 
 export interface UseFetchOptions<T> {
   immediate?: boolean

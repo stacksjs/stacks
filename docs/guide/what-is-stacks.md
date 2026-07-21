@@ -1,3 +1,7 @@
+---
+title: What is Stacks
+description: "Stacks is a rapid application & library development framework for TypeScript developers. The goal of the framework is to help you create & maintain fronten..."
+---
 # What is Stacks
 
 Stacks is a rapid application & library development framework for TypeScript developers. The goal of the framework is to help you create & maintain frontends, backends, and clouds—without having to worry about the boilerplate.

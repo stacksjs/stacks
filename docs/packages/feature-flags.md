@@ -1,3 +1,7 @@
+---
+title: Feature Flags
+description: "Stacks provides typed, scoped feature flags through . The API is inspired by Laravel Pennant and supports boolean flags, multivariate values, deterministic..."
+---
 # Feature Flags
 
 Stacks provides typed, scoped feature flags through `@stacksjs/feature-flags`. The API is inspired by Laravel Pennant and supports boolean flags, multivariate values, deterministic percentage rollouts, runtime overrides, and persistent database storage.

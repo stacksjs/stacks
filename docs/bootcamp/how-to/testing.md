@@ -1,3 +1,7 @@
+---
+title: Testing Guide
+description: "This guide covers testing strategies and patterns for your Stacks application, including unit tests, integration tests, and test-driven development (TDD)."
+---
 # Testing
 
 This guide covers testing strategies and patterns for your Stacks application, including unit tests, integration tests, and test-driven development (TDD).

@@ -1,3 +1,7 @@
+---
+title: Product Categories
+description: "The Product Categories module in the Commerce package provides a robust set of functions to manage and organize your product categories. This guide will wa..."
+---
 # Product Categories
 
 The Product Categories module in the Commerce package provides a robust set of functions to manage and organize your product categories. This guide will walk you through the various operations you can perform with product categories.

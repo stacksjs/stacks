@@ -1,3 +1,7 @@
+---
+title: Test Command
+description: "The  command runs your test suite, including unit tests, feature tests, and type checking, powered by Bun's built-in test runner."
+---
 # Test Command
 
 The `buddy test` command runs your test suite, including unit tests, feature tests, and type checking, powered by Bun's built-in test runner.
@@ -219,8 +223,8 @@ describe('Authentication', () => {
 ```typescript
 // tests/unit/components/Button.test.ts
 import { describe, expect, it } from 'bun:test'
-import { mount } from '@vue/test-utils'
-import Button from '@/components/Button.vue'
+import { mount } from '@stacksjs/stx/testing'
+import Button from '@/components/Button.stx'
 
 describe('Button Component', () => {
   it('renders correctly', () => {

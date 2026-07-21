@@ -1,3 +1,7 @@
+---
+title: Error Handling Package
+description: "A comprehensive error handling system providing Result types for type-safe error handling, HTTP exceptions, model exceptions, and structured error manageme..."
+---
 # Error Handling Package
 
 A comprehensive error handling system providing Result types for type-safe error handling, HTTP exceptions, model exceptions, and structured error management.

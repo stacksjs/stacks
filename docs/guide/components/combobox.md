@@ -1,6 +1,10 @@
+---
+title: Combobox Component
+description: "A modern, accessible combobox component for STX applications."
+---
 # Combobox
 
-A modern, accessible combobox component for Vue applications.
+A modern, accessible combobox component for STX applications.
 
 <ComboboxDemo />
 
@@ -46,9 +50,9 @@ yarn add @stacksjs/combobox
 
 The combobox component is composed of several sub-components that work together to create a fully functional and accessible combobox:
 
-```vue
-<script setup>
-import { ref } from 'vue'
+```html
+<script>
+import { ref } from '@stacksjs/stx'
 import {
   Combobox,
   ComboboxInput,
@@ -145,7 +149,7 @@ The combobox components can be styled using standard CSS classes. Each component
 
 For dynamic styling based on state, use the slot props provided by ComboboxOption:
 
-```vue
+```html
 <ComboboxOption v-slot="{ active, selected }">
   <li :class="selected !active, 'bg-blue-500 'bg-white 'font-bold': { } active, text-black': text-white':">
     {{ option.name }}

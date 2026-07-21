@@ -1,3 +1,7 @@
+---
+title: Notifications Package
+description: "A multi-channel notification system supporting email, SMS, and chat (Slack) notifications with a unified API."
+---
 # Notifications Package
 
 A multi-channel notification system supporting email, SMS, and chat (Slack) notifications with a unified API.

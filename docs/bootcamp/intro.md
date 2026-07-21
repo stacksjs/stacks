@@ -1,3 +1,7 @@
+---
+title: Stacks Bootcamp
+description: "Welcome to the Stacks Bootcamp. This comprehensive series of tutorials will guide you through building applications, APIs, CLIs, desktop apps, and more usi..."
+---
 # Stacks Bootcamp
 
 Welcome to the Stacks Bootcamp. This comprehensive series of tutorials will guide you through building applications, APIs, CLIs, desktop apps, and more using the Stacks framework.
@@ -8,20 +12,21 @@ By the end of this bootcamp, you will have learned how to:
 
 - **Build a Frontend** - Create reactive web applications using STX components, Headwind CSS utility classes, and file-based routing
 - **Build an API** - Develop RESTful APIs with routes, actions, controllers, validation, and authentication
-- **Build Documentation** - Set up and customize documentation sites using BunPress/VitePress
+- **Build Documentation** - Set up and customize STX documentation sites using BunPress
 - **Build a CLI** - Create interactive command-line tools with commands, options, and prompts
 - **Build a Desktop App** - Package your stx application with the first-party Craft runtime
 - **Deploy to Production** - Configure cloud infrastructure and deploy your applications
 
 ## Prerequisites
 
-Before starting, ensure you have the following installed:
+Before starting, install Pantry and bootstrap its shell integration:
 
 ### Required
 
-- **Bun** (v1.0.21 or later) - The JavaScript runtime that powers Stacks
-- **Bun** (v1.3 or later) - The runtime, package manager, test runner, and bundler
-- **Git** - For version control
+- **Pantry** - Install with `curl -fsSL https://pantry.dev | bash`
+- **Pantry shell integration** - Run `pantry bootstrap` once
+
+Pantry provisions Bun 1.3 or newer, Git, SQLite, and every other tool declared by the project.
 
 ### Recommended
 
@@ -35,17 +40,14 @@ Before starting, ensure you have the following installed:
 Get started by creating a new Stacks project:
 
 ```bash
-# Install the Stacks CLI globally
-bun install -g @stacksjs/cli
-
-# Create a new project
-bunx stacks new my-project
+# Create a new project through Pantry's package executor
+panx @stacksjs/buddy new my-project
 
 # Navigate to your project
 cd my-project
 
-# Install dependencies
-bun install
+# Install the complete declared toolchain and project dependencies
+pantry install
 
 # Start the development server
 buddy dev

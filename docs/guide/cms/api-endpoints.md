@@ -1,3 +1,7 @@
+---
+title: CMS API Endpoints
+description: The CMS package provides a set of RESTful API endpoints for managing content. All endpoints are prefixed with .
+---
 # CMS API Endpoints
 
 The CMS package provides a set of RESTful API endpoints for managing content. All endpoints are prefixed with `/cms`.

@@ -1,3 +1,7 @@
+---
+title: Error Handling
+description: "Stacks provides a comprehensive error handling system built on ts-error-handling, featuring Result types for functional error handling, custom exceptions, ..."
+---
 # Error Handling
 
 Stacks provides a comprehensive error handling system built on [ts-error-handling](https://github.com/stacksjs/ts-error-handling), featuring Result types for functional error handling, custom exceptions, and error reporting.
@@ -363,4 +367,4 @@ try {
 ### Related Guides
 
 - **[Logging](/basics/logging)** - Logging errors
-- **[Validation](/guide/validation)** - Handling validation errors
+- **[Validation](/packages/validation)** - Handling validation errors

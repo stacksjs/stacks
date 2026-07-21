@@ -1,3 +1,7 @@
+---
+title: Error Handling
+description: "This guide covers error handling patterns, debugging techniques, and best practices for managing errors in your Stacks application."
+---
 # Error Handling
 
 This guide covers error handling patterns, debugging techniques, and best practices for managing errors in your Stacks application.

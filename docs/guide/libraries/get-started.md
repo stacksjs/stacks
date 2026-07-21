@@ -1,3 +1,7 @@
+---
+title: Getting Started with Libraries
+description: "This guide walks you through creating, developing, and publishing your first Stacks library."
+---
 # Getting Started with Libraries
 
 This guide walks you through creating, developing, and publishing your first Stacks library.
@@ -16,7 +20,7 @@ Before creating a library, ensure you have:
 Create a dedicated library project:
 
 ```bash
-bunx @stacksjs/buddy new my-library
+panx @stacksjs/buddy new my-library
 
 cd my-library
 bun install
@@ -39,7 +43,7 @@ After setup, your library structure looks like this:
 
 ```
 my-library/
-├── components/           # Vue components
+├── components/           # STX components
 │   └── .gitkeep
 ├── functions/            # TypeScript functions
 │   └── .gitkeep
@@ -57,8 +61,8 @@ my-library/
 
 Create a simple button component:
 
-```vue
-<!-- components/Button.vue -->
+```html
+<!-- components/Button.stx -->
 <template>
   <button
     :class="['stacks-button', `stacks-button--${variant}`]"
@@ -69,7 +73,7 @@ Create a simple button component:
   </button>
 </template>
 
-<script setup lang="ts">
+<script>
 export interface ButtonProps {
   variant?: 'primary' | 'secondary' | 'outline'
   disabled?: boolean
@@ -128,7 +132,7 @@ Create a utility function:
 
 ```typescript
 // functions/useToggle.ts
-import { ref, type Ref } from 'vue'
+import { ref, type Ref } from '@stacksjs/stx'
 
 export interface UseToggleReturn {
   value: Ref<boolean>
@@ -169,13 +173,13 @@ Create the main entry point:
 // index.ts
 
 // Export components
-export { default as Button } from './components/Button.vue'
+export { default as Button } from './components/Button.stx'
 
 // Export functions
 export { useToggle } from './functions/useToggle'
 
 // Export types
-export type { ButtonProps } from './components/Button.vue'
+export type { ButtonProps } from './components/Button.stx'
 export type { UseToggleReturn } from './functions/useToggle'
 ```
 
@@ -211,8 +215,8 @@ buddy build:functions
 ```typescript
 // tests/Button.test.ts
 import { describe, it, expect } from 'bun:test'
-import { mount } from '@vue/test-utils'
-import Button from '../components/Button.vue'
+import { mount } from '@stacksjs/stx/testing'
+import Button from '../components/Button.stx'
 
 describe('Button', () => {
   it('renders with default props', () => {
@@ -280,8 +284,8 @@ dist/
 ├── index.cjs         # CommonJS bundle
 ├── index.d.ts        # TypeScript declarations
 ├── components/
-│   ├── Button.vue.mjs
-│   └── Button.vue.d.ts
+│   ├── Button.stx.mjs
+│   └── Button.stx.d.ts
 └── functions/
     ├── useToggle.mjs
     └── useToggle.d.ts
@@ -311,7 +315,7 @@ export default defineLibraryConfig({
   },
 
   // External dependencies (not bundled)
-  external: ['vue'],
+  external: ['@stacksjs/stx'],
 
   // Documentation
   docs: {
@@ -340,7 +344,7 @@ export default defineLibraryConfig({
   },
   "files": ["dist"],
   "peerDependencies": {
-    "vue": "^3.0.0"
+    "@stacksjs/stx": "^3.0.0"
   }
 }
 ```
@@ -358,7 +362,7 @@ buddy dev:docs     # serve it locally while you write
 
 Add documentation directly in components:
 
-```vue
+```html
 <docs>
 # Button
 
@@ -366,7 +370,7 @@ A customizable button component.
 
 ## Basic Usage
 
-```vue
+```html
 
 <Button>Click me</Button>
 
@@ -374,7 +378,7 @@ A customizable button component.
 
 ## Variants
 
-```vue
+```html
 
 <Button variant="primary">Primary</Button>
 <Button variant="secondary">Secondary</Button>

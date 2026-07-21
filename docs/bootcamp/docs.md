@@ -1,6 +1,10 @@
+---
+title: Build Documentation
+description: "Build an STX-powered documentation site for a Stacks project with BunPress, Markdown, search, navigation, and production output."
+---
 # Build Documentation
 
-This tutorial will guide you through building documentation for your Stacks project. Stacks uses BunPress (based on VitePress) to generate beautiful, fast documentation sites from Markdown files.
+This tutorial guides you through building documentation for a Stacks project. BunPress uses STX to generate fast documentation sites from Markdown files.
 
 ## Overview
 
@@ -86,7 +90,7 @@ const config: BunPressOptions = {
           text: 'Core Concepts',
           collapsed: true,
           items: [
-            { text: 'Routing', link: '/guide/routing' },
+            { text: 'Routing', link: '/basics/routing' },
             { text: 'Components', link: '/guide/components' },
             { text: 'Actions', link: '/guide/actions' },
           ],
@@ -354,7 +358,7 @@ Link between documentation pages:
 See the [configuration guide](./configuration.md) for more details.
 
 <!-- Absolute links (from docs root) -->
-Learn about [routing](/guide/routing) first.
+Learn about [routing](/basics/routing) first.
 
 <!-- Link to specific heading -->
 Check the [validation section](/api/actions#validation).
@@ -630,8 +634,8 @@ await Action.run('SendWelcomeEmail', { email: 'user@example.com' })
 
 ## Next Steps
 
-- [Validation Guide](/guide/validation) - Learn about input validation
-- [Routing Guide](/guide/routing) - Connect actions to routes
+- [Validation Guide](/packages/validation) - Learn about input validation
+- [Routing Guide](/basics/routing) - Connect actions to routes
 - [Testing Actions](/guide/testing-actions) - Write tests for your actions
 
 ```
@@ -646,4 +650,4 @@ Now that you know how to build documentation, continue to:
 ## Related Documentation
 
 - [BunPress Documentation](https://bunpress.dev)
-- [VitePress Documentation](https://vitepress.dev)
+- [BunPress repository](https://github.com/stacksjs/bunpress)

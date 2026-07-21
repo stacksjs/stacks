@@ -1,3 +1,7 @@
+---
+title: TypeScript Validation Package
+description: A powerful and flexible validation library for TypeScript that provides a fluent API for validating various data types.
+---
 # TypeScript Validation Package
 
 A powerful and flexible validation library for TypeScript that provides a fluent API for validating various data types.

@@ -1,3 +1,7 @@
+---
+title: Model-View-Action
+description: "Stacks follows the Model-View-Action (MVA) architectural pattern, a modern evolution of MVC that emphasizes explicit business logic through Actions and pro..."
+---
 # Model-View-Action
 
 Stacks follows the Model-View-Action (MVA) architectural pattern, a modern evolution of MVC that emphasizes explicit business logic through Actions and provides better testability and code organization.
@@ -153,10 +157,10 @@ Models should only handle:
 
 Views handle the presentation layer - rendering HTML, components, or JSON responses.
 
-### Vue Components
+### STX Components
 
-```vue
-<!-- views/users/Profile.vue -->
+```html
+<!-- views/users/Profile.stx -->
 <template>
   <div class="profile">
     <Avatar :user="user" size="large" />
@@ -167,7 +171,7 @@ Views handle the presentation layer - rendering HTML, components, or JSON respon
   </div>
 </template>
 
-<script setup lang="ts">
+<script>
 import type { User } from '@/models/User'
 
 const props = defineProps<{
@@ -474,6 +478,6 @@ class OrderResource extends Resource {
 ## Related
 
 - [Models](/basics/models) - Working with models
-- [Controllers](/basics/controllers) - HTTP controllers
+- [Controllers](/basics/actions) - HTTP controllers
 - [Actions](/basics/actions) - Creating actions
 - [Testing](/guide/testing) - Testing your code

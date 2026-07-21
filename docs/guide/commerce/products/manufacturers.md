@@ -1,3 +1,7 @@
+---
+title: Manufacturers
+description: "The Manufacturers module in the Commerce package provides a robust set of functions to manage and interact with your product manufacturer data. This guide ..."
+---
 # Manufacturers
 
 The Manufacturers module in the Commerce package provides a robust set of functions to manage and interact with your product manufacturer data. This guide will walk you through the various operations you can perform with manufacturers.

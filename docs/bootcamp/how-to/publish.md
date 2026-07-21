@@ -1,3 +1,7 @@
+---
+title: Publish Packages
+description: "This guide covers publishing packages and libraries from your Stacks application, including npm publishing, versioning, and package configuration."
+---
 # Publish
 
 This guide covers publishing packages and libraries from your Stacks application, including npm publishing, versioning, and package configuration.
@@ -33,7 +37,7 @@ export default {
   formats: ['esm', 'cjs', 'umd'],
 
   // External dependencies (not bundled)
-  externals: ['vue', 'react'],
+  externals: ['@stacksjs/stx', 'react'],
 
   // TypeScript declarations
   dts: true,
@@ -89,7 +93,7 @@ export default {
     "access": "public"
   },
   "peerDependencies": {
-    "vue": "^3.0.0"
+    "@stacksjs/stx": "^3.0.0"
   }
 }
 ```
@@ -123,8 +127,8 @@ export default defineConfig({
 
     // External packages
     external: [
-      'vue',
-      '@vue/*',
+      '@stacksjs/stx',
+      '@stacksjs/stx',
       /^@stacksjs\//,
     ],
 
@@ -427,14 +431,14 @@ MIT
 
 ## Publishing Components
 
-### Vue Component Library
+### STX Component Library
 
 ```ts
 // src/index.ts
-import type { App } from 'vue'
-import MyButton from './components/MyButton.vue'
-import MyInput from './components/MyInput.vue'
-import MyModal from './components/MyModal.vue'
+import type { App } from '@stacksjs/stx'
+import MyButton from './components/MyButton.stx'
+import MyInput from './components/MyInput.stx'
+import MyModal from './components/MyModal.stx'
 
 export { MyButton, MyInput, MyModal }
 
@@ -466,7 +470,7 @@ export default {
   },
   "sideEffects": ["*.css"],
   "peerDependencies": {
-    "vue": "^3.3.0"
+    "@stacksjs/stx": "^3.3.0"
   }
 }
 ```

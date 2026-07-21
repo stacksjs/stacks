@@ -1,3 +1,7 @@
+---
+title: Query Monitoring
+description: "The Query Monitoring system provides comprehensive tools to collect, analyze, and monitor database queries in your application. This helps you identify per..."
+---
 # Query Monitoring
 
 The Query Monitoring system provides comprehensive tools to collect, analyze, and monitor database queries in your application. This helps you identify performance bottlenecks, optimize slow queries, and understand database usage patterns.

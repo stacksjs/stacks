@@ -1,4 +1,4 @@
 ---
 title: Meet the Team
-description: A team of incredible people.
+description: Meet the maintainers and contributors building the Stacks framework and ecosystem.
 ---

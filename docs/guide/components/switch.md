@@ -1,6 +1,10 @@
+---
+title: Switch Component
+description: "A modern, accessible toggle switch component for STX applications."
+---
 # Switch
 
-A modern, accessible toggle switch component for Vue applications.
+A modern, accessible toggle switch component for STX applications.
 
 <SwitchDemo />
 
@@ -45,9 +49,9 @@ yarn add @stacksjs/switch
 
 The switch component is simple to use and highly customizable:
 
-```vue
-<script setup>
-import { ref } from 'vue'
+```html
+<script>
+import { ref } from '@stacksjs/stx'
 import { Switch, SwitchLabel, SwitchGroup } from '@stacksjs/switch'
 
 const enabled = ref(false)
@@ -109,7 +113,7 @@ The switch component can be styled using standard CSS classes. Each component ac
 
 For dynamic styling based on state, use the v-model value:
 
-```vue
+```html
 <Switch
   v-model="enabled"
   :class="[
@@ -140,7 +144,7 @@ The switch component follows WAI-ARIA guidelines and includes the following feat
 The switch component includes full TypeScript support:
 
 ```ts
-import { ref } from 'vue'
+import { ref } from '@stacksjs/stx'
 
 const enabled = ref<boolean>(false)
 ```

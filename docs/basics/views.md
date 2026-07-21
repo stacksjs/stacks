@@ -1,742 +1,264 @@
 ---
-title: Views
-description: Learn about STX templating and view rendering in Stacks applications
+title: STX View Templates
+description: Build server-rendered and reactive interfaces with STX templates in Stacks.
 ---
 
-```
+# Views
 
-#### @while
+Stacks uses STX for views and components. STX combines server rendering, reactive client code, component composition, and scoped styles in `.stx` files.
 
-```html
+Application views live in `resources/views/`. Reusable components, layouts, and partials live in their matching directories under `resources/`.
 
-<template>
-  @while(items.length > 0)
-    <div>{{ items.pop() }}</div>
-  @endwhile
-</template>
+## Create a view
 
-```
-
-### Loop Variables
-
-Within loops, special variables are available:
+Create `resources/views/welcome.stx`:
 
 ```html
-
-<template>
-  @foreach(items as item)
-    <div>
-      <!-- Check if first iteration -->
-      @if($loop.first)
-        <span class="badge">First</span>
-      @endif
-
-      <!-- Check if last iteration -->
-      @if($loop.last)
-        <span class="badge">Last</span>
-      @endif
-
-      <!-- Current iteration index (0-based) -->
-      <span>Index: {{ $loop.index }}</span>
-
-      <!-- Current iteration count (1-based) -->
-      <span>Count: {{ $loop.iteration }}</span>
-
-      <!-- Remaining iterations -->
-      <span>Remaining: {{ $loop.remaining }}</span>
-
-      <!-- Total count -->
-      <span>Total: {{ $loop.count }}</span>
-
-      <!-- Even/Odd -->
-      <div :class="'bg-gray': { } $loop.even">
-        {{ item.name }}
-      </div>
-    </div>
-  @endforeach
-</template>
-
-```
-
-### Including Partials
-
-#### @include
-
-```html
-
-<template>
-  <div class="page">
-    @include('partials/header')
-
-    <main>
-      @include('partials/sidebar', { user: currentUser })
-      <div class="content">
-        {{ content }}
-      </div>
-    </main>
-
-    @include('partials/footer')
-  </div>
-</template>
-
-```
-
-#### @includeIf
-
-Include only if the partial exists:
-
-```html
-
-<template>
-  @includeIf('partials/optional-banner')
-</template>
-
-```
-
-#### @includeWhen
-
-Conditional include:
-
-```html
-
-<template>
-  @includeWhen(user.isAdmin, 'partials/admin-tools')
-  @includeUnless(user.isGuest, 'partials/user-menu')
-</template>
-
-```
-
-#### @includeFirst
-
-Include the first existing partial:
-
-```html
-
-<template>
-  @includeFirst(['custom/header', 'default/header'])
-</template>
-
-```
-
-### Slots
-
-#### @slot / @endslot
-
-```html
-
-<!-- resources/components/Card.stx -->
-<template>
-  <div class="card">
-    <div class="card-header">
-      @slot('header')
-        Default Header
-      @endslot
-    </div>
-
-    <div class="card-body">
-      @slot('default')
-      @endslot
-    </div>
-
-    <div class="card-footer">
-      @slot('footer')
-      @endslot
-    </div>
-  </div>
-</template>
-
-```
-
-Usage:
-
-```html
-
-<template>
-  <Card>
-    <template #header>
-      <h2>Custom Header</h2>
-    </template>
-
-    <p>This is the card content.</p>
-
-    <template #footer>
-      <button>Action</button>
-    </template>
-  </Card>
-</template>
-
-```
-
-### Stack and Push
-
-Collect content from child views:
-
-```html
-
-<!-- Layout -->
-<template>
-  <html>
-    <head>
-      <title>{{ title }}</title>
-      @stack('styles')
-    </head>
-    <body>
-      {{ content }}
-      @stack('scripts')
-    </body>
-  </html>
-</template>
-
-<!-- Child View -->
-<template>
-  @push('styles')
-    <link rel="stylesheet" href="/custom.css">
-  @endpush
-
-  <div>Content here</div>
-
-  @push('scripts')
-    <script src="/custom.js"></script>
-  @endpush
-</template>
-
-```
-
-### Raw Output
-
-#### @verbatim
-
-Prevent STX from processing content:
-
-```html
-
-<template>
-  @verbatim
-    <div>
-      {{ This will not be processed }}
-      @if(this.wont.work)
-    </div>
-  @endverbatim
-</template>
-
-```
-
-### Comments
-
-```html
-
-<template>
-  {{-- This comment will not appear in the rendered HTML --}}
-
-  <!-- This HTML comment will appear in output -->
-</template>
-
-```
-
-## Component Usage
-
-### Importing Components
-
-```html
-
-<template>
-  <div>
-    <Header />
-    <Sidebar :collapsed="sidebarCollapsed" />
-    <MainContent>
-      <slot />
-    </MainContent>
-    <Footer />
-  </div>
-</template>
-
-<script lang="ts">
-import Header from '@/components/Header.stx'
-import Sidebar from '@/components/Sidebar.stx'
-import MainContent from '@/components/MainContent.stx'
-import Footer from '@/components/Footer.stx'
-
-const sidebarCollapsed = ref(false)
+<script server>
+const pageTitle = 'Welcome to Stacks'
 </script>
 
-```
+<script>
+const count = ref(0)
+const doubled = computed(() => count.value * 2)
 
-### Passing Props
-
-```html
-
-<!-- Parent -->
-<template>
-  <UserCard
-    :user="currentUser"
-    :show-avatar="true"
-    size="large"
-    @click="handleClick"
-  />
-</template>
-
-<!-- UserCard.stx -->
-<template>
-  <div class="user-card" :class="sizeClass">
-    <img v-if="showAvatar" :src="user.avatar" :alt="user.name">
-    <span>{{ user.name }}</span>
-  </div>
-</template>
-
-<script lang="ts">
-interface Props {
-  user: User
-  showAvatar?: boolean
-  size?: 'small' | 'medium' | 'large'
+function increment() {
+  count.value++
 }
-
-const props = withDefaults(defineProps<Props>(), {
-  showAvatar: true,
-  size: 'medium',
-})
-
-const sizeClass = computed(() => `size-${props.size}`)
 </script>
 
+<template>
+  <main class="mx-auto px-6 py-16 max-w-3xl">
+    <h1 class="font-semibold text-4xl">
+      {{ pageTitle }}
+    </h1>
+    <button class="mt-8 px-4 py-2 text-white bg-blue-600 rounded" @click="increment">
+      Count: {{ count }}
+    </button>
+    <p class="mt-2 text-neutral-600">
+      Doubled: {{ doubled }}
+    </p>
+  </main>
+</template>
 ```
 
-### Component Slots
+Browser auto-imports make `ref`, `computed`, `watch`, and the supported composables available inside STX scripts. Do not use direct `document` or `window` access. Keep client behavior in signals, composables, directives, and component methods.
+
+## Rendering data
+
+Double braces escape interpolated values:
 
 ```html
+<p>{{ user.name }}</p>
+<p>{{ items.length }} items</p>
+```
 
-<!-- Modal.stx -->
+Use the raw-output form only for trusted HTML:
+
+```html
+<div>{!! trustedHtml !!}</div>
+```
+
+Server scripts run before the template is rendered and can prepare data for the page:
+
+```html
+<script server>
+const products = await Product.where('status', 'published').all()
+</script>
+
 <template>
-  <div class="modal" v-if="isOpen">
-    <div class="modal-header">
-      <slot name="header">
-        <h2>Default Title</h2>
-      </slot>
-    </div>
-
-    <div class="modal-body">
-      <slot />
-    </div>
-
-    <div class="modal-footer">
-      <slot name="footer">
-        <button @click="close">Close</button>
-      </slot>
-    </div>
-  </div>
+  <ul>
+    @foreach(products as product)
+      <li>{{ product.name }}</li>
+    @endforeach
+  </ul>
 </template>
+```
 
-<script lang="ts">
+## Conditionals and loops
+
+Use Blade-style directives for server-rendered control flow:
+
+```html
+@if(user)
+  <p>Welcome back, {{ user.name }}.</p>
+@else
+  <a href="/login">Sign in</a>
+@endif
+```
+
+```html
+@foreach(posts as post)
+  <article>
+    <h2>{{ post.title }}</h2>
+  </article>
+@endforeach
+```
+
+Use `@for` and `@while` when an indexed loop or condition is a better fit:
+
+```html
+@for(let index = 0; index < featured.length; index++)
+  <p>{{ index + 1 }}. {{ featured[index].name }}</p>
+@endfor
+```
+
+## Components
+
+Components live in `resources/components/` and are auto-resolved by name. A component at `resources/components/UserCard.stx` can be used directly:
+
+```html
+<UserCard :user="user" compact />
+```
+
+Declare typed props inside the component:
+
+```html
+<script>
 interface Props {
-  isOpen: boolean
+  user: {
+    name: string
+    email: string
+  }
+  compact?: boolean
 }
 
 const props = defineProps<Props>()
-const emit = defineEmits<{
-  close: []
-}>()
+</script>
 
-function close() {
-  emit('close')
+<template>
+  <article class="p-4 border border-neutral-200 rounded-lg">
+    <h2 class="font-semibold">{{ props.user.name }}</h2>
+    @unless(props.compact)
+      <p class="text-neutral-600">{{ props.user.email }}</p>
+    @endunless
+  </article>
+</template>
+```
+
+## Events and state
+
+Bind component methods with event directives:
+
+```html
+<script>
+const open = ref(false)
+
+function toggle() {
+  open.value = !open.value
 }
 </script>
 
-```
-
-Usage:
-
-```html
-
 <template>
-  <Modal :is-open="showModal" @close="showModal = false">
-    <template #header>
-      <h2>Confirm Action</h2>
-    </template>
+  <button @click="toggle">
+    {{ open ? 'Hide details' : 'Show details' }}
+  </button>
 
-    <p>Are you sure you want to proceed?</p>
-
-    <template #footer>
-      <button @click="cancel">Cancel</button>
-      <button @click="confirm">Confirm</button>
-    </template>
-  </Modal>
+  @if(open)
+    <p>Additional details</p>
+  @endif
 </template>
-
 ```
 
-### Scoped Slots
+For shared behavior, place a function or composable in `resources/functions/`. Browser auto-import generation makes exported functions available to templates after `buddy generate`.
 
-Pass data to slot content:
+## Slots
+
+Slots let a component accept caller-provided content:
 
 ```html
-
-<!-- DataList.stx -->
+<!-- resources/components/Card.stx -->
 <template>
-  <ul>
-    <li v-for="item in items" :key="item.id">
-      <slot :item="item" :index="$index">
-        {{ item.name }}
-      </slot>
-    </li>
-  </ul>
+  <section class="p-6 border border-neutral-200 rounded-xl">
+    <header class="mb-4">
+      <slot name="header" />
+    </header>
+    <slot />
+  </section>
 </template>
+```
 
-<!-- Usage -->
+```html
+<Card>
+  <template #header>
+    <h2>Account</h2>
+  </template>
+
+  <p>Manage your profile and security settings.</p>
+</Card>
+```
+
+## Layouts and partials
+
+Layouts live in `resources/layouts/`. Select one with frontmatter or the layout directive supported by your application configuration. Partials live in `resources/partials/` and can be included from a view:
+
+```html
+@include('partials/header')
+
+<main>
+  {{ content }}
+</main>
+
+@include('partials/footer')
+```
+
+Pass values to a partial when it needs local context:
+
+```html
+@include('partials/account-menu', { user })
+```
+
+## Styling
+
+Use Crosswind utilities in templates. Component styles can be scoped when custom CSS is necessary:
+
+```html
 <template>
-  <DataList :items="users">
-    <template #default="{ item, index }">
-      <span>{{ index + 1 }}. {{ item.name }} ({{ item.email }})</span>
-    </template>
-  </DataList>
-</template>
-
-```
-
-## Scoped Styles
-
-### Basic Scoped Styles
-
-```html
-
-<style scoped>
-/* These styles only apply to this component */
-.container {
-  padding: 1rem;
-}
-
-h1 {
-  color: blue;
-}
-</style>
-
-```
-
-### Deep Selectors
-
-Target child component elements:
-
-```html
-
-<style scoped>
-/* Target elements inside child components */
-:deep(.child-class) {
-  color: red;
-}
-
-/* Alternative syntax */
-.parent :deep(.child-class) {
-  color: red;
-}
-</style>
-
-```
-
-### Slotted Selectors
-
-Style slotted content:
-
-```html
-
-<style scoped>
-:slotted(p) {
-  color: gray;
-}
-</style>
-
-```
-
-### Global Styles
-
-Apply styles globally from a component:
-
-```html
-
-<style>
-/* Global styles */
-body {
-  font-family: sans-serif;
-}
-</style>
-
-<style scoped>
-/* Component-scoped styles */
-.container {
-  max-width: 800px;
-}
-</style>
-
-```
-
-## TypeScript Integration
-
-### Script Setup
-
-```html
-
-<script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
-import type { User } from '@/types'
-
-// Props
-interface Props {
-  userId: number
-  initialName?: string
-}
-
-const props = withDefaults(defineProps<Props>(), {
-  initialName: 'Guest',
-})
-
-// Emits
-const emit = defineEmits<{
-  update: [name: string]
-  delete: []
-}>()
-
-// Reactive state
-const name = ref(props.initialName)
-const loading = ref(false)
-
-// Computed
-const displayName = computed(() => name.value.toUpperCase())
-
-// Methods
-async function fetchUser() {
-  loading.value = true
-  try {
-    const user = await api.getUser(props.userId)
-    name.value = user.name
-  } finally {
-    loading.value = false
-  }
-}
-
-// Lifecycle
-onMounted(() => {
-  fetchUser()
-})
-
-// Expose for parent access
-defineExpose({
-  refresh: fetchUser,
-})
-</script>
-
-```
-
-### Type-Safe Templates
-
-```html
-
-<template>
-  <div>
-    <!-- TypeScript provides autocomplete and type checking -->
-    <p>{{ user.name }}</p>
-    <p>{{ user.email }}</p>
-
-    <!-- Error if property doesn't exist -->
-    <!-- <p>{{ user.nonExistent }}</p> -->
+  <div class="profile-card">
+    <slot />
   </div>
 </template>
 
-<script setup lang="ts">
-interface User {
-  id: number
-  name: string
-  email: string
+<style scoped>
+.profile-card {
+  container-type: inline-size;
 }
-
-const user = ref<User>({
-  id: 1,
-  name: 'John',
-  email: 'john@example.com',
-})
-</script>
-
+</style>
 ```
 
-## Layouts
+Prefer Crosswind transitions and CSS keyframes for motion. Use `usePreferredReducedMotion()` before enabling non-essential animation.
 
-### Defining a Layout
+## Configuration
 
-```html
+STX configuration lives in `config/stx.ts`:
 
-<!-- resources/layouts/Default.stx -->
-<template>
-  <div class="app">
-    <Header />
-    <nav>
-      <slot name="nav" />
-    </nav>
+```ts
+import type { StxOptions } from '@stacksjs/stx'
 
-    <main>
-      <slot />
-    </main>
-
-    <Footer />
-  </div>
-</template>
-
-<script setup lang="ts">
-import Header from '@/components/Header.stx'
-import Footer from '@/components/Footer.stx'
-</script>
-
+export default {
+  componentsDir: 'resources/components',
+  layoutsDir: 'resources/layouts',
+  partialsDir: 'resources/partials',
+} satisfies StxOptions
 ```
 
-### Using a Layout
+The `bun-plugin-stx` plugin compiles `.stx` files during development and production builds.
 
-```html
+## Commands
 
-<!-- resources/views/home.stx -->
-<template>
-  <DefaultLayout>
-    <template #nav>
-      <a href="/">Home</a>
-      <a href="/about">About</a>
-    </template>
-
-    <h1>Welcome Home</h1>
-    <p>This is the home page content.</p>
-  </DefaultLayout>
-</template>
-
-<script setup lang="ts">
-import DefaultLayout from '@/layouts/Default.stx'
-</script>
-
+```bash
+buddy make:view account
+buddy make:component UserCard
+buddy dev
+buddy build
+buddy generate
 ```
 
-## Edge Cases and Gotchas
+Use `buddy make:page` as an alias for `buddy make:view`. Run `buddy generate` after adding browser functions or components that should appear in generated auto-import types.
 
-### Directive Whitespace
+## Related guides
 
-Directives are whitespace-sensitive:
-
-```html
-
-<!-- Correct -->
-@if(condition)
-  Content
-@endif
-
-<!-- Incorrect (no space after @if) -->
-@if (condition)
-  Content
-@endif
-
-```
-
-### Escaping Directive Syntax
-
-Use `@@` to escape directive syntax:
-
-```html
-
-<template>
-  <!-- Outputs: @if(condition) -->
-  @@if(condition)
-
-  <!-- Outputs: {{ variable }} -->
-  @{{ variable }}
-</template>
-
-```
-
-### Component Name Casing
-
-Components can be used in PascalCase or kebab-case:
-
-```html
-
-<template>
-  <!-- Both are valid -->
-  <MyComponent />
-  <my-component />
-</template>
-
-```
-
-### Reactive Props
-
-Props are readonly; use computed or local refs for mutations:
-
-```html
-
-<script setup lang="ts">
-const props = defineProps<{ value: string }>()
-
-// Wrong - props are readonly
-// props.value = 'new value'
-
-// Correct - use local ref
-const localValue = ref(props.value)
-watch(() => props.value, (newVal) => {
-  localValue.value = newVal
-})
-</script>
-
-```
-
-### Async Components
-
-Load components lazily:
-
-```html
-
-<script setup lang="ts">
-import { defineAsyncComponent } from 'vue'
-
-const HeavyComponent = defineAsyncComponent(() =>
-  import('@/components/HeavyComponent.stx')
-)
-</script>
-
-<template>
-  <Suspense>
-    <HeavyComponent />
-    <template #fallback>
-      <LoadingSpinner />
-    </template>
-  </Suspense>
-</template>
-
-```
-
-## API Reference
-
-### Directives
-
-| Directive | Description |
-|-----------|-------------|
-| `@if` / `@elseif` / `@else` | Conditional rendering |
-| `@unless` | Negative conditional |
-| `@isset` / `@empty` | Existence checks |
-| `@foreach` / `@for` | Loop iteration |
-| `@forelse` | Loop with empty state |
-| `@while` | While loop |
-| `@include` | Include partial |
-| `@slot` | Define slot content |
-| `@stack` / `@push` | Stack content |
-| `@verbatim` | Raw output |
-
-### Loop Variables
-
-| Variable | Description |
-|----------|-------------|
-| `$loop.index` | Current index (0-based) |
-| `$loop.iteration` | Current iteration (1-based) |
-| `$loop.remaining` | Remaining iterations |
-| `$loop.count` | Total count |
-| `$loop.first` | Is first iteration |
-| `$loop.last` | Is last iteration |
-| `$loop.even` | Is even iteration |
-| `$loop.odd` | Is odd iteration |
-| `$loop.depth` | Nesting depth |
-| `$loop.parent` | Parent loop |
-
-## Related Documentation
-
-- [Components](/basics/components) - Creating STX components
-- [Routing](/basics/routing) - Route to view binding
-- [Actions](/basics/actions) - Passing data to views
-- [UI Configuration](/config/ui) - UI and styling options
+- [Components](/basics/components)
+- [Functions](/basics/functions)
+- [Routing](/basics/routing)
+- [STX package reference](/packages/stx)

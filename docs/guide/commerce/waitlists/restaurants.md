@@ -1,3 +1,7 @@
+---
+title: Restaurant Waitlists
+description: "The Restaurant Waitlist module in the Commerce package provides a comprehensive set of functions to manage restaurant waitlists. This module helps you hand..."
+---
 # Restaurant Waitlists
 
 The Restaurant Waitlist module in the Commerce package provides a comprehensive set of functions to manage restaurant waitlists. This module helps you handle customer waiting lists, table assignments, wait times, and detailed analytics for restaurant operations.

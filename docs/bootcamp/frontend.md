@@ -1,3 +1,7 @@
+---
+title: Build a Frontend
+description: "This tutorial will guide you through building a frontend application with Stacks. You will learn how to create components using STX (Stacks Template Syntax..."
+---
 # Build a Frontend
 
 This tutorial will guide you through building a frontend application with Stacks. You will learn how to create components using STX (Stacks Template Syntax), style them with Headwind CSS utilities, manage state, and set up routing.
@@ -9,7 +13,7 @@ The Stacks UI engine is responsible for rendering the UI of your application. It
 The UI engine handles two core responsibilities:
 
 1. **Rendering the Application** - Your main web application
-2. **Rendering the Documentation** - Your docs site (powered by BunPress/VitePress)
+2. **Rendering the Documentation** - Your STX docs site powered by BunPress
 
 ## Creating Components with STX
 

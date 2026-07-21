@@ -436,4 +436,4 @@ After middleware processing, the request object includes:
 - [Routing](/basics/routing) - Learn about route definitions
 - [Actions](/basics/actions) - Creating action handlers
 - [Error Handling](/basics/error-handling) - Handling middleware errors
-- [Authentication](/features/authentication) - Authentication system
+- [Authentication](/guide/auth) - Authentication system

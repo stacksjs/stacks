@@ -1,3 +1,7 @@
+---
+title: Shared Functions
+description: "Functions in Stacks are server-side TypeScript files that handle business logic, API endpoints, and actions. They provide a simple, file-based approach to ..."
+---
 # Functions
 
 Functions in Stacks are server-side TypeScript files that handle business logic, API endpoints, and actions. They provide a simple, file-based approach to building your application's backend.
@@ -542,8 +546,8 @@ describe('GetUsers', () => {
 
 ## Related Documentation
 
-- **[API Routes](/guide/routing)** - HTTP routing
-- **[Validation](/guide/validation)** - Input validation
-- **[Database](/guide/database)** - Database queries
-- **[Authentication](/guide/authentication)** - Auth system
+- **[API Routes](/basics/routing)** - HTTP routing
+- **[Validation](/packages/validation)** - Input validation
+- **[Database](/packages/database)** - Database queries
+- **[Authentication](/guide/auth)** - Auth system
 - **[Jobs](/basics/jobs)** - Background processing

@@ -1,3 +1,7 @@
+---
+title: Deployment How-To
+description: "This guide covers deploying your Stacks application to production. Learn how to configure cloud settings, use the deployment command, manage environment va..."
+---
 # Deployment How-To
 
 This guide covers deploying your Stacks application to production. Learn how to configure cloud settings, use the deployment command, manage environment variables, and set up custom domains.

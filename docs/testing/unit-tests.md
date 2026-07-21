@@ -1,3 +1,7 @@
+---
+title: Unit Tests
+description: "Unit tests verify individual functions, classes, and modules work correctly in isolation. Stacks provides a streamlined unit testing experience built on Bu..."
+---
 # Unit Tests
 
 Unit tests verify individual functions, classes, and modules work correctly in isolation. Stacks provides a streamlined unit testing experience built on Bun's native test runner.

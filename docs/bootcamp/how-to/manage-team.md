@@ -1,3 +1,7 @@
+---
+title: Manage Team
+description: "This guide covers team collaboration features in Stacks, including user management, access control, role-based permissions, and team communication."
+---
 # Manage Team
 
 This guide covers team collaboration features in Stacks, including user management, access control, role-based permissions, and team communication.

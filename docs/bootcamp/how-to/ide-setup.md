@@ -1,504 +1,81 @@
-# IDE Setup
+---
+title: STX editor setup
+description: Configure an editor for TypeScript, STX templates, Crosswind classes, and Buddy commands.
+---
 
-This guide covers setting up your IDE for optimal Stacks development, including recommended extensions, configurations, and productivity tips.
+# IDE setup
 
-## Recommended IDEs
+Stacks source is TypeScript and STX. An editor only needs Bun-aware TypeScript support, HTML-style handling for `.stx` files, and the repository's generated declarations.
 
-Stacks works well with any modern IDE, but we recommend:
+## Generate project types
 
-- **VS Code** - Primary recommendation
-- **Cursor** - AI-powered fork of VS Code
-- **WebStorm** - JetBrains IDE
-- **Zed** - High-performance editor
-
-## VS Code Setup
-
-### Essential Extensions
-
-Install these extensions for the best experience:
+Run the generator after installing the project and whenever components, functions, models, or environment variables change:
 
 ```bash
-# Install via command line
-code --install-extension dbaeumer.vscode-eslint
-code --install-extension esbenp.prettier-vscode
-code --install-extension bradlc.vscode-tailwindcss
-code --install-extension vue.volar
-code --install-extension oven.bun-vscode
+buddy generate
+buddy generate:types
 ```
 
-#### Recommended Extensions List
+Generated declarations live under `storage/framework/types/`. Keep that directory in the TypeScript project so browser and server auto-imports resolve correctly.
 
-1. **ESLint** (`dbaeumer.vscode-eslint`) - Linting
-2. **Prettier** (`esbenp.prettier-vscode`) - Code formatting
-3. **Tailwind CSS IntelliSense** (`bradlc.vscode-tailwindcss`) - CSS autocomplete
-4. **Volar** (`vue.volar`) - Vue/TypeScript support
-5. **Bun** (`oven.bun-vscode`) - Bun runtime support
-6. **TypeScript Vue Plugin (Volar)** (`vue.vscode-typescript-vue-plugin`) - Type support
-7. **GitLens** (`eamodio.gitlens`) - Git integration
-8. **Error Lens** (`usernamehw.errorlens`) - Inline error display
-9. **Auto Rename Tag** (`formulahendry.auto-rename-tag`) - HTML tag editing
-10. **Path Intellisense** (`christian-kohler.path-intellisense`) - Path autocomplete
+## Visual Studio Code
 
-### VS Code Settings
-
-Create or update `.vscode/settings.json`:
+The repository ships settings and snippets under `storage/framework/defaults/ide/vscode/`. The important local settings are:
 
 ```json
 {
-  // Editor
-  "editor.formatOnSave": true,
-  "editor.defaultFormatter": "esbenp.prettier-vscode",
-  "editor.codeActionsOnSave": {
-    "source.fixAll.eslint": "explicit",
-    "source.organizeImports": "explicit"
-  },
-  "editor.tabSize": 2,
-  "editor.insertSpaces": true,
-  "editor.detectIndentation": false,
-  "editor.wordWrap": "on",
-  "editor.linkedEditing": true,
-  "editor.bracketPairColorization.enabled": true,
-  "editor.guides.bracketPairs": true,
-
-  // Files
-  "files.trimTrailingWhitespace": true,
-  "files.insertFinalNewline": true,
-  "files.trimFinalNewlines": true,
   "files.associations": {
-    "*.stx": "vue"
+    "*.stx": "html"
   },
-
-  // TypeScript
-  "typescript.preferences.importModuleSpecifier": "relative",
-  "typescript.suggest.autoImports": true,
-  "typescript.updateImportsOnFileMove.enabled": "always",
-
-  // ESLint
-  "eslint.validate": [
-    "javascript",
-    "typescript",
-    "vue"
-  ],
-  "eslint.useFlatConfig": true,
-
-  // Tailwind CSS
-  "tailwindCSS.includeLanguages": {
-    "vue": "html",
-    "stx": "html"
-  },
-  "tailwindCSS.experimental.classRegex": [
-    ["class\\s*=\\s*[\"']([^\"']*)[\"']", "([^\"'\\s]*)"]
-  ],
-
-  // Vue / Volar
-  "[vue]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
-  },
-
-  // JavaScript/TypeScript
-  "[javascript]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
-  },
-  "[typescript]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
-  },
-  "[json]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
-  },
-
-  // Search
-  "search.exclude": {
-    "**/node*modules": true,
-    "**/dist": true,
-    "**/storage/framework": true,
-    "**/.git": true,
-    "**/bun.lockb": true
-  },
-
-  // Explorer
-  "explorer.fileNesting.enabled": true,
-  "explorer.fileNesting.patterns": {
-    "*.ts": "${capture}.test.ts, ${capture}.spec.ts",
-    "*.vue": "${capture}.test.ts, ${capture}.spec.ts",
-    "package.json": "package-lock.json, bun.lockb, yarn.lock, pnpm-lock.yaml, .npmrc",
-    "tsconfig.json": "tsconfig.*.json"
-  }
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "editor.formatOnSave": true
 }
 ```
 
-### Launch Configuration
+Use the workspace TypeScript version so the editor and `buddy test:types` evaluate the same compiler configuration.
 
-Create `.vscode/launch.json` for debugging:
+Recommended extensions:
 
-```json
-{
-  "version": "0.2.0",
-  "configurations": [
-    {
-      "type": "bun",
-      "request": "launch",
-      "name": "Debug Stacks App",
-      "program": "${workspaceFolder}/buddy",
-      "args": ["dev"],
-      "cwd": "${workspaceFolder}",
-      "env": {
-        "NODE*ENV": "development"
-      }
-    },
-    {
-      "type": "bun",
-      "request": "launch",
-      "name": "Run Tests",
-      "program": "${workspaceFolder}/buddy",
-      "args": ["test"],
-      "cwd": "${workspaceFolder}"
-    },
-    {
-      "type": "bun",
-      "request": "launch",
-      "name": "Debug Current File",
-      "program": "${file}",
-      "cwd": "${workspaceFolder}"
-    }
-  ]
-}
+- EditorConfig
+- Bun for Visual Studio Code
+- Error Lens
+- GitLens
+
+STX template behavior comes from `@stacksjs/stx`, its generated types, and the Bun plugin configured by the project.
+
+## Zed and JetBrains
+
+Associate `*.stx` with HTML for syntax highlighting and keep TypeScript language services enabled for script blocks. Use the repository's `.zed/` or `.idea/` defaults when present, then run `buddy generate:types` so inferred APIs are available.
+
+## Formatting and diagnostics
+
+Buddy delegates linting and formatting to Pickier:
+
+```bash
+buddy lint
+buddy lint --fix
+buddy format:check
+buddy test:types
 ```
 
-### Tasks Configuration
+Do not configure ESLint or Prettier as a competing formatter. Project rules live in `config/code-style.ts` and `.config/pickier.ts` where present.
 
-Create `.vscode/tasks.json`:
+## STX conventions
 
-```json
-{
-  "version": "2.0.0",
-  "tasks": [
-    {
-      "label": "dev",
-      "type": "shell",
-      "command": "bun run dev",
-      "problemMatcher": [],
-      "group": {
-        "kind": "build",
-        "isDefault": true
-      }
-    },
-    {
-      "label": "build",
-      "type": "shell",
-      "command": "bun run build",
-      "problemMatcher": []
-    },
-    {
-      "label": "test",
-      "type": "shell",
-      "command": "bun test",
-      "problemMatcher": []
-    },
-    {
-      "label": "lint",
-      "type": "shell",
-      "command": "bun run lint",
-      "problemMatcher": ["$eslint-stylish"]
-    },
-    {
-      "label": "typecheck",
-      "type": "shell",
-      "command": "bun run typecheck",
-      "problemMatcher": ["$tsc"]
-    }
-  ]
-}
-```
-
-### Snippets
-
-Create `.vscode/stacks.code-snippets`:
-
-```json
-{
-  "Stacks Action": {
-    "prefix": "action",
-    "body": [
-      "import type { RequestInstance } from '@stacksjs/types'",
-      "import { Action } from '@stacksjs/actions'",
-      "import { response } from '@stacksjs/router'",
-      "",
-      "export default new Action({",
-      "  name: '${1:ActionName}',",
-      "  description: '${2:Description}',",
-      "  method: '${3|GET,POST,PUT,PATCH,DELETE|}',",
-      "",
-      "  async handle(request: RequestInstance) {",
-      "    $0",
-      "    return response.json({ success: true })",
-      "  },",
-      "})"
-    ],
-    "description": "Create a Stacks action"
-  },
-
-  "Stacks Model": {
-    "prefix": "model",
-    "body": [
-      "import { Model } from '@stacksjs/orm'",
-      "",
-      "export default new Model({",
-      "  name: '${1:ModelName}',",
-      "  table: '${2:table*name}',",
-      "",
-      "  fields: {",
-      "    $0",
-      "  },",
-      "})"
-    ],
-    "description": "Create a Stacks model"
-  },
-
-  "Stacks Component": {
-    "prefix": "component",
-    "body": [
-      "<script setup lang=\"ts\">",
-      "import { ref } from 'vue'",
-      "",
-      "const ${1:state} = ref($2)",
-      "$0",
-      "</script>",
-      "",
-      "<template>",
-      "  <div>",
-      "    ",
-      "  </div>",
-      "</template>",
-      "",
-      "<style scoped>",
-      "</style>"
-    ],
-    "description": "Create a Vue component"
-  },
-
-  "Stacks Test": {
-    "prefix": "test",
-    "body": [
-      "import { describe, it, expect } from 'bun:test'",
-      "",
-      "describe('${1:TestName}', () => {",
-      "  it('${2:should do something}', () => {",
-      "    $0",
-      "    expect(true).toBe(true)",
-      "  })",
-      "})"
-    ],
-    "description": "Create a test file"
-  }
-}
-```
-
-## Cursor Setup
-
-Cursor uses VS Code settings, so apply the same configuration above. Additionally:
-
-### AI Configuration
-
-Create `.cursor/settings.json`:
-
-```json
-{
-  "cursor.chat.model": "claude-3.5-sonnet",
-  "cursor.contextMode": "normal",
-  "cursor.cpp.disabledLanguages": [],
-  "cursor.chat.systemPrompt": "You are helping develop a Stacks.js application. Stacks uses Bun as the runtime, Vue for components, and provides a full-stack TypeScript framework. Follow Stacks conventions and best practices."
-}
-```
-
-### Cursor Rules
-
-Create `.cursorrules`:
-
-```
-# Stacks Development Rules
-
-## Technology Stack
-
-- Runtime: Bun
-- Framework: Stacks.js
-- Language: TypeScript
-- Frontend: Vue 3 with Composition API
-- Styling: Tailwind CSS
-- Database: SQLite/MySQL with custom ORM
-
-## Conventions
-
-- Use TypeScript for all code
-- Prefer async/await over callbacks
-- Use named exports
-- Follow single-responsibility principle
-- Keep functions small and focused
-
-## File Structure
-
-- Actions go in app/Actions/
-- Models go in app/Models/
-- Components go in resources/components/
-- Tests go alongside source files with .test.ts extension
-
-## Code Style
-
-- 2 spaces for indentation
-- Single quotes for strings
-- No semicolons (except where required)
-- Trailing commas in multiline
-
-```
-
-## WebStorm Setup
-
-### Enable Bun Support
-
-1. Go to **Settings > Languages & Frameworks > Node.js**
-2. Set Node interpreter to Bun
-
-### Configure ESLint
-
-1. Go to **Settings > Languages & Frameworks > JavaScript > Code Quality Tools > ESLint**
-2. Select "Automatic ESLint configuration"
-
-### Configure Prettier
-
-1. Go to **Settings > Languages & Frameworks > JavaScript > Prettier**
-2. Enable "Run on save"
-
-### File Watchers
-
-Set up TypeScript compilation:
-
-1. Go to **Settings > Tools > File Watchers**
-2. Add TypeScript watcher with Bun
-
-## Zed Setup
-
-### Settings
-
-Create `~/.config/zed/settings.json`:
-
-```json
-{
-  "theme": "One Dark",
-  "buffer*font*family": "JetBrains Mono",
-  "buffer*font*size": 14,
-  "format*on*save": "on",
-  "languages": {
-    "TypeScript": {
-      "tab*size": 2,
-      "formatter": "prettier"
-    },
-    "Vue": {
-      "tab*size": 2,
-      "formatter": "prettier"
-    }
-  },
-  "lsp": {
-    "typescript-language-server": {
-      "initialization*options": {
-        "preferences": {
-          "importModuleSpecifierPreference": "relative"
-        }
-      }
-    }
-  }
-}
-```
-
-## Common Configuration
-
-### EditorConfig
-
-Create `.editorconfig` in your project root:
-
-```ini
-root = true
-
-[*]
-charset = utf-8
-indent*style = space
-indent*size = 2
-end*of*line = lf
-insert*final*newline = true
-trim*trailing*whitespace = true
-
-[*.md]
-trim*trailing*whitespace = false
-
-[*.{yml,yaml}]
-indent*size = 2
-
-[Makefile]
-indent*style = tab
-```
-
-### Git Configuration
-
-Create `.gitattributes`:
-
-```
-
-* text=auto eol=lf
-
-*.{cmd,[cC][mM][dD]} text eol=crlf
-*.{bat,[bB][aA][tT]} text eol=crlf
-bun.lockb binary
-```
-
-## Keyboard Shortcuts
-
-### Recommended VS Code Shortcuts
-
-| Action | Windows/Linux | macOS |
-|--------|--------------|-------|
-| Go to File | `Ctrl+P` | `Cmd+P` |
-| Go to Symbol | `Ctrl+Shift+O` | `Cmd+Shift+O` |
-| Find in Files | `Ctrl+Shift+F` | `Cmd+Shift+F` |
-| Quick Fix | `Ctrl+.` | `Cmd+.` |
-| Rename Symbol | `F2` | `F2` |
-| Toggle Terminal | ``Ctrl+```|``Cmd+``` |
-| Run Task | `Ctrl+Shift+B` | `Cmd+Shift+B` |
-| Format Document | `Shift+Alt+F` | `Shift+Option+F` |
-
-### Custom Keybindings
-
-Add to `keybindings.json`:
-
-```json
-[
-  {
-    "key": "ctrl+shift+t",
-    "command": "workbench.action.tasks.runTask",
-    "args": "test"
-  },
-  {
-    "key": "ctrl+shift+d",
-    "command": "workbench.action.tasks.runTask",
-    "args": "dev"
-  }
-]
-```
+- Put views in `resources/views/` and components in `resources/components/`.
+- Use Crosswind utility classes.
+- Use signals and composables in `<script>` blocks.
+- Do not use direct `window` or `document` access in templates.
+- Import standalone APIs from `@stacksjs/stx`; template auto-imports do not need explicit imports.
 
 ## Troubleshooting
 
-### TypeScript Errors Not Showing
+If completion or types are stale:
 
-1. Restart the TypeScript server: `Cmd/Ctrl+Shift+P` > "TypeScript: Restart TS Server"
-2. Check that Volar is enabled and Take Over Mode is configured
+```bash
+buddy generate:types
+buddy doctor
+buddy test:types
+```
 
-### ESLint Not Working
-
-1. Ensure ESLint extension is installed
-2. Check that `eslint.config.js` exists in project root
-3. Run `bun install` to ensure dependencies are installed
-
-### Slow Performance
-
-1. Exclude `node_modules` and `dist` from search
-2. Disable unused extensions
-3. Enable "files.watcherExclude" for large directories
-
-This documentation covers setting up your IDE for Stacks development. Each configuration is designed for an optimal development experience.
+Restart the editor's TypeScript language server after regeneration if it still holds an old declaration graph.

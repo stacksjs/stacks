@@ -1,3 +1,7 @@
+---
+title: CMS Package
+description: "A headless content management system providing posts, pages, authors, categories, tags, and comments management with full API support."
+---
 # CMS Package
 
 A headless content management system providing posts, pages, authors, categories, tags, and comments management with full API support.
@@ -329,7 +333,7 @@ const tag = await cms.tags.store({
 // Create multiple tags
 await cms.tags.storeMany([
   { name: 'React', slug: 'react' },
-  { name: 'Vue', slug: 'vue' },
+  { name: 'STX', slug: 'stx' },
   { name: 'Svelte', slug: 'svelte' }
 ])
 ```

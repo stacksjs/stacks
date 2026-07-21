@@ -1,6 +1,10 @@
+---
+title: Dialog Component
+description: "A modern, accessible dialog component for STX applications."
+---
 # Dialog
 
-A modern, accessible dialog component for Vue applications.
+A modern, accessible dialog component for STX applications.
 
 <DialogDemo />
 
@@ -46,9 +50,9 @@ yarn add @stacksjs/dialog
 
 The dialog component is composed of two main components that work together to create a fully functional and accessible modal dialog:
 
-```vue
-<script setup>
-import { ref } from 'vue'
+```html
+<script>
+import { ref } from '@stacksjs/stx'
 import { Dialog, DialogPanel } from '@stacksjs/dialog'
 
 const visible = ref(false)
@@ -128,7 +132,7 @@ The dialog components can be styled using standard CSS classes. Each component a
 
 Example of styling with transitions:
 
-```vue
+```html
 <style>
 .fade-enter-active,
 .fade-leave-active {
@@ -158,7 +162,7 @@ The dialog component includes full TypeScript support:
 
 ```ts
 import type { DialogProps } from '@stacksjs/dialog'
-import { ref } from 'vue'
+import { ref } from '@stacksjs/stx'
 
 const visible = ref<boolean>(false)
 ```
