@@ -1,7 +1,4 @@
-import { runCommand } from '@stacksjs/cli'
-import { frameworkPath } from '@stacksjs/path'
-
-await runCommand('bun run dev', {
-  // ...options,
-  cwd: frameworkPath('views/desktop'),
-})
+// The Stacks desktop application is the dashboard hosted in a native Craft
+// window. Keeping one server entry means desktop and dashboard share routes,
+// settings, authentication, rpx/tlsx pretty URLs, and hot reload behavior.
+await import('./dashboard')

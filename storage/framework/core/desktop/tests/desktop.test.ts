@@ -31,8 +31,7 @@ describe('desktop module', () => {
       command = args
     })
     expect(result).toBe(true)
-    expect(command).toEqual([
-      'craft',
+    expect(command.slice(1)).toEqual([
       'https://localhost:8080',
       '--title',
       'Dev',
@@ -41,9 +40,37 @@ describe('desktop module', () => {
       '--height',
       '768',
       '--hot-reload',
-      '--dev-tools',
-      '--dark-mode',
+      '--dark',
     ])
+  })
+
+  test('uses Craft native tray flags', async () => {
+    const { craftDevCommand } = await import('../src/index')
+    const command = craftDevCommand(3009, {
+      url: 'https://tray.stacks.test',
+      systemTray: true,
+      hideDockIcon: true,
+      menubarOnly: true,
+      devTools: false,
+    })
+    expect(command).toContain('--system-tray')
+    expect(command).toContain('--hide-dock-icon')
+    expect(command).toContain('--menubar-only')
+    expect(command).toContain('--no-devtools')
+  })
+
+  test('builds typed invite and update URLs', async () => {
+    const { createInviteLink, createUpdateManifestUrl } = await import('../src/index')
+    const invite = new URL(createInviteLink('app.example.com', 'secret', {
+      email: 'hello@example.com',
+      team: 'framework',
+      role: 'admin',
+      expiresAt: '2026-08-01T00:00:00.000Z',
+    }))
+    expect(invite.pathname).toBe('/invite')
+    expect(invite.searchParams.get('token')).toBe('secret')
+    expect(invite.searchParams.get('email')).toBe('hello@example.com')
+    expect(createUpdateManifestUrl('app.example.com')).toBe('https://app.example.com/desktop/updates/stable.json')
   })
 
   test('uses the Stacks pretty URL as the zero-config default', async () => {
@@ -65,5 +92,6 @@ describe('desktop module', () => {
     const exportKeys = Object.keys(mod)
     expect(exportKeys).toContain('openDevWindow')
     expect(exportKeys).toContain('craftDevCommand')
+    expect(exportKeys).toContain('resolveCraftBinary')
   })
 })

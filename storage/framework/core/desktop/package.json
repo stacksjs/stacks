@@ -54,11 +54,10 @@
     "dist"
   ],
   "scripts": {
-    "dev": "bunx --bun vite ../../dashboard -c ../vite-config/src/desktop.ts",
-    "dev:app": "craft dev",
+    "dev": "bun ../../actions/src/dev/desktop.ts",
+    "dev:app": "bun ../../actions/src/dev/desktop.ts",
     "build": "bun build.ts",
-    "build:app": "bunx --bun vite build ../../dashboard -c ../vite-config/src/desktop.ts",
-    "craft:build": "craft build --release",
+    "build:app": "bun ../../actions/src/build/desktop.ts",
     "typecheck": "bun tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
