@@ -82,7 +82,7 @@ jobs:
         run: bun node_modules/@stacksjs/buddy/dist/cli.js extension:package
 
       - name: Upload validated packages
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: browser-extension-packages
           path: '*.zip'
@@ -210,7 +210,7 @@ jobs:
           ref: ${{ inputs.release-tag || github.ref }}
 
       - name: Download validated packages
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: browser-extension-packages
           path: release-artifacts
