@@ -44,12 +44,7 @@ const isRepl = !process.argv[1]
 const isPostinstall = process.env.npm_lifecycle_event === 'postinstall'
 const skipPreloader = isRepl || isPostinstall || (args.length > 0 && fastCommands.some(cmd => args[0] === cmd || args[0].startsWith(`${cmd}:`)))
 
-// Env decryption + deploy-env detection run for EVERY command. Fast commands
-// (migrate/build/seed/...) need correct, decrypted config just as much, so only
-// the heavy auto-import graph below stays gated (see `skipAutoImports`). Coupling
-// env decryption to `skipPreloader` meant an encrypted `.env.<env>` never
-// decrypted for those commands even with the key present. See stacksjs/stacks#2048.
-{
+if (!skipPreloader) {
   // Detect production/deployment commands and set environment accordingly BEFORE loading env files
   // This ensures the correct .env.{env} file is loaded with proper encryption/decryption
   const productionCommands = ['cloud:remove', 'cloud:rm', 'cloud:destroy', 'cloud:cleanup', 'cloud:clean-up', 'undeploy']
@@ -76,24 +71,30 @@ const skipPreloader = isRepl || isPostinstall || (args.length > 0 && fastCommand
     process.env.APP_ENV = 'production'
     process.env.NODE_ENV = 'production'
   }
+}
 
-  // Load .env files with encryption support using the vendored source first.
-  // The preloader runs before Bun has necessarily linked workspace packages
-  // (fresh installs and minimal Linux/Docker checkouts are the important
-  // cases), so resolving @stacksjs/env here creates a bootstrap cycle. The
-  // source plugin is self-contained; retain the package fallback for contexts
-  // where defaults is consumed outside the standard framework layout.
+// Decrypt and load .env files for real command invocations. This is gated on
+// isRepl / isPostinstall ONLY, not on the fast-command `skipPreloader`: fast
+// commands (migrate, build, seed, ...) DO need decrypted config, which the old
+// `skipPreloader` gate wrongly denied them (an encrypted `.env.<env>` never
+// decrypted for those commands even with the key present). See stacksjs/stacks#2048.
+//
+// Postinstall still skips: @stacksjs/env may not be linked yet mid-install, so
+// importing it there can fail (see the isPostinstall note above). The REPL keeps
+// its original skip. The heavy auto-import graph below stays gated separately via
+// `skipAutoImports`.
+if (!isRepl && !isPostinstall) {
+  // Resolve the vendored source first; the package fallback covers non-standard
+  // layouts where defaults is consumed outside the framework layout.
   const envPackage = '@stacksjs/' + 'env'
   const { autoLoadEnv } = await import('../../../core/env/src/plugin.ts')
     .catch(() => import(envPackage))
 
-  // Auto-load .env files based on environment
-  // Set quiet: true to prevent duplicate logging across multiple processes
-  //
   // Pass the resolved env so deploy commands deterministically select their
   // matching `.env.<env>` file. autoLoadEnv discovers `.env.keys` by default,
   // replaces ciphertext that Bun preloaded, and preserves genuine shell/CI
-  // overrides while applying environment-specific file precedence.
+  // overrides while applying environment-specific file precedence. quiet: true
+  // prevents duplicate logging across multiple processes.
   autoLoadEnv({ quiet: true, env: process.env.APP_ENV })
 }
 

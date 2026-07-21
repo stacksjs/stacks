@@ -7,7 +7,7 @@ import type { BunPlugin } from 'bun'
 import { existsSync } from 'node:fs'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
-import { getPrivateKey, parseEnvFromKey } from './crypto'
+import { decryptValue, getPrivateKey, parseEnvFromKey } from './crypto'
 import { parse } from './parser'
 
 export interface EnvPluginOptions {
@@ -72,6 +72,98 @@ function normalizeEnvName(value: string | undefined): string | undefined {
     return 'development'
 
   return normalized
+}
+
+// --- Lazy decryption for the env proxy -------------------------------------
+// The eager path (`autoLoadEnv`) bulk-decrypts every value into process.env at
+// boot, but it only runs from the preloader. Fast CLI commands skip the
+// preloader, and config/app code can read env before it runs — so the env
+// proxy needs to decrypt on read too. These helpers resolve the private key
+// once (process.env first, then `.env.keys`) and cache the result (including
+// "no key") per environment, so a per-read decrypt costs a map lookup rather
+// than a disk read.
+
+let cachedKeyEnv: string | null = null
+let cachedPrivateKey: string | undefined
+
+function keyFromKeysFile(envName: string | undefined, cwd: string, keysFile = '.env.keys'): string | undefined {
+  const keysPath = resolve(cwd, keysFile)
+  if (!existsSync(keysPath))
+    return undefined
+
+  try {
+    const { parsed } = parse(readFileSync(keysPath, 'utf-8'))
+    if (envName) {
+      const specific = parsed[`DOTENV_PRIVATE_KEY_${envName.toUpperCase()}`]
+      if (specific)
+        return specific
+    }
+    return parsed.DOTENV_PRIVATE_KEY
+  }
+  catch {
+    return undefined
+  }
+}
+
+/**
+ * Resolve the dotenvx private key for the active environment, checking
+ * process.env (`DOTENV_PRIVATE_KEY_<ENV>` then `DOTENV_PRIVATE_KEY`) and
+ * finally a local `.env.keys` file. The result — key or `undefined` — is
+ * cached per environment so the env proxy can call this on every encrypted
+ * read without repeatedly touching disk.
+ */
+export function resolvePrivateKey(options: { env?: string, cwd?: string } = {}): string | undefined {
+  const envName = normalizeEnvName(options.env)
+    || normalizeEnvName(process.env.APP_ENV)
+    || normalizeEnvName(process.env.NODE_ENV)
+    || normalizeEnvName(process.env.DOTENV_ENV)
+    || 'development'
+  const cwd = options.cwd || process.cwd()
+
+  if (cachedKeyEnv === envName)
+    return cachedPrivateKey
+
+  let key = getPrivateKey(envName)
+  if (!key)
+    key = process.env.DOTENV_PRIVATE_KEY
+  if (!key)
+    key = keyFromKeysFile(envName, cwd)
+
+  cachedKeyEnv = envName
+  cachedPrivateKey = key
+  return key
+}
+
+/**
+ * Clear the cached private key. Needed after key rotation and between tests
+ * that swap `DOTENV_PRIVATE_KEY*` or `APP_ENV`.
+ */
+export function resetPrivateKeyCache(): void {
+  cachedKeyEnv = null
+  cachedPrivateKey = undefined
+}
+
+/**
+ * Decrypt a single `encrypted:` / `enc:` value on demand. Returns the
+ * plaintext, or `undefined` when the value is unusable (no key available or
+ * decryption failed) so callers can treat it exactly like an unset variable.
+ * Non-encrypted input is returned unchanged.
+ */
+export function decryptEnvValue(value: string, options: { env?: string, cwd?: string } = {}): string | undefined {
+  if (!isEncryptedValue(value))
+    return value
+
+  const key = resolvePrivateKey(options)
+  if (!key)
+    return undefined
+
+  try {
+    const normalized = value.startsWith('enc:') ? `encrypted:${value.slice(4)}` : value
+    return decryptValue(normalized, key)
+  }
+  catch {
+    return undefined
+  }
 }
 
 /**

@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import process from 'node:process'
 import { encryptValue, generateKeypair } from '../src/crypto'
-import { autoLoadEnv, loadEnv } from '../src/plugin'
+import { autoLoadEnv, decryptEnvValue, loadEnv, resetPrivateKeyCache, resolvePrivateKey } from '../src/plugin'
 
 // Bun natively loads `.env` / `.env.<mode>` into process.env before any
 // preload script runs, and it knows nothing about dotenvx-style encryption.
@@ -171,5 +171,46 @@ describe('autoLoadEnv - encrypted environment files', () => {
     autoLoadEnv({ cwd: dir, quiet: true })
 
     expect(process.env.AUTOLOAD_VALUE).toBe('development')
+  })
+})
+
+// Deployed-box path: the private key lives only in `.env.keys` (never
+// exported to process.env). The lazy proxy decrypt must still find it, so a
+// fast command that skips the eager preloader can decrypt secrets on read.
+describe('resolvePrivateKey / decryptEnvValue - .env.keys discovery', () => {
+  let dir: string
+
+  beforeEach(() => {
+    dir = mkdtempSync(join(tmpdir(), 'env-lazy-keys-'))
+    resetPrivateKeyCache()
+  })
+
+  afterEach(() => {
+    resetPrivateKeyCache()
+    rmSync(dir, { recursive: true, force: true })
+  })
+
+  test('resolves an env-specific key from .env.keys and decrypts', () => {
+    const keys = generateKeypair()
+    writeFileSync(join(dir, '.env.keys'), [
+      `DOTENV_PUBLIC_KEY_PRODUCTION="${keys.publicKey}"`,
+      `DOTENV_PRIVATE_KEY_PRODUCTION="${keys.privateKey}"`,
+    ].join('\n'))
+
+    expect(resolvePrivateKey({ env: 'production', cwd: dir })).toBe(keys.privateKey)
+
+    const ciphertext = encryptValue('postgres', keys.publicKey)
+    expect(decryptEnvValue(ciphertext, { env: 'production', cwd: dir })).toBe('postgres')
+  })
+
+  test('returns undefined (unusable) when no key can be found anywhere', () => {
+    const keys = generateKeypair()
+    const ciphertext = encryptValue('postgres', keys.publicKey)
+    // No .env.keys, no DOTENV_PRIVATE_KEY* in process.env for this env.
+    expect(decryptEnvValue(ciphertext, { env: 'production', cwd: dir })).toBeUndefined()
+  })
+
+  test('passes non-encrypted values through unchanged', () => {
+    expect(decryptEnvValue('plain-value', { env: 'production', cwd: dir })).toBe('plain-value')
   })
 })
