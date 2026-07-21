@@ -2,6 +2,7 @@ import type { CLI } from '@stacksjs/cli'
 import process from 'node:process'
 import { cli, log } from '@stacksjs/cli'
 import { path as p } from '@stacksjs/path'
+import { registerGlobalOptions } from './global-options'
 
 // Enforce the minimum supported Bun version before anything else runs, so an
 // outdated runtime fails fast with a clear message instead of an obscure error
@@ -26,7 +27,7 @@ const args = process.argv.slice(2)
 const requestedCommand = args[0] || 'help'
 const isHelpFlag = args.includes('--help') || args.includes('-h')
 // Pure version queries: print version and exit, no command surface needed.
-const isVersionOnly = ['--version', '-v', 'version'].includes(requestedCommand)
+const isVersionOnly = ['--version', '-V', 'version'].includes(requestedCommand)
 // Help mode: `./buddy`, `./buddy help`, `./buddy --help`, or `./buddy <cmd> --help`.
 // We still need the full command registry so help output lists every command,
 // but we can skip the APP_KEY check and other project-setup work.
@@ -88,6 +89,7 @@ if (needsFullSetup) {
 
 async function main() {
   const buddy = cli('buddy')
+  registerGlobalOptions(buddy)
 
   // Enable theme support
   // buddy.themes() // TODO: Re-enable after clapp npm package is updated with themes() method

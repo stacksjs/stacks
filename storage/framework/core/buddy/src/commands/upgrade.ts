@@ -27,7 +27,7 @@ export function upgrade(buddy: CLI): void {
   // Main command: `buddy upgrade` upgrades the framework by default
   buddy
     .command('upgrade', descriptions.upgrade)
-    .option('-v, --version <version>', descriptions.version)
+    .option('-V, --version <version>', descriptions.version)
     .option('--canary', descriptions.canary, { default: false })
     .option('--stable', descriptions.stable, { default: false })
     .option('--dry-run', descriptions.dryRun, { default: false })

@@ -1,7 +1,6 @@
 import type { CLI } from '@stacksjs/types'
-import process from 'node:process'
 import { bold, dim, green, intro, log, onUnknownSubcommand } from "@stacksjs/cli"
-import { storage } from '@stacksjs/storage'
+import { versionLine } from '../version-info'
 
 export function version(buddy: CLI): void {
   const descriptions = {
@@ -12,12 +11,8 @@ export function version(buddy: CLI): void {
     log.debug('Running `buddy version` ...')
     await intro('buddy version')
 
-    const pkg = await storage.readPackageJson('./package.json')
-    const bunVersion = 'wip'
-    const stacksVersion = pkg.version
-
-    log.info(green(bold('@stacksjs/ ')) + dim(` ${stacksVersion}`))
-    log.info(green(bold('Bun: ')) + dim(`   ${bunVersion}`))
+    log.info(green(bold('Stacks: ')) + dim(` ${versionLine}`))
+    log.info(green(bold('Bun: ')) + dim(`    ${Bun.version}`))
 
     // redis (or other cache/s), mysql (or other database/s),
   })
