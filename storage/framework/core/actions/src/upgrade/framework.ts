@@ -34,7 +34,11 @@ import {
   type SnapshotEntry,
   type UpgradeContext,
 } from './framework-utils'
-import { runPostSyncMigration } from './framework-hooks'
+import {
+  runPostSyncMigration,
+  shouldRefreshPostSyncDependencies,
+  shouldRunPostSyncHooks,
+} from './framework-hooks'
 
 interface UpgradeOptions {
   version?: string
@@ -273,7 +277,7 @@ for (const { managed, summary } of perPath) {
 const runHooks = !options.noPostinstall && options.postinstall !== false
 if (runHooks) {
   try {
-    await runPostSyncHooks({ aggregate, perPath, projectRoot })
+    await runPostSyncHooks({ aggregate, perPath, projectRoot, alreadyRestarted })
   }
   catch (err) {
     console.error(`Post-sync hooks failed: ${(err as Error)?.message || err}`)
@@ -651,10 +655,12 @@ async function runPostSyncHooks(args: {
   aggregate: ChangeSummary
   perPath: { managed: ManagedPath, summary: ChangeSummary }[]
   projectRoot: string
+  alreadyRestarted: boolean
 }): Promise<void> {
-  const { aggregate, perPath, projectRoot } = args
+  const { aggregate, perPath, projectRoot, alreadyRestarted } = args
 
-  if (aggregate.added + aggregate.changed + aggregate.removed === 0) {
+  const changeCount = aggregate.added + aggregate.changed + aggregate.removed
+  if (!shouldRunPostSyncHooks(changeCount, alreadyRestarted)) {
     console.log('Nothing changed — skipping post-sync hooks.')
     return
   }
@@ -677,13 +683,13 @@ async function runPostSyncHooks(args: {
   //    pulls new framework package versions; the user's lockfile won't know
   //    about them until install is re-run. We only run install if a
   //    package.json moved, so no-op upgrades stay fast.
-  const corePkgChanged = perPath.some((entry) => {
+  const corePkgChanged = shouldRefreshPostSyncDependencies(perPath.some((entry) => {
     const { managed, summary } = entry
     if (managed.isFile) return false
     if (managed.label !== 'core' && managed.label !== 'defaults') return false
     if (summary.added + summary.changed === 0) return false
     return pkgJsonInTree(join(projectRoot, managed.localPath))
-  })
+  }), alreadyRestarted)
   if (corePkgChanged) {
     console.log('Running `bun install` to refresh dependencies...')
     try {

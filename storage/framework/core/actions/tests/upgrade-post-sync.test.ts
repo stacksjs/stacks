@@ -1,5 +1,26 @@
 import { describe, expect, it } from 'bun:test'
-import { runPostSyncMigration } from '../src/upgrade/framework-hooks'
+import {
+  runPostSyncMigration,
+  shouldRefreshPostSyncDependencies,
+  shouldRunPostSyncHooks,
+} from '../src/upgrade/framework-hooks'
+
+describe('vendored upgrade post-sync hook scheduling', () => {
+  it('runs deferred hooks after an internal restart even when the new process sees no diff', () => {
+    expect(shouldRunPostSyncHooks(0, true)).toBe(true)
+    expect(shouldRefreshPostSyncDependencies(false, true)).toBe(true)
+  })
+
+  it('keeps genuine no-op upgrades fast when no restart occurred', () => {
+    expect(shouldRunPostSyncHooks(0, false)).toBe(false)
+    expect(shouldRefreshPostSyncDependencies(false, false)).toBe(false)
+  })
+
+  it('runs hooks and dependency refreshes for changes detected in the current process', () => {
+    expect(shouldRunPostSyncHooks(1, false)).toBe(true)
+    expect(shouldRefreshPostSyncDependencies(true, false)).toBe(true)
+  })
+})
 
 describe('vendored upgrade post-sync migration', () => {
   it('runs without stdin and forces the nested migration past confirmation', async () => {

@@ -16,6 +16,25 @@ interface PostSyncMigrationOptions {
 }
 
 /**
+ * The first upgrade process records the real file changes, then restarts itself
+ * after replacing its own framework code. The restarted process sees the
+ * already-synced tree as unchanged, but it still owns the post-sync work that
+ * the first process intentionally deferred.
+ */
+export function shouldRunPostSyncHooks(changeCount: number, alreadyRestarted: boolean): boolean {
+  return changeCount > 0 || alreadyRestarted
+}
+
+/**
+ * A restarted process cannot reconstruct whether a package manifest changed
+ * during the parent sync. Refreshing dependencies is the safe, idempotent
+ * choice whenever post-sync work crosses that process boundary.
+ */
+export function shouldRefreshPostSyncDependencies(corePackageChanged: boolean, alreadyRestarted: boolean): boolean {
+  return corePackageChanged || alreadyRestarted
+}
+
+/**
  * Run the migration hook after a vendored framework upgrade.
  *
  * The upgrade command is already an explicit request to install and activate
