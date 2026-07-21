@@ -38,7 +38,7 @@ export async function ensureProjectIsInitialized(): Promise<boolean> {
   if (!isStacksProject()) {
     // sync console.error (not async-buffered log.error) so the message
     // reaches stderr before process.exit fires.
-    console.error('This command must be run inside a Stacks project; create one with: bunx @stacksjs/buddy new my-app')
+    console.error('This command must be run inside a Stacks project; create one with: panx @stacksjs/buddy new my-app')
     process.exit(1)
   }
 

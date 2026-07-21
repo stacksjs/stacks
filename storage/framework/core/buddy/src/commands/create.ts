@@ -158,9 +158,7 @@ function ensureExecutableScripts(path: string) {
 async function ensureEnv(path: string, _options: CreateOptions) {
   log.info('Ensuring your environment is ready...')
   // Bootstrap the Pantry CLI (idempotent) and install the new project's
-  // system-level dependencies declared in `config/deps.ts` — bun, sqlite,
-  // craft, etc. — so the subsequent `bun install` runs against the right
-  // toolchain.
+  // complete machine and project dependency graph declared by the template.
   await ensurePantryInstalled()
   await ensurePantryDependencies(path)
   log.success('Environment is ready')
@@ -169,16 +167,8 @@ async function ensureEnv(path: string, _options: CreateOptions) {
 async function install(path: string, options: CreateOptions) {
   log.info('Installing & setting up Stacks')
 
-  log.info('Running bun install...')
-  let result = await runCommand('bun install', { ...options, cwd: path })
-
-  if (result?.isErr) {
-    log.error(result.error)
-    process.exit(ExitCode.FatalError)
-  }
-
   log.info('Copying .env.example → .env')
-  result = await runCommand('cp .env.example .env', { ...options, cwd: path })
+  let result = await runCommand('cp .env.example .env', { ...options, cwd: path })
 
   if (result?.isErr) {
     log.error(result.error)

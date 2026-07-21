@@ -1,4 +1,5 @@
 import { cpSync, existsSync, readFileSync, writeFileSync } from 'node:fs'
+import { homedir } from 'node:os'
 import { join } from 'node:path'
 import type { CLI, CliOptions } from '@stacksjs/types'
 import process from 'node:process'
@@ -28,7 +29,6 @@ function getTimeoutMs(envVar: string, fallbackMs: number): number {
 const PANTRY_CHECK_TIMEOUT_MS = getTimeoutMs('PANTRY_CHECK_TIMEOUT_MS', 15_000)
 const PANTRY_INSTALL_TIMEOUT_MS = getTimeoutMs('PANTRY_INSTALL_TIMEOUT_MS', 10 * 60_000)
 const PANTRY_DEPENDENCIES_TIMEOUT_MS = getTimeoutMs('PANTRY_DEPENDENCIES_TIMEOUT_MS', 20 * 60_000)
-const BUN_INSTALL_TIMEOUT_MS = getTimeoutMs('BUN_INSTALL_TIMEOUT_MS', 10 * 60_000)
 const KEYGEN_TIMEOUT_MS = getTimeoutMs('KEYGEN_TIMEOUT_MS', 2 * 60_000)
 const AWS_CONFIG_TIMEOUT_MS = getTimeoutMs('AWS_CONFIG_TIMEOUT_MS', 15 * 60_000)
 
@@ -127,14 +127,25 @@ async function isPantryInstalled(): Promise<boolean> {
 }
 
 async function installPantry(): Promise<void> {
-  const result = await runCommand(p.frameworkPath('scripts/pantry-install'), {
+  const bundledInstaller = p.frameworkPath('scripts/pantry-install')
+  const command = existsSync(bundledInstaller)
+    ? [bundledInstaller]
+    : ['sh', '-c', 'curl -fsSL https://pantry.dev | bash']
+  const result = await runCommand(command, {
     timeoutMs: PANTRY_INSTALL_TIMEOUT_MS,
   })
 
-  if (result.isOk)
+  const localBin = join(homedir(), '.local', 'bin')
+  if (!process.env.PATH?.split(':').includes(localBin))
+    process.env.PATH = `${localBin}:${process.env.PATH || ''}`
+
+  if (result.isOk && await isPantryInstalled())
     return
 
-  handleError((result as any).error)
+  if (result.isErr)
+    handleError(result.error)
+  else
+    log.error('Pantry installed but is not available on PATH. Open a new shell and run `buddy setup` again.')
   process.exit(ExitCode.FatalError)
 }
 
@@ -142,66 +153,18 @@ export async function ensurePantryInstalled(): Promise<void> {
   if (await isPantryInstalled())
     return
 
-  // A node_modules-based app has no vendored `scripts/pantry-install`
-  // (storage/framework isn't checked out). Pantry isn't required to run the
-  // buddy CLI or to deploy — the CLI's deps come from node_modules, and the
-  // target box provisions its own system deps over SSH — so skip rather than
-  // fatally exit when there's nothing to bootstrap with.
-  const installer = p.frameworkPath('scripts/pantry-install')
-  if (!existsSync(installer)) {
-    log.debug('Pantry is not installed and no bundled installer is present; continuing without it.')
-    return
-  }
-
+  log.info('Pantry is required. Installing it from https://pantry.dev...')
   await installPantry()
 }
 
 export async function ensurePantryDependencies(cwd: string): Promise<void> {
-  // Only meaningful when pantry is actually installed (vendored/dev layout). A
-  // node_modules app resolves its dependencies through `bun install`, so there
-  // are no pantry deps to install — skip silently rather than shelling out to a
-  // missing `pantry` executable (which throws and silently kills the deploy).
-  if (!(await isPantryInstalled())) {
-    log.debug('Pantry not installed; skipping pantry dependency install (deps come from node_modules).')
-    return
-  }
+  await ensurePantryInstalled()
 
-  log.info('Installing Pantry dependencies...')
+  log.info('Installing project dependencies with Pantry...')
 
   const result = await runCommand('pantry install', {
     cwd,
     timeoutMs: PANTRY_DEPENDENCIES_TIMEOUT_MS,
-  })
-
-  if (result.isOk) {
-    log.success('Installed Pantry dependencies')
-    return
-  }
-
-  handleError((result as any).error)
-  process.exit(ExitCode.FatalError)
-}
-
-export async function ensureNodeDependencies(cwd: string): Promise<void> {
-  // A fresh repo-zip extraction has no node_modules at all. Every later
-  // setup step (key generation, migration, AWS configuration) shells out
-  // through code that resolves via node_modules, so unlike the rest of
-  // setup a failed install here is fatal: nothing after it can work.
-  if (existsSync(join(cwd, 'node_modules'))) {
-    log.success('node_modules existed, skipping bun install')
-    return
-  }
-
-  log.info('Running bun install...')
-
-  const result = await runCommand('bun install', {
-    cwd,
-    timeoutMs: BUN_INSTALL_TIMEOUT_MS,
-  }).catch((error: unknown) => {
-    // runCommand/spawn throws (rather than resolving an Err result) when the
-    // executable itself cannot be launched, e.g. no bun on PATH yet.
-    handleError(error)
-    process.exit(ExitCode.FatalError)
   })
 
   if (result.isErr) {
@@ -209,7 +172,12 @@ export async function ensureNodeDependencies(cwd: string): Promise<void> {
     process.exit(ExitCode.FatalError)
   }
 
-  log.success('Installed node dependencies')
+  if (existsSync(join(cwd, 'package.json')) && !existsSync(join(cwd, 'node_modules'))) {
+    log.error('Pantry completed without installing the project JavaScript dependencies.')
+    process.exit(ExitCode.FatalError)
+  }
+
+  log.success('Installed project dependencies with Pantry')
 }
 
 function hasAppKey(cwd: string): boolean {
@@ -281,10 +249,6 @@ async function initializeProject(options: SetupOptions): Promise<void> {
   const cwd = options.cwd || p.projectPath()
 
   await ensurePantryDependencies(cwd)
-
-  // Node dependencies come right after the pantry toolchain: pantry
-  // provisions bun itself, and every later step resolves via node_modules.
-  await ensureNodeDependencies(cwd)
 
   await ensureEnvIsSet(options)
 
