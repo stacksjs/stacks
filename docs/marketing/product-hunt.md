@@ -62,5 +62,5 @@ We would especially value feedback on onboarding, framework conventions, and the
 - Website: https://stacksjs.com
 - Documentation: https://stacksjs.com/docs
 - GitHub: https://github.com/stacksjs/stacks
-- StackBlitz: https://stackblitz.com/fork/github/stacksjs/stackblitz?startScript=dev&title=Stacks%20Starter
+- StackBlitz: https://stackblitz.com/fork/github/stacksjs/stackblitz?title=Stacks%20Starter
 - Whitepaper: https://whitepaper.stacksjs.com

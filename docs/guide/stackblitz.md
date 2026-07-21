@@ -6,7 +6,7 @@ description: Stacks provides a browser-native stx starter for quick frontend exp
 
 Stacks provides a browser-native stx starter for quick frontend experiments and reproducible examples.
 
-[Open the Stacks starter in StackBlitz](https://stackblitz.com/fork/github/stacksjs/stackblitz?startScript=dev&title=Stacks%20Starter)
+[Open the Stacks starter in StackBlitz](https://stackblitz.com/fork/github/stacksjs/stackblitz?title=Stacks%20Starter)
 
 The dedicated [stacksjs/stackblitz](https://github.com/stacksjs/stackblitz) starter installs, compiles, serves, and tests the preview with Bun. It reloads automatically when a view or stylesheet changes.
 

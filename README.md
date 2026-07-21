@@ -55,7 +55,7 @@ Pantry executes Buddy in an isolated environment and provisions the generated pr
 
 For frontend experiments in the browser, open the live stx starter:
 
-[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/fork/github/stacksjs/stackblitz?startScript=dev&title=Stacks%20Starter)
+[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/fork/github/stacksjs/stackblitz?title=Stacks%20Starter)
 
 ## Usage
 
