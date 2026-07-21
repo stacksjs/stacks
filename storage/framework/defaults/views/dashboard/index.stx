@@ -2,33 +2,23 @@
 
 @section('content')
 <script client>
-// Dashboard home (stacksjs/stacks#1838). Static demo data — replace with
-// a real `/api/dashboard/home` fetch when the endpoint lands. The
-// previous `<script server>` block had three `{{ }} <var>` typos in the
-// template (empty interpolation + bare identifier) — converted those to
-// proper `:class` bindings below at the same time.
-const stats = [
+const stats = state([
   { title: 'Total Users', value: '0', trend: 0, trendLabel: 'vs last period', icon: 'i-hugeicons-user-group' },
   { title: 'Active Projects', value: '0', trend: 0, trendLabel: 'vs last period', icon: 'i-hugeicons-folder-02' },
-  { title: 'Cloud Uptime', value: '99.9%', trend: 0, trendLabel: 'vs last period', icon: 'i-hugeicons-cloud' },
-  { title: 'Response Time', value: '45ms', trend: 0, trendLabel: 'vs last period', icon: 'i-hugeicons-time-02' },
-]
+  { title: 'Revenue', value: '$0', trend: 0, trendLabel: 'Current total', icon: 'i-hugeicons-money-03' },
+  { title: 'Orders', value: '0', trend: 0, trendLabel: 'Current total', icon: 'i-hugeicons-shopping-cart-02' },
+])
 
-const recentActivity = [
-  { type: 'deployment', title: 'Production deployment completed', time: 'Just now', status: 'success' },
-  { type: 'blog', title: 'New blog post published', time: '2 hours ago', status: 'success' },
-  { type: 'error', title: 'Queue worker timeout', time: '5 hours ago', status: 'error' },
-  { type: 'commerce', title: 'New order received', time: '1 day ago', status: 'success' },
-]
+const httpMetrics = state([
+  { title: 'HTTP Requests', value: '0', detail: 'All captured requests', icon: 'i-hugeicons-global' },
+  { title: 'Average Response', value: '0ms', detail: 'No requests captured', icon: 'i-hugeicons-clock-01' },
+  { title: 'Success Rate', value: '100%', detail: '2xx and 3xx responses', icon: 'i-hugeicons-checkmark-circle-02' },
+  { title: 'Error Rate', value: '0%', detail: '4xx and 5xx responses', icon: 'i-hugeicons-alert-02' },
+])
 
-const systemHealth = [
-  { name: 'API', status: 'healthy', latency: '12ms', uptime: '99.9%' },
-  { name: 'Database', status: 'healthy', latency: '3ms', uptime: '99.9%' },
-  { name: 'Storage', status: 'healthy', latency: '8ms', uptime: '99.9%' },
-  { name: 'Cache', status: 'healthy', latency: '1ms', uptime: '99.9%' },
-  { name: 'Queue', status: 'healthy', latency: '45ms', uptime: '99.9%' },
-  { name: 'Notifications', status: 'healthy', latency: '120ms', uptime: '99.5%' },
-]
+const recentActivity = state([])
+
+const systemHealth = state([])
 
 const quickLinks = [
   { name: 'Blog', description: 'Manage your blog posts', href: '/content/dashboard', color: 'bg-blue-500' },
@@ -50,6 +40,41 @@ function getActivityStatusClass(status) {
   if (status === 'warning') return 'text-amber-600 dark:text-amber-400 bg-amber-100 dark:bg-amber-900/30'
   return 'text-blue-600 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/30'
 }
+
+async function loadDashboard() {
+  try {
+    const response = await fetch('/api/dashboard/home', { headers: { accept: 'application/json' } })
+    if (!response.ok) return
+
+    const data = await response.json()
+    if (Array.isArray(data.stats)) {
+      stats.set(data.stats.map(stat => ({
+        title: stat.label,
+        value: stat.value,
+        trend: 0,
+        trendLabel: 'Current total',
+        icon: stat.label === 'Total Users' ? 'i-hugeicons-user-group' : 'i-hugeicons-chart-up',
+      })))
+    }
+    if (Array.isArray(data.httpMetrics)) httpMetrics.set(data.httpMetrics)
+    if (Array.isArray(data.services)) {
+      systemHealth.set(data.services.map(service => ({ ...service, uptime: service.uptime || 'Current' })))
+    }
+    if (Array.isArray(data.activities)) {
+      recentActivity.set(data.activities.map(activity => ({
+        type: activity.type,
+        title: activity.message,
+        time: activity.time,
+        status: 'success',
+      })))
+    }
+  }
+  catch {
+    // Keep the useful empty state while a fresh database is being created.
+  }
+}
+
+onMount(loadDashboard)
 </script>
 
 <div class="mx-auto p-6 max-w-7xl">
@@ -72,6 +97,32 @@ function getActivityStatusClass(status) {
         </div>
       </div>
     </template>
+  </div>
+
+  <div class="mb-8">
+    <div class="flex items-end justify-between mb-4">
+      <div>
+        <h2 class="font-semibold text-base text-neutral-900 dark:text-white">HTTP performance</h2>
+        <p class="mt-1 text-neutral-500 text-sm dark:text-neutral-400">Live metrics from captured application requests.</p>
+      </div>
+      <StxLink to="/requests" class="text-neutral-500 text-sm hover:text-neutral-700 dark:hover:text-neutral-300">Request history</StxLink>
+    </div>
+    <div class="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+      <template :for="metric in httpMetrics">
+        <div class="p-5 bg-white dark:bg-neutral-800 border border-neutral-200 rounded-xl dark:border-neutral-700">
+          <div class="flex gap-4 items-start justify-between">
+            <div>
+              <p class="font-medium text-neutral-500 text-sm dark:text-neutral-400">{{ metric.title }}</p>
+              <p class="mt-1 font-semibold text-2xl text-neutral-900 dark:text-white">{{ metric.value }}</p>
+              <p class="mt-1 text-neutral-500 text-xs dark:text-neutral-400">{{ metric.detail }}</p>
+            </div>
+            <div class="flex-shrink-0 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-xl">
+              <div :class="metric.icon" class="h-5 w-5 text-blue-600 dark:text-blue-400"></div>
+            </div>
+          </div>
+        </div>
+      </template>
+    </div>
   </div>
 
   <!-- Quick Links -->
