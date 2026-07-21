@@ -552,17 +552,24 @@ const serverReady = await waitForServer(dashboardPort)
 // Restore console before our output
 restoreConsole()
 
-// Start reverse proxy in the background (not needed for Craft window, only for browser access)
-let proxyStarted = false
-startReverseProxy().then(ok => { proxyStarted = ok }).catch((err) => {
-  if (verbose) console.warn('[Dashboard] Reverse proxy failed:', err)
-})
+// The native Craft window uses the same pretty HTTPS URL as the browser.
+// When the parent `buddy dev` process already owns rpx/tlsx, it is ready or
+// becoming ready there. A direct `buddy dev:dashboard` waits for its own proxy.
+let proxyStarted = Boolean(process.env.STACKS_PROXY_MANAGED)
+if (!proxyStarted) {
+  // eslint-disable-next-line ts/no-top-level-await
+  proxyStarted = await startReverseProxy().catch((err) => {
+    if (verbose) console.warn('[Dashboard] Reverse proxy failed:', err)
+    return false
+  })
+}
 
 const dashboardHttpsUrl = dashboardDomain ? `https://${dashboardDomain}` : null
 const dashboardLocalUrl = `http://localhost:${dashboardPort}`
 
-// Use local HTTP URL — Craft webview loads directly, no proxy needed
-const initialUrl = `http://localhost:${dashboardPort}/`
+const initialUrl = dashboardHttpsUrl && proxyStarted
+  ? `${dashboardHttpsUrl}/`
+  : `${dashboardLocalUrl}/`
 
 // Print vite-style output
 const elapsedMs = (Bun.nanoseconds() - startTime) / 1_000_000

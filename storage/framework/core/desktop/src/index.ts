@@ -38,6 +38,7 @@ export interface Desktop {
 // }
 
 export interface OpenDevWindowOptions {
+  url?: string
   title?: string
   width?: number
   height?: number
@@ -46,8 +47,58 @@ export interface OpenDevWindowOptions {
   nativeSidebar?: boolean
   sidebarWidth?: number
   sidebarConfig?: unknown
+  devTools?: boolean
+  craftBin?: string
 }
 
-export async function openDevWindow(_port: number, _options?: OpenDevWindowOptions): Promise<boolean> {
-  return false
+export type CraftLauncher = (command: string[]) => void | Promise<void>
+
+export function resolveDevWindowUrl(port: number, options: OpenDevWindowOptions = {}): string {
+  if (!Number.isInteger(port) || port < 1 || port > 65_535)
+    throw new RangeError(`Invalid desktop development port: ${port}`)
+
+  const configured = options.url || process.env.APP_URL
+  if (!configured)
+    return `https://stacks.test`
+
+  const withProtocol = /^https?:\/\//.test(configured) ? configured : `https://${configured}`
+  return new URL(withProtocol).toString().replace(/\/$/, '')
+}
+
+export function craftDevCommand(port: number, options: OpenDevWindowOptions = {}): string[] {
+  const command = [
+    options.craftBin || process.env.CRAFT_BIN || 'craft',
+    resolveDevWindowUrl(port, options),
+    '--title',
+    options.title || 'Stacks',
+    '--width',
+    String(options.width || 1400),
+    '--height',
+    String(options.height || 900),
+  ]
+
+  if (options.hotReload !== false) command.push('--hot-reload')
+  if (options.devTools !== false) command.push('--dev-tools')
+  if (options.darkMode) command.push('--dark-mode')
+
+  return command
+}
+
+async function launchCraft(command: string[]): Promise<void> {
+  const process = Bun.spawn(command, {
+    stdin: 'inherit',
+    stdout: 'inherit',
+    stderr: 'inherit',
+  })
+
+  process.unref()
+}
+
+export async function openDevWindow(
+  port: number,
+  options: OpenDevWindowOptions = {},
+  launcher: CraftLauncher = launchCraft,
+): Promise<boolean> {
+  await launcher(craftDevCommand(port, options))
+  return true
 }

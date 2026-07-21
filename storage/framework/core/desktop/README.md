@@ -1,10 +1,12 @@
 # Stacks Desktop
 
-## ☘️ Features
+## Features
 
-- ⚡️
+- Native macOS, Linux, and Windows windows powered by Craft
+- Pretty development URLs through the Stacks rpx and tlsx integration
+- Hot reload and native developer tools
 
-## 🤖 Usage
+## Usage
 
 ```bash
 bun install -d @stacksjs/desktop
@@ -13,12 +15,18 @@ bun install -d @stacksjs/desktop
 Now, you can use it in your project:
 
 ```js
-import desktop from '@stacksjs/desktop'
+import { openDevWindow } from '@stacksjs/desktop'
 
-// wip
+await openDevWindow(3000, {
+  title: 'My Stacks App',
+})
 ```
 
-## 🧪 Testing
+`APP_URL` is used by default, so a normal Stacks project opens its pretty HTTPS URL. Pass `url` only when embedding another development server.
+
+Craft is provisioned by Pantry from `config/deps.ts`. Run `pantry install` if the native binary is not available yet.
+
+## Testing
 
 ```bash
 bun test

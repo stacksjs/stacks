@@ -55,10 +55,10 @@
   ],
   "scripts": {
     "dev": "bunx --bun vite ../../dashboard -c ../vite-config/src/desktop.ts",
-    "dev:app": "tauri dev",
+    "dev:app": "craft dev",
     "build": "bun build.ts",
     "build:app": "bunx --bun vite build ../../dashboard -c ../vite-config/src/desktop.ts",
-    "tauri:build": "tauri build",
+    "craft:build": "craft build --release",
     "typecheck": "bun tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
