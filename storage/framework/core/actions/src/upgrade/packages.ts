@@ -31,6 +31,38 @@ interface PkgJson {
   [key: string]: unknown
 }
 
+export function hasStacksDependency(pkg: PkgJson): boolean {
+  return Boolean(pkg.dependencies?.stacks || pkg.devDependencies?.stacks)
+}
+
+export function standalonePackageUpdateCommand(): string {
+  return 'bun update'
+}
+
+async function updateStandalonePackage(projectRoot: string, options: PackageUpgradeOptions): Promise<never> {
+  console.log('\n  Standalone package detected. No Stacks framework source is installed.')
+
+  if (options.dryRun) {
+    console.log('  --dry-run: would refresh the package dependencies with `bun update`. No files were changed.\n')
+    process.exit(0)
+  }
+
+  if (options.noPostinstall) {
+    console.log('  --no-postinstall: skipping the dependency refresh. Run `bun update` when ready.\n')
+    process.exit(0)
+  }
+
+  console.log('  Refreshing declared dependencies...\n')
+  const result = await runCommand(standalonePackageUpdateCommand(), { cwd: projectRoot })
+  if (result.isErr) {
+    console.error('\n✗ The dependency refresh failed. Resolve the reported error and re-run `buddy update`.\n')
+    process.exit(1)
+  }
+
+  console.log('\n✔ Standalone package dependencies are up to date.\n')
+  process.exit(0)
+}
+
 /** Resolve the target version + the set of lockstep core packages from the registry. */
 async function resolveTarget(options: PackageUpgradeOptions): Promise<{ version: string, coreDeps: Set<string> }> {
   const res = await fetch('https://registry.npmjs.org/stacks').catch(() => null)
@@ -119,6 +151,9 @@ export async function upgradeStacksPackages(projectRoot: string, options: Packag
   const raw = readFileSync(pkgPath, 'utf-8')
   const pkg = JSON.parse(raw) as PkgJson
   const current = pkg.dependencies?.stacks ?? pkg.devDependencies?.stacks
+
+  if (!hasStacksDependency(pkg))
+    return updateStandalonePackage(projectRoot, options)
 
   const { version: target, coreDeps } = await resolveTarget(options).catch((err: Error) => {
     console.error(`✗ ${err.message}`)

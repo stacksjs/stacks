@@ -3,6 +3,7 @@ import process from 'node:process'
 import { cli, log } from '@stacksjs/cli'
 import { path as p } from '@stacksjs/path'
 import { registerGlobalOptions } from './global-options'
+import { shouldSkipAppKeyCheck } from './project-setup'
 
 // Enforce the minimum supported Bun version before anything else runs, so an
 // outdated runtime fails fast with a clear message instead of an obscure error
@@ -32,39 +33,7 @@ const isVersionOnly = ['--version', '-V', 'version'].includes(requestedCommand)
 // We still need the full command registry so help output lists every command,
 // but we can skip the APP_KEY check and other project-setup work.
 const isHelpMode = requestedCommand === 'help' || (isHelpFlag && args.length <= 2)
-const skipAppKeyCheck = [
-  'build',
-  'lint',
-  'lint:fix',
-  'test',
-  'test:types',
-  'test:unit',
-  'test:feature',
-  'typecheck',
-  'types:fix',
-  'types:generate',
-  'clean',
-  'fresh',
-  'about',
-  'doctor',
-  'list',
-  'setup',
-  'setup:ssl',
-  'setup:oh-my-zsh',
-  'deploy',
-  'serve',
-  // `new` / `create` scaffold a brand-new project from any cwd, so the host
-  // project's APP_KEY check would either spuriously fail (no .env in cwd) or,
-  // worse, write a key into an unrelated directory.
-  'new',
-  'create',
-  'migrate',
-  'seed',
-  'generate',
-  'make',
-  'key:generate',
-  'scaffold:crud',
-].some(cmd => requestedCommand === cmd || requestedCommand.startsWith(`${cmd}:`)) || isHelpFlag || isHelpMode
+const skipAppKeyCheck = shouldSkipAppKeyCheck(requestedCommand, { isHelpFlag, isHelpMode })
 const needsFullSetup = !isVersionOnly
 
 // Setup global error handlers (skip for minimal commands for performance)
