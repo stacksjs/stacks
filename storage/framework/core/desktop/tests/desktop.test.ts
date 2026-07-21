@@ -94,4 +94,12 @@ describe('desktop module', () => {
     expect(exportKeys).toContain('craftDevCommand')
     expect(exportKeys).toContain('resolveCraftBinary')
   })
+
+  test('keeps unqualified targets experimental and blocks stable release claims', async () => {
+    const { assertDesktopReleaseChannel, desktopSupportMatrix } = await import('../src/index')
+    expect(desktopSupportMatrix.every(row => row.status === 'experimental')).toBe(true)
+    expect(() => assertDesktopReleaseChannel('stable', 'darwin', 'arm64')).toThrow('#2059')
+    expect(assertDesktopReleaseChannel('experimental', 'linux', 'x64').packageFormat).toBe('unpackaged bundle')
+    expect(() => assertDesktopReleaseChannel('experimental', 'linux', 'arm64')).toThrow('unsupported')
+  })
 })

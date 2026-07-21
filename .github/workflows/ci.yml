@@ -172,6 +172,7 @@ jobs:
           bun run protocol:check
           bun run protocol:manifest:check
           bun run protocol:drivers:check
+          bun run protocol:desktop:check
 
       - name: Run protocol adapter
         env:

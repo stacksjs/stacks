@@ -28,6 +28,21 @@ await openDevWindow(3000, {
 
 Craft is provisioned by Pantry from `config/deps.ts`. Run `pantry install` if the native binary is not available yet.
 
+## Support status
+
+There are currently **no stable desktop distribution targets**. Local Craft
+development and unpackaged bundles are experimental on macOS arm64/x64, Linux
+x64, and Windows x64. Linux arm64 and every unlisted target are unsupported.
+Exact OS versions remain unqualified until the native install/update matrix in
+[#2063](https://github.com/stacksjs/stacks/issues/2063) is retained. Platform
+signing and macOS notarization are tracked in
+[#2062](https://github.com/stacksjs/stacks/issues/2062).
+
+`buddy build:desktop` defaults to the experimental channel and emits
+`provenance.json` plus `checksums.sha256`. Setting
+`DESKTOP_RELEASE_CHANNEL=stable` fails until the checked support matrix contains
+a fully evidenced stable row.
+
 Invite delivery stays transport-neutral so applications can use their configured Stacks mail provider:
 
 ```ts

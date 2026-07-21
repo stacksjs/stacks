@@ -180,7 +180,9 @@ export function buildReport(): Record<string, unknown> {
     profileClaim: null,
     results,
     drivers,
-    extensions: catalog.extensions.map(extension => ({ id: extension.id, status: 'unsupported', evidenceUrl: null, notes: 'Not evaluated by this adapter.' })),
+    extensions: catalog.extensions.map(extension => extension.id === 'EXT-DESKTOP-01'
+      ? { id: extension.id, status: 'experimental', evidenceUrl: `https://github.com/stacksjs/stacks/blob/${revision}/protocol/evidence/desktop-support.json`, notes: 'Craft targets are explicitly experimental pending native release evidence and signing infrastructure.' }
+      : { id: extension.id, status: 'unsupported', evidenceUrl: null, notes: 'Not evaluated by this adapter.' }),
     exceptions: [],
     generator: { name: '@stacksjs/protocol-adapter', version: '1.0.0-draft.1', revision },
   }

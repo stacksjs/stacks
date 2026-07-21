@@ -1,0 +1,72 @@
+{
+  "schemaVersion": "1.0.0",
+  "generatedFrom": "storage/framework/core/desktop/src/support.ts",
+  "stableTargets": 0,
+  "externalGates": [
+    "https://github.com/stacksjs/stacks/issues/2059",
+    "https://github.com/stacksjs/stacks/issues/2062",
+    "https://github.com/stacksjs/stacks/issues/2063"
+  ],
+  "targets": [
+    {
+      "platform": "darwin",
+      "architecture": "arm64",
+      "status": "experimental",
+      "osVersions": [],
+      "packageFormat": "unpackaged bundle",
+      "signing": "pending",
+      "notarization": "pending",
+      "installLaunchEvidence": null,
+      "updateRollbackEvidence": null,
+      "limitations": [
+        "No retained native install/launch matrix.",
+        "Developer ID signing and notarization are not configured."
+      ]
+    },
+    {
+      "platform": "darwin",
+      "architecture": "x64",
+      "status": "experimental",
+      "osVersions": [],
+      "packageFormat": "unpackaged bundle",
+      "signing": "pending",
+      "notarization": "pending",
+      "installLaunchEvidence": null,
+      "updateRollbackEvidence": null,
+      "limitations": [
+        "No retained native install/launch matrix.",
+        "Developer ID signing and notarization are not configured."
+      ]
+    },
+    {
+      "platform": "linux",
+      "architecture": "x64",
+      "status": "experimental",
+      "osVersions": [],
+      "packageFormat": "unpackaged bundle",
+      "signing": "pending",
+      "notarization": "not-applicable",
+      "installLaunchEvidence": null,
+      "updateRollbackEvidence": null,
+      "limitations": [
+        "No distribution/version support commitment.",
+        "Package/repository signing is not configured."
+      ]
+    },
+    {
+      "platform": "win32",
+      "architecture": "x64",
+      "status": "experimental",
+      "osVersions": [],
+      "packageFormat": "unpackaged bundle",
+      "signing": "pending",
+      "notarization": "not-applicable",
+      "installLaunchEvidence": null,
+      "updateRollbackEvidence": null,
+      "limitations": [
+        "No retained native install/launch matrix.",
+        "Authenticode signing and installer verification are not configured."
+      ]
+    }
+  ]
+}

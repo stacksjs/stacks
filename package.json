@@ -69,6 +69,8 @@
     "protocol:manifest:check": "bun scripts/protocol/source-manifest.ts --check",
     "protocol:drivers": "bun scripts/protocol/driver-registry.ts --write",
     "protocol:drivers:check": "bun scripts/protocol/driver-registry.ts --check",
+    "protocol:desktop": "bun scripts/protocol/desktop-support.ts --write",
+    "protocol:desktop:check": "bun scripts/protocol/desktop-support.ts --check",
     "bud": "./buddy",
     "stx": "./buddy"
   },
