@@ -3,11 +3,43 @@ import type { StacksEnv } from './types'
 import p from 'node:process'
 import { projectPath } from '@stacksjs/path'
 import fs from 'node:fs'
+import { decryptEnvValue } from './plugin'
 import { envEnum } from './types'
+
+// Report an undecryptable key once, not on every read in the hot path.
+const warnedUndecryptable = new Set<string>()
+
+function warnUndecryptable(key: string): void {
+  if (warnedUndecryptable.has(key))
+    return
+  warnedUndecryptable.add(key)
+  // eslint-disable-next-line no-console
+  console.warn(`[env] warning: "${key}" is encrypted but no usable private key was found to decrypt it; falling back to its default. Set DOTENV_PRIVATE_KEY_<ENV> or ship .env.keys.`)
+}
 
 const handler: ProxyHandler<StacksEnv> = {
   get: (target: StacksEnv, key: string) => {
-    const value = target[key]
+    let value = target[key]
+
+    // Decrypt dotenvx-style ciphertext (`encrypted:` / `enc:`) on read. The
+    // preloader's autoLoadEnv bulk-decrypts into process.env at boot, but fast
+    // CLI commands skip the preloader and config/app code can read env before
+    // (or without) it — so any ciphertext reaching here is decrypted lazily so
+    // the config proxy and every other consumer sees plaintext, not
+    // `encrypted:...`. The plaintext is written back to process.env so it's a
+    // one-time cost and direct process.env readers benefit too. With no usable
+    // key the value is useless to everyone, so it's scrubbed to `undefined` and
+    // config falls back to its default — the same resolution the preloader does.
+    if (typeof value === 'string' && (value.startsWith('encrypted:') || value.startsWith('enc:'))) {
+      const decrypted = decryptEnvValue(value)
+      if (decrypted === undefined) {
+        warnUndecryptable(key)
+        delete target[key]
+        return undefined
+      }
+      target[key] = decrypted
+      value = decrypted
+    }
 
     // Only coerce to number for keys that are clearly numeric settings (PORT, etc.)
     // Don't coerce IDs, codes, or values with leading zeros as they lose information
