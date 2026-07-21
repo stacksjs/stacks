@@ -1,5 +1,18 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.157...v0.70.158)
+
+## 🐛 Bug Fixes
+
+- **upgrade**: fully refresh Bun lockfile ([df23f2d](https://github.com/stacksjs/stacks/commit/df23f2d)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **deploy**: resolve cloud servers without aliases ([13e1c1e](https://github.com/stacksjs/stacks/commit/13e1c1e)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **blog**: surface BunPress import failures ([acb274c](https://github.com/stacksjs/stacks/commit/acb274c)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **deps**: require importable BunPress ([f3239ed](https://github.com/stacksjs/stacks/commit/f3239ed)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.156...v0.70.157)
 
 ## 🐛 Bug Fixes
