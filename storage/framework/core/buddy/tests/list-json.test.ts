@@ -51,4 +51,11 @@ describe('buddy list JSON inventory', () => {
       examples: ['buddy deploy production'],
     })
   })
+
+  it('preserves namespaced command names', () => {
+    const buddy = cli('buddy')
+    const command = buddy.command('make:model [name]', 'Create a model')
+
+    expect(commandInventoryEntry(command).name).toBe('make:model')
+  })
 })

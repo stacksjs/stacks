@@ -45,7 +45,7 @@ export function list(buddy: CLI): void {
       if ((options as any).filter) {
         const filterStr = String((options as any).filter).toLowerCase()
         filteredCommands = commands.filter((cmd: any) => {
-          const name = cmd.name || ''
+          const name = canonicalCommandName(cmd)
           const desc = cmd.description || ''
           return name.toLowerCase().includes(filterStr) || desc.toLowerCase().includes(filterStr)
         })
@@ -87,7 +87,7 @@ export function list(buddy: CLI): void {
         const groups = new Map<string, any[]>()
 
         for (const cmd of filteredCommands) {
-          const name = cmd.name || ''
+          const name = canonicalCommandName(cmd)
           if (!name) continue
 
           // Extract group from command name (e.g., "env:get" -> "env", "make:model" -> "make")
@@ -135,10 +135,10 @@ export function list(buddy: CLI): void {
           console.log(bold(`${group}:`))
 
           // Sort commands within group
-          cmds.sort((a, b) => (a.name || '').localeCompare(b.name || ''))
+          cmds.sort((a, b) => canonicalCommandName(a).localeCompare(canonicalCommandName(b)))
 
           for (const cmd of cmds) {
-            const name = (cmd.name || '').padEnd(20)
+            const name = canonicalCommandName(cmd).padEnd(20)
             const desc = cmd.description || ''
             console.log(`  ${green(name)} ${dim(desc)}`)
           }
@@ -153,10 +153,10 @@ export function list(buddy: CLI): void {
         console.log('')
 
         // Sort commands alphabetically
-        filteredCommands.sort((a, b) => (a.name || '').localeCompare(b.name || ''))
+        filteredCommands.sort((a, b) => canonicalCommandName(a).localeCompare(canonicalCommandName(b)))
 
         for (const cmd of filteredCommands) {
-          const name = (cmd.name || '').padEnd(20)
+          const name = canonicalCommandName(cmd).padEnd(20)
           const desc = cmd.description || ''
           console.log(`  ${green(name)} ${dim(desc)}`)
         }
@@ -198,7 +198,7 @@ export interface BuddyCommandInventoryEntry {
 
 export function commandInventoryEntry(command: Command): BuddyCommandInventoryEntry {
   const entry: BuddyCommandInventoryEntry = {
-    name: command.name,
+    name: canonicalCommandName(command),
     description: command.description,
     aliases: [...command.aliasNames],
     usage: command.usageLine,
@@ -223,6 +223,10 @@ export function commandInventoryEntry(command: Command): BuddyCommandInventoryEn
     entry.namespace = command.namespace
 
   return entry
+}
+
+function canonicalCommandName(command: Command): string {
+  return command.namespace ? `${command.namespace}:${command.name}` : command.name
 }
 
 function usesJsonOutput(options: CliOptions): boolean {
