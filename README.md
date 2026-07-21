@@ -297,7 +297,7 @@ _Focus on coding, not publishing._
 Convention over configuration, while staying wholly configurable. _No more boilerplate._
 
 - 💎 **Automated Upgrades** _no need to worry about upgrading to the latest versions, Stacks upgrades you_
-- 🦋 **Pretty Dev URLs** _your-project.localhost instead of localhost:3000_
+- 🦋 **Pretty Dev URLs** _opt into your-project.localhost when you want local HTTPS_
 - 💡 **IDE Integration** _auto-completions, inline docs & a powerful IDE setup_
 - 🪄 **Zero-Config** _yet highly configurable—convention over configuration_
 - 💅 **Linter & Formatter** _auto-configured & built into your IDE_

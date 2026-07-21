@@ -191,11 +191,24 @@ All development servers support Hot Module Replacement (HMR), which means:
 
 ## Pretty URLs
 
-Stacks provides pretty development URLs out of the box:
+New projects start on `<http://localhost:3000>`. This path requires no sudo
+access, hosts-file changes, or local certificate trust.
+
+Pretty HTTPS URLs are opt-in. Set a custom `APP_URL` in `.env`:
+
+```bash
+APP_URL=my-project.localhost
+```
+
+The next `buddy dev` uses rpx and tlsx to serve:
 
 - `<https://your-project.localhost>` instead of `<http://localhost:3000>`
 
-This is configured automatically based on your `APP_URL` environment variable.
+The proxy binds port 443 and installs a local CA certificate. A `*.localhost`
+name resolves to loopback automatically. Other development domains can also
+require an `/etc/hosts` or local DNS resolver entry. Run `buddy setup:ssl` for
+explicit certificate setup, or set `STACKS_DEV_LOCALHOST=1` for one session to
+force the zero-setup localhost URLs.
 
 ## Troubleshooting
 
@@ -212,10 +225,12 @@ buddy ports
 
 ### SSL Certificate Issues
 
-Development servers use HTTPS with self-signed certificates. If your browser shows a warning:
+Opt-in pretty URLs use a locally trusted development certificate. If your
+browser shows a warning, rerun the setup:
 
-1. Click "Advanced" or "Details"
-2. Click "Proceed" or "Accept the Risk"
+```bash
+buddy setup:ssl
+```
 
 ### Server Won't Start
 

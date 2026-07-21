@@ -94,6 +94,22 @@ export async function dispatchInteractiveDevSelection(
   return true
 }
 
+export function resolvePrettyDevDomain(appUrl: string | undefined, nativeMode = false): string | null {
+  if (!appUrl || nativeMode)
+    return null
+
+  try {
+    const url = new URL(/^https?:\/\//i.test(appUrl) ? appUrl : `https://${appUrl}`)
+    const hostname = url.hostname.toLowerCase()
+    if (hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '::1' || hostname === '0.0.0.0')
+      return null
+    return hostname
+  }
+  catch {
+    return null
+  }
+}
+
 export function dev(buddy: CLI): void {
   const descriptions = {
     dev: 'Start development server',
@@ -389,8 +405,8 @@ export async function startDevelopmentServer(_options: DevOptions, _startTime?: 
   // `STACKS_DEV_DASHBOARD=1 ./buddy dev` (or `./buddy dev:dashboard` to
   // run it standalone) when you actually want the dashboard up.
   const includeDashboard = process.env.STACKS_DEV_DASHBOARD === '1'
-  const appLooksCustom = !nativeMode && appUrl && appUrl !== 'localhost' && !appUrl.includes('localhost:')
-  const domain = appLooksCustom ? appUrl.replace(/^https?:\/\//, '') : null
+  const domain = resolvePrettyDevDomain(appUrl, nativeMode)
+  const appLooksCustom = domain !== null
   // Pretty https URLs from APP_URL are the default dev experience, even when
   // the domain is public: rpx maps it to 127.0.0.1 (/etc/hosts plus a
   // domain-scoped resolver) and serves it with a locally trusted cert,
@@ -398,12 +414,14 @@ export async function startDevelopmentServer(_options: DevOptions, _startTime?: 
   // domain must keep resolving to production from this machine) and the
   // banner falls back to plain localhost URLs.
   const localhostOnly = process.env.STACKS_DEV_LOCALHOST === '1'
+  const usePrettyUrls = appLooksCustom && !localhostOnly
   // Only manage the proxy/TLS/daemon ourselves when rpx isn't already doing it.
-  const hasCustomDomain = appLooksCustom && !proxyManagedExternally && !localhostOnly
-  const dashboardDomain = domain ? `dashboard.${domain}` : null
-  const frontendUrl = domain ? `https://${domain}` : `http://localhost:${frontendPort}`
-  const apiUrl = domain ? `https://${domain}/api` : `http://localhost:${apiPort}`
-  const docsUrl = domain ? `https://${domain}/docs` : `http://localhost:${docsPort}`
+  const hasCustomDomain = usePrettyUrls && !proxyManagedExternally
+  const displayedDomain = usePrettyUrls ? domain : null
+  const dashboardDomain = displayedDomain ? `dashboard.${displayedDomain}` : null
+  const frontendUrl = displayedDomain ? `https://${displayedDomain}` : `http://localhost:${frontendPort}`
+  const apiUrl = displayedDomain ? `https://${displayedDomain}/api` : `http://localhost:${apiPort}`
+  const docsUrl = displayedDomain ? `https://${displayedDomain}/docs` : `http://localhost:${docsPort}`
   const dashboardUrl = dashboardDomain ? `https://${dashboardDomain}` : `http://localhost:${dashboardPort}`
   const managedPorts = [
     frontendPort,
