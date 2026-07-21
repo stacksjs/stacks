@@ -33,6 +33,7 @@ import {
   type SnapshotEntry,
   type UpgradeContext,
 } from './framework-utils'
+import { runPostSyncMigration } from './framework-hooks'
 
 interface UpgradeOptions {
   version?: string
@@ -268,7 +269,13 @@ for (const { managed, summary } of perPath) {
 // dead simple is that the user shouldn't have to chase follow-up commands.
 const runHooks = !options.noPostinstall && options.postinstall !== false
 if (runHooks) {
-  await runPostSyncHooks({ aggregate, perPath, projectRoot })
+  try {
+    await runPostSyncHooks({ aggregate, perPath, projectRoot })
+  }
+  catch (err) {
+    console.error(`Post-sync hooks failed: ${(err as Error)?.message || err}`)
+    process.exit(ExitCode.FatalError)
+  }
 }
 
 if (ctx.channel === 'canary' && !ctx.targetVersion) {
@@ -698,21 +705,13 @@ async function runPostSyncHooks(args: {
   const migrationsDir = join(projectRoot, 'database', 'migrations')
   if (existsSync(migrationsDir)) {
     console.log('Running pending migrations...')
-    try {
-      const migrateScript = p.frameworkPath('core/buddy/src/cli.ts')
-      const proc = Bun.spawn({
-        cmd: [process.argv[0] || 'bun', migrateScript, 'migrate'],
-        cwd: projectRoot,
-        stdout: 'inherit',
-        stderr: 'inherit',
-      })
-      const code = await proc.exited
-      if (code !== 0)
-        console.warn(`  migrate exited with code ${code} (non-fatal — DB may not be set up yet)`)
-    }
-    catch (err) {
-      console.warn(`  migrate failed (non-fatal): ${(err as Error)?.message || err}`)
-    }
+    const migrateScript = p.frameworkPath('core/buddy/src/cli.ts')
+    await runPostSyncMigration({
+      bunExecutable: process.argv[0] || 'bun',
+      migrateScript,
+      projectRoot,
+      spawn: spawnOptions => Bun.spawn(spawnOptions),
+    })
   }
 }
 
