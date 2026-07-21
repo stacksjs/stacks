@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.154...v0.70.155)
+
+## 🐛 Bug Fixes
+
+- **upgrade**: trust changes from internal restart ([70dea59](https://github.com/stacksjs/stacks/commit/70dea59)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.153...v0.70.154)
 
 ## 🐛 Bug Fixes
