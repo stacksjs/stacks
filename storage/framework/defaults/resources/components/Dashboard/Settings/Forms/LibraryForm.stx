@@ -189,10 +189,10 @@ const { libraryName = 'hello-world', libraryOwner = '@stacksjs', libraryReposito
         <div class="grid gap-x-8 gap-y-10 grid-cols-1 md:grid-cols-3 py-16 max-w-7xl">
           <div>
             <h2 class="font-semibold leading-7 text-base text-gray-900 dark:text-neutral-100">
-              Vue Components Configurations
+              STX Component Configuration
             </h2>
             <p class="mt-1 leading-6 text-gray-600 text-sm">
-              Update your Vue Components Configuration
+              Update your STX component package
             </p>
           </div>
 
@@ -223,15 +223,15 @@ const { libraryName = 'hello-world', libraryOwner = '@stacksjs', libraryReposito
                 <div class="flex justify-between mb-4">
                   <div>
                     <h2 class="font-semibold leading-7 text-base text-gray-900 dark:text-neutral-100">
-                      Vue Components Tags
+                      STX Component Tags
                     </h2>
                     <p class="mt-1 leading-6 text-gray-600 text-sm">
-                      Update Vue Components Tags, click on the button to show modal to add new tag
+                      Update STX component tags or add a new custom element tag
                     </p>
                   </div>
 
                   <div class="sm:flex-none mt-4 sm:ml-16 sm:mt-0">
-                    <button type="button" class="block px-3 py-2 font-semibold text-center text-sm text-white bg-gray-600 hover:bg-indigo-500 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-600 focus-visible:outline-offset-2 shadow-sm" data-action="add-vue-tag">
+                    <button type="button" class="block px-3 py-2 font-semibold text-center text-sm text-white bg-gray-600 hover:bg-indigo-500 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-600 focus-visible:outline-offset-2 shadow-sm" data-action="add-stx-tag">
                       Add Tag
                     </button>
                   </div>

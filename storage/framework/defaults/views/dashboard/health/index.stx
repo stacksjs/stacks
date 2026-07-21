@@ -134,7 +134,7 @@ const statusBadgeVariant = {
 }
 
 // Pluralize the metrics-grid columns based on count. Done here in JS
-// because STX templates don't support the Vue-style array `:class`
+// because STX templates do not accept array values in `:class`
 // binding (`class="{{ a }} {{ cond ? b : c }}"`); a precomputed string is
 // simpler than threading conditional classes through the template.
 function metricsGridCols(count: number) {

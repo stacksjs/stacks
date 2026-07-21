@@ -1,5 +1,5 @@
 import { runCommand } from '@stacksjs/cli'
-import { frameworkPath, projectPath } from '@stacksjs/path'
+import { projectPath } from '@stacksjs/path'
 
 // If the project ships its own `build.ts` (the canonical static-site
 // escape hatch — same shape as `serve.ts` for dev), use it. The
@@ -8,16 +8,19 @@ import { frameworkPath, projectPath } from '@stacksjs/path'
 // invoke it. Mirrors the dev/views.ts loader so `./buddy build:frontend`
 // and `./buddy dev:frontend` follow the same convention.
 //
-// Falls back to the legacy `framework/views/web` Vue-views build for
-// projects that haven't migrated yet.
+// Projects without a custom build use the STX static-site builder directly.
 const projectBuild = projectPath('build.ts')
 if (await Bun.file(projectBuild).exists()) {
-  await runCommand('bun build.ts', {
+  const result = await runCommand('bun build.ts', {
     cwd: projectPath(),
   })
+  if (result.isErr)
+    throw result.error
 }
 else {
-  await runCommand('bun run build', {
-    cwd: frameworkPath('views/web'),
+  const result = await runCommand('bunx --bun @stacksjs/stx build --pages resources/views --out dist', {
+    cwd: projectPath(),
   })
+  if (result.isErr)
+    throw result.error
 }

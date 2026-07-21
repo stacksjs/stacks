@@ -2,7 +2,7 @@ import type { Result } from '@stacksjs/error-handling'
 import { library } from '@stacksjs/config'
 import { err, ok } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/logging'
-import { customElementsDataPath } from '@stacksjs/path'
+import { customElementsDataPath, frameworkPath } from '@stacksjs/path'
 import { writeTextFile } from '@stacksjs/storage'
 
 function generateComponentInfoData(): string {
@@ -36,5 +36,37 @@ export async function generateVsCodeCustomData(): Promise<Result<void, string>> 
 
 export async function generateWebTypes(): Promise<void> {
   log.info('Generating web-types.json...')
-  log.info('This feature is not yet implemented.')
+  await writeTextFile({
+    path: frameworkPath('core/web-types.json'),
+    data: generateWebTypesData(),
+  })
+  log.success('Generated web-types.json for IDEs.')
+}
+
+export function generateWebTypesData(): string {
+  const tags = (library.webComponents?.tags ?? []).map((tag) => {
+    const sourceName = Array.isArray(tag.name) ? tag.name[0] : tag.name
+    const publicName = Array.isArray(tag.name) ? tag.name[1] : tag.name
+    return {
+      name: publicName,
+      description: tag.description ?? '',
+      attributes: tag.attributes ?? [],
+      source: {
+        module: `../../defaults/resources/components/${sourceName}.stx`,
+        symbol: 'default',
+      },
+    }
+  })
+
+  return `${JSON.stringify({
+    framework: 'stx',
+    name: library.name,
+    contributions: {
+      html: {
+        'description-markup': 'markdown',
+        'types-syntax': 'typescript',
+        tags,
+      },
+    },
+  }, null, 2)}\n`
 }

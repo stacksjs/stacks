@@ -239,7 +239,7 @@ const projectsList: Project[] = [
 const now = Date.now()
 const sampleLogs: Log[] = [
   { id: '1', timestamp: new Date(now).toISOString(), type: 'info', source: 'CLI', message: 'buddy build started', metadata: { user: 'chris@stacksjs.com', command: 'buddy build' }, project: 'stacks' },
-  { id: '2', timestamp: new Date(now - 5000).toISOString(), type: 'error', source: 'File', message: 'Failed to compile component', metadata: { file: './components/Header.vue', line: 42 }, project: 'rpx' },
+  { id: '2', timestamp: new Date(now - 5000).toISOString(), type: 'error', source: 'File', message: 'Failed to compile component', metadata: { file: './components/Header.stx', line: 42 }, project: 'rpx' },
   { id: '3', timestamp: new Date(now - 15000).toISOString(), type: 'success', source: 'System', message: 'Production deployment successful', metadata: { deployment_id: 'dep_abc123', environment: 'production', branch: 'main', commit: '7829abc', duration: '45s' }, project: 'stacks' },
   { id: '4', timestamp: new Date(now - 60000).toISOString(), type: 'info', source: 'CLI', message: 'Starting database migration', metadata: { migration: 'create_users_table', database: 'production', user: 'deploy@stacksjs.com', command: 'buddy db:migrate' }, project: 'stacks' },
   { id: '5', timestamp: new Date(now - 120000).toISOString(), type: 'error', source: 'System', message: 'Failed to connect to Redis cache', metadata: { error: 'Connection timeout', host: 'redis.internal', port: 6379, attempt: 3 }, project: 'stacks' },

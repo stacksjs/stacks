@@ -3,7 +3,7 @@
 First off, thank you for taking the time to contribute to the Stacks ecosystem ❤️
 
 > **Note**
-> The likelihood is high that the repo you are working on is either a Stack or Stacks itself. In both cases, you will be exposed to a meshup of technologies, like [Vue][vue], [Vite][vite], [Tauri][tauri], [Nitro][nitro], and [Bun][bun].
+> The likelihood is high that the repo you are working on is either a Stack or Stacks itself. In both cases, you will be exposed to a meshup of technologies, like [STX][stx], [Vite][vite], [Tauri][tauri], [Nitro][nitro], and [Bun][bun].
 
 ## 💭 Knowledge
 
@@ -126,7 +126,7 @@ buddy changelog # generates CHANGELOG.md
 
 # building for production (e.g. npm, Vercel, Netlify, et al.)
 buddy build # select a specific build (follow CLI prompts)
-buddy build:components # builds Vue component library & Web Component library
+buddy build:components # builds the STX component library and Web Component library
 buddy build:functions # builds function library
 buddy build:web-components # builds framework agnostic Web Component library (i.e. Custom Elements)
 buddy build:views # builds views
@@ -177,7 +177,7 @@ When you're all done, head over to the [repository][stacks], and click the big g
 Don't expect your PR to be accepted immediately or even accepted at all. Give the community time to vet it and see if it should be merged. Please don't be disheartened if it’s not accepted. Your contribution is appreciated more than you can imagine, and even a unmerged PR can teach us a lot ❤️
 
 [typescript]: https://www.typescriptlang.org
-[vue]: https://vuejs.org/
+[stx]: https://github.com/stacksjs/stx
 [vite]: https://vitejs.dev/
 [tauri]: https://tauri.app/
 [nitro]: https://nitro.unjs.io/

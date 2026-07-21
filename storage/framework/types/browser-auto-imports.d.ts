@@ -9,8 +9,6 @@ declare global {
   const EffectScope: typeof import('@stacksjs/stx')['EffectScope']
   const Fetch: typeof import('../core/browser/src/utils/fetch')['Fetch']
   const Head: typeof import('../core/browser/src/utils/vendors')['Head']
-  const HeadVuePlugin: typeof import('../core/browser/src/utils/vendors')['HeadVuePlugin']
-  const acceptHMRUpdate: typeof import('pinia')['acceptHMRUpdate']
   const and: typeof import('../core/browser/src/utils/math')['and']
   const anyOf: typeof import('../core/browser/src/utils/regex')['anyOf']
   const asyncComputed: typeof import('../core/browser/src/utils/vendors')['asyncComputed']
@@ -44,6 +42,7 @@ declare global {
   const controlledRef: typeof import('../core/browser/src/utils/vendors')['controlledRef']
   const count: typeof import('../../../resources/functions/counter')['count']
   const createApp: typeof import('@stacksjs/stx')['createApp']
+  const createStore: typeof import('@stacksjs/stx')['createStore']
   const createControlledPromise: typeof import('../core/browser/src/utils/promise')['createControlledPromise']
   const createEventHook: typeof import('../core/browser/src/utils/vendors')['createEventHook']
   const createFetch: typeof import('../core/browser/src/utils/vendors')['createFetch']
@@ -52,7 +51,6 @@ declare global {
   const createHead: typeof import('../core/browser/src/utils/vendors')['createHead']
   const createInjectionState: typeof import('../core/browser/src/utils/vendors')['createInjectionState']
   const createPaymentMethod: typeof import('../core/browser/src/utils/billable')['createPaymentMethod']
-  const createPinia: typeof import('pinia')['createPinia']
   const createProjection: typeof import('../core/browser/src/utils/math')['createProjection']
   const createPromiseLock: typeof import('../core/browser/src/utils/promise')['createPromiseLock']
   const createReactiveFn: typeof import('../core/browser/src/utils/vendors')['createReactiveFn']
@@ -76,7 +74,7 @@ declare global {
   const defaultWindow: typeof import('../core/browser/src/utils/vendors')['defaultWindow']
   const defineAsyncComponent: typeof import('@stacksjs/stx')['defineAsyncComponent']
   const defineComponent: typeof import('@stacksjs/stx')['defineComponent']
-  const defineStore: typeof import('pinia')['defineStore']
+  const defineStore: typeof import('@stacksjs/stx')['defineStore']
   const delay: typeof import('../core/browser/src/utils/sleep')['delay']
   const digit: typeof import('../core/browser/src/utils/regex')['digit']
   const dotAll: typeof import('../core/browser/src/utils/regex')['dotAll']
@@ -87,17 +85,17 @@ declare global {
   const extendRef: typeof import('../core/browser/src/utils/vendors')['extendRef']
   const format: typeof import('../core/datetime/dist/index.js')['format']
   const formatTimeAgo: typeof import('../core/browser/src/utils/vendors')['formatTimeAgo']
-  const getActiveHead: typeof import('@unhead/vue')['getActiveHead']
-  const getActivePinia: typeof import('pinia')['getActivePinia']
   const getCurrentInstance: typeof import('@stacksjs/stx')['getCurrentInstance']
   const getCurrentScope: typeof import('@stacksjs/stx')['getCurrentScope']
+  const getStore: typeof import('@stacksjs/stx')['getStore']
+  const getStoreNames: typeof import('@stacksjs/stx')['getStoreNames']
   const getSSRHandler: typeof import('../core/browser/src/utils/vendors')['getSSRHandler']
   const global: typeof import('../core/browser/src/utils/regex')['global']
   const h: typeof import('@stacksjs/stx')['h']
+  const hasStore: typeof import('@stacksjs/stx')['hasStore']
   const ignorableWatch: typeof import('../core/browser/src/utils/vendors')['ignorableWatch']
   const increment: typeof import('../../../resources/functions/counter')['increment']
   const inject: typeof import('@stacksjs/stx')['inject']
-  const injectHead: typeof import('@unhead/vue')['injectHead']
   const injectLocal: typeof import('../core/browser/src/utils/vendors')['injectLocal']
   const isDark: typeof import('../../../resources/functions/dark')['isDark']
   const isDefined: typeof import('../core/browser/src/utils/vendors')['isDefined']
@@ -115,12 +113,7 @@ declare global {
   const logicOr: typeof import('../core/browser/src/utils/math')['logicOr']
   const loop: typeof import('../core/browser/src/utils/base')['loop']
   const makeDestructurable: typeof import('../core/browser/src/utils/vendors')['makeDestructurable']
-  const mapActions: typeof import('pinia')['mapActions']
   const mapGamepadToXbox360Controller: typeof import('../core/browser/src/utils/vendors')['mapGamepadToXbox360Controller']
-  const mapGetters: typeof import('pinia')['mapGetters']
-  const mapState: typeof import('pinia')['mapState']
-  const mapStores: typeof import('pinia')['mapStores']
-  const mapWritableState: typeof import('pinia')['mapWritableState']
   const markRaw: typeof import('@stacksjs/stx')['markRaw']
   const maybe: typeof import('../core/browser/src/utils/regex')['maybe']
   const multiline: typeof import('../core/browser/src/utils/regex')['multiline']
@@ -132,8 +125,6 @@ declare global {
   const now: typeof import('../core/datetime/dist/index.js')['now']
   const onActivated: typeof import('@stacksjs/stx')['onActivated']
   const onBeforeMount: typeof import('@stacksjs/stx')['onBeforeMount']
-  const onBeforeRouteLeave: typeof import('vue-router')['onBeforeRouteLeave']
-  const onBeforeRouteUpdate: typeof import('vue-router')['onBeforeRouteUpdate']
   const onBeforeUnmount: typeof import('@stacksjs/stx')['onBeforeUnmount']
   const onBeforeUpdate: typeof import('@stacksjs/stx')['onBeforeUpdate']
   const onClickOutside: typeof import('../core/browser/src/utils/vendors')['onClickOutside']
@@ -183,15 +174,12 @@ declare global {
   const resolveRef: typeof import('../core/browser/src/utils/vendors')['resolveRef']
   const retry: typeof import('../core/browser/src/utils/retry')['retry']
   const saas: typeof import('../core/browser/src/utils/plans')['saas']
-  const setActivePinia: typeof import('pinia')['setActivePinia']
-  const setMapStoreSuffix: typeof import('pinia')['setMapStoreSuffix']
   const setSSRHandler: typeof import('../core/browser/src/utils/vendors')['setSSRHandler']
   const shallowReactive: typeof import('@stacksjs/stx')['shallowReactive']
   const shallowReadonly: typeof import('@stacksjs/stx')['shallowReadonly']
   const shallowRef: typeof import('@stacksjs/stx')['shallowRef']
   const sleep: typeof import('../core/browser/src/utils/sleep')['sleep']
   const sticky: typeof import('../core/browser/src/utils/regex')['sticky']
-  const storeToRefs: typeof import('pinia')['storeToRefs']
   const syncRef: typeof import('../core/browser/src/utils/vendors')['syncRef']
   const syncRefs: typeof import('../core/browser/src/utils/vendors')['syncRefs']
   const tab: typeof import('../core/browser/src/utils/regex')['tab']
@@ -289,9 +277,7 @@ declare global {
   const useGamepad: typeof import('../core/browser/src/utils/vendors')['useGamepad']
   const useGeolocation: typeof import('../core/browser/src/utils/vendors')['useGeolocation']
   const useGitStore: typeof import('../defaults/stores/git')['useGitStore']
-  const useHead: typeof import('@unhead/vue')['useHead']
-  const useHeadSafe: typeof import('@unhead/vue')['useHeadSafe']
-  const useI18n: typeof import('vue-i18n')['useI18n']
+  const useHead: typeof import('@stacksjs/stx')['useHead']
   const useId: typeof import('@stacksjs/stx')['useId']
   const useIdle: typeof import('../core/browser/src/utils/vendors')['useIdle']
   const useImage: typeof import('../core/browser/src/utils/vendors')['useImage']
@@ -301,7 +287,6 @@ declare global {
   const useIntervalFn: typeof import('../core/browser/src/utils/vendors')['useIntervalFn']
   const useKeyModifier: typeof import('../core/browser/src/utils/vendors')['useKeyModifier']
   const useLastChanged: typeof import('../core/browser/src/utils/vendors')['useLastChanged']
-  const useLink: typeof import('vue-router/auto')['useLink']
   const useLocalStorage: typeof import('../core/browser/src/utils/vendors')['useLocalStorage']
   const useMagicKeys: typeof import('../core/browser/src/utils/vendors')['useMagicKeys']
   const useManualRefHistory: typeof import('../core/browser/src/utils/vendors')['useManualRefHistory']
@@ -346,17 +331,13 @@ declare global {
   const useRefHistory: typeof import('../core/browser/src/utils/vendors')['useRefHistory']
   const useResizeObserver: typeof import('../core/browser/src/utils/vendors')['useResizeObserver']
   const useRound: typeof import('../core/browser/src/utils/math')['useRound']
-  const useRoute: typeof import('vue-router')['useRoute']
-  const useRouter: typeof import('vue-router')['useRouter']
+  const useRoute: typeof import('@stacksjs/stx')['useRoute']
   const useScreenOrientation: typeof import('../core/browser/src/utils/vendors')['useScreenOrientation']
   const useScreenSafeArea: typeof import('../core/browser/src/utils/vendors')['useScreenSafeArea']
   const useScriptTag: typeof import('../core/browser/src/utils/vendors')['useScriptTag']
   const useScroll: typeof import('../core/browser/src/utils/vendors')['useScroll']
   const useScrollLock: typeof import('../core/browser/src/utils/vendors')['useScrollLock']
-  const useSeoMeta: typeof import('@unhead/vue')['useSeoMeta']
-  const useServerHead: typeof import('@unhead/vue')['useServerHead']
-  const useServerHeadSafe: typeof import('@unhead/vue')['useServerHeadSafe']
-  const useServerSeoMeta: typeof import('@unhead/vue')['useServerSeoMeta']
+  const useSeoMeta: typeof import('@stacksjs/stx')['useSeoMeta']
   const useSessionStorage: typeof import('../core/browser/src/utils/vendors')['useSessionStorage']
   const useShare: typeof import('../core/browser/src/utils/vendors')['useShare']
   const useSlots: typeof import('@stacksjs/stx')['useSlots']
@@ -366,6 +347,7 @@ declare global {
   const useStepper: typeof import('../core/browser/src/utils/vendors')['useStepper']
   const useStorage: typeof import('../core/browser/src/utils/vendors')['useStorage']
   const useStorageAsync: typeof import('../core/browser/src/utils/vendors')['useStorageAsync']
+  const useStore: typeof import('@stacksjs/stx')['useStore']
   const useStyleTag: typeof import('../core/browser/src/utils/vendors')['useStyleTag']
   const useSum: typeof import('../core/browser/src/utils/math')['useSum']
   const useSupported: typeof import('../core/browser/src/utils/vendors')['useSupported']
@@ -462,8 +444,6 @@ declare module '@stacksjs/stx' {
     readonly EffectScope: UnwrapRef<typeof import('@stacksjs/stx')['EffectScope']>
     readonly Fetch: UnwrapRef<typeof import('../core/browser/src/utils/fetch')['Fetch']>
     readonly Head: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['Head']>
-    readonly HeadVuePlugin: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['HeadVuePlugin']>
-    readonly acceptHMRUpdate: UnwrapRef<typeof import('pinia')['acceptHMRUpdate']>
     readonly and: UnwrapRef<typeof import('../core/browser/src/utils/math')['and']>
     readonly anyOf: UnwrapRef<typeof import('../core/browser/src/utils/regex')['anyOf']>
     readonly asyncComputed: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['asyncComputed']>
@@ -496,6 +476,7 @@ declare module '@stacksjs/stx' {
     readonly controlledRef: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['controlledRef']>
     readonly count: UnwrapRef<typeof import('../../../resources/functions/counter')['count']>
     readonly createApp: UnwrapRef<typeof import('@stacksjs/stx')['createApp']>
+    readonly createStore: UnwrapRef<typeof import('@stacksjs/stx')['createStore']>
     readonly createControlledPromise: UnwrapRef<typeof import('../core/browser/src/utils/promise')['createControlledPromise']>
     readonly createEventHook: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['createEventHook']>
     readonly createFetch: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['createFetch']>
@@ -504,7 +485,6 @@ declare module '@stacksjs/stx' {
     readonly createHead: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['createHead']>
     readonly createInjectionState: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['createInjectionState']>
     readonly createPaymentMethod: UnwrapRef<typeof import('../core/browser/src/utils/billable')['createPaymentMethod']>
-    readonly createPinia: UnwrapRef<typeof import('pinia')['createPinia']>
     readonly createProjection: UnwrapRef<typeof import('../core/browser/src/utils/math')['createProjection']>
     readonly createPromiseLock: UnwrapRef<typeof import('../core/browser/src/utils/promise')['createPromiseLock']>
     readonly createReactiveFn: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['createReactiveFn']>
@@ -528,7 +508,7 @@ declare module '@stacksjs/stx' {
     readonly defaultWindow: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['defaultWindow']>
     readonly defineAsyncComponent: UnwrapRef<typeof import('@stacksjs/stx')['defineAsyncComponent']>
     readonly defineComponent: UnwrapRef<typeof import('@stacksjs/stx')['defineComponent']>
-    readonly defineStore: UnwrapRef<typeof import('pinia')['defineStore']>
+    readonly defineStore: UnwrapRef<typeof import('@stacksjs/stx')['defineStore']>
     readonly delay: UnwrapRef<typeof import('../core/browser/src/utils/sleep')['delay']>
     readonly digit: UnwrapRef<typeof import('../core/browser/src/utils/regex')['digit']>
     readonly dotAll: UnwrapRef<typeof import('../core/browser/src/utils/regex')['dotAll']>
@@ -539,16 +519,17 @@ declare module '@stacksjs/stx' {
     readonly extendRef: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['extendRef']>
     readonly format: UnwrapRef<typeof import('../core/datetime/dist/index.js')['format']>
     readonly formatTimeAgo: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['formatTimeAgo']>
-    readonly getActivePinia: UnwrapRef<typeof import('pinia')['getActivePinia']>
     readonly getCurrentInstance: UnwrapRef<typeof import('@stacksjs/stx')['getCurrentInstance']>
     readonly getCurrentScope: UnwrapRef<typeof import('@stacksjs/stx')['getCurrentScope']>
+    readonly getStore: UnwrapRef<typeof import('@stacksjs/stx')['getStore']>
+    readonly getStoreNames: UnwrapRef<typeof import('@stacksjs/stx')['getStoreNames']>
     readonly getSSRHandler: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['getSSRHandler']>
     readonly global: UnwrapRef<typeof import('../core/browser/src/utils/regex')['global']>
     readonly h: UnwrapRef<typeof import('@stacksjs/stx')['h']>
+    readonly hasStore: UnwrapRef<typeof import('@stacksjs/stx')['hasStore']>
     readonly ignorableWatch: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['ignorableWatch']>
     readonly increment: UnwrapRef<typeof import('../../../resources/functions/counter')['increment']>
     readonly inject: UnwrapRef<typeof import('@stacksjs/stx')['inject']>
-    readonly injectHead: UnwrapRef<typeof import('@unhead/vue')['injectHead']>
     readonly injectLocal: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['injectLocal']>
     readonly isDark: UnwrapRef<typeof import('../../../resources/functions/dark')['isDark']>
     readonly isDefined: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['isDefined']>
@@ -566,12 +547,7 @@ declare module '@stacksjs/stx' {
     readonly logicOr: UnwrapRef<typeof import('../core/browser/src/utils/math')['logicOr']>
     readonly loop: UnwrapRef<typeof import('../core/browser/src/utils/base')['loop']>
     readonly makeDestructurable: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['makeDestructurable']>
-    readonly mapActions: UnwrapRef<typeof import('pinia')['mapActions']>
     readonly mapGamepadToXbox360Controller: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['mapGamepadToXbox360Controller']>
-    readonly mapGetters: UnwrapRef<typeof import('pinia')['mapGetters']>
-    readonly mapState: UnwrapRef<typeof import('pinia')['mapState']>
-    readonly mapStores: UnwrapRef<typeof import('pinia')['mapStores']>
-    readonly mapWritableState: UnwrapRef<typeof import('pinia')['mapWritableState']>
     readonly markRaw: UnwrapRef<typeof import('@stacksjs/stx')['markRaw']>
     readonly maybe: UnwrapRef<typeof import('../core/browser/src/utils/regex')['maybe']>
     readonly multiline: UnwrapRef<typeof import('../core/browser/src/utils/regex')['multiline']>
@@ -583,8 +559,6 @@ declare module '@stacksjs/stx' {
     readonly now: UnwrapRef<typeof import('../core/datetime/dist/index.js')['now']>
     readonly onActivated: UnwrapRef<typeof import('@stacksjs/stx')['onActivated']>
     readonly onBeforeMount: UnwrapRef<typeof import('@stacksjs/stx')['onBeforeMount']>
-    readonly onBeforeRouteLeave: UnwrapRef<typeof import('vue-router')['onBeforeRouteLeave']>
-    readonly onBeforeRouteUpdate: UnwrapRef<typeof import('vue-router')['onBeforeRouteUpdate']>
     readonly onBeforeUnmount: UnwrapRef<typeof import('@stacksjs/stx')['onBeforeUnmount']>
     readonly onBeforeUpdate: UnwrapRef<typeof import('@stacksjs/stx')['onBeforeUpdate']>
     readonly onClickOutside: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['onClickOutside']>
@@ -634,15 +608,12 @@ declare module '@stacksjs/stx' {
     readonly resolveRef: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['resolveRef']>
     readonly retry: UnwrapRef<typeof import('../core/browser/src/utils/retry')['retry']>
     readonly saas: UnwrapRef<typeof import('../core/browser/src/utils/plans')['saas']>
-    readonly setActivePinia: UnwrapRef<typeof import('pinia')['setActivePinia']>
-    readonly setMapStoreSuffix: UnwrapRef<typeof import('pinia')['setMapStoreSuffix']>
     readonly setSSRHandler: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['setSSRHandler']>
     readonly shallowReactive: UnwrapRef<typeof import('@stacksjs/stx')['shallowReactive']>
     readonly shallowReadonly: UnwrapRef<typeof import('@stacksjs/stx')['shallowReadonly']>
     readonly shallowRef: UnwrapRef<typeof import('@stacksjs/stx')['shallowRef']>
     readonly sleep: UnwrapRef<typeof import('../core/browser/src/utils/sleep')['sleep']>
     readonly sticky: UnwrapRef<typeof import('../core/browser/src/utils/regex')['sticky']>
-    readonly storeToRefs: UnwrapRef<typeof import('pinia')['storeToRefs']>
     readonly syncRef: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['syncRef']>
     readonly syncRefs: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['syncRefs']>
     readonly tab: UnwrapRef<typeof import('../core/browser/src/utils/regex')['tab']>
@@ -739,9 +710,7 @@ declare module '@stacksjs/stx' {
     readonly useGamepad: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useGamepad']>
     readonly useGeolocation: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useGeolocation']>
     readonly useGitStore: UnwrapRef<typeof import('../defaults/stores/git')['useGitStore']>
-    readonly useHead: UnwrapRef<typeof import('@unhead/vue')['useHead']>
-    readonly useHeadSafe: UnwrapRef<typeof import('@unhead/vue')['useHeadSafe']>
-    readonly useI18n: UnwrapRef<typeof import('vue-i18n')['useI18n']>
+    readonly useHead: UnwrapRef<typeof import('@stacksjs/stx')['useHead']>
     readonly useId: UnwrapRef<typeof import('@stacksjs/stx')['useId']>
     readonly useIdle: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useIdle']>
     readonly useImage: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useImage']>
@@ -751,7 +720,6 @@ declare module '@stacksjs/stx' {
     readonly useIntervalFn: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useIntervalFn']>
     readonly useKeyModifier: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useKeyModifier']>
     readonly useLastChanged: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useLastChanged']>
-    readonly useLink: UnwrapRef<typeof import('vue-router/auto')['useLink']>
     readonly useLocalStorage: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useLocalStorage']>
     readonly useMagicKeys: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useMagicKeys']>
     readonly useManualRefHistory: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useManualRefHistory']>
@@ -796,17 +764,13 @@ declare module '@stacksjs/stx' {
     readonly useRefHistory: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useRefHistory']>
     readonly useResizeObserver: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useResizeObserver']>
     readonly useRound: UnwrapRef<typeof import('../core/browser/src/utils/math')['useRound']>
-    readonly useRoute: UnwrapRef<typeof import('vue-router')['useRoute']>
-    readonly useRouter: UnwrapRef<typeof import('vue-router')['useRouter']>
+    readonly useRoute: UnwrapRef<typeof import('@stacksjs/stx')['useRoute']>
     readonly useScreenOrientation: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useScreenOrientation']>
     readonly useScreenSafeArea: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useScreenSafeArea']>
     readonly useScriptTag: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useScriptTag']>
     readonly useScroll: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useScroll']>
     readonly useScrollLock: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useScrollLock']>
-    readonly useSeoMeta: UnwrapRef<typeof import('@unhead/vue')['useSeoMeta']>
-    readonly useServerHead: UnwrapRef<typeof import('@unhead/vue')['useServerHead']>
-    readonly useServerHeadSafe: UnwrapRef<typeof import('@unhead/vue')['useServerHeadSafe']>
-    readonly useServerSeoMeta: UnwrapRef<typeof import('@unhead/vue')['useServerSeoMeta']>
+    readonly useSeoMeta: UnwrapRef<typeof import('@stacksjs/stx')['useSeoMeta']>
     readonly useSessionStorage: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useSessionStorage']>
     readonly useShare: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useShare']>
     readonly useSlots: UnwrapRef<typeof import('@stacksjs/stx')['useSlots']>
@@ -816,6 +780,7 @@ declare module '@stacksjs/stx' {
     readonly useStepper: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useStepper']>
     readonly useStorage: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useStorage']>
     readonly useStorageAsync: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useStorageAsync']>
+    readonly useStore: UnwrapRef<typeof import('@stacksjs/stx')['useStore']>
     readonly useStyleTag: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useStyleTag']>
     readonly useSum: UnwrapRef<typeof import('../core/browser/src/utils/math')['useSum']>
     readonly useSupported: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useSupported']>

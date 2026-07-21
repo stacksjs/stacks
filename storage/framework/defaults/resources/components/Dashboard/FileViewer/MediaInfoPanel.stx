@@ -1,8 +1,8 @@
 <!--
   MediaInfoPanel — file preview + metadata
 
-  Ported from meemalabs/file-manager (MediaInformation/{FilePreviewSection,
-  MetaDataSection,SharingSection}.vue) to stx + Crosswind. Presentational: it
+  Ported from the meemalabs/file-manager file preview, metadata, and sharing
+  sections to STX and Crosswind. Presentational: it
   renders a large preview and a metadata list for one selected file. The parent
   owns the slide-over shell (visibility, positioning, close button) and passes
   the current item in.

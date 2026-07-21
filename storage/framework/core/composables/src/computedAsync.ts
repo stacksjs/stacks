@@ -5,7 +5,7 @@ import { ref, watch } from '@stacksjs/stx'
  * Create an async computed ref.
  *
  * Returns a ref whose value is the result of an asynchronous evaluation function.
- * Since stx does not auto-track dependencies like Vue's watchEffect, you can
+ * Since STX async computations use explicit dependencies, you can
  * provide an optional array of dependency refs. When any dependency changes,
  * the evaluation callback is re-run.
  *

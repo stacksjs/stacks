@@ -435,7 +435,7 @@ export function createI18n(options: Partial<I18nConfig> = {}): I18n {
 }
 
 /**
- * Use i18n composable (for Vue-like usage)
+ * Use the i18n composable from an STX component.
  */
 export function useI18n(options: Partial<I18nConfig> = {}): I18nInstance {
   return createI18n(options)

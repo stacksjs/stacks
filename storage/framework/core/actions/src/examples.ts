@@ -7,7 +7,7 @@ import { ExitCode } from '@stacksjs/types'
 import { runNpmScript } from '@stacksjs/utils'
 
 export async function invoke(options: ExamplesOptions): Promise<void> {
-  if (options.components || options.vue) {
+  if (options.components) {
     await componentExample(options)
   }
   else if (options.webComponents || options.elements) {
@@ -26,7 +26,7 @@ export async function examples(options: ExamplesOptions): Promise<void> {
 
 export async function componentExample(options: ExamplesOptions): Promise<void> {
   if (hasComponents()) {
-    await runNpmScript(NpmScript.ExampleVue, options)
+    await runNpmScript(NpmScript.Example, options)
     log.success('Your component library was built successfully')
   }
   else {

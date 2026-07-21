@@ -2,7 +2,7 @@ import type { NewShippingMethod, ShippingMethods } from '../../../types/defaults
 import { useStorage } from '@stacksjs/browser'
 import { pushToast } from '../../toasts'
 
-// Create a persistent shipping methods array using VueUse's useStorage
+// Create a persistent shipping methods array using STX useStorage
 const shippingMethods = useStorage<ShippingMethods[]>('shippingMethods', [])
 
 const baseURL = process.env.VITE_API_URL || `http://localhost:${process.env.PORT_API || '3008'}`

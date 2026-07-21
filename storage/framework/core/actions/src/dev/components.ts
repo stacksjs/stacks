@@ -8,5 +8,5 @@ const options: DeployOptions = parseOptions()
 
 await runCommand(`bun run dev`, {
   ...options,
-  cwd: libsPath('components/vue'),
+  cwd: libsPath('components/stx'),
 })

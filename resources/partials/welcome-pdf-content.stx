@@ -9,7 +9,7 @@ const features = [
   'Full-stack TypeScript framework',
   'Built on Bun—the fastest JavaScript runtime',
   'Elegant ORM with type-safe queries',
-  'Vue-like component system',
+  'STX component system',
   'Zero-config deployment to AWS',
   'Powerful CLI tools',
 ]

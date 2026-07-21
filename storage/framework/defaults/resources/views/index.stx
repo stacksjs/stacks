@@ -607,7 +607,7 @@ Sponsor Here</div>
                   <div class="folder-item-icon">🏗️</div>
                   <div class="folder-item-content">
                     <div class="folder-item-name">stx</div>
-                    <div class="folder-item-desc">A fast & powerful UI framework. Templating inspired by Laravel Blade & Vue.</div>
+                    <div class="folder-item-desc">A fast & powerful UI framework. Templating inspired by Laravel Blade and modern component systems.</div>
                   </div>
                 </a>
             </div>

@@ -32,7 +32,7 @@ export default defineModel({
         },
       },
       factory: faker => faker.helpers.arrayElement([
-        'javascript', 'typescript', 'vue', 'react', 'nodejs',
+        'javascript', 'typescript', 'stx', 'react', 'nodejs',
         'database', 'performance', 'security', 'api', 'testing',
         'devops', 'cloud', 'frontend', 'backend', 'mobile',
       ]),

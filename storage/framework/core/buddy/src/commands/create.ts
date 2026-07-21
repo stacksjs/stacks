@@ -17,7 +17,6 @@ export function create(buddy: CLI): void {
     ui: 'Are you building a UI?',
     components: 'Are you building UI components?',
     webComponents: 'Automagically built optimized custom elements/web components?',
-    vue: 'Automagically built a Vue component library?',
     views: 'How about views?',
     functions: 'Are you developing functions/composables?',
     api: 'Are you building an API?',
@@ -35,9 +34,8 @@ export function create(buddy: CLI): void {
     .alias('create [name]')
     .option('-n, --name [name]', descriptions.name, { default: false })
     .option('-u, --ui', descriptions.ui, { default: true }) // if no, disregard remainder of questions wrt UI
-    .option('-c, --components', descriptions.components, { default: true }) // if no, --vue and -w would be false
+    .option('-c, --components', descriptions.components, { default: true })
     .option('-w, --web-components', descriptions.webComponents, { default: true })
-    .option('--vue', descriptions.vue, { default: true })
     .option('-p, --views', descriptions.views, { default: true }) // i.e. `buddy dev`
     .option('-f, --functions', descriptions.functions, { default: true }) // if no, API would be false
     .option('-a, --api', descriptions.api, { default: true }) // APIs need an HTTP server & assumes functions is true

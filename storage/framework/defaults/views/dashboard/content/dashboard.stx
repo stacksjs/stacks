@@ -272,7 +272,7 @@ const timeRanges = ['Today', 'Last 7 days', 'Last 30 days', 'Last 90 days', 'Las
 const topPosts = [
   { id: 1, title: '10 Tips for Better Code Quality', category: 'Tutorials', views: 12450, comments: 78, published: '2023-12-01', status: 'Published' },
   { id: 2, title: 'The Future of JavaScript Frameworks', category: 'Technology', views: 9870, comments: 124, published: '2023-11-28', status: 'Published' },
-  { id: 3, title: 'Getting Started with Vue 3', category: 'Tutorials', views: 8760, comments: 45, published: '2023-11-25', status: 'Published' },
+  { id: 3, title: 'Getting Started with STX', category: 'Tutorials', views: 8760, comments: 45, published: '2023-11-25', status: 'Published' },
   { id: 4, title: 'Review: Latest MacBook Pro', category: 'Reviews', views: 7650, comments: 92, published: '2023-11-20', status: 'Published' },
   { id: 5, title: 'Understanding Web Accessibility', category: 'Tutorials', views: 6540, comments: 31, published: '2023-11-15', status: 'Published' },
 ]
@@ -280,7 +280,7 @@ const topPosts = [
 const recentComments = [
   { id: 1, author: 'John Smith', email: 'john.smith@example.com', content: "Great article! This helped me solve a problem I've been stuck on for days.", post: '10 Tips for Better Code Quality', date: '2023-12-01', status: 'Approved' },
   { id: 2, author: 'Sarah Johnson', email: 'sarah.j@example.com', content: 'I disagree with point #3. In my experience, that approach causes more problems than it solves.', post: 'The Future of JavaScript Frameworks', date: '2023-12-01', status: 'Pending' },
-  { id: 3, author: 'Michael Brown', email: 'mbrown@example.com', content: 'Thanks for the tutorial! Could you elaborate more on the setup process?', post: 'Getting Started with Vue 3', date: '2023-11-30', status: 'Approved' },
+  { id: 3, author: 'Michael Brown', email: 'mbrown@example.com', content: 'Thanks for the tutorial! Could you elaborate more on the setup process?', post: 'Getting Started with STX', date: '2023-11-30', status: 'Approved' },
   { id: 4, author: 'Emily Davis', email: 'emily.davis@example.com', content: 'I found a typo in the third paragraph. It should be "their" not "there".', post: '10 Tips for Better Code Quality', date: '2023-11-30', status: 'Approved' },
   { id: 5, author: 'David Wilson', email: 'dwilson@example.com', content: 'This review seems biased. Have you tried comparing it with the competition?', post: 'Review: Latest MacBook Pro', date: '2023-11-29', status: 'Spam' },
 ]

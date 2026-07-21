@@ -16,13 +16,6 @@
         }
       }
     },
-    "Vue.js": {
-      "formatter": {
-        "code_actions": {
-          "source.fixAll.eslint": true
-        }
-      }
-    },
     "HTML": {
       "formatter": {
         "code_actions": {

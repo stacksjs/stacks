@@ -4,7 +4,7 @@ This package contains the Stacks UI engine.
 
 ## ☘️ Features
 
-- 🍀 **Vue-powered** _extendable & native access to the ecosystem_
+- 🍀 **STX-powered** _extendable & native access to the ecosystem_
 - 🎨 **Style with ease** _via a blazingly fast utility-first CSS framework, powered by Headwind_
 - 🍍 **Simple data storage** _accessed via an intuitive API_
 - Written in modern ESM/TypeScript

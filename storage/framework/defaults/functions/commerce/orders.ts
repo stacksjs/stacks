@@ -2,7 +2,7 @@ import type { Orders } from '../../types/defaults'
 import { useStorage } from '@stacksjs/browser'
 import { pushToast } from '../toasts'
 
-// Create a persistent orders array using VueUse's useStorage
+// Create a persistent orders array using STX useStorage
 const orders = useStorage<Orders[]>('orders', [])
 
 const baseURL = process.env.VITE_API_URL || `http://localhost:${process.env.PORT_API || '3008'}`

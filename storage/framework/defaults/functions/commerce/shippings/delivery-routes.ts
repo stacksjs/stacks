@@ -2,7 +2,7 @@ import type { DeliveryRoutes, NewDeliveryRoute } from '../../../types/defaults'
 import { useStorage } from '@stacksjs/browser'
 import { pushToast } from '../../toasts'
 
-// Create a persistent delivery routes array using VueUse's useStorage
+// Create a persistent delivery routes array using STX useStorage
 const deliveryRoutes = useStorage<DeliveryRoutes[]>('deliveryRoutes', [])
 
 const baseURL = process.env.VITE_API_URL || `http://localhost:${process.env.PORT_API || '3008'}`

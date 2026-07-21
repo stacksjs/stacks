@@ -1,7 +1,7 @@
 /**
  * Per-request DataLoader-style batcher for `Model.findMany([id])`-style
  * lookups. The classic N+1 antidote isn't always reachable through
- * `.with(...)` (e.g. fetching siblings in a Vue component, computing
+ * `.with(...)` (e.g. fetching siblings in an STX component, computing
  * something off the side of the request, jobs that fan out per-item
  * rather than per-row). This module provides a `batchLoad(model, id)`
  * helper that collects ids on the same tick, fires a single

@@ -157,7 +157,7 @@ const sampleLogs: ActivityLog[] = [
   { id: '7', log_name: 'commerce', description: 'Order #1024 placed', subject_type: 'Order', subject_id: '1024', event: 'created', causer: { name: 'John Doe', avatar: 'https://i.pravatar.cc/150?u=john' }, created_at: new Date(Date.now() - 1000 * 60 * 60 * 26).toISOString() },
   { id: '8', log_name: 'auth', description: 'User logged out', subject_type: 'User', subject_id: '2', event: 'deleted', causer: { name: 'John Doe', avatar: 'https://i.pravatar.cc/150?u=john' }, created_at: new Date(Date.now() - 1000 * 60 * 60 * 36).toISOString() },
   { id: '9', log_name: 'server', description: 'Restarted node-1', subject_type: 'Server', subject_id: 'node-1', event: 'updated', causer: { name: 'System' }, created_at: new Date(Date.now() - 1000 * 60 * 60 * 48).toISOString() },
-  { id: '10', log_name: 'blog', description: 'Published post "Vue 3 Tips"', subject_type: 'Post', subject_id: '88', event: 'updated', causer: { name: 'Jane Smith', avatar: 'https://i.pravatar.cc/150?u=jane' }, created_at: new Date(Date.now() - 1000 * 60 * 60 * 72).toISOString() },
+  { id: '10', log_name: 'blog', description: 'Published post "STX Tips"', subject_type: 'Post', subject_id: '88', event: 'updated', causer: { name: 'Jane Smith', avatar: 'https://i.pravatar.cc/150?u=jane' }, created_at: new Date(Date.now() - 1000 * 60 * 60 * 72).toISOString() },
 ]
 
 const logs = state<ActivityLog[]>(sampleLogs)

@@ -50,7 +50,7 @@
     "configurationDefaults": {
       "files.associations": {
         "buddy": "typescript",
-        "*.stx": "vue"
+        "*.stx": "html"
       },
       "npm.packageManager": "bun",
       "typescript.preferGoToSourceDefinition": true,
@@ -71,8 +71,7 @@
     "nhoizey.gremlins",
     "Orta.vscode-twoslash-queries",
     "oven.bun-vscode",
-    "streetsidesoftware.code-spell-checker",
-    "vue.volar"
+    "streetsidesoftware.code-spell-checker"
   ],
   "devDependencies": {
     "@vscode/vsce": "^3.7.2-12"

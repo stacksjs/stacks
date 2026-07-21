@@ -1,5 +1,5 @@
 /**
- * Vite plugin options for Vue I18n
+ * Internationalization plugin options for STX
  */
 interface VitePluginVueI18nOptions {
   forceStringify?: boolean

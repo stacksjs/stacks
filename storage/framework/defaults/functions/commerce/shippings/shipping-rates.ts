@@ -2,7 +2,7 @@ import type { NewShippingRate, ShippingRates } from '../../../types/defaults'
 import { useStorage } from '@stacksjs/browser'
 import { pushToast } from '../../toasts'
 
-// Create a persistent shipping rates array using VueUse's useStorage
+// Create a persistent shipping rates array using STX useStorage
 const shippingRates = useStorage<ShippingRates[]>('shippingRates', [])
 
 const baseURL = process.env.VITE_API_URL || `http://localhost:${process.env.PORT_API || '3008'}`

@@ -1,7 +1,0 @@
-<script>
-import TableV2 from '../../../core/components/table/src/components/MainTable.vue'
-</script>
-
-<Suspense>
-  <TableV2 columns="id, name, email" type="users" />
-</Suspense>

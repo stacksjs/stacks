@@ -69,7 +69,7 @@ console.log('HelloWorld component mounted & the greeting is', greeting)
             <div class="ml-12">
               <div class="mt-2 leading-6 text-gray-600 text-sm dark:text-neutral-400">
                 The easiest way to build component libraries and distribute them on npm. Stacks automatically imports all of your components & makes them available to you in your templates.
-                And it automatically builds framework agnostic (e.g. Web & Vue Components) component libraries out of those.
+                And it automatically builds framework agnostic (e.g. Web and STX components) component libraries out of those.
               </div>
             </div>
           </div>

@@ -32,8 +32,8 @@ const generatedCode = template(actionTemplate, 'MyAction')
 ## Available Templates
 
 - **action**: Creates a new Action class
-- **component**: Creates a new Vue component
-- **page**: Creates a new Vue page
+- **component**: Creates a new STX component
+- **page**: Creates a new STX page
 - **function**: Creates a new composable function
 - **language**: Creates a new language file
 - **notification**: Creates a new notification

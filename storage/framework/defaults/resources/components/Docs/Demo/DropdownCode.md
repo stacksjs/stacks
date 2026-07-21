@@ -1,4 +1,4 @@
-```vue
+```html
 <script lang="ts" setup>
 import { ref } from '@stacksjs/stx'
 import { Dropdown, DropdownButton, DropdownItem, DropdownItems } from '@stacksjs/dropdown'

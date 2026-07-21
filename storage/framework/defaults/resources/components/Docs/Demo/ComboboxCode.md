@@ -1,4 +1,4 @@
-```vue
+```html
 <script lang="ts" setup>
 import { ref, computed } from '@stacksjs/stx'
 import {

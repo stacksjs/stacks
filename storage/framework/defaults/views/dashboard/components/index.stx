@@ -151,9 +151,9 @@
 // (stacksjs/stacks#1838). Replace with a real component scan when the
 // API lands.
 const componentList = [
-  { name: 'Component A', size: '30kb', path: './resources/components/component-a.vue', updated_at: '01-03-2023 08:23:15', created_at: '04-19-2022 09:04:20' },
-  { name: 'Component B', size: '30kb', path: './resources/components/component-b.vue', updated_at: '01-03-2023 08:23:15', created_at: '04-19-2022 09:04:20' },
-  { name: 'Component C', size: '30kb', path: './resources/components/component-c.vue', updated_at: '01-03-2023 08:23:15', created_at: '04-19-2022 09:04:20' },
+  { name: 'Component A', size: '30kb', path: './resources/components/component-a.stx', updated_at: '01-03-2023 08:23:15', created_at: '04-19-2022 09:04:20' },
+  { name: 'Component B', size: '30kb', path: './resources/components/component-b.stx', updated_at: '01-03-2023 08:23:15', created_at: '04-19-2022 09:04:20' },
+  { name: 'Component C', size: '30kb', path: './resources/components/component-c.stx', updated_at: '01-03-2023 08:23:15', created_at: '04-19-2022 09:04:20' },
 ]
 
 interface DownloadStats {

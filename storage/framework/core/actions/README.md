@@ -9,7 +9,7 @@ This package contains the Stacks Actions.
 - Generate Stacks Library Entry Points
 - Generate Package Manifests
 - Generate VS Code Custom Data file
-- Generate Vue 2 Compatibility (maybe deprecate)
+- Generate STX component metadata
 
 ## 🤖 Usage
 

@@ -2,7 +2,7 @@ import type { LicenseKeys, NewLicenseKey } from '../../../types/defaults'
 import { useStorage } from '@stacksjs/browser'
 import { pushToast } from '../../toasts'
 
-// Create a persistent license keys array using VueUse's useStorage
+// Create a persistent license keys array using STX useStorage
 const licenseKeys = useStorage<LicenseKeys[]>('licenseKeys', [])
 
 const baseURL = process.env.VITE_API_URL || `http://localhost:${process.env.PORT_API || '3008'}`

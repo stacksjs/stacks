@@ -1,2 +1,2 @@
-// Menu primitives were part of the former Vue compatibility layer.
+// Menu primitives were part of the former compatibility layer.
 export {}

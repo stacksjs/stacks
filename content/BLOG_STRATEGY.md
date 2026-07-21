@@ -62,7 +62,7 @@ ecosystem comparison, and the Road-to-v1.0s announcement.
 - **What it takes to emit `.d.ts` files** → `dtsx`, isolated declarations, why
   bundler-emitted types fall short.
 - **Owning the view layer** → `stx` templating: signals, directives, SSR +
-  streaming, why not JSX/Blade/Vue SFCs.
+  streaming, and how STX compares with other template systems.
   - *Follow-up:* "Building a component with stx, end to end."
 - **A CSS engine you control** → `crosswind`: utility-first without the
   upstream churn; custom rules and theming.

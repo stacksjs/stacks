@@ -1,5 +1,5 @@
-```vue
-<!-- App.vue -->
+```html
+<!-- App.stx -->
 <script lang="ts" setup>
 import { Dialog, DialogPanel } from '@stacksjs/dialog'
 

@@ -57,7 +57,6 @@
     "@stacksjs/cli": "workspace:*",
     "better-dx": "catalog:",
     "@stacksjs/path": "workspace:*",
-    "@stacksjs/storage": "workspace:*",
-    "vue-docgen-web-types": "^0.1.8"
+    "@stacksjs/storage": "workspace:*"
   }
 }

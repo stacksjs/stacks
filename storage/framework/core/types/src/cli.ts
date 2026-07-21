@@ -234,7 +234,6 @@ export type CreateBooleanOption =
   | 'ui'
   | 'components'
   | 'web-components'
-  | 'vue'
   | 'views'
   | 'functions'
   | 'api'
@@ -315,7 +314,7 @@ export type UpgradeOptions = {
 } & CliOptions
 
 export type ExamplesString = 'version'
-export type ExamplesBoolean = 'components' | 'vue' | 'webComponents' | 'elements' | 'all' | 'force'
+export type ExamplesBoolean = 'components' | 'webComponents' | 'elements' | 'all' | 'force'
 export type ExamplesOption = ExamplesString & ExamplesBoolean
 export type ExamplesOptions = {
   [key in ExamplesString]: string

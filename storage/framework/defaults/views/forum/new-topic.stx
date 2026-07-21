@@ -71,7 +71,7 @@
             <label class="block mb-1 font-medium">Tags</label>
             <input
               type="text"
-              placeholder="Add tags separated by commas (e.g. javascript, vue, api)"
+              placeholder="Add tags separated by commas (e.g. javascript, stx, api)"
               class="px-3 py-2 w-full border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
             >
             <div class="mt-1 text-gray-500 text-xs">

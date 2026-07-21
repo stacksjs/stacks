@@ -6,7 +6,7 @@ Easily get your project linted. It "just works."
 
 - Single quotes, no semi
 - Auto fix for formatting (aimed to be used as standalone without Prettier)
-- Designed to work with TypeScript, Vue out-of-box (React opt-in)
+- Designed to work with TypeScript and STX out of the box
 - Lint also for json, yaml, markdown
 - Sorted imports, dangling commas for cleaner commit diff
 - Improved component library linting & formatting

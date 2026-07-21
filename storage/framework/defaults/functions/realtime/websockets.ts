@@ -3,7 +3,7 @@ import { useFetch, useStorage } from '@stacksjs/browser'
 
 const baseURL = process.env.VITE_API_URL || `http://localhost:${process.env.PORT_API || '3008'}`
 
-// Create a persistent websockets array using VueUse's useStorage
+// Create a persistent websockets array using STX useStorage
 const websockets = useStorage<Websockets[]>('websockets', [])
 
 // Basic fetch function to get all websocket events

@@ -1,18 +1,17 @@
 /**
  * Component meta extraction for STX components.
  *
- * Replaces the old `vue-component-meta` integration. We don't ship Vue
- * anymore — `.stx` is the only template format Stacks supports — so this
+ * Extracts metadata from `.stx`, the only template format Stacks supports, so this
  * module reads each `.stx` file directly, parses the `<script>` block for
  * `defineProps<…>()` (with or without `withDefaults`), scans the template
  * for `<slot>` and named slots, and pulls preceding JSDoc-style comments
  * onto each prop as its description.
  *
  * The output JSON shape is compatible with what the dashboard component
- * library expected from vue-component-meta — `{ props, events, slots }` —
+ * library expects: `{ props, events, slots }`.
  * so existing consumers don't need to change.
  *
- * Tradeoffs vs vue-component-meta:
+ * Parser tradeoffs:
  *  - We parse with regexes, not the TS compiler, so we won't resolve types
  *    imported from another file. That's a non-issue for the way STX
  *    components are written today (props live next to defineProps), and
@@ -84,8 +83,7 @@ export async function generateComponentMeta(): Promise<void> {
   // raw source text rather than rendered HTML.
   await getMarkdownParser()
 
-  // STX is the only template format we ship; .vue support was dropped along
-  // with vue-component-meta. Globbing both directories covers project layouts
+  // STX is the only template format we ship. Globbing both directories covers project layouts
   // that put components at `src/components/` AND framework defaults at
   // `storage/framework/defaults/resources/components/`.
   const components = globSync(

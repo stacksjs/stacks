@@ -9,7 +9,6 @@ import { copyFolder } from '@stacksjs/storage'
 
 // relative to scripts directory
 const destinations = [
-  [frameworkPath('dist/types/components'), frameworkPath('defaults/resources/components/vue/dist/types')],
   [frameworkPath('dist/types/components'), frameworkPath('defaults/resources/components/web/dist/types')],
   [frameworkPath('dist/types/functions'), frameworkPath('defaults/functions/dist/types')],
 ]

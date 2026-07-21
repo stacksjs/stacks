@@ -1,4 +1,4 @@
-```vue
+```html
 
 <script lang="ts" setup>
 import { Popover, PopoverButton, PopoverPanel } from '@stacksjs/popover'

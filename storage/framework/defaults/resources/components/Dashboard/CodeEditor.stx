@@ -25,7 +25,7 @@ cp`
     @endif
   </header>
 
-  <div class="bg-[#0d1117] rounded-b-lg vue-ace-editor" style="height: 300px; font-size: 14px;">
+  <div class="bg-[#0d1117] rounded-b-lg stx-code-editor" style="height: 300px; font-size: 14px;">
     <pre class="p-4 font-mono text-[#c9d1d9] text-sm">{{ content }}</pre>
   </div>
 <style>
@@ -33,7 +33,7 @@ select {
   margin-right: 15px;
 }
 
-.vue-ace-editor {
+.stx-code-editor {
   font-size: 14px;
   flex: 1;
   font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace;

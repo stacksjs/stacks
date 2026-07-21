@@ -1,14 +1,17 @@
-## Layouts
+# Layouts
 
-Vue components in this dir are used as layouts.
+STX layouts wrap pages with shared navigation, metadata, and structure.
 
-By default, `default.stx` will be used unless an alternative is specified in the route meta.
-
-With [`unplugin-vue-router`](https://github.com/posva/unplugin-vue-router) and [`vite-plugin-layouts`](https://github.com/stacksjs/vite-plugin-layouts), you can specify the layout in the page's SFCs like this:
+`default.stx` is used when a page does not select another layout. A page can
+choose a named layout with the STX layout directive:
 
 ```html
-<route lang="yaml">
-meta:
-  layout: home
-</route>
+@layout('home')
+
+<main>
+  <h1>{{ title }}</h1>
+</main>
 ```
+
+Layouts live in this directory and use the same STX template syntax as pages
+and components.

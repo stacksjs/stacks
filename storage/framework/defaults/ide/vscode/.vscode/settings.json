@@ -65,7 +65,7 @@
   "eslint.validate": [
     "javascript",
     "typescript",
-    "vue",
+    "html",
     "html",
     "markdown",
     "json",
@@ -115,11 +115,10 @@
     "MD041": false
   },
   // Stacks
-  "vue.inlayHints.missingProps": true,
   "typescript.preferGoToSourceDefinition": true,
   "files.associations": {
     "buddy": "typescript",
-    "*.stx": "vue"
+    "*.stx": "html"
   },
   "editor.quickSuggestions": {
     "strings": true

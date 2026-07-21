@@ -224,7 +224,7 @@ describe('Stack Extensions', () => {
       createTestStack('__test-nested-stack', 'testnested', {
         'resources/views/__test-blog/index.stx': '<div>Blog</div>',
         'resources/views/__test-blog/post.stx': '<div>Post</div>',
-        'resources/components/__TestCard.vue': '<template>Card</template>',
+        'resources/components/__TestCard.stx': '<template>Card</template>',
       })
 
       const result = await installStack({ name: '__test-nested-stack' })
@@ -233,11 +233,11 @@ describe('Stack Extensions', () => {
       expect(result!.files.length).toBe(3)
       expect(existsSync(p.projectPath('resources/views/__test-blog/index.stx'))).toBe(true)
       expect(existsSync(p.projectPath('resources/views/__test-blog/post.stx'))).toBe(true)
-      expect(existsSync(p.projectPath('resources/components/__TestCard.vue'))).toBe(true)
+      expect(existsSync(p.projectPath('resources/components/__TestCard.stx'))).toBe(true)
 
       trackProjectFile('resources/views/__test-blog/index.stx')
       trackProjectFile('resources/views/__test-blog/post.stx')
-      trackProjectFile('resources/components/__TestCard.vue')
+      trackProjectFile('resources/components/__TestCard.stx')
       // Also track the parent dir we created
       createdPaths.push(p.projectPath('resources/views/__test-blog'))
     })

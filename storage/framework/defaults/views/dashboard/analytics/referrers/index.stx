@@ -202,15 +202,15 @@ const referrerTypesData = state<ReferrerTypeRow[]>([
 
 const searchTermsData = state<SearchTermRow[]>([
   { term: 'stacks js', visitors: 120, percentage: 18 },
-  { term: 'vue framework', visitors: 85, percentage: 13 },
+  { term: 'STX framework', visitors: 85, percentage: 13 },
   { term: 'typescript framework', visitors: 75, percentage: 11 },
   { term: 'stacks framework', visitors: 68, percentage: 10 },
-  { term: 'modern vue framework', visitors: 65, percentage: 10 },
-  { term: 'vue 3 framework', visitors: 62, percentage: 9 },
-  { term: 'typescript vue', visitors: 60, percentage: 9 },
-  { term: 'stacks vue', visitors: 58, percentage: 9 },
-  { term: 'vue typescript starter', visitors: 55, percentage: 8 },
-  { term: 'vue typescript boilerplate', visitors: 20, percentage: 3 },
+  { term: 'modern STX framework', visitors: 65, percentage: 10 },
+  { term: 'STX framework', visitors: 62, percentage: 9 },
+  { term: 'TypeScript STX', visitors: 60, percentage: 9 },
+  { term: 'Stacks STX', visitors: 58, percentage: 9 },
+  { term: 'STX TypeScript starter', visitors: 55, percentage: 8 },
+  { term: 'STX TypeScript starter', visitors: 20, percentage: 3 },
 ])
 
 const referrerTrendData = state<Array<{ date: string, Direct: number, Social: number, Search: number, Referral: number }>>([

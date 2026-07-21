@@ -1,4 +1,4 @@
-```vue
+```html
 <script lang="ts" setup>
 import { ref } from '@stacksjs/stx'
 import { RadioGroup, RadioGroupLabel, RadioGroupOption, RadioGroupDescription } from '@stacksjs/radio-group'

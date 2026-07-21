@@ -2,7 +2,7 @@ import type { ProductVariants } from '../../../types/defaults'
 import { useStorage } from '@stacksjs/browser'
 import { pushToast } from '../../toasts'
 
-// Create a persistent variants array using VueUse's useStorage
+// Create a persistent variants array using STX useStorage
 const variants = useStorage<ProductVariants[]>('variants', [])
 
 const baseURL = process.env.VITE_API_URL || `http://localhost:${process.env.PORT_API || '3008'}`

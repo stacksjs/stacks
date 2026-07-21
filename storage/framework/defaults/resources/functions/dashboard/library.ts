@@ -35,7 +35,7 @@ export interface ComponentEntry {
 
 /**
  * Scan the dashboard component directory plus any user component
- * directories. Returns one entry per `.stx` / `.vue` file with the file
+ * directories. Returns one entry per `.stx` file with the file
  * size (so the UI can show "small", "medium", "large" hints).
  */
 export function listComponents(): ComponentEntry[] {
@@ -49,7 +49,7 @@ export function listComponents(): ComponentEntry[] {
     const abs = resolve(root, dir)
     if (!existsSync(abs)) continue
     walkSync(abs, (file) => {
-      if (!/\.(?:stx|vue|tsx|jsx)$/.test(file)) return
+      if (!file.endsWith('.stx')) return
       try {
         const stat = statSync(file)
         out.push({

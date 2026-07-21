@@ -969,7 +969,7 @@ With Stacks, you get a **unified, batteries-included framework** that handles ev
 - **Type-Safe by Default**: Built on TypeScript with deep type inference throughout
 - **Cloud-Native**: Define your AWS infrastructure in \`config/cloud.ts\` and deploy with \`./buddy deploy\`
 - **Zero-Config DX**: Linting, testing, CI/CD pipelines, and documentation generation — all preconfigured
-- **Library Extraction**: Build your app, then extract reusable Vue components and TypeScript functions as publishable packages
+- **Library Extraction**: Build your app, then extract reusable STX components and TypeScript functions as publishable packages
 
 ## Getting Started
 

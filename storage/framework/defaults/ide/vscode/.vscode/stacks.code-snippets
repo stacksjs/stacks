@@ -134,35 +134,35 @@
 		"body": [
 			"<${1:div} :style=\"{ fontSize: ${2:data} + 'px' }\"></${1:div}>"
 		],
-		"description": "vue inline style binding"
+		"description": "STX inline style binding"
 	},
 	"Stacks Style Binding Object": {
 		"prefix": "vstyle-obj",
 		"body": [
 			"<${1:div} :style=\"[${2:styleObjectA}, ${3:styleObjectB]}\"></${1:div}>"
 		],
-		"description": "vue inline style binding, objects"
+		"description": "STX inline style binding, objects"
 	},
 	"Stacks Class Binding": {
 		"prefix": "vclass",
 		"body": [
 			"<${1:div} :class=\"{ ${2:className}: ${3:data} }\"></${1:div}>"
 		],
-		"description": "vue class binding"
+		"description": "STX class binding"
 	},
 	"Stacks Class Binding Object": {
 		"prefix": "vclass-obj",
 		"body": [
 			"<${1:div} :class=\"[${2:classNameA}, ${3:classNameB}]\"></${1:div}>"
 		],
-		"description": "vue class binding"
+		"description": "STX class binding"
 	},
 	"Stacks Multiple Conditional Class Bindings": {
 		"prefix": "vclass-obj-mult",
 		"body": [
 			"<${1:div} :class=\"[${2:classNameA}, {${3:classNameB} : ${4:condition}}]\"></${1:div}>"
 		],
-		"description": "vue multiple conditional class bindings"
+		"description": "STX multiple conditional class bindings"
 	},
 	"Stacks Emit from Child": {
 		"prefix": "vemit-child",

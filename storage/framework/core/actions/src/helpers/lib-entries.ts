@@ -79,7 +79,7 @@ export function generateEntryPointData(type: LibraryType): string {
 
   // at this point, we know it is a Web Component we are building
   arr = determineResetPreset()
-  const imports = [...arr, 'import { defineCustomElement } from \'vue\'']
+  const imports = [...arr, 'import { defineCustomElement } from \'@stacksjs/stx\'']
   const declarations = []
   const definitions = []
 
@@ -94,12 +94,12 @@ export function generateEntryPointData(type: LibraryType): string {
 
   for (const component of library.webComponents.tags.map(tag => tag.name)) {
     if (Array.isArray(component)) {
-      imports.push(`import ${component[1]} from '${componentsPath(component[0])}.vue'`)
+      imports.push(`import ${component[1]} from '${componentsPath(component[0])}.stx'`)
       declarations.push(`const ${component[1]}CustomElement = defineCustomElement(${component[1]})`)
       definitions.push(`customElements.define('${kebabCase(component[1] as string)}', ${component[1]}CustomElement)`)
     }
     else {
-      imports.push(`import ${component} from '${componentsPath(component)}.vue'`)
+      imports.push(`import ${component} from '${componentsPath(component)}.stx'`)
       declarations.push(`const ${component}CustomElement = defineCustomElement(${component})`)
       definitions.push(`customElements.define('${kebabCase(component)}', ${component}CustomElement)`)
     }

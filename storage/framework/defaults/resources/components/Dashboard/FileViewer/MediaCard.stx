@@ -1,7 +1,7 @@
 <!--
   MediaCard — Meema-style visual file preview
 
-  Ported from meemalabs/file-manager (MediaCard/{Image,Video,Audio,Document}.vue)
+  Ported from the meemalabs/file-manager media card components.
   to stx + Crosswind. Presentational: it renders the preview + label for one
   file item and derives the media "kind" from `mime_type` (preferred) or the
   file extension in `type`. Real thumbnails render when the item carries a

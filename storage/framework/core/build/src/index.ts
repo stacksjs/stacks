@@ -101,7 +101,7 @@ export async function intro(options: { dir: string, pkgName?: string, styled?: b
  *
  * Pass extra package-specific entries as `extras` and they'll be merged in.
  *
- * Notably absent: `sharp`, `vue-component-meta`, `@aws-sdk/*`. We don't ship
+ * Notably absent: `sharp`, template metadata compilers, and `@aws-sdk/*`. We don't ship
  * any of those — image work goes through the in-house `ts-images` (formerly
  * `imgx`), template metadata is parsed by our own STX-aware extractor, and
  * AWS interactions go through `ts-cloud` / our wrappers. If a build error

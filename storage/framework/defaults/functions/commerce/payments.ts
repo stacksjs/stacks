@@ -2,7 +2,7 @@ import type { Payments } from '../../types/defaults'
 import { useStorage } from '@stacksjs/browser'
 import { pushToast } from '../toasts'
 
-// Create a persistent payments array using VueUse's useStorage
+// Create a persistent payments array using STX useStorage
 const payments = useStorage<Payments[]>('payments', [])
 
 const baseURL = process.env.VITE_API_URL || `http://localhost:${process.env.PORT_API || '3008'}`

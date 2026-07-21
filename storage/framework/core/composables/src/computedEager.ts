@@ -9,7 +9,7 @@ import { ref, watch } from '@stacksjs/stx'
  * until `.value` is accessed. This is useful when you want to precompute values
  * eagerly.
  *
- * Since stx does not auto-track dependencies in the same way as Vue's computed,
+ * Since STX eager computations use explicit dependencies,
  * this accepts an optional array of dependency refs to watch. When any dependency
  * changes, the function is re-evaluated immediately.
  *

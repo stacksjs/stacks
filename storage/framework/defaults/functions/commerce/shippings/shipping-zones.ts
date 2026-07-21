@@ -2,7 +2,7 @@ import type { NewShippingZone, ShippingZones } from '../../../types/defaults'
 import { useStorage } from '@stacksjs/browser'
 import { pushToast } from '../../toasts'
 
-// Create a persistent shipping zones array using VueUse's useStorage
+// Create a persistent shipping zones array using STX useStorage
 const shippingZones = useStorage<ShippingZones[]>('shippingZones', [])
 
 const baseURL = process.env.VITE_API_URL || `http://localhost:${process.env.PORT_API || '3008'}`

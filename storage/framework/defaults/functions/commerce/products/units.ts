@@ -2,7 +2,7 @@ import type { Units } from '../../../types/defaults'
 import { useStorage } from '@stacksjs/browser'
 import { pushToast } from '../../toasts'
 
-// Create a persistent units array using VueUse's useStorage
+// Create a persistent units array using STX useStorage
 const units = useStorage<Units[]>('units', [])
 
 const baseURL = process.env.VITE_API_URL || `http://localhost:${process.env.PORT_API || '3008'}`

@@ -252,7 +252,6 @@ pflannery
 phpcs
 phpunit
 picocolors
-pinia
 pkgjson
 pkgx
 plivo
@@ -385,7 +384,6 @@ vslot
 vsrc
 vstyle
 vueform
-vueuse
 wafv
 Waitlist
 webfont

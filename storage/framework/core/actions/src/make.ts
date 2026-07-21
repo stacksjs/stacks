@@ -146,7 +146,11 @@ export async function createAction(options: MakeOptions): Promise<void> {
 
 export async function createComponent(options: MakeOptions): Promise<void> {
   const name = options.name
-  await createFileWithTemplate(p.userComponentsPath(`${name}.vue`), 'component', name)
+  await createFileWithTemplate(p.userComponentsPath(componentFileName(name)), 'component', name)
+}
+
+export function componentFileName(name: string): string {
+  return `${name}.stx`
 }
 
 export function makeDatabase(options: MakeOptions): void {
@@ -334,7 +338,11 @@ export async function makePage(options: MakeOptions): Promise<void> {
 
 export async function createPage(options: MakeOptions): Promise<void> {
   const name = options.name
-  await createFileWithTemplate(p.userViewsPath(`${name}.vue`), 'page', name)
+  await createFileWithTemplate(p.userViewsPath(pageFileName(name)), 'page', name)
+}
+
+export function pageFileName(name: string): string {
+  return `${name}.stx`
 }
 
 export async function makeFunction(options: MakeOptions): Promise<void> {

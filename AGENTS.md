@@ -121,7 +121,7 @@ Manifests: `storage/framework/{browser,server}-auto-imports.json`. Generated typ
 declarations). Full reference: `stacks-auto-imports`.
 
 **stx templates (browser)** - available with no import:
-- Vue reactivity + 200+ VueUse-style composables: `ref`, `computed`, `watch`, `reactive`,
+- STX reactivity and 200+ composables: `ref`, `computed`, `watch`, `reactive`,
   `watchEffect`, `useFetch`, `useDark` / `useColorMode`, `useStorage`, `useLocalStorage`, `useToggle`,
   `useCounter`, `useIntersectionObserver`, `useScroll`, `useMouse`, `useParallax`,
   `usePreferredReducedMotion`, plus utilities (`debounce`, `throttle`, `sleep`, `clamp`), `useAuth`,

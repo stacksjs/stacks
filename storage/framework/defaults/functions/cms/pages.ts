@@ -1,7 +1,7 @@
 import type { Pages } from '../../types/defaults'
 import { useFetch, useStorage } from '@stacksjs/browser'
 
-// Create a persistent pages array using VueUse's useStorage
+// Create a persistent pages array using STX useStorage
 const pages = useStorage<Pages[]>('pages', [])
 
 const baseURL = process.env.VITE_API_URL || `http://localhost:${process.env.PORT_API || '3008'}`

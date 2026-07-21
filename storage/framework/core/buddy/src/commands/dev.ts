@@ -265,7 +265,7 @@ export function dev(buddy: CLI): void {
 
       const perf = await intro('buddy dev:components')
       const result = await runCommand('bun run dev', {
-        cwd: libsPath('components/vue'),
+        cwd: libsPath('components/stx'),
         // silent: !options.verbose,
       })
 

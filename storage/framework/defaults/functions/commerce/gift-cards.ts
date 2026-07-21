@@ -2,7 +2,7 @@ import type { GiftCards } from '../../types/defaults'
 import { useStorage } from '@stacksjs/browser'
 import { pushToast } from '../toasts'
 
-// Create a persistent gift cards array using VueUse's useStorage
+// Create a persistent gift cards array using STX useStorage
 const giftCards = useStorage<GiftCards[]>('giftCards', [])
 
 const baseURL = process.env.VITE_API_URL || `http://localhost:${process.env.PORT_API || '3008'}`
