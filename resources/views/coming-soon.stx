@@ -80,8 +80,8 @@ const siteDescription = 'Stacks is a full-stack TypeScript framework for web app
       }
 
       /* The dawn scene: Laravel 5.7's 503 illustration, recolored so its
-         rising sun is a Stacks blue sun over blue dunes. Dark mode swaps in
-         the night variant. Edges blend into the page background. */
+        rising sun is a Stacks blue sun over blue dunes. Dark mode swaps in
+        the night variant. Edges blend into the page background. */
       .scene {
         position: fixed;
         inset: 0;
@@ -119,7 +119,7 @@ const siteDescription = 'Stacks is a full-stack TypeScript framework for web app
       }
 
       /* The nature motif, tinted brand blue instead of gray: quiet contour
-         lines inside the card, behind its content. */
+        lines inside the card, behind its content. */
       .card::before {
         position: absolute;
         inset: 0;
@@ -182,7 +182,7 @@ const siteDescription = 'Stacks is a full-stack TypeScript framework for web app
       }
 
       /* Class selector on purpose: the pipeline's preflight resets bare h1
-         typography, and a class always wins over an element selector. */
+        typography, and a class always wins over an element selector. */
       .title {
         font-size: clamp(2.4rem, 6vw, 3.6rem);
         font-weight: 800;

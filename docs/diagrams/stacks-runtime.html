@@ -26,8 +26,8 @@
   </script>
   <style>
     /* ==========================================================
-       THEME VARIABLES - switch by toggling [data-theme] on <html>
-       ========================================================== */
+      THEME VARIABLES - switch by toggling [data-theme] on <html>
+      ========================================================== */
     :root,
     [data-theme="dark"] {
       --bg: #020617;
@@ -47,7 +47,7 @@
       --arrow-emphasis: #34d399;
 
       /* Opaque mask color used behind semi-transparent component fills
-         so the arrows drawn underneath are properly hidden. */
+        so the arrows drawn underneath are properly hidden. */
       --mask: #0f172a;
 
       --frontend-fill:    rgba(8, 51, 68, 0.4);
@@ -226,17 +226,17 @@
     }
 
     /* ==========================================================
-       Print stylesheet - hide interactive controls, force light,
-       drop the grid so the diagram doesn't waste ink, use landscape
-       so wide diagrams fit, pack summary cards into 2 columns to
-       avoid an orphan card on a trailing page.
-       ========================================================== */
+      Print stylesheet - hide interactive controls, force light,
+      drop the grid so the diagram doesn't waste ink, use landscape
+      so wide diagrams fit, pack summary cards into 2 columns to
+      avoid an orphan card on a trailing page.
+      ========================================================== */
     @page { size: landscape; margin: 1.5cm; }
 
     @media print {
       /* Force the FULL light palette - including component fills/strokes and
-         lane/arrow colors - so printing from dark theme doesn't put neon
-         strokes and translucent dark fills on white paper. */
+        lane/arrow colors - so printing from dark theme doesn't put neon
+        strokes and translucent dark fills on white paper. */
       :root, [data-theme="dark"], [data-theme="light"] {
         --bg: #ffffff;
         --grid: transparent;
@@ -278,8 +278,8 @@
     }
 
     /* ==========================================================
-       TOOLBAR (theme toggle + export menu)
-       ========================================================== */
+      TOOLBAR (theme toggle + export menu)
+      ========================================================== */
     .toolbar {
       position: fixed;
       top: 1rem;
@@ -405,8 +405,8 @@
     }
 
     /* ==========================================================
-       SVG SEMANTIC CLASSES - use these instead of inline fill/stroke
-       ========================================================== */
+      SVG SEMANTIC CLASSES - use these instead of inline fill/stroke
+      ========================================================== */
     .c-grid       { stroke: var(--grid); fill: none; }
     .c-mask       { fill: var(--mask); stroke: none; }
 
@@ -448,7 +448,7 @@
     .c-lane           { fill: var(--lane-fill); stroke: var(--lane-stroke); stroke-dasharray: 6,6; }
 
     /* Optional trace animation, enabled only by meta.animation = "trace".
-       Static diagrams do not carry data-animation and render exactly as before. */
+      Static diagrams do not carry data-animation and render exactly as before. */
     svg[data-animation="trace"] [data-animate="edge"] {
       stroke-dasharray: 10 8;
       stroke-dashoffset: 54;
@@ -481,7 +481,7 @@
 </head>
 <body>
   <!-- Toolbar: theme toggle + export menu (present on every generated diagram)
-       Keyboard: T toggles theme, E opens export menu (when no input focused) -->
+      Keyboard: T toggles theme, E opens export menu (when no input focused) -->
   <div class="toolbar" role="toolbar" aria-label="Diagram actions">
     <button id="btn-theme" type="button"
             title="Toggle theme (T)"
@@ -694,7 +694,7 @@
 
       <div class="card">
         <div class="card-header">
-          <div class="card-dot amber"></div>
+          <div class="amber card-dot"></div>
           <h3>Operations</h3>
         </div>
         <ul>
@@ -712,8 +712,8 @@
 
   <script>
     /* ============================================================
-       Theme toggle - persists to localStorage, respects system pref
-       ============================================================ */
+      Theme toggle - persists to localStorage, respects system pref
+      ============================================================ */
     var TechnicalDiagram = {};
 
     TechnicalDiagram.theme = (function () {
@@ -780,17 +780,17 @@
     })();
 
     /* ============================================================
-       Export - PNG / JPEG / WebP / SVG (download) and Copy PNG (clipboard)
+      Export - PNG / JPEG / WebP / SVG (download) and Copy PNG (clipboard)
 
-       Raster exports are always rendered at 4x source resolution for
-       maximum sharpness. The trick: we set the serialized SVG's
-       `width`/`height` to viewBox * 4 so the browser rasterizes the
-       vectors at that resolution natively. drawImage then draws at
-       the image's natural size (no upscaling = no blur).
+      Raster exports are always rendered at 4x source resolution for
+      maximum sharpness. The trick: we set the serialized SVG's
+      `width`/`height` to viewBox * 4 so the browser rasterizes the
+      vectors at that resolution natively. drawImage then draws at
+      the image's natural size (no upscaling = no blur).
 
-       JPEG/WebP paint the current theme's background explicitly since
-       those formats have no alpha channel.
-       ============================================================ */
+      JPEG/WebP paint the current theme's background explicitly since
+      those formats have no alpha channel.
+      ============================================================ */
     (function () {
       var RASTER_SCALE = 4;
 
@@ -898,7 +898,7 @@
         // serialized SVG, so url()-sourced faces would just hang.
         var fontFallback = [400, 500, 600, 700].map(function (w) {
           return "@font-face { font-family: 'JetBrains Mono'; font-weight: " + w +
-                 "; src: local('JetBrains Mono'), local('JetBrainsMono-Regular'); }";
+                "; src: local('JetBrains Mono'), local('JetBrainsMono-Regular'); }";
         }).join('\n');
 
         var style = document.createElementNS('http://www.w3.org/2000/svg', 'style');
@@ -1013,7 +1013,7 @@
             ctx.drawImage(img, 0, 0);
             URL.revokeObjectURL(svgUrl);
             var mime = format === 'jpeg' ? 'image/jpeg' :
-                       format === 'webp' ? 'image/webp' : 'image/png';
+                      format === 'webp' ? 'image/webp' : 'image/png';
             var quality = format === 'png' ? undefined : 0.95;
             canvas.toBlob(function (blob) {
               if (!blob) reject(new Error('toBlob returned null for ' + format));
@@ -1037,8 +1037,8 @@
       // ---- Clipboard support ----------------------------------------------
       function canCopyImage() {
         return typeof ClipboardItem !== 'undefined' &&
-               navigator.clipboard &&
-               typeof navigator.clipboard.write === 'function';
+              navigator.clipboard &&
+              typeof navigator.clipboard.write === 'function';
       }
 
       // ---- Raster format detection ----------------------------------------
@@ -1218,11 +1218,11 @@
     })();
 
     /* ============================================================
-       Global keyboard shortcuts
-         T -> toggle theme
-         E -> open export menu
-       Ignored when focus is inside an input/textarea/contenteditable.
-       ============================================================ */
+      Global keyboard shortcuts
+        T -> toggle theme
+        E -> open export menu
+      Ignored when focus is inside an input/textarea/contenteditable.
+      ============================================================ */
     document.addEventListener('keydown', function (e) {
       if (e.metaKey || e.ctrlKey || e.altKey) return;
       var t = e.target;

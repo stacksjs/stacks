@@ -130,7 +130,7 @@ const deployRoutes = [
     <link rel="apple-touch-icon" href="/images/logos/logo.png">
 
     <!-- Open Graph. Defining og:title here makes stx skip its default SEO
-         injection, which would otherwise stamp placeholder "stx Project" tags. -->
+        injection, which would otherwise stamp placeholder "stx Project" tags. -->
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="Stacks">
     <meta property="og:url" content="https://stacksjs.com/">
@@ -313,7 +313,7 @@ const deployRoutes = [
       }
 
       /* Font roles: Geist carries display and body (weight builds the
-         hierarchy); Geist Mono carries the kicker, chips, code, terminal. */
+        hierarchy); Geist Mono carries the kicker, chips, code, terminal. */
       :root {
         --font-body: "Geist", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         --font-mono: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
@@ -322,7 +322,7 @@ const deployRoutes = [
       }
 
       /* The code window and terminal stay dark in every theme, the way an
-         editor and a shell are. */
+        editor and a shell are. */
       :root {
         --term-bg: #0b1220;
         --term-fg: #93c5fd;
@@ -430,8 +430,8 @@ const deployRoutes = [
       }
 
       /* Entrance motion (MOTION 5): hero rises on load, sections rise into
-         view on scroll via CSS view() timelines. Transform + opacity only,
-         and everything collapses to static under reduced motion. */
+        view on scroll via CSS view() timelines. Transform + opacity only,
+        and everything collapses to static under reduced motion. */
       @keyframes rise-in {
         from { opacity: 0; transform: translateY(20px); }
         to { opacity: 1; transform: none; }
@@ -810,8 +810,8 @@ const deployRoutes = [
       }
 
       /* Real code, not a fake dashboard: an authentic defineModel() as you
-         would actually write it. The code + terminal panels stay dark in
-         every theme, the way an editor and a shell are. */
+        would actually write it. The code + terminal panels stay dark in
+        every theme, the way an editor and a shell are. */
       .product-preview {
         position: relative;
         z-index: 1;
@@ -931,8 +931,8 @@ const deployRoutes = [
       }
 
       /* Platform bento: 12-col grid, mixed spans, three cell treatments
-         (image / tint / gradient) so the grid has rhythm instead of rows
-         of identical white cards. */
+        (image / tint / gradient) so the grid has rhythm instead of rows
+        of identical white cards. */
       .bento {
         display: grid;
         grid-template-columns: repeat(12, minmax(0, 1fr));
@@ -1012,7 +1012,7 @@ const deployRoutes = [
       }
 
       /* Workflow: three verb-led steps, horizontal on desktop, with a
-         connecting hairline that the numbers sit on. */
+        connecting hairline that the numbers sit on. */
       .steps {
         display: grid;
         grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -1389,7 +1389,7 @@ $ buddy deploy       <span class="term-com"># web, docs, blog, API, cloud</span>
         </section>
 
         <section id="platform" class="section site-shell" aria-labelledby="platform-heading">
-          <div class="section-head rise">
+          <div class="rise section-head">
             <h2 id="platform-heading" class="section-title">One install, every layer.</h2>
             <p class="section-copy">Each system is first-party and shares the same types, config, and tooling. No glue code, no plugin roulette.</p>
           </div>
@@ -1407,13 +1407,13 @@ $ buddy deploy       <span class="term-com"># web, docs, blog, API, cloud</span>
         </section>
 
         <section class="section site-shell" aria-labelledby="workflow-heading">
-          <div class="section-head rise">
+          <div class="rise section-head">
             <h2 id="workflow-heading" class="section-title">From first commit to production.</h2>
             <p class="section-copy">Buddy is the command center. It scaffolds, serves, tests, builds, and deploys the whole project.</p>
           </div>
           <div class="steps">
             @foreach (workflowSteps as step)
-              <div class="step rise">
+              <div class="rise step">
                 <em aria-hidden="true">{{ step.label }}</em>
                 <h3>{{ step.title }}</h3>
                 <p>{{ step.text }}</p>
@@ -1456,7 +1456,7 @@ $ buddy deploy       <span class="term-com"># web, docs, blog, API, cloud</span>
         </section>
 
         <section class="section site-shell" aria-labelledby="signup-heading">
-          <div class="signup-panel rise">
+          <div class="rise signup-panel">
             <div class="section-head" style="margin-bottom: 0">
               <h2 id="signup-heading" class="section-title">Release notes, occasionally.</h2>
               <p class="section-copy">Framework updates and deployment notes by email. No noise.</p>
@@ -1478,7 +1478,7 @@ $ buddy deploy       <span class="term-com"># web, docs, blog, API, cloud</span>
     </div>
 
     <!-- Same control, position, and glyphs as the blog's, so switching theme
-         feels like one site rather than two that happen to share a palette. -->
+        feels like one site rather than two that happen to share a palette. -->
     <div class="theme-toggle" role="group" aria-label="Theme">
       <button type="button" data-t="colored" title="Glacier theme" aria-label="Glacier theme" onclick="stxTheme('colored')">🌲</button>
       <button type="button" data-t="light" title="Light theme" aria-label="Light theme" onclick="stxTheme('light')">☀</button>

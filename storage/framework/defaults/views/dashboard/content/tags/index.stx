@@ -16,8 +16,8 @@
     </header>
 
     <!-- Two tiles, not three: the third used to be an "Active" count filtered on
-         `is_active`, a column the tags table does not have. Every tag passed, so
-         it always rendered the same number as Total Tags. -->
+        `is_active`, a column the tags table does not have. Every tag passed, so
+        it always rendered the same number as Total Tags. -->
     <section class="grid gap-4 md:grid-cols-2">
       <div class="p-4 bg-white dark:bg-neutral-900 border border-neutral-200 rounded-lg dark:border-neutral-800 shadow-sm">
         <p class="text-neutral-500 text-sm dark:text-neutral-400">Total Tags</p>
