@@ -1,6 +1,6 @@
 {
   "protocolVersion": "1.0-draft",
-  "rfcsRevision": "7dc6f8d27282814b851d2bfe0db8ed41a4d6201c",
+  "rfcsRevision": "ea9dbe438aca308085372e68aaa82ebe2e92b8d0",
   "sourceRepository": "https://github.com/stacksjs/rfcs",
   "files": {
     "FIXTURES.md": "sha256:160f4e21c01a39a69df94cbc2244b6d6c4a09491466bef05d40419e240a639c7",
