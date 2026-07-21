@@ -1,5 +1,18 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.155...v0.70.156)
+
+## 🐛 Bug Fixes
+
+- **upgrade**: preserve hook intent across restart ([a763a4e](https://github.com/stacksjs/stacks/commit/a763a4e)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dev**: make localhost the zero-setup default ([5a3087c](https://github.com/stacksjs/stacks/commit/5a3087c)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **buddy**: wire every interactive dev choice ([e3379d8](https://github.com/stacksjs/stacks/commit/e3379d8)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **buddy**: print installed versions and register global flags ([2086632](https://github.com/stacksjs/stacks/commit/2086632)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.154...v0.70.155)
 
 ## 🐛 Bug Fixes
