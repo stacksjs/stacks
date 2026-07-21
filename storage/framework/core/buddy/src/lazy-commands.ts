@@ -134,7 +134,6 @@ const commandRegistry: Record<string, CommandLoader> = {
   'undeploy': { path: './commands/cloud.ts', exportName: 'cloud' }, // Alias for cloud:remove
   'upgrade': { path: './commands/upgrade.ts', exportName: 'upgrade' },
   'version': { path: './commands/version.ts', exportName: 'version' },
-  'x-ray': { path: './commands/x-ray.ts', exportName: 'xRay' },
 }
 
 // Commands that are commonly used together (for batch loading optimization)

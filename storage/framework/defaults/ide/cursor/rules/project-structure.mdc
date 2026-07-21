@@ -151,7 +151,6 @@ The `./storage` directory is where the storage resides, and the core logic of th
 - `./storage/framework/core/vite-config` _the core vite-config package_
 - `./storage/framework/core/vite-plugin` _the core vite-plugin package_
 - `./storage/framework/core/whois` _the core whois package_
-- `./storage/framework/core/x-ray` _the core x-ray package_
 - `./storage/framework/docs` _the docs storage directory_
 - `./storage/framework/libs` _the libs storage directory_
 - `./storage/framework/requests` _the requests storage directory_

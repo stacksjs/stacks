@@ -226,10 +226,6 @@ export const alias: Record<string, string> = {
   'stacks/validation': p.validationPath('src/index.ts'),
   '@stacksjs/validation/*': p.validationPath('src/*'),
   'stacks/validation/*': p.validationPath('src/*'),
-  '@stacksjs/x-ray': p.xRayPath('src/index.ts'),
-  'stacks/x-ray': p.xRayPath('src/index.ts'),
-  '@stacksjs/x-ray/*': p.xRayPath('src/*'),
-  'stacks/x-ray/*': p.xRayPath('src/*'),
 
   'framework/*': p.frameworkPath('core/*'),
   '~/app/*': p.appPath('*'),

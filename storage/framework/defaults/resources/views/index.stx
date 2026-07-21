@@ -551,12 +551,6 @@ Sponsor Here</div>
     </div>
 
     <div class="package-item">
-      <div class="package-emoji">🔬</div>
-      <div class="package-title">X-Ray</div>
-      <div class="package-desc">Debugging & monitoring tools</div>
-    </div>
-
-    <div class="package-item">
       <div class="package-emoji">💳</div>
       <div class="package-title">Payments</div>
       <div class="package-desc">Payment processing integration</div>

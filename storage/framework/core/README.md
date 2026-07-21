@@ -274,7 +274,6 @@ _Develop serverless (or server) functions with countless helpers to build scalab
 - 💾 **Storage** _a secure-by-default File API that feels right_
 - 🧪 **Tinker** _a powerful TypeScript REPL_
 - 🌪️ **Validation** _e2e type-safety (true frontend & backend harmony)_
-- 🎯 **X-Ray** _all you need to debug, log & analyze_
 
 ### Cloud Development
 

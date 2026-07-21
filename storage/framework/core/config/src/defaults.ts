@@ -403,7 +403,6 @@ export const defaults: StacksOptions = {
       'errors',
       'git',
       'lint',
-      'x-ray',
       'modules',
       'notifications',
       'objects',

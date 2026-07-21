@@ -36,7 +36,6 @@ export default {
     'errors',
     'git',
     'lint',
-    'x-ray',
     'modules',
     'notifications',
     'objects',

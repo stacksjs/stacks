@@ -58,7 +58,7 @@ hooks: {
 
 ### Commit Scopes
 
-`ci`, `deps`, `dx`, `release`, `docs`, `test`, `core`, `actions`, `arrays`, `auth`, `build`, `cache`, `cli`, `cloud`, `collections`, `config`, `database`, `datetime`, `errors`, `git`, `lint`, `x-ray`, `modules`, `notifications`, `objects`, `path`, `realtime`, `router`, `buddy`, `security`, `server`, `storage`, `strings`, `tests`, `types`, `ui`, `utils`
+`ci`, `deps`, `dx`, `release`, `docs`, `test`, `core`, `actions`, `arrays`, `auth`, `build`, `cache`, `cli`, `cloud`, `collections`, `config`, `database`, `datetime`, `errors`, `git`, `lint`, `modules`, `notifications`, `objects`, `path`, `realtime`, `router`, `buddy`, `security`, `server`, `storage`, `strings`, `tests`, `types`, `ui`, `utils`
 
 ## Commit Configuration (config/commit.ts)
 

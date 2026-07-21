@@ -48,7 +48,6 @@ const skipAppKeyCheck = [
   'about',
   'doctor',
   'list',
-  'x-ray',
   'setup',
   'setup:ssl',
   'setup:oh-my-zsh',

@@ -61,7 +61,7 @@ describe('buddy list JSON inventory', () => {
 
   it('preserves dashed option spellings', () => {
     const buddy = cli('buddy')
-    const command = buddy.command('x-ray', 'Open diagnostics').option('--craft-bin [path]', 'Craft binary')
+    const command = buddy.command('desktop', 'Open desktop application').option('--craft-bin [path]', 'Craft binary')
 
     expect(commandInventoryEntry(command).options[0]?.flags).toEqual(['craft-bin'])
   })
