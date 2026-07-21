@@ -69,6 +69,31 @@ async function actions(): Promise<typeof import('@stacksjs/actions')> {
   return _actions
 }
 
+export const interactiveDevChoices = [
+  { value: 'all', title: 'All' },
+  { value: 'frontend', title: 'Frontend' },
+  { value: 'api', title: 'Backend' },
+  { value: 'dashboard', title: 'Dashboard' },
+  { value: 'desktop', title: 'Desktop' },
+  { value: 'native', title: 'Native App' },
+  { value: 'components', title: 'Components' },
+  { value: 'docs', title: 'Documentation' },
+] as const
+
+type InteractiveDevSelection = typeof interactiveDevChoices[number]['value']
+type InteractiveDevRunners = Record<InteractiveDevSelection, () => Promise<unknown>>
+
+export async function dispatchInteractiveDevSelection(
+  selection: string,
+  runners: InteractiveDevRunners,
+): Promise<boolean> {
+  if (!Object.hasOwn(runners, selection))
+    return false
+
+  await runners[selection as InteractiveDevSelection]()
+  return true
+}
+
 export function dev(buddy: CLI): void {
   const descriptions = {
     dev: 'Start development server',
@@ -78,7 +103,6 @@ export function dev(buddy: CLI): void {
     native: 'Start the app in a native Craft window',
     dashboard: 'Start the Dashboard development server',
     api: 'Start the local API development server',
-    email: 'Start the Email development server',
     docs: 'Start the Documentation development server',
     systemTray: 'Start the System Tray development server',
     interactive: 'Get asked which development server to start',
@@ -92,7 +116,6 @@ export function dev(buddy: CLI): void {
     .command('dev [server]', descriptions.dev) // server is optional because options can be used
     .option('-f, --frontend', descriptions.frontend)
     .option('-a, --api', descriptions.api)
-    .option('-e, --email', descriptions.email)
     .option('-c, --components', descriptions.components)
     .option('-d, --dashboard', descriptions.dashboard)
     .option('-k, --desktop', descriptions.desktop)
@@ -164,39 +187,23 @@ export function dev(buddy: CLI): void {
           type: 'select',
           name: 'value',
           message: descriptions.select,
-          choices: [
-            { value: 'all', title: 'All' },
-            { value: 'frontend', title: 'Frontend' },
-            { value: 'api', title: 'Backend' },
-            { value: 'dashboard', title: 'Dashboard' },
-            { value: 'desktop', title: 'Desktop' },
-            { value: 'native', title: 'Native App' },
-            { value: 'email', title: 'Email' },
-            { value: 'components', title: 'Components' },
-            { value: 'docs', title: 'Documentation' },
-          ],
+          choices: interactiveDevChoices,
         })
 
         const selectedValue: string = answer.value
+        const a = await actions()
+        const handled = await dispatchInteractiveDevSelection(selectedValue, {
+          all: () => startDevelopmentServer(options, perf),
+          frontend: () => a.runFrontendDevServer(options),
+          api: () => a.runApiDevServer(options),
+          dashboard: () => a.runDashboardDevServer(options),
+          desktop: () => a.runDesktopDevServer(options),
+          native: () => startDevelopmentServer({ ...options, native: true }, perf),
+          components: () => a.runComponentsDevServer(options),
+          docs: () => a.runDocsDevServer(options),
+        })
 
-        if (selectedValue === 'components') {
-          await (await actions()).runComponentsDevServer(options)
-        }
-        else if (selectedValue === 'api') {
-          await (await actions()).runApiDevServer(options)
-        }
-        else if (selectedValue === 'dashboard') {
-          await (await actions()).runDashboardDevServer(options)
-        }
-        else if (selectedValue === 'native') {
-          await startDevelopmentServer({ ...options, native: true }, perf)
-        }
-        // else if (selectedValue === 'email')
-        //   await runEmailDevServer(options)
-        else if (selectedValue === 'docs') {
-          await (await actions()).runDocsDevServer(options)
-        }
-        else {
+        if (!handled) {
           log.error('Invalid option during interactive mode')
           process.exit(ExitCode.InvalidArgument)
         }
