@@ -571,8 +571,16 @@ export async function startDevelopmentServer(_options: DevOptions, _startTime?: 
   // still start by default, but they boot in the background and shouldn't hold
   // up the readiness banner. This keeps `ready in` reporting when the app is
   // actually usable; the auxiliary URLs come up moments later.
+  // A frontend (Vite/JS) dev server only binds when the app actually ships one.
+  // stx-only apps (no vite.config / no resources/js) serve everything through
+  // the API server, so their frontend port never binds — gating the readiness
+  // banner on it forced a fixed ~30s wait (readinessTimeoutMs) on every boot.
+  // Only gate on the frontend when a JS frontend is present. See stacksjs/stacks#2036.
+  const hasJsFrontend = ['vite.config.ts', 'vite.config.js', 'vite.config.mjs', 'vite.config.mts']
+    .some(f => existsSync(projectPath(f)))
+    || existsSync(projectPath('resources/js'))
   const ports = [
-    { name: 'Frontend', port: frontendPort },
+    ...(hasJsFrontend ? [{ name: 'Frontend', port: frontendPort }] : []),
     { name: 'API', port: apiPort },
   ]
   const readinessTimeoutMs = 30000
