@@ -1,5 +1,51 @@
 # Stacks Changelog
 
+[Compare changes](github.com:stacksjs/stacks.git/compare/v0.70.160...v0.70.161)
+
+## ✨ Features
+
+- **desktop**: add invite and update workflows ([25160f8](github.com:stacksjs/stacks.git/commit/25160f8)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **buddy**: add X-Ray diagnostics command ([0ad1373](github.com:stacksjs/stacks.git/commit/0ad1373)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **buddy**: expose JSON command inventory ([729c73f](github.com:stacksjs/stacks.git/commit/729c73f)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **desktop**: add Craft system tray ([69b9135](github.com:stacksjs/stacks.git/commit/69b9135)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **desktop**: complete Craft runtime ([07f68ec](github.com:stacksjs/stacks.git/commit/07f68ec)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: finish settings workspace ([c4d7859](github.com:stacksjs/stacks.git/commit/c4d7859)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **ui**: add reusable modal controllers ([3c1bad9](github.com:stacksjs/stacks.git/commit/3c1bad9)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **vscode**: ship project defaults ([aab586c](github.com:stacksjs/stacks.git/commit/aab586c)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **desktop**: run native windows with Craft ([5f42ae3](github.com:stacksjs/stacks.git/commit/5f42ae3)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🐛 Bug Fixes
+
+- **upgrade**: support standalone packages ([655087c](github.com:stacksjs/stacks.git/commit/655087c)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **buddy**: gate dev readiness on the API server, not a background frontend ([3123cde](github.com:stacksjs/stacks.git/commit/3123cde)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **buddy**: also skip starting the phantom frontend server (stx-only apps) ([ab8b807](github.com:stacksjs/stacks.git/commit/ab8b807)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **buddy**: don't gate `buddy dev` readiness on a phantom frontend (stx-only apps) ([b7234d6](github.com:stacksjs/stacks.git/commit/b7234d6)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **buddy**: preserve declared option flags ([cea4af4](github.com:stacksjs/stacks.git/commit/cea4af4)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **buddy**: add desktop to aggregate builds ([5110145](github.com:stacksjs/stacks.git/commit/5110145)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **buddy**: import inventory command type ([ee758e3](github.com:stacksjs/stacks.git/commit/ee758e3)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **buddy**: preserve command namespaces in inventory ([7305657](github.com:stacksjs/stacks.git/commit/7305657)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **env**: keep diagnostics off stdout ([b55fa2d](github.com:stacksjs/stacks.git/commit/b55fa2d)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## ⚡ Performance Improvements
+
+- **utils**: parallelize project discovery ([a1af10b](github.com:stacksjs/stacks.git/commit/a1af10b)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## ♻️ Code Refactoring
+
+- **frontend**: standardize on STX ([f1442fd](github.com:stacksjs/stacks.git/commit/f1442fd)) _(by Chris <chrisbreuer93@gmail.com>)_
+- remove X-Ray package ([4e97a96](github.com:stacksjs/stacks.git/commit/4e97a96)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 📝 Documentation
+
+- replace legacy desktop architecture ([c896678](github.com:stacksjs/stacks.git/commit/c896678)) _(by Chris <chrisbreuer93@gmail.com>)_
+- add runtime architecture diagram ([dced5fd](github.com:stacksjs/stacks.git/commit/dced5fd)) _(by Chris <chrisbreuer93@gmail.com>)_
+- complete framework glossary ([1668748](github.com:stacksjs/stacks.git/commit/1668748)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+- _glennmichael123 <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.159...v0.70.160)
 
 ## ✨ Features
