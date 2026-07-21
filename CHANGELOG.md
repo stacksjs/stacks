@@ -1,5 +1,18 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.156...v0.70.157)
+
+## 🐛 Bug Fixes
+
+- **buddy**: read version from package-local metadata ([351e0eb](https://github.com/stacksjs/stacks/commit/351e0eb)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dev**: keep pretty URLs as the default ([a0c9db6](https://github.com/stacksjs/stacks/commit/a0c9db6)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **deps**: stop tracking Pantry generated state ([2974c83](https://github.com/stacksjs/stacks/commit/2974c83)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **deps**: make Bun the canonical JavaScript lockfile ([53476e4](https://github.com/stacksjs/stacks/commit/53476e4)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.155...v0.70.156)
 
 ## 🐛 Bug Fixes
