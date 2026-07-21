@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.151...v0.70.152)
+
+## 🐛 Bug Fixes
+
+- **buddy**: resolve Stacks component includes ([3f5ab0a](https://github.com/stacksjs/stacks/commit/3f5ab0a)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.150...v0.70.151)
 
 ## 🐛 Bug Fixes
