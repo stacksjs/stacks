@@ -571,16 +571,13 @@ export async function startDevelopmentServer(_options: DevOptions, _startTime?: 
   // still start by default, but they boot in the background and shouldn't hold
   // up the readiness banner. This keeps `ready in` reporting when the app is
   // actually usable; the auxiliary URLs come up moments later.
-  // A frontend (Vite/JS) dev server only binds when the app actually ships one.
-  // stx-only apps (no vite.config / no resources/js) serve everything through
-  // the API server, so their frontend port never binds — gating the readiness
-  // banner on it forced a fixed ~30s wait (readinessTimeoutMs) on every boot.
-  // Only gate on the frontend when a JS frontend is present. See stacksjs/stacks#2036.
-  const hasJsFrontend = ['vite.config.ts', 'vite.config.js', 'vite.config.mjs', 'vite.config.mts']
-    .some(f => existsSync(projectPath(f)))
-    || existsSync(projectPath('resources/js'))
+  // Gate the "ready" banner on the API server — the core every Stacks app runs
+  // and the one requests actually need. Like the docs and dashboard servers
+  // above, the frontend server boots in the background and its URL comes up
+  // moments later, so it must not hold the banner: an app whose whole site is
+  // served by the API never binds a separate frontend port, and gating on that
+  // port forced a fixed ~30s wait (readinessTimeoutMs) every boot. See stacksjs/stacks#2036.
   const ports = [
-    ...(hasJsFrontend ? [{ name: 'Frontend', port: frontendPort }] : []),
     { name: 'API', port: apiPort },
   ]
   const readinessTimeoutMs = 30000
@@ -686,15 +683,10 @@ export async function startDevelopmentServer(_options: DevOptions, _startTime?: 
     .catch(() => { /* swallow — verbose-mode error handlers below already log */ })
 
   await Promise.all([
-    // Skip the frontend (Vite/JS) dev server for stx-only apps: it has nothing
-    // to serve, never binds, and only adds a phantom port to wait on. The API
-    // server serves the whole app for these projects. See stacksjs/stacks#2036.
-    hasJsFrontend
-      ? a.runFrontendDevServer(quietOpts).catch((error) => {
-        if (options.verbose)
-          log.error(`Frontend: ${error}`)
-      })
-      : Promise.resolve(),
+    a.runFrontendDevServer(quietOpts).catch((error) => {
+      if (options.verbose)
+        log.error(`Frontend: ${error}`)
+    }),
     a.runApiDevServer(quietOpts).catch((error) => {
       if (options.verbose)
         log.error(`API: ${error}`)
