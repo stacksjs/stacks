@@ -2,11 +2,11 @@
 
 ## Features
 
-- Native macOS, Linux, and Windows windows powered by Craft
+- Experimental native macOS, Linux, and Windows windows powered by Craft
 - Pretty development URLs through the Stacks rpx and tlsx integration
 - Hot reload and native developer tools
 - Multi-recipient invite delivery with application-owned token and mail callbacks
-- HTTPS update checks with SHA-256 verification and atomic staging
+- HTTPS update checks with Ed25519 manifest signatures, SHA-256 artifact verification, and atomic staging
 
 ## Usage
 
@@ -40,7 +40,9 @@ await sendDesktopInvites(users, {
 })
 ```
 
-The updater never executes unverified downloads. Check the signed release channel, then stage the checksum-verified artifact for the platform installer:
+The updater never stages an unsigned or untrusted release manifest. Configure an
+Ed25519 public key out of band, check the signed channel, then pass the same trust
+set when staging the checksum-verified artifact:
 
 ```ts
 import { checkForDesktopUpdate, stageDesktopUpdate } from '@stacksjs/desktop'
@@ -48,10 +50,15 @@ import { checkForDesktopUpdate, stageDesktopUpdate } from '@stacksjs/desktop'
 const update = await checkForDesktopUpdate({
   currentVersion: '1.4.0',
   manifestUrl: 'https://app.example.com/desktop/updates/stable.json',
+  trustedKeys: {
+    'release-2026': process.env.DESKTOP_UPDATE_PUBLIC_KEY,
+  },
 })
 
 if (update)
-  await stageDesktopUpdate(update, '/path/to/update.bin')
+  await stageDesktopUpdate(update, '/path/to/update.bin', fetch, {
+    'release-2026': process.env.DESKTOP_UPDATE_PUBLIC_KEY,
+  })
 ```
 
 ## Testing
