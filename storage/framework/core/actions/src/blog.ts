@@ -107,17 +107,27 @@ let bunpressPromise: Promise<BunPress | null> | null = null
 async function loadBunPress(): Promise<BunPress | null> {
   if (!bunpressPromise) {
     bunpressPromise = (async () => {
-      const candidates = [
+      const sourceCandidates = [
         join(homedir(), 'Code/Tools/bunpress/packages/bunpress/dist/src/index.js'),
         join(process.cwd(), 'pantry/@stacksjs/bunpress/dist/src/index.js'),
-        '@stacksjs/bunpress',
       ]
-      for (const entry of candidates) {
+
+      const candidates = sourceCandidates.filter(entry => existsSync(entry))
+      try {
+        candidates.push(Bun.resolveSync('@stacksjs/bunpress', import.meta.dir))
+      }
+      catch {
+        // BunPress is optional for apps that use their own blog renderer.
+      }
+
+      for (const entry of new Set(candidates)) {
         try {
-          if (entry.startsWith('@') || existsSync(entry))
-            return (await import(entry)) as unknown as BunPress
+          return (await import(entry)) as unknown as BunPress
         }
-        catch { /* try next */ }
+        catch (cause) {
+          const detail = cause instanceof Error ? cause.message : String(cause)
+          throw new Error(`[blog] Failed to import BunPress from ${entry}: ${detail}`, { cause })
+        }
       }
       return null
     })()
@@ -617,12 +627,12 @@ export async function buildBlog(options: { outDir: string, baseUrl?: string } = 
 
   if (options.baseUrl && !usableOrigin(options.baseUrl)) {
     // eslint-disable-next-line no-console
-    console.warn(`[blog] ignoring unusable baseUrl ${JSON.stringify(options.baseUrl)} — falling back to ${baseUrl}`)
+    console.warn(`[blog] ignoring unusable baseUrl ${JSON.stringify(options.baseUrl)}; falling back to ${baseUrl}`)
   }
 
   const bp = await loadBunPress()
   if (!bp)
-    throw new Error('[blog] BunPress not found — cannot build the blog.')
+    throw new Error('[blog] BunPress not found; cannot build the blog.')
 
   mkdirSync(outDir, { recursive: true })
   const write = (rel: string, content: string) => {
