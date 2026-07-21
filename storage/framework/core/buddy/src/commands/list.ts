@@ -1,5 +1,5 @@
 import type { CLI, CliOptions } from '@stacksjs/types'
-import type { Command } from '@stacksjs/cli'
+import type { Command } from '@stacksjs/clapp'
 import process from 'node:process'
 import { log } from '@stacksjs/logging'
 import { onUnknownSubcommand } from "@stacksjs/cli"
