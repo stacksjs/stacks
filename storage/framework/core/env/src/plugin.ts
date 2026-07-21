@@ -206,7 +206,9 @@ export function loadEnv(options: EnvPluginOptions = {}): { loaded: number, error
       // "loaded 64 variables" even when it had injected none of them, which
       // is precisely what hid the decryption failure above.
       if (!quiet && !process.env.__ENV_LOADED__) {
-        console.log(`[env] loaded ${applied}/${Object.keys(parsed).length} variables from ${envPath}`)
+        // Environment diagnostics belong on stderr so commands with a
+        // machine-readable stdout contract can be piped and parsed safely.
+        console.error(`[env] loaded ${applied}/${Object.keys(parsed).length} variables from ${envPath}`)
         process.env.__ENV_LOADED__ = '1'
       }
     }
