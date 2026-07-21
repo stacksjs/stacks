@@ -35,6 +35,7 @@ import {
   type UpgradeContext,
 } from './framework-utils'
 import {
+  runPostSyncDependencyRefresh,
   runPostSyncMigration,
   shouldRefreshPostSyncDependencies,
   shouldRunPostSyncHooks,
@@ -693,15 +694,11 @@ async function runPostSyncHooks(args: {
   if (corePkgChanged) {
     console.log('Running `bun install` to refresh dependencies...')
     try {
-      const proc = Bun.spawn({
-        cmd: [process.argv[0] || 'bun', 'install'],
-        cwd: projectRoot,
-        stdout: 'inherit',
-        stderr: 'inherit',
+      await runPostSyncDependencyRefresh({
+        bunExecutable: process.argv[0] || 'bun',
+        projectRoot,
+        spawn: spawnOptions => Bun.spawn(spawnOptions),
       })
-      const code = await proc.exited
-      if (code !== 0)
-        console.warn(`  bun install exited with code ${code} (non-fatal)`)
     }
     catch (err) {
       console.warn(`  bun install failed (non-fatal): ${(err as Error)?.message || err}`)

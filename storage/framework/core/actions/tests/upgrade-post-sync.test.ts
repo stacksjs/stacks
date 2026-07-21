@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'bun:test'
 import {
+  runPostSyncDependencyRefresh,
   runPostSyncMigration,
   shouldRefreshPostSyncDependencies,
   shouldRunPostSyncHooks,
@@ -19,6 +20,39 @@ describe('vendored upgrade post-sync hook scheduling', () => {
   it('runs hooks and dependency refreshes for changes detected in the current process', () => {
     expect(shouldRunPostSyncHooks(1, false)).toBe(true)
     expect(shouldRefreshPostSyncDependencies(true, false)).toBe(true)
+  })
+})
+
+describe('vendored upgrade post-sync dependency refresh', () => {
+  it('forces Bun to fully resolve the upgraded workspace graph', async () => {
+    let received: Parameters<Parameters<typeof runPostSyncDependencyRefresh>[0]['spawn']>[0] | undefined
+
+    await runPostSyncDependencyRefresh({
+      bunExecutable: '/opt/bun',
+      projectRoot: '/app',
+      spawn: (options) => {
+        received = options
+        return { exited: Promise.resolve(0) }
+      },
+    })
+
+    expect(received).toEqual({
+      cmd: ['/opt/bun', 'install', '--force'],
+      cwd: '/app',
+      stdin: 'ignore',
+      stdout: 'inherit',
+      stderr: 'inherit',
+    })
+  })
+
+  it('reports a failed dependency refresh to the upgrade hook', async () => {
+    const refresh = runPostSyncDependencyRefresh({
+      bunExecutable: 'bun',
+      projectRoot: '/app',
+      spawn: () => ({ exited: Promise.resolve(9) }),
+    })
+
+    await expect(refresh).rejects.toThrow('Post-upgrade dependency refresh exited with code 9.')
   })
 })
 

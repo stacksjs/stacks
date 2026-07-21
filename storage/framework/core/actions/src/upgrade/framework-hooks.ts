@@ -15,6 +15,12 @@ interface PostSyncMigrationOptions {
   spawn: PostSyncSpawn
 }
 
+interface PostSyncDependencyOptions {
+  bunExecutable: string
+  projectRoot: string
+  spawn: PostSyncSpawn
+}
+
 /**
  * The first upgrade process records the real file changes, then restarts itself
  * after replacing its own framework code. The restarted process sees the
@@ -32,6 +38,28 @@ export function shouldRunPostSyncHooks(changeCount: number, alreadyRestarted: bo
  */
 export function shouldRefreshPostSyncDependencies(corePackageChanged: boolean, alreadyRestarted: boolean): boolean {
   return corePackageChanged || alreadyRestarted
+}
+
+/**
+ * Fully refresh dependencies after replacing vendored workspace manifests.
+ *
+ * A plain `bun install` may reuse the existing nested package placement and
+ * leave a lockfile that changes in a clean checkout. `--force` makes Bun
+ * resolve the complete workspace graph so the resulting lockfile is valid for
+ * subsequent frozen installs.
+ */
+export async function runPostSyncDependencyRefresh(options: PostSyncDependencyOptions): Promise<void> {
+  const process = options.spawn({
+    cmd: [options.bunExecutable, 'install', '--force'],
+    cwd: options.projectRoot,
+    stdin: 'ignore',
+    stdout: 'inherit',
+    stderr: 'inherit',
+  })
+
+  const code = await process.exited
+  if (code !== 0)
+    throw new Error(`Post-upgrade dependency refresh exited with code ${code}.`)
 }
 
 /**
