@@ -408,7 +408,7 @@
       "name": "@stacksjs/config",
       "version": "0.70.161",
       "dependencies": {
-        "ts-pantry": "^0.10.30"
+        "ts-pantry": "^0.10.34"
       },
       "devDependencies": {
         "@stacksjs/alias": "workspace:*",
@@ -1437,7 +1437,7 @@
       "resolved": "https://registry.npmjs.org/@stacksjs/config/-/config-0.70.161.tgz",
       "integrity": "sha512-062PdiFbK4u15S7gOMMbORo4ssLddezMkHJyKrNkrJbhmrXmZcvlU8assZJ0+NPMTa+9Q9b20JdAihfAX2g6Pg==",
       "dependencies": {
-        "ts-pantry": "^0.10.30"
+        "ts-pantry": "^0.10.34"
       }
     },
     "@stacksjs/cron@0.70.161": {
@@ -2402,12 +2402,12 @@
       "resolved": "https://registry.npmjs.org/ts-error-handling/-/ts-error-handling-0.1.3.tgz",
       "integrity": "sha512-Agm8wbQL1YVvnffVDSUKMgImZBoR4UVFjzPaIwPxa0z7YwsowKV8R57pCDIjLP/dTHRBetg7ZfdTeuNVb21OfA=="
     },
-    "ts-pantry@0.10.30": {
+    "ts-pantry@0.10.34": {
       "name": "ts-pantry",
-      "version": "0.10.30",
+      "version": "0.10.34",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/ts-pantry/-/ts-pantry-0.10.30.tgz",
-      "integrity": "sha512-2FwougP5/iF8Np+5b+VgYdcuPnV9louCcyaKPDxvQ4KgptmUUMXhnP0UyLa0JIWe74jGwKpZbhGj6ZD9YGibmQ==",
+      "resolved": "https://registry.npmjs.org/ts-pantry/-/ts-pantry-0.10.34.tgz",
+      "integrity": "sha512-OMB21Q9vw+YWwBrSxatalBeNRaUURUKUr8OkK2TkiGdE52iRyHAgj5KKQKCbFAq/dTa/RYzr1mCl/uc680CoQg==",
       "dependencies": {
         "@stacksjs/ts-cloud": "^0.7.26",
         "bunfig": "^0.15.6",
