@@ -1,6 +1,6 @@
 import type { CloudConfig } from '@stacksjs/types'
 import type { CloudConfig as TsCloudConfig } from '@stacksjs/ts-cloud'
-import { servers } from '~/cloud/servers'
+import { servers } from '../cloud/servers'
 import { env } from '@stacksjs/env'
 
 /**
