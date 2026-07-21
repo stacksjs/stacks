@@ -209,7 +209,7 @@ export function commandInventoryEntry(command: Command): BuddyCommandInventoryEn
     })),
     options: command.options.map(option => ({
       name: option.name,
-      flags: [...option.names],
+      flags: declaredOptionFlags(option.rawName),
       description: option.description,
       required: option.required === true,
       boolean: option.isBoolean === true,
@@ -227,6 +227,10 @@ export function commandInventoryEntry(command: Command): BuddyCommandInventoryEn
 
 function canonicalCommandName(command: Command): string {
   return command.namespace ? `${command.namespace}:${command.name}` : command.name
+}
+
+function declaredOptionFlags(rawName: string): string[] {
+  return [...rawName.matchAll(/-{1,2}([\w-]+)/g)].map(match => match[1]!)
 }
 
 function usesJsonOutput(options: CliOptions): boolean {
