@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.153...v0.70.154)
+
+## 🐛 Bug Fixes
+
+- **upgrade**: make post-sync migration non-interactive ([c650540](https://github.com/stacksjs/stacks/commit/c650540)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.152...v0.70.153)
 
 ## 🐛 Bug Fixes
