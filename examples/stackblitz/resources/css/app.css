@@ -1,0 +1,148 @@
+:root {
+  color: #f8fafc;
+  background: #070a12;
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+  font-synthesis: none;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  min-width: 320px;
+  min-height: 100vh;
+  margin: 0;
+  background:
+    radial-gradient(circle at 78% 12%, rgb(72 62 255 / 24%), transparent 30rem),
+    linear-gradient(145deg, #080b14, #0c1020 62%, #090b13);
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.shell {
+  width: min(1120px, calc(100% - 40px));
+  margin: 0 auto;
+  padding: 28px 0 56px;
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #dbe4ff;
+  font-weight: 650;
+}
+
+.mark {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border: 1px solid #7a71ff;
+  border-radius: 10px;
+  color: white;
+  background: #493fff;
+  box-shadow: 0 10px 30px rgb(73 63 255 / 35%);
+}
+
+.runtime {
+  margin-left: auto;
+  color: #8993aa;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.hero {
+  max-width: 760px;
+  padding: 16vh 0 12vh;
+}
+
+.eyebrow {
+  margin: 0 0 20px;
+  color: #9b94ff;
+  font-size: 13px;
+  font-weight: 750;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+}
+
+h1 {
+  max-width: 720px;
+  margin: 0;
+  color: #fff;
+  font-size: clamp(52px, 9vw, 104px);
+  font-weight: 720;
+  letter-spacing: -.065em;
+  line-height: .92;
+}
+
+.lede {
+  max-width: 600px;
+  margin: 30px 0 0;
+  color: #aeb8cd;
+  font-size: clamp(18px, 2.4vw, 24px);
+  line-height: 1.55;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 38px;
+}
+
+.actions a {
+  padding: 12px 18px;
+  border: 1px solid #343b51;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 700;
+  transition: transform 150ms ease, border-color 150ms ease;
+}
+
+.actions a:hover {
+  transform: translateY(-2px);
+  border-color: #8178ff;
+}
+
+.primary {
+  border-color: #5c52ff !important;
+  background: #5147f5;
+  box-shadow: 0 14px 36px rgb(65 54 245 / 28%);
+}
+
+.proof {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  border-top: 1px solid #242a3a;
+}
+
+.proof article {
+  display: grid;
+  gap: 7px;
+  padding: 24px 24px 0 0;
+}
+
+.proof strong {
+  color: #eef2ff;
+  font-size: 14px;
+}
+
+.proof span {
+  color: #768198;
+  font-size: 13px;
+}
+
+@media (max-width: 680px) {
+  .hero {
+    padding: 13vh 0 9vh;
+  }
+
+  .proof {
+    grid-template-columns: 1fr;
+  }
+}

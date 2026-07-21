@@ -1,0 +1,15 @@
+{
+  "name": "stacks-stackblitz-starter",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "A live stx starter for StackBlitz WebContainers",
+  "scripts": {
+    "dev": "node server.mjs",
+    "start": "node server.mjs",
+    "test": "node --test server.test.mjs"
+  },
+  "dependencies": {
+    "@stacksjs/stx": "0.2.99"
+  }
+}
