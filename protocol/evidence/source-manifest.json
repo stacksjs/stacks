@@ -1,9 +1,9 @@
 {
   "schemaVersion": "1.0.0",
   "repository": "https://github.com/stacksjs/stacks",
-  "sourceRevision": "297426331194bc5adf9db1e458b92c5689e16534",
-  "sourceTree": "7de98ff13a189be1ce7eed108a9af64b855c9209",
-  "sourceDigest": "sha256:4317ddb83b641dd6ee06f4e37a6c422204ce3159149fdefef723170772bb74ae",
+  "sourceRevision": "bf1245e336ab14551e22cb7d88284f93e649a1a2",
+  "sourceTree": "c60cbbbc29c2f8e7ed430667eb5300a3d8fab78a",
+  "sourceDigest": "sha256:2d2f35689576a8d546acd5f13c69029aeb6609bca7506b953271d8f03c82ee8e",
   "generatedAt": "derived-from-immutable-git-objects",
   "classification": {
     "status": "reference-implementation",
@@ -559,32 +559,32 @@
     }
   ],
   "inventory": {
-    "totalFiles": 4049,
-    "totalBytes": 28089553,
+    "totalFiles": 4060,
+    "totalBytes": 28171012,
     "categories": {
       "assets-and-data": {
-        "files": 802,
-        "bytes": 12040518
+        "files": 805,
+        "bytes": 12072026
       },
       "configuration": {
-        "files": 247,
-        "bytes": 678390
+        "files": 248,
+        "bytes": 688648
       },
       "documentation": {
-        "files": 476,
-        "bytes": 4040098
+        "files": 477,
+        "bytes": 4047580
       },
       "generated": {
         "files": 27,
         "bytes": 169642
       },
       "source": {
-        "files": 2022,
-        "bytes": 8434563
+        "files": 2026,
+        "bytes": 8458161
       },
       "tests": {
-        "files": 462,
-        "bytes": 2652130
+        "files": 464,
+        "bytes": 2660743
       },
       "vendored-protocol": {
         "files": 13,
@@ -602,9 +602,9 @@
       ".iml": 1,
       ".jpg": 8,
       ".js": 2,
-      ".json": 212,
+      ".json": 215,
       ".lock": 2,
-      ".md": 461,
+      ".md": 462,
       ".mdc": 11,
       ".mjs": 15,
       ".pbxproj": 1,
@@ -620,7 +620,7 @@
       ".svgz": 1,
       ".swift": 3,
       ".toml": 7,
-      ".ts": 2567,
+      ".ts": 2574,
       ".ttf": 2,
       ".txt": 6,
       ".webp": 4,
@@ -638,6 +638,6 @@
   },
   "protocolSuite": {
     "version": "1.0-draft",
-    "rfcsRevision": "7dc6f8d27282814b851d2bfe0db8ed41a4d6201c"
+    "rfcsRevision": "ea9dbe438aca308085372e68aaa82ebe2e92b8d0"
   }
 }
