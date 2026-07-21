@@ -14,9 +14,10 @@ export const config: PantryConfig = {
    * These are binary tools and system packages required for development
    */
   dependencies: {
-    "bun.com": "^1.3.0",
-    "sqlite.org": "^3.47.2",
-    craft: "^0.0.1",
+    bun: '^1.3.0',
+    git: '^2.47.0',
+    sqlite: '^3.47.2',
+    craft: '^0.0.19',
     // Uncomment as needed:
     // 'redis.io': '^7.4.1',
     // 'mailpit.axllent.org': '^1.21.8',

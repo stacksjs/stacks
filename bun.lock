@@ -426,7 +426,7 @@
       "name": "@stacksjs/config",
       "version": "0.70.161",
       "dependencies": {
-        "ts-pantry": "^0.10.11",
+        "ts-pantry": "^0.10.30",
       },
       "devDependencies": {
         "@stacksjs/alias": "workspace:*",
@@ -2224,7 +2224,7 @@
 
     "ts-jpeg": ["ts-jpeg@0.3.4", "", {}, "sha512-yK5fhHcMVBoEs+qReAMrDsh4q1mDmheylyg1k30TKzLeZl4hkM5MIMIEy4ZuFtV3l276JomBSZKnlEYoA1/eeQ=="],
 
-    "ts-pantry": ["ts-pantry@0.10.28", "", { "dependencies": { "@stacksjs/ts-cloud": "^0.7.26", "bunfig": "^0.15.6", "ts-web-scraper": "^0.1.1" }, "bin": { "ts-pantry": "./dist/bin/cli.js" } }, "sha512-3NmHcy1i9d09T0tkDWEfzdFycboCsVyyZKe6OZy75htDIPpb9ajQT6xxGQygQB9fbSK0MgB4HVxLCmmUtQ7/jA=="],
+    "ts-pantry": ["ts-pantry@0.10.30", "", { "dependencies": { "@stacksjs/ts-cloud": "^0.7.26", "bunfig": "^0.15.6", "ts-web-scraper": "^0.1.1" }, "bin": { "ts-pantry": "./dist/bin/cli.js" } }, "sha512-2FwougP5/iF8Np+5b+VgYdcuPnV9louCcyaKPDxvQ4KgptmUUMXhnP0UyLa0JIWe74jGwKpZbhGj6ZD9YGibmQ=="],
 
     "ts-rate-limiter": ["ts-rate-limiter@0.4.4", "", { "bin": { "ts-rate-limiter": "./dist/bin/init-config.js" } }, "sha512-951NW5AZKRqfEjleVb1nmCfRO0seMWKaEa606xYt9Z5V4bboGguxKusWsEIGAPndttyYTgqG2IC48j1B03JaNg=="],
 
@@ -2343,6 +2343,8 @@
     "body-parser/debug": ["debug@4.4.3", "", { "dependencies": { "ms": "^2.1.3" }, "peerDependencies": { "supports-color": "*" }, "optionalPeers": ["supports-color"] }, "sha512-RGwwWnwQvkVfavKVt22FGLw+xYSdzARwm0ru6DhTVA3umU5hZc28V3kO4stgYryrTlLpuvgI9GiijltAjNbcqA=="],
 
     "boxen/string-width": ["string-width@7.2.0", "", { "dependencies": { "emoji-regex": "^10.3.0", "get-east-asian-width": "^1.0.0", "strip-ansi": "^7.1.0" } }, "sha512-tsaTIkKW9b4N+AEj+SVA+WhJzV7/zMhcSu78mLKWSk7cXMOSHsBKFWUs0fWwq8QyK3MgJBQRX6Gbi4kYbdvGkQ=="],
+
+    "buddy-bot/ts-pantry": ["ts-pantry@0.10.28", "", { "dependencies": { "@stacksjs/ts-cloud": "^0.7.26", "bunfig": "^0.15.6", "ts-web-scraper": "^0.1.1" }, "bin": { "ts-pantry": "./dist/bin/cli.js" } }, "sha512-3NmHcy1i9d09T0tkDWEfzdFycboCsVyyZKe6OZy75htDIPpb9ajQT6xxGQygQB9fbSK0MgB4HVxLCmmUtQ7/jA=="],
 
     "cliui/wrap-ansi": ["wrap-ansi@7.0.0", "", { "dependencies": { "ansi-styles": "^4.0.0", "string-width": "^4.1.0", "strip-ansi": "^6.0.0" } }, "sha512-YVGIj2kamLSTxw6NsZjoBxfSwsn0ycdesmc4p+Q21c5zPuZ1pl+NfxVdxPtdHvmNVOQ6XSYG4AUtyt/Fi7D16Q=="],
 

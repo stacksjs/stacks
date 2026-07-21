@@ -16,9 +16,8 @@
 # Dependencies
 node_modules
 /pantry
-# Pantry manages local system tools from config/deps.ts. Bun owns JavaScript
-# dependency resolution through the committed bun.lock.
-pantry.lock
+# Commit both lockfiles. Pantry owns the complete machine and project graph;
+# Bun's lock remains the runtime package-manager lock used by Bun commands.
 
 # QA
 test-results
