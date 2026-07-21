@@ -121,7 +121,8 @@ async function startDefaultServer() {
     'resources/partials',
     'resources/views/partials',
     'partials',
-  ]) ?? 'resources/partials'
+    'resources/components',
+  ])
   const preferredPort = Number(process.env.PORT) || 3000
   const apiPort = Number(process.env.PORT_API) || 3008
   const docsPort = Number(process.env.PORT_DOCS) || config.ports?.docs || 3006
@@ -141,7 +142,9 @@ async function startDefaultServer() {
     // gives us discovery without enumerating every namespace.
     componentsDir: 'storage/framework/defaults/resources/components',
     layoutsDir: userLayoutsPath,
-    partialsDir: userPartialsPath,
+    // Modern Stacks apps keep include fragments in resources/components;
+    // omit only when no conventional include directory exists.
+    ...(userPartialsPath && { partialsDir: userPartialsPath }),
     fallbackLayoutsDir: defaultLayoutsPath,
     fallbackPartialsDir: defaultViewsPath,
     quiet: true,

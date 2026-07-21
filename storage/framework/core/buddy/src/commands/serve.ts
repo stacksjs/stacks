@@ -60,6 +60,24 @@ function parseCookies(req: Request): Record<string, string> {
 }
 
 /**
+ * Resolve the project's includes directory using Stacks conventions. Modern
+ * Stacks apps keep reusable `.stx` fragments in `resources/components` and
+ * commonly point `config/stx.ts#partialsDir` there; older apps may still use
+ * one of the dedicated partials directories below.
+ */
+export function resolveUserPartialsPath(cwd = process.cwd()): string | undefined {
+  const candidates = [
+    'resources/partials',
+    'resources/views/partials',
+    'partials',
+    'resources/components',
+  ]
+
+  const relative = candidates.find(candidate => existsSync(join(cwd, candidate)))
+  return relative ? join(cwd, relative) : undefined
+}
+
+/**
  * `buddy serve` — boot the production HTTP server.
  *
  * Renders the project's STX views (resources/views) via stx-serve and applies
@@ -132,11 +150,7 @@ export function serve(buddy: CLI): void {
       const defaultsResources = resolveDefaultsResources()
       const defaultViewsPath = join(defaultsResources, 'views')
       const userLayoutsPath = existsSync('resources/views/layouts') ? 'resources/views/layouts' : 'resources/layouts'
-      const userPartialsPath = existsSync('resources/partials')
-        ? 'resources/partials'
-        : existsSync('resources/views/partials')
-          ? 'resources/views/partials'
-          : existsSync('partials') ? 'partials' : 'resources/partials'
+      const userPartialsPath = resolveUserPartialsPath()
 
       // Same-origin API target. Scaffolded client code fetches relative
       // `/api/...` URLs (dashboard stores, CartDrawer, the coming-soon
@@ -168,7 +182,9 @@ export function serve(buddy: CLI): void {
           .includes((process.env.APP_ENV || '').toLowerCase()),
         componentsDir: join(defaultsResources, 'components'),
         layoutsDir: userLayoutsPath,
-        partialsDir: userPartialsPath,
+        // Omit the override only when the app has no Stacks include directory,
+        // allowing bun-plugin-stx to fall back to its own project config.
+        ...(userPartialsPath && { partialsDir: userPartialsPath }),
         fallbackLayoutsDir: join(defaultsResources, 'layouts'),
         fallbackPartialsDir: defaultViewsPath,
         quiet: options?.verbose !== true,
