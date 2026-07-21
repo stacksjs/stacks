@@ -25,6 +25,14 @@ assets; records every versioned workspace package and runtime prerequisite; and
 states the implementation's non-certifying classification. Refresh it explicitly
 with `bun run protocol:manifest`, then review and commit the resulting snapshot.
 
+`evidence/release-manifest.json` maps an exact semantic release tag to its peeled
+commit, tree, digest, runtime prerequisites, and every versioned package at that
+revision. The tag version must match `storage/framework/package.json`; the private
+root package is an independently versioned monorepo orchestrator and is recorded
+rather than treated as the released package. Refresh a reviewed release with
+`bun run protocol:release -- --tag vX.Y.Z`. CI resolves the tag again and rejects
+moved tags, mismatched package versions, stale snapshots, and manual edits.
+
 `evidence/drivers.json` is generated from the runtime capability registry used by
 configuration validation. Each database, queue, cache, storage, mail, realtime,
 and deployment driver is classified as supported, partial, experimental, or
