@@ -122,6 +122,13 @@ function _checkBare(r: RequestInstance): unknown {
 }
 void _checkBare
 
+// A request narrowed by action validations remains assignable to legacy
+// handlers that intentionally accept the broad RequestInstance shape.
+function _checkLegacyRequestCompatibility(r: RequestInstance<{ email: string }>): unknown {
+  return _checkBare(r)
+}
+void _checkLegacyRequestCompatibility
+
 // ─── End-to-end smoke (#1851 Phase 4) ────────────────────────────
 //
 // Importing the smoke fixture forces it through TS in this test
