@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://stacksjs.org/protocol/1.0-draft/fixture-corpus.schema.json",
+  "title": "Stacks Protocol conformance fixture corpus",
+  "type": "object",
+  "required": ["suiteVersion", "catalogRevision", "fixtures"],
+  "properties": {
+    "suiteVersion": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+-draft\\.[0-9]+$" },
+    "catalogRevision": { "type": "integer", "minimum": 1 },
+    "fixtures": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "profile", "requirements", "title", "prerequisites", "setup", "steps", "normalization"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^fixture\\.[a-z0-9.-]+$" },
+          "profile": { "enum": ["Core", "Standard", "Complete"] },
+          "requirements": { "type": "array", "minItems": 1, "items": { "type": "string" }, "uniqueItems": true },
+          "title": { "type": "string", "minLength": 3 },
+          "prerequisites": { "type": "array", "items": { "type": "string" } },
+          "setup": {
+            "type": "object",
+            "required": ["clock", "seed"],
+            "properties": {
+              "clock": { "type": "string", "format": "date-time" },
+              "seed": { "type": "integer" },
+              "state": {}
+            }
+          },
+          "steps": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "required": ["operation", "input", "expect"],
+              "properties": {
+                "operation": { "type": "string", "pattern": "^[a-z][a-z0-9.-]+$" },
+                "input": {},
+                "expect": { "type": "object", "minProperties": 1 }
+              }
+            }
+          },
+          "normalization": {
+            "type": "object",
+            "required": ["timestamps", "identifiers", "paths", "orderInsensitivePaths"]
+          }
+        }
+      }
+    }
+  }
+}

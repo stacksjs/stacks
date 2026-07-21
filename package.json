@@ -62,6 +62,9 @@
     "test:ui": "./buddy test:ui",
     "test:coverage": "./buddy test:coverage",
     "test:types": "./buddy test:types",
+    "protocol:sync": "bun scripts/protocol/sync-suite.ts --write",
+    "protocol:check": "bun scripts/protocol/sync-suite.ts --check",
+    "protocol:conformance": "bun scripts/protocol/run-conformance.ts",
     "bud": "./buddy",
     "stx": "./buddy"
   },
@@ -101,5 +104,9 @@
       }
     },
     "commit-msg": "bun x gitlint --edit .git/COMMIT_EDITMSG"
+  },
+  "devDependencies": {
+    "ajv": "^8.20.0",
+    "ajv-formats": "^3.0.1"
   }
 }

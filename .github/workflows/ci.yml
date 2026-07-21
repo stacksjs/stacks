@@ -142,6 +142,49 @@ jobs:
           AWS_DYNAMODB_ENDPOINT: http://localhost:8000
         run: bun run test
 
+  protocol-conformance:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Setup Pantry
+        uses: home-lang/pantry/packages/action@main
+        with:
+          install: 'false'
+
+      - name: Use cached node_modules
+        uses: actions/cache@v5
+        with:
+          path: node_modules
+          key: node-modules-${{ hashFiles('**/bun.lock') }}
+          restore-keys: |
+            node-modules-
+
+      - name: Install Dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Verify pinned protocol suite
+        run: bun run protocol:check
+
+      - name: Run protocol adapter
+        env:
+          PROTOCOL_REPORT_DIR: protocol/reports
+        run: |
+          bun test scripts/protocol/run-conformance.test.ts
+          bun run protocol:conformance
+          cat protocol/reports/stacks-conformance.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Retain attributable conformance report
+        uses: actions/upload-artifact@v4
+        with:
+          name: stacks-protocol-conformance-${{ github.sha }}
+          path: protocol/reports/
+          if-no-files-found: error
+
   deploy:
     if: >-
       github.event_name == 'workflow_dispatch' ||
@@ -151,7 +194,7 @@ jobs:
         github.ref == 'refs/heads/dev' ||
         (startsWith(github.ref, 'refs/tags/') && contains(github.ref, '-beta.'))
       ))
-    needs: [lint, typecheck, test]
+    needs: [lint, typecheck, test, protocol-conformance]
     runs-on: ubuntu-latest
     timeout-minutes: 30
     environment:
@@ -211,7 +254,7 @@ jobs:
 
   publish-commit:
     if: github.event_name == 'pull_request'
-    needs: [lint, typecheck, test]
+    needs: [lint, typecheck, test, protocol-conformance]
     runs-on: ubuntu-latest
 
     steps:
