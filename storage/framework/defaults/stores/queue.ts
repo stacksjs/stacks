@@ -41,6 +41,3 @@ export const useQueueStore = defineStore('queue', () => {
     fetchQueues,
   }
 })
-
-if (import.meta.hot)
-  import.meta.hot.accept(acceptHMRUpdate(useQueueStore, import.meta.hot))

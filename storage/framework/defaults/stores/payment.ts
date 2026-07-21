@@ -472,6 +472,3 @@ export const usePaymentStore = defineStore('payment', () => {
 
   }
 })
-
-if (import.meta.hot)
-  import.meta.hot.accept(acceptHMRUpdate(usePaymentStore, import.meta.hot))

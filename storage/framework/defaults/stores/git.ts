@@ -9,7 +9,6 @@ const token = ''
 
 declare const defineStore: any
 declare const useHttpFetch: any
-declare const acceptHMRUpdate: any
 
 export const useGitStore = defineStore('git', {
   state: (): any => {
@@ -70,6 +69,3 @@ export const useGitStore = defineStore('git', {
     },
   },
 })
-
-if (import.meta.hot)
-  import.meta.hot.accept(acceptHMRUpdate(useGitStore, import.meta.hot))
