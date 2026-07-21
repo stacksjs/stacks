@@ -10,7 +10,7 @@ export const googleapis = 'https://fonts.googleapis.com'
 export const gstatic = 'https://fonts.gstatic.com'
 export const font = `${googleapis}/css2?family=Readex+Pro:wght@200;400;600&display=swap`
 
-/* vitepress head */
+/* BunPress head */
 export const ogUrl = 'https://stacksjs.com/'
 export const ogImage = `${ogUrl}og.png`
 

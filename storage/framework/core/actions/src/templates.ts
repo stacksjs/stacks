@@ -77,23 +77,26 @@ export default new Action({
   },
 })`,
 
-  component: `<script setup lang="ts">
-console.log('Hello World component created')
+  component: `<script server>
+interface ComponentProps {
+  message?: string
+}
+
+const { message = 'Hello World component created' } = defineProps<ComponentProps>()
 </script>
 
 <template>
-  <div>
-    Some HTML block
-  </div>
+  <div>{{ message }}</div>
 </template>`,
 
-  page: `<script setup lang="ts">
-console.log('Hello World page created')
+  page: `<script server>
+const heading = 'Hello World page created'
 </script>
 
 <template>
   <div>
-    Visit http://127.0.0.1/{0}
+    <h1>{{ heading }}</h1>
+    <p>Visit /{0}</p>
   </div>
 </template>`,
 

@@ -21,7 +21,7 @@ declare global {
   const breakpointsQuasar: typeof import('../core/browser/src/utils/vendors')['breakpointsQuasar']
   const breakpointsSematic: typeof import('../core/browser/src/utils/vendors')['breakpointsSematic']
   const breakpointsTailwind: typeof import('../core/browser/src/utils/vendors')['breakpointsTailwind']
-  const breakpointsVuetify: typeof import('../core/browser/src/utils/vendors')['breakpointsVuetify']
+  const breakpointsMaterialDesign: typeof import('../core/composables/src')['breakpointsMaterialDesign']
   const calculateDelay: typeof import('../core/browser/src/utils/retry')['calculateDelay']
   const carriageReturn: typeof import('../core/browser/src/utils/regex')['carriageReturn']
   const caseInsensitive: typeof import('../core/browser/src/utils/regex')['caseInsensitive']
@@ -455,7 +455,7 @@ declare module '@stacksjs/stx' {
     readonly breakpointsQuasar: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['breakpointsQuasar']>
     readonly breakpointsSematic: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['breakpointsSematic']>
     readonly breakpointsTailwind: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['breakpointsTailwind']>
-    readonly breakpointsVuetify: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['breakpointsVuetify']>
+    readonly breakpointsMaterialDesign: UnwrapRef<typeof import('../core/composables/src')['breakpointsMaterialDesign']>
     readonly calculateDelay: UnwrapRef<typeof import('../core/browser/src/utils/retry')['calculateDelay']>
     readonly carriageReturn: UnwrapRef<typeof import('../core/browser/src/utils/regex')['carriageReturn']>
     readonly caseInsensitive: UnwrapRef<typeof import('../core/browser/src/utils/regex')['caseInsensitive']>

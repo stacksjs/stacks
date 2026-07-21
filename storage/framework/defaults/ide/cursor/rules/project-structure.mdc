@@ -56,7 +56,7 @@ globs:
 
 ### Docs Directory
 
-`./docs` directory is where the VitePress documentation resides.
+`./docs` is where the BunPress documentation resides.
 
 ### Public Directory
 

@@ -26,11 +26,11 @@ export async function build(options: BuildOptions): Promise<void> {
 
 export async function componentLibraries(options: BuildOptions): Promise<void> {
   await runNpmScript(NpmScript.GenerateEntries, options)
-  await vueComponentLibrary(options)
+  await stxComponentLibrary(options)
   await webComponentLibrary(options)
 }
 
-export async function vueComponentLibrary(options: BuildOptions): Promise<void> {
+export async function stxComponentLibrary(options: BuildOptions): Promise<void> {
   if (hasComponents()) {
     log.info('Building your component library...')
     await runNpmScript(NpmScript.BuildComponents, options)

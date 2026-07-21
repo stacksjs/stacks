@@ -1,7 +1,7 @@
 /**
  * Internationalization plugin options for STX
  */
-interface VitePluginVueI18nOptions {
+export interface StxI18nPluginOptions {
   forceStringify?: boolean
   runtimeOnly?: boolean
   compositionOnly?: boolean
@@ -9,7 +9,6 @@ interface VitePluginVueI18nOptions {
   include?: string | string[]
   defaultSFCLang?: 'json' | 'json5' | 'yml' | 'yaml'
   globalSFCScope?: boolean
-  useVueI18nImportName?: boolean
 }
 
 /**
@@ -107,15 +106,9 @@ export interface I18nOptions {
   numberFormats?: NumberFormats
 
   /**
-   * Vite plugin options
+   * STX internationalization plugin options
    */
-  vite?: VitePluginVueI18nOptions
+  stx?: StxI18nPluginOptions
 }
 
 export type I18nConfig = Partial<I18nOptions>
-
-/**
- * Legacy alias
- * @deprecated Use I18nOptions instead
- */
-export type i18nOptions = VitePluginVueI18nOptions

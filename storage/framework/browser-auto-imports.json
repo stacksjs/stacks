@@ -44,7 +44,7 @@
     "breakpointsQuasar": true,
     "breakpointsSematic": true,
     "breakpointsTailwind": true,
-    "breakpointsVuetify": true,
+    "breakpointsMaterialDesign": true,
     "calculateDelay": true,
     "carriageReturn": true,
     "caseInsensitive": true,

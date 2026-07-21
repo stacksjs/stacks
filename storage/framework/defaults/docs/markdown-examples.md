@@ -1,10 +1,10 @@
 # Markdown Extension Examples
 
-This page demonstrates some of the built-in markdown extensions provided by VitePress.
+This page demonstrates the built-in Markdown extensions provided by BunPress.
 
 ## Syntax Highlighting
 
-VitePress provides Syntax Highlighting powered by [Shiki](https://github.com/shikijs/shiki), with additional features like line-highlighting:
+BunPress provides syntax highlighting powered by [Shiki](https://github.com/shikijs/shiki), with additional features such as line highlighting:
 
 **Input**
 
@@ -25,13 +25,13 @@ export default {
 **Output**
 
 ```js{4}
-export default {
-  data () {
-    return {
-      msg: 'Highlighted!'
-    }
-  }
-}
+<script server>
+const message = 'Highlighted!'
+</script>
+
+<template>
+  <p>{{ message }}</p>
+</template>
 ```
 
 ## Custom Containers
@@ -84,4 +84,4 @@ This is a details block.
 
 ## More
 
-Check out the documentation for the [full list of markdown extensions](https://vitepress.dev/guide/markdown).
+See the [BunPress markdown extensions reference](https://github.com/stacksjs/bunpress/blob/main/docs/markdown-extensions.md) for the complete syntax.

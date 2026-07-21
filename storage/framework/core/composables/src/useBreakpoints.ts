@@ -131,9 +131,9 @@ export const breakpointsAntDesign = {
 } as const
 
 /**
- * Vuetify breakpoints.
+ * Material Design breakpoints.
  */
-export const breakpointsVuetify = {
+export const breakpointsMaterialDesign = {
   xs: 600,
   sm: 960,
   md: 1264,

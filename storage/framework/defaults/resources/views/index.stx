@@ -1642,12 +1642,12 @@ export default {
                 <td style="padding: 8px; font-size: 11px; color: #666; text-align: right;">09/29/2025</td>
               </tr>
               <tr style="border-bottom: 1px solid #e0e0e0;">
-                <td style="padding: 8px; font-size: 11px;">📖 VitePress</td>
+                <td style="padding: 8px; font-size: 11px;">📖 BunPress</td>
                 <td style="padding: 8px; font-size: 11px; color: #666;">Static Site Generator</td>
                 <td style="padding: 8px; font-size: 11px; color: #666; text-align: right;">09/28/2025</td>
               </tr>
               <tr style="border-bottom: 1px solid #e0e0e0;">
-                <td style="padding: 8px; font-size: 11px;">📚 VuePress</td>
+                <td style="padding: 8px; font-size: 11px;">📚 STX Docs</td>
                 <td style="padding: 8px; font-size: 11px; color: #666;">Static Site Generator</td>
                 <td style="padding: 8px; font-size: 11px; color: #666; text-align: right;">09/27/2025</td>
               </tr>

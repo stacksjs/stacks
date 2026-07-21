@@ -89,7 +89,7 @@ export {
   breakpointsQuasar,
   breakpointsSematic,
   breakpointsTailwind,
-  breakpointsVuetify,
+  breakpointsMaterialDesign,
   useBreakpoints,
 } from './useBreakpoints'
 

@@ -93,7 +93,7 @@ export function getSelfHostedAnalyticsHead(config: SelfHostedConfig): [string, R
   }
 
   // Return as an inline script tag configuration
-  // Note: For VitePress/Stacks docs, inline scripts need special handling
+  // Note: For BunPress and Stacks docs, inline scripts need special handling
   return [
     ['script', {
       'data-site': config.siteId,

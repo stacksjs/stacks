@@ -1,5 +1,5 @@
 ---
-# https://vitepress.dev/reference/default-theme-home-page
+# BunPress home-page frontmatter
 layout: home
 
 hero:

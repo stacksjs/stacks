@@ -1734,7 +1734,7 @@ SERVICEFILE`,
       html404Content = read404(docs404Path, 'utf-8')
       if (isVerbose) log.debug('  Using BunPress-generated 404.html')
     } else {
-      // Generate a default VitePress-style 404 page
+      // Generate the default BunPress 404 page
       html404Content = `<!DOCTYPE html>
 <html lang="en">
 <head>

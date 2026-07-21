@@ -1,34 +1,46 @@
 ---
+title: Runtime Data Examples
+team: Stacks
 outline: deep
 ---
-<pre>{{ page }}</pre>
 
-### Page Frontmatter
+# {{ title }}
 
-<pre>{{ frontmatter }}</pre>
+BunPress exposes frontmatter and files from `docs/.data/` directly to the STX render context. No client framework or runtime composable is required.
 
+## Frontmatter
+
+**Input**
+
+```md
+---
+title: Runtime Data Examples
+team: Stacks
+---
+
+# {{ title }}
+
+Built by {{ team }}.
 ```
 
-<script setup>
-import { useData } from '@stacksjs/docs' // wip
+**Output**
 
-const { site, theme, page, frontmatter } = useData()
-</script>
+Built by {{ team }}.
 
-## Results
+## Global data
 
-### Theme Data
+Add `docs/.data/project.json`:
 
-<pre>{{ theme }}</pre>
+```json
+{
+  "repository": "stacksjs/stacks"
+}
+```
 
-### Page Data
+The object is available as `project` in Markdown and STX expressions:
 
-<pre>{{ page }}</pre>
+```md
+Repository: {{ project.repository }}
+```
 
-### Page Frontmatter
-
-<pre>{{ frontmatter }}</pre>
-
-## More
-
-Check out the documentation for the [full list of runtime APIs](https://vitepress.dev/reference/runtime-api#usedata).
+See the [BunPress data-loading guide](https://github.com/stacksjs/bunpress/blob/main/docs/advanced.md#data-loading) for loaders and build-time data sources.

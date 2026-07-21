@@ -5,7 +5,7 @@
  * Stacks theme — not by the stx view layer. Posts are markdown files in
  * `content/blog/*.md`; BunPress handles markdown → HTML (syntax highlighting,
  * containers, heading anchors, GFM) and wraps it in its themed document shell.
- * We re-skin its VitePress theme via `content/blog/.theme.css` and add blog
+ * We style its BunPress theme via `content/blog/.theme.css` and add blog
  * chrome (post header, author card, share, listing cards). RSS + sitemap are
  * generated here from `listPosts()`, not by BunPress's `buildRssFeed` /
  * `buildSitemap` — see the note on `feedXml` for why.
@@ -345,7 +345,7 @@ async function blogConfig(bp: BunPress, fm: Record<string, any>) {
     title: fm.title || cfg.title,
     description: fm.description || cfg.description,
     docsDir: CONTENT_DIR,
-    theme: 'vitepress',
+    theme: 'bun',
     markdown: { ...bp.defaultConfig.markdown, css: `${baseCss}\n${themeCss}` },
     themeConfig: {
       siteTitle: cfg.siteTitle,

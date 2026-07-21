@@ -1,5 +1,5 @@
 ```html
-<script setup>
+<script client>
 import { ref, computed } from '@stacksjs/stx'
 import { Stepper } from '@stacksjs/stepper'
 

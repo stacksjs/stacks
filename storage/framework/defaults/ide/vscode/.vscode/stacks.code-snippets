@@ -65,7 +65,7 @@
 	"Stacks Component": {
 		"prefix": "com",
 		"body": [
-			"<script setup lang=\"ts\">",
+			"<script server>",
 			"\t$1",
 			"</script>",
 			"",
@@ -78,14 +78,14 @@
 			"</style>"
 		],
 	},
-	"Stacks v-for": {
-		"prefix": "vfor",
+	"Stacks foreach": {
+		"prefix": "foreach",
 		"body": [
-			"<${1:div} v-for=\"${2:item} in ${2:item}s\" :key=\"${2:item}.id\">",
-			"\t{{ ${2:item} }}",
-			"</${1:div}>"
+			"@foreach (${2:item}s as ${2:item})",
+			"\t<${1:div}>{{ ${2:item} }}</${1:div}>",
+			"@endforeach"
 		],
-		"description": "vfor statement"
+		"description": "STX foreach block"
 	},
 	"Stacks v-model Directive": {
 		"prefix": "vmodel",

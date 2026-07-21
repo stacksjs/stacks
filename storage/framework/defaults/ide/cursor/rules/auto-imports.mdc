@@ -21,7 +21,7 @@ declare global {
   const breakpointsQuasar: typeof import('../core/browser/src/utils/vendors')['breakpointsQuasar']
   const breakpointsSematic: typeof import('../core/browser/src/utils/vendors')['breakpointsSematic']
   const breakpointsTailwind: typeof import('../core/browser/src/utils/vendors')['breakpointsTailwind']
-  const breakpointsVuetify: typeof import('../core/browser/src/utils/vendors')['breakpointsVuetify']
+  const breakpointsMaterialDesign: typeof import('../core/composables/src')['breakpointsMaterialDesign']
   const calculateDelay: typeof import('../core/browser/src/utils/retry')['calculateDelay']
   const carriageReturn: typeof import('../core/browser/src/utils/regex')['carriageReturn']
   const caseInsensitive: typeof import('../core/browser/src/utils/regex')['caseInsensitive']
