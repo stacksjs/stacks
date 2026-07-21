@@ -686,10 +686,15 @@ export async function startDevelopmentServer(_options: DevOptions, _startTime?: 
     .catch(() => { /* swallow — verbose-mode error handlers below already log */ })
 
   await Promise.all([
-    a.runFrontendDevServer(quietOpts).catch((error) => {
-      if (options.verbose)
-        log.error(`Frontend: ${error}`)
-    }),
+    // Skip the frontend (Vite/JS) dev server for stx-only apps: it has nothing
+    // to serve, never binds, and only adds a phantom port to wait on. The API
+    // server serves the whole app for these projects. See stacksjs/stacks#2036.
+    hasJsFrontend
+      ? a.runFrontendDevServer(quietOpts).catch((error) => {
+        if (options.verbose)
+          log.error(`Frontend: ${error}`)
+      })
+      : Promise.resolve(),
     a.runApiDevServer(quietOpts).catch((error) => {
       if (options.verbose)
         log.error(`API: ${error}`)
