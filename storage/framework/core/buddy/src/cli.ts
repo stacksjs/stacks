@@ -89,7 +89,13 @@ if (needsFullSetup) {
 
 async function main() {
   const buddy = cli('buddy')
-  registerGlobalOptions(buddy)
+  // `upgrade` intentionally reuses `-V, --version <version>` for the target
+  // framework release. Registering Buddy's process-wide version flag there
+  // makes clapp consume the option globally and reject the documented
+  // space-separated target value.
+  registerGlobalOptions(buddy, {
+    version: requestedCommand !== 'upgrade' && requestedCommand !== 'update',
+  })
 
   // Enable theme support
   // buddy.themes() // TODO: Re-enable after clapp npm package is updated with themes() method
