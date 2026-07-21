@@ -22,6 +22,14 @@ buddy deploy     # Deploy to cloud
 
 A complete project created with Stacks. A stack includes your application code, configuration, and all associated resources.
 
+### Composability-First
+
+A design rule that favors small capabilities with stable interfaces over a single inseparable framework core. Stacks packages, Actions, components, drivers, and configuration modules can be combined independently while following the same conventions.
+
+### Atomic-First
+
+A design rule that starts with the smallest useful unit, such as one Action, component, utility, or configuration field. Larger features are assembled from those focused units instead of duplicating behavior in broad modules.
+
 ## Architecture
 
 ### Model-View-Action (MVA)
@@ -46,7 +54,7 @@ class CreateOrderAction extends Action {
 
 ### Controllers
 
-Classes that handle HTTP requests and delegate to Actions. Controllers are thin and focus on request/response handling.
+Optional transport adapters for applications migrating from an MVC structure. New Stacks applications normally route requests directly to Actions.
 
 ### Middleware
 
@@ -56,7 +64,7 @@ Functions that process requests before they reach controllers. Used for authenti
 
 ### Components
 
-Reusable Vue.js UI components. Can be Vue Single File Components (SFCs) or Web Components.
+Reusable stx UI components. Components can also compile to standards-based Web Components for use outside a Stacks application.
 
 ### Web Components
 
@@ -64,7 +72,7 @@ Framework-agnostic custom elements built from Vue components. Work in any HTML c
 
 ### Composables
 
-Reusable composition functions that encapsulate stateful logic. Following Vue 3's Composition API pattern.
+Reusable functions that encapsulate stateful UI logic using stx signals and lifecycle primitives.
 
 ```typescript
 const { count, increment } = useCounter()
@@ -92,18 +100,11 @@ TypeScript classes that represent database tables and define fields, relationshi
 
 ### Migrations
 
-Version-controlled database schema changes. Allow you to evolve your database structure over time.
+Version-controlled database schema changes generated from model definitions. Stacks diffs the declared model schema against the database and emits the required SQL.
 
-```typescript
-class CreateUsersTable extends Migration {
-  async up() {
-    await this.schema.create('users', (table) => {
-      table.id()
-      table.string('name')
-      table.timestamps()
-    })
-  }
-}
+```bash
+buddy generate:migrations
+buddy migrate
 ```
 
 ### Seeders
@@ -186,9 +187,9 @@ Classes that define multiple event handlers in one place.
 
 The infrastructure management system for deploying Stacks applications to AWS.
 
-### CDK (Cloud Development Kit)
+### ts-cloud
 
-AWS tool used by Stacks to define cloud infrastructure as code.
+The first-party infrastructure toolkit used by Stacks to define and deploy cloud resources.
 
 ### Lambda
 
@@ -206,7 +207,7 @@ A reusable package of components and/or functions that can be published to npm.
 
 ### Composability
 
-Design principle where small, focused pieces combine to create complex functionality.
+The practical result of the Composability-First rule: small, focused pieces combine into complete features.
 
 ### Atomic Design
 
@@ -220,11 +221,11 @@ The system that powers component rendering and styling in Stacks.
 
 ### Desktop Engine
 
-The Tauri-based system for building native desktop applications.
+The Craft-powered system for building native desktop applications and system tray experiences from Stacks views.
 
 ### Mobile Engine
 
-The Capacitor-based system for building iOS and Android applications.
+The Craft-powered system for packaging Stacks applications for iOS and Android.
 
 ## Development
 
