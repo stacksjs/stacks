@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test'
-import { dispatchInteractiveDevSelection, interactiveDevChoices, resolvePrettyDevDomain } from '../src/commands/dev'
+import { dispatchInteractiveDevSelection, interactiveDevChoices, resolvePrettyDevDomain, shouldUsePrettyDevUrls } from '../src/commands/dev'
 
 describe('buddy dev interactive selection', () => {
   it('dispatches every visible choice to exactly one runner', async () => {
@@ -34,5 +34,32 @@ describe('buddy dev URL selection', () => {
   it('recognizes explicitly configured pretty domains', () => {
     expect(resolvePrettyDevDomain('stacks.localhost')).toBe('stacks.localhost')
     expect(resolvePrettyDevDomain('https://app.example.com')).toBe('app.example.com')
+  })
+
+  it('keeps pretty URLs as the default after one-time system authorization', () => {
+    expect(shouldUsePrettyDevUrls({
+      domain: 'stacks.localhost',
+      localhostOnly: false,
+      proxyManagedExternally: false,
+      systemAuthorized: true,
+    })).toBe(true)
+  })
+
+  it('falls back immediately until the explicit setup is authorized', () => {
+    expect(shouldUsePrettyDevUrls({
+      domain: 'stacks.localhost',
+      localhostOnly: false,
+      proxyManagedExternally: false,
+      systemAuthorized: false,
+    })).toBe(false)
+  })
+
+  it('honors the explicit localhost override', () => {
+    expect(shouldUsePrettyDevUrls({
+      domain: 'stacks.localhost',
+      localhostOnly: true,
+      proxyManagedExternally: false,
+      systemAuthorized: true,
+    })).toBe(false)
   })
 })

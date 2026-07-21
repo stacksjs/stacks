@@ -191,24 +191,27 @@ All development servers support Hot Module Replacement (HMR), which means:
 
 ## Pretty URLs
 
-New projects start on `<http://localhost:3000>`. This path requires no sudo
-access, hosts-file changes, or local certificate trust.
-
-Pretty HTTPS URLs are opt-in. Set a custom `APP_URL` in `.env`:
+Stacks provides pretty HTTPS development URLs out of the box. Set the hostname
+with `APP_URL` in `.env`:
 
 ```bash
 APP_URL=my-project.localhost
 ```
 
-The next `buddy dev` uses rpx and tlsx to serve:
+`buddy dev` uses rpx and tlsx to serve:
 
 - `<https://your-project.localhost>` instead of `<http://localhost:3000>`
 
-The proxy binds port 443 and installs a local CA certificate. A `*.localhost`
-name resolves to loopback automatically. Other development domains can also
-require an `/etc/hosts` or local DNS resolver entry. Run `buddy setup:ssl` for
-explicit certificate setup, or set `STACKS_DEV_LOCALHOST=1` for one session to
-force the zero-setup localhost URLs.
+Run `buddy setup:ssl` once to authorize the shared rpx daemon on ports 80 and
+443 and trust its tlsx-generated local CA. This is the only interactive setup
+step. A `*.localhost` name resolves to loopback automatically, so it does not
+need an `/etc/hosts` entry. Other development domains can require rpx-managed
+DNS or hosts-file setup.
+
+If that one-time setup has not run, `buddy dev` detects the missing system
+authorization immediately and serves `<http://localhost:3000>` for the current
+session. It never waits for a hidden sudo prompt. Use
+`STACKS_DEV_LOCALHOST=1 buddy dev` to request that fallback explicitly.
 
 ## Troubleshooting
 
@@ -225,8 +228,8 @@ buddy ports
 
 ### SSL Certificate Issues
 
-Opt-in pretty URLs use a locally trusted development certificate. If your
-browser shows a warning, rerun the setup:
+Pretty URLs use a locally trusted development certificate. If your browser
+shows a warning, rerun the setup:
 
 ```bash
 buddy setup:ssl

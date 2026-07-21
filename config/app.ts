@@ -12,7 +12,7 @@ export default {
   name: env.APP_NAME ?? 'Stacks',
   description: 'Stacks is a full-stack framework for building modern web applications.',
   env: env.APP_ENV ?? 'local',
-  url: env.APP_URL ?? 'http://localhost:3000',
+  url: env.APP_URL ?? 'stacks.localhost',
   redirectUrls: ['stacksjs.com'],
   debug: env.DEBUG ?? false,
   key: env.APP_KEY,

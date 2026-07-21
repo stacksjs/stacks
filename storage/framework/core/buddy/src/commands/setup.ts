@@ -2,13 +2,14 @@ import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import type { CLI, CliOptions } from '@stacksjs/types'
 import process from 'node:process'
-import { runAction, setupSSL } from '@stacksjs/actions'
+import { runAction } from '@stacksjs/actions'
 import { log, onUnknownSubcommand, runCommand } from "@stacksjs/cli"
 import { Action } from '@stacksjs/enums'
 import { handleError } from '@stacksjs/error-handling'
 import { path as p } from '@stacksjs/path'
 import { copyFile, storage } from '@stacksjs/storage'
 import { ExitCode } from '@stacksjs/types'
+import { setupPrettyDevEnvironment } from './dev'
 
 interface SetupOptions extends CliOptions {
   skipAws?: boolean
@@ -77,7 +78,7 @@ export function setup(buddy: CLI): void {
     .action(async (options: CliOptions & { domain?: string, skipHosts?: boolean, skipTrust?: boolean }) => {
       log.debug('Running `buddy setup:ssl` ...', options)
 
-      const success = await setupSSL({
+      const success = await setupPrettyDevEnvironment({
         domain: options.domain,
         skipHosts: options.skipHosts,
         skipTrust: options.skipTrust,
