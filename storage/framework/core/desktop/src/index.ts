@@ -2,6 +2,9 @@ import { existsSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { join } from 'node:path'
 
+export * from './invites'
+export * from './updater'
+
 export interface Desktop {
   app: unknown
   core: unknown
@@ -109,31 +112,6 @@ export function craftDevCommand(port: number, options: OpenDevWindowOptions = {}
   if (options.menubarOnly) command.push('--menubar-only')
 
   return command
-}
-
-export interface InviteLinkOptions {
-  email?: string
-  team?: string
-  role?: string
-  expiresAt?: Date | string
-}
-
-export function createInviteLink(baseUrl: string, token: string, options: InviteLinkOptions = {}): string {
-  if (!token.trim())
-    throw new Error('Invite token is required')
-
-  const url = new URL('/invite', /^https?:\/\//.test(baseUrl) ? baseUrl : `https://${baseUrl}`)
-  url.searchParams.set('token', token)
-  if (options.email) url.searchParams.set('email', options.email)
-  if (options.team) url.searchParams.set('team', options.team)
-  if (options.role) url.searchParams.set('role', options.role)
-  if (options.expiresAt) {
-    const date = options.expiresAt instanceof Date ? options.expiresAt : new Date(options.expiresAt)
-    if (Number.isNaN(date.valueOf()))
-      throw new Error('Invite expiration must be a valid date')
-    url.searchParams.set('expires', date.toISOString())
-  }
-  return url.toString()
 }
 
 export function createUpdateManifestUrl(baseUrl: string, channel = 'stable'): string {
