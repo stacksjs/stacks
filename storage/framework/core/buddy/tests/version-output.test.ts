@@ -5,6 +5,7 @@ import { buddyVersion, stacksVersion, versionDescriptor, versionLine } from '../
 
 describe('buddy version output', () => {
   it('reports the installed Buddy and framework package versions', () => {
+    expect(stacksVersion).toBe(buddyVersion)
     expect(versionDescriptor).toBe(`${buddyVersion} stacks/${stacksVersion}`)
     expect(versionLine).toBe(`buddy/${buddyVersion} stacks/${stacksVersion}`)
   })
