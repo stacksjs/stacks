@@ -105,6 +105,7 @@ const config: BunPressOptions = {
           collapsed: true,
           items: [
             { text: 'Introduction', link: '/guide/buddy/intro' },
+            { text: 'Command Reference', link: '/guide/buddy/commands' },
             { text: 'Add Stacks', link: '/guide/buddy/add' },
             { text: 'Dev', link: '/guide/buddy/dev' },
             { text: 'Build', link: '/guide/buddy/build' },

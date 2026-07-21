@@ -62,6 +62,8 @@
     "test:ui": "./buddy test:ui",
     "test:coverage": "./buddy test:coverage",
     "test:types": "./buddy test:types",
+    "docs:buddy": "bun scripts/docs/buddy-commands.ts --write",
+    "docs:buddy:check": "bun scripts/docs/buddy-commands.ts --check",
     "protocol:sync": "bun scripts/protocol/sync-suite.ts --write",
     "protocol:check": "bun scripts/protocol/sync-suite.ts --check",
     "protocol:conformance": "bun scripts/protocol/run-conformance.ts",
