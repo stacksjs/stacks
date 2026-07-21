@@ -5,177 +5,28 @@ interface SettingsFormManagerProps {
 
 const { name = '' } = defineProps<SettingsFormManagerProps>()
 
-import AIForm from './Forms/AIForm.vue'
-import AnalyticsForm from './Forms/AnalyticsForm.vue'
-import AppForm from './Forms/AppForm.vue'
-import CacheForm from './Forms/CacheForm.vue'
-import CliForm from './Forms/CLIForm.vue'
-import CloudForm from './Forms/CloudForm.vue'
-import DatabaseForm from './Forms/DatabaseForm.vue'
-import DNSForm from './Forms/DNSForm.vue'
-import EmailForm from './Forms/EmailForm.vue'
-import FileSystemForm from './Forms/FileSystemForm.vue'
-import HashingForm from './Forms/HashingForm.vue'
-import LibraryForm from './Forms/LibraryForm.vue'
-import QueueForm from './Forms/QueueForm.vue'
-import SearchEngineForm from './Forms/SearchEngineForm.vue'
-import SecurityForm from './Forms/SecurityForm.vue'
-import ServicesForm from './Forms/ServicesForm.vue'
-import StorageForm from './Forms/StorageForm.vue'
-import TeamsForm from './Forms/TeamsForm.vue'
-
-const options = [
-  {
-    key: 'ai',
-    label: 'AI',
-  },
-  {
-    key: 'analytics',
-    label: 'Analytics',
-  },
-  {
-    key: 'app',
-    label: 'App',
-  },
-  {
-    key: 'cache',
-    label: 'Cache',
-  },
-  {
-    key: 'cli',
-    label: 'CLI',
-  },
-  {
-    key: 'cloud',
-    label: 'Cloud',
-  },
-  {
-    key: 'database',
-    label: 'Database',
-  },
-  {
-    key: 'dns',
-    label: 'DNS',
-  },
-  {
-    key: 'email',
-    label: 'Email',
-  },
-  {
-    key: 'file-system',
-    label: 'File System',
-  },
-  {
-    key: 'hashing',
-    label: 'Hashing',
-  },
-  {
-    key: 'languages',
-    label: 'Languages',
-  },
-  {
-    key: 'library',
-    label: 'Library',
-  },
-  {
-    key: 'native',
-    label: 'Native',
-  },
-  {
-    key: 'mail',
-    label: 'Mail',
-  },
-  {
-    key: 'queue',
-    label: 'Queue',
-  },
-  {
-    key: 'search-engine',
-    label: 'Search Engine',
-  },
-  {
-    key: 'security',
-    label: 'Security',
-  },
-  {
-    key: 'services',
-    label: 'Services',
-  },
-  {
-    key: 'storage',
-    label: 'Storage',
-  },
-  {
-    key: 'team',
-    label: 'Team',
-  },
-  {
-    key: 'ui',
-    label: 'UI',
-  },
-]
-function pageTitle() { return options.find(option => option.key === name }?.label || name)
+function title(): string {
+  return name
+    .split(/[-_]/)
+    .map(part => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(' ')
+}
 </script>
-<main>
-  <div class="md:col-span-2 px-4 py-6 sm:px-6 lg:px-8 bg-white ring-1 ring-gray-900/5 sm:rounded-xl shadow-sm">
-    <h2 class="font-semibold leading-7 text-base text-gray-900">
-      {{ pageTitle }} Configuration
-    </h2>
-    <p class="mt-1 leading-6 text-gray-600 text-sm">
-      This configuration defines all of your {{ pageTitle }} options.
-    </p>
 
-    <div class="mt-10">
-      @if(name === 'ai')
-        <AIForm />
-      @elseif(name === 'analytics')
-        <AnalyticsForm />
-      @elseif(name === 'app')
-        <AppForm />
-      @elseif(name === 'cache')
-        <CacheForm />
-      @elseif(name === 'cli')
-        <CliForm />
-      @elseif(name === 'cloud')
-        <CloudForm />
-      @elseif(name === 'database')
-        <DatabaseForm />
-      @elseif(name === 'dns')
-        <DNSForm />
-      @elseif(name === 'email')
-        <EmailForm />
-      @elseif(name === 'file-system')
-        <FileSystemForm />
-      @elseif(name === 'hashing')
-        <HashingForm />
-      @elseif(name === 'library')
-        <LibraryForm />
-      @elseif(name === 'queue')
-        <QueueForm />
-      @elseif(name === 'search-engine')
-        <SearchEngineForm />
-      @elseif(name === 'security')
-        <SecurityForm />
-      @elseif(name === 'services')
-        <ServicesForm />
-      @elseif(name === 'storage')
-        <StorageForm />
-      @elseif(name === 'team')
-        <TeamsForm />
-      @else
-        <div class="text-center">
-          <div class="h-12 w-12 text-gray-400 dark:text-neutral-200 duration-150 ease-in-out transition-all i-hugeicons-cog-8-tooth" />
-          <h3 class="mt-2 font-semibold text-gray-900 text-sm">
-            Settings <span class="font-bold">{{ pageTitle }}</span> Form not created yet
-          </h3>
-          <p class="mt-1 text-gray-500 text-sm">
-            Please ask the maintenance team to fix.
-          </p>
-        </div>
-      @endif
+<Card variant="default" padding="lg">
+  <div class="flex gap-4 items-start">
+    <div class="flex flex-none items-center justify-center h-10 w-10 text-blue-600 dark:text-blue-400 bg-blue-500/10 rounded-lg">
+      <span class="h-5 w-5 i-hugeicons-settings-02"></span>
+    </div>
+    <div class="flex-1 min-w-0">
+      <h2 class="font-semibold text-neutral-900 dark:text-white">{{ title() }} configuration</h2>
+      <p class="mt-1 text-neutral-500 text-sm dark:text-neutral-400">
+        Configuration editing now lives in the unified Settings workspace.
+      </p>
+      <a href="/settings" class="inline-flex gap-2 items-center mt-4 font-medium text-blue-600 text-sm dark:text-blue-400 hover:underline">
+        Open Settings
+        <span class="h-4 w-4 i-hugeicons-arrow-right-02"></span>
+      </a>
     </div>
   </div>
-</main>
-<style scoped>
-
-</style>
+</Card>

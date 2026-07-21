@@ -525,7 +525,7 @@ export function buildNavSections(
       { to: '/buddy', icon: 'terminal', text: 'Buddy CLI' },
       { to: '/environment', icon: 'settings', text: 'Environment' },
       { to: '/access-tokens', icon: 'lock', text: 'Access Tokens' },
-      { to: '/settings/billing', icon: 'invoice', text: 'Billing' },
+      { to: '/settings', icon: 'settings', text: 'Settings' },
       { to: '/settings/mail', icon: 'mail', text: 'Mail Settings' },
     ]])
   }
@@ -652,7 +652,7 @@ export function buildWebSidebarSections(): WebSidebarSection[] {
     {
       id: 'system',
       label: '',
-      items: [{ id: 'settings', label: 'Settings', icon: NAV_ICON_CLASSES.settings, iconColor: 'blue', href: '/settings/billing' }],
+      items: [{ id: 'settings', label: 'Settings', icon: NAV_ICON_CLASSES.settings, iconColor: 'blue', href: '/settings' }],
     },
   ]
 }
@@ -671,6 +671,6 @@ export function buildSidebarChunks(): { top: string, nav: string, bottom: string
   return {
     top: `<a href="/" class="sidebar-link sidebar-link-home"><span class="sidebar-icon">${svg('home')}</span><span>Home</span></a>`,
     nav: buildSidebarNavHtml(manifest.models, manifest.sections),
-    bottom: `<a href="/settings/billing" class="sidebar-link"><span class="sidebar-icon">${svg('settings')}</span><span>Settings</span></a>`,
+    bottom: `<a href="/settings" class="sidebar-link"><span class="sidebar-icon">${svg('settings')}</span><span>Settings</span></a>`,
   }
 }

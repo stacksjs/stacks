@@ -1,0 +1,256 @@
+@extends('layouts/default')
+
+@section('content')
+<script client>
+interface ConfigFile {
+  name: string
+  title: string
+  size: number
+}
+
+interface ConfigField {
+  key: string
+  value: string | number | boolean | null | unknown[] | Record<string, unknown>
+  type: string
+  editable: boolean
+  reason?: string
+}
+
+const files = state<ConfigFile[]>([])
+const fields = state<ConfigField[]>([])
+const drafts = state<Record<string, string | number | boolean>>({})
+const selected = state('')
+const query = state('')
+const loading = state(true)
+const saving = state(false)
+const message = state('')
+const error = state('')
+
+const filteredFiles = derived(() => {
+  const needle = query().trim().toLowerCase()
+  if (!needle)
+    return files()
+
+  return files().filter(file => file.name.includes(needle) || file.title.toLowerCase().includes(needle))
+})
+
+const selectedFile = derived(() => files().find(file => file.name === selected()))
+const editableCount = derived(() => fields().filter(field => field.editable).length)
+
+function displayValue(field: ConfigField): string | number {
+  if (field.editable)
+    return drafts()[field.key] as string | number
+  if (field.type === 'object' || field.type === 'array')
+    return JSON.stringify(field.value)
+  return String(field.value ?? '')
+}
+
+function setDraft(key: string, value: string | number | boolean): void {
+  drafts.set({ ...drafts(), [key]: value })
+}
+
+async function loadFiles(): Promise<void> {
+  loading.set(true)
+  error.set('')
+  try {
+    const response = await fetch('/api/config/list')
+    const body = await response.json()
+    if (!response.ok || !body.ok)
+      throw new Error(body.error || 'Unable to list configuration files')
+
+    files.set(body.files)
+    const first = body.files[0]?.name
+    if (first)
+      await selectFile(first)
+  }
+  catch (cause) {
+    error.set(cause instanceof Error ? cause.message : 'Unable to load configuration')
+  }
+  finally {
+    loading.set(false)
+  }
+}
+
+async function selectFile(name: string): Promise<void> {
+  selected.set(name)
+  fields.set([])
+  message.set('')
+  error.set('')
+  loading.set(true)
+  try {
+    const response = await fetch(`/api/config/read?name=${encodeURIComponent(name)}`)
+    const body = await response.json()
+    if (!response.ok || !body.ok)
+      throw new Error(body.error || `Unable to read config/${name}.ts`)
+
+    fields.set(body.fields)
+    drafts.set(Object.fromEntries(
+      body.fields
+        .filter((field: ConfigField) => field.editable)
+        .map((field: ConfigField) => [field.key, field.value]),
+    ))
+  }
+  catch (cause) {
+    error.set(cause instanceof Error ? cause.message : `Unable to read config/${name}.ts`)
+  }
+  finally {
+    loading.set(false)
+  }
+}
+
+async function save(): Promise<void> {
+  const file = selected()
+  if (!file || saving())
+    return
+
+  saving.set(true)
+  message.set('')
+  error.set('')
+  try {
+    const updates = fields()
+      .filter(field => field.editable)
+      .map(field => ({ key: field.key, value: drafts()[field.key] }))
+    const response = await fetch('/api/config/update', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ file, updates }),
+    })
+    const body = await response.json()
+    if (!response.ok || !body.ok) {
+      const failed = body.results?.filter((result: { ok: boolean }) => !result.ok)
+      throw new Error(failed?.map((result: { error?: string }) => result.error).filter(Boolean).join(', ') || body.error || 'Unable to save configuration')
+    }
+
+    message.set(`Saved config/${file}.ts`)
+    await selectFile(file)
+    message.set(`Saved config/${file}.ts`)
+  }
+  catch (cause) {
+    error.set(cause instanceof Error ? cause.message : 'Unable to save configuration')
+  }
+  finally {
+    saving.set(false)
+  }
+}
+
+void loadFiles()
+</script>
+
+<div class="mx-auto pb-12 pt-6 px-6 space-y-6 max-w-7xl">
+  <PageHeader
+    title="Settings"
+    description="Review and edit project configuration without losing comments or environment bindings"
+  />
+
+  <div class="grid gap-6 lg:grid-cols-[17rem_minmax(0,1fr)]">
+    <Card variant="default" padding="none">
+      <div class="p-4 border-b border-neutral-200/60 dark:border-white/5">
+        <label for="config-search" class="sr-only">Search configuration</label>
+        <div class="relative">
+          <span class="absolute left-3 top-1/2 h-4 w-4 text-neutral-400 pointer-events-none -translate-y-1/2 i-hugeicons-search-01"></span>
+          <input
+            id="config-search"
+            type="search"
+            placeholder="Search config"
+            :value="query()"
+            @input="query.set($event.target.value)"
+            class="block pl-9 pr-3 py-2 w-full text-neutral-900 text-sm dark:text-white placeholder:text-neutral-400 bg-white dark:bg-white/5 border border-black/10 rounded-lg dark:border-white/15 focus:border-blue-500/50 focus:outline-none focus:ring-2 focus:ring-blue-500/40"
+          >
+        </div>
+      </div>
+
+      <nav class="overflow-y-auto p-2 max-h-[68vh]" aria-label="Configuration files">
+        @foreach(filteredFiles() as file)
+          <button
+            type="button"
+            :class="selected() === file.name ? 'flex items-center gap-3 px-3 py-2.5 w-full text-left text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-500/10 rounded-lg' : 'flex items-center gap-3 px-3 py-2.5 w-full text-left text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-white/5 rounded-lg'"
+            @click="selectFile(file.name)"
+          >
+            <span class="flex-none h-4 w-4 i-hugeicons-settings-02"></span>
+            <span class="flex-1 font-medium text-sm truncate">{{ file.title }}</span>
+            <span class="text-[10px] text-neutral-400">{{ file.size < 1024 ? file.size + ' B' : Math.round(file.size / 1024) + ' KB' }}</span>
+          </button>
+        @endforeach
+      </nav>
+    </Card>
+
+    <Card variant="default" padding="none">
+      @if(loading())
+        <div class="flex items-center justify-center min-h-80 text-neutral-500 dark:text-neutral-400">
+          <span class="mr-2 h-5 w-5 animate-spin i-hugeicons-loading-03"></span>
+          Loading configuration
+        </div>
+      @elseif(error() && !selectedFile())
+        <div class="p-8 text-center">
+          <span class="inline-block h-8 w-8 text-red-500 i-hugeicons-alert-02"></span>
+          <p class="mt-3 font-medium text-neutral-900 dark:text-white">Configuration unavailable</p>
+          <p class="mt-1 text-red-600 text-sm dark:text-red-400">{{ error() }}</p>
+        </div>
+      @elseif(selectedFile())
+        <div class="flex flex-wrap gap-4 items-center justify-between px-6 py-5 border-b border-neutral-200/60 dark:border-white/5">
+          <div>
+            <h2 class="font-semibold text-lg text-neutral-900 dark:text-white">{{ selectedFile().title }}</h2>
+            <p class="mt-1 font-mono text-neutral-500 text-xs dark:text-neutral-400">config/{{ selectedFile().name }}.ts</p>
+          </div>
+          <div class="flex gap-2 items-center">
+            <Badge variant="default" size="sm">{{ editableCount() }} editable</Badge>
+            <Button variant="primary" size="sm" :disabled="saving() || editableCount() === 0" @click="save()">
+              {{ saving() ? 'Saving...' : 'Save changes' }}
+            </Button>
+          </div>
+        </div>
+
+        @if(message())
+          <div class="mt-5 mx-6 px-4 py-3 text-green-700 text-sm dark:text-green-300 bg-green-50 dark:bg-green-500/10 border border-green-200 rounded-lg dark:border-green-500/20">
+            {{ message() }}
+          </div>
+        @endif
+        @if(error())
+          <div class="mt-5 mx-6 px-4 py-3 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-500/10 border border-red-200 rounded-lg dark:border-red-500/20">
+            {{ error() }}
+          </div>
+        @endif
+
+        <form class="divide-neutral-200/60 divide-y dark:divide-white/5" @submit.prevent="save()">
+          @foreach(fields() as field)
+            <div class="grid gap-3 sm:grid-cols-[minmax(10rem,0.8fr)_minmax(0,1.2fr)] sm:items-start px-6 py-5">
+              <div>
+                <label :for="'config-' + field.key" class="font-medium text-neutral-900 text-sm dark:text-white">{{ field.key }}</label>
+                <p class="mt-1 text-neutral-500 text-xs dark:text-neutral-400">{{ field.type }}</p>
+              </div>
+
+              <div>
+                @if(field.type === 'boolean' && field.editable)
+                  <label class="inline-flex gap-3 items-center cursor-pointer">
+                    <input
+                      :id="'config-' + field.key"
+                      type="checkbox"
+                      :checked="drafts()[field.key] === true"
+                      @change="setDraft(field.key, $event.target.checked)"
+                      class="h-4 w-4 text-blue-600 border-neutral-300 rounded focus:ring-blue-500"
+                    >
+                    <span class="text-neutral-700 text-sm dark:text-neutral-300">{{ drafts()[field.key] ? 'Enabled' : 'Disabled' }}</span>
+                  </label>
+                @elseif(field.editable)
+                  <input
+                    :id="'config-' + field.key"
+                    :type="field.type === 'number' ? 'number' : 'text'"
+                    :value="displayValue(field)"
+                    @input="setDraft(field.key, field.type === 'number' ? Number($event.target.value) : $event.target.value)"
+                    class="block px-3 py-2 w-full text-neutral-900 text-sm dark:text-white bg-white dark:bg-white/5 border border-black/10 rounded-lg dark:border-white/15 focus:border-blue-500/50 focus:outline-none focus:ring-2 focus:ring-blue-500/40"
+                  >
+                @else
+                  <div class="px-3 py-2 break-all font-mono text-neutral-500 text-xs dark:text-neutral-400 bg-neutral-50 dark:bg-white/[0.03] border border-neutral-200 rounded-lg dark:border-white/10">
+                    {{ displayValue(field) }}
+                  </div>
+                  <p class="mt-1.5 text-amber-700 text-xs dark:text-amber-300">{{ field.reason }}</p>
+                @endif
+              </div>
+            </div>
+          @endforeach
+        </form>
+      @endif
+    </Card>
+  </div>
+</div>
+@endsection

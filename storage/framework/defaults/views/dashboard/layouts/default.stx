@@ -161,7 +161,7 @@ const sidebarRoutes = {
   'buddy': '/buddy',
   'environment': '/environment',
   'access-tokens': '/access-tokens',
-  'settings': '/settings/billing',
+  'settings': '/settings',
 }
 
 // Handle Craft native sidebar selection events
@@ -268,18 +268,18 @@ effect(() => {
 >
   <template #header>
     <!-- Traffic lights are native (titlebarHidden window) — this strip only
-         reserves their space and acts as the window drag region. -->
+        reserves their space and acts as the window drag region. -->
     <SidebarHeader :showWindowControls="false" />
   </template>
 </Sidebar>
 
 <!-- Role map for the wiring script below; interpolated server-side. The div is
-     hidden and holds JSON as text, because a JSON-typed script tag would get
-     rewritten by the layout script processor (see the importmap comment above).
+    hidden and holds JSON as text, because a JSON-typed script tag would get
+    rewritten by the layout script processor (see the importmap comment above).
 
-     Do not name that tag literally here. The script processor rewrites script
-     tags inside comments too, and eating this comment's closing marker turns
-     everything below into comment text, blanking the page. -->
+    Do not name that tag literally here. The script processor rewrites script
+    tags inside comments too, and eating this comment's closing marker turns
+    everything below into comment text, blanking the page. -->
 <div data-sidebar-roles hidden>{{ sidebarRoleAttrs }}</div>
 
 <script client>
