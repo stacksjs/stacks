@@ -29,7 +29,7 @@ import { log } from '@stacksjs/logging'
  *   console.log(result)
  * ```
  */
-export async function runCommand(command: string, options?: CliOptions): Promise<Result<Subprocess, CommandError>> {
+export async function runCommand(command: string | string[], options?: CliOptions): Promise<Result<Subprocess, CommandError>> {
   const opts: CliOptions = {
     ...options,
     // Don't override stdin if it's explicitly set
@@ -40,7 +40,7 @@ export async function runCommand(command: string, options?: CliOptions): Promise
   return await exec(command, opts)
 }
 
-export async function runProcess(command: string, options?: CliOptions): Promise<Result<Subprocess, CommandError>> {
+export async function runProcess(command: string | string[], options?: CliOptions): Promise<Result<Subprocess, CommandError>> {
   const opts: CliOptions = {
     ...options,
     stdio: [options?.stdin ?? 'inherit', 'pipe', 'pipe'],
@@ -75,7 +75,7 @@ export async function runProcess(command: string, options?: CliOptions): Promise
  *   console.log(result)
  * ```
  */
-export async function runCommandSync(command: string, options?: CliOptions): Promise<string> {
+export async function runCommandSync(command: string | string[], options?: CliOptions): Promise<string> {
   const opts: CliOptions = {
     ...options,
     stdio: [options?.stdin ?? 'inherit', 'pipe', 'pipe'],
@@ -93,7 +93,7 @@ export async function runCommandSync(command: string, options?: CliOptions): Pro
  * @returns The result of the command.
  */
 export async function runCommands(
-  commands: string[],
+  commands: (string | string[])[],
   options?: CliOptions,
 ): Promise<Ok<Subprocess<Writable, Readable, Readable>, Error>[]> {
   const results = []

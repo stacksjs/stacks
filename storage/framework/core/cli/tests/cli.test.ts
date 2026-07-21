@@ -71,13 +71,20 @@ describe('@stacksjs/cli', () => {
 
   describe('parseOptions', () => {
     it('parses options', () => {
-      process.argv = ['node', 'script.js', '--dry-run', '--verbose']
-      const result = parseOptions()
-      expect(result).toEqual({
-        dryRun: true,
-        quiet: false,
-        verbose: true,
-      })
+      const originalArgv = process.argv
+
+      try {
+        process.argv = ['node', 'script.js', '--dry-run', '--verbose']
+        const result = parseOptions()
+        expect(result).toEqual({
+          dryRun: true,
+          quiet: false,
+          verbose: true,
+        })
+      }
+      finally {
+        process.argv = originalArgv
+      }
     })
   })
 
@@ -118,6 +125,18 @@ describe('@stacksjs/cli', () => {
 
     it('execSync is exported as a function', () => {
       expect(typeof execSync).toBe('function')
+    })
+  })
+
+  describe('command execution', () => {
+    it('preserves explicit argv arrays', async () => {
+      const result = await runCommand(['sh', '-c', 'exit 0'], { silent: true })
+      expect(result.isOk).toBe(true)
+    })
+
+    it('accepts explicit argv arrays in synchronous mode', async () => {
+      const output = await runCommandSync(['sh', '-c', 'exit 0'])
+      expect(typeof output).toBe('string')
     })
   })
 
