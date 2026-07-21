@@ -156,6 +156,17 @@ export function writeSyncedVersion(versionFilePath: string, ch: 'stable' | 'cana
 }
 
 /**
+ * Decide whether the upgrade must protect framework-managed paths from local
+ * edits. The initial process always owns this preflight unless the user passed
+ * `--force`. An internal restart runs only after that validated parent has
+ * intentionally replaced those paths, so checking again would reject the
+ * upgrade's own writes as if they belonged to the user.
+ */
+export function shouldCheckDirtyManagedPaths(args: { force: boolean, alreadyRestarted: boolean }): boolean {
+  return !args.force && !args.alreadyRestarted
+}
+
+/**
  * Pure decision for the "already up to date" short-circuit. Returns true only
  * when a sync can be safely skipped: no override flags, not a pinned version,
  * a resolved remote sha, a prior sync on the SAME channel, and the synced sha

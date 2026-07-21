@@ -24,6 +24,7 @@ import {
   resolveUpgradeContext,
   resolveUpgradeMessage,
   shouldAutoDetectLocalStacks,
+  shouldCheckDirtyManagedPaths,
   shouldShortCircuit,
   snapshotTree,
   writeChannel,
@@ -106,8 +107,11 @@ if (options.dryRun) {
 
 // Pre-flight: warn (and abort, unless --force) if any managed path has
 // uncommitted git changes. We don't want `update` to silently overwrite
-// hand edits inside framework code.
-if (!options.force) {
+// hand edits inside framework code. The internal restart skips this duplicate
+// check because its parent already validated the tree before intentionally
+// syncing these managed paths.
+const alreadyRestarted = process.argv.includes('--__restarted')
+if (shouldCheckDirtyManagedPaths({ force: !!options.force, alreadyRestarted })) {
   const dirty = await detectDirtyManagedPaths(projectRoot)
   if (dirty.length > 0) {
     // Use console.warn (synchronous) — `log.warn` is async, and a follow-up
@@ -206,7 +210,6 @@ const newVersion = readVersion(corePkgPath)
 // to avoid pathological loops if the new code keeps disagreeing with
 // itself somehow.
 const ownHashAfter = await hashFileOrZero(ownPath)
-const alreadyRestarted = process.argv.includes('--__restarted')
 if (ownHashBefore !== 0n && ownHashAfter !== 0n && ownHashBefore !== ownHashAfter && !alreadyRestarted) {
   console.log('Upgrade pulled a newer version of the upgrade action — re-running once to pick up new sync paths and hooks.\n')
   // Forward the user's original args plus the sentinel.

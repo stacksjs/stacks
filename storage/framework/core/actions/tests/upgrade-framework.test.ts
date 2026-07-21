@@ -15,6 +15,7 @@ const {
   resolveUpgradeMessage,
   resolveSuccessMessage,
   shouldAutoDetectLocalStacks,
+  shouldCheckDirtyManagedPaths,
 } = await import('../src/upgrade/framework-utils')
 
 // Temp directory for isolated file operations
@@ -379,6 +380,17 @@ describe('writeSyncedVersion', () => {
 })
 
 // ─── shouldShortCircuit ──────────────────────────────────────────────────────
+
+describe('shouldCheckDirtyManagedPaths', () => {
+  it('protects direct upgrades unless the user explicitly forces them', () => {
+    expect(shouldCheckDirtyManagedPaths({ force: false, alreadyRestarted: false })).toBe(true)
+    expect(shouldCheckDirtyManagedPaths({ force: true, alreadyRestarted: false })).toBe(false)
+  })
+
+  it('trusts managed writes made by the validated parent process', () => {
+    expect(shouldCheckDirtyManagedPaths({ force: false, alreadyRestarted: true })).toBe(false)
+  })
+})
 
 describe('shouldShortCircuit', () => {
   it('should short-circuit when sha + channel match and no flags', () => {
