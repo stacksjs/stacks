@@ -4,6 +4,7 @@ import { arch, platform } from 'node:os'
 import { resolve } from 'node:path'
 import Ajv2020 from 'ajv/dist/2020.js'
 import addFormats from 'ajv-formats'
+import { capabilityRegistry } from '../../storage/framework/core/config/src/capabilities'
 import { decryptValue, encryptValue, generateKeypair } from '../../storage/framework/core/env/src/crypto'
 import { timingSafeEqualString } from '../../storage/framework/core/security/src/hash'
 
@@ -154,15 +155,15 @@ export function buildReport(): Record<string, unknown> {
       notes: requirement.evidence === 'behavior' ? 'Fixture adapter is not implemented yet.' : 'Inspection evidence is not linked yet.',
     }),
   }))
-  const unsupportedDrivers = ['database', 'queue', 'cache', 'storage', 'mail', 'realtime', 'deploy'].map(category => ({
-    category,
-    name: 'not-evaluated',
+  const drivers = capabilityRegistry.map(driver => ({
+    category: driver.category,
+    name: driver.name,
     version: packageJson.version,
     serviceVersion: null,
-    topology: 'not configured by this adapter',
-    status: 'unsupported',
-    evidenceUrl: null,
-    prerequisites: [],
+    topology: driver.topology,
+    status: driver.status,
+    evidenceUrl: driver.testEvidence[0] ? `https://github.com/stacksjs/stacks/blob/${revision}/${driver.testEvidence[0]}` : null,
+    prerequisites: driver.prerequisites,
   }))
 
   return {
@@ -178,7 +179,7 @@ export function buildReport(): Record<string, unknown> {
     },
     profileClaim: null,
     results,
-    drivers: unsupportedDrivers,
+    drivers,
     extensions: catalog.extensions.map(extension => ({ id: extension.id, status: 'unsupported', evidenceUrl: null, notes: 'Not evaluated by this adapter.' })),
     exceptions: [],
     generator: { name: '@stacksjs/protocol-adapter', version: '1.0.0-draft.1', revision },

@@ -12,6 +12,7 @@
  */
 
 import type { StacksConfig } from '@stacksjs/types'
+import { capabilityDrivers, findCapability, type CapabilityCategory } from './capabilities'
 
 export interface ConfigValidationIssue {
   path: string
@@ -56,6 +57,21 @@ function checkOneOf(values: readonly string[]): Check {
     if (typeof value !== 'string' || !values.includes(value)) {
       return [{ path, message: `expected one of [${values.join(', ')}], got ${JSON.stringify(value)}` }]
     }
+    return []
+  }
+}
+
+function checkCapability(category: CapabilityCategory): Check {
+  return (value, path) => {
+    if (value == null) return []
+    const drivers = capabilityDrivers(category)
+    if (typeof value !== 'string')
+      return [{ path, message: `expected ${category} driver name, got ${typeof value}` }]
+    const capability = findCapability(category, value)
+    if (!capability)
+      return [{ path, message: `unknown ${category} driver ${JSON.stringify(value)}; known drivers: [${drivers.map(driver => driver.name).join(', ')}]` }]
+    if (capability.status === 'unsupported')
+      return [{ path, message: `${category} driver ${JSON.stringify(value)} is unsupported: ${capability.limitations.join(' ')}` }]
     return []
   }
 }
@@ -112,12 +128,12 @@ const SCHEMA: Partial<Record<keyof StacksConfig, SchemaSection>> = {
   },
   database: {
     rules: {
-      'default': checkOneOf(['sqlite', 'mysql', 'singlestore', 'postgres', 'dynamodb']),
+      'default': checkCapability('database'),
     },
   },
   cache: {
     rules: {
-      'driver': checkOneOf(['memory', 'redis', 'singlestore']),
+      'driver': checkCapability('cache'),
     },
   },
   featureFlags: {
@@ -128,7 +144,7 @@ const SCHEMA: Partial<Record<keyof StacksConfig, SchemaSection>> = {
   },
   queue: {
     rules: {
-      'default': checkOneOf(['sync', 'database', 'redis']),
+      'default': checkCapability('queue'),
     },
   },
   logging: {
@@ -143,7 +159,7 @@ const SCHEMA: Partial<Record<keyof StacksConfig, SchemaSection>> = {
       // tests to set `config.email.default = 'capture'`, which this list
       // used to reject (and a failed validation degrades unrelated boot
       // consumers like the ORM search hook).
-      'default': checkOneOf(['ses', 'sendgrid', 'mailgun', 'mailtrap', 'smtp', 'log', 'capture']),
+      'default': checkCapability('mail'),
     },
   },
 }

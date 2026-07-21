@@ -67,6 +67,8 @@
     "protocol:conformance": "bun scripts/protocol/run-conformance.ts",
     "protocol:manifest": "bun scripts/protocol/source-manifest.ts --write",
     "protocol:manifest:check": "bun scripts/protocol/source-manifest.ts --check",
+    "protocol:drivers": "bun scripts/protocol/driver-registry.ts --write",
+    "protocol:drivers:check": "bun scripts/protocol/driver-registry.ts --check",
     "bud": "./buddy",
     "stx": "./buddy"
   },

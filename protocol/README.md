@@ -24,3 +24,10 @@ generated output, configuration, documentation, vendored protocol material, and
 assets; records every versioned workspace package and runtime prerequisite; and
 states the implementation's non-certifying classification. Refresh it explicitly
 with `bun run protocol:manifest`, then review and commit the resulting snapshot.
+
+`evidence/drivers.json` is generated from the runtime capability registry used by
+configuration validation. Each database, queue, cache, storage, mail, realtime,
+and deployment driver is classified as supported, partial, experimental, or
+unsupported, with implementation paths, test evidence, topology, prerequisites,
+and explicit limitations. CI rejects stale evidence and operational entries whose
+implementation or cited tests do not exist.
