@@ -1,366 +1,149 @@
 # Stacks Architecture
 
-Stacks is a modular, batteries-included framework built from the ground up in TypeScript with zero external runtime dependencies. This page explains the architecture and how the pieces fit together.
+Stacks is a full-stack TypeScript framework for web, API, desktop, CLI, and cloud applications. Bun is the runtime, package manager, test runner, and bundler. Framework packages are first-party and available under `storage/framework/core/`.
 
-## Core Philosophy
+[Open the interactive runtime architecture diagram](/diagrams/stacks-runtime.html).
 
-Stacks is built on several key principles:
+## Application and framework layers
 
-- **Zero Dependencies** - No external runtime dependencies
-- **TypeScript First** - Full type safety everywhere
-- **Convention over Configuration** - Sensible defaults, full customization
-- **Developer Experience** - Fast feedback, clear errors, excellent tooling
-- **Composability** - Use only what you need
+Your application owns the stable override surfaces:
 
-## Framework Architecture
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│                     Stacks Framework                         │
-├─────────────────────────────────────────────────────────────┤
-│  Application Layer                                           │
-│  ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐           │
-│  │   Web   │ │   API   │ │ Desktop │ │   CLI   │           │
-│  └────┬────┘ └────┬────┘ └────┬────┘ └────┬────┘           │
-├───────┴──────────┴──────────┴──────────┴───────────────────┤
-│  Core Services                                               │
-│  ┌────────┐ ┌────────┐ ┌────────┐ ┌────────┐ ┌────────┐   │
-│  │ Router │ │  ORM   │ │ Queue  │ │ Cache  │ │  Auth  │   │
-│  └────────┘ └────────┘ └────────┘ └────────┘ └────────┘   │
-├─────────────────────────────────────────────────────────────┤
-│  Infrastructure                                              │
-│  ┌────────────┐ ┌────────────┐ ┌────────────┐              │
-│  │  Database  │ │   Cloud    │ │  Logging   │              │
-│  └────────────┘ └────────────┘ └────────────┘              │
-└─────────────────────────────────────────────────────────────┘
+```text
+app/                 actions, jobs, listeners, middleware, models
+config/              typed application and service configuration
+database/            generated and custom migrations, seeders, SQLite files
+resources/           stx views, components, layouts, functions, assets
+routes/               web and API route files
 ```
 
-## Core Packages
+Framework defaults live under `storage/framework/defaults/`. Resolution checks `app/` first and then falls back to the matching default. To customize a built-in action or model, publish or create the same relative path in `app/`.
 
-### @stacksjs/router
+## Request path
 
-Type-safe routing for web and API applications.
+1. rpx and tlsx terminate local HTTPS and forward the pretty application URL.
+2. stx renders the requested view or the router matches an HTTP route.
+3. middleware handles authentication, authorization, locale, and request concerns.
+4. an action executes application logic.
+5. models and the query builder read or write the configured database.
+6. events and queued jobs move non-blocking work to workers.
+
+Craft desktop and tray windows use this same request path. They do not run a second web framework.
+
+## Routes and actions
+
+Register route files in `app/Routes.ts` and keep application logic in actions.
 
 ```typescript
-import { router } from '@stacksjs/router'
+// routes/api.ts
+import { route } from '@stacksjs/router'
 
-// Define routes with full type safety
-router.get('/users', UserController.index)
-router.get('/users/:id', UserController.show)
-router.post('/users', UserController.store)
-
-// Route groups with middleware
-router.group({ middleware: ['auth'] }, () => {
-  router.get('/profile', ProfileController.show)
-  router.put('/profile', ProfileController.update)
-})
-
-// Resource routes
-router.resource('/posts', PostController)
+route.get('/products', 'Actions/ProductIndexAction')
+route.post('/products', 'Actions/ProductStoreAction')
 ```
 
-### @stacksjs/orm
-
-Eloquent-inspired ORM with full type safety.
-
 ```typescript
-import { Model, field, hasMany, belongsTo } from '@stacksjs/orm'
+// app/Actions/ProductIndexAction.ts
+import { response } from '@stacksjs/router'
 
-class User extends Model {
-  static table = 'users'
-
-  static fields = {
-    id: field.id(),
-    name: field.string(),
-    email: field.string().unique(),
-    created_at: field.timestamp(),
-  }
-
-  static relationships = {
-    posts: hasMany(Post),
-    profile: hasOne(Profile),
-  }
-}
-
-// Query with type safety
-const users = await User.query()
-  .where('active', true)
-  .with('posts')
-  .orderBy('name')
-  .paginate(10)
-```
-
-### @stacksjs/queue
-
-Background job processing system.
-
-```typescript
-import { Job } from '@stacksjs/queue'
-
-class SendWelcomeEmail extends Job {
-  constructor(public user: User) {
-    super()
-  }
-
+export default new Action({
+  name: 'Product Index',
   async handle() {
-    await this.user.sendEmail('welcome')
-  }
-
-  retries = 3
-  backoff = 'exponential'
-}
-
-// Dispatch jobs
-await SendWelcomeEmail.dispatch(user)
-
-// Delayed jobs
-await SendWelcomeEmail.dispatch(user).delay('5 minutes')
-```
-
-### @stacksjs/cache
-
-Multi-driver caching system.
-
-```typescript
-import { cache } from '@stacksjs/cache'
-
-// Simple caching
-await cache.put('key', 'value', '1 hour')
-const value = await cache.get('key')
-
-// Remember pattern
-const users = await cache.remember('users', '1 hour', async () => {
-  return User.all()
+    return response.json(await Product.all())
+  },
 })
-
-// Tagged caching
-await cache.tags(['users']).put('user:1', user)
-await cache.tags(['users']).flush()
 ```
 
-### @stacksjs/auth
+Models under `app/Models/` and jobs under `app/Jobs/` are server auto-imports. Framework primitives such as `route`, `response`, `Action`, `schema`, and `defineModel` should be imported explicitly, following the built-in defaults.
 
-Complete authentication system.
+## Models and migrations
+
+Stacks models contain schema, validation, relationships, factories, and behavior traits in one definition.
 
 ```typescript
-import { auth, User } from '@stacksjs/auth'
+import { defineModel } from '@stacksjs/orm'
+import { schema } from '@stacksjs/validation'
 
-// Login
-const user = await auth.attempt(email, password)
-const token = await auth.createToken(user)
-
-// Check authentication
-if (auth.check()) {
-  const user = auth.user()
-}
-
-// Logout
-await auth.logout()
-
-// Social authentication
-const user = await auth.socialite('github').user()
+export default defineModel({
+  name: 'Product',
+  table: 'products',
+  traits: {
+    useTimestamps: true,
+    useSeeder: { count: 20 },
+    useApi: {
+      uri: 'products',
+      routes: ['index', 'store', 'show', 'update', 'destroy'],
+    },
+  },
+  attributes: {
+    name: {
+      fillable: true,
+      required: true,
+      validation: { rule: schema.string().maxLength(100) },
+    },
+    price: {
+      fillable: true,
+      validation: { rule: schema.number().min(0) },
+    },
+  },
+})
 ```
 
-## Application Structure
+Migrations are normally derived from model changes:
 
-### Models (app/Models/)
-
-Define your data structures:
-
-```typescript
-// app/Models/Post.ts
-export default class Post extends Model {
-  static table = 'posts'
-
-  static fields = {
-    id: field.id(),
-    title: field.string(),
-    content: field.text(),
-    published_at: field.timestamp().nullable(),
-    author_id: field.foreignId('users'),
-  }
-
-  static relationships = {
-    author: belongsTo(User),
-    comments: hasMany(Comment),
-    tags: belongsToMany(Tag),
-  }
-
-  // Computed properties
-  get isPublished() {
-    return this.published_at !== null
-  }
-
-  // Methods
-  async publish() {
-    this.published_at = new Date()
-    await this.save()
-  }
-}
+```bash
+buddy generate:migrations
+buddy migrate --diff
+buddy migrate
 ```
 
-### Controllers (app/Controllers/)
+Use `buddy make:migration` only when a migration cannot be represented by a model change.
 
-Handle HTTP requests:
+## stx frontend
 
-```typescript
-// app/Controllers/PostController.ts
-export class PostController extends Controller {
-  async index(request: Request) {
-    const posts = await Post.query()
-      .with('author')
-      .where('published_at', '!=', null)
-      .orderBy('published_at', 'desc')
-      .paginate(request.query.page)
+Views and components use stx with Crosswind utility classes. Browser auto-imports include signals and composables such as `state`, `derived`, `effect`, `useFetch`, `useStorage`, and `useDark`.
 
-    return this.json(posts)
-  }
+```stx
+<script client>
+const count = state(0)
+const doubled = derived(() => count() * 2)
+</script>
 
-  async store(request: Request) {
-    const data = await request.validate({
-      title: 'required|string|max:200',
-      content: 'required|string',
-    })
-
-    const post = await Post.create({
-      ...data,
-      author_id: request.user.id,
-    })
-
-    return this.json(post, 201)
-  }
-}
+<button type="button" class="px-3 py-2 bg-blue-600 rounded-lg" @click="count.set(count() + 1)">
+  {{ count() }} / {{ doubled() }}
+</button>
 ```
 
-### Actions (app/Actions/)
+Use stx signals and composables in templates. Do not add Vue, React, or direct DOM scripting to a Stacks view.
 
-Encapsulate business logic:
+## Background work
 
-```typescript
-// app/Actions/PublishPostAction.ts
-export class PublishPostAction extends Action {
-  async handle(post: Post) {
-    // Validate post is ready
-    if (!post.title || !post.content) {
-      throw new ValidationError('Post must have title and content')
-    }
+Jobs live in `app/Jobs/` and are dispatched through the queue package. Events are registered in `app/Events.ts`, with listeners under `app/Listeners/`. Schedules live in `app/Scheduler.ts`.
 
-    // Update post
-    post.published_at = new Date()
-    await post.save()
-
-    // Dispatch events
-    PostPublishedEvent.dispatch(post)
-
-    // Send notifications
-    await NotifySubscribersJob.dispatch(post)
-
-    return post
-  }
-}
+```bash
+buddy queue:work
+buddy queue:list
+buddy schedule:list
 ```
 
-### Middleware (app/Middleware/)
+## Development and operations
 
-Process HTTP requests:
+Buddy owns the framework lifecycle:
 
-```typescript
-// app/Middleware/RateLimit.ts
-export class RateLimit implements Middleware {
-  async handle(request: Request, next: Next) {
-    const key = `rate_limit:${request.ip}`
-    const limit = 60 // requests per minute
-
-    const current = await cache.increment(key)
-    if (current === 1) {
-      await cache.expire(key, 60)
-    }
-
-    if (current > limit) {
-      throw new TooManyRequestsError()
-    }
-
-    return next(request)
-  }
-}
+```bash
+buddy doctor
+buddy dev
+buddy test
+buddy lint
+buddy build
+buddy deploy
 ```
 
-## Request Lifecycle
+Pretty HTTPS URLs are the local default. rpx supplies the reverse proxy and tlsx supplies trusted local certificates. `STACKS_DEV_LOCALHOST=1` is an explicit CI or troubleshooting opt-out.
 
-1. **HTTP Request** arrives at the server
-2. **Middleware** processes the request (auth, rate limiting, etc.)
-3. **Router** matches the request to a route
-4. **Controller** handles the request
-5. **Actions** execute business logic
-6. **Response** is sent back to the client
+Cloud deployments use `@stacksjs/ts-cloud` to generate and manage AWS infrastructure. The same application can target server, serverless, and static-site workloads through typed cloud configuration.
 
-```
-Request → Middleware → Router → Controller → Action → Response
-              ↓                      ↓
-           Cache                   Model
-              ↓                      ↓
-           Auth                  Database
-```
+## Package boundaries
 
-## Configuration
+Each subsystem has a focused package under `storage/framework/core/`, including router, actions, ORM, database, queue, auth, cache, storage, realtime, cloud, desktop, server, testing, validation, and UI. Application code imports the narrow package it needs instead of a monolithic runtime.
 
-All configuration lives in the `config/` directory:
-
-```
-config/
-├── app.ts          # Application settings
-├── database.ts     # Database connections
-├── cache.ts        # Cache configuration
-├── queue.ts        # Queue settings
-├── mail.ts         # Email configuration
-├── auth.ts         # Authentication
-└── services.ts     # Third-party services
-```
-
-## Extending Stacks
-
-### Custom Service Providers
-
-```typescript
-// providers/StripeServiceProvider.ts
-export class StripeServiceProvider extends ServiceProvider {
-  register() {
-    this.app.singleton('stripe', () => {
-      return new Stripe(config('services.stripe.key'))
-    })
-  }
-
-  boot() {
-    // Register webhooks, etc.
-  }
-}
-```
-
-### Custom Commands
-
-```typescript
-// commands/SyncInventory.ts
-export class SyncInventory extends Command {
-  static signature = 'inventory:sync'
-  static description = 'Sync inventory with external system'
-
-  async handle() {
-    this.info('Syncing inventory...')
-
-    const products = await Product.all()
-    for (const product of products) {
-      await ExternalService.sync(product)
-      this.line(`Synced: ${product.name}`)
-    }
-
-    this.success('Inventory sync complete!')
-  }
-}
-```
-
-## Related
-
-- [Introduction](/guide/intro) - Getting started
-- [Configuration](/guide/config) - Configuration details
-- [Models](/basics/models) - Working with models
-- [Routing](/basics/routing) - Route definitions
+Use the package reference pages in the documentation sidebar for subsystem APIs and the Buddy reference for commands and flags.

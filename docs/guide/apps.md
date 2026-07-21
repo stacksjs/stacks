@@ -7,7 +7,7 @@ Stacks enables you to build multiple types of applications from a single codebas
 Stacks app types:
 
 - **Web Apps** - SPA, SSR, or static sites
-- **Desktop Apps** - Native apps with Tauri
+- **Desktop Apps** - Native apps with Craft
 - **Mobile Apps** - iOS and Android with Capacitor
 - **CLI Apps** - Command-line tools
 - **Libraries** - Reusable packages
@@ -67,9 +67,9 @@ export default defineAppConfig({
 
 ## Desktop Applications
 
-### Tauri Integration
+### Craft Integration
 
-Stacks uses Tauri for building native desktop apps with web technologies.
+Stacks uses the first-party Craft runtime for native desktop apps. Craft opens the same stx application URL served through rpx and tlsx, so desktop and browser clients share routes, actions, authentication, and UI.
 
 ```bash
 # Create desktop app
@@ -111,39 +111,7 @@ export default defineDesktopConfig({
 
 ### Native APIs
 
-Access native desktop APIs:
-
-```typescript
-// Access file system
-import { open, save } from '@tauri-apps/api/dialog'
-import { readTextFile, writeTextFile } from '@tauri-apps/api/fs'
-
-async function openFile() {
-  const path = await open({
-    filters: [{ name: 'Text', extensions: ['txt', 'md'] }]
-  })
-
-  if (path) {
-    const content = await readTextFile(path as string)
-    return content
-  }
-}
-
-// System notifications
-import { sendNotification } from '@tauri-apps/api/notification'
-
-await sendNotification({
-  title: 'Task Complete',
-  body: 'Your export has finished.',
-})
-
-// Global shortcuts
-import { register } from '@tauri-apps/api/globalShortcut'
-
-await register('CommandOrControl+Shift+N', () => {
-  console.log('Shortcut triggered')
-})
-```
+Craft exposes native APIs through its typed bridge. Put bridge access in a TypeScript function or composable and call that function from stx. The bridge covers windows, files, notifications, clipboard, processes, shortcuts, tray menus, and updates.
 
 ### Menu Bar
 
@@ -384,49 +352,26 @@ const answers = await prompt([
 ### Shared Components
 
 ```typescript
-// components/Button.vue - Works in web, desktop, and mobile
-<template>
-  <button
-    :class="['btn', `btn-${variant}`]"
-    :disabled="loading"
-    @click="$emit('click')"
-  >
-    <Spinner v-if="loading" />
-    <slot />
-  </button>
-</template>
-
-<script setup lang="ts">
-defineProps<{
+// resources/components/Button.stx
+<script>
+const { variant = 'primary', loading = false } = defineProps<{
   variant?: 'primary' | 'secondary'
   loading?: boolean
 }>()
-
-defineEmits<{
-  click: []
-}>()
 </script>
+
+<button type="button" :disabled="loading" :data-variant="variant">
+  <slot />
+</button>
 ```
 
 ### Platform-Specific Code
 
 ```typescript
-// utils/storage.ts
-import { isDesktop, isMobile, isWeb } from '@stacksjs/platform'
-
-export async function saveData(key: string, data: any) {
-  if (isDesktop()) {
-    // Use Tauri file system
-    const { writeTextFile } = await import('@tauri-apps/api/fs')
-    await writeTextFile(key, JSON.stringify(data))
-  } else if (isMobile()) {
-    // Use Capacitor storage
-    const { Preferences } = await import('@capacitor/preferences')
-    await Preferences.set({ key, value: JSON.stringify(data) })
-  } else {
-    // Use localStorage
-    localStorage.setItem(key, JSON.stringify(data))
-  }
+// resources/functions/storage.ts
+export async function saveDesktopData(path: string, data: unknown): Promise<void> {
+  const { writeTextFile } = await import('craft-native/api/fs')
+  await writeTextFile(path, JSON.stringify(data))
 }
 ```
 

@@ -10,7 +10,7 @@ By the end of this bootcamp, you will have learned how to:
 - **Build an API** - Develop RESTful APIs with routes, actions, controllers, validation, and authentication
 - **Build Documentation** - Set up and customize documentation sites using BunPress/VitePress
 - **Build a CLI** - Create interactive command-line tools with commands, options, and prompts
-- **Build a Desktop App** - Package your web app as a native desktop application using Tauri
+- **Build a Desktop App** - Package your stx application with the first-party Craft runtime
 - **Deploy to Production** - Configure cloud infrastructure and deploy your applications
 
 ## Prerequisites
@@ -20,7 +20,7 @@ Before starting, ensure you have the following installed:
 ### Required
 
 - **Bun** (v1.0.21 or later) - The JavaScript runtime that powers Stacks
-- **Node.js** (v18 or later) - For compatibility with some tooling
+- **Bun** (v1.3 or later) - The runtime, package manager, test runner, and bundler
 - **Git** - For version control
 
 ### Recommended

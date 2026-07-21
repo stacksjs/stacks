@@ -1,740 +1,176 @@
 # Build a Desktop App
 
-This tutorial will guide you through building desktop applications with Stacks. Using Tauri integration, you can package your web application as a native desktop app for Windows, macOS, and Linux.
-
-## Overview
-
-Stacks desktop apps are powered by Tauri, which provides:
-
-- **Small Bundle Size** - Native binaries, not Electron
-- **Cross-Platform** - Windows, macOS, and Linux from a single codebase
-- **Native Features** - System tray, file dialogs, notifications, and more
-- **Security** - Rust-powered backend with strict sandboxing
-- **Web Frontend** - Use your existing Stacks frontend
+Stacks desktop applications use [Craft](https://github.com/home-lang/craft), the first-party native runtime shared by the dashboard and system tray. Your UI remains stx, your HTTP routes remain Stacks routes, and the native window opens the same pretty HTTPS URL that rpx and tlsx provide to the browser.
 
 ## Prerequisites
 
-Before building desktop apps, install the Tauri CLI:
+- Bun 1.3 or newer
+- A working Stacks project
+- Craft built in `~/Code/Tools/craft`, or `CRAFT_BIN` set to a native Craft binary
+
+Run the framework checks before opening a native window:
 
 ```bash
-# Install Tauri CLI
-bun add -D @tauri-apps/cli
-
-# Verify installation
-bunx tauri --version
+buddy doctor
 ```
 
-You will also need Rust installed for building the native binary:
-
-```bash
-# macOS/Linux
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-
-# Windows (download installer from rustup.rs)
-```
-
-## Project Setup
-
-### Initialize Tauri
-
-Initialize Tauri in your Stacks project:
-
-```bash
-# No buddy command for this; initialize Tauri directly
-bunx tauri init
-```
-
-This creates the following structure:
-
-```
-src-tauri/
-├── Cargo.toml          # Rust dependencies
-├── build.rs            # Build script
-├── icons/              # App icons
-├── src/
-│   └── main.rs         # Rust entry point
-└── tauri.conf.json     # Tauri configuration
-```
-
-### Configuration
-
-Configure your desktop app in `src-tauri/tauri.conf.json`:
-
-```json
-{
-  "build": {
-    "beforeBuildCommand": "buddy build",
-    "beforeDevCommand": "buddy dev",
-    "devPath": "http://localhost:3000",
-    "distDir": "../dist"
-  },
-  "package": {
-    "productName": "My App",
-    "version": "1.0.0"
-  },
-  "tauri": {
-    "bundle": {
-      "active": true,
-      "identifier": "com.example.myapp",
-      "icon": [
-        "icons/32x32.png",
-        "icons/128x128.png",
-        "icons/128x128@2x.png",
-        "icons/icon.icns",
-        "icons/icon.ico"
-      ],
-      "targets": "all",
-      "category": "Productivity",
-      "shortDescription": "My awesome desktop app",
-      "longDescription": "A longer description of my app and its features."
-    },
-    "security": {
-      "csp": null
-    },
-    "windows": [
-      {
-        "title": "My App",
-        "width": 1200,
-        "height": 800,
-        "minWidth": 800,
-        "minHeight": 600,
-        "resizable": true,
-        "fullscreen": false,
-        "center": true
-      }
-    ],
-    "allowlist": {
-      "all": false,
-      "shell": {
-        "open": true
-      },
-      "dialog": {
-        "all": true
-      },
-      "fs": {
-        "all": true,
-        "scope": ["$APP/*", "$DOCUMENT/*"]
-      },
-      "notification": {
-        "all": true
-      },
-      "clipboard": {
-        "all": true
-      }
-    }
-  }
-}
-```
-
-## Window Management
-
-### Opening Windows
-
-Create and manage windows programmatically:
-
-```typescript
-// resources/functions/desktop.ts
-import { WebviewWindow } from '@tauri-apps/api/window'
-
-// Create a new window
-export async function openSettingsWindow() {
-  const settingsWindow = new WebviewWindow('settings', {
-    url: '/settings',
-    title: 'Settings',
-    width: 600,
-    height: 400,
-    center: true,
-    resizable: false,
-  })
-
-  // Listen for window events
-  settingsWindow.once('tauri://created', () => {
-    console.log('Settings window created')
-  })
-
-  settingsWindow.once('tauri://error', (e) => {
-    console.error('Failed to create window:', e)
-  })
-}
-```
-
-### Window Controls
-
-Control the current window:
-
-```typescript
-import { appWindow } from '@tauri-apps/api/window'
-
-// Minimize
-await appWindow.minimize()
-
-// Maximize
-await appWindow.maximize()
-
-// Toggle fullscreen
-await appWindow.toggleMaximize()
-
-// Close
-await appWindow.close()
-
-// Hide
-await appWindow.hide()
-
-// Show
-await appWindow.show()
-
-// Set title
-await appWindow.setTitle('New Title')
-
-// Center window
-await appWindow.center()
-
-// Set size
-await appWindow.setSize({ width: 800, height: 600 })
-
-// Set position
-await appWindow.setPosition({ x: 100, y: 100 })
-
-// Set always on top
-await appWindow.setAlwaysOnTop(true)
-```
-
-### Custom Titlebar
-
-Create a custom titlebar for a frameless window:
-
-```typescript
-// tauri.conf.json
-{
-  "tauri": {
-    "windows": [{
-      "decorations": false,  // Remove native titlebar
-      "transparent": true
-    }]
-  }
-}
-```
-
-```html
-<!-- resources/components/Titlebar.stx -->
-<script server>
-import { appWindow } from '@tauri-apps/api/window'
-
-async function minimize() {
-  await appWindow.minimize()
-}
-
-async function toggleMaximize() {
-  await appWindow.toggleMaximize()
-}
-
-async function close() {
-  await appWindow.close()
-}
-</script>
-
-<div
-  data-tauri-drag-region
-  class="flex items-center justify-between px-4 h-8 bg-gray-100 dark:bg-gray-800"
->
-  <div class="font-medium text-sm">My App</div>
-
-  <div class="flex gap-2">
-    <button onclick="minimize()" class="p-1 hover:bg-gray-200 rounded">
-      <i class="h-4 w-4 i-hugeicons-outline-minus"></i>
-    </button>
-    <button onclick="toggleMaximize()" class="p-1 hover:bg-gray-200 rounded">
-      <i class="h-4 w-4 i-hugeicons-outline-square"></i>
-    </button>
-    <button onclick="close()" class="p-1 hover:text-white hover:bg-red-500 rounded">
-      <i class="h-4 w-4 i-hugeicons-outline-x"></i>
-    </button>
-  </div>
-</div>
-```
-
-## System Tray
-
-Add a system tray icon for background apps:
-
-### Configuration
-
-```json
-// tauri.conf.json
-{
-  "tauri": {
-    "systemTray": {
-      "iconPath": "icons/tray-icon.png",
-      "iconAsTemplate": true
-    },
-    "allowlist": {
-      "systemTray": {
-        "all": true
-      }
-    }
-  }
-}
-```
-
-### Rust Implementation
-
-```rust
-// src-tauri/src/main.rs
-use tauri::{
-    CustomMenuItem, Manager, SystemTray, SystemTrayEvent, SystemTrayMenu,
-    SystemTrayMenuItem,
-};
-
-fn main() {
-    let quit = CustomMenuItem::new("quit".to*string(), "Quit");
-    let hide = CustomMenuItem::new("hide".to*string(), "Hide");
-    let show = CustomMenuItem::new("show".to*string(), "Show");
-
-    let tray*menu = SystemTrayMenu::new()
-        .add*item(show)
-        .add*item(hide)
-        .add*native*item(SystemTrayMenuItem::Separator)
-        .add*item(quit);
-
-    let system*tray = SystemTray::new().with*menu(tray*menu);
-
-    tauri::Builder::default()
-        .system*tray(system*tray)
-        .on*system*tray*event(|app, event| match event {
-            SystemTrayEvent::LeftClick { .. } => {
-                let window = app.get*window("main").unwrap();
-                window.show().unwrap();
-                window.set*focus().unwrap();
-            }
-            SystemTrayEvent::MenuItemClick { id, .. } => match id.as*str() {
-                "quit" => {
-                    std::process::exit(0);
-                }
-                "hide" => {
-                    let window = app.get*window("main").unwrap();
-                    window.hide().unwrap();
-                }
-                "show" => {
-                    let window = app.get*window("main").unwrap();
-                    window.show().unwrap();
-                }
-
-                * => {}
-
-            },
-
-            * => {}
-
-        })
-        .run(tauri::generate*context!())
-        .expect("error while running tauri application");
-}
-```
-
-## Native Features
-
-### File System Access
-
-Access the file system securely:
-
-```typescript
-import { open, save } from '@tauri-apps/api/dialog'
-import { readTextFile, writeTextFile, readDir } from '@tauri-apps/api/fs'
-
-// Open file dialog
-export async function openFile() {
-  const selected = await open({
-    multiple: false,
-    filters: [{
-      name: 'Text Files',
-      extensions: ['txt', 'md', 'json'],
-    }],
-  })
-
-  if (selected) {
-    const content = await readTextFile(selected as string)
-    return content
-  }
-}
-
-// Save file dialog
-export async function saveFile(content: string) {
-  const filePath = await save({
-    filters: [{
-      name: 'Text Files',
-      extensions: ['txt'],
-    }],
-  })
-
-  if (filePath) {
-    await writeTextFile(filePath, content)
-  }
-}
-
-// Read directory
-export async function listFiles(path: string) {
-  const entries = await readDir(path)
-  return entries
-}
-```
-
-### Notifications
-
-Show system notifications:
-
-```typescript
-import {
-  isPermissionGranted,
-  requestPermission,
-  sendNotification,
-} from '@tauri-apps/api/notification'
-
-export async function notify(title: string, body: string) {
-  let permissionGranted = await isPermissionGranted()
-
-  if (!permissionGranted) {
-    const permission = await requestPermission()
-    permissionGranted = permission === 'granted'
-  }
-
-  if (permissionGranted) {
-    sendNotification({ title, body })
-  }
-}
-```
-
-### Clipboard
-
-Access the system clipboard:
-
-```typescript
-import { writeText, readText } from '@tauri-apps/api/clipboard'
-
-// Copy to clipboard
-export async function copyToClipboard(text: string) {
-  await writeText(text)
-}
-
-// Read from clipboard
-export async function pasteFromClipboard() {
-  const text = await readText()
-  return text
-}
-```
-
-### Shell Commands
-
-Execute shell commands:
-
-```typescript
-import { Command } from '@tauri-apps/api/shell'
-
-// Run a command
-export async function runCommand(command: string, args: string[]) {
-  const cmd = new Command(command, args)
-
-  cmd.on('close', (data) => {
-    console.log(`Command finished with code ${data.code}`)
-  })
-
-  cmd.on('error', (error) => {
-    console.error(`Command error: ${error}`)
-  })
-
-  cmd.stdout.on('data', (line) => {
-    console.log(`stdout: ${line}`)
-  })
-
-  const child = await cmd.spawn()
-  return child
-}
-```
-
-### Global Shortcuts
-
-Register global keyboard shortcuts:
-
-```typescript
-import { register, unregister } from '@tauri-apps/api/globalShortcut'
-
-// Register a shortcut
-export async function registerShortcuts() {
-  await register('CommandOrControl+Shift+C', () => {
-    console.log('Shortcut triggered!')
-    // Show your app window
-  })
-}
-
-// Unregister
-export async function unregisterShortcuts() {
-  await unregister('CommandOrControl+Shift+C')
-}
-```
-
-## Communication Between Frontend and Backend
-
-### Invoke Rust Commands
-
-Call Rust functions from your frontend:
-
-```rust
-// src-tauri/src/main.rs
-# [tauri::command]
-fn greet(name: &str) -> String {
-    format!("Hello, {}!", name)
-}
-
-# [tauri::command]
-async fn read*file(path: String) -> Result<String, String> {
-    std::fs::read*to*string(path).map*err(|e| e.to*string())
-}
-
-fn main() {
-    tauri::Builder::default()
-        .invoke*handler(tauri::generate*handler![greet, read*file])
-        .run(tauri::generate*context!())
-        .expect("error while running tauri application");
-}
-```
-
-```typescript
-// Frontend
-import { invoke } from '@tauri-apps/api/tauri'
-
-// Call the Rust function
-const greeting = await invoke('greet', { name: 'World' })
-console.log(greeting) // "Hello, World!"
-
-// Call async Rust function
-try {
-  const content = await invoke('read*file', { path: '/path/to/file.txt' })
-  console.log(content)
-} catch (error) {
-  console.error('Failed to read file:', error)
-}
-```
-
-### Events
-
-Send events between frontend and backend:
-
-```rust
-// Emit event from Rust
-# [tauri::command]
-fn start*processing(window: tauri::Window) {
-    std::thread::spawn(move || {
-        for i in 0..100 {
-            window.emit("progress", i).unwrap();
-            std::thread::sleep(std::time::Duration::from*millis(50));
-        }
-        window.emit("complete", "Done!").unwrap();
-    });
-}
-```
-
-```typescript
-// Listen for events in frontend
-import { listen } from '@tauri-apps/api/event'
-
-const unlistenProgress = await listen('progress', (event) => {
-  console.log(`Progress: ${event.payload}%`)
-})
-
-const unlistenComplete = await listen('complete', (event) => {
-  console.log(`Completed: ${event.payload}`)
-  unlistenProgress()
-  unlistenComplete()
-})
-```
-
-## Development and Building
-
-### Development Mode
-
-Run the desktop app in development:
+## Start the native application
 
 ```bash
 buddy dev:desktop
-# Or
-bunx tauri dev
 ```
 
-This starts the Stacks dev server and opens the app in a native window.
+This starts the dashboard stx server and opens it in Craft. A direct desktop run starts rpx and tlsx for the configured application domain, so the native window uses a URL such as `https://dashboard.my-app.test`. If another `buddy dev` process already manages the proxy, the desktop process reuses it.
 
-### Building for Production
-
-Build distributable binaries:
+Use the general development command when you want the web application and API too:
 
 ```bash
-buddy build:desktop
-# Or
-bunx tauri build
+buddy dev
 ```
 
-Build outputs are placed in `src-tauri/target/release/bundle/`:
+## Build a desktop distribution
 
-- **macOS**: `.app` bundle and `.dmg` installer
-- **Windows**: `.exe` and `.msi` installer
-- **Linux**: `.deb`, `.AppImage`, and `.rpm`
-
-### Platform-Specific Builds
-
-Build for specific platforms:
+Set the deployed application URL, then build:
 
 ```bash
-# macOS
-bunx tauri build --target universal-apple-darwin
-
-# Windows (from macOS/Linux requires cross-compilation setup)
-bunx tauri build --target x86*64-pc-windows-msvc
-
-# Linux
-bunx tauri build --target x86*64-unknown-linux-gnu
+APP_URL=https://app.example.com buddy build:desktop
 ```
 
-## Auto-Updates
+The build creates `storage/framework/desktop-dist/` with:
 
-Enable automatic updates for your desktop app:
+- `stacks-desktop`, the compiled application launcher
+- `craft-runtime`, the native Craft runtime
+- `desktop.json`, the window and application manifest
 
-### Configuration
+`DESKTOP_URL` overrides `APP_URL` when the desktop application should target a separate host.
 
-```json
-// tauri.conf.json
-{
-  "tauri": {
-    "updater": {
-      "active": true,
-      "endpoints": [
-        "https://releases.example.com/{{target}}/{{current*version}}"
-      ],
-      "dialog": true,
-      "pubkey": "YOUR*PUBLIC*KEY"
-    }
-  }
-}
-```
+## Desktop API
 
-### Check for Updates
+The `@stacksjs/desktop` package owns Craft launch configuration.
 
 ```typescript
-import { checkUpdate, installUpdate } from '@tauri-apps/api/updater'
-import { relaunch } from '@tauri-apps/api/process'
+import {
+  createInviteLink,
+  createUpdateManifestUrl,
+  openDevWindow,
+} from '@stacksjs/desktop'
 
-export async function checkForUpdates() {
-  try {
-    const { shouldUpdate, manifest } = await checkUpdate()
+await openDevWindow(3000, {
+  url: 'https://app.example.test',
+  title: 'Example',
+  width: 1280,
+  height: 820,
+  darkMode: true,
+})
 
-    if (shouldUpdate) {
-      console.log(`Update available: ${manifest?.version}`)
+const invite = createInviteLink('https://app.example.com', token, {
+  email: 'person@example.com',
+  team: 'product',
+  role: 'editor',
+  expiresAt: new Date('2026-08-01T00:00:00Z'),
+})
 
-      // Install the update
-      await installUpdate()
+const updateManifest = createUpdateManifestUrl('https://app.example.com')
+```
 
-      // Restart the app
-      await relaunch()
-    }
-  } catch (error) {
-    console.error('Update check failed:', error)
-  }
+Craft exposes native APIs to the webview through its typed bridge. Keep bridge access in a TypeScript function or composable, then call that function from the stx page.
+
+```typescript
+interface CraftWindowBridge {
+  minimize(): Promise<void>
+  toggle(): Promise<void>
+}
+
+export async function minimizeDesktopWindow(): Promise<void> {
+  const craft = (globalThis as typeof globalThis & {
+    craft?: { window?: CraftWindowBridge }
+  }).craft
+
+  await craft?.window?.minimize()
 }
 ```
 
-## Complete Example: Note-Taking App
-
-Here is a complete example combining multiple features:
-
-```html
-<!-- resources/views/notes.stx -->
-<script server>
-import { ref } from '@stacksjs/reactivity'
-import { open, save } from '@tauri-apps/api/dialog'
-import { readTextFile, writeTextFile } from '@tauri-apps/api/fs'
-import { sendNotification } from '@tauri-apps/api/notification'
-
-const content = ref('')
-const currentFile = ref('')
-const isDirty = ref(false)
-
-async function openNote() {
-  const selected = await open({
-    filters: [{ name: 'Markdown', extensions: ['md'] }],
-  })
-
-  if (selected) {
-    content.value = await readTextFile(selected as string)
-    currentFile.value = selected as string
-    isDirty.value = false
-  }
-}
-
-async function saveNote() {
-  let path = currentFile.value
-
-  if (!path) {
-    path = await save({
-      filters: [{ name: 'Markdown', extensions: ['md'] }],
-    }) as string
-  }
-
-  if (path) {
-    await writeTextFile(path, content.value)
-    currentFile.value = path
-    isDirty.value = false
-    sendNotification({ title: 'Saved', body: 'Note saved successfully!' })
-  }
-}
-
-function handleInput(e: Event) {
-  content.value = (e.target as HTMLTextAreaElement).value
-  isDirty.value = true
-}
+```stx
+<script client>
+import { minimizeDesktopWindow } from '~/resources/functions/desktop'
 </script>
 
-<div class="flex flex-col h-screen">
-  <!-- Toolbar -->
-  <div class="flex gap-4 items-center px-4 h-12 bg-gray-100 dark:bg-gray-800 border-b">
-    <button
-      onclick="openNote()"
-      class="px-3 py-1 text-white bg-blue-500 hover:bg-blue-600 rounded"
-    >
-      Open
-    </button>
-    <button
-      onclick="saveNote()"
-      class="px-3 py-1 text-white bg-green-500 hover:bg-green-600 rounded"
-    >
-      Save
-    </button>
-
-    @if(currentFile.value)
-      <span class="text-gray-600 text-sm">
-        {{ currentFile.value }}
-        @if(isDirty.value)
-          <span class="text-orange-500">*</span>
-        @endif
-      </span>
-    @endif
-  </div>
-
-  <!-- Editor -->
-  <textarea
-    value="{{ content.value }}"
-    oninput="handleInput(event)"
-    class="flex-1 p-4 font-mono text-sm dark:text-white dark:bg-gray-900 focus:outline-none resize-none"
-    placeholder="Start writing..."
-  ></textarea>
-</div>
+<button type="button" @click="minimizeDesktopWindow()">
+  Minimize
+</button>
 ```
 
-## Next Steps
+The Craft bridge includes window control, files, notifications, clipboard, processes, shortcuts, tray menus, native sidebars, and update primitives. Keep permissions narrow and expose only the operations the page needs.
 
-Now that you know how to build desktop apps, continue to:
+## System tray
 
-- [Authentication How-To](/bootcamp/how-to/authentication) - Add user authentication
-- [Testing How-To](/bootcamp/how-to/testing) - Test your desktop app
-- [Deployment How-To](/bootcamp/how-to/deploy) - Distribute your app
+Stacks includes a complete Craft system tray application:
 
-## Related Documentation
+```bash
+buddy dev:system-tray
+```
 
-- [Tauri Documentation](https://tauri.app/v1/guides/)
-- [Tauri API Reference](https://tauri.app/v1/api/js/)
+It discovers projects under `~/Code`, installs a native nested menu, and provides shortcuts for:
+
+- refreshing project discovery
+- opening a project Terminal
+- running `buddy doctor`
+- opening dashboard settings
+- checking dependency updates
+- copying the local IP address
+- listing Buddy commands
+- opening deployment, site, and error logs
+- editing `.env`, DNS, and email configuration
+- opening Ask Buddy
+- starting a confirmed deployment
+
+The tray uses `https://tray.<app-domain>` through rpx and tlsx by default. Host operations are allowlisted by the tray server, and destructive operations require confirmation.
+
+## Settings
+
+Desktop settings use the same dashboard settings workspace as the web dashboard:
+
+```text
+https://dashboard.<app-domain>/settings
+```
+
+The workspace discovers every `config/*.ts` file. Literal scalar values can be edited safely. Environment-backed expressions, arrays, and nested objects remain read-only so the editor never destroys comments or configuration logic.
+
+## Updates
+
+Craft supplies the native updater. Publish a signed manifest at the URL returned by `createUpdateManifestUrl()` and configure your release pipeline to produce per-platform checksums and signatures. Desktop builds disable development tools and include their update channel in the application manifest.
+
+Use a stable HTTPS endpoint in production. Never fetch update metadata over plain HTTP.
+
+## Debugging
+
+Development windows enable Craft hot reload and developer tools by default. Use these dashboard surfaces for framework diagnostics:
+
+- `/errors` for captured application errors
+- `/requests` for HTTP activity
+- `/queries` and `/queries/slow` for database activity
+- `/logs` for application logs
+- `/health` for system checks
+- `/insights` for runtime metrics
+
+Run command-line diagnostics alongside the native window:
+
+```bash
+buddy doctor
+buddy ports:check
+buddy route:list
+```
+
+## Distribution checklist
+
+Before shipping:
+
+1. Set a production `APP_URL` or `DESKTOP_URL`.
+2. Run `buddy doctor`.
+3. Run the relevant tests and `buddy lint`.
+4. Run `buddy build:desktop`.
+5. Launch the generated binary from `storage/framework/desktop-dist`.
+6. Verify update signatures and checksums against a staging manifest.
+7. Sign and notarize the native artifacts for each target platform.
+
+Craft is the desktop engine. Do not add Tauri, Electron, or a second native runtime to a Stacks project.

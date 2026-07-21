@@ -90,7 +90,7 @@ buddy dev:admin
 
 ### Desktop Server
 
-Start the desktop application development server (powered by Tauri):
+Start the desktop application development server in a native Craft window:
 
 ```bash
 buddy dev desktop

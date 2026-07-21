@@ -107,7 +107,7 @@ buddy prod:cli
 
 ### Desktop Application
 
-Build the desktop application using Tauri:
+Build the desktop application with the Craft runtime and compiled Stacks launcher:
 
 ```bash
 buddy build:desktop

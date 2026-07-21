@@ -24,7 +24,7 @@ features:
     details: One framework that does it all. Building TypeScript apps & libraries has never been simpler.
   - title: App Development
     icon: 🖥️
-    details: Performant Web or Tauri desktop applications, let Stacks handle the heavy-lifting for you.
+    details: Performant web and Craft desktop applications with one TypeScript codebase.
   - title: Library Development
     icon: 📚
     details: Automagically builds & distributes your component & function libraries, via npm.

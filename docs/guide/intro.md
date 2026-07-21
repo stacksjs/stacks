@@ -13,7 +13,7 @@ Stacks provides everything you need to build modern applications:
 - **Queue System** - Background job processing
 - **Real-time** - WebSocket support
 - **CLI Tools** - Build command-line applications
-- **Desktop Apps** - Native apps with Tauri
+- **Desktop Apps** - Native apps with Craft
 - **Mobile Apps** - iOS/Android with Capacitor
 - **Cloud Deployment** - One-command AWS deployment
 
