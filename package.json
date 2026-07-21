@@ -65,6 +65,8 @@
     "protocol:sync": "bun scripts/protocol/sync-suite.ts --write",
     "protocol:check": "bun scripts/protocol/sync-suite.ts --check",
     "protocol:conformance": "bun scripts/protocol/run-conformance.ts",
+    "protocol:manifest": "bun scripts/protocol/source-manifest.ts --write",
+    "protocol:manifest:check": "bun scripts/protocol/source-manifest.ts --check",
     "bud": "./buddy",
     "stx": "./buddy"
   },

@@ -16,3 +16,11 @@ The adapter does not infer conformance from an existing unit test. A result only
 becomes `pass` when the corresponding protocol fixture is executed through a
 public Stacks API and linked to revision-specific evidence. Until every inherited
 requirement passes, `profileClaim` remains `null`.
+
+`evidence/source-manifest.json` is a deterministic inventory of an immutable
+Stacks Git revision. Its digest is SHA-256 over the complete recursive Git tree
+listing (modes, blob identities, sizes, and paths). It separates source, tests,
+generated output, configuration, documentation, vendored protocol material, and
+assets; records every versioned workspace package and runtime prerequisite; and
+states the implementation's non-certifying classification. Refresh it explicitly
+with `bun run protocol:manifest`, then review and commit the resulting snapshot.

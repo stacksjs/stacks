@@ -168,7 +168,9 @@ jobs:
         run: bun install --frozen-lockfile
 
       - name: Verify pinned protocol suite
-        run: bun run protocol:check
+        run: |
+          bun run protocol:check
+          bun run protocol:manifest:check
 
       - name: Run protocol adapter
         env:
