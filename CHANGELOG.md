@@ -1,5 +1,23 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.159...v0.70.160)
+
+## ✨ Features
+
+- **dashboard**: add live HTTP metric cards ([a815746](https://github.com/stacksjs/stacks/commit/a815746)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **onboarding**: complete zero-setup bootstrap ([8fe5e39](https://github.com/stacksjs/stacks/commit/8fe5e39)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🐛 Bug Fixes
+
+- **buddy**: scope upgrade version option ([af5ddc2](https://github.com/stacksjs/stacks/commit/af5ddc2)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **cloud**: update infrastructure toolkit ([2336733](https://github.com/stacksjs/stacks/commit/2336733)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **container**: shrink production images ([810b592](https://github.com/stacksjs/stacks/commit/810b592)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **packages**: declare side effect metadata ([f11c522](https://github.com/stacksjs/stacks/commit/f11c522)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 ## v0.70.159
 
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.157...v0.70.158)
