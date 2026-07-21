@@ -213,6 +213,7 @@ export type BuildOption =
   | 'webComponents'
   | 'elements'
   | 'functions'
+  | 'desktop'
   | 'docs'
   | 'views'
   | 'stacks'

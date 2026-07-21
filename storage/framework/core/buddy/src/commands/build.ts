@@ -41,6 +41,7 @@ export function build(buddy: CLI): void {
     .option('-w, --web-components', descriptions.webComponents) // also automatically built via the -c flag
     .option('-e, --elements', descriptions.elements) // alias for --web-components
     .option('-f, --functions', descriptions.functions)
+    .option('-k, --desktop', descriptions.desktop)
     .option('-p, --views', descriptions.pages)
     .option('--pages', descriptions.pages) // alias for --views
     .option('-d, --docs', descriptions.docs)
@@ -52,37 +53,7 @@ export function build(buddy: CLI): void {
     .action(async (server: string | undefined, options: BuildOptions) => {
       log.debug('Running `buddy build` ...', options)
 
-      switch (server) {
-        case 'components':
-          options.components = true
-          break
-        case 'web-components':
-          options.webComponents = true
-          break
-        case 'functions':
-          options.functions = true
-          break
-        case 'views':
-          options.views = true
-          break
-        case 'docs':
-          options.docs = true
-          break
-        case 'buddy':
-          options.buddy = true
-          break
-        case 'cli':
-          options.buddy = true
-          break
-        case 'stacks':
-          options.stacks = true
-          break
-        case 'server':
-          options.server = true
-          break
-        default:
-          break
-      }
+      applyBuildTarget(server, options)
 
       if (hasNoOptions(options)) {
         // Bare `buddy build`: ask interactively when a TTY is available.
@@ -94,6 +65,7 @@ export function build(buddy: CLI): void {
               { label: 'Components', value: 'components' },
               { label: 'Web Components', value: 'webComponents' },
               { label: 'Functions', value: 'functions' },
+              { label: 'Desktop application', value: 'desktop' },
               { label: 'Documentation', value: 'docs' },
               { label: 'Stacks framework', value: 'stacks' },
               { label: 'Buddy CLI', value: 'buddy' },
@@ -106,6 +78,7 @@ export function build(buddy: CLI): void {
           if (selected.has('components')) options.components = true
           if (selected.has('webComponents')) options.webComponents = true
           if (selected.has('functions')) options.functions = true
+          if (selected.has('desktop')) options.desktop = true
           if (selected.has('docs')) options.docs = true
           if (selected.has('stacks')) options.stacks = true
           if (selected.has('buddy')) options.buddy = true
@@ -131,6 +104,8 @@ export function build(buddy: CLI): void {
         succeeded = (await runBuildAction(Action.BuildWebComponentLib, 'web component library')) && succeeded
       if (options.functions)
         succeeded = (await runBuildAction(Action.BuildFunctionLib, 'function library')) && succeeded
+      if (options.desktop)
+        succeeded = (await runBuildAction(Action.BuildDesktop, 'desktop application')) && succeeded
       if (options.views)
         succeeded = (await runBuildAction(Action.BuildViews, 'frontend')) && succeeded
       if (options.stacks)
@@ -314,12 +289,46 @@ function hasNoOptions(options: BuildOptions) {
     && !options.webComponents
     && !options.elements
     && !options.functions
+    && !options.desktop
     && !options.views
     && !options.docs
     && !options.stacks
     && !options.buddy
     && !options.server
   )
+}
+
+export function applyBuildTarget(target: string | undefined, options: BuildOptions): void {
+  switch (target) {
+    case 'components':
+      options.components = true
+      break
+    case 'web-components':
+      options.webComponents = true
+      break
+    case 'functions':
+      options.functions = true
+      break
+    case 'desktop':
+      options.desktop = true
+      break
+    case 'views':
+      options.views = true
+      break
+    case 'docs':
+      options.docs = true
+      break
+    case 'buddy':
+    case 'cli':
+      options.buddy = true
+      break
+    case 'stacks':
+      options.stacks = true
+      break
+    case 'server':
+      options.server = true
+      break
+  }
 }
 
 /**
