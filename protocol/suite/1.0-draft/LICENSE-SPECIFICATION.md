@@ -13,4 +13,3 @@ No additional legal or technological restrictions may be applied.
 Canonical legal text: https://creativecommons.org/licenses/by/4.0/legalcode
 
 Copyright © Stacks Protocol contributors.
-

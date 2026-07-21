@@ -35,4 +35,3 @@ A third-party runner implements the operation names it supports, validates this
 corpus against `schemas/fixture-corpus.schema.json`, and writes the report format
 defined by RFC 0004. It may execute a partial profile, but cannot claim that
 profile while any inherited requirement is skipped, unsupported, failed, or experimental.
-

@@ -17,4 +17,3 @@ moving branch. A stale report must never be copied forward to a new revision.
 `profileClaim: null` is the required honest result when the implementation has not
 passed every inherited requirement. Skipped, unsupported, exception, failed, and
 experimental results remain visible in the summary.
-
