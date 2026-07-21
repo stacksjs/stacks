@@ -4,5 +4,10 @@
  * Complete dashboard components for building modern admin interfaces.
  */
 
-// UI Components (re-export from UI folder)
-export * from './UI'
+// Layout components
+export { default as DashboardLayout } from './Dashboard/DashboardLayout.stx'
+export { default as NavbarModern } from './Dashboard/NavbarModern.stx'
+export { default as SidebarModern } from './Dashboard/SidebarModern.stx'
+
+// Dashboard and UI components
+export * from './Dashboard'
