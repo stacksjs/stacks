@@ -1,0 +1,56 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "Stacks Runtime Architecture",
+    "subtitle": "One TypeScript framework from local development to cloud deployment",
+    "output": "stacks-runtime.html",
+    "viewBox": [1220, 760]
+  },
+  "layout": {
+    "mode": "grid",
+    "cols": 7,
+    "origin": [45, 130],
+    "gapX": 45,
+    "gapY": 100,
+    "cellW": 120,
+    "cellH": 60
+  },
+  "components": [
+    { "id": "developer", "type": "external", "label": "Developer", "sublabel": "TypeScript project", "row": 0, "col": 0 },
+    { "id": "buddy", "type": "backend", "label": "Buddy CLI", "sublabel": "dev / build / deploy", "row": 0, "col": 1 },
+    { "id": "cloud", "type": "cloud", "label": "Stacks Cloud", "sublabel": "server or serverless", "row": 0, "col": 6 },
+    { "id": "browser", "type": "frontend", "label": "Web Client", "sublabel": "browser", "row": 1, "col": 0 },
+    { "id": "proxy", "type": "security", "label": "rpx + tlsx", "sublabel": "pretty HTTPS URLs", "row": 1, "col": 1 },
+    { "id": "stx", "type": "frontend", "label": "stx", "sublabel": "views + components", "row": 1, "col": 2 },
+    { "id": "router", "type": "backend", "label": "Router", "sublabel": "routes + middleware", "row": 1, "col": 3 },
+    { "id": "actions", "type": "backend", "label": "Actions", "sublabel": "application logic", "row": 1, "col": 4 },
+    { "id": "orm", "type": "backend", "label": "ORM", "sublabel": "models + queries", "row": 1, "col": 5 },
+    { "id": "database", "type": "database", "label": "Database", "sublabel": "SQLite / SQL / DynamoDB", "row": 1, "col": 6 },
+    { "id": "craft", "type": "frontend", "label": "Craft", "sublabel": "desktop + tray", "row": 2, "col": 0 },
+    { "id": "events", "type": "messagebus", "label": "Events + Queues", "sublabel": "async application work", "row": 2, "col": 4 },
+    { "id": "workers", "type": "backend", "label": "Workers", "sublabel": "jobs + schedules", "row": 2, "col": 5 }
+  ],
+  "boundaries": [
+    { "kind": "region", "label": "Stacks application runtime", "wraps": ["stx", "router", "actions", "orm", "database", "events", "workers"], "pad": 24 }
+  ],
+  "connections": [
+    { "from": "developer", "to": "buddy", "variant": "emphasis" },
+    { "from": "buddy", "to": "cloud", "label": "provision + deploy", "variant": "dashed" },
+    { "from": "browser", "to": "proxy", "label": "HTTPS", "variant": "security" },
+    { "from": "craft", "to": "proxy", "label": "HTTPS", "variant": "security" },
+    { "from": "proxy", "to": "stx", "variant": "emphasis" },
+    { "from": "stx", "to": "router" },
+    { "from": "router", "to": "actions" },
+    { "from": "actions", "to": "orm" },
+    { "from": "orm", "to": "database", "label": "typed queries", "labelDy": 54 },
+    { "from": "actions", "to": "events", "label": "dispatch", "variant": "dashed", "fromSide": "bottom", "toSide": "top", "labelDy": 24 },
+    { "from": "events", "to": "workers", "variant": "dashed" },
+    { "from": "workers", "to": "cloud", "variant": "dashed", "fromSide": "right", "toSide": "bottom", "route": "orthogonal-h" }
+  ],
+  "cards": [
+    { "dot": "cyan", "title": "One application model", "items": ["stx UI and router actions share TypeScript", "Craft reuses the same pretty HTTPS application URLs"] },
+    { "dot": "emerald", "title": "Data and async work", "items": ["Model-driven migrations feed the ORM", "Events, queues, jobs, and schedules stay first-party"] },
+    { "dot": "amber", "title": "Operations", "items": ["Buddy owns development, builds, diagnostics, and releases", "Stacks Cloud provisions server and serverless targets"] }
+  ]
+}

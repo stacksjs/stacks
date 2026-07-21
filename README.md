@@ -15,6 +15,10 @@
 
 Stacks is a rapid development framework, where the goal is to _help you_ create & maintain frontends, backends, and clouds—without having to worry about the boilerplate. _An all-in-one toolkit that meets all your full stack needs._
 
+[![Stacks runtime architecture](./docs/diagrams/stacks-runtime.png)](./docs/diagrams/stacks-runtime.html)
+
+_Open the diagram for light and dark themes plus SVG, PNG, JPEG, and WebP exports._
+
 - Web & Desktop Applications _(including system tray apps)_
 - Serverless & Traditional APIs
 - Cloud Infrastructure Creation & Maintenance
