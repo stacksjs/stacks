@@ -1,4 +1,4 @@
-import { existsSync, readFileSync, writeFileSync } from 'node:fs'
+import { cpSync, existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import type { CLI, CliOptions } from '@stacksjs/types'
 import process from 'node:process'
@@ -294,6 +294,8 @@ async function initializeProject(options: SetupOptions): Promise<void> {
 
   await runInitialMigration(cwd)
 
+  ensureIdeSettings(cwd)
+
   if (!options.skipAws) {
     log.info('Ensuring AWS is connected...')
 
@@ -319,10 +321,26 @@ async function initializeProject(options: SetupOptions): Promise<void> {
     }
   }
 
-  // TODO: ensure the IDE is setup by making sure .vscode etc exists, and if not, copy them over
-
   log.success('Project is setup')
   log.info('Run `./buddy doctor` anytime to check your setup. Happy coding! 💙')
+}
+
+export function ensureIdeSettings(cwd: string): void {
+  const source = p.frameworkPath('defaults/ide/vscode/.vscode')
+  const destination = join(cwd, '.vscode')
+
+  if (existsSync(destination)) {
+    log.debug('.vscode already exists; keeping the project settings')
+    return
+  }
+
+  if (!existsSync(source)) {
+    log.debug('No bundled VS Code settings found; skipping IDE setup')
+    return
+  }
+
+  cpSync(source, destination, { recursive: true })
+  log.success('Installed project VS Code settings')
 }
 
 /**

@@ -1,17 +1,71 @@
 #!/bin/sh
-set -e
+set -eu
 
 ## To learn more, visit https://stacksjs.com/docs/guide/bootstrap
 ## Usage:
-##   ./bootstrap                                                   # local bootstrap (supported today)
-##   curl -fsSL https://stacksjs.com/install | bash                # coming soon: bootstrap in current dir
-##   curl -fsSL https://stacksjs.com/install | bash -s my-project  # coming soon: clone + bootstrap
+##   ./bootstrap
+##   curl -fsSL https://stacksjs.com/install | sh
+##   curl -fsSL https://stacksjs.com/install | sh -s -- my-project
+
+ASSUME_YES=0
+PROJECT_NAME=""
+
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    -y|--yes) ASSUME_YES=1 ;;
+    -h|--help)
+      echo "Usage: ./bootstrap [--yes] [project-name]"
+      exit 0
+      ;;
+    -*)
+      echo "Unknown option: $1"
+      exit 1
+      ;;
+    *)
+      if [ -n "$PROJECT_NAME" ]; then
+        echo "Only one project name may be supplied."
+        exit 1
+      fi
+      PROJECT_NAME="$1"
+      ;;
+  esac
+  shift
+done
+
+TEMP_DIR=""
+cleanup() {
+  if [ -n "$TEMP_DIR" ] && [ -d "$TEMP_DIR" ]; then
+    rm -rf "$TEMP_DIR"
+  fi
+}
+trap cleanup EXIT INT TERM
+
+confirm_install() {
+  if [ "$ASSUME_YES" -eq 1 ]; then
+    return 0
+  fi
+
+  if [ ! -r /dev/tty ]; then
+    echo "Pantry is required to provision Bun and the local toolchain."
+    echo "Run again with --yes to approve its installation."
+    return 1
+  fi
+
+  printf "Pantry will install Bun and the local development toolchain. Continue? [Y/n] " > /dev/tty
+  IFS= read -r answer < /dev/tty || answer=""
+  case "$answer" in
+    ""|y|Y|yes|YES|Yes) return 0 ;;
+    *) echo "Installation cancelled."; return 1 ;;
+  esac
+}
 
 # --- Pantry installer (inlined so it works via curl-pipe-bash before clone) ---
 ensure_pantry() {
   if command -v pantry >/dev/null 2>&1; then
     return
   fi
+
+  confirm_install || exit 1
 
   OS=$(uname -s | tr '[:upper:]' '[:lower:]')
   ARCH=$(uname -m)
@@ -27,11 +81,12 @@ ensure_pantry() {
   URL="https://github.com/home-lang/pantry/releases/latest/download/${ZIP}"
 
   echo "Downloading Pantry from ${URL}..."
-  TMP=$(mktemp -d)
-  curl -fsSL -o "${TMP}/${ZIP}" "$URL"
-  unzip -o "${TMP}/${ZIP}" -d "$INSTALL_DIR"
+  TEMP_DIR=$(mktemp -d)
+  curl -fsSL -o "${TEMP_DIR}/${ZIP}" "$URL"
+  unzip -oq "${TEMP_DIR}/${ZIP}" -d "$INSTALL_DIR"
   chmod +x "${INSTALL_DIR}/pantry"
-  rm -rf "$TMP"
+  rm -rf "$TEMP_DIR"
+  TEMP_DIR=""
 
   export PATH="${INSTALL_DIR}:${PATH}"
   echo "Pantry installed to ${INSTALL_DIR}/pantry"
@@ -39,26 +94,56 @@ ensure_pantry() {
 
 # --- Main ---
 
-# If a project name is passed, download and extract the project
-if [ -n "$1" ]; then
-  if [ -d "$1" ]; then
-    echo "Directory '$1' already exists. Please use a different name."
+# If we are outside a project, create one from the latest stable release.
+if [ ! -d "storage/framework/core" ]; then
+  if [ -z "$PROJECT_NAME" ]; then
+    PROJECT_NAME="${STACKS_PROJECT:-stacks}"
+
+    if [ -r /dev/tty ]; then
+      printf "Project directory [%s]: " "$PROJECT_NAME" > /dev/tty
+      IFS= read -r requested_name < /dev/tty || requested_name=""
+      if [ -n "$requested_name" ]; then
+        PROJECT_NAME="$requested_name"
+      fi
+    fi
+  fi
+
+  if [ -e "$PROJECT_NAME" ]; then
+    echo "Path '$PROJECT_NAME' already exists. Please use a different name."
     exit 1
   fi
 
-  echo "Downloading Stacks..."
-  TMP=$(mktemp -d)
-  curl -fsSL -o "${TMP}/stacks.zip" "https://github.com/stacksjs/stacks/archive/refs/heads/main.zip"
-  unzip -q "${TMP}/stacks.zip" -d "$TMP"
-  mv "${TMP}/stacks-main" "$1"
-  rm -rf "$TMP"
-  cd "$1"
+  RELEASE_TAG="${STACKS_VERSION:-}"
+  if [ -z "$RELEASE_TAG" ]; then
+    RELEASE_URL=$(curl -fsSL -o /dev/null -w '%{url_effective}' "https://github.com/stacksjs/stacks/releases/latest")
+    RELEASE_TAG=${RELEASE_URL##*/}
+  fi
+
+  case "$RELEASE_TAG" in
+    v*) ;;
+    *) RELEASE_TAG="v${RELEASE_TAG}" ;;
+  esac
+
+  echo "Downloading Stacks ${RELEASE_TAG}..."
+  TEMP_DIR=$(mktemp -d)
+  curl -fsSL -o "${TEMP_DIR}/stacks.zip" "https://github.com/stacksjs/stacks/archive/refs/tags/${RELEASE_TAG}.zip"
+  unzip -q "${TEMP_DIR}/stacks.zip" -d "$TEMP_DIR"
+  ARCHIVE_DIR="${TEMP_DIR}/stacks-${RELEASE_TAG#v}"
+
+  if [ ! -d "$ARCHIVE_DIR" ]; then
+    echo "The Stacks release archive had an unexpected layout."
+    exit 1
+  fi
+
+  mv "$ARCHIVE_DIR" "$PROJECT_NAME"
+  rm -rf "$TEMP_DIR"
+  TEMP_DIR=""
+  cd "$PROJECT_NAME"
 fi
 
 # Detect if we're in a Stacks project
 if [ ! -d "storage/framework/core" ]; then
-  echo "Error: not inside a Stacks project. Run with a project name to clone one:"
-  echo "  curl -fsSL https://stacksjs.com/install | bash -s my-project"
+  echo "Error: not inside a Stacks project."
   exit 1
 fi
 
@@ -71,6 +156,6 @@ echo "Bootstrapping Stacks project..."
 
 echo ""
 echo "Project bootstrapped successfully!"
-if [ -n "$1" ]; then
-  echo "Run 'cd $1 && ./buddy dev' to start the dev server."
+if [ -n "$PROJECT_NAME" ]; then
+  echo "Run 'cd $PROJECT_NAME && ./buddy dev' to start the dev server."
 fi
