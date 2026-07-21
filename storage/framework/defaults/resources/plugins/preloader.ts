@@ -44,7 +44,12 @@ const isRepl = !process.argv[1]
 const isPostinstall = process.env.npm_lifecycle_event === 'postinstall'
 const skipPreloader = isRepl || isPostinstall || (args.length > 0 && fastCommands.some(cmd => args[0] === cmd || args[0].startsWith(`${cmd}:`)))
 
-if (!skipPreloader) {
+// Env decryption + deploy-env detection run for EVERY command. Fast commands
+// (migrate/build/seed/...) need correct, decrypted config just as much, so only
+// the heavy auto-import graph below stays gated (see `skipAutoImports`). Coupling
+// env decryption to `skipPreloader` meant an encrypted `.env.<env>` never
+// decrypted for those commands even with the key present. See stacksjs/stacks#2048.
+{
   // Detect production/deployment commands and set environment accordingly BEFORE loading env files
   // This ensures the correct .env.{env} file is loaded with proper encryption/decryption
   const productionCommands = ['cloud:remove', 'cloud:rm', 'cloud:destroy', 'cloud:cleanup', 'cloud:clean-up', 'undeploy']
