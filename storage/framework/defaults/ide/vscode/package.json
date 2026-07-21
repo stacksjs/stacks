@@ -29,6 +29,9 @@
   ],
   "icon": "logo.png",
   "files": [
+    ".vscode/extensions.json",
+    ".vscode/settings.json",
+    ".vscode/stacks.code-snippets",
     "LICENSE.md",
     "logo.png"
   ],
@@ -42,6 +45,17 @@
   "galleryBanner": {
     "color": "#d7e4f5",
     "theme": "light"
+  },
+  "contributes": {
+    "configurationDefaults": {
+      "files.associations": {
+        "buddy": "typescript",
+        "*.stx": "vue"
+      },
+      "npm.packageManager": "bun",
+      "typescript.preferGoToSourceDefinition": true,
+      "typescript.tsdk": "node_modules/typescript/lib"
+    }
   },
   "extensionPack": [
     "dotenv.dotenvx-vscode",

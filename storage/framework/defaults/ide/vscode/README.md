@@ -1,4 +1,4 @@
-# Stacks VSCode Extension Pack
+# Stacks VS Code Extension Pack
 
 A collection of extensions for an enhanced developer experience while working on Stacks projects.
 
@@ -7,12 +7,12 @@ _Please note, the Stacks framework auto-configures any extension that needs to b
 ## Extensions Included
 
 - [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) - Language support
-- [ESlint](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint) - Linting & formatting
+- [ESLint](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint) - Editor integration for the Pickier configuration
 - [markdownlint](https://marketplace.visualstudio.com/items?itemName=DavidAnson.vscode-markdownlint) - Markdown linting
-- [Crosswind](https://github.com/cwcss/crosswind) - Blazingly fast utility-first CSS framework
 - [Goto Definition Alias](https://marketplace.visualstudio.com/items?itemName=antfu.goto-definition-alias) - Allows jumping to the definition of an aliased import
-- [NPM Intellisense](https://marketplace.visualstudio.com/items?itemName=christian-kohler.npm-intellisense) - auto-completes npm modules in import statements
-- [Jumpy](https://marketplace.visualstudio.com/items?itemName=wmaurer.vscode-jumpy) - We lose a lot of time scanning with a mouse, time we can get back by using our keyboard instead. Jumpy provides fast cursor movement by giving you a couple of keys that offer a hook to get to another part of the document.
+- [NPM Intellisense](https://marketplace.visualstudio.com/items?itemName=christian-kohler.npm-intellisense) - Auto-completes package imports
+- [Bun for Visual Studio Code](https://marketplace.visualstudio.com/items?itemName=oven.bun-vscode) - Bun runtime and test integration
+- [Dotenvx](https://marketplace.visualstudio.com/items?itemName=dotenv.dotenvx-vscode) - Encrypted environment file support
 - [Spell Checker](https://marketplace.visualstudio.com/items?itemName=streetsidesoftware.code-spell-checker) - Simple source code spell checker for your code
 
 ## Contributing
@@ -22,8 +22,8 @@ We welcome contributions to this extension pack.
 ## Local Usage
 
 ```bash
-bun run package // to create a .vsix file
-code --install-extension stacks-vscode-0.44.2.vsix // to install the extension locally
+bun run package
+code --install-extension vscode-stacks-0.70.160.vsix
 ```
 
 _If you would like to add an extension, please open an issue or start a Discussion first 🙏🏼._
