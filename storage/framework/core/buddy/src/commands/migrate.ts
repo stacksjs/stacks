@@ -386,7 +386,8 @@ export function migrate(buddy: CLI): void {
           }
         }
         catch (error) {
-          log.error('Failed to preview migrations:', error)
+          // await: guarantee the error flushes before the outro + exit below.
+          await log.error('Failed to preview migrations:', error)
         }
         await outro('Diff complete — no changes applied.', { startTime: perf, useSeconds: true })
         process.exit(ExitCode.Success)
@@ -613,7 +614,9 @@ export function migrate(buddy: CLI): void {
 
       // Hard kill-switch — the command refuses to run at all.
       if (guards.migrateFresh === 'disabled') {
-        log.error(
+        // await: this carries the actionable detail (how to re-enable); the
+        // outro one-liner below isn't enough on its own, so guarantee it flushes.
+        await log.error(
           `\`buddy migrate:fresh\` is disabled by your migration safety guards (it DROPS every table).\n`
           + `  Target: ${APP_ENV} database "${dbLabel}"\n`
           + `  To allow it, set database.safety.migrateFresh to 'allow' in config/database.ts,\n`
@@ -631,7 +634,7 @@ export function migrate(buddy: CLI): void {
           const hint = guards.migrateFresh === 'confirm'
             ? 'Guard is "confirm": migrate:fresh must be run interactively.'
             : 'Re-run with --force to drop the database non-interactively.'
-          log.error(`Refusing to drop the ${APP_ENV} database "${dbLabel}" in a non-interactive environment. ${hint}`)
+          await log.error(`Refusing to drop the ${APP_ENV} database "${dbLabel}" in a non-interactive environment. ${hint}`)
           await outro('migrate:fresh cancelled.', { startTime: perf, useSeconds: true })
           process.exit(ExitCode.FatalError)
         }
