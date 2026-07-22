@@ -92,6 +92,7 @@ registerElements()
       <media-playback-rate-button slot="right" rates="0.5,0.75,1,1.25,1.5,2" aria-label="Playback speed"></media-playback-rate-button>
       <media-settings-menu slot="right" aria-label="Video settings"></media-settings-menu>
       <media-airplay-button slot="right" aria-label="Play on AirPlay"></media-airplay-button>
+      <media-remote-playback-button slot="right" aria-label="Play on another device"></media-remote-playback-button>
       <media-pip-button slot="right" aria-label="Picture in Picture"></media-pip-button>
       <media-fullscreen-button slot="right" aria-label="Fullscreen"></media-fullscreen-button>
     </video-skin>
