@@ -8,7 +8,7 @@ Deterministic, capability-aware video planning for Stacks. Unsupported codec ope
 import { detectVideoRuntimeCapabilities } from 'ts-videos'
 import { video } from '@stacksjs/video'
 
-const derivatives = await video('uploads/demo.mp4')
+const delivery = await video('uploads/demo.mp4')
   .profile({
     width: 1920,
     height: 1080,
@@ -25,7 +25,11 @@ const derivatives = await video('uploads/demo.mp4')
   .process({ signal: request.signal })
 ```
 
-`.generate()` returns the deterministic plan without processing. `.process()` executes its container and rendition matrix through native WebCodecs and the built-in MP4 or WebM muxers. It copies compatible packets, performs real codec changes, scales without upscaling, preserves metadata, and uses bounded batches.
+`.generate()` returns the deterministic plan without processing. `.process()` executes its container and rendition matrix through native WebCodecs and the built-in MP4 or WebM muxers. The same call returns progressive files, CMAF segments, HLS and DASH manifests, poster art, preview sprites, and preview WebVTT when the native preview runtime is available. Compatible packets are copied, real codec changes are encoded, scaling never upscales, metadata is preserved, and work runs in bounded batches.
+
+```ts
+await storage.putMany(delivery.files)
+```
 
 ## HLS, DASH, and protected delivery
 

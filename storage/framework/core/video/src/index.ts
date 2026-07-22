@@ -9,8 +9,8 @@ export interface VideoRendition { name: string, width: number, height: number, f
 export interface VideoCapabilities { videoEncoder: boolean, audioEncoder: boolean, videoCodecs: string[], audioCodecs: string[] }
 export interface VideoOutput { container: VideoContainer, videoCodec: VideoCodec, audioCodec?: VideoAudioCodec, action: 'copy' | 'transcode', available: boolean, reason?: string }
 export interface VideoPlan { source: string, profile: VideoProfile, renditions: VideoRendition[], outputs: VideoOutput[], streaming: StreamingFormat[], segmentDuration: number, keyframeInterval: number }
-export interface VideoProcessOptions { batchSize?: number, signal?: AbortSignal }
-export interface ProcessedVideoDerivative { output: VideoOutput, rendition: VideoRendition, bytes: Uint8Array }
+export type VideoProcessOptions = import('ts-videos/delivery-pipeline').VideoDeliveryPipelineOptions
+export type ProcessedVideoDelivery = import('ts-videos/delivery-pipeline').VideoDeliveryPipelineResult
 export interface PreviewCue { startTime: number, endTime: number, uri: string, x?: number, y?: number, width?: number, height?: number }
 const edges = [240, 360, 480, 540, 720, 1080, 1440, 2160]
 const even = (value: number): number => Math.max(2, Math.round(value / 2) * 2)
@@ -58,13 +58,13 @@ export class VideoBuilder {
     const segmentDuration = profile.duration <= 30 ? 2 : profile.duration <= 600 ? 4 : 6
     return { source: this.source, profile, renditions, outputs, streaming: this.streams, segmentDuration, keyframeInterval: Math.max(1, Math.round(profile.frameRate * segmentDuration)) }
   }
-  async process(options: VideoProcessOptions = {}): Promise<ProcessedVideoDerivative[]> { return processVideoPlan(this.generate(), options) }
+  async process(options: VideoProcessOptions = {}): Promise<ProcessedVideoDelivery> { return processVideoPlan(this.generate(), options) }
 }
 export function video(source: string): VideoBuilder { return new VideoBuilder(source) }
-export async function processVideoPlan(plan: VideoPlan, options: VideoProcessOptions = {}): Promise<ProcessedVideoDerivative[]> {
+export async function processVideoPlan(plan: VideoPlan, options: VideoProcessOptions = {}): Promise<ProcessedVideoDelivery> {
   assertVideoPlanExecutable(plan)
-  const { generateVideoDerivatives } = await import('ts-videos/native-transcode')
-  return generateVideoDerivatives(plan.source, {
+  const { createVideoDeliveryPipeline } = await import('ts-videos/delivery-pipeline')
+  return createVideoDeliveryPipeline(plan.source, {
     source: plan.profile,
     renditions: plan.renditions,
     outputs: plan.outputs,
