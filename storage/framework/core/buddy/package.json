@@ -64,7 +64,6 @@
   "types": "dist/index.d.ts",
   "bin": {
     "stacks": "dist/cli.js",
-    "stx": "dist/cli.js",
     "buddy": "dist/cli.js",
     "bud": "dist/cli.js"
   },
