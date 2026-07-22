@@ -80,10 +80,8 @@ export interface PutFileOptions {
   /**
    * Optional image-processing pipeline applied before write
    * (stacksjs/stacks#1856 Stage 5). Receives the raw bytes + a Sharp
-   * instance loaded lazily from the `@stacksjs/storage/image` submodule;
-   * returns the processed bytes that get persisted. Throws a clear
-   * error if `sharp` isn't installed — projects that don't need image
-   * transforms don't pay the native-module install cost.
+   * pipeline from the `@stacksjs/storage/image` submodule; returns the
+   * processed bytes that get persisted.
    *
    * If the transform changes the output format (e.g. JPEG → WebP), the
    * caller is responsible for updating `mimetype` / `filename` to match

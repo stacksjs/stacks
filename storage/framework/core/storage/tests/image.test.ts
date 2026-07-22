@@ -1,52 +1,32 @@
-/**
- * Tests for `@stacksjs/storage/image` (stacksjs/stacks#1856 Stage 5).
- *
- * sharp is a peer dependency — these tests don't require it. They
- * verify the shape of the wrapper module (`transform`, `avatar`,
- * `resize`, `stripMetadata`) and the clear error users see when sharp
- * isn't installed.
- *
- * The actual sharp pipeline (resize/webp/etc.) is sharp's own test
- * surface — we cover the integration shim, not the image library.
- */
-
 import { describe, expect, test } from 'bun:test'
+import { createImageData, decode, encode } from 'ts-images'
 import { avatar, resize, stripMetadata, transform } from '../src/image'
 
-describe('@stacksjs/storage/image — exports', () => {
-  test('factory functions are present', () => {
-    expect(typeof transform).toBe('function')
-    expect(typeof avatar).toBe('function')
-    expect(typeof resize).toBe('function')
-    expect(typeof stripMetadata).toBe('function')
-  })
+async function fixture(): Promise<Uint8Array> {
+  const image = createImageData(4, 2)
+  image.data.fill(255)
+  return encode(image, 'png')
+}
 
-  test('each preset returns a function suitable for `Storage.put({ transform })`', () => {
+describe('@stacksjs/storage/image', () => {
+  test('provides native Storage.put transforms', () => {
     expect(typeof avatar()).toBe('function')
-    expect(typeof resize(100, 100)).toBe('function')
+    expect(typeof resize(2, 2)).toBe('function')
     expect(typeof stripMetadata()).toBe('function')
-    expect(typeof transform(img => img)).toBe('function')
-  })
-})
-
-describe('@stacksjs/storage/image — lazy sharp load error', () => {
-  // sharp is not a dependency in the framework's own test environment.
-  // The presets should throw a clear install message rather than a
-  // bare `Cannot find module` when invoked.
-  test('`avatar()` throws a friendly error when sharp is missing', async () => {
-    const fn = avatar()
-    await expect(fn(new Uint8Array([1, 2, 3]))).rejects.toThrow(/sharp.*not installed/i)
+    expect(typeof transform(image => image)).toBe('function')
   })
 
-  test('the error message includes the install command', async () => {
-    const fn = transform(img => img)
-    try {
-      await fn(new Uint8Array([1, 2, 3]))
-      throw new Error('expected sharp-missing error')
-    }
-    catch (e) {
-      const message = e instanceof Error ? e.message : String(e)
-      expect(message).toContain('bun add sharp')
-    }
+  test('resizes without upscaling and creates square avatars', async () => {
+    const source = await fixture()
+    const resized = await decode(await resize(2, 2)(source))
+    const square = await decode(await avatar(2)(source))
+    expect([resized.width, resized.height]).toEqual([2, 1])
+    expect([square.width, square.height]).toEqual([2, 2])
+  })
+
+  test('validates transforms before encoding', async () => {
+    const source = await fixture()
+    await expect(transform(image => image.resize(0, 2))(source)).rejects.toThrow(/width/)
+    await expect(transform(image => image.webp({ quality: 101 }))(source)).rejects.toThrow(/quality/)
   })
 })

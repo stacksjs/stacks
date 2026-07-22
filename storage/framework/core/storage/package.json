@@ -52,15 +52,8 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "@stacksjs/ts-cloud": "catalog:"
-  },
-  "peerDependencies": {
-    "sharp": "^0.35.3"
-  },
-  "peerDependenciesMeta": {
-    "sharp": {
-      "optional": true
-    }
+    "@stacksjs/ts-cloud": "catalog:",
+    "ts-images": "^0.1.11"
   },
   "devDependencies": {
     "@stacksjs/arrays": "workspace:*",
@@ -68,7 +61,6 @@
     "@stacksjs/error-handling": "workspace:*",
     "@stacksjs/path": "workspace:*",
     "@stacksjs/strings": "workspace:*",
-    "@stacksjs/types": "workspace:*",
-    "sharp": "^0.35.3"
+    "@stacksjs/types": "workspace:*"
   }
 }
