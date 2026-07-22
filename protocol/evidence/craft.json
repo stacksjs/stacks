@@ -3,24 +3,25 @@
   "status": "source-verified-ci-pending",
   "source": {
     "repository": "https://github.com/home-lang/craft",
-    "version": "0.0.47",
-    "tag": "v0.0.47",
-    "revision": "f22e662d7733375acfcb7d4bf45f0305361738f7"
+    "version": "0.0.48",
+    "tag": "v0.0.48",
+    "revision": "bf75807669e3af6cfb4ae34724be5c613442aee2"
   },
   "issues": {
     "support": "https://github.com/stacksjs/stacks/issues/2059",
     "signing": "https://github.com/stacksjs/stacks/issues/2062",
     "lifecycle": "https://github.com/stacksjs/stacks/issues/2063",
-    "upstreamActions": "https://github.com/home-lang/craft/issues/11"
+    "upstreamActions": "https://github.com/home-lang/craft/issues/11",
+    "dmgContention": "https://github.com/home-lang/craft/issues/16"
   },
   "contracts": [
     {
       "path": "packages/typescript/src/package.ts",
-      "sha256": "92a3fc43d37981d6d66e090ec0d53bffbfb32d91f52ffb9f967558d95b16b83f"
+      "sha256": "a7522f8c79dbd50a0f3bbc113525fb46eb8d6d1bab711d434cae85dc892ccdc1"
     },
     {
       "path": "packages/typescript/src/package.test.ts",
-      "sha256": "2f628fc23fd6e35b374362986c1f915cab36290c663ca7d356983fb5e9e2cb8d"
+      "sha256": "673338f3793e397a83590daf84815869b0698b4afe97eaad8039426418554b7a"
     },
     {
       "path": "scripts/native-lifecycle.ts",
