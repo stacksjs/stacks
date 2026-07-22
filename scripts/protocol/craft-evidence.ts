@@ -9,9 +9,9 @@ export const craftEvidence = {
   status: 'source-verified-ci-pending',
   source: {
     repository: 'https://github.com/home-lang/craft',
-    version: '0.0.44',
-    tag: 'v0.0.44',
-    revision: 'ddd23c70e6208d4a182bde4cae2ff0e6aefe3ec1',
+    version: '0.0.45',
+    tag: 'v0.0.45',
+    revision: 'c27c3adace4d1a4de4fe4ecf0e7c7e48264bbf3e',
   },
   issues: {
     support: 'https://github.com/stacksjs/stacks/issues/2059',
@@ -20,9 +20,11 @@ export const craftEvidence = {
     upstreamActions: 'https://github.com/home-lang/craft/issues/11',
   },
   contracts: [
-    { path: 'packages/typescript/src/package.ts', sha256: '007a2f0c7a8406ba01b0d8e1ac50db1ad58c674209d84e1f3eebce0723ca4b10' },
-    { path: 'packages/typescript/src/package.test.ts', sha256: 'a6f31bdf56014c8423d702af5dc7da12d9ecea49dd138464414c0dbfa7276849' },
-    { path: 'scripts/native-lifecycle.ts', sha256: '17768caa805a9adad975349a388cb90196c8047d526b84b0ad24e1773da629a6' },
+    { path: 'packages/typescript/src/package.ts', sha256: '244b1de5f7fa9fde2a3cb2472fe1e4ffd99f7cedaf9d3013f1e2269d1280d464' },
+    { path: 'packages/typescript/src/package.test.ts', sha256: '155e6008019aa9290a9f73b17abd907509e7576c9c4eb0bb8954afcb0f4f385e' },
+    { path: 'scripts/native-lifecycle.ts', sha256: 'a2c0af2c2165981ca7fbd31880adeec64db64fc305d4ca3efe62a11483b289b4' },
+    { path: 'scripts/native-lifecycle-plan.ts', sha256: 'ac8e8f101246e94c0c26fdcbf9202536426bf192a303606079273d9689e4e27d' },
+    { path: 'scripts/native-lifecycle-plan.test.ts', sha256: '5cc839b60f7c8e32716f29201b159af817f4ac40b2c7963131124b3ac5de0638' },
     { path: '.github/workflows/native-lifecycle.yml', sha256: '493b614554f03dc669724ff31bd56ae8361851dd2a9b32ac37560d9c0bb1b85e' },
     { path: '.github/workflows/release.yml', sha256: 'e3c7edd45841a7260fb4dfe810f0ff3f63f3117f7d0f4d14984e4dfb36b1f638' },
   ],
@@ -43,7 +45,7 @@ export const craftEvidence = {
     blockedBy: 'https://github.com/home-lang/craft/issues/11',
   },
   verification: {
-    local: ['bun test packages/typescript/src/package.test.ts', 'bun run typecheck', 'bun scripts/native-lifecycle.ts'],
+    local: ['bun test packages/typescript/src/package.test.ts scripts/native-lifecycle-plan.test.ts', 'bun run typecheck', 'bun scripts/native-lifecycle.ts'],
     retained: 'pending first successful stacksjs/stacks desktop-lifecycle run',
   },
 } as const
@@ -52,7 +54,7 @@ export function validateCraftEvidence(evidence: typeof craftEvidence): string[] 
   const errors: string[] = []
   if (evidence.source.tag !== `v${evidence.source.version}`) errors.push('Craft tag does not match its version')
   if (!/^[a-f0-9]{40}$/.test(evidence.source.revision)) errors.push('Craft revision is not a full commit SHA')
-  if (evidence.contracts.length !== 5) errors.push('all Craft packaging/release contracts must be pinned')
+  if (evidence.contracts.length !== 7) errors.push('all Craft packaging/release contracts must be pinned')
   for (const contract of evidence.contracts) {
     if (!/^[a-f0-9]{64}$/.test(contract.sha256)) errors.push(`${contract.path}: invalid SHA-256 digest`)
   }
