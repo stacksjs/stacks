@@ -386,7 +386,8 @@ export function migrate(buddy: CLI): void {
           }
         }
         catch (error) {
-          log.error('Failed to preview migrations:', error)
+          // await: guarantee the error flushes before the outro + exit below.
+          await log.error('Failed to preview migrations:', error)
         }
         await outro('Diff complete — no changes applied.', { startTime: perf, useSeconds: true })
         process.exit(ExitCode.Success)
@@ -404,6 +405,9 @@ export function migrate(buddy: CLI): void {
         }
         else {
           const APP_ENV = process.env.APP_ENV || 'local'
+          // Flush buffered async logs (e.g. the intro banner) so they paint
+          // before this prompt instead of under it (see migrate:fresh below).
+          await log.flush()
           const proceed = await confirm({
             message: `Run migrations against the ${APP_ENV} database "${currentDatabaseLabel()}"?`,
             initial: true,
@@ -613,7 +617,9 @@ export function migrate(buddy: CLI): void {
 
       // Hard kill-switch — the command refuses to run at all.
       if (guards.migrateFresh === 'disabled') {
-        log.error(
+        // await: this carries the actionable detail (how to re-enable); the
+        // outro one-liner below isn't enough on its own, so guarantee it flushes.
+        await log.error(
           `\`buddy migrate:fresh\` is disabled by your migration safety guards (it DROPS every table).\n`
           + `  Target: ${APP_ENV} database "${dbLabel}"\n`
           + `  To allow it, set database.safety.migrateFresh to 'allow' in config/database.ts,\n`
@@ -631,12 +637,17 @@ export function migrate(buddy: CLI): void {
           const hint = guards.migrateFresh === 'confirm'
             ? 'Guard is "confirm": migrate:fresh must be run interactively.'
             : 'Re-run with --force to drop the database non-interactively.'
-          log.error(`Refusing to drop the ${APP_ENV} database "${dbLabel}" in a non-interactive environment. ${hint}`)
+          await log.error(`Refusing to drop the ${APP_ENV} database "${dbLabel}" in a non-interactive environment. ${hint}`)
           await outro('migrate:fresh cancelled.', { startTime: perf, useSeconds: true })
           process.exit(ExitCode.FatalError)
         }
 
         log.warn(`This will DROP ALL TABLES in the ${APP_ENV} database "${dbLabel}" and rebuild them from scratch. All data will be lost.`)
+        // Drain buffered async log writes (this warn + the intro banner) so they
+        // paint BEFORE the synchronous prompt below. The clarity logger flushes
+        // on its own tick, so without this the warning lands *under* clapp's
+        // text() prompt and the command looks hung waiting for input.
+        await log.flush()
         const typed = await text({ message: `Type the database name "${dbLabel}" to confirm (blank to cancel):` })
         if (typed.trim() !== dbLabel) {
           await outro('migrate:fresh cancelled — confirmation did not match.', { startTime: perf, useSeconds: true })
