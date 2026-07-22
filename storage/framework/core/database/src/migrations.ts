@@ -34,6 +34,7 @@ import {
   setConfig,
 } from '@stacksjs/query-builder'
 import { db } from './utils'
+import { frameworkManagedColumns, withoutManagedColumnDrops, withoutManagedColumnDropSql } from './managed-columns'
 import { acquireMigrationLock } from './migration-lock'
 
 // Use environment variables via @stacksjs/env for proper type coercion
@@ -954,7 +955,13 @@ export async function previewPendingMigrations(options: GenerateMigrationsOption
       return []
     const { applyRenames, fromDb } = resolveGenerateOptions(options)
     const result = await qbGenerateMigration(modelsDir, { dialect: getQbDialect(), dryRun: true, applyRenames, fromDb })
-    return result.operations ?? []
+    const operations = result.operations ?? []
+    // Framework-managed columns (trait ALTERs, not model `attributes`) are not
+    // real strays — don't surface them as destructive drops in the confirmation
+    // gate, or migrate never shows "nothing to migrate" (stacksjs/stacks#2075).
+    if (!operations.some((op: MigrationOperation) => op.kind === 'drop_column'))
+      return operations
+    return withoutManagedColumnDrops(operations, await frameworkManagedColumns())
   }
   catch (error) {
     // A preview must never block the migrate flow on its own failure — the
@@ -1045,8 +1052,20 @@ export async function generateMigrations(options: GenerateMigrationsOptions = {}
     // the single place that ever writes a migration file.
     const result = await qbGenerateMigration(modelsDir, { dialect: getQbDialect(), dryRun: true, applyRenames, fromDb })
 
+    // Never write a migration that drops a framework-managed column: those are
+    // guaranteed by runtime ALTERs (ensureUsersAuthColumns / ensureUuidColumns),
+    // not the model, so the differ re-proposes dropping them every run and a
+    // stray `y` destroys auth/billing data (stacksjs/stacks#2075).
+    let sqlStatements = result.sqlStatements ?? []
+    if (result.hasChanges && sqlStatements.length > 0) {
+      const filtered = withoutManagedColumnDropSql(sqlStatements, await frameworkManagedColumns(), result.operations ?? [])
+      if (filtered.removed.length > 0)
+        log.debug(`[migration] Skipped ${filtered.removed.length} generated drop(s) of framework-managed column(s) (stacksjs/stacks#2075)`)
+      sqlStatements = filtered.statements
+    }
+
     if (result.hasChanges) {
-      const written = persistGeneratedMigrations(result.sqlStatements ?? [])
+      const written = persistGeneratedMigrations(sqlStatements)
       // Only announce when we actually wrote files. `hasChanges` can be
       // true while `written === 0` if the qb diff restated statements
       // already covered by committed migrations — that's a no-op from
