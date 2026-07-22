@@ -409,10 +409,11 @@ export const log: Log = {
 
   warn: async (message: string, context?: unknown) => {
     const logger = await getLogger()
-    // No context → call with a single arg. Passing `undefined` as the second
-    // arg makes clarity stringify it and append a stray " undefined" to the
-    // line (e.g. `log.warn('… All data will be lost.')`). Matches `warning`.
-    if (context === undefined) {
+    // No context → call with a single arg. Passing a nullish second arg makes
+    // clarity stringify it and append a stray " undefined" / " null" to the
+    // line (e.g. `log.warn('… All data will be lost.')`, or `log.warn(msg,
+    // null)`). `== null` catches both. Matches `warning`.
+    if (context == null) {
       await logger.warn(message)
       return
     }
