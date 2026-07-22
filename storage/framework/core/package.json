@@ -172,6 +172,10 @@
       "types": "./health/dist/index.d.ts",
       "import": "./health/dist/index.js"
     },
+    "./image": {
+      "types": "./image/dist/index.d.ts",
+      "import": "./image/dist/index.js"
+    },
     "./lint": {
       "types": "./lint/dist/index.d.ts",
       "import": "./lint/dist/index.js"
@@ -328,6 +332,7 @@
     "@stacksjs/feature-flags": "^0.70.162",
     "@stacksjs/git": "^0.70.162",
     "@stacksjs/health": "^0.70.162",
+    "@stacksjs/image": "^0.70.162",
     "@stacksjs/lint": "^0.70.162",
     "@stacksjs/logging": "^0.70.162",
     "@stacksjs/notifications": "^0.70.162",
