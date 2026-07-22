@@ -43,7 +43,8 @@ const crossorigin = props.crossorigin || ''
 const controlslist = props.controlslist || 'nodownload'
 const className = props.class || ''
 const playerSources = (sources.length ? sources : src ? [{ src }] : []).map(source => props.drm && (source.type === 'application/dash+xml' || source.src.split(/[?#]/, 1)[0].toLowerCase().endsWith('.mpd')) ? { ...source, type: 'application/dash+xml', drm: props.drm } : source)
-const playerConfig = JSON.stringify({ sources: playerSources, ...(props.drm ? { drm: props.drm } : {}) }).replaceAll('<', '\\u003c').replaceAll('>', '\\u003e').replaceAll('&', '\\u0026')
+const playerTracks = tracks.map(track => ({ ...track, language: track.srclang }))
+const playerConfig = JSON.stringify({ sources: playerSources, tracks: playerTracks, ...(props.drm ? { drm: props.drm } : {}) }).replaceAll('<', '\\u003c').replaceAll('>', '\\u003e').replaceAll('&', '\\u0026')
 </script>
 
 <script client>
@@ -80,7 +81,7 @@ registerElements()
       @endforeach
       Your browser does not support video playback.
     </video>
-    <video-skin aria-hidden="true">
+    <video-skin>
       <media-seek-button slot="left" seconds="-10" aria-label="Back 10 seconds"></media-seek-button>
       <media-play-button slot="left" aria-label="Play or pause"></media-play-button>
       <media-seek-button slot="left" seconds="10" aria-label="Forward 10 seconds"></media-seek-button>
