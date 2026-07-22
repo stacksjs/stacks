@@ -89,14 +89,59 @@ function checkSnapshot(): void {
   console.log(`Protocol suite matches ${basename(lock.sourceRepository)}@${lock.rfcsRevision} (${actualFiles.length} files)`)
 }
 
-if (process.argv.includes('--write')) {
-  const source = resolve(argument('--source') || process.env.STACKS_RFC_SOURCE || resolve(root, '../rfcs'))
-  writeSnapshot(source)
+/** Requirement ids that appear more than once in `ids` (sorted, deduped). */
+export function duplicateRequirementIds(ids: string[]): string[] {
+  const seen = new Set<string>()
+  const duplicates = new Set<string>()
+  for (const id of ids) {
+    if (seen.has(id))
+      duplicates.add(id)
+    else
+      seen.add(id)
+  }
+  return [...duplicates].sort()
 }
-else if (process.argv.includes('--check')) {
-  checkSnapshot()
+
+/**
+ * Validate the vendored requirement catalog: every requirement carries a
+ * non-empty string id and those ids are unique. Protocol 1.0 ratification
+ * requires requirement ids to be unique and validated in CI
+ * (stacksjs/stacks#2050); the vendored `catalog.json` had no such check, so a
+ * duplicate id sneaking in from the RFC source would go unnoticed.
+ */
+function checkCatalog(): void {
+  const catalogPath = resolve(suiteRoot, 'catalog.json')
+  if (!existsSync(catalogPath))
+    throw new Error(`protocol catalog missing at ${relative(root, catalogPath)}; run bun run protocol:sync`)
+
+  const catalog = JSON.parse(readFileSync(catalogPath, 'utf8')) as { requirements?: Array<{ id?: unknown }> }
+  const requirements = Array.isArray(catalog.requirements) ? catalog.requirements : []
+  if (requirements.length === 0)
+    throw new Error('protocol catalog has no requirements')
+
+  const ids = requirements.map(requirement => requirement?.id)
+  const missing = ids.filter(id => typeof id !== 'string' || id.length === 0).length
+  if (missing > 0)
+    throw new Error(`protocol catalog has ${missing} requirement(s) without a string id`)
+
+  const duplicates = duplicateRequirementIds(ids as string[])
+  if (duplicates.length > 0)
+    throw new Error(`protocol catalog has duplicate requirement id(s): ${duplicates.join(', ')}`)
+
+  console.log(`Protocol catalog: ${ids.length} requirement ids, all unique`)
 }
-else {
-  console.error('usage: bun scripts/protocol/sync-suite.ts --write [--source ../rfcs] | --check')
-  process.exit(2)
+
+if (import.meta.main) {
+  if (process.argv.includes('--write')) {
+    const source = resolve(argument('--source') || process.env.STACKS_RFC_SOURCE || resolve(root, '../rfcs'))
+    writeSnapshot(source)
+  }
+  else if (process.argv.includes('--check')) {
+    checkSnapshot()
+    checkCatalog()
+  }
+  else {
+    console.error('usage: bun scripts/protocol/sync-suite.ts --write [--source ../rfcs] | --check')
+    process.exit(2)
+  }
 }
