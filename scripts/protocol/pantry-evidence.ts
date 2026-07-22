@@ -10,9 +10,9 @@ export const pantryEvidence = {
   issue: 'https://github.com/stacksjs/stacks/issues/2066',
   source: {
     repository: 'https://github.com/pantry-pm/pantry',
-    version: '0.10.39',
-    tag: 'v0.10.39',
-    revision: '485c7b102fe14f8af00b57441a13dc3daa1505e7',
+    version: '0.10.40',
+    tag: 'v0.10.40',
+    revision: 'd8d4e2f15c871e9ee3c59ab10a4974c21c5fd182',
   },
   whitepaper: {
     repository: 'https://github.com/stacksjs/white-paper',
@@ -42,12 +42,12 @@ export const pantryEvidence = {
     {
       id: 'github-actions-redis-lifecycle',
       sourcePath: 'packages/action/src/services.ts',
-      sha256: 'fcd618f24a14f0e997dcd5e9a617243d567458e6865bcbda01d1c3473af336d1',
+      sha256: '7e88c89880bf1dc42cfee44f5a741b7659b2c2a1aced7da9c23520ed28a8afe9',
     },
     {
       id: 'github-actions-redis-orchestration',
       sourcePath: 'packages/action/src/index.ts',
-      sha256: '7daa7465d0c54ec89d7d492ed5aa17d0a5a9302cf262636b75d24318291d9e83',
+      sha256: '8ec03abb32f51041f13291101d0c77865fe7232b9c7a4753942b48b3b9609678',
     },
     {
       id: 'github-actions-install-mode',

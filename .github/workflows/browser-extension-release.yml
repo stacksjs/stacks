@@ -71,8 +71,9 @@ jobs:
           ref: ${{ inputs.release-tag || github.ref }}
 
       - name: Setup Pantry
-        uses: pantry-pm/pantry/packages/action@485c7b102fe14f8af00b57441a13dc3daa1505e7 # v0.10.39
+        uses: pantry-pm/pantry/packages/action@d8d4e2f15c871e9ee3c59ab10a4974c21c5fd182 # v0.10.40
         with:
+          version: '0.10.40'
           install: 'false'
 
       - name: Install dependencies
@@ -99,8 +100,9 @@ jobs:
           ref: ${{ inputs.release-tag || github.ref }}
 
       - name: Setup Pantry
-        uses: pantry-pm/pantry/packages/action@485c7b102fe14f8af00b57441a13dc3daa1505e7 # v0.10.39
+        uses: pantry-pm/pantry/packages/action@d8d4e2f15c871e9ee3c59ab10a4974c21c5fd182 # v0.10.40
         with:
+          version: '0.10.40'
           install: 'false'
 
       - name: Install dependencies
@@ -134,8 +136,9 @@ jobs:
           ref: ${{ inputs.release-tag || github.ref }}
 
       - name: Setup Pantry
-        uses: pantry-pm/pantry/packages/action@485c7b102fe14f8af00b57441a13dc3daa1505e7 # v0.10.39
+        uses: pantry-pm/pantry/packages/action@d8d4e2f15c871e9ee3c59ab10a4974c21c5fd182 # v0.10.40
         with:
+          version: '0.10.40'
           install: 'false'
 
       - name: Install dependencies
@@ -169,8 +172,9 @@ jobs:
           xcode-version: latest-stable
 
       - name: Setup Pantry
-        uses: pantry-pm/pantry/packages/action@485c7b102fe14f8af00b57441a13dc3daa1505e7 # v0.10.39
+        uses: pantry-pm/pantry/packages/action@d8d4e2f15c871e9ee3c59ab10a4974c21c5fd182 # v0.10.40
         with:
+          version: '0.10.40'
           install: 'false'
 
       - name: Install dependencies
@@ -238,8 +242,9 @@ jobs:
           echo "tag=$tag" >> "$GITHUB_OUTPUT"
 
       - name: Create GitHub Release
-        uses: pantry-pm/pantry/packages/action@485c7b102fe14f8af00b57441a13dc3daa1505e7 # v0.10.39
+        uses: pantry-pm/pantry/packages/action@d8d4e2f15c871e9ee3c59ab10a4974c21c5fd182 # v0.10.40
         with:
+          version: '0.10.40'
           install: 'false'
           release: 'true'
           release-tag: ${{ steps.release.outputs.tag }}
