@@ -75,6 +75,8 @@
     "protocol:drivers:check": "bun scripts/protocol/driver-registry.ts --check",
     "protocol:desktop": "bun scripts/protocol/desktop-support.ts --write",
     "protocol:desktop:check": "bun scripts/protocol/desktop-support.ts --check",
+    "protocol:pantry": "bun scripts/protocol/pantry-evidence.ts --write",
+    "protocol:pantry:check": "bun scripts/protocol/pantry-evidence.ts --check",
     "bud": "./buddy",
     "stx": "./buddy"
   },

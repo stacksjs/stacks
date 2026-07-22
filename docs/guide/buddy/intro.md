@@ -33,6 +33,11 @@ Run Buddy without a project through Pantry's isolated package executor:
 panx @stacksjs/buddy --help
 ```
 
+This invocation uses Pantry's versioned package-manager and registry boundaries.
+See the pinned [package-manager](https://whitepaper.stacksjs.com/reference/package-manager)
+and [registry](https://whitepaper.stacksjs.com/reference/registry) contracts;
+Buddy does not replace their resolution or integrity rules.
+
 ## Configuration
 
 Buddy automatically reads configuration from your project's config files. Most commands work out of the box without any additional setup.
