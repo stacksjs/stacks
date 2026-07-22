@@ -287,17 +287,24 @@ async function getLogger(): Promise<Logger> {
   return _logger!
 }
 
-// Helper function to format message for logging, including request context
-function formatMessage(...args: unknown[]): string {
+// Helper function to format message for logging, including request context.
+// Exported for direct unit testing of arg handling (stacksjs/stacks#2047).
+export function formatMessage(...args: unknown[]): string {
   // Errors (bare or nested in object args) need normalizing first —
   // `JSON.stringify(new Error())` is `{}` (stacksjs/stacks#1956).
-  const base = args.map((arg) => {
-    if (arg instanceof Error)
-      return renderNormalizedError(normalizeError(arg))
-    if (typeof arg === 'object' && arg !== null)
-      return JSON.stringify(normalizeContextValue(arg), null, 2)
-    return String(arg)
-  }).join(' ')
+  const base = args
+    // Drop `undefined` args so a call with a missing trailing context/format
+    // arg — e.g. `log.warn(`... database "${name}"`, ctx)` where `ctx` is
+    // undefined — doesn't leave a stray " undefined" at the end of the line
+    // (stacksjs/stacks#2047). `null` is kept: it's usually a deliberate value.
+    .filter(arg => arg !== undefined)
+    .map((arg) => {
+      if (arg instanceof Error)
+        return renderNormalizedError(normalizeError(arg))
+      if (typeof arg === 'object' && arg !== null)
+        return JSON.stringify(normalizeContextValue(arg), null, 2)
+      return String(arg)
+    }).join(' ')
 
   // Prepend request ID if available
   const ctx = logContextStorage.getStore()

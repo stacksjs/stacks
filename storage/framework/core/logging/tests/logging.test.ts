@@ -1,5 +1,31 @@
 import { describe, expect, it } from 'bun:test'
-import { log, dump, dd, withLogContext, getLogContext } from '../src/index'
+import { log, dump, dd, withLogContext, getLogContext, formatMessage } from '../src/index'
+
+// A missing trailing context/format arg used to render as a stray
+// " undefined" at the end of a log line, e.g.
+//   WARN Could not auto-create database "bughq": ... create database undefined
+// (stacksjs/stacks#2047).
+describe('formatMessage - drops undefined args (stacksjs/stacks#2047)', () => {
+  it('drops a trailing undefined arg instead of appending " undefined"', () => {
+    expect(formatMessage('permission denied to create database', undefined)).toBe('permission denied to create database')
+  })
+
+  it('drops undefined regardless of position', () => {
+    expect(formatMessage('a', undefined, 'b')).toBe('a b')
+  })
+
+  it('renders a lone undefined as an empty string, not "undefined"', () => {
+    expect(formatMessage(undefined)).toBe('')
+  })
+
+  it('keeps a normal multi-arg message intact', () => {
+    expect(formatMessage('hello', 'world', 123)).toBe('hello world 123')
+  })
+
+  it('keeps null (a deliberate value) rather than dropping it', () => {
+    expect(formatMessage('value is', null)).toBe('value is null')
+  })
+})
 
 describe('@stacksjs/logging', () => {
   describe('log.info()', () => {
