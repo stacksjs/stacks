@@ -35,6 +35,36 @@ const client = useAI()
 // client...
 ```
 
+## Compact project context
+
+Stacks conventions reduce the amount of application-owned code a coding model
+must generate. A model can describe domain shape once, use known Model-View-Action
+locations, and rely on framework traits and generators for migrations, validation,
+routes, API artifacts, and types where those paths are supported. Installed
+dependencies still exist, but their `node_modules` implementation is package-manager
+state, not application context an LLM should ingest or reproduce.
+
+Generate a deterministic context payload for any coding model or agent:
+
+```bash
+buddy ai:context
+buddy ai:context --json
+buddy ai:context --json --output .stacks/ai-context.json
+buddy ai:context --max-chars 4000 --model claude-sonnet-4
+```
+
+The versioned JSON contract identifies canonical source roles, instruction files,
+available application surfaces, safe package metadata, and representative source
+paths. It excludes dependency, build, cache, lock, environment, credential, key,
+and secret paths by default. Existing Buddy AI calls consume the same compact text
+representation.
+
+Output metrics include the enforced character budget and a heuristic token estimate.
+They also compare the payload with the previous unstructured context shape. This is
+evidence about prompt size only. It is not evidence that a particular model will
+write correct code, and exact billing tokens require the selected provider's
+tokenizer.
+
 Learn more in the docs.
 
 ## 🧪 Testing

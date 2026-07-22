@@ -6,12 +6,13 @@ description: Generated reference for every Buddy command, argument, option, alia
 
 # Buddy Command Reference
 
-This reference is generated from Buddy's runtime command registry and currently contains **243 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
+This reference is generated from Buddy's runtime command registry and currently contains **244 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
 
 ## Command groups
 
 | Group | Commands |
 | --- | ---: |
+| `ai` | 1 |
 | `auth` | 4 |
 | `build` | 11 |
 | `cloud` | 7 |
@@ -94,6 +95,30 @@ Examples:
 buddy add calendar
 buddy add table --dry-run
 buddy add calendar --conflict backup
+```
+
+### `ai:context`
+
+Generate compact deterministic project context for coding models
+
+- Usage: `$ buddy ai:context`
+- Namespace: `ai`
+- Aliases: none
+- Arguments: none
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `-J`, `--json` | Emit the versioned machine-readable context contract | boolean, optional | `false` |
+| `-o`, `--output` | Write output to a file instead of stdout | value, optional | — |
+| `--max-chars` | Maximum characters in the prompt context payload | value, optional | `4000` |
+| `--model` | Model family used for the heuristic token estimate | value, optional | `"gpt-4o"` |
+
+Examples:
+
+```bash
+buddy ai:context
+buddy ai:context --json
+buddy ai:context --json --output .stacks/ai-context.json
 ```
 
 ### `auth:client`
@@ -685,7 +710,7 @@ Configure the AWS connection
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
 | `-p`, `--project` | Target a specific project | value, optional | `false` |
-| `--profile` | The AWS profile to use | boolean, optional | `"stacks"` |
+| `--profile` | The AWS profile to use | boolean, optional | — |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
 | `--access-key-id` | The AWS access key | boolean, optional | — |
 | `--secret-access-key` | The AWS secret access key | boolean, optional | — |
@@ -1193,7 +1218,7 @@ Examples:
 ```bash
 buddy env:decrypt
 buddy env:decrypt --file .env.production
-buddy env:decrypt -k "SECRET__"
+buddy env:decrypt -k "SECRET_*"
 ```
 
 ### `env:encrypt`
@@ -1217,7 +1242,7 @@ Examples:
 ```bash
 buddy env:encrypt
 buddy env:encrypt --file .env.production
-buddy env:encrypt -k "SECRET__"
+buddy env:encrypt -k "SECRET_*"
 ```
 
 ### `env:get`
@@ -1460,7 +1485,7 @@ Register Safari Bundle IDs and check the App Store Connect app record
 | --- | --- | --- | --- |
 | `--api-key-id` | App Store Connect API key ID | value, required | — |
 | `--api-issuer-id` | App Store Connect API issuer ID | value, required | — |
-| `--api-key-path` | Path to the App Store Connect AuthKey__.p8 file | value, required | — |
+| `--api-key-path` | Path to the App Store Connect AuthKey_*.p8 file | value, required | — |
 | `--check` | Report missing resources without creating Bundle IDs | boolean, optional | — |
 | `--version` | Create or align App Store versions (defaults to package.json) | value, required | — |
 | `--platform` | Provision macos, ios, or all (defaults to config safariPlatforms) | value, required | — |
@@ -1481,7 +1506,7 @@ Archive and validate or upload the Safari app to App Store Connect
 | `--team-id` | Apple Developer team (defaults to config safariTeamId) | value, required | — |
 | `--api-key-id` | App Store Connect API key ID | value, required | — |
 | `--api-issuer-id` | App Store Connect API issuer ID | value, required | — |
-| `--api-key-path` | Path to the App Store Connect AuthKey__.p8 file | value, required | — |
+| `--api-key-path` | Path to the App Store Connect AuthKey_*.p8 file | value, required | — |
 | `--validate-only` | Create and validate the archive without uploading it | boolean, optional | — |
 | `--platform` | Publish macos, ios, or all (defaults to config safariPlatforms) | value, required | — |
 
@@ -2627,7 +2652,7 @@ Check if the ports are available
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
-| `-p`, `--project` | Target a specific project | value, optional | `"/Users/chris/Code/stacks"` |
+| `-p`, `--project` | Target a specific project | value, optional | `"/Users/chris/Code/stacks-ai-context"` |
 | `-q`, `--quiet` | Use minimal output | boolean, optional | `false` |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
 

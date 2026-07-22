@@ -545,6 +545,11 @@ Uses `@stacksjs/server` module's `down()`, `up()`, `isDownForMaintenance()`, `ma
 
 ```bash
 buddy about                  # display Stacks version, Bun/Node versions, OS, environment
+buddy ai:context             # compact deterministic project context for coding models
+  -J/--json                  # versioned machine-readable contract
+  -o/--output [path]         # write to a file instead of stdout
+  --max-chars [characters]   # prompt payload character budget (default: 4000)
+  --model [model]            # model family for heuristic token estimates
 buddy doctor                 # health checks (Bun version, Node, package.json, .env, APP_KEY)
 buddy tinker                 # interactive REPL with Stacks preloaded
   -e/--eval [expr]           # evaluate expression and exit
