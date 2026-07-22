@@ -2,11 +2,15 @@ import { createHmac, timingSafeEqual } from 'node:crypto'
 
 export type VideoContainer = 'mp4' | 'webm'
 export type StreamingFormat = 'hls' | 'dash'
-export interface VideoProfile { width: number, height: number, duration: number, frameRate: number, container: VideoContainer, videoCodec: string, audioCodec?: string, videoBitrate?: number, hasAudio?: boolean, hdr?: boolean }
+export type VideoCodec = 'h264' | 'h265' | 'vp8' | 'vp9' | 'av1' | 'mpeg1' | 'mpeg2' | 'mpeg4' | 'theora' | 'mjpeg' | 'prores' | 'dnxhd' | 'unknown'
+export type VideoAudioCodec = 'aac' | 'mp3' | 'opus' | 'vorbis' | 'flac' | 'alac' | 'ac3' | 'eac3' | 'dts' | 'pcm_s16le' | 'pcm_s16be' | 'pcm_s24le' | 'pcm_s24be' | 'pcm_s32le' | 'pcm_s32be' | 'pcm_f32le' | 'pcm_f32be' | 'pcm_f64le' | 'pcm_f64be' | 'pcm_mulaw' | 'pcm_alaw' | 'unknown'
+export interface VideoProfile { width: number, height: number, duration: number, frameRate: number, container: VideoContainer, videoCodec: VideoCodec, audioCodec?: VideoAudioCodec, videoBitrate?: number, hasAudio?: boolean, hdr?: boolean }
 export interface VideoRendition { name: string, width: number, height: number, frameRate: number, videoBitrate: number, audioBitrate: number }
 export interface VideoCapabilities { videoEncoder: boolean, audioEncoder: boolean, videoCodecs: string[], audioCodecs: string[] }
-export interface VideoOutput { container: VideoContainer, videoCodec: string, audioCodec?: string, action: 'copy' | 'transcode', available: boolean, reason?: string }
+export interface VideoOutput { container: VideoContainer, videoCodec: VideoCodec, audioCodec?: VideoAudioCodec, action: 'copy' | 'transcode', available: boolean, reason?: string }
 export interface VideoPlan { source: string, profile: VideoProfile, renditions: VideoRendition[], outputs: VideoOutput[], streaming: StreamingFormat[], segmentDuration: number, keyframeInterval: number }
+export interface VideoProcessOptions { batchSize?: number, signal?: AbortSignal }
+export interface ProcessedVideoDerivative { output: VideoOutput, rendition: VideoRendition, bytes: Uint8Array }
 export interface PreviewCue { startTime: number, endTime: number, uri: string, x?: number, y?: number, width?: number, height?: number }
 const edges = [240, 360, 480, 540, 720, 1080, 1440, 2160]
 const even = (value: number): number => Math.max(2, Math.round(value / 2) * 2)
@@ -54,8 +58,21 @@ export class VideoBuilder {
     const segmentDuration = profile.duration <= 30 ? 2 : profile.duration <= 600 ? 4 : 6
     return { source: this.source, profile, renditions, outputs, streaming: this.streams, segmentDuration, keyframeInterval: Math.max(1, Math.round(profile.frameRate * segmentDuration)) }
   }
+  async process(options: VideoProcessOptions = {}): Promise<ProcessedVideoDerivative[]> { return processVideoPlan(this.generate(), options) }
 }
 export function video(source: string): VideoBuilder { return new VideoBuilder(source) }
+export async function processVideoPlan(plan: VideoPlan, options: VideoProcessOptions = {}): Promise<ProcessedVideoDerivative[]> {
+  assertVideoPlanExecutable(plan)
+  const { generateVideoDerivatives } = await import('ts-videos/native-transcode')
+  return generateVideoDerivatives(plan.source, {
+    source: plan.profile,
+    renditions: plan.renditions,
+    outputs: plan.outputs,
+    streaming: plan.streaming,
+    segmentDuration: plan.segmentDuration,
+    keyframeInterval: plan.keyframeInterval,
+  }, options)
+}
 export function assertVideoPlanExecutable(plan: VideoPlan): void {
   const missing = plan.outputs.filter(value => !value.available)
   if (missing.length) throw new Error(missing.map(value => `${value.container}: ${value.reason}`).join('; '))
