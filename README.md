@@ -310,6 +310,7 @@ _Focus on coding, not publishing._
 
 Convention over configuration, while staying wholly configurable. _No more boilerplate._
 
+- 🧠 **LLM-Friendly Authoring** _models generate compact application intent instead of repeating framework glue or reading `node_modules`_
 - 💎 **Automated Upgrades** _no need to worry about upgrading to the latest versions, Stacks upgrades you_
 - 🦋 **Pretty Dev URLs** _your-project.localhost instead of localhost:3000_
 - 💡 **IDE Integration** _auto-completions, inline docs & a powerful IDE setup_

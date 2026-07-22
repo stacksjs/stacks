@@ -196,6 +196,30 @@ for await (const chunk of buddyProcessStreaming('Refactor this function', 'opena
 }
 ```
 
+## Compact Project Context
+
+Use the native context contract instead of sending dependency internals, lockfiles,
+or an arbitrary repository dump to a coding model:
+
+```bash
+buddy ai:context
+buddy ai:context --json
+buddy ai:context --json --output .stacks/ai-context.json
+buddy ai:context --max-chars 4000 --model claude-sonnet-4
+```
+
+Programmatic callers use `buildProjectContext(projectRoot, options)`. Existing
+`getRepoContext(projectRoot)` calls return its compact text payload. The contract
+is deterministic, reports a heuristic token estimate, and describes canonical
+Model-View-Action roles, application overrides, instruction files, scripts,
+dependency names, and representative application files. It excludes
+`node_modules`, build output, caches, lockfiles, environment files, credentials,
+private keys, and secret files by default.
+
+The character budget applies to the prompt payload. JSON adds a versioned metadata
+envelope for tools. Token estimates are planning heuristics, not provider billing
+counts or evidence that model output is correct.
+
 ## Claude Agent
 
 ```typescript

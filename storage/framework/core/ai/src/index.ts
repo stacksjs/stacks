@@ -13,6 +13,9 @@ export * from './agents'
 // Buddy - Voice AI Code Assistant
 export * from './buddy'
 
+// Deterministic, budgeted project context for coding models and agents
+export * from './context'
+
 // Text utilities
 export * from './text'
 
