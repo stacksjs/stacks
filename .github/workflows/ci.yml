@@ -176,6 +176,7 @@ jobs:
           bun run protocol:desktop:check
           bun run protocol:pantry:check
           bun run docs:buddy:check
+          bun run docs:artifacts:check
 
       - name: Run protocol adapter
         env:

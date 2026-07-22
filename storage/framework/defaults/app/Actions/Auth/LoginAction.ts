@@ -1,5 +1,8 @@
-import { createTwoFactorChallenge, getTwoFactorState } from '@stacksjs/auth'
+import { Action } from '@stacksjs/actions'
+import { Auth, createTwoFactorChallenge, getTwoFactorState } from '@stacksjs/auth'
 import { User } from '@stacksjs/orm'
+import { response } from '@stacksjs/router'
+import { schema } from '@stacksjs/validation'
 
 export default new Action({
   name: 'LoginAction',

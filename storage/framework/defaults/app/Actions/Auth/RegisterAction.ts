@@ -1,4 +1,8 @@
-// No imports needed - everything is auto-imported!
+import { Action } from '@stacksjs/actions'
+import { Auth, register } from '@stacksjs/auth'
+import { dispatch } from '@stacksjs/events'
+import { response } from '@stacksjs/router'
+import { schema } from '@stacksjs/validation'
 
 export default new Action({
   name: 'RegisterAction',

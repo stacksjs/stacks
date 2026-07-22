@@ -64,6 +64,8 @@
     "test:types": "./buddy test:types",
     "docs:buddy": "bun scripts/docs/buddy-commands.ts --write",
     "docs:buddy:check": "bun scripts/docs/buddy-commands.ts --check",
+    "docs:artifacts": "bun scripts/docs/generated-artifacts.ts --write",
+    "docs:artifacts:check": "bun scripts/docs/generated-artifacts.ts --check",
     "protocol:sync": "bun scripts/protocol/sync-suite.ts --write",
     "protocol:check": "bun scripts/protocol/sync-suite.ts --check",
     "protocol:conformance": "bun scripts/protocol/run-conformance.ts",

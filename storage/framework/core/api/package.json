@@ -50,7 +50,7 @@
   ],
   "scripts": {
     "build": "bun build.ts",
-    "generate-types": "open-api ./../../api/openapi.json --output ./../../api/api-types.ts",
+    "generate-types": "bun src/generate-types.ts",
     "typecheck": "bun tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
