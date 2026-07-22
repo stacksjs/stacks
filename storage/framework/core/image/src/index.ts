@@ -14,7 +14,7 @@ function integer(name: string, value: number, min: number, max: number): void {
   if (!Number.isInteger(value) || value < min || value > max) throw new TypeError(`${name} must be between ${min} and ${max}`)
 }
 
-export function resolveImageSource(source: string, root = process.cwd()): string {
+export function resolveImageSource(source: string, root: string = process.cwd()): string {
   const allowed = resolve(root)
   const candidate = isAbsolute(source) ? resolve(source) : resolve(allowed, source)
   const relation = relative(allowed, candidate)
@@ -52,7 +52,7 @@ export class ImageBuilder {
     let cursor = 0
     await Promise.all(Array.from({ length: Math.min(tasks.length, this.options.concurrency) }, async () => {
       while (cursor < tasks.length) {
-        const task = tasks[cursor++]
+        const task = tasks[cursor++]!
         variants.push(await this.variant(decoded, hash, sourcePath, task.width, task.format))
       }
     }))
@@ -81,7 +81,7 @@ function accepted(accept: string, mimeType: string): number {
   const [type, subtype] = mimeType.split('/')
   let best = 0
   for (const item of accept.split(',')) {
-    const [range, ...params] = item.trim().toLowerCase().split(';').map(value => value.trim())
+    const [range = '*/*', ...params] = item.trim().toLowerCase().split(';').map(value => value.trim())
     const [acceptedType, acceptedSubtype] = range.split('/')
     if (acceptedType !== '*' && acceptedType !== type || acceptedSubtype !== '*' && acceptedSubtype !== subtype) continue
     const raw = params.find(param => param.startsWith('q='))
@@ -101,7 +101,7 @@ export function imageResponseHeaders(variant: ImageVariant): Record<string, stri
 }
 
 export function signImageTransform(path: string, expires: number, secret: string): string { return createHmac('sha256', secret).update(`${path}\n${expires}`).digest('base64url') }
-export function verifyImageTransform(path: string, expires: number, signature: string, secret: string, now = Date.now()): boolean {
+export function verifyImageTransform(path: string, expires: number, signature: string, secret: string, now: number = Date.now()): boolean {
   if (!Number.isInteger(expires) || expires * 1000 <= now) return false
   const expected = Buffer.from(signImageTransform(path, expires, secret)); const actual = Buffer.from(signature)
   return expected.length === actual.length && timingSafeEqual(expected, actual)
