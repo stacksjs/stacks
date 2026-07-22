@@ -9,9 +9,9 @@ export const craftEvidence = {
   status: 'source-verified-ci-pending',
   source: {
     repository: 'https://github.com/home-lang/craft',
-    version: '0.0.46',
-    tag: 'v0.0.46',
-    revision: '83cd0270a5e1118fa975f381e835bb0f8aee4baf',
+    version: '0.0.47',
+    tag: 'v0.0.47',
+    revision: 'f22e662d7733375acfcb7d4bf45f0305361738f7',
   },
   issues: {
     support: 'https://github.com/stacksjs/stacks/issues/2059',
@@ -20,8 +20,8 @@ export const craftEvidence = {
     upstreamActions: 'https://github.com/home-lang/craft/issues/11',
   },
   contracts: [
-    { path: 'packages/typescript/src/package.ts', sha256: '967ece5fcf7d77359bb7c4133abd56548e00897c8a41cb43b2ee03e62577e401' },
-    { path: 'packages/typescript/src/package.test.ts', sha256: '4d7005d13a4c47ce61da26bf4b775b1659b44a06346b176a500b0b6b3ec78b4a' },
+    { path: 'packages/typescript/src/package.ts', sha256: '92a3fc43d37981d6d66e090ec0d53bffbfb32d91f52ffb9f967558d95b16b83f' },
+    { path: 'packages/typescript/src/package.test.ts', sha256: '2f628fc23fd6e35b374362986c1f915cab36290c663ca7d356983fb5e9e2cb8d' },
     { path: 'scripts/native-lifecycle.ts', sha256: 'a2c0af2c2165981ca7fbd31880adeec64db64fc305d4ca3efe62a11483b289b4' },
     { path: 'scripts/native-lifecycle-plan.ts', sha256: 'ac8e8f101246e94c0c26fdcbf9202536426bf192a303606079273d9689e4e27d' },
     { path: 'scripts/native-lifecycle-plan.test.ts', sha256: '5cc839b60f7c8e32716f29201b159af817f4ac40b2c7963131124b3ac5de0638' },

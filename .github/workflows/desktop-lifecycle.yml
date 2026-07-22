@@ -27,7 +27,7 @@ defaults:
     shell: bash
 
 env:
-  CRAFT_SOURCE_REVISION: 83cd0270a5e1118fa975f381e835bb0f8aee4baf
+  CRAFT_SOURCE_REVISION: f22e662d7733375acfcb7d4bf45f0305361738f7
 
 jobs:
   lifecycle:

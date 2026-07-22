@@ -52,7 +52,7 @@ The build creates `storage/framework/desktop-dist/` with:
 `DESKTOP_URL` overrides `APP_URL` when the desktop application should target a separate host.
 
 The framework build output is currently an **experimental unpackaged bundle**.
-Craft v0.0.46 separately defines DMG/PKG, DEB, MSI, and ZIP packaging contracts,
+Craft v0.0.47 separately defines DMG/PKG, DEB, MSI, and ZIP packaging contracts,
 which Stacks exercises through a pinned four-runner lifecycle matrix. These
 unsigned test installers are evidence for packaging behavior, not release-ready
 artifacts. No OS/architecture row is stable yet. A build refuses
