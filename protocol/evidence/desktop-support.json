@@ -27,7 +27,7 @@
       ],
       "limitations": [
         "Lifecycle fixtures are unsigned while platform identities remain unprovisioned.",
-        "Craft v0.0.45 is source-tagged, but its upstream release workflow is blocked by repository Actions policy."
+        "Craft v0.0.46 is source-tagged, but its upstream release workflow is blocked by repository Actions policy."
       ]
     },
     {
@@ -49,7 +49,7 @@
       ],
       "limitations": [
         "Lifecycle fixtures are unsigned while platform identities remain unprovisioned.",
-        "Craft v0.0.45 is source-tagged, but its upstream release workflow is blocked by repository Actions policy."
+        "Craft v0.0.46 is source-tagged, but its upstream release workflow is blocked by repository Actions policy."
       ]
     },
     {
@@ -71,7 +71,7 @@
       ],
       "limitations": [
         "The lifecycle fixture is unsigned and no package repository support policy is published.",
-        "Craft v0.0.45 is source-tagged, but its upstream release workflow is blocked by repository Actions policy."
+        "Craft v0.0.46 is source-tagged, but its upstream release workflow is blocked by repository Actions policy."
       ]
     },
     {
@@ -93,7 +93,7 @@
       ],
       "limitations": [
         "The lifecycle fixture is not Authenticode-signed.",
-        "Craft v0.0.45 is source-tagged, but its upstream release workflow is blocked by repository Actions policy."
+        "Craft v0.0.46 is source-tagged, but its upstream release workflow is blocked by repository Actions policy."
       ]
     }
   ]
