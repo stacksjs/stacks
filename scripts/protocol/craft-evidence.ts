@@ -6,7 +6,7 @@ const outputPath = resolve(root, 'protocol/evidence/craft.json')
 
 export const craftEvidence = {
   schemaVersion: 1,
-  status: 'source-verified-ci-pending',
+  status: 'source-verified-ci-retained',
   source: {
     repository: 'https://github.com/home-lang/craft',
     version: '0.0.48',
@@ -47,7 +47,7 @@ export const craftEvidence = {
   },
   verification: {
     local: ['bun test packages/typescript/src/package.test.ts scripts/native-lifecycle-plan.test.ts', 'bun run typecheck', 'bun scripts/native-lifecycle.ts'],
-    retained: 'pending first successful stacksjs/stacks desktop-lifecycle run',
+    retained: 'https://github.com/stacksjs/stacks/actions/runs/29890804159',
   },
 } as const
 

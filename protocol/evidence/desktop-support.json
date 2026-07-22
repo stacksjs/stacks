@@ -18,8 +18,8 @@
       "packageFormat": "DMG + PKG",
       "signing": "pending",
       "notarization": "pending",
-      "installLaunchEvidence": "https://github.com/stacksjs/stacks/actions/workflows/desktop-lifecycle.yml",
-      "updateRollbackEvidence": "https://github.com/stacksjs/stacks/actions/workflows/desktop-lifecycle.yml",
+      "installLaunchEvidence": "https://github.com/stacksjs/stacks/actions/runs/29890804159",
+      "updateRollbackEvidence": "https://github.com/stacksjs/stacks/actions/runs/29890804159",
       "packagingEvidence": "https://github.com/stacksjs/stacks/blob/main/protocol/evidence/craft.json",
       "blockingIssues": [
         "https://github.com/stacksjs/stacks/issues/2062",
@@ -40,8 +40,8 @@
       "packageFormat": "DMG + PKG",
       "signing": "pending",
       "notarization": "pending",
-      "installLaunchEvidence": "https://github.com/stacksjs/stacks/actions/workflows/desktop-lifecycle.yml",
-      "updateRollbackEvidence": "https://github.com/stacksjs/stacks/actions/workflows/desktop-lifecycle.yml",
+      "installLaunchEvidence": "https://github.com/stacksjs/stacks/actions/runs/29890804159",
+      "updateRollbackEvidence": "https://github.com/stacksjs/stacks/actions/runs/29890804159",
       "packagingEvidence": "https://github.com/stacksjs/stacks/blob/main/protocol/evidence/craft.json",
       "blockingIssues": [
         "https://github.com/stacksjs/stacks/issues/2062",
@@ -62,8 +62,8 @@
       "packageFormat": "DEB",
       "signing": "pending",
       "notarization": "not-applicable",
-      "installLaunchEvidence": "https://github.com/stacksjs/stacks/actions/workflows/desktop-lifecycle.yml",
-      "updateRollbackEvidence": "https://github.com/stacksjs/stacks/actions/workflows/desktop-lifecycle.yml",
+      "installLaunchEvidence": "https://github.com/stacksjs/stacks/actions/runs/29890804159",
+      "updateRollbackEvidence": "https://github.com/stacksjs/stacks/actions/runs/29890804159",
       "packagingEvidence": "https://github.com/stacksjs/stacks/blob/main/protocol/evidence/craft.json",
       "blockingIssues": [
         "https://github.com/stacksjs/stacks/issues/2062",
@@ -84,8 +84,8 @@
       "packageFormat": "MSI + ZIP",
       "signing": "pending",
       "notarization": "not-applicable",
-      "installLaunchEvidence": "https://github.com/stacksjs/stacks/actions/workflows/desktop-lifecycle.yml",
-      "updateRollbackEvidence": "https://github.com/stacksjs/stacks/actions/workflows/desktop-lifecycle.yml",
+      "installLaunchEvidence": "https://github.com/stacksjs/stacks/actions/runs/29890804159",
+      "updateRollbackEvidence": "https://github.com/stacksjs/stacks/actions/runs/29890804159",
       "packagingEvidence": "https://github.com/stacksjs/stacks/blob/main/protocol/evidence/craft.json",
       "blockingIssues": [
         "https://github.com/stacksjs/stacks/issues/2062",
