@@ -10,20 +10,20 @@ export const pantryEvidence = {
   issue: 'https://github.com/stacksjs/stacks/issues/2066',
   source: {
     repository: 'https://github.com/pantry-pm/pantry',
-    version: '0.10.43',
-    tag: 'v0.10.43',
-    revision: 'c5e15260ccde34206082756a14d03e30cf1d7d5e',
+    version: '0.10.47',
+    tag: 'v0.10.47',
+    revision: 'd738d5fd2e543e3b8380e5fbd5d01ba8936c1790',
   },
   whitepaper: {
     repository: 'https://github.com/stacksjs/white-paper',
-    revision: 'd2a04ebe2129e29978a53dd3af7bfcd3c4e00568',
+    revision: 'ac6d1dfba8cb96cf6e888f3369cbcc3e17cdf202',
     evidenceLock: 'evidence/pantry/evidence.lock.json',
   },
   contracts: [
     {
       id: 'package-manager',
       sourcePath: 'docs/package-manager.md',
-      sha256: '2a655fc1a33aef042340744c69b83afcc15446104f2a4f72ea9e208874c7301f',
+      sha256: '03bab0e0373e2405a4f0656745786702a19c3b3a0ffb9be09ca0931f85a5158e',
       referencePath: 'docs/reference/package-manager.md',
     },
     {
@@ -47,7 +47,7 @@ export const pantryEvidence = {
     {
       id: 'github-actions-redis-orchestration',
       sourcePath: 'packages/action/src/index.ts',
-      sha256: '8ec03abb32f51041f13291101d0c77865fe7232b9c7a4753942b48b3b9609678',
+      sha256: '3fd905facb4109f0a3e65d743c522eb72b934dea466531aeb24c468ab4fc76ab',
     },
     {
       id: 'github-actions-install-mode',
@@ -71,10 +71,10 @@ export const pantryEvidence = {
     },
   ],
   verification: {
-    documentationContracts: 'bun run docs:contracts:check (48 source-linked markers)',
-    targetedBunTests: '11 passed, 0 failed',
+    documentationContracts: 'bun run docs:contracts:check (54 source-linked markers)',
+    targetedBunTests: '332 passed, 6 skipped, 0 failed',
     typecheck: 'bun run typecheck',
-    nativeTests: 'zig build test',
+    nativeTests: '29 semver tests passed; zig build test completed 32/32 steps',
     actionRedisService: 'Pantry CI action-redis-service job (Redis 8.8.0)',
     whitepaperCheck: 'bun run evidence:check',
   },

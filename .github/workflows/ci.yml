@@ -29,9 +29,9 @@ jobs:
           fetch-depth: 0
 
       - name: Setup Pantry
-        uses: pantry-pm/pantry/packages/action@c5e15260ccde34206082756a14d03e30cf1d7d5e # v0.10.43
+        uses: pantry-pm/pantry/packages/action@d738d5fd2e543e3b8380e5fbd5d01ba8936c1790 # v0.10.47
         with:
-          version: '0.10.43'
+          version: '0.10.47'
           install: 'false'
 
       - name: Use cached node_modules
@@ -62,9 +62,9 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Setup Pantry
-        uses: pantry-pm/pantry/packages/action@c5e15260ccde34206082756a14d03e30cf1d7d5e # v0.10.43
+        uses: pantry-pm/pantry/packages/action@d738d5fd2e543e3b8380e5fbd5d01ba8936c1790 # v0.10.47
         with:
-          version: '0.10.43'
+          version: '0.10.47'
           install: 'false'
 
       - name: Use cached node_modules
@@ -105,9 +105,9 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Setup Pantry
-        uses: pantry-pm/pantry/packages/action@c5e15260ccde34206082756a14d03e30cf1d7d5e # v0.10.43
+        uses: pantry-pm/pantry/packages/action@d738d5fd2e543e3b8380e5fbd5d01ba8936c1790 # v0.10.47
         with:
-          version: '0.10.43'
+          version: '0.10.47'
           install: 'false'
           services: redis@8.8.0
 
@@ -137,9 +137,9 @@ jobs:
           fetch-depth: 0
 
       - name: Setup Pantry
-        uses: pantry-pm/pantry/packages/action@c5e15260ccde34206082756a14d03e30cf1d7d5e # v0.10.43
+        uses: pantry-pm/pantry/packages/action@d738d5fd2e543e3b8380e5fbd5d01ba8936c1790 # v0.10.47
         with:
-          version: '0.10.43'
+          version: '0.10.47'
           install: 'false'
           services: redis@8.8.0
 
@@ -199,9 +199,9 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Setup Pantry
-        uses: pantry-pm/pantry/packages/action@c5e15260ccde34206082756a14d03e30cf1d7d5e # v0.10.43
+        uses: pantry-pm/pantry/packages/action@d738d5fd2e543e3b8380e5fbd5d01ba8936c1790 # v0.10.47
         with:
-          version: '0.10.43'
+          version: '0.10.47'
           install: 'false'
 
       - name: Resolve provisioned deployment target
@@ -230,9 +230,9 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Setup Pantry
-        uses: pantry-pm/pantry/packages/action@c5e15260ccde34206082756a14d03e30cf1d7d5e # v0.10.43
+        uses: pantry-pm/pantry/packages/action@d738d5fd2e543e3b8380e5fbd5d01ba8936c1790 # v0.10.47
         with:
-          version: '0.10.43'
+          version: '0.10.47'
           install: 'false'
 
       - name: Use cached node_modules
@@ -278,9 +278,9 @@ jobs:
       - uses: actions/checkout@v6
 
       - name: Setup Pantry
-        uses: pantry-pm/pantry/packages/action@c5e15260ccde34206082756a14d03e30cf1d7d5e # v0.10.43
+        uses: pantry-pm/pantry/packages/action@d738d5fd2e543e3b8380e5fbd5d01ba8936c1790 # v0.10.47
         with:
-          version: '0.10.43'
+          version: '0.10.47'
           install: 'false'
 
       - name: Use cached node_modules
