@@ -53,10 +53,10 @@ const className = props.class || ''
     @if(props.disablePictureInPicture) disable-picture-in-picture @endif
     keep-alive
     aria-label="{{ title }}"
-    class="group relative block w-full overflow-hidden rounded-2xl bg-black shadow-sm ring-1 ring-black/10 focus-within:ring-2 focus-within:ring-sky-500 dark:ring-white/10"
+    class="block overflow-hidden relative w-full bg-black ring-1 ring-black/10 rounded-2xl dark:ring-white/10 focus-within:ring-2 focus-within:ring-sky-500 shadow-sm group"
     style="aspect-ratio: {{ ratio }};"
   >
-    <video data-native-fallback src="{{ src }}" @if(poster) poster="{{ poster }}" @endif @if(width) width="{{ width }}" @endif @if(height) height="{{ height }}" @endif @if(controls) controls @endif @if(props.autoplay) autoplay @endif @if(props.loop) loop @endif @if(props.muted) muted @endif @if(inline) playsinline @endif preload="{{ preload }}" @if(crossorigin) crossorigin="{{ crossorigin }}" @endif controlslist="{{ controlslist }}" @if(props.disablePictureInPicture) disablepictureinpicture @endif aria-label="{{ title }}" class="h-full w-full object-contain">
+    <video data-native-fallback src="{{ src }}" @if(poster) poster="{{ poster }}" @endif @if(width) width="{{ width }}" @endif @if(height) height="{{ height }}" @endif @if(controls) controls @endif @if(props.autoplay) autoplay @endif @if(props.loop) loop @endif @if(props.muted) muted @endif @if(inline) playsinline @endif preload="{{ preload }}" @if(crossorigin) crossorigin="{{ crossorigin }}" @endif controlslist="{{ controlslist }}" @if(props.disablePictureInPicture) disablepictureinpicture @endif aria-label="{{ title }}" class="object-contain h-full w-full">
       @foreach (sources as source)
         <source src="{{ source.src }}" @if(source.type) type="{{ source.type }}" @endif>
       @endforeach
@@ -69,7 +69,7 @@ const className = props.class || ''
       <media-seek-button slot="left" seconds="-10" aria-label="Back 10 seconds"></media-seek-button>
       <media-play-button slot="left" aria-label="Play or pause"></media-play-button>
       <media-seek-button slot="left" seconds="10" aria-label="Forward 10 seconds"></media-seek-button>
-      <media-time-group slot="center" class="font-mono text-xs tabular-nums"></media-time-group>
+      <media-time-group slot="center" class="font-mono tabular-nums text-xs"></media-time-group>
       <media-progress-bar slot="center" previews="metadata" aria-label="Video progress"></media-progress-bar>
       <media-mute-button slot="right" aria-label="Mute or unmute"></media-mute-button>
       <media-volume-slider slot="right" aria-label="Volume"></media-volume-slider>

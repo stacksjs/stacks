@@ -100,7 +100,9 @@ export function imageResponseHeaders(variant: ImageVariant): Record<string, stri
   return { 'Content-Type': variant.mimeType, 'Content-Length': String(variant.bytes), 'Cache-Control': 'public, max-age=31536000, immutable', 'ETag': `"${variant.cacheKey}"`, 'Vary': 'Accept', 'X-Image-Width': String(variant.width), 'X-Image-Height': String(variant.height) }
 }
 
-export function signImageTransform(path: string, expires: number, secret: string): string { return createHmac('sha256', secret).update(`${path}\n${expires}`).digest('base64url') }
+export function signImageTransform(path: string, expires: number, secret: string): string {
+  return createHmac('sha256', secret).update(`${path}\n${expires}`).digest('base64url')
+}
 export function verifyImageTransform(path: string, expires: number, signature: string, secret: string, now: number = Date.now()): boolean {
   if (!Number.isInteger(expires) || expires * 1000 <= now) return false
   const expected = Buffer.from(signImageTransform(path, expires, secret)); const actual = Buffer.from(signature)

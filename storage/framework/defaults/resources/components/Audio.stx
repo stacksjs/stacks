@@ -32,19 +32,19 @@ const className = props.class || ''
 </script>
 
 <figure class="m-0 overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-stone-200 dark:bg-stone-950 dark:ring-stone-800 {{ className }}">
-  <div class="flex items-center gap-4 p-4 sm:p-5">
+  <div class="flex gap-4 items-center p-4 sm:p-5">
     @if(artwork)
-      <img src="{{ artwork }}" alt="" width="72" height="72" loading="lazy" decoding="async" class="h-18 w-18 shrink-0 rounded-xl object-cover ring-1 ring-black/5 dark:ring-white/10">
+      <img src="{{ artwork }}" alt="" width="72" height="72" loading="lazy" decoding="async" class="object-cover shrink-0 h-18 w-18 ring-1 ring-black/5 rounded-xl dark:ring-white/10">
     @else
-      <div class="flex h-18 w-18 shrink-0 items-center justify-center rounded-xl bg-stone-100 text-stone-500 dark:bg-stone-900 dark:text-stone-400" aria-hidden="true"><span class="i-hugeicons-music-note-01 h-7 w-7"></span></div>
+      <div class="flex items-center justify-center shrink-0 h-18 w-18 text-stone-500 dark:text-stone-400 bg-stone-100 dark:bg-stone-900 rounded-xl" aria-hidden="true"><span class="h-7 w-7 i-hugeicons-music-note-01"></span></div>
     @endif
-    <div class="min-w-0 flex-1">
-      <figcaption class="truncate text-sm font-semibold text-stone-950 dark:text-white">{{ title }}</figcaption>
-      @if(artist)<p class="mt-0.5 truncate text-sm text-stone-500 dark:text-stone-400">{{ artist }}</p>@endif
-      @if(waveform)<img src="{{ waveform }}" alt="" loading="lazy" decoding="async" class="mt-3 h-10 w-full object-cover opacity-70 dark:opacity-80">@endif
+    <div class="flex-1 min-w-0">
+      <figcaption class="font-semibold text-sm text-stone-950 truncate dark:text-white">{{ title }}</figcaption>
+      @if(artist)<p class="mt-0.5 text-sm text-stone-500 truncate dark:text-stone-400">{{ artist }}</p>@endif
+      @if(waveform)<img src="{{ waveform }}" alt="" loading="lazy" decoding="async" class="object-cover mt-3 h-10 w-full opacity-70 dark:opacity-80">@endif
     </div>
   </div>
-  <div class="border-t border-stone-100 bg-stone-50/70 px-3 py-2 dark:border-stone-800 dark:bg-stone-900/60">
+  <div class="px-3 py-2 bg-stone-50/70 dark:bg-stone-900/60 border-stone-100 border-t dark:border-stone-800">
     <audio src="{{ src }}" @if(controls) controls @endif @if(props.autoplay) autoplay @endif @if(props.loop) loop @endif @if(props.muted) muted @endif preload="{{ preload }}" @if(crossorigin) crossorigin="{{ crossorigin }}" @endif aria-label="{{ title }}" class="block h-12 w-full accent-sky-600">
       @foreach (sources as source)<source src="{{ source.src }}" @if(source.type) type="{{ source.type }}" @endif>@endforeach
       @foreach (tracks as track)<track src="{{ track.src }}" kind="{{ track.kind }}" @if(track.srclang) srclang="{{ track.srclang }}" @endif @if(track.label) label="{{ track.label }}" @endif @if(track.default) default @endif>@endforeach
