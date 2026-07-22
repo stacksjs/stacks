@@ -2,14 +2,17 @@ import { createHmac, timingSafeEqual } from 'node:crypto'
 
 export type AudioFormat = 'opus' | 'aac' | 'mp3'
 export type AudioContent = 'speech' | 'music' | 'general'
-export interface AudioProfile { codec: string, container: string, duration: number, sampleRate: number, channels: number, bitrate?: number }
+export type AudioCodec = 'aac' | 'mp3' | 'opus' | 'vorbis' | 'flac' | 'alac' | 'pcm_s16le' | 'pcm_s24le' | 'pcm_s32le' | 'pcm_f32le' | 'pcm_f64le'
+export interface AudioProfile { codec: AudioCodec, container: string, duration: number, sampleRate: number, channels: number, bitrate?: number }
 export interface AudioCapabilities { encoder: boolean, codecs: AudioFormat[] }
-export interface AudioOutput { format: AudioFormat, container: 'ogg' | 'm4a' | 'mp3', mimeType: string, extension: 'ogg' | 'm4a' | 'mp3', bitrate: number, action: 'copy' | 'transcode', available: boolean, reason?: string }
+export interface AudioOutput { format: AudioFormat, container: 'ogg' | 'aac' | 'mp3', mimeType: 'audio/ogg; codecs=opus' | 'audio/aac' | 'audio/mpeg', extension: 'ogg' | 'aac' | 'mp3', bitrate: number, action: 'copy' | 'transcode', available: boolean, reason?: string }
 export interface AudioPlan { source: string, profile: AudioProfile, outputs: AudioOutput[], loudness: number }
+export interface AudioProcessOptions { batchSize?: number, signal?: AbortSignal }
+export interface ProcessedAudioDerivative { output: AudioOutput, bytes: Uint8Array }
 export interface Waveform { version: 1, channels: number, sampleRate: number, duration: number, samplesPerPeak: number, peaks: number[][] }
 export interface TranscriptSegment { startTime: number, endTime: number, text: string, confidence?: number, speaker?: string }
 export interface Transcript { language: string, segments: Array<TranscriptSegment & { id: number }>, vtt: string }
-const details: Record<AudioFormat, Pick<AudioOutput, 'container' | 'mimeType' | 'extension'>> = { opus: { container: 'ogg', mimeType: 'audio/ogg; codecs=opus', extension: 'ogg' }, aac: { container: 'm4a', mimeType: 'audio/mp4; codecs=mp4a.40.2', extension: 'm4a' }, mp3: { container: 'mp3', mimeType: 'audio/mpeg', extension: 'mp3' } }
+const details: Record<AudioFormat, Pick<AudioOutput, 'container' | 'mimeType' | 'extension'>> = { opus: { container: 'ogg', mimeType: 'audio/ogg; codecs=opus', extension: 'ogg' }, aac: { container: 'aac', mimeType: 'audio/aac', extension: 'aac' }, mp3: { container: 'mp3', mimeType: 'audio/mpeg', extension: 'mp3' } }
 function validate(profile: AudioProfile): void {
   for (const [name, value] of Object.entries({ duration: profile.duration, sampleRate: profile.sampleRate, channels: profile.channels })) {
     if (!Number.isFinite(value) || value <= 0) throw new TypeError(`Audio ${name} must be positive`)
@@ -34,8 +37,14 @@ export class AudioBuilder {
     const profile = this.inspected; const outputs = this.formats.map((format): AudioOutput => { const info = details[format]; const copy = profile.codec === format && (profile.container === info.container || profile.container === info.extension); const available = copy || this.capabilities.encoder && this.capabilities.codecs.includes(format); return { format, ...info, bitrate: recommendAudioBitrate(format, profile, this.contentType), action: copy ? 'copy' : 'transcode', available, reason: available ? undefined : `Native ${format} encoding is unavailable` } })
     return { source: this.source, profile, outputs, loudness: this.targetLoudness }
   }
+  async process(options: AudioProcessOptions = {}): Promise<ProcessedAudioDerivative[]> { return processAudioPlan(this.generate(), options) }
 }
 export function audio(source: string): AudioBuilder { return new AudioBuilder(source) }
+export async function processAudioPlan(plan: AudioPlan, options: AudioProcessOptions = {}): Promise<ProcessedAudioDerivative[]> {
+  assertAudioPlanExecutable(plan)
+  const { generateAudioDerivatives } = await import('ts-audio/native-transcode')
+  return generateAudioDerivatives(plan.source, { source: plan.profile, outputs: plan.outputs }, options)
+}
 export function assertAudioPlanExecutable(plan: AudioPlan): void {
   const missing = plan.outputs.filter(value => !value.available)
   if (missing.length) throw new Error(missing.map(value => `${value.format}: ${value.reason}`).join('; '))
