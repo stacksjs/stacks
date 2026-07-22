@@ -173,4 +173,4 @@ import { ref } from '@stacksjs/stx'
 const panelOpen = ref<boolean>(false)
 ```
 
-Still have questions relating this component's usage? Contact us and we will help you out. In the meantime, if you are curious about the [`<Tabs />`](./tabs.md) component read more on the next page.
+Still have questions relating this component's usage? Contact us and we will help you out.

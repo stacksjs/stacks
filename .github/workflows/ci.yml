@@ -165,6 +165,7 @@ jobs:
           bun run protocol:craft:check
           bun run docs:buddy:check
           bun run docs:artifacts:check
+          bun run docs:links:check
 
       - name: Run protocol adapter
         env:
