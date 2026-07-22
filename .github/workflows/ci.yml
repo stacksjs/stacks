@@ -179,7 +179,7 @@ jobs:
           cat protocol/reports/stacks-conformance.md >> "$GITHUB_STEP_SUMMARY"
 
       - name: Retain attributable conformance report
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: stacks-protocol-conformance-${{ github.sha }}
           path: protocol/reports/
