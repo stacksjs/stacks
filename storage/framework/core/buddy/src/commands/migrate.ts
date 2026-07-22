@@ -405,6 +405,9 @@ export function migrate(buddy: CLI): void {
         }
         else {
           const APP_ENV = process.env.APP_ENV || 'local'
+          // Flush buffered async logs (e.g. the intro banner) so they paint
+          // before this prompt instead of under it (see migrate:fresh below).
+          await log.flush()
           const proceed = await confirm({
             message: `Run migrations against the ${APP_ENV} database "${currentDatabaseLabel()}"?`,
             initial: true,
@@ -640,6 +643,11 @@ export function migrate(buddy: CLI): void {
         }
 
         log.warn(`This will DROP ALL TABLES in the ${APP_ENV} database "${dbLabel}" and rebuild them from scratch. All data will be lost.`)
+        // Drain buffered async log writes (this warn + the intro banner) so they
+        // paint BEFORE the synchronous prompt below. The clarity logger flushes
+        // on its own tick, so without this the warning lands *under* clapp's
+        // text() prompt and the command looks hung waiting for input.
+        await log.flush()
         const typed = await text({ message: `Type the database name "${dbLabel}" to confirm (blank to cancel):` })
         if (typed.trim() !== dbLabel) {
           await outro('migrate:fresh cancelled — confirmation did not match.', { startTime: perf, useSeconds: true })
