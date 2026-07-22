@@ -288,6 +288,10 @@
       "types": "./validation/dist/index.d.ts",
       "import": "./validation/dist/index.js"
     },
+    "./video": {
+      "types": "./video/dist/index.d.ts",
+      "import": "./video/dist/index.js"
+    },
     "./skills": {
       "types": "./skills/dist/index.d.ts",
       "import": "./skills/dist/index.js"
@@ -355,6 +359,7 @@
     "@stacksjs/utils": "^0.70.162",
     "@stacksjs/skills": "^0.70.162",
     "@stacksjs/validation": "^0.70.162",
+    "@stacksjs/video": "^0.70.162",
     "@stacksjs/api": "^0.70.162",
     "@stacksjs/analytics": "^0.70.162",
     "@stacksjs/chat": "^0.70.162",
