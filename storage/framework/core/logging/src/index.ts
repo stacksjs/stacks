@@ -409,11 +409,16 @@ export const log: Log = {
 
   warn: async (message: string, context?: unknown) => {
     const logger = await getLogger()
+    // No context → call with a single arg. Passing `undefined` as the second
+    // arg makes clarity stringify it and append a stray " undefined" to the
+    // line (e.g. `log.warn('… All data will be lost.')`). Matches `warning`.
+    if (context === undefined) {
+      await logger.warn(message)
+      return
+    }
     // Normalize so Errors in the context survive clarity's JSON.stringify
     // (stacksjs/stacks#1956).
-    const normalized = context === undefined
-      ? undefined
-      : normalizeContextValue(context) as Record<string, unknown>
+    const normalized = normalizeContextValue(context) as Record<string, unknown>
     await logger.warn(message, normalized)
   },
 
