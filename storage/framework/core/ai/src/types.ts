@@ -216,7 +216,7 @@ export interface MCPConfig {
 
 // AI module config (used by @stacksjs/config)
 export interface AIConfig {
-  default?: string
+  default?: AIProvider | string
   models?: string[]
   drivers?: {
     anthropic?: AIDriverConfig & { anthropicVersion?: string }
@@ -226,4 +226,31 @@ export interface AIConfig {
   image?: ImageGenerationConfig
   search?: SearchConfig
   mcp?: MCPConfig
+}
+
+export type AIProvider = 'anthropic' | 'openai' | 'ollama'
+
+export interface ConfiguredAIOptions extends AIConfig {
+  drivers?: {
+    anthropic?: AIDriverConfig & { anthropicVersion?: string }
+    openai?: AIDriverConfig & { embeddingModel?: string }
+    ollama?: AIDriverConfig & { host?: string, embeddingModel?: string }
+  }
+}
+
+export interface GenerateObjectOptions extends ChatCompletionOptions {
+  /** Maximum total generation attempts. Defaults to 2. */
+  attempts?: number
+  /** Optional system instruction kept separate for providers that require it. */
+  system?: string
+}
+
+export interface ConfiguredAIClient {
+  provider: AIProvider
+  generate: (messages: AIMessage[], options?: ChatCompletionOptions & { system?: string }) => Promise<AIResult>
+  generateObject: <T>(
+    messages: AIMessage[],
+    schema: Record<string, unknown>,
+    options?: GenerateObjectOptions,
+  ) => Promise<{ data: T, result: AIResult }>
 }

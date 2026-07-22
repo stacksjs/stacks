@@ -4,6 +4,9 @@ export * from './types'
 // Drivers
 export * from './drivers'
 
+// Provider-neutral, config-driven client
+export * from './client'
+
 // Agents
 export * from './agents'
 

@@ -159,7 +159,14 @@ export async function chat(
     temperature,
     topP,
     stop,
+    responseFormat,
   } = options
+
+  const format = responseFormat?.type === 'json_schema'
+    ? responseFormat.json_schema.schema
+    : responseFormat?.type === 'json_object'
+      ? 'json'
+      : undefined
 
   const response = await fetch(`${config.host}/api/chat`, {
     method: 'POST',
@@ -168,6 +175,7 @@ export async function chat(
       model,
       messages,
       stream: false,
+      format,
       options: {
         temperature,
         top_p: topP,

@@ -217,6 +217,9 @@ export async function chat(
     temperature,
     topP,
     stop,
+    tools,
+    toolChoice,
+    responseFormat,
   } = options
 
   // Normalize content arrays into OpenAI's wire format
@@ -228,20 +231,42 @@ export async function chat(
   // Track wall-clock duration for usage reporters (#1878 A-6).
   const startedAt = Date.now()
 
+  const body: Record<string, unknown> = {
+    model,
+    max_tokens: maxTokens,
+    temperature,
+    top_p: topP,
+    stop,
+    messages: normalizedMessages,
+  }
+
+  if (tools?.length) {
+    body.tools = tools.map(tool => ({
+      type: 'function',
+      function: {
+        name: tool.name,
+        description: tool.description,
+        parameters: tool.parameters ?? { type: 'object', properties: {} },
+      },
+    }))
+  }
+
+  if (toolChoice !== undefined) {
+    body.tool_choice = typeof toolChoice === 'object'
+      ? { type: 'function', function: { name: toolChoice.name } }
+      : toolChoice
+  }
+
+  if (responseFormat && responseFormat.type !== 'text')
+    body.response_format = responseFormat
+
   const response = await fetchWithRetry(`${config.baseUrl || DEFAULT_BASE_URL}/chat/completions`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${config.apiKey}`,
     },
-    body: JSON.stringify({
-      model,
-      max_tokens: maxTokens,
-      temperature,
-      top_p: topP,
-      stop,
-      messages: normalizedMessages,
-    }),
+    body: JSON.stringify(body),
   })
 
   if (!response.ok) {

@@ -33,9 +33,29 @@ type AiModel =
  * have any questions, feel free to reach out via Discord or GitHub Discussions.
  */
 export interface AiOptions {
-  default: AiModel
+  default: 'anthropic' | 'openai' | 'ollama' | AiModel
   models: AiModel[]
   deploy: boolean
+  drivers?: {
+    anthropic?: {
+      apiKey?: string
+      model?: string
+      maxTokens?: number
+      anthropicVersion?: string
+    }
+    openai?: {
+      apiKey?: string
+      model?: string
+      maxTokens?: number
+      baseUrl?: string
+      embeddingModel?: string
+    }
+    ollama?: {
+      host?: string
+      model?: string
+      embeddingModel?: string
+    }
+  }
 }
 
 export type AiConfig = Partial<AiOptions>
