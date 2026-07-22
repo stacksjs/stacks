@@ -287,6 +287,26 @@ describe('Crypto - Versioned Envelope Security', () => {
     expect(() => decryptValue(value, keys.privateKey)).toThrow('authentication or format error')
   })
 
+  it('enforces canonical base64url and exact component lengths', () => {
+    const keys = generateKeypair()
+    const encrypted = encryptValue('secret', keys.publicKey)
+    const open = () => JSON.parse(Buffer.from(encrypted.slice('encrypted:v2:'.length), 'base64url').toString('utf8'))
+    const reseal = (envelope: Record<string, unknown>) => `encrypted:v2:${Buffer.from(JSON.stringify(envelope)).toString('base64url')}`
+
+    // Non-canonical (padded) base64url is rejected, closing malleability.
+    const padded = open()
+    padded.salt = `${padded.salt}=`
+    expect(() => decryptValue(reseal(padded), keys.privateKey)).toThrow('authentication or format error')
+
+    // Fixed-width components (salt=16, nonce=12, tag=16) reject a short but
+    // otherwise canonical value, so a truncated field can't slip through.
+    for (const field of ['salt', 'nonce', 'tag']) {
+      const short = open()
+      short[field] = Buffer.from('short').toString('base64url')
+      expect(() => decryptValue(reseal(short), keys.privateKey)).toThrow('authentication or format error')
+    }
+  })
+
   it('reads and migrates legacy ciphertext but never writes it', () => {
     const legacyPrivate = TEST_PRIVATE_KEY
     const legacyPublic = createHash('sha256').update(Buffer.from(legacyPrivate, 'hex')).digest()
