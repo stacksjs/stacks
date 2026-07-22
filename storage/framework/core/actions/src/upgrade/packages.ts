@@ -63,8 +63,8 @@ async function updateStandalonePackage(projectRoot: string, options: PackageUpgr
   process.exit(0)
 }
 
-/** Resolve the target version + the set of lockstep core packages from the registry. */
-async function resolveTarget(options: PackageUpgradeOptions): Promise<{ version: string, coreDeps: Set<string> }> {
+/** Resolve the target version + the `stacks` meta's declared dependency ranges. */
+async function resolveTarget(options: PackageUpgradeOptions): Promise<{ version: string, metaDeps: Record<string, string> }> {
   const res = await fetch('https://registry.npmjs.org/stacks').catch(() => null)
   if (!res || !res.ok)
     throw new Error('Could not reach the npm registry to resolve the target `stacks` version.')
@@ -90,29 +90,48 @@ async function resolveTarget(options: PackageUpgradeOptions): Promise<{ version:
     version = resolved
   }
 
-  // The core packages are exactly those the `stacks` meta depends on — they are
-  // released in lockstep at the same version. Every *other* `@stacksjs/*` dep
-  // (e.g. ts-cloud, bun-query-builder) is versioned independently and must NOT
-  // be dragged to the meta's version, so we scope the bump to this set.
-  const coreDeps = new Set(Object.keys(versions[version]?.dependencies ?? {}))
+  // The `stacks` meta declares every framework dependency at the version that
+  // release actually ships: lockstep core packages at the meta's own version
+  // (e.g. `@stacksjs/server: ^0.70.161`) and independently-versioned ones on
+  // their own line (e.g. `@stacksjs/tlsx: ^0.13.0`, `@stacksjs/ts-cloud: ^0.7.49`).
+  // Return the full map so the caller only force-bumps the lockstep set and never
+  // drags an independent package to a framework version it doesn't publish
+  // (stacksjs/stacks#2078).
+  const metaDeps = versions[version]?.dependencies ?? {}
 
-  return { version, coreDeps }
+  return { version, metaDeps }
+}
+
+/** Strip a range operator (`^`, `~`, `>=`, …) so a declared range compares to a bare version. */
+export function baseVersion(range: string): string {
+  return range.replace(/^[\^~>=<\s]+/, '').trim()
 }
 
 /**
- * Bump the `stacks` meta and its lockstep core packages in the app's
- * package.json to `target`, preserving each spec's existing range prefix
- * (`^`, `~`, or exact pin). Independently-versioned `@stacksjs/*` packages are
- * left untouched. Returns the set of applied changes.
+ * The packages `buddy upgrade` may move to the framework `target`: the `stacks`
+ * meta itself, plus every `@stacksjs/*` dependency the meta declares AT that
+ * target version. Independently-versioned `@stacksjs/*` packages — the ones the
+ * meta pins on their own line (tlsx, ts-cloud, …) — and non-`@stacksjs/*` tooling
+ * (e.g. `better-dx`) are excluded, so they are never force-bumped to a framework
+ * version they don't publish (stacksjs/stacks#2078).
  */
-function applyBumps(pkg: PkgJson, target: string, coreDeps: Set<string>): Array<{ name: string, from: string, to: string }> {
+export function lockstepPackages(metaDeps: Record<string, string>, target: string): Set<string> {
+  const lockstep = new Set<string>(['stacks'])
+  for (const [name, range] of Object.entries(metaDeps)) {
+    if (name.startsWith('@stacksjs/') && baseVersion(range) === target)
+      lockstep.add(name)
+  }
+  return lockstep
+}
+
+/**
+ * Bump the lockstep packages in the app's package.json to `target`, preserving
+ * each spec's existing range prefix (`^`, `~`, or exact pin). Anything not in
+ * `lockstep` — including independently-versioned `@stacksjs/*` packages — is left
+ * untouched. Returns the set of applied changes.
+ */
+export function applyBumps(pkg: PkgJson, target: string, lockstep: Set<string>): Array<{ name: string, from: string, to: string }> {
   const changes: Array<{ name: string, from: string, to: string }> = []
-  // Lockstep = the `stacks` meta itself, or a scoped `@stacksjs/*` core package
-  // the meta declares. The `@stacksjs/` guard matters because the meta also
-  // depends on independently-versioned third-party tooling (e.g. `better-dx`),
-  // which appears in `coreDeps` but must not be dragged to the meta version.
-  const isLockstep = (name: string): boolean =>
-    name === 'stacks' || (name.startsWith('@stacksjs/') && coreDeps.has(name))
 
   for (const field of ['dependencies', 'devDependencies'] as const) {
     const deps = pkg[field]
@@ -120,7 +139,7 @@ function applyBumps(pkg: PkgJson, target: string, coreDeps: Set<string>): Array<
       continue
 
     for (const [name, spec] of Object.entries(deps)) {
-      if (!isLockstep(name))
+      if (!lockstep.has(name))
         continue
 
       // Preserve the range operator the app already uses; default to caret.
@@ -155,7 +174,7 @@ export async function upgradeStacksPackages(projectRoot: string, options: Packag
   if (!hasStacksDependency(pkg))
     return updateStandalonePackage(projectRoot, options)
 
-  const { version: target, coreDeps } = await resolveTarget(options).catch((err: Error) => {
+  const { version: target, metaDeps } = await resolveTarget(options).catch((err: Error) => {
     console.error(`✗ ${err.message}`)
     process.exit(1)
   })
@@ -164,7 +183,8 @@ export async function upgradeStacksPackages(projectRoot: string, options: Packag
   if (current)
     console.log(`  current \`stacks\` constraint: ${current}\n`)
 
-  const changes = applyBumps(pkg, target, coreDeps)
+  const lockstep = lockstepPackages(metaDeps, target)
+  const changes = applyBumps(pkg, target, lockstep)
 
   if (changes.length === 0 && !options.force) {
     console.log('✔ Already up to date — every framework dependency matches the target.\n')
@@ -196,10 +216,10 @@ export async function upgradeStacksPackages(projectRoot: string, options: Packag
   // leaves stale-but-in-range transitive versions in the lockfile untouched —
   // the app would keep running the OLD buddy/actions. `bun update <names>`
   // moves each named package (including transitive ones) to the newest version
-  // that satisfies the range, rewriting the lockfile. We scope it to `stacks`
-  // + the scoped core packages so independent deps (ts-cloud, better-dx) and
-  // the rest of the tree are left alone.
-  const frameworkPkgs = ['stacks', ...[...coreDeps].filter(n => n.startsWith('@stacksjs/'))]
+  // that satisfies the range, rewriting the lockfile. Scope it to the lockstep
+  // set so independent deps (ts-cloud, tlsx, better-dx) and the rest of the tree
+  // are left alone.
+  const frameworkPkgs = [...lockstep]
 
   if (options.noPostinstall) {
     console.log('  --no-postinstall: skipping install. Run this to pull the new versions:')
