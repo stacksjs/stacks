@@ -23,4 +23,21 @@ describe('@stacksjs/image', () => {
     const expires = Math.floor(Date.now() / 1000) + 60; const signature = signImageTransform('/hero', expires, 'secret')
     expect(verifyImageTransform('/hero', expires, signature, 'secret')).toBe(true)
   })
+  test('applies presets and authorizes before source reads', async () => {
+    const root = await mkdtemp(join(tmpdir(), 'stacks-image-preset-')); dirs.push(root)
+    const input = createImageData(8, 4); input.data.fill(200); await writeFile(join(root, 'avatar.png'), await encode(input, 'png'))
+    const result = await image('avatar.png', { root, outputDir: join(root, 'out') }).preset('avatar').widths([2]).formats(['png']).generate()
+    expect(result.variants).toHaveLength(1)
+    expect(result.variants[0]).toMatchObject({ width: 2, height: 2 })
+    await expect(image('missing.png', { root, authorize: () => false }).generate()).rejects.toThrow('not authorized')
+  })
+  test('publishes image variants through a storage adapter', async () => {
+    const root = await mkdtemp(join(tmpdir(), 'stacks-image-storage-')); dirs.push(root)
+    const input = createImageData(4, 4); input.data.fill(150); await writeFile(join(root, 'image.png'), await encode(input, 'png'))
+    const objects = new Map<string, Uint8Array>()
+    const adapter = { fileExists: async (path: string) => objects.has(path), write: async (path: string, bytes: Uint8Array) => { objects.set(path, bytes); return { size: bytes.byteLength } }, stat: async (path: string) => ({ size: objects.get(path)!.byteLength }), publicUrl: async (path: string) => `https://media.example/${path}` }
+    const result = await image('image.png', { root }).preset('avatar').widths([2]).formats(['webp']).storage(adapter).generate()
+    expect(result.variants[0].path).toStartWith('media/images/')
+    expect(result.variants[0].url).toStartWith('https://media.example/')
+  })
 })
