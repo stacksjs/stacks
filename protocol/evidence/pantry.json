@@ -4,9 +4,9 @@
   "issue": "https://github.com/stacksjs/stacks/issues/2066",
   "source": {
     "repository": "https://github.com/pantry-pm/pantry",
-    "version": "0.10.40",
-    "tag": "v0.10.40",
-    "revision": "d8d4e2f15c871e9ee3c59ab10a4974c21c5fd182"
+    "version": "0.10.42",
+    "tag": "v0.10.42",
+    "revision": "7f563c6fcb53ad73f2dadcb9e3fea0866f4cd7f3"
   },
   "whitepaper": {
     "repository": "https://github.com/stacksjs/white-paper",

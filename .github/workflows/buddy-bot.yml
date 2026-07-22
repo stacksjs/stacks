@@ -158,9 +158,9 @@ jobs:
           persist-credentials: true
 
       - name: Setup Pantry
-        uses: pantry-pm/pantry/packages/action@d8d4e2f15c871e9ee3c59ab10a4974c21c5fd182 # v0.10.40
+        uses: pantry-pm/pantry/packages/action@7f563c6fcb53ad73f2dadcb9e3fea0866f4cd7f3 # v0.10.42
         with:
-          version: '0.10.40'
+          version: '0.10.42'
           install: 'false'
 
       - name: Setup PHP and Composer (if needed)
@@ -199,9 +199,9 @@ jobs:
           persist-credentials: true
 
       - name: Setup Pantry
-        uses: pantry-pm/pantry/packages/action@d8d4e2f15c871e9ee3c59ab10a4974c21c5fd182 # v0.10.40
+        uses: pantry-pm/pantry/packages/action@7f563c6fcb53ad73f2dadcb9e3fea0866f4cd7f3 # v0.10.42
         with:
-          version: '0.10.40'
+          version: '0.10.42'
           install: 'false'
 
       - name: Install dependencies
@@ -284,9 +284,9 @@ jobs:
           persist-credentials: true
 
       - name: Setup Pantry
-        uses: pantry-pm/pantry/packages/action@d8d4e2f15c871e9ee3c59ab10a4974c21c5fd182 # v0.10.40
+        uses: pantry-pm/pantry/packages/action@7f563c6fcb53ad73f2dadcb9e3fea0866f4cd7f3 # v0.10.42
         with:
-          version: '0.10.40'
+          version: '0.10.42'
           install: 'false'
 
       - name: Setup PHP and Composer (if needed)
@@ -395,9 +395,9 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup Pantry
-        uses: pantry-pm/pantry/packages/action@d8d4e2f15c871e9ee3c59ab10a4974c21c5fd182 # v0.10.40
+        uses: pantry-pm/pantry/packages/action@7f563c6fcb53ad73f2dadcb9e3fea0866f4cd7f3 # v0.10.42
         with:
-          version: '0.10.40'
+          version: '0.10.42'
           install: 'false'
 
       - name: Install dependencies
