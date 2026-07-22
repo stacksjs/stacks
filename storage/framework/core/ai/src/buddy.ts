@@ -16,11 +16,12 @@ import type {
   RepoState,
   StreamingResult,
 } from './types'
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, writeFileSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { claudeAgent } from './agents'
 import { createAnthropicDriver, createClaudeAgentSDKDriver, createOllamaDriver, createOpenAIDriver } from './drivers'
+import { buildProjectContext } from './context'
 
 // =============================================================================
 // Configuration
@@ -250,29 +251,7 @@ export function getAvailableDrivers(): string[] {
  * Get repository structure for context
  */
 export async function getRepoContext(repoPath: string): Promise<string> {
-  const { $: _$ } = await import('bun')
-  const treeResult = await _$`cd ${repoPath} && find . -type f -not -path "*/node_modules/*" -not -path "*/.git/*" -not -name "*.lock" | head -50`.quiet()
-  const files = treeResult.text().trim()
-
-  let readme = ''
-  const readmePath = join(repoPath, 'README.md')
-  if (existsSync(readmePath)) {
-    readme = readFileSync(readmePath, 'utf-8').slice(0, 2000)
-  }
-
-  let packageJson = ''
-  const packagePath = join(repoPath, 'package.json')
-  if (existsSync(packagePath)) {
-    packageJson = readFileSync(packagePath, 'utf-8')
-  }
-
-  return `
-Repository Structure:
-${files}
-
-${readme ? `README.md (excerpt):\n${readme}\n` : ''}
-${packageJson ? `package.json:\n${packageJson}\n` : ''}
-`.trim()
+  return buildProjectContext(repoPath).text
 }
 
 /**

@@ -12,6 +12,7 @@ const APP_KEY_OPTIONAL_COMMANDS = [
   'clean',
   'fresh',
   'about',
+  'ai:context',
   'doctor',
   'list',
   'setup',

@@ -16,6 +16,7 @@ interface CommandLoader {
 const commandRegistry: Record<string, CommandLoader> = {
   'about': { path: './commands/about.ts', exportName: 'about' },
   'add': { path: './commands/add.ts', exportName: 'add' },
+  'ai:context': { path: './commands/ai-context.ts', exportName: 'aiContext' },
   'auth': { path: './commands/auth.ts', exportName: 'auth' },
   'build': { path: './commands/build.ts', exportName: 'build' },
   'cd': { path: './commands/cd.ts', exportName: 'cd' },
