@@ -1,6 +1,6 @@
 import { expect, mock, test } from 'bun:test'
 
-mock.module('ts-audio/native-transcode', () => ({
+mock.module('@ts-audio/core/native-transcode', () => ({
   generateAudioDerivatives: async (source: string, plan: { source: { codec: string }, outputs: unknown[] }): Promise<unknown[]> => {
     expect(source).toBe('episode.flac')
     expect(plan.source.codec).toBe('flac')

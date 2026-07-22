@@ -42,7 +42,7 @@ export class AudioBuilder {
 export function audio(source: string): AudioBuilder { return new AudioBuilder(source) }
 export async function processAudioPlan(plan: AudioPlan, options: AudioProcessOptions = {}): Promise<ProcessedAudioDerivative[]> {
   assertAudioPlanExecutable(plan)
-  const { generateAudioDerivatives } = await import('ts-audio/native-transcode')
+  const { generateAudioDerivatives } = await import('@ts-audio/core/native-transcode')
   return generateAudioDerivatives(plan.source, { source: plan.profile, outputs: plan.outputs }, options)
 }
 export function assertAudioPlanExecutable(plan: AudioPlan): void {

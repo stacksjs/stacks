@@ -5,7 +5,7 @@ Capability-aware audio planning, format negotiation, waveforms, and transcript n
 ## Process music, podcasts, and voice
 
 ```ts
-import { detectAudioRuntimeCapabilities } from 'ts-audio'
+import { detectAudioRuntimeCapabilities } from '@ts-audio/core'
 import { audio } from '@stacksjs/audio'
 
 const derivatives = await audio('uploads/episode.flac')
