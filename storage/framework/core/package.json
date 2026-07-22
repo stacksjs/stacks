@@ -72,6 +72,10 @@
       "types": "./auth/dist/index.d.ts",
       "import": "./auth/dist/index.js"
     },
+    "./audio": {
+      "types": "./audio/dist/index.d.ts",
+      "import": "./audio/dist/index.js"
+    },
     "./buddy": {
       "types": "./buddy/dist/index.d.ts",
       "import": "./buddy/dist/index.js"
@@ -313,6 +317,7 @@
     "@stacksjs/actions": "^0.70.162",
     "@stacksjs/ai": "^0.70.162",
     "@stacksjs/alias": "^0.70.162",
+    "@stacksjs/audio": "^0.70.162",
     "@stacksjs/arrays": "^0.70.162",
     "@stacksjs/auth": "^0.70.162",
     "@stacksjs/buddy": "^0.70.162",
