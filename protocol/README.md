@@ -45,3 +45,10 @@ target cannot become stable until native install/launch and update/rollback
 evidence is linked and signing (plus macOS notarization) is enforced. The build
 also refuses a stable channel for unqualified targets and emits exact source,
 runtime digest, per-file SHA-256 checksums, and platform metadata.
+
+`evidence/craft.json` pins the exact Craft source tag, commit, packaging code,
+MSI contract, native lifecycle workflow, and release workflow used by the
+desktop matrix. Stacks re-runs that immutable source on four native GitHub
+runner targets and validates the retained report before attesting it. Packaging
+evidence and release evidence remain separate: unsigned install/update/rollback
+fixtures do not satisfy signing, notarization, or stable support gates.

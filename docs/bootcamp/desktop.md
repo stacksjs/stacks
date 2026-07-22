@@ -51,14 +51,19 @@ The build creates `storage/framework/desktop-dist/` with:
 
 `DESKTOP_URL` overrides `APP_URL` when the desktop application should target a separate host.
 
-The output is currently an **experimental unpackaged bundle**, not a stable
-installer. No OS/architecture row is stable yet. A build refuses
+The framework build output is currently an **experimental unpackaged bundle**.
+Craft v0.0.44 separately defines DMG/PKG, DEB, MSI, and ZIP packaging contracts,
+which Stacks exercises through a pinned four-runner lifecycle matrix. These
+unsigned test installers are evidence for packaging behavior, not release-ready
+artifacts. No OS/architecture row is stable yet. A build refuses
 `DESKTOP_RELEASE_CHANNEL=stable` until that exact target has retained
 install/launch/update/rollback evidence and enforced platform signing. See the
 [machine-readable support matrix](https://github.com/stacksjs/stacks/blob/main/protocol/evidence/desktop-support.json)
 and issues [#2059](https://github.com/stacksjs/stacks/issues/2059),
 [#2062](https://github.com/stacksjs/stacks/issues/2062), and
-[#2063](https://github.com/stacksjs/stacks/issues/2063).
+[#2063](https://github.com/stacksjs/stacks/issues/2063). The pinned Craft source,
+file digests, matrix, and current upstream Actions blocker are recorded in
+[`protocol/evidence/craft.json`](https://github.com/stacksjs/stacks/blob/main/protocol/evidence/craft.json).
 
 ## Desktop API
 

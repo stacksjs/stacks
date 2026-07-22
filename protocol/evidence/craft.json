@@ -1,0 +1,99 @@
+{
+  "schemaVersion": 1,
+  "status": "source-verified-ci-pending",
+  "source": {
+    "repository": "https://github.com/home-lang/craft",
+    "version": "0.0.44",
+    "tag": "v0.0.44",
+    "revision": "ddd23c70e6208d4a182bde4cae2ff0e6aefe3ec1"
+  },
+  "issues": {
+    "support": "https://github.com/stacksjs/stacks/issues/2059",
+    "signing": "https://github.com/stacksjs/stacks/issues/2062",
+    "lifecycle": "https://github.com/stacksjs/stacks/issues/2063",
+    "upstreamActions": "https://github.com/home-lang/craft/issues/11"
+  },
+  "contracts": [
+    {
+      "path": "packages/typescript/src/package.ts",
+      "sha256": "007a2f0c7a8406ba01b0d8e1ac50db1ad58c674209d84e1f3eebce0723ca4b10"
+    },
+    {
+      "path": "packages/typescript/src/package.test.ts",
+      "sha256": "a6f31bdf56014c8423d702af5dc7da12d9ecea49dd138464414c0dbfa7276849"
+    },
+    {
+      "path": "scripts/native-lifecycle.ts",
+      "sha256": "17768caa805a9adad975349a388cb90196c8047d526b84b0ad24e1773da629a6"
+    },
+    {
+      "path": ".github/workflows/native-lifecycle.yml",
+      "sha256": "493b614554f03dc669724ff31bd56ae8361851dd2a9b32ac37560d9c0bb1b85e"
+    },
+    {
+      "path": ".github/workflows/release.yml",
+      "sha256": "e3c7edd45841a7260fb4dfe810f0ff3f63f3117f7d0f4d14984e4dfb36b1f638"
+    }
+  ],
+  "lifecycleMatrix": [
+    {
+      "runner": "macos-15",
+      "platform": "darwin",
+      "architecture": "arm64",
+      "formats": [
+        "dmg",
+        "pkg"
+      ]
+    },
+    {
+      "runner": "macos-15-intel",
+      "platform": "darwin",
+      "architecture": "x64",
+      "formats": [
+        "dmg",
+        "pkg"
+      ]
+    },
+    {
+      "runner": "ubuntu-24.04",
+      "platform": "linux",
+      "architecture": "x64",
+      "formats": [
+        "deb"
+      ]
+    },
+    {
+      "runner": "windows-2025",
+      "platform": "win32",
+      "architecture": "x64",
+      "formats": [
+        "msi",
+        "zip"
+      ]
+    }
+  ],
+  "lifecycleOperations": [
+    "install",
+    "launch",
+    "update",
+    "rollback",
+    "uninstall"
+  ],
+  "stacksWorkflow": "https://github.com/stacksjs/stacks/actions/workflows/desktop-lifecycle.yml",
+  "release": {
+    "sourceTagged": true,
+    "githubRelease": null,
+    "packagePublished": false,
+    "signing": "pending",
+    "notarization": "pending",
+    "blockedBy": "https://github.com/home-lang/craft/issues/11"
+  },
+  "verification": {
+    "local": [
+      "bun test packages/typescript/src/package.test.ts",
+      "bun run typecheck",
+      "bun scripts/native-lifecycle.ts"
+    ],
+    "retained": "pending first successful stacksjs/stacks desktop-lifecycle run"
+  }
+}
