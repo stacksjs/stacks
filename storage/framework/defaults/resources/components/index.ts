@@ -11,3 +11,6 @@ export { default as SidebarModern } from './Dashboard/SidebarModern.stx'
 
 // Dashboard and UI components
 export * from './Dashboard'
+export { default as Audio } from './Audio.stx'
+export { default as Image } from './Image.stx'
+export { default as Video } from './Video.stx'

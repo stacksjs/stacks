@@ -1,0 +1,58 @@
+<script server>
+interface ImageSource { type: string, srcset: string, media?: string }
+interface ImageProps {
+  src: string
+  alt: string
+  width?: number
+  height?: number
+  aspectRatio?: string
+  srcset?: string
+  sizes?: string
+  sources?: ImageSource[]
+  loading?: 'lazy' | 'eager'
+  decoding?: 'async' | 'sync' | 'auto'
+  fetchpriority?: 'high' | 'low' | 'auto'
+  priority?: boolean
+  decorative?: boolean
+  fit?: 'cover' | 'contain' | 'fill' | 'none' | 'scale-down'
+  position?: string
+  placeholder?: string
+  class?: string
+}
+const props = defineProps<ImageProps>()
+const src = props.src || ''
+const alt = props.decorative ? '' : props.alt || ''
+const width = props.width || ''
+const height = props.height || ''
+const ratio = props.aspectRatio || (width && height ? `${width} / ${height}` : '')
+const srcset = props.srcset || ''
+const sizes = props.sizes || (srcset ? '100vw' : '')
+const sources = props.sources || []
+const loading = props.priority ? 'eager' : props.loading || 'lazy'
+const decoding = props.decoding || 'async'
+const priority = props.priority ? 'high' : props.fetchpriority || 'auto'
+const fit = props.fit || 'cover'
+const position = props.position || 'center'
+const placeholder = props.placeholder || ''
+const className = props.class || ''
+</script>
+
+<picture class="relative block overflow-hidden bg-stone-100 dark:bg-stone-900 {{ className }}" @if(ratio) style="aspect-ratio: {{ ratio }};" @endif>
+  @foreach (sources as source)
+    <source type="{{ source.type }}" srcset="{{ source.srcset }}" @if(source.media) media="{{ source.media }}" @endif @if(sizes) sizes="{{ sizes }}" @endif>
+  @endforeach
+  <img
+    src="{{ src }}"
+    alt="{{ alt }}"
+    @if(width) width="{{ width }}" @endif
+    @if(height) height="{{ height }}" @endif
+    @if(srcset) srcset="{{ srcset }}" @endif
+    @if(sizes) sizes="{{ sizes }}" @endif
+    loading="{{ loading }}"
+    decoding="{{ decoding }}"
+    fetchpriority="{{ priority }}"
+    @if(props.decorative) aria-hidden="true" @endif
+    class="h-full w-full"
+    style="object-fit: {{ fit }}; object-position: {{ position }}; @if(placeholder) background: {{ placeholder }} center / cover no-repeat; @endif"
+  >
+</picture>
