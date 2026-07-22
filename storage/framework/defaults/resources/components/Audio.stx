@@ -1,9 +1,15 @@
 <script server>
 interface AudioSource { src: string, type?: string }
+interface AudioDrm {
+  widevine?: { url: string, headers?: Record<string, string> }
+  playready?: { url: string, headers?: Record<string, string> }
+  fairplay?: { url: string, certificateUrl: string, headers?: Record<string, string> }
+}
 interface AudioTrack { src: string, kind: 'subtitles' | 'captions' | 'descriptions' | 'chapters' | 'metadata', srclang?: string, label?: string, default?: boolean }
 interface AudioProps {
   src: string
   sources?: AudioSource[]
+  drm?: AudioDrm
   tracks?: AudioTrack[]
   title?: string
   artist?: string
@@ -29,6 +35,14 @@ const controls = props.controls !== false
 const preload = props.preload || 'metadata'
 const crossorigin = props.crossorigin || ''
 const className = props.class || ''
+const playerSources = (sources.length ? sources : src ? [{ src }] : []).map(source => props.drm && (source.type === 'application/dash+xml' || source.src.split(/[?#]/, 1)[0].toLowerCase().endsWith('.mpd')) ? { ...source, type: 'application/dash+xml', drm: props.drm } : source)
+const playerTracks = tracks.map(track => ({ ...track, language: track.srclang }))
+const playerConfig = JSON.stringify({ sources: playerSources, tracks: playerTracks, ...(props.drm ? { drm: props.drm } : {}) }).replaceAll('<', '\\u003c').replaceAll('>', '\\u003e').replaceAll('&', '\\u0026')
+</script>
+
+<script client>
+import { registerElements } from 'ts-video-player/elements'
+registerElements()
 </script>
 
 <figure class="m-0 overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-stone-200 dark:bg-stone-950 dark:ring-stone-800 {{ className }}">
@@ -44,11 +58,35 @@ const className = props.class || ''
       @if(waveform)<img src="{{ waveform }}" alt="" loading="lazy" decoding="async" class="object-cover mt-3 h-10 w-full opacity-70 dark:opacity-80">@endif
     </div>
   </div>
-  <div class="px-3 py-2 bg-stone-50/70 dark:bg-stone-900/60 border-stone-100 border-t dark:border-stone-800">
-    <audio src="{{ src }}" @if(controls) controls @endif @if(props.autoplay) autoplay @endif @if(props.loop) loop @endif @if(props.muted) muted @endif preload="{{ preload }}" @if(crossorigin) crossorigin="{{ crossorigin }}" @endif aria-label="{{ title }}" class="block h-12 w-full accent-sky-600">
-      @foreach (sources as source)<source src="{{ source.src }}" @if(source.type) type="{{ source.type }}" @endif>@endforeach
-      @foreach (tracks as track)<track src="{{ track.src }}" kind="{{ track.kind }}" @if(track.srclang) srclang="{{ track.srclang }}" @endif @if(track.label) label="{{ track.label }}" @endif @if(track.default) default @endif>@endforeach
-      Your browser does not support audio playback.
-    </audio>
+  <div class="p-3 bg-stone-950 border-stone-100 border-t dark:border-stone-800">
+    <video-player src="{{ src }}" title="{{ title }}" data-media-config="{{ playerConfig }}" @if(controls) controls @endif @if(props.autoplay) autoplay @endif @if(props.loop) loop @endif @if(props.muted) muted @endif preload="{{ preload }}" @if(crossorigin) crossorigin="{{ crossorigin }}" keep-alive aria-label="{{ title }}" class="block overflow-hidden relative h-16 w-full text-white rounded-xl focus-within:ring-2 focus-within:ring-sky-500">
+      <media-error-display></media-error-display>
+      <audio data-native-fallback src="{{ src }}" @if(controls) controls @endif @if(props.autoplay) autoplay @endif @if(props.loop) loop @endif @if(props.muted) muted @endif preload="{{ preload }}" @if(crossorigin) crossorigin="{{ crossorigin }}" @endif aria-label="{{ title }}" class="block h-16 w-full accent-sky-500">
+        @foreach (sources as source)<source src="{{ source.src }}" @if(source.type) type="{{ source.type }}" @endif>@endforeach
+        @foreach (tracks as track)<track src="{{ track.src }}" kind="{{ track.kind }}" @if(track.srclang) srclang="{{ track.srclang }}" @endif @if(track.label) label="{{ track.label }}" @endif @if(track.default) default @endif>@endforeach
+        Your browser does not support audio playback.
+      </audio>
+      @if(controls)
+        <video-skin>
+          <media-seek-button slot="left" seconds="-10" aria-label="Back 10 seconds"></media-seek-button>
+          <media-play-button slot="left" aria-label="Play or pause"></media-play-button>
+          <media-seek-button slot="left" seconds="10" aria-label="Forward 10 seconds"></media-seek-button>
+          <media-time-group slot="center" class="font-mono tabular-nums text-xs"></media-time-group>
+          <media-progress-bar slot="center" @if(waveform) waveform="{{ waveform }}" @endif aria-label="Audio progress"></media-progress-bar>
+          <media-mute-button slot="right" aria-label="Mute or unmute"></media-mute-button>
+          <media-volume-slider slot="right" aria-label="Volume"></media-volume-slider>
+          <media-playback-rate-button slot="right" rates="0.5,0.75,1,1.25,1.5,2" aria-label="Playback speed"></media-playback-rate-button>
+          <media-settings-menu slot="right" aria-label="Audio settings"></media-settings-menu>
+          <media-airplay-button slot="right" aria-label="Play on AirPlay"></media-airplay-button>
+          <media-remote-playback-button slot="right" aria-label="Play on another device"></media-remote-playback-button>
+        </video-skin>
+      @endif
+    </video-player>
   </div>
 </figure>
+
+<style>
+video-player:not(:defined) video-skin { display: none; }
+video-player:defined > [data-native-fallback] { display: none; }
+@media (prefers-reduced-motion: reduce) { video-player, video-player * { transition-duration: 0.01ms !important; } }
+</style>
