@@ -100,7 +100,7 @@ Read the skill before building. Full list of skills is in `.claude/skills/`.
 ### CLI, build, deploy, test
 | Task | Skill |
 |---|---|
-| The `buddy` / `bud` / `stacks` / `stx` CLI (50+ commands, `make:*` scaffolding, custom commands in `app/Commands/`) | `stacks-buddy`, `stacks-cli`, `stacks-scaffolding` |
+| The `buddy` / `bud` / `stacks` CLI (50+ commands, `make:*` scaffolding, custom commands in `app/Commands/`) | `stacks-buddy`, `stacks-cli`, `stacks-scaffolding` |
 | Building (components, CLI binaries, server images, docs) | `stacks-build` |
 | Deploying (server vs serverless, hooks, first deploy) and cloud infra (EC2/Lambda/CDK/Route53/SES/S3) | `stacks-deploy`, `stacks-cloud` |
 | Testing (DB test utils, feature tests, config) | `stacks-testing` |
@@ -237,7 +237,8 @@ Eager loading, pagination, and the full method set are in `stacks-query-builder`
 
 ## The buddy CLI
 
-All of `./buddy`, `bud`, `stacks`, and `stx` invoke the same CLI. Run `buddy list` for everything and
+All of `./buddy`, `bud`, and `stacks` invoke the same CLI. (The `stx` bin belongs to the stx
+template engine, not buddy - see stacksjs/stacks#2081.) Run `buddy list` for everything and
 `buddy <command> --help` for flags. Full reference with every flag: `stacks-buddy`.
 
 **Develop & serve**
