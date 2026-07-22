@@ -87,3 +87,36 @@ export function signVideoAsset(path: string, expires: number, secret: string): s
   return createHmac('sha256', secret).update(`${path}\n${expires}`).digest('base64url')
 }
 export function verifyVideoAsset(path: string, expires: number, signature: string, secret: string, now: number = Date.now()): boolean { if (!Number.isInteger(expires) || expires * 1000 <= now) return false; const expected = Buffer.from(signVideoAsset(path, expires, secret)); const actual = Buffer.from(signature); return expected.length === actual.length && timingSafeEqual(expected, actual) }
+
+export interface VideoSegment { uri: string, duration: number, data: Uint8Array }
+export interface VideoHlsProtection { key: Uint8Array, keyUri: string, iv?: (_index: number) => Uint8Array }
+export interface ProtectedVideoPlaylist { playlist: string, files: Record<string, Uint8Array>, encrypted: boolean }
+
+function sequenceIv(index: number): Uint8Array { const value = new Uint8Array(16); new DataView(value.buffer).setBigUint64(8, BigInt(index)); return value }
+function hex(value: Uint8Array): string { return [...value].map(byte => byte.toString(16).padStart(2, '0')).join('') }
+async function encryptAes(data: Uint8Array, key: Uint8Array, iv: Uint8Array): Promise<Uint8Array> {
+  if (key.byteLength !== 16 || iv.byteLength !== 16) throw new TypeError('HLS AES-128 keys and IVs must contain 16 bytes')
+  const keyBytes = Uint8Array.from(key); const ivBytes = Uint8Array.from(iv); const dataBytes = Uint8Array.from(data)
+  const cryptoKey = await crypto.subtle.importKey('raw', keyBytes.buffer, { name: 'AES-CBC' }, false, ['encrypt'])
+  return new Uint8Array(await crypto.subtle.encrypt({ name: 'AES-CBC', iv: ivBytes.buffer }, cryptoKey, dataBytes.buffer))
+}
+export async function createProtectedVideoPlaylist(segments: VideoSegment[], protection?: VideoHlsProtection): Promise<ProtectedVideoPlaylist> {
+  if (!segments.length) throw new TypeError('Video playlist requires segments')
+  if (protection && /[\r\n"]/.test(protection.keyUri)) throw new TypeError('Invalid video key URI')
+  const lines = ['#EXTM3U', '#EXT-X-VERSION:7', `#EXT-X-TARGETDURATION:${Math.ceil(Math.max(...segments.map(item => item.duration)))}`, '#EXT-X-PLAYLIST-TYPE:VOD', '#EXT-X-INDEPENDENT-SEGMENTS']; const files: Record<string, Uint8Array> = {}
+  for (const [index, segment] of segments.entries()) {
+    if (!Number.isFinite(segment.duration) || segment.duration <= 0 || /[\r\n"]/.test(segment.uri)) throw new TypeError(`Invalid video segment ${index}`)
+    let data = segment.data
+    if (protection) { const iv = protection.iv?.(index) ?? sequenceIv(index); data = await encryptAes(data, protection.key, iv); lines.push(`#EXT-X-KEY:METHOD=AES-128,URI="${protection.keyUri}",IV=0x${hex(iv)}`) }
+    lines.push(`#EXTINF:${segment.duration.toFixed(6)},`, segment.uri); files[segment.uri] = data
+  }
+  lines.push('#EXT-X-ENDLIST', '')
+  return { playlist: lines.join('\n'), files, encrypted: !!protection }
+}
+export function videoAssetHeaders(path: string, bytes?: number, etag?: string, protectedMedia = false): Record<string, string> {
+  const manifest = /\.(?:m3u8|mpd|vtt)$/i.test(path)
+  const headers: Record<string, string> = { 'Accept-Ranges': 'bytes', 'Cache-Control': protectedMedia && manifest ? 'private, no-store' : manifest ? 'public, max-age=5, s-maxage=30' : 'public, max-age=31536000, immutable', 'X-Content-Type-Options': 'nosniff' }
+  if (bytes !== undefined) headers['Content-Length'] = String(bytes)
+  if (etag) headers.ETag = `"${etag}"`
+  return headers
+}
