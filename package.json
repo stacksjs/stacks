@@ -106,7 +106,7 @@
   "catalog": {
     "@stacksjs/clapp": "^0.2.12",
     "@stacksjs/components": "^0.2.82",
-    "@stacksjs/gitlint": "^0.1.5",
+    "@stacksjs/gitlint": "^0.1.7",
     "@stacksjs/stx": "^0.2.99",
     "@stacksjs/ts-cloud": "^0.7.56",
     "better-dx": "^0.2.17",
