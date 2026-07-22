@@ -1,5 +1,96 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.161...v0.70.162)
+
+## ✨ Features
+
+- **docs**: add internal documentation link checker to CI (#2056) (#2077) ([3688500](https://github.com/stacksjs/stacks/commit/3688500)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2056](https://github.com/stacksjs/stacks/issues/2056), [#2077](https://github.com/stacksjs/stacks/issues/2077), [#2056](https://github.com/stacksjs/stacks/issues/2056), [#2077](https://github.com/stacksjs/stacks/issues/2077))
+- **socials**: Bluesky rich-text facets, image upload, threads, and metrics (#2072) ([fccd14a](https://github.com/stacksjs/stacks/commit/fccd14a)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2072](https://github.com/stacksjs/stacks/issues/2072), [#2072](https://github.com/stacksjs/stacks/issues/2072))
+- **deploy**: map main to production push deploy ([05841c5](https://github.com/stacksjs/stacks/commit/05841c5)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **protocol**: retain native desktop lifecycle evidence ([9ccf025](https://github.com/stacksjs/stacks/commit/9ccf025)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **protocol**: retain live Redis driver contracts ([c2158a5](https://github.com/stacksjs/stacks/commit/c2158a5)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **protocol**: attest release tag provenance ([8fe0aec](https://github.com/stacksjs/stacks/commit/8fe0aec)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+- **desktop**: publish evidence-gated support matrix ([765d28d](https://github.com/stacksjs/stacks/commit/765d28d)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **desktop**: require signed update manifests ([0501cd5](https://github.com/stacksjs/stacks/commit/0501cd5)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **env**: add authenticated encryption envelope v2 ([d0305c1](https://github.com/stacksjs/stacks/commit/d0305c1)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **config**: enforce driver capability registry ([b43137e](https://github.com/stacksjs/stacks/commit/b43137e)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **protocol**: publish deterministic source manifest ([c4675f7](https://github.com/stacksjs/stacks/commit/c4675f7)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **protocol**: add conformance evidence pipeline ([82170d2](https://github.com/stacksjs/stacks/commit/82170d2)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **playground**: add StackBlitz STX starter ([ba3e403](https://github.com/stacksjs/stacks/commit/ba3e403)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **buddy**: install project-shaped registry stacks ([9feee00](https://github.com/stacksjs/stacks/commit/9feee00)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🐛 Bug Fixes
+
+- **upgrade**: don't force-bump independently-versioned @stacksjs packages (#2078) (#2079) ([24c43a8](https://github.com/stacksjs/stacks/commit/24c43a8)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2078](https://github.com/stacksjs/stacks/issues/2078), [#2079](https://github.com/stacksjs/stacks/issues/2079), [#2078](https://github.com/stacksjs/stacks/issues/2078), [#2079](https://github.com/stacksjs/stacks/issues/2079))
+- **migrate**: stop proposing to drop trait-managed columns (#2075) (#2076) ([eaec063](https://github.com/stacksjs/stacks/commit/eaec063)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2075](https://github.com/stacksjs/stacks/issues/2075), [#2076](https://github.com/stacksjs/stacks/issues/2076), [#2075](https://github.com/stacksjs/stacks/issues/2075), [#2076](https://github.com/stacksjs/stacks/issues/2076))
+- **socials**: resolve bluesky driver typecheck failures (#2074) ([bfd561f](https://github.com/stacksjs/stacks/commit/bfd561f)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2074](https://github.com/stacksjs/stacks/issues/2074), [#2074](https://github.com/stacksjs/stacks/issues/2074))
+- **logging**: stop rendering a stray "undefined" for missing log args (#2047) (#2071) ([6b23439](https://github.com/stacksjs/stacks/commit/6b23439)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2047](https://github.com/stacksjs/stacks/issues/2047), [#2071](https://github.com/stacksjs/stacks/issues/2071), [#2047](https://github.com/stacksjs/stacks/issues/2047), [#2071](https://github.com/stacksjs/stacks/issues/2071))
+- **desktop**: pin Craft v0.0.48 DMG retries ([e8c005a](https://github.com/stacksjs/stacks/commit/e8c005a)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **desktop**: provision native matrix resources ([66ffde3](https://github.com/stacksjs/stacks/commit/66ffde3)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **api**: gate generated OpenAPI artifacts ([b5117c8](https://github.com/stacksjs/stacks/commit/b5117c8)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **logging**: consume resolvable Clarity release ([462587f](https://github.com/stacksjs/stacks/commit/462587f)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **docs**: preserve Bun StackBlitz startup ([64fcdb2](https://github.com/stacksjs/stacks/commit/64fcdb2)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **deps**: recognize Pantry lock state ([2a446fc](https://github.com/stacksjs/stacks/commit/2a446fc)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **test**: discover project tests before running ([4e19799](https://github.com/stacksjs/stacks/commit/4e19799)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **types**: preserve legacy request handler compatibility ([20aed41](https://github.com/stacksjs/stacks/commit/20aed41)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **components**: export STX dashboard components ([d1d478c](https://github.com/stacksjs/stacks/commit/d1d478c)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **deps**: reconcile Pantry and Bun locks ([7d73ddb](https://github.com/stacksjs/stacks/commit/7d73ddb)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **setup**: provision projects through Pantry ([a6dad92](https://github.com/stacksjs/stacks/commit/a6dad92)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **cli**: preserve explicit command arguments ([ef0a396](https://github.com/stacksjs/stacks/commit/ef0a396)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **env**: decrypt encrypted values at the proxy read layer (#2048) (#2049) ([4077290](https://github.com/stacksjs/stacks/commit/4077290)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2048](https://github.com/stacksjs/stacks/issues/2048), [#2049](https://github.com/stacksjs/stacks/issues/2049), [#2048](https://github.com/stacksjs/stacks/issues/2048), [#2049](https://github.com/stacksjs/stacks/issues/2049))
+- **preloader**: always decrypt env, even for fast commands ([7a5e3a6](https://github.com/stacksjs/stacks/commit/7a5e3a6)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+
+## ♻️ Code Refactoring
+
+- move StackBlitz starter to dedicated repo ([ce19440](https://github.com/stacksjs/stacks/commit/ce19440)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **stores**: remove Pinia HMR hooks ([6f67455](https://github.com/stacksjs/stacks/commit/6f67455)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **frontend**: remove remaining Vue conventions ([b41daed](https://github.com/stacksjs/stacks/commit/b41daed)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 📝 Documentation
+
+- **protocol**: retain desktop lifecycle evidence ([6cacb1a](https://github.com/stacksjs/stacks/commit/6cacb1a)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **protocol**: pin Pantry integration contracts ([9a47bdb](https://github.com/stacksjs/stacks/commit/9a47bdb)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **buddy**: generate complete command reference ([0b1158e](https://github.com/stacksjs/stacks/commit/0b1158e)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+- **marketing**: prepare Product Hunt launch kit ([33d2762](https://github.com/stacksjs/stacks/commit/33d2762)) _(by Chris <chrisbreuer93@gmail.com>)_
+- finish the framework documentation sweep ([c532793](https://github.com/stacksjs/stacks/commit/c532793)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 💄 Styles
+
+- satisfy framework lint ([dc1360b](https://github.com/stacksjs/stacks/commit/dc1360b)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## ✅ Tests
+
+- **security**: cover untested update-channel and envelope invariants (#2061, #2062) (#2073) ([3647dce](https://github.com/stacksjs/stacks/commit/3647dce)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2061](https://github.com/stacksjs/stacks/issues/2061), [#2062](https://github.com/stacksjs/stacks/issues/2062), [#2073](https://github.com/stacksjs/stacks/issues/2073), [#2061](https://github.com/stacksjs/stacks/issues/2061), [#2062](https://github.com/stacksjs/stacks/issues/2062), [#2073](https://github.com/stacksjs/stacks/issues/2073))
+- **protocol**: retain driver contract matrices ([5a8add4](https://github.com/stacksjs/stacks/commit/5a8add4)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🔧 Chores
+
+- **ci**: pin Pantry v0.10.47 runtime ([559ef81](https://github.com/stacksjs/stacks/commit/559ef81)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **desktop**: pin Craft v0.0.47 MSI fix ([302460b](https://github.com/stacksjs/stacks/commit/302460b)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **ci**: use Node 24 artifact actions ([da589ec](https://github.com/stacksjs/stacks/commit/da589ec)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **desktop**: pin Craft v0.0.46 packagers ([5f9f6fe](https://github.com/stacksjs/stacks/commit/5f9f6fe)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **ci**: pin Pantry v0.10.43 release retries ([c8432ec](https://github.com/stacksjs/stacks/commit/c8432ec)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **ci**: pin Pantry v0.10.42 runtime ([a6d3035](https://github.com/stacksjs/stacks/commit/a6d3035)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **desktop**: pin Craft v0.0.45 lifecycle fixes ([bd119be](https://github.com/stacksjs/stacks/commit/bd119be)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **ci**: pin Pantry v0.10.40 runtime ([42d2b3e](https://github.com/stacksjs/stacks/commit/42d2b3e)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **ci**: pin Pantry and ts-cloud deployment contracts ([ccd35db](https://github.com/stacksjs/stacks/commit/ccd35db)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **protocol**: refresh canonical suite formatting ([6deb5ea](https://github.com/stacksjs/stacks/commit/6deb5ea)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **protocol**: refresh source snapshot evidence ([16773a5](https://github.com/stacksjs/stacks/commit/16773a5)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **protocol**: pin encryption RFC revision ([768bee7](https://github.com/stacksjs/stacks/commit/768bee7)) _(by Chris <chrisbreuer93@gmail.com>)_
+- delete examples/stackblitz directory ([77e1fba](https://github.com/stacksjs/stacks/commit/77e1fba)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **deps**: update Pantry to 0.10.34 ([dfd1a83](https://github.com/stacksjs/stacks/commit/dfd1a83)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🎉 Miscellaneous
+
+- Merge pull request #2064 from stacksjs/codex/protocol-ratification ([b01f111](https://github.com/stacksjs/stacks/commit/b01f111)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2064](https://github.com/stacksjs/stacks/issues/2064), [#2064](https://github.com/stacksjs/stacks/issues/2064))
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+- _Chris Breuer <chrisbreuer93@gmail.com>_
+- _Glenn Michael Torregosa <gtorregosa@gmail.com>_
+- _glennmichael123 <gtorregosa@gmail.com>_
+
 [Compare changes](github.com:stacksjs/stacks.git/compare/v0.70.160...v0.70.161)
 
 ## ✨ Features

@@ -1193,7 +1193,7 @@ Examples:
 ```bash
 buddy env:decrypt
 buddy env:decrypt --file .env.production
-buddy env:decrypt -k "SECRET_*"
+buddy env:decrypt -k "SECRET__"
 ```
 
 ### `env:encrypt`
@@ -1217,7 +1217,7 @@ Examples:
 ```bash
 buddy env:encrypt
 buddy env:encrypt --file .env.production
-buddy env:encrypt -k "SECRET_*"
+buddy env:encrypt -k "SECRET__"
 ```
 
 ### `env:get`
@@ -1460,7 +1460,7 @@ Register Safari Bundle IDs and check the App Store Connect app record
 | --- | --- | --- | --- |
 | `--api-key-id` | App Store Connect API key ID | value, required | — |
 | `--api-issuer-id` | App Store Connect API issuer ID | value, required | — |
-| `--api-key-path` | Path to the App Store Connect AuthKey_*.p8 file | value, required | — |
+| `--api-key-path` | Path to the App Store Connect AuthKey__.p8 file | value, required | — |
 | `--check` | Report missing resources without creating Bundle IDs | boolean, optional | — |
 | `--version` | Create or align App Store versions (defaults to package.json) | value, required | — |
 | `--platform` | Provision macos, ios, or all (defaults to config safariPlatforms) | value, required | — |
@@ -1481,7 +1481,7 @@ Archive and validate or upload the Safari app to App Store Connect
 | `--team-id` | Apple Developer team (defaults to config safariTeamId) | value, required | — |
 | `--api-key-id` | App Store Connect API key ID | value, required | — |
 | `--api-issuer-id` | App Store Connect API issuer ID | value, required | — |
-| `--api-key-path` | Path to the App Store Connect AuthKey_*.p8 file | value, required | — |
+| `--api-key-path` | Path to the App Store Connect AuthKey__.p8 file | value, required | — |
 | `--validate-only` | Create and validate the archive without uploading it | boolean, optional | — |
 | `--platform` | Publish macos, ios, or all (defaults to config safariPlatforms) | value, required | — |
 

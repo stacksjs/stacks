@@ -45,12 +45,12 @@ buddy extension:safari:publish
 buddy extension:safari:submit           # submit an already-uploaded version
 ```
 
-Chrome reads `CHROME_WEB_STORE_SERVICE_ACCOUNT_PATH` (or
-`GOOGLE_APPLICATION_CREDENTIALS`) and the configured
+Chrome reads `CHROME*WEB*STORE*SERVICE*ACCOUNT*PATH` (or
+`GOOGLE*APPLICATION*CREDENTIALS`) and the configured
 `chromeWebStore.publisherId`/`itemId`. The API only updates existing items, so
 create the initial Developer Dashboard item once and link the service-account
-email to the publisher account. Firefox reads `AMO_JWT_ISSUER` and
-`AMO_JWT_SECRET`; `web-ext` can create the initial listing when
+email to the publisher account. Firefox reads `AMO*JWT*ISSUER` and
+`AMO*JWT*SECRET`; `web-ext` can create the initial listing when
 `firefoxAddons.license` and `firefoxAddons.categories` are configured.
 
 For tag-driven publication, call Stacks' reusable workflow from the extension
@@ -60,7 +60,7 @@ resubmitting builds to the browser stores:
 
 ```yaml
 on:
-  workflow_dispatch:
+  workflow*dispatch:
     inputs:
       github-release-only:
         description: Build packages and create or repair the GitHub Release only
@@ -78,17 +78,17 @@ jobs:
   publish:
     uses: stacksjs/stacks/.github/workflows/browser-extension-release.yml@v0.70.147
     with:
-      chrome-publisher-id: ${{ vars.CHROME_WEB_STORE_PUBLISHER_ID }}
-      safari-enabled: ${{ vars.ENABLE_SAFARI_PUBLISH == 'true' }}
+      chrome-publisher-id: ${{ vars.CHROME*WEB*STORE*PUBLISHER*ID }}
+      safari-enabled: ${{ vars.ENABLE*SAFARI*PUBLISH == 'true' }}
       publish-stores: ${{ !inputs.github-release-only }}
       release-tag: ${{ inputs.release-tag || '' }}
     secrets:
-      CHROME_WEB_STORE_SERVICE_ACCOUNT_JSON: ${{ secrets.CHROME_WEB_STORE_SERVICE_ACCOUNT_JSON }}
-      AMO_JWT_ISSUER: ${{ secrets.AMO_JWT_ISSUER }}
-      AMO_JWT_SECRET: ${{ secrets.AMO_JWT_SECRET }}
-      APP_STORE_CONNECT_API_KEY: ${{ secrets.APP_STORE_CONNECT_API_KEY }}
-      APP_STORE_CONNECT_API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
-      APP_STORE_CONNECT_API_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_ISSUER_ID }}
+      CHROME*WEB*STORE*SERVICE*ACCOUNT*JSON: ${{ secrets.CHROME*WEB*STORE*SERVICE*ACCOUNT*JSON }}
+      AMO*JWT*ISSUER: ${{ secrets.AMO*JWT*ISSUER }}
+      AMO*JWT*SECRET: ${{ secrets.AMO*JWT*SECRET }}
+      APP*STORE*CONNECT*API*KEY: ${{ secrets.APP*STORE*CONNECT*API*KEY }}
+      APP*STORE*CONNECT*API*KEY*ID: ${{ secrets.APP*STORE*CONNECT*API*KEY*ID }}
+      APP*STORE*CONNECT*API*ISSUER*ID: ${{ secrets.APP*STORE*CONNECT*API*ISSUER*ID }}
 ```
 
 It packages every configured target, publishes Chrome and Firefox in
@@ -104,8 +104,8 @@ Safari Web Extensions ship inside Apple container apps, so the safari target
 has two halves: the web bundle (`extension:build --target safari`) and the
 macOS/iOS apps. The build rewrites promise-style `chrome.*` to `browser.*` (Safari's
 `chrome.*` is callback-flavoured) and pins
-`browser_specific_settings.safari.strict_min_version` (default 18.4, the first
-Safari with MAIN-world content scripts + `match_about_blank`).
+`browser*specific*settings.safari.strict*min*version` (default 18.4, the first
+Safari with MAIN-world content scripts + `match*about*blank`).
 
 ```sh
 buddy extension:safari:init   # scaffold the Xcode container app into safari/
@@ -123,8 +123,8 @@ iPhone and iPad. Stacks generates the current Apple-supported universal Xcode
 project from the same built extension, archives both platforms, uploads them
 to the same App Store Connect app record, waits for Apple processing, and
 selects each processed build on its matching App Store version. Publishing
-reads `APP_STORE_CONNECT_API_KEY_ID`, `APP_STORE_CONNECT_API_ISSUER_ID`, and
-`APP_STORE_CONNECT_API_KEY_PATH` from the environment. Run with
+reads `APP*STORE*CONNECT*API*KEY*ID`, `APP*STORE*CONNECT*API*ISSUER*ID`, and
+`APP*STORE*CONNECT*API*KEY*PATH` from the environment. Run with
 `--validate-only` to exercise Apple's validation without uploading a build.
 List any build output that is not part of the extension (marketing pages,
 etc.) in `safariExclude` so it stays out of the appex. The scaffold mirrors
@@ -168,16 +168,16 @@ export default defineExtension({
     supportUrl: 'https://example.com/support',
     copyright: '2026 Example',
     primaryCategory: 'UTILITIES',
-    contentRightsDeclaration: 'DOES_NOT_USE_THIRD_PARTY_CONTENT',
+    contentRightsDeclaration: 'DOES*NOT*USE*THIRD*PARTY*CONTENT',
     price: '0',
     reviewContact: {
       firstName: 'App', lastName: 'Reviewer',
       phone: '+1 555-555-0100', email: 'review@example.com',
     },
     screenshots: {
-      APP_DESKTOP: ['resources/store/macos.png'],
-      APP_IPHONE_67: ['resources/store/iphone.png'],
-      APP_IPAD_PRO_3GEN_129: ['resources/store/ipad.png'],
+      APP*DESKTOP: ['resources/store/macos.png'],
+      APP*IPHONE*67: ['resources/store/iphone.png'],
+      APP*IPAD*PRO*3GEN*129: ['resources/store/ipad.png'],
     },
     submitForReview: true,
   },
@@ -185,7 +185,7 @@ export default defineExtension({
 
   background: 'src/background/index.ts',
   content: [
-    { entry: 'src/content/index.ts', matches: ['<all_urls>'], runAt: 'document_start' },
+    { entry: 'src/content/index.ts', matches: ['<all*urls>'], runAt: 'document*start' },
     // world: 'MAIN' runs in the page's own JS context (patch page globals)
     { entry: 'src/content/inpage.ts', matches: ['*://example.com/*'], world: 'MAIN' },
   ],
@@ -199,7 +199,7 @@ export default defineExtension({
 
   // declarativeNetRequest — compiled from a module whose default export
   // returns the rules array, written to rules/<id>.json:
-  rules: [{ id: 'static_rules', source: 'src/rules/static.ts' }],
+  rules: [{ id: 'static*rules', source: 'src/rules/static.ts' }],
 
   manifest: {
     permissions: ['declarativeNetRequest', 'storage', 'tabs'],
@@ -207,7 +207,7 @@ export default defineExtension({
     minimumChromeVersion: '111',
     firefoxMinVersion: '142.0',
     safariMinVersion: '18.4',
-    webAccessibleResources: [{ resources: ['stubs/*.js'], matches: ['<all_urls>'] }],
+    webAccessibleResources: [{ resources: ['stubs/*.js'], matches: ['<all*urls>'] }],
   },
 
   // App-specific post-processing the generic build can't express:
@@ -224,8 +224,8 @@ stx pages to HTML (**sanitized for the extension CSP** — inline scripts/styles
 stripped, asset paths made relative, stx dev-chunks removed), bundles
 content/background scripts as classic **IIFE** bundles (esm would leak
 top-level vars as page globals), compiles each ruleset's `source` to
-`rules/<id>.json`, writes `manifest.json` (per-target: Chrome `service_worker`
-vs Firefox event-page + `browser_specific_settings.gecko`), and runs your
+`rules/<id>.json`, writes `manifest.json` (per-target: Chrome `service*worker`
+vs Firefox event-page + `browser*specific*settings.gecko`), and runs your
 `hooks.postBuild`.
 
 ## Programmatic API

@@ -422,11 +422,11 @@ Test upgrades in staging before production:
 
 ```bash
 # Staging
-APP_ENV=staging buddy upgrade:all
+APP*ENV=staging buddy upgrade:all
 buddy test
 
 # Production (after verification)
-APP_ENV=production buddy upgrade:all
+APP*ENV=production buddy upgrade:all
 ```
 
 ## Related Commands

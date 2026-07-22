@@ -157,8 +157,8 @@ export default defineDesktopConfig({
 Build native mobile apps with Capacitor.
 
 ```bash
-# The buddy mobile:* commands are not implemented yet.
-# Use the Capacitor CLI directly in the meantime:
+# The buddy mobile:* commands are not implemented yet
+# Use the Capacitor CLI directly in the meantime
 
 # Add platforms
 bunx cap add ios
