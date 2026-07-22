@@ -122,7 +122,7 @@
         "*.{js,ts,json,yaml,yml,md}": "bun x --bun pickier lint --fix"
       }
     },
-    "commit-msg": "bun x gitlint --edit .git/COMMIT_EDITMSG"
+    "commit-msg": "bun x gitlint --edit \"$1\""
   },
   "devDependencies": {
     "ajv": "^8.20.0",
