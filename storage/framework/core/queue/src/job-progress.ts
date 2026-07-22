@@ -26,15 +26,29 @@ interface JobProgress {
 }
 
 /**
+ * Clamp a reported progress value to the `percent` contract (0-100).
+ * Non-finite input (NaN/Infinity) reports 0.
+ *
+ * `percent` is a percent, not a fraction: `50` is 50%, `12.5` is 12.5%.
+ * The previous implementation branched on the value (`v <= 1 ? v*100 : v`)
+ * to also accept fractions, which made `setJobProgress(id, 1)` — a caller
+ * meaning 1% — jump to 100%. Progress is single-contract now
+ * (stacksjs/stacks#1984).
+ */
+export function clampProgressPercent(percent: number): number {
+  return Number.isFinite(percent) ? Math.max(0, Math.min(100, percent)) : 0
+}
+
+/**
  * Update the progress of the running job. Workers call this from
  * inside their handler; the UI polls `getJobProgress(id)` to render
- * a progress bar.
+ * a progress bar. `percent` is 0-100 (a percent, not a 0-1 fraction).
  *
  * @example
  * ```ts
- * await job.progress(0.5, 'Halfway there')
+ * await setJobProgress(job.id, 50, 'Halfway there')
  * // … later
- * await job.progress(1.0, 'Done')
+ * await setJobProgress(job.id, 100, 'Done')
  * ```
  */
 export async function setJobProgress(
@@ -43,10 +57,9 @@ export async function setJobProgress(
   message?: string,
 ): Promise<void> {
   const { cache } = await import('@stacksjs/cache')
-  const clamped = Number.isFinite(percent) ? Math.max(0, Math.min(100, percent * (percent <= 1 ? 100 : 1))) : 0
   await cache.set(
     PROGRESS_KEY(jobId),
-    { percent: clamped, message, updatedAt: Date.now() } as JobProgress,
+    { percent: clampProgressPercent(percent), message, updatedAt: Date.now() } as JobProgress,
     TTL_SECONDS,
   )
 }
