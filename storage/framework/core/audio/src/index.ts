@@ -86,3 +86,28 @@ export function signAudioAsset(path: string, expires: number, secret: string): s
   return createHmac('sha256', secret).update(`${path}\n${expires}`).digest('base64url')
 }
 export function verifyAudioAsset(path: string, expires: number, signature: string, secret: string, now: number = Date.now()): boolean { if (!Number.isInteger(expires) || expires * 1000 <= now) return false; const expected = Buffer.from(signAudioAsset(path, expires, secret)); const actual = Buffer.from(signature); return expected.length === actual.length && timingSafeEqual(expected, actual) }
+
+export interface AudioSegment { uri: string, duration: number, data: Uint8Array }
+export interface AudioHlsProtection { key: Uint8Array, keyUri: string }
+export async function createProtectedAudioPlaylist(segments: AudioSegment[], protection?: AudioHlsProtection): Promise<{ playlist: string, files: Record<string, Uint8Array>, encrypted: boolean }> {
+  if (!segments.length) throw new TypeError('Audio playlist requires segments')
+  if (protection && /[\r\n"]/.test(protection.keyUri)) throw new TypeError('Invalid audio key URI')
+  const files: Record<string, Uint8Array> = {}; const lines = ['#EXTM3U', '#EXT-X-VERSION:7', `#EXT-X-TARGETDURATION:${Math.ceil(Math.max(...segments.map(item => item.duration)))}`, '#EXT-X-PLAYLIST-TYPE:VOD']
+  for (const [index, segment] of segments.entries()) {
+    if (!Number.isFinite(segment.duration) || segment.duration <= 0 || /[\r\n"]/.test(segment.uri)) throw new TypeError(`Invalid audio segment ${index}`)
+    let data = segment.data
+    if (protection) {
+      if (protection.key.byteLength !== 16) throw new TypeError('Audio HLS AES-128 key must contain 16 bytes')
+      const iv = new Uint8Array(16)
+      new DataView(iv.buffer).setBigUint64(8, BigInt(index))
+      const key = Uint8Array.from(protection.key)
+      const input = Uint8Array.from(data)
+      const cryptoKey = await crypto.subtle.importKey('raw', key.buffer, { name: 'AES-CBC' }, false, ['encrypt'])
+      data = new Uint8Array(await crypto.subtle.encrypt({ name: 'AES-CBC', iv: iv.buffer }, cryptoKey, input.buffer))
+      const ivHex = [...iv].map(byte => byte.toString(16).padStart(2, '0')).join('')
+      lines.push(`#EXT-X-KEY:METHOD=AES-128,URI="${protection.keyUri}",IV=0x${ivHex}`)
+    }
+    lines.push(`#EXTINF:${segment.duration.toFixed(6)},`, segment.uri); files[segment.uri] = data
+  }
+  lines.push('#EXT-X-ENDLIST', ''); return { playlist: lines.join('\n'), files, encrypted: !!protection }
+}
