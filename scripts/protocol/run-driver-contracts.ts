@@ -40,6 +40,7 @@ function markdown(report: any): string {
     `- Source: \`${report.sourceRevision}\`\n` +
     `- Runtime: Bun \`${report.environment.runtime.version}\` on \`${report.environment.platform.os}/${report.environment.platform.architecture}\`\n` +
     `- SQLite: \`${report.environment.services.sqlite}\`\n` +
+    `- Redis: \`${report.environment.services.redis.version}\` at \`${report.environment.services.redis.topology}\`\n` +
     `- Test files: ${report.testRun.files.length}\n` +
     `- Result: **${report.testRun.status}**\n\n` +
     `| Category | Driver | Maturity | Execution | Topology | Evidence boundary |\n| --- | --- | --- | --- | --- | --- |\n${rows}\n`
@@ -61,7 +62,15 @@ export function runDriverContracts(): void {
       runtime: { name: 'bun', version: Bun.version },
       platform: { os: platform(), architecture: arch() },
       ci: process.env.GITHUB_ACTIONS === 'true' ? 'github-actions' : 'local',
-      services: { sqlite: sqliteVersion(), external: 'not provisioned; partial/experimental drivers are not promoted' },
+      services: {
+        sqlite: sqliteVersion(),
+        redis: {
+          version: process.env.REDIS_SERVICE_VERSION || 'unreported',
+          url: process.env.REDIS_URL ? 'redis://127.0.0.1:6379/0' : 'not provisioned',
+          topology: 'single-node loopback process provisioned by Pantry Action',
+        },
+        otherExternal: 'not provisioned; partial/experimental drivers are not promoted',
+      },
     },
     testRun: { status, durationMs, files: plan.tests },
     drivers: plan.records.map(driver => ({

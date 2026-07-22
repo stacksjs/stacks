@@ -26,18 +26,23 @@
     {
       "category": "cache",
       "name": "redis",
-      "status": "partial",
+      "status": "supported",
       "implementation": "storage/framework/core/cache/src/drivers/index.ts",
       "testEvidence": [
-        "storage/framework/core/cache/tests/integration.test.ts"
+        "storage/framework/core/cache/tests/redis-contract.test.ts"
       ],
       "topology": "client-server",
       "prerequisites": [
-        "Redis service"
+        "Redis 8.8 service"
       ],
       "limitations": [
-        "Implementation and unit evidence exist, but CI does not retain a live Redis service contract."
-      ]
+        "The retained contract covers core cache and TTL operations; TLS/authenticated deployments require separate provider evidence."
+      ],
+      "liveServiceContract": {
+        "service": "redis",
+        "version": "8.8.0",
+        "workflow": ".github/workflows/ci.yml"
+      }
     },
     {
       "category": "cache",
@@ -298,19 +303,23 @@
     {
       "category": "queue",
       "name": "redis",
-      "status": "partial",
+      "status": "supported",
       "implementation": "storage/framework/core/queue/src/drivers/redis.ts",
       "testEvidence": [
-        "storage/framework/core/queue/tests/integration.test.ts",
-        "storage/framework/core/queue/tests/envelope.test.ts"
+        "storage/framework/core/queue/tests/redis-contract.test.ts"
       ],
       "topology": "worker-and-redis",
       "prerequisites": [
-        "Redis service"
+        "Redis 8.8 service"
       ],
       "limitations": [
-        "Implementation and unit evidence exist, but CI does not retain a live Redis service contract."
-      ]
+        "The retained contract covers queue persistence operations; horizontal scaling and distributed-lock extensions require separate evidence."
+      ],
+      "liveServiceContract": {
+        "service": "redis",
+        "version": "8.8.0",
+        "workflow": ".github/workflows/ci.yml"
+      }
     },
     {
       "category": "queue",

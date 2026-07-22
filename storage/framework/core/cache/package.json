@@ -55,6 +55,6 @@
   },
   "devDependencies": {
     "@stacksjs/config": "workspace:*",
-    "@stacksjs/ts-cache": "^0.1.4"
+    "@stacksjs/ts-cache": "^0.1.5"
   }
 }
