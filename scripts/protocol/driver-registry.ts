@@ -15,6 +15,9 @@ function validate(): string[] {
     seen.add(id)
     if (!categories.has(driver.category)) errors.push(`${id}: unknown category`)
     if (driver.status === 'supported' && driver.testEvidence.length === 0) errors.push(`${id}: supported driver has no test evidence`)
+    if (driver.status === 'supported' && /client-server|managed|smtp|redis/.test(driver.topology))
+      errors.push(`${id}: externally hosted driver cannot be supported without a retained live-service contract`)
+    if (driver.status !== 'supported' && driver.limitations.length === 0) errors.push(`${id}: non-supported driver must explain its evidence gap`)
     if (driver.status !== 'unsupported' && !driver.implementation) errors.push(`${id}: operational driver has no implementation`)
     if (driver.implementation && !existsSync(resolve(root, driver.implementation))) errors.push(`${id}: implementation path does not exist`)
     for (const testPath of driver.testEvidence) {

@@ -26,7 +26,7 @@
     {
       "category": "cache",
       "name": "redis",
-      "status": "supported",
+      "status": "partial",
       "implementation": "storage/framework/core/cache/src/drivers/index.ts",
       "testEvidence": [
         "storage/framework/core/cache/tests/integration.test.ts"
@@ -35,7 +35,9 @@
       "prerequisites": [
         "Redis service"
       ],
-      "limitations": []
+      "limitations": [
+        "Implementation and unit evidence exist, but CI does not retain a live Redis service contract."
+      ]
     },
     {
       "category": "cache",
@@ -273,11 +275,13 @@
         "storage/framework/core/queue/tests/integration.test.ts",
         "storage/framework/core/queue/tests/failure-path-correctness.test.ts"
       ],
-      "topology": "worker-and-database",
+      "topology": "worker-and-embedded-sqlite",
       "prerequisites": [
-        "Supported SQL database"
+        "Bun SQLite for the retained CI contract"
       ],
-      "limitations": []
+      "limitations": [
+        "Other SQL providers require their own provider evidence."
+      ]
     },
     {
       "category": "queue",
@@ -294,7 +298,7 @@
     {
       "category": "queue",
       "name": "redis",
-      "status": "supported",
+      "status": "partial",
       "implementation": "storage/framework/core/queue/src/drivers/redis.ts",
       "testEvidence": [
         "storage/framework/core/queue/tests/integration.test.ts",
@@ -304,7 +308,9 @@
       "prerequisites": [
         "Redis service"
       ],
-      "limitations": []
+      "limitations": [
+        "Implementation and unit evidence exist, but CI does not retain a live Redis service contract."
+      ]
     },
     {
       "category": "queue",

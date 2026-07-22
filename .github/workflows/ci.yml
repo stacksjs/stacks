@@ -183,7 +183,9 @@ jobs:
           PROTOCOL_REPORT_DIR: protocol/reports
         run: |
           bun test scripts/protocol/run-conformance.test.ts
+          bun run protocol:drivers:test
           bun run protocol:conformance
+          cat protocol/reports/driver-matrix.md >> "$GITHUB_STEP_SUMMARY"
           cat protocol/reports/stacks-conformance.md >> "$GITHUB_STEP_SUMMARY"
 
       - name: Retain attributable conformance report

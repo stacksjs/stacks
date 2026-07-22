@@ -75,6 +75,7 @@
     "protocol:release:check": "bun scripts/protocol/release-manifest.ts --check",
     "protocol:drivers": "bun scripts/protocol/driver-registry.ts --write",
     "protocol:drivers:check": "bun scripts/protocol/driver-registry.ts --check",
+    "protocol:drivers:test": "bun scripts/protocol/run-driver-contracts.ts",
     "protocol:desktop": "bun scripts/protocol/desktop-support.ts --write",
     "protocol:desktop:check": "bun scripts/protocol/desktop-support.ts --check",
     "protocol:pantry": "bun scripts/protocol/pantry-evidence.ts --write",
