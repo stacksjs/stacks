@@ -421,7 +421,10 @@ export function migrate(buddy: CLI): void {
       // the migration table by both inserting the same row name.
       const lock = acquireMigrationLock()
       if (!lock.acquired) {
-        log.error('Another migration is already running (.stacks/migrations.lock exists). Wait for it to finish, or remove the lockfile if it is stale.')
+        // syncError, not the async log.error: process.exit below fires before
+        // an async logger flushes, so an async call would exit 1 with no
+        // message — leaving a stale lockfile looking like a silent crash.
+        log.syncError('Another migration is already running (.stacks/migrations.lock exists). Wait for it to finish, or remove the lockfile if it is stale.')
         process.exit(ExitCode.FatalError)
       }
 
