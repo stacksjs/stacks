@@ -1,0 +1,20 @@
+{
+  "protocolVersion": "1.0-draft",
+  "rfcsRevision": "cda56fb8f967ca9f7522b119425a3f438f7f2fe9",
+  "sourceRepository": "https://github.com/stacksjs/rfcs",
+  "files": {
+    "FIXTURES.md": "sha256:3363eb8a6fd5f59b164ba31e2ec26e216187b8d7d5814f69d44d4e4efad8ee04",
+    "REPORTS.md": "sha256:dbd395d2f6829a0f64f570a466257210780a49a15cc8536f3ec7fa0e110eadf6",
+    "REQUIREMENTS.md": "sha256:cf392fe3338f22a5465511cd72e76d1ac68f427dcb9b37646d097375f04c8fa6",
+    "catalog.json": "sha256:7c105509f1a25c20a2471b464563edfacffe047057fd35467a09da9e093e215b",
+    "driver-contracts.json": "sha256:bd7904bd52653365becad715f6628506dbdb90ae56b35d95befebef671e067f2",
+    "examples/unverified-report.json": "sha256:b0e9b460b27c648c42ee9e3aace88fb0bbe02de98e5e9796bf33a2e21e1757d7",
+    "examples/unverified-report.md": "sha256:cc789ec6b51e35c032372a75f1ac9b51cefaa5064c4995a2231a531df640280e",
+    "fixtures/conformance.json": "sha256:755ec8a5a36be5d8657c22397722ce558346c83f9ee20031c89a1d7d2272e1a9",
+    "schemas/conformance-report.schema.json": "sha256:a534d46e665a14b4024febee382daa34df99397a08ea211a3b86cbeb29295328",
+    "schemas/fixture-corpus.schema.json": "sha256:d7812a6030747986060df011485a944ba6736fc6f8d2bd887fce7dd1647ce42f",
+    "schemas/requirement-catalog.schema.json": "sha256:dddcb57864a74ae66eee8f66965d035b434e73dc045041dd94510645c40dcdce",
+    "LICENSE-SPECIFICATION.md": "sha256:a0ac8cce4a5e48fc7a57d88b456404510e7642aefdce1829062304b947415c0d",
+    "LICENSE-FIXTURES.md": "sha256:bd948841a1c4fb4a7239555f6aac7502a541ad4cc4648796c31af74a85129fa4"
+  }
+}

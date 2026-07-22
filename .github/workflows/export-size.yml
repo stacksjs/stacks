@@ -20,8 +20,9 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Setup Pantry
-        uses: home-lang/pantry/packages/action@main
+        uses: pantry-pm/pantry/packages/action@d738d5fd2e543e3b8380e5fbd5d01ba8936c1790 # v0.10.47
         with:
+          version: '0.10.47'
           install: 'false'
 
 #      - uses: antfu/export-size-action@v1

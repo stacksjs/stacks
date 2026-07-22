@@ -57,7 +57,7 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "@stacksjs/bun-queue": "^0.1.0"
+    "@stacksjs/bun-queue": "^0.1.7"
   },
   "peerDependencies": {
     "redis": ">=4.0.0"

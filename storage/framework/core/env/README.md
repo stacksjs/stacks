@@ -6,7 +6,7 @@ A secure .env file management package with built-in encryption support for Bun a
 
 - 🔐 **Automatic Encryption/Decryption** - Secure your environment variables with public-key cryptography
 - 🚀 **Bun Plugin** - Seamless integration with Bun's runtime
-- 🔑 **secp256k1 ECIES** - Industry-standard elliptic curve encryption
+- 🔑 **Versioned envelope** - X25519 + HKDF-SHA-256 + AES-256-GCM
 - 📝 **Variable Expansion** - Support for `${VAR}`, defaults, and alternates
 - 🔧 **Command Substitution** - Execute commands with `$(command)`
 - 🎯 **Multi-Environment** - Manage multiple .env files for different environments
@@ -98,12 +98,25 @@ buddy env:decrypt --file .env.production
 
 ### How Encryption Works
 
-The encryption uses **secp256k1 ECIES** (Elliptic Curve Integrated Encryption Scheme):
+New writes use the experimental version 2 envelope proposed in
+[`stacksjs/rfcs#6`](https://github.com/stacksjs/rfcs/issues/6):
 
-1. A keypair is generated using secp256k1 (same as Bitcoin)
-2. Each value is encrypted with AES-256-GCM using an ephemeral key
-3. The ephemeral key is encrypted with the public key
-4. Only the private key can decrypt the values
+1. A recipient keypair is generated using X25519.
+2. Every value gets a fresh ephemeral X25519 pair, 16-byte HKDF salt, and
+   12-byte AES-GCM nonce.
+3. X25519 and HKDF-SHA-256 derive a one-use AES-256-GCM key.
+4. Ciphertext and envelope metadata are authenticated; malformed, modified, and
+   wrong-key inputs fail with the same non-secret error.
+
+The pre-RFC `encrypted:<base64>` format can only be read for migration. New
+writes are `encrypted:v2:<base64url>`, and legacy public keys are rejected. Run
+`buddy env:rotate` to decrypt legacy values in memory, generate a version 2 key,
+and replace the encrypted file without writing plaintext to disk.
+
+This feature is not a complete secret-management system. It has not yet passed
+the independent review required by [Stacks issue #2058](https://github.com/stacksjs/stacks/issues/2058),
+so do not treat it as a production security boundary without your own review.
+See [SECURITY.md](./SECURITY.md) for its threat model and non-guarantees.
 
 **Example encrypted .env:**
 
@@ -112,11 +125,11 @@ The encryption uses **secp256k1 ECIES** (Elliptic Curve Integrated Encryption Sc
 # /            public-key encryption for .env files          /
 # /       [how it works](https://stacksjs.com/encryption)   /
 # /----------------------------------------------------------/
-DOTENV_PUBLIC_KEY="034af93e93708b994c10f236c96ef88e47291066946cce2e8d98c9e02c741ced45"
+DOTENV_PUBLIC_KEY="x25519-public:<base64url-spki>"
 
 # .env
-API_KEY="encrypted:BDqDBibm4wsYqMpCjTQ6BsDHmMadg9K3dAt+Z9HPMfLEIRVz50hmLXPXRuDBXaJi..."
-DB_PASSWORD="encrypted:AKx8Bh3m5xtZrNqDkUP7CuEInOcfg9L4eBy/2qt59vbSU0aN9WSmN..."
+API_KEY="encrypted:v2:<base64url-envelope>"
+DB_PASSWORD="encrypted:v2:<base64url-envelope>"
 ```
 
 ## CLI Commands

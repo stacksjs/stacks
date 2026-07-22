@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://stacksjs.org/protocol/1.0-draft/requirement-catalog.schema.json",
+  "title": "Stacks Protocol requirement catalog",
+  "type": "object",
+  "required": ["protocol", "protocolVersion", "catalogRevision", "sourceSections", "profiles", "resultSemantics", "requirements", "extensions", "compatibility"],
+  "properties": {
+    "protocol": { "const": "Stacks Protocol" },
+    "protocolVersion": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+(?:-draft)?$" },
+    "catalogRevision": { "type": "integer", "minimum": 1 },
+    "sourceSections": { "type": "object", "minProperties": 1 },
+    "profiles": {
+      "type": "object",
+      "required": ["Core", "Standard", "Complete"]
+    },
+    "resultSemantics": {
+      "type": "object",
+      "required": ["pass", "fail", "skipped", "unsupported", "exception", "experimental"]
+    },
+    "requirements": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "profile", "level", "area", "evidence", "statement"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^(CORE|STD|COMP)-[A-Z]+-[0-9]{2}$" },
+          "profile": { "enum": ["Core", "Standard", "Complete"] },
+          "level": { "enum": ["MUST", "MUST NOT", "SHOULD", "SHOULD NOT", "MAY"] },
+          "area": { "type": "string", "minLength": 1 },
+          "evidence": { "enum": ["behavior", "inspection"] },
+          "statement": { "type": "string", "minLength": 10 }
+        },
+        "additionalProperties": false
+      }
+    },
+    "extensions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "name", "requires"]
+      }
+    },
+    "compatibility": { "type": "object" }
+  }
+}

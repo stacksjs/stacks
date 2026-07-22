@@ -1,0 +1,100 @@
+{
+  "schemaVersion": "1.0.0",
+  "generatedFrom": "storage/framework/core/desktop/src/support.ts",
+  "stableTargets": 0,
+  "externalGates": [
+    "https://github.com/stacksjs/stacks/issues/2059",
+    "https://github.com/stacksjs/stacks/issues/2062",
+    "https://github.com/stacksjs/stacks/issues/2063"
+  ],
+  "targets": [
+    {
+      "platform": "darwin",
+      "architecture": "arm64",
+      "status": "experimental",
+      "osVersions": [
+        "macOS 15 runner"
+      ],
+      "packageFormat": "DMG + PKG",
+      "signing": "pending",
+      "notarization": "pending",
+      "installLaunchEvidence": "https://github.com/stacksjs/stacks/actions/runs/29890804159",
+      "updateRollbackEvidence": "https://github.com/stacksjs/stacks/actions/runs/29890804159",
+      "packagingEvidence": "https://github.com/stacksjs/stacks/blob/main/protocol/evidence/craft.json",
+      "blockingIssues": [
+        "https://github.com/stacksjs/stacks/issues/2062",
+        "https://github.com/home-lang/craft/issues/11"
+      ],
+      "limitations": [
+        "Lifecycle fixtures are unsigned while platform identities remain unprovisioned.",
+        "Craft v0.0.48 is source-tagged, but its upstream release workflow is blocked by repository Actions policy."
+      ]
+    },
+    {
+      "platform": "darwin",
+      "architecture": "x64",
+      "status": "experimental",
+      "osVersions": [
+        "macOS 15 Intel runner"
+      ],
+      "packageFormat": "DMG + PKG",
+      "signing": "pending",
+      "notarization": "pending",
+      "installLaunchEvidence": "https://github.com/stacksjs/stacks/actions/runs/29890804159",
+      "updateRollbackEvidence": "https://github.com/stacksjs/stacks/actions/runs/29890804159",
+      "packagingEvidence": "https://github.com/stacksjs/stacks/blob/main/protocol/evidence/craft.json",
+      "blockingIssues": [
+        "https://github.com/stacksjs/stacks/issues/2062",
+        "https://github.com/home-lang/craft/issues/11"
+      ],
+      "limitations": [
+        "Lifecycle fixtures are unsigned while platform identities remain unprovisioned.",
+        "Craft v0.0.48 is source-tagged, but its upstream release workflow is blocked by repository Actions policy."
+      ]
+    },
+    {
+      "platform": "linux",
+      "architecture": "x64",
+      "status": "experimental",
+      "osVersions": [
+        "Ubuntu 24.04 runner"
+      ],
+      "packageFormat": "DEB",
+      "signing": "pending",
+      "notarization": "not-applicable",
+      "installLaunchEvidence": "https://github.com/stacksjs/stacks/actions/runs/29890804159",
+      "updateRollbackEvidence": "https://github.com/stacksjs/stacks/actions/runs/29890804159",
+      "packagingEvidence": "https://github.com/stacksjs/stacks/blob/main/protocol/evidence/craft.json",
+      "blockingIssues": [
+        "https://github.com/stacksjs/stacks/issues/2062",
+        "https://github.com/home-lang/craft/issues/11"
+      ],
+      "limitations": [
+        "The lifecycle fixture is unsigned and no package repository support policy is published.",
+        "Craft v0.0.48 is source-tagged, but its upstream release workflow is blocked by repository Actions policy."
+      ]
+    },
+    {
+      "platform": "win32",
+      "architecture": "x64",
+      "status": "experimental",
+      "osVersions": [
+        "Windows Server 2025 runner"
+      ],
+      "packageFormat": "MSI + ZIP",
+      "signing": "pending",
+      "notarization": "not-applicable",
+      "installLaunchEvidence": "https://github.com/stacksjs/stacks/actions/runs/29890804159",
+      "updateRollbackEvidence": "https://github.com/stacksjs/stacks/actions/runs/29890804159",
+      "packagingEvidence": "https://github.com/stacksjs/stacks/blob/main/protocol/evidence/craft.json",
+      "blockingIssues": [
+        "https://github.com/stacksjs/stacks/issues/2062",
+        "https://github.com/home-lang/craft/issues/11"
+      ],
+      "limitations": [
+        "The lifecycle fixture is not Authenticode-signed.",
+        "Craft v0.0.48 is source-tagged, but its upstream release workflow is blocked by repository Actions policy."
+      ]
+    }
+  ]
+}

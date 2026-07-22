@@ -99,3 +99,6 @@ storage/framework/**/storage/logs/
 # @stacksjs/defaults copies resources + app from storage/framework/defaults at build time
 storage/framework/core/defaults/resources/
 storage/framework/core/defaults/app/
+
+# Generated protocol evidence is retained by CI, not committed.
+/protocol/reports/

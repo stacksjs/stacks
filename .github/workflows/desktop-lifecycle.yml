@@ -1,0 +1,144 @@
+name: Desktop Lifecycle
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - storage/framework/core/desktop/**
+      - scripts/protocol/craft-evidence.ts
+      - scripts/protocol/desktop-lifecycle-report.ts
+      - protocol/evidence/craft.json
+      - .github/workflows/desktop-lifecycle.yml
+  pull_request:
+    branches: [main]
+    paths:
+      - storage/framework/core/desktop/**
+      - scripts/protocol/craft-evidence.ts
+      - scripts/protocol/desktop-lifecycle-report.ts
+      - protocol/evidence/craft.json
+      - .github/workflows/desktop-lifecycle.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
+env:
+  CRAFT_SOURCE_REVISION: bf75807669e3af6cfb4ae34724be5c613442aee2
+
+jobs:
+  lifecycle:
+    name: ${{ matrix.name }} install/update/rollback
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-15
+            name: darwin-arm64
+            platform: darwin
+            architecture: arm64
+            formats: dmg,pkg
+          - os: macos-15-intel
+            name: darwin-x64
+            platform: darwin
+            architecture: x64
+            formats: dmg,pkg
+          - os: ubuntu-24.04
+            name: linux-x64
+            platform: linux
+            architecture: x64
+            formats: deb
+          - os: windows-2025
+            name: win32-x64
+            platform: win32
+            architecture: x64
+            formats: msi,zip
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 35
+    env:
+      CRAFT_EVIDENCE_LABEL: ${{ matrix.name }}
+
+    steps:
+      - name: Checkout Stacks
+        uses: actions/checkout@v6
+
+      - name: Checkout pinned Craft source
+        uses: actions/checkout@v6
+        with:
+          repository: home-lang/craft
+          ref: ${{ env.CRAFT_SOURCE_REVISION }}
+          path: .craft-contract
+
+      - name: Setup Pantry
+        uses: pantry-pm/pantry/packages/action@d738d5fd2e543e3b8380e5fbd5d01ba8936c1790 # v0.10.47
+        with:
+          version: '0.10.47'
+          install: 'false'
+
+      - name: Install Craft dependencies
+        working-directory: .craft-contract
+        run: |
+          if [ "$RUNNER_OS" = "macOS" ]; then ulimit -n 65536; fi
+          bun install --frozen-lockfile
+
+      - name: Install WiX Toolset v3
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $bin = Get-ChildItem "${env:ProgramFiles(x86)}\WiX Toolset v3*\bin" -Directory | Select-Object -First 1
+          if (-not $bin) {
+            choco install wixtoolset --version=3.14.1 --yes --no-progress --allow-downgrade
+            $bin = Get-ChildItem "${env:ProgramFiles(x86)}\WiX Toolset v3*\bin" -Directory | Select-Object -First 1
+          }
+          if (-not $bin) { throw 'WiX Toolset bin directory not found' }
+          $candle = Join-Path $bin.FullName 'candle.exe'
+          $version = (Get-Item $candle).VersionInfo.ProductVersion
+          if (-not $version.StartsWith('3.14')) { throw "Expected WiX 3.14, found $version" }
+          Write-Host "Using WiX $version from $($bin.FullName)"
+          $bin.FullName | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+
+      - name: Verify immutable Craft checkout
+        run: test "$(git -C .craft-contract rev-parse HEAD)" = "$CRAFT_SOURCE_REVISION"
+
+      - name: Exercise native package lifecycle
+        working-directory: .craft-contract
+        run: bun scripts/native-lifecycle.ts --install
+
+      - name: Reclaim Craft dependency space
+        if: runner.os == 'macOS'
+        run: |
+          rm -rf .craft-contract/node_modules
+          bun pm cache rm
+
+      - name: Install Stacks dependencies
+        run: |
+          if [ "$RUNNER_OS" = "macOS" ]; then ulimit -n 65536; fi
+          bun install --frozen-lockfile
+
+      - name: Verify Stacks update security contracts
+        run: bun test storage/framework/core/desktop/tests/invites-updater.test.ts
+
+      - name: Validate and attest lifecycle report
+        run: >-
+          bun scripts/protocol/desktop-lifecycle-report.ts
+          --report .craft-contract/artifacts/native-lifecycle/${{ matrix.name }}/report.json
+          --output protocol/reports/desktop/${{ matrix.name }}/attestation.json
+          --revision "$CRAFT_SOURCE_REVISION"
+          --platform ${{ matrix.platform }}
+          --architecture ${{ matrix.architecture }}
+          --formats ${{ matrix.formats }}
+
+      - name: Upload native lifecycle evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: stacks-desktop-lifecycle-${{ matrix.name }}-${{ github.sha }}
+          path: |
+            .craft-contract/artifacts/native-lifecycle/${{ matrix.name }}/report.json
+            .craft-contract/artifacts/native-lifecycle/${{ matrix.name }}/work/packages-*/**
+            protocol/reports/desktop/${{ matrix.name }}/attestation.json
+          if-no-files-found: error
+          retention-days: 90

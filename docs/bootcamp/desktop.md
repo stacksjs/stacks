@@ -45,8 +45,25 @@ The build creates `storage/framework/desktop-dist/` with:
 - `stacks-desktop`, the compiled application launcher
 - `craft-runtime`, the native Craft runtime
 - `desktop.json`, the window and application manifest
+- `provenance.json`, containing the exact Stacks revision, Bun version, Craft
+  runtime digest, target, support status, and artifact inventory
+- `checksums.sha256`, containing the launcher, runtime, and manifest digests
 
 `DESKTOP_URL` overrides `APP_URL` when the desktop application should target a separate host.
+
+The framework build output is currently an **experimental unpackaged bundle**.
+Craft v0.0.48 separately defines DMG/PKG, DEB, MSI, and ZIP packaging contracts,
+which Stacks exercises through a pinned four-runner lifecycle matrix. These
+unsigned test installers are evidence for packaging behavior, not release-ready
+artifacts. No OS/architecture row is stable yet. A build refuses
+`DESKTOP_RELEASE_CHANNEL=stable` until that exact target has retained
+install/launch/update/rollback evidence and enforced platform signing. See the
+[machine-readable support matrix](https://github.com/stacksjs/stacks/blob/main/protocol/evidence/desktop-support.json)
+and issues [#2059](https://github.com/stacksjs/stacks/issues/2059),
+[#2062](https://github.com/stacksjs/stacks/issues/2062), and
+[#2063](https://github.com/stacksjs/stacks/issues/2063). The pinned Craft source,
+file digests, matrix, and current upstream Actions blocker are recorded in
+[`protocol/evidence/craft.json`](https://github.com/stacksjs/stacks/blob/main/protocol/evidence/craft.json).
 
 ## Desktop API
 
@@ -142,7 +159,11 @@ The workspace discovers every `config/*.ts` file. Literal scalar values can be e
 
 ## Updates
 
-Craft supplies the native updater. Publish a signed manifest at the URL returned by `createUpdateManifestUrl()` and configure your release pipeline to produce per-platform checksums and signatures. Desktop builds disable development tools and include their update channel in the application manifest.
+Craft supplies the native update handoff. Stacks requires an Ed25519-signed
+manifest from the URL returned by `createUpdateManifestUrl()`, verifies its
+configured key ID before download, then verifies the artifact size and SHA-256
+before atomic staging. A checksum alone is not an update signature. Platform
+installer signing/notarization remains a separate release gate.
 
 Use a stable HTTPS endpoint in production. Never fetch update metadata over plain HTTP.
 

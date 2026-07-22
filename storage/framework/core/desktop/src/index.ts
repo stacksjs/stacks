@@ -4,6 +4,7 @@ import { join } from 'node:path'
 
 export * from './invites'
 export * from './updater'
+export * from './support'
 
 export interface Desktop {
   app: unknown

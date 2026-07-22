@@ -131,10 +131,10 @@ OTHER=data
 // ─── Crypto Tests ────────────────────────────────────────────────────────────
 
 describe('Env Crypto - Real Encryption', () => {
-  test('generateKeypair produces valid hex strings', () => {
+  test('generateKeypair produces versioned X25519 strings', () => {
     const { publicKey, privateKey } = generateKeypair()
-    expect(publicKey).toMatch(/^[0-9a-f]{64}$/)
-    expect(privateKey).toMatch(/^[0-9a-f]{64}$/)
+    expect(publicKey).toMatch(/^x25519-public:[A-Za-z0-9_-]+$/)
+    expect(privateKey).toMatch(/^x25519-private:[A-Za-z0-9_-]+$/)
   })
 
   test('generateKeypair produces unique keypairs', () => {
@@ -171,7 +171,7 @@ describe('Env Crypto - Real Encryption', () => {
     const original = 'my-api-key-12345'
 
     const encrypted = encryptValue(original, publicKey)
-    expect(encrypted.startsWith('encrypted:')).toBe(true)
+    expect(encrypted.startsWith('encrypted:v2:')).toBe(true)
 
     const decrypted = decryptValue(encrypted, privateKey)
     expect(decrypted).toBe(original)
@@ -189,7 +189,7 @@ describe('Env Crypto - Real Encryption', () => {
   })
 
   test('decryptValue throws on truncated encrypted data', () => {
-    expect(() => decryptValue('encrypted:AAAA', 'somekey')).toThrow('too short')
+    expect(() => decryptValue('encrypted:AAAA', 'somekey')).toThrow('authentication or format error')
   })
 
   test('parseEnvFromKey extracts environment from key name', () => {

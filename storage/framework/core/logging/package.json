@@ -53,7 +53,7 @@
     "prepublishOnly": "bun run build"
   },
   "devDependencies": {
-    "@stacksjs/clarity": "^0.3.24",
+    "@stacksjs/clarity": "^0.3.31",
     "@stacksjs/cli": "workspace:*",
     "@stacksjs/config": "workspace:*",
     "@stacksjs/error-handling": "workspace:*",

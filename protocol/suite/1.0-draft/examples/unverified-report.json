@@ -1,0 +1,534 @@
+{
+  "reportVersion": "1.0.0-draft.1",
+  "protocol": {
+    "version": "1.0-draft",
+    "catalogRevision": 1,
+    "suiteVersion": "1.0.0-draft.1",
+    "rfcsRevision": "0000000000000000000000000000000000000000"
+  },
+  "implementation": {
+    "name": "Example implementation",
+    "version": "0.0.0-unverified",
+    "revision": "0000000000000000000000000000000000000000",
+    "repository": "https://example.com/implementation",
+    "sourceDigest": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
+  },
+  "execution": {
+    "startedAt": "2026-01-01T00:00:00.000Z",
+    "completedAt": "2026-01-01T00:00:01.000Z",
+    "runtime": {
+      "name": "example-runtime",
+      "version": "0.0.0"
+    },
+    "platform": {
+      "os": "example-os",
+      "architecture": "example-arch"
+    },
+    "ci": {
+      "provider": "example-ci",
+      "runUrl": "https://example.com/ci/run/1",
+      "artifactUrl": "https://example.com/ci/run/1/report.json"
+    }
+  },
+  "profileClaim": null,
+  "results": [
+    {
+      "requirementId": "CORE-CONV-01",
+      "status": "skipped",
+      "fixtureId": "fixture.conventions.override",
+      "evidenceUrl": null,
+      "durationMs": 0,
+      "notes": "Example only; no implementation was executed."
+    },
+    {
+      "requirementId": "CORE-CONV-02",
+      "status": "skipped",
+      "fixtureId": "fixture.conventions.override",
+      "evidenceUrl": null,
+      "durationMs": 0,
+      "notes": "Example only; no implementation was executed."
+    },
+    {
+      "requirementId": "CORE-CONV-03",
+      "status": "skipped",
+      "fixtureId": null,
+      "evidenceUrl": null,
+      "durationMs": 0,
+      "notes": "Example only; no implementation was executed."
+    },
+    {
+      "requirementId": "CORE-CONV-04",
+      "status": "skipped",
+      "fixtureId": null,
+      "evidenceUrl": null,
+      "durationMs": 0,
+      "notes": "Example only; no implementation was executed."
+    },
+    {
+      "requirementId": "CORE-CONV-05",
+      "status": "skipped",
+      "fixtureId": "fixture.conventions.scaffold",
+      "evidenceUrl": null,
+      "durationMs": 0,
+      "notes": "Example only; no implementation was executed."
+    },
+    {
+      "requirementId": "CORE-MVA-01",
+      "status": "skipped",
+      "fixtureId": "fixture.lifecycle.short-circuit",
+      "evidenceUrl": null,
+      "durationMs": 0,
+      "notes": "Example only; no implementation was executed."
+    },
+    {
+      "requirementId": "CORE-MVA-02",
+      "status": "skipped",
+      "fixtureId": null,
+      "evidenceUrl": null,
+      "durationMs": 0,
+      "notes": "Example only; no implementation was executed."
+    },
+    {
+      "requirementId": "CORE-GEN-01",
+      "status": "skipped",
+      "fixtureId": "fixture.generation.migrations",
+      "evidenceUrl": null,
+      "durationMs": 0,
+      "notes": "Example only; no implementation was executed."
+    },
+    {
+      "requirementId": "CORE-GEN-02",
+      "status": "skipped",
+      "fixtureId": "fixture.generation.migrations",
+      "evidenceUrl": null,
+      "durationMs": 0,
+      "notes": "Example only; no implementation was executed."
+    },
+    {
+      "requirementId": "CORE-GEN-03",
+      "status": "skipped",
+      "fixtureId": null,
+      "evidenceUrl": null,
+      "durationMs": 0,
+      "notes": "Example only; no implementation was executed."
+    },
+    {
+      "requirementId": "CORE-ERR-01",
+      "status": "skipped",
+      "fixtureId": "fixture.errors.validation-redaction",
+      "evidenceUrl": null,
+      "durationMs": 0,
+      "notes": "Example only; no implementation was executed."
+    },
+    {
+      "requirementId": "CORE-ERR-02",
+      "status": "skipped",
+      "fixtureId": "fixture.errors.validation-redaction",
+      "evidenceUrl": null,
+      "durationMs": 0,
+      "notes": "Example only; no implementation was executed."
+    },
+    {
+      "requirementId": "CORE-ROUTE-01",
+      "status": "skipped",
+      "fixtureId": "fixture.routing.named-parameters",
+      "evidenceUrl": null,
+      "durationMs": 0,
+      "notes": "Example only; no implementation was executed."
+    },
+    {
+      "requirementId": "CORE-ROUTE-02",
+      "status": "skipped",
+      "fixtureId": "fixture.routing.named-parameters",
+      "evidenceUrl": null,
+      "durationMs": 0,
+      "notes": "Example only; no implementation was executed."
+    },
+    {
+      "requirementId": "CORE-LIFE-01",
+      "status": "skipped",
+      "fixtureId": "fixture.lifecycle.short-circuit",
+      "evidenceUrl": null,
+      "durationMs": 0,
+      "notes": "Example only; no implementation was executed."
+    },
+    {
+      "requirementId": "CORE-LIFE-02",
+      "status": "skipped",
+      "fixtureId": "fixture.lifecycle.short-circuit",
+      "evidenceUrl": null,
+      "durationMs": 0,
+      "notes": "Example only; no implementation was executed."
+    },
+    {
+      "requirementId": "CORE-VAL-01",
+      "status": "skipped",
+      "fixtureId": "fixture.errors.validation-redaction",
+      "evidenceUrl": null,
+      "durationMs": 0,
+      "notes": "Example only; no implementation was executed."
+    },
+    {
+      "requirementId": "CORE-VAL-02",
+      "status": "skipped",
+      "fixtureId": "fixture.lifecycle.short-circuit",
+      "evidenceUrl": null,
+      "durationMs": 0,
+      "notes": "Example only; no implementation was executed."
+    },
+    {
+      "requirementId": "CORE-DATA-01",
+      "status": "skipped",
+      "fixtureId": "fixture.data.persistence",
+      "evidenceUrl": null,
+      "durationMs": 0,
+      "notes": "Example only; no implementation was executed."
+    },
+    {
+      "requirementId": "CORE-DATA-02",
+      "status": "skipped",
+      "fixtureId": "fixture.data.persistence",
+      "evidenceUrl": null,
+      "durationMs": 0,
+      "notes": "Example only; no implementation was executed."
+    },
+    {
+      "requirementId": "CORE-DATA-03",
+      "status": "skipped",
+      "fixtureId": "fixture.data.persistence",
+      "evidenceUrl": null,
+      "durationMs": 0,
+      "notes": "Example only; no implementation was executed."
+    },
+    {
+      "requirementId": "CORE-MIG-01",
+      "status": "skipped",
+      "fixtureId": "fixture.data.persistence",
+      "evidenceUrl": null,
+      "durationMs": 0,
+      "notes": "Example only; no implementation was executed."
+    },
+    {
+      "requirementId": "CORE-MIG-02",
+      "status": "skipped",
+      "fixtureId": "fixture.generation.migrations",
+      "evidenceUrl": null,
+      "durationMs": 0,
+      "notes": "Example only; no implementation was executed."
+    },
+    {
+      "requirementId": "CORE-CONFIG-01",
+      "status": "skipped",
+      "fixtureId": "fixture.configuration.precedence",
+      "evidenceUrl": null,
+      "durationMs": 0,
+      "notes": "Example only; no implementation was executed."
+    },
+    {
+      "requirementId": "CORE-CONFIG-02",
+      "status": "skipped",
+      "fixtureId": "fixture.configuration.precedence",
+      "evidenceUrl": null,
+      "durationMs": 0,
+      "notes": "Example only; no implementation was executed."
+    },
+    {
+      "requirementId": "CORE-CONFIG-03",
+      "status": "skipped",
+      "fixtureId": null,
+      "evidenceUrl": null,
+      "durationMs": 0,
+      "notes": "Example only; no implementation was executed."
+    },
+    {
+      "requirementId": "CORE-SEC-01",
+      "status": "skipped",
+      "fixtureId": "fixture.security.baseline",
+      "evidenceUrl": null,
+      "durationMs": 0,
+      "notes": "Example only; no implementation was executed."
+    },
+    {
+      "requirementId": "CORE-SEC-02",
+      "status": "skipped",
+      "fixtureId": "fixture.security.baseline",
+      "evidenceUrl": null,
+      "durationMs": 0,
+      "notes": "Example only; no implementation was executed."
+    },
+    {
+      "requirementId": "CORE-SEC-03",
+      "status": "skipped",
+      "fixtureId": "fixture.security.baseline",
+      "evidenceUrl": null,
+      "durationMs": 0,
+      "notes": "Example only; no implementation was executed."
+    },
+    {
+      "requirementId": "CORE-SEC-04",
+      "status": "skipped",
+      "fixtureId": null,
+      "evidenceUrl": null,
+      "durationMs": 0,
+      "notes": "Example only; no implementation was executed."
+    },
+    {
+      "requirementId": "CORE-SEC-05",
+      "status": "skipped",
+      "fixtureId": "fixture.security.baseline",
+      "evidenceUrl": null,
+      "durationMs": 0,
+      "notes": "Example only; no implementation was executed."
+    },
+    {
+      "requirementId": "CORE-SEC-06",
+      "status": "skipped",
+      "fixtureId": null,
+      "evidenceUrl": null,
+      "durationMs": 0,
+      "notes": "Example only; no implementation was executed."
+    },
+    {
+      "requirementId": "CORE-SEC-07",
+      "status": "skipped",
+      "fixtureId": "fixture.security.baseline",
+      "evidenceUrl": null,
+      "durationMs": 0,
+      "notes": "Example only; no implementation was executed."
+    },
+    {
+      "requirementId": "CORE-SEC-08",
+      "status": "skipped",
+      "fixtureId": null,
+      "evidenceUrl": null,
+      "durationMs": 0,
+      "notes": "Example only; no implementation was executed."
+    },
+    {
+      "requirementId": "STD-AUTH-01",
+      "status": "skipped",
+      "fixtureId": "fixture.standard.auth",
+      "evidenceUrl": null,
+      "durationMs": 0,
+      "notes": "Example only; no implementation was executed."
+    },
+    {
+      "requirementId": "STD-QUEUE-01",
+      "status": "skipped",
+      "fixtureId": "fixture.standard.queue-observability",
+      "evidenceUrl": null,
+      "durationMs": 0,
+      "notes": "Example only; no implementation was executed."
+    },
+    {
+      "requirementId": "STD-DRV-01",
+      "status": "skipped",
+      "fixtureId": "fixture.standard.driver-failure",
+      "evidenceUrl": null,
+      "durationMs": 0,
+      "notes": "Example only; no implementation was executed."
+    },
+    {
+      "requirementId": "STD-DRV-02",
+      "status": "skipped",
+      "fixtureId": null,
+      "evidenceUrl": null,
+      "durationMs": 0,
+      "notes": "Example only; no implementation was executed."
+    },
+    {
+      "requirementId": "STD-OBS-01",
+      "status": "skipped",
+      "fixtureId": "fixture.standard.queue-observability",
+      "evidenceUrl": null,
+      "durationMs": 0,
+      "notes": "Example only; no implementation was executed."
+    },
+    {
+      "requirementId": "STD-OBS-02",
+      "status": "skipped",
+      "fixtureId": "fixture.standard.health-api",
+      "evidenceUrl": null,
+      "durationMs": 0,
+      "notes": "Example only; no implementation was executed."
+    },
+    {
+      "requirementId": "STD-TYPE-01",
+      "status": "skipped",
+      "fixtureId": null,
+      "evidenceUrl": null,
+      "durationMs": 0,
+      "notes": "Example only; no implementation was executed."
+    },
+    {
+      "requirementId": "STD-API-01",
+      "status": "skipped",
+      "fixtureId": "fixture.standard.health-api",
+      "evidenceUrl": null,
+      "durationMs": 0,
+      "notes": "Example only; no implementation was executed."
+    },
+    {
+      "requirementId": "COMP-VIEW-01",
+      "status": "skipped",
+      "fixtureId": "fixture.complete.view-api",
+      "evidenceUrl": null,
+      "durationMs": 0,
+      "notes": "Example only; no implementation was executed."
+    },
+    {
+      "requirementId": "COMP-API-01",
+      "status": "skipped",
+      "fixtureId": "fixture.complete.view-api",
+      "evidenceUrl": null,
+      "durationMs": 0,
+      "notes": "Example only; no implementation was executed."
+    },
+    {
+      "requirementId": "COMP-RT-01",
+      "status": "skipped",
+      "fixtureId": "fixture.complete.realtime-notifications",
+      "evidenceUrl": null,
+      "durationMs": 0,
+      "notes": "Example only; no implementation was executed."
+    },
+    {
+      "requirementId": "COMP-NOTIFY-01",
+      "status": "skipped",
+      "fixtureId": "fixture.complete.realtime-notifications",
+      "evidenceUrl": null,
+      "durationMs": 0,
+      "notes": "Example only; no implementation was executed."
+    },
+    {
+      "requirementId": "COMP-DEPLOY-01",
+      "status": "skipped",
+      "fixtureId": "fixture.complete.deployment",
+      "evidenceUrl": null,
+      "durationMs": 0,
+      "notes": "Example only; no implementation was executed."
+    }
+  ],
+  "drivers": [
+    {
+      "category": "database",
+      "name": "none",
+      "version": "0.0.0",
+      "serviceVersion": null,
+      "topology": "not configured",
+      "status": "unsupported",
+      "evidenceUrl": null,
+      "prerequisites": []
+    },
+    {
+      "category": "queue",
+      "name": "none",
+      "version": "0.0.0",
+      "serviceVersion": null,
+      "topology": "not configured",
+      "status": "unsupported",
+      "evidenceUrl": null,
+      "prerequisites": []
+    },
+    {
+      "category": "cache",
+      "name": "none",
+      "version": "0.0.0",
+      "serviceVersion": null,
+      "topology": "not configured",
+      "status": "unsupported",
+      "evidenceUrl": null,
+      "prerequisites": []
+    },
+    {
+      "category": "storage",
+      "name": "none",
+      "version": "0.0.0",
+      "serviceVersion": null,
+      "topology": "not configured",
+      "status": "unsupported",
+      "evidenceUrl": null,
+      "prerequisites": []
+    },
+    {
+      "category": "mail",
+      "name": "none",
+      "version": "0.0.0",
+      "serviceVersion": null,
+      "topology": "not configured",
+      "status": "unsupported",
+      "evidenceUrl": null,
+      "prerequisites": []
+    },
+    {
+      "category": "realtime",
+      "name": "none",
+      "version": "0.0.0",
+      "serviceVersion": null,
+      "topology": "not configured",
+      "status": "unsupported",
+      "evidenceUrl": null,
+      "prerequisites": []
+    },
+    {
+      "category": "deploy",
+      "name": "none",
+      "version": "0.0.0",
+      "serviceVersion": null,
+      "topology": "not configured",
+      "status": "unsupported",
+      "evidenceUrl": null,
+      "prerequisites": []
+    }
+  ],
+  "extensions": [
+    {
+      "id": "EXT-AI-01",
+      "status": "unsupported",
+      "evidenceUrl": null,
+      "notes": "Not evaluated by the example."
+    },
+    {
+      "id": "EXT-ANALYTICS-01",
+      "status": "unsupported",
+      "evidenceUrl": null,
+      "notes": "Not evaluated by the example."
+    },
+    {
+      "id": "EXT-DESKTOP-01",
+      "status": "unsupported",
+      "evidenceUrl": null,
+      "notes": "Not evaluated by the example."
+    },
+    {
+      "id": "EXT-CMS-01",
+      "status": "unsupported",
+      "evidenceUrl": null,
+      "notes": "Not evaluated by the example."
+    },
+    {
+      "id": "EXT-COMMERCE-01",
+      "status": "unsupported",
+      "evidenceUrl": null,
+      "notes": "Not evaluated by the example."
+    },
+    {
+      "id": "EXT-SEARCH-01",
+      "status": "unsupported",
+      "evidenceUrl": null,
+      "notes": "Not evaluated by the example."
+    },
+    {
+      "id": "EXT-I18N-01",
+      "status": "unsupported",
+      "evidenceUrl": null,
+      "notes": "Not evaluated by the example."
+    }
+  ],
+  "exceptions": [],
+  "generator": {
+    "name": "@stacksjs/rfcs-example",
+    "version": "1.0.0-draft.1",
+    "revision": "0000000000000000000000000000000000000000"
+  }
+}

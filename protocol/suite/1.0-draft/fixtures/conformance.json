@@ -1,0 +1,214 @@
+{
+  "$schema": "../schemas/fixture-corpus.schema.json",
+  "suiteVersion": "1.0.0-draft.1",
+  "catalogRevision": 1,
+  "fixtures": [
+    {
+      "id": "fixture.conventions.override",
+      "profile": "Core",
+      "requirements": ["CORE-CONV-01", "CORE-CONV-02"],
+      "title": "Canonical paths and application overrides",
+      "prerequisites": [],
+      "setup": { "clock": "2026-01-01T00:00:00.000Z", "seed": 1001, "state": { "files": { "framework/actions/Greet": "default", "app/actions/Greet": "application" } } },
+      "steps": [
+        { "operation": "conventions.resolve-role", "input": { "role": "Action", "logicalPath": "actions/Greet" }, "expect": { "path": "app/actions/Greet", "value": "application", "candidates": ["app/actions/Greet", "framework/actions/Greet"] } }
+      ],
+      "normalization": { "timestamps": [], "identifiers": [], "paths": ["$.path", "$.candidates[*]"], "orderInsensitivePaths": [] }
+    },
+    {
+      "id": "fixture.conventions.scaffold",
+      "profile": "Core",
+      "requirements": ["CORE-CONV-05"],
+      "title": "Scaffold starts after declared prerequisites",
+      "prerequisites": ["declared-runtime"],
+      "setup": { "clock": "2026-01-01T00:00:00.000Z", "seed": 1002 },
+      "steps": [
+        { "operation": "conventions.scaffold", "input": { "name": "fixture-app" }, "expect": { "exitCode": 0, "manifest": true, "startCommand": { "exitCode": 0, "ready": true } } }
+      ],
+      "normalization": { "timestamps": [], "identifiers": [], "paths": [], "orderInsensitivePaths": [] }
+    },
+    {
+      "id": "fixture.lifecycle.short-circuit",
+      "profile": "Core",
+      "requirements": ["CORE-MVA-01", "CORE-LIFE-01", "CORE-LIFE-02", "CORE-VAL-02"],
+      "title": "Transport-independent Action and pre-Action short circuits",
+      "prerequisites": [],
+      "setup": { "clock": "2026-01-01T00:00:00.000Z", "seed": 1101 },
+      "steps": [
+        { "operation": "action.invoke-direct", "input": { "action": "Increment", "payload": { "value": 1 } }, "expect": { "output": { "value": 2 }, "events": ["action"] } },
+        { "operation": "request.invoke", "input": { "terminalPhase": null }, "expect": { "events": ["middleware", "validation", "authorization", "action", "serialization", "response"] } },
+        { "operation": "request.invoke", "input": { "terminalPhase": "validation" }, "expect": { "events": ["middleware", "validation", "response"], "notEvents": ["authorization", "action"] } }
+      ],
+      "normalization": { "timestamps": [], "identifiers": [], "paths": [], "orderInsensitivePaths": [] }
+    },
+    {
+      "id": "fixture.generation.migrations",
+      "profile": "Core",
+      "requirements": ["CORE-GEN-01", "CORE-GEN-02", "CORE-MIG-02"],
+      "title": "Deterministic generation and destructive migration preview",
+      "prerequisites": [],
+      "setup": { "clock": "2026-01-01T00:00:00.000Z", "seed": 1201, "state": { "before": { "users": ["id", "email", "legacy"] }, "after": { "users": ["id", "email"] } } },
+      "steps": [
+        { "operation": "generation.plan", "input": { "repeat": 2 }, "expect": { "equalOutputs": true, "operations": [{ "kind": "drop-column", "target": "users.legacy", "destructive": true }], "applied": false } }
+      ],
+      "normalization": { "timestamps": [], "identifiers": [], "paths": [], "orderInsensitivePaths": [] }
+    },
+    {
+      "id": "fixture.errors.validation-redaction",
+      "profile": "Core",
+      "requirements": ["CORE-ERR-01", "CORE-ERR-02", "CORE-VAL-01"],
+      "title": "Nested validation envelope and production redaction",
+      "prerequisites": [],
+      "setup": { "clock": "2026-01-01T00:00:00.000Z", "seed": 1301 },
+      "steps": [
+        { "operation": "request.validate", "input": { "profile": { "email": "bad" } }, "expect": { "status": 422, "body": { "code": "validation_failed", "message": "Validation failed", "errors": { "profile.email": ["invalid_email"] } }, "notContains": ["stack", "password", "SELECT", "/home/"] } }
+      ],
+      "normalization": { "timestamps": [], "identifiers": [], "paths": [], "orderInsensitivePaths": [] }
+    },
+    {
+      "id": "fixture.routing.named-parameters",
+      "profile": "Core",
+      "requirements": ["CORE-ROUTE-01", "CORE-ROUTE-02"],
+      "title": "Route matching, middleware, and reverse generation",
+      "prerequisites": [],
+      "setup": { "clock": "2026-01-01T00:00:00.000Z", "seed": 1401, "state": { "routes": [{ "method": "GET", "path": "/users/:id", "name": "users.show", "middleware": ["auth"] }] } },
+      "steps": [
+        { "operation": "router.match", "input": { "method": "GET", "path": "/users/42" }, "expect": { "name": "users.show", "params": { "id": "42" }, "middleware": ["auth"] } },
+        { "operation": "router.url", "input": { "name": "users.show", "params": { "id": 42 } }, "expect": { "url": "/users/42" } },
+        { "operation": "router.url", "input": { "name": "users.show", "params": {} }, "expect": { "error": { "code": "missing_route_parameter", "parameter": "id" } } }
+      ],
+      "normalization": { "timestamps": [], "identifiers": [], "paths": [], "orderInsensitivePaths": [] }
+    },
+    {
+      "id": "fixture.data.persistence",
+      "profile": "Core",
+      "requirements": ["CORE-DATA-01", "CORE-DATA-02", "CORE-DATA-03", "CORE-MIG-01"],
+      "title": "CRUD, relations, transaction rollback, and migration order",
+      "prerequisites": ["database"],
+      "setup": { "clock": "2026-01-01T00:00:00.000Z", "seed": 1501, "state": { "users": [], "posts": [] } },
+      "steps": [
+        { "operation": "database.migrate", "input": { "migrations": ["002_posts", "001_users"] }, "expect": { "applied": ["001_users", "002_posts"], "rollback": ["002_posts", "001_users"] } },
+        { "operation": "database.crud", "input": { "create": [{ "name": "Ada" }, { "name": "Grace" }], "filter": { "name": "Ada" }, "order": "name", "page": { "size": 1 } }, "expect": { "total": 1, "items": [{ "id": "<id:1>", "name": "Ada" }] } },
+        { "operation": "database.transaction", "input": { "writes": [{ "table": "posts", "title": "temporary" }], "throw": true }, "expect": { "rolledBack": true, "state": { "posts": [] } } },
+        { "operation": "database.relation", "input": { "relation": "user.posts", "eager": true }, "expect": { "loaded": true, "queryCountMaximum": 2 } }
+      ],
+      "normalization": { "timestamps": [], "identifiers": ["$.items[*].id"], "paths": [], "orderInsensitivePaths": [] }
+    },
+    {
+      "id": "fixture.configuration.precedence",
+      "profile": "Core",
+      "requirements": ["CORE-CONFIG-01", "CORE-CONFIG-02"],
+      "title": "Configuration precedence and fail-closed selection",
+      "prerequisites": [],
+      "setup": { "clock": "2026-01-01T00:00:00.000Z", "seed": 1601 },
+      "steps": [
+        { "operation": "config.resolve", "input": { "default": "a", "file": "b", "environment": "c", "explicit": "d" }, "expect": { "value": "d", "precedence": ["explicit", "environment", "file", "default"] } },
+        { "operation": "config.initialize-capability", "input": { "driver": "planned", "credentials": null }, "expect": { "initialized": false, "error": { "code": "unsupported_driver", "driver": "planned" } } }
+      ],
+      "normalization": { "timestamps": [], "identifiers": [], "paths": [], "orderInsensitivePaths": [] }
+    },
+    {
+      "id": "fixture.security.baseline",
+      "profile": "Core",
+      "requirements": ["CORE-SEC-01", "CORE-SEC-02", "CORE-SEC-03", "CORE-SEC-05", "CORE-SEC-07"],
+      "title": "Parameterization, escaping, CSRF, authenticated encryption, and comparison",
+      "prerequisites": [],
+      "setup": { "clock": "2026-01-01T00:00:00.000Z", "seed": 1701 },
+      "steps": [
+        { "operation": "security.query", "input": { "value": "' OR 1=1 --" }, "expect": { "sql": "SELECT * FROM users WHERE email = ?", "bindings": ["' OR 1=1 --"] } },
+        { "operation": "security.render", "input": { "value": "<script>alert(1)</script>" }, "expect": { "output": "&lt;script&gt;alert(1)&lt;/script&gt;" } },
+        { "operation": "security.csrf", "input": { "method": "POST", "sessionAuthenticated": true, "token": "invalid" }, "expect": { "status": 403, "actionExecuted": false } },
+        { "operation": "security.encrypt", "input": { "plaintext": "secret", "tamper": true }, "expect": { "authenticated": true, "decryptError": "authentication_failed", "plaintextLeaked": false } },
+        { "operation": "security.compare-authenticator", "input": { "left": "token-a", "right": "token-b" }, "expect": { "equal": false, "timingSafePrimitive": true } }
+      ],
+      "normalization": { "timestamps": [], "identifiers": [], "paths": [], "orderInsensitivePaths": [] }
+    },
+    {
+      "id": "fixture.standard.auth",
+      "profile": "Standard",
+      "requirements": ["STD-AUTH-01"],
+      "title": "Identity, authorization, and revocation lifecycle",
+      "prerequisites": ["auth-store"],
+      "setup": { "clock": "2026-01-01T00:00:00.000Z", "seed": 1801 },
+      "steps": [
+        { "operation": "auth.lifecycle", "input": { "identity": "user-1", "ability": "posts.update" }, "expect": { "authenticated": true, "authorized": true, "revokedTokenRejected": true, "storage": "declared" } }
+      ],
+      "normalization": { "timestamps": [], "identifiers": [], "paths": [], "orderInsensitivePaths": [] }
+    },
+    {
+      "id": "fixture.standard.queue-observability",
+      "profile": "Standard",
+      "requirements": ["STD-QUEUE-01", "STD-OBS-01"],
+      "title": "Durable Job execution and trace propagation",
+      "prerequisites": ["durable-queue"],
+      "setup": { "clock": "2026-01-01T00:00:00.000Z", "seed": 1901 },
+      "steps": [
+        { "operation": "queue.dispatch", "input": { "job": "SendWelcome", "payload": { "user": 1 }, "traceId": "trace-fixture", "retry": 2, "timeoutMs": 5000 }, "expect": { "persisted": true, "executed": true, "attempts": 1, "failureRecorded": false, "logsContain": { "traceId": "trace-fixture" } } }
+      ],
+      "normalization": { "timestamps": [], "identifiers": [], "paths": [], "orderInsensitivePaths": [] }
+    },
+    {
+      "id": "fixture.standard.driver-failure",
+      "profile": "Standard",
+      "requirements": ["STD-DRV-01"],
+      "title": "Unsupported driver cannot initialize or fall back",
+      "prerequisites": [],
+      "setup": { "clock": "2026-01-01T00:00:00.000Z", "seed": 2001 },
+      "steps": [
+        { "operation": "driver.initialize", "input": { "capability": "queue", "driver": "planned-driver" }, "expect": { "status": "unsupported", "fallback": false, "error": { "code": "unsupported_driver", "capability": "queue", "driver": "planned-driver" } } }
+      ],
+      "normalization": { "timestamps": [], "identifiers": [], "paths": [], "orderInsensitivePaths": [] }
+    },
+    {
+      "id": "fixture.standard.health-api",
+      "profile": "Standard",
+      "requirements": ["STD-OBS-02", "STD-API-01"],
+      "title": "Dependency readiness and API envelope",
+      "prerequisites": [],
+      "setup": { "clock": "2026-01-01T00:00:00.000Z", "seed": 2101 },
+      "steps": [
+        { "operation": "health.read", "input": { "process": "up", "database": "down" }, "expect": { "liveness": { "status": 200 }, "readiness": { "status": 503, "dependencies": { "database": "down" } } } },
+        { "operation": "api.invoke", "input": { "method": "POST", "payload": { "invalid": true } }, "expect": { "status": 422, "validated": true, "serialized": true, "body": { "code": "validation_failed", "message": "Validation failed", "errors": {} } } }
+      ],
+      "normalization": { "timestamps": [], "identifiers": [], "paths": [], "orderInsensitivePaths": ["$.body.errors"] }
+    },
+    {
+      "id": "fixture.complete.view-api",
+      "profile": "Complete",
+      "requirements": ["COMP-VIEW-01", "COMP-API-01"],
+      "title": "Rendered view and fresh machine-readable API description",
+      "prerequisites": ["view-adapter"],
+      "setup": { "clock": "2026-01-01T00:00:00.000Z", "seed": 2201 },
+      "steps": [
+        { "operation": "view.render", "input": { "prepared": { "name": "<Admin>" } }, "expect": { "outputContains": "&lt;Admin&gt;", "authorizationQueries": 0, "persistenceWrites": 0 } },
+        { "operation": "api.describe", "input": { "registeredRoutes": 1 }, "expect": { "paths": 1, "placeholder": false, "fresh": true } }
+      ],
+      "normalization": { "timestamps": [], "identifiers": [], "paths": [], "orderInsensitivePaths": [] }
+    },
+    {
+      "id": "fixture.complete.realtime-notifications",
+      "profile": "Complete",
+      "requirements": ["COMP-RT-01", "COMP-NOTIFY-01"],
+      "title": "Authorized realtime delivery and isolated notification channels",
+      "prerequisites": ["realtime", "two-notification-channels"],
+      "setup": { "clock": "2026-01-01T00:00:00.000Z", "seed": 2301 },
+      "steps": [
+        { "operation": "realtime.publish", "input": { "channel": "private:user.1", "authorized": false, "payloadBytes": 32 }, "expect": { "delivered": false, "status": 403, "rateLimitDeclared": true, "scaleOutDeclared": true } },
+        { "operation": "notification.send", "input": { "channels": ["database", "mail"], "mailFailure": true }, "expect": { "database": "delivered", "mail": "failed", "domainTransactionRolledBack": false, "credentialsInResult": false } }
+      ],
+      "normalization": { "timestamps": [], "identifiers": [], "paths": [], "orderInsensitivePaths": [] }
+    },
+    {
+      "id": "fixture.complete.deployment",
+      "profile": "Complete",
+      "requirements": ["COMP-DEPLOY-01"],
+      "title": "Reviewable deployment plan and topology evidence",
+      "prerequisites": ["deployment-adapter"],
+      "setup": { "clock": "2026-01-01T00:00:00.000Z", "seed": 2401 },
+      "steps": [
+        { "operation": "deployment.plan", "input": { "environment": "fixture", "apply": false }, "expect": { "applied": false, "provider": "declared", "topology": "declared", "operations": [{ "kind": "replace", "destructive": true, "target": "compute.fixture" }] } }
+      ],
+      "normalization": { "timestamps": [], "identifiers": [], "paths": [], "orderInsensitivePaths": [] }
+    }
+  ]
+}

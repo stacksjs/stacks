@@ -43,6 +43,14 @@ Stacks uses [Pantry](https://pantry.dev) to provision Bun, Git, SQLite, and the 
 
 Pantry installs and pins Bun 1.3 or newer for each Stacks project, then keeps the rest of the machine and project dependencies in sync. Features such as PostgreSQL, Redis, and cloud deployment add their requirements through the same Pantry manifest where possible, with feature-specific configuration documented alongside them.
 
+Stacks pins Pantry [`v0.10.36`](https://github.com/pantry-pm/pantry/tree/v0.10.36)
+as an external toolchain contract. Resolution sources, lockfile and integrity
+rules, lifecycle trust, registry routes, authentication, storage, and failure
+modes are documented in the source-linked whitepaper references for the
+[package manager](https://whitepaper.stacksjs.com/reference/package-manager) and
+[registry](https://whitepaper.stacksjs.com/reference/registry). Stacks does not
+redefine those behaviors.
+
 ## Get Started
 
 The fastest path after Pantry is installed:

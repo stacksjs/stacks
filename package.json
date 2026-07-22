@@ -62,6 +62,26 @@
     "test:ui": "./buddy test:ui",
     "test:coverage": "./buddy test:coverage",
     "test:types": "./buddy test:types",
+    "docs:buddy": "bun scripts/docs/buddy-commands.ts --write",
+    "docs:buddy:check": "bun scripts/docs/buddy-commands.ts --check",
+    "docs:artifacts": "bun scripts/docs/generated-artifacts.ts --write",
+    "docs:artifacts:check": "bun scripts/docs/generated-artifacts.ts --check",
+    "protocol:sync": "bun scripts/protocol/sync-suite.ts --write",
+    "protocol:check": "bun scripts/protocol/sync-suite.ts --check",
+    "protocol:conformance": "bun scripts/protocol/run-conformance.ts",
+    "protocol:manifest": "bun scripts/protocol/source-manifest.ts --write",
+    "protocol:manifest:check": "bun scripts/protocol/source-manifest.ts --check",
+    "protocol:release": "bun scripts/protocol/release-manifest.ts --write",
+    "protocol:release:check": "bun scripts/protocol/release-manifest.ts --check",
+    "protocol:drivers": "bun scripts/protocol/driver-registry.ts --write",
+    "protocol:drivers:check": "bun scripts/protocol/driver-registry.ts --check",
+    "protocol:drivers:test": "bun scripts/protocol/run-driver-contracts.ts",
+    "protocol:desktop": "bun scripts/protocol/desktop-support.ts --write",
+    "protocol:desktop:check": "bun scripts/protocol/desktop-support.ts --check",
+    "protocol:pantry": "bun scripts/protocol/pantry-evidence.ts --write",
+    "protocol:pantry:check": "bun scripts/protocol/pantry-evidence.ts --check",
+    "protocol:craft": "bun scripts/protocol/craft-evidence.ts --write",
+    "protocol:craft:check": "bun scripts/protocol/craft-evidence.ts --check",
     "bud": "./buddy",
     "stx": "./buddy"
   },
@@ -86,7 +106,7 @@
     "@stacksjs/components": "^0.2.82",
     "@stacksjs/gitlint": "^0.1.5",
     "@stacksjs/stx": "^0.2.99",
-    "@stacksjs/ts-cloud": "^0.7.49",
+    "@stacksjs/ts-cloud": "^0.7.56",
     "better-dx": "^0.2.17",
     "bun-git-hooks": "^0.3.2",
     "bun-query-builder": "^0.1.56",
@@ -101,5 +121,9 @@
       }
     },
     "commit-msg": "bun x gitlint --edit .git/COMMIT_EDITMSG"
+  },
+  "devDependencies": {
+    "ajv": "^8.20.0",
+    "ajv-formats": "^3.0.1"
   }
 }

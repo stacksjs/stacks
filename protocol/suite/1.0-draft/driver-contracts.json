@@ -1,0 +1,21 @@
+{
+  "version": "1.0.0-draft.1",
+  "resultStates": ["pass", "fail", "skipped", "unsupported", "exception", "experimental"],
+  "metadataRequired": ["runtime", "os", "architecture", "implementationRevision", "driver", "driverVersion", "serviceVersion", "topology", "evidenceUrl"],
+  "contracts": {
+    "database": { "operations": ["connect", "crud", "filter", "order", "paginate", "transactionCommit", "transactionRollback", "migrate", "rollback", "relations"], "destructivePlanRequired": true },
+    "queue": { "operations": ["enqueue", "persist", "reserve", "execute", "retry", "timeout", "delay", "fail", "recover"], "durabilityDeclarationRequired": true },
+    "cache": { "operations": ["get", "set", "delete", "ttl", "increment", "remember", "flush"], "consistencyDeclarationRequired": true },
+    "storage": { "operations": ["put", "get", "exists", "delete", "list", "copy", "move", "temporaryUrl"], "visibilityDeclarationRequired": true },
+    "mail": { "operations": ["sendText", "sendHtml", "rejectInvalidRecipient", "surfaceProviderFailure"], "credentialIsolationRequired": true },
+    "realtime": { "operations": ["connect", "authorize", "subscribe", "publish", "rejectOversize", "rateLimit", "disconnect"], "scaleOutDeclarationRequired": true },
+    "deploy": { "operations": ["validate", "plan", "identifyDestructive", "apply", "healthCheck", "rollback"], "providerTopologyEvidenceRequired": true }
+  },
+  "rules": [
+    "A missing credential may produce skipped only when the driver is otherwise implemented and the report names the prerequisite.",
+    "An unimplemented selectable driver produces unsupported and must not fall back.",
+    "A provider error after execution starts produces fail, not skipped.",
+    "Experimental evidence is reported separately and cannot make a driver supported."
+  ]
+}
+

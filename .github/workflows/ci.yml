@@ -4,26 +4,12 @@ on:
   push:
     branches:
       - main
-      - stage
-      - dev
-
-    tags:
-      - '*-beta.*'
 
   pull_request:
     branches:
       - main
 
   workflow_dispatch:
-    inputs:
-      environment:
-        description: Environment to deploy after CI passes
-        type: choice
-        options:
-          - production
-          - staging
-          - development
-        default: staging
 
 concurrency:
   group: ci-${{ github.event.pull_request.number || github.ref }}
@@ -43,8 +29,9 @@ jobs:
           fetch-depth: 0
 
       - name: Setup Pantry
-        uses: home-lang/pantry/packages/action@main
+        uses: pantry-pm/pantry/packages/action@d738d5fd2e543e3b8380e5fbd5d01ba8936c1790 # v0.10.47
         with:
+          version: '0.10.47'
           install: 'false'
 
       - name: Use cached node_modules
@@ -75,8 +62,9 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Setup Pantry
-        uses: home-lang/pantry/packages/action@main
+        uses: pantry-pm/pantry/packages/action@d738d5fd2e543e3b8380e5fbd5d01ba8936c1790 # v0.10.47
         with:
+          version: '0.10.47'
           install: 'false'
 
       - name: Use cached node_modules
@@ -97,11 +85,6 @@ jobs:
     runs-on: ubuntu-latest
 
     services:
-      redis:
-        image: redis:latest
-        ports:
-          - 6379:6379
-
       mysql:
         image: mysql:latest
         env:
@@ -122,9 +105,11 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Setup Pantry
-        uses: home-lang/pantry/packages/action@main
+        uses: pantry-pm/pantry/packages/action@d738d5fd2e543e3b8380e5fbd5d01ba8936c1790 # v0.10.47
         with:
+          version: '0.10.47'
           install: 'false'
+          services: redis@8.8.0
 
       - name: Use cached node_modules
         uses: actions/cache@v5
@@ -142,35 +127,112 @@ jobs:
           AWS_DYNAMODB_ENDPOINT: http://localhost:8000
         run: bun run test
 
-  deploy:
+  protocol-conformance:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Setup Pantry
+        uses: pantry-pm/pantry/packages/action@d738d5fd2e543e3b8380e5fbd5d01ba8936c1790 # v0.10.47
+        with:
+          version: '0.10.47'
+          install: 'false'
+          services: redis@8.8.0
+
+      - name: Use cached node_modules
+        uses: actions/cache@v5
+        with:
+          path: node_modules
+          key: node-modules-${{ hashFiles('**/bun.lock') }}
+          restore-keys: |
+            node-modules-
+
+      - name: Install Dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Verify pinned protocol suite
+        run: |
+          bun run protocol:check
+          bun run protocol:manifest:check
+          bun run protocol:release:check
+          bun run protocol:drivers:check
+          bun run protocol:desktop:check
+          bun run protocol:pantry:check
+          bun run protocol:craft:check
+          bun run docs:buddy:check
+          bun run docs:artifacts:check
+
+      - name: Run protocol adapter
+        env:
+          PROTOCOL_REPORT_DIR: protocol/reports
+        run: |
+          bun test scripts/protocol/run-conformance.test.ts
+          bun test scripts/protocol/craft-evidence.test.ts scripts/protocol/desktop-lifecycle-report.test.ts
+          bun test scripts/deploy/resolve-target.test.ts
+          bun run protocol:drivers:test
+          bun run protocol:conformance
+          cat protocol/reports/driver-matrix.md >> "$GITHUB_STEP_SUMMARY"
+          cat protocol/reports/stacks-conformance.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Retain attributable conformance report
+        uses: actions/upload-artifact@v7
+        with:
+          name: stacks-protocol-conformance-${{ github.sha }}
+          path: protocol/reports/
+          if-no-files-found: error
+
+  deployment-target:
     if: >-
       github.event_name == 'workflow_dispatch' ||
-      (github.event_name == 'push' && (
-        github.ref == 'refs/heads/main' ||
-        github.ref == 'refs/heads/stage' ||
-        github.ref == 'refs/heads/dev' ||
-        (startsWith(github.ref, 'refs/tags/') && contains(github.ref, '-beta.'))
-      ))
-    needs: [lint, typecheck, test]
+      (github.event_name == 'push' && github.ref == 'refs/heads/main')
     runs-on: ubuntu-latest
-    timeout-minutes: 30
-    environment:
-      name: ${{ github.event_name == 'workflow_dispatch' && inputs.environment || github.ref == 'refs/heads/dev' && 'development' || (github.ref == 'refs/heads/stage' || startsWith(github.ref, 'refs/tags/')) && 'staging' || 'production' }}
-    permissions:
-      contents: read
-      deployments: write
-      id-token: write
-    env:
-      DEPLOY_ENVIRONMENT: ${{ github.event_name == 'workflow_dispatch' && inputs.environment || github.ref == 'refs/heads/dev' && 'development' || (github.ref == 'refs/heads/stage' || startsWith(github.ref, 'refs/tags/')) && 'staging' || 'production' }}
-      DEPLOY_FLAG: ${{ ((github.event_name == 'workflow_dispatch' && inputs.environment == 'development') || github.ref == 'refs/heads/dev') && '--dev' || ((github.event_name == 'workflow_dispatch' && inputs.environment == 'staging') || github.ref == 'refs/heads/stage' || startsWith(github.ref, 'refs/tags/')) && '--staging' || '--prod' }}
+    outputs:
+      environment: ${{ steps.target.outputs.environment }}
+      flag: ${{ steps.target.outputs.flag }}
 
     steps:
       - name: Checkout Code
         uses: actions/checkout@v6
 
       - name: Setup Pantry
-        uses: home-lang/pantry/packages/action@main
+        uses: pantry-pm/pantry/packages/action@d738d5fd2e543e3b8380e5fbd5d01ba8936c1790 # v0.10.47
         with:
+          version: '0.10.47'
+          install: 'false'
+
+      - name: Resolve provisioned deployment target
+        id: target
+        run: bun scripts/deploy/resolve-target.ts --ref "$GITHUB_REF" --github-output "$GITHUB_OUTPUT"
+
+  deploy:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'push' && github.ref == 'refs/heads/main')
+    needs: [lint, typecheck, test, protocol-conformance, deployment-target]
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment:
+      name: ${{ needs.deployment-target.outputs.environment }}
+    permissions:
+      contents: read
+      deployments: write
+      id-token: write
+    env:
+      DEPLOY_ENVIRONMENT: ${{ needs.deployment-target.outputs.environment }}
+      DEPLOY_FLAG: ${{ needs.deployment-target.outputs.flag }}
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v6
+
+      - name: Setup Pantry
+        uses: pantry-pm/pantry/packages/action@d738d5fd2e543e3b8380e5fbd5d01ba8936c1790 # v0.10.47
+        with:
+          version: '0.10.47'
           install: 'false'
 
       - name: Use cached node_modules
@@ -204,22 +266,21 @@ jobs:
         env:
           APP_ENV: ${{ env.DEPLOY_ENVIRONMENT }}
           DOTENV_PRIVATE_KEY_PRODUCTION: ${{ secrets.DOTENV_PRIVATE_KEY_PRODUCTION }}
-          DOTENV_PRIVATE_KEY_STAGING: ${{ secrets.DOTENV_PRIVATE_KEY_STAGING }}
-          DOTENV_PRIVATE_KEY_DEVELOPMENT: ${{ secrets.DOTENV_PRIVATE_KEY_DEVELOPMENT }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           COPYFILE_DISABLE: '1'
 
   publish-commit:
     if: github.event_name == 'pull_request'
-    needs: [lint, typecheck, test]
+    needs: [lint, typecheck, test, protocol-conformance]
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v6
 
       - name: Setup Pantry
-        uses: home-lang/pantry/packages/action@main
+        uses: pantry-pm/pantry/packages/action@d738d5fd2e543e3b8380e5fbd5d01ba8936c1790 # v0.10.47
         with:
+          version: '0.10.47'
           install: 'false'
 
       - name: Use cached node_modules
