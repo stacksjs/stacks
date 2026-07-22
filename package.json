@@ -80,6 +80,8 @@
     "protocol:desktop:check": "bun scripts/protocol/desktop-support.ts --check",
     "protocol:pantry": "bun scripts/protocol/pantry-evidence.ts --write",
     "protocol:pantry:check": "bun scripts/protocol/pantry-evidence.ts --check",
+    "protocol:craft": "bun scripts/protocol/craft-evidence.ts --write",
+    "protocol:craft:check": "bun scripts/protocol/craft-evidence.ts --check",
     "bud": "./buddy",
     "stx": "./buddy"
   },
@@ -104,7 +106,7 @@
     "@stacksjs/components": "^0.2.82",
     "@stacksjs/gitlint": "^0.1.5",
     "@stacksjs/stx": "^0.2.99",
-    "@stacksjs/ts-cloud": "^0.7.49",
+    "@stacksjs/ts-cloud": "^0.7.56",
     "better-dx": "^0.2.17",
     "bun-git-hooks": "^0.3.2",
     "bun-query-builder": "^0.1.56",

@@ -10,9 +10,9 @@ export const pantryEvidence = {
   issue: 'https://github.com/stacksjs/stacks/issues/2066',
   source: {
     repository: 'https://github.com/pantry-pm/pantry',
-    version: '0.10.36',
-    tag: 'v0.10.36',
-    revision: 'a6bdc42071cc659896d1b9ff9d7ab6862c72954d',
+    version: '0.10.39',
+    tag: 'v0.10.39',
+    revision: '485c7b102fe14f8af00b57441a13dc3daa1505e7',
   },
   whitepaper: {
     repository: 'https://github.com/stacksjs/white-paper',
@@ -33,11 +33,49 @@ export const pantryEvidence = {
       referencePath: 'docs/reference/registry.md',
     },
   ],
+  serviceContracts: [
+    {
+      id: 'github-actions-service-interface',
+      sourcePath: 'packages/action/action.yml',
+      sha256: '06f4ac3f3307a474e493abe56f1e8f7d99f7af8ce49cecbf3dfdd2e55333ea13',
+    },
+    {
+      id: 'github-actions-redis-lifecycle',
+      sourcePath: 'packages/action/src/services.ts',
+      sha256: 'fcd618f24a14f0e997dcd5e9a617243d567458e6865bcbda01d1c3473af336d1',
+    },
+    {
+      id: 'github-actions-redis-orchestration',
+      sourcePath: 'packages/action/src/index.ts',
+      sha256: '7daa7465d0c54ec89d7d492ed5aa17d0a5a9302cf262636b75d24318291d9e83',
+    },
+    {
+      id: 'github-actions-install-mode',
+      sourcePath: 'packages/action/src/install-mode.ts',
+      sha256: 'e3ff33f0197eb9607d9a74efd946d34c76aad21ed4af4b2a89169aa04db30581',
+    },
+    {
+      id: 'github-actions-redis-cleanup',
+      sourcePath: 'packages/action/src/post.ts',
+      sha256: '9dbfa452e86a61ec75da8c461d69d10a4f493765c19523ba999ee4f916ccde54',
+    },
+    {
+      id: 'native-service-readiness',
+      sourcePath: 'packages/zig/src/cli/commands/services.zig',
+      sha256: '7da9d6271b8dc755865db26a366202448cc408e0d2e3b0daa0a3b8cb917fd748',
+    },
+    {
+      id: 'native-redis-definition',
+      sourcePath: 'packages/zig/src/services/definitions.zig',
+      sha256: 'faf362b6a9f037350b6baf7204f424e78b9bfe8704dfdfcf26e1daa1b5dce678',
+    },
+  ],
   verification: {
     documentationContracts: 'bun run docs:contracts:check (48 source-linked markers)',
     targetedBunTests: '11 passed, 0 failed',
     typecheck: 'bun run typecheck',
     nativeTests: 'zig build test',
+    actionRedisService: 'Pantry CI action-redis-service job (Redis 8.8.0)',
     whitepaperCheck: 'bun run evidence:check',
   },
   boundaries: [
@@ -58,6 +96,11 @@ export function validatePantryEvidence(evidence: typeof pantryEvidence): string[
     if (!/^[a-f0-9]{64}$/.test(contract.sha256)) errors.push(`${contract.id}: invalid SHA-256 digest`)
     if (!contract.sourcePath.endsWith('.md')) errors.push(`${contract.id}: source contract is not Markdown`)
     if (!contract.referencePath.startsWith('docs/reference/')) errors.push(`${contract.id}: whitepaper reference path is invalid`)
+  }
+  if (evidence.serviceContracts.length !== 7) errors.push('all Pantry Redis service contracts must be pinned')
+  for (const contract of evidence.serviceContracts) {
+    if (!/^[a-f0-9]{64}$/.test(contract.sha256)) errors.push(`${contract.id}: invalid SHA-256 digest`)
+    if (!contract.sourcePath.startsWith('packages/')) errors.push(`${contract.id}: source path is outside Pantry packages`)
   }
   return errors
 }

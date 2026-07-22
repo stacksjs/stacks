@@ -5,16 +5,27 @@ describe('Pantry protocol evidence', () => {
   it('pins both verified upstream contracts', () => {
     expect(validatePantryEvidence(pantryEvidence)).toEqual([])
     expect(pantryEvidence.contracts.map(contract => contract.id)).toEqual(['package-manager', 'registry'])
+    expect(pantryEvidence.serviceContracts.map(contract => contract.id)).toEqual([
+      'github-actions-service-interface',
+      'github-actions-redis-lifecycle',
+      'github-actions-redis-orchestration',
+      'github-actions-install-mode',
+      'github-actions-redis-cleanup',
+      'native-service-readiness',
+      'native-redis-definition',
+    ])
   })
 
   it('rejects an untraceable release or contract digest', () => {
     const invalid = structuredClone(pantryEvidence) as unknown as typeof pantryEvidence
     Object.assign(invalid.source, { tag: 'latest', revision: 'short' })
     Object.assign(invalid.contracts[0], { sha256: 'not-a-digest' })
+    Object.assign(invalid.serviceContracts[0], { sha256: 'not-a-digest' })
     expect(validatePantryEvidence(invalid)).toEqual(expect.arrayContaining([
       'Pantry tag does not match its version',
       'Pantry revision is not a full commit SHA',
       'package-manager: invalid SHA-256 digest',
+      'github-actions-service-interface: invalid SHA-256 digest',
     ]))
   })
 })
