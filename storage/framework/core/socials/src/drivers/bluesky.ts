@@ -77,9 +77,11 @@ export function detectFacetCandidates(text: string): FacetCandidate[] {
 
   const tagPattern = /(^|\s)(#[A-Za-z0-9_]+)/g
   for (const match of text.matchAll(tagPattern)) {
+    const prefix = match[1]
     const tag = match[2]
+    if (prefix === undefined || tag === undefined) continue
     if (/^#\d+$/.test(tag)) continue
-    const charStart = (match.index ?? 0) + match[1].length
+    const charStart = (match.index ?? 0) + prefix.length
     const byteStart = byteLength(text.slice(0, charStart))
     const byteEnd = byteStart + byteLength(tag)
     if (insideLink(byteStart, byteEnd)) continue
@@ -89,8 +91,10 @@ export function detectFacetCandidates(text: string): FacetCandidate[] {
   // Handles are domain-shaped (user.bsky.social), so require a dot.
   const mentionPattern = /(^|\s)(@[a-z0-9][a-z0-9.-]*\.[a-z]{2,})/gi
   for (const match of text.matchAll(mentionPattern)) {
+    const prefix = match[1]
     const handle = match[2]
-    const charStart = (match.index ?? 0) + match[1].length
+    if (prefix === undefined || handle === undefined) continue
+    const charStart = (match.index ?? 0) + prefix.length
     const byteStart = byteLength(text.slice(0, charStart))
     const byteEnd = byteStart + byteLength(handle)
     if (insideLink(byteStart, byteEnd)) continue
@@ -361,7 +365,11 @@ export class BlueskyPublishingDriver implements SocialPublishingDriver {
           'content-type': mimeType,
           'authorization': `Bearer ${identity.accessToken}`,
         },
-        body: bytes,
+        // Copy into a fresh ArrayBuffer-backed array: the parameter is typed
+        // Uint8Array<ArrayBufferLike>, which the fetch body type (ArrayBuffer-
+        // backed views only) rejects; `new Uint8Array(bytes)` is Uint8Array<
+        // ArrayBuffer>. content-type is carried by the explicit header above.
+        body: new Uint8Array(bytes),
       },
     )
 
