@@ -20,6 +20,7 @@ interface ImageProps {
   class?: string
 }
 const props = defineProps<ImageProps>()
+if (!props.decorative && !props.alt?.trim()) throw new TypeError('Image alt text is required unless decorative is true')
 const src = props.src || ''
 const alt = props.decorative ? '' : props.alt || ''
 const width = props.width || ''
