@@ -9,7 +9,8 @@
  */
 
 export { fetchBotPRCounts } from './bots'
-export { ghFetch, ghHeaders, GITHUB_API, mapWithConcurrency } from './client'
+export { ghFetch, ghHeaders, githubHeaders, githubJson, githubRequest, GITHUB_API, mapWithConcurrency } from './client'
+export type { GitHubClientOptions } from './client'
 export { clearDashboardCache, getDashboardData } from './dashboard'
 export { detectNewlyFailedRuns } from './failure-detector'
 export type { DetectOptions, FailedTransition, PreviousRunState } from './failure-detector'
@@ -25,6 +26,14 @@ export type {
   RunnerSample,
 } from './runner-pressure-detector'
 export { fetchFailedJobs, fetchRepoStatus } from './runs'
+export { createPullRequestWithFiles, fetchRepositoryFile, fetchRepositoryTree } from './pull-requests'
+export type {
+  CreatedPullRequest,
+  CreatePullRequestWithFilesOptions,
+  RepositoryFileChange,
+  RepositoryTree,
+  RepositoryTreeEntry,
+} from './pull-requests'
 export type {
   DashboardData,
   DashboardOptions,
