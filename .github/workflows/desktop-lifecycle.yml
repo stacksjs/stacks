@@ -78,20 +78,26 @@ jobs:
           version: '0.10.43'
           install: 'false'
 
-      - name: Install Stacks dependencies
-        run: bun install --frozen-lockfile
-
       - name: Install Craft dependencies
         working-directory: .craft-contract
-        run: bun install --frozen-lockfile
+        run: |
+          if [ "$RUNNER_OS" = "macOS" ]; then ulimit -n 65536; fi
+          bun install --frozen-lockfile
 
       - name: Install WiX Toolset v3
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          choco install wixtoolset --version=3.14.1 --yes --no-progress
           $bin = Get-ChildItem "${env:ProgramFiles(x86)}\WiX Toolset v3*\bin" -Directory | Select-Object -First 1
+          if (-not $bin) {
+            choco install wixtoolset --version=3.14.1 --yes --no-progress --allow-downgrade
+            $bin = Get-ChildItem "${env:ProgramFiles(x86)}\WiX Toolset v3*\bin" -Directory | Select-Object -First 1
+          }
           if (-not $bin) { throw 'WiX Toolset bin directory not found' }
+          $candle = Join-Path $bin.FullName 'candle.exe'
+          $version = (Get-Item $candle).VersionInfo.ProductVersion
+          if (-not $version.StartsWith('3.14')) { throw "Expected WiX 3.14, found $version" }
+          Write-Host "Using WiX $version from $($bin.FullName)"
           $bin.FullName | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
 
       - name: Verify immutable Craft checkout
@@ -100,6 +106,17 @@ jobs:
       - name: Exercise native package lifecycle
         working-directory: .craft-contract
         run: bun scripts/native-lifecycle.ts --install
+
+      - name: Reclaim Craft dependency space
+        if: runner.os == 'macOS'
+        run: |
+          rm -rf .craft-contract/node_modules
+          bun pm cache rm
+
+      - name: Install Stacks dependencies
+        run: |
+          if [ "$RUNNER_OS" = "macOS" ]; then ulimit -n 65536; fi
+          bun install --frozen-lockfile
 
       - name: Verify Stacks update security contracts
         run: bun test storage/framework/core/desktop/tests/invites-updater.test.ts
