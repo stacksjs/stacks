@@ -40,6 +40,66 @@ interface CreateRecordResponse {
   cid?: string
 }
 
+interface FacetCandidate {
+  byteStart: number
+  byteEnd: number
+  type: 'link' | 'tag' | 'mention'
+  value: string
+}
+
+const utf8 = new TextEncoder()
+
+function byteLength(value: string): number {
+  return utf8.encode(value).length
+}
+
+/**
+ * Find link/hashtag/mention spans in post text with UTF-8 byte offsets
+ * (ATProto facet ranges are byte-indexed, not character-indexed).
+ * Mentions still need their DID resolved before they become facets.
+ */
+export function detectFacetCandidates(text: string): FacetCandidate[] {
+  const candidates: FacetCandidate[] = []
+
+  const linkPattern = /https?:\/\/[^\s<>"']+/g
+  for (const match of text.matchAll(linkPattern)) {
+    const value = match[0].replace(/[),.;!?]+$/, '')
+    candidates.push({
+      byteStart: byteLength(text.slice(0, match.index)),
+      byteEnd: byteLength(text.slice(0, match.index)) + byteLength(value),
+      type: 'link',
+      value,
+    })
+  }
+
+  const insideLink = (start: number, end: number): boolean =>
+    candidates.some(candidate => candidate.type === 'link' && start < candidate.byteEnd && end > candidate.byteStart)
+
+  const tagPattern = /(^|\s)(#[A-Za-z0-9_]+)/g
+  for (const match of text.matchAll(tagPattern)) {
+    const tag = match[2]
+    if (/^#\d+$/.test(tag)) continue
+    const charStart = (match.index ?? 0) + match[1].length
+    const byteStart = byteLength(text.slice(0, charStart))
+    const byteEnd = byteStart + byteLength(tag)
+    if (insideLink(byteStart, byteEnd)) continue
+    candidates.push({ byteStart, byteEnd, type: 'tag', value: tag.slice(1) })
+  }
+
+  // Handles are domain-shaped (user.bsky.social), so require a dot.
+  const mentionPattern = /(^|\s)(@[a-z0-9][a-z0-9.-]*\.[a-z]{2,})/gi
+  for (const match of text.matchAll(mentionPattern)) {
+    const handle = match[2]
+    const charStart = (match.index ?? 0) + match[1].length
+    const byteStart = byteLength(text.slice(0, charStart))
+    const byteEnd = byteStart + byteLength(handle)
+    if (insideLink(byteStart, byteEnd)) continue
+    candidates.push({ byteStart, byteEnd, type: 'mention', value: handle.slice(1).replace(/\.+$/, '') })
+  }
+
+  return candidates.sort((a, b) => a.byteStart - b.byteStart)
+}
+
 export class BlueskyPublishingDriver implements SocialPublishingDriver {
   readonly provider: 'bluesky' = 'bluesky'
   characterLimit = 300
@@ -110,6 +170,11 @@ export class BlueskyPublishingDriver implements SocialPublishingDriver {
     }
 
     if (post.langs?.length) record.langs = post.langs
+    if (post.reply) record.reply = post.reply
+
+    const facets = post.facets ?? await this.buildFacets(post.text)
+    if (facets.length) record.facets = facets
+
     if (post.external) {
       record.embed = {
         $type: 'app.bsky.embed.external',
@@ -119,6 +184,18 @@ export class BlueskyPublishingDriver implements SocialPublishingDriver {
           description: post.external.description || '',
         },
       }
+    }
+
+    // Bluesky records hold a single embed; attached images win over a link
+    // card (the link is still clickable via its facet).
+    const imageMedia = (post.media || []).filter(item => item.bytes?.length).slice(0, 4)
+    if (imageMedia.length) {
+      const images = []
+      for (const item of imageMedia) {
+        const blob = await this.uploadBlob(identity, item.bytes!, item.mimeType || 'image/jpeg')
+        images.push({ image: blob, alt: item.altText || '' })
+      }
+      record.embed = { $type: 'app.bsky.embed.images', images }
     }
 
     const payload = await this.post<CreateRecordResponse>(
@@ -139,6 +216,33 @@ export class BlueskyPublishingDriver implements SocialPublishingDriver {
       cid: payload.cid,
       url: this.toPostUrl(identity.handle, payload.uri),
     }
+  }
+
+  /**
+   * Engagement counts for up to 25 of the account's posts per call
+   * (app.bsky.feed.getPosts). Deleted posts are simply absent from the
+   * response.
+   */
+  async postMetrics(
+    identity: SocialIdentityCredentials,
+    uris: string[],
+  ): Promise<Array<{ uri: string, likeCount: number, repostCount: number, replyCount: number }>> {
+    if (!identity.accessToken) throw new Error('Bluesky access token is missing for this identity.')
+    if (uris.length === 0) return []
+
+    const url = new URL(`${this.service}/xrpc/app.bsky.feed.getPosts`)
+    for (const uri of uris.slice(0, 25)) url.searchParams.append('uris', uri)
+
+    const payload = await this.request<{ posts?: Array<{ uri: string, likeCount?: number, repostCount?: number, replyCount?: number }> }>(url, {
+      headers: { authorization: `Bearer ${identity.accessToken}` },
+    })
+
+    return (payload.posts || []).map(post => ({
+      uri: post.uri,
+      likeCount: post.likeCount || 0,
+      repostCount: post.repostCount || 0,
+      replyCount: post.replyCount || 0,
+    }))
   }
 
   async timeline(identity: SocialIdentityCredentials, query: TimelineQuery = {}): Promise<TimelineResult> {
@@ -202,6 +306,66 @@ export class BlueskyPublishingDriver implements SocialPublishingDriver {
         authorization: `Bearer ${identity.accessToken}`,
       },
     })
+  }
+
+  /**
+   * Resolve link/tag/mention candidates into ATProto facets. Mentions that
+   * fail handle→DID resolution are dropped rather than failing the post.
+   */
+  protected async buildFacets(text: string): Promise<Array<Record<string, unknown>>> {
+    const facets: Array<Record<string, unknown>> = []
+    for (const candidate of detectFacetCandidates(text)) {
+      let feature: Record<string, unknown> | null = null
+      if (candidate.type === 'link')
+        feature = { $type: 'app.bsky.richtext.facet#link', uri: candidate.value }
+      else if (candidate.type === 'tag')
+        feature = { $type: 'app.bsky.richtext.facet#tag', tag: candidate.value }
+      else if (candidate.type === 'mention') {
+        const did = await this.resolveHandle(candidate.value)
+        if (did) feature = { $type: 'app.bsky.richtext.facet#mention', did }
+      }
+      if (feature) {
+        facets.push({
+          index: { byteStart: candidate.byteStart, byteEnd: candidate.byteEnd },
+          features: [feature],
+        })
+      }
+    }
+    return facets
+  }
+
+  /** Handle → DID, or null when the handle doesn't resolve. */
+  protected async resolveHandle(handle: string): Promise<string | null> {
+    try {
+      const url = new URL(`${this.service}/xrpc/com.atproto.identity.resolveHandle`)
+      url.searchParams.set('handle', handle)
+      const payload = await this.request<{ did?: string }>(url, {})
+      return payload.did || null
+    }
+    catch {
+      return null
+    }
+  }
+
+  /** Upload raw image bytes and return the blob ref for embeds. */
+  async uploadBlob(identity: SocialIdentityCredentials, bytes: Uint8Array, mimeType: string): Promise<unknown> {
+    if (!identity.accessToken) throw new Error('Bluesky access token is missing for this identity.')
+    if (bytes.length > 1_000_000)
+      throw new Error('Bluesky images must be 1MB or smaller.')
+
+    const payload = await this.request<{ blob: unknown }>(
+      new URL(`${this.service}/xrpc/com.atproto.repo.uploadBlob`),
+      {
+        method: 'POST',
+        headers: {
+          'content-type': mimeType,
+          'authorization': `Bearer ${identity.accessToken}`,
+        },
+        body: bytes,
+      },
+    )
+
+    return payload.blob
   }
 
   protected async post<T>(path: string, body?: unknown, headers: Record<string, string> = {}): Promise<T> {

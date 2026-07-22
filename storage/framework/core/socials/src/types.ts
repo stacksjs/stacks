@@ -142,13 +142,28 @@ export interface PublishPostInput {
     description?: string
   }
   /**
-   * Attached media. Required by media-only providers such as Instagram, and
-   * ignored by text-first providers (Bluesky, LinkedIn) for now.
+   * Reply references for thread chaining (ATProto shape). `root` is the
+   * first post of the thread, `parent` the one directly above.
+   */
+  reply?: {
+    root: { uri: string, cid: string }
+    parent: { uri: string, cid: string }
+  }
+  /**
+   * Attached media. Instagram requires a public `url`; Bluesky uploads
+   * `bytes` (or fetches `url`) as a blob and embeds the images.
    */
   media?: Array<{
-    url: string
+    url?: string
+    bytes?: Uint8Array
+    mimeType?: string
     altText?: string
   }>
+  /**
+   * Precomputed rich-text facets (ATProto shape). When omitted, drivers
+   * that support facets detect links/mentions/hashtags automatically.
+   */
+  facets?: unknown[]
 }
 
 export interface PublishedPost {
