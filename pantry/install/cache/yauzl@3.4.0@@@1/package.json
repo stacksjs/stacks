@@ -1,0 +1,40 @@
+{
+  "name": "yauzl",
+  "version": "3.4.0",
+  "description": "yet another unzip library for node",
+  "engines": {
+    "node": ">=12"
+  },
+  "main": "index.js",
+  "scripts": {
+    "test": "node test/test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/thejoshwolfe/yauzl.git"
+  },
+  "keywords": [
+    "unzip",
+    "zip",
+    "stream",
+    "archive",
+    "file"
+  ],
+  "author": "Josh Wolfe <thejoshwolfe@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/thejoshwolfe/yauzl/issues"
+  },
+  "homepage": "https://github.com/thejoshwolfe/yauzl",
+  "dependencies": {
+    "pend": "~1.2.0"
+  },
+  "devDependencies": {
+    "bl": "^7.0.8"
+  },
+  "files": [
+    "crc32.js",
+    "fd-slicer.js",
+    "index.js"
+  ]
+}
