@@ -25,7 +25,7 @@ export type { FilenameStrategy, PutFileOptions, UploadedFileLike } from './put-f
 export { UploadedFile, uploadedFile, uploadedFiles } from './uploaded-file'
 
 // Filesystem type helpers
-export { configFromEnv, localDisk, s3Disk } from './types/filesystem'
+export { configFromEnv, filebaseDisk, localDisk, s3Disk } from './types/filesystem'
 // Disk-name autocomplete: userland augments `KnownDisks` to get
 // completion on `Storage.disk('…')` (stacksjs/stacks#1924).
 export type { DiskName, KnownDisks } from './types/filesystem'
