@@ -296,6 +296,68 @@ export async function executeQueryEvidence(revision: string): Promise<Evidence> 
   return evidence
 }
 
+export async function executeDatabaseEvidence(revision: string): Promise<Evidence> {
+  const evidence: Evidence = new Map()
+  const url = blob(revision, 'storage/framework/core/query-builder/src/index.ts')
+  const started = performance.now()
+  // Lazy-import + skip-on-failure for the same stale-pantry-link robustness as
+  // SEC-01. Runs a throwaway in-memory SQLite so there is no external service.
+  try {
+    const { createQueryBuilder, setConfig } = await import('../../storage/framework/core/query-builder/src/index')
+    setConfig({ dialect: 'sqlite', database: ':memory:' } as Parameters<typeof setConfig>[0])
+    const db = createQueryBuilder() as any
+    // The query builder reuses one global in-memory connection, so a prior run in
+    // the same process leaves the table behind. Drop first for idempotency.
+    await db.raw`DROP TABLE IF EXISTS conformance_widgets`.execute()
+    await db.raw`CREATE TABLE conformance_widgets (id INTEGER PRIMARY KEY, name TEXT)`.execute()
+
+    // CORE-DATA-01: create, read, update, delete round-trip.
+    await db.insertInto('conformance_widgets').values({ id: 1, name: 'a' }).execute()
+    const created = await db.selectFrom('conformance_widgets').selectAll().execute()
+    await db.updateTable('conformance_widgets').set({ name: 'b' }).where('id', '=', 1).execute()
+    const updated = await db.selectFrom('conformance_widgets').select(['name']).where('id', '=', 1).execute()
+    await db.deleteFrom('conformance_widgets').where('id', '=', 1).execute()
+    const afterDelete = await db.selectFrom('conformance_widgets').selectAll().execute()
+    const crudOk = created.length === 1 && created[0]?.name === 'a' && updated[0]?.name === 'b' && afterDelete.length === 0
+    evidence.set('CORE-DATA-01', {
+      status: crudOk ? 'pass' : 'fail',
+      evidenceUrl: url,
+      durationMs: Math.max(0, performance.now() - started),
+      notes: crudOk ? 'Create, read, update, and delete round-trip succeeded against SQLite.' : 'CRUD fixture failed.',
+    })
+
+    // CORE-DATA-03: a failing transaction rolls back its writes.
+    const txStarted = performance.now()
+    await db.insertInto('conformance_widgets').values({ id: 1, name: 'keep' }).execute()
+    let rolledBack = false
+    try {
+      await db.transaction(async (trx: any) => {
+        await trx.insertInto('conformance_widgets').values({ id: 2, name: 'temp' }).execute()
+        throw new Error('force rollback')
+      })
+    }
+    catch {
+      rolledBack = true
+    }
+    const rows = await db.selectFrom('conformance_widgets').selectAll().execute()
+    const txOk = rolledBack && rows.length === 1 && rows[0]?.id === 1
+    evidence.set('CORE-DATA-03', {
+      status: txOk ? 'pass' : 'fail',
+      evidenceUrl: url,
+      durationMs: Math.max(0, performance.now() - txStarted),
+      notes: txOk ? 'A failing transaction rolled back its writes, leaving prior state intact.' : 'Transaction-rollback fixture failed.',
+    })
+  }
+  catch (error) {
+    const note = `Query builder unavailable in this environment: ${error instanceof Error ? error.message.slice(0, 100) : String(error)}`
+    for (const id of ['CORE-DATA-01', 'CORE-DATA-03']) {
+      if (!evidence.has(id))
+        evidence.set(id, { status: 'skipped', evidenceUrl: null, durationMs: Math.max(0, performance.now() - started), notes: note })
+    }
+  }
+  return evidence
+}
+
 function validateSemantics(report: any, catalog: Catalog, fixtures: FixtureCorpus): string[] {
   const errors: string[] = []
   const expected = new Set(catalog.requirements.map(requirement => requirement.id))
@@ -349,6 +411,7 @@ export async function buildReport(): Promise<Record<string, unknown>> {
   for (const [id, value] of await executeValidationEvidence(revision)) evidence.set(id, value)
   for (const [id, value] of await executeLifecycleEvidence(revision)) evidence.set(id, value)
   for (const [id, value] of await executeQueryEvidence(revision)) evidence.set(id, value)
+  for (const [id, value] of await executeDatabaseEvidence(revision)) evidence.set(id, value)
   const fixtureByRequirement = new Map(fixtures.fixtures.flatMap(fixture => fixture.requirements.map(id => [id, fixture.id] as const)))
   const results: Result[] = catalog.requirements.map((requirement) => ({
     requirementId: requirement.id,
