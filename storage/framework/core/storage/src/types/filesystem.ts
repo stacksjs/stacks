@@ -170,6 +170,27 @@ export function s3Disk(bucket: string, options?: Partial<Omit<S3DiskConfig, 'dri
 }
 
 /**
+ * Helper to create a Filebase disk config (stacksjs/stacks#938).
+ *
+ * Filebase (https://filebase.com) is an S3-compatible, IPFS-backed object
+ * store, so it reuses the `s3` adapter with the endpoint pinned to
+ * `https://s3.filebase.com` and the region to `us-east-1` (Filebase's single
+ * S3 region). Pass a Filebase bucket; supply Filebase credentials via
+ * `options.credentials` or the standard `AWS_ACCESS_KEY_ID`/`AWS_SECRET_ACCESS_KEY`
+ * env vars. Any field (prefix, visibility, credentials, ...) can be overridden.
+ */
+export function filebaseDisk(bucket: string, options?: Partial<Omit<S3DiskConfig, 'driver' | 'bucket'>>): S3DiskConfig {
+  return {
+    driver: 's3',
+    bucket,
+    region: 'us-east-1',
+    endpoint: 'https://s3.filebase.com',
+    visibility: 'private',
+    ...options,
+  }
+}
+
+/**
  * Create filesystem config from environment variables
  */
 export function configFromEnv(base: Partial<FilesystemConfig> = {}): FilesystemConfig {
