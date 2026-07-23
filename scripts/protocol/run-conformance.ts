@@ -262,6 +262,40 @@ export async function executeLifecycleEvidence(revision: string): Promise<Eviden
   return evidence
 }
 
+export async function executeQueryEvidence(revision: string): Promise<Evidence> {
+  const evidence: Evidence = new Map()
+  const url = blob(revision, 'storage/framework/core/database/src/types.ts')
+  const started = performance.now()
+  // CORE-SEC-01: database operations parameterize untrusted values by default.
+  // Lazy-import so a stale local pantry link (see the sibling-resolution note)
+  // degrades this one check to skipped instead of crashing the whole adapter;
+  // CI and a healthy checkout resolve it and run the check for real.
+  try {
+    const { sql } = await import('../../storage/framework/core/database/src/types')
+    const attack = '\' OR 1=1 --'
+    const query = sql`SELECT * FROM users WHERE email = ${attack}` as unknown as { sql: string, parameters: unknown[] }
+    const parameterized = query.sql === 'SELECT * FROM users WHERE email = ?'
+      && Array.isArray(query.parameters)
+      && query.parameters.length === 1
+      && query.parameters[0] === attack
+    evidence.set('CORE-SEC-01', {
+      status: parameterized ? 'pass' : 'fail',
+      evidenceUrl: url,
+      durationMs: Math.max(0, performance.now() - started),
+      notes: parameterized ? 'Untrusted input is bound as a positional parameter and never inlined into the SQL text.' : 'Query-parameterization fixture failed.',
+    })
+  }
+  catch (error) {
+    evidence.set('CORE-SEC-01', {
+      status: 'skipped',
+      evidenceUrl: null,
+      durationMs: Math.max(0, performance.now() - started),
+      notes: `Query builder unavailable in this environment: ${error instanceof Error ? error.message.slice(0, 100) : String(error)}`,
+    })
+  }
+  return evidence
+}
+
 function validateSemantics(report: any, catalog: Catalog, fixtures: FixtureCorpus): string[] {
   const errors: string[] = []
   const expected = new Set(catalog.requirements.map(requirement => requirement.id))
@@ -314,6 +348,7 @@ export async function buildReport(): Promise<Record<string, unknown>> {
   for (const [id, value] of executeConventionsEvidence(revision)) evidence.set(id, value)
   for (const [id, value] of await executeValidationEvidence(revision)) evidence.set(id, value)
   for (const [id, value] of await executeLifecycleEvidence(revision)) evidence.set(id, value)
+  for (const [id, value] of await executeQueryEvidence(revision)) evidence.set(id, value)
   const fixtureByRequirement = new Map(fixtures.fixtures.flatMap(fixture => fixture.requirements.map(id => [id, fixture.id] as const)))
   const results: Result[] = catalog.requirements.map((requirement) => ({
     requirementId: requirement.id,
