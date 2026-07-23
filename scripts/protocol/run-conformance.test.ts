@@ -27,9 +27,10 @@ describe('protocol adapter evidence', () => {
     expect(evidence.get('CORE-SEC-01')?.status).toBe('pass')
   })
 
-  it('performs a CRUD round-trip and rolls back a failed transaction', async () => {
+  it('performs a CRUD round-trip, a relation join, and rolls back a failed transaction', async () => {
     const evidence = await executeDatabaseEvidence(REVISION)
     expect(evidence.get('CORE-DATA-01')?.status).toBe('pass')
+    expect(evidence.get('CORE-DATA-02')?.status).toBe('pass')
     expect(evidence.get('CORE-DATA-03')?.status).toBe('pass')
   })
 
@@ -56,7 +57,7 @@ describe('protocol adapter evidence', () => {
   it('marks every passing requirement with a source evidence url', async () => {
     const report = await buildReport() as { results: Array<{ status: string, evidenceUrl: string | null }> }
     const passing = report.results.filter(result => result.status === 'pass')
-    expect(passing.length).toBeGreaterThanOrEqual(14)
+    expect(passing.length).toBeGreaterThanOrEqual(15)
     expect(passing.every(result => typeof result.evidenceUrl === 'string' && result.evidenceUrl.startsWith('https://'))).toBe(true)
   })
 })
