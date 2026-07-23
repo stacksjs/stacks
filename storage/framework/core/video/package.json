@@ -1,1 +1,41 @@
-{"name":"@stacksjs/video","type":"module","sideEffects":false,"version":"0.70.162","description":"Native video delivery planning for Stacks.","author":"Chris Breuer","license":"MIT","funding":"https://github.com/sponsors/chrisbbreuer","repository":{"type":"git","url":"git+https://github.com/stacksjs/stacks.git","directory":"./storage/framework/core/video"},"exports":{".":{"types":"./dist/index.d.ts","development":"./src/index.ts","bun":"./dist/index.js","import":"./dist/index.js"}},"module":"dist/index.js","types":"dist/index.d.ts","files":["README.md","dist"],"scripts":{"build":"bun build.ts","typecheck":"bun tsc --noEmit","prepublishOnly":"bun run build"},"dependencies":{"ts-video-player":"^0.1.0","ts-videos":"^0.1.1"},"devDependencies":{"better-dx":"catalog:"}}
+{
+  "name": "@stacksjs/video",
+  "type": "module",
+  "sideEffects": false,
+  "version": "0.70.163",
+  "description": "Native video delivery planning for Stacks.",
+  "author": "Chris Breuer",
+  "license": "MIT",
+  "funding": "https://github.com/sponsors/chrisbbreuer",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stacksjs/stacks.git",
+    "directory": "./storage/framework/core/video"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "development": "./src/index.ts",
+      "bun": "./dist/index.js",
+      "import": "./dist/index.js"
+    }
+  },
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "README.md",
+    "dist"
+  ],
+  "scripts": {
+    "build": "bun build.ts",
+    "typecheck": "bun tsc --noEmit",
+    "prepublishOnly": "bun run build"
+  },
+  "dependencies": {
+    "ts-video-player": "^0.1.0",
+    "ts-videos": "^0.1.1"
+  },
+  "devDependencies": {
+    "better-dx": "catalog:"
+  }
+}

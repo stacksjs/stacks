@@ -267,7 +267,7 @@ const SAFE_FILTER_OPERATORS = new Set([
  * text), so filtered aggregates inline values instead - safely, with
  * strict typing and standard `''` quote escaping.
  */
-function inlineSqlLiteral(value: unknown): string {
+function inlineSqlLiteral(_value: unknown): string {
   if (value === null || value === undefined)
     return 'NULL'
   if (typeof value === 'number') {

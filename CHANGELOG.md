@@ -1,5 +1,87 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.162...v0.70.163)
+
+## ✨ Features
+
+- **storage**: S3-compatible presets + endpoint plumbing (Backblaze/R2/Hetzner/Filebase) (#1897, #1896, #938) (#2112) ([91df3e6](https://github.com/stacksjs/stacks/commit/91df3e6)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#1897](https://github.com/stacksjs/stacks/issues/1897), [#1896](https://github.com/stacksjs/stacks/issues/1896), [#938](https://github.com/stacksjs/stacks/issues/938), [#2112](https://github.com/stacksjs/stacks/issues/2112), [#1897](https://github.com/stacksjs/stacks/issues/1897), [#1896](https://github.com/stacksjs/stacks/issues/1896), [#938](https://github.com/stacksjs/stacks/issues/938), [#2112](https://github.com/stacksjs/stacks/issues/2112))
+- **storage**: add filebaseDisk preset for the S3-compatible Filebase store (#938) (#2111) ([84770f0](https://github.com/stacksjs/stacks/commit/84770f0)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#938](https://github.com/stacksjs/stacks/issues/938), [#2111](https://github.com/stacksjs/stacks/issues/2111), [#938](https://github.com/stacksjs/stacks/issues/938), [#2111](https://github.com/stacksjs/stacks/issues/2111))
+- **protocol**: validate fixture-corpus integrity in CI (#2051) (#2110) ([52ba1b8](https://github.com/stacksjs/stacks/commit/52ba1b8)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2051](https://github.com/stacksjs/stacks/issues/2051), [#2110](https://github.com/stacksjs/stacks/issues/2110), [#2051](https://github.com/stacksjs/stacks/issues/2051), [#2110](https://github.com/stacksjs/stacks/issues/2110))
+- **protocol**: validate requirement-id uniqueness in CI (#2050) (#2098) ([c6cf3f7](https://github.com/stacksjs/stacks/commit/c6cf3f7)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2050](https://github.com/stacksjs/stacks/issues/2050), [#2098](https://github.com/stacksjs/stacks/issues/2098), [#2050](https://github.com/stacksjs/stacks/issues/2050), [#2098](https://github.com/stacksjs/stacks/issues/2098))
+- **video**: unify adaptive delivery output ([6a1e300](https://github.com/stacksjs/stacks/commit/6a1e300)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **audio**: execute native delivery plans ([d6dd3d8](https://github.com/stacksjs/stacks/commit/d6dd3d8)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **video**: execute native delivery plans ([27dcdac](https://github.com/stacksjs/stacks/commit/27dcdac)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **ui**: add adaptive audio player ([05da8d8](https://github.com/stacksjs/stacks/commit/05da8d8)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **ui**: add native remote playback ([9f4a9eb](https://github.com/stacksjs/stacks/commit/9f4a9eb)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **ui**: add adaptive video player controls ([ffc1882](https://github.com/stacksjs/stacks/commit/ffc1882)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **audio**: add protected HLS delivery ([a1b02f7](https://github.com/stacksjs/stacks/commit/a1b02f7)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **video**: add protected HLS delivery ([c158dfd](https://github.com/stacksjs/stacks/commit/c158dfd)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **image**: add delivery presets and storage ([41b8a6f](https://github.com/stacksjs/stacks/commit/41b8a6f)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **ui**: add default media components ([0bb86a7](https://github.com/stacksjs/stacks/commit/0bb86a7)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **audio**: add native delivery planning ([273f99c](https://github.com/stacksjs/stacks/commit/273f99c)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **video**: add adaptive delivery planning ([cf6cabf](https://github.com/stacksjs/stacks/commit/cf6cabf)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **image**: add responsive delivery manifests ([ac7d95b](https://github.com/stacksjs/stacks/commit/ac7d95b)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **storage**: use native image transforms ([b24390b](https://github.com/stacksjs/stacks/commit/b24390b)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **ai**: add compact project context ([ee351fd](https://github.com/stacksjs/stacks/commit/ee351fd)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **github**: add atomic pull request workflow ([e1acd7b](https://github.com/stacksjs/stacks/commit/e1acd7b)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **ai**: add config-driven structured client ([4f7d392](https://github.com/stacksjs/stacks/commit/4f7d392)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🐛 Bug Fixes
+
+- **deps**: lock released media packages ([b77f24b](https://github.com/stacksjs/stacks/commit/b77f24b)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **audio**: use organization package scope ([fd48592](https://github.com/stacksjs/stacks/commit/fd48592)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **ui**: expose video tracks and controls ([b9c4de0](https://github.com/stacksjs/stacks/commit/b9c4de0)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **ui**: require accessible image alternatives ([7a6810b](https://github.com/stacksjs/stacks/commit/7a6810b)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **media**: satisfy strict framework types ([1baf748](https://github.com/stacksjs/stacks/commit/1baf748)) _(by Chris <chrisbreuer93@gmail.com>)_
+- support commit hooks in worktrees ([d7071cd](https://github.com/stacksjs/stacks/commit/d7071cd)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **queue**: make setJobProgress a single percent contract (#1984) (#2080) ([49e8673](https://github.com/stacksjs/stacks/commit/49e8673)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#1984](https://github.com/stacksjs/stacks/issues/1984), [#2080](https://github.com/stacksjs/stacks/issues/2080), [#1984](https://github.com/stacksjs/stacks/issues/1984), [#2080](https://github.com/stacksjs/stacks/issues/2080))
+- **ci**: regenerate bun.lock as lockfileVersion 1 to unbreak install (#2085) ([717f626](https://github.com/stacksjs/stacks/commit/717f626)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2085](https://github.com/stacksjs/stacks/issues/2085), [#2085](https://github.com/stacksjs/stacks/issues/2085))
+- **migrate**: flush logs before the confirm/fresh prompts ([1e84dfc](https://github.com/stacksjs/stacks/commit/1e84dfc)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **logging**: treat null warn context like undefined (#2083 follow-up) ([fd255d9](https://github.com/stacksjs/stacks/commit/fd255d9)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2083](https://github.com/stacksjs/stacks/issues/2083), [#2083](https://github.com/stacksjs/stacks/issues/2083))
+- **migrate**: await error logs that precede an exit (#2082 sweep) ([08ec923](https://github.com/stacksjs/stacks/commit/08ec923)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2082](https://github.com/stacksjs/stacks/issues/2082), [#2082](https://github.com/stacksjs/stacks/issues/2082))
+- **migrate**: print the stale-lock error before exiting ([2f49a49](https://github.com/stacksjs/stacks/commit/2f49a49)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **buddy**: stop claiming the `stx` bin so the engine's CLI wins ([bc4c804](https://github.com/stacksjs/stacks/commit/bc4c804)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **logging**: drop stray " undefined" when log.warn has no context ([bb53680](https://github.com/stacksjs/stacks/commit/bb53680)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+
+## ♻️ Code Refactoring
+
+- **deploy**: delegate readiness-check SSH to ts-cloud's helper (#2114) ([68e5510](https://github.com/stacksjs/stacks/commit/68e5510)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2114](https://github.com/stacksjs/stacks/issues/2114), [#2114](https://github.com/stacksjs/stacks/issues/2114))
+
+## 📝 Documentation
+
+- **audio**: add delivery examples ([7681192](https://github.com/stacksjs/stacks/commit/7681192)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **video**: add processing examples ([191eb45](https://github.com/stacksjs/stacks/commit/191eb45)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **image**: add delivery examples ([09290b7](https://github.com/stacksjs/stacks/commit/09290b7)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **ai**: explain token-efficient authoring ([d8835b9](https://github.com/stacksjs/stacks/commit/d8835b9)) _(by Chris <chrisbreuer93@gmail.com>)_
+- stx is the template-engine bin, not a buddy alias (#2081) (#2084) ([2fdf418](https://github.com/stacksjs/stacks/commit/2fdf418)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2081](https://github.com/stacksjs/stacks/issues/2081), [#2084](https://github.com/stacksjs/stacks/issues/2084), [#2081](https://github.com/stacksjs/stacks/issues/2081), [#2084](https://github.com/stacksjs/stacks/issues/2084))
+
+## 💄 Styles
+
+- **media**: align framework lint rules ([2a61f5f](https://github.com/stacksjs/stacks/commit/2a61f5f)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 💚 Continuous Integration
+
+- guard against a bun.lock version CI's Bun can't read (#2113) ([84ec7ff](https://github.com/stacksjs/stacks/commit/84ec7ff)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2113](https://github.com/stacksjs/stacks/issues/2113), [#2113](https://github.com/stacksjs/stacks/issues/2113))
+
+## 🔧 Chores
+
+- **media**: use released native packages ([98815a3](https://github.com/stacksjs/stacks/commit/98815a3)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **deps**: update gitlint ([7542e7c](https://github.com/stacksjs/stacks/commit/7542e7c)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## ⏪ Reverts
+
+- **bun.lock**: restore to main — was swept into fd255d992 by mistake ([ec057c0](https://github.com/stacksjs/stacks/commit/ec057c0)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+
+## 🎉 Miscellaneous
+
+- Merge pull request #2097 from stacksjs/agent/ai-authoring-context ([6008859](https://github.com/stacksjs/stacks/commit/6008859)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2097](https://github.com/stacksjs/stacks/issues/2097), [#2097](https://github.com/stacksjs/stacks/issues/2097))
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+- _Glenn Michael Torregosa <gtorregosa@gmail.com>_
+- _glennmichael123 <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.161...v0.70.162)
 
 ## ✨ Features
