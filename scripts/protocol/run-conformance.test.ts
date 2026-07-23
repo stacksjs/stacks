@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test'
-import { buildReport, executeConfigEvidence, executeConventionsEvidence, executeLifecycleEvidence, executeSecurityEvidence, executeValidationEvidence } from './run-conformance'
+import { buildReport, executeConfigEvidence, executeConventionsEvidence, executeLifecycleEvidence, executeQueryEvidence, executeSecurityEvidence, executeValidationEvidence } from './run-conformance'
 
 const REVISION = '0'.repeat(40)
 
@@ -20,6 +20,11 @@ describe('protocol adapter evidence', () => {
   it('invokes an Action directly, independent of any HTTP transport', async () => {
     const evidence = await executeLifecycleEvidence(REVISION)
     expect(evidence.get('CORE-MVA-01')?.status).toBe('pass')
+  })
+
+  it('parameterizes untrusted values instead of inlining them into SQL', async () => {
+    const evidence = await executeQueryEvidence(REVISION)
+    expect(evidence.get('CORE-SEC-01')?.status).toBe('pass')
   })
 
   it('produces field-keyed validation errors and a redacted 422 envelope', async () => {
@@ -45,7 +50,7 @@ describe('protocol adapter evidence', () => {
   it('marks every passing requirement with a source evidence url', async () => {
     const report = await buildReport() as { results: Array<{ status: string, evidenceUrl: string | null }> }
     const passing = report.results.filter(result => result.status === 'pass')
-    expect(passing.length).toBeGreaterThanOrEqual(11)
+    expect(passing.length).toBeGreaterThanOrEqual(12)
     expect(passing.every(result => typeof result.evidenceUrl === 'string' && result.evidenceUrl.startsWith('https://'))).toBe(true)
   })
 })
