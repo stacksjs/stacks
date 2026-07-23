@@ -68,6 +68,7 @@
     "docs:artifacts:check": "bun scripts/docs/generated-artifacts.ts --check",
     "docs:links": "bun scripts/docs/links.ts",
     "docs:links:check": "bun scripts/docs/links.ts --check",
+    "deps:lockfile:check": "bun scripts/check-lockfile-version.ts",
     "protocol:sync": "bun scripts/protocol/sync-suite.ts --write",
     "protocol:check": "bun scripts/protocol/sync-suite.ts --check",
     "protocol:conformance": "bun scripts/protocol/run-conformance.ts",
