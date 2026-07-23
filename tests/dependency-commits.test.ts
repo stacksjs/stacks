@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test'
-import { hasDependencyStateChange, isDependencyCommit } from '../scripts/check-dependency-commits'
+import { hasDependencyStateChange, isDependencyCommit } from '../.github/scripts/check-dependency-commits'
 
 describe('dependency commit integrity', () => {
   it('recognizes dependency commit subjects', () => {
