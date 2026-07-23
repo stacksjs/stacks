@@ -93,6 +93,40 @@ async function isSettled(p: Promise<unknown>): Promise<boolean> {
 }
 
 /**
+ * Options for the ts-cloud S3 client. Mirrors ts-cloud's internal
+ * `S3ClientOptions` (declared but not re-exported from its package root);
+ * structural typing lets this satisfy the `S3Client` constructor's 3rd argument.
+ */
+interface S3ClientOptions {
+  endpoint?: string
+  forcePathStyle?: boolean
+  credentials?: { accessKeyId: string, secretAccessKey: string, sessionToken?: string }
+}
+
+/**
+ * Build ts-cloud `S3ClientOptions` from adapter config, or `undefined` for a
+ * plain AWS S3 client. The config endpoint may carry a scheme
+ * (`https://s3.filebase.com`); ts-cloud wants a scheme-less host, so it's
+ * stripped here. This is what routes the adapter to S3-compatible providers -
+ * Filebase, Backblaze B2, Cloudflare R2, Hetzner Object Storage
+ * (stacksjs/stacks#938, #1897, #1896).
+ */
+export function resolveS3ClientOptions(config: {
+  endpoint?: string
+  usePathStyleEndpoint?: boolean
+  credentials?: { accessKeyId: string, secretAccessKey: string, sessionToken?: string }
+}): S3ClientOptions | undefined {
+  const options: S3ClientOptions = {}
+  if (config.endpoint)
+    options.endpoint = config.endpoint.replace(/^https?:\/\//i, '').replace(/\/+$/, '')
+  if (config.usePathStyleEndpoint)
+    options.forcePathStyle = true
+  if (config.credentials)
+    options.credentials = config.credentials
+  return Object.keys(options).length > 0 ? options : undefined
+}
+
+/**
  * AWS S3 storage adapter using ts-cloud S3Client
  */
 export class S3StorageAdapter implements StorageAdapter {
@@ -101,6 +135,8 @@ export class S3StorageAdapter implements StorageAdapter {
   private bucket: string
   private prefix: string
   private region: string
+  private endpoint?: string
+  private usePathStyleEndpoint?: boolean
   /**
    * Caller-supplied credentials, kept so we can issue presigned POST
    * policies (which need access to the signing key — ts-cloud's
@@ -120,6 +156,8 @@ export class S3StorageAdapter implements StorageAdapter {
     this.prefix = config.prefix || ''
     this.region = config.region || 'us-east-1'
     this.credentials = config.credentials
+    this.endpoint = config.endpoint
+    this.usePathStyleEndpoint = config.usePathStyleEndpoint
 
     if (!this.bucket) {
       throw new Error('S3 bucket name is required')
@@ -131,7 +169,11 @@ export class S3StorageAdapter implements StorageAdapter {
       return this._client
     if (!this._clientPromise) {
       this._clientPromise = import('@stacksjs/ts-cloud').then((cloud) => {
-        this._client = new cloud.S3Client(this.region)
+        this._client = new cloud.S3Client(
+          this.region,
+          undefined,
+          resolveS3ClientOptions({ endpoint: this.endpoint, usePathStyleEndpoint: this.usePathStyleEndpoint, credentials: this.credentials }),
+        )
         return this._client
       })
     }
