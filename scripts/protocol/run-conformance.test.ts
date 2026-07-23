@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test'
-import { buildReport, executeConfigEvidence, executeConventionsEvidence, executeSecurityEvidence, executeValidationEvidence } from './run-conformance'
+import { buildReport, executeConfigEvidence, executeConventionsEvidence, executeLifecycleEvidence, executeSecurityEvidence, executeValidationEvidence } from './run-conformance'
 
 const REVISION = '0'.repeat(40)
 
@@ -11,9 +11,15 @@ describe('protocol adapter evidence', () => {
     expect(evidence.get('CORE-SEC-02')?.status).toBe('pass')
   })
 
-  it('rejects an unavailable capability driver before any work begins', () => {
+  it('rejects unavailable and planned drivers loudly, before any work begins', () => {
     const evidence = executeConfigEvidence(REVISION)
     expect(evidence.get('CORE-CONFIG-02')?.status).toBe('pass')
+    expect(evidence.get('STD-DRV-01')?.status).toBe('pass')
+  })
+
+  it('invokes an Action directly, independent of any HTTP transport', async () => {
+    const evidence = await executeLifecycleEvidence(REVISION)
+    expect(evidence.get('CORE-MVA-01')?.status).toBe('pass')
   })
 
   it('produces field-keyed validation errors and a redacted 422 envelope', async () => {
@@ -39,7 +45,7 @@ describe('protocol adapter evidence', () => {
   it('marks every passing requirement with a source evidence url', async () => {
     const report = await buildReport() as { results: Array<{ status: string, evidenceUrl: string | null }> }
     const passing = report.results.filter(result => result.status === 'pass')
-    expect(passing.length).toBeGreaterThanOrEqual(9)
+    expect(passing.length).toBeGreaterThanOrEqual(11)
     expect(passing.every(result => typeof result.evidenceUrl === 'string' && result.evidenceUrl.startsWith('https://'))).toBe(true)
   })
 })

@@ -4,6 +4,7 @@ import { arch, platform } from 'node:os'
 import { resolve } from 'node:path'
 import Ajv2020 from 'ajv/dist/2020.js'
 import addFormats from 'ajv-formats'
+import { Action } from '../../storage/framework/core/actions/src/index'
 import { assertCapabilityAvailable, capabilityRegistry } from '../../storage/framework/core/config/src/capabilities'
 import { decryptValue, encryptValue, generateKeypair } from '../../storage/framework/core/env/src/crypto'
 import { escapeHtml } from '../../storage/framework/core/error-handling/src/error-page-template'
@@ -140,6 +141,22 @@ export function executeConfigEvidence(revision: string): Evidence {
     durationMs: Math.max(0, performance.now() - started),
     notes: failedClosed ? `Selecting an unavailable driver is rejected before use: ${message}` : 'Fail-closed capability guard accepted an unavailable driver.',
   })
+
+  // STD-DRV-01: a planned/unsupported driver fails loudly with no silent fallback.
+  const drvStarted = performance.now()
+  let drvFailedClosed = false
+  try {
+    assertCapabilityAvailable('queue', 'planned-driver')
+  }
+  catch {
+    drvFailedClosed = true
+  }
+  evidence.set('STD-DRV-01', {
+    status: drvFailedClosed ? 'pass' : 'fail',
+    evidenceUrl: url,
+    durationMs: Math.max(0, performance.now() - drvStarted),
+    notes: drvFailedClosed ? 'A planned driver is rejected loudly with no silent fallback.' : 'Driver-failure fixture did not reject a planned driver.',
+  })
   return evidence
 }
 
@@ -221,6 +238,30 @@ export function executeConventionsEvidence(revision: string): Evidence {
   return evidence
 }
 
+export async function executeLifecycleEvidence(revision: string): Promise<Evidence> {
+  const evidence: Evidence = new Map()
+  const url = blob(revision, 'storage/framework/core/actions/src/action.ts')
+
+  // CORE-MVA-01: an Action is invokable independently of HTTP or any other
+  // exposing transport, so construct one and call handle() directly.
+  const started = performance.now()
+  const increment = new Action({
+    name: 'Increment',
+    handle(request: any) {
+      return { value: request.body.value + 1 }
+    },
+  })
+  const output = await increment.handle({ body: { value: 1 } } as any) as { value?: number }
+  const mvaOk = output?.value === 2
+  evidence.set('CORE-MVA-01', {
+    status: mvaOk ? 'pass' : 'fail',
+    evidenceUrl: url,
+    durationMs: Math.max(0, performance.now() - started),
+    notes: mvaOk ? 'An Action was invoked directly with no HTTP transport and returned its computed result.' : 'Direct Action invocation fixture failed.',
+  })
+  return evidence
+}
+
 function validateSemantics(report: any, catalog: Catalog, fixtures: FixtureCorpus): string[] {
   const errors: string[] = []
   const expected = new Set(catalog.requirements.map(requirement => requirement.id))
@@ -272,6 +313,7 @@ export async function buildReport(): Promise<Record<string, unknown>> {
   for (const [id, value] of executeConfigEvidence(revision)) evidence.set(id, value)
   for (const [id, value] of executeConventionsEvidence(revision)) evidence.set(id, value)
   for (const [id, value] of await executeValidationEvidence(revision)) evidence.set(id, value)
+  for (const [id, value] of await executeLifecycleEvidence(revision)) evidence.set(id, value)
   const fixtureByRequirement = new Map(fixtures.fixtures.flatMap(fixture => fixture.requirements.map(id => [id, fixture.id] as const)))
   const results: Result[] = catalog.requirements.map((requirement) => ({
     requirementId: requirement.id,
