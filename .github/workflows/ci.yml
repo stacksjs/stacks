@@ -43,7 +43,7 @@ jobs:
             node-modules-
 
       - name: Check lockfile version
-        run: bun scripts/check-lockfile-version.ts
+        run: bun .github/scripts/check-lockfile-version.ts
 
       - name: Install dependencies
         run: bun install --frozen-lockfile
@@ -52,7 +52,7 @@ jobs:
         env:
           DEPENDENCY_BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
           DEPENDENCY_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
-        run: bun scripts/check-dependency-commits.ts
+        run: bun .github/scripts/check-dependency-commits.ts
 
       - name: Lint
         run: bun buddy lint
@@ -172,21 +172,21 @@ jobs:
 
       - name: Run protocol adapter
         env:
-          PROTOCOL_REPORT_DIR: protocol/reports
+          PROTOCOL_REPORT_DIR: .github/protocol/reports
         run: |
-          bun test scripts/protocol/run-conformance.test.ts
-          bun test scripts/protocol/craft-evidence.test.ts scripts/protocol/desktop-lifecycle-report.test.ts
-          bun test scripts/deploy/resolve-target.test.ts
+          bun test ./.github/scripts/protocol/run-conformance.test.ts
+          bun test ./.github/scripts/protocol/craft-evidence.test.ts ./.github/scripts/protocol/desktop-lifecycle-report.test.ts
+          bun test ./.github/scripts/deploy/resolve-target.test.ts
           bun run protocol:drivers:test
           bun run protocol:conformance
-          cat protocol/reports/driver-matrix.md >> "$GITHUB_STEP_SUMMARY"
-          cat protocol/reports/stacks-conformance.md >> "$GITHUB_STEP_SUMMARY"
+          cat .github/protocol/reports/driver-matrix.md >> "$GITHUB_STEP_SUMMARY"
+          cat .github/protocol/reports/stacks-conformance.md >> "$GITHUB_STEP_SUMMARY"
 
       - name: Retain attributable conformance report
         uses: actions/upload-artifact@v7
         with:
           name: stacks-protocol-conformance-${{ github.sha }}
-          path: protocol/reports/
+          path: .github/protocol/reports/
           if-no-files-found: error
 
   deployment-target:
@@ -210,7 +210,7 @@ jobs:
 
       - name: Resolve provisioned deployment target
         id: target
-        run: bun scripts/deploy/resolve-target.ts --ref "$GITHUB_REF" --github-output "$GITHUB_OUTPUT"
+        run: bun .github/scripts/deploy/resolve-target.ts --ref "$GITHUB_REF" --github-output "$GITHUB_OUTPUT"
 
   deploy:
     if: >-

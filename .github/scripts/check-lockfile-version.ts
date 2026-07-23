@@ -21,7 +21,7 @@ export function lockfileVersion(contents: string): number | null {
 }
 
 if (import.meta.main) {
-  const path = resolve(import.meta.dir, '..', 'bun.lock')
+  const path = resolve(import.meta.dir, '..', '..', 'bun.lock')
   const version = lockfileVersion(readFileSync(path, 'utf8'))
 
   if (version === EXPECTED_LOCKFILE_VERSION) {

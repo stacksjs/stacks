@@ -27,8 +27,8 @@ interface SourceManifest {
   protocolSuite: { version: string, rfcsRevision: string }
 }
 
-const root = resolve(import.meta.dir, '../..')
-const outputPath = resolve(root, 'protocol/evidence/source-manifest.json')
+const root = resolve(import.meta.dir, '../../..')
+const outputPath = resolve(root, '.github/protocol/evidence/source-manifest.json')
 
 function runGit(...arguments_: string[]): Buffer {
   try {
@@ -123,7 +123,7 @@ function render(manifest: SourceManifest): string {
 if (import.meta.main) {
   const mode = process.argv.includes('--write') ? 'write' : process.argv.includes('--check') ? 'check' : null
   if (!mode) {
-    console.error('usage: bun scripts/protocol/source-manifest.ts --write [--revision <ref>] | --check')
+    console.error('usage: bun .github/scripts/protocol/source-manifest.ts --write [--revision <ref>] | --check')
     process.exit(2)
   }
 
@@ -141,7 +141,7 @@ if (import.meta.main) {
     const current = JSON.parse(readFileSync(outputPath, 'utf8')) as SourceManifest
     const expected = render(buildSourceManifest(current.sourceRevision))
     if (readFileSync(outputPath, 'utf8') !== expected)
-      throw new Error(`source manifest is stale or modified; run bun scripts/protocol/source-manifest.ts --write --revision ${current.sourceRevision}`)
+      throw new Error(`source manifest is stale or modified; run bun .github/scripts/protocol/source-manifest.ts --write --revision ${current.sourceRevision}`)
     console.log(`Source manifest matches ${current.sourceRevision}`)
   }
 }

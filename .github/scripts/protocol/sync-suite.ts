@@ -9,9 +9,9 @@ interface SuiteLock {
   files: Record<string, string>
 }
 
-const root = resolve(import.meta.dir, '../..')
-const suiteRoot = resolve(root, 'protocol/suite/1.0-draft')
-const lockPath = resolve(root, 'protocol/suite.lock.json')
+const root = resolve(import.meta.dir, '../../..')
+const suiteRoot = resolve(root, '.github/protocol/suite/1.0-draft')
+const lockPath = resolve(root, '.github/protocol/suite.lock.json')
 
 function digest(data: Buffer | string): string {
   return `sha256:${createHash('sha256').update(data).digest('hex')}`
@@ -67,7 +67,7 @@ function writeSnapshot(sourceRepository: string): void {
 }
 
 function checkSnapshot(): void {
-  if (!existsSync(lockPath)) throw new Error('protocol/suite.lock.json is missing; run bun run protocol:sync')
+  if (!existsSync(lockPath)) throw new Error('.github/protocol/suite.lock.json is missing; run bun run protocol:sync')
   const lock = JSON.parse(readFileSync(lockPath, 'utf8')) as SuiteLock
   if (!/^[0-9a-f]{40}$/.test(lock.rfcsRevision)) throw new Error('suite lock has an invalid RFC revision')
 
@@ -200,7 +200,7 @@ if (import.meta.main) {
     checkFixtures()
   }
   else {
-    console.error('usage: bun scripts/protocol/sync-suite.ts --write [--source ../rfcs] | --check')
+    console.error('usage: bun .github/scripts/protocol/sync-suite.ts --write [--source ../rfcs] | --check')
     process.exit(2)
   }
 }

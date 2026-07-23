@@ -31,8 +31,8 @@ export interface ReleaseManifest {
   }
 }
 
-const root = resolve(import.meta.dir, '../..')
-const outputPath = resolve(root, 'protocol/evidence/release-manifest.json')
+const root = resolve(import.meta.dir, '../../..')
+const outputPath = resolve(root, '.github/protocol/evidence/release-manifest.json')
 
 function runGit(...arguments_: string[]): Buffer {
   try {
@@ -132,7 +132,7 @@ export function renderReleaseManifest(manifest: ReleaseManifest): string {
 if (import.meta.main) {
   const mode = process.argv.includes('--write') ? 'write' : process.argv.includes('--check') ? 'check' : null
   if (!mode) {
-    console.error('usage: bun scripts/protocol/release-manifest.ts --write --tag <tag> | --check')
+    console.error('usage: bun .github/scripts/protocol/release-manifest.ts --write --tag <tag> | --check')
     process.exit(2)
   }
 

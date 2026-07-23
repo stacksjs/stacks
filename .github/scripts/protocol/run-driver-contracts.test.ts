@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test'
-import type { CapabilityDriver } from '../../storage/framework/core/config/src/capabilities'
+import type { CapabilityDriver } from '../../../storage/framework/core/config/src/capabilities'
 import { planDriverContracts } from './run-driver-contracts'
 
 describe('driver contract matrix planning', () => {

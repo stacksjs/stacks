@@ -101,4 +101,4 @@ storage/framework/core/defaults/resources/
 storage/framework/core/defaults/app/
 
 # Generated protocol evidence is retained by CI, not committed.
-/protocol/reports/
+/.github/protocol/reports/

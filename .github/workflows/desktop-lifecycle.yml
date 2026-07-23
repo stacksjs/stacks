@@ -5,17 +5,17 @@ on:
     branches: [main]
     paths:
       - storage/framework/core/desktop/**
-      - scripts/protocol/craft-evidence.ts
-      - scripts/protocol/desktop-lifecycle-report.ts
-      - protocol/evidence/craft.json
+      - .github/scripts/protocol/craft-evidence.ts
+      - .github/scripts/protocol/desktop-lifecycle-report.ts
+      - .github/protocol/evidence/craft.json
       - .github/workflows/desktop-lifecycle.yml
   pull_request:
     branches: [main]
     paths:
       - storage/framework/core/desktop/**
-      - scripts/protocol/craft-evidence.ts
-      - scripts/protocol/desktop-lifecycle-report.ts
-      - protocol/evidence/craft.json
+      - .github/scripts/protocol/craft-evidence.ts
+      - .github/scripts/protocol/desktop-lifecycle-report.ts
+      - .github/protocol/evidence/craft.json
       - .github/workflows/desktop-lifecycle.yml
   workflow_dispatch:
 
@@ -105,7 +105,7 @@ jobs:
 
       - name: Exercise native package lifecycle
         working-directory: .craft-contract
-        run: bun scripts/native-lifecycle.ts --install
+        run: bun .github/scripts/native-lifecycle.ts --install
 
       - name: Reclaim Craft dependency space
         if: runner.os == 'macOS'
@@ -123,9 +123,9 @@ jobs:
 
       - name: Validate and attest lifecycle report
         run: >-
-          bun scripts/protocol/desktop-lifecycle-report.ts
+          bun .github/scripts/protocol/desktop-lifecycle-report.ts
           --report .craft-contract/artifacts/native-lifecycle/${{ matrix.name }}/report.json
-          --output protocol/reports/desktop/${{ matrix.name }}/attestation.json
+          --output .github/protocol/reports/desktop/${{ matrix.name }}/attestation.json
           --revision "$CRAFT_SOURCE_REVISION"
           --platform ${{ matrix.platform }}
           --architecture ${{ matrix.architecture }}
@@ -139,6 +139,6 @@ jobs:
           path: |
             .craft-contract/artifacts/native-lifecycle/${{ matrix.name }}/report.json
             .craft-contract/artifacts/native-lifecycle/${{ matrix.name }}/work/packages-*/**
-            protocol/reports/desktop/${{ matrix.name }}/attestation.json
+            .github/protocol/reports/desktop/${{ matrix.name }}/attestation.json
           if-no-files-found: error
           retention-days: 90

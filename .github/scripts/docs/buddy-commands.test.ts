@@ -1,4 +1,4 @@
-import type { BuddyCommandInventoryEntry } from '../../storage/framework/core/buddy/src/commands/list'
+import type { BuddyCommandInventoryEntry } from '../../../storage/framework/core/buddy/src/commands/list'
 import { describe, expect, it } from 'bun:test'
 import { renderBuddyCommandReference } from './buddy-commands'
 
