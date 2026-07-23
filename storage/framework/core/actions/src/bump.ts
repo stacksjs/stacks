@@ -258,6 +258,25 @@ if (!isDryRun && existsSync(p.projectPath('bun.lock'))) {
     writeFileSync(lockPath, previousLock)
     throw error
   }
+
+  // CI runs Bun 1.3.x, which only parses lockfileVersion 1. A maintainer
+  // releasing with Bun 1.4.x regenerates v2 here, which then fails every
+  // post-release `bun install --frozen-lockfile` job before lint/typecheck/test
+  // can run (see scripts/check-lockfile-version.ts, the PR-side guard that
+  // release commits bypass). Refuse to ship a lockfile CI cannot read: restore
+  // the previous one and abort with an actionable message.
+  const expectedLockfileVersion = 1
+  const regeneratedLock = readFileSync(lockPath, 'utf8')
+  const versionMatch = regeneratedLock.match(/"lockfileVersion"\s*:\s*(\d+)/)
+  const producedVersion = versionMatch ? Number(versionMatch[1]) : null
+  if (producedVersion !== expectedLockfileVersion) {
+    writeFileSync(lockPath, previousLock)
+    throw new Error(
+      `Release aborted: regenerating bun.lock produced lockfileVersion ${producedVersion ?? 'unknown'}, `
+      + `but CI's Bun (1.3.x) requires v${expectedLockfileVersion}. You are releasing with a newer Bun `
+      + `(1.4.x writes v2). Re-run the release with Bun 1.3.x (e.g. via \`bunx bun@1.3.14\`) so CI can parse the lockfile.`,
+    )
+  }
 }
 
 function pinMetaCoreDeps(version: string): void {
