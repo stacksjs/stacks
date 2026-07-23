@@ -2,7 +2,7 @@ import { describe, expect, it } from 'bun:test'
 import { readdirSync, readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 
-const root = resolve(import.meta.dir, '../..')
+const root = resolve(import.meta.dir, '../../..')
 const workflow = readFileSync(resolve(root, '.github/workflows/desktop-lifecycle.yml'), 'utf8')
 const workflowDirectory = resolve(root, '.github/workflows')
 const repositoryWorkflows = readdirSync(workflowDirectory)

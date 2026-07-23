@@ -4,14 +4,14 @@ import { arch, platform } from 'node:os'
 import { resolve } from 'node:path'
 import Ajv2020 from 'ajv/dist/2020.js'
 import addFormats from 'ajv-formats'
-import { Action } from '../../storage/framework/core/actions/src/index'
-import { assertCapabilityAvailable, capabilityRegistry } from '../../storage/framework/core/config/src/capabilities'
-import { decryptValue, encryptValue, generateKeypair } from '../../storage/framework/core/env/src/crypto'
-import { escapeHtml } from '../../storage/framework/core/error-handling/src/error-page-template'
-import { appPath, defaultsAppPath } from '../../storage/framework/core/path/src/index'
-import { createValidationErrorResponse } from '../../storage/framework/core/router/src/error-handler'
-import { timingSafeEqualString } from '../../storage/framework/core/security/src/hash'
-import { object, string } from '../../storage/framework/core/validation/src/index'
+import { Action } from '../../../storage/framework/core/actions/src/index'
+import { assertCapabilityAvailable, capabilityRegistry } from '../../../storage/framework/core/config/src/capabilities'
+import { decryptValue, encryptValue, generateKeypair } from '../../../storage/framework/core/env/src/crypto'
+import { escapeHtml } from '../../../storage/framework/core/error-handling/src/error-page-template'
+import { appPath, defaultsAppPath } from '../../../storage/framework/core/path/src/index'
+import { createValidationErrorResponse } from '../../../storage/framework/core/router/src/error-handler'
+import { timingSafeEqualString } from '../../../storage/framework/core/security/src/hash'
+import { object, string } from '../../../storage/framework/core/validation/src/index'
 
 type ResultStatus = 'pass' | 'fail' | 'skipped' | 'unsupported' | 'exception' | 'experimental'
 
@@ -38,8 +38,8 @@ interface Result {
 /** Executable-check evidence keyed by requirement id, merged into the report. */
 type Evidence = Map<string, Omit<Result, 'requirementId' | 'fixtureId'>>
 
-const root = resolve(import.meta.dir, '../..')
-const suiteRoot = resolve(root, 'protocol/suite/1.0-draft')
+const root = resolve(import.meta.dir, '../../..')
+const suiteRoot = resolve(root, '.github/protocol/suite/1.0-draft')
 
 function git(...arguments_: string[]): string {
   const result = Bun.spawnSync(['git', ...arguments_], { cwd: root })
@@ -271,7 +271,7 @@ export async function executeQueryEvidence(revision: string): Promise<Evidence> 
   // degrades this one check to skipped instead of crashing the whole adapter;
   // CI and a healthy checkout resolve it and run the check for real.
   try {
-    const { sql } = await import('../../storage/framework/core/database/src/types')
+    const { sql } = await import('../../../storage/framework/core/database/src/types')
     const attack = '\' OR 1=1 --'
     const query = sql`SELECT * FROM users WHERE email = ${attack}` as unknown as { sql: string, parameters: unknown[] }
     const parameterized = query.sql === 'SELECT * FROM users WHERE email = ?'
@@ -303,7 +303,7 @@ export async function executeDatabaseEvidence(revision: string): Promise<Evidenc
   // Lazy-import + skip-on-failure for the same stale-pantry-link robustness as
   // SEC-01. Runs a throwaway in-memory SQLite so there is no external service.
   try {
-    const { createQueryBuilder, setConfig } = await import('../../storage/framework/core/query-builder/src/index')
+    const { createQueryBuilder, setConfig } = await import('../../../storage/framework/core/query-builder/src/index')
     setConfig({ dialect: 'sqlite', database: ':memory:' } as Parameters<typeof setConfig>[0])
     const db = createQueryBuilder() as any
     // The query builder reuses one global in-memory connection, so a prior run in
@@ -420,7 +420,7 @@ export async function buildReport(): Promise<Record<string, unknown>> {
   const startedAt = new Date()
   const catalog = JSON.parse(readFileSync(resolve(suiteRoot, 'catalog.json'), 'utf8')) as Catalog
   const fixtures = JSON.parse(readFileSync(resolve(suiteRoot, 'fixtures/conformance.json'), 'utf8')) as FixtureCorpus
-  const lock = JSON.parse(readFileSync(resolve(root, 'protocol/suite.lock.json'), 'utf8')) as { rfcsRevision: string }
+  const lock = JSON.parse(readFileSync(resolve(root, '.github/protocol/suite.lock.json'), 'utf8')) as { rfcsRevision: string }
   const packageJson = JSON.parse(readFileSync(resolve(root, 'package.json'), 'utf8')) as { version: string }
   const revision = process.env.GITHUB_SHA || git('rev-parse', 'HEAD')
   const runUrl = process.env.GITHUB_SERVER_URL && process.env.GITHUB_REPOSITORY && process.env.GITHUB_RUN_ID
@@ -493,7 +493,7 @@ if (import.meta.main) {
     for (const error of errors) console.error(`error: ${error}`)
     process.exit(1)
   }
-  const outputDirectory = resolve(process.env.PROTOCOL_REPORT_DIR || resolve(root, 'protocol/reports'))
+  const outputDirectory = resolve(process.env.PROTOCOL_REPORT_DIR || resolve(root, '.github/protocol/reports'))
   mkdirSync(outputDirectory, { recursive: true })
   writeFileSync(resolve(outputDirectory, 'stacks-conformance.json'), `${JSON.stringify(report, null, 2)}\n`)
   writeFileSync(resolve(outputDirectory, 'stacks-conformance.md'), renderSummary(report))

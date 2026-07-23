@@ -1,9 +1,9 @@
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
-import { capabilityRegistry } from '../../storage/framework/core/config/src/capabilities'
+import { capabilityRegistry } from '../../../storage/framework/core/config/src/capabilities'
 
-const root = resolve(import.meta.dir, '../..')
-const outputPath = resolve(root, 'protocol/evidence/drivers.json')
+const root = resolve(import.meta.dir, '../../..')
+const outputPath = resolve(root, '.github/protocol/evidence/drivers.json')
 
 function validate(): string[] {
   const errors: string[] = []
@@ -64,7 +64,7 @@ if (import.meta.main) {
     console.log(`Driver registry is current (${capabilityRegistry.length} records)`)
   }
   else {
-    console.error('usage: bun scripts/protocol/driver-registry.ts --write | --check')
+    console.error('usage: bun .github/scripts/protocol/driver-registry.ts --write | --check')
     process.exit(2)
   }
 }

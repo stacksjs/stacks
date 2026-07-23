@@ -262,7 +262,7 @@ if (!isDryRun && existsSync(p.projectPath('bun.lock'))) {
   // CI runs Bun 1.3.x, which only parses lockfileVersion 1. A maintainer
   // releasing with Bun 1.4.x regenerates v2 here, which then fails every
   // post-release `bun install --frozen-lockfile` job before lint/typecheck/test
-  // can run (see scripts/check-lockfile-version.ts, the PR-side guard that
+  // can run (see .github/scripts/check-lockfile-version.ts, the PR-side guard that
   // release commits bypass). Refuse to ship a lockfile CI cannot read: restore
   // the previous one and abort with an actionable message.
   const expectedLockfileVersion = 1

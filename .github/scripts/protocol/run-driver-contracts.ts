@@ -2,11 +2,11 @@ import { Database } from 'bun:sqlite'
 import { mkdirSync, writeFileSync } from 'node:fs'
 import { arch, platform } from 'node:os'
 import { resolve } from 'node:path'
-import type { CapabilityDriver } from '../../storage/framework/core/config/src/capabilities'
-import { capabilityRegistry } from '../../storage/framework/core/config/src/capabilities'
+import type { CapabilityDriver } from '../../../storage/framework/core/config/src/capabilities'
+import { capabilityRegistry } from '../../../storage/framework/core/config/src/capabilities'
 
-const root = resolve(import.meta.dir, '../..')
-const reportRoot = resolve(process.env.PROTOCOL_REPORT_DIR || resolve(root, 'protocol/reports'))
+const root = resolve(import.meta.dir, '../../..')
+const reportRoot = resolve(process.env.PROTOCOL_REPORT_DIR || resolve(root, '.github/protocol/reports'))
 
 export function planDriverContracts(drivers: readonly CapabilityDriver[]): {
   tests: string[]

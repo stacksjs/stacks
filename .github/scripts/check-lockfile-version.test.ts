@@ -14,7 +14,7 @@ describe('bun.lock version guard', () => {
   })
 
   it('the committed bun.lock is the CI-compatible version', () => {
-    const contents = readFileSync(resolve(import.meta.dir, '..', 'bun.lock'), 'utf8')
+    const contents = readFileSync(resolve(import.meta.dir, '..', '..', 'bun.lock'), 'utf8')
     expect(lockfileVersion(contents)).toBe(EXPECTED_LOCKFILE_VERSION)
   })
 })

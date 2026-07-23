@@ -1,9 +1,9 @@
 import { readFileSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
-import { generateOpenApi } from '../../storage/framework/core/api/src/generate-openapi'
-import { type OpenApiDocument, renderOpenApiTypes } from '../../storage/framework/core/api/src/generate-types'
+import { generateOpenApi } from '../../../storage/framework/core/api/src/generate-openapi'
+import { type OpenApiDocument, renderOpenApiTypes } from '../../../storage/framework/core/api/src/generate-types'
 
-const root = resolve(import.meta.dir, '../..')
+const root = resolve(import.meta.dir, '../../..')
 const openApiPath = resolve(root, 'storage/framework/api/openapi.json')
 const apiTypesPath = resolve(root, 'storage/framework/api/api-types.ts')
 
@@ -56,7 +56,7 @@ if (import.meta.main) {
     if (process.argv.includes('--write')) await write()
     else if (process.argv.includes('--check')) await check()
     else {
-      console.error('usage: bun scripts/docs/generated-artifacts.ts --write | --check')
+      console.error('usage: bun .github/scripts/docs/generated-artifacts.ts --write | --check')
       process.exit(2)
     }
   }

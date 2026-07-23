@@ -1,8 +1,8 @@
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 
-const root = resolve(import.meta.dir, '../..')
-const outputPath = resolve(root, 'protocol/evidence/craft.json')
+const root = resolve(import.meta.dir, '../../..')
+const outputPath = resolve(root, '.github/protocol/evidence/craft.json')
 
 export const craftEvidence = {
   schemaVersion: 1,
@@ -46,7 +46,7 @@ export const craftEvidence = {
     blockedBy: 'https://github.com/home-lang/craft/issues/11',
   },
   verification: {
-    local: ['bun test packages/typescript/src/package.test.ts scripts/native-lifecycle-plan.test.ts', 'bun run typecheck', 'bun scripts/native-lifecycle.ts'],
+    local: ['bun test packages/typescript/src/package.test.ts scripts/native-lifecycle-plan.test.ts', 'bun run typecheck', 'bun .github/scripts/native-lifecycle.ts'],
     retained: 'https://github.com/stacksjs/stacks/actions/runs/29890804159',
   },
 } as const
@@ -81,13 +81,13 @@ if (import.meta.main) {
     console.log(`Wrote Craft evidence for ${craftEvidence.source.tag}`)
   }
   else if (process.argv.includes('--check')) {
-    if (!existsSync(outputPath)) errors.push('protocol/evidence/craft.json is missing')
+    if (!existsSync(outputPath)) errors.push('.github/protocol/evidence/craft.json is missing')
     else if (readFileSync(outputPath, 'utf8') !== serializedEvidence()) errors.push('Craft evidence is stale; run bun run protocol:craft')
     if (errors.length) throw new Error(errors.join('\n'))
     console.log(`Craft evidence pins ${craftEvidence.source.tag} at ${craftEvidence.source.revision}`)
   }
   else {
-    console.error('usage: bun scripts/protocol/craft-evidence.ts --write | --check')
+    console.error('usage: bun .github/scripts/protocol/craft-evidence.ts --write | --check')
     process.exit(2)
   }
 }

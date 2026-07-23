@@ -1,9 +1,9 @@
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
-import { desktopSupportMatrix } from '../../storage/framework/core/desktop/src/support'
+import { desktopSupportMatrix } from '../../../storage/framework/core/desktop/src/support'
 
-const root = resolve(import.meta.dir, '../..')
-const outputPath = resolve(root, 'protocol/evidence/desktop-support.json')
+const root = resolve(import.meta.dir, '../../..')
+const outputPath = resolve(root, '.github/protocol/evidence/desktop-support.json')
 const document = {
   schemaVersion: '1.0.0',
   generatedFrom: 'storage/framework/core/desktop/src/support.ts',
@@ -29,6 +29,6 @@ else if (process.argv.includes('--check')) {
   console.log(`Desktop support matrix is current (${document.stableTargets} stable targets)`)
 }
 else {
-  console.error('usage: bun scripts/protocol/desktop-support.ts --write | --check')
+  console.error('usage: bun .github/scripts/protocol/desktop-support.ts --write | --check')
   process.exit(2)
 }

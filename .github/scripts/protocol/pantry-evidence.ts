@@ -1,8 +1,8 @@
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 
-const root = resolve(import.meta.dir, '../..')
-const outputPath = resolve(root, 'protocol/evidence/pantry.json')
+const root = resolve(import.meta.dir, '../../..')
+const outputPath = resolve(root, '.github/protocol/evidence/pantry.json')
 
 export const pantryEvidence = {
   schemaVersion: 1,
@@ -111,7 +111,7 @@ function serializedEvidence(): string {
 
 function check(): void {
   const errors = validatePantryEvidence(pantryEvidence)
-  if (!existsSync(outputPath)) errors.push('protocol/evidence/pantry.json is missing')
+  if (!existsSync(outputPath)) errors.push('.github/protocol/evidence/pantry.json is missing')
   else if (readFileSync(outputPath, 'utf8') !== serializedEvidence()) errors.push('Pantry evidence is stale; run bun run protocol:pantry')
   if (errors.length) throw new Error(errors.join('\n'))
   console.log(`Pantry evidence pins ${pantryEvidence.source.tag} at ${pantryEvidence.source.revision}`)
@@ -126,7 +126,7 @@ if (import.meta.main) {
   }
   else if (process.argv.includes('--check')) check()
   else {
-    console.error('usage: bun scripts/protocol/pantry-evidence.ts --write | --check')
+    console.error('usage: bun .github/scripts/protocol/pantry-evidence.ts --write | --check')
     process.exit(2)
   }
 }
