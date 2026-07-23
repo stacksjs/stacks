@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto'
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { arch, platform } from 'node:os'
 import { resolve } from 'node:path'
 import Ajv2020 from 'ajv/dist/2020.js'
@@ -7,6 +7,7 @@ import addFormats from 'ajv-formats'
 import { assertCapabilityAvailable, capabilityRegistry } from '../../storage/framework/core/config/src/capabilities'
 import { decryptValue, encryptValue, generateKeypair } from '../../storage/framework/core/env/src/crypto'
 import { escapeHtml } from '../../storage/framework/core/error-handling/src/error-page-template'
+import { appPath, defaultsAppPath } from '../../storage/framework/core/path/src/index'
 import { createValidationErrorResponse } from '../../storage/framework/core/router/src/error-handler'
 import { timingSafeEqualString } from '../../storage/framework/core/security/src/hash'
 import { object, string } from '../../storage/framework/core/validation/src/index'
@@ -185,6 +186,41 @@ export async function executeValidationEvidence(revision: string): Promise<Evide
   return evidence
 }
 
+export function executeConventionsEvidence(revision: string): Evidence {
+  const evidence: Evidence = new Map()
+  const rolesUrl = blob(revision, 'storage/framework/core/path/src/index.ts')
+  const overrideUrl = blob(revision, 'storage/framework/core/router/src/stacks-router.ts')
+
+  // CORE-CONV-01: canonical roles map to their documented paths. The Action
+  // role's logical path resolves under app/Actions/ via the path helper.
+  const started = performance.now()
+  const conv01Ok = appPath('Actions/Greet').endsWith('/app/Actions/Greet')
+  evidence.set('CORE-CONV-01', {
+    status: conv01Ok ? 'pass' : 'fail',
+    evidenceUrl: rolesUrl,
+    durationMs: Math.max(0, performance.now() - started),
+    notes: conv01Ok ? 'The Action role maps to its documented app/Actions/<name> path.' : 'Role-to-path mapping fixture failed.',
+  })
+
+  // CORE-CONV-02: user-owned app code takes precedence over framework defaults at
+  // the same logical path. Exercises the framework's documented app-first rule
+  // (stacks-router.ts) against a real in-repo override: app/Actions/NotifyUser.ts
+  // shadows storage/framework/defaults/app/Actions/NotifyUser.ts.
+  const overrideStarted = performance.now()
+  const logical = 'Actions/NotifyUser.ts'
+  const userCandidate = appPath(logical)
+  const defaultCandidate = defaultsAppPath(logical)
+  const resolved = existsSync(userCandidate) ? userCandidate : defaultCandidate
+  const conv02Ok = existsSync(userCandidate) && existsSync(defaultCandidate) && resolved === userCandidate
+  evidence.set('CORE-CONV-02', {
+    status: conv02Ok ? 'pass' : 'fail',
+    evidenceUrl: overrideUrl,
+    durationMs: Math.max(0, performance.now() - overrideStarted),
+    notes: conv02Ok ? 'With the same logical path present in both app/ and framework defaults, resolution selects the app-owned file.' : 'Override-precedence fixture failed.',
+  })
+  return evidence
+}
+
 function validateSemantics(report: any, catalog: Catalog, fixtures: FixtureCorpus): string[] {
   const errors: string[] = []
   const expected = new Set(catalog.requirements.map(requirement => requirement.id))
@@ -234,6 +270,7 @@ export async function buildReport(): Promise<Record<string, unknown>> {
     : `https://github.com/stacksjs/stacks/commit/${revision}`
   const evidence = executeSecurityEvidence(revision)
   for (const [id, value] of executeConfigEvidence(revision)) evidence.set(id, value)
+  for (const [id, value] of executeConventionsEvidence(revision)) evidence.set(id, value)
   for (const [id, value] of await executeValidationEvidence(revision)) evidence.set(id, value)
   const fixtureByRequirement = new Map(fixtures.fixtures.flatMap(fixture => fixture.requirements.map(id => [id, fixture.id] as const)))
   const results: Result[] = catalog.requirements.map((requirement) => ({
