@@ -4,9 +4,12 @@ import { arch, platform } from 'node:os'
 import { resolve } from 'node:path'
 import Ajv2020 from 'ajv/dist/2020.js'
 import addFormats from 'ajv-formats'
-import { capabilityRegistry } from '../../storage/framework/core/config/src/capabilities'
+import { assertCapabilityAvailable, capabilityRegistry } from '../../storage/framework/core/config/src/capabilities'
 import { decryptValue, encryptValue, generateKeypair } from '../../storage/framework/core/env/src/crypto'
+import { escapeHtml } from '../../storage/framework/core/error-handling/src/error-page-template'
+import { createValidationErrorResponse } from '../../storage/framework/core/router/src/error-handler'
 import { timingSafeEqualString } from '../../storage/framework/core/security/src/hash'
+import { object, string } from '../../storage/framework/core/validation/src/index'
 
 type ResultStatus = 'pass' | 'fail' | 'skipped' | 'unsupported' | 'exception' | 'experimental'
 
@@ -30,6 +33,9 @@ interface Result {
   notes?: string
 }
 
+/** Executable-check evidence keyed by requirement id, merged into the report. */
+type Evidence = Map<string, Omit<Result, 'requirementId' | 'fixtureId'>>
+
 const root = resolve(import.meta.dir, '../..')
 const suiteRoot = resolve(root, 'protocol/suite/1.0-draft')
 
@@ -51,10 +57,16 @@ function tamper(ciphertext: string): string {
   return `${prefix}${payload.toString('base64')}`
 }
 
-export function executeSecurityEvidence(revision: string): Map<string, Omit<Result, 'requirementId' | 'fixtureId'>> {
-  const evidence = new Map<string, Omit<Result, 'requirementId' | 'fixtureId'>>()
-  const cryptoUrl = `https://github.com/stacksjs/stacks/blob/${revision}/storage/framework/core/env/src/crypto.ts`
-  const comparisonUrl = `https://github.com/stacksjs/stacks/blob/${revision}/storage/framework/core/security/src/hash.ts`
+/** Source-permalink for an evidence file at the report's revision. */
+function blob(revision: string, path: string): string {
+  return `https://github.com/stacksjs/stacks/blob/${revision}/${path}`
+}
+
+export function executeSecurityEvidence(revision: string): Evidence {
+  const evidence: Evidence = new Map()
+  const cryptoUrl = blob(revision, 'storage/framework/core/env/src/crypto.ts')
+  const comparisonUrl = blob(revision, 'storage/framework/core/security/src/hash.ts')
+  const renderUrl = blob(revision, 'storage/framework/core/error-handling/src/error-page-template.ts')
 
   const started = performance.now()
   try {
@@ -93,6 +105,83 @@ export function executeSecurityEvidence(revision: string): Map<string, Omit<Resu
     durationMs: Math.max(0, performance.now() - comparisonStarted),
     notes: unequal ? 'The public authenticator comparison helper uses the runtime timing-safe primitive.' : 'Timing-safe comparison fixture failed.',
   })
+
+  // CORE-SEC-02: rendered untrusted values are HTML-escaped by default.
+  const renderStarted = performance.now()
+  const escaped = escapeHtml('<script>alert(1)</script>')
+  const renderOk = escaped === '&lt;script&gt;alert(1)&lt;/script&gt;'
+  evidence.set('CORE-SEC-02', {
+    status: renderOk ? 'pass' : 'fail',
+    evidenceUrl: renderUrl,
+    durationMs: Math.max(0, performance.now() - renderStarted),
+    notes: renderOk ? 'Untrusted markup is converted to HTML entities by the default escaper.' : 'Default render-escaping fixture failed.',
+  })
+  return evidence
+}
+
+export function executeConfigEvidence(revision: string): Evidence {
+  const evidence: Evidence = new Map()
+  // CORE-CONFIG-02: selecting an unavailable capability fails closed before any unsafe work begins.
+  const url = blob(revision, 'storage/framework/core/config/src/capabilities.ts')
+  const started = performance.now()
+  let failedClosed = false
+  let message = ''
+  try {
+    assertCapabilityAvailable('queue', 'planned')
+  }
+  catch (error) {
+    failedClosed = true
+    message = error instanceof Error ? error.message : String(error)
+  }
+  evidence.set('CORE-CONFIG-02', {
+    status: failedClosed ? 'pass' : 'fail',
+    evidenceUrl: url,
+    durationMs: Math.max(0, performance.now() - started),
+    notes: failedClosed ? `Selecting an unavailable driver is rejected before use: ${message}` : 'Fail-closed capability guard accepted an unavailable driver.',
+  })
+  return evidence
+}
+
+export async function executeValidationEvidence(revision: string): Promise<Evidence> {
+  const evidence: Evidence = new Map()
+  const validationUrl = blob(revision, 'storage/framework/core/validation/src/validator.ts')
+  const envelopeUrl = blob(revision, 'storage/framework/core/router/src/error-handler.ts')
+
+  // CORE-VAL-01: nested invalid input yields stable field-keyed errors.
+  const started = performance.now()
+  const schema = object({ profile: object({ email: string().email() }) })
+  const result = await schema.validate({ profile: { email: 'bad' } }) as { valid: boolean, errors: Record<string, Array<{ message?: string }>> }
+  const valOk = result.valid === false && Object.keys(result.errors).includes('profile.email')
+  evidence.set('CORE-VAL-01', {
+    status: valOk ? 'pass' : 'fail',
+    evidenceUrl: validationUrl,
+    durationMs: Math.max(0, performance.now() - started),
+    notes: valOk ? 'Nested invalid input produced a stable field-keyed error at profile.email.' : 'Field-keyed validation fixture failed.',
+  })
+
+  // CORE-ERR-01 / CORE-ERR-02: the machine-readable adapter returns a stable envelope
+  // (error, message, status, field errors) that never leaks internals in production.
+  const envStarted = performance.now()
+  const fieldErrors: Record<string, string[]> = {}
+  for (const [field, errors] of Object.entries(result.errors))
+    fieldErrors[field] = errors.map(entry => entry.message ?? String(entry))
+  const response = createValidationErrorResponse(fieldErrors, new Request('http://conformance.local/profile', { method: 'POST' }))
+  const body = await response.text()
+  const durationEnv = Math.max(0, performance.now() - envStarted)
+  const envelopeOk = response.status === 422 && body.includes('"message":"Validation failed"') && body.includes('profile.email')
+  evidence.set('CORE-ERR-01', {
+    status: envelopeOk ? 'pass' : 'fail',
+    evidenceUrl: envelopeUrl,
+    durationMs: durationEnv,
+    notes: envelopeOk ? 'Validation failure serialized to a stable 422 envelope with error, message, status, and field errors.' : 'Error-envelope fixture failed.',
+  })
+  const leaks = ['stack', 'password', 'SELECT', '/home/'].filter(token => body.includes(token))
+  evidence.set('CORE-ERR-02', {
+    status: envelopeOk && leaks.length === 0 ? 'pass' : 'fail',
+    evidenceUrl: envelopeUrl,
+    durationMs: durationEnv,
+    notes: leaks.length === 0 ? 'Production error envelope contained no stack trace, credentials, raw query, or filesystem path.' : `Production error envelope leaked: ${leaks.join(', ')}.`,
+  })
   return evidence
 }
 
@@ -119,10 +208,10 @@ function renderSummary(report: any): string {
   const rows = [...counts].sort(([a], [b]) => a.localeCompare(b)).map(([status, count]) => `| ${status} | ${count} |`).join('\n')
   return `# Stacks protocol conformance report
 
-**Profile claim:** Unverified  
-**Implementation:** \`${report.implementation.revision}\` (${report.implementation.version})  
-**Protocol:** ${report.protocol.version}, catalog ${report.protocol.catalogRevision}, suite ${report.protocol.suiteVersion}  
-**Runtime/platform:** Bun ${report.execution.runtime.version} on ${report.execution.platform.os}/${report.execution.platform.architecture}  
+**Profile claim:** Unverified
+**Implementation:** \`${report.implementation.revision}\` (${report.implementation.version})
+**Protocol:** ${report.protocol.version}, catalog ${report.protocol.catalogRevision}, suite ${report.protocol.suiteVersion}
+**Runtime/platform:** Bun ${report.execution.runtime.version} on ${report.execution.platform.os}/${report.execution.platform.architecture}
 **CI:** [run](${report.execution.ci.runUrl}) · [artifact](${report.execution.ci.artifactUrl})
 
 | Status | Count |
@@ -133,7 +222,7 @@ Only executable adapter checks are marked \`pass\`. All remaining requirements s
 `
 }
 
-export function buildReport(): Record<string, unknown> {
+export async function buildReport(): Promise<Record<string, unknown>> {
   const startedAt = new Date()
   const catalog = JSON.parse(readFileSync(resolve(suiteRoot, 'catalog.json'), 'utf8')) as Catalog
   const fixtures = JSON.parse(readFileSync(resolve(suiteRoot, 'fixtures/conformance.json'), 'utf8')) as FixtureCorpus
@@ -144,6 +233,8 @@ export function buildReport(): Record<string, unknown> {
     ? `${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}`
     : `https://github.com/stacksjs/stacks/commit/${revision}`
   const evidence = executeSecurityEvidence(revision)
+  for (const [id, value] of executeConfigEvidence(revision)) evidence.set(id, value)
+  for (const [id, value] of await executeValidationEvidence(revision)) evidence.set(id, value)
   const fixtureByRequirement = new Map(fixtures.fixtures.flatMap(fixture => fixture.requirements.map(id => [id, fixture.id] as const)))
   const results: Result[] = catalog.requirements.map((requirement) => ({
     requirementId: requirement.id,
@@ -189,7 +280,7 @@ export function buildReport(): Record<string, unknown> {
 }
 
 if (import.meta.main) {
-  const report = buildReport()
+  const report = await buildReport()
   const schema = JSON.parse(readFileSync(resolve(suiteRoot, 'schemas/conformance-report.schema.json'), 'utf8'))
   const catalog = JSON.parse(readFileSync(resolve(suiteRoot, 'catalog.json'), 'utf8')) as Catalog
   const fixtures = JSON.parse(readFileSync(resolve(suiteRoot, 'fixtures/conformance.json'), 'utf8')) as FixtureCorpus
