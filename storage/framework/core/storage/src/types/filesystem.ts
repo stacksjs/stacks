@@ -191,6 +191,63 @@ export function filebaseDisk(bucket: string, options?: Partial<Omit<S3DiskConfig
 }
 
 /**
+ * Helper to create a Backblaze B2 disk config (stacksjs/stacks#1897).
+ *
+ * Backblaze B2 exposes an S3-compatible API, so it reuses the `s3` adapter.
+ * `region` is the B2 region embedded in the endpoint (e.g. `us-west-004`,
+ * `eu-central-003`); the endpoint resolves to `https://s3.<region>.backblazeb2.com`.
+ * Supply B2 application key credentials via `options.credentials` or the AWS_* env vars.
+ */
+export function backblazeDisk(bucket: string, region: string, options?: Partial<Omit<S3DiskConfig, 'driver' | 'bucket'>>): S3DiskConfig {
+  return {
+    driver: 's3',
+    bucket,
+    region,
+    endpoint: `https://s3.${region}.backblazeb2.com`,
+    visibility: 'private',
+    ...options,
+  }
+}
+
+/**
+ * Helper to create a Cloudflare R2 disk config (stacksjs/stacks#1896).
+ *
+ * R2 exposes an S3-compatible API, so it reuses the `s3` adapter. R2 has a
+ * single logical region (`auto`) and a per-account endpoint
+ * `https://<accountId>.r2.cloudflarestorage.com`. Supply R2 token credentials
+ * via `options.credentials` or the AWS_* env vars.
+ */
+export function r2Disk(bucket: string, accountId: string, options?: Partial<Omit<S3DiskConfig, 'driver' | 'bucket'>>): S3DiskConfig {
+  return {
+    driver: 's3',
+    bucket,
+    region: 'auto',
+    endpoint: `https://${accountId}.r2.cloudflarestorage.com`,
+    visibility: 'private',
+    ...options,
+  }
+}
+
+/**
+ * Helper to create a Hetzner Object Storage disk config (stacksjs/stacks#1897).
+ *
+ * Hetzner Object Storage exposes an S3-compatible API, so it reuses the `s3`
+ * adapter. `location` is the datacenter (e.g. `fsn1`, `nbg1`, `hel1`), used as
+ * both the region and the endpoint host `https://<location>.your-objectstorage.com`.
+ * Supply Hetzner S3 credentials via `options.credentials` or the AWS_* env vars.
+ */
+export function hetznerDisk(bucket: string, location: string, options?: Partial<Omit<S3DiskConfig, 'driver' | 'bucket'>>): S3DiskConfig {
+  return {
+    driver: 's3',
+    bucket,
+    region: location,
+    endpoint: `https://${location}.your-objectstorage.com`,
+    visibility: 'private',
+    ...options,
+  }
+}
+
+/**
  * Create filesystem config from environment variables
  */
 export function configFromEnv(base: Partial<FilesystemConfig> = {}): FilesystemConfig {
