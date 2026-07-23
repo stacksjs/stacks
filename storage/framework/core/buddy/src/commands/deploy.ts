@@ -569,15 +569,16 @@ function fmtDuration(secs: number): string {
 }
 
 /**
- * Poll `check()` until it stops throwing or the timeout elapses, emitting a
- * heartbeat every ~30s so a multi-minute wait never looks frozen (and, when
- * backgrounded, so the caller can see it is still alive).
+ * Poll `check()` (awaited each attempt, so it may be sync or async) until it
+ * stops throwing or the timeout elapses, emitting a heartbeat every ~30s so a
+ * multi-minute wait never looks frozen (and, when backgrounded, so the caller
+ * can see it is still alive).
  */
 async function pollUntil(opts: {
   label: string
   timeoutSecs: number
   intervalMs?: number
-  check: () => void
+  check: () => unknown | Promise<unknown>
   timeoutMessage: (elapsedSecs: number) => string
 }): Promise<void> {
   log.info(`${opts.label} (up to ${fmtDuration(opts.timeoutSecs)})...`)
@@ -586,7 +587,7 @@ async function pollUntil(opts: {
   let lastHeartbeat = 0
   for (;;) {
     try {
-      opts.check()
+      await opts.check()
       return
     }
     catch {
@@ -613,33 +614,24 @@ async function pollUntil(opts: {
  *   TS_CLOUD_SSH_WAIT_SECS   (default 480 = 8m)  — SSH reachability
  *   TS_CLOUD_BOOT_WAIT_SECS  (default 720 = 12m) — cloud-init + bun on PATH
  */
-async function waitForRemoteReady(ip: string, verbose: boolean): Promise<void> {
-  const { execSync } = await import('node:child_process')
-  // Cloud providers recycle IPs, so a freshly-provisioned box often reuses an IP
-  // whose OLD host key is still in ~/.ssh/known_hosts. `accept-new` only accepts
-  // brand-new hosts — a *changed* key fails verification and the readiness check
-  // wrongly reports "SSH not reachable". Ignore the known_hosts file entirely for
-  // this ephemeral check (matches the actual deploy's SSH args).
-  const sshArgs = [
-    '-o', 'StrictHostKeyChecking=no',
-    '-o', 'UserKnownHostsFile=/dev/null',
-    '-o', 'BatchMode=yes',
-    '-o', 'ConnectTimeout=10',
-    `root@${ip}`,
-  ]
+async function waitForRemoteReady(ip: string): Promise<void> {
+  const { sshExecOrThrow } = await import('@stacksjs/ts-cloud')
 
-  const run = (remote: string): string =>
-    execSync(`ssh ${sshArgs.map(a => `'${a}'`).join(' ')} '${remote.replace(/'/g, `'\\''`)}'`, {
-      encoding: 'utf8',
-      stdio: ['ignore', 'pipe', verbose ? 'inherit' : 'pipe'],
-    })
+  // Delegate the SSH exec to ts-cloud's helper. It disables host-key checking
+  // (StrictHostKeyChecking=no, UserKnownHostsFile=/dev/null), the same args the
+  // real deploy uses. That also covers the recycled-IP case: cloud providers
+  // reuse an IP whose OLD host key still sits in ~/.ssh/known_hosts, and a
+  // changed key would otherwise fail verification and wrongly report "SSH not
+  // reachable". ConnectTimeout=10 matches the previous inline check.
+  const run = (remote: string): Promise<string> =>
+    sshExecOrThrow(ip, remote, { user: 'root', connectTimeoutSec: 10 })
 
   // 1) Wait for SSH to accept connections (server may still be booting).
   const sshWaitSecs = readWaitSecs('TS_CLOUD_SSH_WAIT_SECS', 8 * 60)
   await pollUntil({
     label: 'Waiting for SSH to come up',
     timeoutSecs: sshWaitSecs,
-    check: () => { run('true') },
+    check: () => run('true'),
     timeoutMessage: elapsed =>
       `SSH did not become reachable on ${ip} within ${fmtDuration(sshWaitSecs)} (waited ${elapsed}s). `
       + `The box may still be booting — raise TS_CLOUD_SSH_WAIT_SECS and retry.`,
@@ -649,7 +641,7 @@ async function waitForRemoteReady(ip: string, verbose: boolean): Promise<void> {
   // 2) Block on cloud-init, then confirm bun landed on PATH.
   log.info('Waiting for cloud-init (installing bun + caddy)...')
   try {
-    run('cloud-init status --wait || true')
+    await run('cloud-init status --wait || true')
   }
   catch (err) {
     log.debug('cloud-init status --wait returned non-zero (continuing):', err)
@@ -659,7 +651,7 @@ async function waitForRemoteReady(ip: string, verbose: boolean): Promise<void> {
   await pollUntil({
     label: 'Waiting for the bun runtime',
     timeoutSecs: bootWaitSecs,
-    check: () => { run('test -x /usr/local/bin/bun') },
+    check: () => run('test -x /usr/local/bin/bun'),
     timeoutMessage: elapsed =>
       `bun runtime did not appear at /usr/local/bin/bun within ${fmtDuration(bootWaitSecs)} (waited ${elapsed}s). `
       + `cloud-init may have failed — SSH in and check /var/log/cloud-init-output.log; `
@@ -1168,7 +1160,7 @@ async function runHetznerDeploy(args: {
     process.exit(ExitCode.FatalError)
   }
 
-  await waitForRemoteReady(ip, verbose)
+  await waitForRemoteReady(ip)
 
   // Package each site as source-only: dependencies are NOT shipped. They are
   // installed on the server from the committed lockfile via the site's
