@@ -20,6 +20,7 @@ import {
   readChannel,
   readSyncedVersion,
   readVersion,
+  resolveLatestStableTag,
   resolveSuccessMessage,
   resolveUpgradeContext,
   resolveUpgradeMessage,
@@ -79,10 +80,24 @@ if (!existsSync(p.projectPath('storage/framework/core'))) {
 const channelFile = join(projectRoot, '.stacks-channel')
 const versionFile = join(projectRoot, '.stacks-version')
 const currentChannel = readChannel(channelFile)
-const ctx = resolveUpgradeContext(options, currentChannel)
 
 const corePkgPath = p.projectPath('storage/framework/core/buddy/package.json')
 const currentVersion = readVersion(corePkgPath)
+
+// The stable channel installs the latest published `vX.Y.Z` tag (there is no
+// `stable` branch — releases are cut as tags). Only resolve it when the run
+// will actually land on stable: a pinned `--version` and the canary channel
+// don't need it, so we skip the network call. If the remote tags can't be
+// listed (offline / no git), fall back to the currently-installed version tag
+// so we never target a non-existent ref.
+const willResolveStable = !options.version && !options.canary && (!!options.stable || currentChannel !== 'canary')
+let latestStableRef = ''
+if (willResolveStable) {
+  latestStableRef = (await resolveLatestStableTag())
+    ?? (currentVersion ? `v${currentVersion}` : 'main')
+}
+
+const ctx = resolveUpgradeContext(options, currentChannel, latestStableRef)
 
 // Source resolution. Explicit `--from` wins. Otherwise auto-detect a sibling
 // stacks checkout for instant offline updates. If neither is available,
@@ -530,16 +545,31 @@ async function getRemoteSha(context: UpgradeContext, fromLocal: boolean, stacksR
       return (await head.exited) === 0 && SHA_RE.test(h) ? h.toLowerCase() : null
     }
 
-    // GitHub: ls-remote prints "<sha>\trefs/heads/<ref>" lines.
+    // GitHub: ls-remote prints "<sha>\t<ref>" lines. The ref can be a branch
+    // (canary → refs/heads/main) or a tag (stable → refs/tags/vX.Y.Z), so we
+    // ask for both. For an annotated tag, git also emits a `refs/tags/…^{}`
+    // line carrying the dereferenced *commit* sha — prefer it so the short-
+    // circuit compares like-for-like against the synced commit.
     const proc = Bun.spawn({
-      cmd: ['git', 'ls-remote', 'https://github.com/stacksjs/stacks.git', `refs/heads/${context.ref}`],
+      cmd: [
+        'git',
+        'ls-remote',
+        'https://github.com/stacksjs/stacks.git',
+        `refs/heads/${context.ref}`,
+        `refs/tags/${context.ref}`,
+        `refs/tags/${context.ref}^{}`,
+      ],
       stdout: 'pipe',
       stderr: 'pipe',
     })
     const out = await new Response(proc.stdout).text()
     if ((await proc.exited) !== 0)
       return null
-    const m = out.match(/^([0-9a-f]{40})\s/i)
+
+    const lines = out.split('\n').filter(Boolean)
+    const deref = lines.find(l => l.includes('^{}'))
+    const chosen = deref ?? lines[0]
+    const m = chosen?.match(/^([0-9a-f]{40})\s/i)
     return m?.[1] ? m[1].toLowerCase() : null
   }
   catch {
