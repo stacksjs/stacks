@@ -1,0 +1,94 @@
+{
+  "name": "ts-spreadsheets",
+  "type": "module",
+  "version": "0.2.0",
+  "description": "Easily generate spreadsheets, like CSVs and Excel files.",
+  "author": "Chris Breuer <chris@stacksjs.org>",
+  "license": "MIT",
+  "homepage": "https://github.com/stacksjs/ts-spreadsheets#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stacksjs/ts-spreadsheets.git"
+  },
+  "bugs": {
+    "url": "https://github.com/stacksjs/ts-spreadsheets/issues"
+  },
+  "keywords": [
+    "spreadsheet",
+    "csv",
+    "excel",
+    "export",
+    "functional",
+    "functions",
+    "bun",
+    "node"
+  ],
+  "exports": {
+    ".": {
+      "bun": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./*": {
+      "bun": "./src/*",
+      "import": "./dist/*"
+    }
+  },
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "bin": {
+    "spreadsheets": "./dist/bin/cli.js"
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "scripts": {
+    "build": "bun build.ts && bun run compile",
+    "compile": "bun build ./bin/cli.ts --compile --minify --outfile bin/spreadsheets",
+    "compile:all": "bun run compile:linux-x64 && bun run compile:linux-arm64 && bun run compile:windows-x64 && bun run compile:darwin-x64 && bun run compile:darwin-arm64",
+    "compile:linux-x64": "bun build ./bin/cli.ts --compile --minify --target=bun-linux-x64 --outfile bin/spreadsheets-linux-x64",
+    "compile:linux-arm64": "bun build ./bin/cli.ts --compile --minify --target=bun-linux-arm64 --outfile bin/spreadsheets-linux-arm64",
+    "compile:windows-x64": "bun build ./bin/cli.ts --compile --minify --target=bun-windows-x64 --outfile bin/spreadsheets-windows-x64.exe",
+    "compile:darwin-x64": "bun build ./bin/cli.ts --compile --minify --target=bun-darwin-x64 --outfile bin/spreadsheets-darwin-x64",
+    "compile:darwin-arm64": "bun build ./bin/cli.ts --compile --minify --target=bun-darwin-arm64 --outfile bin/spreadsheets-darwin-arm64",
+    "lint": "bunx --bun eslint --flag unstable_ts_config .",
+    "lint:fix": "bunx --bun eslint --flag unstable_ts_config . --fix",
+    "fresh": "bunx rimraf node_modules/ bun.lock && bun i",
+    "changelog": "bunx changelogen --output CHANGELOG.md",
+    "prepublishOnly": "bun --bun run build && bun run compile:all",
+    "release": "bun run changelog && bunx bumpp package.json --all",
+    "test": "bun test",
+    "dev:docs": "bun --bun vitepress dev docs",
+    "build:docs": "bun --bun vitepress build docs",
+    "preview:docs": "bun --bun vitepress preview docs",
+    "typecheck": "bun --bun tsc --noEmit"
+  },
+  "devDependencies": {
+    "@iconify-json/carbon": "^1.2.5",
+    "@shikijs/vitepress-twoslash": "^4.3.1",
+    "@stacksjs/eslint-config": "^3.12.0-beta.4",
+    "@types/bun": "^1.1.14",
+    "@vite-pwa/vitepress": "^1.1.0",
+    "bumpp": "^9.9.1",
+    "bun-plugin-dtsx": "^0.21.9",
+    "changelogen": "^0.5.7",
+    "lint-staged": "^15.2.11",
+    "simple-git-hooks": "^2.11.1",
+    "typescript": "^5.7.2",
+    "unocss": "0.65.2",
+    "unplugin-icons": "^0.22.0",
+    "unplugin-vue-components": "^0.28.0",
+    "vite-plugin-pwa": "^0.21.1",
+    "vitepress": "^1.5.0"
+  },
+  "overrides": {
+    "unconfig": "0.3.10"
+  },
+  "simple-git-hooks": {
+    "pre-commit": "bun lint-staged"
+  },
+  "lint-staged": {
+    "*.{js,ts}": "bunx eslint --flag unstable_ts_config . --fix"
+  }
+}
