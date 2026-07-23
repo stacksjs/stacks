@@ -131,6 +131,64 @@ function checkCatalog(): void {
   console.log(`Protocol catalog: ${ids.length} requirement ids, all unique`)
 }
 
+/**
+ * Requirement ids referenced by a fixture that are absent from `catalogIds`,
+ * formatted `fixtureId -> requirementId`.
+ */
+export function danglingFixtureRequirements(
+  fixtures: Array<{ id: string, requirements?: string[] }>,
+  catalogIds: Set<string>,
+): string[] {
+  const dangling: string[] = []
+  for (const fixture of fixtures) {
+    for (const requirement of fixture.requirements ?? []) {
+      if (!catalogIds.has(requirement))
+        dangling.push(`${fixture.id} -> ${requirement}`)
+    }
+  }
+  return dangling
+}
+
+/**
+ * Validate the vendored fixture corpus: fixtures exist, each has a non-empty
+ * unique id, and every requirement a fixture claims to cover resolves to a real
+ * catalog id. The conformance runner validated *reports* against the catalog,
+ * but nothing checked the corpus's own integrity, so a duplicate fixture id or a
+ * fixture pointing at a renamed/removed requirement would go unnoticed
+ * (stacksjs/stacks#2051).
+ */
+function checkFixtures(): void {
+  const fixturesPath = resolve(suiteRoot, 'fixtures/conformance.json')
+  if (!existsSync(fixturesPath))
+    throw new Error(`protocol fixture corpus missing at ${relative(root, fixturesPath)}; run bun run protocol:sync`)
+
+  const corpus = JSON.parse(readFileSync(fixturesPath, 'utf8')) as { fixtures?: Array<{ id?: unknown, requirements?: unknown }> }
+  const fixtures = Array.isArray(corpus.fixtures) ? corpus.fixtures : []
+  if (fixtures.length === 0)
+    throw new Error('protocol fixture corpus has no fixtures')
+
+  const ids = fixtures.map(fixture => fixture?.id)
+  const missing = ids.filter(id => typeof id !== 'string' || id.length === 0).length
+  if (missing > 0)
+    throw new Error(`protocol fixture corpus has ${missing} fixture(s) without a string id`)
+
+  const duplicates = duplicateRequirementIds(ids as string[])
+  if (duplicates.length > 0)
+    throw new Error(`protocol fixture corpus has duplicate fixture id(s): ${duplicates.join(', ')}`)
+
+  const catalog = JSON.parse(readFileSync(resolve(suiteRoot, 'catalog.json'), 'utf8')) as { requirements?: Array<{ id?: unknown }> }
+  const catalogIds = new Set((catalog.requirements ?? []).map(requirement => requirement?.id).filter((id): id is string => typeof id === 'string'))
+  const normalized = fixtures.map(fixture => ({
+    id: String(fixture?.id),
+    requirements: Array.isArray(fixture?.requirements) ? fixture.requirements.filter((requirement): requirement is string => typeof requirement === 'string') : [],
+  }))
+  const dangling = danglingFixtureRequirements(normalized, catalogIds)
+  if (dangling.length > 0)
+    throw new Error(`protocol fixtures reference unknown requirement id(s): ${dangling.slice(0, 10).join(', ')}`)
+
+  console.log(`Protocol fixtures: ${ids.length} fixtures, ids unique, all requirement refs resolve`)
+}
+
 if (import.meta.main) {
   if (process.argv.includes('--write')) {
     const source = resolve(argument('--source') || process.env.STACKS_RFC_SOURCE || resolve(root, '../rfcs'))
@@ -139,6 +197,7 @@ if (import.meta.main) {
   else if (process.argv.includes('--check')) {
     checkSnapshot()
     checkCatalog()
+    checkFixtures()
   }
   else {
     console.error('usage: bun scripts/protocol/sync-suite.ts --write [--source ../rfcs] | --check')
