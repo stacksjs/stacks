@@ -347,10 +347,31 @@ export async function executeDatabaseEvidence(revision: string): Promise<Evidenc
       durationMs: Math.max(0, performance.now() - txStarted),
       notes: txOk ? 'A failing transaction rolled back its writes, leaving prior state intact.' : 'Transaction-rollback fixture failed.',
     })
+
+    // CORE-DATA-02: a relation query joins related rows across two tables.
+    const relStarted = performance.now()
+    await db.raw`DROP TABLE IF EXISTS conformance_books`.execute()
+    await db.raw`DROP TABLE IF EXISTS conformance_authors`.execute()
+    await db.raw`CREATE TABLE conformance_authors (id INTEGER PRIMARY KEY, name TEXT)`.execute()
+    await db.raw`CREATE TABLE conformance_books (id INTEGER PRIMARY KEY, author_id INTEGER, title TEXT)`.execute()
+    await db.insertInto('conformance_authors').values({ id: 1, name: 'Ada' }).execute()
+    await db.insertInto('conformance_books').values([{ id: 1, author_id: 1, title: 'B1' }, { id: 2, author_id: 1, title: 'B2' }]).execute()
+    const related = await db.selectFrom('conformance_books')
+      .innerJoin('conformance_authors', 'conformance_authors.id', '=', 'conformance_books.author_id')
+      .select(['conformance_books.title', 'conformance_authors.name'])
+      .where('conformance_authors.id', '=', 1)
+      .execute()
+    const relationOk = related.length === 2 && related.every((row: any) => row.name === 'Ada')
+    evidence.set('CORE-DATA-02', {
+      status: relationOk ? 'pass' : 'fail',
+      evidenceUrl: url,
+      durationMs: Math.max(0, performance.now() - relStarted),
+      notes: relationOk ? 'A relation query joined related rows across two tables.' : 'Relation fixture failed.',
+    })
   }
   catch (error) {
     const note = `Query builder unavailable in this environment: ${error instanceof Error ? error.message.slice(0, 100) : String(error)}`
-    for (const id of ['CORE-DATA-01', 'CORE-DATA-03']) {
+    for (const id of ['CORE-DATA-01', 'CORE-DATA-02', 'CORE-DATA-03']) {
       if (!evidence.has(id))
         evidence.set(id, { status: 'skipped', evidenceUrl: null, durationMs: Math.max(0, performance.now() - started), notes: note })
     }
