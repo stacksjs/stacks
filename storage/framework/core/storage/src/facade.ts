@@ -176,6 +176,14 @@ class StorageManager {
       bucket: config.bucket,
       region: config.region,
       prefix: config.prefix,
+      endpoint: config.endpoint,
+      usePathStyleEndpoint: config.usePathStyleEndpoint,
+      // S3DiskConfig uses { key, secret }; the adapter/ts-cloud client use
+      // { accessKeyId, secretAccessKey }. Map so S3-compatible providers whose
+      // keys aren't in the AWS env chain still authenticate (stacksjs/stacks#1897).
+      credentials: config.credentials
+        ? { accessKeyId: config.credentials.key, secretAccessKey: config.credentials.secret }
+        : undefined,
     })
   }
 
