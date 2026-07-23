@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test'
-import { buildReport, executeConfigEvidence, executeSecurityEvidence, executeValidationEvidence } from './run-conformance'
+import { buildReport, executeConfigEvidence, executeConventionsEvidence, executeSecurityEvidence, executeValidationEvidence } from './run-conformance'
 
 const REVISION = '0'.repeat(40)
 
@@ -23,6 +23,12 @@ describe('protocol adapter evidence', () => {
     expect(evidence.get('CORE-ERR-02')?.status).toBe('pass')
   })
 
+  it('maps canonical roles to paths and prefers app-owned overrides', () => {
+    const evidence = executeConventionsEvidence(REVISION)
+    expect(evidence.get('CORE-CONV-01')?.status).toBe('pass')
+    expect(evidence.get('CORE-CONV-02')?.status).toBe('pass')
+  })
+
   it('reports each registered driver independently', async () => {
     const report = await buildReport() as { drivers: Array<{ category: string, name: string }> }
     expect(report.drivers.length).toBeGreaterThan(7)
@@ -33,7 +39,7 @@ describe('protocol adapter evidence', () => {
   it('marks every passing requirement with a source evidence url', async () => {
     const report = await buildReport() as { results: Array<{ status: string, evidenceUrl: string | null }> }
     const passing = report.results.filter(result => result.status === 'pass')
-    expect(passing.length).toBeGreaterThanOrEqual(7)
+    expect(passing.length).toBeGreaterThanOrEqual(9)
     expect(passing.every(result => typeof result.evidenceUrl === 'string' && result.evidenceUrl.startsWith('https://'))).toBe(true)
   })
 })
