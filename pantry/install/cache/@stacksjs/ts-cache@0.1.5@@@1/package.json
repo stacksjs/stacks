@@ -1,0 +1,95 @@
+{
+  "name": "@stacksjs/ts-cache",
+  "type": "module",
+  "version": "0.1.5",
+  "description": "Simple and fast TypeScript in-memory caching. Modern TypeScript port of node-cache.",
+  "author": "Chris Breuer <chris@stacksjs.org>",
+  "license": "MIT",
+  "homepage": "https://github.com/stacksjs/ts-cache#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stacksjs/ts-cache.git"
+  },
+  "bugs": {
+    "url": "https://github.com/stacksjs/ts-cache/issues"
+  },
+  "keywords": [
+    "typescript",
+    "cache",
+    "caching",
+    "memory",
+    "internal",
+    "local",
+    "node",
+    "in-memory",
+    "library",
+    "memcached",
+    "node-cache",
+    "object"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./*": {
+      "import": "./dist/*"
+    }
+  },
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "bin": {
+    "cache": "./dist/bin/cli.js"
+  },
+  "files": [
+    "README.md",
+    "dist"
+  ],
+  "scripts": {
+    "build": "bun --bun build.ts",
+    "fresh": "bunx rimraf node_modules/ bun.lock && bun i",
+    "prepublishOnly": "bun --bun run build",
+    "test": "bun test",
+    "lint": "bunx --bun pickier .",
+    "lint:fix": "bunx --bun pickier . --fix",
+    "format": "bunx --bun pickier . --format",
+    "format:fix": "bunx --bun pickier . --format --write",
+    "changelog": "bunx logsmith --verbose",
+    "changelog:generate": "bunx logsmith --output CHANGELOG.md",
+    "release": "bunx --bun bumpx prompt --recursive",
+    "release:patch": "bunx --bun bumpx patch --recursive --yes",
+    "publish:patch": "bunx --bun bumpx patch --recursive --yes",
+    "dev:docs": "bun --bun vitepress dev docs",
+    "build:docs": "bun --bun vitepress build docs",
+    "preview:docs": "bun --bun vitepress preview docs",
+    "typecheck": "bun --bun tsc --noEmit"
+  },
+  "dependencies": {
+    "@stacksjs/clapp": "^0.2.5",
+    "bunfig": "^0.15.11",
+    "clone": "^2.1.2"
+  },
+  "devDependencies": {
+    "@types/clone": "^2.1.4",
+    "better-dx": "^0.2.15",
+    "bun-plugin-dtsx": "^0.9.14",
+    "ioredis": "^5.11.1",
+    "lru-cache": "^11.5.2",
+    "mitata": "^1.0.34",
+    "node-cache": "^5.1.2",
+    "pickier": "^0.1.28",
+    "redis": "^5.11.0",
+    "ts-clone": "^0.1.4"
+  },
+  "git-hooks": {
+    "pre-commit": {
+      "staged-lint": {
+        "*.{js,ts,json,yaml,yml,md}": "bunx --bun pickier lint --fix"
+      }
+    },
+    "commit-msg": "bunx gitlint --edit .git/COMMIT_EDITMSG"
+  },
+  "overrides": {
+    "typescript": "^7.0.2"
+  }
+}

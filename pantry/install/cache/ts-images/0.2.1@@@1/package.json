@@ -1,0 +1,96 @@
+{
+  "name": "ts-images",
+  "type": "module",
+  "version": "0.2.1",
+  "description": "Modern image optimizations & manipulations.",
+  "author": "Chris Breuer <chris@stacksjs.org>",
+  "license": "MIT",
+  "homepage": "https://github.com/stacksjs/ts-images",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stacksjs/ts-images.git"
+  },
+  "bugs": {
+    "url": "https://github.com/stacksjs/ts-images/issues"
+  },
+  "keywords": [
+    "image",
+    "manipulation",
+    "compression",
+    "web optimization",
+    "jpg",
+    "png",
+    "avif",
+    "webp",
+    "sharp",
+    "bun",
+    "stacks",
+    "typescript",
+    "javascript",
+    "app-icon",
+    "xcode",
+    "macos",
+    "ios"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/src/index.js"
+    }
+  },
+  "module": "./dist/src/index.js",
+  "types": "./dist/index.d.ts",
+  "bin": {
+    "imgx": "./dist/bin/cli.js"
+  },
+  "files": [
+    "README.md",
+    "dist"
+  ],
+  "scripts": {
+    "build": "bun build.ts && bun run compile",
+    "compile": "bun build ./bin/cli.ts --compile --minify --outfile bin/imgx",
+    "compile:all": "bun run compile:linux-x64 && bun run compile:linux-arm64 && bun run compile:windows-x64 && bun run compile:darwin-x64 && bun run compile:darwin-arm64",
+    "compile:linux-x64": "bun build ./bin/cli.ts --compile --minify --target=bun-linux-x64 --outfile bin/imgx-linux-x64",
+    "compile:linux-arm64": "bun build ./bin/cli.ts --compile --minify --target=bun-linux-arm64 --outfile bin/imgx-linux-arm64",
+    "compile:windows-x64": "bun build ./bin/cli.ts --compile --minify --target=bun-windows-x64 --outfile bin/imgx-windows-x64.exe",
+    "compile:darwin-x64": "bun build ./bin/cli.ts --compile --minify --target=bun-darwin-x64 --outfile bin/imgx-darwin-x64",
+    "compile:darwin-arm64": "bun build ./bin/cli.ts --compile --minify --target=bun-darwin-arm64 --outfile bin/imgx-darwin-arm64",
+    "lint": "bunx --bun pickier .",
+    "lint:fix": "bunx --bun pickier . --fix",
+    "fresh": "bunx rimraf node_modules/ bun.lock && bun i",
+    "changelog": "bunx changelogen --output CHANGELOG.md",
+    "prepublishOnly": "bun --bun run build && bun run smoke && bun run compile:all && bun run zip:all",
+    "smoke": "bun --bun scripts/smoke-dist.ts",
+    "release": "bun run changelog && bunx bumpp package.json --all",
+    "release:patch": "bun --bun run changelog && bunx --bun bumpx patch --recursive --yes",
+    "test": "bun test",
+    "typecheck": "bunx tsc --noEmit",
+    "zip": "bun run zip:all",
+    "zip:all": "bun run zip:linux-x64 && bun run zip:linux-arm64 && bun run zip:windows-x64 && bun run zip:darwin-x64 && bun run zip:darwin-arm64",
+    "zip:linux-x64": "zip -j bin/imgx-linux-x64.zip bin/imgx-linux-x64",
+    "zip:linux-arm64": "zip -j bin/imgx-linux-arm64.zip bin/imgx-linux-arm64",
+    "zip:windows-x64": "zip -j bin/imgx-windows-x64.zip bin/imgx-windows-x64.exe",
+    "zip:darwin-x64": "zip -j bin/imgx-darwin-x64.zip bin/imgx-darwin-x64",
+    "zip:darwin-arm64": "zip -j bin/imgx-darwin-arm64.zip bin/imgx-darwin-arm64"
+  },
+  "dependencies": {
+    "@stacksjs/ts-avif": "^0.1.3",
+    "@stacksjs/ts-bmp": "^0.1.1",
+    "@stacksjs/ts-png": "^0.1.8",
+    "@stacksjs/ts-svg": "^0.5.1",
+    "@stacksjs/ts-webp": "^0.1.2",
+    "ts-gif": "^0.1.2",
+    "ts-jpeg": "^0.3.4"
+  },
+  "devDependencies": {
+    "@stacksjs/clapp": "^0.2.0",
+    "bunfig": "^0.15.9"
+  },
+  "simple-git-hooks": {
+    "pre-commit": "bunx lint-staged"
+  },
+  "lint-staged": {
+    "*.{js,ts}": "bunx --bun pickier . --fix"
+  }
+}

@@ -50,12 +50,12 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "ts-pantry": "^0.10.34"
+    "ts-pantry": "^0.10.48"
   },
   "devDependencies": {
     "@stacksjs/alias": "workspace:*",
     "better-dx": "catalog:",
     "@stacksjs/types": "workspace:*",
-    "bunfig": "^0.15.11"
+    "bunfig": "^0.15.15"
   }
 }

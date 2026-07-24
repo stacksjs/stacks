@@ -1,0 +1,101 @@
+{
+  "name": "@stacksjs/ts-svg",
+  "type": "module",
+  "version": "0.1.2",
+  "description": "Pure-TypeScript SVG parser, rasterizer, and PNG encoder for Bun/Node — drop-in `Resvg`-compatible class plus a typed element-tree API.",
+  "author": "Chris Breuer <chris@stacksjs.org>",
+  "license": "MIT",
+  "homepage": "https://github.com/stacksjs/ts-svg#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stacksjs/ts-svg.git"
+  },
+  "bugs": {
+    "url": "https://github.com/stacksjs/ts-svg/issues"
+  },
+  "keywords": [
+    "typescript",
+    "bun",
+    "svg",
+    "rasterizer",
+    "png",
+    "resvg",
+    "renderer",
+    "vector",
+    "parser",
+    "gradient",
+    "viewbox",
+    "path"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./*": {
+      "import": "./dist/*"
+    }
+  },
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "bin": {
+    "svg": "./dist/cli.js"
+  },
+  "files": [
+    "README.md",
+    "dist"
+  ],
+  "scripts": {
+    "build": "bun --bun build.ts && bun run compile",
+    "compile": "bun build ./bin/cli.ts --compile --minify --outfile bin/svg",
+    "compile:all": "bun run compile:linux-x64 && bun run compile:linux-arm64 && bun run compile:windows-x64 && bun run compile:darwin-x64 && bun run compile:darwin-arm64",
+    "compile:linux-x64": "bun build ./bin/cli.ts --compile --minify --target=bun-linux-x64 --outfile bin/svg-linux-x64",
+    "compile:linux-arm64": "bun build ./bin/cli.ts --compile --minify --target=bun-linux-arm64 --outfile bin/svg-linux-arm64",
+    "compile:windows-x64": "bun build ./bin/cli.ts --compile --minify --target=bun-windows-x64 --outfile bin/svg-windows-x64.exe",
+    "compile:darwin-x64": "bun build ./bin/cli.ts --compile --minify --target=bun-darwin-x64 --outfile bin/svg-darwin-x64",
+    "compile:darwin-arm64": "bun build ./bin/cli.ts --compile --minify --target=bun-darwin-arm64 --outfile bin/svg-darwin-arm64",
+    "zip": "bun run zip:all",
+    "zip:all": "bun run zip:linux-x64 && bun run zip:linux-arm64 && bun run zip:windows-x64 && bun run zip:darwin-x64 && bun run zip:darwin-arm64",
+    "zip:linux-x64": "zip -j bin/svg-linux-x64.zip bin/svg-linux-x64",
+    "zip:linux-arm64": "zip -j bin/svg-linux-arm64.zip bin/svg-linux-arm64",
+    "zip:windows-x64": "zip -j bin/svg-windows-x64.zip bin/svg-windows-x64.exe",
+    "zip:darwin-x64": "zip -j bin/svg-darwin-x64.zip bin/svg-darwin-x64",
+    "zip:darwin-arm64": "zip -j bin/svg-darwin-arm64.zip bin/svg-darwin-arm64",
+    "fresh": "bunx rimraf node_modules/ bun.lock && bun i",
+    "prepublishOnly": "bun --bun run build && bun run compile:all && bun run zip",
+    "test": "bun test",
+    "bench": "bun bench/index.ts",
+    "lint": "bunx --bun pickier .",
+    "lint:fix": "bunx --bun pickier . --fix",
+    "changelog": "bunx logsmith --verbose",
+    "changelog:generate": "bunx logsmith --output CHANGELOG.md",
+    "release": "bunx --bun bumpx prompt --recursive",
+    "release:patch": "bunx --bun bumpx patch --yes --recursive",
+    "release:minor": "bunx --bun bumpx minor --yes --recursive",
+    "dev:docs": "bun --bun bunpress dev docs",
+    "build:docs": "bun --bun bunpress build docs",
+    "preview:docs": "bun --bun bunpress preview docs",
+    "typecheck": "bun --bun tsc --noEmit",
+    "format": "bunx --bun pickier . --format",
+    "format:fix": "bunx --bun pickier . --format --write"
+  },
+  "dependencies": {
+    "@stacksjs/ts-css": "^0.1.1",
+    "@stacksjs/ts-png": "^0.1.2"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "better-dx": "^0.2.15",
+    "mitata": "^1.0.34",
+    "svgo": "^4.0.2"
+  },
+  "git-hooks": {
+    "pre-commit": {
+      "staged-lint": {
+        "*.{js,ts,json,yaml,yml,md}": "bunx --bun pickier lint --fix"
+      },
+      "autoRestage": true
+    },
+    "commit-msg": "bunx gitlint --edit .git/COMMIT_EDITMSG"
+  }
+}

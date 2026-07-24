@@ -1,0 +1,105 @@
+{
+  "name": "ts-pantry",
+  "type": "module",
+  "sideEffects": false,
+  "version": "0.10.48",
+  "description": "A library & CLI for managing packages",
+  "author": "Chris Breuer <chris@stacksjs.com>",
+  "license": "MIT",
+  "homepage": "https://github.com/pantry-pm/pantry/tree/main/packages/ts-pantry#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pantry-pm/pantry.git",
+    "directory": "packages/ts-pantry"
+  },
+  "bugs": {
+    "url": "https://github.com/pantry-pm/pantry/issues"
+  },
+  "keywords": [
+    "pantry",
+    "typescript",
+    "bun",
+    "package",
+    "cli",
+    "library",
+    "package-manager"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/src/index.js"
+    },
+    "./testing": {
+      "types": "./dist/testing/index.d.ts",
+      "import": "./dist/src/testing/index.js"
+    },
+    "./*": {
+      "import": "./dist/*"
+    }
+  },
+  "module": "./dist/src/index.js",
+  "types": "./dist/index.d.ts",
+  "bin": {
+    "ts-pantry": "./dist/bin/cli.js"
+  },
+  "files": [
+    "README.md",
+    "dist"
+  ],
+  "scripts": {
+    "build": "bun build.ts && bun run compile",
+    "build:cross-platform": "bun scripts/build-cross-platform.ts",
+    "compile": "bun build ./bin/cli.ts --compile --minify --outfile bin/ts-pantry",
+    "compile:all": "bun run compile:unix && bun run compile:windows-x64",
+    "compile:unix": "bun run compile:linux-x64 && bun run compile:linux-arm64 && bun run compile:darwin-x64 && bun run compile:darwin-arm64",
+    "compile:linux-x64": "bun build ./bin/cli.ts --compile --minify --target=bun-linux-x64 --outfile bin/ts-pantry-linux-x64",
+    "compile:linux-arm64": "bun build ./bin/cli.ts --compile --minify --target=bun-linux-arm64 --outfile bin/ts-pantry-linux-arm64",
+    "compile:windows-x64": "bun build ./bin/cli.ts --compile --minify --target=bun-windows-x64 --outfile bin/ts-pantry-windows-x64.exe && sleep 3 && ls -la bin/ts-pantry-windows-x64.exe && chmod +x bin/ts-pantry-windows-x64.exe",
+    "compile:darwin-x64": "bun build ./bin/cli.ts --compile --minify --target=bun-darwin-x64 --outfile bin/ts-pantry-darwin-x64",
+    "compile:darwin-arm64": "bun build ./bin/cli.ts --compile --minify --target=bun-darwin-arm64 --outfile bin/ts-pantry-darwin-arm64",
+    "zip": "bun run zip:all",
+    "zip:all": "bun run zip:unix && bun run zip:windows-x64",
+    "zip:unix": "bun run zip:linux-x64 && bun run zip:linux-arm64 && bun run zip:darwin-x64 && bun run zip:darwin-arm64",
+    "zip:linux-x64": "zip -j bin/ts-pantry-linux-x64.zip bin/ts-pantry-linux-x64",
+    "zip:linux-arm64": "zip -j bin/ts-pantry-linux-arm64.zip bin/ts-pantry-linux-arm64",
+    "zip:windows-x64": "if [ -f bin/ts-pantry-windows-x64.exe ]; then ls -la bin/ts-pantry-windows-x64.exe && zip -j bin/ts-pantry-windows-x64.zip bin/ts-pantry-windows-x64.exe; else echo 'Windows executable not found'; exit 1; fi",
+    "zip:darwin-x64": "zip -j bin/ts-pantry-darwin-x64.zip bin/ts-pantry-darwin-x64",
+    "zip:darwin-arm64": "zip -j bin/ts-pantry-darwin-arm64.zip bin/ts-pantry-darwin-arm64",
+    "test:yaml": "bun run src/tools/testYamlFetcher.ts",
+    "fresh": "bunx rimraf node_modules/ bun.lock && bun i",
+    "prepublishOnly": "bun run build && bun run build:cross-platform",
+    "release:patch": "bun scripts/bump-version.ts patch",
+    "release:minor": "bun scripts/bump-version.ts minor",
+    "release:major": "bun scripts/bump-version.ts major",
+    "release:dry-run": "bun scripts/bump-version.ts --dry-run",
+    "test": "rm -rf dist/ && bun test",
+    "lint": "bunx --bun pickier lint .",
+    "lint:fix": "bunx --bun pickier lint . --fix",
+    "format": "bunx --bun pickier format .",
+    "format:fix": "bunx --bun pickier format . --write",
+    "changelog": "bunx logsmith --verbose",
+    "changelog:generate": "bunx logsmith --output CHANGELOG.md",
+    "release": "bun run changelog:generate && bunx --bun bumpx prompt --recursive",
+    "dev:docs": "bun bunpress dev docs",
+    "build:docs": "NODE_OPTIONS=\"--max-old-space-size=8192\" bun bunpress build docs",
+    "preview:docs": "bun bunpress preview docs",
+    "typecheck": "bun tsc --noEmit",
+    "pantry:fetch": "bun bin/cli.ts fetch",
+    "pantry:fetch-all": "bun bin/cli.ts fetch --all",
+    "pantry:update": "bun run update:packages",
+    "pantry:docs": "bun bin/cli.ts generate-docs",
+    "pantry:install": "bun scripts/download-from-s3.ts",
+    "pantry:shell": "bun scripts/pantry-cli.ts shell",
+    "pantry:build": "bun scripts/build-package.ts",
+    "pantry:upload": "bun scripts/upload-to-s3.ts"
+  },
+  "dependencies": {
+    "@stacksjs/ts-cloud": "^0.7.26",
+    "bunfig": "^0.15.6",
+    "ts-web-scraper": "^0.1.4"
+  },
+  "devDependencies": {
+    "@stacksjs/bunpress": "^0.1.6",
+    "better-dx": "^0.2.6"
+  }
+}

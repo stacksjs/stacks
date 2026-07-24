@@ -1,0 +1,79 @@
+{
+  "name": "dynamodb-tooling",
+  "type": "module",
+  "version": "0.3.5",
+  "description": "A toolkit of useful DynamoDB goodies.",
+  "author": "Chris Breuer <chris@stacksjs.org>",
+  "license": "MIT",
+  "homepage": "https://github.com/stacksjs/dynamodb-tooling#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stacksjs/dynamodb-tooling.git"
+  },
+  "bugs": {
+    "url": "https://github.com/stacksjs/dynamodb-tooling/issues"
+  },
+  "keywords": [
+    "dynamodb",
+    "utilities",
+    "typescript",
+    "bun",
+    "package"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./*": {
+      "import": "./dist/*"
+    }
+  },
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "bin": {
+    "dbtooling": "./dist/cli.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "bun --bun build.ts",
+    "compile": "bun build ./bin/cli.ts --compile --minify --outfile dbtooling",
+    "create-offline-table": "aws dynamodb create-table --table-name=MyOfflineTable --attribute-definitions AttributeName=Artist,AttributeType=S AttributeName=SongTitle,AttributeType=S --key-schema AttributeName=Artist,KeyType=HASH AttributeName=SongTitle,KeyType=RANGE --provisioned-throughput ReadCapacityUnits=5,WriteCapacityUnits=5 --endpoint-url http://localhost:8000 --region us-east-1",
+    "fresh": "bunx rimraf node_modules/ bun.lock && bun i",
+    "lint": "bunx --bun pickier .",
+    "lint:fix": "bunx --bun pickier . --fix",
+    "format": "bunx --bun pickier . --format",
+    "format:fix": "bunx --bun pickier . --format --write",
+    "changelog": "bunx logsmith --verbose",
+    "changelog:generate": "bunx logsmith --output CHANGELOG.md",
+    "release": "bunx --bun bumpx prompt --recursive",
+    "release:patch": "bunx --bun bumpx patch --recursive --commit --tag --push --yes",
+    "postinstall": "bunx git-hooks",
+    "prepublishOnly": "bun --bun run build",
+    "test": "bun test",
+    "typecheck": "bun --bun tsc --noEmit"
+  },
+  "devDependencies": {
+    "@stacksjs/cli": "^0.70.23",
+    "@stacksjs/clapp": "0.2.0",
+    "@stacksjs/logging": "^0.70.23",
+    "@stacksjs/storage": "^0.70.23",
+    "@types/tar": "^7.0.87",
+    "debug": "^4.4.3",
+    "dynamodb-toolbox": "^2.10.1",
+    "tar": "^7.5.21",
+    "typescript": "^6.0.2",
+    "better-dx": "^0.2.15"
+  },
+  "git-hooks": {
+    "pre-commit": {
+      "staged-lint": {
+        "*.{js,ts,json,yaml,yml,md}": "bunx --bun pickier lint --fix"
+      },
+      "autoRestage": true
+    },
+    "commit-msg": "bunx gitlint --edit .git/COMMIT_EDITMSG"
+  }
+}

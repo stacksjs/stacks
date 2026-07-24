@@ -1,0 +1,75 @@
+{
+  "name": "meilisearch",
+  "version": "0.59.0",
+  "description": "The Meilisearch JS client for Node.js and the browser.",
+  "keywords": [
+    "meilisearch",
+    "search",
+    "instant",
+    "relevant",
+    "client",
+    "wrapper",
+    "meili"
+  ],
+  "author": "cvermand <charlotte@meilisearch.com>",
+  "contributors": [
+    "qdequele <quentin@meilisearch.com>"
+  ],
+  "license": "MIT",
+  "type": "module",
+  "exports": {
+    ".": "./dist/index.js",
+    "./token": "./dist/token.js",
+    "./package.json": "./package.json"
+  },
+  "sideEffects": false,
+  "files": [
+    "src",
+    "dist",
+    "CONTRIBUTING.md"
+  ],
+  "engines": {
+    "node": "^20.19.0 || >=22.12.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/meilisearch/meilisearch-js.git"
+  },
+  "devDependencies": {
+    "@types/node": "24.12.0",
+    "@vitest/coverage-v8": "4.1.9",
+    "eslint-plugin-tsdoc": "0.5.2",
+    "globals": "^17.7.0",
+    "husky": "^9.1.7",
+    "lint-staged": "16.4.0",
+    "oxlint": "1.50.0",
+    "oxlint-tsgolint": "0.14.2",
+    "prettier": "^3.9.4",
+    "prettier-plugin-jsdoc": "^1.8.1",
+    "typedoc": "^0.28.18",
+    "typedoc-plugin-markdown": "^4.12.0",
+    "typedoc-vitepress-theme": "^1.1.3",
+    "typescript": "5.9.3",
+    "vite": "8.1.5",
+    "vitepress": "^1.6.4",
+    "vitest": "4.1.9"
+  },
+  "scripts": {
+    "playground:javascript": "vite serve playgrounds/javascript --open",
+    "docs:api": "typedoc",
+    "docs:dev": "pnpm docs:api && vitepress dev docs",
+    "docs:build": "pnpm docs:api && vitepress build docs",
+    "build:docs": "pnpm docs:build",
+    "build": "vite build && tsc -p tsconfig.build.json",
+    "test": "vitest run",
+    "test:watch": "vitest watch",
+    "types": "tsc -p tsconfig.json --noEmit",
+    "types:watch": "pnpm types --watch",
+    "fmt": "prettier -c .",
+    "fmt:fix": "prettier -w .",
+    "lint": "oxlint --type-aware",
+    "lint:fix": "oxlint --type-aware --fix",
+    "style": "pnpm fmt && pnpm lint",
+    "style:fix": "pnpm fmt:fix && pnpm lint:fix"
+  }
+}

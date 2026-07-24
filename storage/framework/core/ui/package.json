@@ -57,7 +57,7 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "@cwcss/crosswind": "^0.2.6",
+    "@cwcss/crosswind": "^0.2.10",
     "@stacksjs/components": "catalog:"
   },
   "devDependencies": {

@@ -1,0 +1,96 @@
+{
+  "name": "@stacksjs/ts-xml",
+  "type": "module",
+  "version": "0.1.0",
+  "description": "A fast, dependency-free XML parser, builder, and validator for TypeScript & Bun.",
+  "author": "Chris Breuer <chris@stacksjs.com>",
+  "license": "MIT",
+  "homepage": "https://github.com/stacksjs/ts-xml#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stacksjs/ts-xml.git"
+  },
+  "bugs": {
+    "url": "https://github.com/stacksjs/ts-xml/issues"
+  },
+  "keywords": [
+    "xml",
+    "parser",
+    "builder",
+    "validator",
+    "typescript",
+    "bun",
+    "fast",
+    "zero-dependency"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./*": {
+      "import": "./dist/*"
+    }
+  },
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "bin": {
+    "bin-name": "./dist/bin/cli.js"
+  },
+  "files": [
+    "README.md",
+    "dist"
+  ],
+  "scripts": {
+    "build": "bun --bun build.ts && bun run compile",
+    "compile": "bun build ./bin/cli.ts --compile --minify --outfile bin/bin-name",
+    "compile:all": "bun run compile:linux-x64 && bun run compile:linux-arm64 && bun run compile:windows-x64 && bun run compile:darwin-x64 && bun run compile:darwin-arm64",
+    "compile:linux-x64": "bun build ./bin/cli.ts --compile --minify --target=bun-linux-x64 --outfile bin/bin-name-linux-x64",
+    "compile:linux-arm64": "bun build ./bin/cli.ts --compile --minify --target=bun-linux-arm64 --outfile bin/bin-name-linux-arm64",
+    "compile:windows-x64": "bun build ./bin/cli.ts --compile --minify --target=bun-windows-x64 --outfile bin/bin-name-windows-x64.exe",
+    "compile:darwin-x64": "bun build ./bin/cli.ts --compile --minify --target=bun-darwin-x64 --outfile bin/bin-name-darwin-x64",
+    "compile:darwin-arm64": "bun build ./bin/cli.ts --compile --minify --target=bun-darwin-arm64 --outfile bin/bin-name-darwin-arm64",
+    "zip": "bun run zip:all",
+    "zip:all": "bun run zip:linux-x64 && bun run zip:linux-arm64 && bun run zip:windows-x64 && bun run zip:darwin-x64 && bun run zip:darwin-arm64",
+    "zip:linux-x64": "zip -j bin/bin-name-linux-x64.zip bin/bin-name-linux-x64",
+    "zip:linux-arm64": "zip -j bin/bin-name-linux-arm64.zip bin/bin-name-linux-arm64",
+    "zip:windows-x64": "zip -j bin/bin-name-windows-x64.zip bin/bin-name-windows-x64.exe",
+    "zip:darwin-x64": "zip -j bin/bin-name-darwin-x64.zip bin/bin-name-darwin-x64",
+    "zip:darwin-arm64": "zip -j bin/bin-name-darwin-arm64.zip bin/bin-name-darwin-arm64",
+    "fresh": "bunx rimraf node_modules/ bun.lock && bun i",
+    "prepublishOnly": "bun --bun run build && bun run compile:all && bun run zip",
+    "bench": "bun run benchmarks/index.ts",
+    "test": "bun test",
+    "lint": "bunx --bun pickier .",
+    "lint:fix": "bunx --bun pickier . --fix",
+    "changelog": "bunx logsmith --verbose",
+    "changelog:generate": "bunx logsmith --output CHANGELOG.md",
+    "release": "bun --bun run changelog:generate && bunx --bun bumpx prompt --recursive",
+    "postinstall": "bunx git-hooks",
+    "dev:docs": "bun --bun bunpress dev docs",
+    "build:docs": "bun --bun bunpress build docs",
+    "preview:docs": "bun --bun bunpress preview docs",
+    "typecheck": "bun --bun tsc --noEmit",
+    "format": "bunx --bun pickier . --format",
+    "format:fix": "bunx --bun pickier . --format --write"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.3.10",
+    "@types/sax": "^1.2.7",
+    "@types/xml2js": "^0.4.14",
+    "better-dx": "^0.2.5",
+    "fast-xml-parser": "^5.10.1",
+    "mitata": "^1.0.34",
+    "sax": "^1.5.0",
+    "xml2js": "^0.6.2"
+  },
+  "git-hooks": {
+    "pre-commit": {
+      "stagedLint": {
+        "*.{js,ts,json,yaml,yml,md}": "bunx --bun pickier lint --fix"
+      },
+      "autoRestage": true
+    },
+    "commit-msg": "bunx gitlint --edit .git/COMMIT_EDITMSG"
+  }
+}
