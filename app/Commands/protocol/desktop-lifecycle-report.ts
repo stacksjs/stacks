@@ -37,7 +37,7 @@ export function validateLifecycleReport(report: LifecycleReport, expected: {
   return errors
 }
 
-if (import.meta.main) {
+export async function run(): Promise<void> {
   const value = (name: string): string => {
     const index = process.argv.indexOf(name)
     const result = index === -1 ? undefined : process.argv[index + 1]
@@ -68,3 +68,6 @@ if (import.meta.main) {
   writeFileSync(outputPath, `${JSON.stringify(attestation, null, 2)}\n`)
   console.log(`Validated Craft lifecycle for ${expected.platform}/${expected.architecture}`)
 }
+
+if (import.meta.main)
+  await run()

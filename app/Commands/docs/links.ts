@@ -7,7 +7,7 @@
  * can reject a broken cross-reference. External links, mail/tel, and same-page
  * anchors are intentionally left alone.
  *
- * Usage: `bun .github/scripts/docs/links.ts [--check]`
+ * Usage: `bun app/Commands/docs/links.ts [--check]`
  */
 
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs'
@@ -127,7 +127,7 @@ export function checkDocsLinks(docsRoot = docsDir): BrokenDocLink[] {
   return broken
 }
 
-if (import.meta.main) {
+export async function run(): Promise<void> {
   const broken = checkDocsLinks()
   if (broken.length === 0) {
     console.log('✓ All internal documentation links resolve.')
@@ -140,3 +140,6 @@ if (import.meta.main) {
       process.exit(1)
   }
 }
+
+if (import.meta.main)
+  await run()

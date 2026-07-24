@@ -51,12 +51,12 @@ async function check(): Promise<void> {
   console.log(`Generated API artifacts are current (${Object.keys(JSON.parse(expected.openApi).paths).length} paths)`)
 }
 
-if (import.meta.main) {
+export async function run(): Promise<void> {
   try {
     if (process.argv.includes('--write')) await write()
     else if (process.argv.includes('--check')) await check()
     else {
-      console.error('usage: bun .github/scripts/docs/generated-artifacts.ts --write | --check')
+      console.error('usage: bun app/Commands/docs/generated-artifacts.ts --write | --check')
       process.exit(2)
     }
   }
@@ -65,3 +65,6 @@ if (import.meta.main) {
     process.exit(1)
   }
 }
+
+if (import.meta.main)
+  await run()

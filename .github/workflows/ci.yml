@@ -174,8 +174,8 @@ jobs:
         env:
           PROTOCOL_REPORT_DIR: .github/protocol/reports
         run: |
-          bun test ./.github/scripts/protocol/run-conformance.test.ts
-          bun test ./.github/scripts/protocol/craft-evidence.test.ts ./.github/scripts/protocol/desktop-lifecycle-report.test.ts
+          bun test ./app/Commands/protocol/run-conformance.test.ts
+          bun test ./app/Commands/protocol/craft-evidence.test.ts ./app/Commands/protocol/desktop-lifecycle-report.test.ts
           bun test ./.github/scripts/deploy/resolve-target.test.ts
           bun run protocol:drivers:test
           bun run protocol:conformance

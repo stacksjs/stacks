@@ -189,7 +189,7 @@ function checkFixtures(): void {
   console.log(`Protocol fixtures: ${ids.length} fixtures, ids unique, all requirement refs resolve`)
 }
 
-if (import.meta.main) {
+export async function run(): Promise<void> {
   if (process.argv.includes('--write')) {
     const source = resolve(argument('--source') || process.env.STACKS_RFC_SOURCE || resolve(root, '../rfcs'))
     writeSnapshot(source)
@@ -200,7 +200,10 @@ if (import.meta.main) {
     checkFixtures()
   }
   else {
-    console.error('usage: bun .github/scripts/protocol/sync-suite.ts --write [--source ../rfcs] | --check')
+    console.error('usage: bun app/Commands/protocol/sync-suite.ts --write [--source ../rfcs] | --check')
     process.exit(2)
   }
 }
+
+if (import.meta.main)
+  await run()

@@ -477,7 +477,7 @@ export async function buildReport(): Promise<Record<string, unknown>> {
   }
 }
 
-if (import.meta.main) {
+export async function run(): Promise<void> {
   const report = await buildReport()
   const schema = JSON.parse(readFileSync(resolve(suiteRoot, 'schemas/conformance-report.schema.json'), 'utf8'))
   const catalog = JSON.parse(readFileSync(resolve(suiteRoot, 'catalog.json'), 'utf8')) as Catalog
@@ -499,3 +499,6 @@ if (import.meta.main) {
   writeFileSync(resolve(outputDirectory, 'stacks-conformance.md'), renderSummary(report))
   console.log(`Protocol report generated in ${outputDirectory}`)
 }
+
+if (import.meta.main)
+  await run()
