@@ -52,7 +52,7 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "@stacksjs/bunpress": "^0.1.18"
+    "@stacksjs/bunpress": "^0.1.20"
   },
   "devDependencies": {
     "@stacksjs/alias": "workspace:*",

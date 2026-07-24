@@ -356,7 +356,7 @@
     "@stacksjs/server": "^0.70.163",
     "@stacksjs/storage": "^0.70.163",
     "@stacksjs/strings": "^0.70.163",
-    "@stacksjs/tlsx": "^0.13.0",
+    "@stacksjs/tlsx": "^0.13.13",
     "@stacksjs/ts-cloud": "catalog:",
     "@stacksjs/tunnel": "^0.70.163",
     "@stacksjs/types": "^0.70.163",

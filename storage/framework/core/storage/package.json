@@ -53,7 +53,7 @@
   },
   "dependencies": {
     "@stacksjs/ts-cloud": "catalog:",
-    "ts-images": "^0.1.11"
+    "ts-images": "^0.2.1"
   },
   "devDependencies": {
     "@stacksjs/arrays": "workspace:*",

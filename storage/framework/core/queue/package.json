@@ -60,7 +60,7 @@
     "@stacksjs/bun-queue": "^0.1.7"
   },
   "peerDependencies": {
-    "redis": ">=4.0.0"
+    "redis": ">=4.7.1"
   },
   "peerDependenciesMeta": {
     "redis": {
