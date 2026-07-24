@@ -47,7 +47,7 @@ function render(): string {
   return `${JSON.stringify(document, null, 2)}\n`
 }
 
-if (import.meta.main) {
+export async function run(): Promise<void> {
   const errors = validate()
   if (errors.length > 0) {
     for (const error of errors) console.error(`error: ${error}`)
@@ -64,7 +64,10 @@ if (import.meta.main) {
     console.log(`Driver registry is current (${capabilityRegistry.length} records)`)
   }
   else {
-    console.error('usage: bun .github/scripts/protocol/driver-registry.ts --write | --check')
+    console.error('usage: bun app/Commands/protocol/driver-registry.ts --write | --check')
     process.exit(2)
   }
 }
+
+if (import.meta.main)
+  await run()

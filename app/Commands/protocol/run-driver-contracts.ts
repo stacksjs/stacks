@@ -92,7 +92,7 @@ export function runDriverContracts(): void {
   console.log(`Driver contract matrix passed ${plan.tests.length} retained test files`)
 }
 
-if (import.meta.main) {
+export async function run(): Promise<void> {
   try {
     runDriverContracts()
   }
@@ -101,3 +101,6 @@ if (import.meta.main) {
     process.exit(1)
   }
 }
+
+if (import.meta.main)
+  await run()

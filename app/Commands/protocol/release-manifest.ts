@@ -129,10 +129,10 @@ export function renderReleaseManifest(manifest: ReleaseManifest): string {
   return `${JSON.stringify(manifest, null, 2)}\n`
 }
 
-if (import.meta.main) {
+export async function run(): Promise<void> {
   const mode = process.argv.includes('--write') ? 'write' : process.argv.includes('--check') ? 'check' : null
   if (!mode) {
-    console.error('usage: bun .github/scripts/protocol/release-manifest.ts --write --tag <tag> | --check')
+    console.error('usage: bun app/Commands/protocol/release-manifest.ts --write --tag <tag> | --check')
     process.exit(2)
   }
 
@@ -154,3 +154,6 @@ if (import.meta.main) {
     console.log(`Release manifest matches ${current.tag} at ${current.sourceRevision}`)
   }
 }
+
+if (import.meta.main)
+  await run()

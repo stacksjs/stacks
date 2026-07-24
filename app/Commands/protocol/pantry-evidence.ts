@@ -117,7 +117,7 @@ function check(): void {
   console.log(`Pantry evidence pins ${pantryEvidence.source.tag} at ${pantryEvidence.source.revision}`)
 }
 
-if (import.meta.main) {
+export async function run(): Promise<void> {
   if (process.argv.includes('--write')) {
     const errors = validatePantryEvidence(pantryEvidence)
     if (errors.length) throw new Error(errors.join('\n'))
@@ -126,7 +126,10 @@ if (import.meta.main) {
   }
   else if (process.argv.includes('--check')) check()
   else {
-    console.error('usage: bun .github/scripts/protocol/pantry-evidence.ts --write | --check')
+    console.error('usage: bun app/Commands/protocol/pantry-evidence.ts --write | --check')
     process.exit(2)
   }
 }
+
+if (import.meta.main)
+  await run()

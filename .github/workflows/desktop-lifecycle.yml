@@ -5,16 +5,16 @@ on:
     branches: [main]
     paths:
       - storage/framework/core/desktop/**
-      - .github/scripts/protocol/craft-evidence.ts
-      - .github/scripts/protocol/desktop-lifecycle-report.ts
+      - app/Commands/protocol/craft-evidence.ts
+      - app/Commands/protocol/desktop-lifecycle-report.ts
       - .github/protocol/evidence/craft.json
       - .github/workflows/desktop-lifecycle.yml
   pull_request:
     branches: [main]
     paths:
       - storage/framework/core/desktop/**
-      - .github/scripts/protocol/craft-evidence.ts
-      - .github/scripts/protocol/desktop-lifecycle-report.ts
+      - app/Commands/protocol/craft-evidence.ts
+      - app/Commands/protocol/desktop-lifecycle-report.ts
       - .github/protocol/evidence/craft.json
       - .github/workflows/desktop-lifecycle.yml
   workflow_dispatch:
@@ -123,7 +123,7 @@ jobs:
 
       - name: Validate and attest lifecycle report
         run: >-
-          bun .github/scripts/protocol/desktop-lifecycle-report.ts
+          bun app/Commands/protocol/desktop-lifecycle-report.ts
           --report .craft-contract/artifacts/native-lifecycle/${{ matrix.name }}/report.json
           --output .github/protocol/reports/desktop/${{ matrix.name }}/attestation.json
           --revision "$CRAFT_SOURCE_REVISION"

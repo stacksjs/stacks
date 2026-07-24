@@ -28,4 +28,6 @@ export type CommandRegistry = Record<string, string | CommandConfig>
  */
 export default {
   'inspire': 'Inspire',
+  'protocol': 'Protocol',
+  'docs': 'Docs',
 } satisfies CommandRegistry

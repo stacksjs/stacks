@@ -21,7 +21,7 @@ describe('protocol requirement-id uniqueness (stacksjs/stacks#2050)', () => {
   })
 
   it('the vendored catalog.json has unique requirement ids', () => {
-    const catalog = JSON.parse(readFileSync(resolve(import.meta.dir, '../../protocol/suite/1.0-draft/catalog.json'), 'utf8')) as {
+    const catalog = JSON.parse(readFileSync(resolve(import.meta.dir, '../../../.github/protocol/suite/1.0-draft/catalog.json'), 'utf8')) as {
       requirements: Array<{ id: string }>
     }
     const ids = catalog.requirements.map(requirement => requirement.id)
@@ -56,7 +56,7 @@ describe('protocol fixture-corpus integrity (stacksjs/stacks#2051)', () => {
   })
 
   it('the vendored fixture corpus has unique ids and no dangling requirement refs', () => {
-    const base = resolve(import.meta.dir, '../../protocol/suite/1.0-draft')
+    const base = resolve(import.meta.dir, '../../../.github/protocol/suite/1.0-draft')
     const corpus = JSON.parse(readFileSync(resolve(base, 'fixtures/conformance.json'), 'utf8')) as {
       fixtures: Array<{ id: string, requirements?: string[] }>
     }

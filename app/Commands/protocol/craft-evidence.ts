@@ -73,7 +73,7 @@ function serializedEvidence(): string {
   return `${JSON.stringify(craftEvidence, null, 2)}\n`
 }
 
-if (import.meta.main) {
+export async function run(): Promise<void> {
   const errors = validateCraftEvidence(craftEvidence)
   if (process.argv.includes('--write')) {
     if (errors.length) throw new Error(errors.join('\n'))
@@ -87,7 +87,10 @@ if (import.meta.main) {
     console.log(`Craft evidence pins ${craftEvidence.source.tag} at ${craftEvidence.source.revision}`)
   }
   else {
-    console.error('usage: bun .github/scripts/protocol/craft-evidence.ts --write | --check')
+    console.error('usage: bun app/Commands/protocol/craft-evidence.ts --write | --check')
     process.exit(2)
   }
 }
+
+if (import.meta.main)
+  await run()

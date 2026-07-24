@@ -120,10 +120,10 @@ function render(manifest: SourceManifest): string {
   return `${JSON.stringify(manifest, null, 2)}\n`
 }
 
-if (import.meta.main) {
+export async function run(): Promise<void> {
   const mode = process.argv.includes('--write') ? 'write' : process.argv.includes('--check') ? 'check' : null
   if (!mode) {
-    console.error('usage: bun .github/scripts/protocol/source-manifest.ts --write [--revision <ref>] | --check')
+    console.error('usage: bun app/Commands/protocol/source-manifest.ts --write [--revision <ref>] | --check')
     process.exit(2)
   }
 
@@ -141,7 +141,10 @@ if (import.meta.main) {
     const current = JSON.parse(readFileSync(outputPath, 'utf8')) as SourceManifest
     const expected = render(buildSourceManifest(current.sourceRevision))
     if (readFileSync(outputPath, 'utf8') !== expected)
-      throw new Error(`source manifest is stale or modified; run bun .github/scripts/protocol/source-manifest.ts --write --revision ${current.sourceRevision}`)
+      throw new Error(`source manifest is stale or modified; run bun app/Commands/protocol/source-manifest.ts --write --revision ${current.sourceRevision}`)
     console.log(`Source manifest matches ${current.sourceRevision}`)
   }
 }
+
+if (import.meta.main)
+  await run()
