@@ -63,10 +63,10 @@ jobs:
 
     steps:
       - name: Checkout Stacks
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Checkout pinned Craft source
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           repository: home-lang/craft
           ref: ${{ env.CRAFT_SOURCE_REVISION }}
