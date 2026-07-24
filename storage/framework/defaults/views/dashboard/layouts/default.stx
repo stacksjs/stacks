@@ -1,21 +1,22 @@
 <script server>
-// macOS-style web sidebar (@stacksjs/components' <Sidebar theme="macos">).
-// Sections come from the discovered-models manifest + config/dashboard.ts
-// toggles — the same data that used to drive the native NSOutlineView.
+// Web sidebar for the dashboard. Framework-owned nav chrome: the markup is
+// built server-side in resources/functions/dashboard/sidebar.ts and the look
+// lives in the @apply <style> block at the bottom of this file. Sections come
+// from the discovered-models manifest + config/dashboard.ts toggles.
 // Project-root-anchored (`~/`), not relative. The stx client bundler resolves a
 // relative import against the PAGE that extends this layout, not against this
 // file, so `../../..` silently pointed somewhere different for every page depth
 // and the bundle failed for any page more than one level under views/dashboard.
-import { buildWebSidebarSections } from '~/storage/framework/defaults/resources/functions/dashboard/sidebar'
+import { buildSidebarChunks } from '~/storage/framework/defaults/resources/functions/dashboard/sidebar'
 
-export const sidebarSections = buildWebSidebarSections()
-
-// itemId → roles, for the client-side role filter below.
-export const sidebarRoleAttrs = JSON.stringify(
-  sidebarSections.flatMap(section => section.items
-    .filter(item => item.roles && item.roles.length > 0)
-    .map(item => ({ id: item.id, roles: item.roles }))),
-)
+// Pre-rendered, self-contained sidebar HTML (home link, section nav, settings
+// link), built server-side and interpolated raw below. This intentionally does
+// NOT depend on `@stacksjs/components`' <Sidebar>: 0.2.9x stopped shipping
+// tag-resolvable .stx sources (only hashed dist/ output), so the component
+// fatal-errored the whole dashboard with an ENOENT (stacksjs/stacks#1989). Each
+// rendered <a> already carries data-required-roles, which the applyRoleFilter
+// effect below reads directly for role gating.
+export const sidebarChunks = buildSidebarChunks()
 </script>
 
 <style>
@@ -30,6 +31,155 @@ canvas[id$="_chart"] {
   display: block;
   width: 100% !important;
   height: 100% !important;
+}
+
+/*
+ * Dashboard body + sidebar. Plain CSS on purpose: stx serves a layout's raw
+ * style rules verbatim, but it does NOT expand Crosswind @apply here, so these
+ * are hand-written. Class names match the markup built in
+ * resources/functions/dashboard/sidebar.ts. Fixed 250px pane: Home pinned top,
+ * sections scroll in the middle, Settings pinned bottom.
+ */
+body {
+  background: #f4f4f5;
+}
+.dark body {
+  background: #0a0a0a;
+}
+.dashboard-sidebar {
+  position: fixed;
+  inset: 0 auto 0 0;
+  width: 250px;
+  display: flex;
+  flex-direction: column;
+  padding: 0 12px 10px;
+  overflow: hidden;
+  background: #fff;
+  border-right: 1px solid rgba(0, 0, 0, 0.08);
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  z-index: 40;
+}
+.sidebar-header {
+  flex-shrink: 0;
+  height: 38px;
+}
+.sidebar-nav {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+.sidebar-nav::-webkit-scrollbar {
+  width: 0;
+}
+.sidebar-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+  height: 30px;
+  padding: 0 10px;
+  border-radius: 6px;
+  color: #3a3a3c;
+  font-size: 13px;
+  font-weight: 450;
+  text-decoration: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: background-color 0.12s ease, color 0.12s ease;
+}
+.sidebar-link:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+.sidebar-link[data-active="true"] {
+  background: #007aff;
+  color: #fff;
+}
+.sidebar-link-home {
+  font-weight: 550;
+}
+.sidebar-nav .sidebar-link {
+  margin-top: 1px;
+}
+.sidebar-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  opacity: 0.82;
+}
+.sidebar-icon svg {
+  width: 18px;
+  height: 18px;
+}
+.sidebar-link[data-active="true"] .sidebar-icon {
+  opacity: 1;
+}
+.sidebar-section {
+  margin-top: 12px;
+}
+.sidebar-section-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  height: 22px;
+  padding: 0 10px;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  color: #8a8a8e;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+.sidebar-section-label:hover {
+  color: #6a6a6e;
+}
+.sidebar-section-list {
+  list-style: none;
+  margin: 2px 0 0;
+  padding: 0;
+}
+.sidebar-section.collapsed .sidebar-section-list {
+  display: none;
+}
+.sidebar-chevron {
+  width: 7px;
+  height: 7px;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  transform: rotate(45deg);
+  transition: transform 0.15s ease;
+  opacity: 0.7;
+}
+.sidebar-section.collapsed .sidebar-chevron {
+  transform: rotate(-45deg);
+}
+.dark .dashboard-sidebar {
+  background: #1c1c1e;
+  border-right-color: rgba(255, 255, 255, 0.08);
+}
+.dark .sidebar-link {
+  color: #d1d1d6;
+}
+.dark .sidebar-link:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+.dark .sidebar-link[data-active="true"] {
+  background: #0a84ff;
+  color: #fff;
+}
+.dark .sidebar-section-label {
+  color: #8d8d92;
+}
+.dark .sidebar-section-label:hover {
+  color: #aeaeb2;
 }
 </style>
 
@@ -258,66 +408,52 @@ effect(() => {
 })
 </script>
 
-<Sidebar
-  :sections="sidebarSections"
-  theme="macos"
-  width="250"
-  collapseMode="hidden"
-  shellSelector="[data-stx-shell]"
-  persistKey="dashboard-sidebar-collapsed"
->
-  <template #header>
-    <!-- Traffic lights are native (titlebarHidden window) — this strip only
-        reserves their space and acts as the window drag region. -->
-    <SidebarHeader :showWindowControls="false" />
-  </template>
-</Sidebar>
-
-<!-- Role map for the wiring script below; interpolated server-side. The div is
-    hidden and holds JSON as text, because a JSON-typed script tag would get
-    rewritten by the layout script processor (see the importmap comment above).
-
-    Do not name that tag literally here. The script processor rewrites script
-    tags inside comments too, and eating this comment's closing marker turns
-    everything below into comment text, blanking the page. -->
-<div data-sidebar-roles hidden>{{ sidebarRoleAttrs }}</div>
+<aside data-stx-sidebar class="dashboard-sidebar" role="navigation" aria-label="Sidebar">
+  <!-- Traffic lights are native (titlebarHidden window) — this strip reserves
+      their space at the top of the pane so the first nav row clears them. -->
+  <div class="sidebar-header"></div>
+  {{{ sidebarChunks.top }}}
+  <nav class="sidebar-nav">{{{ sidebarChunks.nav }}}</nav>
+  {{{ sidebarChunks.bottom }}}
+</aside>
 
 <script client>
-// Web sidebar wiring: SPA navigation, initial selection, role gating.
+// Web sidebar wiring: collapse restore, active highlight, SPA navigation.
+// Role gating is handled by the applyRoleFilter effect above, which reads the
+// data-required-roles attributes the server emits directly on each link.
 onMount(() => {
-  const roleNode = document.querySelector('div[data-sidebar-roles]')
-  let sidebarRoleList = []
-  try { sidebarRoleList = JSON.parse(roleNode?.textContent || '[]') } catch {}
-
   const pane = document.querySelector('[data-stx-sidebar]')
   if (!pane) return
 
-  // Role-gate rows (picked up by the applyRoleFilter effect above).
-  for (const entry of sidebarRoleList) {
-    const row = pane.querySelector(`[data-sidebar-row][data-item-id="${entry.id}"]`)
-    if (row) row.setAttribute('data-required-roles', entry.roles.join(','))
-  }
+  // Restore per-section collapsed state persisted by the section toggle
+  // (the inline onclick in renderSection writes localStorage['sidebar-collapsed']).
+  try {
+    const saved = JSON.parse(localStorage.getItem('sidebar-collapsed') || '{}')
+    for (const section of pane.querySelectorAll('.sidebar-section')) {
+      if (saved[section.getAttribute('data-section')]) section.classList.add('collapsed')
+    }
+  } catch {}
 
-  // Highlight the row for the current route on hard loads.
-  const activeClasses = (pane.dataset.activeClass || '').split(' ').filter(Boolean)
-  const current = pane.querySelector(`[data-sidebar-item][href="${window.location.pathname}"]`)
-  if (current && !pane.querySelector('[data-sidebar-item][data-active="true"]')) {
-    current.setAttribute('data-active', 'true')
-    current.classList.add(...activeClasses)
-  }
+  // Highlight the link for the current route on hard loads.
+  const current = pane.querySelector(`a.sidebar-link[href="${window.location.pathname}"]`)
+  if (current) current.setAttribute('data-active', 'true')
 
   // SPA-navigate sidebar links; fall back to full loads when the router
-  // isn't available.
+  // isn't available or the target is external.
   pane.addEventListener('click', (event) => {
-    const link = event.target.closest('a[data-sidebar-item]')
-    if (!link || typeof navigate !== 'function') return
+    const link = event.target.closest('a.sidebar-link')
+    if (!link) return
+    const href = link.getAttribute('href')
+    if (!href || href.startsWith('http') || typeof navigate !== 'function') return
     event.preventDefault()
-    navigate(link.getAttribute('href'))
+    for (const a of pane.querySelectorAll('a.sidebar-link[data-active]')) a.removeAttribute('data-active')
+    link.setAttribute('data-active', 'true')
+    navigate(href)
   })
 })
 </script>
 
-<main data-stx-content data-stx-shell style="margin-left: var(--stx-sidebar-width, 250px); transition: margin-left 0.3s ease-out">
+<main data-stx-content style="margin-left: 250px">
   @slot('content')
 </main>
 
@@ -344,9 +480,3 @@ onMount(() => {
     </div>
   @endforeach
 </div>
-
-<style>
-body {
-  @apply bg-neutral-100 dark:bg-neutral-950;
-}
-</style>
