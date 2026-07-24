@@ -1,7 +1,7 @@
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 
-const root = resolve(import.meta.dir, '../../..')
+const root = resolve(import.meta.dir, '../../../../../../..')
 const outputPath = resolve(root, '.github/protocol/evidence/craft.json')
 
 export const craftEvidence = {
@@ -87,7 +87,7 @@ export async function run(): Promise<void> {
     console.log(`Craft evidence pins ${craftEvidence.source.tag} at ${craftEvidence.source.revision}`)
   }
   else {
-    console.error('usage: bun app/Commands/protocol/craft-evidence.ts --write | --check')
+    console.error('usage: bun storage/framework/core/buddy/src/commands/protocol/craft-evidence.ts --write | --check')
     process.exit(2)
   }
 }

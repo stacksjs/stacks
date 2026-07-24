@@ -7,13 +7,13 @@
  * can reject a broken cross-reference. External links, mail/tel, and same-page
  * anchors are intentionally left alone.
  *
- * Usage: `bun app/Commands/docs/links.ts [--check]`
+ * Usage: `bun storage/framework/core/buddy/src/commands/docs/links.ts [--check]`
  */
 
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs'
 import { dirname, join, relative, resolve } from 'node:path'
 
-const root = resolve(import.meta.dir, '../../..')
+const root = resolve(import.meta.dir, '../../../../../../..')
 const docsDir = resolve(root, 'docs')
 
 export interface BrokenDocLink {

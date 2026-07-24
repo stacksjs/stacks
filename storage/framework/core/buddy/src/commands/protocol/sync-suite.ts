@@ -9,7 +9,7 @@ interface SuiteLock {
   files: Record<string, string>
 }
 
-const root = resolve(import.meta.dir, '../../..')
+const root = resolve(import.meta.dir, '../../../../../../..')
 const suiteRoot = resolve(root, '.github/protocol/suite/1.0-draft')
 const lockPath = resolve(root, '.github/protocol/suite.lock.json')
 
@@ -200,7 +200,7 @@ export async function run(): Promise<void> {
     checkFixtures()
   }
   else {
-    console.error('usage: bun app/Commands/protocol/sync-suite.ts --write [--source ../rfcs] | --check')
+    console.error('usage: bun storage/framework/core/buddy/src/commands/protocol/sync-suite.ts --write [--source ../rfcs] | --check')
     process.exit(2)
   }
 }

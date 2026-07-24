@@ -27,7 +27,7 @@ interface SourceManifest {
   protocolSuite: { version: string, rfcsRevision: string }
 }
 
-const root = resolve(import.meta.dir, '../../..')
+const root = resolve(import.meta.dir, '../../../../../../..')
 const outputPath = resolve(root, '.github/protocol/evidence/source-manifest.json')
 
 function runGit(...arguments_: string[]): Buffer {
@@ -77,6 +77,8 @@ export function buildSourceManifest(requestedRevision: string): SourceManifest {
     if (!match) continue
     const bytes = Number(match[1])
     const path = match[2]
+    if (path == null)
+      continue
     paths.push(path)
     totalBytes += bytes
     addCount(categories, category(path), bytes)
@@ -123,7 +125,7 @@ function render(manifest: SourceManifest): string {
 export async function run(): Promise<void> {
   const mode = process.argv.includes('--write') ? 'write' : process.argv.includes('--check') ? 'check' : null
   if (!mode) {
-    console.error('usage: bun app/Commands/protocol/source-manifest.ts --write [--revision <ref>] | --check')
+    console.error('usage: bun storage/framework/core/buddy/src/commands/protocol/source-manifest.ts --write [--revision <ref>] | --check')
     process.exit(2)
   }
 
@@ -141,7 +143,7 @@ export async function run(): Promise<void> {
     const current = JSON.parse(readFileSync(outputPath, 'utf8')) as SourceManifest
     const expected = render(buildSourceManifest(current.sourceRevision))
     if (readFileSync(outputPath, 'utf8') !== expected)
-      throw new Error(`source manifest is stale or modified; run bun app/Commands/protocol/source-manifest.ts --write --revision ${current.sourceRevision}`)
+      throw new Error(`source manifest is stale or modified; run bun storage/framework/core/buddy/src/commands/protocol/source-manifest.ts --write --revision ${current.sourceRevision}`)
     console.log(`Source manifest matches ${current.sourceRevision}`)
   }
 }

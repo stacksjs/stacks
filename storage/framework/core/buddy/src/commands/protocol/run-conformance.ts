@@ -4,14 +4,14 @@ import { arch, platform } from 'node:os'
 import { resolve } from 'node:path'
 import Ajv2020 from 'ajv/dist/2020.js'
 import addFormats from 'ajv-formats'
-import { Action } from '../../../storage/framework/core/actions/src/index'
-import { assertCapabilityAvailable, capabilityRegistry } from '../../../storage/framework/core/config/src/capabilities'
-import { decryptValue, encryptValue, generateKeypair } from '../../../storage/framework/core/env/src/crypto'
-import { escapeHtml } from '../../../storage/framework/core/error-handling/src/error-page-template'
-import { appPath, defaultsAppPath } from '../../../storage/framework/core/path/src/index'
-import { createValidationErrorResponse } from '../../../storage/framework/core/router/src/error-handler'
-import { timingSafeEqualString } from '../../../storage/framework/core/security/src/hash'
-import { object, string } from '../../../storage/framework/core/validation/src/index'
+import { Action } from '../../../../actions/src/index'
+import { assertCapabilityAvailable, capabilityRegistry } from '../../../../config/src/capabilities'
+import { decryptValue, encryptValue, generateKeypair } from '../../../../env/src/crypto'
+import { escapeHtml } from '../../../../error-handling/src/error-page-template'
+import { appPath, defaultsAppPath } from '../../../../path/src/index'
+import { createValidationErrorResponse } from '../../../../router/src/error-handler'
+import { timingSafeEqualString } from '../../../../security/src/hash'
+import { object, string } from '../../../../validation/src/index'
 
 type ResultStatus = 'pass' | 'fail' | 'skipped' | 'unsupported' | 'exception' | 'experimental'
 
@@ -38,7 +38,7 @@ interface Result {
 /** Executable-check evidence keyed by requirement id, merged into the report. */
 type Evidence = Map<string, Omit<Result, 'requirementId' | 'fixtureId'>>
 
-const root = resolve(import.meta.dir, '../../..')
+const root = resolve(import.meta.dir, '../../../../../../..')
 const suiteRoot = resolve(root, '.github/protocol/suite/1.0-draft')
 
 function git(...arguments_: string[]): string {
@@ -55,7 +55,9 @@ function exactSourceDigest(): string {
 function tamper(ciphertext: string): string {
   const prefix = 'encrypted:'
   const payload = Buffer.from(ciphertext.slice(prefix.length), 'base64')
-  payload[payload.length - 1] ^= 1
+  const last = payload.length - 1
+  if (last >= 0)
+    payload[last] = (payload[last] ?? 0) ^ 1
   return `${prefix}${payload.toString('base64')}`
 }
 
@@ -271,7 +273,7 @@ export async function executeQueryEvidence(revision: string): Promise<Evidence> 
   // degrades this one check to skipped instead of crashing the whole adapter;
   // CI and a healthy checkout resolve it and run the check for real.
   try {
-    const { sql } = await import('../../../storage/framework/core/database/src/types')
+    const { sql } = await import('../../../../database/src/types')
     const attack = '\' OR 1=1 --'
     const query = sql`SELECT * FROM users WHERE email = ${attack}` as unknown as { sql: string, parameters: unknown[] }
     const parameterized = query.sql === 'SELECT * FROM users WHERE email = ?'
@@ -303,8 +305,8 @@ export async function executeDatabaseEvidence(revision: string): Promise<Evidenc
   // Lazy-import + skip-on-failure for the same stale-pantry-link robustness as
   // SEC-01. Runs a throwaway in-memory SQLite so there is no external service.
   try {
-    const { createQueryBuilder, setConfig } = await import('../../../storage/framework/core/query-builder/src/index')
-    setConfig({ dialect: 'sqlite', database: ':memory:' } as Parameters<typeof setConfig>[0])
+    const { createQueryBuilder, setConfig } = await import('../../../../query-builder/src/index')
+    setConfig({ dialect: 'sqlite', database: ':memory:' } as unknown as Parameters<typeof setConfig>[0])
     const db = createQueryBuilder() as any
     // The query builder reuses one global in-memory connection, so a prior run in
     // the same process leaves the table behind. Drop first for idempotency.

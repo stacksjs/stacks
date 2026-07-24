@@ -31,7 +31,7 @@ export interface ReleaseManifest {
   }
 }
 
-const root = resolve(import.meta.dir, '../../..')
+const root = resolve(import.meta.dir, '../../../../../../..')
 const outputPath = resolve(root, '.github/protocol/evidence/release-manifest.json')
 
 function runGit(...arguments_: string[]): Buffer {
@@ -79,7 +79,8 @@ export function buildReleaseManifest(tag: string): ReleaseManifest {
   const treeListing = runGit('ls-tree', '-r', '-l', sourceRevision).toString()
   const paths = treeListing.trim().split('\n').filter(Boolean).flatMap((line): string[] => {
     const match = line.match(/^\d+\s+blob\s+[0-9a-f]+\s+\d+\t(.+)$/)
-    return match ? [match[1]] : []
+    const path = match?.[1]
+    return path != null ? [path] : []
   })
   const packages = paths
     .filter(path => path === 'package.json' || path.endsWith('/package.json'))
@@ -132,7 +133,7 @@ export function renderReleaseManifest(manifest: ReleaseManifest): string {
 export async function run(): Promise<void> {
   const mode = process.argv.includes('--write') ? 'write' : process.argv.includes('--check') ? 'check' : null
   if (!mode) {
-    console.error('usage: bun app/Commands/protocol/release-manifest.ts --write --tag <tag> | --check')
+    console.error('usage: bun storage/framework/core/buddy/src/commands/protocol/release-manifest.ts --write --tag <tag> | --check')
     process.exit(2)
   }
 
