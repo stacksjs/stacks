@@ -11,46 +11,65 @@ export interface UpgradeContext {
 }
 
 /**
+ * Resolve the latest published stable git tag (e.g. `v0.70.163`).
+ *
+ * The release pipeline (`.github/workflows/release.yml`) is triggered only by
+ * `push: tags: ['v*']`; it publishes `vX` tags and never pushes a `stable`
+ * branch. So the `stable` channel tracks the latest published tag, not a branch
+ * ref. We read npm's `latest` dist-tag (the same source `packages.ts` uses) and
+ * map it to its `vX` git tag, which the GitHub tarball endpoint resolves.
+ */
+export async function resolveLatestStableTag(): Promise<string> {
+  const res = await fetch('https://registry.npmjs.org/stacks').catch(() => null)
+  const meta = res?.ok
+    ? (await res.json().catch(() => null)) as { 'dist-tags'?: Record<string, string> } | null
+    : null
+  const latest = meta?.['dist-tags']?.latest
+  if (!latest)
+    throw new Error('Could not resolve the latest stable Stacks version from npm; retry, or pass `--version <tag>` or `--canary`.')
+  return latest.startsWith('v') ? latest : `v${latest}`
+}
+
+/**
  * Resolve the target channel and git ref from CLI options and persisted channel.
  * Priority: --version > --canary > --stable > persisted channel
  *
- * Branch model: `main` is the bleeding-edge "dump everything" branch; `stable`
- * is the vetted branch that PRs are merged into from `main` once main is proven.
- * So the `stable` channel tracks the `stable` branch (vetted) and the `canary`
- * channel tracks the `main` branch (bleeding edge). A pinned `--version` still
- * resolves to the matching `vX` tag.
+ * Channel model: `canary` tracks the `main` branch (bleeding edge). `stable`
+ * tracks the latest published `vX` tag, because the release process only ships
+ * tags and there is no `stable` branch (stacksjs/stacks#2117). A pinned
+ * `--version` resolves to the matching `vX` tag. The tag is resolved through
+ * `resolveLatestTag` (injectable for tests).
  */
-export function resolveUpgradeContext(options: {
+export async function resolveUpgradeContext(options: {
   version?: string
   canary?: boolean
   stable?: boolean
-}, currentChannel: 'stable' | 'canary'): UpgradeContext {
+}, currentChannel: 'stable' | 'canary', resolveLatestTag: () => Promise<string> = resolveLatestStableTag): Promise<UpgradeContext> {
   const targetVersion = options.version
 
   if (targetVersion) {
-    // Specific version requested — use the git tag
-    // Support both "0.70.23" and "v0.70.23"
+    // Specific version requested. Use the git tag; support "0.70.23" and "v0.70.23".
     const ref = targetVersion.startsWith('v') ? targetVersion : `v${targetVersion}`
     return { channel: 'stable', ref, targetVersion }
   }
 
   if (options.canary) {
-    // canary tracks `main` — main IS the bleeding edge.
+    // canary tracks `main`, the bleeding edge.
     return { channel: 'canary', ref: 'main' }
   }
 
   if (options.stable) {
-    // stable tracks the vetted `stable` branch.
-    return { channel: 'stable', ref: 'stable' }
+    // stable tracks the latest published `vX` tag (no `stable` branch exists).
+    return { channel: 'stable', ref: await resolveLatestTag() }
   }
 
   if (currentChannel === 'canary') {
-    // Stay on canary if already on canary (like bun upgrade on canary stays on
-    // canary). canary tracks `main` — main IS the bleeding edge.
+    // Stay on canary if already on canary (like `bun upgrade` on canary).
     return { channel: 'canary', ref: 'main' }
   }
 
-  return { channel: 'stable', ref: 'stable' }
+  // Default: the latest published stable tag.
+  return { channel: 'stable', ref: await resolveLatestTag() }
 }
 
 /**

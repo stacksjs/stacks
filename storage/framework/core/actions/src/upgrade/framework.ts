@@ -79,7 +79,7 @@ if (!existsSync(p.projectPath('storage/framework/core'))) {
 const channelFile = join(projectRoot, '.stacks-channel')
 const versionFile = join(projectRoot, '.stacks-version')
 const currentChannel = readChannel(channelFile)
-const ctx = resolveUpgradeContext(options, currentChannel)
+const ctx = await resolveUpgradeContext(options, currentChannel)
 
 const corePkgPath = p.projectPath('storage/framework/core/buddy/package.json')
 const currentVersion = readVersion(corePkgPath)

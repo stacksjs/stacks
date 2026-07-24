@@ -37,16 +37,21 @@ afterEach(() => {
 // ─── resolveUpgradeContext ───────────────────────────────────────────────────
 
 describe('resolveUpgradeContext', () => {
+  // The stable channel resolves the latest published tag (there is no `stable`
+  // branch - stacksjs/stacks#2117). Inject a fixed tag so these unit tests stay
+  // offline and deterministic.
+  const stableTag = async (): Promise<string> => 'v9.9.9'
+
   describe('default behavior', () => {
-    it('should default to the stable channel + stable branch when no options and channel is stable', () => {
-      const ctx = resolveUpgradeContext({}, 'stable')
+    it('defaults to the stable channel + latest tag when no options and channel is stable', async () => {
+      const ctx = await resolveUpgradeContext({}, 'stable', stableTag)
       expect(ctx.channel).toBe('stable')
-      expect(ctx.ref).toBe('stable')
+      expect(ctx.ref).toBe('v9.9.9')
       expect(ctx.targetVersion).toBeUndefined()
     })
 
-    it('should stay on canary (main branch) if current channel is canary and no flags', () => {
-      const ctx = resolveUpgradeContext({}, 'canary')
+    it('should stay on canary (main branch) if current channel is canary and no flags', async () => {
+      const ctx = await resolveUpgradeContext({}, 'canary')
       expect(ctx.channel).toBe('canary')
       expect(ctx.ref).toBe('main')
       expect(ctx.targetVersion).toBeUndefined()
@@ -54,90 +59,90 @@ describe('resolveUpgradeContext', () => {
   })
 
   describe('--canary flag', () => {
-    it('should switch to canary (main branch) when --canary is set', () => {
-      const ctx = resolveUpgradeContext({ canary: true }, 'stable')
+    it('should switch to canary (main branch) when --canary is set', async () => {
+      const ctx = await resolveUpgradeContext({ canary: true }, 'stable')
       expect(ctx.channel).toBe('canary')
       expect(ctx.ref).toBe('main')
     })
 
-    it('should stay on canary (main branch) when already on canary and --canary is set', () => {
-      const ctx = resolveUpgradeContext({ canary: true }, 'canary')
+    it('should stay on canary (main branch) when already on canary and --canary is set', async () => {
+      const ctx = await resolveUpgradeContext({ canary: true }, 'canary')
       expect(ctx.channel).toBe('canary')
       expect(ctx.ref).toBe('main')
     })
   })
 
   describe('--stable flag', () => {
-    it('should switch to the stable branch when --stable is set from canary', () => {
-      const ctx = resolveUpgradeContext({ stable: true }, 'canary')
+    it('switches to the stable channel + latest tag when --stable is set from canary', async () => {
+      const ctx = await resolveUpgradeContext({ stable: true }, 'canary', stableTag)
       expect(ctx.channel).toBe('stable')
-      expect(ctx.ref).toBe('stable')
+      expect(ctx.ref).toBe('v9.9.9')
     })
 
-    it('should stay on the stable branch when already stable and --stable is set', () => {
-      const ctx = resolveUpgradeContext({ stable: true }, 'stable')
+    it('stays on the stable channel + latest tag when already stable and --stable is set', async () => {
+      const ctx = await resolveUpgradeContext({ stable: true }, 'stable', stableTag)
       expect(ctx.channel).toBe('stable')
-      expect(ctx.ref).toBe('stable')
+      expect(ctx.ref).toBe('v9.9.9')
     })
   })
 
   describe('--version flag', () => {
-    it('should use version tag without v prefix', () => {
-      const ctx = resolveUpgradeContext({ version: '0.70.23' }, 'stable')
+    it('should use version tag without v prefix', async () => {
+      const ctx = await resolveUpgradeContext({ version: '0.70.23' }, 'stable')
       expect(ctx.channel).toBe('stable')
       expect(ctx.ref).toBe('v0.70.23')
       expect(ctx.targetVersion).toBe('0.70.23')
     })
 
-    it('should use version tag with v prefix as-is', () => {
-      const ctx = resolveUpgradeContext({ version: 'v0.70.23' }, 'stable')
+    it('should use version tag with v prefix as-is', async () => {
+      const ctx = await resolveUpgradeContext({ version: 'v0.70.23' }, 'stable')
       expect(ctx.channel).toBe('stable')
       expect(ctx.ref).toBe('v0.70.23')
       expect(ctx.targetVersion).toBe('v0.70.23')
     })
 
-    it('should take priority over --canary', () => {
-      const ctx = resolveUpgradeContext({ version: '0.70.23', canary: true }, 'stable')
+    it('should take priority over --canary', async () => {
+      const ctx = await resolveUpgradeContext({ version: '0.70.23', canary: true }, 'stable')
       expect(ctx.channel).toBe('stable')
       expect(ctx.ref).toBe('v0.70.23')
       expect(ctx.targetVersion).toBe('0.70.23')
     })
 
-    it('should take priority over --stable', () => {
-      const ctx = resolveUpgradeContext({ version: '0.70.23', stable: true }, 'canary')
+    it('should take priority over --stable', async () => {
+      const ctx = await resolveUpgradeContext({ version: '0.70.23', stable: true }, 'canary')
       expect(ctx.channel).toBe('stable')
       expect(ctx.ref).toBe('v0.70.23')
     })
 
-    it('should take priority over persisted canary channel', () => {
-      const ctx = resolveUpgradeContext({ version: '0.70.23' }, 'canary')
+    it('should take priority over persisted canary channel', async () => {
+      const ctx = await resolveUpgradeContext({ version: '0.70.23' }, 'canary')
       expect(ctx.channel).toBe('stable')
       expect(ctx.ref).toBe('v0.70.23')
     })
 
-    it('should handle semver-only strings', () => {
-      const ctx = resolveUpgradeContext({ version: '1.0.0' }, 'stable')
+    it('should handle semver-only strings', async () => {
+      const ctx = await resolveUpgradeContext({ version: '1.0.0' }, 'stable')
       expect(ctx.ref).toBe('v1.0.0')
     })
 
-    it('should handle pre-release version strings', () => {
-      const ctx = resolveUpgradeContext({ version: '1.0.0-beta.1' }, 'stable')
+    it('should handle pre-release version strings', async () => {
+      const ctx = await resolveUpgradeContext({ version: '1.0.0-beta.1' }, 'stable')
       expect(ctx.ref).toBe('v1.0.0-beta.1')
     })
   })
 
   describe('flag priority', () => {
-    it('--version beats --canary beats --stable beats persisted channel', () => {
+    it('--version beats --canary beats --stable beats persisted channel', async () => {
       // version > canary
-      const v = resolveUpgradeContext({ version: '1.0.0', canary: true, stable: true }, 'canary')
+      const v = await resolveUpgradeContext({ version: '1.0.0', canary: true, stable: true }, 'canary')
       expect(v.ref).toBe('v1.0.0')
 
       // canary > stable (when no version)
-      const c = resolveUpgradeContext({ canary: true, stable: true }, 'stable')
+      const c = await resolveUpgradeContext({ canary: true, stable: true }, 'stable')
       expect(c.channel).toBe('canary')
 
       // stable > persisted canary (when no version/canary)
-      const s = resolveUpgradeContext({ stable: true }, 'canary')
+      const s = await resolveUpgradeContext({ stable: true }, 'canary', stableTag)
       expect(s.channel).toBe('stable')
     })
   })
