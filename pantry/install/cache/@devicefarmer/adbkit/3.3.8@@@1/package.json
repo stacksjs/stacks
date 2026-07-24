@@ -1,0 +1,84 @@
+{
+  "name": "@devicefarmer/adbkit",
+  "version": "3.3.8",
+  "description": "A Typescript client for the Android Debug Bridge.",
+  "keywords": [
+    "adb",
+    "adbkit",
+    "android",
+    "logcat",
+    "typescript",
+    "monkey"
+  ],
+  "bin": {
+    "adbkit": "./bin/adbkit"
+  },
+  "bugs": {
+    "url": "https://github.com/devicefarmer/adbkit/issues"
+  },
+  "license": "Apache-2.0",
+  "author": {
+    "name": "Device Farmer",
+    "email": "contact@devicefarmer.com",
+    "url": "https://devicefarmer.com/"
+  },
+  "contributors": [
+    {
+      "name": "uriel chemouni",
+      "email": "uchemouni@gmail.com",
+      "url": "https://urielch.github.io/urielch/"
+    }
+  ],
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/devicefarmer/adbkit.git"
+  },
+  "scripts": {
+    "clean": "rimraf dist index.d.ts index.js",
+    "keycode": "node tasks/keycode.js",
+    "prepublish": "npm run clean && npm run compile && npm run test",
+    "compile": "tsc  -p .",
+    "compile2": "tsc -p tsconfig-dist.json",
+    "lint": "eslint   ./ --ext .ts",
+    "format": "eslint ./ --ext .ts --fix",
+    "testJS": "mocha --reporter spec --colors dist/test/**/*.js",
+    "test": "mocha -r ts-node/register --reporter spec --colors test/**/*.ts"
+  },
+  "dependencies": {
+    "@devicefarmer/adbkit-logcat": "^2.1.3",
+    "@devicefarmer/adbkit-monkey": "~1.2.1",
+    "bluebird": "~3.7",
+    "commander": "^9.1.0",
+    "debug": "~4.3.1",
+    "node-forge": "^1.4.0",
+    "split": "~1.0.1"
+  },
+  "devDependencies": {
+    "@types/debug": "^4.1.5",
+    "@types/mocha": "^10.0.0",
+    "@types/node": "^18.15.11",
+    "@types/sinon-chai": "^3.2.5",
+    "@types/bluebird": "^3.5.42",
+    "@types/node-forge": "^1.3.14",
+    "@typescript-eslint/eslint-plugin": "^5.44.0",
+    "@typescript-eslint/parser": "^5.48.0",
+    "bench": "~0.3.6",
+    "chai": "~4.3.0",
+    "eslint": "^8.12.0",
+    "eslint-config-prettier": "^9.0.0",
+    "eslint-plugin-prettier": "^5.0.0",
+    "eslint-plugin-progress": "0.0.1",
+    "mocha": "~10.2.0",
+    "prettier": "^3.0.2",
+    "rimraf": "^3.0.2",
+    "sinon": "~15.0.1",
+    "sinon-chai": "~3.7.0",
+    "ts-node": "^10.4.0",
+    "typescript": "^5.0.2"
+  },
+  "engines": {
+    "node": ">= 0.10.4"
+  }
+}

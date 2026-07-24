@@ -1,0 +1,107 @@
+{
+  "name": "addons-scanner-utils",
+  "version": "15.4.0",
+  "description": "Various addons related helpers to build CLIs.",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./functions": {
+      "types": "./dist/functions/index.d.ts",
+      "default": "./dist/functions/index.js"
+    },
+    "./functions/*": {
+      "types": "./dist/functions/*.d.ts",
+      "default": "./dist/functions/*.js"
+    },
+    "./io": {
+      "types": "./dist/io/index.d.ts",
+      "default": "./dist/io/index.js"
+    },
+    "./io/*": {
+      "types": "./dist/io/*.d.ts",
+      "default": "./dist/io/*.js"
+    },
+    "./*": {
+      "types": "./dist/*.d.ts",
+      "default": "./dist/*.js"
+    }
+  },
+  "files": [
+    "dist/**/*"
+  ],
+  "author": "Mozilla Add-ons Team",
+  "license": "MPL-2.0",
+  "dependencies": {
+    "common-tags": "1.8.2",
+    "first-chunk-stream": "3.0.0",
+    "jsonwebtoken": "^9.0.3",
+    "strip-bom-stream": "4.0.0",
+    "upath": "3.0.8",
+    "yauzl": "3.4.0"
+  },
+  "peerDependencies": {
+    "express": "5.2.1",
+    "safe-compare": "1.1.4"
+  },
+  "peerDependenciesMeta": {
+    "express": {
+      "optional": true
+    },
+    "safe-compare": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@types/common-tags": "^1.8.4",
+    "@types/express": "5.0.6",
+    "@types/jest": "^30.0.0",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/node": "^25.0.1",
+    "@types/safe-compare": "^1.1.2",
+    "@types/supertest": "^7.2.1",
+    "@types/yauzl": "3.4.0",
+    "@typescript-eslint/eslint-plugin": "^8.46.2",
+    "@typescript-eslint/parser": "^8.46.2",
+    "eslint": "^9.0.0",
+    "eslint-config-amo": "^8.1.0",
+    "eslint-import-resolver-typescript": "^4.4.5",
+    "eslint-plugin-amo": "^3.0.0",
+    "express": "5.2.1",
+    "jest": "^30.4.2",
+    "prettier": "3.9.6",
+    "pretty-quick": "4.2.2",
+    "rimraf": "^6.1.0",
+    "safe-compare": "1.1.4",
+    "supertest": "^7.2.2",
+    "ts-jest": "^29.4.12",
+    "type-coverage": "^2.29.7",
+    "typescript": "^5.9.3"
+  },
+  "scripts": {
+    "eslint": "eslint src/",
+    "lint": "npm run eslint",
+    "prepack": "rimraf dist/ && tsc --outDir dist/ && rimraf -g 'dist/**/*.spec.*' 'dist/*.spec.*'",
+    "prettier": "prettier --write '**'",
+    "prettier-ci": "prettier --list-different '**' || (echo '\n\nThis failure means you did not run `npm run prettier-dev` before committing\n\n' && exit 1)",
+    "prettier-dev": "pretty-quick --branch master",
+    "test": "jest",
+    "test-ci": "npm test -- --coverage",
+    "type-coverage": "type-coverage",
+    "typecheck": "tsc --noEmit"
+  },
+  "homepage": "https://github.com/mozilla/addons-scanner-utils",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/mozilla/addons-scanner-utils.git"
+  },
+  "bugs": {
+    "url": "http://github.com/mozilla/addons-scanner-utils/issues"
+  },
+  "typeCoverage": {
+    "atLeast": 97
+  }
+}

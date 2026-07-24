@@ -55,7 +55,7 @@
   },
   "dependencies": {
     "@stacksjs/bun-router": "^0.0.20",
-    "ts-rate-limiter": "^0.4.2"
+    "ts-rate-limiter": "^0.4.4"
   },
   "devDependencies": {
     "@stacksjs/actions": "workspace:*",

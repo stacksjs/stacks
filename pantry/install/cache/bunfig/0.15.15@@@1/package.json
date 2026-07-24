@@ -1,0 +1,97 @@
+{
+  "name": "bunfig",
+  "type": "module",
+  "version": "0.15.15",
+  "description": "A smart & fully-typed configuration loader for Bun.",
+  "author": "Chris Breuer <chris@stacksjs.org>",
+  "license": "MIT",
+  "homepage": "https://github.com/stacksjs/bunfig#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stacksjs/bunfig.git"
+  },
+  "bugs": {
+    "url": "https://github.com/stacksjs/bunfig/issues"
+  },
+  "keywords": [
+    "config",
+    "loader",
+    "bun",
+    "bunfig"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./browser": {
+      "types": "./dist/browser.d.ts",
+      "import": "./dist/browser.js"
+    },
+    "./discovery": {
+      "types": "./dist/discovery.d.ts",
+      "import": "./dist/discovery.js"
+    },
+    "./ts-plugin": {
+      "types": "./dist/ts-plugin.d.ts",
+      "import": "./dist/ts-plugin.js"
+    },
+    "./virtual-bunfig-types": {
+      "types": "./dist/virtual-bunfig-types.d.ts",
+      "default": "./dist/virtual-bunfig-types.d.ts"
+    },
+    "./*": {
+      "import": "./dist/*"
+    }
+  },
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "bin": {
+    "bunfig": "./bin/cli.js"
+  },
+  "files": [
+    "README.md",
+    "dist"
+  ],
+  "scripts": {
+    "build": "bun build.ts && bun run compile",
+    "compile": "bun build ./bin/cli.ts --compile --minify --outfile bin/bunfig",
+    "compile:all": "bun run compile:linux-x64 && bun run compile:linux-arm64 && bun run compile:windows-x64 && bun run compile:darwin-x64 && bun run compile:darwin-arm64",
+    "compile:linux-x64": "bun build ./bin/cli.ts --compile --minify --target=bun-linux-x64 --outfile bin/bunfig-linux-x64",
+    "compile:linux-arm64": "bun build ./bin/cli.ts --compile --minify --target=bun-linux-arm64 --outfile bin/bunfig-linux-arm64",
+    "compile:windows-x64": "bun build ./bin/cli.ts --compile --minify --target=bun-windows-x64 --outfile bin/bunfig-windows-x64.exe",
+    "compile:darwin-x64": "bun build ./bin/cli.ts --compile --minify --target=bun-darwin-x64 --outfile bin/bunfig-darwin-x64",
+    "compile:darwin-arm64": "bun build ./bin/cli.ts --compile --minify --target=bun-darwin-arm64 --outfile bin/bunfig-darwin-arm64",
+    "lint": "bunx --bun pickier lint . --config ../../pickier.config.ts --max-warnings 9999",
+    "lint:fix": "bunx --bun pickier lint . --fix --config ../../pickier.config.ts --max-warnings 9999",
+    "format": "bunx --bun pickier format . --config ../../pickier.config.ts",
+    "format:fix": "bunx --bun pickier format . --write --config ../../pickier.config.ts",
+    "fresh": "bunx rimraf node_modules/ bun.lock && bun i",
+    "prepublishOnly": "bun --bun run build && bun run compile:all && bun run zip",
+    "test": "bun test",
+    "typecheck": "bun --bun tsc --noEmit",
+    "zip": "bun run zip:all",
+    "zip:all": "bun run zip:linux-x64 && bun run zip:linux-arm64 && bun run zip:windows-x64 && bun run zip:darwin-x64 && bun run zip:darwin-arm64",
+    "zip:linux-x64": "zip -j bin/bunfig-linux-x64.zip bin/bunfig-linux-x64",
+    "zip:linux-arm64": "zip -j bin/bunfig-linux-arm64.zip bin/bunfig-linux-arm64",
+    "zip:windows-x64": "zip -j bin/bunfig-windows-x64.zip bin/bunfig-windows-x64.exe",
+    "zip:darwin-x64": "zip -j bin/bunfig-darwin-x64.zip bin/bunfig-darwin-x64",
+    "zip:darwin-arm64": "zip -j bin/bunfig-darwin-arm64.zip bin/bunfig-darwin-arm64"
+  },
+  "dependencies": {
+    "@stacksjs/clapp": "^0.2.0",
+    "@stacksjs/clarity": "^0.3.24"
+  },
+  "devDependencies": {
+    "very-happy-dom": "^0.1.10",
+    "typescript": "^7.0.2"
+  },
+  "git-hooks": {
+    "pre-commit": {
+      "staged-lint": {
+        "*.{js,ts,json,yaml,yml,md}": "bunx --bun pickier lint --fix"
+      }
+    },
+    "commit-msg": "bunx gitlint .git/COMMIT_EDITMSG"
+  }
+}

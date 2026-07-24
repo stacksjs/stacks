@@ -1,0 +1,79 @@
+{
+  "name": "bun-plugin-stx",
+  "type": "module",
+  "version": "0.2.99",
+  "description": "A Bun plugin that allows for using Laravel Blade-like syntax.",
+  "author": "Chris Breuer <chris@stacksjs.org>",
+  "license": "MIT",
+  "homepage": "https://github.com/stacksjs/stx#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stacksjs/stx.git"
+  },
+  "bugs": {
+    "url": "https://github.com/stacksjs/stx/issues"
+  },
+  "keywords": [
+    "blade",
+    "css",
+    "bun",
+    "stx",
+    "plugin",
+    "generation",
+    "typescript",
+    "stacks"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "bun": "./dist/index.js",
+      "import": "./dist/index.js"
+    },
+    "./client": {
+      "types": "./dist/client.d.ts",
+      "bun": "./dist/client.js",
+      "import": "./dist/client.js"
+    },
+    "./preload": {
+      "bun": "./dist/preload.js",
+      "import": "./dist/preload.js"
+    },
+    "./serve": {
+      "bun": "./dist/serve.js",
+      "import": "./dist/serve.js"
+    },
+    "./*": {
+      "types": "./dist/*.d.ts",
+      "bun": "./dist/*.js",
+      "import": "./dist/*.js"
+    }
+  },
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "bin": {
+    "serve": "./dist/serve.js",
+    "stx-serve": "./dist/serve.js"
+  },
+  "files": [
+    "LICENSE.md",
+    "README.md",
+    "dist"
+  ],
+  "scripts": {
+    "build": "bun --bun build.ts",
+    "lint": "bun x --bun pickier lint",
+    "lint:fix": "bun x --bun pickier lint --fix",
+    "fresh": "bun x rimraf node_modules/ bun.lock && bun i",
+    "changelog": "bun x changelogen --output CHANGELOG.md",
+    "prepublishOnly": "bun run build",
+    "release": "bun run changelog && bun x bumpp package.json --all",
+    "test": "bun test --preload ../../test-utils/happy-dom.ts",
+    "test:watch": "bun test --watch --preload ../../test-utils/happy-dom.ts",
+    "test:coverage": "bun test --coverage --preload ../../test-utils/happy-dom.ts",
+    "typecheck": "bun tsc --noEmit"
+  },
+  "dependencies": {
+    "@stacksjs/stx": "^0.2.72",
+    "stx-router": "^0.2.99"
+  }
+}

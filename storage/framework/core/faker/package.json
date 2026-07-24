@@ -53,10 +53,10 @@
     "prepublishOnly": "bun run build"
   },
   "devDependencies": {
-    "@stacksjs/cli": "workspace:*",
+    "@stacksjs/cli": "workspace:*0.70.163",
     "@stacksjs/config": "workspace:*",
     "better-dx": "catalog:",
-    "@stacksjs/ts-faker": "^0.1.7"
+    "@stacksjs/ts-faker": "^0.1.8"
   },
   "sideEffects": false
 }

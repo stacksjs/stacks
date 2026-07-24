@@ -56,8 +56,8 @@
     "cz-git": "^1.13.1"
   },
   "devDependencies": {
-    "@stacksjs/gitlint": "catalog:",
+    "@stacksjs/gitlint": "catalog:0.1.7",
     "@stacksjs/gitit": "^0.2.5",
-    "bun-git-hooks": "catalog:"
+    "bun-git-hooks": "catalog:0.3.2"
   }
 }

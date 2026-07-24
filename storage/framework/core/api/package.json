@@ -55,7 +55,7 @@
     "prepublishOnly": "bun run build"
   },
   "devDependencies": {
-    "better-dx": "catalog:",
+    "better-dx": "catalog:0.2.20",
     "@stacksjs/utils": "workspace:*"
   }
 }
