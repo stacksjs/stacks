@@ -59,7 +59,7 @@
     "prepublishOnly": "bun run build"
   },
   "peerDependencies": {
-    "meilisearch": "^0.59.0"
+    "meilisearch": "^0.60.0"
   },
   "peerDependenciesMeta": {
     "meilisearch": {
@@ -69,6 +69,6 @@
   "devDependencies": {
     "@stacksjs/config": "workspace:*",
     "better-dx": "catalog:",
-    "meilisearch": "^0.59.0"
+    "meilisearch": "^0.60.0"
   }
 }

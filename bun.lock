@@ -91,7 +91,7 @@
         "@stacksjs/strings": "^0.70.163",
         "@stacksjs/testing": "^0.70.163",
         "@stacksjs/tinker": "^0.70.163",
-        "@stacksjs/tlsx": "^0.13.0",
+        "@stacksjs/tlsx": "^0.13.13",
         "@stacksjs/ts-cloud": "catalog:",
         "@stacksjs/tunnel": "^0.70.163",
         "@stacksjs/types": "^0.70.163",
@@ -108,10 +108,10 @@
       "name": "@stacksjs/actions",
       "version": "0.70.163",
       "dependencies": {
-        "@stacksjs/bumpx": "^0.2.6",
-        "@stacksjs/bunpress": "^0.1.18",
+        "@stacksjs/bumpx": "^0.2.12",
+        "@stacksjs/bunpress": "^0.1.20",
         "@stacksjs/config": "workspace:*",
-        "@stacksjs/logsmith": "^0.2.3",
+        "@stacksjs/logsmith": "^0.2.5",
         "@stacksjs/registry": "workspace:*",
         "@stacksjs/ts-cloud": "catalog:",
         "@stacksjs/ts-md": "^0.1.1",
@@ -130,7 +130,7 @@
         "@stacksjs/security": "workspace:*",
         "@stacksjs/storage": "workspace:*",
         "@stacksjs/strings": "workspace:*",
-        "@stacksjs/tlsx": "^0.13.2",
+        "@stacksjs/tlsx": "^0.13.13",
         "@stacksjs/utils": "workspace:*",
         "@stacksjs/validation": "workspace:*",
         "better-dx": "catalog:",
@@ -149,11 +149,11 @@
         "@stacksjs/ts-cloud": "catalog:",
       },
       "devDependencies": {
-        "@anthropic-ai/claude-agent-sdk": "^0.2.79",
+        "@anthropic-ai/claude-agent-sdk": "^0.3.218",
         "better-dx": "catalog:",
       },
       "peerDependencies": {
-        "@anthropic-ai/claude-agent-sdk": "^0.2.79",
+        "@anthropic-ai/claude-agent-sdk": "^0.3.218",
       },
       "optionalPeers": [
         "@anthropic-ai/claude-agent-sdk",
@@ -225,11 +225,11 @@
       },
       "devDependencies": {
         "@stacksjs/utils": "workspace:*",
-        "@stripe/stripe-js": "^9.10.0",
+        "@stripe/stripe-js": "^9.12.0",
         "better-dx": "catalog:",
       },
       "peerDependencies": {
-        "@stripe/stripe-js": "^9.10.0",
+        "@stripe/stripe-js": "^9.12.0",
       },
       "optionalPeers": [
         "@stripe/stripe-js",
@@ -277,7 +277,7 @@
         "@stacksjs/git": "workspace:*",
         "@stacksjs/gitit": "^0.2.5",
         "@stacksjs/health": "workspace:*",
-        "@stacksjs/httx": "^0.1.10",
+        "@stacksjs/httx": "^0.1.11",
         "@stacksjs/lint": "workspace:*",
         "@stacksjs/logging": "workspace:*",
         "@stacksjs/notifications": "workspace:*",
@@ -287,7 +287,7 @@
         "@stacksjs/payments": "workspace:*",
         "@stacksjs/realtime": "workspace:*",
         "@stacksjs/router": "workspace:*",
-        "@stacksjs/rpx": "^0.11.31",
+        "@stacksjs/rpx": "^0.11.33",
         "@stacksjs/search-engine": "workspace:*",
         "@stacksjs/security": "workspace:*",
         "@stacksjs/server": "workspace:*",
@@ -339,8 +339,8 @@
       "name": "@stacksjs/charts",
       "version": "0.70.163",
       "dependencies": {
-        "@ts-charts/format": "^0.2.0",
-        "@ts-charts/scale": "^0.2.0",
+        "@ts-charts/format": "^0.2.3",
+        "@ts-charts/scale": "^0.2.3",
         "@ts-charts/shape": "^0.2.3",
       },
       "devDependencies": {
@@ -401,7 +401,7 @@
       "name": "@stacksjs/cms",
       "version": "0.70.163",
       "dependencies": {
-        "ts-slug": "^0.1.0",
+        "ts-slug": "^0.1.2",
         "ts-spreadsheets": "^0.2.0",
       },
       "devDependencies": {
@@ -443,13 +443,13 @@
       "name": "@stacksjs/config",
       "version": "0.70.163",
       "dependencies": {
-        "ts-pantry": "^0.10.34",
+        "ts-pantry": "^0.10.48",
       },
       "devDependencies": {
         "@stacksjs/alias": "workspace:*",
         "@stacksjs/types": "workspace:*",
         "better-dx": "catalog:",
-        "bunfig": "^0.15.11",
+        "bunfig": "^0.15.15",
       },
     },
     "storage/framework/core/cron": {
@@ -463,9 +463,9 @@
       "name": "@stacksjs/database",
       "version": "0.70.163",
       "dependencies": {
-        "@stacksjs/ts-validation": "^0.5.0",
+        "@stacksjs/ts-validation": "^0.5.2",
         "bun-query-builder": "catalog:",
-        "dynamodb-tooling": "^0.3.2",
+        "dynamodb-tooling": "^0.3.5",
       },
       "devDependencies": {
         "@stacksjs/cli": "workspace:*",
@@ -536,7 +536,7 @@
       "name": "@stacksjs/docs",
       "version": "0.70.163",
       "dependencies": {
-        "@stacksjs/bunpress": "^0.1.18",
+        "@stacksjs/bunpress": "^0.1.20",
       },
       "devDependencies": {
         "@stacksjs/alias": "workspace:*",
@@ -581,8 +581,8 @@
       "version": "0.70.163",
       "dependencies": {
         "@stacksjs/stx": "catalog:",
-        "ts-error-handling": "^0.1.1",
-        "ts-syntax-highlighter": "^0.2.1",
+        "ts-error-handling": "^0.1.3",
+        "ts-syntax-highlighter": "^0.2.5",
       },
       "devDependencies": {
         "@stacksjs/cli": "workspace:*",
@@ -651,7 +651,7 @@
       "name": "@stacksjs/http",
       "version": "0.70.163",
       "dependencies": {
-        "@stacksjs/httx": "^0.1.10",
+        "@stacksjs/httx": "^0.1.11",
       },
       "devDependencies": {
         "better-dx": "catalog:",
@@ -661,7 +661,7 @@
       "name": "@stacksjs/i18n",
       "version": "0.70.163",
       "dependencies": {
-        "@stacksjs/ts-i18n": "^0.1.9",
+        "@stacksjs/ts-i18n": "^0.1.11",
       },
       "devDependencies": {
         "@stacksjs/development": "workspace:*",
@@ -741,7 +741,7 @@
       "name": "@stacksjs/orm",
       "version": "0.70.163",
       "dependencies": {
-        "@stacksjs/ts-validation": "^0.5.0",
+        "@stacksjs/ts-validation": "^0.5.2",
         "bun-query-builder": "catalog:",
       },
       "devDependencies": {
@@ -764,12 +764,12 @@
       "devDependencies": {
         "@stacksjs/config": "workspace:*",
         "@stacksjs/utils": "workspace:*",
-        "@stripe/stripe-js": "^9.10.0",
+        "@stripe/stripe-js": "^9.12.0",
         "better-dx": "catalog:",
         "stripe": "^22.3.2",
       },
       "peerDependencies": {
-        "@stripe/stripe-js": "^9.10.0",
+        "@stripe/stripe-js": "^9.12.0",
         "stripe": "^22.3.2",
       },
       "optionalPeers": [
@@ -810,7 +810,7 @@
         "redis": "catalog:",
       },
       "peerDependencies": {
-        "redis": ">=4.0.0",
+        "redis": ">=4.7.1",
       },
       "optionalPeers": [
         "redis",
@@ -849,7 +849,7 @@
       "version": "0.70.163",
       "dependencies": {
         "@stacksjs/bun-router": "^0.0.20",
-        "ts-rate-limiter": "^0.4.2",
+        "ts-rate-limiter": "^0.4.4",
       },
       "devDependencies": {
         "@stacksjs/actions": "workspace:*",
@@ -879,10 +879,10 @@
       "devDependencies": {
         "@stacksjs/config": "workspace:*",
         "better-dx": "catalog:",
-        "meilisearch": "^0.59.0",
+        "meilisearch": "^0.60.0",
       },
       "peerDependencies": {
-        "meilisearch": "^0.59.0",
+        "meilisearch": "^0.60.0",
       },
       "optionalPeers": [
         "meilisearch",
@@ -906,7 +906,7 @@
       "name": "@stacksjs/server",
       "version": "0.70.163",
       "dependencies": {
-        "bun-plugin-auto-imports": "^0.4.0",
+        "bun-plugin-auto-imports": "^0.4.1",
       },
       "devDependencies": {
         "@stacksjs/config": "workspace:*",
@@ -939,7 +939,7 @@
       "name": "@stacksjs/slug",
       "version": "0.70.163",
       "dependencies": {
-        "ts-slug": "^0.1.0",
+        "ts-slug": "^0.1.2",
       },
       "devDependencies": {
         "@stacksjs/cli": "workspace:*",
@@ -975,7 +975,7 @@
       "version": "0.70.163",
       "dependencies": {
         "@stacksjs/ts-cloud": "catalog:",
-        "ts-images": "^0.1.11",
+        "ts-images": "^0.2.1",
       },
       "devDependencies": {
         "@stacksjs/arrays": "workspace:*",
@@ -1028,20 +1028,20 @@
       "name": "@stacksjs/types",
       "version": "0.70.163",
       "dependencies": {
-        "@stacksjs/bunpress": "^0.1.18",
+        "@stacksjs/bunpress": "^0.1.20",
         "@stacksjs/clapp": "catalog:",
         "@stacksjs/stx": "catalog:",
-        "@stacksjs/ts-validation": "^0.5.0",
+        "@stacksjs/ts-validation": "^0.5.2",
         "bun-query-builder": "catalog:",
       },
       "devDependencies": {
         "@stacksjs/validation": "workspace:*",
-        "@types/bun": "^1.3.11",
-        "meilisearch": "^0.59.0",
+        "@types/bun": "^1.3.14",
+        "meilisearch": "^0.60.0",
         "typescript": "^7.0.2",
       },
       "peerDependencies": {
-        "meilisearch": "^0.59.0",
+        "meilisearch": "^0.60.0",
       },
       "optionalPeers": [
         "meilisearch",
@@ -1051,7 +1051,7 @@
       "name": "@stacksjs/ui",
       "version": "0.70.163",
       "dependencies": {
-        "@cwcss/crosswind": "^0.2.6",
+        "@cwcss/crosswind": "^0.2.10",
         "@stacksjs/components": "catalog:",
       },
       "devDependencies": {
@@ -1086,7 +1086,7 @@
       "name": "@stacksjs/validation",
       "version": "0.70.163",
       "dependencies": {
-        "@stacksjs/ts-validation": "^0.5.0",
+        "@stacksjs/ts-validation": "^0.5.2",
       },
       "devDependencies": {
         "@stacksjs/strings": "workspace:*",
@@ -1134,23 +1134,23 @@
     "web-ext": "^10.5.0",
   },
   "packages": {
-    "@anthropic-ai/claude-agent-sdk": ["@anthropic-ai/claude-agent-sdk@0.2.141", "", { "dependencies": { "@anthropic-ai/sdk": "^0.93.0", "@modelcontextprotocol/sdk": "^1.29.0" }, "optionalDependencies": { "@anthropic-ai/claude-agent-sdk-darwin-arm64": "0.2.141", "@anthropic-ai/claude-agent-sdk-darwin-x64": "0.2.141", "@anthropic-ai/claude-agent-sdk-linux-arm64": "0.2.141", "@anthropic-ai/claude-agent-sdk-linux-arm64-musl": "0.2.141", "@anthropic-ai/claude-agent-sdk-linux-x64": "0.2.141", "@anthropic-ai/claude-agent-sdk-linux-x64-musl": "0.2.141", "@anthropic-ai/claude-agent-sdk-win32-arm64": "0.2.141", "@anthropic-ai/claude-agent-sdk-win32-x64": "0.2.141" }, "peerDependencies": { "zod": "^4.0.0" } }, "sha512-AIBacMWGcZIUcXlUoObqjwJ6pmJI3BayAqPAFXuvSq3DHJXdiuZVs7l/zTB5l3nRhRv5cqSrI2XbiDeHgZWizw=="],
+    "@anthropic-ai/claude-agent-sdk": ["@anthropic-ai/claude-agent-sdk@0.3.218", "", { "optionalDependencies": { "@anthropic-ai/claude-agent-sdk-darwin-arm64": "0.3.218", "@anthropic-ai/claude-agent-sdk-darwin-x64": "0.3.218", "@anthropic-ai/claude-agent-sdk-linux-arm64": "0.3.218", "@anthropic-ai/claude-agent-sdk-linux-arm64-musl": "0.3.218", "@anthropic-ai/claude-agent-sdk-linux-x64": "0.3.218", "@anthropic-ai/claude-agent-sdk-linux-x64-musl": "0.3.218", "@anthropic-ai/claude-agent-sdk-win32-arm64": "0.3.218", "@anthropic-ai/claude-agent-sdk-win32-x64": "0.3.218" }, "peerDependencies": { "@anthropic-ai/sdk": ">=0.93.0", "@modelcontextprotocol/sdk": "^1.29.0", "zod": "^4.0.0" } }, "sha512-lbVOmgdzjBdSUCTbxElpoTxxP/u9jY8gpG/3cr5l1jSSvSY5FrANdRcze/z6gM330xo32SHH6WPGFd4+K0fMoQ=="],
 
-    "@anthropic-ai/claude-agent-sdk-darwin-arm64": ["@anthropic-ai/claude-agent-sdk-darwin-arm64@0.2.141", "", { "os": "darwin", "cpu": "arm64" }, "sha512-9HZ0ot6+FwOfQ1aeMqQLH4IJGMm/DcP08SysDxscVjBm6l2JjqleHohxi3zid0DurfGweqT+4x9GScJffwg55g=="],
+    "@anthropic-ai/claude-agent-sdk-darwin-arm64": ["@anthropic-ai/claude-agent-sdk-darwin-arm64@0.3.218", "", { "os": "darwin", "cpu": "arm64" }, "sha512-foTI71ua2r5lJo7sfcw/3UafBCJYjxPmOXZ98wOz1UWIJxaP/Oq9Xp4sUavBd1efFVRxPnAcRnrZ5yrmXK1xUw=="],
 
-    "@anthropic-ai/claude-agent-sdk-darwin-x64": ["@anthropic-ai/claude-agent-sdk-darwin-x64@0.2.141", "", { "os": "darwin", "cpu": "x64" }, "sha512-4iAdarJaQ+2R58s6QJswZCzUdz2WQmL5lYG7Y+FLzWbRSROFfcH0QYpmOqSaPXd2KRQhIJwEacqecDZd/Q1XKQ=="],
+    "@anthropic-ai/claude-agent-sdk-darwin-x64": ["@anthropic-ai/claude-agent-sdk-darwin-x64@0.3.218", "", { "os": "darwin", "cpu": "x64" }, "sha512-rAdlR2ukJd01Osfsb7nPPv31MCVJBennBDaL7ZP/bv+dednwNuY6thuPO5PMFJUM+54Gbnziqm+hqoNTgndqDg=="],
 
-    "@anthropic-ai/claude-agent-sdk-linux-arm64": ["@anthropic-ai/claude-agent-sdk-linux-arm64@0.2.141", "", { "os": "linux", "cpu": "arm64" }, "sha512-Jdf0ZEwJzOP8sE6rPqdJN+SxMb0/L8sxJg4twCv/7S+Qzk0hJtls+wxSi+0Tjh6EEMaNxJqEGc7S3fx99Wi99Q=="],
+    "@anthropic-ai/claude-agent-sdk-linux-arm64": ["@anthropic-ai/claude-agent-sdk-linux-arm64@0.3.218", "", { "os": "linux", "cpu": "arm64" }, "sha512-Y6vFEnz6wwd+rYpVGsPqgeXZuZP7NvQg6vjkC+N6cs1+I41LdKjfs+F+WG3daIqgt+vJBz/EB5Q0PByABkwufA=="],
 
-    "@anthropic-ai/claude-agent-sdk-linux-arm64-musl": ["@anthropic-ai/claude-agent-sdk-linux-arm64-musl@0.2.141", "", { "os": "linux", "cpu": "arm64" }, "sha512-6H1AJ/AVaWNnV22kubUPkOTRzZFH0+qP9k7WlhriHMN9gtgZcVAsITMddDeGjQsQJMCAdhXFd6sgi7TM1LdeOQ=="],
+    "@anthropic-ai/claude-agent-sdk-linux-arm64-musl": ["@anthropic-ai/claude-agent-sdk-linux-arm64-musl@0.3.218", "", { "os": "linux", "cpu": "arm64" }, "sha512-qfFBwOf0uh/mAtNGEkBJlLWt1XIgFqcQeeX966g2NexasCdSJGnwfc0YWA0QOeAAU/5xk6tSCW/Nn0zHGBO/3A=="],
 
-    "@anthropic-ai/claude-agent-sdk-linux-x64": ["@anthropic-ai/claude-agent-sdk-linux-x64@0.2.141", "", { "os": "linux", "cpu": "x64" }, "sha512-DVjp72f3HmrRYpbneWZZWIqkUht5kTZXS7wXGFiwzLz6eNYEgjjh+GcsnhIi8UOwZUtNiKUrjZnoP38ovFqV8A=="],
+    "@anthropic-ai/claude-agent-sdk-linux-x64": ["@anthropic-ai/claude-agent-sdk-linux-x64@0.3.218", "", { "os": "linux", "cpu": "x64" }, "sha512-gCq/i7yRXeuoQXidGQynuiw5AeczQXSIifxH5Vpr9OFDyHCBNotS1mQ8qutuclZeFpLOPkJ2ic/nvEgHJvfXdg=="],
 
-    "@anthropic-ai/claude-agent-sdk-linux-x64-musl": ["@anthropic-ai/claude-agent-sdk-linux-x64-musl@0.2.141", "", { "os": "linux", "cpu": "x64" }, "sha512-fTI1YuM4cxOa4nSgsyMAdB5ELizkWp+w5Ispo4JnnYtcczMAL4D9GBNjWPW0sUzKvjsJOUVim68SmWLWhUOpXQ=="],
+    "@anthropic-ai/claude-agent-sdk-linux-x64-musl": ["@anthropic-ai/claude-agent-sdk-linux-x64-musl@0.3.218", "", { "os": "linux", "cpu": "x64" }, "sha512-e47oi8dYWnS0wx2/F6FL3YhaD2HedMd2nhI/nududP4PBzytuXeaDE/sJ0eIqtUVkl6/bn5uBhtIEHHWoj37JQ=="],
 
-    "@anthropic-ai/claude-agent-sdk-win32-arm64": ["@anthropic-ai/claude-agent-sdk-win32-arm64@0.2.141", "", { "os": "win32", "cpu": "arm64" }, "sha512-Wm10J6kfbufbPGFELokiJ/7Y5Oqug4Uag3HXFsV8g7TWCpaItx/oqVaJoiGptuAtXQB7xGLQVTuk082wER+Y5w=="],
+    "@anthropic-ai/claude-agent-sdk-win32-arm64": ["@anthropic-ai/claude-agent-sdk-win32-arm64@0.3.218", "", { "os": "win32", "cpu": "arm64" }, "sha512-D0UKI8jOpEsWO1A+i0DlIrgjXFKEZX3RrID2l49S4pShUlLsnSLJGMTPy4nQt6CCl5MzPqWiJDE/lCpImFTDcg=="],
 
-    "@anthropic-ai/claude-agent-sdk-win32-x64": ["@anthropic-ai/claude-agent-sdk-win32-x64@0.2.141", "", { "os": "win32", "cpu": "x64" }, "sha512-IXuP29YJuWbR5Q6xOHrjFVGG54V2s1FC61UVNwEN5fpxL09MwPnbwtQL6fqgzt/U1MP7vWAwpXZriYAklkH/mg=="],
+    "@anthropic-ai/claude-agent-sdk-win32-x64": ["@anthropic-ai/claude-agent-sdk-win32-x64@0.3.218", "", { "os": "win32", "cpu": "x64" }, "sha512-pgE39WnKPPSRsiRJ2pm5NETxQgtVhrquqg7UByZxne0xQw2gNS0Qy+9ZumrsNBNlfrrnQCVDU1I2ks3ZLrEa8Q=="],
 
     "@anthropic-ai/sdk": ["@anthropic-ai/sdk@0.93.0", "", { "dependencies": { "json-schema-to-ts": "^3.1.1" }, "peerDependencies": { "zod": "^3.25.0 || ^4.0.0" }, "optionalPeers": ["zod"], "bin": { "anthropic-ai-sdk": "bin/cli" } }, "sha512-q9vaSZQVFx6B/gPxetGYfLXSJD5v0sOmh0OpZDq7yCrTSA+Rscvrtyol7JJTW40wEpQB4U1B4JXzxQitbQ3CAA=="],
 
@@ -1262,7 +1262,7 @@
 
     "@stacksjs/build": ["@stacksjs/build@workspace:storage/framework/core/build"],
 
-    "@stacksjs/bumpx": ["@stacksjs/bumpx@0.2.10", "", { "dependencies": { "@stacksjs/clapp": "^0.2.0", "@stacksjs/logsmith": "^0.2.1", "bunfig": "^0.15.6" }, "bin": { "bumpx": "./dist/bin/cli.js" } }, "sha512-XSsypcIZdCg8Qn0LwDsCtZMq8YKYXPha36DT3C1LlfjNoZzmSce/RLw/mYnMj2Lm597KOtAjTmTquBqXuIXcMA=="],
+    "@stacksjs/bumpx": ["@stacksjs/bumpx@0.2.12", "", { "dependencies": { "@stacksjs/clapp": "^0.2.0", "@stacksjs/logsmith": "^0.2.1", "bunfig": "^0.15.6" }, "bin": { "bumpx": "./dist/bin/cli.js" } }, "sha512-LJ0vwCs7orvyGfALrXRpDvybwS1584uRRnZ58hQIq4+ctMLrMGVAbvca8Crmuulmlf3R1NcER9P7iiMmFafeKA=="],
 
     "@stacksjs/bun-queue": ["@stacksjs/bun-queue@0.1.7", "", {}, "sha512-j4YZYtc+3zwQuxplINNcNrba3C9LF+GYBbbiEnKPOKH9gzQIdDHAAnOyrMTwjisuxS9dW3W8QVErXCaOXDpWuw=="],
 
@@ -1356,7 +1356,7 @@
 
     "@stacksjs/logging": ["@stacksjs/logging@workspace:storage/framework/core/logging"],
 
-    "@stacksjs/logsmith": ["@stacksjs/logsmith@0.2.3", "", { "dependencies": { "@stacksjs/clapp": "^0.2.0", "bunfig": "^0.15.6", "pickier": "^0.1.9" }, "bin": { "@stacksjs/logsmith": "./dist/bin/cli.js", "logsmith": "./dist/bin/cli.js" } }, "sha512-Jy2AHVdEQwDtjlOVSG4xOmIMSy/D2iZcPK7KaoDOmKfZbMmfmbhveK16w1TWKCY9duhMZigdpeFx39ZzXGARVg=="],
+    "@stacksjs/logsmith": ["@stacksjs/logsmith@0.2.5", "", { "dependencies": { "@stacksjs/clapp": "^0.2.0", "bunfig": "^0.15.6", "pickier": "^0.1.9" }, "bin": { "@stacksjs/logsmith": "./dist/bin/cli.js", "logsmith": "./dist/bin/cli.js" } }, "sha512-PfKifP+eJEVkGNRIqNxMF4vdL6CpYXvTn2BJhfBD4QFZFQwOLffWTlo5lRx8/4BR6dRAQN7SeaNnMtKwyO5+YQ=="],
 
     "@stacksjs/newsletter": ["@stacksjs/newsletter@workspace:storage/framework/core/newsletter"],
 
@@ -1988,7 +1988,7 @@
 
     "media-typer": ["media-typer@1.1.0", "", {}, "sha512-aisnrDP4GNe06UcKFnV5bfMNPBUw4jsLGaWwWfnH3v02GnBuXX2MCVn5RbrWo0j3pczUilYblq7fQ7Nw2t5XKw=="],
 
-    "meilisearch": ["meilisearch@0.59.0", "", {}, "sha512-9KxasX98+qYhOVa4PPeaX/yY/ukM9DMuJlUJRgJVwrdCkWw+mkkiIh6EJmYyCxU8nXhj0VEzdYr3dNUJT1BQow=="],
+    "meilisearch": ["meilisearch@0.60.0", "", {}, "sha512-z32KgxE6/7hRzbVfzUgzlmNl2OS7TwGE6wSWs2tVEuAY9DWrX6zAmt0s7wTyelH36orIaZ3/t1mQsCsExGtVDQ=="],
 
     "merge-descriptors": ["merge-descriptors@2.0.0", "", {}, "sha512-Snk314V5ayFLhp3fkUREub6WtjBfPdCPY1Ln8/8munuLuiYhsABgBVWsozAG+MWMbVEvcdcpbi9R7ww22l9Q3g=="],
 
@@ -2332,11 +2332,13 @@
 
     "@pnpm/network.ca-file/graceful-fs": ["graceful-fs@4.2.10", "", {}, "sha512-9ByhssR2fPVsNZj478qUUbKfmL0+t5BDVyjShtyZZLiK7ZDAArFFfopyOTj0M05wE2tJPisA4iTnnXl2YoPvOA=="],
 
-    "@stacksjs/storage/ts-images": ["ts-images@0.1.11", "", { "dependencies": { "@stacksjs/ts-avif": "^0.1.0", "@stacksjs/ts-bmp": "^0.1.0", "@stacksjs/ts-png": "^0.1.2", "@stacksjs/ts-svg": "^0.1.1", "@stacksjs/ts-webp": "^0.1.0", "ts-gif": "^0.1.2", "ts-jpeg": "^0.3.1" }, "bin": { "imgx": "./dist/bin/cli.js" } }, "sha512-b5g1uADQR1Ytg4mS0EyFEce9jWhxC/kj1f5ChTVnnpPZV8NhI+aEW8YbH+LMDRCzCE1HRJiUIweUPqMkMAytIA=="],
-
     "@stacksjs/stx/@stacksjs/desktop": ["@stacksjs/desktop@0.2.99", "", { "peerDependencies": { "craft": "*" }, "optionalPeers": ["craft"] }, "sha512-CQwp77Y50Qbz3ih2KBGfIqUhmUm3U5wkPHDGtQM6hIlBYexbyxtdZMBp/uZkvD4wYrtojMtqnzb/TxBvxwQ9uA=="],
 
     "@stacksjs/stx/ts-images": ["ts-images@0.1.11", "", { "dependencies": { "@stacksjs/ts-avif": "^0.1.0", "@stacksjs/ts-bmp": "^0.1.0", "@stacksjs/ts-png": "^0.1.2", "@stacksjs/ts-svg": "^0.1.1", "@stacksjs/ts-webp": "^0.1.0", "ts-gif": "^0.1.2", "ts-jpeg": "^0.3.1" }, "bin": { "imgx": "./dist/bin/cli.js" } }, "sha512-b5g1uADQR1Ytg4mS0EyFEce9jWhxC/kj1f5ChTVnnpPZV8NhI+aEW8YbH+LMDRCzCE1HRJiUIweUPqMkMAytIA=="],
+
+    "better-dx/@stacksjs/bumpx": ["@stacksjs/bumpx@0.2.10", "", { "dependencies": { "@stacksjs/clapp": "^0.2.0", "@stacksjs/logsmith": "^0.2.1", "bunfig": "^0.15.6" }, "bin": { "bumpx": "./dist/bin/cli.js" } }, "sha512-XSsypcIZdCg8Qn0LwDsCtZMq8YKYXPha36DT3C1LlfjNoZzmSce/RLw/mYnMj2Lm597KOtAjTmTquBqXuIXcMA=="],
+
+    "better-dx/@stacksjs/logsmith": ["@stacksjs/logsmith@0.2.3", "", { "dependencies": { "@stacksjs/clapp": "^0.2.0", "bunfig": "^0.15.6", "pickier": "^0.1.9" }, "bin": { "@stacksjs/logsmith": "./dist/bin/cli.js", "logsmith": "./dist/bin/cli.js" } }, "sha512-Jy2AHVdEQwDtjlOVSG4xOmIMSy/D2iZcPK7KaoDOmKfZbMmfmbhveK16w1TWKCY9duhMZigdpeFx39ZzXGARVg=="],
 
     "body-parser/content-type": ["content-type@2.0.0", "", {}, "sha512-j/O/d7GcZCyNl7/hwZAb606rzqkyvaDctLmckbxLzHvFBzTJHuGEdodATcP3yIRoDrLHkIATJuvzbFlp/ki2cQ=="],
 
