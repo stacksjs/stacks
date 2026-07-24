@@ -1,8 +1,8 @@
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
-import { desktopSupportMatrix } from '../../../storage/framework/core/desktop/src/support'
+import { desktopSupportMatrix } from '../../../../desktop/src/support'
 
-const root = resolve(import.meta.dir, '../../..')
+const root = resolve(import.meta.dir, '../../../../../../..')
 const outputPath = resolve(root, '.github/protocol/evidence/desktop-support.json')
 const document = {
   schemaVersion: '1.0.0',

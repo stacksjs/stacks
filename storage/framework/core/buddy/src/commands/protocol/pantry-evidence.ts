@@ -1,7 +1,7 @@
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 
-const root = resolve(import.meta.dir, '../../..')
+const root = resolve(import.meta.dir, '../../../../../../..')
 const outputPath = resolve(root, '.github/protocol/evidence/pantry.json')
 
 export const pantryEvidence = {
@@ -126,7 +126,7 @@ export async function run(): Promise<void> {
   }
   else if (process.argv.includes('--check')) check()
   else {
-    console.error('usage: bun app/Commands/protocol/pantry-evidence.ts --write | --check')
+    console.error('usage: bun storage/framework/core/buddy/src/commands/protocol/pantry-evidence.ts --write | --check')
     process.exit(2)
   }
 }
