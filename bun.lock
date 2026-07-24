@@ -810,7 +810,7 @@
         "redis": "catalog:",
       },
       "peerDependencies": {
-        "redis": ">=4.0.0",
+        "redis": ">=6.1.0",
       },
       "optionalPeers": [
         "redis",
