@@ -1,10 +1,13 @@
 {
+  // Type checks the framework itself - everything under `storage/framework/`.
+  // Application code is checked separately, by the project's root
+  // `tsconfig.json` (which extends `tsconfig.app.json`).
+  //
+  // Run it with: bun run typecheck
   "extends": "./core/tsconfig.json",
   "compilerOptions": {
     "declaration": false,
     "declarationMap": false,
-    "incremental": true,
-    "noEmit": true,
     "rootDir": "../..",
     "tsBuildInfoFile": "./.cache/typescript/framework.tsbuildinfo"
   },
@@ -23,9 +26,17 @@
     "./**/build.ts",
     "./auto-imports/**",
     "./core/deploy/**",
-    "./core/defaults/resources/assets/**",
+    // `@stacksjs/defaults` copies `defaults/app` and `defaults/resources` into
+    // `core/defaults/` at build time. Those copies are generated duplicates that
+    // resolve their imports from the wrong directory, so checking them reports
+    // hundreds of phantom errors about code that is already checked where it
+    // actually lives.
+    "./core/defaults/app/**",
+    "./core/defaults/resources/**",
     "./core/models/**",
     "./core/requests/**",
+    // The source of the two directories above. Checked as part of the app,
+    // where the `Models/`, `Actions/` and auto-import globals do resolve.
     "./defaults/**",
     "./frontend-dist/**",
     "./libs/entries/**",

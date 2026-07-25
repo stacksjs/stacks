@@ -1,10 +1,19 @@
 {
-  "extends": "./core/tsconfig.json",
+  // Framework-provided defaults for YOUR application code: `app/`, `config/`,
+  // `resources/` and `routes/`. The project's root `tsconfig.json` extends this
+  // file, so everything set here applies unless the root overrides it.
+  //
+  // Framework internals are checked separately, by `tsconfig.framework.json`.
+  "extends": "./tsconfig.base.json",
   "compilerOptions": {
-    "incremental": true,
+    // App code runs on both the server and in the browser (stx templates,
+    // stores, composables), so DOM types sit on top of the base `esnext` lib.
     "lib": ["esnext", "dom"],
     "rootDir": "../..",
-    "tsBuildInfoFile": "../../node_modules/.cache/typescript/app.tsbuildinfo",
+    // Kept inside the framework's own cache rather than `node_modules/.cache`,
+    // so the incremental build survives a `bun install` and never lands in a
+    // hoisted or symlinked `node_modules` shared with another project.
+    "tsBuildInfoFile": "./.cache/typescript/app.tsbuildinfo",
     "paths": {
       "@stacksjs/actions/*": ["./core/actions/src/*"],
       "@stacksjs/*": ["./core/*/src"],
@@ -21,10 +30,10 @@
       "@/*": ["../../resources/*"]
     }
   },
+  // Only the four directories you author, plus the generated framework
+  // declarations (auto-imports, ORM globals, model attributes) they rely on.
+  // Keeping this list tight is the single biggest lever on check time.
   "include": [
-    "../../*.ts",
-    "../../*.d.ts",
-    "../../types/**/*.d.ts",
     "./types/**/*.d.ts",
     "../../app/**/*.ts",
     "../../config/**/*.ts",

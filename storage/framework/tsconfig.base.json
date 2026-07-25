@@ -1,0 +1,58 @@
+{
+  // The single source of truth for TypeScript defaults across a Stacks project.
+  //
+  // Nothing extends this file by accident: editors only auto-discover
+  // `tsconfig.json`, so this base is loaded exclusively through `extends`. It
+  // deliberately carries compiler options ONLY - `include`, `exclude` and
+  // `paths` are per-project concerns and live in the configs that extend it
+  // (`tsconfig.app.json`, `tsconfig.framework.json`, `core/tsconfig.json`).
+  //
+  // Every option below is written out explicitly rather than inherited, so the
+  // full default set is readable in one place and a project can override any
+  // single line without having to rediscover what the rest of them were.
+  //
+  // Type checking runs on TypeScript 7 (`tsc`, the native Go compiler). Options
+  // dropped in 7.0 - `baseUrl`, `importsNotUsedAsValues`, `preserveValueImports`,
+  // `suppressImplicitAnyIndexErrors`, `out`, `charset` - are intentionally absent.
+  // Path mappings resolve relative to the config file that declares them, which
+  // is why no `baseUrl` is needed.
+  "compilerOptions": {
+    /* Language and environment */
+    "target": "esnext",
+    "lib": ["esnext"],
+    "jsx": "preserve",
+
+    /* Modules */
+    "module": "esnext",
+    "moduleDetection": "force",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "allowImportingTsExtensions": true,
+    // Only Bun's ambient types are loaded automatically. Anything else has to
+    // be imported explicitly, which keeps tsgo from scanning every @types
+    // package it can reach.
+    "types": ["bun"],
+
+    /* Interop */
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "isolatedModules": true,
+
+    /* Type checking */
+    "strict": true,
+    "strictNullChecks": true,
+    "noUncheckedIndexedAccess": true,
+    "noUncheckedSideEffectImports": true,
+    // Left off because pickier already reports unused locals, and it can
+    // auto-fix them. Two tools flagging the same thing is just noise.
+    "noUnusedLocals": false,
+
+    /* Emit - Bun does the bundling, tsc only ever type checks */
+    "noEmit": true,
+
+    /* Performance */
+    "incremental": true,
+    "skipLibCheck": true
+  }
+}

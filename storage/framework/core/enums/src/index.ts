@@ -23,7 +23,7 @@ export enum NpmScript {
   TestUnit = 'bun test ./tests/unit/**',
   TestFeature = 'bun test ./tests/feature/**',
   TestUi = 'bun test 3',
-  TestTypes = 'tsc --noEmit',
+  TestTypes = 'bun x --bun tsc --noEmit -p tsconfig.json --pretty false',
   Generate = 'generate',
   GenerateTypes = 'generate:types',
   GenerateEntries = 'generate:entries',

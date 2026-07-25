@@ -1,3 +1,36 @@
 {
-  "extends": "./storage/framework/tsconfig.app.json"
+  // The only TypeScript config in your project root. It inherits the framework
+  // defaults for application code from `storage/framework/tsconfig.app.json`,
+  // which in turn inherits every compiler option from
+  // `storage/framework/tsconfig.base.json`.
+  //
+  // The `compilerOptions` below simply restate those defaults. They are here so
+  // the settings worth tuning are visible and editable in one place:
+  //
+  //   - change a line to override that single option
+  //   - delete a line to fall back to the framework default
+  //   - delete the whole `compilerOptions` block to use the defaults wholesale
+  //
+  // Anything not listed here (module resolution, path aliases, which files get
+  // included) is owned by the framework and updates along with it. Framework
+  // internals under `storage/framework/` have their own config, so this one
+  // deliberately never reaches into them.
+  "extends": "./storage/framework/tsconfig.app.json",
+  "compilerOptions": {
+    /* Language and environment */
+    "target": "esnext",
+    "lib": ["esnext", "dom"],
+    "jsx": "preserve",
+
+    /* Type checking */
+    "strict": true,
+    "strictNullChecks": true,
+    "noUncheckedIndexedAccess": true,
+    "noUncheckedSideEffectImports": true,
+    "noUnusedLocals": false,
+
+    /* Performance - worth keeping `skipLibCheck` on */
+    "incremental": true,
+    "skipLibCheck": true
+  }
 }

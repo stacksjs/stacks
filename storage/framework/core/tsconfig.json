@@ -1,12 +1,10 @@
 {
+  // Shared config for the framework's own packages, and for `api/` and
+  // `server/`. It only adds the path mappings that resolve `@stacksjs/*` to
+  // package sources - every compiler option comes from the base the whole
+  // project shares.
+  "extends": "../tsconfig.base.json",
   "compilerOptions": {
-    "incremental": true,
-    "target": "esnext",
-    "jsx": "preserve",
-    "lib": ["esnext"],
-    "moduleDetection": "force",
-    "module": "esnext",
-    "moduleResolution": "bundler",
     "paths": {
       "@stacksjs/actions/*": ["./actions/src/*"],
       "@stacksjs/*": ["./*/src"],
@@ -21,26 +19,15 @@
       "Notifications/*": ["../../../app/Notifications/*"],
       "~/*": ["../../../*"],
       "@/*": ["../../../resources/*"],
+      // Fallback for third-party packages: Pantry installs the dependency graph
+      // into `pantry/` rather than `node_modules/`. It is listed last so it only
+      // applies to specifiers that none of the mappings above matched.
       "*": ["../../../pantry/*"]
     },
-    "resolveJsonModule": true,
-    "types": [
-      "bun"
-    ],
-    "allowImportingTsExtensions": true,
-    "strict": true,
-    "strictNullChecks": true,
-    "noUncheckedIndexedAccess": true,
-    "noUncheckedSideEffectImports": true,
-    "noUnusedLocals": false,
+    // `dtsx` emits the published `.d.ts` files, not tsc - these two only
+    // describe intent for editors and for anyone running tsc by hand. The base
+    // sets `noEmit`, so nothing is written either way.
     "declaration": true,
-    "declarationMap": true,
-    "noEmit": true,
-    "outDir": "./dist/types",
-    "allowSyntheticDefaultImports": true,
-    "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true,
-    "isolatedModules": true,
-    "skipLibCheck": true
+    "declarationMap": true
   }
 }
