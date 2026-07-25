@@ -133,6 +133,52 @@ Stacks deploys a complete cloud infrastructure:
 - IAM roles and policies
 - Security groups
 
+## Environment variables on the server
+
+Your `.env.<environment>` is decrypted at deploy time and shipped as each site's
+`.env` on the server. Local files (`.env`, `.env.keys`) are never uploaded - the
+server gets a generated environment file instead.
+
+Because the whole file goes to every site, anything in it reaches every site.
+That matters when several projects share one box.
+
+### Shared boxes and tenant isolation
+
+A box has one owner; other projects attach to it with `cloud.attachTo` and
+deploy from their own repositories with their own env files. No project needs
+another's values.
+
+In practice a tenant's secrets end up in the owner's env file under a `TENANT_`
+prefix - usually pasted in while debugging a deploy - and stay there. Left
+alone, deploy writes those secrets into an unrelated site's `.env` on disk.
+
+Declare the tenants attached to your box in `config/cloud.ts`:
+
+```typescript
+const config: CloudConfig = {
+  tenants: ['bughq', 'analyticshq'],
+}
+```
+
+`buddy deploy` then drops any `BUGHQ_*` / `ANALYTICSHQ_*` key before shipping
+and logs what it dropped, and `buddy env:check` lists them per tenant:
+
+```bash
+buddy env:check --file .env.production
+```
+
+```
+⚠ Tenant isolation          21 key(s) belong to another tenant — remove them
+⚠   analyticshq             ANALYTICSHQ_APP_KEY, ANALYTICSHQ_DB_PASSWORD, …
+⚠   bughq                   BUGHQ_APP_KEY, BUGHQ_STRIPE_SECRET_KEY, …
+```
+
+Stripping them at deploy time closes the leak; deleting them from the env file
+is still worth doing, since nothing in your project reads them.
+
+Prefixes are never guessed. Without a `tenants` list nothing is treated as
+foreign - `STRIPE_`, `AWS_` and `MEILISEARCH_` look identical to a slug prefix.
+
 ## DNS Configuration
 
 ### Automatic DNS

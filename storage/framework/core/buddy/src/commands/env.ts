@@ -263,10 +263,16 @@ export function env(buddy: CLI): void {
 
         // Read and validate .env contents
         try {
+          // `readTextFile` resolves a `{ path, data }` TextFile, so `String(…)`
+          // on it yields "[object Object]" — a 15-char string with no newlines.
+          // Every check below then ran against that one bogus line, which is why
+          // a 67-key .env.production reported "1 variables defined", no APP_KEY
+          // and no encryption keys.
           const envContent = await storage.readTextFile(envPath)
-          const contentStr = String(envContent)
-          const lines = contentStr.split('\n').filter(line => line.trim() && !line.startsWith('#'))
-          const varCount = lines.length
+          const contentStr = typeof envContent === 'string' ? envContent : envContent.data
+          const values = parseEnvAssignments(contentStr)
+          const keys = Object.keys(values)
+          const varCount = keys.length
 
           checks.push({
             name: 'Environment variables',
@@ -275,18 +281,10 @@ export function env(buddy: CLI): void {
           })
 
           // Check for APP_KEY
-          const hasAppKey = lines.some(line => line.startsWith('APP_KEY='))
+          const hasAppKey = 'APP_KEY' in values
           if (hasAppKey) {
-            const appKeyLine = lines.find(line => line.startsWith('APP_KEY='))
-            // `split('=')[1]` truncates at the first `=`, which loses
-            // everything after it. Base64-encoded keys often end with
-            // `=` padding (e.g. `APP_KEY=abc=`) and the key itself can
-            // contain literal `=` chars. Take everything after the first
-            // `=` instead, then strip optional surrounding quotes.
-            const eq = appKeyLine?.indexOf('=') ?? -1
-            const raw = (eq >= 0 ? appKeyLine!.slice(eq + 1) : '').trim()
-            const appKeyValue = raw.replace(/^"(.*)"$/, '$1').replace(/^'(.*)'$/, '$1')
-            if (appKeyValue && appKeyValue.length > 0) {
+            const appKeyValue = values.APP_KEY ?? ''
+            if (appKeyValue.length > 0) {
               checks.push({
                 name: 'APP_KEY',
                 status: 'pass',
@@ -309,9 +307,11 @@ export function env(buddy: CLI): void {
             })
           }
 
-          // Check for encryption keys
-          const hasPublicKey = lines.some(line => line.startsWith('DOTENV_PUBLIC_KEY='))
-          const hasPrivateKey = lines.some(line => line.startsWith('DOTENV_PRIVATE_KEY='))
+          // Check for encryption keys. The private half lives in .env.keys, so
+          // an encrypted env file legitimately carries only the public one.
+          const hasPublicKey = keys.some(key => key.startsWith('DOTENV_PUBLIC_KEY'))
+          const hasPrivateKey = keys.some(key => key.startsWith('DOTENV_PRIVATE_KEY'))
+            || existsSync(resolve(process.cwd(), '.env.keys'))
 
           if (hasPublicKey && hasPrivateKey) {
             checks.push({
@@ -333,6 +333,49 @@ export function env(buddy: CLI): void {
               status: 'warn',
               message: 'Not configured (optional)',
             })
+          }
+
+          // Foreign-tenant keys. On a shared box each project deploys from its
+          // own repository with its own env file, so another tenant's values
+          // have no reader here — and `buddy deploy` ships this file to every
+          // site, which would write that tenant's secrets into an unrelated
+          // site's `.env` on disk. Only reported when `cloud.tenants` declares
+          // who is attached; prefixes are never guessed.
+          const declaredTenants = await resolveDeclaredTenants()
+
+          if (declaredTenants.tenants.length === 0) {
+            checks.push({
+              name: 'Tenant isolation',
+              status: 'pass',
+              message: 'No tenants declared (cloud.tenants)',
+            })
+          }
+          else {
+            const { foreignTenantKeys, partitionTenantEnv } = await import('@stacksjs/env')
+            const foreign = foreignTenantKeys(partitionTenantEnv(values, declaredTenants))
+
+            if (foreign.length === 0) {
+              checks.push({
+                name: 'Tenant isolation',
+                status: 'pass',
+                message: `No foreign keys (checked ${declaredTenants.tenants.join(', ')})`,
+              })
+            }
+            else {
+              const total = foreign.reduce((sum, entry) => sum + entry.keys.length, 0)
+              checks.push({
+                name: 'Tenant isolation',
+                status: 'warn',
+                message: `${total} key(s) belong to another tenant — remove them`,
+              })
+              for (const { tenant, keys } of foreign) {
+                checks.push({
+                  name: `  ${tenant}`,
+                  status: 'warn',
+                  message: keys.join(', '),
+                })
+              }
+            }
           }
         }
         catch (error) {
@@ -419,4 +462,84 @@ export function env(buddy: CLI): void {
     })
 
   onUnknownSubcommand(buddy, "env")
+}
+
+/**
+ * Reads `project.slug` and `cloud.tenants` out of the project's cloud config.
+ *
+ * `cloud.tenants` lists the projects that attach to this box with their own
+ * `cloud.attachTo`. It is the only thing that makes a `TENANT_` prefix
+ * meaningful - without it nothing is ever treated as foreign, because
+ * `STRIPE_`, `AWS_` and friends look identical to a slug prefix.
+ *
+ * Returns empty on any failure: a config that will not load is the cloud
+ * commands' problem to report, not `env:check`'s.
+ */
+async function resolveDeclaredTenants(): Promise<{ self?: string, tenants: string[] }> {
+  try {
+    const { config } = await import('@stacksjs/config')
+    const cloud = (config as { cloud?: { tenants?: unknown } }).cloud
+    const app = (config as { app?: { name?: string } }).app
+    const tenants = Array.isArray(cloud?.tenants)
+      ? cloud.tenants.filter((slug): slug is string => typeof slug === 'string')
+      : []
+
+    return { self: app?.name, tenants }
+  }
+  catch {
+    return { tenants: [] }
+  }
+}
+
+/**
+ * Parses `KEY=value` assignments out of a dotenv file into a flat map.
+ *
+ * Deliberately tolerant of what real `.env` files contain: comments, blank
+ * lines, `export ` prefixes, quoted values, and - the case that matters here -
+ * dotenvx ciphertext, which wraps across many lines inside its quotes. A naive
+ * `split('\n')` treats each wrapped fragment as its own line and loses the key
+ * it belongs to.
+ *
+ * Values are returned raw (still encrypted, if they were). `env:check` only
+ * needs the key names and whether a value is non-empty, so nothing here has to
+ * decrypt - which also means it works without the private key present.
+ */
+export function parseEnvAssignments(content: string): Record<string, string> {
+  const values: Record<string, string> = {}
+  const assignment = /^\s*(?:export\s+)?([A-Z_][A-Z0-9_]*)\s*=\s*(.*)$/i
+
+  const lines = content.split(/\r?\n/)
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i]!
+    if (!line.trim() || line.trimStart().startsWith('#'))
+      continue
+
+    const match = line.match(assignment)
+    if (!match)
+      continue
+
+    const [, key, first] = match
+    let raw = first!.trim()
+
+    // A value opening with a quote runs until the matching close, which may be
+    // several lines down (wrapped ciphertext).
+    const quote = raw[0] === '"' || raw[0] === "'" ? raw[0] : undefined
+    if (quote) {
+      raw = raw.slice(1)
+      while (!raw.endsWith(quote) && i + 1 < lines.length) {
+        i++
+        raw += lines[i]
+      }
+      raw = raw.endsWith(quote) ? raw.slice(0, -1) : raw
+    }
+    else {
+      // Unquoted values end at an inline comment.
+      raw = raw.replace(/\s+#.*$/, '').trim()
+    }
+
+    values[key!] = raw
+  }
+
+  return values
 }

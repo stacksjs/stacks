@@ -372,6 +372,23 @@ export interface CloudOptions {
     [site: string]: string | SiteConfig
   }
 
+  /**
+   * Project slugs that share this project's box, each deploying from its own
+   * repository with `cloud.attachTo: '<this project>'`.
+   *
+   * Tenants bring their own `.env.<environment>`, so none of their values
+   * belong here. Declaring them lets the framework recognise a `TENANT_`-
+   * prefixed key in this project's env file as somebody else's: `buddy deploy`
+   * drops those keys before shipping (it sends the env file to every site, so
+   * leaving them writes one tenant's secrets into another site's `.env` on
+   * disk) and `buddy env:check` lists them so they can be deleted at source.
+   *
+   * Prefixes are never inferred. With no tenants declared nothing is ever
+   * treated as foreign, because `STRIPE_`, `AWS_` and `MEILISEARCH_` are
+   * indistinguishable from a slug prefix.
+   */
+  tenants: string[]
+
   infrastructure: InfrastructureOptions
   cdn: any
   api: any

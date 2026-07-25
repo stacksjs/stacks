@@ -792,7 +792,23 @@ export const tsCloud: TsCloudConfig = {
 
 // Stacks cloud configuration (for existing Stacks cloud features)
 const config: CloudConfig = {
-  // Add Stacks-specific cloud config here if needed
+  /**
+   * Projects that share this box, each deploying from its own repository with
+   * `cloud.attachTo: 'stacks'`.
+   *
+   * Declaring them is what lets the framework recognise a `BUGHQ_…` or
+   * `ANALYTICSHQ_…` key in this project's `.env.*` as belonging to somebody
+   * else. Those keys have no reader here, and `buddy deploy` ships this
+   * project's env file to every site it deploys — so left in place they write
+   * another tenant's secrets into stacksjs.com's `.env` on disk. Deploy now
+   * drops them before shipping, and `buddy env:check` lists them so they can be
+   * deleted at source.
+   */
+  tenants: [
+    'bughq',
+    'analyticshq',
+    'ghost',
+  ],
 }
 
 export default config

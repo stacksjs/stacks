@@ -131,9 +131,46 @@ buddy env:decrypt                          # decrypt .env file
 buddy env:keypair                          # generate encryption keypair
 buddy env:rotate                           # rotate encryption keys
 buddy env:check                            # validate env configuration
+buddy env:check --file .env.production     # check a specific environment's file
 ```
 
+## Tenant isolation on a shared box
+
+When several projects share one server - one owns it, the rest attach with
+`cloud.attachTo` - each still deploys from its own repository with its own
+`.env.<environment>`. No project needs another's values.
+
+They leak anyway: a tenant's secrets get pasted into the owner's env file under
+a `TENANT_` prefix while debugging a deploy, and stay. That is not just untidy.
+`buddy deploy` ships the whole env file as **every** site's `.env` (ts-cloud
+treats `site.env` as the complete file), so a stray `BUGHQ_STRIPE_SECRET_KEY` in
+the owner's file lands on disk in an unrelated site.
+
+Declare who is attached, in `config/cloud.ts`'s default export:
+
+```typescript
+const config: CloudConfig = {
+  tenants: ['bughq', 'analyticshq'],
+}
+```
+
+With that:
+
+- `buddy deploy` drops those keys before shipping, and logs what it dropped
+- `buddy env:check` lists them per tenant so they can be deleted at source
+
+Prefixes are **never** inferred. With no `tenants` declared nothing is treated
+as foreign, because `STRIPE_`, `AWS_` and `MEILISEARCH_` are indistinguishable
+from a slug prefix by shape alone. Slug punctuation is ignored, so
+`analytics-hq` and `analytics_hq` both match `ANALYTICSHQ_`.
+
+The API is `partitionTenantEnv(values, { self, tenants })` from
+`@stacksjs/env`, plus `stripForeignTenantEnv` and `foreignTenantKeys`.
+
 ## Gotchas
+- **A tenant's keys in your env file get shipped everywhere.** `buddy deploy`
+  sends the entire env file as each site's `.env`. Declare `tenants` in
+  `config/cloud.ts` so they are stripped, then delete them at source
 - Bun natively loads `.env` — no dotenv package needed
 - The `env` proxy auto-coerces strings to booleans/numbers
 - `.env` should never be committed — use `.env.example` as template

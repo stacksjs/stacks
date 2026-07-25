@@ -661,6 +661,27 @@ async function waitForRemoteReady(ip: string): Promise<void> {
 }
 
 /**
+ * The projects attached to this box, from `cloud.tenants` in `config/cloud.ts`.
+ *
+ * Each deploys from its own repository with its own env file, so none of their
+ * values belong in this project's. This list is what makes a `TENANT_` prefix
+ * meaningful — with nothing declared, nothing is ever treated as foreign,
+ * because `STRIPE_` and `AWS_` are indistinguishable from a slug prefix.
+ */
+async function resolveDeclaredTenants(): Promise<string[]> {
+  try {
+    const { config } = await import('@stacksjs/config')
+    const tenants = (config as { cloud?: { tenants?: unknown } }).cloud?.tenants
+    return Array.isArray(tenants) ? tenants.filter((slug): slug is string => typeof slug === 'string') : []
+  }
+  catch {
+    // A cloud config that will not load is the deploy's problem to report, not
+    // this helper's — fall back to shipping everything, as before.
+    return []
+  }
+}
+
+/**
  * Resolve (and decrypt) the deploy-target's environment file into a flat
  * key/value map, so its values can be shipped to the server as each site's
  * systemd `.env` content.
@@ -679,11 +700,24 @@ async function waitForRemoteReady(ip: string): Promise<void> {
  * ciphertext it never had a chance to decrypt (no DOTENV_PRIVATE_KEY_* in
  * that 2-key set).
  *
+ * Keys namespaced to another tenant on this box (`cloud.tenants` in
+ * `config/cloud.ts`) are dropped here, before anything is shipped. Those
+ * projects deploy from their own repositories with their own env files and
+ * never need the owner's copy — and because ts-cloud treats `site.env` as the
+ * complete `.env`, leaving them in writes one tenant's secrets into an
+ * unrelated site's `.env` on disk.
+ *
  * Returns `{}` (not an error) when the file doesn't exist or fails to
  * parse — an app with no `.env.production` yet shouldn't block deploying
  * with whatever `site.env` overrides it does have.
+ *
+ * @param environment - Which `.env.<environment>` to read.
+ * @param tsCloudConfig - The deploy target's ts-cloud config, read for `project.slug`.
  */
-export async function resolveDeployEnvValues(environment: 'production' | 'staging' | 'development'): Promise<Record<string, string>> {
+export async function resolveDeployEnvValues(
+  environment: 'production' | 'staging' | 'development',
+  tsCloudConfig?: { project?: { slug?: string } },
+): Promise<Record<string, string>> {
   const fileName = environment === 'production'
     ? '.env.production'
     : environment === 'staging'
@@ -711,7 +745,22 @@ export async function resolveDeployEnvValues(environment: 'production' | 'stagin
         continue
       values[key] = String(value)
     }
-    return values
+
+    const { foreignTenantKeys, partitionTenantEnv } = await import('@stacksjs/env')
+    const partition = partitionTenantEnv(values, {
+      self: tsCloudConfig?.project?.slug,
+      tenants: await resolveDeclaredTenants(),
+    })
+
+    for (const { tenant, keys } of foreignTenantKeys(partition)) {
+      log.warn(
+        `[deploy] Skipping ${keys.length} '${tenant}' key(s) in ${fileName} — they belong to that tenant's own `
+        + `repository, and shipping them writes its secrets into this project's site .env files. `
+        + `Remove them with: buddy env:check --file ${fileName}. Keys: ${keys.join(', ')}`,
+      )
+    }
+
+    return partition.own
   }
   catch (error) {
     log.debug(`[deploy] Failed to resolve ${fileName} for site env merging:`, error)
@@ -1284,7 +1333,7 @@ async function runHetznerDeploy(args: {
   // `env` overrides — see resolveDeployEnvValues' doc comment for why this
   // has to happen here (ts-cloud has no idea .env.production/decryption
   // exist) rather than inside ts-cloud itself.
-  const resolvedDeployEnv = await resolveDeployEnvValues(environment)
+  const resolvedDeployEnv = await resolveDeployEnvValues(environment, tsCloudConfig)
   const sitesWithResolvedEnv = mergeSiteDeployEnv(sites, resolvedDeployEnv)
 
   // Also apply the decrypted values to THIS (local, deploying) process' env —
