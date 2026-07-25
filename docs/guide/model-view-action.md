@@ -107,41 +107,71 @@ Models represent your data and handle database interactions.
 
 ### Defining Models
 
+Everything a model needs - schema, validation, factory, relationships, behavior -
+is declared in one `defineModel()` call. Migrations are generated from it.
+
 ```typescript
 // app/Models/User.ts
-import { Model, field, hasMany, hasOne } from '@stacksjs/orm'
+import { defineModel } from '@stacksjs/orm'
+import { makeHash } from '@stacksjs/security'
+import { schema } from '@stacksjs/validation'
 
-export default class User extends Model {
-  static table = 'users'
+export default defineModel({
+  name: 'User',
+  table: 'users',
 
-  static fields = {
-    id: field.id(),
-    name: field.string(),
-    email: field.string().unique(),
-    password: field.string().hidden(),
-    email_verified_at: field.timestamp().nullable(),
-    created_at: field.timestamp(),
-    updated_at: field.timestamp(),
-  }
+  traits: {
+    useAuth: { usePasskey: true },
+    useUuid: true,
+    useTimestamps: true,
+    useSeeder: { count: 10 },
+  },
 
-  static relationships = {
-    posts: hasMany(Post),
-    profile: hasOne(Profile),
-    orders: hasMany(Order),
-  }
+  hasOne: ['Profile'],
+  hasMany: ['Post', 'Order'],
 
-  // Computed properties
-  get isVerified(): boolean {
-    return this.email_verified_at !== null
-  }
+  attributes: {
+    name: {
+      required: true,
+      fillable: true,
+      validation: { rule: schema.string().max(255) },
+      factory: faker => faker.person.fullName(),
+    },
+    email: {
+      required: true,
+      unique: true,
+      fillable: true,
+      validation: { rule: schema.string().email() },
+      factory: faker => faker.internet.email(),
+    },
+    password: {
+      required: true,
+      hidden: true,
+      validation: { rule: schema.string().min(8) },
+      factory: faker => faker.internet.password(),
+    },
+  },
 
-  // Model methods (data-related only)
-  async markAsVerified(): Promise<void> {
-    this.email_verified_at = new Date()
-    await this.save()
-  }
-}
+  // Computed properties, derived on read
+  get: {
+    isVerified: model => model.emailVerifiedAt !== null,
+  },
+
+  // Transformed on write
+  set: {
+    password: value => makeHash(value),
+  },
+
+  // Reusable query constraints
+  scopes: {
+    verified: query => query.whereNotNull('email_verified_at'),
+  },
+} as const)
 ```
+
+`hidden` keeps a value out of JSON serialization. `fillable` is what mass
+assignment is allowed to touch - note that `password` is neither, so it can only
+be set explicitly.
 
 ### Model Responsibilities
 
@@ -157,64 +187,56 @@ Models should only handle:
 
 Views handle the presentation layer - rendering HTML, components, or JSON responses.
 
-### STX Components
+### stx components
 
 ```html
-<!-- views/users/Profile.stx -->
-<template>
-  <div class="profile">
-    <Avatar :user="user" size="large" />
-    <h1>{{ user.name }}</h1>
-    <p>{{ user.email }}</p>
+<!-- resources/views/users/profile.stx -->
+<script server>
+import { defineProps } from 'stx'
 
-    <Button @click="editProfile">Edit Profile</Button>
+const { user } = defineProps<{ user: { name: string, email: string } }>()
+</script>
+
+<template>
+  <div class="flex flex-col gap-4">
+    <Avatar user="{{ user }}" size="large" />
+    <h1 class="text-2xl">{{ user.name }}</h1>
+    <p class="text-neutral-500">{{ user.email }}</p>
   </div>
 </template>
-
-<script>
-import type { User } from '@/models/User'
-
-const props = defineProps<{
-  user: User
-}>()
-
-const emit = defineEmits<{
-  edit: []
-}>()
-
-function editProfile() {
-  emit('edit')
-}
-</script>
 ```
 
-### API Responses
+Components under `resources/components/` resolve by name - `<Avatar />` needs no
+import. See [stx](/basics/views) for directives, signals, and layouts.
+
+### JSON responses
+
+An action returns data; the router serializes it.
 
 ```typescript
-// app/Controllers/UserController.ts
-class UserController extends Controller {
-  async show(request: Request) {
-    const user = await User.findOrFail(request.params.id)
+// app/Actions/UserShowAction.ts
+import { Action } from '@stacksjs/actions'
 
-    // View: JSON response with resource transformation
-    return UserResource.make(user)
-  }
-}
+export default new Action({
+  name: 'UserShowAction',
+  description: 'Returns a single user',
 
-// app/Resources/UserResource.ts
-class UserResource extends Resource {
-  toArray() {
+  async handle(request) {
+    const user = await User.findOrFail(request.getParam('id'))
+
     return {
-      id: this.id,
-      name: this.name,
-      email: this.email,
-      avatar: this.avatar_url,
-      verified: this.isVerified,
-      joined: this.created_at.toISOString(),
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      verified: user.isVerified,
+      joined: user.created_at,
     }
-  }
-}
+  },
+})
 ```
+
+Route params are always strings. Use `Number(...)` or `request.getParamAsInt()`
+when you need a number.
 
 ## Actions
 
@@ -311,169 +333,98 @@ export class CreateOrderAction extends Action {
 
 ### Running Actions
 
+Routes point at an action by path - there is no controller layer in between.
+
 ```typescript
-// From controllers
-class OrderController extends Controller {
-  async store(request: Request) {
-    const { items, payment_method } = await request.validate(CreateOrderRequest)
+// routes/api.ts
+import { route } from '@stacksjs/router'
 
-    const order = await CreateOrderAction.run(
-      request.user,
-      items,
-      payment_method,
-    )
-
-    return this.json(order, 201)
-  }
-}
-
-// From other actions
-class CheckoutAction extends Action {
-  async handle() {
-    // Validate cart
-    const cart = await ValidateCartAction.run(this.user)
-
-    // Apply discounts
-    const discountedCart = await ApplyDiscountsAction.run(cart, this.coupon)
-
-    // Create order
-    return CreateOrderAction.run(this.user, discountedCart.items, this.payment)
-  }
-}
-
-// From jobs
-class ProcessBulkOrdersJob extends Job {
-  async handle() {
-    for (const orderData of this.orders) {
-      await CreateOrderAction.run(orderData.user, orderData.items, orderData.payment)
-    }
-  }
-}
+route.post('/orders', 'Actions/CreateOrderAction')
 ```
 
-### Action Composition
-
-Actions can call other actions for complex workflows:
+Actions compose by importing each other:
 
 ```typescript
-class RegisterUserAction extends Action {
-  async handle(data: RegisterData): Promise<User> {
-    // Step 1: Create the user
-    const user = await CreateUserAction.run(data)
+// app/Actions/CheckoutAction.ts
+import { Action } from '@stacksjs/actions'
+import ApplyDiscountsAction from './ApplyDiscountsAction'
+import ValidateCartAction from './ValidateCartAction'
 
-    // Step 2: Set up user preferences
-    await CreateUserPreferencesAction.run(user)
+export default new Action({
+  name: 'CheckoutAction',
+  description: 'Validates a cart, applies discounts, and places the order',
 
-    // Step 3: Send verification email
-    await SendVerificationEmailAction.run(user)
+  async handle(request) {
+    const cart = await ValidateCartAction.handle(request)
+    const discounted = await ApplyDiscountsAction.handle(cart)
 
-    // Step 4: Track analytics
-    await TrackUserRegistrationAction.run(user, data.referrer)
-
-    return user
-  }
-}
-```
-
-### Testing Actions
-
-Actions are highly testable because they're isolated:
-
-```typescript
-import { describe, it, expect } from 'bun:test'
-import { CreateOrderAction } from '@/actions/CreateOrderAction'
-import { UserFactory, ProductFactory } from '@/factories'
-
-describe('CreateOrderAction', () => {
-  it('creates an order with items', async () => {
-    const user = await UserFactory.create()
-    const product = await ProductFactory.create({ stock: 10, price: 100 })
-
-    const items = [{ product_id: product.id, quantity: 2, price: 100 }]
-    const payment = { method: 'card', token: 'tok_visa' }
-
-    const order = await CreateOrderAction.run(user, items, payment)
-
-    expect(order.user_id).toBe(user.id)
-    expect(order.total).toBe(200 + order.tax)
-    expect(order.items).toHaveLength(1)
-  })
-
-  it('throws when insufficient stock', async () => {
-    const user = await UserFactory.create()
-    const product = await ProductFactory.create({ stock: 1 })
-
-    const items = [{ product_id: product.id, quantity: 5, price: 100 }]
-
-    await expect(CreateOrderAction.run(user, items, {}))
-      .rejects.toThrow(InsufficientStockError)
-  })
+    return CreateOrderAction.handle(discounted)
+  },
 })
 ```
 
 ## Putting It Together
 
-Here's how MVA works in a complete request:
+Here is a complete request, end to end:
 
 ```typescript
-// 1. Route definition
-router.post('/orders', OrderController.store)
+// 1. Route — points straight at the action
+// routes/api.ts
+route.post('/orders', 'Actions/CreateOrderAction')
 
-// 2. Controller (thin - just delegates)
-class OrderController extends Controller {
-  async store(request: Request) {
-    // Validate request
-    const data = await request.validate(CreateOrderRequest)
+// 2. Action — validates, then does the work
+// app/Actions/CreateOrderAction.ts
+export default new Action({
+  name: 'CreateOrderAction',
+  description: 'Places an order for the authenticated customer',
 
-    // Delegate to action
-    const order = await CreateOrderAction.run(
-      request.user,
-      data.items,
-      data.payment_method,
-    )
+  validations: {
+    items: { rule: schema.array().min(1) },
+    paymentMethod: { rule: schema.string() },
+  },
 
-    // Return view (JSON response)
-    return OrderResource.make(order)
-  }
-}
+  async handle(request) {
+    const order = await Order.create({
+      customer_id: request.user.id,
+      status: 'pending',
+    })
 
-// 3. Action (all business logic)
-class CreateOrderAction extends Action {
-  async handle() {
-    // Complex business logic here
-    // Calls other actions as needed
-    // Returns model instance
-  }
-}
+    for (const item of request.get('items'))
+      await DecrementStockAction.handle(item)
 
-// 4. Model (data only)
-class Order extends Model {
-  // Field definitions
-  // Relationships
-  // Simple computed properties
-}
-
-// 5. Resource (view transformation)
-class OrderResource extends Resource {
-  toArray() {
+    // 3. Shape the response
     return {
-      id: this.id,
-      items: OrderItemResource.collection(this.items),
-      total: this.formatted_total,
-      status: this.status,
+      id: order.id,
+      total: order.totalAmount,
+      status: order.status,
     }
-  }
-}
+  },
+})
+
+// 4. Model — data only
+// app/Models/Order.ts
+export default defineModel({
+  name: 'Order',
+  traits: { useTimestamps: true, observe: true },
+  belongsTo: ['Customer'],
+  hasMany: ['OrderItem'],
+  attributes: { /* … */ },
+} as const)
 ```
+
+`observe: true` on the model emits `order:created`, which listeners registered
+in `app/Events.ts` pick up - so notifications and side effects stay out of the
+action.
 
 ## Best Practices
 
-1. **Keep controllers thin** - Controllers should only handle HTTP concerns
-2. **Single responsibility** - Each action does one thing well
-3. **Name actions clearly** - Use verb phrases: `CreateOrder`, `SendEmail`, `ProcessPayment`
-4. **Compose actions** - Build complex workflows from simple actions
-5. **Test actions directly** - Don't test business logic through HTTP
-6. **Use dependency injection** - Pass dependencies through constructors
+1. **Routes stay declarative** - a route names an action and its middleware, nothing more
+2. **Single responsibility** - each action does one thing well
+3. **Name actions clearly** - use verb phrases: `CreateOrder`, `SendEmail`, `ProcessPayment`
+4. **Compose actions** - build complex workflows from simple ones
+5. **Test actions directly** - call `handle()` in a test rather than going through HTTP
+6. **Push side effects to listeners** - `observe: true` plus `app/Events.ts` keeps
+   notifications and audit trails out of the action's main path
 
 ## Related
 

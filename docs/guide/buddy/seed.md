@@ -1,297 +1,175 @@
 ---
 title: Seed Command
-description: "The  command populates your database with test data using model factories, making it easy to generate realistic data for development and testing."
+description: "buddy seed fills your database with realistic test data, generated from the factory functions declared on your models."
 ---
 # Seed Command
 
-The `buddy seed` command populates your database with test data using model factories, making it easy to generate realistic data for development and testing.
-
-## Basic Usage
-
-```bash
-buddy seed
-```
-
-## Command Syntax
-
-```bash
-buddy seed [options]
-```
-
-### Options
-
-| Option | Description |
-|--------|-------------|
-| `-p, --project [project]` | Target a specific project |
-| `--verbose` | Enable verbose output |
-
-## Aliases
-
-```bash
-buddy seed
-buddy db:seed
-```
-
-## How Seeding Works
-
-Stacks uses model-based seeding. For each model with a defined factory, the seeder:
-
-1. Reads the model's seeder configuration
-2. Uses the factory to generate fake data
-3. Inserts the records into the database
-
-## Defining Seeders
-
-Seeders are defined in your models:
-
-```typescript
-// app/Models/User.ts
-import { Model } from '@stacksjs/orm'
-import { faker } from '@stacksjs/faker'
-
-export default class User extends Model {
-  static table = 'users'
-
-  static fields = {
-    name: { type: 'string', required: true },
-    email: { type: 'string', unique: true, required: true },
-    password: { type: 'string', required: true },
-  }
-
-  // Define seeder
-  static seeder = {
-    count: 50, // Create 50 users
-  }
-
-  // Define factory for generating fake data
-  static factory() {
-    return {
-      name: faker.person.fullName(),
-      email: faker.internet.email(),
-      password: faker.internet.password(),
-    }
-  }
-}
-```
-
-## Examples
-
-### Basic Seeding
+`buddy seed` fills your database with realistic test data. There are no seeder
+files to write or register: seeding reads the models you already have.
 
 ```bash
 buddy seed
 ```
 
-Output:
+## How it works
 
-```
-buddy seed
+Two pieces on the model drive everything:
 
-Seeded your local database.
+- the **`useSeeder` trait** says how many rows to generate, and optionally pins
+  specific ones
+- each attribute's **`factory` function** says what a single value looks like
 
-Completed in 1.23s
-```
-
-### Seeding with Verbose Output
-
-```bash
-buddy seed --verbose
-```
-
-Shows detailed information about each model being seeded.
-
-### Seeding After Fresh Migration
-
-```bash
-buddy migrate:fresh --seed
-```
-
-This is the recommended way to reset and seed your database in one command.
-
-### Seeding Specific Project
-
-```bash
-buddy seed -p my-project
-```
-
-## Factory Definitions
-
-Factories generate realistic fake data using Faker:
+`buddy seed` walks every model that declares `useSeeder`, generates that many
+rows from the attribute factories, and inserts them. A model without the trait
+is never seeded.
 
 ```typescript
 // app/Models/Post.ts
-import { Model } from '@stacksjs/orm'
-import { faker } from '@stacksjs/faker'
+import { defineModel } from '@stacksjs/orm'
+import { schema } from '@stacksjs/validation'
 
-export default class Post extends Model {
-  static table = 'posts'
+export default defineModel({
+  name: 'Post',
+  table: 'posts',
 
-  static fields = {
-    title: { type: 'string', required: true },
-    content: { type: 'text' },
-    authorId: { type: 'integer', references: 'users.id' },
-    publishedAt: { type: 'timestamp', nullable: true },
-    status: { type: 'string', default: 'draft' },
-  }
-
-  static seeder = {
-    count: 100,
-  }
-
-  static factory() {
-    return {
-      title: faker.lorem.sentence(),
-      content: faker.lorem.paragraphs(3),
-      authorId: faker.number.int({ min: 1, max: 50 }),
-      publishedAt: faker.date.past(),
-      status: faker.helpers.arrayElement(['draft', 'published', 'archived']),
-    }
-  }
-}
-```
-
-## Advanced Factory Patterns
-
-### Conditional Data
-
-```typescript
-static factory() {
-  const isPublished = faker.datatype.boolean()
-
-  return {
-    title: faker.lorem.sentence(),
-    status: isPublished ? 'published' : 'draft',
-    publishedAt: isPublished ? faker.date.past() : null,
-  }
-}
-```
-
-### Sequential Data
-
-```typescript
-let counter = 0
-
-static factory() {
-  counter++
-  return {
-    email: `user${counter}@example.com`,
-    username: `user${counter}`,
-  }
-}
-```
-
-### Related Records
-
-```typescript
-static seeder = {
-  count: 50,
-  // Create related records
-  relations: {
-    posts: 5, // Create 5 posts for each user
+  traits: {
+    useTimestamps: true,
+    useSeeder: { count: 100 },
   },
-}
+
+  belongsTo: ['Author'],
+
+  attributes: {
+    title: {
+      required: true,
+      fillable: true,
+      validation: { rule: schema.string().min(3).max(255) },
+      factory: faker => faker.lorem.sentence(),
+    },
+    content: {
+      fillable: true,
+      validation: { rule: schema.string() },
+      factory: faker => faker.lorem.paragraphs(3),
+    },
+    publishedAt: {
+      fillable: true,
+      validation: { rule: schema.timestamp() },
+      factory: faker => faker.date.past().toISOString().slice(0, 19).replace('T', ' '),
+    },
+    status: {
+      fillable: true,
+      default: 'draft',
+      validation: { rule: schema.enum(['draft', 'published', 'archived']) },
+      factory: faker => faker.helpers.arrayElement(['draft', 'published', 'archived']),
+    },
+  },
+} as const)
 ```
 
-## Environment-Specific Seeding
+The `faker` argument comes from `@stacksjs/faker` - you never import it inside a
+model.
 
-Seeding respects the `APP_ENV` environment variable:
+## Options
+
+| Option | Description |
+|--------|-------------|
+| `--only [models]` | Comma-separated list of models to seed |
+| `--except [models]` | Comma-separated list of models to skip |
+| `--include-defaults` | Also seed the framework's built-in models |
+| `--fresh` | Truncate each table before seeding |
+| `--allow-protected` | Seed auth/oauth models on a non-fresh database |
+| `-p, --project [project]` | Target a specific project |
+| `--verbose` | Enable verbose output |
+
+`buddy db:seed` is an alias for `buddy seed`.
+
+## Examples
 
 ```bash
-# Seed local database (default)
-APP_ENV=local buddy seed
+buddy seed                          # every model with a useSeeder trait
+buddy seed --fresh                  # truncate first, then re-seed
+buddy seed --only Post,Comment      # just these two
+buddy seed --except User            # everything but this one
+buddy seed --include-defaults       # framework built-ins too
+buddy migrate:fresh --seed          # drop, re-migrate, seed - the usual reset
+```
 
-# Seed staging database
+## Pinning specific rows
+
+`fixtures` sets specific rows over the generated ones. Keys use the model's
+camelCase attribute names and are stored as snake_case columns.
+
+```typescript
+traits: {
+  useSeeder: {
+    count: 50,
+    fixtures: [
+      { name: 'Admin', email: 'admin@example.com' },
+      { name: 'Support', email: 'support@example.com' },
+    ],
+  },
+},
+```
+
+The first two rows are those two; the remaining 48 come from the factories. If
+`fixtures` is longer than `count`, every fixture is still inserted.
+
+## Rules worth knowing
+
+**Tables that already have rows are skipped.** Seeding is not additive by
+default, so re-running it will not pile up duplicates. Pass `--fresh` to
+truncate and regenerate.
+
+**Auth and OAuth models are protected.** On a non-fresh database, `User`,
+`OauthAccessToken`, `OauthRefreshToken` and friends are skipped, because
+re-rolling the Personal Access Client secret would silently invalidate every
+live session. `--fresh` seeds them (you are wiping the database anyway), and
+`--allow-protected` is the explicit override.
+
+**Your models win over the defaults.** `app/Models/Post.ts` replaces the
+built-in `Post`; only one of them seeds. Framework models are excluded entirely
+unless you pass `--include-defaults`.
+
+**Foreign keys need their parents.** A model that `belongsTo` another needs the
+parent seeded too. If a seed fails on a constraint, check that the parent model
+also carries a `useSeeder` trait.
+
+## Environment
+
+Seeding respects `APP_ENV` and connects to whatever `config/database.ts`
+resolves for it.
+
+```bash
+APP_ENV=local buddy seed
 APP_ENV=staging buddy seed
 ```
 
-**Warning**: Be careful when seeding non-development environments.
+Be deliberate about anything other than local: `--fresh` truncates real tables.
 
 ## Troubleshooting
 
-### No Models Found
+**"No models declare a `useSeeder` trait - nothing to seed."**
+Your models have no seeding configured. Add `useSeeder: { count: N }` to the
+ones you want filled, or pass `--include-defaults` to seed the framework's.
 
-```
-Error: No models found. Please create models in app/Models or ensure framework defaults exist.
-```
-
-**Solution**: Create models with seeder configurations:
-
-```bash
-buddy make:model User
-```
-
-### Seeding Fails Due to Constraints
-
-Foreign key constraints may cause seeding to fail:
-
-```bash
-# Ensure parent records exist first
-# Order matters in your models
-```
-
-**Solution**: Check the seeding order and ensure related records exist.
-
-### Duplicate Entry Errors
-
-If unique constraints are violated:
+**Unique-constraint violations.**
+Faker can repeat values across a large run. Make the factory itself unique
+rather than relying on chance:
 
 ```typescript
-static factory() {
-  return {
-    // Use unique values
-    email: faker.internet.email({ provider: 'example.com' }),
-    // Or add timestamp for uniqueness
-    username: `user_${Date.now()}_${faker.number.int(1000)}`,
-  }
-}
+email: {
+  unique: true,
+  validation: { rule: schema.string().email() },
+  factory: faker => `${faker.string.alphanumeric(10)}@example.com`,
+},
 ```
 
-### Memory Issues with Large Seeds
+**Foreign-key failures.**
+The referenced parent has no rows. Give the parent model a `useSeeder` trait, or
+seed it first with `--only Parent`.
 
-For seeding large amounts of data:
+## Related
 
-```bash
-# Increase memory limit
-NODE_OPTIONS="--max-old-space-size=4096" buddy seed
-```
-
-## Best Practices
-
-### Development Workflow
-
-```bash
-# Reset database with fresh seed data
-buddy migrate:fresh --seed
-```
-
-### Testing
-
-```bash
-# Seed test database before running tests
-APP_ENV=testing buddy seed
-buddy test
-```
-
-### Realistic Data
-
-Use Faker's locale support for realistic data:
-
-```typescript
-import { faker } from '@stacksjs/faker'
-
-// Use German locale
-faker.locale = 'de'
-
-static factory() {
-  return {
-    name: faker.person.fullName(), // German names
-    address: faker.location.streetAddress(), // German addresses
-  }
-}
-```
-
-## Related Commands
-
-- [buddy migrate](/guide/buddy/migrate) - Run database migrations
-- [buddy migrate:fresh](/guide/buddy/migrate) - Fresh migration with optional seeding
-- [buddy make:model](/guide/buddy/generate) - Create a new model
+- [buddy migrate](/guide/buddy/migrate) - run database migrations
+- [Models](/basics/models) - the full `defineModel()` reference
+- [Database package](/packages/database) - queries, transactions, and seeding
