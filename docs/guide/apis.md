@@ -25,15 +25,21 @@ APIs are automatically generated from your models:
 
 ```typescript
 // app/Models/Post.ts
-import { Model } from '@stacksjs/orm'
+import { defineModel } from '@stacksjs/orm'
 
-export default class Post extends Model {
-  static api = {
-    routes: ['index', 'show', 'store', 'update', 'destroy'],
-  }
+export default defineModel({
+  name: 'Post',
+  table: 'posts',
 
-  // Fields, relationships, etc.
-}
+  traits: {
+    useApi: {
+      uri: 'posts',
+      routes: ['index', 'show', 'store', 'update', 'destroy'],
+    },
+  },
+
+  attributes: { /* … */ },
+} as const)
 ```
 
 This generates:
@@ -50,213 +56,138 @@ This generates:
 
 ```typescript
 // app/Models/User.ts
-export default class User extends Model {
-  static api = {
-    // Only specific routes
-    routes: ['index', 'show', 'store'],
+export default defineModel({
+  name: 'User',
 
-    // Custom route prefix
-    prefix: '/users',
+  traits: {
+    useApi: {
+      // Base URI — routes are served under /api/<uri>
+      uri: 'users',
 
-    // Middleware
-    middleware: ['auth'],
+      // Only generate these
+      routes: ['index', 'show', 'store'],
 
-    // Rate limiting
-    rateLimit: {
-      max: 100,
-      window: '15m',
+      // Applied to every generated route
+      middleware: ['auth'],
     },
-  }
-}
+  },
+} as const)
 ```
 
 ### Manual API Routes
 
 ```typescript
 // routes/api.ts
-import { router } from '@stacksjs/router'
-import { PostController } from '@/controllers/PostController'
+import { route } from '@stacksjs/router'
 
-router.group({ prefix: '/api/v1' }, () => {
-  router.get('/posts', PostController.index)
-  router.get('/posts/:id', PostController.show)
-  router.post('/posts', PostController.store)
-  router.put('/posts/:id', PostController.update)
-  router.delete('/posts/:id', PostController.destroy)
+route.group({ prefix: '/v1' }, () => {
+  route.get('/posts', 'Actions/PostIndexAction')
+  route.get('/posts/{id}', 'Actions/PostShowAction')
+  route.post('/posts', 'Actions/PostStoreAction')
+  route.put('/posts/{id}', 'Actions/PostUpdateAction')
+  route.delete('/posts/{id}', 'Actions/PostDestroyAction')
 
-  // Custom actions
-  router.post('/posts/:id/publish', PostController.publish)
-  router.get('/posts/:id/comments', PostController.comments)
+  route.post('/posts/{id}/publish', 'Actions/PostPublishAction')
+  route.get('/posts/{id}/comments', 'Actions/CommentIndexAction')
 })
 ```
 
-## Controllers
+Routes in `routes/api.ts` are already served under `/api`, so the group above
+lands at `/api/v1/posts`. Register route files in `app/Routes.ts`.
 
-### Resource Controller
+## Custom actions
+
+The generated routes cover CRUD. Anything beyond that is an action you write and
+point a route at - there is no controller layer.
 
 ```typescript
-// app/Controllers/PostController.ts
-import { Controller, Request, Response } from '@stacksjs/http'
-import { Post } from '@/models/Post'
+// app/Actions/PostIndexAction.ts
+import { Action } from '@stacksjs/actions'
 
-export class PostController extends Controller {
-  async index(request: Request): Promise<Response> {
-    const posts = await Post.query()
-      .with('author')
-      .paginate(request.query.page, request.query.perPage)
+export default new Action({
+  name: 'PostIndexAction',
+  description: 'Lists published posts with their author',
 
-    return this.json(posts)
-  }
+  async handle(request) {
+    return Post.with('author')
+      .where('status', 'published')
+      .orderByDesc('created_at')
+      .paginate({
+        page: Number(request.query('page') ?? 1),
+        perPage: Number(request.query('perPage') ?? 20),
+      })
+  },
+})
+```
 
-  async show(request: Request): Promise<Response> {
-    const post = await Post.query()
-      .with('author', 'comments')
-      .findOrFail(request.params.id)
+```typescript
+// app/Actions/PostStoreAction.ts
+import { Action } from '@stacksjs/actions'
+import { schema } from '@stacksjs/validation'
 
-    return this.json(post)
-  }
+export default new Action({
+  name: 'PostStoreAction',
+  description: 'Creates a post owned by the authenticated user',
 
-  async store(request: Request): Promise<Response> {
-    const validated = await request.validate({
-      title: 'required|string|max:200',
-      content: 'required|string',
-      published: 'boolean',
-    })
+  validations: {
+    title: { rule: schema.string().max(200) },
+    content: { rule: schema.string() },
+  },
 
-    const post = await Post.create({
-      ...validated,
+  async handle(request) {
+    return Post.create({
+      title: request.get('title'),
+      content: request.get('content'),
       author_id: request.user.id,
     })
-
-    return this.json(post, 201)
-  }
-
-  async update(request: Request): Promise<Response> {
-    const post = await Post.findOrFail(request.params.id)
-
-    await this.authorize('update', post)
-
-    const validated = await request.validate({
-      title: 'string|max:200',
-      content: 'string',
-      published: 'boolean',
-    })
-
-    await post.update(validated)
-
-    return this.json(post)
-  }
-
-  async destroy(request: Request): Promise<Response> {
-    const post = await Post.findOrFail(request.params.id)
-
-    await this.authorize('delete', post)
-    await post.delete()
-
-    return this.noContent()
-  }
-}
+  },
+})
 ```
 
-## Request Validation
-
-### Inline Validation
-
-```typescript
-async store(request: Request): Promise<Response> {
-  const data = await request.validate({
-    email: 'required|email|unique:users,email',
-    password: 'required|min:8|confirmed',
-    name: 'required|string|max:100',
-    role: 'in:admin,user,moderator',
-  })
-
-  // data is typed and validated
-}
-```
-
-### Form Request Classes
-
-```typescript
-// app/Requests/CreateUserRequest.ts
-import { FormRequest } from '@stacksjs/http'
-
-export class CreateUserRequest extends FormRequest {
-  rules() {
-    return {
-      email: 'required|email|unique:users,email',
-      password: 'required|min:8|confirmed',
-      name: 'required|string|max:100',
-    }
-  }
-
-  messages() {
-    return {
-      'email.unique': 'This email is already registered',
-      'password.min': 'Password must be at least 8 characters',
-    }
-  }
-
-  authorize(): boolean {
-    return true // Or check permissions
-  }
-}
-
-// Usage
-async store(request: CreateUserRequest): Promise<Response> {
-  const data = await request.validated()
-  // ...
-}
-```
-
-## Authentication
-
-### Protecting Routes
+`validations` runs before `handle`, so a failing request never reaches your
+logic. Register the action in a route file:
 
 ```typescript
 // routes/api.ts
-router.group({ middleware: ['auth:api'] }, () => {
-  router.get('/profile', ProfileController.show)
-  router.put('/profile', ProfileController.update)
+route.get('/posts', 'Actions/PostIndexAction')
+route.post('/posts', 'Actions/PostStoreAction').middleware(['auth'])
+```
+
+### Authentication
+
+```typescript
+// app/Actions/Auth/LoginAction.ts
+import { Action } from '@stacksjs/actions'
+import { Auth } from '@stacksjs/auth'
+import { schema } from '@stacksjs/validation'
+import { response } from '@stacksjs/router'
+
+export default new Action({
+  name: 'LoginAction',
+  description: 'Exchanges credentials for an access token',
+
+  validations: {
+    email: { rule: schema.string().email() },
+    password: { rule: schema.string() },
+  },
+
+  async handle(request) {
+    const user = await Auth.attempt({
+      email: request.get('email'),
+      password: request.get('password'),
+    })
+
+    if (!user)
+      return response.error('Invalid credentials', 401)
+
+    return { user, token: await Auth.createToken(user) }
+  },
 })
 ```
 
-### Token Authentication
-
-```typescript
-// app/Controllers/AuthController.ts
-import { Controller, Request, Response } from '@stacksjs/http'
-import { Auth } from '@stacksjs/auth'
-
-export class AuthController extends Controller {
-  async login(request: Request): Promise<Response> {
-    const { email, password } = await request.validate({
-      email: 'required|email',
-      password: 'required',
-    })
-
-    const user = await Auth.attempt(email, password)
-
-    if (!user) {
-      return this.json({ error: 'Invalid credentials' }, 401)
-    }
-
-    const token = await Auth.createToken(user)
-
-    return this.json({ user, token })
-  }
-
-  async logout(request: Request): Promise<Response> {
-    await Auth.revokeToken(request.bearerToken())
-
-    return this.noContent()
-  }
-
-  async me(request: Request): Promise<Response> {
-    return this.json(request.user)
-  }
-}
-```
+Stacks ships these as default actions under
+`storage/framework/defaults/app/Actions/Auth/`. Create the same path under
+`app/` to override one.
 
 ## API Resources
 
@@ -349,10 +280,10 @@ const posts = await Post.query()
 ### Route-Level
 
 ```typescript
-router.group({
+route.group({
   middleware: ['throttle:60,1'], // 60 requests per minute
 }, () => {
-  router.post('/api/login', AuthController.login)
+  route.post('/login', 'Actions/Auth/LoginAction')
 })
 ```
 
@@ -391,12 +322,12 @@ export async function apiRateLimit(
 
 ```typescript
 // routes/api.ts
-router.group({ prefix: '/api/v1' }, () => {
-  router.get('/posts', PostControllerV1.index)
+route.group({ prefix: '/v1' }, () => {
+  route.get('/posts', 'Actions/V1/PostIndexAction')
 })
 
-router.group({ prefix: '/api/v2' }, () => {
-  router.get('/posts', PostControllerV2.index)
+route.group({ prefix: '/v2' }, () => {
+  route.get('/posts', 'Actions/V2/PostIndexAction')
 })
 ```
 

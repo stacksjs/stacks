@@ -10,11 +10,10 @@ This tutorial will guide you through building a RESTful API with Stacks. You wil
 
 Stacks follows a clean, Laravel-inspired architecture for APIs:
 
-- **Routes** - Define API endpoints and map them to handlers
-- **Actions** - Reusable business logic units
-- **Controllers** - Group related request handlers
-- **Middleware** - Handle cross-cutting concerns (auth, logging, etc.)
-- **Models** - Database interactions
+- **Routes** - define API endpoints and name the action that handles each
+- **Actions** - one unit of business logic per file, and what routes point at
+- **Middleware** - cross-cutting concerns (auth, throttling, logging)
+- **Models** - schema, validation, relationships, and database access
 
 ## Creating Routes
 
@@ -222,98 +221,103 @@ export default new Action({
 })
 ```
 
-## Creating Controllers
+## Organising endpoints
 
-Controllers group related request handlers. Use them when you have multiple related endpoints.
+### Action Structure
 
-### Generate a Controller
-
-There is no `make:controller` command today; create the file by hand in `app/Controllers/`:
-
-### Controller Structure
+Stacks has no controller layer. Each endpoint is one action, and the route names
+it directly. That keeps a file small enough to read in one sitting and makes it
+callable from a test without going through HTTP.
 
 ```typescript
-// app/Controllers/UserController.ts
-import type { RequestInstance } from '@stacksjs/types'
-import { Controller } from '@stacksjs/router'
+// app/Actions/User/UserIndexAction.ts
+import { Action } from '@stacksjs/actions'
 import { response } from '@stacksjs/router'
 
-export default class UserController extends Controller {
-  // GET /users
-  async index(request: RequestInstance) {
-    const page = request.query('page', 1)
-    const limit = request.query('limit', 10)
+export default new Action({
+  name: 'UserIndexAction',
+  description: 'Lists users, paginated',
 
-    const users = await User.paginate(page, limit)
-
-    return response.json(users)
-  }
-
-  // GET /users/:id
-  async show(request: RequestInstance) {
-    const id = request.param('id')
-    const user = await User.find(id)
-
-    if (!user) {
-      return response.notFound('User not found')
-    }
-
-    return response.json(user)
-  }
-
-  // POST /users
-  async store(request: RequestInstance) {
-    const data = request.only(['email', 'name', 'password'])
-
-    const user = await User.create(data)
-
-    return response.json(user, 201)
-  }
-
-  // PUT /users/:id
-  async update(request: RequestInstance) {
-    const id = request.param('id')
-    const data = request.only(['email', 'name'])
-
-    const user = await User.find(id)
-
-    if (!user) {
-      return response.notFound('User not found')
-    }
-
-    await user.update(data)
-
-    return response.json(user)
-  }
-
-  // DELETE /users/:id
-  async destroy(request: RequestInstance) {
-    const id = request.param('id')
-    const user = await User.find(id)
-
-    if (!user) {
-      return response.notFound('User not found')
-    }
-
-    await user.delete()
-
-    return response.json({ message: 'User deleted' })
-  }
-}
+  async handle(request) {
+    return response.json(await User.paginate({
+      page: Number(request.query('page') ?? 1),
+      perPage: Number(request.query('perPage') ?? 10),
+    }))
+  },
+})
 ```
 
-Using the controller in routes:
+```typescript
+// app/Actions/User/UserShowAction.ts
+import { Action } from '@stacksjs/actions'
+import { response } from '@stacksjs/router'
+
+export default new Action({
+  name: 'UserShowAction',
+  description: 'Returns a single user',
+
+  async handle(request) {
+    const user = await User.find(request.getParam('id'))
+
+    if (!user)
+      return response.notFound('User not found')
+
+    return response.json(user)
+  },
+})
+```
+
+```typescript
+// app/Actions/User/UserStoreAction.ts
+import { Action } from '@stacksjs/actions'
+import { response } from '@stacksjs/router'
+import { schema } from '@stacksjs/validation'
+
+export default new Action({
+  name: 'UserStoreAction',
+  description: 'Creates a user',
+
+  // Runs before handle — a failing request never reaches your logic
+  validations: {
+    email: { rule: schema.string().email() },
+    name: { rule: schema.string().max(255) },
+    password: { rule: schema.string().min(8) },
+  },
+
+  async handle(request) {
+    const user = await User.create(request.only(['email', 'name', 'password']))
+
+    return response.json(user, 201)
+  },
+})
+```
+
+`User` needs no import: models are auto-imported as server globals.
+
+Wire them up in a route file:
 
 ```typescript
 // routes/api.ts
 import { route } from '@stacksjs/router'
 
-route.get('/users', 'Controllers/UserController@index')
-route.get('/users/{id}', 'Controllers/UserController@show')
-route.post('/users', 'Controllers/UserController@store')
-route.put('/users/{id}', 'Controllers/UserController@update')
-route.delete('/users/{id}', 'Controllers/UserController@destroy')
+route.get('/users', 'Actions/User/UserIndexAction')
+route.get('/users/{id}', 'Actions/User/UserShowAction')
+route.post('/users', 'Actions/User/UserStoreAction')
+route.put('/users/{id}', 'Actions/User/UserUpdateAction')
+route.delete('/users/{id}', 'Actions/User/UserDestroyAction')
 ```
+
+For plain CRUD you do not have to write any of this. Put `useApi` on the model
+and Stacks generates the five actions and their routes for you:
+
+```typescript
+traits: {
+  useApi: { uri: 'users', routes: ['index', 'show', 'store', 'update', 'destroy'] },
+},
+```
+
+Write actions by hand when an endpoint does something the generated CRUD does
+not.
 
 ## Validation
 
@@ -535,26 +539,39 @@ Stacks provides an ORM and query builder for database operations.
 
 ```typescript
 // app/Models/User.ts
-import { Model } from '@stacksjs/orm'
+import { defineModel } from '@stacksjs/orm'
+import { schema } from '@stacksjs/validation'
 
-export default class User extends Model {
-  static table = 'users'
+export default defineModel({
+  name: 'User',
+  table: 'users',
 
-  // Define fillable fields
-  static fillable = ['email', 'name', 'password']
+  traits: {
+    useTimestamps: true,   // created_at / updated_at
+  },
 
-  // Define hidden fields (excluded from JSON)
-  static hidden = ['password']
+  hasMany: ['Post'],
+  hasOne: ['Profile'],
 
-  // Relationships
-  posts() {
-    return this.hasMany(Post)
-  }
-
-  profile() {
-    return this.hasOne(Profile)
-  }
-}
+  attributes: {
+    name: {
+      required: true,
+      fillable: true,
+      validation: { rule: schema.string().max(255) },
+    },
+    email: {
+      required: true,
+      unique: true,
+      fillable: true,
+      validation: { rule: schema.string().email() },
+    },
+    password: {
+      required: true,
+      hidden: true,          // excluded from JSON
+      validation: { rule: schema.string().min(8) },
+    },
+  },
+} as const)
 ```
 
 ### Basic Queries

@@ -132,26 +132,50 @@ Stacks uses a model-first approach to migrations. Your migrations are generated 
 
 ```typescript
 // app/Models/User.ts
-import { Model } from '@stacksjs/orm'
+import { defineModel } from '@stacksjs/orm'
+import { schema } from '@stacksjs/validation'
 
-export default class User extends Model {
-  static table = 'users'
+export default defineModel({
+  name: 'User',
+  table: 'users',
 
-  static fields = {
-    name: { type: 'string', required: true },
-    email: { type: 'string', unique: true, required: true },
-    password: { type: 'string', required: true },
-    createdAt: { type: 'timestamp' },
-    updatedAt: { type: 'timestamp' },
-  }
-}
+  traits: {
+    useTimestamps: true,   // created_at / updated_at
+  },
+
+  hasMany: ['Post'],
+  hasOne: ['Profile'],
+
+  attributes: {
+    name: {
+      required: true,
+      fillable: true,
+      validation: { rule: schema.string().max(255) },
+    },
+    email: {
+      required: true,
+      unique: true,
+      fillable: true,
+      validation: { rule: schema.string().email() },
+    },
+    password: {
+      required: true,
+      hidden: true,          // excluded from JSON
+      validation: { rule: schema.string().min(8) },
+    },
+  },
+} as const)
 ```
 
 When you run `buddy migrate`, Stacks:
 
-1. Reads all model definitions from `app/Models`
-2. Compares with current database schema
-3. Generates and runs necessary SQL
+1. Reads every model definition from `app/Models`, falling back to
+   `storage/framework/defaults/app/Models` for the built-ins
+2. Diffs them against the current database schema
+3. Emits SQL into `database/migrations/` and runs what is pending
+
+Run `buddy generate:migrations` on its own to produce the SQL without applying
+it, so you can review the file first.
 
 ## Environment-Specific Migrations
 
