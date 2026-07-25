@@ -27,10 +27,8 @@ export interface EmailFilterRule {
 }
 
 export interface MailboxConfig {
-  /** Email address (preferred) - e.g., 'chris@stacksjs.com' */
+  /** Email address - e.g., 'chris@stacksjs.com' */
   email?: string
-  /** @deprecated Use 'email' instead */
-  address?: string
   displayName?: string
   /**
    * Password for IMAP/SMTP authentication.
@@ -111,11 +109,6 @@ export interface MailServerPortsConfig {
    * @default 995
    */
   pop3s?: number
-
-  /**
-   * @deprecated Use 'submission' instead
-   */
-  smtpStartTls?: number
 }
 
 export interface MailServerFeaturesConfig {

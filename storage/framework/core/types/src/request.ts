@@ -16,32 +16,6 @@ interface RequestData {
 }
 
 /**
- * Loose route-param shape kept around for back-compat with code that
- * predates {@link RequestInstance}'s `TParams` generic. New code should
- * rely on the path-extracted `TParams` instead — see {@link ExtractParams}.
- *
- * @deprecated Use {@link ExtractParams}-driven typing on the action /
- *   route signature instead. URL route params are always strings at
- *   runtime; the `string | number` here misled callers into thinking
- *   the framework coerced numbers automatically (it doesn't —
- *   `Number(request.params.id)` is the correct pattern).
- */
-type RouteParams = { [key: string]: string | number } | null
-
-/**
- * Legacy hard-coded list of param names treated as `number` by
- * {@link RequestInstance.getParam}. The name-match heuristic is
- * brittle (`'judgeId'`, `'user_id'`, etc. all silently fall through
- * to `string`) and will be retired in a future release.
- *
- * @deprecated The name-match returns `number` for these specific keys
- *   only — pass the value through {@link Number} or
- *   {@link RequestInstance.getParamAsInt} for explicit, predictable
- *   coercion. See stacksjs/stacks#1851 Phase 3.
- */
-type NumericField = 'id' | 'age' | 'count' | 'quantity' | 'amount' | 'price' | 'total' | 'score' | 'rating' | 'duration' | 'size' | 'weight' | 'height' | 'width' | 'length' | 'distance' | 'speed' | 'temperature' | 'volume' | 'capacity' | 'density' | 'pressure' | 'force' | 'energy' | 'power' | 'frequency' | 'voltage' | 'current' | 'resistance' | 'time' | 'date' | 'year' | 'month' | 'day' | 'hour' | 'minute' | 'second' | 'millisecond' | 'microsecond' | 'nanosecond'
-
-/**
  * Cookie-access helper exposed via `request.cookies` on
  * {@link RequestInstance}. The methods mirror bun-router's
  * `CookieAccessor` — duplicated locally so this package doesn't
@@ -491,14 +465,11 @@ export interface RequestInstance<
     defaultValue?: D,
   ) => K extends keyof TParams ? TParams[K] : (string | D)
   /**
-   * @deprecated Use {@link param} for typed param lookups, or
-   *   `Number(request.params.id)` for explicit numeric coercion.
-   *   The name-match heuristic returning `number` for {@link NumericField}
-   *   keys (`id`, `count`, `amount`, …) is brittle: it silently falls
-   *   through to `string` for `judgeId`, `user_id`, etc.
-   *   See stacksjs/stacks#1851 Phase 3.
+   * Reads a route parameter. Always a string - the router does no coercion.
+   * Prefer {@link param} for `TParams`-typed lookups, and
+   * {@link getParamAsInt} (or `Number(...)`) when you want a number.
    */
-  getParam: <K extends string>(key: K) => K extends NumericField ? number : string
+  getParam: (key: string) => string
   route: (key: string) => number | string | null
   getParams: () => TParams
   getParamAsInt: (key: string) => number | null

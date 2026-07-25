@@ -3405,7 +3405,7 @@ exports.handler = async (event) => {
       // Port configuration
       const smtpPort = emailConfig?.server?.ports?.smtp || 25
       const smtpsPort = emailConfig?.server?.ports?.smtps || 465
-      const submissionPort = emailConfig?.server?.ports?.submission || emailConfig?.server?.ports?.smtpStartTls || 587
+      const submissionPort = emailConfig?.server?.ports?.submission || 587
       const imapPort = emailConfig?.server?.ports?.imap || 143
       const imapsPort = emailConfig?.server?.ports?.imaps || 993
       const pop3Port = emailConfig?.server?.ports?.pop3 || 110

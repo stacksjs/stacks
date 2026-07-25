@@ -365,12 +365,13 @@ export interface Log {
 export type ErrorMessage = string
 
 /**
- * @deprecated stacksjs/stacks#1932 — the old union form
- * (`{…} | any | Error`) included `| any`, which collapsed the whole
- * union and let `log.error(msg, anything)` type-check while silently
- * dropping the error. Prefer `log.error(message, error?, context?)`.
- * This explicit object shape is retained only for the legacy
- * `{ shouldExit }` fatal path.
+ * Options for the fatal path: `log.error(message, { shouldExit: true })`.
+ *
+ * Kept as an explicit object shape rather than folded into a union with
+ * `Error`. The old union included `| any`, which collapsed the whole thing and
+ * let `log.error(msg, anything)` type check while silently dropping the error
+ * (stacksjs/stacks#1932). For ordinary reporting use
+ * `log.error(message, error?, context?)`.
  */
 export interface LogErrorOptions {
   shouldExit: boolean

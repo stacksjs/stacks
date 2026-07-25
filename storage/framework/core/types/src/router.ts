@@ -22,9 +22,11 @@ export interface CustomAttributes {
   [key: string]: ValidationField
 }
 
-export interface RouteParams { [key: string]: string | number }
-
-export type NumericField = 'id' | 'age' | 'count' | 'quantity' | 'amount' | 'price' | 'total' | 'score' | 'rating' | 'duration' | 'size' | 'weight' | 'height' | 'width' | 'length' | 'distance' | 'speed' | 'temperature' | 'volume' | 'capacity' | 'density' | 'pressure' | 'force' | 'energy' | 'power' | 'frequency' | 'voltage' | 'current' | 'resistance' | 'time' | 'date' | 'year' | 'month' | 'day' | 'hour' | 'minute' | 'second' | 'millisecond' | 'microsecond' | 'nanosecond'
+/**
+ * URL route parameters. Always strings at runtime - the router does no
+ * coercion. Use `Number(...)` or `getParamAsInt()` when you want a number.
+ */
+export interface RouteParams { [key: string]: string }
 
 export interface Route {
   name: string
@@ -104,7 +106,7 @@ export interface RouterInstance {
   addBodies: (params: any) => void
   addParam: (param: RouteParam) => void
   addHeaders: (headerParams: Headers) => void
-  get: <K extends string>(element: K, defaultValue?: K extends NumericField ? number : string) => K extends NumericField ? number : string
+  get: (element: string, defaultValue?: string) => string
   all: () => any
   validate: (attributes?: CustomAttributes) => Promise<void>
   has: (element: string) => boolean
@@ -113,7 +115,7 @@ export interface RouterInstance {
   header: (headerParam: string) => string | number | boolean | null
   getHeaders: () => any
   Header: (headerParam: string) => string | number | boolean | null
-  getParam: <T>(key: string) => T
+  getParam: (key: string) => string
   route: (key: string) => number | string | null
   bearerToken: () => string | null | RouterAuthToken
   getParams: () => RouteParams
