@@ -3,16 +3,6 @@ import type { BroadcastServer } from 'ts-broadcasting'
 import { getServer, setServer } from './server-instance'
 
 /**
- * Set the broadcast server instance
- * @deprecated Use setServer from './server-instance' instead
- */
-export function setBunSocket(server: BroadcastServer | null): void {
-  if (server) {
-    setServer(server)
-  }
-}
-
-/**
  * Store WebSocket event in the database
  * Note: This function is now a no-op. WebSocket events are tracked internally by ts-broadcasting.
  */

@@ -60,16 +60,6 @@ export async function transaction<T>(
 }
 
 /**
- * Legacy alias for transaction()
- * @deprecated Use transaction() instead
- */
-export function transactionBuilder(callback: () => Promise<void>): Promise<void> {
-  return (db.transaction as unknown as (cb: (tx: TransactionHandle) => Promise<void>) => Promise<void>)(async () => {
-    await callback()
-  })
-}
-
-/**
  * Create a savepoint within a transaction for nested rollback support.
  *
  * @example

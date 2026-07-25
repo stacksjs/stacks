@@ -35,7 +35,7 @@ export type { HeartbeatConfig } from './heartbeat'
 // into their reconnect handler to re-send missed messages.
 export { debugSnapshot, getReplayBuffer, pruneExpired, recordBroadcast, replaySince, setReplayBuffer } from './replay-buffer'
 export type { BufferedMessage, ReplayBufferConfig } from './replay-buffer'
-export { setBunSocket, handleWebSocketRequest, storeWebSocketEvent } from './ws'
+export { handleWebSocketRequest, storeWebSocketEvent } from './ws'
 // WebSocket authenticator wiring (stacksjs/stacks#1877 R-1). Install
 // once at server boot to require a valid token / cookie at the
 // handshake boundary — without it, the upgrade proceeds unauthed.

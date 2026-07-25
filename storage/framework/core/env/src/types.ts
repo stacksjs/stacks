@@ -194,9 +194,6 @@ export interface StacksEnv {
   [key: string]: string | number | boolean | undefined
 }
 
-/** @deprecated Use `StacksEnv` instead */
-export type Env = StacksEnv
-
 export type EnvSchema = any
 
 export interface FrontendEnv {
