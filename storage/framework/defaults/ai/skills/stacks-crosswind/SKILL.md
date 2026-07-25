@@ -18,7 +18,7 @@ For taste-level guidance on *which* utilities to reach for (layout variance, spa
 - Package: `node_modules/@cwcss/crosswind/`
 - UI config: `config/ui.ts` (Crosswind options referencing Crosswind)
 - Default styles: `storage/framework/defaults/styles/`
-- Output: `storage/framework/assets/crosswind.css`
+- Output: `storage/framework/stx/cache/cw-<hash>.css`, one file per page (reachable as `.stx/cache/`)
 
 ## Core API
 
@@ -182,7 +182,7 @@ interface ParsedClass {
 ## Gotchas
 - **Not Tailwind** — Crosswind is a separate implementation with Tailwind-compatible syntax
 - **Stacks uses Crosswind config** — `config/ui.ts` defines Crosswind options which feed Crosswind
-- **Output goes to `storage/framework/assets/crosswind.css`** — not a typical `dist/` directory
+- **Output is per-page, content-hashed** — `storage/framework/stx/cache/cw-<hash>.css`, generated on demand rather than one bundled stylesheet. The directory is gitignored and safe to delete; the next request regenerates it
 - **Bun plugin available** — can be used as a Bun build plugin for automatic CSS generation
 - **Attributify mode** — optional mode where utilities can be written as HTML attributes instead of classes
 - **Bracket syntax** — `text-[#custom]` for arbitrary values, same as Tailwind JIT

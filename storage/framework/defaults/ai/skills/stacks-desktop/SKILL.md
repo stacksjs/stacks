@@ -68,7 +68,7 @@ buddy build:desktop     # Build desktop application
 ## Related Files
 - System tray views use STX templates in `storage/framework/defaults/views/system-tray/`
 - System tray has its own router type definitions
-- Desktop layouts in `storage/framework/defaults/layouts/system-tray/`
+- Desktop layouts in `storage/framework/defaults/views/system-tray/`
 
 ## Gotchas
 - **Currently incomplete** — `openDevWindow()` is a stub that returns `false`

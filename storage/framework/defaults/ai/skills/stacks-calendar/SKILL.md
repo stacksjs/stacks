@@ -11,7 +11,7 @@ allowed-tools: Read Edit Write Bash Grep Glob
 Calendar event export to 4 calendar providers.
 
 ## Key Paths
-- Core package: `storage/framework/core/calendar/src/`
+- Core package: `storage/framework/core/calendar-api/src/`
 - Package: `@stacksjs/calendar-api`
 
 ## Export Functions

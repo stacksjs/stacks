@@ -11,7 +11,7 @@ allowed-tools: Read Edit Write Bash Grep Glob
 The Stacks admin dashboard provides a full-featured admin panel with 136+ routes, 150+ components, and multi-section layout.
 
 ## Key Paths
-- Dashboard pages: `storage/framework/defaults/dashboard/pages/`
+- Dashboard pages: `storage/framework/defaults/views/dashboard/`
 - Dashboard components: `storage/framework/defaults/resources/components/Dashboard/`
 - Dashboard views: `storage/framework/defaults/views/dashboard/`
 - Dashboard layouts: `storage/framework/defaults/views/dashboard/layouts/`

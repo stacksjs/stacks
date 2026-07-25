@@ -62,7 +62,7 @@ Command groups defined in lazy-commands.ts:
 5. Parse and execute
 
 ### Commands that skip APP_KEY check
-`build`, `lint`, `lint:fix`, `test`, `test:types`, `test:unit`, `test:feature`, `typecheck`, `types:fix`, `types:generate`, `clean`, `fresh`, `about`, `doctor`, `setup`, `setup:ssl`, `setup:oh-my-zsh`, `deploy`
+`build`, `lint`, `lint:fix`, `test`, `test:types`, `test:unit`, `test:feature`, `typecheck`, `types:fix`, `types:generate`, `clean`, `fresh`, `about`, `doctor`, `setup`, `setup:ai`, `setup:ssl`, `setup:oh-my-zsh`, `deploy`
 
 ### buddy.config.ts Support
 Optional config file at project root. Validated with `validateConfig()`. Supports:
@@ -379,7 +379,7 @@ buddy cloud:invalidate-cache   # invalidate CloudFront cache
 buddy cloud:diff               # show deployed vs local template diff
 ```
 
-`cloud:remove` uses `undeployStack()` from `storage/framework/core/actions/deploy` and handles stuck stacks by creating temporary IAM roles.
+`cloud:remove` uses `undeployStack()` from `storage/framework/core/actions/src/deploy` and handles stuck stacks by creating temporary IAM roles.
 
 ---
 
@@ -582,6 +582,10 @@ buddy ports:check            # check ports across all Stacks projects
 buddy setup                  # ensure project is set up correctly (alias: ensure)
   --skip-aws                 # skip AWS configuration
   --skip-keygen              # skip APP_KEY generation
+buddy setup:ai [provider]    # wire up an AI coding agent (alias: ai:setup)
+  provider                   # claude | codex | cursor | copilot | gemini (prompts if omitted)
+  --copy                     # copy the agent files instead of symlinking them
+  --force                    # overwrite generated files (never AGENTS.md)
 buddy setup:ssl              # setup SSL certs + hosts file (alias: ssl:setup)
   -d/--domain [domain]       # custom domain (defaults to APP_URL)
   --skip-hosts               # skip hosts file modification

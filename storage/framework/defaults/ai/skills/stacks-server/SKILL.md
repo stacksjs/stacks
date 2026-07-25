@@ -185,7 +185,7 @@ Entry point for compiled production binaries. Sequence:
 1. Sets `__STACKS_BINARY_MODE__ = true` on `globalThis` (prevents auto-registration in routes)
 2. Sets `SKIP_CONFIG_LOADING = 'true'` env var
 3. Imports `loadRoutes` and `serve` from `@stacksjs/router`
-4. Loads routes from `app/Routes` registry via `loadRoutes(routeRegistry)`
+4. Loads routes from the `app/Routes.ts` registry via `loadRoutes(routeRegistry)`
 5. Loads ORM auto-generated routes from `../../orm/routes` (model CRUD endpoints)
 6. Calls `serve({ port, host })` to start the Bun HTTP server
 
