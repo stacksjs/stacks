@@ -39,7 +39,7 @@ const { showStartMenu } = withDefaults(
       <slot name="system-tray">
         <button class="tray-icon" onclick="toggleNotificationPopup()">🔔</button>
         <button class="tray-icon" onclick="window.open('https://github.com/stacksjs/stacks', '_blank')">💻</button>
-        <button class="tray-icon" onclick="window.open('https://discord.gg/stacksjs', '_blank')">💬</button>
+        <button class="tray-icon" onclick="window.open('https://stacksjs.com/discord', '_blank')">💬</button>
       </slot>
       <div class="clock" id="clock"></div>
     </div>

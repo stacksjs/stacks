@@ -3,7 +3,7 @@ contact_links:
     url: https://github.com/stacksjs/contribute
     about: Please read through before making contributions.
   - name: 💬 Stacks Discord Server
-    url: https://discord.gg/stacksjs/
+    url: https://stacksjs.com/discord
     about: Want to discuss / chat with the community? Here you go!
   - name: ⁉️ Why & how to create a reproduction?
     url: https://antfu.me/posts/why-reproductions-are-required

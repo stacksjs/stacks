@@ -51,7 +51,7 @@ const desktopIconData: Record<string, { section?: string; url?: string; left: st
   'blog': { section: 'blog', left: '260px', top: '260px' },
   'github': { url: 'https://github.com/stacksjs/stacks', left: '380px', top: '260px' },
   'sponsors': { section: 'sponsors', left: '500px', top: '260px' },
-  'discord': { url: 'https://discord.gg/stacksjs', left: '620px', top: '260px' },
+  'discord': { url: 'https://stacksjs.com/discord', left: '620px', top: '260px' },
   'whitepaper': { url: 'https://github.com/stacksjs/white-paper', left: '20px', top: '380px' },
   'contact': { section: 'contact', left: '140px', top: '380px' },
   'trash': { section: 'trash', left: '20px', top: '500px' },

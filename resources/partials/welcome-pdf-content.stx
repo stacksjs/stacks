@@ -82,7 +82,7 @@ const gettingStarted = [
     <p style="color: #666; font-size: 12px; margin: 0;">
       Learn more at <a href="https://stacksjs.com" style="color: #0831d9;">stacksjs.com</a> •
       GitHub: <a href="https://github.com/stacksjs/stacks" style="color: #0831d9;">stacksjs/stacks</a> •
-      Discord: <a href="https://discord.gg/stacksjs" style="color: #0831d9;">discord.gg/stacksjs</a>
+      Discord: <a href="https://stacksjs.com/discord" style="color: #0831d9;">stacksjs.com/discord</a>
     </p>
   </div>
 </div>

@@ -198,7 +198,7 @@ onMount(loadDashboard)
       <h4 class="font-semibold text-blue-900 text-sm dark:text-blue-200">Documentation</h4>
       <p class="mt-1 text-blue-700 text-xs dark:text-blue-300">Guides and API references</p>
     </a>
-    <a href="https://discord.gg/stacksjs" target="_blank" class="p-5 bg-purple-50 dark:bg-purple-900/20 rounded-xl hover:shadow-md transition-shadow">
+    <a href="https://stacksjs.com/discord" target="_blank" class="p-5 bg-purple-50 dark:bg-purple-900/20 rounded-xl hover:shadow-md transition-shadow">
       <h4 class="font-semibold text-purple-900 text-sm dark:text-purple-200">Community</h4>
       <p class="mt-1 text-purple-700 text-xs dark:text-purple-300">Join our Discord</p>
     </a>

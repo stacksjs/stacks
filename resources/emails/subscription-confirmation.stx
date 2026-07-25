@@ -68,7 +68,7 @@ const year = props.year || new Date().getFullYear()
                     &nbsp;&middot;&nbsp;
                     <a href="https://github.com/stacksjs/stacks" style="color: #888; text-decoration: none;">GitHub</a>
                     &nbsp;&middot;&nbsp;
-                    <a href="https://discord.gg/stacksjs" style="color: #888; text-decoration: none;">Discord</a>
+                    <a href="https://stacksjs.com/discord" style="color: #888; text-decoration: none;">Discord</a>
                   </td>
                 </tr>
               </table>
