@@ -4,7 +4,7 @@ import process from 'node:process'
 import { confirm, intro, log, onUnknownSubcommand, outro, text } from "@stacksjs/cli"
 import { Action } from '@stacksjs/enums'
 import { hasTTY, isCI } from '@stacksjs/env'
-import { appPath, frameworkPath, projectPath } from '@stacksjs/path'
+import { appPath, frameworkPath, frameworkRuntimePath, projectPath } from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types'
 
 // Lazy-load @stacksjs/actions to keep `buddy --help` cheap. The barrel
@@ -26,7 +26,7 @@ async function runAction(...args: Parameters<typeof import('@stacksjs/actions').
  * any DB-level advisory lock and works on every supported OS.
  */
 function acquireMigrationLock(): { acquired: boolean, release: () => void } {
-  const lockDir = projectPath('.stacks')
+  const lockDir = frameworkRuntimePath()
   const lockFile = `${lockDir}/migrations.lock`
   try {
     if (!existsSync(lockDir)) mkdirSync(lockDir, { recursive: true })
@@ -64,7 +64,7 @@ function acquireMigrationLock(): { acquired: boolean, release: () => void } {
  * doesn't see stale state.
  */
 function readMigrateMarker(): { appliedCount: number } | null {
-  const file = projectPath('.stacks/last-migrate-result.json')
+  const file = frameworkRuntimePath('last-migrate-result.json')
   if (!existsSync(file)) return null
   try {
     const raw = readFileSync(file, 'utf8')
@@ -428,7 +428,7 @@ export function migrate(buddy: CLI): void {
         // syncError, not the async log.error: process.exit below fires before
         // an async logger flushes, so an async call would exit 1 with no
         // message — leaving a stale lockfile looking like a silent crash.
-        log.syncError('Another migration is already running (.stacks/migrations.lock exists). Wait for it to finish, or remove the lockfile if it is stale.')
+        log.syncError('Another migration is already running (storage/framework/runtime/migrations.lock exists). Wait for it to finish, or remove the lockfile if it is stale.')
         process.exit(ExitCode.FatalError)
       }
 

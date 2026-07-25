@@ -84,6 +84,10 @@ async function main() {
 
   // Skip expensive setup for commands that don't need it
   if (needsFullSetup) {
+    // Keep the runtime directories under storage/ wired up. Cheap (a handful of
+    // lstat calls), idempotent, and never throws — see ensureRuntimeDirectories.
+    p.ensureRuntimeDirectories()
+
     const { loadCommands, getCommandsToLoad, markLoaded } = await import('./lazy-commands.ts')
 
     // Load required commands for setup and key generation, then tell the

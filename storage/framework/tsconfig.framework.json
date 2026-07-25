@@ -40,6 +40,11 @@
     "./defaults/**",
     "./frontend-dist/**",
     "./libs/entries/**",
+    // Runtime state, not source: stx's build cache and the CLI's scratch
+    // directory. Both are gitignored and can be deleted at any time.
+    "./stx/**",
+    "./runtime/**",
+    "./.cache/**",
     "./server/app/**",
     "./server/config/**",
     "./server/core/**",

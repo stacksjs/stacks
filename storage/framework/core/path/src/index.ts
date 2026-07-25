@@ -1,5 +1,15 @@
 import type { ParsedPath } from 'node:path'
-import { existsSync } from 'node:fs'
+import {
+  existsSync,
+  lstatSync,
+  mkdirSync,
+  readdirSync,
+  readlinkSync,
+  renameSync,
+  rmSync,
+  symlinkSync,
+  unlinkSync,
+} from 'node:fs'
 import os from 'node:os'
 import {
   basename,
@@ -1431,6 +1441,194 @@ export function validationPath(path?: string): string {
 }
 
 /**
+ * Returns the path to the framework's runtime scratch directory.
+ *
+ * This is where the framework keeps short-lived, machine-local state that is
+ * neither source nor build output: the `buddy migrate` lockfile, the marker a
+ * migration subprocess writes back to the CLI, temporary bundles, and similar.
+ * Nothing in here is committed, and deleting the whole directory is always safe.
+ *
+ * It used to live at `./.stacks` in the project root. Everything runtime-owned
+ * now sits under `storage/` so the root only holds files you author.
+ *
+ * @param path - The relative path to the file or directory within the runtime directory.
+ * @returns The absolute path to the specified file or directory.
+ * @example
+ * ```ts
+ * import { frameworkRuntimePath } from '@stacksjs/path'
+ *
+ * console.log(frameworkRuntimePath('migrations.lock'))
+ * ```
+ */
+export function frameworkRuntimePath(path?: string): string {
+  return frameworkPath(`runtime/${path || ''}`)
+}
+
+/**
+ * Returns the path to stx's build cache and generated route manifest.
+ *
+ * stx writes its compiled-template cache and `routes.ts` manifest here. It used
+ * to be `./.stx` in the project root; the root-level directory is now a symlink
+ * maintained by {@link ensureRuntimeDirectories} so stx keeps working unchanged.
+ *
+ * @param path - The relative path to the file or directory within the stx cache.
+ * @returns The absolute path to the specified file or directory.
+ */
+export function stxPath(path?: string): string {
+  return frameworkPath(`stx/${path || ''}`)
+}
+
+/**
+ * Returns the path to the local cloud state directory.
+ *
+ * ts-cloud persists per-environment driver state, cached templates, and the
+ * management dashboard's credentials here. These are machine-local secrets and
+ * caches, never committed. It used to be `./.ts-cloud` in the project root; the
+ * root-level directory is now a symlink maintained by
+ * {@link ensureRuntimeDirectories}.
+ *
+ * Not to be confused with {@link cloudPath}, which points at the committed
+ * `cloud/` infrastructure-as-code directory.
+ *
+ * @param path - The relative path to the file or directory within the cloud state directory.
+ * @returns The absolute path to the specified file or directory.
+ */
+export function cloudStatePath(path?: string): string {
+  return storagePath(`cloud/${path || ''}`)
+}
+
+/**
+ * The outcome of relocating one runtime directory.
+ *
+ * `expectsLink` says whether a symlink is supposed to remain at `legacy`;
+ * `linked` says whether one is actually there. A directory with
+ * `expectsLink: false` is fully migrated and intentionally leaves nothing
+ * behind, so only `expectsLink && !linked` indicates a problem.
+ */
+export interface RuntimeDirectoryState {
+  legacy: string
+  target: string
+  expectsLink: boolean
+  linked: boolean
+}
+
+/**
+ * The runtime directories that used to sit in the project root and now live
+ * under `storage/`.
+ *
+ * `link: true` leaves a symlink behind at the old location. Only stx and
+ * ts-cloud need that: both resolve `.stx` / `.ts-cloud` relative to the working
+ * directory from inside their own bundles and offer no option to point
+ * elsewhere. Everything the framework itself writes resolves through
+ * {@link frameworkRuntimePath}, so `.stacks` is migrated and then simply
+ * removed - no symlink, nothing left in the project root.
+ */
+const RELOCATED_RUNTIME_DIRECTORIES: ReadonlyArray<{ legacy: string, target: () => string, link: boolean }> = [
+  { legacy: '.stx', target: stxPath, link: true },
+  { legacy: '.ts-cloud', target: cloudStatePath, link: true },
+  { legacy: '.stacks', target: frameworkRuntimePath, link: false },
+]
+
+/**
+ * Recursively merges `from` into `to`, keeping whatever is already at `to`.
+ *
+ * The recursion matters: a shallow "rename each top-level entry unless it
+ * exists" pass would delete an entire subtree just because a sibling file
+ * inside it happened to be present at the destination. Directories present on
+ * both sides are merged entry by entry; only files that already exist at the
+ * destination are dropped from the source.
+ */
+export function mergeDirectoryInto(from: string, to: string): void {
+  mkdirSync(to, { recursive: true })
+
+  for (const entry of readdirSync(from)) {
+    const source = join(from, entry)
+    const destination = join(to, entry)
+
+    if (!existsSync(destination)) {
+      renameSync(source, destination)
+      continue
+    }
+
+    if (lstatSync(source).isDirectory() && lstatSync(destination).isDirectory()) {
+      mergeDirectoryInto(source, destination)
+      rmSync(source, { recursive: true, force: true })
+      continue
+    }
+
+    // Same name, and at least one side is a file: the destination is the newer
+    // location, so it wins.
+    rmSync(source, { recursive: true, force: true })
+  }
+}
+
+/**
+ * Creates the framework's runtime directories under `storage/` and points the
+ * legacy root-level directories at them.
+ *
+ * For each relocated directory this:
+ *
+ *  1. creates the target under `storage/` if it does not exist yet,
+ *  2. recursively merges a pre-existing real directory in the project root into
+ *     it (anything already at the target wins, so re-running is safe),
+ *  3. replaces the root entry with a symlink to the target.
+ *
+ * Every step is best-effort. A project on a filesystem that refuses symlinks
+ * keeps working exactly as before - the root directory simply stays real - so
+ * this must never throw or block a command.
+ *
+ * @returns The relocations that are now in place.
+ */
+export function ensureRuntimeDirectories(): RuntimeDirectoryState[] {
+  const results: RuntimeDirectoryState[] = []
+
+  // Windows needs an explicit junction for directory links; POSIX does not care.
+  const linkType = process.platform === 'win32' ? 'junction' : 'dir'
+
+  for (const { legacy, target, link } of RELOCATED_RUNTIME_DIRECTORIES) {
+    const legacyPath = projectPath(legacy)
+    const targetPath = target()
+
+    try {
+      mkdirSync(targetPath, { recursive: true })
+
+      const stats = lstatSync(legacyPath, { throwIfNoEntry: false })
+
+      if (stats?.isSymbolicLink()) {
+        const pointsAtTarget = resolve(dirname(legacyPath), readlinkSync(legacyPath)) === resolve(targetPath)
+
+        // Already correct, or an unrelated symlink we should not be linking
+        // over (`buddy generate:core-symlink` puts one at `.stacks`).
+        if (pointsAtTarget || !link) {
+          results.push({ legacy: legacyPath, target: targetPath, expectsLink: link, linked: pointsAtTarget })
+          continue
+        }
+        unlinkSync(legacyPath)
+      }
+      else if (stats?.isDirectory()) {
+        // One-time migration of a project that predates the move.
+        mergeDirectoryInto(legacyPath, targetPath)
+        rmSync(legacyPath, { recursive: true, force: true })
+      }
+      else if (stats) {
+        // A stray file where a directory belongs.
+        rmSync(legacyPath, { force: true })
+      }
+
+      if (link)
+        symlinkSync(targetPath, legacyPath, linkType)
+
+      results.push({ legacy: legacyPath, target: targetPath, expectsLink: link, linked: link })
+    }
+    catch {
+      results.push({ legacy: legacyPath, target: targetPath, expectsLink: link, linked: false })
+    }
+  }
+
+  return results
+}
+
+/**
  * Returns the path to the `validation` directory within the core directory.
  *
  * @param path - The relative path to the file or directory within the validation directory.
@@ -1478,7 +1676,11 @@ export interface Path {
   chatPath: (path?: string) => string
   cliPath: (path?: string) => string
   cloudPath: (path?: string) => string
+  cloudStatePath: (path?: string) => string
   frameworkCloudPath: (path?: string) => string
+  frameworkRuntimePath: (path?: string) => string
+  stxPath: (path?: string) => string
+  ensureRuntimeDirectories: () => RuntimeDirectoryState[]
   collectionsPath: (path?: string) => string
   commandsPath: (path?: string) => string
   componentsPath: (path?: string) => string
@@ -1617,6 +1819,10 @@ export const path: Path = {
   chatPath,
   cliPath,
   cloudPath,
+  cloudStatePath,
+  frameworkRuntimePath,
+  stxPath,
+  ensureRuntimeDirectories,
   frameworkCloudPath,
   collectionsPath,
   commandsPath,

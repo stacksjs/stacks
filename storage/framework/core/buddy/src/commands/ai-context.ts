@@ -43,7 +43,7 @@ export function aiContext(buddy: CLI): void {
     .option('--model [model]', 'Model family used for the heuristic token estimate', { default: 'gpt-4o' })
     .example('buddy ai:context')
     .example('buddy ai:context --json')
-    .example('buddy ai:context --json --output .stacks/ai-context.json')
+    .example('buddy ai:context --json --output storage/framework/runtime/ai-context.json')
     .action((options: AiContextCommandOptions) => {
       const generated = generateAiContextOutput(options)
       if (generated.outputPath) console.log(`Wrote AI project context to ${generated.outputPath}`)

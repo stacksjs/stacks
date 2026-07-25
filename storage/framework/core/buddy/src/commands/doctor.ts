@@ -309,6 +309,25 @@ export function doctor(buddy: CLI): void {
         return `Driver: ${driver}`
       })
 
+      // Runtime directories — all of them live under storage/ now. `.stx` and
+      // `.ts-cloud` stay as symlinks because stx and ts-cloud hardcode those
+      // names relative to the working directory. A filesystem that refuses
+      // symlinks is not fatal (both tools just use a root-level directory
+      // again), but it is worth surfacing, since deploy state and the build
+      // cache then land outside storage/.
+      {
+        const { ensureRuntimeDirectories, projectPath } = await import('@stacksjs/path')
+        const unlinked = ensureRuntimeDirectories().filter(entry => entry.expectsLink && !entry.linked)
+
+        checks.push(unlinked.length === 0
+          ? { name: 'Runtime directories', status: 'pass', message: 'Linked to storage/' }
+          : {
+              name: 'Runtime directories',
+              status: 'warn',
+              message: `Could not link ${unlinked.map(entry => entry.legacy.slice(projectPath().length + 1)).join(', ')} into storage/ (symlinks unsupported here?)`,
+            })
+      }
+
       // AWS credentials — check the env vars even without making a real call
       const hasAwsCreds = Boolean(process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY)
       const hasAwsRole = Boolean(process.env.AWS_PROFILE) || Boolean(process.env.AWS_ROLE_ARN)

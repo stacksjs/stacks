@@ -236,8 +236,21 @@ export async function generateSeeder(): Promise<void> {
   // await seed()
 }
 
+/**
+ * Drops a `.framework` symlink in the project root pointing at
+ * `storage/framework`, so core developers can `cd .framework` instead of typing
+ * the full path. Purely a convenience; nothing in the framework depends on it.
+ *
+ * It used to be called `.stacks`, which now collides with the pre-relocation
+ * name of the runtime scratch directory (see `ensureRuntimeDirectories`).
+ */
 export async function generateCoreSymlink(): Promise<void> {
-  await runCommand(`ln -s ${frameworkPath()} ${projectPath('.stacks')}`)
+  const link = projectPath('.framework')
+
+  if (fs.existsSync(link))
+    await runCommand(`rm -f ${link}`)
+
+  await runCommand(`ln -s ${frameworkPath()} ${link}`)
 }
 
 export async function generateOpenApiSpec(): Promise<void> {

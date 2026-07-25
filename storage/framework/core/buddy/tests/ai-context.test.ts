@@ -38,7 +38,7 @@ describe('buddy ai:context', () => {
 
   it('emits the versioned JSON contract and writes it explicitly', () => {
     const root = project()
-    const target = '.stacks/ai-context.json'
+    const target = 'storage/framework/runtime/ai-context.json'
     const generated = generateAiContextOutput({ json: true, output: target, maxChars: 1000 }, root)
     const outputPath = join(root, target)
 

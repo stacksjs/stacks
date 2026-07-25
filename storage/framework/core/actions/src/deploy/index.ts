@@ -1357,7 +1357,7 @@ SVCEOF`,
           } else {
             // Serverless mode: Deploy the TypeScript SMTP proxy (existing behavior)
             const smtpServerSrc = resolvePath(p.projectPath('storage/framework/core/cloud/src/imap/smtp-server.ts'))
-            const bundleOutDir = joinPath(p.projectPath(), '.stacks/tmp/smtp-bundle')
+            const bundleOutDir = p.frameworkRuntimePath('tmp/smtp-bundle')
             execSync(`bun build ${smtpServerSrc} --target=bun --outdir=${bundleOutDir}`, { stdio: 'pipe' })
 
             const bundlePath = joinPath(bundleOutDir, 'smtp-server.js')

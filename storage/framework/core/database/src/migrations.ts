@@ -618,7 +618,7 @@ async function countAppliedMigrations(): Promise<number> {
 async function writeMigrateMarker(appliedCount: number): Promise<void> {
   try {
     const fs = await import('node:fs/promises')
-    const dir = path.projectPath('.stacks')
+    const dir = path.frameworkRuntimePath()
     await fs.mkdir(dir, { recursive: true })
     const file = `${dir}/last-migrate-result.json`
     const body = JSON.stringify({

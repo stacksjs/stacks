@@ -50,11 +50,31 @@ temp
 .temp
 data.ms
 generated/*
-.stx
 .stx-serve
 custom-cli
 *bun-build
 discovered-packages.json
+
+# Runtime state. It all lives under storage/ now:
+#   storage/framework/stx      stx build cache + generated route manifest
+#   storage/framework/runtime  migration lock, temp bundles, CLI scratch
+#   storage/cloud              cloud driver state + dashboard credentials
+storage/framework/stx/
+storage/framework/runtime/
+storage/cloud/
+
+# `ensureRuntimeDirectories()` keeps `.stx` and `.ts-cloud` as symlinks to the
+# two directories above: stx and ts-cloud resolve those names relative to the
+# working directory from inside their own bundles, with no way to point them
+# elsewhere. `.stacks` is the pre-relocation name of storage/framework/runtime -
+# listed so a checkout that predates the move stays clean until it migrates.
+/.stx
+/.ts-cloud
+/.stacks
+
+# Opt-in convenience symlink to storage/framework, created by
+# `buddy generate:core-symlink`. Core developers only.
+/.framework
 
 # Stub workspace packages (temporary)
 /ts-auth
@@ -85,12 +105,8 @@ storage/framework/cache/
 # upgrade action on success but listed here to keep stray copies (e.g. from a
 # kill -9'd run) out of commits.
 .tmp-upgrade/
-.claude/scheduled_tasks.lock
 /storage/framework/frontend-dist
 /storage/framework/desktop-dist
-/.stacks
-/.ts-cloud
-.claude/settings.local.json
 
 # Per-package runtime logs created when building a core package in place
 storage/framework/core/**/storage/logs/
