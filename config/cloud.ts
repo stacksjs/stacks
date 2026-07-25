@@ -772,6 +772,21 @@ export const tsCloud: TsCloudConfig = {
     // Redirect-only sites (gateway answers with a 301; nothing is shipped).
     // The alternate adblock domain → canonical, and www → apex for stacksjs.com.
     wwwStacksjs: { domain: 'www.stacksjs.com', redirect: 'https://stacksjs.com' },
+
+    // Vanity invite link. Every README/doc links the community as
+    // stacksjs.com/discord so the invite code lives in exactly one place (here)
+    // and can be rotated without touching thousands of markdown files.
+    //
+    // This is a path-scoped redirect route on the apex domain: the gateway
+    // resolves longest-prefix-first, so `/discord` wins over the `main` app's
+    // `/` route without competing with it. `preservePath: false` is required —
+    // the default appends the request path, which would send visitors to
+    // discord.gg/stacksjs/discord.
+    discord: {
+      domain: env.APP_DOMAIN || 'stacksjs.com',
+      path: '/discord',
+      redirect: { to: 'https://discord.gg/stacksjs', preservePath: false },
+    },
   },
 }
 
