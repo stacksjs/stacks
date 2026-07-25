@@ -781,11 +781,11 @@ export const tsCloud: TsCloudConfig = {
     // resolves longest-prefix-first, so `/discord` wins over the `main` app's
     // `/` route without competing with it. `preservePath: false` is required —
     // the default appends the request path, which would send visitors to
-    // discord.gg/stacksjs/discord.
+    // discord.gg/<invite>/discord.
     discord: {
       domain: env.APP_DOMAIN || 'stacksjs.com',
       path: '/discord',
-      redirect: { to: 'https://discord.gg/stacksjs', preservePath: false },
+      redirect: { to: 'https://discord.gg/gD8KTSzhBd', preservePath: false },
     },
   },
 }
