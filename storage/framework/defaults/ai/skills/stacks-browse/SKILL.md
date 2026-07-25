@@ -13,13 +13,13 @@ browser driver. It uses **no Playwright, no Puppeteer, no npm packages** — it 
 Chromium-family browser already on the machine and drives it over the Chrome DevTools
 Protocol (CDP) using only Bun's native `Bun.spawn`, `fetch`, and `WebSocket`.
 
-The driver lives at `.claude/skills/stacks-browse/scripts/browse.ts`. Run it with `bun`:
+The driver lives at `storage/framework/defaults/ai/skills/stacks-browse/scripts/browse.ts`. Run it with `bun`:
 
 ```bash
-bun .claude/skills/stacks-browse/scripts/browse.ts <command> <url> [flags]
+bun storage/framework/defaults/ai/skills/stacks-browse/scripts/browse.ts <command> <url> [flags]
 ```
 
-Every command prints a JSON result. Screenshots are written under `.stacks/shots/` by
+Every command prints a JSON result. Screenshots are written under `storage/framework/runtime/shots/` by
 default; **Read the PNG** to view it.
 
 ## Browser discovery (no install step)
@@ -52,13 +52,13 @@ you to `brew install --cask chromium` or set `BROWSE_BROWSER`.
 
 ### Navigate
 ```bash
-bun .claude/skills/stacks-browse/scripts/browse.ts navigate <url>
+bun storage/framework/defaults/ai/skills/stacks-browse/scripts/browse.ts navigate <url>
 ```
 Reports: `title`, HTTP `status` of the main document, `loadMs`, `consoleErrors`, request count, and which browser was used.
 
 ### Screenshot
 ```bash
-bun .claude/skills/stacks-browse/scripts/browse.ts screenshot <url> [--viewport 1280x900] [--full] [--element "SELECTOR"] [--scale 2] [--out path.png] [--cookie "name=value"] [--settle 1500]
+bun storage/framework/defaults/ai/skills/stacks-browse/scripts/browse.ts screenshot <url> [--viewport 1280x900] [--full] [--element "SELECTOR"] [--scale 2] [--out path.png] [--cookie "name=value"] [--settle 1500]
 ```
 - `--full` captures the entire scroll height (via `Page.getLayoutMetrics` + `captureBeyondViewport`).
 - `--element` clips to a CSS selector's bounding box.
@@ -66,11 +66,11 @@ bun .claude/skills/stacks-browse/scripts/browse.ts screenshot <url> [--viewport 
 - `--cookie` pre-seeds cookies before navigation (repeatable). Use it for gated pages, e.g. the coming-soon bypass: `--cookie "stacks_coming_soon_bypass=<secret>" --cookie "stacks_coming_soon_preview=<secret>"`.
 - `--settle` waits N ms after the load event before capturing (default 700). Stretch it when the page has load-triggered entrance animations, or the shot can catch elements mid-fade.
 - `--scheme light|dark` emulates `prefers-color-scheme`, so theme-aware pages (auto dark mode) can be captured in both schemes without changing the host OS setting.
-- Default output: `.stacks/shots/<path>.png`.
+- Default output: `storage/framework/runtime/shots/<path>.png`.
 
 ### Responsive
 ```bash
-bun .claude/skills/stacks-browse/scripts/browse.ts responsive <url> [--out-dir DIR]
+bun storage/framework/defaults/ai/skills/stacks-browse/scripts/browse.ts responsive <url> [--out-dir DIR]
 ```
 Full-page screenshot at each breakpoint and a horizontal-overflow check:
 
@@ -82,17 +82,17 @@ Full-page screenshot at each breakpoint and a horizontal-overflow check:
 | Desktop | 1280 | 720 |
 | Wide | 1920 | 1080 |
 
-Reports `horizontalOverflowPx` per breakpoint (0 = no overflow). Shots in `.stacks/shots/responsive/`.
+Reports `horizontalOverflowPx` per breakpoint (0 = no overflow). Shots in `storage/framework/runtime/shots/responsive/`.
 
 ### Monitor (console + network)
 ```bash
-bun .claude/skills/stacks-browse/scripts/browse.ts monitor <url> [--ms 5000]
+bun storage/framework/defaults/ai/skills/stacks-browse/scripts/browse.ts monitor <url> [--ms 5000]
 ```
 Watches for `--ms` after load. Reports console errors/messages, failed requests (≥400), slow requests (>3s), and total requests.
 
 ### Snapshot (accessibility / structure)
 ```bash
-bun .claude/skills/stacks-browse/scripts/browse.ts snapshot <url>
+bun storage/framework/defaults/ai/skills/stacks-browse/scripts/browse.ts snapshot <url>
 ```
 Extracts headings, links (`text -> href`), buttons, forms (action + field count), and ARIA landmarks — useful for auditing structure and catching broken links.
 

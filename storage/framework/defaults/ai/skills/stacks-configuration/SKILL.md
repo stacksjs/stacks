@@ -1,6 +1,6 @@
 ---
 name: stacks-configuration
-description: Use when setting up or modifying Stacks project-level configuration — bunfig.toml settings, tsconfig.json, workspace configuration, .env setup, package.json scripts, system requirements (Bun >= 1.3.0, SQLite >= 3.47.2), or the project bootstrap process. For individual feature configs (database, email, auth, etc.), see the specific package skills instead.
+description: Use when setting up or modifying Stacks project-level configuration — bunfig.toml preload order, the tsconfig chain and TypeScript 7 / tsgo type checking, workspace configuration, .env setup, package.json scripts, system requirements (Bun >= 1.3.0, SQLite >= 3.47.2), or the project bootstrap process. For individual feature configs (database, email, auth, etc.), see the specific package skills instead.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript
 allowed-tools: Read Edit Write Bash Grep Glob
@@ -13,27 +13,70 @@ Project-level configuration files that control the development environment, buil
 ## bunfig.toml
 
 ```toml
-[run]
-bun = true                    # use bun for all commands
-
-[serve]
-plugins = ["bun-plugin-stx"]  # STX template processing
-
-preload = ["./storage/framework/defaults/resources/plugins/preloader.ts"]
+# Order matters: the env layer decrypts .env before the preloader reads it.
+preload = [
+  "./storage/framework/core/env/plugin.ts",
+  "./storage/framework/defaults/resources/plugins/preloader.ts",
+]
 
 [test]
-preload = ["./tests/setup.ts"]
+preload = [
+  "./storage/framework/core/env/plugin.ts",
+  "./tests/setup.ts",
+]
+coverage = false
+
+[run]
+bun = true                          # equivalent to `bun --bun` for `bun run`
+
+[serve.static]
+plugins = ["bun-plugin-stx"]        # stx template processing for static serves
 
 [install]
-linker = "hoisted"            # REQUIRED when using better-dx
+registry = { url = "https://registry.npmjs.org/", token = "$BUN_AUTH_TOKEN" }
+linker = "hoisted"                  # REQUIRED when using better-dx
 ```
 
-## tsconfig.json
+See `stacks-plugins` for what each preloaded module does, and why some commands
+deliberately skip the auto-import graph.
 
-Extends the framework's shared config:
-```json
-{ "extends": "storage/framework/core/tsconfig.json" }
+## TypeScript
+
+There is exactly **one** tsconfig in the project root. It extends the framework's
+app config, and restates the tunable defaults so you can edit or delete any one
+of them:
+
 ```
+tsconfig.json                                  <- yours; the only one in the root
+  extends storage/framework/tsconfig.app.json  <- app paths, include/exclude
+    extends storage/framework/tsconfig.base.json  <- every compiler option
+```
+
+- Change a line in the root `compilerOptions` to override that option.
+- Delete a line to fall back to the framework default.
+- Delete the whole block to take the defaults wholesale.
+
+Path aliases, module resolution, and which files get checked are owned by the
+framework and update with it.
+
+Framework internals are checked separately by
+`storage/framework/tsconfig.framework.json` - do not point your root config at
+`storage/framework/**`.
+
+```bash
+bun run typecheck:app    # app/, config/, resources/, routes/
+bun run typecheck        # framework internals
+bun run typecheck:clean  # drop the incremental cache
+```
+
+Type checking runs on TypeScript 7 - `tsc` is the native Go compiler (tsgo), so
+both checks finish in a couple of seconds. Options removed in 7.0 (`baseUrl`,
+`importsNotUsedAsValues`, `preserveValueImports`, `suppressImplicitAnyIndexErrors`)
+are gone from every config; path mappings resolve relative to the file that
+declares them, so no `baseUrl` is needed.
+
+Incremental build info lands in `storage/framework/.cache/typescript/`, not in
+`node_modules`, so it survives a reinstall.
 
 ## package.json (Root)
 
@@ -100,8 +143,12 @@ bun run build:reset  # full clean rebuild
 
 ## Gotchas
 - `bunfig.toml` MUST have `linker = "hoisted"` when better-dx is installed
-- The preloader runs before the application starts — initializes plugins
-- STX plugin must be in `[serve].plugins` for template processing
-- Workspace excludes prevent node_modules and dist from being treated as packages
+- **Preload order is load-bearing** — the env plugin decrypts `.env` before the
+  preloader reads it. Swapping them breaks encrypted config
+- The stx plugin belongs under `[serve.static]`, not `[serve]`
+- **One tsconfig in the root.** Adding a second (a `tsconfig.framework.json`, say)
+  splits the source of truth. Point scripts at the framework's config by path
+  instead
+- Workspace excludes prevent `node_modules` and `dist` from being treated as packages
 - `.env` is auto-loaded by Bun — no dotenv package needed
 - Generate APP_KEY before deployment: `buddy key:generate`

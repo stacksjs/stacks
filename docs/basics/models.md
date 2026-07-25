@@ -210,10 +210,6 @@ traits: {
     middleware: ['auth'],
   },
 
-  // Seeder configuration
-  useSeeder: {
-    count: 50,
-  },
 }
 
 ```

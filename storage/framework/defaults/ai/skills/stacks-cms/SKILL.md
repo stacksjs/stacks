@@ -10,8 +10,8 @@ allowed-tools: Read Edit Write Bash Grep Glob
 
 ## Key Paths
 - Core package: `storage/framework/core/cms/src/`
-- Models: `storage/framework/defaults/models/Content/` (Post, Author, Page)
-- Models: `storage/framework/defaults/models/` (Comment, Tag)
+- Models: `storage/framework/defaults/app/Models/Content/` (Post, Author, Page)
+- Models: `storage/framework/defaults/app/Models/` (Comment, Tag)
 - Actions: `storage/framework/defaults/app/Actions/Cms/`
 - Routes: `routes/api.ts` (CMS and blog endpoints)
 - Config: `config/blog.ts`

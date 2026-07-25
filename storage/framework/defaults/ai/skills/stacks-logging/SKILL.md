@@ -13,7 +13,7 @@ Uses @stacksjs/clarity Logger with file writing to `storage/logs/stacks.log`.
 ## Key Paths
 - Core package: `storage/framework/core/logging/src/`
 - Configuration: `config/logging.ts`
-- Log model: `storage/framework/models/Log.ts`
+- Log model: `storage/framework/defaults/app/Models/Log.ts`
 - Log file: `storage/logs/stacks.log`
 
 ## Log Facade

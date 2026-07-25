@@ -15,9 +15,9 @@ STX is the full-stack templating and component framework for Stacks. It handles 
 When the task is how a page should *look* (not just how stx renders), pair this skill with the design-taste family: `stacks-design-taste` (flagship), the aesthetic presets `stacks-design-soft` / `stacks-design-minimalist` / `stacks-design-brutalist`, `stacks-redesign`, `stacks-design-output`, and the image-first `stacks-image-to-code` / `stacks-imagegen-web` / `stacks-imagegen-mobile` / `stacks-brandkit`. They translate premium design rules into stx + Crosswind + composables.
 
 ## Key Paths
-- STX config: `config/stx.ts`
+- STX config: `config/ui.ts`
 - STX plugin: `bun-plugin-stx` (loaded via bunfig.toml)
-- STX state: `.stx/`
+- STX build cache + route manifest: `storage/framework/stx/` (also reachable as `.stx/`, a symlink stx relies on)
 - Components: `resources/components/`
 - Layouts: `resources/layouts/`
 - Partials: `resources/partials/`
@@ -58,7 +58,7 @@ function increment() {
 </style>
 ```
 
-## Configuration (config/stx.ts)
+## Configuration (config/ui.ts)
 
 ```typescript
 import type { StxOptions } from '@stacksjs/stx'
@@ -168,7 +168,7 @@ await addLayout('admin', { nav: true, footer: true })
 - **STX is the ONLY templating system** — do not use other template engines
 - **`bun-plugin-stx` must be loaded** — without it, `.stx` files won't be processed
 - **Auto-imports** — browser auto-imports defined in `storage/framework/browser-auto-imports.json`
-- **`.stx/` directory** — contains STX-specific state and cache
+- **`storage/framework/stx/`** — stx build cache and the generated route manifest. The root-level `.stx` is a symlink to it, because stx resolves that name relative to the working directory. Gitignored; safe to delete
 - **Reactivity is custom** — `ref()` and `computed()` from STX are not Vue's implementation
 - **Crosswind for styling** — use utility classes, not inline styles
 - **Script block restrictions** — only stx-compatible code (signals, composables, directives), no vanilla DOM APIs

@@ -23,7 +23,7 @@ This skill ports the renderer and visual system from [Archify](https://github.co
 
 Do not install packages or fetch runtime assets. Use Bun and the bundled source only. Standalone validators for all five JSON schemas are checked in, the renderer uses Bun's built-in Node compatibility modules, and generated HTML uses system font fallbacks with no network requests.
 
-Run `bun --config=.claude/skills/stacks-technical-diagrams/bunfig.toml --no-env-file .claude/skills/stacks-technical-diagrams/bin/technical-diagrams.mjs doctor` from the Stacks project root to verify the skill. Run `bun --config=.claude/skills/stacks-technical-diagrams/bunfig.toml --no-env-file .claude/skills/stacks-technical-diagrams/bin/technical-diagrams.mjs demo [output-directory]` to generate a ready-to-open example before creating the first custom diagram.
+Run `bun --config=storage/framework/defaults/ai/skills/stacks-technical-diagrams/bunfig.toml --no-env-file storage/framework/defaults/ai/skills/stacks-technical-diagrams/bin/technical-diagrams.mjs doctor` from the Stacks project root to verify the skill. Run `bun --config=storage/framework/defaults/ai/skills/stacks-technical-diagrams/bunfig.toml --no-env-file storage/framework/defaults/ai/skills/stacks-technical-diagrams/bin/technical-diagrams.mjs demo [output-directory]` to generate a ready-to-open example before creating the first custom diagram.
 
 ## Stacks repository workflow
 
@@ -78,8 +78,8 @@ All five modes follow the same loop:
 
 1. **Read first**: the schema (`schemas/<type>.schema.json`) and the complete worked example (`examples/*.{architecture,workflow,sequence,dataflow,lifecycle}.json`) - copy its patterns instead of guessing field shapes.
 2. Write `<name>.<type>.json`.
-3. Render: `bun --config=.claude/skills/stacks-technical-diagrams/bunfig.toml --no-env-file .claude/skills/stacks-technical-diagrams/bin/technical-diagrams.mjs render <type> <input>.json <output>.html`.
-4. Validate the generated artifact: `bun --config=.claude/skills/stacks-technical-diagrams/bunfig.toml --no-env-file .claude/skills/stacks-technical-diagrams/bin/technical-diagrams.mjs validate <type> <input>.json --json`, or check an existing HTML file with `bun --config=.claude/skills/stacks-technical-diagrams/bunfig.toml --no-env-file .claude/skills/stacks-technical-diagrams/bin/technical-diagrams.mjs check <output>.html`. This catches malformed SVG output, non-finite SVG values, two-point diagonal arrows, and arrows crossing the legend.
+3. Render: `bun --config=storage/framework/defaults/ai/skills/stacks-technical-diagrams/bunfig.toml --no-env-file storage/framework/defaults/ai/skills/stacks-technical-diagrams/bin/technical-diagrams.mjs render <type> <input>.json <output>.html`.
+4. Validate the generated artifact: `bun --config=storage/framework/defaults/ai/skills/stacks-technical-diagrams/bunfig.toml --no-env-file storage/framework/defaults/ai/skills/stacks-technical-diagrams/bin/technical-diagrams.mjs validate <type> <input>.json --json`, or check an existing HTML file with `bun --config=storage/framework/defaults/ai/skills/stacks-technical-diagrams/bunfig.toml --no-env-file storage/framework/defaults/ai/skills/stacks-technical-diagrams/bin/technical-diagrams.mjs check <output>.html`. This catches malformed SVG output, non-finite SVG values, two-point diagonal arrows, and arrows crossing the legend.
 5. If either step fails, the error names the JSON path or the fix (thresholds, valid ranges, which knob to change). Fix the JSON and re-run; never edit the renderer.
 
 Schema violations exit non-zero with path-prefixed messages like `/nodes/3 (id/label: "router") must NOT have additional properties`. The renderers additionally fail fast on layout problems: node/state overlap (including cross-lane), labels colliding with nodes or other labels, labels wider than their node, out-of-range columns/rows, too-short edges, workflow edges crossing unrelated nodes, and legends outside the viewBox. CJK text is measured at double width automatically.
@@ -212,7 +212,7 @@ Architecture has the same read-schema-then-render loop as the other modes - pref
 }
 ```
 
-Render: `bun --config=.claude/skills/stacks-technical-diagrams/bunfig.toml --no-env-file .claude/skills/stacks-technical-diagrams/bin/technical-diagrams.mjs render architecture <input>.json <output>.html`.
+Render: `bun --config=storage/framework/defaults/ai/skills/stacks-technical-diagrams/bunfig.toml --no-env-file storage/framework/defaults/ai/skills/stacks-technical-diagrams/bin/technical-diagrams.mjs render architecture <input>.json <output>.html`.
 
 **Free placement** - `pos: [x, y]` is the component's top-left; `size: [w, h]` defaults to `[120, 60]`. Unlike typed modes there is no lane/stage grid - asymmetric placement is yours to choose. `meta.viewBox` is optional (auto-fitted).
 
@@ -233,8 +233,8 @@ Render: `bun --config=.claude/skills/stacks-technical-diagrams/bunfig.toml --no-
 **Inspect layout (#9)** - after editing JSON, dump computed boxes without opening HTML:
 
 ```bash
-bun --config=.claude/skills/stacks-technical-diagrams/bunfig.toml --no-env-file .claude/skills/stacks-technical-diagrams/bin/technical-diagrams.mjs inspect architecture my.architecture.json
-# or: bun --config=.claude/skills/stacks-technical-diagrams/bunfig.toml --no-env-file .claude/skills/stacks-technical-diagrams/bin/technical-diagrams.mjs validate architecture my.architecture.json --layout-json
+bun --config=storage/framework/defaults/ai/skills/stacks-technical-diagrams/bunfig.toml --no-env-file storage/framework/defaults/ai/skills/stacks-technical-diagrams/bin/technical-diagrams.mjs inspect architecture my.architecture.json
+# or: bun --config=storage/framework/defaults/ai/skills/stacks-technical-diagrams/bunfig.toml --no-env-file storage/framework/defaults/ai/skills/stacks-technical-diagrams/bin/technical-diagrams.mjs validate architecture my.architecture.json --layout-json
 ```
 
 Output includes component rects, boundaries, connection point paths, and label positions.

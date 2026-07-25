@@ -14,8 +14,8 @@ Built on `@stacksjs/bun-router` with `ts-rate-limiter`.
 - Core package: `storage/framework/core/router/src/`
 - Route files: `routes/` (api.ts, v1.ts, buddy.ts, users.ts)
 - Route registry: `app/Routes.ts`
-- Router types: `storage/framework/types/router.d.ts`
-- Dashboard types: `storage/framework/types/dashboard-router.d.ts`
+- Generated route manifest: `storage/framework/stx/routes.ts` (written by the dev server)
+- Generated action paths: `storage/framework/types/actions.d.ts`
 
 ## Route Definition
 
@@ -227,5 +227,5 @@ url('user.show', { id: 42 })             // '/users/42'
 - EnhancedRequest extends the native Bun Request with Laravel-style helpers
 - File uploads return `UploadedFile` objects with metadata
 - Query tracking is for debug/profiling — call `clearTrackedQueries()` to free memory
-- 136+ routes are auto-generated in `storage/framework/types/router.d.ts`
+- The dev server writes a route manifest to `storage/framework/stx/routes.ts` (reachable as `.stx/routes.ts`); it is a build artifact, not a file to edit
 - The health endpoint returns uptime, memory, PID, and Bun version info

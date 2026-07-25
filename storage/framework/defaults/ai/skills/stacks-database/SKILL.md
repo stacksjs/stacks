@@ -11,7 +11,7 @@ allowed-tools: Read Edit Write Bash Grep Glob
 ## Key Paths
 - Database package: `storage/framework/core/database/src/`
 - Configuration: `config/database.ts`
-- QB config: `config/qb.ts` (re-exported via `config/query-builder.ts`)
+- QB config: `config/query-builder.ts`
 - Migrations: `database/migrations/` (96+ migration files, `.sql` format)
 - QB state: `.qb/`
 - ORM: `storage/framework/orm/`
@@ -173,7 +173,7 @@ Before running migrations on SQLite, `preprocessSqliteMigrations()`:
 ## Seeding (seeder.ts)
 
 ### Seed Functions
-- `seed(config?: SeederConfig): Promise<SeedSummary>` -- loads models from both `storage/framework/defaults/models/` (recursive) and `app/Models/` (flat), user models override defaults by name
+- `seed(config?: SeederConfig): Promise<SeedSummary>` -- loads models from both `storage/framework/defaults/app/Models/` (recursive) and `app/Models/` (flat), user models override defaults by name
 - `seedModel$(modelName, options?): Promise<SeedResult>` -- seed one model by name
 - `freshSeed(config?): Promise<SeedSummary>` -- calls `seed({ ...config, fresh: true })` (truncates before seeding)
 - `listSeedableModels(): Promise<Array<{ name, table, count, source: 'default' | 'user' }>>` -- list without seeding
@@ -252,7 +252,7 @@ Entity-centric API for single-table design:
 }
 ```
 
-## config/qb.ts (Query Builder Config)
+## config/query-builder.ts (Query Builder Config)
 ```typescript
 {
   verbose: true,
@@ -273,7 +273,7 @@ Entity-centric API for single-table design:
 ## Gotchas
 - The actual default driver in `config/database.ts` is `'mysql'` (not `'sqlite'`), but `utils.ts` and `driver-config.ts` fall back to `'sqlite'` when `DB_CONNECTION` is unset
 - The `db` export is a lazy Proxy -- it auto-initializes on first property access, which means errors are deferred until first use
-- Query builder has TWO config files: `config/query-builder.ts` re-exports from `config/qb.ts`
+- Query builder config lives in `config/query-builder.ts`, and reads `DB_CONNECTION` / `DB_*` from the env - it is not a second copy of `config/database.ts`
 - The `.qb/` directory at project root stores query builder state for migration diffing
 - `resetDatabase()` drops ALL tables including framework tables (OAuth, passkeys, jobs, etc.) -- only use in development
 - `freshSeed()` truncates tables before seeding using `deleteFrom()` (not `DROP TABLE`)

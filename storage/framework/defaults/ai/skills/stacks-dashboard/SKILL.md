@@ -12,11 +12,10 @@ The Stacks admin dashboard provides a full-featured admin panel with 136+ routes
 
 ## Key Paths
 - Dashboard pages: `storage/framework/defaults/dashboard/pages/`
-- Dashboard components: `storage/framework/defaults/components/`
+- Dashboard components: `storage/framework/defaults/resources/components/Dashboard/`
 - Dashboard views: `storage/framework/defaults/views/dashboard/`
-- Dashboard layouts: `storage/framework/defaults/layouts/dashboard/`
-- Dashboard router types: `storage/framework/types/dashboard-router.d.ts` (136+ routes)
-- Dashboard actions: `storage/framework/defaults/actions/Dashboard/`
+- Dashboard layouts: `storage/framework/defaults/views/dashboard/layouts/`
+- Dashboard actions: `storage/framework/defaults/app/Actions/Dashboard/`
 - Configuration: `config/ui.ts`
 
 ## Dashboard Sections
@@ -127,7 +126,7 @@ The Stacks admin dashboard provides a full-featured admin panel with 136+ routes
 
 ## Dashboard Actions
 
-Located in `storage/framework/defaults/actions/Dashboard/`:
+Located in `storage/framework/defaults/app/Actions/Dashboard/`:
 - Settings actions — Get/Update for each settings category
 - Commerce actions — CRUD operations for all commerce models
 - Content actions — CRUD operations for content models
@@ -165,10 +164,10 @@ Port: 3002 (configured in `config/ports.ts` as `admin`)
 ## Gotchas
 - Dashboard runs on port 3002 by default (separate from frontend on 3000)
 - Dashboard components use STX templating with crosswind CSS
-- 136+ routes are auto-typed in `storage/framework/types/dashboard-router.d.ts`
+- Dashboard routes are registered from `storage/framework/defaults/routes/`, not from a generated type file
 - Settings panels read/write from the corresponding `config/*.ts` files
 - Models with `useApi` trait get auto-generated dashboard views
 - `dashboard: { highlight: true }` makes models prominent in the dashboard
 - Dashboard layout uses a sidebar + navbar pattern
-- All dashboard actions are in `storage/framework/defaults/actions/Dashboard/`
+- All dashboard actions are in `storage/framework/defaults/app/Actions/Dashboard/`
 - The live terminal component streams deployment output in real-time

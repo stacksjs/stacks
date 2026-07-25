@@ -1,6 +1,6 @@
 ---
 name: stacks-orm
-description: Use when working with the Stacks ORM — defining models with defineModel(), model relationships (hasOne, hasMany, belongsTo, belongsToMany, morphOne, hasManyThrough), attributes, traits, factories, computed properties, query building, transactions, or the 50+ built-in models. Covers @stacksjs/orm, storage/framework/orm/, and storage/framework/models/.
+description: Use when working with the Stacks ORM — defining models with defineModel(), model relationships (hasOne, hasMany, belongsTo, belongsToMany, morphOne, hasManyThrough), attributes, traits, factories, computed properties, query building, transactions, or the 50+ built-in models. Covers @stacksjs/orm, storage/framework/orm/, and storage/framework/defaults/app/Models/.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript, SQLite >= 3.47.2
 allowed-tools: Read Edit Write Bash Grep Glob
@@ -11,9 +11,9 @@ allowed-tools: Read Edit Write Bash Grep Glob
 ## Key Paths
 - Core ORM package: `storage/framework/core/orm/src/`
 - ORM implementation: `storage/framework/orm/`
-- Model definitions: `storage/framework/models/` (50+ models)
+- Model definitions: `storage/framework/defaults/app/Models/` (50+ models)
 - Application models: `app/Models/`
-- Default model templates: `storage/framework/defaults/models/`
+- Default model templates: `storage/framework/defaults/app/Models/`
 - ORM type globals: `storage/framework/types/orm-globals.d.ts`
 - Attribute types: `storage/framework/types/attributes.ts` (240+ attributes)
 - Model events: `storage/framework/types/events.ts`
@@ -282,7 +282,7 @@ type UpdateModelData<T> = Partial<InferModelAttributes<Def<T>> & BelongsToForeig
 - `getGuardedAttributes(model): string[]` -- filters for `guarded: true`, returns snake_case
 - `getFillableAttributes(model, relations): string[]` -- filters for `fillable: true`, adds FK columns, stripe_id, uuid, etc.
 - `extractFields(model, file): Promise<ModelElement[]>` -- parses model file for field metadata
-- `findCoreModel(name): string` -- searches `storage/framework/defaults/models/` recursively
+- `findCoreModel(name): string` -- searches `storage/framework/defaults/app/Models/` recursively
 - `findUserModel(name): string` -- searches `app/Models/`
 - `fetchOtherModelRelations(modelName?): Promise<RelationConfig[]>` -- scans all models for relations pointing to this model
 - `formatDate(date): string` -- ISO format `YYYY-MM-DD HH:MM:SS`
@@ -339,4 +339,4 @@ Marketing: Campaign, EmailList, SocialPost
 - Trait methods are accessed via underscore-prefixed properties: `_taggable`, `_categorizable`, `_commentable`, `_billable`, `_likeable`, `_twoFactor`
 - The `useAuth.useTwoFactor` check (not `usePasskey`) determines if two-factor methods are added
 - `defineModel()` calls `createModel()` from bun-query-builder which returns the typed query builder interface at runtime
-- Model file loading uses `findUserModel()` (app/Models/) with fallback to `findCoreModel()` (storage/framework/defaults/models/)
+- Model file loading uses `findUserModel()` (app/Models/) with fallback to `findCoreModel()` (storage/framework/defaults/app/Models/)

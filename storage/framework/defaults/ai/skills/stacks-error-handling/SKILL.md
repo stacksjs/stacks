@@ -13,7 +13,7 @@ Type-safe error handling with Result types, error pages, and structured logging.
 ## Key Paths
 - Core package: `storage/framework/core/error-handling/src/`
 - Configuration: `config/errors.ts`
-- Error model: `storage/framework/models/Error.ts`
+- Error model: `storage/framework/defaults/app/Models/Error.ts`
 
 ## Result Type (from ts-error-handling)
 
@@ -111,7 +111,7 @@ interface StackFrame { file: string, line: number, column: number, function?: st
 interface CodeSnippet { line: number, code: string, isHighlighted: boolean }
 ```
 
-## Error Model (storage/framework/models/Error.ts)
+## Error Model (storage/framework/defaults/app/Models/Error.ts)
 
 Fields: type, message, stack (stacktrace), status, additional_info
 Seeder: 10 records for testing

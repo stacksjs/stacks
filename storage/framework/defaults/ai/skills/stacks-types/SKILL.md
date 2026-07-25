@@ -13,8 +13,9 @@ allowed-tools: Read Edit Write Bash Grep Glob
 - Generated types: `storage/framework/types/`
 - ORM globals: `storage/framework/types/orm-globals.d.ts`
 - Environment: `storage/framework/types/env.d.ts`
-- Components: `storage/framework/types/components.d.ts`
-- Router: `storage/framework/types/router.d.ts`
+- Actions: `storage/framework/types/actions.d.ts` (generated `ActionPath` union)
+- Model traits: `storage/framework/types/traits.d.ts`
+- Model attributes: `storage/framework/types/attributes.d.ts`
 - Events: `storage/framework/types/events.ts`
 - Attributes: `storage/framework/types/attributes.ts`
 
@@ -145,8 +146,8 @@ interface CommentablesRequestType extends Request {
 ### 60+ ORM Models (globally available)
 User, Team, Post, Page, Author, Comment, Product, Order, Cart, Customer, Coupon, Category, Tag, Payment, Subscription, Driver, ShippingRate, GiftCard, LicenseKey, Job, FailedJob, Error, Log, Notification, and many more.
 
-### 150+ Vue Components (components.d.ts)
-Dashboard, Commerce, Billing, Forms, Marketing, UI Elements, Forum components — all globally registered.
+### stx components
+Components under `resources/components/` are resolved by the stx plugin and used directly in templates (`<Card />`) - no import, no global registration step. Editor metadata is generated into `storage/framework/core/web-types.json` and `custom-elements.json` by `buddy generate:web-types` / `generate:custom-data`. There is no `components.d.ts`.
 
 ### Actions Type
 ```typescript

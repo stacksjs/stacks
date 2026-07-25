@@ -217,7 +217,7 @@ buddy migrate:fresh -d/--diff   # show SQL without running
 buddy migrate:dns            # DNS migration for APP_URL domain
 ```
 
-Both `migrate` and `migrate:fresh` validate that models exist in `app/Models` or `storage/framework/defaults/models` before running.
+Both `migrate` and `migrate:fresh` validate that models exist in `app/Models` or `storage/framework/defaults/app/Models` before running.
 
 ### `buddy seed` - Seed database
 ```bash

@@ -86,7 +86,7 @@ Before commits, scan for:
 ## Stacks-Specific Guards
 
 - **Don't edit `storage/framework/types/*.d.ts`** — these are auto-generated
-- **Don't edit `storage/framework/defaults/models/`** without also generating migrations
+- **Don't edit `storage/framework/defaults/app/Models/`** without also generating migrations
 - **Don't modify `config/services.ts` in commits** — contains API keys
 - **Check `storage/framework/core/*/package.json` versions** — workspace packages should stay in sync
 

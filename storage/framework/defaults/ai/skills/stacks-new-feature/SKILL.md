@@ -19,7 +19,7 @@ Step-by-step guide for building features end-to-end.
 ## Step 1: Define the Model
 
 ```typescript
-// Create or edit in storage/framework/models/
+// Create or edit in storage/framework/defaults/app/Models/
 import { defineModel } from '@stacksjs/orm'
 import { schema } from '@stacksjs/validation'
 

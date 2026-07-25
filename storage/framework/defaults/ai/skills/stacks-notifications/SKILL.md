@@ -16,7 +16,7 @@ Multi-channel notification system with 5 channel types: email, SMS, chat, push, 
 - Drivers: `storage/framework/core/notifications/src/drivers/`
 - Database driver: `storage/framework/core/notifications/src/drivers/database.ts`
 - Configuration: `config/notification.ts`
-- Notification model: `storage/framework/models/Notification.ts`
+- Notification model: `storage/framework/defaults/app/Models/Notification.ts`
 
 ## Package Exports
 
@@ -162,7 +162,7 @@ interface CreateNotificationOptions {
 
 ## Notification Model Fields
 
-The Notification model (at `storage/framework/models/Notification.ts`) defines:
+The Notification model (at `storage/framework/defaults/app/Models/Notification.ts`) defines:
 - `type` -- notification type: email, sms, push, slack, webhook
 - `channel` -- delivery channel
 - `recipient` -- target email, phone, or user
@@ -194,7 +194,7 @@ The notifications package is a thin aggregation layer. Each channel delegates to
 
 - **Email channel** (`useEmail`) -- re-exports `@stacksjs/email` (configured via `config/email.ts`)
 - **SMS channel** (`useSMS`) -- re-exports `@stacksjs/sms` (configured via `config/sms.ts`)
-- **Chat channel** (`useChat`) -- re-exports `@stacksjs/chat` (configured via `config/chat.ts`)
+- **Chat channel** (`useChat`) -- re-exports `@stacksjs/chat` (configured via `config/services.ts`)
 - **Push channel** -- re-exports `@stacksjs/push`
 - **Database channel** (`useDatabase`) -- built-in driver using `@stacksjs/database`
 

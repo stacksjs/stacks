@@ -137,7 +137,7 @@ interface ScaffoldResult {
 | Language files | `locales/` |
 | Layouts | `resources/layouts/` |
 | Pages | `resources/views/` |
-| Stores | `resources/stores/` |
+| Stores | `storage/framework/defaults/stores/` |
 | Partials | `resources/partials/` |
 
 Browser-extension scaffolding also follows this resource layout: popup pages

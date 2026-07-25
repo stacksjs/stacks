@@ -14,7 +14,7 @@ Multi-driver email system with template rendering, S3-based inbox management, an
 - Core package: `storage/framework/core/email/src/`
 - Configuration: `config/email.ts`
 - Application mail: `app/Mail/`
-- Email layouts: `storage/framework/defaults/layouts/emails/`
+- Email layouts: `storage/framework/defaults/resources/emails/layouts/`
 - Email resources: `storage/framework/defaults/resources/emails/`
 
 ## Source Files

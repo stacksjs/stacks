@@ -1,6 +1,6 @@
 ---
 name: stacks-query-builder
-description: Use when building database queries in a Stacks application — constructing SQL queries, using the fluent query API, or configuring the query builder. Covers @stacksjs/query-builder which wraps bun-query-builder, and config/qb.ts.
+description: Use when building database queries in a Stacks application — constructing SQL queries, using the fluent query API, or configuring the query builder. Covers @stacksjs/query-builder which wraps bun-query-builder, and config/query-builder.ts.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript, SQLite >= 3.47.2
 allowed-tools: Read Edit Write Bash Grep Glob
@@ -10,7 +10,7 @@ allowed-tools: Read Edit Write Bash Grep Glob
 
 ## Key Paths
 - Core package: `storage/framework/core/query-builder/src/`
-- Configuration: `config/qb.ts` (re-exported via `config/query-builder.ts`)
+- Configuration: `config/query-builder.ts`
 - QB state: `.qb/`
 - External library: `bun-query-builder`
 - Package: `@stacksjs/query-builder`
@@ -63,7 +63,7 @@ const count = await db.selectFrom('users').count()
 const total = await db.selectFrom('orders').sum('amount')
 ```
 
-## Configuration (config/qb.ts)
+## Configuration (config/query-builder.ts)
 
 ```typescript
 {
@@ -119,7 +119,7 @@ const total = await db.selectFrom('orders').sum('amount')
 
 ## Gotchas
 - **Thin wrapper** — re-exports `bun-query-builder` with no additions
-- **Two config files** — `config/query-builder.ts` re-exports from `config/qb.ts`
+- **One config file** — `config/query-builder.ts`. Its `dialect` and connection details are derived from `DB_CONNECTION` and the other `DB_*` env vars, so switching databases is an env change, not a config edit
 - **`.qb/` directory** — stores query builder state for migration diffing
 - **Prefer ORM models** — query builder is the low-level interface; use models for most operations
 - **`db` proxy** — the `db` export from `@stacksjs/database` is a lazy proxy that auto-initializes the query builder on first access

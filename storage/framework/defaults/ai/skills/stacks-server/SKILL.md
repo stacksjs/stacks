@@ -208,7 +208,7 @@ function initiateImports(): void
 Registers a Bun bundler plugin (`bun-plugin-auto-imports`) that makes models, jobs, controllers, and resource functions available globally without explicit imports.
 
 Scan order (user overrides framework overrides defaults):
-- **Models**: `app/Models/` > `storage/framework/models/` > `storage/framework/defaults/models/`
+- **Models**: `app/Models/` > `storage/framework/defaults/app/Models/` > `storage/framework/defaults/app/Models/`
 - **Jobs**: `app/Jobs/`
 - **Controllers**: `app/Controllers/` > `storage/framework/defaults/app/Controllers/`
 - **Functions**: `resources/functions/`

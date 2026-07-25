@@ -13,7 +13,7 @@ Comprehensive e-commerce module with 13 sub-modules and 20+ models.
 ## Key Paths
 - Core package: `storage/framework/core/commerce/src/`
 - Default functions: `storage/framework/defaults/functions/commerce/`
-- Default models: `storage/framework/defaults/models/commerce/`
+- Default models: `storage/framework/defaults/app/Models/commerce/`
 
 ## Commerce Namespace
 

@@ -204,7 +204,7 @@ or an arbitrary repository dump to a coding model:
 ```bash
 buddy ai:context
 buddy ai:context --json
-buddy ai:context --json --output .stacks/ai-context.json
+buddy ai:context --json --output storage/framework/runtime/ai-context.json
 buddy ai:context --max-chars 4000 --model claude-sonnet-4
 ```
 

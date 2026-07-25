@@ -89,8 +89,9 @@ interface CdpEvent { method: string, params: any }
 class Cdp {
   private ws: WebSocket
   private id = 0
-  private pending = new Map<number, { resolve: (v: any) => void, reject: (e: any) => void }>()
-  private listeners: ((e: CdpEvent) => void)[] = []
+  // `_v` / `_e` are parameter names in a type position, never bound to anything.
+  private pending = new Map<number, { resolve: (_v: any) => void, reject: (_e: any) => void }>()
+  private listeners: ((_e: CdpEvent) => void)[] = []
 
   private constructor(ws: WebSocket) {
     this.ws = ws
@@ -409,7 +410,7 @@ async function main() {
       const cdp = await openPage(session.port)
       const vp = typeof flags.viewport === 'string' ? flags.viewport.split('x').map(Number) : [1280, 900]
       const scale = flags.scale ? Number(flags.scale) : 1
-      const out = (flags.out as string) || `.stacks/shots/${new URL(url).pathname.replace(/[^a-z0-9]+/gi, '-').replace(/^-|-$/g, '') || 'home'}.png`
+      const out = (flags.out as string) || `storage/framework/runtime/shots/${new URL(url).pathname.replace(/[^a-z0-9]+/gi, '-').replace(/^-|-$/g, '') || 'home'}.png`
       mkdirSync(out.split('/').slice(0, -1).join('/') || '.', { recursive: true })
       await gotoAndInstrument(cdp, url, { viewport: { w: vp[0], h: vp[1] }, scale, cookies, settleMs, scheme })
       const png = await captureScreenshot(cdp, { full: !!flags.full, element: flags.element as string | undefined })
@@ -419,7 +420,7 @@ async function main() {
     }
 
     else if (command === 'responsive') {
-      const outDir = (flags['out-dir'] as string) || '.stacks/shots/responsive'
+      const outDir = (flags['out-dir'] as string) || 'storage/framework/runtime/shots/responsive'
       mkdirSync(outDir, { recursive: true })
       const results: any[] = []
       for (const bp of BREAKPOINTS) {

@@ -17,7 +17,7 @@ allowed-tools: Read Edit Write Bash Grep Glob
 - Buddy CLI dev commands: `storage/framework/core/buddy/src/commands/dev.ts`
 - Preloader: `storage/framework/defaults/resources/plugins/preloader.ts`
 - Port config: `config/ports.ts`
-- STX config: `config/stx.ts`
+- STX config: `config/ui.ts`
 - IDE defaults: `storage/framework/defaults/ide/`
 - SSL setup: `storage/framework/core/actions/src/setup/ssl.ts`
 - Bun config: `bunfig.toml`
@@ -135,7 +135,7 @@ Uses `bun-plugin-stx` serve function with pattern-based view resolution:
 - Default views: `storage/framework/defaults/resources/views` (fallback)
 - User layouts: `resources/layouts`
 - Default layouts: `storage/framework/defaults/resources/layouts`
-- Components: `storage/framework/defaults/components/Dashboard`
+- Components: `storage/framework/defaults/resources/components/Dashboard`
 
 ### API Dev Server (api.ts)
 - Uses `@stacksjs/router` with CORS middleware
@@ -146,7 +146,7 @@ Uses `bun-plugin-stx` serve function with pattern-based view resolution:
 - Starts STX server + config API + native Craft window in parallel
 - Config API runs on `dashboardPort + 1` (default 3003), handles `POST /api/config/update`
 - Config API allows live editing of `config/*.ts` files via regex-based key replacement
-- Discovers ORM models from `app/Models/` and `storage/framework/defaults/models/`
+- Discovers ORM models from `app/Models/` and `storage/framework/defaults/app/Models/`
 - Writes `.discovered-models.json` manifest for sidebar population
 - Opens `@craft-native/ts` native window (1400x900, titlebar hidden, native sidebar)
 - Sidebar has 10 sections: Home, Library, Content, App, Data, Commerce, Marketing, Analytics, Management, Utilities
@@ -268,7 +268,7 @@ Default configurations provided at `storage/framework/defaults/ide/`:
 - `.env` file presence (warn if missing, not a failure)
 - `APP_KEY` is set (warn if not, suggests `buddy key:generate`)
 
-## STX Configuration (config/stx.ts)
+## STX Configuration (config/ui.ts)
 
 ```typescript
 {

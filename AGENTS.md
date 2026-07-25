@@ -176,7 +176,6 @@ export default defineModel({
   traits: {
     useUuid: true,
     useTimestamps: true,          // created_at / updated_at
-    useSeeder: { count: 20 },     // factory-backed seeding
     useApi: {                     // auto-generate REST actions + routes
       uri: 'products',
       routes: ['index', 'store', 'show', 'update', 'destroy'],
@@ -210,9 +209,13 @@ export default defineModel({
 ```
 
 Traits do real work: `useApi` generates the REST actions and routes for the model, `useAuth` adds
-auth columns + passkeys, `useSearch` wires search-engine indexing, `useSeeder` enables factory
-seeding, and `billable` / `taggable` / `categorizable` / `commentable` / `likeable` add their
-relations and methods. See `stacks-models` for the full trait and attribute reference.
+auth columns + passkeys, `useSearch` wires search-engine indexing, `useSoftDeletes` adds
+`deleted_at` plus its query scopes, and `billable` / `taggable` / `categorizable` / `commentable` /
+`likeable` add their relations and methods. Seeding is **not** a trait: `useSeeder` is deprecated
+(stacksjs/stacks#1929) in favour of `database/seeders/<Model>Seeder.ts` calling
+`factory.generate(Model, { count })`, which the per-attribute `factory` functions feed. Run
+`buddy seed:scaffold` to convert existing traits. See `stacks-models` for the full trait and
+attribute reference.
 
 ### Model-driven migration workflow
 ```bash

@@ -1,6 +1,6 @@
 ---
 name: stacks-actions
-description: Use when working with Stacks server actions — creating actions in app/Actions/, auto-generated API actions from the useApi model trait, the 80+ default framework actions (auth, dashboard, commerce, content, deployment, jobs), action request/response handling, or action registration. Covers @stacksjs/actions and storage/framework/defaults/actions/.
+description: Use when working with Stacks server actions — creating actions in app/Actions/, auto-generated API actions from the useApi model trait, the 80+ default framework actions (auth, dashboard, commerce, content, deployment, jobs), action request/response handling, or action registration. Covers @stacksjs/actions and storage/framework/defaults/app/Actions/.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript
 allowed-tools: Read Edit Write Bash Grep Glob
@@ -13,7 +13,7 @@ Server actions are reusable business logic units invoked from routes, events, or
 ## Key Paths
 - Core package: `storage/framework/core/actions/src/`
 - Application actions: `app/Actions/`
-- Default framework actions: `storage/framework/defaults/actions/`
+- Default framework actions: `storage/framework/defaults/app/Actions/`
 - Framework actions (generated): `storage/framework/actions/`
 
 ## Creating an Action
@@ -118,7 +118,7 @@ route.post('/users', 'Actions/CreateUser')
 
 ## Gotchas
 - Application actions go in `app/Actions/`
-- Framework default actions are in `storage/framework/defaults/actions/`
+- Framework default actions are in `storage/framework/defaults/app/Actions/`
 - The `handle()` method is required — it receives the request object
 - Actions used as event listeners also have a `handle(event)` method
 - The `useApi` model trait auto-generates CRUD actions + routes

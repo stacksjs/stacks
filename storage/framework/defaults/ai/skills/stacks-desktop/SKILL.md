@@ -12,8 +12,7 @@ allowed-tools: Read Edit Write Bash Grep Glob
 - Core package: `storage/framework/core/desktop/src/`
 - Source: `storage/framework/core/desktop/src/index.ts`
 - System tray views: `storage/framework/defaults/views/system-tray/`
-- System tray layouts: `storage/framework/defaults/layouts/system-tray/`
-- System tray router types: `storage/framework/types/system-tray-router.d.ts`
+- System tray layouts: `storage/framework/defaults/resources/layouts/`
 - Package: `@stacksjs/desktop`
 
 ## API

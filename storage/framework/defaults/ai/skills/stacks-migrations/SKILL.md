@@ -90,7 +90,7 @@ The framework includes migrations for all built-in models:
 
 ## Workflow
 
-1. Define/modify model in `storage/framework/models/` or `app/Models/`
+1. Define/modify model in `storage/framework/defaults/app/Models/` or `app/Models/`
 2. Run `buddy generate:migrations` to generate SQL diffs
 3. Review generated migration files
 4. Run `buddy migrate` to apply

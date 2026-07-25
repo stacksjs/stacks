@@ -12,8 +12,8 @@ allowed-tools: Read Edit Write Bash Grep Glob
 - Queue package: `storage/framework/core/queue/src/`
 - Configuration: `config/queue.ts`
 - Application jobs: `app/Jobs/`
-- Job model: `storage/framework/models/Job.ts`
-- Failed job model: `storage/framework/models/FailedJob.ts`
+- Job model: `storage/framework/defaults/app/Models/Job.ts`
+- Failed job model: `storage/framework/defaults/app/Models/FailedJob.ts`
 
 ## Source Files
 ```

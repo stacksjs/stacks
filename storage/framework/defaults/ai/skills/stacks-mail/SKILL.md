@@ -13,7 +13,7 @@ Application-level email definitions in `app/Mail/`.
 ## Key Paths
 - Application mail: `app/Mail/`
 - Email templates: `resources/emails/` (or `storage/framework/defaults/resources/emails/`)
-- Email layouts: `storage/framework/defaults/layouts/emails/`
+- Email layouts: `storage/framework/defaults/resources/emails/layouts/`
 
 ## Creating a Mail Class
 

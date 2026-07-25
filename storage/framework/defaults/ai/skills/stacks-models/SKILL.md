@@ -1,6 +1,6 @@
 ---
 name: stacks-models
-description: Use when working with data models in Stacks — the defineModel() API, model attributes with validation and factories, relationships (hasOne/hasMany/belongsTo/belongsToMany), traits (useAuth, useUuid, useTimestamps, useSearch, useApi, billable, taggable, categorizable, commentable, likeable, observe), computed properties (get/set), model generation, and the 50+ built-in framework models. Covers model definitions and storage/framework/models/.
+description: Use when working with data models in Stacks — the defineModel() API, model attributes with validation and factories, relationships (hasOne/hasMany/belongsTo/belongsToMany), traits (useAuth, useUuid, useTimestamps, useSearch, useApi, billable, taggable, categorizable, commentable, likeable, observe), computed properties (get/set), model generation, and the 50+ built-in framework models. Covers model definitions and storage/framework/defaults/app/Models/.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript, SQLite >= 3.47.2
 allowed-tools: Read Edit Write Bash Grep Glob
@@ -9,12 +9,158 @@ allowed-tools: Read Edit Write Bash Grep Glob
 # Stacks Models
 
 ## Key Paths
-- Application models: `app/Models/`
-- Framework models: `storage/framework/models/` (50+ auto-generated)
-- Default templates: `storage/framework/defaults/models/`
-- Attribute types: `storage/framework/types/attributes.ts` (240+ fields)
+- Your models: `app/Models/` (create it; it does not exist in a fresh project)
+- Built-in models: `storage/framework/defaults/app/Models/` (62 files, grouped
+  into `commerce/`, `Content/`, `realtime/` and a flat top level)
+- `ModelOptions` / `Attribute` types: `storage/framework/core/types/src/model.ts`
+- Attribute presets: `storage/framework/types/attributes.ts`
 
-## All 50+ Framework Models by Category
+To customize a built-in model, create the same filename under `app/Models/` -
+`app/Models/User.ts` wins over the default. `buddy publish:model User` copies the
+default across as a starting point.
+
+## Writing a model
+
+Everything - schema, validation, factory, relationships, behavior - is declared
+in one `defineModel()` call. Migrations are derived from this; you do not write
+the SQL.
+
+```ts
+// app/Models/Product.ts
+import { defineModel } from '@stacksjs/orm'
+import { schema } from '@stacksjs/validation'
+
+export default defineModel({
+  name: 'Product',        // defaults to the file name
+  table: 'products',      // defaults to lowercase plural of `name`
+  primaryKey: 'id',       // default
+  autoIncrement: true,    // default
+
+  traits: {
+    useUuid: true,
+    useTimestamps: true,
+    useApi: { uri: 'products', routes: ['index', 'store', 'show', 'update', 'destroy'] },
+    useSearch: { searchable: ['name'], filterable: ['status'] },
+    observe: true,
+  },
+
+  belongsTo: ['Category'],
+  hasMany: ['Review'],
+
+  attributes: {
+    name: {
+      required: true,
+      fillable: true,
+      order: 1,
+      validation: {
+        rule: schema.string().min(3).max(100),
+        message: { max: 'Name must have a maximum of 100 characters' },
+      },
+      factory: faker => faker.commerce.productName(),
+    },
+    status: {
+      required: true,
+      fillable: true,
+      default: 'draft',
+      validation: { rule: schema.enum(['draft', 'published', 'archived']) },
+      factory: faker => faker.helpers.arrayElement(['draft', 'published', 'archived']),
+    },
+  },
+} as const)
+```
+
+`as const` is what the built-in models use - it narrows literal types so the
+generated model types stay precise.
+
+### Attribute fields
+
+`validation.rule` is the only required key on an attribute.
+
+| Field | Effect |
+|---|---|
+| `required` | Value required; emits a `NOT NULL` column |
+| `nullable` | Explicit nullability override |
+| `default` | Column default (`string \| number \| boolean \| Date`) |
+| `unique` | Unique constraint |
+| `type` | Force the column type instead of inferring from the rule |
+| `order` | Column order in the table and in dashboard forms |
+| `fillable` | Allow mass assignment |
+| `guarded` | Block mass assignment |
+| `hidden` | Exclude from JSON serialization (passwords, tokens) |
+| `foreignKey` | Disable, infer, or configure the FK constraint |
+| `factory` | `(faker) => value`, used by seeders and tests |
+| `validation` | `{ rule, message? }` - `rule` from `schema`, `message` keyed by rule name |
+
+### Traits
+
+| Trait | What it adds |
+|---|---|
+| `useUuid` | UUID column alongside the primary key |
+| `useTimestamps` (alias `timestampable`) | `created_at` / `updated_at`. On by default |
+| `useSoftDeletes` (alias `softDeletable`) | `deleted_at` plus soft-delete query scopes |
+| `useAuth` (alias `authenticatable`) | Auth columns; `{ usePasskey: true }` adds passkeys |
+| `useApi` | Generates REST actions and routes: `{ uri, routes }` |
+| `useSearch` (alias `searchable`) | Search-engine indexing: `{ displayable, searchable, sortable, filterable }` |
+| `useSocials` | OAuth identities, e.g. `['github']` |
+| `useActivityLog` | Writes an `Activity` row per change |
+| `observe` | Emits `{model}:created` / `:updated` / `:deleted` events |
+| `billable` | Stripe methods (`checkout()`, `activeSubscription()`, ...) |
+| `taggable` / `categorizable` / `commentable` / `likeable` | Pivot tables and their relation methods |
+
+Also at the top level: `indexes: [{ name, columns, unique?, where? }]` for
+composite and partial-unique indexes, and `dashboard: { highlight: true }` to
+feature the model in the admin UI.
+
+### Relationships
+
+`hasOne`, `hasMany`, `belongsTo`, `belongsToMany`, `hasOneThrough`,
+`hasManyThrough`, `morphOne`, `morphMany`, `morphTo`, `morphToMany`,
+`morphedByMany`. Each takes an array of model names, or an object form when you
+need to name the foreign key.
+
+### Computed properties and scopes
+
+```ts
+get: {
+  fullName: (model) => `${model.firstName} ${model.lastName}`,
+},
+set: {
+  password: (value) => makeHash(value),
+},
+scopes: {
+  published: (query) => query.where('status', 'published'),
+},
+```
+
+## Workflow
+
+```sh
+buddy make:model Product        # scaffold app/Models/Product.ts
+buddy generate:migrations       # diff models against the schema, emit SQL
+# review the generated file in database/migrations/
+buddy migrate                   # apply it
+buddy migrate:fresh --seed      # dev only: drop, re-migrate, seed
+```
+
+Models resolve at runtime through `createModel()` from `bun-query-builder` -
+there is no build step between editing a model and querying it. Only migrations
+need generating.
+
+## Seeding
+
+`useSeeder` is **deprecated** (stacksjs/stacks#1929). Seeding is owned by class
+seeders:
+
+```ts
+// database/seeders/ProductSeeder.ts
+await factory.generate(Product, { count: 20 })
+```
+
+Run `buddy seed:scaffold` to codemod existing `useSeeder` traits into seeder
+files and strip the trait. Attribute-level `factory` functions are still what
+those seeders draw from.
+
+## All 62 built-in models by category
 
 ### Users & Auth
 - **User** — name, email, password | traits: useAuth(passkey), useUuid, useTimestamps, useSocials(github) | hasOne: Subscriber, Driver, Author | hasMany: PersonalAccessToken, Customer
@@ -74,19 +220,28 @@ allowed-tools: Read Edit Write Bash Grep Glob
 - **Receipt** — receipt records
 
 ## CLI Commands
-- `buddy make:model [name]` — create new model
-- `buddy make:migration [name]` — create migration for schema changes
-- `buddy make:factory [name]` — create model factory
-- `buddy generate:migrations` — generate migrations from model diffs
+- `buddy make:model [name]` — scaffold a model in `app/Models/`
+- `buddy publish:model [name]` — copy a built-in model into `app/Models/` to override it
+- `buddy generate:migrations` — diff models against the schema and emit SQL
+- `buddy migrate` / `buddy migrate:fresh --seed` — apply migrations
+- `buddy make:migration [name]` — hand-write a migration instead
+- `buddy make:factory [name]` — standalone factory
+- `buddy seed:scaffold` — convert deprecated `useSeeder` traits into class seeders
 
 ## Gotchas
-- Models work directly via the dynamic ORM — no code generation step needed
-- `defineModel()` uses `createModel()` from bun-query-builder at runtime, providing typed query methods immediately
-- Each model can have a `factory` function per attribute using `@stacksjs/faker`
-- `hidden` attributes are excluded from JSON serialization (passwords)
-- `guarded` attributes prevent mass assignment
-- `fillable` explicitly allows mass assignment
-- Model events fire when `observe: true` — emits `{model}:created/updated/deleted`
-- Default seeder counts vary: User(10), Post(20), Review(50), Activity(50)
-- Dashboard highlighted models appear prominently in the admin UI
-- 240+ attribute definitions in `storage/framework/types/attributes.ts`
+- **No code generation step for models.** `defineModel()` calls `createModel()`
+  from bun-query-builder at runtime, so a model is queryable the moment you save
+  it. Only migrations are generated.
+- **Migrations come from models.** Change the model, run `buddy generate:migrations`,
+  review the SQL, then `buddy migrate`. Editing a generated migration by hand
+  will be overwritten by the next diff.
+- **`commentable`, not `commentables`.** `define-model` only checks the singular
+  key. The plural spelling used to type check while leaving the trait inert.
+- **`useSeeder` is deprecated** (stacksjs/stacks#1929) in favour of
+  `database/seeders/<Model>Seeder.ts` calling `factory.generate(Model, { count })`.
+- **`hidden` is serialization, `guarded` is mass assignment.** They are different
+  protections; a password wants both `hidden` and no `fillable`.
+- **`validation.rule` is mandatory** on every attribute - it drives both request
+  validation and the inferred column type.
+- Dashboard-highlighted models (`dashboard: { highlight: true }`) appear
+  prominently in the admin UI.

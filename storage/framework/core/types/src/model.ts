@@ -197,7 +197,14 @@ export interface ModelOptions extends Base {
     softDeletable?: boolean | SoftDeleteOptions // useSoftDeletes alias
     categorizable?: boolean // defaults to false
     taggable?: boolean // defaults to false
-    commentables?: boolean // defaults to false
+    commentable?: boolean // defaults to false
+    /**
+     * @deprecated Misspelling of {@link commentable}. `define-model` only ever
+     * checked the singular key, so a model declaring `commentables` got a
+     * silently inert trait while still type checking. Kept so existing models
+     * keep compiling; use `commentable`.
+     */
+    commentables?: boolean
     useAuth?: boolean | UserAuthOptions // defaults to false
     authenticatable?: boolean | UserAuthOptions // useAuth alias
     /**

@@ -24,7 +24,7 @@ Gather information. Do not form hypotheses yet.
 4. **Map blast radius**: What else touches this code? Use `grep` to find all callers.
 
 For Stacks-specific issues, also check:
-- ORM model definitions in `storage/framework/defaults/models/`
+- ORM model definitions in `storage/framework/defaults/app/Models/`
 - Route definitions in `routes/`
 - Action handlers in `storage/framework/core/actions/src/`
 - Middleware in `storage/framework/defaults/app/Middleware/`
