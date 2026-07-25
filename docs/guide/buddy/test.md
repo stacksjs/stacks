@@ -246,27 +246,22 @@ describe('Button Component', () => {
 
 ## Test Configuration
 
-Configure tests in `config/testing.ts`:
+Tests are configured in `bunfig.toml`, not a `config/` file:
 
-```typescript
-export default {
-  // Test directories
-  unit: 'tests/unit',
-  feature: 'tests/feature',
-
-  // Setup file
-  setupFiles: ['tests/setup.ts'],
-
-  // Coverage settings
-  coverage: {
-    enabled: true,
-    exclude: ['node_modules', 'dist'],
-  },
-
-  // Timeout
-  timeout: 10000,
-}
+```toml
+[test]
+# The env layer decrypts .env the same way it does in production, so the suite
+# exercises the real boot path instead of a test-only shortcut.
+preload = [
+  "./storage/framework/core/env/plugin.ts",
+  "./tests/setup.ts",
+]
+coverage = false
 ```
+
+`tests/setup.ts` is where you put anything every test needs - database
+bootstrapping, global fixtures, cleanup hooks. Everything else (timeouts,
+coverage thresholds, reporters) is a Bun test option; see `bun test --help`.
 
 ## Test Setup
 

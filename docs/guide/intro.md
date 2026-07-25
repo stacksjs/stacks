@@ -120,129 +120,168 @@ Your app is now running at `<http://localhost:3000>`.
 
 ```
 my-app/
-├── app/
-│   ├── Actions/         # Business logic
-│   ├── Controllers/     # HTTP controllers
-│   ├── Models/          # Database models
-│   ├── Events/          # Event classes
-│   ├── Jobs/            # Queue jobs
-│   └── Middleware/      # HTTP middleware
-├── components/          # STX components
-├── config/              # Configuration files
+├── app/                  # Your code
+│   ├── Actions/          # Business logic, one file per action
+│   ├── Models/           # Data models (defineModel)
+│   ├── Jobs/             # Queue jobs
+│   ├── Listeners/        # Event listeners
+│   ├── Mail/             # Mailable classes
+│   ├── Middleware/       # HTTP middleware
+│   ├── Commands/         # Custom buddy commands
+│   ├── Skills/           # Project-specific AI agent skills
+│   ├── Routes.ts         # Registers the files in routes/
+│   ├── Events.ts         # Event → listener map
+│   ├── Gates.ts          # Authorization gates
+│   └── Scheduler.ts      # Scheduled tasks
+├── config/               # Typed configuration, one file per subsystem
 ├── database/
-│   ├── migrations/      # Database migrations
-│   └── seeders/         # Database seeders
-├── public/              # Static assets
+│   └── migrations/       # Generated from your models
+├── public/               # Static assets
 ├── resources/
-│   ├── views/           # View templates
-│   └── functions/       # Serverless functions
+│   ├── views/            # stx pages
+│   ├── components/       # stx components
+│   ├── layouts/          # stx layouts
+│   └── functions/        # Auto-imported browser functions
 ├── routes/
-│   ├── api.ts           # API routes
-│   └── web.ts           # Web routes
-├── storage/             # File storage
-└── tests/               # Test files
+│   ├── api.ts            # API routes
+│   └── web.ts            # Web routes
+├── storage/              # Framework internals, defaults, and runtime state
+├── tests/                # Bun test suites
+├── AGENTS.md             # Guidance every AI coding agent reads
+└── tsconfig.json         # The only tsconfig you own
 ```
+
+Anything under `app/` overrides the framework's equivalent in
+`storage/framework/defaults/app/`. Create `app/Models/User.ts` and it wins over
+the built-in one; leave it out and you get the default. That is how 60+ models
+and 80+ actions ship usable out of the box while staying fully replaceable.
 
 ## Core Concepts
 
 ### Models
 
-Define your data structures with type-safe models:
+A model describes its schema, validation, factory, relationships and behavior in
+one place. Migrations are generated from it - you never hand-write the SQL.
 
 ```typescript
-// app/Models/User.ts
-export default class User extends Model {
-  static table = 'users'
+// app/Models/Post.ts
+import { defineModel } from '@stacksjs/orm'
+import { schema } from '@stacksjs/validation'
 
-  static fields = {
-    id: field.id(),
-    name: field.string(),
-    email: field.string().unique(),
-    password: field.string().hidden(),
-    created_at: field.timestamp(),
-  }
+export default defineModel({
+  name: 'Post',
+  table: 'posts',
 
-  static relationships = {
-    posts: hasMany(Post),
-    profile: hasOne(Profile),
-  }
-}
+  traits: {
+    useUuid: true,
+    useTimestamps: true,
+    useSeeder: { count: 20 },
+    useApi: { uri: 'posts', routes: ['index', 'store', 'show', 'update', 'destroy'] },
+  },
+
+  belongsTo: ['Author'],
+
+  attributes: {
+    title: {
+      required: true,
+      fillable: true,
+      validation: { rule: schema.string().min(3).max(255) },
+      factory: faker => faker.lorem.sentence(),
+    },
+    status: {
+      fillable: true,
+      default: 'draft',
+      validation: { rule: schema.enum(['draft', 'published', 'archived']) },
+    },
+  },
+} as const)
 ```
 
-### Controllers
+`useApi` alone generates the five REST actions and their routes. Then:
 
-Handle HTTP requests:
-
-```typescript
-// app/Controllers/UserController.ts
-export class UserController extends Controller {
-  async index() {
-    return User.all()
-  }
-
-  async show(request: Request) {
-    return User.findOrFail(request.params.id)
-  }
-
-  async store(request: Request) {
-    const data = await request.validate({
-      name: 'required|string',
-      email: 'required|email|unique:users',
-      password: 'required|min:8',
-    })
-
-    return User.create(data)
-  }
-}
+```bash
+buddy generate:migrations   # diff models against the schema
+buddy migrate               # apply
 ```
 
 ### Actions
 
-Encapsulate business logic:
+Actions hold your business logic, one per file, and are what routes point at.
 
 ```typescript
-// app/Actions/CreateOrderAction.ts
-export class CreateOrderAction extends Action {
-  async handle(data: OrderData) {
-    const order = await Order.create(data)
+// app/Actions/SendWelcomeEmail.ts
+import { Action } from '@stacksjs/actions'
+import { mail, template } from '@stacksjs/email'
 
-    await order.calculateTotals()
-    await order.sendConfirmationEmail()
+export default new Action({
+  name: 'SendWelcomeEmail',
+  description: 'Sends a welcome email to newly registered users',
 
-    OrderCreatedEvent.dispatch(order)
+  async handle(request) {
+    const to = request.get('to')
+    const { html, text } = await template('welcome', {
+      subject: 'Welcome!',
+      variables: { name: request.get('name'), email: to },
+    })
 
-    return order
-  }
-}
+    await mail.send({ to, subject: 'Welcome to Stacks!', html, text })
+
+    return { success: true }
+  },
+})
 ```
+
+### Routes
+
+Routes live in `routes/` and reference actions by path:
+
+```typescript
+// routes/api.ts
+import { route } from '@stacksjs/router'
+
+route.get('/posts', 'Actions/PostIndexAction')
+route.post('/welcome', 'Actions/SendWelcomeEmail')
+
+route.group({ prefix: '/admin', middleware: ['auth'] }, () => {
+  route.get('/stats', 'Actions/Dashboard/StatsAction')
+})
+```
+
+Models, `response`, and the rest of the framework are auto-imported on the
+server, so an action rarely needs an import for them.
 
 ### Components
 
-Build UI with STX components:
+Build your UI with stx components:
 
 ```html
-<!-- components/UserCard.stx -->
+<!-- resources/components/InputGroup.stx -->
+<script server>
+import { defineProps, withDefaults } from 'stx'
+
+interface InputGroupProps {
+  id: string
+  label: string
+  type?: 'text' | 'email' | 'password'
+  placeholder?: string
+}
+
+const { id, label, type, placeholder } = withDefaults(
+  defineProps<InputGroupProps>(),
+  { type: 'text', placeholder: '' },
+)
+</script>
+
 <template>
-  <div class="user-card">
-    <img :src="user.avatar" :alt="user.name">
-    <h3>{{ user.name }}</h3>
-    <p>{{ user.email }}</p>
-    <Button @click="$emit('follow')">Follow</Button>
+  <div class="flex flex-col gap-2">
+    <label for="{{ id }}">{{ label }}</label>
+    <input type="{{ type }}" id="{{ id }}" placeholder="{{ placeholder }}" />
   </div>
 </template>
-
-<script>
-import type { User } from '@/models/User'
-
-defineProps<{
-  user: User
-}>()
-
-defineEmits<{
-  follow: []
-}>()
-</script>
 ```
+
+Components in `resources/components/` are resolved by name - write
+`<InputGroup />` in a view with no import.
 
 ## What's Next
 

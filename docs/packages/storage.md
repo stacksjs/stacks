@@ -70,9 +70,14 @@ export default {
 
 By default, three disks are configured:
 
-- `local`: Private storage in `storage/app`
-- `public`: Web-accessible storage in `public`
-- `s3`: Amazon S3 or compatible service
+- `local`: private storage under `storage/app`, created on first write
+- `public`: web-accessible storage under `public`, served at `<APP_URL>/storage`
+- `s3`: Amazon S3 or a compatible service - only registered when
+  `AWS_S3_BUCKET` is set
+
+`local` is the default. Add your own by merging into `disks` from
+`config/filesystems.ts`, then augment the `KnownDisks` interface so
+`Storage.disk('…')` autocompletes it.
 
 ### Switching Disks
 

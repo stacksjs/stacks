@@ -46,4 +46,4 @@ const posts = await db
 const count = await db.selectFrom('users').count()
 ```
 
-Configure dialects, timestamps, pagination, relation limits, transaction retries, SQL features, and soft deletes in `config/qb.ts`. SQLite is the default dialect. The database proxy initializes the query builder lazily on first use.
+Configure dialects, timestamps, pagination, relation limits, transaction retries, SQL features, and soft deletes in `config/query-builder.ts`. SQLite is the default dialect. The database proxy initializes the query builder lazily on first use.

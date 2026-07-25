@@ -230,7 +230,7 @@ Prefer Crosswind transitions and CSS keyframes for motion. Use `usePreferredRedu
 
 ## Configuration
 
-STX configuration lives in `config/stx.ts`:
+STX configuration lives in `config/ui.ts`:
 
 ```ts
 import type { StxOptions } from '@stacksjs/stx'

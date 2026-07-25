@@ -200,7 +200,7 @@ const hosts = (process.env.ALLOWED_HOSTS || '').split(',')
 ### Default Configuration
 
 ```typescript
-// config/defaults.ts
+// storage/framework/core/config/src/defaults.ts
 export const defaults: StacksOptions = {
   app: {
     name: 'Stacks',
@@ -237,7 +237,7 @@ export const defaults: StacksOptions = {
 ### Overrides
 
 ```typescript
-// config/overrides.ts
+// storage/framework/core/config/src/overrides.ts
 export const overrides = {
   // Override specific settings
   app: {
@@ -674,7 +674,7 @@ function validateConfig() {
 
 ### Configuration Loading Order
 
-1. Default values from `config/defaults.ts`
+1. Default values from `storage/framework/core/config/src/defaults.ts`
 2. User configuration from `config/_.ts` files
 3. Environment overrides from `.env` files
 4. Override values from `config/overrides.ts`

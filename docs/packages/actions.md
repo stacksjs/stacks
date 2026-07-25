@@ -4,7 +4,7 @@ description: "Actions are reusable server-side business operations. Application 
 ---
 # Actions
 
-Actions are reusable server-side business operations. Application actions live in `app/Actions/`, while framework defaults live in `storage/framework/defaults/actions/`.
+Actions are reusable server-side business operations. Application actions live in `app/Actions/`, while framework defaults live in `storage/framework/defaults/app/Actions/`.
 
 ## Create an action
 
