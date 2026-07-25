@@ -1,12 +1,14 @@
 # AGENTS.md
 
 Canonical guidance for AI coding agents (Claude Code, OpenAI Codex CLI, Cursor, and others) working
-in this Stacks application. `CLAUDE.md` is a symlink to this file, so both agents read the same rules.
+in this Stacks application. This is the one file every agent reads, and the only one committed -
+`buddy setup:ai` generates the rest (`CLAUDE.md`, `.claude/skills/`, `.cursor/rules/`, ...) from
+`storage/framework/defaults/ai/`, and they are gitignored because the agent you use is your choice.
 
 Stacks is a full-stack TypeScript framework that runs on Bun. Almost every subsystem has a dedicated
-skill under `.claude/skills/` that documents it authoritatively. **This file is a map: it states the
-non-negotiable rules and points you to the right skill for the task.** Read the relevant `SKILL.md`
-before doing non-trivial work in that area rather than guessing an API.
+skill under `storage/framework/defaults/ai/skills/` that documents it authoritatively. **This file is
+a map: it states the non-negotiable rules and points you to the right skill for the task.** Read the
+relevant `SKILL.md` before doing non-trivial work in that area rather than guessing an API.
 
 ---
 
@@ -41,12 +43,13 @@ before doing non-trivial work in that area rather than guessing an API.
 
 | Path | What lives here |
 |---|---|
-| `app/` | Your application code (see the override model below): `Actions/`, `Jobs/`, `Listeners/`, `Middleware/`, `Mail/`, `Commands/`, `Models/`, and top-level `Routes.ts`, `Events.ts`, `Gates.ts`, `Scheduler.ts`, `Middleware.ts`, `Commands.ts`, `Listener.ts` |
+| `app/` | Your application code (see the override model below): `Actions/`, `Jobs/`, `Listeners/`, `Middleware/`, `Mail/`, `Commands/`, `Models/`, `Skills/`, and top-level `Routes.ts`, `Events.ts`, `Gates.ts`, `Scheduler.ts`, `Middleware.ts`, `Commands.ts`, `Listener.ts` |
 | `routes/` | Route files (`api.ts`, `web`, `v1.ts`, `users.ts`, ...), registered via `app/Routes.ts` |
 | `config/` | ~44 typed config files (`app.ts`, `database.ts`, `auth.ts`, `api` via `services.ts`, `queue.ts`, `cache.ts`, `email.ts`, `commerce.ts`, `cms.ts`, `payment.ts`, `ai.ts`, `cloud.ts`, `ui.ts`, `crosswind.ts`, ...) |
 | `database/` | `migrations/`, seeders, and the local SQLite files |
 | `resources/` | stx frontend: `views/`, `components/`, `layouts/`, `partials/` |
-| `storage/framework/` | Framework internals + **defaults** (`defaults/app/` including the 60+ built-in `Models/`, `core/` packages, `server/`, dashboard, and the auto-import manifests); read-only reference, do not edit unless working on the framework |
+| `storage/framework/` | Framework internals + **defaults** (`defaults/app/` including the 60+ built-in `Models/`, `defaults/ai/` with the agent skills, `core/` packages, `server/`, dashboard, and the auto-import manifests); read-only reference, do not edit unless working on the framework |
+| `storage/` | Also holds all machine-local runtime state: `framework/stx/` (stx build cache), `framework/runtime/` (migration lock, temp bundles), `cloud/` (cloud driver state). All gitignored, all safe to delete |
 | `tests/` | Test suites (Bun test) |
 | `cloud/` | AWS infrastructure (CDK / CloudFormation) for deploys |
 | `content/`, `docs/`, `locales/`, `public/` | CMS/markdown content, docs site, i18n strings, static assets |
@@ -62,7 +65,8 @@ the app (e.g. `app/Actions/MyAction.ts` is referenced as `'Actions/MyAction'` in
 
 ## Building features: feature → skill index
 
-Read the skill before building. Full list of skills is in `.claude/skills/`.
+Read the skill before building. The full list lives in `storage/framework/defaults/ai/skills/`; run
+`buddy setup:ai` to expose it to your agent, and add project-specific skills in `app/Skills/`.
 
 ### Backend / API
 | Task | Skill |
@@ -335,5 +339,8 @@ sentences. This is the single most common AI design tell and it is a pre-flight 
 ## Before finishing
 
 - Lint: `bunx --bun pickier .` (fix with `--fix`). Run relevant tests with `buddy test`.
+- Type check what you touched: `bun run typecheck:app` for `app/`, `config/`, `resources/` and
+  `routes/`; `bun run typecheck` for framework internals. Both run on TypeScript 7 (`tsc`, the
+  native Go compiler) and finish in a couple of seconds.
 - For UI work, run the pre-flight check in `stacks-design-taste` (Section 14). If a box cannot be
   honestly ticked, the work is not done.

@@ -1,8 +1,38 @@
-import { join, resolve } from '@stacksjs/path'
-import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs'
 import type { Skill, SkillMetadata } from './types'
+import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs'
+import { appPath, frameworkPath, join } from '@stacksjs/path'
 
-const SKILLS_DIR = resolve(join(import.meta.dir, '..', '..', '..', '..', '..', '.claude', 'skills'))
+/**
+ * Where skills are looked up, in precedence order.
+ *
+ * The framework ships its skills in `storage/framework/defaults/ai/skills`. A
+ * project adds its own - or shadows a bundled one by reusing its directory
+ * name - under `app/Skills`, exactly the app-overrides-defaults model the rest
+ * of the framework uses.
+ *
+ * `buddy setup:ai` materializes the merged result into whatever directory the
+ * chosen agent reads (`.claude/skills` for Claude Code), one entry per skill,
+ * so a project skill wins there too.
+ */
+function skillSources(): string[] {
+  return [
+    appPath('Skills'),
+    frameworkPath('defaults/ai/skills'),
+  ]
+}
+
+/**
+ * Resolves a skill directory to the first source that provides it.
+ */
+function resolveSkillDir(name: string): string | null {
+  for (const source of skillSources()) {
+    const dir = join(source, name)
+    if (existsSync(join(dir, 'SKILL.md')))
+      return dir
+  }
+
+  return null
+}
 
 function parseFrontmatter(content: string): { metadata: SkillMetadata, body: string } {
   const match = content.match(/^---\n([\s\S]*?)\n---\n([\s\S]*)$/)
@@ -29,45 +59,47 @@ function parseFrontmatter(content: string): { metadata: SkillMetadata, body: str
   return { metadata: metadata as unknown as SkillMetadata, body: body ?? '' }
 }
 
+/**
+ * Every available skill name, sorted, with project skills shadowing bundled
+ * ones of the same name rather than appearing twice.
+ */
 export function listSkills(): string[] {
-  if (!existsSync(SKILLS_DIR))
-    return []
+  const names = new Set<string>()
 
-  return readdirSync(SKILLS_DIR).filter((entry) => {
-    const entryPath = join(SKILLS_DIR, entry)
-    return statSync(entryPath).isDirectory() && existsSync(join(entryPath, 'SKILL.md'))
-  })
+  for (const source of skillSources()) {
+    if (!existsSync(source))
+      continue
+
+    for (const entry of readdirSync(source)) {
+      const entryPath = join(source, entry)
+      if (statSync(entryPath).isDirectory() && existsSync(join(entryPath, 'SKILL.md')))
+        names.add(entry)
+    }
+  }
+
+  return [...names].sort()
 }
 
 export function getSkill(name: string): Skill | null {
-  const skillPath = join(SKILLS_DIR, name, 'SKILL.md')
+  const skillDir = resolveSkillDir(name)
 
-  if (!existsSync(skillPath))
+  if (!skillDir)
     return null
 
+  const skillPath = join(skillDir, 'SKILL.md')
   const content = readFileSync(skillPath, 'utf-8')
   const { metadata, body } = parseFrontmatter(content)
-  const skillDir = join(SKILLS_DIR, name)
 
-  const scripts = existsSync(join(skillDir, 'scripts'))
-    ? readdirSync(join(skillDir, 'scripts'))
-    : []
-
-  const references = existsSync(join(skillDir, 'references'))
-    ? readdirSync(join(skillDir, 'references'))
-    : []
-
-  const assets = existsSync(join(skillDir, 'assets'))
-    ? readdirSync(join(skillDir, 'assets'))
-    : []
+  const listDir = (dir: string): string[] =>
+    existsSync(join(skillDir, dir)) ? readdirSync(join(skillDir, dir)) : []
 
   return {
     metadata,
     instructions: body,
     path: skillPath,
-    scripts,
-    references,
-    assets,
+    scripts: listDir('scripts'),
+    references: listDir('references'),
+    assets: listDir('assets'),
   }
 }
 
@@ -76,22 +108,19 @@ export function loadSkillMetadata(name: string): SkillMetadata | null {
   return skill?.metadata ?? null
 }
 
+/**
+ * Checks a skill against the agentskills.io frontmatter rules.
+ */
 export function validateSkill(name: string): { valid: boolean, errors: string[] } {
   const errors: string[] = []
-  const skillDir = join(SKILLS_DIR, name)
+  const skillDir = resolveSkillDir(name)
 
-  if (!existsSync(skillDir)) {
-    errors.push(`Skill directory not found: ${skillDir}`)
+  if (!skillDir) {
+    errors.push(`Skill not found in any source: ${skillSources().map(source => join(source, name)).join(', ')}`)
     return { valid: false, errors }
   }
 
-  const skillPath = join(skillDir, 'SKILL.md')
-  if (!existsSync(skillPath)) {
-    errors.push(`SKILL.md not found in ${skillDir}`)
-    return { valid: false, errors }
-  }
-
-  const content = readFileSync(skillPath, 'utf-8')
+  const content = readFileSync(join(skillDir, 'SKILL.md'), 'utf-8')
   const { metadata } = parseFrontmatter(content)
 
   if (!metadata.name) {
@@ -114,4 +143,29 @@ export function validateSkill(name: string): { valid: boolean, errors: string[] 
   }
 
   return { valid: errors.length === 0, errors }
+}
+
+/**
+ * The directory the framework's own skills ship from. `buddy setup:ai` reads it;
+ * nothing should write into it.
+ */
+export function bundledSkillsPath(): string {
+  return frameworkPath('defaults/ai/skills')
+}
+
+/**
+ * The directory a project puts its own skills in. Searched before
+ * {@link bundledSkillsPath}, so a skill here shadows a bundled one of the same
+ * name.
+ */
+export function projectSkillsPath(): string {
+  return appPath('Skills')
+}
+
+/**
+ * Resolves a skill to its directory on disk, or `null` if no source has it.
+ * Exposed so `buddy setup:ai` can link/copy the winning directory per skill.
+ */
+export function resolveSkillPath(name: string): string | null {
+  return resolveSkillDir(name)
 }

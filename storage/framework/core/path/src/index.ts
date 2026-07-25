@@ -1254,6 +1254,19 @@ export function schedulerPath(path?: string): string {
 }
 
 /**
+ * Returns the path to the `skills` directory within the core directory.
+ *
+ * That is the `@stacksjs/skills` package. The skills it reads ship from
+ * `storage/framework/defaults/ai/skills`, not from here.
+ *
+ * @param path - The relative path to the file or directory within the skills directory.
+ * @returns The absolute path to the specified file or directory within the skills directory.
+ */
+export function skillsPath(path?: string): string {
+  return corePath(`skills/${path || ''}`)
+}
+
+/**
  * Returns the path to the `slug` directory within the core directory.
  *
  * @param path - The relative path to the file or directory within the slug directory.
@@ -1615,8 +1628,10 @@ export function ensureRuntimeDirectories(): RuntimeDirectoryState[] {
         rmSync(legacyPath, { force: true })
       }
 
+      // Relative, so the link keeps working if the project is moved or mounted
+      // at a different path (a container bind mount, for instance).
       if (link)
-        symlinkSync(targetPath, legacyPath, linkType)
+        symlinkSync(relative(dirname(legacyPath), targetPath), legacyPath, linkType)
 
       results.push({ legacy: legacyPath, target: targetPath, expectsLink: link, linked: link })
     }
@@ -1746,6 +1761,7 @@ export interface Path {
   schedulerPath: (path?: string) => string
   settingsPath: (path?: string) => string
   smsPath: (path?: string) => string
+  skillsPath: (path?: string) => string
   slugPath: (path?: string) => string
   scriptsPath: (path?: string) => string
   securityPath: (path?: string) => string
@@ -1889,6 +1905,7 @@ export const path: Path = {
   schedulerPath,
   settingsPath,
   smsPath,
+  skillsPath,
   slugPath,
   scriptsPath,
   securityPath,

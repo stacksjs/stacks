@@ -3,7 +3,7 @@
   "type": "module",
   "sideEffects": false,
   "version": "0.70.163",
-  "description": "Agent skills for the Stacks framework, following the agentskills.io standard.",
+  "description": "Reads the Stacks framework's agent skills, following the agentskills.io standard. The skills themselves ship in storage/framework/defaults/ai/skills.",
   "author": "Chris Breuer",
   "contributors": [
     "Chris Breuer <chris@stacksjs.com>"
@@ -45,8 +45,7 @@
   "types": "dist/index.d.ts",
   "files": [
     "README.md",
-    "dist",
-    "skills"
+    "dist"
   ],
   "scripts": {
     "build": "bun build.ts",

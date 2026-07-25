@@ -36,6 +36,9 @@ export function setup(buddy: CLI): void {
   const descriptions = {
     setup: 'This command ensures your project is setup correctly',
     ssl: 'Setup SSL certificates and hosts file for HTTPS development',
+    ai: 'Set the project up for an AI coding agent (Claude Code, Codex, Cursor, Copilot, Gemini)',
+    copy: 'Copy the agent files instead of symlinking them, so they can be edited per project',
+    force: 'Overwrite files that already exist',
     ohMyZsh: 'Enable Oh My Zsh',
     aws: 'Ensures AWS is connected to the project',
     project: 'Target a specific project',
@@ -89,6 +92,37 @@ export function setup(buddy: CLI): void {
         log.warn('SSL setup completed with warnings')
         log.info('You may need to manually trust certificates or update hosts file')
       }
+    })
+
+  buddy
+    .command('setup:ai [provider]', descriptions.ai)
+    .alias('ai:setup')
+    .option('--copy', descriptions.copy, { default: false })
+    .option('--force', descriptions.force, { default: false })
+    .option('--verbose', descriptions.verbose, { default: false })
+    .action(async (provider: string | undefined, options: CliOptions & { copy?: boolean, force?: boolean }) => {
+      log.debug('Running `buddy setup:ai` ...', options)
+
+      const { AI_PROVIDERS, isAiProvider, reportAiSetup, setupAiProvider } = await import('./setup-ai')
+
+      let id = provider
+
+      if (!id) {
+        const { select } = await import('@stacksjs/cli')
+        id = await select({
+          message: 'Which AI coding agent do you use?',
+          choices: AI_PROVIDERS.map(entry => ({ value: entry.id, label: entry.label })),
+          initial: 0,
+        }) as string
+      }
+
+      if (!id || !isAiProvider(id)) {
+        log.error(`Unknown AI provider: ${id}. Expected one of: ${AI_PROVIDERS.map(entry => entry.id).join(', ')}`)
+        process.exit(ExitCode.InvalidArgument)
+      }
+
+      const definition = AI_PROVIDERS.find(entry => entry.id === id)!
+      reportAiSetup(definition, setupAiProvider(id, { copy: options.copy, force: options.force }))
     })
 
   buddy

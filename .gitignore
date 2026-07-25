@@ -76,6 +76,18 @@ storage/cloud/
 # `buddy generate:core-symlink`. Core developers only.
 /.framework
 
+# AI coding-agent setup, scaffolded by `buddy setup:ai` from the templates in
+# storage/framework/defaults/ai. Which agent you use is a personal choice, so
+# everything it generates stays out of the repo. AGENTS.md is the exception: it
+# is shared guidance every agent reads, so it is authored and committed, and
+# `setup:ai` only ever seeds it when it is missing.
+/.claude
+/.codex
+/.gemini
+/CLAUDE.md
+/GEMINI.md
+/.github/copilot-instructions.md
+
 # Stub workspace packages (temporary)
 /ts-auth
 /ts-cloud

@@ -6,7 +6,7 @@ description: Generated reference for every Buddy command, argument, option, alia
 
 # Buddy Command Reference
 
-This reference is generated from Buddy's runtime command registry and currently contains **266 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
+This reference is generated from Buddy's runtime command registry and currently contains **267 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
 
 ## Command groups
 
@@ -55,7 +55,7 @@ This reference is generated from Buddy's runtime command registry and currently 
 | `search-engine` | 2 |
 | `seed` | 2 |
 | `serve` | 1 |
-| `setup` | 2 |
+| `setup` | 3 |
 | `sms` | 6 |
 | `stack` | 3 |
 | `stripe` | 1 |
@@ -120,7 +120,7 @@ Examples:
 ```bash
 buddy ai:context
 buddy ai:context --json
-buddy ai:context --json --output .stacks/ai-context.json
+buddy ai:context --json --output storage/framework/runtime/ai-context.json
 ```
 
 ### `auth:client`
@@ -712,7 +712,7 @@ Configure the AWS connection
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
 | `-p`, `--project` | Target a specific project | value, optional | `false` |
-| `--profile` | The AWS profile to use | boolean, optional | — |
+| `--profile` | The AWS profile to use | boolean, optional | `"stacks"` |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
 | `--access-key-id` | The AWS access key | boolean, optional | — |
 | `--secret-access-key` | The AWS secret access key | boolean, optional | — |
@@ -1274,7 +1274,7 @@ Examples:
 ```bash
 buddy env:decrypt
 buddy env:decrypt --file .env.production
-buddy env:decrypt -k "SECRET__"
+buddy env:decrypt -k "SECRET_*"
 ```
 
 ### `env:encrypt`
@@ -1298,7 +1298,7 @@ Examples:
 ```bash
 buddy env:encrypt
 buddy env:encrypt --file .env.production
-buddy env:encrypt -k "SECRET__"
+buddy env:encrypt -k "SECRET_*"
 ```
 
 ### `env:get`
@@ -1541,7 +1541,7 @@ Register Safari Bundle IDs and check the App Store Connect app record
 | --- | --- | --- | --- |
 | `--api-key-id` | App Store Connect API key ID | value, required | — |
 | `--api-issuer-id` | App Store Connect API issuer ID | value, required | — |
-| `--api-key-path` | Path to the App Store Connect AuthKey__.p8 file | value, required | — |
+| `--api-key-path` | Path to the App Store Connect AuthKey_*.p8 file | value, required | — |
 | `--check` | Report missing resources without creating Bundle IDs | boolean, optional | — |
 | `--version` | Create or align App Store versions (defaults to package.json) | value, required | — |
 | `--platform` | Provision macos, ios, or all (defaults to config safariPlatforms) | value, required | — |
@@ -1562,7 +1562,7 @@ Archive and validate or upload the Safari app to App Store Connect
 | `--team-id` | Apple Developer team (defaults to config safariTeamId) | value, required | — |
 | `--api-key-id` | App Store Connect API key ID | value, required | — |
 | `--api-issuer-id` | App Store Connect API issuer ID | value, required | — |
-| `--api-key-path` | Path to the App Store Connect AuthKey__.p8 file | value, required | — |
+| `--api-key-path` | Path to the App Store Connect AuthKey_*.p8 file | value, required | — |
 | `--validate-only` | Create and validate the archive without uploading it | boolean, optional | — |
 | `--platform` | Publish macos, ios, or all (defaults to config safariPlatforms) | value, required | — |
 
@@ -1580,7 +1580,7 @@ Synchronize metadata and submit an existing Safari version to App Review
 | `--version` | Marketing version to submit (defaults to package.json) | value, required | — |
 | `--api-key-id` | App Store Connect API key ID | value, required | — |
 | `--api-issuer-id` | App Store Connect API issuer ID | value, required | — |
-| `--api-key-path` | Path to the App Store Connect AuthKey__.p8 file | value, required | — |
+| `--api-key-path` | Path to the App Store Connect AuthKey_*.p8 file | value, required | — |
 | `--platform` | Submit macos, ios, or all (defaults to config safariPlatforms) | value, required | — |
 | `--prepare-only` | Synchronize the listing without submitting it for review | boolean, optional | — |
 
@@ -1666,7 +1666,7 @@ Generate component meta information
 
 ### `generate:core-symlink`
 
-Generate core symlink. A shortcut for core developers.
+Symlink `.framework` -> storage/framework. A shortcut for core developers.
 
 - Usage: `$ buddy generate:core-symlink`
 - Namespace: `generate`
@@ -2708,7 +2708,7 @@ Check if the ports are available
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
-| `-p`, `--project` | Target a specific project | value, optional | `"/Users/chris/Code/stacks-ai-context"` |
+| `-p`, `--project` | Target a specific project | value, optional | `"/Users/chris/Code/stacks"` |
 | `-q`, `--quiet` | Use minimal output | boolean, optional | `false` |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
 
@@ -3575,6 +3575,21 @@ This command ensures your project is setup correctly
 | `-p`, `--project` | Target a specific project | value, optional | `false` |
 | `--skip-aws` | Skip AWS configuration during setup | boolean, optional | `false` |
 | `--skip-keygen` | Skip generating an application key during setup | boolean, optional | `false` |
+| `--verbose` | Enable verbose output | boolean, optional | `false` |
+
+### `setup:ai`
+
+Set the project up for an AI coding agent (Claude Code, Codex, Cursor, Copilot, Gemini)
+
+- Usage: `$ buddy setup:ai [provider]`
+- Namespace: `setup`
+- Aliases: `ai:setup`
+- Arguments: `[provider]`
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `--copy` | Copy the agent files instead of symlinking them, so they can be edited per project | boolean, optional | `false` |
+| `--force` | Overwrite files that already exist | boolean, optional | `false` |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
 
 ### `setup:oh-my-zsh`

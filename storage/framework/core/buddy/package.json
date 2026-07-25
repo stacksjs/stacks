@@ -121,6 +121,7 @@
     "@stacksjs/objects": "workspace:*",
     "@stacksjs/orm": "workspace:*",
     "@stacksjs/path": "workspace:*",
+    "@stacksjs/skills": "workspace:*",
     "@stacksjs/payments": "workspace:*",
     "@stacksjs/realtime": "workspace:*",
     "@stacksjs/router": "workspace:*",
