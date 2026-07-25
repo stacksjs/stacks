@@ -161,7 +161,7 @@ Now that you have a working Stacks application, explore these topics:
 If you need help:
 
 - Check the [full documentation](/)
-- Join the [Stacks Discord Server](https://discord.gg/stacksjs)
+- Join the [Stacks Discord Server](https://stacksjs.com/discord)
 - Open an issue on [GitHub](https://github.com/stacksjs/stacks/issues)
 - Browse [GitHub Discussions](https://github.com/stacksjs/stacks/discussions)
 

@@ -148,7 +148,7 @@ Now that you understand the basics, proceed to the tutorials:
 
 - [Stacks Documentation](https://stacksjs.com/docs) - Complete reference
 - [GitHub Repository](https://github.com/stacksjs/stacks) - Source code
-- [Discord Community](https://discord.gg/stacksjs) - Get help and chat
+- [Discord Community](https://stacksjs.com/discord) - Get help and chat
 - [GitHub Discussions](https://github.com/stacksjs/stacks/discussions) - Ask questions
 
 Ready to begin? Start with [building a frontend](/bootcamp/frontend).

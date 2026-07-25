@@ -210,7 +210,7 @@ bun install
 For issues or questions:
 
 - GitHub Issues: <https://github.com/stacksjs/stacks/issues>
-- Discord: <https://discord.gg/stacksjs>
+- Discord: <https://stacksjs.com/discord>
 - Documentation: <https://stacksjs.com>
 
 ---
