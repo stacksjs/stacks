@@ -72,6 +72,7 @@ export default defineModel({
   table: 'products',
   traits: {
     useTimestamps: true,
+    useSeeder: { count: 20 },
     useApi: {
       uri: 'products',
       routes: ['index', 'store', 'show', 'update', 'destroy'],

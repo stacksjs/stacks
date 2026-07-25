@@ -441,48 +441,68 @@ buddy migrate:fresh
 
 ## Seeding
 
-### Creating Seeders
+Seed data is declared on the model, not in separate seeder files. The
+`useSeeder` trait says how many rows to generate, and each attribute's
+`factory` function says what a value looks like.
+
+### Declaring seed data
 
 ```typescript
-import { Seeder } from '@stacksjs/database'
+import { defineModel } from '@stacksjs/orm'
+import { schema } from '@stacksjs/validation'
 
-export default class UserSeeder extends Seeder {
-  async run() {
-    await this.db.insertInto('users').values([
-      { name: 'Admin', email: 'admin@example.com', role: 'admin' },
-      { name: 'User', email: 'user@example.com', role: 'user' }
-    ]).execute()
-  }
-}
+export default defineModel({
+  name: 'User',
+  table: 'users',
+
+  traits: {
+    useSeeder: {
+      count: 50,
+      // Optional: pin specific rows over the generated ones, keyed by the
+      // model's camelCase attribute names.
+      fixtures: [
+        { name: 'Admin', email: 'admin@example.com' },
+      ],
+    },
+  },
+
+  attributes: {
+    name: {
+      fillable: true,
+      validation: { rule: schema.string().max(255) },
+      factory: faker => faker.person.fullName(),
+    },
+    email: {
+      fillable: true,
+      unique: true,
+      validation: { rule: schema.string().email() },
+      factory: faker => faker.internet.email(),
+    },
+  },
+} as const)
 ```
 
-### Using Factories
+A model without a `useSeeder` trait is never seeded.
 
-```typescript
-import { Seeder, factory } from '@stacksjs/database'
-import { faker } from '@stacksjs/faker'
-
-export default class UserSeeder extends Seeder {
-  async run() {
-    // Create 50 users with fake data
-    await factory('users', 50, () => ({
-      name: faker.person.fullName(),
-      email: faker.internet.email(),
-      created_at: faker.date.past()
-    }))
-  }
-}
-```
-
-### Running Seeders
+### Running seeders
 
 ```bash
-# Run all seeders
-buddy db:seed
-
-# Run specific seeder
-buddy db:seed --class=UserSeeder
+buddy seed                        # every model carrying a useSeeder trait
+buddy seed --fresh                # truncate each table first
+buddy seed --only User,Post       # only these models
+buddy seed --except User          # everything but these
+buddy seed --include-defaults     # the framework's built-in models too
+buddy migrate:fresh --seed        # drop, re-migrate, then seed
 ```
+
+`buddy db:seed` is an alias for `buddy seed`.
+
+Auth and OAuth models are skipped on a non-fresh database, so re-seeding cannot
+silently invalidate live sessions by re-rolling the Personal Access Client
+secret. Pass `--allow-protected` when you do want them re-seeded.
+
+By default a table that already has rows is left alone. `--fresh` truncates
+first, which is the usual way to re-roll a development dataset.
 
 ## Transactions
 

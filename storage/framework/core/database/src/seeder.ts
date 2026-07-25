@@ -410,16 +410,6 @@ async function generateRecords(model: SeederModel, verbose: boolean = false): Pr
 }
 
 /**
- * Direct entry point for `factory.generate(Model, opts)` — exported
- * under a distinct name so the new public API in `factory.ts` can call
- * into the same insert path the legacy walker uses without leaking the
- * `SeederModel` type. See stacksjs/stacks#1919.
- */
-export function seedModelDirect(model: SeederModel, options: SeederConfig): Promise<SeedResult> {
-  return seedModel(model, options)
-}
-
-/**
  * Seed a single model
  */
 async function seedModel(model: SeederModel, options: SeederConfig): Promise<SeedResult> {
@@ -560,17 +550,14 @@ function sortModelsByDependencies(models: SeederModel[]): SeederModel[] {
 }
 
 /**
- * Main seeding function
- * Seeds the database using model factory functions
- * Loads models from both framework defaults and user-defined models,
- * with user models taking precedence.
+ * Seeds the database from your models.
  *
- * @deprecated stacksjs/stacks#1919 — the model auto-walker is no
- * longer invoked by `./buddy seed`. Migrate each `useSeeder` trait to
- * a class seeder via `./buddy seed:scaffold`, then call
- * `factory.generate(Model, opts)` from inside each seeder. This
- * function remains exported for programmatic back-compat but is
- * scheduled for removal.
+ * Walks every model that declares a `useSeeder` trait and fills its table
+ * using the per-attribute `factory: faker => …` declarations. Models are
+ * loaded from `app/Models/` and, with `includeDefaults`, the framework's
+ * built-in models too - user models win on a name collision.
+ *
+ * This is what `./buddy seed` runs.
  */
 export async function seed(config: SeederConfig = {}): Promise<SeedSummary> {
   const startTime = Date.now()
@@ -598,19 +585,6 @@ export async function seed(config: SeederConfig = {}): Promise<SeedSummary> {
       duration: Date.now() - startTime,
     }
   }
-
-  // stacksjs/stacks#1919 — the `useSeeder` auto-walker is being
-  // collapsed into `factory.generate(Model, opts)`, which class
-  // seeders invoke explicitly. Emit a one-shot deprecation warning so
-  // users know the dual-pipeline footgun (walker rows + class seeder
-  // rows on the same table) is going away. The walker keeps firing
-  // for now to preserve back-compat; removal lands in a future major.
-  log.warn(
-    `[seed] The \`useSeeder\` trait + auto-walker is deprecated (stacksjs/stacks#1919, #1929). `
-    + `Run \`./buddy seed:scaffold\` to generate a class seeder per \`useSeeder\` model AND strip the trait `
-    + `from the model in one pass. The walker + trait are scheduled for removal in the next major. `
-    + `Affected: ${models.map(m => m.name).join(', ')}`,
-  )
 
   // Filter models if only/except is specified
   if (config.only && config.only.length > 0) {

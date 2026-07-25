@@ -210,6 +210,10 @@ traits: {
     middleware: ['auth'],
   },
 
+  // How many rows `buddy seed` generates from the attribute factories
+  useSeeder: {
+    count: 50,
+  },
 }
 
 ```

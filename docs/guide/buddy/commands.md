@@ -6,7 +6,7 @@ description: Generated reference for every Buddy command, argument, option, alia
 
 # Buddy Command Reference
 
-This reference is generated from Buddy's runtime command registry and currently contains **267 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
+This reference is generated from Buddy's runtime command registry and currently contains **266 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
 
 ## Command groups
 
@@ -53,7 +53,7 @@ This reference is generated from Buddy's runtime command registry and currently 
 | `schedule` | 3 |
 | `search` | 2 |
 | `search-engine` | 2 |
-| `seed` | 2 |
+| `seed` | 1 |
 | `serve` | 1 |
 | `setup` | 3 |
 | `sms` | 6 |
@@ -3506,7 +3506,9 @@ Seed your database
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
 | `-p`, `--project` | Target a specific project | value, optional | `false` |
-| `-c`, `--class` | Run a specific seeder class from database/seeders/ | value, optional | `""` |
+| `--only` | Comma-separated list of models to seed | value, optional | `""` |
+| `--except` | Comma-separated list of models to skip | value, optional | `""` |
+| `--include-defaults` | Also seed the framework's built-in models | boolean, optional | `false` |
 | `--allow-protected` | Seed auth/oauth models even on a non-fresh DB (will invalidate live tokens) | boolean, optional | `false` |
 | `--fresh` | Truncate tables before seeding | boolean, optional | `false` |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
@@ -3519,20 +3521,6 @@ Seed default RBAC role packs (admin, dev, client)
 - Namespace: `seed`
 - Aliases: `roles:seed`
 - Arguments: none
-
-### `seed:scaffold`
-
-Generate class seeders for every model with a useSeeder trait (codemod for stacksjs/stacks#1919)
-
-- Usage: `$ buddy seed:scaffold`
-- Namespace: `seed`
-- Aliases: none
-- Arguments: none
-
-| Option | Description | Contract | Default |
-| --- | --- | --- | --- |
-| `--force` | Overwrite existing seeder files | boolean, optional | `false` |
-| `--dry-run` | Print what would be generated without writing files | boolean, optional | `false` |
 
 ### `serve`
 

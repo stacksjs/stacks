@@ -148,17 +148,36 @@ need generating.
 
 ## Seeding
 
-`useSeeder` is **deprecated** (stacksjs/stacks#1929). Seeding is owned by class
-seeders:
+Seed data is declared on the model, through the `useSeeder` trait plus the
+per-attribute `factory` functions:
 
 ```ts
-// database/seeders/ProductSeeder.ts
-await factory.generate(Product, { count: 20 })
+traits: {
+  useSeeder: {
+    count: 20,
+    // Optional: pin specific rows over the generated ones. Keys use the
+    // model's camelCase attribute names.
+    fixtures: [
+      { name: 'Flagship Widget', status: 'published' },
+    ],
+  },
+},
 ```
 
-Run `buddy seed:scaffold` to codemod existing `useSeeder` traits into seeder
-files and strip the trait. Attribute-level `factory` functions are still what
-those seeders draw from.
+`buddy seed` walks every model carrying the trait and fills its table from the
+attribute factories. Nothing else is needed - no seeder files, no registration.
+
+```bash
+buddy seed                       # every model with a useSeeder trait
+buddy seed --fresh               # truncate each table first
+buddy seed --only Product,Review # just these models
+buddy seed --except User         # everything but these
+buddy seed --include-defaults    # framework built-ins too
+```
+
+A model with no `useSeeder` trait is never seeded. Auth and OAuth models are
+skipped on a non-fresh database so re-seeding cannot invalidate live sessions -
+pass `--allow-protected` to override.
 
 ## All 62 built-in models by category
 
@@ -226,7 +245,7 @@ those seeders draw from.
 - `buddy migrate` / `buddy migrate:fresh --seed` — apply migrations
 - `buddy make:migration [name]` — hand-write a migration instead
 - `buddy make:factory [name]` — standalone factory
-- `buddy seed:scaffold` — convert deprecated `useSeeder` traits into class seeders
+- `buddy seed` — seed every model carrying a `useSeeder` trait
 
 ## Gotchas
 - **No code generation step for models.** `defineModel()` calls `createModel()`
@@ -237,8 +256,9 @@ those seeders draw from.
   will be overwritten by the next diff.
 - **`commentable`, not `commentables`.** `define-model` only checks the singular
   key. The plural spelling used to type check while leaving the trait inert.
-- **`useSeeder` is deprecated** (stacksjs/stacks#1929) in favour of
-  `database/seeders/<Model>Seeder.ts` calling `factory.generate(Model, { count })`.
+- **Seeding is model-declared.** `useSeeder` sets the count and fixtures; the
+  per-attribute `factory` functions produce the values. There are no seeder
+  files to write or register.
 - **`hidden` is serialization, `guarded` is mass assignment.** They are different
   protections; a password wants both `hidden` and no `fillable`.
 - **`validation.rule` is mandatory** on every attribute - it drives both request

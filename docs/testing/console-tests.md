@@ -261,11 +261,11 @@ describe('Database Commands', () => {
     expect(users.length).toBeGreaterThan(0)
   })
 
-  it('runs specific seeder', async () => {
-    const result = await command('db:seed --class=UserSeeder')
+  it('seeds a single model', async () => {
+    const result = await command('db:seed --only User')
 
     expect(result.exitCode).toBe(0)
-    expect(result.output).toContain('UserSeeder')
+    expect(result.output).toContain('User')
   })
 
   it('runs migrations', async () => {
