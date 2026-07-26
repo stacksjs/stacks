@@ -1,5 +1,30 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.165...v0.70.166)
+
+## 🐛 Bug Fixes
+
+- **queue**: drop the bun-queue shim and the bugs it was hiding ([74ba3f1](https://github.com/stacksjs/stacks/commit/74ba3f1)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **build**: restore the queue and tunnel ambient shims ([c4d26e8](https://github.com/stacksjs/stacks/commit/c4d26e8)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **browser-extension**: make web-ext an optional peer dependency ([516c68a](https://github.com/stacksjs/stacks/commit/516c68a)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **orm**: stop the search-index warning storm during seeding ([6c9c41c](https://github.com/stacksjs/stacks/commit/6c9c41c)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **queue**: use Bun's built-in Redis client, drop the `redis` dependency ([f9453c0](https://github.com/stacksjs/stacks/commit/f9453c0)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 📝 Documentation
+
+- **agents**: record the dependency rules the cleanup enforces ([e59697b](https://github.com/stacksjs/stacks/commit/e59697b)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🔧 Chores
+
+- **dns**: drop two checked-in generated declaration files ([06264bd](https://github.com/stacksjs/stacks/commit/06264bd)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **upgrade**: drop the catalog-mirroring step from the framework sync ([93cbe21](https://github.com/stacksjs/stacks/commit/93cbe21)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **deps**: replace the workspace catalog with explicit versions ([7c28a5d](https://github.com/stacksjs/stacks/commit/7c28a5d)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **deps**: stop re-declaring what better-dx already ships ([2f58a07](https://github.com/stacksjs/stacks/commit/2f58a07)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.164...v0.70.165)
 
 ## 🐛 Bug Fixes
