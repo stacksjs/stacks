@@ -60,6 +60,6 @@
     "@stacksjs/bun-queue": "^0.1.7"
   },
   "devDependencies": {
-    "better-dx": "catalog:"
+    "better-dx": "^0.2.17"
   }
 }

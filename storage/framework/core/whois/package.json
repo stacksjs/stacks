@@ -55,6 +55,6 @@
     "prepublishOnly": "bun run build"
   },
   "devDependencies": {
-    "better-dx": "catalog:"
+    "better-dx": "^0.2.17"
   }
 }

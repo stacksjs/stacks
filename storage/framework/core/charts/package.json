@@ -59,6 +59,6 @@
     "@ts-charts/shape": "^0.2.3"
   },
   "devDependencies": {
-    "better-dx": "catalog:"
+    "better-dx": "^0.2.17"
   }
 }

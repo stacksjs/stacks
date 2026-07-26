@@ -35,6 +35,6 @@
     "ts-images": "^0.2.1"
   },
   "devDependencies": {
-    "better-dx": "catalog:"
+    "better-dx": "^0.2.17"
   }
 }

@@ -71,11 +71,11 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "@stacksjs/ts-cloud": "catalog:"
+    "@stacksjs/ts-cloud": "^0.7.60"
   },
   "devDependencies": {
     "@stacksjs/config": "workspace:*",
     "@stacksjs/database": "workspace:*",
-    "better-dx": "catalog:"
+    "better-dx": "^0.2.17"
   }
 }

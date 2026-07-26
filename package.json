@@ -98,15 +98,6 @@
     "storage/framework/core",
     "storage/framework/core/*"
   ],
-  "catalog": {
-    "@stacksjs/clapp": "^0.2.12",
-    "@stacksjs/components": "^0.2.82",
-    "@stacksjs/stx": "^0.2.100",
-    "@stacksjs/ts-cloud": "^0.7.60",
-    "better-dx": "^0.2.17",
-    "bun-query-builder": "^0.1.56",
-    "pickier": "^0.1.35"
-  },
   "git-hooks": {
     "pre-commit": {
       "staged-lint": {
@@ -116,6 +107,6 @@
     "commit-msg": "bun x gitlint --edit \"$1\""
   },
   "devDependencies": {
-    "better-dx": "catalog:"
+    "better-dx": "^0.2.17"
   }
 }

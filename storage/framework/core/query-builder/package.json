@@ -52,10 +52,10 @@
   },
   "devDependencies": {
     "@stacksjs/database": "workspace:*",
-    "better-dx": "catalog:",
+    "better-dx": "^0.2.17",
     "@stacksjs/types": "workspace:*"
   },
   "dependencies": {
-    "bun-query-builder": "catalog:"
+    "bun-query-builder": "^0.1.56"
   }
 }

@@ -52,11 +52,11 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "@stacksjs/stx": "catalog:"
+    "@stacksjs/stx": "^0.2.100"
   },
   "devDependencies": {
     "@stacksjs/browser": "workspace:*",
-    "better-dx": "catalog:",
+    "better-dx": "^0.2.17",
     "@stacksjs/security": "workspace:*"
   },
   "sideEffects": false

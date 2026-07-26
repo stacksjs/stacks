@@ -99,7 +99,7 @@
     "@stacksjs/build": "workspace:*",
     "@stacksjs/cache": "workspace:*",
     "@stacksjs/cli": "workspace:*",
-    "@stacksjs/clapp": "catalog:",
+    "@stacksjs/clapp": "^0.2.12",
     "@stacksjs/cloud": "workspace:*",
     "@stacksjs/collections": "workspace:*",
     "@stacksjs/config": "workspace:*",
@@ -137,12 +137,12 @@
     "@stacksjs/ui": "workspace:*",
     "@stacksjs/utils": "workspace:*",
     "@stacksjs/validation": "workspace:*",
-    "@stacksjs/ts-cloud": "catalog:",
+    "@stacksjs/ts-cloud": "^0.7.60",
     "ajv": "^8.20.0",
     "ajv-formats": "^3.0.1"
   },
   "devDependencies": {
-    "better-dx": "catalog:"
+    "better-dx": "^0.2.17"
   },
   "web-types": "./web-types.json"
 }
