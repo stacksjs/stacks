@@ -5,10 +5,10 @@ import readline from 'node:readline'
 import process from 'node:process'
 import { bold, cyan, dim, green, intro, log, onUnknownSubcommand, outro, prompts, runCommand, yellow } from "@stacksjs/cli"
 import { homedir } from 'node:os'
-import { dirname, join } from 'node:path'
+import { dirname, join, relative } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { Action } from '@stacksjs/enums'
-import { libsPath, projectPath } from '@stacksjs/path'
+import { libsPath, projectPath, stxPath } from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types'
 import { version } from '../../package.json'
 
@@ -818,7 +818,8 @@ function printDevReadyBanner(input: {
 
 /** Post-ready notes from frontend tooling (Crosswind, STX routes) in a consistent style. */
 function printDevEngineNotes(): void {
-  const routesFile = join(projectPath(), '.stx/routes.ts')
+  const routesFile = stxPath('routes.ts')
+  const routesLabel = relative(projectPath(), routesFile)
   const crosswindConfig = join(projectPath(), 'config/crosswind.ts')
   const hasCrosswind = existsSync(crosswindConfig)
     || existsSync(join(projectPath(), 'crosswind.config.ts'))
@@ -831,10 +832,10 @@ function printDevEngineNotes(): void {
       const source = readFileSync(routesFile, 'utf8')
       const routeCount = (source.match(/pattern:/g) ?? []).length
       if (routeCount > 0)
-        console.log(`  ${green('[stx]')} ${dim(`Generated ${routeCount} routes → .stx/routes.ts`)}`)
+        console.log(`  ${green('[stx]')} ${dim(`Generated ${routeCount} routes → ${routesLabel}`)}`)
     }
     catch {
-      console.log(`  ${green('[stx]')} ${dim('Routes manifest → .stx/routes.ts')}`)
+      console.log(`  ${green('[stx]')} ${dim(`Routes manifest → ${routesLabel}`)}`)
     }
   }
 }

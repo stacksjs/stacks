@@ -1,7 +1,7 @@
 import type { CLI, DeployOptions } from '@stacksjs/types'
 import { existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs'
 import { homedir } from 'node:os'
-import { join } from 'node:path'
+import { join, relative } from 'node:path'
 import process from 'node:process'
 import { runAction } from '@stacksjs/actions'
 import { italic, onUnknownSubcommand, outro, prompts, runCommand } from "@stacksjs/cli"
@@ -1249,11 +1249,22 @@ async function runHetznerDeploy(args: {
     // files — it only strips the ~130MB of built docs/blog from source tarballs
     // that never serve them. (frontend-dist is kept: `dist` != `frontend-dist`.)
     'dist',
-    // stx's build cache + generated route manifest (`.stx/routes.ts`). It MUST
-    // be regenerated on the server from the shipped `resources/views` — shipping
-    // a stale/empty manifest makes production `stx serve` trust it and serve 404
+    // stx's build cache + generated route manifest (`routes.ts`). It MUST be
+    // regenerated on the server from the shipped `resources/views` — shipping a
+    // stale/empty manifest makes production `stx serve` trust it and serve 404
     // on every view route (e.g. `/`). Absent, stx-serve rescans and rebuilds it.
+    // (`.stx` too: a checkout that predates the move to storage/ still has one.)
+    relative(p.projectPath(), p.stxPath()).replace(/\/$/, ''),
     '.stx',
+    // ts-cloud's local state: the dashboard credentials and session signing key
+    // live here. They belong to the machine running the deploy and must never
+    // ride along in the tarball — the box mints its own under the dashboard
+    // site's shared directory.
+    relative(p.projectPath(), p.cloudStatePath()).replace(/\/$/, ''),
+    '.ts-cloud',
+    // Migration lock, temp bundles, CLI scratch — machine-local, never useful
+    // on the box.
+    relative(p.projectPath(), p.frameworkRuntimePath()).replace(/\/$/, ''),
     'tmp',
     'temp',
     '.DS_Store',
