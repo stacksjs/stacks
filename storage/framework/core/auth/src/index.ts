@@ -34,6 +34,9 @@ export * from './email-verification'
 // Session-based Authentication (SPA Cookie Auth)
 export * from './session-auth'
 
+// Cookie-carried access tokens, for server-rendered pages.
+export * from './cookie-auth'
+
 // TOTP (Two-Factor Authentication) - re-export from ts-auth
 export {
   generateTOTP,

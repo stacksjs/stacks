@@ -347,8 +347,21 @@ export class Auth {
     { user: UserModel, token: AuthToken, refreshToken?: string, expiresIn?: number } | null
   > {
     const isValid = await this.attempt(credentials)
+    if (!isValid)
+      return null
+
+    // `attempt()` stashes the user on the request-scoped auth state, which
+    // only exists inside a request. Outside one — a CLI command, a queued
+    // job, a test — that state is null, and login() used to return null on
+    // perfectly correct credentials, indistinguishable from a wrong
+    // password. Fall back to the lookup attempt() has already validated.
+    // The configured username column, which the model types as one of its
+    // own columns; config carries it as a plain string.
+    const username = (config.auth.username || 'email') as Parameters<typeof User.where>[0] & string
     const authedUser = authStateOrNull()?.authUser
-    if (!isValid || !authedUser)
+      ?? await User.where(username, '=', credentials[username]).first()
+
+    if (!authedUser)
       return null
 
     const { plainTextToken, refreshToken, expiresIn } = await this.createTokenForUser(authedUser, options)
