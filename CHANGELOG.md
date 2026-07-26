@@ -1,5 +1,20 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.172...v0.70.173)
+
+## 🐛 Bug Fixes
+
+- **env**: type APP_ENV with the values its validator accepts ([53a2ce2](https://github.com/stacksjs/stacks/commit/53a2ce2)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **config**: drop the phantom commit-scope imports ([c523e9d](https://github.com/stacksjs/stacks/commit/c523e9d)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 💚 Continuous Integration
+
+- run the lockfile check after the install, not before ([b944dec](https://github.com/stacksjs/stacks/commit/b944dec)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.171...v0.70.172)
 
 ## 🐛 Bug Fixes
