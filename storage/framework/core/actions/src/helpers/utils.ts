@@ -73,10 +73,16 @@ export function developmentConditionForProject(projectRoot: string): string {
  * and joining gives us a direct on-disk path regardless of the exports
  * field shape.
  */
-async function resolveActionFile(action: string): Promise<string | null> {
+async function resolveActionFile(action: string, projectRoot?: string): Promise<string | null> {
   const candidates: string[] = []
 
-  // 1) User override path (legacy framework directory)
+  // 1) User override path (legacy framework directory). `projectRoot` is set
+  //    when the action runs in a different project than this process booted
+  //    from (see `userActionsBase` in runAction) so its vendored core wins
+  //    over the host project's.
+  if (projectRoot)
+    candidates.push(join(projectRoot, `storage/framework/core/actions/src/${action}.ts`))
+
   candidates.push(p.actionsPath(`src/${action}.ts`))
 
   // 2/3) Find the @stacksjs/actions package root, then look for a built
@@ -135,14 +141,25 @@ export async function runAction(action: Action, options?: ActionOptions): Promis
   // Most core actions are like "dev/views", "build/app", etc.
   const isLikelyCoreAction = action.includes('/') || ['dev', 'build', 'install', 'upgrade', 'migrate'].some(prefix => action.startsWith(prefix))
 
-  if (!isLikelyCoreAction) {
+  // `app/Actions` of the project the action runs IN, which is not necessarily
+  // the project this process booted from: `buddy new` scaffolds into a fresh
+  // directory and then runs actions there via `options.cwd`. `p.userActionsPath()`
+  // derives from `process.cwd()`, so without honoring the override the scan
+  // below targets the host project (e.g. the directory `buddy new` was invoked
+  // from, which has no `app/` at all).
+  const userActionsBase = options?.cwd ? join(String(options.cwd), 'app/Actions') : p.userActionsPath()
+
+  // Bun.Glob#scan rejects with ENOENT when `cwd` does not exist, and this call
+  // site is not wrapped — an uncaught rejection kills the CLI. A project
+  // without `app/Actions` simply has no user actions to match.
+  if (!isLikelyCoreAction && existsSync(userActionsBase)) {
     // Only scan user actions if it's NOT likely a core action
     const glob = new Bun.Glob('**/*.{ts,js}')
-    const scanOptions = { cwd: p.userActionsPath(), onlyFiles: true, absolute: true }
+    const scanOptions = { cwd: userActionsBase, onlyFiles: true, absolute: true }
 
     // First pass: only check filenames, don't import anything
     const matchingFiles: string[] = []
-    const basePath = p.userActionsPath()
+    const basePath = userActionsBase
 
     for await (const file of glob.scan(scanOptions)) {
       // Normalize the file path relative to basePath to match the action name
@@ -189,7 +206,7 @@ export async function runAction(action: Action, options?: ActionOptions): Promis
   //
   // Bun resolves either an absolute path or a `bun .../foo.ts` arg the same
   // way, so we just pick the first existing candidate and hand it to `bun`.
-  const path = await resolveActionFile(action)
+  const path = await resolveActionFile(action, options?.cwd ? String(options.cwd) : undefined)
   if (!path) {
     return err(`Action '${action}' not found in storage/framework/core/actions/src or @stacksjs/actions`) as any
   }

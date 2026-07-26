@@ -64,8 +64,13 @@ export function create(buddy: CLI): void {
         process.exit(ExitCode.FatalError)
       }
 
-  await ensureEnv(path, options)
+  // Restore the exec bit BEFORE the environment step: the template ships
+  // `buddy` non-executable (the tarball the gitit clone unpacks drops the
+  // mode), and pantry's post-database-setup hook shells out to `./buddy
+  // migrate` — which fails with `Permission denied` (exit 126) if the chmod
+  // has not happened yet.
   ensureExecutableScripts(path)
+  await ensureEnv(path, options)
   await install(path, options)
 
   if (options.minimal)
