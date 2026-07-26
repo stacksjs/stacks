@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'bun:test'
 import {
+  detectDependencyInstaller,
+  resolveDependencyRefreshCommand,
+  resolvePantryExecutable,
   runPostSyncDependencyRefresh,
   runPostSyncMigration,
   shouldRefreshPostSyncDependencies,
@@ -24,11 +27,11 @@ describe('vendored upgrade post-sync hook scheduling', () => {
 })
 
 describe('vendored upgrade post-sync dependency refresh', () => {
-  it('forces Bun to fully resolve the upgraded workspace graph', async () => {
+  it('forces the installer to fully resolve the upgraded workspace graph', async () => {
     let received: Parameters<Parameters<typeof runPostSyncDependencyRefresh>[0]['spawn']>[0] | undefined
 
     await runPostSyncDependencyRefresh({
-      bunExecutable: '/opt/bun',
+      cmd: ['/opt/bun', 'install', '--force'],
       projectRoot: '/app',
       spawn: (options) => {
         received = options
@@ -47,12 +50,56 @@ describe('vendored upgrade post-sync dependency refresh', () => {
 
   it('reports a failed dependency refresh to the upgrade hook', async () => {
     const refresh = runPostSyncDependencyRefresh({
-      bunExecutable: 'bun',
+      cmd: ['bun', 'install', '--force'],
       projectRoot: '/app',
       spawn: () => ({ exited: Promise.resolve(9) }),
     })
 
     await expect(refresh).rejects.toThrow('Post-upgrade dependency refresh exited with code 9.')
+  })
+})
+
+describe('vendored upgrade installer selection', () => {
+  it('hands a pantry app to pantry, because node_modules is not what it resolves', () => {
+    expect(detectDependencyInstaller(true)).toBe('pantry')
+    expect(detectDependencyInstaller(false)).toBe('bun')
+  })
+
+  it('builds the refresh argv for whichever installer owns the graph', () => {
+    expect(resolveDependencyRefreshCommand({
+      installer: 'bun',
+      bunExecutable: '/opt/bun',
+      pantryExecutable: '/usr/local/bin/pantry',
+    })).toEqual(['/opt/bun', 'install', '--force'])
+
+    expect(resolveDependencyRefreshCommand({
+      installer: 'pantry',
+      bunExecutable: '/opt/bun',
+      pantryExecutable: '/usr/local/bin/pantry',
+    })).toEqual(['/usr/local/bin/pantry', 'install', '--force'])
+  })
+
+  it('prefers the project-local pantry over anything installed globally', () => {
+    const present = new Set(['/app/pantry/.bin/pantry', '/home/me/.local/bin/pantry'])
+
+    expect(resolvePantryExecutable(
+      ['/app/pantry/.bin/pantry', '/home/me/.local/bin/pantry'],
+      path => present.has(path),
+    )).toBe('/app/pantry/.bin/pantry')
+  })
+
+  it('skips candidates that are not installed', () => {
+    const present = new Set(['/home/me/.local/bin/pantry'])
+
+    expect(resolvePantryExecutable(
+      ['/app/pantry/.bin/pantry', '/home/me/.local/bin/pantry'],
+      path => present.has(path),
+    )).toBe('/home/me/.local/bin/pantry')
+  })
+
+  it('falls back to a PATH lookup when no candidate exists', () => {
+    expect(resolvePantryExecutable(['/nope/pantry'], () => false)).toBe('pantry')
+    expect(resolvePantryExecutable([], () => false)).toBe('pantry')
   })
 })
 

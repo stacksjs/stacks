@@ -37,6 +37,9 @@ import {
 } from './framework-utils'
 import { reconcileWorkspaceCatalog } from './catalog'
 import {
+  detectDependencyInstaller,
+  resolveDependencyRefreshCommand,
+  resolvePantryExecutable,
   runPostSyncDependencyRefresh,
   runPostSyncMigration,
   shouldRefreshPostSyncDependencies,
@@ -741,10 +744,14 @@ async function runPostSyncHooks(args: {
     console.warn(`  catalog reconcile failed (non-fatal): ${(err as Error)?.message || err}`)
   }
 
-  // 3) `bun install` if any synced package.json changed. Updating core/
-  //    pulls new framework package versions; the user's lockfile won't know
-  //    about them until install is re-run. We only run install if a
-  //    package.json moved, so no-op upgrades stay fast.
+  // 3) Reinstall if any synced package.json changed. Updating core/ pulls new
+  //    framework package versions; the user's lockfile won't know about them
+  //    until install is re-run. We only run install if a package.json moved,
+  //    so no-op upgrades stay fast.
+  //
+  //    Which installer runs matters: a pantry app resolves its packages out of
+  //    `pantry/`, so refreshing `node_modules` with Bun would leave the code
+  //    that actually gets imported untouched.
   const corePkgChanged = shouldRefreshPostSyncDependencies(perPath.some((entry) => {
     const { managed, summary } = entry
     if (managed.isFile) return false
@@ -753,16 +760,23 @@ async function runPostSyncHooks(args: {
     return pkgJsonInTree(join(projectRoot, managed.localPath))
   }), alreadyRestarted)
   if (corePkgChanged) {
-    console.log('Running `bun install` to refresh dependencies...')
+    const installer = detectDependencyInstaller(existsSync(join(projectRoot, 'pantry.lock')))
+    const cmd = resolveDependencyRefreshCommand({
+      installer,
+      bunExecutable: process.argv[0] || 'bun',
+      pantryExecutable: resolvePantryExecutable(pantryExecutableCandidates(projectRoot), existsSync),
+    })
+
+    console.log(`Running \`${installer} install\` to refresh dependencies...`)
     try {
       await runPostSyncDependencyRefresh({
-        bunExecutable: process.argv[0] || 'bun',
+        cmd,
         projectRoot,
         spawn: spawnOptions => Bun.spawn(spawnOptions),
       })
     }
     catch (err) {
-      console.warn(`  bun install failed (non-fatal): ${(err as Error)?.message || err}`)
+      console.warn(`  ${installer} install failed (non-fatal): ${(err as Error)?.message || err}`)
     }
   }
 
@@ -780,6 +794,19 @@ async function runPostSyncHooks(args: {
       spawn: spawnOptions => Bun.spawn(spawnOptions),
     })
   }
+}
+
+/**
+ * Where a pantry binary might live, most project-local first. Mirrors the
+ * lookup `deploy` already does so both paths agree on which pantry runs.
+ */
+function pantryExecutableCandidates(projectRoot: string): string[] {
+  const home = process.env.HOME ?? ''
+  return [
+    join(projectRoot, 'pantry', '.bin', 'pantry'),
+    home ? join(home, '.local', 'bin', 'pantry') : '',
+    home ? join(home, '.local', 'share', 'pantry', 'global', 'bin', 'pantry') : '',
+  ].filter(Boolean)
 }
 
 function pkgJsonInTree(dir: string): boolean {

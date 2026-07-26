@@ -16,9 +16,62 @@ interface PostSyncMigrationOptions {
 }
 
 interface PostSyncDependencyOptions {
-  bunExecutable: string
+  /** Full argv for the refresh, from {@link resolveDependencyRefreshCommand}. */
+  cmd: string[]
   projectRoot: string
   spawn: PostSyncSpawn
+}
+
+/**
+ * Which installer owns the project's dependency graph.
+ *
+ * Stacks apps come in two flavours. The default resolves third-party packages
+ * from `node_modules` and is installed by Bun. A pantry app instead installs
+ * into `pantry/` and points tsconfig's catch-all path mapping at it, so that
+ * directory - not `node_modules` - is what module resolution actually reads.
+ */
+export type DependencyInstaller = 'bun' | 'pantry'
+
+/**
+ * A `pantry.lock` is the marker: it only exists once pantry owns the graph.
+ *
+ * Getting this wrong is not cosmetic. Running `bun install` in a pantry app
+ * refreshes a `node_modules` tree that nothing resolves against, so the
+ * upgrade reports success while the app keeps importing the stale copies in
+ * `pantry/` - which surfaces later as missing exports from packages the
+ * manifest claims are current.
+ */
+export function detectDependencyInstaller(hasPantryLock: boolean): DependencyInstaller {
+  return hasPantryLock ? 'pantry' : 'bun'
+}
+
+/**
+ * Build the refresh argv. Both installers spell the "re-resolve everything"
+ * flag `--force`, so the shape is the same either way.
+ */
+export function resolveDependencyRefreshCommand(options: {
+  installer: DependencyInstaller
+  bunExecutable: string
+  pantryExecutable: string
+}): string[] {
+  const executable = options.installer === 'pantry'
+    ? options.pantryExecutable
+    : options.bunExecutable
+
+  return [executable, 'install', '--force']
+}
+
+/**
+ * Pick the first pantry binary that exists, falling back to a bare `pantry`
+ * so a PATH install still works. `exists` is injected to keep this testable.
+ */
+export function resolvePantryExecutable(candidates: string[], exists: (path: string) => boolean): string {
+  for (const candidate of candidates) {
+    if (candidate && exists(candidate))
+      return candidate
+  }
+
+  return 'pantry'
 }
 
 /**
@@ -43,14 +96,14 @@ export function shouldRefreshPostSyncDependencies(corePackageChanged: boolean, a
 /**
  * Fully refresh dependencies after replacing vendored workspace manifests.
  *
- * A plain `bun install` may reuse the existing nested package placement and
- * leave a lockfile that changes in a clean checkout. `--force` makes Bun
+ * A plain install may reuse the existing nested package placement and leave a
+ * lockfile that changes in a clean checkout. `--force` makes the installer
  * resolve the complete workspace graph so the resulting lockfile is valid for
  * subsequent frozen installs.
  */
 export async function runPostSyncDependencyRefresh(options: PostSyncDependencyOptions): Promise<void> {
   const process = options.spawn({
-    cmd: [options.bunExecutable, 'install', '--force'],
+    cmd: options.cmd,
     cwd: options.projectRoot,
     stdin: 'ignore',
     stdout: 'inherit',
