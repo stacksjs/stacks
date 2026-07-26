@@ -48,7 +48,12 @@ export type EnvConfig = Partial<Record<EnvKey, EnvValueConfig>>
 export interface StacksEnv {
   // App
   APP_NAME: string | undefined
-  APP_ENV: 'local' | 'dev' | 'stage' | 'prod' | undefined
+  // Must match `envEnum.APP_ENV` above, which is what the runtime validates
+  // against. The type listed only the short forms, so the long ones every
+  // deploy actually uses (`APP_ENV=production`, and `development`/`staging`)
+  // were type errors against a value the validator accepts, and
+  // `env.APP_ENV === 'production'` was reported as an impossible comparison.
+  APP_ENV: 'local' | 'dev' | 'development' | 'stage' | 'staging' | 'prod' | 'production' | undefined
   APP_KEY: string | undefined
   APP_URL: string | undefined
   APP_DOMAIN: string | undefined
