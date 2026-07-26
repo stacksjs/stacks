@@ -17,6 +17,15 @@ describe('authCookie', () => {
     expect(cookie).toMatch(/Max-Age=\d+/)
   })
 
+  it('defaults its lifetime to the configured token expiry, in seconds', () => {
+    // config.auth.tokenExpiry is milliseconds (one hour by default); a cookie
+    // that outlived its token would leave the browser sending a dead session.
+    const maxAge = Number(/Max-Age=(\d+)/.exec(authCookie('abc123'))?.[1])
+
+    expect(maxAge).toBeGreaterThanOrEqual(60)
+    expect(maxAge).toBeLessThanOrEqual(60 * 60 * 24 * 400)
+  })
+
   it('honours an explicit name, path, domain and lifetime', () => {
     const cookie = authCookie('abc123', {
       name: 'of_session',

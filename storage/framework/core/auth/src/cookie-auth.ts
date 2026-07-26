@@ -45,9 +45,14 @@ function cookieName(options?: AuthCookieOptions): string {
 }
 
 function defaultMaxAge(): number {
-  // config.auth.tokenExpiry is in days; a cookie wants seconds.
-  const days = Number((config.auth as any)?.tokenExpiry ?? 30)
-  return Math.max(60, Math.round(days * 24 * 60 * 60))
+  // `config.auth.tokenExpiry` is milliseconds — the same value
+  // `createTokenForUser` uses for the token's own `expires_at`, so the cookie
+  // and the token it carries die together. A cookie wants seconds.
+  const milliseconds = Number((config.auth as any)?.tokenExpiry ?? 60 * 60 * 1000)
+  if (!Number.isFinite(milliseconds) || milliseconds <= 0)
+    return 60 * 60
+
+  return Math.max(60, Math.round(milliseconds / 1000))
 }
 
 function isLocal(): boolean {

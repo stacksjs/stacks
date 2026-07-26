@@ -97,6 +97,8 @@ const commandRegistry: Record<string, CommandLoader> = {
   'package': { path: './commands/package.ts', exportName: 'packageCommands' },
   'phone': { path: './commands/phone.ts', exportName: 'phone' },
   'ports': { path: './commands/ports.ts', exportName: 'ports' },
+  'link:core': { path: './commands/link.ts', exportName: 'link' },
+  'unlink:core': { path: './commands/link.ts', exportName: 'link' },
   'prepublish': { path: './commands/prepublish.ts', exportName: 'prepublish' },
   'projects': { path: './commands/projects.ts', exportName: 'projects' },
   'publish': { path: './commands/publish.ts', exportName: 'publish' },
