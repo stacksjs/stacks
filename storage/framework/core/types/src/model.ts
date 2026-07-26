@@ -303,6 +303,17 @@ export interface AttributesElements {
   [key: string]: Attribute
 }
 
+/**
+ * The attribute VALUES of one model row, as handed to a computed getter or
+ * setter: `salutationName: (attributes: Attributes) => …`.
+ *
+ * Not to be confused with `AttributesElements`, which is the map of attribute
+ * DEFINITIONS on a model. Built-in models have imported this name since they
+ * were written; it was simply never exported, so every one of them was a
+ * TS2724 the moment @stacksjs/types started shipping declarations.
+ */
+export type Attributes = Record<string, any>
+
 export interface RelationConfig {
   relationship: string
   model: string

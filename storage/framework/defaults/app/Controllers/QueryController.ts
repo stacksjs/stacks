@@ -294,11 +294,15 @@ export default class QueryController extends Controller {
       let query = db
         .selectFrom('query_logs')
         .select([
-          sql`strftime(${sql.literal(interval)}, executed_at)`.as('time_interval'),
+          // `interval` and `timeConstraint` are chosen from the fixed set a
+          // few lines above, never from the request, so interpolating them
+          // into the fragment is safe. `sql.literal` does not exist on this
+          // tag, which is what made this a type error.
+          sql`strftime('${interval}', executed_at)`.as('time_interval'),
           db.fn.count('id').as('count'),
           db.fn.avg('duration').as('avg_duration'),
         ])
-        .whereRaw(sql`executed_at >= datetime("now", ${sql.literal(timeConstraint)})`)
+        .whereRaw(sql`executed_at >= datetime("now", '${timeConstraint}')`)
         .groupBy('time_interval')
         .orderBy('time_interval')
 
