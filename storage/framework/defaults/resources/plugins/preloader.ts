@@ -103,10 +103,22 @@ if (!isRepl && !isPostinstall) {
   // read an environment variable ahead of that config — which is also what
   // carries the answer into every process a command spawns. Setting it here
   // means no boot order can leave a library writing to `.stx` / `.ts-cloud`.
+  //
+  // Guarded because this preload runs before ANY command: an app resolving
+  // `@stacksjs/path` from npm can legitimately be on a published version that
+  // predates this helper, and a bare call there throws
+  // `applyRuntimeDirectoryEnv is not a function` out of a bunfig preload,
+  // which takes down every `buddy` invocation including the `install` and
+  // `upgrade` that would fix it. Falling through leaves stx and ts-cloud on
+  // their own defaults, which is degraded but recoverable.
   const pathPkg = '@stacksjs/' + 'path'
   const { applyRuntimeDirectoryEnv } = await import('../../../core/path/src/index.ts')
     .catch(() => import(pathPkg))
-  applyRuntimeDirectoryEnv()
+
+  if (typeof applyRuntimeDirectoryEnv === 'function')
+    applyRuntimeDirectoryEnv()
+  else
+    console.warn('[stacks] installed @stacksjs/path has no applyRuntimeDirectoryEnv; stx and ts-cloud will use their default state directories. Run `buddy upgrade` to refresh the framework packages.')
 }
 
 // stx template engine plugin
