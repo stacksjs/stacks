@@ -1,5 +1,16 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.164...v0.70.165)
+
+## 🐛 Bug Fixes
+
+- **dev**: resolve dev/views from the installed @stacksjs/actions ([ce00aa2](https://github.com/stacksjs/stacks/commit/ce00aa2)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dev**: detect a listener bound to a different address family ([1352ddc](https://github.com/stacksjs/stacks/commit/1352ddc)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.163...v0.70.164)
 
 ## ✨ Features
@@ -56,7 +67,7 @@
 - **deps**: stx 0.2.100, ts-cloud 0.7.60 ([a5cf770](https://github.com/stacksjs/stacks/commit/a5cf770)) _(by Chris <chrisbreuer93@gmail.com>)_
 - **cloud**: widen the tenant namespace guard to the whole box ([052f67c](https://github.com/stacksjs/stacks/commit/052f67c)) _(by Chris <chrisbreuer93@gmail.com>)_
 - **env**: remove other tenants' keys from the committed env files ([707cdd1](https://github.com/stacksjs/stacks/commit/707cdd1)) _(by Chris <chrisbreuer93@gmail.com>)_
-- **env**: rename the GHOST_* tenant keys to ANALYTICSHQ_* ([4b9626a](https://github.com/stacksjs/stacks/commit/4b9626a)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **env**: rename the GHOST** tenant keys to ANALYTICSHQ** ([4b9626a](https://github.com/stacksjs/stacks/commit/4b9626a)) _(by Chris <chrisbreuer93@gmail.com>)_
 - untrack local cloud driver state ([6a1d538](https://github.com/stacksjs/stacks/commit/6a1d538)) _(by Chris <chrisbreuer93@gmail.com>)_
 - wip ([d6d734b](https://github.com/stacksjs/stacks/commit/d6d734b)) _(by Chris <chrisbreuer93@gmail.com>)_
 - link the community as stacksjs.com/discord ([231b86c](https://github.com/stacksjs/stacks/commit/231b86c)) _(by Chris <chrisbreuer93@gmail.com>)_
