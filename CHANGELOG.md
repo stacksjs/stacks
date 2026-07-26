@@ -1,5 +1,19 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.180...v0.70.181)
+
+## ✨ Features
+
+- **buddy**: link:core, for developing the framework from an app ([d8afb09](https://github.com/stacksjs/stacks/commit/d8afb09)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🐛 Bug Fixes
+
+- **buddy**: keep the other links when unlinking one, drop dangling ones ([face9c8](https://github.com/stacksjs/stacks/commit/face9c8)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.179...v0.70.180)
 
 ## 🐛 Bug Fixes
