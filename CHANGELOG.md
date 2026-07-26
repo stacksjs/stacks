@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.171...v0.70.172)
+
+## 🐛 Bug Fixes
+
+- **types**: ship declarations for events, router, config, actions, utils and error-handling ([359e5db](https://github.com/stacksjs/stacks/commit/359e5db)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.170...v0.70.171)
 
 ## 🐛 Bug Fixes
