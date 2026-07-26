@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.167...v0.70.168)
+
+## 🐛 Bug Fixes
+
+- **deps**: localtunnels 0.2.11, which ships a bundleable dist ([7c92a8d](https://github.com/stacksjs/stacks/commit/7c92a8d)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.166...v0.70.167)
 
 ## 🐛 Bug Fixes
