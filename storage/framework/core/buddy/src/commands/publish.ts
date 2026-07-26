@@ -379,7 +379,11 @@ async function unvendorFramework(force: boolean): Promise<void> {
     process.exit(ExitCode.FatalError)
   }
 
-  const corePkg = JSON.parse(await fs.promises.readFile(corePkgPath, 'utf-8')) as { name?: string, version?: string }
+  const corePkg = JSON.parse(await fs.promises.readFile(corePkgPath, 'utf-8')) as {
+    name?: string
+    version?: string
+    dependencies?: Record<string, string>
+  }
   const version = corePkg.version
   if (!version) {
     log.error(`${rel(corePkgPath)} has no version field.`)
@@ -400,17 +404,42 @@ async function unvendorFramework(force: boolean): Promise<void> {
 
   const depName = corePkg.name ?? 'stacks'
   const range = `^${version}`
-  for (const field of ['dependencies', 'devDependencies'] as const) {
-    const deps = rootPkg[field]
-    if (deps?.[depName]?.startsWith('workspace:'))
-      deps[depName] = range
+
+  // Everything the vendored workspace was providing. Any `workspace:` range on
+  // one of these names has to become a version range, wherever it is declared:
+  // once the directory is gone bun fails the whole install with
+  // `Workspace dependency "<name>" not found` rather than falling back to npm.
+  const provided = new Set<string>([depName, ...Object.keys(corePkg.dependencies ?? {}).filter(name => name.startsWith('@stacksjs/'))])
+  for (const entry of await readdir(coreDir, { withFileTypes: true })) {
+    if (entry.isDirectory())
+      provided.add(`@stacksjs/${entry.name}`)
   }
 
-  // Nothing else may declare the dependency, or bun keeps linking the
-  // directory that is about to be deleted.
-  if (!rootPkg.dependencies?.[depName] && !rootPkg.devDependencies?.[depName]) {
-    rootPkg.dependencies = { ...rootPkg.dependencies, [depName]: range }
+  let repointed = 0
+  const repointWorkspaceRanges = (pkg: { dependencies?: Record<string, string>, devDependencies?: Record<string, string>, peerDependencies?: Record<string, string> }): boolean => {
+    let touched = false
+    for (const field of ['dependencies', 'devDependencies', 'peerDependencies'] as const) {
+      const deps = pkg[field]
+      if (!deps)
+        continue
+
+      for (const [name, spec] of Object.entries(deps)) {
+        if (!spec.startsWith('workspace:') || !provided.has(name))
+          continue
+
+        deps[name] = range
+        touched = true
+        repointed++
+      }
+    }
+    return touched
   }
+
+  repointWorkspaceRanges(rootPkg)
+
+  // The app has to declare the framework itself, or nothing pulls it in.
+  if (!rootPkg.dependencies?.[depName] && !rootPkg.devDependencies?.[depName])
+    rootPkg.dependencies = { ...rootPkg.dependencies, [depName]: range }
 
   if (Array.isArray(rootPkg.workspaces)) {
     rootPkg.workspaces = rootPkg.workspaces.filter(glob => !isCoreWorkspaceGlob(glob))
@@ -419,6 +448,17 @@ async function unvendorFramework(force: boolean): Promise<void> {
   }
 
   await fs.promises.writeFile(rootPkgPath, `${JSON.stringify(rootPkg, null, 2)}\n`)
+
+  // The workspace members that survive (libs, views, the framework package
+  // itself) commonly depend on the framework with `workspace:*` too.
+  for (const glob of rootPkg.workspaces ?? []) {
+    for (const memberPkgPath of globSync(`${glob.replace(/\/$/, '')}/package.json`, { cwd: process.cwd(), absolute: true })) {
+      const raw = await fs.promises.readFile(memberPkgPath, 'utf-8')
+      const memberPkg = JSON.parse(raw)
+      if (repointWorkspaceRanges(memberPkg))
+        await fs.promises.writeFile(memberPkgPath, `${JSON.stringify(memberPkg, null, 2)}\n`)
+    }
+  }
 
   // 2. bunfig.toml preloads point at source files inside core. Rewrite them to
   //    package specifiers: `storage/framework/core/env/plugin.ts` is the same
@@ -445,6 +485,8 @@ async function unvendorFramework(force: boolean): Promise<void> {
 
   log.success(`Removed ${italic(rel(coreDir))}`)
   log.info(`package.json now depends on ${depName}@${range}`)
+  if (repointed > 0)
+    log.info(`Repointed ${repointed} workspace: range${repointed === 1 ? '' : 's'} to ${range}`)
   if (rewrittenPreloads > 0)
     log.info(`Rewrote ${rewrittenPreloads} bunfig.toml preload path${rewrittenPreloads === 1 ? '' : 's'} to package specifiers`)
 
