@@ -26,14 +26,14 @@
   ],
   "exports": {
     ".": {
-      "types": "./dist/src/index.d.ts",
+      "types": "./dist/index.d.ts",
       "development": "./src/index.ts",
       "bun": "./dist/index.js",
       "import": "./dist/index.js",
       "default": "./dist/index.js"
     },
     "./traits/*": {
-      "types": "./dist/src/traits/*.d.ts",
+      "types": "./dist/traits/*.d.ts",
       "development": "./src/traits/*.ts",
       "bun": "./dist/traits/*.js",
       "import": "./dist/traits/*.js",
@@ -47,7 +47,7 @@
     }
   },
   "module": "dist/index.js",
-  "types": "dist/src/index.d.ts",
+  "types": "dist/index.d.ts",
   "files": [
     "README.md",
     "dist"
