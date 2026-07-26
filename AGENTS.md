@@ -26,9 +26,13 @@ relevant `SKILL.md` before doing non-trivial work in that area rather than guess
 
 ### Dependencies
 - **buddy-bot** handles dependency updates, not renovatebot.
-- **better-dx** provides shared dev tooling as peer dependencies; do not install its peers (e.g.
-  `typescript`, `pickier`, `bun-plugin-dtsx`) separately if `better-dx` is already in `package.json`.
+- **better-dx** bundles the shared dev tooling (`typescript`, `pickier`, `bun-plugin-dtsx`,
+  `bun-git-hooks`, `@stacksjs/gitlint`, `bunfig`, `@types/bun`, ...). If `better-dx` is in a
+  `package.json`, do not also declare what it ships - two ranges for one tool only drift. A package
+  that *imports* one of them at runtime declares it as a real `dependency` instead.
 - If `better-dx` is in `package.json`, ensure `bunfig.toml` sets `linker = "hoisted"`.
+- Do not use Bun's `catalog:` protocol. Every dependency carries its version range in the
+  `package.json` that declares it, so vendored apps and `buddy-bot` both see a resolvable range.
 
 ### Commits
 - Use conventional commit messages (`fix:`, `feat:`, `chore:`, ...).
