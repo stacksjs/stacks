@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it } from 'bun:test'
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { cloudStatePath, frameworkRuntimePath, mergeDirectoryInto, stxPath } from '../src/index'
+import { cloudStatePath, frameworkRuntimePath, mergeDirectoryInto, runtimeDirectoryEnv, stxPath } from '../src/index'
 
 /**
  * Runtime state moved out of the project root and under `storage/`:
@@ -10,6 +10,9 @@ import { cloudStatePath, frameworkRuntimePath, mergeDirectoryInto, stxPath } fro
  *   .stx       -> storage/framework/stx
  *   .ts-cloud  -> storage/cloud
  *   .stacks    -> storage/framework/runtime
+ *
+ * stx and ts-cloud read the new location from their own `stateDir` config
+ * option, so nothing is left behind in the project root - no symlinks.
  *
  * `mergeDirectoryInto` is the one-time migration that carries an existing
  * project across. It has to be recursive: a shallow "move each top-level entry
@@ -46,6 +49,34 @@ describe('runtime directory paths', () => {
   it('keeps cloud state separate from the committed cloud/ IaC directory', () => {
     expect(cloudStatePath()).toEndWith('/storage/cloud')
     expect(cloudStatePath('state')).not.toBe(`${cloudStatePath()}/../../cloud/state`)
+  })
+})
+
+describe('runtimeDirectoryEnv', () => {
+  /**
+   * Both libraries read these ahead of their own config, which is what keeps a
+   * process that never loads a config - and every process a command spawns -
+   * writing to the same place.
+   */
+  it('names the variables stx and ts-cloud actually read', () => {
+    expect(Object.keys(runtimeDirectoryEnv()).sort()).toEqual(['STX_DIR', 'TS_CLOUD_STATE_DIR'])
+  })
+
+  it('points each at its directory under storage/', () => {
+    expect(runtimeDirectoryEnv().STX_DIR).toBe(stxPath().replace(/\/$/, ''))
+    expect(runtimeDirectoryEnv().TS_CLOUD_STATE_DIR).toBe(cloudStatePath().replace(/\/$/, ''))
+  })
+
+  /**
+   * Absolute, and with no trailing slash: a relative value would resolve
+   * against whatever directory a given call site happens to use, and stx joins
+   * the value onto sub-paths itself.
+   */
+  it('exports absolute paths with no trailing separator', () => {
+    for (const value of Object.values(runtimeDirectoryEnv())) {
+      expect(value.startsWith('/')).toBeTrue()
+      expect(value.endsWith('/')).toBeFalse()
+    }
   })
 })
 

@@ -18,7 +18,7 @@ For taste-level guidance on *which* utilities to reach for (layout variance, spa
 - Package: `node_modules/@cwcss/crosswind/`
 - UI config: `config/ui.ts` (Crosswind options referencing Crosswind)
 - Default styles: `storage/framework/defaults/styles/`
-- Output: `storage/framework/stx/cache/cw-<hash>.css`, one file per page (reachable as `.stx/cache/`)
+- Output: `storage/framework/stx/cache/cw-<hash>.css`, one file per page (stx's `stateDir`, set in `config/ui.ts`)
 
 ## Core API
 

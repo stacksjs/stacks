@@ -227,5 +227,5 @@ url('user.show', { id: 42 })             // '/users/42'
 - EnhancedRequest extends the native Bun Request with Laravel-style helpers
 - File uploads return `UploadedFile` objects with metadata
 - Query tracking is for debug/profiling — call `clearTrackedQueries()` to free memory
-- The dev server writes a route manifest to `storage/framework/stx/routes.ts` (reachable as `.stx/routes.ts`); it is a build artifact, not a file to edit
+- The dev server writes a route manifest to `storage/framework/stx/routes.ts` (stx's `stateDir`, set in `config/ui.ts`); it is a build artifact, not a file to edit
 - The health endpoint returns uptime, memory, PID, and Bun version info

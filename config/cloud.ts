@@ -27,6 +27,19 @@ export const tsCloud: TsCloudConfig = {
     region: 'us-east-1', // Default AWS region
   },
 
+  /**
+   * Where ts-cloud keeps its machine-local state: the dashboard credentials
+   * and session key, the auth encryption key, the control-plane database, the
+   * staged dashboard release, cached templates. Stacks keeps every
+   * runtime-owned directory under storage/ rather than a `.ts-cloud` in the
+   * project root - see `cloudStatePath()` in @stacksjs/path, which also
+   * exports this as TS_CLOUD_STATE_DIR for processes that never read a config.
+   *
+   * This is also where the drivers already record the provisioned box
+   * (`storage/cloud/state/<stack>.json`), so all cloud state now sits together.
+   */
+  stateDir: 'storage/cloud',
+
   // Deploy compute to Hetzner Cloud (apiToken falls back to HCLOUD_TOKEN env).
   cloud: {
     provider: 'hetzner',

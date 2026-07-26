@@ -63,11 +63,11 @@ storage/framework/stx/
 storage/framework/runtime/
 storage/cloud/
 
-# `ensureRuntimeDirectories()` keeps `.stx` and `.ts-cloud` as symlinks to the
-# two directories above: stx and ts-cloud resolve those names relative to the
-# working directory from inside their own bundles, with no way to point them
-# elsewhere. `.stacks` is the pre-relocation name of storage/framework/runtime -
-# listed so a checkout that predates the move stays clean until it migrates.
+# Pre-relocation names of the three directories above. stx and ts-cloud each
+# take their state directory from config now (`stateDir` in config/ui.ts and
+# config/cloud.ts), so nothing is left in the project root - but a checkout that
+# predates the move still has these until `ensureRuntimeDirectories()` migrates
+# them, and they should never be committed in the meantime.
 /.stx
 /.ts-cloud
 /.stacks

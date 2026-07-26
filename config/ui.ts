@@ -6,6 +6,13 @@ import type { StxOptions as UiOptions } from '@stacksjs/stx'
  */
 
 export default {
+  // Where stx keeps everything it generates: the compiled-template cache, the
+  // Crosswind CSS cache, client-script bundles, the route manifest and route
+  // types. Stacks keeps every runtime-owned directory under storage/ rather
+  // than a `.stx` in the project root - see `stxPath()` in @stacksjs/path,
+  // which also exports this as STX_DIR for processes that never read a config.
+  stateDir: 'storage/framework/stx',
+
   // Components directory - for user-defined components
   componentsDir: 'resources/components',
 

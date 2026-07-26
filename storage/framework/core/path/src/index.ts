@@ -7,7 +7,6 @@ import {
   readlinkSync,
   renameSync,
   rmSync,
-  symlinkSync,
   unlinkSync,
 } from 'node:fs'
 import os from 'node:os'
@@ -1480,9 +1479,11 @@ export function frameworkRuntimePath(path?: string): string {
 /**
  * Returns the path to stx's build cache and generated route manifest.
  *
- * stx writes its compiled-template cache and `routes.ts` manifest here. It used
- * to be `./.stx` in the project root; the root-level directory is now a symlink
- * maintained by {@link ensureRuntimeDirectories} so stx keeps working unchanged.
+ * stx writes its compiled-template cache, Crosswind CSS cache, client-script
+ * bundles and `routes.ts` manifest here. It used to be `./.stx` in the project
+ * root; stx now takes the location from its own `stateDir` config option, which
+ * `config/ui.ts` sets to this directory and {@link runtimeDirectoryEnv} exports
+ * as `STX_DIR` for every process the project starts.
  *
  * @param path - The relative path to the file or directory within the stx cache.
  * @returns The absolute path to the specified file or directory.
@@ -1496,9 +1497,10 @@ export function stxPath(path?: string): string {
  *
  * ts-cloud persists per-environment driver state, cached templates, and the
  * management dashboard's credentials here. These are machine-local secrets and
- * caches, never committed. It used to be `./.ts-cloud` in the project root; the
- * root-level directory is now a symlink maintained by
- * {@link ensureRuntimeDirectories}.
+ * caches, never committed. It used to be `./.ts-cloud` in the project root;
+ * ts-cloud now takes the location from its own `stateDir` config option, which
+ * `config/cloud.ts` sets to this directory and {@link runtimeDirectoryEnv}
+ * exports as `TS_CLOUD_STATE_DIR` for every process the project starts.
  *
  * Not to be confused with {@link cloudPath}, which points at the committed
  * `cloud/` infrastructure-as-code directory.
@@ -1513,34 +1515,62 @@ export function cloudStatePath(path?: string): string {
 /**
  * The outcome of relocating one runtime directory.
  *
- * `expectsLink` says whether a symlink is supposed to remain at `legacy`;
- * `linked` says whether one is actually there. A directory with
- * `expectsLink: false` is fully migrated and intentionally leaves nothing
- * behind, so only `expectsLink && !linked` indicates a problem.
+ * `cleared` says whether the old root-level entry is gone. It stays false only
+ * when something we should not touch is sitting there - a symlink someone else
+ * created, or an entry we could not remove.
  */
 export interface RuntimeDirectoryState {
   legacy: string
   target: string
-  expectsLink: boolean
-  linked: boolean
+  cleared: boolean
 }
 
 /**
  * The runtime directories that used to sit in the project root and now live
  * under `storage/`.
  *
- * `link: true` leaves a symlink behind at the old location. Only stx and
- * ts-cloud need that: both resolve `.stx` / `.ts-cloud` relative to the working
- * directory from inside their own bundles and offer no option to point
- * elsewhere. Everything the framework itself writes resolves through
- * {@link frameworkRuntimePath}, so `.stacks` is migrated and then simply
- * removed - no symlink, nothing left in the project root.
+ * Nothing is left behind at the old location. stx and ts-cloud used to need a
+ * symlink there because both resolved `.stx` / `.ts-cloud` relative to the
+ * working directory with no way to point them elsewhere; each now takes a
+ * `stateDir` config option, set in `config/ui.ts` and `config/cloud.ts` and
+ * exported as an environment variable by {@link runtimeDirectoryEnv}.
  */
-const RELOCATED_RUNTIME_DIRECTORIES: ReadonlyArray<{ legacy: string, target: () => string, link: boolean }> = [
-  { legacy: '.stx', target: stxPath, link: true },
-  { legacy: '.ts-cloud', target: cloudStatePath, link: true },
-  { legacy: '.stacks', target: frameworkRuntimePath, link: false },
+const RELOCATED_RUNTIME_DIRECTORIES: ReadonlyArray<{ legacy: string, target: () => string }> = [
+  { legacy: '.stx', target: stxPath },
+  { legacy: '.ts-cloud', target: cloudStatePath },
+  { legacy: '.stacks', target: frameworkRuntimePath },
 ]
+
+/**
+ * The environment stx and ts-cloud need in order to find their state.
+ *
+ * Both take the directory from their own config (`config/ui.ts` sets stx's
+ * `stateDir`, `config/cloud.ts` sets ts-cloud's), but a config is only read
+ * once something loads it, and both libraries reach for their state from module
+ * scope and from helpers that never see a config object. Their documented
+ * override is an environment variable, which is also what carries the answer
+ * into every process a command spawns. Absolute, so a code path resolving
+ * against a subdirectory still lands in the same place.
+ */
+export function runtimeDirectoryEnv(): Record<string, string> {
+  return {
+    STX_DIR: stxPath().replace(/\/$/, ''),
+    TS_CLOUD_STATE_DIR: cloudStatePath().replace(/\/$/, ''),
+  }
+}
+
+/**
+ * Applies {@link runtimeDirectoryEnv} to `process.env`.
+ *
+ * An explicitly set value wins: someone who exports `STX_DIR` before running a
+ * command means it.
+ */
+export function applyRuntimeDirectoryEnv(): void {
+  for (const [key, value] of Object.entries(runtimeDirectoryEnv())) {
+    if (!process.env[key]?.trim())
+      process.env[key] = value
+  }
+}
 
 /**
  * Recursively merges `from` into `to`, keeping whatever is already at `to`.
@@ -1576,29 +1606,30 @@ export function mergeDirectoryInto(from: string, to: string): void {
 }
 
 /**
- * Creates the framework's runtime directories under `storage/` and points the
- * legacy root-level directories at them.
+ * Creates the framework's runtime directories under `storage/` and clears the
+ * legacy root-level entries.
  *
  * For each relocated directory this:
  *
  *  1. creates the target under `storage/` if it does not exist yet,
  *  2. recursively merges a pre-existing real directory in the project root into
  *     it (anything already at the target wins, so re-running is safe),
- *  3. replaces the root entry with a symlink to the target.
+ *  3. removes what is left in the root - including the symlink earlier versions
+ *     put there, now that stx and ts-cloud are configured to read the target
+ *     directly.
  *
- * Every step is best-effort. A project on a filesystem that refuses symlinks
- * keeps working exactly as before - the root directory simply stays real - so
- * this must never throw or block a command.
+ * A symlink pointing anywhere other than the target is left alone: it is not
+ * ours to remove (an old checkout's `.stacks` may still be the core-source
+ * shortcut that `buddy generate:core-symlink` now writes to `.framework`).
  *
- * @returns The relocations that are now in place.
+ * Every step is best-effort - this must never throw or block a command.
+ *
+ * @returns What is now in place for each relocated directory.
  */
 export function ensureRuntimeDirectories(): RuntimeDirectoryState[] {
   const results: RuntimeDirectoryState[] = []
 
-  // Windows needs an explicit junction for directory links; POSIX does not care.
-  const linkType = process.platform === 'win32' ? 'junction' : 'dir'
-
-  for (const { legacy, target, link } of RELOCATED_RUNTIME_DIRECTORIES) {
+  for (const { legacy, target } of RELOCATED_RUNTIME_DIRECTORIES) {
     const legacyPath = projectPath(legacy)
     const targetPath = target()
 
@@ -1607,36 +1638,33 @@ export function ensureRuntimeDirectories(): RuntimeDirectoryState[] {
 
       const stats = lstatSync(legacyPath, { throwIfNoEntry: false })
 
-      if (stats?.isSymbolicLink()) {
-        const pointsAtTarget = resolve(dirname(legacyPath), readlinkSync(legacyPath)) === resolve(targetPath)
+      if (!stats) {
+        results.push({ legacy: legacyPath, target: targetPath, cleared: true })
+        continue
+      }
 
-        // Already correct, or an unrelated symlink we should not be linking
-        // over (`buddy generate:core-symlink` puts one at `.stacks`).
-        if (pointsAtTarget || !link) {
-          results.push({ legacy: legacyPath, target: targetPath, expectsLink: link, linked: pointsAtTarget })
+      if (stats.isSymbolicLink()) {
+        const pointsAtTarget = resolve(dirname(legacyPath), readlinkSync(legacyPath)) === resolve(targetPath)
+        if (!pointsAtTarget) {
+          results.push({ legacy: legacyPath, target: targetPath, cleared: false })
           continue
         }
         unlinkSync(legacyPath)
       }
-      else if (stats?.isDirectory()) {
+      else if (stats.isDirectory()) {
         // One-time migration of a project that predates the move.
         mergeDirectoryInto(legacyPath, targetPath)
         rmSync(legacyPath, { recursive: true, force: true })
       }
-      else if (stats) {
+      else {
         // A stray file where a directory belongs.
         rmSync(legacyPath, { force: true })
       }
 
-      // Relative, so the link keeps working if the project is moved or mounted
-      // at a different path (a container bind mount, for instance).
-      if (link)
-        symlinkSync(relative(dirname(legacyPath), targetPath), legacyPath, linkType)
-
-      results.push({ legacy: legacyPath, target: targetPath, expectsLink: link, linked: link })
+      results.push({ legacy: legacyPath, target: targetPath, cleared: true })
     }
     catch {
-      results.push({ legacy: legacyPath, target: targetPath, expectsLink: link, linked: false })
+      results.push({ legacy: legacyPath, target: targetPath, cleared: false })
     }
   }
 
@@ -1696,6 +1724,8 @@ export interface Path {
   frameworkRuntimePath: (path?: string) => string
   stxPath: (path?: string) => string
   ensureRuntimeDirectories: () => RuntimeDirectoryState[]
+  runtimeDirectoryEnv: () => Record<string, string>
+  applyRuntimeDirectoryEnv: () => void
   collectionsPath: (path?: string) => string
   commandsPath: (path?: string) => string
   componentsPath: (path?: string) => string
@@ -1839,6 +1869,8 @@ export const path: Path = {
   frameworkRuntimePath,
   stxPath,
   ensureRuntimeDirectories,
+  runtimeDirectoryEnv,
+  applyRuntimeDirectoryEnv,
   frameworkCloudPath,
   collectionsPath,
   commandsPath,

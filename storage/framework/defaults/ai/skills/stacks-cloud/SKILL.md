@@ -15,7 +15,7 @@ AWS-focused cloud deployment using CloudFormation via `@stacksjs/ts-cloud`.
 - Deploy package: `storage/framework/core/deploy/`
 - CDK stacks: `storage/framework/cloud/` (deploy.ts, cdk.json, package.json)
 - Cloud config: `cloud/` (serverless.ts, servers.ts, deploy-script.ts)
-- Cloud driver state: `storage/cloud/` (also reachable as `.ts-cloud/`, a symlink stx and ts-cloud rely on)
+- Cloud driver state: `storage/cloud/` (ts-cloud's `stateDir`, set in `config/cloud.ts`)
 - Configuration: `config/cloud.ts`
 
 ## Deployment Modes

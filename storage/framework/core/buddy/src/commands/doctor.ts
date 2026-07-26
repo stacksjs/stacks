@@ -309,22 +309,20 @@ export function doctor(buddy: CLI): void {
         return `Driver: ${driver}`
       })
 
-      // Runtime directories — all of them live under storage/ now. `.stx` and
-      // `.ts-cloud` stay as symlinks because stx and ts-cloud hardcode those
-      // names relative to the working directory. A filesystem that refuses
-      // symlinks is not fatal (both tools just use a root-level directory
-      // again), but it is worth surfacing, since deploy state and the build
-      // cache then land outside storage/.
+      // Runtime directories — all of them live under storage/ now, and nothing
+      // is left in the project root. Something still sitting at `.stx`,
+      // `.ts-cloud` or `.stacks` means the one-time migration could not clear
+      // it, so a tool may still be writing outside storage/.
       {
         const { ensureRuntimeDirectories, projectPath } = await import('@stacksjs/path')
-        const unlinked = ensureRuntimeDirectories().filter(entry => entry.expectsLink && !entry.linked)
+        const leftover = ensureRuntimeDirectories().filter(entry => !entry.cleared)
 
-        checks.push(unlinked.length === 0
-          ? { name: 'Runtime directories', status: 'pass', message: 'Linked to storage/' }
+        checks.push(leftover.length === 0
+          ? { name: 'Runtime directories', status: 'pass', message: 'All under storage/' }
           : {
               name: 'Runtime directories',
               status: 'warn',
-              message: `Could not link ${unlinked.map(entry => entry.legacy.slice(projectPath().length + 1)).join(', ')} into storage/ (symlinks unsupported here?)`,
+              message: `Still in the project root: ${leftover.map(entry => entry.legacy.slice(projectPath().length + 1)).join(', ')} — remove them so state stays under storage/`,
             })
       }
 

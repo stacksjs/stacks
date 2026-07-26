@@ -96,6 +96,17 @@ if (!isRepl && !isPostinstall) {
   // overrides while applying environment-specific file precedence. quiet: true
   // prevents duplicate logging across multiple processes.
   autoLoadEnv({ quiet: true, env: process.env.APP_ENV })
+
+  // Tell stx and ts-cloud where their state lives before anything imports them.
+  // Both keep it under `storage/` in a Stacks app rather than in a dot-directory
+  // at the project root, both take the location from their own config, and both
+  // read an environment variable ahead of that config — which is also what
+  // carries the answer into every process a command spawns. Setting it here
+  // means no boot order can leave a library writing to `.stx` / `.ts-cloud`.
+  const pathPkg = '@stacksjs/' + 'path'
+  const { applyRuntimeDirectoryEnv } = await import('../../../core/path/src/index.ts')
+    .catch(() => import(pathPkg))
+  applyRuntimeDirectoryEnv()
 }
 
 // stx template engine plugin

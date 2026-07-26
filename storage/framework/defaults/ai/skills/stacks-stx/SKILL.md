@@ -17,7 +17,7 @@ When the task is how a page should *look* (not just how stx renders), pair this 
 ## Key Paths
 - STX config: `config/ui.ts`
 - STX plugin: `bun-plugin-stx` (loaded via bunfig.toml)
-- STX build cache + route manifest: `storage/framework/stx/` (also reachable as `.stx/`, a symlink stx relies on)
+- STX build cache + route manifest: `storage/framework/stx/` (stx's `stateDir`, set in `config/ui.ts`)
 - Components: `resources/components/`
 - Layouts: `resources/layouts/`
 - Partials: `resources/partials/`
@@ -168,7 +168,7 @@ await addLayout('admin', { nav: true, footer: true })
 - **STX is the ONLY templating system** — do not use other template engines
 - **`bun-plugin-stx` must be loaded** — without it, `.stx` files won't be processed
 - **Auto-imports** — browser auto-imports defined in `storage/framework/browser-auto-imports.json`
-- **`storage/framework/stx/`** — stx build cache and the generated route manifest. The root-level `.stx` is a symlink to it, because stx resolves that name relative to the working directory. Gitignored; safe to delete
+- **`storage/framework/stx/`** — stx build cache and the generated route manifest. `config/ui.ts` sets stx's `stateDir` here, so nothing lands in the project root. Gitignored; safe to delete
 - **Reactivity is custom** — `ref()` and `computed()` from STX are not Vue's implementation
 - **Crosswind for styling** — use utility classes, not inline styles
 - **Script block restrictions** — only stx-compatible code (signals, composables, directives), no vanilla DOM APIs
