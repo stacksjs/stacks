@@ -23,9 +23,9 @@ jobs:
           fetch-depth: 0
 
       - name: Setup Pantry
-        uses: pantry-pm/pantry/packages/action@d738d5fd2e543e3b8380e5fbd5d01ba8936c1790 # v0.10.47
+        uses: pantry-pm/pantry/packages/action@8826c8e3a511995aa0e70a6f0c8b4289f751fa96 # v0.10.50
         with:
-          version: '0.10.47'
+          version: '0.10.50'
 
       - name: Use Cached node_modules
         uses: actions/cache@v5
@@ -164,14 +164,9 @@ jobs:
           bun run zip:all
 
       - name: Create GitHub Release
-        # Pinned past v0.10.47 to pick up pantry-pm/pantry@53a22e5, which reports
-        # logsmith's stdout/stderr on failure. This step has failed on four
-        # consecutive releases with nothing but "exit 1" to go on, so the older
-        # pin cannot tell us why. Move back to a tagged release once one ships
-        # containing that commit.
-        uses: pantry-pm/pantry/packages/action@53a22e5a3277d981ade09fffc3e74ad8071c6f03 # main @ 2026-07-26
+        uses: pantry-pm/pantry/packages/action@8826c8e3a511995aa0e70a6f0c8b4289f751fa96 # v0.10.50
         with:
-          version: '0.10.47'
+          version: '0.10.50'
           install: 'false'
           release: 'true'
           release-tag: ${{ steps.get_version.outputs.version }}

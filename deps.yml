@@ -1,21 +1,4 @@
 dependencies:
   bun: ^1.3.14
+  git: ^2.47.0
   sqlite: ^3.47.2
-  # git >=2.47 is still required — it is just not installed through pantry.
-  #
-  # pantry's prebuilt git-scm.org ships `libexec/git` without the executable
-  # bit, while `bin/git` (a wrapper that execs it) does get the bit. The broken
-  # install then lands first on PATH and shadows the system git, so every git
-  # call in that environment dies with
-  #
-  #   bin/git: exec: .../libexec/git: Permission denied
-  #
-  # which surfaces downstream as "not a git repository" in a workspace that
-  # plainly is one. That silently broke the release-notes step of every release.
-  # Both CI runners and dev machines already ship a suitable git, so we use it
-  # rather than letting pantry replace it.
-  #
-  # Restore this line once pantry publishes a git-scm.org whose libexec helpers
-  # are executable (pantry-pm/pantry@7324c870 fixes the TypeScript installer
-  # path; the Zig CLI path, which is what installs git, still needs the same).
-  # git: ^2.47.0
