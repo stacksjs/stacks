@@ -793,21 +793,35 @@ export const tsCloud: TsCloudConfig = {
 // Stacks cloud configuration (for existing Stacks cloud features)
 const config: CloudConfig = {
   /**
-   * Projects that share this box, each deploying from its own repository with
-   * `cloud.attachTo: 'stacks'`.
+   * Other projects whose env namespace must never appear in this one.
    *
-   * Declaring them is what lets the framework recognise a `BUGHQ_…` or
-   * `ANALYTICSHQ_…` key in this project's `.env.*` as belonging to somebody
-   * else. Those keys have no reader here, and `buddy deploy` ships this
-   * project's env file to every site it deploys — so left in place they write
-   * another tenant's secrets into stacksjs.com's `.env` on disk. Deploy now
-   * drops them before shipping, and `buddy env:check` lists them so they can be
-   * deleted at source.
+   * Mostly the tenants sharing this box - they deploy from their own
+   * repositories with `cloud.attachTo: 'stacks'` and their own env files, so
+   * none of their values belong here. `bughq` runs its own box and `ghost` is
+   * what `analyticshq` used to be called; both are listed because their keys
+   * did leak in, and the list is a guard, not an inventory.
+   *
+   * This is what lets the framework recognise an `ANALYTICSHQ_…` key in
+   * `.env.*` as somebody else's. Such keys have no reader here, and
+   * `buddy deploy` ships this project's env file to every site it deploys - so
+   * left in place they write another project's secrets into stacksjs.com's
+   * `.env` on disk. Deploy drops them before shipping; `buddy env:check` lists
+   * them so they can be moved back to the project that owns them.
+   *
+   * Adding a slug is cheap and safe as long as its prefix does not collide
+   * with a real key here (this project uses APP_, DB_, MAIL_, AWS_, STRIPE_,
+   * FRONTEND_, MEILISEARCH_, SEARCH_, HCLOUD_, TS_, DOTENV_, SUDO_, GITHUB_).
    */
   tenants: [
-    'bughq',
     'analyticshq',
     'ghost',
+    'bughq',
+    'pantry',
+    'reveal',
+    'training',
+    'verygoodadblock',
+    'whitepaper',
+    'zigutils',
   ],
 }
 
