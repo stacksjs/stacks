@@ -31,11 +31,29 @@ import { log } from '@stacksjs/cli'
  */
 ;(globalThis as any).requestContext = {
   cookie(name: string): string | null {
+    // stx builds a per-request snapshot and refreshes this mirror
+    // immediately before each server script runs, so it is the accurate
+    // source even when a concurrent request has already moved on. The
+    // hook-set global below is the fallback for stx versions that predate
+    // it. Preferring the snapshot matters most for the thing cookies are
+    // usually carrying: whoever is signed in.
+    const snapshot = (globalThis as { __stxServeContext?: { cookies?: Record<string, string> } }).__stxServeContext
+    if (snapshot?.cookies && name in snapshot.cookies)
+      return snapshot.cookies[name] ?? null
+
     const cookies = (globalThis as { __stxServeCookies?: Record<string, string> }).__stxServeCookies
     return cookies?.[name] ?? null
   },
   url(): string {
-    return (globalThis as { __stxServeSearch?: string }).__stxServeSearch ?? ''
+    const snapshot = (globalThis as { __stxServeContext?: { search?: string } }).__stxServeContext
+    return snapshot?.search ?? (globalThis as { __stxServeSearch?: string }).__stxServeSearch ?? ''
+  },
+  // The dev server has always exposed this; production had not, so a page
+  // that branched on the locale worked under `buddy dev` and threw
+  // "requestContext.locale is not a function" on the box.
+  locale(): string {
+    const snapshot = (globalThis as { __stxServeContext?: { locale?: string | null } }).__stxServeContext
+    return snapshot?.locale ?? 'en'
   },
 }
 

@@ -54,7 +54,10 @@ function currentRequestContext(): StacksRequestContext | undefined {
     return currentRequestContext()?.url ?? ''
   },
   locale(): string {
-    return currentRequestContext()?.locale ?? 'de'
+    // 'en' rather than 'de' as the fallback: this is what a page sees when
+    // the request carried no locale at all, and the framework has no reason
+    // to assume German.
+    return currentRequestContext()?.locale ?? 'en'
   },
 }
 
