@@ -834,6 +834,7 @@ const config: CloudConfig = {
     'training',
     'verygoodadblock',
     'whitepaper',
+    'wildloop',
     'zigutils',
   ],
 }
