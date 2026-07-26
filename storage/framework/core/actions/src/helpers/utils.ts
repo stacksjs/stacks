@@ -118,9 +118,15 @@ export async function runAction(action: Action, options?: ActionOptions): Promis
         require('module').Module._initPaths?.()
       }
 
+      // The first two are vendored layouts. The published candidates are the
+      // ones an app that runs on the installed @stacksjs packages has, and
+      // without them `dev/views` resolved to nothing there: `buddy dev` still
+      // started the API and docs servers, so the only symptom was a frontend
+      // that never came up.
       const viewsEntries = [
         p.projectPath('storage/framework/core/actions/src/dev/views.ts'),
         p.frameworkPath('actions/src/dev/views.ts'),
+        ...publishedActionCandidates('dev/views'),
       ]
       for (const entry of viewsEntries) {
         if (existsSync(entry)) {
