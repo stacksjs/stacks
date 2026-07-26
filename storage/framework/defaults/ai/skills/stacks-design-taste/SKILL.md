@@ -140,7 +140,7 @@ Unless the design read pulls in an aesthetic-specific companion, these are the d
 * **NEVER drive continuous values (mouse position, scroll progress, pointer physics, magnetic hover) through a signal you re-read every frame.** Writing signal state on every pointer or scroll frame re-runs reactive effects and collapses on mobile. Instead drive a **CSS custom property** from inside an `effect` (Section 5.D) or let CSS scroll-driven animations do the work with no script at all.
 
 ### 3.C Icons
-* **Use Iconify utility classes.** stx ships 200K+ Iconify icons as classes: `<i class="i-hugeicons-{name}"></i>`, or any collection `i-{collection}-{name}` (`i-ph-arrow-right`, `i-tabler-check`). Size and color with Crosswind: `class="i-hugeicons-book-open h-6 w-6 text-gray-500"`.
+* **Use Iconify utility classes.** stx ships 200K+ Iconify icons as classes: `<i class="i-hugeicons-{name}"></i>`, or any collection `i-{collection}-{name}` (`i-ph-arrow-right`, `i-tabler-check`). Size and color with Crosswind: `class="h-6 w-6 text-gray-500 i-hugeicons-book-open"`.
 * **Default collection: hugeicons.** Keep **one collection per project**. Standardize stroke weight.
 * **NEVER hand-roll SVG icon paths. NEVER `npm install lucide-react` / `@phosphor-icons/*` / any icon package.** The Iconify classes replace all of that. If a glyph is missing, pull it from another Iconify collection - do not draw paths from scratch.
 
@@ -354,9 +354,9 @@ Pure CSS: each card is `position: sticky; top: 0`, and a `view()` timeline shrin
 ```html
 <!-- resources/components/sticky-stack.stx -->
 <template>
-  <div class="sticky-stack relative">
+  <div class="relative sticky-stack">
     @foreach($cards as $card)
-      <div class="stack-card sticky top-0 min-h-[100dvh] flex items-center justify-center">
+      <div class="flex sticky top-0 items-center justify-center min-h-[100dvh] stack-card">
         {{ $card }}
       </div>
     @endforeach
@@ -399,9 +399,9 @@ The wrapper reserves tall scroll length; a sticky inner viewport pins at the top
 ```html
 <!-- resources/components/horizontal-pan.stx -->
 <template>
-  <section class="pan-wrap relative">
-    <div class="pan-sticky sticky top-0 h-[100dvh] overflow-hidden">
-      <div class="pan-track flex h-full items-center">
+  <section class="relative pan-wrap">
+    <div class="overflow-hidden sticky top-0 h-[100dvh] pan-sticky">
+      <div class="flex items-center h-full pan-track">
         <slot />
       </div>
     </div>
@@ -455,7 +455,7 @@ For simple "items appear as they enter viewport" (no pinning), use `useIntersect
 </script>
 
 <template>
-  <ul ref="reveal-list" class="reveal grid gap-6">
+  <ul ref="reveal-list" class="grid gap-6 reveal">
     @foreach($items as $i => $item)
       <li class="reveal-item" style="--i: {{ $i }}">{{ $item }}</li>
     @endforeach
@@ -510,7 +510,7 @@ Track the pointer with `useMouse()` and write the offset to a **CSS custom prope
 </script>
 
 <template>
-  <button ref="magnet" class="magnet px-6 py-3 rounded-full">
+  <button ref="magnet" class="px-6 py-3 rounded-full magnet">
     <slot />
   </button>
 </template>
@@ -712,7 +712,7 @@ These patterns came out of real LLM-generated landing-page tests. Treat them as 
 * **Banned in headlines.** Use a period or a comma.
 * **Banned in eyebrows / labels / pills / button text / image captions / nav items.** Replace with line breaks, columns, or hairlines.
 * **Banned in body copy.** Restructure the sentence: two sentences with a period, OR a comma, OR parentheses, OR a colon.
-* **Banned in quote attribution.** Use a normal hyphen with spaces (` - `) or a line break + smaller-weight name.
+* **Banned in quote attribution.** Use a normal hyphen with spaces (`-`) or a line break + smaller-weight name.
 * **Banned in en-dash form too (`–`) when used as a separator.** Date ranges (`2018-2026`) use a hyphen. Number ranges (`40-80k`) use a hyphen.
 
 The ONLY permitted dash characters on the page are:

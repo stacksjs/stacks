@@ -37,7 +37,7 @@ Lane ids are semantic and reserved: a lane with id `main` is required and maps
 to the top phase band; `terminal` maps to the bottom outcome band; every other
 lane id (up to 4 lanes total) shares the single middle event band. The three
 band headers render from your lane labels - the middle band joins the labels of
-all event lanes with ` + `. A complete worked example lives at
+all event lanes with `+`. A complete worked example lives at
 `.claude/skills/stacks-technical-diagrams/examples/agent-run.lifecycle.json`.
 
 The schema lives at:

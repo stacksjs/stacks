@@ -141,7 +141,7 @@ auth/src/
 - `generateTwoFactorUri(user?, service?, secret?): string`
 - `createPersonalAccessClient(): Promise<Result<string, never>>`
 
-### Re-exported from @stacksjs/ts-auth:
+### Re-exported from @stacksjs/ts-auth
 - `generateTOTP`, `verifyTOTP`, `generateTOTPSecret`, `totpKeyUri`
 
 ## Authorization Gates (gate.ts)
@@ -166,7 +166,7 @@ auth/src/
 - `getPolicyFor<T>(model: T): Policy<T> | null`
 - `flush(): void` — clear all gates
 
-### Gate Facade — `Gate.define()`, `Gate.can()`, etc.
+### Gate Facade — `Gate.define()`, `Gate.can()`, etc
 
 ### AuthorizationResponse Class
 - `static allow(message?): AuthorizationResponse`
@@ -277,7 +277,7 @@ const result = await actions.resetPassword(token, newPassword)
 - `getUserPasskey(userId, passkeyId): Promise<PasskeyAttribute | undefined>`
 - `setCurrentRegistrationOptions(user, verified): Promise<void>`
 
-### Re-exported from @stacksjs/ts-auth:
+### Re-exported from @stacksjs/ts-auth
 - `generateRegistrationOptions`, `generateAuthenticationOptions`
 - `verifyRegistrationResponse`, `verifyAuthenticationResponse`
 - `startRegistration`, `startAuthentication` (browser)

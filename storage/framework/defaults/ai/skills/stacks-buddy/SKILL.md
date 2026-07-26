@@ -372,8 +372,8 @@ buddy cloud:remove             # remove cloud infrastructure (aliases: cloud:des
   --yes                        # skip confirmation
 buddy cloud:optimize-cost      # remove optional resources (jump-box)
 buddy cloud:cleanup            # clean up retained resources after stack deletion
-  # Cleans: jump-boxes, S3 buckets, Lambda functions, CloudWatch logs,
-  # Parameter Store, VPCs, Subnets, CDK remnants, IAM users
+# Cleans: jump-boxes, S3 buckets, Lambda functions, CloudWatch logs,
+# Parameter Store, VPCs, Subnets, CDK remnants, IAM users
 buddy cloud:invalidate-cache   # invalidate CloudFront cache
   --paths [paths]              # paths to invalidate
 buddy cloud:diff               # show deployed vs local template diff
@@ -568,8 +568,8 @@ buddy share [type]           # share local dev server via public tunnel (localtu
   -p/--port <port>           # local port
   --server <url>             # tunnel server (default: api.localtunnel.dev)
   --subdomain <name>         # request specific subdomain
-  # Supports: frontend, api, backend, admin, dashboard, desktop, docs
-  # Auto-starts companion services (API, docs) for frontend shares
+# Supports: frontend, api, backend, admin, dashboard, desktop, docs
+# Auto-starts companion services (API, docs) for frontend shares
 buddy search                 # search engine operations
 buddy configure              # configure project
 buddy create                 # create new project

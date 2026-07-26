@@ -68,11 +68,10 @@ Expose these as Crosswind theme tokens or CSS custom properties in `config/ui.ts
 
 ```html
 <!-- resources/components/BentoCard.stx -->
-<article class="border border-[#EAEAEA] rounded-xl bg-white dark:bg-neutral-900 p-8">
-  <span class="inline-block rounded-full bg-[#E1F3FE] text-[#1F6C9F]
-               text-xs uppercase tracking-[0.05em] px-2 py-0.5">Docs</span>
-  <h3 class="mt-4 text-2xl text-[#111111] dark:text-neutral-100">Structured writing</h3>
-  <p class="mt-2 text-[#787774] leading-[1.6]"><slot /></p>
+<article class="p-8 bg-white dark:bg-neutral-900 border border-[#EAEAEA] rounded-xl">
+  <span class="inline-block px-2 py-0.5 text-[#1F6C9F] text-xs tracking-[0.05em] uppercase bg-[#E1F3FE] rounded-full">Docs</span>
+  <h3 class="mt-4 text-[#111111] text-2xl dark:text-neutral-100">Structured writing</h3>
+  <p class="mt-2 leading-[1.6] text-[#787774]"><slot /></p>
 </article>
 ```
 
@@ -100,7 +99,7 @@ Motion should feel invisible: present but never distracting. Quiet sophisticatio
 
 <section ref="block"
          :class="shown() ? 'translate-y-0 opacity-100' : 'translate-y-3 opacity-0'"
-         class="transition-all duration-[600ms] ease-[cubic-bezier(0.16,1,0.3,1)]">
+         class="duration-[600ms] ease-[cubic-bezier(0.16,1,0.3,1)] transition-all">
   <slot />
 </section>
 ```

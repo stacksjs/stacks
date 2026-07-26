@@ -16,7 +16,7 @@ If `/stacks-office-hours` produced a design document, read it. Don't ask the use
 
 ## Step 1: Scope Review
 
-### Expansion Analysis — Is this doing too much?
+### Expansion Analysis — Is this doing too much
 
 ```
 | Addition | Core to goal? | Can ship separately? | Risk if included |
@@ -24,7 +24,7 @@ If `/stacks-office-hours` produced a design document, read it. Don't ask the use
 | [item] | [yes/no] | [yes/no] | [risk] |
 ```
 
-### Reduction Analysis — Is this doing too little?
+### Reduction Analysis — Is this doing too little
 
 ```
 | Missing piece | Needed for v1? | Cost of deferring |

@@ -164,7 +164,7 @@ The full canonical skeletons live in the flagship: **sticky-stack (Section 5.A),
 <!-- resources/components/scroll-media.stx -->
 <template>
   <figure class="scroll-media">
-    <img src="{{ src }}" alt="{{ alt }}" width="1600" height="1000" class="h-full w-full object-cover" />
+    <img src="{{ src }}" alt="{{ alt }}" width="1600" height="1000" class="object-cover h-full w-full" />
   </figure>
 </template>
 
@@ -197,7 +197,7 @@ Split the paragraph into word `<span>`s (via a `@foreach` over pre-split words i
 </script>
 
 <template>
-  <p class="scrub-text max-w-[65ch] text-2xl leading-relaxed">
+  <p class="max-w-[65ch] leading-relaxed text-2xl scrub-text">
     @foreach(words as index => word)
       <span class="scrub-word" style="--i: {{ index }}">{{ word }} </span>
     @endforeach
@@ -238,7 +238,7 @@ Allowed composables are the flagship's list PLUS `useScroll` (scroll progress), 
 
 Select components from this arsenal per the seeded selection (Section 2). All are stx + Crosswind + composables / CSS, never a JS library.
 
-* **Inline typography images:** embed small pill-shaped images directly INSIDE massive headings. Example: `I shape <span class="inline-block w-24 h-10 rounded-full align-middle bg-cover bg-center mx-2" style="background-image: url({{ shot }})"></span> digital spaces.` (Interpolation is `{{ }}`; `class` is the attribute; the inline style uses a CSS `url(...)`.)
+* **Inline typography images:** embed small pill-shaped images directly INSIDE massive headings. Example: `I shape <span class="inline-block mx-2 h-10 w-24 bg-center bg-cover rounded-full align-middle" style="background-image: url({{ shot }})"></span> digital spaces.` (Interpolation is `{{ }}`; `class` is the attribute; the inline style uses a CSS `url(...)`.)
 * **Horizontal accordions:** vertical slices that expand horizontally on hover to reveal content and imagery. Reach for Stacks UI `Disclosure` when the state must be controllable; pure CSS `:hover` width transition otherwise.
 * **Infinite marquee (trusted partners):** a smooth continuously scrolling row of real brand logos (Simple Icons / Iconify brand collection, `i-logos-*` / `i-simple-icons-*`) or large typography, via a CSS keyframe translate. Max one marquee per page (flagship rule).
 * **Feedback / testimonial carousel:** overlapping portrait images next to minimalist quote typography, controlled by subtle arrows. Quote body max 3 lines, attribution is name + role + company, no em-dash (flagship Section 4.10).
@@ -253,7 +253,7 @@ Icons are Iconify utility classes only: `<i class="i-hugeicons-{name} h-6 w-6"><
 * **Image context and style:** use `https://picsum.photos/seed/{descriptive-seed}/1920/1080` and match the seed to the vibe. If an image-generation tool is available in the environment, use it FIRST for section-specific assets (flagship Section 4.8 priority order). Apply sophisticated CSS filters (`grayscale`, `mix-blend-luminosity`, `opacity-90`, `contrast-125`) so images do not read as boring stock. Serve with `<img>` + explicit `width`/`height` (reserve space, avoid CLS); heavy assets go through the stx asset pipeline / `@stacksjs/storage`. There is no `next/image`.
 * **Fonts (Stacks):** declare metadata in the Stacks `fonts` config, then load in the layout `.stx` `<head>` with `<link rel="preconnect">` + stylesheet, or self-host with `@font-face`. Always `font-display: swap`. Never block render on a webfont. There is no `next/font`. Keep the flagship Inter-ban and serif discipline: sans display by default; serif only with explicit brand justification (never Fraunces or Instrument_Serif as default).
 * **Creative backgrounds:** inject subtle professional ambient design (deep radial blurs, grainy mesh gradients built from layered radial gradients in a `<style>` block, shifting dark overlays). Avoid flat boring fills. Apply grain / noise ONLY on a fixed `pointer-events-none` pseudo-element, never on scrolling containers (flagship Section 6.E).
-* **Horizontal-scroll bug guard:** wrap the whole page in `<main class="overflow-x-hidden w-full max-w-full">` to prevent horizontal scrollbars from off-screen animation.
+* **Horizontal-scroll bug guard:** wrap the whole page in `<main class="overflow-x-hidden max-w-full w-full">` to prevent horizontal scrollbars from off-screen animation.
 * **Div-based fake screenshots are banned.** Use a real screenshot, a generated image, a real component preview, or skip the preview. The hero needs a real visual, not a gradient blob.
 * **Copy self-audit** (flagship Section 4.9) and the **full AI-Tells catalogue** (flagship Section 9, including the complete em-dash ban 9.G) are binding. This variant does not restate them; go apply them from the flagship.
 

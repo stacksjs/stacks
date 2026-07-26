@@ -317,7 +317,7 @@ Keep the honesty principle: use the real official thing, do not hand-recreate to
 
 ### 12.E Icons: Iconify `i-*` (not lucide/phosphor npm)
 
-stx ships 200K+ Iconify icons as utility classes: `<i class="i-hugeicons-book-open h-6 w-6 text-gray-500"></i>` or any collection `i-{collection}-{name}` (e.g. `i-ph-arrow-right`, `i-tabler-check`). Default collection is hugeicons. Keep one collection per project and standardize stroke weight. NEVER hand-roll SVG icon paths. NEVER `npm install lucide-react` or similar.
+stx ships 200K+ Iconify icons as utility classes: `<i class="h-6 w-6 text-gray-500 i-hugeicons-book-open"></i>` or any collection `i-{collection}-{name}` (e.g. `i-ph-arrow-right`, `i-tabler-check`). Default collection is hugeicons. Keep one collection per project and standardize stroke weight. NEVER hand-roll SVG icon paths. NEVER `npm install lucide-react` or similar.
 
 ### 12.F Fonts: config + `<link>` / `@font-face` (not next/font)
 
@@ -355,12 +355,12 @@ If the design needs something not in this list, use plain CSS or a standard DOM 
 
 Build the matching stx components with Crosswind utilities. Reference patterns:
 
-- **Pristine gapless bento grid:** `<div class="grid grid-cols-2 md:grid-cols-4 gap-px bg-neutral-200 dark:bg-neutral-800">` with cells `class="bg-white dark:bg-neutral-950 p-8"`. One framing move, no nested cards.
+- **Pristine gapless bento grid:** `<div class="grid gap-px grid-cols-2 md:grid-cols-4 bg-neutral-200 dark:bg-neutral-800">` with cells `class="p-8 bg-white dark:bg-neutral-950"`. One framing move, no nested cards.
 - **Sticky-stack cards:** each card `class="sticky top-0"` inside a tall container; offset with incremental `top` values via inline style or Crosswind arbitrary `top-[...]`. No GSAP pin.
-- **Scroll-reveal float-up:** target starts `class="opacity-0 translate-y-6 transition duration-700 ease-out"`; a `useIntersectionObserver` toggles `opacity-100 translate-y-0` when visible.
+- **Scroll-reveal float-up:** target starts `class="opacity-0 duration-700 ease-out transition translate-y-6"`; a `useIntersectionObserver` toggles `opacity-100 translate-y-0` when visible.
 - **Horizontal-pan strip:** a track with `class="flex gap-8"` inside `overflow-x-auto`, or CSS scroll-driven `animation-timeline: scroll()` for auto-pan. No GSAP.
 - **Magnetic button / parallax:** in an `effect`, read `useMouse()` and set `--x` / `--y` custom properties the CSS `transform` consumes. Never per-frame signal writes.
-- **Glass panel:** `class="backdrop-blur-md bg-white/60 dark:bg-neutral-900/50 border border-white/20"`. Use sparingly and with reason.
+- **Glass panel:** `class="bg-white/60 dark:bg-neutral-900/50 border border-white/20 backdrop-blur-md"`. Use sparingly and with reason.
 
 Do not leave any React/JSX/`motion`/`gsap`/`next` in the implementation.
 

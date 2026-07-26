@@ -12,7 +12,7 @@ Prevent destructive actions and enforce focus during debugging sessions.
 
 ## Destructive Command Detection
 
-### 🔴 CRITICAL — Block and require confirmation:
+### 🔴 CRITICAL — Block and require confirmation
 
 | Pattern | Risk |
 |---------|------|
@@ -32,7 +32,7 @@ Risk: [what will be destroyed]
 Reversible: [yes/no]
 ```
 
-### 🟡 WARNING — Warn but allow:
+### 🟡 WARNING — Warn but allow
 
 | Pattern | Risk |
 |---------|------|
@@ -44,7 +44,7 @@ Reversible: [yes/no]
 | Modifying `config/services.ts` | Contains API keys |
 | Modifying `storage/framework/core/*/src/index.ts` | Public package API |
 
-### 🟢 INFORMATIONAL — Note but don't block:
+### 🟢 INFORMATIONAL — Note but don't block
 
 | Pattern | Note |
 |---------|------|

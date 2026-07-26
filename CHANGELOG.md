@@ -1,5 +1,73 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.163...v0.70.164)
+
+## ✨ Features
+
+- **publish**: add `unpublish:core` to move a project onto the installed packages ([64066d2](https://github.com/stacksjs/stacks/commit/64066d2)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **cloud**: serve the Discord invite from stacksjs.com/discord ([bd41206](https://github.com/stacksjs/stacks/commit/bd41206)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **buddy**: scaffold AI agent setup from framework defaults ([4e4dbc0](https://github.com/stacksjs/stacks/commit/4e4dbc0)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **protocol**: wire relation join (DATA-02) (#2122) ([6e8cf95](https://github.com/stacksjs/stacks/commit/6e8cf95)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2122](https://github.com/stacksjs/stacks/issues/2122), [#2122](https://github.com/stacksjs/stacks/issues/2122))
+- **protocol**: wire CRUD and transaction rollback (DATA-01, DATA-03) (#2121) ([025f867](https://github.com/stacksjs/stacks/commit/025f867)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2121](https://github.com/stacksjs/stacks/issues/2121), [#2121](https://github.com/stacksjs/stacks/issues/2121))
+- **protocol**: wire query parameterization (SEC-01) (#2120) ([ed229ab](https://github.com/stacksjs/stacks/commit/ed229ab)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2120](https://github.com/stacksjs/stacks/issues/2120), [#2120](https://github.com/stacksjs/stacks/issues/2120))
+- **protocol**: wire driver-failure and direct Action invocation (#2119) ([5fc039e](https://github.com/stacksjs/stacks/commit/5fc039e)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2119](https://github.com/stacksjs/stacks/issues/2119), [#2119](https://github.com/stacksjs/stacks/issues/2119))
+- **protocol**: wire the conventions-override conformance fixture (#2118) ([ac99e6d](https://github.com/stacksjs/stacks/commit/ac99e6d)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2118](https://github.com/stacksjs/stacks/issues/2118), [#2118](https://github.com/stacksjs/stacks/issues/2118))
+- **protocol**: wire five more conformance requirements to real Stacks APIs (#2115) ([b254236](https://github.com/stacksjs/stacks/commit/b254236)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2115](https://github.com/stacksjs/stacks/issues/2115), [#2115](https://github.com/stacksjs/stacks/issues/2115))
+
+## 🐛 Bug Fixes
+
+- **preloader**: do not take down every command on an older @stacksjs/path ([33a2886](https://github.com/stacksjs/stacks/commit/33a2886)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **publish**: repoint surviving workspace ranges when unvendoring ([fffc1ac](https://github.com/stacksjs/stacks/commit/fffc1ac)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dev**: never report a frontend URL another project is serving ([b8229ef](https://github.com/stacksjs/stacks/commit/b8229ef)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **new**: keep `buddy new` from dying before key generation ([490c39c](https://github.com/stacksjs/stacks/commit/490c39c)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **serve**: honor the app's configured partialsDir in production ([ac8b2d4](https://github.com/stacksjs/stacks/commit/ac8b2d4)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **upgrade**: refresh dependencies with the installer that owns the graph ([73ff74a](https://github.com/stacksjs/stacks/commit/73ff74a)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **upgrade**: resolve catalog: deps against the app root during update ([da4e652](https://github.com/stacksjs/stacks/commit/da4e652)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **buddy**: follow the configured runtime directories in dev and deploy ([125c02d](https://github.com/stacksjs/stacks/commit/125c02d)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **env**: keep other tenants' secrets out of this project's deploys ([3b1692a](https://github.com/stacksjs/stacks/commit/3b1692a)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **skills**: correct the last stale paths and document setup:ai ([0f91f3c](https://github.com/stacksjs/stacks/commit/0f91f3c)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **cloud**: point stacksjs.com/discord at the current invite ([4a3a820](https://github.com/stacksjs/stacks/commit/4a3a820)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **skills**: correct paths and APIs the skills got wrong ([031a6bf](https://github.com/stacksjs/stacks/commit/031a6bf)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: fix buddy dev --dashboard white screen (sidebar ENOENT + Craft HTTPS cert) (#2191) ([34d66f8](https://github.com/stacksjs/stacks/commit/34d66f8)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2191](https://github.com/stacksjs/stacks/issues/2191), [#2191](https://github.com/stacksjs/stacks/issues/2191))
+- **upgrade**: resolve stable channel to latest release tag, not a `stable` branch (#2167) ([368314e](https://github.com/stacksjs/stacks/commit/368314e)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2167](https://github.com/stacksjs/stacks/issues/2167), [#2167](https://github.com/stacksjs/stacks/issues/2167))
+- **ci**: regenerate bun.lock as v1 and stop releases reintroducing v2 (#2116) ([5cdeb4b](https://github.com/stacksjs/stacks/commit/5cdeb4b)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2116](https://github.com/stacksjs/stacks/issues/2116), [#2116](https://github.com/stacksjs/stacks/issues/2116))
+
+## ♻️ Code Refactoring
+
+- **runtime**: configure stx and ts-cloud instead of symlinking their dirs ([e10b9f2](https://github.com/stacksjs/stacks/commit/e10b9f2)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **seed**: make the useSeeder trait the seeding API again ([0ea134e](https://github.com/stacksjs/stacks/commit/0ea134e)) _(by Chris <chrisbreuer93@gmail.com>)_
+- drop the remaining back-compat surface ([5c12460](https://github.com/stacksjs/stacks/commit/5c12460)) _(by Chris <chrisbreuer93@gmail.com>)_
+- delete legacy aliases instead of marking them deprecated ([fce9904](https://github.com/stacksjs/stacks/commit/fce9904)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **storage**: move runtime state out of the project root ([919b1d6](https://github.com/stacksjs/stacks/commit/919b1d6)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **types**: consolidate tsconfig around a shared base ([3b9b498](https://github.com/stacksjs/stacks/commit/3b9b498)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **buddy**: move protocol + docs governance commands from userland into core (#2192) ([c2e524b](https://github.com/stacksjs/stacks/commit/c2e524b)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2192](https://github.com/stacksjs/stacks/issues/2192), [#2192](https://github.com/stacksjs/stacks/issues/2192))
+- migrate protocol + docs tooling into buddy commands (#2168) ([460440a](https://github.com/stacksjs/stacks/commit/460440a)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2168](https://github.com/stacksjs/stacks/issues/2168), [#2168](https://github.com/stacksjs/stacks/issues/2168))
+
+## 📝 Documentation
+
+- replace controller-based API examples with actions ([f85e25a](https://github.com/stacksjs/stacks/commit/f85e25a)) _(by Chris <chrisbreuer93@gmail.com>)_
+- rewrite seeding and MVA guides against the real APIs ([b93528b](https://github.com/stacksjs/stacks/commit/b93528b)) _(by Chris <chrisbreuer93@gmail.com>)_
+- correct paths, config locations, and the intro's core concepts ([0d668ff](https://github.com/stacksjs/stacks/commit/0d668ff)) _(by Chris <chrisbreuer93@gmail.com>)_
+- link the community as stacksjs.com/discord ([f885c98](https://github.com/stacksjs/stacks/commit/f885c98)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🔧 Chores
+
+- **cloud**: register wildloop as a tenant on the shared box ([4983727](https://github.com/stacksjs/stacks/commit/4983727)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **deps**: stx 0.2.100, ts-cloud 0.7.60 ([a5cf770](https://github.com/stacksjs/stacks/commit/a5cf770)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **cloud**: widen the tenant namespace guard to the whole box ([052f67c](https://github.com/stacksjs/stacks/commit/052f67c)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **env**: remove other tenants' keys from the committed env files ([707cdd1](https://github.com/stacksjs/stacks/commit/707cdd1)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **env**: rename the GHOST_* tenant keys to ANALYTICSHQ_* ([4b9626a](https://github.com/stacksjs/stacks/commit/4b9626a)) _(by Chris <chrisbreuer93@gmail.com>)_
+- untrack local cloud driver state ([6a1d538](https://github.com/stacksjs/stacks/commit/6a1d538)) _(by Chris <chrisbreuer93@gmail.com>)_
+- wip ([d6d734b](https://github.com/stacksjs/stacks/commit/d6d734b)) _(by Chris <chrisbreuer93@gmail.com>)_
+- link the community as stacksjs.com/discord ([231b86c](https://github.com/stacksjs/stacks/commit/231b86c)) _(by Chris <chrisbreuer93@gmail.com>)_
+- delete types directory ([28ec913](https://github.com/stacksjs/stacks/commit/28ec913)) _(by Chris <chrisbreuer93@gmail.com>)_
+- relocate ./scripts and ./protocol under .github (#2133) ([a1e8d57](https://github.com/stacksjs/stacks/commit/a1e8d57)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2133](https://github.com/stacksjs/stacks/issues/2133), [#2133](https://github.com/stacksjs/stacks/issues/2133))
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+- _Glenn Michael Torregosa <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.162...v0.70.163)
 
 ## ✨ Features

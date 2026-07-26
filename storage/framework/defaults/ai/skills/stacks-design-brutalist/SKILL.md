@@ -55,12 +55,12 @@ The color architecture is uncompromising. Gradients, soft drop shadows, and mode
 
 **CRITICAL: Choose ONE substrate palette per project and use it consistently. Never mix light and dark substrates within the same interface.** Expose these as Crosswind theme tokens in `config/ui.ts`.
 
-### If Swiss Industrial Print (Light):
+### If Swiss Industrial Print (Light)
 - **Background:** `#F4F4F0` or `#EAE8E3` (matte, unbleached documentation paper).
 - **Foreground:** `#050505` to `#111111` (carbon ink).
 - **Accent:** `#E61919` or `#FF2A2A` (aviation/hazard red). This is the ONLY accent color. Used for strike-throughs, thick structural dividing lines, or vital data highlights.
 
-### If Tactical Telemetry (Dark):
+### If Tactical Telemetry (Dark)
 - **Background:** `#0A0A0A` or `#121212` (deactivated CRT; avoid pure `#000000`).
 - **Foreground:** `#EAEAEA` (white phosphor). Primary text color.
 - **Accent:** `#E61919` or `#FF2A2A` (aviation/hazard red). Same red, same rules.
@@ -84,12 +84,12 @@ Standard web UI conventions are replaced with utilitarian, industrial graphic el
 
 ```html
 <!-- resources/components/TelemetryRow.stx -->
-<div class="grid grid-cols-4 gap-px bg-[#E61919]">
-  <dl class="bg-[#0A0A0A] p-3 font-mono text-[11px] uppercase tracking-[0.08em] text-[#EAEAEA]">
+<div class="grid gap-px grid-cols-4 bg-[#E61919]">
+  <dl class="p-3 font-mono text-[#EAEAEA] text-[11px] tracking-[0.08em] uppercase bg-[#0A0A0A]">
     <dt class="text-[#E61919]">[ UNIT ID ]</dt>
     <dd><output>D-01</output></dd>
   </dl>
-  <dl class="bg-[#0A0A0A] p-3 font-mono text-[11px] uppercase tracking-[0.08em] text-[#EAEAEA]">
+  <dl class="p-3 font-mono text-[#EAEAEA] text-[11px] tracking-[0.08em] uppercase bg-[#0A0A0A]">
     <dt class="text-[#E61919]">[ REV ]</dt>
     <dd><samp>2.6</samp></dd>
   </dl>

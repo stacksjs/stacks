@@ -50,9 +50,8 @@ Never place a premium card, image, or container flatly on the background. It mus
 
 ```html
 <!-- resources/components/BezelCard.stx -->
-<div class="bg-white/5 ring-1 ring-black/5 dark:border dark:border-white/10 p-2 rounded-[2rem]">
-  <div class="bg-white dark:bg-neutral-900 rounded-[calc(2rem-0.5rem)] p-8
-              shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)]">
+<div class="p-2 bg-white/5 ring-1 ring-black/5 rounded-[2rem] dark:border dark:border-white/10">
+  <div class="p-8 bg-white dark:bg-neutral-900 rounded-[calc(2rem-0.5rem)] shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)]">
     <slot />
   </div>
 </div>
@@ -63,14 +62,10 @@ Never place a premium card, image, or container flatly on the background. It mus
 - **The "Button-in-Button" Trailing Icon:** If a button has an arrow, it NEVER sits naked next to the text. It nests inside its own distinct circular wrapper (`w-8 h-8 rounded-full bg-black/5 dark:bg-white/10 flex items-center justify-center`) placed flush with the main button's right inner padding.
 
 ```html
-<button class="group inline-flex items-center gap-3 rounded-full px-6 py-3
-               bg-neutral-900 text-white transition-all duration-700
-               ease-[cubic-bezier(0.32,0.72,0,1)] active:scale-[0.98]">
+<button class="inline-flex gap-3 items-center px-6 py-3 text-white bg-neutral-900 rounded-full duration-700 ease-[cubic-bezier(0.32,0.72,0,1)] transition-all active:scale-[0.98] group">
   <span>Get started</span>
-  <span class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center
-               transition-transform duration-700 ease-[cubic-bezier(0.32,0.72,0,1)]
-               group-hover:translate-x-1 group-hover:-translate-y-px group-hover:scale-105">
-    <i class="i-ph-arrow-up-right h-4 w-4"></i>
+  <span class="flex items-center justify-center h-8 w-8 bg-white/10 rounded-full duration-700 ease-[cubic-bezier(0.32,0.72,0,1)] transition-transform group-hover:scale-105 group-hover:translate-x-1 group-hover:-translate-y-px">
+    <i class="h-4 w-4 i-ph-arrow-up-right"></i>
   </span>
 </button>
 ```
@@ -94,15 +89,12 @@ Stacks ships no animation library. Do NOT import `motion/react`, `gsap`, or `fra
   const [open, toggle] = useToggle(false)
 </script>
 
-<nav class="mt-6 mx-auto w-max rounded-full backdrop-blur-2xl bg-white/70
-            dark:bg-black/60 ring-1 ring-black/5 px-4 py-2">
+<nav class="mt-6 mx-auto px-4 py-2 w-max bg-white/70 dark:bg-black/60 ring-1 ring-black/5 rounded-full backdrop-blur-2xl">
   <button @click="toggle()" class="relative h-6 w-6" aria-label="Menu">
     <span :class="open() ? 'rotate-45 translate-y-0' : '-translate-y-1'"
-          class="absolute inset-x-0 h-px bg-current transition-transform duration-500
-                 ease-[cubic-bezier(0.32,0.72,0,1)]"></span>
+          class="absolute inset-x-0 h-px bg-current duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] transition-transform"></span>
     <span :class="open() ? '-rotate-45 translate-y-0' : 'translate-y-1'"
-          class="absolute inset-x-0 h-px bg-current transition-transform duration-500
-                 ease-[cubic-bezier(0.32,0.72,0,1)]"></span>
+          class="absolute inset-x-0 h-px bg-current duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] transition-transform"></span>
   </button>
 </nav>
 ```
@@ -128,7 +120,7 @@ Stacks ships no animation library. Do NOT import `motion/react`, `gsap`, or `fra
 
 <div ref="reveal"
      :class="shown() ? 'translate-y-0 blur-0 opacity-100' : 'translate-y-16 blur-md opacity-0'"
-     class="transition-all duration-[800ms] ease-[cubic-bezier(0.32,0.72,0,1)]">
+     class="duration-[800ms] ease-[cubic-bezier(0.32,0.72,0,1)] transition-all">
   <slot />
 </div>
 ```

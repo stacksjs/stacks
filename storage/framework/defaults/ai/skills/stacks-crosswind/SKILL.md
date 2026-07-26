@@ -152,17 +152,17 @@ interface ParsedClass {
 
 ```html
 <div class="flex items-center justify-between p-4 bg-white rounded-lg shadow">
-  <h1 class="text-2xl font-bold text-gray-900">Title</h1>
-  <button class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+  <h1 class="font-bold text-2xl text-gray-900">Title</h1>
+  <button class="px-4 py-2 text-white bg-blue-500 hover:bg-blue-600 rounded">
     Click me
   </button>
 </div>
 
 <!-- Arbitrary values -->
-<div class="text-[#1a1a1a] w-[calc(100%-2rem)] grid-cols-[1fr_2fr]">
+<div class="grid-cols-[1fr_2fr] w-[calc(100%-2rem)] text-[#1a1a1a]">
 
 <!-- Dark mode -->
-<div class="bg-white dark:bg-gray-900 text-black dark:text-white">
+<div class="text-black dark:text-white bg-white dark:bg-gray-900">
 
 <!-- Responsive -->
 <div class="w-full md:w-1/2 lg:w-1/3">
