@@ -44,7 +44,15 @@ import { log } from '@stacksjs/cli'
     const cookies = (globalThis as { __stxServeCookies?: Record<string, string> }).__stxServeCookies
     return cookies?.[name] ?? null
   },
+  // The full request URL, as the dev server has always returned — production
+  // used to return only the query string, so a page that did
+  // `new URL(requestContext.url())` worked in development and threw on the
+  // box. `search()` is the query string for callers that only want that.
   url(): string {
+    const snapshot = (globalThis as { __stxServeContext?: { url?: string, search?: string } }).__stxServeContext
+    return snapshot?.url || snapshot?.search || (globalThis as { __stxServeSearch?: string }).__stxServeSearch || ''
+  },
+  search(): string {
     const snapshot = (globalThis as { __stxServeContext?: { search?: string } }).__stxServeContext
     return snapshot?.search ?? (globalThis as { __stxServeSearch?: string }).__stxServeSearch ?? ''
   },

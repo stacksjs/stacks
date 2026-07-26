@@ -53,6 +53,15 @@ function currentRequestContext(): StacksRequestContext | undefined {
   url(): string {
     return currentRequestContext()?.url ?? ''
   },
+  /** Just the query string, including the leading `?`. Mirrors production. */
+  search(): string {
+    const url = currentRequestContext()?.url
+    if (!url)
+      return ''
+
+    const mark = url.indexOf('?')
+    return mark === -1 ? '' : url.slice(mark)
+  },
   locale(): string {
     // 'en' rather than 'de' as the fallback: this is what a page sees when
     // the request carried no locale at all, and the framework has no reason
