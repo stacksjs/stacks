@@ -30,7 +30,6 @@
  * ```
  */
 
-/// <reference path="./shims.d.ts" />
 import { RedisClient } from 'bun'
 import { log } from '@stacksjs/logging'
 import { env as envVars } from '@stacksjs/env'

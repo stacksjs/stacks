@@ -1,4 +1,3 @@
-/// <reference path="../shims.d.ts" />
 /**
  * Redis Queue Driver
  *
@@ -233,11 +232,14 @@ export class RedisQueue<T = any> {
     tz?: string
     name?: string
   }): Promise<string> {
+    // bun-queue names these `cronExpression`/`timezone`/`jobId`. Passing our
+    // own field names straight through left `cronExpression` undefined, which
+    // threw `Invalid cron expression: undefined` on every call.
     return this.queue.scheduleCron({
-      cron: options.cron,
+      cronExpression: options.cron,
       data: options.data,
-      tz: options.tz,
-      name: options.name,
+      timezone: options.tz,
+      jobId: options.name,
     })
   }
 
