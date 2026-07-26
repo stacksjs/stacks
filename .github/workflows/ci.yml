@@ -42,11 +42,16 @@ jobs:
           restore-keys: |
             node-modules-
 
-      - name: Check lockfile version
-        run: bun .github/scripts/check-lockfile-version.ts
-
       - name: Install dependencies
         run: bun install --frozen-lockfile
+
+      # After the install: the bunfig preload resolves @stacksjs/env, so
+      # anything invoking `bun` before node_modules exists dies with
+      # `preload not found`. Only bites a project resolving the framework from
+      # npm rather than a vendored storage/framework/core, but the ordering is
+      # wrong either way.
+      - name: Check lockfile version
+        run: bun .github/scripts/check-lockfile-version.ts
 
       - name: Check dependency state
         env:
