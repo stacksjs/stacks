@@ -35,6 +35,7 @@ import {
   type SnapshotEntry,
   type UpgradeContext,
 } from './framework-utils'
+import { reconcileWorkspaceCatalog } from './catalog'
 import {
   runPostSyncDependencyRefresh,
   runPostSyncMigration,
@@ -293,7 +294,7 @@ for (const { managed, summary } of perPath) {
 const runHooks = !options.noPostinstall && options.postinstall !== false
 if (runHooks) {
   try {
-    await runPostSyncHooks({ aggregate, perPath, projectRoot, alreadyRestarted })
+    await runPostSyncHooks({ aggregate, perPath, projectRoot, alreadyRestarted, localStacksRoot: detectedLocal, ref: ctx.ref })
   }
   catch (err) {
     console.error(`Post-sync hooks failed: ${(err as Error)?.message || err}`)
@@ -687,8 +688,10 @@ async function runPostSyncHooks(args: {
   perPath: { managed: ManagedPath, summary: ChangeSummary }[]
   projectRoot: string
   alreadyRestarted: boolean
+  localStacksRoot: string | null
+  ref: string
 }): Promise<void> {
-  const { aggregate, perPath, projectRoot, alreadyRestarted } = args
+  const { aggregate, perPath, projectRoot, alreadyRestarted, localStacksRoot, ref } = args
 
   const changeCount = aggregate.added + aggregate.changed + aggregate.removed
   if (!shouldRunPostSyncHooks(changeCount, alreadyRestarted)) {
@@ -710,7 +713,35 @@ async function runPostSyncHooks(args: {
     console.warn(`  auto-imports failed (non-fatal): ${(err as Error)?.message || err}`)
   }
 
-  // 2) `bun install` if any synced package.json changed. Updating core/
+  // 2) Mirror the upstream dependency catalog into the app root. The vendored
+  //    workspace members pin shared deps with Bun's `catalog:` protocol, which
+  //    only resolves against a catalog on the workspace root — and that root
+  //    belongs to the app, not the framework. Without this, the install below
+  //    fails every `catalog:` reference the sync just introduced.
+  console.log('Reconciling workspace dependency catalog...')
+  try {
+    const result = await reconcileWorkspaceCatalog({
+      projectRoot,
+      frameworkRoot: join(projectRoot, 'storage', 'framework'),
+      localStacksRoot,
+      ref,
+    })
+
+    if (!result)
+      console.log('  catalog: nothing to reconcile')
+    else if (result.added.length || result.updated.length)
+      console.log(`  catalog: +${result.added.length} added, ~${result.updated.length} updated`)
+    else
+      console.log('  catalog: up to date')
+
+    if (result?.missing.length)
+      console.warn(`  catalog: no upstream version for ${result.missing.join(', ')}`)
+  }
+  catch (err) {
+    console.warn(`  catalog reconcile failed (non-fatal): ${(err as Error)?.message || err}`)
+  }
+
+  // 3) `bun install` if any synced package.json changed. Updating core/
   //    pulls new framework package versions; the user's lockfile won't know
   //    about them until install is re-run. We only run install if a
   //    package.json moved, so no-op upgrades stay fast.
@@ -735,7 +766,7 @@ async function runPostSyncHooks(args: {
     }
   }
 
-  // 3) Run pending migrations. Idempotent — Stacks tracks applied migrations
+  // 4) Run pending migrations. Idempotent — Stacks tracks applied migrations
   //    in the migrations table, so re-running on a fully-migrated DB is a
   //    no-op. Skip if no migration files exist (fresh app, no DB yet).
   const migrationsDir = join(projectRoot, 'database', 'migrations')
