@@ -1,5 +1,16 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.179...v0.70.180)
+
+## 🐛 Bug Fixes
+
+- **serve**: make requestContext.url() mean the same thing in both servers ([510d48b](https://github.com/stacksjs/stacks/commit/510d48b)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **serve**: read cookies from the per-request snapshot ([daa845b](https://github.com/stacksjs/stacks/commit/daa845b)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.178...v0.70.179)
 
 ## ✨ Features

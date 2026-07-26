@@ -2,7 +2,7 @@
   "name": "@stacksjs/database",
   "type": "module",
   "sideEffects": false,
-  "version": "0.70.179",
+  "version": "0.70.180",
   "description": "The Stacks database integration.",
   "author": "Chris Breuer",
   "contributors": [
