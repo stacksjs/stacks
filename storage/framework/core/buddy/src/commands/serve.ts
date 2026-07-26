@@ -60,12 +60,30 @@ function parseCookies(req: Request): Record<string, string> {
 }
 
 /**
- * Resolve the project's includes directory using Stacks conventions. Modern
- * Stacks apps keep reusable `.stx` fragments in `resources/components` and
- * commonly point `config/stx.ts#partialsDir` there; older apps may still use
- * one of the dedicated partials directories below.
+ * Resolve the project's includes directory.
+ *
+ * A configured `config/stx.ts#partialsDir` wins outright. The convention list
+ * below is only a fallback for apps that never set one, and it cannot stand in
+ * for the config: the candidates are probed for existence in order, so an app
+ * that keeps its includes in `resources/components` but also has an unrelated
+ * `resources/partials` directory silently resolved to the wrong one and every
+ * `@include` failed with ENOENT at runtime.
+ *
+ * The configured value is relative to the stx root (`resources`), matching how
+ * stx itself reads it, but an app-root-relative path is accepted too so either
+ * spelling resolves.
  */
-export function resolveUserPartialsPath(cwd = process.cwd()): string | undefined {
+export function resolveUserPartialsPath(cwd = process.cwd(), configuredDir?: string): string | undefined {
+  if (configuredDir) {
+    const configured = [
+      join(cwd, 'resources', configuredDir),
+      join(cwd, configuredDir),
+    ].find(candidate => existsSync(candidate))
+
+    if (configured)
+      return configured
+  }
+
   const candidates = [
     'resources/partials',
     'resources/views/partials',
@@ -75,6 +93,25 @@ export function resolveUserPartialsPath(cwd = process.cwd()): string | undefined
 
   const relative = candidates.find(candidate => existsSync(join(cwd, candidate)))
   return relative ? join(cwd, relative) : undefined
+}
+
+/**
+ * Read `partialsDir` off the app's stx config. Failure is non-fatal: without
+ * it {@link resolveUserPartialsPath} falls back to the conventions.
+ */
+export async function loadStxPartialsDir(cwd = process.cwd()): Promise<string | undefined> {
+  const configPath = join(cwd, 'config/stx.ts')
+  if (!existsSync(configPath))
+    return undefined
+
+  try {
+    const mod = await import(configPath)
+    const dir = mod.default?.partialsDir
+    return typeof dir === 'string' && dir.length > 0 ? dir : undefined
+  }
+  catch {
+    return undefined
+  }
 }
 
 /**
@@ -150,7 +187,7 @@ export function serve(buddy: CLI): void {
       const defaultsResources = resolveDefaultsResources()
       const defaultViewsPath = join(defaultsResources, 'views')
       const userLayoutsPath = existsSync('resources/views/layouts') ? 'resources/views/layouts' : 'resources/layouts'
-      const userPartialsPath = resolveUserPartialsPath()
+      const userPartialsPath = resolveUserPartialsPath(process.cwd(), await loadStxPartialsDir())
 
       // Same-origin API target. Scaffolded client code fetches relative
       // `/api/...` URLs (dashboard stores, CartDrawer, the coming-soon
