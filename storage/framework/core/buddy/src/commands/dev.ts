@@ -1147,33 +1147,62 @@ async function probeDevServerHttp(port: number): Promise<boolean> {
  * Return `preferred` if nothing is listening on it, otherwise the next free
  * port above it.
  *
- * Availability is decided by actually binding rather than by inspecting
- * `lsof` output: binding is the operation that has to succeed, so it also
- * accounts for a listener the current user cannot see and for the
- * `SO_REUSEPORT` case, where two servers can both "bind" :3000 and the kernel
- * then load-balances between two different apps.
+ * A port counts as taken if EITHER check says so, because neither alone is
+ * sufficient:
+ *
+ *   - Binding catches the case where nothing accepts connections yet but the
+ *     address is reserved, and it is the operation that actually has to
+ *     succeed. `reusePort: false` matters here: with SO_REUSEPORT a second
+ *     bind succeeds against a live listener and the kernel then load-balances
+ *     between two different apps on one port.
+ *   - Connecting catches a listener bound to a different address family than
+ *     the probe. A server on `[::]:3000` does not necessarily block a bind on
+ *     `0.0.0.0:3000`, so the bind alone reports a busy port as free and the
+ *     dev server goes on to fail its real bind.
  */
 async function findAvailablePort(preferred: number, attempts = 20): Promise<number> {
   for (let port = preferred; port < preferred + attempts; port++) {
-    let server: { stop: (force?: boolean) => void } | undefined
-
-    try {
-      // `reusePort: false` is the point of the probe: with it on, this bind
-      // would succeed against an existing listener and report a busy port as
-      // free.
-      server = Bun.serve({ port, hostname: '0.0.0.0', reusePort: false, fetch: () => new Response() })
-    }
-    catch {
-      continue
-    }
-
-    server.stop(true)
-    return port
+    if (await portIsFree(port))
+      return port
   }
 
   // Everything in the window is taken. Hand back the preferred port so the
   // caller fails on the real bind with the real error rather than here.
   return preferred
+}
+
+async function portIsFree(port: number): Promise<boolean> {
+  for (const host of ['127.0.0.1', '::1']) {
+    if (await someoneIsListening(port, host))
+      return false
+  }
+
+  let server: { stop: (force?: boolean) => void } | undefined
+  try {
+    server = Bun.serve({ port, hostname: '0.0.0.0', reusePort: false, fetch: () => new Response() })
+  }
+  catch {
+    return false
+  }
+
+  server.stop(true)
+  return true
+}
+
+async function someoneIsListening(port: number, host: string): Promise<boolean> {
+  const { connect } = await import('node:net')
+
+  return new Promise<boolean>((resolve) => {
+    const socket = connect({ port, host })
+    const finish = (listening: boolean) => {
+      socket.destroy()
+      resolve(listening)
+    }
+
+    socket.setTimeout(300, () => finish(false))
+    socket.once('connect', () => finish(true))
+    socket.once('error', () => finish(false))
+  })
 }
 
 async function waitForPort(port: number, timeoutMs: number): Promise<boolean> {
