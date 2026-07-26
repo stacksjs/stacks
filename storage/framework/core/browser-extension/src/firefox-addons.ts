@@ -80,15 +80,23 @@ export function firefoxListingMetadata(config: ExtensionConfig, store: FirefoxAd
   }
 }
 
-/** Resolve web-ext from PATH or from this package's declared dependency. */
-export function resolveWebExtExecutable(which: (command: string) => string | null = Bun.which): string | undefined {
+/**
+ * Resolve web-ext from PATH, or from wherever the app installed it.
+ *
+ * web-ext is an optional peer dependency: it is only needed to sign and
+ * submit a Firefox build, so extensions targeting Chrome or Safari (and every
+ * app that never builds an extension at all) skip a ~40MB install.
+ */
+export function resolveWebExtExecutable(
+  which: (command: string) => string | null = Bun.which,
+  resolvePackage: (specifier: string) => string = specifier => createRequire(import.meta.url).resolve(specifier),
+): string | undefined {
   const fromPath = which('web-ext')
   if (fromPath)
     return fromPath
 
   try {
-    const require = createRequire(import.meta.url)
-    const packagePath = require.resolve('web-ext/package.json')
+    const packagePath = resolvePackage('web-ext/package.json')
     const packageJson = JSON.parse(readFileSync(packagePath, 'utf8')) as { bin?: string | Record<string, string> }
     const relativeBin = typeof packageJson.bin === 'string' ? packageJson.bin : packageJson.bin?.['web-ext']
     if (!relativeBin)
@@ -115,7 +123,7 @@ export async function publishFirefoxExtension(config: ExtensionConfig, options: 
   const artifactsDir = resolve(cwd, store.artifactsDir ?? 'web-ext-artifacts')
   const executable = resolveWebExtExecutable()
   if (!executable)
-    throw new Error('[browser-extension] web-ext is unavailable; reinstall @stacksjs/browser-extension dependencies')
+    throw new Error('[browser-extension] Firefox publishing needs web-ext, an optional peer dependency. Install it with `bun add -d web-ext`.')
   await mkdir(artifactsDir, { recursive: true })
   const before = new Set(existsSync(artifactsDir) ? readdirSync(artifactsDir) : [])
   const tempDir = await mkdtemp(join(tmpdir(), 'stacks-firefox-publish-'))

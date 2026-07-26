@@ -57,10 +57,15 @@
     "typecheck": "bun tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
+  "peerDependencies": {
+    "web-ext": ">=8"
+  },
+  "peerDependenciesMeta": {
+    "web-ext": {
+      "optional": true
+    }
+  },
   "devDependencies": {
     "better-dx": "catalog:"
-  },
-  "dependencies": {
-    "web-ext": "catalog:"
   }
 }

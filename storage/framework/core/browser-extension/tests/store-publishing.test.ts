@@ -169,9 +169,15 @@ describe('Firefox Add-ons metadata', () => {
     expect(() => firefoxListingMetadata(config, { license: 'MIT' })).toThrow('both firefoxAddons.license and firefoxAddons.categories')
   })
 
-  it('resolves the declared web-ext dependency when it is absent from PATH', () => {
-    const executable = resolveWebExtExecutable(() => null)
-    expect(executable).toEndWith('/web-ext/bin/web-ext.js')
+  it('prefers a web-ext on PATH', () => {
+    expect(resolveWebExtExecutable(() => '/usr/local/bin/web-ext')).toBe('/usr/local/bin/web-ext')
+  })
+
+  it('reports web-ext as unavailable when the optional peer is not installed', () => {
+    // web-ext is an optional peer dependency, so publishing has to survive its
+    // absence with an actionable hint rather than a bare resolution crash.
+    const missing = (): string => { throw new Error('Cannot find package \'web-ext\'') }
+    expect(resolveWebExtExecutable(() => null, missing)).toBeUndefined()
   })
 
   it('uses only options supported by current web-ext releases', () => {
