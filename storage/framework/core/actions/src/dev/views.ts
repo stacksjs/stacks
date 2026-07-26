@@ -239,11 +239,34 @@ async function firstExistingPath(candidates: string[]): Promise<string | null> {
   // break projects whose layouts/components live at the legacy paths
   // (`resources/{layouts,components}/`) instead of the canonical
   // `resources/views/{layouts,components}/`.
-  for (const candidate of candidates) {
-    if (existsSync(projectPath(candidate)))
+  //
+  // A directory that exists but holds no templates loses to one that does.
+  // The scaffold ships two sample partials in `resources/partials/`, so a
+  // project keeping its own in `resources/views/partials/` had the empty-ish
+  // legacy directory win purely by being listed first, and every
+  // `@include('foo.stx')` resolved under the wrong root. Falling through to
+  // the directory with the templates in it is what the author meant in every
+  // case where only one of the candidates is populated.
+  const existing = candidates.filter(candidate => existsSync(projectPath(candidate)))
+  if (existing.length === 0)
+    return null
+
+  for (const candidate of existing) {
+    if (containsTemplates(projectPath(candidate)))
       return candidate
   }
-  return null
+
+  return existing[0]!
+}
+
+/** True when the directory holds at least one `.stx` file, at any depth. */
+function containsTemplates(dir: string): boolean {
+  try {
+    return [...new Bun.Glob('**/*.stx').scanSync({ cwd: dir, onlyFiles: true })].length > 0
+  }
+  catch {
+    return false
+  }
 }
 
 function fallbackI18nFromSite(site: { i18n: { locales: string[], defaultLocale?: string, pickerSelector?: string, labels?: Record<string, string> } }) {

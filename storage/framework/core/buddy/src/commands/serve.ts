@@ -91,8 +91,27 @@ export function resolveUserPartialsPath(cwd = process.cwd(), configuredDir?: str
     'resources/components',
   ]
 
-  const relative = candidates.find(candidate => existsSync(join(cwd, candidate)))
-  return relative ? join(cwd, relative) : undefined
+  // A directory that exists but holds no templates loses to one that does.
+  // The scaffold ships two sample partials in `resources/partials/`, so a
+  // project keeping its own in `resources/views/partials/` had the wrong
+  // directory win purely by being listed first, and every `@include('x.stx')`
+  // failed with ENOENT in production while the same include worked in dev.
+  const existing = candidates.filter(candidate => existsSync(join(cwd, candidate)))
+  if (existing.length === 0)
+    return undefined
+
+  const populated = existing.find(candidate => containsTemplates(join(cwd, candidate)))
+  return join(cwd, populated ?? existing[0]!)
+}
+
+/** True when the directory holds at least one `.stx` file, at any depth. */
+function containsTemplates(dir: string): boolean {
+  try {
+    return [...new Bun.Glob('**/*.stx').scanSync({ cwd: dir, onlyFiles: true })].length > 0
+  }
+  catch {
+    return false
+  }
 }
 
 /**
