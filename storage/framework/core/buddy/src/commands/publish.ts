@@ -498,13 +498,34 @@ async function unvendorFramework(force: boolean): Promise<void> {
       await fs.promises.writeFile(bunfigPath, next)
   }
 
-  // 3. The vendored source itself.
+  // 3. The vendored source itself, and any node_modules symlink still
+  //    pointing into it. Those links survive the directory they point at and
+  //    then resolve to nothing, so an import of that package fails with a
+  //    missing module rather than falling back to the published copy.
   await fs.promises.rm(coreDir, { recursive: true, force: true })
+
+  const scopedDir = resolve(process.cwd(), 'node_modules/@stacksjs')
+  let danglingRemoved = 0
+  if (existsSync(scopedDir)) {
+    for (const entry of await readdir(scopedDir, { withFileTypes: true })) {
+      if (!entry.isSymbolicLink())
+        continue
+
+      const link = resolve(scopedDir, entry.name)
+      if (existsSync(link))
+        continue
+
+      await fs.promises.rm(link, { force: true })
+      danglingRemoved++
+    }
+  }
 
   log.success(`Removed ${italic(rel(coreDir))}`)
   log.info(`package.json now depends on ${depName}@${range}`)
   if (repointed > 0)
     log.info(`Repointed ${repointed} workspace: range${repointed === 1 ? '' : 's'} to ${range}`)
+  if (danglingRemoved > 0)
+    log.info(`Removed ${danglingRemoved} node_modules symlink${danglingRemoved === 1 ? '' : 's'} left pointing into it`)
   if (rewrittenScripts > 0)
     log.info(`Repointed ${rewrittenScripts} package.json script${rewrittenScripts === 1 ? '' : 's'} to ./buddy`)
   if (rewrittenPreloads > 0)

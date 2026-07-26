@@ -214,16 +214,27 @@ export function link(buddy: CLI): void {
           .map(entry => `@stacksjs/${entry.name}`)
 
       let removed = 0
+      const unlinked = new Set<string>()
       for (const name of wanted) {
         const target = join(modulesDir, name)
         if (!isSymlink(target))
           continue
 
         fs.rmSync(target, { force: true })
+        unlinked.add(name)
         removed++
       }
 
-      fs.rmSync(recordPath(), { force: true })
+      // Unlinking one package reinstalls the whole tree, which replaces every
+      // other symlink with the published copy. Remember what should survive
+      // and put it back afterwards, or `unlink:core orm` quietly un-links the
+      // five packages the developer is still working on.
+      const survivors = (record?.packages ?? []).filter(name => !unlinked.has(name))
+
+      if (survivors.length > 0)
+        writeRecord({ framework: record!.framework, packages: survivors })
+      else
+        fs.rmSync(recordPath(), { force: true })
 
       if (removed === 0) {
         log.info('Nothing was linked.')
@@ -241,7 +252,22 @@ export function link(buddy: CLI): void {
         process.exit(ExitCode.FatalError)
       }
 
-      log.success('This project is back on the published packages.')
+      // Restore the links the install just overwrote.
+      for (const name of survivors) {
+        const source = join(record!.framework, 'storage/framework/core', name.replace('@stacksjs/', ''))
+        const target = join(modulesDir, name)
+        if (!existsSync(source))
+          continue
+
+        fs.rmSync(target, { recursive: true, force: true })
+        fs.symlinkSync(source, target, 'dir')
+      }
+
+      if (survivors.length > 0)
+        log.success(`Unlinked ${removed}; ${survivors.length} package${survivors.length === 1 ? '' : 's'} still linked.`)
+      else
+        log.success('This project is back on the published packages.')
+
       await log.flush()
       process.exit(ExitCode.Success)
     })
