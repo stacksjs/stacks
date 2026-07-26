@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.168...v0.70.169)
+
+## 🔧 Chores
+
+- **deps**: align every bun-query-builder pin on ^0.1.59 ([587f520](https://github.com/stacksjs/stacks/commit/587f520)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.167...v0.70.168)
 
 ## 🐛 Bug Fixes
