@@ -54,9 +54,7 @@
     "prepublishOnly": "bun run build"
   },
   "devDependencies": {
-    "better-dx": "catalog:",
-    "@stacksjs/gitlint": "catalog:",
-    "bun-git-hooks": "catalog:"
+    "better-dx": "catalog:"
   },
   "publishConfig": {
     "exports": {

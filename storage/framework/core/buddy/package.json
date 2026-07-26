@@ -137,7 +137,9 @@
     "@stacksjs/ui": "workspace:*",
     "@stacksjs/utils": "workspace:*",
     "@stacksjs/validation": "workspace:*",
-    "@stacksjs/ts-cloud": "catalog:"
+    "@stacksjs/ts-cloud": "catalog:",
+    "ajv": "^8.20.0",
+    "ajv-formats": "^3.0.1"
   },
   "devDependencies": {
     "better-dx": "catalog:"

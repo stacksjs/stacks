@@ -8,8 +8,7 @@
         "stacks": "workspace:*",
       },
       "devDependencies": {
-        "ajv": "^8.20.0",
-        "ajv-formats": "^3.0.1",
+        "better-dx": "catalog:",
       },
     },
     "storage/framework": {
@@ -119,7 +118,6 @@
       "devDependencies": {
         "@stacksjs/api": "workspace:*",
         "@stacksjs/cli": "workspace:*",
-        "@stacksjs/config": "workspace:*",
         "@stacksjs/database": "workspace:*",
         "@stacksjs/dns": "workspace:*",
         "@stacksjs/enums": "workspace:*",
@@ -304,6 +302,8 @@
         "@stacksjs/ui": "workspace:*",
         "@stacksjs/utils": "workspace:*",
         "@stacksjs/validation": "workspace:*",
+        "ajv": "^8.20.0",
+        "ajv-formats": "^3.0.1",
       },
       "devDependencies": {
         "better-dx": "catalog:",
@@ -453,7 +453,6 @@
         "@stacksjs/alias": "workspace:*",
         "@stacksjs/types": "workspace:*",
         "better-dx": "catalog:",
-        "bunfig": "^0.15.11",
       },
     },
     "storage/framework/core/cron": {
@@ -631,9 +630,7 @@
         "cz-git": "^1.13.1",
       },
       "devDependencies": {
-        "@stacksjs/gitit": "^0.2.5",
-        "@stacksjs/gitlint": "catalog:",
-        "bun-git-hooks": "catalog:",
+        "better-dx": "catalog:",
       },
     },
     "storage/framework/core/github": {
@@ -685,23 +682,23 @@
       "name": "@stacksjs/lint",
       "version": "0.70.165",
       "devDependencies": {
-        "@stacksjs/gitlint": "catalog:",
         "better-dx": "catalog:",
-        "bun-git-hooks": "catalog:",
       },
     },
     "storage/framework/core/logging": {
       "name": "@stacksjs/logging",
       "version": "0.70.165",
-      "devDependencies": {
+      "dependencies": {
         "@stacksjs/clarity": "^0.3.31",
+      },
+      "devDependencies": {
         "@stacksjs/cli": "workspace:*",
         "@stacksjs/config": "workspace:*",
         "@stacksjs/error-handling": "workspace:*",
         "@stacksjs/path": "workspace:*",
         "@stacksjs/storage": "workspace:*",
         "@stacksjs/validation": "workspace:*",
-        "typescript": "^7.0.2",
+        "better-dx": "catalog:",
       },
     },
     "storage/framework/core/newsletter": {
@@ -1033,9 +1030,8 @@
       },
       "devDependencies": {
         "@stacksjs/validation": "workspace:*",
-        "@types/bun": "^1.3.11",
+        "better-dx": "catalog:",
         "meilisearch": "^0.59.0",
-        "typescript": "^7.0.2",
       },
       "peerDependencies": {
         "meilisearch": "^0.59.0",
@@ -1120,11 +1116,9 @@
   "catalog": {
     "@stacksjs/clapp": "^0.2.12",
     "@stacksjs/components": "^0.2.82",
-    "@stacksjs/gitlint": "^0.1.7",
     "@stacksjs/stx": "^0.2.100",
     "@stacksjs/ts-cloud": "^0.7.60",
     "better-dx": "^0.2.17",
-    "bun-git-hooks": "^0.3.2",
     "bun-query-builder": "^0.1.56",
     "pickier": "^0.1.35",
   },

@@ -67,9 +67,8 @@
   },
   "devDependencies": {
     "@stacksjs/validation": "workspace:*",
-    "@types/bun": "^1.3.11",
-    "meilisearch": "^0.59.0",
-    "typescript": "^7.0.2"
+    "better-dx": "catalog:",
+    "meilisearch": "^0.59.0"
   },
   "sideEffects": false,
   "publishConfig": {
