@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.173...v0.70.175)
+
+## 🐛 Bug Fixes
+
+- **deps**: stop installing git through pantry ([77e217b](https://github.com/stacksjs/stacks/commit/77e217b)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.172...v0.70.173)
 
 ## 🐛 Bug Fixes
