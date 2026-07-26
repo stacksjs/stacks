@@ -31,6 +31,7 @@
  */
 
 /// <reference path="./shims.d.ts" />
+import { RedisClient } from 'bun'
 import { log } from '@stacksjs/logging'
 import { env as envVars } from '@stacksjs/env'
 import type { Job } from './action'
@@ -774,18 +775,47 @@ async function getRedisClient(): Promise<any> {
   return new RedisQueue('__batches__', redisConfig as ConstructorParameters<typeof RedisQueue>[1])
 }
 
+/**
+ * Build the batch store's Redis URL from the queue config.
+ *
+ * The previous builder dropped `password` and `db`, so an authenticated Redis
+ * failed to connect and every batch write silently fell back to the database
+ * store. Credentials are URL-encoded because Redis passwords routinely carry
+ * `@`, `:` and `/`.
+ */
+async function batchRedisUrl(): Promise<string> {
+  const { queue: queueConfig } = await import('@stacksjs/config')
+  const redisConfig = queueConfig?.connections?.redis?.redis
+  if (redisConfig?.url)
+    return redisConfig.url
+
+  const auth = redisConfig?.password ? `:${encodeURIComponent(redisConfig.password)}@` : ''
+  const db = redisConfig?.db ? `/${redisConfig.db}` : ''
+
+  return `redis://${auth}${redisConfig?.host || 'localhost'}:${redisConfig?.port || 6379}${db}`
+}
+
+/**
+ * Open a connection for batch bookkeeping using Bun's built-in Redis client.
+ *
+ * Bun ships `RedisClient` natively, so the queue no longer depends on the
+ * `redis` npm package — apps that never touch the redis driver stop paying for
+ * it, and the ones that do get the runtime's own client. Callers own the
+ * connection and must `close()` it.
+ */
+async function connectBatchRedis(): Promise<RedisClient> {
+  const client = new RedisClient(await batchRedisUrl())
+  await client.connect()
+
+  return client
+}
+
 async function storeBatchInRedis(record: BatchRecord): Promise<void> {
   try {
-    const { createClient } = await import('redis')
-    const { queue: queueConfig } = await import('@stacksjs/config')
-    const redisConfig = queueConfig?.connections?.redis?.redis
-    const url = redisConfig?.url || `redis://${redisConfig?.host || 'localhost'}:${redisConfig?.port || 6379}`
-
-    const client = createClient({ url })
-    await client.connect()
+    const client = await connectBatchRedis()
 
     const key = `${REDIS_BATCH_PREFIX}${record.id}`
-    await client.hSet(key, {
+    await client.hset(key, {
       id: record.id,
       name: record.name,
       total_jobs: String(record.total_jobs),
@@ -797,8 +827,8 @@ async function storeBatchInRedis(record: BatchRecord): Promise<void> {
       created_at: record.created_at,
       finished_at: record.finished_at || '',
     })
-    await client.sAdd(REDIS_BATCH_INDEX, record.id)
-    await client.quit()
+    await client.sadd(REDIS_BATCH_INDEX, record.id)
+    client.close()
   }
   catch {
     // Fallback to database if Redis unavailable
@@ -806,34 +836,41 @@ async function storeBatchInRedis(record: BatchRecord): Promise<void> {
   }
 }
 
+/**
+ * Decode a `stacks:batch:*` hash into a {@link BatchRecord}.
+ *
+ * Every field is read defensively: Redis hashes are schemaless, so a row
+ * written by an older release (or half-written by a crashed worker) can be
+ * missing keys the current record type requires. A hash without an `id` is
+ * treated as absent rather than yielding a half-built record.
+ */
+function batchRecordFromHash(data: Record<string, string> | null): BatchRecord | null {
+  if (!data?.id)
+    return null
+
+  return {
+    id: data.id,
+    name: data.name ?? '',
+    total_jobs: Number(data.total_jobs),
+    pending_jobs: Number(data.pending_jobs),
+    failed_jobs: Number(data.failed_jobs),
+    failed_job_ids: data.failed_job_ids ?? '',
+    options: data.options ?? '',
+    cancelled_at: data.cancelled_at || null,
+    created_at: data.created_at ?? '',
+    finished_at: data.finished_at || null,
+  }
+}
+
 async function getBatchFromRedis(id: string): Promise<BatchRecord | null> {
   try {
-    const { createClient } = await import('redis')
-    const { queue: queueConfig } = await import('@stacksjs/config')
-    const redisConfig = queueConfig?.connections?.redis?.redis
-    const url = redisConfig?.url || `redis://${redisConfig?.host || 'localhost'}:${redisConfig?.port || 6379}`
-
-    const client = createClient({ url })
-    await client.connect()
+    const client = await connectBatchRedis()
 
     const key = `${REDIS_BATCH_PREFIX}${id}`
-    const data = await client.hGetAll(key)
-    await client.quit()
+    const data = await client.hgetall(key)
+    client.close()
 
-    if (!data || !data.id) return null
-
-    return {
-      id: data.id,
-      name: data.name,
-      total_jobs: Number(data.total_jobs),
-      pending_jobs: Number(data.pending_jobs),
-      failed_jobs: Number(data.failed_jobs),
-      failed_job_ids: data.failed_job_ids,
-      options: data.options,
-      cancelled_at: data.cancelled_at || null,
-      created_at: data.created_at,
-      finished_at: data.finished_at || null,
-    }
+    return batchRecordFromHash(data)
   }
   catch {
     return getBatchFromDatabase(id)
@@ -842,37 +879,18 @@ async function getBatchFromRedis(id: string): Promise<BatchRecord | null> {
 
 async function getAllBatchesFromRedis(): Promise<BatchRecord[]> {
   try {
-    const { createClient } = await import('redis')
-    const { queue: queueConfig } = await import('@stacksjs/config')
-    const redisConfig = queueConfig?.connections?.redis?.redis
-    const url = redisConfig?.url || `redis://${redisConfig?.host || 'localhost'}:${redisConfig?.port || 6379}`
+    const client = await connectBatchRedis()
 
-    const client = createClient({ url })
-    await client.connect()
-
-    const ids = await client.sMembers(REDIS_BATCH_INDEX)
+    const ids = await client.smembers(REDIS_BATCH_INDEX)
     const batches: BatchRecord[] = []
 
     for (const id of ids) {
-      const key = `${REDIS_BATCH_PREFIX}${id}`
-      const data = await client.hGetAll(key)
-      if (data?.id) {
-        batches.push({
-          id: data.id,
-          name: data.name,
-          total_jobs: Number(data.total_jobs),
-          pending_jobs: Number(data.pending_jobs),
-          failed_jobs: Number(data.failed_jobs),
-          failed_job_ids: data.failed_job_ids,
-          options: data.options,
-          cancelled_at: data.cancelled_at || null,
-          created_at: data.created_at,
-          finished_at: data.finished_at || null,
-        })
-      }
+      const record = batchRecordFromHash(await client.hgetall(`${REDIS_BATCH_PREFIX}${id}`))
+      if (record)
+        batches.push(record)
     }
 
-    await client.quit()
+    client.close()
     return batches
   }
   catch {
@@ -882,13 +900,7 @@ async function getAllBatchesFromRedis(): Promise<BatchRecord[]> {
 
 async function updateBatchInRedis(id: string, updates: Partial<BatchRecord>): Promise<void> {
   try {
-    const { createClient } = await import('redis')
-    const { queue: queueConfig } = await import('@stacksjs/config')
-    const redisConfig = queueConfig?.connections?.redis?.redis
-    const url = redisConfig?.url || `redis://${redisConfig?.host || 'localhost'}:${redisConfig?.port || 6379}`
-
-    const client = createClient({ url })
-    await client.connect()
+    const client = await connectBatchRedis()
 
     const key = `${REDIS_BATCH_PREFIX}${id}`
     const hashUpdates: Record<string, string> = {}
@@ -897,8 +909,8 @@ async function updateBatchInRedis(id: string, updates: Partial<BatchRecord>): Pr
       hashUpdates[k] = v === null ? '' : String(v)
     }
 
-    await client.hSet(key, hashUpdates)
-    await client.quit()
+    await client.hset(key, hashUpdates)
+    client.close()
   }
   catch {
     await updateBatchInDatabase(id, updates)
@@ -907,17 +919,11 @@ async function updateBatchInRedis(id: string, updates: Partial<BatchRecord>): Pr
 
 async function deleteBatchFromRedis(id: string): Promise<void> {
   try {
-    const { createClient } = await import('redis')
-    const { queue: queueConfig } = await import('@stacksjs/config')
-    const redisConfig = queueConfig?.connections?.redis?.redis
-    const url = redisConfig?.url || `redis://${redisConfig?.host || 'localhost'}:${redisConfig?.port || 6379}`
-
-    const client = createClient({ url })
-    await client.connect()
+    const client = await connectBatchRedis()
 
     await client.del(`${REDIS_BATCH_PREFIX}${id}`)
-    await client.sRem(REDIS_BATCH_INDEX, id)
-    await client.quit()
+    await client.srem(REDIS_BATCH_INDEX, id)
+    client.close()
   }
   catch {
     await deleteBatchFromDatabase(id)

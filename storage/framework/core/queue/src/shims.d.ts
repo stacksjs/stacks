@@ -1,8 +1,3 @@
-declare module 'redis' {
-  export type RedisClient = any
-  export function createClient(options?: { url?: string }): RedisClient
-}
-
 declare module '@stacksjs/bun-queue' {
   // Wide ambient: @stacksjs/bun-queue may not be installed in node_modules; this
   // shim exists so that imports type-check. The actual values are resolved
