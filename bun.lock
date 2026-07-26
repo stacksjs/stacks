@@ -681,6 +681,9 @@
     "storage/framework/core/lint": {
       "name": "@stacksjs/lint",
       "version": "0.70.170",
+      "dependencies": {
+        "pickier": "^0.1.40",
+      },
       "devDependencies": {
         "better-dx": "^0.2.17",
       },
