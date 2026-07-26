@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.170...v0.70.171)
+
+## 🐛 Bug Fixes
+
+- **lint**: wrap pickier so the package stops publishing an empty tarball ([8468fff](https://github.com/stacksjs/stacks/commit/8468fff)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.169...v0.70.170)
 
 ## 💚 Continuous Integration
