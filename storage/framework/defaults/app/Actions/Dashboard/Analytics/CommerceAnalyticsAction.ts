@@ -1,4 +1,5 @@
 import { Action } from '@stacksjs/actions'
+import { log } from '@stacksjs/logging'
 
 export default new Action({
   name: 'CommerceAnalyticsAction',
@@ -6,7 +7,7 @@ export default new Action({
   method: 'GET',
   async handle() {
     try {
-      const { AnalyticsQueryAPI, AnalyticsStore } = await import('ts-analytics')
+      const { AnalyticsQueryAPI, AnalyticsStore } = await import('@ts-analytics/tracking/analytics')
       const store = new AnalyticsStore({ tableName: 'analytics' })
 
       const now = new Date()
@@ -57,7 +58,11 @@ export default new Action({
         revenueByChannel: [],
       }
     }
-    catch {
+    catch (error) {
+      // The analytics integration is optional: without
+      // @ts-analytics/tracking installed the dashboard renders empty
+      // rather than erroring. Log so a broken install is still visible.
+      log.debug('[CommerceAnalyticsAction] analytics unavailable:', error)
       return { stats: [], topProducts: [], salesByRegion: [], revenueByChannel: [] }
     }
   },
