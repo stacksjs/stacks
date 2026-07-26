@@ -1,8 +1,11 @@
 import type { UserConfig } from 'cz-git'
-import { components, functions } from '@stacksjs/utils'
 import git from './git'
 
-const scopes = [...new Set([...git.scopes, ...components, ...functions])]
+// `components` and `functions` used to be appended here from `@stacksjs/utils`,
+// which has never exported them: the import resolved to `undefined` and the
+// spread silently contributed nothing. It only ever surfaced as a type error
+// once @stacksjs/utils started shipping declarations.
+const scopes = [...new Set(git.scopes)]
 
 export default {
   rules: {
