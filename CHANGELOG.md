@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.178...v0.70.179)
+
+## ✨ Features
+
+- **auth**: cookie-carried sessions for server-rendered pages ([12fe0cd](https://github.com/stacksjs/stacks/commit/12fe0cd)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.177...v0.70.178)
 
 ## 🐛 Bug Fixes
