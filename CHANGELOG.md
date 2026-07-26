@@ -1,5 +1,17 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.177...v0.70.178)
+
+## 🐛 Bug Fixes
+
+- **types**: stop Attributes being exported twice ([a141508](https://github.com/stacksjs/stacks/commit/a141508)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **publish**: repoint package.json scripts when unvendoring core ([c495d7a](https://github.com/stacksjs/stacks/commit/c495d7a)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **defaults**: resolve usePaymentStore inside useBillable ([3d175fd](https://github.com/stacksjs/stacks/commit/3d175fd)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.176...v0.70.177)
 
 ## 🐛 Bug Fixes
