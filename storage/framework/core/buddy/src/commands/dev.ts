@@ -419,10 +419,58 @@ export async function startDevelopmentServer(_options: DevOptions, _startTime?: 
   // which would otherwise fight rpx and could even restart the daemon that's
   // serving the request that booted us.
   const proxyManagedExternally = process.env.STACKS_PROXY_MANAGED === '1'
-  const frontendPort = Number(process.env.PORT) || 3000
-  const apiPort = Number(process.env.PORT_API) || 3008
-  const docsPort = Number(process.env.PORT_DOCS) || 3006
-  const dashboardPort = Number(process.env.PORT_ADMIN) || 3002
+  const preferredFrontendPort = Number(process.env.PORT) || 3000
+  const preferredApiPort = Number(process.env.PORT_API) || 3008
+  const preferredDocsPort = Number(process.env.PORT_DOCS) || 3006
+  const preferredDashboardPort = Number(process.env.PORT_ADMIN) || 3002
+
+  // Free up the ports THIS project left behind before deciding what to bind:
+  // an orphan from a previous `./buddy dev` in this same project is ours to
+  // reclaim, and reclaiming it keeps the port numbers stable across restarts.
+  // Anything still listening afterwards belongs to someone else.
+  if (process.env.STACKS_DEV_NO_KILL !== '1') {
+    await cleanupStaleDevProcesses([
+      preferredFrontendPort,
+      preferredApiPort,
+      preferredDocsPort,
+      preferredDashboardPort,
+    ])
+  }
+
+  // A port held by ANOTHER project (a second app's `./buddy dev`, or any
+  // unrelated server) is not ours to kill. Binding is what actually fails
+  // there, and the frontend server does not gate the readiness banner — so
+  // before this, `./buddy dev` printed a cheerful `➜ Frontend: :3000` while
+  // that URL served the *other* project's site and this one's frontend was
+  // never up. Step to the next free port instead, and say so.
+  //
+  // Under rpx (`STACKS_PROXY_MANAGED`) the ports are assigned to us by the
+  // daemon that is already proxying to them, so they are taken as given.
+  const portShifts: string[] = []
+  const claimPort = async (label: string, preferred: number): Promise<number> => {
+    if (proxyManagedExternally)
+      return preferred
+
+    const port = await findAvailablePort(preferred)
+    if (port !== preferred)
+      portShifts.push(`${label} :${preferred} → :${port}`)
+
+    return port
+  }
+
+  const frontendPort = await claimPort('Frontend', preferredFrontendPort)
+  const apiPort = await claimPort('API', preferredApiPort)
+  const docsPort = await claimPort('Docs', preferredDocsPort)
+  const dashboardPort = await claimPort('Dashboard', preferredDashboardPort)
+
+  // Child dev actions (`dev/views.ts`, `dev/api.ts`, `dev/docs.ts`) each read
+  // their port from the environment, so the resolved values have to be
+  // published here or they would go back to the occupied defaults.
+  process.env.PORT = String(frontendPort)
+  process.env.PORT_API = String(apiPort)
+  process.env.PORT_DOCS = String(docsPort)
+  process.env.PORT_ADMIN = String(dashboardPort)
+
   // Dashboard is opt-in. It boots a separate stx-serve process + a craft
   // window when ts-craft is installed, both of which are heavyweight and
   // unnecessary for most app development sessions. Use
@@ -457,13 +505,6 @@ export async function startDevelopmentServer(_options: DevOptions, _startTime?: 
   const apiUrl = displayedDomain ? `https://${displayedDomain}/api` : `http://localhost:${apiPort}`
   const docsUrl = displayedDomain ? `https://${displayedDomain}/docs` : `http://localhost:${docsPort}`
   const dashboardUrl = dashboardDomain ? `https://${dashboardDomain}` : `http://localhost:${dashboardPort}`
-  const managedPorts = [
-    frontendPort,
-    apiPort,
-    docsPort,
-    ...(includeDashboard ? [dashboardPort] : []),
-  ]
-
   // Signal subprocesses that the main dev server manages the reverse proxy,
   // so they don't start their own (which would conflict on port 443).
   // Suppress early Crosswind/STX/auth config noise — `printDevEngineNotes()` prints after "ready in".
@@ -477,19 +518,12 @@ export async function startDevelopmentServer(_options: DevOptions, _startTime?: 
     console.log(`  ${dim('    ')}${dim('Run `./buddy setup:ssl` once, then restart `./buddy dev`.')}`)
     console.log()
   }
+  if (portShifts.length > 0) {
+    console.log(`  ${yellow('⚠')}  ${yellow('Ports in use by another process')} ${dim(`- ${portShifts.join(', ')}`)}`)
+    console.log()
+  }
   console.log(`  ${bold(cyan('stacks'))} ${dim(`v${version}`)}  ${dim('starting…')}`)
   console.log()
-
-  // Pre-flight: clean up orphaned bun processes from prior dev runs that
-  // didn't shut down cleanly (`pkill -9` from a foreground terminal exits
-  // the parent but leaves detached children holding `:3000`/`:3002`/etc).
-  // Without this, the readiness probe sees stale listeners and reports
-  // "ready in 0.0s" while the *new* backends never bind because their
-  // ports are already taken. Skipped when `STACKS_DEV_NO_KILL` is set
-  // (e.g. in CI where there's nothing to clean up).
-  if (process.env.STACKS_DEV_NO_KILL !== '1') {
-    await cleanupStaleDevProcesses(managedPorts)
-  }
 
   // Mint TLS + start the rpx daemon in parallel with backend boot. Awaiting here
   // would delay every dev server; readiness waits on this promise before writing
@@ -1107,6 +1141,39 @@ async function probeDevServerHttp(port: number): Promise<boolean> {
       return true
   }
   return false
+}
+
+/**
+ * Return `preferred` if nothing is listening on it, otherwise the next free
+ * port above it.
+ *
+ * Availability is decided by actually binding rather than by inspecting
+ * `lsof` output: binding is the operation that has to succeed, so it also
+ * accounts for a listener the current user cannot see and for the
+ * `SO_REUSEPORT` case, where two servers can both "bind" :3000 and the kernel
+ * then load-balances between two different apps.
+ */
+async function findAvailablePort(preferred: number, attempts = 20): Promise<number> {
+  for (let port = preferred; port < preferred + attempts; port++) {
+    let server: { stop: (force?: boolean) => void } | undefined
+
+    try {
+      // `reusePort: false` is the point of the probe: with it on, this bind
+      // would succeed against an existing listener and report a busy port as
+      // free.
+      server = Bun.serve({ port, hostname: '0.0.0.0', reusePort: false, fetch: () => new Response() })
+    }
+    catch {
+      continue
+    }
+
+    server.stop(true)
+    return port
+  }
+
+  // Everything in the window is taken. Hand back the preferred port so the
+  // caller fails on the real bind with the real error rather than here.
+  return preferred
 }
 
 async function waitForPort(port: number, timeoutMs: number): Promise<boolean> {
