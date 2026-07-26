@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.175...v0.70.176)
+
+## 🐛 Bug Fixes
+
+- **types**: export Attributes, and drop a sql.literal that never existed ([2104bb6](https://github.com/stacksjs/stacks/commit/2104bb6)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.173...v0.70.175)
 
 ## 🐛 Bug Fixes
