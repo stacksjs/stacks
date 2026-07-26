@@ -2141,13 +2141,34 @@ function buildSearchHooks(definition: BQBModelDefinition): BQBModelDefinition['h
   }
 }
 
+/**
+ * Search indexing fails per document, but its causes are per environment: no
+ * search server running, no driver configured, a bad key. Seeding a few
+ * hundred rows into a `useSearch` model therefore printed the same warning a
+ * few hundred times and buried whatever else the command had to say.
+ *
+ * The first failure for a model is worth reporting; the rest are the same
+ * fact repeated, so they are counted and summarised instead.
+ */
+const searchFailures = new Map<string, number>()
+
+function warnSearchFailure(key: string, message: string): void {
+  const seen = searchFailures.get(key) ?? 0
+  searchFailures.set(key, seen + 1)
+
+  if (seen === 0)
+    log.warn(`[orm/search] ${message}`)
+  else if (seen === 9)
+    log.warn(`[orm/search] ${key} is still failing; further identical warnings suppressed for this process.`)
+}
+
 async function indexInline(indexName: string, doc: Record<string, unknown>, modelName: string): Promise<void> {
   try {
     const { useSearchEngine } = await import('@stacksjs/search-engine')
     await useSearchEngine().addDocument(indexName, doc)
   }
   catch (err) {
-    log.warn(`[orm/search] Failed to index ${modelName}: ${(err as Error).message}`)
+    warnSearchFailure(`index:${modelName}`, `Failed to index ${modelName}: ${(err as Error).message}`)
   }
 }
 
@@ -2157,7 +2178,7 @@ async function removeInline(indexName: string, id: number, modelName: string): P
     await useSearchEngine().deleteDocument(indexName, id)
   }
   catch (err) {
-    log.warn(`[orm/search] Failed to remove ${modelName}#${id}: ${(err as Error).message}`)
+    warnSearchFailure(`remove:${modelName}`, `Failed to remove ${modelName}#${id}: ${(err as Error).message}`)
   }
 }
 
