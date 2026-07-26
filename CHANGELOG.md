@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.169...v0.70.170)
+
+## 💚 Continuous Integration
+
+- **release**: pin the release step to a pantry build that reports logsmith errors ([456830f](https://github.com/stacksjs/stacks/commit/456830f)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.168...v0.70.169)
 
 ## 🔧 Chores
