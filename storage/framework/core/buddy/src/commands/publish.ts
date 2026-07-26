@@ -399,6 +399,7 @@ async function unvendorFramework(force: boolean): Promise<void> {
   const rootPkg = JSON.parse(rootPkgRaw) as {
     dependencies?: Record<string, string>
     devDependencies?: Record<string, string>
+    scripts?: Record<string, string>
     workspaces?: string[]
   }
 
@@ -440,6 +441,23 @@ async function unvendorFramework(force: boolean): Promise<void> {
   // The app has to declare the framework itself, or nothing pulls it in.
   if (!rootPkg.dependencies?.[depName] && !rootPkg.devDependencies?.[depName])
     rootPkg.dependencies = { ...rootPkg.dependencies, [depName]: range }
+
+  // Scripts that run the vendored CLI by path (`bun
+  // ./storage/framework/core/buddy/src/cli.ts lint`) point at a file that is
+  // about to stop existing. The `./buddy` shim resolves whichever CLI the
+  // project actually has, so it is right in both layouts — and a script like
+  // `bun buddy lint` in CI fails hard otherwise, days after the unvendor.
+  let rewrittenScripts = 0
+  for (const [name, script] of Object.entries(rootPkg.scripts ?? {})) {
+    if (!/storage\/framework\/core\/buddy\/src\/cli\.ts/.test(script))
+      continue
+
+    rootPkg.scripts![name] = script.replace(
+      /\bbunx?\s+(?:--bun\s+)?\.?\/?storage\/framework\/core\/buddy\/src\/cli\.ts/g,
+      './buddy',
+    )
+    rewrittenScripts++
+  }
 
   if (Array.isArray(rootPkg.workspaces)) {
     rootPkg.workspaces = rootPkg.workspaces.filter(glob => !isCoreWorkspaceGlob(glob))
@@ -487,6 +505,8 @@ async function unvendorFramework(force: boolean): Promise<void> {
   log.info(`package.json now depends on ${depName}@${range}`)
   if (repointed > 0)
     log.info(`Repointed ${repointed} workspace: range${repointed === 1 ? '' : 's'} to ${range}`)
+  if (rewrittenScripts > 0)
+    log.info(`Repointed ${rewrittenScripts} package.json script${rewrittenScripts === 1 ? '' : 's'} to ./buddy`)
   if (rewrittenPreloads > 0)
     log.info(`Rewrote ${rewrittenPreloads} bunfig.toml preload path${rewrittenPreloads === 1 ? '' : 's'} to package specifiers`)
 
