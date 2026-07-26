@@ -1,5 +1,27 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.166...v0.70.167)
+
+## 🐛 Bug Fixes
+
+- **dashboard**: import the analytics API from the package that exports it ([b60aa31](https://github.com/stacksjs/stacks/commit/b60aa31)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **types**: make the ORM's types reachable from an installed app ([22ed0dc](https://github.com/stacksjs/stacks/commit/22ed0dc)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **tunnel**: drop the localtunnels shim ([e5ed934](https://github.com/stacksjs/stacks/commit/e5ed934)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🔧 Chores
+
+- **deps**: bun-query-builder 0.1.58 ([54ff9ab](https://github.com/stacksjs/stacks/commit/54ff9ab)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **deps**: pick up localtunnels 0.2.10 ([ad8ec9c](https://github.com/stacksjs/stacks/commit/ad8ec9c)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **types**: drop the dead @ts-analytics ambient stub ([9bebced](https://github.com/stacksjs/stacks/commit/9bebced)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🎉 Miscellaneous
+
+- Merge branch 'fix/tunnel-drop-shim' ([43c0f14](https://github.com/stacksjs/stacks/commit/43c0f14)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.165...v0.70.166)
 
 ## 🐛 Bug Fixes
