@@ -1012,7 +1012,7 @@
       "name": "@stacksjs/tunnel",
       "version": "0.70.167",
       "dependencies": {
-        "localtunnels": "^0.2.10",
+        "localtunnels": "^0.2.11",
       },
       "devDependencies": {
         "better-dx": "^0.2.17",
@@ -1600,7 +1600,7 @@
 
     "kleur": ["kleur@3.0.3", "", {}, "sha512-eTIzlVOSUR+JxdDFepEYcBMtZ9Qqdef+rnzWdRZuMbOywu5tO2w2N7rqjoANZ5k9vywhL6Br1VRjUIgTQx4E8w=="],
 
-    "localtunnels": ["localtunnels@0.2.10", "", { "dependencies": { "@stacksjs/ts-analytics": "github:stacksjs/ts-analytics", "bunfig": "^0.15.6" }, "bin": { "localtunnel": "./dist/bin/cli.js", "lt": "./dist/bin/cli.js" } }, "sha512-AMyVhZMG08nWz3mp5Z4JEvRK8pZH2Zwoc7DDmbV6VEiGMtUbi2zykgzgj3GUhd51lyu2Hf023HMByP5K25JrYQ=="],
+    "localtunnels": ["localtunnels@0.2.11", "", { "dependencies": { "@stacksjs/ts-analytics": "github:stacksjs/ts-analytics", "bunfig": "^0.15.6" }, "bin": { "localtunnel": "./dist/bin/cli.js", "lt": "./dist/bin/cli.js" } }, "sha512-ZjdzgwBQlhUILfa7+VD0audM8o++vQRBRBIT2cDK9fH+PQ+VX1CDYWFBCO5Gaq+3zqcFTOPOxCpeO67hZ7Q7BA=="],
 
     "magic-regexp": ["magic-regexp@0.11.0", "", { "dependencies": { "magic-string": "^0.30.21", "regexp-tree": "^0.1.27", "type-level-regexp": "~0.1.17", "unplugin": "^3.0.0" } }, "sha512-LG77Z/gVnwz7oaDpD4heX6ryl+lcr4l1B2gnP4MMvt2pGhGC1Dfj7dl1pXpP4ih+VQFLuAadeKVa+lARAzfW+Q=="],
 
