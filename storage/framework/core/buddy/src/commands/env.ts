@@ -354,6 +354,13 @@ export function env(buddy: CLI): void {
             const { foreignTenantKeys, partitionTenantEnv } = await import('@stacksjs/env')
             const foreign = foreignTenantKeys(partitionTenantEnv(values, declaredTenants))
 
+            // `.env` is machine-local: gitignored, and excluded from the
+            // deploy tarball. Foreign keys there are inert, and it is where
+            // `env:check` tells you to move them, so flagging it would be
+            // self-contradictory. Only `.env.<environment>` gets shipped.
+            const isShipped = /^\.env\.[a-z]+$/.test(envFile)
+            const total = foreign.reduce((sum, entry) => sum + entry.keys.length, 0)
+
             if (foreign.length === 0) {
               checks.push({
                 name: 'Tenant isolation',
@@ -361,12 +368,18 @@ export function env(buddy: CLI): void {
                 message: `No foreign keys (checked ${declaredTenants.tenants.join(', ')})`,
               })
             }
+            else if (!isShipped) {
+              checks.push({
+                name: 'Tenant isolation',
+                status: 'pass',
+                message: `${total} archived key(s) — ${envFile} is local-only and never deployed`,
+              })
+            }
             else {
-              const total = foreign.reduce((sum, entry) => sum + entry.keys.length, 0)
               checks.push({
                 name: 'Tenant isolation',
                 status: 'warn',
-                message: `${total} key(s) belong to another tenant — remove them`,
+                message: `${total} key(s) belong to another tenant — move them to .env`,
               })
               for (const { tenant, keys } of foreign) {
                 checks.push({
