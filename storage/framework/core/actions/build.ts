@@ -1,3 +1,4 @@
+import { dts } from 'bun-plugin-dtsx'
 /**
  * Build the @stacksjs/actions package.
  *
@@ -27,6 +28,15 @@ const { startTime } = await intro({
 await transpilePackage({
   dir: import.meta.dir,
   external: frameworkExternal(['bun', 'bun:*', 'node:*']),
+  plugins: [
+    // Ship declarations: without them every consumer of this package sees
+    // `any`, which is how a typed framework silently stops being typed.
+    dts({
+      root: './src',
+      outdir: './dist',
+      exclude: ['tests/**'],
+    }),
+  ],
 })
 
 await outro({

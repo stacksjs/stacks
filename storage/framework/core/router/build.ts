@@ -1,3 +1,4 @@
+import { dts } from 'bun-plugin-dtsx'
 import { frameworkExternal, intro, outro, transpilePackage } from '../build/src'
 
 const { startTime } = await intro({
@@ -12,6 +13,15 @@ const { startTime } = await intro({
 await transpilePackage({
   dir: import.meta.dir,
   external: frameworkExternal(),
+  plugins: [
+    // Ship declarations: without them every consumer of this package sees
+    // `any`, which is how a typed framework silently stops being typed.
+    dts({
+      root: './src',
+      outdir: './dist',
+      exclude: ['tests/**'],
+    }),
+  ],
 })
 
 await outro({
