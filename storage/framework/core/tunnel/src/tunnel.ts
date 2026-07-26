@@ -1,4 +1,3 @@
-/// <reference path="./shims.d.ts" />
 import type { TunnelClient } from 'localtunnels'
 import { startLocalTunnel } from 'localtunnels'
 
