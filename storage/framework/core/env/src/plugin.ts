@@ -86,6 +86,20 @@ function normalizeEnvName(value: string | undefined): string | undefined {
 let cachedKeyEnv: string | null = null
 let cachedPrivateKey: string | undefined
 
+/**
+ * The environment whose file was actually loaded.
+ *
+ * Key resolution and file loading used to read the same three variables in
+ * different orders: `autoLoadEnv` asked NODE_ENV first, `resolvePrivateKey`
+ * asked APP_ENV first. An app whose `.env` says `APP_ENV=development` and
+ * whose server runs with `NODE_ENV=production` therefore loaded
+ * `.env.production` and then looked for the *development* private key - so
+ * every encrypted value in the file it had just read came back undecryptable
+ * and silently fell back to its default. Recording what was loaded keeps the
+ * two answers the same.
+ */
+let loadedEnvName: string | undefined
+
 function keyFromKeysFile(envName: string | undefined, cwd: string, keysFile = '.env.keys'): string | undefined {
   const keysPath = resolve(cwd, keysFile)
   if (!existsSync(keysPath))
@@ -106,6 +120,20 @@ function keyFromKeysFile(envName: string | undefined, cwd: string, keysFile = '.
 }
 
 /**
+ * The environment the env layer is operating as.
+ *
+ * Exposed so a failure can say which key it went looking for.
+ */
+export function activeEnvName(options: { env?: string } = {}): string {
+  return normalizeEnvName(options.env)
+    || loadedEnvName
+    || normalizeEnvName(process.env.NODE_ENV)
+    || normalizeEnvName(process.env.DOTENV_ENV)
+    || normalizeEnvName(process.env.APP_ENV)
+    || 'development'
+}
+
+/**
  * Resolve the dotenvx private key for the active environment, checking
  * process.env (`DOTENV_PRIVATE_KEY_<ENV>` then `DOTENV_PRIVATE_KEY`) and
  * finally a local `.env.keys` file. The result — key or `undefined` — is
@@ -113,11 +141,7 @@ function keyFromKeysFile(envName: string | undefined, cwd: string, keysFile = '.
  * read without repeatedly touching disk.
  */
 export function resolvePrivateKey(options: { env?: string, cwd?: string } = {}): string | undefined {
-  const envName = normalizeEnvName(options.env)
-    || normalizeEnvName(process.env.APP_ENV)
-    || normalizeEnvName(process.env.NODE_ENV)
-    || normalizeEnvName(process.env.DOTENV_ENV)
-    || 'development'
+  const envName = activeEnvName(options)
   const cwd = options.cwd || process.cwd()
 
   if (cachedKeyEnv === envName)
@@ -335,6 +359,14 @@ export function autoLoadEnv(options: Omit<EnvPluginOptions, 'path'> = {}): { loa
     || normalizeEnvName(process.env.APP_ENV)
     || 'development'
   const cwd = options.cwd || process.cwd()
+
+  // Anything decrypted later belongs to this environment's key, whatever the
+  // process environment says afterwards.
+  if (loadedEnvName !== env) {
+    loadedEnvName = env
+    cachedKeyEnv = null
+    cachedPrivateKey = undefined
+  }
 
   // Load from least to most specific. loadEnv preserves variables that were
   // present before this call while allowing later files in this list to

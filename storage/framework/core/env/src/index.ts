@@ -3,7 +3,7 @@ import type { StacksEnv } from './types'
 import p from 'node:process'
 import { projectPath } from '@stacksjs/path'
 import fs from 'node:fs'
-import { decryptEnvValue } from './plugin'
+import { activeEnvName, decryptEnvValue } from './plugin'
 import { envEnum } from './types'
 
 // Report an undecryptable key once, not on every read in the hot path.
@@ -13,8 +13,13 @@ function warnUndecryptable(key: string): void {
   if (warnedUndecryptable.has(key))
     return
   warnedUndecryptable.add(key)
+
+  // Name the environment whose key was looked for. "No usable private key" on
+  // its own sends people to check a key that is present and correct, when the
+  // real answer is that the wrong environment was asked for.
+  const envName = activeEnvName()
   // eslint-disable-next-line no-console
-  console.warn(`[env] warning: "${key}" is encrypted but no usable private key was found to decrypt it; falling back to its default. Set DOTENV_PRIVATE_KEY_<ENV> or ship .env.keys.`)
+  console.warn(`[env] warning: "${key}" is encrypted but no usable private key was found for the "${envName}" environment; falling back to its default. Set DOTENV_PRIVATE_KEY_${envName.toUpperCase()} or ship .env.keys.`)
 }
 
 const handler: ProxyHandler<StacksEnv> = {
