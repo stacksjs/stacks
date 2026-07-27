@@ -17,7 +17,8 @@
     "./package.json": "./package.json"
   },
   "dependencies": {
-    "@iconify-json/f7": "^1.2.2"
+    "@iconify-json/f7": "^1.2.2",
+    "@iconify-json/hugeicons": "^1.2.27"
   },
   "scripts": {
     "build": "bun build.ts"
