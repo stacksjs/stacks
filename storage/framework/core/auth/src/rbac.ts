@@ -164,11 +164,25 @@ export function setRbacStore(rbacStore: RbacStore): void {
 }
 
 /**
- * Get the current RBAC store
+ * Get the current RBAC store, installing the database-backed default the
+ * first time one is needed.
+ *
+ * Nothing in the framework called `setRbacStore()` outside of tests, so every
+ * RBAC entry point threw "RBAC store not configured" on a fresh install —
+ * including the shipped `buddy seed:roles` command, which could therefore
+ * never succeed. Requiring each caller to wire the only real implementation
+ * is a footgun, not a choice; an explicit `setRbacStore()` still wins, which
+ * is what test suites use to swap in an in-memory double.
+ *
+ * Loaded through `require` rather than a top-level import so the query-builder
+ * dependency stays out of the module graph for consumers that only import RBAC
+ * types, and so an explicitly-set store never pays for it at all.
  */
 function getStore(): RbacStore {
   if (!store) {
-    throw new Error('RBAC store not configured. Call setRbacStore() first.')
+    // eslint-disable-next-line ts/no-require-imports
+    const { createBqbRbacStore } = require('./rbac-store-bqb') as typeof import('./rbac-store-bqb')
+    store = createBqbRbacStore()
   }
   return store
 }

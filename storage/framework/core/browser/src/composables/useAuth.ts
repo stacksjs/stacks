@@ -2,6 +2,7 @@ import type { AuthComposable, AuthUser, ErrorResponse, LoginError, LoginResponse
 import { useStorage } from '@stacksjs/composables'
 /// <reference lib="dom" />
 import { ref } from '@stacksjs/stx'
+import { withCsrfHeader } from './csrf'
 
 const token = useStorage('token', '')
 
@@ -65,9 +66,10 @@ export function useAuth(): AuthComposable {
     const url = `${baseUrl}/register`
     const response = await fetch(url, {
       method: 'POST',
-      headers: {
+      credentials: 'same-origin',
+      headers: withCsrfHeader({
         'Content-Type': 'application/json',
-      },
+      }),
       body: JSON.stringify(user),
     })
 
@@ -98,9 +100,10 @@ export function useAuth(): AuthComposable {
       const url = `${baseUrl}/login`
       const response = await fetch(url, {
         method: 'POST',
-        headers: {
+        credentials: 'same-origin',
+        headers: withCsrfHeader({
           'Content-Type': 'application/json',
-        },
+        }),
         body: JSON.stringify(user),
       })
 
