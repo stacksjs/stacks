@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.181...v0.70.182)
+
+## ✨ Features
+
+- **buddy**: user:add and user:list ([4c08576](https://github.com/stacksjs/stacks/commit/4c08576)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.180...v0.70.181)
 
 ## ✨ Features
