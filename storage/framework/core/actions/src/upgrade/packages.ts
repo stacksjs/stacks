@@ -5,8 +5,8 @@
 // style framework bump. We deliberately use `console.*` + `process.exit` here
 // (same as framework.ts) because the calling script exits synchronously.
 /* eslint-disable no-console */
-import { existsSync, readFileSync, writeFileSync } from 'node:fs'
-import { join } from 'node:path'
+import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs'
+import { join, relative } from 'node:path'
 import process from 'node:process'
 import { runCommand } from '@stacksjs/cli'
 
@@ -186,7 +186,14 @@ export async function upgradeStacksPackages(projectRoot: string, options: Packag
   const lockstep = lockstepPackages(metaDeps, target)
   const changes = applyBumps(pkg, target, lockstep)
 
-  if (changes.length === 0 && !options.force) {
+  // The root manifest is not the whole story. An app that keeps parts of the
+  // framework in its own tree has manifests under storage/framework that
+  // declare their own @stacksjs/* dependencies, and an upgrade that ignores
+  // them leaves the app describing two framework versions at once — or, once
+  // a vendored core is removed, unable to install at all.
+  const manifestChanges = reconcileVendoredManifests(projectRoot, target, { dryRun: options.dryRun })
+
+  if (changes.length === 0 && manifestChanges.length === 0 && !options.force) {
     console.log('✔ Already up to date — every framework dependency matches the target.\n')
     process.exit(0)
   }
@@ -196,6 +203,14 @@ export async function upgradeStacksPackages(projectRoot: string, options: Packag
     const width = Math.max(...changes.map(c => c.name.length))
     for (const c of changes)
       console.log(`    ${c.name.padEnd(width)}  ${c.from}  →  ${c.to}`)
+    console.log('')
+  }
+
+  if (manifestChanges.length > 0) {
+    console.log(`  Vendored manifests under storage/framework (${manifestChanges.length}):`)
+    const width = Math.max(...manifestChanges.map(c => c.name.length))
+    for (const c of manifestChanges)
+      console.log(`    ${c.name.padEnd(width)}  ${c.from}  →  ${c.to}   ${c.file}`)
     console.log('')
   }
 
@@ -238,4 +253,148 @@ export async function upgradeStacksPackages(projectRoot: string, options: Packag
 
   console.log(`\n✔ Upgraded to stacks@${target}. Review the changelog: https://github.com/stacksjs/stacks/releases/tag/v${target}\n`)
   process.exit(0)
+}
+
+/** One manifest the reconcile rewrote, for reporting. */
+export interface ManifestChange {
+  /** Path relative to the project root. */
+  file: string
+  name: string
+  from: string
+  to: string
+}
+
+/**
+ * Decide the spec a vendored manifest's framework dependency should carry.
+ *
+ * Returns null when it is already correct, or when the dependency is not one
+ * the framework versions in lockstep.
+ *
+ * `workspace:*` is the case that matters. An app that vendored
+ * `storage/framework/core` had every `@stacksjs/*` package present locally, so
+ * the manifests under `storage/framework/**` pointed at them by workspace
+ * reference. Delete that directory to move onto published packages and those
+ * references resolve to nothing: `bun install` fails outright with
+ * "@stacksjs/utils@workspace:* failed to resolve", and the app cannot install
+ * at all until every one of them is rewritten by hand.
+ */
+export function resolveManifestSpec(name: string, spec: string, target: string): string | null {
+  if (name !== 'stacks' && !name.startsWith('@stacksjs/'))
+    return null
+
+  if (spec.startsWith('workspace:'))
+    return `^${target}`
+
+  // A pinned or ranged version that is already on target needs nothing.
+  if (baseVersion(spec) === target)
+    return null
+
+  // Leave anything exotic (a git url, a file: link, a tag) alone: it was set
+  // deliberately and guessing at it would be worse than leaving it.
+  if (!/^[\^~]?\d/.test(spec))
+    return null
+
+  const prefix = /^[\^~]/.test(spec) ? spec[0] : ''
+  return `${prefix}${target}`
+}
+
+/**
+ * Point the vendored `storage/framework/**` manifests at the target version.
+ *
+ * The root package.json is not the whole story for an app that keeps parts of
+ * the framework in its own tree. Those manifests declare their own
+ * `@stacksjs/*` dependencies, and an upgrade that ignores them leaves the app
+ * describing two different framework versions at once - or, after a vendored
+ * core is removed, unable to install.
+ *
+ * Returns what changed so the caller can report it. Writes nothing when
+ * `dryRun` is set.
+ */
+export function reconcileVendoredManifests(
+  projectRoot: string,
+  target: string,
+  options: { dryRun?: boolean } = {},
+): ManifestChange[] {
+  const root = join(projectRoot, 'storage/framework')
+  if (!existsSync(root))
+    return []
+
+  const changes: ManifestChange[] = []
+
+  const walk = (dir: string): void => {
+    let entries: string[]
+    try {
+      entries = readdirSync(dir)
+    }
+    catch {
+      return
+    }
+
+    for (const entry of entries) {
+      // Skip installed and built trees: their manifests are not ours to edit.
+      if (entry === 'node_modules' || entry === 'dist' || entry === '.git')
+        continue
+
+      const full = join(dir, entry)
+      let stat
+      try {
+        stat = statSync(full)
+      }
+      catch {
+        continue
+      }
+
+      if (stat.isDirectory()) {
+        walk(full)
+        continue
+      }
+
+      if (entry !== 'package.json')
+        continue
+
+      let raw: string
+      try {
+        raw = readFileSync(full, 'utf-8')
+      }
+      catch {
+        continue
+      }
+
+      let pkg: PkgJson
+      try {
+        pkg = JSON.parse(raw) as PkgJson
+      }
+      catch {
+        // A malformed manifest is the app's to fix; skipping beats throwing
+        // in the middle of an upgrade.
+        continue
+      }
+
+      let touched = false
+      for (const field of ['dependencies', 'devDependencies'] as const) {
+        const deps = pkg[field]
+        if (!deps)
+          continue
+
+        for (const [name, spec] of Object.entries(deps)) {
+          const next = resolveManifestSpec(name, spec, target)
+          if (!next)
+            continue
+
+          changes.push({ file: relative(projectRoot, full), name, from: spec, to: next })
+          deps[name] = next
+          touched = true
+        }
+      }
+
+      if (touched && !options.dryRun) {
+        // Match the trailing newline convention of the file we read.
+        const suffix = raw.endsWith('\n') ? '\n' : ''
+        writeFileSync(full, `${JSON.stringify(pkg, null, 2)}${suffix}`)
+      }
+    }
+  }
+
+  walk(root)
+  return changes
 }
