@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.186...v0.70.187)
+
+## 🐛 Bug Fixes
+
+- **lint**: update the pantry pickier, which was undoing the mail fix ([d13bc05](https://github.com/stacksjs/stacks/commit/d13bc05)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.185...v0.70.186)
 
 ## 🐛 Bug Fixes
