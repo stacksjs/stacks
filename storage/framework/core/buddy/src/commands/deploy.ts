@@ -1585,7 +1585,35 @@ export async function provisionMailTenant(ip: string, logger: typeof log): Promi
 
   const domain: string | undefined = cfg.domain
     || (typeof cfg.from?.address === 'string' && cfg.from.address.includes('@') ? cfg.from.address.split('@')[1] : undefined)
-  const forwards: Record<string, string[]> = (cfg.forwards && typeof cfg.forwards === 'object') ? cfg.forwards : {}
+  const declaredForwards: Record<string, string[]> = (cfg.forwards && typeof cfg.forwards === 'object') ? cfg.forwards : {}
+
+  /*
+   * An alias with no mailbox of its own needs its bare local part as the key.
+   *
+   * The server looks a forward up by the mailbox it delivered to: the full
+   * address when that address is a registered mailbox, and the bare local
+   * part when it is not. So `'akki@example.com': ['someone@example.com']`
+   * — the obvious way to write an alias — silently did nothing, and the mail
+   * piled up in a mailbox nobody reads.
+   *
+   * Both keys are written for an address that has no declared mailbox. The
+   * bare one is not domain-scoped, so it is only added when nothing else has
+   * claimed it: on a shared server another tenant may already own that local
+   * part.
+   */
+  const forwards: Record<string, string[]> = { ...declaredForwards }
+  const declaredBoxes = new Set(domain ? resolveMailboxes(cfg.mailboxes, domain).map(b => b.address) : [])
+  for (const [key, targets] of Object.entries(declaredForwards)) {
+    const at = key.indexOf('@')
+    if (at === -1 || declaredBoxes.has(key))
+      continue
+
+    const localPart = key.slice(0, at)
+    if (key.slice(at + 1) !== domain || forwards[localPart])
+      continue
+
+    forwards[localPart] = targets
+  }
   const hasForwards = Object.keys(forwards).length > 0
   const boxes = domain ? resolveMailboxes(cfg.mailboxes, domain) : []
 
@@ -1678,6 +1706,41 @@ if [ -n "$BOXES_B64" ] && [ -x "$MS" ]; then
     fi
   done
 fi
+# 3b) Put the tenant's own mail hostname on the mail certificate.
+#
+# A person setting up Mail.app types mail.<their domain>, not the shared host.
+# Without that name on the certificate the client says "unable to verify
+# account name or password", which sounds like a wrong password and is really
+# a wrong hostname.
+#
+# acme:renew cannot do this: it renews an existing certificate with the SAN
+# list already inside it and skips names that have no certificate file of
+# their own. Adding a name takes an acme:issue for the union of the names
+# already on the certificate plus this one.
+CERTFILE=/etc/bun-gateway/certs/mail.stacksjs.com.crt
+RENEW=/opt/mail/renew-mail-cert.sh
+if [ -n "$DOMAIN" ] && [ -f "$CERTFILE" ] && [ -d /opt/tlsx ]; then
+  MAILHOSTNAME="mail.$DOMAIN"
+  CURRENT=$(openssl x509 -in "$CERTFILE" -noout -text 2>/dev/null | grep -A1 'Subject Alternative Name' | tail -1 | tr -d ' ' | sed 's/DNS://g')
+  case ",$CURRENT," in
+    *",$MAILHOSTNAME,"*) : ;;
+    *)
+      ALL="$CURRENT,$MAILHOSTNAME"
+      if (cd /opt/tlsx && /usr/local/bin/bun run packages/tlsx/bin/cli.ts acme:issue -d "$ALL" --method http-01 --webroot /var/www/acme-challenge --dir /etc/bun-gateway/certs --prod) >/tmp/.mailtenant-cert 2>&1; then
+        install -m 644 /etc/bun-gateway/certs/mail.stacksjs.com.crt /etc/letsencrypt/live/mail.stacksjs.com/fullchain.pem
+        install -m 640 -g mail-server /etc/bun-gateway/certs/mail.stacksjs.com.key /etc/letsencrypt/live/mail.stacksjs.com/privkey.pem
+        systemctl restart mail || true
+        # Keep the scheduled renewal issuing the same set, or the name drops
+        # off the certificate at the next renewal.
+        [ -f "$RENEW" ] && ! grep -q "$MAILHOSTNAME" "$RENEW" && sed -i "s|acme:renew -d \"|acme:renew -d \"$MAILHOSTNAME,|" "$RENEW" 2>/dev/null
+        echo "CERTHOST:$MAILHOSTNAME"
+      else
+        echo "CERTFAIL:$(tail -c 200 /tmp/.mailtenant-cert | tr '\\n' ' ')"
+      fi
+      rm -f /tmp/.mailtenant-cert
+      ;;
+  esac
+fi
 # 4) Merge auto-forward rules into forwards.json (live-reloaded; no restart).
 if [ -n "$FWD_B64" ] && [ -x /usr/local/bin/bun ]; then
   echo "$FWD_B64" | base64 -d > /tmp/.mailtenant-fwd.json
@@ -1689,14 +1752,14 @@ if [ -n "$FWD_B64" ] && [ -x /usr/local/bin/bun ]; then
   # while forwards.json sat untouched.
   /usr/local/bin/bun --bun -e '
     const fs=require("fs"); const f="/opt/mail/forwards.json";
-    const cur={}; try{cur=JSON.parse(fs.readFileSync(f,"utf8"))}catch{}
+    let cur={}; try{cur=JSON.parse(fs.readFileSync(f,"utf8"))}catch{}
     const add=JSON.parse(fs.readFileSync("/tmp/.mailtenant-fwd.json","utf8"));
     const readme=fs.readFileSync("/tmp/.mailtenant-readme.txt","utf8");
     const merged={...cur}; delete merged._readme;
     for(const [k,v] of Object.entries(add)) merged[k]=v;
     const out={_readme:readme,...merged};
     const s=JSON.stringify(out,null,2)+"\\n";
-    const prev=""; try{prev=fs.readFileSync(f,"utf8")}catch{}
+    let prev=""; try{prev=fs.readFileSync(f,"utf8")}catch{}
     if(s!==prev){ fs.writeFileSync(f,s); process.stdout.write("FWDCHANGED"); }
   ' > /tmp/.mailtenant-res 2>/tmp/.mailtenant-err || true
 # A merge that failed is worth one line, not silence: the rules decide where
@@ -1771,7 +1834,8 @@ if [ "$ENV_CHANGED" = 1 ]; then systemctl restart mail 2>/dev/null || true; echo
       stdio: ['pipe', 'pipe', 'pipe'],
     })
     const line = (out.match(/MAILTENANT:[^\n]*/) || [])[0] || 'MAILTENANT:done'
-    const mailHost = (out.match(/MAILHOST:([^\n]*)/) || [])[1]?.trim() || `mail.${domain}`
+    const mailHostFromOut = (out.match(/MAILHOST:([^\n]*)/) || [])[1]?.trim()
+    const mailHost = mailHostFromOut || `mail.${domain}`
     const dkimPubB64 = (out.match(/DKIMPUB:([^\n]*)/) || [])[1]?.trim() || undefined
     const madeAddrs = new Set([...out.matchAll(/MADE:([^\n]+)/g)].flatMap(m => m[1] ? [m[1].trim()] : []))
     const created = boxes.filter(b => madeAddrs.has(b.address)).map(b => ({ address: b.address, password: b.password }))
@@ -1788,6 +1852,14 @@ if [ "$ENV_CHANGED" = 1 ]; then systemctl restart mail 2>/dev/null || true; echo
     const forwardError = (out.match(/FWDERR:([^\n]*)/) || [])[1]?.trim()
     if (forwardError)
       logger.warn(`Mail: the forward rules were not merged: ${forwardError}`)
+
+    const certHost = (out.match(/CERTHOST:([^\n]*)/) || [])[1]?.trim()
+    if (certHost)
+      logger.success(`Mail: ${certHost} added to the mail certificate — clients can use it as the server name`)
+
+    const certError = (out.match(/CERTFAIL:([^\n]*)/) || [])[1]?.trim()
+    if (certError)
+      logger.warn(`Mail: could not issue a certificate for mail.${domain} (clients should use ${mailHostFromOut || 'the shared mail host'}): ${certError}`)
 
     // Declared, not created, not reported as existing: the reconcile never
     // saw it. Silence here is how a missing mailbox reaches production.
@@ -1899,7 +1971,16 @@ export async function reconcileMailDns(res: MailTenantResult, ip: string, logger
     if (dkim)
       await upsert('TXT', 'mail._domainkey', dkim)
     await upsert('TXT', '_dmarc', dmarc)
-    logger.success(`Mail DNS published for ${domain} (MX→${mailHost}, SPF, DKIM, DMARC)`)
+
+    // `mail.<domain>` pointing at the box, because that is the hostname a
+    // person types into Mail.app or Outlook. Without it the name resolved to
+    // the registrar's parking page and the client reported "unable to verify
+    // account name or password" — which sounds like a bad password and is
+    // really a bad hostname. The certificate for it is arranged separately;
+    // until it exists, clients should use the shared host.
+    await upsert('A', 'mail', ip)
+
+    logger.success(`Mail DNS published for ${domain} (MX→${mailHost}, SPF, DKIM, DMARC, mail.${domain}→${ip})`)
   }
   catch (err) {
     logger.warn(`Mail DNS reconcile skipped for ${domain}: ${getErrorMessage(err)}`)
