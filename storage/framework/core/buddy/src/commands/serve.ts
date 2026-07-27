@@ -390,9 +390,29 @@ export function serveApi(buddy: CLI): void {
       process.env.APP_ENV = process.env.APP_ENV || 'production'
 
       // The api entry is a self-booting server script; importing it starts it.
-      // Resolved from node_modules (or the vendored core) via the package name.
-      await import('@stacksjs/actions/serve/api')
+      await import(resolveApiEntry())
     })
+}
+
+/**
+ * Locate the self-booting API entry.
+ *
+ * `import('@stacksjs/actions/serve/api')` assumed the package was installed
+ * under that name. A vendored checkout has the file on disk but no such
+ * package, so `buddy serve:api` died on "Cannot find module" - on the very
+ * checkouts where the source is sitting right there. Production was unaffected
+ * because its start command names the vendored path directly, which meant the
+ * break only ever showed up locally.
+ *
+ * Same shape as the defaults/middleware resolvers: on-disk wins, package is
+ * the fallback for a node_modules install.
+ */
+function resolveApiEntry(): string {
+  const vendored = join(process.cwd(), 'storage/framework/core/actions/src/serve/api.ts')
+  if (existsSync(vendored))
+    return vendored
+
+  return '@stacksjs/actions/serve/api'
 }
 
 /**
