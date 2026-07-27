@@ -1,7 +1,8 @@
 <script server>
 // Web sidebar for the dashboard. Framework-owned nav chrome: the markup is
 // built server-side in resources/functions/dashboard/sidebar.ts and the look
-// lives in the @apply <style> block at the bottom of this file. Sections come
+// lives in the plain-CSS <style> block below (stx does not expand Crosswind
+// @apply in a layout <style>, so it is hand-written). Sections come
 // from the discovered-models manifest + config/dashboard.ts toggles.
 // Project-root-anchored (`~/`), not relative. The stx client bundler resolves a
 // relative import against the PAGE that extends this layout, not against this
@@ -18,6 +19,14 @@ import { buildSidebarChunks } from '~/storage/framework/defaults/resources/funct
 // effect below reads directly for role gating.
 export const sidebarChunks = buildSidebarChunks()
 </script>
+
+<!-- Dashboard icon stylesheet. Most dashboard icons are applied via dynamic
+    `:class="…"` bindings whose class names live in <script> state, which the stx
+    Crosswind extractor can't see — so their CSS is never generated inline and they
+    render as empty boxes. The dev server generates the full icon set once and serves
+    it here (browser-cached), instead of inlining ~260KB into every page. Route:
+    `/__deps/dashboard-icons.css` in storage/framework/core/actions/src/dev/dashboard.ts. -->
+<link rel="stylesheet" href="/__deps/dashboard-icons.css">
 
 <style>
 /*

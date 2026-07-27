@@ -134,7 +134,45 @@ async function startStxServer(): Promise<void> {
   const depRoutes: Record<string, string> = {
     '/__deps/charts.js': storagePath('framework/core/charts/dist/index.js'),
   }
+
+  // Dashboard icons render through Crosswind icon classes (`i-hugeicons-*`), but most are
+  // applied via dynamic bindings — `:class="stat.icon"` — whose values live in `<script>`
+  // state. The stx Crosswind extractor only sees static `class="…"` and string literals
+  // written inline inside `:class="…"`, so dynamically-bound icons never get CSS generated
+  // and render as empty boxes. Generate the CSS for every icon the dashboard references
+  // (framework defaults + userland overrides) ONCE and serve it as a browser-cached
+  // stylesheet the layout links, rather than inlining ~260KB of icon CSS into every page.
+  // The matching <link> is injected by the dashboard layout — see
+  // `storage/framework/defaults/views/dashboard/layouts/default.stx`.
+  let dashboardIconCss: Promise<string> | null = null
+  async function buildDashboardIconCss(): Promise<string> {
+    const { generateCrosswindCSS } = await import('@stacksjs/stx')
+    const dirs = [dashboardPath, userDashboardPath, storagePath('framework/defaults/resources/components/Dashboard')]
+    const icons = new Set<string>()
+    for (const dir of dirs) {
+      if (!existsSync(dir))
+        continue
+      const glob = new Bun.Glob('**/*.stx')
+      for await (const file of glob.scan({ cwd: dir, absolute: true })) {
+        const text = await Bun.file(file).text()
+        // `i-collection-name` icon tokens; two+ segments avoids matching `i-foo`.
+        for (const match of text.matchAll(/\bi-[a-z][a-z0-9]*(?:-[a-z0-9]+)+/g))
+          icons.add(match[0])
+      }
+    }
+    if (icons.size === 0)
+      return ''
+    return generateCrosswindCSS(`<div class="${[...icons].join(' ')}"></div>`, process.cwd())
+  }
+
   const configRoutes: Record<string, (req: Request) => Response | Promise<Response>> = {
+    '/__deps/dashboard-icons.css': async () => {
+      if (!dashboardIconCss)
+        dashboardIconCss = buildDashboardIconCss()
+      return new Response(await dashboardIconCss, {
+        headers: { 'content-type': 'text/css; charset=utf-8', 'cache-control': 'no-cache' },
+      })
+    },
     ...Object.fromEntries(
       Object.entries(depRoutes).map(([url, file]) => [
         url,
