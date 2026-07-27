@@ -1,4 +1,6 @@
 import type { CLI } from '@stacksjs/types'
+import { lstatSync, readlinkSync } from 'node:fs'
+import { resolve } from 'node:path'
 import process from 'node:process'
 import { bold, dim, green, intro, log, onUnknownSubcommand, red, yellow } from "@stacksjs/cli"
 import { feature } from '@stacksjs/config'
@@ -73,6 +75,39 @@ export function doctor(buddy: CLI): void {
       await intro('buddy doctor')
 
       const checks: HealthCheck[] = []
+
+      // A node_modules that belongs to a different project
+      //
+      // Symlinking node_modules at another checkout is an easy way to skip an
+      // install, and it quietly makes every resolution — and every subsequent
+      // `bun install` — belong to that other project. It is invisible: the app
+      // runs, tests pass, and then a lockfile-driven CI resolves something
+      // else entirely and nobody can reproduce it locally.
+      const modulesPath = resolve(process.cwd(), 'node_modules')
+      try {
+        if (lstatSync(modulesPath).isSymbolicLink()) {
+          const target = resolve(process.cwd(), readlinkSync(modulesPath))
+          const insideProject = target.startsWith(`${resolve(process.cwd())}/`)
+
+          checks.push({
+            name: 'Dependency tree',
+            status: insideProject ? 'warn' : 'fail',
+            message: insideProject
+              ? `node_modules is a symlink to ${target}`
+              : `node_modules is a symlink to ${target}, which belongs to another project — installs here mutate it, and what runs locally is not what the lockfile resolves. Remove the link and run \`bun install\`.`,
+          })
+        }
+        else {
+          checks.push({ name: 'Dependency tree', status: 'pass', message: 'node_modules is this project\'s own' })
+        }
+      }
+      catch {
+        checks.push({
+          name: 'Dependency tree',
+          status: 'warn',
+          message: 'node_modules is missing — run `bun install`',
+        })
+      }
 
       // Check Bun version against the framework minimum
       const bunVersion = process.versions.bun
@@ -654,7 +689,13 @@ export function doctor(buddy: CLI): void {
         log.error('Some critical checks failed. Please address the issues above.')
         // `--no-fail` (options.fail === false) keeps exit 0 for CI ramp-up;
         // default behavior exits 1 so doctor gates upgrades/CI out of the box.
-        if (options?.fail !== false) process.exit(1)
+        if (options?.fail !== false) {
+          // `log` writes asynchronously: exiting here without flushing threw
+          // away the whole report, so a failing doctor printed nothing at all
+          // and looked like a broken command rather than a failed check.
+          await log.flush()
+          process.exit(1)
+        }
       }
       else if (hasWarnings) {
         log.info(yellow('Some checks have warnings. Your system should work but may have issues.'))
