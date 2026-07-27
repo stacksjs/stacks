@@ -1605,7 +1605,12 @@ export async function provisionMailTenant(ip: string, logger: typeof log): Promi
     + 'from config/email.ts (merge-based — hand edits to other keys are preserved).'
   const readmeB64 = Buffer.from(readme).toString('base64')
   // address<TAB>password per mailbox, base64'd as one blob for the shell hop.
-  const boxesB64 = boxes.length ? Buffer.from(boxes.map(b => `${b.address}\t${b.password}`).join('\n')).toString('base64') : ''
+  //
+  // The trailing newline matters: `while read` returns non-zero on a final
+  // line with no terminator and leaves the loop before the body runs, so the
+  // LAST mailbox in config/email.ts was silently never created. It reported
+  // success either way, because the caller only counts the MADE lines.
+  const boxesB64 = boxes.length ? Buffer.from(`${boxes.map(b => `${b.address}\t${b.password}`).join('\n')}\n`).toString('base64') : ''
 
   // One idempotent, merge-based reconcile script. Emits keyed lines the caller
   // parses: MAILHOST:, DKIMPUB:, MADE:<addr>, and a final MAILTENANT:<state>.
@@ -1763,6 +1768,21 @@ if [ "$ENV_CHANGED" = 1 ]; then systemctl restart mail 2>/dev/null || true; echo
     const created = boxes.filter(b => madeAddrs.has(b.address)).map(b => ({ address: b.address, password: b.password }))
 
     logger.success(`Mail routing reconciled (${line.replace('MAILTENANT:', '')})`)
+
+    // A mailbox the server refused is worth saying out loud. This used to be
+    // swallowed: only MADE lines were read, so a declared mailbox that never
+    // appeared looked exactly like one that already existed.
+    const failed = [...out.matchAll(/FAIL:([^\n]+)/g)].flatMap(m => m[1] ? [m[1].trim()] : [])
+    if (failed.length)
+      logger.warn(`Mail: the server refused ${failed.length} mailbox(es): ${failed.join(', ')}`)
+
+    // Declared, not created, not reported as existing: the reconcile never
+    // saw it. Silence here is how a missing mailbox reaches production.
+    const seen = new Set([...madeAddrs, ...[...out.matchAll(/EXISTS:([^\n]+)/g)].flatMap(m => m[1] ? [m[1].trim()] : [])])
+    const unaccounted = boxes.filter(b => !seen.has(b.address)).map(b => b.address)
+    if (unaccounted.length)
+      logger.warn(`Mail: ${unaccounted.length} declared mailbox(es) were not reconciled: ${unaccounted.join(', ')}`)
+
     if (created.length) {
       logger.info(`Mail: created ${created.length} mailbox(es) — credentials below (save them; shown once):`)
       for (const b of created)
