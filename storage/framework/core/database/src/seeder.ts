@@ -55,6 +55,33 @@ export const PROTECTED_MODELS: readonly string[] = Object.freeze([
 ])
 
 /**
+ * Models whose rows are people, not fixtures.
+ *
+ * A seeded row is allowed to attach itself to a parent that already exists —
+ * that is how a seeded flight finds a seeded field. It is not allowed to
+ * attach itself to an *account*. These tables hold real sign-ins on any
+ * database that is not a scratch copy, and pointing invented rows at them
+ * hands one customer another customer's fabricated data: a farmer signs in
+ * and finds fields they have never seen, on a holding they do not own.
+ *
+ * Foreign keys to these models are left null. Which account owns a seeded
+ * row is a decision for the app that seeded it (a `demo:account` command, a
+ * fixture, a migration), not something a factory should guess.
+ *
+ * `allowProtected: true` (`./buddy seed --allow-protected`) opts back in.
+ */
+export const ACCOUNT_MODELS: readonly string[] = Object.freeze([
+  'User',
+  'Team',
+  'Customer',
+])
+
+/** Test whether a model holds accounts rather than fixtures. */
+export function isAccountModel(name: string): boolean {
+  return ACCOUNT_MODELS.includes(name)
+}
+
+/**
  * Test whether a model name is on the protected list.
  * Exported for downstream tooling (CI lint rules, custom seeders) so the
  * list stays a single source of truth.
@@ -108,6 +135,16 @@ export interface SeederConfig {
    * `./buddy seed --allow-protected`. (stacksjs/stacks#1852)
    */
   allowProtected?: boolean
+
+  /**
+   * Add rows to tables that already have some, instead of skipping them.
+   *
+   * The default refuses to touch a non-empty table, and `fresh` empties every
+   * table first. Neither answers "this database already has real rows in it
+   * and I want some seeded ones as well" — the case every demo account on a
+   * live deployment runs into, where `fresh` would take the real rows with it.
+   */
+  append?: boolean
 }
 
 /**
@@ -431,7 +468,7 @@ async function existingRows(table: string): Promise<Record<string, unknown>[]> {
  * adopted, and every later parent is drawn only from rows that agree with
  * them.
  */
-async function relationColumns(model: SeederModel): Promise<Record<string, unknown>[]> {
+async function relationColumns(model: SeederModel, options: SeederConfig = {}): Promise<Record<string, unknown>[]> {
   const parents = parentModels(model)
   if (parents.length === 0)
     return []
@@ -441,6 +478,10 @@ async function relationColumns(model: SeederModel): Promise<Record<string, unkno
     const column = `${snakeCase(parent)}_id`
     // A model that declares the key itself keeps its own factory for it.
     if (model.attributes[column] || model.attributes[parent])
+      continue
+
+    // Never hand a seeded row to somebody's account (see ACCOUNT_MODELS).
+    if (isAccountModel(parent) && !options.allowProtected)
       continue
 
     const rows = await existingRows(`${snakeCase(parent)}s`)
@@ -506,9 +547,9 @@ export function chooseRelations(
   })
 }
 
-async function generateRecords(model: SeederModel): Promise<Record<string, unknown>[]> {
+async function generateRecords(model: SeederModel, options: SeederConfig = {}): Promise<Record<string, unknown>[]> {
   const records: Record<string, unknown>[] = []
-  const relations = await relationColumns(model)
+  const relations = await relationColumns(model, options)
 
   for (let i = 0; i < model.count; i++) {
     // A factory that throws is reported on the first record and then stays
@@ -553,14 +594,14 @@ async function seedModel(model: SeederModel, options: SeederConfig): Promise<See
       throw tableErr
     }
 
-    if (!options.fresh) {
+    if (!options.fresh && !options.append) {
       const existing = await db.selectFrom(model.table)
         .selectAll()
         .limit(1)
         .executeTakeFirst()
       if (existing) {
         if (options.verbose) {
-          log.info(`  ${model.name}: table already has rows — skipping (use --fresh to replace)`)
+          log.info(`  ${model.name}: table already has rows — skipping (--append to add more, --fresh to replace)`)
         }
         return {
           model: model.name,
@@ -573,7 +614,7 @@ async function seedModel(model: SeederModel, options: SeederConfig): Promise<See
     }
 
     // Generate records
-    const records = await generateRecords(model)
+    const records = await generateRecords(model, options)
 
     if (records.length === 0) {
       return {

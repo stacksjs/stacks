@@ -24,8 +24,9 @@ export function seed(buddy: CLI): void {
     // Pass --allow-protected to override.
     .option('--allow-protected', 'Seed auth/oauth models even on a non-fresh DB (will invalidate live tokens)', { default: false })
     .option('--fresh', 'Truncate tables before seeding', { default: false })
+    .option('--append', 'Add rows to tables that already have some, instead of skipping them', { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
-    .action(async (options: SeedOptions & { only?: string, except?: string, includeDefaults?: boolean, allowProtected?: boolean, fresh?: boolean, verbose?: boolean }) => {
+    .action(async (options: SeedOptions & { only?: string, except?: string, includeDefaults?: boolean, allowProtected?: boolean, fresh?: boolean, append?: boolean, verbose?: boolean }) => {
       log.debug('Running `buddy seed` ...', options)
 
       const perf = await intro('buddy seed')
@@ -44,6 +45,7 @@ export function seed(buddy: CLI): void {
       const summary = await seedDatabase({
         verbose: options.verbose,
         fresh: options.fresh,
+        append: options.append,
         only: list(options.only),
         except: list(options.except),
         includeDefaults: options.includeDefaults,

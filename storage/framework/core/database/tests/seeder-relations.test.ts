@@ -88,3 +88,19 @@ describe('chooseRelations', () => {
     expect(chooseRelations([], 10)).toEqual([])
   })
 })
+
+/**
+ * Attaching a seeded row to a parent that already exists is the point. Doing
+ * it to an *account* is not: on any database that is not a scratch copy those
+ * rows are people, and a seeded holding pointed at one hands a farmer fields
+ * they have never seen.
+ */
+describe('account foreign keys', () => {
+  it('is not filled from the account table', async () => {
+    const { isAccountModel } = await import('../src/seeder')
+
+    expect(isAccountModel('User')).toBe(true)
+    expect(isAccountModel('Team')).toBe(true)
+    expect(isAccountModel('Farm')).toBe(false)
+  })
+})
