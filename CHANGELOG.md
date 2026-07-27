@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.188...v0.70.189)
+
+## 🐛 Bug Fixes
+
+- **env**: look for the private key of the environment whose file was loaded ([cca4664](https://github.com/stacksjs/stacks/commit/cca4664)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.187...v0.70.188)
 
 ## 🐛 Bug Fixes
