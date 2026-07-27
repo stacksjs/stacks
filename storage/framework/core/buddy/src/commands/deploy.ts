@@ -1752,14 +1752,14 @@ if [ -n "$FWD_B64" ] && [ -x /usr/local/bin/bun ]; then
   # while forwards.json sat untouched.
   /usr/local/bin/bun --bun -e '
     const fs=require("fs"); const f="/opt/mail/forwards.json";
-    const cur={}; try{cur=JSON.parse(fs.readFileSync(f,"utf8"))}catch{}
+    let cur={}; try{cur=JSON.parse(fs.readFileSync(f,"utf8"))}catch{}
     const add=JSON.parse(fs.readFileSync("/tmp/.mailtenant-fwd.json","utf8"));
     const readme=fs.readFileSync("/tmp/.mailtenant-readme.txt","utf8");
     const merged={...cur}; delete merged._readme;
     for(const [k,v] of Object.entries(add)) merged[k]=v;
     const out={_readme:readme,...merged};
     const s=JSON.stringify(out,null,2)+"\\n";
-    const prev=""; try{prev=fs.readFileSync(f,"utf8")}catch{}
+    let prev=""; try{prev=fs.readFileSync(f,"utf8")}catch{}
     if(s!==prev){ fs.writeFileSync(f,s); process.stdout.write("FWDCHANGED"); }
   ' > /tmp/.mailtenant-res 2>/tmp/.mailtenant-err || true
 # A merge that failed is worth one line, not silence: the rules decide where
