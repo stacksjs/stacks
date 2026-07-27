@@ -226,12 +226,12 @@ export const tsCloud: TsCloudConfig = {
     compute: {
       instances: 1,
       // This is the owner of a busy shared host with many Bun services,
-      // dashboards, mail, PostgreSQL, and the rpx gateway. Hetzner `medium`
-      // maps to cx33 (4 vCPU / 8 GB), leaving headroom for deploy-time builds
+      // dashboards, mail, PostgreSQL, and the rpx gateway. Hetzner `large`
+      // maps to cx43 (8 vCPU / 16 GB), leaving headroom for deploy-time builds
       // and avoiding sustained CPU pressure on the previous cx23.
       size: 'large',
       disk: {
-        size: 40,
+        size: 160,
         type: 'ssd', // Provider-agnostic: 'standard', 'ssd', 'premium'
         encrypted: true,
       },

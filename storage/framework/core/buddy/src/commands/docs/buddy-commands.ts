@@ -140,8 +140,24 @@ export async function run(): Promise<void> {
   }
   else {
     if (!existsSync(outputPath)) throw new Error('Buddy command reference is missing; run bun run docs:buddy')
-    if (readFileSync(outputPath, 'utf8') !== expected)
-      throw new Error('Buddy command reference is stale; run bun run docs:buddy')
+
+    const current = readFileSync(outputPath, 'utf8')
+    if (current !== expected) {
+      // Say what differs. "Stale" on its own sends whoever sees it to
+      // regenerate and commit, which is no help at all when the file already
+      // matches on their machine and the difference is the environment the
+      // registry was enumerated in.
+      const currentLines = current.split('\n')
+      const expectedLines = expected.split('\n')
+      const differences: string[] = []
+
+      for (let i = 0; i < Math.max(currentLines.length, expectedLines.length) && differences.length < 6; i++) {
+        if (currentLines[i] !== expectedLines[i])
+          differences.push(`  line ${i + 1}:\n    committed: ${JSON.stringify(currentLines[i] ?? '<end of file>')}\n    generated: ${JSON.stringify(expectedLines[i] ?? '<end of file>')}`)
+      }
+
+      throw new Error(`Buddy command reference is stale; run bun run docs:buddy\n${differences.join('\n')}`)
+    }
     console.log('Buddy command reference matches the runtime registry')
   }
 }
