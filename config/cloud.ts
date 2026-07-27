@@ -229,7 +229,7 @@ export const tsCloud: TsCloudConfig = {
       // dashboards, mail, PostgreSQL, and the rpx gateway. Hetzner `medium`
       // maps to cx33 (4 vCPU / 8 GB), leaving headroom for deploy-time builds
       // and avoiding sustained CPU pressure on the previous cx23.
-      size: 'medium',
+      size: 'large',
       disk: {
         size: 40,
         type: 'ssd', // Provider-agnostic: 'standard', 'ssd', 'premium'

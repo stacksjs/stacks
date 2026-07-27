@@ -1,5 +1,17 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.191...v0.70.192)
+
+## 🐛 Bug Fixes
+
+- **release**: repin the pantry lockfile, and compile against the tree it builds ([0511329](https://github.com/stacksjs/stacks/commit/0511329)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **ci**: get redis from a service container ([4d61310](https://github.com/stacksjs/stacks/commit/4d61310)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **ci**: unbreak the pantry step that has been failing test and conformance ([519e4a3](https://github.com/stacksjs/stacks/commit/519e4a3)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.190...v0.70.191)
 
 ## ✨ Features
