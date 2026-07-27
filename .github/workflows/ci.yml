@@ -108,15 +108,6 @@ jobs:
         ports:
           - 8000:8000
 
-      # Redis via a Docker service container (bundles its own OpenSSL), matching
-      # the mysql/dynamodb services above. The pantry `services: redis@…` binary
-      # was linked against OpenSSL 1.1, which ubuntu-latest (OpenSSL 3) no longer
-      # ships, so `redis-server` died at setup with a missing libssl.so.1.1.
-      redis:
-        image: redis:8
-        ports:
-          - 6379:6379
-
     steps:
       - name: Checkout Code
         uses: actions/checkout@v6
@@ -126,6 +117,7 @@ jobs:
         with:
           version: '0.10.47'
           install: 'false'
+          services: redis@8.8.0
 
       - name: Use cached node_modules
         uses: actions/cache@v5
@@ -146,15 +138,6 @@ jobs:
   protocol-conformance:
     runs-on: ubuntu-latest
 
-    # Redis via a Docker service container (see the test job) instead of the
-    # pantry `services: redis@…` binary, which needs OpenSSL 1.1 that
-    # ubuntu-latest no longer ships.
-    services:
-      redis:
-        image: redis:8
-        ports:
-          - 6379:6379
-
     steps:
       - name: Checkout Code
         uses: actions/checkout@v6
@@ -166,6 +149,7 @@ jobs:
         with:
           version: '0.10.47'
           install: 'false'
+          services: redis@8.8.0
 
       - name: Use cached node_modules
         uses: actions/cache@v5
