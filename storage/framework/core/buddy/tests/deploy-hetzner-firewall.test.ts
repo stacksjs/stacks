@@ -14,8 +14,10 @@
  */
 
 import { describe, expect, it } from 'bun:test'
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { scrubLoopbackSitePortsForFirewall } from '../src/commands/deploy'
+import { loadTsCloudDeployApi, scrubLoopbackSitePortsForFirewall } from '../src/commands/deploy'
 
 /**
  * Mirror of ts-cloud's HetznerDriver.collectUpstreamPorts — the exact set of
@@ -100,5 +102,32 @@ describe('scrubLoopbackSitePortsForFirewall (#1950)', () => {
     const ports = collectUpstreamPorts(scrubLoopbackSitePortsForFirewall(tsCloud).sites)
     expect(ports).toContain(3000)
     expect(ports).not.toContain(3008)
+  })
+})
+
+describe('loadTsCloudDeployApi', () => {
+  it('loads an explicit built module for local ts-cloud dogfooding', async () => {
+    const fixtureDir = mkdtempSync(join(tmpdir(), 'ts-cloud-module-'))
+    const modulePath = join(fixtureDir, 'index.mjs')
+    const previous = process.env.TS_CLOUD_MODULE
+    writeFileSync(modulePath, [
+      'export function createCloudDriver() {}',
+      'export function deployAllComputeSites() {}',
+      'export function ensureManagementDashboard() {}',
+      'export function resolveSiteKind() {}',
+    ].join('\n'))
+    process.env.TS_CLOUD_MODULE = modulePath
+
+    try {
+      const api = await loadTsCloudDeployApi()
+      expect(typeof api.createCloudDriver).toBe('function')
+      expect(typeof api.deployAllComputeSites).toBe('function')
+      expect(typeof api.ensureManagementDashboard).toBe('function')
+      expect(typeof api.resolveSiteKind).toBe('function')
+    } finally {
+      if (previous === undefined) delete process.env.TS_CLOUD_MODULE
+      else process.env.TS_CLOUD_MODULE = previous
+      rmSync(fixtureDir, { force: true, recursive: true })
+    }
   })
 })

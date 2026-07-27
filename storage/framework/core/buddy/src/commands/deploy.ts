@@ -1,8 +1,9 @@
 import type { CLI, DeployOptions } from '@stacksjs/types'
 import { existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs'
 import { homedir } from 'node:os'
-import { join, relative } from 'node:path'
+import { isAbsolute, join, relative, resolve } from 'node:path'
 import process from 'node:process'
+import { pathToFileURL } from 'node:url'
 import { runAction } from '@stacksjs/actions'
 import { italic, onUnknownSubcommand, outro, prompts, runCommand } from "@stacksjs/cli"
 import { app, dns as dnsConfig, email as emailConfig, cloud as cloudConfig } from '@stacksjs/config'
@@ -888,16 +889,31 @@ async function deployToHetzner(tsCloudConfig: any, deployEnv: string, options: D
     process.exit(ExitCode.FatalError)
   }
 
-  const { createCloudDriver, deployAllComputeSites, resolveSiteKind } = await import('@stacksjs/ts-cloud')
+  const { createCloudDriver, deployAllComputeSites, ensureManagementDashboard, resolveSiteKind } = await loadTsCloudDeployApi()
 
   try {
-    await runHetznerDeploy({ tsCloudConfig, environment, verbose, docker: (options as any).docker === true, createCloudDriver, deployAllComputeSites, resolveSiteKind, onlySite: (options as any).site || undefined })
+    await runHetznerDeploy({ tsCloudConfig, environment, verbose, docker: (options as any).docker === true, createCloudDriver, deployAllComputeSites, ensureManagementDashboard, resolveSiteKind, onlySite: (options as any).site || undefined })
   }
   catch (err) {
     log.error('Hetzner deploy failed:')
     console.error(err instanceof Error ? (err.stack || err.message) : err)
     process.exit(ExitCode.FatalError)
   }
+}
+
+/**
+ * Load the ts-cloud driver used by Buddy. Published installs use the declared
+ * package dependency. Framework and ts-cloud development can point at a built
+ * local module with TS_CLOUD_MODULE, avoiding stale nested dependency copies
+ * while still exercising the exact Buddy deploy path.
+ */
+export async function loadTsCloudDeployApi(): Promise<typeof import('@stacksjs/ts-cloud')> {
+  const requested = process.env.TS_CLOUD_MODULE?.trim()
+  if (!requested) return import('@stacksjs/ts-cloud')
+
+  const modulePath = isAbsolute(requested) ? requested : resolve(process.cwd(), requested)
+  if (!existsSync(modulePath)) throw new Error(`TS_CLOUD_MODULE points to a missing module: ${modulePath}`)
+  return import(pathToFileURL(modulePath).href) as Promise<typeof import('@stacksjs/ts-cloud')>
 }
 
 /**
@@ -1084,13 +1100,14 @@ async function runHetznerDeploy(args: {
   docker: boolean
   createCloudDriver: any
   deployAllComputeSites: any
+  ensureManagementDashboard?: (config: any, options: any) => any
   resolveSiteKind: (site: any) => 'bucket' | 'server-app' | 'server-static' | 'server-php' | 'redirect'
   /** Deploy ONLY this site (multi-tenant surgical add). Provisioning still uses
    *  the full config so rpx keeps every existing route; only this site's files
    *  are rebuilt/shipped and only its domain gets a DNS record. */
   onlySite?: string
 }): Promise<void> {
-  const { tsCloudConfig, environment, verbose, docker, createCloudDriver, deployAllComputeSites, resolveSiteKind, onlySite } = args
+  const { tsCloudConfig, environment, verbose, docker, createCloudDriver, deployAllComputeSites, ensureManagementDashboard, resolveSiteKind, onlySite } = args
 
   const startTime = performance.now()
   console.log('')
@@ -1109,7 +1126,6 @@ async function runHetznerDeploy(args: {
   // and best-effort: a UI-resolution hiccup or an older ts-cloud without the
   // export never blocks the app deploy. Set TS_CLOUD_UI_DISABLE=1 to opt out.
   try {
-    const { ensureManagementDashboard } = (await import('@stacksjs/ts-cloud')) as any
     if (typeof ensureManagementDashboard === 'function') {
       ensureManagementDashboard(tsCloudConfig, {
         cwd: process.cwd(),
@@ -1374,6 +1390,9 @@ async function runHetznerDeploy(args: {
     : { ...tsCloudConfig, sites: sitesWithResolvedEnv }
   const ok = await deployAllComputeSites({
     config: deployConfig,
+    // Buddy injects and stages the dashboard before provisioning. Do not let
+    // the shared deploy helper add it back to a narrowed --site deployment.
+    managementDashboard: false,
     // The rpx gateway is ALWAYS regenerated from the full site model, never the
     // narrowed single-site `deployConfig`, so a `--site` deploy can never drop the
     // other sites' routes (the production-incident guard). Use the environment-
@@ -1655,8 +1674,8 @@ ENV_CHANGED=0
 # The 'user:local' CLI is direct-DB and does NOT read /etc/mail/mail.env, so
 # without SMTP_DB_PATH it writes to ./smtp.db (the SSH cwd) — a phantom DB the
 # running server never reads, and auth silently 535s. Point it at the real DB.
-export SMTP_DB_PATH="$(grep -E '^SMTP_DB_PATH=' "$ENVF" 2>/dev/null | head -1 | cut -d= -f2- || true)"
-[ -z "$SMTP_DB_PATH" ] && export SMTP_DB_PATH=/opt/mail/smtp.db
+MAIL_DB_PATH="$(grep -E '^SMTP_DB_PATH=' "$ENVF" 2>/dev/null | head -1 | cut -d= -f2- || true)"
+[ -z "$MAIL_DB_PATH" ] && MAIL_DB_PATH=/opt/mail/smtp.db
 echo "MAILHOST:$(grep -E '^SMTP_HOSTNAME=' "$ENVF" 2>/dev/null | head -1 | cut -d= -f2- || true)"
 # 1) Register the local delivery domain (merge into SMTP_LOCAL_DOMAINS).
 if [ -n "$DOMAIN" ] && [ -f "$ENVF" ]; then
@@ -1699,8 +1718,48 @@ if [ -n "$BOXES_B64" ] && [ -x "$MS" ]; then
     [ -z "$addr" ] && continue
     # NOTE: 'user:local info' exits 0 even when the user is absent (it only
     # prints "not found"), so existence is decided from the OUTPUT, not $?.
-    if "$MS" user:local info "$addr" 2>&1 | grep -qi 'not found'; then
-      if "$MS" user:local create "$addr" "$pw" "$addr" >/dev/null 2>&1; then echo "MADE:$addr"; else echo "FAIL:$addr"; fi
+    if SMTP_DB_PATH="$MAIL_DB_PATH" "$MS" user:local info "$addr" 2>&1 | grep -qi 'not found'; then
+      legacy="\${addr%%@*}"
+      # Older single-domain installs used a bare username whose email is this
+      # full address. Creating the isolated address then hits users.email's
+      # UNIQUE constraint while the CLI still exits zero. Perform mail's
+      # documented username migration transactionally, including every
+      # username-keyed table, before falling back to a true create.
+      migrated=$(MAIL_DB_PATH="$MAIL_DB_PATH" OLD_USERNAME="$legacy" NEW_USERNAME="$addr" /usr/local/bin/bun --bun -e '
+        const { Database } = require("bun:sqlite")
+        const db = new Database(process.env.MAIL_DB_PATH)
+        const oldName = process.env.OLD_USERNAME
+        const newName = process.env.NEW_USERNAME
+        const oldUser = db.query("SELECT 1 AS found FROM users WHERE username=? AND email=?").get(oldName, newName)
+        const newUser = db.query("SELECT 1 AS found FROM users WHERE username=?").get(newName)
+        if (oldUser && !newUser) {
+          db.transaction(() => {
+            for (const table of ["users", "imap_mailboxes", "imap_uids", "webmail_sessions"])
+              db.query("UPDATE " + table + " SET username=? WHERE username=?").run(newName, oldName)
+          })()
+          process.stdout.write("yes")
+        }
+        db.close()
+      ' 2>/dev/null || true)
+      if [ "$migrated" = yes ]; then
+        if [ -d "/opt/mail/mail/$legacy" ] && [ ! -e "/opt/mail/mail/$addr" ]; then
+          mv -- "/opt/mail/mail/$legacy" "/opt/mail/mail/$addr"
+          chown -R mail-server:mail-server "/opt/mail/mail/$addr"
+        fi
+        # The declared config password becomes authoritative after migration.
+        SMTP_DB_PATH="$MAIL_DB_PATH" "$MS" user:local change-password "$addr" "$pw" >/dev/null 2>&1 || true
+      else
+        # The CLI action historically returned zero even when an internal
+        # create failed. Pin the live DB for both calls and verify the row.
+        SMTP_DB_PATH="$MAIL_DB_PATH" "$MS" user:local create "$addr" "$pw" "$addr" >/dev/null 2>&1 || true
+      fi
+      if SMTP_DB_PATH="$MAIL_DB_PATH" "$MS" user:local info "$addr" 2>&1 | grep -qi 'not found'; then
+        echo "FAIL:$addr"
+      elif [ "$migrated" = yes ]; then
+        echo "MIGRATED:$addr"
+      else
+        echo "MADE:$addr"
+      fi
     else
       echo "EXISTS:$addr"
     fi
@@ -1838,6 +1897,7 @@ if [ "$ENV_CHANGED" = 1 ]; then systemctl restart mail 2>/dev/null || true; echo
     const mailHost = mailHostFromOut || `mail.${domain}`
     const dkimPubB64 = (out.match(/DKIMPUB:([^\n]*)/) || [])[1]?.trim() || undefined
     const madeAddrs = new Set([...out.matchAll(/MADE:([^\n]+)/g)].flatMap(m => m[1] ? [m[1].trim()] : []))
+    const migratedAddrs = new Set([...out.matchAll(/MIGRATED:([^\n]+)/g)].flatMap(m => m[1] ? [m[1].trim()] : []))
     const created = boxes.filter(b => madeAddrs.has(b.address)).map(b => ({ address: b.address, password: b.password }))
 
     logger.success(`Mail routing reconciled (${line.replace('MAILTENANT:', '')})`)
@@ -1863,7 +1923,7 @@ if [ "$ENV_CHANGED" = 1 ]; then systemctl restart mail 2>/dev/null || true; echo
 
     // Declared, not created, not reported as existing: the reconcile never
     // saw it. Silence here is how a missing mailbox reaches production.
-    const seen = new Set([...madeAddrs, ...[...out.matchAll(/EXISTS:([^\n]+)/g)].flatMap(m => m[1] ? [m[1].trim()] : [])])
+    const seen = new Set([...madeAddrs, ...migratedAddrs, ...[...out.matchAll(/EXISTS:([^\n]+)/g)].flatMap(m => m[1] ? [m[1].trim()] : [])])
     const unaccounted = boxes.filter(b => !seen.has(b.address)).map(b => b.address)
     if (unaccounted.length)
       logger.warn(`Mail: ${unaccounted.length} declared mailbox(es) were not reconciled: ${unaccounted.join(', ')}`)
@@ -1873,6 +1933,8 @@ if [ "$ENV_CHANGED" = 1 ]; then systemctl restart mail 2>/dev/null || true; echo
       for (const b of created)
         logger.info(`  ${b.address}  ${b.password}`)
     }
+    if (migratedAddrs.size)
+      logger.success(`Mail: migrated ${migratedAddrs.size} legacy mailbox username(s) to isolated full addresses`)
     return domain ? { domain, mailHost, dkimPubB64, created } : null
   }
   catch (err) {
