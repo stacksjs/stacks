@@ -135,6 +135,41 @@ jobs:
           AWS_DYNAMODB_ENDPOINT: http://localhost:8000
         run: bun run test
 
+  compile:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v6
+
+      - name: Setup Pantry
+        uses: pantry-pm/pantry/packages/action@d738d5fd2e543e3b8380e5fbd5d01ba8936c1790 # v0.10.47
+        with:
+          version: '0.10.47'
+          install: 'false'
+
+      - name: Use cached node_modules
+        uses: actions/cache@v5
+        with:
+          path: node_modules
+          key: node-modules-${{ hashFiles('**/bun.lock') }}
+          restore-keys: |
+            node-modules-
+
+      - name: Install Dependencies
+        run: bun install --frozen-lockfile
+
+      # The binaries are built only by the release job, on a tag, after npm
+      # publish. So a dependency that grows a top-level await — which
+      # `bun build --compile` refuses to bundle through a `require()` — took
+      # three releases to notice: the packages published, the compile failed,
+      # and nobody looked. One target here is enough to catch that, and it is
+      # the cheap half of `compile:all`.
+      - name: Compile the buddy binary
+        run: |
+          cd storage/framework/core/buddy
+          bun run compile:linux-x64
+
   protocol-conformance:
     runs-on: ubuntu-latest
 
@@ -221,7 +256,7 @@ jobs:
     if: >-
       github.event_name == 'workflow_dispatch' ||
       (github.event_name == 'push' && github.ref == 'refs/heads/main')
-    needs: [lint, typecheck, test, protocol-conformance, deployment-target]
+    needs: [lint, typecheck, test, compile, protocol-conformance, deployment-target]
     runs-on: ubuntu-latest
     timeout-minutes: 30
     environment:
@@ -280,7 +315,7 @@ jobs:
 
   publish-commit:
     if: github.event_name == 'pull_request'
-    needs: [lint, typecheck, test, protocol-conformance]
+    needs: [lint, typecheck, test, compile, protocol-conformance]
     runs-on: ubuntu-latest
 
     steps:
