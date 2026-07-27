@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.185...v0.70.186)
+
+## 🐛 Bug Fixes
+
+- **mail**: restore the let in the forwards merge, and pin pickier 0.1.43 ([289995c](https://github.com/stacksjs/stacks/commit/289995c)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.184...v0.70.185)
 
 ## 🐛 Bug Fixes
