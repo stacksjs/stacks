@@ -168,6 +168,13 @@ jobs:
       - name: Install Dependencies
         run: bun install --frozen-lockfile
 
+      # The release job resolves through `pantry/`, not `node_modules`, and the
+      # two lockfiles pin different versions — the first attempt at this check
+      # passed here while the release still failed on a package `pantry.lock`
+      # held back. So this installs the same tree the release does.
+      - name: Install the pantry tree
+        run: pantry install
+
       # The binaries are built only by the release job, on a tag, after npm
       # publish. So a dependency that grows a top-level await — which
       # `bun build --compile` refuses to bundle through a `require()` — took
