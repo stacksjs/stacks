@@ -1850,6 +1850,27 @@ export async function reconcileMailDns(res: MailTenantResult, ip: string, logger
     })
     return r.json().catch(() => ({}))
   }
+
+  // Confirm the zone is ours before touching it. `upsert` deletes every record
+  // of a name+type before recreating it, so pointing this at the wrong domain
+  // is destructive — and a project that never edited the scaffold's
+  // `config/email.ts` inherits `domain: 'stacksjs.com'`, which aims this
+  // routine straight at somebody else's MX. A read-only retrieve says whether
+  // these credentials actually administer the zone.
+  const ownership = await call(`dns/retrieve/${domain}`, {})
+  if (ownership?.status !== 'SUCCESS') {
+    logger.warn(
+      `Mail DNS skipped: ${domain} is not administered by these Porkbun credentials `
+      + `(${ownership?.message || 'domain not in this account'}).`,
+    )
+    logger.info(`Set \`domain\` in config/email.ts to a zone you own, or add these records for ${domain} by hand:`)
+    logger.info(`  MX    @                 10 ${mailHost}`)
+    logger.info(`  TXT   @                 ${spf}`)
+    if (dkim) logger.info(`  TXT   mail._domainkey   ${dkim}`)
+    logger.info(`  TXT   _dmarc            ${dmarc}`)
+    return
+  }
+
   // Idempotent upsert: delete every record of this name+type, then recreate.
   const upsert = async (type: string, name: string, content: string, extra: Record<string, unknown> = {}): Promise<void> => {
     const sub = name === '@' ? '' : `/${name}`
