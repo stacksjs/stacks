@@ -40,6 +40,37 @@ export interface GetOptions {
   cwd?: string
 }
 
+/**
+ * Decide which env file a command should act on.
+ *
+ * `buddy` carries a global `--env <environment>` flag, and reaching for it is
+ * the obvious way to say "this secret belongs to production". The env commands
+ * only ever read `-f/--file` though, so `buddy env:set KEY value --env
+ * production` wrote to `.env` — accepted, no warning, wrong file. The value
+ * then sat in the development env encrypted against a production key nobody
+ * holds locally, which surfaces much later as a decryption warning rather than
+ * as the mis-targeted write it actually was.
+ *
+ * `--file` still wins when given, since it names a path outright. `development`
+ * (and an unset environment) keeps the plain `.env` convention, and returns the
+ * empty string so callers fall through to their own defaults unchanged.
+ */
+export function resolveEnvFile(file?: string, environment?: string): string {
+  if (file)
+    return file
+
+  const name = String(environment ?? '').trim()
+  if (!name || name === 'development' || name === 'dev' || name === 'local')
+    return ''
+
+  // Environments name files, so anything that could escape the project root or
+  // name a different file entirely is not an environment.
+  if (!/^[\w.-]+$/.test(name))
+    return ''
+
+  return `.env.${name}`
+}
+
 function encryptedEnvContent(envContent: string, publicKey: string, publicKeyName: string, options: Pick<EncryptOptions, 'key' | 'excludeKey'>): string {
   const encryptedLines: string[] = [
     '#/-------------------[DOTENV_PUBLIC_KEY]--------------------/',

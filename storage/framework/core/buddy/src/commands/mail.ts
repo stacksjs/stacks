@@ -55,7 +55,27 @@ export function mailCommands(buddy: CLI): void {
   buddy
     .command('mail:provision', 'Provision this app\'s mail from config/email.ts onto the shared mail server (domain + DKIM + mailboxes + MX/SPF/DKIM/DMARC DNS). Reusable + idempotent; the same reconcile buddy deploy runs.')
     .option('--ip <ip>', 'Mail server IP (defaults to the A record of config.email.domain)')
-    .action(async (options: { ip?: string }) => {
+    .action(async (options: { ip?: string, env?: string }) => {
+      // Mailbox passwords come from `MAIL_PASSWORD_<LOCALPART>`, which belong in
+      // the target environment's encrypted env file — but nothing here loaded
+      // that file, so `mail:provision --env production` read the development
+      // env, found no passwords, and skipped every mailbox while still
+      // reporting success and advising you to set the very variables it had
+      // just ignored. Load the target environment's decrypted secrets first,
+      // exactly as `buddy deploy` does, so the two paths provision alike.
+      const environment = options.env || process.env.APP_ENV || 'production'
+      process.env.APP_ENV = environment
+      const envFile = `.env.${environment}`
+      if (existsSync(envFile)) {
+        try {
+          const { loadEnv } = await import('@stacksjs/env')
+          loadEnv({ path: envFile, env: environment, keysFile: '.env.keys', overload: true, quiet: true })
+        }
+        catch (err) {
+          log.warn(`Could not load ${envFile}: ${getErrorMessage(err)}`)
+        }
+      }
+
       const { email: emailConfig } = await import('@stacksjs/config')
       const domain: string | undefined = (emailConfig as any)?.domain
       if (!domain) {
@@ -333,9 +353,28 @@ export function mailCommands(buddy: CLI): void {
       const domain = process.env.APP_DOMAIN || process.env.MAIL_DOMAIN || 'stacksjs.com'
       const mailHost = `mail.${domain}`
       const email = emailAddress || `chris@${domain}`
-      const username = email.includes('@') ? email.split('@')[0]! : email
-      const envKey = `MAIL_PASSWORD_${username.toUpperCase()}`
-      const password = process.env[envKey]
+      const localPart = email.includes('@') ? email.split('@')[0]! : email
+
+      // The IMAP/SMTP username is the FULL address. Mailboxes are provisioned
+      // per-domain (`user:local create <addr>`) precisely so two tenants can
+      // both have a `chris`, so a bare local part authenticates as nobody here
+      // and the client reports a bad password. Handing someone the wrong
+      // username is worse than handing them nothing.
+      const username = email
+
+      // Matches the provisioner's key derivation: every character that cannot
+      // appear in an env var name becomes `_`. Without this, `no-reply` looked
+      // for `MAIL_PASSWORD_NO-REPLY`, which is not a legal name and never
+      // matched the `MAIL_PASSWORD_NO_REPLY` the deploy actually reads.
+      const envKey = `MAIL_PASSWORD_${localPart.toUpperCase().replace(/[^A-Z0-9]/g, '_')}`
+      const rawPassword = process.env[envKey]
+
+      // A value that is still ciphertext means this machine holds no private
+      // key for `.env.production`. Printing it would look like a password and
+      // fail every login attempt.
+      const isCiphertext = typeof rawPassword === 'string' && rawPassword.replace(/^["']/, '').startsWith('encrypted:')
+      const password = isCiphertext ? undefined : rawPassword
+
 
       console.log('')
       console.log('==========================================================')
@@ -350,6 +389,8 @@ export function mailCommands(buddy: CLI): void {
 
       if (password) {
         console.log(`  Password:    ${password}`)
+      } else if (isCiphertext) {
+        console.log(`  Password:    (encrypted — this machine has no private key for .env.production)`)
       } else {
         console.log(`  Password:    (not set — add ${envKey} to .env.production)`)
       }
@@ -806,18 +847,34 @@ export function mailCommands(buddy: CLI): void {
 function loadEnvFiles(): void {
   const envPath = '.env.production'
   if (existsSync(envPath)) {
-    const content = readFileSync(envPath, 'utf-8')
-    for (const line of content.split('\n')) {
-      const eq = line.indexOf('=')
-      if (eq > 0 && !line.startsWith('#')) {
-        const key = line.slice(0, eq).trim()
-        const value = line.slice(eq + 1).trim()
-        if (!process.env[key]) {
-          process.env[key] = value
+    // Decrypt on the way in. This used to slice the file on `=` and assign the
+    // raw right-hand side, which for an `encrypted:v2:...` value is the
+    // CIPHERTEXT — so `mail:credentials` printed a 300-character blob where the
+    // password goes, and anyone who pasted it into a mail client got a login
+    // failure that looks like a wrong password. A mailbox password belongs in
+    // the encrypted env; reading it back has to undo that.
+    try {
+      const { loadEnv } = require('@stacksjs/env') as typeof import('@stacksjs/env')
+      loadEnv({ path: envPath, env: 'production', keysFile: '.env.keys', overload: false, quiet: true })
+    }
+    catch {
+      // No private key on this machine (CI, a colleague's checkout): fall back
+      // to the plain values so unencrypted entries still load. Encrypted ones
+      // stay ciphertext, which the caller reports rather than prints as a
+      // usable secret.
+      const content = readFileSync(envPath, 'utf-8')
+      for (const line of content.split('\n')) {
+        const eq = line.indexOf('=')
+        if (eq > 0 && !line.startsWith('#')) {
+          const key = line.slice(0, eq).trim()
+          const value = line.slice(eq + 1).trim()
+          if (!process.env[key])
+            process.env[key] = value
         }
       }
     }
   }
+
 
   // Load AWS credentials from ~/.aws/credentials if not in env
   if (!process.env.AWS_ACCESS_KEY_ID || !process.env.AWS_SECRET_ACCESS_KEY) {

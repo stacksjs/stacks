@@ -179,6 +179,29 @@ export async function loadStxPartialsDir(cwd = process.cwd()): Promise<string | 
  * This is the entry the Hetzner deploy runs as a systemd service
  * (`bun storage/framework/core/buddy/src/cli.ts serve`).
  */
+/**
+ * Locate the scaffold-defaults CSRF middleware, the same way the API router
+ * does: a vendored checkout has it on disk and wins, a node_modules app has no
+ * `storage/framework` at all and resolves the published `@stacksjs/defaults`
+ * package instead. Without the fallback the page server silently stops seeding
+ * CSRF cookies on exactly the deploy shape that can't be debugged by reading
+ * the repo.
+ */
+function resolveCsrfMiddlewarePath(): string {
+  const rel = 'app/Middleware/Csrf.ts'
+  const vendored = join(process.cwd(), 'storage/framework/defaults', rel)
+  if (existsSync(vendored))
+    return vendored
+
+  try {
+    const pkgJson = Bun.resolveSync('@stacksjs/defaults/package.json', process.cwd())
+    return `${pkgJson.slice(0, pkgJson.lastIndexOf('/'))}/${rel}`
+  }
+  catch {
+    return vendored
+  }
+}
+
 export function serve(buddy: CLI): void {
   buddy
     .command('serve', 'Start the production HTTP server (STX views + /api proxy + coming-soon/maintenance gate)')
@@ -315,6 +338,30 @@ export function serve(buddy: CLI): void {
           ;(globalThis as { __stxServeCookies?: Record<string, string> }).__stxServeCookies = parseCookies(req)
 
           return undefined
+        },
+
+        // Seed the CSRF double-submit cookie on safe-method page responses.
+        //
+        // The API router already seeds it, but pages are rendered HERE, and a
+        // browser only ever loads a page first. So a visitor who opened
+        // /login and submitted the form had no cookie to echo, and the
+        // default-on CSRF middleware rejected the POST with 403 — sign-in was
+        // impossible for anyone whose first request wasn't an API GET. The
+        // token has to ride the HTML that carries the form.
+        onResponse: async (req: Request, response: Response) => {
+          const method = req.method.toUpperCase()
+          if (method !== 'GET' && method !== 'HEAD')
+            return
+
+          try {
+            const { seedCsrfCookieIfMissing } = await import(resolveCsrfMiddlewarePath())
+            return seedCsrfCookieIfMissing(req, response)
+          }
+          catch (error) {
+            // Never fail a page render over a cookie — the CSRF middleware
+            // still rejects unsafe requests, so this is fail-closed.
+            log.debug(`CSRF cookie seeding skipped: ${(error as Error).message}`)
+          }
         },
       })
 

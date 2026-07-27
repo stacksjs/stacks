@@ -1,7 +1,7 @@
 import type { CLI } from '@stacksjs/types'
 import process from 'node:process'
 import { log, onUnknownSubcommand } from "@stacksjs/cli"
-import { decryptEnv, encryptEnv, getEnv, getKeypair, rotateKeypair, setEnv } from '@stacksjs/env'
+import { decryptEnv, encryptEnv, getEnv, getKeypair, resolveEnvFile, rotateKeypair, setEnv } from '@stacksjs/env'
 import { ExitCode } from '@stacksjs/types'
 
 interface EnvOptions {
@@ -21,6 +21,8 @@ interface EnvOptions {
   verbose: boolean
   file: string
   plain: boolean
+  /** The global `--env <environment>` flag, e.g. `production`. */
+  env: string
 }
 
 export function env(buddy: CLI): void {
@@ -62,7 +64,7 @@ export function env(buddy: CLI): void {
       log.debug('Running `buddy env:get` ...', options)
 
       const result = getEnv(key, {
-        file: options.file,
+        file: resolveEnvFile(options.file, options.env),
         keysFile: options.fileKeys,
         all: options.all,
         format: options.format as 'json' | 'shell' | 'eval',
@@ -98,7 +100,7 @@ export function env(buddy: CLI): void {
       }
 
       const result = setEnv(key, value, {
-        file: options.file,
+        file: resolveEnvFile(options.file, options.env),
         keysFile: options.fileKeys,
         plain: options.plain,
       })
@@ -126,7 +128,7 @@ export function env(buddy: CLI): void {
       log.debug('Running `buddy env:encrypt` ...', options)
 
       const result = encryptEnv({
-        file: options.file,
+        file: resolveEnvFile(options.file, options.env),
         keysFile: options.fileKeys,
         key,
         excludeKey: options.excludeKey,
@@ -155,7 +157,7 @@ export function env(buddy: CLI): void {
       log.debug('Running `buddy env:decrypt` ...', options)
 
       const result = decryptEnv({
-        file: options.file,
+        file: resolveEnvFile(options.file, options.env),
         keysFile: options.fileKeys,
         key,
         stdout: options.stdout,
@@ -183,7 +185,7 @@ export function env(buddy: CLI): void {
       log.debug('Running `buddy env:keypair` ...', options)
 
       const result = getKeypair(key, {
-        file: options.file,
+        file: resolveEnvFile(options.file, options.env),
         keysFile: options.fileKeys,
         format: options.format as 'json' | 'shell',
       })
@@ -210,7 +212,7 @@ export function env(buddy: CLI): void {
       log.debug('Running `buddy env:rotate` ...', options)
 
       const result = rotateKeypair({
-        file: options.file,
+        file: resolveEnvFile(options.file, options.env),
         keysFile: options.fileKeys,
         key,
         excludeKey: options.excludeKey,
