@@ -683,7 +683,7 @@
       "name": "@stacksjs/lint",
       "version": "0.70.186",
       "dependencies": {
-        "pickier": "^0.1.40",
+        "pickier": "0.1.43",
       },
       "devDependencies": {
         "better-dx": "^0.2.17",

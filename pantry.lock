@@ -2442,19 +2442,10 @@
       "source": "pantry",
       "resolved": "registry:perl.org@5.42.1"
     },
-    "pickier@0.1.40": {
+    "pickier@0.1.43": {
       "name": "pickier",
-      "version": "0.1.40",
-      "source": "npm",
-      "resolved": "https://registry.npmjs.org/pickier/-/pickier-0.1.40.tgz",
-      "integrity": "sha512-4zE0pNkJxg03SOaSziuSX5ZPIwwLczmjINUlNdrBhfHKlSp5DbAf3ExXlYCoFDk4YLmnVqXS/K9z5p4h7rvBGg==",
-      "dependencies": {
-        "@stacksjs/clapp": "^0.2.3",
-        "@stacksjs/clarity": "^0.3.24"
-      },
-      "bin": {
-        "pickier": "./dist/bin/cli.js"
-      }
+      "version": "0.1.43",
+      "source": "npm"
     },
     "sqlite.org@3.53.4": {
       "name": "sqlite.org",
