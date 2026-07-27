@@ -1,5 +1,16 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.184...v0.70.185)
+
+## 🐛 Bug Fixes
+
+- **mail**: make an alias in config/email.ts actually forward ([18dcb9e](https://github.com/stacksjs/stacks/commit/18dcb9e)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **env,mail,serve**: make secrets, mailbox provisioning and sign-in work ([16fc531](https://github.com/stacksjs/stacks/commit/16fc531)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.183...v0.70.184)
 
 ## 🐛 Bug Fixes
