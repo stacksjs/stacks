@@ -49,7 +49,7 @@ function showJson<T>(sourceRevision: string, path: string): T {
 
 function category(path: string): string {
   if (/(^|\/)(test|tests|__tests__)(\/|$)|\.(test|spec)\.[^.]+$/.test(path)) return 'tests'
-  if (path.startsWith('protocol/suite/')) return 'vendored-protocol'
+  if (path.startsWith('.github/protocol/suite/')) return 'vendored-protocol'
   if (/(^|\/)(dist|generated|coverage)(\/|$)|\.d\.ts$/.test(path)) return 'generated'
   if (/\.(md|mdx|rst|txt)$/.test(path) || /(^|\/)docs\//.test(path)) return 'documentation'
   if (/(^|\/)(config|configs|\.github)(\/|$)|(^|\/)(tsconfig|package|bun\.lock|pantry)\b/.test(path)) return 'configuration'
@@ -92,7 +92,7 @@ export function buildSourceManifest(requestedRevision: string): SourceManifest {
     return [{ name: pkg.name, path, version: pkg.version, publishable: pkg.private !== true }]
   }).sort((a, b) => a.name.localeCompare(b.name) || a.path.localeCompare(b.path))
   const rootPackage = showJson<{ system?: Record<string, string> }>(sourceRevision, 'package.json')
-  const suiteLock = showJson<{ protocolVersion: string, rfcsRevision: string }>(sourceRevision, 'protocol/suite.lock.json')
+  const suiteLock = showJson<{ protocolVersion: string, rfcsRevision: string }>(sourceRevision, '.github/protocol/suite.lock.json')
 
   return {
     schemaVersion: '1.0.0',

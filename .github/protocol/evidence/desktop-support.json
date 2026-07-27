@@ -20,7 +20,7 @@
       "notarization": "pending",
       "installLaunchEvidence": "https://github.com/stacksjs/stacks/actions/runs/29890804159",
       "updateRollbackEvidence": "https://github.com/stacksjs/stacks/actions/runs/29890804159",
-      "packagingEvidence": "https://github.com/stacksjs/stacks/blob/main/protocol/evidence/craft.json",
+      "packagingEvidence": "https://github.com/stacksjs/stacks/blob/main/.github/protocol/evidence/craft.json",
       "blockingIssues": [
         "https://github.com/stacksjs/stacks/issues/2062",
         "https://github.com/home-lang/craft/issues/11"
@@ -42,7 +42,7 @@
       "notarization": "pending",
       "installLaunchEvidence": "https://github.com/stacksjs/stacks/actions/runs/29890804159",
       "updateRollbackEvidence": "https://github.com/stacksjs/stacks/actions/runs/29890804159",
-      "packagingEvidence": "https://github.com/stacksjs/stacks/blob/main/protocol/evidence/craft.json",
+      "packagingEvidence": "https://github.com/stacksjs/stacks/blob/main/.github/protocol/evidence/craft.json",
       "blockingIssues": [
         "https://github.com/stacksjs/stacks/issues/2062",
         "https://github.com/home-lang/craft/issues/11"
@@ -64,7 +64,7 @@
       "notarization": "not-applicable",
       "installLaunchEvidence": "https://github.com/stacksjs/stacks/actions/runs/29890804159",
       "updateRollbackEvidence": "https://github.com/stacksjs/stacks/actions/runs/29890804159",
-      "packagingEvidence": "https://github.com/stacksjs/stacks/blob/main/protocol/evidence/craft.json",
+      "packagingEvidence": "https://github.com/stacksjs/stacks/blob/main/.github/protocol/evidence/craft.json",
       "blockingIssues": [
         "https://github.com/stacksjs/stacks/issues/2062",
         "https://github.com/home-lang/craft/issues/11"
@@ -86,7 +86,7 @@
       "notarization": "not-applicable",
       "installLaunchEvidence": "https://github.com/stacksjs/stacks/actions/runs/29890804159",
       "updateRollbackEvidence": "https://github.com/stacksjs/stacks/actions/runs/29890804159",
-      "packagingEvidence": "https://github.com/stacksjs/stacks/blob/main/protocol/evidence/craft.json",
+      "packagingEvidence": "https://github.com/stacksjs/stacks/blob/main/.github/protocol/evidence/craft.json",
       "blockingIssues": [
         "https://github.com/stacksjs/stacks/issues/2062",
         "https://github.com/home-lang/craft/issues/11"

@@ -101,7 +101,7 @@
     "local": [
       "bun test packages/typescript/src/package.test.ts scripts/native-lifecycle-plan.test.ts",
       "bun run typecheck",
-      "bun scripts/native-lifecycle.ts"
+      "bun .github/scripts/native-lifecycle.ts"
     ],
     "retained": "https://github.com/stacksjs/stacks/actions/runs/29890804159"
   }

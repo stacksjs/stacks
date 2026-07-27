@@ -6,7 +6,7 @@ description: Generated reference for every Buddy command, argument, option, alia
 
 # Buddy Command Reference
 
-This reference is generated from Buddy's runtime command registry and currently contains **266 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
+This reference is generated from Buddy's runtime command registry and currently contains **271 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
 
 ## Command groups
 
@@ -34,6 +34,7 @@ This reference is generated from Buddy's runtime command registry and currently 
 | `generate` | 11 |
 | `inspire` | 1 |
 | `key` | 1 |
+| `link` | 1 |
 | `lint` | 1 |
 | `mail` | 13 |
 | `make` | 18 |
@@ -61,7 +62,10 @@ This reference is generated from Buddy's runtime command registry and currently 
 | `stripe` | 1 |
 | `test` | 4 |
 | `types` | 2 |
+| `unlink` | 1 |
+| `unpublish` | 1 |
 | `upgrade` | 5 |
+| `user` | 2 |
 
 ## Commands
 
@@ -1877,6 +1881,27 @@ Examples:
 buddy launch
 ```
 
+### `link:core`
+
+Point this app's @stacksjs/* at a local framework checkout
+
+- Usage: `$ buddy link:core [...packages]`
+- Namespace: `link`
+- Aliases: none
+- Arguments: `[packages...]`
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `--path` | Framework checkout to link against | value, required | — |
+| `--all` | Link every core package the app has installed | boolean, optional | `false` |
+
+Examples:
+
+```bash
+buddy link:core auth router
+buddy link:core --all --path ../stacks
+```
+
 ### `lint`
 
 Automagically lints your project codebase
@@ -3511,6 +3536,7 @@ Seed your database
 | `--include-defaults` | Also seed the framework's built-in models | boolean, optional | `false` |
 | `--allow-protected` | Seed auth/oauth models even on a non-fresh DB (will invalidate live tokens) | boolean, optional | `false` |
 | `--fresh` | Truncate tables before seeding | boolean, optional | `false` |
+| `--append` | Add rows to tables that already have some, instead of skipping them | boolean, optional | `false` |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
 
 ### `seed:roles`
@@ -3927,6 +3953,40 @@ Generate the types of & for your library/libraries
 | `-p`, `--project` | Target a specific project | value, optional | `false` |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
 
+### `unlink:core`
+
+Go back to the installed @stacksjs/* packages
+
+- Usage: `$ buddy unlink:core [...packages]`
+- Namespace: `unlink`
+- Aliases: none
+- Arguments: `[packages...]`
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `--all` | Unlink everything that was linked | boolean, optional | `false` |
+
+Examples:
+
+```bash
+buddy unlink:core
+```
+
+### `unpublish:core`
+
+Drop a vendored storage/framework/core/<pkg>/ and go back to the installed @stacksjs/<pkg>
+
+- Usage: `$ buddy unpublish:core [pkg]`
+- Namespace: `unpublish`
+- Aliases: none
+- Arguments: `[pkg]`
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `--all` | Unvendor the whole framework: remove storage/framework/core and resolve every @stacksjs package from the `stacks` dependency in package.json | boolean, optional | `false` |
+| `--force` | Delete the vendored source even when it has uncommitted changes | boolean, optional | `false` |
+| `--verbose` | Enable verbose output | boolean, optional | `false` |
+
 ### `up`
 
 Bring the application out of maintenance mode
@@ -4077,6 +4137,42 @@ Examples:
 ```bash
 buddy upgrade:shell
 ```
+
+### `user:add`
+
+Create a user account (optionally an admin)
+
+- Usage: `$ buddy user:add <email>`
+- Namespace: `user`
+- Aliases: none
+- Arguments: `<email>`
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `--name` | Display name. Defaults to the local part of the email. | value, required | — |
+| `--password` | Password. Generated and printed once if omitted. | value, required | — |
+| `--role` | Role to assign, e.g. admin. Seeds the default roles if the table is empty. | value, required | — |
+| `--update` | If the account already exists, reset its password and ensure the role | boolean, optional | `false` |
+
+Examples:
+
+```bash
+buddy user:add chris@example.com --role admin
+buddy user:add support@example.com --name Support --password s3cret
+```
+
+### `user:list`
+
+List the accounts that can sign in
+
+- Usage: `$ buddy user:list`
+- Namespace: `user`
+- Aliases: none
+- Arguments: none
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `--limit` | How many to show | value, required | `"25"` |
 
 ### `version`
 
