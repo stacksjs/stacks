@@ -1,4 +1,5 @@
 export * from './csrf'
+export * from './request-error'
 export * from './useAuth'
 export * from './useApi'
 
