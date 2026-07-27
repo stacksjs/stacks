@@ -226,12 +226,11 @@ export const tsCloud: TsCloudConfig = {
     compute: {
       instances: 1,
       // This is the owner of a busy shared host with many Bun services,
-      // dashboards, mail, PostgreSQL, and the rpx gateway. Hetzner `large`
-      // maps to cx43 (8 vCPU / 16 GB), leaving headroom for deploy-time builds
-      // and avoiding sustained CPU pressure on the previous cx23.
-      size: 'large',
+      // dashboards, mail, PostgreSQL, and the rpx gateway. Hetzner `medium`
+      // maps to cx33 (4 vCPU / 8 GB), doubling the previous cx23 capacity.
+      size: 'medium',
       disk: {
-        size: 160,
+        size: 80,
         type: 'ssd', // Provider-agnostic: 'standard', 'ssd', 'premium'
         encrypted: true,
       },
@@ -246,6 +245,15 @@ export const tsCloud: TsCloudConfig = {
       // Deploy-time Bun installs can briefly exceed physical headroom on this
       // shared host. Low-swappiness swap prevents a box-wide OOM cascade.
       swapGb: 4,
+      autoUpdates: true,
+      monitoring: {
+        enabled: true,
+        alerts: {
+          cpuLoadPerCore: 1.5,
+          memPercent: 85,
+          diskPercent: 80,
+        },
+      },
       webServer: 'rpx',
       proxy: {
         engine: 'rpx',
