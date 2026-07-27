@@ -1,5 +1,16 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.187...v0.70.188)
+
+## 🐛 Bug Fixes
+
+- **user**: flush the log before exiting on failure ([8cf1808](https://github.com/stacksjs/stacks/commit/8cf1808)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **seeder**: keep a seeded row's parents consistent, and empty tables children-first ([13f6c5c](https://github.com/stacksjs/stacks/commit/13f6c5c)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.186...v0.70.187)
 
 ## 🐛 Bug Fixes
