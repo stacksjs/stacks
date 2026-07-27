@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.192...v0.70.193)
+
+## 🐛 Bug Fixes
+
+- **protocol**: point the manifest generator at .github/protocol ([5acad00](https://github.com/stacksjs/stacks/commit/5acad00)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2133](https://github.com/stacksjs/stacks/issues/2133))
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.191...v0.70.192)
 
 ## 🐛 Bug Fixes
