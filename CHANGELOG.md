@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.183...v0.70.184)
+
+## 🐛 Bug Fixes
+
+- **mail**: the forward rules were never merged ([f97a019](https://github.com/stacksjs/stacks/commit/f97a019)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.182...v0.70.183)
 
 ## 🐛 Bug Fixes
