@@ -1,5 +1,26 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.190...v0.70.191)
+
+## ✨ Features
+
+- **browser**: describe request failures in words a person can act on ([16e3174](https://github.com/stacksjs/stacks/commit/16e3174)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🐛 Bug Fixes
+
+- **release**: make the buddy binaries build and run again ([57f7944](https://github.com/stacksjs/stacks/commit/57f7944)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **ci**: run redis as a Docker service container, not a pantry binary (#2197) ([b76b12a](https://github.com/stacksjs/stacks/commit/b76b12a)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2197](https://github.com/stacksjs/stacks/issues/2197), [#2197](https://github.com/stacksjs/stacks/issues/2197))
+- **dashboard**: render Crosswind icons in the dev dashboard (#2196) ([923ae9b](https://github.com/stacksjs/stacks/commit/923ae9b)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2196](https://github.com/stacksjs/stacks/issues/2196), [#2196](https://github.com/stacksjs/stacks/issues/2196))
+
+## 🎉 Miscellaneous
+
+- Revert "fix(ci): run redis as a Docker service container, not a pantry binary (#2197)" (#2198) ([869292d](https://github.com/stacksjs/stacks/commit/869292d)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2197](https://github.com/stacksjs/stacks/issues/2197), [#2198](https://github.com/stacksjs/stacks/issues/2198), [#2197](https://github.com/stacksjs/stacks/issues/2197), [#2198](https://github.com/stacksjs/stacks/issues/2198))
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+- _Glenn Michael Torregosa <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.189...v0.70.190)
 
 ## ✨ Features
