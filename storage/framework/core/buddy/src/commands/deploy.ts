@@ -1682,18 +1682,27 @@ fi
 if [ -n "$FWD_B64" ] && [ -x /usr/local/bin/bun ]; then
   echo "$FWD_B64" | base64 -d > /tmp/.mailtenant-fwd.json
   echo "$README_B64" | base64 -d > /tmp/.mailtenant-readme.txt
+  # \`let\`, not \`const\`: both of these were const with an assignment inside a
+  # try, which Bun rejects at parse time ("this assignment will throw because
+  # X is a constant"). The whole snippet therefore never ran, stderr was sent
+  # to /dev/null, and every reconcile since has reported forwards=nochange
+  # while forwards.json sat untouched.
   /usr/local/bin/bun --bun -e '
     const fs=require("fs"); const f="/opt/mail/forwards.json";
-    const cur={}; try{cur=JSON.parse(fs.readFileSync(f,"utf8"))}catch{}
+    let cur={}; try{cur=JSON.parse(fs.readFileSync(f,"utf8"))}catch{}
     const add=JSON.parse(fs.readFileSync("/tmp/.mailtenant-fwd.json","utf8"));
     const readme=fs.readFileSync("/tmp/.mailtenant-readme.txt","utf8");
     const merged={...cur}; delete merged._readme;
     for(const [k,v] of Object.entries(add)) merged[k]=v;
     const out={_readme:readme,...merged};
     const s=JSON.stringify(out,null,2)+"\\n";
-    const prev=""; try{prev=fs.readFileSync(f,"utf8")}catch{}
+    let prev=""; try{prev=fs.readFileSync(f,"utf8")}catch{}
     if(s!==prev){ fs.writeFileSync(f,s); process.stdout.write("FWDCHANGED"); }
-  ' > /tmp/.mailtenant-res 2>/dev/null || true
+  ' > /tmp/.mailtenant-res 2>/tmp/.mailtenant-err || true
+# A merge that failed is worth one line, not silence: the rules decide where
+# mail goes.
+if [ -s /tmp/.mailtenant-err ]; then echo "FWDERR:$(head -c 200 /tmp/.mailtenant-err | tr '\\n' ' ')"; fi
+rm -f /tmp/.mailtenant-err
   chown mail-server:mail-server "$FJSON" 2>/dev/null || true
   chmod 644 "$FJSON" 2>/dev/null || true
   rm -f /tmp/.mailtenant-fwd.json /tmp/.mailtenant-readme.txt
@@ -1775,6 +1784,10 @@ if [ "$ENV_CHANGED" = 1 ]; then systemctl restart mail 2>/dev/null || true; echo
     const failed = [...out.matchAll(/FAIL:([^\n]+)/g)].flatMap(m => m[1] ? [m[1].trim()] : [])
     if (failed.length)
       logger.warn(`Mail: the server refused ${failed.length} mailbox(es): ${failed.join(', ')}`)
+
+    const forwardError = (out.match(/FWDERR:([^\n]*)/) || [])[1]?.trim()
+    if (forwardError)
+      logger.warn(`Mail: the forward rules were not merged: ${forwardError}`)
 
     // Declared, not created, not reported as existing: the reconcile never
     // saw it. Silence here is how a missing mailbox reaches production.
