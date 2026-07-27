@@ -2733,7 +2733,7 @@ Check if the ports are available
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
-| `-p`, `--project` | Target a specific project | value, optional | `"/Users/chris/Code/stacks"` |
+| `-p`, `--project` | Target a specific project | value, optional | `"<project root>"` |
 | `-q`, `--quiet` | Use minimal output | boolean, optional | `false` |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
 

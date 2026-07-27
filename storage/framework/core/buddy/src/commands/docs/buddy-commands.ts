@@ -19,6 +19,23 @@ function code(value: unknown): string {
   return `\`${String(value).replaceAll('`', '\\`')}\``
 }
 
+/**
+ * Strip the absolute path of whoever generated the file.
+ *
+ * A default that comes from `process.cwd()` renders as the generating
+ * machine's checkout - a home directory on a laptop, `/home/runner/work/...`
+ * on CI - so the committed reference could never match what CI generated, and
+ * the check failed for everyone with a message that only said "stale". It
+ * also meant a contributor's directory layout was published in the docs.
+ */
+function stablePath(value: unknown): unknown {
+  if (typeof value !== 'string' || !value.includes(root))
+    return value
+
+  return value.replaceAll(root, '<project root>')
+}
+
+
 function optionFlags(option: BuddyCommandInventoryOption): string {
   return option.flags.map(flag => code(`${flag.length === 1 ? '-' : '--'}${flag}`)).join(', ')
 }
@@ -54,7 +71,7 @@ function commandSection(command: BuddyCommandInventoryEntry): string {
       '',
       '| Option | Description | Contract | Default |',
       '| --- | --- | --- | --- |',
-      ...command.options.map(option => `| ${optionFlags(option)} | ${markdown(option.description || '—')} | ${optionKind(option)} | ${option.default === undefined ? '—' : code(JSON.stringify(option.default))} |`),
+      ...command.options.map(option => `| ${optionFlags(option)} | ${markdown(option.description || '—')} | ${optionKind(option)} | ${option.default === undefined ? '—' : code(JSON.stringify(stablePath(option.default)))} |`),
     )
   }
 
