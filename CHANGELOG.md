@@ -1,5 +1,17 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.182...v0.70.183)
+
+## 🐛 Bug Fixes
+
+- **deploy**: verify zone ownership before rewriting mail DNS ([a71fa66](https://github.com/stacksjs/stacks/commit/a71fa66)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **auth**: configure the RBAC store by default and echo CSRF from the client ([7bbe600](https://github.com/stacksjs/stacks/commit/7bbe600)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **mail**: stop dropping the last mailbox in config/email.ts ([50b43ca](https://github.com/stacksjs/stacks/commit/50b43ca)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.181...v0.70.182)
 
 ## ✨ Features
