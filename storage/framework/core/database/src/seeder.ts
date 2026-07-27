@@ -292,7 +292,7 @@ function isPasswordField(fieldName: string, attr: Attribute): boolean {
 async function generateRecord(
   attributes: Record<string, Attribute>,
   modelName: string,
-  verbose: boolean = false,
+  report: boolean = false,
 ): Promise<Record<string, unknown>> {
   const record: Record<string, unknown> = {}
 
@@ -310,8 +310,8 @@ async function generateRecord(
       }
       catch (err) {
         const errorMsg = err instanceof Error ? err.message : String(err)
-        if (verbose) {
-          log.warn(`  Factory failed for ${modelName}.${fieldName}: ${errorMsg}`)
+        if (report) {
+          log.warn(`  Factory failed for ${modelName}.${fieldName}: ${errorMsg} — seeding the default instead.`)
         }
         // Use default if available, otherwise use sensible fallbacks based on likely type
         if (attr.default !== undefined) {
@@ -338,9 +338,9 @@ async function generateRecord(
       }
       catch (err) {
         const errorMsg = err instanceof Error ? err.message : String(err)
-        if (verbose) {
-          log.warn(`  Failed to hash password for ${modelName}.${fieldName}: ${errorMsg}`)
-        }
+        // Always: the fallback writes the password in the clear, so nobody can
+        // sign in and nothing says why.
+        log.warn(`  Failed to hash password for ${modelName}.${fieldName}: ${errorMsg}`)
         // Keep the unhashed value as fallback
       }
     }
@@ -396,14 +396,130 @@ function fixtureToColumns(fixture: Record<string, unknown>): Record<string, unkn
   return out
 }
 
-async function generateRecords(model: SeederModel, verbose: boolean = false): Promise<Record<string, unknown>[]> {
+/**
+ * The rows already in a parent's table, for pointing a foreign key at.
+ *
+ * Whole rows rather than bare ids: a parent's own foreign keys are what keep
+ * a child's several parents consistent with each other (see below). Empty
+ * when the table is missing or empty, in which case the key is left null
+ * rather than pointing at a row that does not exist.
+ */
+async function existingRows(table: string): Promise<Record<string, unknown>[]> {
+  try {
+    return await db.selectFrom(table).selectAll().limit(500).execute() as Record<string, unknown>[]
+  }
+  catch {
+    return []
+  }
+}
+
+/**
+ * Fill the foreign keys a model's `belongsTo` implies.
+ *
+ * Without this a seeded database has rows but no edges: every field belongs to
+ * no farm, every detection to no flight, and an app that joins them renders
+ * nothing at all. The parent is picked at random from the rows that exist,
+ * which is what makes the seeded graph look like a real one rather than a
+ * hundred children hanging off row 1.
+ *
+ * Picking each parent independently is not enough once a model has more than
+ * one. A flight that belongs to both a farm and a field would get a random
+ * farm and a random field, and the field would usually belong to some other
+ * farm - rows that satisfy every foreign key and describe something that
+ * cannot happen. So each pick is constrained by the picks already made: the
+ * parent whose own row carries the most foreign keys goes first, its keys are
+ * adopted, and every later parent is drawn only from rows that agree with
+ * them.
+ */
+async function relationColumns(model: SeederModel): Promise<Record<string, unknown>[]> {
+  const parents = parentModels(model)
+  if (parents.length === 0)
+    return []
+
+  const pools: { column: string, rows: Record<string, unknown>[] }[] = []
+  for (const parent of parents) {
+    const column = `${snakeCase(parent)}_id`
+    // A model that declares the key itself keeps its own factory for it.
+    if (model.attributes[column] || model.attributes[parent])
+      continue
+
+    const rows = await existingRows(`${snakeCase(parent)}s`)
+    if (rows.length > 0)
+      pools.push({ column, rows })
+  }
+
+  return chooseRelations(pools, model.count)
+}
+
+/**
+ * Choose one consistent set of parent ids per record.
+ *
+ * Split out from the query above so the rule can be exercised without a
+ * database: given the parent rows, the same input always produces rows whose
+ * foreign keys agree with one another.
+ */
+export function chooseRelations(
+  pools: { column: string, rows: Record<string, unknown>[] }[],
+  count: number,
+): Record<string, unknown>[] {
+  if (pools.length === 0)
+    return []
+
+  // The columns this model is filling: only these are worth inheriting from a
+  // parent row, and only these can constrain a later pick.
+  const wanted = new Set(pools.map(pool => pool.column))
+
+  /** How many of the other foreign keys this parent's rows carry. */
+  const specificity = (pool: { column: string, rows: Record<string, unknown>[] }): number => {
+    const sample = pool.rows[0] ?? {}
+    return [...wanted].filter(column => column !== pool.column && column in sample).length
+  }
+
+  const ordered = [...pools].sort((a, b) => specificity(b) - specificity(a))
+
+  return Array.from({ length: count }, () => {
+    const row: Record<string, unknown> = {}
+
+    for (const pool of ordered) {
+      // An ancestor already inherited from an earlier, more specific parent.
+      if (row[pool.column] != null)
+        continue
+
+      const agrees = (candidate: Record<string, unknown>): boolean =>
+        [...wanted].every(column => row[column] == null || candidate[column] == null || candidate[column] === row[column])
+
+      const candidates = pool.rows.filter(agrees)
+      const from = candidates.length > 0 ? candidates : pool.rows
+      const chosen = from[Math.floor(Math.random() * from.length)]!
+
+      row[pool.column] = chosen.id
+
+      // Adopt the parent's own keys, so a flight sits on the farm its field
+      // belongs to rather than on a farm of its own.
+      for (const column of wanted) {
+        if (column !== pool.column && row[column] == null && chosen[column] != null)
+          row[column] = chosen[column]
+      }
+    }
+
+    return row
+  })
+}
+
+async function generateRecords(model: SeederModel): Promise<Record<string, unknown>[]> {
   const records: Record<string, unknown>[] = []
+  const relations = await relationColumns(model)
 
   for (let i = 0; i < model.count; i++) {
-    // Only log factory failures for the first record to avoid spam
-    const record = await generateRecord(model.attributes, model.name, verbose && i === 0)
+    // A factory that throws is reported on the first record and then stays
+    // quiet, so one broken attribute does not print once per row. It is
+    // reported whether or not `--verbose` was passed: the failure is silently
+    // replaced with a default, and a column that comes out null across the
+    // whole table is otherwise indistinguishable from one nobody declared.
+    const record = await generateRecord(model.attributes, model.name, i === 0)
     const fixture = model.fixtures[i]
-    records.push(fixture ? { ...record, ...fixtureToColumns(fixture) } : record)
+    const withRelations = { ...record, ...(relations[i] ?? {}) }
+    records.push(fixture ? { ...withRelations, ...fixtureToColumns(fixture) } : withRelations)
   }
 
   return records
@@ -457,7 +573,7 @@ async function seedModel(model: SeederModel, options: SeederConfig): Promise<See
     }
 
     // Generate records
-    const records = await generateRecords(model, options.verbose)
+    const records = await generateRecords(model)
 
     if (records.length === 0) {
       return {
@@ -466,19 +582,6 @@ async function seedModel(model: SeederModel, options: SeederConfig): Promise<See
         count: 0,
         success: true,
         duration: Date.now() - startTime,
-      }
-    }
-
-    // Truncate table if fresh option is enabled
-    if (options.fresh) {
-      try {
-        await db.deleteFrom(model.table).execute()
-        if (options.verbose) {
-          log.info(`  Truncated table: ${model.table}`)
-        }
-      }
-      catch {
-        // Table might not exist yet, ignore
       }
     }
 
@@ -526,27 +629,87 @@ async function seedModel(model: SeederModel, options: SeederConfig): Promise<See
   }
 }
 
-/**
- * Sort models by dependencies (basic implementation)
- * Models with foreign keys should be seeded after their dependencies
- */
-function sortModelsByDependencies(models: SeederModel[]): SeederModel[] {
-  // For now, use a simple heuristic:
-  // - User model first (many things depend on it)
-  // - Models without relationships next
-  // - Models with relationships last
+/** The models a model declares it belongs to, however the relation is written. */
+function parentModels(model: SeederModel): string[] {
+  const belongsTo = (model.model as { belongsTo?: unknown }).belongsTo
 
-  const priority: Record<string, number> = {
-    User: 0,
-    Team: 1,
-    Project: 2,
+  if (Array.isArray(belongsTo))
+    return belongsTo.map(entry => (typeof entry === 'string' ? entry : String((entry as { model?: string })?.model ?? ''))).filter(Boolean)
+
+  if (belongsTo && typeof belongsTo === 'object')
+    return Object.values(belongsTo as Record<string, unknown>).map(value => String((value as { model?: string })?.model ?? value)).filter(Boolean)
+
+  return []
+}
+
+/**
+ * Order the models so a parent is always seeded before its children.
+ *
+ * This used to be a hardcoded list of three names — User, Team, Project —
+ * which meant any other graph seeded in directory order and children were
+ * written before the rows they point at existed. The order now comes from the
+ * models' own `belongsTo` declarations, which is where the app already says
+ * what depends on what.
+ *
+ * A cycle (two models that belong to each other) cannot be ordered; those are
+ * emitted last, in their original order, rather than dropped.
+ */
+/**
+ * Empty every seedable table before a fresh seed.
+ *
+ * In reverse dependency order, and in one pass before any seeding starts.
+ * Clearing each table just before its own insert ran parents-first, so
+ * emptying `farms` while `fields` still pointed at them raised a foreign key
+ * error — which was swallowed as "the table might not exist". The seed then
+ * appended to a table it believed it had emptied, and every `--fresh` run
+ * left more rows behind than the last.
+ */
+async function clearTables(models: SeederModel[], verbose?: boolean): Promise<void> {
+  for (const model of [...models].reverse()) {
+    try {
+      await db.deleteFrom(model.table).execute()
+      if (verbose)
+        log.info(`  Truncated table: ${model.table}`)
+    }
+    catch (error) {
+      const message = error instanceof Error ? error.message : String(error)
+
+      // A table that has not been migrated yet is not a problem; anything
+      // else is, and staying quiet about it is what hid this for so long.
+      if (/no such table|doesn't exist|does not exist/i.test(message))
+        continue
+
+      throw new Error(`Could not empty ${model.table} before seeding: ${message}`)
+    }
+  }
+}
+
+function sortModelsByDependencies(models: SeederModel[]): SeederModel[] {
+  const byName = new Map(models.map(model => [model.name, model]))
+  const ordered: SeederModel[] = []
+  const state = new Map<string, 'visiting' | 'done'>()
+
+  const visit = (model: SeederModel): void => {
+    const status = state.get(model.name)
+    if (status === 'done' || status === 'visiting')
+      return
+
+    state.set(model.name, 'visiting')
+
+    for (const parentName of parentModels(model)) {
+      const parent = byName.get(parentName)
+      if (parent && parent !== model)
+        visit(parent)
+    }
+
+    state.set(model.name, 'done')
+    ordered.push(model)
   }
 
-  return models.sort((a, b) => {
-    const priorityA = priority[a.name] ?? 10
-    const priorityB = priority[b.name] ?? 10
-    return priorityA - priorityB
-  })
+  for (const model of models)
+    visit(model)
+
+  return ordered
 }
 
 /**
@@ -628,6 +791,9 @@ export async function seed(config: SeederConfig = {}): Promise<SeedSummary> {
   if (verbose) {
     log.info(`Found ${models.length} seedable model(s)`)
   }
+
+  if (config.fresh)
+    await clearTables(models, verbose)
 
   // Seed each model
   const results: SeedResult[] = []
