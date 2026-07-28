@@ -102,7 +102,7 @@
   </div>
 
   <div class="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 mt-6">
-    <template :for="campaign in paginatedCampaigns()">
+    <template :for="campaign in paginatedCampaigns">
       <div class="overflow-hidden bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700 shadow-sm hover:shadow-md transition-shadow">
         <div class="p-6">
           <div class="flex items-start justify-between">

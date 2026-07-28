@@ -66,14 +66,14 @@
           </tr>
         </thead>
         <tbody class="divide-black/5 divide-y dark:divide-white/5">
-          @foreach(recentJobs() as job)
+          <template :for="job in recentJobs">
             <tr class="dark:bg-neutral-800/[0.02] hover:bg-black/[0.02] dark:hover:bg-white transition-colors">
               <td class="pl-5 pr-3 py-3.5 whitespace-nowrap">
                 <div class="font-medium text-[13px] text-neutral-900 dark:text-white">{{ job.name }}</div>
                 <div class="flex gap-1 items-center mt-1">
-                  @foreach(job.tags as tag)
+                  <template :for="tag in job.tags">
                     <Badge size="xs" variant="default">{{ tag }}</Badge>
-                  @endforeach
+                  </template>
                 </div>
               </td>
               <td class="px-3 py-3.5 whitespace-nowrap">
@@ -95,7 +95,7 @@
                 <Button :href="`/jobs/${job.id}`" variant="ghost" size="sm">View</Button>
               </td>
             </tr>
-          @endforeach
+          </template>
         </tbody>
       </table>
     </div>

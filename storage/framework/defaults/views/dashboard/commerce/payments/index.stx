@@ -179,7 +179,7 @@
                   </tr>
                 </thead>
                 <tbody class="bg-white dark:bg-neutral-800 divide-gray-200 divide-y dark:divide-neutral-700">
-                  @foreach(paginatedTransactions() as transaction)
+                  <template :for="transaction in paginatedTransactions">
                     <tr>
                       <td class="pl-4 pr-3 py-4 sm:pl-6 font-medium text-gray-900 text-sm whitespace-nowrap dark:text-white">
                         {{ transaction.orderId }}
@@ -221,7 +221,7 @@
                         </div>
                       </td>
                     </tr>
-                  @endforeach
+                  </template>
                   @if(paginatedTransactions().length === 0)
                     <tr>
                       <td colspan="7" class="px-6 py-4 text-center text-gray-500 text-sm dark:text-neutral-400">
@@ -271,7 +271,7 @@
                 <div class="h-5 w-5 i-hugeicons-arrow-left-01"></div>
               </button>
 
-              @foreach(visiblePages() as page)
+              <template :for="page in visiblePages">
                 @if(page === '...')
                   <span class="inline-flex relative items-center px-4 py-2 font-semibold text-gray-700 text-sm dark:text-neutral-400 ring-1 ring-gray-300 ring-inset dark:ring-neutral-600 focus:outline-offset-0">
                     ...
@@ -284,7 +284,7 @@
                     {{ page }}
                   </button>
                 @endif
-              @endforeach
+              </template>
 
               <button
                 @click="changePage(Math.min(totalPages(), currentPage() + 1))"

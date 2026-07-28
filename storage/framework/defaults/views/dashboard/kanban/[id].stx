@@ -732,7 +732,7 @@
             </div>
             <ul class="space-y-3">
               <li
-                :for="cm in openCard().comments"
+                :for="cm in openCard.comments"
                 class="flex gap-3"
               >
                 <span class="inline-flex flex-shrink-0 items-center justify-center h-7 w-7 font-medium text-[10px] text-white bg-violet-500 rounded-full" :text="initialsOf(cm.authorName, cm.authorEmail)"></span>
@@ -770,7 +770,7 @@
             <!-- Selected labels -->
             <div :if="!showLabelPicker()" class="flex flex-wrap gap-1">
               <span
-                :for="lbl in openCard().labels"
+                :for="lbl in openCard.labels"
                 :class="`px-2 py-0.5 text-xs font-medium rounded ${labelChipClass(lbl.color)}`"
                 :text="lbl.name"
               ></span>
@@ -780,7 +780,7 @@
             <!-- Picker -->
             <div :if="showLabelPicker()" class="space-y-2">
               <button
-                :for="lbl in allLabels()"
+                :for="lbl in allLabels"
                 @click="toggleLabel(lbl.id)"
                 :class="`w-full flex items-center justify-between px-2 py-1 rounded text-xs ${labelChipClass(lbl.color)} hover:opacity-90`"
               >
@@ -846,7 +846,7 @@
 
             <div :if="!showAssigneePicker()" class="flex flex-wrap gap-2">
               <div
-                :for="asg in openCard().assignees"
+                :for="asg in openCard.assignees"
                 class="flex gap-1.5 items-center text-xs text-zinc-700 dark:text-zinc-200"
               >
                 <span class="inline-flex items-center justify-center h-6 w-6 font-medium text-[10px] text-white bg-violet-500 rounded-full" :text="initialsOf(asg.name, asg.email)"></span>
@@ -858,7 +858,7 @@
             <div :if="showAssigneePicker()" class="overflow-y-auto space-y-1 max-h-48">
               <p :if="kanban.users().length === 0" class="italic text-xs text-zinc-400">No users to assign.</p>
               <button
-                :for="u in kanban.users()"
+                :for="u in kanban.users"
                 @click="toggleAssignee(u.id)"
                 class="flex gap-2 items-center px-2 py-1.5 w-full text-left text-xs hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded"
               >

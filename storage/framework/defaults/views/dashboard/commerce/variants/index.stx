@@ -81,17 +81,17 @@
                   </tr>
                 </thead>
                 <tbody class="bg-white dark:bg-neutral-800 divide-gray-200 divide-y dark:divide-neutral-700">
-                  @foreach(filteredVariantTypes() as variantType)
+                  <template :for="variantType in filteredVariantTypes">
                     <tr>
                       <td class="pl-4 pr-3 py-4 font-medium text-gray-900 text-sm whitespace-nowrap dark:text-white">{{ variantType.name }}</td>
                       <td class="px-3 py-4 text-gray-500 text-sm dark:text-neutral-300">{{ variantType.description }}</td>
                       <td class="px-3 py-4 text-gray-500 text-sm dark:text-neutral-300">
                         <div class="flex flex-wrap gap-1">
-                          @foreach(variantType.options.slice(0, 5) as option)
+                          <template :for="option in variantType.options.slice(0, 5)">
                             <span class="inline-flex items-center px-2 py-1 font-medium text-blue-700 text-xs dark:text-blue-300 bg-blue-50 dark:bg-blue-900 rounded-full">
                               {{ option }}
                             </span>
-                          @endforeach
+                          </template>
                           @if(variantType.options.length > 5)
                             <span class="inline-flex items-center px-2 py-1 font-medium text-gray-600 text-xs dark:text-neutral-300 bg-gray-50 dark:bg-neutral-700 rounded-full">
                               +{{ variantType.options.length - 5 }} more
@@ -116,7 +116,7 @@
                         </div>
                       </td>
                     </tr>
-                  @endforeach
+                  </template>
                   @if(filteredVariantTypes().length === 0)
                     <tr>
                       <td colspan="6" class="px-6 py-4 text-center text-gray-500 text-sm dark:text-neutral-400">
@@ -160,7 +160,7 @@
                   <label class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">Options</label>
                   <div class="mt-2">
                     <div class="flex flex-wrap gap-2 mb-2">
-                      @foreach(newOptions() as option, index)
+                      <template :for="(option, index) in newOptions">
                         <div class="inline-flex items-center px-2 py-1 font-medium text-blue-700 text-xs dark:text-blue-300 bg-blue-50 dark:bg-blue-900 rounded-full">
                           {{ option }}
                           <button
@@ -171,7 +171,7 @@
                             <div class="h-4 w-4 i-hugeicons-cancel-circle"></div>
                           </button>
                         </div>
-                      @endforeach
+                      </template>
                     </div>
                     <div class="flex">
                       <input

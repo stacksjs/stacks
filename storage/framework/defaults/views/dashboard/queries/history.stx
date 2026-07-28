@@ -70,7 +70,7 @@
               </tr>
             </thead>
             <tbody class="bg-white dark:bg-neutral-900 divide-gray-200 divide-y dark:divide-neutral-700">
-              @foreach(filteredQueries() as query)
+              <template :for="query in filteredQueries">
                 <tr>
                   <td class="pl-4 pr-3 py-4 sm:pl-6 text-sm">
                     <div class="flex gap-2 items-center mb-1">
@@ -78,9 +78,9 @@
                       <div class="overflow-hidden font-medium font-mono text-ellipsis text-gray-900 text-xs dark:text-white" title="{{ query.query }}">{{ formatQuery(query.query) }}</div>
                     </div>
                     <div class="hidden xl:block mt-1 text-gray-500 dark:text-neutral-400">
-                      @foreach(query.tags as tag)
+                      <template :for="tag in query.tags">
                         <span class="inline-flex items-center mr-1 px-2 py-1 font-medium text-xs rounded-md">{{ tag }}</span>
-                      @endforeach
+                      </template>
                     </div>
                   </td>
                   <td class="hidden lg:table-cell px-3 py-4 text-gray-500 text-sm dark:text-neutral-400">{{ query.connection }}</td>
@@ -97,7 +97,7 @@
                     <StxLink to="/queries/{{ query.id }}" class="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300">View<span class="sr-only">, {{ query.id }}</span></StxLink>
                   </td>
                 </tr>
-              @endforeach
+              </template>
               <tr :show="hasNoQueries">
                 <td colspan="7" class="py-8 text-center text-gray-500 text-sm dark:text-neutral-400">No queries found matching your criteria.</td>
               </tr>

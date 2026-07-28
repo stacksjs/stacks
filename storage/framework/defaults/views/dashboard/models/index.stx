@@ -115,7 +115,7 @@ void loadModels()
     </div>
   </div>
 
-  <template :for="group in categoryGroups()">
+  <template :for="group in categoryGroups">
     <div class="space-y-3">
       <div class="flex items-baseline justify-between">
         <h3 class="font-semibold text-base text-neutral-900 dark:text-white">{{ group.label }}</h3>

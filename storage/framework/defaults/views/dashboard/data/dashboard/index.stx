@@ -22,7 +22,7 @@
   </div>
 
   <div class="grid gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-    <template :for="model in filteredModels()">
+    <template :for="model in filteredModels">
       <div class="overflow-hidden p-6 bg-white dark:bg-neutral-800 rounded-lg shadow">
         <div class="flex gap-3 items-center">
           <span class="text-3xl">{{ model.emoji }}</span>

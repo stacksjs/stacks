@@ -71,9 +71,9 @@
       <div class="overflow-x-auto mt-6 pb-2">
         <div class="inline-flex space-x-2">
           <button @click="setCategoryFilter('all')" class="px-4 py-2 font-medium text-sm rounded-full transition {{ categoryFilter() === 'all' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-800 dark:text-white dark:bg-neutral-700 hover:bg-gray-200 dark:hover:bg-neutral-600' }}">All</button>
-          @foreach(categories() as category)
+          <template :for="category in categories">
             <button @click="setCategoryFilter('{{ category.name }}')" class="px-4 py-2 font-medium text-sm rounded-full transition {{ categoryFilter() === category.name ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-800 dark:text-white dark:bg-neutral-700 hover:bg-gray-200 dark:hover:bg-neutral-600' }}">{{ category.name }}</button>
-          @endforeach
+          </template>
         </div>
       </div>
 
@@ -104,7 +104,7 @@
           <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Try adjusting your search or category filter.</p>
         </div>
         <div :show="hasMenuItems" class="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          @foreach(filteredMenuItems() as item)
+          <template :for="item in filteredMenuItems">
             <div class="overflow-hidden relative bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700 shadow-sm hover:shadow-md transition group {{ !item.available ? 'opacity-70' : '' }}">
               <div class="aspect-square overflow-hidden relative bg-gray-200 dark:bg-neutral-700">
                 <img src="{{ item.imageUrl }}" alt="{{ item.name }}" class="object-cover h-full w-full duration-300 transition-transform group-hover:scale-105" />
@@ -124,9 +124,9 @@
                 <p class="mt-1 line-clamp-2 text-gray-500 text-sm dark:text-neutral-400">{{ item.description }}</p>
 
                 <div class="flex flex-wrap gap-1 mt-2">
-                  @foreach(item.allergies as allergy)
+                  <template :for="allergy in item.allergies">
                     <span class="{{ getAllergyClass(allergy) }} inline-flex items-center px-2 py-0.5 font-medium text-xs rounded-full">{{ allergy }}</span>
-                  @endforeach
+                  </template>
                 </div>
 
                 <div class="flex items-center justify-between mt-2">
@@ -140,7 +140,7 @@
                 <button @click="addToOrderById({{ item.id }})" {{ !item.available ? 'disabled' : '' }} class="mt-3 px-3 py-2 w-full font-semibold text-center text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed">Add to Order</button>
               </div>
             </div>
-          @endforeach
+          </template>
         </div>
       </div>
 
@@ -160,7 +160,7 @@
             <tr :show="hasNoMenuItems">
               <td colspan="5" class="py-4 text-center text-gray-500 text-sm dark:text-neutral-400">No menu items found. Try adjusting your search or category filter.</td>
             </tr>
-            @foreach(filteredMenuItems() as item)
+            <template :for="item in filteredMenuItems">
               <tr class="hover:bg-gray-50 dark:hover:bg-neutral-700 {{ !item.available ? 'opacity-70' : '' }}">
                 <td class="pl-4 pr-3 py-4 sm:pl-6 text-sm whitespace-nowrap">
                   <div class="flex items-center">
@@ -188,7 +188,7 @@
                   <button @click="addToOrderById({{ item.id }})" {{ !item.available ? 'disabled' : '' }} class="px-2.5 py-1.5 font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed">Add</button>
                 </td>
               </tr>
-            @endforeach
+            </template>
           </tbody>
         </table>
       </div>
@@ -214,25 +214,25 @@
             </div>
 
             <div :show="hasOrderItems">
-              @foreach(orderItems() as item, index)
+              <template :for="(item, index) in orderItems">
                 <div class="flex justify-between my-1 font-mono text-xs dark:text-neutral-300 transactionDetails">
                   <div class="detail">{{ item.quantity }}</div>
                   <div class="flex-grow mx-2 detail">{{ item.name }}</div>
                   <div class="detail">${{ (item.price * item.quantity).toFixed(2) }}</div>
                 </div>
-              @endforeach
+              </template>
 
-              @foreach(orderItems() as item, index)
+              <template :for="(item, index) in orderItems">
                 <div class="mb-2 mt-0">
                   <p :show="{{ item.specialInstructions ? 'true' : 'false' }}" class="pl-5 font-mono text-gray-500 text-xs dark:text-neutral-400">{{ item.specialInstructions }}</p>
                 </div>
-              @endforeach
+              </template>
 
               <div class="mb-2 mt-2 pt-2 border-dashed border-gray-200 border-t dark:border-neutral-700 item-actions">
                 <div class="flex items-center justify-between mb-1">
                   <span class="font-mono text-gray-700 text-xs dark:text-neutral-300">Edit Items:</span>
                 </div>
-                @foreach(orderItems() as item, index)
+                <template :for="(item, index) in orderItems">
                   <div class="flex items-center justify-between mb-1 px-1 py-1 text-xs bg-gray-50 dark:bg-neutral-700 rounded">
                     <div class="flex items-center">
                       <span class="font-mono">{{ item.name }}</span>
@@ -253,7 +253,7 @@
                       </button>
                     </div>
                   </div>
-                @endforeach
+                </template>
               </div>
 
               <div class="my-2 break font-mono text-center text-xs dark:text-neutral-400">*************************************</div>
@@ -336,7 +336,7 @@
                 <div class="mb-2 text-center text-gray-500 text-xs dark:text-neutral-400">{{ currentDateTime() }}</div>
                 <div class="my-2 break text-center text-xs dark:text-neutral-400">*************************************</div>
 
-                @foreach(summaryItems() as item, index)
+                <template :for="(item, index) in summaryItems">
                   <div class="flex justify-between my-1 text-gray-700 text-sm dark:text-neutral-300">
                     <div class="flex">
                       <span class="mr-2">{{ item.quantity }}</span>
@@ -344,7 +344,7 @@
                     </div>
                     <span>${{ (item.price * item.quantity).toFixed(2) }}</span>
                   </div>
-                @endforeach
+                </template>
 
                 <div class="my-2 break text-center text-xs dark:text-neutral-400">*************************************</div>
 

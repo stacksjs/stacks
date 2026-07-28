@@ -67,7 +67,7 @@
               <tr :show="isEmpty">
                 <td colspan="4" class="py-8 text-center text-gray-500 text-sm dark:text-neutral-400">No teammates yet. Invite someone above.</td>
               </tr>
-              @foreach(teammates() as teammate)
+              <template :for="teammate in teammates">
                 <tr>
                   <td class="pl-4 pr-3 py-4 sm:pl-0 font-medium text-gray-900 text-sm whitespace-nowrap dark:text-neutral-100">{{ teammate.name }}</td>
                   <td class="px-3 py-4 text-gray-500 text-sm whitespace-nowrap dark:text-neutral-400">{{ teammate.email }}</td>
@@ -78,7 +78,7 @@
                     </button>
                   </td>
                 </tr>
-              @endforeach
+              </template>
             </tbody>
           </table>
         </div>

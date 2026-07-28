@@ -55,9 +55,9 @@
                   <div class="mt-2">
                     <select id="license-customer" x-model.number="newCustomerId" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm">
                       <option value="0">Select a customer</option>
-                      @foreach(customerOptions() as customer)
+                      <template :for="customer in customerOptions">
                         <option value="{{ customer.id }}">{{ customer.name }} ({{ customer.email }})</option>
-                      @endforeach
+                      </template>
                     </select>
                   </div>
                 </div>
@@ -131,9 +131,9 @@
                   <div class="mt-2">
                     <select id="edit-license-customer" x-model.number="newCustomerId" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm">
                       <option value="0">Select a customer</option>
-                      @foreach(customerOptions() as customer)
+                      <template :for="customer in customerOptions">
                         <option value="{{ customer.id }}">{{ customer.name }} ({{ customer.email }})</option>
-                      @endforeach
+                      </template>
                     </select>
                   </div>
                 </div>

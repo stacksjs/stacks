@@ -35,9 +35,9 @@
             class="block pl-3 pr-10 py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-800 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-700 focus:ring-2 focus:ring-blue-600 focus:ring-inset"
           >
             <option value="all">All Types</option>
-            @foreach(unitTypes() as type)
+            <template :for="type in unitTypes">
               <option value="{{ type }}">{{ type }}</option>
-            @endforeach
+            </template>
           </select>
 
           <select
@@ -99,7 +99,7 @@
                   </tr>
                 </thead>
                 <tbody class="bg-white dark:bg-neutral-800 divide-gray-200 divide-y dark:divide-neutral-700">
-                  @foreach(filteredUnits() as unit)
+                  <template :for="unit in filteredUnits">
                     <tr>
                       <td class="pl-4 pr-3 py-4 sm:pl-6 font-medium text-gray-900 text-sm whitespace-nowrap dark:text-white">{{ unit.name }}</td>
                       <td class="px-3 py-4 text-gray-500 text-sm whitespace-nowrap dark:text-neutral-300">{{ unit.abbreviation }}</td>
@@ -124,7 +124,7 @@
                         </div>
                       </td>
                     </tr>
-                  @endforeach
+                  </template>
                   @if(filteredUnits().length === 0)
                     <tr>
                       <td colspan="7" class="px-6 py-4 text-center text-gray-500 text-sm dark:text-neutral-400">
@@ -171,9 +171,9 @@
                   <div class="mt-2">
                     <select id="unit-type" x-model="newType" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm">
                       <option value="">Select a type</option>
-                      @foreach(unitTypes() as type)
+                      <template :for="type in unitTypes">
                         <option value="{{ type }}">{{ type }}</option>
-                      @endforeach
+                      </template>
                       <option value="Other">Other</option>
                     </select>
                   </div>

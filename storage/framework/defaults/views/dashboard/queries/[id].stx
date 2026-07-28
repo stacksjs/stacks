@@ -74,9 +74,9 @@
               <dt class="font-medium text-gray-500 text-sm dark:text-neutral-400">Affected Tables</dt>
               <dd class="sm:col-span-2 mt-1 sm:mt-0 text-gray-900 text-sm dark:text-white">
                 <div class="flex flex-wrap gap-2">
-                  @foreach(affectedTables() as table)
+                  <template :for="table in affectedTables">
                     <span class="inline-flex items-center px-2 py-1 font-medium text-blue-700 text-xs dark:text-blue-300 bg-blue-50 dark:bg-blue-900/20 ring-1 ring-blue-700/10 ring-inset rounded-md dark:ring-blue-400/30">{{ table }}</span>
-                  @endforeach
+                  </template>
                 </div>
               </dd>
             </div>
@@ -87,18 +87,18 @@
                   <div>
                     <h4 class="mb-1 font-medium text-gray-600 text-xs dark:text-neutral-400">Used Indexes</h4>
                     <div :show="hasIndexesUsed" class="flex flex-wrap gap-2">
-                      @foreach(indexesUsed() as index)
+                      <template :for="index in indexesUsed">
                         <span class="inline-flex items-center px-2 py-1 font-medium text-green-700 text-xs dark:text-green-300 bg-green-50 dark:bg-green-900/20 ring-1 ring-green-700/10 ring-inset rounded-md dark:ring-green-400/30">{{ index }}</span>
-                      @endforeach
+                      </template>
                     </div>
                     <p :show="noIndexesUsed" class="text-gray-500 text-xs dark:text-neutral-400">No indexes used</p>
                   </div>
                   <div>
                     <h4 class="mb-1 font-medium text-gray-600 text-xs dark:text-neutral-400">Missing Indexes</h4>
                     <div :show="hasMissingIndexes" class="flex flex-wrap gap-2">
-                      @foreach(missingIndexes() as index)
+                      <template :for="index in missingIndexes">
                         <span class="inline-flex items-center px-2 py-1 font-medium text-red-700 text-xs dark:text-red-300 bg-red-50 dark:bg-red-900/20 ring-1 ring-inset ring-red-700/10 rounded-md dark:ring-red-400/30">{{ index }}</span>
-                      @endforeach
+                      </template>
                     </div>
                     <p :show="noMissingIndexes" class="text-gray-500 text-xs dark:text-neutral-400">No missing indexes identified</p>
                   </div>
@@ -134,12 +134,12 @@
               <dt class="font-medium text-gray-500 text-sm dark:text-neutral-400">Optimization Suggestions</dt>
               <dd class="sm:col-span-2 mt-1 sm:mt-0 text-gray-900 text-sm dark:text-white">
                 <ul class="space-y-2">
-                  @foreach(optimizationSuggestions() as suggestion)
+                  <template :for="suggestion in optimizationSuggestions">
                     <li class="flex items-start">
                       <div class="flex-shrink-0 mr-2 mt-0.5 h-5 w-5 text-yellow-500 i-hugeicons-lightbulb-02"></div>
                       <span class="text-gray-800 text-sm dark:text-neutral-200">{{ suggestion }}</span>
                     </li>
-                  @endforeach
+                  </template>
                 </ul>
               </dd>
             </div>
@@ -153,9 +153,9 @@
         </div>
         <div class="px-4 py-5 sm:px-6 border-gray-200 border-t dark:border-neutral-700">
           <div class="flex flex-wrap gap-2">
-            @foreach(queryTags() as tag)
+            <template :for="tag in queryTags">
               <span class="inline-flex items-center px-2 py-1 font-medium text-gray-700 text-xs dark:text-neutral-300 bg-gray-50 dark:bg-neutral-800 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-700">{{ tag }}</span>
-            @endforeach
+            </template>
           </div>
         </div>
       </div>

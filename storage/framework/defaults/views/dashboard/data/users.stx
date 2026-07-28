@@ -89,7 +89,7 @@
             <div class="mb-4">
               <h5 class="mb-2 font-medium text-gray-700 text-sm dark:text-neutral-300">Properties</h5>
               <ul class="space-y-1">
-                <template :for="prop in (selectedModel()?.properties ?? [])">
+                <template :for="prop in (selectedModel?.properties ?? [])">
                   <li class="font-mono text-gray-600 text-sm dark:text-neutral-400">{{ prop }}</li>
                 </template>
               </ul>
@@ -97,7 +97,7 @@
             <div class="mb-6">
               <h5 class="mb-2 font-medium text-gray-700 text-sm dark:text-neutral-300">Relationships</h5>
               <ul class="space-y-1">
-                <template :for="rel in (selectedModel()?.relationships ?? [])">
+                <template :for="rel in (selectedModel?.relationships ?? [])">
                   <li class="font-mono text-sm">
                     <a :href="resolveModelRoute(rel)" class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">{{ rel }}</a>
                   </li>

@@ -103,9 +103,9 @@
         <div class="flex flex-col gap-4 sm:flex-row">
           <select x-model="productFilter" class="block pl-3 pr-10 py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-800 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-700 focus:ring-2 focus:ring-blue-600 focus:ring-inset">
             <option value="all">All Products</option>
-            @foreach(productList() as product)
+            <template :for="product in productList">
               <option value="{{ product.id }}">{{ product.name }}</option>
-            @endforeach
+            </template>
           </select>
 
           <select x-model="ratingFilter" class="block pl-3 pr-10 py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-800 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-700 focus:ring-2 focus:ring-blue-600 focus:ring-inset">
@@ -177,7 +177,7 @@
           <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Try adjusting your search or filter to find what you're looking for.</p>
         </div>
         <div :show="hasReviews" class="space-y-6">
-          @foreach(paginatedReviews() as review)
+          <template :for="review in paginatedReviews">
             <div class="overflow-hidden bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700 shadow-sm">
               <div class="p-6">
                 <div class="flex items-start justify-between">
@@ -246,7 +246,7 @@
                 </div>
               </div>
             </div>
-          @endforeach
+          </template>
         </div>
       </div>
 
@@ -268,7 +268,7 @@
             <tr :show="hasNoReviews">
               <td colspan="7" class="py-4 text-center text-gray-500 text-sm dark:text-neutral-400">No reviews found. Try adjusting your search or filter.</td>
             </tr>
-            @foreach(paginatedReviews() as review)
+            <template :for="review in paginatedReviews">
               <tr class="hover:bg-gray-50 dark:hover:bg-neutral-700">
                 <td class="pl-4 pr-3 py-4 sm:pl-6 text-sm whitespace-nowrap">
                   <div class="flex items-center">
@@ -314,7 +314,7 @@
                   </div>
                 </td>
               </tr>
-            @endforeach
+            </template>
           </tbody>
         </table>
       </div>
@@ -337,9 +337,9 @@
                 <span class="sr-only">Previous</span>
                 <div class="h-5 w-5 i-hugeicons-arrow-left-01"></div>
               </button>
-              @foreach(pageNumbers() as page)
+              <template :for="page in pageNumbers">
                 <button @click="changePage({{ page }})" class="relative inline-flex items-center px-4 py-2 text-sm font-semibold ring-1 ring-inset ring-gray-300 focus:z-20 focus:outline-offset-0 dark:ring-neutral-600 {{ page === currentPage() ? 'bg-blue-600 text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 dark:bg-blue-700' : 'text-gray-900 hover:bg-gray-50 dark:text-white dark:hover:bg-neutral-700' }}">{{ page }}</button>
-              @endforeach
+              </template>
               <button @click="nextPage()" class="inline-flex relative focus:z-20 items-center px-2 py-2 text-gray-400 dark:text-neutral-500 hover:bg-gray-50 dark:hover:bg-neutral-700 ring-1 ring-gray-300 ring-inset rounded-r-md dark:ring-neutral-600 focus:outline-offset-0 {{ currentPage() === totalPages() ? 'opacity-50 cursor-not-allowed' : '' }}">
                 <span class="sr-only">Next</span>
                 <div class="h-5 w-5 i-hugeicons-arrow-right-01"></div>

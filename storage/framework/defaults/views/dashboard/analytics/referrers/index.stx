@@ -67,7 +67,7 @@
               </tr>
             </thead>
             <tbody class="bg-white dark:bg-neutral-800 divide-gray-200 divide-y dark:divide-neutral-700">
-              @foreach(referrerTypesData() as type)
+              <template :for="type in referrerTypesData">
                 <tr class="relative hover:bg-gray-50 dark:hover:bg-neutral-700/50">
                   <td class="px-4 py-3 text-gray-900 text-sm whitespace-nowrap dark:text-white">
                     <div class="absolute inset-0 bg-green-100/50 dark:bg-green-900/50" style="width: {{ type.percentage }}%"></div>
@@ -80,7 +80,7 @@
                     <span class="relative z-10">{{ type.percentage }}%</span>
                   </td>
                 </tr>
-              @endforeach
+              </template>
             </tbody>
           </table>
         </div>
@@ -103,7 +103,7 @@
               </tr>
             </thead>
             <tbody class="bg-white dark:bg-neutral-800 divide-gray-200 divide-y dark:divide-neutral-700">
-              @foreach(referrersData() as referrer)
+              <template :for="referrer in referrersData">
                 <tr class="relative hover:bg-gray-50 dark:hover:bg-neutral-700/50">
                   <td class="px-4 py-3 text-gray-900 text-sm whitespace-nowrap dark:text-white">
                     <div class="absolute inset-0 bg-green-100/50 dark:bg-green-900/50" style="width: {{ referrer.percentage }}%"></div>
@@ -122,7 +122,7 @@
                     <span class="relative z-10">{{ referrer.percentage }}%</span>
                   </td>
                 </tr>
-              @endforeach
+              </template>
             </tbody>
           </table>
         </div>
@@ -144,7 +144,7 @@
               </tr>
             </thead>
             <tbody class="bg-white dark:bg-neutral-800 divide-gray-200 divide-y dark:divide-neutral-700">
-              @foreach(searchTermsData() as term)
+              <template :for="term in searchTermsData">
                 <tr class="relative hover:bg-gray-50 dark:hover:bg-neutral-700/50">
                   <td class="px-4 py-3 text-gray-900 text-sm whitespace-nowrap dark:text-white">
                     <div class="absolute inset-0 bg-amber-100/50 dark:bg-amber-900/50" style="width: {{ term.percentage }}%"></div>
@@ -157,7 +157,7 @@
                     <span class="relative z-10">{{ term.percentage }}%</span>
                   </td>
                 </tr>
-              @endforeach
+              </template>
             </tbody>
           </table>
         </div>

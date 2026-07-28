@@ -544,7 +544,7 @@ effect(() => {
     Pointer-events-none on the wrapper + auto on individual toasts so
     surrounding UI stays clickable while a toast is up. -->
 <div class="flex fixed right-4 top-4 z-[60] flex-col gap-2 max-w-sm w-full pointer-events-none">
-  @foreach(toasts() as toast)
+  <template :for="toast in toasts">
     <div role="alert" aria-live="assertive" :class="toastWrapperClass(toast.type)">
       <div class="flex gap-3 items-start p-4">
         <div :class="toastIconClass(toast.type)"></div>
@@ -561,5 +561,5 @@ effect(() => {
         </button>
       </div>
     </div>
-  @endforeach
+  </template>
 </div>

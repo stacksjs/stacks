@@ -323,7 +323,7 @@
               </tr>
             </thead>
             <tbody class="divide-y divide-zinc-200 dark:divide-zinc-800">
-              @foreach(filteredRoles() as role)
+              <template :for="role in filteredRoles">
                 <tr>
                   <td class="px-5 py-2 font-medium text-sm text-zinc-900 dark:text-zinc-100">{{ role.name }}</td>
                   <td class="px-5 py-2 text-xs text-zinc-500"><code>{{ role.guardName }}</code></td>
@@ -334,7 +334,7 @@
                     <button type="button" @click="removeRole('{{ role.name }}', '{{ role.guardName }}')" class="text-red-600 dark:text-red-400 hover:underline">Delete</button>
                   </td>
                 </tr>
-              @endforeach
+              </template>
             </tbody>
           </table>
         </div>
@@ -368,7 +368,7 @@
               </tr>
             </thead>
             <tbody class="divide-y divide-zinc-200 dark:divide-zinc-800">
-              @foreach(filteredPermissions() as perm)
+              <template :for="perm in filteredPermissions">
                 <tr>
                   <td class="px-5 py-2 font-medium text-sm text-zinc-900 dark:text-zinc-100">{{ perm.name }}</td>
                   <td class="px-5 py-2 text-xs text-zinc-500"><code>{{ perm.guardName }}</code></td>
@@ -378,7 +378,7 @@
                     <button type="button" @click="removePermission('{{ perm.name }}', '{{ perm.guardName }}')" class="text-red-600 dark:text-red-400 hover:underline">Delete</button>
                   </td>
                 </tr>
-              @endforeach
+              </template>
             </tbody>
           </table>
         </div>
@@ -401,7 +401,7 @@
               </tr>
             </thead>
             <tbody class="divide-y divide-zinc-200 dark:divide-zinc-800">
-              @foreach(filteredUsers() as u)
+              <template :for="u in filteredUsers">
                 <tr>
                   <td class="px-5 py-2 font-medium text-sm text-zinc-900 dark:text-zinc-100">{{ u.name || '—' }}</td>
                   <td class="px-5 py-2 text-sm text-zinc-500">{{ u.email || '—' }}</td>
@@ -409,7 +409,7 @@
                     <button type="button" @click="selectUser({{ u.id }})" class="text-violet-600 dark:text-violet-400 hover:underline">Manage roles</button>
                   </td>
                 </tr>
-              @endforeach
+              </template>
             </tbody>
           </table>
         </div>
@@ -422,12 +422,12 @@
         </div>
         <div :if="roles().length === 0" class="px-5 py-8 text-center text-sm text-zinc-500 bg-white dark:bg-neutral-900 border border-zinc-200 rounded-lg dark:border-zinc-800">No roles yet — create one on the Roles tab.</div>
         <div :if="roles().length > 0" class="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-          @foreach(roles() as role)
+          <template :for="role in roles">
             <button type="button" @click="selectRole('{{ role.name }}', '{{ role.guardName }}')" class="block px-4 py-3 text-left bg-white dark:bg-neutral-900 border border-zinc-200 rounded-lg dark:border-zinc-800 hover:border-violet-300 dark:hover:border-violet-700 transition-colors">
               <div class="font-medium text-sm text-zinc-900 dark:text-zinc-100">{{ role.name }}</div>
               <div class="mt-0.5 text-xs text-zinc-500">{{ role.description || 'No description' }}</div>
             </button>
-          @endforeach
+          </template>
         </div>
       </div>
     </div>
@@ -445,13 +445,13 @@
       </div>
       <div class="overflow-y-auto flex-1 px-5 py-4 space-y-2">
         <div :if="roles().length === 0" class="text-sm text-zinc-500">No roles defined yet.</div>
-        @foreach(roles() as role)
+        <template :for="role in roles">
           <label class="flex gap-2 items-center px-2 py-1.5 hover:bg-zinc-50 dark:hover:bg-neutral-800 rounded-md cursor-pointer">
             <input type="checkbox" :checked="isRoleInDraft('{{ role.name }}')" @change="toggleUserRoleDraft('{{ role.name }}')" class="h-4 w-4 text-violet-600 border-zinc-300 rounded dark:border-zinc-700 focus:ring-violet-500" />
             <span class="text-sm text-zinc-900 dark:text-zinc-100">{{ role.name }}</span>
             <span class="text-xs text-zinc-500">{{ role.description || '' }}</span>
           </label>
-        @endforeach
+        </template>
       </div>
       <div class="flex gap-2 items-center justify-end px-5 py-3 border-t border-zinc-200 dark:border-zinc-800">
         <button type="button" @click="closeUserDrawer()" class="px-3 py-1.5 text-sm text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-neutral-800 rounded-md">Cancel</button>
@@ -472,13 +472,13 @@
       </div>
       <div class="overflow-y-auto flex-1 px-5 py-4 space-y-2">
         <div :if="permissions().length === 0" class="text-sm text-zinc-500">No permissions defined yet.</div>
-        @foreach(permissions() as perm)
+        <template :for="perm in permissions">
           <label class="flex gap-2 items-center px-2 py-1.5 hover:bg-zinc-50 dark:hover:bg-neutral-800 rounded-md cursor-pointer">
             <input type="checkbox" :checked="isPermInDraft('{{ perm.name }}')" @change="toggleRolePermDraft('{{ perm.name }}')" class="h-4 w-4 text-violet-600 border-zinc-300 rounded dark:border-zinc-700 focus:ring-violet-500" />
             <span class="text-sm text-zinc-900 dark:text-zinc-100">{{ perm.name }}</span>
             <span class="text-xs text-zinc-500">{{ perm.description || '' }}</span>
           </label>
-        @endforeach
+        </template>
       </div>
       <div class="flex gap-2 items-center justify-end px-5 py-3 border-t border-zinc-200 dark:border-zinc-800">
         <button type="button" @click="closeRoleDrawer()" class="px-3 py-1.5 text-sm text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-neutral-800 rounded-md">Cancel</button>

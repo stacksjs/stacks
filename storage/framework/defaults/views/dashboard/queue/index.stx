@@ -72,7 +72,7 @@
       </div>
 
       <div class="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 mt-6">
-        @foreach(queueList() as queue)
+        <template :for="queue in queueList">
           <div class="p-6 bg-white dark:bg-neutral-700 rounded-lg shadow">
             <div class="flex items-center justify-between mb-4">
               <h4 class="inline-flex items-center px-2.5 py-0.5 font-medium text-gray-800 text-xs dark:text-neutral-200 bg-gray-100 dark:bg-neutral-600 rounded-full">{{ queue.name }}</h4>
@@ -80,12 +80,12 @@
 
             <div class="space-y-4">
               <div class="grid gap-4 grid-cols-3">
-                @foreach(queue.entries as entry)
+                <template :for="entry in queue.entries">
                   <div class="text-center">
                     <div class="font-mono font-semibold text-2xl {{ statusValueClass(entry.status) }}">{{ entry.value }}</div>
                     <div class="capitalize text-gray-500 text-xs dark:text-neutral-400">{{ entry.status }}</div>
                   </div>
-                @endforeach
+                </template>
               </div>
 
               <div class="overflow-hidden h-2 bg-gray-100 dark:bg-neutral-600 rounded-full">
@@ -100,7 +100,7 @@
               </div>
             </div>
           </div>
-        @endforeach
+        </template>
       </div>
     </div>
 
@@ -111,9 +111,9 @@
           <div class="flex gap-4 items-center">
             <select x-model="selectedQueue" class="block px-3 py-1.5 h-9 w-32 text-gray-900 text-sm dark:text-neutral-100 bg-gray-50 dark:bg-neutral-600 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600">
               <option value="all">All Queues</option>
-              @foreach(queueNames() as queueName)
+              <template :for="queueName in queueNames">
                 <option value="{{ queueName }}">{{ queueName }}</option>
-              @endforeach
+              </template>
             </select>
 
             <select x-model="timeRange" class="block px-3 py-1.5 h-9 text-gray-900 text-sm dark:text-neutral-100 bg-gray-50 dark:bg-neutral-600 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600">
@@ -155,7 +155,7 @@
         </div>
 
         <div class="space-y-6">
-          @foreach(workers() as worker)
+          <template :for="worker in workers">
             <div class="relative p-6 border rounded-lg dark:border-neutral-600 hover:border-blue-200 dark:hover:border-blue-500 duration-200 transition-all">
               <div class="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
                 <div>
@@ -227,7 +227,7 @@
                 </div>
               </div>
             </div>
-          @endforeach
+          </template>
         </div>
       </div>
     </div>

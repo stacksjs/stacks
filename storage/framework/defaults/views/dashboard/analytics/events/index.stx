@@ -65,7 +65,7 @@
           </tr>
         </thead>
         <tbody class="divide-gray-200 divide-y dark:divide-neutral-700">
-          <template :for="event in activeEvents()">
+          <template :for="event in activeEvents">
             <tr @click="viewEventDetails(event.id)" class="hover:bg-gray-50 dark:hover:bg-neutral-700/50 cursor-pointer">
               <td class="px-4 py-3 font-medium text-gray-900 text-sm whitespace-nowrap dark:text-white">{{ event.name }}</td>
               <td class="px-4 py-3 text-gray-500 text-right text-sm whitespace-nowrap dark:text-neutral-300">{{ formatNumber(event.completions) }}</td>
@@ -133,7 +133,7 @@ stacks.trackEvent('purchase completed', {
           </tr>
         </thead>
         <tbody class="divide-gray-200 divide-y dark:divide-neutral-700">
-          <template :for="event in blockedEvents()">
+          <template :for="event in blockedEvents">
             <tr class="hover:bg-gray-50 dark:hover:bg-neutral-700/50">
               <td class="px-4 py-3 font-medium text-gray-500 text-sm whitespace-nowrap dark:text-neutral-400">
                 <div class="flex items-center">

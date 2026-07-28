@@ -384,7 +384,7 @@
       <!-- Runs list -->
       <ul :if="drilldownRuns().length > 0" class="px-5 py-3">
         <li
-          :for="run in drilldownRuns()"
+          :for="run in drilldownRuns"
           class="border-b border-zinc-100 dark:border-zinc-900 last:border-0"
         >
           <div

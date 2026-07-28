@@ -60,7 +60,7 @@
         </tr>
       </thead>
       <tbody class="bg-white dark:bg-neutral-800 divide-gray-200 divide-y dark:divide-neutral-700">
-        <template :for="entry in filteredEntries()">
+        <template :for="entry in filteredEntries">
           <tr class="hover:bg-gray-50 dark:hover:bg-neutral-700">
             <td class="px-4 py-4 whitespace-nowrap">
               <div class="font-medium text-gray-900 text-sm dark:text-white">{{ entry.title }}</div>

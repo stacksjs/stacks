@@ -196,7 +196,7 @@
             <tr :show="hasNoEntries" class="text-center">
               <td colspan="8" class="py-10 text-gray-500 dark:text-neutral-400">No parties currently on the waitlist.</td>
             </tr>
-            @foreach(paginatedEntries() as entry)
+            <template :for="entry in paginatedEntries">
               <tr class="hover:bg-gray-50 dark:hover:bg-neutral-700">
                 <td class="pl-4 pr-3 py-4 sm:pl-6 text-sm whitespace-nowrap">
                   <input type="checkbox" @change="toggleEntrySelection({{ entry.id }})" {{ isSelected(entry.id) ? 'checked' : '' }} class="h-4 w-4 text-blue-600 border-gray-300 rounded dark:border-neutral-600 focus:ring-blue-600" />
@@ -239,7 +239,7 @@
                   </div>
                 </td>
               </tr>
-            @endforeach
+            </template>
           </tbody>
         </table>
       </div>
@@ -261,9 +261,9 @@
                 <span class="sr-only">Previous</span>
                 <div class="h-5 w-5 i-hugeicons-arrow-left-01"></div>
               </button>
-              @foreach(pageNumbers() as page)
+              <template :for="page in pageNumbers">
                 <button @click="goToPage({{ page }})" class="{{ page === currentPage() ? 'relative z-10 inline-flex items-center bg-blue-600 px-4 py-2 text-sm font-semibold text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600' : 'relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 dark:text-white dark:ring-neutral-600 dark:hover:bg-neutral-700' }} focus:z-20">{{ page }}</button>
-              @endforeach
+              </template>
               <button @click="goToPage(currentPage() + 1)" class="{{ currentPage() === totalPages() ? 'cursor-not-allowed opacity-50' : 'hover:bg-gray-50 dark:hover:bg-neutral-700' }} relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 dark:ring-neutral-600">
                 <span class="sr-only">Next</span>
                 <div class="h-5 w-5 i-hugeicons-arrow-right-01"></div>

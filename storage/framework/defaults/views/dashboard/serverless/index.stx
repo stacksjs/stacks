@@ -81,7 +81,7 @@
         <div :show="selectedOutgoing().length > 0" class="mt-6">
           <h4 class="font-medium text-gray-900 text-sm dark:text-white">Outgoing connections</h4>
           <ul class="mt-2 space-y-2">
-            <template :for="conn in selectedOutgoing()">
+            <template :for="conn in selectedOutgoing">
               <li class="flex items-center justify-between p-2 bg-gray-50 dark:bg-neutral-700 rounded">
                 <span class="text-gray-900 text-sm dark:text-white">{{ conn.target?.name }}</span>
                 <span class="{{ linkTypeBadge(conn.type) }}">{{ conn.type }}</span>
@@ -93,7 +93,7 @@
         <div :show="selectedIncoming().length > 0" class="mt-6">
           <h4 class="font-medium text-gray-900 text-sm dark:text-white">Incoming connections</h4>
           <ul class="mt-2 space-y-2">
-            <template :for="conn in selectedIncoming()">
+            <template :for="conn in selectedIncoming">
               <li class="flex items-center justify-between p-2 bg-gray-50 dark:bg-neutral-700 rounded">
                 <span class="text-gray-900 text-sm dark:text-white">{{ conn.source?.name }}</span>
                 <span class="{{ linkTypeBadge(conn.type) }}">{{ conn.type }}</span>

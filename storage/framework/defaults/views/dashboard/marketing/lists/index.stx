@@ -116,7 +116,7 @@
         </tr>
       </thead>
       <tbody class="bg-white dark:bg-neutral-800 divide-gray-200 divide-y dark:divide-neutral-700">
-        <template :for="list in paginatedLists()">
+        <template :for="list in paginatedLists">
           <tr class="hover:bg-gray-50 dark:hover:bg-neutral-700/50">
             <td class="relative pl-4 pr-3 py-4 sm:pl-6">
               <input type="checkbox" :checked="isListSelected(list.id)" @change="toggleListSelection(list.id)" class="h-4 w-4 text-blue-600 dark:bg-neutral-700 border-gray-300 rounded dark:border-neutral-600 focus:ring-blue-600" />

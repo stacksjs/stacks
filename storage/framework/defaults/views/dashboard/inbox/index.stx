@@ -49,7 +49,7 @@
             <div :if="isLoading()" class="p-8 text-center text-gray-500 dark:text-neutral-400">Loading…</div>
             <div :if="loadError() && !isLoading()" class="p-8 text-center text-red-500">{{ loadError() }}</div>
             <ul :if="!isLoading() && !loadError()" class="divide-gray-200 divide-y dark:divide-neutral-600">
-              <template :for="email in filteredEmails()">
+              <template :for="email in filteredEmails">
                 <li @click="openEmail(email)" class="{{ emailRowClass(email) }}">
                   <div class="px-4 py-3">
                     <div class="flex items-center justify-between">

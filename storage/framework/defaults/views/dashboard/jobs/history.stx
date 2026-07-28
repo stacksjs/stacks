@@ -65,7 +65,7 @@
                 <tr :show="hasNoJobs" class="hover:bg-gray-50 dark:hover:bg-neutral-600/50">
                   <td colspan="7" class="px-3 py-4 text-center text-gray-500 text-sm dark:text-neutral-400">No jobs found matching your criteria</td>
                 </tr>
-                @foreach(paginatedJobs() as job)
+                <template :for="job in paginatedJobs">
                   <tr class="hover:bg-gray-50 dark:hover:bg-neutral-600/50">
                     <td class="pl-4 pr-3 py-4 sm:pl-6 text-sm whitespace-nowrap">
                       <div class="font-medium text-gray-900 dark:text-neutral-100">{{ job.name }}</div>
@@ -85,7 +85,7 @@
                       </div>
                     </td>
                   </tr>
-                @endforeach
+                </template>
               </tbody>
             </table>
           </div>

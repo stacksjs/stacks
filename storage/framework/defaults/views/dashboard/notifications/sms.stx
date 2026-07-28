@@ -80,7 +80,7 @@
                 <tr :show="hasNoNotifications">
                   <td colspan="6" class="px-3 py-4 text-center text-gray-500 text-sm dark:text-neutral-400">No SMS notifications found matching your criteria</td>
                 </tr>
-                @foreach(paginatedNotifications() as notification)
+                <template :for="notification in paginatedNotifications">
                   <tr class="hover:bg-gray-50 dark:hover:bg-neutral-600/50">
                     <td class="pl-4 pr-3 py-4 sm:pl-6 font-medium text-gray-900 text-sm whitespace-nowrap dark:text-neutral-100">{{ notification.recipient }}</td>
                     <td class="px-3 py-4 text-gray-500 text-sm dark:text-neutral-400">
@@ -98,7 +98,7 @@
                       </div>
                     </td>
                   </tr>
-                @endforeach
+                </template>
               </tbody>
             </table>
           </div>

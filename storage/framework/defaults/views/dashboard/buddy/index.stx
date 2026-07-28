@@ -9,7 +9,7 @@
     </div>
 
     <div class="overflow-y-auto flex-1">
-      @foreach(conversations() as chat)
+      <template :for="chat in conversations">
         <div @click="selectConversation({{ chat.id }})" class="p-4 cursor-pointer border-b border-gray-200 {{ isActive(chat.id) ? 'bg-blue-50' : 'hover:bg-gray-50' }}">
           <div class="flex items-start justify-between">
             <div class="flex items-center space-x-3">
@@ -30,7 +30,7 @@
             </div>
           </div>
         </div>
-      @endforeach
+      </template>
     </div>
   </div>
 
@@ -51,7 +51,7 @@
 
     <div class="overflow-y-auto flex-1 p-4 bg-gray-50 dark:bg-neutral-900">
       <div class="flex flex-col mx-auto space-y-4 max-w-3xl">
-        @foreach(messages() as message)
+        <template :for="message in messages">
           <div class="flex items-start space-x-4 {{ message.type === 'ai' ? '' : 'justify-end' }}">
             <div :show="{{ message.type === 'ai' ? 'true' : 'false' }}" class="flex items-center justify-center h-10 w-10 bg-gradient-to-r from-blue-400 to-blue-600 rounded-full">
               <span class="font-medium text-sm text-white">AI</span>
@@ -71,7 +71,7 @@
 
             <img :show="{{ message.type === 'human' ? 'true' : 'false' }}" src="{{ message.user.avatar }}" alt="{{ message.user.name }}" class="h-10 w-10 rounded-full" />
           </div>
-        @endforeach
+        </template>
       </div>
     </div>
 

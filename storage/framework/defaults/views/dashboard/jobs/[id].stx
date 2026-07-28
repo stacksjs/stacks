@@ -75,9 +75,9 @@
               <dt class="font-medium text-gray-500 text-sm dark:text-neutral-400">Tags</dt>
               <dd class="col-span-2 text-gray-900 text-sm dark:text-neutral-100">
                 <div class="flex flex-wrap gap-2">
-                  @foreach(jobTags() as tag)
+                  <template :for="tag in jobTags">
                     <span class="inline-flex items-center px-2 py-1 font-medium text-gray-600 text-xs dark:text-neutral-300 bg-gray-50 dark:bg-neutral-600 ring-1 ring-gray-500/10 ring-inset rounded-md">{{ tag }}</span>
-                  @endforeach
+                  </template>
                 </div>
               </dd>
             </div>
@@ -92,14 +92,14 @@
             <div class="relative">
               <div class="absolute bottom-4 left-4 top-4 w-px bg-gray-200 dark:bg-neutral-600"></div>
               <ul class="relative space-y-6">
-                @foreach(jobChain() as chainJob, index)
+                <template :for="(chainJob, index) in jobChain">
                   <li class="relative pl-10">
                     <div class="flex absolute left-0 top-1/2 items-center justify-center h-8 w-8 bg-white dark:bg-neutral-700 border-2 border-gray-200 rounded-full dark:border-neutral-600 -translate-y-1/2">
                       <span class="font-medium text-gray-500 text-sm dark:text-neutral-400">{{ index + 1 }}</span>
                     </div>
                     <div class="py-2 font-mono text-gray-900 text-sm dark:text-neutral-100">{{ chainJob.replace('App\\Jobs\\', '') }}</div>
                   </li>
-                @endforeach
+                </template>
               </ul>
             </div>
           </div>
@@ -109,13 +109,13 @@
           <div class="px-4 py-5 sm:p-6">
             <h3 class="mb-4 font-semibold leading-6 text-base text-gray-900 dark:text-neutral-100">Logs</h3>
             <div class="space-y-2">
-              @foreach(jobLogs() as log)
+              <template :for="log in jobLogs">
                 <div class="flex gap-2 items-start font-mono text-sm">
                   <span class="shrink-0 text-gray-500 dark:text-neutral-400">{{ log.timestamp }}</span>
                   <span class="shrink-0 {{ getLogLevelColor(log.level) }}">[{{ log.level }}]</span>
                   <span class="text-gray-900 dark:text-neutral-100">{{ log.message }}</span>
                 </div>
-              @endforeach
+              </template>
             </div>
           </div>
         </div>
@@ -165,12 +165,12 @@
           </div>
           <div :show="hidePayload" class="mt-4">
             <dl class="grid gap-4 grid-cols-1 sm:grid-cols-2">
-              @foreach(payloadEntries() as entry)
+              <template :for="entry in payloadEntries">
                 <div class="grid gap-4 grid-cols-3">
                   <dt class="font-medium text-gray-500 text-sm dark:text-neutral-400">{{ entry.key }}</dt>
                   <dd class="col-span-2 font-mono text-gray-900 text-sm dark:text-neutral-100">{{ entry.value }}</dd>
                 </div>
-              @endforeach
+              </template>
             </dl>
           </div>
         </div>
@@ -200,9 +200,9 @@
                 <div class="font-mono text-red-600 text-sm dark:text-red-400 hover:text-blue-600 dark:hover:text-blue-400 cursor-pointer" @click="openTraceLine(0)">{{ firstTraceLine() }}</div>
               </div>
               <div :show="showTrace" class="divide-gray-200 divide-y dark:divide-neutral-500">
-                @foreach(exceptionTrace() as line, index)
+                <template :for="(line, index) in exceptionTrace">
                   <div class="p-4 font-mono text-red-600 text-sm dark:text-red-400 hover:text-blue-600 dark:hover:text-blue-400 cursor-pointer" @click="openTraceLine({{ index }})">{{ line }}</div>
-                @endforeach
+                </template>
               </div>
             </div>
           </div>

@@ -46,7 +46,7 @@
         </tr>
       </thead>
       <tbody class="bg-white dark:bg-neutral-800 divide-gray-200 divide-y dark:divide-neutral-700">
-        <template :for="log in paginatedLogs()">
+        <template :for="log in paginatedLogs">
           <tr class="hover:bg-gray-50 dark:hover:bg-neutral-700">
             <td class="px-4 py-3 whitespace-nowrap"><div class="text-gray-500 text-xs dark:text-neutral-400">{{ formatDate(log.created_at) }}</div></td>
             <td class="px-4 py-3 whitespace-nowrap">

@@ -160,7 +160,7 @@ void loadFiles()
       </div>
 
       <nav class="overflow-y-auto p-2 max-h-[68vh]" aria-label="Configuration files">
-        @foreach(filteredFiles() as file)
+        <template :for="file in filteredFiles">
           <button
             type="button"
             :class="selected() === file.name ? 'flex items-center gap-3 px-3 py-2.5 w-full text-left text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-500/10 rounded-lg' : 'flex items-center gap-3 px-3 py-2.5 w-full text-left text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-white/5 rounded-lg'"
@@ -170,7 +170,7 @@ void loadFiles()
             <span class="flex-1 font-medium text-sm truncate">{{ file.title }}</span>
             <span class="text-[10px] text-neutral-400">{{ file.size < 1024 ? file.size + ' B' : Math.round(file.size / 1024) + ' KB' }}</span>
           </button>
-        @endforeach
+        </template>
       </nav>
     </Card>
 
@@ -212,7 +212,7 @@ void loadFiles()
         @endif
 
         <form class="divide-neutral-200/60 divide-y dark:divide-white/5" @submit.prevent="save()">
-          @foreach(fields() as field)
+          <template :for="field in fields">
             <div class="grid gap-3 sm:grid-cols-[minmax(10rem,0.8fr)_minmax(0,1.2fr)] sm:items-start px-6 py-5">
               <div>
                 <label :for="'config-' + field.key" class="font-medium text-neutral-900 text-sm dark:text-white">{{ field.key }}</label>
@@ -247,7 +247,7 @@ void loadFiles()
                 @endif
               </div>
             </div>
-          @endforeach
+          </template>
         </form>
       @endif
     </Card>

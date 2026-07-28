@@ -69,7 +69,7 @@
               </tr>
             </thead>
             <tbody class="bg-white dark:bg-neutral-800 divide-gray-200 divide-y dark:divide-neutral-700">
-              @foreach(pagesData() as page)
+              <template :for="page in pagesData">
                 <tr class="relative hover:bg-gray-50 dark:hover:bg-neutral-700/50">
                   <td class="px-4 py-3 text-gray-900 text-sm whitespace-nowrap dark:text-white">
                     <div class="absolute inset-0 bg-blue-100/50 dark:bg-blue-900/50" style="width: {{ page.percentage }}%"></div>
@@ -94,7 +94,7 @@
                     <span class="relative z-10">{{ page.percentage }}%</span>
                   </td>
                 </tr>
-              @endforeach
+              </template>
             </tbody>
           </table>
         </div>
@@ -119,7 +119,7 @@
               </tr>
             </thead>
             <tbody class="bg-white dark:bg-neutral-800 divide-gray-200 divide-y dark:divide-neutral-700">
-              @foreach(pagePerformanceData() as page)
+              <template :for="page in pagePerformanceData">
                 <tr class="hover:bg-gray-50 dark:hover:bg-neutral-700/50">
                   <td class="px-4 py-3 text-gray-900 text-sm whitespace-nowrap dark:text-white">{{ page.path }}</td>
                   <td class="px-4 py-3 text-gray-500 text-right text-sm whitespace-nowrap dark:text-neutral-300">{{ page.loadTime.toFixed(1) }}</td>
@@ -128,7 +128,7 @@
                   <td class="px-4 py-3 text-gray-500 text-right text-sm whitespace-nowrap dark:text-neutral-300">{{ page.cls.toFixed(2) }}</td>
                   <td class="px-4 py-3 font-medium text-right text-sm whitespace-nowrap {{ getPerformanceColorClass(page.score) }}">{{ page.score }}</td>
                 </tr>
-              @endforeach
+              </template>
             </tbody>
           </table>
         </div>

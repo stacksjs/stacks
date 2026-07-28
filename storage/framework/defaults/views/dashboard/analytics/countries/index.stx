@@ -67,7 +67,7 @@
               </tr>
             </thead>
             <tbody class="bg-white dark:bg-neutral-800 divide-gray-200 divide-y dark:divide-neutral-700">
-              @foreach(countriesData() as country, index)
+              <template :for="(country, index) in countriesData">
                 <tr class="relative hover:bg-gray-50 dark:hover:bg-neutral-700/50">
                   <td class="px-4 py-3 text-gray-900 text-sm whitespace-nowrap dark:text-white">
                     <div class="absolute inset-0 bg-rose-100/50 dark:bg-rose-900/50" style="width: {{ country.percentage }}%"></div>
@@ -80,7 +80,7 @@
                     <span class="relative z-10">{{ country.percentage }}%</span>
                   </td>
                 </tr>
-              @endforeach
+              </template>
             </tbody>
           </table>
         </div>
@@ -103,7 +103,7 @@
               </tr>
             </thead>
             <tbody class="bg-white dark:bg-neutral-800 divide-gray-200 divide-y dark:divide-neutral-700">
-              @foreach(citiesData() as city, index)
+              <template :for="(city, index) in citiesData">
                 <tr class="relative hover:bg-gray-50 dark:hover:bg-neutral-700/50">
                   <td class="px-4 py-3 text-gray-900 text-sm whitespace-nowrap dark:text-white">
                     <div class="absolute inset-0 bg-blue-100/50 dark:bg-blue-900/50" style="width: {{ city.percentage }}%"></div>
@@ -119,7 +119,7 @@
                     <span class="relative z-10">{{ city.percentage }}%</span>
                   </td>
                 </tr>
-              @endforeach
+              </template>
             </tbody>
           </table>
         </div>
@@ -142,7 +142,7 @@
               </tr>
             </thead>
             <tbody class="bg-white dark:bg-neutral-800 divide-gray-200 divide-y dark:divide-neutral-700">
-              @foreach(languagesData() as language, index)
+              <template :for="(language, index) in languagesData">
                 <tr class="relative hover:bg-gray-50 dark:hover:bg-neutral-700/50">
                   <td class="px-4 py-3 text-gray-900 text-sm whitespace-nowrap dark:text-white">
                     <div class="absolute inset-0 bg-green-100/50 dark:bg-green-900/50" style="width: {{ language.percentage }}%"></div>
@@ -158,7 +158,7 @@
                     <span class="relative z-10">{{ language.percentage }}%</span>
                   </td>
                 </tr>
-              @endforeach
+              </template>
             </tbody>
           </table>
         </div>

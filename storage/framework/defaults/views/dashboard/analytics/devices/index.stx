@@ -67,7 +67,7 @@
               </tr>
             </thead>
             <tbody class="bg-white dark:bg-neutral-800 divide-gray-200 divide-y dark:divide-neutral-700">
-              @foreach(deviceData() as device, index)
+              <template :for="(device, index) in deviceData">
                 <tr class="relative hover:bg-gray-50 dark:hover:bg-neutral-700/50">
                   <td class="px-4 py-3 text-gray-900 text-sm whitespace-nowrap dark:text-white">
                     <div class="absolute inset-0 bg-purple-100/50 dark:bg-purple-900/50" style="width: {{ device.percentage }}%"></div>
@@ -80,7 +80,7 @@
                     <span class="relative z-10">{{ device.percentage }}%</span>
                   </td>
                 </tr>
-              @endforeach
+              </template>
             </tbody>
           </table>
         </div>
@@ -104,7 +104,7 @@
               </tr>
             </thead>
             <tbody class="bg-white dark:bg-neutral-800 divide-gray-200 divide-y dark:divide-neutral-700">
-              @foreach(detailedDeviceData() as device, index)
+              <template :for="(device, index) in detailedDeviceData">
                 <tr class="relative hover:bg-gray-50 dark:hover:bg-neutral-700/50">
                   <td class="px-4 py-3 text-gray-900 text-sm whitespace-nowrap dark:text-white">
                     <div class="absolute inset-0 bg-purple-100/50 dark:bg-purple-900/50" style="width: {{ device.percentage }}%"></div>
@@ -123,7 +123,7 @@
                     <span class="relative z-10">{{ device.percentage }}%</span>
                   </td>
                 </tr>
-              @endforeach
+              </template>
             </tbody>
           </table>
         </div>
@@ -145,7 +145,7 @@
               </tr>
             </thead>
             <tbody class="bg-white dark:bg-neutral-800 divide-gray-200 divide-y dark:divide-neutral-700">
-              @foreach(screenSizeData() as screen, index)
+              <template :for="(screen, index) in screenSizeData">
                 <tr class="relative hover:bg-gray-50 dark:hover:bg-neutral-700/50">
                   <td class="px-4 py-3 text-gray-900 text-sm whitespace-nowrap dark:text-white">
                     <div class="absolute inset-0 bg-indigo-100/50 dark:bg-indigo-900/50" style="width: {{ screen.percentage }}%"></div>
@@ -158,7 +158,7 @@
                     <span class="relative z-10">{{ screen.percentage }}%</span>
                   </td>
                 </tr>
-              @endforeach
+              </template>
             </tbody>
           </table>
         </div>

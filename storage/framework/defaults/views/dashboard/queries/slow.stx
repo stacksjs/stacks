@@ -67,7 +67,7 @@
 
         <div class="overflow-hidden bg-white dark:bg-neutral-900 sm:rounded-md shadow">
           <ul role="list" class="divide-gray-200 divide-y dark:divide-neutral-700">
-            @foreach(filteredQueries() as query)
+            <template :for="query in filteredQueries">
               <li class="hover:bg-gray-50 dark:hover:bg-neutral-800 cursor-pointer group" @click="toggleQueryDetails('{{ query.id }}')">
                 <div class="px-4 py-4 sm:px-6">
                   <div class="flex items-center justify-between">
@@ -91,9 +91,9 @@
                     </div>
                   </div>
                   <div class="flex flex-wrap gap-1 mt-2">
-                    @foreach(query.affected_tables as table)
+                    <template :for="table in query.affected_tables">
                       <span class="inline-flex items-center px-2 py-1 font-medium text-blue-700 text-xs dark:text-blue-300 bg-blue-50 dark:bg-blue-900/20 ring-1 ring-blue-700/10 ring-inset rounded-md dark:ring-blue-400/30">{{ table }}</span>
-                    @endforeach
+                    </template>
                   </div>
                 </div>
 
@@ -123,12 +123,12 @@
                     <div>
                       <h4 class="mb-2 font-medium text-gray-900 text-sm dark:text-white">Optimization Suggestions</h4>
                       <ul class="mt-1 space-y-2">
-                        @foreach(query.optimization_suggestions as suggestion)
+                        <template :for="suggestion in query.optimization_suggestions">
                           <li class="flex items-start">
                             <div class="flex-shrink-0 mr-2 mt-0.5 h-5 w-5 text-yellow-500 i-hugeicons-lightbulb-02"></div>
                             <span class="text-gray-700 text-sm dark:text-neutral-300">{{ suggestion }}</span>
                           </li>
-                        @endforeach
+                        </template>
                       </ul>
 
                       <h4 class="mb-2 mt-4 font-medium text-gray-900 text-sm dark:text-white">Source</h4>
@@ -141,9 +141,9 @@
                         <div class="mb-2">
                           <h5 class="font-medium text-gray-600 text-xs dark:text-neutral-400">Used Indexes</h5>
                           <div :show="{{ query.indexes_used && query.indexes_used.length ? 'true' : 'false' }}" class="mt-1">
-                            @foreach(query.indexes_used as index)
+                            <template :for="index in query.indexes_used">
                               <span class="inline-flex items-center mb-2 mr-2 px-2 py-1 font-medium text-green-700 text-xs dark:text-green-300 bg-green-50 dark:bg-green-900/20 ring-1 ring-green-700/10 ring-inset rounded-md dark:ring-green-400/30">{{ index }}</span>
-                            @endforeach
+                            </template>
                           </div>
                           <p :show="{{ !query.indexes_used || !query.indexes_used.length ? 'true' : 'false' }}" class="text-gray-500 text-xs dark:text-neutral-400">No indexes used</p>
                         </div>
@@ -151,9 +151,9 @@
                         <div>
                           <h5 class="font-medium text-gray-600 text-xs dark:text-neutral-400">Missing Indexes</h5>
                           <div :show="{{ query.missing_indexes && query.missing_indexes.length ? 'true' : 'false' }}" class="mt-1">
-                            @foreach(query.missing_indexes as index)
+                            <template :for="index in query.missing_indexes">
                               <span class="inline-flex items-center mb-2 mr-2 px-2 py-1 font-medium text-red-700 text-xs dark:text-red-300 bg-red-50 dark:bg-red-900/20 ring-1 ring-inset ring-red-700/10 rounded-md dark:ring-red-400/30">{{ index }}</span>
-                            @endforeach
+                            </template>
                           </div>
                           <p :show="{{ !query.missing_indexes || !query.missing_indexes.length ? 'true' : 'false' }}" class="text-gray-500 text-xs dark:text-neutral-400">No missing indexes identified</p>
                         </div>
@@ -162,7 +162,7 @@
                   </div>
                 </div>
               </li>
-            @endforeach
+            </template>
             <li :show="hasNoQueries" class="px-4 py-6 sm:px-6 text-center text-gray-500 text-sm dark:text-neutral-400">No slow queries found matching your criteria.</li>
           </ul>
         </div>

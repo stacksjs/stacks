@@ -62,7 +62,7 @@ catch {}
           <div class="mt-5">
             <h3 class="mb-1 px-2.5 font-semibold text-[11px] text-stone-400 dark:text-neutral-500">Folders</h3>
             <div class="space-y-px">
-              <template :for="folder in topLevelFolders()">
+              <template :for="folder in topLevelFolders">
                 <button @click="navigateToFolder(folder)" :class="navRowClass(currentFolderId() === folder.id)">
                   <div class="h-[18px] w-[18px] text-amber-400 i-hugeicons-folder-02"></div>
                   {{ folder.name }}
@@ -133,7 +133,7 @@ catch {}
 
         <nav class="flex mt-4">
           <ol class="flex items-center space-x-1">
-            <template :for="(path, index) in currentPath()">
+            <template :for="(path, index) in currentPath">
               <li>
                 <div class="flex items-center">
                   <span :show="index > 0" class="mx-1 text-gray-400 dark:text-neutral-500">/</span>
@@ -153,7 +153,7 @@ catch {}
         </div>
 
         <div :show="filteredItems().length > 0 && viewMode() === 'grid'" class="grid gap-4 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
-          <template :for="item in filteredItems()">
+          <template :for="item in filteredItems">
             <div @click="onItemClick(item)" :class="gridCardClass(item)">
               <MediaCard :item="item" />
               <div class="flex absolute right-2 top-2 space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -179,7 +179,7 @@ catch {}
               </tr>
             </thead>
             <tbody class="bg-white dark:bg-neutral-800 divide-stone-100 divide-y dark:divide-neutral-700">
-              <template :for="item in filteredItems()">
+              <template :for="item in filteredItems">
                 <tr @click="onItemClick(item)" class="hover:bg-stone-50/50 dark:hover:bg-neutral-700/50 transition-colors cursor-pointer">
                   <td class="pl-6 pr-3 py-3.5 text-sm whitespace-nowrap">
                     <div class="flex items-center">

@@ -67,7 +67,7 @@
               </tr>
             </thead>
             <tbody class="bg-white dark:bg-neutral-800 divide-gray-200 divide-y dark:divide-neutral-700">
-              @foreach(browserData() as browser, index)
+              <template :for="(browser, index) in browserData">
                 <tr class="relative hover:bg-gray-50 dark:hover:bg-neutral-700/50">
                   <td class="px-4 py-3 text-gray-900 text-sm whitespace-nowrap dark:text-white">
                     <div class="absolute inset-0 bg-amber-100/50 dark:bg-amber-900/50" style="width: {{ browser.percentage }}%"></div>
@@ -80,7 +80,7 @@
                     <span class="relative z-10">{{ browser.percentage }}%</span>
                   </td>
                 </tr>
-              @endforeach
+              </template>
             </tbody>
           </table>
         </div>
@@ -104,7 +104,7 @@
               </tr>
             </thead>
             <tbody class="bg-white dark:bg-neutral-800 divide-gray-200 divide-y dark:divide-neutral-700">
-              @foreach(detailedBrowserData() as browser, index)
+              <template :for="(browser, index) in detailedBrowserData">
                 <tr class="relative hover:bg-gray-50 dark:hover:bg-neutral-700/50">
                   <td class="px-4 py-3 text-gray-900 text-sm whitespace-nowrap dark:text-white">
                     <div class="absolute inset-0 bg-amber-100/50 dark:bg-amber-900/50" style="width: {{ browser.percentage }}%"></div>
@@ -123,7 +123,7 @@
                     <span class="relative z-10">{{ browser.percentage }}%</span>
                   </td>
                 </tr>
-              @endforeach
+              </template>
             </tbody>
           </table>
         </div>
