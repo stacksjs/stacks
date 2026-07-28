@@ -125,8 +125,14 @@ storage/framework/core/**/storage/logs/
 storage/framework/**/storage/logs/
 
 # @stacksjs/defaults copies resources + app from storage/framework/defaults at build time
-storage/framework/core/defaults/resources/
-storage/framework/core/defaults/app/
+# @stacksjs/defaults is a publish wrapper. Its generated scaffold is rebuilt
+# from storage/framework/defaults by core/defaults/build.ts.
+storage/framework/core/defaults/*
+!storage/framework/core/defaults/README.md
+!storage/framework/core/defaults/build.ts
+!storage/framework/core/defaults/package.json
+!storage/framework/core/defaults/tests/
+!storage/framework/core/defaults/tests/**
 
 # Generated protocol evidence is retained by CI, not committed.
 /.github/protocol/reports/

@@ -9,6 +9,12 @@ import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from '
 import { join, relative } from 'node:path'
 import process from 'node:process'
 import { runCommand } from '@stacksjs/cli'
+import {
+  detectProjectAiProviders,
+  migratePackageProjectManifest,
+  migratePackageProjectTsconfig,
+  syncPackageProjectFiles,
+} from './package-project'
 
 export interface PackageUpgradeOptions {
   /** Pin an exact target version (e.g. 0.70.70). Overrides channel. */
@@ -25,7 +31,7 @@ export interface PackageUpgradeOptions {
   noPostinstall?: boolean
 }
 
-interface PkgJson {
+export interface PkgJson {
   dependencies?: Record<string, string>
   devDependencies?: Record<string, string>
   [key: string]: unknown
@@ -185,6 +191,7 @@ export async function upgradeStacksPackages(projectRoot: string, options: Packag
 
   const lockstep = lockstepPackages(metaDeps, target)
   const changes = applyBumps(pkg, target, lockstep)
+  const projectManifestChanges = migratePackageProjectManifest(pkg)
 
   // The root manifest is not the whole story. An app that keeps parts of the
   // framework in its own tree has manifests under storage/framework that
@@ -192,11 +199,6 @@ export async function upgradeStacksPackages(projectRoot: string, options: Packag
   // them leaves the app describing two framework versions at once — or, once
   // a vendored core is removed, unable to install at all.
   const manifestChanges = reconcileVendoredManifests(projectRoot, target, { dryRun: options.dryRun })
-
-  if (changes.length === 0 && manifestChanges.length === 0 && !options.force) {
-    console.log('✔ Already up to date — every framework dependency matches the target.\n')
-    process.exit(0)
-  }
 
   if (changes.length > 0) {
     console.log('  The following dependencies will be updated:')
@@ -214,12 +216,15 @@ export async function upgradeStacksPackages(projectRoot: string, options: Packag
     console.log('')
   }
 
+  if (projectManifestChanges.length > 0)
+    console.log(`  Project manifest migrations: ${projectManifestChanges.length}\n`)
+
   if (options.dryRun) {
     console.log('  --dry-run: no files were written and nothing was installed.\n')
     process.exit(0)
   }
 
-  if (changes.length > 0) {
+  if (changes.length > 0 || projectManifestChanges.length > 0) {
     // Preserve trailing newline convention of the original file.
     const trailing = raw.endsWith('\n') ? '\n' : ''
     writeFileSync(pkgPath, `${JSON.stringify(pkg, null, 2)}${trailing}`)
@@ -242,16 +247,47 @@ export async function upgradeStacksPackages(projectRoot: string, options: Packag
     process.exit(0)
   }
 
-  console.log('  Installing…\n')
-  const result = await runCommand(`bun update ${frameworkPkgs.join(' ')}`, { cwd: projectRoot })
-  const isErr = result.isErr
+  if (changes.length > 0 || manifestChanges.length > 0 || projectManifestChanges.length > 0 || options.force) {
+    console.log('  Installing…\n')
+    const result = await runCommand(`bun update ${frameworkPkgs.join(' ')}`, { cwd: projectRoot })
 
-  if (isErr) {
-    console.error('\n✗ The install step failed. Your package.json was updated — resolve the error and re-run `bun update`.\n')
-    process.exit(1)
+    if (result.isErr) {
+      console.error('\n✗ The install step failed. Your package.json was updated — resolve the error and re-run `bun update`.\n')
+      process.exit(1)
+    }
   }
 
-  console.log(`\n✔ Upgraded to stacks@${target}. Review the changelog: https://github.com/stacksjs/stacks/releases/tag/v${target}\n`)
+  const defaultsPackageRoot = join(projectRoot, 'node_modules/@stacksjs/defaults')
+  const structureChanges = existsSync(join(defaultsPackageRoot, 'package.json'))
+    ? syncPackageProjectFiles(projectRoot, defaultsPackageRoot)
+    : []
+  const tsconfigChanges = migratePackageProjectTsconfig(projectRoot)
+
+  if (structureChanges.length > 0 || tsconfigChanges.length > 0) {
+    const added = structureChanges.filter(change => change.action === 'add').length
+    const updated = structureChanges.filter(change => change.action === 'update').length + tsconfigChanges.length
+    const removed = structureChanges.filter(change => change.action === 'remove').length
+    console.log(`  Project structure: +${added} ~${updated} -${removed}`)
+  }
+
+  for (const provider of detectProjectAiProviders(projectRoot)) {
+    const result = await runCommand(`./buddy setup:ai ${provider} --force`, { cwd: projectRoot })
+    if (result.isErr) {
+      console.error(`\n✗ AI setup refresh failed for ${provider}. Re-run \`buddy setup:ai ${provider} --force\`.\n`)
+      process.exit(1)
+    }
+  }
+
+  const didChange = changes.length > 0
+    || manifestChanges.length > 0
+    || projectManifestChanges.length > 0
+    || structureChanges.length > 0
+    || tsconfigChanges.length > 0
+
+  if (!didChange && !options.force)
+    console.log('\n✔ Already up to date — dependencies and managed project files match the target.\n')
+  else
+    console.log(`\n✔ Upgraded to stacks@${target}. Review the changelog: https://github.com/stacksjs/stacks/releases/tag/v${target}\n`)
   process.exit(0)
 }
 
