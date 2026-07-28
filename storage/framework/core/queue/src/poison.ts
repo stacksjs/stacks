@@ -22,6 +22,7 @@
 
 import { createHash } from 'node:crypto'
 import { db } from '@stacksjs/database'
+import { isMissingTableError } from './missing-table'
 
 export interface PoisonConfig {
   /** Failures-in-window threshold. Default 5. */
@@ -42,10 +43,6 @@ function warnOnceAboutMissingTable(): void {
   )
 }
 
-function isMissingTableError(err: unknown): boolean {
-  const msg = (err as { message?: string } | null)?.message ?? ''
-  return msg.includes('no such table') || msg.includes("doesn't exist")
-}
 
 /**
  * Compute the dedup key for a job+payload combination. Stable

@@ -16,6 +16,7 @@
  */
 
 import { db } from '@stacksjs/database'
+import { isMissingTableError } from './missing-table'
 
 export type DeadLetterReason = 'repeat-failure' | 'poison-detected' | 'circuit-broken' | 'manual'
 
@@ -45,10 +46,6 @@ function warnOnceAboutMissingTable(): void {
   )
 }
 
-function isMissingTableError(err: unknown): boolean {
-  const msg = (err as { message?: string } | null)?.message ?? ''
-  return msg.includes('no such table') || msg.includes("doesn't exist")
-}
 
 /**
  * Move a job from `failed_jobs` into `dead_letter_jobs`. Called

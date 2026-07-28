@@ -19,6 +19,7 @@
  */
 
 import { db } from '@stacksjs/database'
+import { isMissingTableError } from './missing-table'
 
 export interface CircuitBreakerConfig {
   /** Failure rate (0-1) over the window that trips the breaker. Default 0.5 (50%). */
@@ -43,10 +44,6 @@ function warnOnceAboutMissingTable(): void {
   )
 }
 
-function isMissingTableError(err: unknown): boolean {
-  const msg = (err as { message?: string } | null)?.message ?? ''
-  return msg.includes('no such table') || msg.includes("doesn't exist")
-}
 
 interface CircuitRow {
   queue_name: string

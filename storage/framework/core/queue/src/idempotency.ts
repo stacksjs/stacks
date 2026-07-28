@@ -16,6 +16,7 @@
  * Mirrors the dedup tables we ship across the framework:
  *   - `order_idempotency`        (stacksjs/stacks#1879 Co-3)
  *   - `email_idempotency`        (stacksjs/stacks#1871 M-8)
+import { isMissingTableError } from './missing-table'
  *   - `stripe_webhook_events`    (stacksjs/stacks#1879 Co-17)
  *
  * Same insert-or-skip semantics, same warn-once-and-degrade when
@@ -47,10 +48,6 @@ function warnOnceAboutMissingTable(): void {
   )
 }
 
-function isMissingTableError(err: unknown): boolean {
-  const msg = (err as { message?: string } | null)?.message ?? ''
-  return msg.includes('no such table') || msg.includes("doesn't exist")
-}
 
 /**
  * Check whether a job has already been dispatched under this key.
