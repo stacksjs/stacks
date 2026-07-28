@@ -1,5 +1,16 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.215...v0.70.216)
+
+## 🐛 Bug Fixes
+
+- **testing**: discover browser suites reliably ([baeffd2](https://github.com/stacksjs/stacks/commit/baeffd2)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **ci**: run pinned Craft lifecycle script ([cc80537](https://github.com/stacksjs/stacks/commit/cc80537)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.213...v0.70.215)
 
 ## 🐛 Bug Fixes
