@@ -2193,50 +2193,6 @@ async function reconcileConfigDns(sites: Record<string, any>, logger: typeof log
   }
 }
 
-/**
- * Best-effort post-write check that an address record for `fqdn → ip` exists at
- * the provider. Returns true when the provider offers no list API or the
- * listing itself fails — verification must never turn a possibly-good
- * write into a false alarm; it exists to catch phantom successes (an
- * upsert that edited the wrong record) at providers that CAN list their
- * zone (Porkbun at minimum).
- */
-async function verifyDnsRecord(provider: any, domain: string, fqdn: string, ip: string, recordType: 'A' | 'AAAA' = 'A'): Promise<boolean> {
-  try {
-    if (typeof provider?.listRecords !== 'function')
-      return true
-
-    // List WITHOUT a type filter: the typed listing maps to provider
-    // endpoints like Porkbun's retrieveByNameType, whose subdomain-less
-    // form returns apex records only — filtering by 'A' server-side made
-    // verification blind to every non-apex record and produced false
-    // "record is missing" warnings on healthy zones. Retrieve the full
-    // zone and match type/name/content client-side instead.
-    const res = await provider.listRecords(domain)
-    if (!res?.success || !Array.isArray(res.records))
-      return true
-
-    return res.records.some((r: any) => {
-      const name = typeof r?.name === 'string' ? r.name.replace(/\.$/, '') : ''
-      return r?.type === recordType && name === fqdn && r?.content === ip
-    })
-  }
-  catch {
-    return true
-  }
-}
-
-/**
- * Hosts that must stay IPv4-only. The mail server binds `0.0.0.0` and the box's
- * IPv6 address has no PTR, so an AAAA here would advertise a port nothing
- * answers on and hand senders a deferral instead of a delivery.
- */
-const IPV6_EXCLUDED_HOSTS = new Set(['mail', 'smtp', 'imap', 'mx'])
-
-function skipIpv6ForHost(fqdn: string): boolean {
-  return IPV6_EXCLUDED_HOSTS.has(fqdn.split('.')[0] ?? '')
-}
-
 async function reconcileHetznerDns(sites: Record<string, any>, ip: string, logger: typeof log, ipv6?: string): Promise<void> {
   // Collect the apex domains declared by sites (skip loopback/domain-less sites).
   const domains = new Set<string>()
@@ -2268,7 +2224,7 @@ async function reconcileHetznerDns(sites: Record<string, any>, ip: string, logge
   const {
     createDnsProvider,
     detectDnsProvider,
-    removeStaleServerAddressRecords,
+    reconcileAddressRecords,
   } = await import('@stacksjs/ts-cloud') as any
   logger.info('Reconciling DNS records...')
 
@@ -2328,46 +2284,18 @@ async function reconcileHetznerDns(sites: Record<string, any>, ip: string, logge
         // printed a phantom ✓ for a record that never existed (this was
         // the hq.training production TLS blocker — LE could not resolve
         // the host to validate http-01).
-        const res = await provider.upsertRecord(domain, { name: fqdn, type: 'A', content: ip, ttl: 600 })
-        if (res?.success === false) {
-          // ts-cloud providers report failures as { success: false,
-          // message } — read both fields before giving up on detail.
-          logger.warn(`  DNS: ${fqdn} → ${ip} failed: ${res.error || res.message || 'unknown error'}`)
-          continue
-        }
-        // An upsert may update only one of multiple records with the same
-        // hostname. Remove the remaining stale addresses so DNS cannot
-        // round-robin traffic back to an old host (and its stale TLS cert).
-        const cleanupWarnings = await removeStaleServerAddressRecords(provider, domain, fqdn, ip)
-        for (const warning of cleanupWarnings)
-          logger.warn(`  DNS: ${fqdn} cleanup: ${warning}`)
-        // Post-write verification against the provider API. Upsert paths
-        // have produced phantom successes, so only print ✓ once the
-        // record is confirmed to exist. Best-effort: providers without a
-        // usable list API are trusted (see verifyDnsRecord).
-        if (await verifyDnsRecord(provider, domain, fqdn, ip))
-          logger.success(`  DNS: ${fqdn} → ${ip} (${provider.name})`)
-        else
-          logger.warn(`  DNS: ${fqdn} → ${ip} reported success at ${provider.name} but no matching A record exists — create it manually: A ${fqdn} → ${ip}`)
-
-        // Mirror the A record into AAAA when the box has a v6 address. Without
-        // this the sites answer on IPv6 (rpx binds dual-stack) but nothing
-        // advertises the address, so no v6-only client can ever find them.
-        if (!ipv6 || skipIpv6ForHost(fqdn))
-          continue
-
-        const v6res = await provider.upsertRecord(domain, { name: fqdn, type: 'AAAA', content: ipv6, ttl: 600 })
-        if (v6res?.success === false) {
-          logger.warn(`  DNS: ${fqdn} → ${ipv6} failed: ${v6res.error || v6res.message || 'unknown error'}`)
-          continue
-        }
-        const v6Cleanup = await removeStaleServerAddressRecords(provider, domain, fqdn, ipv6, 'AAAA')
-        for (const warning of v6Cleanup)
-          logger.warn(`  DNS: ${fqdn} cleanup: ${warning}`)
-        if (await verifyDnsRecord(provider, domain, fqdn, ipv6, 'AAAA'))
-          logger.success(`  DNS: ${fqdn} → ${ipv6} (${provider.name})`)
-        else
-          logger.warn(`  DNS: ${fqdn} → ${ipv6} reported success at ${provider.name} but no matching AAAA record exists — create it manually: AAAA ${fqdn} → ${ipv6}`)
+        //
+        // Upsert, stale-record cleanup, post-write verification and the
+        // IPv4/IPv6 split all live in ts-cloud's reconcileAddressRecords, so
+        // every driver and every caller applies the same rules — including
+        // the ones learned the hard way here (phantom successes, duplicate
+        // addresses round-robining onto a dead host, mail hosts that must
+        // stay IPv4-only).
+        const report = await reconcileAddressRecords({ provider, zone: domain, fqdn, ipv4: ip, ipv6 })
+        for (const record of report.published)
+          logger.success(`  DNS: ${record.fqdn} → ${record.content} (${provider.name})`)
+        for (const warning of report.warnings)
+          logger.warn(`  DNS: ${warning}`)
       }
     }
     catch (err: any) {
