@@ -56,7 +56,7 @@
   },
   "dependencies": {
     "@stacksjs/ts-validation": "^0.5.0",
-    "bun-query-builder": "^0.1.59",
+    "bun-query-builder": "^0.1.63",
     "dynamodb-tooling": "^0.3.2"
   },
   "devDependencies": {
