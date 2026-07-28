@@ -1,0 +1,197 @@
+name: Publish desktop app to the Mac App Store
+
+on:
+  workflow_call:
+    inputs:
+      app-name:
+        description: Mac App Store display name
+        required: true
+        type: string
+      bundle-id:
+        description: Reverse-DNS macOS bundle identifier
+        required: true
+        type: string
+      team-id:
+        description: Apple Developer team ID
+        required: true
+        type: string
+      desktop-url:
+        description: HTTPS URL opened by the packaged Stacks desktop app
+        required: true
+        type: string
+      app-signing-identity:
+        description: Mac App Distribution signing identity
+        required: true
+        type: string
+      installer-signing-identity:
+        description: Mac Installer Distribution signing identity
+        required: true
+        type: string
+      minimum-macos:
+        description: Minimum supported macOS version
+        default: '13.0'
+        required: false
+        type: string
+      category:
+        description: LSApplicationCategoryType value
+        default: public.app-category.productivity
+        required: false
+        type: string
+      craft-revision:
+        description: Immutable home-lang/craft source revision
+        default: bf75807669e3af6cfb4ae34724be5c613442aee2
+        required: false
+        type: string
+      validate-only:
+        description: Validate the signed package without uploading it
+        default: true
+        required: false
+        type: boolean
+    secrets:
+      APPLE_APP_CERTIFICATE_BASE64:
+        description: Base64-encoded P12 containing the Mac App Distribution identity
+        required: true
+      APPLE_INSTALLER_CERTIFICATE_BASE64:
+        description: Base64-encoded P12 containing the Mac Installer Distribution identity
+        required: true
+      APPLE_CERTIFICATE_PASSWORD:
+        description: Password used to export both P12 files
+        required: true
+      APPLE_PROVISIONING_PROFILE_BASE64:
+        description: Base64-encoded Mac App Store provisioning profile
+        required: true
+      APP_STORE_CONNECT_API_KEY:
+        description: App Store Connect API private key contents
+        required: true
+      APP_STORE_CONNECT_API_KEY_ID:
+        description: App Store Connect API key ID
+        required: true
+      APP_STORE_CONNECT_API_ISSUER_ID:
+        description: App Store Connect API issuer ID
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    runs-on: macos-15
+    timeout-minutes: 45
+    env:
+      APPLE_APP_NAME: ${{ inputs.app-name }}
+      APPLE_BUNDLE_ID: ${{ inputs.bundle-id }}
+      APPLE_TEAM_ID: ${{ inputs.team-id }}
+      DESKTOP_URL: ${{ inputs.desktop-url }}
+      APPLE_APP_SIGNING_IDENTITY: ${{ inputs.app-signing-identity }}
+      APPLE_INSTALLER_SIGNING_IDENTITY: ${{ inputs.installer-signing-identity }}
+      APPLE_MINIMUM_MACOS: ${{ inputs.minimum-macos }}
+      APPLE_APP_CATEGORY: ${{ inputs.category }}
+      APP_STORE_CONNECT_API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
+      APP_STORE_CONNECT_API_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_ISSUER_ID }}
+      CRAFT_BIN: ${{ github.workspace }}/.craft-contract/packages/zig/zig-out/bin/craft
+
+    steps:
+      - name: Checkout application
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Checkout pinned Craft source
+        uses: actions/checkout@v6
+        with:
+          repository: home-lang/craft
+          ref: ${{ inputs.craft-revision }}
+          path: .craft-contract
+
+      - name: Select stable Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+
+      - name: Setup Pantry
+        uses: pantry-pm/pantry/packages/action@d738d5fd2e543e3b8380e5fbd5d01ba8936c1790 # v0.10.47
+        with:
+          version: '0.10.47'
+          install: 'false'
+
+      - name: Install application dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Build pinned Craft runtime
+        working-directory: .craft-contract
+        run: |
+          set -euo pipefail
+          bun install --frozen-lockfile
+          bun run build:core
+          test "$(git rev-parse HEAD)" = "${{ inputs.craft-revision }}"
+          test -x packages/zig/zig-out/bin/craft
+
+      - name: Import Apple signing identities
+        env:
+          APP_CERTIFICATE: ${{ secrets.APPLE_APP_CERTIFICATE_BASE64 }}
+          INSTALLER_CERTIFICATE: ${{ secrets.APPLE_INSTALLER_CERTIFICATE_BASE64 }}
+          CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+        run: |
+          set -euo pipefail
+          KEYCHAIN_PASSWORD="$(uuidgen)"
+          KEYCHAIN_PATH="$RUNNER_TEMP/stacks-app-store.keychain-db"
+          echo "::add-mask::$KEYCHAIN_PASSWORD"
+          printf 'APPLE_KEYCHAIN_PATH=%s\n' "$KEYCHAIN_PATH" >> "$GITHUB_ENV"
+          printf 'APPLE_KEYCHAIN_PASSWORD=%s\n' "$KEYCHAIN_PASSWORD" >> "$GITHUB_ENV"
+
+          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security default-keychain -s "$KEYCHAIN_PATH"
+
+          printf '%s' "$APP_CERTIFICATE" | base64 --decode > "$RUNNER_TEMP/apple-app.p12"
+          printf '%s' "$INSTALLER_CERTIFICATE" | base64 --decode > "$RUNNER_TEMP/apple-installer.p12"
+          security import "$RUNNER_TEMP/apple-app.p12" -k "$KEYCHAIN_PATH" -P "$CERTIFICATE_PASSWORD" -T /usr/bin/codesign
+          security import "$RUNNER_TEMP/apple-installer.p12" -k "$KEYCHAIN_PATH" -P "$CERTIFICATE_PASSWORD" -T /usr/bin/productbuild
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          rm "$RUNNER_TEMP/apple-app.p12" "$RUNNER_TEMP/apple-installer.p12"
+
+      - name: Configure Apple profile and App Store Connect key
+        env:
+          PROVISIONING_PROFILE: ${{ secrets.APPLE_PROVISIONING_PROFILE_BASE64 }}
+          API_KEY: ${{ secrets.APP_STORE_CONNECT_API_KEY }}
+        run: |
+          set -euo pipefail
+          PRIVATE_KEYS_DIR="$RUNNER_TEMP/private_keys"
+          mkdir -p "$PRIVATE_KEYS_DIR"
+          printf '%s' "$PROVISIONING_PROFILE" | base64 --decode > "$RUNNER_TEMP/app.provisionprofile"
+          printf '%s\n' "$API_KEY" > "$PRIVATE_KEYS_DIR/AuthKey_${APP_STORE_CONNECT_API_KEY_ID}.p8"
+          chmod 600 "$RUNNER_TEMP/app.provisionprofile" "$PRIVATE_KEYS_DIR/AuthKey_${APP_STORE_CONNECT_API_KEY_ID}.p8"
+          printf 'APPLE_PROVISIONING_PROFILE=%s\n' "$RUNNER_TEMP/app.provisionprofile" >> "$GITHUB_ENV"
+          printf 'APP_STORE_CONNECT_API_KEY_PATH=%s\n' "$PRIVATE_KEYS_DIR/AuthKey_${APP_STORE_CONNECT_API_KEY_ID}.p8" >> "$GITHUB_ENV"
+
+      - name: Verify Mac App Store prerequisites
+        run: bun node_modules/@stacksjs/buddy/dist/cli.js desktop:apple:doctor
+
+      - name: Build, sign, and deliver Mac App Store package
+        env:
+          APPLE_BUILD_NUMBER: ${{ github.run_number }}
+        run: |
+          set -euo pipefail
+          args=(desktop:apple:publish)
+          if ${{ inputs.validate-only }}; then args+=(--validate-only); fi
+          bun node_modules/@stacksjs/buddy/dist/cli.js "${args[@]}"
+
+      - name: Upload signed package evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: mac-app-store-${{ inputs.bundle-id }}-${{ github.sha }}
+          path: |
+            storage/framework/desktop-dist/apple/*.pkg
+            storage/framework/desktop-dist/apple/checksums.sha256
+            storage/framework/desktop-dist/apple/apple-provenance.json
+          if-no-files-found: error
+          retention-days: 90
+
+      - name: Remove ephemeral signing keychain
+        if: always()
+        run: |
+          if test -n "${APPLE_KEYCHAIN_PATH:-}" && test -e "$APPLE_KEYCHAIN_PATH"; then
+            security delete-keychain "$APPLE_KEYCHAIN_PATH"
+          fi
