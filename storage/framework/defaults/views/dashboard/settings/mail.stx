@@ -1,21 +1,96 @@
 @extends('layouts/default')
 
 @section('content')
-<script>
-import { useMailSettings } from '../../../functions/settings/mail'
+<script client>
+// State-signal + directive style (matches the rest of the dashboard). The
+// previous version used a Vue-style ref() composable, which stx's template
+// runtime does not unwrap, so every binding on the page rendered empty; it
+// also imported functions/api, whose auth chain runs useStorage() at module
+// load and throws in the client bundle, killing the whole scope. So this
+// talks to /api/settings/mail with a plain fetch, like the blog page.
+const endpoint = '/api/settings/mail'
 
-const { settings, isLoading, isSaving, error, success, fetchSettings, saveSettings } = useMailSettings()
-
-function handleSubmit(event: Event) {
-  event.preventDefault()
-  saveSettings()
+// CSRF header for writes, read from the cookie the GET on load seeds.
+function writeHeaders() {
+  const headers = { 'Content-Type': 'application/json' }
+  const match = document.cookie.match(/(?:^|;\s*)X-CSRF-Token=([^;]*)/)
+  if (match)
+    headers['X-CSRF-Token'] = decodeURIComponent(match[1])
+  return headers
 }
 
-// Load settings on mount
-fetchSettings()
+const from = state('')
+const to = state('')
+const driver = state('SMTP')
+const host = state('')
+const port = state(587)
+const username = state('')
+const password = state('')
+const isSaving = state(false)
+const error = state('')
+const success = state('')
+
+async function load() {
+  try {
+    const res = await fetch(endpoint, { headers: { Accept: 'application/json' } })
+    if (!res.ok)
+      return
+    const json = await res.json()
+    const d = json && json.data ? json.data : json
+    if (d) {
+      from.set(d.from ?? '')
+      to.set(d.to ?? '')
+      driver.set(d.driver ?? 'SMTP')
+      host.set(d.host ?? '')
+      port.set(d.port ?? 587)
+      username.set(d.username ?? '')
+      password.set(d.password ?? '')
+    }
+  }
+  catch (e) {
+    // Keep the defaults when the settings endpoint isn't available yet.
+  }
+}
+
+async function save() {
+  isSaving.set(true)
+  error.set('')
+  success.set('')
+  try {
+    const res = await fetch(endpoint, {
+      method: 'PUT',
+      headers: writeHeaders(),
+      body: JSON.stringify({
+        from: from(),
+        to: to(),
+        driver: driver(),
+        host: host(),
+        port: port(),
+        username: username(),
+        password: password(),
+      }),
+    })
+    if (!res.ok)
+      throw new Error(`Save failed (${res.status})`)
+    success.set('Mail settings saved successfully.')
+  }
+  catch (e) {
+    error.set(e instanceof Error ? e.message : 'Failed to save mail settings.')
+  }
+  finally {
+    isSaving.set(false)
+  }
+}
+
+onMount(() => {
+  load()
+})
 </script>
 
-<PageLayout variant="bare">
+<!-- Plain container instead of a component wrapper: a component slot severs the
+     page reactive scope from the markup, leaving every field binding empty. The
+     sibling settings pages avoid the wrapper for the same reason. -->
+<div class="mx-auto pb-12 pt-6 px-6 space-y-6 max-w-7xl">
   <PageHeader title="Email Settings" description="Configure how your application sends mail." />
 
   <!-- Settings forms -->
@@ -30,20 +105,16 @@ fetchSettings()
         </p>
       </div>
 
-      <form class="md:col-span-2" @submit="handleSubmit">
+      <form class="md:col-span-2" @submit.prevent="save()">
         <!-- Success message -->
-        @if(success)
-          <div class="mb-6 p-4 bg-green-50 dark:bg-green-900/20 rounded-md">
-            <p class="text-green-700 text-sm dark:text-green-400">{{ success }}</p>
-          </div>
-        @endif
+        <div x-show="success()" class="mb-6 p-4 bg-green-50 dark:bg-green-900/20 rounded-md">
+          <p class="text-green-700 text-sm dark:text-green-400">{{ success() }}</p>
+        </div>
 
         <!-- Error message -->
-        @if(error)
-          <div class="mb-6 p-4 bg-red-50 dark:bg-red-900/20 rounded-md">
-            <p class="text-red-700 text-sm dark:text-red-400">{{ error }}</p>
-          </div>
-        @endif
+        <div x-show="error()" class="mb-6 p-4 bg-red-50 dark:bg-red-900/20 rounded-md">
+          <p class="text-red-700 text-sm dark:text-red-400">{{ error() }}</p>
+        </div>
 
         <div class="grid gap-x-6 gap-y-8 grid-cols-1 sm:grid-cols-6 sm:max-w-xl">
           <div class="sm:col-span-full">
@@ -55,8 +126,7 @@ fetchSettings()
               <input
                 id="mail-from"
                 type="email"
-                value="{{ settings.from }}"
-                oninput="settings.from = $event.target.value"
+                x-model="from"
                 placeholder="no-reply@example.com"
                 class="block px-4 py-2 w-full text-gray-900 dark:text-neutral-100 dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-600 focus:border-none focus:ring-2 focus:ring-blue-500 shadow-sm"
               >
@@ -72,8 +142,7 @@ fetchSettings()
               <input
                 id="mail-to"
                 type="email"
-                value="{{ settings.to }}"
-                oninput="settings.to = $event.target.value"
+                x-model="to"
                 placeholder="admin@example.com"
                 class="block px-4 py-2 w-full text-gray-900 dark:text-neutral-100 dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-600 focus:border-none focus:ring-2 focus:ring-blue-500 shadow-sm"
               >
@@ -88,8 +157,7 @@ fetchSettings()
             <div class="mt-2">
               <select
                 id="mail-driver"
-                value="{{ settings.driver }}"
-                onchange="settings.driver = $event.target.value"
+                x-model="driver"
                 class="block px-4 py-2 w-full text-gray-900 dark:text-neutral-100 dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-600 focus:border-none focus:ring-2 focus:ring-blue-500 shadow-sm"
               >
                 <option value="SMTP">SMTP</option>
@@ -110,8 +178,7 @@ fetchSettings()
               <input
                 id="mail-host"
                 type="text"
-                value="{{ settings.host }}"
-                oninput="settings.host = $event.target.value"
+                x-model="host"
                 placeholder="smtp.example.com"
                 class="block px-4 py-2 w-full text-gray-900 dark:text-neutral-100 dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-600 focus:border-none focus:ring-2 focus:ring-blue-500 shadow-sm"
               >
@@ -127,8 +194,7 @@ fetchSettings()
               <input
                 id="mail-port"
                 type="number"
-                value="{{ settings.port }}"
-                oninput="settings.port = Number($event.target.value)"
+                x-model.number="port"
                 placeholder="587"
                 class="block px-4 py-2 w-full text-gray-900 dark:text-neutral-100 dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-600 focus:border-none focus:ring-2 focus:ring-blue-500 shadow-sm"
               >
@@ -144,8 +210,7 @@ fetchSettings()
               <input
                 id="mail-username"
                 type="text"
-                value="{{ settings.username }}"
-                oninput="settings.username = $event.target.value"
+                x-model="username"
                 placeholder="your-username"
                 class="block px-4 py-2 w-full text-gray-900 dark:text-neutral-100 dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-600 focus:border-none focus:ring-2 focus:ring-blue-500 shadow-sm"
               >
@@ -161,8 +226,7 @@ fetchSettings()
               <input
                 id="mail-password"
                 type="password"
-                value="{{ settings.password }}"
-                oninput="settings.password = $event.target.value"
+                x-model="password"
                 autocomplete="off"
                 placeholder="••••••••"
                 class="block px-4 py-2 w-full text-gray-900 dark:text-neutral-100 dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-600 focus:border-none focus:ring-2 focus:ring-blue-500 shadow-sm"
@@ -174,15 +238,15 @@ fetchSettings()
         <div class="flex mt-8">
           <button
             type="submit"
-            disabled="{{ isSaving }}"
+            :disabled="isSaving()"
             class="px-3 py-2 font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {{ isSaving ? 'Saving...' : 'Save Settings' }}
+            {{ isSaving() ? 'Saving...' : 'Save Settings' }}
           </button>
         </div>
       </form>
     </div>
   </div>
-</PageLayout>
+</div>
 
 @endsection
