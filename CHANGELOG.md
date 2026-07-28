@@ -1,5 +1,38 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.193...v0.70.194)
+
+## ✨ Features
+
+- **upgrade**: reconcile vendored manifests, not just the root package.json ([ab26304](https://github.com/stacksjs/stacks/commit/ab26304)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **cloud**: optimize the shared Hetzner host ([7b264aa](https://github.com/stacksjs/stacks/commit/7b264aa)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **doctor**: fail when node_modules belongs to another project ([23d61ec](https://github.com/stacksjs/stacks/commit/23d61ec)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🐛 Bug Fixes
+
+- **cloud**: drain monitoring probe responses ([1927763](https://github.com/stacksjs/stacks/commit/1927763)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **deploy**: make shared-host deploys deterministic ([578cdfa](https://github.com/stacksjs/stacks/commit/578cdfa)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **serve**: resolve the API entry from a vendored checkout ([f7c7468](https://github.com/stacksjs/stacks/commit/f7c7468)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **docs**: keep the generating machine's path out of the command reference ([8e70255](https://github.com/stacksjs/stacks/commit/8e70255)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **docs**: say which lines make the command reference stale ([55cb5a1](https://github.com/stacksjs/stacks/commit/55cb5a1)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## ⚡ Performance Improvements
+
+- **cloud**: use bodyless monitoring probes ([7f92106](https://github.com/stacksjs/stacks/commit/7f92106)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **cloud**: adopt event-driven dashboard workers ([56bd69f](https://github.com/stacksjs/stacks/commit/56bd69f)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🔧 Chores
+
+- **deps**: update ts-cloud to 0.7.78 ([2410c3a](https://github.com/stacksjs/stacks/commit/2410c3a)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **deps**: update ts-cloud to 0.7.77 ([04b1fba](https://github.com/stacksjs/stacks/commit/04b1fba)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **cloud**: adopt Route53 reconciliation fixes ([867d465](https://github.com/stacksjs/stacks/commit/867d465)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **cloud**: align ts-cloud deployment packages ([51a9262](https://github.com/stacksjs/stacks/commit/51a9262)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **cloud**: refresh the local ts-cloud package ([0ee5d66](https://github.com/stacksjs/stacks/commit/0ee5d66)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.192...v0.70.193)
 
 ## 🐛 Bug Fixes

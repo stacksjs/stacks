@@ -476,8 +476,19 @@ async function relationColumns(model: SeederModel, options: SeederConfig = {}): 
   const pools: { column: string, rows: Record<string, unknown>[] }[] = []
   for (const parent of parents) {
     const column = `${snakeCase(parent)}_id`
-    // A model that declares the key itself keeps its own factory for it.
-    if (model.attributes[column] || model.attributes[parent])
+
+    /*
+     * A declared key is no longer skipped outright.
+     *
+     * Relation keys have to be declared for anything else to see them: the
+     * generated REST layer builds its writable and filterable columns from a
+     * model's attributes, so an undeclared `farm_id` cannot be set by a POST
+     * or filtered with `?farm_id=`. Declaring it used to cost the seeder the
+     * relation entirely — the model owned the column, so nothing wired it, and
+     * every seeded row landed unattached. The value a factory produces still
+     * wins (see below); this only fills the key when it came out empty.
+     */
+    if (model.attributes[parent])
       continue
 
     // Never hand a seeded row to somebody's account (see ACCOUNT_MODELS).
@@ -559,7 +570,14 @@ async function generateRecords(model: SeederModel, options: SeederConfig = {}): 
     // whole table is otherwise indistinguishable from one nobody declared.
     const record = await generateRecord(model.attributes, model.name, i === 0)
     const fixture = model.fixtures[i]
-    const withRelations = { ...record, ...(relations[i] ?? {}) }
+    // Relations fill only what the record left empty, so an explicit factory
+    // on a declared key keeps its value.
+    const relation = relations[i] ?? {}
+    const withRelations = { ...record }
+    for (const [column, value] of Object.entries(relation)) {
+      if (withRelations[column] == null)
+        withRelations[column] = value
+    }
     records.push(fixture ? { ...withRelations, ...fixtureToColumns(fixture) } : withRelations)
   }
 

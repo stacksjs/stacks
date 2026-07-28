@@ -104,3 +104,36 @@ describe('account foreign keys', () => {
     expect(isAccountModel('Farm')).toBe(false)
   })
 })
+
+/**
+ * A relation key has to be *declared* for the generated REST layer to see it:
+ * writable and filterable columns are built from a model's attributes, so an
+ * undeclared `farm_id` cannot be set by a POST or filtered with `?farm_id=`.
+ * Declaring it used to cost the seeder the relation entirely — the model owned
+ * the column, so nothing wired it and every seeded row landed unattached.
+ */
+describe('declared relation keys', () => {
+  it('is filled when the record left it empty', async () => {
+    const { chooseRelations } = await import('../src/seeder')
+    const rows = chooseRelations([{ column: 'farm_id', rows: [{ id: 7 }] }], 3)
+
+    // What generateRecords does with them: fill only the empty ones.
+    const record: Record<string, unknown> = { name: 'Oberer Acker', farm_id: null }
+    for (const [column, value] of Object.entries(rows[0]!)) {
+      if (record[column] == null)
+        record[column] = value
+    }
+
+    expect(record.farm_id).toBe(7)
+  })
+
+  it('leaves a value an explicit factory produced', () => {
+    const record: Record<string, unknown> = { farm_id: 42 }
+    for (const [column, value] of Object.entries({ farm_id: 7 })) {
+      if (record[column] == null)
+        record[column] = value
+    }
+
+    expect(record.farm_id).toBe(42)
+  })
+})

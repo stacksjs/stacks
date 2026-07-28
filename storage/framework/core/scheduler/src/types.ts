@@ -98,7 +98,15 @@ export interface BaseSchedule {
 
 // Interface for schedule after timing is set
 export interface TimedSchedule extends BaseSchedule {
-  // Only includes the configuration methods, no timing methods
+  /**
+   * Pin a daily/weekly/monthly schedule to a time of day, as "HH:MM".
+   *
+   * Declared here because `Schedule` has always implemented it and returns a
+   * `TimedSchedule` from every timing method — leaving it off the interface
+   * made the one spelling the docs use (`.daily().at('05:30')`) a type error,
+   * with `dailyAt` suggested in its place, which does not exist at all.
+   */
+  at: (time: string) => TimedSchedule
 }
 
 // Interface for schedule before timing is set
