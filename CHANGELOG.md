@@ -1,5 +1,30 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.205...v0.70.206)
+
+## ✨ Features
+
+- **deploy**: publish AAAA records alongside the A records ([1f1a2dc](https://github.com/stacksjs/stacks/commit/1f1a2dc)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🐛 Bug Fixes
+
+- **database**: resolve the snapshot dir instead of hardcoding .qb ([68ad856](https://github.com/stacksjs/stacks/commit/68ad856)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **query-builder**: stop bundling bun-query-builder into the dist ([f75768f](https://github.com/stacksjs/stacks/commit/f75768f)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **queue**: recognise a missing table on Postgres, not just SQLite and MySQL ([3a3c44e](https://github.com/stacksjs/stacks/commit/3a3c44e)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+
+## 📝 Documentation
+
+- **buddy**: regenerate the command reference ([18d1968](https://github.com/stacksjs/stacks/commit/18d1968)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+
+## 🔧 Chores
+
+- **deps**: require bun-query-builder 0.1.63 ([d6c8534](https://github.com/stacksjs/stacks/commit/d6c8534)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+- _glennmichael123 <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.204...v0.70.205)
 
 ## ✨ Features
