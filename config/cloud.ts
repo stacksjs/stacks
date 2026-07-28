@@ -719,10 +719,11 @@ export const tsCloud: TsCloudConfig = {
       root: '.',
       path: '/',
       domain: env.APP_DOMAIN || 'stacksjs.com',
-      // Bun-runnable entry (ts-cloud prepends the runtime, so this must be a
-      // JS/TS file bun can execute — NOT the ./buddy shell wrapper). stacks
-      // vendors storage/framework, so the CLI resolves here directly.
-      start: 'bun --conditions development storage/framework/core/buddy/src/cli.ts serve',
+      // The deploy builds a dedicated, minified production entry. This keeps
+      // Buddy's general-purpose command dispatcher out of the long-running
+      // web process while preserving source-based workspace resolution only
+      // during the build step.
+      start: 'bun storage/framework/runtime/production/serve.js',
       port: 3000,
       // preStart runs (in order) after the repo is shipped + the resolved
       // production env is in place, before the systemd service starts.
@@ -733,14 +734,19 @@ export const tsCloud: TsCloudConfig = {
       // Migrate runs ONLY on `main`, the single DB owner: the `api` site shares
       // the same box + SQLite file, so migrating from both would race two
       // writers on one file (the file lock would make one fail; see the
-      // "SQLite migrate gotchas" — `busy_timeout`/single-writer). Same
-      // `bun --conditions development … cli.ts` entry as `start` so resolution
-      // matches. No `--force`: additive migrations apply on every deploy (a
-      // no-op when none pend). A *destructive* change is refused in this
+      // "SQLite migrate gotchas" — `busy_timeout`/single-writer). Migration
+      // remains a short-lived CLI task. No `--force`: additive migrations
+      // apply on every deploy (a no-op when none pend). A *destructive*
+      // change is refused in this
       // non-interactive context — migrate logs the refusal and skips it
       // (leaving prod data intact) rather than dropping columns/tables
       // unattended; apply those deliberately with `--force`.
-      preStart: ['bun install', 'bun --conditions development storage/framework/core/buddy/src/cli.ts migrate'],
+      preStart: [
+        'bun install',
+        'mkdir -p storage/framework/runtime/production',
+        'bun build --production --conditions=development --target=bun storage/framework/core/buddy/src/serve-entry.ts --outfile storage/framework/runtime/production/serve.js',
+        'bun --conditions development storage/framework/core/buddy/src/cli.ts migrate',
+      ],
     },
 
     // API (bun-router) behind `buddy serve`'s same-origin /api proxy.
@@ -756,9 +762,13 @@ export const tsCloud: TsCloudConfig = {
     // API off the public internet.
     api: {
       root: '.',
-      start: 'bun --conditions development storage/framework/core/actions/src/serve/api.ts',
+      start: 'bun storage/framework/runtime/production/api.js',
       port: 3008,
-      preStart: ['bun install'],
+      preStart: [
+        'bun install',
+        'mkdir -p storage/framework/runtime/production',
+        'bun build --production --conditions=development --target=bun storage/framework/core/actions/src/serve/api.ts --outfile storage/framework/runtime/production/api.js',
+      ],
       env: { HOST: '127.0.0.1', APP_ENV: 'production' },
     },
 
