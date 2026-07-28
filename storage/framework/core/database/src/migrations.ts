@@ -1103,18 +1103,22 @@ export async function previewPendingMigrations(options: GenerateMigrationsOption
  * guarding anything. Stacks points it at `storage/framework/database` to keep
  * generated framework state out of the project root.
  */
+function snapshotDirLabel(): string {
+  return (qbConfig as { snapshotDir?: string } | undefined)?.snapshotDir || QB_SNAPSHOT_DIR
+}
+
 function resolveSnapshotDir(): string {
-  const configured = (qbConfig as { snapshotDir?: string } | undefined)?.snapshotDir
-  return join(process.cwd(), configured || QB_SNAPSHOT_DIR)
+  return join(process.cwd(), snapshotDirLabel())
 }
 
 /**
- * Detect a dialect/snapshot mismatch in `.qb/`. Returns the name of an existing
- * snapshot's dialect when the resolved `dialect` has no snapshot of its own but
- * some OTHER dialect does — the signature of a misconfigured environment that
- * would make `generateMigrations` emit a duplicate migration set. Returns null
- * when there is no `.qb/` yet (fresh project — nothing to protect) or when the
- * resolved dialect already has history.
+ * Detect a dialect/snapshot mismatch in the snapshot directory. Returns the
+ * name of an existing snapshot's dialect when the resolved `dialect` has no
+ * snapshot of its own but some OTHER dialect does — the signature of a
+ * misconfigured environment that would make `generateMigrations` emit a
+ * duplicate migration set. Returns null when there is no snapshot directory yet
+ * (fresh project — nothing to protect) or when the resolved dialect already has
+ * history.
  */
 function detectSnapshotDialectMismatch(dialect: string): string | null {
   const qbDir = resolveSnapshotDir()
@@ -1123,7 +1127,7 @@ function detectSnapshotDialectMismatch(dialect: string): string | null {
     files = readdirSync(qbDir)
   }
   catch {
-    return null // no .qb dir yet — first-ever generate, nothing to clobber
+    return null // no snapshot dir yet — first-ever generate, nothing to clobber
   }
   const snapshotFor = (d: string): string => `model-snapshot.${d}.json`
   if (files.includes(snapshotFor(dialect)))
@@ -1150,8 +1154,8 @@ export async function generateMigrations(options: GenerateMigrationsOptions = {}
     const dialect = getDialect()
 
     // Guard against the dialect footgun (stacksjs/stacks#1927): the qb generator
-    // diffs models against `.qb/model-snapshot.<dialect>.json`. If the resolved
-    // dialect has NO snapshot but another dialect does, the environment is almost
+    // diffs models against `<snapshotDir>/model-snapshot.<dialect>.json`. If the
+    // resolved dialect has NO snapshot but another dialect does, the environment is almost
     // certainly misconfigured — most commonly there is no `.env`, so
     // `DB_CONNECTION` defaults to 'sqlite' even though the project's committed
     // migrations + snapshot are Postgres. Generating anyway emits a FULL, second
@@ -1161,12 +1165,14 @@ export async function generateMigrations(options: GenerateMigrationsOptions = {}
     // clobbering; the fix is to set DB_CONNECTION (or add the `.env`).
     const mismatch = detectSnapshotDialectMismatch(dialect)
     if (mismatch) {
+      const snapshotDir = snapshotDirLabel()
       return err(new Error(
         `Refusing to generate migrations: resolved dialect "${dialect}" has no snapshot in `
-        + `.qb/, but "${mismatch}" does. DB_CONNECTION is likely unset or wrong (missing .env?) — `
-        + `generating now would write a full duplicate migration set in the wrong dialect. `
-        + `Set DB_CONNECTION=${mismatch} (or your intended dialect) and retry. To intentionally `
-        + `start a new dialect from scratch, remove .qb/model-snapshot.${mismatch}.json first.`,
+        + `${snapshotDir}/, but "${mismatch}" does. DB_CONNECTION is likely unset or wrong `
+        + `(missing .env?) — generating now would write a full duplicate migration set in the `
+        + `wrong dialect. Set DB_CONNECTION=${mismatch} (or your intended dialect) and retry. To `
+        + `intentionally start a new dialect from scratch, remove `
+        + `${snapshotDir}/model-snapshot.${mismatch}.json first.`,
       ))
     }
 
@@ -1290,6 +1296,10 @@ export async function regenerateMigrationCorpus(options: {
   dryRun?: boolean
 } = {}): Promise<Result<RegeneratedCorpus, Error>> {
   try {
+    // Establish dialect + snapshotDir before anything reads them, as every
+    // other entry point here does. resolveSnapshotDir() below depends on it.
+    configureQueryBuilder()
+
     const dialect = options.dialect ?? getQbDialect()
     const dir = options.dir ?? join(process.cwd(), 'database', 'migrations')
 
@@ -1326,9 +1336,10 @@ export async function regenerateMigrationCorpus(options: {
 
     // A model snapshot outranks the sentinel above, so move it aside for the
     // duration or a full regeneration silently degrades back into a delta.
-    // Note the snapshot path is hardcoded to `.qb` inside the generator; the
-    // `snapshotDir` we pass in configureQueryBuilder() is not honoured.
-    const snapshotPath = join(process.cwd(), '.qb', `model-snapshot.${dialect}.json`)
+    // Resolve it the same way every other reader here does — parking a
+    // hardcoded `.qb` path would find nothing and quietly degrade to a delta
+    // now that the generator honours `snapshotDir` (bun-query-builder 0.1.63).
+    const snapshotPath = join(resolveSnapshotDir(), `model-snapshot.${dialect}.json`)
     const parkedSnapshot = `${snapshotPath}.regenerating`
     let snapshotParked = false
     if (existsSync(snapshotPath)) {
