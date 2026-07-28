@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.196...v0.70.197)
+
+## 🔧 Chores
+
+- **deps**: update ts-cloud to 0.7.79 ([47a6652](https://github.com/stacksjs/stacks/commit/47a6652)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.195...v0.70.196)
 
 ## 🐛 Bug Fixes
