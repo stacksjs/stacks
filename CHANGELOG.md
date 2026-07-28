@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.202...v0.70.203)
+
+## 🐛 Bug Fixes
+
+- **database**: keep the snapshot directory across every setConfig call ([7165abd](https://github.com/stacksjs/stacks/commit/7165abd)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.201...v0.70.202)
 
 ## ✨ Features
