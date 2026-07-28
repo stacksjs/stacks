@@ -6,7 +6,7 @@ description: Generated reference for every Buddy command, argument, option, alia
 
 # Buddy Command Reference
 
-This reference is generated from Buddy's runtime command registry and currently contains **271 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
+This reference is generated from Buddy's runtime command registry and currently contains **273 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
 
 ## Command groups
 
@@ -30,7 +30,7 @@ This reference is generated from Buddy's runtime command registry and currently 
 | `env` | 7 |
 | `extension` | 11 |
 | `format` | 1 |
-| `general` | 48 |
+| `general` | 49 |
 | `generate` | 11 |
 | `inspire` | 1 |
 | `key` | 1 |
@@ -39,7 +39,7 @@ This reference is generated from Buddy's runtime command registry and currently 
 | `mail` | 13 |
 | `make` | 18 |
 | `marketing` | 2 |
-| `migrate` | 4 |
+| `migrate` | 5 |
 | `monitoring` | 2 |
 | `package` | 1 |
 | `phone` | 4 |
@@ -2516,6 +2516,7 @@ Migrates your database
 | `-a`, `--auth` | Also migrate auth tables (oauth_clients, oauth_access_tokens, oauth_refresh_tokens, password_resets) | boolean, optional | `true` |
 | `--no-auth` | Skip auth/oauth table migrations | boolean, optional, negated | `true` |
 | `-f`, `--force` | Apply destructive changes (drop column/table, lossy type change) without confirmation | boolean, optional | `false` |
+| `--create-database` | Create the database if it does not exist, without asking | boolean, optional | `false` |
 | `--from-db` | Diff against the live database schema instead of the snapshot (self-heal drift) | boolean, optional | `false` |
 | `--no-rename` | Treat renamed columns as drop + add instead of a data-preserving rename | boolean, optional, negated | `true` |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
@@ -2550,6 +2551,7 @@ Drop all tables and re-run every migration (destroys all data)
 | `-s`, `--seed` | Run database seeders after migration | boolean, optional | `false` |
 | `-a`, `--auth` | Also migrate auth tables (oauth_clients, oauth_access_tokens, oauth_refresh_tokens, password_resets) | boolean, optional | `true` |
 | `--no-auth` | Skip auth/oauth table migrations | boolean, optional, negated | `true` |
+| `--create-database` | Create the database if it does not exist, without asking | boolean, optional | `false` |
 | `-f`, `--force` | Skip the drop-database confirmation (only honored when the migrateFresh guard is "allow") | boolean, optional | `false` |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
 
@@ -2568,6 +2570,20 @@ Port an existing project (Laravel, Rails) into a Stacks project.
 | `--source` | Path to the existing source project. Defaults to the current working directory. | value, required | `false` |
 | `--dry-run` | Show what would be translated without writing files. | boolean, optional | `false` |
 | `--verbose` | Print the per-entry table after the summary. | boolean, optional | `false` |
+
+### `migrate:regenerate`
+
+Rebuild database/migrations from your models for a given dialect
+
+- Usage: `$ buddy migrate:regenerate [dialect]`
+- Namespace: `migrate`
+- Aliases: none
+- Arguments: `[dialect]`
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `--dry-run` | Show what would change without writing anything | boolean, optional | `false` |
+| `-f`, `--force` | Regenerate even though the database already has migrations recorded | boolean, optional | `false` |
 
 ### `migrate:switch`
 
@@ -2765,6 +2781,26 @@ Run your prepublish script
 | --- | --- | --- | --- |
 | `-p`, `--project` | Target a specific project | value, optional | `false` |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
+
+### `preview`
+
+Serve a static build locally, the way a static host would
+
+- Usage: `$ buddy preview [dir]`
+- Namespace: none
+- Aliases: none
+- Arguments: `[dir]`
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `-p`, `--port` | Port to listen on | value, required | `"3001"` |
+
+Examples:
+
+```bash
+buddy preview
+buddy preview dist --port 4000
+```
 
 ### `projects`
 
