@@ -1,5 +1,20 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.212...v0.70.213)
+
+## ✨ Features
+
+- **desktop**: automate Apple provisioning ([89d2eee](https://github.com/stacksjs/stacks/commit/89d2eee)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **desktop**: unify app store release delivery ([116e8f7](https://github.com/stacksjs/stacks/commit/116e8f7)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## ♻️ Code Refactoring
+
+- **app-store**: delegate automation to Pantry ([a9620b4](https://github.com/stacksjs/stacks/commit/a9620b4)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.211...v0.70.212)
 
 ## 🐛 Bug Fixes
