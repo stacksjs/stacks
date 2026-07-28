@@ -105,6 +105,10 @@ export { migrateRbacTables } from './rbac-tables'
 export * from './sql-helpers'
 export * from './defaults'
 
+// Dialect classification for the committed migration corpus, so a corpus
+// emitted for one database fails loudly before a single statement runs.
+export * from './migration-dialect'
+
 // Database bootstrap: probe the target, and create it over a maintenance
 // connection we open ourselves rather than through bun-query-builder, whose
 // connection string is rebuilt from process.env and cannot be redirected.

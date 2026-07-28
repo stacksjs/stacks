@@ -169,10 +169,20 @@ export default defineModel({
 
 When you run `buddy migrate`, Stacks:
 
-1. Reads every model definition from `app/Models`, falling back to
-   `storage/framework/defaults/app/Models` for the built-ins
+1. Reads every model definition from `app/Models`
 2. Diffs them against the current database schema
 3. Emits SQL into `database/migrations/` and runs what is pending
+
+> **Migrations are emitted for one database.** The SQL under `database/migrations/`
+> is generated for whichever dialect was configured at generation time, and the
+> files shipped with a new project are SQLite. Pointing `DB_CONNECTION` at
+> Postgres or MySQL without regenerating them will refuse to run, because the
+> DDL is not portable. Run `buddy migrate:switch <driver>` to see what a switch
+> involves.
+>
+> The generator currently reads **only** `app/Models`. If that directory is
+> absent it produces nothing, so the framework's own
+> `storage/framework/defaults/app/Models` are not picked up automatically.
 
 Run `buddy generate:migrations` on its own to produce the SQL without applying
 it, so you can review the file first.

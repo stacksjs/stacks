@@ -7,6 +7,7 @@ import { hasTTY, isCI } from '@stacksjs/env'
 import { appPath, frameworkPath, frameworkRuntimePath, projectPath } from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types'
 import { preflightDatabase } from '../database-preflight'
+import { DIALECT_OVERRIDE_ENV, auditMigrationCorpus, formatMigrationDialectError, stripSqlNoise } from '@stacksjs/database'
 
 // Lazy-load @stacksjs/actions to keep `buddy --help` cheap. The barrel
 // pulls in the database driver setup transitively, which we don't want
@@ -151,6 +152,40 @@ function validateModelsExist(): { valid: boolean, error?: string } {
   }
 
   return { valid: true }
+}
+
+/**
+ * Refuse to replay a migration corpus against a database it was not written
+ * for.
+ *
+ * Stacks ships ONE set of migration files under `database/migrations`, emitted
+ * for a single dialect, and `buddy new` copies them verbatim into every new
+ * project. Setting DB_CONNECTION=postgres therefore used to fail with a raw
+ * `syntax error at or near "AUTOINCREMENT"` on file 1 of 121, which says
+ * nothing about the actual cause.
+ *
+ * Checked in the parent, before the migrate:fresh drop confirmation and before
+ * any action subprocess starts, so a mismatch cannot drop the framework tables
+ * and only then discover it has nothing to rebuild them with.
+ */
+function validateMigrationDialect(): { valid: boolean, error?: string } {
+  if (process.env[DIALECT_OVERRIDE_ENV] === '1')
+    return { valid: true }
+
+  const driver = String(process.env.DB_CONNECTION || 'sqlite').toLowerCase()
+  // SingleStore speaks the MySQL wire protocol; anything else (sqlite is
+  // checked too, dynamodb is not a SQL migration target) resolves below.
+  const target = driver === 'singlestore' ? 'mysql' : driver
+  if (target !== 'sqlite' && target !== 'postgres' && target !== 'mysql')
+    return { valid: true }
+
+  const dir = projectPath('database/migrations')
+  const audit = auditMigrationCorpus({ dir, target })
+
+  if (audit.empty || audit.incompatible.length === 0)
+    return { valid: true }
+
+  return { valid: false, error: formatMigrationDialectError(audit, target, 'database/migrations') }
 }
 
 /**
@@ -388,6 +423,15 @@ export function migrate(buddy: CLI): void {
       const validation = validateModelsExist()
       if (!validation.valid) {
         console.error(`\n❌ Error: ${validation.error!}\n`)
+        process.exit(ExitCode.FatalError)
+      }
+
+      // Before the drop confirmation, the database bootstrap, and the action
+      // subprocess: a corpus that cannot run must not get as far as dropping
+      // tables it has no way to recreate.
+      const dialectCheck = validateMigrationDialect()
+      if (!dialectCheck.valid) {
+        console.error(`\n❌ Error: ${dialectCheck.error!}\n`)
         process.exit(ExitCode.FatalError)
       }
 
@@ -651,6 +695,15 @@ export function migrate(buddy: CLI): void {
         process.exit(ExitCode.FatalError)
       }
 
+      // Before the drop confirmation, the database bootstrap, and the action
+      // subprocess: a corpus that cannot run must not get as far as dropping
+      // tables it has no way to recreate.
+      const dialectCheck = validateMigrationDialect()
+      if (!dialectCheck.valid) {
+        console.error(`\n❌ Error: ${dialectCheck.error!}\n`)
+        process.exit(ExitCode.FatalError)
+      }
+
       // Safety guard. migrate:fresh DROPS every table, so it is gated far
       // more strictly than `migrate`: a hard kill-switch plus a typed
       // confirmation that no accidental keystroke can satisfy.
@@ -910,13 +963,30 @@ export function migrate(buddy: CLI): void {
         if (existsSync(migrationsDir)) {
           const files = readdirSync(migrationsDir).filter(f => f.endsWith('.sql'))
           for (const f of files) {
-            const content = readFileSync(`${migrationsDir}/${f}`, 'utf-8').toLowerCase()
+            // stripSqlNoise first. Matching raw content counted the words
+            // inside `-- Skipped: SQLite does not support ALTER TABLE ADD
+            // CONSTRAINT`, so this reported 40 foreign-key migrations that are
+            // all `SELECT 1;` no-ops. The real count against this corpus is 0,
+            // and the plan then told the user to run `./buddy migrate`.
+            const content = stripSqlNoise(readFileSync(`${migrationsDir}/${f}`, 'utf-8')).toLowerCase()
             if (/alter\s+table[\s\S]*add\s+constraint/.test(content)) alterCount++
             if (/^\s*create\s+unique\s+index/m.test(content)) uniqueIdxCount++
           }
         }
       }
       catch { /* directory missing — fine */ }
+
+      // The corpus is emitted for ONE dialect, so "switch" is not a thing the
+      // shipped migrations can survive. Say so here rather than letting the
+      // checklist send the user into `buddy migrate` and a syntax error.
+      // `target` is already validated against the sqlite/mysql/postgres set above.
+      const switchAudit = auditMigrationCorpus({ dir: projectPath('database/migrations'), target: target as 'sqlite' | 'postgres' | 'mysql' })
+      const switchBlocked = switchAudit.incompatible.length > 0
+      const blockedFiles = new Set(switchAudit.incompatible.map(m => m.file)).size
+      const dialectNote = switchBlocked
+        ? `\n  ⛔ ${blockedFiles} of ${switchAudit.total} migration files are ${switchAudit.inferred ?? 'another dialect'}-flavoured and will NOT run on ${target}.`
+          + `\n     Regenerate them against ${target} before migrating, or this switch will fail on the first file.`
+        : ''
 
       // The plan is rendered with `console.log` (sync, flushes
       // before `process.exit`) rather than `log.info` (async-
@@ -944,13 +1014,13 @@ export function migrate(buddy: CLI): void {
   • ${alterCount} ALTER TABLE ADD CONSTRAINT migration(s) will be applied against ${target}.${sqliteFkNote}
   • ${uniqueIdxCount} CREATE UNIQUE INDEX migration(s) will be applied against ${target}.
   • Auth tables (oauth_clients, oauth_access_tokens, oauth_refresh_tokens, password_resets) will be CREATE TABLE IF NOT EXISTS — they re-create cleanly under the new dialect.${boolNote}${tzNote}
-  • Existing row data does NOT auto-migrate. Use \`mysqldump\` / \`pg_dump\` (or your own export) to move it.${missingNote}
+  • Existing row data does NOT auto-migrate. Use \`mysqldump\` / \`pg_dump\` (or your own export) to move it.${missingNote}${dialectNote}
   ─────────────────────────────────────────────
 
   Next steps:
     1. Update .env:  DB_CONNECTION=${target}${envExtras}
     2. (Optional) Export data from the current ${current} database.
-    3. Run \`./buddy migrate\` (or \`migrate:fresh\` to start clean).
+    3. ${switchBlocked ? `Regenerate the migration files for ${target} FIRST — \`./buddy migrate\` will refuse until then.` : `Run \`./buddy migrate\` (or \`migrate:fresh\` to start clean).`}
     4. The post-migrate FK audit will report any constraints that didn't replay.
 `)
 

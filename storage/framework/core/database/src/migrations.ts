@@ -750,6 +750,7 @@ function idempotentSql(sql: string): string {
  * with no ADD COLUMN/CONSTRAINT and files that are already idempotent.
  */
 function makeMigrationsIdempotent(): void {
+  const rewritten: string[] = []
   const migrationsDir = join(process.cwd(), 'database', 'migrations')
   let files: string[]
   try {
@@ -773,10 +774,21 @@ function makeMigrationsIdempotent(): void {
     if (next !== sql) {
       try {
         writeFileSync(p, next)
-        log.debug(`[migration] made idempotent: ${f}`)
+        rewritten.push(f)
       }
       catch { /* read-only fs — leave as-is */ }
     }
+  }
+
+  // These are git-tracked files, so rewriting them dirties the user's working
+  // tree. It was logged at .debug, which is invisible by default, so the only
+  // symptom was an unexplained diff appearing after every Postgres migrate.
+  // Say it out loud until the transform moves in-memory.
+  if (rewritten.length > 0) {
+    log.warn(
+      `[migration] Rewrote ${rewritten.length} migration file(s) on disk to be idempotent: ${rewritten.slice(0, 3).join(', ')}${rewritten.length > 3 ? `, +${rewritten.length - 3} more` : ''}. `
+      + 'These files are tracked in git, so this shows up as a working-tree change.',
+    )
   }
 }
 
