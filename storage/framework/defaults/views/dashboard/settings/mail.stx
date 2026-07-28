@@ -16,7 +16,7 @@ fetchSettings()
 </script>
 
 <PageLayout variant="bare">
-  <SettingsHeader />
+  <PageHeader title="Email Settings" description="Configure how your application sends mail." />
 
   <!-- Settings forms -->
   <div class="divide-white/5 divide-y">
