@@ -12,6 +12,17 @@ const result = await Bun.build({
   target: 'bun',
   // sourcemap: 'linked',
   minify: true,
+  // `frameworkExternal` was imported here but never passed, so the bundle
+  // INLINED bun-query-builder — freezing whatever version was current at
+  // publish time into dist/index.js. Since this package is the only route
+  // stacks takes to the query builder, that snapshot is what actually ran in
+  // every app, and upgrading bun-query-builder in the app changed nothing.
+  // It cost a long debugging session: `setConfig({ snapshotDir })` wrote to
+  // the live config while the frozen copy read a hardcoded `.qb`, so the
+  // snapshot kept landing in the project root and every fix looked correct
+  // and did nothing. Keep it external so the consumer's installed version
+  // wins, exactly as the helper's own contract describes.
+  external: frameworkExternal(),
   plugins: [
     // Every public ORM type is generic over the model definition and every
     // one of them originates here: `ModelStatic`, `ModelRecord`,
