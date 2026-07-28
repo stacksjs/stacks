@@ -1,5 +1,24 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.204...v0.70.205)
+
+## ✨ Features
+
+- **migrate**: regenerate the migration corpus from models per dialect ([b9c01e5](https://github.com/stacksjs/stacks/commit/b9c01e5)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+
+## 🐛 Bug Fixes
+
+- **query-builder**: set the snapshot location at module load ([1d54068](https://github.com/stacksjs/stacks/commit/1d54068)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🔧 Chores
+
+- **protocol**: refresh driver evidence after the capability change ([91542dd](https://github.com/stacksjs/stacks/commit/91542dd)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+- _glennmichael123 <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.203...v0.70.204)
 
 ## 🐛 Bug Fixes
