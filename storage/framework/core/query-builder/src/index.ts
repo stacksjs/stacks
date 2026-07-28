@@ -1,3 +1,4 @@
+import { setConfig } from 'bun-query-builder'
 /**
  * @stacksjs/query-builder
  *
@@ -293,3 +294,17 @@ export function assertSafeOperator(op: unknown, context?: string): asserts op is
   const ctx = context ? ` in ${context}` : ''
   throw new Error(`[query-builder] Refusing to use ${JSON.stringify(op)} as a SQL operator${ctx} — not in the allowed set (${[...SAFE_OPERATORS].join(', ')})`)
 }
+
+// Apply the framework's snapshot location at module load.
+//
+// bun-query-builder writes the model snapshot to `.qb` at the project root
+// unless told otherwise, and `setConfig` replaces the config wholesale, so the
+// value only holds if it is set before anything reaches the write path. Entry
+// points differ: `buddy migrate` never imports @stacksjs/database, so the
+// load-time hook there never ran and the snapshot landed in `.qb` no matter
+// how many call sites carried the right value.
+//
+// Setting it here removes the ordering requirement: every path into the query
+// builder goes through this module, so no future entry point can reach a write
+// before the location is known.
+setConfig({ snapshotDir: 'storage/framework/database' })
