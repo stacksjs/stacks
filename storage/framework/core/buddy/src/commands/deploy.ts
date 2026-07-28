@@ -1161,6 +1161,10 @@ async function runHetznerDeploy(args: {
   // honour ("record its serverId there" — for a shared box).
   const attachTo: string | undefined = tsCloudConfig.cloud?.attachTo
   let ip: string | undefined
+  // Set when the box has a public IPv6. The DNS reconciler publishes AAAA
+  // records alongside the A records so the sites are reachable on both stacks;
+  // left undefined, it simply skips them.
+  let ipv6: string | undefined
   if (attachTo) {
     const box = await resolveAttachTargetBox(attachTo, environment)
     if (!box?.publicIp) {
@@ -1168,6 +1172,7 @@ async function runHetznerDeploy(args: {
       process.exit(ExitCode.FatalError)
     }
     ip = box.publicIp
+    ipv6 = box.publicIpv6
     log.info(`Attaching to '${attachTo}' box '${box.serverName}' (${ip}) — skipping provisioning`)
 
     // The attached-to box is fronted by the owner's rpx gateway (it owns :80/:443
@@ -1220,6 +1225,7 @@ async function runHetznerDeploy(args: {
     // exposes them (#1950); the full config still drives deployAllComputeSites.
     const outputs = await driver.provisionComputeInfrastructure({ config: scrubLoopbackSitePortsForFirewall(tsCloudConfig), environment })
     ip = outputs.appPublicIp
+    ipv6 = outputs.appPublicIpv6
     log.success('Hetzner compute infrastructure ready')
     if (outputs.appInstanceId)
       log.info(`Server ID: ${outputs.appInstanceId}`)
@@ -1432,7 +1438,7 @@ async function runHetznerDeploy(args: {
   // env) and upsert A records → the box IP. Non-fatal: a DNS hiccup shouldn't
   // fail an otherwise-successful release.
   if (ok)
-    await reconcileHetznerDns(onlySite ? { [onlySite]: sites[onlySite] } : sites, ip, log)
+    await reconcileHetznerDns(onlySite ? { [onlySite]: sites[onlySite] } : sites, ip, log, ipv6)
 
   // Reconcile the app's declared DNS records (config/dns.ts) beyond the apex/www
   // A records above — e.g. verification TXT, extra CNAMEs. Strictly additive:
@@ -1614,7 +1620,7 @@ systemctl reset-failed`
 async function resolveAttachTargetBox(
   owner: string,
   environment: string,
-): Promise<{ serverId: number, serverName: string, publicIp?: string } | null> {
+): Promise<{ serverId: number, serverName: string, publicIp?: string, publicIpv6?: string } | null> {
   const token = process.env.HCLOUD_TOKEN
   if (!token)
     return null
@@ -1638,7 +1644,16 @@ async function resolveAttachTargetBox(
   const chosen = pick(byLabel) || pick(await req(`name=${encodeURIComponent(`${owner}-${environment}-app`)}`))
   if (!chosen)
     return null
-  return { serverId: chosen.id, serverName: chosen.name, publicIp: chosen.public_net?.ipv4?.ip }
+  // Hetzner reports the routed block (`2a01:4f8:c014:6186::/64`), not the
+  // address the interface holds — hetznerBoxIpv6 narrows it so the value is
+  // something an AAAA record can actually point at.
+  const { hetznerBoxIpv6 } = await import('@stacksjs/ts-cloud') as any
+  return {
+    serverId: chosen.id,
+    serverName: chosen.name,
+    publicIp: chosen.public_net?.ipv4?.ip,
+    publicIpv6: hetznerBoxIpv6?.(chosen.public_net?.ipv6?.ip),
+  }
 }
 
 /**
@@ -2179,14 +2194,14 @@ async function reconcileConfigDns(sites: Record<string, any>, logger: typeof log
 }
 
 /**
- * Best-effort post-write check that an A record for `fqdn → ip` exists at
+ * Best-effort post-write check that an address record for `fqdn → ip` exists at
  * the provider. Returns true when the provider offers no list API or the
  * listing itself fails — verification must never turn a possibly-good
  * write into a false alarm; it exists to catch phantom successes (an
  * upsert that edited the wrong record) at providers that CAN list their
  * zone (Porkbun at minimum).
  */
-async function verifyDnsRecord(provider: any, domain: string, fqdn: string, ip: string): Promise<boolean> {
+async function verifyDnsRecord(provider: any, domain: string, fqdn: string, ip: string, recordType: 'A' | 'AAAA' = 'A'): Promise<boolean> {
   try {
     if (typeof provider?.listRecords !== 'function')
       return true
@@ -2203,7 +2218,7 @@ async function verifyDnsRecord(provider: any, domain: string, fqdn: string, ip: 
 
     return res.records.some((r: any) => {
       const name = typeof r?.name === 'string' ? r.name.replace(/\.$/, '') : ''
-      return r?.type === 'A' && name === fqdn && r?.content === ip
+      return r?.type === recordType && name === fqdn && r?.content === ip
     })
   }
   catch {
@@ -2211,7 +2226,18 @@ async function verifyDnsRecord(provider: any, domain: string, fqdn: string, ip: 
   }
 }
 
-async function reconcileHetznerDns(sites: Record<string, any>, ip: string, logger: typeof log): Promise<void> {
+/**
+ * Hosts that must stay IPv4-only. The mail server binds `0.0.0.0` and the box's
+ * IPv6 address has no PTR, so an AAAA here would advertise a port nothing
+ * answers on and hand senders a deferral instead of a delivery.
+ */
+const IPV6_EXCLUDED_HOSTS = new Set(['mail', 'smtp', 'imap', 'mx'])
+
+function skipIpv6ForHost(fqdn: string): boolean {
+  return IPV6_EXCLUDED_HOSTS.has(fqdn.split('.')[0] ?? '')
+}
+
+async function reconcileHetznerDns(sites: Record<string, any>, ip: string, logger: typeof log, ipv6?: string): Promise<void> {
   // Collect the apex domains declared by sites (skip loopback/domain-less sites).
   const domains = new Set<string>()
   for (const site of Object.values(sites)) {
@@ -2323,6 +2349,25 @@ async function reconcileHetznerDns(sites: Record<string, any>, ip: string, logge
           logger.success(`  DNS: ${fqdn} → ${ip} (${provider.name})`)
         else
           logger.warn(`  DNS: ${fqdn} → ${ip} reported success at ${provider.name} but no matching A record exists — create it manually: A ${fqdn} → ${ip}`)
+
+        // Mirror the A record into AAAA when the box has a v6 address. Without
+        // this the sites answer on IPv6 (rpx binds dual-stack) but nothing
+        // advertises the address, so no v6-only client can ever find them.
+        if (!ipv6 || skipIpv6ForHost(fqdn))
+          continue
+
+        const v6res = await provider.upsertRecord(domain, { name: fqdn, type: 'AAAA', content: ipv6, ttl: 600 })
+        if (v6res?.success === false) {
+          logger.warn(`  DNS: ${fqdn} → ${ipv6} failed: ${v6res.error || v6res.message || 'unknown error'}`)
+          continue
+        }
+        const v6Cleanup = await removeStaleServerAddressRecords(provider, domain, fqdn, ipv6, 'AAAA')
+        for (const warning of v6Cleanup)
+          logger.warn(`  DNS: ${fqdn} cleanup: ${warning}`)
+        if (await verifyDnsRecord(provider, domain, fqdn, ipv6, 'AAAA'))
+          logger.success(`  DNS: ${fqdn} → ${ipv6} (${provider.name})`)
+        else
+          logger.warn(`  DNS: ${fqdn} → ${ipv6} reported success at ${provider.name} but no matching AAAA record exists — create it manually: AAAA ${fqdn} → ${ipv6}`)
       }
     }
     catch (err: any) {
