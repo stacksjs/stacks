@@ -18,6 +18,7 @@
     "paths": {
       "~/*": ["../../../*"],
       "@stacksjs/*": ["./*/src"],
+      "ts-pantry": ["../../../node_modules/ts-pantry"],
       "*": ["../../../pantry/*"]
     },
     "resolveJsonModule": true,

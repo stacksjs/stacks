@@ -22,6 +22,7 @@
       // Fallback for third-party packages: Pantry installs the dependency graph
       // into `pantry/` rather than `node_modules/`. It is listed last so it only
       // applies to specifiers that none of the mappings above matched.
+      "ts-pantry": ["../../../node_modules/ts-pantry"],
       "*": ["../../../pantry/*"]
     },
     // `dtsx` emits the published `.d.ts` files, not tsc - these two only

@@ -52,6 +52,9 @@
     "dist",
     "safari-template"
   ],
+  "dependencies": {
+    "ts-pantry": "^0.11.0"
+  },
   "scripts": {
     "build": "bun build.ts",
     "typecheck": "bun tsc --noEmit",

@@ -132,6 +132,11 @@ what `xcrun safari-web-extension-converter` generates, so day-to-day work
 never needs the converter; `--signed` builds need an Apple Development
 identity selected in Xcode.
 
+The provider-neutral App Store Connect client, certificate/profile
+provisioning, version reconciliation, and build attachment live in
+`ts-pantry`. Stacks keeps only the Safari-specific Bundle ID mapping, Xcode
+build orchestration, and listing configuration.
+
 When `safariAppStore` is configured, publishing also synchronizes the app
 description, category, content-rights declaration, pricing, age rating,
 territory availability, review contact, export compliance, and required
