@@ -192,10 +192,19 @@ export function renderAppleWorkflowCaller(): string {
 on:
   workflow_dispatch:
     inputs:
+      release-tag:
+        description: Git tag used for the GitHub release
+        required: true
+        type: string
       validate-only:
         description: Validate the signed package without uploading it
         required: false
         default: true
+        type: boolean
+      mirror-s3:
+        description: Mirror artifacts to the configured S3-compatible release registry
+        required: false
+        default: false
         type: boolean
 
 jobs:
@@ -208,7 +217,15 @@ jobs:
       desktop-url: \${{ vars.DESKTOP_URL }}
       app-signing-identity: \${{ vars.APPLE_APP_SIGNING_IDENTITY }}
       installer-signing-identity: \${{ vars.APPLE_INSTALLER_SIGNING_IDENTITY }}
+      release-tag: \${{ inputs.release-tag }}
       validate-only: \${{ inputs.validate-only }}
+      mirror-s3: \${{ inputs.mirror-s3 }}
+      s3-provider: \${{ vars.RELEASE_S3_PROVIDER || 'hetzner' }}
+      s3-bucket: \${{ vars.RELEASE_S3_BUCKET }}
+      s3-region: \${{ vars.RELEASE_S3_REGION }}
+      s3-endpoint: \${{ vars.RELEASE_S3_ENDPOINT }}
+      s3-prefix: \${{ vars.RELEASE_S3_PREFIX }}
+      s3-public-url: \${{ vars.RELEASE_S3_PUBLIC_URL }}
     secrets: inherit
 `
 }

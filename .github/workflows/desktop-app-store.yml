@@ -47,6 +47,45 @@ on:
         default: true
         required: false
         type: boolean
+      release-tag:
+        description: Git tag used for the GitHub release and immutable delivery record
+        required: true
+        type: string
+      mirror-s3:
+        description: Mirror release artifacts to S3-compatible object storage
+        default: false
+        required: false
+        type: boolean
+      s3-provider:
+        description: Object storage provider (aws, backblaze, or hetzner)
+        default: hetzner
+        required: false
+        type: string
+      s3-bucket:
+        description: Object storage bucket
+        default: ''
+        required: false
+        type: string
+      s3-region:
+        description: Object storage region or location
+        default: ''
+        required: false
+        type: string
+      s3-endpoint:
+        description: Optional S3-compatible endpoint host or URL
+        default: ''
+        required: false
+        type: string
+      s3-prefix:
+        description: Optional object key prefix
+        default: ''
+        required: false
+        type: string
+      s3-public-url:
+        description: Optional public base URL for mirrored release receipts
+        default: ''
+        required: false
+        type: string
     secrets:
       APPLE_APP_CERTIFICATE_BASE64:
         description: Base64-encoded P12 containing the Mac App Distribution identity
@@ -69,9 +108,15 @@ on:
       APP_STORE_CONNECT_API_ISSUER_ID:
         description: App Store Connect API issuer ID
         required: true
+      RELEASE_S3_ACCESS_KEY_ID:
+        description: Optional S3-compatible object storage access key ID
+        required: false
+      RELEASE_S3_SECRET_ACCESS_KEY:
+        description: Optional S3-compatible object storage secret access key
+        required: false
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   publish:
@@ -109,9 +154,9 @@ jobs:
           xcode-version: latest-stable
 
       - name: Setup Pantry
-        uses: pantry-pm/pantry/packages/action@d738d5fd2e543e3b8380e5fbd5d01ba8936c1790 # v0.10.47
+        uses: pantry-pm/pantry/packages/action@db1b32a881dcc8bf9012488a28d96ca3c5a5763a # v0.10.56
         with:
-          version: '0.10.47'
+          version: '0.10.56'
           install: 'false'
 
       - name: Install application dependencies
@@ -168,14 +213,39 @@ jobs:
       - name: Verify Mac App Store prerequisites
         run: bun node_modules/@stacksjs/buddy/dist/cli.js desktop:apple:doctor
 
-      - name: Build, sign, and deliver Mac App Store package
+      - name: Build and sign Mac App Store package
         env:
           APPLE_BUILD_NUMBER: ${{ github.run_number }}
-        run: |
-          set -euo pipefail
-          args=(desktop:apple:publish)
-          if ${{ inputs.validate-only }}; then args+=(--validate-only); fi
-          bun node_modules/@stacksjs/buddy/dist/cli.js "${args[@]}"
+        run: bun node_modules/@stacksjs/buddy/dist/cli.js desktop:apple:publish --package-only
+
+      - name: Publish GitHub release and deliver package
+        uses: pantry-pm/pantry/packages/action@db1b32a881dcc8bf9012488a28d96ca3c5a5763a # v0.10.56
+        with:
+          version: '0.10.56'
+          install: 'false'
+          release: 'true'
+          release-tag: ${{ inputs.release-tag }}
+          release-files: |
+            storage/framework/desktop-dist/apple/*.pkg
+            storage/framework/desktop-dist/apple/checksums.sha256
+            storage/framework/desktop-dist/apple/apple-provenance.json
+          release-checksums: sha256
+          release-app-store: 'true'
+          release-app-store-api-key-id: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
+          release-app-store-issuer-id: ${{ secrets.APP_STORE_CONNECT_API_ISSUER_ID }}
+          release-app-store-private-key: ${{ secrets.APP_STORE_CONNECT_API_KEY }}
+          release-app-store-validate-only: ${{ inputs.validate-only }}
+          release-app-store-retry-existing: 'true'
+          release-s3: ${{ inputs.mirror-s3 }}
+          release-s3-provider: ${{ inputs.s3-provider }}
+          release-s3-bucket: ${{ inputs.s3-bucket }}
+          release-s3-region: ${{ inputs.s3-region }}
+          release-s3-endpoint: ${{ inputs.s3-endpoint }}
+          release-s3-prefix: ${{ inputs.s3-prefix }}
+          release-s3-public-url: ${{ inputs.s3-public-url }}
+          release-s3-access-key-id: ${{ secrets.RELEASE_S3_ACCESS_KEY_ID }}
+          release-s3-secret-access-key: ${{ secrets.RELEASE_S3_SECRET_ACCESS_KEY }}
+          release-token: ${{ github.token }}
 
       - name: Upload signed package evidence
         if: always()
