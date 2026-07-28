@@ -1,5 +1,16 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.211...v0.70.212)
+
+## 🐛 Bug Fixes
+
+- **upgrade**: remove legacy workspace lock ([6f0673a](https://github.com/stacksjs/stacks/commit/6f0673a)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **ci**: serialize framework releases ([0855b63](https://github.com/stacksjs/stacks/commit/0855b63)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.210...v0.70.211)
 
 ## 🐛 Bug Fixes
