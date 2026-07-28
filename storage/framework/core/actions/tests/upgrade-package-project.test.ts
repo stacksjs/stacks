@@ -33,6 +33,7 @@ beforeEach(() => {
   writeDefault('project/bootstrap', '#!/bin/sh\n')
   writeDefault('project/storage/framework/tsconfig.app.json', '{"app":true}\n')
   writeDefault('project/storage/framework/tsconfig.base.json', '{"base":true}\n')
+  writeDefault('project/storage/framework/server/tsconfig.docker.json', '{"docker":true}\n')
 })
 
 afterEach(() => {
@@ -79,6 +80,7 @@ describe('package project file sync', () => {
     expect(existsSync(join(root, 'storage/framework/defaults/ai/skills/removed'))).toBe(false)
     expect(existsSync(join(root, 'storage/framework/defaults/.discovered-models.json'))).toBe(true)
     expect(readFileSync(join(root, 'storage/framework/tsconfig.app.json'), 'utf8')).toContain('"app"')
+    expect(readFileSync(join(root, 'storage/framework/server/tsconfig.docker.json'), 'utf8')).toContain('"docker"')
     expect(lstatSync(join(root, 'buddy')).mode & 0o111).not.toBe(0)
   })
 

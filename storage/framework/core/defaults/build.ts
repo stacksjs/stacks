@@ -29,8 +29,9 @@ for (const entry of await readdir(defaults)) {
 const projectFiles: Array<{ source: string, destination: string }> = [
   { source: join(here, '../../../../buddy'), destination: join(here, 'project/buddy') },
   { source: join(here, '../../../../bootstrap'), destination: join(here, 'project/bootstrap') },
-  { source: join(here, '../../tsconfig.app.json'), destination: join(here, 'project/storage/framework/tsconfig.app.json') },
+  { source: join(here, '../../tsconfig.package-app.json'), destination: join(here, 'project/storage/framework/tsconfig.app.json') },
   { source: join(here, '../../tsconfig.base.json'), destination: join(here, 'project/storage/framework/tsconfig.base.json') },
+  { source: join(here, '../../server/tsconfig.docker.json'), destination: join(here, 'project/storage/framework/server/tsconfig.docker.json') },
 ]
 
 await rm(join(here, 'project'), { recursive: true, force: true })

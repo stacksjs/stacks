@@ -43,6 +43,10 @@ const SUPPORT_FILES: Array<{ source: string, target: string, executable?: boolea
     source: 'project/storage/framework/tsconfig.base.json',
     target: 'storage/framework/tsconfig.base.json',
   },
+  {
+    source: 'project/storage/framework/server/tsconfig.docker.json',
+    target: 'storage/framework/server/tsconfig.docker.json',
+  },
 ]
 
 function sameFile(left: string, right: string): boolean {
