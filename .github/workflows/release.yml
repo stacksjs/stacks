@@ -10,6 +10,13 @@ permissions:
   packages: write
   id-token: write
 
+# Publishing a workspace exposes packages one at a time. Keep tag releases
+# serialized so a newer compatible version cannot enter npm resolution while
+# the previous tag's clean-install smoke test is still running.
+concurrency:
+  group: stacks-framework-release
+  cancel-in-progress: false
+
 jobs:
   npm:
     name: npm
