@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.203...v0.70.204)
+
+## 🐛 Bug Fixes
+
+- **database**: single-source the snapshot directory across all setConfig sites ([a56daae](https://github.com/stacksjs/stacks/commit/a56daae)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.202...v0.70.203)
 
 ## 🐛 Bug Fixes
