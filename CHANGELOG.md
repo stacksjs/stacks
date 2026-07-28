@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.210...v0.70.211)
+
+## 🐛 Bug Fixes
+
+- **upgrade**: remove vendored core type aliases ([7b45765](https://github.com/stacksjs/stacks/commit/7b45765)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.209...v0.70.210)
 
 ## 🐛 Bug Fixes
