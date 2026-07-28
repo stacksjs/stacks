@@ -106,7 +106,7 @@
             </tr>
           </thead>
           <tbody class="divide-neutral-200 divide-y dark:divide-neutral-800">
-            @foreach(filteredPosts() as post)
+            <template :for="post in filteredPosts">
               <tr class="hover:bg-neutral-50 dark:hover:bg-neutral-950/60">
                 <td class="px-4 py-3">
                   <div class="flex gap-2 items-center">
@@ -143,7 +143,7 @@
                   </div>
                 </td>
               </tr>
-            @endforeach
+            </template>
           </tbody>
         </table>
       </div>
