@@ -137,7 +137,7 @@
     "@stacksjs/ui": "^0.70.180",
     "@stacksjs/utils": "^0.70.180",
     "@stacksjs/validation": "^0.70.180",
-    "@stacksjs/ts-cloud": "^0.7.76",
+    "@stacksjs/ts-cloud": "^0.7.77",
     "ajv": "^8.20.0",
     "ajv-formats": "^3.0.1"
   },
