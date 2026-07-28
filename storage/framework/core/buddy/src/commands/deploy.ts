@@ -1446,11 +1446,27 @@ async function runHetznerDeploy(args: {
   // rules (forwards.json). Idempotent, merge-based and best-effort — it never
   // removes another tenant's domains/forwards and never fails the release.
   if (ok) {
-    const mailRes = await provisionMailTenant(ip, log)
+    const mailOwner = mailServerOwnerFromConfig(emailConfig)
+    let mailIp: string | undefined = ip
+    if (mailOwner) {
+      const mailBox = await resolveAttachTargetBox(mailOwner, environment)
+      if (mailBox?.publicIp) {
+        mailIp = mailBox.publicIp
+        log.info(`Mail: reconciling on '${mailOwner}' box '${mailBox.serverName}' (${mailIp})`)
+      }
+      else {
+        mailIp = undefined
+        log.warn(`Mail: attach target '${mailOwner}' has no reachable '${environment}' box; application deploy remains live`)
+      }
+    }
+
+    const mailRes = mailIp ? await provisionMailTenant(mailIp, log) : null
+    if (mailOwner && mailIp && mailIp !== ip)
+      await cleanupDetachedMailHealth(ip, log)
     // Publish the domain's mail DNS (MX/SPF/DKIM/DMARC) so the mailboxes can
     // actually send + receive. Best-effort, same as the tenant reconcile.
     if (mailRes)
-      await reconcileMailDns(mailRes, ip, log)
+      await reconcileMailDns(mailRes, mailIp!, log)
   }
 
   // Close out every GitHub Deployment we opened (before the failure branch's
@@ -1539,6 +1555,40 @@ export interface MailTenantResult {
  */
 export function hasExplicitEmailConfig(projectRoot = p.projectPath()): boolean {
   return existsSync(join(projectRoot, 'config', 'email.ts'))
+}
+
+export function mailServerOwnerFromConfig(config: any): string | undefined {
+  const owner = config?.server?.attachTo
+  return typeof owner === 'string' && owner.trim() ? owner.trim() : undefined
+}
+
+async function cleanupDetachedMailHealth(ip: string, logger: typeof log): Promise<void> {
+  const { execSync } = await import('node:child_process')
+  const sshArgs = ['-o', 'StrictHostKeyChecking=accept-new', '-o', 'BatchMode=yes', '-o', 'ConnectTimeout=20', `root@${ip}`]
+  const script = `set -e
+if systemctl list-unit-files --type=service --no-legend | awk '{print $1}' | grep -qx mail.service; then
+  exit 0
+fi
+systemctl disable --now mail-health.timer >/dev/null 2>&1 || true
+systemctl stop mail-health.service >/dev/null 2>&1 || true
+systemctl reset-failed mail-health.service >/dev/null 2>&1 || true
+rm -f /etc/systemd/system/mail-health.service /etc/systemd/system/mail-health.timer
+rm -f /usr/local/sbin/mail-health-check /etc/systemd/system/mail.service.d/reliability.conf
+rmdir /etc/systemd/system/mail.service.d 2>/dev/null || true
+systemctl daemon-reload
+systemctl reset-failed`
+
+  try {
+    execSync(`ssh ${sshArgs.map(a => `'${a}'`).join(' ')} bash -s`, {
+      input: script,
+      encoding: 'utf8',
+      stdio: ['pipe', 'pipe', 'pipe'],
+    })
+    logger.success('Mail: removed the detached health timer from the application box')
+  }
+  catch (err) {
+    logger.warn(`Mail: could not remove the detached health timer: ${getErrorMessage(err)}`)
+  }
 }
 
 /**

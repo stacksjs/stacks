@@ -212,6 +212,14 @@ export interface EmailServerConfig {
   scan?: boolean // spam/virus scanning
 
   /**
+   * Reconcile this application's domains, mailboxes, and forwarding rules on
+   * another ts-cloud project's Hetzner server instead of the application box.
+   * This keeps application compute dedicated while sharing one mail daemon.
+   * @example 'stacks'
+   */
+  attachTo?: string
+
+  /**
    * Server mode:
    * - 'server': Full-featured Zig mail server with IMAP, POP3, CalDAV, etc. (default)
    * - 'serverless': Lightweight TypeScript/Bun server (~$3/month)

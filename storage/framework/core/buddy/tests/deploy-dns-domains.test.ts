@@ -2,7 +2,7 @@ import { describe, expect, it } from 'bun:test'
 import { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { configDnsDomains, dnsProviderNameFromNameservers, hasExplicitEmailConfig } from '../src/commands/deploy'
+import { configDnsDomains, dnsProviderNameFromNameservers, hasExplicitEmailConfig, mailServerOwnerFromConfig } from '../src/commands/deploy'
 
 describe('configDnsDomains', () => {
   it('keeps application zones and normalizes www aliases', () => {
@@ -55,5 +55,16 @@ describe('hasExplicitEmailConfig', () => {
     finally {
       rmSync(root, { recursive: true, force: true })
     }
+  })
+})
+
+describe('mailServerOwnerFromConfig', () => {
+  it('normalizes an explicit shared mail server owner', () => {
+    expect(mailServerOwnerFromConfig({ server: { enabled: true, attachTo: ' stacks ' } })).toBe('stacks')
+  })
+
+  it('keeps same-box mail as the default', () => {
+    expect(mailServerOwnerFromConfig({ server: { enabled: true } })).toBeUndefined()
+    expect(mailServerOwnerFromConfig({ server: { enabled: true, attachTo: '  ' } })).toBeUndefined()
   })
 })
