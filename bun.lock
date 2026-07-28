@@ -5,8 +5,6 @@
     "": {
       "name": "stacks",
       "dependencies": {
-        "@stacksjs/ts-cloud": "^0.7.84",
-        "pickier": "^0.1.43",
         "stacks": "workspace:*",
       },
       "devDependencies": {
