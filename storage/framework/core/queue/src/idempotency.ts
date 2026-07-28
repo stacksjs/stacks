@@ -16,7 +16,6 @@
  * Mirrors the dedup tables we ship across the framework:
  *   - `order_idempotency`        (stacksjs/stacks#1879 Co-3)
  *   - `email_idempotency`        (stacksjs/stacks#1871 M-8)
-import { isMissingTableError } from './missing-table'
  *   - `stripe_webhook_events`    (stacksjs/stacks#1879 Co-17)
  *
  * Same insert-or-skip semantics, same warn-once-and-degrade when
@@ -35,6 +34,8 @@ import { isMissingTableError } from './missing-table'
  * the caller can retry with the same key and the next attempt is
  * the one that should land.
  */
+
+import { isMissingTableError } from './missing-table'
 
 let warnedAboutMissingJobIdempotencyTable = false
 
