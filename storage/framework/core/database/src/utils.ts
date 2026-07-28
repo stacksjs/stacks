@@ -187,6 +187,17 @@ function getDbConfig(): { database: string, username?: string, password?: string
 /**
  * Update bun-query-builder configuration
  */
+/**
+ * Where the model snapshot lives, relative to the project root.
+ *
+ * Exported and referenced by every `setConfig` call rather than repeated at
+ * each one: `setConfig` replaces the query-builder config wholesale, so a call
+ * site that omits this silently reverts the snapshot to the library default
+ * and writes `.qb` into the project root. That has now happened twice from two
+ * different call sites, which is a sign the value wants one home.
+ */
+export const QB_SNAPSHOT_DIR = 'storage/framework/database'
+
 function updateQueryBuilderConfig(): void {
   const dialect = getDialect()
   const dbConfigForQb = getDbConfig()
@@ -199,7 +210,7 @@ function updateQueryBuilderConfig(): void {
     // wholesale, so omitting this here silently reverts the snapshot to the
     // library default and writes a second copy to `.qb` in the project root -
     // the exact directory moving it was meant to remove.
-    snapshotDir: 'storage/framework/database',
+    snapshotDir: QB_SNAPSHOT_DIR,
     timestamps: {
       createdAt: 'created_at',
       updatedAt: 'updated_at',

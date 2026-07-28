@@ -34,7 +34,7 @@ import {
   saveMigrationSnapshot,
   setConfig,
 } from '@stacksjs/query-builder'
-import { db } from './utils'
+import { db, QB_SNAPSHOT_DIR } from './utils'
 import {
   classifyConnectionError,
   createDatabase,
@@ -137,7 +137,7 @@ function configureQueryBuilder(): void {
     // dot-directory in every Stacks app holding something the app never chose
     // to place there. `storage/framework` is where generated framework state
     // already lives, so it belongs there.
-    snapshotDir: 'storage/framework/database',
+    snapshotDir: QB_SNAPSHOT_DIR,
     database: {
       database: connectionConfig?.name || connectionConfig?.database || 'stacks',
       host: connectionConfig?.host || 'localhost',
@@ -1095,7 +1095,7 @@ export async function previewPendingMigrations(options: GenerateMigrationsOption
  */
 function resolveSnapshotDir(): string {
   const configured = (qbConfig as { snapshotDir?: string } | undefined)?.snapshotDir
-  return join(process.cwd(), configured || '.qb')
+  return join(process.cwd(), configured || QB_SNAPSHOT_DIR)
 }
 
 /**
