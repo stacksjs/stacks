@@ -45,6 +45,18 @@ export function standalonePackageUpdateCommand(): string {
   return 'bun update'
 }
 
+/**
+ * Refresh the framework through its declared meta-package only.
+ *
+ * Passing every transitive `@stacksjs/*` name to `bun update` makes Bun promote
+ * those packages into the application's direct dependencies. Updating the
+ * already-declared `stacks` package refreshes its dependency graph without
+ * rewriting the application's ownership boundary.
+ */
+export function frameworkPackageUpdateCommand(): string {
+  return 'bun update stacks'
+}
+
 async function updateStandalonePackage(projectRoot: string, options: PackageUpgradeOptions): Promise<never> {
   console.log('\n  Standalone package detected. No Stacks framework source is installed.')
 
@@ -231,25 +243,15 @@ export async function upgradeStacksPackages(projectRoot: string, options: Packag
     console.log('✔ Updated package.json')
   }
 
-  // The lockstep framework packages to refresh. The `stacks` meta pins its
-  // core deps with caret ranges (e.g. `^0.70.53`), so a plain `bun install`
-  // leaves stale-but-in-range transitive versions in the lockfile untouched —
-  // the app would keep running the OLD buddy/actions. `bun update <names>`
-  // moves each named package (including transitive ones) to the newest version
-  // that satisfies the range, rewriting the lockfile. Scope it to the lockstep
-  // set so independent deps (ts-cloud, tlsx, better-dx) and the rest of the tree
-  // are left alone.
-  const frameworkPkgs = [...lockstep]
-
   if (options.noPostinstall) {
     console.log('  --no-postinstall: skipping install. Run this to pull the new versions:')
-    console.log(`    bun update ${frameworkPkgs.slice(0, 3).join(' ')} …\n`)
+    console.log(`    ${frameworkPackageUpdateCommand()}\n`)
     process.exit(0)
   }
 
   if (changes.length > 0 || manifestChanges.length > 0 || projectManifestChanges.length > 0 || options.force) {
     console.log('  Installing…\n')
-    const result = await runCommand(`bun update ${frameworkPkgs.join(' ')}`, { cwd: projectRoot })
+    const result = await runCommand(frameworkPackageUpdateCommand(), { cwd: projectRoot })
 
     if (result.isErr) {
       console.error('\n✗ The install step failed. Your package.json was updated — resolve the error and re-run `bun update`.\n')

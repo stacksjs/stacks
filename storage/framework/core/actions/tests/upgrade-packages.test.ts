@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test'
-import { applyBumps, baseVersion, hasStacksDependency, lockstepPackages, standalonePackageUpdateCommand } from '../src/upgrade/packages'
+import { applyBumps, baseVersion, frameworkPackageUpdateCommand, hasStacksDependency, lockstepPackages, standalonePackageUpdateCommand } from '../src/upgrade/packages'
 
 describe('package-only buddy updates', () => {
   it('distinguishes Stacks apps from standalone packages', () => {
@@ -10,6 +10,10 @@ describe('package-only buddy updates', () => {
 
   it('refreshes only dependencies declared by the standalone package', () => {
     expect(standalonePackageUpdateCommand()).toBe('bun update')
+  })
+
+  it('refreshes a Stacks app through the declared meta-package only', () => {
+    expect(frameworkPackageUpdateCommand()).toBe('bun update stacks')
   })
 })
 
