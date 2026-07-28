@@ -1,5 +1,24 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.213...v0.70.215)
+
+## 🐛 Bug Fixes
+
+- **app-store**: satisfy framework type contracts ([68424e6](https://github.com/stacksjs/stacks/commit/68424e6)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## ⚡ Performance Improvements
+
+- bundle Stacks production services ([2b36d73](https://github.com/stacksjs/stacks/commit/2b36d73)) _(by Chris <chrisbreuer93@gmail.com>)_
+- add a dedicated production server entry ([360f0d6](https://github.com/stacksjs/stacks/commit/360f0d6)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🔧 Chores
+
+- release v0.70.214 ([658a61c](https://github.com/stacksjs/stacks/commit/658a61c)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.213...v0.70.214)
 
 ## 🐛 Bug Fixes
