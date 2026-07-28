@@ -72,6 +72,7 @@ describe('package project file sync', () => {
     write('storage/framework/defaults/ai/skills/stacks-buddy/SKILL.md', 'old skill')
     write('storage/framework/defaults/ai/skills/removed/SKILL.md', 'stale skill')
     write('storage/framework/defaults/.discovered-models.json', '{}')
+    write('pantry.lock', 'legacy workspace lock')
 
     const changes = syncPackageProjectFiles(root, defaultsRoot)
 
@@ -79,6 +80,7 @@ describe('package project file sync', () => {
     expect(readFileSync(join(root, 'storage/framework/defaults/ai/skills/stacks-buddy/SKILL.md'), 'utf8')).toBe('current skill')
     expect(existsSync(join(root, 'storage/framework/defaults/ai/skills/removed'))).toBe(false)
     expect(existsSync(join(root, 'storage/framework/defaults/.discovered-models.json'))).toBe(true)
+    expect(existsSync(join(root, 'pantry.lock'))).toBe(false)
     expect(readFileSync(join(root, 'storage/framework/tsconfig.app.json'), 'utf8')).toContain('"app"')
     expect(readFileSync(join(root, 'storage/framework/server/tsconfig.docker.json'), 'utf8')).toContain('"docker"')
     expect(lstatSync(join(root, 'buddy')).mode & 0o111).not.toBe(0)

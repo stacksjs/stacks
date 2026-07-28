@@ -32,6 +32,8 @@ const LOCAL_DEFAULT_IGNORES = new Set([
   'node_modules',
 ])
 
+const LEGACY_PACKAGE_PROJECT_FILES = ['pantry.lock']
+
 const SUPPORT_FILES: Array<{ source: string, target: string, executable?: boolean }> = [
   { source: 'project/buddy', target: 'buddy', executable: true },
   { source: 'project/bootstrap', target: 'bootstrap', executable: true },
@@ -159,6 +161,16 @@ export function syncPackageProjectFiles(
       options,
       file.executable,
     )
+  }
+
+  for (const legacyFile of LEGACY_PACKAGE_PROJECT_FILES) {
+    const target = join(projectRoot, legacyFile)
+    if (!existsSync(target))
+      continue
+
+    changes.push({ path: legacyFile, action: 'remove' })
+    if (!options.dryRun)
+      rmSync(target, { force: true })
   }
 
   return changes
