@@ -105,7 +105,7 @@ jobs:
 
       - name: Exercise native package lifecycle
         working-directory: .craft-contract
-        run: bun .github/scripts/native-lifecycle.ts --install
+        run: bun scripts/native-lifecycle.ts --install
 
       - name: Reclaim Craft dependency space
         if: runner.os == 'macOS'

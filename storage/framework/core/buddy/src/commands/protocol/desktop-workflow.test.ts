@@ -23,6 +23,7 @@ describe('desktop lifecycle workflow', () => {
     expect(lifecycle).toBeLessThan(reclaim)
     expect(reclaim).toBeLessThan(stacksInstall)
     expect(stacksInstall).toBeLessThan(stacksTests)
+    expect(workflow).toContain('working-directory: .craft-contract\n        run: bun scripts/native-lifecycle.ts --install')
     expect(workflow).toContain('rm -rf .craft-contract/node_modules')
   })
 
