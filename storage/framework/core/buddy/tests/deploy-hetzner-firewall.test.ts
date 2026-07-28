@@ -17,7 +17,11 @@ import { describe, expect, it } from 'bun:test'
 import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { loadTsCloudDeployApi, scrubLoopbackSitePortsForFirewall } from '../src/commands/deploy'
+import {
+  loadTsCloudDeployApi,
+  scrubLoopbackSitePortsForFirewall,
+  shouldInjectManagementDashboard,
+} from '../src/commands/deploy'
 
 /**
  * Mirror of ts-cloud's HetznerDriver.collectUpstreamPorts — the exact set of
@@ -102,6 +106,13 @@ describe('scrubLoopbackSitePortsForFirewall (#1950)', () => {
     const ports = collectUpstreamPorts(scrubLoopbackSitePortsForFirewall(tsCloud).sites)
     expect(ports).toContain(3000)
     expect(ports).not.toContain(3008)
+  })
+})
+
+describe('management dashboard ownership', () => {
+  it('injects a dashboard only for the project that owns the server', () => {
+    expect(shouldInjectManagementDashboard({ cloud: { provider: 'hetzner' } })).toBe(true)
+    expect(shouldInjectManagementDashboard({ cloud: { provider: 'hetzner', attachTo: 'stacks' } })).toBe(false)
   })
 })
 

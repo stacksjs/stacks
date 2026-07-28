@@ -931,6 +931,10 @@ export async function loadTsCloudDeployApi(): Promise<typeof import('@stacksjs/t
  * gateway's route table (which proxies to 127.0.0.1:port on-box), so its
  * port declaration is left alone.
  */
+export function shouldInjectManagementDashboard(tsCloudConfig: any): boolean {
+  return !tsCloudConfig.cloud?.attachTo
+}
+
 export function scrubLoopbackSitePortsForFirewall(tsCloudConfig: any): any {
   const sites = tsCloudConfig?.sites
   if (!sites)
@@ -1126,11 +1130,14 @@ async function runHetznerDeploy(args: {
   // and best-effort: a UI-resolution hiccup or an older ts-cloud without the
   // export never blocks the app deploy. Set TS_CLOUD_UI_DISABLE=1 to opt out.
   try {
-    if (typeof ensureManagementDashboard === 'function') {
+    if (shouldInjectManagementDashboard(tsCloudConfig) && typeof ensureManagementDashboard === 'function') {
       ensureManagementDashboard(tsCloudConfig, {
         cwd: process.cwd(),
         logger: { info: (m: string) => log.info(m), warn: (m: string) => log.warn(m) },
       })
+    }
+    else if (tsCloudConfig.cloud?.attachTo) {
+      log.info(`Management dashboard: using the '${tsCloudConfig.cloud.attachTo}' server owner's dashboard`)
     }
   }
   catch (err) {
@@ -1390,9 +1397,10 @@ async function runHetznerDeploy(args: {
     : { ...tsCloudConfig, sites: sitesWithResolvedEnv }
   const ok = await deployAllComputeSites({
     config: deployConfig,
-    // Buddy injects and stages the dashboard before provisioning. Do not let
-    // the shared deploy helper add it back to a narrowed --site deployment.
-    managementDashboard: false,
+    // Full deploys let ts-cloud reconcile the one-dashboard-per-server
+    // invariant. A narrowed --site deployment must not add or remove dashboard
+    // state because it intentionally touches one application site only.
+    managementDashboard: !onlySite,
     // The rpx gateway is ALWAYS regenerated from the full site model, never the
     // narrowed single-site `deployConfig`, so a `--site` deploy can never drop the
     // other sites' routes (the production-incident guard). Use the environment-
