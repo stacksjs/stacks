@@ -1,5 +1,33 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.201...v0.70.202)
+
+## ✨ Features
+
+- **buddy**: add preview, and keep the model snapshot out of the project root ([82561ca](https://github.com/stacksjs/stacks/commit/82561ca)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **migrate**: ask before creating a missing database ([600295f](https://github.com/stacksjs/stacks/commit/600295f)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+
+## 🐛 Bug Fixes
+
+- **database**: refuse to replay migrations against the wrong dialect ([4734fa2](https://github.com/stacksjs/stacks/commit/4734fa2)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **database**: open the maintenance connection directly instead of via bqb ([2b0d751](https://github.com/stacksjs/stacks/commit/2b0d751)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **dashboard**: make the mail settings page reactive (view) ([a412029](https://github.com/stacksjs/stacks/commit/a412029)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **dashboard**: make the mail settings page reactive ([ed8cc92](https://github.com/stacksjs/stacks/commit/ed8cc92)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **dashboard**: use PageHeader on the mail settings page ([62996f9](https://github.com/stacksjs/stacks/commit/62996f9)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **dashboard**: render reactive lists via bare-signal :for across the dashboard ([9d794cd](https://github.com/stacksjs/stacks/commit/9d794cd)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **dashboard**: render blog list via reactive :for over a bare signal ([b7a492c](https://github.com/stacksjs/stacks/commit/b7a492c)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **dashboard**: vibrancy sidebar + working active-link highlight ([ed4ce07](https://github.com/stacksjs/stacks/commit/ed4ce07)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+
+## 🔧 Chores
+
+- wip ([70c759d](https://github.com/stacksjs/stacks/commit/70c759d)) _(by Chris <chrisbreuer93@gmail.com>)_
+- wip ([526b814](https://github.com/stacksjs/stacks/commit/526b814)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+- _glennmichael123 <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.200...v0.70.201)
 
 ## 🔧 Chores
