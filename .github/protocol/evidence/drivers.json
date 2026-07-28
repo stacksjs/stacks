@@ -85,7 +85,8 @@
         "MySQL service"
       ],
       "limitations": [
-        "The default CI suite does not yet publish a dedicated dialect report."
+        "The default CI suite does not yet publish a dedicated dialect report.",
+        "The migration files shipped under database/migrations are emitted for a single dialect (SQLite in the default template) and do not replay on MySQL. They must be regenerated against MySQL before migrating."
       ]
     },
     {
@@ -101,7 +102,8 @@
         "PostgreSQL service"
       ],
       "limitations": [
-        "The default CI suite does not provision PostgreSQL."
+        "The default CI suite does not provision PostgreSQL.",
+        "The migration files shipped under database/migrations are emitted for a single dialect (SQLite in the default template) and do not replay on PostgreSQL. They must be regenerated against PostgreSQL before migrating."
       ]
     },
     {
