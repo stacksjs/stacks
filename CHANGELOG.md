@@ -1,5 +1,24 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.206...v0.70.207)
+
+## 🐛 Bug Fixes
+
+- **queue**: move the missing-table import out of the doc comment ([994c74b](https://github.com/stacksjs/stacks/commit/994c74b)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## ♻️ Code Refactoring
+
+- **deploy**: use ts-cloud's shared address-record reconciler ([bdc2f29](https://github.com/stacksjs/stacks/commit/bdc2f29)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🔧 Chores
+
+- **deps**: refresh lockfiles for the bun-query-builder 0.1.63 floor ([cdbac1c](https://github.com/stacksjs/stacks/commit/cdbac1c)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **deps**: raise the last bun-query-builder floor to 0.1.63 ([bb973a0](https://github.com/stacksjs/stacks/commit/bb973a0)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.205...v0.70.206)
 
 ## ✨ Features
