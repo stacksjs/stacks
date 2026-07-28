@@ -218,8 +218,9 @@ export function formatMigrationDialectError(audit: MigrationCorpusAudit, target:
     `Nothing was migrated, so the database is unchanged.`,
     '',
     `Stacks ships one set of migration files, and they are emitted for a single database.`,
-    `To use ${target}, regenerate them from your models against ${target}, or point`,
-    `DB_CONNECTION back at the database they were written for.`,
+    `Regenerate them from your models:`,
+    `  ./buddy migrate:regenerate ${target}`,
+    `or point DB_CONNECTION back at the database they were written for.`,
     '',
     `If you know this corpus is correct, re-run with ${DIALECT_OVERRIDE_ENV}=1 to proceed anyway.`,
   ]

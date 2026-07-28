@@ -1031,5 +1031,89 @@ export function migrate(buddy: CLI): void {
       process.exit(ExitCode.Success)
     })
 
+  // `buddy migrate:regenerate [dialect]` — rebuild the whole migration corpus
+  // from the models, for one dialect.
+  //
+  // Stacks ships ONE corpus and it is emitted for a single dialect, so a
+  // project that switches DB_CONNECTION has SQL it cannot run. Translating the
+  // committed SQLite DDL was never viable: that emission threw away varchar
+  // lengths, numeric scale and every foreign key (40 are `SELECT 1;` stubs).
+  // The intent still lives in the models, so this recovers it rather than
+  // guessing.
+  buddy
+    .command('migrate:regenerate [dialect]', 'Rebuild database/migrations from your models for a given dialect')
+    .option('--dry-run', 'Show what would change without writing anything', { default: false })
+    .option('-f, --force', 'Regenerate even though the database already has migrations recorded', { default: false })
+    .action(async (dialect: string | undefined, options: { dryRun?: boolean, force?: boolean }) => {
+      const perf = await intro('buddy migrate:regenerate')
+
+      const target = (dialect || process.env.DB_CONNECTION || 'sqlite').toLowerCase()
+      const allowed = new Set(['sqlite', 'mysql', 'postgres', 'singlestore'])
+      if (!allowed.has(target)) {
+        log.syncError(`Unknown dialect "${target}". Allowed: sqlite, mysql, postgres, singlestore.`)
+        process.exit(ExitCode.FatalError)
+      }
+
+      const { countAppliedMigrations, regenerateMigrationCorpus } = await import('@stacksjs/database')
+
+      // Renumbering is safe only against a database with no bookkeeping. The
+      // migrations table keys on filename, so renaming files makes applied
+      // migrations look pending, and 0000000098 is a hard token wipe.
+      let applied = 0
+      try { applied = await countAppliedMigrations() }
+      catch { applied = 0 }
+
+      if (applied > 0 && !options.force && !options.dryRun) {
+        log.syncError(`This database already has ${applied} migration(s) recorded.`)
+        log.syncError('Regenerating renumbers every file, and the migrations table keys on the filename,')
+        log.syncError('so already-applied migrations would look pending and run a second time.')
+        log.syncError('  Point at an empty database, or re-run with --force if you know it is safe.')
+        process.exit(ExitCode.FatalError)
+      }
+
+      const plan = await regenerateMigrationCorpus({ dialect: target, dryRun: true })
+      if (plan.isErr) {
+        log.syncError(plan.error.message)
+        process.exit(ExitCode.FatalError)
+      }
+
+      const { files, removed, models } = plan.value
+      // eslint-disable-next-line no-console
+      console.log(`
+  Regenerate plan: ${target}
+  ─────────────────────────────────────────────
+  • ${models} model(s) read from app/Models and the framework defaults
+  • ${files.length} migration file(s) will be written
+  • ${removed.length} existing file(s) will be removed
+  • These files are tracked in git, so review with \`git diff\` afterwards
+  ─────────────────────────────────────────────
+`)
+
+      if (options.dryRun) {
+        await outro('Dry run. Nothing was written.', { startTime: perf, useSeconds: true })
+        process.exit(ExitCode.Success)
+      }
+
+      if (!isCI && hasTTY && process.stdin.isTTY) {
+        await log.flush()
+        const proceed = await confirm({ message: `Replace ${removed.length} migration file(s) with ${files.length} generated for ${target}?`, initial: false })
+        if (!proceed) {
+          await outro('Cancelled. Nothing was written.', { startTime: perf, useSeconds: true })
+          process.exit(ExitCode.Success)
+        }
+      }
+
+      const result = await regenerateMigrationCorpus({ dialect: target })
+      if (result.isErr) {
+        log.syncError(result.error.message)
+        process.exit(ExitCode.FatalError)
+      }
+
+      log.success(`Wrote ${result.value.files.length} ${target} migration file(s) to database/migrations.`)
+      log.info('Review the change with `git diff`, then run `./buddy migrate`.')
+      await outro('Regenerated.', { startTime: perf, useSeconds: true })
+      process.exit(ExitCode.Success)
+    })
+
   onUnknownSubcommand(buddy, "migrate")
 }

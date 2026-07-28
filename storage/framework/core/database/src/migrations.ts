@@ -6,7 +6,7 @@
  */
 
 import type { Result } from '@stacksjs/error-handling'
-import { existsSync, mkdirSync, readdirSync, readFileSync, unlinkSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readdirSync, readFileSync, renameSync, unlinkSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { log as _log } from '@stacksjs/logging'
 
@@ -43,6 +43,7 @@ import {
   probeTargetDatabase,
   resolveConnectionTarget,
 } from './ensure-database'
+import { resolveModelSources } from './model-sources'
 import { frameworkManagedColumns, withoutManagedColumnDrops, withoutManagedColumnDropSql } from './managed-columns'
 import { acquireMigrationLock } from './migration-lock'
 
@@ -662,7 +663,16 @@ async function restoreHiddenMigrations(hidden: Array<{ original: string, hidden:
  * — distinguishes the "nothing to migrate" path from a real apply
  * in the CLI outro (user-reported messaging gap).
  */
-async function countAppliedMigrations(): Promise<number> {
+/**
+ * How many migrations the target database has already recorded.
+ *
+ * Exported because regeneration must refuse to renumber a corpus that a live
+ * database has bookkeeping against: the migrations table keys on the FILENAME,
+ * so renaming files makes an applied migration look pending. One of them,
+ * 0000000098-revoke-legacy-long-lived-tokens.sql, is a hard
+ * `DELETE FROM oauth_access_tokens`, so a careless renumber re-runs a data wipe.
+ */
+export async function countAppliedMigrations(): Promise<number> {
   try {
     const row = await (db as any)
       .selectFrom('migrations')
@@ -1223,6 +1233,179 @@ export async function generateMigrations(options: GenerateMigrationsOptions = {}
  * Write generated SQL to `database/migrations/` so the runner picks it up.
  * Returns the number of files written.
  */
+/**
+ * Enum types a generated corpus USES but never DEFINES.
+ *
+ * Postgres enums have to exist before a column can be typed with them, so a
+ * dangling reference is a guaranteed mid-migration failure rather than a
+ * cosmetic problem.
+ */
+export function findDanglingTypeReferences(statements: string[]): string[] {
+  const defined = new Set<string>()
+  const referenced = new Set<string>()
+
+  for (const statement of statements) {
+    for (const match of statement.matchAll(/CREATE\s+TYPE\s+"([^"]+)"/gi))
+      defined.add(match[1]!)
+
+    // `ALTER COLUMN "x" TYPE "y"` and `"col" "y" not null` both land here; only
+    // quoted names are considered, so built-ins like bigint are never flagged.
+    for (const match of statement.matchAll(/\bTYPE\s+"([^"]+)"/gi))
+      referenced.add(match[1]!)
+  }
+
+  return [...referenced].filter(name => !defined.has(name)).sort()
+}
+
+export interface RegeneratedCorpus {
+  dialect: string
+  /** How many model definitions fed the generation. */
+  models: number
+  /** Files that would be (or were) written, in order. */
+  files: Array<{ name: string, statements: number }>
+  /** Existing .sql files that would be (or were) removed. */
+  removed: string[]
+  /** The directory operated on. */
+  dir: string
+}
+
+/**
+ * Rebuild the whole migration corpus for one dialect, from the models.
+ *
+ * This is the fix for a corpus that cannot run on the configured database.
+ * Translating the committed SQLite DDL was never viable: the emission threw
+ * away varchar lengths, numeric scale and every foreign key (40 of them are
+ * `SELECT 1;` stubs). All of that still exists in the model definitions, so
+ * regenerating recovers the intent instead of guessing at it.
+ *
+ * Unlike `persistGeneratedMigrations`, which appends a diff on top of what is
+ * already committed, this produces a COMPLETE corpus numbered from 1 and
+ * replaces what is there. Callers are responsible for confirming that with the
+ * user, and for refusing when the target database already has migrations
+ * recorded against the old filenames.
+ */
+export async function regenerateMigrationCorpus(options: {
+  dialect?: string
+  dir?: string
+  dryRun?: boolean
+} = {}): Promise<Result<RegeneratedCorpus, Error>> {
+  try {
+    const dialect = options.dialect ?? getQbDialect()
+    const dir = options.dir ?? join(process.cwd(), 'database', 'migrations')
+
+    const sources = resolveModelSources()
+    if (!sources) {
+      return err(new Error(
+        'No models found. Define models in app/Models, or ensure the framework defaults at '
+        + 'storage/framework/defaults/app/Models are present.',
+      ))
+    }
+
+    // Force a FULL emit rather than a diff.
+    //
+    // With no `.qb` snapshot, the generator falls back to introspecting the
+    // LIVE database and emitting the delta against it. That is right for
+    // `generate:migrations` and wrong here: regenerating the corpus must
+    // describe the whole schema, not "whatever this particular database is
+    // currently missing". It also matters for correctness, because the
+    // generator's ALTER COLUMN path names enum types `<column>_type` while its
+    // CREATE TABLE path names them `<table>_<column>_type`, so a delta against
+    // a half-built database produced SQL referencing a type nothing creates.
+    //
+    // bun-query-builder reads `.qb-migrations.<dialect>.json` from the models
+    // directory as a starting state, so an empty plan there means "assume
+    // nothing exists". The staging directory is ours and is rebuilt on every
+    // call, so this cannot leak into the user's project.
+    try {
+      writeFileSync(
+        join(sources.dir, `.qb-migrations.${dialect}.json`),
+        JSON.stringify({ plan: { dialect, tables: [] } }),
+      )
+    }
+    catch { /* fall back to the generator's own previous-state resolution */ }
+
+    // A model snapshot outranks the sentinel above, so move it aside for the
+    // duration or a full regeneration silently degrades back into a delta.
+    // Note the snapshot path is hardcoded to `.qb` inside the generator; the
+    // `snapshotDir` we pass in configureQueryBuilder() is not honoured.
+    const snapshotPath = join(process.cwd(), '.qb', `model-snapshot.${dialect}.json`)
+    const parkedSnapshot = `${snapshotPath}.regenerating`
+    let snapshotParked = false
+    if (existsSync(snapshotPath)) {
+      try {
+        renameSync(snapshotPath, parkedSnapshot)
+        snapshotParked = true
+      }
+      catch { /* leave it; the sentinel still helps in the common case */ }
+    }
+
+    let result: Awaited<ReturnType<typeof qbGenerateMigration>>
+    try {
+      result = await qbGenerateMigration(sources.dir, { dialect: dialect as any, dryRun: true })
+    }
+    finally {
+      if (snapshotParked) {
+        try { renameSync(parkedSnapshot, snapshotPath) }
+        catch { /* the snapshot is a cache; regenerating it is cheap */ }
+      }
+    }
+
+    const statements = result.sqlStatements ?? []
+    if (statements.length === 0)
+      return err(new Error(`The generator produced no SQL for dialect "${dialect}".`))
+
+    // Never write a corpus we already know will fail. bun-query-builder names
+    // an enum type `<table>_<column>_type` when it creates the table, but its
+    // ALTER COLUMN path emits the unqualified `<column>_type`, so a generated
+    // corpus can reference a type nothing ever creates (observed:
+    // `ALTER TABLE "notifications" ALTER COLUMN "type" TYPE "type_type"`,
+    // which fails with `type "type_type" does not exist`). Catch it here rather
+    // than discovering it 66 files into a migration run.
+    const dangling = findDanglingTypeReferences(statements)
+    if (dangling.length > 0) {
+      return err(new Error(
+        `The generator emitted ${dangling.length} reference(s) to enum type(s) it never creates: `
+        + `${dangling.slice(0, 5).join(', ')}${dangling.length > 5 ? `, +${dangling.length - 5} more` : ''}. `
+        + 'Writing this corpus would fail partway through a migration. This is a bug in the '
+        + 'migration generator, not in your models.',
+      ))
+    }
+
+    const groups = groupGeneratedStatements(statements)
+
+    let existing: string[] = []
+    try {
+      existing = readdirSync(dir).filter(f => f.endsWith('.sql')).sort()
+    }
+    catch { /* directory does not exist yet */ }
+
+    const files = groups.map((group, index) => ({
+      name: `${String(index + 1).padStart(10, '0')}-${group.label}.sql`,
+      statements: group.statements.length,
+    }))
+
+    if (options.dryRun)
+      return ok({ dialect, models: sources.models.length, files, removed: existing, dir })
+
+    mkdirSync(dir, { recursive: true })
+
+    // Remove first so a rename (create-x-table -> create-x_items-table) cannot
+    // leave an orphan behind that would still be executed.
+    for (const file of existing)
+      unlinkSync(join(dir, file))
+
+    groups.forEach((group, index) => {
+      const body = `${group.statements.map(s => s.trim().replace(/;\s*$/, '')).join(';\n')};\n`
+      writeFileSync(join(dir, files[index]!.name), body)
+    })
+
+    return ok({ dialect, models: sources.models.length, files, removed: existing, dir })
+  }
+  catch (error) {
+    return err(handleError('Migration regeneration failed', error))
+  }
+}
+
 function persistGeneratedMigrations(sqlStatements: string[]): number {
   if (!sqlStatements?.length)
     return 0

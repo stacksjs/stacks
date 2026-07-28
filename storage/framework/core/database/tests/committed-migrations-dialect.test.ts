@@ -121,3 +121,37 @@ describe('formatMigrationDialectError', () => {
     expect(message).not.toContain('—')
   })
 })
+
+describe('findDanglingTypeReferences', () => {
+  it('flags an enum type that is used but never created', async () => {
+    // The real case: bun-query-builder's CREATE TABLE path names an enum
+    // `<table>_<column>_type`, but its ALTER COLUMN path emits the bare
+    // `<column>_type`, so a corpus generated as a delta referenced
+    // "type_type" while only "notifications_type_type" was ever defined.
+    // Writing that corpus fails 66 files into a migration run.
+    const { findDanglingTypeReferences } = await import('../src/migrations')
+
+    expect(findDanglingTypeReferences([
+      'CREATE TYPE "notifications_type_type" AS ENUM (\'a\')',
+      'ALTER TABLE "notifications" ALTER COLUMN "type" TYPE "type_type"',
+    ])).toEqual(['type_type'])
+  })
+
+  it('accepts a corpus that defines every type it uses', async () => {
+    const { findDanglingTypeReferences } = await import('../src/migrations')
+
+    expect(findDanglingTypeReferences([
+      'CREATE TYPE "orders_status_type" AS ENUM (\'new\')',
+      'CREATE TABLE "orders" ("status" "orders_status_type" not null)',
+      'ALTER TABLE "orders" ALTER COLUMN "status" TYPE "orders_status_type"',
+    ])).toEqual([])
+  })
+
+  it('ignores built-in types, which are never quoted', async () => {
+    const { findDanglingTypeReferences } = await import('../src/migrations')
+
+    expect(findDanglingTypeReferences([
+      'ALTER TABLE "t" ALTER COLUMN "id" TYPE bigint USING "id"::bigint',
+    ])).toEqual([])
+  })
+})
