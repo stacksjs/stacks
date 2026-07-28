@@ -32,6 +32,14 @@ interface AppleDesktopOptions {
   skipBuild?: boolean
   validateOnly?: boolean
   packageOnly?: boolean
+  plan?: boolean
+  apply?: boolean
+  capabilities?: string
+  appCertificateCsr?: string
+  installerCertificateCsr?: string
+  profileName?: string
+  output?: string
+  commonName?: string
 }
 
 export interface AppleDesktopConfig {
@@ -215,6 +223,7 @@ jobs:
       bundle-id: \${{ vars.APPLE_BUNDLE_ID }}
       team-id: \${{ vars.APPLE_TEAM_ID }}
       desktop-url: \${{ vars.DESKTOP_URL }}
+      app-version: \${{ vars.APPLE_APP_VERSION }}
       app-signing-identity: \${{ vars.APPLE_APP_SIGNING_IDENTITY }}
       installer-signing-identity: \${{ vars.APPLE_INSTALLER_SIGNING_IDENTITY }}
       release-tag: \${{ inputs.release-tag }}
@@ -400,6 +409,136 @@ function fail(error: unknown): never {
 }
 
 export function desktopApple(buddy: CLI): void {
+  buddy
+    .command('desktop:apple:csr', 'Generate local private keys and CSRs for Mac App Store distribution certificates')
+    .option('--common-name <name>', 'Certificate request common name')
+    .option('--output <path>', 'Directory for private keys and certificate requests')
+    .action(async (options: AppleDesktopOptions) => {
+      try {
+        const metadata = packageMetadata()
+        const outputDirectory = resolve(options.output || storagePath('framework/desktop-dist/apple/provisioning'))
+        const { generateMacCertificateRequests } = await import('ts-pantry')
+        generateMacCertificateRequests({
+          outputDirectory,
+          commonName: options.commonName || metadata.name,
+        })
+        log.success(`Generated Apple certificate requests and private keys in ${outputDirectory}`)
+      }
+      catch (error) {
+        fail(error)
+      }
+    })
+
+  buddy
+    .command('desktop:apple:provision', 'Plan or reconcile Apple Bundle ID, capabilities, certificates, and profile')
+    .option('--app-name <name>', 'Mac App Store display name')
+    .option('--bundle-id <id>', 'Reverse-DNS bundle identifier')
+    .option('--api-key-id <id>', 'App Store Connect API key ID')
+    .option('--api-issuer-id <id>', 'App Store Connect API issuer ID')
+    .option('--api-key-path <path>', 'App Store Connect AuthKey .p8 file')
+    .option('--capabilities <types>', 'Comma-separated Apple capability types')
+    .option('--app-certificate-csr <path>', 'CSR for a missing Mac App Distribution certificate')
+    .option('--installer-certificate-csr <path>', 'CSR for a missing Mac Installer Distribution certificate')
+    .option('--profile-name <name>', 'Provisioning profile name')
+    .option('--output <path>', 'Directory for the plan and downloaded Apple assets')
+    .option('--plan', 'Report the idempotent Apple resource diff without mutating it')
+    .option('--apply', 'Apply the Apple resource diff without revoking existing certificates')
+    .action(async (options: AppleDesktopOptions) => {
+      try {
+        if (options.plan && options.apply)
+          throw new Error('Choose either --plan or --apply')
+        const config = resolveAppleDesktopConfig(options)
+        if (!config.bundleId)
+          throw new Error('APPLE_BUNDLE_ID or --bundle-id is required')
+        if (!config.apiKeyId || !config.apiIssuerId || !config.apiKeyPath || !existsSync(config.apiKeyPath))
+          throw new Error('App Store Connect API key ID, issuer ID, and existing .p8 key path are required')
+        const readCsr = (file?: string): string | undefined => {
+          if (!file) return undefined
+          const resolved = resolve(file)
+          if (!existsSync(resolved)) throw new Error(`Apple certificate CSR does not exist: ${resolved}`)
+          return readFileSync(resolved, 'utf8')
+        }
+        const { exportAppleCertificateP12, provisionMacApp } = await import('ts-pantry')
+        const result = await provisionMacApp({
+          identifier: config.bundleId,
+          name: config.appName,
+          capabilities: options.capabilities?.split(',').map(value => value.trim()).filter(Boolean),
+          appCertificateCsr: readCsr(options.appCertificateCsr),
+          installerCertificateCsr: readCsr(options.installerCertificateCsr),
+          profileName: options.profileName,
+          keyId: config.apiKeyId,
+          issuerId: config.apiIssuerId,
+          keyPath: config.apiKeyPath,
+          checkOnly: !options.apply,
+        })
+        const outputDirectory = resolve(options.output || storagePath('framework/desktop-dist/apple/provisioning'))
+        mkdirSync(outputDirectory, { recursive: true })
+        for (const certificate of result.certificates) {
+          if (!certificate.certificateContent) continue
+          const fileName = certificate.type === 'MAC_APP_DISTRIBUTION'
+            ? 'mac-app-distribution.cer'
+            : 'mac-installer-distribution.cer'
+          writeFileSync(join(outputDirectory, fileName), Buffer.from(certificate.certificateContent, 'base64'), { mode: 0o600 })
+        }
+        if (result.profile.profileContent) {
+          writeFileSync(
+            join(outputDirectory, 'mac-app-store.provisionprofile'),
+            Buffer.from(result.profile.profileContent, 'base64'),
+            { mode: 0o600 },
+          )
+        }
+        const certificatePassword = env('APPLE_CERTIFICATE_PASSWORD')
+        const certificateExports = [
+          {
+            type: 'MAC_APP_DISTRIBUTION',
+            csr: options.appCertificateCsr,
+            certificate: 'mac-app-distribution.cer',
+            output: 'mac-app-distribution.p12',
+            name: `${config.appName} Mac App Distribution`,
+          },
+          {
+            type: 'MAC_INSTALLER_DISTRIBUTION',
+            csr: options.installerCertificateCsr,
+            certificate: 'mac-installer-distribution.cer',
+            output: 'mac-installer-distribution.p12',
+            name: `${config.appName} Mac Installer Distribution`,
+          },
+        ]
+        for (const certificateExport of certificateExports) {
+          const certificate = result.certificates.find(item => item.type === certificateExport.type)
+          if (!certificate?.certificateContent || !certificateExport.csr || !certificatePassword)
+            continue
+          exportAppleCertificateP12({
+            certificatePath: join(outputDirectory, certificateExport.certificate),
+            privateKeyPath: resolve(certificateExport.csr.replace(/\.csr$/i, '.key')),
+            outputPath: join(outputDirectory, certificateExport.output),
+            password: certificatePassword,
+            name: certificateExport.name,
+          })
+        }
+        const certificates = result.certificates.map((item) => {
+          const certificate = { ...item }
+          delete certificate.certificateContent
+          return certificate
+        })
+        const profile = { ...result.profile }
+        delete profile.profileContent
+        const report = {
+          ...result,
+          certificates,
+          profile,
+        }
+        const reportPath = join(outputDirectory, 'provisioning-plan.json')
+        writeFileSync(reportPath, `${JSON.stringify(report, null, 2)}\n`, { mode: 0o600 })
+        log.success(`${options.apply ? 'Applied' : 'Planned'} Apple provisioning: ${reportPath}`)
+        if (!result.appRecord.exists)
+          log.warn(result.appRecord.manualAction)
+      }
+      catch (error) {
+        fail(error)
+      }
+    })
+
   buddy
     .command('desktop:apple:doctor', 'Validate Mac App Store tooling, credentials, certificates, and project metadata')
     .option('--app-name <name>', 'Mac App Store display name')

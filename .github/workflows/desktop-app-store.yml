@@ -32,6 +32,11 @@ on:
         default: '13.0'
         required: false
         type: string
+      app-version:
+        description: Marketing version recorded in the App Store delivery receipt; defaults to the release tag
+        default: ''
+        required: false
+        type: string
       category:
         description: LSApplicationCategoryType value
         default: public.app-category.productivity
@@ -154,9 +159,9 @@ jobs:
           xcode-version: latest-stable
 
       - name: Setup Pantry
-        uses: pantry-pm/pantry/packages/action@db1b32a881dcc8bf9012488a28d96ca3c5a5763a # v0.10.56
+        uses: pantry-pm/pantry/packages/action@3c723aa5d6c8d4572cf2cc8c81356e34b8fea9b9 # v0.11
         with:
-          version: '0.10.56'
+          version: '0.11.0'
           install: 'false'
 
       - name: Install application dependencies
@@ -219,9 +224,9 @@ jobs:
         run: bun node_modules/@stacksjs/buddy/dist/cli.js desktop:apple:publish --package-only
 
       - name: Publish GitHub release and deliver package
-        uses: pantry-pm/pantry/packages/action@db1b32a881dcc8bf9012488a28d96ca3c5a5763a # v0.10.56
+        uses: pantry-pm/pantry/packages/action@3c723aa5d6c8d4572cf2cc8c81356e34b8fea9b9 # v0.11
         with:
-          version: '0.10.56'
+          version: '0.11.0'
           install: 'false'
           release: 'true'
           release-tag: ${{ inputs.release-tag }}
@@ -231,6 +236,9 @@ jobs:
             storage/framework/desktop-dist/apple/apple-provenance.json
           release-checksums: sha256
           release-app-store: 'true'
+          release-app-store-bundle-id: ${{ inputs.bundle-id }}
+          release-app-store-version: ${{ inputs.app-version || inputs.release-tag }}
+          release-app-store-build-number: ${{ github.run_number }}
           release-app-store-api-key-id: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
           release-app-store-issuer-id: ${{ secrets.APP_STORE_CONNECT_API_ISSUER_ID }}
           release-app-store-private-key: ${{ secrets.APP_STORE_CONNECT_API_KEY }}

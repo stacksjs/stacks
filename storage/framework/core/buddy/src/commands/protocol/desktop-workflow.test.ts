@@ -44,7 +44,7 @@ describe('desktop lifecycle workflow', () => {
   it('retains artifacts through maintained Node 24 action runtimes', () => {
     expect(repositoryWorkflows).not.toMatch(/actions\/upload-artifact@v[1-6]\b/)
     expect(repositoryWorkflows).not.toMatch(/actions\/download-artifact@v[1-7]\b/)
-    expect(repositoryWorkflows.match(/actions\/upload-artifact@v7\b/g)).toHaveLength(3)
+    expect(repositoryWorkflows.match(/actions\/upload-artifact@v7\b/g)).toHaveLength(4)
     expect(repositoryWorkflows.match(/actions\/download-artifact@v8\b/g)).toHaveLength(1)
   })
 })

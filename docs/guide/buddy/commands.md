@@ -6,7 +6,7 @@ description: Generated reference for every Buddy command, argument, option, alia
 
 # Buddy Command Reference
 
-This reference is generated from Buddy's runtime command registry and currently contains **273 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
+This reference is generated from Buddy's runtime command registry and currently contains **279 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
 
 ## Command groups
 
@@ -22,6 +22,7 @@ This reference is generated from Buddy's runtime command registry and currently 
 | `config` | 1 |
 | `configure` | 1 |
 | `dashboard` | 2 |
+| `desktop` | 6 |
 | `dev` | 8 |
 | `dns` | 3 |
 | `docs` | 6 |
@@ -770,6 +771,131 @@ Deploy your project
 | `--staging` | Deploy to staging | boolean, optional | `false` |
 | `--docker` | Also build an OCI image with pantry (native, no Docker daemon) and push it to the pantry registry | boolean, optional | `false` |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
+
+### `desktop:apple:csr`
+
+Generate local private keys and CSRs for Mac App Store distribution certificates
+
+- Usage: `$ buddy desktop:apple:csr`
+- Namespace: `desktop`
+- Aliases: none
+- Arguments: none
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `--common-name` | Certificate request common name | value, required | — |
+| `--output` | Directory for private keys and certificate requests | value, required | — |
+
+### `desktop:apple:doctor`
+
+Validate Mac App Store tooling, credentials, certificates, and project metadata
+
+- Usage: `$ buddy desktop:apple:doctor`
+- Namespace: `desktop`
+- Aliases: none
+- Arguments: none
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `--app-name` | Mac App Store display name | value, required | — |
+| `--bundle-id` | Reverse-DNS bundle identifier | value, required | — |
+| `--team-id` | Apple Developer team ID | value, required | — |
+| `--app-signing-identity` | Mac App Distribution signing identity | value, required | — |
+| `--installer-signing-identity` | Mac Installer Distribution signing identity | value, required | — |
+| `--provisioning-profile` | Mac App Store provisioning profile | value, required | — |
+| `--api-key-id` | App Store Connect API key ID | value, required | — |
+| `--api-issuer-id` | App Store Connect API issuer ID | value, required | — |
+| `--api-key-path` | App Store Connect AuthKey .p8 file | value, required | — |
+
+### `desktop:apple:init`
+
+Create a GitHub Actions caller for the reusable Stacks Mac App Store workflow
+
+- Usage: `$ buddy desktop:apple:init`
+- Namespace: `desktop`
+- Aliases: none
+- Arguments: none
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `--force` | Replace an existing workflow | boolean, optional | — |
+
+### `desktop:apple:package`
+
+Build, sandbox, sign, and package a Mac App Store desktop app
+
+- Usage: `$ buddy desktop:apple:package`
+- Namespace: `desktop`
+- Aliases: none
+- Arguments: none
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `--app-name` | Mac App Store display name | value, required | — |
+| `--bundle-id` | Reverse-DNS bundle identifier | value, required | — |
+| `--team-id` | Apple Developer team ID | value, required | — |
+| `--app-version` | Marketing version | value, required | — |
+| `--build-number` | Unique App Store build number | value, required | — |
+| `--minimum-macos` | Minimum supported macOS version | value, required | — |
+| `--category` | LSApplicationCategoryType value | value, required | — |
+| `--app-signing-identity` | Mac App Distribution signing identity | value, required | — |
+| `--installer-signing-identity` | Mac Installer Distribution signing identity | value, required | — |
+| `--provisioning-profile` | Mac App Store provisioning profile | value, required | — |
+| `--icon` | Optional .icns app icon | value, required | — |
+| `--skip-build` | Package existing storage/framework/desktop-dist artifacts | boolean, optional | — |
+
+### `desktop:apple:provision`
+
+Plan or reconcile Apple Bundle ID, capabilities, certificates, and profile
+
+- Usage: `$ buddy desktop:apple:provision`
+- Namespace: `desktop`
+- Aliases: none
+- Arguments: none
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `--app-name` | Mac App Store display name | value, required | — |
+| `--bundle-id` | Reverse-DNS bundle identifier | value, required | — |
+| `--api-key-id` | App Store Connect API key ID | value, required | — |
+| `--api-issuer-id` | App Store Connect API issuer ID | value, required | — |
+| `--api-key-path` | App Store Connect AuthKey .p8 file | value, required | — |
+| `--capabilities` | Comma-separated Apple capability types | value, required | — |
+| `--app-certificate-csr` | CSR for a missing Mac App Distribution certificate | value, required | — |
+| `--installer-certificate-csr` | CSR for a missing Mac Installer Distribution certificate | value, required | — |
+| `--profile-name` | Provisioning profile name | value, required | — |
+| `--output` | Directory for the plan and downloaded Apple assets | value, required | — |
+| `--plan` | Report the idempotent Apple resource diff without mutating it | boolean, optional | — |
+| `--apply` | Apply the Apple resource diff without revoking existing certificates | boolean, optional | — |
+
+### `desktop:apple:publish`
+
+Build and validate or upload a signed Mac App Store package
+
+- Usage: `$ buddy desktop:apple:publish`
+- Namespace: `desktop`
+- Aliases: none
+- Arguments: none
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `--app-name` | Mac App Store display name | value, required | — |
+| `--bundle-id` | Reverse-DNS bundle identifier | value, required | — |
+| `--team-id` | Apple Developer team ID | value, required | — |
+| `--app-version` | Marketing version | value, required | — |
+| `--build-number` | Unique App Store build number | value, required | — |
+| `--minimum-macos` | Minimum supported macOS version | value, required | — |
+| `--category` | LSApplicationCategoryType value | value, required | — |
+| `--app-signing-identity` | Mac App Distribution signing identity | value, required | — |
+| `--installer-signing-identity` | Mac Installer Distribution signing identity | value, required | — |
+| `--provisioning-profile` | Mac App Store provisioning profile | value, required | — |
+| `--icon` | Optional .icns app icon | value, required | — |
+| `--skip-build` | Package existing storage/framework/desktop-dist artifacts | boolean, optional | — |
+| `--api-key-id` | App Store Connect API key ID | value, required | — |
+| `--api-issuer-id` | App Store Connect API issuer ID | value, required | — |
+| `--api-key-path` | App Store Connect AuthKey .p8 file | value, required | — |
+| `--validate-only` | Validate with App Store Connect without uploading | boolean, optional | — |
+| `--package-only` | Create the signed package without contacting App Store Connect | boolean, optional | — |
 
 ### `dev`
 
