@@ -105,6 +105,11 @@ export { migrateRbacTables } from './rbac-tables'
 export * from './sql-helpers'
 export * from './defaults'
 
+// Database bootstrap: probe the target, and create it over a maintenance
+// connection we open ourselves rather than through bun-query-builder, whose
+// connection string is rebuilt from process.env and cannot be redirected.
+export * from './ensure-database'
+
 // Foreign-key audit (stacksjs/stacks#1916) — compare declared
 // `belongsTo` relationships against live FKs.
 export { auditForeignKeys, findFkOrphans, getDeclaredFKs, getLiveFKs } from './fk-audit'

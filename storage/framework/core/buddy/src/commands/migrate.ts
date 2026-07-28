@@ -54,6 +54,34 @@ function acquireMigrationLock(): { acquired: boolean, release: () => void } {
 }
 
 /**
+ * Bootstrap the database once, in the parent process, before any command that
+ * needs one touches the server.
+ *
+ * `migrate` reaches the database from several independent places (the auth
+ * tables, the notification tables, the RBAC tables, and the numbered
+ * migrations in the action subprocess). Each one used to discover a missing or
+ * unreachable database on its own and report it separately, so a single root
+ * cause produced a wall of near-identical errors with no obvious first line.
+ * Doing it here means the user gets exactly one message, and it arrives before
+ * anything destructive is attempted.
+ *
+ * Fatal by design: there is nothing useful any of those steps can do without a
+ * database, and continuing only buries the real reason.
+ */
+async function ensureDatabaseOrExit(): Promise<void> {
+  try {
+    const { ensureDatabaseReady } = await import('@stacksjs/database')
+    await ensureDatabaseReady()
+  }
+  catch (error) {
+    // syncError, not the async log.error: process.exit fires before an async
+    // logger flushes, which would exit 1 with no message at all.
+    log.syncError(error instanceof Error ? error.message : String(error))
+    process.exit(ExitCode.FatalError)
+  }
+}
+
+/**
  * Read + clear the marker file the migration subprocess wrote to
  * communicate how many migrations actually ran. Returns `null` when
  * the file is missing or malformed — callers fall back to the
@@ -419,6 +447,11 @@ export function migrate(buddy: CLI): void {
         }
       }
 
+      // Bootstrap before anything opens a connection. Deliberately placed
+      // after the --diff branch above, which previews and exits: a dry run
+      // must never provision infrastructure.
+      await ensureDatabaseOrExit()
+
       // Acquire a project-local migration lock to prevent two concurrent
       // runs from interleaving DDL on the same database. Two parallel
       // `buddy migrate` invocations on the same project used to corrupt
@@ -654,6 +687,10 @@ export function migrate(buddy: CLI): void {
           process.exit(ExitCode.Success)
         }
       }
+
+      // Bootstrap AFTER the typed confirmation, so cancelling at the prompt
+      // cannot leave a freshly provisioned database behind.
+      await ensureDatabaseOrExit()
 
       const result = await runAction(Action.MigrateFresh, options)
 

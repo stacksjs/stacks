@@ -34,6 +34,14 @@ import {
   setConfig,
 } from '@stacksjs/query-builder'
 import { db } from './utils'
+import {
+  classifyConnectionError,
+  createDatabase,
+  describeTarget,
+  manualCreateHint,
+  probeTargetDatabase,
+  resolveConnectionTarget,
+} from './ensure-database'
 import { frameworkManagedColumns, withoutManagedColumnDrops, withoutManagedColumnDropSql } from './managed-columns'
 import { acquireMigrationLock } from './migration-lock'
 
@@ -427,82 +435,144 @@ export function preprocessSqliteMigrations(): void {
 }
 
 /**
- * Ensure the target database exists for PostgreSQL/MySQL.
- * SQLite creates files automatically; server-based databases need an explicit CREATE DATABASE.
- * Uses bun-query-builder's createQueryBuilder + unsafe() to connect to the admin database
- * and issue CREATE DATABASE before switching to the target database for migrations.
+ * Whether a missing database may be created without asking.
+ *
+ * `STACKS_CREATE_DATABASE` is the internal parent-to-child signal: the buddy
+ * CLI asks the human once, in the parent process where a TTY actually exists,
+ * then hands the answer down to this action. `DB_CREATE_DATABASE=never` is the
+ * user-facing opt-out for anyone who would rather provision databases
+ * themselves.
+ */
+function mayCreateMissingDatabase(): boolean {
+  const signal = process.env.STACKS_CREATE_DATABASE
+  if (signal === '1')
+    return true
+  if (signal === '0')
+    return false
+
+  const policy = String(process.env.DB_CREATE_DATABASE || '').toLowerCase()
+  return !(policy === 'never' || policy === 'false' || policy === '0')
+}
+
+/**
+ * Turn a failed probe into one actionable sentence. Every branch names the
+ * server we actually tried, because the most common cause of all of these is
+ * pointing at the wrong one.
+ */
+function describeProbeFailure(
+  target: ReturnType<typeof resolveConnectionTarget> & {},
+  kind: string | undefined,
+  error: unknown,
+): string {
+  const where = describeTarget(target)
+  const detail = error instanceof Error ? error.message : String(error ?? '')
+
+  switch (kind) {
+    case 'missing-role':
+      return `The user "${target.username}" does not exist on ${where}. `
+        + `Set DB_USERNAME to a role that exists, or create it with:  createuser -s ${target.username}`
+    case 'auth-failed':
+      return `Authentication failed for user "${target.username}" on ${where}. Check DB_USERNAME and DB_PASSWORD.`
+    case 'server-unreachable':
+      return `Could not reach the database server at ${target.host}:${target.port}. `
+        + `Check that it is running and that DB_HOST and DB_PORT are correct.`
+    case 'timeout':
+      return `Timed out connecting to the database server at ${target.host}:${target.port}. ${detail}`
+    case 'permission-denied':
+      return `The user "${target.username}" is not allowed to connect to "${target.database}" on ${where}.`
+    default:
+      return `Could not connect to the database "${target.database}" on ${where}. ${detail}`
+  }
+}
+
+/**
+ * Ensure the target database exists before anything tries to connect to it.
+ *
+ * SQLite creates its file on open, so this is a no-op there. Server-based
+ * engines need an explicit CREATE DATABASE, issued over a maintenance
+ * connection that `ensure-database.ts` opens with Bun's own SQL client.
+ *
+ * This used to reach the maintenance database through bun-query-builder's
+ * `setConfig()`, which could never work: bqb's `createConnectionString()`
+ * short-circuits whenever `process.env.DB_CONNECTION === dialect` and rebuilds
+ * the URL from `process.env`, so the "admin" connection was silently pointed
+ * back at the very database we were trying to create. That produced the
+ * self-contradicting `Could not auto-create database "stacks": database
+ * "stacks" does not exist`, logged as a warning that let a fatal condition
+ * continue into a cascade of follow-on errors.
+ *
+ * Throws on an unrecoverable condition so the caller fails fast with one clear
+ * message instead of twenty.
  */
 async function ensureDatabaseExists(): Promise<void> {
-  const dialect = getDialect()
+  const target = resolveConnectionTarget()
 
-  if (dialect === 'sqlite')
+  // SQLite, DynamoDB and unknown drivers have nothing to bootstrap.
+  if (!target)
     return
 
-  const connectionConfig = dbConfig.connections[dialect] as any
-  const dbName = (connectionConfig?.name || 'stacks').replace(/['"]/g, '')
-  const host = connectionConfig?.host || 'localhost'
-  const port = connectionConfig?.port || (dialect === 'postgres' ? 5432 : 3306)
-  const username = connectionConfig?.username || (dialect === 'postgres' ? process.env.USER || 'postgres' : 'root')
-  const password = connectionConfig?.password || ''
+  // Probe the TARGET first. On a locked-down managed instance the app user
+  // often cannot open a maintenance database at all, so leading with
+  // maintenance would fail even when the target exists and all was well.
+  const probe = await probeTargetDatabase(target)
+  if (probe.ok)
+    return
 
-  // The admin database to connect to for CREATE DATABASE
-  const adminDatabase = dialect === 'postgres' ? 'postgres' : 'mysql'
+  if (probe.kind !== 'missing-database')
+    throw new Error(describeProbeFailure(target, probe.kind, probe.error))
 
-  try {
-    // Configure bun-query-builder to connect to the admin database
-    setConfig({
-      dialect,
-      database: {
-        database: adminDatabase,
-        host,
-        port,
-        username,
-        password,
-      },
-    })
-    resetConnection()
-
-    const adminDb = createQueryBuilder()
-
-    if (dialect === 'postgres') {
-      try {
-        await adminDb.unsafe(`CREATE DATABASE "${dbName}"`)
-        log.info(`Created database "${dbName}"`)
-      }
-      catch (e: any) {
-        // 42P04 = database already exists
-        if (e?.message?.includes('already exists') || e?.errno === '42P04') {
-          log.info(`Database "${dbName}" already exists`)
-        }
-        else {
-          throw e
-        }
-      }
-    }
-    else if (dialect === 'mysql') {
-      try {
-        await adminDb.unsafe(`CREATE DATABASE IF NOT EXISTS \`${dbName}\``)
-        log.info(`Ensured database "${dbName}" exists`)
-      }
-      catch (e: any) {
-        if (e?.message?.includes('database exists')) {
-          log.info(`Database "${dbName}" already exists`)
-        }
-        else {
-          throw e
-        }
-      }
-    }
-
-    // Reset connection so configureQueryBuilder() can reconnect to the target database
-    resetConnection()
+  if (!mayCreateMissingDatabase()) {
+    throw new Error(
+      `The database "${target.database}" does not exist on ${describeTarget(target)}. `
+      + `Create it with:  ${manualCreateHint(target)}`,
+    )
   }
-  catch (error: any) {
-    log.warn(`Could not auto-create database "${dbName}": ${error?.message || error}`)
-    log.info('If the database already exists, this warning can be ignored.')
-    // Reset connection state regardless of failure
-    resetConnection()
+
+  const result = await createDatabase(target)
+
+  if (!result.created && result.error) {
+    throw new Error(
+      `The database "${target.database}" does not exist on ${describeTarget(target)} `
+      + `and it could not be created automatically. `
+      + `${describeProbeFailure(target, result.kind, result.error)}\n`
+      + `Create it yourself with:  ${manualCreateHint(target)}`,
+    )
   }
+
+  if (result.created) {
+    // Name the database AND the server. Auto-creation turns a misconfigured
+    // DB_DATABASE from a loud error into a silent side effect, so the one
+    // thing we must never do is create it quietly.
+    log.success(`Created database "${target.database}" on ${target.host}:${target.port}`)
+  }
+}
+
+/** Set once the bootstrap has succeeded, so one process probes only once. */
+let databaseBootstrapped = false
+
+/**
+ * Public bootstrap entry point.
+ *
+ * Call this before ANY other database work in a command. `migrate` reaches the
+ * server from several independent places (auth tables, notification tables,
+ * RBAC tables, the numbered migrations), and each one used to discover a
+ * missing database on its own and report it separately, which is how a single
+ * root cause turned into twenty lines of near-identical errors.
+ *
+ * Throws with one actionable message. Only a success is memoised, so a
+ * transient failure can be retried in the same process.
+ */
+export async function ensureDatabaseReady(): Promise<void> {
+  if (databaseBootstrapped)
+    return
+
+  await ensureDatabaseExists()
+  databaseBootstrapped = true
+}
+
+/** Test seam: forget that the bootstrap already ran. */
+export function resetDatabaseBootstrapCache(): void {
+  databaseBootstrapped = false
 }
 
 /**
@@ -718,8 +788,9 @@ export async function runDatabaseMigration(): Promise<Result<string, Error>> {
     // that duplicate what the outro already prints with timing.
     log.debug('Migrating database...')
 
-    // Ensure the database exists before running migrations (PostgreSQL/MySQL)
-    await ensureDatabaseExists()
+    // Ensure the database exists before running migrations (PostgreSQL/MySQL).
+    // Memoised: the buddy command normally bootstrapped already.
+    await ensureDatabaseReady()
 
     // Configure bun-query-builder with stacks database settings
     configureQueryBuilder()
@@ -813,6 +884,13 @@ const FRAMEWORK_TABLES = [
  */
 export async function resetDatabase(): Promise<Result<string, Error>> {
   try {
+    // Bootstrap BEFORE dropping anything. `migrate:fresh` calls this function
+    // first and only reached ensureDatabaseExists() later, from inside
+    // runDatabaseMigration(), so a missing database produced eight
+    // "Could not drop table X: database ... does not exist" warnings before
+    // anything checked whether the database was there at all.
+    await ensureDatabaseReady()
+
     // Configure bun-query-builder with stacks database settings
     configureQueryBuilder()
 
@@ -822,8 +900,17 @@ export async function resetDatabase(): Promise<Result<string, Error>> {
     // Drop framework tables first (OAuth, passkeys, etc.)
     await dropFrameworkTables(dialect)
 
-    // Then drop user model tables
-    await qbResetDatabase(modelsDir, { dialect })
+    // Then drop user model tables. A vendored framework checkout has no
+    // userland app/Models, and bun-query-builder's resetDatabase() answers a
+    // missing directory by printing a raw ENOENT stack and then reporting
+    // "-- Database reset completed successfully" regardless. Skip the call
+    // rather than let it narrate a failure as a success.
+    if (existsSync(modelsDir)) {
+      await qbResetDatabase(modelsDir, { dialect })
+    }
+    else {
+      log.debug(`No models directory at ${modelsDir}; skipping model table drops.`)
+    }
 
     return ok('All tables dropped successfully!')
   }
@@ -878,7 +965,15 @@ async function dropFrameworkTables(dialect: 'sqlite' | 'mysql' | 'postgres'): Pr
       log.info(`Dropped framework table: ${tableName}`)
     }
     catch (error) {
-      // Log the actual error for debugging, but continue with other tables
+      // A connection-level failure (database gone, server down, credentials
+      // rejected) repeats identically for every remaining table. Surface it
+      // once and stop, rather than printing the same sentence eight times and
+      // then reporting the reset as successful.
+      const kind = classifyConnectionError(error)
+      if (kind === 'missing-database' || kind === 'missing-role' || kind === 'auth-failed' || kind === 'server-unreachable' || kind === 'timeout')
+        throw error
+
+      // Anything else is table-specific, most often that it never existed.
       log.warn(`Could not drop table ${tableName}: ${error instanceof Error ? error.message : String(error)}`)
     }
   }
