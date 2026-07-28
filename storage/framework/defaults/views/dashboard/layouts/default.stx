@@ -49,10 +49,23 @@ canvas[id$="_chart"] {
  * resources/functions/dashboard/sidebar.ts. Fixed 250px pane: Home pinned top,
  * sections scroll in the middle, Settings pinned bottom.
  */
+/*
+ * The window background is owned by the main content pane, not the body element.
+ * In the native Craft window the WKWebView is transparent and an
+ * NSVisualEffectView (real macOS vibrancy) sits behind the sidebar strip; a
+ * solid body background would paint over it. So the body stays clear and the
+ * content color lives on the scrolling pane, which lets the frosted material
+ * read through the translucent sidebar. (Do not write angle-bracket tag names in
+ * a layout style-block comment — stx parses them as elements and breaks out.)
+ */
 body {
+  background: transparent;
+}
+[data-stx-content] {
+  min-height: 100vh;
   background: #f4f4f5;
 }
-.dark body {
+.dark [data-stx-content] {
   background: #0a0a0a;
 }
 .dashboard-sidebar {
@@ -63,8 +76,16 @@ body {
   flex-direction: column;
   padding: 0 12px 10px;
   overflow: hidden;
-  background: #fff;
-  border-right: 1px solid rgba(0, 0, 0, 0.08);
+  /* Translucent so the native NSVisualEffectView vibrancy reads through in the
+     Craft window; the blur is the frosted-glass fallback in a plain browser,
+     where there is no material behind the pane. */
+  background: rgba(255, 255, 255, 0.55);
+  -webkit-backdrop-filter: saturate(180%) blur(24px);
+  backdrop-filter: saturate(180%) blur(24px);
+  /* No hard border: a soft cast shadow to the right lifts the translucent pane
+     ABOVE the content, so it reads as a glass layer laid on top (Finder-style)
+     rather than a flat column butted beside it. The 1px inset is the hairline. */
+  box-shadow: 1px 0 0 rgba(0, 0, 0, 0.05), 12px 0 34px -10px rgba(0, 0, 0, 0.18);
   font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', sans-serif;
   -webkit-font-smoothing: antialiased;
   z-index: 40;
@@ -171,8 +192,8 @@ body {
   transform: rotate(-45deg);
 }
 .dark .dashboard-sidebar {
-  background: #1c1c1e;
-  border-right-color: rgba(255, 255, 255, 0.08);
+  background: rgba(28, 28, 30, 0.55);
+  box-shadow: 1px 0 0 rgba(255, 255, 255, 0.06), 12px 0 34px -10px rgba(0, 0, 0, 0.55);
 }
 .dark .sidebar-link {
   color: #d1d1d6;
@@ -426,40 +447,93 @@ effect(() => {
   {{{ sidebarChunks.bottom }}}
 </aside>
 
-<script client>
+<script>
 // Web sidebar wiring: collapse restore, active highlight, SPA navigation.
-// Role gating is handled by the applyRoleFilter effect above, which reads the
-// data-required-roles attributes the server emits directly on each link.
-onMount(() => {
-  const pane = document.querySelector('[data-stx-sidebar]')
-  if (!pane) return
+// Runs as a plain <script> IIFE (like the import-map script above), NOT via
+// onMount: stx gives a LAYOUT no reactive scope of its own, so its onMount /
+// effect callbacks never fire ("global mountCallbacks: 0") — the previous
+// onMount version silently never ran, which is why no link was ever highlighted.
+// A DOMContentLoaded IIFE plus the stx:navigate event cover hard loads and every
+// SPA route change without depending on a scope mount.
+;(function () {
+  if (typeof document === 'undefined') return
 
-  // Restore per-section collapsed state persisted by the section toggle
-  // (the inline onclick in renderSection writes localStorage['sidebar-collapsed']).
-  try {
-    const saved = JSON.parse(localStorage.getItem('sidebar-collapsed') || '{}')
-    for (const section of pane.querySelectorAll('.sidebar-section')) {
-      if (saved[section.getAttribute('data-section')]) section.classList.add('collapsed')
+  // Highlight the sidebar link for the CURRENT route. Longest-prefix match, so a
+  // nested/detail page (e.g. /commerce/products/42) still lights up its section
+  // link (/commerce/products); the root link (/) only ever matches the home page.
+  function syncActive(url) {
+    var pane = document.querySelector('[data-stx-sidebar]')
+    if (!pane) return
+    var path
+    try { path = new URL(url || location.href, location.origin).pathname }
+    catch (e) { path = location.pathname }
+    var norm = function (p) { return (p || '/').replace(/\/+$/, '') || '/' }
+    var cur = norm(path)
+    var best = null
+    var bestLen = -1
+    var links = pane.querySelectorAll('a.sidebar-link[href]')
+    for (var i = 0; i < links.length; i++) {
+      var href = links[i].getAttribute('href') || ''
+      if (href.indexOf('http') === 0) continue
+      var h = norm(href)
+      // `${cur}/`.startsWith(`${h}/`) catches an exact hit and any child path,
+      // while the trailing slash stops /health matching /health-check.
+      if ((cur + '/').indexOf(h + '/') === 0 && h.length > bestLen) {
+        best = links[i]
+        bestLen = h.length
+      }
     }
-  } catch {}
+    var actives = pane.querySelectorAll('a.sidebar-link[data-active]')
+    for (var j = 0; j < actives.length; j++) actives[j].removeAttribute('data-active')
+    if (best) best.setAttribute('data-active', 'true')
+  }
 
-  // Highlight the link for the current route on hard loads.
-  const current = pane.querySelector(`a.sidebar-link[href="${window.location.pathname}"]`)
-  if (current) current.setAttribute('data-active', 'true')
+  function init() {
+    var pane = document.querySelector('[data-stx-sidebar]')
+    if (!pane) return
 
-  // SPA-navigate sidebar links; fall back to full loads when the router
-  // isn't available or the target is external.
-  pane.addEventListener('click', (event) => {
-    const link = event.target.closest('a.sidebar-link')
-    if (!link) return
-    const href = link.getAttribute('href')
-    if (!href || href.startsWith('http') || typeof navigate !== 'function') return
-    event.preventDefault()
-    for (const a of pane.querySelectorAll('a.sidebar-link[data-active]')) a.removeAttribute('data-active')
-    link.setAttribute('data-active', 'true')
-    navigate(href)
-  })
-})
+    // Restore per-section collapsed state persisted by the section toggle
+    // (the inline onclick in renderSection writes localStorage['sidebar-collapsed']).
+    try {
+      var saved = JSON.parse(localStorage.getItem('sidebar-collapsed') || '{}')
+      var sections = pane.querySelectorAll('.sidebar-section')
+      for (var i = 0; i < sections.length; i++) {
+        if (saved[sections[i].getAttribute('data-section')]) sections[i].classList.add('collapsed')
+      }
+    } catch (e) {}
+
+    syncActive()
+
+    // Bind route + click listeners once. This script can re-run on SPA fragment
+    // swaps, so guard against stacking duplicate handlers on the persistent pane.
+    if (!pane.__sidebarWired) {
+      pane.__sidebarWired = true
+
+      // Follow EVERY route change, not just sidebar clicks. navigate() dispatches
+      // stx:navigate (content links, programmatic navigate, and popstate
+      // back/forward all route through it), so the highlight tracks the real
+      // route instead of only updating when a sidebar item is clicked.
+      window.addEventListener('stx:navigate', function (event) {
+        syncActive(event && event.detail && event.detail.url)
+      })
+
+      // SPA-navigate sidebar links; fall back to full loads when the router isn't
+      // available or the target is external. The highlight is driven by the
+      // stx:navigate listener above, so we don't toggle data-active here.
+      pane.addEventListener('click', function (event) {
+        var link = event.target.closest('a.sidebar-link')
+        if (!link) return
+        var href = link.getAttribute('href')
+        if (!href || href.indexOf('http') === 0 || typeof navigate !== 'function') return
+        event.preventDefault()
+        navigate(href)
+      })
+    }
+  }
+
+  if (document.querySelector('[data-stx-sidebar]')) init()
+  else document.addEventListener('DOMContentLoaded', init)
+})();
 </script>
 
 <main data-stx-content style="margin-left: 250px">

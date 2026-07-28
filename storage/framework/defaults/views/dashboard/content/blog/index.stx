@@ -265,7 +265,7 @@
 <script client>
 // Plain async transport for /api/dashboard/blog, which reads and writes the
 // markdown files in content/blog. It owns no state; the signals below do.
-import { deleteBlogPost, fetchBlogPost, fetchBlogPosts, saveBlogPost } from '../../../../functions/blog'
+import { deleteBlogPost, fetchBlogPost, fetchBlogPosts, saveBlogPost } from '~/storage/framework/defaults/functions/blog'
 
 // Fixed-length list purely to render the loading skeleton rows.
 const skeletonRows = [1, 2, 3, 4]
