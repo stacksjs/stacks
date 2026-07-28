@@ -100,7 +100,7 @@
         "@stacksjs/video": "^0.70.206",
         "@stacksjs/whois": "^0.70.206",
         "better-dx": "^0.2.17",
-        "bun-query-builder": "^0.1.56",
+        "bun-query-builder": "^0.1.63",
       },
     },
     "storage/framework/core/actions": {
