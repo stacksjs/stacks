@@ -30,6 +30,7 @@ import {
   generateMigration as qbGenerateMigration,
   resetConnection,
   resetDatabase as qbResetDatabase,
+  config as qbConfig,
   saveMigrationSnapshot,
   setConfig,
 } from '@stacksjs/query-builder'
@@ -131,6 +132,12 @@ function configureQueryBuilder(): void {
     // by exporting `STACKS_QB_VERBOSE=1` (intentionally not wired yet —
     // add it if a real debugging need shows up).
     verbose: false,
+    // Keep the model snapshot with the rest of the generated framework state.
+    // The library defaults to `.qb` at the project root, which puts a
+    // dot-directory in every Stacks app holding something the app never chose
+    // to place there. `storage/framework` is where generated framework state
+    // already lives, so it belongs there.
+    snapshotDir: 'storage/framework/database',
     database: {
       database: connectionConfig?.name || connectionConfig?.database || 'stacks',
       host: connectionConfig?.host || 'localhost',
@@ -1067,6 +1074,19 @@ export async function previewPendingMigrations(options: GenerateMigrationsOption
 }
 
 /**
+ * Where bun-query-builder keeps its model snapshots.
+ *
+ * It writes to `snapshotDir` (default `.qb`), so this has to read from the same
+ * place or the mismatch guard silently checks an empty directory and stops
+ * guarding anything. Stacks points it at `storage/framework/database` to keep
+ * generated framework state out of the project root.
+ */
+function resolveSnapshotDir(): string {
+  const configured = (qbConfig as { snapshotDir?: string } | undefined)?.snapshotDir
+  return join(process.cwd(), configured || '.qb')
+}
+
+/**
  * Detect a dialect/snapshot mismatch in `.qb/`. Returns the name of an existing
  * snapshot's dialect when the resolved `dialect` has no snapshot of its own but
  * some OTHER dialect does — the signature of a misconfigured environment that
@@ -1075,7 +1095,7 @@ export async function previewPendingMigrations(options: GenerateMigrationsOption
  * resolved dialect already has history.
  */
 function detectSnapshotDialectMismatch(dialect: string): string | null {
-  const qbDir = join(process.cwd(), '.qb')
+  const qbDir = resolveSnapshotDir()
   let files: string[]
   try {
     files = readdirSync(qbDir)

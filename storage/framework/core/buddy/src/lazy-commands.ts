@@ -126,6 +126,7 @@ const commandRegistry: Record<string, CommandLoader> = {
   // function runs). Single export, two callable commands.
   'seed:roles': { path: './commands/seed.ts', exportName: 'seed' },
   'roles:seed': { path: './commands/seed.ts', exportName: 'seed' },
+  'preview': { path: './commands/serve.ts', exportName: 'preview' },
   'serve': { path: './commands/serve.ts', exportName: 'serve' },
   'serve:api': { path: './commands/serve.ts', exportName: 'serveApi' },
   'setup': { path: './commands/setup.ts', exportName: 'setup' },

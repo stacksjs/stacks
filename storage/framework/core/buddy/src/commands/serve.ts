@@ -1,4 +1,5 @@
 import type { CLI } from '@stacksjs/types'
+import { ExitCode } from '@stacksjs/types'
 import { existsSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { dirname, join } from 'node:path'
@@ -522,4 +523,63 @@ async function loadStxSiteConfig(): Promise<{ site?: any, i18n?: any }> {
   catch { /* no site config */ }
 
   return {}
+}
+
+/**
+ * `buddy preview` — serve a finished static build locally.
+ *
+ * The twin of `buddy serve`, for the other kind of output: where that renders
+ * stx pages and proxies an API, this hands over pre-built files exactly as a
+ * static host would. It exists so checking a build before shipping it does not
+ * require a `preview.ts` in every project's root, hand-rolled per app and
+ * quietly drifting from how the host actually behaves.
+ *
+ * Extensionless paths resolve to `.html`, matching the "pretty URLs" behaviour
+ * of Netlify, Vercel and Cloudflare Pages, so a link that works here works
+ * there.
+ */
+export function preview(buddy: CLI): void {
+  buddy
+    .command('preview [dir]', 'Serve a static build locally, the way a static host would')
+    .option('-p, --port <port>', 'Port to listen on', { default: '3001' })
+    .example('buddy preview')
+    .example('buddy preview dist --port 4000')
+    .action(async (dir: string | undefined, options: { port?: string }) => {
+      const root = dir || 'dist'
+      const port = Number(options?.port) || 3001
+
+      if (!existsSync(root)) {
+        log.error(`No \`${root}\` directory to preview. Run \`buddy build\` first, or pass the directory to serve.`)
+        process.exit(ExitCode.FatalError)
+      }
+
+      Bun.serve({
+        port,
+        async fetch(req) {
+          const url = new URL(req.url)
+          let pathname = url.pathname
+
+          // A directory root means its index; an extensionless path means the
+          // matching .html, which is what pretty-URL hosting serves.
+          if (pathname === '/' || pathname === '')
+            pathname = '/index.html'
+          else if (!pathname.includes('.'))
+            pathname = `${pathname.replace(/\/$/, '')}.html`
+
+          const file = Bun.file(join(root, pathname))
+          if (await file.exists())
+            return new Response(file)
+
+          // Serve the build's own 404 page when it has one, so the preview
+          // shows what a visitor would actually see.
+          const notFound = Bun.file(join(root, '404.html'))
+          if (await notFound.exists())
+            return new Response(notFound, { status: 404 })
+
+          return new Response('Not Found', { status: 404 })
+        },
+      })
+
+      log.success(`Previewing ./${root} at http://localhost:${port}`)
+    })
 }
