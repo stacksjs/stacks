@@ -6,6 +6,7 @@ import { Action } from '@stacksjs/enums'
 import { hasTTY, isCI } from '@stacksjs/env'
 import { appPath, frameworkPath, frameworkRuntimePath, projectPath } from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types'
+import { preflightDatabase } from '../database-preflight'
 
 // Lazy-load @stacksjs/actions to keep `buddy --help` cheap. The barrel
 // pulls in the database driver setup transitively, which we don't want
@@ -374,10 +375,11 @@ export function migrate(buddy: CLI): void {
     .option('-a, --auth', descriptions.auth, { default: true })
     .option('--no-auth', 'Skip auth/oauth table migrations')
     .option('-f, --force', descriptions.force, { default: false })
+    .option('--create-database', 'Create the database if it does not exist, without asking', { default: false })
     .option('--from-db', descriptions.fromDb, { default: false })
     .option('--no-rename', descriptions.noRename)
     .option('--verbose', descriptions.verbose, { default: false })
-    .action(async (options: MigrateOptions & { auth?: boolean, force?: boolean, fromDb?: boolean, rename?: boolean }) => {
+    .action(async (options: MigrateOptions & { auth?: boolean, createDatabase?: boolean, force?: boolean, fromDb?: boolean, rename?: boolean }) => {
       log.debug('Running `buddy migrate` ...', options)
 
       const perf = await intro('buddy migrate')
@@ -421,6 +423,16 @@ export function migrate(buddy: CLI): void {
         process.exit(ExitCode.Success)
       }
 
+      // Ask about a missing database FIRST, while we still have the terminal.
+      // Must happen in the parent: the migrate action runs in a subprocess
+      // sharing this stdin, so a prompt down there can hang unseen. Ordered
+      // ahead of the confirmMigrate guard below so a first run reads
+      // "create it?" then "migrate into it?", rather than asking permission
+      // to migrate against a database that does not exist yet. Placed after
+      // the --diff branch above, which previews and exits: a dry run must
+      // never provision infrastructure.
+      await preflightDatabase({ createDatabase: options.createDatabase, command: 'migrate' })
+
       // Safety guard: confirm before touching the database at all. This is
       // separate from (and runs before) the destructive-change gate below —
       // it catches "wrong database / wrong env" mistakes even for additive
@@ -447,9 +459,6 @@ export function migrate(buddy: CLI): void {
         }
       }
 
-      // Bootstrap before anything opens a connection. Deliberately placed
-      // after the --diff branch above, which previews and exits: a dry run
-      // must never provision infrastructure.
       await ensureDatabaseOrExit()
 
       // Acquire a project-local migration lock to prevent two concurrent
@@ -627,9 +636,10 @@ export function migrate(buddy: CLI): void {
     .option('-s, --seed', 'Run database seeders after migration', { default: false })
     .option('-a, --auth', descriptions.auth, { default: true })
     .option('--no-auth', 'Skip auth/oauth table migrations')
+    .option('--create-database', 'Create the database if it does not exist, without asking', { default: false })
     .option('-f, --force', 'Skip the drop-database confirmation (only honored when the migrateFresh guard is "allow")', { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
-    .action(async (options: MigrateOptions & { seed?: boolean, auth?: boolean, force?: boolean }) => {
+    .action(async (options: MigrateOptions & { seed?: boolean, auth?: boolean, createDatabase?: boolean, force?: boolean }) => {
       log.debug('Running `buddy migrate:fresh` ...', options)
 
       const perf = await intro('buddy migrate:fresh')
@@ -690,6 +700,7 @@ export function migrate(buddy: CLI): void {
 
       // Bootstrap AFTER the typed confirmation, so cancelling at the prompt
       // cannot leave a freshly provisioned database behind.
+      await preflightDatabase({ createDatabase: options.createDatabase, command: 'migrate:fresh' })
       await ensureDatabaseOrExit()
 
       const result = await runAction(Action.MigrateFresh, options)

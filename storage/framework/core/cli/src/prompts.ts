@@ -41,20 +41,104 @@ function getGlobalRl(): Interface {
         process.emit('SIGINT' as any)
       })
     }
+
+    // Drop the cached interface once it closes. It was previously kept
+    // forever, so the SECOND prompt in a process whose stdin had reached EOF
+    // called question() on a closed interface and threw ERR_USE_AFTER_CLOSE
+    // from deep inside node:readline. Commands that ask more than one
+    // question (migrate asks about a missing database, then about applying
+    // destructive changes) hit this as soon as input ran out. Letting the
+    // next call build a fresh interface turns that into a clean EOF, which
+    // the close handler in readLine() resolves as an empty answer.
+    globalRl.once('close', () => {
+      globalRl = null
+    })
   }
   return globalRl
 }
 
 /**
- * Read a line from stdin using readline's question method
+ * Sentinel for "stdin ended before an answer arrived".
+ *
+ * This has to be distinguishable from an empty line. A confirm with
+ * `initial: true` maps an empty answer to YES, so collapsing EOF into `''`
+ * would make an unattended process silently answer yes to a question it never
+ * displayed to anybody. That is fine for "press enter to accept the default"
+ * and very much not fine for "shall I create this database?".
  */
-function readLine(prompt: string): Promise<string> {
+const EOF = Symbol('stdin-eof')
+
+function readLineOrEof(prompt: string): Promise<string | typeof EOF> {
   return new Promise((resolve) => {
     const rl = getGlobalRl()
-    rl.question(prompt, (answer) => {
+    let settled = false
+
+    const finish = (answer: string | typeof EOF) => {
+      if (settled)
+        return
+      settled = true
+      rl.off('close', onClose)
       resolve(answer)
-    })
+    }
+
+    // Without this, a question that is pending when stdin reaches EOF never
+    // settles and the process hangs forever: `rl.question`'s callback is only
+    // invoked for a completed line, and `process.stdin.destroy` is neutered
+    // above. That bites whenever stdin is a TTY at guard time but closes
+    // afterwards, e.g. an SSH connection dropping, the terminal window being
+    // closed, or a parent process exiting. Treat EOF as an empty answer, which
+    // every caller already handles as "take the default / cancel".
+    const onClose = () => finish(EOF)
+
+    rl.once('close', onClose)
+
+    try {
+      rl.question(prompt, finish)
+    }
+    catch {
+      // The interface was already closed (stdin at EOF). Report EOF rather
+      // than propagating ERR_USE_AFTER_CLOSE up through every caller.
+      finish(EOF)
+    }
   })
+}
+
+/**
+ * Read a line, treating EOF as an empty answer. Existing behaviour: callers
+ * that only ever wanted "the default" on end-of-input keep getting it.
+ */
+async function readLine(prompt: string): Promise<string> {
+  const answer = await readLineOrEof(prompt)
+  return answer === EOF ? '' : answer
+}
+
+/** Interpret a raw confirm answer. Empty means "take the default". */
+function normalizeConfirm(answer: string, defaultValue: boolean): boolean {
+  const normalized = answer.toLowerCase().trim()
+  if (!normalized)
+    return defaultValue
+  if (normalized === 'y' || normalized === 'yes')
+    return true
+  if (normalized === 'n' || normalized === 'no')
+    return false
+  return defaultValue
+}
+
+/**
+ * Confirm that reports `null` when stdin ended without an answer, instead of
+ * silently returning the default. Use this for any question whose "yes" has
+ * side effects the user cannot easily undo.
+ */
+async function confirmOrNull(options: ConfirmOptions | string): Promise<boolean | null> {
+  const opts = typeof options === 'string' ? { message: options } : options
+  const defaultValue = opts.initial ?? false
+  const suffix = defaultValue ? ' (Y/n) ' : ' (y/N) '
+
+  const answer = await readLineOrEof(`${opts.message}${suffix}`)
+  if (answer === EOF)
+    return null
+
+  return normalizeConfirm(answer, defaultValue)
 }
 
 interface ConfirmOptions {
@@ -89,20 +173,7 @@ async function confirm(options: ConfirmOptions | string): Promise<boolean> {
   const suffix = defaultValue ? ' (Y/n) ' : ' (y/N) '
 
   const answer = await readLine(`${opts.message}${suffix}`)
-  const normalized = answer.toLowerCase().trim()
-
-  if (!normalized) {
-    return defaultValue
-  }
-  else if (normalized === 'y' || normalized === 'yes') {
-    return true
-  }
-  else if (normalized === 'n' || normalized === 'no') {
-    return false
-  }
-  else {
-    return defaultValue
-  }
+  return normalizeConfirm(answer, defaultValue)
 }
 
 /**
@@ -173,4 +244,4 @@ export const prompts = {
 }
 
 // Also export individual functions
-export { confirm, text, select, multiselect, password }
+export { confirm, confirmOrNull, text, select, multiselect, password }

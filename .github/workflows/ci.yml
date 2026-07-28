@@ -151,7 +151,9 @@ jobs:
       # Scoped to one file on purpose: wiring up the core suites wholesale
       # needs the pre-existing failures in them triaged first.
       - name: Database bootstrap tests
-        run: bun test storage/framework/core/database/tests/ensure-database.test.ts
+        run: |
+          bun test storage/framework/core/database/tests/ensure-database.test.ts
+          bun test storage/framework/core/buddy/tests/database-preflight.test.ts
 
   compile:
     runs-on: ubuntu-latest
