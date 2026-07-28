@@ -81,7 +81,7 @@ run_with_timeout() {
 }
 
 is_usable_bun() {
-  [ -x "$1" ] && "$1" --version >/dev/null 2>&1
+  [ -x "$1" ] && sh -c '"$1" --version >/dev/null 2>&1' sh "$1" 2>/dev/null
 }
 
 # Run buddy with the correct PATH and NODE_PATH for pantry resolution.
@@ -126,14 +126,14 @@ if is_usable_bun "${PANTRY_LOCAL_BIN}/bun" && [ "${STACKS_FORCE_PANTRY:-}" != "1
 fi
 
 if [ -d "${PANTRY_DIR}" ] && command -v bun >/dev/null 2>&1 && [ "${STACKS_FORCE_PANTRY:-}" != "1" ]; then
-  run_buddy bun "$@"
+  run_buddy "$(command -v bun)" "$@"
 fi
 
 # node_modules layout (framework from npm, not vendored): there is no per-project
 # pantry to bootstrap and none is needed to run the CLI — if a bun runtime is on
 # PATH and the pantry installer is absent, just use it.
 if command -v bun >/dev/null 2>&1 && [ "${STACKS_FORCE_PANTRY:-}" != "1" ] && [ ! -x "${PANTRY_INSTALLER}" ]; then
-  run_buddy bun "$@"
+  run_buddy "$(command -v bun)" "$@"
 fi
 
 # Pantry not set up (or an earlier bootstrap died halfway) - bootstrap it.
@@ -168,7 +168,7 @@ if command -v bun >/dev/null 2>&1; then
   if [ "${pantry_bootstrap_failed}" = "1" ]; then
     echo "buddy: pantry bootstrap incomplete; falling back to the bun on PATH." >&2
   fi
-  run_buddy bun "$@"
+  run_buddy "$(command -v bun)" "$@"
 fi
 
 echo "Pantry did not provide a local bun runtime." >&2
