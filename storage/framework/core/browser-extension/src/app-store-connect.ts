@@ -21,7 +21,6 @@ export type {
   AppAttributes,
   AppStoreBuildAttachmentResult,
   AppStoreBuildResult,
-  AppStoreConnectAuth,
   AppStoreConnectClientOptions,
   AppStoreConnectResource,
   AppStoreVersionAttributes,

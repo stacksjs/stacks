@@ -531,7 +531,7 @@ export function desktopApple(buddy: CLI): void {
         const reportPath = join(outputDirectory, 'provisioning-plan.json')
         writeFileSync(reportPath, `${JSON.stringify(report, null, 2)}\n`, { mode: 0o600 })
         log.success(`${options.apply ? 'Applied' : 'Planned'} Apple provisioning: ${reportPath}`)
-        if (!result.appRecord.exists)
+        if (!result.appRecord.exists && result.appRecord.manualAction)
           log.warn(result.appRecord.manualAction)
       }
       catch (error) {
