@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.195...v0.70.196)
+
+## 🐛 Bug Fixes
+
+- **deploy**: honor server dashboard ownership ([6056637](https://github.com/stacksjs/stacks/commit/6056637)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.194...v0.70.195)
 
 ## 🐛 Bug Fixes
