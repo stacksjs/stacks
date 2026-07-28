@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.213...v0.70.214)
+
+## 🐛 Bug Fixes
+
+- **app-store**: satisfy framework type contracts ([68424e6](https://github.com/stacksjs/stacks/commit/68424e6)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.212...v0.70.213)
 
 ## ✨ Features
