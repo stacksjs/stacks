@@ -3,6 +3,7 @@ import { log } from '@stacksjs/logging'
 import { serverResponse } from '@stacksjs/router'
 import { retry } from '@stacksjs/utils'
 import type { Server, ServerWebSocket } from 'bun'
+import { isWebSocketUpgrade } from './request'
 
 // Auto-imports (ORM models + resources/functions) are loaded via preloader
 // See: storage/framework/defaults/resources/plugins/preloader.ts
@@ -52,7 +53,7 @@ const server = Bun.serve({
   reusePort: !development,
 
   async fetch(request: Request, server: Server<any>): Promise<Response | undefined> {
-    if (server.upgrade(request)) {
+    if (isWebSocketUpgrade(request) && server.upgrade(request)) {
       return
     }
 
