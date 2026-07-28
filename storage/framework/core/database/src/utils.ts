@@ -195,6 +195,11 @@ function updateQueryBuilderConfig(): void {
     dialect: dialect as Parameters<typeof setConfig>[0]['dialect'],
     database: dbConfigForQb as any,
     verbose: getEnv() !== 'production',
+    // Must match the value migrations.ts sets. setConfig replaces the config
+    // wholesale, so omitting this here silently reverts the snapshot to the
+    // library default and writes a second copy to `.qb` in the project root -
+    // the exact directory moving it was meant to remove.
+    snapshotDir: 'storage/framework/database',
     timestamps: {
       createdAt: 'created_at',
       updatedAt: 'updated_at',
