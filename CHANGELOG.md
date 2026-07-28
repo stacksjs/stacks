@@ -1,5 +1,19 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.199...v0.70.200)
+
+## ⚡ Performance Improvements
+
+- **server**: skip websocket work for http requests ([2f1834e](https://github.com/stacksjs/stacks/commit/2f1834e)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🔧 Chores
+
+- **deps**: update rpx and ts-cloud ([81641f4](https://github.com/stacksjs/stacks/commit/81641f4)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.198...v0.70.199)
 
 ## 🔧 Chores
