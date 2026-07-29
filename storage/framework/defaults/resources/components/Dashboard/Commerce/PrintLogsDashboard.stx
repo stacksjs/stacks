@@ -1,0 +1,268 @@
+<script client>
+import type { PrintLogRecord, PrintLogSummary } from '../../../../app/Actions/Dashboard/Commerce/print-log-records'
+import {
+  printLogsToCsv,
+} from '../../../../app/Actions/Dashboard/Commerce/print-log-records'
+import { dashboardApi } from '../../../../functions/dashboard-api'
+import { pushToast } from '../../../../functions/toasts'
+
+interface PrintLogsResponse {
+  records: PrintLogRecord[]
+  summary: PrintLogSummary
+  pagination: {
+    page: number
+    perPage: number
+    total: number
+    totalPages: number
+  }
+  options: {
+    printers: string[]
+    statuses: string[]
+  }
+}
+
+const records = state<PrintLogRecord[]>([])
+const summary = state<PrintLogSummary>({
+  total: 0,
+  successful: 0,
+  failed: 0,
+  warnings: 0,
+  successRate: 0,
+  totalPages: 0,
+  averagePages: 0,
+  averageSuccessfulDuration: 0,
+})
+const printerOptions = state<string[]>([])
+const statusOptions = state<string[]>([])
+const search = state('')
+const printerFilter = state('all')
+const statusFilter = state('all')
+const timeRange = state('30')
+const sort = state('newest')
+const page = state(1)
+const pageSize = 20
+const total = state(0)
+const totalPages = state(1)
+const loading = state(true)
+const loadError = state('')
+const detailsRecord = state<PrintLogRecord | null>(null)
+const deleteRecord = state<PrintLogRecord | null>(null)
+const deleting = state(false)
+let loadSequence = 0
+
+function printers(): string[] {
+  return printerOptions()
+}
+
+function statuses(): string[] {
+  return statusOptions()
+}
+
+function pageCount(): number {
+  return totalPages()
+}
+
+function metricCards(): Array<{ label: string, value: string, detail: string }> {
+  const current = summary()
+  const warningLabel = current.warnings === 1 ? 'warning' : 'warnings'
+  return [
+    { label: 'Print jobs', value: String(current.total), detail: 'On the current page' },
+    { label: 'Success rate', value: `${current.successRate}%`, detail: `${current.failed} failed, ${current.warnings} ${warningLabel}` },
+    { label: 'Pages', value: String(current.totalPages), detail: `${current.averagePages} average per job` },
+    { label: 'Successful duration', value: `${current.averageSuccessfulDuration}s`, detail: 'Average completed print time' },
+  ]
+}
+
+function exportHref(): string {
+  return `data:text/csv;charset=utf-8,${encodeURIComponent(`\uFEFF${printLogsToCsv(records())}`)}`
+}
+
+function exportFilename(): string {
+  return `print-logs-${new Date().toISOString().slice(0, 10)}.csv`
+}
+
+function updateSearch(event: Event): void {
+  search.set((event.target as HTMLInputElement).value)
+  loadSearch()
+}
+
+function updatePrinter(event: Event): void {
+  printerFilter.set((event.target as HTMLSelectElement).value)
+  page.set(1)
+  void loadPrintLogs()
+}
+
+function updateStatus(event: Event): void {
+  statusFilter.set((event.target as HTMLSelectElement).value)
+  page.set(1)
+  void loadPrintLogs()
+}
+
+function updateTimeRange(event: Event): void {
+  timeRange.set((event.target as HTMLSelectElement).value)
+  page.set(1)
+  void loadPrintLogs()
+}
+
+function updateSort(event: Event): void {
+  sort.set((event.target as HTMLSelectElement).value)
+  page.set(1)
+  void loadPrintLogs()
+}
+
+async function loadPrintLogs(): Promise<void> {
+  const sequence = ++loadSequence
+  loading.set(true)
+  loadError.set('')
+  try {
+    const params = new URLSearchParams({
+      page: String(page()),
+      per_page: String(pageSize),
+      range: timeRange(),
+      sort: sort(),
+    })
+    if (search().trim())
+      params.set('search', search().trim())
+    if (printerFilter() !== 'all')
+      params.set('printer', printerFilter())
+    if (statusFilter() !== 'all')
+      params.set('status', statusFilter())
+
+    const data = await dashboardApi<PrintLogsResponse>(`/api/dashboard/commerce/print-logs?${params}`)
+    if (sequence !== loadSequence)
+      return
+    records.set(Array.isArray(data.records) ? data.records : [])
+    summary.set(data.summary)
+    printerOptions.set(Array.isArray(data.options?.printers) ? data.options.printers : [])
+    statusOptions.set(Array.isArray(data.options?.statuses) ? data.options.statuses : [])
+    total.set(Number(data.pagination?.total) || 0)
+    totalPages.set(Math.max(1, Number(data.pagination?.totalPages) || 1))
+    page.set(Math.max(1, Number(data.pagination?.page) || 1))
+  }
+  catch (error) {
+    if (sequence !== loadSequence)
+      return
+    loadError.set('Print logs could not be loaded.')
+    pushToast('error', 'Could not load print logs', {
+      detail: error instanceof Error ? error.message : String(error),
+    })
+  }
+  finally {
+    if (sequence === loadSequence)
+      loading.set(false)
+  }
+}
+
+const loadSearch = useDebounce(() => {
+  page.set(1)
+  void loadPrintLogs()
+}, 250)
+
+function openDetails(record: PrintLogRecord): void {
+  detailsRecord.set(record)
+}
+
+function closeDetails(): void {
+  detailsRecord.set(null)
+}
+
+function requestDelete(record: PrintLogRecord): void {
+  deleteRecord.set(record)
+}
+
+function closeDelete(): void {
+  if (!deleting())
+    deleteRecord.set(null)
+}
+
+async function confirmDelete(): Promise<void> {
+  const record = deleteRecord()
+  if (!record)
+    return
+  deleting.set(true)
+  try {
+    await dashboardApi(`/api/print-logs/${record.id}`, { method: 'DELETE' })
+    deleteRecord.set(null)
+    detailsRecord.set(null)
+    pushToast('success', 'Print log deleted', { detail: record.document || `Print log #${record.id}` })
+    await loadPrintLogs()
+  }
+  catch (error) {
+    pushToast('error', 'Could not delete print log', {
+      detail: error instanceof Error ? error.message : String(error),
+    })
+  }
+  finally {
+    deleting.set(false)
+  }
+}
+
+function previousPage(): void {
+  page.set(Math.max(1, page() - 1))
+  void loadPrintLogs()
+}
+
+function nextPage(): void {
+  page.set(Math.min(pageCount(), page() + 1))
+  void loadPrintLogs()
+}
+
+onMount(() => {
+  void loadPrintLogs()
+})
+</script>
+
+<div class="space-y-6">
+  <header class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+    <div>
+      <h1 class="font-bold text-2xl text-gray-900 dark:text-white">Print logs</h1>
+      <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Inspect native Receipt records from configured print devices.</p>
+    </div>
+    <div class="flex flex-wrap gap-2">
+      <button type="button" :disabled="loading()" class="inline-flex items-center px-3 py-2 font-semibold text-gray-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700 disabled:opacity-50" @click="loadPrintLogs()"><span :class="'mr-2 h-4 w-4 ' + (loading() ? 'animate-spin i-hugeicons-loading-03' : 'i-hugeicons-refresh')"></span>Refresh</button>
+      <a :href="exportHref()" :download="exportFilename()" class="inline-flex items-center px-3 py-2 font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md"><span class="mr-2 h-4 w-4 i-hugeicons-download-04"></span>Export current page</a>
+    </div>
+  </header>
+
+  <div :if="loadError()" class="p-4 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900">{{ loadError() }}</div>
+
+  <section aria-label="Print log metrics" class="grid gap-3 grid-cols-2 lg:grid-cols-4">
+    <template :for="item in metricCards()" :key="item.label">
+      <article class="p-4 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
+        <p class="text-gray-500 text-xs dark:text-neutral-400">{{ item.label }}</p>
+        <p class="mt-2 font-semibold text-2xl text-gray-900 dark:text-white">{{ item.value }}</p>
+        <p class="mt-1 text-gray-400 text-xs dark:text-neutral-500">{{ item.detail }}</p>
+      </article>
+    </template>
+  </section>
+
+  <PrintLogBreakdown :records="records()" />
+
+  <section class="space-y-3">
+    <div class="grid gap-3 grid-cols-1 sm:grid-cols-2 xl:grid-cols-6">
+      <label class="relative sm:col-span-2">
+        <span class="sr-only">Search print logs</span>
+        <span class="flex absolute inset-y-0 left-0 items-center pl-3 text-gray-400 pointer-events-none"><span class="h-4 w-4 i-hugeicons-search-01"></span></span>
+        <input :value="search()" type="search" placeholder="Search documents, printers, or outcomes" class="pl-9 pr-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" @input="updateSearch($event)" />
+      </label>
+      <label><span class="sr-only">Printer</span><select :value="printerFilter()" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" @change="updatePrinter($event)"><option value="all">All printers</option><template :for="printer in printers()" :key="printer"><option :value="printer">{{ printer }}</option></template></select></label>
+      <label><span class="sr-only">Print status</span><select :value="statusFilter()" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" @change="updateStatus($event)"><option value="all">All statuses</option><template :for="status in statuses()" :key="status"><option :value="status">{{ status }}</option></template></select></label>
+      <label><span class="sr-only">Print log time range</span><select :value="timeRange()" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" @change="updateTimeRange($event)"><option value="1">Last 24 hours</option><option value="7">Last 7 days</option><option value="30">Last 30 days</option><option value="90">Last 90 days</option><option value="all">All time</option></select></label>
+      <label><span class="sr-only">Sort print logs</span><select :value="sort()" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" @change="updateSort($event)"><option value="newest">Newest</option><option value="oldest">Oldest</option><option value="printer">Printer</option><option value="duration">Longest duration</option></select></label>
+    </div>
+
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <p class="text-gray-500 text-sm dark:text-neutral-400">{{ total() }} matching print logs</p>
+      <div class="flex gap-2 items-center">
+        <button type="button" :disabled="page() <= 1" class="px-3 py-1.5 font-medium text-gray-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700 disabled:opacity-40" @click="previousPage()">Previous</button>
+        <span class="text-gray-500 text-sm dark:text-neutral-400">Page {{ page() }} of {{ pageCount() }}</span>
+        <button type="button" :disabled="page() >= pageCount()" class="px-3 py-1.5 font-medium text-gray-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700 disabled:opacity-40" @click="nextPage()">Next</button>
+      </div>
+    </div>
+
+    <PrintLogsTable :records="records()" :loading="loading()" @view="openDetails" @delete="requestDelete" />
+  </section>
+</div>
+
+<PrintLogDetailsDialog :open="Boolean(detailsRecord())" :record="detailsRecord()" @close="closeDetails()" />
+<PrintLogDeleteDialog :open="Boolean(deleteRecord())" :record="deleteRecord()" :busy="deleting()" @confirm="confirmDelete()" @close="closeDelete()" />

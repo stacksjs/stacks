@@ -1,0 +1,78 @@
+<script client>
+import type { PrintLogRecord } from '../../../../app/Actions/Dashboard/Commerce/print-log-records'
+import { printLogTimestamp } from '../../../../app/Actions/Dashboard/Commerce/print-log-records'
+
+interface CountRow {
+  key: string
+  count: number
+  percentage: number
+}
+
+const records = useReactiveProp('records', [] as PrintLogRecord[])
+
+function countRows(field: 'printer' | 'status'): CountRow[] {
+  const counts = new Map<string, number>()
+  for (const record of records()) {
+    const key = record[field] || 'Unknown'
+    counts.set(key, (counts.get(key) || 0) + 1)
+  }
+  const total = records().length
+  return [...counts.entries()]
+    .map(([key, count]) => ({ key, count, percentage: total ? Math.round((count / total) * 1000) / 10 : 0 }))
+    .sort((left, right) => right.count - left.count || left.key.localeCompare(right.key))
+}
+
+function hourlyRows(): CountRow[] {
+  const counts = new Map<number, number>()
+  for (const record of records()) {
+    const timestamp = printLogTimestamp(record.timestamp)
+    if (!timestamp)
+      continue
+    const hour = new Date(timestamp).getHours()
+    counts.set(hour, (counts.get(hour) || 0) + 1)
+  }
+  const max = Math.max(0, ...counts.values())
+  return [...counts.entries()]
+    .sort(([left], [right]) => left - right)
+    .map(([hour, count]) => {
+      const time = new Date(2000, 0, 1, hour)
+      return {
+        key: new Intl.DateTimeFormat(undefined, { hour: 'numeric' }).format(time),
+        count,
+        percentage: max ? Math.round((count / max) * 1000) / 10 : 0,
+      }
+    })
+}
+</script>
+
+<section aria-label="Print log breakdowns" class="grid gap-3 lg:grid-cols-3">
+  <article class="p-4 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
+    <h2 class="font-semibold text-gray-900 text-sm dark:text-white">Outcomes</h2>
+    <div class="mt-4 space-y-3">
+      <template :for="item in countRows('status')" :key="item.key">
+        <div><div class="flex items-center justify-between text-xs"><span class="capitalize text-gray-600 dark:text-neutral-300">{{ item.key }}</span><span class="text-gray-500 dark:text-neutral-400">{{ item.count }} · {{ item.percentage }}%</span></div><div class="mt-1 h-1.5 bg-gray-100 dark:bg-neutral-700 rounded-full"><div :style="'width:' + item.percentage + '%'" class="h-1.5 bg-blue-500 rounded-full"></div></div></div>
+      </template>
+      <p :if="countRows('status').length === 0" class="py-8 text-center text-gray-500 text-sm dark:text-neutral-400">No outcomes in this view.</p>
+    </div>
+  </article>
+
+  <article class="p-4 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
+    <h2 class="font-semibold text-gray-900 text-sm dark:text-white">Printers</h2>
+    <div class="mt-4 space-y-3">
+      <template :for="item in countRows('printer')" :key="item.key">
+        <div><div class="flex items-center justify-between text-xs"><span class="max-w-48 text-gray-600 truncate dark:text-neutral-300">{{ item.key }}</span><span class="text-gray-500 dark:text-neutral-400">{{ item.count }} · {{ item.percentage }}%</span></div><div class="mt-1 h-1.5 bg-gray-100 dark:bg-neutral-700 rounded-full"><div :style="'width:' + item.percentage + '%'" class="h-1.5 bg-emerald-500 rounded-full"></div></div></div>
+      </template>
+      <p :if="countRows('printer').length === 0" class="py-8 text-center text-gray-500 text-sm dark:text-neutral-400">No printers in this view.</p>
+    </div>
+  </article>
+
+  <article class="p-4 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
+    <div class="flex items-start justify-between"><h2 class="font-semibold text-gray-900 text-sm dark:text-white">Prints by hour</h2><span class="text-gray-400 text-xs dark:text-neutral-500">Local time</span></div>
+    <div class="mt-4 space-y-3">
+      <template :for="item in hourlyRows()" :key="item.key">
+        <div class="grid gap-3 grid-cols-[4rem_1fr_auto] items-center"><span class="text-gray-500 text-xs dark:text-neutral-400">{{ item.key }}</span><div class="h-1.5 bg-gray-100 dark:bg-neutral-700 rounded-full"><div :style="'width:' + item.percentage + '%'" class="h-1.5 bg-violet-500 rounded-full"></div></div><span class="text-gray-500 text-xs dark:text-neutral-400">{{ item.count }}</span></div>
+      </template>
+      <p :if="hourlyRows().length === 0" class="py-8 text-center text-gray-500 text-sm dark:text-neutral-400">No timestamped jobs in this view.</p>
+    </div>
+  </article>
+</section>
