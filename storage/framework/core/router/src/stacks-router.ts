@@ -2806,7 +2806,19 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
         if (!isExposeRoutesAuthorized(req)) return Response.json({ error: 'disabled' }, { status: 404 })
         try {
           const { generateOpenApi } = await import('@stacksjs/api')
-          const spec = await (generateOpenApi as () => Promise<unknown>)()
+          // `write: false` because this route SERVES a spec, it does not
+          // produce the committed artifact. Called bare, `options.write` is
+          // undefined and the generator's `write !== false` test treated that
+          // as yes, so every hit on this route overwrote the tracked
+          // storage/framework/api/openapi.json with whatever that machine's
+          // APP_NAME happened to be.
+          //
+          // `portable: false` keeps the app's own name in the served document,
+          // which is the one place that is genuinely wanted.
+          const spec = await (generateOpenApi as (o: { write: boolean, portable: boolean }) => Promise<unknown>)({
+            write: false,
+            portable: false,
+          })
           return Response.json(spec)
         }
         catch (err) {
