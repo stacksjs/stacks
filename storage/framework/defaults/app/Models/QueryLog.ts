@@ -7,6 +7,21 @@ export default defineModel({
   primaryKey: 'id',
   autoIncrement: true,
 
+  indexes: [
+    {
+      name: 'query_logs_executed_at_index',
+      columns: ['executed_at'],
+    },
+    {
+      name: 'query_logs_status_index',
+      columns: ['status'],
+    },
+    {
+      name: 'query_logs_duration_index',
+      columns: ['duration'],
+    },
+  ],
+
   traits: {
     useTimestamps: true,
     useApi: {

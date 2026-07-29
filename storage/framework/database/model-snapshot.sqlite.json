@@ -5752,7 +5752,29 @@
             "hasDefault": false
           }
         ],
-        "indexes": []
+        "indexes": [
+          {
+            "name": "query_logs_executed_at_index",
+            "columns": [
+              "executed_at"
+            ],
+            "type": "index"
+          },
+          {
+            "name": "query_logs_status_index",
+            "columns": [
+              "status"
+            ],
+            "type": "index"
+          },
+          {
+            "name": "query_logs_duration_index",
+            "columns": [
+              "duration"
+            ],
+            "type": "index"
+          }
+        ]
       },
       {
         "table": "notifications",
@@ -8295,7 +8317,7 @@
       }
     ]
   },
-  "hash": "e21c93156ef9499071b9c50a0821159da94a158000d4b96d0e59baaf21ad2381",
+  "hash": "e642652b4d2f5a4f3f3dd41610233324bd62ab6cd0c2ce1390caa5a6efc25e74",
   "dialect": "sqlite",
-  "updatedAt": "2026-07-29T14:13:34.055Z"
+  "updatedAt": "2026-07-29T14:33:46.135Z"
 }
