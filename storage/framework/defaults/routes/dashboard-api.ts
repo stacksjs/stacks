@@ -289,6 +289,19 @@ route.group({ prefix: '/api/dashboard', apiResponse: true }, () => {
   guard(route.patch('/models/{slug}/{id}', 'Actions/Dashboard/Models/ModelUpdateAction'))
   guard(route.delete('/models/{slug}/{id}', 'Actions/Dashboard/Models/ModelDestroyAction'))
 
+  // Error monitoring - the same native Error model aggregation exposed by
+  // the token-authenticated `/api/monitoring` routes, projected through the
+  // dashboard guard so the local dashboard session can read and manage it.
+  guard(route.get('/monitoring/errors', 'Actions/Monitoring/ErrorIndexAction'))
+  guard(route.get('/monitoring/errors/stats', 'Actions/Monitoring/ErrorStatsAction'))
+  guard(route.get('/monitoring/errors/timeline', 'Actions/Monitoring/ErrorTimelineAction'))
+  guard(route.get('/monitoring/errors/group', 'Actions/Monitoring/ErrorGroupAction'))
+  guard(route.get('/monitoring/errors/{id}', 'Actions/Monitoring/ErrorShowAction'))
+  guard(route.patch('/monitoring/errors/resolve', 'Actions/Monitoring/ErrorResolveAction'))
+  guard(route.patch('/monitoring/errors/ignore', 'Actions/Monitoring/ErrorIgnoreAction'))
+  guard(route.patch('/monitoring/errors/unresolve', 'Actions/Monitoring/ErrorUnresolveAction'))
+  guard(route.delete('/monitoring/errors', 'Actions/Monitoring/ErrorDestroyAction'))
+
   // Markdown blog admin — the write side of the BunPress blog that /blog
   // renders from `content/blog/*.md` (storage/framework/core/actions/src/blog.ts).
   // Backs `views/dashboard/content/blog/index.stx`.

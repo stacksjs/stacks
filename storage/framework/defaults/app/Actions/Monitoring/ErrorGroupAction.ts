@@ -7,8 +7,8 @@ export default new Action({
   description: 'Fetch all errors in a specific group (by type and message)',
   method: 'GET',
   async handle(request: RequestInstance) {
-    const type = decodeURIComponent(request.string('type'))
-    const message = decodeURIComponent(request.string('message'))
+    const type = request.string('type')
+    const message = request.string('message')
 
     if (!type || !message) {
       return response.json({ error: 'Both type and message are required' }, 400)

@@ -13,7 +13,7 @@
     <StatsCard title="Resolved" :value="resolvedStatsLabel" icon="i-hugeicons-checkmark-circle-02" iconBg="success" />
   </div>
 
-  <Card>
+  <Card padding="none">
     <template #header>
       <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <h2 class="font-semibold text-lg text-neutral-900 dark:text-white">Issues</h2>
@@ -35,39 +35,19 @@
       </div>
     </template>
 
-    <Table :columns="columns" :data="paginatedErrors" rowKey="id" hoverable :emptyTitle="emptyTitle" :emptyDescription="emptyDescription" @sort="handleSort" @row-click="viewError">
-      <template #cell-type="{ value }">
-        <span class="inline-flex items-center px-2 py-0.5 font-medium text-neutral-700 text-xs dark:text-neutral-200 bg-neutral-100 dark:bg-neutral-700 rounded">{{ value }}</span>
-      </template>
-      <template #cell-message="{ value }">
-        <span class="line-clamp-1 text-neutral-700 dark:text-neutral-200">{{ value }}</span>
-      </template>
-      <template #cell-count="{ value }">
-        <span class="inline-flex items-center justify-center px-2 py-0.5 min-w-[2rem] font-semibold text-neutral-700 text-xs dark:text-neutral-200 bg-neutral-100 dark:bg-neutral-700 rounded-full">{{ value }}</span>
-      </template>
-      <template #cell-status="{ value }">
-        <Badge :variant="getStatusVariant(value)" size="sm">{{ value }}</Badge>
-      </template>
-      <template #cell-last_seen="{ value }">
-        <span class="text-neutral-500 text-sm dark:text-neutral-400">{{ formatRelativeTime(value) }}</span>
-      </template>
-      <template #actions="{ row }">
-        <div class="flex gap-1 items-center">
-          <Button :show="row.status === 'unresolved'" variant="ghost" size="sm" title="Resolve" @click.stop="handleResolveError(row)">
-            <div class="h-4 w-4 text-green-600 i-hugeicons-checkmark-circle-02"></div>
-          </Button>
-          <Button :show="row.status === 'unresolved'" variant="ghost" size="sm" title="Ignore" @click.stop="handleIgnoreError(row)">
-            <div class="h-4 w-4 text-amber-600 i-hugeicons-eye-off"></div>
-          </Button>
-          <Button :show="row.status !== 'unresolved'" variant="ghost" size="sm" title="Unresolve" @click.stop="handleUnresolveError(row)">
-            <div class="h-4 w-4 text-blue-600 i-hugeicons-refresh"></div>
-          </Button>
-          <Button variant="ghost" size="sm" title="Delete" @click.stop="openDeleteModal(row)">
-            <div class="h-4 w-4 text-red-600 i-hugeicons-delete-02"></div>
-          </Button>
-        </div>
-      </template>
-    </Table>
+    <ErrorTable
+      :errors="paginatedErrors"
+      :emptyTitle="emptyTitle"
+      :emptyDescription="emptyDescription"
+      :sortColumn="sortBy"
+      :sortDirection="sortOrder"
+      @sort="handleSort"
+      @row-click="viewError"
+      @resolve="handleResolveError"
+      @ignore="handleIgnoreError"
+      @unresolve="handleUnresolveError"
+      @delete="openDeleteModal"
+    />
 
     <template #footer>
       <Pagination :value="currentPage" :totalPages="totalPages" :totalItems="totalFiltered" :itemsPerPage="itemsPerPage" showTotalItems />
@@ -173,7 +153,7 @@ interface ErrorGroup {
   status: 'unresolved' | 'resolved' | 'ignored'
   first_seen: string
   last_seen: string
-  stack_trace?: string
+  stack?: string | null
 }
 
 const { groupedErrors, errorStats, fetchGroupedErrors, fetchErrorStats, resolveErrorGroup, ignoreErrorGroup, unresolveErrorGroup, deleteErrorGroup } = useErrors()
@@ -196,14 +176,6 @@ const statusOptions = [
   { value: 'unresolved', label: 'Unresolved' },
   { value: 'resolved', label: 'Resolved' },
   { value: 'ignored', label: 'Ignored' },
-]
-
-const columns = [
-  { key: 'type', label: 'Type', sortable: true },
-  { key: 'message', label: 'Message', sortable: false },
-  { key: 'count', label: 'Events', sortable: true, align: 'center' },
-  { key: 'status', label: 'Status', sortable: false, align: 'center' },
-  { key: 'last_seen', label: 'Last Seen', sortable: true, align: 'right' },
 ]
 
 function errorList(): ErrorGroup[] {
@@ -277,7 +249,7 @@ const selectedIsResolvedOrIgnored = derived(() => {
   const s = selectedError()?.status
   return s !== undefined && s !== 'unresolved'
 })
-const hasStackTrace = derived(() => Boolean(selectedError()?.stack_trace))
+const hasStackTrace = derived(() => Boolean(selectedError()?.stack))
 const detailTitle = derived(() => selectedError()?.type ?? 'Error Details')
 
 function selectedMessage(): string { return selectedError()?.message ?? '' }
@@ -285,17 +257,23 @@ function selectedCount(): number { return selectedError()?.count ?? 0 }
 function selectedStatus(): string { return selectedError()?.status ?? '' }
 function selectedFirstSeen(): string { return formatDate(selectedError()?.first_seen ?? '') }
 function selectedLastSeen(): string { return formatDate(selectedError()?.last_seen ?? '') }
-function selectedStackTrace(): string { return selectedError()?.stack_trace ?? '' }
+function selectedStackTrace(): string { return selectedError()?.stack ?? '' }
 
 function deleteCount(): number { return errorToDelete()?.count ?? 0 }
 function deleteMessage(): string { return errorToDelete()?.message ?? '' }
 
-function handleSort(column: string, direction: 'asc' | 'desc'): void {
-  sortBy.set(column)
-  sortOrder.set(direction)
+function eventValue<T>(value: T | CustomEvent<T>): T {
+  return value instanceof CustomEvent ? value.detail : value
 }
 
-function viewError(error: ErrorGroup): void {
+function handleSort(value: { column: string, direction: 'asc' | 'desc' } | CustomEvent<{ column: string, direction: 'asc' | 'desc' }>): void {
+  const sort = eventValue(value)
+  sortBy.set(sort.column)
+  sortOrder.set(sort.direction)
+}
+
+function viewError(value: ErrorGroup | CustomEvent<ErrorGroup>): void {
+  const error = eventValue(value)
   selectedError.set(error)
   isDetailModalOpen.set(true)
 }
@@ -305,21 +283,24 @@ function closeDetailModal(): void {
   selectedError.set(null)
 }
 
-async function handleResolveError(error: ErrorGroup): Promise<void> {
+async function handleResolveError(value: ErrorGroup | CustomEvent<ErrorGroup>): Promise<void> {
+  const error = eventValue(value)
   await resolveErrorGroup(error.type, error.message)
   await fetchErrorStats()
   if (isDetailModalOpen() && selectedError())
     selectedError.update(e => e ? { ...e, status: 'resolved' } : e)
 }
 
-async function handleIgnoreError(error: ErrorGroup): Promise<void> {
+async function handleIgnoreError(value: ErrorGroup | CustomEvent<ErrorGroup>): Promise<void> {
+  const error = eventValue(value)
   await ignoreErrorGroup(error.type, error.message)
   await fetchErrorStats()
   if (isDetailModalOpen() && selectedError())
     selectedError.update(e => e ? { ...e, status: 'ignored' } : e)
 }
 
-async function handleUnresolveError(error: ErrorGroup): Promise<void> {
+async function handleUnresolveError(value: ErrorGroup | CustomEvent<ErrorGroup>): Promise<void> {
+  const error = eventValue(value)
   await unresolveErrorGroup(error.type, error.message)
   await fetchErrorStats()
   if (isDetailModalOpen() && selectedError())
@@ -350,7 +331,8 @@ function deleteSelected(): void {
     openDeleteModal(target)
 }
 
-function openDeleteModal(error: ErrorGroup): void {
+function openDeleteModal(value: ErrorGroup | CustomEvent<ErrorGroup>): void {
+  const error = eventValue(value)
   errorToDelete.set(error)
   showDeleteModal.set(true)
   if (isDetailModalOpen())
@@ -384,27 +366,6 @@ function formatDate(date: string): string {
   if (!date)
     return ''
   return new Date(date).toLocaleString()
-}
-
-function formatRelativeTime(date: string): string {
-  if (!date)
-    return ''
-  const now = new Date()
-  const errorDate = new Date(date)
-  const diffMs = now.getTime() - errorDate.getTime()
-  const diffMins = Math.floor(diffMs / 60000)
-  const diffHours = Math.floor(diffMins / 60)
-  const diffDays = Math.floor(diffHours / 24)
-
-  if (diffMins < 1)
-    return 'Just now'
-  if (diffMins < 60)
-    return `${diffMins}m ago`
-  if (diffHours < 24)
-    return `${diffHours}h ago`
-  if (diffDays < 7)
-    return `${diffDays}d ago`
-  return errorDate.toLocaleDateString()
 }
 
 onMount(async () => {
