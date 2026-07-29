@@ -75,6 +75,12 @@ describe('@stacksjs/faker', () => {
     expect(city.length).toBeGreaterThan(0)
   })
 
+  it('faker.phone.number() returns a non-empty phone number', () => {
+    const phone = faker.phone.number()
+    expect(typeof phone).toBe('string')
+    expect(phone.length).toBeGreaterThanOrEqual(10)
+  })
+
   it('faker.helpers.shuffle() returns a shuffled copy of the array', () => {
     const arr = [1, 2, 3, 4, 5]
     const shuffled = faker.helpers.shuffle(arr)
