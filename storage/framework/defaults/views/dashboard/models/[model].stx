@@ -2,92 +2,192 @@
 
 @section('content')
 <script client>
-// Dynamic model page (stacksjs/stacks#1838). Previously a 136-line
-// `<script server>` block doing ORM lookup + raw-SQLite fallback at
-// render time; now backed by
-// `GET /api/dashboard/models/{slug}` (Action:
-// `Dashboard/Models/ModelShowAction`) which returns the same shape.
+// The page every model gets for free (stacksjs/stacks#1838): a browsable,
+// sortable, filterable table over any model the app defines, with no
+// per-model code.
 //
-// The URL slug is pulled with `useNavigation().urlSegment(-1)` instead
-// of `route.params.model` (which only existed inside the old server
-// block).
+// All querying is server-side (`GET /api/dashboard/models/{slug}`), so this
+// works the same on a table with 10 rows and one with a million. Rows and
+// writes go through the model, so scopes, casts and observers apply.
 import { useNavigation } from '../composables/useNavigation'
+import { dashboardApi } from '~/storage/framework/defaults/functions/dashboard-api'
+import { pushToast } from '~/storage/framework/defaults/functions/toasts'
+
+interface ColumnMeta {
+  name: string
+  label: string
+  type: 'number' | 'boolean' | 'date' | 'json' | 'text'
+}
 
 interface ResponseShape {
   modelName: string
   tableName: string
   rows: Array<Record<string, unknown>>
-  columns: string[]
   displayColumns: string[]
+  columnMeta: ColumnMeta[]
   totalCount: number
+  page: number
+  perPage: number
+  lastPage: number
+  sort: string
+  dir: 'asc' | 'desc'
+  writable: boolean
   source: 'orm' | 'sqlite-fallback'
   error: string | null
 }
 
+const PER_PAGE_OPTIONS = [25, 50, 100, 200]
+
 const modelName = state('')
 const tableName = state('')
 const rows = state<Array<Record<string, unknown>>>([])
-const displayColumns = state<string[]>([])
+const columnMeta = state<ColumnMeta[]>([])
 const totalCount = state(0)
+const page = state(1)
+const perPage = state(25)
+const lastPage = state(1)
+const sort = state('')
+const dir = state<'asc' | 'desc'>('desc')
+const search = state('')
+const filters = state<Record<string, string>>({})
+const writable = state(false)
 const source = state<'orm' | 'sqlite-fallback'>('orm')
 const error = state<string | null>(null)
 const loading = state(true)
+const showFilters = state(false)
 
-const sourceLabel = derived(() => {
-  return source() === 'orm' ? 'via Stacks ORM' : 'raw SQLite (no model file)'
+// Row being edited, plus the working copy of its values. `null` closes the
+// editor; the copy is kept separate so cancelling leaves the table row as
+// it was and a failed save does not desync the two.
+const editing = state<Record<string, unknown> | null>(null)
+const editValues = state<Record<string, string>>({})
+const saving = state(false)
+const confirmingDelete = state<Record<string, unknown> | null>(null)
+
+const slug = derived(() => useNavigation().urlSegment(-1) || '')
+
+const sourceLabel = derived(() => source() === 'orm' ? 'via Stacks ORM' : 'raw SQLite, read-only')
+
+const recordLabel = derived(() => {
+  const n = totalCount()
+  return `${n.toLocaleString()} ${n === 1 ? 'record' : 'records'}`
 })
 
-const recordCountLabel = derived(() => {
-  return totalCount() + ' record' + (totalCount() === 1 ? '' : 's')
+const rangeLabel = derived(() => {
+  if (totalCount() === 0) return 'No records'
+  const from = (page() - 1) * perPage() + 1
+  const to = Math.min(page() * perPage(), totalCount())
+  return `${from.toLocaleString()} to ${to.toLocaleString()} of ${totalCount().toLocaleString()}`
 })
+
+const activeFilterCount = derived(() => Object.values(filters()).filter(v => v !== '').length)
+
+const filterLabel = derived(() => {
+  const n = activeFilterCount()
+  return n === 0 ? 'Filter' : `Filter (${n})`
+})
+
+const isEmpty = derived(() => !loading() && !error() && rows().length === 0)
+
+// Fields for the edit sheet, carrying their starting value. Derived from the
+// row being edited rather than from `editValues`, so the list changes exactly
+// once per open: deriving it from the working copy instead would rebuild
+// every input on each keystroke and steal focus mid-word.
+const editFields = derived(() => {
+  const row = editing()
+  if (!row) return []
+  return columnMeta().map(column => ({
+    name: column.name,
+    label: column.label,
+    value: row[column.name] === null || row[column.name] === undefined ? '' : String(row[column.name]),
+    // The primary key, the uuid and the timestamps are shown for context but
+    // the API refuses to write them, so the input says so rather than
+    // accepting an edit that will be silently dropped.
+    readonly: column.name === 'id' || column.name === 'uuid' || column.name.endsWith('_at'),
+  }))
+})
+
+// Skeleton rows while a query is in flight. Matching the real row count
+// keeps the table from collapsing and jumping back on every keystroke.
+const skeletonRows = derived(() => Array.from({ length: Math.min(8, Math.max(3, rows().length || 6)) }, (_, i) => i))
 
 function formatDate(value: unknown): string {
-  if (!value) return '-'
-  try {
-    const date = new Date(value as string | number)
-    if (Number.isNaN(date.getTime())) return String(value)
-    return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
-  }
-  catch {
-    return String(value)
-  }
+  const date = new Date(value as string | number)
+  if (Number.isNaN(date.getTime())) return String(value)
+  return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
 }
 
-function formatCell(value: unknown, column: string): string {
-  if (value === null || value === undefined) return '-'
-  if (column === 'created_at' || column === 'updated_at' || column.endsWith('_at')) return formatDate(value)
+function formatCell(value: unknown, type: ColumnMeta['type']): string {
+  if (value === null || value === undefined || value === '') return '-'
+  if (type === 'date') return formatDate(value)
+  if (type === 'boolean') return (value === true || value === 1 || value === '1') ? 'Yes' : 'No'
+  if (type === 'number' && typeof value === 'number') return value.toLocaleString()
   if (typeof value === 'object') {
-    try { return JSON.stringify(value).slice(0, 80) }
+    try { return JSON.stringify(value).slice(0, 90) }
     catch { return '[object]' }
   }
-  if (typeof value === 'string' && value.length > 100) return value.slice(0, 100) + '…'
-  return String(value)
+  const text = String(value)
+  return text.length > 120 ? `${text.slice(0, 120)}…` : text
 }
 
-function cellValue(row: Record<string, unknown>, col: string): string {
-  return formatCell(row[col], col)
+function cellValue(row: Record<string, unknown>, column: ColumnMeta): string {
+  return formatCell(row[column.name], column.type)
+}
+
+// Returned as COMPLETE class strings and applied with `:class`, because a
+// `{{ }}` placeholder inside a class attribute is not reactively bound.
+function cellClass(column: ColumnMeta): string {
+  const align = column.type === 'number' ? 'text-right tabular-nums' : 'text-left'
+  const mono = column.type === 'json' ? ' font-mono text-[12px]' : ''
+  return `px-3 py-2 max-w-xs truncate whitespace-nowrap text-[13px] text-neutral-800 dark:text-neutral-200 ${align}${mono}`
+}
+
+function headerClass(column: ColumnMeta): string {
+  const align = column.type === 'number' ? 'justify-end' : 'justify-start'
+  return `flex items-center gap-1 w-full ${align} font-medium text-[11px] uppercase tracking-wide text-neutral-500 dark:text-neutral-400 hover:text-neutral-800 dark:hover:text-neutral-200 transition-colors`
+}
+
+function sortIconClass(column: ColumnMeta): string {
+  if (sort() !== column.name) return 'h-3 w-3 opacity-0 group-hover:opacity-40 i-hugeicons-arrow-up-down'
+  return dir() === 'asc' ? 'h-3 w-3 i-hugeicons-arrow-up-01' : 'h-3 w-3 i-hugeicons-arrow-down-01'
 }
 
 async function load() {
-  loading.set(true)
-  error.set(null)
-  const slug = useNavigation().urlSegment(-1)
-  if (!slug) {
-    error.set('Missing model slug in URL.')
+  if (!slug()) {
+    error.set('Missing model slug in the URL.')
     loading.set(false)
     return
   }
+  loading.set(true)
+  error.set(null)
   try {
-    const res = await fetch(`/api/dashboard/models/${encodeURIComponent(slug)}`, {
-      headers: { accept: 'application/json' },
+    const params = new URLSearchParams({
+      page: String(page()),
+      per_page: String(perPage()),
+      dir: dir(),
     })
-    if (!res.ok) throw new Error(`HTTP ${res.status}`)
-    const data = await res.json() as Partial<ResponseShape>
+    if (sort()) params.set('sort', sort())
+    if (search()) params.set('q', search())
+    const active = Object.fromEntries(Object.entries(filters()).filter(([, v]) => v !== ''))
+    if (Object.keys(active).length > 0) params.set('filters', JSON.stringify(active))
+
+    const data = await dashboardApi<ResponseShape>(`/api/dashboard/models/${encodeURIComponent(slug())}?${params}`)
+
     modelName.set(data.modelName ?? '')
     tableName.set(data.tableName ?? '')
     rows.set(data.rows ?? [])
-    displayColumns.set(data.displayColumns ?? [])
+    // Only reassign when the column set actually changes. It is the same for
+    // every page and every sort of a given model, and re-rendering the
+    // header `:for` on each query both wastes work and trips a reconciler
+    // bug that leaves the columns rotated out of order.
+    const nextColumns = data.columnMeta ?? []
+    const sameColumns = nextColumns.length === columnMeta().length
+      && nextColumns.every((c, i) => c.name === columnMeta()[i]?.name)
+    if (!sameColumns) columnMeta.set(nextColumns)
     totalCount.set(data.totalCount ?? 0)
+    lastPage.set(data.lastPage ?? 1)
+    sort.set(data.sort ?? '')
+    writable.set(data.writable === true)
     source.set(data.source ?? 'orm')
     error.set(data.error ?? null)
   }
@@ -99,69 +199,281 @@ async function load() {
   }
 }
 
+function toggleSort(column: ColumnMeta) {
+  if (sort() === column.name) dir.set(dir() === 'asc' ? 'desc' : 'asc')
+  else { sort.set(column.name); dir.set('asc') }
+  page.set(1)
+  void load()
+}
+
+// Debounced so a query is not fired per keystroke. The timer id is module
+// scope rather than signal state: it is bookkeeping, not something the
+// template renders.
+let searchTimer: ReturnType<typeof setTimeout> | undefined
+
+function onSearchInput(event: Event) {
+  search.set((event.target as HTMLInputElement).value)
+  clearTimeout(searchTimer)
+  searchTimer = setTimeout(() => {
+    page.set(1)
+    void load()
+  }, 250)
+}
+
+function onFilterInput(column: string, event: Event) {
+  filters.set({ ...filters(), [column]: (event.target as HTMLInputElement).value })
+  clearTimeout(searchTimer)
+  searchTimer = setTimeout(() => {
+    page.set(1)
+    void load()
+  }, 250)
+}
+
+function clearFilters() {
+  filters.set({})
+  search.set('')
+  page.set(1)
+  void load()
+}
+
+function goToPage(next: number) {
+  const target = Math.min(Math.max(1, next), lastPage())
+  if (target === page()) return
+  page.set(target)
+  void load()
+}
+
+function onPerPageChange(event: Event) {
+  perPage.set(Number((event.target as HTMLSelectElement).value) || 25)
+  page.set(1)
+  void load()
+}
+
+function startEdit(row: Record<string, unknown>) {
+  const values: Record<string, string> = {}
+  for (const column of columnMeta()) {
+    const raw = row[column.name]
+    values[column.name] = raw === null || raw === undefined ? '' : String(raw)
+  }
+  editValues.set(values)
+  editing.set(row)
+}
+
+function onEditInput(column: string, event: Event) {
+  editValues.set({ ...editValues(), [column]: (event.target as HTMLInputElement).value })
+}
+
+async function saveEdit() {
+  const row = editing()
+  if (!row) return
+  // Send only what actually changed, so a save never rewrites columns the
+  // editor merely displayed.
+  const fields: Record<string, unknown> = {}
+  for (const [column, value] of Object.entries(editValues())) {
+    const original = row[column]
+    const originalText = original === null || original === undefined ? '' : String(original)
+    if (value !== originalText) fields[column] = value === '' ? null : value
+  }
+  if (Object.keys(fields).length === 0) {
+    editing.set(null)
+    return
+  }
+
+  saving.set(true)
+  try {
+    const result = await dashboardApi<{ ok: boolean, error?: string }>(
+      `/api/dashboard/models/${encodeURIComponent(slug())}/${row.id}`,
+      { method: 'PATCH', body: { fields } },
+    )
+    if (!result?.ok) throw new Error(result?.error || 'The update was rejected.')
+    pushToast('success', `${modelName()} ${row.id} updated`)
+    editing.set(null)
+    await load()
+  }
+  catch (e) {
+    pushToast('error', 'Could not save', { detail: e instanceof Error ? e.message : String(e) })
+  }
+  finally {
+    saving.set(false)
+  }
+}
+
+async function confirmDelete() {
+  const row = confirmingDelete()
+  if (!row) return
+  saving.set(true)
+  try {
+    const result = await dashboardApi<{ ok: boolean, error?: string }>(
+      `/api/dashboard/models/${encodeURIComponent(slug())}/${row.id}`,
+      { method: 'DELETE' },
+    )
+    if (!result?.ok) throw new Error(result?.error || 'The delete was rejected.')
+    pushToast('success', `${modelName()} ${row.id} deleted`)
+    confirmingDelete.set(null)
+    // Deleting the last row of the final page would strand the viewer on an
+    // empty page, so step back one.
+    if (rows().length === 1 && page() > 1) page.set(page() - 1)
+    await load()
+  }
+  catch (e) {
+    pushToast('error', 'Could not delete', { detail: e instanceof Error ? e.message : String(e) })
+  }
+  finally {
+    saving.set(false)
+  }
+}
+
 void load()
 </script>
 
-<div class="p-6 space-y-6">
+<div class="p-6 space-y-4">
 
-  <PageHeader :title="modelName()" :description="recordCountLabel() + ' · ' + sourceLabel()">
-    <template #actions>
-      <Button variant="primary">
-        <div class="h-4 w-4 i-hugeicons-add-01"></div>
-        New <span :text="modelName()"></span>
-      </Button>
-    </template>
-  </PageHeader>
+  <!-- Written out rather than using <PageHeader>: that component renders on
+      the server, so a `{{ }}` placeholder in it is baked at render time and
+      would stay empty for a title that only exists once the fetch resolves.
+      `:text` bindings here stay reactive. -->
+  <div class="flex flex-wrap gap-4 items-start justify-between">
+    <div class="min-w-0">
+      <h1 class="font-semibold text-2xl text-neutral-900 truncate dark:text-white" :text="modelName()"></h1>
+      <p class="mt-1 text-[13px] text-neutral-500 dark:text-neutral-400" :text="recordLabel() + ' · ' + tableName() + ' · ' + sourceLabel()"></p>
+    </div>
+    <button
+      type="button"
+      @click="showFilters.set(!showFilters())"
+      class="inline-flex gap-1.5 items-center px-3 h-8 font-medium text-[13px] text-neutral-700 dark:text-neutral-200 bg-white dark:bg-white/10 border border-black/10 rounded-lg dark:border-white/15 hover:bg-neutral-50 dark:hover:bg-white/15 transition-colors"
+    >
+      <span class="h-4 w-4 i-hugeicons-filter"></span>
+      <span :text="filterLabel()"></span>
+    </button>
+  </div>
 
-  <div :if="error()" class="p-6 bg-red-50 dark:bg-red-900/20 border border-red-200 rounded-xl dark:border-red-800">
+  <!-- Search + page size -->
+  <div class="flex flex-wrap gap-3 items-center">
+    <div class="relative flex-1 max-w-sm">
+      <div class="flex absolute inset-y-0 left-0 items-center pl-3 pointer-events-none">
+        <div class="h-4 w-4 text-neutral-400 dark:text-neutral-500 i-hugeicons-search-01"></div>
+      </div>
+      <input
+        type="search"
+        :value="search()"
+        @input="onSearchInput($event)"
+        :placeholder="'Search ' + (modelName() || 'records')"
+        class="block pl-9 pr-3 py-1.5 w-full text-[13px] text-neutral-900 dark:text-neutral-100 placeholder:text-neutral-400 dark:placeholder:text-neutral-500 bg-white dark:bg-white/10 border border-black/10 rounded-lg dark:border-white/15 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
+      >
+    </div>
+
+    <div :if="activeFilterCount() > 0 || search()" class="flex items-center">
+      <button
+        type="button"
+        @click="clearFilters()"
+        class="px-2.5 h-8 text-[13px] text-neutral-600 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white transition-colors"
+      >
+        Clear
+      </button>
+    </div>
+
+    <div class="flex gap-2 items-center ml-auto text-[12px] text-neutral-500 dark:text-neutral-400">
+      <span>Show</span>
+      <select
+        @change="onPerPageChange($event)"
+        class="px-2 h-8 text-[12px] text-neutral-700 dark:text-neutral-200 bg-white dark:bg-white/10 border border-black/10 rounded-md dark:border-white/15 focus:border-blue-500/50"
+      >
+        <template :for="option in PER_PAGE_OPTIONS">
+          <option :value="option" :selected="option === perPage()">{{ option }}</option>
+        </template>
+      </select>
+    </div>
+  </div>
+
+  <div :if="error()" class="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 rounded-xl dark:border-red-800">
     <div class="flex gap-3 items-start">
       <span class="flex-shrink-0 mt-0.5 h-5 w-5 text-red-500 i-hugeicons-alert-02"></span>
       <div>
-        <h3 class="font-medium text-red-800 dark:text-red-200">Couldn't load <span :text="modelName()"></span></h3>
-        <p class="mt-1 text-red-600 text-sm dark:text-red-300" :text="error()"></p>
-        <p class="mt-2 text-red-500 text-xs dark:text-red-400">
-          Looked for an ORM model named <code :text="modelName()"></code> and a SQLite table named <code :text="tableName()"></code>.
+        <h3 class="font-medium text-[13px] text-red-800 dark:text-red-200">Couldn't load <span :text="modelName()"></span></h3>
+        <p class="mt-1 text-[13px] text-red-600 dark:text-red-300" :text="error()"></p>
+        <p class="mt-2 text-[12px] text-red-500 dark:text-red-400">
+          Looked for an ORM model named <code :text="modelName()"></code> and a table named <code :text="tableName()"></code>.
         </p>
       </div>
     </div>
   </div>
 
-  <div :if="!error() && !loading() && rows().length === 0" class="p-12 text-center bg-white dark:bg-neutral-900 border border-neutral-200 rounded-xl dark:border-neutral-800">
-    <span class="mx-auto h-12 w-12 text-neutral-300 dark:text-neutral-600 i-hugeicons-database-01"></span>
-    <h3 class="mt-4 font-medium text-lg text-neutral-900 dark:text-white">No <span :text="modelName()"></span> records</h3>
-    <p class="mt-2 text-neutral-500 text-sm dark:text-neutral-400">Get started by creating a new <span :text="modelName()"></span>.</p>
+  <div :if="isEmpty()" class="p-12 text-center bg-white dark:bg-neutral-900 border border-black/8 rounded-xl dark:border-white/10">
+    <span class="mx-auto h-10 w-10 text-neutral-300 dark:text-neutral-600 i-hugeicons-database-01"></span>
+    <h3 class="mt-3 font-medium text-[15px] text-neutral-900 dark:text-white">
+      <span :if="activeFilterCount() > 0 || search()">Nothing matches those filters</span>
+      <span :if="activeFilterCount() === 0 && !search()">No <span :text="modelName()"></span> records yet</span>
+    </h3>
+    <p class="mt-1.5 text-[13px] text-neutral-500 dark:text-neutral-400">
+      <span :if="activeFilterCount() > 0 || search()">Try a broader search, or clear the filters.</span>
+      <span :if="activeFilterCount() === 0 && !search()">Seed some with <code>./buddy seed</code>.</span>
+    </p>
   </div>
 
-  <div :if="!error() && rows().length > 0" class="overflow-hidden bg-white dark:bg-neutral-900 border border-neutral-200 rounded-xl dark:border-neutral-800">
+  <div :if="!error() && (rows().length > 0 || loading())" class="overflow-hidden bg-white dark:bg-neutral-900 border border-black/8 rounded-xl dark:border-white/10">
     <div class="overflow-x-auto">
-      <table class="min-w-full divide-neutral-200 divide-y dark:divide-neutral-800">
-        <thead class="bg-neutral-50 dark:bg-neutral-800/50">
+      <table class="min-w-full">
+        <thead class="bg-neutral-50 dark:bg-white/5">
           <tr>
-            <template :for="column in displayColumns">
-              <th class="px-4 py-3 font-medium text-left text-neutral-500 text-xs tracking-wider uppercase whitespace-nowrap dark:text-neutral-400">
-                {{ column.replace(/_/g, ' ') }}
+            <template :for="column in columnMeta()">
+              <th scope="col" class="group px-3 py-2 whitespace-nowrap">
+                <button type="button" @click="toggleSort(column)" :class="headerClass(column)">
+                  <span>{{ column.label }}</span>
+                  <span :class="sortIconClass(column)"></span>
+                </button>
               </th>
             </template>
-            <th class="px-4 py-3 font-medium text-neutral-500 text-right text-xs tracking-wider uppercase dark:text-neutral-400">Actions</th>
+            <th :if="writable()" scope="col" class="px-3 py-2 w-24 font-medium text-[11px] text-neutral-500 text-right uppercase tracking-wide dark:text-neutral-400">Actions</th>
+          </tr>
+
+          <!-- Per-column filter row -->
+          <tr :if="showFilters()" class="bg-white dark:bg-neutral-900">
+            <template :for="column in columnMeta()">
+              <th scope="col" class="px-2 pb-2">
+                <input
+                  type="text"
+                  :value="filters()[column.name] || ''"
+                  @input="onFilterInput(column.name, $event)"
+                  :placeholder="column.label"
+                  class="block px-2 py-1 w-full font-normal text-[12px] text-neutral-900 dark:text-neutral-100 placeholder:text-neutral-400 dark:placeholder:text-neutral-500 bg-white dark:bg-white/10 border border-black/10 rounded-md dark:border-white/15 focus:border-blue-400 focus:outline-none"
+                >
+              </th>
+            </template>
+            <th :if="writable()"></th>
           </tr>
         </thead>
-        <tbody class="divide-neutral-200 divide-y dark:divide-neutral-800">
-          <template :for="row in rows">
-            <tr class="hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors">
-              <template :for="column in displayColumns">
-                <td class="px-4 py-3 max-w-xs text-neutral-900 text-sm truncate whitespace-nowrap dark:text-neutral-100">
-                  {{ cellValue(row, column) }}
+
+        <!-- Loading skeleton, shaped like the real rows so the table does not
+            collapse and jump back on every keystroke. Two <tbody> elements
+            rather than one: `:if` and `:for` on the same <template> do not
+            compose, and a table may legally carry several bodies. -->
+        <tbody :if="loading()" class="divide-black/5 divide-y dark:divide-white/8">
+          <template :for="i in skeletonRows()">
+            <tr>
+              <template :for="column in columnMeta()">
+                <td class="px-3 py-2">
+                  <div class="h-3 rounded bg-neutral-200 dark:bg-white/10 animate-pulse"></div>
                 </td>
               </template>
-              <td class="px-4 py-3 text-right">
-                <div class="flex gap-2 items-center justify-end">
-                  <button class="p-1.5 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors" title="View">
-                    <span class="h-4 w-4 i-hugeicons-view"></span>
-                  </button>
-                  <button class="p-1.5 text-neutral-400 hover:text-blue-600 transition-colors" title="Edit">
+              <td :if="writable()" class="px-3 py-2">
+                <div class="ml-auto h-3 w-16 rounded bg-neutral-200 dark:bg-white/10 animate-pulse"></div>
+              </td>
+            </tr>
+          </template>
+        </tbody>
+
+        <tbody :if="!loading()" class="divide-black/5 divide-y dark:divide-white/8">
+          <template :for="row in rows()">
+            <tr class="hover:bg-neutral-50 dark:hover:bg-white/5 transition-colors">
+              <template :for="column in columnMeta()">
+                <td :class="cellClass(column)" :title="cellValue(row, column)">{{ cellValue(row, column) }}</td>
+              </template>
+              <td :if="writable()" class="px-3 py-2 text-right">
+                <div class="flex gap-1 items-center justify-end">
+                  <button type="button" @click="startEdit(row)" class="p-1.5 text-neutral-400 hover:text-blue-600 rounded-md hover:bg-blue-50 dark:hover:bg-blue-500/10 transition-colors" title="Edit">
                     <span class="h-4 w-4 i-hugeicons-edit-02"></span>
                   </button>
-                  <button class="p-1.5 text-neutral-400 hover:text-red-600 transition-colors" title="Delete">
+                  <button type="button" @click="confirmingDelete.set(row)" class="p-1.5 text-neutral-400 hover:text-red-600 rounded-md hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors" title="Delete">
                     <span class="h-4 w-4 i-hugeicons-delete-02"></span>
                   </button>
                 </div>
@@ -172,23 +484,91 @@ void load()
       </table>
     </div>
 
-    <div class="px-4 py-3 bg-neutral-50 dark:bg-neutral-800/30 border-neutral-200 border-t dark:border-neutral-800">
-      <div class="flex items-center justify-between">
-        <p class="text-neutral-500 text-sm dark:text-neutral-400">
-          Showing <span class="font-medium">{{ rows().length }}</span> of <span class="font-medium">{{ totalCount() }}</span>
-        </p>
-        <div class="flex gap-2 items-center">
-          <button class="px-3 py-1.5 font-medium text-neutral-600 text-sm dark:text-neutral-300 bg-white dark:bg-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-700 border border-neutral-300 rounded-lg dark:border-neutral-600 disabled:opacity-50 transition-colors" disabled>
-            Previous
-          </button>
-          <button class="px-3 py-1.5 font-medium text-neutral-600 text-sm dark:text-neutral-300 bg-white dark:bg-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-700 border border-neutral-300 rounded-lg dark:border-neutral-600 transition-colors">
-            Next
-          </button>
-        </div>
+    <div class="flex flex-wrap gap-3 items-center justify-between px-3 py-2 bg-neutral-50 dark:bg-white/5 border-black/5 border-t dark:border-white/10">
+      <p class="text-[12px] text-neutral-500 dark:text-neutral-400" :text="rangeLabel()"></p>
+      <div class="flex gap-1 items-center">
+        <button
+          type="button"
+          @click="goToPage(1)"
+          :disabled="page() === 1"
+          class="px-2 h-7 text-[12px] text-neutral-600 dark:text-neutral-300 bg-white dark:bg-white/10 border border-black/10 rounded-md dark:border-white/15 hover:bg-neutral-100 dark:hover:bg-white/15 disabled:opacity-40 disabled:pointer-events-none transition-colors"
+        >First</button>
+        <button
+          type="button"
+          @click="goToPage(page() - 1)"
+          :disabled="page() === 1"
+          class="px-2 h-7 text-[12px] text-neutral-600 dark:text-neutral-300 bg-white dark:bg-white/10 border border-black/10 rounded-md dark:border-white/15 hover:bg-neutral-100 dark:hover:bg-white/15 disabled:opacity-40 disabled:pointer-events-none transition-colors"
+        >Previous</button>
+        <span class="px-2 text-[12px] text-neutral-500 tabular-nums dark:text-neutral-400">{{ page() }} / {{ lastPage() }}</span>
+        <button
+          type="button"
+          @click="goToPage(page() + 1)"
+          :disabled="page() >= lastPage()"
+          class="px-2 h-7 text-[12px] text-neutral-600 dark:text-neutral-300 bg-white dark:bg-white/10 border border-black/10 rounded-md dark:border-white/15 hover:bg-neutral-100 dark:hover:bg-white/15 disabled:opacity-40 disabled:pointer-events-none transition-colors"
+        >Next</button>
+        <button
+          type="button"
+          @click="goToPage(lastPage())"
+          :disabled="page() >= lastPage()"
+          class="px-2 h-7 text-[12px] text-neutral-600 dark:text-neutral-300 bg-white dark:bg-white/10 border border-black/10 rounded-md dark:border-white/15 hover:bg-neutral-100 dark:hover:bg-white/15 disabled:opacity-40 disabled:pointer-events-none transition-colors"
+        >Last</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit sheet -->
+  <div :if="editing()" class="flex fixed inset-0 z-50 items-center justify-center p-4 bg-black/30" @click="editing.set(null)">
+    <div class="overflow-hidden bg-white dark:bg-neutral-900 rounded-xl shadow-2xl max-h-[85vh] w-full max-w-lg flex flex-col" @click.stop>
+      <div class="flex items-center justify-between px-4 py-3 border-black/5 border-b dark:border-white/10">
+        <h2 class="font-semibold text-[14px] text-neutral-900 dark:text-white">Edit <span :text="modelName()"></span></h2>
+        <button type="button" @click="editing.set(null)" class="p-1 text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200" aria-label="Close">
+          <span class="h-4 w-4 i-hugeicons-cancel-01"></span>
+        </button>
+      </div>
+
+      <div class="overflow-y-auto flex-1 p-4 space-y-3">
+        <template :for="field in editFields()">
+          <div class="flex flex-col gap-1.5">
+            <label class="font-medium text-[12px] text-neutral-600 dark:text-neutral-300">{{ field.label }}</label>
+            <input
+              type="text"
+              :value="field.value"
+              @input="onEditInput(field.name, $event)"
+              :readonly="field.readonly"
+              class="px-2.5 py-1.5 text-[13px] text-neutral-900 dark:text-neutral-100 bg-white dark:bg-white/10 border border-black/10 rounded-lg dark:border-white/15 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 read-only:bg-neutral-50 read-only:text-neutral-500 dark:read-only:bg-white/5 dark:read-only:text-neutral-400"
+            >
+          </div>
+        </template>
+      </div>
+
+      <div class="flex gap-2 items-center justify-end px-4 py-3 bg-neutral-50 dark:bg-white/5 border-black/5 border-t dark:border-white/10">
+        <button type="button" @click="editing.set(null)" class="px-3 h-8 font-medium text-[13px] text-neutral-700 dark:text-neutral-200 bg-white dark:bg-white/10 border border-black/10 rounded-lg dark:border-white/15 hover:bg-neutral-100 dark:hover:bg-white/15 transition-colors">Cancel</button>
+        <button type="button" @click="saveEdit()" :disabled="saving()" class="px-3 h-8 font-medium text-[13px] text-white bg-blue-600 rounded-lg hover:bg-blue-700 active:scale-[0.98] disabled:opacity-60 disabled:pointer-events-none transition-all">
+          <span :if="!saving()">Save changes</span>
+          <span :if="saving()">Saving</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete confirmation -->
+  <div :if="confirmingDelete()" class="flex fixed inset-0 z-50 items-center justify-center p-4 bg-black/30" @click="confirmingDelete.set(null)">
+    <div class="p-5 bg-white dark:bg-neutral-900 rounded-xl shadow-2xl w-full max-w-sm" @click.stop>
+      <h2 class="font-semibold text-[14px] text-neutral-900 dark:text-white">Delete this <span :text="modelName()"></span>?</h2>
+      <p class="mt-1.5 text-[13px] text-neutral-500 dark:text-neutral-400">
+        Row <span class="font-mono">{{ confirmingDelete().id }}</span> will be removed. This runs through the model, so soft deletes and observers apply.
+      </p>
+      <div class="flex gap-2 items-center justify-end mt-4">
+        <button type="button" @click="confirmingDelete.set(null)" class="px-3 h-8 font-medium text-[13px] text-neutral-700 dark:text-neutral-200 bg-white dark:bg-white/10 border border-black/10 rounded-lg dark:border-white/15 hover:bg-neutral-100 dark:hover:bg-white/15 transition-colors">Cancel</button>
+        <button type="button" @click="confirmDelete()" :disabled="saving()" class="px-3 h-8 font-medium text-[13px] text-white bg-red-600 rounded-lg hover:bg-red-700 active:scale-[0.98] disabled:opacity-60 disabled:pointer-events-none transition-all">
+          <span :if="!saving()">Delete</span>
+          <span :if="saving()">Deleting</span>
+        </button>
       </div>
     </div>
   </div>
 </div>
+
 <style>
 .overflow-x-auto { -webkit-overflow-scrolling: touch; }
 </style>
