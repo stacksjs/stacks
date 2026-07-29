@@ -29,11 +29,15 @@ const trendClasses = {
   neutral: 'text-neutral-500 dark:text-neutral-400'
 }
 </script>
+<script client>
+const liveTitle = useReactiveProp('title', '')
+const liveIcon = useReactiveProp('icon', '')
+</script>
 <div class="p-5 bg-white dark:bg-neutral-800/90 border border-black/5 rounded-xl dark:border-white/5 hover:shadow-black/5 hover:shadow-md dark:hover:shadow-black/20 duration-150 transition-all">
     <div class="flex items-start justify-between">
       <div class="flex-1 min-w-0">
         <p class="font-medium text-[13px] text-neutral-500 tracking-tight truncate dark:text-neutral-400">
-          {{ title }}
+          {{ liveTitle() }}
         </p>
 
         <div class="flex gap-2 items-baseline mt-1.5">
@@ -74,11 +78,9 @@ const trendClasses = {
         @endif
       </div>
 
-      @if(icon)
-        <div class="p-2.5 rounded-lg flex-shrink-0 {{ iconBgClasses[iconBg] }}">
-          <div class="{{ icon }} h-5 w-5"></div>
+      <div :if="liveIcon()" class="p-2.5 rounded-lg flex-shrink-0 {{ iconBgClasses[iconBg] }}">
+          <div :class="liveIcon() + ' h-5 w-5'"></div>
         </div>
-      @endif
     </div>
 
     <slot />
