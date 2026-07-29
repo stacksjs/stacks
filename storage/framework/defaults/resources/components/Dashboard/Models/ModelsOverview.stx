@@ -1,0 +1,201 @@
+<script client>
+import { dashboardApi } from '../../../../functions/dashboard-api'
+
+interface ModelRow {
+  name: string
+  table: string
+  href: string
+  count: number
+  attributeCount: number
+  category: string
+  source: 'userland' | 'framework'
+  apiUri: string
+  apiRoutes: string[]
+}
+
+interface ModelGroup {
+  key: string
+  label: string
+  models: ModelRow[]
+  countLabel: string
+}
+
+interface ModelsResponse {
+  totalModels: number
+  totalRecords: number
+  userlandCount: number
+  categoryGroups: ModelGroup[]
+}
+
+const title = useReactiveProp('title', 'Models')
+const description = useReactiveProp('description', 'Inspect application models.')
+const totalModels = state(0)
+const totalRecords = state(0)
+const userlandCount = state(0)
+const categoryGroups = state<ModelGroup[]>([])
+const loading = state(true)
+const loadError = state('')
+const search = state('')
+const selectedCategory = state('all')
+
+const categories = derived(() => categoryGroups().map(group => ({
+  key: group.key,
+  label: group.label,
+})))
+
+const visibleGroups = derived(() => {
+  const query = search().trim().toLowerCase()
+  return categoryGroups()
+    .filter(group => selectedCategory() === 'all' || group.key === selectedCategory())
+    .map(group => ({
+      ...group,
+      models: group.models.filter((model) => {
+        if (!query)
+          return true
+        return [
+          model.name,
+          model.table,
+          model.category,
+          model.apiUri,
+          ...model.apiRoutes,
+        ].join(' ').toLowerCase().includes(query)
+      }),
+    }))
+    .filter(group => group.models.length > 0)
+})
+
+const visibleModelCount = derived(() => visibleGroups().reduce((total, group) => total + group.models.length, 0))
+
+async function loadModels(): Promise<void> {
+  loading.set(true)
+  loadError.set('')
+  try {
+    const response = await dashboardApi<ModelsResponse>('/api/dashboard/models')
+    totalModels.set(response.totalModels || 0)
+    totalRecords.set(response.totalRecords || 0)
+    userlandCount.set(response.userlandCount || 0)
+    categoryGroups.set(response.categoryGroups || [])
+  }
+  catch (error) {
+    totalModels.set(0)
+    totalRecords.set(0)
+    userlandCount.set(0)
+    categoryGroups.set([])
+    loadError.set(error instanceof Error ? error.message : 'Models could not be loaded.')
+  }
+  finally {
+    loading.set(false)
+  }
+}
+
+onMount(() => {
+  void loadModels()
+})
+</script>
+
+<div class="space-y-6">
+  <header class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+    <div>
+      <h1 class="font-semibold text-2xl text-neutral-900 tracking-tight dark:text-white">{{ title() }}</h1>
+      <p class="mt-1 max-w-3xl text-neutral-500 text-sm dark:text-neutral-400">{{ description() }}</p>
+    </div>
+    <button type="button" :disabled="loading()" class="inline-flex items-center self-start px-3 py-2 font-medium text-neutral-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-neutral-300 rounded-lg dark:border-neutral-700 disabled:opacity-50" @click="loadModels">
+      <span :class="'mr-2 h-4 w-4 ' + (loading() ? 'animate-spin i-hugeicons-loading-03' : 'i-hugeicons-refresh')"></span>
+      Refresh
+    </button>
+  </header>
+
+  <div class="grid gap-4 grid-cols-1 sm:grid-cols-3">
+    <StatsCard title="Total Models" icon="i-hugeicons-database" iconBg="primary">
+      <template #value>{{ totalModels() }}</template>
+    </StatsCard>
+    <StatsCard title="Total Records" icon="i-hugeicons-rows-01" iconBg="success">
+      <template #value>{{ totalRecords().toLocaleString() }}</template>
+    </StatsCard>
+    <StatsCard title="App Overrides" icon="i-hugeicons-folder-02" iconBg="info">
+      <template #value>{{ userlandCount() }}</template>
+    </StatsCard>
+  </div>
+
+  <div :if="loadError()" role="alert" class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between px-4 py-3 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/40 border border-red-200 rounded-lg dark:border-red-900">
+    <span>{{ loadError() }}</span>
+    <button type="button" class="font-medium hover:underline" @click="loadModels">Try again</button>
+  </div>
+
+  <Card padding="none">
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between p-5 border-b border-neutral-200 dark:border-neutral-700">
+      <div>
+        <h2 class="font-semibold text-neutral-900 dark:text-white">Model Registry</h2>
+        <p class="mt-1 text-neutral-500 text-xs dark:text-neutral-400">{{ visibleModelCount() }} matching models</p>
+      </div>
+      <div class="flex flex-col gap-2 sm:flex-row w-full sm:w-auto">
+        <label class="block relative w-full sm:w-64">
+          <span class="sr-only">Search models</span>
+          <span class="flex absolute inset-y-0 left-0 items-center pl-3 text-neutral-400 i-hugeicons-search-01"></span>
+          <input x-model="search" type="search" placeholder="Search models" class="block pl-9 pr-3 py-2 w-full text-neutral-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-neutral-300 rounded-lg dark:border-neutral-700 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20">
+        </label>
+        <label>
+          <span class="sr-only">Filter model category</span>
+          <select x-model="selectedCategory" class="block px-3 py-2 w-full text-neutral-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-neutral-300 rounded-lg dark:border-neutral-700 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20">
+            <option value="all">All categories</option>
+            <template :for="category in categories()">
+              <option :value="category.key">{{ category.label }}</option>
+            </template>
+          </select>
+        </label>
+      </div>
+    </div>
+
+    <div :if="loading()" class="grid gap-4 grid-cols-1 md:grid-cols-2 xl:grid-cols-3 p-5">
+      <div :for="index in [1, 2, 3, 4, 5, 6]" class="h-40 bg-neutral-100 dark:bg-neutral-800 rounded-xl animate-pulse"></div>
+    </div>
+
+    <div :if="!loading() && !loadError() && visibleModelCount() === 0">
+      <EmptyState
+        icon="i-hugeicons-database-01"
+        :title="totalModels() === 0 ? 'No models were discovered' : 'No models match these filters'"
+        :description="totalModels() === 0 ? 'Create an app model with ./buddy make:model to add it to the registry.' : 'Try another search term or category.'"
+      />
+    </div>
+
+    <div :if="!loading() && visibleModelCount() > 0" class="p-5 space-y-7">
+      <section :for="group in visibleGroups()" class="space-y-3">
+        <div class="flex items-baseline justify-between">
+          <h3 class="font-semibold text-neutral-900 dark:text-white">{{ group.label }}</h3>
+          <span class="text-neutral-500 text-xs dark:text-neutral-400">{{ group.models.length }} visible</span>
+        </div>
+        <div class="grid gap-4 grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
+          <StxLink :for="model in group.models" :to="model.href" class="block p-5 bg-white dark:bg-neutral-900 border border-neutral-200 rounded-xl dark:border-neutral-700 hover:border-blue-300 dark:hover:border-blue-700 hover:shadow-sm transition-colors group">
+            <div class="flex gap-3 items-start justify-between">
+              <div class="flex gap-3 items-center min-w-0">
+                <span class="flex flex-none items-center justify-center h-9 w-9 text-neutral-500 dark:text-neutral-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 bg-neutral-100 dark:bg-neutral-800 rounded-lg i-hugeicons-database-01"></span>
+                <div class="min-w-0">
+                  <h4 class="font-medium text-neutral-900 truncate dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400">{{ model.name }}</h4>
+                  <p class="font-mono text-neutral-500 text-xs truncate dark:text-neutral-400">{{ model.table }}</p>
+                </div>
+              </div>
+              <span class="flex-none h-5 w-5 text-neutral-300 dark:text-neutral-600 group-hover:text-blue-500 i-hugeicons-arrow-right-01"></span>
+            </div>
+
+            <dl class="grid gap-3 grid-cols-2 mt-5 pt-4 border-neutral-100 border-t dark:border-neutral-800">
+              <div>
+                <dt class="text-neutral-500 text-xs dark:text-neutral-400">Records</dt>
+                <dd class="mt-1 font-medium text-neutral-900 text-sm dark:text-white">{{ model.count.toLocaleString() }}</dd>
+              </div>
+              <div>
+                <dt class="text-neutral-500 text-xs dark:text-neutral-400">Attributes</dt>
+                <dd class="mt-1 font-medium text-neutral-900 text-sm dark:text-white">{{ model.attributeCount }}</dd>
+              </div>
+            </dl>
+
+            <div :if="model.apiUri" class="flex gap-2 items-center mt-4">
+              <span class="inline-flex px-2 py-0.5 font-medium text-green-700 text-xs dark:text-green-300 bg-green-50 dark:bg-green-950/40 rounded">API</span>
+              <code class="text-neutral-500 text-xs truncate dark:text-neutral-400">{{ model.apiUri }}</code>
+              <span class="ml-auto text-neutral-400 text-xs">{{ model.apiRoutes.length }} routes</span>
+            </div>
+          </StxLink>
+        </div>
+      </section>
+    </div>
+  </Card>
+</div>

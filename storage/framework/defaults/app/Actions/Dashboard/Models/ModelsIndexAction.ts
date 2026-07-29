@@ -2,7 +2,7 @@ import { Action } from '@stacksjs/actions'
 import { readdirSync } from 'node:fs'
 import { join } from 'node:path'
 import process from 'node:process'
-import { loadModel, safeCount } from '../../../../resources/functions/dashboard/data'
+import { safeCount } from '../../../../resources/functions/dashboard/data'
 
 /**
  * `GET /api/dashboard/models` (stacksjs/stacks#1838).
@@ -25,8 +25,11 @@ interface ModelRow {
   table: string
   href: string
   count: number
+  attributeCount: number
   category: string
   source: 'userland' | 'framework'
+  apiUri: string
+  apiRoutes: string[]
 }
 
 interface ModelGroup {
@@ -112,31 +115,38 @@ export default new Action({
       }
     }
 
-    const enriched: ModelRow[] = []
-    for (const m of merged) {
+    const enriched = await Promise.all(merged.map(async (m): Promise<ModelRow> => {
       try {
-        const Model = await loadModel(m.name)
+        const module = await import(m.file)
+        const Model = module.default ?? module
         const count = await safeCount(Model)
-        enriched.push({
+        const api = Model.traits?.useApi
+        return {
           name: m.name,
-          table: pluralize(pascalToSnake(m.name)),
+          table: String(Model.table || pluralize(pascalToSnake(m.name))),
           href: `/models/${pascalToKebab(m.name)}`,
           count,
+          attributeCount: Object.keys(Model.attributes || {}).length,
           category: categorize(m),
           source: m.source,
-        })
+          apiUri: typeof api === 'object' && typeof api.uri === 'string' ? `/api/${api.uri}` : '',
+          apiRoutes: typeof api === 'object' && Array.isArray(api.routes) ? api.routes.map(String) : [],
+        }
       }
       catch {
-        enriched.push({
+        return {
           name: m.name,
           table: pluralize(pascalToSnake(m.name)),
           href: `/models/${pascalToKebab(m.name)}`,
           count: 0,
+          attributeCount: 0,
           category: categorize(m),
           source: m.source,
-        })
+          apiUri: '',
+          apiRoutes: [],
+        }
       }
-    }
+    }))
 
     enriched.sort((a, b) => a.name.localeCompare(b.name))
 
