@@ -203,10 +203,17 @@ route.group({ prefix: '/api/dashboard', apiResponse: true }, () => {
   // `views/dashboard/models/index.stx` page (stacksjs/stacks#1838).
   guard(route.get('/models', 'Actions/Dashboard/Models/ModelsIndexAction'))
 
-  // Per-model row view — first 50 rows + column list, for the
-  // dynamic `views/dashboard/models/[model].stx` page. ORM path
-  // first, raw SQLite fallback if no model file matches the slug.
+  // Per-model row query for the dynamic `views/dashboard/models/[model].stx`
+  // page: paging, sorting, search and column filters, all resolved
+  // server-side. ORM path first, raw SQLite fallback if no model file
+  // matches the slug.
   guard(route.get('/models/{slug}', 'Actions/Dashboard/Models/ModelShowAction'))
+
+  // Row writes from the same page. Guarded like every other mutating
+  // dashboard endpoint; models with no ORM file stay read-only, which the
+  // actions enforce rather than the route.
+  guard(route.patch('/models/{slug}/{id}', 'Actions/Dashboard/Models/ModelUpdateAction'))
+  guard(route.delete('/models/{slug}/{id}', 'Actions/Dashboard/Models/ModelDestroyAction'))
 
   // Markdown blog admin — the write side of the BunPress blog that /blog
   // renders from `content/blog/*.md` (storage/framework/core/actions/src/blog.ts).

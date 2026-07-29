@@ -1,25 +1,35 @@
 import { Action } from '@stacksjs/actions'
-import { loadModel, safeAll, safeGet } from '../../../../resources/functions/dashboard/data'
+import { request } from '@stacksjs/router'
+import { loadModel, safeGet } from '../../../../resources/functions/dashboard/data'
 
 /**
  * `GET /api/dashboard/models/{slug}` (stacksjs/stacks#1838).
  *
- * Returns the first 50 rows of any model's table for the dynamic
- * `views/dashboard/models/[model].stx` page. Previously the page did
- * this work inline in a `<script server>` block — converting it for
- * the #1838 sweep moved the ORM lookup + raw-SQLite fallback into an
- * action so the page can stay `<script client>`-only.
+ * The query engine behind the dashboard's generic model browser
+ * (`views/dashboard/models/[model].stx`) — the page every model gets for
+ * free, whether or not someone hand-built a dedicated view for it.
  *
- * Resolution order:
- *   1. ORM via `loadModel(name)` — covers every model the dashboard
- *      knows about and respects scopes, casts, accessors, observers.
- *   2. Raw SQLite via `bun:sqlite` — last-resort fallback for slugs
- *      that don't have a matching ORM file (rare; usually a lookup
- *      table or userland-only schema).
+ * Everything is resolved server-side: paging, sorting, a global search
+ * across text columns, and per-column equality filters. The page used to
+ * receive the first 50 rows and nothing else, so its pagination controls
+ * were inert and a table with real volume was unusable.
  *
- * The response shape mirrors what the original template consumed so
- * the page rewrite is a 1:1 swap (no template restructuring needed).
+ * Model resolution order:
+ *   1. `globalThis[Name]` — @stacksjs/orm injects every registered model
+ *      as a global, and that is the same object the rest of the dashboard
+ *      queries, so scopes, casts and accessors all apply.
+ *   2. `loadModel(Name)` — path-map lookup, covers models the ORM has not
+ *      registered as a global.
+ *   3. Raw SQLite — last resort for a table with no model file at all
+ *      (lookup/pivot tables, or a schema added outside the ORM).
  */
+
+interface ColumnMeta {
+  name: string
+  label: string
+  /** Coarse kind used by the table to pick an alignment and a filter control. */
+  type: 'number' | 'boolean' | 'date' | 'json' | 'text'
+}
 
 interface ResponseShape {
   modelName: string
@@ -27,10 +37,24 @@ interface ResponseShape {
   rows: Array<Record<string, unknown>>
   columns: string[]
   displayColumns: string[]
+  columnMeta: ColumnMeta[]
+  searchable: string[]
   totalCount: number
+  page: number
+  perPage: number
+  lastPage: number
+  sort: string
+  dir: 'asc' | 'desc'
+  q: string
+  filters: Record<string, string>
   source: 'orm' | 'sqlite-fallback'
+  /** False for tables reached through the SQLite fallback: no model, no writes. */
+  writable: boolean
   error: string | null
 }
+
+const DEFAULT_PER_PAGE = 25
+const MAX_PER_PAGE = 200
 
 function slugToPascal(str: string): string {
   return str.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join('')
@@ -46,18 +70,107 @@ function pluralize(word: string): string {
   return `${word}s`
 }
 
-// Hide credential / token columns + private fields by default.
-const HIDDEN_COLUMNS = new Set(['password', 'remember_token', 'api_token', 'access_token', 'refresh_token', 'secret'])
+function humanize(column: string): string {
+  return column
+    .replace(/_/g, ' ')
+    .replace(/\b\w/g, c => c.toUpperCase())
+    .replace(/\bId\b/g, 'ID')
+    .replace(/\bUrl\b/g, 'URL')
+}
+
+// Hide credential / token columns + private fields by default. These are
+// dropped from the response body AND from the sort/filter allowlist: a
+// column you cannot see is still an enumeration oracle if you can sort or
+// filter by it.
+const HIDDEN_COLUMNS = new Set(['password', 'remember_token', 'api_token', 'access_token', 'refresh_token', 'secret', 'two_factor_secret'])
+
+/**
+ * Column identifiers reach the query builder as raw, unquoted SQL, so only
+ * word-shaped names from the table's own column list may ever be used.
+ */
+function isSafeColumn(name: string, allowed: Set<string>): boolean {
+  return /^\w+$/.test(name) && allowed.has(name)
+}
+
+function inferType(values: unknown[]): ColumnMeta['type'] {
+  const sample = values.find(v => v !== null && v !== undefined)
+  if (sample === undefined) return 'text'
+  if (typeof sample === 'boolean') return 'boolean'
+  if (typeof sample === 'number') return 'number'
+  if (typeof sample === 'object') return 'json'
+  return 'text'
+}
+
+function typeForColumn(column: string, values: unknown[]): ColumnMeta['type'] {
+  if (column === 'id' || column.endsWith('_id')) return 'number'
+  if (column.endsWith('_at') || column.endsWith('_date')) return 'date'
+  if (column.startsWith('is_') || column.startsWith('has_')) return 'boolean'
+  return inferType(values)
+}
+
+function queryParams(): URLSearchParams {
+  const query = ((request as any).query || {}) as Record<string, string | string[] | undefined>
+  const params = new URLSearchParams()
+  for (const [key, value] of Object.entries(query)) {
+    if (value === undefined) continue
+    params.set(key, Array.isArray(value) ? String(value[0]) : String(value))
+  }
+  return params
+}
+
+/** `filters` arrives as a JSON object so column names stay unambiguous. */
+function parseFilters(raw: string | null): Record<string, string> {
+  if (!raw) return {}
+  try {
+    const parsed = JSON.parse(raw) as Record<string, unknown>
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return {}
+    const out: Record<string, string> = {}
+    for (const [key, value] of Object.entries(parsed)) {
+      if (value === null || value === undefined || value === '') continue
+      out[key] = String(value)
+    }
+    return out
+  }
+  catch {
+    return {}
+  }
+}
+
+/**
+ * Signals that a free-text search spans several columns, which the query
+ * builder cannot express (`whereLike` is single-column and `orWhere` only
+ * takes equality pairs). The SQLite path builds that OR with bound
+ * parameters instead. Distinct from a real failure so it never surfaces
+ * to the page as an error.
+ */
+class SearchUnsupported extends Error {}
+
+function resolveOrmModel(modelName: string): any {
+  const injected = (globalThis as Record<string, any>)[modelName]
+  // The ORM injects Proxies that answer `undefined` for every property
+  // until their deferred load lands, so probe for a real query method
+  // rather than trusting the name to be bound.
+  if (injected && typeof injected.where === 'function') return injected
+  return null
+}
 
 export default new Action({
   name: 'Dashboard Model Show',
-  description: 'Returns the first N rows of a single model by URL slug.',
+  description: 'Queries a single model by URL slug with paging, sorting, search and column filters.',
   method: 'GET',
   apiResponse: true,
-  async handle(request: { route?: { params?: { slug?: string } } }) {
-    const slug = request?.route?.params?.slug || ''
+  async handle(req: { getParam?: (name: string) => unknown, route?: { params?: { slug?: string } } }) {
+    const slug = String(req?.getParam?.('slug') ?? req?.route?.params?.slug ?? '')
     const modelName = slugToPascal(slug)
     const tableName = pluralize(pascalToSnake(modelName))
+
+    const params = queryParams()
+    const page = Math.max(1, Number.parseInt(params.get('page') || '1', 10) || 1)
+    const perPage = Math.min(MAX_PER_PAGE, Math.max(1, Number.parseInt(params.get('per_page') || String(DEFAULT_PER_PAGE), 10) || DEFAULT_PER_PAGE))
+    const requestedSort = (params.get('sort') || '').trim()
+    const dir: 'asc' | 'desc' = params.get('dir') === 'asc' ? 'asc' : 'desc'
+    const q = (params.get('q') || '').trim()
+    const filters = parseFilters(params.get('filters'))
 
     const response: ResponseShape = {
       modelName,
@@ -65,66 +178,160 @@ export default new Action({
       rows: [],
       columns: [],
       displayColumns: [],
+      columnMeta: [],
+      searchable: [],
       totalCount: 0,
+      page,
+      perPage,
+      lastPage: 1,
+      sort: '',
+      dir,
+      q,
+      filters,
       source: 'orm',
+      writable: false,
       error: null,
     }
 
-    // ORM path.
-    try {
-      const Model = await loadModel(modelName)
-      if (Model && !Model._isStub) {
-        const all = await safeAll(Model) as Array<Record<string, unknown>>
-        const rows = all.slice(0, 50)
-        response.totalCount = all.length
+    const Model = resolveOrmModel(modelName) ?? await loadModel(modelName)
+    const hasOrm = Boolean(Model) && !Model._isStub && typeof Model.where === 'function'
 
-        if (rows.length > 0) {
-          const sample = rows[0] as Record<string, unknown>
-          const attrs = sample && typeof sample === 'object' && !Array.isArray(sample)
-            ? ((sample as { attributes?: Record<string, unknown> }).attributes ?? sample)
-            : sample
-          response.columns = Object.keys(attrs ?? {}).filter(k => typeof k === 'string' && !k.startsWith('_'))
+    if (hasOrm) {
+      try {
+        // The column list has to come from a real row: the ORM does not
+        // expose a schema reflection API, and the filter/sort allowlist
+        // must be built from actual columns rather than user input.
+        const probe = await Model.orderByDesc('id').take(1).get() as Array<Record<string, unknown>>
+        const first = Array.isArray(probe) ? probe[0] : undefined
+        const shape = first && typeof first === 'object'
+          ? ((first as { attributes?: Record<string, unknown> }).attributes ?? first)
+          : {}
+        response.columns = Object.keys(shape).filter(k => typeof k === 'string' && !k.startsWith('_'))
+
+        const allowed = new Set(response.columns.filter(c => !HIDDEN_COLUMNS.has(c)))
+        const sort = isSafeColumn(requestedSort, allowed)
+          ? requestedSort
+          : (allowed.has('id') ? 'id' : (response.columns[0] ?? ''))
+        response.sort = sort
+
+        // Text columns are decided from the probe row, before any query is
+        // built, so the search clause does not depend on response metadata
+        // that is only assembled after the rows come back.
+        const searchColumns = [...allowed].filter(c => typeof safeGet(first, c, null) === 'string')
+
+        const build = () => {
+          let chain = Model as any
+          for (const [column, value] of Object.entries(filters)) {
+            if (!isSafeColumn(column, allowed)) continue
+            chain = chain.where(column, value)
+          }
+          // Global search is a LIKE across every text column. The builder's
+          // `whereLike` covers one column and `orWhere` only takes equality
+          // pairs, so a multi-column OR-LIKE has no ORM expression; that
+          // case is served by the SQLite path below instead, which builds
+          // the OR with bound parameters. Writes stay enabled either way,
+          // because the model still exists.
+          if (q && searchColumns.length === 1)
+            chain = chain.whereLike(searchColumns[0], `%${q}%`)
+          return chain
         }
 
-        // Flatten each row to a plain JSON-safe object — proxy models or
-        // accessor-rich rows don't serialise cleanly across the wire.
-        response.rows = rows.map((row) => {
+        // A multi-column search has no ORM expression, so hand that one
+        // query to the SQLite path — without recording an error, because it
+        // is a gap in the builder's vocabulary, not a failure.
+        if (q && searchColumns.length !== 1)
+          throw new SearchUnsupported()
+
+        response.totalCount = await build().count()
+        const rows = await build()
+          .orderBy(sort, dir)
+          .skip((page - 1) * perPage)
+          .take(perPage)
+          .get() as Array<Record<string, unknown>>
+
+        // Flatten to plain JSON-safe objects — proxy models and
+        // accessor-rich rows do not serialise cleanly across the wire.
+        response.rows = (Array.isArray(rows) ? rows : []).map((row) => {
           const flat: Record<string, unknown> = {}
           for (const col of response.columns)
             flat[col] = safeGet(row, col, null)
           return flat
         })
       }
-      else {
+      catch (e) {
         response.source = 'sqlite-fallback'
+        if (!(e instanceof SearchUnsupported))
+          response.error = e instanceof Error ? e.message : String(e)
       }
     }
-    catch (e) {
+    else {
       response.source = 'sqlite-fallback'
-      response.error = e instanceof Error ? e.message : String(e)
     }
 
-    // SQLite fallback path.
-    if (response.source === 'sqlite-fallback' && response.rows.length === 0) {
+    if (response.source === 'sqlite-fallback') {
       try {
         const { Database } = await import('bun:sqlite')
         const db = new Database('database/stacks.sqlite')
-        const tableInfo = db.query(`PRAGMA table_info(${tableName})`).all() as Array<{ name: string }>
-        response.columns = tableInfo.map(c => c.name)
-        if (response.columns.length > 0) {
-          const countResult = db.query(`SELECT COUNT(*) as count FROM ${tableName}`).get() as { count?: number } | null
-          response.totalCount = countResult?.count ?? 0
-          response.rows = db.query(`SELECT * FROM ${tableName} ORDER BY id DESC LIMIT 50`).all() as Array<Record<string, unknown>>
-          response.error = null
+        try {
+          const tableInfo = db.query(`PRAGMA table_info(${tableName})`).all() as Array<{ name: string, type: string }>
+          response.columns = tableInfo.map(c => c.name)
+
+          if (response.columns.length > 0) {
+            const allowed = new Set(response.columns.filter(c => !HIDDEN_COLUMNS.has(c)))
+            const sort = isSafeColumn(requestedSort, allowed)
+              ? requestedSort
+              : (allowed.has('id') ? 'id' : response.columns[0])
+            response.sort = sort
+
+            // Every value is bound; only identifiers are interpolated, and
+            // those come from the allowlist built out of PRAGMA above.
+            const wheres: string[] = []
+            const values: unknown[] = []
+            for (const [column, value] of Object.entries(filters)) {
+              if (!isSafeColumn(column, allowed)) continue
+              wheres.push(`${column} = ?`)
+              values.push(value)
+            }
+            if (q) {
+              const textColumns = tableInfo
+                .filter(c => allowed.has(c.name) && /char|text|clob/i.test(c.type || ''))
+                .map(c => c.name)
+              if (textColumns.length > 0) {
+                wheres.push(`(${textColumns.map(c => `${c} LIKE ?`).join(' OR ')})`)
+                for (const _ of textColumns) values.push(`%${q}%`)
+              }
+            }
+            const whereSql = wheres.length > 0 ? ` WHERE ${wheres.join(' AND ')}` : ''
+
+            const countRow = db.query(`SELECT COUNT(*) as count FROM ${tableName}${whereSql}`).get(...values as any[]) as { count?: number } | null
+            response.totalCount = countRow?.count ?? 0
+            response.rows = db
+              .query(`SELECT * FROM ${tableName}${whereSql} ORDER BY ${sort} ${dir.toUpperCase()} LIMIT ? OFFSET ?`)
+              .all(...values as any[], perPage, (page - 1) * perPage) as Array<Record<string, unknown>>
+            response.error = null
+          }
         }
-        db.close()
+        finally {
+          db.close()
+        }
       }
       catch (e) {
         response.error = e instanceof Error ? e.message : String(e)
       }
     }
 
+    // Writability follows the existence of a model, not which engine
+    // answered this particular query: a multi-column search is served by
+    // SQLite even for a model that is perfectly writable.
+    response.writable = hasOrm
     response.displayColumns = response.columns.filter(col => !HIDDEN_COLUMNS.has(col) && !col.startsWith('_'))
+    response.columnMeta = response.displayColumns.map(name => ({
+      name,
+      label: humanize(name),
+      type: typeForColumn(name, response.rows.map(r => r[name])),
+    }))
+    response.searchable = response.columnMeta.filter(c => c.type === 'text').map(c => c.name)
+    response.lastPage = Math.max(1, Math.ceil(response.totalCount / perPage))
 
     return response
   },
