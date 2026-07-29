@@ -113,7 +113,7 @@ export async function validateField(modelFile: string, params: RequestData): Pro
     return result
   }
   catch (error: unknown) {
-    if (error instanceof HttpError)
+    if (isHttpErrorLike(error))
       throw error
 
     throw new HttpError(500, getErrorMessage(error) || 'An unexpected validation error occurred')
@@ -316,12 +316,7 @@ export async function validate<T = Record<string, unknown>>(
     const result = await validator.validate(input)
 
     if (!result.valid) {
-      const errors: Record<string, string[]> = {}
-      for (const e of (result.errors || []) as Array<{ field?: string, message: string }>) {
-        const f = e.field ?? '_'
-        if (!errors[f]) errors[f] = []
-        errors[f].push(e.message)
-      }
+      const errors = normalizeValidationErrors(result.errors)
       throw new HttpError(422, 'Validation failed', { errors })
     }
 
@@ -331,7 +326,7 @@ export async function validate<T = Record<string, unknown>>(
     return validated as T
   }
   catch (error: unknown) {
-    if (error instanceof HttpError) throw error
+    if (isHttpErrorLike(error)) throw error
     throw new HttpError(500, getErrorMessage(error) || 'An unexpected validation error occurred')
   }
 }
@@ -365,9 +360,44 @@ export async function customValidate(attributes: CustomAttributes, params: Reque
     return result
   }
   catch (error: unknown) {
-    if (error instanceof HttpError)
+    if (isHttpErrorLike(error))
       throw error
 
     throw new HttpError(500, getErrorMessage(error) || 'An unexpected validation error occurred')
   }
+}
+function isHttpErrorLike(error: unknown): error is Error & { status: number } {
+  return error instanceof HttpError
+    || (error instanceof Error
+      && typeof (error as Error & { status?: unknown }).status === 'number')
+}
+
+function normalizeValidationErrors(value: unknown): Record<string, string[]> {
+  const errors: Record<string, string[]> = {}
+  if (Array.isArray(value)) {
+    for (const entry of value) {
+      if (!entry || typeof entry !== 'object')
+        continue
+      const field = typeof entry.field === 'string' ? entry.field : '_'
+      const message = typeof entry.message === 'string' ? entry.message : 'Validation failed'
+      ;(errors[field] ??= []).push(message)
+    }
+    return errors
+  }
+
+  if (!value || typeof value !== 'object')
+    return errors
+
+  for (const [field, entries] of Object.entries(value)) {
+    const list = Array.isArray(entries) ? entries : [entries]
+    for (const entry of list) {
+      const message = typeof entry === 'string'
+        ? entry
+        : entry && typeof entry === 'object' && typeof entry.message === 'string'
+          ? entry.message
+          : 'Validation failed'
+      ;(errors[field] ??= []).push(message)
+    }
+  }
+  return errors
 }

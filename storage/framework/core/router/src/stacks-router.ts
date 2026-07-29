@@ -1575,6 +1575,7 @@ async function resolveStringHandlerUncached(handlerPath: string): Promise<RouteH
       if (actionForcesJson) {
         ;req._forceJson = true
       }
+      ;(req as any)._requestValidationRules = action.validations ?? modelValidationRules(action.model)
       try {
         // Validate action input if validations are defined. Always returns
         // JSON — validation failures are 100% an API-shape signal and HTML
@@ -1706,6 +1707,19 @@ export async function validateActionInput(req: EnhancedRequest, validations: Act
     valid: Object.keys(errors).length === 0,
     errors,
   }
+}
+
+function modelValidationRules(model: any): ActionValidations | undefined {
+  if (!model?.attributes || typeof model.attributes !== 'object')
+    return
+
+  const rules: ActionValidations = {}
+  for (const [field, attribute] of Object.entries(model.attributes)) {
+    const validation = (attribute as any)?.validation
+    if (validation?.rule)
+      rules[field] = validation
+  }
+  return Object.keys(rules).length > 0 ? rules : undefined
 }
 
 /**
@@ -2129,6 +2143,46 @@ const REQUEST_METHODS: Record<string, (...args: any[]) => any> & ThisType<Enhanc
     if (Array.isArray(value))
       return value
     return value !== undefined && value !== null ? [value] : []
+  },
+  async validate(rules?: Record<string, any>, messages: Record<string, string> = {}) {
+    const selectedRules = rules ?? (this as any)._requestValidationRules
+    if (!selectedRules || Object.keys(selectedRules).length === 0) {
+      const input = getAllInputFor(this)
+      ;(this as any)._validatedInput = input
+      return input
+    }
+
+    const normalized: Record<string, any> = {}
+    for (const [field, definition] of Object.entries(selectedRules)) {
+      if (typeof definition === 'string') {
+        throw new TypeError(`String validation rules are not supported for "${field}". Use schema validators.`)
+      }
+
+      if (definition && typeof definition === 'object' && 'rule' in definition) {
+        const message = messages[field]
+        normalized[field] = message ? { ...definition, message } : definition
+      }
+      else {
+        normalized[field] = definition
+      }
+    }
+
+    const { validate } = await import('@stacksjs/validation')
+    const validated = await validate(this, normalized)
+    ;(this as any)._validatedInput = validated
+    return validated
+  },
+  getValidated() {
+    return (this as any)._validatedInput ?? {}
+  },
+  safe() {
+    const data = (this as any)._validatedInput ?? {}
+    return {
+      all: () => ({ ...data }),
+      get: (key: string, defaultValue?: any) => key in data ? data[key] : defaultValue,
+      only: (keys: string[]) => Object.fromEntries(keys.filter(key => key in data).map(key => [key, data[key]])),
+      except: (keys: string[]) => Object.fromEntries(Object.entries(data).filter(([key]) => !keys.includes(key))),
+    }
   },
   // File handling — returns UploadedFile with store/storeAs methods.
   file(key: string) {
