@@ -231,6 +231,11 @@ export function preprocessSqliteMigrations(): void {
   const createUniqueIndexPattern = /^\s*CREATE\s+UNIQUE\s+INDEX\s+(?:IF\s+NOT\s+EXISTS\s+)?["'`]?(\w+)["'`]?/i
   // Match ALTER TABLE ... DROP COLUMN — SQLite fails if the column doesn't exist
   const dropColumnPattern = /^\s*ALTER\s+TABLE\s+["']?(\w+)["']?\s+DROP\s+COLUMN\s+["']?(\w+)["']?\s*$/i
+  // Match ALTER TABLE ... ADD COLUMN — the mirror case: SQLite fails with
+  // "duplicate column name" if the column is already there. Postgres gets
+  // `ADD COLUMN IF NOT EXISTS` from `makeMigrationsIdempotent`; SQLite has no
+  // such syntax, so replay safety has to be decided here, against the schema.
+  const addColumnPattern = /^\s*ALTER\s+TABLE\s+["']?(\w+)["']?\s+ADD\s+COLUMN\s+["'`]?(\w+)["'`]?/i
   // Match CREATE TABLE — used to detect when buddy regenerates a CREATE TABLE
   // migration for a table that already has an earlier create-table file.
   const createTablePattern = /^\s*CREATE\s+TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?["']?(\w+)["']?/i
@@ -334,6 +339,59 @@ export function preprocessSqliteMigrations(): void {
         replayMigrations.push(file)
       }
       continue
+    }
+
+    /*
+     * An ALTER migration whose columns are already on the table.
+     *
+     * This happens whenever an ADD COLUMN file is applied but not recorded:
+     * an earlier statement in the same file failed after this one landed, a
+     * database was restored from a snapshot taken after the change, or the
+     * column was applied by hand. SQLite has no `ADD COLUMN IF NOT EXISTS`,
+     * so the replay dies with `duplicate column name` and takes the whole
+     * migrate run with it — including every unrelated migration queued behind
+     * it. The DROP COLUMN branch below already reconciles the opposite case
+     * against the live schema; this is the same idea in the other direction.
+     *
+     * Skip-and-KEEP, never delete. A dead DROP COLUMN file is dead on every
+     * dialect, but an ADD COLUMN file is exactly what a fresh database needs
+     * — deleting it would mean the next clone never gets the column. Nor is
+     * the file rewritten: the statements have to stay intact on disk for that
+     * fresh run.
+     */
+    const addColumnTargets = statements
+      .map(s => s.match(addColumnPattern))
+      .filter((m): m is RegExpMatchArray => Boolean(m?.[1] && m[2]))
+      .map(m => ({ table: m[1] as string, column: m[2] as string }))
+
+    if (sqliteDb && addColumnTargets.length > 0 && addColumnTargets.length === statements.length) {
+      const present = addColumnTargets.filter(({ table, column }) => {
+        try {
+          const safeTableName = table.replace(/[^a-zA-Z0-9_]/g, '')
+          const columns = (sqliteDb as any).prepare(`PRAGMA table_info("${safeTableName}")`).all() as Array<{ name: string }>
+          return columns.some(col => col.name === column)
+        }
+        catch {
+          return false // table missing — the ALTER is genuinely pending
+        }
+      })
+
+      if (present.length === addColumnTargets.length) {
+        skipMigration(file, 'every column it adds is already on the table')
+        continue
+      }
+
+      // Partially applied. The file cannot be rewritten (a fresh database
+      // needs all of it) and cannot run as-is, so say precisely which
+      // statement will fail instead of letting `duplicate column name` be
+      // the operator's only clue.
+      if (present.length > 0) {
+        log.warn(
+          `[migration] ${file} is partially applied: ${present.map(p => `${p.table}.${p.column}`).join(', ')} `
+          + `already exist${present.length === 1 ? 's' : ''}, the rest do not. SQLite cannot skip a single ADD COLUMN, so this file will fail. `
+          + 'Add the remaining columns by hand, or split the file so the applied statements sit in their own migration.',
+        )
+      }
     }
 
     // DROP COLUMN fails in SQLite if the column doesn't exist (e.g., on fresh DB

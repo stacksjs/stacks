@@ -188,6 +188,68 @@ describe('preprocessSqliteMigrations — unique-index files must run (stacksjs/s
     expect(migrationRecord(dbPath, fkFileName)).not.toBeNull()
   })
 
+  // An ADD COLUMN migration that is applied but not recorded — an earlier
+  // statement in the file failed after this one landed, a database was
+  // restored from a later snapshot, or the column was added by hand. SQLite
+  // has no `ADD COLUMN IF NOT EXISTS`, so replaying it used to fail the whole
+  // migrate run with `duplicate column name`.
+  const addFileName = '0000000133-add-orthomosaic-to-missions.sql'
+  const addSql = 'ALTER TABLE "users" ADD COLUMN "nickname" TEXT;\nALTER TABLE "users" ADD COLUMN "avatar" TEXT;\n'
+
+  it('records an ADD COLUMN file whose columns are all present, instead of failing on it', () => {
+    writeFileSync(join(migrationsDir, addFileName), addSql)
+    const dbPath = createDb(
+      'ALTER TABLE users ADD COLUMN "nickname" TEXT',
+      'ALTER TABLE users ADD COLUMN "avatar" TEXT',
+    )
+
+    preprocessSqliteMigrations()
+
+    expect(migrationRecord(dbPath, addFileName)).not.toBeNull()
+  })
+
+  it('keeps that file on disk, because a fresh database still needs it', () => {
+    // The opposite of the dead DROP COLUMN case: deleting this file would mean
+    // the next clone never gets the columns at all.
+    writeFileSync(join(migrationsDir, addFileName), addSql)
+    createDb('ALTER TABLE users ADD COLUMN "nickname" TEXT', 'ALTER TABLE users ADD COLUMN "avatar" TEXT')
+
+    preprocessSqliteMigrations()
+
+    expect(existsSync(join(migrationsDir, addFileName))).toBe(true)
+    expect(readFileSync(join(migrationsDir, addFileName), 'utf-8')).toBe(addSql)
+  })
+
+  it('leaves a genuinely pending ADD COLUMN file to run', () => {
+    writeFileSync(join(migrationsDir, addFileName), addSql)
+    const dbPath = createDb()
+
+    preprocessSqliteMigrations()
+
+    expect(migrationRecord(dbPath, addFileName)).toBeNull()
+  })
+
+  it('leaves a partially applied ADD COLUMN file to run, rather than recording columns that do not exist', () => {
+    writeFileSync(join(migrationsDir, addFileName), addSql)
+    const dbPath = createDb('ALTER TABLE users ADD COLUMN "nickname" TEXT')
+
+    preprocessSqliteMigrations()
+
+    // Recording it would strand `avatar`: the column would never be created
+    // and the file would never run again.
+    expect(migrationRecord(dbPath, addFileName)).toBeNull()
+  })
+
+  it('does not record a file that adds a column to a table that does not exist yet', () => {
+    const fileName = '0000000134-add-column-to-missing-table.sql'
+    writeFileSync(join(migrationsDir, fileName), 'ALTER TABLE "missions" ADD COLUMN "orthomosaic_url" TEXT;')
+    const dbPath = createDb()
+
+    preprocessSqliteMigrations()
+
+    expect(migrationRecord(dbPath, fileName)).toBeNull()
+  })
+
   it('repo hygiene: no checked-in unique-index migration is a SELECT 1 stub', () => {
     // The pre-fix preprocessor rewrote 9 unique-index migrations in
     // database/migrations/ to `SELECT 1;` stubs — restored as part of
