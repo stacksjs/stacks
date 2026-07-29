@@ -23,6 +23,7 @@ export default defineModel({
 
     useApi: {
       uri: 'orders',
+      middleware: ['auth'],
     },
 
     observe: true,
@@ -50,8 +51,18 @@ export default defineModel({
       factory: faker => faker.number.int({ min: 100, max: 2000 }),
     },
 
-    taxAmount: {
+    currency: {
       order: 4,
+      fillable: true,
+      default: 'USD',
+      validation: {
+        rule: schema.string().required().max(3),
+      },
+      factory: faker => faker.helpers.arrayElement(['USD', 'EUR', 'GBP', 'CAD', 'AUD']),
+    },
+
+    taxAmount: {
+      order: 5,
       fillable: true,
       validation: {
         rule: schema.number().min(0),
@@ -60,7 +71,7 @@ export default defineModel({
     },
 
     discountAmount: {
-      order: 5,
+      order: 6,
       fillable: true,
       validation: {
         rule: schema.number().min(0),
@@ -69,7 +80,7 @@ export default defineModel({
     },
 
     deliveryFee: {
-      order: 6,
+      order: 7,
       fillable: true,
       validation: {
         rule: schema.number().min(0),
@@ -78,7 +89,7 @@ export default defineModel({
     },
 
     tipAmount: {
-      order: 7,
+      order: 8,
       fillable: true,
       validation: {
         rule: schema.number().min(0),
@@ -87,7 +98,7 @@ export default defineModel({
     },
 
     orderType: {
-      order: 8,
+      order: 9,
       fillable: true,
       validation: {
         rule: schema.string().required(),
@@ -96,7 +107,7 @@ export default defineModel({
     },
 
     deliveryAddress: {
-      order: 9,
+      order: 10,
       fillable: true,
       validation: {
         rule: schema.string(),
@@ -105,7 +116,7 @@ export default defineModel({
     },
 
     specialInstructions: {
-      order: 10,
+      order: 11,
       fillable: true,
       validation: {
         rule: schema.string(),
@@ -114,7 +125,7 @@ export default defineModel({
     },
 
     estimatedDeliveryTime: {
-      order: 11,
+      order: 12,
       fillable: true,
       validation: {
         rule: schema.string(),
@@ -127,7 +138,7 @@ export default defineModel({
     },
 
     appliedCouponId: {
-      order: 12,
+      order: 13,
       fillable: true,
       validation: {
         rule: schema.string(),

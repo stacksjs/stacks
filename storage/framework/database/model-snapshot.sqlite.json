@@ -4982,6 +4982,16 @@
             "hasDefault": false
           },
           {
+            "name": "currency",
+            "type": "string",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": true,
+            "defaultValue": "USD",
+            "maxLength": 3
+          },
+          {
             "name": "tax_amount",
             "type": "integer",
             "isPrimaryKey": false,
@@ -7955,7 +7965,7 @@
       }
     ]
   },
-  "hash": "568e62fef0e3f845290dfb9e004127c68c90becad4fae242a9e6f0b74f74e120",
+  "hash": "dfe44d214075dd541ddb91444ea620fc298135e5edce60c4bcf38baef7a0b06d",
   "dialect": "sqlite",
-  "updatedAt": "2026-07-29T11:37:35.598Z"
+  "updatedAt": "2026-07-29T12:43:23.668Z"
 }
