@@ -3,27 +3,15 @@
 @section('content')
 @title('Dashboard - Web Analytics')
 <PageLayout>
-      <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-6">
-        <div>
-          <h1 class="font-bold text-2xl text-gray-900 dark:text-white">Web Analytics</h1>
-          <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Privacy-safe traffic aggregates from recorded application requests.</p>
-        </div>
-        <div class="flex flex-wrap gap-2 items-center">
-          <span class="text-gray-500 text-sm dark:text-neutral-400">{{ dateRangeDisplay }}</span>
-          <div class="relative">
-            <select x-model="analyticsRange" class="block pl-3 pr-10 py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-800 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-700 focus:ring-2 focus:ring-blue-600 focus:ring-inset">
-              <option value="day">Last 24 hours</option>
-              <option value="week">Last 7 days</option>
-              <option value="month">Last 30 days</option>
-              <option value="year">Last year</option>
-            </select>
-          </div>
-          <button type="button" :disabled="isLoading" @click="loadAnalytics()" class="inline-flex items-center px-3 py-1.5 font-semibold text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-600 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 shadow-sm disabled:opacity-50">
-            <span class="mr-1 h-4 w-4 {{ isLoading() ? 'animate-spin i-hugeicons-refresh' : 'i-hugeicons-refresh' }}"></span>
-            Refresh
-          </button>
-        </div>
-      </div>
+      <AnalyticsPageHeader
+        title="Web Analytics"
+        description="Privacy-safe traffic aggregates from recorded application requests."
+        :dateRange="dateRangeDisplay"
+        :range="analyticsRange"
+        :loading="isLoading"
+        @range-change="setAnalyticsRange"
+        @refresh="loadAnalytics"
+      />
 
       <div class="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 mb-8 p-4 bg-black dark:bg-neutral-900 rounded-lg">
         <div class="flex flex-col items-center justify-center">
@@ -257,6 +245,12 @@ function formatNumber(value: number): string {
 function formatDateRange(start: string, end: string): string {
   const formatter = new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
   return `${formatter.format(new Date(start))} to ${formatter.format(new Date(end))}`
+}
+
+function setAnalyticsRange(value: string | CustomEvent<string>): void {
+  const range = typeof value === 'string' ? value : value.detail
+  analyticsRange.set(range as AnalyticsRange)
+  void loadAnalytics()
 }
 
 async function renderTrafficChart(): Promise<void> {

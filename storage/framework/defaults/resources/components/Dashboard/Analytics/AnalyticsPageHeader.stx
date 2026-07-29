@@ -1,0 +1,44 @@
+<script client>
+const title = useReactiveProp('title', '')
+const description = useReactiveProp('description', '')
+const dateRange = useReactiveProp('dateRange', '')
+const range = useReactiveProp('range', 'month')
+const loading = useReactiveProp('loading', false)
+const emit = defineEmits()
+
+function updateRange(event: Event): void {
+  const target = event.target as HTMLSelectElement
+  emit('range-change', target.value)
+}
+</script>
+
+<header class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+  <div>
+    <h1 class="font-bold text-2xl text-gray-900 dark:text-white">{{ title() }}</h1>
+    <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">{{ description() }}</p>
+  </div>
+
+  <div class="flex flex-wrap gap-2 items-center">
+    <span class="text-gray-500 text-sm dark:text-neutral-400">{{ dateRange() }}</span>
+    <select
+      :value="range()"
+      aria-label="Analytics date range"
+      class="block pl-3 pr-10 py-1.5 text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-800 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-700 focus:ring-2 focus:ring-blue-600 focus:ring-inset"
+      @change="updateRange($event)"
+    >
+      <option value="day">Last 24 hours</option>
+      <option value="week">Last 7 days</option>
+      <option value="month">Last 30 days</option>
+      <option value="year">Last year</option>
+    </select>
+    <button
+      type="button"
+      :disabled="loading()"
+      class="inline-flex items-center px-3 py-1.5 font-semibold text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-600 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 shadow-sm disabled:opacity-50"
+      @click="emit('refresh')"
+    >
+      <span :class="'mr-1 h-4 w-4 i-hugeicons-refresh' + (loading() ? ' animate-spin' : '')"></span>
+      Refresh
+    </button>
+  </div>
+</header>
