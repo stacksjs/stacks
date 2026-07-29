@@ -1,90 +1,106 @@
-<script>
-interface PaginationProps {
-  currentPage?: number
-  perPage?: number
-  total?: number
-  from?: number
-  to?: number
+<script client>
+const currentPage = useReactiveProp('currentPage', 1)
+const totalPagesProp = useReactiveProp('totalPages', 0)
+const totalItems = useReactiveProp('totalItems', 0)
+const itemsPerPage = useReactiveProp('itemsPerPage', 20)
+const showItemsPerPage = useReactiveProp('showItemsPerPage', false)
+const showTotalItems = useReactiveProp('showTotalItems', true)
+const maxVisiblePages = useReactiveProp('maxVisiblePages', 5)
+const emit = defineEmits()
+
+const perPageOptions = [10, 20, 25, 50, 100]
+
+const totalPages = derived(() => {
+  if (totalPagesProp() > 0)
+    return totalPagesProp()
+  return Math.max(1, Math.ceil(totalItems() / Math.max(1, itemsPerPage())))
+})
+
+const rangeStart = derived(() => totalItems() === 0 ? 0 : (currentPage() - 1) * itemsPerPage() + 1)
+const rangeEnd = derived(() => Math.min(currentPage() * itemsPerPage(), totalItems()))
+
+const visiblePages = derived(() => {
+  const total = totalPages()
+  const current = currentPage()
+  const maximum = Math.max(3, maxVisiblePages())
+  if (total <= maximum)
+    return Array.from({ length: total }, (_, index) => index + 1)
+
+  const pages: Array<number | 'ellipsis-start' | 'ellipsis-end'> = [1]
+  const windowSize = Math.max(1, maximum - 2)
+  let start = Math.max(2, current - Math.floor(windowSize / 2))
+  let end = Math.min(total - 1, start + windowSize - 1)
+  start = Math.max(2, end - windowSize + 1)
+
+  if (start > 2)
+    pages.push('ellipsis-start')
+  for (let page = start; page <= end; page++)
+    pages.push(page)
+  if (end < total - 1)
+    pages.push('ellipsis-end')
+  pages.push(total)
+  return pages
+})
+
+function goToPage(page: number): void {
+  if (page < 1 || page > totalPages() || page === currentPage())
+    return
+  emit('page', page)
 }
 
-const { currentPage = 1, perPage = 20, total = 875, from = 1, to = 20 } = defineProps<PaginationProps>()
+function previousPage(): void {
+  if (currentPage() <= 1)
+    return
+  emit('prev')
+  emit('page', currentPage() - 1)
+}
+
+function nextPage(): void {
+  if (currentPage() >= totalPages())
+    return
+  emit('next')
+  emit('page', currentPage() + 1)
+}
+
+function updateItemsPerPage(event: Event): void {
+  emit('per-page', Number((event.target as HTMLSelectElement).value))
+}
 </script>
-<div class="flex items-center justify-between px-4 py-3 sm:px-6 bg-white dark:bg-neutral-800 border-gray-200 border-t rounded-bl-lg rounded-br-lg dark:border-neutral-600">
-    <div class="flex sm:hidden flex-1 justify-between">
-      <a
-        href="#"
-        class="inline-flex relative items-center px-4 py-2 font-medium text-gray-700 text-sm dark:text-neutral-200 bg-white hover:bg-gray-50 border border-gray-300 rounded-md dark:border-neutral-600"
-      >Previous</a>
-      <a
-        href="#"
-        class="inline-flex relative items-center ml-3 px-4 py-2 font-medium text-gray-700 text-sm dark:text-neutral-200 bg-white hover:bg-gray-50 border border-gray-300 rounded-md dark:border-neutral-600"
-      >Next</a>
-    </div>
-    <div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
-      <div>
-        <p class="text-gray-700 text-sm dark:text-neutral-200 dark:text-neutral-300">
-          Showing <span class="font-semibold">{{ from }}</span> to <span class="font-semibold">{{ to }}</span> of <span class="font-semibold">{{ total }}</span> results
-        </p>
-      </div>
-      <div>
-        <nav
-          class="inline-flex -space-x-px rounded-md shadow-sm isolate"
-          aria-label="Pagination"
-        >
-          <a
-            href="#"
-            class="inline-flex relative focus:z-20 items-center px-2 py-2 font-medium text-gray-500 text-sm dark:text-neutral-300 dark:text-neutral-400 bg-white dark:bg-neutral-700 hover:bg-gray-50 border border-gray-300 rounded-l-md dark:border-neutral-600"
-          >
-            <span class="sr-only">First</span>
-            <div class="h-5 w-5 i-hugeicons-chevron-double-left-20-solid"></div>
-          </a>
-          <a
-            href="#"
-            class="inline-flex relative focus:z-20 items-center px-2 py-2 font-medium text-gray-500 text-sm dark:text-neutral-300 dark:text-neutral-400 bg-white dark:bg-neutral-700 hover:bg-gray-50 border border-gray-300 dark:border-neutral-600"
-          >
-            <span class="sr-only">Previous</span>
-            <div class="h-5 w-5 i-hugeicons-chevron-left-20-solid"></div>
-          </a>
-          <a
-            href="#"
-            aria-current="page"
-            class="inline-flex relative z-20 items-center px-4 py-2 font-medium text-blue-600 text-sm dark:text-teal-50 bg-neutral-50 dark:bg-neutral-600 hover:bg-neutral-50 border border-neutral-400 dark:border-neutral-600"
-          >1</a>
-          <a
-            href="#"
-            aria-current="page"
-            class="inline-flex relative items-center px-4 py-2 font-medium text-sm dark:text-teal-50 dark-hover:bg-gray-600 dark:bg-neutral-700 hover:bg-neutral-50 border dark:border-neutral-600"
-          >2</a>
-          <a
-            href="#"
-            aria-current="page"
-            class="inline-flex relative items-center px-4 py-2 font-medium text-sm dark:text-teal-50 dark-hover:bg-gray-600 dark:bg-neutral-700 hover:bg-neutral-50 border dark:border-neutral-600"
-          >3</a>
-          <a
-            href="#"
-            aria-current="page"
-            class="inline-flex relative items-center px-4 py-2 font-medium text-sm dark:text-teal-50 dark-hover:bg-gray-600 dark:bg-neutral-700 hover:bg-neutral-50 border dark:border-neutral-600"
-          >4</a>
-          <a
-            href="#"
-            aria-current="page"
-            class="inline-flex relative items-center px-4 py-2 font-medium text-sm dark:text-teal-50 dark-hover:bg-gray-600 dark:bg-neutral-700 hover:bg-neutral-50 border dark:border-neutral-600"
-          >5</a>
-          <a
-            href="#"
-            class="inline-flex relative focus:z-20 items-center px-2 py-2 font-medium text-gray-500 text-sm dark:text-neutral-300 dark:text-neutral-400 bg-white dark:bg-neutral-700 hover:bg-gray-50 border border-gray-300 dark:border-neutral-600"
-          >
-            <span class="sr-only">Next</span>
-            <div class="h-5 w-5 i-hugeicons-chevron-right-20-solid"></div>
-          </a>
-          <a
-            href="#"
-            class="inline-flex relative focus:z-20 items-center px-2 py-2 font-medium text-gray-500 text-sm dark:text-neutral-300 dark:text-neutral-400 bg-white dark:bg-neutral-700 hover:bg-gray-50 border border-gray-300 rounded-r-md dark:border-neutral-600"
-          >
-            <span class="sr-only">Last</span>
-            <div class="h-5 w-5 i-hugeicons-chevron-double-right-20-solid"></div>
-          </a>
-        </nav>
-      </div>
-    </div>
+
+<div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+  <div class="flex flex-wrap gap-4 items-center text-neutral-500 text-sm dark:text-neutral-400">
+    <label :if="showItemsPerPage()" class="flex gap-2 items-center">
+      <span>Show</span>
+      <select :value="itemsPerPage()" class="px-2 py-1.5 text-neutral-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-neutral-300 rounded-md dark:border-neutral-600" @change="updateItemsPerPage($event)">
+        <template :for="option in perPageOptions">
+          <option :value="option">{{ option }}</option>
+        </template>
+      </select>
+      <span>per page</span>
+    </label>
+
+    <p :if="showTotalItems()" aria-live="polite">
+      <span class="font-medium text-neutral-700 dark:text-neutral-200">{{ rangeStart() }}-{{ rangeEnd() }}</span>
+      of
+      <span class="font-medium text-neutral-700 dark:text-neutral-200">{{ totalItems() }}</span>
+      items
+    </p>
   </div>
+
+  <nav class="flex gap-1 items-center" aria-label="Pagination">
+    <button type="button" :disabled="currentPage() <= 1" aria-label="Previous page" class="p-2 font-medium text-neutral-500 text-sm dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg disabled:opacity-40 disabled:pointer-events-none" @click="previousPage">
+      <span class="block h-5 w-5 i-hugeicons-arrow-left-01"></span>
+    </button>
+
+    <template :for="page in visiblePages()">
+      <span :if="typeof page !== 'number'" class="px-2 text-neutral-400 dark:text-neutral-500">...</span>
+      <button :if="typeof page === 'number'" type="button" :aria-current="page === currentPage() ? 'page' : null" :class="'flex items-center justify-center px-3 min-w-9 h-9 font-medium text-sm rounded-lg ' + (page === currentPage() ? 'text-white bg-blue-600' : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-800 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800')" @click="goToPage(page)">
+        {{ page }}
+      </button>
+    </template>
+
+    <button type="button" :disabled="currentPage() >= totalPages()" aria-label="Next page" class="p-2 font-medium text-neutral-500 text-sm dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg disabled:opacity-40 disabled:pointer-events-none" @click="nextPage">
+      <span class="block h-5 w-5 i-hugeicons-arrow-right-01"></span>
+    </button>
+  </nav>
+</div>

@@ -41,19 +41,21 @@ const trendClasses = {
             <div class="h-7 w-20 bg-black/5 dark:bg-white/10 rounded-md animate-pulse"></div>
           @else
             <p class="font-semibold text-[22px] text-neutral-900 tracking-tight dark:text-white">
-              {{ value }}
+              @if($slots.value)
+                <slot name="value" />
+              @else
+                {{ value }}
+              @endif
             </p>
 
-            @if(trend !== null)
+            @if($slots.trend)
+              <slot name="trend" />
+            @elseif(trend !== null)
               <span class="inline-flex items-center text-[12px] font-medium {{ trendClasses[trendDirection] }}">
                 @if(trendDirection == 'up')
-                  <svg class="mr-0.5 h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 15l7-7 7 7"></path>
-                  </svg>
+                  <span class="mr-0.5 h-3.5 w-3.5 i-hugeicons-arrow-up-02"></span>
                 @elseif(trendDirection == 'down')
-                  <svg class="mr-0.5 h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"></path>
-                  </svg>
+                  <span class="mr-0.5 h-3.5 w-3.5 i-hugeicons-arrow-down-02"></span>
                 @endif
                 {{ Math.abs(trend) }}%
               </span>
@@ -61,9 +63,13 @@ const trendClasses = {
           @endif
         </div>
 
-        @if(subtitle || trendLabel)
+        @if($slots.subtitle || subtitle || trendLabel)
           <p class="mt-1 text-[12px] text-neutral-500 dark:text-neutral-400">
-            {{ trendLabel || subtitle }}
+            @if($slots.subtitle)
+              <slot name="subtitle" />
+            @else
+              {{ trendLabel || subtitle }}
+            @endif
           </p>
         @endif
       </div>
