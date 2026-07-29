@@ -1,0 +1,168 @@
+<script client>
+import type {
+  CouponDiscountType,
+  CouponRecord,
+  CouponStatus,
+} from '../../../../app/Actions/Dashboard/Commerce/coupon-records'
+
+const open = useReactiveProp('open', false)
+const mode = useReactiveProp('mode', 'add')
+const record = useReactiveProp('record', null as CouponRecord | null)
+const busy = useReactiveProp('busy', false)
+const errors = useReactiveProp('errors', {} as Record<string, string>)
+const emit = defineEmits()
+const code = state('')
+const description = state('')
+const status = state<CouponStatus>('Active')
+const isActive = state(true)
+const discountType = state<CouponDiscountType>('percentage')
+const discountValue = state('10')
+const minOrderAmount = state('')
+const maxDiscountAmount = state('')
+const freeProductId = state('')
+const usageLimit = state('')
+const startDate = state('')
+const endDate = state('')
+let hydrationKey = ''
+
+effect(() => {
+  if (!open()) {
+    hydrationKey = ''
+    return
+  }
+  const current = record()
+  const key = `${mode()}:${current?.id || 'new'}`
+  if (hydrationKey === key)
+    return
+  hydrationKey = key
+  code.set(current?.code || '')
+  description.set(current?.description || '')
+  status.set(current?.status || 'Active')
+  isActive.set(current?.isActive ?? true)
+  discountType.set(current?.discountType || 'percentage')
+  discountValue.set(String(current?.discountValue || 10))
+  minOrderAmount.set(current?.minOrderAmount ? String(current.minOrderAmount) : '')
+  maxDiscountAmount.set(current?.maxDiscountAmount ? String(current.maxDiscountAmount) : '')
+  freeProductId.set(current?.freeProductId || '')
+  usageLimit.set(current?.usageLimit ? String(current.usageLimit) : '')
+  startDate.set(current?.startDate || '')
+  endDate.set(current?.endDate || '')
+})
+
+function inputValue(event: Event): string {
+  return (event.target as HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement).value
+}
+
+function updateCode(event: Event): void {
+  code.set(inputValue(event))
+}
+
+function updateDescription(event: Event): void {
+  description.set(inputValue(event))
+}
+
+function updateStatus(event: Event): void {
+  status.set(inputValue(event) as CouponStatus)
+}
+
+function updateDiscountType(event: Event): void {
+  discountType.set(inputValue(event) as CouponDiscountType)
+}
+
+function updateDiscountValue(event: Event): void {
+  discountValue.set(inputValue(event))
+}
+
+function updateMinOrderAmount(event: Event): void {
+  minOrderAmount.set(inputValue(event))
+}
+
+function updateMaxDiscountAmount(event: Event): void {
+  maxDiscountAmount.set(inputValue(event))
+}
+
+function updateFreeProductId(event: Event): void {
+  freeProductId.set(inputValue(event))
+}
+
+function updateUsageLimit(event: Event): void {
+  usageLimit.set(inputValue(event))
+}
+
+function updateStartDate(event: Event): void {
+  startDate.set(inputValue(event))
+}
+
+function updateEndDate(event: Event): void {
+  endDate.set(inputValue(event))
+}
+
+function updateIsActive(event: Event): void {
+  isActive.set((event.target as HTMLInputElement).checked)
+}
+
+function optionalNumber(value: string): number | undefined {
+  if (!value.trim())
+    return undefined
+  const result = Number(value)
+  return Number.isFinite(result) ? result : undefined
+}
+
+function valid(): boolean {
+  return Boolean(code().trim() && Number(discountValue()) >= 0.01)
+}
+
+function submit(): void {
+  if (!valid())
+    return
+  emit('submit', {
+    code: code().trim().toUpperCase(),
+    description: description().trim(),
+    status: status(),
+    isActive: isActive(),
+    discountType: discountType(),
+    discountValue: Number(discountValue()),
+    minOrderAmount: optionalNumber(minOrderAmount()),
+    maxDiscountAmount: optionalNumber(maxDiscountAmount()),
+    freeProductId: freeProductId().trim() || undefined,
+    usageLimit: optionalNumber(usageLimit()),
+    startDate: startDate() || undefined,
+    endDate: endDate() || undefined,
+  })
+}
+
+function errorMessages(): string[] {
+  return Object.entries(errors()).map(([field, message]) => {
+    const label = field.replace(/([a-z])([A-Z])/g, '$1 $2').replaceAll('_', ' ')
+    return `${label.charAt(0).toUpperCase()}${label.slice(1)}: ${message}`
+  })
+}
+</script>
+
+<div :if="open()" class="flex fixed inset-0 z-50 items-center justify-center p-4">
+  <button type="button" aria-label="Close coupon dialog" class="absolute inset-0 bg-black/45" @click="emit('close')"></button>
+  <section role="dialog" aria-modal="true" aria-labelledby="coupon-dialog-title" class="overflow-y-auto relative max-h-[90dvh] max-w-2xl w-full bg-white dark:bg-neutral-800 border border-gray-200 rounded-xl dark:border-neutral-700 shadow-xl">
+    <form @submit.prevent="submit">
+      <div class="p-6"><h2 id="coupon-dialog-title" class="font-semibold text-gray-900 text-lg dark:text-white">{{ mode() === 'edit' ? 'Edit coupon' : 'Add coupon' }}</h2><p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Store fields declared by the Coupon model.</p>
+        <ul :if="errorMessages().length > 0" class="mt-5 p-3 space-y-1 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900">
+          <template :for="message in errorMessages()" :key="message"><li>{{ message }}</li></template>
+        </ul>
+        <div class="grid gap-4 grid-cols-1 sm:grid-cols-2 mt-5">
+          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Code</span><input :value="code()" type="text" maxlength="50" required spellcheck="false" class="mt-1 px-3 py-2 w-full font-mono text-gray-900 text-sm uppercase dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="updateCode($event)" /></label>
+          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Status</span><select :value="status()" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @change="updateStatus($event)"><option value="Active">Active</option><option value="Scheduled">Scheduled</option><option value="Expired">Expired</option></select></label>
+          <label class="block sm:col-span-2"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Description</span><textarea :value="description()" rows="3" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="updateDescription($event)"></textarea></label>
+          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Discount type</span><select :value="discountType()" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @change="updateDiscountType($event)"><option value="percentage">Percentage</option><option value="fixed_amount">Fixed amount</option></select></label>
+          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Discount value</span><input :value="discountValue()" type="number" min="0.01" step="0.01" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="updateDiscountValue($event)" /></label>
+          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Minimum order amount</span><input :value="minOrderAmount()" type="number" min="0" step="0.01" placeholder="No minimum" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="updateMinOrderAmount($event)" /></label>
+          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Maximum discount amount</span><input :value="maxDiscountAmount()" type="number" min="0" step="0.01" placeholder="No maximum" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="updateMaxDiscountAmount($event)" /></label>
+          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Usage limit</span><input :value="usageLimit()" type="number" min="1" step="1" placeholder="No limit" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="updateUsageLimit($event)" /></label>
+          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Free product ID</span><input :value="freeProductId()" type="text" placeholder="Optional" class="mt-1 px-3 py-2 w-full font-mono text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="updateFreeProductId($event)" /></label>
+          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Start date</span><input :value="startDate()" type="date" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="updateStartDate($event)" /></label>
+          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">End date</span><input :value="endDate()" type="date" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="updateEndDate($event)" /></label>
+          <label class="flex gap-3 items-center sm:col-span-2 p-3 border border-gray-200 rounded-lg dark:border-neutral-700"><input type="checkbox" :checked="isActive()" class="h-4 w-4 text-blue-600 border-gray-300 rounded" @change="updateIsActive($event)" /><span><span class="block font-medium text-gray-700 text-sm dark:text-neutral-200">Enabled for redemption</span><span class="block mt-0.5 text-gray-400 text-xs dark:text-neutral-500">Availability is stored separately from lifecycle status.</span></span></label>
+        </div>
+      </div>
+      <footer class="flex gap-2 justify-end px-6 py-4 bg-gray-50 dark:bg-neutral-900/50 border-gray-200 border-t dark:border-neutral-700"><button type="button" :disabled="busy()" class="px-3 py-2 font-semibold text-gray-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700 disabled:opacity-50" @click="emit('close')">Cancel</button><button type="submit" :disabled="busy() || !valid()" class="inline-flex items-center px-3 py-2 font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md disabled:opacity-50"><span :if="busy()" class="mr-2 h-4 w-4 animate-spin i-hugeicons-loading-03"></span>{{ mode() === 'edit' ? 'Save coupon' : 'Add coupon' }}</button></footer>
+    </form>
+  </section>
+</div>

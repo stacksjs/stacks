@@ -62,6 +62,7 @@ route.group({ prefix: '/api/dashboard', apiResponse: true }, () => {
   guard(route.get('/commerce/waitlist-products', 'Actions/Dashboard/Commerce/ProductWaitlistIndexAction'))
   guard(route.get('/commerce/waitlist-restaurants', 'Actions/Dashboard/Commerce/RestaurantWaitlistIndexAction'))
   guard(route.get('/commerce/reviews', 'Actions/Dashboard/Commerce/ReviewIndexAction'))
+  guard(route.get('/commerce/coupons', 'Actions/Dashboard/Commerce/CommerceCouponsAction'))
   guard(route.get('/commerce/manufacturers', 'Actions/Dashboard/Commerce/ManufacturerIndexAction'))
   guard(route.get('/commerce/units', 'Actions/Dashboard/Commerce/ProductUnitIndexAction'))
   guard(route.patch('/commerce/units/{id}/default', 'Actions/Dashboard/Commerce/ProductUnitDefaultAction'))
