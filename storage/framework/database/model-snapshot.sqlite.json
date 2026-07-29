@@ -414,19 +414,39 @@
           },
           {
             "name": "method",
-            "type": "string",
+            "type": "enum",
             "isPrimaryKey": false,
             "isUnique": false,
             "isNullable": false,
-            "hasDefault": false
+            "hasDefault": false,
+            "enumValues": [
+              "cash",
+              "creditCard",
+              "debitCard",
+              "paypal",
+              "applePay",
+              "googlePay",
+              "bankTransfer",
+              "giftCard"
+            ]
           },
           {
             "name": "status",
-            "type": "string",
+            "type": "enum",
             "isPrimaryKey": false,
             "isUnique": false,
             "isNullable": false,
-            "hasDefault": false
+            "hasDefault": true,
+            "defaultValue": "pending",
+            "enumValues": [
+              "pending",
+              "processing",
+              "completed",
+              "failed",
+              "refunded",
+              "partiallyRefunded",
+              "succeeded"
+            ]
           },
           {
             "name": "currency",
@@ -434,7 +454,8 @@
             "isPrimaryKey": false,
             "isUnique": false,
             "isNullable": true,
-            "hasDefault": false,
+            "hasDefault": true,
+            "defaultValue": "USD",
             "maxLength": 3
           },
           {
@@ -492,7 +513,8 @@
             "isPrimaryKey": false,
             "isUnique": false,
             "isNullable": true,
-            "hasDefault": false
+            "hasDefault": true,
+            "defaultValue": 0
           },
           {
             "name": "notes",
@@ -6840,6 +6862,66 @@
         "indexes": []
       },
       {
+        "table": "order_idempotency",
+        "columns": [
+          {
+            "name": "id",
+            "type": "bigint",
+            "isPrimaryKey": true,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": false
+          },
+          {
+            "name": "idempotency_key",
+            "type": "string",
+            "isPrimaryKey": false,
+            "isUnique": true,
+            "isNullable": false,
+            "hasDefault": false,
+            "maxLength": 255
+          },
+          {
+            "name": "order_id",
+            "type": "bigint",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": false,
+            "references": {
+              "table": "orders",
+              "column": "id"
+            }
+          },
+          {
+            "name": "created_at",
+            "type": "datetime",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": true,
+            "defaultValue": "CURRENT_TIMESTAMP"
+          },
+          {
+            "name": "updated_at",
+            "type": "datetime",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false
+          }
+        ],
+        "indexes": [
+          {
+            "name": "order_idempotency_idempotency_key_unique",
+            "columns": [
+              "idempotency_key"
+            ],
+            "type": "unique"
+          }
+        ]
+      },
+      {
         "table": "shipping_methods",
         "columns": [
           {
@@ -8317,7 +8399,7 @@
       }
     ]
   },
-  "hash": "e642652b4d2f5a4f3f3dd41610233324bd62ab6cd0c2ce1390caa5a6efc25e74",
+  "hash": "7722962550bc5bd3df03a41d0833ef98918f470f0ee109aaaaf7ca83a7b58ac5",
   "dialect": "sqlite",
-  "updatedAt": "2026-07-29T14:33:46.135Z"
+  "updatedAt": "2026-07-29T23:26:31.808Z"
 }

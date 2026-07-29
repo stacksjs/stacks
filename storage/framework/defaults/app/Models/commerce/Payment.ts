@@ -45,6 +45,7 @@ export default defineModel({
       fillable: true,
       validation: {
         rule: schema.enum([
+          'cash',
           'creditCard',
           'debitCard',
           'paypal',
@@ -55,6 +56,7 @@ export default defineModel({
         ]).required(),
       },
       factory: faker => faker.helpers.arrayElement([
+        'cash',
         'creditCard',
         'debitCard',
         'paypal',

@@ -1,7 +1,8 @@
-import { db, sql } from '@stacksjs/database'
+import { db } from '@stacksjs/database'
 import { formatDate } from '@stacksjs/orm'
 type ProductJsonResponse = ModelRow<typeof Product>
 type ProductUpdate = UpdateModelData<typeof Product>
+import { adjustInventoryOnConnection } from '../../utils/inventory-adjustment'
 import { fetchById } from './fetch'
 
 /**
@@ -143,24 +144,7 @@ export async function adjustInventory(
     throw new Error('[commerce/inventory] adjustInventory delta must be a non-zero finite number')
   }
 
-  const result: any = await db
-    .updateTable('products')
-    .set({
-      inventory_count: sql`inventory_count + ${delta}`,
-      updated_at: formatDate(new Date()),
-    })
-    .where('id', '=', id)
-    // Guard against negative stock when decrementing.
-    .where(sql`inventory_count + ${delta}`, '>=', 0)
-    .execute()
-
-  // Drivers report affected rows differently — handle the common shapes.
-  const affected = Number(
-    result?.numUpdatedRows
-    ?? result?.[0]?.numUpdatedRows
-    ?? result?.numAffectedRows
-    ?? 0,
-  )
+  const affected = await adjustInventoryOnConnection(db as any, id, delta, formatDate(new Date()))
 
   if (!affected) return null
   return (await fetchById(id)) ?? null
@@ -220,22 +204,7 @@ export async function adjustInventoryMany(
         // Same atomic UPDATE as adjustInventory, but routed through
         // the transaction handle so all decrements share a single
         // commit boundary.
-        const result: any = await trx
-          .updateTable('products')
-          .set({
-            inventory_count: sql`inventory_count + ${delta}`,
-            updated_at: formatDate(new Date()),
-          })
-          .where('id', '=', id)
-          .where(sql`inventory_count + ${delta}`, '>=', 0)
-          .execute()
-
-        const affected = Number(
-          result?.numUpdatedRows
-          ?? result?.[0]?.numUpdatedRows
-          ?? result?.numAffectedRows
-          ?? 0,
-        )
+        const affected = await adjustInventoryOnConnection(trx, id, delta, formatDate(new Date()))
 
         if (!affected) {
           // Throw a structured error the outer try/catch can convert

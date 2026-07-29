@@ -1,14 +1,15 @@
 /**
  * Atomic order placement (stacksjs/stacks#1879 Co-1).
  *
- * Background: order creation, payment recording, and inventory
- * decrement happened as three separate writes. A failure between
- * steps left the system in a split-brain state:
+ * Background: order creation, line materialization, payment recording,
+ * inventory decrement, and idempotency tracking must share one commit
+ * boundary. A failure between separate writes previously left the
+ * system in a split-brain state:
  *   - Order created but no payment row → reconciliation churn
  *   - Payment created but no inventory decrement → over-sale
  *   - Inventory decremented but order rolled back → phantom stock loss
  *
- * Fix: wrap all three writes in a single `db.transaction`. Either
+ * Fix: wrap every database write in a single `db.transaction`. Either
  * everything commits or nothing does. The Stripe API call (a
  * network round-trip, not a DB write) stays OUTSIDE the transaction
  * to keep the transaction window short — apps that need
@@ -37,18 +38,28 @@
 
 import { randomUUIDv7 } from 'bun'
 import { db } from '@stacksjs/database'
-import { formatDate } from '@stacksjs/orm'
-import { sql } from '@stacksjs/database'
+import { formatDate, isUniqueViolation } from '@stacksjs/orm'
 import { emitOrderCreated, emitOrderPaid } from './events'
+import { adjustInventoryOnConnection } from '../utils/inventory-adjustment'
 
 type OrderJsonResponse = ModelRow<typeof Order>
 type NewOrder = NewModelData<typeof Order>
+type OrderItemJsonResponse = ModelRow<typeof OrderItem>
 type PaymentJsonResponse = ModelRow<typeof Payment>
 type NewPayment = NewModelData<typeof Payment>
+
+export interface PlaceOrderLineItem {
+  productId: number
+  quantity: number
+  price: number
+  specialInstructions?: string
+}
 
 export interface PlaceOrderInput {
   /** Order row fields. UUID / created_at / updated_at are filled in. */
   order: NewOrder
+  /** Optional order lines to materialize in the same transaction. */
+  items?: ReadonlyArray<PlaceOrderLineItem>
   /** Optional payment row to record alongside the order. */
   payment?: NewPayment
   /** Optional inventory decrements to apply (each delta is signed). */
@@ -72,7 +83,7 @@ export interface PlaceOrderInput {
  * caller can surface a specific error to the user.
  */
 export type PlaceOrderResult =
-  | { ok: true, order: OrderJsonResponse, payment?: PaymentJsonResponse }
+  | { ok: true, order: OrderJsonResponse, items?: OrderItemJsonResponse[], payment?: PaymentJsonResponse }
   | { ok: false, reason: 'out-of-stock' | 'duplicate-payment' | 'duplicate-idempotency-key' | 'unknown', failedAt?: string, error?: unknown }
 
 /**
@@ -99,7 +110,7 @@ function isMissingTableError(err: unknown): boolean {
     || /relation "[^"]*" does not exist/i.test(msg) // postgres wording
 }
 
-async function findOrderByIdempotencyKey(key: string): Promise<OrderJsonResponse | null> {
+export async function findOrderByIdempotencyKey(key: string): Promise<OrderJsonResponse | null> {
   try {
     const row = await (db as any)
       .selectFrom('order_idempotency')
@@ -119,7 +130,7 @@ async function findOrderByIdempotencyKey(key: string): Promise<OrderJsonResponse
       if (!warnedAboutMissingOrderIdempotencyTable) {
         warnedAboutMissingOrderIdempotencyTable = true
         // eslint-disable-next-line no-console
-        console.warn('[commerce/orders] order_idempotency table missing — idempotency keys are accepted but NOT enforced. Run migrations to enable dedup.')
+        console.warn('[commerce/orders] order_idempotency table missing - idempotency keys are accepted but NOT enforced. Run migrations to enable dedup.')
       }
       return null
     }
@@ -146,50 +157,96 @@ export async function placeOrder(input: PlaceOrderInput): Promise<PlaceOrderResu
       const now = formatDate(new Date())
 
       // 1. Insert the order row.
+      const orderUuid = randomUUIDv7()
       const orderData = {
         ...input.order,
         status: input.order.status || 'PENDING',
-        uuid: randomUUIDv7(),
+        uuid: orderUuid,
         created_at: now,
         updated_at: now,
       }
-      const orderInsert: any = await trx
+      await trx
         .insertInto('orders')
         .values(orderData as NewOrder)
         .executeTakeFirst()
 
-      const orderId = Number(orderInsert?.insertId) || Number(orderInsert?.numInsertedOrUpdatedRows)
-      if (!orderId)
-        throw Object.assign(new Error('order insert returned no id'), { __placeFail: true, failedAt: 'order', reason: 'unknown' })
+      // Insert metadata varies by driver: SQLite reports lastInsertRowid,
+      // MySQL reports insertId, and PostgreSQL requires RETURNING. The
+      // model-managed UUID is stable across all of them, so resolve the row
+      // by UUID instead of mistaking an affected-row count for its id.
+      const insertedOrder = await trx
+        .selectFrom('orders')
+        .where('uuid', '=', orderUuid)
+        .selectAll()
+        .executeTakeFirst() as OrderJsonResponse | undefined
+      const orderId = Number(insertedOrder?.id)
+      if (!Number.isSafeInteger(orderId) || orderId <= 0)
+        throw Object.assign(new Error('order insert could not be resolved by uuid'), { __placeFail: true, failedAt: 'order', reason: 'unknown' })
 
-      // 2. Insert the payment row if provided. The transaction_id
+      // 2. Materialize order lines while the order and inventory
+      // adjustments are still provisional. This keeps a sale from
+      // committing as an empty order when a line insert fails.
+      let orderItemRows: OrderItemJsonResponse[] | undefined
+      if (input.items && input.items.length > 0) {
+        const values = input.items.map((item) => {
+          if (!Number.isInteger(item.productId) || item.productId <= 0)
+            throw Object.assign(new Error('order item product id must be a positive integer'), { __placeFail: true, failedAt: 'items', reason: 'unknown' })
+          if (!Number.isInteger(item.quantity) || item.quantity <= 0)
+            throw Object.assign(new Error('order item quantity must be a positive integer'), { __placeFail: true, failedAt: 'items', reason: 'unknown' })
+          if (!Number.isFinite(item.price) || item.price < 0)
+            throw Object.assign(new Error('order item price must be a non-negative finite number'), { __placeFail: true, failedAt: 'items', reason: 'unknown' })
+          return {
+            order_id: orderId,
+            product_id: item.productId,
+            quantity: item.quantity,
+            price: item.price,
+            special_instructions: item.specialInstructions || null,
+            created_at: now,
+            updated_at: now,
+          }
+        })
+        await trx.insertInto('order_items').values(values).execute()
+        orderItemRows = await trx
+          .selectFrom('order_items')
+          .where('order_id', '=', orderId)
+          .selectAll()
+          .execute() as OrderItemJsonResponse[]
+      }
+
+      // 3. Insert the payment row if provided. The transaction_id
       // unique constraint catches duplicate Stripe webhook deliveries
       // (the pre-fix code's Co-19 backstop) — we surface it as a
       // structured result instead of a generic SQL error.
       let paymentRow: PaymentJsonResponse | undefined
       if (input.payment) {
         try {
-          const paymentInsert: any = await trx
+          const paymentUuid = randomUUIDv7()
+          await trx
             .insertInto('payments')
             .values({
               ...input.payment,
               order_id: orderId,
+              uuid: paymentUuid,
               created_at: now,
               updated_at: now,
             } as NewPayment)
             .executeTakeFirst()
-          const paymentId = Number(paymentInsert?.insertId) || Number(paymentInsert?.numInsertedOrUpdatedRows)
-          if (paymentId)
-            paymentRow = await trx.selectFrom('payments').where('id', '=', paymentId).selectAll().executeTakeFirst() as PaymentJsonResponse | undefined
+          paymentRow = await trx
+            .selectFrom('payments')
+            .where('uuid', '=', paymentUuid)
+            .selectAll()
+            .executeTakeFirst() as PaymentJsonResponse | undefined
+          if (!paymentRow)
+            throw Object.assign(new Error('payment insert could not be resolved by uuid'), { __placeFail: true, failedAt: 'payment', reason: 'unknown' })
         }
         catch (err: any) {
-          if (err?.message?.includes('UNIQUE constraint') || err?.message?.includes('Duplicate entry'))
+          if (isUniqueViolation(err))
             throw Object.assign(new Error('duplicate payment transaction_id'), { __placeFail: true, failedAt: 'payment', reason: 'duplicate-payment' })
           throw Object.assign(err, { __placeFail: true, failedAt: 'payment', reason: 'unknown' })
         }
       }
 
-      // 3. Decrement inventory atomically. Same conditional UPDATE
+      // 4. Decrement inventory atomically. Same conditional UPDATE
       // shape as adjustInventoryMany — `inventory_count + delta >=
       // 0` enforces the precondition in the WHERE clause so two
       // concurrent placeOrders for the same last-in-stock item don't
@@ -200,28 +257,13 @@ export async function placeOrder(input: PlaceOrderInput): Promise<PlaceOrderResu
           if (!Number.isFinite(delta) || delta === 0)
             throw Object.assign(new Error('inventory delta must be a non-zero finite number'), { __placeFail: true, failedAt: 'inventory', reason: 'unknown' })
 
-          const adjResult: any = await trx
-            .updateTable('products')
-            .set({
-              inventory_count: sql`inventory_count + ${delta}`,
-              updated_at: now,
-            })
-            .where('id', '=', id)
-            .where(sql`inventory_count + ${delta}`, '>=', 0)
-            .execute()
-
-          const affected = Number(
-            adjResult?.numUpdatedRows
-            ?? adjResult?.[0]?.numUpdatedRows
-            ?? adjResult?.numAffectedRows
-            ?? 0,
-          )
+          const affected = await adjustInventoryOnConnection(trx, id, delta, now)
           if (!affected)
             throw Object.assign(new Error(`inventory adjust failed for product ${id}`), { __placeFail: true, failedAt: 'inventory', reason: 'out-of-stock' })
         }
       }
 
-      // 4. Record the idempotency key inside the transaction so a
+      // 5. Record the idempotency key inside the transaction so a
       // concurrent retry of the same key (the classic double-click
       // scenario) hits the unique constraint and rolls back here
       // instead of creating a second order. Skipped silently when
@@ -243,7 +285,7 @@ export async function placeOrder(input: PlaceOrderInput): Promise<PlaceOrderResu
           // race; abort this transaction so the caller falls back
           // to the existing order via the pre-transaction lookup
           // on the next attempt (or right now if they re-call).
-          if (err?.message?.includes('UNIQUE constraint') || err?.message?.includes('Duplicate entry'))
+          if (isUniqueViolation(err))
             throw Object.assign(new Error('idempotency-key collision'), { __placeFail: true, failedAt: 'idempotency', reason: 'duplicate-idempotency-key' })
           // Missing table: degrade silently (the pre-transaction
           // lookup already warned).
@@ -252,12 +294,12 @@ export async function placeOrder(input: PlaceOrderInput): Promise<PlaceOrderResu
         }
       }
 
-      // 5. Refetch the order so callers get the post-write canonical row.
+      // 6. Refetch the order so callers get the post-write canonical row.
       const order = await trx.selectFrom('orders').where('id', '=', orderId).selectAll().executeTakeFirst() as OrderJsonResponse | undefined
       if (!order)
         throw Object.assign(new Error('order disappeared mid-transaction'), { __placeFail: true, failedAt: 'order', reason: 'unknown' })
 
-      return { order, payment: paymentRow }
+      return { order, items: orderItemRows, payment: paymentRow }
     })
 
     // Fire `order:created` AFTER the transaction commits (#1879
@@ -273,10 +315,15 @@ export async function placeOrder(input: PlaceOrderInput): Promise<PlaceOrderResu
       )
     }
 
-    return { ok: true, order: result.order, payment: result.payment }
+    return { ok: true, order: result.order, items: result.items, payment: result.payment }
   }
   catch (err: any) {
     if (err?.__placeFail) {
+      if (err.reason === 'duplicate-idempotency-key' && input.idempotencyKey) {
+        const existing = await findOrderByIdempotencyKey(input.idempotencyKey)
+        if (existing)
+          return { ok: true, order: existing }
+      }
       return {
         ok: false,
         reason: err.reason as Extract<PlaceOrderResult, { ok: false }>['reason'],

@@ -288,6 +288,16 @@
       }
     },
     {
+      "id": "order-idempotency",
+      "name": "OrderIdempotency",
+      "icon": "tablecells.fill",
+      "hasDedicatedPage": false,
+      "category": "commerce",
+      "dashboard": {
+        "enabled": false
+      }
+    },
+    {
       "id": "order-item",
       "name": "OrderItem",
       "icon": "list.bullet.clipboard.fill",

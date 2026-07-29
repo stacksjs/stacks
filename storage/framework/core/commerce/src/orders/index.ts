@@ -25,10 +25,10 @@ export {
 } from './store'
 
 // Atomic order placement (stacksjs/stacks#1879 Co-1).
-// Wraps order + payment + inventory decrement in a single
-// transaction so any failure rolls back the rest.
-export { placeOrder } from './place-order'
-export type { PlaceOrderInput, PlaceOrderResult } from './place-order'
+// Wraps order + lines + payment + inventory + idempotency in a
+// single transaction so any failure rolls back the rest.
+export { findOrderByIdempotencyKey, placeOrder } from './place-order'
+export type { PlaceOrderInput, PlaceOrderLineItem, PlaceOrderResult } from './place-order'
 
 // Event bus integration + status-transition state machine
 // (stacksjs/stacks#1879 Co-18, Co-4). Emit helpers fire
