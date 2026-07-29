@@ -20,7 +20,7 @@
         </div>
       </div>
 
-      <DeliveryRoutesTable :routes="paginatedRoutes" @view-map="viewRouteOnMap" @edit="openEditModal" @delete="handleDeleteRoute" />
+      <DeliveryRoutesTable :routes="paginatedRoutes" @edit="openEditModal($event.detail)" @delete="handleDeleteRoute($event.detail)" />
 
       <div class="px-4 py-3 bg-gray-50 dark:bg-neutral-900 border-gray-200 border-t dark:border-neutral-700">
         <DeliveryPagination :currentPage="currentPage" :totalItems="totalItems" :itemsPerPage="itemsPerPage" @prev="handlePrevPage" @next="handleNextPage" @page="handlePageChange($event.detail)" />
@@ -32,7 +32,7 @@
   <div :show="showAddModal" class="fixed inset-0 overflow-y-auto z-10">
     <div class="flex items-end justify-center sm:items-center p-4 sm:p-0 min-h-full text-center">
       <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" @click="closeAddModal()"></div>
-      <div class="overflow-hidden relative pb-4 pt-5 px-4 sm:my-8 sm:p-6 sm:max-w-lg sm:w-full text-left bg-white dark:bg-neutral-800 rounded-lg shadow-xl transition-all transform">
+      <form @submit.prevent="addDeliveryRoute()" class="overflow-hidden relative pb-4 pt-5 px-4 sm:my-8 sm:p-6 sm:max-w-lg sm:w-full text-left bg-white dark:bg-neutral-800 rounded-lg shadow-xl transition-all transform">
         <div>
           <div class="mt-3 sm:mt-5 text-center">
             <h3 class="font-semibold leading-6 text-base text-gray-900 dark:text-white">Add New Delivery Route</h3>
@@ -41,33 +41,39 @@
                 <div>
                   <label for="route-driver" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">Driver</label>
                   <div class="mt-2">
-                    <input type="text" id="route-driver" x-model="newDriver" placeholder="Enter driver name" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm" />
+                    <input type="text" id="route-driver" x-model.trim="newDriver" maxlength="255" required placeholder="Enter driver name" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm" />
                   </div>
                 </div>
                 <div>
                   <label for="route-vehicle" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">Vehicle</label>
                   <div class="mt-2">
-                    <input type="text" id="route-vehicle" x-model="newVehicle" placeholder="Enter vehicle information" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm" />
+                    <input type="text" id="route-vehicle" x-model.trim="newVehicle" maxlength="255" required placeholder="Enter vehicle information" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm" />
                   </div>
                 </div>
                 <div class="grid gap-4 grid-cols-3">
                   <div>
                     <label for="route-stops" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">Stops</label>
                     <div class="mt-2">
-                      <input type="number" id="route-stops" x-model.number="newStops" placeholder="0" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm" />
+                      <input type="number" id="route-stops" x-model.number="newStops" min="0" step="1" required placeholder="0" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm" />
                     </div>
                   </div>
                   <div>
-                    <label for="route-delivery-time" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">Delivery Time (hours)</label>
+                    <label for="route-delivery-time" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">Delivery Time (minutes)</label>
                     <div class="mt-2">
-                      <input type="number" id="route-delivery-time" x-model.number="newDeliveryTime" step="0.1" placeholder="0" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm" />
+                      <input type="number" id="route-delivery-time" x-model.number="newDeliveryTime" min="0" step="1" required placeholder="0" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm" />
                     </div>
                   </div>
                   <div>
-                    <label for="route-total-distance" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">Total Distance (km)</label>
+                    <label for="route-total-distance" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">Total Distance (miles)</label>
                     <div class="mt-2">
-                      <input type="number" id="route-total-distance" x-model.number="newTotalDistance" step="0.1" placeholder="0" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm" />
+                      <input type="number" id="route-total-distance" x-model.number="newTotalDistance" min="0" step="1" required placeholder="0" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm" />
                     </div>
+                  </div>
+                </div>
+                <div>
+                  <label for="route-last-active" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">Last Active</label>
+                  <div class="mt-2">
+                    <input type="datetime-local" id="route-last-active" x-model="newLastActive" required class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm" />
                   </div>
                 </div>
               </div>
@@ -75,10 +81,10 @@
           </div>
         </div>
         <div class="sm:grid sm:gap-3 sm:grid-cols-2 sm:grid-flow-row-dense mt-5 sm:mt-6">
-          <button type="button" @click="addDeliveryRoute()" class="inline-flex justify-center sm:col-start-2 px-3 py-2 w-full font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 shadow-sm">Add Route</button>
+          <button type="submit" class="inline-flex justify-center sm:col-start-2 px-3 py-2 w-full font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 shadow-sm">Add Route</button>
           <button type="button" @click="closeAddModal()" class="inline-flex justify-center sm:col-start-1 mt-3 px-3 py-2 sm:mt-0 w-full font-semibold text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-600 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 shadow-sm">Cancel</button>
         </div>
-      </div>
+      </form>
     </div>
   </div>
 
@@ -86,7 +92,7 @@
   <div :show="showEditModal" class="fixed inset-0 overflow-y-auto z-10">
     <div class="flex items-end justify-center sm:items-center p-4 sm:p-0 min-h-full text-center">
       <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" @click="closeEditModal()"></div>
-      <div class="overflow-hidden relative pb-4 pt-5 px-4 sm:my-8 sm:p-6 sm:max-w-lg sm:w-full text-left bg-white dark:bg-neutral-800 rounded-lg shadow-xl transition-all transform">
+      <form @submit.prevent="saveDeliveryRoute()" class="overflow-hidden relative pb-4 pt-5 px-4 sm:my-8 sm:p-6 sm:max-w-lg sm:w-full text-left bg-white dark:bg-neutral-800 rounded-lg shadow-xl transition-all transform">
         <div>
           <div class="mt-3 sm:mt-5 text-center">
             <h3 class="font-semibold leading-6 text-base text-gray-900 dark:text-white">Edit Delivery Route</h3>
@@ -95,33 +101,39 @@
                 <div>
                   <label for="edit-route-driver" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">Driver</label>
                   <div class="mt-2">
-                    <input type="text" id="edit-route-driver" x-model="newDriver" placeholder="Enter driver name" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm" />
+                    <input type="text" id="edit-route-driver" x-model.trim="newDriver" maxlength="255" required placeholder="Enter driver name" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm" />
                   </div>
                 </div>
                 <div>
                   <label for="edit-route-vehicle" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">Vehicle</label>
                   <div class="mt-2">
-                    <input type="text" id="edit-route-vehicle" x-model="newVehicle" placeholder="Enter vehicle information" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm" />
+                    <input type="text" id="edit-route-vehicle" x-model.trim="newVehicle" maxlength="255" required placeholder="Enter vehicle information" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm" />
                   </div>
                 </div>
                 <div class="grid gap-4 grid-cols-3">
                   <div>
                     <label for="edit-route-stops" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">Stops</label>
                     <div class="mt-2">
-                      <input type="number" id="edit-route-stops" x-model.number="newStops" placeholder="0" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm" />
+                      <input type="number" id="edit-route-stops" x-model.number="newStops" min="0" step="1" required placeholder="0" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm" />
                     </div>
                   </div>
                   <div>
-                    <label for="edit-route-delivery-time" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">Delivery Time (hours)</label>
+                    <label for="edit-route-delivery-time" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">Delivery Time (minutes)</label>
                     <div class="mt-2">
-                      <input type="number" id="edit-route-delivery-time" x-model.number="newDeliveryTime" step="0.1" placeholder="0" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm" />
+                      <input type="number" id="edit-route-delivery-time" x-model.number="newDeliveryTime" min="0" step="1" required placeholder="0" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm" />
                     </div>
                   </div>
                   <div>
-                    <label for="edit-route-total-distance" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">Total Distance (km)</label>
+                    <label for="edit-route-total-distance" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">Total Distance (miles)</label>
                     <div class="mt-2">
-                      <input type="number" id="edit-route-total-distance" x-model.number="newTotalDistance" step="0.1" placeholder="0" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm" />
+                      <input type="number" id="edit-route-total-distance" x-model.number="newTotalDistance" min="0" step="1" required placeholder="0" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm" />
                     </div>
+                  </div>
+                </div>
+                <div>
+                  <label for="edit-route-last-active" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">Last Active</label>
+                  <div class="mt-2">
+                    <input type="datetime-local" id="edit-route-last-active" x-model="newLastActive" required class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm" />
                   </div>
                 </div>
               </div>
@@ -129,10 +141,10 @@
           </div>
         </div>
         <div class="sm:grid sm:gap-3 sm:grid-cols-2 sm:grid-flow-row-dense mt-5 sm:mt-6">
-          <button type="button" @click="saveDeliveryRoute()" class="inline-flex justify-center sm:col-start-2 px-3 py-2 w-full font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 shadow-sm">Save Changes</button>
+          <button type="submit" class="inline-flex justify-center sm:col-start-2 px-3 py-2 w-full font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 shadow-sm">Save Changes</button>
           <button type="button" @click="closeEditModal()" class="inline-flex justify-center sm:col-start-1 mt-3 px-3 py-2 sm:mt-0 w-full font-semibold text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-600 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 shadow-sm">Cancel</button>
         </div>
-      </div>
+      </form>
     </div>
   </div>
 </div>
@@ -147,6 +159,7 @@ interface DeliveryRoute {
   stops: number
   delivery_time: number
   total_distance: number
+  last_active: string
 }
 
 const { deliveryRoutes, createDeliveryRoute, fetchDeliveryRoutes, updateDeliveryRoute, deleteDeliveryRoute } = useDeliveryRoutes()
@@ -160,6 +173,7 @@ const newVehicle = state('')
 const newStops = state(0)
 const newDeliveryTime = state(0)
 const newTotalDistance = state(0)
+const newLastActive = state('')
 
 const searchQuery = state('')
 const currentPage = state(1)
@@ -186,12 +200,29 @@ const paginatedRoutes = derived(() => {
 
 const totalItems = derived(() => filteredRoutes().length)
 
+function toDateTimeLocal(value?: string): string {
+  if (!value)
+    return ''
+  return value.replace(' ', 'T').slice(0, 16)
+}
+
+function toDatabaseTimestamp(value: string): string {
+  const normalized = value.replace('T', ' ')
+  return normalized.length === 16 ? `${normalized}:00` : normalized
+}
+
+function currentDateTimeLocal(): string {
+  const now = new Date()
+  return new Date(now.getTime() - now.getTimezoneOffset() * 60_000).toISOString().slice(0, 16)
+}
+
 function resetForm(): void {
   newDriver.set('')
   newVehicle.set('')
   newStops.set(0)
   newDeliveryTime.set(0)
   newTotalDistance.set(0)
+  newLastActive.set(currentDateTimeLocal())
 }
 
 function openAddModal(): void {
@@ -210,6 +241,7 @@ function openEditModal(route: DeliveryRoute): void {
   newStops.set(route.stops)
   newDeliveryTime.set(route.delivery_time)
   newTotalDistance.set(route.total_distance)
+  newLastActive.set(toDateTimeLocal(route.last_active))
   showEditModal.set(true)
 }
 
@@ -226,6 +258,7 @@ async function addDeliveryRoute(): Promise<void> {
       stops: newStops(),
       delivery_time: newDeliveryTime(),
       total_distance: newTotalDistance(),
+      last_active: toDatabaseTimestamp(newLastActive()),
     } as DeliveryRoute)
     closeAddModal()
   }
@@ -247,6 +280,7 @@ async function saveDeliveryRoute(): Promise<void> {
       stops: newStops(),
       delivery_time: newDeliveryTime(),
       total_distance: newTotalDistance(),
+      last_active: toDatabaseTimestamp(newLastActive()),
     })
     closeEditModal()
   }
@@ -272,11 +306,6 @@ async function handleDeleteRoute(route: DeliveryRoute): Promise<void> {
     // eslint-disable-next-line no-console
     console.error('Failed to delete delivery route:', error)
   }
-}
-
-function viewRouteOnMap(route: DeliveryRoute): void {
-  // eslint-disable-next-line no-alert
-  alert(`View route on map: ${route.driver} (${route.stops} stops)`)
 }
 
 function handlePrevPage(): void {
