@@ -1,29 +1,32 @@
+import { Auth, sessionUser } from '@stacksjs/auth'
+import { config } from '@stacksjs/config'
 import { HttpError } from '@stacksjs/error-handling'
 import { Middleware } from '@stacksjs/router'
 
-/**
- * Authentication Middleware
- *
- * Validates the bearer token from the request and ensures
- * the user is authenticated before proceeding.
- *
- * Usage:
- * route.get('/dashboard', 'DashboardAction').middleware('auth')
- * route.group({ middleware: 'auth' }, () => { ... })
- */
-function extractBearerToken(request: any): string | null {
+function bearerToken(request: any): string | null {
   if (typeof request.bearerToken === 'function') {
-    const t = request.bearerToken()
-    if (t)
-      return t
+    const token = request.bearerToken()
+    if (token)
+      return token
   }
-  const authHeader
+
+  const header
     = (typeof request.header === 'function' && request.header('authorization'))
-    || request.headers?.get?.('authorization')
-    || request.headers?.get?.('Authorization')
-  if (typeof authHeader === 'string' && authHeader.startsWith('Bearer '))
-    return authHeader.substring(7)
-  return null
+      || request.headers?.get?.('authorization')
+      || request.headers?.get?.('Authorization')
+  return typeof header === 'string' && header.startsWith('Bearer ')
+    ? header.slice(7)
+    : null
+}
+
+async function stampTokenUser(request: any, token: string): Promise<void> {
+  const user = await Auth.getUserFromToken(token)
+  if (!user)
+    throw new HttpError(401, 'Unauthorized. Invalid or expired token.')
+
+  Auth.setUser(user)
+  request._authenticatedUser = user
+  request._currentAccessToken = await Auth.currentAccessToken()
 }
 
 export default new Middleware({
@@ -31,29 +34,30 @@ export default new Middleware({
   priority: 1,
 
   async handle(request) {
-    const { Auth } = await import('@stacksjs/auth')
-
-    const bearerToken = extractBearerToken(request)
-
-    if (!bearerToken)
-      throw new HttpError(401, 'Unauthorized. No token provided.')
-
-    const isValid = await Auth.validateToken(bearerToken)
-    if (!isValid)
-      throw new HttpError(401, 'Unauthorized. Invalid token.')
-
-    const user = await Auth.getUserFromToken(bearerToken)
-    if (user) {
-      Auth.setUser(user)
-      ;request._authenticatedUser = user
-      // Do NOT overwrite `request.user` — `enhanceRequest` declared
-      // it as an async function (`user(): Promise<UserModel | undefined>`)
-      // and downstream action code reaches for `await request.user()`.
-      // Replacing the function with a User object made every caller
-      // throw "user is not a function" post-auth. Read from
-      // `_authenticatedUser` via `request.user()` instead — the helper
-      // prefers the stamped value before falling back to a token
-      // lookup. See stacksjs/stacks#1860 M-9.
+    const token = bearerToken(request)
+    if (token) {
+      await stampTokenUser(request, token)
+      return
     }
+
+    const tokenCookieName = config.auth?.defaultTokenName || 'auth-token'
+    const cookieToken = request.cookie?.(tokenCookieName)
+    if (cookieToken) {
+      await stampTokenUser(request, cookieToken)
+      return
+    }
+
+    const sessionId = request.cookie?.('session_id')
+    if (sessionId) {
+      const user = await sessionUser(sessionId)
+      if (!user)
+        throw new HttpError(401, 'Unauthorized. Session expired.')
+
+      Auth.setUser(user)
+      request._authenticatedUser = user
+      return
+    }
+
+    throw new HttpError(401, 'Unauthorized. No token or session provided.')
   },
 })

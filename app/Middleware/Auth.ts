@@ -13,10 +13,13 @@ export default new Middleware({
 
     if (bearerToken) {
       log.debug(`[middleware:auth] Validating bearer token`)
-      const isValid = await Auth.validateToken(bearerToken)
-      if (!isValid)
+      const user = await Auth.getUserFromToken(bearerToken)
+      if (!user)
         throw new HttpError(401, 'Unauthorized. Invalid token.')
 
+      Auth.setUser(user)
+      request._authenticatedUser = user
+      request._currentAccessToken = await Auth.currentAccessToken()
       log.debug(`[middleware:auth] Bearer token valid`)
       return
     }
@@ -40,7 +43,8 @@ export default new Middleware({
         throw new HttpError(401, 'Unauthorized. Invalid or expired session.')
 
       Auth.setUser(user)
-      ;(request as { _authenticatedUser?: unknown })._authenticatedUser = user
+      request._authenticatedUser = user
+      request._currentAccessToken = await Auth.currentAccessToken()
 
       log.debug(`[middleware:auth] Login cookie valid`)
       return
@@ -51,11 +55,13 @@ export default new Middleware({
 
     if (sessionId) {
       log.debug(`[middleware:auth] Validating session`)
-      const { sessionCheck } = await import('@stacksjs/auth')
-      const isValid = await sessionCheck(sessionId)
-      if (!isValid)
+      const { sessionUser } = await import('@stacksjs/auth')
+      const user = await sessionUser(sessionId)
+      if (!user)
         throw new HttpError(401, 'Unauthorized. Session expired.')
 
+      Auth.setUser(user)
+      request._authenticatedUser = user
       log.debug(`[middleware:auth] Session valid`)
       return
     }
