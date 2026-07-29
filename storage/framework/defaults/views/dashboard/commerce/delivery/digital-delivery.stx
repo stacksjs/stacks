@@ -20,7 +20,7 @@
         </div>
       </div>
 
-      <DigitalDeliveryTable :methods="paginatedDigitalDeliveries" @edit="openEditModal" @delete="handleDeleteDigitalMethod" />
+      <DigitalDeliveryTable :methods="paginatedDigitalDeliveries" @edit="openEditModal($event.detail)" @delete="handleDeleteDigitalMethod($event.detail)" />
 
       <div class="px-4 py-3 bg-gray-50 dark:bg-neutral-900 border-gray-200 border-t dark:border-neutral-700">
         <DeliveryPagination :currentPage="currentPage" :totalItems="totalItems" :itemsPerPage="itemsPerPage" @prev="handlePrevPage" @next="handleNextPage" @page="handlePageChange($event.detail)" />
@@ -32,7 +32,7 @@
   <div :show="showAddModal" class="fixed inset-0 overflow-y-auto z-10">
     <div class="flex items-end justify-center sm:items-center p-4 sm:p-0 min-h-full text-center">
       <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" @click="closeAddModal()"></div>
-      <div class="overflow-hidden relative pb-4 pt-5 px-4 sm:my-8 sm:p-6 sm:max-w-lg sm:w-full text-left bg-white dark:bg-neutral-800 rounded-lg shadow-xl transition-all transform">
+      <form @submit.prevent="addDigitalDelivery()" class="overflow-hidden relative pb-4 pt-5 px-4 sm:my-8 sm:p-6 sm:max-w-lg sm:w-full text-left bg-white dark:bg-neutral-800 rounded-lg shadow-xl transition-all transform">
         <div>
           <div class="mt-3 sm:mt-5 text-center">
             <h3 class="font-semibold leading-6 text-base text-gray-900 dark:text-white">Add New Digital Delivery Method</h3>
@@ -41,26 +41,26 @@
                 <div>
                   <label for="delivery-name" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">Name</label>
                   <div class="mt-2">
-                    <input type="text" id="delivery-name" x-model="newName" placeholder="Enter delivery method name" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm" />
+                    <input type="text" id="delivery-name" x-model.trim="newName" maxlength="255" required placeholder="Enter delivery method name" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm" />
                   </div>
                 </div>
                 <div>
                   <label for="delivery-description" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">Description</label>
                   <div class="mt-2">
-                    <textarea id="delivery-description" x-model="newDescription" rows="3" placeholder="Enter description" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm"></textarea>
+                    <textarea id="delivery-description" x-model.trim="newDescription" rows="3" required placeholder="Enter description" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm"></textarea>
                   </div>
                 </div>
                 <div class="grid gap-4 grid-cols-2">
                   <div>
                     <label for="delivery-download-limit" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">Download Limit</label>
                     <div class="mt-2">
-                      <input type="number" id="delivery-download-limit" x-model.number="newDownloadLimit" placeholder="Leave empty for unlimited" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm" />
+                      <input type="number" id="delivery-download-limit" x-model.number="newDownloadLimit" min="0" step="1" placeholder="Unlimited" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm" />
                     </div>
                   </div>
                   <div>
                     <label for="delivery-expiry-days" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">Expiry Days</label>
                     <div class="mt-2">
-                      <input type="number" id="delivery-expiry-days" x-model.number="newExpiryDays" placeholder="Leave empty for no expiry" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm" />
+                      <input type="number" id="delivery-expiry-days" x-model.number="newExpiryDays" min="0" step="1" required placeholder="30" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm" />
                     </div>
                   </div>
                 </div>
@@ -77,9 +77,9 @@
                 <div>
                   <label for="delivery-status" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">Status</label>
                   <div class="mt-2">
-                    <select id="delivery-status" x-model="newStatus" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm">
-                      <option value="Active">Active</option>
-                      <option value="Inactive">Inactive</option>
+                    <select id="delivery-status" x-model="newStatus" required class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm">
+                      <option value="active">Active</option>
+                      <option value="inactive">Inactive</option>
                     </select>
                   </div>
                 </div>
@@ -88,10 +88,10 @@
           </div>
         </div>
         <div class="sm:grid sm:gap-3 sm:grid-cols-2 sm:grid-flow-row-dense mt-5 sm:mt-6">
-          <button type="button" @click="addDigitalDelivery()" class="inline-flex justify-center sm:col-start-2 px-3 py-2 w-full font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 shadow-sm">Add Method</button>
+          <button type="submit" class="inline-flex justify-center sm:col-start-2 px-3 py-2 w-full font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 shadow-sm">Add Method</button>
           <button type="button" @click="closeAddModal()" class="inline-flex justify-center sm:col-start-1 mt-3 px-3 py-2 sm:mt-0 w-full font-semibold text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-600 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 shadow-sm">Cancel</button>
         </div>
-      </div>
+      </form>
     </div>
   </div>
 
@@ -99,7 +99,7 @@
   <div :show="showEditModal" class="fixed inset-0 overflow-y-auto z-10">
     <div class="flex items-end justify-center sm:items-center p-4 sm:p-0 min-h-full text-center">
       <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" @click="closeEditModal()"></div>
-      <div class="overflow-hidden relative pb-4 pt-5 px-4 sm:my-8 sm:p-6 sm:max-w-lg sm:w-full text-left bg-white dark:bg-neutral-800 rounded-lg shadow-xl transition-all transform">
+      <form @submit.prevent="saveDigitalDelivery()" class="overflow-hidden relative pb-4 pt-5 px-4 sm:my-8 sm:p-6 sm:max-w-lg sm:w-full text-left bg-white dark:bg-neutral-800 rounded-lg shadow-xl transition-all transform">
         <div>
           <div class="mt-3 sm:mt-5 text-center">
             <h3 class="font-semibold leading-6 text-base text-gray-900 dark:text-white">Edit Digital Delivery Method</h3>
@@ -108,26 +108,26 @@
                 <div>
                   <label for="edit-delivery-name" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">Name</label>
                   <div class="mt-2">
-                    <input type="text" id="edit-delivery-name" x-model="newName" placeholder="Enter delivery method name" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm" />
+                    <input type="text" id="edit-delivery-name" x-model.trim="newName" maxlength="255" required placeholder="Enter delivery method name" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm" />
                   </div>
                 </div>
                 <div>
                   <label for="edit-delivery-description" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">Description</label>
                   <div class="mt-2">
-                    <textarea id="edit-delivery-description" x-model="newDescription" rows="3" placeholder="Enter description" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm"></textarea>
+                    <textarea id="edit-delivery-description" x-model.trim="newDescription" rows="3" required placeholder="Enter description" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm"></textarea>
                   </div>
                 </div>
                 <div class="grid gap-4 grid-cols-2">
                   <div>
                     <label for="edit-delivery-download-limit" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">Download Limit</label>
                     <div class="mt-2">
-                      <input type="number" id="edit-delivery-download-limit" x-model.number="newDownloadLimit" placeholder="Leave empty for unlimited" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm" />
+                      <input type="number" id="edit-delivery-download-limit" x-model.number="newDownloadLimit" min="0" step="1" placeholder="Unlimited" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm" />
                     </div>
                   </div>
                   <div>
                     <label for="edit-delivery-expiry-days" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">Expiry Days</label>
                     <div class="mt-2">
-                      <input type="number" id="edit-delivery-expiry-days" x-model.number="newExpiryDays" placeholder="Leave empty for no expiry" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm" />
+                      <input type="number" id="edit-delivery-expiry-days" x-model.number="newExpiryDays" min="0" step="1" required placeholder="30" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm" />
                     </div>
                   </div>
                 </div>
@@ -144,9 +144,9 @@
                 <div>
                   <label for="edit-delivery-status" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">Status</label>
                   <div class="mt-2">
-                    <select id="edit-delivery-status" x-model="newStatus" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm">
-                      <option value="Active">Active</option>
-                      <option value="Inactive">Inactive</option>
+                    <select id="edit-delivery-status" x-model="newStatus" required class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm">
+                      <option value="active">Active</option>
+                      <option value="inactive">Inactive</option>
                     </select>
                   </div>
                 </div>
@@ -155,10 +155,10 @@
           </div>
         </div>
         <div class="sm:grid sm:gap-3 sm:grid-cols-2 sm:grid-flow-row-dense mt-5 sm:mt-6">
-          <button type="button" @click="saveDigitalDelivery()" class="inline-flex justify-center sm:col-start-2 px-3 py-2 w-full font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 shadow-sm">Save Changes</button>
+          <button type="submit" class="inline-flex justify-center sm:col-start-2 px-3 py-2 w-full font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 shadow-sm">Save Changes</button>
           <button type="button" @click="closeEditModal()" class="inline-flex justify-center sm:col-start-1 mt-3 px-3 py-2 sm:mt-0 w-full font-semibold text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-600 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 shadow-sm">Cancel</button>
         </div>
-      </div>
+      </form>
     </div>
   </div>
 </div>
@@ -166,15 +166,17 @@
 <script client>
 import { useDigitalDeliveries } from '../../../../functions/commerce/shippings/digital-deliveries'
 
+type DigitalDeliveryStatus = 'active' | 'inactive'
+
 interface DigitalDelivery {
   id?: number
   name: string
   description: string
-  download_limit?: number
+  download_limit?: number | null
   expiry_days: number
-  requires_login?: boolean
-  automatic_delivery?: boolean
-  status?: string
+  requires_login: boolean | number
+  automatic_delivery: boolean | number
+  status: DigitalDeliveryStatus
 }
 
 const { digitalDeliveries, createDigitalDelivery, fetchDigitalDeliveries, updateDigitalDelivery, deleteDigitalDelivery } = useDigitalDeliveries()
@@ -185,11 +187,11 @@ const editingDelivery = state<DigitalDelivery | null>(null)
 
 const newName = state('')
 const newDescription = state('')
-const newDownloadLimit = state<number | undefined>(undefined)
+const newDownloadLimit = state<number | string>('')
 const newExpiryDays = state(30)
 const newRequiresLogin = state(false)
 const newAutomaticDelivery = state(true)
-const newStatus = state('Active')
+const newStatus = state<DigitalDeliveryStatus>('active')
 
 const searchQuery = state('')
 const currentPage = state(1)
@@ -213,11 +215,11 @@ const totalItems = derived(() => filteredDigitalDeliveries().length)
 function resetForm(): void {
   newName.set('')
   newDescription.set('')
-  newDownloadLimit.set(undefined)
+  newDownloadLimit.set('')
   newExpiryDays.set(30)
   newRequiresLogin.set(false)
   newAutomaticDelivery.set(true)
-  newStatus.set('Active')
+  newStatus.set('active')
 }
 
 function openAddModal(): void {
@@ -233,11 +235,11 @@ function openEditModal(delivery: DigitalDelivery): void {
   editingDelivery.set(delivery)
   newName.set(delivery.name)
   newDescription.set(delivery.description)
-  newDownloadLimit.set(delivery.download_limit ?? undefined)
+  newDownloadLimit.set(delivery.download_limit ?? '')
   newExpiryDays.set(delivery.expiry_days ?? 30)
-  newRequiresLogin.set(delivery.requires_login ?? false)
-  newAutomaticDelivery.set(delivery.automatic_delivery ?? true)
-  newStatus.set(delivery.status ?? 'Active')
+  newRequiresLogin.set(Boolean(delivery.requires_login))
+  newAutomaticDelivery.set(Boolean(delivery.automatic_delivery))
+  newStatus.set(delivery.status)
   showEditModal.set(true)
 }
 
@@ -251,7 +253,7 @@ async function addDigitalDelivery(): Promise<void> {
     await createDigitalDelivery({
       name: newName(),
       description: newDescription(),
-      download_limit: newDownloadLimit(),
+      download_limit: newDownloadLimit() === '' ? undefined : Number(newDownloadLimit()),
       expiry_days: newExpiryDays(),
       requires_login: newRequiresLogin(),
       automatic_delivery: newAutomaticDelivery(),
@@ -274,7 +276,7 @@ async function saveDigitalDelivery(): Promise<void> {
       ...target,
       name: newName(),
       description: newDescription(),
-      download_limit: newDownloadLimit(),
+      download_limit: newDownloadLimit() === '' ? undefined : Number(newDownloadLimit()),
       expiry_days: newExpiryDays(),
       requires_login: newRequiresLogin(),
       automatic_delivery: newAutomaticDelivery(),
