@@ -32,7 +32,7 @@ const tabs = [
   </div>
   <div class="hidden sm:block">
     <div class="overflow-x-auto border-b border-gray-200 dark:border-neutral-700">
-      <nav class="flex gap-8 -mb-px min-w-max" aria-label="Delivery sections">
+      <nav class="flex gap-6 -mb-px min-w-max" aria-label="Delivery sections">
         @foreach(tabs as tab)
           <a
             href="{{ tab.href }}"
