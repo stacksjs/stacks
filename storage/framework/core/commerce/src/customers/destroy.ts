@@ -1,5 +1,6 @@
 import { db } from '@stacksjs/database'
 import { fetchById } from './fetch'
+import { mutationCount } from '../utils/mutation-count'
 
 /**
  * Delete a customer by ID
@@ -50,7 +51,7 @@ export async function bulkDestroy(ids: number[]): Promise<number> {
       .where('id', 'in', ids)
       .executeTakeFirst()
 
-    return Number(result.numDeletedRows) || 0
+    return mutationCount(result) || 0
   }
   catch (error) {
     if (error instanceof Error) {

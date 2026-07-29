@@ -1,5 +1,6 @@
 import { db } from '@stacksjs/database'
 import { formatDate } from '@stacksjs/orm'
+import { mutationCount } from '../utils/mutation-count'
 
 /**
  * Delete a coupon by ID
@@ -45,5 +46,5 @@ export async function deleteExpiredCoupons(): Promise<number> {
     .where('end_date', '<', currentDate)
     .executeTakeFirst()
 
-  return Number(result?.numDeletedRows) || 0
+  return mutationCount(result)
 }

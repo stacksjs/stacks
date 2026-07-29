@@ -1,6 +1,7 @@
 import { db } from '@stacksjs/database'
 import { formatDate } from '@stacksjs/orm'
 import { fetchById } from './fetch'
+import { mutationCount } from '../utils/mutation-count'
 
 /**
  * Delete a gift card by ID
@@ -40,7 +41,7 @@ export async function bulkDestroy(ids: number[]): Promise<number> {
     .where('id', 'in', ids)
     .executeTakeFirst()
 
-  return Number(result?.numDeletedRows) || 0
+  return mutationCount(result)
 }
 
 /**
@@ -56,7 +57,7 @@ export async function destroyExpired(): Promise<number> {
     .where('expiry_date', '<', currentDate)
     .executeTakeFirst()
 
-  return Number(result?.numDeletedRows) || 0
+  return mutationCount(result)
 }
 
 /**

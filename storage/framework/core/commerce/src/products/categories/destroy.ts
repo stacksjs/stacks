@@ -1,5 +1,6 @@
 import { db } from '@stacksjs/database'
 import { fetchById } from './fetch'
+import { mutationCount } from '../../utils/mutation-count'
 
 /**
  * Delete a category by ID
@@ -39,7 +40,7 @@ export async function bulkRemove(ids: number[]): Promise<number> {
     .where('id', 'in', ids)
     .executeTakeFirst()
 
-  return Number(result?.numDeletedRows) || 0
+  return mutationCount(result)
 }
 
 /**
@@ -54,7 +55,7 @@ export async function removeChildCategories(parentId: string): Promise<number> {
     .where('parent_category_id', '=', parentId)
     .executeTakeFirst()
 
-  return Number(result?.numDeletedRows) || 0
+  return mutationCount(result)
 }
 
 /**

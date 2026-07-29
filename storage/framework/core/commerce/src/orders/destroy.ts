@@ -1,4 +1,5 @@
 import { db } from '@stacksjs/database'
+import { mutationCount } from '../utils/mutation-count'
 
 /**
  * Delete an order by ID
@@ -13,7 +14,7 @@ export async function destroy(id: number): Promise<boolean> {
       .where('id', '=', id)
       .executeTakeFirst()
 
-    return Number(result.numDeletedRows) > 0
+    return mutationCount(result) > 0
   }
   catch (error) {
     if (error instanceof Error) {
@@ -69,7 +70,7 @@ export async function bulkDestroy(ids: number[]): Promise<number> {
       .executeTakeFirst()
 
     // Return the number of deleted rows
-    return Number(result.numDeletedRows)
+    return mutationCount(result)
   }
   catch (error) {
     if (error instanceof Error) {
