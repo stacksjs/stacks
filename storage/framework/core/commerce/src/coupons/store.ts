@@ -1,5 +1,6 @@
 type CouponJsonResponse = ModelRow<typeof Coupon>
 type NewCoupon = NewModelData<typeof Coupon>
+import { randomUUIDv7 } from 'bun'
 import { db } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
 import { isUniqueViolation } from '@stacksjs/orm'
@@ -12,25 +13,22 @@ import { isUniqueViolation } from '@stacksjs/orm'
  */
 export async function store(data: NewCoupon): Promise<CouponJsonResponse | undefined> {
   try {
-    // Insert the coupon record
-    const createdCoupon = await db
+    const uuid = randomUUIDv7()
+    await db
       .insertInto('coupons')
-      .values(data)
+      .values({
+        ...data,
+        uuid,
+      })
       .executeTakeFirst()
 
-    const couponId = Number(createdCoupon.insertId) || Number(createdCoupon.numInsertedOrUpdatedRows)
+    const coupon = await db
+      .selectFrom('coupons')
+      .where('uuid', '=', uuid)
+      .selectAll()
+      .executeTakeFirst()
 
-    if (couponId) {
-      const coupon = await db
-        .selectFrom('coupons')
-        .where('id', '=', couponId)
-        .selectAll()
-        .executeTakeFirst()
-
-      return coupon as CouponJsonResponse
-    }
-
-    return undefined
+    return coupon as CouponJsonResponse | undefined
   }
   catch (error) {
     if (error instanceof HttpError)

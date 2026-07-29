@@ -26,7 +26,8 @@ describe('Coupon Module', () => {
           end_date: formatDate(new Date('2023-12-31')),
         }
 
-        await store(couponData)
+        const coupon = await store(couponData)
+        expect(coupon?.code).toBe(code)
       }
 
       // Fetch all coupons

@@ -69,9 +69,11 @@ export default defineModel({
     isActive: {
       order: 4,
       fillable: true,
+      default: true,
       validation: {
         rule: schema.boolean().required(),
       },
+      factory: () => true,
     },
 
     discountType: {
