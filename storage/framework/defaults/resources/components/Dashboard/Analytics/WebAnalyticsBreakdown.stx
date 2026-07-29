@@ -1,0 +1,208 @@
+<script client>
+import type {
+  AnalyticsRange,
+  BrowserData,
+  CountryData,
+  DeviceData,
+  PageData,
+  ReferrerData,
+  TrafficDataPoint,
+  WebAnalyticsResponse,
+} from '../../../../functions/analytics'
+import { fetchWebAnalytics } from '../../../../functions/analytics'
+import { pushToast } from '../../../../functions/toasts'
+
+type BreakdownKind = 'pages' | 'referrers' | 'countries' | 'devices' | 'browsers'
+type BreakdownRow = PageData | ReferrerData | CountryData | DeviceData | BrowserData
+
+const kind = useReactiveProp<BreakdownKind>('kind', 'pages')
+const title = useReactiveProp('title', 'Analytics')
+const description = useReactiveProp('description', '')
+const emptyMessage = useReactiveProp('emptyMessage', 'No analytics data was recorded for this period.')
+
+const analytics = state<WebAnalyticsResponse | null>(null)
+const analyticsRange = state<AnalyticsRange>('month')
+const dateRangeDisplay = state('Last 30 days')
+const isLoading = state(false)
+const loadError = state('')
+
+function formatNumber(value: number): string {
+  return new Intl.NumberFormat().format(value)
+}
+
+function formatDateRange(start: string, end: string): string {
+  const formatter = new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
+  return `${formatter.format(new Date(start))} to ${formatter.format(new Date(end))}`
+}
+
+function currentRows(): BreakdownRow[] {
+  const data = analytics()
+  if (!data)
+    return []
+
+  switch (kind()) {
+    case 'pages': return data.pages
+    case 'referrers': return data.referrers
+    case 'countries': return data.countries
+    case 'devices': return data.devices
+    case 'browsers': return data.browsers
+  }
+}
+
+function trafficRows(): TrafficDataPoint[] {
+  return analytics()?.traffic || []
+}
+
+function totalVisitors(): number {
+  return analytics()?.overview.people || 0
+}
+
+function totalViews(): number {
+  return analytics()?.overview.views || 0
+}
+
+function rowName(row: BreakdownRow): string {
+  if ('path' in row)
+    return row.path
+  if ('flag' in row && row.flag)
+    return `${row.flag} ${row.name}`
+  return row.name
+}
+
+function rowVisitors(row: BreakdownRow): number {
+  return row.visitors
+}
+
+function rowPercentage(row: BreakdownRow): number {
+  return row.percentage
+}
+
+function setAnalyticsRange(value: string | CustomEvent<string>): void {
+  const range = typeof value === 'string' ? value : value.detail
+  analyticsRange.set(range as AnalyticsRange)
+  void loadAnalytics()
+}
+
+async function loadAnalytics(): Promise<void> {
+  isLoading.set(true)
+  loadError.set('')
+  try {
+    const data = await fetchWebAnalytics(analyticsRange())
+    analytics.set(data)
+    dateRangeDisplay.set(formatDateRange(data.dateRange.start, data.dateRange.end))
+  }
+  catch (error) {
+    loadError.set('Analytics data could not be loaded.')
+    pushToast('error', 'Could not load analytics', { detail: String(error) })
+  }
+  finally {
+    isLoading.set(false)
+  }
+}
+
+onMount(() => {
+  void loadAnalytics()
+})
+</script>
+
+<div class="space-y-6">
+  <AnalyticsPageHeader
+    :title="title"
+    :description="description"
+    :dateRange="dateRangeDisplay"
+    :range="analyticsRange"
+    :loading="isLoading"
+    @range-change="setAnalyticsRange"
+    @refresh="loadAnalytics"
+  />
+
+  <div :if="loadError()" class="p-4 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900">
+    {{ loadError() }}
+  </div>
+
+  <section class="grid gap-3 grid-cols-1 sm:grid-cols-3">
+    <div class="p-4 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
+      <p class="text-gray-500 text-xs tracking-wide uppercase dark:text-neutral-400">Unique visitors</p>
+      <p class="mt-2 font-semibold text-2xl text-gray-900 dark:text-white">{{ formatNumber(totalVisitors()) }}</p>
+    </div>
+    <div class="p-4 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
+      <p class="text-gray-500 text-xs tracking-wide uppercase dark:text-neutral-400">Page views</p>
+      <p class="mt-2 font-semibold text-2xl text-gray-900 dark:text-white">{{ formatNumber(totalViews()) }}</p>
+    </div>
+    <div class="p-4 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
+      <p class="text-gray-500 text-xs tracking-wide uppercase dark:text-neutral-400">Recorded rows</p>
+      <p class="mt-2 font-semibold text-2xl text-gray-900 dark:text-white">{{ formatNumber(currentRows().length) }}</p>
+    </div>
+  </section>
+
+  <section :show="kind() === 'pages'" class="overflow-hidden bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
+    <div class="px-4 py-3 border-b border-gray-200 dark:border-neutral-700">
+      <h2 class="font-semibold text-gray-900 dark:text-white">Traffic timeline</h2>
+      <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Recorded page requests grouped by the selected period.</p>
+    </div>
+    <div :if="trafficRows().length === 0" class="px-4 py-10 text-center text-gray-500 text-sm dark:text-neutral-400">
+      No page requests were recorded for this period.
+    </div>
+    <div :if="trafficRows().length > 0" class="overflow-x-auto">
+      <table class="min-w-full divide-gray-200 divide-y dark:divide-neutral-700">
+        <thead class="bg-gray-50 dark:bg-neutral-700/50">
+          <tr>
+            <th class="px-4 py-3 font-medium text-gray-500 text-left text-xs uppercase dark:text-neutral-300">Period</th>
+            <th class="px-4 py-3 font-medium text-gray-500 text-right text-xs uppercase dark:text-neutral-300">Visitors</th>
+            <th class="px-4 py-3 font-medium text-gray-500 text-right text-xs uppercase dark:text-neutral-300">Views</th>
+          </tr>
+        </thead>
+        <tbody class="divide-gray-200 divide-y dark:divide-neutral-700">
+          <template :for="point in trafficRows()">
+            <tr>
+              <td class="px-4 py-3 text-gray-900 text-sm dark:text-white">{{ point.date }}</td>
+              <td class="px-4 py-3 text-gray-500 text-right text-sm dark:text-neutral-300">{{ formatNumber(point.visitors) }}</td>
+              <td class="px-4 py-3 text-gray-500 text-right text-sm dark:text-neutral-300">{{ formatNumber(point.pageViews) }}</td>
+            </tr>
+          </template>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="overflow-hidden bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
+    <div class="px-4 py-3 border-b border-gray-200 dark:border-neutral-700">
+      <h2 class="font-semibold text-gray-900 dark:text-white">{{ title() }} breakdown</h2>
+      <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Privacy-safe aggregates from recorded application requests.</p>
+    </div>
+
+    <div :if="isLoading() && !analytics()" class="px-4 py-10 text-center text-gray-500 text-sm dark:text-neutral-400">
+      Loading analytics...
+    </div>
+    <div :if="!isLoading() && currentRows().length === 0" class="px-4 py-10 text-center">
+      <div class="mb-3 mx-auto h-8 w-8 text-gray-400 i-hugeicons-chart-line-data-02"></div>
+      <p class="font-medium text-gray-700 text-sm dark:text-neutral-200">No recorded data</p>
+      <p class="mt-1 mx-auto max-w-xl text-gray-500 text-sm dark:text-neutral-400">{{ emptyMessage() }}</p>
+    </div>
+
+    <div :if="currentRows().length > 0" class="overflow-x-auto">
+      <table class="min-w-full divide-gray-200 divide-y dark:divide-neutral-700">
+        <thead class="bg-gray-50 dark:bg-neutral-700/50">
+          <tr>
+            <th class="px-4 py-3 font-medium text-gray-500 text-left text-xs uppercase dark:text-neutral-300">{{ kind() === 'pages' ? 'Page' : 'Name' }}</th>
+            <th :show="kind() === 'pages'" class="px-4 py-3 font-medium text-gray-500 text-right text-xs uppercase dark:text-neutral-300">Entries</th>
+            <th class="px-4 py-3 font-medium text-gray-500 text-right text-xs uppercase dark:text-neutral-300">Visitors</th>
+            <th :show="kind() === 'pages' || kind() === 'referrers'" class="px-4 py-3 font-medium text-gray-500 text-right text-xs uppercase dark:text-neutral-300">Views</th>
+            <th class="px-4 py-3 font-medium text-gray-500 text-right text-xs uppercase dark:text-neutral-300">Share</th>
+          </tr>
+        </thead>
+        <tbody class="divide-gray-200 divide-y dark:divide-neutral-700">
+          <template :for="row in currentRows()">
+            <tr class="hover:bg-gray-50 dark:hover:bg-neutral-700/50">
+              <td class="px-4 py-3 font-medium text-gray-900 text-sm dark:text-white">{{ rowName(row) }}</td>
+              <td :show="kind() === 'pages'" class="px-4 py-3 text-gray-500 text-right text-sm dark:text-neutral-300">{{ formatNumber(row.entries || 0) }}</td>
+              <td class="px-4 py-3 text-gray-500 text-right text-sm dark:text-neutral-300">{{ formatNumber(rowVisitors(row)) }}</td>
+              <td :show="kind() === 'pages' || kind() === 'referrers'" class="px-4 py-3 text-gray-500 text-right text-sm dark:text-neutral-300">{{ formatNumber(row.views || 0) }}</td>
+              <td class="px-4 py-3 text-gray-500 text-right text-sm dark:text-neutral-300">{{ rowPercentage(row) }}%</td>
+            </tr>
+          </template>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
