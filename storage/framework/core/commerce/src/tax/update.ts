@@ -117,3 +117,47 @@ export async function updateRate(
     throw error
   }
 }
+
+/**
+ * Select or clear the default tax rate.
+ *
+ * @param id The ID of the tax rate
+ * @param isDefault Whether the tax rate should be the default
+ * @returns True when the tax rate exists and was updated
+ */
+export async function updateDefaultStatus(id: number, isDefault: boolean): Promise<boolean> {
+  try {
+    return await db.transaction(async (trx: any) => {
+      const existing = await trx
+        .selectFrom('tax_rates')
+        .select('id')
+        .where('id', '=', id)
+        .executeTakeFirst()
+
+      if (!existing)
+        return false
+
+      const updatedAt = formatDate(new Date())
+      if (isDefault) {
+        await trx
+          .updateTable('tax_rates')
+          .set({ is_default: false, updated_at: updatedAt })
+          .where('id', '!=', id)
+          .execute()
+      }
+
+      await trx
+        .updateTable('tax_rates')
+        .set({ is_default: isDefault, updated_at: updatedAt })
+        .where('id', '=', id)
+        .execute()
+
+      return true
+    })
+  }
+  catch (error) {
+    if (error instanceof Error)
+      throw new TypeError(`Failed to update tax rate default status: ${error.message}`)
+    throw error
+  }
+}

@@ -19,6 +19,7 @@ export {
 // Functions from update.ts
 export {
   update,
+  updateDefaultStatus,
   updateRate,
   updateStatus,
 } from './update'
