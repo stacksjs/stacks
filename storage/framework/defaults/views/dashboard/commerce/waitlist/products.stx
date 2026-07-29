@@ -223,11 +223,11 @@
                       <div class="h-5 w-5 i-hugeicons-edit-01"></div>
                       <span class="sr-only">Edit</span>
                     </button>
-                    <button :show="{{ entry.status === 'Waiting' ? 'true' : 'false' }}" @click="markAsNotified({{ entry.id }})" class="text-gray-400 dark:text-green-400 hover:text-green-900 dark:hover:text-green-300 transition-colors">
+                    <button :show="entry.status === 'Waiting'" @click="markAsNotified({{ entry.id }})" class="text-gray-400 dark:text-green-400 hover:text-green-900 dark:hover:text-green-300 transition-colors">
                       <div class="h-5 w-5 i-hugeicons-notification-square"></div>
                       <span class="sr-only">Notify</span>
                     </button>
-                    <button :show="{{ entry.status === 'Notified' ? 'true' : 'false' }}" @click="markAsPurchased({{ entry.id }})" class="text-gray-400 dark:text-purple-400 hover:text-purple-900 dark:hover:text-purple-300 transition-colors">
+                    <button :show="entry.status === 'Notified'" @click="markAsPurchased({{ entry.id }})" class="text-gray-400 dark:text-purple-400 hover:text-purple-900 dark:hover:text-purple-300 transition-colors">
                       <div class="h-5 w-5 i-hugeicons-shopping-cart-02"></div>
                       <span class="sr-only">Purchase</span>
                     </button>

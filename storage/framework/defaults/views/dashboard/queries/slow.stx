@@ -110,8 +110,8 @@
 
                       <h4 class="mb-2 mt-4 font-medium text-gray-900 text-sm dark:text-white">Bindings</h4>
                       <div class="mt-1 p-3 bg-gray-100 dark:bg-neutral-700 rounded-md">
-                        <pre :show="{{ query.bindings && query.bindings.length ? 'true' : 'false' }}" class="overflow-x-auto font-mono text-gray-800 text-xs dark:text-neutral-200">{{ JSON.stringify(query.bindings, null, 2) }}</pre>
-                        <p :show="{{ !query.bindings || !query.bindings.length ? 'true' : 'false' }}" class="text-gray-500 text-xs dark:text-neutral-400">No bindings</p>
+                        <pre :show="query.bindings && query.bindings.length" class="overflow-x-auto font-mono text-gray-800 text-xs dark:text-neutral-200">{{ JSON.stringify(query.bindings, null, 2) }}</pre>
+                        <p :show="!query.bindings || !query.bindings.length" class="text-gray-500 text-xs dark:text-neutral-400">No bindings</p>
                       </div>
 
                       <h4 class="mb-2 mt-4 font-medium text-gray-900 text-sm dark:text-white">Explain Plan</h4>
@@ -140,22 +140,22 @@
                       <div class="mt-1">
                         <div class="mb-2">
                           <h5 class="font-medium text-gray-600 text-xs dark:text-neutral-400">Used Indexes</h5>
-                          <div :show="{{ query.indexes_used && query.indexes_used.length ? 'true' : 'false' }}" class="mt-1">
+                          <div :show="query.indexes_used && query.indexes_used.length" class="mt-1">
                             <template :for="index in query.indexes_used">
                               <span class="inline-flex items-center mb-2 mr-2 px-2 py-1 font-medium text-green-700 text-xs dark:text-green-300 bg-green-50 dark:bg-green-900/20 ring-1 ring-green-700/10 ring-inset rounded-md dark:ring-green-400/30">{{ index }}</span>
                             </template>
                           </div>
-                          <p :show="{{ !query.indexes_used || !query.indexes_used.length ? 'true' : 'false' }}" class="text-gray-500 text-xs dark:text-neutral-400">No indexes used</p>
+                          <p :show="!query.indexes_used || !query.indexes_used.length" class="text-gray-500 text-xs dark:text-neutral-400">No indexes used</p>
                         </div>
 
                         <div>
                           <h5 class="font-medium text-gray-600 text-xs dark:text-neutral-400">Missing Indexes</h5>
-                          <div :show="{{ query.missing_indexes && query.missing_indexes.length ? 'true' : 'false' }}" class="mt-1">
+                          <div :show="query.missing_indexes && query.missing_indexes.length" class="mt-1">
                             <template :for="index in query.missing_indexes">
                               <span class="inline-flex items-center mb-2 mr-2 px-2 py-1 font-medium text-red-700 text-xs dark:text-red-300 bg-red-50 dark:bg-red-900/20 ring-1 ring-inset ring-red-700/10 rounded-md dark:ring-red-400/30">{{ index }}</span>
                             </template>
                           </div>
-                          <p :show="{{ !query.missing_indexes || !query.missing_indexes.length ? 'true' : 'false' }}" class="text-gray-500 text-xs dark:text-neutral-400">No missing indexes identified</p>
+                          <p :show="!query.missing_indexes || !query.missing_indexes.length" class="text-gray-500 text-xs dark:text-neutral-400">No missing indexes identified</p>
                         </div>
                       </div>
                     </div>

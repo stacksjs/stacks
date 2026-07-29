@@ -82,14 +82,14 @@
               </td>
               <td class="px-3 py-3.5 whitespace-nowrap">
                 <Badge :variant="getStatusVariant(job.status)" size="sm">{{ job.status }}</Badge>
-                <div :show="{{ job.status === 'failed' ? 'true' : 'false' }}" class="mt-1 text-[11px] text-red-600 dark:text-red-400">Attempts: {{ job.attempts }}</div>
+                <div :show="job.status === 'failed'" class="mt-1 text-[11px] text-red-600 dark:text-red-400">Attempts: {{ job.attempts }}</div>
               </td>
               <td class="px-3 py-3.5 whitespace-nowrap">
                 <div class="font-mono text-[13px] text-neutral-900 dark:text-white">{{ job.runtime ? `${job.runtime.toFixed(1)}s` : '-' }}</div>
               </td>
               <td class="px-3 py-3.5 text-[12px] text-neutral-500 whitespace-nowrap dark:text-neutral-400">
                 <div>{{ job.started_at || '-' }}</div>
-                <div :show="{{ job.completed_at ? 'true' : 'false' }}">Completed: {{ job.completed_at }}</div>
+                <div :show="job.completed_at">Completed: {{ job.completed_at }}</div>
               </td>
               <td class="relative pl-3 pr-5 py-3.5 text-right whitespace-nowrap">
                 <Button :href="`/jobs/${job.id}`" variant="ghost" size="sm">View</Button>

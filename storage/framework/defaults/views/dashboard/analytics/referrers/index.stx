@@ -110,7 +110,7 @@
                     <span class="relative z-10">{{ referrer.name }}</span>
                   </td>
                   <td class="relative px-4 py-3 text-sm whitespace-nowrap">
-                    <span :show="{{ referrer.type ? 'true' : 'false' }}" class="inline-flex relative z-10 items-center px-2.5 py-0.5 font-medium text-xs rounded-full {{ getReferrerTypeBadgeClass(referrer.type) }}">{{ referrerTypeLabel(referrer.type) }}</span>
+                    <span :show="referrer.type" class="inline-flex relative z-10 items-center px-2.5 py-0.5 font-medium text-xs rounded-full {{ getReferrerTypeBadgeClass(referrer.type) }}">{{ referrerTypeLabel(referrer.type) }}</span>
                   </td>
                   <td class="relative px-4 py-3 text-gray-500 text-right text-sm whitespace-nowrap dark:text-neutral-300">
                     <span class="relative z-10">{{ referrer.visitors }}</span>

@@ -53,13 +53,13 @@
       </template>
       <template #actions="{ row }">
         <div class="flex gap-1 items-center">
-          <Button :show="{{ row.status === 'unresolved' ? 'true' : 'false' }}" variant="ghost" size="sm" title="Resolve" @click.stop="handleResolveError(row)">
+          <Button :show="row.status === 'unresolved'" variant="ghost" size="sm" title="Resolve" @click.stop="handleResolveError(row)">
             <div class="h-4 w-4 text-green-600 i-hugeicons-checkmark-circle-02"></div>
           </Button>
-          <Button :show="{{ row.status === 'unresolved' ? 'true' : 'false' }}" variant="ghost" size="sm" title="Ignore" @click.stop="handleIgnoreError(row)">
+          <Button :show="row.status === 'unresolved'" variant="ghost" size="sm" title="Ignore" @click.stop="handleIgnoreError(row)">
             <div class="h-4 w-4 text-amber-600 i-hugeicons-eye-off"></div>
           </Button>
-          <Button :show="{{ row.status !== 'unresolved' ? 'true' : 'false' }}" variant="ghost" size="sm" title="Unresolve" @click.stop="handleUnresolveError(row)">
+          <Button :show="row.status !== 'unresolved'" variant="ghost" size="sm" title="Unresolve" @click.stop="handleUnresolveError(row)">
             <div class="h-4 w-4 text-blue-600 i-hugeicons-refresh"></div>
           </Button>
           <Button variant="ghost" size="sm" title="Delete" @click.stop="openDeleteModal(row)">

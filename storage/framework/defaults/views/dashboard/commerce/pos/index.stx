@@ -108,8 +108,8 @@
             <div class="overflow-hidden relative bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700 shadow-sm hover:shadow-md transition group {{ !item.available ? 'opacity-70' : '' }}">
               <div class="aspect-square overflow-hidden relative bg-gray-200 dark:bg-neutral-700">
                 <img src="{{ item.imageUrl }}" alt="{{ item.name }}" class="object-cover h-full w-full duration-300 transition-transform group-hover:scale-105" />
-                <span :show="{{ !item.available ? 'true' : 'false' }}" class="absolute right-2 top-2 px-2 py-0.5 font-medium text-red-700 text-xs dark:text-red-400 bg-red-50 dark:bg-red-900/30 ring-1 ring-inset ring-red-600/20 rounded-full">Unavailable</span>
-                <span :show="{{ item.featured ? 'true' : 'false' }}" class="absolute left-2 top-2 px-2 py-0.5 font-medium text-xs text-yellow-700 dark:text-yellow-400 bg-yellow-50 dark:bg-yellow-900/30 ring-1 ring-inset ring-yellow-600/20 rounded-full">Popular</span>
+                <span :show="!item.available" class="absolute right-2 top-2 px-2 py-0.5 font-medium text-red-700 text-xs dark:text-red-400 bg-red-50 dark:bg-red-900/30 ring-1 ring-inset ring-red-600/20 rounded-full">Unavailable</span>
+                <span :show="item.featured" class="absolute left-2 top-2 px-2 py-0.5 font-medium text-xs text-yellow-700 dark:text-yellow-400 bg-yellow-50 dark:bg-yellow-900/30 ring-1 ring-inset ring-yellow-600/20 rounded-full">Popular</span>
               </div>
 
               <div class="p-4">
@@ -131,7 +131,7 @@
 
                 <div class="flex items-center justify-between mt-2">
                   <div>
-                    <span :show="{{ item.salePrice !== null ? 'true' : 'false' }}" class="font-medium text-gray-900 text-sm dark:text-white">${{ item.salePrice !== null ? item.salePrice.toFixed(2) : '' }}</span>
+                    <span :show="item.salePrice !== null" class="font-medium text-gray-900 text-sm dark:text-white">${{ item.salePrice !== null ? item.salePrice.toFixed(2) : '' }}</span>
                     <span class="{{ item.salePrice !== null ? 'line-through ml-2 text-sm text-gray-500 dark:text-neutral-400' : 'text-sm font-medium text-gray-900 dark:text-white' }}">${{ item.price.toFixed(2) }}</span>
                   </div>
                   <span class="text-gray-500 text-xs dark:text-neutral-400">{{ item.preparationTime }}</span>
@@ -175,11 +175,11 @@
                 </td>
                 <td class="px-3 py-4 text-gray-500 text-sm whitespace-nowrap dark:text-neutral-400">{{ item.category }}</td>
                 <td class="px-3 py-4 text-sm whitespace-nowrap">
-                  <div :show="{{ item.salePrice !== null ? 'true' : 'false' }}">
+                  <div :show="item.salePrice !== null">
                     <div class="font-medium text-gray-900 dark:text-white">${{ item.salePrice !== null ? item.salePrice.toFixed(2) : '' }}</div>
                     <div class="line-through text-gray-500 text-xs dark:text-neutral-400">${{ item.price.toFixed(2) }}</div>
                   </div>
-                  <div :show="{{ item.salePrice === null ? 'true' : 'false' }}">
+                  <div :show="item.salePrice === null">
                     <div class="font-medium text-gray-900 dark:text-white">${{ item.price.toFixed(2) }}</div>
                   </div>
                 </td>
@@ -224,7 +224,7 @@
 
               <template :for="(item, index) in orderItems">
                 <div class="mb-2 mt-0">
-                  <p :show="{{ item.specialInstructions ? 'true' : 'false' }}" class="pl-5 font-mono text-gray-500 text-xs dark:text-neutral-400">{{ item.specialInstructions }}</p>
+                  <p :show="item.specialInstructions" class="pl-5 font-mono text-gray-500 text-xs dark:text-neutral-400">{{ item.specialInstructions }}</p>
                 </div>
               </template>
 
@@ -336,7 +336,7 @@
                 <div class="mb-2 text-center text-gray-500 text-xs dark:text-neutral-400">{{ currentDateTime() }}</div>
                 <div class="my-2 break text-center text-xs dark:text-neutral-400">*************************************</div>
 
-                <template :for="(item, index) in summaryItems">
+                <template :for="(item, index) in summaryItems()">
                   <div class="flex justify-between my-1 text-gray-700 text-sm dark:text-neutral-300">
                     <div class="flex">
                       <span class="mr-2">{{ item.quantity }}</span>
