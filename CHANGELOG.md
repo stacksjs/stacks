@@ -1,5 +1,16 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.221...v0.70.222)
+
+## 🔧 Chores
+
+- update dashboard telemetry runtime ([d3ea587](https://github.com/stacksjs/stacks/commit/d3ea587)) _(by Chris <chrisbreuer93@gmail.com>)_
+- wip ([1b8e26e](https://github.com/stacksjs/stacks/commit/1b8e26e)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.220...v0.70.221)
 
 ## 🔧 Chores
