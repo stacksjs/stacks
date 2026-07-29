@@ -106,7 +106,7 @@
                     <label for="product-category" class="block font-medium text-gray-700 text-sm dark:text-neutral-300">Category</label>
                     <select id="product-category" x-model.number="newCategoryId" required class="block mt-1 w-full sm:text-sm dark:text-white dark:bg-neutral-700 border-gray-300 rounded-md dark:border-neutral-600 focus:border-blue-500 focus:ring-blue-500 shadow-sm">
                       <option value="0">Select a category</option>
-                      <template :for="category in categoryOptions">
+                      <template :for="category in categoryOptions()">
                         <option value="{{ category.id }}">{{ category.name }}</option>
                       </template>
                     </select>
@@ -115,7 +115,7 @@
                     <label for="product-manufacturer" class="block font-medium text-gray-700 text-sm dark:text-neutral-300">Manufacturer</label>
                     <select id="product-manufacturer" x-model.number="newManufacturerId" required class="block mt-1 w-full sm:text-sm dark:text-white dark:bg-neutral-700 border-gray-300 rounded-md dark:border-neutral-600 focus:border-blue-500 focus:ring-blue-500 shadow-sm">
                       <option value="0">Select a manufacturer</option>
-                      <template :for="manufacturer in manufacturerOptions">
+                      <template :for="manufacturer in manufacturerOptions()">
                         <option value="{{ manufacturer.id }}">{{ manufacturer.name }}</option>
                       </template>
                     </select>
@@ -161,7 +161,7 @@
 </div>
 
 <script client>
-import { useProducts } from '../../../../functions/commerce/products'
+import { useProducts } from '../../../../functions/commerce/products/products'
 import { useCategories } from '../../../../functions/commerce/products/categories'
 import { useManufacturers } from '../../../../functions/commerce/products/manufacturers'
 

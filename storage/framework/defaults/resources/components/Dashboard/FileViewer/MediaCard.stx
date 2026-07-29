@@ -30,7 +30,12 @@ interface Props {
   item: FileItem
 }
 
-const { item } = defineProps<Props>()
+const emptyItem: FileItem = {
+  id: 0,
+  name: '',
+  type: 'other',
+}
+const { item = emptyItem } = defineProps<Props>()
 
 const IMAGE_EXT = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'avif', 'svg', 'bmp', 'heic']
 const VIDEO_EXT = ['mp4', 'mov', 'webm', 'mkv', 'avi', 'm4v']

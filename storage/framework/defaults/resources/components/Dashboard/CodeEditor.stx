@@ -6,10 +6,10 @@ interface CodeEditorProps {
   content?: string
 }
 
-const { live = false, lang = 'typescript', theme = 'github_dark', content = `echo 'Hello World!' } = defineProps<CodeEditorProps>()
-
+const defaultContent = `echo 'Hello World!'
 mv ./test/test.ts ./jello
-cp`
+cp ./jello ./backup`
+const { live = false, lang = 'typescript', theme = 'github_dark', content = defaultContent } = defineProps<CodeEditorProps>()
 </script>
 <header class="flex items-center justify-between p-4 bg-[#1f2428] border-[#30363d] border-b rounded-t-lg">
     <div class="flex gap-2 items-center">
