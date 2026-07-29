@@ -746,14 +746,21 @@ export async function createQueryLogsTable(): Promise<void> {
   migrationContent += `    .addColumn('duration', 'integer')\n`
   migrationContent += `    .addColumn('connection', 'varchar(255)')\n`
   migrationContent += `    .addColumn('status', 'varchar(50)')\n`
+  migrationContent += `    .addColumn('error', 'text')\n`
   migrationContent += `    .addColumn('executed_at', 'timestamp', col => col.notNull())\n`
+  migrationContent += `    .addColumn('trace', 'text')\n`
   migrationContent += `    .addColumn('model', 'varchar(255)')\n`
   migrationContent += `    .addColumn('method', 'varchar(255)')\n`
+  migrationContent += `    .addColumn('file', 'text')\n`
+  migrationContent += `    .addColumn('line', 'integer')\n`
+  migrationContent += `    .addColumn('memory_usage', 'real')\n`
   migrationContent += `    .addColumn('rows_affected', 'integer')\n`
+  migrationContent += `    .addColumn('transaction_id', 'varchar(255)')\n`
   migrationContent += `    .addColumn('optimization_suggestions', 'json')\n`
   migrationContent += `    .addColumn('affected_tables', 'json')\n`
   migrationContent += `    .addColumn('indexes_used', 'json')\n`
   migrationContent += `    .addColumn('missing_indexes', 'json')\n`
+  migrationContent += `    .addColumn('explain_plan', 'json')\n`
   migrationContent += `    .addColumn('tags', 'json')\n`
   migrationContent += `    .addColumn('bindings', 'json')\n`
   migrationContent += `    .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql.raw('CURRENT_TIMESTAMP')))\n`
@@ -807,14 +814,21 @@ export async function createPostgresQueryLogsTable(): Promise<void> {
   migrationContent += `    .addColumn('duration', 'integer')\n`
   migrationContent += `    .addColumn('connection', 'varchar(255)')\n`
   migrationContent += `    .addColumn('status', 'varchar(50)')\n`
+  migrationContent += `    .addColumn('error', 'text')\n`
   migrationContent += `    .addColumn('executed_at', 'timestamp', col => col.notNull())\n`
+  migrationContent += `    .addColumn('trace', 'text')\n`
   migrationContent += `    .addColumn('model', 'varchar(255)')\n`
   migrationContent += `    .addColumn('method', 'varchar(255)')\n`
+  migrationContent += `    .addColumn('file', 'text')\n`
+  migrationContent += `    .addColumn('line', 'integer')\n`
+  migrationContent += `    .addColumn('memory_usage', 'double precision')\n`
   migrationContent += `    .addColumn('rows_affected', 'integer')\n`
+  migrationContent += `    .addColumn('transaction_id', 'varchar(255)')\n`
   migrationContent += `    .addColumn('optimization_suggestions', 'jsonb')\n`
   migrationContent += `    .addColumn('affected_tables', 'jsonb')\n`
   migrationContent += `    .addColumn('indexes_used', 'jsonb')\n`
   migrationContent += `    .addColumn('missing_indexes', 'jsonb')\n`
+  migrationContent += `    .addColumn('explain_plan', 'jsonb')\n`
   migrationContent += `    .addColumn('tags', 'jsonb')\n`
   migrationContent += `    .addColumn('bindings', 'jsonb')\n`
   migrationContent += `    .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql.raw('CURRENT_TIMESTAMP')))\n`

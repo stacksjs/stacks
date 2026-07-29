@@ -82,6 +82,10 @@ export async function logQuery(event: LogEvent): Promise<void> {
     if (!config.database?.queryLogging?.enabled)
       return
 
+    const excludedQueries = config.database?.queryLogging?.excludedQueries
+    if (!query.trim() || isExcludedQuery(query, Array.isArray(excludedQueries) ? excludedQueries : []))
+      return
+
     // Determine query status based on duration and error
     const status = determineQueryStatus(durationMs, error)
 
@@ -118,6 +122,14 @@ export async function logQuery(event: LogEvent): Promise<void> {
     // Log error but don't throw - this is a background operation
     log.error('Failed to log query:', err)
   }
+}
+
+export function isExcludedQuery(query: string, excludedQueries: readonly string[]): boolean {
+  const normalizedQuery = query.toLowerCase()
+  return excludedQueries.some((pattern) => {
+    const normalizedPattern = pattern.trim().toLowerCase()
+    return normalizedPattern.length > 0 && normalizedQuery.includes(normalizedPattern)
+  })
 }
 
 /**
@@ -442,6 +454,10 @@ async function storeQueryLog(logRecord: QueryLogRecord): Promise<void> {
     await db.insertInto('query_logs').values(logRecord as unknown as Record<string, unknown>).execute()
   }
   catch (error) {
-    log.error('Failed to store query log:', error)
+    const message = error instanceof Error ? error.message : String(error)
+    if (/no such table|does not exist|doesn't exist/i.test(message) && /query_logs/i.test(message))
+      log.debug('Query logging will start after the query_logs table is migrated.')
+    else
+      log.error('Failed to store query log:', error)
   }
 }

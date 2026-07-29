@@ -6,7 +6,8 @@
  */
 
 import { AsyncLocalStorage } from 'node:async_hooks'
-import { createQueryBuilder, setConfig } from '@stacksjs/query-builder'
+import type { QueryHooks } from '@stacksjs/query-builder'
+import { createQueryBuilder, registerPersistentQueryHooks, setConfig } from '@stacksjs/query-builder'
 
 // Use default values to avoid circular dependencies initially
 // These can be overridden later once config is fully loaded
@@ -197,6 +198,52 @@ function getDbConfig(): { database: string, username?: string, password?: string
  * different call sites, which is a sign the value wants one home.
  */
 export const QB_SNAPSHOT_DIR = 'storage/framework/database'
+
+export interface DatabaseQueryLogEvent {
+  query: {
+    sql: string
+    parameters?: unknown[]
+  }
+  queryDurationMillis: number
+  error?: unknown
+}
+
+export function createDatabaseQueryHooks(dispatch: (event: DatabaseQueryLogEvent) => void | Promise<void>): QueryHooks {
+  function forward(event: DatabaseQueryLogEvent): void {
+    try {
+      void Promise.resolve(dispatch(event)).catch(() => {})
+    }
+    catch {
+      // Query diagnostics must never change the query result.
+    }
+  }
+
+  return {
+    onQueryEnd: event => forward({
+      query: {
+        sql: event.sql,
+        parameters: event.params,
+      },
+      queryDurationMillis: event.durationMs,
+    }),
+    onQueryError: event => forward({
+      query: {
+        sql: event.sql,
+        parameters: event.params,
+      },
+      queryDurationMillis: event.durationMs,
+      error: event.error,
+    }),
+  }
+}
+
+function forwardDatabaseQuery(event: DatabaseQueryLogEvent): void {
+  void import('./query-logger')
+    .then(({ logQuery }) => logQuery(event))
+    .catch(() => {})
+}
+
+registerPersistentQueryHooks(createDatabaseQueryHooks(forwardDatabaseQuery))
 
 function updateQueryBuilderConfig(): void {
   const dialect = getDialect()

@@ -1,4 +1,4 @@
-import { setConfig } from 'bun-query-builder'
+import { setConfig as setBunQueryBuilderConfig } from 'bun-query-builder'
 /**
  * @stacksjs/query-builder
  *
@@ -22,6 +22,59 @@ import { config as bunQbConfig, createQueryBuilder as createBunQueryBuilder } fr
 export * from 'bun-query-builder'
 export { saveMigrationSnapshot } from 'bun-query-builder'
 export type StacksDialect = import('bun-query-builder').SupportedDialect | 'singlestore'
+
+type QueryHooks = import('bun-query-builder').QueryHooks
+type QueryBuilderConfig = Parameters<typeof setBunQueryBuilderConfig>[0]
+
+const persistentQueryHooks = new Set<QueryHooks>()
+
+function callQueryHooks<K extends 'onQueryStart' | 'onQueryEnd' | 'onQueryError' | 'onSlowQuery'>(
+  hook: K,
+  event: Parameters<NonNullable<QueryHooks[K]>>[0],
+  configuredHooks?: QueryHooks,
+): void {
+  for (const hooks of persistentQueryHooks) {
+    try {
+      // eslint-disable-next-line
+      const listener = hooks[hook] as ((value: typeof event) => void) | undefined
+      listener?.(event)
+    }
+    catch {
+      // Framework diagnostics must never change the query result.
+    }
+  }
+
+  try {
+    // eslint-disable-next-line
+    const listener = configuredHooks?.[hook] as ((value: typeof event) => void) | undefined
+    listener?.(event)
+  }
+  catch {
+    // User diagnostics receive the same fail-safe behavior as upstream hooks.
+  }
+}
+
+function withPersistentQueryHooks(configuredHooks?: QueryHooks): QueryHooks {
+  return {
+    ...configuredHooks,
+    onQueryStart: event => callQueryHooks('onQueryStart', event, configuredHooks),
+    onQueryEnd: event => callQueryHooks('onQueryEnd', event, configuredHooks),
+    onQueryError: event => callQueryHooks('onQueryError', event, configuredHooks),
+    onSlowQuery: event => callQueryHooks('onSlowQuery', event, configuredHooks),
+  }
+}
+
+export function registerPersistentQueryHooks(hooks: QueryHooks): () => void {
+  persistentQueryHooks.add(hooks)
+  return () => persistentQueryHooks.delete(hooks)
+}
+
+export function setConfig(config: QueryBuilderConfig): void {
+  setBunQueryBuilderConfig({
+    ...config,
+    hooks: withPersistentQueryHooks(config.hooks),
+  })
+}
 
 /**
  * Per-connection SQLite bootstrap pragmas (stacksjs/stacks#1951).
