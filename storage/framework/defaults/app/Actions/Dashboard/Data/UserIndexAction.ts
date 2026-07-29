@@ -1,47 +1,45 @@
 import { Action } from '@stacksjs/actions'
 import { User } from '@stacksjs/orm'
+import { safeGet } from '../../../../resources/functions/dashboard/data'
+import { dateValue, daysAgoIso, numberValue, textValue } from './data-records'
 
 export default new Action({
   name: 'UserIndexAction',
-  description: 'Returns user data for the dashboard.',
+  description: 'Returns a safe projection of users and native registration statistics.',
   method: 'GET',
+  apiResponse: true,
   async handle() {
-    const roles = ['All Roles', 'Admin', 'Editor', 'Author', 'Subscriber', 'User']
-
     try {
-      const allUsers = await User.orderBy('created_at', 'desc').get()
-      const totalUsers = await User.count()
+      const rows = await User.orderByDesc('created_at').limit(100).get()
+      const users = rows.map(row => ({
+        id: numberValue(safeGet(row, 'id', 0)),
+        name: textValue(safeGet(row, 'name'), 'Unnamed user'),
+        email: textValue(safeGet(row, 'email')),
+        emailVerifiedAt: dateValue(safeGet(row, 'email_verified_at', safeGet(row, 'emailVerifiedAt'))),
+        createdAt: dateValue(safeGet(row, 'created_at', safeGet(row, 'createdAt'))),
+        updatedAt: dateValue(safeGet(row, 'updated_at', safeGet(row, 'updatedAt'))),
+      }))
 
-      const users = allUsers.map((u) => {
-        const name = String(u.get('name') || 'Unknown')
-        const initials = name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()
-        return {
-          name,
-          email: String(u.get('email') || 'N/A'),
-          role: 'User',
-          status: 'active',
-          lastLogin: 'Recently',
-          avatar: initials,
-        }
-      })
+      const [total, newThisWeek, verified] = await Promise.all([
+        User.count(),
+        User.where('created_at', '>=', daysAgoIso(7)).count(),
+        User.whereNotNull('email_verified_at' as never).count(),
+      ])
 
-      const stats = [
-        { label: 'Total Users', value: String(totalUsers) },
-        { label: 'Active Today', value: String(totalUsers) },
-        { label: 'New This Week', value: String(Math.min(totalUsers, 5)) },
-      ]
-
-      return { users, stats, roles }
+      return {
+        users,
+        stats: {
+          total,
+          newThisWeek,
+          verified,
+        },
+      }
     }
-    catch {
+    catch (error) {
       return {
         users: [],
-        stats: [
-          { label: 'Total Users', value: '0' },
-          { label: 'Active Today', value: '0' },
-          { label: 'New This Week', value: '0' },
-        ],
-        roles,
+        stats: { total: 0, newThisWeek: 0, verified: 0 },
+        error: error instanceof Error ? error.message : 'Users could not be loaded.',
       }
     }
   },

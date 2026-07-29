@@ -1,0 +1,285 @@
+<script client>
+import type {
+  DashboardActivity,
+  DashboardSubscriber,
+  DashboardTeam,
+  DashboardUser,
+  DataMode,
+  DataStats,
+} from '../../../../functions/data'
+import { fetchDashboardData } from '../../../../functions/data'
+
+type DataRecord = DashboardActivity | DashboardSubscriber | DashboardTeam | DashboardUser
+
+const mode = useReactiveProp<DataMode>('mode', 'activity')
+const records = state<DataRecord[]>([])
+const stats = state<DataStats>({ total: 0 })
+const search = state('')
+const loading = state(true)
+const loadError = state('')
+
+const metadata: Record<DataMode, { title: string, description: string, icon: string, empty: string }> = {
+  activity: {
+    title: 'Activity Log',
+    description: 'Review the native application audit trail.',
+    icon: 'i-hugeicons-activity-03',
+    empty: 'No activity has been recorded.',
+  },
+  users: {
+    title: 'Users',
+    description: 'Review registered application users.',
+    icon: 'i-hugeicons-user-group',
+    empty: 'No users have registered.',
+  },
+  teams: {
+    title: 'Teams',
+    description: 'Review collaborative teams and membership totals.',
+    icon: 'i-hugeicons-user-multiple-02',
+    empty: 'No teams have been created.',
+  },
+  subscribers: {
+    title: 'Subscribers',
+    description: 'Review subscription status and acquisition sources.',
+    icon: 'i-hugeicons-mail-account-01',
+    empty: 'No subscribers have joined.',
+  },
+}
+
+const page = derived(() => metadata[mode()])
+const filteredRecords = derived(() => {
+  const query = search().trim().toLowerCase()
+  if (!query)
+    return records()
+  return records().filter(record => searchableText(record).includes(query))
+})
+
+const activityRecords = derived(() => filteredRecords() as DashboardActivity[])
+const userRecords = derived(() => filteredRecords() as DashboardUser[])
+const teamRecords = derived(() => filteredRecords() as DashboardTeam[])
+const subscriberRecords = derived(() => filteredRecords() as DashboardSubscriber[])
+
+function searchableText(record: DataRecord): string {
+  return Object.values(record)
+    .filter(value => typeof value === 'string' || typeof value === 'number')
+    .join(' ')
+    .toLowerCase()
+}
+
+function statValue(key: string): number {
+  return Number(stats()[key] || 0)
+}
+
+function formatDate(value: string): string {
+  if (!value)
+    return 'Never'
+  const date = new Date(value)
+  return Number.isNaN(date.getTime()) ? 'Unknown' : date.toLocaleString()
+}
+
+function formatSubject(record: DashboardActivity): string {
+  if (!record.subjectType)
+    return 'Application'
+  return record.subjectId > 0 ? `${record.subjectType} #${record.subjectId}` : record.subjectType
+}
+
+function statusClass(status: string): string {
+  if (['active', 'subscribed', 'completed'].includes(status))
+    return 'text-green-700 dark:text-green-300 bg-green-50 dark:bg-green-950/40'
+  if (['bounced', 'inactive', 'unsubscribed'].includes(status))
+    return 'text-red-700 dark:text-red-300 bg-red-50 dark:bg-red-950/40'
+  return 'text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40'
+}
+
+async function loadRecords(): Promise<void> {
+  loading.set(true)
+  loadError.set('')
+  try {
+    if (mode() === 'activity') {
+      const response = await fetchDashboardData<DashboardActivity>('activity')
+      records.set(response.activities || [])
+      stats.set(response.stats)
+      loadError.set(response.error || '')
+    }
+    else if (mode() === 'users') {
+      const response = await fetchDashboardData<DashboardUser>('users')
+      records.set(response.users || [])
+      stats.set(response.stats)
+      loadError.set(response.error || '')
+    }
+    else if (mode() === 'teams') {
+      const response = await fetchDashboardData<DashboardTeam>('teams')
+      records.set(response.teams || [])
+      stats.set(response.stats)
+      loadError.set(response.error || '')
+    }
+    else {
+      const response = await fetchDashboardData<DashboardSubscriber>('subscribers')
+      records.set(response.subscribers || [])
+      stats.set(response.stats)
+      loadError.set(response.error || '')
+    }
+  }
+  catch (error) {
+    records.set([])
+    stats.set({ total: 0 })
+    loadError.set(error instanceof Error ? error.message : `${page().title} could not be loaded.`)
+  }
+  finally {
+    loading.set(false)
+  }
+}
+
+onMount(() => {
+  void loadRecords()
+})
+</script>
+
+<div class="space-y-6">
+  <header class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+    <div>
+      <h1 class="font-semibold text-2xl text-neutral-900 tracking-tight dark:text-white">{{ page().title }}</h1>
+      <p class="mt-1 text-neutral-500 text-sm dark:text-neutral-400">{{ page().description }}</p>
+    </div>
+    <button type="button" :disabled="loading()" class="inline-flex items-center self-start px-3 py-2 font-medium text-neutral-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-neutral-300 rounded-lg dark:border-neutral-700 disabled:opacity-50" @click="loadRecords">
+      <span :class="'mr-2 h-4 w-4 ' + (loading() ? 'animate-spin i-hugeicons-loading-03' : 'i-hugeicons-refresh')"></span>
+      Refresh
+    </button>
+  </header>
+
+  <div class="grid gap-4 grid-cols-2 lg:grid-cols-4">
+    <StatsCard :title="'Total ' + page().title" :icon="page().icon" iconBg="primary">
+      <template #value>{{ statValue('total') }}</template>
+    </StatsCard>
+    <StatsCard :if="mode() === 'activity'" title="Last 24 Hours" icon="i-hugeicons-clock-01" iconBg="success">
+      <template #value>{{ statValue('last24Hours') }}</template>
+    </StatsCard>
+    <StatsCard :if="mode() === 'activity'" title="Last 7 Days" icon="i-hugeicons-calendar-03" iconBg="info">
+      <template #value>{{ statValue('last7Days') }}</template>
+    </StatsCard>
+    <StatsCard :if="mode() === 'users'" title="New This Week" icon="i-hugeicons-user-add-01" iconBg="success">
+      <template #value>{{ statValue('newThisWeek') }}</template>
+    </StatsCard>
+    <StatsCard :if="mode() === 'users'" title="Email Verified" icon="i-hugeicons-mail-validation-01" iconBg="info">
+      <template #value>{{ statValue('verified') }}</template>
+    </StatsCard>
+    <StatsCard :if="mode() === 'teams'" title="Active Teams" icon="i-hugeicons-checkmark-circle-02" iconBg="success">
+      <template #value>{{ statValue('active') }}</template>
+    </StatsCard>
+    <StatsCard :if="mode() === 'teams'" title="Members" icon="i-hugeicons-user-multiple" iconBg="info">
+      <template #value>{{ statValue('members') }}</template>
+    </StatsCard>
+    <StatsCard :if="mode() === 'teams'" title="New This Month" icon="i-hugeicons-calendar-add-01" iconBg="warning">
+      <template #value>{{ statValue('newThisMonth') }}</template>
+    </StatsCard>
+    <StatsCard :if="mode() === 'subscribers'" title="Subscribed" icon="i-hugeicons-mail-open-01" iconBg="success">
+      <template #value>{{ statValue('subscribed') }}</template>
+    </StatsCard>
+    <StatsCard :if="mode() === 'subscribers'" title="Unsubscribed" icon="i-hugeicons-mail-remove-01" iconBg="warning">
+      <template #value>{{ statValue('unsubscribed') }}</template>
+    </StatsCard>
+    <StatsCard :if="mode() === 'subscribers'" title="New This Month" icon="i-hugeicons-calendar-add-01" iconBg="info">
+      <template #value>{{ statValue('newThisMonth') }}</template>
+    </StatsCard>
+  </div>
+
+  <div :if="loadError()" role="alert" class="px-4 py-3 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/40 border border-red-200 rounded-lg dark:border-red-900">
+    {{ loadError() }}
+  </div>
+
+  <Card padding="none">
+    <div class="flex flex-col gap-3 items-start sm:flex-row sm:items-center sm:justify-between p-5 border-b border-neutral-200 dark:border-neutral-700">
+      <div>
+        <h2 class="font-semibold text-neutral-900 dark:text-white">{{ page().title }}</h2>
+        <p class="mt-1 text-neutral-500 text-xs dark:text-neutral-400">Showing {{ filteredRecords().length }} of {{ records().length }} loaded records</p>
+      </div>
+      <label class="block relative w-full sm:w-72">
+        <span class="sr-only">Search {{ page().title.toLowerCase() }}</span>
+        <span class="flex absolute inset-y-0 left-0 items-center pl-3 text-neutral-400 i-hugeicons-search-01"></span>
+        <input x-model="search" type="search" :placeholder="'Search ' + page().title.toLowerCase()" class="block pl-9 pr-3 py-2 w-full text-neutral-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-neutral-300 rounded-lg dark:border-neutral-700 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20">
+      </label>
+    </div>
+
+    <div :if="loading()" class="flex items-center justify-center py-16 text-neutral-500 text-sm dark:text-neutral-400">
+      <span class="mr-2 h-5 w-5 animate-spin i-hugeicons-loading-03"></span>
+      Loading {{ page().title.toLowerCase() }}...
+    </div>
+
+    <EmptyState :if="!loading() && !loadError() && filteredRecords().length === 0" :icon="page().icon" :title="search() ? 'No matching records' : page().empty" :description="search() ? 'Try a different search term.' : 'New records will appear here automatically.'" />
+
+    <div :if="!loading() && filteredRecords().length > 0" class="overflow-x-auto">
+      <table class="w-full">
+        <thead class="bg-neutral-50 dark:bg-neutral-800/50">
+          <tr :if="mode() === 'activity'">
+            <th class="pl-5 pr-4 py-3 font-semibold text-left text-neutral-500 text-xs tracking-wider uppercase dark:text-neutral-400">Activity</th>
+            <th class="px-4 py-3 font-semibold text-left text-neutral-500 text-xs tracking-wider uppercase dark:text-neutral-400">Subject</th>
+            <th class="px-4 py-3 font-semibold text-left text-neutral-500 text-xs tracking-wider uppercase dark:text-neutral-400">Causer</th>
+            <th class="pr-5 py-3 font-semibold text-neutral-500 text-right text-xs tracking-wider uppercase dark:text-neutral-400">Recorded</th>
+          </tr>
+          <tr :if="mode() === 'users'">
+            <th class="pl-5 pr-4 py-3 font-semibold text-left text-neutral-500 text-xs tracking-wider uppercase dark:text-neutral-400">User</th>
+            <th class="px-4 py-3 font-semibold text-left text-neutral-500 text-xs tracking-wider uppercase dark:text-neutral-400">Verification</th>
+            <th class="px-4 py-3 font-semibold text-neutral-500 text-right text-xs tracking-wider uppercase dark:text-neutral-400">Updated</th>
+            <th class="pr-5 py-3 font-semibold text-neutral-500 text-right text-xs tracking-wider uppercase dark:text-neutral-400">Registered</th>
+          </tr>
+          <tr :if="mode() === 'teams'">
+            <th class="pl-5 pr-4 py-3 font-semibold text-left text-neutral-500 text-xs tracking-wider uppercase dark:text-neutral-400">Team</th>
+            <th class="px-4 py-3 font-semibold text-neutral-500 text-right text-xs tracking-wider uppercase dark:text-neutral-400">Members</th>
+            <th class="px-4 py-3 font-semibold text-left text-neutral-500 text-xs tracking-wider uppercase dark:text-neutral-400">Status</th>
+            <th class="pr-5 py-3 font-semibold text-neutral-500 text-right text-xs tracking-wider uppercase dark:text-neutral-400">Created</th>
+          </tr>
+          <tr :if="mode() === 'subscribers'">
+            <th class="pl-5 pr-4 py-3 font-semibold text-left text-neutral-500 text-xs tracking-wider uppercase dark:text-neutral-400">Subscriber</th>
+            <th class="px-4 py-3 font-semibold text-left text-neutral-500 text-xs tracking-wider uppercase dark:text-neutral-400">Source</th>
+            <th class="px-4 py-3 font-semibold text-left text-neutral-500 text-xs tracking-wider uppercase dark:text-neutral-400">Status</th>
+            <th class="pr-5 py-3 font-semibold text-neutral-500 text-right text-xs tracking-wider uppercase dark:text-neutral-400">Subscribed</th>
+          </tr>
+        </thead>
+        <tbody class="divide-neutral-100 divide-y dark:divide-neutral-700">
+          <template :if="mode() === 'activity'" :for="record in activityRecords()">
+            <tr>
+              <td class="pl-5 pr-4 py-3.5">
+                <p class="font-medium text-neutral-900 text-sm dark:text-white">{{ record.description }}</p>
+                <p class="mt-0.5 font-mono text-neutral-500 text-xs dark:text-neutral-400">{{ record.type }}</p>
+              </td>
+              <td class="px-4 py-3.5 text-neutral-600 text-sm dark:text-neutral-300">{{ formatSubject(record) }}</td>
+              <td class="px-4 py-3.5 text-neutral-600 text-sm dark:text-neutral-300">{{ record.causer }}</td>
+              <td class="pr-5 py-3.5 text-neutral-500 text-right text-xs whitespace-nowrap dark:text-neutral-400">{{ formatDate(record.createdAt) }}</td>
+            </tr>
+          </template>
+          <template :if="mode() === 'users'" :for="record in userRecords()">
+            <tr>
+              <td class="pl-5 pr-4 py-3.5">
+                <p class="font-medium text-neutral-900 text-sm dark:text-white">{{ record.name }}</p>
+                <p class="mt-0.5 text-neutral-500 text-xs dark:text-neutral-400">{{ record.email }}</p>
+              </td>
+              <td class="px-4 py-3.5">
+                <span :class="'inline-flex px-2 py-0.5 font-medium text-xs rounded ' + (record.emailVerifiedAt ? statusClass('active') : statusClass('pending'))">{{ record.emailVerifiedAt ? 'Verified' : 'Unverified' }}</span>
+              </td>
+              <td class="px-4 py-3.5 text-neutral-500 text-right text-xs whitespace-nowrap dark:text-neutral-400">{{ formatDate(record.updatedAt) }}</td>
+              <td class="pr-5 py-3.5 text-neutral-500 text-right text-xs whitespace-nowrap dark:text-neutral-400">{{ formatDate(record.createdAt) }}</td>
+            </tr>
+          </template>
+          <template :if="mode() === 'teams'" :for="record in teamRecords()">
+            <tr>
+              <td class="pl-5 pr-4 py-3.5">
+                <StxLink :to="'/models/team?q=' + encodeURIComponent(record.name)" class="font-medium text-neutral-900 text-sm dark:text-white hover:text-blue-600 dark:hover:text-blue-400">{{ record.name }}</StxLink>
+                <p class="mt-0.5 max-w-xl text-neutral-500 text-xs dark:text-neutral-400">{{ record.description || 'No description' }}</p>
+              </td>
+              <td class="px-4 py-3.5 font-mono text-neutral-700 text-right text-sm dark:text-neutral-300">{{ record.memberCount }}</td>
+              <td class="px-4 py-3.5"><span :class="'inline-flex px-2 py-0.5 font-medium text-xs capitalize rounded ' + statusClass(record.status)">{{ record.status }}</span></td>
+              <td class="pr-5 py-3.5 text-neutral-500 text-right text-xs whitespace-nowrap dark:text-neutral-400">{{ formatDate(record.createdAt) }}</td>
+            </tr>
+          </template>
+          <template :if="mode() === 'subscribers'" :for="record in subscriberRecords()">
+            <tr>
+              <td class="pl-5 pr-4 py-3.5 font-medium text-neutral-900 text-sm dark:text-white">{{ record.email }}</td>
+              <td class="px-4 py-3.5 capitalize text-neutral-600 text-sm dark:text-neutral-300">{{ record.source }}</td>
+              <td class="px-4 py-3.5"><span :class="'inline-flex px-2 py-0.5 font-medium text-xs capitalize rounded ' + statusClass(record.status)">{{ record.status }}</span></td>
+              <td class="pr-5 py-3.5 text-neutral-500 text-right text-xs whitespace-nowrap dark:text-neutral-400">{{ formatDate(record.createdAt) }}</td>
+            </tr>
+          </template>
+        </tbody>
+      </table>
+    </div>
+  </Card>
+</div>

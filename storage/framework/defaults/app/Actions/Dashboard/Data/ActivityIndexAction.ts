@@ -1,28 +1,47 @@
 import { Action } from '@stacksjs/actions'
 import { Activity } from '@stacksjs/orm'
+import { safeGet } from '../../../../resources/functions/dashboard/data'
+import { dateValue, daysAgoIso, numberValue, textValue } from './data-records'
 
 export default new Action({
   name: 'ActivityIndexAction',
-  description: 'Returns recent activity data for the dashboard.',
+  description: 'Returns a safe projection of recent activity for the dashboard.',
   method: 'GET',
+  apiResponse: true,
   async handle() {
-    const filters = ['All', 'Creates', 'Updates', 'Deletes', 'Schema', 'Exports']
-
     try {
-      const allActivities = await Activity.orderByDesc('id').limit(50).get()
-
-      const activities = allActivities.map(r => ({
-        action: String(r.get('action') || r.get('description') || ''),
-        table: String(r.get('table_name') || r.get('subject_type') || ''),
-        user: String(r.get('user') || r.get('causer_id') || 'system'),
-        time: String(r.get('created_at') || ''),
-        type: String(r.get('type') || 'update'),
+      const rows = await Activity.orderByDesc('created_at').limit(100).get()
+      const activities = rows.map(row => ({
+        id: numberValue(safeGet(row, 'id', 0)),
+        type: textValue(safeGet(row, 'type')),
+        description: textValue(safeGet(row, 'description')),
+        subjectType: textValue(safeGet(row, 'subject_type', safeGet(row, 'subjectType'))),
+        subjectId: numberValue(safeGet(row, 'subject_id', safeGet(row, 'subjectId', 0))),
+        causer: textValue(safeGet(row, 'causer'), 'System'),
+        createdAt: dateValue(safeGet(row, 'created_at', safeGet(row, 'createdAt'))),
       }))
 
-      return { activities, filters }
+      const [total, last24Hours, last7Days] = await Promise.all([
+        Activity.count(),
+        Activity.where('created_at', '>=', daysAgoIso(1)).count(),
+        Activity.where('created_at', '>=', daysAgoIso(7)).count(),
+      ])
+
+      return {
+        activities,
+        stats: {
+          total,
+          last24Hours,
+          last7Days,
+        },
+      }
     }
-    catch {
-      return { activities: [], filters }
+    catch (error) {
+      return {
+        activities: [],
+        stats: { total: 0, last24Hours: 0, last7Days: 0 },
+        error: error instanceof Error ? error.message : 'Activity could not be loaded.',
+      }
     }
   },
 })

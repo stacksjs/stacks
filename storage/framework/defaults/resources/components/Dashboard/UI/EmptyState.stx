@@ -1,50 +1,35 @@
-<script server>
-interface EmptyStateProps {
-  icon?: string
-  title?: string
-  description?: string
-  actionLabel?: string
-  actionIcon?: string
-  actionHref?: string
-}
-
-const { icon = 'i-hugeicons-folder-02', title = '', description = '', actionLabel = '', actionIcon = '', actionHref = '' } = defineProps<EmptyStateProps>()
+<script client>
+const icon = useReactiveProp('icon', 'i-hugeicons-folder-02')
+const title = useReactiveProp('title', '')
+const description = useReactiveProp('description', '')
+const actionLabel = useReactiveProp('actionLabel', '')
+const actionIcon = useReactiveProp('actionIcon', '')
+const actionHref = useReactiveProp('actionHref', '')
 </script>
+
 <div class="flex flex-col items-center justify-center px-4 py-12 text-center">
-    <!-- Icon -->
-    <div class="mb-4 p-4 bg-neutral-100 dark:bg-neutral-800 rounded-full">
-      @if(iconSlot)
-        {{ iconSlot }}
-      @else
-        <div class="{{ icon }} w-8 h-8 text-neutral-400 dark:text-neutral-500"></div>
-      @endif
-    </div>
-
-    <!-- Title -->
-    <h3 class="mb-1 font-medium text-lg text-neutral-900 dark:text-white">
-      {{ title }}
-    </h3>
-
-    <!-- Description -->
-    @if(description)
-      <p class="mb-6 max-w-sm text-neutral-500 text-sm dark:text-neutral-400">
-        {{ description }}
-      </p>
-    @endif
-
-    <!-- Action button -->
-    @if(actionLabel)
-      <a
-        href="{{ actionHref || '#' }}"
-        class="inline-flex gap-2 items-center px-4 py-2 font-medium text-sm text-white bg-blue-600 hover:bg-blue-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-neutral-900 transition-colors"
-      >
-        @if(actionIcon)
-          <div class="{{ actionIcon }} w-4 h-4"></div>
-        @endif
-        {{ actionLabel }}
-      </a>
-    @endif
-
-    <!-- Custom action slot -->
-    {{ actionSlot }}
+  <div class="mb-4 p-4 bg-neutral-100 dark:bg-neutral-800 rounded-full">
+    <slot name="icon">
+      <span :class="icon() + ' block h-8 w-8 text-neutral-400 dark:text-neutral-500'"></span>
+    </slot>
   </div>
+
+  <h3 class="mb-1 font-medium text-lg text-neutral-900 dark:text-white">
+    {{ title() }}
+  </h3>
+
+  <p :if="description()" class="mb-6 max-w-sm text-neutral-500 text-sm dark:text-neutral-400">
+    {{ description() }}
+  </p>
+
+  <a
+    :if="actionLabel()"
+    :href="actionHref() || '#'"
+    class="inline-flex gap-2 items-center px-4 py-2 font-medium text-sm text-white bg-blue-600 hover:bg-blue-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-neutral-900 transition-colors"
+  >
+    <span :if="actionIcon()" :class="actionIcon() + ' h-4 w-4'"></span>
+    {{ actionLabel() }}
+  </a>
+
+  <slot name="action" />
+</div>

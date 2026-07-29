@@ -1,47 +1,47 @@
 import { Action } from '@stacksjs/actions'
 import { Subscriber } from '@stacksjs/orm'
+import { safeGet } from '../../../../resources/functions/dashboard/data'
+import { dateValue, daysAgoIso, numberValue, textValue } from './data-records'
 
 export default new Action({
   name: 'SubscriberIndexAction',
-  description: 'Returns subscriber data for the dashboard.',
+  description: 'Returns subscribers and native subscription statistics for the dashboard.',
   method: 'GET',
+  apiResponse: true,
   async handle() {
-    const plans = ['All Plans', 'Basic', 'Pro', 'Enterprise']
-    const planTypes = ['Basic', 'Pro', 'Enterprise']
-    const sources = ['Website', 'API', 'Referral']
-
     try {
-      const allSubscribers = await Subscriber.orderBy('created_at', 'desc').get()
-      const totalSubscribers = await Subscriber.count()
-
-      const subscribers = allSubscribers.map((s, idx) => ({
-        email: String(s.get('email') || 'N/A'),
-        name: String(s.get('name') || 'Subscriber'),
-        plan: planTypes[idx % planTypes.length],
-        status: 'active',
-        subscribed: s.get('created_at') ? String(s.get('created_at')).split('T')[0] : 'N/A',
-        source: sources[idx % sources.length],
+      const rows = await Subscriber.orderByDesc('created_at').limit(100).get()
+      const subscribers = rows.map(row => ({
+        id: numberValue(safeGet(row, 'id', 0)),
+        email: textValue(safeGet(row, 'email')),
+        status: textValue(safeGet(row, 'status'), 'pending'),
+        source: textValue(safeGet(row, 'source'), 'unknown'),
+        unsubscribedAt: dateValue(safeGet(row, 'unsubscribed_at', safeGet(row, 'unsubscribedAt'))),
+        createdAt: dateValue(safeGet(row, 'created_at', safeGet(row, 'createdAt'))),
       }))
 
-      const stats = [
-        { label: 'Total Subscribers', value: String(totalSubscribers) },
-        { label: 'Active', value: String(totalSubscribers) },
-        { label: 'New This Month', value: String(Math.min(totalSubscribers, 5)) },
-        { label: 'Churn Rate', value: '0%' },
-      ]
+      const [total, subscribed, unsubscribed, newThisMonth] = await Promise.all([
+        Subscriber.count(),
+        Subscriber.where('status', 'subscribed').count(),
+        Subscriber.where('status', 'unsubscribed').count(),
+        Subscriber.where('created_at', '>=', daysAgoIso(30)).count(),
+      ])
 
-      return { subscribers, stats, plans }
+      return {
+        subscribers,
+        stats: {
+          total,
+          subscribed,
+          unsubscribed,
+          newThisMonth,
+        },
+      }
     }
-    catch {
+    catch (error) {
       return {
         subscribers: [],
-        stats: [
-          { label: 'Total Subscribers', value: '0' },
-          { label: 'Active', value: '0' },
-          { label: 'New This Month', value: '0' },
-          { label: 'Churn Rate', value: '0%' },
-        ],
-        plans,
+        stats: { total: 0, subscribed: 0, unsubscribed: 0, newThisMonth: 0 },
+        error: error instanceof Error ? error.message : 'Subscribers could not be loaded.',
       }
     }
   },
