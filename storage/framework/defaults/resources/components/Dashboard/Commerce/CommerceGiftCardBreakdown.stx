@@ -1,0 +1,52 @@
+<script client>
+import type { GiftCardSummary } from '../../../../app/Actions/Dashboard/Commerce/gift-card-records'
+
+const { summary } = defineProps<{ summary: GiftCardSummary }>()
+
+function money(value: number, currency: string): string {
+  try {
+    return new Intl.NumberFormat(undefined, { style: 'currency', currency }).format(value)
+  }
+  catch {
+    return `${currency} ${value.toFixed(2)}`
+  }
+}
+</script>
+
+<section aria-label="Gift card breakdowns" class="grid gap-3 grid-cols-1 xl:grid-cols-3">
+  <article class="p-4 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
+    <h2 class="font-semibold text-gray-900 text-sm dark:text-white">Status distribution</h2>
+    <dl class="mt-4 space-y-3 text-sm">
+      <div class="flex justify-between"><dt class="text-gray-500 dark:text-neutral-400">Active</dt><dd class="font-medium text-gray-900 dark:text-white">{{ summary.statuses.ACTIVE }}</dd></div>
+      <div class="flex justify-between"><dt class="text-gray-500 dark:text-neutral-400">Used</dt><dd class="font-medium text-gray-900 dark:text-white">{{ summary.statuses.USED }}</dd></div>
+      <div class="flex justify-between"><dt class="text-gray-500 dark:text-neutral-400">Expired</dt><dd class="font-medium text-gray-900 dark:text-white">{{ summary.statuses.EXPIRED }}</dd></div>
+      <div class="flex justify-between"><dt class="text-gray-500 dark:text-neutral-400">Deactivated</dt><dd class="font-medium text-gray-900 dark:text-white">{{ summary.statuses.DEACTIVATED }}</dd></div>
+    </dl>
+  </article>
+
+  <article class="p-4 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
+    <h2 class="font-semibold text-gray-900 text-sm dark:text-white">Outstanding by currency</h2>
+    <div :if="summary.currencies.length === 0" class="mt-4 text-gray-500 text-sm dark:text-neutral-400">No balances recorded.</div>
+    <ul :if="summary.currencies.length > 0" class="mt-4 space-y-3">
+      <template :for="item in summary.currencies" :key="item.currency">
+        <li class="flex gap-4 justify-between text-sm">
+          <span class="text-gray-500 dark:text-neutral-400">{{ item.currency }} <span class="text-gray-400 text-xs dark:text-neutral-500">({{ item.cards }})</span></span>
+          <span class="font-medium text-gray-900 dark:text-white">{{ money(item.currentBalance, item.currency) }}</span>
+        </li>
+      </template>
+    </ul>
+  </article>
+
+  <article class="p-4 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
+    <h2 class="font-semibold text-gray-900 text-sm dark:text-white">Redeemed by currency</h2>
+    <div :if="summary.currencies.length === 0" class="mt-4 text-gray-500 text-sm dark:text-neutral-400">No redemption value recorded.</div>
+    <ul :if="summary.currencies.length > 0" class="mt-4 space-y-3">
+      <template :for="item in summary.currencies" :key="item.currency">
+        <li class="flex gap-4 justify-between text-sm">
+          <span class="text-gray-500 dark:text-neutral-400">{{ item.currency }}</span>
+          <span class="font-medium text-gray-900 dark:text-white">{{ money(item.redeemedBalance, item.currency) }}</span>
+        </li>
+      </template>
+    </ul>
+  </article>
+</section>

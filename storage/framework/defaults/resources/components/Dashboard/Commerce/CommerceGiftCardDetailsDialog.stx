@@ -1,0 +1,68 @@
+<script client>
+import type { GiftCardRecord } from '../../../../app/Actions/Dashboard/Commerce/gift-card-records'
+
+const open = useReactiveProp('open', false)
+const record = useReactiveProp('record', null as GiftCardRecord | null)
+const emit = defineEmits()
+
+function money(value: number, currency: string): string {
+  try {
+    return new Intl.NumberFormat(undefined, { style: 'currency', currency }).format(value)
+  }
+  catch {
+    return `${currency} ${value.toFixed(2)}`
+  }
+}
+
+function dateTime(value: string): string {
+  if (!value)
+    return 'Not recorded'
+  const date = new Date(value)
+  return Number.isNaN(date.getTime()) ? value : date.toLocaleString()
+}
+
+function editRecord(): void {
+  const current = record()
+  if (!current)
+    return
+  emit('edit', current)
+  emit('close')
+}
+
+function deleteRecord(): void {
+  const current = record()
+  if (!current)
+    return
+  emit('delete', current)
+  emit('close')
+}
+</script>
+
+<div :if="open()" class="flex fixed inset-0 z-50 items-center justify-center p-4">
+  <button type="button" aria-label="Close gift card details" class="absolute inset-0 bg-black/45" @click="emit('close')"></button>
+  <section role="dialog" aria-modal="true" aria-labelledby="gift-card-details-title" class="overflow-y-auto relative max-h-[90dvh] max-w-2xl w-full bg-white dark:bg-neutral-800 border border-gray-200 rounded-xl dark:border-neutral-700 shadow-xl">
+    <div class="p-6">
+      <div class="flex gap-4 items-start justify-between">
+        <div><h2 id="gift-card-details-title" class="font-mono font-semibold text-gray-900 text-lg dark:text-white">{{ record()?.code || 'Gift card' }}</h2><p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">{{ record()?.recipientName || 'No recipient assigned' }}</p></div>
+        <span class="px-2 py-1 font-semibold text-gray-700 text-xs dark:text-neutral-200 bg-gray-100 dark:bg-neutral-700 rounded-full">{{ record()?.status || 'Not recorded' }}</span>
+      </div>
+      <dl class="grid gap-4 grid-cols-1 sm:grid-cols-2 mt-6">
+        <div><dt class="text-gray-400 text-xs dark:text-neutral-500">Current balance</dt><dd class="mt-1 font-semibold text-gray-900 text-sm dark:text-white">{{ money(record()?.currentBalance || 0, record()?.currency || 'USD') }}</dd></div>
+        <div><dt class="text-gray-400 text-xs dark:text-neutral-500">Initial balance</dt><dd class="mt-1 text-gray-900 text-sm dark:text-white">{{ money(record()?.initialBalance || 0, record()?.currency || 'USD') }}</dd></div>
+        <div><dt class="text-gray-400 text-xs dark:text-neutral-500">Availability</dt><dd class="mt-1 text-gray-900 text-sm dark:text-white">{{ record()?.isActive ? 'Enabled' : 'Disabled' }}</dd></div>
+        <div><dt class="text-gray-400 text-xs dark:text-neutral-500">Delivery</dt><dd class="mt-1 text-gray-900 text-sm dark:text-white">{{ record()?.isDigital ? 'Digital' : 'Physical' }} · {{ record()?.isReloadable ? 'Reloadable' : 'Single use' }}</dd></div>
+        <div><dt class="text-gray-400 text-xs dark:text-neutral-500">Recipient email</dt><dd class="mt-1 break-all text-gray-900 text-sm dark:text-white">{{ record()?.recipientEmail || 'Not recorded' }}</dd></div>
+        <div><dt class="text-gray-400 text-xs dark:text-neutral-500">Purchaser ID</dt><dd class="mt-1 break-all font-mono text-gray-900 text-sm dark:text-white">{{ record()?.purchaserId || 'Not recorded' }}</dd></div>
+        <div><dt class="text-gray-400 text-xs dark:text-neutral-500">Customer ID</dt><dd class="mt-1 font-mono text-gray-900 text-sm dark:text-white">{{ record()?.customerId || 'Not linked' }}</dd></div>
+        <div><dt class="text-gray-400 text-xs dark:text-neutral-500">Template ID</dt><dd class="mt-1 break-all font-mono text-gray-900 text-sm dark:text-white">{{ record()?.templateId || 'Not configured' }}</dd></div>
+        <div><dt class="text-gray-400 text-xs dark:text-neutral-500">Expiry date</dt><dd class="mt-1 text-gray-900 text-sm dark:text-white">{{ dateTime(record()?.expiryDate || '') }}</dd></div>
+        <div><dt class="text-gray-400 text-xs dark:text-neutral-500">Last used date</dt><dd class="mt-1 text-gray-900 text-sm dark:text-white">{{ dateTime(record()?.lastUsedDate || '') }}</dd></div>
+        <div class="sm:col-span-2"><dt class="text-gray-400 text-xs dark:text-neutral-500">Personal message</dt><dd class="mt-1 text-gray-900 text-sm whitespace-pre-wrap dark:text-white">{{ record()?.personalMessage || 'No message recorded.' }}</dd></div>
+      </dl>
+    </div>
+    <footer class="flex gap-2 justify-between px-6 py-4 bg-gray-50 dark:bg-neutral-900/50 border-gray-200 border-t dark:border-neutral-700">
+      <button type="button" class="px-3 py-2 font-semibold text-red-700 text-sm dark:text-red-300" @click="deleteRecord()">Delete</button>
+      <div class="flex gap-2"><button type="button" class="px-3 py-2 font-semibold text-gray-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" @click="emit('close')">Close</button><button type="button" class="px-3 py-2 font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md" @click="editRecord()">Edit gift card</button></div>
+    </footer>
+  </section>
+</div>

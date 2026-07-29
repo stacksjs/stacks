@@ -1,0 +1,255 @@
+<script client>
+import type { GiftCardRecord, GiftCardStatus } from '../../../../app/Actions/Dashboard/Commerce/gift-card-records'
+
+const open = useReactiveProp('open', false)
+const mode = useReactiveProp('mode', 'add')
+const record = useReactiveProp('record', null as GiftCardRecord | null)
+const busy = useReactiveProp('busy', false)
+const errors = useReactiveProp('errors', {} as Record<string, string>)
+const emit = defineEmits()
+const code = state('')
+const initialBalance = state('50')
+const currentBalance = state('50')
+const currency = state('USD')
+const status = state<GiftCardStatus>('ACTIVE')
+const purchaserId = state('')
+const recipientEmail = state('')
+const recipientName = state('')
+const personalMessage = state('')
+const isDigital = state(true)
+const isReloadable = state(false)
+const isActive = state(true)
+const expiryDate = state('')
+const lastUsedDate = state('')
+const templateId = state('')
+const customerId = state('')
+let hydrationKey = ''
+
+function generatedCode(): string {
+  const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
+  const bytes = new Uint8Array(12)
+  crypto.getRandomValues(bytes)
+  return `GIFT-${[...bytes].map(value => alphabet[value % alphabet.length]).join('')}`
+}
+
+function defaultExpiry(): string {
+  const date = new Date()
+  date.setFullYear(date.getFullYear() + 1)
+  date.setMinutes(date.getMinutes() - date.getTimezoneOffset())
+  return date.toISOString().slice(0, 16)
+}
+
+function inputDateTime(value: string): string {
+  if (!value)
+    return ''
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime()))
+    return ''
+  const local = new Date(date.getTime() - date.getTimezoneOffset() * 60_000)
+  return local.toISOString().slice(0, 16)
+}
+
+effect(() => {
+  if (!open()) {
+    hydrationKey = ''
+    return
+  }
+  const current = record()
+  const key = `${mode()}:${current?.id || 'new'}`
+  if (hydrationKey === key)
+    return
+  hydrationKey = key
+  code.set(current?.code || generatedCode())
+  initialBalance.set(String(current?.initialBalance || 50))
+  currentBalance.set(String(current?.currentBalance ?? current?.initialBalance ?? 50))
+  currency.set(current?.currency || 'USD')
+  status.set(current?.status || 'ACTIVE')
+  purchaserId.set(current?.purchaserId || '')
+  recipientEmail.set(current?.recipientEmail || '')
+  recipientName.set(current?.recipientName || '')
+  personalMessage.set(current?.personalMessage || '')
+  isDigital.set(current?.isDigital ?? true)
+  isReloadable.set(current?.isReloadable ?? false)
+  isActive.set(current?.isActive ?? true)
+  expiryDate.set(current?.expiryDate ? inputDateTime(current.expiryDate) : defaultExpiry())
+  lastUsedDate.set(current?.lastUsedDate ? inputDateTime(current.lastUsedDate) : '')
+  templateId.set(current?.templateId || '')
+  customerId.set(current?.customerId || '')
+})
+
+function inputValue(event: Event): string {
+  return (event.target as HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement).value
+}
+
+function updateCode(event: Event): void {
+  code.set(inputValue(event))
+}
+
+function updateInitialBalance(event: Event): void {
+  const previous = initialBalance()
+  const next = inputValue(event)
+  initialBalance.set(next)
+  if (currentBalance() === previous)
+    currentBalance.set(next)
+}
+
+function updateCurrentBalance(event: Event): void {
+  currentBalance.set(inputValue(event))
+}
+
+function updateCurrency(event: Event): void {
+  currency.set(inputValue(event).toUpperCase())
+}
+
+function updateStatus(event: Event): void {
+  status.set(inputValue(event) as GiftCardStatus)
+}
+
+function updatePurchaserId(event: Event): void {
+  purchaserId.set(inputValue(event))
+}
+
+function updateRecipientEmail(event: Event): void {
+  recipientEmail.set(inputValue(event))
+}
+
+function updateRecipientName(event: Event): void {
+  recipientName.set(inputValue(event))
+}
+
+function updatePersonalMessage(event: Event): void {
+  personalMessage.set(inputValue(event))
+}
+
+function updateExpiryDate(event: Event): void {
+  expiryDate.set(inputValue(event))
+}
+
+function updateLastUsedDate(event: Event): void {
+  lastUsedDate.set(inputValue(event))
+}
+
+function updateTemplateId(event: Event): void {
+  templateId.set(inputValue(event))
+}
+
+function updateCustomerId(event: Event): void {
+  customerId.set(inputValue(event))
+}
+
+function updateIsDigital(event: Event): void {
+  isDigital.set((event.target as HTMLInputElement).checked)
+}
+
+function updateIsReloadable(event: Event): void {
+  isReloadable.set((event.target as HTMLInputElement).checked)
+}
+
+function updateIsActive(event: Event): void {
+  isActive.set((event.target as HTMLInputElement).checked)
+}
+
+function optionalTimestamp(value: string): number | undefined {
+  if (!value)
+    return undefined
+  const milliseconds = new Date(value).getTime()
+  return Number.isNaN(milliseconds) ? undefined : Math.floor(milliseconds / 1000)
+}
+
+function optionalCustomerId(): number | undefined {
+  if (!customerId().trim())
+    return undefined
+  const result = Number(customerId())
+  return Number.isInteger(result) && result > 0 ? result : undefined
+}
+
+function balanceError(): string {
+  const initial = Number(initialBalance())
+  const current = Number(currentBalance())
+  if (!Number.isFinite(initial) || initial < 1)
+    return 'Initial balance must be at least 1.'
+  if (!Number.isFinite(current) || current < 0)
+    return 'Current balance cannot be negative.'
+  if (current > initial)
+    return 'Current balance cannot exceed the initial balance.'
+  return ''
+}
+
+function valid(): boolean {
+  return Boolean(
+    code().trim()
+    && /^[A-Z]{3}$/.test(currency().trim().toUpperCase())
+    && !balanceError()
+  )
+}
+
+function submit(): void {
+  if (!valid())
+    return
+  emit('submit', {
+    code: code().trim().toUpperCase(),
+    initialBalance: Number(initialBalance()),
+    currentBalance: Number(currentBalance()),
+    currency: currency().trim().toUpperCase(),
+    status: status(),
+    purchaser_id: purchaserId().trim() || undefined,
+    recipient_email: recipientEmail().trim() || undefined,
+    recipientName: recipientName().trim() || undefined,
+    personalMessage: personalMessage().trim() || undefined,
+    isDigital: isDigital(),
+    isReloadable: isReloadable(),
+    isActive: isActive(),
+    expiryDate: optionalTimestamp(expiryDate()),
+    lastUsedDate: optionalTimestamp(lastUsedDate()),
+    templateId: templateId().trim() || undefined,
+    customerId: optionalCustomerId(),
+  })
+}
+
+function errorMessages(): string[] {
+  return Object.entries(errors()).map(([field, message]) => {
+    const label = field.replace(/([a-z])([A-Z])/g, '$1 $2').replaceAll('_', ' ')
+    return `${label.charAt(0).toUpperCase()}${label.slice(1)}: ${message}`
+  })
+}
+</script>
+
+<div :if="open()" class="flex fixed inset-0 z-50 items-center justify-center p-4">
+  <button type="button" aria-label="Close gift card dialog" class="absolute inset-0 bg-black/45" @click="emit('close')"></button>
+  <section role="dialog" aria-modal="true" aria-labelledby="gift-card-dialog-title" class="overflow-y-auto relative max-h-[92dvh] max-w-3xl w-full bg-white dark:bg-neutral-800 border border-gray-200 rounded-xl dark:border-neutral-700 shadow-xl">
+    <form @submit.prevent="submit">
+      <div class="p-6">
+        <h2 id="gift-card-dialog-title" class="font-semibold text-gray-900 text-lg dark:text-white">{{ mode() === 'edit' ? 'Edit gift card' : 'Add gift card' }}</h2>
+        <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Store fields declared by the GiftCard model.</p>
+        <ul :if="errorMessages().length > 0" class="mt-5 p-3 space-y-1 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900">
+          <template :for="message in errorMessages()" :key="message"><li>{{ message }}</li></template>
+        </ul>
+        <div class="grid gap-4 grid-cols-1 sm:grid-cols-2 mt-5">
+          <label class="block sm:col-span-2"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Code</span><input :value="code()" type="text" maxlength="50" required spellcheck="false" class="mt-1 px-3 py-2 w-full font-mono text-gray-900 text-sm uppercase dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="updateCode($event)" /></label>
+          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Initial balance</span><input :value="initialBalance()" type="number" min="1" step="0.01" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="updateInitialBalance($event)" /></label>
+          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Current balance</span><input :value="currentBalance()" :max="initialBalance()" type="number" min="0" step="0.01" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="updateCurrentBalance($event)" /></label>
+          <p :if="balanceError()" class="sm:col-span-2 -mt-2 text-red-600 text-xs dark:text-red-400">{{ balanceError() }}</p>
+          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Currency</span><input :value="currency()" type="text" minlength="3" maxlength="3" required spellcheck="false" class="mt-1 px-3 py-2 w-full font-mono text-gray-900 text-sm uppercase dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="updateCurrency($event)" /></label>
+          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Status</span><select :value="status()" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @change="updateStatus($event)"><option value="ACTIVE">Active</option><option value="USED">Used</option><option value="EXPIRED">Expired</option><option value="DEACTIVATED">Deactivated</option></select></label>
+          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Recipient name</span><input :value="recipientName()" type="text" placeholder="Optional" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="updateRecipientName($event)" /></label>
+          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Recipient email</span><input :value="recipientEmail()" type="email" placeholder="Optional" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="updateRecipientEmail($event)" /></label>
+          <label class="block sm:col-span-2"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Personal message</span><textarea :value="personalMessage()" rows="3" placeholder="Optional" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="updatePersonalMessage($event)"></textarea></label>
+          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Expiry date</span><input :value="expiryDate()" type="datetime-local" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="updateExpiryDate($event)" /></label>
+          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Last used date</span><input :value="lastUsedDate()" type="datetime-local" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="updateLastUsedDate($event)" /></label>
+          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Purchaser ID</span><input :value="purchaserId()" type="text" placeholder="Optional" class="mt-1 px-3 py-2 w-full font-mono text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="updatePurchaserId($event)" /></label>
+          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Customer ID</span><input :value="customerId()" type="number" min="1" step="1" placeholder="Optional" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="updateCustomerId($event)" /></label>
+          <label class="block sm:col-span-2"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Template ID</span><input :value="templateId()" type="text" placeholder="Optional" class="mt-1 px-3 py-2 w-full font-mono text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="updateTemplateId($event)" /></label>
+          <div class="grid gap-3 grid-cols-1 sm:col-span-2 sm:grid-cols-3">
+            <label class="flex gap-3 items-center p-3 border border-gray-200 rounded-lg dark:border-neutral-700"><input type="checkbox" :checked="isActive()" class="h-4 w-4 text-blue-600 border-gray-300 rounded" @change="updateIsActive($event)" /><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Enabled</span></label>
+            <label class="flex gap-3 items-center p-3 border border-gray-200 rounded-lg dark:border-neutral-700"><input type="checkbox" :checked="isDigital()" class="h-4 w-4 text-blue-600 border-gray-300 rounded" @change="updateIsDigital($event)" /><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Digital delivery</span></label>
+            <label class="flex gap-3 items-center p-3 border border-gray-200 rounded-lg dark:border-neutral-700"><input type="checkbox" :checked="isReloadable()" class="h-4 w-4 text-blue-600 border-gray-300 rounded" @change="updateIsReloadable($event)" /><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Reloadable</span></label>
+          </div>
+        </div>
+      </div>
+      <footer class="flex gap-2 justify-end px-6 py-4 bg-gray-50 dark:bg-neutral-900/50 border-gray-200 border-t dark:border-neutral-700">
+        <button type="button" :disabled="busy()" class="px-3 py-2 font-semibold text-gray-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700 disabled:opacity-50" @click="emit('close')">Cancel</button>
+        <button type="submit" :disabled="busy() || !valid()" class="inline-flex items-center px-3 py-2 font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md disabled:opacity-50"><span :if="busy()" class="mr-2 h-4 w-4 animate-spin i-hugeicons-loading-03"></span>{{ mode() === 'edit' ? 'Save gift card' : 'Add gift card' }}</button>
+      </footer>
+    </form>
+  </section>
+</div>
