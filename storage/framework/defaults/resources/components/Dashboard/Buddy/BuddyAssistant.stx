@@ -1,0 +1,196 @@
+<script client>
+import type { BuddyChatMessage, BuddyChatState } from '../../../../functions/buddy-chat'
+import { askBuddy, clearBuddyChat, fetchBuddyChat } from '../../../../functions/buddy-chat'
+import { pushToast } from '../../../../functions/toasts'
+
+const chatState = state<BuddyChatState | null>(null)
+const messages = state<BuddyChatMessage[]>([])
+const prompt = state('')
+const isLoading = state(true)
+const isSending = state(false)
+const loadError = state('')
+
+function providerName(): string {
+  const provider = chatState()?.provider
+  if (provider === 'openai')
+    return 'OpenAI'
+  if (provider === 'anthropic')
+    return 'Anthropic'
+  if (provider === 'ollama')
+    return 'Ollama'
+  return 'AI provider'
+}
+
+function updatePrompt(event: Event): void {
+  prompt.set((event.target as HTMLTextAreaElement).value)
+}
+
+function setSuggestion(value: string): void {
+  prompt.set(value)
+}
+
+async function loadChat(): Promise<void> {
+  isLoading.set(true)
+  loadError.set('')
+  try {
+    const data = await fetchBuddyChat()
+    chatState.set(data)
+    messages.set(data.history)
+  }
+  catch (error) {
+    loadError.set('Buddy status could not be loaded.')
+    pushToast('error', 'Could not load Buddy', { detail: String(error) })
+  }
+  finally {
+    isLoading.set(false)
+  }
+}
+
+async function sendMessage(event: Event): Promise<void> {
+  event.preventDefault()
+  const content = prompt().trim()
+  if (!content || isSending() || !chatState()?.configured)
+    return
+
+  const previous = messages()
+  messages.set([...previous, { role: 'user', content }])
+  prompt.set('')
+  isSending.set(true)
+  try {
+    const result = await askBuddy(content)
+    messages.set([...messages(), { role: 'assistant', content: result.content }])
+  }
+  catch (error) {
+    messages.set(previous)
+    prompt.set(content)
+    pushToast('error', 'Buddy could not answer', { detail: String(error) })
+  }
+  finally {
+    isSending.set(false)
+  }
+}
+
+async function clearHistory(): Promise<void> {
+  try {
+    await clearBuddyChat()
+    messages.set([])
+    pushToast('success', 'Buddy conversation cleared')
+  }
+  catch (error) {
+    pushToast('error', 'Could not clear conversation', { detail: String(error) })
+  }
+}
+
+onMount(() => {
+  void loadChat()
+})
+</script>
+
+<div class="space-y-6">
+  <header class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+    <div>
+      <h1 class="font-bold text-2xl text-gray-900 dark:text-white">Buddy</h1>
+      <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Ask framework questions through your configured Stacks AI provider.</p>
+    </div>
+    <div class="flex gap-2 items-center">
+      <span :class="'inline-flex items-center px-2.5 py-1 font-medium text-xs rounded-full ' + (chatState()?.configured ? 'text-green-700 bg-green-100 dark:text-green-300 dark:bg-green-950' : 'text-amber-700 bg-amber-100 dark:text-amber-300 dark:bg-amber-950')">
+        <span :class="'mr-1.5 h-1.5 w-1.5 rounded-full ' + (chatState()?.configured ? 'bg-green-500' : 'bg-amber-500')"></span>
+        {{ providerName() }} {{ chatState()?.configured ? 'ready' : 'needs configuration' }}
+      </span>
+      <button :if="messages().length > 0" type="button" class="px-3 py-1.5 font-semibold text-gray-700 text-sm dark:text-neutral-200 hover:bg-gray-100 dark:hover:bg-neutral-800 rounded-md" @click="clearHistory">
+        Clear
+      </button>
+    </div>
+  </header>
+
+  <div :if="loadError()" class="p-4 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900">
+    {{ loadError() }}
+  </div>
+
+  <div :if="!isLoading() && chatState() && !chatState()?.configured" class="p-5 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 rounded-lg dark:border-amber-900">
+    <div class="flex gap-3">
+      <span class="mt-0.5 h-5 w-5 text-amber-600 i-hugeicons-key-01"></span>
+      <div>
+        <h2 class="font-semibold text-amber-900 dark:text-amber-200">Configure {{ providerName() }}</h2>
+        <p class="mt-1 text-amber-800 text-sm dark:text-amber-300">
+          Add the provider key to your environment, then restart the dashboard. Secrets remain server-side and are never returned to this page.
+        </p>
+        <code class="inline-block mt-3 px-2 py-1 font-mono text-amber-900 text-xs dark:text-amber-200 bg-amber-100 dark:bg-amber-950 rounded">
+          {{ chatState()?.provider === 'openai' ? 'OPENAI_API_KEY' : 'ANTHROPIC_API_KEY' }}
+        </code>
+        <StxLink to="/environment" class="inline-flex items-center ml-3 font-medium text-amber-800 text-sm dark:text-amber-300">
+          Open environment
+          <span class="ml-1 h-4 w-4 i-hugeicons-arrow-right-02"></span>
+        </StxLink>
+      </div>
+    </div>
+  </div>
+
+  <section class="flex overflow-hidden flex-col min-h-[36rem] bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
+    <div class="flex items-center justify-between px-5 py-3 border-b border-gray-200 dark:border-neutral-700">
+      <div>
+        <h2 class="font-semibold text-gray-900 dark:text-white">Framework conversation</h2>
+        <p class="text-gray-500 text-xs dark:text-neutral-400">Session history is held by the running Buddy process.</p>
+      </div>
+      <div :if="chatState()?.repository" class="text-right">
+        <p class="font-medium text-gray-700 text-xs dark:text-neutral-200">{{ chatState()?.repository?.name }}</p>
+        <p class="font-mono text-gray-500 text-xs dark:text-neutral-400">{{ chatState()?.repository?.branch }}</p>
+      </div>
+    </div>
+
+    <div class="overflow-y-auto flex-1 p-5">
+      <div :if="isLoading()" class="flex items-center justify-center h-full text-gray-500 text-sm dark:text-neutral-400">
+        Loading Buddy
+      </div>
+
+      <div :if="!isLoading() && messages().length === 0" class="flex flex-col items-center justify-center h-full text-center">
+        <div class="flex items-center justify-center h-11 w-11 text-blue-600 bg-blue-50 dark:bg-blue-950/30 rounded-lg i-hugeicons-ai-chat-02"></div>
+        <h3 class="mt-4 font-semibold text-gray-900 dark:text-white">Start with a Stacks question</h3>
+        <p class="mt-1 max-w-lg text-gray-500 text-sm dark:text-neutral-400">Buddy answers questions only from this page. It does not edit files or run commands.</p>
+        <div class="grid gap-2 grid-cols-1 sm:grid-cols-2 mt-5 max-w-2xl w-full">
+          <button type="button" class="p-3 text-gray-700 text-left text-sm dark:text-neutral-200 hover:bg-gray-50 dark:hover:bg-neutral-700 border border-gray-200 rounded-md dark:border-neutral-700" @click="setSuggestion('How do I create a model that generates authenticated CRUD APIs?')">
+            Model with authenticated APIs
+          </button>
+          <button type="button" class="p-3 text-gray-700 text-left text-sm dark:text-neutral-200 hover:bg-gray-50 dark:hover:bg-neutral-700 border border-gray-200 rounded-md dark:border-neutral-700" @click="setSuggestion('How should I build a reactive form with stx signals?')">
+            Reactive stx form
+          </button>
+        </div>
+      </div>
+
+      <div :if="messages().length > 0" class="mx-auto space-y-4 max-w-4xl">
+        <template :for="message in messages()">
+          <div :class="'flex ' + (message.role === 'user' ? 'justify-end' : 'justify-start')">
+            <div :class="'max-w-[85%] px-4 py-3 text-sm whitespace-pre-wrap rounded-lg ' + (message.role === 'user' ? 'text-white bg-blue-600' : 'text-gray-800 dark:text-neutral-100 bg-gray-100 dark:bg-neutral-700')">
+              {{ message.content }}
+            </div>
+          </div>
+        </template>
+        <div :if="isSending()" class="flex justify-start">
+          <div class="inline-flex items-center px-4 py-3 text-gray-500 text-sm dark:text-neutral-300 bg-gray-100 dark:bg-neutral-700 rounded-lg">
+            <span class="mr-2 h-4 w-4 animate-spin i-hugeicons-loading-03"></span>
+            Buddy is thinking
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <form class="p-4 bg-gray-50 dark:bg-neutral-800 border-gray-200 border-t dark:border-neutral-700" @submit="sendMessage($event)">
+      <div class="flex gap-3 items-end mx-auto max-w-4xl">
+        <textarea
+          :value="prompt()"
+          :disabled="!chatState()?.configured || isSending()"
+          maxlength="4000"
+          rows="3"
+          aria-label="Ask Buddy"
+          placeholder="Ask about models, actions, routes, stx, Crosswind, testing, or deployment"
+          class="block px-3 py-2 min-h-20 w-full text-gray-900 text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border border-gray-300 rounded-md dark:border-neutral-600 disabled:opacity-60 resize-y"
+          @input="updatePrompt($event)"
+        ></textarea>
+        <button type="submit" :disabled="!chatState()?.configured || isSending() || prompt().trim().length < 3" class="inline-flex items-center justify-center px-4 py-2.5 font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md disabled:opacity-50">
+          <span class="mr-2 h-4 w-4 i-hugeicons-sent"></span>
+          Send
+        </button>
+      </div>
+    </form>
+  </section>
+</div>
