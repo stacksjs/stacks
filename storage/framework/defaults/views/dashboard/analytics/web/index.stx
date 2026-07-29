@@ -4,22 +4,23 @@
 @title('Dashboard - Web Analytics')
 <PageLayout>
       <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-6">
-        <div class="flex items-center space-x-2">
-          <div class="h-5 w-5 text-gray-500 dark:text-neutral-400 i-hugeicons-calendar-03"></div>
-          <span class="font-medium text-gray-700 text-sm dark:text-neutral-300">{{ dateRangeDisplay }}</span>
+        <div>
+          <h1 class="font-bold text-2xl text-gray-900 dark:text-white">Web Analytics</h1>
+          <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Privacy-safe traffic aggregates from recorded application requests.</p>
         </div>
         <div class="flex flex-wrap gap-2 items-center">
-          <span class="text-gray-500 text-sm dark:text-neutral-400">compared to</span>
+          <span class="text-gray-500 text-sm dark:text-neutral-400">{{ dateRangeDisplay }}</span>
           <div class="relative">
-            <select x-model="comparisonType" class="block pl-3 pr-10 py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-800 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-700 focus:ring-2 focus:ring-blue-600 focus:ring-inset">
-              <option value="no-comparison">No comparison</option>
-              <option value="previous-period">Previous period</option>
-              <option value="previous-year">Previous year</option>
+            <select x-model="analyticsRange" class="block pl-3 pr-10 py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-800 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-700 focus:ring-2 focus:ring-blue-600 focus:ring-inset">
+              <option value="day">Last 24 hours</option>
+              <option value="week">Last 7 days</option>
+              <option value="month">Last 30 days</option>
+              <option value="year">Last year</option>
             </select>
           </div>
-          <button type="button" class="inline-flex items-center px-3 py-1.5 font-semibold text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-600 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 shadow-sm">
-            <div class="mr-1 h-4 w-4 i-hugeicons-settings-01"></div>
-            Auto
+          <button type="button" :disabled="isLoading" @click="loadAnalytics()" class="inline-flex items-center px-3 py-1.5 font-semibold text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-600 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 shadow-sm disabled:opacity-50">
+            <span class="mr-1 h-4 w-4 {{ isLoading() ? 'animate-spin i-hugeicons-refresh' : 'i-hugeicons-refresh' }}"></span>
+            Refresh
           </button>
         </div>
       </div>
@@ -30,24 +31,24 @@
           <div class="text-gray-400 text-sm">Realtime</div>
         </div>
         <div class="flex flex-col items-center justify-center">
-          <div class="font-bold text-4xl text-white">2.2k</div>
-          <div class="text-gray-400 text-sm">People</div>
+          <div class="font-bold text-4xl text-white">{{ formatNumber(analyticsOverview.people) }}</div>
+          <div class="text-gray-400 text-sm">Unique visitors</div>
         </div>
         <div class="flex flex-col items-center justify-center">
-          <div class="font-bold text-4xl text-white">3k</div>
-          <div class="text-gray-400 text-sm">Views</div>
+          <div class="font-bold text-4xl text-white">{{ formatNumber(analyticsOverview.views) }}</div>
+          <div class="text-gray-400 text-sm">Page views</div>
         </div>
         <div class="flex flex-col items-center justify-center">
           <div class="font-bold text-4xl text-white">{{ analyticsOverview.avgTimeOnSite }}</div>
-          <div class="text-gray-400 text-sm">Avg time on site</div>
+          <div class="text-gray-400 text-sm">Avg response</div>
         </div>
         <div class="flex flex-col items-center justify-center">
           <div class="font-bold text-4xl text-white">{{ analyticsOverview.bounceRate }}</div>
-          <div class="text-gray-400 text-sm">Bounce rate</div>
+          <div class="text-gray-400 text-sm">Error rate</div>
         </div>
         <div class="flex flex-col items-center justify-center">
-          <div class="font-bold text-4xl text-white">{{ analyticsOverview.eventCompletions }}</div>
-          <div class="text-gray-400 text-sm">Event completions</div>
+          <div class="font-bold text-4xl text-white">{{ formatNumber(analyticsOverview.eventCompletions) }}</div>
+          <div class="text-gray-400 text-sm">Successful requests</div>
         </div>
       </div>
 
@@ -119,6 +120,7 @@
               </tbody>
             </table>
           </div>
+          <p :if="referrersData.length === 0" class="mt-3 text-gray-500 text-sm dark:text-neutral-400">Referrers require an analytics provider that records source headers.</p>
           <div class="flex justify-end mt-2"><StxLink to="/analytics/referrers" class="text-blue-600 text-sm dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">View all referrers</StxLink></div>
         </div>
       </div>
@@ -205,123 +207,60 @@
               </tbody>
             </table>
           </div>
+          <p :if="countriesData.length === 0" class="mt-3 text-gray-500 text-sm dark:text-neutral-400">Country data requires geolocation tracking in your analytics provider.</p>
           <div class="flex justify-end mt-2"><StxLink to="/analytics/countries" class="text-blue-600 text-sm dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">View all countries</StxLink></div>
         </div>
       </div>
 </PageLayout>
 <script client>
+import type {
+  AnalyticsOverview,
+  AnalyticsRange,
+  BrowserData,
+  CountryData,
+  DeviceData,
+  PageData,
+  ReferrerData,
+  TrafficDataPoint,
+} from '../../../../functions/analytics'
+import { fetchWebAnalytics } from '../../../../functions/analytics'
+import { pushToast } from '../../../../functions/toasts'
 import { useChart } from '~/storage/framework/defaults/views/dashboard/composables/useChart'
 
 interface ChartLike { destroy: () => void }
 type ChartCtor = new (canvas: HTMLElement, config: { type: string, data: unknown, options?: unknown }) => ChartLike
 
-// Static analytics tables + overview — moved out of the former
-// `<script server>` block (stacksjs/stacks#1838).
-const pagesRaw = [
-  { path: '/', entries: 1800, visitors: 1800, views: 2100 },
-  { path: '/blog', entries: 113, visitors: 113, views: 139 },
-  { path: '/about', entries: 51, visitors: 51, views: 77 },
-  { path: '/contact', entries: 42, visitors: 42, views: 51 },
-  { path: '/products', entries: 37, visitors: 37, views: 60 },
-  { path: '/guide/get-started.html', entries: 21, visitors: 29, views: 45 },
-  { path: '/docs', entries: 16, visitors: 17, views: 202 },
-  { path: '/guide/intro.html', entries: 12, visitors: 17, views: 22 },
-  { path: '/guide/get-started', entries: 9, visitors: 12, views: 13 },
-  { path: '/team', entries: 9, visitors: 10, views: 15 },
-]
-
-const referrersRaw = [
-  { name: 'Direct / Unknown', visitors: 1400, views: 2100 },
-  { name: 'X/Twitter', visitors: 545, views: 580 },
-  { name: 'Google', visitors: 46, views: 50 },
-  { name: 'stacksjs.com', visitors: 45, views: 63 },
-  { name: 'stacksjs.netlify.app', visitors: 38, views: 60 },
-  { name: 'github.com', visitors: 34, views: 47 },
-  { name: 'DuckDuckGo', visitors: 32, views: 35 },
-  { name: 'Bing', visitors: 22, views: 24 },
-  { name: 'Baidu', visitors: 8, views: 8 },
-  { name: 'npmjs.com', visitors: 7, views: 7 },
-]
-
-const deviceData = [
-  { name: 'Desktop', visitors: 1300, percentage: 60 },
-  { name: 'Phone', visitors: 874, percentage: 38 },
-  { name: 'Tablet', visitors: 5, percentage: 2 },
-]
-
-const browserData = [
-  { name: 'Chrome', visitors: 1300, percentage: 58 },
-  { name: 'Safari', visitors: 579, percentage: 26 },
-  { name: 'Edge', visitors: 129, percentage: 6 },
-  { name: 'Firefox', visitors: 92, percentage: 4 },
-  { name: 'Mozilla', visitors: 24, percentage: 1 },
-]
-
-const countriesRaw = [
-  { name: 'United States of America', visitors: 768, flag: '🇺🇸' },
-  { name: 'Germany', visitors: 140, flag: '🇩🇪' },
-  { name: 'United Kingdom', visitors: 87, flag: '🇬🇧' },
-  { name: 'India', visitors: 83, flag: '🇮🇳' },
-  { name: 'Indonesia', visitors: 80, flag: '🇮🇩' },
-]
-
-const totalPageViews = pagesRaw.reduce((s, p) => s + p.views, 0)
-const totalReferrerViews = referrersRaw.reduce((s, r) => s + r.views, 0)
-const totalCountryVisitors = countriesRaw.reduce((s, c) => s + c.visitors, 0)
-
-const pagesData = pagesRaw.map(p => ({ ...p, percentage: Math.round((p.views / totalPageViews) * 100) }))
-const referrersData = referrersRaw.map(r => ({ ...r, percentage: Math.round((r.views / totalReferrerViews) * 100) }))
-const countriesData = countriesRaw.map(c => ({ ...c, percentage: Math.round((c.visitors / totalCountryVisitors) * 100) }))
-
-const analyticsOverview = {
+const analyticsOverview = state<AnalyticsOverview>({
   realtime: 0,
-  people: 2200,
-  views: 3000,
-  avgTimeOnSite: '03:36',
-  bounceRate: '89%',
+  people: 0,
+  views: 0,
+  avgTimeOnSite: '-',
+  bounceRate: '0%',
   eventCompletions: 0,
-}
-
-const dateRangeDisplay = state('All Time: Sep 7, 2023 to Mar 6, 2025')
-const comparisonType = state('no-comparison')
-
-const trafficData = state<Array<{ date: string, pageViews: number, visitors: number }>>([
-  { date: '2023-11-01', pageViews: 100, visitors: 80 },
-  { date: '2023-11-15', pageViews: 250, visitors: 180 },
-  { date: '2023-12-01', pageViews: 150, visitors: 120 },
-  { date: '2023-12-15', pageViews: 220, visitors: 170 },
-  { date: '2024-01-01', pageViews: 180, visitors: 140 },
-  { date: '2024-01-15', pageViews: 320, visitors: 240 },
-  { date: '2024-02-01', pageViews: 280, visitors: 210 },
-  { date: '2024-02-15', pageViews: 400, visitors: 300 },
-  { date: '2024-03-01', pageViews: 350, visitors: 270 },
-  { date: '2024-03-15', pageViews: 300, visitors: 230 },
-  { date: '2024-04-01', pageViews: 250, visitors: 190 },
-  { date: '2024-04-15', pageViews: 200, visitors: 150 },
-  { date: '2024-05-01', pageViews: 150, visitors: 120 },
-  { date: '2024-05-15', pageViews: 120, visitors: 90 },
-  { date: '2024-06-01', pageViews: 100, visitors: 80 },
-  { date: '2024-06-15', pageViews: 130, visitors: 100 },
-  { date: '2024-07-01', pageViews: 150, visitors: 120 },
-  { date: '2024-07-15', pageViews: 120, visitors: 90 },
-  { date: '2024-08-01', pageViews: 100, visitors: 80 },
-  { date: '2024-08-15', pageViews: 80, visitors: 60 },
-  { date: '2024-09-01', pageViews: 100, visitors: 80 },
-  { date: '2024-09-15', pageViews: 120, visitors: 90 },
-  { date: '2024-10-01', pageViews: 150, visitors: 120 },
-  { date: '2024-10-15', pageViews: 100, visitors: 80 },
-  { date: '2024-11-01', pageViews: 80, visitors: 60 },
-  { date: '2024-11-15', pageViews: 120, visitors: 90 },
-  { date: '2024-12-01', pageViews: 300, visitors: 230 },
-  { date: '2024-12-15', pageViews: 150, visitors: 120 },
-  { date: '2025-01-01', pageViews: 100, visitors: 80 },
-  { date: '2025-01-15', pageViews: 80, visitors: 60 },
-  { date: '2025-02-01', pageViews: 60, visitors: 40 },
-])
+})
+const analyticsRange = state<AnalyticsRange>('month')
+const dateRangeDisplay = state('Last 30 days')
+const trafficData = state<TrafficDataPoint[]>([])
+const pagesData = state<PageData[]>([])
+const referrersData = state<ReferrerData[]>([])
+const deviceData = state<DeviceData[]>([])
+const browserData = state<BrowserData[]>([])
+const countriesData = state<CountryData[]>([])
+const isLoading = state(false)
 
 let chartHandle: { destroy: () => void } | null = null
 
-onMount(async () => {
+function formatNumber(value: number): string {
+  return new Intl.NumberFormat().format(value)
+}
+
+function formatDateRange(start: string, end: string): string {
+  const formatter = new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
+  return `${formatter.format(new Date(start))} to ${formatter.format(new Date(end))}`
+}
+
+async function renderTrafficChart(): Promise<void> {
+  chartHandle?.destroy()
   const { Chart, registerables } = await import('/__deps/charts.js')
   Chart.register(...registerables)
   const Ctor = Chart as unknown as ChartCtor
@@ -346,6 +285,32 @@ onMount(async () => {
       plugins: { legend: { display: true, position: 'top' }, tooltip: { mode: 'index', intersect: false } },
     },
   })
+}
+
+async function loadAnalytics(): Promise<void> {
+  isLoading.set(true)
+  try {
+    const data = await fetchWebAnalytics(analyticsRange())
+    analyticsOverview.set(data.overview)
+    trafficData.set(data.traffic)
+    pagesData.set(data.pages)
+    referrersData.set(data.referrers)
+    deviceData.set(data.devices)
+    browserData.set(data.browsers)
+    countriesData.set(data.countries)
+    dateRangeDisplay.set(formatDateRange(data.dateRange.start, data.dateRange.end))
+    await renderTrafficChart()
+  }
+  catch (error) {
+    pushToast('error', 'Could not load web analytics', { detail: String(error) })
+  }
+  finally {
+    isLoading.set(false)
+  }
+}
+
+onMount(async () => {
+  await loadAnalytics()
 })
 
 onDestroy(() => {

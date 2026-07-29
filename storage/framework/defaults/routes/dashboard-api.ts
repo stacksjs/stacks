@@ -39,6 +39,8 @@ function guard(r: any): any {
 route.group({ prefix: '/api/dashboard', apiResponse: true }, () => {
   guard(route.get('/home', 'Actions/Dashboard/DashboardHomeAction'))
 
+  guard(route.get('/analytics/web', 'Actions/Dashboard/Analytics/WebAnalyticsAction'))
+
   // CMS admin — backs the pages under `views/dashboard/content/`.
   //
   // This is the dashboard-reachable surface for CMS CRUD. The `/cms/*` group in

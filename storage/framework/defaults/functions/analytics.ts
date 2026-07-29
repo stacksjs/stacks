@@ -1,10 +1,8 @@
-import { resolveApiBaseUrl } from './api-url'
 /**
  * Analytics Composable
  */
 import { ref } from '@stacksjs/stx'
-
-const baseUrl = resolveApiBaseUrl()
+import { dashboardApi } from './dashboard-api'
 
 export interface AnalyticsOverview {
   realtime: number
@@ -55,6 +53,28 @@ export interface CountryData {
   flag: string
 }
 
+export type AnalyticsRange = 'day' | 'week' | 'month' | 'year'
+
+export interface WebAnalyticsResponse {
+  source: 'requests'
+  range: AnalyticsRange
+  dateRange: {
+    start: string
+    end: string
+  }
+  overview: AnalyticsOverview
+  traffic: TrafficDataPoint[]
+  pages: PageData[]
+  referrers: ReferrerData[]
+  devices: DeviceData[]
+  browsers: BrowserData[]
+  countries: CountryData[]
+}
+
+export async function fetchWebAnalytics(range: AnalyticsRange = 'month'): Promise<WebAnalyticsResponse> {
+  return await dashboardApi<WebAnalyticsResponse>(`/api/dashboard/analytics/web?range=${encodeURIComponent(range)}`)
+}
+
 export function useAnalytics() {
   const overview = ref<AnalyticsOverview>({ realtime: 0, people: 0, views: 0, avgTimeOnSite: '0s', bounceRate: '0%', eventCompletions: 0 })
   const trafficData = ref<TrafficDataPoint[]>([])
@@ -70,23 +90,26 @@ export function useAnalytics() {
     isLoading.value = true
     error.value = null
     try {
-      const response = await fetch(`${baseUrl}/analytics/web?range=${dateRange}`, {
-        headers: { 'Accept': 'application/json' },
-      })
-      if (response.ok) {
-        const data = await response.json()
-        overview.value = data.overview || overview.value
-        trafficData.value = data.traffic || []
-        pagesData.value = data.pages || []
-        referrersData.value = data.referrers || []
-        devicesData.value = data.devices || []
-        browsersData.value = data.browsers || []
-        countriesData.value = data.countries || []
-      }
-    } catch (e) {
+      const range: AnalyticsRange = dateRange === '1d'
+        ? 'day'
+        : dateRange === '7d'
+          ? 'week'
+          : dateRange === '1y'
+            ? 'year'
+            : 'month'
+      const data = await fetchWebAnalytics(range)
+      overview.value = data.overview
+      trafficData.value = data.traffic
+      pagesData.value = data.pages
+      referrersData.value = data.referrers
+      devicesData.value = data.devices
+      browsersData.value = data.browsers
+      countriesData.value = data.countries
+    }
+    catch {
       error.value = 'Failed to load analytics data.'
-      console.error('Failed to fetch analytics:', e)
-    } finally {
+    }
+    finally {
       isLoading.value = false
     }
   }
