@@ -1,0 +1,135 @@
+<script client>
+import type { DashboardJob } from '../../../../functions/jobs'
+import { fetchJobs, retryJob } from '../../../../functions/jobs'
+import { pushToast } from '../../../../functions/toasts'
+
+const jobs = state<DashboardJob[]>([])
+const queues = state<string[]>([])
+const currentPage = state(1)
+const perPage = state(25)
+const total = state(0)
+const selectedQueue = state('all')
+const selectedStatus = state('all')
+const searchQuery = state('')
+const isLoading = state(true)
+const loadError = state('')
+
+function totalPages(): number {
+  return Math.max(1, Math.ceil(total() / perPage()))
+}
+
+function rangeStart(): number {
+  return total() === 0 ? 0 : (currentPage() - 1) * perPage() + 1
+}
+
+function rangeEnd(): number {
+  return Math.min(currentPage() * perPage(), total())
+}
+
+function updateFilter(field: string, event: Event): void {
+  const value = (event.target as HTMLInputElement | HTMLSelectElement).value
+  if (field === 'queue')
+    selectedQueue.set(value)
+  else if (field === 'status')
+    selectedStatus.set(value)
+  else
+    searchQuery.set(value)
+  currentPage.set(1)
+  void loadJobs()
+}
+
+async function loadJobs(): Promise<void> {
+  isLoading.set(true)
+  loadError.set('')
+  try {
+    const data = await fetchJobs({
+      page: currentPage(),
+      perPage: perPage(),
+      queue: selectedQueue(),
+      status: selectedStatus(),
+      search: searchQuery().trim(),
+    })
+    jobs.set(data.data)
+    queues.set(data.queues)
+    total.set(data.total)
+  }
+  catch (error) {
+    loadError.set('Job history could not be loaded.')
+    pushToast('error', 'Could not load job history', { detail: String(error) })
+  }
+  finally {
+    isLoading.set(false)
+  }
+}
+
+function previousPage(): void {
+  if (currentPage() <= 1)
+    return
+  currentPage.set(currentPage() - 1)
+  void loadJobs()
+}
+
+function nextPage(): void {
+  if (currentPage() >= totalPages())
+    return
+  currentPage.set(currentPage() + 1)
+  void loadJobs()
+}
+
+async function handleRetry(id: string | CustomEvent<string>): Promise<void> {
+  const jobId = typeof id === 'string' ? id : id.detail
+  try {
+    const result = await retryJob(jobId)
+    if (!result.success)
+      throw new Error(result.message)
+    pushToast('success', result.message)
+    await loadJobs()
+  }
+  catch (error) {
+    pushToast('error', 'Could not retry job', { detail: String(error) })
+  }
+}
+
+onMount(() => {
+  void loadJobs()
+})
+</script>
+
+<div class="space-y-6">
+  <header>
+    <h1 class="font-bold text-2xl text-gray-900 dark:text-white">Job History</h1>
+    <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Search active and failed jobs recorded by the configured queue.</p>
+  </header>
+
+  <div class="grid gap-3 grid-cols-1 md:grid-cols-[minmax(0,1fr)_12rem_12rem]">
+    <div>
+      <label for="job-search" class="sr-only">Search jobs</label>
+      <input id="job-search" :value="searchQuery()" type="search" placeholder="Search job names" class="block px-3 py-2 w-full text-gray-900 text-sm dark:text-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" @input="updateFilter('search', $event)" />
+    </div>
+    <select :value="selectedQueue()" aria-label="Queue" class="block px-3 py-2 text-gray-900 text-sm dark:text-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" @change="updateFilter('queue', $event)">
+      <option value="all">All queues</option>
+      <template :for="queue in queues()">
+        <option :value="queue">{{ queue }}</option>
+      </template>
+    </select>
+    <select :value="selectedStatus()" aria-label="Status" class="block px-3 py-2 text-gray-900 text-sm dark:text-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" @change="updateFilter('status', $event)">
+      <option value="all">All statuses</option>
+      <option value="queued">Queued</option>
+      <option value="processing">Processing</option>
+      <option value="completed">Completed</option>
+      <option value="failed">Failed</option>
+    </select>
+  </div>
+
+  <div :if="loadError()" class="p-4 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900">{{ loadError() }}</div>
+
+  <JobTable :jobs="jobs" :loading="isLoading" emptyTitle="No jobs match these filters" @retry="handleRetry" />
+
+  <div class="flex items-center justify-between">
+    <p class="text-gray-500 text-sm dark:text-neutral-400">Showing {{ rangeStart() }} to {{ rangeEnd() }} of {{ total() }}</p>
+    <div class="flex gap-2">
+      <button type="button" :disabled="currentPage() <= 1" class="px-3 py-2 font-semibold text-gray-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700 disabled:opacity-50" @click="previousPage">Previous</button>
+      <button type="button" :disabled="currentPage() >= totalPages()" class="px-3 py-2 font-semibold text-gray-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700 disabled:opacity-50" @click="nextPage">Next</button>
+    </div>
+  </div>
+</div>

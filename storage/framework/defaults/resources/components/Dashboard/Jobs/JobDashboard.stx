@@ -1,0 +1,100 @@
+<script client>
+import type { DashboardJob, JobStatsResponse } from '../../../../functions/jobs'
+import { fetchJobs, fetchJobStats, retryJob } from '../../../../functions/jobs'
+import { pushToast } from '../../../../functions/toasts'
+
+const jobs = state<DashboardJob[]>([])
+const stats = state<JobStatsResponse | null>(null)
+const isLoading = state(true)
+const loadError = state('')
+
+function formatNumber(value: number): string {
+  return new Intl.NumberFormat().format(value)
+}
+
+async function loadDashboard(): Promise<void> {
+  isLoading.set(true)
+  loadError.set('')
+  try {
+    const [list, summary] = await Promise.all([
+      fetchJobs({ page: 1, perPage: 10 }),
+      fetchJobStats(),
+    ])
+    jobs.set(list.data)
+    stats.set(summary)
+  }
+  catch (error) {
+    loadError.set('Job data could not be loaded.')
+    pushToast('error', 'Could not load jobs', { detail: String(error) })
+  }
+  finally {
+    isLoading.set(false)
+  }
+}
+
+async function handleRetry(id: string | CustomEvent<string>): Promise<void> {
+  const jobId = typeof id === 'string' ? id : id.detail
+  try {
+    const result = await retryJob(jobId)
+    if (!result.success)
+      throw new Error(result.message)
+    pushToast('success', result.message)
+    await loadDashboard()
+  }
+  catch (error) {
+    pushToast('error', 'Could not retry job', { detail: String(error) })
+  }
+}
+
+onMount(() => {
+  void loadDashboard()
+})
+</script>
+
+<div class="space-y-6">
+  <header class="flex items-start justify-between">
+    <div>
+      <h1 class="font-bold text-2xl text-gray-900 dark:text-white">Jobs</h1>
+      <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Queue activity from Job and FailedJob records plus the current worker metrics.</p>
+    </div>
+    <button type="button" :disabled="isLoading()" class="inline-flex items-center px-3 py-2 font-semibold text-gray-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700 disabled:opacity-50" @click="loadDashboard">
+      <span :class="'mr-2 h-4 w-4 ' + (isLoading() ? 'animate-spin i-hugeicons-loading-03' : 'i-hugeicons-refresh')"></span>
+      Refresh
+    </button>
+  </header>
+
+  <div :if="loadError()" class="p-4 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900">{{ loadError() }}</div>
+
+  <section class="grid gap-3 grid-cols-2 lg:grid-cols-4">
+    <div class="p-4 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
+      <p class="text-gray-500 text-xs uppercase dark:text-neutral-400">Recorded jobs</p>
+      <p class="mt-2 font-semibold text-2xl text-gray-900 dark:text-white">{{ formatNumber(stats()?.totalJobs || 0) }}</p>
+    </div>
+    <div class="p-4 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
+      <p class="text-gray-500 text-xs uppercase dark:text-neutral-400">Failed jobs</p>
+      <p class="mt-2 font-semibold text-2xl text-gray-900 dark:text-white">{{ formatNumber(stats()?.totalFailed || 0) }}</p>
+    </div>
+    <div class="p-4 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
+      <p class="text-gray-500 text-xs uppercase dark:text-neutral-400">Average processing</p>
+      <p class="mt-2 font-semibold text-2xl text-gray-900 dark:text-white">{{ stats()?.avgProcessingTime || '0ms' }}</p>
+    </div>
+    <div class="p-4 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
+      <p class="text-gray-500 text-xs uppercase dark:text-neutral-400">Jobs per minute</p>
+      <p class="mt-2 font-semibold text-2xl text-gray-900 dark:text-white">{{ formatNumber(stats()?.jobsPerMinute || 0) }}</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="flex items-end justify-between mb-3">
+      <div>
+        <h2 class="font-semibold text-gray-900 dark:text-white">Recent jobs</h2>
+        <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">No synthetic throughput is shown. Metrics reflect the running queue process.</p>
+      </div>
+      <StxLink to="/jobs/history" class="inline-flex items-center font-medium text-blue-600 text-sm dark:text-blue-400">
+        Full history
+        <span class="ml-1 h-4 w-4 i-hugeicons-arrow-right-02"></span>
+      </StxLink>
+    </div>
+    <JobTable :jobs="jobs" :loading="isLoading" emptyTitle="No jobs have been recorded" @retry="handleRetry" />
+  </section>
+</div>

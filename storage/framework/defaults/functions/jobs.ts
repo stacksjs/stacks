@@ -1,76 +1,123 @@
-/**
- * Jobs Composable
- *
- * Provides data fetching for job history and queue management.
- */
-
 import { ref } from '@stacksjs/stx'
-import { get, post } from './api'
+import { dashboardApi } from './dashboard-api'
 
-export interface JobHistoryEntry {
+export type JobStatus = 'queued' | 'processing' | 'completed' | 'failed'
+
+export interface DashboardJob {
   id: string
   name: string
   queue: string
-  status: 'queued' | 'processing' | 'failed' | 'completed'
+  status: JobStatus
   attempts: number
+  maxAttempts: number
+  duration: string
   runtime?: number
+  error?: string
+  payload: unknown
+  created_at: string
   started_at?: string
   finished_at?: string
-  error?: string
-  payload: any
 }
 
+export interface JobListResponse {
+  data: DashboardJob[]
+  total: number
+  page: number
+  perPage: number
+  queues: string[]
+  queueConnected: boolean
+}
+
+export interface JobStatsResponse {
+  totalJobs: number
+  totalFailed: number
+  avgProcessingTime: string
+  jobsPerMinute: number
+  failureRate: string
+}
+
+export interface JobListFilters {
+  page?: number
+  perPage?: number
+  queue?: string
+  status?: string
+  search?: string
+}
+
+export async function fetchJobs(filters: JobListFilters = {}): Promise<JobListResponse> {
+  const query = new URLSearchParams()
+  if (filters.page)
+    query.set('page', String(filters.page))
+  if (filters.perPage)
+    query.set('per_page', String(filters.perPage))
+  if (filters.queue && filters.queue !== 'all')
+    query.set('queue', filters.queue)
+  if (filters.status && filters.status !== 'all')
+    query.set('status', filters.status)
+  if (filters.search)
+    query.set('search', filters.search)
+  const suffix = query.size > 0 ? `?${query.toString()}` : ''
+  return await dashboardApi<JobListResponse>(`/api/dashboard/jobs${suffix}`)
+}
+
+export async function fetchJobStats(): Promise<JobStatsResponse> {
+  return await dashboardApi<JobStatsResponse>('/api/dashboard/jobs/stats')
+}
+
+export async function retryJob(id: string): Promise<{ success: boolean, message: string }> {
+  return await dashboardApi<{ success: boolean, message: string }>(`/api/dashboard/jobs/${encodeURIComponent(id)}/retry`, {
+    method: 'POST',
+  })
+}
+
+export async function retryFailedJobs(): Promise<{ success: boolean, message: string, count: number }> {
+  return await dashboardApi<{ success: boolean, message: string, count: number }>('/api/dashboard/queue/retry-failed', {
+    method: 'POST',
+  })
+}
+
+/** Backwards-compatible alias for dashboard consumers using the older composable. */
+export type JobHistoryEntry = DashboardJob
+
 export function useJobs() {
-  const jobs = ref<JobHistoryEntry[]>([])
+  const jobs = ref<DashboardJob[]>([])
   const totalJobs = ref(0)
   const isLoading = ref(false)
   const error = ref<string | null>(null)
 
-  async function fetchJobs(params?: { page?: number, perPage?: number, queue?: string, status?: string, search?: string }) {
+  async function loadJobs(filters: JobListFilters = {}) {
     isLoading.value = true
     error.value = null
-
     try {
-      const query = new URLSearchParams()
-      if (params?.page) query.set('page', String(params.page))
-      if (params?.perPage) query.set('per_page', String(params.perPage))
-      if (params?.queue && params.queue !== 'all') query.set('queue', params.queue)
-      if (params?.status && params.status !== 'all') query.set('status', params.status)
-      if (params?.search) query.set('search', params.search)
-
-      const data = await get<{ data: JobHistoryEntry[], total: number }>(`/jobs?${query.toString()}`)
-      jobs.value = data.data || []
-      totalJobs.value = data.total || 0
+      const result = await fetchJobs(filters)
+      jobs.value = result.data
+      totalJobs.value = result.total
     }
-    catch (e) {
+    catch {
       error.value = 'Failed to load job history.'
-      console.error('Failed to fetch jobs:', e)
     }
     finally {
       isLoading.value = false
     }
   }
 
-  async function retryJob(jobId: string) {
+  async function retryOneJob(id: string) {
     try {
-      await post(`/jobs/${jobId}/retry`)
-      // Refresh the job list after retry
-      await fetchJobs()
+      await retryJob(id)
+      await loadJobs()
     }
-    catch (e) {
-      error.value = `Failed to retry job ${jobId}.`
-      console.error('Failed to retry job:', e)
+    catch {
+      error.value = `Failed to retry job ${id}.`
     }
   }
 
-  async function retryFailedJobs() {
+  async function retryAllFailedJobs() {
     try {
-      await post('/queue/retry-failed')
-      await fetchJobs()
+      await retryFailedJobs()
+      await loadJobs()
     }
-    catch (e) {
+    catch {
       error.value = 'Failed to retry failed jobs.'
-      console.error('Failed to retry failed jobs:', e)
     }
   }
 
@@ -79,8 +126,8 @@ export function useJobs() {
     totalJobs,
     isLoading,
     error,
-    fetchJobs,
-    retryJob,
-    retryFailedJobs,
+    fetchJobs: loadJobs,
+    retryJob: retryOneJob,
+    retryFailedJobs: retryAllFailedJobs,
   }
 }
