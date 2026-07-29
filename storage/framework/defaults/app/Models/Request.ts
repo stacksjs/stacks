@@ -13,7 +13,11 @@ export default defineModel({
     useSeeder: {
       count: 50,
     },
-    useApi: true,
+    useApi: {
+      uri: 'requests',
+      routes: ['index', 'store', 'show', 'update', 'destroy'],
+      middleware: ['auth'],
+    },
   },
 
   attributes: {
