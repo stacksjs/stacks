@@ -936,6 +936,81 @@ export function shouldInjectManagementDashboard(tsCloudConfig: any): boolean {
   return !tsCloudConfig.cloud?.attachTo
 }
 
+export function reconcilePartialDeployManagementDashboards(
+  tsCloudConfig: any,
+  livePorts: Record<string, number>,
+): { preserved: string[], removed: string[] } {
+  const sites = tsCloudConfig.sites as Record<string, any> | undefined
+  const preserved: string[] = []
+  const removed: string[] = []
+  if (!sites) return { preserved, removed }
+
+  for (const [siteName, site] of Object.entries(sites)) {
+    if (siteName !== 'dashboard' && !siteName.startsWith('dashboard-'))
+      continue
+
+    const livePort = livePorts[siteName]
+    if (typeof livePort !== 'number' || !Number.isInteger(livePort) || livePort < 1 || livePort > 65535) {
+      delete sites[siteName]
+      removed.push(siteName)
+      continue
+    }
+
+    const next = { ...site, port: livePort }
+    if (typeof next.start === 'string')
+      next.start = next.start.replace(/(--port(?:=|\s+))\d+/, `$1${livePort}`)
+    sites[siteName] = next
+    preserved.push(siteName)
+  }
+
+  return { preserved, removed }
+}
+
+async function reconcilePartialDeployManagementDashboardsWithLiveBox(
+  tsCloudConfig: any,
+  ip: string,
+): Promise<void> {
+  const slug = String(tsCloudConfig.project?.slug || 'app').replace(/[^a-z0-9._-]+/gi, '-')
+  const siteNames = Object.keys(tsCloudConfig.sites ?? {})
+    .filter(name => name === 'dashboard' || name.startsWith('dashboard-'))
+  if (siteNames.length === 0) return
+
+  const units = siteNames.map(siteName => ({
+    siteName,
+    unit: `${slug}-${siteName}.service`,
+  }))
+  const probe = `
+const units = ${JSON.stringify(units)}
+const text = bytes => new TextDecoder().decode(bytes).trim()
+const run = args => text(Bun.spawnSync(args).stdout)
+const ports = {}
+for (const entry of units) {
+  if (run(['systemctl', 'show', entry.unit, '--property=ActiveState', '--value']) !== 'active')
+    continue
+  const command = run(['systemctl', 'show', entry.unit, '--property=ExecStart', '--value'])
+  const match = command.match(/--port(?:=|\\s+)(\\d+)/)
+  if (match)
+    ports[entry.siteName] = Number(match[1])
+}
+console.log(JSON.stringify(ports))
+`.trim()
+  const encoded = Buffer.from(probe).toString('base64')
+  const { sshExecOrThrow } = await import('@stacksjs/ts-cloud')
+  const output = await sshExecOrThrow(
+    ip,
+    `/usr/local/bin/bun -e "eval(Buffer.from('${encoded}','base64').toString())"`,
+    { user: 'root', connectTimeoutSec: 10 },
+  )
+  const line = output.trim().split('\n').at(-1) || '{}'
+  const livePorts = JSON.parse(line) as Record<string, number>
+  const result = reconcilePartialDeployManagementDashboards(tsCloudConfig, livePorts)
+
+  for (const siteName of result.preserved)
+    log.info(`Partial deploy: preserving the live management dashboard service '${siteName}' on port ${livePorts[siteName]}`)
+  for (const siteName of result.removed)
+    log.info(`Partial deploy: omitting management dashboard route '${siteName}' because no active service owns it`)
+}
+
 interface AttachedComputeBox {
   serverId: number
   serverName: string
@@ -1292,6 +1367,14 @@ async function runHetznerDeploy(args: {
   }
 
   await waitForRemoteReady(ip)
+
+  // A narrowed app deploy intentionally leaves the management dashboard unit
+  // untouched. Resolve its REAL systemd port before regenerating rpx so a stale
+  // local TS_CLOUD_UI_PORT override cannot point the route at a service this
+  // deploy never started. If no dashboard service is active, omit its route
+  // rather than publishing a guaranteed 502.
+  if (onlySite && !attachTo)
+    await reconcilePartialDeployManagementDashboardsWithLiveBox(tsCloudConfig, ip)
 
   // Package each site as source-only: dependencies are NOT shipped. They are
   // installed on the server from the committed lockfile via the site's

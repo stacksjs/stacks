@@ -19,6 +19,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import {
   loadTsCloudDeployApi,
+  reconcilePartialDeployManagementDashboards,
   resolvePersistedAttachTargetBox,
   scrubLoopbackSitePortsForFirewall,
   shouldInjectManagementDashboard,
@@ -107,6 +108,49 @@ describe('scrubLoopbackSitePortsForFirewall (#1950)', () => {
     const ports = collectUpstreamPorts(scrubLoopbackSitePortsForFirewall(tsCloud).sites)
     expect(ports).toContain(3000)
     expect(ports).not.toContain(3008)
+  })
+})
+
+describe('reconcilePartialDeployManagementDashboards', () => {
+  it('pins a narrowed deploy to the port of the active dashboard unit', () => {
+    const config = {
+      sites: {
+        main: { domain: 'stacksjs.com', port: 3000 },
+        'dashboard-stacksjs-com': {
+          domain: 'dashboard.stacksjs.com',
+          port: 29446,
+          start: 'bun dashboard-server.js --box --port 29446',
+        },
+      },
+    }
+
+    const result = reconcilePartialDeployManagementDashboards(config, {
+      'dashboard-stacksjs-com': 29346,
+    })
+
+    expect(result).toEqual({ preserved: ['dashboard-stacksjs-com'], removed: [] })
+    expect(config.sites['dashboard-stacksjs-com'].port).toBe(29346)
+    expect(config.sites['dashboard-stacksjs-com'].start).toContain('--port 29346')
+    expect(config.sites.main.port).toBe(3000)
+  })
+
+  it('omits a dashboard route when no active service owns it', () => {
+    const config: any = {
+      sites: {
+        main: { domain: 'stacksjs.com', port: 3000 },
+        'dashboard-stacksjs-com': {
+          domain: 'dashboard.stacksjs.com',
+          port: 29446,
+          start: 'bun dashboard-server.js --box --port 29446',
+        },
+      },
+    }
+
+    const result = reconcilePartialDeployManagementDashboards(config, {})
+
+    expect(result).toEqual({ preserved: [], removed: ['dashboard-stacksjs-com'] })
+    expect(config.sites['dashboard-stacksjs-com']).toBeUndefined()
+    expect(config.sites.main.port).toBe(3000)
   })
 })
 
