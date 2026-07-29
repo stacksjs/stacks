@@ -2,7 +2,7 @@
   "name": "@stacksjs/security",
   "type": "module",
   "sideEffects": false,
-  "version": "0.70.218",
+  "version": "0.70.219",
   "description": "The Stacks framework security.",
   "author": "Chris Breuer",
   "contributors": [
