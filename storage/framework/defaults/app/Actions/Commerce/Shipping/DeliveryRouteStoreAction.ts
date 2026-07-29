@@ -9,7 +9,8 @@ export default new Action({
   description: 'DeliveryRoute Store ORM Action',
   method: 'POST',
   async handle(request: RequestInstance) {
-    const model = await shippings.routes.store(request)
+    const data = await request.all()
+    const model = await shippings.routes.store(data)
 
     return response.json(model)
   },

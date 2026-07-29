@@ -7,7 +7,7 @@ export default new Action({
   description: 'ShippingMethod Store ORM Action',
   method: 'POST',
   async handle(request: RequestInstance) {
-    const data = request.all()
+    const data = await request.all()
 
     const model = await shippings.methods.store(data)
 

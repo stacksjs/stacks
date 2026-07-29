@@ -8,7 +8,8 @@ export default new Action({
   method: 'PATCH',
   async handle(request: RequestInstance) {
     const id = request.getParam('id')
-    const model = await shippings.zones.update(id, request)
+    const data = await request.all()
+    const model = await shippings.zones.update(id, data)
 
     return response.json(model)
   },

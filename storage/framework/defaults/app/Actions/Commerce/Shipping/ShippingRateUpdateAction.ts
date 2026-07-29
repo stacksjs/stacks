@@ -9,8 +9,9 @@ export default new Action({
   method: 'PATCH',
   async handle(request: RequestInstance) {
     const id = request.getParam('id')
+    const data = await request.all()
 
-    const model = await shippings.rates.update(id, request)
+    const model = await shippings.rates.update(id, data)
 
     return response.json(model)
   },

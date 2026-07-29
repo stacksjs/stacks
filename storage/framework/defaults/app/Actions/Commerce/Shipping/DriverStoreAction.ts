@@ -9,7 +9,8 @@ export default new Action({
   description: 'Driver Store ORM Action',
   method: 'POST',
   async handle(request: RequestInstance) {
-    const model = await shippings.drivers.store(request)
+    const data = await request.all()
+    const model = await shippings.drivers.store(data)
 
     return response.json(model)
   },

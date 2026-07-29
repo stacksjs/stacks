@@ -532,6 +532,7 @@ route.group({ prefix: '/api/commerce', middleware: 'auth' }, () => {
   route.get('/drivers/{id}', 'Actions/Commerce/Shipping/DriverShowAction')
   route.post('/drivers', 'Actions/Commerce/Shipping/DriverStoreAction')
   route.patch('/drivers/{id}', 'Actions/Commerce/Shipping/DriverUpdateAction')
+  route.delete('/drivers/{id}', 'Actions/Commerce/Shipping/DriverDestroyAction')
 
   // Renamed from `/digital` — frontend composable expects `/digital-deliveries`.
   route.get('/digital-deliveries', 'Actions/Commerce/Shipping/DigitalDeliveryIndexAction')

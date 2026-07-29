@@ -10,8 +10,9 @@ export default new Action({
   method: 'PUT',
   async handle(request: RequestInstance) {
     const id = request.getParam('id')
+    const data = await request.all()
 
-    const model = await shippings.routes.update(id, request)
+    const model = await shippings.routes.update(id, data)
 
     return response.json(model)
   },

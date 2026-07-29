@@ -3,14 +3,14 @@ import { shippings } from '@stacksjs/commerce'
 import { response } from '@stacksjs/router'
 
 export default new Action({
-  name: 'ShippingMethod Update',
-  description: 'ShippingMethod Update ORM Action',
-  method: 'PATCH',
+  name: 'Driver Destroy',
+  description: 'Driver Destroy ORM Action',
+  method: 'DELETE',
   async handle(request: RequestInstance) {
     const id = request.getParam('id')
-    const data = await request.all()
-    const model = await shippings.methods.update(id, data)
 
-    return response.json(model)
+    await shippings.drivers.destroy(id)
+
+    return response.json({ message: 'Driver deleted successfully' })
   },
 })

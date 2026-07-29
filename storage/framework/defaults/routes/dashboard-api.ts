@@ -203,6 +203,51 @@ route.group({ prefix: '/api/dashboard', apiResponse: true }, () => {
   // own generated useApi endpoints.
   guard(route.get('/commerce/delivery', 'Actions/Dashboard/Commerce/CommerceDeliveryAction'))
 
+  // Dashboard-local aliases for the model-backed delivery resources. These
+  // reuse the same commerce Actions as the authenticated public API while the
+  // local guard keeps `buddy dev --dashboard` usable without a login session.
+  guard(route.get('/commerce/shipping-methods', 'Actions/Commerce/Shipping/ShippingMethodIndexAction'))
+  guard(route.get('/commerce/shipping-methods/{id}', 'Actions/Commerce/Shipping/ShippingMethodShowAction'))
+  guard(route.post('/commerce/shipping-methods', 'Actions/Commerce/Shipping/ShippingMethodStoreAction'))
+  guard(route.patch('/commerce/shipping-methods/{id}', 'Actions/Commerce/Shipping/ShippingMethodUpdateAction'))
+  guard(route.delete('/commerce/shipping-methods/{id}', 'Actions/Commerce/Shipping/ShippingMethodDestroyAction'))
+
+  guard(route.get('/commerce/shipping-rates', 'Actions/Commerce/Shipping/ShippingRateIndexAction'))
+  guard(route.get('/commerce/shipping-rates/{id}', 'Actions/Commerce/Shipping/ShippingRateShowAction'))
+  guard(route.post('/commerce/shipping-rates', 'Actions/Commerce/Shipping/ShippingRateStoreAction'))
+  guard(route.patch('/commerce/shipping-rates/{id}', 'Actions/Commerce/Shipping/ShippingRateUpdateAction'))
+  guard(route.delete('/commerce/shipping-rates/{id}', 'Actions/Commerce/Shipping/ShippingRateDestroyAction'))
+
+  guard(route.get('/commerce/shipping-zones', 'Actions/Commerce/Shipping/ShippingZoneIndexAction'))
+  guard(route.get('/commerce/shipping-zones/{id}', 'Actions/Commerce/Shipping/ShippingZoneShowAction'))
+  guard(route.post('/commerce/shipping-zones', 'Actions/Commerce/Shipping/ShippingZoneStoreAction'))
+  guard(route.patch('/commerce/shipping-zones/{id}', 'Actions/Commerce/Shipping/ShippingZoneUpdateAction'))
+  guard(route.delete('/commerce/shipping-zones/{id}', 'Actions/Commerce/Shipping/ShippingZoneDestroyAction'))
+
+  guard(route.get('/commerce/delivery-routes', 'Actions/Commerce/Shipping/DeliveryRouteIndexAction'))
+  guard(route.get('/commerce/delivery-routes/{id}', 'Actions/Commerce/Shipping/DeliveryRouteShowAction'))
+  guard(route.post('/commerce/delivery-routes', 'Actions/Commerce/Shipping/DeliveryRouteStoreAction'))
+  guard(route.patch('/commerce/delivery-routes/{id}', 'Actions/Commerce/Shipping/DeliveryRouteUpdateAction'))
+  guard(route.delete('/commerce/delivery-routes/{id}', 'Actions/Commerce/Shipping/DeliveryRouteDestroyAction'))
+
+  guard(route.get('/commerce/drivers', 'Actions/Commerce/Shipping/DriverIndexAction'))
+  guard(route.get('/commerce/drivers/{id}', 'Actions/Commerce/Shipping/DriverShowAction'))
+  guard(route.post('/commerce/drivers', 'Actions/Commerce/Shipping/DriverStoreAction'))
+  guard(route.patch('/commerce/drivers/{id}', 'Actions/Commerce/Shipping/DriverUpdateAction'))
+  guard(route.delete('/commerce/drivers/{id}', 'Actions/Commerce/Shipping/DriverDestroyAction'))
+
+  guard(route.get('/commerce/digital-deliveries', 'Actions/Commerce/Shipping/DigitalDeliveryIndexAction'))
+  guard(route.get('/commerce/digital-deliveries/{id}', 'Actions/Commerce/Shipping/DigitalDeliveryShowAction'))
+  guard(route.post('/commerce/digital-deliveries', 'Actions/Commerce/Shipping/DigitalDeliveryStoreAction'))
+  guard(route.patch('/commerce/digital-deliveries/{id}', 'Actions/Commerce/Shipping/DigitalDeliveryUpdateAction'))
+  guard(route.delete('/commerce/digital-deliveries/{id}', 'Actions/Commerce/Shipping/DigitalDeliveryDestroyAction'))
+
+  guard(route.get('/commerce/license-keys', 'Actions/Commerce/Shipping/LicenseKeyIndexAction'))
+  guard(route.get('/commerce/license-keys/{id}', 'Actions/Commerce/Shipping/LicenseKeyShowAction'))
+  guard(route.post('/commerce/license-keys', 'Actions/Commerce/Shipping/LicenseKeyStoreAction'))
+  guard(route.patch('/commerce/license-keys/{id}', 'Actions/Commerce/Shipping/LicenseKeyUpdateAction'))
+  guard(route.delete('/commerce/license-keys/{id}', 'Actions/Commerce/Shipping/LicenseKeyDestroyAction'))
+
   // Models overview. Walks `app/Models/` + framework default models,
   // counts rows for each, returns grouped JSON for the
   // `views/dashboard/models/index.stx` page (stacksjs/stacks#1838).
