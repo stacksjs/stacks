@@ -1,5 +1,4 @@
 import type { TunnelClient } from 'localtunnels'
-import { startLocalTunnel } from 'localtunnels'
 
 export interface TunnelOptions {
   /** Local port to expose through the tunnel */
@@ -34,6 +33,7 @@ export interface LocalTunnel {
 }
 
 export async function localTunnel(options?: TunnelOptions | { port: number }): Promise<LocalTunnel> {
+  const { startLocalTunnel } = await import('localtunnels')
   const opts: TunnelOptions = options || { port: 3000 }
   const port = opts.port || 3000
 
