@@ -1,3 +1,6 @@
+import type { ApiErrorBody } from '@stacksjs/browser'
+import { describeResponseError } from '@stacksjs/browser'
+
 /**
  * Dashboard API client.
  *
@@ -61,8 +64,10 @@ export async function dashboardApi<T = unknown>(path: string, options: ApiReques
   }
 
   if (!res.ok) {
-    const detail = payload?.message || payload?.error || `HTTP ${res.status}`
-    throw new Error(String(detail))
+    const failure = describeResponseError(res.status, payload as ApiErrorBody | null)
+    if (failure.unexpected)
+      console.error('[dashboard-api] Unexpected request failure:', failure.cause)
+    throw new Error(failure.message)
   }
 
   return payload as T
