@@ -240,6 +240,13 @@
       }
     },
     {
+      "id": "mail-preference",
+      "name": "MailPreference",
+      "icon": "tablecells.fill",
+      "hasDedicatedPage": false,
+      "category": "data"
+    },
+    {
       "id": "manufacturer",
       "name": "Manufacturer",
       "icon": "building.2.fill",

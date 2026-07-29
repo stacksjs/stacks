@@ -1,0 +1,28 @@
+CREATE TABLE IF NOT EXISTS "mail_preferences" (
+  "id" INTEGER PRIMARY KEY AUTOINCREMENT,
+  "mailbox" TEXT not null,
+  "account_name" TEXT not null default 'Stacks',
+  "signature" TEXT,
+  "display_density" TEXT CHECK ("display_density" IN ('comfortable', 'default', 'compact')) not null default 'default',
+  "theme" TEXT CHECK ("theme" IN ('light', 'dark', 'system')) not null default 'system',
+  "language" TEXT CHECK ("language" IN ('en', 'fr', 'de', 'es', 'ja')) not null default 'en',
+  "default_reply_behavior" TEXT CHECK ("default_reply_behavior" IN ('reply', 'replyAll')) not null default 'replyAll',
+  "send_and_archive" INTEGER not null default 1,
+  "auto_advance" TEXT CHECK ("auto_advance" IN ('newer', 'older', 'back')) not null default 'newer',
+  "desktop_notifications" INTEGER not null default 1,
+  "notification_sound" TEXT CHECK ("notification_sound" IN ('default', 'subtle', 'none')) not null default 'default',
+  "notification_preview" INTEGER not null default 1,
+  "filters" TEXT not null default '[]',
+  "blocked_senders" TEXT not null default '[]',
+  "labels" TEXT not null default '[]',
+  "load_remote_images" INTEGER not null default 0,
+  "show_external_content" INTEGER not null default 0,
+  "vacation_enabled" INTEGER not null default 0,
+  "vacation_start_date" TEXT,
+  "vacation_end_date" TEXT,
+  "vacation_subject" TEXT,
+  "vacation_message" TEXT,
+  "created_at" TEXT not null default CURRENT_TIMESTAMP,
+  "updated_at" TEXT
+);
+CREATE UNIQUE INDEX IF NOT EXISTS "mail_preferences_mail_preferences_mailbox_unique" ON "mail_preferences" ("mailbox");

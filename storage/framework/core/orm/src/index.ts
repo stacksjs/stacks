@@ -295,6 +295,7 @@ const FRAMEWORK_MODEL_MANIFEST: Array<[name: string, subdirs: string[], feature:
   ['Release', [''], 'dashboard'],
   ['Notification', [''], 'dashboard'],
   ['NotificationDelivery', [''], 'dashboard'],
+  ['MailPreference', [''], 'dashboard'],
   ['Log', [''], 'dashboard'],
   ['Request', [''], 'dashboard'],
 
@@ -409,6 +410,7 @@ export const LicenseKey = lazyModel<typeof import('../../../defaults/app/Models/
 export const Log = lazyModel<typeof import('../../../defaults/app/Models/Log').default>('Log')
 export const LoyaltyPoint = lazyModel<typeof import('../../../defaults/app/Models/commerce/LoyaltyPoint').default>('LoyaltyPoint')
 export const LoyaltyReward = lazyModel<typeof import('../../../defaults/app/Models/commerce/LoyaltyReward').default>('LoyaltyReward')
+export const MailPreference = lazyModel<typeof import('../../../defaults/app/Models/MailPreference').default>('MailPreference')
 export const Manufacturer = lazyModel<typeof import('../../../defaults/app/Models/commerce/Manufacturer').default>('Manufacturer')
 export const Notification = lazyModel<typeof import('../../../defaults/app/Models/Notification').default>('Notification')
 export const NotificationDelivery = lazyModel<typeof import('../../../defaults/app/Models/NotificationDelivery').default>('NotificationDelivery')
@@ -457,7 +459,7 @@ const _allExports: Record<string, any> = {
   Activity, Author, Campaign, CampaignSend, Cart, CartItem, Category,
   Comment, Coupon, Customer, DeliveryRoute, Deployment, DigitalDelivery,
   Driver, EmailList, EmailListSubscriber, ErrorModel, GiftCard, LicenseKey,
-  Log, LoyaltyPoint, LoyaltyReward, Manufacturer, Notification,
+  Log, LoyaltyPoint, LoyaltyReward, MailPreference, Manufacturer, Notification,
   NotificationDelivery, Order, OrderItem, Page, Payment, PaymentMethod,
   PaymentProduct, PaymentTransaction, Post, PrintDevice, Product, ProductUnit,
   ProductVariant, Receipt, Release, Request, Review, ShippingMethod,
