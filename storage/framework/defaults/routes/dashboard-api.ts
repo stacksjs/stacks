@@ -58,6 +58,7 @@ route.group({ prefix: '/api/dashboard', apiResponse: true }, () => {
   guard(route.get('/queue/workers', 'Actions/Dashboard/Queue/QueueWorkersAction'))
   guard(route.post('/queue/retry-failed', 'Actions/Dashboard/Queue/QueueRetryFailedAction'))
   guard(route.get('/realtime', 'Actions/Dashboard/Realtime/RealtimeStatsAction'))
+  guard(route.get('/releases', 'Actions/Dashboard/Releases/ReleaseIndexAction'))
   guard(route.get('/deployments', 'Actions/Dashboard/Deployments/GetDeployments'))
   guard(route.post('/deployments', 'Actions/Dashboard/Deployments/CreateDeployment'))
   guard(route.get('/deployments/count', 'Actions/Dashboard/Deployments/GetDeploymentCount'))

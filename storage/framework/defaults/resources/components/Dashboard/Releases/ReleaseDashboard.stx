@@ -1,0 +1,199 @@
+<script client>
+import type { ReleaseRecord, ReleaseSummary } from '../../../../app/Actions/Dashboard/Releases/release-records'
+import { dashboardApi } from '../../../../functions/dashboard-api'
+import { pushToast } from '../../../../functions/toasts'
+
+interface ReleaseResponse {
+  releases: ReleaseRecord[]
+  summary: ReleaseSummary
+}
+
+const releases = state<ReleaseRecord[]>([])
+const summary = state<ReleaseSummary>({
+  total: 0,
+  published: 0,
+  downloads: 0,
+  latestVersion: null,
+})
+const search = state('')
+const status = state('all')
+const isLoading = state(true)
+const loadError = state('')
+
+function rows(): ReleaseRecord[] {
+  const query = search().trim().toLowerCase()
+  return releases().filter((release) => {
+    if (status() !== 'all' && release.status.toLowerCase() !== status())
+      return false
+    if (!query)
+      return true
+    return [
+      release.version,
+      release.type,
+      release.status,
+      release.notes,
+      release.author,
+    ].some(value => value.toLowerCase().includes(query))
+  })
+}
+
+function updateSearch(event: Event): void {
+  search.set((event.target as HTMLInputElement).value)
+}
+
+function updateStatus(event: Event): void {
+  status.set((event.target as HTMLSelectElement).value)
+}
+
+function formatNumber(value: number): string {
+  return new Intl.NumberFormat().format(value)
+}
+
+function formatDate(value: string): string {
+  if (!value)
+    return 'Not recorded'
+  const parsed = new Date(value)
+  if (Number.isNaN(parsed.getTime()))
+    return value
+  return new Intl.DateTimeFormat(undefined, {
+    dateStyle: 'medium',
+    timeStyle: 'short',
+  }).format(parsed)
+}
+
+function statusClass(value: string): string {
+  if (value === 'published')
+    return 'text-green-700 dark:text-green-300 bg-green-50 dark:bg-green-950/30'
+  if (value === 'scheduled')
+    return 'text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/30'
+  if (value === 'draft')
+    return 'text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/30'
+  return 'text-gray-700 dark:text-neutral-300 bg-gray-100 dark:bg-neutral-700'
+}
+
+async function loadReleases(): Promise<void> {
+  isLoading.set(true)
+  loadError.set('')
+  try {
+    const result = await dashboardApi<ReleaseResponse>('/api/dashboard/releases')
+    releases.set(Array.isArray(result.releases) ? result.releases : [])
+    summary.set(result.summary ?? {
+      total: 0,
+      published: 0,
+      downloads: 0,
+      latestVersion: null,
+    })
+  }
+  catch (error) {
+    releases.set([])
+    loadError.set('Release records could not be loaded.')
+    pushToast('error', 'Could not load releases', {
+      detail: error instanceof Error ? error.message : String(error),
+    })
+  }
+  finally {
+    isLoading.set(false)
+  }
+}
+
+onMount(() => {
+  void loadReleases()
+})
+</script>
+
+<div class="space-y-6">
+  <header class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+    <div>
+      <h1 class="font-bold text-2xl text-gray-900 dark:text-white">Releases</h1>
+      <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Release model records and recorded download totals.</p>
+    </div>
+    <button type="button" :disabled="isLoading()" class="inline-flex items-center self-start px-3 py-2 font-semibold text-gray-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700 disabled:opacity-50" @click="loadReleases">
+      <span :class="'mr-2 h-4 w-4 ' + (isLoading() ? 'animate-spin i-hugeicons-loading-03' : 'i-hugeicons-refresh')"></span>
+      Refresh
+    </button>
+  </header>
+
+  <div :if="loadError()" class="p-4 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900">{{ loadError() }}</div>
+
+  <section class="grid gap-3 grid-cols-2 lg:grid-cols-4">
+    <div class="p-4 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
+      <p class="text-gray-500 text-xs uppercase dark:text-neutral-400">Recorded</p>
+      <p class="mt-2 font-semibold text-2xl text-gray-900 dark:text-white">{{ formatNumber(summary().total) }}</p>
+    </div>
+    <div class="p-4 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
+      <p class="text-gray-500 text-xs uppercase dark:text-neutral-400">Published</p>
+      <p class="mt-2 font-semibold text-2xl text-gray-900 dark:text-white">{{ formatNumber(summary().published) }}</p>
+    </div>
+    <div class="p-4 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
+      <p class="text-gray-500 text-xs uppercase dark:text-neutral-400">Downloads</p>
+      <p class="mt-2 font-semibold text-2xl text-gray-900 dark:text-white">{{ formatNumber(summary().downloads) }}</p>
+    </div>
+    <div class="p-4 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
+      <p class="text-gray-500 text-xs uppercase dark:text-neutral-400">Latest version</p>
+      <p class="mt-2 font-semibold text-2xl text-gray-900 dark:text-white">{{ summary().latestVersion ?? 'None' }}</p>
+    </div>
+  </section>
+
+  <section class="space-y-3">
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+      <div>
+        <h2 class="font-semibold text-gray-900 dark:text-white">Release history</h2>
+        <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Up to 200 of the most recent native records.</p>
+      </div>
+      <div class="flex gap-2">
+        <label class="sr-only" for="release-status">Status</label>
+        <select id="release-status" :value="status()" class="px-3 py-2 text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" @change="updateStatus($event)">
+          <option value="all">All statuses</option>
+          <option value="published">Published</option>
+          <option value="scheduled">Scheduled</option>
+          <option value="draft">Draft</option>
+        </select>
+        <label class="sr-only" for="release-search">Search releases</label>
+        <input id="release-search" :value="search()" type="search" placeholder="Search releases" class="px-3 py-2 w-56 text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" @input="updateSearch($event)" />
+      </div>
+    </div>
+
+    <div class="overflow-hidden bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
+      <div :if="isLoading()" class="flex items-center justify-center p-8 text-gray-500 text-sm dark:text-neutral-400">
+        <span class="mr-2 h-4 w-4 animate-spin i-hugeicons-loading-03"></span>
+        Loading releases
+      </div>
+      <div :else-if="rows().length === 0" class="p-8 text-center">
+        <div class="mx-auto h-8 w-8 text-gray-400 i-hugeicons-right-to-left-list-number"></div>
+        <p class="mt-3 font-medium text-gray-900 text-sm dark:text-white">No release records found</p>
+        <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Create releases through your application workflow and they will appear here.</p>
+      </div>
+      <div :else class="overflow-x-auto">
+        <table class="min-w-full divide-gray-200 divide-y dark:divide-neutral-700">
+          <thead class="bg-gray-50 dark:bg-neutral-900/50">
+            <tr>
+              <th class="px-4 py-3 font-semibold text-gray-600 text-left text-xs uppercase dark:text-neutral-400">Version</th>
+              <th class="px-4 py-3 font-semibold text-gray-600 text-left text-xs uppercase dark:text-neutral-400">Type</th>
+              <th class="px-4 py-3 font-semibold text-gray-600 text-left text-xs uppercase dark:text-neutral-400">Status</th>
+              <th class="px-4 py-3 font-semibold text-gray-600 text-right text-xs uppercase dark:text-neutral-400">Downloads</th>
+              <th class="px-4 py-3 font-semibold text-gray-600 text-left text-xs uppercase dark:text-neutral-400">Author</th>
+              <th class="px-4 py-3 font-semibold text-gray-600 text-left text-xs uppercase dark:text-neutral-400">Created</th>
+            </tr>
+          </thead>
+          <tbody class="divide-gray-100 divide-y dark:divide-neutral-700">
+            <template :for="release in rows()" :key="release.id">
+              <tr>
+                <td class="px-4 py-3">
+                  <p class="font-semibold text-gray-900 text-sm dark:text-white">{{ release.version }}</p>
+                  <p :if="release.notes" class="mt-1 max-w-md text-gray-500 text-xs truncate dark:text-neutral-400">{{ release.notes }}</p>
+                </td>
+                <td class="px-4 py-3 capitalize text-gray-600 text-sm dark:text-neutral-300">{{ release.type }}</td>
+                <td class="px-4 py-3">
+                  <span :class="'inline-flex px-2 py-1 font-medium text-xs capitalize rounded-full ' + statusClass(release.status)">{{ release.status }}</span>
+                </td>
+                <td class="px-4 py-3 font-mono text-gray-700 text-right text-sm dark:text-neutral-200">{{ formatNumber(release.downloads) }}</td>
+                <td class="px-4 py-3 text-gray-600 text-sm dark:text-neutral-300">{{ release.author || 'Not recorded' }}</td>
+                <td class="px-4 py-3 text-gray-600 text-sm whitespace-nowrap dark:text-neutral-300">{{ formatDate(release.createdAt) }}</td>
+              </tr>
+            </template>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+</div>
