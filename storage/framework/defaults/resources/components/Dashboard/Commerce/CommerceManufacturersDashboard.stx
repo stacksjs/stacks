@@ -1,0 +1,275 @@
+<script client>
+import type { ManufacturerRecord, ManufacturerSummary } from '../../../../app/Actions/Dashboard/Commerce/manufacturer-records'
+import { dashboardApi } from '../../../../functions/dashboard-api'
+import { pushToast } from '../../../../functions/toasts'
+
+interface ManufacturerIndexResponse {
+  records: ManufacturerRecord[]
+  summary: ManufacturerSummary
+}
+
+interface ManufacturerWritePayload {
+  manufacturer: string
+  description: string
+  country: string
+  featured: boolean
+}
+
+const emptySummary: ManufacturerSummary = { total: 0, featured: 0, countries: 0, linkedProducts: 0 }
+const records = state<ManufacturerRecord[]>([])
+const summary = state<ManufacturerSummary>({ ...emptySummary })
+const search = state('')
+const featuredFilter = state('all')
+const countryFilter = state('all')
+const sort = state('name')
+const loading = state(true)
+const loadError = state('')
+const dialogOpen = state(false)
+const dialogMode = state<'add' | 'edit'>('add')
+const editingRecord = state<ManufacturerRecord | null>(null)
+const deletingRecord = state<ManufacturerRecord | null>(null)
+const saving = state(false)
+const deleting = state(false)
+
+function countries(): string[] {
+  return [...new Set(records().map(record => record.country).filter(Boolean))].sort()
+}
+
+function visibleRecords(): ManufacturerRecord[] {
+  const query = search().trim().toLowerCase()
+  const featured = featuredFilter()
+  const country = countryFilter()
+  return [...records()]
+    .filter((record) => {
+      if (featured === 'featured' && !record.featured)
+        return false
+      if (featured === 'not-featured' && record.featured)
+        return false
+      if (country !== 'all' && record.country !== country)
+        return false
+      return !query || [record.name, record.description, record.country]
+        .some(value => value.toLowerCase().includes(query))
+    })
+    .sort((left, right) => {
+      if (sort() === 'products')
+        return right.productCount - left.productCount || left.name.localeCompare(right.name)
+      if (sort() === 'country')
+        return left.country.localeCompare(right.country) || left.name.localeCompare(right.name)
+      if (sort() === 'newest')
+        return Number(right.id) - Number(left.id)
+      return left.name.localeCompare(right.name)
+    })
+}
+
+function metricCards(): Array<{ label: string, value: string }> {
+  return [
+    { label: 'Manufacturers', value: String(summary().total) },
+    { label: 'Featured', value: String(summary().featured) },
+    { label: 'Countries', value: String(summary().countries) },
+    { label: 'Linked products', value: String(summary().linkedProducts) },
+  ]
+}
+
+function updateSearch(event: Event): void {
+  search.set((event.target as HTMLInputElement).value)
+}
+
+function updateFeaturedFilter(event: Event): void {
+  featuredFilter.set((event.target as HTMLSelectElement).value)
+}
+
+function updateCountryFilter(event: Event): void {
+  countryFilter.set((event.target as HTMLSelectElement).value)
+}
+
+function updateSort(event: Event): void {
+  sort.set((event.target as HTMLSelectElement).value)
+}
+
+async function loadManufacturers(): Promise<void> {
+  loading.set(true)
+  loadError.set('')
+  try {
+    const data = await dashboardApi<ManufacturerIndexResponse>('/api/dashboard/commerce/manufacturers')
+    records.set(Array.isArray(data.records) ? data.records : [])
+    summary.set(data.summary ?? { ...emptySummary })
+  }
+  catch (error) {
+    loadError.set('Manufacturer records could not be loaded.')
+    pushToast('error', 'Could not load manufacturers', {
+      detail: error instanceof Error ? error.message : String(error),
+    })
+  }
+  finally {
+    loading.set(false)
+  }
+}
+
+function openAdd(): void {
+  dialogMode.set('add')
+  editingRecord.set(null)
+  dialogOpen.set(true)
+}
+
+function openEdit(record: ManufacturerRecord): void {
+  dialogMode.set('edit')
+  editingRecord.set(record)
+  dialogOpen.set(true)
+}
+
+function closeDialog(): void {
+  if (saving())
+    return
+  dialogOpen.set(false)
+  editingRecord.set(null)
+}
+
+async function saveManufacturer(payload: ManufacturerWritePayload): Promise<void> {
+  const current = editingRecord()
+  const editing = dialogMode() === 'edit' && current !== null
+  const path = editing
+    ? `/api/product-manufacturers/${current.id}`
+    : '/api/product-manufacturers'
+  saving.set(true)
+  try {
+    await dashboardApi(path, { method: editing ? 'PATCH' : 'POST', body: payload })
+    dialogOpen.set(false)
+    editingRecord.set(null)
+    pushToast('success', editing ? 'Manufacturer updated' : 'Manufacturer added')
+    await loadManufacturers()
+  }
+  catch (error) {
+    pushToast('error', 'Could not save manufacturer', {
+      detail: error instanceof Error ? error.message : String(error),
+    })
+  }
+  finally {
+    saving.set(false)
+  }
+}
+
+function openDelete(record: ManufacturerRecord): void {
+  deletingRecord.set(record)
+}
+
+function closeDelete(): void {
+  if (!deleting())
+    deletingRecord.set(null)
+}
+
+async function deleteManufacturer(): Promise<void> {
+  const current = deletingRecord()
+  if (!current)
+    return
+  deleting.set(true)
+  try {
+    await dashboardApi(`/api/product-manufacturers/${current.id}`, { method: 'DELETE' })
+    deletingRecord.set(null)
+    pushToast('success', 'Manufacturer deleted')
+    await loadManufacturers()
+  }
+  catch (error) {
+    pushToast('error', 'Could not delete manufacturer', {
+      detail: error instanceof Error ? error.message : String(error),
+    })
+  }
+  finally {
+    deleting.set(false)
+  }
+}
+
+onMount(() => {
+  void loadManufacturers()
+})
+</script>
+
+<div class="space-y-6">
+  <header class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+    <div>
+      <h1 class="font-bold text-2xl text-gray-900 dark:text-white">Manufacturers</h1>
+      <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Manage native Manufacturer records and their product relationships.</p>
+    </div>
+    <div class="flex gap-2">
+      <button type="button" :disabled="loading()" class="inline-flex items-center px-3 py-2 font-semibold text-gray-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700 disabled:opacity-50" @click="loadManufacturers">
+        <span :class="'mr-2 h-4 w-4 ' + (loading() ? 'animate-spin i-hugeicons-loading-03' : 'i-hugeicons-refresh')"></span>
+        Refresh
+      </button>
+      <button type="button" class="inline-flex items-center px-3 py-2 font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md" @click="openAdd()">
+        <span class="mr-2 h-4 w-4 i-hugeicons-add-01"></span>
+        Add manufacturer
+      </button>
+    </div>
+  </header>
+
+  <div :if="loadError()" class="p-4 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900">{{ loadError() }}</div>
+
+  <section aria-label="Manufacturer metrics" class="grid gap-3 grid-cols-2 lg:grid-cols-4">
+    <template :for="item in metricCards()" :key="item.label">
+      <article class="p-4 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
+        <p class="text-gray-500 text-xs dark:text-neutral-400">{{ item.label }}</p>
+        <p class="mt-2 font-semibold text-2xl text-gray-900 dark:text-white">{{ item.value }}</p>
+      </article>
+    </template>
+  </section>
+
+  <section class="space-y-3">
+    <div class="grid gap-3 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
+      <label class="relative sm:col-span-2">
+        <span class="sr-only">Search manufacturers</span>
+        <span class="flex absolute inset-y-0 left-0 items-center pl-3 text-gray-400 pointer-events-none">
+          <span class="h-4 w-4 i-hugeicons-search-01"></span>
+        </span>
+        <input :value="search()" type="search" placeholder="Search manufacturers" class="pl-9 pr-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" @input="updateSearch($event)" />
+      </label>
+      <label>
+        <span class="sr-only">Featured state</span>
+        <select :value="featuredFilter()" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" @change="updateFeaturedFilter($event)">
+          <option value="all">All manufacturers</option>
+          <option value="featured">Featured only</option>
+          <option value="not-featured">Not featured</option>
+        </select>
+      </label>
+      <label>
+        <span class="sr-only">Country</span>
+        <select :value="countryFilter()" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" @change="updateCountryFilter($event)">
+          <option value="all">All countries</option>
+          <template :for="country in countries()" :key="country">
+            <option :value="country">{{ country }}</option>
+          </template>
+        </select>
+      </label>
+    </div>
+
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <p class="text-gray-500 text-sm dark:text-neutral-400">{{ visibleRecords().length }} matching manufacturers</p>
+      <label class="flex gap-2 items-center text-gray-500 text-sm dark:text-neutral-400">
+        Sort
+        <select :value="sort()" class="px-3 py-1.5 text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" @change="updateSort($event)">
+          <option value="name">Name</option>
+          <option value="products">Most products</option>
+          <option value="country">Country</option>
+          <option value="newest">Newest</option>
+        </select>
+      </label>
+    </div>
+
+    <CommerceManufacturersTable :records="visibleRecords()" :loading="loading()" @edit="openEdit" @delete="openDelete" />
+  </section>
+</div>
+
+<CommerceManufacturerDialog
+  :open="dialogOpen()"
+  :mode="dialogMode()"
+  :record="editingRecord()"
+  :busy="saving()"
+  @submit="saveManufacturer"
+  @close="closeDialog()"
+/>
+
+<CommerceManufacturerDeleteDialog
+  :open="Boolean(deletingRecord())"
+  :record="deletingRecord()"
+  :busy="deleting()"
+  @confirm="deleteManufacturer()"
+  @close="closeDelete()"
+/>

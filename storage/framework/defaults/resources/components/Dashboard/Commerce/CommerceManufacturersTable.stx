@@ -1,0 +1,71 @@
+<script client>
+import type { ManufacturerRecord } from '../../../../app/Actions/Dashboard/Commerce/manufacturer-records'
+
+const records = useReactiveProp('records', [] as ManufacturerRecord[])
+const loading = useReactiveProp('loading', false)
+const emit = defineEmits()
+
+function formatDate(value: string): string {
+  if (!value)
+    return 'Not recorded'
+  const normalized = /^\d{4}-\d{2}-\d{2} \d/.test(value)
+    ? `${value.replace(' ', 'T')}Z`
+    : value
+  const date = new Date(normalized)
+  return Number.isNaN(date.getTime())
+    ? value
+    : new Intl.DateTimeFormat(undefined, { dateStyle: 'medium' }).format(date)
+}
+</script>
+
+<div class="overflow-hidden bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
+  <div :if="loading() && records().length === 0" class="flex items-center justify-center p-10 text-gray-500 text-sm dark:text-neutral-400">
+    <span class="mr-2 h-4 w-4 animate-spin i-hugeicons-loading-03"></span>
+    Loading manufacturers
+  </div>
+  <div :else-if="records().length === 0" class="p-10 text-center">
+    <p class="font-medium text-gray-900 text-sm dark:text-white">No manufacturers found</p>
+    <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Add a manufacturer or adjust the current filters.</p>
+  </div>
+  <div :else class="overflow-x-auto">
+    <table class="min-w-full divide-gray-200 divide-y dark:divide-neutral-700">
+      <thead class="bg-gray-50 dark:bg-neutral-900/50">
+        <tr>
+          <th scope="col" class="px-4 py-3 font-semibold text-gray-600 text-left text-xs uppercase dark:text-neutral-400">Manufacturer</th>
+          <th scope="col" class="px-4 py-3 font-semibold text-gray-600 text-left text-xs uppercase dark:text-neutral-400">Description</th>
+          <th scope="col" class="px-4 py-3 font-semibold text-gray-600 text-left text-xs uppercase dark:text-neutral-400">Country</th>
+          <th scope="col" class="px-4 py-3 font-semibold text-gray-600 text-right text-xs uppercase dark:text-neutral-400">Products</th>
+          <th scope="col" class="px-4 py-3 font-semibold text-gray-600 text-left text-xs uppercase dark:text-neutral-400">Created</th>
+          <th scope="col" class="relative px-4 py-3"><span class="sr-only">Actions</span></th>
+        </tr>
+      </thead>
+      <tbody class="divide-gray-100 divide-y dark:divide-neutral-700">
+        <template :for="record in records()" :key="record.id">
+          <tr class="hover:bg-gray-50/60 dark:hover:bg-neutral-700/40">
+            <td class="px-4 py-4 min-w-48">
+              <p class="font-medium text-gray-900 text-sm dark:text-white">{{ record.name || 'Unnamed manufacturer' }}</p>
+              <span :if="record.featured" class="inline-flex items-center mt-1 font-medium text-blue-700 text-xs dark:text-blue-300">
+                <span class="mr-1 h-3.5 w-3.5 i-hugeicons-star"></span>
+                Featured
+              </span>
+            </td>
+            <td class="px-4 py-4 max-w-md min-w-64 text-gray-500 text-sm dark:text-neutral-400">
+              <p class="line-clamp-2">{{ record.description || 'No description recorded.' }}</p>
+            </td>
+            <td class="px-4 py-4 text-gray-700 text-sm whitespace-nowrap dark:text-neutral-200">{{ record.country || 'Not recorded' }}</td>
+            <td class="px-4 py-4 font-mono text-gray-700 text-right text-sm dark:text-neutral-200">{{ record.productCount }}</td>
+            <td class="px-4 py-4 text-gray-500 text-sm whitespace-nowrap dark:text-neutral-400">{{ formatDate(record.createdAt) }}</td>
+            <td class="px-4 py-3 text-right whitespace-nowrap">
+              <button type="button" :aria-label="'Edit ' + record.name" class="p-2 text-gray-400 hover:text-blue-700 dark:hover:text-blue-300 rounded-md" @click="emit('edit', record)">
+                <span class="block h-5 w-5 i-hugeicons-edit-01"></span>
+              </button>
+              <button type="button" :aria-label="'Delete ' + record.name" class="p-2 text-gray-400 hover:text-red-700 dark:hover:text-red-300 rounded-md" @click="emit('delete', record)">
+                <span class="block h-5 w-5 i-hugeicons-waste"></span>
+              </button>
+            </td>
+          </tr>
+        </template>
+      </tbody>
+    </table>
+  </div>
+</div>
