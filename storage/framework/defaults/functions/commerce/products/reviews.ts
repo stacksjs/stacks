@@ -1,3 +1,4 @@
+import { resolveApiBaseUrl } from '../../api-url'
 import type { Reviews } from '../../../types/defaults'
 import { useStorage } from '@stacksjs/browser'
 import { pushToast } from '../../toasts'
@@ -5,7 +6,7 @@ import { pushToast } from '../../toasts'
 // Create a persistent reviews array using STX useStorage
 const reviews = useStorage<Reviews[]>('reviews', [])
 
-const baseURL = process.env.VITE_API_URL || `http://localhost:${process.env.PORT_API || '3008'}`
+const baseURL = resolveApiBaseUrl()
 
 // Basic fetch function to get all reviews
 async function fetchReviews(): Promise<Reviews[]> {

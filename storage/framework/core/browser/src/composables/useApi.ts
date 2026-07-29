@@ -41,7 +41,7 @@ export function initApi(options?: {
   const baseUrl = options?.baseUrl || (
     typeof window !== 'undefined'
       ? `${window.location.origin}/api`
-      : `http://localhost:${process.env.PORT_API || '3008'}/api`
+      : '/api'
   )
 
   configureBrowser({

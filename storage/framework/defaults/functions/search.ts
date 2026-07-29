@@ -1,3 +1,4 @@
+import { resolveApiBaseUrl } from './api-url'
 /**
  * Global Search Composable
  *
@@ -6,7 +7,7 @@
 
 import { ref } from '@stacksjs/stx'
 
-const baseUrl = process.env.VITE_API_URL || `http://localhost:${process.env.PORT_API || '3008'}`
+const baseUrl = resolveApiBaseUrl()
 
 export interface SearchResultItem {
   id: string | number

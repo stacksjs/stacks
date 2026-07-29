@@ -7,7 +7,7 @@ import { withCsrfHeader } from './csrf'
 const token = useStorage('token', '')
 
 const stacksConfig = (globalThis as any).__STACKS_CONFIG__ || {}
-const baseUrl = stacksConfig.API_URL || (typeof window !== 'undefined' ? window.location.origin : `http://localhost:${process.env.PORT_API || '3008'}`)
+const baseUrl = stacksConfig.API_URL || (typeof window !== 'undefined' ? window.location.origin : '')
 
 // Create singleton state
 const user = ref<UserData | null>(null)

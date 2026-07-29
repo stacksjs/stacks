@@ -1,10 +1,11 @@
+import { resolveApiBaseUrl } from '../api-url'
 import type { Categorizables } from '../../types/defaults'
 import { useFetch, useStorage } from '@stacksjs/browser'
 
 // Create a persistent categories array using STX useStorage
 const categorizables = useStorage<Categorizables[]>('categorizables', [])
 
-const baseURL = process.env.VITE_API_URL || `http://localhost:${process.env.PORT_API || '3008'}`
+const baseURL = resolveApiBaseUrl()
 
 // Basic fetch function to get all categories
 async function fetchCategorizables(): Promise<Categorizables[]> {

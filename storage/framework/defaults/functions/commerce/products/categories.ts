@@ -1,3 +1,4 @@
+import { resolveApiBaseUrl } from '../../api-url'
 import type { Categories } from '../../../types/defaults'
 import { useStorage } from '@stacksjs/browser'
 import { pushToast } from '../../toasts'
@@ -5,7 +6,7 @@ import { pushToast } from '../../toasts'
 // Create a persistent categories array using STX useStorage
 const categories = useStorage<Categories[]>('categories', [])
 
-const baseURL = process.env.VITE_API_URL || `http://localhost:${process.env.PORT_API || '3008'}`
+const baseURL = resolveApiBaseUrl()
 
 // Basic fetch function to get all categories
 async function fetchCategories(): Promise<Categories[]> {

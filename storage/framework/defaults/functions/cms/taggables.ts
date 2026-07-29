@@ -1,10 +1,11 @@
+import { resolveApiBaseUrl } from '../api-url'
 import type { Taggables } from '../../types/defaults'
 import { useFetch, useStorage } from '@stacksjs/browser'
 
 // Create a persistent tags array using STX useStorage
 const taggables = useStorage<Taggables[]>('taggables', [])
 
-const baseURL = process.env.VITE_API_URL || `http://localhost:${process.env.PORT_API || '3008'}`
+const baseURL = resolveApiBaseUrl()
 
 // Basic fetch function to get all tags
 async function fetchTaggables(): Promise<Taggables[]> {

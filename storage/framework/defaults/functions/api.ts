@@ -1,3 +1,4 @@
+import { resolveApiBaseUrl } from './api-url'
 /**
  * API Client for Dashboard
  *
@@ -6,7 +7,7 @@
 
 import { useAuth } from './auth'
 
-const baseUrl = process.env.VITE_API_URL || `http://localhost:${process.env.PORT_API || '3008'}`
+const baseUrl = resolveApiBaseUrl()
 
 export interface ApiResponse<T> {
   data: T

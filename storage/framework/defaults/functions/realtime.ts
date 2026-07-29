@@ -1,9 +1,10 @@
+import { resolveApiBaseUrl } from './api-url'
 /**
  * Realtime Composable
  */
 import { ref } from '@stacksjs/stx'
 
-const baseUrl = process.env.VITE_API_URL || `http://localhost:${process.env.PORT_API || '3008'}`
+const baseUrl = resolveApiBaseUrl()
 
 export interface RealtimeStats {
   connectionsTriggered: number

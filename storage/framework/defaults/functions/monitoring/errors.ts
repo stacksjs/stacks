@@ -1,3 +1,4 @@
+import { resolveApiBaseUrl } from '../api-url'
 import { useStorage } from '@stacksjs/browser'
 
 export interface GroupedError {
@@ -42,7 +43,7 @@ const groupedErrors = useStorage<GroupedError[]>('grouped-errors', [])
 const errorStats = useStorage<ErrorStats | null>('error-stats', null)
 const errorTimeline = useStorage<ErrorTimelinePoint[]>('error-timeline', [])
 
-const baseURL = process.env.VITE_API_URL || `http://localhost:${process.env.PORT_API || '3008'}`
+const baseURL = resolveApiBaseUrl()
 
 /**
  * Fetch all grouped errors

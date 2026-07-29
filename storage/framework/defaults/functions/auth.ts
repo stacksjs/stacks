@@ -1,3 +1,4 @@
+import { resolveApiBaseUrl } from './api-url'
 import type { Ref } from '@stacksjs/stx'
 import type { AuthUser, ErrorResponse, LoginError, LoginResponse, MeResponse, RegisterError, RegisterResponse, UserData } from '../types/dashboard'
 import { useStorage } from '@stacksjs/browser'
@@ -19,7 +20,7 @@ const user = useStorage<UserData | null>('user', null, undefined, {
   },
 })
 
-const baseUrl = process.env.VITE_API_URL || `http://localhost:${process.env.PORT_API || '3008'}`
+const baseUrl = resolveApiBaseUrl()
 
 // Create singleton state
 const isAuthenticated = ref(false)
