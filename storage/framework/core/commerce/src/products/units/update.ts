@@ -118,36 +118,38 @@ export async function bulkUpdate(data: ProductUnitUpdate[]): Promise<number> {
  */
 export async function updateDefaultStatus(id: number, isDefault: boolean): Promise<boolean> {
   try {
-    // First get the unit type to update other units if needed
-    const unit = await db
-      .selectFrom('product_units')
-      .select('type' as any)
-      .where('id', '=', id)
-      .executeTakeFirst() as { type: string } | undefined
+    return await db.transaction(async (trx: any) => {
+      const unit = await trx
+        .selectFrom('product_units')
+        .select('type')
+        .where('id', '=', id)
+        .executeTakeFirst() as { type: string } | undefined
 
-    if (!unit)
-      return false
+      if (!unit)
+        return false
 
-    const result = await db
-      .updateTable('product_units')
-      .set({
-        is_default: isDefault,
-        updated_at: formatDate(new Date()),
-      })
-      .where('id', '=', id)
-      .executeTakeFirst()
+      const updatedAt = formatDate(new Date())
 
-    // If setting this unit as default, update all other units of the same type
-    if (isDefault && unit.type) {
-      await db
+      if (isDefault && unit.type) {
+        await trx
+          .updateTable('product_units')
+          .set({ is_default: false, updated_at: updatedAt })
+          .where('type', '=', unit.type)
+          .where('id', '!=', id)
+          .execute()
+      }
+
+      await trx
         .updateTable('product_units')
-        .set({ is_default: false })
-        .where('type', '=', unit.type)
-        .where('id', '!=', id)
+        .set({
+          is_default: isDefault,
+          updated_at: updatedAt,
+        })
+        .where('id', '=', id)
         .execute()
-    }
 
-    return Number(result.numUpdatedRows) > 0
+      return true
+    })
   }
   catch (error) {
     if (error instanceof Error) {

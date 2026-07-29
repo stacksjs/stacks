@@ -1,8 +1,9 @@
 import { beforeEach, describe, expect, it } from 'bun:test'
 import { refreshDatabase } from './setup'
 import { bulkDestroy } from '../products/units/destroy'
+import { fetchAll } from '../products/units/fetch'
 import { bulkStore, formatUnitOptions } from '../products/units/store'
-import { bulkUpdate } from '../products/units/update'
+import { bulkUpdate, updateDefaultStatus } from '../products/units/update'
 
 beforeEach(async () => {
   await refreshDatabase()
@@ -98,6 +99,38 @@ describe('Product Unit Module', () => {
     it('should return 0 when trying to update an empty array of units', async () => {
       const updatedCount = await bulkUpdate([])
       expect(updatedCount).toBe(0)
+    })
+  })
+
+  describe('updateDefaultStatus', () => {
+    it('atomically selects one default unit for a type', async () => {
+      await bulkStore([
+        {
+          name: 'Kilogram',
+          abbreviation: 'kg',
+          type: 'weight',
+          is_default: true,
+        },
+        {
+          name: 'Gram',
+          abbreviation: 'g',
+          type: 'weight',
+          is_default: false,
+        },
+      ])
+      const units = await fetchAll()
+      const gram = units.find(unit => unit.name === 'Gram')
+
+      expect(gram).toBeDefined()
+      expect(await updateDefaultStatus(Number(gram!.id), true)).toBe(true)
+
+      const updated = await fetchAll()
+      expect(Boolean(updated.find(unit => unit.name === 'Gram')?.is_default)).toBe(true)
+      expect(Boolean(updated.find(unit => unit.name === 'Kilogram')?.is_default)).toBe(false)
+    })
+
+    it('returns false when the unit does not exist', async () => {
+      expect(await updateDefaultStatus(999, true)).toBe(false)
     })
   })
 
