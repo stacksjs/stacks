@@ -1,6 +1,13 @@
 {
   "models": [
     {
+      "id": "analytics-event",
+      "name": "AnalyticsEvent",
+      "icon": "tablecells.fill",
+      "hasDedicatedPage": false,
+      "category": "data"
+    },
+    {
       "id": "author",
       "name": "Author",
       "icon": "person.text.rectangle.fill",

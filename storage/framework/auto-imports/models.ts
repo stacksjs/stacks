@@ -3,6 +3,7 @@
 // which never existed; the actual models live under defaults/app/Models).
 
 export { default as Activity } from '../defaults/app/Models/Activity'
+export { default as AnalyticsEvent } from '../defaults/app/Models/AnalyticsEvent'
 export { default as Campaign } from '../defaults/app/Models/Campaign'
 export { default as CampaignSend } from '../defaults/app/Models/CampaignSend'
 export { default as Comment } from '../defaults/app/Models/Comment'

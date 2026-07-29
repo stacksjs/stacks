@@ -298,6 +298,7 @@ const FRAMEWORK_MODEL_MANIFEST: Array<[name: string, subdirs: string[], feature:
   ['MailPreference', [''], 'dashboard'],
   ['Log', [''], 'dashboard'],
   ['Request', [''], 'dashboard'],
+  ['AnalyticsEvent', [''], 'dashboard'],
 
   // Monitoring (Error model can be used standalone without the rest of dashboard)
   ['Error', [''], 'monitoring'],
@@ -389,6 +390,7 @@ queueMicrotask(async () => {
 })
 
 export const Activity = lazyModel<typeof import('../../../defaults/app/Models/Activity').default>('Activity')
+export const AnalyticsEvent = lazyModel<typeof import('../../../defaults/app/Models/AnalyticsEvent').default>('AnalyticsEvent')
 export const Author = lazyModel<typeof import('../../../defaults/app/Models/Content/Author').default>('Author')
 export const Campaign = lazyModel<typeof import('../../../defaults/app/Models/Campaign').default>('Campaign')
 export const Cart = lazyModel<typeof import('../../../defaults/app/Models/commerce/Cart').default>('Cart')
