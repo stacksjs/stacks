@@ -9,12 +9,6 @@ export default defineModel({
 
   traits: {
     useTimestamps: true,
-    useSearch: {
-      displayable: ['id', 'mailbox', 'accountName', 'theme', 'language', 'updatedAt'],
-      searchable: ['mailbox', 'accountName', 'signature'],
-      sortable: ['mailbox', 'accountName', 'updatedAt'],
-      filterable: ['theme', 'language', 'desktopNotifications', 'vacationEnabled'],
-    },
     useApi: {
       uri: 'mail-preferences',
       routes: ['index', 'store', 'show', 'update', 'destroy'],

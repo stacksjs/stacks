@@ -24,20 +24,7 @@
       </div>
 
       <div class="flex overflow-hidden flex-1">
-        <div class="overflow-y-auto w-64 bg-white dark:bg-neutral-700 border-gray-200 border-r dark:border-neutral-600">
-          <nav class="p-4">
-            <ul class="space-y-1">
-              @foreach(settingsSections as section)
-                <li>
-                  <button @click="setActiveSection('{{ section.id }}')" class="w-full flex items-center px-3 py-3 text-sm rounded-md {{ activeSection() === section.id ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-100' : 'text-gray-700 hover:bg-gray-100 dark:text-neutral-200 dark:hover:bg-neutral-600' }}">
-                    <i class="{{ section.icon }} text-lg"></i>
-                    <span class="ml-3">{{ section.name }}</span>
-                  </button>
-                </li>
-              @endforeach
-            </ul>
-          </nav>
-        </div>
+        <EmailSettingsNavigation :activeSection="activeSection" :sections="settingsSections" @select="setActiveSection" />
 
         <div class="overflow-y-auto flex-1 p-6">
           <div :show="isGeneralSection" class="space-y-6">
@@ -122,7 +109,8 @@
 
                 <div>
                   <label for="email" class="block font-medium text-gray-700 text-sm dark:text-neutral-300">Email Address</label>
-                  <input id="email" type="email" x-model="accountEmail" class="block mt-1 px-3 py-2 w-full text-gray-900 sm:text-sm dark:text-neutral-100 bg-white dark:bg-neutral-600 border border-gray-300 rounded-md dark:border-neutral-600 focus:border-blue-500 focus:outline-none focus:ring-blue-500" />
+                  <input id="email" type="email" x-model="accountEmail" readonly class="block mt-1 px-3 py-2 w-full text-gray-600 sm:text-sm dark:text-neutral-300 bg-gray-50 dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-600 cursor-not-allowed" />
+                  <p class="mt-1 text-gray-500 text-xs dark:text-neutral-400">Mailbox identity is managed by your email configuration.</p>
                 </div>
               </div>
             </div>
@@ -176,13 +164,92 @@
             </div>
           </div>
 
-          <div :show="isOtherSection" class="p-6 bg-white dark:bg-neutral-700 rounded-lg shadow">
-            <div class="flex flex-col items-center justify-center py-12">
-              <div class="mb-4 p-6 bg-blue-100 dark:bg-blue-900 rounded-full">
-                <i class="{{ activeSectionIcon() }} text-4xl text-blue-600 dark:text-blue-400"></i>
+          <div :show="isNotificationsSection" class="space-y-6">
+            <div class="p-6 bg-white dark:bg-neutral-700 rounded-lg shadow">
+              <h2 class="font-medium text-gray-900 text-lg dark:text-white">Notification Delivery</h2>
+              <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Choose how new mailbox activity is announced on this device.</p>
+
+              <div class="mt-5 space-y-4">
+                <label class="flex items-start">
+                  <input id="desktopNotificationsDelivery" type="checkbox" x-model="desktopNotifications" class="mt-0.5 h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500" />
+                  <span class="ml-3">
+                    <span class="block font-medium text-gray-700 text-sm dark:text-neutral-200">Desktop notifications</span>
+                    <span class="block text-gray-500 text-xs dark:text-neutral-400">Show a system notification when new mail arrives.</span>
+                  </span>
+                </label>
+
+                <label class="flex items-start">
+                  <input id="notificationPreview" type="checkbox" x-model="notificationPreview" class="mt-0.5 h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500" />
+                  <span class="ml-3">
+                    <span class="block font-medium text-gray-700 text-sm dark:text-neutral-200">Message previews</span>
+                    <span class="block text-gray-500 text-xs dark:text-neutral-400">Include sender and subject in notifications.</span>
+                  </span>
+                </label>
+
+                <div>
+                  <label for="notificationSound" class="block font-medium text-gray-700 text-sm dark:text-neutral-300">Notification sound</label>
+                  <select id="notificationSound" x-model="notificationSound" class="block mt-1 pl-3 pr-10 py-2 w-full text-gray-900 text-sm dark:text-neutral-100 bg-white dark:bg-neutral-600 border-gray-300 rounded-md dark:border-neutral-600 focus:border-blue-500 focus:outline-none focus:ring-blue-500">
+                    <option value="default">Default</option>
+                    <option value="subtle">Subtle</option>
+                    <option value="none">None</option>
+                  </select>
+                </div>
               </div>
-              <h2 class="mb-2 font-medium text-gray-900 text-xl dark:text-white">{{ activeSectionName() }} Settings</h2>
-              <p class="max-w-md text-center text-gray-500 dark:text-neutral-400">This section is under development. More settings will be available soon.</p>
+            </div>
+          </div>
+
+          <div :show="isFiltersSection" class="space-y-6">
+            <EmailSettingsList
+              title="Filter Rules"
+              description="Keep a reusable list of mailbox filter expressions."
+              placeholder="from:billing@example.com"
+              :items="filters"
+              @add="addFilter"
+              @remove="removeFilter"
+            />
+            <EmailSettingsList
+              title="Blocked Senders"
+              description="Messages from these addresses can be rejected by mailbox integrations."
+              placeholder="sender@example.com"
+              :items="blockedSenders"
+              @add="addBlockedSender"
+              @remove="removeBlockedSender"
+            />
+          </div>
+
+          <div :show="isLabelsSection" class="space-y-6">
+            <EmailSettingsList
+              title="Mailbox Labels"
+              description="Create labels that integrations can apply to incoming conversations."
+              placeholder="Priority"
+              :items="labels"
+              @add="addLabel"
+              @remove="removeLabel"
+            />
+          </div>
+
+          <div :show="isSecuritySection" class="space-y-6">
+            <div class="p-6 bg-white dark:bg-neutral-700 rounded-lg shadow">
+              <h2 class="font-medium text-gray-900 text-lg dark:text-white">External Content</h2>
+              <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Remote content stays blocked by default to reduce tracking and untrusted requests.</p>
+
+              <div class="mt-5 space-y-4">
+                <label class="flex items-start">
+                  <input id="loadRemoteImages" type="checkbox" x-model="loadRemoteImages" class="mt-0.5 h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500" />
+                  <span class="ml-3">
+                    <span class="block font-medium text-gray-700 text-sm dark:text-neutral-200">Load remote images</span>
+                    <span class="block text-gray-500 text-xs dark:text-neutral-400">Allow message images hosted outside your application.</span>
+                  </span>
+                </label>
+
+                <label class="flex items-start">
+                  <input id="showExternalContent" type="checkbox" x-model="showExternalContent" class="mt-0.5 h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500" />
+                  <span class="ml-3">
+                    <span class="block font-medium text-gray-700 text-sm dark:text-neutral-200">Show external content</span>
+                    <span class="block text-gray-500 text-xs dark:text-neutral-400">Permit embedded content from message authors.</span>
+                  </span>
+                </label>
+              </div>
             </div>
           </div>
         </div>
@@ -192,7 +259,17 @@
 </div>
 
 <script client>
+import type {
+  AutoAdvance,
+  DisplayDensity,
+  MailLanguage,
+  MailPreference,
+  MailTheme,
+  NotificationSound,
+  ReplyBehavior,
+} from '../../../functions/mail-preferences'
 import { fetchInboxActivity } from '../../../functions/inbox'
+import { fetchMailPreference, saveMailPreference } from '../../../functions/mail-preferences'
 
 interface SettingsSection {
   id: string
@@ -232,39 +309,46 @@ const settingsSections: SettingsSection[] = [
 
 const activeFolder = state('inbox')
 const activeSection = state('general')
-const isLoading = state(false)
+const isLoading = state(true)
 
-const displayDensity = state('default')
-const defaultReplyBehavior = state('replyAll')
+const displayDensity = state<DisplayDensity>('default')
+const defaultReplyBehavior = state<ReplyBehavior>('replyAll')
 const sendAndArchive = state(true)
-const autoAdvance = state('newer')
+const autoAdvance = state<AutoAdvance>('newer')
 const desktopNotifications = state(true)
-const theme = state('system')
-const language = state('en')
+const notificationSound = state<NotificationSound>('default')
+const notificationPreview = state(true)
+const theme = state<MailTheme>('system')
+const language = state<MailLanguage>('en')
 
-const accountName = state('User')
-const accountEmail = state('me@stacksjs.com')
-const signature = state('<p>Best regards,<br>User</p>')
+const accountName = state('Stacks')
+const accountEmail = state('')
+const signature = state('')
 const vacationEnabled = state(false)
 const vacationStartDate = state('')
 const vacationEndDate = state('')
-const vacationSubject = state('Out of Office')
-const vacationMessage = state('I am currently out of office with limited access to email.')
+const vacationSubject = state('')
+const vacationMessage = state('')
+const filters = state<string[]>([])
+const blockedSenders = state<string[]>([])
+const labels = state<string[]>([])
+const loadRemoteImages = state(false)
+const showExternalContent = state(false)
 
 const isIdle = derived(() => !isLoading())
 const isGeneralSection = derived(() => activeSection() === 'general')
 const isAccountsSection = derived(() => activeSection() === 'accounts')
-const isOtherSection = derived(() => activeSection() !== 'general' && activeSection() !== 'accounts')
+const isNotificationsSection = derived(() => activeSection() === 'notifications')
+const isFiltersSection = derived(() => activeSection() === 'filters')
+const isLabelsSection = derived(() => activeSection() === 'labels')
+const isSecuritySection = derived(() => activeSection() === 'security')
 
-function activeSectionMeta(): SettingsSection | undefined {
-  return settingsSections.find(s => s.id === activeSection())
+function eventValue(value: string | CustomEvent<string>): string {
+  return typeof value === 'string' ? value : value.detail
 }
 
-function activeSectionName(): string { return activeSectionMeta()?.name ?? '' }
-function activeSectionIcon(): string { return activeSectionMeta()?.icon ?? '' }
-
-function setActiveSection(id: string): void {
-  activeSection.set(id)
+function setActiveSection(value: string | CustomEvent<string>): void {
+  activeSection.set(eventValue(value))
 }
 
 function toggleVacationResponder(): void {
@@ -281,12 +365,90 @@ function handleCompose(): void {
   navigate('/inbox?compose=true')
 }
 
+function parseStringList(value: string): string[] {
+  try {
+    const parsed = JSON.parse(value)
+    if (Array.isArray(parsed))
+      return parsed.map(item => String(item)).filter(Boolean)
+  }
+  catch {}
+  return []
+}
+
+interface StringListSignal {
+  update: (updater: (items: string[]) => string[]) => void
+}
+
+function addUnique(target: StringListSignal, value: string): void {
+  target.update(items => items.includes(value) ? items : [...items, value])
+}
+
+function removeValue(target: StringListSignal, value: string): void {
+  target.update(items => items.filter(item => item !== value))
+}
+
+function addFilter(value: string | CustomEvent<string>): void { addUnique(filters, eventValue(value)) }
+function removeFilter(value: string | CustomEvent<string>): void { removeValue(filters, eventValue(value)) }
+function addBlockedSender(value: string | CustomEvent<string>): void { addUnique(blockedSenders, eventValue(value).toLowerCase()) }
+function removeBlockedSender(value: string | CustomEvent<string>): void { removeValue(blockedSenders, eventValue(value)) }
+function addLabel(value: string | CustomEvent<string>): void { addUnique(labels, eventValue(value)) }
+function removeLabel(value: string | CustomEvent<string>): void { removeValue(labels, eventValue(value)) }
+
+function applyPreference(preference: MailPreference): void {
+  accountEmail.set(preference.mailbox)
+  mailbox.set(preference.mailbox)
+  accountName.set(preference.accountName)
+  signature.set(preference.signature)
+  displayDensity.set(preference.displayDensity)
+  theme.set(preference.theme)
+  language.set(preference.language)
+  defaultReplyBehavior.set(preference.defaultReplyBehavior)
+  sendAndArchive.set(preference.sendAndArchive)
+  autoAdvance.set(preference.autoAdvance)
+  desktopNotifications.set(preference.desktopNotifications)
+  notificationSound.set(preference.notificationSound)
+  notificationPreview.set(preference.notificationPreview)
+  filters.set(parseStringList(preference.filters))
+  blockedSenders.set(parseStringList(preference.blockedSenders))
+  labels.set(parseStringList(preference.labels))
+  loadRemoteImages.set(preference.loadRemoteImages)
+  showExternalContent.set(preference.showExternalContent)
+  vacationEnabled.set(preference.vacationEnabled)
+  vacationStartDate.set(preference.vacationStartDate)
+  vacationEndDate.set(preference.vacationEndDate)
+  vacationSubject.set(preference.vacationSubject)
+  vacationMessage.set(preference.vacationMessage)
+}
+
 async function saveSettings(): Promise<void> {
   isLoading.set(true)
   try {
-    await new Promise(resolve => setTimeout(resolve, 1000))
-    // eslint-disable-next-line no-alert
-    alert('Settings saved successfully')
+    const saved = await saveMailPreference({
+      mailbox: accountEmail(),
+      accountName: accountName(),
+      signature: signature(),
+      displayDensity: displayDensity(),
+      theme: theme(),
+      language: language(),
+      defaultReplyBehavior: defaultReplyBehavior(),
+      sendAndArchive: sendAndArchive(),
+      autoAdvance: autoAdvance(),
+      desktopNotifications: desktopNotifications(),
+      notificationSound: notificationSound(),
+      notificationPreview: notificationPreview(),
+      filters: JSON.stringify(filters()),
+      blockedSenders: JSON.stringify(blockedSenders()),
+      labels: JSON.stringify(labels()),
+      loadRemoteImages: loadRemoteImages(),
+      showExternalContent: showExternalContent(),
+      vacationEnabled: vacationEnabled(),
+      vacationStartDate: vacationStartDate(),
+      vacationEndDate: vacationEndDate(),
+      vacationSubject: vacationSubject(),
+      vacationMessage: vacationMessage(),
+    })
+    if (saved)
+      applyPreference(saved)
   }
   finally {
     isLoading.set(false)
@@ -294,12 +456,21 @@ async function saveSettings(): Promise<void> {
 }
 
 onMount(async () => {
-  const activity = await fetchInboxActivity('year')
-  if (!activity)
-    return
-  unreadCounts.set(activity.folder_counts)
-  mailbox.set(activity.mailbox)
-  accountEmail.set(activity.mailbox)
+  try {
+    const activity = await fetchInboxActivity('year')
+    if (activity) {
+      unreadCounts.set(activity.folder_counts)
+      mailbox.set(activity.mailbox)
+      accountEmail.set(activity.mailbox)
+    }
+
+    const preference = await fetchMailPreference(activity?.mailbox)
+    if (preference)
+      applyPreference(preference)
+  }
+  finally {
+    isLoading.set(false)
+  }
 })
 </script>
 

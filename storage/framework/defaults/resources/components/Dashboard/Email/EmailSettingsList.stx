@@ -1,0 +1,46 @@
+<script client>
+const title = useReactiveProp('title', '')
+const description = useReactiveProp('description', '')
+const placeholder = useReactiveProp('placeholder', '')
+const items = useReactiveProp('items', [] as string[])
+const emit = defineEmits()
+const input = state('')
+
+function addItem(): void {
+  const value = input().trim()
+  if (!value)
+    return
+  emit('add', value)
+  input.set('')
+}
+</script>
+
+<section class="p-6 bg-white dark:bg-neutral-700 rounded-lg shadow">
+  <h2 class="font-medium text-gray-900 text-lg dark:text-white">{{ title() }}</h2>
+  <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">{{ description() }}</p>
+
+  <form class="flex gap-2 mt-4" @submit.prevent="addItem()">
+    <input
+      x-model="input"
+      :placeholder="placeholder()"
+      class="block flex-1 px-3 py-2 min-w-0 text-gray-900 text-sm dark:text-neutral-100 bg-white dark:bg-neutral-600 border border-gray-300 rounded-md dark:border-neutral-600 focus:border-blue-500 focus:outline-none focus:ring-blue-500"
+    />
+    <button type="submit" class="inline-flex items-center px-3 py-2 font-medium text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md">
+      <span class="mr-2 h-4 w-4 i-hugeicons-plus-sign"></span>
+      Add
+    </button>
+  </form>
+
+  <ul :if="items.length > 0" class="mt-4 divide-gray-200 divide-y dark:divide-neutral-600">
+    <template :for="item in items">
+      <li class="flex items-center justify-between py-3">
+        <span class="min-w-0 text-gray-700 text-sm truncate dark:text-neutral-200">{{ item }}</span>
+        <button type="button" class="ml-4 p-1 text-gray-400 hover:text-red-600 dark:hover:text-red-400" :aria-label="'Remove ' + item" @click="emit('remove', item)">
+          <span class="h-4 w-4 i-hugeicons-cancel-01"></span>
+        </button>
+      </li>
+    </template>
+  </ul>
+
+  <p :if="items.length === 0" class="mt-4 py-5 text-center text-gray-500 text-sm dark:text-neutral-400">No entries configured.</p>
+</section>

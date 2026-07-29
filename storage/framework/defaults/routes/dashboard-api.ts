@@ -293,6 +293,8 @@ route.group({ prefix: '/api/dashboard', apiResponse: true }, () => {
   guard(route.get('/email/inbox/{id}', 'Actions/Dashboard/Email/InboxShowAction'))
   guard(route.get('/email/stats', 'Actions/Dashboard/Email/InboxStatsAction'))
   guard(route.get('/email/activity', 'Actions/Dashboard/Email/InboxActivityAction'))
+  guard(route.get('/email/preferences', 'Actions/Dashboard/Email/InboxPreferenceShowAction'))
+  guard(route.put('/email/preferences', 'Actions/Dashboard/Email/InboxPreferenceUpdateAction'))
   guard(route.post('/email/send', 'Actions/Dashboard/Email/InboxSendAction'))
   guard(route.post('/email/read', 'Actions/Dashboard/Email/InboxMarkReadAction'))
   guard(route.post('/email/unread', 'Actions/Dashboard/Email/InboxMarkUnreadAction'))
