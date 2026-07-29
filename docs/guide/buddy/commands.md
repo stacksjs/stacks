@@ -6,7 +6,7 @@ description: Generated reference for every Buddy command, argument, option, alia
 
 # Buddy Command Reference
 
-This reference is generated from Buddy's runtime command registry and currently contains **279 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
+This reference is generated from Buddy's runtime command registry and currently contains **296 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
 
 ## Command groups
 
@@ -37,7 +37,7 @@ This reference is generated from Buddy's runtime command registry and currently 
 | `key` | 1 |
 | `link` | 1 |
 | `lint` | 1 |
-| `mail` | 13 |
+| `mail` | 30 |
 | `make` | 18 |
 | `marketing` | 2 |
 | `migrate` | 5 |
@@ -2097,6 +2097,22 @@ Show SMTP credentials for email access
 - Aliases: none
 - Arguments: `[email]`
 
+### `mail:forward:compile`
+
+Compile and validate the live RFC 5228 forwarding script
+
+- Usage: `$ buddy mail:forward:compile`
+- Namespace: `mail`
+- Aliases: none
+- Arguments: none
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `--host` | Mail server hostname or IP | value, required | — |
+| `--secret` | AWS Secrets Manager secret ID | value, required | — |
+| `--region` | AWS region | value, required | `"us-east-1"` |
+| `--profile` | AWS credential profile | value, required | `"default"` |
+
 ### `mail:logs`
 
 Show mail server logs from production
@@ -2213,6 +2229,268 @@ Show mail server status
 - Namespace: `mail`
 - Aliases: none
 - Arguments: none
+
+### `mail:storage:backup`
+
+Create and verify an encrypted local mail backup
+
+- Usage: `$ buddy mail:storage:backup`
+- Namespace: `mail`
+- Aliases: none
+- Arguments: none
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `--host` | Mail server hostname or IP | value, required | — |
+| `--secret` | AWS Secrets Manager secret ID | value, required | — |
+| `--region` | AWS region | value, required | `"us-east-1"` |
+| `--profile` | AWS credential profile | value, required | `"default"` |
+
+### `mail:storage:escrow`
+
+Copy the machine-bound LUKS key to AWS Secrets Manager
+
+- Usage: `$ buddy mail:storage:escrow`
+- Namespace: `mail`
+- Aliases: none
+- Arguments: none
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `--host` | Mail server hostname or IP | value, required | — |
+| `--secret` | AWS Secrets Manager secret ID | value, required | — |
+| `--region` | AWS region | value, required | `"us-east-1"` |
+| `--profile` | AWS credential profile | value, required | `"default"` |
+| `--force` | Replace a different existing secret | boolean, optional | `false` |
+
+### `mail:storage:externalize`
+
+Move the LUKS key off-host and require external unlocks
+
+- Usage: `$ buddy mail:storage:externalize`
+- Namespace: `mail`
+- Aliases: none
+- Arguments: none
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `--host` | Mail server hostname or IP | value, required | — |
+| `--secret` | AWS Secrets Manager secret ID | value, required | — |
+| `--region` | AWS region | value, required | `"us-east-1"` |
+| `--profile` | AWS credential profile | value, required | `"default"` |
+| `--force` | Replace a different existing secret | boolean, optional | `false` |
+
+### `mail:storage:header:backup`
+
+Stream a LUKS header backup to S3 with KMS encryption
+
+- Usage: `$ buddy mail:storage:header:backup`
+- Namespace: `mail`
+- Aliases: none
+- Arguments: none
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `--host` | Mail server hostname or IP | value, required | — |
+| `--secret` | AWS Secrets Manager secret ID | value, required | — |
+| `--region` | AWS region | value, required | `"us-east-1"` |
+| `--profile` | AWS credential profile | value, required | `"default"` |
+| `--bucket` | Recovery bucket (defaults to <app>-<env>-s3-backups) | value, required | — |
+
+### `mail:storage:key:recovery:add`
+
+Add an independent LUKS recovery key to macOS Keychain
+
+- Usage: `$ buddy mail:storage:key:recovery:add`
+- Namespace: `mail`
+- Aliases: none
+- Arguments: none
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `--host` | Mail server hostname or IP | value, required | — |
+| `--secret` | AWS Secrets Manager secret ID | value, required | — |
+| `--region` | AWS region | value, required | `"us-east-1"` |
+| `--profile` | AWS credential profile | value, required | `"default"` |
+
+### `mail:storage:key:recovery:verify`
+
+Verify the Keychain recovery key against the live LUKS header
+
+- Usage: `$ buddy mail:storage:key:recovery:verify`
+- Namespace: `mail`
+- Aliases: none
+- Arguments: none
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `--host` | Mail server hostname or IP | value, required | — |
+| `--secret` | AWS Secrets Manager secret ID | value, required | — |
+| `--region` | AWS region | value, required | `"us-east-1"` |
+| `--profile` | AWS credential profile | value, required | `"default"` |
+
+### `mail:storage:key:slot:remove`
+
+Remove an unusable non-primary LUKS keyslot
+
+- Usage: `$ buddy mail:storage:key:slot:remove`
+- Namespace: `mail`
+- Aliases: none
+- Arguments: none
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `--host` | Mail server hostname or IP | value, required | — |
+| `--secret` | AWS Secrets Manager secret ID | value, required | — |
+| `--region` | AWS region | value, required | `"us-east-1"` |
+| `--profile` | AWS credential profile | value, required | `"default"` |
+| `--slot` | LUKS keyslot number to remove | value, required | — |
+
+### `mail:storage:key:verify`
+
+Verify the external key against the LUKS2 header
+
+- Usage: `$ buddy mail:storage:key:verify`
+- Namespace: `mail`
+- Aliases: none
+- Arguments: none
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `--host` | Mail server hostname or IP | value, required | — |
+| `--secret` | AWS Secrets Manager secret ID | value, required | — |
+| `--region` | AWS region | value, required | `"us-east-1"` |
+| `--profile` | AWS credential profile | value, required | `"default"` |
+
+### `mail:storage:kms:ensure`
+
+Create and apply the customer-managed production mail KMS key
+
+- Usage: `$ buddy mail:storage:kms:ensure`
+- Namespace: `mail`
+- Aliases: none
+- Arguments: none
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `--host` | Mail server hostname or IP | value, required | — |
+| `--secret` | AWS Secrets Manager secret ID | value, required | — |
+| `--region` | AWS region | value, required | `"us-east-1"` |
+| `--profile` | AWS credential profile | value, required | `"default"` |
+
+### `mail:storage:lock`
+
+Stop mail and lock external mail storage
+
+- Usage: `$ buddy mail:storage:lock`
+- Namespace: `mail`
+- Aliases: none
+- Arguments: none
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `--host` | Mail server hostname or IP | value, required | — |
+| `--secret` | AWS Secrets Manager secret ID | value, required | — |
+| `--region` | AWS region | value, required | `"us-east-1"` |
+| `--profile` | AWS credential profile | value, required | `"default"` |
+
+### `mail:storage:maildir:migrate`
+
+Migrate live mailboxes to canonical Maildir++ layout
+
+- Usage: `$ buddy mail:storage:maildir:migrate`
+- Namespace: `mail`
+- Aliases: none
+- Arguments: none
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `--host` | Mail server hostname or IP | value, required | — |
+| `--secret` | AWS Secrets Manager secret ID | value, required | — |
+| `--region` | AWS region | value, required | `"us-east-1"` |
+| `--profile` | AWS credential profile | value, required | `"default"` |
+
+### `mail:storage:restic:configure`
+
+Configure client-encrypted Restic backups to S3
+
+- Usage: `$ buddy mail:storage:restic:configure`
+- Namespace: `mail`
+- Aliases: none
+- Arguments: none
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `--host` | Mail server hostname or IP | value, required | — |
+| `--secret` | AWS Secrets Manager secret ID | value, required | — |
+| `--region` | AWS region | value, required | `"us-east-1"` |
+| `--profile` | AWS credential profile | value, required | `"default"` |
+| `--force` | Rotate an existing dedicated IAM access key | boolean, optional | `false` |
+
+### `mail:storage:restore:check`
+
+Restore and validate the newest off-host mail snapshot
+
+- Usage: `$ buddy mail:storage:restore:check`
+- Namespace: `mail`
+- Aliases: none
+- Arguments: none
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `--host` | Mail server hostname or IP | value, required | — |
+| `--secret` | AWS Secrets Manager secret ID | value, required | — |
+| `--region` | AWS region | value, required | `"us-east-1"` |
+| `--profile` | AWS credential profile | value, required | `"default"` |
+
+### `mail:storage:status`
+
+Show encrypted mail storage and external-key status
+
+- Usage: `$ buddy mail:storage:status`
+- Namespace: `mail`
+- Aliases: none
+- Arguments: none
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `--host` | Mail server hostname or IP | value, required | — |
+| `--secret` | AWS Secrets Manager secret ID | value, required | — |
+| `--region` | AWS region | value, required | `"us-east-1"` |
+| `--profile` | AWS credential profile | value, required | `"default"` |
+
+### `mail:storage:unlock`
+
+Unlock external mail storage and start mail
+
+- Usage: `$ buddy mail:storage:unlock`
+- Namespace: `mail`
+- Aliases: none
+- Arguments: none
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `--host` | Mail server hostname or IP | value, required | — |
+| `--secret` | AWS Secrets Manager secret ID | value, required | — |
+| `--region` | AWS region | value, required | `"us-east-1"` |
+| `--profile` | AWS credential profile | value, required | `"default"` |
+
+### `mail:storage:volume:migrate`
+
+Create a dedicated Hetzner volume and migrate encrypted mail storage
+
+- Usage: `$ buddy mail:storage:volume:migrate`
+- Namespace: `mail`
+- Aliases: none
+- Arguments: none
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `--host` | Mail server hostname or IP | value, required | — |
+| `--secret` | AWS Secrets Manager secret ID | value, required | — |
+| `--region` | AWS region | value, required | `"us-east-1"` |
+| `--profile` | AWS credential profile | value, required | `"default"` |
+| `--size` | Hetzner volume size in GiB | value, required | `"20"` |
 
 ### `mail:test`
 
