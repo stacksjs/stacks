@@ -1,5 +1,16 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.216...v0.70.217)
+
+## ⚡ Performance Improvements
+
+- lazy load local tunnel runtime ([76b4fdb](https://github.com/stacksjs/stacks/commit/76b4fdb)) _(by Chris <chrisbreuer93@gmail.com>)_
+- split optional production modules ([bb74be1](https://github.com/stacksjs/stacks/commit/bb74be1)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.215...v0.70.216)
 
 ## 🐛 Bug Fixes
