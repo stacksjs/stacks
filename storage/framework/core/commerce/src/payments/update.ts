@@ -107,6 +107,7 @@ export async function recordRefund(id: number, amount: number): Promise<PaymentJ
   if (!REFUNDABLE_STATUSES.has(status))
     throw new Error(`Payment status ${status || 'unknown'} cannot be refunded`)
 
-  const remainingAmount = Number(payment.amount || 0) - Number(payment.refund_amount || 0)
+  const persisted = payment as PaymentJsonResponse & { refund_amount?: unknown }
+  const remainingAmount = Number(payment.amount || 0) - Number(persisted.refundAmount ?? persisted.refund_amount ?? 0)
   throw new Error(`Refund amount exceeds the remaining ${remainingAmount} minor units`)
 }
