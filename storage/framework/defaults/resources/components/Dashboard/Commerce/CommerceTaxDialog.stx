@@ -37,8 +37,16 @@ effect(() => {
   isDefault.set(current?.isDefault || false)
 })
 
-function updateText(signal: { set: (value: string) => void }, event: Event): void {
-  signal.set((event.target as HTMLInputElement).value)
+function updateName(event: Event): void {
+  name.set((event.target as HTMLInputElement).value)
+}
+
+function updateType(event: Event): void {
+  type.set((event.target as HTMLInputElement).value)
+}
+
+function updateCountry(event: Event): void {
+  country.set((event.target as HTMLInputElement).value)
 }
 
 function updateRate(event: Event): void {
@@ -82,7 +90,7 @@ function submit(): void {
         <div class="mt-5 space-y-4">
           <label class="block">
             <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Name</span>
-            <input :value="name()" type="text" maxlength="255" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="updateText(name, $event)" />
+            <input :value="name()" type="text" maxlength="255" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="updateName($event)" />
           </label>
           <div class="grid gap-4 sm:grid-cols-2">
             <label class="block">
@@ -91,13 +99,13 @@ function submit(): void {
             </label>
             <label class="block">
               <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Type</span>
-              <input :value="type()" type="text" list="tax-rate-types" maxlength="100" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="updateText(type, $event)" />
+              <input :value="type()" type="text" list="tax-rate-types" maxlength="100" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="updateType($event)" />
               <datalist id="tax-rate-types"><template :for="taxType in types()" :key="taxType"><option :value="taxType"></option></template></datalist>
             </label>
           </div>
           <label class="block">
             <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Country</span>
-            <input :value="country()" type="text" maxlength="100" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="updateText(country, $event)" />
+            <input :value="country()" type="text" maxlength="100" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="updateCountry($event)" />
           </label>
           <div class="grid gap-4 sm:grid-cols-2">
             <label class="block">

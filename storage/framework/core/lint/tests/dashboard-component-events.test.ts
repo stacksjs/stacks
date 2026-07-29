@@ -28,4 +28,13 @@ describe('dashboard component event handlers', () => {
 
     expect(offenders).toEqual([])
   })
+
+  test('do not pass auto-unwrapped signals to helpers expecting signal wrappers', () => {
+    const offenders = ROOTS
+      .flatMap(walkStxFiles)
+      .filter(file => /function\s+\w+\(\s*\w+\s*:\s*\{\s*set\s*:/.test(readFileSync(file, 'utf8')))
+      .map(file => file.replace(`${join(import.meta.dir, '../../../defaults')}/`, ''))
+
+    expect(offenders).toEqual([])
+  })
 })
