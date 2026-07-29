@@ -1,0 +1,94 @@
+<script client>
+import type {
+  PrintDeviceRecord,
+  PrintDeviceStatus,
+} from '../../../../app/Actions/Dashboard/Commerce/print-device-records'
+
+const open = useReactiveProp('open', false)
+const mode = useReactiveProp('mode', 'add')
+const record = useReactiveProp('record', null as PrintDeviceRecord | null)
+const busy = useReactiveProp('busy', false)
+const emit = defineEmits()
+const name = state('')
+const macAddress = state('')
+const location = state('')
+const terminal = state('')
+const status = state<PrintDeviceStatus>('offline')
+let hydrationKey = ''
+
+effect(() => {
+  if (!open()) {
+    hydrationKey = ''
+    return
+  }
+  const current = record()
+  const key = `${mode()}:${current?.id || 'new'}`
+  if (hydrationKey === key)
+    return
+  hydrationKey = key
+  name.set(current?.name || '')
+  macAddress.set(current?.macAddress || '')
+  location.set(current?.location || '')
+  terminal.set(current?.terminal || '')
+  status.set(current?.status || 'offline')
+})
+
+function updateName(event: Event): void {
+  name.set((event.target as HTMLInputElement).value)
+}
+
+function updateMacAddress(event: Event): void {
+  macAddress.set((event.target as HTMLInputElement).value)
+}
+
+function updateLocation(event: Event): void {
+  location.set((event.target as HTMLInputElement).value)
+}
+
+function updateTerminal(event: Event): void {
+  terminal.set((event.target as HTMLInputElement).value)
+}
+
+function updateStatus(event: Event): void {
+  status.set((event.target as HTMLSelectElement).value as PrintDeviceStatus)
+}
+
+function valid(): boolean {
+  return Boolean(name().trim() && macAddress().trim() && location().trim() && terminal().trim())
+}
+
+function submit(): void {
+  if (!valid())
+    return
+  emit('submit', {
+    name: name().trim(),
+    macAddress: macAddress().trim(),
+    location: location().trim(),
+    terminal: terminal().trim(),
+    status: status(),
+  })
+}
+</script>
+
+<div :if="open()" class="flex fixed inset-0 z-50 items-center justify-center p-4">
+  <button type="button" aria-label="Close print device dialog" class="absolute inset-0 bg-black/45" @click="emit('close')"></button>
+  <section role="dialog" aria-modal="true" aria-labelledby="print-device-dialog-title" class="relative max-w-lg w-full bg-white dark:bg-neutral-800 border border-gray-200 rounded-xl dark:border-neutral-700 shadow-xl">
+    <form @submit.prevent="submit">
+      <div class="p-6">
+        <h2 id="print-device-dialog-title" class="font-semibold text-gray-900 text-lg dark:text-white">{{ mode() === 'edit' ? 'Edit print device' : 'Add print device' }}</h2>
+        <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Store fields declared by the PrintDevice model.</p>
+        <div class="grid gap-4 grid-cols-1 sm:grid-cols-2 mt-5">
+          <label class="block sm:col-span-2"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Name</span><input :value="name()" type="text" maxlength="100" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="updateName($event)" /></label>
+          <label class="block sm:col-span-2"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">MAC address</span><input :value="macAddress()" type="text" maxlength="50" required spellcheck="false" class="mt-1 px-3 py-2 w-full font-mono text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="updateMacAddress($event)" /></label>
+          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Location</span><input :value="location()" type="text" maxlength="100" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="updateLocation($event)" /></label>
+          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Terminal</span><input :value="terminal()" type="text" maxlength="50" required spellcheck="false" class="mt-1 px-3 py-2 w-full font-mono text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="updateTerminal($event)" /></label>
+          <label class="block sm:col-span-2"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Operational status</span><select :value="status()" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @change="updateStatus($event)"><option value="online">Online</option><option value="warning">Warning</option><option value="offline">Offline</option></select></label>
+        </div>
+      </div>
+      <footer class="flex gap-2 justify-end px-6 py-4 bg-gray-50 dark:bg-neutral-900/50 border-gray-200 border-t dark:border-neutral-700">
+        <button type="button" :disabled="busy()" class="px-3 py-2 font-semibold text-gray-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700 disabled:opacity-50" @click="emit('close')">Cancel</button>
+        <button type="submit" :disabled="busy() || !valid()" class="inline-flex items-center px-3 py-2 font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md disabled:opacity-50"><span :if="busy()" class="mr-2 h-4 w-4 animate-spin i-hugeicons-loading-03"></span>{{ mode() === 'edit' ? 'Save printer' : 'Add printer' }}</button>
+      </footer>
+    </form>
+  </section>
+</div>

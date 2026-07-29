@@ -1,0 +1,80 @@
+<script client>
+import type {
+  PrintDeviceRecord,
+  PrintDeviceStatus,
+} from '../../../../app/Actions/Dashboard/Commerce/print-device-records'
+
+const records = useReactiveProp('records', [] as PrintDeviceRecord[])
+
+function statusCounts(): Array<{ status: PrintDeviceStatus, label: string, count: number, color: string }> {
+  return [
+    { status: 'online', label: 'Online', count: records().filter(record => record.status === 'online').length, color: 'bg-emerald-500' },
+    { status: 'warning', label: 'Warning', count: records().filter(record => record.status === 'warning').length, color: 'bg-amber-500' },
+    { status: 'offline', label: 'Offline', count: records().filter(record => record.status === 'offline').length, color: 'bg-red-500' },
+  ]
+}
+
+function statusWidth(count: number): string {
+  return `${records().length ? Math.round((count / records().length) * 100) : 0}%`
+}
+
+function locationCounts(): Array<{ name: string, count: number }> {
+  const counts = new Map<string, number>()
+  for (const record of records()) {
+    const name = record.location || 'Not recorded'
+    counts.set(name, (counts.get(name) || 0) + 1)
+  }
+  return [...counts.entries()]
+    .map(([name, count]) => ({ name, count }))
+    .sort((left, right) => right.count - left.count || left.name.localeCompare(right.name))
+    .slice(0, 5)
+}
+
+function printVolumes(): PrintDeviceRecord[] {
+  return [...records()]
+    .sort((left, right) => right.printCount - left.printCount || left.name.localeCompare(right.name))
+    .slice(0, 5)
+}
+
+function volumeWidth(count: number): string {
+  const maximum = Math.max(...records().map(record => record.printCount), 0)
+  return `${maximum ? Math.max(3, Math.round((count / maximum) * 100)) : 0}%`
+}
+</script>
+
+<section aria-label="Print device breakdowns" class="grid gap-3 lg:grid-cols-3">
+  <article class="p-4 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
+    <h2 class="font-semibold text-gray-900 text-sm dark:text-white">Device status</h2>
+    <div class="mt-4 space-y-3">
+      <template :for="item in statusCounts()" :key="item.status">
+        <div>
+          <div class="flex justify-between text-xs"><span class="text-gray-500 dark:text-neutral-400">{{ item.label }}</span><span class="font-mono text-gray-700 dark:text-neutral-200">{{ item.count }}</span></div>
+          <div class="mt-1 h-1.5 bg-gray-100 dark:bg-neutral-700 rounded-full"><div :class="'h-full rounded-full ' + item.color" :style="'width: ' + statusWidth(item.count)"></div></div>
+        </div>
+      </template>
+    </div>
+  </article>
+
+  <article class="p-4 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
+    <h2 class="font-semibold text-gray-900 text-sm dark:text-white">Devices by location</h2>
+    <div :if="locationCounts().length === 0" class="mt-4 text-gray-500 text-sm dark:text-neutral-400">No locations recorded.</div>
+    <ol :else class="mt-3 divide-gray-100 divide-y dark:divide-neutral-700">
+      <template :for="item in locationCounts()" :key="item.name">
+        <li class="flex items-center justify-between py-2 text-sm"><span class="text-gray-600 truncate dark:text-neutral-300">{{ item.name }}</span><span class="ml-3 font-mono text-gray-900 dark:text-white">{{ item.count }}</span></li>
+      </template>
+    </ol>
+  </article>
+
+  <article class="p-4 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
+    <h2 class="font-semibold text-gray-900 text-sm dark:text-white">Highest print volume</h2>
+    <div :if="printVolumes().length === 0" class="mt-4 text-gray-500 text-sm dark:text-neutral-400">No print volume recorded.</div>
+    <div :else class="mt-4 space-y-3">
+      <template :for="record in printVolumes()" :key="record.id">
+        <div>
+          <div class="flex gap-3 justify-between text-xs"><span class="text-gray-500 truncate dark:text-neutral-400">{{ record.name }}</span><span class="font-mono text-gray-700 dark:text-neutral-200">{{ record.printCount.toLocaleString() }}</span></div>
+          <div class="mt-1 h-1.5 bg-gray-100 dark:bg-neutral-700 rounded-full"><div class="h-full bg-blue-500 rounded-full" :style="'width: ' + volumeWidth(record.printCount)"></div></div>
+        </div>
+      </template>
+    </div>
+  </article>
+</section>
