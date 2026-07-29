@@ -7,7 +7,7 @@
  * stable entrypoint it can bundle with `bun build --production`.
  */
 import process from 'node:process'
-import { startProductionServer } from './commands/serve'
+import { startProductionServer } from './production-server'
 
 process.env.APP_ENV ||= 'production'
 process.env.NODE_ENV ||= 'production'
