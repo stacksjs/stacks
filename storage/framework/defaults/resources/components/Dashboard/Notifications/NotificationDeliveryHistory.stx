@@ -1,0 +1,219 @@
+<script client>
+import type {
+  NotificationDelivery,
+  NotificationDeliveryChannel,
+  NotificationDeliveryStatus,
+} from '../../../../functions/notifications/deliveries'
+import {
+  fetchNotificationDeliveryHistory,
+  retryNotificationDelivery,
+} from '../../../../functions/notifications/deliveries'
+
+const deliveries = state<NotificationDelivery[]>([])
+const currentPage = state(1)
+const perPage = state(20)
+const totalItems = state(0)
+const totalPages = state(1)
+const isLoading = state(true)
+const searchQuery = state('')
+const appliedSearch = state('')
+const selectedChannel = state<NotificationDeliveryChannel | 'all'>('all')
+const selectedStatus = state<NotificationDeliveryStatus | 'all'>('all')
+const sortField = state<'sent_at' | 'recipient' | 'channel' | 'status' | 'id'>('sent_at')
+const sortDirection = state<'asc' | 'desc'>('desc')
+const selectedDelivery = state<NotificationDelivery | null>(null)
+const showDetails = state(false)
+const retryingId = state<number | null>(null)
+
+let requestController: AbortController | null = null
+
+const rangeStart = derived(() => totalItems() === 0 ? 0 : (currentPage() - 1) * perPage() + 1)
+const rangeEnd = derived(() => Math.min(currentPage() * perPage(), totalItems()))
+const canGoBack = derived(() => currentPage() > 1)
+const canGoForward = derived(() => currentPage() < totalPages())
+
+async function loadHistory(): Promise<void> {
+  requestController?.abort()
+  const controller = new AbortController()
+  requestController = controller
+  isLoading.set(true)
+
+  const result = await fetchNotificationDeliveryHistory({
+    page: currentPage(),
+    perPage: perPage(),
+    channel: selectedChannel(),
+    status: selectedStatus(),
+    search: appliedSearch(),
+    sort: sortField(),
+    direction: sortDirection(),
+    signal: controller.signal,
+  })
+
+  if (controller.signal.aborted)
+    return
+
+  if (result) {
+    deliveries.set(result.deliveries)
+    totalItems.set(result.pagination.total)
+    totalPages.set(result.pagination.total_pages)
+  }
+  isLoading.set(false)
+}
+
+function applySearch(): void {
+  appliedSearch.set(searchQuery().trim())
+  currentPage.set(1)
+  void loadHistory()
+}
+
+function applyFilters(): void {
+  currentPage.set(1)
+  void loadHistory()
+}
+
+function resetFilters(): void {
+  searchQuery.set('')
+  appliedSearch.set('')
+  selectedChannel.set('all')
+  selectedStatus.set('all')
+  sortField.set('sent_at')
+  sortDirection.set('desc')
+  currentPage.set(1)
+  void loadHistory()
+}
+
+function toggleSortDirection(): void {
+  sortDirection.set(sortDirection() === 'asc' ? 'desc' : 'asc')
+  currentPage.set(1)
+  void loadHistory()
+}
+
+function previousPage(): void {
+  if (!canGoBack())
+    return
+  currentPage.update(page => page - 1)
+  void loadHistory()
+}
+
+function nextPage(): void {
+  if (!canGoForward())
+    return
+  currentPage.update(page => page + 1)
+  void loadHistory()
+}
+
+function openDelivery(event: CustomEvent<NotificationDelivery>): void {
+  selectedDelivery.set(event.detail)
+  showDetails.set(true)
+}
+
+function closeDelivery(): void {
+  showDetails.set(false)
+  selectedDelivery.set(null)
+}
+
+async function retryDelivery(event: CustomEvent<NotificationDelivery>): Promise<void> {
+  const delivery = event.detail
+  retryingId.set(delivery.id)
+  const retried = await retryNotificationDelivery(delivery)
+  if (retried)
+    await loadHistory()
+  retryingId.set(null)
+}
+
+onMount(loadHistory)
+onDestroy(() => requestController?.abort())
+</script>
+
+<section class="py-4 lg:py-8 min-h-screen dark:bg-neutral-800">
+  <div class="px-4 sm:px-6 lg:px-8">
+    <div class="mb-6">
+      <NotificationNavigation active="history" />
+    </div>
+    <div class="sm:flex sm:items-start sm:justify-between">
+      <div>
+        <h1 class="font-semibold leading-6 text-base text-gray-900 dark:text-neutral-100">Notification History</h1>
+        <p class="mt-2 text-gray-700 text-sm dark:text-neutral-300">Search and inspect persisted notification transport attempts.</p>
+      </div>
+      <StxLink to="/notifications/dashboard" class="inline-flex gap-2 items-center mt-4 px-3 py-2 sm:mt-0 font-semibold text-gray-900 text-sm dark:text-neutral-100 bg-white dark:bg-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-600 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 shadow-sm">
+        <span class="h-4 w-4 i-hugeicons-dashboard-square-01"></span>
+        Overview
+      </StxLink>
+    </div>
+
+    <form class="grid gap-3 grid-cols-1 md:grid-cols-2 xl:grid-cols-6 mt-6" @submit.prevent="applySearch()">
+      <label class="xl:col-span-2">
+        <span class="sr-only">Search notification history</span>
+        <span class="flex">
+          <input x-model.trim="searchQuery" type="search" placeholder="Search recipient or content..." class="block px-3 py-2 w-full text-gray-900 text-sm dark:text-neutral-100 placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-l-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset" />
+          <button type="submit" class="inline-flex items-center px-3 py-2 font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-r-md">
+            Search
+          </button>
+        </span>
+      </label>
+      <label>
+        <span class="sr-only">Channel</span>
+        <select x-model="selectedChannel" class="block px-3 py-2 w-full text-gray-900 text-sm dark:text-neutral-100 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600" @change="applyFilters()">
+          <option value="all">All Channels</option>
+          <option value="email">Email</option>
+          <option value="sms">SMS</option>
+          <option value="chat">Chat</option>
+          <option value="database">Database</option>
+          <option value="push">Push</option>
+          <option value="broadcast">Broadcast</option>
+        </select>
+      </label>
+      <label>
+        <span class="sr-only">Status</span>
+        <select x-model="selectedStatus" class="block px-3 py-2 w-full text-gray-900 text-sm dark:text-neutral-100 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600" @change="applyFilters()">
+          <option value="all">All Statuses</option>
+          <option value="sent">Sent</option>
+          <option value="delivered">Delivered</option>
+          <option value="failed">Failed</option>
+          <option value="pending">Pending</option>
+        </select>
+      </label>
+      <label>
+        <span class="sr-only">Sort field</span>
+        <select x-model="sortField" class="block px-3 py-2 w-full text-gray-900 text-sm dark:text-neutral-100 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600" @change="applyFilters()">
+          <option value="sent_at">Attempted</option>
+          <option value="recipient">Recipient</option>
+          <option value="channel">Channel</option>
+          <option value="status">Status</option>
+          <option value="id">ID</option>
+        </select>
+      </label>
+      <div class="flex gap-2">
+        <button type="button" :aria-label="sortDirection === 'asc' ? 'Sort descending' : 'Sort ascending'" class="inline-flex items-center justify-center px-3 py-2 text-gray-700 dark:text-neutral-200 bg-white dark:bg-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-600 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600" @click="toggleSortDirection()">
+          <span :class="'h-5 w-5 ' + (sortDirection === 'asc' ? 'i-hugeicons-sort-by-up-01' : 'i-hugeicons-sort-by-down-01')"></span>
+        </button>
+        <button type="button" class="flex-1 px-3 py-2 font-semibold text-gray-900 text-sm dark:text-neutral-100 bg-white dark:bg-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-600 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600" @click="resetFilters()">Reset</button>
+      </div>
+    </form>
+
+    <div class="mt-6">
+      <NotificationDeliveryTable
+        :deliveries="deliveries"
+        :loading="isLoading"
+        :actions="true"
+        :retryingId="retryingId"
+        emptyMessage="No notification delivery attempts match these filters."
+        @view="openDelivery($event)"
+        @retry="retryDelivery($event)"
+      />
+    </div>
+
+    <div class="flex items-center justify-between mt-4">
+      <p class="text-gray-700 text-sm dark:text-neutral-300">
+        Showing <span class="font-medium">{{ rangeStart }}</span> to <span class="font-medium">{{ rangeEnd }}</span> of <span class="font-medium">{{ totalItems }}</span> results
+      </p>
+      <div class="flex gap-2 items-center">
+        <button type="button" :disabled="!canGoBack || isLoading" class="px-3 py-2 font-semibold text-gray-900 text-sm dark:text-neutral-100 bg-white dark:bg-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-600 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 disabled:opacity-50" @click="previousPage()">Previous</button>
+        <span class="px-2 font-mono text-gray-500 text-xs dark:text-neutral-400">Page {{ currentPage }} of {{ totalPages }}</span>
+        <button type="button" :disabled="!canGoForward || isLoading" class="px-3 py-2 font-semibold text-gray-900 text-sm dark:text-neutral-100 bg-white dark:bg-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-600 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 disabled:opacity-50" @click="nextPage()">Next</button>
+      </div>
+    </div>
+  </div>
+
+  <NotificationDeliveryDialog :open="showDetails" :delivery="selectedDelivery" @close="closeDelivery" />
+</section>

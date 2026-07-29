@@ -1,0 +1,125 @@
+<script client>
+import type { NotificationDelivery } from '../../../../functions/notifications/deliveries'
+
+const deliveries = useReactiveProp('deliveries', [] as NotificationDelivery[])
+const loading = useReactiveProp('loading', false)
+const actions = useReactiveProp('actions', false)
+const allowRetry = useReactiveProp('allowRetry', true)
+const retryingId = useReactiveProp('retryingId', null as number | null)
+const emptyMessage = useReactiveProp('emptyMessage', 'No notification delivery attempts have been recorded.')
+const emit = defineEmits()
+
+function channelIcon(channel: string): string {
+  if (channel === 'email')
+    return 'i-hugeicons-mail-01'
+  if (channel === 'sms')
+    return 'i-hugeicons-smart-phone-01'
+  if (channel === 'push')
+    return 'i-hugeicons-notification-01'
+  if (channel === 'database')
+    return 'i-hugeicons-database'
+  if (channel === 'broadcast')
+    return 'i-hugeicons-satellite'
+  if (channel === 'chat')
+    return 'i-hugeicons-message-01'
+  return 'i-hugeicons-notification-03'
+}
+
+function statusClass(status: string): string {
+  if (status === 'failed')
+    return 'bg-red-50 text-red-700 ring-red-600/20 dark:bg-red-950/40 dark:text-red-300'
+  if (status === 'pending')
+    return 'bg-amber-50 text-amber-700 ring-amber-600/20 dark:bg-amber-950/40 dark:text-amber-300'
+  if (status === 'sent')
+    return 'bg-blue-50 text-blue-700 ring-blue-600/20 dark:bg-blue-950/40 dark:text-blue-300'
+  return 'bg-green-50 text-green-700 ring-green-600/20 dark:bg-green-950/40 dark:text-green-300'
+}
+
+function formatDate(value: string): string {
+  if (!value)
+    return 'Not recorded'
+  const date = new Date(value)
+  return Number.isNaN(date.getTime()) ? value : new Intl.DateTimeFormat('en-US', {
+    dateStyle: 'medium',
+    timeStyle: 'short',
+  }).format(date)
+}
+
+function provider(delivery: NotificationDelivery): string {
+  const value = delivery.metadata.provider || delivery.metadata.driver
+  return typeof value === 'string' && value ? value : 'Default'
+}
+
+function summary(delivery: NotificationDelivery): string {
+  return delivery.subject || delivery.body || 'No content recorded'
+}
+
+function canRetry(delivery: NotificationDelivery): boolean {
+  return allowRetry()
+    && delivery.status === 'failed'
+    && (delivery.channel === 'email' || delivery.channel === 'sms')
+}
+</script>
+
+<div class="overflow-x-auto ring-1 ring-black/5 rounded-lg dark:ring-white/10 shadow-sm">
+  <table class="min-w-full divide-gray-200 divide-y dark:divide-neutral-600">
+    <thead class="bg-gray-50 dark:bg-neutral-700">
+      <tr>
+        <th scope="col" class="pl-4 pr-3 py-3.5 sm:pl-6 font-semibold text-gray-900 text-left text-sm dark:text-neutral-100">Channel</th>
+        <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-neutral-100">Recipient</th>
+        <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-neutral-100">Content</th>
+        <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-neutral-100">Status</th>
+        <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-neutral-100">Provider</th>
+        <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-right text-sm dark:text-neutral-100">Attempted</th>
+        <th :if="actions" scope="col" class="relative pl-3 pr-4 py-3.5 sm:pr-6"><span class="sr-only">Actions</span></th>
+      </tr>
+    </thead>
+    <tbody class="bg-white dark:bg-neutral-800 divide-gray-200 divide-y dark:divide-neutral-700">
+      <tr :if="loading">
+        <td :colspan="actions ? 7 : 6" class="px-6 py-12 text-center text-gray-500 text-sm dark:text-neutral-400">
+          Loading delivery attempts...
+        </td>
+      </tr>
+      <tr :if="!loading && deliveries.length === 0">
+        <td :colspan="actions ? 7 : 6" class="px-6 py-12 text-center text-gray-500 text-sm dark:text-neutral-400">
+          {{ emptyMessage }}
+        </td>
+      </tr>
+      <template :for="delivery in deliveries">
+        <tr class="hover:bg-gray-50 dark:hover:bg-neutral-700/50">
+          <td class="pl-4 pr-3 py-4 sm:pl-6 text-sm whitespace-nowrap">
+            <span class="inline-flex gap-2 items-center font-medium text-gray-900 dark:text-neutral-100">
+              <span :class="'h-5 w-5 ' + channelIcon(delivery.channel)"></span>
+              <span class="capitalize">{{ delivery.channel }}</span>
+            </span>
+          </td>
+          <td class="px-3 py-4 text-gray-600 text-sm whitespace-nowrap dark:text-neutral-300">{{ delivery.recipient || 'Not recorded' }}</td>
+          <td class="px-3 py-4 text-gray-500 text-sm dark:text-neutral-400">
+            <span class="block max-w-sm truncate">{{ summary(delivery) }}</span>
+          </td>
+          <td class="px-3 py-4 text-sm whitespace-nowrap">
+            <span :class="'inline-flex items-center px-2 py-1 font-medium text-xs ring-1 ring-inset rounded-md capitalize ' + statusClass(delivery.status)">
+              {{ delivery.status }}
+            </span>
+          </td>
+          <td class="px-3 py-4 text-gray-500 text-sm whitespace-nowrap dark:text-neutral-400">{{ provider(delivery) }}</td>
+          <td class="px-3 py-4 text-gray-500 text-right text-sm whitespace-nowrap dark:text-neutral-400">{{ formatDate(delivery.sent_at) }}</td>
+          <td :if="actions" class="relative pl-3 pr-4 py-4 sm:pr-6 font-medium text-right text-sm whitespace-nowrap">
+            <button
+              :if="canRetry(delivery)"
+              type="button"
+              :disabled="retryingId === delivery.id"
+              class="mr-3 text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 disabled:opacity-50"
+              @click="emit('retry', delivery)"
+            >
+              {{ retryingId === delivery.id ? 'Retrying...' : 'Retry' }}
+            </button>
+            <button type="button" class="text-gray-600 dark:text-neutral-400 hover:text-gray-900 dark:hover:text-gray-200" @click="emit('view', delivery)">
+              View Details
+            </button>
+          </td>
+        </tr>
+      </template>
+    </tbody>
+  </table>
+</div>

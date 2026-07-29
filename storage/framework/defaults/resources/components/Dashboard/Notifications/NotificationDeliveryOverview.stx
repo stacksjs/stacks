@@ -1,0 +1,161 @@
+<script client>
+import type {
+  NotificationDelivery,
+  NotificationDeliveryOverview,
+} from '../../../../functions/notifications/deliveries'
+import { fetchNotificationDeliveryOverview } from '../../../../functions/notifications/deliveries'
+
+const overview = state<NotificationDeliveryOverview>({
+  stats: {
+    total: 0,
+    successful: 0,
+    failed: 0,
+    pending: 0,
+    success_rate: 0,
+    active_channels: 0,
+  },
+  statuses: {
+    sent: 0,
+    delivered: 0,
+    failed: 0,
+    pending: 0,
+  },
+  channels: [],
+  recent: [],
+})
+const isLoading = state(true)
+const selectedDelivery = state<NotificationDelivery | null>(null)
+const showDetails = state(false)
+
+function formatNumber(value: number): string {
+  return new Intl.NumberFormat('en-US').format(value)
+}
+
+function attemptLabel(value: number): string {
+  return `${formatNumber(value)} ${value === 1 ? 'attempt' : 'attempts'}`
+}
+
+function channelIcon(channel: string): string {
+  if (channel === 'email')
+    return 'i-hugeicons-mail-01'
+  if (channel === 'sms')
+    return 'i-hugeicons-smart-phone-01'
+  if (channel === 'push')
+    return 'i-hugeicons-notification-01'
+  if (channel === 'database')
+    return 'i-hugeicons-database'
+  if (channel === 'broadcast')
+    return 'i-hugeicons-satellite'
+  return 'i-hugeicons-message-01'
+}
+
+function openDelivery(event: CustomEvent<NotificationDelivery>): void {
+  selectedDelivery.set(event.detail)
+  showDetails.set(true)
+}
+
+function closeDelivery(): void {
+  showDetails.set(false)
+  selectedDelivery.set(null)
+}
+
+async function loadOverview(): Promise<void> {
+  isLoading.set(true)
+  const result = await fetchNotificationDeliveryOverview()
+  if (result)
+    overview.set(result)
+  isLoading.set(false)
+}
+
+onMount(loadOverview)
+</script>
+
+<section class="py-4 lg:py-8 min-h-screen dark:bg-neutral-800">
+  <div class="px-4 sm:px-6 lg:px-8">
+    <div class="mb-6">
+      <NotificationNavigation active="overview" />
+    </div>
+    <div class="flex gap-4 items-start justify-between">
+      <div>
+        <h1 class="font-semibold leading-6 text-base text-gray-900 dark:text-neutral-100">Notifications Overview</h1>
+        <p class="mt-2 text-gray-700 text-sm dark:text-neutral-300">Live transport health across every notification channel.</p>
+      </div>
+      <StxLink to="/notifications/history" class="inline-flex gap-2 items-center px-3 py-2 font-semibold text-blue-700 text-sm dark:text-blue-300 bg-blue-50 dark:bg-blue-950/40 hover:bg-blue-100 dark:hover:bg-blue-950/70 rounded-md">
+        View History
+        <span class="h-4 w-4 i-hugeicons-arrow-right-01"></span>
+      </StxLink>
+    </div>
+
+    <dl class="grid gap-3 grid-cols-2 lg:grid-cols-5 mt-6">
+      <div class="px-4 py-3 bg-white dark:bg-neutral-700 ring-1 ring-gray-200 rounded-lg dark:ring-neutral-600">
+        <dt class="text-gray-500 text-xs dark:text-neutral-400">Attempts</dt>
+        <dd class="mt-1 font-semibold tabular-nums text-gray-900 text-xl dark:text-white">{{ formatNumber(overview.stats.total) }}</dd>
+      </div>
+      <div class="px-4 py-3 bg-white dark:bg-neutral-700 ring-1 ring-gray-200 rounded-lg dark:ring-neutral-600">
+        <dt class="text-gray-500 text-xs dark:text-neutral-400">Successful</dt>
+        <dd class="mt-1 font-semibold tabular-nums text-green-700 text-xl dark:text-green-300">{{ formatNumber(overview.stats.successful) }}</dd>
+      </div>
+      <div class="px-4 py-3 bg-white dark:bg-neutral-700 ring-1 ring-gray-200 rounded-lg dark:ring-neutral-600">
+        <dt class="text-gray-500 text-xs dark:text-neutral-400">Failed</dt>
+        <dd class="mt-1 font-semibold tabular-nums text-red-700 text-xl dark:text-red-300">{{ formatNumber(overview.stats.failed) }}</dd>
+      </div>
+      <div class="px-4 py-3 bg-white dark:bg-neutral-700 ring-1 ring-gray-200 rounded-lg dark:ring-neutral-600">
+        <dt class="text-gray-500 text-xs dark:text-neutral-400">Success Rate</dt>
+        <dd class="mt-1 font-semibold tabular-nums text-gray-900 text-xl dark:text-white">{{ overview.stats.success_rate }}%</dd>
+      </div>
+      <div class="px-4 py-3 bg-white dark:bg-neutral-700 ring-1 ring-gray-200 rounded-lg dark:ring-neutral-600">
+        <dt class="text-gray-500 text-xs dark:text-neutral-400">Active Channels</dt>
+        <dd class="mt-1 font-semibold tabular-nums text-gray-900 text-xl dark:text-white">{{ overview.stats.active_channels }}</dd>
+      </div>
+    </dl>
+
+    <section class="mt-8">
+      <div class="flex items-center justify-between mb-3">
+        <div>
+          <h2 class="font-semibold text-gray-900 text-sm dark:text-neutral-100">Recent Delivery Attempts</h2>
+          <p class="mt-1 text-gray-500 text-xs dark:text-neutral-400">The eight most recent persisted transport results.</p>
+        </div>
+      </div>
+      <NotificationDeliveryTable
+        :deliveries="overview.recent"
+        :loading="isLoading"
+        :actions="true"
+        :allowRetry="false"
+        emptyMessage="No notification delivery attempts have been recorded."
+        @view="openDelivery($event)"
+      />
+    </section>
+
+    <section class="mt-8">
+      <div class="mb-3">
+        <h2 class="font-semibold text-gray-900 text-sm dark:text-neutral-100">Channel Health</h2>
+        <p class="mt-1 text-gray-500 text-xs dark:text-neutral-400">Exact totals grouped by transport.</p>
+      </div>
+      <div class="grid gap-3 grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
+        <div :if="!isLoading && overview.channels.length === 0" class="px-4 py-10 text-center text-gray-500 text-sm dark:text-neutral-400 bg-white dark:bg-neutral-700 ring-1 ring-gray-200 rounded-lg dark:ring-neutral-600">
+          No active channels yet.
+        </div>
+        <template :for="channel in overview.channels">
+          <article class="px-4 py-4 bg-white dark:bg-neutral-700 ring-1 ring-gray-200 rounded-lg dark:ring-neutral-600">
+            <div class="flex items-center justify-between">
+              <div class="inline-flex gap-2 items-center font-medium text-gray-900 text-sm dark:text-neutral-100">
+                <span :class="'h-5 w-5 ' + channelIcon(channel.channel)"></span>
+                <span class="capitalize">{{ channel.channel }}</span>
+              </div>
+              <span class="font-mono text-gray-500 text-xs dark:text-neutral-400">{{ attemptLabel(channel.total) }}</span>
+            </div>
+            <div class="overflow-hidden mt-4 h-2 bg-gray-100 dark:bg-neutral-600 rounded-full">
+              <div class="h-full bg-green-500 rounded-full" style="width: {{ channel.success_rate }}%"></div>
+            </div>
+            <div class="flex items-center justify-between mt-2 text-xs">
+              <span class="text-gray-500 dark:text-neutral-400">{{ channel.success_rate }}% successful</span>
+              <span :class="channel.failed > 0 ? 'text-red-600 dark:text-red-400' : 'text-gray-500 dark:text-neutral-400'">{{ formatNumber(channel.failed) }} failed</span>
+            </div>
+          </article>
+        </template>
+      </div>
+    </section>
+  </div>
+
+  <NotificationDeliveryDialog :open="showDetails" :delivery="selectedDelivery" @close="closeDelivery" />
+</section>
