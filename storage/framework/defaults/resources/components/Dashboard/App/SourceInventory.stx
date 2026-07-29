@@ -1,0 +1,228 @@
+<script client>
+import { dashboardApi } from '../../../../functions/dashboard-api'
+
+type InventoryMode = 'actions' | 'commands'
+
+interface SourceItem {
+  name: string
+  description: string
+  path: string
+  origin: 'Application' | 'Framework'
+  modifiedAt: string
+  method?: string
+  aliases?: string[]
+  options?: string[]
+}
+
+interface InventoryResponse {
+  items: SourceItem[]
+  stats: Record<string, number>
+}
+
+const mode = useReactiveProp<InventoryMode>('mode', 'actions')
+const items = state<SourceItem[]>([])
+const stats = state<Record<string, number>>({})
+const search = state('')
+const loading = state(true)
+const loadError = state('')
+const copyMessage = state('')
+
+const page = derived(() => mode() === 'actions'
+  ? {
+      title: 'Actions',
+      description: 'Inspect application overrides and framework Actions from their native TypeScript sources.',
+      empty: 'No Action modules were found.',
+      scaffold: 'buddy make:action MyAction',
+      icon: 'i-hugeicons-energy',
+      detailLabel: 'Method',
+    }
+  : {
+      title: 'Commands',
+      description: 'Inspect the custom commands registered by app/Commands.ts.',
+      empty: 'No application commands are registered.',
+      scaffold: 'buddy make:command my-command',
+      icon: 'i-hugeicons-command-line',
+      detailLabel: 'Aliases and options',
+    })
+
+const filteredItems = derived(() => {
+  const query = search().trim().toLowerCase()
+  if (!query)
+    return items()
+  return items().filter(item => [
+    item.name,
+    item.description,
+    item.path,
+    item.origin,
+    item.method,
+    ...(item.aliases || []),
+    ...(item.options || []),
+  ].join(' ').toLowerCase().includes(query))
+})
+
+function statValue(key: string): number {
+  return Number(stats()[key] || 0)
+}
+
+function formatDate(value: string): string {
+  if (!value)
+    return 'Unknown'
+  const date = new Date(value)
+  return Number.isNaN(date.getTime()) ? 'Unknown' : date.toLocaleString()
+}
+
+function formatAliases(item: SourceItem): string {
+  return item.aliases?.length ? item.aliases.join(', ') : 'None'
+}
+
+function formatOptions(item: SourceItem): string {
+  return item.options?.length ? item.options.join(', ') : 'None'
+}
+
+function methodClass(method = 'ANY'): string {
+  if (['GET', 'HEAD', 'OPTIONS'].includes(method))
+    return 'text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/40'
+  if (method === 'ANY')
+    return 'text-neutral-700 dark:text-neutral-300 bg-neutral-100 dark:bg-neutral-800'
+  return 'text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40'
+}
+
+async function loadInventory(): Promise<void> {
+  loading.set(true)
+  loadError.set('')
+  try {
+    const endpoint = mode() === 'actions'
+      ? '/api/dashboard/source/actions'
+      : '/api/dashboard/source/commands'
+    const response = await dashboardApi<InventoryResponse>(endpoint)
+    items.set(response.items || [])
+    stats.set(response.stats || {})
+  }
+  catch (error) {
+    items.set([])
+    stats.set({})
+    loadError.set(error instanceof Error ? error.message : 'Source inventory could not be loaded.')
+  }
+  finally {
+    loading.set(false)
+  }
+}
+
+async function copyScaffoldCommand(): Promise<void> {
+  copyMessage.set('')
+  try {
+    await globalThis.navigator.clipboard.writeText(page().scaffold)
+    copyMessage.set(`Copied: ${page().scaffold}`)
+  }
+  catch {
+    copyMessage.set(`Run: ${page().scaffold}`)
+  }
+}
+
+onMount(() => {
+  void loadInventory()
+})
+</script>
+
+<div class="space-y-6">
+  <header class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+    <div>
+      <h1 class="font-semibold text-2xl text-neutral-900 tracking-tight dark:text-white">{{ page().title }}</h1>
+      <p class="mt-1 max-w-3xl text-neutral-500 text-sm dark:text-neutral-400">{{ page().description }}</p>
+    </div>
+    <div class="flex gap-2 items-center">
+      <button type="button" :disabled="loading()" class="inline-flex items-center px-3 py-2 text-neutral-600 text-sm dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg disabled:opacity-50" @click="loadInventory">
+        <span :class="'mr-2 h-4 w-4 ' + (loading() ? 'animate-spin i-hugeicons-loading-03' : 'i-hugeicons-refresh')"></span>
+        Refresh
+      </button>
+      <button type="button" class="inline-flex items-center px-3 py-2 font-medium text-sm text-white bg-blue-600 hover:bg-blue-700 rounded-lg" @click="copyScaffoldCommand">
+        <span class="mr-2 h-4 w-4 i-hugeicons-copy-01"></span>
+        Copy scaffold command
+      </button>
+    </div>
+  </header>
+
+  <div :if="copyMessage()" role="status" class="px-4 py-3 text-blue-700 text-sm dark:text-blue-300 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 rounded-lg dark:border-blue-900">
+    {{ copyMessage() }}
+  </div>
+
+  <div :if="loadError()" role="alert" class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between px-4 py-3 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/40 border border-red-200 rounded-lg dark:border-red-900">
+    <span>{{ loadError() }}</span>
+    <button type="button" class="font-medium hover:underline" @click="loadInventory">Try again</button>
+  </div>
+
+  <div class="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
+    <StatsCard :title="mode() === 'actions' ? 'Total Actions' : 'Registered Entries'" :icon="page().icon" iconBg="primary">
+      <template #value>{{ statValue(mode() === 'actions' ? 'total' : 'registered') }}</template>
+    </StatsCard>
+    <StatsCard :title="mode() === 'actions' ? 'Application Overrides' : 'Command Modules'" icon="i-hugeicons-source-code" iconBg="success">
+      <template #value>{{ statValue(mode() === 'actions' ? 'application' : 'total') }}</template>
+    </StatsCard>
+    <StatsCard :title="mode() === 'actions' ? 'Framework Defaults' : 'Aliases'" icon="i-hugeicons-git-branch" iconBg="info">
+      <template #value>{{ statValue(mode() === 'actions' ? 'framework' : 'aliases') }}</template>
+    </StatsCard>
+    <StatsCard :title="mode() === 'actions' ? 'Write Handlers' : 'Declared Options'" icon="i-hugeicons-settings-02" iconBg="warning">
+      <template #value>{{ statValue(mode() === 'actions' ? 'writes' : 'options') }}</template>
+    </StatsCard>
+  </div>
+
+  <Card padding="none">
+    <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between p-5 border-b border-neutral-200 dark:border-neutral-700">
+      <div>
+        <h2 class="font-semibold text-neutral-900 dark:text-white">Native source inventory</h2>
+        <p class="mt-1 text-neutral-500 text-xs dark:text-neutral-400">Application files override matching framework defaults.</p>
+      </div>
+      <label class="block relative w-full sm:max-w-xs">
+        <span class="sr-only">Search {{ page().title.toLowerCase() }}</span>
+        <span class="absolute left-3 top-2.5 h-4 w-4 text-neutral-400 i-hugeicons-search-01"></span>
+        <input x-model="search" type="search" :placeholder="'Search ' + page().title.toLowerCase()" class="block pl-9 pr-3 py-2 w-full text-neutral-900 text-sm dark:text-white bg-white dark:bg-neutral-950 border border-neutral-300 rounded-lg dark:border-neutral-700 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20">
+      </label>
+    </div>
+
+    <div :if="loading()" class="flex items-center justify-center py-16 text-neutral-500 text-sm dark:text-neutral-400">
+      <span class="mr-2 h-5 w-5 animate-spin i-hugeicons-loading-03"></span>
+      Reading source files...
+    </div>
+
+    <EmptyState
+      :if="!loading() && !loadError() && filteredItems().length === 0"
+      :icon="page().icon"
+      :title="search() ? 'No matching source files' : page().empty"
+      :description="search() ? 'Try a different name, path, method, or alias.' : 'Use the scaffold command to add one through the native framework workflow.'"
+    />
+
+    <div :if="!loading() && filteredItems().length > 0" class="overflow-x-auto">
+      <table class="w-full">
+        <thead class="bg-neutral-50 dark:bg-neutral-800/50">
+          <tr>
+            <th class="pl-5 pr-4 py-3 font-semibold text-left text-neutral-500 text-xs tracking-wider uppercase dark:text-neutral-400">Name</th>
+            <th class="px-4 py-3 font-semibold text-left text-neutral-500 text-xs tracking-wider uppercase dark:text-neutral-400">{{ page().detailLabel }}</th>
+            <th class="px-4 py-3 font-semibold text-left text-neutral-500 text-xs tracking-wider uppercase dark:text-neutral-400">Origin</th>
+            <th class="px-4 py-3 font-semibold text-left text-neutral-500 text-xs tracking-wider uppercase dark:text-neutral-400">Path</th>
+            <th class="pr-5 py-3 font-semibold text-neutral-500 text-right text-xs tracking-wider uppercase dark:text-neutral-400">Modified</th>
+          </tr>
+        </thead>
+        <tbody class="divide-neutral-100 divide-y dark:divide-neutral-700">
+          <tr :for="item in filteredItems()">
+            <td class="pl-5 pr-4 py-3.5">
+              <p class="font-medium text-neutral-900 text-sm dark:text-white">{{ item.name }}</p>
+              <p class="mt-0.5 max-w-md text-neutral-500 text-xs dark:text-neutral-400">{{ item.description }}</p>
+            </td>
+            <td class="px-4 py-3.5">
+              <span :if="mode() === 'actions'" :class="'inline-flex px-2 py-0.5 font-medium text-xs rounded ' + methodClass(item.method)">{{ item.method || 'ANY' }}</span>
+              <div :if="mode() === 'commands'" class="space-y-1 text-xs">
+                <p class="text-neutral-700 dark:text-neutral-300"><span class="text-neutral-500 dark:text-neutral-400">Aliases:</span> {{ formatAliases(item) }}</p>
+                <p class="text-neutral-700 dark:text-neutral-300"><span class="text-neutral-500 dark:text-neutral-400">Options:</span> {{ formatOptions(item) }}</p>
+              </div>
+            </td>
+            <td class="px-4 py-3.5">
+              <span :class="'inline-flex px-2 py-0.5 font-medium text-xs rounded ' + (item.origin === 'Application' ? 'text-green-700 dark:text-green-300 bg-green-50 dark:bg-green-950/40' : 'text-neutral-700 dark:text-neutral-300 bg-neutral-100 dark:bg-neutral-800')">{{ item.origin }}</span>
+            </td>
+            <td class="px-4 py-3.5 font-mono text-neutral-600 text-xs dark:text-neutral-300">{{ item.path }}</td>
+            <td class="pr-5 py-3.5 text-neutral-500 text-right text-xs whitespace-nowrap dark:text-neutral-400">{{ formatDate(item.modifiedAt) }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </Card>
+</div>

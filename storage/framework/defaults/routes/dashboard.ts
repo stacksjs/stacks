@@ -225,7 +225,6 @@ route.group({ prefix: '/dashboard', middleware: 'auth' }, () => {
   route.get('/health', 'Actions/Dashboard/DashboardHealthAction')
   route.get('/services', 'Actions/Dashboard/ServiceHealthAction')
   route.get('/buddy', 'Actions/Dashboard/BuddyDashboardAction')
-  route.get('/actions/list', 'Actions/Dashboard/Actions/GetActions')
   route.get('/settings', 'Actions/Dashboard/Settings/SettingsIndexAction')
   // Dashboard's omnisearch endpoint. Lived at root `/search` until users
   // building a public site discovered it shadowed `resources/views/search.stx`
@@ -629,7 +628,6 @@ route.group({ prefix: '/api/data', middleware: 'auth' }, () => {
 // ============================================================================
 
 route.group({ prefix: '/infrastructure', middleware: 'auth' }, () => {
-  route.get('/commands', 'Actions/Dashboard/Infrastructure/CommandIndexAction')
   route.get('/requests', 'Actions/Dashboard/Infrastructure/RequestIndexAction')
   route.get('/servers', 'Actions/Dashboard/Infrastructure/ServerIndexAction')
   route.get('/dns', 'Actions/Dashboard/Infrastructure/DnsIndexAction')

@@ -1,19 +1,22 @@
 import { Action } from '@stacksjs/actions'
-// import { Action as ActionModel } from '@stacksjs/orm'
+import process from 'node:process'
+import { discoverActionSources } from '../Source/source-inventory'
 
 export default new Action({
   name: 'GetActions',
-  description: 'Gets your actions.',
+  description: 'Lists application and framework Actions from their native source files.',
   method: 'GET',
   async handle() {
-    // TODO: replace with ActionModel.all() when ORM is ready
+    const items = await discoverActionSources(process.cwd())
+
     return {
-      actions: [
-        { name: 'SendWelcomeEmail', type: 'email', runs: 1247, avgTime: '234ms', status: 'active' },
-        { name: 'ProcessPayment', type: 'payment', runs: 892, avgTime: '1.2s', status: 'active' },
-        { name: 'GenerateReport', type: 'report', runs: 156, avgTime: '4.5s', status: 'active' },
-        { name: 'SyncInventory', type: 'sync', runs: 48, avgTime: '12s', status: 'paused' },
-      ],
+      items,
+      stats: {
+        total: items.length,
+        application: items.filter(item => item.origin === 'Application').length,
+        framework: items.filter(item => item.origin === 'Framework').length,
+        writes: items.filter(item => !['ANY', 'GET', 'HEAD', 'OPTIONS'].includes(item.method || 'ANY')).length,
+      },
     }
   },
 })

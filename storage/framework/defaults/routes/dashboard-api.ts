@@ -38,6 +38,8 @@ function guard(r: any): any {
 
 route.group({ prefix: '/api/dashboard', apiResponse: true }, () => {
   guard(route.get('/home', 'Actions/Dashboard/DashboardHomeAction'))
+  guard(route.get('/source/actions', 'Actions/Dashboard/Actions/GetActions'))
+  guard(route.get('/source/commands', 'Actions/Dashboard/Infrastructure/CommandIndexAction'))
 
   guard(route.get('/analytics/web', 'Actions/Dashboard/Analytics/WebAnalyticsAction'))
   guard(route.get('/analytics/sales', 'Actions/Dashboard/Analytics/SalesAnalyticsAction'))
