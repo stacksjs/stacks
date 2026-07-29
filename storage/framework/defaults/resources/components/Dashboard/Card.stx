@@ -1,78 +1,103 @@
-<!--
-  Custom Dashboard Card Component
+<script server>
+interface CardAction {
+  label: string
+  onClick?: string
+}
 
-  A flexible card component for dashboard content.
-
-  Usage:
-  <Card title="My Card" :actions="[{ label: 'Action', onClick: handleClick }]">
-    <p>Card content here</p>
-  </Card>
--->
-
-<script>
 interface CardProps {
   title?: string
   subtitle?: string
-  actions?: any[]
-  padding?: boolean
+  actions?: CardAction[]
+  variant?: 'default' | 'elevated' | 'outline' | 'ghost' | 'vibrancy'
+  padding?: 'none' | 'sm' | 'md' | 'lg' | 'xl'
+  rounded?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl'
+  hoverable?: boolean
+  clickable?: boolean
 }
 
-const { title, subtitle, actions, padding } = defineProps<CardProps>()
+const {
+  title = '',
+  subtitle = '',
+  actions = [],
+  variant = 'default',
+  padding = 'md',
+  rounded = 'lg',
+  hoverable = false,
+  clickable = false,
+} = defineProps<CardProps>()
+
+const variantClasses = {
+  default: 'bg-white dark:bg-neutral-800/90 border border-stone-200/80 dark:border-white/5 shadow-sm shadow-stone-200/50 dark:shadow-black/20',
+  elevated: 'bg-white dark:bg-neutral-800 border border-stone-200/60 dark:border-white/10 shadow-lg shadow-stone-200/60 dark:shadow-black/30',
+  outline: 'bg-transparent border border-stone-200/80 dark:border-white/10',
+  ghost: 'bg-stone-50/50 dark:bg-white/[0.05] border border-transparent',
+  vibrancy: 'bg-white/60 dark:bg-neutral-800/60 border border-stone-200/60 dark:border-white/10 backdrop-blur-xl backdrop-saturate-150 shadow-sm shadow-stone-200/50',
+}
+
+const paddingClasses = {
+  none: '',
+  sm: 'p-2.5',
+  md: 'p-4',
+  lg: 'p-5',
+  xl: 'p-6',
+}
+
+const roundedClasses = {
+  sm: 'rounded-md',
+  md: 'rounded-lg',
+  lg: 'rounded-xl',
+  xl: 'rounded-2xl',
+  '2xl': 'rounded-[20px]',
+  '3xl': 'rounded-[24px]',
+}
+
+const hoverClass = hoverable || clickable
+  ? 'hover:border-stone-300/80 dark:hover:border-white/15 hover:shadow-md hover:shadow-stone-300/60 dark:hover:shadow-black/25'
+  : ''
+const clickableClass = clickable ? 'cursor-pointer active:scale-[0.98] active:shadow-sm' : ''
+const cardClass = [
+  'overflow-hidden transition-all duration-150',
+  variantClasses[variant],
+  roundedClasses[rounded],
+  hoverClass,
+  clickableClass,
+].join(' ')
 </script>
-<div class="dashboard-card">
-    @if (title || actions.length > 0)
-      <div class="dashboard-card-header">
-        <div>
-          @if (title)
-            <h3 class="dashboard-card-title">{{ title }}</h3>
-          @endif
-          @if (subtitle)
-            <p class="dashboard-card-subtitle">{{ subtitle }}</p>
-          @endif
-        </div>
-        @if (actions.length > 0)
-          <div class="dashboard-card-actions">
-            @foreach (actions as action)
-              <button class="btn btn-ghost btn-sm" @click="action.onClick">
-                {{ action.label }}
-              </button>
-            @endforeach
-          </div>
+
+<article class="{{ cardClass }}" @if(clickable) role="button" tabindex="0" @endif>
+  @if($slots.header)
+    <header class="px-5 py-4 border-b border-stone-200/80 dark:border-white/5">
+      <slot name="header" />
+    </header>
+  @elseif(title || actions.length > 0)
+    <header class="flex gap-4 items-start justify-between px-5 py-4 border-b border-stone-200/80 dark:border-white/5">
+      <div>
+        @if(title)
+          <h3 class="font-semibold text-base text-neutral-900 dark:text-white">{{ title }}</h3>
+        @endif
+        @if(subtitle)
+          <p class="mt-1 text-neutral-500 text-sm dark:text-neutral-400">{{ subtitle }}</p>
         @endif
       </div>
-    @endif
-    <div class="{{ padding ? 'dashboard-card-content' : '' }}">
-      <slot></slot>
-    </div>
+      @if(actions.length > 0)
+        <div class="flex gap-2 items-center">
+          @foreach(actions as action)
+            <button type="button" class="px-3 py-1.5 font-medium text-neutral-700 text-sm dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-white/5 rounded-md" @click="{{ action.onClick || '' }}">
+              {{ action.label }}
+            </button>
+          @endforeach
+        </div>
+      @endif
+    </header>
+  @endif
+
+  <div class="{{ paddingClasses[padding] }}">
+    <slot />
   </div>
-<style>
-.dashboard-card {
-  background: var(--color-bg-card);
-  border: 1px solid var(--color-border);
-  border-radius: 0.75rem;
-  overflow: hidden;
-}
-.dashboard-card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1rem 1.25rem;
-  border-bottom: 1px solid var(--color-border);
-}
-.dashboard-card-title {
-  font-size: 0.9375rem;
-  font-weight: 600;
-}
-.dashboard-card-subtitle {
-  font-size: 0.8125rem;
-  color: var(--color-text-muted);
-  margin-top: 0.125rem;
-}
-.dashboard-card-actions {
-  display: flex;
-  gap: 0.5rem;
-}
-.dashboard-card-content {
-  padding: 1.25rem;
-}
-</style>
+
+  @if($slots.footer)
+    <footer class="px-4 py-3 bg-neutral-50/50 dark:bg-white/[0.025] border-stone-200/80 border-t dark:border-white/5">
+      <slot name="footer" />
+    </footer>
+  @endif
+</article>
