@@ -7,7 +7,7 @@
  */
 
 import { ref } from '@stacksjs/stx'
-import { get, post } from './api'
+import { dashboardApi } from './dashboard-api'
 
 export interface QueueBucket {
   name: string
@@ -41,6 +41,32 @@ export interface QueueWorker {
   memory: string
 }
 
+export interface QueueStatsResponse {
+  queues: QueueBucket[]
+  stats: QueueAggregateStats
+  queueConnected: boolean
+}
+
+export interface QueueWorkersResponse {
+  data: QueueWorker[]
+  worker_running: boolean
+  active_jobs: number
+}
+
+export async function fetchQueueStats(): Promise<QueueStatsResponse> {
+  return await dashboardApi<QueueStatsResponse>('/api/dashboard/queue/stats')
+}
+
+export async function fetchQueueWorkers(): Promise<QueueWorkersResponse> {
+  return await dashboardApi<QueueWorkersResponse>('/api/dashboard/queue/workers')
+}
+
+export async function retryQueueFailures(): Promise<{ success: boolean, count: number, message: string }> {
+  return await dashboardApi<{ success: boolean, count: number, message: string }>('/api/dashboard/queue/retry-failed', {
+    method: 'POST',
+  })
+}
+
 export function useQueue() {
   const queues = ref<QueueBucket[]>([])
   const stats = ref<QueueAggregateStats>({
@@ -58,14 +84,14 @@ export function useQueue() {
   const error = ref<string | null>(null)
 
   async function fetchStats() {
-    const data = await get<{ queues: QueueBucket[], stats: QueueAggregateStats, queueConnected: boolean }>('/queue/stats')
+    const data = await fetchQueueStats()
     queues.value = data.queues || []
     stats.value = data.stats || stats.value
     queueConnected.value = Boolean(data.queueConnected)
   }
 
   async function fetchWorkers() {
-    const data = await get<{ data: QueueWorker[] }>('/queue/workers')
+    const data = await fetchQueueWorkers()
     workers.value = data.data || []
   }
 
@@ -87,7 +113,7 @@ export function useQueue() {
 
   async function retryFailedJobs() {
     try {
-      await post<{ success: boolean, count: number, message: string }>('/queue/retry-failed')
+      await retryQueueFailures()
       await fetchAll()
     }
     catch (e) {

@@ -29,7 +29,7 @@ export default new Action({
           failed_jobs: w.failedCount,
           uptime,
           last_heartbeat: w.lastActivityAt,
-          memory: '—',
+          memory: '-',
         }
       })
 
