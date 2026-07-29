@@ -1,5 +1,7 @@
 import { Action } from '@stacksjs/actions'
-// import { Deployment } from '@stacksjs/orm'
+import { readFile } from 'node:fs/promises'
+import { join } from 'node:path'
+import process from 'node:process'
 
 export default new Action({
   name: 'GetDeployScript',
@@ -7,6 +9,19 @@ export default new Action({
   apiResponse: true,
 
   async handle() {
-    // return Deployment.script()
+    const filePath = join(process.cwd(), 'cloud', 'deploy-script.ts')
+    try {
+      return {
+        path: 'cloud/deploy-script.ts',
+        content: await readFile(filePath, 'utf8'),
+      }
+    }
+    catch {
+      return {
+        path: 'cloud/deploy-script.ts',
+        content: '',
+        exists: false,
+      }
+    }
   },
 })

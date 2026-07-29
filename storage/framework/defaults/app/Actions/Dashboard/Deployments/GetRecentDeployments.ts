@@ -1,5 +1,5 @@
 import { Action } from '@stacksjs/actions'
-// import { Deployment } from '@stacksjs/orm'
+import { Deployment } from '@stacksjs/orm'
 
 export default new Action({
   name: 'GetRecentDeployments',
@@ -7,6 +7,7 @@ export default new Action({
   apiResponse: true,
 
   async handle() {
-    // return Deployment.recent(3)
+    const deployments = await Deployment.orderByDesc('created_at').limit(3).get()
+    return deployments.map(deployment => deployment.toJSON())
   },
 })

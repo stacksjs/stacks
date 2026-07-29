@@ -1,14 +1,34 @@
 <script client>
 import type { DeploymentRecord } from '../../../../functions/deployments'
+import { dashboardApi } from '../../../../functions/dashboard-api'
 import { fetchDeployments, summarizeDeployments } from '../../../../functions/deployments'
 import { pushToast } from '../../../../functions/toasts'
+
+interface DeploymentStartResponse {
+  success: boolean
+  message: string
+  pid?: number
+}
 
 const deployments = state<DeploymentRecord[]>([])
 const search = state('')
 const status = state('all')
 const isLoading = state(true)
 const loadError = state('')
+const showDeployModal = state(false)
+const isStarting = state(false)
+const environment = state('production')
+const domain = state('')
 const summary = derived(() => summarizeDeployments(deployments()))
+const environmentOptions = [
+  { value: 'production', label: 'Production' },
+  { value: 'staging', label: 'Staging' },
+  { value: 'development', label: 'Development' },
+]
+
+function eventValue<T>(value: T | CustomEvent<T>): T {
+  return value instanceof CustomEvent ? value.detail : value
+}
 
 function rows(): DeploymentRecord[] {
   const query = search().trim().toLowerCase()
@@ -33,6 +53,14 @@ function updateSearch(event: Event): void {
 
 function updateStatus(event: Event): void {
   status.set((event.target as HTMLSelectElement).value)
+}
+
+function updateEnvironment(value: string | CustomEvent<string>): void {
+  environment.set(eventValue(value))
+}
+
+function updateDomain(value: string | CustomEvent<string>): void {
+  domain.set(eventValue(value))
 }
 
 function formatNumber(value: number): string {
@@ -64,6 +92,37 @@ async function loadDeployments(): Promise<void> {
   }
 }
 
+async function startDeployment(dryRun: boolean): Promise<void> {
+  isStarting.set(true)
+  try {
+    const result = await dashboardApi<DeploymentStartResponse>('/api/dashboard/deployments', {
+      method: 'POST',
+      body: {
+        confirmed: !dryRun,
+        dryRun,
+        environment: environment(),
+        domain: domain().trim(),
+      },
+    })
+    if (!result.success)
+      throw new Error(result.message)
+    showDeployModal.set(false)
+    pushToast('success', result.message, {
+      detail: result.pid ? `Process ${result.pid}` : undefined,
+    })
+    if (!dryRun)
+      await loadDeployments()
+  }
+  catch (error) {
+    pushToast('error', dryRun ? 'Could not preview deployment' : 'Could not start deployment', {
+      detail: error instanceof Error ? error.message : String(error),
+    })
+  }
+  finally {
+    isStarting.set(false)
+  }
+}
+
 onMount(() => {
   void loadDeployments()
 })
@@ -75,10 +134,18 @@ onMount(() => {
       <h1 class="font-bold text-2xl text-gray-900 dark:text-white">Deployments</h1>
       <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Deployment model records through the guarded dashboard API.</p>
     </div>
-    <button type="button" :disabled="isLoading()" class="inline-flex items-center px-3 py-2 font-semibold text-gray-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700 disabled:opacity-50" @click="loadDeployments">
-      <span :class="'mr-2 h-4 w-4 ' + (isLoading() ? 'animate-spin i-hugeicons-loading-03' : 'i-hugeicons-refresh')"></span>
-      Refresh
-    </button>
+    <div class="flex gap-2 items-center">
+      <Button :disabled="isStarting()" variant="outline" @click="startDeployment(true)">
+        Preview
+      </Button>
+      <Button :disabled="isStarting()" @click="showDeployModal.set(true)">
+        Deploy
+      </Button>
+      <button type="button" :disabled="isLoading()" class="inline-flex items-center px-3 py-2 font-semibold text-gray-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700 disabled:opacity-50" @click="loadDeployments">
+        <span :class="'mr-2 h-4 w-4 ' + (isLoading() ? 'animate-spin i-hugeicons-loading-03' : 'i-hugeicons-refresh')"></span>
+        Refresh
+      </button>
+    </div>
   </header>
 
   <div :if="loadError()" class="p-4 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900">{{ loadError() }}</div>
@@ -124,4 +191,39 @@ onMount(() => {
     </div>
     <DeploymentTable :deployments="rows()" :loading="isLoading" />
   </section>
+
+  <Modal
+    :isOpen="showDeployModal()"
+    title="Start deployment"
+    description="This runs ./buddy deploy as a real background process and records its status."
+    size="sm"
+    @close="showDeployModal.set(false)"
+  >
+    <div class="space-y-4">
+      <Select
+        :value="environment()"
+        :options="environmentOptions"
+        label="Environment"
+        placeholder=""
+        @change="updateEnvironment"
+      />
+      <Input
+        :value="domain()"
+        type="text"
+        label="Domain"
+        placeholder="app.example.com"
+        hint="Optional. Leave blank to use the configured deployment domain."
+        @input="updateDomain"
+      />
+      <div class="p-3 text-amber-800 text-sm dark:text-amber-200 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 rounded-lg dark:border-amber-900">
+        A deployment can create or update cloud resources. Confirm only after reviewing the target environment.
+      </div>
+    </div>
+    <template #footer>
+      <div class="flex gap-2 items-center">
+        <Button :disabled="isStarting()" variant="ghost" @click="showDeployModal.set(false)">Cancel</Button>
+        <Button :loading="isStarting()" @click="startDeployment(false)">Start deployment</Button>
+      </div>
+    </template>
+  </Modal>
 </div>
