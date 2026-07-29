@@ -240,6 +240,13 @@ effect(() => {
       syncActive(event && event.detail && event.detail.url)
     })
 
+    // The Sidebar component applies its initial server-declared selection
+    // during hydration. Re-sync once that native lifecycle completes so a
+    // direct URL load wins over any stale/default item state.
+    window.addEventListener('stx:hydrated', function () {
+      syncActive()
+    }, { once: true })
+
     // SPA-navigate sidebar rows; fall back to full loads when the router isn't
     // available or the target is external. The component already moves
     // `data-active` on click, and the stx:navigate listener re-syncs after.
