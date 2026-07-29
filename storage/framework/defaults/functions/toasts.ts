@@ -45,8 +45,25 @@ export interface PushToastOptions {
   durationMs?: number
 }
 
-const toasts = state<Toast[]>([])
-let nextId = 1
+function createDashboardToastStore() {
+  return {
+    toasts: state<Toast[]>([]),
+    nextId: 1,
+  }
+}
+
+type DashboardToastStore = ReturnType<typeof createDashboardToastStore>
+
+const dashboardGlobal = globalThis as typeof globalThis & {
+  __stacksDashboardToastStore?: DashboardToastStore
+}
+
+// Client components are compiled into independent bundles. Keeping the store
+// on globalThis makes every bundle observe the same signal while preserving it
+// across hot-module reloads.
+const toastStore = dashboardGlobal.__stacksDashboardToastStore
+  ??= createDashboardToastStore()
+const toasts = toastStore.toasts
 
 // Errors get longer dwell because a user might need to read & screenshot.
 // Success is short — it's just a "yep, that worked" pat on the back.
@@ -58,7 +75,7 @@ const DEFAULT_DURATION_MS: Record<ToastType, number> = {
 }
 
 export function pushToast(type: ToastType, title: string, opts: PushToastOptions = {}): number {
-  const id = nextId++
+  const id = toastStore.nextId++
   const durationMs = opts.durationMs ?? DEFAULT_DURATION_MS[type]
   const toast: Toast = {
     id,
