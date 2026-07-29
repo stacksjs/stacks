@@ -12,34 +12,29 @@ import { isUniqueViolation } from '@stacksjs/orm'
  * @returns The newly created payment record
  */
 export async function store(data: NewPayment): Promise<PaymentJsonResponse | undefined> {
+  const uuid = randomUUIDv7()
   const paymentData = {
     ...data,
-    status: data.status || 'PENDING',
+    status: data.status || 'pending',
     currency: data.currency || 'USD',
-    uuid: randomUUIDv7(),
+    uuid,
   }
 
   try {
-    // Insert the payment record
-    const createdPayment = await db
+    await db
       .insertInto('payments')
       .values(paymentData as NewPayment)
       .executeTakeFirst()
 
-    const insertId = Number(createdPayment.insertId) || Number(createdPayment.numInsertedOrUpdatedRows)
-
-    // If insert was successful, retrieve the newly created payment
-    if (insertId) {
-      const payment = await db
-        .selectFrom('payments')
-        .where('id', '=', insertId)
-        .selectAll()
-        .executeTakeFirst()
-
-      return payment as PaymentJsonResponse | undefined
-    }
-
-    return undefined
+    // The model-managed UUID is stable across every supported dialect.
+    // Insert metadata is not: SQLite reports lastInsertRowid, MySQL reports
+    // insertId, and PostgreSQL requires RETURNING. Reading by UUID avoids
+    // treating an affected-row count as a primary key.
+    return await db
+      .selectFrom('payments')
+      .where('uuid', '=', uuid)
+      .selectAll()
+      .executeTakeFirst() as PaymentJsonResponse | undefined
   }
   catch (error) {
     if (error instanceof HttpError)

@@ -2,14 +2,34 @@ import { beforeEach, describe, expect, it } from 'bun:test'
 import { formatDate } from '@stacksjs/orm'
 import { refreshDatabase } from './setup'
 import { bulkDestroy } from '../payments/destroy'
-import { fetchMonthlyPaymentTrends } from '../payments/fetch'
+import { fetchById, fetchMonthlyPaymentTrends } from '../payments/fetch'
 import { store } from '../payments/store'
+import { recordRefund } from '../payments/update'
 
 beforeEach(async () => {
   await refreshDatabase()
 })
 
 describe('Payment Module', () => {
+  describe('store', () => {
+    it('returns the inserted row across dialect-specific insert metadata', async () => {
+      const first = await store({
+        amount: 1000,
+        method: 'creditCard',
+        transaction_id: `TXN-STORE-FIRST-${Date.now()}`,
+      })
+      const second = await store({
+        amount: 2000,
+        method: 'debitCard',
+        transaction_id: `TXN-STORE-SECOND-${Date.now()}`,
+      })
+
+      expect(Number(second?.id)).toBeGreaterThan(Number(first?.id))
+      expect(second?.amount).toBe(2000)
+      expect(second?.status).toBe('pending')
+    })
+  })
+
   describe('bulkDestroy', () => {
     it('should return 0 when trying to delete an empty array of payments', async () => {
       // Try to delete with an empty array
@@ -33,7 +53,7 @@ describe('Payment Module', () => {
         order_id: 40,
         customer_id: 40,
         amount: 100,
-        method: 'credit_card',
+        method: 'creditCard',
         status: 'completed',
         transaction_id: `TXN-MONTHLY-1-${Date.now()}`,
         created_at: today,
@@ -44,7 +64,7 @@ describe('Payment Module', () => {
         order_id: 41,
         customer_id: 41,
         amount: 200,
-        method: 'credit_card',
+        method: 'creditCard',
         status: 'completed',
         transaction_id: `TXN-MONTHLY-2-${Date.now()}`,
         created_at: previousMonthStr,
@@ -70,6 +90,66 @@ describe('Payment Module', () => {
         expect(firstMonth).toHaveProperty('revenue')
         expect(firstMonth).toHaveProperty('average')
       }
+    })
+  })
+
+  describe('recordRefund', () => {
+    it('records partial and full refunds without exceeding the captured amount', async () => {
+      const payment = await store({
+        amount: 1000,
+        method: 'creditCard',
+        status: 'completed',
+        transaction_id: `TXN-REFUND-${Date.now()}`,
+      })
+
+      const partial = await recordRefund(Number(payment?.id), 250)
+      expect(Number(partial.refund_amount)).toBe(250)
+      expect(partial.status).toBe('partiallyRefunded')
+
+      const refunded = await recordRefund(Number(payment?.id), 750)
+      expect(Number(refunded.refund_amount)).toBe(1000)
+      expect(refunded.status).toBe('refunded')
+    })
+
+    it('rejects invalid states and amounts', async () => {
+      const payment = await store({
+        amount: 1000,
+        method: 'creditCard',
+        status: 'pending',
+        transaction_id: `TXN-PENDING-${Date.now()}`,
+      })
+
+      await expect(recordRefund(Number(payment?.id), 100)).rejects.toThrow('cannot be refunded')
+      await expect(recordRefund(Number(payment?.id), 0)).rejects.toThrow('positive integer')
+
+      const completed = await store({
+        amount: 1000,
+        method: 'creditCard',
+        status: 'completed',
+        transaction_id: `TXN-OVER-${Date.now()}`,
+      })
+
+      await expect(recordRefund(Number(completed?.id), 1001)).rejects.toThrow('exceeds the remaining')
+    })
+
+    it('atomically rejects concurrent refunds above the captured amount', async () => {
+      const payment = await store({
+        amount: 1000,
+        method: 'creditCard',
+        status: 'completed',
+        transaction_id: `TXN-CONCURRENT-${Date.now()}`,
+      })
+
+      const outcomes = await Promise.allSettled([
+        recordRefund(Number(payment?.id), 750),
+        recordRefund(Number(payment?.id), 750),
+      ])
+      const persisted = await fetchById(Number(payment?.id))
+
+      expect(outcomes.filter(result => result.status === 'fulfilled')).toHaveLength(1)
+      expect(outcomes.filter(result => result.status === 'rejected')).toHaveLength(1)
+      expect(Number(persisted?.refund_amount)).toBe(750)
+      expect(persisted?.status).toBe('partiallyRefunded')
     })
   })
 })

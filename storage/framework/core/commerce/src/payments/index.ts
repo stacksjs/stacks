@@ -13,4 +13,4 @@ export {
 export { store } from './store'
 
 // Update operations - from update.ts
-export { update } from './update'
+export { recordRefund, update } from './update'

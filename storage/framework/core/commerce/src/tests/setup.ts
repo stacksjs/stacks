@@ -33,7 +33,7 @@ import process from 'node:process'
 const DB_PATH = join(tmpdir(), `stacks-commerce-${process.pid}.sqlite`)
 process.env.DB_CONNECTION = 'sqlite'
 process.env.DB_DATABASE_PATH = DB_PATH
-process.env.APP_ENV = 'testing'
+process.env.APP_ENV = 'test'
 
 // Dynamic imports AFTER the env pin so the lazy `db` proxy and the
 // config loader can't capture a different connection first.
@@ -60,7 +60,7 @@ const commerceModelsDir = join(defaultsModelsDir, 'commerce')
 async function forceConfig(): Promise<void> {
   await ensureDatabaseConfigLoaded()
   initializeDbConfig({
-    app: { env: 'testing' },
+    app: { env: 'test' },
     database: {
       default: 'sqlite',
       connections: { sqlite: { database: DB_PATH, prefix: '' } },

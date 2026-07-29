@@ -44,7 +44,15 @@ export default defineModel({
       order: 4,
       fillable: true,
       validation: {
-        rule: schema.string().required(),
+        rule: schema.enum([
+          'creditCard',
+          'debitCard',
+          'paypal',
+          'applePay',
+          'googlePay',
+          'bankTransfer',
+          'giftCard',
+        ]).required(),
       },
       factory: faker => faker.helpers.arrayElement([
         'creditCard',
@@ -60,22 +68,30 @@ export default defineModel({
     status: {
       order: 5,
       fillable: true,
+      default: 'pending',
       validation: {
-        rule: schema.string().required(),
+        rule: schema.enum([
+          'pending',
+          'processing',
+          'completed',
+          'failed',
+          'refunded',
+          'partiallyRefunded',
+          'succeeded',
+        ]).required(),
       },
       factory: faker => faker.helpers.arrayElement([
         'pending',
         'processing',
         'completed',
         'failed',
-        'refunded',
-        'partiallyRefunded',
       ]),
     },
 
     currency: {
       order: 7,
       fillable: true,
+      default: 'USD',
       validation: {
         rule: schema.string().max(3),
       },
@@ -97,7 +113,7 @@ export default defineModel({
       validation: {
         rule: schema.string().max(4),
       },
-      factory: faker => faker.helpers.maybe(() => faker.finance.creditCardNumber('####'), { probability: 0.7 }),
+      factory: faker => faker.helpers.maybe(() => faker.string.numeric(4), { probability: 0.7 }),
     },
 
     cardBrand: {
@@ -141,10 +157,10 @@ export default defineModel({
     refundAmount: {
       order: 14,
       fillable: true,
+      default: 0,
       validation: {
         rule: schema.number().min(0),
       },
-      factory: faker => faker.helpers.maybe(() => faker.number.int({ min: 500, max: 10000 }), { probability: 0.2 }),
     },
 
     notes: {
