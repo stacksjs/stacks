@@ -1,5 +1,23 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.224...v0.70.225)
+
+## ⚡ Performance Improvements
+
+- bypass the CLI in the production entry ([6ef4328](https://github.com/stacksjs/stacks/commit/6ef4328)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## ♻️ Code Refactoring
+
+- **dashboard**: render the sidebar with the stx Sidebar component ([8d6108a](https://github.com/stacksjs/stacks/commit/8d6108a)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#1989](https://github.com/stacksjs/stacks/issues/1989))
+
+## 🎉 Miscellaneous
+
+- Merge remote-tracking branch 'origin/main' ([5d1524e](https://github.com/stacksjs/stacks/commit/5d1524e)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.223...v0.70.224)
 
 ## ⚡ Performance Improvements
