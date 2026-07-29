@@ -2,6 +2,7 @@ type DeliveryRouteJsonResponse = ModelRow<typeof DeliveryRoute>
 type NewDeliveryRoute = NewModelData<typeof DeliveryRoute>
 import { randomUUIDv7 } from 'bun'
 import { db } from '@stacksjs/database'
+import { fetchById } from './fetch'
 
 /**
  * Create a new delivery route
@@ -11,15 +12,22 @@ import { db } from '@stacksjs/database'
  */
 export async function store(data: NewDeliveryRoute): Promise<DeliveryRouteJsonResponse> {
   try {
+    const uuid = randomUUIDv7()
     const routeData = {
       ...data,
-      uuid: randomUUIDv7(),
+      last_active: data.last_active ?? Date.now(),
+      uuid,
     }
 
-    const result = await db
+    await db
       .insertInto('delivery_routes')
       .values(routeData)
-      .returningAll()
+      .executeTakeFirst()
+
+    const result = await db
+      .selectFrom('delivery_routes')
+      .where('uuid', '=', uuid)
+      .selectAll()
       .executeTakeFirst()
 
     if (!result)
@@ -44,16 +52,16 @@ export async function store(data: NewDeliveryRoute): Promise<DeliveryRouteJsonRe
  */
 export async function updateLastActive(id: number): Promise<DeliveryRouteJsonResponse> {
   try {
-    const result = await db
+    await db
       .updateTable('delivery_routes')
       .set({
-        last_active: new Date().toISOString(),
+        last_active: Date.now(),
         updated_at: new Date().toISOString(),
       })
       .where('id', '=', id)
-      .returningAll()
-      .executeTakeFirst()
+      .execute()
 
+    const result = await fetchById(id)
     if (!result)
       throw new Error('Failed to update delivery route last active')
 

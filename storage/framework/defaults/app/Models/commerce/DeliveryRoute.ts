@@ -78,12 +78,9 @@ export default defineModel({
       order: 6,
       fillable: true,
       validation: {
-        rule: schema.timestamp().required(),
+        rule: schema.unix().required(),
       },
-      factory: (faker) => {
-        const date = faker.date.recent()
-        return date.toISOString().slice(0, 19).replace('T', ' ')
-      },
+      factory: faker => faker.date.recent().getTime(),
     },
   },
 

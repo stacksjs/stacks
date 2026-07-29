@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it } from 'bun:test'
 import { refreshDatabase } from './setup'
 import { bulkDestroy } from '../shippings/delivery-routes/destroy'
 import { fetchByDriver } from '../shippings/delivery-routes/fetch'
-import { store } from '../shippings/delivery-routes/store'
+import { store, updateLastActive } from '../shippings/delivery-routes/store'
 
 beforeEach(async () => {
   await refreshDatabase()
@@ -32,12 +32,17 @@ describe('Delivery Route Module', () => {
 
       // Store each route individually
       for (const routeData of routes) {
-        await store(routeData)
+        const route = await store(routeData)
+        expect(route.driver).toBe(driverName)
+        expect(Number((route as any).last_active)).toBeGreaterThan(0)
       }
 
       const driverRoutes = await fetchByDriver(driverName)
       expect(driverRoutes.length).toBeGreaterThanOrEqual(2)
       expect(driverRoutes.every(route => route.driver === driverName)).toBe(true)
+
+      const updated = await updateLastActive(Number(driverRoutes[0]?.id))
+      expect(Number((updated as any).last_active)).toBeGreaterThan(0)
     })
   })
 
