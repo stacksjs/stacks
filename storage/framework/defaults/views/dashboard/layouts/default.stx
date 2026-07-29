@@ -1,23 +1,35 @@
 <script server>
-// Web sidebar for the dashboard. Framework-owned nav chrome: the markup is
-// built server-side in resources/functions/dashboard/sidebar.ts and the look
-// lives in the plain-CSS <style> block below (stx does not expand Crosswind
-// @apply in a layout <style>, so it is hand-written). Sections come
-// from the discovered-models manifest + config/dashboard.ts toggles.
-// Project-root-anchored (`~/`), not relative. The stx client bundler resolves a
-// relative import against the PAGE that extends this layout, not against this
-// file, so `../../..` silently pointed somewhere different for every page depth
-// and the bundle failed for any page more than one level under views/dashboard.
-import { buildSidebarChunks } from '~/storage/framework/defaults/resources/functions/dashboard/sidebar'
+// Dashboard chrome. The navigation pane is `@stacksjs/components`' <Sidebar>
+// in its `macos` theme — the same component Craft apps use, so the dashboard
+// and a native Craft build render the identical source list.
+//
+// This used to be a hand-rolled <aside> plus ~180 lines of plain CSS, because
+// @stacksjs/components 0.2.9x shipped only its hashed dist/ output and the
+// component fatal-errored with an ENOENT (stacksjs/stacks#1989). That package
+// now publishes its .stx sources, so the real component resolves and the
+// duplicate markup is gone.
+//
+// Project-root-anchored (`~/`), not relative: the stx client bundler resolves
+// a relative import against the PAGE that extends this layout, not against
+// this file, so `../../..` pointed somewhere different for every page depth.
+import { buildWebSidebarSections } from '~/storage/framework/defaults/resources/functions/dashboard/sidebar'
 
-// Pre-rendered, self-contained sidebar HTML (home link, section nav, settings
-// link), built server-side and interpolated raw below. This intentionally does
-// NOT depend on `@stacksjs/components`' <Sidebar>: 0.2.9x stopped shipping
-// tag-resolvable .stx sources (only hashed dist/ output), so the component
-// fatal-errored the whole dashboard with an ENOENT (stacksjs/stacks#1989). Each
-// rendered <a> already carries data-required-roles, which the applyRoleFilter
-// effect below reads directly for role gating.
-export const sidebarChunks = buildSidebarChunks()
+export const sidebarSections = buildWebSidebarSections()
+
+// Role gating (stacksjs/stacks#1843). Models can declare
+// `dashboard.roles: ['admin', 'dev']`; rows for those models are hidden from
+// viewers who hold none of them. Emitted as an id-keyed map rather than a
+// `data-required-roles` attribute on each row, which keeps the generic
+// Sidebar component free of Stacks-specific attributes.
+export const sidebarRoleMap = JSON.stringify(
+  Object.fromEntries(
+    sidebarSections.flatMap(section =>
+      section.items
+        .filter(item => item.roles && item.roles.length > 0)
+        .map(item => [item.id, item.roles]),
+    ),
+  ),
+)
 </script>
 
 <!-- Dashboard icon stylesheet. Most dashboard icons are applied via dynamic
@@ -43,13 +55,6 @@ canvas[id$="_chart"] {
 }
 
 /*
- * Dashboard body + sidebar. Plain CSS on purpose: stx serves a layout's raw
- * style rules verbatim, but it does NOT expand Crosswind @apply here, so these
- * are hand-written. Class names match the markup built in
- * resources/functions/dashboard/sidebar.ts. Fixed 250px pane: Home pinned top,
- * sections scroll in the middle, Settings pinned bottom.
- */
-/*
  * The window background is owned by the main content pane, not the body element.
  * In the native Craft window the WKWebView is transparent and an
  * NSVisualEffectView (real macOS vibrancy) sits behind the sidebar strip; a
@@ -61,155 +66,21 @@ canvas[id$="_chart"] {
 body {
   background: transparent;
 }
+/*
+ * The pane offset follows the sidebar's own width variable, which <Sidebar>
+ * writes onto this element via `shell-selector`. The literal fallback keeps
+ * the layout correct on the first paint, before the controller mounts, and
+ * the collapsed state animates because the variable changes rather than a
+ * class toggling a hard-coded margin.
+ */
 [data-stx-content] {
   min-height: 100vh;
+  margin-left: var(--stx-sidebar-width, 250px);
   background: #f4f4f5;
+  transition: margin-left 0.3s ease-out;
 }
 .dark [data-stx-content] {
   background: #0a0a0a;
-}
-.dashboard-sidebar {
-  position: fixed;
-  inset: 0 auto 0 0;
-  width: 250px;
-  display: flex;
-  flex-direction: column;
-  padding: 0 12px 10px;
-  overflow: hidden;
-  /* Translucent so the native NSVisualEffectView vibrancy reads through in the
-     Craft window; the blur is the frosted-glass fallback in a plain browser,
-     where there is no material behind the pane. */
-  background: rgba(255, 255, 255, 0.55);
-  -webkit-backdrop-filter: saturate(180%) blur(24px);
-  backdrop-filter: saturate(180%) blur(24px);
-  /* No hard border: a soft cast shadow to the right lifts the translucent pane
-     ABOVE the content, so it reads as a glass layer laid on top (Finder-style)
-     rather than a flat column butted beside it. The 1px inset is the hairline. */
-  box-shadow: 1px 0 0 rgba(0, 0, 0, 0.05), 12px 0 34px -10px rgba(0, 0, 0, 0.18);
-  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', sans-serif;
-  -webkit-font-smoothing: antialiased;
-  z-index: 40;
-}
-.sidebar-header {
-  flex-shrink: 0;
-  height: 38px;
-}
-.sidebar-nav {
-  flex: 1 1 auto;
-  min-height: 0;
-  overflow-y: auto;
-  scrollbar-width: none;
-}
-.sidebar-nav::-webkit-scrollbar {
-  width: 0;
-}
-.sidebar-link {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-shrink: 0;
-  height: 30px;
-  padding: 0 10px;
-  border-radius: 6px;
-  color: #3a3a3c;
-  font-size: 13px;
-  font-weight: 450;
-  text-decoration: none;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  transition: background-color 0.12s ease, color 0.12s ease;
-}
-.sidebar-link:hover {
-  background: rgba(0, 0, 0, 0.05);
-}
-.sidebar-link[data-active="true"] {
-  background: #007aff;
-  color: #fff;
-}
-.sidebar-link-home {
-  font-weight: 550;
-}
-.sidebar-nav .sidebar-link {
-  margin-top: 1px;
-}
-.sidebar-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  width: 18px;
-  height: 18px;
-  opacity: 0.82;
-}
-.sidebar-icon svg {
-  width: 18px;
-  height: 18px;
-}
-.sidebar-link[data-active="true"] .sidebar-icon {
-  opacity: 1;
-}
-.sidebar-section {
-  margin-top: 12px;
-}
-.sidebar-section-label {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  height: 22px;
-  padding: 0 10px;
-  background: none;
-  border: 0;
-  cursor: pointer;
-  color: #8a8a8e;
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.03em;
-  text-transform: uppercase;
-}
-.sidebar-section-label:hover {
-  color: #6a6a6e;
-}
-.sidebar-section-list {
-  list-style: none;
-  margin: 2px 0 0;
-  padding: 0;
-}
-.sidebar-section.collapsed .sidebar-section-list {
-  display: none;
-}
-.sidebar-chevron {
-  width: 7px;
-  height: 7px;
-  border-right: 1.5px solid currentColor;
-  border-bottom: 1.5px solid currentColor;
-  transform: rotate(45deg);
-  transition: transform 0.15s ease;
-  opacity: 0.7;
-}
-.sidebar-section.collapsed .sidebar-chevron {
-  transform: rotate(-45deg);
-}
-.dark .dashboard-sidebar {
-  background: rgba(28, 28, 30, 0.55);
-  box-shadow: 1px 0 0 rgba(255, 255, 255, 0.06), 12px 0 34px -10px rgba(0, 0, 0, 0.55);
-}
-.dark .sidebar-link {
-  color: #d1d1d6;
-}
-.dark .sidebar-link:hover {
-  background: rgba(255, 255, 255, 0.06);
-}
-.dark .sidebar-link[data-active="true"] {
-  background: #0a84ff;
-  color: #fff;
-}
-.dark .sidebar-section-label {
-  color: #8d8d92;
-}
-.dark .sidebar-section-label:hover {
-  color: #aeaeb2;
 }
 </style>
 
@@ -274,86 +145,6 @@ body {
 </script>
 
 <script client>
-// Craft native sidebar integration
-// Maps sidebar itemIds to STX page routes for SPA navigation
-const sidebarRoutes = {
-  'home': '/',
-  'dependencies': '/dependencies',
-  'services': '/health',
-  'ci': '/ci',
-  'components': '/components',
-  'functions': '/functions',
-  'releases': '/releases',
-  'packages': '/packages',
-  'content-dashboard': '/content/dashboard',
-  'files': '/content/files',
-  'blog': '/content/blog',
-  'pages': '/content/pages',
-  'posts': '/content/posts',
-  'categories': '/content/categories',
-  'tags': '/content/tags',
-  'comments': '/content/comments',
-  'authors': '/content/authors',
-  'seo': '/content/seo',
-  'deployments': '/deployments',
-  'requests': '/requests',
-  'realtime': '/realtime',
-  'actions': '/actions',
-  'commands': '/commands',
-  'queue': '/queue',
-  'jobs': '/jobs',
-  'inbox': '/inbox',
-  'queries': '/queries',
-  'notifications': '/notifications/dashboard',
-  'data-dashboard': '/data/dashboard',
-  'activity': '/data/activity',
-  'users': '/data/users',
-  'teams': '/data/teams',
-  'subscribers': '/data/subscribers',
-  'commerce-dashboard': '/commerce/dashboard',
-  'pos': '/commerce/pos',
-  'customers': '/commerce/customers',
-  'orders': '/commerce/orders',
-  'products': '/commerce/products',
-  'coupons': '/commerce/coupons',
-  'gift-cards': '/commerce/gift-cards',
-  'payments': '/commerce/payments',
-  'delivery': '/commerce/delivery',
-  'taxes': '/commerce/taxes',
-  'lists': '/marketing/lists',
-  'social-posts': '/marketing/social-posts',
-  'campaigns': '/marketing/campaigns',
-  'marketing-reviews': '/marketing/reviews',
-  'analytics-web': '/analytics/web',
-  'analytics-blog': '/analytics/blog',
-  'analytics-goals': '/analytics/goals',
-  'analytics-commerce': '/analytics/commerce/web',
-  'analytics-sales': '/analytics/commerce/sales',
-  'analytics-marketing': '/analytics/marketing',
-  'cloud': '/cloud',
-  'servers': '/servers',
-  'serverless': '/serverless',
-  'dns': '/dns',
-  'permissions': '/management/permissions',
-  'kanban': '/kanban',
-  'mailboxes': '/mailboxes',
-  'logs': '/logs',
-  'buddy': '/buddy',
-  'environment': '/environment',
-  'access-tokens': '/access-tokens',
-  'settings': '/settings',
-}
-
-// Handle Craft native sidebar selection events
-window.craft = window.craft || {}
-window.craft._sidebarSelectHandler = (event) => {
-  const url = sidebarRoutes[event.itemId]
-    || (event.itemId && event.itemId.startsWith('model-') ? '/models/' + event.itemId.slice(6) : null)
-  if (url) {
-    navigate(url)
-  }
-}
-
 // Global toast queue. Composables across the dashboard call
 // `pushToast(...)` (defined in defaults/functions/toasts.ts) when
 // network requests fail or succeed; that signal is rendered in the
@@ -382,20 +173,17 @@ const toastWrapperClass = (type) => `pointer-events-auto overflow-hidden bg-whit
 
 // Role-gated sidebar filter (stacksjs/stacks#1843).
 //
-// The server emits sidebar `<a>` items with `data-required-roles="…"` for
-// any model that declares `dashboard.roles: ['admin', 'dev', …]`. We
-// walk those nodes on hydration and on auth-store changes, hiding rows
-// the current viewer can't access.
-//
 // Permissive default: when the viewer is unauthenticated (the localhost
-// dev dashboard) `isDev()` returns true so every gated row stays visible.
-// In production deployments where `/api/dashboard/*` sits behind auth,
-// the endpoint returns real role data and the filter hides what the
-// viewer can't reach.
-// Guarded: `useStore('auth')` THROWS when the store was never registered, and a
-// throw here aborts scope registration for the entire page, leaving every signal
-// on every dashboard page unbound. A missing auth store must degrade to the
-// permissive default described above, not take the dashboard down with it.
+// dev dashboard) every gated row stays visible. In production deployments
+// where `/api/dashboard/*` sits behind auth, the endpoint returns real role
+// data and the filter hides what the viewer can't reach.
+//
+// Guarded: `useStore('auth')` THROWS when the store was never registered, and
+// a throw here aborts scope registration for the entire page, leaving every
+// signal on every dashboard page unbound. A missing auth store must degrade to
+// the permissive default, not take the dashboard down with it.
+const sidebarRoles = {{ sidebarRoleMap }}
+
 const auth = (() => {
   try {
     const store = useStore('auth')
@@ -408,59 +196,64 @@ const auth = (() => {
 })()
 
 function applyRoleFilter() {
-  // No auth store means no role data, which is the unauthenticated case: show
-  // every gated row rather than hiding the whole sidebar.
   const roleList = auth ? auth.roles() : []
   const unauth = auth ? auth.unauthenticated() : true
-  const nodes = document.querySelectorAll('[data-required-roles]')
-  for (const el of nodes) {
-    const required = (el.getAttribute('data-required-roles') || '')
-      .split(',').map(s => s.trim()).filter(Boolean)
-    if (required.length === 0) continue
-    // Unauthenticated viewers (no auth wired) see everything — keeps the
-    // dev dashboard usable. Once authenticated, role membership becomes
-    // the authoritative answer.
+  for (const [itemId, required] of Object.entries(sidebarRoles)) {
+    const row = document.querySelector(`[data-sidebar-row][data-item-id="${itemId}"]`)
+    if (!row) continue
+    // Unauthenticated viewers see everything — keeps the dev dashboard
+    // usable. Once authenticated, role membership is authoritative. CSS
+    // `display: none` keeps the DOM intact for SPA nav, so a later role
+    // change can re-show the row without a re-render.
     const allowed = unauth || required.some(r => roleList.includes(r))
-    // Hide the parent <li> when the link is inside one; otherwise the
-    // link itself. Either way the row disappears from the rendered
-    // sidebar; CSS `display: none` keeps the DOM intact for SPA nav so
-    // a later role change can re-show without a re-render.
-    const target = el.closest('li') || el
-    target.style.display = allowed ? '' : 'none'
+    row.style.display = allowed ? '' : 'none'
   }
 }
 
 effect(() => {
-  // `effect` re-runs whenever `auth.roles()` / `auth.unauthenticated()`
-  // change. Includes the first run, which executes after hydration once
-  // the auth fetch resolves.
+  // Re-runs whenever `auth.roles()` / `auth.unauthenticated()` change,
+  // including the first run after the auth fetch resolves.
   applyRoleFilter()
 })
 </script>
 
-<aside data-stx-sidebar class="dashboard-sidebar" role="navigation" aria-label="Sidebar">
-  <!-- Traffic lights are native (titlebarHidden window) — this strip reserves
-      their space at the top of the pane so the first nav row clears them. -->
-  <div class="sidebar-header"></div>
-  {{{ sidebarChunks.top }}}
-  <nav class="sidebar-nav">{{{ sidebarChunks.nav }}}</nav>
-  {{{ sidebarChunks.bottom }}}
-</aside>
+<Sidebar
+  :sections="sidebarSections"
+  theme="macos"
+  width="250"
+  placement="fixed"
+  persist-key="stacks-dashboard-sidebar"
+  shell-selector="[data-stx-content]"
+>
+  <template #header>
+    <!-- Chrome strip. The traffic lights are native (the Craft window is
+        titlebarHidden), so this reserves their space and acts as the window
+        drag region; in a plain browser it is the same empty strip macOS
+        sidebars carry above their first row. -->
+    <SidebarHeader :show-window-controls="false" />
+  </template>
+</Sidebar>
 
 <script>
-// Web sidebar wiring: collapse restore, active highlight, SPA navigation.
+// Sidebar wiring the component intentionally leaves to the host app: SPA
+// navigation, keeping the highlight in sync with the real route, and Craft's
+// native selection events.
+//
 // Runs as a plain <script> IIFE (like the import-map script above), NOT via
 // onMount: stx gives a LAYOUT no reactive scope of its own, so its onMount /
-// effect callbacks never fire ("global mountCallbacks: 0") — the previous
-// onMount version silently never ran, which is why no link was ever highlighted.
-// A DOMContentLoaded IIFE plus the stx:navigate event cover hard loads and every
-// SPA route change without depending on a scope mount.
+// effect callbacks never fire ("global mountCallbacks: 0"). A DOMContentLoaded
+// IIFE plus the stx:navigate event cover hard loads and every SPA route change
+// without depending on a scope mount.
 ;(function () {
   if (typeof document === 'undefined') return
 
-  // Highlight the sidebar link for the CURRENT route. Longest-prefix match, so a
+  function rows(pane) {
+    return pane.querySelectorAll('a[data-sidebar-item][href]')
+  }
+
+  // Highlight the sidebar row for the CURRENT route. Longest-prefix match, so a
   // nested/detail page (e.g. /commerce/products/42) still lights up its section
-  // link (/commerce/products); the root link (/) only ever matches the home page.
+  // row (/commerce/products); the root row (/) only ever matches the home page.
   function syncActive(url) {
     var pane = document.querySelector('[data-stx-sidebar]')
     if (!pane) return
@@ -471,7 +264,7 @@ effect(() => {
     var cur = norm(path)
     var best = null
     var bestLen = -1
-    var links = pane.querySelectorAll('a.sidebar-link[href]')
+    var links = rows(pane)
     for (var i = 0; i < links.length; i++) {
       var href = links[i].getAttribute('href') || ''
       if (href.indexOf('http') === 0) continue
@@ -483,51 +276,61 @@ effect(() => {
         bestLen = h.length
       }
     }
-    var actives = pane.querySelectorAll('a.sidebar-link[data-active]')
-    for (var j = 0; j < actives.length; j++) actives[j].removeAttribute('data-active')
-    if (best) best.setAttribute('data-active', 'true')
+    var actives = pane.querySelectorAll('[data-sidebar-item][data-active="true"]')
+    for (var j = 0; j < actives.length; j++) {
+      actives[j].removeAttribute('data-active')
+      actives[j].removeAttribute('aria-current')
+    }
+    if (best) {
+      best.setAttribute('data-active', 'true')
+      best.setAttribute('aria-current', 'page')
+    }
   }
 
   function init() {
     var pane = document.querySelector('[data-stx-sidebar]')
     if (!pane) return
 
-    // Restore per-section collapsed state persisted by the section toggle
-    // (the inline onclick in renderSection writes localStorage['sidebar-collapsed']).
-    try {
-      var saved = JSON.parse(localStorage.getItem('sidebar-collapsed') || '{}')
-      var sections = pane.querySelectorAll('.sidebar-section')
-      for (var i = 0; i < sections.length; i++) {
-        if (saved[sections[i].getAttribute('data-section')]) sections[i].classList.add('collapsed')
-      }
-    } catch (e) {}
-
     syncActive()
 
     // Bind route + click listeners once. This script can re-run on SPA fragment
     // swaps, so guard against stacking duplicate handlers on the persistent pane.
-    if (!pane.__sidebarWired) {
-      pane.__sidebarWired = true
+    if (pane.__sidebarWired) return
+    pane.__sidebarWired = true
 
-      // Follow EVERY route change, not just sidebar clicks. navigate() dispatches
-      // stx:navigate (content links, programmatic navigate, and popstate
-      // back/forward all route through it), so the highlight tracks the real
-      // route instead of only updating when a sidebar item is clicked.
-      window.addEventListener('stx:navigate', function (event) {
-        syncActive(event && event.detail && event.detail.url)
-      })
+    // Follow EVERY route change, not just sidebar clicks. navigate() dispatches
+    // stx:navigate (content links, programmatic navigate, and popstate
+    // back/forward all route through it), so the highlight tracks the real
+    // route instead of only updating when a sidebar row is clicked.
+    window.addEventListener('stx:navigate', function (event) {
+      syncActive(event && event.detail && event.detail.url)
+    })
 
-      // SPA-navigate sidebar links; fall back to full loads when the router isn't
-      // available or the target is external. The highlight is driven by the
-      // stx:navigate listener above, so we don't toggle data-active here.
-      pane.addEventListener('click', function (event) {
-        var link = event.target.closest('a.sidebar-link')
-        if (!link) return
-        var href = link.getAttribute('href')
-        if (!href || href.indexOf('http') === 0 || typeof navigate !== 'function') return
-        event.preventDefault()
-        navigate(href)
-      })
+    // SPA-navigate sidebar rows; fall back to full loads when the router isn't
+    // available or the target is external. The component already moves
+    // `data-active` on click, and the stx:navigate listener re-syncs after.
+    pane.addEventListener('click', function (event) {
+      var link = event.target.closest('a[data-sidebar-item]')
+      if (!link) return
+      // Disclosure chevrons live inside the row and only expand a subtree.
+      if (event.target.closest('[data-sidebar-disclosure]')) return
+      var href = link.getAttribute('href')
+      if (!href || href.indexOf('http') === 0 || typeof navigate !== 'function') return
+      event.preventDefault()
+      navigate(href)
+    })
+
+    // Craft native sidebar selection. When a Craft build installs a real
+    // NSOutlineView, it reports the selected row's id; resolve that back to a
+    // route from the rendered markup rather than a hand-maintained id-to-URL
+    // table, so the two can never drift apart.
+    window.craft = window.craft || {}
+    window.craft._sidebarSelectHandler = function (event) {
+      var id = event && event.itemId
+      if (!id) return
+      var row = pane.querySelector('[data-sidebar-row][data-item-id="' + id + '"] a[data-sidebar-item][href]')
+      var href = row && row.getAttribute('href')
+      if (href) navigate(href)
     }
   }
 
@@ -536,7 +339,7 @@ effect(() => {
 })();
 </script>
 
-<main data-stx-content style="margin-left: 250px">
+<main data-stx-content>
   @slot('content')
 </main>
 
