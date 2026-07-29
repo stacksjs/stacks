@@ -23,6 +23,8 @@ export default defineModel({
 
     useApi: {
       uri: 'waitlist-products',
+      routes: ['index', 'store', 'show', 'update', 'destroy'],
+      middleware: ['auth'],
     },
 
     observe: true,
