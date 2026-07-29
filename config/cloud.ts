@@ -747,6 +747,7 @@ export const tsCloud: TsCloudConfig = {
         'bun build --production --splitting --conditions=development --target=bun --external=localtunnels --external=localtunnels/cloud --external=@stacksjs/bun-queue --external=meilisearch storage/framework/core/buddy/src/serve-entry.ts --outdir storage/framework/runtime/production --entry-naming serve.js --chunk-naming chunks/[name]-[hash].js',
         'bun --conditions development storage/framework/core/buddy/src/cli.ts migrate',
       ],
+      env: { APP_ENV: 'production', NODE_ENV: 'production' },
     },
 
     // API (bun-router) behind `buddy serve`'s same-origin /api proxy.
@@ -769,7 +770,7 @@ export const tsCloud: TsCloudConfig = {
         'mkdir -p storage/framework/runtime/production',
         'bun build --production --splitting --conditions=development --target=bun --external=localtunnels --external=localtunnels/cloud --external=@stacksjs/bun-queue --external=meilisearch storage/framework/core/actions/src/serve/api.ts --outdir storage/framework/runtime/production --entry-naming api.js --chunk-naming chunks/[name]-[hash].js',
       ],
-      env: { HOST: '127.0.0.1', APP_ENV: 'production' },
+      env: { HOST: '127.0.0.1', APP_ENV: 'production', NODE_ENV: 'production' },
     },
 
     // ---- server-static sites (migrated off AWS S3 + CloudFront) ----
