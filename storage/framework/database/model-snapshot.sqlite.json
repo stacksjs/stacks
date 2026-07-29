@@ -2903,6 +2903,16 @@
             "defaultValue": 0
           },
           {
+            "name": "currency",
+            "type": "string",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": true,
+            "defaultValue": "USD",
+            "maxLength": 3
+          },
+          {
             "name": "start_date",
             "type": "datetime",
             "isPrimaryKey": false,
@@ -7965,7 +7975,7 @@
       }
     ]
   },
-  "hash": "dfe44d214075dd541ddb91444ea620fc298135e5edce60c4bcf38baef7a0b06d",
+  "hash": "dd650a15b951a38d61aba50517f84d2ce9b072c3859a43204f58515215b91c51",
   "dialect": "sqlite",
-  "updatedAt": "2026-07-29T12:43:23.668Z"
+  "updatedAt": "2026-07-29T12:49:52.857Z"
 }

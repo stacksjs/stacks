@@ -18,6 +18,7 @@ export default defineModel({
     useApi: {
       uri: 'campaigns',
       routes: ['index', 'store', 'show', 'update', 'destroy'],
+      middleware: ['auth'],
     },
   },
 
@@ -212,6 +213,16 @@ export default defineModel({
         rule: schema.number().min(0),
       },
       factory: faker => faker.number.float({ min: 0, max: 5000, fractionDigits: 2 }),
+    },
+
+    currency: {
+      required: true,
+      fillable: true,
+      default: 'USD',
+      validation: {
+        rule: schema.string().required().max(3),
+      },
+      factory: faker => faker.helpers.arrayElement(['USD', 'EUR', 'GBP', 'CAD', 'AUD']),
     },
 
     startDate: {
