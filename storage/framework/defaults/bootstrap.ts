@@ -100,6 +100,9 @@ if (feature('dashboard')) {
   // JSON endpoints for the dev dashboard UI. Kept separate from the view
   // routes above so the data layer is one obvious file to grep.
   await route.register(frameworkPath('defaults/routes/dashboard-api.ts'))
+  // The dev dashboard boots through this file rather than the application
+  // router's importRoutes() path, so load model-declared useApi routes here too.
+  await import(frameworkPath('orm/routes.ts'))
 }
 
 // Email webhook + unsubscribe routes (stacksjs/stacks#1881, #1880).

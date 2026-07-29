@@ -8,11 +8,12 @@
 import type { EnhancedRequest } from '@stacksjs/bun-router'
 import { route } from '@stacksjs/router'
 import { env } from '@stacksjs/env'
-import { projectPath } from '@stacksjs/path'
+import { projectPath, storagePath } from '@stacksjs/path'
 import { createQueryBuilder, defaultConfig, setConfig } from '@stacksjs/query-builder'
 import { HttpError } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/logging'
 import { applyCasts, applySorting, buildIndexMeta, buildIndexPaginator, buildReadColumnMap, dropHiddenInputs, filterFillable, mapWriteError, resolveApiMiddleware, resolveIndexPageArgs, stripHidden, toSnakeCase, toSnakeCaseKeys } from './src/auto-crud'
+import { loadModelRegistry } from './src/model-registry'
 
 // Initialize the query builder config from the project's optional
 // `config/qb.ts` override (stacksjs/stacks#1930).
@@ -58,36 +59,13 @@ catch {
   } as Parameters<typeof setConfig>[0])
 }
 
-// Load all models from app/Models/ (individually, so one broken model doesn't block the rest)
-const modelsDir = projectPath('app/Models')
-const models: Record<string, any> = {}
-
-try {
-  const { readdirSync, statSync } = await import('node:fs')
-  const { extname, basename } = await import('node:path')
-
-  const entries = readdirSync(modelsDir)
-  for (const entry of entries) {
-    const full = `${modelsDir}/${entry}`
-    const st = statSync(full)
-    if (st.isDirectory()) continue
-    const ext = extname(full)
-    if (!['.ts', '.js'].includes(ext)) continue
-
-    try {
-      const mod = await import(`${full}?t=${Date.now()}`)
-      const def = mod.default ?? mod
-      const name = def.name ?? basename(entry, ext)
-      models[name] = { ...def, name }
-    }
-    catch {
-      // Skip models that fail to import (e.g., missing dependencies)
-    }
-  }
-}
-catch {
-  // Models directory may not exist yet
-}
+// Framework defaults receive the same auto-route behavior as userland models.
+// Load defaults first, recursively, then let app/Models override by model name.
+const models = await loadModelRegistry({
+  defaultsRoot: storagePath('framework/defaults/app/Models'),
+  userRoot: projectPath('app/Models'),
+  onImportError: (file, error) => log.warn(`[orm] Could not load model ${file}: ${(error as Error).message}`),
+})
 
 // Create a query builder instance (uses the config set above)
 const db = createQueryBuilder()
