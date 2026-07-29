@@ -89,9 +89,23 @@
                 </span>
                 <i :show="!selectedEmail()?.starred" class="text-gray-500 text-lg dark:text-neutral-400 i-hugeicons-star"></i>
               </button>
-              <button class="p-1 text-gray-500 dark:text-neutral-400 hover:bg-gray-100 dark:hover:bg-neutral-600 rounded"><i class="text-lg i-hugeicons-inbox"></i></button>
-              <button class="p-1 text-gray-500 dark:text-neutral-400 hover:bg-gray-100 dark:hover:bg-neutral-600 rounded"><i class="text-lg i-hugeicons-waste"></i></button>
+              <button
+                @click="toggleSelectedRead()"
+                :title="selectedEmail()?.read ? 'Mark as unread' : 'Mark as read'"
+                class="p-1 text-gray-500 dark:text-neutral-400 hover:bg-gray-100 dark:hover:bg-neutral-600 rounded"
+              >
+                <i :class="'text-lg ' + (selectedEmail()?.read ? 'i-hugeicons-mail-02' : 'i-hugeicons-mail-open-01')"></i>
+              </button>
+              <button @click="requestSelectedDelete()" class="p-1 text-gray-500 dark:text-neutral-400 hover:bg-gray-100 dark:hover:bg-neutral-600 rounded" title="Delete email"><i class="text-lg i-hugeicons-waste"></i></button>
             </div>
+          </div>
+
+          <div :show="pendingDeleteId() !== null" class="flex gap-3 items-center justify-end px-4 py-2 text-sm bg-red-50 dark:bg-red-950/30 border-b border-red-200 dark:border-red-900">
+            <span class="mr-auto text-red-800 dark:text-red-200">Permanently delete this email?</span>
+            <button @click="cancelDelete()" type="button" class="px-3 py-1.5 text-gray-700 dark:text-neutral-200 hover:bg-white dark:hover:bg-neutral-700 rounded-md">Cancel</button>
+            <button @click="confirmDelete()" :disabled="isDeleting" type="button" class="px-3 py-1.5 font-medium text-white bg-red-600 hover:bg-red-500 rounded-md disabled:opacity-50">
+              {{ isDeleting() ? 'Deleting...' : 'Delete' }}
+            </button>
           </div>
 
           <div class="px-4 py-3 border-b border-gray-200 dark:border-neutral-600">
@@ -135,7 +149,9 @@
                   <span class="ml-2">Mute this thread</span>
                 </label>
               </div>
-              <button @click="sendReply()" class="px-4 py-2 font-medium text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md">Send</button>
+              <button @click="sendReply()" :disabled="!canSendReply" class="px-4 py-2 font-medium text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md disabled:opacity-50 disabled:cursor-not-allowed">
+                {{ isReplying() ? 'Sending...' : 'Send' }}
+              </button>
             </div>
           </div>
         </div>
@@ -184,7 +200,9 @@
               <button class="p-2 text-gray-500 dark:text-neutral-400 hover:bg-gray-100 dark:hover:bg-neutral-600 rounded"><i class="text-lg i-hugeicons-smile"></i></button>
             </div>
             <div>
-              <button @click="sendEmail()" class="px-4 py-2 font-medium text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md">Send</button>
+              <button @click="sendEmail()" :disabled="!canSendEmail" class="px-4 py-2 font-medium text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md disabled:opacity-50 disabled:cursor-not-allowed">
+                {{ isSending() ? 'Sending...' : 'Send' }}
+              </button>
             </div>
           </div>
         </div>
@@ -194,6 +212,8 @@
 </div>
 
 <script client>
+import { deleteInboxEmail, sendInboxEmail, setInboxEmailReadState } from '../../../functions/inbox'
+
 // Mail folder list — moved out of the former `<script server>` block
 // (stacksjs/stacks#1838). `EmailSidebar` resolves through stx's
 // component auto-discovery (it lives at
@@ -231,6 +251,10 @@ const isComposing = state(false)
 const isLoading = state(false)
 const loadError = state<string | null>(null)
 const mailbox = state('')
+const isSending = state(false)
+const isReplying = state(false)
+const isDeleting = state(false)
+const pendingDeleteId = state<string | null>(null)
 const replyText = state('')
 const newEmailTo = state('')
 const newEmailSubject = state('')
@@ -241,6 +265,17 @@ const selectedEmailDate = derived(() => {
   const email = selectedEmail()
   return email?.date ? new Date(email.date).toLocaleString() : ''
 })
+const canSendEmail = derived(() =>
+  !isSending()
+  && newEmailTo().trim().length > 0
+  && newEmailSubject().trim().length > 0
+  && newEmailBody().trim().length > 0,
+)
+const canSendReply = derived(() =>
+  !isReplying()
+  && replyText().trim().length > 0
+  && Boolean(selectedEmail()?.email),
+)
 
 const filteredEmails = derived(() => {
   let filtered = emails().filter((email) => {
@@ -334,18 +369,9 @@ async function loadEmailBody(id: string) {
 }
 
 async function markAsRead(id: string) {
-  try {
-    const res = await fetch('/api/dashboard/email/read', {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ messageId: id }),
-    })
-    if (!res.ok) throw new Error(`HTTP ${res.status}`)
+  const success = await setInboxEmailReadState(id, true, mailbox())
+  if (success)
     emails.set(emails().map(e => e.id === id ? { ...e, read: true } : e))
-  }
-  catch (e) {
-    console.error('Failed to mark email as read:', e)
-  }
 }
 
 function formatDate(dateString: string) {
@@ -391,15 +417,19 @@ function closeEmail() {
   selectedEmailId.set(null)
 }
 
-function toggleRead(id: string) {
+async function toggleRead(id: string) {
   const email = emails().find(e => e.id === id)
   if (!email) return
-  if (email.read) {
-    emails.set(emails().map(e => e.id === id ? { ...e, read: false } : e))
-  }
-  else {
-    void markAsRead(id)
-  }
+  const read = !email.read
+  const success = await setInboxEmailReadState(id, read, mailbox())
+  if (success)
+    emails.set(emails().map(e => e.id === id ? { ...e, read } : e))
+}
+
+function toggleSelectedRead() {
+  const id = selectedEmailId()
+  if (id)
+    void toggleRead(id)
 }
 
 function toggleStar(id: string) {
@@ -427,28 +457,83 @@ function cancelCompose() {
   isComposing.set(false)
 }
 
-function sendEmail() {
-  emails.set([
-    ...emails(),
-    {
-      id: `sent-${Date.now()}`,
-      from: 'Me',
-      email: 'me@stacksjs.com',
+async function sendEmail() {
+  if (isSending())
+    return
+
+  isSending.set(true)
+  try {
+    const success = await sendInboxEmail({
+      to: newEmailTo(),
       subject: newEmailSubject(),
-      preview: newEmailBody().substring(0, 100),
       body: newEmailBody(),
-      date: new Date().toISOString(),
-      read: true,
-      starred: false,
-      folder: 'sent',
-      attachment: false,
-    },
-  ])
-  isComposing.set(false)
+    })
+    if (!success)
+      return
+
+    isComposing.set(false)
+    navigate('/inbox/activity')
+  }
+  finally {
+    isSending.set(false)
+  }
 }
 
-function sendReply() {
-  replyText.set('')
+function requestDelete(id: string | null) {
+  if (id)
+    pendingDeleteId.set(id)
+}
+
+function requestSelectedDelete() {
+  requestDelete(selectedEmailId())
+}
+
+function cancelDelete() {
+  pendingDeleteId.set(null)
+}
+
+async function confirmDelete() {
+  const id = pendingDeleteId()
+  if (!id || isDeleting())
+    return
+
+  isDeleting.set(true)
+  try {
+    const success = await deleteInboxEmail(id, mailbox())
+    if (!success)
+      return
+
+    emails.set(emails().filter(email => email.id !== id))
+    selectedEmailId.set(null)
+    pendingDeleteId.set(null)
+  }
+  finally {
+    isDeleting.set(false)
+  }
+}
+
+async function sendReply() {
+  const email = selectedEmail()
+  const body = replyText().trim()
+  if (!email?.email || !body || isReplying())
+    return
+
+  isReplying.set(true)
+  try {
+    const subject = email.subject.toLowerCase().startsWith('re:')
+      ? email.subject
+      : `Re: ${email.subject}`
+    const success = await sendInboxEmail({
+      to: email.email,
+      subject,
+      body,
+    })
+    if (success)
+      replyText.set('')
+  }
+  finally {
+    isReplying.set(false)
+  }
 }
 
 onMount(async () => {

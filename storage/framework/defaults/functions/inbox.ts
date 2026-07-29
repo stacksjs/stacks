@@ -55,6 +55,18 @@ export interface InboxActivity {
   }>
 }
 
+export interface InboxSendInput {
+  to: string
+  subject: string
+  body: string
+}
+
+interface InboxMutationResult {
+  success: boolean
+  mailbox?: string
+  messageId?: string
+}
+
 export async function fetchInboxActivity(range: InboxActivityRange): Promise<InboxActivity | null> {
   try {
     return await dashboardApi<InboxActivity>(`/api/dashboard/email/activity?range=${range}`)
@@ -62,6 +74,50 @@ export async function fetchInboxActivity(range: InboxActivityRange): Promise<Inb
   catch (error) {
     pushToast('error', 'Could not load mail activity', { detail: String(error) })
     return null
+  }
+}
+
+export async function sendInboxEmail(input: InboxSendInput): Promise<boolean> {
+  try {
+    await dashboardApi<InboxMutationResult>('/api/dashboard/email/send', {
+      method: 'POST',
+      body: input,
+    })
+    pushToast('success', 'Email sent', { detail: `Delivered to ${input.to}` })
+    return true
+  }
+  catch (error) {
+    pushToast('error', 'Could not send email', { detail: String(error) })
+    return false
+  }
+}
+
+export async function setInboxEmailReadState(messageId: string, read: boolean, mailbox?: string): Promise<boolean> {
+  try {
+    await dashboardApi<InboxMutationResult>(`/api/dashboard/email/${read ? 'read' : 'unread'}`, {
+      method: 'POST',
+      body: { messageId, ...(mailbox ? { mailbox } : {}) },
+    })
+    return true
+  }
+  catch (error) {
+    pushToast('error', `Could not mark email as ${read ? 'read' : 'unread'}`, { detail: String(error) })
+    return false
+  }
+}
+
+export async function deleteInboxEmail(messageId: string, mailbox?: string): Promise<boolean> {
+  try {
+    const query = mailbox ? `?mailbox=${encodeURIComponent(mailbox)}` : ''
+    await dashboardApi<InboxMutationResult>(`/api/dashboard/email/inbox/${encodeURIComponent(messageId)}${query}`, {
+      method: 'DELETE',
+    })
+    pushToast('success', 'Email deleted')
+    return true
+  }
+  catch (error) {
+    pushToast('error', 'Could not delete email', { detail: String(error) })
+    return false
   }
 }
 
