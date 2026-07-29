@@ -1,0 +1,28 @@
+CREATE TABLE IF NOT EXISTS "campaigns" (
+  "id" INTEGER PRIMARY KEY AUTOINCREMENT,
+  "name" TEXT not null,
+  "description" TEXT,
+  "type" TEXT CHECK ("type" IN ('email', 'sms', 'push', 'social', 'multi-channel')) not null,
+  "status" TEXT CHECK ("status" IN ('draft', 'scheduled', 'sending', 'sent', 'paused', 'cancelled', 'failed', 'active', 'completed', 'archived')) not null default 'draft',
+  "subject" TEXT,
+  "template" TEXT,
+  "text" TEXT,
+  "from_name" TEXT,
+  "from_address" TEXT,
+  "email_list_id" INTEGER REFERENCES "email_lists"("id"),
+  "scheduled_at" TEXT,
+  "sent_at" TEXT,
+  "audience_size" INTEGER default 0,
+  "sent_count" INTEGER default 0,
+  "open_rate" INTEGER,
+  "click_rate" INTEGER,
+  "conversion_rate" INTEGER,
+  "budget" INTEGER,
+  "spent" INTEGER default 0,
+  "start_date" TEXT,
+  "end_date" TEXT,
+  "created_at" TEXT not null default CURRENT_TIMESTAMP,
+  "updated_at" TEXT,
+  "uuid" TEXT
+);
+CREATE UNIQUE INDEX IF NOT EXISTS "campaigns_campaigns_uuid_unique" ON "campaigns" ("uuid");
