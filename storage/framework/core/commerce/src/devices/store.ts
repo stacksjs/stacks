@@ -11,24 +11,20 @@ import { db } from '@stacksjs/database'
  */
 export async function store(data: NewPrintDevice): Promise<PrintDeviceJsonResponse | undefined> {
   try {
-    // Prepare print device data
+    const uuid = randomUUIDv7()
     const deviceData = {
       ...data,
-      uuid: randomUUIDv7(),
+      uuid,
     }
 
-    // Insert the print device
-    const result = await db
+    await db
       .insertInto('print_devices')
       .values(deviceData as NewPrintDevice)
       .executeTakeFirst()
 
-    const deviceId = Number(result.insertId) || Number(result.numInsertedOrUpdatedRows)
-
-    // Retrieve the newly created print device
     const printDevice = await db
       .selectFrom('print_devices')
-      .where('id', '=', deviceId)
+      .where('uuid', '=', uuid)
       .selectAll()
       .executeTakeFirst()
 

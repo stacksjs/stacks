@@ -1,8 +1,17 @@
 import { beforeEach, describe, expect, it } from 'bun:test'
 import { refreshDatabase } from './setup'
-import { bulkDestroy } from '../devices/destroy'
+import { bulkDestroy, destroy } from '../devices/destroy'
 import { exportPrintDevices } from '../devices/export'
+import {
+  calculateErrorRate,
+  countAll,
+  countTotalPrints,
+  fetchErrorsByDeviceId,
+  getPrinterStatusCounts,
+} from '../devices/fetch'
 import { bulkStore, store } from '../devices/store'
+import { updatePrintCount, updateStatus } from '../devices/update'
+import { bulkStore as bulkStoreReceipts } from '../receipts/store'
 
 beforeEach(async () => {
   await refreshDatabase()
@@ -48,11 +57,48 @@ describe('Print Device Module', () => {
       const { fetchAll } = await import('../devices/fetch')
       const allDevices = await fetchAll()
       expect(allDevices.length).toBeGreaterThanOrEqual(3)
+
+      const stored = await store({
+        name: 'Printer 4',
+        mac_address: '22:33:44:55:66:77',
+        location: 'Office 104',
+        terminal: 'TERM004',
+        status: 'offline',
+        last_ping: Date.now(),
+        print_count: 40,
+      })
+      expect(stored?.name).toBe('Printer 4')
+
+      const warned = await updateStatus(Number(stored?.id), 'warning')
+      expect(warned?.status).toBe('warning')
+      const counted = await updatePrintCount(Number(stored?.id), 45)
+      expect(Number((counted as any)?.print_count)).toBe(45)
+      expect(await destroy(Number(stored?.id))).toBe(true)
     })
 
     it('should return 0 when trying to bulk store an empty array', async () => {
       const count = await bulkStore([])
       expect(count).toBe(0)
+    })
+  })
+
+  describe('metrics', () => {
+    it('calculates device and failed print totals from all persisted rows', async () => {
+      await bulkStore([
+        { name: 'A', mac_address: '00:00:00:00:00:01', location: 'Front', terminal: 'A', status: 'online', last_ping: Date.now(), print_count: 10 },
+        { name: 'B', mac_address: '00:00:00:00:00:02', location: 'Back', terminal: 'B', status: 'offline', last_ping: Date.now(), print_count: 20 },
+      ])
+      await bulkStoreReceipts([
+        { printer: 'A', document: 'One', timestamp: Date.now(), status: 'success', size: 1, pages: 1, duration: 1, print_device_id: 1 },
+        { printer: 'A', document: 'Two', timestamp: Date.now(), status: 'failed', size: 1, pages: 1, duration: 1, print_device_id: 1 },
+        { printer: 'B', document: 'Three', timestamp: Date.now(), status: 'warning', size: 1, pages: 1, duration: 1, print_device_id: 2 },
+      ])
+
+      expect(await countAll()).toBe(2)
+      expect(await countTotalPrints()).toBe(30)
+      expect(await calculateErrorRate()).toBeCloseTo(33.33, 1)
+      expect(await fetchErrorsByDeviceId(1)).toHaveLength(1)
+      expect(await getPrinterStatusCounts()).toEqual({ online: 1, offline: 1 })
     })
   })
 

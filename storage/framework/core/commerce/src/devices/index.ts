@@ -13,8 +13,15 @@ export {
 
 // Functions from fetch.ts
 export {
+  calculateErrorRate,
+  calculatePrinterHealth,
+  countAll,
+  countPrintsByDeviceId,
+  countTotalPrints,
   fetchAll,
   fetchById,
+  fetchErrorsByDeviceId,
+  getPrinterStatusCounts,
 } from './fetch'
 
 // Functions from store.ts

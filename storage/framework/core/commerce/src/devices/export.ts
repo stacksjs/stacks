@@ -17,6 +17,16 @@ export interface ExportedPrintDevice {
   'Print Count': number
 }
 
+function value(device: any, camel: string, snake: string = camel): unknown {
+  return device?.[camel] ?? device?.[snake]
+}
+
+function timestamp(value: unknown): Date {
+  const raw = String(value || '')
+  const milliseconds = /^\d+$/.test(raw) ? Number(raw) : value
+  return new Date(milliseconds as string | number)
+}
+
 /**
  * Export print devices to a spreadsheet
  * @param format The format of the spreadsheet (default is CSV)
@@ -56,12 +66,12 @@ function prepareDevicesForExport(devices: PrintDeviceJsonResponse[]) {
     return [
       device.id,
       device.name,
-      device.macAddress,
+      value(device, 'macAddress', 'mac_address'),
       device.location,
       device.terminal,
       device.status,
-      new Date(device.lastPing).toLocaleString(),
-      device.printCount,
+      timestamp(value(device, 'lastPing', 'last_ping')).toLocaleString(),
+      value(device, 'printCount', 'print_count'),
     ]
   })
 
