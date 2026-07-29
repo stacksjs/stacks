@@ -257,6 +257,13 @@
       "category": "system"
     },
     {
+      "id": "notification-delivery",
+      "name": "NotificationDelivery",
+      "icon": "tablecells.fill",
+      "hasDedicatedPage": false,
+      "category": "data"
+    },
+    {
       "id": "order",
       "name": "Order",
       "icon": "list.clipboard.fill",
