@@ -1,0 +1,70 @@
+<script client>
+interface PosCartLine {
+  productId: string
+  name: string
+  unitPrice: number
+  quantity: number
+  inventoryCount: number
+  specialInstructions: string
+}
+
+const lines = useReactiveProp('lines', [] as PosCartLine[])
+const currency = useReactiveProp('currency', 'USD')
+const subtotal = useReactiveProp('subtotal', 0)
+const taxRate = useReactiveProp('taxRate', 0)
+const taxAmount = useReactiveProp('taxAmount', 0)
+const totalAmount = useReactiveProp('totalAmount', 0)
+const emit = defineEmits()
+
+function formatMoney(value: number): string {
+  try {
+    return new Intl.NumberFormat(undefined, { style: 'currency', currency: currency() }).format(value)
+  }
+  catch {
+    return `${value.toFixed(2)} ${currency()}`
+  }
+}
+</script>
+
+<aside class="overflow-hidden lg:sticky lg:top-6 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
+  <header class="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-neutral-700">
+    <div>
+      <h2 class="font-semibold text-gray-900 dark:text-white">Current sale</h2>
+      <p class="mt-0.5 text-gray-500 text-xs dark:text-neutral-400">{{ lines().length }} distinct {{ lines().length === 1 ? 'product' : 'products' }}</p>
+    </div>
+    <button :if="lines().length > 0" type="button" class="font-medium text-red-600 text-xs dark:text-red-400" @click="emit('clear')">Clear</button>
+  </header>
+
+  <div :if="lines().length === 0" class="px-5 py-14 text-center">
+    <div class="mb-3 mx-auto h-8 w-8 text-gray-400 i-hugeicons-shopping-cart-02"></div>
+    <p class="font-medium text-gray-900 text-sm dark:text-white">The cart is empty</p>
+    <p class="mt-1 text-gray-500 text-xs dark:text-neutral-400">Add a sellable Product record from the catalog.</p>
+  </div>
+
+  <ul :if="lines().length > 0" class="overflow-y-auto max-h-[52dvh] divide-gray-100 divide-y dark:divide-neutral-700">
+    <template :for="line in lines()" :key="line.productId">
+      <li class="p-4">
+        <div class="flex gap-3 items-start justify-between">
+          <div class="min-w-0"><p class="font-medium text-gray-900 text-sm truncate dark:text-white">{{ line.name }}</p><p class="mt-1 text-gray-500 text-xs dark:text-neutral-400">{{ formatMoney(line.unitPrice) }} each · {{ formatMoney(line.unitPrice * line.quantity) }}</p></div>
+          <button type="button" :aria-label="'Remove ' + line.name" class="p-1 text-gray-400 hover:text-red-600 dark:hover:text-red-400 rounded" @click="emit('remove', line.productId)"><span class="block h-4 w-4 i-hugeicons-delete-02"></span></button>
+        </div>
+        <div class="flex gap-2 items-center mt-3">
+          <button type="button" :aria-label="'Decrease ' + line.name + ' quantity'" class="p-1.5 text-gray-600 dark:text-neutral-300 bg-gray-100 dark:bg-neutral-700 rounded-md" @click="emit('decrease', line.productId)"><span class="block h-3.5 w-3.5 i-hugeicons-minus-sign"></span></button>
+          <span class="min-w-8 font-semibold text-center text-gray-800 text-sm dark:text-neutral-100">{{ line.quantity }}</span>
+          <button type="button" :disabled="line.quantity >= line.inventoryCount" :aria-label="'Increase ' + line.name + ' quantity'" class="p-1.5 text-gray-600 dark:text-neutral-300 bg-gray-100 dark:bg-neutral-700 rounded-md disabled:opacity-35" @click="emit('increase', line.productId)"><span class="block h-3.5 w-3.5 i-hugeicons-plus-sign"></span></button>
+          <span class="ml-auto text-gray-400 text-xs dark:text-neutral-500">{{ line.inventoryCount }} available</span>
+        </div>
+        <label class="block mt-3"><span class="sr-only">Instructions for {{ line.name }}</span><input :value="line.specialInstructions" type="text" maxlength="500" placeholder="Optional line instructions" class="px-3 py-1.5 w-full text-gray-900 text-xs dark:text-white bg-gray-50 dark:bg-neutral-900 border border-gray-200 rounded-md dark:border-neutral-700" @input="emit('instructions', { productId: line.productId, event: $event })" /></label>
+      </li>
+    </template>
+  </ul>
+
+  <footer class="p-4 bg-gray-50 dark:bg-neutral-900/50 border-gray-200 border-t dark:border-neutral-700">
+    <dl class="space-y-2">
+      <div class="flex items-center justify-between text-gray-500 text-sm dark:text-neutral-400"><dt>Subtotal</dt><dd>{{ formatMoney(subtotal()) }}</dd></div>
+      <div class="flex items-center justify-between text-gray-500 text-sm dark:text-neutral-400"><dt>Tax ({{ taxRate() }}%)</dt><dd>{{ formatMoney(taxAmount()) }}</dd></div>
+      <div class="flex items-center justify-between pt-2 font-semibold text-gray-900 dark:text-white border-gray-200 border-t dark:border-neutral-700"><dt>Amount due</dt><dd>{{ formatMoney(totalAmount()) }}</dd></div>
+    </dl>
+    <button type="button" :disabled="lines().length === 0" class="inline-flex items-center justify-center mt-4 px-4 py-3 w-full font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md disabled:opacity-40" @click="emit('checkout')"><span class="mr-2 h-4 w-4 i-hugeicons-cash-02"></span>Review cash sale</button>
+  </footer>
+</aside>

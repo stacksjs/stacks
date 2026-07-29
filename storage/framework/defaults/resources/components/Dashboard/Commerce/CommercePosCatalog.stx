@@ -1,0 +1,85 @@
+<script client>
+import type { CommercePosProduct } from '../../../../app/Actions/Dashboard/Commerce/commerce-pos'
+import type { ProductOption } from '../../../../app/Actions/Dashboard/Commerce/commerce-product-records'
+
+const products = useReactiveProp('products', [] as CommercePosProduct[])
+const categories = useReactiveProp('categories', [] as ProductOption[])
+const search = useReactiveProp('search', '')
+const category = useReactiveProp('category', 'all')
+const availability = useReactiveProp('availability', 'sellable')
+const currency = useReactiveProp('currency', 'USD')
+const loading = useReactiveProp('loading', false)
+const emit = defineEmits()
+
+function initials(name: string): string {
+  return name.split(/\s+/).filter(Boolean).slice(0, 2).map(part => part[0]?.toUpperCase() || '').join('') || 'PR'
+}
+
+function formatMoney(value: number): string {
+  try {
+    return new Intl.NumberFormat(undefined, { style: 'currency', currency: currency() }).format(value)
+  }
+  catch {
+    return `${value.toFixed(2)} ${currency()}`
+  }
+}
+
+function sellable(product: CommercePosProduct): boolean {
+  return product.isAvailable && product.inventoryCount > 0
+}
+</script>
+
+<section class="min-w-0">
+  <div class="grid gap-3 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
+    <label class="relative sm:col-span-2">
+      <span class="sr-only">Search point of sale products</span>
+      <span class="flex absolute inset-y-0 left-0 items-center pl-3 text-gray-400 pointer-events-none"><span class="h-4 w-4 i-hugeicons-search-01"></span></span>
+      <input :value="search()" type="search" placeholder="Search products, categories, or allergens" class="pl-9 pr-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" @input="emit('search', $event)" />
+    </label>
+    <label>
+      <span class="sr-only">Product category</span>
+      <select :value="category()" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" @change="emit('category', $event)">
+        <option value="all">Any category</option>
+        <template :for="option in categories()" :key="option.id"><option :value="option.id">{{ option.label }}</option></template>
+      </select>
+    </label>
+    <label>
+      <span class="sr-only">Product availability</span>
+      <select :value="availability()" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" @change="emit('availability', $event)">
+        <option value="sellable">Sellable products</option>
+        <option value="all">All products</option>
+        <option value="unavailable">Unavailable or sold out</option>
+      </select>
+    </label>
+  </div>
+
+  <div :if="loading()" class="flex items-center justify-center mt-4 py-24 text-gray-500 text-sm dark:text-neutral-400 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700"><span class="mr-2 h-4 w-4 animate-spin i-hugeicons-loading-03"></span>Loading persisted products</div>
+  <div :if="!loading() && products().length === 0" class="mt-4 py-24 text-center bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
+    <div class="mb-3 mx-auto h-8 w-8 text-gray-400 i-hugeicons-package-out-of-stock"></div>
+    <p class="font-medium text-gray-900 text-sm dark:text-white">No products match this catalog view</p>
+    <p class="mt-1 text-gray-500 text-xs dark:text-neutral-400">Adjust the filters or manage native Product records.</p>
+  </div>
+
+  <div :if="!loading() && products().length > 0" class="grid gap-3 grid-cols-1 sm:grid-cols-2 2xl:grid-cols-3 mt-4">
+    <template :for="product in products()" :key="product.id">
+      <article :class="'flex flex-col p-4 bg-white dark:bg-neutral-800 border rounded-lg ' + (sellable(product) ? 'border-gray-200 dark:border-neutral-700' : 'border-gray-200 dark:border-neutral-700 opacity-65')">
+        <div class="flex gap-3 items-start">
+          <div class="flex flex-none items-center justify-center h-10 w-10 font-semibold text-blue-700 text-xs dark:text-blue-300 bg-blue-50 dark:bg-blue-950/40 rounded-md">{{ initials(product.name) }}</div>
+          <div class="min-w-0">
+            <h2 class="font-semibold text-gray-900 text-sm truncate dark:text-white">{{ product.name || 'Unnamed product' }}</h2>
+            <p class="mt-1 text-gray-500 text-xs dark:text-neutral-400">{{ product.categoryName }}</p>
+          </div>
+        </div>
+        <p class="mt-3 min-h-10 line-clamp-2 text-gray-500 text-xs dark:text-neutral-400">{{ product.description || 'No description recorded.' }}</p>
+        <div :if="product.allergens.length > 0" class="flex flex-wrap gap-1 mt-3"><template :for="allergen in product.allergens" :key="allergen"><span class="px-2 py-0.5 text-amber-700 text-xs dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40 rounded-full">{{ allergen }}</span></template></div>
+        <div class="flex items-end justify-between mt-auto pt-4">
+          <div>
+            <p class="font-semibold text-gray-900 dark:text-white">{{ formatMoney(product.price) }}</p>
+            <p :class="'mt-1 text-xs ' + (product.inventoryCount > 0 ? 'text-gray-400 dark:text-neutral-500' : 'text-red-600 dark:text-red-400')">{{ product.inventoryCount.toLocaleString() }} in stock<span :if="product.preparationTime > 0"> · {{ product.preparationTime }} min</span></p>
+          </div>
+          <button type="button" :disabled="!sellable(product)" :aria-label="'Add ' + product.name + ' to cart'" class="inline-flex flex-none items-center px-3 py-2 font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md disabled:opacity-40" @click="emit('add', product)"><span class="mr-1.5 h-4 w-4 i-hugeicons-add-01"></span>Add</button>
+        </div>
+      </article>
+    </template>
+  </div>
+</section>

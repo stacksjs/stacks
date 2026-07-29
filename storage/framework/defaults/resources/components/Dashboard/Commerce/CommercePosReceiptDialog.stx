@@ -1,0 +1,68 @@
+<script client>
+interface PosReceiptLine {
+  productId: number
+  name: string
+  quantity: number
+  unitPrice: number
+  lineTotal: number
+  specialInstructions: string
+}
+
+interface PosReceipt {
+  orderId: number
+  referenceNumber: string
+  lines: PosReceiptLine[]
+  subtotal: number
+  taxRate: number
+  taxAmount: number
+  totalAmount: number
+  currency: string
+  createdAt: string
+}
+
+const open = useReactiveProp('open', false)
+const receipt = useReactiveProp('receipt', null as PosReceipt | null)
+const emit = defineEmits()
+
+function formatMoney(value: number): string {
+  const current = receipt()
+  const currency = current?.currency || 'USD'
+  try {
+    return new Intl.NumberFormat(undefined, { style: 'currency', currency }).format(value)
+  }
+  catch {
+    return `${value.toFixed(2)} ${currency}`
+  }
+}
+
+function formatDate(value: string): string {
+  if (!value)
+    return 'Recorded just now'
+  const normalized = /^\d{4}-\d{2}-\d{2} \d/.test(value) ? `${value.replace(' ', 'T')}Z` : value
+  const date = new Date(normalized)
+  return Number.isNaN(date.getTime()) ? value : new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(date)
+}
+</script>
+
+<div :if="open() && receipt()" class="flex fixed inset-0 z-50 items-center justify-center p-4">
+  <button type="button" aria-label="Close receipt dialog" class="absolute inset-0 bg-black/45" @click="emit('close')"></button>
+  <section role="dialog" aria-modal="true" aria-labelledby="pos-receipt-title" class="overflow-y-auto relative max-h-[92dvh] max-w-md w-full bg-white dark:bg-neutral-800 border border-gray-200 rounded-xl dark:border-neutral-700 shadow-xl">
+    <div class="p-6">
+      <div class="flex items-center justify-center h-11 w-11 text-green-700 dark:text-green-300 bg-green-50 dark:bg-green-950/40 rounded-full"><span class="h-6 w-6 i-hugeicons-checkmark-circle-02"></span></div>
+      <h2 id="pos-receipt-title" class="mt-4 font-semibold text-gray-900 text-lg dark:text-white">Sale recorded</h2>
+      <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Order {{ receipt()?.orderId }} · {{ formatDate(receipt()?.createdAt || '') }}</p>
+      <p :if="receipt()?.referenceNumber" class="mt-1 font-mono text-gray-400 text-xs dark:text-neutral-500">{{ receipt()?.referenceNumber }}</p>
+
+      <ul class="mt-5 divide-gray-100 divide-y dark:divide-neutral-700">
+        <template :for="line in (receipt()?.lines || [])" :key="line.productId"><li class="py-3"><div class="flex gap-3 items-start justify-between"><div><p class="font-medium text-gray-900 text-sm dark:text-white">{{ line.quantity }} × {{ line.name }}</p><p :if="line.specialInstructions" class="mt-1 text-gray-500 text-xs dark:text-neutral-400">{{ line.specialInstructions }}</p></div><p class="font-medium text-gray-700 text-sm whitespace-nowrap dark:text-neutral-200">{{ formatMoney(line.lineTotal) }}</p></div></li></template>
+      </ul>
+
+      <dl class="mt-4 p-4 space-y-2 bg-gray-50 dark:bg-neutral-900/60 rounded-lg">
+        <div class="flex items-center justify-between text-gray-500 text-sm dark:text-neutral-400"><dt>Subtotal</dt><dd>{{ formatMoney(receipt()?.subtotal || 0) }}</dd></div>
+        <div class="flex items-center justify-between text-gray-500 text-sm dark:text-neutral-400"><dt>Tax<span :if="receipt()?.taxRate"> ({{ receipt()?.taxRate }}%)</span></dt><dd>{{ formatMoney(receipt()?.taxAmount || 0) }}</dd></div>
+        <div class="flex items-center justify-between pt-2 font-semibold text-gray-900 dark:text-white border-gray-200 border-t dark:border-neutral-700"><dt>Cash paid</dt><dd>{{ formatMoney(receipt()?.totalAmount || 0) }}</dd></div>
+      </dl>
+    </div>
+    <footer class="flex gap-2 justify-end px-6 py-4 bg-gray-50 dark:bg-neutral-900/50 border-gray-200 border-t dark:border-neutral-700"><button type="button" class="px-3 py-2 font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md" @click="emit('close')">Start next sale</button></footer>
+  </section>
+</div>
