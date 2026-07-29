@@ -50,6 +50,10 @@ export default defineModel({
       uri: 'users', // your-url.com/api/users
 
       routes: ['index', 'store', 'show'],
+      // Registration is handled by the dedicated, rate-limited
+      // `/register` action. The generated User CRUD surface exposes PII
+      // and must only be available to authenticated operators.
+      middleware: ['auth'],
     },
   },
 

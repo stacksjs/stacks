@@ -16,6 +16,7 @@ export default defineModel({
     useApi: {
       uri: 'activities',
       routes: ['index', 'show'],
+      middleware: ['auth'],
     },
   },
 
