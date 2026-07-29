@@ -20,7 +20,7 @@
         </div>
       </div>
 
-      <ShippingZonesTable :zones="paginatedShippingZones" @edit="openEditModal" @delete="handleDeleteZone" />
+      <ShippingZonesTable :zones="paginatedShippingZones" @edit="openEditModal($event.detail)" @delete="handleDeleteZone($event.detail)" />
 
       <div class="px-4 py-3 bg-gray-50 dark:bg-neutral-900 border-gray-200 border-t dark:border-neutral-700">
         <DeliveryPagination :currentPage="currentPage" :totalItems="totalItems" :itemsPerPage="itemsPerPage" @prev="handlePrevPage" @next="handleNextPage" @page="handlePageChange($event.detail)" />
@@ -41,33 +41,43 @@
                 <div>
                   <label for="zone-name" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">Zone Name</label>
                   <div class="mt-2">
-                    <input type="text" id="zone-name" x-model="newName" placeholder="Enter zone name" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm" />
+                    <input type="text" id="zone-name" x-model.trim="newName" maxlength="100" required placeholder="Enter zone name" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm" />
                   </div>
                 </div>
                 <div>
                   <label for="zone-countries" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">Countries</label>
                   <div class="mt-2">
-                    <textarea id="zone-countries" x-model="newCountries" rows="3" placeholder="Enter countries (comma-separated)" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm"></textarea>
+                    <textarea id="zone-countries" x-model="newCountries" rows="3" maxlength="1000" placeholder="Enter countries (comma-separated)" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm"></textarea>
+                  </div>
+                </div>
+                <div>
+                  <label for="zone-method" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">Shipping Method</label>
+                  <div class="mt-2">
+                    <select id="zone-method" x-model.number="newMethodId" required class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm">
+                      <option value="">Select a shipping method</option>
+                      <option :for="method in methodOptions()" :value="method.id">{{ method.name }}</option>
+                    </select>
                   </div>
                 </div>
                 <div>
                   <label for="zone-regions" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">Regions</label>
                   <div class="mt-2">
-                    <textarea id="zone-regions" x-model="newRegions" rows="3" placeholder="Enter regions (comma-separated)" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm"></textarea>
+                    <textarea id="zone-regions" x-model="newRegions" rows="3" maxlength="500" placeholder="Enter regions (comma-separated)" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm"></textarea>
                   </div>
                 </div>
                 <div>
                   <label for="zone-postal-codes" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">Postal Codes</label>
                   <div class="mt-2">
-                    <textarea id="zone-postal-codes" x-model="newPostalCodes" rows="3" placeholder="Enter postal codes (comma-separated)" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm"></textarea>
+                    <textarea id="zone-postal-codes" x-model="newPostalCodes" rows="3" maxlength="1000" placeholder="Enter postal codes (comma-separated)" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm"></textarea>
                   </div>
                 </div>
                 <div>
                   <label for="zone-status" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">Status</label>
                   <div class="mt-2">
-                    <select id="zone-status" x-model="newStatus" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm">
-                      <option value="Active">Active</option>
-                      <option value="Inactive">Inactive</option>
+                    <select id="zone-status" x-model="newStatus" required class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm">
+                      <option value="active">Active</option>
+                      <option value="inactive">Inactive</option>
+                      <option value="draft">Draft</option>
                     </select>
                   </div>
                 </div>
@@ -96,33 +106,43 @@
                 <div>
                   <label for="edit-zone-name" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">Zone Name</label>
                   <div class="mt-2">
-                    <input type="text" id="edit-zone-name" x-model="newName" placeholder="Enter zone name" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm" />
+                    <input type="text" id="edit-zone-name" x-model.trim="newName" maxlength="100" required placeholder="Enter zone name" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm" />
                   </div>
                 </div>
                 <div>
                   <label for="edit-zone-countries" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">Countries</label>
                   <div class="mt-2">
-                    <textarea id="edit-zone-countries" x-model="newCountries" rows="3" placeholder="Enter countries (comma-separated)" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm"></textarea>
+                    <textarea id="edit-zone-countries" x-model="newCountries" rows="3" maxlength="1000" placeholder="Enter countries (comma-separated)" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm"></textarea>
+                  </div>
+                </div>
+                <div>
+                  <label for="edit-zone-method" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">Shipping Method</label>
+                  <div class="mt-2">
+                    <select id="edit-zone-method" x-model.number="newMethodId" required class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm">
+                      <option value="">Select a shipping method</option>
+                      <option :for="method in methodOptions()" :value="method.id">{{ method.name }}</option>
+                    </select>
                   </div>
                 </div>
                 <div>
                   <label for="edit-zone-regions" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">Regions</label>
                   <div class="mt-2">
-                    <textarea id="edit-zone-regions" x-model="newRegions" rows="3" placeholder="Enter regions (comma-separated)" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm"></textarea>
+                    <textarea id="edit-zone-regions" x-model="newRegions" rows="3" maxlength="500" placeholder="Enter regions (comma-separated)" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm"></textarea>
                   </div>
                 </div>
                 <div>
                   <label for="edit-zone-postal-codes" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">Postal Codes</label>
                   <div class="mt-2">
-                    <textarea id="edit-zone-postal-codes" x-model="newPostalCodes" rows="3" placeholder="Enter postal codes (comma-separated)" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm"></textarea>
+                    <textarea id="edit-zone-postal-codes" x-model="newPostalCodes" rows="3" maxlength="1000" placeholder="Enter postal codes (comma-separated)" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm"></textarea>
                   </div>
                 </div>
                 <div>
                   <label for="edit-zone-status" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">Status</label>
                   <div class="mt-2">
-                    <select id="edit-zone-status" x-model="newStatus" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm">
-                      <option value="Active">Active</option>
-                      <option value="Inactive">Inactive</option>
+                    <select id="edit-zone-status" x-model="newStatus" required class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm">
+                      <option value="active">Active</option>
+                      <option value="inactive">Inactive</option>
+                      <option value="draft">Draft</option>
                     </select>
                   </div>
                 </div>
@@ -140,6 +160,7 @@
 </div>
 
 <script client>
+import { useShippingMethods } from '../../../../functions/commerce/shippings/shipping-methods'
 import { useShippingZones } from '../../../../functions/commerce/shippings/shipping-zones'
 
 interface ShippingZone {
@@ -149,10 +170,11 @@ interface ShippingZone {
   regions?: string
   postal_codes?: string
   shipping_method_id: number
-  status: string
+  status: 'active' | 'inactive' | 'draft'
 }
 
 const { shippingZones, createShippingZone, fetchShippingZones, updateShippingZone, deleteShippingZone } = useShippingZones()
+const { shippingMethods, fetchShippingMethods } = useShippingMethods()
 
 const showAddModal = state(false)
 const showEditModal = state(false)
@@ -162,11 +184,34 @@ const newName = state('')
 const newCountries = state('')
 const newRegions = state('')
 const newPostalCodes = state('')
-const newStatus = state('Active')
+const newMethodId = state(0)
+const newStatus = state<'active' | 'inactive' | 'draft'>('active')
 
 const searchQuery = state('')
 const currentPage = state(1)
 const itemsPerPage = state(5)
+
+function methodOptions(): Array<{ id: number, name: string }> {
+  return (shippingMethods.value as Array<{ id: number, name: string }>) || []
+}
+
+function parseList(value?: string): string[] {
+  if (!value)
+    return []
+  try {
+    const parsed = JSON.parse(value)
+    if (Array.isArray(parsed))
+      return parsed.map(item => String(item))
+  }
+  catch {
+    return value.split(',').map(item => item.trim()).filter(Boolean)
+  }
+  return []
+}
+
+function serializeList(value: string): string {
+  return JSON.stringify(value.split(',').map(item => item.trim()).filter(Boolean))
+}
 
 const filteredShippingZones = derived(() => {
   const list = (shippingZones.value as ShippingZone[]) || []
@@ -192,7 +237,8 @@ function resetForm(): void {
   newCountries.set('')
   newRegions.set('')
   newPostalCodes.set('')
-  newStatus.set('Active')
+  newMethodId.set(0)
+  newStatus.set('active')
 }
 
 function openAddModal(): void {
@@ -207,9 +253,10 @@ function closeAddModal(): void {
 function openEditModal(zone: ShippingZone): void {
   editingZone.set(zone)
   newName.set(zone.name)
-  newCountries.set(zone.countries ?? '')
-  newRegions.set(zone.regions ?? '')
-  newPostalCodes.set(zone.postal_codes ?? '')
+  newCountries.set(parseList(zone.countries).join(', '))
+  newRegions.set(parseList(zone.regions).join(', '))
+  newPostalCodes.set(parseList(zone.postal_codes).join(', '))
+  newMethodId.set(zone.shipping_method_id)
   newStatus.set(zone.status)
   showEditModal.set(true)
 }
@@ -223,10 +270,10 @@ async function addShippingZone(): Promise<void> {
   try {
     await createShippingZone({
       name: newName(),
-      countries: newCountries(),
-      regions: newRegions(),
-      postal_codes: newPostalCodes(),
-      shipping_method_id: 1,
+      countries: serializeList(newCountries()),
+      regions: serializeList(newRegions()),
+      postal_codes: serializeList(newPostalCodes()),
+      shipping_method_id: newMethodId(),
       status: newStatus(),
     } as ShippingZone)
     closeAddModal()
@@ -245,9 +292,10 @@ async function saveShippingZone(): Promise<void> {
     await updateShippingZone({
       ...target,
       name: newName(),
-      countries: newCountries(),
-      regions: newRegions(),
-      postal_codes: newPostalCodes(),
+      countries: serializeList(newCountries()),
+      regions: serializeList(newRegions()),
+      postal_codes: serializeList(newPostalCodes()),
+      shipping_method_id: newMethodId(),
       status: newStatus(),
     })
     closeEditModal()
@@ -292,7 +340,10 @@ function handlePageChange(page: number): void {
 }
 
 onMount(async () => {
-  await fetchShippingZones()
+  await Promise.all([
+    fetchShippingZones(),
+    fetchShippingMethods(),
+  ])
 })
 </script>
 

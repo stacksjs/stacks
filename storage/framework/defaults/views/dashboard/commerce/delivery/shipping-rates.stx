@@ -20,7 +20,7 @@
         </div>
       </div>
 
-      <ShippingRatesTable :rates="paginatedShippingRates" @edit="openEditModal" @delete="handleDeleteRate" />
+      <ShippingRatesTable :rates="paginatedShippingRates" @edit="openEditModal($event.detail)" @delete="handleDeleteRate($event.detail)" />
 
       <div class="px-4 py-3 bg-gray-50 dark:bg-neutral-900 border-gray-200 border-t dark:border-neutral-700">
         <DeliveryPagination :currentPage="currentPage" :totalItems="totalItems" :itemsPerPage="itemsPerPage" @prev="handlePrevPage" @next="handleNextPage" @page="handlePageChange($event.detail)" />
@@ -41,22 +41,18 @@
                 <div>
                   <label for="rate-method" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">Method</label>
                   <div class="mt-2">
-                    <select id="rate-method" x-model.number="newMethodId" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm">
+                    <select id="rate-method" x-model.number="newMethodId" required class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm">
                       <option value="">Select a shipping method</option>
-                      <template :for="method in methodOptions()">
-                        <option value="{{ method.id }}">{{ method.name }}</option>
-                      </template>
+                      <option :for="method in methodOptions()" :value="method.id">{{ method.name }}</option>
                     </select>
                   </div>
                 </div>
                 <div>
                   <label for="rate-zone" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">Zone</label>
                   <div class="mt-2">
-                    <select id="rate-zone" x-model.number="newZoneId" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm">
+                    <select id="rate-zone" x-model.number="newZoneId" required class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm">
                       <option value="">Select a shipping zone</option>
-                      <template :for="zone in zoneOptions()">
-                        <option value="{{ zone.id }}">{{ zone.name }}</option>
-                      </template>
+                      <option :for="zone in zoneOptions()" :value="zone.id">{{ zone.name }}</option>
                     </select>
                   </div>
                 </div>
@@ -64,20 +60,20 @@
                   <div>
                     <label for="rate-weight-from" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">Weight From</label>
                     <div class="mt-2">
-                      <input type="number" id="rate-weight-from" x-model.number="newWeightFrom" placeholder="0" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm" />
+                      <input type="number" id="rate-weight-from" x-model.number="newWeightFrom" min="0" step="0.01" required placeholder="0" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm" />
                     </div>
                   </div>
                   <div>
                     <label for="rate-weight-to" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">Weight To</label>
                     <div class="mt-2">
-                      <input type="number" id="rate-weight-to" x-model.number="newWeightTo" placeholder="10" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm" />
+                      <input type="number" id="rate-weight-to" x-model.number="newWeightTo" min="0" step="0.01" required placeholder="10" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm" />
                     </div>
                   </div>
                 </div>
                 <div>
-                  <label for="rate-rate" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">Rate (in cents)</label>
+                  <label for="rate-rate" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">Rate ($)</label>
                   <div class="mt-2">
-                    <input type="number" id="rate-rate" x-model.number="newRate" placeholder="599" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm" />
+                    <input type="number" id="rate-rate" x-model.number="newRate" min="0" step="0.01" required placeholder="5.99" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm" />
                   </div>
                 </div>
               </div>
@@ -105,22 +101,18 @@
                 <div>
                   <label for="edit-rate-method" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">Method</label>
                   <div class="mt-2">
-                    <select id="edit-rate-method" x-model.number="newMethodId" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm">
+                    <select id="edit-rate-method" x-model.number="newMethodId" required class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm">
                       <option value="">Select a shipping method</option>
-                      <template :for="method in methodOptions()">
-                        <option value="{{ method.id }}">{{ method.name }}</option>
-                      </template>
+                      <option :for="method in methodOptions()" :value="method.id">{{ method.name }}</option>
                     </select>
                   </div>
                 </div>
                 <div>
                   <label for="edit-rate-zone" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">Zone</label>
                   <div class="mt-2">
-                    <select id="edit-rate-zone" x-model.number="newZoneId" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm">
+                    <select id="edit-rate-zone" x-model.number="newZoneId" required class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm">
                       <option value="">Select a shipping zone</option>
-                      <template :for="zone in zoneOptions()">
-                        <option value="{{ zone.id }}">{{ zone.name }}</option>
-                      </template>
+                      <option :for="zone in zoneOptions()" :value="zone.id">{{ zone.name }}</option>
                     </select>
                   </div>
                 </div>
@@ -128,20 +120,20 @@
                   <div>
                     <label for="edit-rate-weight-from" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">Weight From</label>
                     <div class="mt-2">
-                      <input type="number" id="edit-rate-weight-from" x-model.number="newWeightFrom" placeholder="0" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm" />
+                      <input type="number" id="edit-rate-weight-from" x-model.number="newWeightFrom" min="0" step="0.01" required placeholder="0" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm" />
                     </div>
                   </div>
                   <div>
                     <label for="edit-rate-weight-to" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">Weight To</label>
                     <div class="mt-2">
-                      <input type="number" id="edit-rate-weight-to" x-model.number="newWeightTo" placeholder="10" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm" />
+                      <input type="number" id="edit-rate-weight-to" x-model.number="newWeightTo" min="0" step="0.01" required placeholder="10" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm" />
                     </div>
                   </div>
                 </div>
                 <div>
-                  <label for="edit-rate-rate" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">Rate (in cents)</label>
+                  <label for="edit-rate-rate" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">Rate ($)</label>
                   <div class="mt-2">
-                    <input type="number" id="edit-rate-rate" x-model.number="newRate" placeholder="599" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm" />
+                    <input type="number" id="edit-rate-rate" x-model.number="newRate" min="0" step="0.01" required placeholder="5.99" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm" />
                   </div>
                 </div>
               </div>
@@ -169,8 +161,8 @@ interface ShippingRate {
   weight_from: number
   weight_to: number
   rate: number
-  method?: string
-  zone?: string
+  shipping_method?: { id: number, name: string }
+  shipping_zone?: { id: number, name: string }
 }
 
 const { shippingRates, createShippingRate, fetchShippingRates, updateShippingRate, deleteShippingRate } = useShippingRates()
@@ -205,8 +197,8 @@ const filteredShippingRates = derived(() => {
   if (!q)
     return list
   return list.filter(r =>
-    (r.method?.toLowerCase().includes(q) ?? false)
-    || (r.zone?.toLowerCase().includes(q) ?? false)
+    (r.shipping_method?.name.toLowerCase().includes(q) ?? false)
+    || (r.shipping_zone?.name.toLowerCase().includes(q) ?? false)
     || r.weight_from.toString().includes(q)
     || r.weight_to.toString().includes(q)
     || r.rate.toString().includes(q),
@@ -243,7 +235,7 @@ function openEditModal(rate: ShippingRate): void {
   newZoneId.set(rate.shipping_zone_id)
   newWeightFrom.set(rate.weight_from)
   newWeightTo.set(rate.weight_to)
-  newRate.set(rate.rate)
+  newRate.set(rate.rate / 100)
   showEditModal.set(true)
 }
 
@@ -259,7 +251,7 @@ async function addShippingRate(): Promise<void> {
       shipping_zone_id: newZoneId(),
       weight_from: newWeightFrom(),
       weight_to: newWeightTo(),
-      rate: newRate(),
+      rate: Math.round(newRate() * 100),
     } as ShippingRate)
     closeAddModal()
   }
@@ -280,7 +272,7 @@ async function saveShippingRate(): Promise<void> {
       shipping_zone_id: newZoneId(),
       weight_from: newWeightFrom(),
       weight_to: newWeightTo(),
-      rate: newRate(),
+      rate: Math.round(newRate() * 100),
     })
     closeEditModal()
   }
