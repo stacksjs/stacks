@@ -10,8 +10,8 @@ function defaultMailbox(): string {
 }
 
 export default new Action({
-  name: 'InboxMarkReadAction',
-  description: 'Marks a single inbound email as read.',
+  name: 'InboxMarkUnreadAction',
+  description: 'Marks a single inbound email as unread.',
   method: 'POST',
   apiResponse: true,
 
@@ -22,7 +22,7 @@ export default new Action({
     if (!messageId)
       return response.json({ message: 'messageId is required.' }, 422)
 
-    const success = await emailSDK.markAsRead(mailbox, messageId)
+    const success = await emailSDK.markAsUnread(mailbox, messageId)
     if (!success)
       return response.json({ message: 'Email not found or its read state could not be updated.' }, 404)
 
