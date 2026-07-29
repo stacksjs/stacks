@@ -1,11 +1,38 @@
-import { resolveApiBaseUrl } from './api-url'
-/**
- * Realtime Composable
- */
 import { ref } from '@stacksjs/stx'
+import { dashboardApi } from './dashboard-api'
 
-const baseUrl = resolveApiBaseUrl()
+export interface RealtimeEvent {
+  id: string
+  type: string
+  socket: string
+  details: string
+  time: number
+  createdAt: string
+  occurredAt: string
+}
 
+export interface RealtimeDashboardResponse {
+  config: {
+    enabled: boolean
+    mode: string
+    url: string
+  }
+  overview: {
+    recordedEvents: number
+    uniqueSockets: number
+    successes: number
+    errors: number
+    disconnections: number
+    successRate: number
+  }
+  events: RealtimeEvent[]
+}
+
+export async function fetchRealtimeDashboard(): Promise<RealtimeDashboardResponse> {
+  return await dashboardApi<RealtimeDashboardResponse>('/api/dashboard/realtime')
+}
+
+/** Compatibility shape retained for consumers of the previous composable. */
 export interface RealtimeStats {
   connectionsTriggered: number
   connectionsChange: number
@@ -24,7 +51,14 @@ export interface ActiveConnection {
 }
 
 export function useRealtimeStats() {
-  const stats = ref<RealtimeStats>({ connectionsTriggered: 0, connectionsChange: 0, avgLatency: '0ms', latencyChange: 0, successRate: '0%', successChange: 0 })
+  const stats = ref<RealtimeStats>({
+    connectionsTriggered: 0,
+    connectionsChange: 0,
+    avgLatency: '-',
+    latencyChange: 0,
+    successRate: '0%',
+    successChange: 0,
+  })
   const activeConnections = ref<ActiveConnection[]>([])
   const isLoading = ref(false)
   const error = ref<string | null>(null)
@@ -33,18 +67,21 @@ export function useRealtimeStats() {
     isLoading.value = true
     error.value = null
     try {
-      const response = await fetch(`${baseUrl}/realtime/stats`, {
-        headers: { 'Accept': 'application/json' },
-      })
-      if (response.ok) {
-        const data = await response.json()
-        stats.value = data.stats || stats.value
-        activeConnections.value = data.activeConnections || []
+      const data = await fetchRealtimeDashboard()
+      stats.value = {
+        connectionsTriggered: data.overview.recordedEvents,
+        connectionsChange: 0,
+        avgLatency: '-',
+        latencyChange: 0,
+        successRate: `${data.overview.successRate}%`,
+        successChange: 0,
       }
-    } catch (e) {
+      activeConnections.value = []
+    }
+    catch {
       error.value = 'Failed to load realtime stats.'
-      console.error('Failed to fetch realtime stats:', e)
-    } finally {
+    }
+    finally {
       isLoading.value = false
     }
   }

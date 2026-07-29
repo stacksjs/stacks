@@ -1,49 +1,47 @@
 import { Action } from '@stacksjs/actions'
+import { config } from '@stacksjs/config'
 import { Websocket } from '@stacksjs/orm'
+import { buildRealtimeStats } from './realtime-stats'
 
 export default new Action({
   name: 'RealtimeStatsAction',
-  description: 'Returns realtime connection statistics.',
+  description: 'Returns recorded websocket events and the configured connection endpoint.',
   method: 'GET',
+  apiResponse: true,
+
   async handle() {
     try {
-      const allConnections = await Websocket.all()
-      const totalConnections = await Websocket.count()
-
-      // Group connections by channel
-      const channelMap: Record<string, { connections: number, messages: number }> = {}
-      for (const conn of allConnections) {
-        const channel = String(conn.get('channel') || conn.get('name') || 'default')
-        if (!channelMap[channel]) {
-          channelMap[channel] = { connections: 0, messages: 0 }
-        }
-        channelMap[channel].connections++
-        channelMap[channel].messages += Number(conn.get('message_count') || 0)
-      }
-
-      const channels = Object.entries(channelMap).map(([name, data]) => ({
-        name,
-        connections: data.connections,
-        messages: `${data.messages}/min`,
-      }))
+      const records = await Websocket.orderByDesc('id').limit(20_000).get()
+      const realtimeConfig = config.realtime
+      const scheme = String(realtimeConfig?.server?.scheme || 'ws')
+      const configuredHost = String(realtimeConfig?.server?.host || 'localhost')
+      const host = configuredHost === '0.0.0.0' ? 'localhost' : configuredHost
+      const port = Number(realtimeConfig?.server?.port || 6001)
 
       return {
-        channels,
-        stats: {
-          activeConnections: totalConnections,
-          messagesPerMinute: '-',
-          avgLatency: '-',
+        config: {
+          enabled: Boolean(realtimeConfig?.enabled),
+          mode: String(realtimeConfig?.mode || 'server'),
+          url: `${scheme}://${host}:${port}`,
         },
+        ...buildRealtimeStats(records.map(record => ({
+          id: String(record.get('id') || ''),
+          type: String(record.get('type') || 'error'),
+          socket: String(record.get('socket') || ''),
+          details: String(record.get('details') || ''),
+          time: Number(record.get('time') || 0),
+          createdAt: String(record.get('created_at') || ''),
+        }))),
       }
     }
     catch {
       return {
-        channels: [],
-        stats: {
-          activeConnections: 0,
-          messagesPerMinute: '0',
-          avgLatency: '-',
+        config: {
+          enabled: Boolean(config.realtime?.enabled),
+          mode: String(config.realtime?.mode || 'server'),
+          url: '',
         },
+        ...buildRealtimeStats([]),
       }
     }
   },

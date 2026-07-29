@@ -53,6 +53,7 @@ route.group({ prefix: '/api/dashboard', apiResponse: true }, () => {
   guard(route.get('/queue/stats', 'Actions/Dashboard/Queue/QueueStatsAction'))
   guard(route.get('/queue/workers', 'Actions/Dashboard/Queue/QueueWorkersAction'))
   guard(route.post('/queue/retry-failed', 'Actions/Dashboard/Queue/QueueRetryFailedAction'))
+  guard(route.get('/realtime', 'Actions/Dashboard/Realtime/RealtimeStatsAction'))
 
   // CMS admin — backs the pages under `views/dashboard/content/`.
   //

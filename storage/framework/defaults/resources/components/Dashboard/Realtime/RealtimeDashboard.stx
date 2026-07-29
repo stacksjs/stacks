@@ -1,0 +1,242 @@
+<script client>
+import type { RealtimeDashboardResponse, RealtimeEvent } from '../../../../functions/realtime'
+import { fetchRealtimeDashboard } from '../../../../functions/realtime'
+import { pushToast } from '../../../../functions/toasts'
+
+interface LiveEvent {
+  type: 'connection' | 'message' | 'disconnection' | 'error'
+  detail: string
+  occurredAt: string
+}
+
+const dashboard = state<RealtimeDashboardResponse | null>(null)
+const endpoint = state('')
+const isLoading = state(true)
+const loadError = state('')
+const isConnected = state(false)
+const connectionStatus = state('Disconnected')
+const liveEvents = state<LiveEvent[]>([])
+
+let socket: WebSocket | null = null
+
+function recordedEvents(): RealtimeEvent[] {
+  return dashboard()?.events || []
+}
+
+function inspectorEvents(): LiveEvent[] {
+  return liveEvents()
+}
+
+function formatNumber(value: number): string {
+  return new Intl.NumberFormat().format(value)
+}
+
+function formatDate(value: string): string {
+  if (!value)
+    return 'Not recorded'
+  return new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value))
+}
+
+function updateEndpoint(event: Event): void {
+  endpoint.set((event.target as HTMLInputElement).value)
+}
+
+function addLiveEvent(type: LiveEvent['type'], detail: string): void {
+  liveEvents.set([
+    { type, detail, occurredAt: new Date().toISOString() },
+    ...liveEvents(),
+  ].slice(0, 100))
+}
+
+function disconnect(): void {
+  if (socket) {
+    socket.close()
+    socket = null
+  }
+  isConnected.set(false)
+  connectionStatus.set('Disconnected')
+}
+
+function connect(): void {
+  disconnect()
+  const url = endpoint().trim()
+  if (!/^wss?:\/\//i.test(url)) {
+    pushToast('warning', 'Enter a ws:// or wss:// endpoint')
+    return
+  }
+
+  connectionStatus.set('Connecting')
+  try {
+    socket = new WebSocket(url)
+    socket.onopen = () => {
+      isConnected.set(true)
+      connectionStatus.set('Connected')
+      addLiveEvent('connection', `Connected to ${url}`)
+    }
+    socket.onmessage = (event) => {
+      addLiveEvent('message', typeof event.data === 'string' ? event.data : 'Binary message received')
+    }
+    socket.onerror = () => {
+      connectionStatus.set('Connection error')
+      addLiveEvent('error', `Could not connect to ${url}`)
+    }
+    socket.onclose = () => {
+      isConnected.set(false)
+      connectionStatus.set('Disconnected')
+      addLiveEvent('disconnection', `Disconnected from ${url}`)
+      socket = null
+    }
+  }
+  catch (error) {
+    connectionStatus.set('Connection error')
+    addLiveEvent('error', String(error))
+  }
+}
+
+function toggleConnection(): void {
+  if (isConnected())
+    disconnect()
+  else
+    connect()
+}
+
+async function loadRealtime(): Promise<void> {
+  isLoading.set(true)
+  loadError.set('')
+  try {
+    const data = await fetchRealtimeDashboard()
+    dashboard.set(data)
+    if (!endpoint())
+      endpoint.set(data.config.url)
+  }
+  catch (error) {
+    loadError.set('Realtime data could not be loaded.')
+    pushToast('error', 'Could not load realtime data', { detail: String(error) })
+  }
+  finally {
+    isLoading.set(false)
+  }
+}
+
+onMount(() => {
+  void loadRealtime()
+})
+
+onDestroy(() => {
+  disconnect()
+})
+</script>
+
+<div class="space-y-6">
+  <header class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+    <div>
+      <h1 class="font-bold text-2xl text-gray-900 dark:text-white">Realtime</h1>
+      <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Recorded Websocket model events and a native connection inspector.</p>
+    </div>
+    <button type="button" :disabled="isLoading()" class="inline-flex items-center px-3 py-2 font-semibold text-gray-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700 disabled:opacity-50" @click="loadRealtime">
+      <span :class="'mr-2 h-4 w-4 ' + (isLoading() ? 'animate-spin i-hugeicons-loading-03' : 'i-hugeicons-refresh')"></span>
+      Refresh
+    </button>
+  </header>
+
+  <div :if="loadError()" class="p-4 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900">{{ loadError() }}</div>
+
+  <section class="grid gap-3 grid-cols-2 lg:grid-cols-4">
+    <div class="p-4 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
+      <p class="text-gray-500 text-xs uppercase dark:text-neutral-400">Recorded events</p>
+      <p class="mt-2 font-semibold text-2xl text-gray-900 dark:text-white">{{ formatNumber(dashboard()?.overview.recordedEvents || 0) }}</p>
+    </div>
+    <div class="p-4 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
+      <p class="text-gray-500 text-xs uppercase dark:text-neutral-400">Unique sockets</p>
+      <p class="mt-2 font-semibold text-2xl text-gray-900 dark:text-white">{{ formatNumber(dashboard()?.overview.uniqueSockets || 0) }}</p>
+    </div>
+    <div class="p-4 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
+      <p class="text-gray-500 text-xs uppercase dark:text-neutral-400">Errors</p>
+      <p class="mt-2 font-semibold text-2xl text-gray-900 dark:text-white">{{ formatNumber(dashboard()?.overview.errors || 0) }}</p>
+    </div>
+    <div class="p-4 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
+      <p class="text-gray-500 text-xs uppercase dark:text-neutral-400">Recorded success rate</p>
+      <p class="mt-2 font-semibold text-2xl text-gray-900 dark:text-white">{{ dashboard()?.overview.successRate || 0 }}%</p>
+    </div>
+  </section>
+
+  <section class="grid gap-6 grid-cols-1 xl:grid-cols-[minmax(20rem,1fr)_minmax(0,2fr)]">
+    <div class="self-start p-5 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
+      <div class="flex items-start justify-between">
+        <div>
+          <h2 class="font-semibold text-gray-900 dark:text-white">Connection inspector</h2>
+          <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Connect from this browser without creating synthetic model records.</p>
+        </div>
+        <span :class="'inline-flex px-2 py-1 font-medium text-xs rounded-full ' + (isConnected() ? 'text-green-700 bg-green-100 dark:text-green-300 dark:bg-green-950' : 'text-gray-600 bg-gray-100 dark:text-neutral-300 dark:bg-neutral-700')">{{ connectionStatus() }}</span>
+      </div>
+      <label for="realtime-endpoint" class="block mb-1 mt-5 font-medium text-gray-700 text-sm dark:text-neutral-300">WebSocket endpoint</label>
+      <input id="realtime-endpoint" :value="endpoint()" type="url" placeholder="ws://localhost:6001" class="block px-3 py-2 w-full font-mono text-gray-900 text-sm dark:text-white dark:bg-neutral-700 border border-gray-300 rounded-md dark:border-neutral-600" @input="updateEndpoint($event)" />
+      <button type="button" :class="'inline-flex items-center justify-center mt-3 px-3 py-2 w-full font-semibold text-sm text-white rounded-md ' + (isConnected() ? 'bg-red-600 hover:bg-red-500' : 'bg-blue-600 hover:bg-blue-500')" @click="toggleConnection">
+        <span :class="'mr-2 h-4 w-4 ' + (isConnected() ? 'i-hugeicons-link-square-02' : 'i-hugeicons-link-03')"></span>
+        {{ isConnected() ? 'Disconnect' : 'Connect' }}
+      </button>
+      <dl class="grid gap-3 grid-cols-2 mt-5 text-sm">
+        <div>
+          <dt class="text-gray-500 dark:text-neutral-400">Mode</dt>
+          <dd class="mt-1 font-medium text-gray-900 dark:text-white">{{ dashboard()?.config.mode || 'server' }}</dd>
+        </div>
+        <div>
+          <dt class="text-gray-500 dark:text-neutral-400">Configured</dt>
+          <dd class="mt-1 font-medium text-gray-900 dark:text-white">{{ dashboard()?.config.enabled ? 'Enabled' : 'Disabled' }}</dd>
+        </div>
+      </dl>
+    </div>
+
+    <div class="overflow-hidden bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
+      <div class="px-4 py-3 border-b border-gray-200 dark:border-neutral-700">
+        <h2 class="font-semibold text-gray-900 dark:text-white">Inspector events</h2>
+        <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Ephemeral messages received by this browser session.</p>
+      </div>
+      <div :if="inspectorEvents().length === 0" class="px-5 py-12 text-center text-gray-500 text-sm dark:text-neutral-400">Connect to an endpoint to inspect live messages.</div>
+      <div :if="inspectorEvents().length > 0" class="divide-gray-200 divide-y dark:divide-neutral-700">
+        <template :for="event in inspectorEvents()">
+          <div class="flex gap-4 items-start justify-between px-4 py-3">
+            <div>
+              <p class="font-medium text-gray-900 text-sm dark:text-white">{{ event.type }}</p>
+              <p class="mt-1 break-all font-mono text-gray-500 text-xs dark:text-neutral-400">{{ event.detail }}</p>
+            </div>
+            <p class="text-gray-500 text-xs whitespace-nowrap dark:text-neutral-400">{{ formatDate(event.occurredAt) }}</p>
+          </div>
+        </template>
+      </div>
+    </div>
+  </section>
+
+  <section class="overflow-hidden bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
+    <div class="px-4 py-3 border-b border-gray-200 dark:border-neutral-700">
+      <h2 class="font-semibold text-gray-900 dark:text-white">Recorded Websocket events</h2>
+      <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Persisted through the Websocket model. No latency or throughput is estimated.</p>
+    </div>
+    <div :if="!isLoading() && recordedEvents().length === 0" class="px-5 py-12 text-center">
+      <p class="font-semibold text-gray-900 dark:text-white">No realtime events recorded</p>
+      <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Connection lifecycle events appear after they are persisted through the Websocket model.</p>
+    </div>
+    <div :if="recordedEvents().length > 0" class="overflow-x-auto">
+      <table class="min-w-full divide-gray-200 divide-y dark:divide-neutral-700">
+        <thead class="bg-gray-50 dark:bg-neutral-700/50">
+          <tr>
+            <th class="px-4 py-3 font-medium text-gray-500 text-left text-xs uppercase dark:text-neutral-300">Time</th>
+            <th class="px-4 py-3 font-medium text-gray-500 text-left text-xs uppercase dark:text-neutral-300">Type</th>
+            <th class="px-4 py-3 font-medium text-gray-500 text-left text-xs uppercase dark:text-neutral-300">Socket</th>
+            <th class="px-4 py-3 font-medium text-gray-500 text-left text-xs uppercase dark:text-neutral-300">Details</th>
+          </tr>
+        </thead>
+        <tbody class="divide-gray-200 divide-y dark:divide-neutral-700">
+          <template :for="event in recordedEvents()">
+            <tr>
+              <td class="px-4 py-3 text-gray-500 text-sm whitespace-nowrap dark:text-neutral-300">{{ formatDate(event.occurredAt) }}</td>
+              <td class="px-4 py-3 font-medium text-gray-900 text-sm dark:text-white">{{ event.type }}</td>
+              <td class="px-4 py-3 font-mono text-gray-500 text-xs dark:text-neutral-300">{{ event.socket }}</td>
+              <td class="px-4 py-3 text-gray-500 text-sm dark:text-neutral-300">{{ event.details }}</td>
+            </tr>
+          </template>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
