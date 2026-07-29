@@ -93,7 +93,10 @@ body {
 // `~/`-anchored for the same reason as the sidebar import above.
 import { useToasts, dismissToast } from '~/storage/framework/defaults/functions/toasts'
 import { authStore } from '~/storage/framework/defaults/views/dashboard/stores/auth'
+import { kanbanStore } from '~/storage/framework/defaults/views/dashboard/stores/kanban'
+import { rbacStore } from '~/storage/framework/defaults/views/dashboard/stores/rbac'
 const { toasts } = useToasts()
+registerStoresClient({ authStore, kanbanStore, rbacStore })
 
 // Helpers below return COMPLETE class strings (static + dynamic) and are
 // applied via `:class="fn(...)"` because stx's `{{ ... }}` placeholder is
