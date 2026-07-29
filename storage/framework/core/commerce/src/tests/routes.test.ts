@@ -44,6 +44,21 @@ describe('Delivery Route Module', () => {
       const updated = await updateLastActive(Number(driverRoutes[0]?.id))
       expect(Number((updated as any).last_active)).toBeGreaterThan(0)
     })
+
+    it('should normalize model attribute names to database columns', async () => {
+      const route = await store({
+        driver: 'Jane Doe',
+        vehicle: 'Van C789',
+        stops: 4,
+        deliveryTime: 75,
+        totalDistance: 31,
+        lastActive: 1785360000000,
+      })
+
+      expect(Number((route as any).delivery_time)).toBe(75)
+      expect(Number((route as any).total_distance)).toBe(31)
+      expect(Number((route as any).last_active)).toBe(1785360000000)
+    })
   })
 
   describe('destroy', () => {
