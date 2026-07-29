@@ -1,0 +1,96 @@
+<script client>
+import type { RestaurantWaitlistRecord } from '../../../../app/Actions/Dashboard/Commerce/restaurant-waitlist-records'
+
+const records = useReactiveProp('records', [] as RestaurantWaitlistRecord[])
+const loading = useReactiveProp('loading', false)
+const busyId = useReactiveProp('busyId', '')
+const emit = defineEmits()
+
+function formatDateTime(value: string): string {
+  if (!value)
+    return 'Not recorded'
+  const date = /^\d{10,13}$/.test(value)
+    ? new Date(Number(value) * (value.length === 10 ? 1000 : 1))
+    : new Date(value.replace(' ', 'T'))
+  return Number.isNaN(date.getTime())
+    ? value
+    : new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(date)
+}
+
+function preferenceLabel(value: string): string {
+  return value === 'no_preference'
+    ? 'No preference'
+    : value.replaceAll('_', ' ')
+}
+
+function statusLabel(value: string): string {
+  return value.replaceAll('_', ' ')
+}
+
+function statusClass(value: string): string {
+  if (value === 'seated')
+    return 'text-green-700 dark:text-green-300 bg-green-50 dark:bg-green-950/30'
+  if (value === 'waiting')
+    return 'text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/30'
+  if (value === 'no_show')
+    return 'text-red-700 dark:text-red-300 bg-red-50 dark:bg-red-950/30'
+  return 'text-gray-700 dark:text-neutral-300 bg-gray-100 dark:bg-neutral-700'
+}
+</script>
+
+<div class="overflow-hidden bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
+  <div :if="loading()" class="flex items-center justify-center p-8 text-gray-500 text-sm dark:text-neutral-400">
+    <span class="mr-2 h-4 w-4 animate-spin i-hugeicons-loading-03"></span>
+    Loading restaurant waitlist
+  </div>
+  <div :else-if="records().length === 0" class="p-8 text-center">
+    <p class="font-medium text-gray-900 text-sm dark:text-white">No restaurant waitlist records found</p>
+    <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Add a party or adjust the current filters.</p>
+  </div>
+  <div :else class="overflow-x-auto">
+    <table class="min-w-full divide-gray-200 divide-y dark:divide-neutral-700">
+      <thead class="bg-gray-50 dark:bg-neutral-900/50">
+        <tr>
+          <th scope="col" class="px-4 py-3 font-semibold text-gray-600 text-left text-xs uppercase dark:text-neutral-400">Party</th>
+          <th scope="col" class="px-4 py-3 font-semibold text-gray-600 text-right text-xs uppercase dark:text-neutral-400">Size</th>
+          <th scope="col" class="px-4 py-3 font-semibold text-gray-600 text-left text-xs uppercase dark:text-neutral-400">Status</th>
+          <th scope="col" class="px-4 py-3 font-semibold text-gray-600 text-right text-xs uppercase dark:text-neutral-400">Quoted wait</th>
+          <th scope="col" class="px-4 py-3 font-semibold text-gray-600 text-left text-xs uppercase dark:text-neutral-400">Preference</th>
+          <th scope="col" class="px-4 py-3 font-semibold text-gray-600 text-left text-xs uppercase dark:text-neutral-400">Check in</th>
+          <th scope="col" class="relative px-4 py-3"><span class="sr-only">Actions</span></th>
+        </tr>
+      </thead>
+      <tbody class="divide-gray-100 divide-y dark:divide-neutral-700">
+        <template :for="entry in records()" :key="entry.id">
+          <tr class="hover:bg-gray-50/60 dark:hover:bg-neutral-700/50">
+            <td class="px-4 py-3">
+              <p class="font-medium text-gray-900 text-sm dark:text-white">{{ entry.name || 'Unnamed party' }}</p>
+              <p class="mt-1 text-gray-500 text-xs dark:text-neutral-400">{{ entry.phone || entry.email || 'No contact recorded' }}</p>
+            </td>
+            <td class="px-4 py-3 font-mono text-gray-700 text-right text-sm dark:text-neutral-200">{{ entry.partySize }}</td>
+            <td class="px-4 py-3">
+              <span :class="'inline-flex px-2 py-1 font-medium text-xs capitalize rounded-full ' + statusClass(entry.status)">{{ statusLabel(entry.status) }}</span>
+            </td>
+            <td class="px-4 py-3 font-mono text-gray-700 text-right text-sm dark:text-neutral-200">{{ entry.quotedWaitTime }} min</td>
+            <td class="px-4 py-3 capitalize text-gray-600 text-sm dark:text-neutral-300">{{ preferenceLabel(entry.tablePreference) }}</td>
+            <td class="px-4 py-3 text-gray-600 text-sm whitespace-nowrap dark:text-neutral-300">{{ formatDateTime(entry.checkInTime) }}</td>
+            <td class="px-4 py-3 text-right whitespace-nowrap">
+              <button :if="entry.status === 'waiting'" type="button" :disabled="busyId() === entry.id" :aria-label="'Seat party for ' + (entry.name || 'customer')" class="p-2 text-gray-400 hover:text-green-700 dark:hover:text-green-300 rounded-md disabled:opacity-50" @click="emit('seat', entry)">
+                <span class="block h-5 w-5 i-hugeicons-checkmark-circle-02"></span>
+              </button>
+              <button :if="entry.status === 'waiting'" type="button" :disabled="busyId() === entry.id" :aria-label="'Mark no show for ' + (entry.name || 'customer')" class="p-2 text-gray-400 hover:text-red-700 dark:hover:text-red-300 rounded-md disabled:opacity-50" @click="emit('no-show', entry)">
+                <span class="block h-5 w-5 i-hugeicons-user-remove-01"></span>
+              </button>
+              <button type="button" :disabled="busyId() === entry.id" :aria-label="'Edit restaurant waitlist entry for ' + (entry.name || 'customer')" class="p-2 text-gray-400 hover:text-blue-700 dark:hover:text-blue-300 rounded-md disabled:opacity-50" @click="emit('edit', entry)">
+                <span class="block h-5 w-5 i-hugeicons-edit-01"></span>
+              </button>
+              <button type="button" :disabled="busyId() === entry.id" :aria-label="'Delete restaurant waitlist entry for ' + (entry.name || 'customer')" class="p-2 text-gray-400 hover:text-red-700 dark:hover:text-red-300 rounded-md disabled:opacity-50" @click="emit('delete', entry)">
+                <span class="block h-5 w-5 i-hugeicons-waste"></span>
+              </button>
+            </td>
+          </tr>
+        </template>
+      </tbody>
+    </table>
+  </div>
+</div>
