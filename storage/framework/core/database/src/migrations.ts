@@ -1696,8 +1696,21 @@ export function groupGeneratedStatements(sqlStatements: string[]): GeneratedGrou
     const alter = stmt.match(/^\s*ALTER\s+TABLE\s+["`]?(\w+)["`]?\s+(?:ADD\s+COLUMN\s+["`]?(\w+)["`]?|DROP\s+COLUMN\s+["`]?(\w+)["`]?|ADD\s+CONSTRAINT)/i)
     const alterTable = alter?.[1]
     if (alter && alterTable) {
+      // One migration per TABLE, not per column. Ten new attributes on a model
+      // is one edit and one schema change; it used to become ten numbered
+      // migrations that only ever ran together. Grouping by table also makes
+      // each file one transaction-sized unit, so a half-applied change is a
+      // file that failed rather than a run that stopped in the middle of a set.
+      //
+      // `-columns`, not `-table`, on purpose: bun-query-builder's runner
+      // treats a file matching `alter-*-table` as its own throwaway output —
+      // replayed rather than recorded, then deleted from disk. Naming these
+      // `alter-fields-table.sql` handed every generated migration to that
+      // path and they vanished after their first run. The per-column names
+      // this replaces never matched the pattern, so this keeps that property
+      // while collapsing the files.
       const isCreateTimeConstraint = createdTables.has(alterTable) && !alter[2] && !alter[3]
-      push(isCreateTimeConstraint ? 'create-foreign-key-constraints' : `alter-${alterTable}-${alter[2] || alter[3] || 'constraint'}`, stmt)
+      push(isCreateTimeConstraint ? 'create-foreign-key-constraints' : `alter-${alterTable}-columns`, stmt)
       continue
     }
 

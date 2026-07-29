@@ -46,6 +46,48 @@ describe('generated migration grouping', () => {
     expect(groups.flatMap(group => group.statements).some(statement => statement.startsWith('ALTER TABLE'))).toBe(false)
   })
 
+  it('puts every column change to one model in ONE migration', () => {
+    // Ten new attributes on a model is one edit and one schema change. It used
+    // to become ten numbered migrations — `alter-fields-attr_0`,
+    // `alter-fields-attr_1`, ... — that only ever ran together.
+    const groups = groupGeneratedStatements(
+      Array.from({ length: 10 }, (_, i) => `ALTER TABLE "fields" ADD COLUMN "attr_${i}" TEXT;`),
+    )
+
+    expect(groups).toHaveLength(1)
+    expect(groups[0]?.label).toBe('alter-fields-columns')
+    expect(groups[0]?.statements).toHaveLength(10)
+  })
+
+  it('keeps adds and drops on the same model together, and splits by model', () => {
+    const groups = groupGeneratedStatements([
+      'ALTER TABLE "fields" ADD COLUMN "soil_type" TEXT;',
+      'ALTER TABLE "fields" DROP COLUMN "legacy_code";',
+      'ALTER TABLE "farms" ADD COLUMN "steward" TEXT;',
+    ])
+
+    expect(groups.map(group => group.label)).toEqual(['alter-fields-columns', 'alter-farms-columns'])
+    expect(groups[0]?.statements).toHaveLength(2)
+    expect(groups[1]?.statements).toHaveLength(1)
+  })
+
+  it('never names a group so the query builder treats it as throwaway', () => {
+    // bun-query-builder's runner treats a file matching `alter-*-table` as its
+    // own regenerated output: replayed rather than recorded, then deleted from
+    // disk. A generated migration named into that pattern disappears after its
+    // first run, and with it the only record of the change.
+    const groups = groupGeneratedStatements([
+      'ALTER TABLE "fields" ADD COLUMN "soil_type" TEXT;',
+      'ALTER TABLE "timetables" ADD COLUMN "slot" TEXT;',
+      'ALTER TABLE "audit_table" ADD COLUMN "actor" TEXT;',
+    ])
+
+    for (const group of groups) {
+      const filename = `0000000001-${group.label}.sql`
+      expect(filename.includes('alter-') && filename.includes('-table')).toBe(false)
+    }
+  })
+
   it('defers only cyclic foreign keys until every new table exists', () => {
     const groups = groupGeneratedStatements([
       'CREATE TABLE "teams" ("id" BIGSERIAL PRIMARY KEY, "captain_id" integer);',
