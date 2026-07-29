@@ -1,5 +1,19 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.228...v0.70.229)
+
+## ⚡ Performance Improvements
+
+- share router in production api ([e79b3c9](https://github.com/stacksjs/stacks/commit/e79b3c9)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🔧 Chores
+
+- **deps**: move to crosswind 0.2.12 ([1134400](https://github.com/stacksjs/stacks/commit/1134400)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.227...v0.70.228)
 
 ## ✨ Features
