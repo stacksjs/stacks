@@ -1,0 +1,312 @@
+<script client>
+import type {
+  CommerceCategoryRecord,
+  CommerceCategorySummary,
+} from '../../../../app/Actions/Dashboard/Commerce/commerce-category-records'
+import { DashboardApiError, dashboardApi } from '../../../../functions/dashboard-api'
+import { pushToast } from '../../../../functions/toasts'
+
+interface CategoryIndexResponse {
+  records: CommerceCategoryRecord[]
+  summary: CommerceCategorySummary
+}
+
+interface CategoryWritePayload {
+  name: string
+  description?: string
+  slug: string
+  imageUrl?: string
+  isActive: boolean
+  parentCategoryId?: string
+  displayOrder: number
+}
+
+const emptySummary: CommerceCategorySummary = { total: 0, active: 0, roots: 0, children: 0 }
+const records = state<CommerceCategoryRecord[]>([])
+const summary = state<CommerceCategorySummary>({ ...emptySummary })
+const search = state('')
+const activeFilter = state('all')
+const hierarchyFilter = state('all')
+const sort = state('order')
+const page = state(1)
+const pageSize = 20
+const loading = state(true)
+const loadError = state('')
+const dialogOpen = state(false)
+const dialogMode = state<'add' | 'edit'>('add')
+const editingRecord = state<CommerceCategoryRecord | null>(null)
+const detailsRecord = state<CommerceCategoryRecord | null>(null)
+const deletingRecord = state<CommerceCategoryRecord | null>(null)
+const saving = state(false)
+const deleting = state(false)
+const validationErrors = state<Record<string, string>>({})
+
+function categoryName(id: string): string {
+  return records().find(record => record.id === id)?.name || ''
+}
+
+function filteredRecords(): CommerceCategoryRecord[] {
+  const query = search().trim().toLowerCase()
+  const selectedActive = activeFilter()
+  const selectedHierarchy = hierarchyFilter()
+  return [...records()]
+    .filter((record) => {
+      if (selectedActive === 'active' && !record.isActive)
+        return false
+      if (selectedActive === 'inactive' && record.isActive)
+        return false
+      if (selectedHierarchy === 'root' && record.parentCategoryId)
+        return false
+      if (selectedHierarchy === 'child' && !record.parentCategoryId)
+        return false
+      return !query || [record.name, record.description, record.slug, categoryName(record.parentCategoryId)]
+        .some(value => value.toLowerCase().includes(query))
+    })
+    .sort((left, right) => {
+      if (sort() === 'name')
+        return left.name.localeCompare(right.name)
+      if (sort() === 'newest')
+        return Number(right.id) - Number(left.id)
+      return left.displayOrder - right.displayOrder || left.name.localeCompare(right.name)
+    })
+}
+
+function pageCount(): number {
+  return Math.max(1, Math.ceil(filteredRecords().length / pageSize))
+}
+
+function visibleRecords(): CommerceCategoryRecord[] {
+  const selectedPage = Math.min(page(), pageCount())
+  return filteredRecords().slice((selectedPage - 1) * pageSize, selectedPage * pageSize)
+}
+
+function matchingLabel(): string {
+  const count = filteredRecords().length
+  return `${count} matching ${count === 1 ? 'category' : 'categories'}`
+}
+
+function metricCards(): Array<{ label: string, value: string, detail: string }> {
+  const current = summary()
+  return [
+    { label: 'Categories', value: String(current.total), detail: 'Persisted product categories' },
+    { label: 'Active', value: String(current.active), detail: `${current.total - current.active} inactive` },
+    { label: 'Root categories', value: String(current.roots), detail: 'Top-level navigation' },
+    { label: 'Child categories', value: String(current.children), detail: 'Nested hierarchy entries' },
+  ]
+}
+
+function exportHref(): string {
+  const rows = filteredRecords().map(record => [
+    record.name,
+    record.slug,
+    record.description,
+    record.isActive ? 'Active' : 'Inactive',
+    record.parentCategoryId ? categoryName(record.parentCategoryId) : '',
+    String(record.displayOrder),
+    record.imageUrl,
+  ])
+  const escape = (value: string): string => `"${value.replaceAll('"', '""')}"`
+  const csv = [
+    ['Name', 'Slug', 'Description', 'Status', 'Parent', 'Display order', 'Image URL'],
+    ...rows,
+  ].map(row => row.map(escape).join(',')).join('\n')
+  return `data:text/csv;charset=utf-8,${encodeURIComponent(`\uFEFF${csv}`)}`
+}
+
+function updateSearch(event: Event): void {
+  search.set((event.target as HTMLInputElement).value)
+  page.set(1)
+}
+
+function updateActive(event: Event): void {
+  activeFilter.set((event.target as HTMLSelectElement).value)
+  page.set(1)
+}
+
+function updateHierarchy(event: Event): void {
+  hierarchyFilter.set((event.target as HTMLSelectElement).value)
+  page.set(1)
+}
+
+function updateSort(event: Event): void {
+  sort.set((event.target as HTMLSelectElement).value)
+  page.set(1)
+}
+
+async function loadCategories(): Promise<void> {
+  loading.set(true)
+  loadError.set('')
+  try {
+    const data = await dashboardApi<CategoryIndexResponse>('/api/dashboard/commerce/categories')
+    records.set(Array.isArray(data.records) ? data.records : [])
+    summary.set(data.summary ?? { ...emptySummary })
+    page.set(Math.min(page(), Math.max(1, Math.ceil((data.records?.length || 0) / pageSize))))
+  }
+  catch (error) {
+    loadError.set('Product categories could not be loaded.')
+    pushToast('error', 'Could not load product categories', {
+      detail: error instanceof Error ? error.message : String(error),
+    })
+  }
+  finally {
+    loading.set(false)
+  }
+}
+
+function openAdd(): void {
+  dialogMode.set('add')
+  editingRecord.set(null)
+  validationErrors.set({})
+  dialogOpen.set(true)
+}
+
+function openEdit(record: CommerceCategoryRecord): void {
+  detailsRecord.set(null)
+  dialogMode.set('edit')
+  editingRecord.set(record)
+  validationErrors.set({})
+  dialogOpen.set(true)
+}
+
+function closeDialog(): void {
+  if (saving())
+    return
+  dialogOpen.set(false)
+  editingRecord.set(null)
+  validationErrors.set({})
+}
+
+async function saveCategory(payload: CategoryWritePayload): Promise<void> {
+  const current = editingRecord()
+  const editing = dialogMode() === 'edit' && current !== null
+  saving.set(true)
+  validationErrors.set({})
+  try {
+    await dashboardApi(editing ? `/api/product-categories/${current.id}` : '/api/product-categories', {
+      method: editing ? 'PATCH' : 'POST',
+      body: payload,
+    })
+    dialogOpen.set(false)
+    editingRecord.set(null)
+    pushToast('success', editing ? 'Category updated' : 'Category added')
+    await loadCategories()
+  }
+  catch (error) {
+    if (error instanceof DashboardApiError)
+      validationErrors.set(error.fields ?? {})
+    pushToast('error', 'Could not save category', {
+      detail: error instanceof Error ? error.message : String(error),
+    })
+  }
+  finally {
+    saving.set(false)
+  }
+}
+
+function openDetails(record: CommerceCategoryRecord): void {
+  detailsRecord.set(record)
+}
+
+function closeDetails(): void {
+  detailsRecord.set(null)
+}
+
+function openDelete(record: CommerceCategoryRecord): void {
+  deletingRecord.set(record)
+}
+
+function closeDelete(): void {
+  if (!deleting())
+    deletingRecord.set(null)
+}
+
+async function deleteCategory(): Promise<void> {
+  const current = deletingRecord()
+  if (!current)
+    return
+  deleting.set(true)
+  try {
+    await dashboardApi(`/api/product-categories/${current.id}`, { method: 'DELETE' })
+    deletingRecord.set(null)
+    detailsRecord.set(null)
+    pushToast('success', 'Category deleted', { detail: current.name })
+    await loadCategories()
+  }
+  catch (error) {
+    pushToast('error', 'Could not delete category', {
+      detail: error instanceof Error ? error.message : String(error),
+    })
+  }
+  finally {
+    deleting.set(false)
+  }
+}
+
+function previousPage(): void {
+  page.set(Math.max(1, page() - 1))
+}
+
+function nextPage(): void {
+  page.set(Math.min(pageCount(), page() + 1))
+}
+
+onMount(() => {
+  void loadCategories()
+})
+</script>
+
+<div class="space-y-6">
+  <header class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+    <div>
+      <h1 class="font-bold text-2xl text-gray-900 dark:text-white">Product Categories</h1>
+      <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Manage the native Category hierarchy, display order, and storefront availability.</p>
+    </div>
+    <div class="flex flex-wrap gap-2">
+      <button type="button" :disabled="loading()" class="inline-flex items-center px-3 py-2 font-semibold text-gray-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700 disabled:opacity-50" @click="loadCategories()"><span :class="'mr-2 h-4 w-4 ' + (loading() ? 'animate-spin i-hugeicons-loading-03' : 'i-hugeicons-refresh')"></span>Refresh</button>
+      <a :href="exportHref()" :download="'product-categories-' + new Date().toISOString().slice(0, 10) + '.csv'" class="inline-flex items-center px-3 py-2 font-semibold text-gray-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700"><span class="mr-2 h-4 w-4 i-hugeicons-download-04"></span>Export filtered</a>
+      <button type="button" class="inline-flex items-center px-3 py-2 font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md" @click="openAdd()"><span class="mr-2 h-4 w-4 i-hugeicons-add-01"></span>Add category</button>
+    </div>
+  </header>
+
+  <div :if="loadError()" class="p-4 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900">{{ loadError() }}</div>
+
+  <section aria-label="Product category metrics" class="grid gap-3 grid-cols-2 lg:grid-cols-4">
+    <template :for="item in metricCards()" :key="item.label">
+      <article class="p-4 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
+        <p class="text-gray-500 text-xs dark:text-neutral-400">{{ item.label }}</p>
+        <p class="mt-2 font-semibold text-2xl text-gray-900 dark:text-white">{{ item.value }}</p>
+        <p class="mt-1 text-gray-400 text-xs dark:text-neutral-500">{{ item.detail }}</p>
+      </article>
+    </template>
+  </section>
+
+  <CommerceCategoryHierarchy :records="records()" />
+
+  <section class="space-y-3">
+    <div class="grid gap-3 grid-cols-1 sm:grid-cols-2 xl:grid-cols-5">
+      <label class="relative sm:col-span-2">
+        <span class="sr-only">Search product categories</span>
+        <span class="flex absolute inset-y-0 left-0 items-center pl-3 text-gray-400 pointer-events-none"><span class="h-4 w-4 i-hugeicons-search-01"></span></span>
+        <input :value="search()" type="search" placeholder="Search names, slugs, or descriptions" class="pl-9 pr-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" @input="updateSearch($event)" />
+      </label>
+      <label><span class="sr-only">Category availability</span><select :value="activeFilter()" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" @change="updateActive($event)"><option value="all">Any availability</option><option value="active">Active</option><option value="inactive">Inactive</option></select></label>
+      <label><span class="sr-only">Category hierarchy</span><select :value="hierarchyFilter()" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" @change="updateHierarchy($event)"><option value="all">Any hierarchy</option><option value="root">Root categories</option><option value="child">Child categories</option></select></label>
+      <label><span class="sr-only">Sort product categories</span><select :value="sort()" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" @change="updateSort($event)"><option value="order">Display order</option><option value="name">Name</option><option value="newest">Newest</option></select></label>
+    </div>
+
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <p class="text-gray-500 text-sm dark:text-neutral-400">{{ matchingLabel() }}</p>
+      <div class="flex gap-2 items-center">
+        <button type="button" :disabled="page() <= 1" class="px-3 py-1.5 font-medium text-gray-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700 disabled:opacity-40" @click="previousPage()">Previous</button>
+        <span class="text-gray-500 text-sm dark:text-neutral-400">Page {{ Math.min(page(), pageCount()) }} of {{ pageCount() }}</span>
+        <button type="button" :disabled="page() >= pageCount()" class="px-3 py-1.5 font-medium text-gray-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700 disabled:opacity-40" @click="nextPage()">Next</button>
+      </div>
+    </div>
+
+    <CommerceCategoriesTable :records="visibleRecords()" :all-records="records()" :loading="loading()" @view="openDetails" @edit="openEdit" @delete="openDelete" />
+  </section>
+</div>
+
+<CommerceCategoryDialog :open="dialogOpen()" :mode="dialogMode()" :record="editingRecord()" :records="records()" :busy="saving()" :errors="validationErrors()" @submit="saveCategory" @close="closeDialog()" />
+<CommerceCategoryDetailsDialog :open="Boolean(detailsRecord())" :record="detailsRecord()" :records="records()" @edit="openEdit" @delete="openDelete" @close="closeDetails()" />
+<CommerceCategoryDeleteDialog :open="Boolean(deletingRecord())" :record="deletingRecord()" :busy="deleting()" @confirm="deleteCategory()" @close="closeDelete()" />

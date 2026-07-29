@@ -1,0 +1,35 @@
+<script client>
+import type { CommerceCategoryRecord } from '../../../../app/Actions/Dashboard/Commerce/commerce-category-records'
+
+const records = useReactiveProp('records', [] as CommerceCategoryRecord[])
+
+function roots(): CommerceCategoryRecord[] {
+  return records()
+    .filter(record => !record.parentCategoryId)
+    .sort((left, right) => left.displayOrder - right.displayOrder || left.name.localeCompare(right.name))
+}
+
+function childCount(id: string): number {
+  return records().filter(record => record.parentCategoryId === id).length
+}
+
+function childLabel(id: string): string {
+  const count = childCount(id)
+  return `${count} ${count === 1 ? 'child' : 'children'}`
+}
+</script>
+
+<section aria-label="Category hierarchy" class="p-4 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
+  <div class="flex gap-4 items-center justify-between">
+    <div><h2 class="font-semibold text-gray-900 text-sm dark:text-white">Root hierarchy</h2><p class="mt-1 text-gray-400 text-xs dark:text-neutral-500">Ordered by storefront display order.</p></div>
+    <span class="text-gray-500 text-xs dark:text-neutral-400">{{ roots().length }} roots</span>
+  </div>
+  <div :if="roots().length === 0" class="mt-4 text-gray-500 text-sm dark:text-neutral-400">No root categories recorded.</div>
+  <div :if="roots().length > 0" class="grid gap-2 grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 mt-4">
+    <template :for="record in roots().slice(0, 10)" :key="record.id">
+      <article class="p-3 border border-gray-100 rounded-lg dark:border-neutral-700">
+        <div class="flex gap-3 items-center"><span class="flex items-center justify-center shrink-0 h-8 w-8 font-semibold text-blue-700 text-xs dark:text-blue-300 bg-blue-50 dark:bg-blue-950/40 rounded-md">{{ record.name.slice(0, 1).toUpperCase() }}</span><div class="min-w-0"><p class="font-medium text-gray-900 text-sm truncate dark:text-white">{{ record.name }}</p><p class="text-gray-400 text-xs dark:text-neutral-500">{{ childLabel(record.id) }} · order {{ record.displayOrder }}</p></div></div>
+      </article>
+    </template>
+  </div>
+</section>

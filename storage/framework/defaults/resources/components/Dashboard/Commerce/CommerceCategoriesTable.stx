@@ -1,0 +1,43 @@
+<script client>
+import type { CommerceCategoryRecord } from '../../../../app/Actions/Dashboard/Commerce/commerce-category-records'
+
+const records = useReactiveProp('records', [] as CommerceCategoryRecord[])
+const allRecords = useReactiveProp('allRecords', [] as CommerceCategoryRecord[])
+const loading = useReactiveProp('loading', false)
+const emit = defineEmits<{
+  view: [record: CommerceCategoryRecord]
+  edit: [record: CommerceCategoryRecord]
+  delete: [record: CommerceCategoryRecord]
+}>()
+
+function parentName(record: CommerceCategoryRecord): string {
+  if (!record.parentCategoryId)
+    return 'Root category'
+  return allRecords().find(parent => parent.id === record.parentCategoryId)?.name || 'Unknown parent'
+}
+</script>
+
+<div class="overflow-hidden bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
+  <div :if="loading()" class="flex items-center justify-center py-16 text-gray-500 text-sm dark:text-neutral-400"><span class="mr-2 h-4 w-4 animate-spin i-hugeicons-loading-03"></span>Loading categories</div>
+  <div :if="!loading() && records().length === 0" class="py-16 text-center">
+    <div class="mb-3 mx-auto h-8 w-8 text-gray-400 i-hugeicons-tags"></div>
+    <p class="font-medium text-gray-900 text-sm dark:text-white">No product categories found</p>
+    <p class="mt-1 text-gray-500 text-xs dark:text-neutral-400">Adjust the filters or add a native Category record.</p>
+  </div>
+  <div :if="!loading() && records().length > 0" class="overflow-x-auto">
+    <table class="min-w-full divide-gray-200 divide-y dark:divide-neutral-700">
+      <thead class="bg-gray-50 dark:bg-neutral-900/60"><tr><th class="px-4 py-3 font-semibold text-gray-500 text-left text-xs tracking-wide uppercase dark:text-neutral-400">Category</th><th class="px-4 py-3 font-semibold text-gray-500 text-left text-xs tracking-wide uppercase dark:text-neutral-400">Hierarchy</th><th class="px-4 py-3 font-semibold text-gray-500 text-left text-xs tracking-wide uppercase dark:text-neutral-400">Display order</th><th class="px-4 py-3 font-semibold text-gray-500 text-left text-xs tracking-wide uppercase dark:text-neutral-400">Availability</th><th class="px-4 py-3"><span class="sr-only">Actions</span></th></tr></thead>
+      <tbody class="divide-gray-100 divide-y dark:divide-neutral-700">
+        <template :for="record in records()" :key="record.id">
+          <tr class="hover:bg-gray-50/70 dark:hover:bg-neutral-900/40">
+            <td class="px-4 py-3"><div class="flex gap-3 items-center"><span class="flex items-center justify-center shrink-0 h-9 w-9 font-semibold text-blue-700 text-sm dark:text-blue-300 bg-blue-50 dark:bg-blue-950/40 rounded-md">{{ record.name.slice(0, 1).toUpperCase() }}</span><div class="min-w-0"><button type="button" class="font-semibold text-gray-900 text-sm dark:text-white hover:text-blue-600 dark:hover:text-blue-400" @click="emit('view', record)">{{ record.name }}</button><p class="mt-1 max-w-96 text-gray-400 text-xs truncate dark:text-neutral-500">{{ record.description || record.slug }}</p></div></div></td>
+            <td class="px-4 py-3"><p class="text-gray-700 text-sm dark:text-neutral-200">{{ parentName(record) }}</p><p class="mt-1 font-mono text-gray-400 text-xs dark:text-neutral-500">{{ record.slug }}</p></td>
+            <td class="px-4 py-3 font-mono text-gray-700 text-sm dark:text-neutral-200">{{ record.displayOrder }}</td>
+            <td class="px-4 py-3"><span :class="'inline-flex px-2 py-1 font-medium text-xs rounded-full ' + (record.isActive ? 'bg-green-50 text-green-700 dark:bg-green-950/40 dark:text-green-300' : 'bg-gray-100 text-gray-600 dark:bg-neutral-700 dark:text-neutral-300')">{{ record.isActive ? 'Active' : 'Inactive' }}</span></td>
+            <td class="px-4 py-3"><div class="flex gap-1 justify-end"><button type="button" :aria-label="'View ' + record.name" class="p-2 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 rounded-md" @click="emit('view', record)"><span class="block h-4 w-4 i-hugeicons-view"></span></button><button type="button" :aria-label="'Edit ' + record.name" class="p-2 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 rounded-md" @click="emit('edit', record)"><span class="block h-4 w-4 i-hugeicons-edit-02"></span></button><button type="button" :aria-label="'Delete ' + record.name" class="p-2 text-gray-400 hover:text-red-600 dark:hover:text-red-400 rounded-md" @click="emit('delete', record)"><span class="block h-4 w-4 i-hugeicons-delete-02"></span></button></div></td>
+          </tr>
+        </template>
+      </tbody>
+    </table>
+  </div>
+</div>
