@@ -44,7 +44,7 @@ export interface SearchEngineOptions {
 
   opensearch?: {
     host: string
-    protocol: number
+    protocol: 'http' | 'https'
     port: number
     auth: string
   }

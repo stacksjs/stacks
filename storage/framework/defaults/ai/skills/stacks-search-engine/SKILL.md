@@ -8,7 +8,8 @@ allowed-tools: Read Edit Write Bash Grep Glob
 
 # Stacks Search Engine
 
-Full-text search integration with Meilisearch and Algolia drivers.
+Full-text search integration with Meilisearch, Algolia, Typesense, and
+OpenSearch drivers.
 
 ## Key Paths
 - Core package: `storage/framework/core/search-engine/src/`
@@ -17,11 +18,20 @@ Full-text search integration with Meilisearch and Algolia drivers.
 ## Search Driver Factory
 
 ```typescript
-import { useSearchEngine, useAlgolia, useMeilisearch } from '@stacksjs/search-engine'
+import {
+  flushModelDocuments,
+  useAlgolia,
+  useMeilisearch,
+  useOpensearch,
+  useSearchEngine,
+  useTypesense,
+} from '@stacksjs/search-engine'
 
 const search = useSearchEngine()       // default driver
 const algolia = useAlgolia()            // Algolia client
 const meili = useMeilisearch()          // Meilisearch client
+const openSearch = useOpensearch()       // OpenSearch driver
+const typesense = useTypesense()         // Typesense driver
 ```
 
 ## Document Operations
@@ -37,7 +47,7 @@ await search.addDocuments('products', [
 const results = await search.search('products', 'widget')
 
 // List indexes
-const indexes = await search.listIndexes()
+const indexes = await search.listAllIndexes()
 
 // Get/update settings
 const settings = await search.getSettings('products')
@@ -48,7 +58,7 @@ await search.updateSettings('products', {
 })
 
 // Flush all documents
-await search.flush('products')
+await flushModelDocuments('Product')
 ```
 
 ## Model Integration (useSearch Trait)
@@ -82,25 +92,23 @@ buddy search-engine:settings --model Product  # settings for specific model
 
 ## Driver Comparison
 
-| Feature | Meilisearch | Algolia |
-|---------|------------|---------|
-| Self-hosted | Yes | No (cloud) |
-| Pricing | Free (self-hosted) | Per-search pricing |
-| Typo tolerance | Built-in | Built-in |
-| Faceted search | Yes | Yes |
-| Geo search | Yes | Yes |
-| Speed | Very fast | Very fast |
+| Feature | Meilisearch | Algolia | Typesense | OpenSearch |
+|---------|-------------|---------|-----------|------------|
+| Self-hosted | Yes | No | Yes | Yes |
+| Managed option | Yes | Yes | Yes | Yes |
+| Model lifecycle indexing | Yes | Yes | Yes | Driver must implement the full contract |
 
 ## config/search-engine.ts
 
 ```typescript
-{ driver: 'opensearch' }  // 'meilisearch' | 'algolia' | 'opensearch'
+{ driver: 'opensearch' }  // 'meilisearch' | 'algolia' | 'opensearch' | 'typesense'
 ```
 
 Environment variables: `MEILISEARCH_HOST`, `MEILISEARCH_KEY`, `SEARCH_ENGINE_DRIVER`
 
 ## Gotchas
 - Default driver is `opensearch` — configure in config or env
+- A selected driver must implement the complete `SearchEngineDriver` surface; never satisfy the type with an empty cast
 - `useSearch` trait determines which model fields are indexed
 - `displayable` controls which fields appear in search results
 - `searchable` controls which fields are queried during search
