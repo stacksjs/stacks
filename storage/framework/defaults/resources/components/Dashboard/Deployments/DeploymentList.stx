@@ -1,94 +1,127 @@
-<script>
-interface DeploymentListProps {
-  showModal?: boolean
+<script client>
+import type { DeploymentRecord } from '../../../../functions/deployments'
+import { fetchDeployments, summarizeDeployments } from '../../../../functions/deployments'
+import { pushToast } from '../../../../functions/toasts'
+
+const deployments = state<DeploymentRecord[]>([])
+const search = state('')
+const status = state('all')
+const isLoading = state(true)
+const loadError = state('')
+const summary = derived(() => summarizeDeployments(deployments()))
+
+function rows(): DeploymentRecord[] {
+  const query = search().trim().toLowerCase()
+  return deployments().filter((deployment) => {
+    if (status() !== 'all' && deployment.status !== status())
+      return false
+    if (!query)
+      return true
+    return [
+      deployment.commitHash,
+      deployment.commitMessage,
+      deployment.branch,
+      deployment.environment,
+      deployment.author,
+    ].some(value => value.toLowerCase().includes(query))
+  })
 }
 
-const { showModal = false } = defineProps<DeploymentListProps>()
+function updateSearch(event: Event): void {
+  search.set((event.target as HTMLInputElement).value)
+}
+
+function updateStatus(event: Event): void {
+  status.set((event.target as HTMLSelectElement).value)
+}
+
+function formatNumber(value: number): string {
+  return new Intl.NumberFormat().format(value)
+}
+
+function formatDuration(value: number | null): string {
+  if (value === null)
+    return 'Not recorded'
+  if (value < 60)
+    return `${Math.round(value)}s`
+  const minutes = Math.floor(value / 60)
+  const seconds = Math.round(value % 60)
+  return seconds > 0 ? `${minutes}m ${seconds}s` : `${minutes}m`
+}
+
+async function loadDeployments(): Promise<void> {
+  isLoading.set(true)
+  loadError.set('')
+  try {
+    deployments.set(await fetchDeployments())
+  }
+  catch (error) {
+    loadError.set('Deployment records could not be loaded.')
+    pushToast('error', 'Could not load deployments', { detail: String(error) })
+  }
+  finally {
+    isLoading.set(false)
+  }
+}
+
+onMount(() => {
+  void loadDeployments()
+})
 </script>
-<div class="py-4 lg:py-8 min-h-screen dark:bg-neutral-800">
-    <div class="mb-8 px-4 sm:px-6 lg:px-8">
+
+<div class="space-y-6">
+  <header class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+    <div>
+      <h1 class="font-bold text-2xl text-gray-900 dark:text-white">Deployments</h1>
+      <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Deployment model records through the guarded dashboard API.</p>
+    </div>
+    <button type="button" :disabled="isLoading()" class="inline-flex items-center px-3 py-2 font-semibold text-gray-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700 disabled:opacity-50" @click="loadDeployments">
+      <span :class="'mr-2 h-4 w-4 ' + (isLoading() ? 'animate-spin i-hugeicons-loading-03' : 'i-hugeicons-refresh')"></span>
+      Refresh
+    </button>
+  </header>
+
+  <div :if="loadError()" class="p-4 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900">{{ loadError() }}</div>
+
+  <section class="grid gap-3 grid-cols-2 lg:grid-cols-4">
+    <div class="p-4 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
+      <p class="text-gray-500 text-xs uppercase dark:text-neutral-400">Recorded</p>
+      <p class="mt-2 font-semibold text-2xl text-gray-900 dark:text-white">{{ formatNumber(summary().total) }}</p>
+    </div>
+    <div class="p-4 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
+      <p class="text-gray-500 text-xs uppercase dark:text-neutral-400">Successful</p>
+      <p class="mt-2 font-semibold text-2xl text-gray-900 dark:text-white">{{ formatNumber(summary().successful) }}</p>
+    </div>
+    <div class="p-4 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
+      <p class="text-gray-500 text-xs uppercase dark:text-neutral-400">Failed</p>
+      <p class="mt-2 font-semibold text-2xl text-gray-900 dark:text-white">{{ formatNumber(summary().failed) }}</p>
+    </div>
+    <div class="p-4 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
+      <p class="text-gray-500 text-xs uppercase dark:text-neutral-400">Average duration</p>
+      <p class="mt-2 font-semibold text-2xl text-gray-900 dark:text-white">{{ formatDuration(summary().averageDuration) }}</p>
+    </div>
+  </section>
+
+  <section class="space-y-3">
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
       <div>
-        <h3 class="font-semibold leading-6 text-base text-gray-900 dark:text-neutral-100">
-          Last 30 days
-        </h3>
-
-        <dl class="grid gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 mt-5">
-          <div class="overflow-hidden relative pt-5 px-4 sm:pt-6 sm:px-6 bg-white dark:bg-neutral-700 rounded-lg shadow">
-            <dt>
-              <div class="absolute p-3 bg-blue-500 rounded-md">
-                <div class="h-6 w-6 text-white i-hugeicons-rocket-01"></div>
-              </div>
-              <p class="ml-16 font-medium text-gray-500 text-sm truncate dark:text-neutral-400">
-                Total Deployments
-              </p>
-            </dt>
-            <dd class="flex items-baseline ml-16 pb-6 sm:pb-7">
-              <p class="font-semibold text-2xl text-gray-900 dark:text-neutral-100">
-                71,897
-              </p>
-              <p class="flex items-baseline ml-2 font-semibold text-green-600 text-sm dark:text-green-400">
-                <svg class="flex-shrink-0 self-center h-5 w-5 text-green-500 dark:text-green-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                  <path fill-rule="evenodd" d="M10 17a.75.75 0 01-.75-.75V5.612L5.29 9.77a.75.75 0 01-1.08-1.04l5.25-5.5a.75.75 0 011.08 0l5.25 5.5a.75.75 0 11-1.08 1.04l-3.96-4.158V16.25A.75.75 0 0110 17z" clip-rule="evenodd"></path>
-                </svg>
-                <span class="sr-only"> Increased by </span>
-                122
-              </p>
-            </dd>
-          </div>
-
-          <div class="overflow-hidden relative pt-5 px-4 sm:pt-6 sm:px-6 bg-white dark:bg-neutral-700 rounded-lg shadow">
-            <dt>
-              <div class="absolute p-3 bg-blue-500 rounded-md">
-                <div class="h-6 w-6 text-white i-hugeicons-clock-01"></div>
-              </div>
-              <p class="ml-16 font-medium text-gray-500 text-sm truncate dark:text-neutral-400">
-                Avg. Deploy Time
-              </p>
-            </dt>
-            <dd class="flex items-baseline ml-16 pb-6 sm:pb-7">
-              <p class="font-semibold text-2xl text-gray-900 dark:text-neutral-100">
-                3.65 mins
-              </p>
-              <p class="flex items-baseline ml-2 font-semibold text-green-600 text-sm dark:text-green-400">
-                <svg class="flex-shrink-0 self-center h-5 w-5 text-green-500 dark:text-green-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                  <path fill-rule="evenodd" d="M10 17a.75.75 0 01-.75-.75V5.612L5.29 9.77a.75.75 0 01-1.08-1.04l5.25-5.5a.75.75 0 011.08 0l5.25 5.5a.75.75 0 11-1.08 1.04l-3.96-4.158V16.25A.75.75 0 0110 17z" clip-rule="evenodd"></path>
-                </svg>
-                <span class="sr-only"> Increased by </span>
-                12 s
-              </p>
-            </dd>
-          </div>
-
-          <div class="overflow-hidden relative pt-5 px-4 sm:pt-6 sm:px-6 bg-white dark:bg-neutral-700 rounded-lg shadow">
-            <dt>
-              <div class="absolute p-3 bg-blue-500 rounded-md">
-                <div class="h-6 w-6 text-white i-hugeicons-checkmark-circle-02"></div>
-              </div>
-              <p class="ml-16 font-medium text-gray-500 text-sm truncate dark:text-neutral-400">
-                Success Rate
-              </p>
-            </dt>
-            <dd class="flex items-baseline ml-16 pb-6 sm:pb-7">
-              <p class="font-semibold text-2xl text-gray-900 dark:text-neutral-100">
-                94.57%
-              </p>
-              <p class="flex items-baseline ml-2 font-semibold text-red-600 text-sm dark:text-red-400">
-                <svg class="flex-shrink-0 self-center h-5 w-5 text-red-500 dark:text-red-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                  <path fill-rule="evenodd" d="M10 3a.75.75 0 01.75.75v10.638l3.96-4.158a.75.75 0 111.08 1.04l-5.25 5.5a.75.75 0 01-1.08 0l-5.25-5.5a.75.75 0 111.08-1.04l3.96 4.158V3.75A.75.75 0 0110 3z" clip-rule="evenodd"></path>
-                </svg>
-                <span class="sr-only"> Decreased by </span>
-                3.2%
-              </p>
-            </dd>
-          </div>
-        </dl>
+        <h2 class="font-semibold text-gray-900 dark:text-white">Deployment history</h2>
+        <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">No estimated totals or synthetic build activity.</p>
+      </div>
+      <div class="flex gap-2">
+        <label class="sr-only" for="deployment-status">Status</label>
+        <select id="deployment-status" :value="status()" class="px-3 py-2 text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" @change="updateStatus($event)">
+          <option value="all">All statuses</option>
+          <option value="success">Success</option>
+          <option value="failed">Failed</option>
+          <option value="running">Running</option>
+          <option value="pending">Pending</option>
+          <option value="cancelled">Cancelled</option>
+        </select>
+        <label class="sr-only" for="deployment-search">Search deployments</label>
+        <input id="deployment-search" :value="search()" type="search" placeholder="Search deployments" class="px-3 py-2 w-56 text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" @input="updateSearch($event)" />
       </div>
     </div>
-
-    <slot name="deployScript" />
-    <slot name="deploymentHistory" />
-  </div>
-
-  @if(showModal)
-    <slot name="modal" />
-  @endif
+    <DeploymentTable :deployments="rows()" :loading="isLoading" />
+  </section>
+</div>

@@ -2,8 +2,7 @@
 
 @section('content')
 @title('Dashboard - Deployments')
-<DeploymentList />
-
-<!-- <ActivityFeed /> -->
-
+<PageLayout>
+  <DeploymentList />
+</PageLayout>
 @endsection

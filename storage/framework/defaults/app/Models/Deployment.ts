@@ -24,6 +24,7 @@ export default defineModel({
     useApi: {
       uri: 'deployments',
       routes: ['index', 'show'],
+      middleware: ['auth'],
     },
   },
 

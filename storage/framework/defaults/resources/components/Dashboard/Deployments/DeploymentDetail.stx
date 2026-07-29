@@ -1,0 +1,149 @@
+<script client>
+import type { DeploymentRecord } from '../../../../functions/deployments'
+import { fetchDeployment } from '../../../../functions/deployments'
+import { pushToast } from '../../../../functions/toasts'
+
+const deployment = state<DeploymentRecord | null>(null)
+const isLoading = state(true)
+const loadError = state('')
+
+function record(): DeploymentRecord | null {
+  return deployment()
+}
+
+function formatDate(value: string): string {
+  if (!value)
+    return 'Not recorded'
+  const date = new Date(value)
+  return Number.isNaN(date.getTime())
+    ? value
+    : new Intl.DateTimeFormat(undefined, { dateStyle: 'long', timeStyle: 'medium' }).format(date)
+}
+
+function formatDuration(value: number | null): string {
+  if (value === null)
+    return 'Not recorded'
+  if (value < 60)
+    return `${Math.round(value)} seconds`
+  const minutes = Math.floor(value / 60)
+  const seconds = Math.round(value % 60)
+  return seconds > 0 ? `${minutes}m ${seconds}s` : `${minutes}m`
+}
+
+function statusClass(status: string): string {
+  if (['success', 'successful', 'completed', 'ready'].includes(status))
+    return 'text-green-700 dark:text-green-300 bg-green-50 dark:bg-green-950/40'
+  if (['failed', 'error', 'cancelled'].includes(status))
+    return 'text-red-700 dark:text-red-300 bg-red-50 dark:bg-red-950/40'
+  return 'text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40'
+}
+
+function statusLabel(status: string): string {
+  if (!status)
+    return 'Unknown'
+  return status.charAt(0).toUpperCase() + status.slice(1)
+}
+
+async function loadDeployment(): Promise<void> {
+  const route = useRoute()
+  const id = String(route.params.id || '')
+  isLoading.set(true)
+  loadError.set('')
+  try {
+    deployment.set(id ? await fetchDeployment(id) : null)
+  }
+  catch (error) {
+    loadError.set('Deployment could not be loaded.')
+    pushToast('error', 'Could not load deployment', { detail: String(error) })
+  }
+  finally {
+    isLoading.set(false)
+  }
+}
+
+onMount(() => {
+  void loadDeployment()
+})
+</script>
+
+<div class="space-y-6">
+  <header>
+    <StxLink to="/deployments" class="inline-flex items-center mb-3 font-medium text-blue-600 text-sm dark:text-blue-400">
+      <span class="mr-1 h-4 w-4 i-hugeicons-arrow-left-02"></span>
+      Deployments
+    </StxLink>
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+      <div>
+        <h1 class="font-bold text-2xl text-gray-900 dark:text-white">Deployment details</h1>
+        <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">A single Deployment model record.</p>
+      </div>
+      <span :if="record()" :class="'inline-flex px-2 py-1 font-medium text-xs rounded-md ' + statusClass(record()?.status || '')">{{ statusLabel(record()?.status || '') }}</span>
+    </div>
+  </header>
+
+  <div :if="isLoading()" class="px-5 py-12 text-center text-gray-500 text-sm bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">Loading deployment</div>
+  <div :if="loadError()" class="p-4 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900">{{ loadError() }}</div>
+  <div :if="!isLoading() && !loadError() && !record()" class="px-5 py-12 text-center bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
+    <p class="font-semibold text-gray-900 dark:text-white">Deployment not found</p>
+    <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">The requested Deployment model record does not exist.</p>
+  </div>
+
+  <template :if="record()">
+    <section class="grid gap-4 grid-cols-1 lg:grid-cols-2">
+      <div class="p-5 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
+        <h2 class="font-semibold text-gray-900 dark:text-white">Source</h2>
+        <dl class="grid gap-4 mt-4 text-sm">
+          <div>
+            <dt class="text-gray-500 dark:text-neutral-400">Commit</dt>
+            <dd class="mt-1 font-mono text-gray-900 dark:text-white">{{ record()?.commitHash || 'Not recorded' }}</dd>
+          </div>
+          <div>
+            <dt class="text-gray-500 dark:text-neutral-400">Message</dt>
+            <dd class="mt-1 text-gray-900 dark:text-white">{{ record()?.commitMessage || 'Not recorded' }}</dd>
+          </div>
+          <div class="grid gap-4 grid-cols-2">
+            <div>
+              <dt class="text-gray-500 dark:text-neutral-400">Branch</dt>
+              <dd class="mt-1 font-mono text-gray-900 dark:text-white">{{ record()?.branch || 'Not recorded' }}</dd>
+            </div>
+            <div>
+              <dt class="text-gray-500 dark:text-neutral-400">Author</dt>
+              <dd class="mt-1 text-gray-900 dark:text-white">{{ record()?.author || 'Not recorded' }}</dd>
+            </div>
+          </div>
+        </dl>
+      </div>
+
+      <div class="p-5 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
+        <h2 class="font-semibold text-gray-900 dark:text-white">Execution</h2>
+        <dl class="grid gap-4 mt-4 text-sm">
+          <div class="grid gap-4 grid-cols-2">
+            <div>
+              <dt class="text-gray-500 dark:text-neutral-400">Environment</dt>
+              <dd class="mt-1 text-gray-900 dark:text-white">{{ record()?.environment || 'Not recorded' }}</dd>
+            </div>
+            <div>
+              <dt class="text-gray-500 dark:text-neutral-400">Duration</dt>
+              <dd class="mt-1 text-gray-900 dark:text-white">{{ formatDuration(record()?.duration ?? null) }}</dd>
+            </div>
+          </div>
+          <div>
+            <dt class="text-gray-500 dark:text-neutral-400">Created</dt>
+            <dd class="mt-1 text-gray-900 dark:text-white">{{ formatDate(record()?.createdAt || '') }}</dd>
+          </div>
+          <div :if="record()?.url">
+            <dt class="text-gray-500 dark:text-neutral-400">Deployment URL</dt>
+            <dd class="mt-1"><a :href="record()?.url || '#'" target="_blank" rel="noopener noreferrer" class="font-medium text-blue-600 dark:text-blue-400 hover:text-blue-500">{{ record()?.url }}</a></dd>
+          </div>
+        </dl>
+      </div>
+    </section>
+
+    <section :if="record()?.errorLog" class="overflow-hidden bg-white dark:bg-neutral-800 border border-red-200 rounded-lg dark:border-red-900">
+      <div class="px-4 py-3 border-b border-red-200 dark:border-red-900">
+        <h2 class="font-semibold text-red-800 dark:text-red-200">Error log</h2>
+      </div>
+      <pre class="overflow-x-auto p-4 font-mono text-red-800 text-xs whitespace-pre-wrap dark:text-red-200">{{ record()?.errorLog }}</pre>
+    </section>
+  </template>
+</div>
