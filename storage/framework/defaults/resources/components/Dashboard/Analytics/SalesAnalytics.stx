@@ -1,0 +1,228 @@
+<script client>
+import type { AnalyticsRange, SalesAnalyticsResponse } from '../../../../functions/analytics'
+import { fetchSalesAnalytics } from '../../../../functions/analytics'
+import { pushToast } from '../../../../functions/toasts'
+
+const analytics = state<SalesAnalyticsResponse | null>(null)
+const analyticsRange = state<AnalyticsRange>('month')
+const dateRangeDisplay = state('Last 30 days')
+const isLoading = state(false)
+const loadError = state('')
+
+function formatNumber(value: number): string {
+  return new Intl.NumberFormat().format(value)
+}
+
+function formatCurrency(value: number, currency: string): string {
+  return new Intl.NumberFormat(undefined, { style: 'currency', currency }).format(value)
+}
+
+function formatDateRange(start: string, end: string): string {
+  const formatter = new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
+  return `${formatter.format(new Date(start))} to ${formatter.format(new Date(end))}`
+}
+
+function currencyTotals(): SalesAnalyticsResponse['currencyTotals'] {
+  return analytics()?.currencyTotals || []
+}
+
+function paymentMethods(): SalesAnalyticsResponse['paymentMethods'] {
+  return analytics()?.paymentMethods || []
+}
+
+function dailyOrders(): SalesAnalyticsResponse['dailyOrders'] {
+  return analytics()?.dailyOrders || []
+}
+
+function topProducts(): SalesAnalyticsResponse['topProducts'] {
+  return analytics()?.topProducts || []
+}
+
+function setAnalyticsRange(value: string | CustomEvent<string>): void {
+  const range = typeof value === 'string' ? value : value.detail
+  analyticsRange.set(range as AnalyticsRange)
+  void loadAnalytics()
+}
+
+async function loadAnalytics(): Promise<void> {
+  isLoading.set(true)
+  loadError.set('')
+  try {
+    const data = await fetchSalesAnalytics(analyticsRange())
+    analytics.set(data)
+    dateRangeDisplay.set(formatDateRange(data.dateRange.start, data.dateRange.end))
+  }
+  catch (error) {
+    loadError.set('Sales analytics could not be loaded.')
+    pushToast('error', 'Could not load sales analytics', { detail: String(error) })
+  }
+  finally {
+    isLoading.set(false)
+  }
+}
+
+onMount(() => {
+  void loadAnalytics()
+})
+</script>
+
+<div class="space-y-6">
+  <AnalyticsPageHeader
+    title="Sales Analytics"
+    description="Currency-safe aggregates from orders, payments, and recorded order items."
+    :dateRange="dateRangeDisplay"
+    :range="analyticsRange"
+    :loading="isLoading"
+    @range-change="setAnalyticsRange"
+    @refresh="loadAnalytics"
+  />
+
+  <div :if="loadError()" class="p-4 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900">
+    {{ loadError() }}
+  </div>
+
+  <section class="grid gap-3 grid-cols-2 lg:grid-cols-4">
+    <div class="p-4 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
+      <p class="text-gray-500 text-xs tracking-wide uppercase dark:text-neutral-400">Orders</p>
+      <p class="mt-2 font-semibold text-2xl text-gray-900 dark:text-white">{{ formatNumber(analytics()?.overview.orders || 0) }}</p>
+    </div>
+    <div class="p-4 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
+      <p class="text-gray-500 text-xs tracking-wide uppercase dark:text-neutral-400">Payments</p>
+      <p class="mt-2 font-semibold text-2xl text-gray-900 dark:text-white">{{ formatNumber(analytics()?.overview.payments || 0) }}</p>
+    </div>
+    <div class="p-4 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
+      <p class="text-gray-500 text-xs tracking-wide uppercase dark:text-neutral-400">Refunds</p>
+      <p class="mt-2 font-semibold text-2xl text-gray-900 dark:text-white">{{ formatNumber(analytics()?.overview.refunds || 0) }}</p>
+    </div>
+    <div class="p-4 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
+      <p class="text-gray-500 text-xs tracking-wide uppercase dark:text-neutral-400">Currencies</p>
+      <p class="mt-2 font-semibold text-2xl text-gray-900 dark:text-white">{{ formatNumber(analytics()?.overview.currencies || 0) }}</p>
+    </div>
+  </section>
+
+  <section class="overflow-hidden bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
+    <div class="px-4 py-3 border-b border-gray-200 dark:border-neutral-700">
+      <h2 class="font-semibold text-gray-900 dark:text-white">Order value by currency</h2>
+      <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Currencies stay separate so unlike values are never added together.</p>
+    </div>
+    <div :if="!isLoading() && currencyTotals().length === 0" class="px-4 py-10 text-center text-gray-500 text-sm dark:text-neutral-400">
+      No orders were recorded for this period.
+    </div>
+    <div :if="currencyTotals().length > 0" class="overflow-x-auto">
+      <table class="min-w-full divide-gray-200 divide-y dark:divide-neutral-700">
+        <thead class="bg-gray-50 dark:bg-neutral-700/50">
+          <tr>
+            <th class="px-4 py-3 font-medium text-gray-500 text-left text-xs uppercase dark:text-neutral-300">Currency</th>
+            <th class="px-4 py-3 font-medium text-gray-500 text-right text-xs uppercase dark:text-neutral-300">Orders</th>
+            <th class="px-4 py-3 font-medium text-gray-500 text-right text-xs uppercase dark:text-neutral-300">Gross</th>
+            <th class="px-4 py-3 font-medium text-gray-500 text-right text-xs uppercase dark:text-neutral-300">Canceled</th>
+            <th class="px-4 py-3 font-medium text-gray-500 text-right text-xs uppercase dark:text-neutral-300">Net</th>
+            <th class="px-4 py-3 font-medium text-gray-500 text-right text-xs uppercase dark:text-neutral-300">Average</th>
+          </tr>
+        </thead>
+        <tbody class="divide-gray-200 divide-y dark:divide-neutral-700">
+          <template :for="total in currencyTotals()">
+            <tr>
+              <td class="px-4 py-3 font-medium text-gray-900 text-sm dark:text-white">{{ total.currency }}</td>
+              <td class="px-4 py-3 text-gray-500 text-right text-sm dark:text-neutral-300">{{ formatNumber(total.orders) }}</td>
+              <td class="px-4 py-3 text-gray-500 text-right text-sm dark:text-neutral-300">{{ formatCurrency(total.gross, total.currency) }}</td>
+              <td class="px-4 py-3 text-gray-500 text-right text-sm dark:text-neutral-300">{{ formatCurrency(total.cancelled, total.currency) }}</td>
+              <td class="px-4 py-3 font-medium text-gray-900 text-right text-sm dark:text-white">{{ formatCurrency(total.net, total.currency) }}</td>
+              <td class="px-4 py-3 text-gray-500 text-right text-sm dark:text-neutral-300">{{ formatCurrency(total.average, total.currency) }}</td>
+            </tr>
+          </template>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="overflow-hidden bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
+    <div class="px-4 py-3 border-b border-gray-200 dark:border-neutral-700">
+      <h2 class="font-semibold text-gray-900 dark:text-white">Recorded payment methods</h2>
+      <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Transaction and refund values come directly from Payment records.</p>
+    </div>
+    <div :if="!isLoading() && paymentMethods().length === 0" class="px-4 py-10 text-center text-gray-500 text-sm dark:text-neutral-400">
+      No payments were recorded for this period.
+    </div>
+    <div :if="paymentMethods().length > 0" class="overflow-x-auto">
+      <table class="min-w-full divide-gray-200 divide-y dark:divide-neutral-700">
+        <thead class="bg-gray-50 dark:bg-neutral-700/50">
+          <tr>
+            <th class="px-4 py-3 font-medium text-gray-500 text-left text-xs uppercase dark:text-neutral-300">Method</th>
+            <th class="px-4 py-3 font-medium text-gray-500 text-left text-xs uppercase dark:text-neutral-300">Currency</th>
+            <th class="px-4 py-3 font-medium text-gray-500 text-right text-xs uppercase dark:text-neutral-300">Transactions</th>
+            <th class="px-4 py-3 font-medium text-gray-500 text-right text-xs uppercase dark:text-neutral-300">Gross</th>
+            <th class="px-4 py-3 font-medium text-gray-500 text-right text-xs uppercase dark:text-neutral-300">Refunds</th>
+            <th class="px-4 py-3 font-medium text-gray-500 text-right text-xs uppercase dark:text-neutral-300">Net</th>
+            <th class="px-4 py-3 font-medium text-gray-500 text-right text-xs uppercase dark:text-neutral-300">Share</th>
+          </tr>
+        </thead>
+        <tbody class="divide-gray-200 divide-y dark:divide-neutral-700">
+          <template :for="method in paymentMethods()">
+            <tr>
+              <td class="px-4 py-3 font-medium text-gray-900 text-sm dark:text-white">{{ method.method }}</td>
+              <td class="px-4 py-3 text-gray-500 text-sm dark:text-neutral-300">{{ method.currency }}</td>
+              <td class="px-4 py-3 text-gray-500 text-right text-sm dark:text-neutral-300">{{ formatNumber(method.transactions) }}</td>
+              <td class="px-4 py-3 text-gray-500 text-right text-sm dark:text-neutral-300">{{ formatCurrency(method.amount, method.currency) }}</td>
+              <td class="px-4 py-3 text-gray-500 text-right text-sm dark:text-neutral-300">{{ formatCurrency(method.refunds, method.currency) }}</td>
+              <td class="px-4 py-3 font-medium text-gray-900 text-right text-sm dark:text-white">{{ formatCurrency(method.net, method.currency) }}</td>
+              <td class="px-4 py-3 text-gray-500 text-right text-sm dark:text-neutral-300">{{ method.percentage }}%</td>
+            </tr>
+          </template>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="grid gap-6 grid-cols-1 xl:grid-cols-2">
+    <div class="overflow-hidden bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
+      <div class="px-4 py-3 border-b border-gray-200 dark:border-neutral-700">
+        <h2 class="font-semibold text-gray-900 dark:text-white">Daily order activity</h2>
+      </div>
+      <div :if="dailyOrders().length === 0" class="px-4 py-10 text-center text-gray-500 text-sm dark:text-neutral-400">No order activity for this period.</div>
+      <div :if="dailyOrders().length > 0" class="overflow-x-auto">
+        <table class="min-w-full divide-gray-200 divide-y dark:divide-neutral-700">
+          <thead class="bg-gray-50 dark:bg-neutral-700/50">
+            <tr>
+              <th class="px-4 py-3 font-medium text-gray-500 text-left text-xs uppercase dark:text-neutral-300">Date</th>
+              <th class="px-4 py-3 font-medium text-gray-500 text-left text-xs uppercase dark:text-neutral-300">Currency</th>
+              <th class="px-4 py-3 font-medium text-gray-500 text-right text-xs uppercase dark:text-neutral-300">Orders</th>
+              <th class="px-4 py-3 font-medium text-gray-500 text-right text-xs uppercase dark:text-neutral-300">Value</th>
+            </tr>
+          </thead>
+          <tbody class="divide-gray-200 divide-y dark:divide-neutral-700">
+            <template :for="day in dailyOrders()">
+              <tr>
+                <td class="px-4 py-3 text-gray-900 text-sm dark:text-white">{{ day.date }}</td>
+                <td class="px-4 py-3 text-gray-500 text-sm dark:text-neutral-300">{{ day.currency }}</td>
+                <td class="px-4 py-3 text-gray-500 text-right text-sm dark:text-neutral-300">{{ day.orders }}</td>
+                <td class="px-4 py-3 text-gray-500 text-right text-sm dark:text-neutral-300">{{ formatCurrency(day.value, day.currency) }}</td>
+              </tr>
+            </template>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="overflow-hidden bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
+      <div class="px-4 py-3 border-b border-gray-200 dark:border-neutral-700">
+        <h2 class="font-semibold text-gray-900 dark:text-white">Top products</h2>
+      </div>
+      <div :if="topProducts().length === 0" class="px-4 py-10 text-center">
+        <p class="font-medium text-gray-700 text-sm dark:text-neutral-200">No recorded order items</p>
+        <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Product performance appears after orders contain OrderItem records.</p>
+      </div>
+      <div :if="topProducts().length > 0" class="divide-gray-200 divide-y dark:divide-neutral-700">
+        <template :for="product in topProducts()">
+          <div class="flex gap-4 items-center justify-between px-4 py-3">
+            <div>
+              <p class="font-medium text-gray-900 text-sm dark:text-white">{{ product.name }}</p>
+              <p class="text-gray-500 text-xs dark:text-neutral-400">{{ formatNumber(product.quantity) }} units</p>
+            </div>
+            <p class="font-medium text-gray-900 text-sm dark:text-white">{{ formatCurrency(product.revenue, product.currency) }}</p>
+          </div>
+        </template>
+      </div>
+    </div>
+  </section>
+</div>

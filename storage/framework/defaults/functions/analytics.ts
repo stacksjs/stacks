@@ -73,9 +73,68 @@ export interface WebAnalyticsResponse {
   countries: CountryData[]
 }
 
+export interface SalesAnalyticsResponse {
+  source: 'models'
+  range: AnalyticsRange
+  dateRange: {
+    start: string
+    end: string
+  }
+  overview: {
+    orders: number
+    payments: number
+    refunds: number
+    currencies: number
+  }
+  currencyTotals: Array<{
+    currency: string
+    orders: number
+    gross: number
+    cancelled: number
+    net: number
+    average: number
+  }>
+  paymentMethods: Array<{
+    method: string
+    currency: string
+    amount: number
+    refunds: number
+    net: number
+    transactions: number
+    percentage: number
+  }>
+  dailyOrders: Array<{
+    date: string
+    currency: string
+    value: number
+    orders: number
+  }>
+  topProducts: Array<{
+    id: string
+    productId: string
+    name: string
+    categoryId: string
+    quantity: number
+    revenue: number
+    currency: string
+  }>
+  categories: Array<{
+    id: string
+    categoryId: string
+    name: string
+    quantity: number
+    revenue: number
+    currency: string
+  }>
+}
+
 export async function fetchWebAnalytics(range: AnalyticsRange = 'month', scope: AnalyticsScope = 'all'): Promise<WebAnalyticsResponse> {
   const query = new URLSearchParams({ range, scope })
   return await dashboardApi<WebAnalyticsResponse>(`/api/dashboard/analytics/web?${query.toString()}`)
+}
+
+export async function fetchSalesAnalytics(range: AnalyticsRange = 'month'): Promise<SalesAnalyticsResponse> {
+  return await dashboardApi<SalesAnalyticsResponse>(`/api/dashboard/analytics/sales?range=${encodeURIComponent(range)}`)
 }
 
 export function useAnalytics() {

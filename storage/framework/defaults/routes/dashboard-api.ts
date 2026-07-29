@@ -40,6 +40,7 @@ route.group({ prefix: '/api/dashboard', apiResponse: true }, () => {
   guard(route.get('/home', 'Actions/Dashboard/DashboardHomeAction'))
 
   guard(route.get('/analytics/web', 'Actions/Dashboard/Analytics/WebAnalyticsAction'))
+  guard(route.get('/analytics/sales', 'Actions/Dashboard/Analytics/SalesAnalyticsAction'))
 
   // CMS admin — backs the pages under `views/dashboard/content/`.
   //
