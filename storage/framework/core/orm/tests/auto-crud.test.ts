@@ -26,7 +26,7 @@
 import { describe, expect, it } from 'bun:test'
 import { Database } from 'bun:sqlite'
 import { snakeCase } from '@stacksjs/strings'
-import { applyCasts, applySorting, buildIndexMeta, buildIndexPaginator, buildReadColumnMap, dropHiddenInputs, filterFillable, getWritableFields, INDEX_DEFAULT_PER_PAGE, INDEX_MAX_PER_PAGE, isUniqueViolation, mapWriteError, resolveApiMiddleware, resolveIndexPageArgs, stripHidden, toSnakeCase, toSnakeCaseKeys } from '../src/auto-crud'
+import { applyCasts, applySorting, buildIndexMeta, buildIndexPaginator, buildReadColumnMap, dropHiddenInputs, filterFillable, getWritableFields, INDEX_DEFAULT_PER_PAGE, INDEX_MAX_PER_PAGE, isUniqueViolation, mapWriteError, normalizeValidationValue, resolveApiMiddleware, resolveIndexPageArgs, stripHidden, toSnakeCase, toSnakeCaseKeys } from '../src/auto-crud'
 import { toPaginator } from '../src/paginator'
 
 describe('toSnakeCaseKeys (write-path column mapping)', () => {
@@ -108,6 +108,27 @@ describe('filterFillable (dual-spelling input)', () => {
   it('returns {} for empty body or no fillable fields', () => {
     expect(filterFillable(null, fillable)).toEqual({})
     expect(filterFillable({ code: 'X' }, [])).toEqual({})
+  })
+})
+
+describe('normalizeValidationValue (JSON date boundary)', () => {
+  const dateRule = { name: 'date' }
+
+  it('converts a valid ISO calendar date to a Date for schema validation', () => {
+    const result = normalizeValidationValue(dateRule, '2026-08-01')
+    expect(result).toBeInstanceOf(Date)
+    expect((result as Date).toISOString()).toBe('2026-08-01T00:00:00.000Z')
+  })
+
+  it('leaves impossible and non-ISO dates invalid', () => {
+    expect(normalizeValidationValue(dateRule, '2026-02-30')).toBe('2026-02-30')
+    expect(normalizeValidationValue(dateRule, 'August 1, 2026')).toBe('August 1, 2026')
+  })
+
+  it('does not alter existing Date instances or unrelated validators', () => {
+    const date = new Date('2026-08-01T00:00:00.000Z')
+    expect(normalizeValidationValue(dateRule, date)).toBe(date)
+    expect(normalizeValidationValue({ name: 'string' }, '2026-08-01')).toBe('2026-08-01')
   })
 })
 

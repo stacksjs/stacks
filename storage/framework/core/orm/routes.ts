@@ -12,7 +12,7 @@ import { projectPath, storagePath } from '@stacksjs/path'
 import { createQueryBuilder, defaultConfig, setConfig } from '@stacksjs/query-builder'
 import { HttpError } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/logging'
-import { applyCasts, applySorting, buildIndexMeta, buildIndexPaginator, buildReadColumnMap, dropHiddenInputs, filterFillable, getWritableFields, mapWriteError, resolveApiMiddleware, resolveIndexPageArgs, stripHidden, toSnakeCase, toSnakeCaseKeys } from './src/auto-crud'
+import { applyCasts, applySorting, buildIndexMeta, buildIndexPaginator, buildReadColumnMap, dropHiddenInputs, filterFillable, getWritableFields, mapWriteError, normalizeValidationValue, resolveApiMiddleware, resolveIndexPageArgs, stripHidden, toSnakeCase, toSnakeCaseKeys } from './src/auto-crud'
 import { loadModelRegistry } from './src/model-registry'
 
 // Initialize the query builder config from the project's optional
@@ -107,7 +107,7 @@ function validateWriteBody(
     if (!rule || typeof rule.validate !== 'function') continue
     const present = Object.prototype.hasOwnProperty.call(data, field)
     if (!present && hook === 'updating') continue
-    const value = present ? data[field] : undefined
+    const value = normalizeValidationValue(rule, present ? data[field] : undefined)
     const result = rule.validate(value)
     if (!result?.valid && Array.isArray(result?.errors) && result.errors.length > 0) {
       errors[field] = result.errors.map((e: any) =>

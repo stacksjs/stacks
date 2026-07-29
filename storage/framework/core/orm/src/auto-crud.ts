@@ -153,6 +153,36 @@ export function filterFillable(body: any, fillableFields: string[]): Record<stri
 }
 
 /**
+ * Normalize JSON-safe values for validators whose in-process type cannot be
+ * represented directly in a request body. `schema.date()` validates a Date
+ * instance, while browser forms submit an ISO calendar date string. Keep the
+ * stored write payload unchanged and normalize only the value passed to the
+ * validator.
+ */
+export function normalizeValidationValue(rule: any, value: unknown): unknown {
+  if (rule?.name !== 'date' || value instanceof Date || typeof value !== 'string')
+    return value
+
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value)
+  if (!match)
+    return value
+
+  const year = Number(match[1])
+  const month = Number(match[2])
+  const day = Number(match[3])
+  const parsed = new Date(Date.UTC(year, month - 1, day))
+  if (
+    parsed.getUTCFullYear() !== year
+    || parsed.getUTCMonth() !== month - 1
+    || parsed.getUTCDate() !== day
+  ) {
+    return value
+  }
+
+  return parsed
+}
+
+/**
  * Drop attribute keys flagged `hidden: true` from an incoming write body.
  * Must drop BOTH spellings — accepting the snake spelling in filterFillable
  * without this would let `payment_intent_id` sneak past a camelCase hidden
