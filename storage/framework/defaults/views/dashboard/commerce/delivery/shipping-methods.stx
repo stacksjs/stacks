@@ -22,7 +22,7 @@
         <div class="mt-4">
           <SearchFilter
             placeholder="Search shipping methods..."
-            @search="handleSearch($event.detail)"
+            @search="handleSearch"
             class="w-full md:w-96"
           />
         </div>
@@ -30,8 +30,8 @@
 
       <ShippingMethodsTable
         :methods="paginatedShippingMethods"
-        @edit="handleEditMethod($event.detail)"
-        @delete="handleDeleteMethod($event.detail)"
+        @edit="handleEditMethod"
+        @delete="handleDeleteMethod"
       />
 
       <div class="px-4 py-3 bg-gray-50 dark:bg-neutral-900 border-gray-200 border-t dark:border-neutral-700">
@@ -41,7 +41,7 @@
           :itemsPerPage="itemsPerPage"
           @prev="handlePrevPage"
           @next="handleNextPage"
-          @page="handlePageChange($event.detail)"
+          @page="handlePageChange"
         />
       </div>
     </div>

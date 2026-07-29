@@ -19,14 +19,14 @@
           </button>
         </div>
         <div class="mt-4">
-          <div class="w-full md:w-96"><SearchFilter placeholder="Search license keys..." @search="handleSearch($event.detail)" /></div>
+          <div class="w-full md:w-96"><SearchFilter placeholder="Search license keys..." @search="handleSearch" /></div>
         </div>
       </div>
 
-      <LicenseKeysTable :licenseKeys="paginatedLicenseKeys" @edit="openEditModal($event.detail)" @delete="handleDeleteLicenseKey($event.detail)" />
+      <LicenseKeysTable :licenseKeys="paginatedLicenseKeys" @edit="openEditModal" @delete="handleDeleteLicenseKey" />
 
       <div class="px-4 py-3 bg-gray-50 dark:bg-neutral-900 border-gray-200 border-t dark:border-neutral-700">
-        <DeliveryPagination :currentPage="currentPage" :totalItems="totalItems" :itemsPerPage="itemsPerPage" @prev="handlePrevPage" @next="handleNextPage" @page="handlePageChange($event.detail)" />
+        <DeliveryPagination :currentPage="currentPage" :totalItems="totalItems" :itemsPerPage="itemsPerPage" @prev="handlePrevPage" @next="handleNextPage" @page="handlePageChange" />
       </div>
     </div>
   </div>
@@ -35,7 +35,7 @@
     :open="showAddModal"
     mode="add"
     :options="licenseKeyOptions"
-    @submit="addLicenseKey($event.detail)"
+    @submit="addLicenseKey"
     @close="closeAddModal()"
   />
   <LicenseKeyDialog
@@ -43,7 +43,7 @@
     mode="edit"
     :license-key="editingLicenseKey"
     :options="licenseKeyOptions"
-    @submit="saveLicenseKey($event.detail)"
+    @submit="saveLicenseKey"
     @close="closeEditModal()"
   />
 </div>
