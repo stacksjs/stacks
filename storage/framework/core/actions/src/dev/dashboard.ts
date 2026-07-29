@@ -79,12 +79,22 @@ async function startStxServer(): Promise<void> {
 
   let serve: typeof import('bun-plugin-stx/serve').serve
   try {
-    const mod = await import('bun-plugin-stx/serve')
+    const localServe = process.env.BUN_PLUGIN_STX_SRC
+      || `${process.env.HOME}/Code/Tools/stx/packages/bun-plugin/src/serve.ts`
+    if (!(await Bun.file(localServe).exists()))
+      throw new Error('local bun-plugin-stx source not found')
+    const mod = await import(localServe)
     serve = mod.serve
   }
   catch {
-    const mod = await import(projectPath('pantry/bun-plugin-stx/dist/serve.js'))
-    serve = mod.serve
+    try {
+      const mod = await import('bun-plugin-stx/serve')
+      serve = mod.serve
+    }
+    catch {
+      const mod = await import(projectPath('pantry/bun-plugin-stx/dist/serve.js'))
+      serve = mod.serve
+    }
   }
 
   // Pre-resolve stx from pantry. Bun's bare-specifier resolver finds the
@@ -122,17 +132,88 @@ async function startStxServer(): Promise<void> {
   const { listConfigFiles, readConfig, updateConfigKey } = await import(
     storagePath('framework/defaults/resources/functions/dashboard/config-io.ts')
   )
-  // Map a runtime bare specifier (used by client-side `await import('@stacksjs/...')`
-  // in dashboard pages) to the on-disk dist file we serve. The matching import
-  // map is injected by the dashboard layout — see
-  // `storage/framework/defaults/views/dashboard/layouts/default.stx`
-  // (`<script type="importmap">` near the top). The dashboard's own
-  // `stx.config.ts` would be the natural home for this, but `bun-plugin-stx`'s
-  // `serve()` autoloads config from `process.cwd()` (the project root), not
-  // the layouts dir, so the layout-level injection is what actually reaches
-  // the browser.
-  const depRoutes: Record<string, string> = {
-    '/__deps/charts.js': storagePath('framework/core/charts/dist/index.js'),
+  // Dashboard chart modules are loaded lazily from explicit dev-server URLs.
+  // Package dist files are intentionally not served verbatim: they retain
+  // package-internal bare imports, which browsers cannot resolve. Build each
+  // entry into one browser-native ESM module and cache it for this dev session.
+  const localTsChartsRoot = process.env.TS_CHARTS_SRC
+    || `${process.env.HOME}/Code/Libraries/ts-charts`
+  const dependencyBundles = new Map<string, Promise<string>>()
+
+  function resolveTsChartsSource(packageName: string): string | null {
+    const candidates = [
+      `${localTsChartsRoot}/packages/${packageName}/src/index.ts`,
+      projectPath(`node_modules/@ts-charts/${packageName}/src/index.ts`),
+      projectPath(`pantry/@ts-charts/${packageName}/src/index.ts`),
+    ]
+    return candidates.find(existsSync) || null
+  }
+
+  const tsChartsEntry = [
+    `${localTsChartsRoot}/packages/ts-charts/src/index.ts`,
+    projectPath('node_modules/ts-charts/src/index.ts'),
+    projectPath('pantry/ts-charts/src/index.ts'),
+  ].find(existsSync)
+
+  async function buildDashboardDependency(entrypoint: string): Promise<string> {
+    const cached = dependencyBundles.get(entrypoint)
+    if (cached)
+      return cached
+
+    const build = (async () => {
+      const result = await Bun.build({
+        entrypoints: [entrypoint],
+        target: 'browser',
+        format: 'esm',
+        minify: true,
+        plugins: [{
+          name: 'dashboard-ts-charts-source',
+          setup(builder) {
+            builder.onResolve({ filter: /^@ts-charts\/[a-z0-9-]+$/ }, (args) => {
+              const packageName = args.path.slice('@ts-charts/'.length)
+              const source = resolveTsChartsSource(packageName)
+              if (source)
+                return { path: source }
+              return null
+            })
+          },
+        }],
+      })
+      if (!result.success) {
+        const errors = result.logs
+          .filter(log => log.level === 'error')
+          .map(log => log.message)
+          .join('\n')
+        throw new Error(errors || `Failed to bundle ${entrypoint}`)
+      }
+      const output = result.outputs.find(file => file.path.endsWith('.js'))
+      if (!output)
+        throw new Error(`No JavaScript output produced for ${entrypoint}`)
+      return output.text()
+    })()
+
+    dependencyBundles.set(entrypoint, build)
+    return build
+  }
+
+  function browserDependencyRoute(entrypoint: string): () => Promise<Response> {
+    return async () => {
+      try {
+        return new Response(await buildDashboardDependency(entrypoint), {
+          headers: {
+            'content-type': 'text/javascript; charset=utf-8',
+            'cache-control': 'no-cache',
+          },
+        })
+      }
+      catch (error) {
+        dependencyBundles.delete(entrypoint)
+        return new Response(`throw new Error(${JSON.stringify((error as Error).message)})`, {
+          status: 500,
+          headers: { 'content-type': 'text/javascript; charset=utf-8' },
+        })
+      }
+    }
   }
 
   // Dashboard icons render through Crosswind icon classes (`i-hugeicons-*`), but most are
@@ -166,6 +247,12 @@ async function startStxServer(): Promise<void> {
   }
 
   const configRoutes: Record<string, (req: Request) => Response | Promise<Response>> = {
+    '/__deps/charts.js': browserDependencyRoute(
+      storagePath('framework/core/charts/src/index.ts'),
+    ),
+    '/__deps/ts-charts.js': browserDependencyRoute(
+      tsChartsEntry || `${localTsChartsRoot}/packages/ts-charts/src/index.ts`,
+    ),
     '/__deps/dashboard-icons.css': async () => {
       if (!dashboardIconCss)
         dashboardIconCss = buildDashboardIconCss()
@@ -173,26 +260,6 @@ async function startStxServer(): Promise<void> {
         headers: { 'content-type': 'text/css; charset=utf-8', 'cache-control': 'no-cache' },
       })
     },
-    ...Object.fromEntries(
-      Object.entries(depRoutes).map(([url, file]) => [
-        url,
-        async () => {
-          const f = Bun.file(file)
-          if (!(await f.exists())) {
-            return new Response(
-              `// dependency dist missing: ${file}\n// rebuild with: cd ${file.replace(/\/dist\/[^/]+$/, '')} && bun build.ts`,
-              { status: 500, headers: { 'content-type': 'text/javascript; charset=utf-8' } },
-            )
-          }
-          return new Response(f, {
-            headers: {
-              'content-type': 'text/javascript; charset=utf-8',
-              'cache-control': 'no-cache',
-            },
-          })
-        },
-      ]),
-    ),
     '/api/config/list': async () => {
       try {
         return Response.json({ ok: true, files: listConfigFiles() })
