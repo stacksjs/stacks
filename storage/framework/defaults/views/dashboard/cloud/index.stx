@@ -1,4 +1,6 @@
+@extends('layouts/default')
 
+@section('content')
 @title('Dashboard - Cloud')
 <div class="py-4 lg:py-8 min-h-screen dark:bg-neutral-800">
   <div class="px-4 sm:px-6 lg:px-8">
@@ -335,7 +337,7 @@ async function renderTopology() {
   topologyCleanup?.()
   container.innerHTML = ''
 
-  const d3 = await import('d3')
+  const d3 = await import('/__deps/ts-charts.js')
   const width = container.clientWidth || 800
   const height = container.clientHeight || 420
 

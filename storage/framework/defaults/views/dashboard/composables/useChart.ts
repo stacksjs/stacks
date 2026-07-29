@@ -10,7 +10,7 @@
  * `useChart` packages that into one call, returns a destroyer so SPA
  * navigation can tear charts down, and tolerates SSR (no-ops on the
  * server). It does *not* import the chart lib eagerly — pages can
- * still `await import('@stacksjs/charts')` to keep the browser bundle
+ * still `await import('/__deps/charts.js')` to keep the browser bundle
  * lazy, then pass the `Chart` constructor in.
  */
 

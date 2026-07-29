@@ -369,7 +369,7 @@ async function onTimeRangeChange(): Promise<void> {
 
 onMount(async () => {
   await fetchReleaseData(timeRange())
-  const { Chart, registerables } = await import('@stacksjs/charts')
+  const { Chart, registerables } = await import('/__deps/charts.js')
   Chart.register(...registerables)
   const Ctor = Chart as unknown as ChartCtor
   const dl = useChart({ Chart: Ctor, id: 'releases_downloads_chart', type: 'line', data: downloadsData(), options: chartOptions })

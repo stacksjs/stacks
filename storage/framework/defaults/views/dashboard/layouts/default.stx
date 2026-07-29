@@ -85,27 +85,6 @@ body {
 </style>
 
 <script>
-// Dynamic import map injection. Pages do `await import('@stacksjs/charts')`
-// in their `<script client>` blocks, which the browser refuses to resolve
-// without an import map. Writing a literal `<script type="importmap">` here
-// would be the obvious fix, but STX's layout-script processor strips the
-// `type` attribute and wraps the body in an IIFE — destroying it. Instead
-// we inject the import map programmatically via DOM, synchronously, before
-// any page-level script (and therefore before any dynamic import) runs.
-// The matching `/__deps/charts.js` route lives in dev/dashboard.ts.
-;(function () {
-  if (typeof document === 'undefined') return
-  // SPA fragment swaps re-execute scripts — only install once.
-  if (document.querySelector('script[data-stx-importmap]')) return
-  var s = document.createElement('script')
-  s.type = 'importmap'
-  s.setAttribute('data-stx-importmap', '')
-  s.textContent = '{"imports":{"@stacksjs/charts":"/__deps/charts.js"}}'
-  ;(document.head || document.documentElement).prepend(s)
-})();
-</script>
-
-<script>
 // Dashboard-wide chart helpers exposed on window so feature pages can call
 // `useChart(...)` / `useCharts(...)` without importing the composables
 // module. The page's `<script client>` blocks run inside a non-module
@@ -152,6 +131,7 @@ body {
 // layout so every dashboard page picks it up without opting in.
 // `~/`-anchored for the same reason as the sidebar import above.
 import { useToasts, dismissToast } from '~/storage/framework/defaults/functions/toasts'
+import { authStore } from '~/storage/framework/defaults/views/dashboard/stores/auth'
 const { toasts } = useToasts()
 
 // Helpers below return COMPLETE class strings (static + dynamic) and are
@@ -178,26 +158,16 @@ const toastWrapperClass = (type) => `pointer-events-auto overflow-hidden bg-whit
 // where `/api/dashboard/*` sits behind auth, the endpoint returns real role
 // data and the filter hides what the viewer can't reach.
 //
-// Guarded: `useStore('auth')` THROWS when the store was never registered, and
-// a throw here aborts scope registration for the entire page, leaving every
-// signal on every dashboard page unbound. A missing auth store must degrade to
-// the permissive default, not take the dashboard down with it.
-const sidebarRoles = {{ sidebarRoleMap }}
-
-const auth = (() => {
-  try {
-    const store = useStore('auth')
-    store.load()
-    return store
-  }
-  catch {
-    return null
-  }
-})()
+// stx bridges referenced <script server> exports into this client scope.
+// Keep this as a normal identifier so imported client code remains valid
+// TypeScript throughout the bundling pipeline.
+const sidebarRoles = sidebarRoleMap
+const auth = authStore
+auth.load()
 
 function applyRoleFilter() {
-  const roleList = auth ? auth.roles() : []
-  const unauth = auth ? auth.unauthenticated() : true
+  const roleList = auth.roles()
+  const unauth = auth.unauthenticated()
   for (const [itemId, required] of Object.entries(sidebarRoles)) {
     const row = document.querySelector(`[data-sidebar-row][data-item-id="${itemId}"]`)
     if (!row) continue

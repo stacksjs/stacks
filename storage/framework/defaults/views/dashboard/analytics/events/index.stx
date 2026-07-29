@@ -472,7 +472,7 @@ function unblockEvent(id: string) {
 let chartHandle: ChartLike | null = null
 
 async function ensureChartLib() {
-  const { Chart, registerables } = await import('@stacksjs/charts')
+  const { Chart, registerables } = await import('/__deps/charts.js')
   Chart.register(...registerables)
   return Chart as unknown as ChartCtor
 }

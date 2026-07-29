@@ -140,7 +140,7 @@ function getDNSRecordsData() {
 
 onMount(async () => {
   isLoading.set(true)
-  const { Chart, registerables } = await import('@stacksjs/charts')
+  const { Chart, registerables } = await import('/__deps/charts.js')
   Chart.register(...registerables)
   const handle = useChart({
     Chart: Chart as unknown as ChartCtor,

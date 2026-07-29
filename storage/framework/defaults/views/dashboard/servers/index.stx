@@ -371,7 +371,7 @@ async function renderTopology() {
   topologyCleanup?.()
   container.innerHTML = ''
 
-  const d3 = await import('d3')
+  const d3 = await import('/__deps/ts-charts.js')
   const width = container.clientWidth || 800
   const height = container.clientHeight || 420
 

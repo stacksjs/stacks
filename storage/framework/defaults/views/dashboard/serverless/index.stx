@@ -145,7 +145,22 @@
 <script client>
 // Static topology data + view helpers — moved out of the former
 // `<script server>` block (stacksjs/stacks#1838).
-const services = [
+interface Service {
+  id: string
+  name: string
+  type: string
+  description: string
+  icon: string
+  color: string
+}
+
+interface Connection {
+  type: string
+  source?: Service
+  target?: Service
+}
+
+const services: Service[] = [
   { id: 'lambda', name: 'Lambda', type: 'compute', description: 'Serverless compute service', icon: 'i-hugeicons-cloud', color: '#F90F71' },
   { id: 's3', name: 'S3', type: 'storage', description: 'Object storage service', icon: 'i-hugeicons-database', color: '#6CAE3E' },
   { id: 'dynamodb', name: 'DynamoDB', type: 'database', description: 'NoSQL database service', icon: 'i-hugeicons-database-02', color: '#527FFF' },
@@ -185,7 +200,7 @@ const links = [
   { source: 'acm', target: 'ecs', type: 'protects' },
 ]
 
-const serviceById = Object.fromEntries(services.map(s => [s.id, s]))
+const serviceById: Record<string, Service> = Object.fromEntries(services.map(s => [s.id, s]))
 
 const servicesWithConnections = services.map((service) => {
   const outgoing = links.filter(l => l.source === service.id).map(l => ({ type: l.type, target: serviceById[l.target] }))
@@ -237,63 +252,6 @@ function linkTypeBadge(type: string): string {
   }
 }
 
-interface Service {
-  id: string
-  name: string
-  type: string
-  description: string
-  icon: string
-  color: string
-}
-
-interface Connection {
-  type: string
-  source?: Service
-  target?: Service
-}
-
-const servicesData: Service[] = [
-  { id: 'lambda', name: 'Lambda', type: 'compute', description: 'Serverless compute service', icon: 'i-hugeicons-cloud', color: '#F90F71' },
-  { id: 's3', name: 'S3', type: 'storage', description: 'Object storage service', icon: 'i-hugeicons-database', color: '#6CAE3E' },
-  { id: 'dynamodb', name: 'DynamoDB', type: 'database', description: 'NoSQL database service', icon: 'i-hugeicons-database-02', color: '#527FFF' },
-  { id: 'sqs', name: 'SQS', type: 'queue', description: 'Message queue service', icon: 'i-hugeicons-message-multiple-02', color: '#FF4F8B' },
-  { id: 'apigateway', name: 'API Gateway', type: 'api', description: 'API management service', icon: 'i-hugeicons-globe', color: '#A166FF' },
-  { id: 'cloudfront', name: 'CloudFront', type: 'cdn', description: 'Content delivery network', icon: 'i-hugeicons-cloud-fast-wind', color: '#A166FF' },
-  { id: 'route53', name: 'Route 53', type: 'dns', description: 'DNS and domain management service', icon: 'i-hugeicons-route-01', color: '#C77DFF' },
-  { id: 'ses', name: 'SES', type: 'email', description: 'Email sending and receiving service', icon: 'i-hugeicons-mail-01', color: '#FF8E8E' },
-  { id: 'vpc', name: 'VPC', type: 'network', description: 'Virtual Private Cloud networking', icon: 'i-hugeicons-network', color: '#64B5FF' },
-  { id: 'efs', name: 'EFS', type: 'storage', description: 'Elastic File System', icon: 'i-hugeicons-folder-01', color: '#00D1B2' },
-  { id: 'ecs', name: 'ECS', type: 'compute', description: 'Elastic Container Service', icon: 'i-hugeicons-package', color: '#FFC300' },
-  { id: 'acm', name: 'ACM', type: 'security', description: 'Certificate Manager', icon: 'i-hugeicons-certificate-01', color: '#A166FF' },
-  { id: 'waf', name: 'WAF', type: 'security', description: 'Web Application Firewall', icon: 'i-hugeicons-shield-01', color: '#FF6B6B' },
-  { id: 'kms', name: 'KMS', type: 'security', description: 'Key Management Service', icon: 'i-hugeicons-key-01', color: '#7F6B99' },
-  { id: 'iam', name: 'IAM', type: 'security', description: 'Identity and Access Management', icon: 'i-hugeicons-user-shield-01', color: '#DD344C' },
-]
-
-const linksData = [
-  { source: 'apigateway', target: 'lambda', type: 'triggers' },
-  { source: 'lambda', target: 's3', type: 'uses' },
-  { source: 'lambda', target: 'dynamodb', type: 'uses' },
-  { source: 'lambda', target: 'sqs', type: 'processes' },
-  { source: 'cloudfront', target: 's3', type: 'connects' },
-  { source: 'route53', target: 'cloudfront', type: 'connects' },
-  { source: 'route53', target: 'apigateway', type: 'connects' },
-  { source: 'route53', target: 'ecs', type: 'connects' },
-  { source: 'lambda', target: 'ses', type: 'uses' },
-  { source: 'lambda', target: 'vpc', type: 'uses' },
-  { source: 'ecs', target: 'vpc', type: 'uses' },
-  { source: 'ecs', target: 'efs', type: 'uses' },
-  { source: 'waf', target: 'cloudfront', type: 'protects' },
-  { source: 'waf', target: 'apigateway', type: 'protects' },
-  { source: 'kms', target: 's3', type: 'protects' },
-  { source: 'kms', target: 'efs', type: 'protects' },
-  { source: 'acm', target: 'cloudfront', type: 'protects' },
-  { source: 'acm', target: 'apigateway', type: 'protects' },
-  { source: 'acm', target: 'ecs', type: 'protects' },
-]
-
-const serviceById: Record<string, Service> = Object.fromEntries(servicesData.map(s => [s.id, s]))
-
 const selectedServiceId = state<string | null>(null)
 
 const selectedService = derived(() => selectedServiceId() ? serviceById[selectedServiceId()!] ?? null : null)
@@ -302,14 +260,14 @@ const selectedOutgoing = derived<Connection[]>(() => {
   const id = selectedServiceId()
   if (!id)
     return []
-  return linksData.filter(l => l.source === id).map(l => ({ type: l.type, target: serviceById[l.target] }))
+  return links.filter(l => l.source === id).map(l => ({ type: l.type, target: serviceById[l.target] }))
 })
 
 const selectedIncoming = derived<Connection[]>(() => {
   const id = selectedServiceId()
   if (!id)
     return []
-  return linksData.filter(l => l.target === id).map(l => ({ type: l.type, source: serviceById[l.source] }))
+  return links.filter(l => l.target === id).map(l => ({ type: l.type, source: serviceById[l.source] }))
 })
 
 const selectedServiceStyle = derived(() => {
@@ -328,18 +286,6 @@ function selectService(id: string) {
 
 function closeService() {
   selectedServiceId.set(null)
-}
-
-function linkTypeBadge(type: string): string {
-  const base = 'inline-flex items-center px-1.5 py-0.5 font-medium text-xs rounded'
-  switch (type) {
-    case 'triggers': return `${base} bg-pink-100 dark:bg-pink-900 text-pink-700 dark:text-pink-200`
-    case 'uses': return `${base} bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-200`
-    case 'connects': return `${base} bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-200`
-    case 'processes': return `${base} bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-200`
-    case 'protects': return `${base} bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-200`
-    default: return `${base} bg-gray-100 dark:bg-neutral-700 text-gray-700 dark:text-neutral-200`
-  }
 }
 
 function linkColor(type: string): string {
@@ -362,15 +308,15 @@ async function renderTopology() {
   topologyCleanup?.()
   container.innerHTML = ''
 
-  const d3 = await import('d3')
+  const d3 = await import('/__deps/ts-charts.js')
   const width = container.clientWidth || 800
   const height = container.clientHeight || 500
 
   type SimNode = Service & { x?: number, y?: number, fx?: number | null, fy?: number | null }
   type SimLink = { source: string | SimNode, target: string | SimNode, type: string }
 
-  const nodes: SimNode[] = servicesData.map(s => ({ ...s }))
-  const links: SimLink[] = linksData.map(l => ({ source: l.source, target: l.target, type: l.type }))
+  const nodes: SimNode[] = services.map(s => ({ ...s }))
+  const simulationLinks: SimLink[] = links.map(l => ({ source: l.source, target: l.target, type: l.type }))
 
   const svg = d3.select(container)
     .append('svg')
@@ -390,7 +336,7 @@ async function renderTopology() {
   const link = zoomGroup.append('g')
     .attr('stroke-opacity', 0.7)
     .selectAll('line')
-    .data(links)
+    .data(simulationLinks)
     .join('line')
     .attr('stroke', d => linkColor(d.type))
     .attr('stroke-width', 2)
@@ -443,7 +389,7 @@ async function renderTopology() {
   node.call(drag as any)
 
   const simulation = d3.forceSimulation<SimNode>(nodes)
-    .force('link', d3.forceLink<SimNode, SimLink>(links).id(d => d.id).distance(140))
+    .force('link', d3.forceLink<SimNode, SimLink>(simulationLinks).id(d => d.id).distance(140))
     .force('charge', d3.forceManyBody().strength(-450))
     .force('center', d3.forceCenter(width / 2, height / 2))
     .force('collide', d3.forceCollide<SimNode>().radius(40))

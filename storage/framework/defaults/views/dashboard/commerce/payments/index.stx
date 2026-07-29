@@ -518,7 +518,7 @@ function getPaymentMethodIcon(method: string): string {
   }
 }
 
-const { Chart, registerables } = await import('@stacksjs/charts')
+const { Chart, registerables } = await import('/__deps/charts.js')
 Chart.register(...registerables)
 
 const chartData = monthlyChartData()

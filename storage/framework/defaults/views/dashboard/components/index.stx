@@ -314,7 +314,7 @@ async function handleCompare(): Promise<void> {
 
 onMount(async () => {
   await fetchDownloadData(timeRange())
-  const { Chart, registerables } = await import('@stacksjs/charts')
+  const { Chart, registerables } = await import('/__deps/charts.js')
   Chart.register(...registerables)
   const Ctor = Chart as unknown as ChartCtor
   const handle = useChart({ Chart: Ctor, id: 'components_downloads_chart', type: 'line', data: downloadsData(), options: chartOptions })

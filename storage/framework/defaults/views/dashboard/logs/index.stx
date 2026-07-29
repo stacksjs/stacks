@@ -521,7 +521,7 @@ const chartOptions = {
 let chartHandle: ChartLike | null = null
 
 onMount(async () => {
-  const { Chart, registerables } = await import('@stacksjs/charts')
+  const { Chart, registerables } = await import('/__deps/charts.js')
   Chart.register(...registerables)
   const Ctor = Chart as unknown as ChartCtor
   const handle = useChart({ Chart: Ctor, id: 'logs_volume_chart', type: 'line', data: buildVolumeData(), options: chartOptions })

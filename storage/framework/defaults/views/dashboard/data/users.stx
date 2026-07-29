@@ -242,7 +242,7 @@ function changeTimeRange() {
 }
 
 onMount(async () => {
-  const { Chart, registerables } = await import('@stacksjs/charts')
+  const { Chart, registerables } = await import('/__deps/charts.js')
   Chart.register(...registerables)
   const Ctor = Chart as unknown as ChartCtor
   const series = buildSeries()

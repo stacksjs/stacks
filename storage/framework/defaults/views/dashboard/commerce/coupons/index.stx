@@ -463,7 +463,7 @@ async function confirmDelete(): Promise<void> {
   }
 }
 
-const { Chart, registerables } = await import('@stacksjs/charts')
+const { Chart, registerables } = await import('/__deps/charts.js')
 Chart.register(...registerables)
 
 const chartData = monthlyChartData()

@@ -127,7 +127,7 @@ function getEmailActivityData() {
 
 onMount(async () => {
   isLoading.set(true)
-  const { Chart, registerables } = await import('@stacksjs/charts')
+  const { Chart, registerables } = await import('/__deps/charts.js')
   Chart.register(...registerables)
   chartHandle = useChart({
     Chart: Chart as unknown as ChartCtor,
