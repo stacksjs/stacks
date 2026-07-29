@@ -242,7 +242,8 @@ route.group({ prefix: '/api/dashboard', apiResponse: true }, () => {
   guard(route.patch('/commerce/digital-deliveries/{id}', 'Actions/Commerce/Shipping/DigitalDeliveryUpdateAction'))
   guard(route.delete('/commerce/digital-deliveries/{id}', 'Actions/Commerce/Shipping/DigitalDeliveryDestroyAction'))
 
-  guard(route.get('/commerce/license-keys', 'Actions/Commerce/Shipping/LicenseKeyIndexAction'))
+  guard(route.get('/commerce/license-keys', 'Actions/Dashboard/Commerce/LicenseKeyIndexAction'))
+  guard(route.get('/commerce/license-key-options', 'Actions/Dashboard/Commerce/LicenseKeyOptionsAction'))
   guard(route.get('/commerce/license-keys/{id}', 'Actions/Commerce/Shipping/LicenseKeyShowAction'))
   guard(route.post('/commerce/license-keys', 'Actions/Commerce/Shipping/LicenseKeyStoreAction'))
   guard(route.patch('/commerce/license-keys/{id}', 'Actions/Commerce/Shipping/LicenseKeyUpdateAction'))
