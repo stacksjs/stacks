@@ -3,16 +3,20 @@ import type { DashboardQueryLog, DashboardQueryResponse } from '../../../../func
 import { fetchDashboardQueries } from '../../../../functions/queries'
 
 type QueryRange = 'hour' | 'day' | 'week'
+type QueryMode = 'all' | 'slow' | 'history'
 type QueryType = DashboardQueryLog['type'] | 'all'
+type QueryStatus = DashboardQueryLog['status'] | 'all'
 
+const mode = useReactiveProp<QueryMode>('mode', 'all')
 const data = state<DashboardQueryResponse>({
   enabled: false,
   slowThreshold: 100,
   queries: [],
 })
-const range = state<QueryRange>('day')
+const range = state<QueryRange>(mode() === 'history' ? 'week' : 'day')
 const connection = state('all')
 const type = state<QueryType>('all')
+const status = state<QueryStatus>('all')
 const loading = state(true)
 const loadError = state('')
 
@@ -31,11 +35,22 @@ const rangedQueries = derived(() => {
 })
 
 const filteredQueries = derived(() => rangedQueries().filter((query) => {
+  if (mode() === 'slow' && query.status !== 'slow')
+    return false
   if (connection() !== 'all' && query.connection !== connection())
+    return false
+  if (status() !== 'all' && query.status !== status())
     return false
   return type() === 'all' || query.type === type()
 }))
 
+const pageTitle = derived(() => mode() === 'slow' ? 'Slow Queries' : mode() === 'history' ? 'Query History' : 'Queries')
+const pageDescription = derived(() => mode() === 'slow'
+  ? 'Identify database work that exceeded the configured slow-query threshold.'
+  : mode() === 'history'
+    ? 'Review database work recorded by the native query logger.'
+    : 'Inspect query volume and latency recorded by the native database logger.')
+const emptyTitle = derived(() => mode() === 'slow' ? 'No slow queries in this range' : 'No query logs in this range')
 const connections = derived(() => Array.from(new Set(data().queries.map(query => query.connection))).sort())
 const total = derived(() => filteredQueries().length)
 const selectCount = derived(() => filteredQueries().filter(query => query.type === 'SELECT').length)
@@ -59,6 +74,10 @@ function updateConnection(event: Event): void {
 
 function updateType(event: Event): void {
   type.set((event.target as HTMLSelectElement).value as QueryType)
+}
+
+function updateStatus(event: Event): void {
+  status.set((event.target as HTMLSelectElement).value as QueryStatus)
 }
 
 function formatQuery(query: string): string {
@@ -117,8 +136,8 @@ onMount(() => {
 <div class="space-y-6">
   <header class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
     <div>
-      <h1 class="font-semibold text-2xl text-neutral-900 tracking-tight dark:text-white">Queries</h1>
-      <p class="mt-1 text-neutral-500 text-sm dark:text-neutral-400">Inspect query volume and latency recorded by the native database logger.</p>
+      <h1 class="font-semibold text-2xl text-neutral-900 tracking-tight dark:text-white">{{ pageTitle() }}</h1>
+      <p class="mt-1 text-neutral-500 text-sm dark:text-neutral-400">{{ pageDescription() }}</p>
     </div>
     <div class="flex flex-wrap gap-3 items-center">
       <div class="inline-flex p-1 bg-neutral-100 dark:bg-neutral-800 rounded-lg">
@@ -178,6 +197,13 @@ onMount(() => {
             <option value="DELETE">DELETE</option>
             <option value="OTHER">OTHER</option>
           </select>
+          <label :if="mode() !== 'slow'" for="query-status" class="sr-only">Query status</label>
+          <select :if="mode() !== 'slow'" id="query-status" :value="status()" class="px-3 py-2 text-neutral-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-neutral-300 rounded-lg dark:border-neutral-700" @change="updateStatus($event)">
+            <option value="all">All statuses</option>
+            <option value="completed">Completed</option>
+            <option value="slow">Slow</option>
+            <option value="failed">Failed</option>
+          </select>
         </div>
       </div>
     </template>
@@ -186,8 +212,8 @@ onMount(() => {
     <div :if="loadError() && !loading()" role="alert" class="p-10 text-center text-red-600 text-sm dark:text-red-300">{{ loadError() }}</div>
     <div :if="!loading() && !loadError() && filteredQueries().length === 0" class="p-10 text-center">
       <span class="block mb-3 mx-auto h-8 w-8 text-neutral-400 i-hugeicons-database-02"></span>
-      <p class="font-medium text-neutral-900 dark:text-white">No query logs in this range</p>
-      <p class="mt-1 text-neutral-500 text-sm dark:text-neutral-400">{{ data().enabled ? 'Queries will appear as the application executes them.' : 'Enable database.queryLogging in config/database.ts to record queries.' }}</p>
+      <p class="font-medium text-neutral-900 dark:text-white">{{ emptyTitle() }}</p>
+      <p class="mt-1 text-neutral-500 text-sm dark:text-neutral-400">{{ data().enabled ? (mode() === 'slow' ? 'Queries appear here after they exceed the configured threshold.' : 'Queries will appear as the application executes them.') : 'Enable database.queryLogging in config/database.ts to record queries.' }}</p>
     </div>
 
     <div :if="!loading() && !loadError() && filteredQueries().length > 0" class="overflow-x-auto">
