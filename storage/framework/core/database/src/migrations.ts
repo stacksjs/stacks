@@ -188,6 +188,28 @@ export function prepareMigrationModelsDir(): { modelsDir: string, skip: boolean 
  *     migration whose target column never existed. Removing it keeps the
  *     directory clean and prevents future runs from re-discovering it.
  */
+/**
+ * Split a migration file into its statements.
+ *
+ * Comments come out FIRST, before the split on `;`. Splitting first and then
+ * dropping the chunks that begin with `--` looks equivalent and is not: a
+ * file that opens with a comment header — which every hand-written migration
+ * in this repo does — glues that header to its first statement, so the chunk
+ * begins with `--` and the statement disappears with the comment. Everything
+ * downstream then reasons about a file it has only partly read, and the
+ * ADD COLUMN reconciliation below would happily record a file as fully
+ * applied while its first column had never been created.
+ */
+export function sqlStatementsOf(content: string): string[] {
+  return content
+    .split('\n')
+    .map(line => line.replace(/--.*$/, ''))
+    .join('\n')
+    .split(';')
+    .map(s => s.trim())
+    .filter(s => s.length > 0)
+}
+
 export function preprocessSqliteMigrations(): void {
   const migrationsDir = join(process.cwd(), 'database', 'migrations')
   let files: string[]
@@ -270,10 +292,7 @@ export function preprocessSqliteMigrations(): void {
     log.debug(`[migration] Running: ${file}`)
     const filePath = join(migrationsDir, file)
     const content = readFileSync(filePath, 'utf-8')
-    const statements = content
-      .split(';')
-      .map(s => s.trim())
-      .filter(s => s.length > 0 && !s.startsWith('--'))
+    const statements = sqlStatementsOf(content)
 
     if (statements.length === 0) continue
 

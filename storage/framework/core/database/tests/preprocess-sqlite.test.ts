@@ -240,6 +240,47 @@ describe('preprocessSqliteMigrations — unique-index files must run (stacksjs/s
     expect(migrationRecord(dbPath, addFileName)).toBeNull()
   })
 
+  it('reads a statement that follows a comment header', () => {
+    // Every hand-written migration in this repo opens with a comment block.
+    // Splitting on `;` first glues that header to the first statement, so the
+    // chunk starts with `--` and the statement vanishes with the comment —
+    // and this file would then be recorded as fully applied while `nickname`
+    // had never been created.
+    const fileName = '0000000135-add-commented-columns.sql'
+    writeFileSync(join(migrationsDir, fileName), [
+      '-- Why this migration exists, at length,',
+      '-- across several lines like the real ones.',
+      'ALTER TABLE "users" ADD COLUMN "nickname" TEXT;',
+      'ALTER TABLE "users" ADD COLUMN "avatar" TEXT;',
+      '',
+    ].join('\n'))
+    // Only the SECOND column exists: a correct read sees one statement
+    // pending and leaves the file to run.
+    const dbPath = createDb('ALTER TABLE users ADD COLUMN "avatar" TEXT')
+
+    preprocessSqliteMigrations()
+
+    expect(migrationRecord(dbPath, fileName)).toBeNull()
+  })
+
+  it('records a commented file only when every one of its columns is present', () => {
+    const fileName = '0000000136-add-commented-columns-applied.sql'
+    writeFileSync(join(migrationsDir, fileName), [
+      '-- A header, then the statements it describes.',
+      'ALTER TABLE "users" ADD COLUMN "nickname" TEXT;',
+      'ALTER TABLE "users" ADD COLUMN "avatar" TEXT;',
+      '',
+    ].join('\n'))
+    const dbPath = createDb(
+      'ALTER TABLE users ADD COLUMN "nickname" TEXT',
+      'ALTER TABLE users ADD COLUMN "avatar" TEXT',
+    )
+
+    preprocessSqliteMigrations()
+
+    expect(migrationRecord(dbPath, fileName)).not.toBeNull()
+  })
+
   it('does not record a file that adds a column to a table that does not exist yet', () => {
     const fileName = '0000000134-add-column-to-missing-table.sql'
     writeFileSync(join(migrationsDir, fileName), 'ALTER TABLE "missions" ADD COLUMN "orthomosaic_url" TEXT;')
