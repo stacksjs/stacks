@@ -15,6 +15,8 @@ const {
   useNotification,
   notify,
   notification,
+  makeDeliveryRecord,
+  resolveDeliveryRecipient,
   wherePreferenceCategory,
 } = await import('../src/index')
 
@@ -150,6 +152,47 @@ describe('Notifications - useNotification()', () => {
 describe('Notifications - notify()', () => {
   test('notify is a function', () => {
     expect(typeof notify).toBe('function')
+  })
+})
+
+describe('Notifications - delivery tracking', () => {
+  test('resolves the channel-specific recipient', () => {
+    const recipient = {
+      email: 'user@example.com',
+      phone: '+15551234567',
+      userId: 42,
+      pushTokens: ['token-a', 'token-b'],
+      broadcastChannel: 'private-orders',
+    }
+
+    expect(resolveDeliveryRecipient(recipient, 'email')).toBe('user@example.com')
+    expect(resolveDeliveryRecipient(recipient, 'sms')).toBe('+15551234567')
+    expect(resolveDeliveryRecipient(recipient, 'database')).toBe('User #42')
+    expect(resolveDeliveryRecipient(recipient, 'push')).toBe('token-a, token-b')
+    expect(resolveDeliveryRecipient(recipient, 'broadcast')).toBe('private-orders')
+  })
+
+  test('builds a failed delivery record without throwing away context', () => {
+    const error = new Error('Provider unavailable')
+    const record = makeDeliveryRecord(
+      { email: 'user@example.com', userId: 42 },
+      { subject: 'Security alert', body: 'A new login was detected.', data: { ip: '127.0.0.1' } },
+      { channel: 'email', success: false, error },
+      { category: 'security' },
+      '2026-07-29T10:00:00.000Z',
+    )
+
+    expect(record).toEqual({
+      userId: 42,
+      channel: 'email',
+      recipient: 'user@example.com',
+      subject: 'Security alert',
+      body: 'A new login was detected.',
+      status: 'failed',
+      error: 'Provider unavailable',
+      metadata: { ip: '127.0.0.1', category: 'security' },
+      sentAt: '2026-07-29T10:00:00.000Z',
+    })
   })
 })
 

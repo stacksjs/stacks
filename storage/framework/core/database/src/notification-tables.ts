@@ -5,6 +5,7 @@
  * preference layer depend on:
  * - notifications
  * - notification_preferences
+ * - notification_deliveries
  *
  * Previously no migration shipped these — `preferences.ts` even
  * documented the schema in a comment and told apps to hand-roll the
@@ -64,6 +65,29 @@ export function notificationPreferencesTableSql(sql: SqlHelpers): string {
 }
 
 /**
+ * `CREATE TABLE IF NOT EXISTS notification_deliveries`. This table records
+ * every transport attempt made by `notify()` without mixing outbound delivery
+ * state into the database inbox table.
+ */
+export function notificationDeliveriesTableSql(sql: SqlHelpers): string {
+  const { pkColumn, nullableTimestamp } = sql
+  return `CREATE TABLE IF NOT EXISTS notification_deliveries (
+    ${pkColumn},
+    user_id INTEGER,
+    channel VARCHAR(50) NOT NULL,
+    recipient VARCHAR(1000) NOT NULL,
+    subject VARCHAR(255),
+    body TEXT NOT NULL,
+    status VARCHAR(50) NOT NULL DEFAULT 'pending',
+    error TEXT,
+    metadata TEXT,
+    sent_at ${nullableTimestamp},
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at ${nullableTimestamp}
+  )`
+}
+
+/**
  * Create the notification + notification_preferences tables. Idempotent
  * (`IF NOT EXISTS`), so it's safe to run on every `buddy migrate`.
  */
@@ -82,6 +106,11 @@ export async function migrateNotificationTables(options: { verbose?: boolean } =
     if (options.verbose) log.info('Creating notification_preferences table...')
     await db.unsafe(notificationPreferencesTableSql(sql)).execute()
     await db.unsafe(`CREATE INDEX IF NOT EXISTS idx_notification_preferences_user ON notification_preferences (user_id)`).execute()
+
+    if (options.verbose) log.info('Creating notification deliveries table...')
+    await db.unsafe(notificationDeliveriesTableSql(sql)).execute()
+    await db.unsafe(`CREATE INDEX IF NOT EXISTS idx_notification_deliveries_channel ON notification_deliveries (channel)`).execute()
+    await db.unsafe(`CREATE INDEX IF NOT EXISTS idx_notification_deliveries_status ON notification_deliveries (status)`).execute()
 
     if (options.verbose) log.success('Notification tables created')
     return { success: true }

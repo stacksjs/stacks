@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'bun:test'
 import {
   migrateNotificationTables,
+  notificationDeliveriesTableSql,
   notificationPreferencesTableSql,
   notificationsTableSql,
 } from '../src/notification-tables'
@@ -20,6 +21,7 @@ describe('notification table DDL — cross-dialect (stacksjs/stacks#1937)', () =
     expect(typeof migrateNotificationTables).toBe('function')
     expect(typeof notificationsTableSql).toBe('function')
     expect(typeof notificationPreferencesTableSql).toBe('function')
+    expect(typeof notificationDeliveriesTableSql).toBe('function')
   })
 
   for (const driver of ['sqlite', 'mysql', 'postgres'] as const) {
@@ -39,6 +41,13 @@ describe('notification table DDL — cross-dialect (stacksjs/stacks#1937)', () =
         expect(ddl).toContain('channel')
         expect(ddl).toContain('enabled')
         expect(ddl).toContain('UNIQUE (user_id, channel, category)')
+      })
+
+      test('notification_deliveries tracks transport attempts separately from the inbox', () => {
+        const ddl = notificationDeliveriesTableSql(sql)
+        expect(ddl).toContain('CREATE TABLE IF NOT EXISTS notification_deliveries')
+        for (const col of ['user_id', 'channel', 'recipient', 'subject', 'body', 'status', 'error', 'metadata', 'sent_at'])
+          expect(ddl).toContain(col)
       })
 
       test('primary-key DDL matches the dialect', () => {

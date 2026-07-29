@@ -5,6 +5,7 @@ import { mail } from '@stacksjs/email'
 import { chat, email, push, sms } from './drivers'
 import { BroadcastNotificationDriver } from './drivers/broadcast'
 import { DatabaseNotificationDriver } from './drivers/database'
+import { makeDeliveryRecord, recordNotificationDelivery } from './delivery'
 import { filterChannelsByPreferences } from './preferences'
 
 const config = _notification as NotificationOptions | undefined
@@ -311,7 +312,7 @@ export async function notify(
     }),
   )
 
-  return results.map((result, index) => {
+  const mappedResults = results.map((result, index) => {
     const channel = effectiveChannels[index]
     if (!channel)
       throw new Error(`Missing notification channel for result ${index}`)
@@ -328,6 +329,12 @@ export async function notify(
       error: result.status === 'rejected' ? result.reason : undefined,
     }
   })
+
+  await Promise.all(mappedResults.map(result =>
+    recordNotificationDelivery(makeDeliveryRecord(recipient, payload, result, options)),
+  ))
+
+  return mappedResults
 }
 
 export function notification(): ReturnType<typeof useNotification> {
@@ -336,6 +343,8 @@ export function notification(): ReturnType<typeof useNotification> {
 
 export { BroadcastNotificationDriver } from './drivers/broadcast'
 export type { BroadcastNotificationOptions, BroadcastNotificationResult } from './drivers/broadcast'
+export { makeDeliveryRecord, recordNotificationDelivery, resolveDeliveryRecipient } from './delivery'
+export type { NotificationDeliveryRecord } from './delivery'
 export { DatabaseNotificationDriver } from './drivers/database'
 export type { CreateNotificationOptions, DatabaseNotification } from './drivers/database'
 export {

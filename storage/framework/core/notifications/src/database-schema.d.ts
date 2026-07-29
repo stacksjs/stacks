@@ -31,6 +31,20 @@ declare module '@stacksjs/database' {
       created_at: string
       updated_at: string | null
     }
+    notification_deliveries: {
+      id: number
+      user_id: number | null
+      channel: string
+      recipient: string
+      subject: string | null
+      body: string
+      status: string
+      error: string | null
+      metadata: string | null
+      sent_at: string | null
+      created_at: string
+      updated_at: string | null
+    }
   }
 }
 
