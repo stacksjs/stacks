@@ -15,6 +15,7 @@ const {
   useNotification,
   notify,
   notification,
+  ensureSuccessfulEmailResult,
   makeDeliveryRecord,
   resolveDeliveryRecipient,
   wherePreferenceCategory,
@@ -152,6 +153,20 @@ describe('Notifications - useNotification()', () => {
 describe('Notifications - notify()', () => {
   test('notify is a function', () => {
     expect(typeof notify).toBe('function')
+  })
+
+  test('surfaces resolved email driver failures', () => {
+    expect(() => ensureSuccessfulEmailResult({
+      success: false,
+      message: 'Provider rejected the message',
+      provider: 'ses',
+    })).toThrow('Provider rejected the message')
+
+    expect(() => ensureSuccessfulEmailResult({
+      success: true,
+      message: 'Email sent',
+      provider: 'capture',
+    })).not.toThrow()
   })
 })
 

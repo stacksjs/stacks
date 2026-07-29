@@ -69,6 +69,11 @@ export interface NotifyResult {
   error?: Error
 }
 
+export function ensureSuccessfulEmailResult(result: EmailResult): void {
+  if (!result.success)
+    throw new Error(result.message || `Email delivery failed through ${result.provider || 'the configured provider'}.`)
+}
+
 export function useChat(driver?: string): typeof chat[keyof typeof chat] {
   const resolvedDriver = driver || 'slack'
   return chat[resolvedDriver as keyof typeof chat]
@@ -235,12 +240,13 @@ export async function notify(
           // body so SES/SendGrid drivers (which only render `html`/`text`)
           // actually carry the message. Previously `body` was dropped on
           // the floor by every driver.
-          await driver.send({
+          const result = await driver.send({
             to: recipient.email,
             subject: payload.subject ?? '',
             text: payload.body,
             html: `<p>${escapeBodyHtml(payload.body)}</p>`,
           })
+          ensureSuccessfulEmailResult(result)
           break
         }
         case 'sms': {
