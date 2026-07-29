@@ -1,0 +1,349 @@
+<script client>
+import type {
+  CommerceProductRecord,
+  CommerceProductSummary,
+  ProductOption,
+} from '../../../../app/Actions/Dashboard/Commerce/commerce-product-records'
+import { DashboardApiError, dashboardApi } from '../../../../functions/dashboard-api'
+import { pushToast } from '../../../../functions/toasts'
+
+interface ProductIndexResponse {
+  records: CommerceProductRecord[]
+  summary: CommerceProductSummary
+  categories: ProductOption[]
+  manufacturers: ProductOption[]
+  defaultCurrency: string
+}
+
+interface ProductWritePayload {
+  name: string
+  description: string
+  price: number
+  imageUrl: string
+  isAvailable: boolean
+  inventoryCount: number
+  preparationTime: number
+  allergens: string
+  nutritionalInfo: string
+  categoryId: number | null
+  manufacturerId: number | null
+}
+
+const emptySummary: CommerceProductSummary = {
+  total: 0,
+  available: 0,
+  unavailable: 0,
+  outOfStock: 0,
+  totalInventory: 0,
+}
+const records = state<CommerceProductRecord[]>([])
+const summary = state<CommerceProductSummary>({ ...emptySummary })
+const categories = state<ProductOption[]>([])
+const manufacturers = state<ProductOption[]>([])
+const defaultCurrency = state('USD')
+const search = state('')
+const categoryFilter = state('all')
+const availabilityFilter = state('all')
+const sort = state('newest')
+const page = state(1)
+const pageSize = 10
+const loading = state(true)
+const loadError = state('')
+const dialogOpen = state(false)
+const dialogMode = state<'add' | 'edit'>('add')
+const editingRecord = state<CommerceProductRecord | null>(null)
+const deletingRecord = state<CommerceProductRecord | null>(null)
+const saving = state(false)
+const deleting = state(false)
+const validationErrors = state<Record<string, string>>({})
+
+function timestamp(value: string): number {
+  if (!value)
+    return 0
+  const normalized = /^\d{4}-\d{2}-\d{2} \d/.test(value)
+    ? `${value.replace(' ', 'T')}Z`
+    : value
+  const result = new Date(normalized).getTime()
+  return Number.isFinite(result) ? result : 0
+}
+
+function filteredRecords(): CommerceProductRecord[] {
+  const query = search().trim().toLowerCase()
+  const selectedCategory = categoryFilter()
+  const selectedAvailability = availabilityFilter()
+  return [...records()]
+    .filter((record) => {
+      if (selectedCategory !== 'all' && record.categoryId !== selectedCategory)
+        return false
+      if (selectedAvailability === 'available' && !record.isAvailable)
+        return false
+      if (selectedAvailability === 'unavailable' && record.isAvailable)
+        return false
+      if (selectedAvailability === 'out-of-stock' && record.inventoryCount !== 0)
+        return false
+      return !query || [
+        record.id,
+        record.name,
+        record.description,
+        record.categoryName,
+        record.manufacturerName,
+        ...record.allergens,
+      ].some(value => value.toLowerCase().includes(query))
+    })
+    .sort((left, right) => {
+      if (sort() === 'oldest')
+        return timestamp(left.createdAt) - timestamp(right.createdAt)
+      if (sort() === 'name')
+        return left.name.localeCompare(right.name)
+      if (sort() === 'price-high')
+        return right.price - left.price || left.name.localeCompare(right.name)
+      if (sort() === 'price-low')
+        return left.price - right.price || left.name.localeCompare(right.name)
+      if (sort() === 'inventory-high')
+        return right.inventoryCount - left.inventoryCount || left.name.localeCompare(right.name)
+      return timestamp(right.createdAt) - timestamp(left.createdAt) || Number(right.id) - Number(left.id)
+    })
+}
+
+function pageCount(): number {
+  return Math.max(1, Math.ceil(filteredRecords().length / pageSize))
+}
+
+function visibleRecords(): CommerceProductRecord[] {
+  const selectedPage = Math.min(page(), pageCount())
+  return filteredRecords().slice((selectedPage - 1) * pageSize, selectedPage * pageSize)
+}
+
+function matchingLabel(): string {
+  const count = filteredRecords().length
+  return `${count} matching ${count === 1 ? 'product' : 'products'}`
+}
+
+function metricCards(): Array<{ label: string, value: string, detail: string }> {
+  const current = summary()
+  return [
+    { label: 'Products', value: String(current.total), detail: 'Persisted Product records' },
+    { label: 'Available', value: String(current.available), detail: 'Enabled for commerce' },
+    { label: 'Unavailable', value: String(current.unavailable), detail: 'Not currently offered' },
+    { label: 'Out of stock', value: String(current.outOfStock), detail: 'Zero recorded inventory' },
+    { label: 'Inventory', value: current.totalInventory.toLocaleString(), detail: 'Units across products' },
+  ]
+}
+
+function exportHref(): string {
+  const rows = filteredRecords().map(record => [
+    record.id,
+    record.name,
+    record.description,
+    String(record.price),
+    defaultCurrency(),
+    record.isAvailable ? 'Available' : 'Unavailable',
+    String(record.inventoryCount),
+    String(record.preparationTime),
+    record.categoryName,
+    record.manufacturerName,
+    record.allergens.join('; '),
+    String(record.variantCount),
+    String(record.unitCount),
+    String(record.reviewCount),
+    record.createdAt,
+  ])
+  const escape = (value: string): string => `"${value.replaceAll('"', '""')}"`
+  const csv = [
+    ['Product ID', 'Name', 'Description', 'Price', 'Currency', 'Availability', 'Inventory', 'Preparation minutes', 'Category', 'Manufacturer', 'Allergens', 'Variants', 'Units', 'Reviews', 'Created at'],
+    ...rows,
+  ].map(row => row.map(escape).join(',')).join('\n')
+  return `data:text/csv;charset=utf-8,${encodeURIComponent(`\uFEFF${csv}`)}`
+}
+
+function updateSearch(event: Event): void {
+  search.set((event.target as HTMLInputElement).value)
+  page.set(1)
+}
+
+function updateCategory(event: Event): void {
+  categoryFilter.set((event.target as HTMLSelectElement).value)
+  page.set(1)
+}
+
+function updateAvailability(event: Event): void {
+  availabilityFilter.set((event.target as HTMLSelectElement).value)
+  page.set(1)
+}
+
+function updateSort(event: Event): void {
+  sort.set((event.target as HTMLSelectElement).value)
+  page.set(1)
+}
+
+async function loadProducts(): Promise<void> {
+  loading.set(true)
+  loadError.set('')
+  try {
+    const data = await dashboardApi<ProductIndexResponse>('/api/dashboard/commerce/products')
+    records.set(Array.isArray(data.records) ? data.records : [])
+    summary.set(data.summary ?? { ...emptySummary })
+    categories.set(Array.isArray(data.categories) ? data.categories : [])
+    manufacturers.set(Array.isArray(data.manufacturers) ? data.manufacturers : [])
+    defaultCurrency.set(data.defaultCurrency || 'USD')
+    page.set(Math.min(page(), Math.max(1, Math.ceil((data.records?.length || 0) / pageSize))))
+  }
+  catch (error) {
+    loadError.set('Product records could not be loaded.')
+    pushToast('error', 'Could not load products', {
+      detail: error instanceof Error ? error.message : String(error),
+    })
+  }
+  finally {
+    loading.set(false)
+  }
+}
+
+function openAdd(): void {
+  dialogMode.set('add')
+  editingRecord.set(null)
+  validationErrors.set({})
+  dialogOpen.set(true)
+}
+
+function openEdit(record: CommerceProductRecord): void {
+  dialogMode.set('edit')
+  editingRecord.set(record)
+  validationErrors.set({})
+  dialogOpen.set(true)
+}
+
+function closeDialog(): void {
+  if (saving())
+    return
+  dialogOpen.set(false)
+  editingRecord.set(null)
+  validationErrors.set({})
+}
+
+async function saveProduct(payload: ProductWritePayload): Promise<void> {
+  const current = editingRecord()
+  const editing = dialogMode() === 'edit' && current !== null
+  saving.set(true)
+  validationErrors.set({})
+  try {
+    await dashboardApi(editing ? `/api/products/${current.id}` : '/api/products', {
+      method: editing ? 'PATCH' : 'POST',
+      body: payload,
+    })
+    dialogOpen.set(false)
+    editingRecord.set(null)
+    pushToast('success', editing ? 'Product updated' : 'Product added')
+    await loadProducts()
+  }
+  catch (error) {
+    if (error instanceof DashboardApiError)
+      validationErrors.set(error.fields ?? {})
+    pushToast('error', 'Could not save product', {
+      detail: error instanceof Error ? error.message : String(error),
+    })
+  }
+  finally {
+    saving.set(false)
+  }
+}
+
+function viewProduct(record: CommerceProductRecord): void {
+  navigate(`/commerce/products/${record.id}`)
+}
+
+function openDelete(record: CommerceProductRecord): void {
+  deletingRecord.set(record)
+}
+
+function closeDelete(): void {
+  if (!deleting())
+    deletingRecord.set(null)
+}
+
+async function deleteProduct(): Promise<void> {
+  const current = deletingRecord()
+  if (!current)
+    return
+  deleting.set(true)
+  try {
+    await dashboardApi(`/api/products/${current.id}`, { method: 'DELETE' })
+    deletingRecord.set(null)
+    pushToast('success', 'Product deleted', { detail: current.name })
+    await loadProducts()
+  }
+  catch (error) {
+    pushToast('error', 'Could not delete product', {
+      detail: error instanceof Error ? error.message : String(error),
+    })
+  }
+  finally {
+    deleting.set(false)
+  }
+}
+
+function previousPage(): void {
+  page.set(Math.max(1, page() - 1))
+}
+
+function nextPage(): void {
+  page.set(Math.min(pageCount(), page() + 1))
+}
+
+onMount(() => {
+  void loadProducts()
+})
+</script>
+
+<div class="space-y-6">
+  <header class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+    <div>
+      <h1 class="font-bold text-2xl text-gray-900 dark:text-white">Products</h1>
+      <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Manage native Product records, commerce availability, inventory, and relationships.</p>
+    </div>
+    <div class="flex flex-wrap gap-2">
+      <button type="button" :disabled="loading()" class="inline-flex items-center px-3 py-2 font-semibold text-gray-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700 disabled:opacity-50" @click="loadProducts()"><span :class="'mr-2 h-4 w-4 ' + (loading() ? 'animate-spin i-hugeicons-loading-03' : 'i-hugeicons-refresh')"></span>Refresh</button>
+      <a :href="exportHref()" :download="'products-' + new Date().toISOString().slice(0, 10) + '.csv'" class="inline-flex items-center px-3 py-2 font-semibold text-gray-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700"><span class="mr-2 h-4 w-4 i-hugeicons-download-04"></span>Export filtered</a>
+      <button type="button" class="inline-flex items-center px-3 py-2 font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md" @click="openAdd()"><span class="mr-2 h-4 w-4 i-hugeicons-add-01"></span>Add product</button>
+    </div>
+  </header>
+
+  <div :if="loadError()" class="p-4 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900">{{ loadError() }}</div>
+
+  <section aria-label="Product metrics" class="grid gap-3 grid-cols-2 lg:grid-cols-5">
+    <template :for="item in metricCards()" :key="item.label">
+      <article class="p-4 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
+        <p class="text-gray-500 text-xs dark:text-neutral-400">{{ item.label }}</p>
+        <p class="mt-2 font-semibold text-2xl text-gray-900 dark:text-white">{{ item.value }}</p>
+        <p class="mt-1 text-gray-400 text-xs dark:text-neutral-500">{{ item.detail }}</p>
+      </article>
+    </template>
+  </section>
+
+  <section class="space-y-3">
+    <div class="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-5">
+      <label class="relative sm:col-span-2">
+        <span class="sr-only">Search products</span>
+        <span class="flex absolute inset-y-0 left-0 items-center pl-3 text-gray-400 pointer-events-none"><span class="h-4 w-4 i-hugeicons-search-01"></span></span>
+        <input :value="search()" type="search" placeholder="Search name, category, manufacturer, or allergen" class="pl-9 pr-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" @input="updateSearch($event)" />
+      </label>
+      <label><span class="sr-only">Product category</span><select :value="categoryFilter()" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" @change="updateCategory($event)"><option value="all">Any category</option><template :for="option in categories()" :key="option.id"><option :value="option.id">{{ option.label }}</option></template></select></label>
+      <label><span class="sr-only">Product availability</span><select :value="availabilityFilter()" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" @change="updateAvailability($event)"><option value="all">Any availability</option><option value="available">Available</option><option value="unavailable">Unavailable</option><option value="out-of-stock">Out of stock</option></select></label>
+      <label><span class="sr-only">Sort products</span><select :value="sort()" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" @change="updateSort($event)"><option value="newest">Newest first</option><option value="oldest">Oldest first</option><option value="name">Name</option><option value="price-high">Highest price</option><option value="price-low">Lowest price</option><option value="inventory-high">Highest inventory</option></select></label>
+    </div>
+
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <p class="text-gray-500 text-sm dark:text-neutral-400">{{ matchingLabel() }}</p>
+      <div class="flex gap-2 items-center">
+        <button type="button" :disabled="page() <= 1" class="px-3 py-1.5 font-medium text-gray-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700 disabled:opacity-40" @click="previousPage()">Previous</button>
+        <span class="text-gray-500 text-sm dark:text-neutral-400">Page {{ Math.min(page(), pageCount()) }} of {{ pageCount() }}</span>
+        <button type="button" :disabled="page() >= pageCount()" class="px-3 py-1.5 font-medium text-gray-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700 disabled:opacity-40" @click="nextPage()">Next</button>
+      </div>
+    </div>
+
+    <CommerceProductsTable :records="visibleRecords()" :loading="loading()" :currency="defaultCurrency()" @view="viewProduct" @edit="openEdit" @delete="openDelete" />
+  </section>
+</div>
+
+<CommerceProductDialog :open="dialogOpen()" :mode="dialogMode()" :record="editingRecord()" :categories="categories()" :manufacturers="manufacturers()" :currency="defaultCurrency()" :busy="saving()" :errors="validationErrors()" @submit="saveProduct" @close="closeDialog()" />
+<CommerceProductDeleteDialog :open="Boolean(deletingRecord())" :record="deletingRecord()" :busy="deleting()" @confirm="deleteProduct()" @close="closeDelete()" />

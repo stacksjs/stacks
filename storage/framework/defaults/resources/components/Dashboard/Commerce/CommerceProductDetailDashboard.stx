@@ -1,0 +1,268 @@
+<script client>
+import type {
+  CommerceProductRecord,
+  ProductOption,
+  ProductReviewSummary,
+  ProductUnitDetail,
+  ProductVariantDetail,
+} from '../../../../app/Actions/Dashboard/Commerce/commerce-product-records'
+import { DashboardApiError, dashboardApi } from '../../../../functions/dashboard-api'
+import { pushToast } from '../../../../functions/toasts'
+
+interface ProductDetailResponse {
+  record: CommerceProductRecord
+  variants: ProductVariantDetail[]
+  units: ProductUnitDetail[]
+  reviews: ProductReviewSummary
+  categories: ProductOption[]
+  manufacturers: ProductOption[]
+  defaultCurrency: string
+}
+
+interface ProductWritePayload {
+  name: string
+  description: string
+  price: number
+  imageUrl: string
+  isAvailable: boolean
+  inventoryCount: number
+  preparationTime: number
+  allergens: string
+  nutritionalInfo: string
+  categoryId: number | null
+  manufacturerId: number | null
+}
+
+const route = useRoute()
+const record = state<CommerceProductRecord | null>(null)
+const variants = state<ProductVariantDetail[]>([])
+const units = state<ProductUnitDetail[]>([])
+const reviews = state<ProductReviewSummary>({ total: 0, approved: 0, pending: 0, averageRating: 0 })
+const categories = state<ProductOption[]>([])
+const manufacturers = state<ProductOption[]>([])
+const defaultCurrency = state('USD')
+const loading = state(true)
+const loadError = state('')
+const editOpen = state(false)
+const deleteOpen = state(false)
+const saving = state(false)
+const deleting = state(false)
+const validationErrors = state<Record<string, string>>({})
+
+function productId(): string {
+  const value = route.params.id
+  return Array.isArray(value) ? String(value[0] || '') : String(value || '')
+}
+
+function formatMoney(value: number): string {
+  try {
+    return new Intl.NumberFormat(undefined, { style: 'currency', currency: defaultCurrency() }).format(value)
+  }
+  catch {
+    return `${value.toFixed(2)} ${defaultCurrency()}`
+  }
+}
+
+function formatDate(value: string): string {
+  if (!value)
+    return 'Not recorded'
+  const normalized = /^\d{4}-\d{2}-\d{2} \d/.test(value)
+    ? `${value.replace(' ', 'T')}Z`
+    : value
+  const date = new Date(normalized)
+  return Number.isNaN(date.getTime())
+    ? value
+    : new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(date)
+}
+
+function nutritionEntries(): Array<{ label: string, value: string }> {
+  return Object.entries(record()?.nutritionalInfo || {}).map(([label, value]) => ({ label, value }))
+}
+
+async function loadProduct(): Promise<void> {
+  const id = productId()
+  if (!id) {
+    loadError.set('Product not found.')
+    loading.set(false)
+    return
+  }
+  loading.set(true)
+  loadError.set('')
+  try {
+    const data = await dashboardApi<ProductDetailResponse>(`/api/dashboard/commerce/products/${id}`)
+    record.set(data.record)
+    variants.set(Array.isArray(data.variants) ? data.variants : [])
+    units.set(Array.isArray(data.units) ? data.units : [])
+    reviews.set(data.reviews ?? { total: 0, approved: 0, pending: 0, averageRating: 0 })
+    categories.set(Array.isArray(data.categories) ? data.categories : [])
+    manufacturers.set(Array.isArray(data.manufacturers) ? data.manufacturers : [])
+    defaultCurrency.set(data.defaultCurrency || 'USD')
+  }
+  catch (error) {
+    record.set(null)
+    loadError.set(error instanceof DashboardApiError && error.status === 404
+      ? 'Product not found.'
+      : 'Product details could not be loaded.')
+    pushToast('error', 'Could not load product', {
+      detail: error instanceof Error ? error.message : String(error),
+    })
+  }
+  finally {
+    loading.set(false)
+  }
+}
+
+function goBack(): void {
+  navigate('/commerce/products')
+}
+
+function openEdit(): void {
+  validationErrors.set({})
+  editOpen.set(true)
+}
+
+function closeEdit(): void {
+  if (saving())
+    return
+  editOpen.set(false)
+  validationErrors.set({})
+}
+
+async function saveProduct(payload: ProductWritePayload): Promise<void> {
+  const current = record()
+  if (!current)
+    return
+  saving.set(true)
+  validationErrors.set({})
+  try {
+    await dashboardApi(`/api/products/${current.id}`, { method: 'PATCH', body: payload })
+    editOpen.set(false)
+    pushToast('success', 'Product updated')
+    await loadProduct()
+  }
+  catch (error) {
+    if (error instanceof DashboardApiError)
+      validationErrors.set(error.fields ?? {})
+    pushToast('error', 'Could not save product', {
+      detail: error instanceof Error ? error.message : String(error),
+    })
+  }
+  finally {
+    saving.set(false)
+  }
+}
+
+function closeDelete(): void {
+  if (!deleting())
+    deleteOpen.set(false)
+}
+
+async function deleteProduct(): Promise<void> {
+  const current = record()
+  if (!current)
+    return
+  deleting.set(true)
+  try {
+    await dashboardApi(`/api/products/${current.id}`, { method: 'DELETE' })
+    pushToast('success', 'Product deleted', { detail: current.name })
+    navigate('/commerce/products')
+  }
+  catch (error) {
+    pushToast('error', 'Could not delete product', {
+      detail: error instanceof Error ? error.message : String(error),
+    })
+  }
+  finally {
+    deleting.set(false)
+  }
+}
+
+onMount(() => {
+  void loadProduct()
+})
+</script>
+
+<div class="space-y-6">
+  <header class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+    <div class="flex gap-3 items-start">
+      <button type="button" aria-label="Back to products" class="mt-0.5 p-2 text-gray-500 dark:text-neutral-400 hover:text-blue-600 dark:hover:text-blue-400 bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" @click="goBack()"><span class="block h-4 w-4 i-hugeicons-arrow-left-02"></span></button>
+      <div>
+        <p class="font-medium text-gray-400 text-xs tracking-wide uppercase dark:text-neutral-500">Product {{ productId() }}</p>
+        <h1 class="mt-1 font-bold text-2xl text-gray-900 dark:text-white">{{ record()?.name || (loading() ? 'Loading product' : 'Product details') }}</h1>
+        <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Persisted Product fields and native commerce relationships.</p>
+      </div>
+    </div>
+    <div :if="record()" class="flex flex-wrap gap-2">
+      <button type="button" :disabled="loading()" class="inline-flex items-center px-3 py-2 font-semibold text-gray-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700 disabled:opacity-50" @click="loadProduct()"><span :class="'mr-2 h-4 w-4 ' + (loading() ? 'animate-spin i-hugeicons-loading-03' : 'i-hugeicons-refresh')"></span>Refresh</button>
+      <button type="button" class="inline-flex items-center px-3 py-2 font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md" @click="openEdit()"><span class="mr-2 h-4 w-4 i-hugeicons-edit-02"></span>Edit product</button>
+      <button type="button" class="inline-flex items-center px-3 py-2 font-semibold text-red-700 text-sm dark:text-red-300 bg-white dark:bg-neutral-800 hover:bg-red-50 dark:hover:bg-red-950/30 border border-red-200 rounded-md dark:border-red-900" @click="deleteOpen.set(true)"><span class="mr-2 h-4 w-4 i-hugeicons-delete-02"></span>Delete</button>
+    </div>
+  </header>
+
+  <div :if="loading()" class="flex items-center justify-center py-24 text-gray-500 text-sm dark:text-neutral-400 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700"><span class="mr-2 h-4 w-4 animate-spin i-hugeicons-loading-03"></span>Loading product details</div>
+  <div :if="!loading() && loadError()" class="p-8 text-center bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700"><div class="mb-3 mx-auto h-8 w-8 text-gray-400 i-hugeicons-package-out-of-stock"></div><p class="font-semibold text-gray-900 dark:text-white">{{ loadError() }}</p><button type="button" class="mt-4 px-3 py-2 font-semibold text-blue-700 text-sm dark:text-blue-300 bg-blue-50 dark:bg-blue-950/40 rounded-md" @click="goBack()">Return to products</button></div>
+
+  <template :if="!loading() && record()">
+    <section class="grid gap-3 grid-cols-2 lg:grid-cols-5" aria-label="Product summary">
+      <article class="p-4 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700"><p class="text-gray-500 text-xs dark:text-neutral-400">Price</p><p class="mt-2 font-semibold text-gray-900 text-xl dark:text-white">{{ formatMoney(record()?.price || 0) }}</p></article>
+      <article class="p-4 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700"><p class="text-gray-500 text-xs dark:text-neutral-400">Inventory</p><p class="mt-2 font-semibold text-gray-900 text-xl dark:text-white">{{ (record()?.inventoryCount || 0).toLocaleString() }}</p></article>
+      <article class="p-4 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700"><p class="text-gray-500 text-xs dark:text-neutral-400">Variants</p><p class="mt-2 font-semibold text-gray-900 text-xl dark:text-white">{{ variants().length }}</p></article>
+      <article class="p-4 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700"><p class="text-gray-500 text-xs dark:text-neutral-400">Units</p><p class="mt-2 font-semibold text-gray-900 text-xl dark:text-white">{{ units().length }}</p></article>
+      <article class="p-4 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700"><p class="text-gray-500 text-xs dark:text-neutral-400">Reviews</p><p class="mt-2 font-semibold text-gray-900 text-xl dark:text-white">{{ reviews().total }}</p><p class="mt-1 text-gray-400 text-xs dark:text-neutral-500">{{ reviews().averageRating }} average rating</p></article>
+    </section>
+
+    <div class="grid gap-6 grid-cols-1 xl:grid-cols-3">
+      <section class="xl:col-span-2 p-5 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
+        <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <div class="flex gap-2 items-center"><span :class="'inline-flex px-2 py-1 font-medium text-xs rounded-full ' + (record()?.isAvailable ? 'bg-green-50 text-green-700 dark:bg-green-950/40 dark:text-green-300' : 'bg-gray-100 text-gray-600 dark:bg-neutral-700 dark:text-neutral-300')">{{ record()?.isAvailable ? 'Available' : 'Unavailable' }}</span><span :if="record()?.inventoryCount === 0" class="inline-flex px-2 py-1 font-medium text-red-700 text-xs dark:text-red-300 bg-red-50 dark:bg-red-950/40 rounded-full">Out of stock</span></div>
+            <p class="mt-4 max-w-3xl leading-6 text-gray-600 text-sm dark:text-neutral-300">{{ record()?.description || 'No description recorded.' }}</p>
+          </div>
+          <div class="flex flex-none items-center justify-center h-16 w-16 font-bold text-blue-700 text-lg dark:text-blue-300 bg-blue-50 dark:bg-blue-950/40 rounded-lg"><span class="h-7 w-7 i-hugeicons-package"></span></div>
+        </div>
+        <dl class="grid gap-5 grid-cols-1 sm:grid-cols-2 mt-6 pt-5 border-gray-200 border-t dark:border-neutral-700">
+          <div><dt class="text-gray-400 text-xs dark:text-neutral-500">Category</dt><dd class="mt-1 font-medium text-gray-800 text-sm dark:text-neutral-100">{{ record()?.categoryName || 'Unassigned category' }}</dd></div>
+          <div><dt class="text-gray-400 text-xs dark:text-neutral-500">Manufacturer</dt><dd class="mt-1 font-medium text-gray-800 text-sm dark:text-neutral-100">{{ record()?.manufacturerName || 'Unassigned manufacturer' }}</dd></div>
+          <div><dt class="text-gray-400 text-xs dark:text-neutral-500">Preparation time</dt><dd class="mt-1 text-gray-700 text-sm dark:text-neutral-200">{{ record()?.preparationTime || 0 }} minutes</dd></div>
+          <div><dt class="text-gray-400 text-xs dark:text-neutral-500">Created</dt><dd class="mt-1 text-gray-700 text-sm dark:text-neutral-200">{{ formatDate(record()?.createdAt || '') }}</dd></div>
+          <div class="sm:col-span-2"><dt class="text-gray-400 text-xs dark:text-neutral-500">Persisted image URL</dt><dd class="mt-1 break-all font-mono text-gray-600 text-xs dark:text-neutral-300">{{ record()?.imageUrl || 'No image URL recorded.' }}</dd></div>
+        </dl>
+      </section>
+
+      <section class="p-5 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
+        <h2 class="font-semibold text-gray-900 dark:text-white">Review state</h2>
+        <dl class="mt-4 space-y-3">
+          <div class="flex items-center justify-between"><dt class="text-gray-500 text-sm dark:text-neutral-400">Approved</dt><dd class="font-semibold text-gray-900 text-sm dark:text-white">{{ reviews().approved }}</dd></div>
+          <div class="flex items-center justify-between"><dt class="text-gray-500 text-sm dark:text-neutral-400">Pending</dt><dd class="font-semibold text-gray-900 text-sm dark:text-white">{{ reviews().pending }}</dd></div>
+          <div class="flex items-center justify-between pt-3 border-gray-200 border-t dark:border-neutral-700"><dt class="text-gray-500 text-sm dark:text-neutral-400">Average rating</dt><dd class="font-semibold text-gray-900 text-sm dark:text-white">{{ reviews().averageRating }} / 5</dd></div>
+        </dl>
+      </section>
+    </div>
+
+    <div class="grid gap-6 grid-cols-1 xl:grid-cols-2">
+      <section class="overflow-hidden bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
+        <header class="px-5 py-4 border-b border-gray-200 dark:border-neutral-700"><h2 class="font-semibold text-gray-900 dark:text-white">Product variants</h2><p class="mt-1 text-gray-500 text-xs dark:text-neutral-400">Persisted ProductVariant relationships.</p></header>
+        <div :if="variants().length === 0" class="px-5 py-10 text-center text-gray-500 text-sm dark:text-neutral-400">No variants are linked to this product.</div>
+        <ul :if="variants().length > 0" class="divide-gray-100 divide-y dark:divide-neutral-700">
+          <template :for="variant in variants()" :key="variant.id"><li class="px-5 py-4"><div class="flex gap-3 items-start justify-between"><div><p class="font-medium text-gray-900 text-sm dark:text-white">{{ variant.name || 'Unnamed variant' }}</p><p class="mt-1 text-gray-500 text-xs dark:text-neutral-400">{{ variant.type || 'No type' }}<span :if="variant.description"> · {{ variant.description }}</span></p></div><span :if="variant.status" class="px-2 py-1 font-medium text-gray-600 text-xs dark:text-neutral-300 bg-gray-100 dark:bg-neutral-700 rounded-full">{{ variant.status }}</span></div><div :if="variant.options.length > 0" class="flex flex-wrap gap-1.5 mt-3"><template :for="option in variant.options" :key="option"><span class="px-2 py-1 text-blue-700 text-xs dark:text-blue-300 bg-blue-50 dark:bg-blue-950/40 rounded">{{ option }}</span></template></div></li></template>
+        </ul>
+      </section>
+
+      <section class="overflow-hidden bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
+        <header class="px-5 py-4 border-b border-gray-200 dark:border-neutral-700"><h2 class="font-semibold text-gray-900 dark:text-white">Product units</h2><p class="mt-1 text-gray-500 text-xs dark:text-neutral-400">Persisted ProductUnit relationships.</p></header>
+        <div :if="units().length === 0" class="px-5 py-10 text-center text-gray-500 text-sm dark:text-neutral-400">No units are linked to this product.</div>
+        <ul :if="units().length > 0" class="divide-gray-100 divide-y dark:divide-neutral-700">
+          <template :for="unit in units()" :key="unit.id"><li class="flex gap-3 items-start justify-between px-5 py-4"><div><div class="flex gap-2 items-center"><p class="font-medium text-gray-900 text-sm dark:text-white">{{ unit.name || 'Unnamed unit' }}</p><span :if="unit.isDefault" class="px-2 py-0.5 font-medium text-green-700 text-xs dark:text-green-300 bg-green-50 dark:bg-green-950/40 rounded-full">Default</span></div><p class="mt-1 text-gray-500 text-xs dark:text-neutral-400">{{ unit.type || 'No type' }}<span :if="unit.description"> · {{ unit.description }}</span></p></div><span class="font-mono text-gray-500 text-xs dark:text-neutral-400">{{ unit.abbreviation || 'n/a' }}</span></li></template>
+        </ul>
+      </section>
+    </div>
+
+    <div class="grid gap-6 grid-cols-1 xl:grid-cols-2">
+      <section class="p-5 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700"><h2 class="font-semibold text-gray-900 dark:text-white">Allergens</h2><div :if="(record()?.allergens || []).length > 0" class="flex flex-wrap gap-2 mt-4"><template :for="allergen in (record()?.allergens || [])" :key="allergen"><span class="px-2.5 py-1 font-medium text-amber-700 text-xs dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40 rounded-full">{{ allergen }}</span></template></div><p :if="(record()?.allergens || []).length === 0" class="mt-4 text-gray-500 text-sm dark:text-neutral-400">No allergens recorded.</p></section>
+      <section class="p-5 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700"><h2 class="font-semibold text-gray-900 dark:text-white">Nutritional information</h2><dl :if="nutritionEntries().length > 0" class="grid gap-3 grid-cols-2 mt-4"><template :for="item in nutritionEntries()" :key="item.label"><div class="p-3 bg-gray-50 dark:bg-neutral-900/50 rounded-md"><dt class="text-gray-400 text-xs dark:text-neutral-500">{{ item.label }}</dt><dd class="mt-1 font-medium text-gray-800 text-sm dark:text-neutral-100">{{ item.value }}</dd></div></template></dl><p :if="nutritionEntries().length === 0" class="mt-4 text-gray-500 text-sm dark:text-neutral-400">No nutritional information recorded.</p></section>
+    </div>
+  </template>
+</div>
+
+<CommerceProductDialog :open="editOpen()" mode="edit" :record="record()" :categories="categories()" :manufacturers="manufacturers()" :currency="defaultCurrency()" :busy="saving()" :errors="validationErrors()" @submit="saveProduct" @close="closeEdit()" />
+<CommerceProductDeleteDialog :open="deleteOpen()" :record="record()" :busy="deleting()" @confirm="deleteProduct()" @close="closeDelete()" />
