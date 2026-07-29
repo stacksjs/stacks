@@ -249,6 +249,9 @@ route.group({ prefix: '/api/dashboard', apiResponse: true }, () => {
   guard(route.patch('/commerce/license-keys/{id}', 'Actions/Commerce/Shipping/LicenseKeyUpdateAction'))
   guard(route.delete('/commerce/license-keys/{id}', 'Actions/Commerce/Shipping/LicenseKeyDestroyAction'))
 
+  guard(route.get('/notification-deliveries', 'Actions/Dashboard/Notifications/NotificationDeliveryIndexAction'))
+  guard(route.post('/notification-deliveries/{id}/retry', 'Actions/Dashboard/Notifications/NotificationDeliveryRetryAction'))
+
   // Models overview. Walks `app/Models/` + framework default models,
   // counts rows for each, returns grouped JSON for the
   // `views/dashboard/models/index.stx` page (stacksjs/stacks#1838).
