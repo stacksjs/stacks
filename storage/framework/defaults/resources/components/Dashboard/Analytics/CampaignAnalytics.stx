@@ -1,0 +1,238 @@
+<script client>
+import type { AnalyticsRange, CampaignAnalyticsResponse } from '../../../../functions/analytics'
+import { fetchCampaignAnalytics } from '../../../../functions/analytics'
+import { pushToast } from '../../../../functions/toasts'
+
+const analytics = state<CampaignAnalyticsResponse | null>(null)
+const analyticsRange = state<AnalyticsRange>('month')
+const dateRangeDisplay = state('Last 30 days')
+const isLoading = state(false)
+const loadError = state('')
+
+function formatNumber(value: number): string {
+  return new Intl.NumberFormat().format(value)
+}
+
+function formatCurrency(value: number, currency: string): string {
+  return new Intl.NumberFormat(undefined, { style: 'currency', currency }).format(value)
+}
+
+function formatDateRange(start: string, end: string): string {
+  const formatter = new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
+  return `${formatter.format(new Date(start))} to ${formatter.format(new Date(end))}`
+}
+
+function campaigns(): CampaignAnalyticsResponse['campaigns'] {
+  return analytics()?.campaigns || []
+}
+
+function channels(): CampaignAnalyticsResponse['channels'] {
+  return analytics()?.channels || []
+}
+
+function spendByCurrency(): CampaignAnalyticsResponse['spendByCurrency'] {
+  return analytics()?.spendByCurrency || []
+}
+
+function statuses(): CampaignAnalyticsResponse['statuses'] {
+  return analytics()?.statuses || []
+}
+
+function setAnalyticsRange(value: string | CustomEvent<string>): void {
+  const range = typeof value === 'string' ? value : value.detail
+  analyticsRange.set(range as AnalyticsRange)
+  void loadAnalytics()
+}
+
+async function loadAnalytics(): Promise<void> {
+  isLoading.set(true)
+  loadError.set('')
+  try {
+    const data = await fetchCampaignAnalytics(analyticsRange())
+    analytics.set(data)
+    dateRangeDisplay.set(formatDateRange(data.dateRange.start, data.dateRange.end))
+  }
+  catch (error) {
+    loadError.set('Campaign analytics could not be loaded.')
+    pushToast('error', 'Could not load campaign analytics', { detail: String(error) })
+  }
+  finally {
+    isLoading.set(false)
+  }
+}
+
+onMount(() => {
+  void loadAnalytics()
+})
+</script>
+
+<div class="space-y-6">
+  <AnalyticsPageHeader
+    title="Marketing Analytics"
+    description="Delivery, engagement, and currency-safe spend from Campaign records."
+    :dateRange="dateRangeDisplay"
+    :range="analyticsRange"
+    :loading="isLoading"
+    @range-change="setAnalyticsRange"
+    @refresh="loadAnalytics"
+  />
+
+  <div :if="loadError()" class="p-4 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900">
+    {{ loadError() }}
+  </div>
+
+  <section class="grid gap-3 grid-cols-2 xl:grid-cols-4">
+    <div class="p-4 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
+      <p class="text-gray-500 text-xs tracking-wide uppercase dark:text-neutral-400">Campaigns</p>
+      <p class="mt-2 font-semibold text-2xl text-gray-900 dark:text-white">{{ formatNumber(analytics()?.overview.campaigns || 0) }}</p>
+    </div>
+    <div class="p-4 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
+      <p class="text-gray-500 text-xs tracking-wide uppercase dark:text-neutral-400">Audience</p>
+      <p class="mt-2 font-semibold text-2xl text-gray-900 dark:text-white">{{ formatNumber(analytics()?.overview.audience || 0) }}</p>
+    </div>
+    <div class="p-4 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
+      <p class="text-gray-500 text-xs tracking-wide uppercase dark:text-neutral-400">Sent</p>
+      <p class="mt-2 font-semibold text-2xl text-gray-900 dark:text-white">{{ formatNumber(analytics()?.overview.sent || 0) }}</p>
+    </div>
+    <div class="p-4 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
+      <p class="text-gray-500 text-xs tracking-wide uppercase dark:text-neutral-400">Conversions</p>
+      <p class="mt-2 font-semibold text-2xl text-gray-900 dark:text-white">{{ formatNumber(analytics()?.overview.conversions || 0) }}</p>
+    </div>
+  </section>
+
+  <section class="grid gap-3 grid-cols-1 sm:grid-cols-3">
+    <div class="px-4 py-3 bg-neutral-900 rounded-lg">
+      <p class="text-neutral-400 text-xs uppercase">Open rate</p>
+      <p class="mt-1 font-semibold text-white text-xl">{{ analytics()?.overview.openRate || 0 }}%</p>
+    </div>
+    <div class="px-4 py-3 bg-neutral-900 rounded-lg">
+      <p class="text-neutral-400 text-xs uppercase">Click rate</p>
+      <p class="mt-1 font-semibold text-white text-xl">{{ analytics()?.overview.clickRate || 0 }}%</p>
+    </div>
+    <div class="px-4 py-3 bg-neutral-900 rounded-lg">
+      <p class="text-neutral-400 text-xs uppercase">Conversion rate</p>
+      <p class="mt-1 font-semibold text-white text-xl">{{ analytics()?.overview.conversionRate || 0 }}%</p>
+    </div>
+  </section>
+
+  <div :if="!isLoading() && campaigns().length === 0" class="px-6 py-14 text-center bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
+    <div class="mb-3 mx-auto h-9 w-9 text-gray-400 i-hugeicons-marketing"></div>
+    <h2 class="font-semibold text-gray-900 dark:text-white">No campaigns in this period</h2>
+    <p class="mt-2 mx-auto max-w-xl text-gray-500 text-sm dark:text-neutral-400">
+      Create and send campaigns from Marketing to populate delivery, engagement, channel, and spend analytics.
+    </p>
+    <StxLink to="/marketing/campaigns" class="inline-flex items-center mt-4 font-medium text-blue-600 text-sm dark:text-blue-400">
+      Open campaigns
+      <span class="ml-1 h-4 w-4 i-hugeicons-arrow-right-02"></span>
+    </StxLink>
+  </div>
+
+  <template :if="campaigns().length > 0">
+    <section class="overflow-hidden bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
+      <div class="px-4 py-3 border-b border-gray-200 dark:border-neutral-700">
+        <h2 class="font-semibold text-gray-900 dark:text-white">Campaign performance</h2>
+        <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Engagement counts are derived from each campaign's recorded sent count and rates.</p>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-gray-200 divide-y dark:divide-neutral-700">
+          <thead class="bg-gray-50 dark:bg-neutral-700/50">
+            <tr>
+              <th class="px-4 py-3 font-medium text-gray-500 text-left text-xs uppercase dark:text-neutral-300">Campaign</th>
+              <th class="px-4 py-3 font-medium text-gray-500 text-left text-xs uppercase dark:text-neutral-300">Channel</th>
+              <th class="px-4 py-3 font-medium text-gray-500 text-left text-xs uppercase dark:text-neutral-300">Status</th>
+              <th class="px-4 py-3 font-medium text-gray-500 text-right text-xs uppercase dark:text-neutral-300">Sent</th>
+              <th class="px-4 py-3 font-medium text-gray-500 text-right text-xs uppercase dark:text-neutral-300">Opens</th>
+              <th class="px-4 py-3 font-medium text-gray-500 text-right text-xs uppercase dark:text-neutral-300">Clicks</th>
+              <th class="px-4 py-3 font-medium text-gray-500 text-right text-xs uppercase dark:text-neutral-300">Conversions</th>
+              <th class="px-4 py-3 font-medium text-gray-500 text-right text-xs uppercase dark:text-neutral-300">Spent</th>
+            </tr>
+          </thead>
+          <tbody class="divide-gray-200 divide-y dark:divide-neutral-700">
+            <template :for="campaign in campaigns()">
+              <tr>
+                <td class="px-4 py-3 font-medium text-gray-900 text-sm dark:text-white">{{ campaign.name }}</td>
+                <td class="px-4 py-3 text-gray-500 text-sm dark:text-neutral-300">{{ campaign.type }}</td>
+                <td class="px-4 py-3 text-gray-500 text-sm dark:text-neutral-300">{{ campaign.status }}</td>
+                <td class="px-4 py-3 text-gray-500 text-right text-sm dark:text-neutral-300">{{ formatNumber(campaign.sentCount) }}</td>
+                <td class="px-4 py-3 text-gray-500 text-right text-sm dark:text-neutral-300">{{ formatNumber(campaign.opens) }}</td>
+                <td class="px-4 py-3 text-gray-500 text-right text-sm dark:text-neutral-300">{{ formatNumber(campaign.clicks) }}</td>
+                <td class="px-4 py-3 text-gray-500 text-right text-sm dark:text-neutral-300">{{ formatNumber(campaign.conversions) }}</td>
+                <td class="px-4 py-3 text-gray-500 text-right text-sm dark:text-neutral-300">{{ formatCurrency(campaign.spent, campaign.currency) }}</td>
+              </tr>
+            </template>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="grid gap-6 grid-cols-1 xl:grid-cols-2">
+      <div class="overflow-hidden bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
+        <div class="px-4 py-3 border-b border-gray-200 dark:border-neutral-700">
+          <h2 class="font-semibold text-gray-900 dark:text-white">Spend by currency</h2>
+        </div>
+        <div class="divide-gray-200 divide-y dark:divide-neutral-700">
+          <template :for="spend in spendByCurrency()">
+            <div class="flex gap-4 items-center justify-between px-4 py-3">
+              <div>
+                <p class="font-medium text-gray-900 text-sm dark:text-white">{{ spend.currency }}</p>
+                <p class="text-gray-500 text-xs dark:text-neutral-400">{{ spend.campaigns }} campaigns</p>
+              </div>
+              <div class="text-right">
+                <p class="font-medium text-gray-900 text-sm dark:text-white">{{ formatCurrency(spend.spent, spend.currency) }}</p>
+                <p class="text-gray-500 text-xs dark:text-neutral-400">of {{ formatCurrency(spend.budget, spend.currency) }}</p>
+              </div>
+            </div>
+          </template>
+        </div>
+      </div>
+
+      <div class="overflow-hidden bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
+        <div class="px-4 py-3 border-b border-gray-200 dark:border-neutral-700">
+          <h2 class="font-semibold text-gray-900 dark:text-white">Campaign statuses</h2>
+        </div>
+        <div class="divide-gray-200 divide-y dark:divide-neutral-700">
+          <template :for="status in statuses()">
+            <div class="flex items-center justify-between px-4 py-3">
+              <p class="font-medium text-gray-900 text-sm dark:text-white">{{ status.label }}</p>
+              <p class="text-gray-500 text-sm dark:text-neutral-300">{{ status.count }}</p>
+            </div>
+          </template>
+        </div>
+      </div>
+    </section>
+
+    <section class="overflow-hidden bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
+      <div class="px-4 py-3 border-b border-gray-200 dark:border-neutral-700">
+        <h2 class="font-semibold text-gray-900 dark:text-white">Channel performance</h2>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-gray-200 divide-y dark:divide-neutral-700">
+          <thead class="bg-gray-50 dark:bg-neutral-700/50">
+            <tr>
+              <th class="px-4 py-3 font-medium text-gray-500 text-left text-xs uppercase dark:text-neutral-300">Channel</th>
+              <th class="px-4 py-3 font-medium text-gray-500 text-left text-xs uppercase dark:text-neutral-300">Currency</th>
+              <th class="px-4 py-3 font-medium text-gray-500 text-right text-xs uppercase dark:text-neutral-300">Campaigns</th>
+              <th class="px-4 py-3 font-medium text-gray-500 text-right text-xs uppercase dark:text-neutral-300">Sent</th>
+              <th class="px-4 py-3 font-medium text-gray-500 text-right text-xs uppercase dark:text-neutral-300">Spent</th>
+              <th class="px-4 py-3 font-medium text-gray-500 text-right text-xs uppercase dark:text-neutral-300">Click rate</th>
+              <th class="px-4 py-3 font-medium text-gray-500 text-right text-xs uppercase dark:text-neutral-300">Conversion rate</th>
+            </tr>
+          </thead>
+          <tbody class="divide-gray-200 divide-y dark:divide-neutral-700">
+            <template :for="channel in channels()">
+              <tr>
+                <td class="px-4 py-3 font-medium text-gray-900 text-sm dark:text-white">{{ channel.name }}</td>
+                <td class="px-4 py-3 text-gray-500 text-sm dark:text-neutral-300">{{ channel.currency }}</td>
+                <td class="px-4 py-3 text-gray-500 text-right text-sm dark:text-neutral-300">{{ channel.campaigns }}</td>
+                <td class="px-4 py-3 text-gray-500 text-right text-sm dark:text-neutral-300">{{ formatNumber(channel.sent) }}</td>
+                <td class="px-4 py-3 text-gray-500 text-right text-sm dark:text-neutral-300">{{ formatCurrency(channel.spent, channel.currency) }}</td>
+                <td class="px-4 py-3 text-gray-500 text-right text-sm dark:text-neutral-300">{{ channel.clickRate }}%</td>
+                <td class="px-4 py-3 text-gray-500 text-right text-sm dark:text-neutral-300">{{ channel.conversionRate }}%</td>
+              </tr>
+            </template>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </template>
+</div>

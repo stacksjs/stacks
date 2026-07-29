@@ -1,81 +1,36 @@
+import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
-import { log } from '@stacksjs/logging'
+import { Campaign } from '@stacksjs/orm'
+import { buildCampaignAnalytics } from './campaign-analytics'
+import { normalizeAnalyticsRange } from './request-analytics'
 
 export default new Action({
   name: 'MarketingAnalyticsAction',
-  description: 'Returns marketing analytics data from ts-analytics campaign and referrer stats.',
+  description: 'Returns campaign delivery, engagement, channel, and currency-safe spend analytics.',
   method: 'GET',
-  async handle() {
-    try {
-      const { AnalyticsQueryAPI, AnalyticsStore } = await import('@ts-analytics/tracking/analytics')
-      const store = new AnalyticsStore({ tableName: 'analytics' })
+  apiResponse: true,
 
-      const now = new Date()
-      const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
-      const dateRange = { start: thirtyDaysAgo, end: now }
-      const period = AnalyticsQueryAPI.determinePeriod(dateRange)
-      const periodStart = AnalyticsStore.getPeriodStart(now, period)
+  async handle(request: RequestInstance) {
+    const range = normalizeAnalyticsRange(request.get('range'))
+    const campaigns = await Campaign.orderByDesc('id').limit(10_000).get()
 
-      const campaignStatsCmd = store.getCampaignStatsCommand('default', period, periodStart)
-      const campaignResult = (campaignStatsCmd as unknown as { Items?: unknown[] })?.Items ?? []
-
-      const campaignItems = campaignResult as any[]
-
-      const totalVisitors = campaignItems.reduce((sum: number, c: any) => sum + (c.visitors || 0), 0)
-      const totalConversions = campaignItems.reduce((sum: number, c: any) => sum + (c.conversions || 0), 0)
-      const totalRevenue = campaignItems.reduce((sum: number, c: any) => sum + (c.revenue || 0), 0)
-
-      const stats = [
-        { label: 'Campaign Visitors', value: totalVisitors.toLocaleString(), change: '' },
-        { label: 'Conversions', value: totalConversions.toLocaleString(), change: '' },
-        { label: 'Revenue', value: `$${totalRevenue.toLocaleString()}`, change: '' },
-        { label: 'Avg Conversion Rate', value: totalVisitors > 0 ? `${((totalConversions / totalVisitors) * 100).toFixed(1)}%` : '0%', change: '' },
-      ]
-
-      const campaigns = campaignItems
-        .sort((a: any, b: any) => (b.revenue || 0) - (a.revenue || 0))
-        .slice(0, 10)
-        .map((c: any) => ({
-          name: [c.utmSource, c.utmCampaign].filter(Boolean).join(' - ') || 'Unknown',
-          spend: '-',
-          leads: c.visitors || 0,
-          cpl: '-',
-          revenue: `$${(c.revenue || 0).toLocaleString()}`,
-          roi: '-',
-        }))
-
-      const channelMap: Record<string, { visitors: number, conversions: number }> = {}
-      for (const c of campaignItems) {
-        const channel = c.utmMedium || c.utmSource || 'Other'
-        if (!channelMap[channel]) {
-          channelMap[channel] = { visitors: 0, conversions: 0 }
-        }
-        channelMap[channel].visitors += c.visitors || 0
-        channelMap[channel].conversions += c.conversions || 0
-      }
-
-      const channels = Object.entries(channelMap)
-        .sort(([, a], [, b]) => b.visitors - a.visitors)
-        .map(([channel, data]) => ({
-          channel,
-          spend: '-',
-          leads: data.visitors,
-          conversion: data.visitors > 0 ? `${((data.conversions / data.visitors) * 100).toFixed(1)}%` : '0%',
-        }))
-
-      return {
-        stats,
-        campaigns,
-        channels,
-        attribution: [],
-      }
-    }
-    catch (error) {
-      // The analytics integration is optional: without
-      // @ts-analytics/tracking installed the dashboard renders empty
-      // rather than erroring. Log so a broken install is still visible.
-      log.debug('[MarketingAnalyticsAction] analytics unavailable:', error)
-      return { stats: [], campaigns: [], channels: [], attribution: [] }
-    }
+    return buildCampaignAnalytics(
+      campaigns.map(campaign => ({
+        id: String(campaign.get('id') || ''),
+        name: String(campaign.get('name') || 'Untitled campaign'),
+        type: String(campaign.get('type') || 'unknown'),
+        status: String(campaign.get('status') || 'unknown'),
+        audienceSize: Number(campaign.get('audience_size') || 0),
+        sentCount: Number(campaign.get('sent_count') || 0),
+        openRate: Number(campaign.get('open_rate') || 0),
+        clickRate: Number(campaign.get('click_rate') || 0),
+        conversionRate: Number(campaign.get('conversion_rate') || 0),
+        budget: Number(campaign.get('budget') || 0),
+        spent: Number(campaign.get('spent') || 0),
+        currency: String(campaign.get('currency') || 'USD'),
+        createdAt: String(campaign.get('created_at') || ''),
+      })),
+      range,
+    )
   },
 })

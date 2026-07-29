@@ -128,6 +128,67 @@ export interface SalesAnalyticsResponse {
   }>
 }
 
+export interface CampaignAnalyticsResponse {
+  source: 'campaigns'
+  range: AnalyticsRange
+  dateRange: {
+    start: string
+    end: string
+  }
+  overview: {
+    campaigns: number
+    audience: number
+    sent: number
+    opens: number
+    clicks: number
+    conversions: number
+    openRate: number
+    clickRate: number
+    conversionRate: number
+  }
+  spendByCurrency: Array<{
+    currency: string
+    budget: number
+    spent: number
+    campaigns: number
+  }>
+  campaigns: Array<{
+    id: string
+    name: string
+    type: string
+    status: string
+    audienceSize: number
+    sentCount: number
+    openRate: number
+    clickRate: number
+    conversionRate: number
+    budget: number
+    spent: number
+    currency: string
+    createdAt: string
+    opens: number
+    clicks: number
+    conversions: number
+  }>
+  channels: Array<{
+    type: string
+    name: string
+    currency: string
+    campaigns: number
+    audience: number
+    sent: number
+    spent: number
+    openRate: number
+    clickRate: number
+    conversionRate: number
+  }>
+  statuses: Array<{
+    status: string
+    label: string
+    count: number
+  }>
+}
+
 export async function fetchWebAnalytics(range: AnalyticsRange = 'month', scope: AnalyticsScope = 'all'): Promise<WebAnalyticsResponse> {
   const query = new URLSearchParams({ range, scope })
   return await dashboardApi<WebAnalyticsResponse>(`/api/dashboard/analytics/web?${query.toString()}`)
@@ -135,6 +196,10 @@ export async function fetchWebAnalytics(range: AnalyticsRange = 'month', scope: 
 
 export async function fetchSalesAnalytics(range: AnalyticsRange = 'month'): Promise<SalesAnalyticsResponse> {
   return await dashboardApi<SalesAnalyticsResponse>(`/api/dashboard/analytics/sales?range=${encodeURIComponent(range)}`)
+}
+
+export async function fetchCampaignAnalytics(range: AnalyticsRange = 'month'): Promise<CampaignAnalyticsResponse> {
+  return await dashboardApi<CampaignAnalyticsResponse>(`/api/dashboard/analytics/marketing?range=${encodeURIComponent(range)}`)
 }
 
 export function useAnalytics() {
