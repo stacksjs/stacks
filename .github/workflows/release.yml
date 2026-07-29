@@ -18,8 +18,88 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  # Nothing stopped a publish before this job existed. `npm` triggers straight
+  # off a `v*` tag push with no dependency on CI, and ci.yml does not even run
+  # on tags, so 24+ releases went out while protocol-conformance was red. The
+  # checks were never the problem; having no consequence was.
+  #
+  # These are the same ten checks ci.yml runs, re-run here against the tagged
+  # commit rather than trusting a CI verdict that may be absent, cancelled, or
+  # for a different SHA. They cost about a minute against an 11 minute release
+  # that does not start publishing for over two.
+  #
+  # Break-glass: set the repository variable RELEASE_GATE_BYPASS to 'true' to
+  # ship while something unrelated is red. It is a variable rather than a code
+  # change so it can be flipped and unflipped without a commit, and it leaves a
+  # warning annotation on the run so the bypass is visible afterwards.
+  release-gate:
+    name: release gate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v6
+        with:
+          # Full history: protocol:manifest:check resolves a pinned source
+          # revision with git, which a shallow clone cannot see.
+          fetch-depth: 0
+
+      - name: Setup Pantry
+        uses: pantry-pm/pantry/packages/action@8826c8e3a511995aa0e70a6f0c8b4289f751fa96 # v0.10.50
+        with:
+          version: '0.10.50'
+          install: 'false'
+
+      - name: Use Cached node_modules
+        uses: actions/cache@v5
+        with:
+          path: node_modules
+          key: node-modules-${{ hashFiles('**/bun.lock') }}
+          restore-keys: |
+            node-modules-
+
+      - name: Install Dependencies
+        # Matches the npm job's install rather than CI's --frozen-lockfile, so
+        # the gate validates exactly the tree the release will publish and
+        # cannot block on a lockfile difference the release itself tolerates.
+        run: bun install
+
+      - name: Verify pinned checks against the tagged commit
+        if: vars.RELEASE_GATE_BYPASS != 'true'
+        # Every check runs even after one fails, so a release blocked by two
+        # stale artifacts reports both instead of hiding the second behind the
+        # first. `::error::` surfaces each failure in the run summary.
+        run: |
+          status=0
+          for check in \
+            protocol:check \
+            protocol:manifest:check \
+            protocol:release:check \
+            protocol:drivers:check \
+            protocol:desktop:check \
+            protocol:pantry:check \
+            protocol:craft:check \
+            docs:buddy:check \
+            docs:artifacts:check \
+            docs:links:check
+          do
+            echo "::group::$check"
+            if bun run "$check"; then
+              echo "$check ok"
+            else
+              echo "::error title=Release gate::$check failed. Regenerate the artifact and re-tag, or set RELEASE_GATE_BYPASS to ship anyway."
+              status=1
+            fi
+            echo "::endgroup::"
+          done
+          exit $status
+
+      - name: Gate bypassed
+        if: vars.RELEASE_GATE_BYPASS == 'true'
+        run: echo "::warning title=Release gate bypassed::RELEASE_GATE_BYPASS is set, so the pinned checks did not run for this release."
+
   npm:
     name: npm
+    needs: release-gate
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.get_version.outputs.version }}
