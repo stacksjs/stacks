@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.226...v0.70.227)
+
+## 🐛 Bug Fixes
+
+- preserve dashboards during partial deploys ([587112e](https://github.com/stacksjs/stacks/commit/587112e)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.225...v0.70.226)
 
 ## ⚡ Performance Improvements
