@@ -8,6 +8,7 @@
       :activeFolder="activeFolder"
       :folders="folders"
       :unreadCounts="unreadCounts"
+      :mailbox="mailbox"
       @update:active-folder="handleFolderChange"
       @compose="handleCompose"
     />
@@ -15,7 +16,10 @@
     <div class="flex overflow-hidden flex-1 flex-col">
       <div class="px-4 py-2 bg-white dark:bg-neutral-700 border-b border-gray-200 dark:border-neutral-600">
         <div class="flex items-center justify-between">
-          <div class="font-medium text-gray-900 text-xl dark:text-white">Inbox</div>
+          <div class="flex gap-4 items-center">
+            <div class="font-medium text-gray-900 text-xl dark:text-white">Inbox</div>
+            <EmailNavigation active="inbox" />
+          </div>
           <div class="flex items-center space-x-1">
             <div class="flex bg-gray-100 dark:bg-neutral-600 rounded-md">
               <button class="px-4 py-2 font-medium text-gray-700 text-sm dark:text-white bg-gray-200 dark:bg-neutral-500 rounded-md">All mail</button>
@@ -226,6 +230,7 @@ const searchQuery = state('')
 const isComposing = state(false)
 const isLoading = state(false)
 const loadError = state<string | null>(null)
+const mailbox = state('')
 const replyText = state('')
 const newEmailTo = state('')
 const newEmailSubject = state('')
@@ -301,6 +306,7 @@ async function loadInbox() {
     if (!res.ok) throw new Error(`HTTP ${res.status}`)
     const data = await res.json()
     const mapped = (data.emails || []).map(mapInboxEmail)
+    mailbox.set(data.mailbox || '')
     emails.set(mapped)
   }
   catch (e) {
@@ -400,15 +406,21 @@ function toggleStar(id: string) {
   emails.set(emails().map(e => e.id === id ? { ...e, starred: !e.starred } : e))
 }
 
-function handleFolderChange(folder: string) {
+function handleFolderChange(event: CustomEvent<string>) {
+  const folder = event.detail
   activeFolder.set(folder)
+  selectedEmailId.set(null)
+  isComposing.set(false)
+  navigate(`/inbox?folder=${encodeURIComponent(folder)}`)
 }
 
 function handleCompose() {
   isComposing.set(true)
+  selectedEmailId.set(null)
   newEmailTo.set('')
   newEmailSubject.set('')
   newEmailBody.set('')
+  navigate('/inbox?compose=true')
 }
 
 function cancelCompose() {

@@ -1,0 +1,21 @@
+<script client>
+const active = useReactiveProp('active', 'inbox')
+
+function linkClass(name: string): string {
+  return active() === name
+    ? 'bg-white text-gray-900 shadow-sm dark:bg-neutral-700 dark:text-white'
+    : 'text-gray-600 hover:text-gray-900 dark:text-neutral-400 dark:hover:text-white'
+}
+</script>
+
+<nav aria-label="Mail sections" class="inline-flex gap-1 p-1 bg-gray-100 dark:bg-neutral-900 rounded-lg">
+  <StxLink to="/inbox" :class="'px-3 py-1.5 font-medium text-sm rounded-md transition-colors ' + linkClass('inbox')">
+    Inbox
+  </StxLink>
+  <StxLink to="/inbox/activity" :class="'px-3 py-1.5 font-medium text-sm rounded-md transition-colors ' + linkClass('activity')">
+    Activity
+  </StxLink>
+  <StxLink to="/inbox/settings" :class="'px-3 py-1.5 font-medium text-sm rounded-md transition-colors ' + linkClass('settings')">
+    Settings
+  </StxLink>
+</nav>

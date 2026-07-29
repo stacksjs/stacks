@@ -1,0 +1,417 @@
+<script client>
+import type { InboxActivity, InboxActivityRange } from '../../../../functions/inbox'
+import { fetchInboxActivity } from '../../../../functions/inbox'
+import { useChart } from '../../../../views/dashboard/composables/useChart'
+
+interface ChartLike {
+  destroy: () => void
+  update: () => void
+  data: {
+    labels: string[]
+    datasets: Array<{ data: number[] }>
+  }
+}
+
+type ChartCtor = new (
+  canvas: HTMLElement,
+  config: { type: string, data: unknown, options?: unknown },
+) => ChartLike
+
+const folders = [
+  { id: 'inbox', name: 'Inbox', icon: 'inbox' },
+  { id: 'starred', name: 'Starred', icon: 'star' },
+  { id: 'sent', name: 'Sent', icon: 'mail-send-01' },
+  { id: 'drafts', name: 'Drafts', icon: 'license-draft' },
+  { id: 'archive', name: 'Archive', icon: 'archive' },
+  { id: 'spam', name: 'Spam', icon: 'spam' },
+  { id: 'trash', name: 'Trash', icon: 'waste' },
+]
+
+const activity = state<InboxActivity>({
+  mailbox: '',
+  range: 'week',
+  period: { start: '', end: '' },
+  stats: {
+    messages: 0,
+    unread: 0,
+    failed: 0,
+    attachments: 0,
+    message_change: 0,
+    unread_rate: 0,
+  },
+  folder_counts: {
+    inbox: 0,
+    starred: 0,
+    sent: 0,
+    drafts: 0,
+    archive: 0,
+    spam: 0,
+    trash: 0,
+  },
+  mailbox_state: { read: 0, unread: 0 },
+  delivery_statuses: { sent: 0, delivered: 0, failed: 0, pending: 0 },
+  series: [],
+  recent: [],
+})
+const timeRange = state<InboxActivityRange>('week')
+const activeFolder = state('inbox')
+const isLoading = state(true)
+const hasLoaded = state(false)
+
+let volumeChart: ChartLike | null = null
+let chartConstructor: ChartCtor | null = null
+
+const statCards = derived(() => [
+  {
+    name: 'Messages',
+    value: formatNumber(activity().stats.messages),
+    detail: changeLabel(activity().stats.message_change),
+    icon: 'i-hugeicons-mail-02',
+    tone: 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/40',
+  },
+  {
+    name: 'Unread inbound',
+    value: formatNumber(activity().stats.unread),
+    detail: `${activity().stats.unread_rate}% of received`,
+    icon: 'i-hugeicons-mail-open-01',
+    tone: 'text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40',
+  },
+  {
+    name: 'Failed sends',
+    value: formatNumber(activity().stats.failed),
+    detail: activity().stats.failed === 0 ? 'No failures' : 'Needs attention',
+    icon: 'i-hugeicons-alert-02',
+    tone: 'text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/40',
+  },
+  {
+    name: 'Attachments',
+    value: formatNumber(activity().stats.attachments),
+    detail: 'Inbound messages',
+    icon: 'i-hugeicons-attachment-01',
+    tone: 'text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-950/40',
+  },
+])
+
+const mailboxTotal = derived(() => activity().mailbox_state.read + activity().mailbox_state.unread)
+const deliveryTotal = derived(() => {
+  const statuses = activity().delivery_statuses
+  return statuses.sent + statuses.delivered + statuses.failed + statuses.pending
+})
+
+function formatNumber(value: number): string {
+  return new Intl.NumberFormat('en-US').format(value)
+}
+
+function changeLabel(value: number | null): string {
+  if (value === null)
+    return 'No prior-period baseline'
+  if (value === 0)
+    return 'No change from prior period'
+  return `${value > 0 ? '+' : ''}${value}% from prior period`
+}
+
+function percent(value: number, total: number): number {
+  return total > 0 ? Number(((value / total) * 100).toFixed(1)) : 0
+}
+
+function statusClass(status: string): string {
+  if (status === 'failed')
+    return 'bg-red-100 text-red-800 dark:bg-red-950/50 dark:text-red-300'
+  if (status === 'pending' || status === 'unread')
+    return 'bg-amber-100 text-amber-800 dark:bg-amber-950/50 dark:text-amber-300'
+  return 'bg-green-100 text-green-800 dark:bg-green-950/50 dark:text-green-300'
+}
+
+function formatDate(value: string): string {
+  if (!value)
+    return 'Unknown'
+  return new Intl.DateTimeFormat('en-US', {
+    month: 'short',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+  }).format(new Date(value))
+}
+
+function chartData(data: InboxActivity) {
+  return {
+    labels: data.series.map(point => point.label),
+    datasets: [
+      {
+        label: 'Received',
+        data: data.series.map(point => point.received),
+        borderColor: 'rgb(59, 130, 246)',
+        backgroundColor: 'rgba(59, 130, 246, 0.12)',
+        fill: true,
+        tension: 0.25,
+      },
+      {
+        label: 'Sent',
+        data: data.series.map(point => point.sent),
+        borderColor: 'rgb(16, 185, 129)',
+        backgroundColor: 'rgba(16, 185, 129, 0.08)',
+        fill: true,
+        tension: 0.25,
+      },
+      {
+        label: 'Failed',
+        data: data.series.map(point => point.failed),
+        borderColor: 'rgb(239, 68, 68)',
+        backgroundColor: 'rgba(239, 68, 68, 0.08)',
+        fill: false,
+        tension: 0.25,
+      },
+    ],
+  }
+}
+
+const chartOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  interaction: { mode: 'index', intersect: false },
+  scales: {
+    y: {
+      beginAtZero: true,
+      ticks: { precision: 0, color: 'rgb(156, 163, 175)' },
+      grid: { color: 'rgba(156, 163, 175, 0.12)' },
+    },
+    x: {
+      ticks: { color: 'rgb(156, 163, 175)', maxRotation: 0, autoSkip: true },
+      grid: { display: false },
+    },
+  },
+  plugins: {
+    legend: {
+      position: 'top',
+      align: 'end',
+      labels: { color: 'rgb(156, 163, 175)', boxWidth: 10, padding: 14 },
+    },
+  },
+}
+
+function renderChart(data: InboxActivity): void {
+  if (!chartConstructor)
+    return
+  if (!volumeChart) {
+    const chart = useChart({
+      Chart: chartConstructor,
+      id: 'inbox-activity-volume',
+      type: 'line',
+      data: chartData(data),
+      options: chartOptions,
+    })
+    volumeChart = chart.instance
+    return
+  }
+
+  const next = chartData(data)
+  volumeChart.data.labels = next.labels
+  next.datasets.forEach((dataset, index) => {
+    if (volumeChart?.data.datasets[index])
+      volumeChart.data.datasets[index]!.data = dataset.data
+  })
+  volumeChart.update()
+}
+
+async function loadActivity(range: InboxActivityRange): Promise<void> {
+  isLoading.set(true)
+  const result = await fetchInboxActivity(range)
+  if (result) {
+    activity.set(result)
+    renderChart(result)
+  }
+  hasLoaded.set(true)
+  isLoading.set(false)
+}
+
+async function changeTimeRange(range: InboxActivityRange): Promise<void> {
+  if (timeRange() === range && hasLoaded())
+    return
+  timeRange.set(range)
+  await loadActivity(range)
+}
+
+function rangeClass(range: InboxActivityRange): string {
+  return timeRange() === range
+    ? 'bg-white text-gray-900 shadow-sm dark:bg-neutral-700 dark:text-white'
+    : 'text-gray-600 hover:text-gray-900 dark:text-neutral-400 dark:hover:text-white'
+}
+
+function handleFolderChange(event: CustomEvent<string>): void {
+  const folder = event.detail
+  activeFolder.set(folder)
+  navigate(`/inbox?folder=${encodeURIComponent(folder)}`)
+}
+
+function handleCompose(): void {
+  navigate('/inbox?compose=true')
+}
+
+onMount(async () => {
+  const { Chart, registerables } = await import('/__deps/charts.js')
+  Chart.register(...registerables)
+  chartConstructor = Chart as unknown as ChartCtor
+  await loadActivity(timeRange())
+})
+
+onDestroy(() => {
+  volumeChart?.destroy()
+  volumeChart = null
+  chartConstructor = null
+})
+</script>
+
+<div class="min-h-screen dark:bg-neutral-800">
+  <div class="flex h-screen">
+    <EmailSidebar
+      :activeFolder="activeFolder"
+      :folders="folders"
+      :unreadCounts="activity.folder_counts"
+      :mailbox="activity.mailbox"
+      @update:active-folder="handleFolderChange"
+      @compose="handleCompose"
+    />
+
+    <main class="overflow-y-auto flex-1">
+      <div class="px-4 py-4 sm:px-6 lg:px-8">
+        <EmailNavigation active="activity" />
+
+        <header class="flex gap-4 items-start justify-between mt-6">
+          <div>
+            <h1 class="font-semibold leading-6 text-base text-gray-900 dark:text-neutral-100">Mail Activity</h1>
+            <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">
+              Deterministic inbound and outbound activity for {{ activity.mailbox || 'the configured mailbox' }}.
+            </p>
+          </div>
+          <div class="inline-flex gap-1 p-1 bg-gray-100 dark:bg-neutral-900 rounded-lg">
+            <button @click="changeTimeRange('day')" :class="'px-3 py-1.5 font-medium text-sm rounded-md transition-colors ' + rangeClass('day')">Day</button>
+            <button @click="changeTimeRange('week')" :class="'px-3 py-1.5 font-medium text-sm rounded-md transition-colors ' + rangeClass('week')">Week</button>
+            <button @click="changeTimeRange('month')" :class="'px-3 py-1.5 font-medium text-sm rounded-md transition-colors ' + rangeClass('month')">Month</button>
+            <button @click="changeTimeRange('year')" :class="'px-3 py-1.5 font-medium text-sm rounded-md transition-colors ' + rangeClass('year')">Year</button>
+          </div>
+        </header>
+
+        <dl class="grid gap-3 grid-cols-2 xl:grid-cols-4 mt-6">
+          <template :for="stat in statCards">
+            <div class="px-4 py-3 bg-white dark:bg-neutral-700 ring-1 ring-gray-200 rounded-lg dark:ring-neutral-600">
+              <div class="flex items-start justify-between">
+                <div>
+                  <dt class="text-gray-500 text-xs dark:text-neutral-400">{{ stat.name }}</dt>
+                  <dd class="mt-1 font-semibold tabular-nums text-gray-900 text-xl dark:text-white">{{ stat.value }}</dd>
+                </div>
+                <span :class="'flex items-center justify-center h-8 w-8 rounded-md ' + stat.tone">
+                  <span :class="'h-4 w-4 ' + stat.icon"></span>
+                </span>
+              </div>
+              <p class="mt-2 text-gray-500 text-xs dark:text-neutral-400">{{ stat.detail }}</p>
+            </div>
+          </template>
+        </dl>
+
+        <section class="mt-6 px-4 py-4 bg-white dark:bg-neutral-700 ring-1 ring-gray-200 rounded-lg dark:ring-neutral-600">
+          <div class="flex items-center justify-between">
+            <div>
+              <h2 class="font-semibold text-gray-900 text-sm dark:text-neutral-100">Message volume</h2>
+              <p class="mt-1 text-gray-500 text-xs dark:text-neutral-400">Received, sent, and failed messages in the selected period.</p>
+            </div>
+            <span :if="isLoading" class="h-4 w-4 text-blue-600 animate-spin i-hugeicons-loading-03"></span>
+          </div>
+          <div class="relative mt-4 h-72">
+            <canvas id="inbox-activity-volume"></canvas>
+          </div>
+        </section>
+
+        <div class="grid gap-4 grid-cols-1 lg:grid-cols-2 mt-6">
+          <section class="px-4 py-4 bg-white dark:bg-neutral-700 ring-1 ring-gray-200 rounded-lg dark:ring-neutral-600">
+            <h2 class="font-semibold text-gray-900 text-sm dark:text-neutral-100">Mailbox state</h2>
+            <p class="mt-1 text-gray-500 text-xs dark:text-neutral-400">Read state of inbound messages in this period.</p>
+            <div class="mt-5 space-y-4">
+              <div>
+                <div class="flex items-center justify-between text-xs">
+                  <span class="text-gray-600 dark:text-neutral-300">Read</span>
+                  <span class="font-mono text-gray-900 dark:text-white">{{ activity.mailbox_state.read }} · {{ percent(activity.mailbox_state.read, mailboxTotal) }}%</span>
+                </div>
+                <div class="overflow-hidden mt-2 h-2 bg-gray-100 dark:bg-neutral-600 rounded-full">
+                  <div class="h-full bg-green-500 rounded-full" style="width: {{ percent(activity.mailbox_state.read, mailboxTotal) }}%"></div>
+                </div>
+              </div>
+              <div>
+                <div class="flex items-center justify-between text-xs">
+                  <span class="text-gray-600 dark:text-neutral-300">Unread</span>
+                  <span class="font-mono text-gray-900 dark:text-white">{{ activity.mailbox_state.unread }} · {{ percent(activity.mailbox_state.unread, mailboxTotal) }}%</span>
+                </div>
+                <div class="overflow-hidden mt-2 h-2 bg-gray-100 dark:bg-neutral-600 rounded-full">
+                  <div class="h-full bg-amber-500 rounded-full" style="width: {{ percent(activity.mailbox_state.unread, mailboxTotal) }}%"></div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section class="px-4 py-4 bg-white dark:bg-neutral-700 ring-1 ring-gray-200 rounded-lg dark:ring-neutral-600">
+            <h2 class="font-semibold text-gray-900 text-sm dark:text-neutral-100">Outbound delivery state</h2>
+            <p class="mt-1 text-gray-500 text-xs dark:text-neutral-400">Persisted email transport outcomes in this period.</p>
+            <dl class="grid gap-3 grid-cols-2 mt-5">
+              <div class="px-3 py-2 bg-gray-50 dark:bg-neutral-800 rounded-md">
+                <dt class="text-gray-500 text-xs dark:text-neutral-400">Successful</dt>
+                <dd class="mt-1 font-semibold text-green-700 dark:text-green-300">{{ activity.delivery_statuses.sent + activity.delivery_statuses.delivered }}</dd>
+              </div>
+              <div class="px-3 py-2 bg-gray-50 dark:bg-neutral-800 rounded-md">
+                <dt class="text-gray-500 text-xs dark:text-neutral-400">Failed</dt>
+                <dd class="mt-1 font-semibold text-red-700 dark:text-red-300">{{ activity.delivery_statuses.failed }}</dd>
+              </div>
+              <div class="px-3 py-2 bg-gray-50 dark:bg-neutral-800 rounded-md">
+                <dt class="text-gray-500 text-xs dark:text-neutral-400">Pending</dt>
+                <dd class="mt-1 font-semibold text-amber-700 dark:text-amber-300">{{ activity.delivery_statuses.pending }}</dd>
+              </div>
+              <div class="px-3 py-2 bg-gray-50 dark:bg-neutral-800 rounded-md">
+                <dt class="text-gray-500 text-xs dark:text-neutral-400">Attempts</dt>
+                <dd class="mt-1 font-semibold text-gray-900 dark:text-white">{{ deliveryTotal }}</dd>
+              </div>
+            </dl>
+          </section>
+        </div>
+
+        <section class="overflow-hidden mt-6 bg-white dark:bg-neutral-700 ring-1 ring-gray-200 rounded-lg dark:ring-neutral-600">
+          <div class="px-4 py-4 border-b border-gray-200 dark:border-neutral-600">
+            <h2 class="font-semibold text-gray-900 text-sm dark:text-neutral-100">Recent activity</h2>
+            <p class="mt-1 text-gray-500 text-xs dark:text-neutral-400">Newest real inbound messages and recorded outbound delivery attempts.</p>
+          </div>
+          <div :if="!isLoading && activity.recent.length === 0" class="px-4 py-12 text-center text-gray-500 text-sm dark:text-neutral-400">
+            No mail activity in this period.
+          </div>
+          <div :if="activity.recent.length > 0" class="overflow-x-auto">
+            <table class="min-w-full divide-gray-200 divide-y dark:divide-neutral-600">
+              <thead class="bg-gray-50 dark:bg-neutral-800">
+                <tr>
+                  <th class="px-4 py-3 font-medium text-gray-500 text-left text-xs uppercase dark:text-neutral-400">Direction</th>
+                  <th class="px-4 py-3 font-medium text-gray-500 text-left text-xs uppercase dark:text-neutral-400">Message</th>
+                  <th class="px-4 py-3 font-medium text-gray-500 text-left text-xs uppercase dark:text-neutral-400">Correspondent</th>
+                  <th class="px-4 py-3 font-medium text-gray-500 text-left text-xs uppercase dark:text-neutral-400">Time</th>
+                  <th class="px-4 py-3 font-medium text-gray-500 text-left text-xs uppercase dark:text-neutral-400">Status</th>
+                </tr>
+              </thead>
+              <tbody class="divide-gray-200 divide-y dark:divide-neutral-600">
+                <template :for="item in activity.recent">
+                  <tr>
+                    <td class="px-4 py-3">
+                      <span class="inline-flex gap-2 items-center text-gray-700 text-sm dark:text-neutral-300">
+                        <span :class="'h-4 w-4 ' + (item.direction === 'received' ? 'i-hugeicons-mail-receive-02' : 'i-hugeicons-mail-send-02')"></span>
+                        <span class="capitalize">{{ item.direction }}</span>
+                      </span>
+                    </td>
+                    <td class="px-4 py-3 max-w-xs font-medium text-gray-900 text-sm truncate dark:text-white">{{ item.subject }}</td>
+                    <td class="px-4 py-3 max-w-xs text-gray-500 text-sm truncate dark:text-neutral-400">{{ item.correspondent }}</td>
+                    <td class="px-4 py-3 text-gray-500 text-sm whitespace-nowrap dark:text-neutral-400">{{ formatDate(item.occurred_at) }}</td>
+                    <td class="px-4 py-3">
+                      <span :class="'inline-flex px-2 py-0.5 font-medium text-xs rounded-full capitalize ' + statusClass(item.status)">{{ item.status }}</span>
+                    </td>
+                  </tr>
+                </template>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+</div>

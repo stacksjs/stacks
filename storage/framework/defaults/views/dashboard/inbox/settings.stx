@@ -4,12 +4,15 @@
 @title('Mail - Settings')
 <div class="min-h-screen dark:bg-neutral-800">
   <div class="flex h-screen">
-    <EmailSidebar :activeFolder="activeFolder" :folders="folders" :unreadCounts="unreadCounts" @update:active-folder="handleFolderChange" @compose="handleCompose" />
+    <EmailSidebar :activeFolder="activeFolder" :folders="folders" :unreadCounts="unreadCounts" :mailbox="mailbox" @update:active-folder="handleFolderChange" @compose="handleCompose" />
 
     <div class="flex overflow-hidden flex-1 flex-col">
       <div class="px-6 py-4 bg-white dark:bg-neutral-700 border-b border-gray-200 dark:border-neutral-600">
         <div class="flex items-center justify-between">
-          <h1 class="font-bold text-2xl text-gray-900 dark:text-white">Settings</h1>
+          <div class="flex gap-4 items-center">
+            <h1 class="font-bold text-2xl text-gray-900 dark:text-white">Settings</h1>
+            <EmailNavigation active="settings" />
+          </div>
           <div>
             <button @click="saveSettings()" :disabled="isLoading" class="flex items-center px-4 py-2 font-medium text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md disabled:opacity-50">
               <i :show="isIdle" class="mr-2 text-lg i-hugeicons-checkmark-circle-02"></i>
@@ -189,6 +192,8 @@
 </div>
 
 <script client>
+import { fetchInboxActivity } from '../../../functions/inbox'
+
 interface SettingsSection {
   id: string
   name: string
@@ -205,15 +210,16 @@ const folders = [
   { id: 'trash', name: 'Trash', icon: 'waste' },
 ]
 
-const unreadCounts = {
-  inbox: 2,
-  starred: 1,
+const unreadCounts = state({
+  inbox: 0,
+  starred: 0,
   sent: 0,
   drafts: 0,
   archive: 0,
-  spam: 1,
+  spam: 0,
   trash: 0,
-}
+})
+const mailbox = state('')
 
 const settingsSections: SettingsSection[] = [
   { id: 'general', name: 'General', icon: 'i-hugeicons-settings-01' },
@@ -265,7 +271,8 @@ function toggleVacationResponder(): void {
   vacationEnabled.update(v => !v)
 }
 
-function handleFolderChange(folder: string): void {
+function handleFolderChange(event: CustomEvent<string>): void {
+  const folder = event.detail
   activeFolder.set(folder)
   navigate(`/inbox?folder=${encodeURIComponent(folder)}`)
 }
@@ -285,6 +292,15 @@ async function saveSettings(): Promise<void> {
     isLoading.set(false)
   }
 }
+
+onMount(async () => {
+  const activity = await fetchInboxActivity('year')
+  if (!activity)
+    return
+  unreadCounts.set(activity.folder_counts)
+  mailbox.set(activity.mailbox)
+  accountEmail.set(activity.mailbox)
+})
 </script>
 
 @endsection
