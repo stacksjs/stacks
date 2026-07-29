@@ -768,7 +768,12 @@ export const tsCloud: TsCloudConfig = {
       preStart: [
         'bun install',
         'mkdir -p storage/framework/runtime/production',
-        'bun build --production --splitting --conditions=development --target=bun --external=localtunnels --external=localtunnels/cloud --external=@stacksjs/bun-queue --external=meilisearch storage/framework/core/actions/src/serve/api.ts --outdir storage/framework/runtime/production --entry-naming api.js --chunk-naming chunks/[name]-[hash].js',
+        // Cors middleware is loaded from the app override tree at runtime and
+        // imports the router by package name. Keep that package external so
+        // the API and middleware share one router instance instead of retaining
+        // a second copy inside a split chunk. Without splitting, Bun emits one
+        // small entry and avoids duplicate output paths from prebuilt packages.
+        'bun build --production --conditions=development --target=bun --external=localtunnels --external=localtunnels/cloud --external=@stacksjs/router --external=@stacksjs/bun-queue --external=meilisearch storage/framework/core/actions/src/serve/api.ts --outdir storage/framework/runtime/production --entry-naming api.js',
       ],
       env: { HOST: '127.0.0.1', APP_ENV: 'production', NODE_ENV: 'production' },
     },

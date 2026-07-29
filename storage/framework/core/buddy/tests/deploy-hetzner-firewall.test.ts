@@ -109,6 +109,14 @@ describe('scrubLoopbackSitePortsForFirewall (#1950)', () => {
     expect(ports).toContain(3000)
     expect(ports).not.toContain(3008)
   })
+
+  it('shipped config: the production api keeps one external router instance', async () => {
+    const { tsCloud } = await import(join(import.meta.dir, '../../../../..', 'config/cloud.ts'))
+    const apiBuild = tsCloud.sites.api.preStart.find((command: string) => command.includes('serve/api.ts'))
+    expect(apiBuild).toContain('--production')
+    expect(apiBuild).toContain('--external=@stacksjs/router')
+    expect(apiBuild).not.toContain('--splitting')
+  })
 })
 
 describe('reconcilePartialDeployManagementDashboards', () => {
