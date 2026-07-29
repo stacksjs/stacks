@@ -1,0 +1,200 @@
+<script client>
+import type {
+  CommerceOrderRecord,
+  OrderCustomerOption,
+} from '../../../../app/Actions/Dashboard/Commerce/commerce-order-records'
+
+const open = useReactiveProp('open', false)
+const mode = useReactiveProp('mode', 'add')
+const record = useReactiveProp('record', null as CommerceOrderRecord | null)
+const customers = useReactiveProp('customers', [] as OrderCustomerOption[])
+const statuses = useReactiveProp('statuses', [] as string[])
+const orderTypes = useReactiveProp('orderTypes', [] as string[])
+const defaultCurrency = useReactiveProp('defaultCurrency', 'USD')
+const busy = useReactiveProp('busy', false)
+const errors = useReactiveProp('errors', {} as Record<string, string>)
+const emit = defineEmits()
+const customerId = state('')
+const couponId = state('')
+const status = state('PENDING')
+const totalAmount = state('0')
+const currency = state('USD')
+const taxAmount = state('0')
+const discountAmount = state('0')
+const deliveryFee = state('0')
+const tipAmount = state('0')
+const orderType = state('DELIVERY')
+const deliveryAddress = state('')
+const specialInstructions = state('')
+const estimatedDeliveryTime = state('')
+const appliedCouponId = state('')
+let hydrationKey = ''
+
+effect(() => {
+  if (!open()) {
+    hydrationKey = ''
+    return
+  }
+  const current = record()
+  const key = `${mode()}:${current?.id || 'new'}`
+  if (hydrationKey === key)
+    return
+  hydrationKey = key
+  customerId.set(current?.customerId || '')
+  couponId.set(current?.couponId || '')
+  status.set(current?.status || statuses()[0] || 'PENDING')
+  totalAmount.set(String(current?.totalAmount ?? 0))
+  currency.set(current?.currency || defaultCurrency())
+  taxAmount.set(String(current?.taxAmount ?? 0))
+  discountAmount.set(String(current?.discountAmount ?? 0))
+  deliveryFee.set(String(current?.deliveryFee ?? 0))
+  tipAmount.set(String(current?.tipAmount ?? 0))
+  orderType.set(current?.orderType || orderTypes()[0] || 'DELIVERY')
+  deliveryAddress.set(current?.deliveryAddress || '')
+  specialInstructions.set(current?.specialInstructions || '')
+  estimatedDeliveryTime.set(current?.estimatedDeliveryTime.slice(0, 16) || '')
+  appliedCouponId.set(current?.appliedCouponId || '')
+})
+
+function inputValue(event: Event): string {
+  return (event.target as HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement).value
+}
+
+function setCustomer(event: Event): void {
+  customerId.set(inputValue(event))
+}
+
+function setCoupon(event: Event): void {
+  couponId.set(inputValue(event))
+}
+
+function setStatus(event: Event): void {
+  status.set(inputValue(event))
+}
+
+function setTotal(event: Event): void {
+  totalAmount.set(inputValue(event))
+}
+
+function setCurrency(event: Event): void {
+  currency.set(inputValue(event).toUpperCase().slice(0, 3))
+}
+
+function setTax(event: Event): void {
+  taxAmount.set(inputValue(event))
+}
+
+function setDiscount(event: Event): void {
+  discountAmount.set(inputValue(event))
+}
+
+function setDeliveryFee(event: Event): void {
+  deliveryFee.set(inputValue(event))
+}
+
+function setTip(event: Event): void {
+  tipAmount.set(inputValue(event))
+}
+
+function setOrderType(event: Event): void {
+  orderType.set(inputValue(event))
+}
+
+function setAddress(event: Event): void {
+  deliveryAddress.set(inputValue(event))
+}
+
+function setInstructions(event: Event): void {
+  specialInstructions.set(inputValue(event))
+}
+
+function setEstimatedTime(event: Event): void {
+  estimatedDeliveryTime.set(inputValue(event))
+}
+
+function setAppliedCoupon(event: Event): void {
+  appliedCouponId.set(inputValue(event))
+}
+
+function label(value: string): string {
+  return value.replaceAll('_', ' ').toLowerCase().replace(/\b\w/g, letter => letter.toUpperCase())
+}
+
+function validNumber(value: string): boolean {
+  const result = Number(value)
+  return Number.isFinite(result) && result >= 0
+}
+
+function valid(): boolean {
+  return Boolean(
+    status().trim()
+    && orderType().trim()
+    && currency().trim().length === 3
+    && validNumber(totalAmount())
+    && validNumber(taxAmount())
+    && validNumber(discountAmount())
+    && validNumber(deliveryFee())
+    && validNumber(tipAmount())
+  )
+}
+
+function submit(): void {
+  if (!valid())
+    return
+  emit('submit', {
+    customerId: customerId() ? Number(customerId()) : undefined,
+    couponId: couponId() ? Number(couponId()) : undefined,
+    status: status().trim(),
+    totalAmount: Number(totalAmount()),
+    currency: currency().trim().toUpperCase(),
+    taxAmount: Number(taxAmount()),
+    discountAmount: Number(discountAmount()),
+    deliveryFee: Number(deliveryFee()),
+    tipAmount: Number(tipAmount()),
+    orderType: orderType().trim(),
+    deliveryAddress: deliveryAddress().trim() || undefined,
+    specialInstructions: specialInstructions().trim() || undefined,
+    estimatedDeliveryTime: estimatedDeliveryTime() || undefined,
+    appliedCouponId: appliedCouponId().trim() || undefined,
+  })
+}
+
+function errorMessages(): string[] {
+  return Object.entries(errors()).map(([field, message]) => {
+    const fieldLabel = field.replace(/([a-z])([A-Z])/g, '$1 $2').replaceAll('_', ' ')
+    return `${fieldLabel.charAt(0).toUpperCase()}${fieldLabel.slice(1)}: ${message}`
+  })
+}
+</script>
+
+<div :if="open()" class="flex fixed inset-0 z-50 items-center justify-center p-4">
+  <button type="button" aria-label="Close order dialog" class="absolute inset-0 bg-black/45" @click="emit('close')"></button>
+  <section role="dialog" aria-modal="true" aria-labelledby="order-dialog-title" class="overflow-y-auto relative max-h-[92dvh] max-w-3xl w-full bg-white dark:bg-neutral-800 border border-gray-200 rounded-xl dark:border-neutral-700 shadow-xl">
+    <form @submit.prevent="submit">
+      <div class="p-6">
+        <h2 id="order-dialog-title" class="font-semibold text-gray-900 text-lg dark:text-white">{{ mode() === 'edit' ? 'Edit order' : 'Add order' }}</h2>
+        <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Store fields and relationships declared by the native Order model.</p>
+        <ul :if="errorMessages().length > 0" class="mt-5 p-3 space-y-1 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900">
+          <template :for="message in errorMessages()" :key="message"><li>{{ message }}</li></template>
+        </ul>
+        <div class="grid gap-4 grid-cols-1 sm:grid-cols-2 mt-5">
+          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Customer</span><select :value="customerId()" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @change="setCustomer($event)"><option value="">Unassigned customer</option><template :for="option in customers()" :key="option.id"><option :value="option.id">{{ option.label }}</option></template></select></label>
+          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Status</span><select :value="status()" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @change="setStatus($event)"><template :for="option in statuses()" :key="option"><option :value="option">{{ label(option) }}</option></template></select></label>
+          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Order type</span><select :value="orderType()" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @change="setOrderType($event)"><template :for="option in orderTypes()" :key="option"><option :value="option">{{ label(option) }}</option></template></select></label>
+          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Currency</span><input :value="currency()" type="text" minlength="3" maxlength="3" required spellcheck="false" class="mt-1 px-3 py-2 w-full font-mono text-gray-900 text-sm uppercase dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="setCurrency($event)" /></label>
+          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Total amount</span><input :value="totalAmount()" type="number" min="0" step="0.01" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="setTotal($event)" /></label>
+          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Tax amount</span><input :value="taxAmount()" type="number" min="0" step="0.01" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="setTax($event)" /></label>
+          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Discount amount</span><input :value="discountAmount()" type="number" min="0" step="0.01" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="setDiscount($event)" /></label>
+          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Delivery fee</span><input :value="deliveryFee()" type="number" min="0" step="0.01" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="setDeliveryFee($event)" /></label>
+          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Tip amount</span><input :value="tipAmount()" type="number" min="0" step="0.01" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="setTip($event)" /></label>
+          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Estimated delivery time</span><input :value="estimatedDeliveryTime()" type="datetime-local" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="setEstimatedTime($event)" /></label>
+          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Coupon relation ID</span><input :value="couponId()" type="number" min="1" step="1" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="setCoupon($event)" /></label>
+          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Applied coupon reference</span><input :value="appliedCouponId()" type="text" class="mt-1 px-3 py-2 w-full font-mono text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="setAppliedCoupon($event)" /></label>
+          <label class="block sm:col-span-2"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Delivery address</span><textarea :value="deliveryAddress()" rows="3" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="setAddress($event)"></textarea></label>
+          <label class="block sm:col-span-2"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Special instructions</span><textarea :value="specialInstructions()" rows="3" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="setInstructions($event)"></textarea></label>
+        </div>
+      </div>
+      <footer class="flex gap-2 justify-end px-6 py-4 bg-gray-50 dark:bg-neutral-900/50 border-gray-200 border-t dark:border-neutral-700"><button type="button" :disabled="busy()" class="px-3 py-2 font-semibold text-gray-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700 disabled:opacity-50" @click="emit('close')">Cancel</button><button type="submit" :disabled="busy() || !valid()" class="inline-flex items-center px-3 py-2 font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md disabled:opacity-50"><span :if="busy()" class="mr-2 h-4 w-4 animate-spin i-hugeicons-loading-03"></span>{{ mode() === 'edit' ? 'Save order' : 'Add order' }}</button></footer>
+    </form>
+  </section>
+</div>

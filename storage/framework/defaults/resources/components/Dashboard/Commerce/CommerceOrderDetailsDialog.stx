@@ -1,0 +1,73 @@
+<script client>
+import type { CommerceOrderRecord } from '../../../../app/Actions/Dashboard/Commerce/commerce-order-records'
+
+const open = useReactiveProp('open', false)
+const record = useReactiveProp('record', null as CommerceOrderRecord | null)
+const emit = defineEmits()
+
+function label(value: string): string {
+  return value.replaceAll('_', ' ').toLowerCase().replace(/\b\w/g, letter => letter.toUpperCase())
+}
+
+function formatMoney(value: number, currency: string): string {
+  try {
+    return new Intl.NumberFormat(undefined, { style: 'currency', currency }).format(value)
+  }
+  catch {
+    return `${value.toFixed(2)} ${currency}`
+  }
+}
+
+function formatDate(value: string): string {
+  if (!value)
+    return 'Not recorded'
+  const normalized = /^\d{4}-\d{2}-\d{2} \d/.test(value)
+    ? `${value.replace(' ', 'T')}Z`
+    : value
+  const date = new Date(normalized)
+  return Number.isNaN(date.getTime())
+    ? value
+    : new Intl.DateTimeFormat(undefined, { dateStyle: 'long', timeStyle: 'short' }).format(date)
+}
+
+function editRecord(): void {
+  const current = record()
+  if (!current)
+    return
+  emit('edit', current)
+  emit('close')
+}
+
+function deleteRecord(): void {
+  const current = record()
+  if (!current)
+    return
+  emit('delete', current)
+  emit('close')
+}
+</script>
+
+<div :if="open()" class="flex fixed inset-0 z-50 items-center justify-center p-4">
+  <button type="button" aria-label="Close order details" class="absolute inset-0 bg-black/45" @click="emit('close')"></button>
+  <section role="dialog" aria-modal="true" aria-labelledby="order-details-title" class="overflow-y-auto relative max-h-[90dvh] max-w-2xl w-full bg-white dark:bg-neutral-800 border border-gray-200 rounded-xl dark:border-neutral-700 shadow-xl">
+    <div class="p-6">
+      <div class="flex gap-4 items-start justify-between"><div><h2 id="order-details-title" class="font-semibold text-gray-900 text-lg dark:text-white">Order {{ record()?.id || 'not recorded' }}</h2><p class="mt-1 text-gray-400 text-sm dark:text-neutral-500">{{ record()?.customerName || 'Unassigned customer' }}</p></div><span class="px-2 py-1 font-semibold text-gray-700 text-xs dark:text-neutral-200 bg-gray-100 dark:bg-neutral-700 rounded-full">{{ label(record()?.status || 'UNKNOWN') }}</span></div>
+      <dl class="grid gap-4 grid-cols-2 mt-6">
+        <div><dt class="text-gray-400 text-xs dark:text-neutral-500">Total</dt><dd class="mt-1 font-semibold text-gray-900 text-sm dark:text-white">{{ formatMoney(record()?.totalAmount || 0, record()?.currency || 'USD') }}</dd></div>
+        <div><dt class="text-gray-400 text-xs dark:text-neutral-500">Order type</dt><dd class="mt-1 text-gray-900 text-sm dark:text-white">{{ label(record()?.orderType || 'UNKNOWN') }}</dd></div>
+        <div><dt class="text-gray-400 text-xs dark:text-neutral-500">Items</dt><dd class="mt-1 text-gray-900 text-sm dark:text-white">{{ record()?.itemCount || 0 }}</dd></div>
+        <div><dt class="text-gray-400 text-xs dark:text-neutral-500">Created</dt><dd class="mt-1 text-gray-900 text-sm dark:text-white">{{ formatDate(record()?.createdAt || '') }}</dd></div>
+        <div><dt class="text-gray-400 text-xs dark:text-neutral-500">Tax</dt><dd class="mt-1 text-gray-900 text-sm dark:text-white">{{ formatMoney(record()?.taxAmount || 0, record()?.currency || 'USD') }}</dd></div>
+        <div><dt class="text-gray-400 text-xs dark:text-neutral-500">Discount</dt><dd class="mt-1 text-gray-900 text-sm dark:text-white">{{ formatMoney(record()?.discountAmount || 0, record()?.currency || 'USD') }}</dd></div>
+        <div><dt class="text-gray-400 text-xs dark:text-neutral-500">Delivery fee</dt><dd class="mt-1 text-gray-900 text-sm dark:text-white">{{ formatMoney(record()?.deliveryFee || 0, record()?.currency || 'USD') }}</dd></div>
+        <div><dt class="text-gray-400 text-xs dark:text-neutral-500">Tip</dt><dd class="mt-1 text-gray-900 text-sm dark:text-white">{{ formatMoney(record()?.tipAmount || 0, record()?.currency || 'USD') }}</dd></div>
+        <div class="col-span-2"><dt class="text-gray-400 text-xs dark:text-neutral-500">Estimated delivery</dt><dd class="mt-1 text-gray-900 text-sm dark:text-white">{{ formatDate(record()?.estimatedDeliveryTime || '') }}</dd></div>
+        <div class="col-span-2"><dt class="text-gray-400 text-xs dark:text-neutral-500">Delivery address</dt><dd class="mt-1 text-gray-900 text-sm whitespace-pre-wrap dark:text-white">{{ record()?.deliveryAddress || 'Not recorded' }}</dd></div>
+        <div class="col-span-2"><dt class="text-gray-400 text-xs dark:text-neutral-500">Special instructions</dt><dd class="mt-1 text-gray-900 text-sm whitespace-pre-wrap dark:text-white">{{ record()?.specialInstructions || 'None recorded' }}</dd></div>
+        <div><dt class="text-gray-400 text-xs dark:text-neutral-500">Coupon relation ID</dt><dd class="mt-1 font-mono text-gray-900 text-sm dark:text-white">{{ record()?.couponId || 'Not linked' }}</dd></div>
+        <div><dt class="text-gray-400 text-xs dark:text-neutral-500">Applied coupon reference</dt><dd class="mt-1 font-mono text-gray-900 text-sm dark:text-white">{{ record()?.appliedCouponId || 'Not linked' }}</dd></div>
+      </dl>
+    </div>
+    <footer class="flex gap-2 justify-between px-6 py-4 bg-gray-50 dark:bg-neutral-900/50 border-gray-200 border-t dark:border-neutral-700"><button type="button" class="px-3 py-2 font-semibold text-red-700 text-sm dark:text-red-300" @click="deleteRecord()">Delete</button><div class="flex gap-2"><button type="button" class="px-3 py-2 font-semibold text-gray-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" @click="emit('close')">Close</button><button type="button" class="px-3 py-2 font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md" @click="editRecord()">Edit order</button></div></footer>
+  </section>
+</div>

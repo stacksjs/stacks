@@ -1,0 +1,377 @@
+<script client>
+import type {
+  CommerceOrderRecord,
+  CommerceOrderSummary,
+  OrderCustomerOption,
+} from '../../../../app/Actions/Dashboard/Commerce/commerce-order-records'
+import { DashboardApiError, dashboardApi } from '../../../../functions/dashboard-api'
+import { pushToast } from '../../../../functions/toasts'
+
+interface OrderIndexResponse {
+  records: CommerceOrderRecord[]
+  summary: CommerceOrderSummary
+  customers: OrderCustomerOption[]
+  statuses: string[]
+  orderTypes: string[]
+  defaultCurrency: string
+}
+
+interface OrderWritePayload {
+  customerId?: number
+  couponId?: number
+  status: string
+  totalAmount: number
+  currency: string
+  taxAmount: number
+  discountAmount: number
+  deliveryFee: number
+  tipAmount: number
+  orderType: string
+  deliveryAddress?: string
+  specialInstructions?: string
+  estimatedDeliveryTime?: string
+  appliedCouponId?: string
+}
+
+const emptySummary: CommerceOrderSummary = {
+  total: 0,
+  pending: 0,
+  inProgress: 0,
+  completed: 0,
+  cancelled: 0,
+  currencyTotals: [],
+}
+const records = state<CommerceOrderRecord[]>([])
+const summary = state<CommerceOrderSummary>({ ...emptySummary })
+const customers = state<OrderCustomerOption[]>([])
+const statuses = state<string[]>([])
+const orderTypes = state<string[]>([])
+const defaultCurrency = state('USD')
+const search = state('')
+const statusFilter = state('all')
+const typeFilter = state('all')
+const sort = state('newest')
+const page = state(1)
+const pageSize = 12
+const loading = state(true)
+const loadError = state('')
+const dialogOpen = state(false)
+const dialogMode = state<'add' | 'edit'>('add')
+const editingRecord = state<CommerceOrderRecord | null>(null)
+const detailsRecord = state<CommerceOrderRecord | null>(null)
+const deletingRecord = state<CommerceOrderRecord | null>(null)
+const saving = state(false)
+const deleting = state(false)
+const validationErrors = state<Record<string, string>>({})
+
+function timestamp(value: string): number {
+  if (!value)
+    return 0
+  const normalized = /^\d{4}-\d{2}-\d{2} \d/.test(value)
+    ? `${value.replace(' ', 'T')}Z`
+    : value
+  const result = new Date(normalized).getTime()
+  return Number.isFinite(result) ? result : 0
+}
+
+function formatMoney(value: number, currency: string): string {
+  try {
+    return new Intl.NumberFormat(undefined, {
+      style: 'currency',
+      currency,
+      maximumFractionDigits: 2,
+    }).format(value)
+  }
+  catch {
+    return `${value.toFixed(2)} ${currency}`
+  }
+}
+
+function label(value: string): string {
+  return value.replaceAll('_', ' ').toLowerCase().replace(/\b\w/g, letter => letter.toUpperCase())
+}
+
+function filteredRecords(): CommerceOrderRecord[] {
+  const query = search().trim().toLowerCase()
+  const selectedStatus = statusFilter()
+  const selectedType = typeFilter()
+  return [...records()]
+    .filter((record) => {
+      if (selectedStatus !== 'all' && record.status !== selectedStatus)
+        return false
+      if (selectedType !== 'all' && record.orderType !== selectedType)
+        return false
+      return !query || [
+        record.id,
+        record.customerName,
+        record.customerEmail,
+        record.status,
+        record.orderType,
+        record.deliveryAddress,
+      ].some(value => value.toLowerCase().includes(query))
+    })
+    .sort((left, right) => {
+      if (sort() === 'oldest')
+        return timestamp(left.createdAt) - timestamp(right.createdAt)
+      if (sort() === 'total-high')
+        return right.totalAmount - left.totalAmount || timestamp(right.createdAt) - timestamp(left.createdAt)
+      if (sort() === 'total-low')
+        return left.totalAmount - right.totalAmount || timestamp(right.createdAt) - timestamp(left.createdAt)
+      return timestamp(right.createdAt) - timestamp(left.createdAt) || Number(right.id) - Number(left.id)
+    })
+}
+
+function pageCount(): number {
+  return Math.max(1, Math.ceil(filteredRecords().length / pageSize))
+}
+
+function visibleRecords(): CommerceOrderRecord[] {
+  const selectedPage = Math.min(page(), pageCount())
+  return filteredRecords().slice((selectedPage - 1) * pageSize, selectedPage * pageSize)
+}
+
+function matchingLabel(): string {
+  const count = filteredRecords().length
+  return `${count} matching ${count === 1 ? 'order' : 'orders'}`
+}
+
+function metricCards(): Array<{ label: string, value: string, detail: string }> {
+  const current = summary()
+  return [
+    { label: 'Orders', value: String(current.total), detail: 'Persisted Order records' },
+    { label: 'Pending', value: String(current.pending), detail: 'Awaiting preparation' },
+    { label: 'In progress', value: String(current.inProgress), detail: 'Preparing, ready, or shipped' },
+    { label: 'Completed', value: String(current.completed), detail: 'Delivered, completed, or paid' },
+    { label: 'Cancelled', value: String(current.cancelled), detail: 'Cancelled or refunded' },
+  ]
+}
+
+function exportHref(): string {
+  const rows = filteredRecords().map(record => [
+    record.id,
+    record.customerName,
+    record.customerEmail,
+    record.status,
+    record.orderType,
+    String(record.itemCount),
+    String(record.totalAmount),
+    record.currency,
+    String(record.taxAmount),
+    String(record.discountAmount),
+    String(record.deliveryFee),
+    String(record.tipAmount),
+    record.deliveryAddress,
+    record.createdAt,
+  ])
+  const escape = (value: string): string => `"${value.replaceAll('"', '""')}"`
+  const csv = [
+    ['Order ID', 'Customer', 'Customer email', 'Status', 'Order type', 'Items', 'Total', 'Currency', 'Tax', 'Discount', 'Delivery fee', 'Tip', 'Delivery address', 'Created at'],
+    ...rows,
+  ].map(row => row.map(escape).join(',')).join('\n')
+  return `data:text/csv;charset=utf-8,${encodeURIComponent(`\uFEFF${csv}`)}`
+}
+
+function updateSearch(event: Event): void {
+  search.set((event.target as HTMLInputElement).value)
+  page.set(1)
+}
+
+function updateStatus(event: Event): void {
+  statusFilter.set((event.target as HTMLSelectElement).value)
+  page.set(1)
+}
+
+function updateType(event: Event): void {
+  typeFilter.set((event.target as HTMLSelectElement).value)
+  page.set(1)
+}
+
+function updateSort(event: Event): void {
+  sort.set((event.target as HTMLSelectElement).value)
+  page.set(1)
+}
+
+async function loadOrders(): Promise<void> {
+  loading.set(true)
+  loadError.set('')
+  try {
+    const data = await dashboardApi<OrderIndexResponse>('/api/dashboard/commerce/orders')
+    records.set(Array.isArray(data.records) ? data.records : [])
+    summary.set(data.summary ?? { ...emptySummary })
+    customers.set(Array.isArray(data.customers) ? data.customers : [])
+    statuses.set(Array.isArray(data.statuses) ? data.statuses : [])
+    orderTypes.set(Array.isArray(data.orderTypes) ? data.orderTypes : [])
+    defaultCurrency.set(data.defaultCurrency || 'USD')
+    page.set(Math.min(page(), Math.max(1, Math.ceil((data.records?.length || 0) / pageSize))))
+  }
+  catch (error) {
+    loadError.set('Order records could not be loaded.')
+    pushToast('error', 'Could not load orders', {
+      detail: error instanceof Error ? error.message : String(error),
+    })
+  }
+  finally {
+    loading.set(false)
+  }
+}
+
+function openAdd(): void {
+  dialogMode.set('add')
+  editingRecord.set(null)
+  validationErrors.set({})
+  dialogOpen.set(true)
+}
+
+function openEdit(record: CommerceOrderRecord): void {
+  detailsRecord.set(null)
+  dialogMode.set('edit')
+  editingRecord.set(record)
+  validationErrors.set({})
+  dialogOpen.set(true)
+}
+
+function closeDialog(): void {
+  if (saving())
+    return
+  dialogOpen.set(false)
+  editingRecord.set(null)
+  validationErrors.set({})
+}
+
+async function saveOrder(payload: OrderWritePayload): Promise<void> {
+  const current = editingRecord()
+  const editing = dialogMode() === 'edit' && current !== null
+  saving.set(true)
+  validationErrors.set({})
+  try {
+    await dashboardApi(editing ? `/api/orders/${current.id}` : '/api/orders', {
+      method: editing ? 'PATCH' : 'POST',
+      body: payload,
+    })
+    dialogOpen.set(false)
+    editingRecord.set(null)
+    pushToast('success', editing ? 'Order updated' : 'Order added')
+    await loadOrders()
+  }
+  catch (error) {
+    if (error instanceof DashboardApiError)
+      validationErrors.set(error.fields ?? {})
+    pushToast('error', 'Could not save order', {
+      detail: error instanceof Error ? error.message : String(error),
+    })
+  }
+  finally {
+    saving.set(false)
+  }
+}
+
+function openDetails(record: CommerceOrderRecord): void {
+  detailsRecord.set(record)
+}
+
+function closeDetails(): void {
+  detailsRecord.set(null)
+}
+
+function openDelete(record: CommerceOrderRecord): void {
+  deletingRecord.set(record)
+}
+
+function closeDelete(): void {
+  if (!deleting())
+    deletingRecord.set(null)
+}
+
+async function deleteOrder(): Promise<void> {
+  const current = deletingRecord()
+  if (!current)
+    return
+  deleting.set(true)
+  try {
+    await dashboardApi(`/api/orders/${current.id}`, { method: 'DELETE' })
+    deletingRecord.set(null)
+    detailsRecord.set(null)
+    pushToast('success', 'Order deleted', { detail: `Order ${current.id}` })
+    await loadOrders()
+  }
+  catch (error) {
+    pushToast('error', 'Could not delete order', {
+      detail: error instanceof Error ? error.message : String(error),
+    })
+  }
+  finally {
+    deleting.set(false)
+  }
+}
+
+function previousPage(): void {
+  page.set(Math.max(1, page() - 1))
+}
+
+function nextPage(): void {
+  page.set(Math.min(pageCount(), page() + 1))
+}
+
+onMount(() => {
+  void loadOrders()
+})
+</script>
+
+<div class="space-y-6">
+  <header class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+    <div>
+      <h1 class="font-bold text-2xl text-gray-900 dark:text-white">Orders</h1>
+      <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Manage native Order records, customer assignments, totals, and fulfillment state.</p>
+    </div>
+    <div class="flex flex-wrap gap-2">
+      <button type="button" :disabled="loading()" class="inline-flex items-center px-3 py-2 font-semibold text-gray-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700 disabled:opacity-50" @click="loadOrders()"><span :class="'mr-2 h-4 w-4 ' + (loading() ? 'animate-spin i-hugeicons-loading-03' : 'i-hugeicons-refresh')"></span>Refresh</button>
+      <a :href="exportHref()" :download="'orders-' + new Date().toISOString().slice(0, 10) + '.csv'" class="inline-flex items-center px-3 py-2 font-semibold text-gray-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700"><span class="mr-2 h-4 w-4 i-hugeicons-download-04"></span>Export filtered</a>
+      <button type="button" class="inline-flex items-center px-3 py-2 font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md" @click="openAdd()"><span class="mr-2 h-4 w-4 i-hugeicons-add-01"></span>Add order</button>
+    </div>
+  </header>
+
+  <div :if="loadError()" class="p-4 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900">{{ loadError() }}</div>
+
+  <section aria-label="Order metrics" class="grid gap-3 grid-cols-2 lg:grid-cols-5">
+    <template :for="item in metricCards()" :key="item.label">
+      <article class="p-4 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
+        <p class="text-gray-500 text-xs dark:text-neutral-400">{{ item.label }}</p>
+        <p class="mt-2 font-semibold text-2xl text-gray-900 dark:text-white">{{ item.value }}</p>
+        <p class="mt-1 text-gray-400 text-xs dark:text-neutral-500">{{ item.detail }}</p>
+      </article>
+    </template>
+  </section>
+
+  <section :if="summary().currencyTotals.length > 0" aria-label="Order currency totals" class="flex flex-wrap gap-2 items-center">
+    <span class="text-gray-500 text-xs dark:text-neutral-400">Recorded order value</span>
+    <template :for="total in summary().currencyTotals" :key="total.currency"><span class="px-2.5 py-1 font-medium text-gray-700 text-xs dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-gray-200 rounded-full dark:border-neutral-700">{{ formatMoney(total.amount, total.currency) }}</span></template>
+  </section>
+
+  <section class="space-y-3">
+    <div class="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-5">
+      <label class="relative sm:col-span-2">
+        <span class="sr-only">Search orders</span>
+        <span class="flex absolute inset-y-0 left-0 items-center pl-3 text-gray-400 pointer-events-none"><span class="h-4 w-4 i-hugeicons-search-01"></span></span>
+        <input :value="search()" type="search" placeholder="Search order, customer, status, or address" class="pl-9 pr-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" @input="updateSearch($event)" />
+      </label>
+      <label><span class="sr-only">Order status</span><select :value="statusFilter()" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" @change="updateStatus($event)"><option value="all">Any status</option><template :for="option in statuses()" :key="option"><option :value="option">{{ label(option) }}</option></template></select></label>
+      <label><span class="sr-only">Order type</span><select :value="typeFilter()" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" @change="updateType($event)"><option value="all">Any order type</option><template :for="option in orderTypes()" :key="option"><option :value="option">{{ label(option) }}</option></template></select></label>
+      <label><span class="sr-only">Sort orders</span><select :value="sort()" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" @change="updateSort($event)"><option value="newest">Newest first</option><option value="oldest">Oldest first</option><option value="total-high">Highest total</option><option value="total-low">Lowest total</option></select></label>
+    </div>
+
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <p class="text-gray-500 text-sm dark:text-neutral-400">{{ matchingLabel() }}</p>
+      <div class="flex gap-2 items-center">
+        <button type="button" :disabled="page() <= 1" class="px-3 py-1.5 font-medium text-gray-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700 disabled:opacity-40" @click="previousPage()">Previous</button>
+        <span class="text-gray-500 text-sm dark:text-neutral-400">Page {{ Math.min(page(), pageCount()) }} of {{ pageCount() }}</span>
+        <button type="button" :disabled="page() >= pageCount()" class="px-3 py-1.5 font-medium text-gray-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700 disabled:opacity-40" @click="nextPage()">Next</button>
+      </div>
+    </div>
+
+    <CommerceOrdersTable :records="visibleRecords()" :loading="loading()" @view="openDetails" @edit="openEdit" @delete="openDelete" />
+  </section>
+</div>
+
+<CommerceOrderDialog :open="dialogOpen()" :mode="dialogMode()" :record="editingRecord()" :customers="customers()" :statuses="statuses()" :order-types="orderTypes()" :default-currency="defaultCurrency()" :busy="saving()" :errors="validationErrors()" @submit="saveOrder" @close="closeDialog()" />
+<CommerceOrderDetailsDialog :open="Boolean(detailsRecord())" :record="detailsRecord()" @edit="openEdit" @delete="openDelete" @close="closeDetails()" />
+<CommerceOrderDeleteDialog :open="Boolean(deletingRecord())" :record="deletingRecord()" :busy="deleting()" @confirm="deleteOrder()" @close="closeDelete()" />

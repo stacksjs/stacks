@@ -1,0 +1,17 @@
+<script client>
+import type { CommerceOrderRecord } from '../../../../app/Actions/Dashboard/Commerce/commerce-order-records'
+
+const open = useReactiveProp('open', false)
+const record = useReactiveProp('record', null as CommerceOrderRecord | null)
+const busy = useReactiveProp('busy', false)
+const emit = defineEmits()
+</script>
+
+<div :if="open()" class="flex fixed inset-0 z-50 items-center justify-center p-4">
+  <button type="button" aria-label="Close delete order dialog" class="absolute inset-0 bg-black/45" @click="emit('close')"></button>
+  <section role="dialog" aria-modal="true" aria-labelledby="order-delete-title" class="relative p-6 max-w-md w-full bg-white dark:bg-neutral-800 border border-gray-200 rounded-xl dark:border-neutral-700 shadow-xl">
+    <h2 id="order-delete-title" class="font-semibold text-gray-900 text-lg dark:text-white">Delete order</h2>
+    <p class="mt-2 text-gray-500 text-sm dark:text-neutral-400">Delete order {{ record()?.id || 'not recorded' }} permanently? Linked items, payments, and license keys may prevent deletion.</p>
+    <footer class="flex gap-2 justify-end mt-6"><button type="button" :disabled="busy()" class="px-3 py-2 font-semibold text-gray-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700 disabled:opacity-50" @click="emit('close')">Cancel</button><button type="button" :disabled="busy()" class="inline-flex items-center px-3 py-2 font-semibold text-sm text-white bg-red-600 hover:bg-red-500 rounded-md disabled:opacity-50" @click="emit('confirm')"><span :if="busy()" class="mr-2 h-4 w-4 animate-spin i-hugeicons-loading-03"></span>Delete order</button></footer>
+  </section>
+</div>

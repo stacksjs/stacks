@@ -1,51 +1,51 @@
 import { Action } from '@stacksjs/actions'
-import { Order } from '@stacksjs/orm'
+import { config } from '@stacksjs/config'
+import { Customer, Order, OrderItem } from '@stacksjs/orm'
+import {
+  normalizeCommerceOrderRecord,
+  normalizeOrderCustomerOption,
+  summarizeCommerceOrders,
+} from './commerce-order-records'
 
 export default new Action({
-  name: 'CommerceOrders',
-  description: 'Returns orders list with stats and filters.',
+  name: 'CommerceOrdersAction',
+  description: 'Returns persisted Order records with customer context and item counts for dashboard management.',
   method: 'GET',
+  apiResponse: true,
+
   async handle() {
-    const filters = ['All', 'Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled']
-
-    try {
-      const allOrders = await Order.orderBy('created_at', 'desc').get()
-
-      const orders = allOrders.map(o => ({
-        id: `ORD-${String(o.get('id')).padStart(4, '0')}`,
-        customer: String(o.get('customer_name') || 'Guest'),
-        items: Number(o.get('item_count') || 1),
-        total: `$${(Number(o.get('total_amount')) || 0).toFixed(2)}`,
-        status: String(o.get('status') || 'pending'),
-        payment: o.get('status') === 'completed' ? 'paid' : o.get('status') === 'cancelled' ? 'refunded' : 'pending',
-        date: o.get('created_at') ? String(o.get('created_at')).split('T')[0] : 'N/A',
-      }))
-
-      const totalOrders = orders.length
-      const pendingOrders = orders.filter(o => o.status === 'pending').length
-      const processingOrders = orders.filter(o => o.status === 'processing').length
-      const completedOrders = orders.filter(o => o.status === 'completed' || o.status === 'shipped' || o.status === 'delivered').length
-
-      const stats = [
-        { label: 'Total Orders', value: String(totalOrders) },
-        { label: 'Pending', value: String(pendingOrders) },
-        { label: 'Processing', value: String(processingOrders) },
-        { label: 'Completed', value: String(completedOrders) },
-      ]
-
-      return { orders, stats, filters }
+    const orders = await Order.orderBy('created_at', 'desc').limit(500).get()
+    const orderIds = orders.map(order => Number(order.get('id'))).filter(id => Number.isFinite(id) && id > 0)
+    const [customers, items] = await Promise.all([
+      Customer.orderBy('name', 'asc').limit(500).get(),
+      orderIds.length > 0 ? OrderItem.where('order_id', 'in', orderIds).get() : [],
+    ])
+    const customerMap = new Map(customers.map(customer => [
+      String(customer.get('id') || ''),
+      {
+        name: String(customer.get('name') || ''),
+        email: String(customer.get('email') || ''),
+      },
+    ]))
+    const itemCounts = new Map<string, number>()
+    for (const item of items) {
+      const orderId = String(item.get('order_id') || '')
+      if (orderId)
+        itemCounts.set(orderId, (itemCounts.get(orderId) || 0) + 1)
     }
-    catch {
-      return {
-        orders: [],
-        stats: [
-          { label: 'Total Orders', value: '0' },
-          { label: 'Pending', value: '0' },
-          { label: 'Processing', value: '0' },
-          { label: 'Completed', value: '0' },
-        ],
-        filters,
-      }
+
+    const records = orders.map(order => normalizeCommerceOrderRecord(order, customerMap, itemCounts))
+    const defaultStatuses = ['PENDING', 'PREPARING', 'READY', 'DELIVERED', 'CANCELED']
+    const defaultTypes = ['DINE_IN', 'TAKEOUT', 'DELIVERY']
+    return {
+      records,
+      summary: summarizeCommerceOrders(records),
+      customers: customers
+        .map(normalizeOrderCustomerOption)
+        .sort((left, right) => left.label.localeCompare(right.label)),
+      statuses: [...new Set([...defaultStatuses, ...records.map(record => record.status).filter(Boolean)])],
+      orderTypes: [...new Set([...defaultTypes, ...records.map(record => record.orderType).filter(Boolean)])],
+      defaultCurrency: String((config as any).commerce?.currency || 'USD').toUpperCase(),
     }
   },
 })
