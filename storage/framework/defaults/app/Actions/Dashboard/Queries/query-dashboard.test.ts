@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test'
-import { mapDashboardQueryLog, parseQueryLogList, queryType } from './query-dashboard'
+import { dashboardQueryColumns, mapDashboardQueryLog, parseQueryLogList, queryType } from './query-dashboard'
 
 describe('query dashboard projection', () => {
   it('classifies supported query types', () => {
@@ -33,5 +33,8 @@ describe('query dashboard projection', () => {
     expect(result).not.toHaveProperty('bindings')
     expect(result).not.toHaveProperty('trace')
     expect(result).not.toHaveProperty('file')
+    expect(dashboardQueryColumns).not.toContain('bindings')
+    expect(dashboardQueryColumns).not.toContain('trace')
+    expect(dashboardQueryColumns).not.toContain('file')
   })
 })

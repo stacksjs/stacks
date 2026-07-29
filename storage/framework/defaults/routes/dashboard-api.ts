@@ -303,6 +303,7 @@ route.group({ prefix: '/api/dashboard', apiResponse: true }, () => {
   guard(route.delete('/monitoring/errors', 'Actions/Monitoring/ErrorDestroyAction'))
 
   guard(route.get('/queries', 'Actions/Dashboard/Queries/QueryDashboardAction'))
+  guard(route.get('/queries/{id}', 'Actions/Dashboard/Queries/QueryShowAction'))
 
   // Markdown blog admin — the write side of the BunPress blog that /blog
   // renders from `content/blog/*.md` (storage/framework/core/actions/src/blog.ts).

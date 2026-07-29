@@ -1,0 +1,147 @@
+<script client>
+import type { DashboardQueryLog } from '../../../../functions/queries'
+import { fetchDashboardQuery } from '../../../../functions/queries'
+
+const query = state<DashboardQueryLog | null>(null)
+const loading = state(true)
+const loadError = state('')
+
+function record(): DashboardQueryLog | null {
+  return query()
+}
+
+function affectedTables(): string[] {
+  return record()?.affectedTables || []
+}
+
+function suggestions(): string[] {
+  return record()?.suggestions || []
+}
+
+function formatDate(value: string): string {
+  const date = new Date(value)
+  return Number.isNaN(date.getTime())
+    ? value
+    : new Intl.DateTimeFormat(undefined, { dateStyle: 'long', timeStyle: 'medium' }).format(date)
+}
+
+function formatDuration(value: number): string {
+  return `${value.toFixed(2)} ms`
+}
+
+function statusClass(value: DashboardQueryLog['status']): string {
+  if (value === 'failed')
+    return 'text-red-700 dark:text-red-300 bg-red-50 dark:bg-red-950/40'
+  if (value === 'slow')
+    return 'text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40'
+  return 'text-green-700 dark:text-green-300 bg-green-50 dark:bg-green-950/40'
+}
+
+async function loadQuery(): Promise<void> {
+  const route = useRoute()
+  const id = String(route.params.id || '')
+  loading.set(true)
+  loadError.set('')
+  try {
+    query.set(id ? await fetchDashboardQuery(id) : null)
+  }
+  catch (error) {
+    loadError.set(error instanceof Error ? error.message : 'Query details could not be loaded.')
+  }
+  finally {
+    loading.set(false)
+  }
+}
+
+onMount(() => {
+  void loadQuery()
+})
+</script>
+
+<div class="space-y-6">
+  <header>
+    <StxLink to="/queries/history" class="inline-flex items-center mb-3 font-medium text-blue-600 text-sm dark:text-blue-400">
+      <span class="mr-1 h-4 w-4 i-hugeicons-arrow-left-02"></span>
+      Query history
+    </StxLink>
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+      <div>
+        <h1 class="font-semibold text-2xl text-neutral-900 tracking-tight dark:text-white">Query Details</h1>
+        <p class="mt-1 text-neutral-500 text-sm dark:text-neutral-400">A safe projection of one native database log record.</p>
+      </div>
+      <span :if="record()" :class="'inline-flex px-2.5 py-1 font-medium text-xs rounded-md ' + statusClass(record()?.status || 'completed')">{{ record()?.status }}</span>
+    </div>
+  </header>
+
+  <div :if="loading()" class="p-10 text-center text-neutral-500 text-sm dark:text-neutral-400 bg-white dark:bg-neutral-800 border border-neutral-200 rounded-xl dark:border-neutral-700">Loading query details</div>
+  <div :if="loadError()" role="alert" class="p-4 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900">{{ loadError() }}</div>
+  <div :if="!loading() && !loadError() && !record()" class="p-10 text-center bg-white dark:bg-neutral-800 border border-neutral-200 rounded-xl dark:border-neutral-700">
+    <p class="font-medium text-neutral-900 dark:text-white">Query not found</p>
+    <p class="mt-1 text-neutral-500 text-sm dark:text-neutral-400">The requested query log does not exist or has expired.</p>
+  </div>
+
+  <template :if="record()">
+    <Card padding="none">
+      <template #header>
+        <div class="flex flex-wrap gap-3 items-center justify-between">
+          <div class="flex flex-wrap gap-2 items-center">
+            <span class="inline-flex px-2 py-1 font-semibold text-blue-700 text-xs dark:text-blue-300 bg-blue-50 dark:bg-blue-950/40 rounded">{{ record()?.type }}</span>
+            <span class="font-mono text-neutral-600 text-sm dark:text-neutral-300">{{ formatDuration(record()?.duration || 0) }}</span>
+          </div>
+          <time class="text-neutral-500 text-xs dark:text-neutral-400">{{ formatDate(record()?.executedAt || '') }}</time>
+        </div>
+      </template>
+
+      <dl class="divide-neutral-100 divide-y dark:divide-neutral-700">
+        <div class="grid gap-2 px-5 py-4">
+          <dt class="font-medium text-neutral-500 text-xs uppercase dark:text-neutral-400">Query</dt>
+          <dd><pre class="overflow-x-auto p-4 font-mono text-neutral-100 text-xs whitespace-pre-wrap bg-neutral-900 rounded-lg">{{ record()?.query }}</pre></dd>
+        </div>
+        <div :if="record()?.normalizedQuery !== record()?.query" class="grid gap-2 px-5 py-4">
+          <dt class="font-medium text-neutral-500 text-xs uppercase dark:text-neutral-400">Normalized query</dt>
+          <dd><pre class="overflow-x-auto p-4 font-mono text-neutral-700 text-xs whitespace-pre-wrap dark:text-neutral-200 bg-neutral-100 dark:bg-neutral-900 rounded-lg">{{ record()?.normalizedQuery }}</pre></dd>
+        </div>
+        <div class="grid gap-4 grid-cols-2 lg:grid-cols-4 px-5 py-4">
+          <div>
+            <dt class="text-neutral-500 text-xs dark:text-neutral-400">Connection</dt>
+            <dd class="mt-1 font-medium text-neutral-900 text-sm dark:text-white">{{ record()?.connection }}</dd>
+          </div>
+          <div>
+            <dt class="text-neutral-500 text-xs dark:text-neutral-400">Rows affected</dt>
+            <dd class="mt-1 font-medium text-neutral-900 text-sm dark:text-white">{{ record()?.rowsAffected ?? 'Not recorded' }}</dd>
+          </div>
+          <div>
+            <dt class="text-neutral-500 text-xs dark:text-neutral-400">Model</dt>
+            <dd class="mt-1 font-medium text-neutral-900 text-sm dark:text-white">{{ record()?.model || 'Not recorded' }}</dd>
+          </div>
+          <div>
+            <dt class="text-neutral-500 text-xs dark:text-neutral-400">Method</dt>
+            <dd class="mt-1 font-medium text-neutral-900 text-sm dark:text-white">{{ record()?.method || 'Not recorded' }}</dd>
+          </div>
+        </div>
+      </dl>
+    </Card>
+
+    <div class="grid gap-4 grid-cols-1 lg:grid-cols-2">
+      <Card title="Affected tables">
+        <div :if="affectedTables().length > 0" class="flex flex-wrap gap-2">
+          <template :for="table in affectedTables()">
+            <span class="px-2 py-1 font-medium text-blue-700 text-xs dark:text-blue-300 bg-blue-50 dark:bg-blue-950/40 rounded">{{ table }}</span>
+          </template>
+        </div>
+        <p :if="affectedTables().length === 0" class="text-neutral-500 text-sm dark:text-neutral-400">No affected tables were recorded.</p>
+      </Card>
+      <Card title="Optimization">
+        <ul :if="suggestions().length > 0" class="space-y-2">
+          <template :for="suggestion in suggestions()">
+            <li class="flex gap-2 items-start text-neutral-700 text-sm dark:text-neutral-300">
+              <span class="flex-none mt-0.5 h-4 w-4 text-amber-500 i-hugeicons-lightbulb-02"></span>
+              {{ suggestion }}
+            </li>
+          </template>
+        </ul>
+        <p :if="suggestions().length === 0" class="text-neutral-500 text-sm dark:text-neutral-400">No optimization suggestions were recorded.</p>
+      </Card>
+    </div>
+  </template>
+</div>

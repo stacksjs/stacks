@@ -28,6 +28,15 @@ export interface DashboardQueryResponse {
   error?: string
 }
 
+export interface DashboardQueryShowResponse {
+  query: DashboardQueryLog | null
+}
+
 export async function fetchDashboardQueries(): Promise<DashboardQueryResponse> {
   return dashboardApi<DashboardQueryResponse>('/api/dashboard/queries')
+}
+
+export async function fetchDashboardQuery(id: string): Promise<DashboardQueryLog | null> {
+  const response = await dashboardApi<DashboardQueryShowResponse>(`/api/dashboard/queries/${encodeURIComponent(id)}`)
+  return response.query
 }

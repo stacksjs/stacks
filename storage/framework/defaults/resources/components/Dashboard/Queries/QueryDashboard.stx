@@ -225,6 +225,7 @@ onMount(() => {
             <th scope="col" class="px-4 py-3 font-semibold text-neutral-500 text-right text-xs tracking-wider uppercase dark:text-neutral-400">Duration</th>
             <th scope="col" class="px-4 py-3 font-semibold text-left text-neutral-500 text-xs tracking-wider uppercase dark:text-neutral-400">Status</th>
             <th scope="col" class="px-4 py-3 font-semibold text-neutral-500 text-right text-xs tracking-wider uppercase dark:text-neutral-400">Executed</th>
+            <th scope="col" class="pr-5 py-3"><span class="sr-only">Details</span></th>
           </tr>
         </thead>
         <tbody class="divide-neutral-100 divide-y dark:divide-neutral-700">
@@ -242,6 +243,11 @@ onMount(() => {
                 <span :class="'font-medium text-xs capitalize ' + statusClass(query.status)">{{ query.status }}</span>
               </td>
               <td class="px-4 py-3.5 text-neutral-500 text-right text-xs whitespace-nowrap dark:text-neutral-400">{{ formatDate(query.executedAt) }}</td>
+              <td class="pr-5 py-3.5 text-right">
+                <StxLink :to="'/queries/' + query.id" :aria-label="'View query ' + query.id" class="inline-flex p-1.5 text-neutral-500 dark:text-neutral-400 hover:text-blue-600 dark:hover:text-blue-400 rounded-md">
+                  <span class="h-4 w-4 i-hugeicons-arrow-right-01"></span>
+                </StxLink>
+              </td>
             </tr>
           </template>
         </tbody>

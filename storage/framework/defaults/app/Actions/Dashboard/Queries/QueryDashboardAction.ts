@@ -1,7 +1,7 @@
 import { Action } from '@stacksjs/actions'
 import { config } from '@stacksjs/config'
 import { db } from '@stacksjs/database'
-import { mapDashboardQueryLog, type QueryLogSourceRow } from './query-dashboard'
+import { dashboardQueryColumns, mapDashboardQueryLog, type QueryLogSourceRow } from './query-dashboard'
 
 export default new Action({
   name: 'Query Dashboard',
@@ -14,25 +14,7 @@ export default new Action({
     try {
       const rows = await db
         .selectFrom('query_logs')
-        .select([
-          'id',
-          'query',
-          'normalized_query',
-          'duration',
-          'connection',
-          'status',
-          'error',
-          'executed_at',
-          'model',
-          'method',
-          'rows_affected',
-          'memory_usage',
-          'tags',
-          'affected_tables',
-          'indexes_used',
-          'missing_indexes',
-          'optimization_suggestions',
-        ])
+        .select(dashboardQueryColumns)
         .orderBy('executed_at', 'desc')
         .limit(2000)
         .execute()

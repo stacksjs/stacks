@@ -18,6 +18,26 @@ export interface QueryLogSourceRow {
   optimization_suggestions?: string | null
 }
 
+export const dashboardQueryColumns = [
+  'id',
+  'query',
+  'normalized_query',
+  'duration',
+  'connection',
+  'status',
+  'error',
+  'executed_at',
+  'model',
+  'method',
+  'rows_affected',
+  'memory_usage',
+  'tags',
+  'affected_tables',
+  'indexes_used',
+  'missing_indexes',
+  'optimization_suggestions',
+] as const
+
 export interface DashboardQueryLog {
   id: number | string
   query: string
