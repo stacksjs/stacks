@@ -189,6 +189,62 @@ export interface CampaignAnalyticsResponse {
   }>
 }
 
+export interface EventAnalyticsResponse {
+  source: 'analytics-events'
+  range: AnalyticsRange
+  dateRange: {
+    start: string
+    end: string
+  }
+  overview: {
+    occurrences: number
+    eventNames: number
+    categories: number
+    valuedEvents: number
+  }
+  events: Array<{
+    name: string
+    category: string
+    currency: string
+    count: number
+    value: number
+    lastSeen: string
+  }>
+  categories: Array<{
+    name: string
+    label: string
+    count: number
+    percentage: number
+  }>
+  valueByCurrency: Array<{
+    currency: string
+    value: number
+    events: number
+  }>
+  timeline: Array<{
+    date: string
+    count: number
+  }>
+  recent: Array<{
+    id: string
+    name: string
+    category: string
+    path: string
+    value: number
+    currency: string
+    createdAt: string
+  }>
+}
+
+export interface RecordAnalyticsEventInput {
+  name: string
+  category?: string
+  path?: string
+  value?: number
+  currency?: string
+  properties?: unknown
+}
+
 export async function fetchWebAnalytics(range: AnalyticsRange = 'month', scope: AnalyticsScope = 'all'): Promise<WebAnalyticsResponse> {
   const query = new URLSearchParams({ range, scope })
   return await dashboardApi<WebAnalyticsResponse>(`/api/dashboard/analytics/web?${query.toString()}`)
@@ -200,6 +256,17 @@ export async function fetchSalesAnalytics(range: AnalyticsRange = 'month'): Prom
 
 export async function fetchCampaignAnalytics(range: AnalyticsRange = 'month'): Promise<CampaignAnalyticsResponse> {
   return await dashboardApi<CampaignAnalyticsResponse>(`/api/dashboard/analytics/marketing?range=${encodeURIComponent(range)}`)
+}
+
+export async function fetchEventAnalytics(range: AnalyticsRange = 'month'): Promise<EventAnalyticsResponse> {
+  return await dashboardApi<EventAnalyticsResponse>(`/api/dashboard/analytics/events?range=${encodeURIComponent(range)}`)
+}
+
+export async function recordAnalyticsEvent(input: RecordAnalyticsEventInput): Promise<{ success: true }> {
+  return await dashboardApi<{ success: true }>('/api/dashboard/analytics/events', {
+    method: 'POST',
+    body: input,
+  })
 }
 
 export function useAnalytics() {

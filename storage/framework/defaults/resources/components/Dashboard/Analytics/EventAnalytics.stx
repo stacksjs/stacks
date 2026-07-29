@@ -1,0 +1,313 @@
+<script client>
+import type { AnalyticsRange, EventAnalyticsResponse } from '../../../../functions/analytics'
+import { fetchEventAnalytics, recordAnalyticsEvent } from '../../../../functions/analytics'
+import { pushToast } from '../../../../functions/toasts'
+
+const analytics = state<EventAnalyticsResponse | null>(null)
+const analyticsRange = state<AnalyticsRange>('month')
+const dateRangeDisplay = state('Last 30 days')
+const isLoading = state(false)
+const isRecording = state(false)
+const loadError = state('')
+const eventName = state('')
+const eventCategory = state('custom')
+const eventPath = state('')
+const eventValue = state('0')
+const eventCurrency = state('USD')
+
+function formatNumber(value: number): string {
+  return new Intl.NumberFormat().format(value)
+}
+
+function formatCurrency(value: number, currency: string): string {
+  return new Intl.NumberFormat(undefined, { style: 'currency', currency }).format(value)
+}
+
+function formatDate(value: string): string {
+  return value
+    ? new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value))
+    : 'Not recorded'
+}
+
+function formatDateRange(start: string, end: string): string {
+  const formatter = new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
+  return `${formatter.format(new Date(start))} to ${formatter.format(new Date(end))}`
+}
+
+function events(): EventAnalyticsResponse['events'] {
+  return analytics()?.events || []
+}
+
+function categories(): EventAnalyticsResponse['categories'] {
+  return analytics()?.categories || []
+}
+
+function values(): EventAnalyticsResponse['valueByCurrency'] {
+  return analytics()?.valueByCurrency || []
+}
+
+function recentEvents(): EventAnalyticsResponse['recent'] {
+  return analytics()?.recent || []
+}
+
+function updateField(field: string, event: Event): void {
+  const value = (event.target as HTMLInputElement | HTMLSelectElement).value
+  if (field === 'name')
+    eventName.set(value)
+  else if (field === 'category')
+    eventCategory.set(value)
+  else if (field === 'path')
+    eventPath.set(value)
+  else if (field === 'value')
+    eventValue.set(value)
+  else if (field === 'currency')
+    eventCurrency.set(value)
+}
+
+function setAnalyticsRange(value: string | CustomEvent<string>): void {
+  const range = typeof value === 'string' ? value : value.detail
+  analyticsRange.set(range as AnalyticsRange)
+  void loadAnalytics()
+}
+
+async function loadAnalytics(): Promise<void> {
+  isLoading.set(true)
+  loadError.set('')
+  try {
+    const data = await fetchEventAnalytics(analyticsRange())
+    analytics.set(data)
+    dateRangeDisplay.set(formatDateRange(data.dateRange.start, data.dateRange.end))
+  }
+  catch (error) {
+    loadError.set('Event analytics could not be loaded.')
+    pushToast('error', 'Could not load event analytics', { detail: String(error) })
+  }
+  finally {
+    isLoading.set(false)
+  }
+}
+
+async function submitEvent(event: Event): Promise<void> {
+  event.preventDefault()
+  const name = eventName().trim()
+  if (!name) {
+    pushToast('warning', 'Enter an event name')
+    return
+  }
+
+  const value = Number(eventValue() || 0)
+  if (!Number.isFinite(value) || value < 0) {
+    pushToast('warning', 'Event value must be zero or greater')
+    return
+  }
+
+  isRecording.set(true)
+  try {
+    await recordAnalyticsEvent({
+      name,
+      category: eventCategory(),
+      path: eventPath().trim(),
+      value,
+      currency: eventCurrency(),
+    })
+    eventName.set('')
+    eventPath.set('')
+    eventValue.set('0')
+    pushToast('success', 'Event recorded')
+    await loadAnalytics()
+  }
+  catch (error) {
+    pushToast('error', 'Could not record event', { detail: String(error) })
+  }
+  finally {
+    isRecording.set(false)
+  }
+}
+
+onMount(() => {
+  void loadAnalytics()
+})
+</script>
+
+<div class="space-y-6">
+  <AnalyticsPageHeader
+    title="Event Analytics"
+    description="Privacy-safe aggregates from first-party AnalyticsEvent records."
+    :dateRange="dateRangeDisplay"
+    :range="analyticsRange"
+    :loading="isLoading"
+    @range-change="setAnalyticsRange"
+    @refresh="loadAnalytics"
+  />
+
+  <div :if="loadError()" class="p-4 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900">
+    {{ loadError() }}
+  </div>
+
+  <section class="grid gap-3 grid-cols-2 lg:grid-cols-4">
+    <div class="p-4 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
+      <p class="text-gray-500 text-xs tracking-wide uppercase dark:text-neutral-400">Occurrences</p>
+      <p class="mt-2 font-semibold text-2xl text-gray-900 dark:text-white">{{ formatNumber(analytics()?.overview.occurrences || 0) }}</p>
+    </div>
+    <div class="p-4 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
+      <p class="text-gray-500 text-xs tracking-wide uppercase dark:text-neutral-400">Event names</p>
+      <p class="mt-2 font-semibold text-2xl text-gray-900 dark:text-white">{{ formatNumber(analytics()?.overview.eventNames || 0) }}</p>
+    </div>
+    <div class="p-4 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
+      <p class="text-gray-500 text-xs tracking-wide uppercase dark:text-neutral-400">Categories</p>
+      <p class="mt-2 font-semibold text-2xl text-gray-900 dark:text-white">{{ formatNumber(analytics()?.overview.categories || 0) }}</p>
+    </div>
+    <div class="p-4 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
+      <p class="text-gray-500 text-xs tracking-wide uppercase dark:text-neutral-400">Valued events</p>
+      <p class="mt-2 font-semibold text-2xl text-gray-900 dark:text-white">{{ formatNumber(analytics()?.overview.valuedEvents || 0) }}</p>
+    </div>
+  </section>
+
+  <section class="grid gap-6 grid-cols-1 xl:grid-cols-[minmax(0,2fr)_minmax(20rem,1fr)]">
+    <div class="overflow-hidden bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
+      <div class="px-4 py-3 border-b border-gray-200 dark:border-neutral-700">
+        <h2 class="font-semibold text-gray-900 dark:text-white">Recorded event names</h2>
+        <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Occurrences are grouped by name, category, and currency.</p>
+      </div>
+      <div :if="!isLoading() && events().length === 0" class="px-6 py-12 text-center">
+        <div class="mb-3 mx-auto h-9 w-9 text-gray-400 i-hugeicons-cursor-click-02"></div>
+        <h3 class="font-semibold text-gray-900 dark:text-white">No events in this period</h3>
+        <p class="mt-2 text-gray-500 text-sm dark:text-neutral-400">Record an event here or create one from server code with the AnalyticsEvent model.</p>
+      </div>
+      <div :if="events().length > 0" class="overflow-x-auto">
+        <table class="min-w-full divide-gray-200 divide-y dark:divide-neutral-700">
+          <thead class="bg-gray-50 dark:bg-neutral-700/50">
+            <tr>
+              <th class="px-4 py-3 font-medium text-gray-500 text-left text-xs uppercase dark:text-neutral-300">Event</th>
+              <th class="px-4 py-3 font-medium text-gray-500 text-left text-xs uppercase dark:text-neutral-300">Category</th>
+              <th class="px-4 py-3 font-medium text-gray-500 text-right text-xs uppercase dark:text-neutral-300">Occurrences</th>
+              <th class="px-4 py-3 font-medium text-gray-500 text-right text-xs uppercase dark:text-neutral-300">Value</th>
+              <th class="px-4 py-3 font-medium text-gray-500 text-right text-xs uppercase dark:text-neutral-300">Last seen</th>
+            </tr>
+          </thead>
+          <tbody class="divide-gray-200 divide-y dark:divide-neutral-700">
+            <template :for="row in events()">
+              <tr>
+                <td class="px-4 py-3 font-medium text-gray-900 text-sm dark:text-white">{{ row.name }}</td>
+                <td class="px-4 py-3 text-gray-500 text-sm dark:text-neutral-300">{{ row.category }}</td>
+                <td class="px-4 py-3 text-gray-500 text-right text-sm dark:text-neutral-300">{{ formatNumber(row.count) }}</td>
+                <td class="px-4 py-3 text-gray-500 text-right text-sm dark:text-neutral-300">{{ formatCurrency(row.value, row.currency) }}</td>
+                <td class="px-4 py-3 text-gray-500 text-right text-sm dark:text-neutral-300">{{ formatDate(row.lastSeen) }}</td>
+              </tr>
+            </template>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <form class="self-start p-5 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700" @submit="submitEvent($event)">
+      <h2 class="font-semibold text-gray-900 dark:text-white">Record an event</h2>
+      <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Use this for verification or operational events. Production code can call AnalyticsEvent.create.</p>
+      <div class="mt-4 space-y-4">
+        <div>
+          <label for="event-name" class="block mb-1 font-medium text-gray-700 text-sm dark:text-neutral-300">Name</label>
+          <input id="event-name" :value="eventName()" maxlength="100" required type="text" placeholder="newsletter_signup" class="block px-3 py-2 w-full text-gray-900 text-sm dark:text-white dark:bg-neutral-700 border border-gray-300 rounded-md dark:border-neutral-600" @input="updateField('name', $event)" />
+        </div>
+        <div class="grid gap-3 grid-cols-2">
+          <div>
+            <label for="event-category" class="block mb-1 font-medium text-gray-700 text-sm dark:text-neutral-300">Category</label>
+            <input id="event-category" :value="eventCategory()" maxlength="50" type="text" placeholder="conversion" class="block px-3 py-2 w-full text-gray-900 text-sm dark:text-white dark:bg-neutral-700 border border-gray-300 rounded-md dark:border-neutral-600" @input="updateField('category', $event)" />
+          </div>
+          <div>
+            <label for="event-path" class="block mb-1 font-medium text-gray-700 text-sm dark:text-neutral-300">Path</label>
+            <input id="event-path" :value="eventPath()" maxlength="2048" type="text" placeholder="/signup" class="block px-3 py-2 w-full text-gray-900 text-sm dark:text-white dark:bg-neutral-700 border border-gray-300 rounded-md dark:border-neutral-600" @input="updateField('path', $event)" />
+          </div>
+        </div>
+        <div class="grid gap-3 grid-cols-2">
+          <div>
+            <label for="event-value" class="block mb-1 font-medium text-gray-700 text-sm dark:text-neutral-300">Value</label>
+            <input id="event-value" :value="eventValue()" min="0" step="0.01" type="number" class="block px-3 py-2 w-full text-gray-900 text-sm dark:text-white dark:bg-neutral-700 border border-gray-300 rounded-md dark:border-neutral-600" @input="updateField('value', $event)" />
+          </div>
+          <div>
+            <label for="event-currency" class="block mb-1 font-medium text-gray-700 text-sm dark:text-neutral-300">Currency</label>
+            <select id="event-currency" :value="eventCurrency()" class="block px-3 py-2 w-full text-gray-900 text-sm dark:text-white dark:bg-neutral-700 border border-gray-300 rounded-md dark:border-neutral-600" @change="updateField('currency', $event)">
+              <option value="USD">USD</option>
+              <option value="EUR">EUR</option>
+              <option value="GBP">GBP</option>
+              <option value="CAD">CAD</option>
+              <option value="AUD">AUD</option>
+            </select>
+          </div>
+        </div>
+        <button type="submit" :disabled="isRecording()" class="inline-flex items-center justify-center px-3 py-2 w-full font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md disabled:opacity-50">
+          <span :class="'mr-2 h-4 w-4 ' + (isRecording() ? 'i-hugeicons-loading-03 animate-spin' : 'i-hugeicons-plus-sign')"></span>
+          {{ isRecording() ? 'Recording' : 'Record event' }}
+        </button>
+      </div>
+    </form>
+  </section>
+
+  <section class="grid gap-6 grid-cols-1 xl:grid-cols-2">
+    <div class="overflow-hidden bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
+      <div class="px-4 py-3 border-b border-gray-200 dark:border-neutral-700">
+        <h2 class="font-semibold text-gray-900 dark:text-white">Category breakdown</h2>
+      </div>
+      <div :if="categories().length === 0" class="px-4 py-10 text-center text-gray-500 text-sm dark:text-neutral-400">No categories for this period.</div>
+      <div :if="categories().length > 0" class="divide-gray-200 divide-y dark:divide-neutral-700">
+        <template :for="category in categories()">
+          <div class="flex gap-4 items-center justify-between px-4 py-3">
+            <div>
+              <p class="font-medium text-gray-900 text-sm dark:text-white">{{ category.label }}</p>
+              <p class="text-gray-500 text-xs dark:text-neutral-400">{{ category.name }}</p>
+            </div>
+            <p class="text-gray-500 text-sm dark:text-neutral-300">{{ category.count }} · {{ category.percentage }}%</p>
+          </div>
+        </template>
+      </div>
+    </div>
+
+    <div class="overflow-hidden bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
+      <div class="px-4 py-3 border-b border-gray-200 dark:border-neutral-700">
+        <h2 class="font-semibold text-gray-900 dark:text-white">Value by currency</h2>
+        <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Currencies stay separate so unlike values are never combined.</p>
+      </div>
+      <div :if="values().length === 0" class="px-4 py-10 text-center text-gray-500 text-sm dark:text-neutral-400">No valued events for this period.</div>
+      <div :if="values().length > 0" class="divide-gray-200 divide-y dark:divide-neutral-700">
+        <template :for="entry in values()">
+          <div class="flex gap-4 items-center justify-between px-4 py-3">
+            <div>
+              <p class="font-medium text-gray-900 text-sm dark:text-white">{{ entry.currency }}</p>
+              <p class="text-gray-500 text-xs dark:text-neutral-400">{{ entry.events }} valued events</p>
+            </div>
+            <p class="font-medium text-gray-900 text-sm dark:text-white">{{ formatCurrency(entry.value, entry.currency) }}</p>
+          </div>
+        </template>
+      </div>
+    </div>
+  </section>
+
+  <section class="overflow-hidden bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
+    <div class="px-4 py-3 border-b border-gray-200 dark:border-neutral-700">
+      <h2 class="font-semibold text-gray-900 dark:text-white">Recent occurrences</h2>
+      <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Properties are intentionally excluded from this dashboard response.</p>
+    </div>
+    <div :if="recentEvents().length === 0" class="px-4 py-10 text-center text-gray-500 text-sm dark:text-neutral-400">No recent occurrences.</div>
+    <div :if="recentEvents().length > 0" class="overflow-x-auto">
+      <table class="min-w-full divide-gray-200 divide-y dark:divide-neutral-700">
+        <thead class="bg-gray-50 dark:bg-neutral-700/50">
+          <tr>
+            <th class="px-4 py-3 font-medium text-gray-500 text-left text-xs uppercase dark:text-neutral-300">Time</th>
+            <th class="px-4 py-3 font-medium text-gray-500 text-left text-xs uppercase dark:text-neutral-300">Name</th>
+            <th class="px-4 py-3 font-medium text-gray-500 text-left text-xs uppercase dark:text-neutral-300">Category</th>
+            <th class="px-4 py-3 font-medium text-gray-500 text-left text-xs uppercase dark:text-neutral-300">Path</th>
+          </tr>
+        </thead>
+        <tbody class="divide-gray-200 divide-y dark:divide-neutral-700">
+          <template :for="occurrence in recentEvents()">
+            <tr>
+              <td class="px-4 py-3 text-gray-500 text-sm whitespace-nowrap dark:text-neutral-300">{{ formatDate(occurrence.createdAt) }}</td>
+              <td class="px-4 py-3 font-medium text-gray-900 text-sm dark:text-white">{{ occurrence.name }}</td>
+              <td class="px-4 py-3 text-gray-500 text-sm dark:text-neutral-300">{{ occurrence.category }}</td>
+              <td class="px-4 py-3 font-mono text-gray-500 text-xs dark:text-neutral-300">{{ occurrence.path || 'Not set' }}</td>
+            </tr>
+          </template>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
