@@ -22,12 +22,12 @@ function fieldError(field: string): string {
   return fieldErrors()[field] || ''
 }
 
-function setEmail(event: Event): void {
-  email.set((event.target as HTMLInputElement).value)
+function setEmail(value: string): void {
+  email.set(value)
 }
 
-function setPassword(event: Event): void {
-  password.set((event.target as HTMLInputElement).value)
+function setPassword(value: string): void {
+  password.set(value)
 }
 
 function setRememberMe(event: Event): void {

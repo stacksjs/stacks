@@ -63,6 +63,10 @@ function handleInput(event: Event): void {
 function handleChange(event: Event): void {
   emit('change', inputValue(event))
 }
+
+function handleBlur(event: Event): void {
+  emit('blur', inputValue(event))
+}
 </script>
 <div class="{{ fullWidth ? 'w-full' : '' }}">
   @if(label)
@@ -89,6 +93,7 @@ function handleChange(event: Event): void {
       class="{{ inputClass }} {{ $slots.iconLeft ? 'pl-8' : '' }}"
       @input="handleInput"
       @change="handleChange"
+      @blur="handleBlur"
       @if(disabled) disabled @endif
       @if(readonly) readonly @endif
       @if(required) required @endif
