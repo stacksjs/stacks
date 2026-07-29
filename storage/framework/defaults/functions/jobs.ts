@@ -5,8 +5,11 @@ export type JobStatus = 'queued' | 'processing' | 'completed' | 'failed'
 
 export interface DashboardJob {
   id: string
+  recordId: string
+  source: 'job' | 'failed'
   name: string
   queue: string
+  connection: string
   status: JobStatus
   attempts: number
   maxAttempts: number
@@ -15,6 +18,9 @@ export interface DashboardJob {
   error?: string
   payload: unknown
   created_at: string
+  updated_at?: string
+  available_at?: string
+  reserved_at?: string
   started_at?: string
   finished_at?: string
 }
@@ -44,6 +50,11 @@ export interface JobListFilters {
   search?: string
 }
 
+export interface JobShowResponse {
+  job: DashboardJob | null
+  error?: string
+}
+
 export async function fetchJobs(filters: JobListFilters = {}): Promise<JobListResponse> {
   const query = new URLSearchParams()
   if (filters.page)
@@ -62,6 +73,10 @@ export async function fetchJobs(filters: JobListFilters = {}): Promise<JobListRe
 
 export async function fetchJobStats(): Promise<JobStatsResponse> {
   return await dashboardApi<JobStatsResponse>('/api/dashboard/jobs/stats')
+}
+
+export async function fetchJob(id: string): Promise<JobShowResponse> {
+  return await dashboardApi<JobShowResponse>(`/api/dashboard/jobs/${encodeURIComponent(id)}`)
 }
 
 export async function retryJob(id: string): Promise<{ success: boolean, message: string }> {

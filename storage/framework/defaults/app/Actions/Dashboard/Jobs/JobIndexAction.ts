@@ -1,43 +1,7 @@
 import { Action } from '@stacksjs/actions'
 import { FailedJob, Job } from '@stacksjs/orm'
 import { request } from '@stacksjs/router'
-
-interface NormalizedJob {
-  id: string
-  name: string
-  queue: string
-  status: 'queued' | 'processing' | 'completed' | 'failed'
-  attempts: number
-  maxAttempts: number
-  duration: string
-  runtime?: number
-  error?: string
-  payload: unknown
-  created_at: string
-  started_at?: string
-  finished_at?: string
-}
-
-const STATUS_MAP: Record<string, NormalizedJob['status']> = {
-  pending: 'queued',
-  waiting: 'queued',
-  queued: 'queued',
-  active: 'processing',
-  processing: 'processing',
-  done: 'completed',
-  completed: 'completed',
-  failed: 'failed',
-}
-
-function safeParse(payload: unknown): unknown {
-  if (typeof payload !== 'string') return payload ?? null
-  try {
-    return JSON.parse(payload)
-  }
-  catch {
-    return payload
-  }
-}
+import { normalizeActiveJob, normalizeFailedJob } from './job-records'
 
 export default new Action({
   name: 'JobIndexAction',
@@ -64,52 +28,8 @@ export default new Action({
         FailedJob.orderByDesc('id').get(),
       ])
 
-      const activeNormalized: NormalizedJob[] = activeJobs.map((j) => {
-        const rawStatus = String(j.get('status') || 'pending').toLowerCase()
-        const status = STATUS_MAP[rawStatus] || 'queued'
-        const payload = safeParse(j.get('payload'))
-        const name = String(
-          (payload && typeof payload === 'object' && (payload as { displayName?: string }).displayName)
-          || j.get('name')
-          || j.get('queue')
-          || 'Job',
-        )
-        const duration = j.get('duration') ? `${j.get('duration')}ms` : '-'
-        return {
-          id: String(j.get('id') ?? ''),
-          name,
-          queue: String(j.get('queue') || 'default'),
-          status,
-          attempts: Number(j.get('attempts') || 0),
-          maxAttempts: Number(j.get('max_attempts') || 3),
-          duration,
-          runtime: Number(j.get('duration') || 0),
-          payload,
-          created_at: String(j.get('created_at') || ''),
-        }
-      })
-
-      const failedNormalized: NormalizedJob[] = failedJobs.map((f) => {
-        const payload = safeParse(f.get('payload'))
-        const name = String(
-          (payload && typeof payload === 'object' && (payload as { displayName?: string }).displayName)
-          || f.get('queue')
-          || 'Failed job',
-        )
-        return {
-          id: String(f.get('id') ?? ''),
-          name,
-          queue: String(f.get('queue') || 'default'),
-          status: 'failed',
-          attempts: Number(f.get('attempts') || 0),
-          maxAttempts: Number(f.get('max_attempts') || 3),
-          duration: '-',
-          error: String(f.get('exception') || ''),
-          payload,
-          created_at: String(f.get('failed_at') || f.get('created_at') || ''),
-          finished_at: String(f.get('failed_at') || ''),
-        }
-      })
+      const activeNormalized = activeJobs.map(normalizeActiveJob)
+      const failedNormalized = failedJobs.map(normalizeFailedJob)
 
       const merged = [...activeNormalized, ...failedNormalized].sort((a, b) =>
         new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),

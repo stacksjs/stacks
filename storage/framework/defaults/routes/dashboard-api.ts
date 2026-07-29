@@ -52,6 +52,7 @@ route.group({ prefix: '/api/dashboard', apiResponse: true }, () => {
   guard(route.post('/buddy/chat/clear', 'Actions/Dashboard/Buddy/BuddyChatClearAction'))
   guard(route.get('/jobs', 'Actions/Dashboard/Jobs/JobIndexAction'))
   guard(route.get('/jobs/stats', 'Actions/Dashboard/Jobs/JobStatsAction'))
+  guard(route.get('/jobs/{id}', 'Actions/Dashboard/Jobs/JobShowAction'))
   guard(route.post('/jobs/{id}/retry', 'Actions/Dashboard/Jobs/JobRetryAction'))
   guard(route.get('/queue/stats', 'Actions/Dashboard/Queue/QueueStatsAction'))
   guard(route.get('/queue/workers', 'Actions/Dashboard/Queue/QueueWorkersAction'))

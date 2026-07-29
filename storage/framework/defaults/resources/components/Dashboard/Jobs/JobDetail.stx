@@ -1,0 +1,181 @@
+<script client>
+import type { DashboardJob } from '../../../../functions/jobs'
+import { fetchJob, retryJob } from '../../../../functions/jobs'
+import { pushToast } from '../../../../functions/toasts'
+
+const route = useRoute()
+const job = state<DashboardJob | null>(null)
+const isLoading = state(true)
+const isRetrying = state(false)
+const loadError = state('')
+
+const hasJob = derived(() => job() !== null)
+const canRetry = derived(() => job()?.source === 'failed')
+
+function jobId(): string {
+  return String(route.params.id || '')
+}
+
+function statusClass(status: DashboardJob['status']): string {
+  const classes: Record<DashboardJob['status'], string> = {
+    queued: 'text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/40',
+    processing: 'text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40',
+    completed: 'text-green-700 dark:text-green-300 bg-green-50 dark:bg-green-950/40',
+    failed: 'text-red-700 dark:text-red-300 bg-red-50 dark:bg-red-950/40',
+  }
+  return classes[status]
+}
+
+function formatDate(value?: string): string {
+  if (!value)
+    return 'Not recorded'
+  const date = new Date(value)
+  return Number.isNaN(date.getTime())
+    ? value
+    : new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(date)
+}
+
+function payloadJson(): string {
+  const payload = job()?.payload
+  return typeof payload === 'string' ? payload : JSON.stringify(payload ?? null, null, 2)
+}
+
+async function loadJob(): Promise<void> {
+  isLoading.set(true)
+  loadError.set('')
+  try {
+    const response = await fetchJob(jobId())
+    job.set(response.job)
+    loadError.set(response.error || '')
+  }
+  catch (error) {
+    job.set(null)
+    loadError.set(error instanceof Error ? error.message : 'Job could not be loaded.')
+  }
+  finally {
+    isLoading.set(false)
+  }
+}
+
+async function handleRetry(): Promise<void> {
+  const record = job()
+  if (!record || record.source !== 'failed')
+    return
+
+  isRetrying.set(true)
+  try {
+    const result = await retryJob(record.id)
+    if (!result.success)
+      throw new Error(result.message)
+    pushToast('success', result.message)
+    navigate('/jobs')
+  }
+  catch (error) {
+    pushToast('error', 'Could not retry job', { detail: String(error) })
+  }
+  finally {
+    isRetrying.set(false)
+  }
+}
+
+onMount(() => {
+  void loadJob()
+})
+</script>
+
+<div class="space-y-6">
+  <header class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+    <div>
+      <StxLink to="/jobs" class="inline-flex gap-1 items-center mb-3 font-medium text-neutral-500 text-sm dark:text-neutral-400 hover:text-blue-600 dark:hover:text-blue-400">
+        <span class="h-4 w-4 i-hugeicons-arrow-left-02"></span>
+        Jobs
+      </StxLink>
+      <h1 class="font-semibold text-2xl text-neutral-900 tracking-tight dark:text-white">Job details</h1>
+      <p class="mt-1 font-mono text-neutral-500 text-sm dark:text-neutral-400">{{ jobId() }}</p>
+    </div>
+    <Button :if="canRetry()" :disabled="isRetrying()" variant="primary" @click="handleRetry">
+      <template #iconLeft>
+        <span :class="'h-4 w-4 ' + (isRetrying() ? 'animate-spin i-hugeicons-loading-03' : 'i-hugeicons-refresh')"></span>
+      </template>
+      Retry job
+    </Button>
+  </header>
+
+  <div :if="isLoading()" class="flex items-center justify-center py-20 text-neutral-500 text-sm dark:text-neutral-400">
+    <span class="mr-2 h-5 w-5 animate-spin i-hugeicons-loading-03"></span>
+    Loading job
+  </div>
+
+  <div :if="!isLoading() && loadError()" role="alert" class="px-4 py-3 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/40 border border-red-200 rounded-lg dark:border-red-900">
+    {{ loadError() }}
+  </div>
+
+  <EmptyState
+    :if="!isLoading() && !loadError() && !hasJob()"
+    icon="i-hugeicons-task-remove-01"
+    title="Job not found"
+    description="This job is no longer present in the active or failed queue records."
+  />
+
+  <div :if="hasJob()" class="grid gap-6 grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(20rem,0.7fr)]">
+    <Card>
+      <h2 class="mb-5 font-semibold text-neutral-900 dark:text-white">Recorded state</h2>
+      <dl class="grid gap-x-6 gap-y-4 grid-cols-1 sm:grid-cols-2">
+        <div>
+          <dt class="text-neutral-500 text-xs uppercase dark:text-neutral-400">Name</dt>
+          <dd class="mt-1 font-medium text-neutral-900 dark:text-white">{{ job()?.name }}</dd>
+        </div>
+        <div>
+          <dt class="text-neutral-500 text-xs uppercase dark:text-neutral-400">Status</dt>
+          <dd class="mt-1">
+            <span :class="'inline-flex px-2 py-1 font-medium text-xs capitalize rounded-md ' + statusClass(job()?.status || 'queued')">{{ job()?.status }}</span>
+          </dd>
+        </div>
+        <div>
+          <dt class="text-neutral-500 text-xs uppercase dark:text-neutral-400">Queue</dt>
+          <dd class="mt-1 font-mono text-neutral-900 text-sm dark:text-white">{{ job()?.queue }}</dd>
+        </div>
+        <div>
+          <dt class="text-neutral-500 text-xs uppercase dark:text-neutral-400">Connection</dt>
+          <dd class="mt-1 font-mono text-neutral-900 text-sm dark:text-white">{{ job()?.connection || 'Not recorded' }}</dd>
+        </div>
+        <div>
+          <dt class="text-neutral-500 text-xs uppercase dark:text-neutral-400">Attempts</dt>
+          <dd class="mt-1 text-neutral-900 text-sm dark:text-white">{{ job()?.attempts }} / {{ job()?.maxAttempts }}</dd>
+        </div>
+        <div>
+          <dt class="text-neutral-500 text-xs uppercase dark:text-neutral-400">Duration</dt>
+          <dd class="mt-1 font-mono text-neutral-900 text-sm dark:text-white">{{ job()?.duration }}</dd>
+        </div>
+        <div>
+          <dt class="text-neutral-500 text-xs uppercase dark:text-neutral-400">Created</dt>
+          <dd class="mt-1 text-neutral-900 text-sm dark:text-white">{{ formatDate(job()?.created_at) }}</dd>
+        </div>
+        <div>
+          <dt class="text-neutral-500 text-xs uppercase dark:text-neutral-400">Finished</dt>
+          <dd class="mt-1 text-neutral-900 text-sm dark:text-white">{{ formatDate(job()?.finished_at) }}</dd>
+        </div>
+        <div :if="job()?.available_at">
+          <dt class="text-neutral-500 text-xs uppercase dark:text-neutral-400">Available at</dt>
+          <dd class="mt-1 font-mono text-neutral-900 text-sm dark:text-white">{{ job()?.available_at }}</dd>
+        </div>
+        <div :if="job()?.reserved_at">
+          <dt class="text-neutral-500 text-xs uppercase dark:text-neutral-400">Reserved at</dt>
+          <dd class="mt-1 text-neutral-900 text-sm dark:text-white">{{ formatDate(job()?.reserved_at) }}</dd>
+        </div>
+      </dl>
+    </Card>
+
+    <Card>
+      <h2 class="mb-5 font-semibold text-neutral-900 dark:text-white">Payload</h2>
+      <pre class="overflow-auto p-4 max-h-[30rem] break-words font-mono text-neutral-200 text-xs whitespace-pre-wrap bg-neutral-950 rounded-lg">{{ payloadJson() }}</pre>
+    </Card>
+
+    <div :if="job()?.error" class="lg:col-span-2">
+      <Card>
+        <h2 class="mb-3 font-semibold text-neutral-900 dark:text-white">Failure</h2>
+        <pre class="overflow-auto p-4 max-h-[32rem] break-words font-mono text-red-200 text-xs whitespace-pre-wrap bg-neutral-950 rounded-lg">{{ job()?.error }}</pre>
+      </Card>
+    </div>
+  </div>
+</div>
