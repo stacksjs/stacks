@@ -8,7 +8,7 @@
 // actually updated. Now uses `state(...)` signals for proper reactivity
 // and the auto-imported `navigate()` for SPA navigation instead of the
 // nonexistent `useRouter()`.
-import { useAuth } from '../../functions/auth'
+import { describeAuthError, useAuth } from '../../functions/auth'
 
 const { login } = useAuth()
 
@@ -22,8 +22,8 @@ async function handleLogin(credentials) {
   try {
     const result = await login(credentials)
 
-    if (result && 'errors' in result) {
-      error.set(result.message || 'Invalid credentials')
+    if (!result || !('token' in result)) {
+      error.set(describeAuthError(result, 'Invalid credentials'))
       return
     }
 
@@ -43,6 +43,7 @@ async function handleLogin(credentials) {
   @submit="handleLogin"
   :isLoading="isLoading()"
   :error="error()"
+  :data-auth-status="isLoading() ? 'loading' : 'ready'"
 />
 
 @endsection

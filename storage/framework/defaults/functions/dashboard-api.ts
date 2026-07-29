@@ -1,5 +1,6 @@
 import type { ApiErrorBody } from '@stacksjs/browser'
-import { describeResponseError } from '@stacksjs/browser'
+import { describeResponseError, withCsrfHeader } from '@stacksjs/browser'
+import { useAuth } from './auth'
 
 /**
  * Dashboard API client.
@@ -19,14 +20,6 @@ export interface ApiRequestOptions {
   signal?: AbortSignal
 }
 
-/** Read the CSRF cookie the server seeds on safe requests. */
-function csrfToken(): string | null {
-  if (typeof document === 'undefined')
-    return null
-  const match = document.cookie.match(/(?:^|;\s*)X-CSRF-Token=([^;]*)/)
-  return match ? decodeURIComponent(match[1]) : null
-}
-
 /**
  * Call a dashboard API endpoint and return its parsed JSON.
  *
@@ -37,19 +30,22 @@ function csrfToken(): string | null {
 export async function dashboardApi<T = unknown>(path: string, options: ApiRequestOptions = {}): Promise<T> {
   const method = options.method ?? 'GET'
   const headers: Record<string, string> = { accept: 'application/json' }
+  const authToken = useAuth().getToken()
+
+  if (authToken)
+    headers.Authorization = `Bearer ${authToken}`
 
   if (options.body !== undefined)
     headers['content-type'] = 'application/json'
 
-  if (method !== 'GET' && method !== 'HEAD') {
-    const token = csrfToken()
-    if (token)
-      headers['X-CSRF-Token'] = token
-  }
+  const requestHeaders = method === 'GET' || method === 'HEAD'
+    ? headers
+    : withCsrfHeader(headers)
 
   const res = await fetch(path, {
     method,
-    headers,
+    headers: requestHeaders,
+    credentials: 'same-origin',
     signal: options.signal,
     ...(options.body !== undefined && { body: JSON.stringify(options.body) }),
   })

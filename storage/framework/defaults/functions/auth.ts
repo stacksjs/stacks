@@ -1,7 +1,7 @@
 import { resolveApiBaseUrl } from './api-url'
 import type { Ref } from '@stacksjs/stx'
-import type { AuthUser, ErrorResponse, LoginError, LoginResponse, MeResponse, RegisterError, RegisterResponse, UserData } from '../types/dashboard'
-import { useStorage } from '@stacksjs/browser'
+import type { AuthUser, LoginError, LoginResponse, MeResponse, RegisterCredentials, RegisterError, RegisterResponse, ResponseError, UserData } from '../types/dashboard'
+import { useStorage, withCsrfHeader } from '@stacksjs/browser'
 import { ref } from '@stacksjs/stx'
 
 const token = useStorage('token', '')
@@ -20,7 +20,9 @@ const user = useStorage<UserData | null>('user', null, undefined, {
   },
 })
 
-const baseUrl = resolveApiBaseUrl()
+// The framework's auth routes are intentionally mounted at /login,
+// /register, /me, and /logout rather than under the generated /api surface.
+const baseUrl = resolveApiBaseUrl('')
 
 // Create singleton state
 const isAuthenticated = ref(false)
@@ -29,7 +31,7 @@ export interface AuthComposable {
   isAuthenticated: Ref<boolean>
   user: { value: UserData | null }
   login: (user: AuthUser) => Promise<LoginResponse | LoginError>
-  register: (user: AuthUser) => Promise<RegisterResponse | RegisterError>
+  register: (user: RegisterCredentials) => Promise<RegisterResponse | RegisterError>
   fetchAuthUser: () => Promise<UserData | null>
   checkAuthentication: () => Promise<boolean>
   logout: () => void
@@ -85,29 +87,26 @@ export function useAuth(): AuthComposable {
     }
   }
 
-  async function register(user: AuthUser): Promise<RegisterResponse | RegisterError> {
+  async function register(credentials: RegisterCredentials): Promise<RegisterResponse | RegisterError> {
     const url = `${baseUrl}/register`
     const response = await fetch(url, {
       method: 'POST',
-      headers: {
+      credentials: 'same-origin',
+      headers: withCsrfHeader({
         'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(user),
+      }),
+      body: JSON.stringify(credentials),
     })
-
-    if (!response.ok) {
-      const errorData = await response.json() as RegisterError
-      return errorData
-    }
 
     const data = await response.json() as RegisterResponse | RegisterError
 
-    if (isRegisterError(data)) {
+    if (!response.ok || isRegisterError(data))
       return data
-    }
 
     if (isRegisterResponse(data)) {
       token.value = data.token
+      user.value = data.user
+      isAuthenticated.value = true
       return data
     }
 
@@ -115,38 +114,32 @@ export function useAuth(): AuthComposable {
   }
 
   function isRegisterError(data: RegisterResponse | RegisterError): data is RegisterError {
-    return 'errors' in data
+    return !('token' in data && 'user' in data)
   }
 
   function isRegisterResponse(data: RegisterResponse | RegisterError): data is RegisterResponse {
     return 'token' in data && 'user' in data
   }
 
-  async function login(user: AuthUser): Promise<LoginResponse | LoginError> {
-    try {
-      const url = `${baseUrl}/login`
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(user),
-      })
+  async function login(credentials: AuthUser): Promise<LoginResponse | LoginError> {
+    const url = `${baseUrl}/login`
+    const response = await fetch(url, {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: withCsrfHeader({
+        'Content-Type': 'application/json',
+      }),
+      body: JSON.stringify(credentials),
+    })
+    const data = await response.json() as LoginResponse | LoginError
 
-      if (!response.ok) {
-        const errorData = await response.json() as ErrorResponse
-        throw new Error(errorData.message || `HTTP error! status: ${response.status}`)
-      }
-
-      const data = await response.json() as LoginResponse
-
-      token.value = data.token
-
+    if (!response.ok || !('token' in data && 'user' in data))
       return data
-    }
-    catch (error) {
-      return error as LoginError
-    }
+
+    token.value = data.token
+    user.value = data.user
+    isAuthenticated.value = true
+    return data
   }
 
   async function logout() {
@@ -182,6 +175,33 @@ export function useAuth(): AuthComposable {
     fetchAuthUser,
     checkAuthentication,
   }
+}
+
+export function describeAuthError(error: RegisterError | undefined, fallback: string): string {
+  if (!error)
+    return fallback
+  if (error.message)
+    return error.message
+  if (error.error)
+    return error.error
+  return responseErrorMessage(error.errors) || fallback
+}
+
+function responseErrorMessage(error: ResponseError | undefined): string {
+  if (!error)
+    return ''
+  if ('error' in error && typeof error.error === 'string')
+    return error.error
+
+  for (const messages of Object.values(error)) {
+    if (!Array.isArray(messages))
+      continue
+    const first = messages[0]
+    if (first?.message)
+      return first.message
+  }
+
+  return ''
 }
 
 // Strict auth guard middleware

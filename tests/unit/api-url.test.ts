@@ -19,4 +19,8 @@ describe('resolveApiBaseUrl', () => {
   test('uses a relative API root outside the browser', () => {
     expect(resolveApiBaseUrl()).toBe('/api')
   })
+
+  test('supports framework routes mounted at the origin', () => {
+    expect(resolveApiBaseUrl('')).toBe('')
+  })
 })

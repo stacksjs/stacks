@@ -13,7 +13,9 @@ export function isGeneralError(error: ResponseError): error is { error: string }
 }
 
 export interface RegisterError {
-  errors: ResponseError
+  errors?: ResponseError
+  error?: string
+  message?: string
 }
 
 export type LoginError = RegisterError
@@ -55,6 +57,11 @@ export interface Response<T> {
 export interface AuthUser {
   email: string
   password: string
+}
+
+export interface RegisterCredentials extends AuthUser {
+  name: string
+  password_confirmation: string
 }
 
 export interface ErrorResponse {

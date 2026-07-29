@@ -10,13 +10,13 @@ type StacksBrowserGlobal = typeof globalThis & {
  * Otherwise browser clients use the same-origin `/api` router, which is also
  * how the dashboard dev server delegates application API requests.
  */
-export function resolveApiBaseUrl(): string {
+export function resolveApiBaseUrl(defaultPath = '/api'): string {
   const configured = (globalThis as StacksBrowserGlobal).__STACKS_API_URL__
   if (configured)
     return configured.replace(/\/+$/, '')
 
   if (typeof window !== 'undefined')
-    return `${window.location.origin}/api`
+    return `${window.location.origin}${defaultPath}`
 
-  return '/api'
+  return defaultPath
 }

@@ -4,7 +4,7 @@
 <script client>
 // Register form (stacksjs/stacks#1838) — see comment on login.stx; same
 // shape, same broken-`const`-reassignment fix.
-import { useAuth } from '../../functions/auth'
+import { describeAuthError, useAuth } from '../../functions/auth'
 
 const { register } = useAuth()
 
@@ -18,8 +18,8 @@ async function handleRegister(credentials) {
   try {
     const result = await register(credentials)
 
-    if (result && 'errors' in result) {
-      error.set(result.message || 'Registration failed')
+    if (!result || !('token' in result)) {
+      error.set(describeAuthError(result, 'Registration failed'))
       return
     }
 
@@ -41,6 +41,7 @@ async function handleRegister(credentials) {
   @submit="handleRegister"
   :isLoading="isLoading()"
   :error="error()"
+  :data-auth-status="isLoading() ? 'loading' : 'ready'"
 />
 
 @endsection
