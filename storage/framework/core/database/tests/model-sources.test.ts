@@ -16,6 +16,7 @@
 import { afterEach, describe, expect, it } from 'bun:test'
 import { existsSync, mkdirSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
+import { prepareMigrationModelsDir } from '../src/migrations'
 import { cleanupModelStaging, resolveModelSources } from '../src/model-sources'
 
 const TMP = join(import.meta.dir, '.tmp-model-sources')
@@ -119,5 +120,13 @@ describe('resolveModelSources against the real framework defaults', () => {
 
     const staged = readdirSync(resolved.dir).filter(f => f.endsWith('.ts'))
     expect(staged.length).toBe(resolved.models.length)
+  })
+
+  it('feeds framework defaults to migration generation without app/Models', () => {
+    const prepared = prepareMigrationModelsDir()
+
+    expect(prepared.skip).toBe(false)
+    expect(existsSync(prepared.modelsDir)).toBe(true)
+    expect(readdirSync(prepared.modelsDir).some(file => file === 'User.ts')).toBe(true)
   })
 })

@@ -152,9 +152,12 @@ function configureQueryBuilder(): void {
   resetConnection()
 }
 
-function prepareMigrationModelsDir(): { modelsDir: string, skip: boolean } {
-  const userModelsDir = path.userModelsPath()
-  return { modelsDir: userModelsDir, skip: !existsSync(userModelsDir) }
+export function prepareMigrationModelsDir(): { modelsDir: string, skip: boolean } {
+  const sources = resolveModelSources()
+  return {
+    modelsDir: sources?.dir ?? path.userModelsPath(),
+    skip: !sources,
+  }
 }
 
 /**
