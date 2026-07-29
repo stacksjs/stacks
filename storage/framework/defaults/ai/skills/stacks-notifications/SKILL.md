@@ -162,16 +162,20 @@ interface CreateNotificationOptions {
 
 ## Notification Model Fields
 
-The Notification model (at `storage/framework/defaults/app/Models/Notification.ts`) defines:
-- `type` -- notification type: email, sms, push, slack, webhook
-- `channel` -- delivery channel
-- `recipient` -- target email, phone, or user
-- `subject` -- notification subject line
-- `body` -- notification body content
-- `status` -- pending, sent, delivered, failed, read
-- `readAt`, `sentAt`, `metadata`
+The Notification model at `storage/framework/defaults/app/Models/Notification.ts`
+maps the database notification inbox used by `DatabaseNotificationDriver`:
 
-Note: The Notification model uses 30 seeded records by default.
+- `user_id` comes from the `belongsTo: ['User']` relationship
+- `type` is an application event name such as `order.shipped`
+- `data` is a JSON string containing the notification payload
+- `readAt` maps to the nullable `read_at` column
+- `created_at` and `updated_at` come from `useTimestamps`
+
+The model uses `useApi` for its CRUD API and seeds 30 records by default. It
+must stay aligned with `notificationsTableSql()` in
+`storage/framework/core/database/src/notification-tables.ts`. Outbound
+transport attempts belong in a separate delivery-log model and table. Do not
+add email, SMS, or provider-specific delivery columns to the inbox model.
 
 ## CLI Commands
 - `buddy make:notification [name]` -- scaffold a new notification

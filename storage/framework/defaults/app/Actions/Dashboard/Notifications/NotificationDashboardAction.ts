@@ -1,30 +1,58 @@
 import { Action } from '@stacksjs/actions'
 import { Notification } from '@stacksjs/orm'
 
+interface NotificationData {
+  body?: string
+  recipient?: string
+  subject?: string
+}
+
+function parseData(value: unknown): NotificationData {
+  if (typeof value !== 'string')
+    return {}
+
+  try {
+    const parsed = JSON.parse(value)
+    return parsed && typeof parsed === 'object' ? parsed as NotificationData : {}
+  }
+  catch {
+    return { body: value }
+  }
+}
+
 export default new Action({
   name: 'NotificationDashboardAction',
-  description: 'Returns notification dashboard stats and recent notifications.',
+  description: 'Returns database inbox notification stats and recent notifications.',
   method: 'GET',
   async handle() {
     try {
       const allNotifications = await Notification.orderByDesc('id').limit(50).get()
 
-      const notifications = allNotifications.map(r => ({
-        type: String(r.get('type') || 'email'),
-        recipient: String(r.get('recipient') || r.get('notifiable_id') || ''),
-        subject: String(r.get('subject') || r.get('data') || ''),
-        status: String(r.get('status') || 'sent'),
-        time: String(r.get('created_at') || ''),
-      }))
+      const notifications = allNotifications.map((record) => {
+        const data = parseData(record.get('data'))
+        const type = String(record.get('type') || 'notification')
+        const readAt = record.get('read_at')
 
-      const sent = notifications.filter(n => n.status === 'sent' || n.status === 'delivered').length
-      const failed = notifications.filter(n => n.status === 'failed').length
+        return {
+          id: Number(record.get('id')),
+          type,
+          recipient: data.recipient || `User #${Number(record.get('user_id'))}`,
+          subject: data.subject || type,
+          body: data.body || '',
+          status: readAt ? 'read' : 'unread',
+          read_at: readAt,
+          time: String(record.get('created_at') || ''),
+        }
+      })
+
+      const read = notifications.filter(notification => notification.status === 'read').length
+      const unread = notifications.length - read
       const total = notifications.length
 
       const stats = [
-        { label: 'Sent Today', value: String(sent) },
-        { label: 'Delivered', value: total > 0 ? `${Math.round((sent / total) * 100)}%` : '0%' },
-        { label: 'Failed', value: String(failed) },
+        { label: 'Notifications', value: String(total) },
+        { label: 'Read', value: total > 0 ? `${Math.round((read / total) * 100)}%` : '0%' },
+        { label: 'Unread', value: String(unread) },
       ]
 
       return { notifications, stats }
@@ -33,9 +61,9 @@ export default new Action({
       return {
         notifications: [],
         stats: [
-          { label: 'Sent Today', value: '0' },
-          { label: 'Delivered', value: '0%' },
-          { label: 'Failed', value: '0' },
+          { label: 'Notifications', value: '0' },
+          { label: 'Read', value: '0%' },
+          { label: 'Unread', value: '0' },
         ],
       }
     }
