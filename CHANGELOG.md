@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.219...v0.70.220)
+
+## 🔧 Chores
+
+- update dashboard runtime ([6424b86](https://github.com/stacksjs/stacks/commit/6424b86)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.218...v0.70.219)
 
 ## 🐛 Bug Fixes
