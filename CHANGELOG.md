@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.223...v0.70.224)
+
+## ⚡ Performance Improvements
+
+- expose the production server directly ([ac10784](https://github.com/stacksjs/stacks/commit/ac10784)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.222...v0.70.223)
 
 ## 🐛 Bug Fixes
