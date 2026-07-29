@@ -1,5 +1,19 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.222...v0.70.223)
+
+## 🐛 Bug Fixes
+
+- reuse attached server state for deploys ([f38f358](https://github.com/stacksjs/stacks/commit/f38f358)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🔧 Chores
+
+- update attached deploy runtime ([2dd4183](https://github.com/stacksjs/stacks/commit/2dd4183)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.221...v0.70.222)
 
 ## 🔧 Chores
