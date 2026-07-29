@@ -1,0 +1,34 @@
+<script client>
+import type { ProductVariantRecord } from '../../../../app/Actions/Dashboard/Commerce/product-variant-records'
+
+const records = useReactiveProp('records', [] as ProductVariantRecord[])
+const loading = useReactiveProp('loading', false)
+const emit = defineEmits()
+
+function formatDate(value: string): string {
+  const date = new Date(value)
+  return !value || Number.isNaN(date.getTime()) ? 'Unknown' : new Intl.DateTimeFormat(undefined, { dateStyle: 'medium' }).format(date)
+}
+</script>
+
+<div class="overflow-hidden bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
+  <div :if="loading() && records().length === 0" class="flex items-center justify-center py-16 text-gray-500 text-sm dark:text-neutral-400"><span class="mr-2 h-5 w-5 animate-spin i-hugeicons-loading-03"></span>Loading product variants</div>
+  <div :else-if="records().length === 0" class="px-6 py-16 text-center"><span class="inline-block h-8 w-8 text-gray-400 i-hugeicons-layer"></span><p class="mt-3 font-medium text-gray-900 text-sm dark:text-white">No product variants found</p><p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Adjust the filters or add a ProductVariant record.</p></div>
+  <div :else class="overflow-x-auto">
+    <table class="min-w-full divide-gray-200 divide-y dark:divide-neutral-700">
+      <thead class="bg-gray-50 dark:bg-neutral-900/50"><tr><th scope="col" class="px-4 py-3 font-semibold text-gray-600 text-left text-xs dark:text-neutral-300">Variant</th><th scope="col" class="px-4 py-3 font-semibold text-gray-600 text-left text-xs dark:text-neutral-300">Product</th><th scope="col" class="px-4 py-3 font-semibold text-gray-600 text-left text-xs dark:text-neutral-300">Options</th><th scope="col" class="px-4 py-3 font-semibold text-gray-600 text-left text-xs dark:text-neutral-300">Status</th><th scope="col" class="px-4 py-3 font-semibold text-gray-600 text-left text-xs dark:text-neutral-300">Created</th><th scope="col" class="px-4 py-3 font-semibold text-gray-600 text-right text-xs dark:text-neutral-300"><span class="sr-only">Actions</span></th></tr></thead>
+      <tbody class="divide-gray-200 divide-y dark:divide-neutral-700">
+        <template :for="record in records()" :key="record.id">
+          <tr class="align-top">
+            <td class="px-4 py-4"><p class="font-medium text-gray-900 text-sm dark:text-white">{{ record.variant }}</p><p class="mt-1 text-gray-500 text-xs dark:text-neutral-400">{{ record.type }}</p><p class="mt-2 max-w-sm text-gray-500 text-xs dark:text-neutral-400">{{ record.description }}</p></td>
+            <td class="px-4 py-4 text-gray-600 text-sm dark:text-neutral-300">{{ record.productName || 'Unassigned' }}</td>
+            <td class="px-4 py-4 max-w-sm"><div class="flex flex-wrap gap-1"><template :for="option in record.options.slice(0, 4)" :key="option"><span class="px-2 py-0.5 text-blue-700 text-xs dark:text-blue-300 bg-blue-50 dark:bg-blue-950/40 rounded-full">{{ option }}</span></template><span :if="record.options.length > 4" class="px-2 py-0.5 text-gray-600 text-xs dark:text-neutral-300 bg-gray-100 dark:bg-neutral-700 rounded-full">+{{ record.options.length - 4 }}</span><span :if="record.options.length === 0" class="text-gray-400 text-xs">No options</span></div></td>
+            <td class="px-4 py-4"><span :class="'inline-flex px-2 py-1 font-medium text-xs rounded-full ' + (record.status === 'active' ? 'text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40' : record.status === 'draft' ? 'text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40' : 'text-gray-600 dark:text-neutral-300 bg-gray-100 dark:bg-neutral-700')">{{ record.status }}</span></td>
+            <td class="px-4 py-4 text-gray-500 text-sm whitespace-nowrap dark:text-neutral-400">{{ formatDate(record.createdAt) }}</td>
+            <td class="px-4 py-4"><div class="flex gap-1 justify-end"><button type="button" :aria-label="'Edit ' + record.variant" class="p-2 text-gray-500 dark:text-neutral-400 hover:text-blue-600 dark:hover:text-blue-400 rounded-md" @click="emit('edit', record)"><span class="block h-4 w-4 i-hugeicons-edit-01"></span></button><button type="button" :aria-label="'Delete ' + record.variant" class="p-2 text-gray-500 dark:text-neutral-400 hover:text-red-600 dark:hover:text-red-400 rounded-md" @click="emit('delete', record)"><span class="block h-4 w-4 i-hugeicons-delete-02"></span></button></div></td>
+          </tr>
+        </template>
+      </tbody>
+    </table>
+  </div>
+</div>

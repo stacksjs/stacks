@@ -1,0 +1,262 @@
+<script client>
+import type {
+  ProductVariantOption,
+  ProductVariantRecord,
+  ProductVariantSummary,
+} from '../../../../app/Actions/Dashboard/Commerce/product-variant-records'
+import { dashboardApi } from '../../../../functions/dashboard-api'
+import { pushToast } from '../../../../functions/toasts'
+
+interface ProductVariantIndexResponse {
+  records: ProductVariantRecord[]
+  products: ProductVariantOption[]
+  summary: ProductVariantSummary
+}
+
+interface ProductVariantWritePayload {
+  variant: string
+  type: string
+  description: string
+  options: string[]
+  status: 'active' | 'inactive' | 'draft'
+  productId: number | null
+}
+
+const emptySummary: ProductVariantSummary = { total: 0, active: 0, draft: 0, linkedProducts: 0 }
+const records = state<ProductVariantRecord[]>([])
+const products = state<ProductVariantOption[]>([])
+const summary = state<ProductVariantSummary>({ ...emptySummary })
+const search = state('')
+const statusFilter = state('all')
+const typeFilter = state('all')
+const productFilter = state('all')
+const sort = state('variant')
+const loading = state(true)
+const loadError = state('')
+const dialogOpen = state(false)
+const dialogMode = state<'add' | 'edit'>('add')
+const editingRecord = state<ProductVariantRecord | null>(null)
+const deletingRecord = state<ProductVariantRecord | null>(null)
+const saving = state(false)
+const deleting = state(false)
+
+function variantTypes(): string[] {
+  return [...new Set(records().map(record => record.type).filter(Boolean))].sort()
+}
+
+function visibleRecords(): ProductVariantRecord[] {
+  const query = search().trim().toLowerCase()
+  const status = statusFilter()
+  const type = typeFilter()
+  const product = productFilter()
+  return [...records()]
+    .filter((record) => {
+      if (status !== 'all' && record.status !== status)
+        return false
+      if (type !== 'all' && record.type !== type)
+        return false
+      if (product !== 'all' && record.productId !== product)
+        return false
+      return !query || [
+        record.variant,
+        record.type,
+        record.description,
+        record.productName,
+        ...record.options,
+      ].some(value => value.toLowerCase().includes(query))
+    })
+    .sort((left, right) => {
+      if (sort() === 'options')
+        return right.options.length - left.options.length || left.variant.localeCompare(right.variant)
+      if (sort() === 'product')
+        return left.productName.localeCompare(right.productName) || left.variant.localeCompare(right.variant)
+      if (sort() === 'newest')
+        return Number(right.id) - Number(left.id)
+      return left.variant.localeCompare(right.variant)
+    })
+}
+
+function metricCards(): Array<{ label: string, value: string }> {
+  return [
+    { label: 'Product variants', value: String(summary().total) },
+    { label: 'Active', value: String(summary().active) },
+    { label: 'Draft', value: String(summary().draft) },
+    { label: 'Linked products', value: String(summary().linkedProducts) },
+  ]
+}
+
+function updateSearch(event: Event): void {
+  search.set((event.target as HTMLInputElement).value)
+}
+
+function updateStatusFilter(event: Event): void {
+  statusFilter.set((event.target as HTMLSelectElement).value)
+}
+
+function updateTypeFilter(event: Event): void {
+  typeFilter.set((event.target as HTMLSelectElement).value)
+}
+
+function updateProductFilter(event: Event): void {
+  productFilter.set((event.target as HTMLSelectElement).value)
+}
+
+function updateSort(event: Event): void {
+  sort.set((event.target as HTMLSelectElement).value)
+}
+
+async function loadVariants(): Promise<void> {
+  loading.set(true)
+  loadError.set('')
+  try {
+    const data = await dashboardApi<ProductVariantIndexResponse>('/api/dashboard/commerce/variants')
+    records.set(Array.isArray(data.records) ? data.records : [])
+    products.set(Array.isArray(data.products) ? data.products : [])
+    summary.set(data.summary ?? { ...emptySummary })
+  }
+  catch (error) {
+    loadError.set('Product variant records could not be loaded.')
+    pushToast('error', 'Could not load product variants', {
+      detail: error instanceof Error ? error.message : String(error),
+    })
+  }
+  finally {
+    loading.set(false)
+  }
+}
+
+function openAdd(): void {
+  dialogMode.set('add')
+  editingRecord.set(null)
+  dialogOpen.set(true)
+}
+
+function openEdit(record: ProductVariantRecord): void {
+  dialogMode.set('edit')
+  editingRecord.set(record)
+  dialogOpen.set(true)
+}
+
+function closeDialog(): void {
+  if (!saving()) {
+    dialogOpen.set(false)
+    editingRecord.set(null)
+  }
+}
+
+async function saveVariant(payload: ProductVariantWritePayload): Promise<void> {
+  const current = editingRecord()
+  const editing = dialogMode() === 'edit' && current !== null
+  saving.set(true)
+  try {
+    await dashboardApi(editing ? `/api/product-variants/${current.id}` : '/api/product-variants', {
+      method: editing ? 'PATCH' : 'POST',
+      body: {
+        variant: payload.variant,
+        type: payload.type,
+        description: payload.description,
+        options: JSON.stringify(payload.options),
+        status: payload.status,
+        productId: payload.productId,
+      },
+    })
+    dialogOpen.set(false)
+    editingRecord.set(null)
+    pushToast('success', editing ? 'Product variant updated' : 'Product variant added')
+    await loadVariants()
+  }
+  catch (error) {
+    pushToast('error', 'Could not save product variant', {
+      detail: error instanceof Error ? error.message : String(error),
+    })
+  }
+  finally {
+    saving.set(false)
+  }
+}
+
+function openDelete(record: ProductVariantRecord): void {
+  deletingRecord.set(record)
+}
+
+function closeDelete(): void {
+  if (!deleting())
+    deletingRecord.set(null)
+}
+
+async function deleteVariant(): Promise<void> {
+  const current = deletingRecord()
+  if (!current)
+    return
+  deleting.set(true)
+  try {
+    await dashboardApi(`/api/product-variants/${current.id}`, { method: 'DELETE' })
+    deletingRecord.set(null)
+    pushToast('success', 'Product variant deleted')
+    await loadVariants()
+  }
+  catch (error) {
+    pushToast('error', 'Could not delete product variant', {
+      detail: error instanceof Error ? error.message : String(error),
+    })
+  }
+  finally {
+    deleting.set(false)
+  }
+}
+
+onMount(() => {
+  void loadVariants()
+})
+</script>
+
+<div class="space-y-6">
+  <header class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+    <div>
+      <h1 class="font-bold text-2xl text-gray-900 dark:text-white">Product variants</h1>
+      <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Manage native ProductVariant records, option sets, and product relationships.</p>
+    </div>
+    <div class="flex gap-2">
+      <button type="button" :disabled="loading()" class="inline-flex items-center px-3 py-2 font-semibold text-gray-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700 disabled:opacity-50" @click="loadVariants">
+        <span :class="'mr-2 h-4 w-4 ' + (loading() ? 'animate-spin i-hugeicons-loading-03' : 'i-hugeicons-refresh')"></span>Refresh
+      </button>
+      <button type="button" class="inline-flex items-center px-3 py-2 font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md" @click="openAdd()">
+        <span class="mr-2 h-4 w-4 i-hugeicons-add-01"></span>Add variant
+      </button>
+    </div>
+  </header>
+
+  <div :if="loadError()" class="p-4 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900">{{ loadError() }}</div>
+
+  <section aria-label="Product variant metrics" class="grid gap-3 grid-cols-2 lg:grid-cols-4">
+    <template :for="item in metricCards()" :key="item.label">
+      <article class="p-4 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
+        <p class="text-gray-500 text-xs dark:text-neutral-400">{{ item.label }}</p>
+        <p class="mt-2 font-semibold text-2xl text-gray-900 dark:text-white">{{ item.value }}</p>
+      </article>
+    </template>
+  </section>
+
+  <section class="space-y-3">
+    <div class="grid gap-3 grid-cols-1 sm:grid-cols-2 xl:grid-cols-5">
+      <label class="relative sm:col-span-2">
+        <span class="sr-only">Search product variants</span>
+        <span class="flex absolute inset-y-0 left-0 items-center pl-3 text-gray-400 pointer-events-none"><span class="h-4 w-4 i-hugeicons-search-01"></span></span>
+        <input :value="search()" type="search" placeholder="Search product variants" class="pl-9 pr-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" @input="updateSearch($event)" />
+      </label>
+      <label><span class="sr-only">Variant status</span><select :value="statusFilter()" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" @change="updateStatusFilter($event)"><option value="all">All statuses</option><option value="active">Active</option><option value="inactive">Inactive</option><option value="draft">Draft</option></select></label>
+      <label><span class="sr-only">Variant type</span><select :value="typeFilter()" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" @change="updateTypeFilter($event)"><option value="all">All types</option><template :for="type in variantTypes()" :key="type"><option :value="type">{{ type }}</option></template></select></label>
+      <label><span class="sr-only">Variant product</span><select :value="productFilter()" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" @change="updateProductFilter($event)"><option value="all">All products</option><template :for="product in products()" :key="product.id"><option :value="product.id">{{ product.name }}</option></template></select></label>
+    </div>
+
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <p class="text-gray-500 text-sm dark:text-neutral-400">{{ visibleRecords().length }} matching product variants</p>
+      <label class="flex gap-2 items-center text-gray-500 text-sm dark:text-neutral-400">Sort<select :value="sort()" class="px-3 py-1.5 text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" @change="updateSort($event)"><option value="variant">Name</option><option value="options">Most options</option><option value="product">Product</option><option value="newest">Newest</option></select></label>
+    </div>
+
+    <CommerceVariantsTable :records="visibleRecords()" :loading="loading()" @edit="openEdit" @delete="openDelete" />
+  </section>
+</div>
+
+<CommerceVariantDialog :open="dialogOpen()" :mode="dialogMode()" :record="editingRecord()" :products="products()" :types="variantTypes()" :busy="saving()" @submit="saveVariant" @close="closeDialog()" />
+<CommerceVariantDeleteDialog :open="Boolean(deletingRecord())" :record="deletingRecord()" :busy="deleting()" @confirm="deleteVariant()" @close="closeDelete()" />
