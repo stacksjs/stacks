@@ -380,6 +380,13 @@
       }
     },
     {
+      "id": "query-log",
+      "name": "QueryLog",
+      "icon": "tablecells.fill",
+      "hasDedicatedPage": false,
+      "category": "data"
+    },
+    {
       "id": "receipt",
       "name": "Receipt",
       "icon": "doc.text.fill",

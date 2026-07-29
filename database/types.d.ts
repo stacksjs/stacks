@@ -20,6 +20,19 @@ declare module '@stacksjs/database' {
       ip_address: unknown
       user_id: number
     }
+    analytics_events: {
+      // columns
+      id: number
+      uuid: string
+      created_at: string
+      updated_at: string | null
+      name: unknown
+      category: unknown
+      path: unknown
+      value: unknown
+      currency: unknown
+      properties: unknown
+    }
     authors: {
       // columns
       id: number
@@ -98,6 +111,7 @@ declare module '@stacksjs/database' {
       conversion_rate: unknown
       budget: unknown
       spent: unknown
+      currency: unknown
       start_date: unknown
       end_date: unknown
     }
@@ -444,6 +458,34 @@ declare module '@stacksjs/database' {
       image_url: unknown
       product_id: number
     }
+    mail_preferences: {
+      // columns
+      id: number
+      created_at: string
+      updated_at: string | null
+      mailbox: unknown
+      account_name: unknown
+      signature: unknown
+      display_density: unknown
+      theme: unknown
+      language: unknown
+      default_reply_behavior: unknown
+      send_and_archive: unknown
+      auto_advance: unknown
+      desktop_notifications: unknown
+      notification_sound: unknown
+      notification_preview: unknown
+      filters: unknown
+      blocked_senders: unknown
+      labels: unknown
+      load_remote_images: unknown
+      show_external_content: unknown
+      vacation_enabled: unknown
+      vacation_start_date: unknown
+      vacation_end_date: unknown
+      vacation_subject: unknown
+      vacation_message: unknown
+    }
     manufacturers: {
       // columns
       id: number
@@ -455,6 +497,21 @@ declare module '@stacksjs/database' {
       country: unknown
       featured: unknown
     }
+    notification_deliveries: {
+      // columns
+      id: number
+      created_at: string
+      updated_at: string | null
+      user_id: unknown
+      channel: unknown
+      recipient: unknown
+      subject: unknown
+      body: unknown
+      status: unknown
+      error: unknown
+      metadata: unknown
+      sent_at: unknown
+    }
     notifications: {
       // columns
       id: number
@@ -462,14 +519,8 @@ declare module '@stacksjs/database' {
       created_at: string
       updated_at: string | null
       type: unknown
-      channel: unknown
-      recipient: unknown
-      subject: unknown
-      body: unknown
-      status: unknown
+      data: unknown
       read_at: unknown
-      sent_at: unknown
-      metadata: unknown
       user_id: number
     }
     order_items: {
@@ -491,6 +542,7 @@ declare module '@stacksjs/database' {
       updated_at: string | null
       status: unknown
       total_amount: unknown
+      currency: unknown
       tax_amount: unknown
       discount_amount: unknown
       delivery_fee: unknown
@@ -653,6 +705,34 @@ declare module '@stacksjs/database' {
       nutritional_info: unknown
       category_id: number
       manufacturer_id: number
+    }
+    query_logs: {
+      // columns
+      id: number
+      created_at: string
+      updated_at: string | null
+      query: unknown
+      normalized_query: unknown
+      duration: unknown
+      connection: unknown
+      status: unknown
+      error: unknown
+      executed_at: unknown
+      bindings: unknown
+      trace: unknown
+      model: unknown
+      method: unknown
+      file: unknown
+      line: unknown
+      memory_usage: unknown
+      rows_affected: unknown
+      transaction_id: unknown
+      tags: unknown
+      affected_tables: unknown
+      indexes_used: unknown
+      missing_indexes: unknown
+      explain_plan: unknown
+      optimization_suggestions: unknown
     }
     receipts: {
       // columns
