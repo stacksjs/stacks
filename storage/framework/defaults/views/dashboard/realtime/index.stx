@@ -164,7 +164,7 @@
                     <div class="font-mono">{{ event.details }}</div>
                     <div :show="event.data" class="mt-1 text-xs">
                       <button @click="toggleEventData({{ index }})" class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">{{ isEventDataOpen(index) ? 'Hide Data' : 'Show Data' }}</button>
-                      <pre :show="isEventDataOpen({{ index }})" class="overflow-x-auto mt-2 p-2 bg-gray-50 dark:bg-neutral-800 rounded">{{ JSON.stringify(event.data, null, 2) }}</pre>
+                      <pre :show="isEventDataOpen(index)" class="overflow-x-auto mt-2 p-2 bg-gray-50 dark:bg-neutral-800 rounded">{{ JSON.stringify(event.data, null, 2) }}</pre>
                     </div>
                   </td>
                   <td class="px-3 py-4 text-gray-500 text-sm whitespace-nowrap dark:text-neutral-400">{{ event.time }}</td>
@@ -179,6 +179,7 @@
 </div>
 
 <script client>
+import { useChart } from '~/storage/framework/defaults/views/dashboard/composables/useChart'
 
 interface WebSocketMessage {
   socket_id?: string

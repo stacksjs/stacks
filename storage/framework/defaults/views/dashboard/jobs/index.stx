@@ -103,6 +103,7 @@
 </div>
 
 <script client>
+import { useChart } from '~/storage/framework/defaults/views/dashboard/composables/useChart'
 
 interface Job {
   id: string

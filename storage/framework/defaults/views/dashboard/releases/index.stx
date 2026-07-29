@@ -161,6 +161,7 @@
 </div>
 
 <script client>
+import { useChart } from '~/storage/framework/defaults/views/dashboard/composables/useChart'
 // Demo release rows — moved out of the former `<script server>` block
 // (stacksjs/stacks#1838). Replace with a real release feed when the
 // API lands.

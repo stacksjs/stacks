@@ -155,6 +155,7 @@
 </style>
 
 <script client>
+import { useChart } from '~/storage/framework/defaults/views/dashboard/composables/useChart'
 
 interface QueryRecord {
   id: string

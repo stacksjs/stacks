@@ -165,6 +165,7 @@
       </div>
 </PageLayout>
 <script client>
+import { useChart } from '~/storage/framework/defaults/views/dashboard/composables/useChart'
 
 interface DeviceRow {
   name: string

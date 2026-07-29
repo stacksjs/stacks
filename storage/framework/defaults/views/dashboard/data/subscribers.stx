@@ -167,6 +167,7 @@
 </div>
 
 <script client>
+import { useChart } from '~/storage/framework/defaults/views/dashboard/composables/useChart'
 
 interface ChartLike { destroy: () => void, data: { labels: string[], datasets: Array<{ data: number[] }> }, update: () => void }
 type ChartCtor = new (canvas: HTMLElement, config: { type: string, data: unknown, options?: unknown }) => ChartLike

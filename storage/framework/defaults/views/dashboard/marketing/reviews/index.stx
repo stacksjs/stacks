@@ -203,6 +203,7 @@
 </PageLayout>
 
 <script client>
+import { useChart } from '~/storage/framework/defaults/views/dashboard/composables/useChart'
 // Filter options — moved out of the former `<script server>` block
 // (stacksjs/stacks#1838).
 const sources = ['Google', 'Yelp', 'Facebook', 'TripAdvisor', 'Other']
