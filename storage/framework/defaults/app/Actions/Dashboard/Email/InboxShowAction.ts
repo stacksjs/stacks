@@ -1,6 +1,7 @@
 import { Action } from '@stacksjs/actions'
 import { emailSDK } from '@stacksjs/email'
 import { config } from '@stacksjs/config'
+import { sanitizeInboxHtml } from './sanitize-inbox-html'
 
 function defaultMailbox(): string {
   const domain = (config as any)?.email?.domain || 'stacksjs.com'
@@ -30,7 +31,7 @@ export default new Action({
       return {
         mailbox,
         messageId,
-        html: email.html ?? '',
+        html: sanitizeInboxHtml(email.html ?? ''),
         text: email.text ?? '',
         metadata: email.metadata,
       }
