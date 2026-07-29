@@ -17,10 +17,19 @@ const sizeClasses = {
   full: 'max-w-[calc(100vw-2rem)] max-h-[calc(100vh-2rem)]'
 }
 </script>
-@if(isOpen)
-  <div ref="pageRoot" class="fixed inset-0 overflow-y-auto z-50">
+<script client>
+const open = useReactiveProp('isOpen', false)
+const liveTitle = useReactiveProp('title', '')
+const liveDescription = useReactiveProp('description', '')
+const emit = defineEmits()
+
+function closeModal(): void {
+  emit('close')
+}
+</script>
+  <div :if="open()" class="fixed inset-0 overflow-y-auto z-50">
     <!-- Overlay -->
-    <div class="fixed inset-0 bg-black/50 backdrop-blur-sm" data-modal-overlay></div>
+    <button type="button" class="fixed inset-0 w-full bg-black/50 backdrop-blur-sm" aria-label="Close modal" @click="closeModal"></button>
 
     <!-- Modal container -->
     <div class="flex items-center justify-center p-4 min-h-full">
@@ -29,23 +38,20 @@ const sizeClasses = {
         @if(title || closable)
           <div class="flex gap-4 items-start justify-between p-6 border-b border-neutral-200 dark:border-neutral-700">
             <div class="min-w-0">
-              @if(title)
-                <h3 class="font-semibold text-lg text-neutral-900 dark:text-white">
-                  {{ title }}
+                <h3 :if="liveTitle()" class="font-semibold text-lg text-neutral-900 dark:text-white">
+                  {{ liveTitle() }}
                 </h3>
-              @endif
-              @if(description)
-                <p class="mt-1 text-neutral-500 text-sm dark:text-neutral-400">
-                  {{ description }}
+                <p :if="liveDescription()" class="mt-1 text-neutral-500 text-sm dark:text-neutral-400">
+                  {{ liveDescription() }}
                 </p>
-              @endif
             </div>
 
             @if(closable)
               <button
                 type="button"
                 class="-m-2 p-2 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors"
-                data-modal-close
+                aria-label="Close modal"
+                @click="closeModal"
               >
                 <div class="h-5 w-5 i-hugeicons-cancel-01"></div>
               </button>
@@ -57,19 +63,12 @@ const sizeClasses = {
         <div class="p-6">
           <slot />
         </div>
+
+        @if($slots.footer)
+          <div class="flex items-center justify-end px-6 py-4 border-neutral-200 border-t dark:border-neutral-700">
+            <slot name="footer" />
+          </div>
+        @endif
       </div>
     </div>
   </div>
-  @endif
-<script client>
-var _root = useRef('pageRoot')
-onMount(function() {
-  var el = _root.current;
-  if (!el) return;
-  el.querySelectorAll('[data-modal-overlay], [data-modal-close]').forEach(item => {
-    item.addEventListener('click', () => {
-      item.closest('.fixed.inset-0')?.remove();
-    });
-  });
-});
-</script>

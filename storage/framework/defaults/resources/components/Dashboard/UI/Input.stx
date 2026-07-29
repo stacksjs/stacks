@@ -45,6 +45,25 @@ const sizeClasses = {
 
   const inputId = id || 'input-' + Math.random().toString(36).slice(2, 11)
 </script>
+<script client>
+const liveValue = useReactiveProp('value', '')
+const emit = defineEmits()
+
+function inputValue(event: Event): string {
+  return (event.target as HTMLInputElement).value
+}
+
+function handleInput(event: Event): void {
+  const nextValue = inputValue(event)
+  liveValue.set(nextValue)
+  emit('input', nextValue)
+  emit('update:value', nextValue)
+}
+
+function handleChange(event: Event): void {
+  emit('change', inputValue(event))
+}
+</script>
 <div class="{{ fullWidth ? 'w-full' : '' }}">
   @if(label)
     <label for="{{ inputId }}" class="block text-[13px] font-medium mb-1.5 tracking-tight {{ error ? 'text-red-600 dark:text-red-400' : 'text-stone-600 dark:text-neutral-400' }}">
@@ -56,13 +75,20 @@ const sizeClasses = {
   @endif
 
   <div class="relative">
+    @if($slots.iconLeft)
+      <div class="flex absolute inset-y-0 left-0 items-center pl-2.5 text-neutral-400 pointer-events-none">
+        <slot name="iconLeft" />
+      </div>
+    @endif
     <input
       id="{{ inputId }}"
       type="{{ type }}"
-      value="{{ value }}"
+      :value="liveValue()"
       placeholder="{{ placeholder }}"
       name="{{ name }}"
-      class="{{ inputClass }}"
+      class="{{ inputClass }} {{ $slots.iconLeft ? 'pl-8' : '' }}"
+      @input="handleInput"
+      @change="handleChange"
       @if(disabled) disabled @endif
       @if(readonly) readonly @endif
       @if(required) required @endif
