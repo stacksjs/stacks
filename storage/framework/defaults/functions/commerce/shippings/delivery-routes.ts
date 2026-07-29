@@ -1,124 +1,19 @@
-import { resolveApiBaseUrl } from '../../api-url'
 import type { DeliveryRoutes, NewDeliveryRoute } from '../../../types/defaults'
-import { useStorage } from '@stacksjs/browser'
-import { pushToast } from '../../toasts'
+import { createDashboardResource } from './dashboard-resource'
 
-// Create a persistent delivery routes array using STX useStorage
-const deliveryRoutes = useStorage<DeliveryRoutes[]>('deliveryRoutes', [])
+const resource = createDashboardResource<DeliveryRoutes, NewDeliveryRoute>({
+  path: '/api/dashboard/commerce/delivery-routes',
+  storageKey: 'deliveryRoutes',
+  singular: 'delivery route',
+  plural: 'delivery routes',
+})
 
-const baseURL = resolveApiBaseUrl()
-
-// Basic fetch function to get all delivery routes
-async function fetchDeliveryRoutes() {
-  try {
-    const response = await fetch(`${baseURL}/commerce/delivery-routes`)
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`)
-    }
-    const { data } = await response.json() as { data: DeliveryRoutes[] }
-
-    if (Array.isArray(data)) {
-      deliveryRoutes.value = data
-      return data
-    }
-    else {
-      pushToast('error', 'Couldn\'t load delivery routes', { detail: 'Server returned a non-array response' })
-      return []
-    }
-  }
-  catch (error) {
-    pushToast('error', 'Error fetching delivery routes', { detail: String(error) })
-    return []
-  }
-}
-
-async function createDeliveryRoute(deliveryRoute: NewDeliveryRoute) {
-  try {
-    const response = await fetch(`${baseURL}/commerce/delivery-routes`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(deliveryRoute),
-    })
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`)
-    }
-
-    const { data } = await response.json() as { data: DeliveryRoutes }
-    if (data) {
-      deliveryRoutes.value.push(data)
-      return data
-    }
-    return null
-  }
-  catch (error) {
-    pushToast('error', 'Error creating delivery route', { detail: String(error) })
-    return null
-  }
-}
-
-async function updateDeliveryRoute(deliveryRoute: DeliveryRoutes) {
-  try {
-    const response = await fetch(`${baseURL}/commerce/delivery-routes/${deliveryRoute.id}`, {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(deliveryRoute),
-    })
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`)
-    }
-
-    const { data } = await response.json() as { data: DeliveryRoutes }
-    if (data) {
-      const index = deliveryRoutes.value.findIndex(s => s.id === deliveryRoute.id)
-      if (index !== -1) {
-        deliveryRoutes.value[index] = data
-      }
-      return data
-    }
-    return null
-  }
-  catch (error) {
-    pushToast('error', 'Error updating delivery route', { detail: String(error) })
-    return null
-  }
-}
-
-async function deleteDeliveryRoute(id: number) {
-  try {
-    const response = await fetch(`${baseURL}/commerce/delivery-routes/${id}`, {
-      method: 'DELETE',
-    })
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`)
-    }
-
-    const index = deliveryRoutes.value.findIndex(s => s.id === id)
-    if (index !== -1) {
-      deliveryRoutes.value.splice(index, 1)
-    }
-
-    return true
-  }
-  catch (error) {
-    pushToast('error', 'Error deleting delivery route', { detail: String(error) })
-    return false
-  }
-}
-
-// Export the composable
 export function useDeliveryRoutes() {
   return {
-    deliveryRoutes,
-    fetchDeliveryRoutes,
-    createDeliveryRoute,
-    updateDeliveryRoute,
-    deleteDeliveryRoute,
+    deliveryRoutes: resource.items,
+    fetchDeliveryRoutes: resource.fetchAll,
+    createDeliveryRoute: resource.create,
+    updateDeliveryRoute: resource.update,
+    deleteDeliveryRoute: resource.destroy,
   }
 }
