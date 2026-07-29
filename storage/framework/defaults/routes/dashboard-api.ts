@@ -198,6 +198,11 @@ route.group({ prefix: '/api/dashboard', apiResponse: true }, () => {
   // `useRole().isAdmin()` (stacksjs/stacks#1838).
   route.get('/commerce/stats', 'Actions/Dashboard/Commerce/CommerceDashboardAction')
 
+  // Delivery operations overview. Guarded because route and driver data is
+  // operational information even though the underlying models expose their
+  // own generated useApi endpoints.
+  guard(route.get('/commerce/delivery', 'Actions/Dashboard/Commerce/CommerceDeliveryAction'))
+
   // Models overview. Walks `app/Models/` + framework default models,
   // counts rows for each, returns grouped JSON for the
   // `views/dashboard/models/index.stx` page (stacksjs/stacks#1838).
