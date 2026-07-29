@@ -1,6 +1,24 @@
 import { defineModel } from '@stacksjs/orm'
 import { schema } from '@stacksjs/validation'
 
+const tagNames = [
+  'javascript',
+  'typescript',
+  'stx',
+  'react',
+  'nodejs',
+  'database',
+  'performance',
+  'security',
+  'api',
+  'testing',
+  'devops',
+  'cloud',
+  'frontend',
+  'backend',
+  'mobile',
+]
+
 export default defineModel({
   name: 'Tag',
   table: 'tags',
@@ -11,7 +29,8 @@ export default defineModel({
     useUuid: true,
     useTimestamps: true,
     useSeeder: {
-      count: 15,
+      count: tagNames.length,
+      fixtures: tagNames.map(name => ({ name, slug: name })),
     },
     useApi: {
       uri: 'tags',
@@ -31,11 +50,7 @@ export default defineModel({
           max: 'Tag name must have at most 50 characters',
         },
       },
-      factory: faker => faker.helpers.arrayElement([
-        'javascript', 'typescript', 'stx', 'react', 'nodejs',
-        'database', 'performance', 'security', 'api', 'testing',
-        'devops', 'cloud', 'frontend', 'backend', 'mobile',
-      ]),
+      factory: faker => `tag-${faker.string.alphanumeric(12).toLowerCase()}`,
     },
 
     slug: {
@@ -45,10 +60,7 @@ export default defineModel({
       validation: {
         rule: schema.string().min(2).max(50),
       },
-      factory: (faker) => {
-        const name = faker.lorem.word()
-        return name.toLowerCase().replace(/\s+/g, '-')
-      },
+      factory: faker => `tag-${faker.string.alphanumeric(12).toLowerCase()}`,
     },
 
     description: {
