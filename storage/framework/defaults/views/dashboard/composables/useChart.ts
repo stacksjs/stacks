@@ -17,6 +17,7 @@ import { onDestroy, onMount } from '@stacksjs/stx'
 
 export interface ChartLike {
   destroy: () => void
+  update?: () => void
 }
 
 // Constructor signature mirrors Chart.js — `new Chart(canvas, config)`.
@@ -41,12 +42,13 @@ export interface ChartHandle {
   /** The constructed chart, or `null` if the element was missing or we're SSR. */
   readonly instance: ChartLike | null
   destroy: () => void
+  update: () => void
 }
 
 export function useChart(opts: UseChartOptions): ChartHandle {
   // SSR-safe — no document means no canvas.
   if (typeof document === 'undefined')
-    return { instance: null, destroy: () => {} }
+    return { instance: null, destroy: () => {}, update: () => {} }
 
   const el = document.getElementById(opts.id)
   if (!el) {
@@ -55,13 +57,14 @@ export function useChart(opts: UseChartOptions): ChartHandle {
     // missing chart and can grep the id.
     // eslint-disable-next-line no-console
     console.warn(`[useChart] no element with id "${opts.id}" — chart not initialised`)
-    return { instance: null, destroy: () => {} }
+    return { instance: null, destroy: () => {}, update: () => {} }
   }
 
   const instance = new opts.Chart(el, { type: opts.type, data: opts.data, options: opts.options })
   return {
     instance,
     destroy: () => instance.destroy(),
+    update: () => instance.update?.(),
   }
 }
 
@@ -69,17 +72,19 @@ export function useChart(opts: UseChartOptions): ChartHandle {
  * Convenience for the common "init N charts at once" pattern. Returns
  * a single destroyer that tears them all down.
  */
-export function useCharts(specs: UseChartOptions[]): { handles: ChartHandle[], destroyAll: () => void } {
+export function useCharts(specs: UseChartOptions[]): { handles: ChartHandle[], destroyAll: () => void, updateAll: () => void } {
   const handles = specs.map(useChart)
   return {
     handles,
     destroyAll: () => handles.forEach(h => h.destroy()),
+    updateAll: () => handles.forEach(h => h.update()),
   }
 }
 
 export interface LazyChartsHandle {
   readonly handles: ChartHandle[]
   destroyAll: () => void
+  updateAll: () => void
 }
 
 /**
@@ -94,6 +99,10 @@ export function useLazyCharts(loadSpecs: () => Promise<UseChartOptions[]>): Lazy
     active = false
     handles.forEach(handle => handle.destroy())
     handles = []
+  }
+
+  const updateAll = (): void => {
+    handles.forEach(handle => handle.update())
   }
 
   onMount(async () => {
@@ -111,5 +120,6 @@ export function useLazyCharts(loadSpecs: () => Promise<UseChartOptions[]>): Lazy
       return handles
     },
     destroyAll,
+    updateAll,
   }
 }

@@ -1,0 +1,95 @@
+<script client>
+import type {
+  CommerceDashboardChartSeries,
+  CommerceDashboardOrder,
+  CommerceDashboardProduct,
+  CommerceDashboardRange,
+  CommerceDashboardResult,
+  CommerceDashboardStat,
+} from '../../../../app/Actions/Dashboard/Commerce/commerce-dashboard'
+import { dashboardApi } from '../../../../functions/dashboard-api'
+import { pushToast } from '../../../../functions/toasts'
+
+const stats = state<CommerceDashboardStat[]>([])
+const charts = state<CommerceDashboardChartSeries>({ labels: [], revenue: [], orders: [] })
+const recentOrders = state<CommerceDashboardOrder[]>([])
+const topProducts = state<CommerceDashboardProduct[]>([])
+const range = state<CommerceDashboardRange>('30d')
+const rangeLabel = state('Last 30 days')
+const loading = state(true)
+const loadError = state('')
+let requestSequence = 0
+
+async function loadDashboard(): Promise<void> {
+  const sequence = ++requestSequence
+  loading.set(true)
+  loadError.set('')
+  try {
+    const data = await dashboardApi<CommerceDashboardResult>(`/api/dashboard/commerce/stats?range=${encodeURIComponent(range())}`)
+    if (sequence !== requestSequence)
+      return
+    stats.set(Array.isArray(data.stats) ? data.stats : [])
+    charts.set(data.charts ?? { labels: [], revenue: [], orders: [] })
+    recentOrders.set(Array.isArray(data.recentOrders) ? data.recentOrders : [])
+    topProducts.set(Array.isArray(data.topProducts) ? data.topProducts : [])
+    rangeLabel.set(data.rangeLabel || 'Selected range')
+  }
+  catch (error) {
+    if (sequence !== requestSequence)
+      return
+    loadError.set('Commerce data could not be loaded.')
+    pushToast('error', 'Could not load commerce dashboard', {
+      detail: error instanceof Error ? error.message : String(error),
+    })
+  }
+  finally {
+    if (sequence === requestSequence)
+      loading.set(false)
+  }
+}
+
+function updateRange(event: Event): void {
+  range.set((event.target as HTMLSelectElement).value as CommerceDashboardRange)
+  void loadDashboard()
+}
+
+onMount(() => {
+  void loadDashboard()
+})
+</script>
+
+<div class="space-y-8">
+  <header class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+    <div>
+      <h1 class="font-bold text-2xl text-gray-900 dark:text-white">Commerce Dashboard</h1>
+      <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Persisted order performance for {{ rangeLabel().toLowerCase() }}.</p>
+    </div>
+    <div class="flex gap-2">
+      <button type="button" :disabled="loading()" class="inline-flex items-center px-3 py-2 font-semibold text-gray-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700 disabled:opacity-50" @click="loadDashboard">
+        <span :class="'mr-2 h-4 w-4 ' + (loading() ? 'animate-spin i-hugeicons-loading-03' : 'i-hugeicons-refresh')"></span>
+        Refresh
+      </button>
+      <label class="sr-only" for="commerce-dashboard-range">Reporting range</label>
+      <select id="commerce-dashboard-range" :value="range()" class="block pl-3 pr-10 py-2 text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-800 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-700 focus:ring-2 focus:ring-blue-600" @change="updateRange($event)">
+        <option value="today">Today</option>
+        <option value="7d">Last 7 days</option>
+        <option value="30d">Last 30 days</option>
+        <option value="90d">Last 90 days</option>
+        <option value="year">Last year</option>
+        <option value="all">All time</option>
+      </select>
+    </div>
+  </header>
+
+  <div :if="loadError()" class="px-4 py-3 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-300 rounded-md dark:border-red-800">
+    {{ loadError() }}
+  </div>
+
+  <CommerceOverviewStats :stats="stats()" :loading="loading()" />
+  <CommerceOverviewCharts :series="charts()" :loading="loading()" />
+
+  <div class="grid gap-6 grid-cols-1 xl:grid-cols-2">
+    <CommerceOverviewProductsTable :products="topProducts()" :loading="loading()" />
+    <CommerceOverviewOrdersTable :orders="recentOrders()" :loading="loading()" />
+  </div>
+</div>

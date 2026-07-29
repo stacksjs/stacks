@@ -1,0 +1,41 @@
+<script client>
+import type { CommerceDashboardProduct } from '../../../../app/Actions/Dashboard/Commerce/commerce-dashboard'
+
+const products = useReactiveProp('products', [] as CommerceDashboardProduct[])
+const loading = useReactiveProp('loading', false)
+</script>
+
+<section class="overflow-hidden bg-white dark:bg-neutral-800 border border-gray-200 rounded-xl dark:border-neutral-700">
+  <div class="px-5 py-4 border-b border-gray-100 dark:border-neutral-700">
+    <h2 class="font-semibold text-base text-gray-900 dark:text-white">Top selling products</h2>
+    <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Ranked by non-cancelled units sold.</p>
+  </div>
+  <div :if="loading() && products().length === 0" class="flex items-center justify-center p-10 text-gray-500 text-sm dark:text-neutral-400">
+    <span class="mr-2 h-4 w-4 animate-spin i-hugeicons-loading-03"></span>
+    Loading product sales
+  </div>
+  <div :else-if="products().length === 0" class="p-10 text-center">
+    <p class="font-medium text-gray-900 text-sm dark:text-white">No product sales recorded</p>
+    <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Order items in this range will appear here.</p>
+  </div>
+  <div :else class="overflow-x-auto">
+    <table class="min-w-full divide-gray-200 divide-y dark:divide-neutral-700">
+      <thead class="bg-gray-50 dark:bg-neutral-900/50">
+        <tr>
+          <th scope="col" class="px-5 py-3 font-semibold text-gray-600 text-left text-xs uppercase dark:text-neutral-400">Product</th>
+          <th scope="col" class="px-5 py-3 font-semibold text-gray-600 text-right text-xs uppercase dark:text-neutral-400">Units</th>
+          <th scope="col" class="px-5 py-3 font-semibold text-gray-600 text-right text-xs uppercase dark:text-neutral-400">Revenue</th>
+        </tr>
+      </thead>
+      <tbody class="divide-gray-100 divide-y dark:divide-neutral-700">
+        <template :for="product in products()" :key="product.id">
+          <tr>
+            <td class="px-5 py-3 font-medium text-gray-900 text-sm dark:text-white">{{ product.name }}</td>
+            <td class="px-5 py-3 font-mono text-gray-600 text-right text-sm dark:text-neutral-300">{{ product.sales }}</td>
+            <td class="px-5 py-3 font-medium text-gray-700 text-right text-sm dark:text-neutral-200">{{ product.revenue }}</td>
+          </tr>
+        </template>
+      </tbody>
+    </table>
+  </div>
+</section>
