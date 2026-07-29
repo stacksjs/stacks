@@ -294,6 +294,7 @@ const FRAMEWORK_MODEL_MANIFEST: Array<[name: string, subdirs: string[], feature:
   ['Deployment', [''], 'dashboard'],
   ['Release', [''], 'dashboard'],
   ['Notification', [''], 'dashboard'],
+  ['NotificationDelivery', [''], 'dashboard'],
   ['Log', [''], 'dashboard'],
   ['Request', [''], 'dashboard'],
 
@@ -410,6 +411,7 @@ export const LoyaltyPoint = lazyModel<typeof import('../../../defaults/app/Model
 export const LoyaltyReward = lazyModel<typeof import('../../../defaults/app/Models/commerce/LoyaltyReward').default>('LoyaltyReward')
 export const Manufacturer = lazyModel<typeof import('../../../defaults/app/Models/commerce/Manufacturer').default>('Manufacturer')
 export const Notification = lazyModel<typeof import('../../../defaults/app/Models/Notification').default>('Notification')
+export const NotificationDelivery = lazyModel<typeof import('../../../defaults/app/Models/NotificationDelivery').default>('NotificationDelivery')
 export const Order = lazyModel<typeof import('../../../defaults/app/Models/commerce/Order').default>('Order')
 export const OrderItem = lazyModel<typeof import('../../../defaults/app/Models/commerce/OrderItem').default>('OrderItem')
 export const Page = lazyModel<typeof import('../../../defaults/app/Models/Content/Page').default>('Page')
@@ -455,12 +457,13 @@ const _allExports: Record<string, any> = {
   Activity, Author, Campaign, CampaignSend, Cart, CartItem, Category,
   Comment, Coupon, Customer, DeliveryRoute, Deployment, DigitalDelivery,
   Driver, EmailList, EmailListSubscriber, ErrorModel, GiftCard, LicenseKey,
-  Log, LoyaltyPoint, LoyaltyReward, Manufacturer, Notification, Order,
-  OrderItem, Page, Payment, PaymentMethod, PaymentProduct, PaymentTransaction,
-  Post, PrintDevice, Product, ProductUnit, ProductVariant, Receipt, Release,
-  Request, Review, ShippingMethod, ShippingRate, ShippingZone, SocialPost,
-  Subscriber, SubscriberEmail, Subscription, Tag, TaxRate, Team, Transaction,
-  WaitlistProduct, WaitlistRestaurant, Websocket,
+  Log, LoyaltyPoint, LoyaltyReward, Manufacturer, Notification,
+  NotificationDelivery, Order, OrderItem, Page, Payment, PaymentMethod,
+  PaymentProduct, PaymentTransaction, Post, PrintDevice, Product, ProductUnit,
+  ProductVariant, Receipt, Release, Request, Review, ShippingMethod,
+  ShippingRate, ShippingZone, SocialPost, Subscriber, SubscriberEmail,
+  Subscription, Tag, TaxRate, Team, Transaction, WaitlistProduct,
+  WaitlistRestaurant, Websocket,
 }
 const g = globalThis as Record<string, any>
 for (const [name, M] of Object.entries(_allExports)) {
