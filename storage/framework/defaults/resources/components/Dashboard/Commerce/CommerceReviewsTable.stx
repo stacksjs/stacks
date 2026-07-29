@@ -1,0 +1,94 @@
+<script client>
+import type { ReviewRecord } from '../../../../app/Actions/Dashboard/Commerce/review-records'
+
+const reviews = useReactiveProp('reviews', [] as ReviewRecord[])
+const loading = useReactiveProp('loading', false)
+const busyId = useReactiveProp('busyId', '')
+const emit = defineEmits()
+
+function formatDate(value: string): string {
+  if (!value)
+    return 'Not recorded'
+  const numeric = /^\d{10,13}$/.test(value)
+    ? Number(value) * (value.length === 10 ? 1000 : 1)
+    : Number.NaN
+  const normalized = /^\d{4}-\d{2}-\d{2} \d/.test(value)
+    ? `${value.replace(' ', 'T')}Z`
+    : value
+  const date = new Date(Number.isFinite(numeric) ? numeric : normalized)
+  return Number.isNaN(date.getTime())
+    ? value
+    : new Intl.DateTimeFormat(undefined, { dateStyle: 'medium' }).format(date)
+}
+</script>
+
+<div class="overflow-hidden bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
+  <div :if="loading() && reviews().length === 0" class="flex items-center justify-center p-10 text-gray-500 text-sm dark:text-neutral-400">
+    <span class="mr-2 h-4 w-4 animate-spin i-hugeicons-loading-03"></span>
+    Loading review records
+  </div>
+  <div :else-if="reviews().length === 0" class="p-10 text-center">
+    <p class="font-medium text-gray-900 text-sm dark:text-white">No reviews found</p>
+    <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Adjust the current filters or wait for a customer review.</p>
+  </div>
+  <div :else class="overflow-x-auto">
+    <table class="min-w-full divide-gray-200 divide-y dark:divide-neutral-700">
+      <thead class="bg-gray-50 dark:bg-neutral-900/50">
+        <tr>
+          <th scope="col" class="px-4 py-3 font-semibold text-gray-600 text-left text-xs uppercase dark:text-neutral-400">Customer</th>
+          <th scope="col" class="px-4 py-3 font-semibold text-gray-600 text-left text-xs uppercase dark:text-neutral-400">Product</th>
+          <th scope="col" class="px-4 py-3 font-semibold text-gray-600 text-left text-xs uppercase dark:text-neutral-400">Review</th>
+          <th scope="col" class="px-4 py-3 font-semibold text-gray-600 text-left text-xs uppercase dark:text-neutral-400">State</th>
+          <th scope="col" class="relative px-4 py-3"><span class="sr-only">Actions</span></th>
+        </tr>
+      </thead>
+      <tbody class="divide-gray-100 divide-y dark:divide-neutral-700">
+        <template :for="review in reviews()" :key="review.id">
+          <tr class="hover:bg-gray-50/60 dark:hover:bg-neutral-700/40 align-top">
+            <td class="px-4 py-4 min-w-44">
+              <p class="font-medium text-gray-900 text-sm dark:text-white">{{ review.customerName }}</p>
+              <p :if="review.customerEmail" class="mt-1 text-gray-500 text-xs dark:text-neutral-400">{{ review.customerEmail }}</p>
+              <span :if="review.verifiedPurchase" class="inline-flex items-center mt-2 font-medium text-green-700 text-xs dark:text-green-300">
+                <span class="mr-1 h-3.5 w-3.5 i-hugeicons-checkmark-badge-01"></span>
+                Verified purchase
+              </span>
+            </td>
+            <td class="px-4 py-4 min-w-40 text-gray-700 text-sm dark:text-neutral-200">{{ review.productName }}</td>
+            <td class="px-4 py-4 max-w-lg min-w-72">
+              <p class="font-medium text-gray-900 text-sm dark:text-white">{{ review.title || 'Untitled review' }}</p>
+              <p class="mt-1 line-clamp-2 text-gray-500 text-sm dark:text-neutral-400">{{ review.content || 'No review content recorded.' }}</p>
+              <div class="flex flex-wrap gap-x-3 gap-y-1 items-center mt-2 text-gray-400 text-xs dark:text-neutral-500">
+                <span :aria-label="review.rating + ' out of 5 stars'" class="text-amber-500 text-sm">{{ '★'.repeat(review.rating) }}{{ '☆'.repeat(5 - review.rating) }}</span>
+                <span>{{ review.helpfulVotes }} helpful</span>
+                <span>{{ review.unhelpfulVotes }} not helpful</span>
+                <span>{{ formatDate(review.createdAt) }}</span>
+              </div>
+            </td>
+            <td class="px-4 py-4 whitespace-nowrap">
+              <span :class="'inline-flex px-2 py-1 font-medium text-xs rounded-full ' + (review.approved ? 'text-green-700 dark:text-green-300 bg-green-50 dark:bg-green-950/30' : 'text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/30')">
+                {{ review.approved ? 'Approved' : 'Pending' }}
+              </span>
+              <span :if="review.featured" class="block mt-2 font-medium text-blue-700 text-xs dark:text-blue-300">Featured</span>
+            </td>
+            <td class="px-4 py-3 text-right whitespace-nowrap">
+              <div class="flex gap-1 justify-end">
+                <button type="button" :disabled="busyId() === review.id" :aria-label="review.approved ? 'Return review to pending' : 'Approve review'" class="p-2 text-gray-400 hover:text-green-700 dark:hover:text-green-300 rounded-md disabled:opacity-50" @click="emit('approve', review)">
+                  <span :class="'block h-5 w-5 ' + (review.approved ? 'i-hugeicons-cancel-circle' : 'i-hugeicons-checkmark-circle-02')"></span>
+                </button>
+                <button type="button" :disabled="busyId() === review.id" :aria-label="review.featured ? 'Remove review from featured' : 'Feature review'" class="p-2 text-gray-400 hover:text-amber-600 dark:hover:text-amber-300 rounded-md disabled:opacity-50" @click="emit('feature', review)">
+                  <span :class="'block h-5 w-5 ' + (review.featured ? 'i-hugeicons-star-off' : 'i-hugeicons-star')"></span>
+                </button>
+                <button type="button" :aria-label="'Edit review ' + review.id" class="p-2 text-gray-400 hover:text-blue-700 dark:hover:text-blue-300 rounded-md" @click="emit('edit', review)">
+                  <span class="block h-5 w-5 i-hugeicons-edit-01"></span>
+                </button>
+                <button type="button" :aria-label="'Delete review ' + review.id" class="p-2 text-gray-400 hover:text-red-700 dark:hover:text-red-300 rounded-md" @click="emit('delete', review)">
+                  <span class="block h-5 w-5 i-hugeicons-waste"></span>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </template>
+      </tbody>
+    </table>
+  </div>
+</div>

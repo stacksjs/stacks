@@ -1,0 +1,391 @@
+<script client>
+import type {
+  ReviewProductOption,
+  ReviewRecord,
+  ReviewSummary,
+} from '../../../../app/Actions/Dashboard/Commerce/review-records'
+import { dashboardApi } from '../../../../functions/dashboard-api'
+import { pushToast } from '../../../../functions/toasts'
+
+interface ReviewIndexResponse {
+  records: ReviewRecord[]
+  summary: ReviewSummary
+  products: ReviewProductOption[]
+}
+
+interface ReviewEditPayload {
+  title: string
+  content: string
+  rating: number
+  isApproved: boolean
+  isFeatured: boolean
+}
+
+const emptySummary: ReviewSummary = {
+  total: 0,
+  approved: 0,
+  pending: 0,
+  featured: 0,
+  verified: 0,
+  averageRating: 0,
+}
+
+const records = state<ReviewRecord[]>([])
+const summary = state<ReviewSummary>({ ...emptySummary })
+const products = state<ReviewProductOption[]>([])
+const search = state('')
+const productFilter = state('all')
+const ratingFilter = state('all')
+const moderationFilter = state('all')
+const sort = state('newest')
+const page = state(1)
+const pageSize = 12
+const loading = state(true)
+const loadError = state('')
+const editingReview = state<ReviewRecord | null>(null)
+const deletingReview = state<ReviewRecord | null>(null)
+const saving = state(false)
+const deleting = state(false)
+const busyId = state('')
+
+function timestamp(value: string): number {
+  if (!value)
+    return 0
+  const numeric = /^\d{10,13}$/.test(value)
+    ? Number(value) * (value.length === 10 ? 1000 : 1)
+    : Number.NaN
+  if (Number.isFinite(numeric))
+    return numeric
+  const normalized = /^\d{4}-\d{2}-\d{2} \d/.test(value)
+    ? `${value.replace(' ', 'T')}Z`
+    : value
+  const result = new Date(normalized).getTime()
+  return Number.isFinite(result) ? result : 0
+}
+
+function filteredRecords(): ReviewRecord[] {
+  const query = search().trim().toLowerCase()
+  const product = productFilter()
+  const rating = ratingFilter()
+  const moderation = moderationFilter()
+  return [...records()]
+    .filter((review) => {
+      if (product !== 'all' && review.productId !== product)
+        return false
+      if (rating !== 'all' && String(review.rating) !== rating)
+        return false
+      if (moderation === 'approved' && !review.approved)
+        return false
+      if (moderation === 'pending' && review.approved)
+        return false
+      if (moderation === 'featured' && !review.featured)
+        return false
+      if (moderation === 'verified' && !review.verifiedPurchase)
+        return false
+      return !query || [
+        review.customerName,
+        review.customerEmail,
+        review.productName,
+        review.title,
+        review.content,
+      ].some(value => value.toLowerCase().includes(query))
+    })
+    .sort((left, right) => {
+      if (sort() === 'oldest')
+        return timestamp(left.createdAt) - timestamp(right.createdAt)
+      if (sort() === 'rating-high')
+        return right.rating - left.rating || timestamp(right.createdAt) - timestamp(left.createdAt)
+      if (sort() === 'rating-low')
+        return left.rating - right.rating || timestamp(right.createdAt) - timestamp(left.createdAt)
+      if (sort() === 'helpful')
+        return right.helpfulVotes - left.helpfulVotes || timestamp(right.createdAt) - timestamp(left.createdAt)
+      return timestamp(right.createdAt) - timestamp(left.createdAt)
+    })
+}
+
+function totalPages(): number {
+  return Math.max(1, Math.ceil(filteredRecords().length / pageSize))
+}
+
+function visibleRecords(): ReviewRecord[] {
+  const safePage = Math.min(page(), totalPages())
+  const offset = (safePage - 1) * pageSize
+  return filteredRecords().slice(offset, offset + pageSize)
+}
+
+function rangeStart(): number {
+  return filteredRecords().length === 0 ? 0 : (Math.min(page(), totalPages()) - 1) * pageSize + 1
+}
+
+function rangeEnd(): number {
+  return Math.min(Math.min(page(), totalPages()) * pageSize, filteredRecords().length)
+}
+
+function metricCards(): Array<{ label: string, value: string }> {
+  return [
+    { label: 'Recorded', value: String(summary().total) },
+    { label: 'Approved', value: String(summary().approved) },
+    { label: 'Pending', value: String(summary().pending) },
+    { label: 'Verified', value: String(summary().verified) },
+    { label: 'Average rating', value: `${summary().averageRating.toFixed(1)} / 5` },
+  ]
+}
+
+function updateSearch(event: Event): void {
+  search.set((event.target as HTMLInputElement).value)
+  page.set(1)
+}
+
+function updateProductFilter(event: Event): void {
+  productFilter.set((event.target as HTMLSelectElement).value)
+  page.set(1)
+}
+
+function updateRatingFilter(event: Event): void {
+  ratingFilter.set((event.target as HTMLSelectElement).value)
+  page.set(1)
+}
+
+function updateModerationFilter(event: Event): void {
+  moderationFilter.set((event.target as HTMLSelectElement).value)
+  page.set(1)
+}
+
+function updateSort(event: Event): void {
+  sort.set((event.target as HTMLSelectElement).value)
+  page.set(1)
+}
+
+async function loadReviews(): Promise<void> {
+  loading.set(true)
+  loadError.set('')
+  try {
+    const data = await dashboardApi<ReviewIndexResponse>('/api/dashboard/commerce/reviews')
+    records.set(Array.isArray(data.records) ? data.records : [])
+    summary.set(data.summary ?? { ...emptySummary })
+    products.set(Array.isArray(data.products) ? data.products : [])
+    if (page() > totalPages())
+      page.set(totalPages())
+  }
+  catch (error) {
+    loadError.set('Review records could not be loaded.')
+    pushToast('error', 'Could not load reviews', {
+      detail: error instanceof Error ? error.message : String(error),
+    })
+  }
+  finally {
+    loading.set(false)
+  }
+}
+
+async function patchReview(review: ReviewRecord, payload: Record<string, unknown>, successMessage: string): Promise<void> {
+  busyId.set(review.id)
+  try {
+    await dashboardApi(`/api/product-reviews/${review.id}`, { method: 'PATCH', body: payload })
+    pushToast('success', successMessage)
+    await loadReviews()
+  }
+  catch (error) {
+    pushToast('error', 'Could not update review', {
+      detail: error instanceof Error ? error.message : String(error),
+    })
+  }
+  finally {
+    busyId.set('')
+  }
+}
+
+function toggleApproval(review: ReviewRecord): void {
+  void patchReview(
+    review,
+    { isApproved: !review.approved },
+    review.approved ? 'Review returned to pending' : 'Review approved',
+  )
+}
+
+function toggleFeatured(review: ReviewRecord): void {
+  void patchReview(
+    review,
+    { isFeatured: !review.featured },
+    review.featured ? 'Review removed from featured' : 'Review featured',
+  )
+}
+
+function openEdit(review: ReviewRecord): void {
+  editingReview.set(review)
+}
+
+function closeEdit(): void {
+  if (!saving())
+    editingReview.set(null)
+}
+
+async function saveReview(payload: ReviewEditPayload): Promise<void> {
+  const review = editingReview()
+  if (!review)
+    return
+  saving.set(true)
+  try {
+    await dashboardApi(`/api/product-reviews/${review.id}`, { method: 'PATCH', body: payload })
+    editingReview.set(null)
+    pushToast('success', 'Review updated')
+    await loadReviews()
+  }
+  catch (error) {
+    pushToast('error', 'Could not save review', {
+      detail: error instanceof Error ? error.message : String(error),
+    })
+  }
+  finally {
+    saving.set(false)
+  }
+}
+
+function openDelete(review: ReviewRecord): void {
+  deletingReview.set(review)
+}
+
+function closeDelete(): void {
+  if (!deleting())
+    deletingReview.set(null)
+}
+
+async function deleteSelectedReview(): Promise<void> {
+  const review = deletingReview()
+  if (!review)
+    return
+  deleting.set(true)
+  try {
+    await dashboardApi(`/api/product-reviews/${review.id}`, { method: 'DELETE' })
+    deletingReview.set(null)
+    pushToast('success', 'Review deleted')
+    await loadReviews()
+  }
+  catch (error) {
+    pushToast('error', 'Could not delete review', {
+      detail: error instanceof Error ? error.message : String(error),
+    })
+  }
+  finally {
+    deleting.set(false)
+  }
+}
+
+onMount(() => {
+  void loadReviews()
+})
+</script>
+
+<div class="space-y-6">
+  <header class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+    <div>
+      <h1 class="font-bold text-2xl text-gray-900 dark:text-white">Product Reviews</h1>
+      <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Moderate native Review records and keep storefront feedback accurate.</p>
+    </div>
+    <button type="button" :disabled="loading()" class="inline-flex items-center self-start px-3 py-2 font-semibold text-gray-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700 disabled:opacity-50" @click="loadReviews">
+      <span :class="'mr-2 h-4 w-4 ' + (loading() ? 'animate-spin i-hugeicons-loading-03' : 'i-hugeicons-refresh')"></span>
+      Refresh
+    </button>
+  </header>
+
+  <div :if="loadError()" class="p-4 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900">{{ loadError() }}</div>
+
+  <section aria-label="Review metrics" class="grid gap-3 grid-cols-2 lg:grid-cols-5">
+    <template :for="item in metricCards()" :key="item.label">
+      <article class="p-4 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
+        <p class="text-gray-500 text-xs dark:text-neutral-400">{{ item.label }}</p>
+        <p class="mt-2 font-semibold text-2xl text-gray-900 dark:text-white">{{ item.value }}</p>
+      </article>
+    </template>
+  </section>
+
+  <section class="space-y-3">
+    <div class="grid gap-3 grid-cols-1 md:grid-cols-2 xl:grid-cols-5">
+      <div class="relative xl:col-span-2">
+        <label class="sr-only" for="review-search">Search reviews</label>
+        <span class="flex absolute inset-y-0 left-0 items-center pl-3 text-gray-400 pointer-events-none">
+          <span class="h-4 w-4 i-hugeicons-search-01"></span>
+        </span>
+        <input id="review-search" :value="search()" type="search" placeholder="Search reviews" class="pl-9 pr-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" @input="updateSearch($event)" />
+      </div>
+      <label>
+        <span class="sr-only">Product</span>
+        <select :value="productFilter()" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" @change="updateProductFilter($event)">
+          <option value="all">All products</option>
+          <template :for="product in products()" :key="product.id">
+            <option :value="product.id">{{ product.label }}</option>
+          </template>
+        </select>
+      </label>
+      <label>
+        <span class="sr-only">Rating</span>
+        <select :value="ratingFilter()" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" @change="updateRatingFilter($event)">
+          <option value="all">All ratings</option>
+          <option value="5">5 stars</option>
+          <option value="4">4 stars</option>
+          <option value="3">3 stars</option>
+          <option value="2">2 stars</option>
+          <option value="1">1 star</option>
+        </select>
+      </label>
+      <label>
+        <span class="sr-only">Moderation state</span>
+        <select :value="moderationFilter()" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" @change="updateModerationFilter($event)">
+          <option value="all">All states</option>
+          <option value="approved">Approved</option>
+          <option value="pending">Pending</option>
+          <option value="featured">Featured</option>
+          <option value="verified">Verified purchase</option>
+        </select>
+      </label>
+    </div>
+
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <p class="text-gray-500 text-sm dark:text-neutral-400">
+        Showing {{ rangeStart() }} to {{ rangeEnd() }} of {{ filteredRecords().length }} reviews
+      </p>
+      <label class="flex gap-2 items-center text-gray-500 text-sm dark:text-neutral-400">
+        Sort
+        <select :value="sort()" class="px-3 py-1.5 text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" @change="updateSort($event)">
+          <option value="newest">Newest first</option>
+          <option value="oldest">Oldest first</option>
+          <option value="rating-high">Highest rating</option>
+          <option value="rating-low">Lowest rating</option>
+          <option value="helpful">Most helpful</option>
+        </select>
+      </label>
+    </div>
+
+    <CommerceReviewsTable
+      :reviews="visibleRecords()"
+      :loading="loading()"
+      :busy-id="busyId()"
+      @approve="toggleApproval"
+      @feature="toggleFeatured"
+      @edit="openEdit"
+      @delete="openDelete"
+    />
+
+    <nav :if="totalPages() > 1" aria-label="Review pages" class="flex items-center justify-between">
+      <button type="button" :disabled="page() <= 1" class="px-3 py-2 font-semibold text-gray-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700 disabled:opacity-50" @click="page.update(value => value - 1)">Previous</button>
+      <span class="text-gray-500 text-sm dark:text-neutral-400">Page {{ page() }} of {{ totalPages() }}</span>
+      <button type="button" :disabled="page() >= totalPages()" class="px-3 py-2 font-semibold text-gray-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700 disabled:opacity-50" @click="page.update(value => value + 1)">Next</button>
+    </nav>
+  </section>
+</div>
+
+<CommerceReviewEditDialog
+  :open="Boolean(editingReview())"
+  :review="editingReview()"
+  :busy="saving()"
+  @submit="saveReview"
+  @close="closeEdit()"
+/>
+
+<CommerceReviewDeleteDialog
+  :open="Boolean(deletingReview())"
+  :review="deletingReview()"
+  :busy="deleting()"
+  @confirm="deleteSelectedReview()"
+  @close="closeDelete()"
+/>

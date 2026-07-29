@@ -23,6 +23,7 @@ export default defineModel({
 
     useApi: {
       uri: 'product-reviews',
+      middleware: ['auth'],
     },
 
     observe: true,
