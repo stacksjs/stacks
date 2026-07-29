@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test'
-import { normalizeProductWaitlistRecord, summarizeProductWaitlist } from './product-waitlist-records'
+import { normalizeProductWaitlistCustomerOption, normalizeProductWaitlistOption, normalizeProductWaitlistRecord, summarizeProductWaitlist } from './product-waitlist-records'
 
 describe('dashboard product waitlist records', () => {
   it('normalizes database and model attribute names', () => {
@@ -36,6 +36,31 @@ describe('dashboard product waitlist records', () => {
       notified: 1,
       purchased: 2,
       conversionRate: 50,
+    })
+  })
+
+  it('normalizes persisted product and customer choices', () => {
+    expect(normalizeProductWaitlistOption({
+      id: 8,
+      name: 'Native Mug',
+      inventory_count: '12',
+    })).toEqual({
+      id: '8',
+      label: 'Native Mug',
+      detail: '12 in inventory',
+    })
+
+    expect(normalizeProductWaitlistCustomerOption({
+      id: 9,
+      name: 'Chris',
+      email: 'chris@example.com',
+      phone: '555-0100',
+    })).toEqual({
+      id: '9',
+      label: 'Chris',
+      detail: 'chris@example.com',
+      email: 'chris@example.com',
+      phone: '555-0100',
     })
   })
 })

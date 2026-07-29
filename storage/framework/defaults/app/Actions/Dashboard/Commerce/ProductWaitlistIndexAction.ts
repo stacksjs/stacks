@@ -1,6 +1,6 @@
 import { Action } from '@stacksjs/actions'
-import { WaitlistProduct } from '@stacksjs/orm'
-import { normalizeProductWaitlistRecord, summarizeProductWaitlist } from './product-waitlist-records'
+import { Customer, Product, WaitlistProduct } from '@stacksjs/orm'
+import { normalizeProductWaitlistCustomerOption, normalizeProductWaitlistOption, normalizeProductWaitlistRecord, summarizeProductWaitlist } from './product-waitlist-records'
 
 export default new Action({
   name: 'ProductWaitlistIndexAction',
@@ -9,19 +9,19 @@ export default new Action({
   apiResponse: true,
 
   async handle() {
-    try {
-      const rows = await WaitlistProduct.orderByDesc('id').limit(200).get()
-      const records = rows.map(normalizeProductWaitlistRecord)
-      return {
-        records,
-        summary: summarizeProductWaitlist(records),
-      }
-    }
-    catch {
-      return {
-        records: [],
-        summary: summarizeProductWaitlist([]),
-      }
+    const [rows, products, customers] = await Promise.all([
+      WaitlistProduct.orderByDesc('id').limit(200).get(),
+      Product.orderBy('name').limit(200).get(),
+      Customer.orderBy('name').limit(200).get(),
+    ])
+    const records = rows.map(normalizeProductWaitlistRecord)
+    return {
+      records,
+      summary: summarizeProductWaitlist(records),
+      options: {
+        products: products.map(normalizeProductWaitlistOption),
+        customers: customers.map(normalizeProductWaitlistCustomerOption),
+      },
     }
   },
 })

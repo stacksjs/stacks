@@ -1,26 +1,35 @@
 <script client>
-import type { ProductWaitlistRecord, ProductWaitlistSummary } from '../../../../app/Actions/Dashboard/Commerce/product-waitlist-records'
+import type { ProductWaitlistOptions, ProductWaitlistRecord, ProductWaitlistSummary, ProductWaitlistWritePayload } from '../../../../app/Actions/Dashboard/Commerce/product-waitlist-records'
 import { dashboardApi } from '../../../../functions/dashboard-api'
 import { pushToast } from '../../../../functions/toasts'
 
 interface ProductWaitlistResponse {
   records: ProductWaitlistRecord[]
   summary: ProductWaitlistSummary
+  options: ProductWaitlistOptions
 }
 
 const records = state<ProductWaitlistRecord[]>([])
 const summary = state<ProductWaitlistSummary>({ total: 0, waiting: 0, notified: 0, purchased: 0, conversionRate: 0 })
+const options = state<ProductWaitlistOptions>({ products: [], customers: [] })
 const search = state('')
 const status = state('all')
 const isLoading = state(true)
 const loadError = state('')
+const entryDialogOpen = state(false)
+const entryDialogMode = state<'add' | 'edit'>('add')
+const editingRecord = state<ProductWaitlistRecord | null>(null)
+const deleteRecord = state<ProductWaitlistRecord | null>(null)
+const isSaving = state(false)
+const isDeleting = state(false)
 
 function rows(): ProductWaitlistRecord[] {
   const query = search().trim().toLowerCase()
   return records().filter((record) => {
     if (status() !== 'all' && record.status !== status())
       return false
-    return !query || [record.name, record.email, record.phone, record.source, record.productId]
+    const productName = options().products.find(option => option.id === record.productId)?.label || ''
+    return !query || [record.name, record.email, record.phone, record.source, productName, record.productId]
       .some(value => value.toLowerCase().includes(query))
   })
 }
@@ -33,21 +42,32 @@ function updateStatus(event: Event): void {
   status.set((event.target as HTMLSelectElement).value)
 }
 
-function formatDate(value: string): string {
-  if (!value)
-    return 'Not recorded'
-  const date = new Date(value)
-  return Number.isNaN(date.getTime()) ? value : new Intl.DateTimeFormat(undefined, { dateStyle: 'medium' }).format(date)
+function openAddDialog(): void {
+  entryDialogMode.set('add')
+  editingRecord.set(null)
+  entryDialogOpen.set(true)
 }
 
-function statusClass(value: string): string {
-  if (value === 'purchased')
-    return 'text-purple-700 dark:text-purple-300 bg-purple-50 dark:bg-purple-950/30'
-  if (value === 'notified')
-    return 'text-green-700 dark:text-green-300 bg-green-50 dark:bg-green-950/30'
-  if (value === 'waiting')
-    return 'text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/30'
-  return 'text-gray-700 dark:text-neutral-300 bg-gray-100 dark:bg-neutral-700'
+function openEditDialog(record: ProductWaitlistRecord): void {
+  entryDialogMode.set('edit')
+  editingRecord.set(record)
+  entryDialogOpen.set(true)
+}
+
+function closeEntryDialog(): void {
+  if (isSaving())
+    return
+  entryDialogOpen.set(false)
+  editingRecord.set(null)
+}
+
+function openDeleteDialog(record: ProductWaitlistRecord): void {
+  deleteRecord.set(record)
+}
+
+function closeDeleteDialog(): void {
+  if (!isDeleting())
+    deleteRecord.set(null)
 }
 
 async function loadRecords(): Promise<void> {
@@ -57,6 +77,7 @@ async function loadRecords(): Promise<void> {
     const result = await dashboardApi<ProductWaitlistResponse>('/api/dashboard/commerce/waitlist-products')
     records.set(Array.isArray(result.records) ? result.records : [])
     summary.set(result.summary ?? { total: 0, waiting: 0, notified: 0, purchased: 0, conversionRate: 0 })
+    options.set(result.options ?? { products: [], customers: [] })
   }
   catch (error) {
     loadError.set('Product waitlist records could not be loaded.')
@@ -66,6 +87,54 @@ async function loadRecords(): Promise<void> {
   }
   finally {
     isLoading.set(false)
+  }
+}
+
+async function saveRecord(payload: ProductWaitlistWritePayload): Promise<void> {
+  const current = editingRecord()
+  const isEditing = entryDialogMode() === 'edit' && current !== null
+  const path = isEditing
+    ? `/api/waitlist-products/${current.id}`
+    : '/api/waitlist-products'
+  const method = isEditing ? 'PATCH' : 'POST'
+
+  isSaving.set(true)
+  try {
+    await dashboardApi(path, { method, body: payload })
+    entryDialogOpen.set(false)
+    editingRecord.set(null)
+    pushToast('success', isEditing ? 'Waitlist entry updated' : 'Waitlist entry added')
+    await loadRecords()
+  }
+  catch (error) {
+    pushToast('error', 'Could not save waitlist entry', {
+      detail: error instanceof Error ? error.message : String(error),
+    })
+  }
+  finally {
+    isSaving.set(false)
+  }
+}
+
+async function deleteSelectedRecord(): Promise<void> {
+  const current = deleteRecord()
+  if (!current)
+    return
+
+  isDeleting.set(true)
+  try {
+    await dashboardApi(`/api/waitlist-products/${current.id}`, { method: 'DELETE' })
+    deleteRecord.set(null)
+    pushToast('success', 'Waitlist entry deleted')
+    await loadRecords()
+  }
+  catch (error) {
+    pushToast('error', 'Could not delete waitlist entry', {
+      detail: error instanceof Error ? error.message : String(error),
+    })
+  }
+  finally {
+    isDeleting.set(false)
   }
 }
 
@@ -80,13 +149,22 @@ onMount(() => {
       <h1 class="font-bold text-2xl text-gray-900 dark:text-white">Product Waitlist</h1>
       <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Native WaitlistProduct records without simulated customers or activity.</p>
     </div>
-    <button type="button" :disabled="isLoading()" class="inline-flex items-center self-start px-3 py-2 font-semibold text-gray-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700 disabled:opacity-50" @click="loadRecords">
-      <span :class="'mr-2 h-4 w-4 ' + (isLoading() ? 'animate-spin i-hugeicons-loading-03' : 'i-hugeicons-refresh')"></span>
-      Refresh
-    </button>
+    <div class="flex gap-2">
+      <button type="button" :disabled="isLoading()" class="inline-flex items-center self-start px-3 py-2 font-semibold text-gray-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700 disabled:opacity-50" @click="loadRecords">
+        <span :class="'mr-2 h-4 w-4 ' + (isLoading() ? 'animate-spin i-hugeicons-loading-03' : 'i-hugeicons-refresh')"></span>
+        Refresh
+      </button>
+      <button type="button" :disabled="isLoading() || options().products.length === 0" class="inline-flex items-center self-start px-3 py-2 font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md disabled:opacity-50" @click="openAddDialog()">
+        <span class="mr-2 h-4 w-4 i-hugeicons-add-01"></span>
+        Add entry
+      </button>
+    </div>
   </header>
 
   <div :if="loadError()" class="p-4 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900">{{ loadError() }}</div>
+  <div :if="!isLoading() && options().products.length === 0" class="p-4 text-amber-800 text-sm dark:text-amber-200 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 rounded-lg dark:border-amber-900">
+    Add a product before creating a product waitlist entry.
+  </div>
 
   <section class="grid gap-3 grid-cols-2 lg:grid-cols-5">
     <template :for="item in [
@@ -123,41 +201,24 @@ onMount(() => {
       </div>
     </div>
 
-    <div class="overflow-hidden bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
-      <div :if="isLoading()" class="flex items-center justify-center p-8 text-gray-500 text-sm dark:text-neutral-400">Loading waitlist records</div>
-      <div :else-if="rows().length === 0" class="p-8 text-center">
-        <p class="font-medium text-gray-900 text-sm dark:text-white">No product waitlist records found</p>
-        <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Records created through the WaitlistProduct API will appear here.</p>
-      </div>
-      <div :else class="overflow-x-auto">
-        <table class="min-w-full divide-gray-200 divide-y dark:divide-neutral-700">
-          <thead class="bg-gray-50 dark:bg-neutral-900/50">
-            <tr>
-              <th class="px-4 py-3 font-semibold text-gray-600 text-left text-xs uppercase dark:text-neutral-400">Customer</th>
-              <th class="px-4 py-3 font-semibold text-gray-600 text-left text-xs uppercase dark:text-neutral-400">Product</th>
-              <th class="px-4 py-3 font-semibold text-gray-600 text-right text-xs uppercase dark:text-neutral-400">Quantity</th>
-              <th class="px-4 py-3 font-semibold text-gray-600 text-left text-xs uppercase dark:text-neutral-400">Status</th>
-              <th class="px-4 py-3 font-semibold text-gray-600 text-left text-xs uppercase dark:text-neutral-400">Preference</th>
-              <th class="px-4 py-3 font-semibold text-gray-600 text-left text-xs uppercase dark:text-neutral-400">Created</th>
-            </tr>
-          </thead>
-          <tbody class="divide-gray-100 divide-y dark:divide-neutral-700">
-            <template :for="record in rows()" :key="record.id">
-              <tr>
-                <td class="px-4 py-3">
-                  <p class="font-medium text-gray-900 text-sm dark:text-white">{{ record.name || 'Unnamed' }}</p>
-                  <p class="mt-1 text-gray-500 text-xs dark:text-neutral-400">{{ record.email || record.phone || 'No contact recorded' }}</p>
-                </td>
-                <td class="px-4 py-3 font-mono text-gray-600 text-sm dark:text-neutral-300">{{ record.productId || 'Not linked' }}</td>
-                <td class="px-4 py-3 font-mono text-gray-700 text-right text-sm dark:text-neutral-200">{{ record.quantity }}</td>
-                <td class="px-4 py-3"><span :class="'inline-flex px-2 py-1 font-medium text-xs capitalize rounded-full ' + statusClass(record.status)">{{ record.status || 'unknown' }}</span></td>
-                <td class="px-4 py-3 capitalize text-gray-600 text-sm dark:text-neutral-300">{{ record.notificationPreference || 'Not recorded' }}</td>
-                <td class="px-4 py-3 text-gray-600 text-sm whitespace-nowrap dark:text-neutral-300">{{ formatDate(record.createdAt) }}</td>
-              </tr>
-            </template>
-          </tbody>
-        </table>
-      </div>
-    </div>
+    <ProductWaitlistTable :records="rows()" :options="options()" :loading="isLoading()" @edit="openEditDialog" @delete="openDeleteDialog" />
   </section>
 </div>
+
+<ProductWaitlistEntryDialog
+  :open="entryDialogOpen()"
+  :mode="entryDialogMode()"
+  :record="editingRecord()"
+  :options="options()"
+  :busy="isSaving()"
+  @submit="saveRecord"
+  @close="closeEntryDialog()"
+/>
+
+<ProductWaitlistDeleteDialog
+  :open="Boolean(deleteRecord())"
+  :record="deleteRecord()"
+  :busy="isDeleting()"
+  @confirm="deleteSelectedRecord()"
+  @close="closeDeleteDialog()"
+/>
