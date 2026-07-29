@@ -12,7 +12,7 @@ import { projectPath, storagePath } from '@stacksjs/path'
 import { createQueryBuilder, defaultConfig, setConfig } from '@stacksjs/query-builder'
 import { HttpError } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/logging'
-import { applyCasts, applySorting, buildIndexMeta, buildIndexPaginator, buildReadColumnMap, dropHiddenInputs, filterFillable, mapWriteError, resolveApiMiddleware, resolveIndexPageArgs, stripHidden, toSnakeCase, toSnakeCaseKeys } from './src/auto-crud'
+import { applyCasts, applySorting, buildIndexMeta, buildIndexPaginator, buildReadColumnMap, dropHiddenInputs, filterFillable, getWritableFields, mapWriteError, resolveApiMiddleware, resolveIndexPageArgs, stripHidden, toSnakeCase, toSnakeCaseKeys } from './src/auto-crud'
 import { loadModelRegistry } from './src/model-registry'
 
 // Initialize the query builder config from the project's optional
@@ -75,14 +75,6 @@ function routeExists(method: string, path: string): boolean {
   return route.routes.some(
     (r: any) => r.method === method && r.path === path,
   )
-}
-
-// Helper: get fillable attribute names from a model
-function getFillableFields(model: any): string[] {
-  if (!model.attributes) return []
-  return Object.entries(model.attributes)
-    .filter(([_, attr]: [string, any]) => attr.fillable === true)
-    .map(([name]: [string, any]) => name)
 }
 
 // Helper: get hidden attribute names from a model
@@ -502,7 +494,7 @@ for (const [modelName, model] of Object.entries(models)) {
 
   const enabledRoutes: string[] = apiConfig.routes || ['index', 'show', 'store', 'update', 'destroy']
   const table = model.table || uri
-  const fillableFields = getFillableFields(model)
+  const fillableFields = getWritableFields(model)
   const hiddenFields = getHiddenFields(model)
   const basePath = `/api/${uri}`
 

@@ -3,9 +3,8 @@
  *
  * Extracted so the write-path key mapping and middleware resolution can be
  * unit-tested without booting the router or a database. The canonical
- * generated routes file (storage/framework/orm/routes.ts) inlines copies of
- * these — it must stay importable when @stacksjs/orm is npm-installed — so
- * any behavioral change here must be mirrored there.
+ * storage/framework/orm/routes.ts entrypoint delegates to ../core/orm/routes,
+ * so every runtime consumes these same helpers.
  */
 
 interface UniqueViolation { code?: string, errno?: number, message?: string }
@@ -96,6 +95,40 @@ export function toSnakeCaseKeys(data: Record<string, any>): Record<string, any> 
   const out: Record<string, any> = {}
   for (const [k, v] of Object.entries(data)) out[toSnakeCase(k)] = v
   return out
+}
+
+/**
+ * Resolve the model fields accepted by generated store/update routes.
+ *
+ * Declared fillable attributes remain the primary allowlist. A `belongsTo`
+ * declaration also defines a real foreign-key column in model-driven
+ * migrations, so its `<relation>Id` attribute is writable through `useApi`
+ * without requiring a bespoke action for every relationship. No undeclared
+ * body key is admitted, and hasMany/hasOne relations never contribute keys.
+ */
+export function getWritableFields(model: {
+  attributes?: Record<string, { fillable?: boolean }>
+  belongsTo?: unknown[]
+} | null | undefined): string[] {
+  if (!model) return []
+
+  const fields = Object.entries(model.attributes ?? {})
+    .filter(([, attribute]) => attribute?.fillable === true)
+    .map(([name]) => name)
+
+  for (const relation of model.belongsTo ?? []) {
+    if (typeof relation !== 'string' || !relation.trim())
+      continue
+
+    const words = toSnakeCase(relation.trim()).split('_').filter(Boolean)
+    if (words.length === 0)
+      continue
+
+    const relationField = `${words[0]}${words.slice(1).map(word => `${word[0]?.toUpperCase()}${word.slice(1)}`).join('')}Id`
+    fields.push(relationField)
+  }
+
+  return [...new Set(fields)]
 }
 
 /**

@@ -26,7 +26,7 @@
 import { describe, expect, it } from 'bun:test'
 import { Database } from 'bun:sqlite'
 import { snakeCase } from '@stacksjs/strings'
-import { applyCasts, applySorting, buildIndexMeta, buildIndexPaginator, buildReadColumnMap, dropHiddenInputs, filterFillable, INDEX_DEFAULT_PER_PAGE, INDEX_MAX_PER_PAGE, isUniqueViolation, mapWriteError, resolveApiMiddleware, resolveIndexPageArgs, stripHidden, toSnakeCase, toSnakeCaseKeys } from '../src/auto-crud'
+import { applyCasts, applySorting, buildIndexMeta, buildIndexPaginator, buildReadColumnMap, dropHiddenInputs, filterFillable, getWritableFields, INDEX_DEFAULT_PER_PAGE, INDEX_MAX_PER_PAGE, isUniqueViolation, mapWriteError, resolveApiMiddleware, resolveIndexPageArgs, stripHidden, toSnakeCase, toSnakeCaseKeys } from '../src/auto-crud'
 import { toPaginator } from '../src/paginator'
 
 describe('toSnakeCaseKeys (write-path column mapping)', () => {
@@ -108,6 +108,32 @@ describe('filterFillable (dual-spelling input)', () => {
   it('returns {} for empty body or no fillable fields', () => {
     expect(filterFillable(null, fillable)).toEqual({})
     expect(filterFillable({ code: 'X' }, [])).toEqual({})
+  })
+})
+
+describe('getWritableFields (model attributes and belongsTo keys)', () => {
+  it('adds the generated foreign-key attribute for every declared belongsTo relation', () => {
+    expect(getWritableFields({
+      attributes: {
+        name: { fillable: true },
+        internalNote: { fillable: false },
+      },
+      belongsTo: ['Product', 'BoardColumn'],
+    })).toEqual(['name', 'productId', 'boardColumnId'])
+  })
+
+  it('deduplicates an explicitly declared relation field', () => {
+    expect(getWritableFields({
+      attributes: {
+        productId: { fillable: true },
+      },
+      belongsTo: ['Product'],
+    })).toEqual(['productId'])
+  })
+
+  it('ignores malformed relation declarations and missing models', () => {
+    expect(getWritableFields({ belongsTo: ['', null, { name: 'Customer' }] })).toEqual([])
+    expect(getWritableFields(undefined)).toEqual([])
   })
 })
 

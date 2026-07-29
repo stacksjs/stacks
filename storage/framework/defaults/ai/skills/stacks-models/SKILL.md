@@ -129,6 +129,11 @@ shape, authorization boundary, or aggregation differs from generic CRUD. Do
 not expose a sensitive model through unguarded generated routes just because a
 separate dashboard endpoint is protected.
 
+Generated store and update routes accept both spellings of every fillable
+attribute and each foreign key implied by `belongsTo`. Declaring Product as a
+belongs-to relation therefore accepts `productId` or `product_id` without
+duplicating that relationship column as an attribute.
+
 ### Relationships
 
 `hasOne`, `hasMany`, `belongsTo`, `belongsToMany`, `hasOneThrough`,

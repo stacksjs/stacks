@@ -702,13 +702,18 @@ The main `routes/api.ts` file defines route groups for major feature areas:
 
 Models with `traits.useApi` automatically get CRUD routes via ORM actions:
 
-| Method | Path | Action | Status |
-|--------|------|--------|--------|
-| GET | `/api/{model}` | `{Model}IndexOrmAction` | 200 |
-| POST | `/api/{model}` | `{Model}StoreOrmAction` | 201 |
-| GET | `/api/{model}/{id}` | `{Model}ShowOrmAction` | 200 |
-| PATCH | `/api/{model}/{id}` | `{Model}UpdateOrmAction` | 202 |
-| DELETE | `/api/{model}/{id}` | `{Model}DestroyOrmAction` | 204 |
+| Method | Path | Handler | Status |
+|--------|------|---------|--------|
+| GET | `/api/{model}` | Generated index | 200 |
+| POST | `/api/{model}` | Generated store | 201 |
+| GET | `/api/{model}/{id}` | Generated show | 200 |
+| PUT/PATCH | `/api/{model}/{id}` | Generated update | 200 |
+| DELETE | `/api/{model}/{id}` | Generated destroy | 204 |
+
+Generated store and update handlers accept declared `fillable` attributes and
+the foreign-key attributes derived from `belongsTo`. For example,
+`belongsTo: ['Product', 'Customer']` accepts `productId` / `product_id` and
+`customerId` / `customer_id`. Other undeclared fields remain guarded.
 
 ## CLI Commands
 
