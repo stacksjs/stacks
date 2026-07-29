@@ -20,6 +20,18 @@ export interface ApiRequestOptions {
   signal?: AbortSignal
 }
 
+export class DashboardApiError extends Error {
+  readonly status: number
+  readonly fields?: Record<string, string>
+
+  constructor(message: string, status: number, fields?: Record<string, string>) {
+    super(message)
+    this.name = 'DashboardApiError'
+    this.status = status
+    this.fields = fields
+  }
+}
+
 /**
  * Call a dashboard API endpoint and return its parsed JSON.
  *
@@ -63,7 +75,7 @@ export async function dashboardApi<T = unknown>(path: string, options: ApiReques
     const failure = describeResponseError(res.status, payload as ApiErrorBody | null)
     if (failure.unexpected)
       console.error('[dashboard-api] Unexpected request failure:', failure.cause)
-    throw new Error(failure.message)
+    throw new DashboardApiError(failure.message, res.status, failure.fields)
   }
 
   return payload as T
