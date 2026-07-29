@@ -1,0 +1,202 @@
+<script client>
+type DialogMode = 'add' | 'edit'
+type LicenseKeyStatus = 'active' | 'inactive' | 'unassigned'
+
+interface LicenseKeyOption {
+  id: number
+  label: string
+  detail?: string
+}
+
+interface LicenseKeyOptions {
+  customers: LicenseKeyOption[]
+  products: LicenseKeyOption[]
+  orders: LicenseKeyOption[]
+}
+
+interface LicenseKeyRecord {
+  id?: number
+  key: string
+  template: string
+  customer_id?: number | null
+  product_id?: number | null
+  order_id?: number | null
+  expiry_date: string
+  status: LicenseKeyStatus
+}
+
+const open = useReactiveProp('open', false)
+const mode = useReactiveProp('mode', 'add' as DialogMode)
+const licenseKey = useReactiveProp('license-key', null as LicenseKeyRecord | null)
+const options = useReactiveProp('options', {
+  customers: [],
+  products: [],
+  orders: [],
+} as LicenseKeyOptions)
+const emit = defineEmits()
+
+const keyValue = state('')
+const templateValue = state('Standard License')
+const customerId = state<number | string>('')
+const productId = state<number | string>('')
+const orderId = state<number | string>('')
+const expiryDate = state('')
+const status = state<LicenseKeyStatus>('unassigned')
+let lastSync = ''
+
+function toDateTimeLocal(value?: string): string {
+  return value ? value.replace(' ', 'T').slice(0, 16) : ''
+}
+
+function toDatabaseTimestamp(value: string): string {
+  const normalized = value.replace('T', ' ')
+  return normalized.length === 16 ? `${normalized}:00` : normalized
+}
+
+function defaultExpiry(): string {
+  const date = new Date()
+  date.setFullYear(date.getFullYear() + 1)
+  return new Date(date.getTime() - date.getTimezoneOffset() * 60_000).toISOString().slice(0, 16)
+}
+
+function relationId(value: number | string): number | null {
+  if (value === '')
+    return null
+  const id = Number(value)
+  return Number.isFinite(id) && id > 0 ? id : null
+}
+
+function reset(record: LicenseKeyRecord | null): void {
+  keyValue.set(record?.key || '')
+  templateValue.set(record?.template || 'Standard License')
+  customerId.set(record?.customer_id || '')
+  productId.set(record?.product_id || '')
+  orderId.set(record?.order_id || '')
+  expiryDate.set(toDateTimeLocal(record?.expiry_date) || defaultExpiry())
+  status.set(record?.status || 'unassigned')
+}
+
+effect(() => {
+  const record = licenseKey()
+  const signature = `${Boolean(open())}:${mode()}:${record?.id || 'new'}`
+  if (!open() || signature === lastSync)
+    return
+  lastSync = signature
+  reset(record)
+})
+
+function generateKey(): void {
+  const bytes = new Uint8Array(20)
+  crypto.getRandomValues(bytes)
+  const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
+  const characters = Array.from(bytes, value => alphabet[value % alphabet.length])
+  keyValue.set(Array.from({ length: 5 }, (_, index) => characters.slice(index * 4, index * 4 + 4).join('')).join('-'))
+}
+
+function submitForm(): void {
+  emit('submit', {
+    ...(licenseKey()?.id ? { id: licenseKey()?.id } : {}),
+    key: keyValue(),
+    template: templateValue(),
+    customer_id: relationId(customerId()),
+    product_id: relationId(productId()),
+    order_id: relationId(orderId()),
+    expiry_date: toDatabaseTimestamp(expiryDate()),
+    status: status(),
+  })
+}
+</script>
+
+<div
+  :show="open"
+  role="dialog"
+  aria-modal="true"
+  :aria-label="mode === 'edit' ? 'Edit license key' : 'Add license key'"
+  class="fixed inset-0 overflow-y-auto z-20"
+>
+  <div class="flex items-end justify-center sm:items-center p-4 sm:p-0 min-h-full text-center">
+    <button type="button" aria-label="Close license key dialog" class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" @click="emit('close')"></button>
+    <form @submit.prevent="submitForm()" class="overflow-hidden relative pb-4 pt-5 px-4 sm:my-8 sm:p-6 sm:max-w-lg sm:w-full text-left bg-white dark:bg-neutral-800 rounded-lg shadow-xl transition-all transform">
+      <h3 class="font-semibold leading-6 text-base text-center text-gray-900 dark:text-white">
+        {{ mode === 'edit' ? 'Edit License Key' : 'Add New License Key' }}
+      </h3>
+
+      <div class="mt-5 space-y-4">
+        <label class="block">
+          <span class="block font-medium leading-6 text-gray-900 text-sm dark:text-neutral-200">License Key</span>
+          <span class="flex gap-2 mt-2">
+            <input
+              type="text"
+              x-model.trim="keyValue"
+              pattern="[A-Z0-9]{4}(-[A-Z0-9]{4}){4}"
+              required
+              placeholder="XXXX-XXXX-XXXX-XXXX-XXXX"
+              class="block flex-1 py-1.5 text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm"
+            />
+            <button type="button" @click="generateKey()" class="px-3 py-1.5 font-semibold text-gray-700 text-sm dark:text-neutral-200 bg-gray-50 dark:bg-neutral-700 hover:bg-gray-100 dark:hover:bg-neutral-600 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600">
+              Generate
+            </button>
+          </span>
+        </label>
+
+        <label class="block">
+          <span class="block font-medium leading-6 text-gray-900 text-sm dark:text-neutral-200">Template</span>
+          <select x-model="templateValue" required class="block mt-2 py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm">
+            <option value="Standard License">Standard License</option>
+            <option value="Premium License">Premium License</option>
+            <option value="Enterprise License">Enterprise License</option>
+          </select>
+        </label>
+
+        <div class="grid gap-4 sm:grid-cols-2">
+          <label class="block">
+            <span class="block font-medium leading-6 text-gray-900 text-sm dark:text-neutral-200">Customer</span>
+            <select x-model.number="customerId" class="block mt-2 py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm">
+              <option value="">Unassigned</option>
+              <option :for="option in options.customers" :value="option.id">{{ option.label }}</option>
+            </select>
+          </label>
+          <label class="block">
+            <span class="block font-medium leading-6 text-gray-900 text-sm dark:text-neutral-200">Product</span>
+            <select x-model.number="productId" class="block mt-2 py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm">
+              <option value="">Unassigned</option>
+              <option :for="option in options.products" :value="option.id">{{ option.label }}</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="grid gap-4 sm:grid-cols-2">
+          <label class="block">
+            <span class="block font-medium leading-6 text-gray-900 text-sm dark:text-neutral-200">Order</span>
+            <select x-model.number="orderId" class="block mt-2 py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm">
+              <option value="">Unassigned</option>
+              <option :for="option in options.orders" :value="option.id">{{ option.label }}</option>
+            </select>
+          </label>
+          <label class="block">
+            <span class="block font-medium leading-6 text-gray-900 text-sm dark:text-neutral-200">Expiry Date</span>
+            <input type="datetime-local" x-model="expiryDate" required class="block mt-2 py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm" />
+          </label>
+        </div>
+
+        <label class="block">
+          <span class="block font-medium leading-6 text-gray-900 text-sm dark:text-neutral-200">Status</span>
+          <select x-model="status" required class="block mt-2 py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm">
+            <option value="unassigned">Unassigned</option>
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="sm:grid sm:gap-3 sm:grid-cols-2 sm:grid-flow-row-dense mt-6">
+        <button type="submit" class="inline-flex justify-center sm:col-start-2 px-3 py-2 w-full font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 shadow-sm">
+          {{ mode === 'edit' ? 'Save Changes' : 'Add License Key' }}
+        </button>
+        <button type="button" @click="emit('close')" class="inline-flex justify-center sm:col-start-1 mt-3 px-3 py-2 sm:mt-0 w-full font-semibold text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-600 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 shadow-sm">
+          Cancel
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

@@ -1,92 +1,130 @@
-<script>
-interface LicenseKeysTableProps {
-  licenseKeys?: any[]
+<script client>
+type LicenseKeyStatus = 'active' | 'inactive' | 'unassigned'
+
+interface RelatedSummary {
+  id: number
+  label: string
+  detail?: string
 }
 
-const { licenseKeys = [] } = defineProps<LicenseKeysTableProps>()
+interface LicenseKeyRow {
+  id: number
+  key: string
+  template: string
+  customer_id?: number | null
+  product_id?: number | null
+  order_id?: number | null
+  expiry_date: string
+  created_at: string
+  status: LicenseKeyStatus
+  customer?: RelatedSummary | null
+  product?: RelatedSummary | null
+  order?: RelatedSummary | null
+}
 
-function statusVariant(status) {
-    const s = String(status || '').toLowerCase()
-    if (s === 'active') return 'success'
-    if (s === 'expired') return 'warning'
-    if (s === 'revoked') return 'danger'
-    return 'default'
-  }
+const licenseKeys = useReactiveProp('license-keys', [] as LicenseKeyRow[])
+const emit = defineEmits()
 
-  function uppercaseFirstLetter(status) {
-    return status.charAt(0).toUpperCase() + status.slice(1)
-  }
+function formatDate(value: string): string {
+  if (!value)
+    return 'Not set'
 
-  function formatDate(date) {
-    if (!date) return 'N/A'
-    return new Date(date).toLocaleDateString()
-  }
+  const normalized = value.includes('T') ? value : value.replace(' ', 'T')
+  const date = new Date(normalized)
+  if (Number.isNaN(date.getTime()))
+    return value
+
+  return new Intl.DateTimeFormat('en-US', { dateStyle: 'medium' }).format(date)
+}
+
+function statusLabel(status: LicenseKeyStatus): string {
+  return status === 'unassigned' ? 'Unassigned' : status === 'active' ? 'Active' : 'Inactive'
+}
+
+function statusClass(status: LicenseKeyStatus): string {
+  if (status === 'active')
+    return 'bg-green-50 text-green-700 ring-green-600/20 dark:bg-green-900/30 dark:text-green-300'
+  if (status === 'inactive')
+    return 'bg-stone-100 text-stone-600 ring-stone-500/20 dark:bg-neutral-700 dark:text-neutral-300'
+  return 'bg-amber-50 text-amber-700 ring-amber-600/20 dark:bg-amber-900/30 dark:text-amber-300'
+}
 </script>
-<div class="overflow-hidden border border-stone-200/80 rounded-xl dark:border-neutral-700 shadow-sm">
-    <table class="min-w-full divide-stone-100 divide-y dark:divide-neutral-700">
-      <thead class="bg-stone-50/80 dark:bg-neutral-800">
-        <tr>
-          <th scope="col" class="pl-6 pr-3 py-3.5 font-semibold text-left text-stone-500 text-xs tracking-wider uppercase dark:text-neutral-400">Key</th>
-          <th scope="col" class="px-4 py-3.5 font-semibold text-left text-stone-500 text-xs tracking-wider uppercase dark:text-neutral-400">Template</th>
-          <th scope="col" class="px-4 py-3.5 font-semibold text-left text-stone-500 text-xs tracking-wider uppercase dark:text-neutral-400">Customer</th>
-          <th scope="col" class="px-4 py-3.5 font-semibold text-left text-stone-500 text-xs tracking-wider uppercase dark:text-neutral-400">Product</th>
-          <th scope="col" class="px-4 py-3.5 font-semibold text-left text-stone-500 text-xs tracking-wider uppercase dark:text-neutral-400">Order ID</th>
-          <th scope="col" class="px-4 py-3.5 font-semibold text-left text-stone-500 text-xs tracking-wider uppercase dark:text-neutral-400">Date Created</th>
-          <th scope="col" class="px-4 py-3.5 font-semibold text-left text-stone-500 text-xs tracking-wider uppercase dark:text-neutral-400">Expiry Date</th>
-          <th scope="col" class="px-4 py-3.5 font-semibold text-left text-stone-500 text-xs tracking-wider uppercase dark:text-neutral-400">Status</th>
-          <th scope="col" class="px-4 py-3.5 font-semibold text-left text-stone-500 text-xs tracking-wider uppercase dark:text-neutral-400">Actions</th>
+
+<div class="overflow-x-auto border border-stone-200/80 rounded-xl dark:border-neutral-700 shadow-sm">
+  <table class="min-w-full divide-stone-100 divide-y dark:divide-neutral-700">
+    <thead class="bg-stone-50/80 dark:bg-neutral-800">
+      <tr>
+        <th scope="col" class="pl-6 pr-3 py-3.5 font-semibold text-left text-stone-500 text-xs tracking-wider uppercase dark:text-neutral-400">Key</th>
+        <th scope="col" class="px-4 py-3.5 font-semibold text-left text-stone-500 text-xs tracking-wider uppercase dark:text-neutral-400">Template</th>
+        <th scope="col" class="px-4 py-3.5 font-semibold text-left text-stone-500 text-xs tracking-wider uppercase dark:text-neutral-400">Customer</th>
+        <th scope="col" class="px-4 py-3.5 font-semibold text-left text-stone-500 text-xs tracking-wider uppercase dark:text-neutral-400">Product</th>
+        <th scope="col" class="px-4 py-3.5 font-semibold text-left text-stone-500 text-xs tracking-wider uppercase dark:text-neutral-400">Order</th>
+        <th scope="col" class="px-4 py-3.5 font-semibold text-left text-stone-500 text-xs tracking-wider uppercase dark:text-neutral-400">Created</th>
+        <th scope="col" class="px-4 py-3.5 font-semibold text-left text-stone-500 text-xs tracking-wider uppercase dark:text-neutral-400">Expires</th>
+        <th scope="col" class="px-4 py-3.5 font-semibold text-left text-stone-500 text-xs tracking-wider uppercase dark:text-neutral-400">Status</th>
+        <th scope="col" class="relative pl-3 pr-6 py-3.5">
+          <span class="sr-only">Actions</span>
+        </th>
+      </tr>
+    </thead>
+    <tbody class="bg-white dark:bg-neutral-800 divide-stone-100 divide-y dark:divide-neutral-700">
+      <template :for="licenseKey in licenseKeys">
+        <tr class="hover:bg-stone-50/50 dark:hover:bg-neutral-700/50 transition-colors">
+          <td class="pl-6 pr-3 py-3.5 font-medium font-mono text-sm text-stone-800 whitespace-nowrap dark:text-white">
+            {{ licenseKey.key }}
+          </td>
+          <td class="px-4 py-3.5 text-sm text-stone-500 whitespace-nowrap dark:text-neutral-300">
+            {{ licenseKey.template }}
+          </td>
+          <td class="px-4 py-3.5 text-sm text-stone-500 whitespace-nowrap dark:text-neutral-300">
+            <span class="block">{{ licenseKey.customer?.label || 'Unassigned' }}</span>
+            <span :if="licenseKey.customer?.detail" class="block text-stone-400 text-xs dark:text-neutral-500">
+              {{ licenseKey.customer?.detail }}
+            </span>
+          </td>
+          <td class="px-4 py-3.5 text-sm text-stone-500 whitespace-nowrap dark:text-neutral-300">
+            {{ licenseKey.product?.label || 'Unassigned' }}
+          </td>
+          <td class="px-4 py-3.5 text-sm text-stone-500 whitespace-nowrap dark:text-neutral-300">
+            {{ licenseKey.order?.label || 'Unassigned' }}
+          </td>
+          <td class="px-4 py-3.5 text-sm text-stone-500 whitespace-nowrap dark:text-neutral-300">
+            {{ formatDate(licenseKey.created_at) }}
+          </td>
+          <td class="px-4 py-3.5 text-sm text-stone-500 whitespace-nowrap dark:text-neutral-300">
+            {{ formatDate(licenseKey.expiry_date) }}
+          </td>
+          <td class="px-4 py-3.5 text-sm whitespace-nowrap">
+            <span :class="'inline-flex items-center px-2 py-1 font-medium text-xs ring-1 ring-inset rounded-md ' + statusClass(licenseKey.status)">
+              {{ statusLabel(licenseKey.status) }}
+            </span>
+          </td>
+          <td class="relative pl-3 pr-6 py-3.5 font-medium text-right text-sm whitespace-nowrap">
+            <button
+              type="button"
+              @click="emit('edit', licenseKey)"
+              :aria-label="'Edit license key ' + licenseKey.key"
+              class="mr-1 p-2 text-stone-400 hover:text-blue-700 dark:hover:text-blue-300 rounded-md transition-colors"
+            >
+              <span class="block h-5 w-5 i-hugeicons-edit-01"></span>
+            </button>
+            <button
+              type="button"
+              @click="emit('delete', licenseKey)"
+              :aria-label="'Delete license key ' + licenseKey.key"
+              class="p-2 text-stone-400 hover:text-red-700 dark:hover:text-red-300 rounded-md transition-colors"
+            >
+              <span class="block h-5 w-5 i-hugeicons-waste"></span>
+            </button>
+          </td>
         </tr>
-      </thead>
-      <tbody class="bg-white dark:bg-neutral-800 divide-stone-100 divide-y dark:divide-neutral-700">
-        @foreach(licenseKeys as licenseKey)
-          <tr class="hover:bg-stone-50/50 dark:hover:bg-neutral-700/50 transition-colors">
-            <td class="pl-6 pr-3 py-3.5 font-medium text-sm text-stone-800 whitespace-nowrap dark:text-white">
-              {{ licenseKey.key }}
-            </td>
-            <td class="px-4 py-3.5 text-sm text-stone-500 whitespace-nowrap dark:text-neutral-300">
-              {{ licenseKey.template }}
-            </td>
-            <td class="px-4 py-3.5 text-sm text-stone-500 whitespace-nowrap dark:text-neutral-300">
-              {{ licenseKey.customer.name }}
-              <div class="text-stone-400 text-xs dark:text-neutral-500">{{ licenseKey.customer.email }}</div>
-            </td>
-            <td class="px-4 py-3.5 text-sm text-stone-500 whitespace-nowrap dark:text-neutral-300">
-              {{ licenseKey.product }}
-            </td>
-            <td class="px-4 py-3.5 text-sm text-stone-500 whitespace-nowrap dark:text-neutral-300">
-              {{ licenseKey.order_id }}
-            </td>
-            <td class="px-4 py-3.5 text-sm text-stone-500 whitespace-nowrap dark:text-neutral-300">
-              {{ formatDate(licenseKey.created_at) }}
-            </td>
-            <td class="px-4 py-3.5 text-sm text-stone-500 whitespace-nowrap dark:text-neutral-300">
-              {{ formatDate(licenseKey.expiry_date) }}
-            </td>
-            <td class="px-4 py-3.5 text-sm whitespace-nowrap">
-              <Badge variant="{{ statusVariant(licenseKey.status) }}" size="sm">
-                {{ uppercaseFirstLetter(licenseKey.status) }}
-              </Badge>
-            </td>
-            <td class="relative pl-3 pr-6 py-3.5 font-medium text-right text-sm whitespace-nowrap">
-              <button type="button" class="mr-2 p-2 text-stone-400 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 border border-transparent rounded-md hover:border-blue-200 dark:hover:border-blue-800 duration-150 transition-colors" data-action="view" data-license-id="{{ licenseKey.id }}" title="View">
-                <div class="h-5 w-5 i-hugeicons-view"></div>
-              </button>
-              <button type="button" class="mr-2 p-2 text-stone-400 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 border border-transparent rounded-md hover:border-blue-200 dark:hover:border-blue-800 duration-150 transition-colors" data-action="edit" data-license-id="{{ licenseKey.id }}" title="Edit">
-                <div class="h-5 w-5 i-hugeicons-edit-01"></div>
-              </button>
-              <button type="button" class="p-2 text-stone-400 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300 border border-transparent rounded-md hover:border-red-200 dark:hover:border-red-800 duration-150 transition-colors" data-action="delete" data-license-id="{{ licenseKey.id }}" title="Delete">
-                <div class="h-5 w-5 i-hugeicons-waste"></div>
-              </button>
-            </td>
-          </tr>
-        @endforeach
-        @if(licenseKeys.length == 0)
-          <tr>
-            <td colspan="9" class="px-6 py-3.5 text-center text-sm text-stone-500 dark:text-neutral-400">
-              No license keys found
-            </td>
-          </tr>
-        @endif
-      </tbody>
-    </table>
-  </div>
+      </template>
+
+      <tr :if="licenseKeys().length === 0">
+        <td colspan="9" class="px-6 py-12 text-center text-sm text-stone-500 dark:text-neutral-400">
+          No license keys found.
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
