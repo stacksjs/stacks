@@ -250,6 +250,8 @@ route.group({ prefix: '/api/dashboard', apiResponse: true }, () => {
   guard(route.delete('/commerce/license-keys/{id}', 'Actions/Commerce/Shipping/LicenseKeyDestroyAction'))
 
   guard(route.get('/notification-deliveries', 'Actions/Dashboard/Notifications/NotificationDeliveryIndexAction'))
+  guard(route.get('/notification-deliveries/overview', 'Actions/Dashboard/Notifications/NotificationDeliveryOverviewAction'))
+  guard(route.get('/notification-deliveries/history', 'Actions/Dashboard/Notifications/NotificationDeliveryHistoryAction'))
   guard(route.post('/notification-deliveries/{id}/retry', 'Actions/Dashboard/Notifications/NotificationDeliveryRetryAction'))
 
   // Models overview. Walks `app/Models/` + framework default models,
