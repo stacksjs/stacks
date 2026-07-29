@@ -2,6 +2,7 @@ import process from 'node:process'
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { bold, cyan, dim, green, red } from '@stacksjs/cli'
 import { projectPath, storagePath } from '@stacksjs/path'
+import { seedCsrfPageResponse } from './csrf'
 import { buildDashboardUrl, buildManifest, discoverModels, findAvailablePort, waitForServer } from './dashboard-utils'
 
 // buddyOptions serializes `verbose: false` as `--verbose false`, so
@@ -446,6 +447,10 @@ async function startStxServer(): Promise<void> {
           return null
         }
       : undefined,
+    // The dashboard's login and registration views submit to CSRF-protected
+    // framework routes. Seed the token on the HTML response, matching the
+    // regular development and production page servers.
+    onResponse: seedCsrfPageResponse,
     auth: false,
     ...(stxModule && { stxModule }),
   } as any)

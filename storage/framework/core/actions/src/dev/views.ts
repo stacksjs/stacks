@@ -2,6 +2,7 @@ import { AsyncLocalStorage } from 'node:async_hooks'
 import { existsSync } from 'node:fs'
 import { config, overridesReady } from '@stacksjs/config'
 import { projectPath } from '@stacksjs/path'
+import { seedCsrfPageResponse } from './csrf'
 
 /**
  * Boot the views/SSR dev server.
@@ -241,6 +242,11 @@ async function startDefaultServer() {
       requestStore.enterWith(ctx)
       return null
     },
+    // API requests are CSRF-protected by default. Seed the matching
+    // double-submit cookie on the HTML page response so a first visit to
+    // /login or /register can immediately submit to the API. Production
+    // already applies the same response hook.
+    onResponse: seedCsrfPageResponse,
   } as any)
 }
 
