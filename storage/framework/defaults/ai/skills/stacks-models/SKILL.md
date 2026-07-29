@@ -99,7 +99,7 @@ generated model types stay precise.
 | `useTimestamps` (alias `timestampable`) | `created_at` / `updated_at`. On by default |
 | `useSoftDeletes` (alias `softDeletable`) | `deleted_at` plus soft-delete query scopes |
 | `useAuth` (alias `authenticatable`) | Auth columns; `{ usePasskey: true }` adds passkeys |
-| `useApi` | Generates REST actions and routes: `{ uri, routes }` |
+| `useApi` | Generates REST actions and routes: `{ uri, routes, middleware? }` |
 | `useSearch` (alias `searchable`) | Search-engine indexing: `{ displayable, searchable, sortable, filterable }` |
 | `useSocials` | OAuth identities, e.g. `['github']` |
 | `useActivityLog` | Writes an `Activity` row per change |
@@ -110,6 +110,24 @@ generated model types stay precise.
 Also at the top level: `indexes: [{ name, columns, unique?, where? }]` for
 composite and partial-unique indexes, and `dashboard: { highlight: true }` to
 feature the model in the admin UI.
+
+`useApi` is an API capability, not a dashboard-view generator. Its generated
+routes are registered from the merged model registry. Framework defaults are
+loaded first, then recursive `app/Models/` definitions override matching model
+names. Protect non-public resources at the model:
+
+```ts
+useApi: {
+  uri: 'mail-preferences',
+  routes: ['index', 'store', 'show', 'update', 'destroy'],
+  middleware: ['auth'],
+}
+```
+
+Dashboard-specific endpoints may still use scoped Actions when their transport
+shape, authorization boundary, or aggregation differs from generic CRUD. Do
+not expose a sensitive model through unguarded generated routes just because a
+separate dashboard endpoint is protected.
 
 ### Relationships
 

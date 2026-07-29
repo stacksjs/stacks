@@ -149,7 +149,19 @@ defineModel({
 })
 ```
 
-The `useApi` trait auto-generates dashboard CRUD views for the model.
+The `useApi` trait auto-generates REST actions and routes for the model. The
+generic model explorer discovers the model separately. It does not generate a
+custom dashboard page.
+
+Use a dashboard-scoped Action when a page needs an aggregate response or a
+purpose-built transport shape. Register it under `/api/dashboard/*` in
+`storage/framework/defaults/routes/dashboard-api.ts`. Sensitive reads and all
+writes must use the route file's `guard()` boundary so local development stays
+usable while non-local environments require authentication and an admin role.
+
+For stateful settings, persist through a model with `useApi` and explicit
+middleware, then expose a narrow dashboard Action for the page. Keep account
+identity fields read-only when their source of truth is `config/*.ts`.
 
 ## Dashboard Development
 
@@ -166,8 +178,10 @@ Port: 3002 (configured in `config/ports.ts` as `admin`)
 - Dashboard components use STX templating with crosswind CSS
 - Dashboard routes are registered from `storage/framework/defaults/routes/`, not from a generated type file
 - Settings panels read/write from the corresponding `config/*.ts` files
-- Models with `useApi` trait get auto-generated dashboard views
+- Models with `useApi` get generated REST actions and routes, not bespoke dashboard views
 - `dashboard: { highlight: true }` makes models prominent in the dashboard
 - Dashboard layout uses a sidebar + navbar pattern
 - All dashboard actions are in `storage/framework/defaults/app/Actions/Dashboard/`
+- Split repeated or stateful page regions into `.stx` components under `resources/components/Dashboard/`; pass reactive values with `useReactiveProp()` and communicate upward with `defineEmits()`
+- Preserve the existing sidebar information architecture and styling when redesigning page content
 - The live terminal component streams deployment output in real-time

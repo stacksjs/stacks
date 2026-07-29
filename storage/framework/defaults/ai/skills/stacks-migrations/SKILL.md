@@ -13,6 +13,7 @@ Schema change management via migration files.
 ## Key Paths
 - Migration files: `database/migrations/` (96+ files)
 - Database config: `config/database.ts`
+- Model snapshot: `storage/framework/database/model-snapshot.<dialect>.json`
 
 ## CLI Commands
 
@@ -44,7 +45,20 @@ When you define or modify a model, generate migrations automatically:
 buddy generate:migrations
 ```
 
-This diffs model definitions against the current schema and generates the necessary SQL.
+This recursively loads both model roots, with `app/Models/` overriding framework
+models that have the same model name:
+
+- `storage/framework/defaults/app/Models/`
+- `app/Models/`
+
+It diffs the merged registry against the committed dialect snapshot and
+generates the necessary SQL. An application does not need an `app/Models/`
+directory for framework model migrations to be discovered.
+
+The snapshot is part of the schema history and must be committed with the
+generated migration. It lives under `storage/framework/database/`, not `.qb/`.
+Run the generator a second time before committing. A stable change reports
+`Nothing to migrate` and `Model snapshot unchanged`.
 
 ## Built-in Migrations (96+)
 
@@ -93,12 +107,17 @@ The framework includes migrations for all built-in models:
 1. Define/modify model in `storage/framework/defaults/app/Models/` or `app/Models/`
 2. Run `buddy generate:migrations` to generate SQL diffs
 3. Review generated migration files
-4. Run `buddy migrate` to apply
+4. Run `buddy generate:migrations` again and confirm there is no remaining diff
+5. Run `buddy migrate` to apply
+6. Commit the generated SQL and `storage/framework/database/model-snapshot.<dialect>.json`
 
 ## Gotchas
 - `migrate:fresh` drops ALL tables — only use in development
 - Migrations run in filename order (timestamps ensure correct sequence)
 - Never edit a migration that's been run in production — create a new one
+- Keep the committed model snapshot in sync with every generated migration
+- Do not commit a second snapshot under `.qb/`; that indicates a missing `snapshotDir` configuration
+- If a generated SQLite migration rebuilds tables, test it against a copy of the current database and run `PRAGMA integrity_check` plus `PRAGMA foreign_key_check`
 - `--seed` flag after `migrate:fresh` seeds the database with factory data
 - 96+ migration files exist by default for all framework models
 - SQLite >= 3.47.2 is required (system requirement)
