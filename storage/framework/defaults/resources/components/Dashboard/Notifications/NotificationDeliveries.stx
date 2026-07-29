@@ -1,0 +1,262 @@
+<script client>
+import type {
+  DashboardDeliveryChannel,
+  NotificationDelivery,
+  NotificationDeliveryStatus,
+} from '../../../../functions/notifications/deliveries'
+import {
+  fetchNotificationDeliveries,
+  retryNotificationDelivery,
+} from '../../../../functions/notifications/deliveries'
+
+const channel = useReactiveProp('channel', 'email' as DashboardDeliveryChannel)
+const title = useReactiveProp('title', 'Notification Deliveries')
+const description = useReactiveProp('description', 'Monitor notification transport attempts.')
+
+const deliveries = state<NotificationDelivery[]>([])
+const currentPage = state(1)
+const perPage = state(10)
+const isLoading = state(true)
+const searchQuery = state('')
+const selectedStatus = state('all')
+const showFilters = state(false)
+const sortDirection = state<'asc' | 'desc'>('desc')
+const selectedDelivery = state<NotificationDelivery | null>(null)
+const showDetails = state(false)
+const retryingId = state<number | null>(null)
+
+const filteredDeliveries = derived(() => {
+  const query = searchQuery().trim().toLowerCase()
+  const status = selectedStatus()
+
+  return deliveries().filter((delivery) => {
+    if (status !== 'all' && delivery.status !== status)
+      return false
+    if (!query)
+      return true
+
+    return delivery.recipient.toLowerCase().includes(query)
+      || delivery.subject.toLowerCase().includes(query)
+      || delivery.body.toLowerCase().includes(query)
+      || delivery.error.toLowerCase().includes(query)
+  })
+})
+
+const sortedDeliveries = derived(() => [...filteredDeliveries()].sort((a, b) => {
+  const comparison = new Date(a.sent_at).getTime() - new Date(b.sent_at).getTime()
+  return sortDirection() === 'asc' ? comparison : -comparison
+}))
+
+const paginatedDeliveries = derived(() => {
+  const start = (currentPage() - 1) * perPage()
+  return sortedDeliveries().slice(start, start + perPage())
+})
+
+const totalItems = derived(() => filteredDeliveries().length)
+const totalPages = derived(() => Math.max(1, Math.ceil(totalItems() / perPage())))
+const rangeStart = derived(() => totalItems() === 0 ? 0 : (currentPage() - 1) * perPage() + 1)
+const rangeEnd = derived(() => Math.min(currentPage() * perPage(), totalItems()))
+const canGoBack = derived(() => currentPage() > 1)
+const canGoForward = derived(() => currentPage() < totalPages())
+const sentCount = derived(() => deliveries().filter(delivery => delivery.status === 'sent' || delivery.status === 'delivered').length)
+const failedCount = derived(() => deliveries().filter(delivery => delivery.status === 'failed').length)
+const pendingCount = derived(() => deliveries().filter(delivery => delivery.status === 'pending').length)
+
+effect(() => {
+  searchQuery()
+  selectedStatus()
+  currentPage.set(1)
+})
+
+function formatDate(value: string): string {
+  if (!value)
+    return 'Not recorded'
+  const date = new Date(value)
+  return Number.isNaN(date.getTime()) ? value : new Intl.DateTimeFormat('en-US', {
+    dateStyle: 'medium',
+    timeStyle: 'short',
+  }).format(date)
+}
+
+function statusLabel(status: NotificationDeliveryStatus): string {
+  return status.charAt(0).toUpperCase() + status.slice(1)
+}
+
+function statusClass(status: NotificationDeliveryStatus): string {
+  if (status === 'failed')
+    return 'bg-red-50 text-red-700 ring-red-600/20 dark:bg-red-950/40 dark:text-red-300'
+  if (status === 'pending')
+    return 'bg-amber-50 text-amber-700 ring-amber-600/20 dark:bg-amber-950/40 dark:text-amber-300'
+  return 'bg-green-50 text-green-700 ring-green-600/20 dark:bg-green-950/40 dark:text-green-300'
+}
+
+function provider(delivery: NotificationDelivery): string {
+  const value = delivery.metadata.provider || delivery.metadata.driver
+  return typeof value === 'string' && value ? value : 'Default'
+}
+
+function openDelivery(delivery: NotificationDelivery): void {
+  selectedDelivery.set(delivery)
+  showDetails.set(true)
+}
+
+function closeDelivery(): void {
+  showDetails.set(false)
+  selectedDelivery.set(null)
+}
+
+async function loadDeliveries(): Promise<void> {
+  isLoading.set(true)
+  deliveries.set(await fetchNotificationDeliveries(channel()))
+  isLoading.set(false)
+}
+
+async function retryDelivery(delivery: NotificationDelivery): Promise<void> {
+  retryingId.set(delivery.id)
+  const retried = await retryNotificationDelivery(delivery)
+  if (retried)
+    await loadDeliveries()
+  retryingId.set(null)
+}
+
+function resetFilters(): void {
+  searchQuery.set('')
+  selectedStatus.set('all')
+}
+
+function previousPage(): void {
+  if (canGoBack())
+    currentPage.update(page => page - 1)
+}
+
+function nextPage(): void {
+  if (canGoForward())
+    currentPage.update(page => page + 1)
+}
+
+onMount(loadDeliveries)
+</script>
+
+<section class="py-4 lg:py-8 min-h-screen dark:bg-neutral-800">
+  <div class="px-4 sm:px-6 lg:px-8">
+    <div class="sm:flex sm:items-center">
+      <div class="sm:flex-auto">
+        <h1 class="font-semibold leading-6 text-base text-gray-900 dark:text-neutral-100">{{ title }}</h1>
+        <p class="mt-2 text-gray-700 text-sm dark:text-neutral-300">{{ description }}</p>
+      </div>
+      <div class="sm:flex-none mt-4 sm:ml-16 sm:mt-0">
+        <button type="button" class="inline-flex items-center px-3 py-2 font-semibold text-gray-900 text-sm dark:text-neutral-100 bg-white dark:bg-neutral-600 hover:bg-gray-50 dark:hover:bg-neutral-500 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 shadow-sm" @click="showFilters.update(value => !value)">
+          <span class="mr-2 h-5 w-5 i-hugeicons-filter"></span>
+          {{ showFilters ? 'Hide Filters' : 'Show Filters' }}
+        </button>
+      </div>
+    </div>
+
+    <dl class="grid gap-3 grid-cols-2 lg:grid-cols-4 mt-6">
+      <div class="px-4 py-3 bg-white dark:bg-neutral-700 ring-1 ring-gray-200 rounded-lg dark:ring-neutral-600">
+        <dt class="text-gray-500 text-xs dark:text-neutral-400">Attempts</dt>
+        <dd class="mt-1 font-semibold text-gray-900 text-xl dark:text-white">{{ deliveries.length }}</dd>
+      </div>
+      <div class="px-4 py-3 bg-white dark:bg-neutral-700 ring-1 ring-gray-200 rounded-lg dark:ring-neutral-600">
+        <dt class="text-gray-500 text-xs dark:text-neutral-400">Sent</dt>
+        <dd class="mt-1 font-semibold text-green-700 text-xl dark:text-green-300">{{ sentCount }}</dd>
+      </div>
+      <div class="px-4 py-3 bg-white dark:bg-neutral-700 ring-1 ring-gray-200 rounded-lg dark:ring-neutral-600">
+        <dt class="text-gray-500 text-xs dark:text-neutral-400">Failed</dt>
+        <dd class="mt-1 font-semibold text-red-700 text-xl dark:text-red-300">{{ failedCount }}</dd>
+      </div>
+      <div class="px-4 py-3 bg-white dark:bg-neutral-700 ring-1 ring-gray-200 rounded-lg dark:ring-neutral-600">
+        <dt class="text-gray-500 text-xs dark:text-neutral-400">Pending</dt>
+        <dd class="mt-1 font-semibold text-amber-700 text-xl dark:text-amber-300">{{ pendingCount }}</dd>
+      </div>
+    </dl>
+
+    <div :show="showFilters" class="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 mt-4">
+      <label class="block">
+        <span class="sr-only">Search notification deliveries</span>
+        <span class="block relative">
+          <span class="flex absolute inset-y-0 left-0 items-center pl-3 pointer-events-none">
+            <span class="h-5 w-5 text-gray-400 i-hugeicons-search-01"></span>
+          </span>
+          <input x-model.trim="searchQuery" type="search" placeholder="Search recipient or content..." class="block pl-10 py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-neutral-100 placeholder:text-gray-400 dark:bg-neutral-600 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset" />
+        </span>
+      </label>
+      <label class="block">
+        <span class="sr-only">Delivery status</span>
+        <select x-model="selectedStatus" class="block pl-3 pr-10 py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-neutral-100 dark:bg-neutral-600 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600">
+          <option value="all">All Statuses</option>
+          <option value="sent">Sent</option>
+          <option value="delivered">Delivered</option>
+          <option value="failed">Failed</option>
+          <option value="pending">Pending</option>
+        </select>
+      </label>
+      <div>
+        <button type="button" class="px-3 py-2 font-semibold text-gray-900 text-sm dark:text-neutral-100 bg-white dark:bg-neutral-600 hover:bg-gray-50 dark:hover:bg-neutral-500 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 shadow-sm" @click="resetFilters()">Reset Filters</button>
+      </div>
+    </div>
+
+    <div class="overflow-x-auto mt-8 ring-1 ring-black/5 rounded-lg dark:ring-white/10 shadow-sm">
+      <table class="min-w-full divide-gray-200 divide-y dark:divide-neutral-600">
+        <thead class="bg-gray-50 dark:bg-neutral-700">
+          <tr>
+            <th scope="col" class="pl-4 pr-3 py-3.5 sm:pl-6 font-semibold text-gray-900 text-left text-sm dark:text-neutral-100">Recipient</th>
+            <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-neutral-100">{{ channel === 'email' ? 'Subject' : 'Message' }}</th>
+            <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-neutral-100">Status</th>
+            <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-neutral-100">Provider</th>
+            <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-right text-sm dark:text-neutral-100">
+              <button type="button" class="inline-flex gap-2 items-center" @click="sortDirection.set(sortDirection === 'asc' ? 'desc' : 'asc')">
+                Attempted
+                <span :class="'h-4 w-4 ' + (sortDirection === 'asc' ? 'i-hugeicons-chevron-up' : 'i-hugeicons-chevron-down')"></span>
+              </button>
+            </th>
+            <th scope="col" class="relative pl-3 pr-4 py-3.5 sm:pr-6"><span class="sr-only">Actions</span></th>
+          </tr>
+        </thead>
+        <tbody class="bg-white dark:bg-neutral-800 divide-gray-200 divide-y dark:divide-neutral-700">
+          <tr :show="isLoading">
+            <td colspan="6" class="px-3 py-12 text-center text-gray-500 text-sm dark:text-neutral-400">Loading delivery attempts...</td>
+          </tr>
+          <tr :if="!isLoading && paginatedDeliveries.length === 0">
+            <td colspan="6" class="px-3 py-12 text-center text-gray-500 text-sm dark:text-neutral-400">
+              No {{ channel === 'email' ? 'email' : 'SMS' }} delivery attempts have been recorded.
+            </td>
+          </tr>
+          <template :for="delivery in paginatedDeliveries">
+            <tr class="hover:bg-gray-50 dark:hover:bg-neutral-700/50">
+              <td class="pl-4 pr-3 py-4 sm:pl-6 font-medium text-gray-900 text-sm whitespace-nowrap dark:text-neutral-100">{{ delivery.recipient || 'Not recorded' }}</td>
+              <td class="px-3 py-4 text-gray-500 text-sm dark:text-neutral-400">
+                <span class="block max-w-md truncate">{{ channel === 'email' ? (delivery.subject || 'No subject') : delivery.body }}</span>
+              </td>
+              <td class="px-3 py-4 text-sm whitespace-nowrap">
+                <span :class="'inline-flex items-center px-2 py-1 font-medium text-xs ring-1 ring-inset rounded-md ' + statusClass(delivery.status)">
+                  {{ statusLabel(delivery.status) }}
+                </span>
+              </td>
+              <td class="px-3 py-4 text-gray-500 text-sm whitespace-nowrap dark:text-neutral-400">{{ provider(delivery) }}</td>
+              <td class="px-3 py-4 text-gray-500 text-right text-sm whitespace-nowrap dark:text-neutral-400">{{ formatDate(delivery.sent_at) }}</td>
+              <td class="relative pl-3 pr-4 py-4 sm:pr-6 font-medium text-right text-sm whitespace-nowrap">
+                <button :if="delivery.status === 'failed'" type="button" :disabled="retryingId === delivery.id" class="mr-3 text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 disabled:opacity-50" @click="retryDelivery(delivery)">
+                  {{ retryingId === delivery.id ? 'Retrying...' : 'Retry' }}
+                </button>
+                <button type="button" class="text-gray-600 dark:text-neutral-400 hover:text-gray-900 dark:hover:text-gray-200" @click="openDelivery(delivery)">View Details</button>
+              </td>
+            </tr>
+          </template>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="flex items-center justify-between mt-4">
+      <p class="text-gray-700 text-sm dark:text-neutral-300">
+        Showing <span class="font-medium">{{ rangeStart }}</span> to <span class="font-medium">{{ rangeEnd }}</span> of <span class="font-medium">{{ totalItems }}</span> results
+      </p>
+      <div class="flex gap-2 items-center">
+        <button type="button" :disabled="!canGoBack" class="px-3 py-2 font-semibold text-gray-900 text-sm dark:text-neutral-100 bg-white dark:bg-neutral-600 hover:bg-gray-50 dark:hover:bg-neutral-500 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 disabled:opacity-50" @click="previousPage()">Previous</button>
+        <button type="button" :disabled="!canGoForward" class="px-3 py-2 font-semibold text-gray-900 text-sm dark:text-neutral-100 bg-white dark:bg-neutral-600 hover:bg-gray-50 dark:hover:bg-neutral-500 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 disabled:opacity-50" @click="nextPage()">Next</button>
+      </div>
+    </div>
+  </div>
+
+  <NotificationDeliveryDialog :open="showDetails" :delivery="selectedDelivery" @close="closeDelivery()" />
+</section>

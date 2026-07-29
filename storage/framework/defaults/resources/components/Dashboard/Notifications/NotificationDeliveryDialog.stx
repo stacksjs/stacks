@@ -1,0 +1,84 @@
+<script client>
+import type { NotificationDelivery } from '../../../../functions/notifications/deliveries'
+
+const open = useReactiveProp('open', false)
+const delivery = useReactiveProp('delivery', null as NotificationDelivery | null)
+const emit = defineEmits()
+
+function formatDate(value?: string): string {
+  if (!value)
+    return 'Not recorded'
+  const date = new Date(value)
+  return Number.isNaN(date.getTime()) ? value : new Intl.DateTimeFormat('en-US', {
+    dateStyle: 'medium',
+    timeStyle: 'medium',
+  }).format(date)
+}
+
+function metadataText(): string {
+  const value = delivery()?.metadata
+  return value && Object.keys(value).length > 0 ? JSON.stringify(value, null, 2) : 'No provider metadata was recorded.'
+}
+</script>
+
+<div
+  :show="open"
+  role="dialog"
+  aria-modal="true"
+  aria-label="Notification delivery details"
+  class="fixed inset-0 overflow-y-auto z-30"
+>
+  <div class="flex items-end justify-center sm:items-center p-4 sm:p-0 min-h-full text-center">
+    <button
+      type="button"
+      aria-label="Close notification delivery details"
+      class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"
+      @click="emit('close')"
+    ></button>
+
+    <section class="overflow-hidden relative pb-4 pt-5 px-4 sm:my-8 sm:p-6 sm:max-w-2xl sm:w-full text-left bg-white dark:bg-neutral-800 rounded-lg shadow-xl transition-all transform">
+      <div class="flex gap-4 items-start justify-between">
+        <div>
+          <p class="font-medium text-blue-600 text-xs tracking-wide uppercase dark:text-blue-400">{{ delivery?.channel || 'notification' }}</p>
+          <h3 class="mt-1 font-semibold leading-6 text-gray-900 text-lg dark:text-white">Delivery attempt #{{ delivery?.id || '' }}</h3>
+        </div>
+        <button type="button" aria-label="Close notification delivery details" class="p-2 text-gray-400 hover:text-gray-700 dark:hover:text-white rounded-md" @click="emit('close')">
+          <span class="block h-5 w-5 i-hugeicons-cancel-01"></span>
+        </button>
+      </div>
+
+      <dl class="grid gap-x-6 gap-y-4 grid-cols-1 sm:grid-cols-2 mt-6">
+        <div>
+          <dt class="font-medium text-gray-500 text-xs uppercase dark:text-neutral-400">Recipient</dt>
+          <dd class="mt-1 break-all text-gray-900 text-sm dark:text-neutral-100">{{ delivery?.recipient || 'Not recorded' }}</dd>
+        </div>
+        <div>
+          <dt class="font-medium text-gray-500 text-xs uppercase dark:text-neutral-400">Attempted</dt>
+          <dd class="mt-1 text-gray-900 text-sm dark:text-neutral-100">{{ formatDate(delivery?.sent_at) }}</dd>
+        </div>
+        <div class="sm:col-span-2">
+          <dt class="font-medium text-gray-500 text-xs uppercase dark:text-neutral-400">Subject</dt>
+          <dd class="mt-1 text-gray-900 text-sm dark:text-neutral-100">{{ delivery?.subject || 'No subject' }}</dd>
+        </div>
+        <div class="sm:col-span-2">
+          <dt class="font-medium text-gray-500 text-xs uppercase dark:text-neutral-400">Body</dt>
+          <dd class="mt-1 p-3 text-gray-800 text-sm whitespace-pre-wrap dark:text-neutral-200 bg-gray-50 dark:bg-neutral-900 rounded-md">{{ delivery?.body || 'No body was recorded.' }}</dd>
+        </div>
+        <div :if="delivery?.error" class="sm:col-span-2">
+          <dt class="font-medium text-red-600 text-xs uppercase dark:text-red-400">Error</dt>
+          <dd class="mt-1 p-3 text-red-800 text-sm whitespace-pre-wrap dark:text-red-200 bg-red-50 dark:bg-red-950/40 rounded-md">{{ delivery?.error }}</dd>
+        </div>
+        <div class="sm:col-span-2">
+          <dt class="font-medium text-gray-500 text-xs uppercase dark:text-neutral-400">Metadata</dt>
+          <dd class="overflow-x-auto mt-1 p-3 font-mono text-gray-700 text-xs whitespace-pre dark:text-neutral-300 bg-gray-50 dark:bg-neutral-900 rounded-md">{{ metadataText() }}</dd>
+        </div>
+      </dl>
+
+      <div class="flex justify-end mt-6">
+        <button type="button" class="px-3 py-2 font-semibold text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-600 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 shadow-sm" @click="emit('close')">
+          Close
+        </button>
+      </div>
+    </section>
+  </div>
+</div>
