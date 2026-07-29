@@ -1,3 +1,4 @@
+import type { Dirent } from 'node:fs'
 import { readdirSync } from 'node:fs'
 import { basename, extname, join } from 'node:path'
 
@@ -11,15 +12,15 @@ export function modelFiles(root: string): string[] {
   const files: string[] = []
 
   const walk = (directory: string): void => {
-    let entries: ReturnType<typeof readdirSync>
+    let entries: Dirent[]
     try {
-      entries = readdirSync(directory, { withFileTypes: true }) as ReturnType<typeof readdirSync>
+      entries = readdirSync(directory, { withFileTypes: true })
     }
     catch {
       return
     }
 
-    for (const entry of entries as any[]) {
+    for (const entry of entries) {
       const file = join(directory, entry.name)
       if (entry.isDirectory()) {
         walk(file)
