@@ -15,6 +15,7 @@ export default defineModel({
     useApi: {
       uri: 'websockets',
       routes: ['index', 'store', 'show'],
+      middleware: ['auth'],
     },
     observe: true,
   },
