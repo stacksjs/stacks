@@ -287,11 +287,9 @@ effect(() => {
         <div :class="toastIconClass(toast.type)"></div>
         <div class="flex-1 min-w-0">
           <p class="font-medium text-gray-900 text-sm dark:text-neutral-100">{{ toast.title }}</p>
-          @if(toast.detail)
-            <p class="mt-1 break-words text-gray-500 text-xs dark:text-neutral-400">{{ toast.detail }}</p>
-          @endif
+          <p :if="toast.detail" class="mt-1 break-words text-gray-500 text-xs dark:text-neutral-400">{{ toast.detail }}</p>
         </div>
-        <button type="button" @click="dismissToast({{ toast.id }})" class="flex-shrink-0 text-gray-400 hover:text-gray-600 dark:hover:text-neutral-200" aria-label="Dismiss">
+        <button type="button" @click="dismissToast(toast.id)" class="flex-shrink-0 text-gray-400 hover:text-gray-600 dark:hover:text-neutral-200" aria-label="Dismiss">
           <svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
             <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z"></path>
           </svg>
