@@ -95,6 +95,9 @@ export * from './uuid-columns'
 // Schema-diff guards so trait-managed columns aren't proposed for dropping (stacksjs/stacks#2075)
 export * from './managed-columns'
 
+// Foreign keys a model gets from `belongsTo` rather than from `attributes`
+export * from './relation-columns'
+
 // Notification tables migration (stacksjs/stacks#1937)
 export { migrateNotificationTables } from './notification-tables'
 

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'bun:test'
 import { USERS_GUARANTEED_COLUMNS, isManagedColumnDrop, withoutManagedColumnDropSql, withoutManagedColumnDrops } from '../src/managed-columns'
+import { belongsToColumn, belongsToColumnsOf } from '../src/relation-columns'
 
 // Regression coverage for stacksjs/stacks#2075: the model-first schema differ
 // proposes dropping trait-managed columns (useAuth 2FA, billable stripe_id,
@@ -90,5 +91,66 @@ describe('framework-managed column guards (#2075)', () => {
     const { statements: kept, removed } = withoutManagedColumnDropSql(statements, managed)
     expect(removed).toEqual([])
     expect(kept).toEqual(statements)
+  })
+})
+
+// A `belongsTo` puts a foreign key on the declaring model's table without
+// declaring it in `attributes`, so the attributes-only differ reads it as a
+// stray and proposes dropping it — on every run, against the column that says
+// who owns the row.
+describe('relation-derived foreign keys', () => {
+  it('derives the column a belongsTo entry puts on the table', () => {
+    expect(belongsToColumn('User')).toBe('user_id')
+    expect(belongsToColumn('PaymentMethod')).toBe('payment_method_id')
+    expect(belongsToColumn({ model: 'User' })).toBe('user_id')
+    // An explicit key wins, because that is the column the ORM will write.
+    expect(belongsToColumn({ model: 'User', foreignKey: 'owner_id' })).toBe('owner_id')
+    expect(belongsToColumn('')).toBeNull()
+    expect(belongsToColumn(undefined)).toBeNull()
+    expect(belongsToColumn({})).toBeNull()
+  })
+
+  it('reads every form a model can declare', () => {
+    expect(belongsToColumnsOf({ name: 'Farm', belongsTo: ['User'] } as any)).toEqual(['user_id'])
+    expect(belongsToColumnsOf({ name: 'Mission', belongsTo: ['Farm', 'Field', 'Drone'] } as any))
+      .toEqual(['farm_id', 'field_id', 'drone_id'])
+    expect(belongsToColumnsOf({ name: 'Post', belongsTo: [{ model: 'Author', foreignKey: 'writer_id' }] } as any))
+      .toEqual(['writer_id'])
+    expect(belongsToColumnsOf({ name: 'Standalone' } as any)).toEqual([])
+  })
+
+  it('keeps a relation key out of the destructive diff, rebuild included', () => {
+    // What `buddy migrate` actually produced against a Farm model declaring
+    // `belongsTo: ['User']`: one rebuild statement, surfaced as two ops.
+    const rebuild = 'CREATE TABLE "_qb_tmp_farms" ("id" INTEGER PRIMARY KEY); INSERT INTO "_qb_tmp_farms" SELECT "id" FROM "farms"; DROP TABLE "farms"; ALTER TABLE "_qb_tmp_farms" RENAME TO "farms"'
+    const withRelations = new Map([['farms', new Set(['user_id'])]])
+
+    const kept = withoutManagedColumnDrops([
+      op('rebuild_table', 'farms', undefined, rebuild),
+      op('drop_column', 'farms', 'user_id', rebuild),
+      op('rebuild_table', 'fields', undefined, 'CREATE TABLE "_qb_tmp_fields" ("id" INTEGER PRIMARY KEY)'),
+    ], withRelations)
+
+    // Both halves of the drop are gone; an unrelated rebuild is untouched.
+    expect(kept.map(o => `${o.kind}:${o.table}`)).toEqual(['rebuild_table:fields'])
+  })
+
+  it('leaves a rebuild alone when it is not carrying out a suppressed drop', () => {
+    const kept = withoutManagedColumnDrops([
+      op('rebuild_table', 'users', undefined, 'CREATE TABLE "_qb_tmp_users" ("id" INTEGER PRIMARY KEY)'),
+      op('drop_column', 'users', 'nickname', 'ALTER TABLE users DROP COLUMN nickname'),
+    ], managed)
+
+    expect(kept.map(o => `${o.kind}:${o.table}`)).toEqual(['rebuild_table:users', 'drop_column:users'])
+  })
+
+  it('does not pair operations that merely have no sql', () => {
+    // Two ops with empty sql must not be treated as the same statement.
+    const kept = withoutManagedColumnDrops([
+      op('drop_column', 'products', 'uuid'),
+      op('rebuild_table', 'orders'),
+    ], managed)
+
+    expect(kept.map(o => `${o.kind}:${o.table}`)).toEqual(['rebuild_table:orders'])
   })
 })
