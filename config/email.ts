@@ -32,6 +32,16 @@ export default {
     'glenn',
   ],
 
+  /**
+   * Role inboxes retain their own copy and forward one to Chris.
+   * The mail deploy also writes the matching bare local-part keys because
+   * these addresses currently use legacy role mailboxes on the shared server.
+   */
+  forwards: {
+    'socials@stacksjs.com': ['chris@stacksjs.com'],
+    'hi@stacksjs.com': ['chris@stacksjs.com'],
+  },
+
   url: env.APP_URL || 'https://stacksjs.com',
   charset: 'UTF-8',
 
