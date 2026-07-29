@@ -618,7 +618,6 @@ route.group({ prefix: '/api/settings', middleware: 'auth' }, () => {
 // ============================================================================
 
 route.group({ prefix: '/api/data', middleware: 'auth' }, () => {
-  route.get('/access-tokens', 'Actions/Dashboard/Data/AccessTokenIndexAction')
   route.get('/subscribers', 'Actions/Dashboard/Data/SubscriberIndexAction')
   route.get('/teams', 'Actions/Dashboard/Data/TeamIndexAction')
   route.get('/users', 'Actions/Dashboard/Data/UserIndexAction')

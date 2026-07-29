@@ -22,7 +22,7 @@ export default new Action({
         scopes: token.scopes,
         expires_at: token.expiresAt?.toISOString() || null,
         created_at: token.createdAt.toISOString(),
-        last_used_at: token.updatedAt.toISOString(),
+        updated_at: token.updatedAt.toISOString(),
       })),
       count: userTokens.length,
     })
