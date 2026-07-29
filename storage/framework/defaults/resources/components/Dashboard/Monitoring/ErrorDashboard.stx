@@ -1,0 +1,404 @@
+<div class="p-6 space-y-6">
+
+  <PageHeader title="Error Tracking" description="Monitor and manage application errors. Similar errors are grouped together." />
+
+  <div :show="hasStats" class="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 mb-6">
+    <StatsCard title="Total Errors" icon="i-hugeicons-bug-01" iconBg="primary">
+      <template #value>{{ totalErrorsLabel() }}</template>
+    </StatsCard>
+    <StatsCard title="Unresolved" icon="i-hugeicons-alert-02" iconBg="danger">
+      <template #value>{{ unresolvedLabel() }}</template>
+    </StatsCard>
+    <StatsCard title="Last 24 Hours" trendLabel="vs previous period" icon="i-hugeicons-time-02" iconBg="warning">
+      <template #value>{{ last24hLabel() }}</template>
+      <template #trend>
+        <span :class="'inline-flex items-center font-medium text-[12px] ' + (trendValue() > 0 ? 'text-green-500 dark:text-green-400' : trendValue() < 0 ? 'text-red-500 dark:text-red-400' : 'text-neutral-500 dark:text-neutral-400')">
+          <span :if="trendValue() !== 0" :class="'mr-0.5 h-3.5 w-3.5 ' + (trendValue() > 0 ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02')"></span>
+          {{ Math.abs(trendValue()) }}%
+        </span>
+      </template>
+    </StatsCard>
+    <StatsCard title="Resolved" icon="i-hugeicons-checkmark-circle-02" iconBg="success">
+      <template #value>{{ resolvedStatsLabel() }}</template>
+    </StatsCard>
+  </div>
+
+  <Card padding="none">
+    <template #header>
+      <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <h2 class="font-semibold text-lg text-neutral-900 dark:text-white">Issues</h2>
+        <div class="flex flex-col gap-3 sm:flex-row">
+          <div class="w-full sm:w-64">
+            <Input :value="searchQuery()" placeholder="Search errors..." size="sm" @input="setSearchQuery">
+              <template #iconLeft>
+                <div class="h-4 w-4 i-hugeicons-search-01"></div>
+              </template>
+            </Input>
+          </div>
+          <div class="w-full sm:w-40">
+            <Select :value="statusFilter() ?? ''" :options="statusOptions" placeholder="" size="sm" @change="setStatusFilter" />
+          </div>
+          <div class="w-full sm:w-40">
+            <Select :value="typeFilter() ?? ''" :options="typeOptions" placeholder="" size="sm" @change="setTypeFilter" />
+          </div>
+        </div>
+      </div>
+    </template>
+
+    <ErrorTable
+      :errors="paginatedErrors"
+      :emptyTitle="emptyTitle"
+      :emptyDescription="emptyDescription"
+      :sortColumn="sortBy"
+      :sortDirection="sortOrder"
+      @sort="handleSort"
+      @row-click="viewError"
+      @resolve="handleResolveError"
+      @ignore="handleIgnoreError"
+      @unresolve="handleUnresolveError"
+      @delete="openDeleteModal"
+    />
+
+    <template #footer>
+      <Pagination :currentPage="currentPage" :totalPages="totalPages" :totalItems="totalFiltered" :itemsPerPage="itemsPerPage" showTotalItems @page="setCurrentPage" />
+    </template>
+  </Card>
+
+  <Modal :isOpen="isDetailModalOpen()" :title="detailTitle" size="lg" @close="closeDetailModal">
+    <div :show="hasSelectedError" class="space-y-6">
+      <div>
+        <h4 class="mb-2 font-medium text-neutral-500 text-sm dark:text-neutral-400">Message</h4>
+        <p class="p-3 text-neutral-900 dark:text-white bg-neutral-50 dark:bg-neutral-800 rounded-lg">{{ selectedMessage() }}</p>
+      </div>
+
+      <div class="grid gap-4 grid-cols-3">
+        <div class="p-3 text-center bg-neutral-50 dark:bg-neutral-800 rounded-lg">
+          <div class="font-semibold text-2xl text-neutral-900 dark:text-white">{{ selectedCount() }}</div>
+          <div class="text-neutral-500 text-sm dark:text-neutral-400">Occurrences</div>
+        </div>
+        <div class="p-3 text-center bg-neutral-50 dark:bg-neutral-800 rounded-lg">
+          <div class="font-medium text-neutral-900 text-sm dark:text-white">{{ selectedFirstSeen() }}</div>
+          <div class="text-neutral-500 text-sm dark:text-neutral-400">First Seen</div>
+        </div>
+        <div class="p-3 text-center bg-neutral-50 dark:bg-neutral-800 rounded-lg">
+          <div class="font-medium text-neutral-900 text-sm dark:text-white">{{ selectedLastSeen() }}</div>
+          <div class="text-neutral-500 text-sm dark:text-neutral-400">Last Seen</div>
+        </div>
+      </div>
+
+      <div :show="hasStackTrace">
+        <h4 class="mb-2 font-medium text-neutral-500 text-sm dark:text-neutral-400">Stack Trace</h4>
+        <pre class="overflow-x-auto p-4 max-h-64 text-neutral-700 text-xs dark:text-neutral-300 bg-neutral-900 dark:bg-black rounded-lg">{{ selectedStackTrace() }}</pre>
+      </div>
+
+      <div class="flex gap-2 items-center">
+        <span class="text-neutral-500 text-sm dark:text-neutral-400">Status:</span>
+        <Badge :variant="getStatusVariant(selectedStatus())">{{ selectedStatus() }}</Badge>
+      </div>
+    </div>
+
+    <template #footer>
+      <div class="flex items-center justify-between w-full">
+        <div class="flex gap-2 items-center">
+          <Button :show="selectedIsUnresolved" variant="primary" size="sm" @click="resolveSelected()">
+            <template #iconLeft>
+              <div class="h-4 w-4 i-hugeicons-checkmark-circle-02"></div>
+            </template>
+            Resolve
+          </Button>
+          <Button :show="selectedIsUnresolved" variant="outline" size="sm" @click="ignoreSelected()">
+            <template #iconLeft>
+              <div class="h-4 w-4 i-hugeicons-eye-off"></div>
+            </template>
+            Ignore
+          </Button>
+          <Button :show="selectedIsResolvedOrIgnored" variant="outline" size="sm" @click="unresolveSelected()">
+            <template #iconLeft>
+              <div class="h-4 w-4 i-hugeicons-refresh"></div>
+            </template>
+            Unresolve
+          </Button>
+        </div>
+        <div class="flex gap-2 items-center">
+          <Button variant="danger" size="sm" @click="deleteSelected()">
+            <template #iconLeft>
+              <div class="h-4 w-4 i-hugeicons-delete-02"></div>
+            </template>
+            Delete
+          </Button>
+          <Button variant="ghost" size="sm" @click="closeDetailModal">Close</Button>
+        </div>
+      </div>
+    </template>
+  </Modal>
+
+  <Modal :isOpen="showDeleteModal()" title="Delete Error Group" size="sm" @close="closeDeleteModal">
+    <div class="text-center">
+      <div class="flex items-center justify-center mb-4 mx-auto h-12 w-12 bg-red-100 dark:bg-red-900/30 rounded-full">
+        <div class="h-6 w-6 text-red-600 dark:text-red-400 i-hugeicons-alert-02"></div>
+      </div>
+      <p class="text-neutral-600 text-sm dark:text-neutral-300">
+        Are you sure you want to delete all <strong>{{ deleteCount() }}</strong> occurrences of this error? This action cannot be undone.
+      </p>
+      <p class="mt-2 font-medium text-neutral-900 text-sm dark:text-white">{{ deleteMessage() }}</p>
+    </div>
+
+    <template #footer>
+      <div class="flex gap-3 items-center justify-end w-full">
+        <Button variant="ghost" @click="closeDeleteModal()">Cancel</Button>
+        <Button variant="danger" @click="confirmDelete()">Delete All</Button>
+      </div>
+    </template>
+  </Modal>
+</div>
+
+<script client>
+import { useErrors } from '../../../../functions/monitoring/errors'
+
+interface ErrorGroup {
+  id?: string | number
+  type: string
+  message: string
+  count: number
+  status: 'unresolved' | 'resolved' | 'ignored'
+  first_seen: string
+  last_seen: string
+  stack?: string | null
+}
+
+const { groupedErrors, errorStats, fetchGroupedErrors, fetchErrorStats, resolveErrorGroup, ignoreErrorGroup, unresolveErrorGroup, deleteErrorGroup } = useErrors()
+
+const searchQuery = state('')
+const statusFilter = state<string | null>(null)
+const typeFilter = state<string | null>(null)
+const sortBy = state('last_seen')
+const sortOrder = state<'asc' | 'desc'>('desc')
+const currentPage = state(1)
+const itemsPerPage = state(10)
+
+const selectedError = state<ErrorGroup | null>(null)
+const isDetailModalOpen = state(false)
+const showDeleteModal = state(false)
+const errorToDelete = state<ErrorGroup | null>(null)
+
+const statusOptions = [
+  { value: '', label: 'All Statuses' },
+  { value: 'unresolved', label: 'Unresolved' },
+  { value: 'resolved', label: 'Resolved' },
+  { value: 'ignored', label: 'Ignored' },
+]
+
+function errorList(): ErrorGroup[] {
+  return (groupedErrors.value as ErrorGroup[]) || []
+}
+
+function statsValue(): { total?: number, unresolved?: number, last_24h?: number, resolved?: number, trend?: number } | null {
+  return (errorStats.value as { total?: number, unresolved?: number, last_24h?: number, resolved?: number, trend?: number } | null) || null
+}
+
+const hasStats = derived(() => statsValue() !== null)
+const totalErrorsLabel = derived(() => String(statsValue()?.total ?? 0))
+const unresolvedLabel = derived(() => String(statsValue()?.unresolved ?? 0))
+const last24hLabel = derived(() => String(statsValue()?.last_24h ?? 0))
+const resolvedStatsLabel = derived(() => String(statsValue()?.resolved ?? 0))
+const trendValue = derived(() => statsValue()?.trend ?? 0)
+
+const typeOptions = derived(() => {
+  const types = new Set(errorList().map(e => e.type))
+  return [
+    { value: '', label: 'All Types' },
+    ...Array.from(types).map(type => ({ value: type, label: type })),
+  ]
+})
+
+const filteredErrors = derived(() => {
+  const list = errorList()
+  const q = searchQuery().toLowerCase()
+  const status = statusFilter()
+  const type = typeFilter()
+  const sb = sortBy()
+  const so = sortOrder()
+  return list
+    .filter((error) => {
+      const matchesSearch = !q
+        || error.type.toLowerCase().includes(q)
+        || error.message.toLowerCase().includes(q)
+      const matchesStatus = !status || error.status === status
+      const matchesType = !type || error.type === type
+      return matchesSearch && matchesStatus && matchesType
+    })
+    .sort((a, b) => {
+      let comparison = 0
+      if (sb === 'type')
+        comparison = a.type.localeCompare(b.type)
+      else if (sb === 'count')
+        comparison = a.count - b.count
+      else if (sb === 'last_seen')
+        comparison = new Date(a.last_seen).getTime() - new Date(b.last_seen).getTime()
+      else if (sb === 'first_seen')
+        comparison = new Date(a.first_seen).getTime() - new Date(b.first_seen).getTime()
+      return so === 'asc' ? comparison : -comparison
+    })
+})
+
+const paginatedErrors = derived(() => {
+  const start = (currentPage() - 1) * itemsPerPage()
+  return filteredErrors().slice(start, start + itemsPerPage())
+})
+
+const totalFiltered = derived(() => filteredErrors().length)
+const totalPages = derived(() => Math.max(1, Math.ceil(filteredErrors().length / itemsPerPage())))
+
+const hasFilters = derived(() => searchQuery() !== '' || (statusFilter() ?? '') !== '' || (typeFilter() ?? '') !== '')
+const emptyTitle = derived(() => hasFilters() ? 'No matching errors' : 'No errors found')
+const emptyDescription = derived(() => hasFilters() ? 'Try adjusting your filters' : 'Your application is running smoothly!')
+
+const hasSelectedError = derived(() => selectedError() !== null)
+
+function setCurrentPage(page: number | CustomEvent<number>): void {
+  const nextPage = typeof page === 'number' ? page : page.detail
+  currentPage.set(Math.min(Math.max(1, nextPage), totalPages()))
+}
+const selectedIsUnresolved = derived(() => selectedError()?.status === 'unresolved')
+const selectedIsResolvedOrIgnored = derived(() => {
+  const s = selectedError()?.status
+  return s !== undefined && s !== 'unresolved'
+})
+const hasStackTrace = derived(() => Boolean(selectedError()?.stack))
+const detailTitle = derived(() => selectedError()?.type ?? 'Error Details')
+
+function selectedMessage(): string { return selectedError()?.message ?? '' }
+function selectedCount(): number { return selectedError()?.count ?? 0 }
+function selectedStatus(): string { return selectedError()?.status ?? '' }
+function selectedFirstSeen(): string { return formatDate(selectedError()?.first_seen ?? '') }
+function selectedLastSeen(): string { return formatDate(selectedError()?.last_seen ?? '') }
+function selectedStackTrace(): string { return selectedError()?.stack ?? '' }
+
+function deleteCount(): number { return errorToDelete()?.count ?? 0 }
+function deleteMessage(): string { return errorToDelete()?.message ?? '' }
+
+function eventValue<T>(value: T | CustomEvent<T>): T {
+  return value instanceof CustomEvent ? value.detail : value
+}
+
+function setSearchQuery(value: string | CustomEvent<string>): void {
+  searchQuery.set(eventValue(value))
+  currentPage.set(1)
+}
+
+function setStatusFilter(value: string | CustomEvent<string>): void {
+  statusFilter.set(eventValue(value) || null)
+  currentPage.set(1)
+}
+
+function setTypeFilter(value: string | CustomEvent<string>): void {
+  typeFilter.set(eventValue(value) || null)
+  currentPage.set(1)
+}
+
+function handleSort(value: { column: string, direction: 'asc' | 'desc' } | CustomEvent<{ column: string, direction: 'asc' | 'desc' }>): void {
+  const sort = eventValue(value)
+  sortBy.set(sort.column)
+  sortOrder.set(sort.direction)
+}
+
+function viewError(value: ErrorGroup | CustomEvent<ErrorGroup>): void {
+  const error = eventValue(value)
+  selectedError.set(error)
+  isDetailModalOpen.set(true)
+}
+
+function closeDetailModal(): void {
+  isDetailModalOpen.set(false)
+  selectedError.set(null)
+}
+
+async function handleResolveError(value: ErrorGroup | CustomEvent<ErrorGroup>): Promise<void> {
+  const error = eventValue(value)
+  await resolveErrorGroup(error.type, error.message)
+  await fetchErrorStats()
+  if (isDetailModalOpen() && selectedError())
+    selectedError.update(e => e ? { ...e, status: 'resolved' } : e)
+}
+
+async function handleIgnoreError(value: ErrorGroup | CustomEvent<ErrorGroup>): Promise<void> {
+  const error = eventValue(value)
+  await ignoreErrorGroup(error.type, error.message)
+  await fetchErrorStats()
+  if (isDetailModalOpen() && selectedError())
+    selectedError.update(e => e ? { ...e, status: 'ignored' } : e)
+}
+
+async function handleUnresolveError(value: ErrorGroup | CustomEvent<ErrorGroup>): Promise<void> {
+  const error = eventValue(value)
+  await unresolveErrorGroup(error.type, error.message)
+  await fetchErrorStats()
+  if (isDetailModalOpen() && selectedError())
+    selectedError.update(e => e ? { ...e, status: 'unresolved' } : e)
+}
+
+async function resolveSelected(): Promise<void> {
+  const target = selectedError()
+  if (target)
+    await handleResolveError(target)
+}
+
+async function ignoreSelected(): Promise<void> {
+  const target = selectedError()
+  if (target)
+    await handleIgnoreError(target)
+}
+
+async function unresolveSelected(): Promise<void> {
+  const target = selectedError()
+  if (target)
+    await handleUnresolveError(target)
+}
+
+function deleteSelected(): void {
+  const target = selectedError()
+  if (target)
+    openDeleteModal(target)
+}
+
+function openDeleteModal(value: ErrorGroup | CustomEvent<ErrorGroup>): void {
+  const error = eventValue(value)
+  errorToDelete.set(error)
+  showDeleteModal.set(true)
+  if (isDetailModalOpen())
+    isDetailModalOpen.set(false)
+}
+
+function closeDeleteModal(): void {
+  showDeleteModal.set(false)
+  errorToDelete.set(null)
+}
+
+async function confirmDelete(): Promise<void> {
+  const target = errorToDelete()
+  if (!target)
+    return
+  await deleteErrorGroup(target.type, target.message)
+  await fetchErrorStats()
+  closeDeleteModal()
+}
+
+function getStatusVariant(status: string): string {
+  const variants: Record<string, string> = {
+    unresolved: 'danger',
+    resolved: 'success',
+    ignored: 'warning',
+  }
+  return variants[status] || 'default'
+}
+
+function formatDate(date: string): string {
+  if (!date)
+    return ''
+  return new Date(date).toLocaleString()
+}
+
+onMount(async () => {
+  await Promise.all([fetchGroupedErrors(), fetchErrorStats()])
+})
+</script>
