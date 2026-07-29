@@ -1,32 +1,44 @@
 <script>
 interface DriversTableProps {
-  drivers?: any[]
+  drivers?: Array<{
+    id?: number
+    avatar?: string
+    name: string
+    phone: string
+    vehicle_number: string
+    license: string
+    status: string | string[]
+    last_active?: string | number | Date
+  }>
 }
 
 const { drivers = [] } = defineProps<DriversTableProps>()
 
-function formatDate(date) {
-    if (!date) return 'N/A'
-    const dateObj = typeof date === 'string' ? new Date(date) : date
-    return dateObj.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    }
-  }
+function formatDate(date?: string | number | Date): string {
+  if (!date)
+    return 'N/A'
 
-  function getStatusClass(status) {
-    switch (status) {
-      case 'Active':
-        return 'bg-green-50 text-green-700 ring-1 ring-inset ring-green-600/20 dark:bg-green-900/30 dark:text-green-400'
-      case 'On Delivery':
-        return 'bg-blue-50 text-blue-700 ring-1 ring-inset ring-blue-600/20 dark:bg-blue-900/30 dark:text-blue-400'
-      case 'On Break':
-        return 'bg-yellow-50 text-yellow-700 ring-1 ring-inset ring-yellow-600/20 dark:bg-yellow-900/30 dark:text-yellow-400'
-      default:
-        return 'bg-red-50 text-red-700 ring-1 ring-inset ring-red-600/20 dark:bg-red-900/30 dark:text-red-400'
-    }
+  const dateObj = date instanceof Date ? date : new Date(date)
+  return dateObj.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  })
+}
+
+function getStatusClass(status: string | string[]): string {
+  const value = Array.isArray(status) ? status[0] : status
+  switch (value) {
+    case 'Active':
+      return 'bg-green-50 text-green-700 ring-1 ring-inset ring-green-600/20 dark:bg-green-900/30 dark:text-green-400'
+    case 'On Delivery':
+      return 'bg-blue-50 text-blue-700 ring-1 ring-inset ring-blue-600/20 dark:bg-blue-900/30 dark:text-blue-400'
+    case 'On Break':
+      return 'bg-yellow-50 text-yellow-700 ring-1 ring-inset ring-yellow-600/20 dark:bg-yellow-900/30 dark:text-yellow-400'
+    default:
+      return 'bg-red-50 text-red-700 ring-1 ring-inset ring-red-600/20 dark:bg-red-900/30 dark:text-red-400'
   }
+}
 </script>
 <div class="overflow-hidden border border-stone-200/80 rounded-xl dark:border-neutral-700 shadow-sm">
     <table class="min-w-full divide-stone-100 divide-y dark:divide-neutral-700">
@@ -82,13 +94,13 @@ function formatDate(date) {
               {{ formatDate(driver.last_active) }}
             </td>
             <td class="relative pl-3 pr-6 py-3.5 font-medium text-right text-sm whitespace-nowrap">
-              <button type="button" class="mr-2 p-2 text-stone-400 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 border border-transparent rounded-md hover:border-blue-200 dark:hover:border-blue-800 duration-150 transition-colors" data-action="view-routes" data-driver-id="{{ driver.id }}" title="View Routes">
+              <button type="button" class="mr-2 p-2 text-stone-400 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 border border-transparent rounded-md hover:border-blue-200 dark:hover:border-blue-800 duration-150 transition-colors" @click="$emit('view-routes', driver)" title="View Routes">
                 <div class="h-5 w-5 i-hugeicons-route-02"></div>
               </button>
-              <button type="button" class="mr-2 p-2 text-stone-400 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 border border-transparent rounded-md hover:border-blue-200 dark:hover:border-blue-800 duration-150 transition-colors" title="Edit" data-action="edit" data-driver-id="{{ driver.id }}">
+              <button type="button" class="mr-2 p-2 text-stone-400 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 border border-transparent rounded-md hover:border-blue-200 dark:hover:border-blue-800 duration-150 transition-colors" @click="$emit('edit', driver)" title="Edit">
                 <div class="h-5 w-5 i-hugeicons-edit-01"></div>
               </button>
-              <button type="button" class="p-2 text-stone-400 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300 border border-transparent rounded-md hover:border-red-200 dark:hover:border-red-800 duration-150 transition-colors" title="Delete" data-action="delete" data-driver-id="{{ driver.id }}">
+              <button type="button" class="p-2 text-stone-400 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300 border border-transparent rounded-md hover:border-red-200 dark:hover:border-red-800 duration-150 transition-colors" @click="$emit('delete', driver)" title="Delete">
                 <div class="h-5 w-5 i-hugeicons-waste"></div>
               </button>
             </td>

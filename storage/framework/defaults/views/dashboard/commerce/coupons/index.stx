@@ -162,13 +162,14 @@
   </div>
 
   <!-- Coupons Form Modal -->
-  <CouponsForm
-    :show="showFormModal"
-    :mode="formMode"
-    :coupon="couponToEdit"
-    @close="closeFormModal"
-    @submit="handleFormSubmit"
-  />
+  <div :show="showFormModal">
+    <CouponsForm
+      :mode="formMode"
+      :coupon="couponToEdit"
+      @close="closeFormModal"
+      @submit="handleFormSubmit"
+    />
+  </div>
 
   <!-- Delete Coupon Confirmation Modal -->
   <div :show="showDeleteModal" class="fixed inset-0 overflow-y-auto z-10">
