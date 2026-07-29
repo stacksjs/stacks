@@ -3,6 +3,7 @@ import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { bold, cyan, dim, green, red } from '@stacksjs/cli'
 import { projectPath, storagePath } from '@stacksjs/path'
 import { seedCsrfPageResponse } from './csrf'
+import { shouldDelegateDashboardRequest } from './dashboard-request-routing'
 import { buildDashboardUrl, buildManifest, discoverModels, findAvailablePort, waitForServer } from './dashboard-utils'
 
 // buddyOptions serializes `verbose: false` as `--verbose false`, so
@@ -424,7 +425,9 @@ async function startStxServer(): Promise<void> {
     //   2. `/api/*` always delegates to the Stacks router. These are JSON
     //      endpoints — bun-router's 404 (no route) and 405 (method
     //      mismatch) are the right responses, never an HTML page.
-    //   3. For everything else, GET goes to STX (page rendering wins,
+    //   3. `/auth/*` and `/me` are JSON authentication endpoints even on
+    //      GET, so they also delegate to the Stacks router.
+    //   4. For everything else, GET goes to STX (page rendering wins,
     //      so `/health`, `/login`, `/content/authors`, etc. render their
     //      `.stx` view) and non-GET goes to bun-router (so POST `/login`
     //      reaches the action). Without rule (3a), root-level routes that
@@ -435,13 +438,7 @@ async function startStxServer(): Promise<void> {
           const url = new URL(req.url)
           const pathname = url.pathname
 
-          if (pathname.startsWith('/api/config/') || pathname.startsWith('/__deps/'))
-            return null
-
-          if (pathname.startsWith('/api/'))
-            return stacksRoute!.handleRequest(req)
-
-          if (req.method.toUpperCase() !== 'GET')
+          if (shouldDelegateDashboardRequest(pathname, req.method))
             return stacksRoute!.handleRequest(req)
 
           return null
