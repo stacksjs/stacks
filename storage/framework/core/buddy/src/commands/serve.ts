@@ -4,7 +4,7 @@ import { existsSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { dirname, join } from 'node:path'
 import process from 'node:process'
-import { log } from '@stacksjs/cli'
+import { log } from '@stacksjs/logging'
 
 /**
  * Request-scoped context (query string + parsed cookies) for `<script

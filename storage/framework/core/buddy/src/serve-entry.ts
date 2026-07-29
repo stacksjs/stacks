@@ -7,7 +7,7 @@
  * gives Bun a stable entrypoint it can bundle with `bun build --production`.
  */
 import process from 'node:process'
-import { cli } from '@stacksjs/cli'
+import { cli } from '../../cli/src/cli'
 import { serve } from './commands/serve'
 
 process.env.APP_ENV ||= 'production'

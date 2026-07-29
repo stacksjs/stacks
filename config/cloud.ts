@@ -744,7 +744,7 @@ export const tsCloud: TsCloudConfig = {
       preStart: [
         'bun install',
         'mkdir -p storage/framework/runtime/production',
-        'bun build --production --conditions=development --target=bun storage/framework/core/buddy/src/serve-entry.ts --outfile storage/framework/runtime/production/serve.js',
+        'bun build --production --splitting --conditions=development --target=bun --external=localtunnels --external=localtunnels/cloud --external=@stacksjs/bun-queue --external=meilisearch storage/framework/core/buddy/src/serve-entry.ts --outdir storage/framework/runtime/production --entry-naming serve.js --chunk-naming chunks/[name]-[hash].js',
         'bun --conditions development storage/framework/core/buddy/src/cli.ts migrate',
       ],
     },
@@ -767,7 +767,7 @@ export const tsCloud: TsCloudConfig = {
       preStart: [
         'bun install',
         'mkdir -p storage/framework/runtime/production',
-        'bun build --production --conditions=development --target=bun storage/framework/core/actions/src/serve/api.ts --outfile storage/framework/runtime/production/api.js',
+        'bun build --production --splitting --conditions=development --target=bun --external=localtunnels --external=localtunnels/cloud --external=@stacksjs/bun-queue --external=meilisearch storage/framework/core/actions/src/serve/api.ts --outdir storage/framework/runtime/production --entry-naming api.js --chunk-naming chunks/[name]-[hash].js',
       ],
       env: { HOST: '127.0.0.1', APP_ENV: 'production' },
     },
