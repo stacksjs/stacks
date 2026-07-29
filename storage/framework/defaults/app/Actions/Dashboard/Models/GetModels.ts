@@ -2,6 +2,7 @@ import type { Model } from '@stacksjs/types'
 import { Glob } from 'bun'
 import { Action } from '@stacksjs/actions'
 import { path } from '@stacksjs/path'
+import { safeCount } from '../../../../resources/functions/dashboard/data'
 
 export default new Action({
   name: 'GetModels',
@@ -30,10 +31,9 @@ export default new Action({
       displayModels.length = 8
     displayModels.sort((a, b) => (a.name || '').localeCompare(b.name || ''))
 
-    return displayModels.map(model => ({
+    return await Promise.all(displayModels.map(async model => ({
       model: model.name,
-      // TODO: implement this total logic
-      total: Math.floor(Math.random() * (999 - 10 + 1)) + 10,
-    }))
+      total: await safeCount(model),
+    })))
   },
 })
