@@ -2,6 +2,7 @@ type ReceiptJsonResponse = ModelRow<typeof Receipt>
 type NewReceipt = NewModelData<typeof Receipt>
 import { randomUUIDv7 } from 'bun'
 import { db } from '@stacksjs/database'
+import { receiptTimestamp } from './timestamp'
 
 /**
  * Create a new receipt
@@ -11,15 +12,22 @@ import { db } from '@stacksjs/database'
  */
 export async function store(data: NewReceipt): Promise<ReceiptJsonResponse> {
   try {
+    const uuid = randomUUIDv7()
     const receiptData = {
       ...data,
-      uuid: randomUUIDv7(),
+      timestamp: receiptTimestamp(data.timestamp),
+      uuid,
     }
 
-    const result = await db
+    await db
       .insertInto('receipts')
       .values(receiptData)
-      .returningAll()
+      .executeTakeFirst()
+
+    const result = await db
+      .selectFrom('receipts')
+      .where('uuid', '=', uuid)
+      .selectAll()
       .executeTakeFirst()
 
     if (!result)
@@ -49,6 +57,7 @@ export async function bulkStore(data: NewReceipt[]): Promise<number> {
   try {
     const receiptDataArray = data.map(item => ({
       ...item,
+      timestamp: receiptTimestamp(item.timestamp),
       uuid: randomUUIDv7(),
     }))
 
@@ -57,7 +66,13 @@ export async function bulkStore(data: NewReceipt[]): Promise<number> {
       .values(receiptDataArray)
       .executeTakeFirst()
 
-    return Number(result.numInsertedOrUpdatedRows)
+    return Number(
+      result.numInsertedOrUpdatedRows
+      ?? (result as any).numAffectedRows
+      ?? (result as any).affectedRows
+      ?? (result as any).changes
+      ?? 0,
+    )
   }
   catch (error) {
     if (error instanceof Error) {

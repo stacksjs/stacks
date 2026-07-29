@@ -1,5 +1,7 @@
 import { db } from '@stacksjs/database'
 import { formatDate } from '@stacksjs/orm'
+import { fetchById } from './fetch'
+import { receiptTimestamp } from './timestamp'
 type ReceiptJsonResponse = ModelRow<typeof Receipt>
 type ReceiptUpdate = UpdateModelData<typeof Receipt>
 
@@ -15,16 +17,18 @@ export async function update(id: number, data: ReceiptUpdate): Promise<ReceiptJs
     if (!id)
       throw new Error('Receipt ID is required for update')
 
-    const result = await db
+    const updateData = {
+      ...data,
+      ...(data.timestamp === undefined ? {} : { timestamp: receiptTimestamp(data.timestamp) }),
+      updated_at: formatDate(new Date()),
+    }
+    await db
       .updateTable('receipts')
-      .set({
-        ...data,
-        updated_at: formatDate(new Date()),
-      })
+      .set(updateData)
       .where('id', '=', id)
-      .returningAll()
-      .executeTakeFirst()
+      .execute()
 
+    const result = await fetchById(id)
     if (!result)
       throw new Error('Failed to update receipt')
 
@@ -51,16 +55,16 @@ export async function updateStatus(
   status: 'success' | 'failed' | 'warning',
 ): Promise<ReceiptJsonResponse> {
   try {
-    const result = await db
+    await db
       .updateTable('receipts')
       .set({
         status,
         updated_at: formatDate(new Date()),
       })
       .where('id', '=', id)
-      .returningAll()
-      .executeTakeFirst()
+      .execute()
 
+    const result = await fetchById(id)
     if (!result)
       throw new Error('Failed to update receipt status')
 
@@ -102,13 +106,13 @@ export async function updatePrintJob(
     if (duration !== undefined)
       updateData.duration = duration
 
-    const result = await db
+    await db
       .updateTable('receipts')
       .set(updateData)
       .where('id', '=', id)
-      .returningAll()
-      .executeTakeFirst()
+      .execute()
 
+    const result = await fetchById(id)
     if (!result)
       throw new Error('Failed to update receipt job information')
 

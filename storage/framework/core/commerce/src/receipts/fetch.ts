@@ -1,6 +1,29 @@
 import { db } from '@stacksjs/database'
+import { formatDate } from '@stacksjs/orm'
 import { aggregateStats } from '../utils/typed-stats'
 type ReceiptJsonResponse = ModelRow<typeof Receipt>
+
+function dateBoundary(value: Date | number): string {
+  return formatDate(value)
+}
+
+function receiptDate(value: unknown): Date | null {
+  if (value instanceof Date)
+    return Number.isNaN(value.getTime()) ? null : value
+  if (typeof value === 'number') {
+    const parsed = new Date(value <= 2147483647 ? value * 1000 : value)
+    return Number.isNaN(parsed.getTime()) ? null : parsed
+  }
+  const raw = String(value || '').trim()
+  if (!raw)
+    return null
+  if (/^\d{10}$/.test(raw)) {
+    const parsed = new Date(Number(raw) * 1000)
+    return Number.isNaN(parsed.getTime()) ? null : parsed
+  }
+  const parsed = new Date(raw.includes('T') ? raw : `${raw.replace(' ', 'T')}Z`)
+  return Number.isNaN(parsed.getTime()) ? null : parsed
+}
 
 /**
  * Fetch a print log by ID
@@ -42,8 +65,8 @@ export async function fetchPrintJobStats(
     averagePages: number
     averageDuration: number
   }> {
-  const start = typeof _startDate === 'number' ? _startDate : _startDate.getTime()
-  const end = typeof _endDate === 'number' ? _endDate : _endDate.getTime()
+  const start = dateBoundary(_startDate)
+  const end = dateBoundary(_endDate)
 
   const stats = await aggregateStats('receipts', {
     total: { kind: 'count' },
@@ -83,8 +106,8 @@ export async function fetchSuccessRate(
     failed: number
     warning: number
   }> {
-  const start = typeof _startDate === 'number' ? _startDate : _startDate.getTime()
-  const end = typeof _endDate === 'number' ? _endDate : _endDate.getTime()
+  const start = dateBoundary(_startDate)
+  const end = dateBoundary(_endDate)
 
   const stats = await aggregateStats('receipts', {
     total: { kind: 'count' },
@@ -119,8 +142,8 @@ export async function fetchPageStats(
     averagePagesPerReceipt: number
     totalReceipts: number
   }> {
-  const start = typeof _startDate === 'number' ? _startDate : _startDate.getTime()
-  const end = typeof _endDate === 'number' ? _endDate : _endDate.getTime()
+  const start = dateBoundary(_startDate)
+  const end = dateBoundary(_endDate)
 
   const stats = await aggregateStats('receipts', {
     totalReceipts: { kind: 'count' },
@@ -151,8 +174,8 @@ export async function fetchPrintTimeStats(
     maxDuration: number
     totalJobs: number
   }> {
-  const start = typeof _startDate === 'number' ? _startDate : _startDate.getTime()
-  const end = typeof _endDate === 'number' ? _endDate : _endDate.getTime()
+  const start = dateBoundary(_startDate)
+  const end = dateBoundary(_endDate)
 
   const stats = await aggregateStats('receipts', {
     totalJobs: { kind: 'count' },
@@ -188,8 +211,10 @@ export async function fetchPrintsPerHour(
       count: number
     }>
   }> {
-  const start = typeof _startDate === 'number' ? _startDate : _startDate.getTime()
-  const end = typeof _endDate === 'number' ? _endDate : _endDate.getTime()
+  const startMs = typeof _startDate === 'number' ? _startDate : _startDate.getTime()
+  const endMs = typeof _endDate === 'number' ? _endDate : _endDate.getTime()
+  const start = dateBoundary(_startDate)
+  const end = dateBoundary(_endDate)
 
   const receipts = await db
     .selectFrom('receipts')
@@ -199,7 +224,7 @@ export async function fetchPrintsPerHour(
     .execute()
 
   const totalPrints = receipts.length
-  const totalHours = Math.ceil((end - start) / (1000 * 60 * 60))
+  const totalHours = Math.ceil((endMs - startMs) / (1000 * 60 * 60))
   const printsPerHour = totalHours > 0 ? Math.round(totalPrints / totalHours) : 0
 
   const hourlyBreakdown = Array.from({ length: 24 }, (_, i) => ({
@@ -208,9 +233,10 @@ export async function fetchPrintsPerHour(
   }))
 
   receipts.forEach((receipt: any) => {
-    const date = new Date(Number(receipt.timestamp))
-    const hour = date.getHours()
-    hourlyBreakdown[hour]!.count++
+    const date = receiptDate(receipt.timestamp)
+    if (!date)
+      return
+    hourlyBreakdown[date.getHours()]!.count++
   })
 
   return {

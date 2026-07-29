@@ -1,9 +1,17 @@
 type ReceiptJsonResponse = ModelRow<typeof Receipt>
 import { beforeEach, describe, expect, it } from 'bun:test'
 import { refreshDatabase } from './setup'
-import { bulkDestroy } from '../receipts/destroy'
-import { fetchAll, fetchPrintsPerHour } from '../receipts/fetch'
-import { bulkStore } from '../receipts/store'
+import { bulkDestroy, destroy } from '../receipts/destroy'
+import {
+  fetchAll,
+  fetchPageStats,
+  fetchPrintJobStats,
+  fetchPrintsPerHour,
+  fetchPrintTimeStats,
+  fetchSuccessRate,
+} from '../receipts/fetch'
+import { bulkStore, store } from '../receipts/store'
+import { update, updatePrintJob, updateStatus } from '../receipts/update'
 
 beforeEach(async () => {
   await refreshDatabase()
@@ -14,6 +22,47 @@ describe('Print Log Module', () => {
     it('should return 0 when trying to bulk store an empty array', async () => {
       const count = await bulkStore([])
       expect(count).toBe(0)
+    })
+
+    it('returns and updates the persisted row without dialect-specific returning support', async () => {
+      const receipt = await store({
+        printer: 'Front Counter',
+        document: 'Receipt #100',
+        timestamp: Date.parse('2026-01-10T12:00:00Z'),
+        status: 'success',
+        size: 12,
+        pages: 1,
+        duration: 2,
+      })
+
+      expect(receipt.document).toBe('Receipt #100')
+      expect(String(receipt.timestamp)).toBe('2026-01-10 12:00:00')
+
+      const warned = await updateStatus(Number(receipt.id), 'warning')
+      expect(warned.status).toBe('warning')
+
+      const measured = await updatePrintJob(Number(receipt.id), 14, 2, 3)
+      expect(Number(measured.size)).toBe(14)
+      expect(Number(measured.pages)).toBe(2)
+      expect(Number(measured.duration)).toBe(3)
+
+      const retimed = await update(Number(receipt.id), {
+        timestamp: Date.parse('2026-01-10T12:30:00Z') / 1000,
+      })
+      expect(String(retimed.timestamp)).toBe('2026-01-10 12:30:00')
+      expect(await destroy(Number(receipt.id))).toBe(true)
+
+      const unixReceipt = await store({
+        printer: 'Back Office',
+        document: 'Receipt #101',
+        timestamp: Date.parse('2026-01-10T13:00:00Z') / 1000,
+        status: 'success',
+        size: 6,
+        pages: 1,
+        duration: 1,
+      })
+
+      expect(String(unixReceipt.timestamp)).toBe('2026-01-10 13:00:00')
     })
   })
 
@@ -281,6 +330,44 @@ describe('Print Log Module', () => {
       // Only the first hour should have prints
       stats.hourlyBreakdown.forEach((hour: { hour: number, count: number }, index: number) => {
         expect(hour.count).toBe(index === 0 ? 1 : 0)
+      })
+    })
+
+    it('calculates native status, page, and duration statistics from SQL timestamps', async () => {
+      const start = Date.parse('2026-01-10T00:00:00Z')
+      const end = Date.parse('2026-01-10T23:59:59Z')
+      await bulkStore([
+        { printer: 'A', document: 'One', timestamp: start + 3600000, status: 'success', size: 10, pages: 1, duration: 10 },
+        { printer: 'A', document: 'Two', timestamp: start + 7200000, status: 'warning', size: 20, pages: 2, duration: 20 },
+        { printer: 'B', document: 'Three', timestamp: start + 10800000, status: 'failed', size: 30, pages: 5, duration: 30 },
+      ])
+
+      expect(await fetchPrintJobStats(start, end)).toEqual({
+        total: 3,
+        success: 1,
+        failed: 1,
+        warning: 1,
+        averageSize: 20,
+        averagePages: 3,
+        averageDuration: 20,
+      })
+      expect(await fetchSuccessRate(start, end)).toEqual({
+        successRate: 33,
+        total: 3,
+        success: 1,
+        failed: 1,
+        warning: 1,
+      })
+      expect(await fetchPageStats(start, end)).toEqual({
+        totalPages: 8,
+        averagePagesPerReceipt: 3,
+        totalReceipts: 3,
+      })
+      expect(await fetchPrintTimeStats(start, end)).toEqual({
+        averageDuration: 20,
+        minDuration: 10,
+        maxDuration: 30,
+        totalJobs: 3,
       })
     })
   })

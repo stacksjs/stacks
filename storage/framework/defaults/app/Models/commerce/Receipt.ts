@@ -1,5 +1,16 @@
-import { defineModel } from '@stacksjs/orm'
+import type { Attributes } from '@stacksjs/types'
+import { defineModel, formatDate } from '@stacksjs/orm'
 import { schema } from '@stacksjs/validation'
+
+function receiptTimestamp(value: unknown): string {
+  if (typeof value === 'number')
+    return formatDate(value <= 2147483647 ? value * 1000 : value)
+
+  if (typeof value === 'string' && /^\d{10}$/.test(value))
+    return formatDate(Number(value) * 1000)
+
+  return formatDate(value as Date | string)
+}
 
 export default defineModel({
   name: 'Receipt',
@@ -57,15 +68,12 @@ export default defineModel({
       order: 3,
       fillable: true,
       validation: {
-        rule: schema.timestamp().required(),
+        rule: schema.timestampTz().required(),
         message: {
           invalid: 'Invalid date format',
         },
       },
-      factory: (faker) => {
-        const date = faker.date.recent()
-        return date.toISOString().slice(0, 19).replace('T', ' ')
-      },
+      factory: faker => faker.date.recent().toISOString(),
     },
 
     status: {
@@ -115,11 +123,15 @@ export default defineModel({
     metadata: {
       order: 8,
       fillable: true,
+      default: '{}',
       validation: {
         rule: schema.string(),
       },
-      factory: () => 'test',
     },
+  },
+
+  set: {
+    timestamp: (attributes: Attributes) => receiptTimestamp(attributes.timestamp),
   },
 
   dashboard: {

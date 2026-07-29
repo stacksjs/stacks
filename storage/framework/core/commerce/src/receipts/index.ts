@@ -8,6 +8,11 @@ export {
 export {
   fetchAll,
   fetchById,
+  fetchPageStats,
+  fetchPrintJobStats,
+  fetchPrintsPerHour,
+  fetchPrintTimeStats,
+  fetchSuccessRate,
 } from './fetch'
 
 // Functions from store.ts

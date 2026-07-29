@@ -1,5 +1,23 @@
 import { db } from '@stacksjs/database'
 
+function mutationCount(result: unknown): number {
+  if (typeof result === 'number')
+    return Number.isFinite(result) ? result : 0
+  if (typeof result === 'bigint')
+    return Number(result)
+  if (!result || typeof result !== 'object')
+    return 0
+
+  const record = result as Record<string, unknown>
+  for (const key of ['changes', 'affectedRows', 'count', 'numAffectedRows', 'numDeletedRows']) {
+    if (record[key] !== undefined && record[key] !== null)
+      return mutationCount(record[key])
+  }
+  if (Array.isArray(result))
+    return result.reduce((total, item) => total + mutationCount(item), 0)
+  return 0
+}
+
 /**
  * Delete a print log by ID
  *
@@ -13,7 +31,7 @@ export async function destroy(id: number): Promise<boolean> {
       .where('id', '=', id)
       .executeTakeFirst()
 
-    return Number(result.numDeletedRows) > 0
+    return mutationCount(result) > 0
   }
   catch (error) {
     if (error instanceof Error) {
@@ -42,7 +60,7 @@ export async function bulkDestroy(ids: number[]): Promise<number> {
       .executeTakeFirst()
 
     // Return the number of deleted rows
-    return Number(result.numDeletedRows)
+    return mutationCount(result)
   }
   catch (error) {
     if (error instanceof Error) {
