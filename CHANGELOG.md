@@ -1,5 +1,20 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.227...v0.70.228)
+
+## ✨ Features
+
+- **dashboard**: make the auto-generated model page a real management surface ([4dbce42](https://github.com/stacksjs/stacks/commit/4dbce42)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: query and write API behind the generic model browser ([7181bbc](https://github.com/stacksjs/stacks/commit/7181bbc)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🐛 Bug Fixes
+
+- preserve live dashboards during partial deploys ([f737cd3](https://github.com/stacksjs/stacks/commit/f737cd3)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.226...v0.70.227)
 
 ## 🐛 Bug Fixes
