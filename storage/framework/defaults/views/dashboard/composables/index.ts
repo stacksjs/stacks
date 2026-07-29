@@ -9,8 +9,8 @@
  * See stacksjs/stacks#1838 for the wider sweep this is part of.
  */
 
-export type { ChartCtor, ChartHandle, ChartLike, UseChartOptions } from './useChart'
-export { useChart, useCharts } from './useChart'
+export type { ChartCtor, ChartHandle, ChartLike, LazyChartsHandle, UseChartOptions } from './useChart'
+export { useChart, useCharts, useLazyCharts } from './useChart'
 export type { NavigationSnapshot } from './useNavigation'
 export { useNavigation } from './useNavigation'
 export type { RoleSnapshot } from './useRole'

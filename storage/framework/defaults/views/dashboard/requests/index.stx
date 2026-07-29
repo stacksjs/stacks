@@ -281,6 +281,8 @@
 </div>
 
 <script client>
+import { useLazyCharts } from '../composables'
+
 // Static chart data + options — moved out of the former `<script server>`
 // block (stacksjs/stacks#1838).
 const chartOptions = {
@@ -418,44 +420,17 @@ const barChartOptions = {
   },
 }
 
-const { Chart, registerables } = await import('/__deps/charts.js')
-Chart.register(...registerables)
+useLazyCharts(async () => {
+  const { Chart, registerables } = await import('/__deps/charts.js')
+  Chart.register(...registerables)
 
-const chart_1_ctx = document.getElementById('chart_1')
-if (chart_1_ctx) {
-  new Chart(chart_1_ctx, {
-    type: 'line',
-    data: requestVolumeData,
-    options: chartOptions,
-  })
-}
-
-const chart_2_ctx = document.getElementById('chart_2')
-if (chart_2_ctx) {
-  new Chart(chart_2_ctx, {
-    type: 'line',
-    data: responseTimeData,
-    options: chartOptions,
-  })
-}
-
-const chart_3_ctx = document.getElementById('chart_3')
-if (chart_3_ctx) {
-  new Chart(chart_3_ctx, {
-    type: 'line',
-    data: successRateData,
-    options: chartOptions,
-  })
-}
-
-const chart_4_ctx = document.getElementById('chart_4')
-if (chart_4_ctx) {
-  new Chart(chart_4_ctx, {
-    type: 'bar',
-    data: statusCodesData,
-    options: barChartOptions,
-  })
-}
+  return [
+    { Chart, id: 'chart_1', type: 'line', data: requestVolumeData, options: chartOptions },
+    { Chart, id: 'chart_2', type: 'line', data: responseTimeData, options: chartOptions },
+    { Chart, id: 'chart_3', type: 'line', data: successRateData, options: chartOptions },
+    { Chart, id: 'chart_4', type: 'bar', data: statusCodesData, options: barChartOptions },
+  ]
+})
 
 </script>
 

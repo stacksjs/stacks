@@ -166,6 +166,8 @@
 </div>
 
 <script client>
+import { useLazyCharts } from '../../../composables'
+
 // Filter options — moved out of the former `<script server>` block
 // (stacksjs/stacks#1838).
 const locations = ['All Locations', 'Main Floor', 'Second Floor', 'Kitchen', 'Pickup Area'] as const
@@ -256,17 +258,15 @@ const barChartOptions = {
   },
 }
 
-const { Chart, registerables } = await import('/__deps/charts.js')
-Chart.register(...registerables)
+useLazyCharts(async () => {
+  const { Chart, registerables } = await import('/__deps/charts.js')
+  Chart.register(...registerables)
 
-const { destroyAll } = useCharts([
-  { Chart, id: 'chart_1', type: 'pie', data: statusData, options: chartOptions },
-  { Chart, id: 'chart_2', type: 'bar', data: printVolumeData, options: barChartOptions },
-  { Chart, id: 'chart_3', type: 'bar', data: errorRateData, options: barChartOptions },
-])
-
-onDestroy(() => {
-  destroyAll()
+  return [
+    { Chart, id: 'chart_1', type: 'pie', data: statusData, options: chartOptions },
+    { Chart, id: 'chart_2', type: 'bar', data: printVolumeData, options: barChartOptions },
+    { Chart, id: 'chart_3', type: 'bar', data: errorRateData, options: barChartOptions },
+  ]
 })
 </script>
 

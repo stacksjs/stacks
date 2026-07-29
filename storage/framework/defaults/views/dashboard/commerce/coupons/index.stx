@@ -212,6 +212,7 @@
 
 <script client>
 import { useCoupons } from '../../../../functions/commerce/coupons'
+import { useLazyCharts } from '../../composables'
 import type { Coupons, NewCoupon } from '../../../../types/defaults'
 // Filter options — moved out of the former `<script server>` block
 // (stacksjs/stacks#1838).
@@ -463,23 +464,21 @@ async function confirmDelete(): Promise<void> {
   }
 }
 
-const { Chart, registerables } = await import('/__deps/charts.js')
-Chart.register(...registerables)
+useLazyCharts(async () => {
+  const { Chart, registerables } = await import('/__deps/charts.js')
+  Chart.register(...registerables)
+  const chartData = monthlyChartData()
 
-const chartData = monthlyChartData()
-const { destroyAll } = useCharts([
-  { Chart, id: 'chart_1', type: 'line', data: chartData.couponUsageData, options: chartOptions },
-  { Chart, id: 'chart_2', type: 'bar', data: chartData.discountAmountData, options: chartOptions },
-])
+  return [
+    { Chart, id: 'chart_1', type: 'line', data: chartData.couponUsageData, options: chartOptions },
+    { Chart, id: 'chart_2', type: 'bar', data: chartData.discountAmountData, options: chartOptions },
+  ]
+})
 
 onMount(async () => {
   await fetchCoupons()
 })
 
-// Tear charts down on SPA navigation so chart.js doesn't leak canvases.
-onDestroy(() => {
-  destroyAll()
-})
 </script>
 
 @endsection

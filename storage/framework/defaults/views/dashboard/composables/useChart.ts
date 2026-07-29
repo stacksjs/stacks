@@ -9,10 +9,11 @@
  *
  * `useChart` packages that into one call, returns a destroyer so SPA
  * navigation can tear charts down, and tolerates SSR (no-ops on the
- * server). It does *not* import the chart lib eagerly — pages can
- * still `await import('/__deps/charts.js')` to keep the browser bundle
- * lazy, then pass the `Chart` constructor in.
+ * server). `useLazyCharts` owns the asynchronous browser import and
+ * lifecycle for pages that should defer the chart library.
  */
+
+import { onDestroy, onMount } from '@stacksjs/stx'
 
 export interface ChartLike {
   destroy: () => void
@@ -73,5 +74,42 @@ export function useCharts(specs: UseChartOptions[]): { handles: ChartHandle[], d
   return {
     handles,
     destroyAll: () => handles.forEach(h => h.destroy()),
+  }
+}
+
+export interface LazyChartsHandle {
+  readonly handles: ChartHandle[]
+  destroyAll: () => void
+}
+
+/**
+ * Load chart code only after the component DOM has mounted, then release every
+ * chart automatically when SPA navigation destroys the page scope.
+ */
+export function useLazyCharts(loadSpecs: () => Promise<UseChartOptions[]>): LazyChartsHandle {
+  let handles: ChartHandle[] = []
+  let active = true
+
+  const destroyAll = (): void => {
+    active = false
+    handles.forEach(handle => handle.destroy())
+    handles = []
+  }
+
+  onMount(async () => {
+    const specs = await loadSpecs()
+    if (!active)
+      return
+
+    handles = specs.map(useChart)
+  })
+
+  onDestroy(destroyAll)
+
+  return {
+    get handles() {
+      return handles
+    },
+    destroyAll,
   }
 }

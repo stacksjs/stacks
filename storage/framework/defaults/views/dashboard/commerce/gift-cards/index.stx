@@ -332,6 +332,7 @@
 <script client>
 import { useGiftCards } from '../../../../functions/commerce/gift-cards'
 import { useAuth } from '../../../../functions/auth'
+import { useLazyCharts } from '../../composables'
 // Filter options — moved out of the former `<script server>` block
 // (stacksjs/stacks#1838).
 const statuses = ['all', 'Active', 'Used', 'Expired'] as const
@@ -540,22 +541,21 @@ async function addGiftCard(): Promise<void> {
   }
 }
 
-const { Chart, registerables } = await import('/__deps/charts.js')
-Chart.register(...registerables)
+useLazyCharts(async () => {
+  const { Chart, registerables } = await import('/__deps/charts.js')
+  Chart.register(...registerables)
+  const chartData = monthlyChartData()
 
-const chartData = monthlyChartData()
-const { destroyAll } = useCharts([
-  { Chart, id: 'chart_1', type: 'line', data: chartData.giftCardSalesData, options: chartOptions },
-  { Chart, id: 'chart_2', type: 'bar', data: chartData.giftCardRevenueData, options: chartOptions },
-])
+  return [
+    { Chart, id: 'chart_1', type: 'line', data: chartData.giftCardSalesData, options: chartOptions },
+    { Chart, id: 'chart_2', type: 'bar', data: chartData.giftCardRevenueData, options: chartOptions },
+  ]
+})
 
 onMount(async () => {
   await fetchGiftCards()
 })
 
-onDestroy(() => {
-  destroyAll()
-})
 </script>
 
 @endsection

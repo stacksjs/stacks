@@ -2,6 +2,8 @@
 
 @section('content')
 <script client>
+import { useLazyCharts } from '../../composables'
+
 // Commerce Dashboard (stacksjs/stacks#1838 — last big page off the
 // `<script server>` allowlist).
 //
@@ -139,18 +141,18 @@ const chartOptions = {
   },
 }
 
-void loadStats()
+useLazyCharts(async () => {
+  const { Chart, registerables } = await import('/__deps/charts.js')
+  Chart.register(...registerables)
 
-const { Chart, registerables } = await import('/__deps/charts.js')
-Chart.register(...registerables)
+  return [
+    { Chart, id: 'revenueChart', type: 'line', data: revenueData, options: chartOptions },
+    { Chart, id: 'ordersChart', type: 'bar', data: ordersData, options: chartOptions },
+  ]
+})
 
-const { destroyAll } = useCharts([
-  { Chart, id: 'revenueChart', type: 'line', data: revenueData, options: chartOptions },
-  { Chart, id: 'ordersChart', type: 'bar', data: ordersData, options: chartOptions },
-])
-
-onDestroy(() => {
-  destroyAll()
+onMount(async () => {
+  await loadStats()
 })
 </script>
 

@@ -300,6 +300,8 @@
       </div>
 </PageLayout>
 <script client>
+import { useLazyCharts } from '../../composables'
+
 // Filter options — moved out of the former `<script server>` block
 // (stacksjs/stacks#1838).
 const statuses = ['all', 'Completed', 'Pending', 'Failed', 'Refunded'] as const
@@ -518,17 +520,15 @@ function getPaymentMethodIcon(method: string): string {
   }
 }
 
-const { Chart, registerables } = await import('/__deps/charts.js')
-Chart.register(...registerables)
+useLazyCharts(async () => {
+  const { Chart, registerables } = await import('/__deps/charts.js')
+  Chart.register(...registerables)
+  const chartData = monthlyChartData()
 
-const chartData = monthlyChartData()
-const { destroyAll } = useCharts([
-  { Chart, id: 'chart_1', type: 'line', data: chartData.transactionCountChartData, options: chartOptions },
-  { Chart, id: 'chart_2', type: 'bar', data: chartData.revenueChartData, options: chartOptions },
-])
-
-onDestroy(() => {
-  destroyAll()
+  return [
+    { Chart, id: 'chart_1', type: 'line', data: chartData.transactionCountChartData, options: chartOptions },
+    { Chart, id: 'chart_2', type: 'bar', data: chartData.revenueChartData, options: chartOptions },
+  ]
 })
 </script>
 
