@@ -203,23 +203,18 @@ function resolveCsrfMiddlewarePath(): string {
   }
 }
 
-export function serve(buddy: CLI): void {
-  buddy
-    .command('serve', 'Start the production HTTP server (STX views + /api proxy + coming-soon/maintenance gate)')
-    .option('-p, --port <port>', 'Port to listen on (defaults to PORT env or 3000)')
-    .option('--verbose', 'Enable verbose output', { default: false })
-    .action(async (options?: { port?: string | number, verbose?: boolean }) => {
-      if (options?.port)
-        process.env.PORT = String(options.port)
-      process.env.APP_ENV = process.env.APP_ENV || 'production'
+export async function startProductionServer(options?: { port?: string | number, verbose?: boolean }): Promise<void> {
+  if (options?.port)
+    process.env.PORT = String(options.port)
+  process.env.APP_ENV = process.env.APP_ENV || 'production'
 
-      const port = Number(process.env.PORT) || 3000
+  const port = Number(process.env.PORT) || 3000
 
-      const { config, overridesReady } = await import('@stacksjs/config')
-      await overridesReady
+  const { config, overridesReady } = await import('@stacksjs/config')
+  await overridesReady
 
-      const { injectGlobalAutoImports } = await import('@stacksjs/server')
-      await injectGlobalAutoImports()
+  const { injectGlobalAutoImports } = await import('@stacksjs/server')
+  await injectGlobalAutoImports()
 
       // Resolve the stx `serve` implementation: local STX worktree first
       // (dev machines), then the project's pantry-vendored copy, then the
@@ -366,8 +361,15 @@ export function serve(buddy: CLI): void {
         },
       })
 
-      log.success(`Production server listening on http://0.0.0.0:${port}`)
-    })
+  log.success(`Production server listening on http://0.0.0.0:${port}`)
+}
+
+export function serve(buddy: CLI): void {
+  buddy
+    .command('serve', 'Start the production HTTP server (STX views + /api proxy + coming-soon/maintenance gate)')
+    .option('-p, --port <port>', 'Port to listen on (defaults to PORT env or 3000)')
+    .option('--verbose', 'Enable verbose output', { default: false })
+    .action(startProductionServer)
 }
 
 /**
