@@ -1,0 +1,225 @@
+<script client>
+import type { DashboardQueryLog, DashboardQueryResponse } from '../../../../functions/queries'
+import { fetchDashboardQueries } from '../../../../functions/queries'
+
+type QueryRange = 'hour' | 'day' | 'week'
+type QueryType = DashboardQueryLog['type'] | 'all'
+
+const data = state<DashboardQueryResponse>({
+  enabled: false,
+  slowThreshold: 100,
+  queries: [],
+})
+const range = state<QueryRange>('day')
+const connection = state('all')
+const type = state<QueryType>('all')
+const loading = state(true)
+const loadError = state('')
+
+const rangeHours: Record<QueryRange, number> = {
+  hour: 1,
+  day: 24,
+  week: 168,
+}
+
+const rangedQueries = derived(() => {
+  const cutoff = Date.now() - rangeHours[range()] * 60 * 60 * 1000
+  return data().queries.filter((query) => {
+    const executed = new Date(query.executedAt).getTime()
+    return Number.isFinite(executed) && executed >= cutoff
+  })
+})
+
+const filteredQueries = derived(() => rangedQueries().filter((query) => {
+  if (connection() !== 'all' && query.connection !== connection())
+    return false
+  return type() === 'all' || query.type === type()
+}))
+
+const connections = derived(() => Array.from(new Set(data().queries.map(query => query.connection))).sort())
+const total = derived(() => filteredQueries().length)
+const selectCount = derived(() => filteredQueries().filter(query => query.type === 'SELECT').length)
+const writeCount = derived(() => filteredQueries().filter(query => ['INSERT', 'UPDATE', 'DELETE'].includes(query.type)).length)
+const slowCount = derived(() => filteredQueries().filter(query => query.status === 'slow').length)
+const failedCount = derived(() => filteredQueries().filter(query => query.status === 'failed').length)
+const averageDuration = derived(() => {
+  const rows = filteredQueries()
+  if (rows.length === 0)
+    return '0.00 ms'
+  return `${(rows.reduce((sum, query) => sum + query.duration, 0) / rows.length).toFixed(2)} ms`
+})
+
+function setRange(value: QueryRange): void {
+  range.set(value)
+}
+
+function updateConnection(event: Event): void {
+  connection.set((event.target as HTMLSelectElement).value)
+}
+
+function updateType(event: Event): void {
+  type.set((event.target as HTMLSelectElement).value as QueryType)
+}
+
+function formatQuery(query: string): string {
+  return query.length > 140 ? `${query.slice(0, 140)}...` : query
+}
+
+function formatDuration(duration: number): string {
+  return `${duration.toFixed(2)} ms`
+}
+
+function formatDate(value: string): string {
+  const date = new Date(value)
+  return Number.isNaN(date.getTime()) ? value : date.toLocaleString()
+}
+
+function typeClass(value: DashboardQueryLog['type']): string {
+  const classes: Record<DashboardQueryLog['type'], string> = {
+    SELECT: 'text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/40',
+    INSERT: 'text-green-700 dark:text-green-300 bg-green-50 dark:bg-green-950/40',
+    UPDATE: 'text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40',
+    DELETE: 'text-red-700 dark:text-red-300 bg-red-50 dark:bg-red-950/40',
+    OTHER: 'text-neutral-700 dark:text-neutral-300 bg-neutral-100 dark:bg-neutral-700',
+  }
+  return classes[value]
+}
+
+function statusClass(value: DashboardQueryLog['status']): string {
+  if (value === 'failed')
+    return 'text-red-700 dark:text-red-300'
+  if (value === 'slow')
+    return 'text-amber-700 dark:text-amber-300'
+  return 'text-green-700 dark:text-green-300'
+}
+
+async function loadQueries(): Promise<void> {
+  loading.set(true)
+  loadError.set('')
+  try {
+    const result = await fetchDashboardQueries()
+    data.set(result)
+    loadError.set(result.error || '')
+  }
+  catch (error) {
+    loadError.set(error instanceof Error ? error.message : 'Query logs could not be loaded.')
+  }
+  finally {
+    loading.set(false)
+  }
+}
+
+onMount(() => {
+  void loadQueries()
+})
+</script>
+
+<div class="space-y-6">
+  <header class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+    <div>
+      <h1 class="font-semibold text-2xl text-neutral-900 tracking-tight dark:text-white">Queries</h1>
+      <p class="mt-1 text-neutral-500 text-sm dark:text-neutral-400">Inspect query volume and latency recorded by the native database logger.</p>
+    </div>
+    <div class="flex flex-wrap gap-3 items-center">
+      <div class="inline-flex p-1 bg-neutral-100 dark:bg-neutral-800 rounded-lg">
+        <button type="button" :aria-pressed="range() === 'hour'" :class="'px-3 py-1.5 font-medium text-sm rounded-md ' + (range() === 'hour' ? 'text-neutral-900 dark:text-white bg-white dark:bg-neutral-700 shadow-sm' : 'text-neutral-500 dark:text-neutral-400')" @click="setRange('hour')">Hour</button>
+        <button type="button" :aria-pressed="range() === 'day'" :class="'px-3 py-1.5 font-medium text-sm rounded-md ' + (range() === 'day' ? 'text-neutral-900 dark:text-white bg-white dark:bg-neutral-700 shadow-sm' : 'text-neutral-500 dark:text-neutral-400')" @click="setRange('day')">Day</button>
+        <button type="button" :aria-pressed="range() === 'week'" :class="'px-3 py-1.5 font-medium text-sm rounded-md ' + (range() === 'week' ? 'text-neutral-900 dark:text-white bg-white dark:bg-neutral-700 shadow-sm' : 'text-neutral-500 dark:text-neutral-400')" @click="setRange('week')">Week</button>
+      </div>
+      <button type="button" :disabled="loading()" class="inline-flex items-center px-3 py-2 font-medium text-neutral-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-neutral-300 rounded-lg dark:border-neutral-700 disabled:opacity-50" @click="loadQueries">
+        <span :class="'mr-2 h-4 w-4 ' + (loading() ? 'animate-spin i-hugeicons-loading-03' : 'i-hugeicons-refresh')"></span>
+        Refresh
+      </button>
+    </div>
+  </header>
+
+  <div class="grid gap-4 grid-cols-2 lg:grid-cols-6">
+    <StatsCard title="Queries" icon="i-hugeicons-database-02" iconBg="primary">
+      <template #value>{{ total() }}</template>
+    </StatsCard>
+    <StatsCard title="Reads" icon="i-hugeicons-search-01" iconBg="info">
+      <template #value>{{ selectCount() }}</template>
+    </StatsCard>
+    <StatsCard title="Writes" icon="i-hugeicons-pencil-edit-02" iconBg="success">
+      <template #value>{{ writeCount() }}</template>
+    </StatsCard>
+    <StatsCard title="Slow" icon="i-hugeicons-time-02" iconBg="warning">
+      <template #value>{{ slowCount() }}</template>
+    </StatsCard>
+    <StatsCard title="Failed" icon="i-hugeicons-alert-02" iconBg="danger">
+      <template #value>{{ failedCount() }}</template>
+    </StatsCard>
+    <StatsCard title="Average" icon="i-hugeicons-dashboard-speed-01" iconBg="neutral">
+      <template #value>{{ averageDuration() }}</template>
+    </StatsCard>
+  </div>
+
+  <Card padding="none">
+    <template #header>
+      <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h2 class="font-semibold text-base text-neutral-900 dark:text-white">Recent queries</h2>
+          <p class="mt-1 text-neutral-500 text-xs dark:text-neutral-400">Slow threshold: {{ data().slowThreshold }} ms</p>
+        </div>
+        <div class="flex gap-2 items-center">
+          <label for="query-connection" class="sr-only">Connection</label>
+          <select id="query-connection" :value="connection()" class="px-3 py-2 text-neutral-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-neutral-300 rounded-lg dark:border-neutral-700" @change="updateConnection($event)">
+            <option value="all">All connections</option>
+            <template :for="item in connections()">
+              <option :value="item">{{ item }}</option>
+            </template>
+          </select>
+          <label for="query-type" class="sr-only">Query type</label>
+          <select id="query-type" :value="type()" class="px-3 py-2 text-neutral-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-neutral-300 rounded-lg dark:border-neutral-700" @change="updateType($event)">
+            <option value="all">All types</option>
+            <option value="SELECT">SELECT</option>
+            <option value="INSERT">INSERT</option>
+            <option value="UPDATE">UPDATE</option>
+            <option value="DELETE">DELETE</option>
+            <option value="OTHER">OTHER</option>
+          </select>
+        </div>
+      </div>
+    </template>
+
+    <div :if="loading()" aria-live="polite" class="p-10 text-center text-neutral-500 text-sm dark:text-neutral-400">Loading query logs</div>
+    <div :if="loadError() && !loading()" role="alert" class="p-10 text-center text-red-600 text-sm dark:text-red-300">{{ loadError() }}</div>
+    <div :if="!loading() && !loadError() && filteredQueries().length === 0" class="p-10 text-center">
+      <span class="block mb-3 mx-auto h-8 w-8 text-neutral-400 i-hugeicons-database-02"></span>
+      <p class="font-medium text-neutral-900 dark:text-white">No query logs in this range</p>
+      <p class="mt-1 text-neutral-500 text-sm dark:text-neutral-400">{{ data().enabled ? 'Queries will appear as the application executes them.' : 'Enable database.queryLogging in config/database.ts to record queries.' }}</p>
+    </div>
+
+    <div :if="!loading() && !loadError() && filteredQueries().length > 0" class="overflow-x-auto">
+      <table class="w-full">
+        <thead class="bg-neutral-50 dark:bg-neutral-800/50">
+          <tr>
+            <th scope="col" class="pl-5 pr-4 py-3 font-semibold text-left text-neutral-500 text-xs tracking-wider uppercase dark:text-neutral-400">Query</th>
+            <th scope="col" class="px-4 py-3 font-semibold text-left text-neutral-500 text-xs tracking-wider uppercase dark:text-neutral-400">Connection</th>
+            <th scope="col" class="px-4 py-3 font-semibold text-neutral-500 text-right text-xs tracking-wider uppercase dark:text-neutral-400">Duration</th>
+            <th scope="col" class="px-4 py-3 font-semibold text-left text-neutral-500 text-xs tracking-wider uppercase dark:text-neutral-400">Status</th>
+            <th scope="col" class="px-4 py-3 font-semibold text-neutral-500 text-right text-xs tracking-wider uppercase dark:text-neutral-400">Executed</th>
+          </tr>
+        </thead>
+        <tbody class="divide-neutral-100 divide-y dark:divide-neutral-700">
+          <template :for="query in filteredQueries()">
+            <tr>
+              <td class="pl-5 pr-4 py-3.5 max-w-2xl">
+                <div class="flex gap-2 items-start">
+                  <span :class="'inline-flex flex-none items-center px-2 py-0.5 font-semibold text-[10px] rounded ' + typeClass(query.type)">{{ query.type }}</span>
+                  <code class="block break-all font-mono text-neutral-800 text-xs dark:text-neutral-200">{{ formatQuery(query.query) }}</code>
+                </div>
+              </td>
+              <td class="px-4 py-3.5 text-neutral-500 text-sm dark:text-neutral-400">{{ query.connection }}</td>
+              <td class="px-4 py-3.5 font-mono text-neutral-700 text-right text-xs whitespace-nowrap dark:text-neutral-300">{{ formatDuration(query.duration) }}</td>
+              <td class="px-4 py-3.5">
+                <span :class="'font-medium text-xs capitalize ' + statusClass(query.status)">{{ query.status }}</span>
+              </td>
+              <td class="px-4 py-3.5 text-neutral-500 text-right text-xs whitespace-nowrap dark:text-neutral-400">{{ formatDate(query.executedAt) }}</td>
+            </tr>
+          </template>
+        </tbody>
+      </table>
+    </div>
+  </Card>
+</div>
