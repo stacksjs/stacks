@@ -875,7 +875,8 @@ async function deployToHetzner(tsCloudConfig: any, deployEnv: string, options: D
   const environment = (deployEnv === 'prod' ? 'production' : deployEnv) as 'production' | 'staging' | 'development'
 
   const apiToken = tsCloudConfig.hetzner?.apiToken || process.env.HCLOUD_TOKEN || process.env.HETZNER_API_TOKEN
-  if (!apiToken) {
+  const persistedAttachBox = resolvePersistedAttachTargetBox(tsCloudConfig, environment)
+  if (!apiToken && !persistedAttachBox) {
     log.error('No Hetzner API token found. Set HCLOUD_TOKEN in your .env (or hetzner.apiToken in config/cloud.ts).')
     process.exit(ExitCode.FatalError)
   }
@@ -892,7 +893,7 @@ async function deployToHetzner(tsCloudConfig: any, deployEnv: string, options: D
   const { createCloudDriver, deployAllComputeSites, ensureManagementDashboard, resolveSiteKind } = await loadTsCloudDeployApi()
 
   try {
-    await runHetznerDeploy({ tsCloudConfig, environment, verbose, docker: (options as any).docker === true, createCloudDriver, deployAllComputeSites, ensureManagementDashboard, resolveSiteKind, onlySite: (options as any).site || undefined })
+    await runHetznerDeploy({ tsCloudConfig, environment, verbose, docker: (options as any).docker === true, createCloudDriver, deployAllComputeSites, ensureManagementDashboard, resolveSiteKind, onlySite: (options as any).site || undefined, persistedAttachBox })
   }
   catch (err) {
     log.error('Hetzner deploy failed:')
@@ -933,6 +934,57 @@ export async function loadTsCloudDeployApi(): Promise<typeof import('@stacksjs/t
  */
 export function shouldInjectManagementDashboard(tsCloudConfig: any): boolean {
   return !tsCloudConfig.cloud?.attachTo
+}
+
+interface AttachedComputeBox {
+  serverId: number
+  serverName: string
+  publicIp: string
+  publicIpv6?: string
+}
+
+/**
+ * Read a tenant's existing shared-server pin without requiring provider API
+ * credentials. The pin contains only compute metadata and is sufficient for
+ * an SSH release to a box that the owner project already provisioned.
+ */
+export function resolvePersistedAttachTargetBox(
+  tsCloudConfig: any,
+  environment: string,
+  cwd = process.cwd(),
+): AttachedComputeBox | null {
+  const owner = tsCloudConfig.cloud?.attachTo
+  if (!owner)
+    return null
+
+  const stackName = tsCloudConfig.project?.stackName || `${tsCloudConfig.project?.slug || 'app'}-${environment}`
+  const statePath = join(cwd, 'storage', 'cloud', 'state', `${stackName}.json`)
+  if (!existsSync(statePath))
+    return null
+
+  try {
+    const state = JSON.parse(readFileSync(statePath, 'utf8')) as Record<string, unknown>
+    if (
+      state.stackName !== stackName ||
+      typeof state.serverId !== 'number' ||
+      typeof state.publicIp !== 'string' ||
+      !state.publicIp.trim()
+    ) {
+      return null
+    }
+
+    return {
+      serverId: state.serverId,
+      serverName: typeof state.serverName === 'string' && state.serverName
+        ? state.serverName
+        : `${owner}-${environment}-app`,
+      publicIp: state.publicIp,
+      publicIpv6: typeof state.publicIpv6 === 'string' ? state.publicIpv6 : undefined,
+    }
+  }
+  catch {
+    return null
+  }
 }
 
 export function scrubLoopbackSitePortsForFirewall(tsCloudConfig: any): any {
@@ -1106,12 +1158,13 @@ async function runHetznerDeploy(args: {
   deployAllComputeSites: any
   ensureManagementDashboard?: (config: any, options: any) => any
   resolveSiteKind: (site: any) => 'bucket' | 'server-app' | 'server-static' | 'server-php' | 'redirect'
+  persistedAttachBox?: AttachedComputeBox | null
   /** Deploy ONLY this site (multi-tenant surgical add). Provisioning still uses
    *  the full config so rpx keeps every existing route; only this site's files
    *  are rebuilt/shipped and only its domain gets a DNS record. */
   onlySite?: string
 }): Promise<void> {
-  const { tsCloudConfig, environment, verbose, docker, createCloudDriver, deployAllComputeSites, ensureManagementDashboard, resolveSiteKind, onlySite } = args
+  const { tsCloudConfig, environment, verbose, docker, createCloudDriver, deployAllComputeSites, ensureManagementDashboard, resolveSiteKind, onlySite, persistedAttachBox } = args
 
   const startTime = performance.now()
   console.log('')
@@ -1166,7 +1219,7 @@ async function runHetznerDeploy(args: {
   // left undefined, it simply skips them.
   let ipv6: string | undefined
   if (attachTo) {
-    const box = await resolveAttachTargetBox(attachTo, environment)
+    const box = persistedAttachBox ?? await resolveAttachTargetBox(attachTo, environment)
     if (!box?.publicIp) {
       log.error(`Attach target '${attachTo}' has no reachable box for '${environment}'. Is '${attachTo}-${environment}-app' provisioned (by its owner)?`)
       process.exit(ExitCode.FatalError)

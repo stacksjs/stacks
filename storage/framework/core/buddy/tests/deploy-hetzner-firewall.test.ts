@@ -14,11 +14,12 @@
  */
 
 import { describe, expect, it } from 'bun:test'
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import {
   loadTsCloudDeployApi,
+  resolvePersistedAttachTargetBox,
   scrubLoopbackSitePortsForFirewall,
   shouldInjectManagementDashboard,
 } from '../src/commands/deploy'
@@ -113,6 +114,57 @@ describe('management dashboard ownership', () => {
   it('injects a dashboard only for the project that owns the server', () => {
     expect(shouldInjectManagementDashboard({ cloud: { provider: 'hetzner' } })).toBe(true)
     expect(shouldInjectManagementDashboard({ cloud: { provider: 'hetzner', attachTo: 'stacks' } })).toBe(false)
+  })
+})
+
+describe('attached compute state', () => {
+  it('reuses a complete tenant state pin without provider credentials', () => {
+    const fixtureDir = mkdtempSync(join(tmpdir(), 'attached-compute-'))
+    const stateDir = join(fixtureDir, 'storage', 'cloud', 'state')
+    mkdirSync(stateDir, { recursive: true })
+    writeFileSync(join(stateDir, 'tenant-production.json'), JSON.stringify({
+      stackName: 'tenant-production',
+      serverId: 133793977,
+      serverName: 'stacks-production-app',
+      publicIp: '203.0.113.10',
+      publicIpv6: '2001:db8::10',
+    }))
+
+    try {
+      expect(resolvePersistedAttachTargetBox({
+        project: { slug: 'tenant' },
+        cloud: { provider: 'hetzner', attachTo: 'stacks' },
+      }, 'production', fixtureDir)).toEqual({
+        serverId: 133793977,
+        serverName: 'stacks-production-app',
+        publicIp: '203.0.113.10',
+        publicIpv6: '2001:db8::10',
+      })
+    }
+    finally {
+      rmSync(fixtureDir, { force: true, recursive: true })
+    }
+  })
+
+  it('rejects stale or incomplete tenant state', () => {
+    const fixtureDir = mkdtempSync(join(tmpdir(), 'attached-compute-'))
+    const stateDir = join(fixtureDir, 'storage', 'cloud', 'state')
+    mkdirSync(stateDir, { recursive: true })
+    writeFileSync(join(stateDir, 'tenant-production.json'), JSON.stringify({
+      stackName: 'another-production',
+      serverId: 133793977,
+      publicIp: '203.0.113.10',
+    }))
+
+    try {
+      expect(resolvePersistedAttachTargetBox({
+        project: { slug: 'tenant' },
+        cloud: { provider: 'hetzner', attachTo: 'stacks' },
+      }, 'production', fixtureDir)).toBeNull()
+    }
+    finally {
+      rmSync(fixtureDir, { force: true, recursive: true })
+    }
   })
 })
 
