@@ -18,6 +18,7 @@ export default {
   verbose: true,
   dialect,
   database: databaseConfig,
+  snapshotDir: 'storage/framework/database',
   timestamps: {
     createdAt: 'created_at',
     updatedAt: 'updated_at',
