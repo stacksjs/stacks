@@ -1,0 +1,70 @@
+<script client>
+import type { PaymentRecord } from '../../../../app/Actions/Dashboard/Commerce/payment-records'
+
+const records = useReactiveProp('records', [] as PaymentRecord[])
+const loading = useReactiveProp('loading', false)
+const emit = defineEmits()
+
+function label(value: string): string {
+  return value.replace(/([a-z])([A-Z])/g, '$1 $2').replaceAll('_', ' ')
+}
+
+function money(value: number, currency: string): string {
+  try {
+    return new Intl.NumberFormat(undefined, { style: 'currency', currency }).format(value / 100)
+  }
+  catch {
+    return `${currency} ${(value / 100).toFixed(2)}`
+  }
+}
+
+function date(value: string): string {
+  const parsed = new Date(value.includes('T') ? value : value.replace(' ', 'T'))
+  return !value || Number.isNaN(parsed.getTime())
+    ? 'Unknown'
+    : new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(parsed)
+}
+
+function statusClass(status: string): string {
+  if (status === 'completed' || status === 'succeeded')
+    return 'text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40'
+  if (status === 'failed')
+    return 'text-red-700 dark:text-red-300 bg-red-50 dark:bg-red-950/40'
+  if (status === 'refunded' || status === 'partiallyRefunded')
+    return 'text-violet-700 dark:text-violet-300 bg-violet-50 dark:bg-violet-950/40'
+  return 'text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40'
+}
+</script>
+
+<div class="overflow-hidden bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
+  <div :if="loading() && records().length === 0" class="flex items-center justify-center py-16 text-gray-500 text-sm dark:text-neutral-400"><span class="mr-2 h-5 w-5 animate-spin i-hugeicons-loading-03"></span>Loading payments</div>
+  <div :else-if="records().length === 0" class="px-6 py-16 text-center"><span class="inline-block h-8 w-8 text-gray-400 i-hugeicons-credit-card"></span><p class="mt-3 font-medium text-gray-900 text-sm dark:text-white">No payments found</p><p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Adjust the filters to inspect another part of the native ledger.</p></div>
+  <div :else class="overflow-x-auto">
+    <table class="min-w-full divide-gray-200 divide-y dark:divide-neutral-700">
+      <thead class="bg-gray-50 dark:bg-neutral-900/50">
+        <tr>
+          <th scope="col" class="px-4 py-3 font-semibold text-gray-600 text-left text-xs dark:text-neutral-300">Payment</th>
+          <th scope="col" class="px-4 py-3 font-semibold text-gray-600 text-left text-xs dark:text-neutral-300">Billing</th>
+          <th scope="col" class="px-4 py-3 font-semibold text-gray-600 text-left text-xs dark:text-neutral-300">Amount</th>
+          <th scope="col" class="px-4 py-3 font-semibold text-gray-600 text-left text-xs dark:text-neutral-300">Method</th>
+          <th scope="col" class="px-4 py-3 font-semibold text-gray-600 text-left text-xs dark:text-neutral-300">Status</th>
+          <th scope="col" class="px-4 py-3 font-semibold text-gray-600 text-left text-xs dark:text-neutral-300">Created</th>
+          <th scope="col" class="px-4 py-3 font-semibold text-gray-600 text-right text-xs dark:text-neutral-300"><span class="sr-only">Actions</span></th>
+        </tr>
+      </thead>
+      <tbody class="divide-gray-200 divide-y dark:divide-neutral-700">
+        <template :for="record in records()" :key="record.id">
+          <tr>
+            <td class="px-4 py-4"><p class="font-medium text-gray-900 text-sm dark:text-white">#{{ record.id }}</p><p class="mt-1 max-w-44 text-gray-400 text-xs truncate dark:text-neutral-500">{{ record.referenceNumber || record.transactionId || 'No reference' }}</p></td>
+            <td class="px-4 py-4"><p class="text-gray-700 text-sm dark:text-neutral-200">{{ record.billingEmail || 'No billing email' }}</p><p class="mt-1 text-gray-400 text-xs dark:text-neutral-500">{{ record.orderId ? 'Order #' + record.orderId : 'No linked order' }}</p></td>
+            <td class="px-4 py-4"><p class="font-medium text-gray-900 text-sm dark:text-white">{{ money(record.amount, record.currency) }}</p><p :if="record.refundAmount > 0" class="mt-1 text-violet-600 text-xs dark:text-violet-300">Refunded {{ money(record.refundAmount, record.currency) }}</p><p :else-if="record.status === 'refunded' && !record.refundRecorded" class="mt-1 text-amber-600 text-xs dark:text-amber-300">Refund amount not recorded</p></td>
+            <td class="px-4 py-4"><p class="capitalize text-gray-700 text-sm dark:text-neutral-200">{{ label(record.method) }}</p><p class="mt-1 text-gray-400 text-xs dark:text-neutral-500">{{ record.cardBrand }}<span :if="record.cardLastFour"> · {{ record.cardLastFour }}</span><span :if="!record.cardBrand && !record.cardLastFour">{{ record.paymentProvider || 'No processor details' }}</span></p></td>
+            <td class="px-4 py-4"><span :class="'inline-flex px-2 py-1 font-medium text-xs capitalize rounded-full ' + statusClass(record.status)">{{ label(record.status) }}</span></td>
+            <td class="px-4 py-4 text-gray-500 text-sm whitespace-nowrap dark:text-neutral-400">{{ date(record.createdAt) }}</td>
+            <td class="px-4 py-4 text-right"><button type="button" :aria-label="'View payment ' + record.id" class="p-2 text-gray-500 dark:text-neutral-400 hover:text-blue-600 dark:hover:text-blue-400 rounded-md" @click="emit('view', record)"><span class="block h-4 w-4 i-hugeicons-view"></span></button></td>
+          </tr>
+        </template>
+      </tbody>
+    </table>
+  </div>
+</div>

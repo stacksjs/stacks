@@ -68,6 +68,8 @@ route.group({ prefix: '/api/dashboard', apiResponse: true }, () => {
   guard(route.get('/commerce/taxes', 'Actions/Dashboard/Commerce/CommerceTaxesAction'))
   guard(route.patch('/commerce/taxes/{id}/default', 'Actions/Dashboard/Commerce/TaxRateDefaultAction'))
   guard(route.get('/commerce/variants', 'Actions/Dashboard/Commerce/ProductVariantIndexAction'))
+  guard(route.get('/commerce/payments', 'Actions/Dashboard/Commerce/CommercePaymentsAction'))
+  guard(route.post('/commerce/payments/{id}/refund', 'Actions/Dashboard/Commerce/PaymentRefundAction'))
   guard(route.get('/deployments', 'Actions/Dashboard/Deployments/GetDeployments'))
   guard(route.post('/deployments', 'Actions/Dashboard/Deployments/CreateDeployment'))
   guard(route.get('/deployments/count', 'Actions/Dashboard/Deployments/GetDeploymentCount'))

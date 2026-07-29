@@ -1,0 +1,107 @@
+<script client>
+import type {
+  PaymentRecord,
+} from '../../../../app/Actions/Dashboard/Commerce/payment-records'
+import { isSuccessfulPayment } from '../../../../app/Actions/Dashboard/Commerce/payment-records'
+
+interface CountRow {
+  key: string
+  count: number
+  percentage: number
+}
+
+interface CurrencyRow {
+  currency: string
+  captured: number
+  refunded: number
+}
+
+const records = useReactiveProp('records', [] as PaymentRecord[])
+
+function countRows(field: 'status' | 'method'): CountRow[] {
+  const counts = new Map<string, number>()
+  for (const record of records()) {
+    const key = record[field] || 'unknown'
+    counts.set(key, (counts.get(key) || 0) + 1)
+  }
+  const total = records().length
+  return [...counts.entries()]
+    .map(([key, count]) => ({
+      key,
+      count,
+      percentage: total ? Math.round((count / total) * 1000) / 10 : 0,
+    }))
+    .sort((left, right) => right.count - left.count || left.key.localeCompare(right.key))
+}
+
+function currencyRows(): CurrencyRow[] {
+  const currencies = new Map<string, CurrencyRow>()
+  for (const record of records()) {
+    const row = currencies.get(record.currency) ?? {
+      currency: record.currency,
+      captured: 0,
+      refunded: 0,
+    }
+    if (isSuccessfulPayment(record))
+      row.captured += record.amount
+    row.refunded += record.refundAmount
+    currencies.set(record.currency, row)
+  }
+  return [...currencies.values()].sort((left, right) => right.captured - left.captured)
+}
+
+function label(value: string): string {
+  return value.replace(/([a-z])([A-Z])/g, '$1 $2').replaceAll('_', ' ')
+}
+
+function money(value: number, currency: string): string {
+  try {
+    return new Intl.NumberFormat(undefined, { style: 'currency', currency }).format(value / 100)
+  }
+  catch {
+    return `${currency} ${(value / 100).toFixed(2)}`
+  }
+}
+</script>
+
+<section aria-label="Payment breakdowns" class="grid gap-3 lg:grid-cols-3">
+  <article class="p-4 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
+    <h2 class="font-semibold text-gray-900 text-sm dark:text-white">Statuses</h2>
+    <div class="mt-4 space-y-3">
+      <template :for="item in countRows('status')" :key="item.key">
+        <div>
+          <div class="flex items-center justify-between text-xs"><span class="capitalize text-gray-600 dark:text-neutral-300">{{ label(item.key) }}</span><span class="text-gray-500 dark:text-neutral-400">{{ item.count }} · {{ item.percentage }}%</span></div>
+          <div class="mt-1 h-1.5 bg-gray-100 dark:bg-neutral-700 rounded-full"><div :style="'width:' + item.percentage + '%'" class="h-1.5 bg-blue-500 rounded-full"></div></div>
+        </div>
+      </template>
+    </div>
+  </article>
+
+  <article class="p-4 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
+    <h2 class="font-semibold text-gray-900 text-sm dark:text-white">Methods</h2>
+    <div class="mt-4 space-y-3">
+      <template :for="item in countRows('method')" :key="item.key">
+        <div>
+          <div class="flex items-center justify-between text-xs"><span class="capitalize text-gray-600 dark:text-neutral-300">{{ label(item.key) }}</span><span class="text-gray-500 dark:text-neutral-400">{{ item.count }} · {{ item.percentage }}%</span></div>
+          <div class="mt-1 h-1.5 bg-gray-100 dark:bg-neutral-700 rounded-full"><div :style="'width:' + item.percentage + '%'" class="h-1.5 bg-emerald-500 rounded-full"></div></div>
+        </div>
+      </template>
+    </div>
+  </article>
+
+  <article class="p-4 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
+    <div class="flex items-start justify-between">
+      <h2 class="font-semibold text-gray-900 text-sm dark:text-white">Gross captured by currency</h2>
+      <span class="text-gray-400 text-xs dark:text-neutral-500">Current view</span>
+    </div>
+    <div class="mt-4 divide-gray-100 divide-y dark:divide-neutral-700">
+      <template :for="item in currencyRows()" :key="item.currency">
+        <div class="flex items-center justify-between py-2 first:pt-0 last:pb-0">
+          <div><p class="font-medium text-gray-900 text-sm dark:text-white">{{ item.currency }}</p><p class="text-gray-400 text-xs dark:text-neutral-500">Refunded {{ money(item.refunded, item.currency) }}</p></div>
+          <p class="font-semibold text-gray-700 text-sm dark:text-neutral-200">{{ money(item.captured, item.currency) }}</p>
+        </div>
+      </template>
+      <p :if="currencyRows().length === 0" class="py-8 text-center text-gray-500 text-sm dark:text-neutral-400">No completed volume in this view.</p>
+    </div>
+  </article>
+</section>

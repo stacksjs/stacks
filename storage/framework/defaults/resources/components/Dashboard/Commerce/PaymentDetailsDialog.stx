@@ -1,0 +1,68 @@
+<script client>
+import type { PaymentRecord } from '../../../../app/Actions/Dashboard/Commerce/payment-records'
+import { isRefundablePayment } from '../../../../app/Actions/Dashboard/Commerce/payment-records'
+
+const open = useReactiveProp('open', false)
+const record = useReactiveProp('record', null as PaymentRecord | null)
+const emit = defineEmits()
+
+function label(value: string): string {
+  return value.replace(/([a-z])([A-Z])/g, '$1 $2').replaceAll('_', ' ')
+}
+
+function money(value: number, currency: string): string {
+  try {
+    return new Intl.NumberFormat(undefined, { style: 'currency', currency }).format(value / 100)
+  }
+  catch {
+    return `${currency} ${(value / 100).toFixed(2)}`
+  }
+}
+
+function detailRows(): Array<{ label: string, value: string }> {
+  const payment = record()
+  if (!payment)
+    return []
+  return [
+    { label: 'Reference', value: payment.referenceNumber || 'Not recorded' },
+    { label: 'Transaction ID', value: payment.transactionId || 'Not recorded' },
+    { label: 'Provider', value: payment.paymentProvider || 'Not recorded' },
+    { label: 'Billing email', value: payment.billingEmail || 'Not recorded' },
+    { label: 'Order ID', value: payment.orderId || 'Not linked' },
+    { label: 'Customer ID', value: payment.customerId || 'Not linked' },
+    { label: 'Card', value: payment.cardBrand || payment.cardLastFour ? `${payment.cardBrand} ${payment.cardLastFour}`.trim() : 'Not recorded' },
+  ]
+}
+
+function refundable(): boolean {
+  const payment = record()
+  return payment ? isRefundablePayment(payment) : false
+}
+</script>
+
+<div :if="open() && record()" class="flex fixed inset-0 z-50 items-center justify-center p-4">
+  <button type="button" aria-label="Close payment details" class="absolute inset-0 bg-black/45" @click="emit('close')"></button>
+  <section role="dialog" aria-modal="true" aria-labelledby="payment-details-title" class="relative max-w-xl w-full bg-white dark:bg-neutral-800 border border-gray-200 rounded-xl dark:border-neutral-700 shadow-xl">
+    <div class="p-6">
+      <div class="flex items-start justify-between">
+        <div><p class="text-gray-400 text-xs dark:text-neutral-500">Payment #{{ record()?.id }}</p><h2 id="payment-details-title" class="mt-1 font-semibold text-gray-900 text-lg dark:text-white">{{ money(record()?.amount || 0, record()?.currency || 'USD') }}</h2></div>
+        <span class="px-2 py-1 capitalize font-medium text-gray-700 text-xs dark:text-neutral-200 bg-gray-100 dark:bg-neutral-700 rounded-full">{{ label(record()?.status || '') }}</span>
+      </div>
+
+      <dl class="grid gap-x-6 gap-y-4 sm:grid-cols-2 mt-6">
+        <template :for="item in detailRows()" :key="item.label">
+          <div><dt class="text-gray-400 text-xs dark:text-neutral-500">{{ item.label }}</dt><dd class="mt-1 break-all text-gray-800 text-sm dark:text-neutral-100">{{ item.value }}</dd></div>
+        </template>
+        <div><dt class="text-gray-400 text-xs dark:text-neutral-500">Method</dt><dd class="mt-1 capitalize text-gray-800 text-sm dark:text-neutral-100">{{ label(record()?.method || '') }}</dd></div>
+        <div><dt class="text-gray-400 text-xs dark:text-neutral-500">Refund recorded</dt><dd class="mt-1 text-gray-800 text-sm dark:text-neutral-100">{{ record()?.refundAmount ? money(record()?.refundAmount || 0, record()?.currency || 'USD') : record()?.status === 'refunded' && !record()?.refundRecorded ? 'Amount missing' : money(0, record()?.currency || 'USD') }}</dd></div>
+      </dl>
+
+      <div :if="record()?.notes" class="mt-5 p-3 text-gray-600 text-sm dark:text-neutral-300 bg-gray-50 dark:bg-neutral-900/60 rounded-lg">{{ record()?.notes }}</div>
+      <div :if="refundable()" class="mt-5 p-3 text-amber-800 text-xs dark:text-amber-200 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 rounded-lg dark:border-amber-900">Only record a refund after the payment processor confirms it. This updates the local ledger and does not contact the processor.</div>
+    </div>
+    <footer class="flex gap-2 justify-end px-6 py-4 bg-gray-50 dark:bg-neutral-900/50 border-gray-200 border-t dark:border-neutral-700">
+      <button type="button" class="px-3 py-2 font-semibold text-gray-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" @click="emit('close')">Close</button>
+      <button :if="refundable()" type="button" class="px-3 py-2 font-semibold text-sm text-white bg-violet-600 hover:bg-violet-500 rounded-md" @click="emit('request-refund')">Record refund</button>
+    </footer>
+  </section>
+</div>
