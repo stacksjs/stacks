@@ -55,10 +55,10 @@ export interface DashboardDataResponse<T> {
 export type DataMode = 'activity' | 'users' | 'teams' | 'subscribers'
 
 const endpointByMode: Record<DataMode, string> = {
-  activity: '/api/data/activity',
-  users: '/api/data/users',
-  teams: '/api/data/teams',
-  subscribers: '/api/data/subscribers',
+  activity: '/api/dashboard/data/activity',
+  users: '/api/dashboard/data/users',
+  teams: '/api/dashboard/data/teams',
+  subscribers: '/api/dashboard/data/subscribers',
 }
 
 export async function fetchDashboardData<T>(mode: DataMode): Promise<DashboardDataResponse<T>> {

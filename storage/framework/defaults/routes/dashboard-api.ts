@@ -59,6 +59,10 @@ route.group({ prefix: '/api/dashboard', apiResponse: true }, () => {
   guard(route.get('/realtime', 'Actions/Dashboard/Realtime/RealtimeStatsAction'))
   guard(route.get('/deployments', 'Actions/Dashboard/Deployments/GetDeployments'))
   guard(route.get('/deployments/{id}', 'Actions/Dashboard/Deployments/GetDeployment'))
+  guard(route.get('/data/activity', 'Actions/Dashboard/Data/ActivityIndexAction'))
+  guard(route.get('/data/users', 'Actions/Dashboard/Data/UserIndexAction'))
+  guard(route.get('/data/teams', 'Actions/Dashboard/Data/TeamIndexAction'))
+  guard(route.get('/data/subscribers', 'Actions/Dashboard/Data/SubscriberIndexAction'))
 
   // CMS admin — backs the pages under `views/dashboard/content/`.
   //
