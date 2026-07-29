@@ -16,14 +16,14 @@
           </button>
         </div>
         <div class="mt-4">
-          <div class="w-full md:w-96"><SearchFilter placeholder="Search delivery routes..." @search="handleSearch" /></div>
+          <div class="w-full md:w-96"><SearchFilter placeholder="Search delivery routes..." @search="handleSearch($event.detail)" /></div>
         </div>
       </div>
 
       <DeliveryRoutesTable :routes="paginatedRoutes" @view-map="viewRouteOnMap" @edit="openEditModal" @delete="handleDeleteRoute" />
 
       <div class="px-4 py-3 bg-gray-50 dark:bg-neutral-900 border-gray-200 border-t dark:border-neutral-700">
-        <Pagination :currentPage="currentPage" :totalItems="totalItems" :itemsPerPage="itemsPerPage" @prev="handlePrevPage" @next="handleNextPage" @page="handlePageChange" />
+        <DeliveryPagination :currentPage="currentPage" :totalItems="totalItems" :itemsPerPage="itemsPerPage" @prev="handlePrevPage" @next="handleNextPage" @page="handlePageChange($event.detail)" />
       </div>
     </div>
   </div>

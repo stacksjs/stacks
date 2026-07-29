@@ -22,7 +22,7 @@
         <div class="mt-4">
           <SearchFilter
             placeholder="Search shipping methods..."
-            @search="handleSearch"
+            @search="handleSearch($event.detail)"
             class="w-full md:w-96"
           />
         </div>
@@ -30,18 +30,18 @@
 
       <ShippingMethodsTable
         :methods="paginatedShippingMethods"
-        @edit="handleEditMethod"
-        @delete="handleDeleteMethod"
+        @edit="handleEditMethod($event.detail)"
+        @delete="handleDeleteMethod($event.detail)"
       />
 
       <div class="px-4 py-3 bg-gray-50 dark:bg-neutral-900 border-gray-200 border-t dark:border-neutral-700">
-        <Pagination
+        <DeliveryPagination
           :currentPage="currentPage"
           :totalItems="totalItems"
           :itemsPerPage="itemsPerPage"
           @prev="handlePrevPage"
           @next="handleNextPage"
-          @page="handlePageChange"
+          @page="handlePageChange($event.detail)"
         />
       </div>
     </div>
@@ -96,8 +96,9 @@
                   <label for="method-status" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">Status</label>
                   <div class="mt-2">
                     <select id="method-status" x-model="newStatus" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm">
-                      <option value="Active">Active</option>
-                      <option value="Inactive">Inactive</option>
+                      <option value="active">Active</option>
+                      <option value="inactive">Inactive</option>
+                      <option value="draft">Draft</option>
                     </select>
                   </div>
                 </div>
@@ -162,8 +163,9 @@
                   <label for="edit-method-status" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">Status</label>
                   <div class="mt-2">
                     <select id="edit-method-status" x-model="newStatus" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm">
-                      <option value="Active">Active</option>
-                      <option value="Inactive">Inactive</option>
+                      <option value="active">Active</option>
+                      <option value="inactive">Inactive</option>
+                      <option value="draft">Draft</option>
                     </select>
                   </div>
                 </div>
@@ -189,8 +191,8 @@ interface ShippingMethod {
   name: string
   description?: string
   base_rate: number
-  free_shipping?: number
-  status: string
+  free_shipping?: number | null
+  status: 'active' | 'inactive' | 'draft'
 }
 
 const { shippingMethods, createShippingMethod, fetchShippingMethods, updateShippingMethod, deleteShippingMethod } = useShippingMethods()
@@ -203,7 +205,7 @@ const newName = state('')
 const newDescription = state('')
 const newBaseRate = state(0)
 const newFreeShipping = state<number | undefined>(undefined)
-const newStatus = state<'Active' | 'Inactive'>('Active')
+const newStatus = state<'active' | 'inactive' | 'draft'>('active')
 
 const searchQuery = state('')
 const currentPage = state(1)
@@ -232,7 +234,7 @@ function resetForm(): void {
   newDescription.set('')
   newBaseRate.set(0)
   newFreeShipping.set(undefined)
-  newStatus.set('Active')
+  newStatus.set('active')
 }
 
 function openAddModal(): void {
@@ -248,9 +250,9 @@ function openEditModal(method: ShippingMethod): void {
   editingMethod.set(method)
   newName.set(method.name)
   newDescription.set(method.description || '')
-  newBaseRate.set(method.base_rate)
-  newFreeShipping.set(method.free_shipping)
-  newStatus.set(method.status as 'Active' | 'Inactive')
+  newBaseRate.set(method.base_rate / 100)
+  newFreeShipping.set(method.free_shipping === null || method.free_shipping === undefined ? undefined : method.free_shipping / 100)
+  newStatus.set(method.status)
   showEditModal.set(true)
 }
 
@@ -263,8 +265,8 @@ async function addShippingMethod(): Promise<void> {
   const payload: NewShippingMethod = {
     name: newName(),
     description: newDescription(),
-    base_rate: newBaseRate(),
-    free_shipping: newFreeShipping(),
+    base_rate: Math.round(newBaseRate() * 100),
+    free_shipping: newFreeShipping() === undefined ? undefined : Math.round(newFreeShipping()! * 100),
     status: newStatus(),
   } as NewShippingMethod
   try {
@@ -286,8 +288,8 @@ async function saveShippingMethod(): Promise<void> {
       ...target,
       name: newName(),
       description: newDescription(),
-      base_rate: newBaseRate(),
-      free_shipping: newFreeShipping(),
+      base_rate: Math.round(newBaseRate() * 100),
+      free_shipping: newFreeShipping() === undefined ? undefined : Math.round(newFreeShipping()! * 100),
       status: newStatus(),
     } as ShippingMethod)
     closeEditModal()
