@@ -12,7 +12,7 @@ allowed-tools: Read Edit Write Bash Grep Glob
 
 ## Key Paths
 - Core package: `storage/framework/core/faker/src/`
-- Source: `storage/framework/core/faker/src/index.ts` (265 lines)
+- Source: `storage/framework/core/faker/src/index.ts`
 - Tests: `storage/framework/core/faker/tests/faker.test.ts`
 - Seeder integration: `storage/framework/core/database/src/seeder.ts`
 
@@ -90,10 +90,10 @@ faker.helpers.objectValue<T>(obj: T): T[keyof T]
 ```typescript
 faker.lorem.word(): string
 faker.lorem.words(count?: number): string              // default: 3
-faker.lorem.sentence(maxWords?: number): string        // default: 3-10 words
+faker.lorem.sentence(wordCount?: number | { min, max }): string
 faker.lorem.sentences(count?, separator?): string      // default: 3, sep: ' '
 faker.lorem.paragraph(sentenceCount?): string
-faker.lorem.paragraphs(count?, separator?): string     // default: 3, sep: '\n\n'
+faker.lorem.paragraphs(count?: number | { min, max }, separator?): string
 faker.lorem.text(length?: number): string              // default: 200 chars
 faker.lorem.slug(wordCount?: number): string           // URL-safe, default: 3
 faker.lorem.lines(count?: number): string              // default: 3

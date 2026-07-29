@@ -232,13 +232,24 @@ const helpers: EnhancedHelpers = {
 interface LoremCompatibility {
   word: () => string
   words: (count?: number) => string
-  sentence: (maxWords?: number) => string
+  sentence: (wordCount?: number | NumberRange) => string
   sentences: (count?: number, separator?: string) => string
   paragraph: (sentenceCount?: number) => string
-  paragraphs: (count?: number, separator?: string) => string
+  paragraphs: (count?: number | NumberRange, separator?: string) => string
   text: (length?: number) => string
   slug: (wordCount?: number) => string
   lines: (count?: number) => string
+}
+
+interface NumberRange {
+  min: number
+  max: number
+}
+
+function randomCount(range: NumberRange, minimum = 1): number {
+  const lower = Math.max(minimum, Math.floor(Math.min(range.min, range.max)))
+  const upper = Math.max(lower, Math.floor(Math.max(range.min, range.max)))
+  return Math.floor(Math.random() * (upper - lower + 1)) + lower
 }
 
 type EnhancedLorem = Omit<typeof baseFaker.lorem, keyof LoremCompatibility> & LoremCompatibility
@@ -263,14 +274,18 @@ const enhancedLorem = {
 
   /**
    * Generate a sentence with random words
-   * @param maxWords - Maximum number of words in the sentence (default: random 3-10)
+   * @param wordCount - Maximum word count, or an inclusive min/max range
    */
-  sentence(maxWords?: number): string {
-    if (maxWords !== undefined) {
+  sentence(wordCount?: number | NumberRange): string {
+    if (typeof wordCount === 'object')
+      return baseFaker.lorem.sentence(randomCount(wordCount))
+
+    if (wordCount !== undefined) {
       // Generate random word count between 3 and maxWords
+      const maxWords = Math.max(1, Math.floor(wordCount))
       const minWords = Math.min(3, maxWords)
-      const wordCount = Math.floor(Math.random() * (maxWords - minWords + 1)) + minWords
-      return baseFaker.lorem.sentence(wordCount)
+      const resolvedWordCount = Math.floor(Math.random() * (maxWords - minWords + 1)) + minWords
+      return baseFaker.lorem.sentence(resolvedWordCount)
     }
     return baseFaker.lorem.sentence()
   },
@@ -294,11 +309,14 @@ const enhancedLorem = {
 
   /**
    * Generate multiple paragraphs
-   * @param count - Number of paragraphs (default: 3)
+   * @param count - Number of paragraphs, or an inclusive min/max range
    * @param separator - Separator between paragraphs (default: '\n\n')
    */
-  paragraphs(count?: number, separator?: string): string {
-    return baseFaker.lorem.paragraphs(count ?? 3, separator ?? '\n\n')
+  paragraphs(count?: number | NumberRange, separator?: string): string {
+    const resolvedCount = typeof count === 'object'
+      ? randomCount(count)
+      : count ?? 3
+    return baseFaker.lorem.paragraphs(resolvedCount, separator ?? '\n\n')
   },
 
   /**

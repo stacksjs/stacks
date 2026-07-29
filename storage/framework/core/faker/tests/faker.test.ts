@@ -32,6 +32,16 @@ describe('@stacksjs/faker', () => {
     expect(sentence.length).toBeGreaterThan(0)
   })
 
+  it('faker.lorem supports min and max count ranges used by model factories', () => {
+    const sentence = faker.lorem.sentence({ min: 4, max: 4 })
+    const paragraphs = faker.lorem.paragraphs({ min: 2, max: 2 }, '\n\n')
+
+    expect(sentence).not.toBe('.')
+    expect(sentence.split(/\s+/)).toHaveLength(4)
+    expect(paragraphs.split('\n\n')).toHaveLength(2)
+    expect(paragraphs.replaceAll('\n', '').length).toBeGreaterThan(0)
+  })
+
   it('faker.string.uuid() matches UUID pattern', () => {
     const uuid = faker.string.uuid()
     expect(uuid).toMatch(/^[\da-f]{8}-[\da-f]{4}-[\da-f]{4}-[\da-f]{4}-[\da-f]{12}$/i)
