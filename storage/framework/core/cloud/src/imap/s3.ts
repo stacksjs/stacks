@@ -821,6 +821,7 @@ export class S3Client {
     ETag?: string
     LastModified?: string
     Metadata?: Record<string, string>
+    ServerSideEncryption?: string
   } | null> {
     try {
       const result = await this.client.request({
@@ -835,6 +836,7 @@ export class S3Client {
         ContentType: result?.headers?.['content-type'],
         ETag: result?.headers?.['etag'],
         LastModified: result?.headers?.['last-modified'],
+        ServerSideEncryption: result?.headers?.['x-amz-server-side-encryption'],
       }
     } catch (e: any) {
       if (e.statusCode === 404) {
@@ -1108,7 +1110,7 @@ export class S3Client {
         path: `/${bucket}`,
         queryParams: { encryption: '' },
       })
-      return result?.ServerSideEncryptionConfiguration
+      return result?.ServerSideEncryptionConfiguration || result
     } catch (e: any) {
       if (e.statusCode === 404) {
         return null

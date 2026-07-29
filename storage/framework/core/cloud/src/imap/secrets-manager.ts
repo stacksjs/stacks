@@ -56,6 +56,7 @@ export interface UpdateSecretOptions {
   KmsKeyId?: string
   SecretBinary?: string
   SecretString?: string
+  ClientRequestToken?: string
 }
 
 export interface PutSecretValueOptions {
@@ -164,6 +165,7 @@ export class SecretsManagerClient {
   }> {
     const params: Record<string, any> = {
       SecretId: options.SecretId,
+      ClientRequestToken: options.ClientRequestToken || crypto.randomUUID(),
     }
 
     if (options.Description) {

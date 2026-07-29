@@ -1585,7 +1585,7 @@ async function runHetznerDeploy(args: {
 
   // Reconcile this app's mail routing onto the (shared) mail server from
   // config/email.ts: register its local domain and provision its auto-forward
-  // rules (forwards.json). Idempotent, merge-based and best-effort — it never
+  // rules (forwards.json + compiled RFC 5228 Sieve). Idempotent, merge-based and best-effort — it never
   // removes another tenant's domains/forwards and never fails the release.
   if (ok) {
     const mailOwner = mailServerOwnerFromConfig(emailConfig)
@@ -1743,7 +1743,8 @@ systemctl reset-failed`
  *      and registered in `DKIM_EXTRA_KEYS` so outbound mail is signed AS the domain.
  *   3. `config.email.mailboxes` → created as per-domain isolated users
  *      (`mail-server user:local create <lp>@<domain>`), skipping any that exist.
- *   4. `config.email.forwards` → merged into `forwards.json` (live-reloaded).
+ *   4. `config.email.forwards` → merged into `forwards.json` and compiled to
+ *      RFC 5228 `forwards.sieve` (live-reloaded).
  *
 /**
  * Resolve the shared box owned by another project (`cloud.attachTo`) so this
@@ -1852,7 +1853,7 @@ export async function provisionMailTenant(ip: string, logger: typeof log): Promi
   const { execSync } = await import('node:child_process')
   const sshArgs = ['-o', 'StrictHostKeyChecking=accept-new', '-o', 'BatchMode=yes', '-o', 'ConnectTimeout=20', `root@${ip}`]
 
-  // Compact forwards JSON, base64'd so it survives the SSH shell hop untouched.
+  // Compact forwarding manifest, base64'd so it survives the SSH shell hop.
   const forwardsB64 = hasForwards ? Buffer.from(JSON.stringify(forwards)).toString('base64') : ''
   const readme = 'Auto-forwarding rules, re-read on every message (edits take effect immediately, no restart). '
     + 'KEY = the delivered mailbox: the FULL address for per-domain isolated mailboxes (e.g. no-reply@app.com), '
@@ -2009,7 +2010,8 @@ if [ -n "$DOMAIN" ] && [ -f "$CERTFILE" ] && [ -d /opt/tlsx ]; then
       ;;
   esac
 fi
-# 4) Merge auto-forward rules into forwards.json (live-reloaded; no restart).
+# 4) Merge auto-forward rules and compile the canonical RFC 5228 runtime script
+# (live-reloaded; no restart).
 if [ -n "$FWD_B64" ] && [ -x /usr/local/bin/bun ]; then
   echo "$FWD_B64" | base64 -d > /tmp/.mailtenant-fwd.json
   echo "$README_B64" | base64 -d > /tmp/.mailtenant-readme.txt
@@ -2036,6 +2038,12 @@ if [ -s /tmp/.mailtenant-err ]; then echo "FWDERR:$(head -c 200 /tmp/.mailtenant
 rm -f /tmp/.mailtenant-err
   chown mail-server:mail-server "$FJSON" 2>/dev/null || true
   chmod 644 "$FJSON" 2>/dev/null || true
+  if [ -x /usr/local/sbin/mail-forward-compile ]; then
+    if ! /usr/local/sbin/mail-forward-compile "$FJSON" /opt/mail/forwards.sieve 2>/tmp/.mailtenant-sieve-err; then
+      echo "SIEVEERR:$(head -c 200 /tmp/.mailtenant-sieve-err | tr '\\n' ' ')"
+    fi
+    rm -f /tmp/.mailtenant-sieve-err
+  fi
   rm -f /tmp/.mailtenant-fwd.json /tmp/.mailtenant-readme.txt
 fi
 FWD_STATE=nochange; grep -q FWDCHANGED /tmp/.mailtenant-res 2>/dev/null && FWD_STATE=updated; rm -f /tmp/.mailtenant-res

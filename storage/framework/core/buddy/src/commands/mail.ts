@@ -2,9 +2,9 @@ import { log, runCommand } from '@stacksjs/cli'
 import { ExitCode } from '@stacksjs/types'
 import { getErrorMessage } from '@stacksjs/utils'
 import { CLI } from '@stacksjs/clapp'
-import { createHash, createHmac, randomBytes } from 'crypto'
+import { createHash, createHmac, randomBytes, timingSafeEqual } from 'crypto'
 import { readFileSync, existsSync } from 'node:fs'
-import { execSync } from 'node:child_process'
+import { execSync, spawnSync } from 'node:child_process'
 
 export function resolveDirectMailHost(env: NodeJS.ProcessEnv = process.env): string | undefined {
   let configured = env.MAIL_SERVER_HOST
@@ -49,6 +49,558 @@ async function resolveOperationalMailHost(): Promise<string | undefined> {
     return configured
   const { email } = await import('@stacksjs/config')
   return (email as any)?.domain ? `mail.${(email as any).domain}` : undefined
+}
+
+interface MailStorageOptions {
+  host?: string
+  secret?: string
+  bucket?: string
+  size?: string
+  region?: string
+  profile?: string
+  force?: boolean
+  slot?: string
+}
+
+interface MailStorageSecret {
+  version: 1
+  encoding: 'base64'
+  key: string
+  image: string
+  mapper: string
+  createdAt: string
+}
+
+const mailStorageRemote = '/usr/local/sbin/mail-storage-external'
+
+function loadMailStorageAws(options: MailStorageOptions): { profile: string, region: string } {
+  const profile = options.profile || process.env.AWS_PROFILE || 'default'
+  const region = options.region || process.env.AWS_REGION || 'us-east-1'
+  process.env.AWS_PROFILE = profile
+  loadEnvFiles()
+
+  // The application environment is the primary credential source for Buddy.
+  // Reload it with precedence because the CLI bootstrap may have populated
+  // stale shell/profile credentials before this command was dispatched.
+  if (existsSync('.env.production')) {
+    try {
+      const { loadEnv } = require('@stacksjs/env') as typeof import('@stacksjs/env')
+      loadEnv({ path: '.env.production', env: 'production', keysFile: '.env.keys', overload: true, quiet: true })
+    }
+    catch {
+      // loadEnvFiles already loaded any usable plaintext entries.
+    }
+  }
+
+  const home = process.env.HOME || process.env.USERPROFILE || ''
+  const credentialsPath = `${home}/.aws/credentials`
+  if ((!process.env.AWS_ACCESS_KEY_ID || !process.env.AWS_SECRET_ACCESS_KEY) && existsSync(credentialsPath)) {
+    const values: Record<string, string> = {}
+    let inProfile = false
+    for (const line of readFileSync(credentialsPath, 'utf8').split('\n')) {
+      const trimmed = line.trim()
+      if (trimmed.startsWith('[')) {
+        inProfile = trimmed === `[${profile}]`
+        continue
+      }
+      if (!inProfile)
+        continue
+      const separator = trimmed.indexOf('=')
+      if (separator > 0)
+        values[trimmed.slice(0, separator).trim()] = trimmed.slice(separator + 1).trim()
+    }
+    if (values.aws_access_key_id && values.aws_secret_access_key) {
+      process.env.AWS_ACCESS_KEY_ID = values.aws_access_key_id
+      process.env.AWS_SECRET_ACCESS_KEY = values.aws_secret_access_key
+      if (values.aws_session_token)
+        process.env.AWS_SESSION_TOKEN = values.aws_session_token
+      else
+        delete process.env.AWS_SESSION_TOKEN
+    }
+  }
+  return { profile, region }
+}
+
+function mailStorageSecretId(options: MailStorageOptions): string {
+  if (options.secret)
+    return options.secret
+  if (process.env.MAIL_STORAGE_SECRET_ID)
+    return process.env.MAIL_STORAGE_SECRET_ID
+  const app = (process.env.APP_NAME || 'stacks').toLowerCase().replace(/[^a-z0-9-]/g, '-')
+  const environment = (process.env.APP_ENV || 'production').toLowerCase().replace(/[^a-z0-9-]/g, '-')
+  return `${app}/${environment}/mail-storage-key`
+}
+
+async function mailStorageHost(options: MailStorageOptions): Promise<string> {
+  const host = options.host || await resolveOperationalMailHost()
+  if (!host)
+    throw new Error('Could not resolve the mail host. Pass --host <hostname-or-ip>.')
+  if (!/^[a-zA-Z0-9._:-]+$/.test(host))
+    throw new Error(`Unsafe mail host: ${host}`)
+  return host
+}
+
+function runMailStorageSsh(host: string, command: string, input?: Buffer): Buffer {
+  const result = spawnSync('ssh', [
+    '-o', 'BatchMode=yes',
+    '-o', 'ConnectTimeout=15',
+    `root@${host}`,
+    command,
+  ], {
+    input,
+    maxBuffer: 32 * 1024 * 1024,
+  })
+
+  if (result.status !== 0) {
+    const stderr = Buffer.from(result.stderr || []).toString('utf8').trim()
+    throw new Error(stderr || `SSH command failed with status ${result.status}`)
+  }
+  return Buffer.from(result.stdout || [])
+}
+
+function readMailRecoveryKey(): Buffer {
+  const result = spawnSync('/usr/bin/security', [
+    'find-generic-password',
+    '-a', 'mail-storage-recovery',
+    '-s', 'com.stacks.production.mail.luks',
+    '-w',
+  ], {
+    maxBuffer: 1024 * 1024,
+    timeout: 30_000,
+  })
+  if (result.status !== 0)
+    throw new Error('macOS Keychain recovery-key read failed')
+  const raw = Buffer.from(result.stdout || [])
+  const text = raw.toString('ascii').trim()
+  const key = /^[0-9a-f]{128}$/i.test(text)
+    ? Buffer.from(text, 'hex')
+    : raw.length === 65 && raw[64] === 0x0A
+      ? Buffer.from(raw.subarray(0, 64))
+      : Buffer.from(raw)
+  raw.fill(0)
+  if (key.length !== 64)
+    throw new Error('macOS Keychain returned an invalid recovery key')
+  return key
+}
+
+async function waitForHetznerAction(token: string, actionId: number): Promise<void> {
+  const deadline = Date.now() + 120_000
+  while (Date.now() < deadline) {
+    const response = await fetch(`https://api.hetzner.cloud/v1/actions/${actionId}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+    const data = await response.json() as any
+    if (!response.ok)
+      throw new Error(data?.error?.message || `Hetzner action ${actionId} lookup failed`)
+    if (data.action?.status === 'success')
+      return
+    if (data.action?.status === 'error')
+      throw new Error(data.action?.error?.message || `Hetzner action ${actionId} failed`)
+    await new Promise(resolve => setTimeout(resolve, 1000))
+  }
+  throw new Error(`Hetzner action ${actionId} timed out`)
+}
+
+async function ensureMailStorageVolume(
+  options: MailStorageOptions,
+): Promise<{ device: string; host: string; id: number; name: string; size: number }> {
+  loadEnvFiles()
+  const token = process.env.HCLOUD_TOKEN || process.env.HETZNER_API_TOKEN
+  if (!token)
+    throw new Error('HCLOUD_TOKEN or HETZNER_API_TOKEN is required.')
+  const headers = {
+    Authorization: `Bearer ${token}`,
+    'Content-Type': 'application/json',
+  }
+  const host = await mailStorageHost(options)
+  const serverResponse = await fetch(`https://api.hetzner.cloud/v1/servers?name=${encodeURIComponent('stacks-production-app')}`, { headers })
+  const serverData = await serverResponse.json() as any
+  const server = serverData.servers?.[0]
+  if (!server)
+    throw new Error('Hetzner server stacks-production-app was not found.')
+
+  const app = (process.env.APP_NAME || 'stacks').toLowerCase().replace(/[^a-z0-9-]/g, '-')
+  const name = `${app}-production-mail`
+  const requestedSize = Number.parseInt(options.size || '20', 10)
+  if (!Number.isFinite(requestedSize) || requestedSize < 10 || requestedSize > 1024)
+    throw new Error('Mail volume size must be between 10 and 1024 GiB.')
+
+  const volumesResponse = await fetch(`https://api.hetzner.cloud/v1/volumes?name=${encodeURIComponent(name)}`, { headers })
+  const volumesData = await volumesResponse.json() as any
+  let volume = volumesData.volumes?.[0]
+  if (!volume) {
+    const createResponse = await fetch('https://api.hetzner.cloud/v1/volumes', {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({
+        name,
+        size: requestedSize,
+        server: server.id,
+        automount: false,
+        labels: {
+          application: app,
+          environment: 'production',
+          purpose: 'mail-storage',
+        },
+      }),
+    })
+    const createData = await createResponse.json() as any
+    if (!createResponse.ok)
+      throw new Error(createData?.error?.message || 'Hetzner volume creation failed.')
+    volume = createData.volume
+    if (createData.action?.id)
+      await waitForHetznerAction(token, createData.action.id)
+  }
+  else if (!volume.server) {
+    const attachResponse = await fetch(`https://api.hetzner.cloud/v1/volumes/${volume.id}/actions/attach`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ server: server.id, automount: false }),
+    })
+    const attachData = await attachResponse.json() as any
+    if (!attachResponse.ok)
+      throw new Error(attachData?.error?.message || 'Hetzner volume attach failed.')
+    await waitForHetznerAction(token, attachData.action.id)
+  }
+  else if (volume.server !== server.id) {
+    throw new Error(`Hetzner volume ${name} is attached to a different server.`)
+  }
+
+  const refreshed = await (await fetch(`https://api.hetzner.cloud/v1/volumes/${volume.id}`, { headers })).json() as any
+  volume = refreshed.volume || volume
+  if (!volume.linux_device)
+    throw new Error(`Hetzner volume ${name} has no Linux device path yet.`)
+  return { device: volume.linux_device, host, id: volume.id, name, size: volume.size }
+}
+
+async function ensureMailKmsKey(options: MailStorageOptions): Promise<{ alias: string; arn: string }> {
+  const { region } = loadMailStorageAws(options)
+  const { AWSClient } = await import('../../../cloud/src/imap/client')
+  const { S3Client } = await import('../../../cloud/src/imap/s3')
+  const { SecretsManagerClient } = await import('../../../cloud/src/imap/secrets-manager')
+  const client = new AWSClient()
+  const request = async (target: string, body: Record<string, unknown>): Promise<any> => client.request({
+    service: 'kms',
+    region,
+    method: 'POST',
+    path: '/',
+    headers: {
+      'Content-Type': 'application/x-amz-json-1.1',
+      'X-Amz-Target': `TrentService.${target}`,
+    },
+    body: JSON.stringify(body),
+  })
+
+  const alias = 'alias/stacks-production-mail'
+  const aliases = await request('ListAliases', { Limit: 100 })
+  let keyId = aliases.Aliases?.find((item: any) => item.AliasName === alias)?.TargetKeyId
+  if (!keyId) {
+    const created = await request('CreateKey', {
+      Description: 'Customer-managed key for production mail secrets and backups',
+      KeyUsage: 'ENCRYPT_DECRYPT',
+      Origin: 'AWS_KMS',
+      Tags: [
+        { TagKey: 'Application', TagValue: 'stacks' },
+        { TagKey: 'Environment', TagValue: 'production' },
+        { TagKey: 'Purpose', TagValue: 'mail-storage' },
+      ],
+    })
+    keyId = created.KeyMetadata?.KeyId
+    if (!keyId)
+      throw new Error('AWS KMS did not return a key ID.')
+    await request('CreateAlias', { AliasName: alias, TargetKeyId: keyId })
+    await request('EnableKeyRotation', { KeyId: keyId, RotationPeriodInDays: 90 })
+  }
+  const described = await request('DescribeKey', { KeyId: keyId })
+  const arn = described.KeyMetadata?.Arn
+  if (!arn)
+    throw new Error('AWS KMS did not return a key ARN.')
+
+  const secrets = new SecretsManagerClient(region)
+  for (const secretId of ['stacks/production/mail-storage-key', 'stacks/production/mail-restic']) {
+    try {
+      await secrets.updateSecret({ SecretId: secretId, KmsKeyId: arn })
+    }
+    catch (error: any) {
+      if (error?.code !== 'ResourceNotFoundException')
+        throw new Error(`Could not re-encrypt secret ${secretId}: ${getErrorMessage(error)}`)
+    }
+  }
+  const s3 = new S3Client(region)
+  for (const bucket of ['stacks-production-s3-backups', 'stacks-production-s3-email', 'stacks-production-email']) {
+    try {
+      await s3.putBucketEncryption(bucket, 'aws:kms', arn)
+    }
+    catch (error) {
+      throw new Error(`Could not apply KMS encryption to ${bucket}: ${getErrorMessage(error)}`)
+    }
+  }
+  return { alias, arn }
+}
+
+async function configureMailRestic(options: MailStorageOptions): Promise<{ repository: string; secretId: string }> {
+  const { region } = loadMailStorageAws(options)
+  const host = await mailStorageHost(options)
+  const bucket = options.bucket || 'stacks-production-s3-backups'
+  if (!/^[a-z0-9][a-z0-9.-]{1,61}[a-z0-9]$/.test(bucket))
+    throw new Error(`Unsafe S3 bucket name: ${bucket}`)
+  const kms = await ensureMailKmsKey(options)
+  const { AWSClient } = await import('../../../cloud/src/imap/client')
+  const { SecretsManagerClient } = await import('../../../cloud/src/imap/secrets-manager')
+  const iam = new AWSClient()
+  const iamRequest = async (action: string, params: Record<string, string> = {}): Promise<any> => iam.request({
+    service: 'iam',
+    region: 'us-east-1',
+    method: 'POST',
+    path: '/',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({
+      Action: action,
+      Version: '2010-05-08',
+      ...params,
+    }).toString(),
+  })
+  const userName = 'stacks-production-mail-backup'
+  try {
+    await iamRequest('GetUser', { UserName: userName })
+  }
+  catch (error: any) {
+    if (error?.code !== 'NoSuchEntity')
+      throw error
+    await iamRequest('CreateUser', {
+      UserName: userName,
+      'Tags.member.1.Key': 'Application',
+      'Tags.member.1.Value': 'stacks',
+      'Tags.member.2.Key': 'Environment',
+      'Tags.member.2.Value': 'production',
+      'Tags.member.3.Key': 'Purpose',
+      'Tags.member.3.Value': 'mail-backup',
+    })
+  }
+  await iamRequest('PutUserPolicy', {
+    UserName: userName,
+    PolicyName: 'mail-restic-backup',
+    PolicyDocument: JSON.stringify({
+      Version: '2012-10-17',
+      Statement: [
+        {
+          Effect: 'Allow',
+          Action: ['s3:ListBucket', 's3:GetBucketLocation'],
+          Resource: `arn:aws:s3:::${bucket}`,
+          Condition: { StringLike: { 's3:prefix': ['restic-mail', 'restic-mail/*'] } },
+        },
+        {
+          Effect: 'Allow',
+          Action: [
+            's3:GetObject',
+            's3:PutObject',
+            's3:DeleteObject',
+            's3:AbortMultipartUpload',
+            's3:ListMultipartUploadParts',
+          ],
+          Resource: `arn:aws:s3:::${bucket}/restic-mail/*`,
+        },
+        {
+          Effect: 'Allow',
+          Action: ['kms:Decrypt', 'kms:Encrypt', 'kms:GenerateDataKey', 'kms:DescribeKey'],
+          Resource: kms.arn,
+        },
+      ],
+    }),
+  })
+
+  const listedKeys = await iamRequest('ListAccessKeys', { UserName: userName })
+  const listedMembers = listedKeys.ListAccessKeysResult?.AccessKeyMetadata?.member
+  const oldKeys: any[] = listedMembers ? (Array.isArray(listedMembers) ? listedMembers : [listedMembers]) : []
+  if (oldKeys.length > 0 && !options.force)
+    throw new Error(`IAM user ${userName} already has a key. Pass --force to rotate it.`)
+  if (oldKeys.length >= 2) {
+    for (const old of oldKeys)
+      await iamRequest('DeleteAccessKey', { UserName: userName, AccessKeyId: old.AccessKeyId })
+  }
+  const createdKey = await iamRequest('CreateAccessKey', { UserName: userName })
+  const access = createdKey.CreateAccessKeyResult?.AccessKey
+  if (!access?.AccessKeyId || !access?.SecretAccessKey)
+    throw new Error('AWS IAM did not return the Restic access key.')
+  const password = randomBytes(48).toString('base64url')
+  const repository = `s3:s3.amazonaws.com/${bucket}/restic-mail`
+  const secretId = 'stacks/production/mail-restic'
+  const secretPayload = JSON.stringify({
+    version: 1,
+    repository,
+    password,
+    accessKeyId: access.AccessKeyId,
+    secretAccessKey: access.SecretAccessKey,
+    kmsKeyArn: kms.arn,
+    createdAt: new Date().toISOString(),
+  })
+  const secrets = new SecretsManagerClient(region)
+  try {
+    await secrets.createSecret({
+      Name: secretId,
+      Description: 'Restic credentials for production mail backups',
+      KmsKeyId: kms.arn,
+      SecretString: secretPayload,
+      Tags: [
+        { Key: 'Application', Value: 'stacks' },
+        { Key: 'Environment', Value: 'production' },
+        { Key: 'Purpose', Value: 'mail-backup' },
+      ],
+    })
+  }
+  catch (error: any) {
+    if (error?.code !== 'ResourceExistsException')
+      throw error
+    await secrets.updateSecret({ SecretId: secretId, KmsKeyId: kms.arn, SecretString: secretPayload })
+  }
+
+  const configDir = '/var/lib/mail-storage/data/restic'
+  const passwordPath = `${configDir}/password`
+  const envPayload = [
+    `RESTIC_REPOSITORY=${repository}`,
+    `RESTIC_PASSWORD_FILE=${passwordPath}`,
+    `AWS_ACCESS_KEY_ID=${access.AccessKeyId}`,
+    `AWS_SECRET_ACCESS_KEY=${access.SecretAccessKey}`,
+    `AWS_DEFAULT_REGION=${region}`,
+    '',
+  ].join('\n')
+  runMailStorageSsh(
+    host,
+    `install -d -m 0700 ${configDir}; umask 077; dd of=${configDir}/restic.env status=none`,
+    Buffer.from(envPayload),
+  )
+  runMailStorageSsh(
+    host,
+    `umask 077; dd of=${passwordPath} status=none`,
+    Buffer.from(`${password}\n`),
+  )
+  runMailStorageSsh(
+    host,
+    `set -a; . ${configDir}/restic.env; set +a; restic snapshots >/dev/null 2>&1 || restic init`,
+  )
+  runMailStorageSsh(host, 'systemctl enable --now mail-restic-backup.timer mail-storage-health.timer')
+  runMailStorageSsh(host, 'systemctl start mail-restic-backup.service')
+  runMailStorageSsh(host, '/usr/local/sbin/mail-restic-restore-check')
+
+  for (const old of oldKeys) {
+    if (old.AccessKeyId !== access.AccessKeyId)
+      await iamRequest('DeleteAccessKey', { UserName: userName, AccessKeyId: old.AccessKeyId })
+  }
+  return { repository, secretId }
+}
+
+function decodeMailStorageSecret(secretString?: string): Buffer {
+  if (!secretString)
+    throw new Error('The mail storage secret has no SecretString value.')
+  let parsed: MailStorageSecret
+  try {
+    parsed = JSON.parse(secretString) as MailStorageSecret
+  }
+  catch {
+    throw new Error('The mail storage secret is not valid JSON.')
+  }
+  if (parsed.version !== 1 || parsed.encoding !== 'base64' || typeof parsed.key !== 'string')
+    throw new Error('The mail storage secret uses an unsupported format.')
+  const key = Buffer.from(parsed.key, 'base64')
+  if (key.length < 32)
+    throw new Error('The mail storage key is unexpectedly short.')
+  return key
+}
+
+async function getMailStorageSecret(
+  options: MailStorageOptions,
+): Promise<{ key: Buffer; secretId: string }> {
+  const { profile, region } = loadMailStorageAws(options)
+  const secretId = mailStorageSecretId(options)
+  const { SecretsManagerClient } = await import('../../../cloud/src/imap/secrets-manager')
+  const secrets = new SecretsManagerClient(region, profile)
+  const value = await secrets.getSecretValue({ SecretId: secretId })
+  return { key: decodeMailStorageSecret(value.SecretString), secretId }
+}
+
+async function escrowMailStorageKey(
+  options: MailStorageOptions,
+): Promise<{ secretId: string; host: string }> {
+  const { profile, region } = loadMailStorageAws(options)
+  const host = await mailStorageHost(options)
+  const secretId = mailStorageSecretId(options)
+  const { SecretsManagerClient } = await import('../../../cloud/src/imap/secrets-manager')
+  const secrets = new SecretsManagerClient(region, profile)
+
+  const key = runMailStorageSsh(
+    host,
+    'systemd-creds decrypt --name=mail-storage-key /etc/credstore.encrypted/mail-storage-key.cred -',
+  )
+  if (key.length < 32)
+    throw new Error('The machine-bound mail storage key is unexpectedly short.')
+
+  let existing: Buffer | undefined
+  try {
+    const value = await secrets.getSecretValue({ SecretId: secretId })
+    existing = decodeMailStorageSecret(value.SecretString)
+  }
+  catch (error: any) {
+    if (error?.code !== 'ResourceNotFoundException')
+      throw error
+  }
+
+  if (existing && (!timingSafeEqual(existing, key))) {
+    existing.fill(0)
+    if (!options.force) {
+      key.fill(0)
+      throw new Error(`Secret ${secretId} already contains a different key. Pass --force to replace it.`)
+    }
+  }
+  existing?.fill(0)
+
+  const payload: MailStorageSecret = {
+    version: 1,
+    encoding: 'base64',
+    key: key.toString('base64'),
+    image: '/var/lib/mail-storage.luks',
+    mapper: 'mail-storage',
+    createdAt: new Date().toISOString(),
+  }
+
+  if (existing) {
+    await secrets.putSecretValue({ SecretId: secretId, SecretString: JSON.stringify(payload) })
+  }
+  else {
+    try {
+      await secrets.createSecret({
+        Name: secretId,
+        Description: `Externally escrowed LUKS2 key for ${host}`,
+        SecretString: JSON.stringify(payload),
+        Tags: [
+          { Key: 'Application', Value: process.env.APP_NAME || 'stacks' },
+          { Key: 'Environment', Value: process.env.APP_ENV || 'production' },
+          { Key: 'Purpose', Value: 'mail-storage' },
+        ],
+      })
+    }
+    catch (error: any) {
+      if (error?.code !== 'ResourceExistsException')
+        throw error
+      await secrets.putSecretValue({ SecretId: secretId, SecretString: JSON.stringify(payload) })
+    }
+  }
+
+  const verify = await secrets.getSecretValue({ SecretId: secretId })
+  const verifiedKey = decodeMailStorageSecret(verify.SecretString)
+  const matches = verifiedKey.length === key.length && timingSafeEqual(verifiedKey, key)
+  verifiedKey.fill(0)
+  key.fill(0)
+  if (!matches)
+    throw new Error(`Secret ${secretId} did not verify after writing.`)
+  return { secretId, host }
+}
+
+function addMailStorageOptions(command: any): any {
+  return command
+    .option('--host <host>', 'Mail server hostname or IP')
+    .option('--secret <id>', 'AWS Secrets Manager secret ID')
+    .option('--region <region>', 'AWS region', { default: 'us-east-1' })
+    .option('--profile <profile>', 'AWS credential profile', { default: 'default' })
 }
 
 export function mailCommands(buddy: CLI): void {
@@ -104,6 +656,529 @@ export function mailCommands(buddy: CLI): void {
         await reconcileMailDns(res, ip!, log)
       log.success(`Mail provisioned for ${domain}. Add MAIL_PASSWORD_<LOCALPART> env vars to pin mailbox passwords.`)
       process.exit(ExitCode.Success)
+    })
+
+  addMailStorageOptions(
+    buddy.command('mail:storage:status', 'Show encrypted mail storage and external-key status'),
+  )
+    .action(async (options: MailStorageOptions) => {
+      loadEnvFiles()
+      try {
+        const host = await mailStorageHost(options)
+        const output = runMailStorageSsh(host, `${mailStorageRemote} status`).toString('utf8').trim()
+        console.log(output)
+        process.exit(ExitCode.Success)
+      }
+      catch (error) {
+        console.error(`Failed to read mail storage status: ${getErrorMessage(error)}`)
+        process.exit(ExitCode.FatalError)
+      }
+    })
+
+  addMailStorageOptions(
+    buddy.command('mail:storage:kms:ensure', 'Create and apply the customer-managed production mail KMS key'),
+  )
+    .action(async (options: MailStorageOptions) => {
+      try {
+        const kms = await ensureMailKmsKey(options)
+        console.log(`alias=${kms.alias}`)
+        console.log(`arn=${kms.arn}`)
+        process.exit(ExitCode.Success)
+      }
+      catch (error) {
+        console.error(`Failed to configure mail KMS: ${getErrorMessage(error)}`)
+        process.exit(ExitCode.FatalError)
+      }
+    })
+
+  addMailStorageOptions(
+    buddy.command('mail:storage:volume:migrate', 'Create a dedicated Hetzner volume and migrate encrypted mail storage'),
+  )
+    .option('--size <gib>', 'Hetzner volume size in GiB', { default: '20' })
+    .action(async (options: MailStorageOptions) => {
+      let key: Buffer | undefined
+      let prepareAttempted = false
+      try {
+        const volume = await ensureMailStorageVolume(options)
+        const secret = await getMailStorageSecret(options)
+        key = secret.key
+        runMailStorageSsh(
+          volume.host,
+          `for i in $(seq 1 60); do test -b ${shellQuote(volume.device)} && exit 0; sleep 1; done; exit 1`,
+        )
+        prepareAttempted = true
+        runMailStorageSsh(
+          volume.host,
+          [
+            'umask 077',
+            'key_file=$(mktemp /run/mail-volume-migrate-key.XXXXXX)',
+            'trap \'shred -u "$key_file" 2>/dev/null || rm -f "$key_file"\' EXIT',
+            'dd of="$key_file" bs=64 count=1 iflag=fullblock status=none',
+            `MAIL_ENCRYPTED_IMAGE_SIZE=16G /usr/local/sbin/mail-volume-migrate prepare ${shellQuote(volume.device)}`,
+            `${mailStorageRemote} unlock < "$key_file"`,
+            '/usr/local/sbin/mail-volume-migrate finalize',
+          ].join(' && '),
+          key,
+        )
+        const status = runMailStorageSsh(volume.host, `${mailStorageRemote} status`).toString('utf8').trim()
+        console.log(`volume=${volume.name}`)
+        console.log(`volume_id=${volume.id}`)
+        console.log(`volume_size_gib=${volume.size}`)
+        console.log(status)
+        process.exit(ExitCode.Success)
+      }
+      catch (error) {
+        if (prepareAttempted && key) {
+          const host = await mailStorageHost(options)
+          try {
+            runMailStorageSsh(host, '/usr/local/sbin/mail-volume-migrate rollback')
+          }
+          catch (rollbackError) {
+            console.error(`Dedicated-volume rollback step failed: ${getErrorMessage(rollbackError)}`)
+          }
+          try {
+            runMailStorageSsh(host, `${mailStorageRemote} unlock`, key)
+          }
+          catch (unlockError) {
+            console.error(`Mail storage re-unlock failed: ${getErrorMessage(unlockError)}`)
+          }
+        }
+        console.error(`Failed to migrate mail storage volume: ${getErrorMessage(error)}`)
+        process.exit(ExitCode.FatalError)
+      }
+      finally {
+        key?.fill(0)
+      }
+    })
+
+  addMailStorageOptions(
+    buddy.command('mail:storage:key:recovery:add', 'Add an independent LUKS recovery key to macOS Keychain'),
+  )
+    .action(async (options: MailStorageOptions) => {
+      let currentKey: Buffer | undefined
+      let recoveryKey: Buffer | undefined
+      try {
+        const host = await mailStorageHost(options)
+        const secret = await getMailStorageSecret(options)
+        currentKey = secret.key
+        recoveryKey = randomBytes(64)
+        runMailStorageSsh(
+          host,
+          `${mailStorageRemote} add-recovery-key`,
+          Buffer.concat([currentKey, recoveryKey]),
+        )
+
+        const account = 'mail-storage-recovery'
+        const service = 'com.stacks.production.mail.luks'
+        const encoded = recoveryKey.toString('base64')
+        const keychainWriter = `
+          import Foundation
+          import Security
+
+          let input = FileHandle.standardInput.readDataToEndOfFile()
+          guard let encoded = String(data: input, encoding: .utf8)?
+            .trimmingCharacters(in: .whitespacesAndNewlines),
+            let secret = Data(base64Encoded: encoded),
+            secret.count == 64
+          else { exit(2) }
+
+          let query: [CFString: Any] = [
+            kSecClass: kSecClassGenericPassword,
+            kSecAttrAccount: "${account}",
+            kSecAttrService: "${service}",
+          ]
+          var trustedApplications: [SecTrustedApplication] = []
+          for path in ["/usr/bin/security", "/Library/Developer/CommandLineTools/usr/bin/swift-frontend"] {
+            var application: SecTrustedApplication?
+            guard SecTrustedApplicationCreateFromPath(path, &application) == errSecSuccess,
+              let application
+            else { exit(4) }
+            trustedApplications.append(application)
+          }
+          var access: SecAccess?
+          guard SecAccessCreate(
+            "Stacks production mail LUKS recovery key" as CFString,
+            trustedApplications as CFArray,
+            &access
+          ) == errSecSuccess, let access
+          else { exit(5) }
+
+          let attributes: [CFString: Any] = [
+            kSecValueData: secret,
+            kSecAttrLabel: "Stacks production mail LUKS recovery key",
+            kSecAttrAccessible: kSecAttrAccessibleWhenUnlockedThisDeviceOnly,
+            kSecAttrSynchronizable: false,
+            kSecAttrAccess: access,
+          ]
+          var status = SecItemUpdate(query as CFDictionary, attributes as CFDictionary)
+          if status == errSecItemNotFound {
+            var item = query
+            for (key, value) in attributes { item[key] = value }
+            status = SecItemAdd(item as CFDictionary, nil)
+          }
+          guard status == errSecSuccess else { exit(Int32(status)) }
+
+          var verificationQuery = query
+          verificationQuery[kSecReturnData] = true
+          verificationQuery[kSecMatchLimit] = kSecMatchLimitOne
+          var result: CFTypeRef?
+          status = SecItemCopyMatching(verificationQuery as CFDictionary, &result)
+          guard status == errSecSuccess, let stored = result as? Data, stored == secret
+          else { exit(3) }
+        `
+        const stored = spawnSync('/usr/bin/swift', ['-e', keychainWriter], {
+          input: `${encoded}\n`,
+          maxBuffer: 1024 * 1024,
+        })
+        if (stored.status !== 0)
+          throw new Error('macOS Keychain write failed')
+
+        console.log(`keychain_service=${service}`)
+        console.log('recovery_keyslot=verified')
+        process.exit(ExitCode.Success)
+      }
+      catch (error) {
+        console.error(`Failed to add recovery key: ${getErrorMessage(error)}`)
+        process.exit(ExitCode.FatalError)
+      }
+      finally {
+        currentKey?.fill(0)
+        recoveryKey?.fill(0)
+      }
+    })
+
+  addMailStorageOptions(
+    buddy.command('mail:storage:key:recovery:verify', 'Verify the Keychain recovery key against the live LUKS header'),
+  )
+    .action(async (options: MailStorageOptions) => {
+      let key: Buffer | undefined
+      try {
+        const host = await mailStorageHost(options)
+        key = readMailRecoveryKey()
+        runMailStorageSsh(
+          host,
+          'cryptsetup open --test-passphrase --type luks2 --key-file - /var/lib/mail-storage.luks',
+          key,
+        )
+        console.log('Keychain recovery key unlocks the live mail volume.')
+        process.exit(ExitCode.Success)
+      }
+      catch (error) {
+        console.error(`Recovery key verification failed: ${getErrorMessage(error)}`)
+        process.exit(ExitCode.FatalError)
+      }
+      finally {
+        key?.fill(0)
+      }
+    })
+
+  addMailStorageOptions(
+    buddy.command('mail:storage:key:slot:remove', 'Remove an unusable non-primary LUKS keyslot'),
+  )
+    .option('--slot <number>', 'LUKS keyslot number to remove')
+    .action(async (options: MailStorageOptions) => {
+      let key: Buffer | undefined
+      try {
+        const slot = Number.parseInt(options.slot || '', 10)
+        if (!Number.isInteger(slot) || slot < 1 || slot > 31)
+          throw new Error('Pass a non-primary keyslot from 1 through 31.')
+        const host = await mailStorageHost(options)
+        const secret = await getMailStorageSecret(options)
+        key = secret.key
+        const output = runMailStorageSsh(host, `${mailStorageRemote} remove-keyslot ${slot}`, key).toString('utf8').trim()
+        console.log(output)
+        process.exit(ExitCode.Success)
+      }
+      catch (error) {
+        console.error(`Failed to remove LUKS keyslot: ${getErrorMessage(error)}`)
+        process.exit(ExitCode.FatalError)
+      }
+      finally {
+        key?.fill(0)
+      }
+    })
+
+  addMailStorageOptions(
+    buddy.command('mail:storage:restic:configure', 'Configure client-encrypted Restic backups to S3'),
+  )
+    .option('--force', 'Rotate an existing dedicated IAM access key', { default: false })
+    .action(async (options: MailStorageOptions) => {
+      try {
+        const result = await configureMailRestic(options)
+        console.log(`repository=${result.repository}`)
+        console.log(`recovery_secret=${result.secretId}`)
+        console.log('restore_check=ok')
+        process.exit(ExitCode.Success)
+      }
+      catch (error) {
+        console.error(`Failed to configure Restic mail backups: ${getErrorMessage(error)}`)
+        process.exit(ExitCode.FatalError)
+      }
+    })
+
+  addMailStorageOptions(
+    buddy.command('mail:storage:restore:check', 'Restore and validate the newest off-host mail snapshot'),
+  )
+    .action(async (options: MailStorageOptions) => {
+      try {
+        const host = await mailStorageHost(options)
+        const output = runMailStorageSsh(host, '/usr/local/sbin/mail-restic-restore-check').toString('utf8').trim()
+        console.log(output)
+        process.exit(ExitCode.Success)
+      }
+      catch (error) {
+        console.error(`Mail restore check failed: ${getErrorMessage(error)}`)
+        process.exit(ExitCode.FatalError)
+      }
+    })
+
+  addMailStorageOptions(
+    buddy.command('mail:storage:maildir:migrate', 'Migrate live mailboxes to canonical Maildir++ layout'),
+  )
+    .action(async (options: MailStorageOptions) => {
+      try {
+        const host = await mailStorageHost(options)
+        const output = runMailStorageSsh(host, '/usr/local/sbin/maildir-migrate migrate').toString('utf8').trim()
+        console.log(output)
+        const status = runMailStorageSsh(host, '/usr/local/sbin/maildir-migrate status').toString('utf8').trim()
+        console.log(status)
+        process.exit(ExitCode.Success)
+      }
+      catch (error) {
+        console.error(`Maildir++ migration failed: ${getErrorMessage(error)}`)
+        process.exit(ExitCode.FatalError)
+      }
+    })
+
+  addMailStorageOptions(
+    buddy.command('mail:forward:compile', 'Compile and validate the live RFC 5228 forwarding script'),
+  )
+    .action(async (options: MailStorageOptions) => {
+      try {
+        const host = await mailStorageHost(options)
+        const output = runMailStorageSsh(
+          host,
+          '/usr/local/sbin/mail-forward-compile /opt/mail/forwards.json /opt/mail/forwards.sieve && sed -n "1,160p" /opt/mail/forwards.sieve',
+        ).toString('utf8').trim()
+        console.log(output)
+        process.exit(ExitCode.Success)
+      }
+      catch (error) {
+        console.error(`Forwarding script compilation failed: ${getErrorMessage(error)}`)
+        process.exit(ExitCode.FatalError)
+      }
+    })
+
+  addMailStorageOptions(
+    buddy.command('mail:storage:escrow', 'Copy the machine-bound LUKS key to AWS Secrets Manager'),
+  )
+    .option('--force', 'Replace a different existing secret', { default: false })
+    .action(async (options: MailStorageOptions) => {
+      try {
+        const result = await escrowMailStorageKey(options)
+        console.log(`Mail storage key verified in AWS Secrets Manager: ${result.secretId}`)
+        console.log(`Host: ${result.host}`)
+        process.exit(ExitCode.Success)
+      }
+      catch (error) {
+        console.error(`Failed to escrow mail storage key: ${getErrorMessage(error)}`)
+        process.exit(ExitCode.FatalError)
+      }
+    })
+
+  addMailStorageOptions(
+    buddy.command('mail:storage:key:verify', 'Verify the external key against the LUKS2 header'),
+  )
+    .action(async (options: MailStorageOptions) => {
+      let key: Buffer | undefined
+      try {
+        const host = await mailStorageHost(options)
+        const secret = await getMailStorageSecret(options)
+        key = secret.key
+        runMailStorageSsh(
+          host,
+          'cryptsetup open --test-passphrase --type luks2 --key-file - /var/lib/mail-storage.luks',
+          key,
+        )
+        console.log(`External key ${secret.secretId} unlocks the mail volume.`)
+        process.exit(ExitCode.Success)
+      }
+      catch (error) {
+        console.error(`Mail storage key verification failed: ${getErrorMessage(error)}`)
+        process.exit(ExitCode.FatalError)
+      }
+      finally {
+        key?.fill(0)
+      }
+    })
+
+  addMailStorageOptions(
+    buddy.command('mail:storage:unlock', 'Unlock external mail storage and start mail'),
+  )
+    .action(async (options: MailStorageOptions) => {
+      let key: Buffer | undefined
+      try {
+        const host = await mailStorageHost(options)
+        const secret = await getMailStorageSecret(options)
+        key = secret.key
+        const output = runMailStorageSsh(host, `${mailStorageRemote} unlock`, key).toString('utf8').trim()
+        console.log(output)
+        console.log(`External key: ${secret.secretId}`)
+        process.exit(ExitCode.Success)
+      }
+      catch (error) {
+        console.error(`Failed to unlock mail storage: ${getErrorMessage(error)}`)
+        process.exit(ExitCode.FatalError)
+      }
+      finally {
+        key?.fill(0)
+      }
+    })
+
+  addMailStorageOptions(
+    buddy.command('mail:storage:lock', 'Stop mail and lock external mail storage'),
+  )
+    .action(async (options: MailStorageOptions) => {
+      loadEnvFiles()
+      try {
+        const host = await mailStorageHost(options)
+        const output = runMailStorageSsh(host, `${mailStorageRemote} lock`).toString('utf8').trim()
+        console.log(output)
+        process.exit(ExitCode.Success)
+      }
+      catch (error) {
+        console.error(`Failed to lock mail storage: ${getErrorMessage(error)}`)
+        process.exit(ExitCode.FatalError)
+      }
+    })
+
+  addMailStorageOptions(
+    buddy.command('mail:storage:backup', 'Create and verify an encrypted local mail backup'),
+  )
+    .action(async (options: MailStorageOptions) => {
+      loadEnvFiles()
+      try {
+        const host = await mailStorageHost(options)
+        const output = runMailStorageSsh(
+          host,
+          [
+            'set -eu',
+            'systemctl reset-failed mail-backup.service 2>/dev/null || true',
+            'systemctl start mail-backup.service',
+            'latest=$(find -L /opt/mail/backups -maxdepth 1 -type f -name "mail-backup-*.tgz" -printf "%T@ %p\\n" | sort -nr | head -1 | cut -d" " -f2-)',
+            'test -n "$latest"',
+            'tar -tzf "$latest" >/dev/null',
+            'printf "backup=%s\\n" "$latest"',
+            'stat -c "mode=%a owner=%U:%G size=%s" "$latest"',
+          ].join('; '),
+        ).toString('utf8').trim()
+        console.log(output)
+        process.exit(ExitCode.Success)
+      }
+      catch (error) {
+        console.error(`Failed to create mail backup: ${getErrorMessage(error)}`)
+        process.exit(ExitCode.FatalError)
+      }
+    })
+
+  addMailStorageOptions(
+    buddy.command('mail:storage:header:backup', 'Stream a LUKS header backup to S3 with KMS encryption'),
+  )
+    .option('--bucket <bucket>', 'Recovery bucket (defaults to <app>-<env>-s3-backups)')
+    .action(async (options: MailStorageOptions) => {
+      try {
+        const { region } = loadMailStorageAws(options)
+        const host = await mailStorageHost(options)
+        const app = (process.env.APP_NAME || 'stacks').toLowerCase().replace(/[^a-z0-9-]/g, '-')
+        const environment = (process.env.APP_ENV || 'production').toLowerCase().replace(/[^a-z0-9-]/g, '-')
+        const bucket = options.bucket || `${app}-${environment}-s3-backups`
+        if (!/^[a-z0-9][a-z0-9.-]{1,61}[a-z0-9]$/.test(bucket))
+          throw new Error(`Unsafe S3 bucket name: ${bucket}`)
+
+        const timestamp = new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d{3}Z$/, 'Z')
+        const objectKey = `luks-headers/mail-storage-${timestamp}.header`
+        const { AWSClient } = await import('../../../cloud/src/imap/client')
+        const { S3Client } = await import('../../../cloud/src/imap/s3')
+        const kms = await ensureMailKmsKey(options)
+        const s3 = new S3Client(region)
+        await s3.putBucketEncryption(bucket, 'aws:kms', kms.arn)
+        const uploadUrl = s3.generatePresignedPutUrl(bucket, objectKey, 'application/octet-stream', 600)
+        const remoteCommand = [
+          'set -eu',
+          'tmp_dir=$(mktemp -d /run/mail-storage-header.XXXXXX)',
+          'tmp="$tmp_dir/header"',
+          'trap \'shred -u "$tmp" 2>/dev/null || rm -f "$tmp"; rmdir "$tmp_dir"\' EXIT',
+          'cryptsetup luksHeaderBackup /var/lib/mail-storage.luks --header-backup-file "$tmp"',
+          `curl --fail-with-body --silent --show-error -H 'Content-Type: application/octet-stream' --upload-file "$tmp" ${shellQuote(uploadUrl)} 1>&2`,
+        ].join('; ')
+        runMailStorageSsh(host, remoteCommand)
+        const object = await s3.headObject(bucket, objectKey)
+        if (!object?.ContentLength || object.ContentLength < 1024 * 1024)
+          throw new Error('The uploaded LUKS header size did not verify.')
+        const rawS3 = new AWSClient()
+        const head = await rawS3.request({
+          service: 's3',
+          region,
+          method: 'HEAD',
+          path: `/${bucket}/${objectKey}`,
+          returnHeaders: true,
+        })
+        const encryption = head?.headers?.['x-amz-server-side-encryption']
+        if (encryption !== 'aws:kms')
+          throw new Error(`The LUKS header object reported unexpected encryption: ${encryption || 'none'}`)
+        const keyId = head?.headers?.['x-amz-server-side-encryption-aws-kms-key-id']
+        if (keyId !== kms.arn)
+          throw new Error(`The LUKS header object used an unexpected KMS key: ${keyId || 'none'}`)
+
+        console.log(`header=s3://${bucket}/${objectKey}`)
+        console.log('encryption=aws:kms')
+        console.log(`kms_key=${kms.arn}`)
+        process.exit(ExitCode.Success)
+      }
+      catch (error) {
+        console.error(`Failed to back up the LUKS header: ${getErrorMessage(error)}`)
+        process.exit(ExitCode.FatalError)
+      }
+    })
+
+  addMailStorageOptions(
+    buddy.command('mail:storage:externalize', 'Move the LUKS key off-host and require external unlocks'),
+  )
+    .option('--force', 'Replace a different existing secret', { default: false })
+    .action(async (options: MailStorageOptions) => {
+      let configured = false
+      let key: Buffer | undefined
+      try {
+        const escrow = await escrowMailStorageKey(options)
+        const secret = await getMailStorageSecret(options)
+        key = secret.key
+
+        runMailStorageSsh(escrow.host, `${mailStorageRemote} configure-external`)
+        configured = true
+        runMailStorageSsh(escrow.host, `${mailStorageRemote} unlock`, key)
+        runMailStorageSsh(escrow.host, `${mailStorageRemote} finalize-external`)
+
+        const status = runMailStorageSsh(escrow.host, `${mailStorageRemote} status`).toString('utf8').trim()
+        console.log(status)
+        console.log(`External key: ${escrow.secretId}`)
+        process.exit(ExitCode.Success)
+      }
+      catch (error) {
+        if (configured) {
+          try {
+            const host = await mailStorageHost(options)
+            runMailStorageSsh(host, `${mailStorageRemote} rollback-machine`)
+          }
+          catch (rollbackError) {
+            console.error(`Automatic rollback also failed: ${getErrorMessage(rollbackError)}`)
+          }
+        }
+        console.error(`Failed to externalize mail storage: ${getErrorMessage(error)}`)
+        process.exit(ExitCode.FatalError)
+      }
+      finally {
+        key?.fill(0)
+      }
     })
 
   buddy
