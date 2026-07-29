@@ -234,20 +234,61 @@ jobs:
             node-modules-
 
       - name: Install Dependencies
+        id: install
         run: bun install --frozen-lockfile
 
-      - name: Verify pinned protocol suite
-        run: |
-          bun run protocol:check
-          bun run protocol:manifest:check
-          bun run protocol:release:check
-          bun run protocol:drivers:check
-          bun run protocol:desktop:check
-          bun run protocol:pantry:check
-          bun run protocol:craft:check
-          bun run docs:buddy:check
-          bun run docs:artifacts:check
-          bun run docs:links:check
+      # One step per check, rather than one `run:` block running all ten.
+      #
+      # Two things were wrong with the block. Under `bash -e` the first failure
+      # ended it, so a red `docs:artifacts:check` (ninth) meant
+      # `docs:links:check` (tenth) never executed at all — it has never run on
+      # main. And a failure surfaced only as "Verify pinned protocol suite",
+      # so finding out WHICH check failed meant grepping the raw log.
+      #
+      # `!cancelled()` is what actually fixes the masking: without it Actions
+      # skips every later step once one fails, which is the same bug in a new
+      # costume. The install guard keeps the ten from all failing noisily when
+      # the real problem is that dependencies did not install.
+
+      - name: protocol:check
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: bun run protocol:check
+
+      - name: protocol:manifest:check
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: bun run protocol:manifest:check
+
+      - name: protocol:release:check
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: bun run protocol:release:check
+
+      - name: protocol:drivers:check
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: bun run protocol:drivers:check
+
+      - name: protocol:desktop:check
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: bun run protocol:desktop:check
+
+      - name: protocol:pantry:check
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: bun run protocol:pantry:check
+
+      - name: protocol:craft:check
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: bun run protocol:craft:check
+
+      - name: docs:buddy:check
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: bun run docs:buddy:check
+
+      - name: docs:artifacts:check
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: bun run docs:artifacts:check
+
+      - name: docs:links:check
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: bun run docs:links:check
 
       - name: Run protocol adapter
         env:
