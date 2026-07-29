@@ -1,0 +1,317 @@
+<script client>
+import type { DashboardInboxEmail } from '../../../../functions/inbox'
+import {
+  deleteInboxEmail,
+  fetchDashboardInbox,
+  fetchDashboardInboxBody,
+  sendInboxEmail,
+  setInboxEmailReadState,
+} from '../../../../functions/inbox'
+import { pushToast } from '../../../../functions/toasts'
+
+const folders = [{ id: 'inbox', name: 'Inbox', icon: 'inbox' }]
+const emails = state<DashboardInboxEmail[]>([])
+const mailbox = state('')
+const search = state('')
+const filter = state<'all' | 'unread'>('all')
+const selectedEmailId = state<string | null>(null)
+const isComposing = state(false)
+const isLoading = state(true)
+const loadError = state('')
+const isSending = state(false)
+const isReplying = state(false)
+const isDeleting = state(false)
+const deletePending = state(false)
+const replyText = state('')
+const newEmailTo = state('')
+const newEmailSubject = state('')
+const newEmailBody = state('')
+
+const selectedEmail = derived(() => emails().find(email => email.id === selectedEmailId()) || null)
+const isPanelOpen = derived(() => Boolean(selectedEmail()) || isComposing())
+const unreadCounts = derived(() => ({ inbox: emails().filter(email => !email.read).length }))
+const canSendEmail = derived(() =>
+  !isSending()
+  && newEmailTo().trim().length > 0
+  && newEmailSubject().trim().length > 0
+  && newEmailBody().trim().length > 0,
+)
+const canSendReply = derived(() =>
+  !isReplying()
+  && replyText().trim().length > 0
+  && Boolean(selectedEmail()?.email),
+)
+
+function visibleEmails(): DashboardInboxEmail[] {
+  const query = search().trim().toLowerCase()
+  return emails().filter((email) => {
+    if (filter() === 'unread' && email.read)
+      return false
+    if (!query)
+      return true
+    return [email.subject, email.from, email.email, email.preview]
+      .some(value => value.toLowerCase().includes(query))
+  })
+}
+
+function emptyTitle(): string {
+  if (search().trim())
+    return 'No messages match your search'
+  if (filter() === 'unread')
+    return 'No unread messages'
+  return 'No messages in this inbox'
+}
+
+function eventValue<T>(value: T | CustomEvent<T>): T {
+  return value instanceof CustomEvent ? value.detail : value
+}
+
+function setSearch(value: string | CustomEvent<string>): void {
+  search.set(eventValue(value))
+}
+
+function setFilter(value: 'all' | 'unread'): void {
+  filter.set(value)
+}
+
+function setComposeField(field: 'to' | 'subject' | 'body', value: string | CustomEvent<string>): void {
+  const next = eventValue(value)
+  if (field === 'to')
+    newEmailTo.set(next)
+  else if (field === 'subject')
+    newEmailSubject.set(next)
+  else
+    newEmailBody.set(next)
+}
+
+function updateReply(value: string | CustomEvent<string>): void {
+  replyText.set(eventValue(value))
+}
+
+function requestDelete(): void {
+  deletePending.set(true)
+}
+
+function cancelDelete(): void {
+  deletePending.set(false)
+}
+
+async function loadInbox(): Promise<void> {
+  isLoading.set(true)
+  loadError.set('')
+  try {
+    const result = await fetchDashboardInbox(mailbox())
+    mailbox.set(result.mailbox)
+    emails.set(result.emails)
+    loadError.set(result.error)
+  }
+  catch (error) {
+    loadError.set('Inbox messages could not be loaded.')
+    pushToast('error', 'Could not load inbox', { detail: String(error) })
+  }
+  finally {
+    isLoading.set(false)
+  }
+}
+
+async function openEmail(value: DashboardInboxEmail | CustomEvent<DashboardInboxEmail>): Promise<void> {
+  const email = eventValue(value)
+  selectedEmailId.set(email.id)
+  isComposing.set(false)
+  deletePending.set(false)
+  replyText.set('')
+
+  if (!email.bodyHtml && !email.bodyText) {
+    try {
+      const body = await fetchDashboardInboxBody(email.id, mailbox())
+      emails.set(emails().map(item => item.id === email.id ? { ...item, ...body } : item))
+    }
+    catch (error) {
+      pushToast('error', 'Could not load message body', { detail: String(error) })
+    }
+  }
+
+  if (!email.read)
+    await setReadState(email.id, true)
+}
+
+async function setReadState(id: string, read: boolean): Promise<void> {
+  if (await setInboxEmailReadState(id, read, mailbox()))
+    emails.set(emails().map(email => email.id === id ? { ...email, read } : email))
+}
+
+async function toggleSelectedRead(): Promise<void> {
+  const email = selectedEmail()
+  if (email)
+    await setReadState(email.id, !email.read)
+}
+
+function closeEmail(): void {
+  selectedEmailId.set(null)
+  deletePending.set(false)
+  replyText.set('')
+}
+
+function compose(): void {
+  isComposing.set(true)
+  selectedEmailId.set(null)
+  newEmailTo.set('')
+  newEmailSubject.set('')
+  newEmailBody.set('')
+}
+
+function cancelCompose(): void {
+  isComposing.set(false)
+}
+
+async function sendEmail(): Promise<void> {
+  if (!canSendEmail())
+    return
+  isSending.set(true)
+  try {
+    if (await sendInboxEmail({
+      to: newEmailTo(),
+      subject: newEmailSubject(),
+      body: newEmailBody(),
+    })) {
+      isComposing.set(false)
+      navigate('/inbox/activity')
+    }
+  }
+  finally {
+    isSending.set(false)
+  }
+}
+
+async function sendReply(): Promise<void> {
+  const email = selectedEmail()
+  const body = replyText().trim()
+  if (!email?.email || !body || isReplying())
+    return
+
+  isReplying.set(true)
+  try {
+    const subject = email.subject.toLowerCase().startsWith('re:')
+      ? email.subject
+      : `Re: ${email.subject}`
+    if (await sendInboxEmail({ to: email.email, subject, body }))
+      replyText.set('')
+  }
+  finally {
+    isReplying.set(false)
+  }
+}
+
+async function confirmDelete(): Promise<void> {
+  const email = selectedEmail()
+  if (!email || isDeleting())
+    return
+
+  isDeleting.set(true)
+  try {
+    if (await deleteInboxEmail(email.id, mailbox())) {
+      emails.set(emails().filter(item => item.id !== email.id))
+      closeEmail()
+    }
+  }
+  finally {
+    isDeleting.set(false)
+  }
+}
+
+onMount(() => {
+  const route = useRoute()
+  if (route.query.compose === 'true')
+    compose()
+  void loadInbox()
+})
+</script>
+
+<div class="overflow-hidden bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
+  <div class="flex min-h-[calc(100vh-8rem)]">
+    <EmailSidebar
+      activeFolder="inbox"
+      :folders="folders"
+      :unreadCounts="unreadCounts"
+      :mailbox="mailbox"
+      @compose="compose"
+    />
+
+    <div class="flex overflow-hidden flex-1 flex-col">
+      <header class="px-4 py-3 bg-white dark:bg-neutral-700 border-b border-gray-200 dark:border-neutral-600">
+        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div class="flex gap-4 items-center">
+            <h1 class="font-bold text-gray-900 text-xl dark:text-white">Inbox</h1>
+            <EmailNavigation active="inbox" />
+          </div>
+          <div class="flex gap-2 items-center">
+            <div class="inline-flex p-1 bg-gray-100 dark:bg-neutral-800 rounded-md">
+              <button type="button" :aria-pressed="filter() === 'all'" :class="'px-3 py-1.5 font-medium text-sm rounded ' + (filter() === 'all' ? 'text-gray-900 dark:text-white bg-white dark:bg-neutral-700 shadow-sm' : 'text-gray-600 dark:text-neutral-300')" @click="setFilter('all')">All</button>
+              <button type="button" :aria-pressed="filter() === 'unread'" :class="'px-3 py-1.5 font-medium text-sm rounded ' + (filter() === 'unread' ? 'text-gray-900 dark:text-white bg-white dark:bg-neutral-700 shadow-sm' : 'text-gray-600 dark:text-neutral-300')" @click="setFilter('unread')">Unread</button>
+            </div>
+            <button type="button" :disabled="isLoading()" class="inline-flex items-center px-3 py-2 font-medium text-gray-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-600 disabled:opacity-50" @click="loadInbox">
+              <span :class="'mr-2 h-4 w-4 ' + (isLoading() ? 'animate-spin i-hugeicons-loading-03' : 'i-hugeicons-refresh')"></span>
+              Refresh
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <div class="flex overflow-hidden flex-1">
+        <InboxMessageList
+          :emails="visibleEmails()"
+          :loading="isLoading"
+          :error="loadError"
+          :search="search"
+          :emptyTitle="emptyTitle()"
+          :panelOpen="isPanelOpen"
+          @search="setSearch"
+          @select="openEmail"
+        />
+
+        <InboxMessageDetail
+          :if="selectedEmail()"
+          :email="selectedEmail"
+          :deletePending="deletePending"
+          :deleting="isDeleting"
+          :replying="isReplying"
+          :replyText="replyText"
+          :canSendReply="canSendReply"
+          @close="closeEmail"
+          @toggle-read="toggleSelectedRead"
+          @request-delete="requestDelete"
+          @cancel-delete="cancelDelete"
+          @confirm-delete="confirmDelete"
+          @update:reply="updateReply"
+          @reply="sendReply"
+        />
+
+        <InboxComposer
+          :if="isComposing()"
+          :to="newEmailTo"
+          :subject="newEmailSubject"
+          :body="newEmailBody"
+          :sending="isSending"
+          :canSend="canSendEmail"
+          @cancel="cancelCompose"
+          @update:to="setComposeField('to', $event)"
+          @update:subject="setComposeField('subject', $event)"
+          @update:body="setComposeField('body', $event)"
+          @send="sendEmail"
+        />
+
+        <section :if="!selectedEmail() && !isComposing()" aria-label="Inbox empty selection" class="hidden md:flex flex-col items-center justify-center p-8 md:w-3/5 bg-white dark:bg-neutral-700">
+          <div class="text-center">
+            <span class="block mb-5 mx-auto h-16 w-16 text-blue-500 i-hugeicons-mail-02"></span>
+            <h2 class="font-semibold text-gray-900 text-xl dark:text-white">No message selected</h2>
+            <p class="mt-2 max-w-md text-gray-500 text-sm dark:text-neutral-400">Select a message to read it, or compose a new email.</p>
+            <button type="button" class="inline-flex items-center mt-5 px-4 py-2 font-medium text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md" @click="compose">
+              <span class="mr-2 h-4 w-4 i-hugeicons-plus-sign"></span>
+              Compose email
+            </button>
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+</div>

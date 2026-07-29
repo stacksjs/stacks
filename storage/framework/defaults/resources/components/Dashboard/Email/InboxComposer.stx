@@ -1,0 +1,50 @@
+<script client>
+const to = useReactiveProp('to', '')
+const subject = useReactiveProp('subject', '')
+const body = useReactiveProp('body', '')
+const sending = useReactiveProp('sending', false)
+const canSend = useReactiveProp('canSend', false)
+const emit = defineEmits()
+
+function update(field: string, event: Event): void {
+  emit(`update:${field}`, (event.target as HTMLInputElement | HTMLTextAreaElement).value)
+}
+
+function submit(event: Event): void {
+  event.preventDefault()
+  if (canSend())
+    emit('send')
+}
+</script>
+
+<form aria-label="Compose email" class="flex flex-col w-full md:w-3/5 bg-white dark:bg-neutral-700" @submit="submit($event)">
+  <div class="flex items-center justify-between px-4 py-2 border-b border-gray-200 dark:border-neutral-600">
+    <h2 class="font-medium text-gray-900 text-lg dark:text-white">New message</h2>
+    <button type="button" class="p-1 text-gray-500 dark:text-neutral-400 hover:bg-gray-100 dark:hover:bg-neutral-600 rounded" title="Cancel compose" @click="emit('cancel')">
+      <span class="block h-5 w-5 i-hugeicons-cancel-circle"></span>
+    </button>
+  </div>
+
+  <div class="overflow-y-auto flex-1 p-4">
+    <div class="space-y-4">
+      <div>
+        <label for="compose-to" class="block font-medium text-gray-700 text-sm dark:text-neutral-300">To</label>
+        <input id="compose-to" :value="to()" type="email" autocomplete="email" placeholder="recipient@example.com" required class="block mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-neutral-100 bg-white dark:bg-neutral-600 border border-gray-300 rounded-md dark:border-neutral-600 focus:border-blue-500 focus:ring-blue-500" @input="update('to', $event)" />
+      </div>
+      <div>
+        <label for="compose-subject" class="block font-medium text-gray-700 text-sm dark:text-neutral-300">Subject</label>
+        <input id="compose-subject" :value="subject()" type="text" maxlength="255" placeholder="Enter email subject" required class="block mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-neutral-100 bg-white dark:bg-neutral-600 border border-gray-300 rounded-md dark:border-neutral-600 focus:border-blue-500 focus:ring-blue-500" @input="update('subject', $event)" />
+      </div>
+      <div>
+        <label for="compose-body" class="block font-medium text-gray-700 text-sm dark:text-neutral-300">Message</label>
+        <textarea id="compose-body" :value="body()" rows="15" maxlength="100000" placeholder="Write your message here..." required class="block mt-1 p-3 w-full text-gray-900 text-sm dark:text-neutral-100 bg-white dark:bg-neutral-600 border border-gray-300 rounded-md dark:border-neutral-600 focus:border-blue-500 focus:ring-blue-500" @input="update('body', $event)"></textarea>
+      </div>
+    </div>
+  </div>
+
+  <div class="flex justify-end p-4 border-gray-200 border-t dark:border-neutral-600">
+    <button type="submit" :disabled="!canSend()" class="px-4 py-2 font-medium text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md disabled:opacity-50 disabled:cursor-not-allowed">
+      {{ sending() ? 'Sending...' : 'Send email' }}
+    </button>
+  </div>
+</form>

@@ -1,0 +1,83 @@
+<script client>
+import type { DashboardInboxEmail } from '../../../../functions/inbox'
+
+const emails = useReactiveProp('emails', [])
+const loading = useReactiveProp('loading', false)
+const error = useReactiveProp('error', '')
+const search = useReactiveProp('search', '')
+const emptyTitle = useReactiveProp('emptyTitle', 'No messages found')
+const panelOpen = useReactiveProp('panelOpen', false)
+const emit = defineEmits()
+
+function rows(): DashboardInboxEmail[] {
+  return emails() as DashboardInboxEmail[]
+}
+
+function formatDate(value: string): string {
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime()))
+    return 'Not recorded'
+  const today = new Date()
+  if (date.toDateString() === today.toDateString())
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+  return date.toLocaleDateString([], { month: 'short', day: 'numeric' })
+}
+
+function rowClass(email: DashboardInboxEmail): string {
+  const base = 'w-full px-4 py-3 text-left hover:bg-gray-50 dark:hover:bg-neutral-600'
+  return email.read
+    ? `${base} bg-white dark:bg-neutral-700`
+    : `${base} bg-blue-50 dark:bg-neutral-700`
+}
+
+function listClass(): string {
+  const visibility = panelOpen() ? 'hidden md:flex' : 'flex'
+  return `${visibility} flex-col w-full md:w-2/5 border-gray-200 border-r dark:border-neutral-600`
+}
+
+function updateSearch(event: Event): void {
+  emit('search', (event.target as HTMLInputElement).value)
+}
+</script>
+
+<section aria-label="Message list" :class="listClass()">
+  <div class="px-4 py-2 bg-white dark:bg-neutral-700 border-b border-gray-200 dark:border-neutral-600">
+    <label for="inbox-search" class="sr-only">Search messages</label>
+    <div class="relative">
+      <span class="flex absolute inset-y-0 left-0 items-center pl-3 text-gray-400 pointer-events-none i-hugeicons-search-01"></span>
+      <input id="inbox-search" :value="search()" type="search" placeholder="Search messages" class="block placeholder-gray-500 dark:placeholder-gray-400 pl-10 pr-3 py-2 w-full text-gray-900 text-sm dark:text-neutral-100 bg-gray-50 dark:bg-neutral-600 border border-gray-300 rounded-md dark:border-neutral-600 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" @input="updateSearch($event)" />
+    </div>
+  </div>
+
+  <div class="overflow-y-auto flex-1">
+    <div :if="loading()" aria-live="polite" class="p-8 text-center text-gray-500 text-sm dark:text-neutral-400">Loading messages</div>
+    <div :if="error() && !loading()" role="alert" class="p-8 text-center text-red-600 text-sm dark:text-red-300">{{ error() }}</div>
+    <div :if="!loading() && !error() && rows().length === 0" aria-live="polite" class="p-8 text-center">
+      <span class="block mb-3 mx-auto h-8 w-8 text-gray-400 i-hugeicons-mail-02"></span>
+      <p class="font-semibold text-gray-900 dark:text-white">{{ emptyTitle() }}</p>
+      <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Try another filter or wait for mail to arrive.</p>
+    </div>
+    <ul :if="!loading() && !error() && rows().length > 0" class="divide-gray-200 divide-y dark:divide-neutral-600">
+      <template :for="email in rows()">
+        <li>
+          <button type="button" :class="rowClass(email)" @click="emit('select', email)">
+            <div class="flex gap-3 items-start justify-between">
+              <div class="min-w-0">
+                <div class="flex gap-2 items-center">
+                  <span :if="!email.read" class="flex-shrink-0 h-2 w-2 bg-blue-600 rounded-full"></span>
+                  <p class="font-medium text-gray-900 text-sm truncate dark:text-white">{{ email.from }}</p>
+                </div>
+                <p class="mt-1 text-gray-900 text-sm truncate dark:text-white">{{ email.subject }}</p>
+                <p class="mt-1 text-gray-500 text-xs truncate dark:text-neutral-400">{{ email.preview }}</p>
+              </div>
+              <div class="flex flex-shrink-0 gap-2 items-center">
+                <span :if="email.hasAttachments" class="h-4 w-4 text-gray-400 i-hugeicons-attachment-01" title="Has attachments"></span>
+                <time class="text-gray-500 text-xs dark:text-neutral-400" :datetime="email.date">{{ formatDate(email.date) }}</time>
+              </div>
+            </div>
+          </button>
+        </li>
+      </template>
+    </ul>
+  </div>
+</section>

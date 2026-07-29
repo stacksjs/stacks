@@ -1,0 +1,88 @@
+<script client>
+import type { DashboardInboxEmail } from '../../../../functions/inbox'
+
+const email = useReactiveProp<DashboardInboxEmail | null>('email', null)
+const deletePending = useReactiveProp('deletePending', false)
+const deleting = useReactiveProp('deleting', false)
+const replying = useReactiveProp('replying', false)
+const replyText = useReactiveProp('replyText', '')
+const canSendReply = useReactiveProp('canSendReply', false)
+const emit = defineEmits()
+
+function message(): DashboardInboxEmail | null {
+  return email() as DashboardInboxEmail | null
+}
+
+function formatDate(value: string): string {
+  if (!value)
+    return 'Not recorded'
+  const date = new Date(value)
+  return Number.isNaN(date.getTime())
+    ? value
+    : new Intl.DateTimeFormat(undefined, { dateStyle: 'long', timeStyle: 'short' }).format(date)
+}
+
+function updateReply(event: Event): void {
+  emit('update:reply', (event.target as HTMLTextAreaElement).value)
+}
+</script>
+
+<section :if="message()" aria-label="Selected message" class="flex flex-col w-full md:w-3/5 bg-white dark:bg-neutral-700">
+  <div class="flex items-center justify-between px-4 py-2 border-b border-gray-200 dark:border-neutral-600">
+    <div class="flex items-center space-x-2 min-w-0">
+      <button type="button" class="p-1 text-gray-500 dark:text-neutral-400 hover:bg-gray-100 dark:hover:bg-neutral-600 rounded" title="Close message" @click="emit('close')">
+        <span class="block h-5 w-5 i-hugeicons-arrow-left-02"></span>
+      </button>
+      <h2 class="font-medium text-gray-900 text-lg truncate dark:text-white">{{ message()?.subject }}</h2>
+    </div>
+    <div class="flex space-x-2">
+      <button type="button" class="p-1 text-gray-500 dark:text-neutral-400 hover:bg-gray-100 dark:hover:bg-neutral-600 rounded" :title="message()?.read ? 'Mark as unread' : 'Mark as read'" @click="emit('toggle-read')">
+        <span :class="'block h-5 w-5 ' + (message()?.read ? 'i-hugeicons-mail-02' : 'i-hugeicons-mail-open-01')"></span>
+      </button>
+      <button type="button" class="p-1 text-gray-500 dark:text-neutral-400 hover:bg-gray-100 dark:hover:bg-neutral-600 rounded" title="Delete message" @click="emit('request-delete')">
+        <span class="block h-5 w-5 i-hugeicons-waste"></span>
+      </button>
+    </div>
+  </div>
+
+  <div :if="deletePending()" class="flex gap-3 items-center justify-end px-4 py-2 text-sm bg-red-50 dark:bg-red-950/30 border-b border-red-200 dark:border-red-900">
+    <span class="mr-auto text-red-800 dark:text-red-200">Permanently delete this email?</span>
+    <button type="button" class="px-3 py-1.5 text-gray-700 dark:text-neutral-200 hover:bg-white dark:hover:bg-neutral-700 rounded-md" @click="emit('cancel-delete')">Cancel</button>
+    <button type="button" :disabled="deleting()" class="px-3 py-1.5 font-medium text-white bg-red-600 hover:bg-red-500 rounded-md disabled:opacity-50" @click="emit('confirm-delete')">
+      {{ deleting() ? 'Deleting...' : 'Delete' }}
+    </button>
+  </div>
+
+  <div class="px-4 py-3 border-b border-gray-200 dark:border-neutral-600">
+    <div class="flex items-start justify-between">
+      <div class="flex items-center min-w-0">
+        <div class="flex flex-shrink-0 items-center justify-center h-10 w-10 font-medium text-gray-700 dark:text-white bg-gray-200 dark:bg-neutral-500 rounded-full">{{ message()?.from?.charAt(0) }}</div>
+        <div class="ml-3 min-w-0">
+          <p class="font-medium text-gray-900 text-sm truncate dark:text-white">{{ message()?.from }}</p>
+          <p class="text-gray-500 text-xs truncate dark:text-neutral-400">{{ message()?.email }}</p>
+        </div>
+      </div>
+      <time class="ml-4 text-gray-500 text-xs whitespace-nowrap dark:text-neutral-400" :datetime="message()?.date || ''">{{ formatDate(message()?.date || '') }}</time>
+    </div>
+  </div>
+
+  <div class="overflow-y-auto flex-1 p-4 text-gray-900 dark:text-white">
+    <div :if="message()?.bodyHtml" @html="message()?.bodyHtml || ''" class="max-w-none prose dark:prose-invert"></div>
+    <p :if="!message()?.bodyHtml && message()?.bodyText" class="whitespace-pre-wrap">{{ message()?.bodyText }}</p>
+    <p :if="!message()?.bodyHtml && !message()?.bodyText" class="text-gray-500 text-sm dark:text-neutral-400">No message body was available.</p>
+    <div :if="message()?.hasAttachments" class="flex gap-3 items-start mt-5 p-3 text-gray-700 text-sm dark:text-neutral-300 bg-gray-50 dark:bg-neutral-800 border border-gray-200 rounded-md dark:border-neutral-600">
+      <span class="flex-shrink-0 mt-0.5 h-5 w-5 i-hugeicons-attachment-01"></span>
+      <p>This message includes attachments. Attachment downloads are not exposed by the inbox API yet.</p>
+    </div>
+  </div>
+
+  <div class="p-4 bg-white dark:bg-neutral-700 border-gray-200 border-t dark:border-neutral-600">
+    <label for="inbox-reply" class="sr-only">Reply</label>
+    <textarea id="inbox-reply" :value="replyText()" placeholder="Reply..." class="block p-3 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-600 border border-gray-300 rounded-md dark:border-neutral-600 focus:outline-none focus:ring-1 focus:ring-blue-500" rows="3" @input="updateReply($event)"></textarea>
+    <div class="flex justify-end mt-2">
+      <button type="button" :disabled="!canSendReply()" class="px-4 py-2 font-medium text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md disabled:opacity-50 disabled:cursor-not-allowed" @click="emit('reply')">
+        {{ replying() ? 'Sending...' : 'Send reply' }}
+      </button>
+    </div>
+  </div>
+</section>

@@ -61,10 +61,97 @@ export interface InboxSendInput {
   body: string
 }
 
+export interface DashboardInboxEmail {
+  id: string
+  from: string
+  email: string
+  subject: string
+  preview: string
+  bodyHtml: string
+  bodyText: string
+  date: string
+  read: boolean
+  hasAttachments: boolean
+}
+
+interface DashboardInboxEntry {
+  messageId: string
+  from: string
+  fromName?: string
+  subject?: string
+  preview?: string
+  date: string
+  read?: boolean
+  hasAttachments?: boolean
+}
+
+interface DashboardInboxResponse {
+  mailbox?: string
+  total?: number
+  emails?: DashboardInboxEntry[]
+  error?: string
+}
+
+interface DashboardInboxBodyResponse {
+  html?: string
+  text?: string
+  error?: string
+}
+
 interface InboxMutationResult {
   success: boolean
   mailbox?: string
   messageId?: string
+}
+
+export interface LoadedDashboardInbox {
+  mailbox: string
+  emails: DashboardInboxEmail[]
+  error: string
+}
+
+export function parseInboxSender(from: string, fromName = ''): { name: string; email: string } {
+  const match = from.match(/^"?([^"<]+)"?\s*<([^>]+)>$/)
+  if (match)
+    return { name: fromName.trim() || match[1].trim(), email: match[2].trim() }
+  return { name: fromName.trim() || from, email: from }
+}
+
+export function mapDashboardInboxEntry(item: DashboardInboxEntry): DashboardInboxEmail {
+  const sender = parseInboxSender(item.from || '', item.fromName || '')
+  return {
+    id: item.messageId,
+    from: sender.name || sender.email,
+    email: sender.email,
+    subject: item.subject || '(no subject)',
+    preview: item.preview || '',
+    bodyHtml: '',
+    bodyText: '',
+    date: item.date,
+    read: item.read === true,
+    hasAttachments: item.hasAttachments === true,
+  }
+}
+
+export async function fetchDashboardInbox(mailbox?: string): Promise<LoadedDashboardInbox> {
+  const query = mailbox ? `?mailbox=${encodeURIComponent(mailbox)}` : ''
+  const data = await dashboardApi<DashboardInboxResponse>(`/api/dashboard/email/inbox${query}`)
+  return {
+    mailbox: data.mailbox || mailbox || '',
+    emails: (data.emails || []).map(mapDashboardInboxEntry),
+    error: data.error || '',
+  }
+}
+
+export async function fetchDashboardInboxBody(messageId: string, mailbox?: string): Promise<Pick<DashboardInboxEmail, 'bodyHtml' | 'bodyText'>> {
+  const query = mailbox ? `?mailbox=${encodeURIComponent(mailbox)}` : ''
+  const data = await dashboardApi<DashboardInboxBodyResponse>(`/api/dashboard/email/inbox/${encodeURIComponent(messageId)}${query}`)
+  if (data.error)
+    throw new Error(data.error)
+  return {
+    bodyHtml: data.html || '',
+    bodyText: data.text || '',
+  }
 }
 
 export async function fetchInboxActivity(range: InboxActivityRange): Promise<InboxActivity | null> {
