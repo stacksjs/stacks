@@ -54,10 +54,12 @@ export interface CountryData {
 }
 
 export type AnalyticsRange = 'day' | 'week' | 'month' | 'year'
+export type AnalyticsScope = 'all' | 'blog' | 'commerce'
 
 export interface WebAnalyticsResponse {
   source: 'requests'
   range: AnalyticsRange
+  scope: AnalyticsScope
   dateRange: {
     start: string
     end: string
@@ -71,8 +73,9 @@ export interface WebAnalyticsResponse {
   countries: CountryData[]
 }
 
-export async function fetchWebAnalytics(range: AnalyticsRange = 'month'): Promise<WebAnalyticsResponse> {
-  return await dashboardApi<WebAnalyticsResponse>(`/api/dashboard/analytics/web?range=${encodeURIComponent(range)}`)
+export async function fetchWebAnalytics(range: AnalyticsRange = 'month', scope: AnalyticsScope = 'all'): Promise<WebAnalyticsResponse> {
+  const query = new URLSearchParams({ range, scope })
+  return await dashboardApi<WebAnalyticsResponse>(`/api/dashboard/analytics/web?${query.toString()}`)
 }
 
 export function useAnalytics() {

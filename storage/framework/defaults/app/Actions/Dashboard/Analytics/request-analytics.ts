@@ -1,4 +1,5 @@
 export type AnalyticsRange = 'day' | 'week' | 'month' | 'year'
+export type AnalyticsScope = 'all' | 'blog' | 'commerce'
 
 export interface RequestAnalyticsRow {
   method: string
@@ -23,11 +24,23 @@ const RANGE_DAYS: Record<AnalyticsRange, number> = {
   year: 365,
 }
 
+const SCOPE_PREFIXES: Record<Exclude<AnalyticsScope, 'all'>, string[]> = {
+  blog: ['/blog'],
+  commerce: ['/commerce', '/products', '/product', '/cart', '/checkout', '/orders'],
+}
+
 export function normalizeAnalyticsRange(value: unknown): AnalyticsRange {
   const range = String(value || '').toLowerCase()
   return ['day', 'week', 'month', 'year'].includes(range)
     ? range as AnalyticsRange
     : 'month'
+}
+
+export function normalizeAnalyticsScope(value: unknown): AnalyticsScope {
+  const scope = String(value || '').toLowerCase()
+  return ['blog', 'commerce'].includes(scope)
+    ? scope as AnalyticsScope
+    : 'all'
 }
 
 function timestamp(value: string): number {
@@ -55,6 +68,13 @@ function isPageRequest(row: RequestAnalyticsRow): boolean {
     && !path.startsWith('/api/')
     && !path.startsWith('/__')
     && !/\.(?:css|js|map|png|jpe?g|gif|svg|ico|woff2?|ttf)$/i.test(path)
+}
+
+function matchesScope(row: RequestAnalyticsRow, scope: AnalyticsScope): boolean {
+  if (scope === 'all')
+    return true
+  const path = pagePath(row.path)
+  return SCOPE_PREFIXES[scope].some(prefix => path === prefix || path.startsWith(`${prefix}/`))
 }
 
 function browserName(userAgent: string): string {
@@ -131,9 +151,14 @@ export function buildWebAnalytics(
   allRows: RequestAnalyticsRow[],
   range: AnalyticsRange,
   now = new Date(),
+  scope: AnalyticsScope = 'all',
 ) {
   const start = new Date(now.getTime() - RANGE_DAYS[range] * 24 * 60 * 60 * 1000)
-  const rows = allRows.filter(row => timestamp(row.createdAt) >= start.getTime() && timestamp(row.createdAt) <= now.getTime())
+  const rows = allRows.filter(row =>
+    timestamp(row.createdAt) >= start.getTime()
+    && timestamp(row.createdAt) <= now.getTime()
+    && matchesScope(row, scope),
+  )
   const pages = rows.filter(isPageRequest)
   const visitors = new Set(pages.map(row => row.ipAddress).filter(Boolean))
   const errors = rows.filter(row => row.statusCode >= 400).length
@@ -170,6 +195,7 @@ export function buildWebAnalytics(
   return {
     source: 'requests',
     range,
+    scope,
     dateRange: {
       start: start.toISOString(),
       end: now.toISOString(),

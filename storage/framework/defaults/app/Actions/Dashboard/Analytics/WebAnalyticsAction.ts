@@ -1,7 +1,7 @@
 import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
 import { Request } from '@stacksjs/orm'
-import { buildWebAnalytics, normalizeAnalyticsRange } from './request-analytics'
+import { buildWebAnalytics, normalizeAnalyticsRange, normalizeAnalyticsScope } from './request-analytics'
 
 export default new Action({
   name: 'WebAnalyticsAction',
@@ -11,6 +11,7 @@ export default new Action({
 
   async handle(request: RequestInstance) {
     const range = normalizeAnalyticsRange(request.get('range'))
+    const scope = normalizeAnalyticsScope(request.get('scope'))
     const records = await Request.orderByDesc('id').limit(10_000).get()
     const rows = records.map(record => ({
       method: String(record.get('method') || 'GET'),
@@ -22,6 +23,6 @@ export default new Action({
       createdAt: String(record.get('created_at') || ''),
     }))
 
-    return buildWebAnalytics(rows, range)
+    return buildWebAnalytics(rows, range, new Date(), scope)
   },
 })

@@ -1,6 +1,7 @@
 <script client>
 import type {
   AnalyticsRange,
+  AnalyticsScope,
   BrowserData,
   CountryData,
   DeviceData,
@@ -16,6 +17,7 @@ type BreakdownKind = 'pages' | 'referrers' | 'countries' | 'devices' | 'browsers
 type BreakdownRow = PageData | ReferrerData | CountryData | DeviceData | BrowserData
 
 const kind = useReactiveProp<BreakdownKind>('kind', 'pages')
+const scope = useReactiveProp<AnalyticsScope>('scope', 'all')
 const title = useReactiveProp('title', 'Analytics')
 const description = useReactiveProp('description', '')
 const emptyMessage = useReactiveProp('emptyMessage', 'No analytics data was recorded for this period.')
@@ -87,7 +89,7 @@ async function loadAnalytics(): Promise<void> {
   isLoading.set(true)
   loadError.set('')
   try {
-    const data = await fetchWebAnalytics(analyticsRange())
+    const data = await fetchWebAnalytics(analyticsRange(), scope())
     analytics.set(data)
     dateRangeDisplay.set(formatDateRange(data.dateRange.start, data.dateRange.end))
   }
