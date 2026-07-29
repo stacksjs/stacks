@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.217...v0.70.218)
+
+## 🐛 Bug Fixes
+
+- require DNS reconciliation runtime ([8db6cb4](https://github.com/stacksjs/stacks/commit/8db6cb4)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.216...v0.70.217)
 
 ## ⚡ Performance Improvements
