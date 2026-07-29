@@ -4,7 +4,7 @@
 @title('Dashboard - Delivery Drivers')
 <div class="py-6">
   <div class="mx-auto px-4 sm:px-6 md:px-8 max-w-7xl">
-    <TabNavigation modelValue="drivers" :tabs="tabs" />
+    <TabNavigation modelValue="drivers" />
 
     <!-- Stats section -->
     <div class="grid gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 mt-6">
@@ -211,9 +211,6 @@
 
 <script client>
 import { useDrivers } from '../../../../functions/commerce/shippings/drivers'
-// Shared tab nav config — formerly duplicated in every delivery page's
-// `<script server>` block (stacksjs/stacks#1838).
-import { deliveryTabs as tabs } from './tabs'
 
 interface Driver {
   id?: number

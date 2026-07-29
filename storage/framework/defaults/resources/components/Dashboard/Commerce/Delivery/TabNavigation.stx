@@ -1,36 +1,48 @@
-<script>
+<script server>
 interface TabNavigationProps {
   modelValue?: string
-  tabs?: any[]
 }
 
-const { modelValue = '', tabs = [] } = defineProps<TabNavigationProps>()
+const { modelValue = '' } = defineProps<TabNavigationProps>()
+
+const tabs = [
+  { name: 'Overview', value: 'overview', href: '/commerce/delivery' },
+  { name: 'Shipping Methods', value: 'methods', href: '/commerce/delivery/shipping-methods' },
+  { name: 'Shipping Zones', value: 'zones', href: '/commerce/delivery/shipping-zones' },
+  { name: 'Shipping Rates', value: 'rates', href: '/commerce/delivery/shipping-rates' },
+  { name: 'Digital Delivery', value: 'digital', href: '/commerce/delivery/digital-delivery' },
+  { name: 'License Keys', value: 'license', href: '/commerce/delivery/license-keys' },
+  { name: 'Delivery Routes', value: 'routes', href: '/commerce/delivery/delivery-routes' },
+  { name: 'Drivers', value: 'drivers', href: '/commerce/delivery/drivers' },
+]
 </script>
-<div>
-    <div class="sm:hidden">
-      <label for="tabs" class="sr-only">Select a tab</label>
-      <select
-        id="tabs"
-        name="tabs"
-        class="block w-full dark:text-white dark:bg-neutral-800 border-gray-300 rounded-md dark:border-neutral-700 focus:border-blue-500 focus:ring-blue-500"
-      >
+<div ref="pageRoot">
+  <div class="sm:hidden">
+    <label for="delivery-tabs" class="sr-only">Select a delivery section</label>
+    <select
+      id="delivery-tabs"
+      name="delivery-tabs"
+      @change="navigate($event.target.value)"
+      class="block w-full dark:text-white dark:bg-neutral-800 border-gray-300 rounded-md dark:border-neutral-700 focus:border-blue-500 focus:ring-blue-500"
+    >
+      @foreach(tabs as tab)
+        <option value="{{ tab.href }}" {{ tab.value === modelValue ? 'selected' : '' }}>{{ tab.name }}</option>
+      @endforeach
+    </select>
+  </div>
+  <div class="hidden sm:block">
+    <div class="overflow-x-auto border-b border-gray-200 dark:border-neutral-700">
+      <nav class="flex gap-8 -mb-px min-w-max" aria-label="Delivery sections">
         @foreach(tabs as tab)
-          <option value="{{ tab }}" {{ tab == modelValue ? 'selected' : '' }}>{{ tab.name }}</option>
+          <a
+            href="{{ tab.href }}"
+            aria-current="{{ tab.value === modelValue ? 'page' : 'false' }}"
+            class="{{ tab.value === modelValue ? 'border-blue-500 text-blue-600 dark:border-blue-400 dark:text-blue-400' : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:text-neutral-400 dark:hover:border-gray-600 dark:hover:text-gray-300' }} whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium"
+          >
+            {{ tab.name }}
+          </a>
         @endforeach
-      </select>
-    </div>
-    <div class="hidden sm:block">
-      <div class="border-b border-gray-200 dark:border-neutral-700">
-        <nav class="flex -mb-px space-x-8" aria-label="Tabs">
-          @foreach(tabs as tab)
-            <a
-              href="{{ tab.href }}"
-              class="{{ tab == modelValue ? 'border-blue-500 text-blue-600 dark:border-blue-400 dark:text-blue-400' : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:text-neutral-400 dark:hover:border-gray-600 dark:hover:text-gray-300' }} whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium"
-            >
-              {{ tab.name }}
-            </a>
-          @endforeach
-        </nav>
-      </div>
+      </nav>
     </div>
   </div>
+</div>

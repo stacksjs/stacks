@@ -4,7 +4,7 @@
 @title('Dashboard - Digital Delivery')
 <div class="py-6">
   <div class="mx-auto px-4 sm:px-6 md:px-8 max-w-7xl">
-    <TabNavigation modelValue="digital" :tabs="tabs" />
+    <TabNavigation modelValue="digital" />
 
     <div class="overflow-hidden mt-6 bg-white dark:bg-neutral-800 rounded-lg shadow">
       <div class="px-4 py-5 sm:px-6 border-b border-gray-200 dark:border-neutral-700">
@@ -165,9 +165,6 @@
 
 <script client>
 import { useDigitalDeliveries } from '../../../../functions/commerce/shippings/digital-deliveries'
-// Shared tab nav config — formerly duplicated in every delivery page's
-// `<script server>` block (stacksjs/stacks#1838).
-import { deliveryTabs as tabs } from './tabs'
 
 interface DigitalDelivery {
   id?: number

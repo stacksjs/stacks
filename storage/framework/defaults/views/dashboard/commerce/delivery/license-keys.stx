@@ -4,7 +4,7 @@
 @title('Dashboard - License Keys')
 <div class="py-6">
   <div class="mx-auto px-4 sm:px-6 md:px-8 max-w-7xl">
-    <TabNavigation modelValue="license" :tabs="tabs" />
+    <TabNavigation modelValue="license" />
 
     <div class="overflow-hidden mt-6 bg-white dark:bg-neutral-800 rounded-lg shadow">
       <div class="px-4 py-5 sm:px-6 border-b border-gray-200 dark:border-neutral-700">
@@ -183,9 +183,6 @@
 
 <script client>
 import { useCustomers } from '../../../../functions/commerce/customers'
-// Shared tab nav config — formerly duplicated in every delivery page's
-// `<script server>` block (stacksjs/stacks#1838).
-import { deliveryTabs as tabs } from './tabs'
 import { useLicenseKeys } from '../../../../functions/commerce/shippings/license-keys'
 
 interface LicenseKey {
