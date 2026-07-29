@@ -282,5 +282,9 @@ Entity-centric API for single-table design:
 - `Database.fromConfig()` appends `_testing` to database name/path when `env === 'testing'`
 - DynamoDB support uses a separate entity-centric API, not the standard query builder
 - Soft deletes are disabled by default in qb.ts config (`enabled: false`)
+- Keep the process-wide raw query-builder soft-delete filter disabled. Raw
+  `db.selectFrom()` calls do not carry a model definition, so they cannot know
+  whether a table has `useSoftDeletes` or a `deleted_at` column. Model queries
+  and generated `useApi` routes apply the trait-aware scope themselves.
 - Transaction defaults: 2 retries, `read committed` isolation, with exponential backoff + jitter
 - The ORM lives in TWO locations: `storage/framework/core/orm/` (package) and `storage/framework/orm/` (implementation)

@@ -199,6 +199,21 @@ function getDbConfig(): { database: string, username?: string, password?: string
  */
 export const QB_SNAPSHOT_DIR = 'storage/framework/database'
 
+/**
+ * Process-wide query-builder soft-delete filtering must stay disabled.
+ *
+ * The raw query builder has no model definition, so it cannot know whether
+ * the selected table carries the `useSoftDeletes` trait or even has a
+ * `deleted_at` column. ModelQueryBuilder applies the trait-aware scope, and
+ * the generated REST routes apply it from the model definition. Enabling
+ * this global filter would incorrectly scope every raw table query.
+ */
+export const RAW_QUERY_SOFT_DELETE_CONFIG = {
+  enabled: false,
+  column: 'deleted_at',
+  defaultFilter: true,
+} as const
+
 export interface DatabaseQueryLogEvent {
   query: {
     sql: string
@@ -263,15 +278,7 @@ function updateQueryBuilderConfig(): void {
       updatedAt: 'updated_at',
       defaultOrderColumn: 'created_at',
     },
-    softDeletes: {
-      // Boot-time default; mirrors config/query-builder.ts. Enabled so the
-      // ORM read path filters out `deleted_at` rows by default (per-model
-      // behavior still gated by the `useSoftDeletes` trait). See the config
-      // file for the full rationale.
-      enabled: true,
-      column: 'deleted_at',
-      defaultFilter: true,
-    },
+    softDeletes: RAW_QUERY_SOFT_DELETE_CONFIG,
   })
 }
 

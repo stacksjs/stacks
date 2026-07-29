@@ -61,14 +61,11 @@ export default {
   },
   hooks: {},
   softDeletes: {
-    // Enabled so the ORM read path (find/where/all) excludes `deleted_at`
-    // rows by default — matching what the auto-CRUD REST routes already do
-    // manually. With this off, a soft-deleted (banned/GDPR-erased) row stayed
-    // fully visible and authenticatable through every hand-written ORM query.
-    // Per-model behavior is still gated by the `useSoftDeletes` trait; models
-    // without a `deleted_at` column are unaffected. Use `withTrashed()` to
-    // opt back in to deleted rows for a given query.
-    enabled: true,
+    // The process-wide raw query builder has no model definition and cannot
+    // know which tables use soft deletes. Model queries scope records from
+    // the `useSoftDeletes` trait, while generated REST routes apply the same
+    // trait-aware filter explicitly.
+    enabled: false,
     column: 'deleted_at',
     defaultFilter: true,
   },
