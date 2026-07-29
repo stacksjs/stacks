@@ -7,6 +7,63 @@
 
 import { ref } from '@stacksjs/stx'
 import { get } from './api'
+import { dashboardApi } from './dashboard-api'
+import { pushToast } from './toasts'
+
+export type InboxActivityRange = 'day' | 'week' | 'month' | 'year'
+
+export interface InboxActivity {
+  mailbox: string
+  range: InboxActivityRange
+  period: {
+    start: string
+    end: string
+  }
+  stats: {
+    messages: number
+    unread: number
+    failed: number
+    attachments: number
+    message_change: number | null
+    unread_rate: number
+  }
+  folder_counts: Record<'inbox' | 'starred' | 'sent' | 'drafts' | 'archive' | 'spam' | 'trash', number>
+  mailbox_state: {
+    read: number
+    unread: number
+  }
+  delivery_statuses: {
+    sent: number
+    delivered: number
+    failed: number
+    pending: number
+  }
+  series: Array<{
+    key: string
+    label: string
+    received: number
+    sent: number
+    failed: number
+  }>
+  recent: Array<{
+    id: string
+    direction: 'received' | 'sent'
+    subject: string
+    correspondent: string
+    occurred_at: string
+    status: string
+  }>
+}
+
+export async function fetchInboxActivity(range: InboxActivityRange): Promise<InboxActivity | null> {
+  try {
+    return await dashboardApi<InboxActivity>(`/api/dashboard/email/activity?range=${range}`)
+  }
+  catch (error) {
+    pushToast('error', 'Could not load mail activity', { detail: String(error) })
+    return null
+  }
+}
 
 export interface InboxEntry {
   id: string
