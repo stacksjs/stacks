@@ -1,0 +1,138 @@
+<script client>
+import type { CommerceCustomerRecord } from '../../../../app/Actions/Dashboard/Commerce/commerce-customer-records'
+
+const open = useReactiveProp('open', false)
+const mode = useReactiveProp('mode', 'add')
+const record = useReactiveProp('record', null as CommerceCustomerRecord | null)
+const currency = useReactiveProp('currency', 'USD')
+const busy = useReactiveProp('busy', false)
+const errors = useReactiveProp('errors', {} as Record<string, string>)
+const emit = defineEmits()
+const name = state('')
+const email = state('')
+const phone = state('')
+const totalSpent = state('0')
+const lastOrder = state('')
+const status = state<'Active' | 'Inactive'>('Active')
+const avatar = state('')
+let hydrationKey = ''
+
+effect(() => {
+  if (!open()) {
+    hydrationKey = ''
+    return
+  }
+  const current = record()
+  const key = `${mode()}:${current?.id || 'new'}`
+  if (hydrationKey === key)
+    return
+  hydrationKey = key
+  name.set(current?.name || '')
+  email.set(current?.email || '')
+  phone.set(current?.phone || '')
+  totalSpent.set(String(current?.totalSpent ?? 0))
+  lastOrder.set(current?.lastOrder.slice(0, 10) || '')
+  status.set(current?.status === 'Inactive' ? 'Inactive' : 'Active')
+  avatar.set(current?.avatar || '')
+})
+
+function inputValue(event: Event): string {
+  return (event.target as HTMLInputElement | HTMLSelectElement).value
+}
+
+function updateName(event: Event): void {
+  name.set(inputValue(event))
+}
+
+function updateEmail(event: Event): void {
+  email.set(inputValue(event))
+}
+
+function updatePhone(event: Event): void {
+  phone.set(inputValue(event))
+}
+
+function updateTotalSpent(event: Event): void {
+  totalSpent.set(inputValue(event))
+}
+
+function updateLastOrder(event: Event): void {
+  lastOrder.set(inputValue(event))
+}
+
+function updateStatus(event: Event): void {
+  status.set(inputValue(event) === 'Inactive' ? 'Inactive' : 'Active')
+}
+
+function updateAvatar(event: Event): void {
+  avatar.set(inputValue(event))
+}
+
+function validAvatar(): boolean {
+  try {
+    const result = new URL(avatar().trim())
+    return result.protocol === 'https:' || result.protocol === 'http:'
+  }
+  catch {
+    return false
+  }
+}
+
+function valid(): boolean {
+  const spend = Number(totalSpent())
+  return Boolean(
+    name().trim().length >= 2
+    && email().trim()
+    && phone().trim().length >= 10
+    && Number.isFinite(spend)
+    && spend >= 0
+    && validAvatar()
+  )
+}
+
+function submit(): void {
+  if (!valid())
+    return
+  emit('submit', {
+    name: name().trim(),
+    email: email().trim(),
+    phone: phone().trim(),
+    totalSpent: Number(totalSpent()),
+    lastOrder: lastOrder() || undefined,
+    status: status(),
+    avatar: avatar().trim(),
+  })
+}
+
+function errorMessages(): string[] {
+  return Object.entries(errors()).map(([field, message]) => {
+    const label = field.replace(/([a-z])([A-Z])/g, '$1 $2').replaceAll('_', ' ')
+    return `${label.charAt(0).toUpperCase()}${label.slice(1)}: ${message}`
+  })
+}
+</script>
+
+<div :if="open()" class="flex fixed inset-0 z-50 items-center justify-center p-4">
+  <button type="button" aria-label="Close customer dialog" class="absolute inset-0 bg-black/45" @click="emit('close')"></button>
+  <section role="dialog" aria-modal="true" aria-labelledby="customer-dialog-title" class="overflow-y-auto relative max-h-[90dvh] max-w-2xl w-full bg-white dark:bg-neutral-800 border border-gray-200 rounded-xl dark:border-neutral-700 shadow-xl">
+    <form @submit.prevent="submit">
+      <div class="p-6">
+        <h2 id="customer-dialog-title" class="font-semibold text-gray-900 text-lg dark:text-white">{{ mode() === 'edit' ? 'Edit customer' : 'Add customer' }}</h2>
+        <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Store fields declared by the native Customer model.</p>
+        <ul :if="errorMessages().length > 0" class="mt-5 p-3 space-y-1 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900">
+          <template :for="message in errorMessages()" :key="message"><li>{{ message }}</li></template>
+        </ul>
+        <div class="grid gap-4 grid-cols-1 sm:grid-cols-2 mt-5">
+          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Name</span><input :value="name()" type="text" minlength="2" maxlength="255" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="updateName($event)" /></label>
+          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Email</span><input :value="email()" type="email" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="updateEmail($event)" /></label>
+          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Phone</span><input :value="phone()" type="tel" minlength="10" maxlength="50" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="updatePhone($event)" /></label>
+          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Status</span><select :value="status()" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @change="updateStatus($event)"><option value="Active">Active</option><option value="Inactive">Inactive</option></select></label>
+          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Recorded spend ({{ currency() }})</span><input :value="totalSpent()" type="number" min="0" step="0.01" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="updateTotalSpent($event)" /></label>
+          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Last order</span><input :value="lastOrder()" type="date" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="updateLastOrder($event)" /></label>
+          <label class="block sm:col-span-2"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Avatar URL</span><input :value="avatar()" type="url" placeholder="https://cdn.example.com/customers/avatar.jpg" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="updateAvatar($event)" /><span class="block mt-1 text-gray-400 text-xs dark:text-neutral-500">Use a persisted HTTP asset URL. The dashboard uses initials when rendering the table.</span></label>
+        </div>
+      </div>
+      <footer class="flex gap-2 justify-end px-6 py-4 bg-gray-50 dark:bg-neutral-900/50 border-gray-200 border-t dark:border-neutral-700"><button type="button" :disabled="busy()" class="px-3 py-2 font-semibold text-gray-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700 disabled:opacity-50" @click="emit('close')">Cancel</button><button type="submit" :disabled="busy() || !valid()" class="inline-flex items-center px-3 py-2 font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md disabled:opacity-50"><span :if="busy()" class="mr-2 h-4 w-4 animate-spin i-hugeicons-loading-03"></span>{{ mode() === 'edit' ? 'Save customer' : 'Add customer' }}</button></footer>
+    </form>
+  </section>
+</div>

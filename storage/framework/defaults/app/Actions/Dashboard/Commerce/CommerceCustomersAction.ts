@@ -1,48 +1,21 @@
 import { Action } from '@stacksjs/actions'
+import { config } from '@stacksjs/config'
 import { Customer } from '@stacksjs/orm'
+import { normalizeCommerceCustomerRecord, summarizeCommerceCustomers } from './commerce-customer-records'
 
 export default new Action({
-  name: 'CommerceCustomers',
-  description: 'Returns customers list with stats.',
+  name: 'CommerceCustomersAction',
+  description: 'Returns persisted Customer records and summary values for dashboard management.',
   method: 'GET',
+  apiResponse: true,
+
   async handle() {
-    try {
-      const allCustomers = await Customer.all()
-      const totalCustomers = await Customer.count()
-
-      const customers = allCustomers.map(c => ({
-        name: String(c.get('name') || 'Unknown'),
-        email: String(c.get('email') || 'N/A'),
-        orders: Number(c.get('order_count') || 0),
-        spent: `$${(Number(c.get('total_spent') || 0)).toFixed(2)}`,
-        lastOrder: 'Recently',
-        status: (Number(c.get('total_spent') || 0)) > 500 ? 'vip' : (Number(c.get('order_count') || 0)) > 0 ? 'active' : 'inactive',
-      }))
-
-      const activeCustomers = customers.filter(c => c.status === 'active' || c.status === 'vip').length
-      const vipCustomers = customers.filter(c => c.status === 'vip').length
-      const totalSpent = allCustomers.reduce((sum, c) => sum + (Number(c.get('total_spent') || 0)), 0)
-      const avgLifetimeValue = totalCustomers > 0 ? totalSpent / totalCustomers : 0
-
-      const stats = [
-        { label: 'Total Customers', value: String(totalCustomers) },
-        { label: 'Active', value: String(activeCustomers) },
-        { label: 'VIP', value: String(vipCustomers) },
-        { label: 'Avg Lifetime Value', value: `$${avgLifetimeValue.toFixed(2)}` },
-      ]
-
-      return { customers, stats }
-    }
-    catch {
-      return {
-        customers: [],
-        stats: [
-          { label: 'Total Customers', value: '0' },
-          { label: 'Active', value: '0' },
-          { label: 'VIP', value: '0' },
-          { label: 'Avg Lifetime Value', value: '$0.00' },
-        ],
-      }
+    const customers = await Customer.orderBy('name', 'asc').limit(500).get()
+    const records = customers.map(normalizeCommerceCustomerRecord)
+    return {
+      records,
+      summary: summarizeCommerceCustomers(records),
+      currency: String((config as any).commerce?.currency || 'USD').toUpperCase(),
     }
   },
 })
