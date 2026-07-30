@@ -131,14 +131,14 @@ onMount(() => {
       <p class="mt-1 max-w-3xl text-neutral-500 text-sm dark:text-neutral-400">{{ page().description }}</p>
     </div>
     <div class="flex gap-2 items-center">
-      <button type="button" :disabled="loading()" class="inline-flex items-center px-3 py-2 text-neutral-600 text-sm dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg disabled:opacity-50" @click="loadInventory">
-        <span :class="'mr-2 h-4 w-4 ' + (loading() ? 'animate-spin i-hugeicons-loading-03' : 'i-hugeicons-refresh')"></span>
+      <Button variant="secondary" :loading="loading()" @click="loadInventory">
+        <span :if="!loading()" class="h-4 w-4 i-hugeicons-refresh"></span>
         Refresh
-      </button>
-      <button type="button" class="inline-flex items-center px-3 py-2 font-medium text-sm text-white bg-blue-600 hover:bg-blue-700 rounded-lg" @click="copyScaffoldCommand">
-        <span class="mr-2 h-4 w-4 i-hugeicons-copy-01"></span>
+      </Button>
+      <Button @click="copyScaffoldCommand">
+        <span class="h-4 w-4 i-hugeicons-copy-01"></span>
         Copy scaffold command
-      </button>
+      </Button>
     </div>
   </header>
 
@@ -148,7 +148,7 @@ onMount(() => {
 
   <div :if="loadError()" role="alert" class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between px-4 py-3 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/40 border border-red-200 rounded-lg dark:border-red-900">
     <span>{{ loadError() }}</span>
-    <button type="button" class="font-medium hover:underline" @click="loadInventory">Try again</button>
+    <Button variant="secondary" size="sm" @click="loadInventory">Try again</Button>
   </div>
 
   <div class="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">

@@ -128,15 +128,15 @@ onMount(() => {
       <h1 class="font-semibold text-2xl text-neutral-900 tracking-tight dark:text-white">Requests</h1>
       <p class="mt-1 text-neutral-500 text-sm dark:text-neutral-400">Inspect HTTP activity persisted by the Request model.</p>
     </div>
-    <button type="button" :disabled="loading()" class="inline-flex items-center self-start px-3 py-2 text-neutral-600 text-sm dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg disabled:opacity-50" @click="loadRequests">
-      <span :class="'mr-2 h-4 w-4 ' + (loading() ? 'animate-spin i-hugeicons-loading-03' : 'i-hugeicons-refresh')"></span>
+    <Button variant="secondary" :loading="loading()" @click="loadRequests">
+      <span :if="!loading()" class="h-4 w-4 i-hugeicons-refresh"></span>
       Refresh
-    </button>
+    </Button>
   </header>
 
   <div :if="loadError()" role="alert" class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between px-4 py-3 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/40 border border-red-200 rounded-lg dark:border-red-900">
     <span>{{ loadError() }}</span>
-    <button type="button" class="font-medium hover:underline" @click="loadRequests">Try again</button>
+    <Button variant="secondary" size="sm" @click="loadRequests">Try again</Button>
   </div>
 
   <div class="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
@@ -221,7 +221,7 @@ onMount(() => {
             <td class="px-4 py-3.5 text-neutral-500 text-xs dark:text-neutral-400">{{ request.ipAddress || 'Not recorded' }}</td>
             <td class="px-4 py-3.5 text-neutral-500 text-right text-xs whitespace-nowrap dark:text-neutral-400">{{ formatDate(request.createdAt) }}</td>
             <td class="pr-5 py-3.5 text-right">
-              <button type="button" class="px-3 py-1.5 font-medium text-blue-600 text-xs dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/40 rounded-lg" @click="inspectRequest(request)">Inspect</button>
+              <Button variant="ghost" size="sm" @click="inspectRequest(request)">Inspect</Button>
             </td>
           </tr>
         </tbody>
@@ -236,9 +236,9 @@ onMount(() => {
           <h2 id="request-detail-title" class="font-semibold text-lg text-neutral-900 dark:text-white">Request #{{ selectedRequest()?.id }}</h2>
           <p class="mt-1 break-all font-mono text-neutral-500 text-sm dark:text-neutral-400">{{ selectedRequest()?.method }} {{ selectedRequest()?.path }}</p>
         </div>
-        <button type="button" aria-label="Close request details" class="p-1 text-neutral-500 hover:text-neutral-900 dark:hover:text-white rounded" @click="closeInspector">
+        <Button variant="ghost" iconOnly ariaLabel="Close request details" @click="closeInspector">
           <span class="h-5 w-5 i-hugeicons-cancel-01"></span>
-        </button>
+        </Button>
       </div>
       <dl class="grid gap-4 grid-cols-1 sm:grid-cols-2 mt-6 text-sm">
         <div><dt class="text-neutral-500 dark:text-neutral-400">Status</dt><dd class="mt-1 font-medium text-neutral-900 dark:text-white">{{ selectedRequest()?.status }}</dd></div>

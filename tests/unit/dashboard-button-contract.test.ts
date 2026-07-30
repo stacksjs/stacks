@@ -141,6 +141,8 @@ describe('dashboard button contract', () => {
       'Infrastructure/InsightsDashboard.stx',
       'Infrastructure/ServerDetailsDashboard.stx',
       'Infrastructure/LogsDashboard.stx',
+      'App/RequestsOverview.stx',
+      'App/SourceInventory.stx',
     ]
 
     for (const file of files) {
