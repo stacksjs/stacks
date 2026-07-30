@@ -6,6 +6,7 @@
 CREATE TABLE IF NOT EXISTS "taggable_models" (
   "id" INTEGER PRIMARY KEY AUTOINCREMENT,
   "tag_id" INTEGER NOT NULL,
+  "taggable_id" INTEGER NOT NULL,
   "taggable_type" TEXT NOT NULL,
   "created_at" TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
   "updated_at" TEXT
@@ -16,3 +17,6 @@ CREATE INDEX IF NOT EXISTS "taggable_models_tag_index"
 
 CREATE INDEX IF NOT EXISTS "taggable_models_type_index"
   ON "taggable_models" ("taggable_type");
+
+CREATE UNIQUE INDEX IF NOT EXISTS "taggable_models_owner_unique"
+  ON "taggable_models" ("tag_id", "taggable_id", "taggable_type");

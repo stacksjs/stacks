@@ -97,6 +97,7 @@ function generateTaggableModelsTableInterface(): string {
   export interface TaggableModelsTable {
     id?: number
     tag_id: number
+    taggable_id: number
     taggable_type: string
     created_at?: string
     updated_at?: string

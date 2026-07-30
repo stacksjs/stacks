@@ -81,13 +81,25 @@ await db.unsafe(`
   CREATE TABLE IF NOT EXISTS categorizable_models (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     category_id INTEGER NOT NULL,
+    categorizable_id INTEGER NOT NULL,
     categorizable_type VARCHAR(255) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP
   )
 `).execute()
 
-const tableNames = ['categorizables', 'categorizable_models']
+await db.unsafe(`
+  CREATE TABLE IF NOT EXISTS taggable_models (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    tag_id INTEGER NOT NULL,
+    taggable_id INTEGER NOT NULL,
+    taggable_type VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP
+  )
+`).execute()
+
+const tableNames = ['categorizables', 'categorizable_models', 'taggable_models']
 
 /**
  * Wipe the trait tables between tests. DELETE (not DROP) keeps the

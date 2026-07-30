@@ -88,7 +88,6 @@ export async function attach(
     // Get the foreign key names based on the table name
     const postForeignKey = tableName === 'categorizable_models' ? 'categorizable_id' : 'taggable_id'
     const postTypeField = tableName === 'categorizable_models' ? 'categorizable_type' : 'taggable_type'
-
     const tablePrimary = tableName === 'categorizable_models' ? 'category_id' : 'tag_id'
 
     // Prepare the data for insertion
@@ -133,15 +132,24 @@ export async function detach(
     // Get the foreign key names based on the table name
     const postForeignKey = tableName === 'categorizable_models' ? 'categorizable_id' : 'taggable_id'
     const postTypeField = tableName === 'categorizable_models' ? 'categorizable_type' : 'taggable_type'
+    const relatedForeignKey = tableName === 'categorizable_models' ? 'category_id' : 'tag_id'
 
     // Build the delete query
-    let query = db
+    const query = db
       .deleteFrom(tableName)
       .where(postForeignKey, '=', postId)
       .where(postTypeField, '=', 'posts')
 
     if (ids) {
-      query = query.where('id', 'in', ids)
+      for (const relatedId of ids) {
+        await db
+          .deleteFrom(tableName)
+          .where(postForeignKey, '=', postId)
+          .where(postTypeField, '=', 'posts')
+          .where(relatedForeignKey, '=', relatedId)
+          .execute()
+      }
+      return
     }
 
     await query.execute()
@@ -173,16 +181,17 @@ export async function sync(
     // Get the foreign key names based on the table name
     const postForeignKey = tableName === 'categorizable_models' ? 'categorizable_id' : 'taggable_id'
     const postTypeField = tableName === 'categorizable_models' ? 'categorizable_type' : 'taggable_type'
+    const relatedForeignKey = tableName === 'categorizable_models' ? 'category_id' : 'tag_id'
 
     // Get existing relationships
     const existingRelations = await db
       .selectFrom(tableName)
-      .select(['id'])
+      .select([relatedForeignKey])
       .where(postForeignKey, '=', postId)
       .where(postTypeField, '=', 'posts')
       .execute()
 
-    const existingIds = existingRelations.map((rel: Record<string, unknown>) => rel.id as number)
+    const existingIds = existingRelations.map((rel: Record<string, unknown>) => rel[relatedForeignKey] as number)
 
     // Find IDs to remove (in existing but not in new set)
     const idsToRemove = existingIds.filter((id: number) => !ids.includes(id))
@@ -192,17 +201,20 @@ export async function sync(
 
     // Remove relationships that are no longer needed
     if (idsToRemove.length > 0) {
-      await db
-        .deleteFrom(tableName)
-        .where(postForeignKey, '=', postId)
-        .where(postTypeField, '=', 'posts')
-        .where('id', 'in', idsToRemove)
-        .execute()
+      for (const relatedId of idsToRemove) {
+        await db
+          .deleteFrom(tableName)
+          .where(postForeignKey, '=', postId)
+          .where(postTypeField, '=', 'posts')
+          .where(relatedForeignKey, '=', relatedId)
+          .execute()
+      }
     }
 
     // Add new relationships
     if (idsToAdd.length > 0) {
-      const pivotData = idsToAdd.map(() => ({
+      const pivotData = idsToAdd.map(id => ({
+        [relatedForeignKey]: id,
         [postForeignKey]: postId,
         [postTypeField]: 'posts',
         created_at: formatDate(new Date()),
