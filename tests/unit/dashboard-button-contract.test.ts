@@ -103,6 +103,12 @@ describe('dashboard button contract', () => {
       'Marketing/MarketingListsDashboard.stx',
       'Marketing/CampaignsDashboard.stx',
       'Marketing/SocialPostsDashboard.stx',
+      'Content/PostsDashboard.stx',
+      'Content/PagesDashboard.stx',
+      'Content/AuthorsDashboard.stx',
+      'Content/ContentTaxonomyDashboard.stx',
+      'Content/CommentsDashboard.stx',
+      'Content/ContentDashboard.stx',
     ]
 
     for (const file of files) {

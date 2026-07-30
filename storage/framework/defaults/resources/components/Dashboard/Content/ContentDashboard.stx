@@ -279,15 +279,10 @@ onDestroy(() => {
           <option :for="range in rangeOptions" :value="range.value">{{ range.label }}</option>
         </select>
       </label>
-      <button
-        type="button"
-        :disabled="loading()"
-        class="inline-flex items-center px-3 py-2 font-semibold text-gray-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700 disabled:opacity-50"
-        @click="loadOverview()"
-      >
-        <span :class="'mr-2 h-4 w-4 ' + (loading() ? 'animate-spin i-hugeicons-loading-03' : 'i-hugeicons-refresh')"></span>
+      <Button variant="secondary" :loading="loading()" @click="loadOverview()">
+        <span :if="!loading()" class="h-4 w-4 i-hugeicons-refresh"></span>
         Refresh
-      </button>
+      </Button>
     </div>
   </header>
 
@@ -297,7 +292,7 @@ onDestroy(() => {
     class="flex gap-4 items-center justify-between p-4 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900"
   >
     <span :text="loadError()"></span>
-    <button type="button" class="font-semibold underline" @click="loadOverview()">Retry</button>
+    <Button variant="secondary" size="sm" @click="loadOverview()">Retry</Button>
   </div>
 
   <section aria-label="Content metrics" class="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
