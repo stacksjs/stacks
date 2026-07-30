@@ -119,6 +119,41 @@ export function parseInboxSender(from: string, fromName = ''): { name: string; e
   return { name: fromName.trim() || from, email: from }
 }
 
+export function normalizeInboxPreview(preview: string, maxLength = 200): string {
+  let result = preview.trim().replace(/^[-=_]{2,}[^\s]*\s+/, '')
+
+  for (let pass = 0; pass < 6; pass++) {
+    const next = result
+      .replace(/^content-transfer-encoding:\s*[^\s]+\s*/i, '')
+      .replace(/^mime-version:\s*[^\s]+\s*/i, '')
+      .replace(/^content-description:\s*[^\s]+\s*/i, '')
+      .replace(/^content-type:\s*[^\s;]+(?:;\s*(?:charset|boundary|name)\s*=\s*(?:"[^"]*"|[^\s]+))*\s*/i, '')
+    if (next === result)
+      break
+    result = next
+  }
+
+  const encoded = result.replace(/^[-=_]{4,}[^\s]*\s*/, '').replace(/=\r?\n/g, '')
+  const bytes: number[] = []
+  const encoder = new TextEncoder()
+  for (let index = 0; index < encoded.length; index++) {
+    const token = encoded.slice(index, index + 3)
+    if (/^=[0-9a-f]{2}$/i.test(token)) {
+      bytes.push(Number.parseInt(token.slice(1), 16))
+      index += 2
+    }
+    else {
+      bytes.push(...encoder.encode(encoded[index]!))
+    }
+  }
+
+  return new TextDecoder().decode(Uint8Array.from(bytes))
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, maxLength)
+}
+
 export function mapDashboardInboxEntry(item: DashboardInboxEntry): DashboardInboxEmail {
   const sender = parseInboxSender(item.from || '', item.fromName || '')
   return {
@@ -126,7 +161,7 @@ export function mapDashboardInboxEntry(item: DashboardInboxEntry): DashboardInbo
     from: sender.name || sender.email,
     email: sender.email,
     subject: item.subject || '(no subject)',
-    preview: item.preview || '',
+    preview: normalizeInboxPreview(item.preview || ''),
     bodyHtml: '',
     bodyText: '',
     date: item.date,

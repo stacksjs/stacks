@@ -2,6 +2,7 @@ import type { CLI } from '@stacksjs/types'
 import { readFileSync, existsSync } from 'node:fs'
 import process from 'node:process'
 import { email as emailConfig } from '@stacksjs/config'
+import { extractEmailPreview } from '@stacksjs/email'
 import { ExitCode } from '@stacksjs/types'
 import { onUnknownSubcommand } from '@stacksjs/cli'
 import { getErrorMessage } from '@stacksjs/utils'
@@ -600,13 +601,7 @@ export function email(buddy: CLI): void {
             const subject = headers.subject || 'No Subject'
             const date = headers.date || (obj.LastModified ? new Date(obj.LastModified).toISOString() : new Date().toISOString())
 
-            // Parse body
-            let preview = ''
-            const bodyStart = rawEmail.indexOf('\r\n\r\n')
-            if (bodyStart > 0) {
-              const bodySnippet = rawEmail.substring(bodyStart + 4, bodyStart + 500)
-              preview = bodySnippet.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim().substring(0, 200)
-            }
+            const preview = extractEmailPreview(rawEmail)
 
             // For each recipient on our domain
             const recipients = toList.length > 0 ? toList : [`unknown@${domain}`]

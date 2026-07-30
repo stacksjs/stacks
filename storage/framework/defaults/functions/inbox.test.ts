@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test'
-import { mapDashboardInboxEntry, parseInboxSender } from './inbox'
+import { mapDashboardInboxEntry, normalizeInboxPreview, parseInboxSender } from './inbox'
 
 describe('dashboard inbox mapping', () => {
   it('prefers the structured sender name', () => {
@@ -36,5 +36,19 @@ describe('dashboard inbox mapping', () => {
       read: false,
       hasAttachments: true,
     })
+  })
+
+  it('normalizes legacy MIME preambles in stored previews', () => {
+    expect(mapDashboardInboxEntry({
+      messageId: 'message-2',
+      from: 'sender@example.com',
+      subject: 'Sign in',
+      preview: '--boundary Content-Type: text/plain; charset=utf-8 Content-Transfer-Encoding: quoted-printable Great news=E2=80=94your account is ready.',
+      date: '2026-07-29T12:00:00.000Z',
+    }).preview).toBe('Great news—your account is ready.')
+  })
+
+  it('bounds browser-safe preview normalization', () => {
+    expect(normalizeInboxPreview('<p>Hello from the inbox</p>', 10)).toBe('Hello from')
   })
 })
