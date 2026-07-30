@@ -1,0 +1,48 @@
+<script client>
+import type { BillingPaymentMethod } from '../../../../functions/billing/dashboard'
+
+const methods = useReactiveProp('methods', [] as BillingPaymentMethod[])
+
+function brand(value: string): string {
+  if (!value)
+    return 'Payment method'
+  return value.charAt(0).toUpperCase() + value.slice(1)
+}
+
+function expiry(method: BillingPaymentMethod): string {
+  if (!method.expMonth || !method.expYear)
+    return 'Expiry not reported'
+  return `Expires ${String(method.expMonth).padStart(2, '0')}/${method.expYear}`
+}
+</script>
+
+<section class="overflow-hidden bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
+  <header class="flex items-center justify-between px-5 py-4 border-b border-gray-200 dark:border-neutral-700">
+    <div>
+      <h2 class="font-semibold text-base text-gray-900 dark:text-white">Payment methods</h2>
+      <p class="mt-1 text-gray-500 text-xs dark:text-neutral-400">Methods returned by the configured payment provider.</p>
+    </div>
+    <span class="h-5 w-5 text-gray-400 i-hugeicons-credit-card"></span>
+  </header>
+
+  <div :if="methods().length === 0" class="px-6 py-14 text-center">
+    <span class="inline-block h-7 w-7 text-gray-400 i-hugeicons-credit-card-not-found"></span>
+    <p class="mt-3 font-medium text-gray-900 text-sm dark:text-white">No payment methods</p>
+    <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">No provider-backed payment method is attached to this user.</p>
+  </div>
+
+  <ul :else role="list" class="divide-gray-200 divide-y dark:divide-neutral-700">
+    <template :for="method in methods()" :key="method.id">
+      <li class="flex gap-4 items-center px-5 py-4">
+        <span class="flex flex-none items-center justify-center h-10 w-10 text-gray-500 dark:text-neutral-300 bg-gray-100 dark:bg-neutral-700 rounded-lg"><span class="h-5 w-5 i-hugeicons-credit-card"></span></span>
+        <div class="flex-1 min-w-0">
+          <div class="flex gap-2 items-center">
+            <p class="font-medium text-gray-900 text-sm dark:text-white">{{ brand(method.brand) }} {{ method.lastFour ? 'ending in ' + method.lastFour : '' }}</p>
+            <span :if="method.isDefault" class="inline-flex px-2 py-0.5 font-medium text-[11px] text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/40 rounded-full">Default</span>
+          </div>
+          <p class="mt-1 text-gray-500 text-xs dark:text-neutral-400">{{ expiry(method) }}</p>
+        </div>
+      </li>
+    </template>
+  </ul>
+</section>

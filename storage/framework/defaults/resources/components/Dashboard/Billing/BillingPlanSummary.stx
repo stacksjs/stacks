@@ -1,0 +1,62 @@
+<script client>
+import type { BillingSubscription } from '../../../../functions/billing/dashboard'
+
+const subscription = useReactiveProp<BillingSubscription | null>('subscription', null)
+
+function title(value: string): string {
+  if (!value)
+    return 'Active subscription'
+  return value.split(/[-_\s]+/).filter(Boolean).map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')
+}
+
+function amount(): string {
+  const value = subscription()?.amount
+  const currency = subscription()?.currency
+  if (value === null || value === undefined)
+    return 'Not reported'
+  if (!currency)
+    return `${new Intl.NumberFormat().format(value)} minor units`
+  return new Intl.NumberFormat(undefined, { style: 'currency', currency: currency.toUpperCase() }).format(value / 100)
+}
+
+function date(value: string): string {
+  if (!value)
+    return 'Not reported'
+  const parsed = new Date(value)
+  return Number.isNaN(parsed.getTime())
+    ? value
+    : new Intl.DateTimeFormat(undefined, { dateStyle: 'medium' }).format(parsed)
+}
+</script>
+
+<section class="overflow-hidden bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
+  <header class="flex items-center justify-between px-5 py-4 border-b border-gray-200 dark:border-neutral-700">
+    <div>
+      <h2 class="font-semibold text-base text-gray-900 dark:text-white">Subscription</h2>
+      <p class="mt-1 text-gray-500 text-xs dark:text-neutral-400">The active local subscription joined with its payment provider state.</p>
+    </div>
+    <span class="h-5 w-5 text-gray-400 i-hugeicons-invoice-03"></span>
+  </header>
+
+  <div :if="!subscription()" class="px-6 py-14 text-center">
+    <span class="inline-block h-7 w-7 text-gray-400 i-hugeicons-calendar-remove-02"></span>
+    <p class="mt-3 font-medium text-gray-900 text-sm dark:text-white">No active subscription</p>
+    <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">An active persisted subscription will appear here after the payment provider confirms it.</p>
+  </div>
+
+  <div :else class="p-5">
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+      <div>
+        <p class="font-semibold text-gray-900 text-xl dark:text-white">{{ title(subscription()?.plan || subscription()?.type || '') }}</p>
+        <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Subscription {{ subscription()?.id || 'without a local identifier' }}</p>
+      </div>
+      <span class="inline-flex self-start px-2 py-1 capitalize font-medium text-emerald-700 text-xs dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 rounded-full">{{ subscription()?.status || 'active' }}</span>
+    </div>
+
+    <dl class="grid gap-3 sm:grid-cols-3 mt-6">
+      <div class="p-3 bg-gray-50 dark:bg-neutral-900/60 rounded-md"><dt class="text-gray-500 text-xs dark:text-neutral-400">Amount</dt><dd class="mt-1 font-semibold text-gray-900 text-sm dark:text-white">{{ amount() }}</dd></div>
+      <div class="p-3 bg-gray-50 dark:bg-neutral-900/60 rounded-md"><dt class="text-gray-500 text-xs dark:text-neutral-400">Current period ends</dt><dd class="mt-1 font-semibold text-gray-900 text-sm dark:text-white">{{ date(subscription()?.periodEnd || '') }}</dd></div>
+      <div class="p-3 bg-gray-50 dark:bg-neutral-900/60 rounded-md"><dt class="text-gray-500 text-xs dark:text-neutral-400">Renewal</dt><dd class="mt-1 font-semibold text-gray-900 text-sm dark:text-white">{{ subscription()?.cancelAtPeriodEnd ? 'Cancellation scheduled' : 'Provider managed' }}</dd></div>
+    </dl>
+  </div>
+</section>
