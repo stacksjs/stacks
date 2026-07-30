@@ -4,7 +4,7 @@ import type {
   ProductVariantRecord,
   ProductVariantSummary,
 } from '../../../../app/Actions/Dashboard/Commerce/product-variant-records'
-import { dashboardApi } from '../../../../functions/dashboard-api'
+import { DashboardApiError, dashboardApi } from '../../../../functions/dashboard-api'
 import { pushToast } from '../../../../functions/toasts'
 
 interface ProductVariantIndexResponse {
@@ -39,6 +39,7 @@ const editingRecord = state<ProductVariantRecord | null>(null)
 const deletingRecord = state<ProductVariantRecord | null>(null)
 const saving = state(false)
 const deleting = state(false)
+const validationErrors = state<Record<string, string>>({})
 
 function variantTypes(): string[] {
   return [...new Set(records().map(record => record.type).filter(Boolean))].sort()
@@ -108,12 +109,14 @@ async function loadVariants(): Promise<void> {
 function openAdd(): void {
   dialogMode.set('add')
   editingRecord.set(null)
+  validationErrors.set({})
   dialogOpen.set(true)
 }
 
 function openEdit(record: ProductVariantRecord): void {
   dialogMode.set('edit')
   editingRecord.set(record)
+  validationErrors.set({})
   dialogOpen.set(true)
 }
 
@@ -121,6 +124,7 @@ function closeDialog(): void {
   if (!saving()) {
     dialogOpen.set(false)
     editingRecord.set(null)
+    validationErrors.set({})
   }
 }
 
@@ -128,8 +132,9 @@ async function saveVariant(payload: ProductVariantWritePayload): Promise<void> {
   const current = editingRecord()
   const editing = dialogMode() === 'edit' && current !== null
   saving.set(true)
+  validationErrors.set({})
   try {
-    await dashboardApi(editing ? `/api/product-variants/${current.id}` : '/api/product-variants', {
+    await dashboardApi(editing ? `/api/dashboard/commerce/variants/${current.id}` : '/api/dashboard/commerce/variants', {
       method: editing ? 'PATCH' : 'POST',
       body: {
         variant: payload.variant,
@@ -146,6 +151,8 @@ async function saveVariant(payload: ProductVariantWritePayload): Promise<void> {
     await loadVariants()
   }
   catch (error) {
+    if (error instanceof DashboardApiError)
+      validationErrors.set(error.fields ?? {})
     pushToast('error', 'Could not save product variant', {
       detail: error instanceof Error ? error.message : String(error),
     })
@@ -170,7 +177,7 @@ async function deleteVariant(): Promise<void> {
     return
   deleting.set(true)
   try {
-    await dashboardApi(`/api/product-variants/${current.id}`, { method: 'DELETE' })
+    await dashboardApi(`/api/dashboard/commerce/variants/${current.id}`, { method: 'DELETE' })
     deletingRecord.set(null)
     pushToast('success', 'Product variant deleted')
     await loadVariants()
@@ -197,12 +204,8 @@ onMount(() => {
       <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Manage native ProductVariant records, option sets, and product relationships.</p>
     </div>
     <div class="flex gap-2">
-      <button type="button" :disabled="loading()" class="inline-flex items-center px-3 py-2 font-semibold text-gray-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700 disabled:opacity-50" @click="loadVariants">
-        <span :class="'mr-2 h-4 w-4 ' + (loading() ? 'animate-spin i-hugeicons-loading-03' : 'i-hugeicons-refresh')"></span>Refresh
-      </button>
-      <button type="button" class="inline-flex items-center px-3 py-2 font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md" @click="openAdd()">
-        <span class="mr-2 h-4 w-4 i-hugeicons-add-01"></span>Add variant
-      </button>
+      <Button variant="secondary" :loading="loading()" @click="loadVariants"><span :if="!loading()" class="h-4 w-4 i-hugeicons-refresh"></span>Refresh</Button>
+      <Button @click="openAdd()"><span class="h-4 w-4 i-hugeicons-add-01"></span>Add variant</Button>
     </div>
   </header>
 
@@ -238,5 +241,5 @@ onMount(() => {
   </section>
 </div>
 
-<CommerceVariantDialog :open="dialogOpen()" :mode="dialogMode()" :record="editingRecord()" :products="products()" :types="variantTypes()" :busy="saving()" @submit="saveVariant" @close="closeDialog()" />
+<CommerceVariantDialog :open="dialogOpen()" :mode="dialogMode()" :record="editingRecord()" :products="products()" :types="variantTypes()" :busy="saving()" :errors="validationErrors()" @submit="saveVariant" @close="closeDialog()" />
 <CommerceVariantDeleteDialog :open="Boolean(deletingRecord())" :record="deletingRecord()" :busy="deleting()" @confirm="deleteVariant()" @close="closeDelete()" />

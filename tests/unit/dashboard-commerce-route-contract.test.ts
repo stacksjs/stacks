@@ -214,4 +214,27 @@ describe('dashboard commerce route contract', () => {
     expect(update).toContain('...data')
     expect(taxes).not.toContain("did not return an ID")
   })
+
+  test('product variant mutations use guarded model actions and relationship normalization', () => {
+    const routes = source('storage/framework/defaults/routes/dashboard-api.ts')
+    const variants = source('storage/framework/defaults/resources/components/Dashboard/Commerce/CommerceVariantsDashboard.stx')
+    const storeAction = source('storage/framework/defaults/app/Actions/Commerce/Product/ProductVariantStoreAction.ts')
+    const updateAction = source('storage/framework/defaults/app/Actions/Commerce/Product/ProductVariantUpdateAction.ts')
+    const destroyAction = source('storage/framework/defaults/app/Actions/Commerce/Product/ProductVariantDestroyAction.ts')
+
+    expect(routes).toContain("guard(route.post('/commerce/variants', 'Actions/Commerce/Product/ProductVariantStoreAction'))")
+    expect(routes).toContain("guard(route.patch('/commerce/variants/{id}', 'Actions/Commerce/Product/ProductVariantUpdateAction'))")
+    expect(routes).toContain("guard(route.delete('/commerce/variants/{id}', 'Actions/Commerce/Product/ProductVariantDestroyAction'))")
+    expect(variants).toContain('/api/dashboard/commerce/variants')
+    expect(variants).not.toMatch(/\/api\/product-variants(?:\/|\?|'|`)/)
+
+    for (const action of [storeAction, updateAction]) {
+      expect(action).toContain('model: ProductVariant')
+      expect(action).toContain('await request.validate()')
+      expect(action).toContain('toSnakeCaseKeys(request.all())')
+    }
+
+    expect(variants).toContain('options: JSON.stringify(payload.options)')
+    expect(destroyAction).toContain('response.noContent()')
+  })
 })

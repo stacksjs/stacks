@@ -1,15 +1,19 @@
 import { Action } from '@stacksjs/actions'
 import { products } from '@stacksjs/commerce'
+import { toSnakeCaseKeys } from '@stacksjs/orm'
 import { response } from '@stacksjs/router'
 
 export default new Action({
   name: 'ProductVariant Update',
-  description: 'ProductVariant Update ORM Action',
+  description: 'Updates a product variant through the native commerce module.',
   method: 'PATCH',
+  model: ProductVariant,
   async handle(request: RequestInstance) {
-    const id = request.getParam('id')
+    await request.validate()
 
-    const result = await products.variants.update(id, request)
+    const id = Number(request.getParam('id'))
+    const data = toSnakeCaseKeys(request.all())
+    const result = await products.variants.update(id, data)
 
     return response.json(result)
   },

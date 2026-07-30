@@ -6,13 +6,13 @@ import { response } from '@stacksjs/router'
 
 export default new Action({
   name: 'ProductVariant Destroy',
-  description: 'ProductVariant Destroy ORM Action',
+  description: 'Deletes a product variant through the native commerce module.',
   method: 'DELETE',
   async handle(request: RequestInstance) {
-    const id = request.getParam('id')
+    const id = Number(request.getParam('id'))
 
     await products.variants.destroy(id)
 
-    return response.json({ message: 'Variant deleted successfully' })
+    return response.noContent()
   },
 })
