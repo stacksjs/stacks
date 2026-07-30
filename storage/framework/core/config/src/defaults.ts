@@ -244,8 +244,10 @@ export const defaults: StacksOptions = {
 
   docs: {
     lang: 'en-US',
-    title: 'Stacks',
-    description: 'Rapid application, cloud & library framework.',
+    // No title or description here on purpose. bunpress prefers a top-level
+    // `title` over `markdown.title`, so a framework default wins over the one
+    // the application actually set and every scaffolded app published a docs
+    // site called "Stacks". Set them in the app's `config/docs.ts`.
     lastUpdated: true,
     deploy: false,
 

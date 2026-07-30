@@ -108,6 +108,7 @@ const userConfigs: Array<[keyof StacksConfig, string]> = [
   ['dashboard', 'dashboard'],
   ['database', 'database'],
   ['dns', 'dns'],
+  ['docs', 'docs'],
   ['email', 'email'],
   ['errors', 'errors'],
   ['featureFlags', 'feature-flags'],
