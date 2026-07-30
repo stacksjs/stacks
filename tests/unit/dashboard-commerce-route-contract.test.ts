@@ -188,4 +188,30 @@ describe('dashboard commerce route contract', () => {
     expect(update).toContain('db.transaction')
     expect(units).not.toContain("did not return an ID")
   })
+
+  test('tax rate mutations are guarded and save complete state atomically', () => {
+    const routes = source('storage/framework/defaults/routes/dashboard-api.ts')
+    const taxes = source('storage/framework/defaults/resources/components/Dashboard/Commerce/CommerceTaxesDashboard.stx')
+    const storeAction = source('storage/framework/defaults/app/Actions/Commerce/TaxRateStoreAction.ts')
+    const updateAction = source('storage/framework/defaults/app/Actions/Commerce/TaxRateUpdateAction.ts')
+    const store = source('storage/framework/core/commerce/src/tax/store.ts')
+    const update = source('storage/framework/core/commerce/src/tax/update.ts')
+
+    expect(routes).toContain("guard(route.post('/commerce/taxes', 'Actions/Commerce/TaxRateStoreAction'))")
+    expect(routes).toContain("guard(route.patch('/commerce/taxes/{id}', 'Actions/Commerce/TaxRateUpdateAction'))")
+    expect(routes).toContain("guard(route.delete('/commerce/taxes/{id}', 'Actions/Commerce/TaxRateDestroyAction'))")
+    expect(taxes).toContain('/api/dashboard/commerce/taxes')
+    expect(taxes).not.toMatch(/\/api\/tax-rates(?:\/|\?|'|`)/)
+
+    for (const action of [storeAction, updateAction]) {
+      expect(action).toContain('model: TaxRate')
+      expect(action).toContain('await request.validate()')
+      expect(action).toContain('toSnakeCaseKeys(request.all())')
+    }
+
+    expect(store).toContain('db.transaction')
+    expect(update).toContain('db.transaction')
+    expect(update).toContain('...data')
+    expect(taxes).not.toContain("did not return an ID")
+  })
 })
