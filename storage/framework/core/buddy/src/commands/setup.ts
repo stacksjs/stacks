@@ -347,6 +347,11 @@ export function ensureIdeSettings(cwd: string): void {
 interface DatabasePackage {
   name: string
   version: string
+  /**
+   * The pantry service that has to be running before the database can be
+   * reached. SQLite is a file, so it has none.
+   */
+  service?: string
 }
 
 const DB_CONNECTION_PACKAGES: Record<string, DatabasePackage> = {
@@ -354,10 +359,12 @@ const DB_CONNECTION_PACKAGES: Record<string, DatabasePackage> = {
   // unconstrained `*` here let Pantry upgrade a live v17 cluster to v18 and
   // made the service unbootable. Pin the supported major while allowing
   // security and patch releases within it.
-  postgres: { name: 'postgresql.org', version: '^17.10' },
-  mysql: { name: 'mysql.com', version: '*' },
+  postgres: { name: 'postgresql.org', version: '^17.10', service: 'postgres' },
+  mysql: { name: 'mysql.com', version: '*', service: 'mysql' },
   sqlite: { name: 'sqlite.org', version: '^3.47.2' },
 }
+
+const DB_PACKAGE_NAMES = new Set(Object.values(DB_CONNECTION_PACKAGES).map(pkg => pkg.name))
 
 export function pantryDatabasePackage(connection: string): DatabasePackage | undefined {
   return DB_CONNECTION_PACKAGES[connection]
@@ -402,6 +409,7 @@ export async function optimizePantryDeps(): Promise<void> {
   }
 
   let configDeps: Record<string, string> = {}
+  let configServices: string[] = []
 
   try {
     const mod = await import(depsConfigPath)
@@ -410,6 +418,12 @@ export async function optimizePantryDeps(): Promise<void> {
     if (config?.dependencies) {
       configDeps = { ...config.dependencies }
     }
+
+    // `autoStart` is a boolean in the shipped config (meaning "start whatever
+    // this project needs"); only an explicit list names additional services.
+    if (Array.isArray(config?.services?.autoStart)) {
+      configServices = config.services.autoStart.filter((name: unknown): name is string => typeof name === 'string')
+    }
   }
   catch (err) {
     log.debug('Could not load config/deps.ts, skipping dependency optimization')
@@ -417,14 +431,33 @@ export async function optimizePantryDeps(): Promise<void> {
   }
 
   const dbPackage = detectDbPackage(cwd)
+  const autoStart = [...configServices]
 
   if (dbPackage) {
+    // A project talks to exactly one database. Shipping the others anyway made
+    // every app install a SQLite it never opens, and left the impression that
+    // whichever engine appeared first was the one in use.
+    for (const pkg of Object.keys(configDeps)) {
+      const domain = pkg.split('/')[0]!
+
+      if (domain !== dbPackage.name && DB_PACKAGE_NAMES.has(domain)) {
+        log.info(`DB_CONNECTION selects ${dbPackage.name}, dropping unused ${pkg}`)
+        delete configDeps[pkg]
+      }
+    }
+
     const alreadyHasDb = Object.keys(configDeps).some(key => key === dbPackage.name || key.startsWith(`${dbPackage.name}/`))
 
     if (!alreadyHasDb) {
       log.info(`Detected DB_CONNECTION requires ${dbPackage.name}, adding to dependencies`)
       configDeps[dbPackage.name] = dbPackage.version
     }
+
+    // Without this, pantry installs the server but never boots it, so its own
+    // post-install database creation fails with a connection refused and the
+    // first migration lands on a database that does not exist yet.
+    if (dbPackage.service && !autoStart.includes(dbPackage.service))
+      autoStart.push(dbPackage.service)
   }
 
   const lines = [
@@ -439,6 +472,13 @@ export async function optimizePantryDeps(): Promise<void> {
 
   for (const [pkg, version] of Object.entries(configDeps)) {
     lines.push(`  ${pkg}: ${version}`)
+  }
+
+  if (autoStart.length > 0) {
+    lines.push('', 'services:', '  enabled: true', '  autoStart:')
+
+    for (const service of autoStart)
+      lines.push(`    - ${service}`)
   }
 
   const depsYamlPath = join(cwd, 'deps.yaml')
