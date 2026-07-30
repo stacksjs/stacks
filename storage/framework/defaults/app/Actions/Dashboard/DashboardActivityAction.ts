@@ -1,58 +1,45 @@
 import { Action } from '@stacksjs/actions'
+import { Activity } from '@stacksjs/orm'
+import { safeGet } from '../../../resources/functions/dashboard/data'
+import { dateValue, numberValue, textValue } from './Data/data-records'
+
+export function activityStatus(type: string): 'success' | 'warning' {
+  const normalized = type.toLowerCase()
+  return normalized.includes('failed')
+    || normalized.includes('error')
+    || normalized.includes('cancelled')
+    || normalized.includes('deleted')
+    ? 'warning'
+    : 'success'
+}
 
 export default new Action({
   name: 'Dashboard Activity',
-  description: 'Fetch recent activity for dashboard',
+  description: 'Fetch recent persisted activity for dashboard',
   method: 'GET',
 
   async handle() {
-    // Mock data for development - replace with actual ORM queries when database is set up
-    const activity = [
-      {
-        id: 1,
-        type: 'deployment',
-        title: 'Deployment completed successfully',
-        time: '5 minutes ago',
-        status: 'success' as const,
-      },
-      {
-        id: 2,
-        type: 'commerce',
-        title: 'New order #1234 received',
-        time: '15 minutes ago',
-        status: 'success' as const,
-      },
-      {
-        id: 3,
-        type: 'blog',
-        title: 'Blog post "Getting Started" published',
-        time: '30 minutes ago',
-        status: 'success' as const,
-      },
-      {
-        id: 4,
-        type: 'error',
-        title: 'Error: Connection timeout in payments',
-        time: '45 minutes ago',
-        status: 'warning' as const,
-      },
-      {
-        id: 5,
-        type: 'deployment',
-        title: 'Staging deployment started',
-        time: '1 hour ago',
-        status: 'success' as const,
-      },
-      {
-        id: 6,
-        type: 'commerce',
-        title: 'New order #1233 received',
-        time: '2 hours ago',
-        status: 'success' as const,
-      },
-    ]
+    try {
+      const rows = await Activity.orderByDesc('created_at').limit(20).get()
+      const activity = rows.map((row) => {
+        const type = textValue(safeGet(row, 'type'), 'activity')
+        return {
+          id: numberValue(safeGet(row, 'id')),
+          type,
+          title: textValue(safeGet(row, 'description'), type),
+          time: dateValue(safeGet(row, 'created_at', safeGet(row, 'createdAt'))),
+          status: activityStatus(type),
+        }
+      })
 
-    // Return the activity directly - the router will handle JSON serialization
-    return { activity }
+      return { activity, count: activity.length }
+    }
+    catch (error) {
+      return {
+        activity: [],
+        count: 0,
+        error: error instanceof Error ? error.message : 'Activity records could not be loaded.',
+      }
+    }
   },
 })
