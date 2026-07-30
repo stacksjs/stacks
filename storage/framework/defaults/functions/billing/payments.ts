@@ -1,10 +1,10 @@
 import { confirmCardSetup, confirmPayment, loadCardElement, loadPaymentElement } from '@stacksjs/browser'
+import { usePaymentStore } from '../../stores/payment'
 
 export function useBillable() {
-  // Resolved per call, not at module scope: `usePaymentStore` is a browser
-  // auto-import, so calling it while the module is being evaluated throws
-  // "usePaymentStore is not defined" the moment anything imports this file
-  // server-side, which the generated auto-import manifest does.
+  // Imported modules own their dependencies. STX browser auto-imports are
+  // injected into the template script entry, not into every module the entry
+  // bundles.
   const paymentStore = usePaymentStore()
 
   function convertUnixTimestampToDate(timestamp: number): string {
