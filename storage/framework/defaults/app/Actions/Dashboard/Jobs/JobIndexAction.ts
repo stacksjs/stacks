@@ -1,6 +1,6 @@
 import { Action } from '@stacksjs/actions'
 import { FailedJob, Job } from '@stacksjs/orm'
-import { request } from '@stacksjs/router'
+import { request, response } from '@stacksjs/router'
 import { matchesJobSearch, normalizeActiveJob, normalizeFailedJob } from './job-records'
 
 export default new Action({
@@ -49,8 +49,10 @@ export default new Action({
 
       return { data, total, page, perPage, queues, queueConnected: true }
     }
-    catch {
-      return { data: [], total: 0, page, perPage, queues: [], queueConnected: false }
+    catch (error) {
+      return response.json({
+        message: error instanceof Error ? error.message : 'Job history could not be loaded.',
+      }, 503)
     }
   },
 })
