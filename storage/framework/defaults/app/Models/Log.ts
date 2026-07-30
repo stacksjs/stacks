@@ -7,6 +7,25 @@ export default defineModel({
   primaryKey: 'id',
   autoIncrement: true,
 
+  indexes: [
+    {
+      name: 'logs_timestamp_index',
+      columns: ['timestamp'],
+    },
+    {
+      name: 'logs_type_timestamp_index',
+      columns: ['type', 'timestamp'],
+    },
+    {
+      name: 'logs_source_timestamp_index',
+      columns: ['source', 'timestamp'],
+    },
+    {
+      name: 'logs_project_timestamp_index',
+      columns: ['project', 'timestamp'],
+    },
+  ],
+
   traits: {
     useTimestamps: true,
     useApi: {

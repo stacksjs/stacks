@@ -6392,7 +6392,39 @@
             "hasDefault": false
           }
         ],
-        "indexes": []
+        "indexes": [
+          {
+            "name": "logs_timestamp_index",
+            "columns": [
+              "timestamp"
+            ],
+            "type": "index"
+          },
+          {
+            "name": "logs_type_timestamp_index",
+            "columns": [
+              "type",
+              "timestamp"
+            ],
+            "type": "index"
+          },
+          {
+            "name": "logs_source_timestamp_index",
+            "columns": [
+              "source",
+              "timestamp"
+            ],
+            "type": "index"
+          },
+          {
+            "name": "logs_project_timestamp_index",
+            "columns": [
+              "project",
+              "timestamp"
+            ],
+            "type": "index"
+          }
+        ]
       },
       {
         "table": "subscriptions",
@@ -8337,7 +8369,7 @@
       }
     ]
   },
-  "hash": "eb4d4cd72111da88a09b015eecabec728cca303593a0f7716cdd4dd30a00c42d",
+  "hash": "f4a7885b39d1874049a74f6bd155f55a77666b0377c9d661f46d56fd13106496",
   "dialect": "sqlite",
-  "updatedAt": "2026-07-30T04:34:29.146Z"
+  "updatedAt": "2026-07-30T12:08:22.700Z"
 }
