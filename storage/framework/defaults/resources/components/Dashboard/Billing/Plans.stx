@@ -102,35 +102,30 @@ const { currentPlan = null, hasPaymentMethods = false, updatingPlanState = false
 
     @if(showPlans)
       <div class="flex justify-end pt-8">
-        <button
-          type="button"
-          class="px-2.5 py-1.5 font-semibold text-sm text-white bg-blue-600 disabled:bg-gray-600 hover:bg-neutral-500 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 shadow-sm"
+        <Button
           @if(!hasPaymentMethods) disabled @endif
-          data-action="subscribe"
+          dataAction="subscribe"
         >
           Subscribe
-        </button>
+        </Button>
       </div>
     @endif
 
     @if(updatingPlanState)
       <div class="flex justify-end pt-8">
-        <button
-          type="button"
-          class="px-2.5 py-1.5 font-semibold text-gray-900 text-sm bg-white hover:bg-gray-50 ring-1 ring-gray-300 ring-inset rounded-md shadow-sm"
-          data-action="cancel-edit"
+        <Button
+          variant="secondary"
+          dataAction="cancel-edit"
         >
           Cancel Plan
-        </button>
+        </Button>
 
-        <button
-          type="button"
-          class="ml-4 px-2.5 py-1.5 font-semibold text-sm text-white bg-blue-600 disabled:bg-gray-600 hover:bg-neutral-500 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 shadow-sm"
+        <Button
           @if(!hasPaymentMethods) disabled @endif
-          data-action="update-plan"
+          dataAction="update-plan"
         >
           Update Plan
-        </button>
+        </Button>
       </div>
     @endif
   </div>

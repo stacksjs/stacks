@@ -54,13 +54,11 @@ const { defaultPaymentMethod = null, paymentMethods = [], loading = false, showC
 
     @if(!showCardForm)
       <div class="flex justify-end mt-8">
-        <button
-          type="button"
-          class="px-3.5 py-2.5 font-semibold text-sm text-white bg-blue-600 hover:bg-neutral-500 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 shadow-sm"
-          data-action="add-payment-method"
+        <Button
+          dataAction="add-payment-method"
         >
           Add Payment Method
-        </button>
+        </Button>
       </div>
     @endif
   </div>

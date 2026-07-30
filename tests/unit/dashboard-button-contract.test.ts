@@ -15,6 +15,8 @@ describe('dashboard button contract', () => {
     expect(button).toContain("variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger' | 'success' | 'warning'")
     expect(button).toContain("tag?: 'button' | 'a'")
     expect(button).toContain("const liveDownload = useReactiveProp('download', '')")
+    expect(button).toContain("const liveDataAction = useReactiveProp('dataAction', '')")
+    expect(button).toContain("const liveDataMethodId = useReactiveProp('dataMethodId', '')")
   })
 
   test('routes primary commerce actions through the canonical component', () => {
@@ -113,6 +115,13 @@ describe('dashboard button contract', () => {
       'Notifications/NotificationDeliveryDialog.stx',
       'Notifications/NotificationDeliveryHistory.stx',
       'Notifications/NotificationDeliveries.stx',
+      'Billing/PaymentForm.stx',
+      'Billing/CardForm.stx',
+      'Billing/PaymentMethodList.stx',
+      'Billing/ActivePlan.stx',
+      'Billing/PaymentMethod.stx',
+      'Billing/Plans.stx',
+      'Billing/BillingSettings.stx',
     ]
 
     for (const file of files) {

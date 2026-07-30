@@ -37,21 +37,18 @@ function convertUnixTimestampToDate(timestamp) {
       </p>
     </div>
 
-    <div class="flex mt-8">
-      <button
-        type="button"
-        class="px-2.5 py-1.5 font-semibold text-gray-900 text-sm bg-white hover:bg-gray-50 ring-1 ring-gray-300 ring-inset rounded-md shadow-sm"
-        data-action="cancel-plan"
+    <div class="flex gap-4 mt-8">
+      <Button
+        variant="danger"
+        dataAction="cancel-plan"
       >
         Cancel Plan
-      </button>
+      </Button>
 
-      <button
-        type="button"
-        class="ml-4 px-2.5 py-1.5 font-semibold text-sm text-white bg-blue-600 hover:bg-neutral-500 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 shadow-sm"
-        data-action="change-plan"
+      <Button
+        dataAction="change-plan"
       >
         Change Plan
-      </button>
+      </Button>
     </div>
   </div>
