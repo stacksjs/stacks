@@ -601,9 +601,15 @@ void load()
 
   <!-- Edit sheet -->
   <div :if="editing()" class="flex fixed inset-0 z-50 items-center justify-center p-4 bg-black/30" @click="editing.set(null)">
-    <div class="flex overflow-hidden flex-col max-h-[85vh] max-w-lg w-full bg-white dark:bg-neutral-900 rounded-xl shadow-2xl" @click.stop>
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="model-edit-title"
+      class="flex overflow-hidden flex-col max-h-[85vh] max-w-lg w-full bg-white dark:bg-neutral-900 rounded-xl shadow-2xl"
+      @click.stop
+    >
       <div class="flex items-center justify-between px-4 py-3 border-b border-black/5 dark:border-white/10">
-        <h2 class="font-semibold text-[14px] text-neutral-900 dark:text-white">Edit <span :text="modelName()"></span></h2>
+        <h2 id="model-edit-title" class="font-semibold text-[14px] text-neutral-900 dark:text-white">Edit <span :text="modelName()"></span></h2>
         <button type="button" @click="editing.set(null)" class="p-1 text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200" aria-label="Close">
           <span class="h-4 w-4 i-hugeicons-cancel-01"></span>
         </button>
@@ -612,8 +618,9 @@ void load()
       <div class="overflow-y-auto flex-1 p-4 space-y-3">
         <template :for="field in editFields()">
           <div class="flex flex-col gap-1.5">
-            <label class="font-medium text-[12px] text-neutral-600 dark:text-neutral-300">{{ field.label }}</label>
+            <label :for="'model-edit-' + field.name" class="font-medium text-[12px] text-neutral-600 dark:text-neutral-300">{{ field.label }}</label>
             <input
+              :id="'model-edit-' + field.name"
               type="text"
               :value="field.value"
               @input="onEditInput(field.name, $event)"
