@@ -21,6 +21,7 @@ import { log, report } from '@stacksjs/logging'
 import { path as p } from '@stacksjs/path'
 import { UploadedFile } from '@stacksjs/storage'
 import { applyRequestEnhancements, Router } from '@stacksjs/bun-router'
+import { checkApplicationHealth } from './health'
 
 // --- Split-router-instance detection (stacksjs/stacks#1975 / #1982) ---------
 // Two physically distinct @stacksjs/router modules can load in one process: an
@@ -2673,49 +2674,8 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
     // `/api/health`.
     health() {
       bunRouter.get('/api/health', async () => {
-        const checks: Record<string, { ok: boolean, message?: string, ms?: number }> = {}
-        const probe = async (name: string, fn: () => Promise<unknown>): Promise<void> => {
-          const start = Date.now()
-          try {
-            const ac = new AbortController()
-            const t = setTimeout(() => ac.abort(), 1500)
-            await Promise.race([
-              fn(),
-              new Promise<never>((_, rej) => ac.signal.addEventListener('abort', () => rej(new Error('timeout')))),
-            ])
-            clearTimeout(t)
-            checks[name] = { ok: true, ms: Date.now() - start }
-          }
-          catch (err) {
-            checks[name] = {
-              ok: false,
-              ms: Date.now() - start,
-              message: err instanceof Error ? err.message : String(err),
-            }
-          }
-        }
-
-        await Promise.all([
-          probe('database', async () => {
-            const { db } = await import('@stacksjs/database')
-            // `SELECT 1` is the universal "I can talk to the DB" probe.
-            await (db as any).unsafe?.('SELECT 1')
-          }),
-          probe('cache', async () => {
-            const { cache } = await import('@stacksjs/cache')
-            const k = `__health__:${Date.now()}`
-            await cache.set(k, 1, 5)
-            await cache.del(k)
-          }),
-        ])
-
-        const healthy = Object.values(checks).every(c => c.ok)
-        const body = {
-          status: healthy ? 'healthy' : 'degraded',
-          checks,
-          timestamp: Date.now(),
-        }
-        return Response.json(body, { status: healthy ? 200 : 503 })
+        const health = await checkApplicationHealth()
+        return Response.json(health, { status: health.status === 'healthy' ? 200 : 503 })
       })
       // Internal route-introspection endpoint. Powers `buddy dev` route
       // listing on startup and future `buddy route:list` consumers.

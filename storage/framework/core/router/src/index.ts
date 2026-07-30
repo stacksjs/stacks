@@ -67,6 +67,11 @@ export { rateLimit, rateLimitStatus, clearRateLimit } from './rate-limit'
 export { PathParamError, safePathParam, sanitizePathParam } from './path-sanitize'
 export type { PathParamRejection, SanitizePathParamOptions } from './path-sanitize'
 
+// Shared dependency probes used by the public load-balancer endpoint and
+// authenticated operational dashboards.
+export { checkApplicationHealth, runHealthProbes } from './health'
+export type { ApplicationHealthCheck, ApplicationHealthResult, HealthProbe, HealthProbeOptions } from './health'
+
 // Export the streaming-response helper for SSE / NDJSON / chunked
 // binary returns (stacksjs/stacks#1870 R-4). Actions can return
 // `stream(asyncGen, { type: 'sse' })` and the router pipes it back
