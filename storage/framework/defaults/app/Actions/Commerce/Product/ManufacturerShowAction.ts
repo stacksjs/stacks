@@ -2,14 +2,14 @@ import { Action } from '@stacksjs/actions'
 
 import { products } from '@stacksjs/commerce'
 
-import { request, response } from '@stacksjs/router'
+import { response } from '@stacksjs/router'
 
 export default new Action({
   name: 'Manufacturer Show',
   description: 'Manufacturer Show ORM Action',
   method: 'GET',
-  async handle() {
-    const id = request.getParam('id')
+  async handle(request: RequestInstance) {
+    const id = Number(request.getParam('id'))
 
     const model = await products.manufacturers.fetchById(id)
 

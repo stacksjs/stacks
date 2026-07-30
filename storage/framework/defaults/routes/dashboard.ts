@@ -404,7 +404,7 @@ route.group({ prefix: '/api/commerce', middleware: 'auth' }, () => {
   route.get('/product-manufacturers', 'Actions/Commerce/Product/ManufacturerIndexAction')
   route.get('/product-manufacturers/{id}', 'Actions/Commerce/Product/ManufacturerShowAction')
   route.post('/product-manufacturers', 'Actions/Commerce/Product/ManufacturerStoreAction')
-  route.patch('/product-manufacturers/{id}', 'Actions/Commerce/Product/ProductManufacturerUpdateAction')
+  route.patch('/product-manufacturers/{id}', 'Actions/Commerce/Product/ManufacturerUpdateAction')
   route.delete('/product-manufacturers/{id}', 'Actions/Commerce/Product/ManufacturerDestroyAction')
 
   route.get('/orders', 'Actions/Commerce/OrderIndexAction')
