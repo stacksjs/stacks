@@ -2917,8 +2917,7 @@
             "isPrimaryKey": false,
             "isUnique": false,
             "isNullable": true,
-            "hasDefault": false,
-            "maxLength": 255
+            "hasDefault": false
           },
           {
             "name": "text",
@@ -8420,7 +8419,7 @@
       }
     ]
   },
-  "hash": "303bc49dbb6d86ab0aabc0fc67e48a1af999b0bb977ea959530c7d01d8a3c56f",
+  "hash": "aad008764d978f277f4a2cccdc3239504d65a5767dbd77e0ca5b4478328872e2",
   "dialect": "sqlite",
-  "updatedAt": "2026-07-30T00:56:17.210Z"
+  "updatedAt": "2026-07-30T02:07:13.048Z"
 }

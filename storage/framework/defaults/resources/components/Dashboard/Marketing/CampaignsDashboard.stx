@@ -1,0 +1,275 @@
+<script client>
+import type {
+  CampaignListOption,
+  CampaignRecord,
+  CampaignSummary,
+} from '../../../../app/Actions/Dashboard/Marketing/campaign-records'
+import { dashboardApi } from '../../../../functions/dashboard-api'
+import { pushToast } from '../../../../functions/toasts'
+
+interface CampaignIndexResponse {
+  records: CampaignRecord[]
+  summary: CampaignSummary
+  lists: CampaignListOption[]
+  defaultCurrency: string
+}
+
+interface CampaignPayload {
+  name: string
+  description: string
+  type: string
+  status: string
+  subject: string
+  template: string
+  text: string
+  fromName: string
+  fromAddress: string
+  emailListId: string | null
+  scheduledAt: string | null
+  budget: string
+  spent: string
+  currency: string
+  startDate: string
+  endDate: string
+}
+
+const emptySummary: CampaignSummary = {
+  total: 0,
+  live: 0,
+  sent: 0,
+  recipients: 0,
+  failedDeliveries: 0,
+}
+const records = state<CampaignRecord[]>([])
+const summary = state<CampaignSummary>({ ...emptySummary })
+const lists = state<CampaignListOption[]>([])
+const defaultCurrency = state('USD')
+const loading = state(true)
+const loadError = state('')
+const search = state('')
+const typeFilter = state('all')
+const statusFilter = state('all')
+const listFilter = state('all')
+const sort = state('newest')
+const page = state(1)
+const perPage = 10
+const dialogOpen = state(false)
+const dialogMode = state<'add' | 'edit'>('add')
+const editingRecord = state<CampaignRecord | null>(null)
+const deletingRecord = state<CampaignRecord | null>(null)
+const saving = state(false)
+const saveError = state('')
+const deleting = state(false)
+const deleteError = state('')
+
+function filteredRecords(): CampaignRecord[] {
+  const query = search().trim().toLowerCase()
+  return [...records()]
+    .filter((record) => {
+      if (typeFilter() !== 'all' && record.type !== typeFilter())
+        return false
+      if (statusFilter() !== 'all' && record.status !== statusFilter())
+        return false
+      if (listFilter() !== 'all' && record.emailListId !== listFilter())
+        return false
+      return !query || [
+        record.name,
+        record.description,
+        record.subject,
+        record.type,
+        record.status,
+        record.emailListName,
+      ].some(value => value.toLowerCase().includes(query))
+    })
+    .sort((left, right) => {
+      if (sort() === 'audience')
+        return right.audienceSize - left.audienceSize || left.name.localeCompare(right.name)
+      if (sort() === 'sent')
+        return right.sentCount - left.sentCount || left.name.localeCompare(right.name)
+      if (sort() === 'name')
+        return left.name.localeCompare(right.name)
+      return Number(right.id) - Number(left.id)
+    })
+}
+
+function visibleRecords(): CampaignRecord[] {
+  const start = (page() - 1) * perPage
+  return filteredRecords().slice(start, start + perPage)
+}
+
+function totalPages(): number {
+  return Math.max(1, Math.ceil(filteredRecords().length / perPage))
+}
+
+function updateFilter(field: string, event: Event): void {
+  const nextValue = (event.target as HTMLInputElement | HTMLSelectElement).value
+  if (field === 'search')
+    search.set(nextValue)
+  else if (field === 'type')
+    typeFilter.set(nextValue)
+  else if (field === 'status')
+    statusFilter.set(nextValue)
+  else if (field === 'list')
+    listFilter.set(nextValue)
+  else if (field === 'sort')
+    sort.set(nextValue)
+  page.set(1)
+}
+
+async function loadCampaigns(): Promise<void> {
+  loading.set(true)
+  loadError.set('')
+  try {
+    const data = await dashboardApi<CampaignIndexResponse>('/api/dashboard/marketing/campaigns')
+    if (!data || !Array.isArray(data.records) || !data.summary || !Array.isArray(data.lists))
+      throw new TypeError('Campaign resources were not returned in the expected shape.')
+    records.set(data.records)
+    summary.set(data.summary)
+    lists.set(data.lists)
+    defaultCurrency.set(data.defaultCurrency || 'USD')
+    if (page() > totalPages())
+      page.set(totalPages())
+  }
+  catch (error) {
+    loadError.set(error instanceof Error ? error.message : String(error))
+    pushToast('error', 'Could not load campaigns', { detail: loadError() })
+  }
+  finally {
+    loading.set(false)
+  }
+}
+
+function openAdd(): void {
+  dialogMode.set('add')
+  editingRecord.set(null)
+  saveError.set('')
+  dialogOpen.set(true)
+}
+
+function openEdit(record: CampaignRecord): void {
+  if (['sending', 'sent'].includes(record.status))
+    return
+  dialogMode.set('edit')
+  editingRecord.set(record)
+  saveError.set('')
+  dialogOpen.set(true)
+}
+
+function closeDialog(): void {
+  if (saving())
+    return
+  dialogOpen.set(false)
+  editingRecord.set(null)
+  saveError.set('')
+}
+
+async function saveCampaign(payload: CampaignPayload): Promise<void> {
+  const current = editingRecord()
+  const editing = dialogMode() === 'edit' && current !== null
+  saving.set(true)
+  saveError.set('')
+  try {
+    await dashboardApi(
+      editing ? `/api/dashboard/marketing/campaigns/${current.id}` : '/api/dashboard/marketing/campaigns',
+      {
+        method: editing ? 'PATCH' : 'POST',
+        body: payload,
+      },
+    )
+    dialogOpen.set(false)
+    editingRecord.set(null)
+    pushToast('success', editing ? 'Campaign updated' : 'Campaign added')
+    await loadCampaigns()
+  }
+  catch (error) {
+    saveError.set(error instanceof Error ? error.message : String(error))
+  }
+  finally {
+    saving.set(false)
+  }
+}
+
+function openDelete(record: CampaignRecord): void {
+  deletingRecord.set(record)
+  deleteError.set('')
+}
+
+function closeDelete(): void {
+  if (deleting())
+    return
+  deletingRecord.set(null)
+  deleteError.set('')
+}
+
+async function deleteCampaign(): Promise<void> {
+  const current = deletingRecord()
+  if (!current)
+    return
+  deleting.set(true)
+  deleteError.set('')
+  try {
+    await dashboardApi(`/api/dashboard/marketing/campaigns/${current.id}`, { method: 'DELETE' })
+    deletingRecord.set(null)
+    pushToast('success', 'Campaign deleted')
+    await loadCampaigns()
+  }
+  catch (error) {
+    deleteError.set(error instanceof Error ? error.message : String(error))
+  }
+  finally {
+    deleting.set(false)
+  }
+}
+
+function previousPage(): void {
+  if (page() > 1)
+    page.set(page() - 1)
+}
+
+function nextPage(): void {
+  if (page() < totalPages())
+    page.set(page() + 1)
+}
+
+onMount(() => {
+  void loadCampaigns()
+})
+</script>
+
+<div class="space-y-6">
+  <header class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+    <div>
+      <h1 class="font-bold text-2xl text-gray-900 dark:text-white">Campaigns</h1>
+      <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Manage Campaign records with real audience and delivery aggregates.</p>
+    </div>
+    <div class="flex gap-2">
+      <button type="button" :disabled="loading()" class="inline-flex items-center px-3 py-2 font-semibold text-gray-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700 disabled:opacity-50" @click="loadCampaigns()"><span :class="'mr-2 h-4 w-4 ' + (loading() ? 'animate-spin i-hugeicons-loading-03' : 'i-hugeicons-refresh')"></span>Refresh</button>
+      <button type="button" class="inline-flex items-center px-3 py-2 font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md" @click="openAdd()"><span class="mr-2 h-4 w-4 i-hugeicons-add-01"></span>Add campaign</button>
+    </div>
+  </header>
+
+  <div :if="loadError()" role="alert" class="flex gap-4 items-center justify-between p-4 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900"><span>{{ loadError() }}</span><button type="button" class="font-semibold underline" @click="loadCampaigns()">Retry</button></div>
+
+  <section aria-label="Campaign metrics" class="grid gap-3 grid-cols-2 lg:grid-cols-5">
+    <article class="p-4 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700"><p class="text-gray-500 text-xs dark:text-neutral-400">Campaigns</p><p class="mt-2 font-semibold text-2xl text-gray-900 dark:text-white">{{ summary().total }}</p><p class="mt-1 text-gray-400 text-xs dark:text-neutral-500">Persisted records</p></article>
+    <article class="p-4 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700"><p class="text-gray-500 text-xs dark:text-neutral-400">Live</p><p class="mt-2 font-semibold text-2xl text-gray-900 dark:text-white">{{ summary().live }}</p><p class="mt-1 text-gray-400 text-xs dark:text-neutral-500">Scheduled, sending, or active</p></article>
+    <article class="p-4 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700"><p class="text-gray-500 text-xs dark:text-neutral-400">Completed</p><p class="mt-2 font-semibold text-2xl text-gray-900 dark:text-white">{{ summary().sent }}</p><p class="mt-1 text-gray-400 text-xs dark:text-neutral-500">Sent or completed</p></article>
+    <article class="p-4 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700"><p class="text-gray-500 text-xs dark:text-neutral-400">Recipients</p><p class="mt-2 font-semibold text-2xl text-gray-900 dark:text-white">{{ summary().recipients.toLocaleString() }}</p><p class="mt-1 text-gray-400 text-xs dark:text-neutral-500">Persisted successful sends</p></article>
+    <article class="p-4 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700"><p class="text-gray-500 text-xs dark:text-neutral-400">Delivery issues</p><p class="mt-2 font-semibold text-2xl text-gray-900 dark:text-white">{{ summary().failedDeliveries.toLocaleString() }}</p><p class="mt-1 text-gray-400 text-xs dark:text-neutral-500">Failed, bounced, or complained</p></article>
+  </section>
+
+  <section class="space-y-3">
+    <div class="grid gap-3 grid-cols-1 sm:grid-cols-2 xl:grid-cols-5">
+      <label><span class="sr-only">Search campaigns</span><input :value="search()" type="search" placeholder="Search campaigns" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" @input="updateFilter('search', $event)" /></label>
+      <label><span class="sr-only">Filter campaign type</span><select :value="typeFilter()" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" @change="updateFilter('type', $event)"><option value="all">All types</option><option value="email">Email</option><option value="sms">SMS</option><option value="push">Push</option><option value="social">Social</option><option value="multi-channel">Multi-channel</option></select></label>
+      <label><span class="sr-only">Filter campaign status</span><select :value="statusFilter()" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" @change="updateFilter('status', $event)"><option value="all">All statuses</option><option value="draft">Draft</option><option value="scheduled">Scheduled</option><option value="sending">Sending</option><option value="sent">Sent</option><option value="active">Active</option><option value="completed">Completed</option><option value="paused">Paused</option><option value="cancelled">Cancelled</option><option value="failed">Failed</option><option value="archived">Archived</option></select></label>
+      <label><span class="sr-only">Filter campaign list</span><select :value="listFilter()" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" @change="updateFilter('list', $event)"><option value="all">All email lists</option><template :for="list in lists"><option :value="list.id">{{ list.name }}</option></template></select></label>
+      <label><span class="sr-only">Sort campaigns</span><select :value="sort()" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" @change="updateFilter('sort', $event)"><option value="newest">Newest</option><option value="name">Name</option><option value="audience">Largest audience</option><option value="sent">Most sent</option></select></label>
+    </div>
+    <CampaignsTable :records="visibleRecords()" :loading="loading()" @edit="openEdit" @delete="openDelete" />
+    <div :if="filteredRecords().length > perPage" class="flex items-center justify-between"><p class="text-gray-500 text-sm dark:text-neutral-400">Page {{ page() }} of {{ totalPages() }}</p><div class="flex gap-2"><button type="button" :disabled="page() === 1" class="px-3 py-2 text-gray-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700 disabled:opacity-50" @click="previousPage()">Previous</button><button type="button" :disabled="page() === totalPages()" class="px-3 py-2 text-gray-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700 disabled:opacity-50" @click="nextPage()">Next</button></div></div>
+  </section>
+</div>
+
+<CampaignDialog :open="dialogOpen()" :mode="dialogMode()" :record="editingRecord()" :lists="lists()" :defaultCurrency="defaultCurrency()" :busy="saving()" :error="saveError()" @submit="saveCampaign" @close="closeDialog()" />
+<CampaignDeleteDialog :open="Boolean(deletingRecord())" :record="deletingRecord()" :busy="deleting()" :error="deleteError()" @confirm="deleteCampaign()" @close="closeDelete()" />

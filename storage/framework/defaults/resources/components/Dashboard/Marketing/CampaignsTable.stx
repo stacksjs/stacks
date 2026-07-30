@@ -1,0 +1,76 @@
+<script client>
+import type { CampaignRecord } from '../../../../app/Actions/Dashboard/Marketing/campaign-records'
+
+const records = useReactiveProp('records', [] as CampaignRecord[])
+const loading = useReactiveProp('loading', false)
+const emit = defineEmits()
+
+function titleCase(value: string): string {
+  return value.replace('-', ' ').replace(/\b\w/g, letter => letter.toUpperCase())
+}
+
+function formatDate(value: string): string {
+  if (!value)
+    return 'Not set'
+  return new Intl.DateTimeFormat(undefined, {
+    dateStyle: 'medium',
+    timeStyle: 'short',
+  }).format(new Date(value.replace(' ', 'T')))
+}
+
+function percentage(value: number): string {
+  return `${value.toFixed(1)}%`
+}
+</script>
+
+<div class="overflow-x-auto bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
+  <table class="min-w-full divide-gray-200 divide-y dark:divide-neutral-700">
+    <thead class="bg-gray-50 dark:bg-neutral-900/50">
+      <tr>
+        <th scope="col" class="px-4 py-3 font-semibold text-gray-600 text-left text-xs dark:text-neutral-300">Campaign</th>
+        <th scope="col" class="px-4 py-3 font-semibold text-gray-600 text-left text-xs dark:text-neutral-300">Audience</th>
+        <th scope="col" class="px-4 py-3 font-semibold text-gray-600 text-left text-xs dark:text-neutral-300">Timing</th>
+        <th scope="col" class="px-4 py-3 font-semibold text-gray-600 text-left text-xs dark:text-neutral-300">Delivery</th>
+        <th scope="col" class="px-4 py-3 font-semibold text-gray-600 text-left text-xs dark:text-neutral-300">Status</th>
+        <th scope="col" class="px-4 py-3"><span class="sr-only">Actions</span></th>
+      </tr>
+    </thead>
+    <tbody class="divide-gray-200 divide-y dark:divide-neutral-700">
+      <template :if="loading()">
+        <tr><td colspan="6" class="px-4 py-12 text-center text-gray-500 text-sm dark:text-neutral-400"><span class="inline-block mr-2 h-4 w-4 animate-spin i-hugeicons-loading-03"></span>Loading campaigns</td></tr>
+      </template>
+      <template :else-if="records().length === 0">
+        <tr><td colspan="6" class="px-4 py-14 text-center"><span class="inline-block h-6 w-6 text-gray-400 i-hugeicons-mail-send-01"></span><p class="mt-2 font-medium text-gray-900 text-sm dark:text-white">No campaigns found</p><p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Adjust the filters or add a Campaign record.</p></td></tr>
+      </template>
+      <template :else>
+        <template :for="record in records">
+          <tr class="hover:bg-gray-50/70 dark:hover:bg-neutral-700/40">
+            <td class="px-4 py-4 max-w-sm">
+              <p class="font-medium text-gray-900 text-sm dark:text-white">{{ record.name }}</p>
+              <p class="mt-1 text-gray-500 text-xs dark:text-neutral-400">{{ titleCase(record.type) }}<span :if="record.subject"> · {{ record.subject }}</span></p>
+            </td>
+            <td class="px-4 py-4">
+              <p class="text-gray-900 text-sm dark:text-white">{{ record.emailListName }}</p>
+              <p class="mt-1 text-gray-500 text-xs dark:text-neutral-400">{{ record.audienceSize.toLocaleString() }} available</p>
+            </td>
+            <td class="px-4 py-4">
+              <p class="text-gray-900 text-sm dark:text-white">{{ formatDate(record.sentAt || record.scheduledAt || record.startDate) }}</p>
+              <p class="mt-1 text-gray-500 text-xs dark:text-neutral-400">{{ record.sentAt ? 'Sent' : record.status === 'scheduled' ? 'Scheduled' : record.startDate ? 'Starts' : record.scheduledAt ? 'Originally scheduled' : 'No timing' }}</p>
+            </td>
+            <td class="px-4 py-4">
+              <p class="text-gray-900 text-sm dark:text-white">{{ record.sentCount.toLocaleString() }} sent</p>
+              <p class="mt-1 text-gray-500 text-xs dark:text-neutral-400">{{ percentage(record.openRate) }} open · {{ percentage(record.clickRate) }} click</p>
+            </td>
+            <td class="px-4 py-4"><span class="inline-flex px-2 py-1 font-medium text-xs bg-gray-100 dark:bg-neutral-700 rounded-full">{{ titleCase(record.status) }}</span></td>
+            <td class="px-4 py-4">
+              <div class="flex gap-1 justify-end">
+                <button type="button" :disabled="['sending', 'sent'].includes(record.status)" :aria-label="'Edit campaign ' + record.id" class="p-2 text-gray-500 dark:text-neutral-400 hover:text-blue-600 dark:hover:text-blue-400 disabled:opacity-30" @click="emit('edit', record)"><span class="block h-4 w-4 i-hugeicons-edit-02"></span></button>
+                <button type="button" :disabled="['scheduled', 'sending', 'sent'].includes(record.status)" :aria-label="'Delete campaign ' + record.id" class="p-2 text-gray-500 dark:text-neutral-400 hover:text-red-600 dark:hover:text-red-400 disabled:opacity-30" @click="emit('delete', record)"><span class="block h-4 w-4 i-hugeicons-delete-02"></span></button>
+              </div>
+            </td>
+          </tr>
+        </template>
+      </template>
+    </tbody>
+  </table>
+</div>

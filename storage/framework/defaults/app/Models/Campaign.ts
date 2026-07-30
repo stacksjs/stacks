@@ -20,6 +20,13 @@ export default defineModel({
       routes: ['index', 'store', 'show', 'update', 'destroy'],
       middleware: ['auth'],
     },
+    useSearch: {
+      displayable: ['id', 'name', 'type', 'status', 'subject', 'scheduledAt', 'sentAt'],
+      searchable: ['name', 'description', 'subject'],
+      sortable: ['name', 'type', 'status', 'scheduledAt', 'sentAt', 'createdAt', 'updatedAt'],
+      filterable: ['type', 'status', 'emailListId', 'currency'],
+    },
+    observe: true,
   },
 
   attributes: {
@@ -88,7 +95,7 @@ export default defineModel({
       required: false,
       fillable: true,
       validation: {
-        rule: schema.string().max(255),
+        rule: schema.string(),
       },
       factory: faker => faker.helpers.arrayElement(['newsletter-default', 'product-update', 'promo']),
     },

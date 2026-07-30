@@ -1,45 +1,59 @@
 import { Action } from '@stacksjs/actions'
-import { Campaign } from '@stacksjs/orm'
+import { config } from '@stacksjs/config'
+import { db } from '@stacksjs/database'
+import { Campaign, EmailList } from '@stacksjs/orm'
+import { normalizeCampaigns } from './campaign-records'
 
 export default new Action({
   name: 'CampaignIndexAction',
-  description: 'Returns marketing campaign data for the dashboard.',
+  description: 'Returns persisted campaigns with list membership and delivery aggregates.',
   method: 'GET',
+  apiResponse: true,
+
   async handle() {
-    try {
-      const allCampaigns = await Campaign.orderByDesc('id').get()
+    const [
+      campaigns,
+      lists,
+      membershipRows,
+      sendRows,
+      openedRows,
+      clickedRows,
+    ] = await Promise.all([
+      Campaign.orderByDesc('id').limit(500).get(),
+      EmailList.orderBy('name', 'asc').get(),
+      db
+        .selectFrom('email_list_subscribers')
+        .select(['email_list_id', db.fn.count('id').as('count')])
+        .where('status', '=', 'subscribed')
+        .groupBy('email_list_id')
+        .execute(),
+      db
+        .selectFrom('campaign_sends')
+        .select(['campaign_id', 'status', db.fn.count('id').as('count')])
+        .groupBy(['campaign_id', 'status'])
+        .execute(),
+      db
+        .selectFrom('campaign_sends')
+        .select(['campaign_id', db.fn.count('id').as('count')])
+        .where('opened_at', 'is not', null)
+        .groupBy('campaign_id')
+        .execute(),
+      db
+        .selectFrom('campaign_sends')
+        .select(['campaign_id', db.fn.count('id').as('count')])
+        .where('clicked_at', 'is not', null)
+        .groupBy('campaign_id')
+        .execute(),
+    ])
 
-      const campaigns = allCampaigns.map(c => ({
-        name: String(c.get('name') || ''),
-        type: String(c.get('type') || 'Email'),
-        status: String(c.get('status') || 'active'),
-        sent: String(c.get('sent_count') || c.get('sent') || '-'),
-        opened: c.get('open_rate') ? `${c.get('open_rate')}%` : '-',
-        clicked: c.get('click_rate') ? `${c.get('click_rate')}%` : '-',
-        revenue: c.get('revenue') ? `$${c.get('revenue')}` : '-',
-      }))
-
-      const activeCampaigns = campaigns.filter(c => c.status === 'active').length
-
-      const stats = [
-        { label: 'Active Campaigns', value: String(activeCampaigns) },
-        { label: 'Total Sent', value: '-' },
-        { label: 'Avg Open Rate', value: '-' },
-        { label: 'Revenue Generated', value: '-' },
-      ]
-
-      return { campaigns, stats }
-    }
-    catch {
-      return {
-        campaigns: [],
-        stats: [
-          { label: 'Active Campaigns', value: '0' },
-          { label: 'Total Sent', value: '0' },
-          { label: 'Avg Open Rate', value: '-' },
-          { label: 'Revenue Generated', value: '-' },
-        ],
-      }
-    }
+    return normalizeCampaigns(
+      campaigns,
+      lists,
+      membershipRows,
+      sendRows,
+      openedRows,
+      clickedRows,
+      String((config as any).commerce?.currency || 'USD').toUpperCase(),
+    )
   },
 })
