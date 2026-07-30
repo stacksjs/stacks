@@ -259,11 +259,11 @@ export async function fetchCampaignAnalytics(range: AnalyticsRange = 'month'): P
 }
 
 export async function fetchEventAnalytics(range: AnalyticsRange = 'month'): Promise<EventAnalyticsResponse> {
-  return await dashboardApi<EventAnalyticsResponse>(`/api/dashboard/analytics/events?range=${encodeURIComponent(range)}`)
+  return await dashboardApi<EventAnalyticsResponse>(`/api/dashboard/event-metrics?range=${encodeURIComponent(range)}`)
 }
 
 export async function recordAnalyticsEvent(input: RecordAnalyticsEventInput): Promise<{ success: true }> {
-  return await dashboardApi<{ success: true }>('/api/dashboard/analytics/events', {
+  return await dashboardApi<{ success: true }>('/api/dashboard/event-metrics', {
     method: 'POST',
     body: input,
   })

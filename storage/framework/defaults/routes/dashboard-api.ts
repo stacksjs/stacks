@@ -61,8 +61,10 @@ route.group({ prefix: '/api/dashboard', apiResponse: true }, () => {
   guard(route.get('/analytics/web', 'Actions/Dashboard/Analytics/WebAnalyticsAction'))
   guard(route.get('/analytics/sales', 'Actions/Dashboard/Analytics/SalesAnalyticsAction'))
   guard(route.get('/analytics/marketing', 'Actions/Dashboard/Analytics/MarketingAnalyticsAction'))
-  guard(route.get('/analytics/events', 'Actions/Dashboard/Analytics/EventAnalyticsAction'))
-  guard(route.post('/analytics/events', 'Actions/Dashboard/Analytics/EventStoreAction'))
+  // Avoid tracker-shaped URLs here. Content blockers commonly reject paths
+  // containing `/analytics/events` before the request reaches the dashboard.
+  guard(route.get('/event-metrics', 'Actions/Dashboard/Analytics/EventAnalyticsAction'))
+  guard(route.post('/event-metrics', 'Actions/Dashboard/Analytics/EventStoreAction'))
   guard(route.get('/buddy/chat', 'Actions/Dashboard/Buddy/BuddyChatStateAction'))
   guard(route.post('/buddy/chat', 'Actions/Dashboard/Buddy/BuddyChatAction'))
   guard(route.post('/buddy/chat/clear', 'Actions/Dashboard/Buddy/BuddyChatClearAction'))
