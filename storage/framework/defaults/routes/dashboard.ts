@@ -356,7 +356,6 @@ route.group({ prefix: '/cms', middleware: 'auth' }, () => {
   route.patch('/pages/{id}', 'Actions/Cms/PageUpdateAction')
   route.delete('/pages/{id}', 'Actions/Cms/PageDestroyAction')
 
-  route.get('/seo', 'Actions/Dashboard/Content/SeoIndexAction')
   route.get('/files', 'Actions/Dashboard/Content/FileIndexAction')
 })
 
