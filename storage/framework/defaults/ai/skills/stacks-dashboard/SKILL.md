@@ -180,6 +180,37 @@ buddy build:components       # build dashboard components
 
 Port: 3002 (configured in `config/ports.ts` as `admin`)
 
+### Runtime shell and responsive navigation
+
+`buddy dev --dashboard` renders its shared shell from
+`storage/framework/defaults/views/dashboard/layouts/default.stx`. Do not
+mistake `storage/framework/defaults/resources/layouts/dashboard/default.stx`
+for the active dev-dashboard layout. The resources layout is a reusable legacy
+layout and changes there alone do not affect port 3002.
+
+The runtime shell owns the fixed desktop `Sidebar`, content offset, role
+filtering, active-route synchronization, Craft selection bridge, global search,
+and toast layer. Keep those behaviors centralized in the layout. The mobile
+drawer behavior belongs in `Dashboard/MobileSidebar.stx`, with the layout
+passing the same `Sidebar` sections through its slot. This preserves one
+navigation source and the existing sidebar theme across form factors.
+
+At widths below 1024px:
+
+- Hide the fixed desktop sidebar and reset `[data-stx-content]` to
+  `margin-left: 0`.
+- Show the mobile menu bar and render the same Sidebar inside the drawer.
+- Apply role filtering and active-route state to both sidebar panes.
+- Trap focus inside the open drawer, close on Escape and STX navigation,
+  restore focus to the menu button, and lock background scrolling with the
+  native `useScrollLock()` composable.
+- Verify `document.documentElement.scrollWidth <= innerWidth` at phone and
+  tablet sizes.
+
+At 1024px and wider, the desktop sidebar must retain its existing theme,
+250px width, fixed placement, persisted collapse state, and
+`--stx-sidebar-width` content-shell contract.
+
 ### Reactive page components
 
 Keep route views thin. Place stateful page implementations under
