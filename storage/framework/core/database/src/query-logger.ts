@@ -70,12 +70,16 @@ export async function logQuery(event: LogEvent): Promise<void> {
     // Extract basic information from the event
     const { query, durationMs, error, bindings } = extractQueryInfo(event)
 
-    // Always track query for error page context (even if logging is disabled)
-    try {
-      trackQuery(query, durationMs, config.database?.default || 'unknown')
-    }
-    catch {
-      // Ignore if router not available
+    // Always track query for error page context (even if logging is disabled).
+    // Skipped without usable SQL text: an unattributable entry on the error page
+    // is worse than one fewer entry, and it would poison N+1 shape counting.
+    if (query) {
+      try {
+        trackQuery(query, durationMs, config.database?.default || 'unknown')
+      }
+      catch {
+        // Ignore if router not available
+      }
     }
 
     // Skip database logging if disabled
@@ -135,8 +139,40 @@ export function isExcludedQuery(query: string, excludedQueries: readonly string[
 /**
  * Extract basic information from a query event
  */
+/**
+ * The SQL text of an event, or '' when the driver did not give us one.
+ *
+ * Not every driver hands over a string: the Postgres path can pass the pending
+ * query object, and coercing that yields the literal `[object Promise]`. Doing
+ * so filled query_logs with rows that record nothing, and made the N+1 detector
+ * report `[OBJECT PROMISE]` as the repeating shape. A thenable is never awaited
+ * here — that would run the query a second time — so an event without usable
+ * text is dropped instead.
+ */
+function queryText(sql: unknown): string {
+  if (typeof sql === 'string')
+    return usableQueryText(sql)
+
+  if (sql && typeof sql === 'object' && typeof (sql as { then?: unknown }).then === 'function')
+    return ''
+
+  if (sql && typeof (sql as { toString?: unknown }).toString === 'function')
+    return usableQueryText(String(sql))
+
+  return ''
+}
+
+/**
+ * `[object Promise]` and friends arrive as real strings, because the coercion
+ * already happened in the driver before the event reached us. No SQL statement
+ * starts with `[object `, so treating those as absent costs nothing.
+ */
+function usableQueryText(text: string): string {
+  return text.startsWith('[object ') ? '' : text
+}
+
 function extractQueryInfo(event: any) {
-  const query = event.query?.sql || ''
+  const query = queryText(event.query?.sql)
   const durationMs = event.queryDurationMillis || 0
   const error = event.error
 
