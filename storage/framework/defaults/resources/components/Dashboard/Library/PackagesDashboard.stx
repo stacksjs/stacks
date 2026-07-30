@@ -1,0 +1,80 @@
+<script client>
+import { dashboardApi } from '../../../../functions/dashboard-api'
+import { pushToast } from '../../../../functions/toasts'
+
+interface PackageRow {
+  name: string
+  version: string
+  description: string
+  license: string
+  private: boolean
+  path: string
+  url: string
+  dependencyCount: number
+}
+
+const packages = state<PackageRow[]>([])
+const publicCount = state(0)
+const privateCount = state(0)
+const dependencyCount = state(0)
+const loading = state(true)
+const loadError = state('')
+const search = state('')
+const visibility = state('all')
+
+function visiblePackages(): PackageRow[] {
+  const query = search().trim().toLowerCase()
+  return packages().filter(pkg =>
+    (visibility() === 'all' || (visibility() === 'public' ? !pkg.private : pkg.private))
+    && (!query || [pkg.name, pkg.description, pkg.path].some(value => value.toLowerCase().includes(query))),
+  )
+}
+
+async function loadPackages(): Promise<void> {
+  loading.set(true)
+  loadError.set('')
+  try {
+    const data = await dashboardApi<{ packages?: PackageRow[], publicCount?: number, privateCount?: number, dependencyCount?: number }>('/api/dashboard/library/packages')
+    if (!Array.isArray(data.packages))
+      throw new TypeError('Workspace packages were not returned in the expected shape.')
+    packages.set(data.packages)
+    publicCount.set(Number(data.publicCount || 0))
+    privateCount.set(Number(data.privateCount || 0))
+    dependencyCount.set(Number(data.dependencyCount || 0))
+  }
+  catch (error) {
+    loadError.set(error instanceof Error ? error.message : String(error))
+    pushToast('error', 'Could not load packages', { detail: loadError() })
+  }
+  finally {
+    loading.set(false)
+  }
+}
+
+onMount(() => { void loadPackages() })
+</script>
+
+<div class="space-y-6">
+  <header class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+    <div><p class="font-semibold text-blue-600 text-xs tracking-wide uppercase dark:text-blue-400">Library</p><h1 class="mt-1 font-bold text-2xl text-gray-900 dark:text-white">Packages</h1><p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Workspace manifests discovered from the current bun.lock.</p></div>
+    <button type="button" :disabled="loading()" class="inline-flex items-center self-start px-3 py-2 font-semibold text-gray-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700 disabled:opacity-50" @click="loadPackages()"><span :class="'mr-2 h-4 w-4 ' + (loading() ? 'animate-spin i-hugeicons-loading-03' : 'i-hugeicons-refresh')"></span>Refresh</button>
+  </header>
+
+  <div :if="loadError()" role="alert" class="flex gap-4 items-center justify-between p-4 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900"><span>{{ loadError() }}</span><button type="button" class="font-semibold underline" @click="loadPackages()">Retry</button></div>
+
+  <section aria-label="Package metrics" class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+    <article class="p-4 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700"><p class="text-gray-500 text-xs dark:text-neutral-400">Workspaces</p><p class="mt-2 font-semibold text-2xl text-gray-900 dark:text-white">{{ packages().length }}</p></article>
+    <article class="p-4 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700"><p class="text-gray-500 text-xs dark:text-neutral-400">Public</p><p class="mt-2 font-semibold text-2xl text-green-700 dark:text-green-300">{{ publicCount() }}</p></article>
+    <article class="p-4 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700"><p class="text-gray-500 text-xs dark:text-neutral-400">Private</p><p class="mt-2 font-semibold text-2xl text-gray-900 dark:text-white">{{ privateCount() }}</p></article>
+    <article class="p-4 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700"><p class="text-gray-500 text-xs dark:text-neutral-400">Declared runtime deps</p><p class="mt-2 font-semibold text-2xl text-blue-700 dark:text-blue-300">{{ dependencyCount() }}</p></article>
+  </section>
+
+  <section class="overflow-hidden bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
+    <div class="flex flex-col gap-3 sm:flex-row p-4 border-b border-gray-200 dark:border-neutral-700"><label class="flex-1"><span class="sr-only">Search packages</span><input x-model="search" type="search" placeholder="Search name, description, or path" class="px-3 py-2 max-w-xl w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label><label><span class="sr-only">Filter package visibility</span><select x-model="visibility" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700"><option value="all">All workspaces</option><option value="public">Public</option><option value="private">Private</option></select></label></div>
+    <div class="overflow-x-auto"><table class="min-w-full divide-gray-200 divide-y dark:divide-neutral-700"><thead class="bg-gray-50 dark:bg-neutral-900/50"><tr><th class="px-4 py-3 font-semibold text-gray-600 text-left text-xs dark:text-neutral-300">Package</th><th class="px-4 py-3 font-semibold text-gray-600 text-left text-xs dark:text-neutral-300">Version</th><th class="px-4 py-3 font-semibold text-gray-600 text-left text-xs dark:text-neutral-300">Visibility</th><th class="px-4 py-3 font-semibold text-gray-600 text-left text-xs dark:text-neutral-300">Dependencies</th><th class="px-4 py-3 font-semibold text-gray-600 text-left text-xs dark:text-neutral-300">Path</th></tr></thead><tbody class="divide-gray-200 divide-y dark:divide-neutral-700">
+      <template :if="loading()"><tr><td colspan="5" class="px-4 py-12 text-center text-gray-500 text-sm dark:text-neutral-400"><span class="inline-block mr-2 h-4 w-4 animate-spin i-hugeicons-loading-03"></span>Reading workspace manifests</td></tr></template>
+      <template :else-if="visiblePackages().length === 0"><tr><td colspan="5" class="px-4 py-14 text-center"><span class="inline-block h-6 w-6 text-gray-400 i-hugeicons-package"></span><p class="mt-2 font-medium text-gray-900 text-sm dark:text-white">No packages found</p><p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Adjust the search or visibility filter.</p></td></tr></template>
+      <template :else><template :for="pkg in visiblePackages()"><tr><td class="px-4 py-3 max-w-md"><a :if="pkg.url" :href="pkg.url" target="_blank" rel="noreferrer" class="font-medium text-blue-700 text-sm dark:text-blue-300 hover:underline">{{ pkg.name }}</a><span :else class="font-medium text-gray-900 text-sm dark:text-white">{{ pkg.name }}</span><p class="mt-1 text-gray-500 text-xs truncate dark:text-neutral-400">{{ pkg.description || 'No package description' }}</p></td><td class="px-4 py-3 font-mono text-gray-500 text-sm dark:text-neutral-400">{{ pkg.version || 'Unversioned' }}</td><td class="px-4 py-3"><span :class="'inline-flex px-2 py-1 font-medium text-xs rounded-full ' + (pkg.private ? 'text-gray-600 dark:text-neutral-300 bg-gray-100 dark:bg-neutral-700' : 'text-green-700 dark:text-green-300 bg-green-50 dark:bg-green-950/40')">{{ pkg.private ? 'Private' : 'Public' }}</span></td><td class="px-4 py-3 text-gray-500 text-sm dark:text-neutral-400">{{ pkg.dependencyCount }}</td><td class="px-4 py-3 font-mono text-gray-500 text-xs dark:text-neutral-400">{{ pkg.path }}</td></tr></template></template>
+    </tbody></table></div>
+  </section>
+</div>

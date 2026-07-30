@@ -1,0 +1,90 @@
+<script client>
+import { dashboardApi } from '../../../../functions/dashboard-api'
+import { pushToast } from '../../../../functions/toasts'
+
+interface DependencyRow {
+  name: string
+  version: string
+  isWorkspace?: boolean
+  isScoped?: boolean
+}
+
+const declared = state<DependencyRow[]>([])
+const transitive = state<DependencyRow[]>([])
+const available = state(true)
+const source = state('bun.lock')
+const loading = state(true)
+const loadError = state('')
+const search = state('')
+const dataset = state('declared')
+const scope = state('all')
+
+function activeRows(): DependencyRow[] {
+  return dataset() === 'transitive' ? transitive() : declared()
+}
+
+function visibleRows(): DependencyRow[] {
+  const query = search().trim().toLowerCase()
+  return activeRows().filter(dependency =>
+    (dataset() === 'transitive' || scope() === 'all' || (scope() === 'workspace' ? dependency.isWorkspace : !dependency.isWorkspace))
+    && (!query || [dependency.name, dependency.version].some(value => value.toLowerCase().includes(query))),
+  )
+}
+
+function workspaceCount(): number {
+  return declared().filter(dependency => dependency.isWorkspace).length
+}
+
+function thirdPartyCount(): number {
+  return declared().length - workspaceCount()
+}
+
+async function loadDependencies(): Promise<void> {
+  loading.set(true)
+  loadError.set('')
+  try {
+    const data = await dashboardApi<{ available?: boolean, source?: string, declared?: DependencyRow[], transitive?: DependencyRow[] }>('/api/dashboard/library/dependencies')
+    if (!Array.isArray(data.declared) || !Array.isArray(data.transitive))
+      throw new TypeError('Dependencies were not returned in the expected shape.')
+    available.set(data.available !== false)
+    source.set(String(data.source || 'bun.lock'))
+    declared.set(data.declared)
+    transitive.set(data.transitive)
+  }
+  catch (error) {
+    loadError.set(error instanceof Error ? error.message : String(error))
+    pushToast('error', 'Could not load dependencies', { detail: loadError() })
+  }
+  finally {
+    loading.set(false)
+  }
+}
+
+onMount(() => { void loadDependencies() })
+</script>
+
+<div class="space-y-6">
+  <header class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+    <div><p class="font-semibold text-blue-600 text-xs tracking-wide uppercase dark:text-blue-400">Library</p><h1 class="mt-1 font-bold text-2xl text-gray-900 dark:text-white">Dependencies</h1><p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Resolved dependency declarations from {{ source() }}. Updates are managed by buddy-bot.</p></div>
+    <button type="button" :disabled="loading()" class="inline-flex items-center self-start px-3 py-2 font-semibold text-gray-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700 disabled:opacity-50" @click="loadDependencies()"><span :class="'mr-2 h-4 w-4 ' + (loading() ? 'animate-spin i-hugeicons-loading-03' : 'i-hugeicons-refresh')"></span>Refresh</button>
+  </header>
+
+  <div :if="loadError()" role="alert" class="flex gap-4 items-center justify-between p-4 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900"><span>{{ loadError() }}</span><button type="button" class="font-semibold underline" @click="loadDependencies()">Retry</button></div>
+  <div :if="!loading() && !available()" role="status" class="p-4 text-amber-700 text-sm dark:text-amber-300 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 rounded-lg dark:border-amber-900">No bun.lock exists yet. Run the normal dependency install workflow to create it.</div>
+
+  <section aria-label="Dependency metrics" class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+    <article class="p-4 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700"><p class="text-gray-500 text-xs dark:text-neutral-400">Declared</p><p class="mt-2 font-semibold text-2xl text-gray-900 dark:text-white">{{ declared().length }}</p></article>
+    <article class="p-4 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700"><p class="text-gray-500 text-xs dark:text-neutral-400">Workspace</p><p class="mt-2 font-semibold text-2xl text-blue-700 dark:text-blue-300">{{ workspaceCount() }}</p></article>
+    <article class="p-4 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700"><p class="text-gray-500 text-xs dark:text-neutral-400">Third-party</p><p class="mt-2 font-semibold text-2xl text-green-700 dark:text-green-300">{{ thirdPartyCount() }}</p></article>
+    <article class="p-4 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700"><p class="text-gray-500 text-xs dark:text-neutral-400">Transitive</p><p class="mt-2 font-semibold text-2xl text-gray-900 dark:text-white">{{ transitive().length }}</p></article>
+  </section>
+
+  <section class="overflow-hidden bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
+    <div class="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto_auto] p-4 border-b border-gray-200 dark:border-neutral-700"><label><span class="sr-only">Search dependencies</span><input x-model="search" type="search" placeholder="Search package or version" class="px-3 py-2 max-w-xl w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label><label><span class="sr-only">Choose dependency dataset</span><select x-model="dataset" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700"><option value="declared">Declared</option><option value="transitive">Transitive</option></select></label><label><span class="sr-only">Filter dependency scope</span><select x-model="scope" :disabled="dataset() === 'transitive'" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700 disabled:opacity-50"><option value="all">All scopes</option><option value="workspace">Workspace</option><option value="third-party">Third-party</option></select></label></div>
+    <div class="overflow-x-auto"><table class="min-w-full divide-gray-200 divide-y dark:divide-neutral-700"><thead class="bg-gray-50 dark:bg-neutral-900/50"><tr><th class="px-4 py-3 font-semibold text-gray-600 text-left text-xs dark:text-neutral-300">Package</th><th class="px-4 py-3 font-semibold text-gray-600 text-left text-xs dark:text-neutral-300">Version</th><th class="px-4 py-3 font-semibold text-gray-600 text-left text-xs dark:text-neutral-300">Source</th></tr></thead><tbody class="divide-gray-200 divide-y dark:divide-neutral-700">
+      <template :if="loading()"><tr><td colspan="3" class="px-4 py-12 text-center text-gray-500 text-sm dark:text-neutral-400"><span class="inline-block mr-2 h-4 w-4 animate-spin i-hugeicons-loading-03"></span>Reading dependency graph</td></tr></template>
+      <template :else-if="visibleRows().length === 0"><tr><td colspan="3" class="px-4 py-14 text-center"><span class="inline-block h-6 w-6 text-gray-400 i-hugeicons-package"></span><p class="mt-2 font-medium text-gray-900 text-sm dark:text-white">No dependencies found</p><p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Adjust the dataset, scope, or search.</p></td></tr></template>
+      <template :else><template :for="dependency in visibleRows()"><tr><td class="px-4 py-3 font-medium text-gray-900 text-sm dark:text-white">{{ dependency.name }}</td><td class="px-4 py-3 font-mono text-gray-500 text-sm dark:text-neutral-400">{{ dependency.version }}</td><td class="px-4 py-3"><span :class="'inline-flex px-2 py-1 font-medium text-xs rounded-full ' + (dependency.isWorkspace ? 'text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/40' : 'text-gray-600 dark:text-neutral-300 bg-gray-100 dark:bg-neutral-700')">{{ dependency.isWorkspace ? 'Workspace' : (dataset() === 'transitive' ? 'Transitive' : 'Third-party') }}</span></td></tr></template></template>
+    </tbody></table></div>
+  </section>
+</div>
