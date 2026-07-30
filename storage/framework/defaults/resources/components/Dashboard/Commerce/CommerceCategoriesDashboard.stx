@@ -113,25 +113,13 @@ function exportHref(): string {
   return `data:text/csv;charset=utf-8,${encodeURIComponent(`\uFEFF${csv}`)}`
 }
 
-function updateSearch(event: Event): void {
-  search.set((event.target as HTMLInputElement).value)
+effect(() => {
+  search()
+  activeFilter()
+  hierarchyFilter()
+  sort()
   page.set(1)
-}
-
-function updateActive(event: Event): void {
-  activeFilter.set((event.target as HTMLSelectElement).value)
-  page.set(1)
-}
-
-function updateHierarchy(event: Event): void {
-  hierarchyFilter.set((event.target as HTMLSelectElement).value)
-  page.set(1)
-}
-
-function updateSort(event: Event): void {
-  sort.set((event.target as HTMLSelectElement).value)
-  page.set(1)
-}
+})
 
 async function loadCategories(): Promise<void> {
   loading.set(true)
@@ -287,11 +275,11 @@ onMount(() => {
       <label class="relative sm:col-span-2">
         <span class="sr-only">Search product categories</span>
         <span class="flex absolute inset-y-0 left-0 items-center pl-3 text-gray-400 pointer-events-none"><span class="h-4 w-4 i-hugeicons-search-01"></span></span>
-        <input :value="search()" type="search" placeholder="Search names, slugs, or descriptions" class="pl-9 pr-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" @input="updateSearch($event)" />
+        <input x-model="search" type="search" placeholder="Search names, slugs, or descriptions" class="pl-9 pr-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" />
       </label>
-      <label><span class="sr-only">Category availability</span><select :value="activeFilter()" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" @change="updateActive($event)"><option value="all">Any availability</option><option value="active">Active</option><option value="inactive">Inactive</option></select></label>
-      <label><span class="sr-only">Category hierarchy</span><select :value="hierarchyFilter()" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" @change="updateHierarchy($event)"><option value="all">Any hierarchy</option><option value="root">Root categories</option><option value="child">Child categories</option></select></label>
-      <label><span class="sr-only">Sort product categories</span><select :value="sort()" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" @change="updateSort($event)"><option value="order">Display order</option><option value="name">Name</option><option value="newest">Newest</option></select></label>
+      <label><span class="sr-only">Category availability</span><select x-model="activeFilter" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700"><option value="all">Any availability</option><option value="active">Active</option><option value="inactive">Inactive</option></select></label>
+      <label><span class="sr-only">Category hierarchy</span><select x-model="hierarchyFilter" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700"><option value="all">Any hierarchy</option><option value="root">Root categories</option><option value="child">Child categories</option></select></label>
+      <label><span class="sr-only">Sort product categories</span><select x-model="sort" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700"><option value="order">Display order</option><option value="name">Name</option><option value="newest">Newest</option></select></label>
     </div>
 
     <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">

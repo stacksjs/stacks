@@ -7,6 +7,10 @@ const commerceComponents = [
   'CommerceCustomersDashboard.stx',
   'CommerceOrdersDashboard.stx',
   'CommerceCouponsDashboard.stx',
+  'CommerceCategoriesDashboard.stx',
+  'CommerceManufacturersDashboard.stx',
+  'CommerceUnitsDashboard.stx',
+  'CommerceVariantsDashboard.stx',
 ]
 
 describe('commerce dashboard filter bindings', () => {
