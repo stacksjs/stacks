@@ -259,6 +259,19 @@ describe('dashboard native STX bindings', () => {
       expect(source).not.toContain('bg-red-600 hover:bg-red-500')
     }
 
+    for (const file of [
+      'Content/AuthorsDashboard.stx',
+      'Content/CommentsDashboard.stx',
+      'Content/ContentTaxonomyDashboard.stx',
+      'Content/FileManagerDashboard.stx',
+      'Content/PagesDashboard.stx',
+      'Content/PostsDashboard.stx',
+    ]) {
+      const source = componentSource(file)
+      expect(source).not.toMatch(/<button[^>]+bg-(?:blue|red)-600/)
+      expect(source).toContain('<Button')
+    }
+
     const navbar = componentSource('NavbarModern.stx')
     expect(navbar).toContain('notificationCount = 0')
     expect(navbar).not.toContain('Chris Breuer')

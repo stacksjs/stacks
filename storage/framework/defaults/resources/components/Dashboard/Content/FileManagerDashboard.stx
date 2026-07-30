@@ -498,7 +498,7 @@ onMount(() => { void loadFiles() })
       </nav>
 
       <div class="p-3 border-black/[0.06] border-t dark:border-white/[0.08]">
-        <button type="button" class="inline-flex gap-2 items-center justify-center px-3 py-2 w-full font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-lg disabled:opacity-50" :disabled="loading()" @click="openUpload()"><span class="h-4 w-4 i-hugeicons-upload-01"></span>Upload files</button>
+        <Button :disabled="loading()" fullWidth @click="openUpload()"><span aria-hidden="true" class="h-4 w-4 i-hugeicons-upload-01"></span>Upload files</Button>
       </div>
     </div>
   </aside>
@@ -515,8 +515,8 @@ onMount(() => { void loadFiles() })
           <div class="flex gap-0.5 p-0.5 bg-black/[0.05] dark:bg-white/[0.06] rounded-lg"><button type="button" aria-label="Grid view" :class="gridViewClass()" @click="viewMode.set('grid')"><span class="h-5 w-5 i-hugeicons-grid-view"></span></button><button type="button" aria-label="List view" :class="listViewClass()" @click="viewMode.set('list')"><span class="h-5 w-5 i-hugeicons-right-to-left-list-number"></span></button></div>
           <select x-model="sortBy" aria-label="Sort files" class="px-2.5 py-2 text-sm text-stone-700 dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-stone-200 rounded-lg dark:border-neutral-700"><option value="name">Name</option><option value="lastModified">Date</option><option value="size">Size</option></select>
           <button type="button" aria-label="Reverse sort order" class="p-2 text-stone-500 dark:text-neutral-400 hover:bg-stone-100 dark:hover:bg-neutral-800 rounded-lg" @click="toggleSortOrder()"><span :class="sortOrderIconClass()"></span></button>
-          <button type="button" class="inline-flex gap-2 items-center px-3 py-2 font-semibold text-sm text-stone-700 dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-stone-200 rounded-lg dark:border-neutral-700 disabled:opacity-50" :disabled="loading()" @click="loadFiles()"><span :class="'h-4 w-4 ' + (loading() ? 'animate-spin i-hugeicons-loading-03' : 'i-hugeicons-refresh')"></span>Refresh</button>
-          <button type="button" class="inline-flex gap-2 items-center px-3 py-2 font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-lg" @click="openCreateFolder()"><span class="h-4 w-4 i-hugeicons-folder-add"></span>New folder</button>
+          <Button :loading="loading()" variant="secondary" @click="loadFiles()"><span :if="!loading()" aria-hidden="true" class="h-4 w-4 i-hugeicons-refresh"></span>Refresh</Button>
+          <Button @click="openCreateFolder()"><span aria-hidden="true" class="h-4 w-4 i-hugeicons-folder-add"></span>New folder</Button>
         </div>
       </div>
       <nav aria-label="Folder path" class="flex overflow-x-auto items-center mt-4 text-sm">
@@ -536,7 +536,7 @@ onMount(() => { void loadFiles() })
       </div>
 
       <div :else-if="!loadError() && filteredItems().length === 0" class="flex flex-col items-center justify-center min-h-[55dvh] text-center">
-        <span class="h-14 w-14 text-stone-300 dark:text-neutral-700 i-hugeicons-folder-02"></span><h2 class="mt-3 font-semibold text-stone-900 dark:text-white">No items</h2><p class="mt-1 text-sm text-stone-500 dark:text-neutral-400">{{ emptyHint }}</p><div :if="!searchQuery()" class="flex gap-2 mt-5"><button type="button" class="px-3 py-2 font-semibold text-sm text-stone-700 dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-stone-200 rounded-lg dark:border-neutral-700" @click="openCreateFolder()">Create folder</button><button type="button" class="px-3 py-2 font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-lg" @click="openUpload()">Upload files</button></div>
+        <span class="h-14 w-14 text-stone-300 dark:text-neutral-700 i-hugeicons-folder-02"></span><h2 class="mt-3 font-semibold text-stone-900 dark:text-white">No items</h2><p class="mt-1 text-sm text-stone-500 dark:text-neutral-400">{{ emptyHint }}</p><div :if="!searchQuery()" class="flex gap-2 mt-5"><Button variant="secondary" @click="openCreateFolder()">Create folder</Button><Button @click="openUpload()">Upload files</Button></div>
       </div>
 
       <div :else-if="viewMode() === 'grid'" class="grid gap-4 grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
@@ -568,7 +568,7 @@ onMount(() => { void loadFiles() })
     <h2 id="file-manager-folder-title" class="font-semibold text-lg text-stone-900 dark:text-white">Create folder</h2><p class="mt-1 text-sm text-stone-500 dark:text-neutral-400">Add a folder inside {{ currentFolderLabel }}.</p>
     <div :if="createError()" role="alert" class="mt-4 p-3 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900">{{ createError() }}</div>
     <label class="block mt-5"><span class="font-medium text-sm text-stone-700 dark:text-neutral-200">Folder name</span><input ref="fileManagerFolderName" x-model.trim="newFolderName" required maxlength="255" autocomplete="off" class="mt-1 px-3 py-2 w-full text-sm text-stone-900 dark:text-white bg-white dark:bg-neutral-900 border border-stone-300 rounded-lg dark:border-neutral-700" /></label>
-    <div class="flex gap-2 justify-end mt-6"><button type="button" class="px-3 py-2 font-semibold text-sm text-stone-700 dark:text-neutral-200" :disabled="creatingFolder()" @click="closeCreateFolder()">Cancel</button><button type="submit" class="inline-flex gap-2 items-center px-3 py-2 font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-lg disabled:opacity-50" :disabled="creatingFolder() || !newFolderName().trim()"><span :if="creatingFolder()" class="h-4 w-4 animate-spin i-hugeicons-loading-03"></span>Create folder</button></div>
+    <div class="flex gap-2 justify-end mt-6"><Button :disabled="creatingFolder()" variant="secondary" @click="closeCreateFolder()">Cancel</Button><Button type="submit" :disabled="creatingFolder() || !newFolderName().trim()" :loading="creatingFolder()">Create folder</Button></div>
   </form>
 </div>
 
@@ -579,7 +579,7 @@ onMount(() => { void loadFiles() })
     <div :if="uploadError()" role="alert" class="mt-4 p-3 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900">{{ uploadError() }}</div>
     <label class="flex flex-col items-center justify-center mt-5 p-8 text-center border-2 border-dashed border-stone-300 rounded-xl dark:border-neutral-600 hover:border-blue-400 dark:hover:border-blue-600 cursor-pointer" @dragover.prevent="handleDragOver()" @drop.prevent="handleDrop($event)"><span class="h-10 w-10 text-stone-400 i-hugeicons-upload-01"></span><span class="mt-3 font-semibold text-sm text-stone-800 dark:text-white">Choose files or drop them here</span><span class="mt-1 text-stone-500 text-xs dark:text-neutral-400">{{ selectedFilesLabel }}</span><input ref="fileManagerUploadInput" type="file" class="sr-only" multiple @change="handleFileSelection($event)" /></label>
     <ul :if="selectedFiles().length" class="overflow-y-auto mt-4 space-y-1 max-h-32 text-sm"><template :for="file in selectedFiles"><li class="flex gap-4 items-center justify-between px-3 py-2 bg-stone-50 dark:bg-neutral-900 rounded-lg"><span class="text-stone-700 truncate dark:text-neutral-200">{{ file.name }}</span><span class="flex-shrink-0 font-mono text-stone-400 text-xs dark:text-neutral-500">{{ formatFileSize(file.size) }}</span></li></template></ul>
-    <div class="flex gap-2 justify-end mt-6"><button type="button" class="px-3 py-2 font-semibold text-sm text-stone-700 dark:text-neutral-200" :disabled="uploading()" @click="closeUpload()">Cancel</button><button type="submit" class="inline-flex gap-2 items-center px-3 py-2 font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-lg disabled:opacity-50" :disabled="uploading() || !selectedFiles().length"><span :if="uploading()" class="h-4 w-4 animate-spin i-hugeicons-loading-03"></span>Upload</button></div>
+    <div class="flex gap-2 justify-end mt-6"><Button :disabled="uploading()" variant="secondary" @click="closeUpload()">Cancel</Button><Button type="submit" :disabled="uploading() || !selectedFiles().length" :loading="uploading()">Upload</Button></div>
   </form>
 </div>
 
@@ -588,6 +588,6 @@ onMount(() => { void loadFiles() })
   <section role="alertdialog" aria-modal="true" aria-labelledby="file-manager-delete-title" class="relative p-6 max-w-md w-full bg-white dark:bg-neutral-800 border border-stone-200 rounded-xl dark:border-neutral-700 shadow-xl">
     <div class="flex gap-3 items-start"><span class="flex flex-shrink-0 items-center justify-center h-10 w-10 text-red-600 bg-red-50 dark:bg-red-950/40 rounded-full"><span class="h-5 w-5 i-hugeicons-delete-02"></span></span><div><h2 id="file-manager-delete-title" class="font-semibold text-lg text-stone-900 dark:text-white">Delete {{ itemToDelete()?.name }}</h2><p class="mt-1 text-sm text-stone-500 dark:text-neutral-400">{{ itemToDelete()?.type === 'folder' ? 'The folder and everything inside it will be permanently deleted.' : 'This file will be permanently deleted.' }}</p></div></div>
     <div :if="deleteError()" role="alert" class="mt-4 p-3 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900">{{ deleteError() }}</div>
-    <div class="flex gap-2 justify-end mt-6"><button type="button" class="px-3 py-2 font-semibold text-sm text-stone-700 dark:text-neutral-200" :disabled="deleting()" @click="closeDelete()">Cancel</button><button type="button" class="inline-flex gap-2 items-center px-3 py-2 font-semibold text-sm text-white bg-red-600 hover:bg-red-500 rounded-lg disabled:opacity-50" :disabled="deleting()" @click="deleteItem()"><span :if="deleting()" class="h-4 w-4 animate-spin i-hugeicons-loading-03"></span>Delete permanently</button></div>
+    <div class="flex gap-2 justify-end mt-6"><Button :disabled="deleting()" variant="secondary" @click="closeDelete()">Cancel</Button><Button :loading="deleting()" variant="danger" @click="deleteItem()">Delete permanently</Button></div>
   </section>
 </div>
