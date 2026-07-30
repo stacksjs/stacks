@@ -110,7 +110,7 @@ function errorMessages(): string[] {
           <label class="flex gap-3 items-center sm:col-span-2 p-3 border border-gray-200 rounded-lg dark:border-neutral-700"><input x-model="isActive" type="checkbox" class="h-4 w-4 text-blue-600 border-gray-300 rounded" /><span><span class="block font-medium text-gray-700 text-sm dark:text-neutral-200">Enabled for redemption</span><span class="block mt-0.5 text-gray-400 text-xs dark:text-neutral-500">Availability is stored separately from lifecycle status.</span></span></label>
         </div>
       </div>
-      <footer class="flex gap-2 justify-end px-6 py-4 bg-gray-50 dark:bg-neutral-900/50 border-gray-200 border-t dark:border-neutral-700"><button type="button" :disabled="busy()" class="px-3 py-2 font-semibold text-gray-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700 disabled:opacity-50" @click="emit('close')">Cancel</button><button type="submit" :disabled="busy() || !valid()" class="inline-flex items-center px-3 py-2 font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md disabled:opacity-50"><span :if="busy()" class="mr-2 h-4 w-4 animate-spin i-hugeicons-loading-03"></span>{{ mode() === 'edit' ? 'Save coupon' : 'Add coupon' }}</button></footer>
+      <footer class="flex gap-2 justify-end px-6 py-4 bg-gray-50 dark:bg-neutral-900/50 border-gray-200 border-t dark:border-neutral-700"><Button variant="secondary" :disabled="busy()" @click="emit('close')">Cancel</Button><Button type="submit" :loading="busy()" :disabled="!valid()">{{ mode() === 'edit' ? 'Save coupon' : 'Add coupon' }}</Button></footer>
     </form>
   </section>
 </div>

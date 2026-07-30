@@ -16,4 +16,40 @@ describe('dashboard button contract', () => {
     expect(button).toContain("tag?: 'button' | 'a'")
     expect(button).toContain("const liveDownload = useReactiveProp('download', '')")
   })
+
+  test('routes primary commerce actions through the canonical component', () => {
+    const files = [
+      'CommerceProductsDashboard.stx',
+      'CommerceProductDialog.stx',
+      'CommerceProductDeleteDialog.stx',
+      'CommerceProductDetailDashboard.stx',
+      'CommerceCustomersDashboard.stx',
+      'CommerceCustomerDialog.stx',
+      'CommerceCustomerDeleteDialog.stx',
+      'CommerceCustomerDetailsDialog.stx',
+      'CommerceOrdersDashboard.stx',
+      'CommerceOrderDialog.stx',
+      'CommerceOrderDeleteDialog.stx',
+      'CommerceOrderDetailsDialog.stx',
+      'CommerceCouponsDashboard.stx',
+      'CommerceCouponDialog.stx',
+      'CommerceCouponDeleteDialog.stx',
+      'CommerceCouponDetailsDialog.stx',
+      'CommerceGiftCardsDashboard.stx',
+      'CommerceGiftCardDialog.stx',
+      'CommerceGiftCardDeleteDialog.stx',
+      'CommerceGiftCardDetailsDialog.stx',
+    ]
+
+    for (const file of files) {
+      const source = readFileSync(
+        resolve('storage/framework/defaults/resources/components/Dashboard/Commerce', file),
+        'utf8',
+      )
+      const nativeButtons = [...source.matchAll(/<button\b[^>]*>/g)].map(match => match[0])
+
+      expect(source).toContain('<Button')
+      expect(nativeButtons.every(button => button.includes('absolute inset-0 bg-black/45'))).toBe(true)
+    }
+  })
 })

@@ -100,7 +100,7 @@ function errorMessages(): string[] {
           <label class="block sm:col-span-2"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Avatar URL</span><input x-model="avatar" type="url" placeholder="https://cdn.example.com/customers/avatar.jpg" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /><span class="block mt-1 text-gray-400 text-xs dark:text-neutral-500">Use a persisted HTTP asset URL. The dashboard uses initials when rendering the table.</span></label>
         </div>
       </div>
-      <footer class="flex gap-2 justify-end px-6 py-4 bg-gray-50 dark:bg-neutral-900/50 border-gray-200 border-t dark:border-neutral-700"><button type="button" :disabled="busy()" class="px-3 py-2 font-semibold text-gray-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700 disabled:opacity-50" @click="emit('close')">Cancel</button><button type="submit" :disabled="busy() || !valid()" class="inline-flex items-center px-3 py-2 font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md disabled:opacity-50"><span :if="busy()" class="mr-2 h-4 w-4 animate-spin i-hugeicons-loading-03"></span>{{ mode() === 'edit' ? 'Save customer' : 'Add customer' }}</button></footer>
+      <footer class="flex gap-2 justify-end px-6 py-4 bg-gray-50 dark:bg-neutral-900/50 border-gray-200 border-t dark:border-neutral-700"><Button variant="secondary" :disabled="busy()" @click="emit('close')">Cancel</Button><Button type="submit" :loading="busy()" :disabled="!valid()">{{ mode() === 'edit' ? 'Save customer' : 'Add customer' }}</Button></footer>
     </form>
   </section>
 </div>
