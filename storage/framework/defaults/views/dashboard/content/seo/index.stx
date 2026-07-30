@@ -307,7 +307,7 @@ void loadEntries()
                 </td>
                 <td class="px-4 py-4 text-neutral-500 text-sm whitespace-nowrap dark:text-neutral-400">{{ formatDate(entry.updated_at || entry.created_at) }}</td>
                 <td class="px-4 py-4 text-right">
-                  <button type="button" @click="openEdit(entry)" class="font-medium text-blue-600 text-sm dark:text-blue-400 hover:text-blue-500">Edit</button>
+                  <Button variant="ghost" size="sm" @click="openEdit(entry)">Edit</Button>
                 </td>
               </tr>
             </template>
@@ -335,9 +335,9 @@ void loadEntries()
           <h2 id="seo-edit-title" class="font-semibold text-neutral-900 dark:text-white">Edit SEO metadata</h2>
           <p class="mt-1 text-neutral-500 text-xs dark:text-neutral-400">{{ editingEntry()?.title }}</p>
         </div>
-        <button type="button" aria-label="Close SEO editor" @click="closeEdit()" class="p-1.5 text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 rounded-md">
+        <Button variant="ghost" size="sm" iconOnly ariaLabel="Close SEO editor" @click="closeEdit()">
           <span class="block h-4 w-4 i-hugeicons-cancel-01"></span>
-        </button>
+        </Button>
       </div>
 
       <div class="p-5 space-y-4">

@@ -190,6 +190,23 @@ describe('dashboard button contract', () => {
     }
   })
 
+  test('routes content view actions through the canonical component', () => {
+    const files = [
+      'blog/index.stx',
+      'seo/index.stx',
+    ]
+
+    for (const file of files) {
+      const source = readFileSync(
+        resolve('storage/framework/defaults/views/dashboard/content', file),
+        'utf8',
+      )
+
+      expect(source).toContain('<Button')
+      expect(source).not.toMatch(/<button\b/)
+    }
+  })
+
   test('keeps file navigation semantic while sharing all file actions', () => {
     const source = readFileSync(
       resolve('storage/framework/defaults/resources/components/Dashboard/Content/FileManagerDashboard.stx'),

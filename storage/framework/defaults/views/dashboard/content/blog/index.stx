@@ -13,14 +13,14 @@
         </p>
       </div>
       <div class="flex flex-wrap gap-2">
-        <a href="/blog" target="_blank" rel="noopener" class="inline-flex gap-2 items-center px-3 py-2 font-medium text-neutral-800 text-sm dark:text-neutral-100 hover:bg-white dark:hover:bg-neutral-900 border border-neutral-300 rounded-md dark:border-neutral-700">
+        <Button tag="a" href="/blog" target="_blank" rel="noopener" variant="secondary">
           <span class="h-4 w-4 i-hugeicons-view"></span>
           View blog
-        </a>
-        <button type="button" @click="openEditor(null)" class="inline-flex gap-2 items-center px-3 py-2 font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md shadow-sm">
+        </Button>
+        <Button @click="openEditor(null)">
           <span class="h-4 w-4 i-hugeicons-plus-sign"></span>
           New post
-        </button>
+        </Button>
       </div>
     </header>
 
@@ -75,9 +75,9 @@
         <span class="h-8 w-8 text-red-500 i-hugeicons-alert-02"></span>
         <p class="font-medium">Couldn't load posts</p>
         <p class="max-w-md text-neutral-500 text-sm dark:text-neutral-400">{{ loadError() }}</p>
-        <button type="button" @click="load()" class="mt-1 px-3 py-2 font-medium text-neutral-800 text-sm dark:text-neutral-100 border border-neutral-300 rounded-md dark:border-neutral-700">
+        <Button variant="secondary" @click="load()">
           Try again
-        </button>
+        </Button>
       </div>
 
       <!-- Loading: skeleton rows matching the table's shape. -->
@@ -134,12 +134,12 @@
                     >
                       <span class="block h-4 w-4 i-hugeicons-view"></span>
                     </a>
-                    <button type="button" @click="openEditor(post)" :title="'Edit ' + post.title" class="p-2 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded">
+                    <Button variant="ghost" size="sm" iconOnly :ariaLabel="'Edit ' + post.title" @click="openEditor(post)">
                       <span class="block h-4 w-4 i-hugeicons-edit-01"></span>
-                    </button>
-                    <button type="button" @click="askDelete(post)" :title="'Delete ' + post.title" class="p-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 rounded">
-                      <span class="block h-4 w-4 i-hugeicons-waste"></span>
-                    </button>
+                    </Button>
+                    <Button variant="ghost" size="sm" iconOnly :ariaLabel="'Delete ' + post.title" @click="askDelete(post)">
+                      <span class="block h-4 w-4 text-red-600 dark:text-red-400 i-hugeicons-waste"></span>
+                    </Button>
                   </div>
                 </td>
               </tr>
@@ -155,12 +155,12 @@
         <p class="max-w-sm text-neutral-500 text-sm dark:text-neutral-400">
           {{ posts().length === 0 ? 'Your first post becomes a markdown file in content/blog.' : 'Try a different search term or status.' }}
         </p>
-        <button x-show="posts().length === 0" type="button" @click="openEditor(null)" class="mt-1 px-3 py-2 font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md">
+        <Button :if="posts().length === 0" @click="openEditor(null)">
           Write your first post
-        </button>
-        <button x-show="posts().length > 0" type="button" @click="clearFilters()" class="mt-1 px-3 py-2 font-medium text-neutral-800 text-sm dark:text-neutral-100 border border-neutral-300 rounded-md dark:border-neutral-700">
+        </Button>
+        <Button :if="posts().length > 0" variant="secondary" @click="clearFilters()">
           Clear filters
-        </button>
+        </Button>
       </div>
     </section>
   </div>
@@ -172,9 +172,9 @@
     <div role="dialog" aria-modal="true" aria-labelledby="editor-title" class="relative z-10 my-8 max-w-3xl w-full bg-white dark:bg-neutral-900 border border-neutral-200 rounded-lg dark:border-neutral-800 shadow-xl">
       <div class="flex items-center justify-between px-5 py-4 border-b border-neutral-200 dark:border-neutral-800">
         <h2 id="editor-title" class="font-semibold text-lg">{{ editingSlug() ? 'Edit post' : 'New post' }}</h2>
-        <button type="button" @click="closeEditor()" aria-label="Close editor" class="p-2 text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded">
+        <Button variant="ghost" size="sm" iconOnly ariaLabel="Close editor" @click="closeEditor()">
           <span class="block h-4 w-4 i-hugeicons-cancel-01"></span>
-        </button>
+        </Button>
       </div>
 
       <div class="overflow-y-auto p-5 space-y-4 max-h-[70vh]">
@@ -236,11 +236,10 @@
       </div>
 
       <div class="flex gap-2 justify-end px-5 py-4 border-neutral-200 border-t dark:border-neutral-800">
-        <button type="button" @click="closeEditor()" class="px-3 py-2 font-medium text-neutral-800 text-sm dark:text-neutral-100 border border-neutral-300 rounded-md dark:border-neutral-700">Cancel</button>
-        <button type="button" @click="submit()" :disabled="isSaving()" class="inline-flex gap-2 items-center px-3 py-2 font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md disabled:opacity-60">
-          <span x-show="isSaving()" class="h-4 w-4 animate-spin i-hugeicons-loading-03"></span>
+        <Button variant="secondary" :disabled="isSaving()" @click="closeEditor()">Cancel</Button>
+        <Button :loading="isSaving()" @click="submit()">
           {{ isSaving() ? 'Saving' : 'Save post' }}
-        </button>
+        </Button>
       </div>
     </div>
   </div>
@@ -255,8 +254,8 @@
         This deletes the file <code class="px-1 py-0.5 text-xs bg-neutral-100 dark:bg-neutral-800 rounded">content/blog/{{ deleteTargetSlug() }}.md</code>. It stays in git history until you commit the deletion.
       </p>
       <div class="flex gap-2 justify-end mt-5">
-        <button type="button" @click="cancelDelete()" class="px-3 py-2 font-medium text-neutral-800 text-sm dark:text-neutral-100 border border-neutral-300 rounded-md dark:border-neutral-700">Cancel</button>
-        <button type="button" @click="confirmDelete()" class="px-3 py-2 font-semibold text-sm text-white bg-red-600 hover:bg-red-500 rounded-md">Delete post</button>
+        <Button variant="secondary" @click="cancelDelete()">Cancel</Button>
+        <Button variant="danger" @click="confirmDelete()">Delete post</Button>
       </div>
     </div>
   </div>
