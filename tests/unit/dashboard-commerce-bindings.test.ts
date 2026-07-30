@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test'
-import { readFileSync } from 'node:fs'
+import { readFileSync, readdirSync } from 'node:fs'
 import { resolve } from 'node:path'
 
 const commerceComponents = [
@@ -213,5 +213,36 @@ describe('commerce dashboard filter bindings', () => {
     )
     expect(overview).toContain('reloadSelectedRange($event)')
     expect(overview).not.toContain('range.set(')
+  })
+
+  test('product and order forms use native field models', () => {
+    for (const component of [
+      'CommerceProductDialog.stx',
+      'CommerceOrderDialog.stx',
+    ]) {
+      const source = readFileSync(
+        resolve(
+          'storage/framework/defaults/resources/components/Dashboard/Commerce',
+          component,
+        ),
+        'utf8',
+      )
+
+      expect(source).toContain('x-model=')
+      expect(source).not.toContain('function inputValue(')
+      expect(source).not.toMatch(/function (?:set|toggle)[A-Z]\w*\(event: Event\)/)
+    }
+  })
+
+  test('commerce components do not manually mirror control values into signals', () => {
+    const componentRoot = resolve(
+      'storage/framework/defaults/resources/components/Dashboard/Commerce',
+    )
+
+    for (const component of readdirSync(componentRoot).filter(file => file.endsWith('.stx'))) {
+      const source = readFileSync(resolve(componentRoot, component), 'utf8')
+      expect(source).not.toMatch(/:value="[^"]+\(\)"[^>]+@(?:input|change)=/)
+      expect(source).not.toMatch(/:checked="[^"]+\(\)"[^>]+@change=/)
+    }
   })
 })
