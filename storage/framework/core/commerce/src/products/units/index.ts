@@ -11,3 +11,5 @@ export { bulkStore, formatUnitOptions, getDefaultUnit, store } from './store'
 
 // Update functions
 export { bulkUpdate, update, updateDefaultStatus } from './update'
+
+export type { ProductUnitWriteData } from './types'

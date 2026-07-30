@@ -1,8 +1,8 @@
 // Import dependencies
 type ProductUnitJsonResponse = ModelRow<typeof ProductUnit>
-type NewProductUnit = NewModelData<typeof ProductUnit>
 import { randomUUIDv7 } from 'bun'
 import { db } from '@stacksjs/database'
+import type { ProductUnitWriteData } from './types'
 
 /**
  * Create a new product unit
@@ -10,33 +10,34 @@ import { db } from '@stacksjs/database'
  * @param data The product unit data to store
  * @returns The newly created product unit record
  */
-export async function store(data: NewProductUnit): Promise<ProductUnitJsonResponse> {
+export async function store(data: ProductUnitWriteData): Promise<ProductUnitJsonResponse> {
   try {
-    const unitData = {
-      ...data,
-      uuid: randomUUIDv7(),
-    }
+    return await db.transaction(async (trx: any) => {
+      const unitData = {
+        ...data,
+        uuid: randomUUIDv7(),
+      }
 
-    const result = await db
-      .insertInto('product_units')
-      .values(unitData)
-      .returningAll()
-      .executeTakeFirst()
+      const result = await trx
+        .insertInto('product_units')
+        .values(unitData)
+        .returningAll()
+        .executeTakeFirst()
 
-    if (!result)
-      throw new Error('Failed to create product unit')
+      if (!result)
+        throw new Error('Failed to create product unit')
 
-    // If this unit is set as default, update all other units of the same type
-    if ((unitData as Record<string, unknown>).is_default) {
-      await db
-        .updateTable('product_units')
-        .set({ is_default: false })
-        .where('type', '=', unitData.type)
-        .where('id', '!=', result.id)
-        .execute()
-    }
+      if (unitData.is_default && unitData.type) {
+        await trx
+          .updateTable('product_units')
+          .set({ is_default: false })
+          .where('type', '=', unitData.type)
+          .where('id', '!=', result.id)
+          .execute()
+      }
 
-    return result as ProductUnitJsonResponse
+      return result as ProductUnitJsonResponse
+    })
   }
   catch (error) {
     if (error instanceof Error) {
@@ -53,7 +54,7 @@ export async function store(data: NewProductUnit): Promise<ProductUnitJsonRespon
  * @param data Array of product unit data to store
  * @returns Number of product units created
  */
-export async function bulkStore(data: NewProductUnit[]): Promise<number> {
+export async function bulkStore(data: ProductUnitWriteData[]): Promise<number> {
   if (!data.length)
     return 0
 
@@ -73,7 +74,7 @@ export async function bulkStore(data: NewProductUnit[]): Promise<number> {
         .executeTakeFirst()
 
       // If this unit is set as default, update all other units of the same type
-      if ((unitData as Record<string, unknown>).is_default && result) {
+      if (unitData.is_default && unitData.type && result) {
         await db
           .updateTable('product_units')
           .set({ is_default: false })

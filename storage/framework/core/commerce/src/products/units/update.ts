@@ -1,5 +1,6 @@
 import { db } from '@stacksjs/database'
 import { formatDate } from '@stacksjs/orm'
+import type { ProductUnitWriteData } from './types'
 type ProductUnitJsonResponse = ModelRow<typeof ProductUnit>
 type ProductUnitUpdate = UpdateModelData<typeof ProductUnit>
 
@@ -10,36 +11,47 @@ type ProductUnitUpdate = UpdateModelData<typeof ProductUnit>
  * @param data The product unit data to update
  * @returns The updated product unit record
  */
-export async function update(id: number, data: ProductUnitUpdate): Promise<ProductUnitJsonResponse> {
+export async function update(id: number, data: ProductUnitWriteData): Promise<ProductUnitJsonResponse> {
   try {
     if (!id)
       throw new Error('Product unit ID is required for update')
 
-    const result = await db
-      .updateTable('product_units')
-      .set({
-        ...data,
-        updated_at: formatDate(new Date()),
-      })
-      .where('id', '=', id)
-      .returningAll()
-      .executeTakeFirst()
+    return await db.transaction(async (trx: any) => {
+      const current = await trx
+        .selectFrom('product_units')
+        .select(['type', 'is_default'])
+        .where('id', '=', id)
+        .executeTakeFirst() as { type: string, is_default: boolean | null } | undefined
 
-    if (!result)
-      throw new Error('Failed to update product unit')
+      if (!current)
+        throw new Error(`Product unit with ID ${id} not found`)
 
-    // If this unit is set as default, update all other units of the same type
-    const d = data as Record<string, unknown>
-    if (d.is_default === true && data.type) {
-      await db
+      const unitType = data.type ?? current.type
+      const isDefault = data.is_default ?? Boolean(current.is_default)
+      if (isDefault && unitType) {
+        await trx
+          .updateTable('product_units')
+          .set({ is_default: false, updated_at: formatDate(new Date()) })
+          .where('type', '=', unitType)
+          .where('id', '!=', id)
+          .execute()
+      }
+
+      const result = await trx
         .updateTable('product_units')
-        .set({ is_default: false })
-        .where('type', '=', data.type)
-        .where('id', '!=', id)
-        .execute()
-    }
+        .set({
+          ...data,
+          updated_at: formatDate(new Date()),
+        })
+        .where('id', '=', id)
+        .returningAll()
+        .executeTakeFirst()
 
-    return result as ProductUnitJsonResponse
+      if (!result)
+        throw new Error(`Product unit with ID ${id} not found`)
+
+      return result as ProductUnitJsonResponse
+    })
   }
   catch (error) {
     if (error instanceof Error) {
