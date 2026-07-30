@@ -20,9 +20,10 @@ import { preprocessSqliteMigrations } from '../src/migrations'
 //     dialect driver never renders inline UNIQUE in CREATE TABLE, so the
 //     standalone index file is the only uniqueness enforcement on SQLite
 //     (stacksjs/stacks#1952).
-//   - Genuinely dead files (duplicate CREATE TABLE created by buddy
-//     regeneration, DROP COLUMN of a column that doesn't exist) are
-//     still deleted — they wouldn't be useful on any dialect.
+//   - Genuinely dead, unrecorded duplicate CREATE TABLE files created by
+//     buddy regeneration are deleted.
+//   - Recorded migration files are immutable, even when the live schema
+//     already reflects their changes.
 
 describe('preprocessSqliteMigrations — keep portable files (stacksjs/stacks#1916)', () => {
   let workspace: string
@@ -176,6 +177,36 @@ describe('preprocessSqliteMigrations — unique-index files must run (stacksjs/s
     preprocessSqliteMigrations()
 
     expect(migrationRecord(dbPath, idxFileName)).not.toBeNull()
+  })
+
+  it('never deletes a recorded DROP COLUMN migration after the column is gone', () => {
+    const fileName = '0000000152-alter-tags-columns.sql'
+    const filePath = join(migrationsDir, fileName)
+    const sql = 'ALTER TABLE "users" DROP COLUMN "nickname";\n'
+    writeFileSync(filePath, sql)
+    const dbPath = createDb(`INSERT INTO migrations (migration) VALUES ('${fileName}')`)
+
+    preprocessSqliteMigrations()
+
+    expect(existsSync(filePath)).toBe(true)
+    expect(readFileSync(filePath, 'utf-8')).toBe(sql)
+    expect(migrationRecord(dbPath, fileName)).not.toBeNull()
+  })
+
+  it('keeps a pending DROP COLUMN needed after an earlier create migration', () => {
+    const createFileName = '0000000001-create-users-table.sql'
+    const dropFileName = '0000000002-drop-users-nickname.sql'
+    const dropPath = join(migrationsDir, dropFileName)
+    writeFileSync(
+      join(migrationsDir, createFileName),
+      'CREATE TABLE "users" ("id" INTEGER PRIMARY KEY, "nickname" TEXT);',
+    )
+    writeFileSync(dropPath, 'ALTER TABLE "users" DROP COLUMN "nickname";\n')
+
+    preprocessSqliteMigrations()
+
+    expect(existsSync(dropPath)).toBe(true)
+    expect(readFileSync(dropPath, 'utf-8')).toBe('ALTER TABLE "users" DROP COLUMN "nickname";\n')
   })
 
   it('still records ADD CONSTRAINT files as executed (#1916 contract unchanged)', () => {

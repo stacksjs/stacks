@@ -203,10 +203,9 @@ export function prepareMigrationModelsDir(): { modelsDir: string, skip: boolean 
  *     (stacksjs/stacks#1916)
  *
  *   - **Drop-and-delete** (`deleteMigration`): the file is genuinely dead
- *     — a duplicate CREATE TABLE created by `buddy generate:migrations`
- *     regenerating against an already-modeled table, or a DROP COLUMN
- *     migration whose target column never existed. Removing it keeps the
- *     directory clean and prevents future runs from re-discovering it.
+ *     — currently limited to an unrecorded duplicate CREATE TABLE created by
+ *     `buddy generate:migrations`. Recorded files are immutable migration
+ *     history, regardless of the current live schema.
  */
 /**
  * Split a migration file into its statements.
@@ -328,6 +327,22 @@ export function preprocessSqliteMigrations(): void {
     }
   }
 
+  const migrationWasRecorded = (file: string): boolean => {
+    if (!sqliteDb)
+      return false
+
+    try {
+      return Boolean(
+        (sqliteDb as any)
+          .prepare('SELECT 1 FROM migrations WHERE migration = ? LIMIT 1')
+          .get(file),
+      )
+    }
+    catch {
+      return false
+    }
+  }
+
   for (const file of files) {
     log.debug(`[migration] Running: ${file}`)
     const filePath = join(migrationsDir, file)
@@ -335,6 +350,31 @@ export function preprocessSqliteMigrations(): void {
     const statements = sqlStatementsOf(content)
 
     if (statements.length === 0) continue
+
+    // Self-heal databases the old skip logic poisoned: it recorded
+    // unique-index files as executed without ever creating the index, so
+    // `email: { unique: true }` etc. were never enforced. This is the one
+    // intentional exception to recorded migration immutability: a missing
+    // index proves that the historical record is false, so re-queue the file.
+    const uniqueIndexNames = statements
+      .map(s => s.match(createUniqueIndexPattern)?.[1])
+      .filter((name): name is string => Boolean(name))
+    if (sqliteDb && uniqueIndexNames.length === statements.length) {
+      const indexExists = (sqliteDb as any).prepare(`SELECT name FROM sqlite_master WHERE type = 'index' AND name = ?`)
+      const missing = uniqueIndexNames.filter(name => !indexExists.get(name))
+      if (missing.length > 0) {
+        log.info(`Re-queueing unique-index migration (index missing from database): ${file}`)
+        replayMigrations.push(file)
+      }
+      continue
+    }
+
+    // Migration files are append-only history. Once a file is recorded, its
+    // SQL must not be deleted or rewritten merely because the live schema now
+    // reflects it. The executor will not run it again, so preprocessing it can
+    // only destroy the upgrade path for fresh databases and other dialects.
+    if (migrationWasRecorded(file))
+      continue
 
     // Drop duplicate CREATE TABLE migrations — keep only the earliest one
     // for each table. This handles the case where buddy regenerates a
@@ -381,25 +421,6 @@ export function preprocessSqliteMigrations(): void {
       continue
     }
 
-    // Self-heal databases the old skip logic poisoned: it recorded
-    // unique-index files as executed without ever creating the index, so
-    // `email: { unique: true }` etc. were never enforced. If the index is
-    // missing from sqlite_master, un-record the file so the runner replays
-    // it; indexes that exist stay recorded (no replay churn). Fresh
-    // installs (no DB yet) fall through and run the file normally.
-    const uniqueIndexNames = statements
-      .map(s => s.match(createUniqueIndexPattern)?.[1])
-      .filter((name): name is string => Boolean(name))
-    if (sqliteDb && uniqueIndexNames.length === statements.length) {
-      const indexExists = (sqliteDb as any).prepare(`SELECT name FROM sqlite_master WHERE type = 'index' AND name = ?`)
-      const missing = uniqueIndexNames.filter(name => !indexExists.get(name))
-      if (missing.length > 0) {
-        log.info(`Re-queueing unique-index migration (index missing from database): ${file}`)
-        replayMigrations.push(file)
-      }
-      continue
-    }
-
     /*
      * An ALTER migration whose columns are already on the table.
      *
@@ -412,11 +433,8 @@ export function preprocessSqliteMigrations(): void {
      * it. The DROP COLUMN branch below already reconciles the opposite case
      * against the live schema; this is the same idea in the other direction.
      *
-     * Skip-and-KEEP, never delete. A dead DROP COLUMN file is dead on every
-     * dialect, but an ADD COLUMN file is exactly what a fresh database needs
-     * — deleting it would mean the next clone never gets the column. Nor is
-     * the file rewritten: the statements have to stay intact on disk for that
-     * fresh run.
+     * Skip-and-KEEP, never delete. An ADD COLUMN file is exactly what a fresh
+     * database needs, so the statements have to stay intact on disk.
      */
     const addColumnTargets = statements
       .map(s => s.match(addColumnPattern))
@@ -480,9 +498,14 @@ export function preprocessSqliteMigrations(): void {
           const columnName = dropColMatch[2]
 
           if (!sqliteDb) {
-            // No database file — fresh install. The CREATE TABLE migration will
-            // create the table from the current model (without the dropped column),
-            // so this DROP COLUMN is unnecessary.
+            // No database file means every migration is pending. If an earlier
+            // create migration still defines the legacy column, this drop is
+            // required later in the same fresh run and must remain untouched.
+            if (earlierCreateDefinesColumn(file, tableName, columnName)) {
+              filteredStatements.push(stmt)
+              continue
+            }
+
             log.info(`Skipping DROP COLUMN "${columnName}" — no database exists yet: ${file}`)
             modified = true
             continue
@@ -493,7 +516,13 @@ export function preprocessSqliteMigrations(): void {
             const safeTableName = tableName.replace(/[^a-zA-Z0-9_]/g, '')
             const columns = (sqliteDb as any).prepare(`PRAGMA table_info("${safeTableName}")`).all() as Array<{ name: string }>
             if (columns.length === 0) {
-              // Table doesn't exist yet — column will be absent from CREATE TABLE
+              // The table may be pending in an earlier migration. Preserve the
+              // drop when that create file still defines the legacy column.
+              if (earlierCreateDefinesColumn(file, tableName, columnName)) {
+                filteredStatements.push(stmt)
+                continue
+              }
+
               log.info(`Skipping DROP COLUMN "${columnName}" — table "${tableName}" does not exist yet: ${file}`)
               modified = true
               continue
@@ -506,7 +535,11 @@ export function preprocessSqliteMigrations(): void {
             }
           }
           catch {
-            // Table doesn't exist — skip the DROP COLUMN
+            if (earlierCreateDefinesColumn(file, tableName, columnName)) {
+              filteredStatements.push(stmt)
+              continue
+            }
+
             log.info(`Skipping DROP COLUMN "${columnName}" — table "${tableName}" not found: ${file}`)
             modified = true
             continue
