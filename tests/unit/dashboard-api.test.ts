@@ -84,6 +84,26 @@ describe('dashboard API authentication', () => {
     })
   })
 
+  it('sends multipart forms without replacing the browser boundary header', async () => {
+    const formData = new FormData()
+    formData.append('path', 'images')
+    formData.append('files', new File(['image'], 'photo.jpg', { type: 'image/jpeg' }))
+    const fetchMock = mock(async (_input: RequestInfo | URL, _init?: RequestInit) => Response.json({ uploaded: [] }))
+    globalThis.fetch = fetchMock as typeof fetch
+
+    await dashboardApi('/api/dashboard/files/uploads', {
+      method: 'POST',
+      formData,
+    })
+
+    const [, options] = fetchMock.mock.calls[0]
+    expect(options?.body).toBe(formData)
+    expect(options?.headers).toMatchObject({
+      'X-CSRF-Token': 'test-csrf-token',
+    })
+    expect((options?.headers as Record<string, string>)['content-type']).toBeUndefined()
+  })
+
   it('keeps failed logins unauthenticated and returns the server message', async () => {
     const fetchMock = mock(async () => {
       return Response.json({ message: 'Invalid credentials' }, { status: 422 })

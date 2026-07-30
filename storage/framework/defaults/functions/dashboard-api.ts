@@ -17,6 +17,8 @@ export interface ApiRequestOptions {
   method?: 'GET' | 'HEAD' | 'POST' | 'PATCH' | 'PUT' | 'DELETE'
   /** JSON request body. Omitted entirely for GET. */
   body?: unknown
+  /** Multipart request body. The browser supplies its boundary header. */
+  formData?: FormData
   signal?: AbortSignal
 }
 
@@ -44,6 +46,9 @@ export async function dashboardApi<T = unknown>(path: string, options: ApiReques
   const headers: Record<string, string> = { accept: 'application/json' }
   const authToken = useAuth().getToken()
 
+  if (options.body !== undefined && options.formData)
+    throw new TypeError('dashboardApi accepts either body or formData, not both.')
+
   if (authToken)
     headers.Authorization = `Bearer ${authToken}`
 
@@ -60,6 +65,7 @@ export async function dashboardApi<T = unknown>(path: string, options: ApiReques
     credentials: 'same-origin',
     signal: options.signal,
     ...(options.body !== undefined && { body: JSON.stringify(options.body) }),
+    ...(options.formData && { body: options.formData }),
   })
 
   const text = await res.text()
