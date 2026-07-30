@@ -30,11 +30,6 @@ function iconName(): string {
   return variant() === 'warning' ? 'i-hugeicons-alert-circle' : 'i-hugeicons-alert-02'
 }
 
-function confirmClass(): string {
-  return variant() === 'warning'
-    ? 'bg-orange-600 hover:bg-orange-500 focus-visible:ring-orange-500'
-    : 'bg-red-600 hover:bg-red-500 focus-visible:ring-red-500'
-}
 </script>
 
 <template :if="open()">
@@ -63,24 +58,29 @@ function confirmClass(): string {
         </div>
 
         <div class="flex gap-2 items-center justify-end mt-6">
-          <button
-            type="button"
-            class="inline-flex items-center justify-center px-3 py-1.5 font-medium text-[13px] text-neutral-800 tracking-tight dark:text-neutral-100 bg-white/80 dark:bg-white/10 hover:bg-white dark:hover:bg-white/15 border border-black/10 rounded-lg dark:border-white/10 shadow-sm disabled:opacity-50 duration-150 transition-all"
+          <Button
+            variant="secondary"
             :disabled="busy()"
             @click="close"
           >
             {{ cancelLabel() }}
-          </button>
-          <button
-            type="button"
-            class="inline-flex gap-1.5 items-center justify-center px-3 py-1.5 font-medium text-[13px] text-white tracking-tight rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-neutral-900 shadow-sm disabled:opacity-50 duration-150 transition-colors"
-            :class="confirmClass()"
-            :disabled="busy()"
+          </Button>
+          <Button
+            :if="variant() === 'warning'"
+            variant="warning"
+            :loading="busy()"
             @click="confirm"
           >
-            <span :if="busy()" class="h-4 w-4 animate-spin i-hugeicons-loading-03"></span>
             {{ confirmLabel() }}
-          </button>
+          </Button>
+          <Button
+            :if="variant() !== 'warning'"
+            variant="danger"
+            :loading="busy()"
+            @click="confirm"
+          >
+            {{ confirmLabel() }}
+          </Button>
         </div>
       </section>
     </div>

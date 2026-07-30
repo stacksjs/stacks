@@ -1,6 +1,6 @@
 <script server>
 interface ButtonProps {
-  variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger' | 'success'
+  variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger' | 'success' | 'warning'
   size?: 'xs' | 'sm' | 'md' | 'lg'
   disabled?: boolean
   loading?: boolean
@@ -34,7 +34,8 @@ const variantClasses = {
   outline: 'bg-transparent text-neutral-700 dark:text-neutral-200 border border-black/15 dark:border-white/15 hover:bg-black/5 dark:hover:bg-white/8 active:bg-black/10 dark:active:bg-white/10',
   ghost: 'bg-transparent text-neutral-600 dark:text-neutral-300 hover:bg-black/5 dark:hover:bg-white/8 active:bg-black/10 dark:active:bg-white/12',
   danger: 'bg-gradient-to-b from-red-500 to-red-600 text-white shadow-sm shadow-red-600/25 hover:from-red-400 hover:to-red-500 active:from-red-600 active:to-red-700',
-  success: 'bg-gradient-to-b from-green-500 to-green-600 text-white shadow-sm shadow-green-600/25 hover:from-green-400 hover:to-green-500 active:from-green-600 active:to-green-700'
+  success: 'bg-gradient-to-b from-green-500 to-green-600 text-white shadow-sm shadow-green-600/25 hover:from-green-400 hover:to-green-500 active:from-green-600 active:to-green-700',
+  warning: 'bg-gradient-to-b from-orange-500 to-orange-600 text-white shadow-sm shadow-orange-600/25 hover:from-orange-400 hover:to-orange-500 active:from-orange-600 active:to-orange-700'
 }
 
 // Size classes

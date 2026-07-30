@@ -12,7 +12,7 @@ describe('dashboard button contract', () => {
     expect(existsSync(resolve('storage/framework/defaults/resources/components/Button.stx'))).toBe(false)
     expect(existsSync(resolve('storage/framework/defaults/resources/components/Buttons/BaseButton.stx'))).toBe(false)
     expect(button).toContain('bg-gradient-to-b from-blue-500 to-blue-600')
-    expect(button).toContain("variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger' | 'success'")
+    expect(button).toContain("variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger' | 'success' | 'warning'")
     expect(button).toContain("tag?: 'button' | 'a'")
     expect(button).toContain("const liveDownload = useReactiveProp('download', '')")
   })
@@ -89,6 +89,25 @@ describe('dashboard button contract', () => {
 
       expect(source).toContain('<Button')
       expect(nativeButtons.every(button => button.includes('absolute inset-0 bg-black/45'))).toBe(true)
+    }
+  })
+
+  test('routes shared dashboard controls through the canonical component', () => {
+    const files = [
+      'Pagination.stx',
+      'UI/Modal.stx',
+      'UI/ConfirmDialog.stx',
+    ]
+
+    for (const file of files) {
+      const source = readFileSync(
+        resolve('storage/framework/defaults/resources/components/Dashboard', file),
+        'utf8',
+      )
+      const nativeButtons = [...source.matchAll(/<button\b[^>]*>/g)].map(match => match[0])
+
+      expect(source).toContain('<Button')
+      expect(nativeButtons.every(button => button.includes('inset-0'))).toBe(true)
     }
   })
 })

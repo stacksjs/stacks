@@ -53,14 +53,15 @@ function closeModal(): void {
             </div>
 
             @if(closable)
-              <button
-                type="button"
-                class="-m-2 p-2 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors"
-                aria-label="Close modal"
+              <Button
+                variant="ghost"
+                size="sm"
+                iconOnly
+                ariaLabel="Close modal"
                 @click="closeModal"
               >
                 <div class="h-5 w-5 i-hugeicons-cancel-01"></div>
-              </button>
+              </Button>
             @endif
           </div>
         @endif

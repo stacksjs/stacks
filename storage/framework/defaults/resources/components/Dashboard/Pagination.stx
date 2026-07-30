@@ -93,19 +93,22 @@ function emitItemsPerPage(event: Event): void {
   </div>
 
   <nav class="flex gap-1 items-center" aria-label="Pagination">
-    <button type="button" :disabled="currentPage() <= 1" aria-label="Previous page" class="p-2 font-medium text-neutral-500 text-sm dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg disabled:opacity-40 disabled:pointer-events-none" @click="previousPage">
+    <Button variant="secondary" iconOnly :disabled="currentPage() <= 1" ariaLabel="Previous page" @click="previousPage">
       <span class="block h-5 w-5 i-hugeicons-arrow-left-01"></span>
-    </button>
+    </Button>
 
     <template :for="page in visiblePages()">
       <span :if="typeof page !== 'number'" class="px-2 text-neutral-400 dark:text-neutral-500">...</span>
-      <button :if="typeof page === 'number'" type="button" :aria-current="page === currentPage() ? 'page' : null" :class="'flex items-center justify-center px-3 min-w-9 h-9 font-medium text-sm rounded-lg ' + (page === currentPage() ? 'text-white bg-blue-600' : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-800 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800')" @click="goToPage(page)">
+      <Button :if="typeof page === 'number' && page === currentPage()" @click="goToPage(page)">
+        <span aria-current="page">{{ page }}</span>
+      </Button>
+      <Button :if="typeof page === 'number' && page !== currentPage()" variant="secondary" @click="goToPage(page)">
         {{ page }}
-      </button>
+      </Button>
     </template>
 
-    <button type="button" :disabled="currentPage() >= totalPages()" aria-label="Next page" class="p-2 font-medium text-neutral-500 text-sm dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg disabled:opacity-40 disabled:pointer-events-none" @click="nextPage">
+    <Button variant="secondary" iconOnly :disabled="currentPage() >= totalPages()" ariaLabel="Next page" @click="nextPage">
       <span class="block h-5 w-5 i-hugeicons-arrow-right-01"></span>
-    </button>
+    </Button>
   </nav>
 </div>
