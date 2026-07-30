@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'bun:test'
+import { modelSchemaColumns } from '../../../defaults/app/Actions/Dashboard/Models/model-write'
 import { loadModel } from '../../../defaults/resources/functions/dashboard/data'
 
 describe('dashboard model loader', () => {
@@ -16,5 +17,17 @@ describe('dashboard model loader', () => {
 
     expect(Model._isStub).toBe(true)
     expect(await Model.all()).toEqual([])
+  })
+
+  it('derives empty-table columns from the model migration definition', async () => {
+    const Model = await loadModel('OrderIdempotency')
+
+    expect(modelSchemaColumns(Model)).toEqual([
+      'id',
+      'idempotency_key',
+      'order_id',
+      'created_at',
+      'updated_at',
+    ])
   })
 })

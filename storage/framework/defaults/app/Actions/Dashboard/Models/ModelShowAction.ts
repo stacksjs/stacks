@@ -2,7 +2,7 @@ import { Action } from '@stacksjs/actions'
 import { env } from '@stacksjs/env'
 import { request } from '@stacksjs/router'
 import { loadModel, safeGet } from '../../../../resources/functions/dashboard/data'
-import { type ModelCreateField, type ModelWriteCapabilities, modelCreateFields, modelWriteCapabilities } from './model-write'
+import { type ModelCreateField, type ModelWriteCapabilities, modelCreateFields, modelSchemaColumns, modelWriteCapabilities } from './model-write'
 
 /**
  * `GET /api/dashboard/models/{slug}` (stacksjs/stacks#1838).
@@ -204,15 +204,18 @@ export default new Action({
 
     if (hasOrm) {
       try {
+        response.tableName = String(Model.table || tableName)
         // The column list has to come from a real row: the ORM does not
-        // expose a schema reflection API, and the filter/sort allowlist
-        // must be built from actual columns rather than user input.
+        // expose a database schema reflection API. Empty tables fall back
+        // to the model definition, which is also the migration source.
         const probe = await Model.orderByDesc('id').take(1).get() as Array<Record<string, unknown>>
         const first = Array.isArray(probe) ? probe[0] : undefined
         const shape = first && typeof first === 'object'
           ? ((first as { attributes?: Record<string, unknown> }).attributes ?? first)
           : {}
         response.columns = Object.keys(shape).filter(k => typeof k === 'string' && !k.startsWith('_'))
+        if (response.columns.length === 0)
+          response.columns = modelSchemaColumns(Model)
 
         const allowed = new Set(response.columns.filter(c => !HIDDEN_COLUMNS.has(c)))
         const sort = isSafeColumn(requestedSort, allowed)
@@ -245,15 +248,19 @@ export default new Action({
         // A multi-column search has no ORM expression, so hand that one
         // query to the SQLite path — without recording an error, because it
         // is a gap in the builder's vocabulary, not a failure.
-        if (q && searchColumns.length !== 1)
+        if (q && searchColumns.length > 1)
           throw new SearchUnsupported()
 
-        response.totalCount = await build().count()
-        const rows = await build()
-          .orderBy(sort, dir)
-          .skip((page - 1) * perPage)
-          .take(perPage)
-          .get() as Array<Record<string, unknown>>
+        response.totalCount = q && searchColumns.length === 0
+          ? 0
+          : await build().count()
+        const rows = response.totalCount === 0
+          ? []
+          : await build()
+              .orderBy(sort, dir)
+              .skip((page - 1) * perPage)
+              .take(perPage)
+              .get() as Array<Record<string, unknown>>
 
         // Flatten to plain JSON-safe objects — proxy models and
         // accessor-rich rows do not serialise cleanly across the wire.

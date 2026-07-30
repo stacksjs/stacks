@@ -49,12 +49,55 @@ export interface ModelCreateField {
   options: string[]
 }
 
+function snakeCase(name: string): string {
+  return name
+    .replace(/([a-z\d])([A-Z])/g, '$1_$2')
+    .replace(/[\s-]+/g, '_')
+    .toLowerCase()
+}
+
 function humanize(name: string): string {
   return name
     .replace(/([a-z\d])([A-Z])/g, '$1 $2')
     .replace(/_/g, ' ')
     .replace(/\b\w/g, character => character.toUpperCase())
     .replace(/\bId\b/g, 'ID')
+}
+
+/**
+ * Derive the physical columns declared by a model when its table has no rows
+ * to inspect. This mirrors model-driven migrations closely enough for the
+ * generic browser to render and sort an empty model without falling back to
+ * raw SQLite.
+ */
+export function modelSchemaColumns(Model: any): string[] {
+  const columns: string[] = []
+  const add = (column: string) => {
+    if (column && !columns.includes(column))
+      columns.push(column)
+  }
+
+  add(snakeCase(String(Model?.primaryKey || 'id')))
+  for (const name of Object.keys(Model?.attributes ?? {}))
+    add(snakeCase(name))
+
+  for (const relation of Model?.belongsTo ?? []) {
+    const name = typeof relation === 'string' ? relation : relation?.model
+    if (typeof name === 'string' && name.trim())
+      add(`${snakeCase(name)}_id`)
+  }
+
+  const traits = Model?.traits ?? {}
+  if (traits.useUuid)
+    add('uuid')
+  if ((traits.useTimestamps ?? traits.timestampable) !== false) {
+    add('created_at')
+    add('updated_at')
+  }
+  if (traits.useSoftDeletes ?? traits.softDeletable)
+    add('deleted_at')
+
+  return columns
 }
 
 function isProtectedField(name: string): boolean {
