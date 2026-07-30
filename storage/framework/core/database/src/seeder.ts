@@ -19,7 +19,7 @@ import { fs } from '@stacksjs/storage'
 /**
  * Returns the path to the framework default models directory
  */
-function defaultModelsPath(subpath?: string): string {
+export function defaultModelsPath(subpath?: string): string {
   return path.frameworkPath(`defaults/app/Models/${subpath || ''}`)
 }
 
@@ -451,6 +451,37 @@ async function existingRows(table: string): Promise<Record<string, unknown>[]> {
 }
 
 /**
+ * The table each loaded model actually uses, by model name.
+ *
+ * A parent's table used to be guessed as `snake_case(name) + 's'`, which is
+ * wrong for every model whose plural is not formed by adding an s: a
+ * `Repository` was looked up in `repositorys`, the query failed, the pool came
+ * back empty, and the child's foreign key was left to whatever its factory
+ * invented. On a database with foreign keys that is not a subtly wrong graph
+ * but a hard constraint violation, so the whole model failed to seed. The
+ * models already declare their table; this reads it instead of guessing.
+ */
+const modelTables = new Map<string, string>()
+
+/** Record the table names of the models about to be seeded. */
+export function registerModelTables(models: { name: string, table: string }[]): void {
+  modelTables.clear()
+  for (const model of models)
+    modelTables.set(model.name, model.table)
+}
+
+/**
+ * The table a parent model lives in.
+ *
+ * Falls back to the old guess for a parent that is not itself being seeded
+ * (a framework model with no `useSeeder`, say), which is still right for the
+ * regular plurals that make up most of them.
+ */
+export function parentTable(parent: string): string {
+  return modelTables.get(parent) ?? `${snakeCase(parent)}s`
+}
+
+/**
  * Fill the foreign keys a model's `belongsTo` implies.
  *
  * Without this a seeded database has rows but no edges: every field belongs to
@@ -469,13 +500,14 @@ async function existingRows(table: string): Promise<Record<string, unknown>[]> {
  * them.
  */
 async function relationColumns(model: SeederModel, options: SeederConfig = {}): Promise<Record<string, unknown>[]> {
-  const parents = parentModels(model)
+  const parents = parentRelations(model)
   if (parents.length === 0)
     return []
 
   const pools: { column: string, rows: Record<string, unknown>[] }[] = []
-  for (const parent of parents) {
-    const column = `${snakeCase(parent)}_id`
+  for (const relation of parents) {
+    const parent = relation.model
+    const column = relation.column
 
     /*
      * A declared key is no longer skipped outright.
@@ -495,7 +527,7 @@ async function relationColumns(model: SeederModel, options: SeederConfig = {}): 
     if (isAccountModel(parent) && !options.allowProtected)
       continue
 
-    const rows = await existingRows(`${snakeCase(parent)}s`)
+    const rows = await existingRows(parentTable(parent))
     if (rows.length > 0)
       pools.push({ column, rows })
   }
@@ -688,17 +720,51 @@ async function seedModel(model: SeederModel, options: SeederConfig): Promise<See
   }
 }
 
-/** The models a model declares it belongs to, however the relation is written. */
-function parentModels(model: SeederModel): string[] {
+/** A parent a model belongs to, and the column that points at it. */
+export interface ParentRelation {
+  model: string
+  column: string
+}
+
+/**
+ * The parents a model declares, with the column each one is reached through.
+ *
+ * The column defaults to `<model>_id`, which is what most relations look like.
+ * An entry may override it with `foreignKey`, and doing so is not a niceness:
+ * a model that belongs to `User` twice — an author and a reviewer — has no
+ * `user_id` at all, so under the derived name neither key was ever filled and
+ * both fell back to whatever the factory invented.
+ */
+export function parentRelations(model: SeederModel): ParentRelation[] {
   const belongsTo = (model.model as { belongsTo?: unknown }).belongsTo
 
-  if (Array.isArray(belongsTo))
-    return belongsTo.map(entry => (typeof entry === 'string' ? entry : String((entry as { model?: string })?.model ?? ''))).filter(Boolean)
+  const read = (entry: unknown): ParentRelation | null => {
+    if (typeof entry === 'string')
+      return entry ? { model: entry, column: `${snakeCase(entry)}_id` } : null
 
-  if (belongsTo && typeof belongsTo === 'object')
-    return Object.values(belongsTo as Record<string, unknown>).map(value => String((value as { model?: string })?.model ?? value)).filter(Boolean)
+    if (entry && typeof entry === 'object') {
+      const name = String((entry as { model?: string }).model ?? '')
+      if (!name)
+        return null
 
-  return []
+      const key = (entry as { foreignKey?: string }).foreignKey
+
+      return { model: name, column: key || `${snakeCase(name)}_id` }
+    }
+
+    return null
+  }
+
+  const entries = Array.isArray(belongsTo)
+    ? belongsTo
+    : (belongsTo && typeof belongsTo === 'object' ? Object.values(belongsTo as Record<string, unknown>) : [])
+
+  return entries.map(read).filter((relation): relation is ParentRelation => relation !== null)
+}
+
+/** The models a model declares it belongs to, however the relation is written. */
+function parentModels(model: SeederModel): string[] {
+  return parentRelations(model).map(relation => relation.model)
 }
 
 /**
@@ -796,6 +862,10 @@ export async function seed(config: SeederConfig = {}): Promise<SeedSummary> {
 
   // Load all seedable models from both defaults and user directories
   let models = await loadAllModels(modelsDir, verbose, config.includeDefaults ?? false)
+
+  // Registered before any filtering, so a parent excluded from this run is
+  // still resolvable when a child needs its table to fill a foreign key.
+  registerModelTables(models)
 
   if (models.length === 0) {
     log.warn('No seedable models found in defaults or user directories')

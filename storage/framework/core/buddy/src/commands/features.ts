@@ -144,10 +144,16 @@ export const FEATURE_FILES: Record<FeatureName, readonly string[]> = {
  * defaults to "run unless owned by a disabled feature".
  */
 export const FEATURE_TABLES: Record<FeatureName, readonly string[]> = {
-  cms: ['posts', 'pages', 'comments', 'tags', 'authors', 'categories'],
+  // The polymorphic pivots belong here too: they carry foreign keys to
+  // `posts`/`tags`/`categories`, so leaving them unclaimed means they run
+  // against a database where the tables they point at were gated out.
+  cms: [
+    'posts', 'pages', 'comments', 'tags', 'authors', 'categories',
+    'taggable_models', 'categorizable_models', 'commentables',
+  ],
   commerce: [
     'products', 'product_variants', 'product_units', 'manufacturers',
-    'orders', 'order_items', 'carts', 'cart_items',
+    'orders', 'order_items', 'order_idempotency', 'carts', 'cart_items',
     'payments', 'payment_methods', 'payment_products', 'payment_transactions',
     'customers', 'subscribers', 'subscriber_emails', 'subscriptions',
     'gift_cards', 'coupons', 'transactions', 'reviews',
@@ -166,7 +172,12 @@ export const FEATURE_TABLES: Record<FeatureName, readonly string[]> = {
     // Dashboard observability tables
     'requests', 'logs',
   ],
-  marketing: [], // Marketing models exist but don't generate dedicated tables yet
+  // These do generate tables, and two of them reference `subscribers`,
+  // which commerce owns and gates.
+  marketing: [
+    'campaigns', 'campaign_sends', 'email_lists', 'email_list_subscribers',
+    'social_posts', 'mail_preferences',
+  ],
   monitoring: ['errors'],
   realtime: ['websockets'],
   queue: ['jobs', 'failed_jobs'],

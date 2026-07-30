@@ -23,6 +23,7 @@ const log = {
 }
 import { err, handleError, ok } from '@stacksjs/error-handling'
 import { path } from '@stacksjs/path'
+import { defaultModelsPath } from './seeder'
 import type { MigrationOperation } from '@stacksjs/query-builder'
 import {
   createQueryBuilder,
@@ -777,15 +778,34 @@ async function hideDisabledFeatureMigrations(): Promise<Array<{ original: string
     if (disabledFeatures.size === 0) return hidden
 
     const files = readdirSync(migrationsDir).filter(f => f.endsWith('.sql'))
+    const gatedTables = new Set<string>()
     for (const file of files) {
       const owner = (migrationFeature as (filename: string) => string | null)(file)
       if (!owner || !disabledFeatures.has(owner)) continue
       const table = (migrationTable as (filename: string) => string | null)(file)
       if (table && (appModelClaimsTable as (table: string) => boolean)(table)) continue
+      if (table)
+        gatedTables.add(table.toLowerCase())
       const original = join(migrationsDir, file)
       const hiddenPath = `${original}.disabled`
       await fs.rename(original, hiddenPath)
       hidden.push({ original, hidden: hiddenPath, feature: owner })
+    }
+
+    // A file the gate could not classify may still contain statements against
+    // the tables it just hid — the catch-all `auto-misc` migration holds alters
+    // for every table at once. Those statements are stripped for the duration
+    // of the run and the original is put back afterwards.
+    for (const file of files) {
+      const filePath = join(migrationsDir, file)
+      if (!existsSync(filePath)) continue
+      const sql = readFileSync(filePath, 'utf8')
+      const filtered = withoutGatedStatements(sql, gatedTables)
+      if (filtered === sql) continue
+      const backup = `${filePath}.ungated`
+      await fs.rename(filePath, backup)
+      writeFileSync(filePath, filtered)
+      hidden.push({ original: filePath, hidden: backup, feature: 'mixed' })
     }
 
     if (hidden.length > 0) {
@@ -808,10 +828,68 @@ async function hideDisabledFeatureMigrations(): Promise<Array<{ original: string
   return hidden
 }
 
+/**
+ * The table a single DDL statement acts on, or null when it names none.
+ *
+ * Only the forms the generator emits are recognised; anything unrecognised
+ * comes back null and is therefore kept, which is the safe direction.
+ */
+export function statementTable(statement: string): string | null {
+  const patterns = [
+    /^\s*ALTER\s+TABLE\s+["`]?([a-z0-9_]+)["`]?/i,
+    /^\s*CREATE\s+TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?["`]?([a-z0-9_]+)["`]?/i,
+    /^\s*DROP\s+TABLE\s+(?:IF\s+EXISTS\s+)?["`]?([a-z0-9_]+)["`]?/i,
+    /^\s*CREATE\s+(?:UNIQUE\s+)?INDEX\s+(?:IF\s+NOT\s+EXISTS\s+)?["`]?[a-z0-9_]+["`]?\s+ON\s+["`]?([a-z0-9_]+)["`]?/i,
+  ]
+
+  for (const pattern of patterns) {
+    const match = pattern.exec(statement)
+    if (match)
+      return match[1]!.toLowerCase()
+  }
+
+  return null
+}
+
+/**
+ * Drop the statements that act on a table a disabled feature owns.
+ *
+ * The generator emits a catch-all `auto-misc` migration holding stray alters
+ * for every table at once. Its filename names no table, so the file-level gate
+ * cannot classify it, and it ran in full: the first statement touching a gated
+ * table failed with "relation ... does not exist" and took the whole migration
+ * run with it. Gating has to reach inside a file that mixes them.
+ *
+ * A statement whose table cannot be identified is kept.
+ */
+export function withoutGatedStatements(sql: string, gated: ReadonlySet<string>): string {
+  if (gated.size === 0)
+    return sql
+
+  const statements = sql.split(';').map(s => s.trim()).filter(Boolean)
+  const kept = statements.filter((statement) => {
+    const table = statementTable(statement)
+
+    return !table || !gated.has(table)
+  })
+
+  if (kept.length === statements.length)
+    return sql
+
+  return kept.length === 0 ? '' : `${kept.join(';\n')};\n`
+}
+
 async function restoreHiddenMigrations(hidden: Array<{ original: string, hidden: string, feature: string }>): Promise<void> {
   const fs = await import('node:fs/promises')
   for (const { original, hidden: h } of hidden) {
-    try { await fs.rename(h, original) }
+    try {
+      // A filtered file was written in place of the original, so it has to go
+      // before the backup can take its name back.
+      if (h.endsWith('.ungated'))
+        await fs.rm(original, { force: true })
+
+      await fs.rename(h, original)
+    }
     catch { /* best-effort restore; another invocation may have already swept */ }
   }
 }
@@ -1112,10 +1190,70 @@ export async function resetDatabase(): Promise<Result<string, Error>> {
       log.debug(`No models directory at ${modelsDir}; skipping model table drops.`)
     }
 
+    // The framework's own default models have tables in this database too, and
+    // leaving them standing is not merely untidy: their Postgres enum types
+    // survive with them, and the replay that follows tries to create a type
+    // that is still there and dies on the first one it reaches. `fresh` has to
+    // mean the whole schema the framework put there, not just the app's half.
+    const defaultsDir = defaultModelsPath()
+    if (existsSync(defaultsDir))
+      await qbResetDatabase(defaultsDir, { dialect })
+    else
+      log.debug(`No framework default models directory at ${defaultsDir}; skipping.`)
+
+    // Postgres enum types outlive the tables that used them: `DROP TABLE`
+    // leaves the type behind, and the replay that follows tries to create it
+    // again and fails with "type ... already exists". A reset that leaves the
+    // database unable to migrate is not a reset.
+    if (dialect === 'postgres')
+      await dropOrphanedEnumTypes()
+
     return ok('All tables dropped successfully!')
   }
   catch (error) {
     return err(handleError('Database reset failed', error))
+  }
+}
+
+/**
+ * Drop every enum type no surviving column still uses.
+ *
+ * Types belonging to tables that were kept are left alone, so this stays safe
+ * to call against a database that shares a schema with something else.
+ */
+async function dropOrphanedEnumTypes(): Promise<void> {
+  try {
+    const rows = await (db as any).unsafe(`
+      SELECT t.typname AS name
+      FROM pg_type t
+      JOIN pg_namespace n ON n.oid = t.typnamespace
+      WHERE t.typtype = 'e'
+        AND n.nspname = current_schema()
+        AND NOT EXISTS (
+          SELECT 1 FROM pg_attribute a
+          JOIN pg_class c ON c.oid = a.attrelid
+          WHERE a.atttypid = t.oid AND c.relkind = 'r' AND NOT a.attisdropped
+        )
+    `).execute()
+
+    const names: string[] = (Array.isArray(rows) ? rows : (rows?.rows ?? []))
+      .map((row: any) => String(row.name ?? row.typname ?? ''))
+      .filter(Boolean)
+
+    for (const name of names) {
+      try {
+        await (db as any).unsafe(`DROP TYPE IF EXISTS "${name}" CASCADE`).execute()
+        log.debug(`Dropped orphaned enum type: ${name}`)
+      }
+      catch (error) {
+        log.warn(`Could not drop enum type ${name}: ${error instanceof Error ? error.message : String(error)}`)
+      }
+    }
+  }
+  catch (error) {
+    // Listing types is best effort: a database that refuses the catalog query
+    // still deserves the table drops it already got.
+    log.warn(`Could not list enum types to drop: ${error instanceof Error ? error.message : String(error)}`)
   }
 }
 
