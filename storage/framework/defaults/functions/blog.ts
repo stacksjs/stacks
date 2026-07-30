@@ -48,8 +48,9 @@ function writeHeaders(): Record<string, string> {
   const headers: Record<string, string> = { 'Content-Type': 'application/json' }
   const match = document.cookie.match(/(?:^|;\s*)X-CSRF-Token=([^;]*)/)
 
-  if (match)
-    headers['X-CSRF-Token'] = decodeURIComponent(match[1])
+  const csrfToken = match?.[1]
+  if (csrfToken)
+    headers['X-CSRF-Token'] = decodeURIComponent(csrfToken)
 
   return headers
 }

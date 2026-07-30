@@ -42,7 +42,7 @@ export interface RoleSnapshot {
 }
 
 export function useRole(): RoleSnapshot {
-  const auth = useStore('auth')
+  const auth = useStore<RoleSnapshot>('auth')
 
   // Fire the load lazily on first consumer. The store guards against
   // double-fetch so multiple `useRole()` calls in one page are safe.

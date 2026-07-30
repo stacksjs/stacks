@@ -78,7 +78,7 @@ async function updateCoupon(id: number, coupon: NewCoupon) {
 
     const data = await response.json() as Coupons
     if (data) {
-      const index = coupons.value.findIndex(c => c.id === coupon.id)
+      const index = coupons.value.findIndex(c => c.id === id)
       if (index !== -1) {
         coupons.value = [
           ...coupons.value.slice(0, index),

@@ -14,7 +14,7 @@ import { useAuth } from './auth'
  */
 
 export interface ApiRequestOptions {
-  method?: 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE'
+  method?: 'GET' | 'HEAD' | 'POST' | 'PATCH' | 'PUT' | 'DELETE'
   /** JSON request body. Omitted entirely for GET. */
   body?: unknown
   signal?: AbortSignal

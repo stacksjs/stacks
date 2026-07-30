@@ -112,8 +112,10 @@ export interface LoadedDashboardInbox {
 
 export function parseInboxSender(from: string, fromName = ''): { name: string; email: string } {
   const match = from.match(/^"?([^"<]+)"?\s*<([^>]+)>$/)
-  if (match)
-    return { name: fromName.trim() || match[1].trim(), email: match[2].trim() }
+  const matchedName = match?.[1]
+  const matchedEmail = match?.[2]
+  if (matchedName && matchedEmail)
+    return { name: fromName.trim() || matchedName.trim(), email: matchedEmail.trim() }
   return { name: fromName.trim() || from, email: from }
 }
 

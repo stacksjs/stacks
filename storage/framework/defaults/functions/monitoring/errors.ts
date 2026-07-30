@@ -167,12 +167,11 @@ async function resolveErrorGroup(type: string, message: string): Promise<boolean
     }
 
     // Update local state
-    const index = groupedErrors.value.findIndex(
+    const group = groupedErrors.value.find(
       e => e.type === type && e.message === message,
     )
-    if (index !== -1) {
-      groupedErrors.value[index].status = 'resolved'
-    }
+    if (group)
+      group.status = 'resolved'
 
     return true
   }
@@ -200,12 +199,11 @@ async function ignoreErrorGroup(type: string, message: string): Promise<boolean>
     }
 
     // Update local state
-    const index = groupedErrors.value.findIndex(
+    const group = groupedErrors.value.find(
       e => e.type === type && e.message === message,
     )
-    if (index !== -1) {
-      groupedErrors.value[index].status = 'ignored'
-    }
+    if (group)
+      group.status = 'ignored'
 
     return true
   }
@@ -233,12 +231,11 @@ async function unresolveErrorGroup(type: string, message: string): Promise<boole
     }
 
     // Update local state
-    const index = groupedErrors.value.findIndex(
+    const group = groupedErrors.value.find(
       e => e.type === type && e.message === message,
     )
-    if (index !== -1) {
-      groupedErrors.value[index].status = 'unresolved'
-    }
+    if (group)
+      group.status = 'unresolved'
 
     return true
   }

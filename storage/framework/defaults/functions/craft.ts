@@ -8,15 +8,46 @@
 /**
  * Check if running in Craft native environment
  */
+interface CraftWindowBridge {
+  minimize: () => void | Promise<void>
+  close: () => void | Promise<void>
+  toggle: () => void | Promise<void>
+  show: () => void | Promise<void>
+  hide: () => void | Promise<void>
+}
+
+interface CraftAppInfo {
+  name: string
+  version: string
+  platform: string
+}
+
+interface CraftAppBridge {
+  quit: () => void | Promise<void>
+  notify: (options: { title: string, body?: string }) => void | Promise<void>
+  getInfo: () => CraftAppInfo | Promise<CraftAppInfo>
+}
+
+interface CraftBridge {
+  window?: CraftWindowBridge
+  app?: CraftAppBridge
+  tray?: unknown
+}
+
+function craftBridge(): CraftBridge | undefined {
+  return (globalThis as typeof globalThis & { craft?: CraftBridge }).craft
+}
+
 export function isCraftNative(): boolean {
-  return typeof window !== 'undefined' && window.craft?.window !== undefined
+  return craftBridge()?.window !== undefined
 }
 
 /**
  * Get the Craft bridge API (returns undefined in web environment)
  */
 export function useCraft() {
-  if (!isCraftNative()) {
+  const craft = craftBridge()
+  if (!craft?.window) {
     return {
       isNative: false,
       window: undefined,
@@ -27,9 +58,9 @@ export function useCraft() {
 
   return {
     isNative: true,
-    window: window.craft?.window,
-    app: window.craft?.app,
-    tray: window.craft?.tray,
+    window: craft.window,
+    app: craft.app,
+    tray: craft.tray,
   }
 }
 

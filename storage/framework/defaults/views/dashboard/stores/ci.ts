@@ -177,8 +177,9 @@ export const ciStore = defineStore('ci', () => {
       // if it's still valid after a refresh.
       const nextOrgs = Object.keys(data.runners ?? {})
       orgs.set(nextOrgs)
-      if (!nextOrgs.includes(activeTab()) && nextOrgs.length > 0)
-        activeTab.set(nextOrgs[0])
+      const firstOrg = nextOrgs.at(0)
+      if (!nextOrgs.includes(activeTab()) && firstOrg)
+        activeTab.set(firstOrg)
     }
     catch (e) {
       error.set(e instanceof Error ? e.message : String(e))
