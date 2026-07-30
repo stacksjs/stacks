@@ -141,6 +141,40 @@ duplicating that relationship column as an attribute.
 `morphedByMany`. Each takes an array of model names, or an object form when you
 need to name the foreign key.
 
+Use the named object form for a many-to-many relation that owns its pivot
+schema. It keeps the relation accessor, migration, pivot defaults, timestamps,
+and uniqueness in the model definition:
+
+```ts
+belongsToMany: {
+  tags: {
+    model: 'Tag',
+    table: 'taggable_models',
+    foreignKey: 'taggable_id',
+    relatedKey: 'tag_id',
+    pivot: {
+      columns: {
+        taggable_type: { default: 'posts' },
+      },
+      timestamps: true,
+      uniques: [['tag_id', 'taggable_id', 'taggable_type']],
+    },
+  },
+},
+```
+
+An instance then exposes the named relation directly:
+
+```ts
+const post = await Post.find(id)
+await post.tags().sync(tagIds)
+await post.tags().detach()
+```
+
+The legacy array form remains supported. Prefer the named form when the pivot
+has custom keys, columns, defaults, timestamps, or uniqueness. Run
+`buddy generate:migrations` after changing pivot metadata.
+
 ### Computed properties and scopes
 
 ```ts

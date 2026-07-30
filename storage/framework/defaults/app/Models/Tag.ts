@@ -38,6 +38,22 @@ export default defineModel({
     },
   },
 
+  belongsToMany: {
+    posts: {
+      model: 'Post',
+      table: 'taggable_models',
+      foreignKey: 'tag_id',
+      relatedKey: 'taggable_id',
+      pivot: {
+        columns: {
+          taggable_type: { default: 'posts' },
+        },
+        timestamps: true,
+        uniques: [['tag_id', 'taggable_id', 'taggable_type']],
+      },
+    },
+  },
+
   attributes: {
     name: {
       required: true,
@@ -70,16 +86,6 @@ export default defineModel({
         rule: schema.string().max(255),
       },
       factory: faker => faker.lorem.sentence(),
-    },
-
-    postCount: {
-      required: false,
-      fillable: true,
-      default: 0,
-      validation: {
-        rule: schema.number().min(0),
-      },
-      factory: faker => faker.number.int({ min: 0, max: 100 }),
     },
 
     color: {

@@ -291,9 +291,23 @@ type UpdateModelData<T> = Partial<InferModelAttributes<Def<T>> & BelongsToForeig
 Each relationship type is processed into a `RelationConfig` object:
 - **hasOne / hasMany**: FK = `{parent_snake}_id`, model key = `{related_snake}_id`
 - **belongsTo**: FK is empty string (set on the owning model's side), supports custom `foreignKey`
-- **belongsToMany**: auto-creates pivot table name via `getPivotTableName()`, supports `pivotTable`, `firstForeignKey`, `secondForeignKey` overrides
+- **belongsToMany**: the legacy array form auto-creates a conventional pivot and supports `pivotTable`, `firstForeignKey`, and `secondForeignKey`; the named object form supports `table`, `foreignKey`, `relatedKey`, and `pivot` metadata (`columns`, `timestamps`, `uniques`)
 - **hasOneThrough**: includes `throughModel` and `throughForeignKey`
 - **morphOne**: uses `{modelName}able` pattern, generates `_type` and `_id` columns
+
+Named many-to-many relations are callable on model instances. Use their native
+relation builder for pivot writes:
+
+```ts
+const post = await Post.find(id)
+await post.categories().sync(categoryIds)
+await post.tags().attach(tagId)
+await post.tags().detach()
+```
+
+Declaring custom pivot columns in the model is required when those columns have
+defaults that `attach()` and `sync()` must write. `pivot.timestamps: true`
+causes both timestamps to be generated and maintained.
 
 ## Model Events (when `traits.observe: true`)
 `observe: true` emits all three events. `observe: ['create', 'update']` emits only those.

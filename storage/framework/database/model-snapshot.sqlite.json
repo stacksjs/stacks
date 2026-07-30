@@ -222,15 +222,6 @@
             "maxLength": 255
           },
           {
-            "name": "post_count",
-            "type": "integer",
-            "isPrimaryKey": false,
-            "isUnique": false,
-            "isNullable": true,
-            "hasDefault": true,
-            "defaultValue": 0
-          },
-          {
             "name": "color",
             "type": "string",
             "isPrimaryKey": false,
@@ -8197,7 +8188,7 @@
         ]
       },
       {
-        "table": "taggable",
+        "table": "taggable_models",
         "columns": [
           {
             "name": "id",
@@ -8208,46 +8199,16 @@
             "hasDefault": false
           },
           {
-            "name": "name",
-            "type": "string",
+            "name": "tag_id",
+            "type": "bigint",
             "isPrimaryKey": false,
             "isUnique": false,
             "isNullable": false,
-            "hasDefault": false
-          },
-          {
-            "name": "slug",
-            "type": "string",
-            "isPrimaryKey": false,
-            "isUnique": false,
-            "isNullable": false,
-            "hasDefault": false
-          },
-          {
-            "name": "description",
-            "type": "text",
-            "isPrimaryKey": false,
-            "isUnique": false,
-            "isNullable": true,
-            "hasDefault": false
-          },
-          {
-            "name": "order",
-            "type": "integer",
-            "isPrimaryKey": false,
-            "isUnique": false,
-            "isNullable": false,
-            "hasDefault": true,
-            "defaultValue": 0
-          },
-          {
-            "name": "is_active",
-            "type": "boolean",
-            "isPrimaryKey": false,
-            "isUnique": false,
-            "isNullable": false,
-            "hasDefault": true,
-            "defaultValue": true
+            "hasDefault": false,
+            "references": {
+              "table": "tags",
+              "column": "id"
+            }
           },
           {
             "name": "taggable_id",
@@ -8255,7 +8216,11 @@
             "isPrimaryKey": false,
             "isUnique": false,
             "isNullable": false,
-            "hasDefault": false
+            "hasDefault": false,
+            "references": {
+              "table": "posts",
+              "column": "id"
+            }
           },
           {
             "name": "taggable_type",
@@ -8263,7 +8228,8 @@
             "isPrimaryKey": false,
             "isUnique": false,
             "isNullable": false,
-            "hasDefault": false
+            "hasDefault": true,
+            "defaultValue": "posts"
           },
           {
             "name": "created_at",
@@ -8285,73 +8251,11 @@
         ],
         "indexes": [
           {
-            "name": "taggable_target_index",
+            "name": "taggable_models_tag_id_taggable_id_taggable_type_unique",
             "columns": [
+              "tag_id",
               "taggable_id",
               "taggable_type"
-            ],
-            "type": "index"
-          }
-        ]
-      },
-      {
-        "table": "categorizable",
-        "columns": [
-          {
-            "name": "id",
-            "type": "bigint",
-            "isPrimaryKey": true,
-            "isUnique": false,
-            "isNullable": false,
-            "hasDefault": false
-          },
-          {
-            "name": "name",
-            "type": "string",
-            "isPrimaryKey": false,
-            "isUnique": false,
-            "isNullable": false,
-            "hasDefault": false
-          },
-          {
-            "name": "slug",
-            "type": "string",
-            "isPrimaryKey": false,
-            "isUnique": false,
-            "isNullable": false,
-            "hasDefault": false
-          },
-          {
-            "name": "description",
-            "type": "text",
-            "isPrimaryKey": false,
-            "isUnique": false,
-            "isNullable": true,
-            "hasDefault": false
-          },
-          {
-            "name": "created_at",
-            "type": "datetime",
-            "isPrimaryKey": false,
-            "isUnique": false,
-            "isNullable": false,
-            "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
-          },
-          {
-            "name": "updated_at",
-            "type": "datetime",
-            "isPrimaryKey": false,
-            "isUnique": false,
-            "isNullable": true,
-            "hasDefault": false
-          }
-        ],
-        "indexes": [
-          {
-            "name": "categorizable_slug_unique",
-            "columns": [
-              "slug"
             ],
             "type": "unique"
           }
@@ -8376,7 +8280,7 @@
             "isNullable": false,
             "hasDefault": false,
             "references": {
-              "table": "categorizable",
+              "table": "categories",
               "column": "id"
             }
           },
@@ -8386,7 +8290,11 @@
             "isPrimaryKey": false,
             "isUnique": false,
             "isNullable": false,
-            "hasDefault": false
+            "hasDefault": false,
+            "references": {
+              "table": "posts",
+              "column": "id"
+            }
           },
           {
             "name": "categorizable_type",
@@ -8394,7 +8302,8 @@
             "isPrimaryKey": false,
             "isUnique": false,
             "isNullable": false,
-            "hasDefault": false
+            "hasDefault": true,
+            "defaultValue": "posts"
           },
           {
             "name": "created_at",
@@ -8404,22 +8313,31 @@
             "isNullable": false,
             "hasDefault": true,
             "defaultValue": "CURRENT_TIMESTAMP"
+          },
+          {
+            "name": "updated_at",
+            "type": "datetime",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false
           }
         ],
         "indexes": [
           {
-            "name": "categorizable_models_target_index",
+            "name": "categorizable_models_category_id_categorizable_id_categorizable_type_unique",
             "columns": [
+              "category_id",
               "categorizable_id",
               "categorizable_type"
             ],
-            "type": "index"
+            "type": "unique"
           }
         ]
       }
     ]
   },
-  "hash": "aad008764d978f277f4a2cccdc3239504d65a5767dbd77e0ca5b4478328872e2",
+  "hash": "eb4d4cd72111da88a09b015eecabec728cca303593a0f7716cdd4dd30a00c42d",
   "dialect": "sqlite",
-  "updatedAt": "2026-07-30T02:07:13.048Z"
+  "updatedAt": "2026-07-30T04:34:29.146Z"
 }

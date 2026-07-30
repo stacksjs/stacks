@@ -19,8 +19,6 @@ export default defineModel({
 
     // No faker seeding. The public blog is markdown-based (content/blog/*.md)
     // rendered by BunPress; this model backs the CMS dashboard only.
-    categorizable: true,
-    taggable: true,
     // `commentable`, not `commentables`: define-model checks the singular key,
     // so the plural spelling left the trait inert. Now that the commentable
     // trait targets the real `commentables` table, activating it is correct.
@@ -32,6 +30,34 @@ export default defineModel({
   },
 
   belongsTo: ['Author'],
+  belongsToMany: {
+    categories: {
+      model: 'Category',
+      table: 'categorizable_models',
+      foreignKey: 'categorizable_id',
+      relatedKey: 'category_id',
+      pivot: {
+        columns: {
+          categorizable_type: { default: 'posts' },
+        },
+        timestamps: true,
+        uniques: [['category_id', 'categorizable_id', 'categorizable_type']],
+      },
+    },
+    tags: {
+      model: 'Tag',
+      table: 'taggable_models',
+      foreignKey: 'taggable_id',
+      relatedKey: 'tag_id',
+      pivot: {
+        columns: {
+          taggable_type: { default: 'posts' },
+        },
+        timestamps: true,
+        uniques: [['tag_id', 'taggable_id', 'taggable_type']],
+      },
+    },
+  },
 
   attributes: {
     title: {
@@ -65,9 +91,10 @@ export default defineModel({
       order: 5,
       fillable: true,
       validation: {
-        rule: schema.string().min(10).max(1000),
+        rule: schema.string().min(10).max(100000),
         message: {
           min: 'Post body must have a minimum of 10 characters',
+          max: 'Post body must have a maximum of 100000 characters',
         },
       },
       factory: faker => faker.lorem.paragraphs(1),

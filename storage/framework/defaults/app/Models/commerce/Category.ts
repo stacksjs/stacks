@@ -30,6 +30,21 @@ export default defineModel({
   },
 
   hasMany: ['Product'],
+  belongsToMany: {
+    posts: {
+      model: 'Post',
+      table: 'categorizable_models',
+      foreignKey: 'category_id',
+      relatedKey: 'categorizable_id',
+      pivot: {
+        columns: {
+          categorizable_type: { default: 'posts' },
+        },
+        timestamps: true,
+        uniques: [['category_id', 'categorizable_id', 'categorizable_type']],
+      },
+    },
+  },
 
   attributes: {
     name: {
