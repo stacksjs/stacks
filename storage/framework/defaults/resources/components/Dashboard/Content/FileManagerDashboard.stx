@@ -503,7 +503,7 @@ onMount(() => { void loadFiles() })
     </div>
   </aside>
 
-  <main class="flex-1 min-w-0">
+  <div class="flex-1 min-w-0">
     <header class="sticky top-0 z-10 p-4 bg-white/85 dark:bg-neutral-900/85 border-b border-black/[0.06] dark:border-white/[0.08] backdrop-blur-xl">
       <div class="flex flex-wrap gap-3 items-center justify-between">
         <div class="flex items-center min-w-0">
@@ -554,7 +554,7 @@ onMount(() => { void loadFiles() })
         </tbody></table></div>
       </div>
     </div>
-  </main>
+  </div>
 </div>
 
 <aside :if="selectedItem()" aria-label="File details" class="flex fixed inset-y-0 right-0 z-40 flex-col max-w-sm w-full bg-white/95 dark:bg-neutral-900/95 border-black/[0.06] border-l dark:border-white/[0.08] shadow-2xl backdrop-blur-2xl">

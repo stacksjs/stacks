@@ -272,7 +272,7 @@ onDestroy(() => {
       @compose="handleCompose"
     />
 
-    <main class="overflow-y-auto flex-1">
+    <div class="overflow-y-auto flex-1">
       <div class="px-4 py-4 sm:px-6 lg:px-8">
         <EmailNavigation active="activity" />
 
@@ -412,6 +412,6 @@ onDestroy(() => {
           </div>
         </section>
       </div>
-    </main>
+    </div>
   </div>
 </div>
