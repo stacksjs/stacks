@@ -27,8 +27,9 @@
  *     (`env.X ?? 'y'`) — those need to be edited via env, not config
  */
 
-import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
-import { join, resolve } from 'node:path'
+import { chmodSync, existsSync, readdirSync, readFileSync, renameSync, statSync, unlinkSync, writeFileSync } from 'node:fs'
+import { randomUUID } from 'node:crypto'
+import { basename, dirname, join, resolve } from 'node:path'
 import process from 'node:process'
 
 let projectRootCache: string | null = null
@@ -164,26 +165,48 @@ export interface UpdateResult {
   source: string
 }
 
+export interface ConfigUpdate {
+  key: string
+  value: string | number | boolean
+}
+
+export interface BatchUpdateResult {
+  ok: true
+  updates: ConfigUpdate[]
+  source: string
+}
+
 export async function updateConfigKey(
   name: string,
   key: string,
   newValue: string | number | boolean,
 ): Promise<UpdateResult> {
+  const result = await updateConfigKeys(name, [{ key, value: newValue }])
+  return { ok: true, newValue, source: result.source }
+}
+
+/**
+ * Validate and apply a group of config edits as one filesystem operation.
+ * Every rewrite is prepared in memory first, so one invalid field prevents
+ * all fields from being persisted. The completed source is then swapped into
+ * place with a same-directory rename.
+ */
+export async function updateConfigKeys(
+  name: string,
+  updates: ConfigUpdate[],
+): Promise<BatchUpdateResult> {
   const path = join(configDir(), `${name}.ts`)
   if (!existsSync(path))
     throw new Error(`config/${name}.ts not found`)
 
   const source = readFileSync(path, 'utf8')
-  const rewritten = rewriteKey(source, key, newValue)
-  if (!rewritten)
-    throw new Error(`Cannot edit "${key}" in config/${name}.ts. The key is not a top-level scalar literal (likely env-backed or nested).`)
-
-  writeFileSync(path, rewritten, 'utf8')
+  const rewritten = rewriteConfigKeys(source, updates, `config/${name}.ts`)
+  atomicWrite(path, rewritten)
   // We don't bust moduleCache here on purpose — re-importing with a
   // changed-on-disk file via Bun reuses the original module from the
   // first import; subsequent reads pick up the edit through the source-
   // text overlay (`applySourceOverrides`) instead.
-  return { ok: true, newValue, source: rewritten }
+  return { ok: true, updates, source: rewritten }
 }
 
 /**
@@ -296,6 +319,29 @@ function scalarLiteralRegex(key: string): RegExp {
   )
 }
 
+export function rewriteConfigKeys(
+  source: string,
+  updates: ConfigUpdate[],
+  label = 'config source',
+): string {
+  if (updates.length === 0)
+    throw new Error('No configuration updates supplied')
+
+  const seen = new Set<string>()
+  let rewritten = source
+  for (const { key, value } of updates) {
+    if (!key || seen.has(key))
+      throw new Error(`Duplicate or empty configuration key "${key}"`)
+    seen.add(key)
+
+    const next = rewriteKey(rewritten, key, value)
+    if (!next)
+      throw new Error(`Cannot edit "${key}" in ${label}. The key is not a top-level scalar literal (likely env-backed or nested).`)
+    rewritten = next
+  }
+  return rewritten
+}
+
 function rewriteKey(source: string, key: string, newValue: string | number | boolean): string | null {
   const re = scalarLiteralRegex(key)
   if (!re.test(source)) return null
@@ -303,6 +349,21 @@ function rewriteKey(source: string, key: string, newValue: string | number | boo
   return source.replace(re, (_full, indent, k, sep, _old, tail) => {
     return `${indent}${k}${sep}${literal}${tail}`
   })
+}
+
+function atomicWrite(path: string, source: string): void {
+  const tempPath = join(dirname(path), `.${basename(path)}.${randomUUID()}.tmp`)
+  try {
+    const mode = statSync(path).mode
+    writeFileSync(tempPath, source, { encoding: 'utf8', flag: 'wx', mode })
+    chmodSync(tempPath, mode)
+    renameSync(tempPath, path)
+  }
+  catch (error) {
+    if (existsSync(tempPath))
+      unlinkSync(tempPath)
+    throw error
+  }
 }
 
 function serializeScalar(v: string | number | boolean): string {

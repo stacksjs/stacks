@@ -1,5 +1,5 @@
 import process from 'node:process'
-import { existsSync, readFileSync, writeFileSync } from 'node:fs'
+import { existsSync, writeFileSync } from 'node:fs'
 import { bold, cyan, dim, green, red } from '@stacksjs/cli'
 import { projectPath, storagePath } from '@stacksjs/path'
 import { seedCsrfPageResponse } from './csrf'
@@ -131,7 +131,7 @@ async function startStxServer(): Promise<void> {
   // to list config files, read their resolved values, and write edits
   // back to disk. They run in the dashboard server's process so they
   // share the same fs cwd and don't need a second port to be open.
-  const { listConfigFiles, readConfig, updateConfigKey } = await import(
+  const { listConfigFiles, readConfig, updateConfigKeys } = await import(
     storagePath('framework/defaults/resources/functions/dashboard/config-io.ts')
   )
   // Dashboard chart modules are loaded lazily from explicit dev-server URLs.
@@ -328,25 +328,27 @@ async function startStxServer(): Promise<void> {
         if (updates.length === 0)
           return Response.json({ ok: false, error: 'No updates supplied' }, { status: 400 })
 
-        const results: Array<{ key: string, ok: boolean, error?: string, newValue?: any }> = []
-        for (const u of updates) {
-          try {
-            const r = await updateConfigKey(file, u.key, coerce(u.value))
-            results.push({ key: u.key, ok: true, newValue: r.newValue })
-          }
-          catch (err) {
-            results.push({ key: u.key, ok: false, error: (err as Error)?.message })
-          }
+        const coercedUpdates = updates.map(update => ({
+          key: update.key,
+          value: coerce(update.value),
+        }))
+        try {
+          await updateConfigKeys(file, coercedUpdates)
         }
-        const allOk = results.every(r => r.ok)
-        if (!allOk) {
-          const error = results
-            .filter(result => !result.ok)
-            .map(result => result.error)
-            .filter(Boolean)
-            .join(', ') || 'One or more configuration values could not be updated.'
+        catch (err) {
+          const error = (err as Error)?.message || 'Configuration values could not be updated.'
+          const results = coercedUpdates.map(update => ({
+            key: update.key,
+            ok: false,
+            error,
+          }))
           return Response.json({ ok: false, file, results, error }, { status: 422 })
         }
+        const results = coercedUpdates.map(update => ({
+          key: update.key,
+          ok: true,
+          newValue: update.value,
+        }))
         return Response.json({ ok: true, file, results })
       }
       catch (e) {
@@ -493,79 +495,6 @@ async function startReverseProxy(): Promise<boolean> {
     return false
   }
 }
-
-// Config API server for dashboard editing
-const configApiPort = dashboardPort + 1
-function jsonResponse(data: unknown, status = 200, extraHeaders: Record<string, string> = {}): Response {
-  return new Response(JSON.stringify(data), {
-    status,
-    headers: {
-      'Content-Type': 'application/json',
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type',
-      ...extraHeaders,
-    },
-  })
-}
-
-function startConfigApi(): void {
-  Bun.serve({
-    port: configApiPort,
-    fetch: async (req: Request) => {
-      if (req.method === 'OPTIONS')
-        return new Response(null, {
-          headers: {
-            'Access-Control-Allow-Origin': '*',
-            'Access-Control-Allow-Methods': 'POST, OPTIONS',
-            'Access-Control-Allow-Headers': 'Content-Type',
-          },
-        })
-
-      const url = new URL(req.url)
-
-      if (url.pathname === '/api/config/update' && req.method === 'POST') {
-        try {
-          const { file, updates } = await req.json() as {
-            file: string
-            updates: Array<{ path: string, value: string }>
-          }
-
-          if (!file || file.includes('..') || !file.match(/^[\w.-]+\.ts$/))
-            return jsonResponse({ error: 'Invalid file name' }, 400)
-
-          const filePath = projectPath(`config/${file}`)
-          let content = readFileSync(filePath, 'utf-8')
-
-          for (const { path: keyPath, value } of updates) {
-            const lastKey = keyPath.split('.').pop()!
-            const escapedKey = lastKey.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-            const pattern = new RegExp(
-              `(${escapedKey}\\s*:\\s*)(?:'[^']*'|"[^"]*"|\\d+(?:\\.\\d+)?|true|false)`,
-            )
-            if (pattern.test(content)) {
-              const isNum = /^\d+(?:\.\d+)?$/.test(value)
-              const isBool = value === 'true' || value === 'false'
-              const sanitizedValue = value.replace(/'/g, '\\\'').replace(/\$/g, '$$$$')
-              const replacement = isNum || isBool ? value : `'${sanitizedValue}'`
-              content = content.replace(pattern, `$1${replacement}`)
-            }
-          }
-
-          writeFileSync(filePath, content, 'utf-8')
-          return jsonResponse({ success: true })
-        }
-        catch (err: any) {
-          return jsonResponse({ error: err.message }, 500)
-        }
-      }
-
-      return jsonResponse({ error: 'Not found' }, 404)
-    },
-  })
-}
-
-startConfigApi()
 
 // Phase 1: Start STX server and discover models in parallel
 // eslint-disable-next-line ts/no-top-level-await
