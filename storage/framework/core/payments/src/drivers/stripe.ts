@@ -4,12 +4,14 @@ import { services } from '@stacksjs/config'
 
 const require = createRequire(import.meta.url)
 
+type StripeConstructor = typeof Stripe
+
 // `stripe` is an opt-in dependency: it is only installed when Stripe payments
 // are enabled in config. Resolved lazily (synchronously, on first use) so
 // importing `@stacksjs/payments` never hard-requires the package.
-function StripeCtor(): typeof import('stripe').default {
+function StripeCtor(): StripeConstructor {
   try {
-    return require('stripe')
+    return require('stripe') as StripeConstructor
   }
   catch {
     throw new Error(
