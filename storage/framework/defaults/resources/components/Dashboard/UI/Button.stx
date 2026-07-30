@@ -12,6 +12,8 @@ interface ButtonProps {
   target?: string
   rel?: string
   ariaLabel?: string
+  dataAction?: string
+  dataMethodId?: string
   type?: string
 }
 
@@ -22,6 +24,8 @@ const {
   loading = false,
   fullWidth = false,
   iconOnly = false,
+  dataAction = '',
+  dataMethodId = '',
   tag = 'button',
   href = '',
   type = 'button',
@@ -74,12 +78,16 @@ const liveDownload = useReactiveProp('download', '')
 const liveTarget = useReactiveProp('target', '')
 const liveRel = useReactiveProp('rel', '')
 const liveAriaLabel = useReactiveProp('ariaLabel', '')
+const liveDataAction = useReactiveProp('dataAction', '')
+const liveDataMethodId = useReactiveProp('dataMethodId', '')
 </script>
 @if(tag === 'a' || (href && href.length > 0))
     <a
       :href="liveDisabled() || liveLoading() ? undefined : liveHref()"
       :download="liveDownload() || undefined"
       :aria-label="liveAriaLabel() || undefined"
+      :data-action="liveDataAction() || undefined"
+      :data-method-id="liveDataMethodId() || undefined"
       class="{{ buttonClass }}"
       :target="liveTarget() || undefined"
       :rel="liveRel() || undefined"
@@ -97,6 +105,8 @@ const liveAriaLabel = useReactiveProp('ariaLabel', '')
       type="{{ type }}"
       class="{{ buttonClass }}"
       :aria-label="liveAriaLabel() || undefined"
+      :data-action="liveDataAction() || undefined"
+      :data-method-id="liveDataMethodId() || undefined"
       :aria-busy="liveLoading() ? 'true' : 'false'"
       :disabled="liveDisabled() || liveLoading()"
     >
