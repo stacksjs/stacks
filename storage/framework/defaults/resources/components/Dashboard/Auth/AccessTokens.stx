@@ -1,5 +1,5 @@
 <script client>
-import { dashboardApi } from '../../../../functions/dashboard-api'
+import { DashboardApiError, dashboardApi } from '../../../../functions/dashboard-api'
 
 interface AccessTokenRow {
   id: number
@@ -37,6 +37,7 @@ const availableScopes = [
 
 const tokens = state<AccessTokenRow[]>([])
 const loading = state(true)
+const authenticationRequired = state(false)
 const loadError = state('')
 const actionError = state('')
 const actionMessage = state('')
@@ -88,6 +89,9 @@ function resetCreateForm(): void {
 }
 
 function openCreate(): void {
+  if (authenticationRequired())
+    return
+
   resetCreateForm()
   actionError.set('')
   showCreate.set(true)
@@ -104,10 +108,16 @@ async function loadTokens(): Promise<void> {
   try {
     const response = await dashboardApi<TokenListResponse>('/auth/tokens')
     tokens.set(response.tokens || [])
+    authenticationRequired.set(false)
   }
   catch (error) {
     tokens.set([])
-    loadError.set(error instanceof Error ? error.message : 'Access tokens could not be loaded.')
+    if (error instanceof DashboardApiError && error.status === 401) {
+      authenticationRequired.set(true)
+    }
+    else {
+      loadError.set(error instanceof Error ? error.message : 'Access tokens could not be loaded.')
+    }
   }
   finally {
     loading.set(false)
@@ -144,7 +154,14 @@ async function createAccessToken(event: Event): Promise<void> {
     await loadTokens()
   }
   catch (error) {
-    actionError.set(error instanceof Error ? error.message : 'The access token could not be created.')
+    if (error instanceof DashboardApiError && error.status === 401) {
+      authenticationRequired.set(true)
+      showCreate.set(false)
+      actionError.set('')
+    }
+    else {
+      actionError.set(error instanceof Error ? error.message : 'The access token could not be created.')
+    }
   }
   finally {
     creating.set(false)
@@ -178,7 +195,13 @@ async function revokeToken(id: number): Promise<void> {
     await loadTokens()
   }
   catch (error) {
-    actionError.set(error instanceof Error ? error.message : 'The access token could not be revoked.')
+    if (error instanceof DashboardApiError && error.status === 401) {
+      authenticationRequired.set(true)
+      actionError.set('')
+    }
+    else {
+      actionError.set(error instanceof Error ? error.message : 'The access token could not be revoked.')
+    }
   }
   finally {
     revoking.set(null)
@@ -196,13 +219,17 @@ onMount(() => {
       <h1 class="font-semibold text-2xl text-neutral-900 tracking-tight dark:text-white">Access Tokens</h1>
       <p class="mt-1 text-neutral-500 text-sm dark:text-neutral-400">Create and revoke personal API credentials for the signed-in account.</p>
     </div>
-    <button type="button" class="inline-flex items-center self-start px-3 py-2 font-medium text-sm text-white bg-blue-600 hover:bg-blue-700 rounded-lg" @click="openCreate">
+    <button :if="!loading() && !authenticationRequired()" type="button" class="inline-flex items-center self-start px-3 py-2 font-medium text-sm text-white bg-blue-600 hover:bg-blue-700 rounded-lg" @click="openCreate">
       <span class="mr-2 h-4 w-4 i-hugeicons-key-02"></span>
       Create Token
     </button>
+    <a :if="!loading() && authenticationRequired()" href="/login" class="inline-flex items-center self-start px-3 py-2 font-medium text-sm text-white bg-blue-600 hover:bg-blue-700 rounded-lg">
+      <span class="mr-2 h-4 w-4 i-hugeicons-login-03"></span>
+      Sign in
+    </a>
   </header>
 
-  <div class="grid gap-4 grid-cols-1 sm:grid-cols-3">
+  <div :if="!loading() && !authenticationRequired()" class="grid gap-4 grid-cols-1 sm:grid-cols-3">
     <StatsCard title="Total Tokens" icon="i-hugeicons-key-01" iconBg="primary">
       <template #value>{{ tokens().length }}</template>
     </StatsCard>
@@ -228,7 +255,7 @@ onMount(() => {
         <h2 class="font-semibold text-neutral-900 dark:text-white">Personal Access Tokens</h2>
         <p class="mt-1 text-neutral-500 text-xs dark:text-neutral-400">Existing token values are hashed and cannot be retrieved.</p>
       </div>
-      <button type="button" :disabled="loading()" class="inline-flex items-center px-3 py-2 text-neutral-600 text-sm dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg disabled:opacity-50" @click="loadTokens">
+      <button :if="!authenticationRequired()" type="button" :disabled="loading()" class="inline-flex items-center px-3 py-2 text-neutral-600 text-sm dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg disabled:opacity-50" @click="loadTokens">
         <span :class="'mr-2 h-4 w-4 ' + (loading() ? 'animate-spin i-hugeicons-loading-03' : 'i-hugeicons-refresh')"></span>
         Refresh
       </button>
@@ -240,7 +267,21 @@ onMount(() => {
     </div>
 
     <EmptyState
-      :if="!loading() && !loadError() && tokens().length === 0"
+      :if="!loading() && authenticationRequired()"
+      icon="i-hugeicons-user-lock-01"
+      title="Sign in to manage access tokens"
+      description="Personal access tokens belong to an authenticated account. Sign in to create, inspect, or revoke them."
+    >
+      <template #action>
+        <a href="/login" class="inline-flex gap-2 items-center px-4 py-2 font-medium text-sm text-white bg-blue-600 hover:bg-blue-700 rounded-lg">
+          <span class="h-4 w-4 i-hugeicons-login-03"></span>
+          Sign in
+        </a>
+      </template>
+    </EmptyState>
+
+    <EmptyState
+      :if="!loading() && !authenticationRequired() && !loadError() && tokens().length === 0"
       icon="i-hugeicons-key-01"
       title="No access tokens"
       description="Create a scoped token when an integration needs API access."
@@ -253,7 +294,7 @@ onMount(() => {
       </template>
     </EmptyState>
 
-    <div :if="!loading() && tokens().length > 0" class="overflow-x-auto">
+    <div :if="!loading() && !authenticationRequired() && tokens().length > 0" class="overflow-x-auto">
       <table class="w-full">
         <thead class="bg-neutral-50 dark:bg-neutral-800/50">
           <tr>
