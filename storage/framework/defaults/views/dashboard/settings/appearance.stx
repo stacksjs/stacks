@@ -295,7 +295,7 @@ const selected = (a, b) => String(a === b)
       <div>
         <h2 class="font-semibold text-lg text-neutral-900 dark:text-white">Navigation</h2>
         <p class="mt-1 text-neutral-500 text-sm dark:text-neutral-400">
-          Hide sections you do not use. This only affects your sidebar — it does not
+          Hide sections you do not use. This only affects your sidebar. It does not
           disable anything, and every page stays reachable by URL.
         </p>
       </div>
@@ -328,13 +328,9 @@ const selected = (a, b) => String(a === b)
     <p class="text-neutral-500 text-xs dark:text-neutral-400">
       Preferences are stored in this browser only, and sync across its tabs.
     </p>
-    <button
-      type="button"
-      @click="resetAll()"
-      class="px-3 py-1.5 text-neutral-600 text-sm font-medium rounded-lg border border-stone-200/80 hover:bg-stone-50 dark:text-neutral-300 dark:border-white/10 dark:hover:bg-white/[0.06]"
-    >
+    <Button variant="secondary" size="sm" @click="resetAll()">
       Reset to defaults
-    </button>
+    </Button>
   </div>
 </div>
 

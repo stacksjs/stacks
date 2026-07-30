@@ -226,6 +226,23 @@ describe('dashboard button contract', () => {
     expect(nativeButtons.every(button => semanticControls.some(marker => button.includes(marker)))).toBe(true)
   })
 
+  test('keeps appearance selectors native while sharing shell actions', () => {
+    const appearance = readFileSync(
+      resolve('storage/framework/defaults/views/dashboard/settings/appearance.stx'),
+      'utf8',
+    )
+    const layout = readFileSync(
+      resolve('storage/framework/defaults/views/dashboard/layouts/default.stx'),
+      'utf8',
+    )
+    const appearanceButtons = [...appearance.matchAll(/<button\b[^>]*>/g)].map(match => match[0])
+
+    expect(appearance).toContain('<Button variant="secondary" size="sm" @click="resetAll()">')
+    expect(appearanceButtons.every(button => button.includes('appearance-option'))).toBe(true)
+    expect(layout).toContain('<Button variant="ghost" size="xs" iconOnly ariaLabel="Dismiss notification"')
+    expect(layout).not.toMatch(/<button\b/)
+  })
+
   test('keeps file navigation semantic while sharing all file actions', () => {
     const source = readFileSync(
       resolve('storage/framework/defaults/resources/components/Dashboard/Content/FileManagerDashboard.stx'),
