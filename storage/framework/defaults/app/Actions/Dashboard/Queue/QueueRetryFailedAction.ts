@@ -1,6 +1,7 @@
 import { Action } from '@stacksjs/actions'
 import { executeFailedJobs } from '@stacksjs/queue'
 import { FailedJob } from '@stacksjs/orm'
+import { response } from '@stacksjs/router'
 
 export default new Action({
   name: 'QueueRetryFailedAction',
@@ -16,7 +17,9 @@ export default new Action({
       return { success: true, message: `Re-queued ${requeued} failed job${requeued === 1 ? '' : 's'}`, count: requeued }
     }
     catch (e) {
-      return { success: false, message: (e as Error).message || 'Failed to retry failed jobs', count: 0 }
+      return response.json({
+        message: (e as Error).message || 'Failed jobs could not be retried.',
+      }, 500)
     }
   },
 })
