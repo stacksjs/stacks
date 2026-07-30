@@ -56,12 +56,12 @@ const { emails = [], activeFolder = 'inbox', searchQuery = '' } = defineProps<Em
           {{ folderTitle }}
         </h2>
         <div class="flex ml-4 space-x-2">
-          <button class="p-1 hover:bg-gray-100 dark:hover:bg-neutral-600 rounded">
+          <Button variant="ghost" iconOnly ariaLabel="Refresh email list" dataAction="refresh">
             <i class="text-gray-500 text-lg dark:text-neutral-400 i-hugeicons-refresh"></i>
-          </button>
-          <button class="p-1 hover:bg-gray-100 dark:hover:bg-neutral-600 rounded">
+          </Button>
+          <Button variant="ghost" iconOnly ariaLabel="More email actions" dataAction="more">
             <i class="text-gray-500 text-lg dark:text-neutral-400 i-hugeicons-more-vertical-circle-01"></i>
-          </button>
+          </Button>
         </div>
       </div>
     </div>
@@ -88,13 +88,13 @@ const { emails = [], activeFolder = 'inbox', searchQuery = '' } = defineProps<Em
                   {{ email.subject }}
                 </p>
                 <div class="flex items-center space-x-1">
-                  <button class="text-gray-400 hover:text-yellow-400" data-action="toggle-star" data-email-id="{{ email.id }}">
+                  <Button variant="ghost" size="sm" iconOnly ariaLabel="Toggle star" dataAction="toggle-star" dataEmailId="{{ email.id }}">
                     @if(email.starred)
                       <span aria-hidden="true" class="h-6 w-6 text-yellow-400 i-hugeicons-star"></span>
                     @else
                       <i class="text-lg i-hugeicons-star"></i>
                     @endif
-                  </button>
+                  </Button>
                   @if(email.attachment)
                     <span class="text-gray-400">
                       <i class="text-lg i-hugeicons-attachment-01"></i>

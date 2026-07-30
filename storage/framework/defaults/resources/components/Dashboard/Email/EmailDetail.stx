@@ -1,47 +1,60 @@
-<script>
-interface EmailDetailProps {
-  email?: string
+<script server>
+interface EmailDetailMessage {
+  id: number | string
+  from: string
+  email: string
+  subject: string
+  preview: string
+  body: string
+  date: string
+  read: boolean
+  starred: boolean
+  folder: string
+  attachment: boolean
 }
 
-const { email = { } = defineProps<EmailDetailProps>()
+interface EmailDetailProps {
+  email?: EmailDetailMessage
+}
 
-id: 0,
-    from: '',
-    email: '',
-    subject: '',
-    preview: '',
-    body: '',
-    date: '',
-    read: false,
-    starred: false,
-    folder: 'inbox',
-    attachment: false
-  }
+const { email = {
+  id: 0,
+  from: '',
+  email: '',
+  subject: '',
+  preview: '',
+  body: '',
+  date: '',
+  read: false,
+  starred: false,
+  folder: 'inbox',
+  attachment: false,
+} } = defineProps<EmailDetailProps>()
 </script>
 <div class="flex flex-col w-full md:w-2/3 lg:w-3/5 bg-white dark:bg-neutral-700">
     <div class="flex items-center justify-between px-4 py-2 border-b border-gray-200 dark:border-neutral-600">
       <div class="flex items-center space-x-2">
-        <button class="p-1 hover:bg-gray-100 dark:hover:bg-neutral-600 rounded" data-action="close">
+        <Button variant="ghost" iconOnly ariaLabel="Close email" dataAction="close">
           <i class="text-gray-500 text-lg dark:text-neutral-400 i-hugeicons-arrow-left-02"></i>
-        </button>
+        </Button>
         <h2 class="font-medium text-gray-900 text-lg dark:text-neutral-100">
           {{ email.subject }}
         </h2>
       </div>
       <div class="flex space-x-2">
-        <button class="p-1 hover:bg-gray-100 dark:hover:bg-neutral-600 rounded" data-action="toggle-star" data-email-id="{{ email.id }}">
+        <Button variant="ghost" iconOnly ariaLabel="Toggle star" dataAction="toggle-star" dataEmailId="{{ email.id }}">
           @if(email.starred)
             <span aria-hidden="true" class="h-6 w-6 text-yellow-400 i-hugeicons-star"></span>
           @else
             <i class="text-gray-500 text-lg dark:text-neutral-400 i-hugeicons-star"></i>
           @endif
-        </button>
-        <button class="p-1 hover:bg-gray-100 dark:hover:bg-neutral-600 rounded">
+        </Button>
+        <Button variant="ghost" iconOnly ariaLabel="Archive email" dataAction="archive" dataEmailId="{{ email.id }}">
           <i class="text-gray-500 text-lg dark:text-neutral-400 i-hugeicons-inbox"></i>
-        </button>
-        <button class="p-1 hover:bg-gray-100 dark:hover:bg-neutral-600 rounded">
+        </Button>
+        <Button variant="ghost" iconOnly ariaLabel="Delete email" dataAction="delete" dataEmailId="{{ email.id }}">
           <i class="text-gray-500 text-lg dark:text-neutral-400 i-hugeicons-waste"></i>
-        </button>
+        </Button>
       </div>
     </div>
 
@@ -80,9 +93,9 @@ id: 0,
               <p class="font-medium text-gray-900 text-sm dark:text-neutral-100">Document.pdf</p>
               <p class="text-gray-500 text-xs dark:text-neutral-400">1.2 MB</p>
             </div>
-            <button class="ml-auto p-1 text-blue-700 dark:text-blue-100 bg-blue-100 dark:bg-blue-900 hover:bg-blue-200 dark:hover:bg-blue-800 rounded">
+            <Button variant="secondary" iconOnly ariaLabel="Download attachment" dataAction="download-attachment" dataEmailId="{{ email.id }}">
               <i class="text-lg i-hugeicons-download-04"></i>
-            </button>
+            </Button>
           </div>
         </div>
       @endif
@@ -90,12 +103,12 @@ id: 0,
 
     <div class="p-4 border-gray-200 border-t dark:border-neutral-600">
       <div class="flex space-x-2">
-        <button class="px-4 py-2 font-medium text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md">
+        <Button dataAction="reply" dataEmailId="{{ email.id }}">
           Reply
-        </button>
-        <button class="px-4 py-2 font-medium text-gray-700 text-sm dark:text-neutral-200 hover:bg-gray-50 dark:hover:bg-neutral-600 border border-gray-300 rounded-md dark:border-neutral-600">
+        </Button>
+        <Button variant="secondary" dataAction="forward" dataEmailId="{{ email.id }}">
           Forward
-        </button>
+        </Button>
       </div>
     </div>
   </div>

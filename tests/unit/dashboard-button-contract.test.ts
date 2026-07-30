@@ -17,6 +17,7 @@ describe('dashboard button contract', () => {
     expect(button).toContain("const liveDownload = useReactiveProp('download', '')")
     expect(button).toContain("const liveType = useReactiveProp('type', 'button')")
     expect(button).toContain("const liveDataAction = useReactiveProp('dataAction', '')")
+    expect(button).toContain("const liveDataEmailId = useReactiveProp('dataEmailId', '')")
     expect(button).toContain("const liveDataErrorMessage = useReactiveProp('dataErrorMessage', '')")
     expect(button).toContain("const liveDataErrorType = useReactiveProp('dataErrorType', '')")
     expect(button).toContain("const liveDataMethodId = useReactiveProp('dataMethodId', '')")
@@ -275,5 +276,21 @@ describe('dashboard button contract', () => {
     expect(settingsView).toContain('<Toggle v-model:checked="vacationEnabled"')
     expect(settingsView).not.toMatch(/<button\b/)
     expect(settingsView).not.toMatch(/class="[^"]*{{/)
+
+    const legacyActionFiles = [
+      'EmailDetail.stx',
+      'EmailList.stx',
+      'EmailCompose.stx',
+    ]
+
+    for (const file of legacyActionFiles) {
+      const source = readFileSync(
+        resolve('storage/framework/defaults/resources/components/Dashboard/Email', file),
+        'utf8',
+      )
+
+      expect(source).toContain('<Button')
+      expect(source).not.toMatch(/<button\b/)
+    }
   })
 })

@@ -15,6 +15,7 @@ interface ButtonProps {
   rel?: string
   ariaLabel?: string
   dataAction?: string
+  dataEmailId?: string
   dataErrorMessage?: string
   dataErrorType?: string
   dataMethodId?: string
@@ -86,6 +87,7 @@ const liveRel = useReactiveProp('rel', '')
 const liveType = useReactiveProp('type', 'button')
 const liveAriaLabel = useReactiveProp('ariaLabel', '')
 const liveDataAction = useReactiveProp('dataAction', '')
+const liveDataEmailId = useReactiveProp('dataEmailId', '')
 const liveDataErrorMessage = useReactiveProp('dataErrorMessage', '')
 const liveDataErrorType = useReactiveProp('dataErrorType', '')
 const liveDataMethodId = useReactiveProp('dataMethodId', '')
@@ -96,6 +98,7 @@ const liveDataMethodId = useReactiveProp('dataMethodId', '')
       :download="liveDownload() || undefined"
       :aria-label="liveAriaLabel() || undefined"
       :data-action="liveDataAction() || undefined"
+      :data-email-id="liveDataEmailId() || undefined"
       :data-error-message="liveDataErrorMessage() || undefined"
       :data-error-type="liveDataErrorType() || undefined"
       :data-method-id="liveDataMethodId() || undefined"
@@ -118,6 +121,7 @@ const liveDataMethodId = useReactiveProp('dataMethodId', '')
         class="{{ buttonClass }}"
         :aria-label="liveAriaLabel() || undefined"
         :data-action="liveDataAction() || undefined"
+        :data-email-id="liveDataEmailId() || undefined"
         :data-error-message="liveDataErrorMessage() || undefined"
         :data-error-type="liveDataErrorType() || undefined"
         :data-method-id="liveDataMethodId() || undefined"
@@ -136,6 +140,7 @@ const liveDataMethodId = useReactiveProp('dataMethodId', '')
         class="{{ buttonClass }}"
         :aria-label="liveAriaLabel() || undefined"
         :data-action="liveDataAction() || undefined"
+        :data-email-id="liveDataEmailId() || undefined"
         :data-error-message="liveDataErrorMessage() || undefined"
         :data-error-type="liveDataErrorType() || undefined"
         :data-method-id="liveDataMethodId() || undefined"

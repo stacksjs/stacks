@@ -12,9 +12,9 @@ const { to = '', subject = '', body = '' } = defineProps<EmailComposeProps>()
       <h2 class="font-medium text-gray-900 text-lg dark:text-neutral-100">
         New Message
       </h2>
-      <button class="p-1 hover:bg-gray-100 dark:hover:bg-neutral-600 rounded" data-action="cancel">
+      <Button variant="ghost" iconOnly ariaLabel="Cancel compose" dataAction="cancel">
         <i class="text-gray-500 text-lg dark:text-neutral-400 i-hugeicons-cancel-circle"></i>
-      </button>
+      </Button>
     </div>
 
     <div class="overflow-y-auto flex-1 p-4">
@@ -53,20 +53,20 @@ const { to = '', subject = '', body = '' } = defineProps<EmailComposeProps>()
 
     <div class="flex justify-between p-4 border-gray-200 border-t dark:border-neutral-600">
       <div class="flex space-x-2">
-        <button class="p-2 hover:bg-gray-100 dark:hover:bg-neutral-600 rounded">
+        <Button variant="ghost" iconOnly ariaLabel="Attach file" dataAction="attach">
           <i class="text-gray-500 text-lg dark:text-neutral-400 i-hugeicons-attachment-01"></i>
-        </button>
-        <button class="p-2 hover:bg-gray-100 dark:hover:bg-neutral-600 rounded">
+        </Button>
+        <Button variant="ghost" iconOnly ariaLabel="Insert image" dataAction="insert-image">
           <i class="text-gray-500 text-lg dark:text-neutral-400 i-hugeicons-image-01"></i>
-        </button>
-        <button class="p-2 hover:bg-gray-100 dark:hover:bg-neutral-600 rounded">
+        </Button>
+        <Button variant="ghost" iconOnly ariaLabel="Insert emoji" dataAction="insert-emoji">
           <i class="text-gray-500 text-lg dark:text-neutral-400 i-hugeicons-smile"></i>
-        </button>
+        </Button>
       </div>
       <div>
-        <button type="submit" class="px-4 py-2 font-medium text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md" data-action="send">
+        <Button type="submit" dataAction="send">
           Send
-        </button>
+        </Button>
       </div>
     </div>
   </div>
