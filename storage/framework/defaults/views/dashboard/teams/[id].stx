@@ -1,6 +1,8 @@
 @extends('layouts/default')
 
 @section('content')
+@title('Dashboard - Team Members')
+
 <div class="p-6 space-y-6">
 
   <PageHeader title="Team Members" description="Manage your team members and invitations" />

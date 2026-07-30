@@ -1,6 +1,8 @@
 @extends('layouts/default')
 
 @section('content')
+@title('Dashboard - SEO')
+
 <div class="p-6 space-y-6">
   <div class="flex items-center justify-between">
     <PageHeader title="SEO" description="Optimize each post for search engines" />

@@ -1,6 +1,8 @@
 @extends('layouts/default')
 
 @section('content')
+@title('Dashboard - Page Not Found')
+
 {{-- Catch-all 404. Inlined instead of using <PageLayout> because the
     filename's route-param `...all` leaks into component prop scopes
     and stx's @if evaluator parses it as a rest parameter, breaking

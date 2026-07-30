@@ -1,6 +1,8 @@
 @extends('layouts/default')
 
 @section('content')
+@title('Dashboard - CI')
+
 <script client>
   // CI tracking surface (stacksjs/stacks#1844).
   //

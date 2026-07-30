@@ -1,6 +1,8 @@
 @extends('layouts/default')
 
 @section('content')
+@title('Dashboard - Model Records')
+
 <script client>
 // The page every model gets for free (stacksjs/stacks#1838): a browsable,
 // sortable, filterable table over any model the app defines, with no

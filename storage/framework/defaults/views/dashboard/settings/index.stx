@@ -1,6 +1,8 @@
 @extends('layouts/default')
 
 @section('content')
+@title('Dashboard - Settings')
+
 <script client>
 import { dashboardApi } from '../../../functions/dashboard-api'
 

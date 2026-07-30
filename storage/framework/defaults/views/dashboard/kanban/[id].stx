@@ -1,6 +1,8 @@
 @extends('layouts/default')
 
 @section('content')
+@title('Dashboard - Kanban Board')
+
 <script client>
   // Kanban board view (stacksjs/stacks#1846 Phase 2).
   //
