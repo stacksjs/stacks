@@ -33,13 +33,30 @@ const displayedPages = derived<(number | string)[]>(() => {
 function isCurrent(page: number | string): boolean {
   return typeof page === 'number' && page === currentPage()
 }
+
+function emitPrevious(): void {
+  emit('select', Math.max(1, currentPage() - 1))
+  emit('prev')
+}
+
+function emitNext(): void {
+  emit('select', Math.min(totalPages(), currentPage() + 1))
+  emit('next')
+}
+
+function emitPage(page: number | string): void {
+  if (typeof page === 'number') {
+    emit('select', page)
+    emit('page', page)
+  }
+}
 </script>
 
 <div class="flex items-center justify-between">
   <div class="flex sm:hidden flex-1 justify-between">
     <button
       type="button"
-      @click="emit('prev')"
+      @click="emitPrevious()"
       :disabled="currentPage() <= 1"
       class="inline-flex relative items-center px-4 py-2 font-medium text-gray-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 hover:bg-gray-50 dark:hover:bg-neutral-700 border border-gray-300 rounded-md dark:border-neutral-600 disabled:opacity-50 disabled:cursor-not-allowed"
     >
@@ -47,7 +64,7 @@ function isCurrent(page: number | string): boolean {
     </button>
     <button
       type="button"
-      @click="emit('next')"
+      @click="emitNext()"
       :disabled="currentPage() >= totalPages()"
       class="inline-flex relative items-center ml-3 px-4 py-2 font-medium text-gray-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 hover:bg-gray-50 dark:hover:bg-neutral-700 border border-gray-300 rounded-md dark:border-neutral-600 disabled:opacity-50 disabled:cursor-not-allowed"
     >
@@ -69,7 +86,7 @@ function isCurrent(page: number | string): boolean {
     <nav class="inline-flex -space-x-px rounded-md shadow-sm isolate" aria-label="Pagination">
       <button
         type="button"
-        @click="emit('prev')"
+        @click="emitPrevious()"
         :disabled="currentPage() <= 1"
         aria-label="Previous page"
         class="inline-flex relative items-center p-2 text-gray-400 bg-white dark:bg-neutral-800 hover:bg-gray-50 dark:hover:bg-neutral-700 ring-1 ring-gray-300 ring-inset rounded-l-md dark:ring-neutral-700 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -81,7 +98,7 @@ function isCurrent(page: number | string): boolean {
         <button
           :if="page !== '...'"
           type="button"
-          @click="emit('page', page)"
+          @click="emitPage(page)"
           :aria-current="isCurrent(page) ? 'page' : null"
           :class="isCurrent(page) ? 'relative z-10 inline-flex items-center px-4 py-2 font-semibold text-white text-sm bg-blue-600 dark:bg-blue-700 focus:z-20' : 'relative inline-flex items-center px-4 py-2 font-semibold text-gray-900 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 hover:bg-gray-50 dark:hover:bg-neutral-700 ring-1 ring-gray-300 ring-inset dark:ring-neutral-700 focus:z-20'"
         >
@@ -97,7 +114,7 @@ function isCurrent(page: number | string): boolean {
 
       <button
         type="button"
-        @click="emit('next')"
+        @click="emitNext()"
         :disabled="currentPage() >= totalPages()"
         aria-label="Next page"
         class="inline-flex relative items-center p-2 text-gray-400 bg-white dark:bg-neutral-800 hover:bg-gray-50 dark:hover:bg-neutral-700 ring-1 ring-gray-300 ring-inset rounded-r-md dark:ring-neutral-700 disabled:opacity-50 disabled:cursor-not-allowed"
