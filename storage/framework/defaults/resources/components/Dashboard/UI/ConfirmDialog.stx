@@ -21,8 +21,8 @@ const iconNames = {
 }
 </script>
 @if(isOpen)
-  <div ref="pageRoot" class="fixed inset-0 overflow-y-auto z-50">
-    <div class="fixed inset-0 bg-black/50 backdrop-blur-sm" data-modal-overlay></div>
+  <div ref="pageRoot" class="fixed inset-y-0 overflow-y-auto right-0 z-[55] dashboard-modal-layer">
+    <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" data-modal-overlay></div>
 
     <div class="flex items-center justify-center p-4 min-h-full">
       <div class="relative p-6 max-w-md w-full bg-white dark:bg-neutral-900 rounded-xl shadow-2xl">

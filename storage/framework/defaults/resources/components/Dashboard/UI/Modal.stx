@@ -27,9 +27,9 @@ function closeModal(): void {
   emit('close')
 }
 </script>
-  <div :if="open()" class="fixed inset-0 overflow-y-auto z-50">
+  <div :if="open()" class="fixed inset-y-0 overflow-y-auto right-0 z-[55] dashboard-modal-layer">
     <!-- Overlay -->
-    <button type="button" class="fixed inset-0 w-full bg-black/50 backdrop-blur-sm" aria-label="Close modal" @click="closeModal"></button>
+    <button type="button" class="absolute inset-0 w-full bg-black/50 backdrop-blur-sm" aria-label="Close modal" @click="closeModal"></button>
 
     <!-- Modal container -->
     <div class="flex items-center justify-center p-4 min-h-full">

@@ -79,6 +79,18 @@ body {
   background: #f4f4f5;
   transition: margin-left 0.3s ease-out;
 }
+.dashboard-modal-layer {
+  left: var(--stx-sidebar-width, 250px);
+  transition: left 0.3s ease-out;
+}
+@media (max-width: 1023px) {
+  .dashboard-modal-layer {
+    left: 0;
+  }
+}
+html[data-craft-native-sidebar='true'] .dashboard-modal-layer {
+  left: 0;
+}
 .dark [data-stx-content] {
   background: #0a0a0a;
 }

@@ -173,6 +173,41 @@ buddy build:components       # build dashboard components
 
 Port: 3002 (configured in `config/ports.ts` as `admin`)
 
+### Reactive page components
+
+Keep route views thin. Place stateful page implementations under
+`storage/framework/defaults/resources/components/Dashboard/` and render them
+from the route view as normal STX components. Use signals, `onMount`,
+`useReactiveProp()`, and `defineEmits()` rather than direct DOM access or
+page-global scripts.
+
+Every async page needs loading, error, empty, and populated states. Dashboard
+Actions should return persisted data only. Do not hide failed endpoints behind
+sample or randomly generated rows.
+
+### Sidebar-aware overlays
+
+The desktop sidebar is fixed and publishes its current width through
+`--stx-sidebar-width` on the dashboard content shell. Fixed dialogs and
+drawers must use the shared `dashboard-modal-layer` class so their interactive
+surface starts beside that sidebar and returns to `left: 0` on mobile and in
+the Craft native-sidebar shell.
+
+Use the shared `Dashboard/UI/Modal` and `Dashboard/UI/ConfirmDialog`
+components when possible. A custom overlay root must use this shape:
+
+```html
+<div class="fixed inset-y-0 overflow-y-auto right-0 z-[55] dashboard-modal-layer">
+  <button class="absolute inset-0" aria-label="Close dialog"></button>
+  <!-- dialog panel -->
+</div>
+```
+
+Do not solve sidebar overlap by increasing z-index alone. That places the
+dialog above the sidebar without centering it in the available content area.
+Keep overlay children `absolute`, not `fixed`, so they remain bounded by the
+sidebar-aware root.
+
 ## Gotchas
 - Dashboard runs on port 3002 by default (separate from frontend on 3000)
 - Dashboard components use STX templating with crosswind CSS
@@ -184,4 +219,5 @@ Port: 3002 (configured in `config/ports.ts` as `admin`)
 - All dashboard actions are in `storage/framework/defaults/app/Actions/Dashboard/`
 - Split repeated or stateful page regions into `.stx` components under `resources/components/Dashboard/`; pass reactive values with `useReactiveProp()` and communicate upward with `defineEmits()`
 - Preserve the existing sidebar information architecture and styling when redesigning page content
+- Use `dashboard-modal-layer` for every fixed dashboard dialog or drawer
 - The live terminal component streams deployment output in real-time
