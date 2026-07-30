@@ -255,8 +255,11 @@ export function prepareModelFields(
       errors[field.name] = [`${field.label} is required.`]
       continue
     }
-    if ((value === '' || value === null || value === undefined) && !field.required)
+    if ((value === '' || value === null || value === undefined) && !field.required) {
+      if (partial)
+        data[field.name] = null
       continue
+    }
 
     const definition = attributes[field.name]
     const rule = definition?.validation?.rule

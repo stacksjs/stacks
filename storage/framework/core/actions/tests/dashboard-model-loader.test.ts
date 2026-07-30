@@ -62,4 +62,20 @@ describe('dashboard model loader', () => {
     expect(prepared.data).toEqual({})
     expect(prepared.errors.status?.length).toBeGreaterThan(0)
   })
+
+  it('allows optional model fields to be cleared by PATCH', async () => {
+    const Model = await loadModel('Post')
+    const prepared = prepareModelFields(Model, {
+      focus_keyword: '',
+      meta_description: null,
+    }, true)
+
+    expect(prepared).toEqual({
+      data: {
+        focusKeyword: null,
+        metaDescription: null,
+      },
+      errors: {},
+    })
+  })
 })
