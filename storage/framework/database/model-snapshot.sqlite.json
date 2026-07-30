@@ -4310,7 +4310,29 @@
             "hasDefault": false
           }
         ],
-        "indexes": []
+        "indexes": [
+          {
+            "name": "requests_created_at_index",
+            "columns": [
+              "created_at"
+            ],
+            "type": "index"
+          },
+          {
+            "name": "requests_duration_ms_index",
+            "columns": [
+              "duration_ms"
+            ],
+            "type": "index"
+          },
+          {
+            "name": "requests_status_code_index",
+            "columns": [
+              "status_code"
+            ],
+            "type": "index"
+          }
+        ]
       },
       {
         "table": "product_units",
@@ -6890,7 +6912,15 @@
             "hasDefault": false
           }
         ],
-        "indexes": []
+        "indexes": [
+          {
+            "name": "errors_created_at_index",
+            "columns": [
+              "created_at"
+            ],
+            "type": "index"
+          }
+        ]
       },
       {
         "table": "order_idempotency",
@@ -8369,7 +8399,7 @@
       }
     ]
   },
-  "hash": "f4a7885b39d1874049a74f6bd155f55a77666b0377c9d661f46d56fd13106496",
+  "hash": "098b6bddf6e087c51ef67a0a1e1cd9ce1417a839752741bdcdf109ef05903121",
   "dialect": "sqlite",
-  "updatedAt": "2026-07-30T12:08:22.700Z"
+  "updatedAt": "2026-07-30T12:48:32.078Z"
 }

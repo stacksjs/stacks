@@ -7,6 +7,13 @@ export default defineModel({
   primaryKey: 'id',
   autoIncrement: true,
 
+  indexes: [
+    {
+      name: 'errors_created_at_index',
+      columns: ['created_at'],
+    },
+  ],
+
   traits: {
     useTimestamps: true,
   },
