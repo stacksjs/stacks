@@ -1,0 +1,82 @@
+<script client>
+import type { MarketingListRecord } from '../../../../app/Actions/Dashboard/Marketing/marketing-list-records'
+
+const records = useReactiveProp('records', [] as MarketingListRecord[])
+const loading = useReactiveProp('loading', false)
+const emit = defineEmits()
+
+function formatDate(value: string): string {
+  if (!value)
+    return 'Never'
+  const timestamp = new Date(value.replace(' ', 'T')).getTime()
+  return Number.isFinite(timestamp)
+    ? new Intl.DateTimeFormat(undefined, { dateStyle: 'medium' }).format(timestamp)
+    : value
+}
+
+function statusClass(status: string): string {
+  if (status === 'active')
+    return 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300'
+  if (status === 'archived')
+    return 'bg-gray-100 text-gray-600 dark:bg-neutral-700 dark:text-neutral-300'
+  return 'bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300'
+}
+</script>
+
+<div class="overflow-hidden bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
+  <div :if="loading() && records().length === 0" class="flex items-center justify-center py-16 text-gray-500 text-sm dark:text-neutral-400">
+    <span class="mr-2 h-5 w-5 animate-spin i-hugeicons-loading-03"></span>
+    Loading email lists
+  </div>
+  <div :else-if="records().length === 0" class="px-6 py-16 text-center">
+    <span class="inline-block h-8 w-8 text-gray-400 i-hugeicons-mail-01"></span>
+    <p class="mt-3 font-medium text-gray-900 text-sm dark:text-white">No email lists found</p>
+    <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Adjust the filters or add an EmailList record.</p>
+  </div>
+  <div :else class="overflow-x-auto">
+    <table class="min-w-full divide-gray-200 divide-y dark:divide-neutral-700">
+      <thead class="bg-gray-50 dark:bg-neutral-900/50">
+        <tr>
+          <th scope="col" class="px-4 py-3 font-semibold text-gray-600 text-left text-xs dark:text-neutral-300">List</th>
+          <th scope="col" class="px-4 py-3 font-semibold text-gray-600 text-left text-xs dark:text-neutral-300">Members</th>
+          <th scope="col" class="px-4 py-3 font-semibold text-gray-600 text-left text-xs dark:text-neutral-300">Campaigns</th>
+          <th scope="col" class="px-4 py-3 font-semibold text-gray-600 text-left text-xs dark:text-neutral-300">Signup</th>
+          <th scope="col" class="px-4 py-3 font-semibold text-gray-600 text-left text-xs dark:text-neutral-300">Last sent</th>
+          <th scope="col" class="px-4 py-3 font-semibold text-gray-600 text-left text-xs dark:text-neutral-300">Status</th>
+          <th scope="col" class="px-4 py-3 font-semibold text-gray-600 text-right text-xs dark:text-neutral-300"><span class="sr-only">Actions</span></th>
+        </tr>
+      </thead>
+      <tbody class="divide-gray-200 divide-y dark:divide-neutral-700">
+        <template :for="record in records()" :key="record.id">
+          <tr class="align-top">
+            <td class="px-4 py-4">
+              <div class="flex gap-2 items-center">
+                <p class="font-medium text-gray-900 text-sm dark:text-white">{{ record.name }}</p>
+                <span :if="record.countDrift" title="Stored counters differ from membership rows" class="h-4 w-4 text-amber-500 i-hugeicons-alert-02"></span>
+              </div>
+              <p class="mt-1 font-mono text-gray-500 text-xs dark:text-neutral-400">{{ record.slug }}</p>
+              <p :if="record.description" class="mt-1 max-w-sm text-gray-500 text-xs dark:text-neutral-400">{{ record.description }}</p>
+            </td>
+            <td class="px-4 py-4">
+              <p class="font-medium tabular-nums text-gray-900 text-sm dark:text-white">{{ record.subscriberCount.toLocaleString() }}</p>
+              <p class="mt-1 text-gray-500 text-xs dark:text-neutral-400">{{ record.activeCount }} active, {{ record.unsubscribedCount }} unsubscribed</p>
+            </td>
+            <td class="px-4 py-4 font-medium tabular-nums text-gray-700 text-sm dark:text-neutral-200">{{ record.campaignCount }}</td>
+            <td class="px-4 py-4 text-gray-600 text-sm dark:text-neutral-300">
+              <p>{{ record.isPublic ? 'Public' : 'Private' }}</p>
+              <p class="mt-1 text-gray-500 text-xs dark:text-neutral-400">{{ record.doubleOptIn ? 'Double opt-in' : 'Single opt-in' }}</p>
+            </td>
+            <td class="px-4 py-4 text-gray-500 text-sm whitespace-nowrap dark:text-neutral-400">{{ formatDate(record.lastSentAt) }}</td>
+            <td class="px-4 py-4"><span :class="'inline-flex px-2 py-1 font-medium text-xs rounded-full ' + statusClass(record.status)">{{ record.status }}</span></td>
+            <td class="px-4 py-4">
+              <div class="flex gap-1 justify-end">
+                <button type="button" :aria-label="'Edit ' + record.name" class="p-2 text-gray-500 dark:text-neutral-400 hover:text-blue-600 dark:hover:text-blue-400 rounded-md" @click="emit('edit', record)"><span class="block h-4 w-4 i-hugeicons-edit-01"></span></button>
+                <button type="button" :aria-label="'Delete ' + record.name" class="p-2 text-gray-500 dark:text-neutral-400 hover:text-red-600 dark:hover:text-red-400 rounded-md" @click="emit('delete', record)"><span class="block h-4 w-4 i-hugeicons-delete-02"></span></button>
+              </div>
+            </td>
+          </tr>
+        </template>
+      </tbody>
+    </table>
+  </div>
+</div>

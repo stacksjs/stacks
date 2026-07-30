@@ -17,7 +17,15 @@ export default defineModel({
     useApi: {
       uri: 'email-lists',
       routes: ['index', 'store', 'show', 'update', 'destroy'],
+      middleware: ['auth'],
     },
+    useSearch: {
+      displayable: ['id', 'name', 'slug', 'description', 'status', 'subscriberCount', 'activeCount'],
+      searchable: ['name', 'slug', 'description'],
+      sortable: ['name', 'status', 'subscriberCount', 'createdAt', 'updatedAt'],
+      filterable: ['status', 'isPublic', 'doubleOptIn'],
+    },
+    observe: true,
   },
 
   attributes: {

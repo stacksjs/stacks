@@ -305,6 +305,11 @@ route.group({ prefix: '/api/dashboard', apiResponse: true }, () => {
   guard(route.patch('/commerce/license-keys/{id}', 'Actions/Commerce/Shipping/LicenseKeyUpdateAction'))
   guard(route.delete('/commerce/license-keys/{id}', 'Actions/Commerce/Shipping/LicenseKeyDestroyAction'))
 
+  guard(route.get('/marketing/lists', 'Actions/Dashboard/Marketing/ListIndexAction'))
+  guard(route.post('/marketing/lists', 'Actions/Dashboard/Marketing/ListStoreAction'))
+  guard(route.patch('/marketing/lists/{id}', 'Actions/Dashboard/Marketing/ListUpdateAction'))
+  guard(route.delete('/marketing/lists/{id}', 'Actions/Dashboard/Marketing/ListDestroyAction'))
+
   guard(route.get('/notification-deliveries', 'Actions/Dashboard/Notifications/NotificationDeliveryIndexAction'))
   guard(route.get('/notification-deliveries/overview', 'Actions/Dashboard/Notifications/NotificationDeliveryOverviewAction'))
   guard(route.get('/notification-deliveries/history', 'Actions/Dashboard/Notifications/NotificationDeliveryHistoryAction'))
