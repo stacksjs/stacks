@@ -21,6 +21,11 @@ interface ReviewEditPayload {
   isFeatured: boolean
 }
 
+const title = useReactiveProp('title', 'Product Reviews')
+const description = useReactiveProp(
+  'description',
+  'Moderate native Review records and keep storefront feedback accurate.',
+)
 const emptySummary: ReviewSummary = {
   total: 0,
   approved: 0,
@@ -279,8 +284,8 @@ onMount(() => {
 <div class="space-y-6">
   <header class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
     <div>
-      <h1 class="font-bold text-2xl text-gray-900 dark:text-white">Product Reviews</h1>
-      <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Moderate native Review records and keep storefront feedback accurate.</p>
+      <h1 class="font-bold text-2xl text-gray-900 dark:text-white">{{ title() }}</h1>
+      <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">{{ description() }}</p>
     </div>
     <button type="button" :disabled="loading()" class="inline-flex items-center self-start px-3 py-2 font-semibold text-gray-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700 disabled:opacity-50" @click="loadReviews">
       <span :class="'mr-2 h-4 w-4 ' + (loading() ? 'animate-spin i-hugeicons-loading-03' : 'i-hugeicons-refresh')"></span>
