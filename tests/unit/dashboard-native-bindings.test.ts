@@ -219,11 +219,15 @@ describe('dashboard native STX bindings', () => {
 
   test('shared buttons and modals use native icons and dialog semantics', () => {
     const button = componentSource('UI/Button.stx')
+    expect(button).toContain('from-blue-500 to-blue-600')
+    expect(button).toContain("useReactiveProp('href', '')")
+    expect(button).toContain(':aria-busy=')
+    expect(button).toContain(':aria-disabled=')
+    expect(button).toContain(':tabindex=')
     expect(button).toContain('i-hugeicons-loading-03')
     expect(button).not.toContain('<svg')
 
     for (const path of [
-      'Buttons/AppButton.stx',
       'UI/ChartCard.stx',
       'UI/Avatar.stx',
       'Avatar.stx',

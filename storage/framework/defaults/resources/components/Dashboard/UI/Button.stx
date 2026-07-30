@@ -43,7 +43,7 @@ const buttonClass = [
   'transition-all duration-150',
   'select-none',
   'focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/40 focus-visible:ring-offset-0',
-  'disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none',
+  'disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none aria-disabled:opacity-40 aria-disabled:cursor-not-allowed aria-disabled:pointer-events-none',
   'active:scale-[0.98]',
   fullWidth ? 'w-full' : '',
   iconOnly ? iconOnlySizes[size] : sizeClasses[size],
@@ -53,18 +53,30 @@ const buttonClass = [
 <script client>
 const liveDisabled = useReactiveProp('disabled', false)
 const liveLoading = useReactiveProp('loading', false)
+const liveHref = useReactiveProp('href', '')
 </script>
 @if(href && href.length > 0)
-    <a href="{{ href }}" class="{{ buttonClass }}" :aria-disabled="liveDisabled() || liveLoading() ? 'true' : 'false'">
+    <a
+      :href="liveDisabled() || liveLoading() ? undefined : liveHref()"
+      class="{{ buttonClass }}"
+      :aria-busy="liveLoading() ? 'true' : 'false'"
+      :aria-disabled="liveDisabled() || liveLoading() ? 'true' : 'false'"
+      :tabindex="liveDisabled() || liveLoading() ? -1 : undefined"
+    >
       <template :if="liveLoading()">
-        <span class="animate-spin h-3.5 w-3.5 i-hugeicons-loading-03 {{ iconOnly ? '' : '-ml-0.5 mr-1.5' }}"></span>
+        <span aria-hidden="true" class="animate-spin h-3.5 w-3.5 i-hugeicons-loading-03 {{ iconOnly ? '' : '-ml-0.5 mr-1.5' }}"></span>
       </template>
       <slot />
     </a>
   @else
-    <button type="{{ type }}" class="{{ buttonClass }}" :disabled="liveDisabled() || liveLoading()">
+    <button
+      type="{{ type }}"
+      class="{{ buttonClass }}"
+      :aria-busy="liveLoading() ? 'true' : 'false'"
+      :disabled="liveDisabled() || liveLoading()"
+    >
       <template :if="liveLoading()">
-        <span class="animate-spin h-3.5 w-3.5 i-hugeicons-loading-03 {{ iconOnly ? '' : '-ml-0.5 mr-1.5' }}"></span>
+        <span aria-hidden="true" class="animate-spin h-3.5 w-3.5 i-hugeicons-loading-03 {{ iconOnly ? '' : '-ml-0.5 mr-1.5' }}"></span>
       </template>
       <slot />
     </button>
