@@ -74,43 +74,8 @@ effect(() => {
   endDate.set(localDateTime(current?.endDate || ''))
 })
 
-function updateField(field: string, event: Event): void {
-  const nextValue = (event.target as HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement).value
-  if (field === 'name')
-    name.set(nextValue)
-  else if (field === 'description')
-    description.set(nextValue)
-  else if (field === 'status')
-    status.set(nextValue as CampaignStatus)
-  else if (field === 'subject')
-    subject.set(nextValue)
-  else if (field === 'template')
-    template.set(nextValue)
-  else if (field === 'text')
-    text.set(nextValue)
-  else if (field === 'fromName')
-    fromName.set(nextValue)
-  else if (field === 'fromAddress')
-    fromAddress.set(nextValue)
-  else if (field === 'emailListId')
-    emailListId.set(nextValue)
-  else if (field === 'scheduledAt')
-    scheduledAt.set(nextValue)
-  else if (field === 'budget')
-    budget.set(nextValue)
-  else if (field === 'spent')
-    spent.set(nextValue)
-  else if (field === 'currency')
-    currency.set(nextValue)
-  else if (field === 'startDate')
-    startDate.set(nextValue)
-  else if (field === 'endDate')
-    endDate.set(nextValue)
-}
-
-function updateType(event: Event): void {
+function normalizeType(event: Event): void {
   const nextType = (event.target as HTMLSelectElement).value as CampaignType
-  type.set(nextType)
   if (nextType === 'email')
     status.set('draft')
   else if (['sending', 'sent'].includes(status()))
@@ -154,15 +119,15 @@ function submit(): void {
         <div class="grid gap-4 sm:grid-cols-2 mt-5">
           <label class="block sm:col-span-2">
             <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Name</span>
-            <input :value="name()" type="text" minlength="3" maxlength="255" required autocomplete="off" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="updateField('name', $event)" />
+            <input x-model="name" type="text" minlength="3" maxlength="255" required autocomplete="off" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" />
           </label>
           <label class="block sm:col-span-2">
             <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Description</span>
-            <textarea :value="description()" rows="2" maxlength="1000" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="updateField('description', $event)"></textarea>
+            <textarea x-model="description" rows="2" maxlength="1000" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700"></textarea>
           </label>
           <label class="block">
             <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Type</span>
-            <select :value="type()" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @change="updateType($event)">
+            <select x-model="type" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @change="normalizeType($event)">
               <option value="email">Email</option>
               <option value="sms">SMS</option>
               <option value="push">Push</option>
@@ -172,7 +137,7 @@ function submit(): void {
           </label>
           <label class="block">
             <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Status</span>
-            <select :value="status()" :disabled="type() === 'email' && (mode() === 'add' || ['scheduled', 'sending', 'sent'].includes(status()))" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700 disabled:opacity-60" @change="updateField('status', $event)">
+            <select x-model="status" :disabled="type() === 'email' && (mode() === 'add' || ['scheduled', 'sending', 'sent'].includes(status()))" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700 disabled:opacity-60">
               <option value="draft">Draft</option>
               <option :if="type() !== 'email'" value="scheduled">Scheduled</option>
               <option :if="type() !== 'email'" value="active">Active</option>
@@ -190,7 +155,7 @@ function submit(): void {
           <div :if="type() === 'email'" class="grid gap-4 sm:col-span-2 sm:grid-cols-2 p-4 bg-gray-50 dark:bg-neutral-900/50 border border-gray-200 rounded-lg dark:border-neutral-700">
             <label class="block sm:col-span-2">
               <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Email list</span>
-              <select :value="emailListId()" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @change="updateField('emailListId', $event)">
+              <select x-model="emailListId" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700">
                 <option value="">Select a list</option>
                 <template :for="list in lists">
                   <option :value="list.id">{{ list.name }} - {{ list.activeMembers.toLocaleString() }} active</option>
@@ -199,52 +164,52 @@ function submit(): void {
             </label>
             <label class="block sm:col-span-2">
               <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Subject</span>
-              <input :value="subject()" type="text" maxlength="255" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="updateField('subject', $event)" />
+              <input x-model="subject" type="text" maxlength="255" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" />
             </label>
             <label class="block sm:col-span-2">
               <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Template name or raw HTML</span>
-              <textarea :value="template()" rows="3" required class="mt-1 px-3 py-2 w-full font-mono text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="updateField('template', $event)"></textarea>
+              <textarea x-model="template" rows="3" required class="mt-1 px-3 py-2 w-full font-mono text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700"></textarea>
             </label>
             <label class="block sm:col-span-2">
               <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Plain-text fallback</span>
-              <textarea :value="text()" rows="3" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="updateField('text', $event)"></textarea>
+              <textarea x-model="text" rows="3" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700"></textarea>
             </label>
             <label class="block">
               <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">From name</span>
-              <input :value="fromName()" type="text" maxlength="100" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="updateField('fromName', $event)" />
+              <input x-model="fromName" type="text" maxlength="100" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" />
             </label>
             <label class="block">
               <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">From address</span>
-              <input :value="fromAddress()" type="email" maxlength="255" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="updateField('fromAddress', $event)" />
+              <input x-model="fromAddress" type="email" maxlength="255" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" />
             </label>
           </div>
 
           <label :if="status() === 'scheduled'" class="block sm:col-span-2">
             <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Scheduled for</span>
-            <input :value="scheduledAt()" type="datetime-local" required :disabled="type() === 'email'" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700 disabled:opacity-60" @input="updateField('scheduledAt', $event)" />
+            <input x-model="scheduledAt" type="datetime-local" required :disabled="type() === 'email'" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700 disabled:opacity-60" />
             <span :if="type() === 'email'" class="block mt-1 text-gray-500 text-xs dark:text-neutral-400">Email scheduling is managed by the delivery pipeline.</span>
           </label>
 
           <label class="block">
             <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Starts</span>
-            <input :value="startDate()" type="datetime-local" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="updateField('startDate', $event)" />
+            <input x-model="startDate" type="datetime-local" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" />
           </label>
           <label class="block">
             <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Ends</span>
-            <input :value="endDate()" type="datetime-local" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="updateField('endDate', $event)" />
+            <input x-model="endDate" type="datetime-local" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" />
           </label>
           <label class="block">
             <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Budget</span>
-            <input :value="budget()" type="number" min="0" step="0.01" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="updateField('budget', $event)" />
+            <input x-model="budget" type="number" min="0" step="0.01" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" />
           </label>
           <div class="grid gap-3 grid-cols-[1fr_7rem]">
             <label class="block">
               <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Spent</span>
-              <input :value="spent()" type="number" min="0" step="0.01" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="updateField('spent', $event)" />
+              <input x-model="spent" type="number" min="0" step="0.01" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" />
             </label>
             <label class="block">
               <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Currency</span>
-              <input :value="currency()" type="text" minlength="3" maxlength="3" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm uppercase dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="updateField('currency', $event)" />
+              <input x-model="currency" type="text" minlength="3" maxlength="3" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm uppercase dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" />
             </label>
           </div>
         </div>

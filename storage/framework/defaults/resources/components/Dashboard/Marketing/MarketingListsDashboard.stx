@@ -80,25 +80,13 @@ function totalPages(): number {
   return Math.max(1, Math.ceil(filteredRecords().length / perPage))
 }
 
-function updateSearch(event: Event): void {
-  search.set((event.target as HTMLInputElement).value)
+effect(() => {
+  search()
+  statusFilter()
+  visibilityFilter()
+  sort()
   page.set(1)
-}
-
-function updateStatusFilter(event: Event): void {
-  statusFilter.set((event.target as HTMLSelectElement).value)
-  page.set(1)
-}
-
-function updateVisibilityFilter(event: Event): void {
-  visibilityFilter.set((event.target as HTMLSelectElement).value)
-  page.set(1)
-}
-
-function updateSort(event: Event): void {
-  sort.set((event.target as HTMLSelectElement).value)
-  page.set(1)
-}
+})
 
 async function loadLists(): Promise<void> {
   loading.set(true)
@@ -253,10 +241,10 @@ onMount(() => {
 
   <section class="space-y-3">
     <div class="grid gap-3 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
-      <label class="xl:col-span-1"><span class="sr-only">Search email lists</span><input :value="search()" type="search" placeholder="Search email lists" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" @input="updateSearch($event)" /></label>
-      <label><span class="sr-only">Filter status</span><select :value="statusFilter()" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" @change="updateStatusFilter($event)"><option value="all">All statuses</option><option value="active">Active</option><option value="inactive">Inactive</option><option value="archived">Archived</option></select></label>
-      <label><span class="sr-only">Filter visibility</span><select :value="visibilityFilter()" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" @change="updateVisibilityFilter($event)"><option value="all">All signup modes</option><option value="public">Public</option><option value="private">Private</option></select></label>
-      <label><span class="sr-only">Sort email lists</span><select :value="sort()" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" @change="updateSort($event)"><option value="name">Name</option><option value="members">Most members</option><option value="campaigns">Most campaigns</option><option value="newest">Newest</option></select></label>
+      <label class="xl:col-span-1"><span class="sr-only">Search email lists</span><input x-model="search" type="search" placeholder="Search email lists" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" /></label>
+      <label><span class="sr-only">Filter status</span><select x-model="statusFilter" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700"><option value="all">All statuses</option><option value="active">Active</option><option value="inactive">Inactive</option><option value="archived">Archived</option></select></label>
+      <label><span class="sr-only">Filter visibility</span><select x-model="visibilityFilter" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700"><option value="all">All signup modes</option><option value="public">Public</option><option value="private">Private</option></select></label>
+      <label><span class="sr-only">Sort email lists</span><select x-model="sort" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700"><option value="name">Name</option><option value="members">Most members</option><option value="campaigns">Most campaigns</option><option value="newest">Newest</option></select></label>
     </div>
     <MarketingListsTable :records="visibleRecords()" :loading="loading()" @edit="openEdit" @delete="openDelete" />
     <div :if="filteredRecords().length > perPage" class="flex items-center justify-between">

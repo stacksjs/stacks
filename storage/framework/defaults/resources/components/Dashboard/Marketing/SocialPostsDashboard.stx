@@ -78,30 +78,14 @@ function totalPages(): number {
   return Math.max(1, Math.ceil(filteredRecords().length / perPage))
 }
 
-function updateSearch(event: Event): void {
-  search.set((event.target as HTMLInputElement).value)
+effect(() => {
+  search()
+  statusFilter()
+  platformFilter()
+  authorFilter()
+  sort()
   page.set(1)
-}
-
-function updateStatusFilter(event: Event): void {
-  statusFilter.set((event.target as HTMLSelectElement).value)
-  page.set(1)
-}
-
-function updatePlatformFilter(event: Event): void {
-  platformFilter.set((event.target as HTMLSelectElement).value)
-  page.set(1)
-}
-
-function updateAuthorFilter(event: Event): void {
-  authorFilter.set((event.target as HTMLSelectElement).value)
-  page.set(1)
-}
-
-function updateSort(event: Event): void {
-  sort.set((event.target as HTMLSelectElement).value)
-  page.set(1)
-}
+})
 
 async function loadPosts(): Promise<void> {
   loading.set(true)
@@ -241,11 +225,11 @@ onMount(() => {
 
   <section class="space-y-3">
     <div class="grid gap-3 grid-cols-1 sm:grid-cols-2 xl:grid-cols-5">
-      <label><span class="sr-only">Search social posts</span><input :value="search()" type="search" placeholder="Search social posts" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" @input="updateSearch($event)" /></label>
-      <label><span class="sr-only">Filter social status</span><select :value="statusFilter()" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" @change="updateStatusFilter($event)"><option value="all">All statuses</option><option value="draft">Draft</option><option value="scheduled">Scheduled</option><option value="published">Published</option><option value="failed">Failed</option></select></label>
-      <label><span class="sr-only">Filter platform</span><select :value="platformFilter()" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" @change="updatePlatformFilter($event)"><option value="all">All platforms</option><option value="twitter">Twitter</option><option value="facebook">Facebook</option><option value="instagram">Instagram</option><option value="linkedin">LinkedIn</option><option value="tiktok">TikTok</option><option value="youtube">YouTube</option></select></label>
-      <label><span class="sr-only">Filter owner</span><select :value="authorFilter()" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" @change="updateAuthorFilter($event)"><option value="all">All owners</option><option value="">Unassigned</option><template :for="user in users()" :key="user.id"><option :value="user.id">{{ user.name }}</option></template></select></label>
-      <label><span class="sr-only">Sort social posts</span><select :value="sort()" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" @change="updateSort($event)"><option value="newest">Newest</option><option value="scheduled">Latest schedule</option><option value="reach">Most reach</option><option value="engagement">Most engagement</option></select></label>
+      <label><span class="sr-only">Search social posts</span><input x-model="search" type="search" placeholder="Search social posts" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" /></label>
+      <label><span class="sr-only">Filter social status</span><select x-model="statusFilter" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700"><option value="all">All statuses</option><option value="draft">Draft</option><option value="scheduled">Scheduled</option><option value="published">Published</option><option value="failed">Failed</option></select></label>
+      <label><span class="sr-only">Filter platform</span><select x-model="platformFilter" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700"><option value="all">All platforms</option><option value="twitter">Twitter</option><option value="facebook">Facebook</option><option value="instagram">Instagram</option><option value="linkedin">LinkedIn</option><option value="tiktok">TikTok</option><option value="youtube">YouTube</option></select></label>
+      <label><span class="sr-only">Filter owner</span><select x-model="authorFilter" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700"><option value="all">All owners</option><option value="">Unassigned</option><template :for="user in users()" :key="user.id"><option :value="user.id">{{ user.name }}</option></template></select></label>
+      <label><span class="sr-only">Sort social posts</span><select x-model="sort" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700"><option value="newest">Newest</option><option value="scheduled">Latest schedule</option><option value="reach">Most reach</option><option value="engagement">Most engagement</option></select></label>
     </div>
     <SocialPostsTable :records="visibleRecords()" :loading="loading()" @edit="openEdit" @delete="openDelete" />
     <div :if="filteredRecords().length > perPage" class="flex items-center justify-between"><p class="text-gray-500 text-sm dark:text-neutral-400">Page {{ page() }} of {{ totalPages() }}</p><div class="flex gap-2"><button type="button" :disabled="page() === 1" class="px-3 py-2 text-gray-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700 disabled:opacity-50" @click="previousPage()">Previous</button><button type="button" :disabled="page() === totalPages()" class="px-3 py-2 text-gray-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700 disabled:opacity-50" @click="nextPage()">Next</button></div></div>

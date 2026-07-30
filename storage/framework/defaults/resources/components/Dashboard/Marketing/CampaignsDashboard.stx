@@ -111,20 +111,14 @@ function totalPages(): number {
   return Math.max(1, Math.ceil(filteredRecords().length / perPage))
 }
 
-function updateFilter(field: string, event: Event): void {
-  const nextValue = (event.target as HTMLInputElement | HTMLSelectElement).value
-  if (field === 'search')
-    search.set(nextValue)
-  else if (field === 'type')
-    typeFilter.set(nextValue)
-  else if (field === 'status')
-    statusFilter.set(nextValue)
-  else if (field === 'list')
-    listFilter.set(nextValue)
-  else if (field === 'sort')
-    sort.set(nextValue)
+effect(() => {
+  search()
+  typeFilter()
+  statusFilter()
+  listFilter()
+  sort()
   page.set(1)
-}
+})
 
 async function loadCampaigns(): Promise<void> {
   loading.set(true)
@@ -314,11 +308,11 @@ onMount(() => {
 
   <section class="space-y-3">
     <div class="grid gap-3 grid-cols-1 sm:grid-cols-2 xl:grid-cols-5">
-      <label><span class="sr-only">Search campaigns</span><input :value="search()" type="search" placeholder="Search campaigns" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" @input="updateFilter('search', $event)" /></label>
-      <label><span class="sr-only">Filter campaign type</span><select :value="typeFilter()" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" @change="updateFilter('type', $event)"><option value="all">All types</option><option value="email">Email</option><option value="sms">SMS</option><option value="push">Push</option><option value="social">Social</option><option value="multi-channel">Multi-channel</option></select></label>
-      <label><span class="sr-only">Filter campaign status</span><select :value="statusFilter()" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" @change="updateFilter('status', $event)"><option value="all">All statuses</option><option value="draft">Draft</option><option value="scheduled">Scheduled</option><option value="sending">Sending</option><option value="sent">Sent</option><option value="active">Active</option><option value="completed">Completed</option><option value="paused">Paused</option><option value="cancelled">Cancelled</option><option value="failed">Failed</option><option value="archived">Archived</option></select></label>
-      <label><span class="sr-only">Filter campaign list</span><select :value="listFilter()" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" @change="updateFilter('list', $event)"><option value="all">All email lists</option><template :for="list in lists"><option :value="list.id">{{ list.name }}</option></template></select></label>
-      <label><span class="sr-only">Sort campaigns</span><select :value="sort()" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" @change="updateFilter('sort', $event)"><option value="newest">Newest</option><option value="name">Name</option><option value="audience">Largest audience</option><option value="sent">Most sent</option></select></label>
+      <label><span class="sr-only">Search campaigns</span><input x-model="search" type="search" placeholder="Search campaigns" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" /></label>
+      <label><span class="sr-only">Filter campaign type</span><select x-model="typeFilter" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700"><option value="all">All types</option><option value="email">Email</option><option value="sms">SMS</option><option value="push">Push</option><option value="social">Social</option><option value="multi-channel">Multi-channel</option></select></label>
+      <label><span class="sr-only">Filter campaign status</span><select x-model="statusFilter" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700"><option value="all">All statuses</option><option value="draft">Draft</option><option value="scheduled">Scheduled</option><option value="sending">Sending</option><option value="sent">Sent</option><option value="active">Active</option><option value="completed">Completed</option><option value="paused">Paused</option><option value="cancelled">Cancelled</option><option value="failed">Failed</option><option value="archived">Archived</option></select></label>
+      <label><span class="sr-only">Filter campaign list</span><select x-model="listFilter" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700"><option value="all">All email lists</option><template :for="list in lists"><option :value="list.id">{{ list.name }}</option></template></select></label>
+      <label><span class="sr-only">Sort campaigns</span><select x-model="sort" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700"><option value="newest">Newest</option><option value="name">Name</option><option value="audience">Largest audience</option><option value="sent">Most sent</option></select></label>
     </div>
     <CampaignsTable :records="visibleRecords()" :loading="loading()" @edit="openEdit" @delete="openDelete" @deliver="openDelivery" />
     <div :if="filteredRecords().length > perPage" class="flex items-center justify-between"><p class="text-gray-500 text-sm dark:text-neutral-400">Page {{ page() }} of {{ totalPages() }}</p><div class="flex gap-2"><button type="button" :disabled="page() === 1" class="px-3 py-2 text-gray-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700 disabled:opacity-50" @click="previousPage()">Previous</button><button type="button" :disabled="page() === totalPages()" class="px-3 py-2 text-gray-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700 disabled:opacity-50" @click="nextPage()">Next</button></div></div>
