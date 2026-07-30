@@ -1,0 +1,174 @@
+<script client>
+interface DriverOption {
+  id: number
+  name: string
+  vehicle_number: string
+  status: 'active' | 'on_delivery' | 'on_break'
+}
+
+interface DeliveryRouteRecord {
+  id: number
+  driver: string
+  driver_id?: number | null
+  vehicle: string
+  stops: number
+  delivery_time: number
+  total_distance: number
+  last_active: string | number
+}
+
+const open = useReactiveProp('open', false)
+const mode = useReactiveProp('mode', 'create')
+const record = useReactiveProp('record', null as DeliveryRouteRecord | null)
+const drivers = useReactiveProp('drivers', [] as DriverOption[])
+const busy = useReactiveProp('busy', false)
+const error = useReactiveProp('error', '')
+const emit = defineEmits()
+const driverId = state('')
+const stops = state('0')
+const deliveryTime = state('0')
+const totalDistance = state('0')
+const lastActive = state('')
+let hydrationKey = ''
+
+function currentDateTimeLocal(): string {
+  const now = new Date()
+  return new Date(now.getTime() - now.getTimezoneOffset() * 60_000).toISOString().slice(0, 16)
+}
+
+function toDateTimeLocal(value?: string | number): string {
+  if (value === undefined || value === null || value === '')
+    return currentDateTimeLocal()
+
+  const numeric = typeof value === 'number' || /^\d+$/.test(String(value))
+  const date = numeric
+    ? new Date(Number(value))
+    : new Date(String(value).replace(' ', 'T'))
+  if (Number.isNaN(date.getTime()))
+    return currentDateTimeLocal()
+
+  return new Date(date.getTime() - date.getTimezoneOffset() * 60_000).toISOString().slice(0, 16)
+}
+
+function toDatabaseTimestamp(value: string): string {
+  const normalized = value.replace('T', ' ')
+  return normalized.length === 16 ? `${normalized}:00` : normalized
+}
+
+effect(() => {
+  if (!open()) {
+    hydrationKey = ''
+    return
+  }
+  const current = record()
+  const nextKey = `${mode()}:${current?.id || 'new'}`
+  if (hydrationKey === nextKey)
+    return
+  hydrationKey = nextKey
+  driverId.set(current?.driver_id ? String(current.driver_id) : '')
+  stops.set(String(current?.stops ?? 0))
+  deliveryTime.set(String(current?.delivery_time ?? 0))
+  totalDistance.set(String(current?.total_distance ?? 0))
+  lastActive.set(toDateTimeLocal(current?.last_active))
+})
+
+function selectedDriver(): DriverOption | undefined {
+  const id = Number(driverId())
+  return drivers().find(driver => driver.id === id)
+}
+
+function setDriver(event: Event): void {
+  driverId.set((event.target as HTMLSelectElement).value)
+}
+
+function setStops(event: Event): void {
+  stops.set((event.target as HTMLInputElement).value)
+}
+
+function setDeliveryTime(event: Event): void {
+  deliveryTime.set((event.target as HTMLInputElement).value)
+}
+
+function setTotalDistance(event: Event): void {
+  totalDistance.set((event.target as HTMLInputElement).value)
+}
+
+function setLastActive(event: Event): void {
+  lastActive.set((event.target as HTMLInputElement).value)
+}
+
+function submit(): void {
+  const driver = selectedDriver()
+  const parsedStops = Number(stops())
+  const parsedDeliveryTime = Number(deliveryTime())
+  const parsedDistance = Number(totalDistance())
+
+  if (!driver) {
+    emit('invalid', 'Select a persisted driver.')
+    return
+  }
+  if (!Number.isInteger(parsedStops) || parsedStops < 0) {
+    emit('invalid', 'Stops must be a whole number of zero or more.')
+    return
+  }
+  if (!Number.isInteger(parsedDeliveryTime) || parsedDeliveryTime < 0) {
+    emit('invalid', 'Delivery time must be a whole number of minutes.')
+    return
+  }
+  if (!Number.isInteger(parsedDistance) || parsedDistance < 0) {
+    emit('invalid', 'Distance must be a whole number of miles.')
+    return
+  }
+  if (!lastActive()) {
+    emit('invalid', 'Last active time is required.')
+    return
+  }
+
+  emit('submit', {
+    driver: driver.name,
+    driver_id: driver.id,
+    vehicle: driver.vehicle_number,
+    stops: parsedStops,
+    delivery_time: parsedDeliveryTime,
+    total_distance: parsedDistance,
+    last_active: toDatabaseTimestamp(lastActive()),
+  })
+}
+</script>
+
+<div :if="open()" class="flex fixed inset-0 z-50 items-center justify-center p-4">
+  <button type="button" aria-label="Close delivery route dialog" class="absolute inset-0 bg-black/45" @click="emit('close')"></button>
+  <section role="dialog" aria-modal="true" aria-labelledby="delivery-route-dialog-title" class="overflow-y-auto relative max-h-[92dvh] max-w-xl w-full bg-white dark:bg-neutral-800 border border-gray-200 rounded-xl dark:border-neutral-700 shadow-xl">
+    <form @submit.prevent="submit()">
+      <div class="p-6">
+        <h2 id="delivery-route-dialog-title" class="font-semibold text-gray-900 text-lg dark:text-white">{{ mode() === 'edit' ? 'Edit delivery route' : 'Add delivery route' }}</h2>
+        <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Assign a persisted driver and record the operational route metrics.</p>
+        <div :if="error()" class="mt-4 p-3 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900">{{ error() }}</div>
+
+        <div class="mt-5 space-y-4">
+          <label class="block">
+            <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Driver</span>
+            <select :value="driverId()" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @change="setDriver">
+              <option value="">Select a driver</option>
+              <template :for="driver in drivers()" :key="driver.id"><option :value="driver.id">{{ driver.name }} - {{ driver.vehicle_number }}</option></template>
+            </select>
+          </label>
+          <div :if="selectedDriver()" class="flex gap-3 items-center p-3 text-gray-600 text-sm dark:text-neutral-300 bg-gray-50 dark:bg-neutral-900/60 border border-gray-200 rounded-lg dark:border-neutral-700">
+            <span class="h-5 w-5 text-blue-600 i-hugeicons-delivery-truck-02"></span>
+            <span><strong class="text-gray-900 dark:text-white">{{ selectedDriver()?.vehicle_number }}</strong> will be stored as the route vehicle snapshot.</span>
+          </div>
+          <div class="grid gap-4 grid-cols-1 sm:grid-cols-3">
+            <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Stops</span><input :value="stops()" type="number" required min="0" step="1" inputmode="numeric" class="mt-1 px-3 py-2 w-full tabular-nums text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="setStops" /></label>
+            <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Time, minutes</span><input :value="deliveryTime()" type="number" required min="0" step="1" inputmode="numeric" class="mt-1 px-3 py-2 w-full tabular-nums text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="setDeliveryTime" /></label>
+            <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Distance, miles</span><input :value="totalDistance()" type="number" required min="0" step="1" inputmode="numeric" class="mt-1 px-3 py-2 w-full tabular-nums text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="setTotalDistance" /></label>
+          </div>
+          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Last active</span><input :value="lastActive()" type="datetime-local" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="setLastActive" /></label>
+        </div>
+      </div>
+      <footer class="flex gap-2 justify-end px-6 py-4 bg-gray-50 dark:bg-neutral-900/50 border-gray-200 border-t dark:border-neutral-700">
+        <button type="button" :disabled="busy()" class="px-3 py-2 font-semibold text-gray-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700 disabled:opacity-50" @click="emit('close')">Cancel</button>
+        <button type="submit" :disabled="busy()" class="inline-flex items-center px-3 py-2 font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md disabled:opacity-50"><span :if="busy()" class="mr-2 h-4 w-4 animate-spin i-hugeicons-loading-03"></span>{{ mode() === 'edit' ? 'Save changes' : 'Add route' }}</button>
+      </footer>
+    </form>
+  </section>
+</div>

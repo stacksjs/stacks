@@ -2,6 +2,8 @@
 interface DeliveryRouteRow {
   id: number
   driver: string
+  driver_id?: number | null
+  driver_record?: { id: number, name: string, vehicle_number: string }
   vehicle: string
   stops: number
   delivery_time: number
@@ -49,13 +51,14 @@ function formatNumber(value: number): string {
       </tr>
     </thead>
     <tbody class="bg-white dark:bg-neutral-800 divide-stone-100 divide-y dark:divide-neutral-700">
-      <template :for="route in routes">
+      <template :for="route in routes" :key="route.id">
         <tr class="hover:bg-stone-50/50 dark:hover:bg-neutral-700/50 transition-colors">
           <td class="pl-6 pr-3 py-3.5 font-medium tabular-nums text-sm text-stone-800 whitespace-nowrap dark:text-white">
             #{{ route.id }}
           </td>
           <td class="px-4 py-3.5 font-medium text-sm text-stone-800 whitespace-nowrap dark:text-white">
-            {{ route.driver }}
+            <span class="block">{{ route.driver_record?.name || route.driver }}</span>
+            <span class="block font-normal text-stone-400 text-xs dark:text-neutral-500">{{ route.driver_id ? 'Linked driver #' + route.driver_id : 'Legacy snapshot' }}</span>
           </td>
           <td class="px-4 py-3.5 text-sm text-stone-500 whitespace-nowrap dark:text-neutral-300">
             {{ route.vehicle }}
@@ -76,7 +79,7 @@ function formatNumber(value: number): string {
             <button
               type="button"
               @click="emit('edit', route)"
-              :aria-label="'Edit route ' + route.id"
+              :aria-label="'Edit delivery route ' + route.id + ' for ' + route.driver"
               class="mr-1 p-2 text-stone-400 hover:text-blue-700 dark:hover:text-blue-300 rounded-md transition-colors"
             >
               <span class="block h-5 w-5 i-hugeicons-edit-01"></span>
@@ -84,7 +87,7 @@ function formatNumber(value: number): string {
             <button
               type="button"
               @click="emit('delete', route)"
-              :aria-label="'Delete route ' + route.id"
+              :aria-label="'Delete delivery route ' + route.id + ' for ' + route.driver"
               class="p-2 text-stone-400 hover:text-red-700 dark:hover:text-red-300 rounded-md transition-colors"
             >
               <span class="block h-5 w-5 i-hugeicons-waste"></span>
