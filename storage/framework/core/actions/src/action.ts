@@ -227,6 +227,14 @@ export class Action<
   before?: ActionOptions<TModel, TValidations, TPath>['before']
   handle: ActionOptions<TModel, TValidations, TPath>['handle']
   model?: string
+  /**
+   * Original model definition used for request validation.
+   *
+   * `model` remains the normalized name consumed by route metadata, while
+   * the router needs the definition's attributes when an action calls
+   * `request.validate()` without explicit rules.
+   */
+  modelDefinition?: TModel
 
   /**
    * Backing factory for {@link deps} (stacksjs/stacks#1870 R-6).
@@ -280,6 +288,7 @@ export class Action<
     this.authorize = authorize
     this.before = before
     this._dependenciesFactory = dependencies
+    this.modelDefinition = model
 
     // Extract model name string for runtime (route generation, etc.)
     if (model && typeof model === 'object' && 'name' in model) {

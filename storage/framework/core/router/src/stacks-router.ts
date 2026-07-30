@@ -1576,7 +1576,8 @@ async function resolveStringHandlerUncached(handlerPath: string): Promise<RouteH
       if (actionForcesJson) {
         ;req._forceJson = true
       }
-      ;(req as any)._requestValidationRules = action.validations ?? modelValidationRules(action.model)
+      ;(req as any)._requestValidationRules = action.validations
+        ?? modelValidationRules(action.modelDefinition ?? action.model)
       try {
         // Validate action input if validations are defined. Always returns
         // JSON — validation failures are 100% an API-shape signal and HTML
