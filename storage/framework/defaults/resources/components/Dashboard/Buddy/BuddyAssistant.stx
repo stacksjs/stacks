@@ -21,10 +21,6 @@ function providerName(): string {
   return 'AI provider'
 }
 
-function updatePrompt(event: Event): void {
-  prompt.set((event.target as HTMLTextAreaElement).value)
-}
-
 function setSuggestion(value: string): void {
   prompt.set(value)
 }
@@ -46,8 +42,7 @@ async function loadChat(): Promise<void> {
   }
 }
 
-async function sendMessage(event: Event): Promise<void> {
-  event.preventDefault()
+async function sendMessage(): Promise<void> {
   const content = prompt().trim()
   if (!content || isSending() || !chatState()?.configured)
     return
@@ -174,17 +169,16 @@ onMount(() => {
       </div>
     </div>
 
-    <form class="p-4 bg-gray-50 dark:bg-neutral-800 border-gray-200 border-t dark:border-neutral-700" @submit="sendMessage($event)">
+    <form class="p-4 bg-gray-50 dark:bg-neutral-800 border-gray-200 border-t dark:border-neutral-700" @submit.prevent="sendMessage">
       <div class="flex gap-3 items-end mx-auto max-w-4xl">
         <textarea
-          :value="prompt()"
+          x-model="prompt"
           :disabled="!chatState()?.configured || isSending()"
           maxlength="4000"
           rows="3"
           aria-label="Ask Buddy"
           placeholder="Ask about models, actions, routes, stx, Crosswind, testing, or deployment"
           class="block px-3 py-2 min-h-20 w-full text-gray-900 text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border border-gray-300 rounded-md dark:border-neutral-600 disabled:opacity-60 resize-y"
-          @input="updatePrompt($event)"
         ></textarea>
         <button type="submit" :disabled="!chatState()?.configured || isSending() || prompt().trim().length < 3" class="inline-flex items-center justify-center px-4 py-2.5 font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md disabled:opacity-50">
           <span class="mr-2 h-4 w-4 i-hugeicons-sent"></span>

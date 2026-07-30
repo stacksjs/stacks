@@ -131,6 +131,15 @@ describe('dashboard native STX bindings', () => {
     expect(forgotPassword).not.toContain('<script server>')
   })
 
+  test('Buddy prompt uses a native textarea model and submit prevention', () => {
+    const source = componentSource('Buddy/BuddyAssistant.stx')
+
+    expect(source).toContain('x-model="prompt"')
+    expect(source).toContain('@submit.prevent="sendMessage"')
+    expect(source).not.toContain('function updatePrompt(')
+    expect(source).not.toContain(':value="prompt()"')
+  })
+
   test('shared buttons and modals use native icons and dialog semantics', () => {
     const button = componentSource('UI/Button.stx')
     expect(button).toContain('i-hugeicons-loading-03')
