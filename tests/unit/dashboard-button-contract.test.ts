@@ -62,6 +62,21 @@ describe('dashboard button contract', () => {
       'CommercePosReceiptDialog.stx',
       'PaymentDetailsDialog.stx',
       'PaymentRefundDialog.stx',
+      'Delivery/DeliveryOverviewDashboard.stx',
+      'Delivery/ShippingMethodsDashboard.stx',
+      'Delivery/DriversDashboard.stx',
+      'Delivery/DeliveryRoutesDashboard.stx',
+      'Delivery/LicenseKeysDashboard.stx',
+      'Delivery/ShippingZonesDashboard.stx',
+      'Delivery/DigitalDeliveriesDashboard.stx',
+      'Delivery/ShippingRatesDashboard.stx',
+      'Delivery/DigitalDeliveryTable.stx',
+      'Delivery/DeliveryRoutesTable.stx',
+      'Delivery/LicenseKeysTable.stx',
+      'Delivery/ShippingMethodsTable.stx',
+      'Delivery/DriversTable.stx',
+      'Delivery/ShippingZonesTable.stx',
+      'Delivery/ShippingRatesTable.stx',
     ]
 
     for (const file of files) {

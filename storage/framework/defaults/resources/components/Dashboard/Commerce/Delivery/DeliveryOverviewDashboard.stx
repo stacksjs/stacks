@@ -161,7 +161,7 @@ onMount(() => {
 
   <div :if="loadError()" role="alert" class="flex gap-4 items-center justify-between p-4 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900">
     <span>{{ loadError() }}</span>
-    <button type="button" class="font-semibold underline" @click="loadOverview()">Retry</button>
+    <Button variant="secondary" size="sm" @click="loadOverview()">Retry</Button>
   </div>
 
   <div :if="loading()" aria-label="Loading delivery overview" class="space-y-6 animate-pulse">

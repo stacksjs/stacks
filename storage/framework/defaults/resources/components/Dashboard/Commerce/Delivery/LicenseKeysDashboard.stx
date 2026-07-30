@@ -261,7 +261,7 @@ onMount(() => {
     </div>
   </header>
 
-  <div :if="loadError()" class="flex gap-4 items-center justify-between p-4 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900"><span>{{ loadError() }}</span><button type="button" class="font-semibold underline" @click="loadKeys()">Retry</button></div>
+  <div :if="loadError()" class="flex gap-4 items-center justify-between p-4 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900"><span>{{ loadError() }}</span><Button variant="secondary" size="sm" @click="loadKeys()">Retry</Button></div>
 
   <section aria-label="License key metrics" class="grid gap-3 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
     <template :for="item in metricCards()" :key="item.label"><article class="p-4 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700"><p class="text-gray-500 text-xs dark:text-neutral-400">{{ item.label }}</p><p class="mt-2 font-semibold text-2xl text-gray-900 dark:text-white">{{ item.value }}</p><p class="mt-1 text-gray-400 text-xs dark:text-neutral-500">{{ item.detail }}</p></article></template>
