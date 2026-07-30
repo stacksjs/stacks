@@ -28,6 +28,12 @@ function formatCurrency(cents: number): string {
 function formatWeight(weight: number): string {
   return `${new Intl.NumberFormat('en-US', { maximumFractionDigits: 2 }).format(weight)} kg`
 }
+
+function actionLabel(action: string, rate: ShippingRateRow): string {
+  const method = rate.shipping_method?.name || `method ${rate.shipping_method_id}`
+  const zone = rate.shipping_zone?.name || `zone ${rate.shipping_zone_id}`
+  return `${action} ${method} rate for ${zone}, ${formatWeight(rate.weight_from)} to ${formatWeight(rate.weight_to)}`
+}
 </script>
 
 <div class="overflow-x-auto border border-stone-200/80 rounded-xl dark:border-neutral-700 shadow-sm">
@@ -45,7 +51,7 @@ function formatWeight(weight: number): string {
       </tr>
     </thead>
     <tbody class="bg-white dark:bg-neutral-800 divide-stone-100 divide-y dark:divide-neutral-700">
-      <template :for="rate in rates">
+      <template :for="rate in rates" :key="rate.id">
         <tr class="hover:bg-stone-50/50 dark:hover:bg-neutral-700/50 transition-colors">
           <td class="pl-6 pr-3 py-3.5 font-medium text-sm text-stone-800 whitespace-nowrap dark:text-white">
             {{ rate.shipping_method?.name || 'Method #' + rate.shipping_method_id }}
@@ -66,7 +72,7 @@ function formatWeight(weight: number): string {
             <button
               type="button"
               @click="emit('edit', rate)"
-              :aria-label="'Edit rate for ' + (rate.shipping_method?.name || 'method ' + rate.shipping_method_id)"
+              :aria-label="actionLabel('Edit', rate)"
               class="mr-1 p-2 text-stone-400 hover:text-blue-700 dark:hover:text-blue-300 rounded-md transition-colors"
             >
               <span class="block h-5 w-5 i-hugeicons-edit-01"></span>
@@ -74,7 +80,7 @@ function formatWeight(weight: number): string {
             <button
               type="button"
               @click="emit('delete', rate)"
-              :aria-label="'Delete rate for ' + (rate.shipping_method?.name || 'method ' + rate.shipping_method_id)"
+              :aria-label="actionLabel('Delete', rate)"
               class="p-2 text-stone-400 hover:text-red-700 dark:hover:text-red-300 rounded-md transition-colors"
             >
               <span class="block h-5 w-5 i-hugeicons-waste"></span>

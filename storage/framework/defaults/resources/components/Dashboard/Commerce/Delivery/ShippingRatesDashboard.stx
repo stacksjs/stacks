@@ -1,0 +1,280 @@
+<script client>
+import { dashboardApi } from '../../../../../functions/dashboard-api'
+import { pushToast } from '../../../../../functions/toasts'
+
+interface ShippingResourceOption {
+  id: number
+  name: string
+  status?: string
+}
+
+interface ShippingRateRecord {
+  id: number
+  shipping_method_id: number
+  shipping_zone_id: number
+  weight_from: number
+  weight_to: number
+  rate: number
+  shipping_method?: ShippingResourceOption
+  shipping_zone?: ShippingResourceOption
+}
+
+interface ShippingRatePayload {
+  shipping_method_id: number
+  shipping_zone_id: number
+  weight_from: number
+  weight_to: number
+  rate: number
+}
+
+const records = state<ShippingRateRecord[]>([])
+const methods = state<ShippingResourceOption[]>([])
+const zones = state<ShippingResourceOption[]>([])
+const loading = state(true)
+const loadError = state('')
+const search = state('')
+const page = state(1)
+const perPage = state(10)
+const editorOpen = state(false)
+const editorMode = state<'create' | 'edit'>('create')
+const editing = state<ShippingRateRecord | null>(null)
+const saving = state(false)
+const editorError = state('')
+const deleting = state<ShippingRateRecord | null>(null)
+const deleteBusy = state(false)
+const deleteError = state('')
+
+function methodFor(id: number): ShippingResourceOption | undefined {
+  return methods().find(method => method.id === id)
+}
+
+function zoneFor(id: number): ShippingResourceOption | undefined {
+  return zones().find(zone => zone.id === id)
+}
+
+function withRelations(record: ShippingRateRecord): ShippingRateRecord {
+  return {
+    ...record,
+    shipping_method: methodFor(record.shipping_method_id),
+    shipping_zone: zoneFor(record.shipping_zone_id),
+  }
+}
+
+function filteredRecords(): ShippingRateRecord[] {
+  const query = search().trim().toLowerCase()
+  if (!query)
+    return records()
+  return records().filter(record => [
+    record.shipping_method?.name,
+    record.shipping_zone?.name,
+    record.weight_from,
+    record.weight_to,
+    record.rate / 100,
+  ].some(value => String(value ?? '').toLowerCase().includes(query)))
+}
+
+function paginatedRecords(): ShippingRateRecord[] {
+  const start = (page() - 1) * perPage()
+  return filteredRecords().slice(start, start + perPage())
+}
+
+function uniqueZoneCount(): number {
+  return new Set(records().map(record => record.shipping_zone_id)).size
+}
+
+function averageRate(): string {
+  if (!records().length)
+    return '$0.00'
+  const average = records().reduce((sum, record) => sum + record.rate, 0) / records().length
+  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(average / 100)
+}
+
+function metricCards(): Array<{ label: string, value: string, detail: string }> {
+  const activeMethods = methods().filter(method => method.status === 'active').length
+  return [
+    { label: 'Shipping rates', value: records().length.toLocaleString(), detail: 'Persisted ShippingRate records' },
+    { label: 'Covered zones', value: uniqueZoneCount().toLocaleString(), detail: `${zones().length} configured zones` },
+    { label: 'Active methods', value: activeMethods.toLocaleString(), detail: `${methods().length} configured methods` },
+    { label: 'Average rate', value: averageRate(), detail: 'Across configured weight bands' },
+  ]
+}
+
+async function loadRates(): Promise<void> {
+  loading.set(true)
+  loadError.set('')
+  try {
+    const [rateData, methodData, zoneData] = await Promise.all([
+      dashboardApi<ShippingRateRecord[]>('/api/dashboard/commerce/shipping-rates'),
+      dashboardApi<ShippingResourceOption[]>('/api/dashboard/commerce/shipping-methods'),
+      dashboardApi<ShippingResourceOption[]>('/api/dashboard/commerce/shipping-zones'),
+    ])
+    if (!Array.isArray(rateData) || !Array.isArray(methodData) || !Array.isArray(zoneData))
+      throw new TypeError('Shipping rate resources were not returned as arrays.')
+    methods.set(methodData)
+    zones.set(zoneData)
+    records.set(rateData.map(withRelations))
+    const lastPage = Math.max(1, Math.ceil(filteredRecords().length / perPage()))
+    if (page() > lastPage)
+      page.set(lastPage)
+  }
+  catch (error) {
+    loadError.set(error instanceof Error ? error.message : String(error))
+    pushToast('error', 'Could not load shipping rates', { detail: loadError() })
+  }
+  finally {
+    loading.set(false)
+  }
+}
+
+function handleSearch(value: string): void {
+  search.set(value)
+  page.set(1)
+}
+
+function openCreate(): void {
+  editing.set(null)
+  editorMode.set('create')
+  editorError.set('')
+  editorOpen.set(true)
+}
+
+function openEdit(record: ShippingRateRecord): void {
+  editing.set(record)
+  editorMode.set('edit')
+  editorError.set('')
+  editorOpen.set(true)
+}
+
+function closeEditor(): void {
+  if (saving())
+    return
+  editorOpen.set(false)
+  editing.set(null)
+  editorError.set('')
+}
+
+function setEditorError(message: string): void {
+  editorError.set(message)
+}
+
+async function saveRate(payload: ShippingRatePayload): Promise<void> {
+  saving.set(true)
+  editorError.set('')
+  try {
+    const current = editing()
+    const updated = await dashboardApi<ShippingRateRecord>(
+      current
+        ? `/api/dashboard/commerce/shipping-rates/${current.id}`
+        : '/api/dashboard/commerce/shipping-rates',
+      {
+        method: current ? 'PATCH' : 'POST',
+        body: payload,
+      },
+    )
+    const hydrated = withRelations(updated)
+    if (current) {
+      records.set(records().map(record => record.id === current.id ? hydrated : record))
+    }
+    else {
+      const nextRecords = [...records(), hydrated]
+      records.set(nextRecords)
+      page.set(Math.max(1, Math.ceil(nextRecords.length / perPage())))
+    }
+    editorOpen.set(false)
+    editing.set(null)
+    pushToast('success', current ? 'Shipping rate updated' : 'Shipping rate added', {
+      detail: `${hydrated.shipping_method?.name || 'Method'} for ${hydrated.shipping_zone?.name || 'zone'}`,
+    })
+  }
+  catch (error) {
+    editorError.set(error instanceof Error ? error.message : String(error))
+  }
+  finally {
+    saving.set(false)
+  }
+}
+
+function requestDelete(record: ShippingRateRecord): void {
+  deleting.set(record)
+  deleteError.set('')
+}
+
+function closeDelete(): void {
+  if (deleteBusy())
+    return
+  deleting.set(null)
+  deleteError.set('')
+}
+
+async function confirmDelete(): Promise<void> {
+  const current = deleting()
+  if (!current)
+    return
+  deleteBusy.set(true)
+  deleteError.set('')
+  try {
+    await dashboardApi(`/api/dashboard/commerce/shipping-rates/${current.id}`, {
+      method: 'DELETE',
+    })
+    records.set(records().filter(record => record.id !== current.id))
+    deleting.set(null)
+    const lastPage = Math.max(1, Math.ceil(filteredRecords().length / perPage()))
+    if (page() > lastPage)
+      page.set(lastPage)
+    pushToast('success', 'Shipping rate deleted', {
+      detail: `${current.shipping_method?.name || 'Method'} for ${current.shipping_zone?.name || 'zone'}`,
+    })
+  }
+  catch (error) {
+    deleteError.set(error instanceof Error ? error.message : String(error))
+  }
+  finally {
+    deleteBusy.set(false)
+  }
+}
+
+function goToPage(value: number): void {
+  page.set(value)
+}
+
+onMount(() => {
+  void loadRates()
+})
+</script>
+
+<div class="space-y-6">
+  <TabNavigation model-value="rates" />
+
+  <header class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+    <div>
+      <h1 class="font-bold text-2xl text-gray-900 dark:text-white">Shipping rates</h1>
+      <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Price method and zone combinations across exact weight bands.</p>
+    </div>
+    <div class="flex gap-2">
+      <button type="button" :disabled="loading()" class="inline-flex items-center px-3 py-2 font-semibold text-gray-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700 disabled:opacity-50" @click="loadRates()"><span :class="'mr-2 h-4 w-4 ' + (loading() ? 'animate-spin i-hugeicons-loading-03' : 'i-hugeicons-refresh')"></span>Refresh</button>
+      <button type="button" :disabled="loading() || methods().length === 0 || zones().length === 0" class="inline-flex items-center px-3 py-2 font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md disabled:opacity-50" @click="openCreate()"><span class="mr-2 h-4 w-4 i-hugeicons-add-01"></span>Add rate</button>
+    </div>
+  </header>
+
+  <div :if="loadError()" class="flex gap-4 items-center justify-between p-4 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900"><span>{{ loadError() }}</span><button type="button" class="font-semibold underline" @click="loadRates()">Retry</button></div>
+  <div :if="!loading() && (!methods().length || !zones().length)" class="p-4 text-amber-800 text-sm dark:text-amber-200 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 rounded-lg dark:border-amber-900">Add at least one shipping method and one shipping zone before creating a rate.</div>
+
+  <section aria-label="Shipping rate metrics" class="grid gap-3 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
+    <template :for="item in metricCards()" :key="item.label"><article class="p-4 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700"><p class="text-gray-500 text-xs dark:text-neutral-400">{{ item.label }}</p><p class="mt-2 font-semibold text-2xl text-gray-900 dark:text-white">{{ item.value }}</p><p class="mt-1 text-gray-400 text-xs dark:text-neutral-500">{{ item.detail }}</p></article></template>
+  </section>
+
+  <section class="overflow-hidden bg-white dark:bg-neutral-800 border border-gray-200 rounded-xl dark:border-neutral-700">
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between px-4 py-4 border-b border-gray-200 dark:border-neutral-700">
+      <div><h2 class="font-semibold text-gray-900 dark:text-white">Configured weight bands</h2><p class="mt-0.5 text-gray-500 text-xs dark:text-neutral-400">{{ filteredRecords().length }} matching records</p></div>
+      <SearchFilter placeholder="Search shipping rates" class="w-full sm:w-80" @search="handleSearch" />
+    </div>
+    <div :if="loading()" class="flex items-center justify-center py-24 text-gray-500 text-sm dark:text-neutral-400"><span class="mr-2 h-4 w-4 animate-spin i-hugeicons-loading-03"></span>Loading shipping rates</div>
+    <ShippingRatesTable :if="!loading()" :rates="paginatedRecords()" @edit="openEdit" @delete="requestDelete" />
+    <div :if="!loading()" class="px-4 py-3 bg-gray-50 dark:bg-neutral-900/50 border-gray-200 border-t dark:border-neutral-700">
+      <DeliveryPagination :current-page="page()" :total-items="filteredRecords().length" :items-per-page="perPage()" @select="goToPage" />
+    </div>
+  </section>
+</div>
+
+<ShippingRateDialog :open="editorOpen()" :mode="editorMode()" :record="editing()" :methods="methods()" :zones="zones()" :busy="saving()" :error="editorError()" @submit="saveRate" @invalid="setEditorError" @close="closeEditor()" />
+<ShippingRateDeleteDialog :open="Boolean(deleting())" :record="deleting()" :busy="deleteBusy()" :error="deleteError()" @confirm="confirmDelete()" @close="closeDelete()" />
