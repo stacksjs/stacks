@@ -35,12 +35,14 @@ export default defineModel({
     query: {
       required: true,
       fillable: true,
+      type: 'text',
       validation: {
         rule: schema.string().required(),
       },
     },
     normalized_query: {
       fillable: true,
+      type: 'text',
       validation: {
         rule: schema.string(),
       },
@@ -68,6 +70,7 @@ export default defineModel({
     },
     error: {
       fillable: true,
+      type: 'text',
       validation: {
         rule: schema.string(),
       },
@@ -82,6 +85,7 @@ export default defineModel({
     bindings: {
       hidden: true,
       fillable: true,
+      type: 'text',
       validation: {
         rule: schema.string(),
       },
@@ -89,6 +93,7 @@ export default defineModel({
     trace: {
       hidden: true,
       fillable: true,
+      type: 'text',
       validation: {
         rule: schema.string(),
       },
