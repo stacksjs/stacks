@@ -207,6 +207,25 @@ describe('dashboard button contract', () => {
     }
   })
 
+  test('keeps permission navigation semantic while sharing its actions', () => {
+    const source = readFileSync(
+      resolve('storage/framework/defaults/views/dashboard/management/permissions/index.stx'),
+      'utf8',
+    )
+    const nativeButtons = [...source.matchAll(/<button\b[^>]*>/g)].map(match => match[0])
+    const semanticControls = [
+      "tabClass('roles')",
+      "tabClass('permissions')",
+      "tabClass('users')",
+      "tabClass('matrix')",
+      '@click="selectRole(role)"',
+      'fixed inset-0 w-full bg-black/50',
+    ]
+
+    expect((source.match(/<Button/g) || []).length).toBeGreaterThanOrEqual(11)
+    expect(nativeButtons.every(button => semanticControls.some(marker => button.includes(marker)))).toBe(true)
+  })
+
   test('keeps file navigation semantic while sharing all file actions', () => {
     const source = readFileSync(
       resolve('storage/framework/defaults/resources/components/Dashboard/Content/FileManagerDashboard.stx'),
