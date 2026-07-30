@@ -269,8 +269,7 @@ describe('Parser - Command Substitution', () => {
     expect(parsed.RESULT).toBe('')
   })
 
-  it.skip('should trim command output', () => {
-    // Skipping: printf behavior varies across shells
+  it('should trim command output', () => {
     const src = `VALUE=$(printf '  spaced  ')`
 
     const { parsed } = parse(src)

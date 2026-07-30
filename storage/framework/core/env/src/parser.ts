@@ -3,6 +3,10 @@
  * Parses .env files and handles encrypted values
  */
 
+import { spawnSync } from 'node:child_process'
+import { readFileSync } from 'node:fs'
+import { arch, hostname, platform, release, userInfo } from 'node:os'
+import { basename, dirname, resolve } from 'node:path'
 import { decryptValue } from './crypto'
 
 export interface ParseOptions {
@@ -158,11 +162,118 @@ function expandVariables(value: string, env: Record<string, string | undefined>)
  */
 const ALLOWED_ENV_COMMANDS = new Set(['date', 'hostname', 'whoami', 'uname', 'pwd', 'echo', 'printf', 'cat', 'basename', 'dirname'])
 
+function splitCommand(command: string): string[] {
+  const parts: string[] = []
+  let current = ''
+  let quote: '"' | '\'' | null = null
+  let escaped = false
+
+  for (const character of command.trim()) {
+    if (escaped) {
+      current += character
+      escaped = false
+      continue
+    }
+
+    if (character === '\\' && quote !== '\'') {
+      escaped = true
+      continue
+    }
+
+    if (quote) {
+      if (character === quote)
+        quote = null
+      else
+        current += character
+      continue
+    }
+
+    if (character === '"' || character === '\'') {
+      quote = character
+      continue
+    }
+
+    if (/\s/.test(character)) {
+      if (current) {
+        parts.push(current)
+        current = ''
+      }
+      continue
+    }
+
+    current += character
+  }
+
+  if (escaped || quote)
+    throw new Error('Command substitution contains an unterminated escape or quote')
+  if (current)
+    parts.push(current)
+
+  return parts
+}
+
+/**
+ * Resolve simple allowlisted commands without starting a subprocess.
+ *
+ * This keeps environment loading portable in restricted runtimes, including
+ * Bun's test runner, while complex command flags continue through spawnSync.
+ */
+function portableCommand(parts: string[]): string | undefined {
+  const [executable, ...args] = parts
+  const hasFlags = args.some(argument => argument.startsWith('-'))
+
+  if (executable === 'echo' && !hasFlags)
+    return args.join(' ')
+  if (executable === 'printf' && args.length === 1 && !args[0]?.includes('%'))
+    return args[0]
+  if (executable === 'hostname' && args.length === 0)
+    return hostname()
+  if (executable === 'whoami' && args.length === 0)
+    return userInfo().username
+  if (executable === 'pwd' && args.length === 0)
+    return process.cwd()
+  if (executable === 'basename' && args.length === 1)
+    return basename(args[0] ?? '')
+  if (executable === 'dirname' && args.length === 1)
+    return dirname(args[0] ?? '')
+  if (executable === 'cat' && args.length > 0 && !hasFlags) {
+    return args
+      .map(path => readFileSync(resolve(process.cwd(), path), 'utf8'))
+      .join('')
+  }
+  if (executable === 'uname') {
+    const flag = args[0] ?? '-s'
+    if (args.length <= 1 && flag === '-m')
+      return arch()
+    if (args.length <= 1 && flag === '-r')
+      return release()
+    if (args.length <= 1 && flag === '-s') {
+      const platformNames: Record<string, string> = {
+        aix: 'AIX',
+        android: 'Android',
+        cygwin: 'CYGWIN',
+        darwin: 'Darwin',
+        freebsd: 'FreeBSD',
+        haiku: 'Haiku',
+        linux: 'Linux',
+        netbsd: 'NetBSD',
+        openbsd: 'OpenBSD',
+        sunos: 'SunOS',
+        win32: 'Windows_NT',
+      }
+
+      return platformNames[platform()] ?? platform()
+    }
+  }
+
+  return undefined
+}
+
 function expandCommands(value: string): string {
   // Match $(command) patterns
   return value.replace(/\$\(([^)]+)\)/g, (_match, command) => {
     try {
-      const parts = command.trim().split(/\s+/)
+      const parts = splitCommand(command)
       const executable = parts[0]
 
       if (!executable || !ALLOWED_ENV_COMMANDS.has(executable)) {
@@ -170,16 +281,21 @@ function expandCommands(value: string): string {
         return ''
       }
 
-      const result = Bun.spawnSync(parts, {
-        stdout: 'pipe',
-        stderr: 'pipe',
+      const portableResult = portableCommand(parts)
+      if (portableResult !== undefined)
+        return portableResult.trim()
+
+      const result = spawnSync(executable, parts.slice(1), {
+        encoding: 'utf8',
+        env: process.env,
       })
 
-      if (result.exitCode === 0) {
-        return new TextDecoder().decode(result.stdout).trim()
+      if (result.status === 0) {
+        return result.stdout.trim()
       }
 
-      console.warn(`[env] Command substitution failed (exit code ${result.exitCode}): ${executable}`)
+      const detail = result.stderr.trim()
+      console.warn(`[env] Command substitution failed (exit code ${result.status ?? 'unknown'}): ${executable}${detail ? `: ${detail}` : ''}`)
     }
     catch (error) {
       console.warn(`[env] Command substitution error: ${error instanceof Error ? error.message : String(error)}`)

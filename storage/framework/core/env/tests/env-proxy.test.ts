@@ -104,8 +104,8 @@ describe('@stacksjs/env proxy - lazy decryption', () => {
 
   it('decrypts an encrypted value on read using the environment private key', async () => {
     const { publicKey, privateKey } = generateKeypair()
-    process.env.APP_ENV = 'production'
-    process.env.DOTENV_PRIVATE_KEY_PRODUCTION = privateKey
+    process.env.APP_ENV = 'test'
+    process.env.DOTENV_PRIVATE_KEY_TEST = privateKey
     process.env.SECRET_TOKEN = encryptValue('s3cr3t-value', publicKey)
     resetPrivateKeyCache()
 
@@ -117,8 +117,8 @@ describe('@stacksjs/env proxy - lazy decryption', () => {
 
   it('decrypts, then coerces the plaintext (encrypted numeric PORT)', async () => {
     const { publicKey, privateKey } = generateKeypair()
-    process.env.APP_ENV = 'production'
-    process.env.DOTENV_PRIVATE_KEY_PRODUCTION = privateKey
+    process.env.APP_ENV = 'test'
+    process.env.DOTENV_PRIVATE_KEY_TEST = privateKey
     process.env.DB_PORT = encryptValue('5432', publicKey)
     resetPrivateKeyCache()
 
@@ -128,8 +128,8 @@ describe('@stacksjs/env proxy - lazy decryption', () => {
 
   it('supports the short enc: prefix', async () => {
     const { publicKey, privateKey } = generateKeypair()
-    process.env.APP_ENV = 'production'
-    process.env.DOTENV_PRIVATE_KEY_PRODUCTION = privateKey
+    process.env.APP_ENV = 'test'
+    process.env.DOTENV_PRIVATE_KEY_TEST = privateKey
     const full = encryptValue('short-prefix', publicKey)
     process.env.SECRET_SHORT = `enc:${full.slice('encrypted:'.length)}`
     resetPrivateKeyCache()
@@ -140,9 +140,9 @@ describe('@stacksjs/env proxy - lazy decryption', () => {
 
   it('scrubs encrypted values to undefined when no private key is available', async () => {
     const { publicKey } = generateKeypair()
-    process.env.APP_ENV = 'production'
+    process.env.APP_ENV = 'test'
     delete process.env.DOTENV_PRIVATE_KEY
-    delete process.env.DOTENV_PRIVATE_KEY_PRODUCTION
+    delete process.env.DOTENV_PRIVATE_KEY_TEST
     process.env.SECRET_NOKEY = encryptValue('unreachable', publicKey)
     resetPrivateKeyCache()
 
