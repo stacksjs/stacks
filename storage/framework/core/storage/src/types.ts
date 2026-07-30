@@ -328,6 +328,8 @@ export interface MimeTypeOptions {
 export interface StorageAdapterConfig {
   /** Root directory for local storage */
   root?: string
+  /** Base URL for files exposed by a local public disk */
+  url?: string
   /** S3 bucket name */
   bucket?: string
   /** S3 region */

@@ -165,7 +165,7 @@ class StorageManager {
   }
 
   private createLocalAdapter(config: LocalDiskConfig): StorageAdapter {
-    return createLocalStorage({ root: config.root })
+    return createLocalStorage({ root: config.root, url: config.url })
   }
 
   private createS3Adapter(_name: string, config: S3DiskConfig): StorageAdapter {

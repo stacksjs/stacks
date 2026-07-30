@@ -122,6 +122,10 @@ describe('Storage Facade - disk selection', () => {
     expect(typeof disk.write).toBe('function')
   })
 
+  test('local disks honor their configured public URL', async () => {
+    expect(await storage.disk('public').publicUrl('images/logo.png')).toBe('/storage/images/logo.png')
+  })
+
   test('disk("public") returns the public disk adapter', () => {
     const disk = storage.disk('public')
     expect(disk).toBeDefined()

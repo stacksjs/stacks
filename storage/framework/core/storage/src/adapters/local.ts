@@ -31,9 +31,11 @@ import { createSignedStorageToken } from '../signed-url'
  */
 export class LocalStorageAdapter implements StorageAdapter {
   private root: string
+  private url?: string
 
   constructor(config: StorageAdapterConfig = {}) {
     this.root = config.root || process.cwd()
+    this.url = config.url?.replace(/\/$/, '')
   }
 
   private resolvePath(path: string): string {
@@ -337,7 +339,7 @@ export class LocalStorageAdapter implements StorageAdapter {
     // for every other framework URL got localhost-prefixed public
     // links pointing at files on disk, which broke whenever the
     // generated URL was emailed or stored.
-    const base = (options.domain || process.env.APP_URL || 'http://localhost').replace(/\/$/, '')
+    const base = (options.domain || this.url || process.env.APP_URL || 'http://localhost').replace(/\/$/, '')
     return `${base}/${path}`
   }
 
