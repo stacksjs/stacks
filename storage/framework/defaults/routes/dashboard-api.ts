@@ -128,6 +128,7 @@ route.group({ prefix: '/api/dashboard', apiResponse: true }, () => {
   //
   // Guarded for the same reason as the blog routes below: the writes mutate the
   // database and the reads expose unpublished drafts and unmoderated comments.
+  guard(route.get('/content/overview', 'Actions/Dashboard/Content/ContentDashboardAction'))
   guard(route.get('/posts', 'Actions/Dashboard/Content/PostIndexAction'))
   guard(route.post('/posts', 'Actions/Dashboard/Content/PostStoreAction'))
   guard(route.patch('/posts/{id}', 'Actions/Dashboard/Content/PostUpdateAction'))
