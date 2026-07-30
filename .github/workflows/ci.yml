@@ -137,6 +137,7 @@ jobs:
             node-modules-
 
       - name: Install Dependencies
+        id: install
         run: bun install --frozen-lockfile
 
       - name: Test Suite
@@ -150,14 +151,39 @@ jobs:
       # on every server-backed project, so its suite runs explicitly here.
       # Scoped to one file on purpose: wiring up the core suites wholesale
       # needs the pre-existing failures in them triaged first.
-      - name: Database bootstrap tests
-        run: |
-          bun test storage/framework/core/database/tests/ensure-database.test.ts
-          bun test storage/framework/core/buddy/tests/database-preflight.test.ts
-          bun test storage/framework/core/database/tests/committed-migrations-dialect.test.ts
-          bun test storage/framework/core/database/tests/model-sources.test.ts
-          bun test storage/framework/core/actions/tests/release-preflight.test.ts
-          bun test storage/framework/core/cli/tests/exec-throw-on-error.test.ts
+      # `bun run test` shells out to `buddy test`, which only globs
+      # <project>/tests/**, so nothing under storage/framework/core/**/tests has
+      # ever run in CI. These five suites are green and cover ~945 tests.
+      #
+      # One suite per step, not one command: `bun test` over all 81 core suites
+      # at once crashes the runtime, and separate steps also mean a failure
+      # names the package instead of one opaque red block.
+      #
+      # `actions` and `queue` each still have one pre-existing failure, so they
+      # are deliberately not wired yet rather than being left red.
+      - name: Core tests (database)
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: bun test storage/framework/core/database/tests
+
+      - name: Core tests (router)
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: bun test storage/framework/core/router/tests
+
+      - name: Core tests (buddy)
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: bun test storage/framework/core/buddy/tests
+
+      - name: Core tests (cli)
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: bun test storage/framework/core/cli/tests
+
+      - name: Core tests (api)
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: bun test storage/framework/core/api/tests
+
+      - name: Core tests (release pre-flight)
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: bun test storage/framework/core/actions/tests/release-preflight.test.ts
 
   compile:
     runs-on: ubuntu-latest

@@ -97,6 +97,73 @@ const cacheCopies = ['TmpEmitMysql.ts', 'TmpEmitPostgres.ts', 'TmpEmitAlter.ts']
 // drags the orm/security/validation graph into the test.
 const relatedModelPath = stacksPath.userModelsPath('TmpEmitRelated.ts')
 
+// Every model file is written HERE, before any test runs, and never from
+// inside a test.
+//
+// Bun caches a directory's listing the first time it resolves a module out of
+// it. A file created in that directory afterwards is invisible to the
+// resolver, so the generator's `import(modelPath)` fails with
+// `Cannot find module ... from ''`. Writing each model inside its own test
+// meant the first test primed the cache and every later one imported a file
+// the resolver refused to see: mysql create-table passed, mysql alter-table
+// and the postgres test failed, and all three passed when run alone.
+//
+// Reproduced in isolation: three files written and imported one per test fail
+// from the second onwards, while the same three written up front all import
+// cleanly.
+mkdirSync(stacksPath.userModelsPath(''), { recursive: true })
+mkdirSync(cacheModelsDir, { recursive: true })
+
+writeFileSync(relatedModelPath, `export default {
+  name: 'TmpEmitRelated',
+  table: 'tmp_emit_relateds',
+  primaryKey: 'id',
+  attributes: {},
+}
+`)
+
+writeFileSync(join(tmpModelsDir, 'TmpEmitMysql.ts'), `export default {
+  name: 'TmpEmitMysql',
+  table: 'tmp_emit_mysql_rows',
+  primaryKey: 'id',
+  traits: { likeable: true },
+  attributes: {},
+}
+`)
+
+writeFileSync(join(tmpModelsDir, 'TmpEmitAlter.ts'), `export default {
+  name: 'TmpEmitAlter',
+  table: 'tmp_emit_alter_rows',
+  primaryKey: 'id',
+  attributes: { title: { order: 1 } },
+}
+`)
+
+writeFileSync(join(tmpModelsDir, 'TmpEmitPostgres.ts'), `export default {
+  name: 'TmpEmitPostgres',
+  table: 'tmp_emit_reviews',
+  primaryKey: 'id',
+  traits: { likeable: true },
+  belongsToMany: ['TmpEmitRelated'],
+  attributes: {},
+}
+`)
+
+// The alter generator diffs against this snapshot, so it is the PREVIOUS
+// shape of TmpEmitAlter (no `title` column) rather than a copy of the model.
+writeFileSync(join(cacheModelsDir, 'TmpEmitAlter.ts'), `export default {
+  name: 'TmpEmitAlter',
+  table: 'tmp_emit_alter_rows',
+  primaryKey: 'id',
+  attributes: {},
+}
+`)
+
+// A stale snapshot for these two would make the generator early-return
+// "unchanged" and emit nothing.
+rmSync(join(cacheModelsDir, 'TmpEmitMysql.ts'), { force: true })
+rmSync(join(cacheModelsDir, 'TmpEmitPostgres.ts'), { force: true })
+
 afterAll(() => {
   rmSync(tmpModelsDir, { recursive: true, force: true })
   rmSync(relatedModelPath, { force: true })
@@ -111,19 +178,10 @@ afterAll(() => {
 
 describe('emitted mysql migrations execute (stacksjs/stacks#1954)', () => {
   it('create-table migration with likeable runs to completion, including the pivot DDL', async () => {
+    // Written at module scope: see the note there on Bun's directory-listing
+    // cache. Plain default-export object, the same shape the generators
+    // consume; defineModel would drag the orm barrel into the test graph.
     const modelPath = join(tmpModelsDir, 'TmpEmitMysql.ts')
-    // Plain default-export object — same shape the generators consume; using
-    // defineModel here would drag the orm barrel into the test module graph.
-    writeFileSync(modelPath, `export default {
-  name: 'TmpEmitMysql',
-  table: 'tmp_emit_mysql_rows',
-  primaryKey: 'id',
-  traits: { likeable: true },
-  attributes: {},
-}
-`)
-    // a stale snapshot would make the generator early-return as "unchanged"
-    rmSync(join(cacheModelsDir, 'TmpEmitMysql.ts'), { force: true })
 
     const captured = await captureEmittedMigrations(() => generateMysqlMigration(modelPath))
     const content = findEmitted(captured, 'create-tmp_emit_mysql_rows-table')
@@ -137,23 +195,8 @@ describe('emitted mysql migrations execute (stacksjs/stacks#1954)', () => {
   })
 
   it('alter-table migration runs to completion', async () => {
+    // Model and its previous-shape snapshot are both written at module scope.
     const modelPath = join(tmpModelsDir, 'TmpEmitAlter.ts')
-    writeFileSync(modelPath, `export default {
-  name: 'TmpEmitAlter',
-  table: 'tmp_emit_alter_rows',
-  primaryKey: 'id',
-  attributes: { title: { order: 1 } },
-}
-`)
-    // seed the model snapshot the alter generator diffs against
-    mkdirSync(cacheModelsDir, { recursive: true })
-    writeFileSync(join(cacheModelsDir, 'TmpEmitAlter.ts'), `export default {
-  name: 'TmpEmitAlter',
-  table: 'tmp_emit_alter_rows',
-  primaryKey: 'id',
-  attributes: {},
-}
-`)
 
     const captured = await captureEmittedMigrations(() => createMysqlAlterTableMigration(modelPath))
     const content = findEmitted(captured, 'alter-tmp_emit_alter_rows-table')
@@ -165,25 +208,9 @@ describe('emitted mysql migrations execute (stacksjs/stacks#1954)', () => {
 
 describe('emitted postgres migrations execute (stacksjs/stacks#1954)', () => {
   it('belongsToMany pivot and likeable create-table migrations run to completion', async () => {
+    // Model and the TmpEmitRelated side of the belongsToMany are both written
+    // at module scope.
     const modelPath = join(tmpModelsDir, 'TmpEmitPostgres.ts')
-    mkdirSync(stacksPath.userModelsPath(''), { recursive: true })
-    writeFileSync(relatedModelPath, `export default {
-  name: 'TmpEmitRelated',
-  table: 'tmp_emit_relateds',
-  primaryKey: 'id',
-  attributes: {},
-}
-`)
-    writeFileSync(modelPath, `export default {
-  name: 'TmpEmitPostgres',
-  table: 'tmp_emit_reviews',
-  primaryKey: 'id',
-  traits: { likeable: true },
-  belongsToMany: ['TmpEmitRelated'],
-  attributes: {},
-}
-`)
-    rmSync(join(cacheModelsDir, 'TmpEmitPostgres.ts'), { force: true })
 
     const captured = await captureEmittedMigrations(() => generatePostgresMigration(modelPath))
 
