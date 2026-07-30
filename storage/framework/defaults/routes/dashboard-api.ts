@@ -216,35 +216,32 @@ route.group({ prefix: '/api/dashboard', apiResponse: true }, () => {
   //   PATCH  /kanban/cards/{id}       — update (incl. column move)
   //   POST   /kanban/cards/reorder    — bulk position update
   //
-  // No role middleware applied yet — the route group at the file level
-  // doesn't enforce auth (matches the rest of /api/dashboard/*). The
-  // page itself wraps content in `useRole().isDev()` so non-dev users
-  // see an empty surface when the dashboard ever gets exposed beyond
-  // localhost. Tighten with `.middleware('auth').middleware('role:admin,dev')`
-  // when the dashboard is deployed multi-tenant.
+  // Kanban data is local-only without authentication. Outside local
+  // environments every read and write uses the same auth + admin guard as
+  // the other operational dashboard surfaces.
   // Reads (Phase 1)
-  route.get('/kanban/boards', 'Actions/Dashboard/Kanban/BoardsIndexAction')
-  route.get('/kanban/boards/{id}', 'Actions/Dashboard/Kanban/BoardShowAction')
+  guard(route.get('/kanban/boards', 'Actions/Dashboard/Kanban/BoardsIndexAction'))
+  guard(route.get('/kanban/boards/{id}', 'Actions/Dashboard/Kanban/BoardShowAction'))
 
   // Writes (Phase 2). The reorder endpoints are POST not PATCH because
   // their semantics — "here's the full new state of this slice of the
   // board" — match the resource-replacement intent better than PATCH's
   // "apply this delta" verb. They also accept a body shape that PATCH
   // verbs don't conventionally carry.
-  route.post('/kanban/boards', 'Actions/Dashboard/Kanban/BoardStoreAction')
-  route.patch('/kanban/boards/{id}', 'Actions/Dashboard/Kanban/BoardUpdateAction')
-  route.delete('/kanban/boards/{id}', 'Actions/Dashboard/Kanban/BoardDestroyAction')
-  route.post('/kanban/boards/reorder', 'Actions/Dashboard/Kanban/BoardsReorderAction')
+  guard(route.post('/kanban/boards', 'Actions/Dashboard/Kanban/BoardStoreAction'))
+  guard(route.patch('/kanban/boards/{id}', 'Actions/Dashboard/Kanban/BoardUpdateAction'))
+  guard(route.delete('/kanban/boards/{id}', 'Actions/Dashboard/Kanban/BoardDestroyAction'))
+  guard(route.post('/kanban/boards/reorder', 'Actions/Dashboard/Kanban/BoardsReorderAction'))
 
-  route.post('/kanban/columns', 'Actions/Dashboard/Kanban/ColumnStoreAction')
-  route.patch('/kanban/columns/{id}', 'Actions/Dashboard/Kanban/ColumnUpdateAction')
-  route.delete('/kanban/columns/{id}', 'Actions/Dashboard/Kanban/ColumnDestroyAction')
-  route.post('/kanban/columns/reorder', 'Actions/Dashboard/Kanban/ColumnsReorderAction')
+  guard(route.post('/kanban/columns', 'Actions/Dashboard/Kanban/ColumnStoreAction'))
+  guard(route.patch('/kanban/columns/{id}', 'Actions/Dashboard/Kanban/ColumnUpdateAction'))
+  guard(route.delete('/kanban/columns/{id}', 'Actions/Dashboard/Kanban/ColumnDestroyAction'))
+  guard(route.post('/kanban/columns/reorder', 'Actions/Dashboard/Kanban/ColumnsReorderAction'))
 
-  route.post('/kanban/cards', 'Actions/Dashboard/Kanban/CardStoreAction')
-  route.patch('/kanban/cards/{id}', 'Actions/Dashboard/Kanban/CardUpdateAction')
-  route.delete('/kanban/cards/{id}', 'Actions/Dashboard/Kanban/CardDestroyAction')
-  route.post('/kanban/cards/reorder', 'Actions/Dashboard/Kanban/CardsReorderAction')
+  guard(route.post('/kanban/cards', 'Actions/Dashboard/Kanban/CardStoreAction'))
+  guard(route.patch('/kanban/cards/{id}', 'Actions/Dashboard/Kanban/CardUpdateAction'))
+  guard(route.delete('/kanban/cards/{id}', 'Actions/Dashboard/Kanban/CardDestroyAction'))
+  guard(route.post('/kanban/cards/reorder', 'Actions/Dashboard/Kanban/CardsReorderAction'))
 
   // Phase 3 — card detail + labels + assignees + comments.
   //
@@ -252,30 +249,30 @@ route.group({ prefix: '/api/dashboard', apiResponse: true }, () => {
   // read; the boards/{id} response already embeds labels + assignees
   // per card for the kanban view, so the modal only fetches when
   // opening (or for direct URL access).
-  route.get('/kanban/cards/{id}', 'Actions/Dashboard/Kanban/CardShowAction')
+  guard(route.get('/kanban/cards/{id}', 'Actions/Dashboard/Kanban/CardShowAction'))
 
   // Label CRUD. No reorder endpoint — labels are board-scoped tag
   // palettes, no inherent order beyond alphabetical.
-  route.post('/kanban/labels', 'Actions/Dashboard/Kanban/LabelStoreAction')
-  route.patch('/kanban/labels/{id}', 'Actions/Dashboard/Kanban/LabelUpdateAction')
-  route.delete('/kanban/labels/{id}', 'Actions/Dashboard/Kanban/LabelDestroyAction')
+  guard(route.post('/kanban/labels', 'Actions/Dashboard/Kanban/LabelStoreAction'))
+  guard(route.patch('/kanban/labels/{id}', 'Actions/Dashboard/Kanban/LabelUpdateAction'))
+  guard(route.delete('/kanban/labels/{id}', 'Actions/Dashboard/Kanban/LabelDestroyAction'))
 
   // Card-pivot sync endpoints. Sync semantics: pass the full new
   // list, the action diffs against current state. Single-shot calls
   // from the modal's label/assignee pickers.
-  route.post('/kanban/cards/{id}/labels', 'Actions/Dashboard/Kanban/CardLabelsSyncAction')
-  route.post('/kanban/cards/{id}/assignees', 'Actions/Dashboard/Kanban/CardAssigneesSyncAction')
+  guard(route.post('/kanban/cards/{id}/labels', 'Actions/Dashboard/Kanban/CardLabelsSyncAction'))
+  guard(route.post('/kanban/cards/{id}/assignees', 'Actions/Dashboard/Kanban/CardAssigneesSyncAction'))
 
   // Comments. Append-only thread: store + destroy, no edit yet — the
   // history-preservation argument outweighs the "fix a typo" argument
   // until someone explicitly asks for editing.
-  route.post('/kanban/cards/{id}/comments', 'Actions/Dashboard/Kanban/CardCommentStoreAction')
-  route.delete('/kanban/comments/{id}', 'Actions/Dashboard/Kanban/CardCommentDestroyAction')
+  guard(route.post('/kanban/cards/{id}/comments', 'Actions/Dashboard/Kanban/CardCommentStoreAction'))
+  guard(route.delete('/kanban/comments/{id}', 'Actions/Dashboard/Kanban/CardCommentDestroyAction'))
 
   // Lightweight user list for the assignee picker. Distinct from the
   // wider `/api/dashboard/users` (Data section consumer) — the
   // picker only needs id/name/email.
-  route.get('/kanban/users', 'Actions/Dashboard/Kanban/UsersListAction')
+  guard(route.get('/kanban/users', 'Actions/Dashboard/Kanban/UsersListAction'))
 
   // Commerce dashboard stats. Same Action that backs the auth'd
   // `/api/commerce/dashboard` — exposed here without the auth gate so
