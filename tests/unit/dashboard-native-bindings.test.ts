@@ -43,4 +43,24 @@ describe('dashboard native STX bindings', () => {
     expect(source).not.toContain('function updateField(')
     expect(source).not.toMatch(/:value="[^"]+\(\)"[^>]+@(?:input|change)=/)
   })
+
+  test('content dashboards use native filters and form models', () => {
+    for (const component of [
+      'Content/AuthorsDashboard.stx',
+      'Content/CommentsDashboard.stx',
+      'Content/ContentTaxonomyDashboard.stx',
+      'Content/PagesDashboard.stx',
+    ]) {
+      const source = componentSource(component)
+      expect(source).toContain('x-model=')
+      expect(source).not.toMatch(/:value="[^"]+\(\)"[^>]+@(?:input|change)=/)
+      expect(source).not.toMatch(/:checked="[^"]+\(\)"[^>]+@change=/)
+      expect(source).not.toMatch(/function update[A-Z]\w*\(event: Event\)/)
+    }
+
+    const taxonomy = componentSource('Content/ContentTaxonomyDashboard.stx')
+    expect(taxonomy).toContain(".normalize('NFKD')")
+    expect(taxonomy).toContain('@input="markSlugTouched"')
+    expect(taxonomy).toContain('@blur="normalizeSlug"')
+  })
 })

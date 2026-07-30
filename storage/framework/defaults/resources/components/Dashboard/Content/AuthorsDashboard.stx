@@ -61,22 +61,6 @@ function formatDate(value: string): string {
     : new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(date)
 }
 
-function updateSearch(event: Event): void {
-  search.set((event.target as HTMLInputElement).value)
-}
-
-function updateField(field: string, event: Event): void {
-  const value = (event.target as HTMLInputElement | HTMLTextAreaElement).value
-  if (field === 'name')
-    name.set(value)
-  else if (field === 'email')
-    email.set(value)
-  else if (field === 'bio')
-    bio.set(value)
-  else if (field === 'avatar')
-    avatar.set(value)
-}
-
 async function loadAuthors(): Promise<void> {
   loading.set(true)
   loadError.set('')
@@ -198,7 +182,7 @@ onMount(() => {
   </section>
 
   <section class="overflow-hidden bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
-    <div class="p-4 border-b border-gray-200 dark:border-neutral-700"><label><span class="sr-only">Search authors</span><input :value="search()" type="search" placeholder="Search authors" class="px-3 py-2 max-w-md w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="updateSearch($event)" /></label></div>
+    <div class="p-4 border-b border-gray-200 dark:border-neutral-700"><label><span class="sr-only">Search authors</span><input x-model="search" type="search" placeholder="Search authors" class="px-3 py-2 max-w-md w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label></div>
     <div class="overflow-x-auto"><table class="min-w-full divide-gray-200 divide-y dark:divide-neutral-700"><thead class="bg-gray-50 dark:bg-neutral-900/50"><tr><th class="px-4 py-3 font-semibold text-gray-600 text-left text-xs dark:text-neutral-300">Author</th><th class="px-4 py-3 font-semibold text-gray-600 text-left text-xs dark:text-neutral-300">Posts</th><th class="px-4 py-3 font-semibold text-gray-600 text-left text-xs dark:text-neutral-300">Created</th><th class="px-4 py-3"><span class="sr-only">Actions</span></th></tr></thead><tbody class="divide-gray-200 divide-y dark:divide-neutral-700">
       <template :if="loading()"><tr><td colspan="4" class="px-4 py-12 text-center text-gray-500 text-sm dark:text-neutral-400"><span class="inline-block mr-2 h-4 w-4 animate-spin i-hugeicons-loading-03"></span>Loading authors</td></tr></template>
       <template :else-if="visibleAuthors().length === 0"><tr><td colspan="4" class="px-4 py-14 text-center"><span class="inline-block h-6 w-6 text-gray-400 i-hugeicons-user-group"></span><p class="mt-2 font-medium text-gray-900 text-sm dark:text-white">No authors found</p><p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Adjust the search or create an author.</p></td></tr></template>
@@ -211,7 +195,7 @@ onMount(() => {
   <button type="button" aria-label="Close author dialog" class="absolute inset-0 bg-black/45" @click="closeForm()"></button>
   <section role="dialog" aria-modal="true" :aria-label="editingAuthor() ? 'Edit author' : 'New author'" class="relative max-w-lg w-full bg-white dark:bg-neutral-800 border border-gray-200 rounded-xl dark:border-neutral-700 shadow-xl">
     <form @submit.prevent="saveAuthor">
-      <div class="p-6"><h2 class="font-semibold text-gray-900 text-lg dark:text-white">{{ editingAuthor() ? 'Edit author' : 'New author' }}</h2><div :if="saveError()" role="alert" class="mt-4 p-3 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900">{{ saveError() }}</div><div class="grid gap-4 mt-5"><label><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Name</span><input :value="name()" required minlength="5" maxlength="255" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="updateField('name', $event)" /></label><label><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Email</span><input :value="email()" type="email" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="updateField('email', $event)" /></label><label><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Bio</span><textarea :value="bio()" maxlength="500" rows="3" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="updateField('bio', $event)"></textarea></label><label><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Avatar URL</span><input :value="avatar()" type="url" placeholder="https://example.com/avatar.jpg" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="updateField('avatar', $event)" /></label></div></div>
+      <div class="p-6"><h2 class="font-semibold text-gray-900 text-lg dark:text-white">{{ editingAuthor() ? 'Edit author' : 'New author' }}</h2><div :if="saveError()" role="alert" class="mt-4 p-3 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900">{{ saveError() }}</div><div class="grid gap-4 mt-5"><label><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Name</span><input x-model="name" required minlength="5" maxlength="255" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label><label><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Email</span><input x-model="email" type="email" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label><label><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Bio</span><textarea x-model="bio" maxlength="500" rows="3" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700"></textarea></label><label><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Avatar URL</span><input x-model="avatar" type="url" placeholder="https://example.com/avatar.jpg" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label></div></div>
       <footer class="flex gap-2 justify-end px-6 py-4 bg-gray-50 dark:bg-neutral-900/50 border-gray-200 border-t dark:border-neutral-700"><button type="button" :disabled="saving()" class="px-3 py-2 font-semibold text-gray-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" @click="closeForm()">Cancel</button><button type="submit" :disabled="saving() || name().trim().length < 5 || !email().trim()" class="inline-flex items-center px-3 py-2 font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md disabled:opacity-50"><span :if="saving()" class="mr-2 h-4 w-4 animate-spin i-hugeicons-loading-03"></span>{{ editingAuthor() ? 'Save changes' : 'Create author' }}</button></footer>
     </form>
   </section>

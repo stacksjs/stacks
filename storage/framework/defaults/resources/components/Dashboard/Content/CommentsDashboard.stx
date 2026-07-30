@@ -68,14 +68,6 @@ function formatDate(value: string): string {
     : new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(date)
 }
 
-function updateSearch(event: Event): void {
-  search.set((event.target as HTMLInputElement).value)
-}
-
-function updateStatusFilter(event: Event): void {
-  statusFilter.set((event.target as HTMLSelectElement).value)
-}
-
 async function loadComments(): Promise<void> {
   loading.set(true)
   loadError.set('')
@@ -165,7 +157,7 @@ onMount(() => {
   </section>
 
   <section class="overflow-hidden bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
-    <div class="flex flex-col gap-3 sm:flex-row p-4 border-b border-gray-200 dark:border-neutral-700"><label class="flex-1"><span class="sr-only">Search comments</span><input :value="search()" type="search" placeholder="Search comments" class="px-3 py-2 max-w-xl w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="updateSearch($event)" /></label><label><span class="sr-only">Filter comment status</span><select :value="statusFilter()" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @change="updateStatusFilter($event)"><option value="all">All statuses</option><option value="pending">Pending</option><option value="approved">Approved</option><option value="spam">Spam</option><option value="trash">Trash</option></select></label></div>
+    <div class="flex flex-col gap-3 sm:flex-row p-4 border-b border-gray-200 dark:border-neutral-700"><label class="flex-1"><span class="sr-only">Search comments</span><input x-model="search" type="search" placeholder="Search comments" class="px-3 py-2 max-w-xl w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label><label><span class="sr-only">Filter comment status</span><select x-model="statusFilter" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700"><option value="all">All statuses</option><option value="pending">Pending</option><option value="approved">Approved</option><option value="spam">Spam</option><option value="trash">Trash</option></select></label></div>
     <div class="divide-gray-200 divide-y dark:divide-neutral-700">
       <div :if="loading()" class="px-4 py-14 text-center text-gray-500 text-sm dark:text-neutral-400"><span class="inline-block mr-2 h-4 w-4 animate-spin i-hugeicons-loading-03"></span>Loading comments</div>
       <div :else-if="visibleComments().length === 0" class="px-4 py-14 text-center"><span class="inline-block h-6 w-6 text-gray-400 i-hugeicons-comment-01"></span><p class="mt-2 font-medium text-gray-900 text-sm dark:text-white">No comments found</p><p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Adjust the search or status filter.</p></div>
