@@ -219,10 +219,10 @@ onMount(() => {
             </select>
           </div>
         </div>
-        <button type="submit" :disabled="isRecording()" class="inline-flex items-center justify-center px-3 py-2 w-full font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md disabled:opacity-50">
-          <span :class="'mr-2 h-4 w-4 ' + (isRecording() ? 'i-hugeicons-loading-03 animate-spin' : 'i-hugeicons-plus-sign')"></span>
+        <Button type="submit" fullWidth :loading="isRecording()">
+          <span :if="!isRecording()" class="h-4 w-4 i-hugeicons-plus-sign"></span>
           {{ isRecording() ? 'Recording' : 'Record event' }}
-        </button>
+        </Button>
       </div>
     </form>
   </section>

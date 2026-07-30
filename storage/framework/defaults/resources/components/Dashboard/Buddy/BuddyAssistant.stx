@@ -92,9 +92,9 @@ onMount(() => {
         <span :class="'mr-1.5 h-1.5 w-1.5 rounded-full ' + (chatState()?.configured ? 'bg-green-500' : 'bg-amber-500')"></span>
         {{ providerName() }} {{ chatState()?.configured ? 'ready' : 'needs configuration' }}
       </span>
-      <button :if="messages().length > 0" type="button" class="px-3 py-1.5 font-semibold text-gray-700 text-sm dark:text-neutral-200 hover:bg-gray-100 dark:hover:bg-neutral-800 rounded-md" @click="clearHistory">
+      <Button :if="messages().length > 0" variant="secondary" size="sm" @click="clearHistory">
         Clear
-      </button>
+      </Button>
     </div>
   </header>
 
@@ -143,12 +143,12 @@ onMount(() => {
         <h3 class="mt-4 font-semibold text-gray-900 dark:text-white">Start with a Stacks question</h3>
         <p class="mt-1 max-w-lg text-gray-500 text-sm dark:text-neutral-400">Buddy answers questions only from this page. It does not edit files or run commands.</p>
         <div class="grid gap-2 grid-cols-1 sm:grid-cols-2 mt-5 max-w-2xl w-full">
-          <button type="button" class="p-3 text-gray-700 text-left text-sm dark:text-neutral-200 hover:bg-gray-50 dark:hover:bg-neutral-700 border border-gray-200 rounded-md dark:border-neutral-700" @click="setSuggestion('How do I create a model that generates authenticated CRUD APIs?')">
+          <Button variant="outline" fullWidth @click="setSuggestion('How do I create a model that generates authenticated CRUD APIs?')">
             Model with authenticated APIs
-          </button>
-          <button type="button" class="p-3 text-gray-700 text-left text-sm dark:text-neutral-200 hover:bg-gray-50 dark:hover:bg-neutral-700 border border-gray-200 rounded-md dark:border-neutral-700" @click="setSuggestion('How should I build a reactive form with stx signals?')">
+          </Button>
+          <Button variant="outline" fullWidth @click="setSuggestion('How should I build a reactive form with stx signals?')">
             Reactive stx form
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -180,10 +180,10 @@ onMount(() => {
           placeholder="Ask about models, actions, routes, stx, Crosswind, testing, or deployment"
           class="block px-3 py-2 min-h-20 w-full text-gray-900 text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border border-gray-300 rounded-md dark:border-neutral-600 disabled:opacity-60 resize-y"
         ></textarea>
-        <button type="submit" :disabled="!chatState()?.configured || isSending() || prompt().trim().length < 3" class="inline-flex items-center justify-center px-4 py-2.5 font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md disabled:opacity-50">
-          <span class="mr-2 h-4 w-4 i-hugeicons-sent"></span>
+        <Button type="submit" :disabled="!chatState()?.configured || prompt().trim().length < 3" :loading="isSending()">
+          <span :if="!isSending()" class="h-4 w-4 i-hugeicons-sent"></span>
           Send
-        </button>
+        </Button>
       </div>
     </form>
   </section>

@@ -140,10 +140,10 @@ onMount(() => {
       <h1 class="font-semibold text-2xl text-neutral-900 tracking-tight dark:text-white">{{ page().title }}</h1>
       <p class="mt-1 text-neutral-500 text-sm dark:text-neutral-400">{{ page().description }}</p>
     </div>
-    <button type="button" :disabled="loading()" class="inline-flex items-center self-start px-3 py-2 font-medium text-neutral-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-neutral-300 rounded-lg dark:border-neutral-700 disabled:opacity-50" @click="loadRecords">
-      <span :class="'mr-2 h-4 w-4 ' + (loading() ? 'animate-spin i-hugeicons-loading-03' : 'i-hugeicons-refresh')"></span>
+    <Button variant="secondary" :loading="loading()" @click="loadRecords">
+      <span :if="!loading()" class="h-4 w-4 i-hugeicons-refresh"></span>
       Refresh
-    </button>
+    </Button>
   </header>
 
   <div class="grid gap-4 grid-cols-2 lg:grid-cols-4">

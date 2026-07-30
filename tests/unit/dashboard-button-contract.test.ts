@@ -17,6 +17,7 @@ describe('dashboard button contract', () => {
     expect(button).toContain("const liveDownload = useReactiveProp('download', '')")
     expect(button).toContain("const liveType = useReactiveProp('type', 'button')")
     expect(button).toContain("const liveDataAction = useReactiveProp('dataAction', '')")
+    expect(button).toContain("const liveDataCloseModal = useReactiveProp('dataCloseModal', '')")
     expect(button).toContain("const liveDataEmailId = useReactiveProp('dataEmailId', '')")
     expect(button).toContain("const liveDataErrorMessage = useReactiveProp('dataErrorMessage', '')")
     expect(button).toContain("const liveDataErrorType = useReactiveProp('dataErrorType', '')")
@@ -167,6 +168,14 @@ describe('dashboard button contract', () => {
       'Jobs/JobTable.stx',
       'Jobs/JobDashboard.stx',
       'Jobs/JobHistory.stx',
+      'Analytics/AnalyticsPageHeader.stx',
+      'Analytics/AnalyticsHub.stx',
+      'Analytics/EventAnalytics.stx',
+      'Buddy/BuddyAssistant.stx',
+      'Models/ModelsOverview.stx',
+      'Data/DataRecords.stx',
+      'Releases/ReleaseDashboard.stx',
+      'NotificationErrorModal.stx',
     ]
 
     for (const file of files) {

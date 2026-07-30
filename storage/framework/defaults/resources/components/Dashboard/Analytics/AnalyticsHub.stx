@@ -48,10 +48,10 @@ onMount(() => {
       <h1 class="font-semibold text-2xl text-neutral-900 tracking-tight dark:text-white">Analytics</h1>
       <p class="mt-1 text-neutral-500 text-sm dark:text-neutral-400">Persisted business metrics and privacy-safe request telemetry.</p>
     </div>
-    <button type="button" :disabled="loading()" class="inline-flex items-center px-3 py-2 font-medium text-neutral-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-neutral-300 rounded-lg dark:border-neutral-700 disabled:opacity-50" @click="loadOverview">
-      <span :class="'mr-2 h-4 w-4 ' + (loading() ? 'animate-spin i-hugeicons-loading-03' : 'i-hugeicons-refresh')"></span>
+    <Button variant="secondary" :loading="loading()" @click="loadOverview">
+      <span :if="!loading()" class="h-4 w-4 i-hugeicons-refresh"></span>
       Refresh
-    </button>
+    </Button>
   </header>
 
   <div :if="loadError()" role="alert" class="px-4 py-3 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900">

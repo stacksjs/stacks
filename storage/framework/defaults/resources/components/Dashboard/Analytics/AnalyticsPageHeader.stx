@@ -35,14 +35,9 @@ function emitRange(event: Event): void {
       <option value="month">Last 30 days</option>
       <option value="year">Last year</option>
     </select>
-    <button
-      type="button"
-      :disabled="loading()"
-      class="inline-flex items-center px-3 py-1.5 font-semibold text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-600 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 shadow-sm disabled:opacity-50"
-      @click="emit('refresh')"
-    >
-      <span :class="'mr-1 h-4 w-4 i-hugeicons-refresh' + (loading() ? ' animate-spin' : '')"></span>
+    <Button variant="secondary" :loading="loading()" @click="emit('refresh')">
+      <span :if="!loading()" class="h-4 w-4 i-hugeicons-refresh"></span>
       Refresh
-    </button>
+    </Button>
   </div>
 </header>
