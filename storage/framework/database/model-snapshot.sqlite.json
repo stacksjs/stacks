@@ -5591,7 +5591,7 @@
           },
           {
             "name": "query",
-            "type": "string",
+            "type": "text",
             "isPrimaryKey": false,
             "isUnique": false,
             "isNullable": false,
@@ -5599,7 +5599,7 @@
           },
           {
             "name": "normalized_query",
-            "type": "string",
+            "type": "text",
             "isPrimaryKey": false,
             "isUnique": false,
             "isNullable": true,
@@ -5640,7 +5640,7 @@
           },
           {
             "name": "error",
-            "type": "string",
+            "type": "text",
             "isPrimaryKey": false,
             "isUnique": false,
             "isNullable": true,
@@ -5656,7 +5656,7 @@
           },
           {
             "name": "bindings",
-            "type": "string",
+            "type": "text",
             "isPrimaryKey": false,
             "isUnique": false,
             "isNullable": true,
@@ -5664,7 +5664,7 @@
           },
           {
             "name": "trace",
-            "type": "string",
+            "type": "text",
             "isPrimaryKey": false,
             "isUnique": false,
             "isNullable": true,
@@ -8163,6 +8163,32 @@
             "hasDefault": false
           },
           {
+            "name": "focus_keyword",
+            "type": "string",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false,
+            "maxLength": 100
+          },
+          {
+            "name": "meta_description",
+            "type": "string",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false,
+            "maxLength": 160
+          },
+          {
+            "name": "canonical_url",
+            "type": "string",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false
+          },
+          {
             "name": "views",
             "type": "integer",
             "isPrimaryKey": false,
@@ -8399,7 +8425,7 @@
       }
     ]
   },
-  "hash": "098b6bddf6e087c51ef67a0a1e1cd9ce1417a839752741bdcdf109ef05903121",
+  "hash": "a989d53b3dbbb351c76b987c1fff61eeb9955ebd0a195e465a18b81658360b1b",
   "dialect": "sqlite",
-  "updatedAt": "2026-07-30T12:48:32.078Z"
+  "updatedAt": "2026-07-30T15:48:22.053Z"
 }

@@ -11,8 +11,8 @@ export default defineModel({
     useUuid: true,
     useTimestamps: true,
     useSearch: {
-      displayable: ['id', 'title', 'author', 'views', 'status', 'poster'],
-      searchable: ['title', 'author', 'body', 'excerpt'],
+      displayable: ['id', 'title', 'author', 'views', 'status', 'poster', 'focusKeyword', 'metaDescription', 'canonicalUrl'],
+      searchable: ['title', 'author', 'body', 'excerpt', 'focusKeyword', 'metaDescription'],
       sortable: ['published_at', 'views', 'comments'],
       filterable: ['status'],
     },
@@ -114,9 +114,45 @@ export default defineModel({
       factory: faker => faker.lorem.paragraph(),
     },
 
-    views: {
+    focusKeyword: {
       required: false,
       order: 7,
+      fillable: true,
+      validation: {
+        rule: schema.string().max(100),
+        message: {
+          max: 'Focus keyword must have a maximum of 100 characters',
+        },
+      },
+    },
+
+    metaDescription: {
+      required: false,
+      order: 8,
+      fillable: true,
+      validation: {
+        rule: schema.string().max(160),
+        message: {
+          max: 'Meta description must have a maximum of 160 characters',
+        },
+      },
+    },
+
+    canonicalUrl: {
+      required: false,
+      order: 9,
+      fillable: true,
+      validation: {
+        rule: schema.string().url(),
+        message: {
+          url: 'Canonical URL must be a valid URL',
+        },
+      },
+    },
+
+    views: {
+      required: false,
+      order: 10,
       fillable: true,
       default: 0,
       validation: {
@@ -130,7 +166,7 @@ export default defineModel({
 
     publishedAt: {
       required: false,
-      order: 8,
+      order: 11,
       fillable: true,
       validation: {
         rule: schema.timestamp(),
@@ -146,7 +182,7 @@ export default defineModel({
 
     status: {
       required: true,
-      order: 9,
+      order: 12,
       fillable: true,
       default: 'draft',
       validation: {
@@ -160,7 +196,7 @@ export default defineModel({
 
     isFeatured: {
       required: false,
-      order: 10,
+      order: 13,
       fillable: true,
       validation: {
         rule: schema.number(),
