@@ -215,11 +215,11 @@ onMount(() => {
       <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Manage EmailList records, signup policy, and real membership totals.</p>
     </div>
     <div class="flex gap-2">
-      <button type="button" :disabled="loading()" class="inline-flex items-center px-3 py-2 font-semibold text-gray-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700 disabled:opacity-50" @click="loadLists()">
-        <span :class="'mr-2 h-4 w-4 ' + (loading() ? 'animate-spin i-hugeicons-loading-03' : 'i-hugeicons-refresh')"></span>
+      <Button :loading="loading()" variant="secondary" @click="loadLists()">
+        <span :if="!loading()" aria-hidden="true" class="h-4 w-4 i-hugeicons-refresh"></span>
         Refresh
-      </button>
-      <button type="button" class="inline-flex items-center px-3 py-2 font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md" @click="openAdd()"><span class="mr-2 h-4 w-4 i-hugeicons-add-01"></span>Add list</button>
+      </Button>
+      <Button @click="openAdd()"><span aria-hidden="true" class="h-4 w-4 i-hugeicons-add-01"></span>Add list</Button>
     </div>
   </header>
 
@@ -249,7 +249,7 @@ onMount(() => {
     <MarketingListsTable :records="visibleRecords()" :loading="loading()" @edit="openEdit" @delete="openDelete" />
     <div :if="filteredRecords().length > perPage" class="flex items-center justify-between">
       <p class="text-gray-500 text-sm dark:text-neutral-400">Page {{ page() }} of {{ totalPages() }}</p>
-      <div class="flex gap-2"><button type="button" :disabled="page() === 1" class="px-3 py-2 text-gray-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700 disabled:opacity-50" @click="previousPage()">Previous</button><button type="button" :disabled="page() === totalPages()" class="px-3 py-2 text-gray-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700 disabled:opacity-50" @click="nextPage()">Next</button></div>
+      <div class="flex gap-2"><Button :disabled="page() === 1" variant="secondary" @click="previousPage()">Previous</Button><Button :disabled="page() === totalPages()" variant="secondary" @click="nextPage()">Next</Button></div>
     </div>
   </section>
 </div>

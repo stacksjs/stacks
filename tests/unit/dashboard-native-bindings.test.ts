@@ -272,6 +272,13 @@ describe('dashboard native STX bindings', () => {
       expect(source).toContain('<Button')
     }
 
+    const marketingComponents = resolve(dashboardComponents, 'Marketing')
+    for (const file of readdirSync(marketingComponents).filter(file => file.endsWith('.stx'))) {
+      const source = readFileSync(resolve(marketingComponents, file), 'utf8')
+      expect(source).not.toContain('bg-blue-600 hover:bg-blue-500')
+      expect(source).not.toContain('bg-red-600 hover:bg-red-500')
+    }
+
     const navbar = componentSource('NavbarModern.stx')
     expect(navbar).toContain('notificationCount = 0')
     expect(navbar).not.toContain('Chris Breuer')

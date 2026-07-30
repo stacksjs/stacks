@@ -82,10 +82,13 @@ function submit(): void {
     </label>
     <div :if="error()" role="alert" class="mt-4 p-3 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900">{{ error() }}</div>
     <div class="flex gap-2 justify-end mt-6">
-      <button type="button" :disabled="busy()" class="px-3 py-2 font-semibold text-gray-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700 disabled:opacity-50" @click="emit('close')">Close</button>
-      <button type="button" :disabled="busy() || (mode() === 'schedule' && !scheduledAt())" :class="'inline-flex items-center px-3 py-2 font-semibold text-sm text-white rounded-md disabled:opacity-50 ' + (mode() === 'cancel' ? 'bg-red-600 hover:bg-red-500' : 'bg-blue-600 hover:bg-blue-500')" @click="submit()">
-        <span :if="busy()" class="mr-2 h-4 w-4 animate-spin i-hugeicons-loading-03"></span>{{ confirmLabel() }}
-      </button>
+      <Button :disabled="busy()" variant="secondary" @click="emit('close')">Close</Button>
+      <template :if="mode() === 'cancel'">
+        <Button :disabled="busy() || (mode() === 'schedule' && !scheduledAt())" :loading="busy()" variant="danger" @click="submit()">{{ confirmLabel() }}</Button>
+      </template>
+      <template :else>
+        <Button :disabled="busy() || (mode() === 'schedule' && !scheduledAt())" :loading="busy()" @click="submit()">{{ confirmLabel() }}</Button>
+      </template>
     </div>
   </section>
 </div>
