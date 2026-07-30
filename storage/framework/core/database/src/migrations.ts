@@ -1390,7 +1390,7 @@ export async function generateMigrations(options: GenerateMigrationsOptions = {}
       const dangling = findDanglingTypeReferences(sqlStatements)
       if (dangling.length > 0) {
         const before = sqlStatements.length
-        sqlStatements = sqlStatements.filter(statement => !referencesUndefinedType(statement, dangling))
+        sqlStatements = sqlStatements.filter((statement: string) => !referencesUndefinedType(statement, dangling))
         log.warn(
           `[migration] Skipped ${before - sqlStatements.length} generated statement(s) referencing enum type(s) `
           + `nothing creates (${dangling.slice(0, 3).join(', ')}${dangling.length > 3 ? ', …' : ''}). `
@@ -1970,4 +1970,3 @@ export interface MigrationResult {
 }
 
 export type { MigrationResult as MigrationResultType }
-
