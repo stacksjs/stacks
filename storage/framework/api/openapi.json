@@ -8362,6 +8362,31 @@
         }
       }
     },
+    "/api/dashboard/commerce/waitlist-products": {
+      "get": {
+        "summary": "/api/dashboard/commerce/waitlist-products",
+        "operationId": "get__api_dashboard_commerce_waitlist_products",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
     "/api/dashboard/data/activity": {
       "get": {
         "summary": "/api/dashboard/data/activity",
@@ -8466,6 +8491,177 @@
       "get": {
         "summary": "/api/dashboard/deployments",
         "operationId": "get__api_dashboard_deployments",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      },
+      "post": {
+        "summary": "/api/dashboard/deployments",
+        "operationId": "post__api_dashboard_deployments",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/api/dashboard/deployments/avg-time": {
+      "get": {
+        "summary": "/api/dashboard/deployments/avg-time",
+        "operationId": "get__api_dashboard_deployments_avg_time",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/api/dashboard/deployments/count": {
+      "get": {
+        "summary": "/api/dashboard/deployments/count",
+        "operationId": "get__api_dashboard_deployments_count",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/api/dashboard/deployments/recent": {
+      "get": {
+        "summary": "/api/dashboard/deployments/recent",
+        "operationId": "get__api_dashboard_deployments_recent",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/api/dashboard/deployments/script": {
+      "get": {
+        "summary": "/api/dashboard/deployments/script",
+        "operationId": "get__api_dashboard_deployments_script",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      },
+      "put": {
+        "summary": "/api/dashboard/deployments/script",
+        "operationId": "put__api_dashboard_deployments_script",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/api/dashboard/deployments/terminal": {
+      "get": {
+        "summary": "/api/dashboard/deployments/terminal",
+        "operationId": "get__api_dashboard_deployments_terminal",
         "parameters": [],
         "responses": {
           "200": {
@@ -8840,6 +9036,40 @@
         "summary": "/api/dashboard/jobs/stats",
         "operationId": "get__api_dashboard_jobs_stats",
         "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/api/dashboard/jobs/{id}": {
+      "get": {
+        "summary": "/api/dashboard/jobs/{id}",
+        "operationId": "get__api_dashboard_jobs__id_",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Successful response",
@@ -10718,6 +10948,31 @@
       "get": {
         "summary": "/api/dashboard/realtime",
         "operationId": "get__api_dashboard_realtime",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/api/dashboard/releases": {
+      "get": {
+        "summary": "/api/dashboard/releases",
+        "operationId": "get__api_dashboard_releases",
         "parameters": [],
         "responses": {
           "200": {
