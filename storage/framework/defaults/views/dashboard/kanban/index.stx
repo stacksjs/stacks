@@ -23,17 +23,21 @@
   const boards = derived(() => kanban.boards())
   const hasBoards = derived(() => kanban.hasBoards())
 
-  // ─── New-board modal (Phase 2) ────────────────────────────────────
-  //
-  // Inline modal so the page stays single-file. Phase 3 may extract
-  // this into a reusable component if/when a third caller appears
-  // (board rename, column rename, label edit — same shape).
+  // ─── New-board modal ──────────────────────────────────────────────
+  interface BoardDeleteTarget {
+    id: number
+    name: string
+    cardCount: number
+  }
+
   const isCreating = state(false)
   const draftName = state('')
   const draftDescription = state('')
   const draftColor = state('violet')
   const submitting = state(false)
   const submitError = state('')
+  const pendingBoardDelete = state<BoardDeleteTarget | null>(null)
+  const deletingBoard = state(false)
 
   const colorChoices = ['violet', 'blue', 'emerald', 'amber', 'rose', 'slate']
 
@@ -48,6 +52,13 @@
     isCreating.set(false)
     submitError.set('')
   }
+
+  function handleKeydown(event: KeyboardEvent): void {
+    if (event.key === 'Escape' && isCreating())
+      closeCreate()
+  }
+
+  useEventListener('keydown', handleKeydown)
   async function submitCreate() {
     const name = draftName().trim()
     if (!name) {
@@ -66,6 +77,30 @@
       closeCreate()
     else
       submitError.set(kanban.error() || 'Failed to create board.')
+  }
+
+  const boardDeleteDescription = derived(() => {
+    const selected = pendingBoardDelete()
+    if (!selected)
+      return ''
+    const count = selected.cardCount || 0
+    return count > 0
+      ? `${count} ${count === 1 ? 'card' : 'cards'} and every column on this board will also be deleted.`
+      : 'Every column on this board will also be deleted.'
+  })
+
+  async function confirmBoardDelete(): Promise<void> {
+    const selected = pendingBoardDelete()
+    if (!selected || deletingBoard())
+      return
+    deletingBoard.set(true)
+    try {
+      if (await kanban.deleteBoard(selected.id))
+        pendingBoardDelete.set(null)
+    }
+    finally {
+      deletingBoard.set(false)
+    }
   }
 
   function colorSwatchClass(c) {
@@ -121,7 +156,7 @@
     <header class="flex items-center justify-between mb-6">
       <div>
         <h1 class="font-semibold text-2xl text-zinc-900 dark:text-zinc-100">Boards</h1>
-        <p class="mt-1 text-sm text-zinc-500">Internal project-management boards. Drag-and-drop kanban view lands in Phase 2.</p>
+        <p class="mt-1 text-sm text-zinc-500">Internal project-management boards with native card and column reordering.</p>
       </div>
       <button
         @click="openCreate()"
@@ -132,10 +167,8 @@
     </header>
 
     <!-- Loading -->
-    <div :if="loading" class="flex items-center justify-center" style="min-height: 40vh">
-      <svg class="text-violet-500 animate-spin" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M21 12a9 9 0 1 1-6.219-8.56" />
-      </svg>
+    <div :if="loading" class="flex items-center justify-center min-h-[40vh]">
+      <span class="h-7 w-7 text-violet-500 animate-spin i-hugeicons-loading-03"></span>
     </div>
 
     <!-- Error -->
@@ -147,74 +180,69 @@
 
     <!-- Empty state — DB reachable but no boards yet -->
     <div :if="!loading && !error && !hasBoards" class="px-6 py-12 text-center border border-dashed border-zinc-300 rounded-lg dark:border-zinc-700">
-      <svg class="mb-3 mx-auto text-zinc-400" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-        <rect x="3" y="4" width="6" height="16" rx="1" />
-        <rect x="11" y="4" width="6" height="10" rx="1" />
-        <rect x="19" y="4" width="2" height="6" rx="1" />
-      </svg>
+      <span class="block mb-3 mx-auto h-10 w-10 text-zinc-400 i-hugeicons-layout-3-column"></span>
       <p class="font-medium text-sm text-zinc-700 dark:text-zinc-300">No boards yet</p>
       <p class="mt-1 text-xs text-zinc-500">Click "New board" to create one.</p>
     </div>
 
     <!-- Boards grid -->
-    <div :if="!loading && !error && hasBoards" class="grid gap-4" style="grid-template-columns: repeat(auto-fill, minmax(280px, 1fr))">
-      <a
+    <div :if="!loading && !error && hasBoards" class="grid gap-4 grid-cols-[repeat(auto-fill,minmax(280px,1fr))]">
+      <article
         :for="board in boards"
-        :href="`/kanban/${board.id}`"
-        class="block overflow-hidden no-underline bg-white dark:bg-zinc-900 border border-zinc-200 rounded-lg dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700 transition-colors group"
-        data-mpa="true"
+        class="overflow-hidden relative bg-white dark:bg-zinc-900 border border-zinc-200 rounded-lg dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700 transition-colors group"
       >
-        <div :class="`h-2 ${accentClass(board.color)}`"></div>
-        <div class="px-4 py-3">
-          <div class="flex gap-2 items-start">
-            <h2 class="flex-1 font-medium text-sm text-zinc-900 truncate dark:text-zinc-100 group-hover:text-violet-600 dark:group-hover:text-violet-400" :text="board.name"></h2>
+        <StxLink
+          :to="`/kanban/${board.id}`"
+          prefetch
+          class="block no-underline"
+        >
+          <div :class="`h-2 ${accentClass(board.color)}`"></div>
+          <div class="pr-11 px-4 py-3">
+            <h2 class="font-medium text-sm text-zinc-900 truncate dark:text-zinc-100 group-hover:text-violet-600 dark:group-hover:text-violet-400" :text="board.name"></h2>
+            <p
+              :if="board.description"
+              class="mt-1 line-clamp-2 text-xs text-zinc-500"
+              :text="board.description"
+            ></p>
+            <p class="mt-3 text-xs text-zinc-400" :text="cardCountText(board.cardCount)"></p>
           </div>
-          <p
-            :if="board.description"
-            class="mt-1 line-clamp-2 text-xs text-zinc-500"
-            :text="board.description"
-          ></p>
-          <p class="mt-3 text-xs text-zinc-400" :text="cardCountText(board.cardCount)"></p>
-        </div>
-      </a>
+        </StxLink>
+        <button
+          type="button"
+          class="absolute right-3 top-4 p-1.5 text-zinc-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-md opacity-0 focus:opacity-100 group-hover:opacity-100 transition-all"
+          aria-label="Delete board"
+          @click="pendingBoardDelete.set(board)"
+        >
+          <span class="block h-4 w-4 i-hugeicons-delete-02"></span>
+        </button>
+      </article>
     </div>
   </div>
 
-  <!-- Create-board modal. Fixed positioned with a backdrop; closes on
-      backdrop click + Escape key. Optimistic insert: kanban.createBoard
-      updates the boards list immediately on success and rolls back on
-      failure (with the error surfaced inline below the form). -->
-  <div
-    :if="isCreating()"
-    class="flex fixed inset-0 z-50 items-center justify-center px-4 bg-black/50"
-    @click="closeCreate()"
-    @keydown.escape.window="closeCreate()"
+  <Modal
+    :isOpen="isCreating()"
+    title="New board"
+    size="md"
+    @close="closeCreate"
   >
-    <div
-      @click.stop
-      class="max-w-md w-full bg-white dark:bg-zinc-900 border border-zinc-200 rounded-lg dark:border-zinc-800 shadow-xl"
-    >
-      <div class="px-5 py-4 border-b border-zinc-200 dark:border-zinc-800">
-        <h3 class="font-semibold text-base text-zinc-900 dark:text-zinc-100">New board</h3>
-      </div>
-      <div class="px-5 py-4 space-y-4">
+    <form @submit.prevent="submitCreate">
+      <div class="space-y-4">
         <div>
-          <label class="block mb-1 font-medium text-xs text-zinc-700 dark:text-zinc-300">Name</label>
+          <label for="kanban-board-name" class="block mb-1 font-medium text-xs text-zinc-700 dark:text-zinc-300">Name</label>
           <input
-            :value="draftName()"
-            @input="(e) => draftName.set(e.target.value)"
-            @keydown.enter="submitCreate()"
+            id="kanban-board-name"
+            x-model="draftName"
             placeholder="e.g. Q3 Roadmap"
             class="px-3 py-2 w-full text-sm text-zinc-900 dark:text-zinc-100 bg-white dark:bg-zinc-950 border border-zinc-300 rounded dark:border-zinc-700 focus:border-violet-500 focus:outline-none"
-            autofocus
+            required
           />
         </div>
 
         <div>
-          <label class="block mb-1 font-medium text-xs text-zinc-700 dark:text-zinc-300">Description <span class="text-zinc-400">(optional)</span></label>
+          <label for="kanban-board-description" class="block mb-1 font-medium text-xs text-zinc-700 dark:text-zinc-300">Description <span class="text-zinc-400">(optional)</span></label>
           <textarea
-            :value="draftDescription()"
-            @input="(e) => draftDescription.set(e.target.value)"
+            id="kanban-board-description"
+            x-model="draftDescription"
             rows="3"
             placeholder="A short description of what this board tracks."
             class="px-3 py-2 w-full text-sm text-zinc-900 dark:text-zinc-100 bg-white dark:bg-zinc-950 border border-zinc-300 rounded dark:border-zinc-700 focus:border-violet-500 focus:outline-none resize-none"
@@ -237,8 +265,9 @@
         <p :if="submitError()" class="text-red-600 text-xs dark:text-red-400" :text="submitError()"></p>
       </div>
 
-      <div class="flex gap-2 justify-end px-5 py-3 border-t border-zinc-200 dark:border-zinc-800">
+      <div class="flex gap-2 justify-end mt-5 pt-4 border-t border-zinc-200 dark:border-zinc-800">
         <button
+          type="button"
           @click="closeCreate()"
           class="px-3 py-1.5 text-sm text-zinc-600 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200 rounded-md"
           :disabled="submitting()"
@@ -246,7 +275,7 @@
           Cancel
         </button>
         <button
-          @click="submitCreate()"
+          type="submit"
           class="px-3 py-1.5 text-sm text-white bg-violet-600 hover:bg-violet-700 rounded-md"
           :disabled="submitting()"
         >
@@ -254,7 +283,17 @@
           <span :if="submitting()">Creating…</span>
         </button>
       </div>
-    </div>
-  </div>
+    </form>
+  </Modal>
+
+  <ConfirmDialog
+    :isOpen="Boolean(pendingBoardDelete())"
+    title="Delete this board?"
+    :description="boardDeleteDescription()"
+    :busy="deletingBoard()"
+    :confirmLabel="deletingBoard() ? 'Deleting' : 'Delete'"
+    @close="pendingBoardDelete.set(null)"
+    @confirm="confirmBoardDelete"
+  />
 </div>
 @endsection

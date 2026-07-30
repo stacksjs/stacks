@@ -4,12 +4,6 @@
 <script client>
   // Kanban board view (stacksjs/stacks#1846 Phase 2).
   //
-  // Drag-and-drop via Pragmatic Drag and Drop (Atlassian). Loaded from
-  // esm.sh so we don't need a bundler step — the dashboard's
-  // <script client> blocks run as inline modules and ESM imports
-  // resolve at fetch time. The library is ~5kb gzipped so the
-  // round-trip cost is negligible.
-  //
   // Optimistic-update pattern:
   //   1. The DnD handler mutates the store immediately (so the card
   //      visually settles in its new position before the network
@@ -24,15 +18,6 @@
   import { useStore } from '@stacksjs/stx'
   import { useNavigation } from '../composables/useNavigation'
   import { useRole } from '../composables/useRole'
-  import {
-    draggable,
-    dropTargetForElements,
-    monitorForElements,
-  } from 'https://esm.sh/@atlaskit/pragmatic-drag-and-drop@1/element/adapter'
-  import {
-    attachClosestEdge,
-    extractClosestEdge,
-  } from 'https://esm.sh/@atlaskit/pragmatic-drag-and-drop-hitbox@1/closest-edge'
 
   const kanban = useStore('kanban')
   const { isDev } = useRole()
@@ -68,11 +53,35 @@
   const showNewLabelComposer = state(false)
   const newLabelName = state('')
   const newLabelColor = state('slate')
+  const dueDateDraft = state('')
+
+  type DeleteKind = 'card' | 'column' | 'comment' | 'label'
+  interface PendingDelete {
+    kind: DeleteKind
+    id: number
+    hasCards?: boolean
+  }
+  const pendingDelete = state<PendingDelete | null>(null)
+  const deleting = state(false)
+
+  interface CardDrag {
+    cardId: number
+    fromColumnId: number
+  }
+  interface CardDropTarget {
+    columnId: number
+    beforeCardId: number | null
+  }
+  const draggingCard = state<CardDrag | null>(null)
+  const draggingColumnId = state<number | null>(null)
+  const cardDropTarget = state<CardDropTarget | null>(null)
+  const columnDropBeforeId = state<number | null>(null)
 
   function syncDraftsFromCard() {
     const c = openCard()
     titleDraft.set(c ? c.title : '')
     descDraft.set(c ? (c.description || '') : '')
+    dueDateDraft.set(c?.dueDate ? c.dueDate.slice(0, 10) : '')
     commentDraft.set('')
   }
   // Sync drafts when the open card changes (open / close / refetch).
@@ -125,9 +134,8 @@
     if (ok) commentDraft.set('')
   }
 
-  async function deleteCommentClicked(commentId) {
-    if (!window.confirm('Delete this comment?')) return
-    await kanban.deleteComment(commentId)
+  function requestDelete(kind: DeleteKind, id: number, hasCards = false): void {
+    pendingDelete.set({ kind, id, hasCards })
   }
 
   async function submitNewLabel() {
@@ -143,12 +151,51 @@
     showNewLabelComposer.set(false)
   }
 
-  async function deleteLabelClicked(labelId) {
-    if (!window.confirm('Delete this label everywhere it\'s used?')) return
-    await kanban.deleteLabel(labelId)
-  }
-
   const labelColors = ['slate', 'red', 'amber', 'emerald', 'blue', 'violet', 'rose']
+
+  const deleteTitle = derived(() => {
+    const pending = pendingDelete()
+    if (!pending)
+      return 'Delete item?'
+    return {
+      card: 'Delete this card?',
+      column: 'Delete this column?',
+      comment: 'Delete this comment?',
+      label: 'Delete this label?',
+    }[pending.kind]
+  })
+
+  const deleteDescription = derived(() => {
+    const pending = pendingDelete()
+    if (!pending)
+      return ''
+    if (pending.kind === 'column' && pending.hasCards)
+      return 'Every card in this column will also be permanently deleted.'
+    if (pending.kind === 'label')
+      return 'The label will be removed from every card that currently uses it.'
+    return 'This action cannot be undone.'
+  })
+
+  async function confirmDelete(): Promise<void> {
+    const pending = pendingDelete()
+    if (!pending || deleting())
+      return
+    deleting.set(true)
+    try {
+      const ok = pending.kind === 'card'
+        ? await kanban.deleteCard(pending.id)
+        : pending.kind === 'column'
+          ? await kanban.deleteColumn(pending.id)
+          : pending.kind === 'comment'
+            ? await kanban.deleteComment(pending.id)
+            : await kanban.deleteLabel(pending.id)
+      if (ok)
+        pendingDelete.set(null)
+    }
+    finally {
+      deleting.set(false)
+    }
+  }
 
   function totalCards() {
     const cols = columns()
@@ -171,7 +218,7 @@
     })[color] || 'bg-slate-100 dark:bg-slate-800'
   }
 
-  // Pull the id from the URL via the composable instead of window.location
+  // Pull the id from the URL through the navigation composable.
   // (stacksjs/stacks#1838 — no vanilla DOM in dashboard pages).
   const id = useNavigation().urlIdParam()
   if (id !== null)
@@ -219,18 +266,6 @@
     closeColumnComposer()
   }
 
-  async function deleteCardClicked(cardId) {
-    if (!window.confirm('Delete this card?')) return
-    await kanban.deleteCard(cardId)
-  }
-  async function deleteColumnClicked(columnId, hasCards) {
-    const warning = hasCards
-      ? 'Delete this column AND its cards? This cannot be undone.'
-      : 'Delete this empty column?'
-    if (!window.confirm(warning)) return
-    await kanban.deleteColumn(columnId)
-  }
-
   // ─── Card detail modal handlers ───────────────────────────────────
 
   function openDetail(cardId) {
@@ -238,6 +273,22 @@
     kanban.openCardDetail(cardId)
   }
   function closeDetail() { kanban.closeCardDetail() }
+
+  function handleBoardKeydown(event: KeyboardEvent): void {
+    if (event.key !== 'Escape' || pendingDelete())
+      return
+    if (openCard())
+      closeDetail()
+  }
+
+  function handleCommentKeydown(event: KeyboardEvent): void {
+    if (event.key === 'Enter' && (event.metaKey || event.ctrlKey)) {
+      event.preventDefault()
+      void submitComment()
+    }
+  }
+
+  useEventListener('keydown', handleBoardKeydown)
 
   // Label color → tailwind hue. Mirrors the column-accent map but
   // returns a more saturated chip class.
@@ -275,171 +326,143 @@
     return d.toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })
   }
 
-  // ─── DnD wiring ────────────────────────────────────────────────────
-  //
-  // The cleanest pattern with Pragmatic DnD + a reactive UI: wire the
-  // drop targets + draggables in an `onMount`-style effect that
-  // re-runs when the columns list changes. The library's `cleanup()`
-  // functions handle deregistering listeners as DOM nodes go away.
-  //
-  // We mark every card element with `data-card-id` and every column
-  // with `data-column-id` so the monitor can extract the move
-  // semantics from the dragged element + drop target.
+  // ─── Native drag and drop ─────────────────────────────────────────
 
-  const dndCleanups = []
-
-  function teardownDnd() {
-    while (dndCleanups.length) {
-      const fn = dndCleanups.pop()
-      try { fn() } catch { /* ignore */ }
-    }
+  function setDragTransfer(event: DragEvent, kind: 'card' | 'column', id: number): void {
+    if (!event.dataTransfer)
+      return
+    event.dataTransfer.effectAllowed = 'move'
+    event.dataTransfer.setData(`application/x-stacks-kanban-${kind}`, String(id))
   }
 
-  function setupDnd() {
-    teardownDnd()
-    const root = document.querySelector('[data-kanban-root]')
-    if (!root) return
+  function beginCardDrag(cardId: number, fromColumnId: number, event: DragEvent): void {
+    draggingColumnId.set(null)
+    draggingCard.set({ cardId, fromColumnId })
+    setDragTransfer(event, 'card', cardId)
+  }
 
-    // Card draggables + per-card drop targets (for drop-between
-    // hitbox detection via Pragmatic DnD's closestEdge utility).
-    // Per-card drop targets give us a "drop above / below this card"
-    // signal; the column-level drop target is the fallback for
-    // empty-column drops.
-    for (const cardEl of root.querySelectorAll('[data-card-id]')) {
-      dndCleanups.push(draggable({
-        element: cardEl,
-        getInitialData: () => ({
-          kind: 'card',
-          cardId: Number(cardEl.getAttribute('data-card-id')),
-          fromColumnId: Number(cardEl.getAttribute('data-card-column-id')),
-        }),
-      }))
-      dndCleanups.push(dropTargetForElements({
-        element: cardEl,
-        canDrop: ({ source }) => source.data?.kind === 'card',
-        getData: ({ input, element }) => attachClosestEdge(
-          {
-            kind: 'card-drop',
-            overCardId: Number(cardEl.getAttribute('data-card-id')),
-            overColumnId: Number(cardEl.getAttribute('data-card-column-id')),
-          },
-          { input, element, allowedEdges: ['top', 'bottom'] },
-        ),
-      }))
+  function beginColumnDrag(columnId: number, event: DragEvent): void {
+    draggingCard.set(null)
+    draggingColumnId.set(columnId)
+    setDragTransfer(event, 'column', columnId)
+  }
+
+  function finishDrag(): void {
+    draggingCard.set(null)
+    draggingColumnId.set(null)
+    cardDropTarget.set(null)
+    columnDropBeforeId.set(null)
+  }
+
+  function nextCardId(columnId: number, cardId: number): number | null {
+    const column = columns().find(item => item.id === columnId)
+    if (!column)
+      return null
+    const index = column.cards.findIndex(card => card.id === cardId)
+    return index >= 0 ? column.cards[index + 1]?.id ?? null : null
+  }
+
+  function previewCardDrop(columnId: number, overCardId: number, event: DragEvent): void {
+    if (!draggingCard())
+      return
+    const target = event.currentTarget as HTMLElement
+    const bounds = target.getBoundingClientRect()
+    const beforeCardId = event.clientY < bounds.top + bounds.height / 2
+      ? overCardId
+      : nextCardId(columnId, overCardId)
+    cardDropTarget.set({ columnId, beforeCardId })
+    if (event.dataTransfer)
+      event.dataTransfer.dropEffect = 'move'
+  }
+
+  function previewColumnDrop(columnId: number, event: DragEvent): void {
+    if (draggingCard()) {
+      cardDropTarget.set({ columnId, beforeCardId: null })
+      return
     }
-    for (const colEl of root.querySelectorAll('[data-column-id]')) {
-      dndCleanups.push(dropTargetForElements({
-        element: colEl,
-        canDrop: ({ source }) => source.data?.kind === 'card',
-        getData: () => ({
-          kind: 'column-drop',
-          columnId: Number(colEl.getAttribute('data-column-id')),
-        }),
-      }))
+    if (!draggingColumnId())
+      return
+    const target = event.currentTarget as HTMLElement
+    const bounds = target.getBoundingClientRect()
+    if (event.clientX < bounds.left + bounds.width / 2) {
+      columnDropBeforeId.set(columnId)
+      return
     }
+    const ordered = columns()
+    const index = ordered.findIndex(column => column.id === columnId)
+    columnDropBeforeId.set(index >= 0 ? ordered[index + 1]?.id ?? null : null)
+  }
 
-    // Single monitor handles the actual move semantics — fires once
-    // per drop, reads source + nearest drop target (a card if the
-    // pointer is over one, the column otherwise), computes the new
-    // per-column order honouring drop position, hands it to the store.
-    dndCleanups.push(monitorForElements({
-      canMonitor: ({ source }) => source.data?.kind === 'card',
-      onDrop: ({ source, location }) => {
-        // The nearest drop target wins. If we landed over a card,
-        // its `closestEdge` (top/bottom) tells us whether the drop
-        // is before or after that card; if we landed over the
-        // column shell, it's an append-to-column drop.
-        const dropTargets = location.current.dropTargets ?? []
-        if (dropTargets.length === 0) return
+  async function moveCard(toColumnId: number, beforeCardId: number | null): Promise<void> {
+    const dragging = draggingCard()
+    if (!dragging || dragging.cardId === beforeCardId)
+      return
+    const fromColumn = columns().find(column => column.id === dragging.fromColumnId)
+    const toColumn = columns().find(column => column.id === toColumnId)
+    if (!fromColumn || !toColumn)
+      return
 
-        const cardId = Number(source.data.cardId)
-        const fromColumnId = Number(source.data.fromColumnId)
-        if (!cardId || !fromColumnId) return
-
-        // Card-over-card target takes priority over the column-level
-        // target (Pragmatic DnD's `dropTargets` array is innermost-
-        // first, so a card target appears before its parent column).
-        const cardTarget = dropTargets.find(t => t.data?.kind === 'card-drop')
-        const columnTarget = dropTargets.find(t => t.data?.kind === 'column-drop')
-
-        let toColumnId
-        let dropBeforeCardId = null
-        if (cardTarget) {
-          toColumnId = Number(cardTarget.data.overColumnId)
-          const overCardId = Number(cardTarget.data.overCardId)
-          const edge = extractClosestEdge(cardTarget.data)
-          // edge === 'top' → insert before the overCard
-          // edge === 'bottom' → insert after = before the NEXT card
-          dropBeforeCardId = edge === 'top' ? overCardId : null
-          if (edge === 'bottom') {
-            // Find the next card in the column; null means "append".
-            const cols = columns()
-            const tcol = cols.find(c => c.id === toColumnId)
-            if (tcol) {
-              const idx = tcol.cards.findIndex(c => c.id === overCardId)
-              const next = idx >= 0 ? tcol.cards[idx + 1] : null
-              dropBeforeCardId = next ? next.id : null
-            }
-          }
-        }
-        else if (columnTarget) {
-          toColumnId = Number(columnTarget.data.columnId)
-          dropBeforeCardId = null // append
-        }
-        else {
-          return
-        }
-        if (!toColumnId) return
-
-        // No-op: dragging a card onto itself.
-        if (cardId === dropBeforeCardId) return
-
-        const cols = columns()
-        const fromCol = cols.find(c => c.id === fromColumnId)
-        const toCol = cols.find(c => c.id === toColumnId)
-        if (!fromCol || !toCol) return
-
-        // Build the new per-column orders.
-        const fromOrderRaw = fromCol.cards.map(c => c.id).filter(idd => idd !== cardId)
-
-        // Start the target column's order from the existing one,
-        // minus the moving card (in case of same-column rearrange),
-        // then insert at the computed position.
-        const toOrderRaw = toCol.cards.map(c => c.id).filter(idd => idd !== cardId)
-        let insertAt = toOrderRaw.length
-        if (dropBeforeCardId !== null) {
-          const idx = toOrderRaw.indexOf(dropBeforeCardId)
-          if (idx >= 0) insertAt = idx
-        }
-        const toOrder = [
-          ...toOrderRaw.slice(0, insertAt),
-          cardId,
-          ...toOrderRaw.slice(insertAt),
+    const fromOrder = fromColumn.cards.map(card => card.id).filter(id => id !== dragging.cardId)
+    const targetOrder = toColumn.cards.map(card => card.id).filter(id => id !== dragging.cardId)
+    const targetIndex = beforeCardId === null ? targetOrder.length : targetOrder.indexOf(beforeCardId)
+    const insertAt = targetIndex < 0 ? targetOrder.length : targetIndex
+    const toOrder = [
+      ...targetOrder.slice(0, insertAt),
+      dragging.cardId,
+      ...targetOrder.slice(insertAt),
+    ]
+    const payload = dragging.fromColumnId === toColumnId
+      ? [{ columnId: toColumnId, order: toOrder }]
+      : [
+          { columnId: dragging.fromColumnId, order: fromOrder },
+          { columnId: toColumnId, order: toOrder },
         ]
-
-        const payload = fromColumnId === toColumnId
-          ? [{ columnId: toColumnId, order: toOrder }]
-          : [
-              { columnId: fromColumnId, order: fromOrderRaw },
-              { columnId: toColumnId, order: toOrder },
-            ]
-        kanban.reorderCards(payload)
-      },
-    }))
+    finishDrag()
+    await kanban.reorderCards(payload)
   }
 
-  // Re-wire DnD whenever columns mutate (new card, deleted card,
-  // post-drop reorder, etc.). `effect` runs after every state change
-  // that touches `columns()`, with a microtask delay so the DOM has
-  // re-rendered first.
-  effect(() => {
-    columns()
-    Promise.resolve().then(setupDnd)
-  })
+  async function dropCard(columnId: number, overCardId: number, event: DragEvent): Promise<void> {
+    previewCardDrop(columnId, overCardId, event)
+    const target = cardDropTarget()
+    if (target)
+      await moveCard(target.columnId, target.beforeCardId)
+  }
 
-  onUnmount(() => {
-    teardownDnd()
-  })
+  async function dropOnColumn(columnId: number): Promise<void> {
+    if (draggingCard()) {
+      await moveCard(columnId, null)
+      return
+    }
+    const movingColumnId = draggingColumnId()
+    const currentBoard = board()
+    if (!movingColumnId || !currentBoard)
+      return
+    const order = columns().map(column => column.id).filter(id => id !== movingColumnId)
+    const beforeId = columnDropBeforeId()
+    const targetIndex = beforeId === null ? order.length : order.indexOf(beforeId)
+    const insertAt = targetIndex < 0 ? order.length : targetIndex
+    order.splice(insertAt, 0, movingColumnId)
+    finishDrag()
+    await kanban.reorderColumns(currentBoard.id, order)
+  }
+
+  function cardDragClass(cardId: number, columnId: number): string {
+    const dragging = draggingCard()
+    const target = cardDropTarget()
+    if (dragging?.cardId === cardId)
+      return 'opacity-45'
+    if (target?.columnId === columnId && target.beforeCardId === cardId)
+      return 'ring-2 ring-violet-500 ring-offset-1 dark:ring-offset-zinc-950'
+    return ''
+  }
+
+  function columnDragClass(columnId: number): string {
+    if (draggingColumnId() === columnId)
+      return 'opacity-50'
+    if (columnDropBeforeId() === columnId)
+      return 'ring-2 ring-violet-500 ring-offset-2 dark:ring-offset-neutral-950'
+    return ''
+  }
 </script>
 
 <div class="mx-auto px-6 py-6 max-w-full">
@@ -448,16 +471,14 @@
   </div>
 
   <div :if="canView">
-    <a href="/kanban" class="inline-flex gap-1 items-center mb-4 no-underline text-xs text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300" data-mpa="true">
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6" /></svg>
+    <StxLink to="/kanban" prefetch class="inline-flex gap-1 items-center mb-4 no-underline text-xs text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300">
+      <span class="h-3 w-3 i-hugeicons-arrow-left-02"></span>
       All boards
-    </a>
+    </StxLink>
 
     <!-- Loading -->
-    <div :if="loading" class="flex items-center justify-center" style="min-height: 40vh">
-      <svg class="text-violet-500 animate-spin" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M21 12a9 9 0 1 1-6.219-8.56" />
-      </svg>
+    <div :if="loading" class="flex items-center justify-center min-h-[40vh]">
+      <span class="h-7 w-7 text-violet-500 animate-spin i-hugeicons-loading-03"></span>
     </div>
 
     <!-- Error -->
@@ -482,28 +503,33 @@
 
       <!-- The board itself. Horizontal scroll for wide boards;
           each column is a vertical card stack. -->
-      <div data-kanban-root class="flex overflow-x-auto gap-3 pb-4" style="min-height: 60vh">
+      <div data-kanban-root class="flex overflow-x-auto gap-3 pb-4 min-h-[60vh]">
         <div
           :for="col in columns"
           :data-column-id="col.id"
-          class="flex flex-col flex-shrink-0 w-72 bg-white dark:bg-zinc-950 border border-zinc-200 rounded-lg dark:border-zinc-800"
-          style="max-height: calc(100vh - 220px)"
+          @dragover.prevent="previewColumnDrop(col.id, $event)"
+          @drop.prevent="dropOnColumn(col.id)"
+          class="flex flex-col flex-shrink-0 max-h-[calc(100vh-220px)] w-72 bg-white dark:bg-zinc-950 border border-zinc-200 rounded-lg dark:border-zinc-800"
+          :class="columnDragClass(col.id)"
         >
           <!-- Column header -->
-          <div :class="`px-3 py-2 border-b border-zinc-100 dark:border-zinc-900 ${columnAccentClass(col.color)}`">
+          <div
+            draggable="true"
+            @dragstart.stop="beginColumnDrag(col.id, $event)"
+            @dragend="finishDrag"
+            :class="`px-3 py-2 border-b border-zinc-100 dark:border-zinc-900 cursor-grab active:cursor-grabbing ${columnAccentClass(col.color)}`"
+          >
             <div class="flex gap-2 items-center justify-between">
               <p class="font-medium text-sm text-zinc-700 truncate dark:text-zinc-200" :text="col.name"></p>
               <div class="flex gap-1 items-center">
                 <span class="font-mono text-xs text-zinc-500" :text="col.cards.length"></span>
                 <button
-                  @click="deleteColumnClicked(col.id, col.cards.length > 0)"
+                  type="button"
+                  @click="requestDelete('column', col.id, col.cards.length > 0)"
                   class="-m-1 p-1 text-zinc-400 hover:text-red-500"
-                  title="Delete column"
+                  aria-label="Delete column"
                 >
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <polyline points="3 6 5 6 21 6" />
-                    <path d="M19 6l-2 14a2 2 0 01-2 2H9a2 2 0 01-2-2L5 6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" />
-                  </svg>
+                  <span class="block h-3 w-3 i-hugeicons-delete-02"></span>
                 </button>
               </div>
             </div>
@@ -515,8 +541,14 @@
               :for="card in col.cards"
               :data-card-id="card.id"
               :data-card-column-id="col.id"
+              draggable="true"
+              @dragstart.stop="beginCardDrag(card.id, col.id, $event)"
+              @dragend="finishDrag"
+              @dragover.prevent.stop="previewCardDrop(col.id, card.id, $event)"
+              @drop.prevent.stop="dropCard(col.id, card.id, $event)"
               @click="openDetail(card.id)"
               class="px-3 py-2 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 rounded dark:border-zinc-800 hover:border-violet-300 dark:hover:border-violet-700 transition-colors cursor-grab group"
+              :class="cardDragClass(card.id, col.id)"
             >
               <!-- Label chips strip -->
               <div :if="card.labels && card.labels.length > 0" class="flex flex-wrap gap-1 mb-1">
@@ -530,23 +562,19 @@
               <div class="flex gap-2 items-start justify-between">
                 <p class="flex-1 leading-snug text-xs text-zinc-800 dark:text-zinc-200" :text="card.title"></p>
                 <button
-                  @click.stop="deleteCardClicked(card.id)"
+                  type="button"
+                  @click.stop="requestDelete('card', card.id)"
                   class="text-zinc-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
-                  title="Delete card"
+                  aria-label="Delete card"
                 >
-                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <line x1="18" y1="6" x2="6" y2="18" />
-                    <line x1="6" y1="6" x2="18" y2="18" />
-                  </svg>
+                  <span class="block h-2.5 w-2.5 i-hugeicons-cancel-01"></span>
                 </button>
               </div>
 
               <!-- Footer: due date + assignee avatars -->
               <div :if="card.dueDate || (card.assignees && card.assignees.length > 0)" class="flex gap-2 items-center justify-between mt-1.5 pt-1.5 border-t border-zinc-200/50 dark:border-zinc-800/50">
                 <div :if="card.dueDate" class="flex gap-1 items-center text-[10px] text-zinc-500">
-                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <rect x="3" y="4" width="18" height="18" rx="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" />
-                  </svg>
+                  <span class="h-2.5 w-2.5 i-hugeicons-calendar-03"></span>
                   <span :text="formatDueDate(card.dueDate)"></span>
                 </div>
                 <div :if="!card.dueDate"></div>
@@ -566,8 +594,7 @@
           <div class="p-2 border-t border-zinc-100 dark:border-zinc-900">
             <div :if="isComposingFor(col.id)" class="space-y-2">
               <textarea
-                :value="draftCardTitle()"
-                @input="(e) => draftCardTitle.set(e.target.value)"
+                x-model="draftCardTitle"
                 @keydown.enter.prevent="submitCard(col.id)"
                 @keydown.escape="closeCardComposer()"
                 placeholder="Card title…"
@@ -603,8 +630,7 @@
         <div class="flex-shrink-0 w-72">
           <div :if="composingNewColumn()" class="p-3 space-y-2 bg-white dark:bg-zinc-950 border border-zinc-300 rounded-lg dark:border-zinc-700">
             <input
-              :value="draftColumnName()"
-              @input="(e) => draftColumnName.set(e.target.value)"
+              x-model="draftColumnName"
               @keydown.enter="submitColumn()"
               @keydown.escape="closeColumnComposer()"
               placeholder="Column name…"
@@ -651,17 +677,19 @@
     :if="openCard()"
     class="flex fixed inset-0 overflow-y-auto z-50 items-start justify-center px-4 py-8 bg-black/50"
     @click="closeDetail()"
-    @keydown.escape.window="closeDetail()"
   >
     <div
       @click.stop
+      role="dialog"
+      aria-modal="true"
+      aria-label="Card details"
+      tabindex="-1"
       class="my-8 max-w-3xl w-full bg-white dark:bg-zinc-900 border border-zinc-200 rounded-lg dark:border-zinc-800 shadow-xl"
     >
       <!-- Header: title + close -->
       <div class="flex gap-3 items-start px-6 py-4 border-b border-zinc-200 dark:border-zinc-800">
         <input
-          :value="titleDraft()"
-          @input="(e) => titleDraft.set(e.target.value)"
+          x-model="titleDraft"
           @blur="commitTitle()"
           @keydown.enter.prevent="(e) => e.target.blur()"
           class="flex-1 -mx-2 -my-1 px-2 py-1 font-semibold text-lg text-zinc-900 dark:text-zinc-100 bg-transparent focus:bg-zinc-50 dark:focus:bg-zinc-800 rounded focus:outline-none"
@@ -671,9 +699,7 @@
           class="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
           title="Close"
         >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
-          </svg>
+          <span class="block h-5 w-5 i-hugeicons-cancel-01"></span>
         </button>
       </div>
 
@@ -692,8 +718,7 @@
           <section>
             <h4 class="mb-2 font-medium text-xs text-zinc-500 tracking-wide uppercase">Description</h4>
             <textarea
-              :value="descDraft()"
-              @input="(e) => descDraft.set(e.target.value)"
+              x-model="descDraft"
               @blur="commitDescription()"
               rows="4"
               placeholder="Add a more detailed description…"
@@ -708,9 +733,8 @@
             <!-- Composer -->
             <div class="mb-4">
               <textarea
-                :value="commentDraft()"
-                @input="(e) => commentDraft.set(e.target.value)"
-                @keydown.metaCmd.enter.prevent="submitComment()"
+                x-model="commentDraft"
+                @keydown="handleCommentKeydown"
                 rows="2"
                 placeholder="Add a comment… (⌘+Enter to send)"
                 class="px-3 py-2 w-full text-sm text-zinc-800 dark:text-zinc-200 bg-white dark:bg-zinc-950 border border-zinc-200 rounded dark:border-zinc-800 focus:border-violet-400 focus:outline-none dark:focus:border-violet-600 resize-none"
@@ -741,7 +765,8 @@
                     <span class="font-medium text-xs text-zinc-700 dark:text-zinc-200" :text="cm.authorName || cm.authorEmail || 'Unknown'"></span>
                     <span class="text-[10px] text-zinc-400" :text="formatTimestamp(cm.createdAt)"></span>
                     <button
-                      @click="deleteCommentClicked(cm.id)"
+                      type="button"
+                      @click="requestDelete('comment', cm.id)"
                       class="ml-auto text-[10px] text-zinc-400 hover:text-red-500"
                     >Delete</button>
                   </div>
@@ -786,11 +811,9 @@
               >
                 <span :text="lbl.name"></span>
                 <span class="flex gap-1 items-center">
-                  <svg :if="openCard().labels.some(l => l.id === lbl.id)" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                    <polyline points="20 6 9 17 4 12" />
-                  </svg>
+                  <span :if="openCard().labels.some(l => l.id === lbl.id)" class="h-3 w-3 i-hugeicons-tick-02"></span>
                   <span
-                    @click.stop="deleteLabelClicked(lbl.id)"
+                    @click.stop="requestDelete('label', lbl.id)"
                     class="text-zinc-500 hover:text-red-500"
                     title="Delete label"
                   >
@@ -802,8 +825,7 @@
               <!-- New label composer -->
               <div :if="showNewLabelComposer()" class="pt-2 space-y-2 border-t border-zinc-200 dark:border-zinc-800">
                 <input
-                  :value="newLabelName()"
-                  @input="(e) => newLabelName.set(e.target.value)"
+                  x-model="newLabelName"
                   @keydown.enter.prevent="submitNewLabel()"
                   placeholder="Label name"
                   class="px-2 py-1 w-full text-xs bg-white dark:bg-zinc-950 border border-zinc-300 rounded dark:border-zinc-700 focus:border-violet-500 focus:outline-none"
@@ -864,9 +886,7 @@
               >
                 <span class="inline-flex flex-shrink-0 items-center justify-center h-6 w-6 font-medium text-[10px] text-white bg-violet-500 rounded-full" :text="initialsOf(u.name, u.email)"></span>
                 <span class="flex-1 text-zinc-700 truncate dark:text-zinc-200" :text="u.name || u.email"></span>
-                <svg :if="openCard().assignees.some(a => a.userId === u.id)" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="text-violet-500">
-                  <polyline points="20 6 9 17 4 12" />
-                </svg>
+                <span :if="openCard().assignees.some(a => a.userId === u.id)" class="h-3.5 w-3.5 text-violet-500 i-hugeicons-tick-02"></span>
               </button>
             </div>
           </section>
@@ -876,8 +896,8 @@
             <h4 class="mb-2 font-medium text-xs text-zinc-500 tracking-wide uppercase">Due date</h4>
             <input
               type="date"
-              :value="openCard().dueDate ? openCard().dueDate.slice(0, 10) : ''"
-              @change="(e) => commitDueDate(e.target.value)"
+              x-model="dueDateDraft"
+              @change="commitDueDate(dueDateDraft())"
               class="px-2 py-1 w-full text-xs text-zinc-800 dark:text-zinc-200 bg-white dark:bg-zinc-950 border border-zinc-200 rounded dark:border-zinc-800 focus:border-violet-400 focus:outline-none"
             />
           </section>
@@ -895,5 +915,15 @@
       </div>
     </div>
   </div>
+
+  <ConfirmDialog
+    :isOpen="Boolean(pendingDelete())"
+    :title="deleteTitle()"
+    :description="deleteDescription()"
+    :busy="deleting()"
+    :confirmLabel="deleting() ? 'Deleting' : 'Delete'"
+    @close="pendingDelete.set(null)"
+    @confirm="confirmDelete"
+  />
 </div>
 @endsection

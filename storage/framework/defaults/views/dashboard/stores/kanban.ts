@@ -1,4 +1,5 @@
 import { defineStore, derived, registerStoresClient, state } from '@stacksjs/stx'
+import { dashboardApi } from '../../../functions/dashboard-api'
 
 interface BoardSummary {
   id: number
@@ -127,9 +128,7 @@ export const kanbanStore = defineStore('kanban', () => {
     loading.set(true)
     error.set(null)
     try {
-      const res = await fetch('/api/dashboard/kanban/boards', { headers: { accept: 'application/json' } })
-      if (!res.ok) throw new Error(`HTTP ${res.status}`)
-      const data = await res.json() as { boards: BoardSummary[], error?: string }
+      const data = await dashboardApi<{ boards: BoardSummary[], error?: string }>('/api/dashboard/kanban/boards')
       if (data.error) {
         error.set(data.error)
         boards.set([])
@@ -150,14 +149,12 @@ export const kanbanStore = defineStore('kanban', () => {
     errorBoard.set(null)
     lastViewedBoardId.set(id)
     try {
-      const res = await fetch(`/api/dashboard/kanban/boards/${id}`, { headers: { accept: 'application/json' } })
-      if (!res.ok) throw new Error(`HTTP ${res.status}`)
-      const data = await res.json() as {
+      const data = await dashboardApi<{
         board?: BoardDetail
         columns?: ColumnRecord[]
         labels?: LabelRecord[]
         error?: string
-      }
+      }>(`/api/dashboard/kanban/boards/${id}`)
       if (data.error || !data.board) {
         errorBoard.set(data.error ?? 'Board not found')
         currentBoard.set(null)
@@ -193,13 +190,10 @@ export const kanbanStore = defineStore('kanban', () => {
   async function createBoard(input: { name: string, description?: string, color?: string, icon?: string }): Promise<BoardSummary | null> {
     const snapshot = boards()
     try {
-      const res = await fetch('/api/dashboard/kanban/boards', {
+      const data = await dashboardApi<{ board?: BoardSummary, error?: string }>('/api/dashboard/kanban/boards', {
         method: 'POST',
-        headers: { 'content-type': 'application/json', accept: 'application/json' },
-        body: JSON.stringify(input),
+        body: input,
       })
-      if (!res.ok) throw new Error(`HTTP ${res.status}`)
-      const data = await res.json() as { board?: BoardSummary, error?: string }
       if (data.error || !data.board) throw new Error(data.error ?? 'Create failed')
       boards.set([...snapshot, data.board])
       return data.board
@@ -215,8 +209,7 @@ export const kanbanStore = defineStore('kanban', () => {
     // Optimistic remove.
     boards.set(snapshot.filter(b => b.id !== id))
     try {
-      const res = await fetch(`/api/dashboard/kanban/boards/${id}`, { method: 'DELETE', headers: { accept: 'application/json' } })
-      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      await dashboardApi(`/api/dashboard/kanban/boards/${id}`, { method: 'DELETE' })
       return true
     }
     catch (e) {
@@ -229,13 +222,10 @@ export const kanbanStore = defineStore('kanban', () => {
   async function createColumn(input: { boardId: number, name: string, color?: string }): Promise<ColumnRecord | null> {
     const snapshot = currentColumns()
     try {
-      const res = await fetch('/api/dashboard/kanban/columns', {
+      const data = await dashboardApi<{ column?: ColumnRecord, error?: string }>('/api/dashboard/kanban/columns', {
         method: 'POST',
-        headers: { 'content-type': 'application/json', accept: 'application/json' },
-        body: JSON.stringify(input),
+        body: input,
       })
-      if (!res.ok) throw new Error(`HTTP ${res.status}`)
-      const data = await res.json() as { column?: ColumnRecord, error?: string }
       if (data.error || !data.column) throw new Error(data.error ?? 'Create failed')
       currentColumns.set([...snapshot, data.column])
       return data.column
@@ -250,8 +240,7 @@ export const kanbanStore = defineStore('kanban', () => {
     const snapshot = currentColumns()
     currentColumns.set(snapshot.filter(c => c.id !== columnId))
     try {
-      const res = await fetch(`/api/dashboard/kanban/columns/${columnId}`, { method: 'DELETE', headers: { accept: 'application/json' } })
-      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      await dashboardApi(`/api/dashboard/kanban/columns/${columnId}`, { method: 'DELETE' })
       return true
     }
     catch (e) {
@@ -264,13 +253,10 @@ export const kanbanStore = defineStore('kanban', () => {
   async function createCard(input: { columnId: number, title: string, description?: string }): Promise<CardRecord | null> {
     const snapshot = currentColumns()
     try {
-      const res = await fetch('/api/dashboard/kanban/cards', {
+      const data = await dashboardApi<{ card?: CardRecord, error?: string }>('/api/dashboard/kanban/cards', {
         method: 'POST',
-        headers: { 'content-type': 'application/json', accept: 'application/json' },
-        body: JSON.stringify(input),
+        body: input,
       })
-      if (!res.ok) throw new Error(`HTTP ${res.status}`)
-      const data = await res.json() as { card?: CardRecord, error?: string }
       if (data.error || !data.card) throw new Error(data.error ?? 'Create failed')
       currentColumns.set(snapshot.map(col =>
         col.id === input.columnId
@@ -292,8 +278,7 @@ export const kanbanStore = defineStore('kanban', () => {
       cards: col.cards.filter(c => c.id !== cardId),
     })))
     try {
-      const res = await fetch(`/api/dashboard/kanban/cards/${cardId}`, { method: 'DELETE', headers: { accept: 'application/json' } })
-      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      await dashboardApi(`/api/dashboard/kanban/cards/${cardId}`, { method: 'DELETE' })
       return true
     }
     catch (e) {
@@ -336,13 +321,10 @@ export const kanbanStore = defineStore('kanban', () => {
     currentColumns.set(next)
 
     try {
-      const res = await fetch('/api/dashboard/kanban/cards/reorder', {
+      const data = await dashboardApi<{ moved?: number, error?: string }>('/api/dashboard/kanban/cards/reorder', {
         method: 'POST',
-        headers: { 'content-type': 'application/json', accept: 'application/json' },
-        body: JSON.stringify({ columns: payload }),
+        body: { columns: payload },
       })
-      if (!res.ok) throw new Error(`HTTP ${res.status}`)
-      const data = await res.json() as { moved?: number, error?: string }
       if (data.error) throw new Error(data.error)
       return true
     }
@@ -364,13 +346,10 @@ export const kanbanStore = defineStore('kanban', () => {
     currentColumns.set(next)
 
     try {
-      const res = await fetch('/api/dashboard/kanban/columns/reorder', {
+      const data = await dashboardApi<{ reordered?: number, error?: string }>('/api/dashboard/kanban/columns/reorder', {
         method: 'POST',
-        headers: { 'content-type': 'application/json', accept: 'application/json' },
-        body: JSON.stringify({ boardId, order }),
+        body: { boardId, order },
       })
-      if (!res.ok) throw new Error(`HTTP ${res.status}`)
-      const data = await res.json() as { reordered?: number, error?: string }
       if (data.error) throw new Error(data.error)
       return true
     }
@@ -417,15 +396,13 @@ export const kanbanStore = defineStore('kanban', () => {
       openCard.set(cardToDetail(seed))
 
     try {
-      const res = await fetch(`/api/dashboard/kanban/cards/${cardId}`, { headers: { accept: 'application/json' } })
-      if (!res.ok) throw new Error(`HTTP ${res.status}`)
-      const data = await res.json() as {
+      const data = await dashboardApi<{
         card?: CardRecord
         labels?: CardLabel[]
         assignees?: CardAssignee[]
         comments?: CardComment[]
         error?: string
-      }
+      }>(`/api/dashboard/kanban/cards/${cardId}`)
       if (data.error || !data.card)
         throw new Error(data.error ?? 'Card not found')
       openCard.set({
@@ -470,13 +447,10 @@ export const kanbanStore = defineStore('kanban', () => {
     const snapshot = { ...oc }
     patchOpenCard(input as Partial<CardDetail>)
     try {
-      const res = await fetch(`/api/dashboard/kanban/cards/${oc.id}`, {
+      const data = await dashboardApi<{ card?: CardRecord, error?: string }>(`/api/dashboard/kanban/cards/${oc.id}`, {
         method: 'PATCH',
-        headers: { 'content-type': 'application/json', accept: 'application/json' },
-        body: JSON.stringify(input),
+        body: input,
       })
-      if (!res.ok) throw new Error(`HTTP ${res.status}`)
-      const data = await res.json() as { card?: CardRecord, error?: string }
       if (data.error || !data.card) throw new Error(data.error ?? 'Update failed')
       // Server-canonical state wins (handles trimming etc.).
       patchOpenCard(data.card)
@@ -498,9 +472,7 @@ export const kanbanStore = defineStore('kanban', () => {
     if (loadingUsers() || users().length > 0) return
     loadingUsers.set(true)
     try {
-      const res = await fetch('/api/dashboard/kanban/users', { headers: { accept: 'application/json' } })
-      if (!res.ok) throw new Error(`HTTP ${res.status}`)
-      const data = await res.json() as { users?: UserSummary[] }
+      const data = await dashboardApi<{ users?: UserSummary[] }>('/api/dashboard/kanban/users')
       users.set(data.users ?? [])
     }
     catch {
@@ -527,13 +499,10 @@ export const kanbanStore = defineStore('kanban', () => {
     patchOpenCard({ labels: optimistic })
 
     try {
-      const res = await fetch(`/api/dashboard/kanban/cards/${cardId}/labels`, {
+      const data = await dashboardApi<{ labels?: CardLabel[], error?: string }>(`/api/dashboard/kanban/cards/${cardId}/labels`, {
         method: 'POST',
-        headers: { 'content-type': 'application/json', accept: 'application/json' },
-        body: JSON.stringify({ labelIds }),
+        body: { labelIds },
       })
-      if (!res.ok) throw new Error(`HTTP ${res.status}`)
-      const data = await res.json() as { labels?: CardLabel[], error?: string }
       if (data.error) throw new Error(data.error)
       // Canonical reconciliation.
       patchOpenCard({ labels: data.labels ?? [] })
@@ -563,13 +532,10 @@ export const kanbanStore = defineStore('kanban', () => {
     patchOpenCard({ assignees: optimistic })
 
     try {
-      const res = await fetch(`/api/dashboard/kanban/cards/${cardId}/assignees`, {
+      const data = await dashboardApi<{ assignees?: CardAssignee[], error?: string }>(`/api/dashboard/kanban/cards/${cardId}/assignees`, {
         method: 'POST',
-        headers: { 'content-type': 'application/json', accept: 'application/json' },
-        body: JSON.stringify({ userIds }),
+        body: { userIds },
       })
-      if (!res.ok) throw new Error(`HTTP ${res.status}`)
-      const data = await res.json() as { assignees?: CardAssignee[], error?: string }
       if (data.error) throw new Error(data.error)
       patchOpenCard({ assignees: data.assignees ?? [] })
       return true
@@ -588,13 +554,10 @@ export const kanbanStore = defineStore('kanban', () => {
     if (!trimmed) return false
 
     try {
-      const res = await fetch(`/api/dashboard/kanban/cards/${oc.id}/comments`, {
+      const data = await dashboardApi<{ comment?: CardComment, error?: string }>(`/api/dashboard/kanban/cards/${oc.id}/comments`, {
         method: 'POST',
-        headers: { 'content-type': 'application/json', accept: 'application/json' },
-        body: JSON.stringify({ body: trimmed }),
+        body: { body: trimmed },
       })
-      if (!res.ok) throw new Error(`HTTP ${res.status}`)
-      const data = await res.json() as { comment?: CardComment, error?: string }
       if (data.error || !data.comment) throw new Error(data.error ?? 'Comment failed')
       patchOpenCard({ comments: [...oc.comments, data.comment] })
       return true
@@ -611,8 +574,7 @@ export const kanbanStore = defineStore('kanban', () => {
     const snapshot = oc.comments
     patchOpenCard({ comments: oc.comments.filter(c => c.id !== commentId) })
     try {
-      const res = await fetch(`/api/dashboard/kanban/comments/${commentId}`, { method: 'DELETE', headers: { accept: 'application/json' } })
-      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      await dashboardApi(`/api/dashboard/kanban/comments/${commentId}`, { method: 'DELETE' })
       return true
     }
     catch (e) {
@@ -626,13 +588,10 @@ export const kanbanStore = defineStore('kanban', () => {
 
   async function createLabel(input: { boardId: number, name: string, color?: string }): Promise<LabelRecord | null> {
     try {
-      const res = await fetch('/api/dashboard/kanban/labels', {
+      const data = await dashboardApi<{ label?: LabelRecord, error?: string }>('/api/dashboard/kanban/labels', {
         method: 'POST',
-        headers: { 'content-type': 'application/json', accept: 'application/json' },
-        body: JSON.stringify(input),
+        body: input,
       })
-      if (!res.ok) throw new Error(`HTTP ${res.status}`)
-      const data = await res.json() as { label?: LabelRecord, error?: string }
       if (data.error || !data.label) throw new Error(data.error ?? 'Create failed')
       currentLabels.set([...currentLabels(), data.label])
       return data.label
@@ -661,8 +620,7 @@ export const kanbanStore = defineStore('kanban', () => {
       patchOpenCard({ labels: oc.labels.filter(l => l.id !== labelId) })
 
     try {
-      const res = await fetch(`/api/dashboard/kanban/labels/${labelId}`, { method: 'DELETE', headers: { accept: 'application/json' } })
-      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      await dashboardApi(`/api/dashboard/kanban/labels/${labelId}`, { method: 'DELETE' })
       return true
     }
     catch (e) {

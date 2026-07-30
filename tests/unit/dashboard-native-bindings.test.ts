@@ -206,4 +206,45 @@ describe('dashboard native STX bindings', () => {
     expect(queries).toContain(':for="query in visibleQueries()"')
     expect(queries).toContain('<Pagination')
   })
+
+  test('kanban uses native reactive drag, dialogs, and form models', () => {
+    const board = readFileSync(
+      resolve('storage/framework/defaults/views/dashboard/kanban/[id].stx'),
+      'utf8',
+    )
+    const index = readFileSync(
+      resolve('storage/framework/defaults/views/dashboard/kanban/index.stx'),
+      'utf8',
+    )
+    const store = readFileSync(
+      resolve('storage/framework/defaults/views/dashboard/stores/kanban.ts'),
+      'utf8',
+    )
+
+    expect(board).toContain('@dragstart.stop="beginCardDrag')
+    expect(board).toContain('@drop.prevent="dropOnColumn(col.id)"')
+    expect(board).toContain('await kanban.reorderColumns(currentBoard.id, order)')
+    expect(board).toContain('<ConfirmDialog')
+    expect(board).toContain('x-model="draftCardTitle"')
+    expect(board).toContain('x-model="commentDraft"')
+    expect(board).toContain('<StxLink to="/kanban"')
+    expect(board).not.toMatch(/\b(?:document|window)\./)
+    expect(board).not.toContain('querySelector(')
+    expect(board).not.toContain('https://esm.sh')
+    expect(board).not.toContain('<svg')
+    expect(board).not.toContain('onUnmount(')
+
+    expect(index).toContain('<Modal')
+    expect(index).toContain('@submit.prevent="submitCreate"')
+    expect(index).toContain('x-model="draftName"')
+    expect(index).toContain('x-model="draftDescription"')
+    expect(index).toContain(':to="`/kanban/${board.id}`"')
+    expect(index).not.toMatch(/\b(?:document|window)\./)
+    expect(index).not.toContain('<svg')
+
+    expect(store).toContain("import { dashboardApi } from '../../../functions/dashboard-api'")
+    expect(store).toContain("dashboardApi<{ board?: BoardSummary")
+    expect(store).toContain("{ method: 'DELETE' }")
+    expect(store).not.toContain('fetch(')
+  })
 })
