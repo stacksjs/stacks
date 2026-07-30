@@ -10,8 +10,10 @@ import SalesAnalyticsAction from './Analytics/SalesAnalyticsAction'
 import WebAnalyticsAction from './Analytics/WebAnalyticsAction'
 import BuddyChatStateAction from './Buddy/BuddyChatStateAction'
 import BuddyDashboardAction from './BuddyDashboardAction'
+import DashboardHealthAction from './DashboardHealthAction'
 import QueryDashboardAction from './Queries/QueryDashboardAction'
 import QueryIndexAction from './Queries/QueryIndexAction'
+import ServiceHealthAction from './ServiceHealthAction'
 
 describe('legacy dashboard action routes', () => {
   test('reuse the canonical Buddy state action', () => {
@@ -20,6 +22,10 @@ describe('legacy dashboard action routes', () => {
 
   test('reuse the canonical persisted query action', () => {
     expect(QueryIndexAction).toBe(QueryDashboardAction)
+  })
+
+  test('reuses native health probes for the legacy services route', () => {
+    expect(ServiceHealthAction).toBe(DashboardHealthAction)
   })
 
   test('reuses canonical analytics actions for legacy routes', () => {
