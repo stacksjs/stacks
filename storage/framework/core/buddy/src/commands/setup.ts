@@ -364,7 +364,14 @@ const DB_CONNECTION_PACKAGES: Record<string, DatabasePackage> = {
   sqlite: { name: 'sqlite.org', version: '^3.47.2' },
 }
 
-const DB_PACKAGE_NAMES = new Set(Object.values(DB_CONNECTION_PACKAGES).map(pkg => pkg.name))
+/**
+ * Every spelling a database engine can appear under in a dependency map: the
+ * pantry domain (`postgresql.org`) and the alias (`postgres`) both resolve to
+ * the same package, and the shipped config uses the alias.
+ */
+function databaseAliases(connection: string, pkg: DatabasePackage): string[] {
+  return [connection, pkg.name]
+}
 
 export function pantryDatabasePackage(connection: string): DatabasePackage | undefined {
   return DB_CONNECTION_PACKAGES[connection]
@@ -437,16 +444,27 @@ export async function optimizePantryDeps(): Promise<void> {
     // A project talks to exactly one database. Shipping the others anyway made
     // every app install a SQLite it never opens, and left the impression that
     // whichever engine appeared first was the one in use.
+    const selected = new Set(Object.entries(DB_CONNECTION_PACKAGES)
+      .filter(([, pkg]) => pkg.name === dbPackage.name)
+      .flatMap(([connection, pkg]) => databaseAliases(connection, pkg)))
+
+    const unused = new Set(Object.entries(DB_CONNECTION_PACKAGES)
+      .flatMap(([connection, pkg]) => databaseAliases(connection, pkg))
+      .filter(alias => !selected.has(alias)))
+
     for (const pkg of Object.keys(configDeps)) {
       const domain = pkg.split('/')[0]!
 
-      if (domain !== dbPackage.name && DB_PACKAGE_NAMES.has(domain)) {
+      if (unused.has(domain)) {
         log.info(`DB_CONNECTION selects ${dbPackage.name}, dropping unused ${pkg}`)
         delete configDeps[pkg]
       }
     }
 
-    const alreadyHasDb = Object.keys(configDeps).some(key => key === dbPackage.name || key.startsWith(`${dbPackage.name}/`))
+    const alreadyHasDb = Object.keys(configDeps).some((key) => {
+      const domain = key.split('/')[0]!
+      return selected.has(domain)
+    })
 
     if (!alreadyHasDb) {
       log.info(`Detected DB_CONNECTION requires ${dbPackage.name}, adding to dependencies`)

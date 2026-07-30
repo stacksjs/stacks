@@ -1380,6 +1380,25 @@ export async function generateMigrations(options: GenerateMigrationsOptions = {}
       sqlStatements = filtered.statements
     }
 
+    // An ALTER that names an enum type nothing creates cannot run, and writing
+    // it means every later `migrate` stops there. bun-query-builder qualifies an
+    // enum type as `<table>_<column>_type` when it creates the table but has
+    // emitted the bare `<column>_type` on the ALTER path, so a diff touching an
+    // existing enum column produces exactly that. Dropping those statements
+    // leaves the column as it is, which is what it already was.
+    if (result.hasChanges && sqlStatements.length > 0) {
+      const dangling = findDanglingTypeReferences(sqlStatements)
+      if (dangling.length > 0) {
+        const before = sqlStatements.length
+        sqlStatements = sqlStatements.filter(statement => !referencesUndefinedType(statement, dangling))
+        log.warn(
+          `[migration] Skipped ${before - sqlStatements.length} generated statement(s) referencing enum type(s) `
+          + `nothing creates (${dangling.slice(0, 3).join(', ')}${dangling.length > 3 ? ', …' : ''}). `
+          + 'This is a bug in the migration generator, not in your models.',
+        )
+      }
+    }
+
     if (result.hasChanges) {
       const written = persistGeneratedMigrations(sqlStatements)
       // Only announce when we actually wrote files. `hasChanges` can be
@@ -1419,6 +1438,17 @@ export async function generateMigrations(options: GenerateMigrationsOptions = {}
  * dangling reference is a guaranteed mid-migration failure rather than a
  * cosmetic problem.
  */
+
+/**
+ * Whether a statement references one of the enum types nothing creates.
+ *
+ * Matches on the quoted name so a column or table that merely contains the same
+ * word is not caught.
+ */
+export function referencesUndefinedType(statement: string, dangling: string[]): boolean {
+  return dangling.some(name => statement.includes(`"${name}"`))
+}
+
 export function findDanglingTypeReferences(statements: string[]): string[] {
   const defined = new Set<string>()
   const referenced = new Set<string>()
@@ -1940,3 +1970,4 @@ export interface MigrationResult {
 }
 
 export type { MigrationResult as MigrationResultType }
+
