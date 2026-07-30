@@ -145,6 +145,29 @@ interface StxConfig {
 - Reactivity system (ref, computed, watch)
 - Component composition and lifecycle
 - Dependency injection (provide/inject)
+- DOM update scheduling with the browser-auto-imported `nextTick()`
+
+### Template refs after structural updates
+
+Use `useRef()` with `nextTick()` when an element is inserted by `:if`, a modal, or another structural directive and must be focused or measured immediately afterward:
+
+```ts
+const open = state(false)
+const searchInput = useRef('searchInput')
+
+function showSearch(): void {
+  open.set(true)
+  void nextTick(() => searchInput.current?.focus())
+}
+```
+
+```html
+<template :if="open()">
+  <input ref="searchInput" type="search">
+</template>
+```
+
+`nextTick()` runs after the current synchronous signal and effect flush. Prefer it over `querySelector`, manual DOM polling, or `requestAnimationFrame` when the task is waiting for STX to materialize reactive markup.
 
 ### Rendering
 - **SSR** — Server-Side Rendering
@@ -203,6 +226,7 @@ await addLayout('admin', { nav: true, footer: true })
 - **Auto-imports** — browser auto-imports defined in `storage/framework/browser-auto-imports.json`
 - **`storage/framework/stx/`** — stx build cache and the generated route manifest. `config/ui.ts` sets stx's `stateDir` here, so nothing lands in the project root. Gitignored; safe to delete
 - **Reactivity is signal-based** - use callable `state()` and `derived()` signals, not Vue-style `ref()` or `.value`
+- **Structural DOM timing** - use `nextTick()` with `useRef()` after opening reactive markup
 - **Crosswind for styling** — use utility classes, not inline styles
 - **Script block restrictions** — only stx-compatible code (signals, composables, directives), no vanilla DOM APIs
 - **Components go in `resources/`** — not in `app/` or `storage/`
