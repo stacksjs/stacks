@@ -416,14 +416,16 @@ void load()
         <span aria-hidden="true" class="h-4 w-4 i-hugeicons-add-01"></span>
         Create
       </Button>
-      <button
-        type="button"
+      <Button
+        variant="secondary"
+        size="sm"
+        interaction="toggle"
+        :pressed="showFilters()"
         @click="showFilters.set(!showFilters())"
-        class="inline-flex gap-1.5 items-center px-3 h-8 font-medium text-[13px] text-neutral-700 dark:text-neutral-200 bg-white dark:bg-white/10 hover:bg-neutral-50 dark:hover:bg-white/15 border border-black/10 rounded-lg dark:border-white/15 transition-colors"
       >
         <span class="h-4 w-4 i-hugeicons-filter"></span>
         <span :text="filterLabel()"></span>
-      </button>
+      </Button>
     </div>
   </div>
 
@@ -443,13 +445,9 @@ void load()
     </div>
 
     <div :if="activeFilterCount() > 0 || search()" class="flex items-center">
-      <button
-        type="button"
-        @click="clearFilters()"
-        class="px-2.5 h-8 text-[13px] text-neutral-600 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white transition-colors"
-      >
+      <Button variant="ghost" size="sm" @click="clearFilters()">
         Clear
-      </button>
+      </Button>
     </div>
 
     <div class="flex gap-2 items-center ml-auto text-[12px] text-neutral-500 dark:text-neutral-400">
@@ -551,12 +549,12 @@ void load()
               </template>
               <td :if="canManageRows()" class="px-3 py-2 text-right">
                 <div class="flex gap-1 items-center justify-end">
-                  <button :if="writeCapabilities().update" type="button" @click="startEdit(row)" class="p-1.5 text-neutral-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-500/10 rounded-md transition-colors" title="Edit">
+                  <Button :if="writeCapabilities().update" variant="ghost" size="sm" iconOnly :ariaLabel="'Edit ' + modelName() + ' ' + row.id" @click="startEdit(row)">
                     <span class="h-4 w-4 i-hugeicons-edit-02"></span>
-                  </button>
-                  <button :if="writeCapabilities().destroy" type="button" @click="confirmingDelete.set(row)" class="p-1.5 text-neutral-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-md transition-colors" title="Delete">
-                    <span class="h-4 w-4 i-hugeicons-delete-02"></span>
-                  </button>
+                  </Button>
+                  <Button :if="writeCapabilities().destroy" variant="ghost" size="sm" iconOnly :ariaLabel="'Delete ' + modelName() + ' ' + row.id" @click="confirmingDelete.set(row)">
+                    <span class="h-4 w-4 text-red-500 i-hugeicons-delete-02"></span>
+                  </Button>
                 </div>
               </td>
             </tr>
@@ -568,31 +566,11 @@ void load()
     <div class="flex flex-wrap gap-3 items-center justify-between px-3 py-2 bg-neutral-50 dark:bg-white/5 border-black/5 border-t dark:border-white/10">
       <p class="text-[12px] text-neutral-500 dark:text-neutral-400" :text="rangeLabel()"></p>
       <div class="flex gap-1 items-center">
-        <button
-          type="button"
-          @click="goToPage(1)"
-          :disabled="page() === 1"
-          class="px-2 h-7 text-[12px] text-neutral-600 dark:text-neutral-300 bg-white dark:bg-white/10 hover:bg-neutral-100 dark:hover:bg-white/15 border border-black/10 rounded-md dark:border-white/15 disabled:opacity-40 transition-colors disabled:pointer-events-none"
-        >First</button>
-        <button
-          type="button"
-          @click="goToPage(page() - 1)"
-          :disabled="page() === 1"
-          class="px-2 h-7 text-[12px] text-neutral-600 dark:text-neutral-300 bg-white dark:bg-white/10 hover:bg-neutral-100 dark:hover:bg-white/15 border border-black/10 rounded-md dark:border-white/15 disabled:opacity-40 transition-colors disabled:pointer-events-none"
-        >Previous</button>
+        <Button variant="secondary" size="xs" :disabled="page() === 1" @click="goToPage(1)">First</Button>
+        <Button variant="secondary" size="xs" :disabled="page() === 1" @click="goToPage(page() - 1)">Previous</Button>
         <span class="px-2 tabular-nums text-[12px] text-neutral-500 dark:text-neutral-400">{{ page() }} / {{ lastPage() }}</span>
-        <button
-          type="button"
-          @click="goToPage(page() + 1)"
-          :disabled="page() >= lastPage()"
-          class="px-2 h-7 text-[12px] text-neutral-600 dark:text-neutral-300 bg-white dark:bg-white/10 hover:bg-neutral-100 dark:hover:bg-white/15 border border-black/10 rounded-md dark:border-white/15 disabled:opacity-40 transition-colors disabled:pointer-events-none"
-        >Next</button>
-        <button
-          type="button"
-          @click="goToPage(lastPage())"
-          :disabled="page() >= lastPage()"
-          class="px-2 h-7 text-[12px] text-neutral-600 dark:text-neutral-300 bg-white dark:bg-white/10 hover:bg-neutral-100 dark:hover:bg-white/15 border border-black/10 rounded-md dark:border-white/15 disabled:opacity-40 transition-colors disabled:pointer-events-none"
-        >Last</button>
+        <Button variant="secondary" size="xs" :disabled="page() >= lastPage()" @click="goToPage(page() + 1)">Next</Button>
+        <Button variant="secondary" size="xs" :disabled="page() >= lastPage()" @click="goToPage(lastPage())">Last</Button>
       </div>
     </div>
   </div>
@@ -608,9 +586,9 @@ void load()
     >
       <div class="flex items-center justify-between px-4 py-3 border-b border-black/5 dark:border-white/10">
         <h2 id="model-edit-title" class="font-semibold text-[14px] text-neutral-900 dark:text-white">Edit <span :text="modelName()"></span></h2>
-        <button type="button" @click="editing.set(null)" class="p-1 text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200" aria-label="Close">
+        <Button variant="ghost" size="sm" iconOnly ariaLabel="Close record editor" @click="editing.set(null)">
           <span class="h-4 w-4 i-hugeicons-cancel-01"></span>
-        </button>
+        </Button>
       </div>
 
       <div class="overflow-y-auto flex-1 p-4 space-y-3">

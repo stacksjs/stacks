@@ -33,6 +33,7 @@ describe('dashboard button contract', () => {
       'storage/framework/defaults/resources/components/Dashboard/Email/InboxDashboard.stx',
       'storage/framework/defaults/resources/components/Dashboard/Email/EmailActivityDashboard.stx',
       'storage/framework/defaults/views/dashboard/settings/appearance.stx',
+      'storage/framework/defaults/views/dashboard/ci/index.stx',
     ]
 
     for (const file of pressedStateFiles) {
@@ -241,6 +242,32 @@ describe('dashboard button contract', () => {
     expect(appearanceButtons.every(button => button.includes('appearance-option'))).toBe(true)
     expect(layout).toContain('<Button variant="ghost" size="xs" iconOnly ariaLabel="Dismiss notification"')
     expect(layout).not.toMatch(/<button\b/)
+  })
+
+  test('keeps CI tabs and filters semantic while sharing drawer actions', () => {
+    const source = readFileSync(
+      resolve('storage/framework/defaults/views/dashboard/ci/index.stx'),
+      'utf8',
+    )
+    const nativeButtons = [...source.matchAll(/<button\b[^>]*>/g)].map(match => match[0])
+
+    expect(source).toContain('<Button variant="ghost" size="sm" iconOnly ariaLabel="Close run history"')
+    expect(source).toContain(':aria-selected="String(activeTab() === org)"')
+    expect(nativeButtons.every(button => button.includes('tabClass(') || button.includes('filterClass('))).toBe(true)
+  })
+
+  test('keeps model sorting semantic while sharing record actions', () => {
+    const source = readFileSync(
+      resolve('storage/framework/defaults/views/dashboard/models/[model].stx'),
+      'utf8',
+    )
+    const nativeButtons = [...source.matchAll(/<button\b[^>]*>/g)].map(match => match[0])
+
+    expect((source.match(/<Button/g) || []).length).toBeGreaterThanOrEqual(12)
+    expect(source).toContain('interaction="toggle"')
+    expect(source).toContain('@click="goToPage(page() + 1)"')
+    expect(source).toContain('@click="goToPage(lastPage())"')
+    expect(nativeButtons.every(button => button.includes('headerClass(column)'))).toBe(true)
   })
 
   test('keeps file navigation semantic while sharing all file actions', () => {

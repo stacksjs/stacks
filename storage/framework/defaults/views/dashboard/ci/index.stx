@@ -223,9 +223,12 @@
   <!-- Loaded state -->
   <div :if="!loading && !error && !disabled">
     <!-- Org tabs -->
-    <div class="flex overflow-x-auto gap-1 items-center mb-4 border-b border-zinc-200 dark:border-zinc-800">
+    <div class="flex overflow-x-auto gap-1 items-center mb-4 border-b border-zinc-200 dark:border-zinc-800" role="tablist" aria-label="Organizations">
       <button
         :for="org in orgs"
+        type="button"
+        role="tab"
+        :aria-selected="String(activeTab() === org)"
         @click="ci.setActiveTab(org)"
         :class="tabClass(org)"
         :text="org"
@@ -233,11 +236,11 @@
     </div>
 
     <!-- Status-filter chips -->
-    <div class="flex flex-wrap gap-2 mb-4">
-      <button @click="ci.setStatusFilter('all')" :class="filterClass('all')">All</button>
-      <button @click="ci.setStatusFilter('passing')" :class="filterClass('passing')">Passing</button>
-      <button @click="ci.setStatusFilter('failing')" :class="filterClass('failing')">Failing</button>
-      <button @click="ci.setStatusFilter('pending')" :class="filterClass('pending')">Pending</button>
+    <div class="flex flex-wrap gap-2 mb-4" role="group" aria-label="Status filter">
+      <button type="button" :aria-pressed="String(statusFilter() === 'all')" @click="ci.setStatusFilter('all')" :class="filterClass('all')">All</button>
+      <button type="button" :aria-pressed="String(statusFilter() === 'passing')" @click="ci.setStatusFilter('passing')" :class="filterClass('passing')">Passing</button>
+      <button type="button" :aria-pressed="String(statusFilter() === 'failing')" @click="ci.setStatusFilter('failing')" :class="filterClass('failing')">Failing</button>
+      <button type="button" :aria-pressed="String(statusFilter() === 'pending')" @click="ci.setStatusFilter('pending')" :class="filterClass('pending')">Pending</button>
     </div>
 
     <!-- Summary line + runner sparkline -->
@@ -347,13 +350,9 @@
           <p class="text-xs text-zinc-500 tracking-wide uppercase">Run history</p>
           <h3 class="font-semibold text-lg text-zinc-900 truncate dark:text-zinc-100" :text="drilldownTarget().fullName"></h3>
         </div>
-        <button
-          @click="ci.closeDrilldown()"
-          class="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
-          title="Close"
-        >
+        <Button variant="ghost" size="sm" iconOnly ariaLabel="Close run history" @click="ci.closeDrilldown()">
           <span aria-hidden="true" class="h-5 w-5 i-hugeicons-cancel-01"></span>
-        </button>
+        </Button>
       </div>
 
       <!-- Error -->
