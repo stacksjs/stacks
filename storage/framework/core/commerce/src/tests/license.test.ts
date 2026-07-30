@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from 'bun:test'
 import { refreshDatabase } from './setup'
 import { bulkDestroy, bulkSoftDelete } from '../shippings/license-keys/destroy'
-import { bulkStore } from '../shippings/license-keys/store'
+import { bulkStore, store } from '../shippings/license-keys/store'
 
 beforeEach(async () => {
   await refreshDatabase()
@@ -12,6 +12,19 @@ describe('License Key Module', () => {
     it('should return 0 when trying to bulk store an empty array', async () => {
       const count = await bulkStore([])
       expect(count).toBe(0)
+    })
+
+    it('returns an actionable error for duplicate keys', async () => {
+      const payload = {
+        key: 'ABCD-EFGH-JKLM-NPQR-STUV',
+        template: 'Standard License' as const,
+        expiryDate: '2027-07-29 12:00:00',
+        status: 'unassigned' as const,
+      }
+
+      await store(payload)
+
+      await expect(store(payload)).rejects.toThrow('A license key with this value already exists.')
     })
   })
 

@@ -34,6 +34,8 @@ export async function update(id: number, data: LicenseKeyUpdate): Promise<Licens
   }
   catch (error) {
     if (error instanceof Error) {
+      if (error.message.includes('UNIQUE constraint failed: license_keys.key'))
+        throw new TypeError('A license key with this value already exists.')
       throw new TypeError(`Failed to update license key: ${error.message}`)
     }
 

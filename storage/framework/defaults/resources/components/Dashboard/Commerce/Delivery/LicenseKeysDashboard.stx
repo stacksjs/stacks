@@ -1,0 +1,284 @@
+<script client>
+import { dashboardApi } from '../../../../../functions/dashboard-api'
+import { pushToast } from '../../../../../functions/toasts'
+
+type LicenseKeyStatus = 'active' | 'inactive' | 'unassigned'
+
+interface RelatedSummary {
+  id: number
+  label: string
+  detail?: string
+}
+
+interface LicenseKeyOptions {
+  customers: RelatedSummary[]
+  products: RelatedSummary[]
+  orders: RelatedSummary[]
+}
+
+interface LicenseKeyRecord {
+  id: number
+  key: string
+  template: string
+  customer_id?: number | null
+  product_id?: number | null
+  order_id?: number | null
+  expiry_date: string
+  created_at: string
+  status: LicenseKeyStatus
+  customer?: RelatedSummary | null
+  product?: RelatedSummary | null
+  order?: RelatedSummary | null
+}
+
+interface LicenseKeyPayload {
+  key: string
+  template: string
+  customer_id: number | null
+  product_id: number | null
+  order_id: number | null
+  expiry_date: string
+  status: LicenseKeyStatus
+}
+
+const emptyOptions: LicenseKeyOptions = { customers: [], products: [], orders: [] }
+const records = state<LicenseKeyRecord[]>([])
+const options = state<LicenseKeyOptions>(emptyOptions)
+const loading = state(true)
+const loadError = state('')
+const search = state('')
+const page = state(1)
+const perPage = state(10)
+const editorOpen = state(false)
+const editorMode = state<'create' | 'edit'>('create')
+const editing = state<LicenseKeyRecord | null>(null)
+const saving = state(false)
+const editorError = state('')
+const deleting = state<LicenseKeyRecord | null>(null)
+const deleteBusy = state(false)
+const deleteError = state('')
+
+function optionFor(items: RelatedSummary[], id?: number | null): RelatedSummary | null {
+  return id ? items.find(item => item.id === id) || null : null
+}
+
+function withRelationships(record: LicenseKeyRecord): LicenseKeyRecord {
+  const currentOptions = options()
+  return {
+    ...record,
+    customer: optionFor(currentOptions.customers, record.customer_id),
+    product: optionFor(currentOptions.products, record.product_id),
+    order: optionFor(currentOptions.orders, record.order_id),
+  }
+}
+
+function dateTime(value: string): number {
+  return new Date(value.replace(' ', 'T')).getTime()
+}
+
+function filteredRecords(): LicenseKeyRecord[] {
+  const query = search().trim().toLowerCase()
+  if (!query)
+    return records()
+  return records().filter(record => [
+    record.key,
+    record.template,
+    record.status,
+    record.customer?.label,
+    record.customer?.detail,
+    record.product?.label,
+    record.order?.label,
+  ].some(value => String(value || '').toLowerCase().includes(query)))
+}
+
+function paginatedRecords(): LicenseKeyRecord[] {
+  const start = (page() - 1) * perPage()
+  return filteredRecords().slice(start, start + perPage())
+}
+
+function metricCards(): Array<{ label: string, value: string, detail: string }> {
+  const expiryCutoff = Date.now() + (30 * 24 * 60 * 60 * 1000)
+  const expiring = records().filter((record) => {
+    const expiry = dateTime(record.expiry_date)
+    return expiry >= Date.now() && expiry <= expiryCutoff
+  }).length
+  return [
+    { label: 'License keys', value: records().length.toLocaleString(), detail: 'Unique persisted keys' },
+    { label: 'Active', value: records().filter(record => record.status === 'active').length.toLocaleString(), detail: 'Currently enabled' },
+    { label: 'Assigned', value: records().filter(record => record.customer_id || record.product_id || record.order_id).length.toLocaleString(), detail: 'Linked to commerce records' },
+    { label: 'Expiring in 30d', value: expiring.toLocaleString(), detail: 'Future expiry within 30 days' },
+  ]
+}
+
+async function loadKeys(): Promise<void> {
+  loading.set(true)
+  loadError.set('')
+  try {
+    const [keyData, optionData] = await Promise.all([
+      dashboardApi<LicenseKeyRecord[]>('/api/dashboard/commerce/license-keys'),
+      dashboardApi<LicenseKeyOptions>('/api/dashboard/commerce/license-key-options'),
+    ])
+    if (!Array.isArray(keyData) || !Array.isArray(optionData?.customers) || !Array.isArray(optionData?.products) || !Array.isArray(optionData?.orders))
+      throw new TypeError('License key resources were not returned in the expected shape.')
+    options.set(optionData)
+    records.set(keyData.map(withRelationships))
+    const lastPage = Math.max(1, Math.ceil(filteredRecords().length / perPage()))
+    if (page() > lastPage)
+      page.set(lastPage)
+  }
+  catch (error) {
+    loadError.set(error instanceof Error ? error.message : String(error))
+    pushToast('error', 'Could not load license keys', { detail: loadError() })
+  }
+  finally {
+    loading.set(false)
+  }
+}
+
+function handleSearch(value: string): void {
+  search.set(value)
+  page.set(1)
+}
+
+function openCreate(): void {
+  editing.set(null)
+  editorMode.set('create')
+  editorError.set('')
+  editorOpen.set(true)
+}
+
+function openEdit(record: LicenseKeyRecord): void {
+  editing.set(record)
+  editorMode.set('edit')
+  editorError.set('')
+  editorOpen.set(true)
+}
+
+function closeEditor(): void {
+  if (saving())
+    return
+  editorOpen.set(false)
+  editing.set(null)
+  editorError.set('')
+}
+
+function setEditorError(message: string): void {
+  editorError.set(message)
+}
+
+async function saveKey(payload: LicenseKeyPayload): Promise<void> {
+  saving.set(true)
+  editorError.set('')
+  try {
+    const current = editing()
+    const updated = await dashboardApi<LicenseKeyRecord>(
+      current
+        ? `/api/dashboard/commerce/license-keys/${current.id}`
+        : '/api/dashboard/commerce/license-keys',
+      {
+        method: current ? 'PATCH' : 'POST',
+        body: payload,
+      },
+    )
+    const hydrated = withRelationships(updated)
+    if (current) {
+      records.set(records().map(record => record.id === current.id ? hydrated : record))
+    }
+    else {
+      const nextRecords = [...records(), hydrated]
+      records.set(nextRecords)
+      page.set(Math.max(1, Math.ceil(nextRecords.length / perPage())))
+    }
+    editorOpen.set(false)
+    editing.set(null)
+    pushToast('success', current ? 'License key updated' : 'License key added', { detail: hydrated.key })
+  }
+  catch (error) {
+    editorError.set(error instanceof Error ? error.message : String(error))
+  }
+  finally {
+    saving.set(false)
+  }
+}
+
+function requestDelete(record: LicenseKeyRecord): void {
+  deleting.set(record)
+  deleteError.set('')
+}
+
+function closeDelete(): void {
+  if (deleteBusy())
+    return
+  deleting.set(null)
+  deleteError.set('')
+}
+
+async function confirmDelete(): Promise<void> {
+  const current = deleting()
+  if (!current)
+    return
+  deleteBusy.set(true)
+  deleteError.set('')
+  try {
+    await dashboardApi(`/api/dashboard/commerce/license-keys/${current.id}`, {
+      method: 'DELETE',
+    })
+    records.set(records().filter(record => record.id !== current.id))
+    deleting.set(null)
+    const lastPage = Math.max(1, Math.ceil(filteredRecords().length / perPage()))
+    if (page() > lastPage)
+      page.set(lastPage)
+    pushToast('success', 'License key deleted', { detail: current.key })
+  }
+  catch (error) {
+    deleteError.set(error instanceof Error ? error.message : String(error))
+  }
+  finally {
+    deleteBusy.set(false)
+  }
+}
+
+function goToPage(value: number): void {
+  page.set(value)
+}
+
+onMount(() => {
+  void loadKeys()
+})
+</script>
+
+<div class="space-y-6">
+  <TabNavigation model-value="license" />
+
+  <header class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+    <div>
+      <h1 class="font-bold text-2xl text-gray-900 dark:text-white">License keys</h1>
+      <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Generate unique software licenses and manage their commerce assignments.</p>
+    </div>
+    <div class="flex gap-2">
+      <button type="button" :disabled="loading()" class="inline-flex items-center px-3 py-2 font-semibold text-gray-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700 disabled:opacity-50" @click="loadKeys()"><span :class="'mr-2 h-4 w-4 ' + (loading() ? 'animate-spin i-hugeicons-loading-03' : 'i-hugeicons-refresh')"></span>Refresh</button>
+      <button type="button" :disabled="loading()" class="inline-flex items-center px-3 py-2 font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md disabled:opacity-50" @click="openCreate()"><span class="mr-2 h-4 w-4 i-hugeicons-add-01"></span>Add key</button>
+    </div>
+  </header>
+
+  <div :if="loadError()" class="flex gap-4 items-center justify-between p-4 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900"><span>{{ loadError() }}</span><button type="button" class="font-semibold underline" @click="loadKeys()">Retry</button></div>
+
+  <section aria-label="License key metrics" class="grid gap-3 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
+    <template :for="item in metricCards()" :key="item.label"><article class="p-4 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700"><p class="text-gray-500 text-xs dark:text-neutral-400">{{ item.label }}</p><p class="mt-2 font-semibold text-2xl text-gray-900 dark:text-white">{{ item.value }}</p><p class="mt-1 text-gray-400 text-xs dark:text-neutral-500">{{ item.detail }}</p></article></template>
+  </section>
+
+  <section class="overflow-hidden bg-white dark:bg-neutral-800 border border-gray-200 rounded-xl dark:border-neutral-700">
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between px-4 py-4 border-b border-gray-200 dark:border-neutral-700">
+      <div><h2 class="font-semibold text-gray-900 dark:text-white">Key inventory</h2><p class="mt-0.5 text-gray-500 text-xs dark:text-neutral-400">{{ filteredRecords().length }} matching records</p></div>
+      <SearchFilter placeholder="Search license keys" class="w-full sm:w-80" @search="handleSearch" />
+    </div>
+    <div :if="loading()" class="flex items-center justify-center py-24 text-gray-500 text-sm dark:text-neutral-400"><span class="mr-2 h-4 w-4 animate-spin i-hugeicons-loading-03"></span>Loading license keys</div>
+    <LicenseKeysTable :if="!loading()" :license-keys="paginatedRecords()" @edit="openEdit" @delete="requestDelete" />
+    <div :if="!loading()" class="px-4 py-3 bg-gray-50 dark:bg-neutral-900/50 border-gray-200 border-t dark:border-neutral-700">
+      <DeliveryPagination :current-page="page()" :total-items="filteredRecords().length" :items-per-page="perPage()" @select="goToPage" />
+    </div>
+  </section>
+</div>
+
+<LicenseKeyDialog :open="editorOpen()" :mode="editorMode()" :record="editing()" :options="options()" :busy="saving()" :error="editorError()" @submit="saveKey" @invalid="setEditorError" @close="closeEditor()" />
+<LicenseKeyDeleteDialog :open="Boolean(deleting())" :record="deleting()" :busy="deleteBusy()" :error="deleteError()" @confirm="confirmDelete()" @close="closeDelete()" />

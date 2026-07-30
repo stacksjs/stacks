@@ -68,7 +68,7 @@ function statusClass(status: LicenseKeyStatus): string {
       </tr>
     </thead>
     <tbody class="bg-white dark:bg-neutral-800 divide-stone-100 divide-y dark:divide-neutral-700">
-      <template :for="licenseKey in licenseKeys">
+      <template :for="licenseKey in licenseKeys" :key="licenseKey.id">
         <tr class="hover:bg-stone-50/50 dark:hover:bg-neutral-700/50 transition-colors">
           <td class="pl-6 pr-3 py-3.5 font-medium font-mono text-sm text-stone-800 whitespace-nowrap dark:text-white">
             {{ licenseKey.key }}
@@ -103,7 +103,7 @@ function statusClass(status: LicenseKeyStatus): string {
             <button
               type="button"
               @click="emit('edit', licenseKey)"
-              :aria-label="'Edit license key ' + licenseKey.key"
+              :aria-label="'Edit license key ' + licenseKey.key + ', record ' + licenseKey.id"
               class="mr-1 p-2 text-stone-400 hover:text-blue-700 dark:hover:text-blue-300 rounded-md transition-colors"
             >
               <span class="block h-5 w-5 i-hugeicons-edit-01"></span>
@@ -111,7 +111,7 @@ function statusClass(status: LicenseKeyStatus): string {
             <button
               type="button"
               @click="emit('delete', licenseKey)"
-              :aria-label="'Delete license key ' + licenseKey.key"
+              :aria-label="'Delete license key ' + licenseKey.key + ', record ' + licenseKey.id"
               class="p-2 text-stone-400 hover:text-red-700 dark:hover:text-red-300 rounded-md transition-colors"
             >
               <span class="block h-5 w-5 i-hugeicons-waste"></span>

@@ -37,6 +37,8 @@ export async function store(data: NewLicenseKey): Promise<LicenseKeyJsonResponse
   }
   catch (error) {
     if (error instanceof Error) {
+      if (error.message.includes('UNIQUE constraint failed: license_keys.key'))
+        throw new TypeError('A license key with this value already exists.')
       throw new TypeError(`Failed to create license key: ${error.message}`)
     }
 
