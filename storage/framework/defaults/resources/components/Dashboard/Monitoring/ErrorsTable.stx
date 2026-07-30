@@ -141,23 +141,23 @@ function truncateMessage(message, maxLength = 60) {
           <td class="relative pl-3 pr-4 py-4 sm:pr-6 font-medium text-right text-sm whitespace-nowrap">
             <div class="flex items-center justify-end space-x-2">
               @if(error.status != 'resolved')
-                <button type="button" title="Mark as resolved" class="text-green-400 dark:text-green-400 hover:text-green-600 dark:hover:text-green-300 duration-150 transition-colors" data-action="resolve" data-error-type="{{ error.type }}" data-error-message="{{ error.message }}">
+                <Button variant="success" size="sm" iconOnly ariaLabel="Mark as resolved" dataAction="resolve" dataErrorType="{{ error.type }}" dataErrorMessage="{{ error.message }}">
                   <div class="h-5 w-5 i-hugeicons-checkmark-circle-02"></div>
-                </button>
+                </Button>
               @endif
               @if(error.status == 'resolved')
-                <button type="button" title="Reopen" class="text-yellow-400 dark:text-yellow-400 hover:text-yellow-600 dark:hover:text-yellow-300 duration-150 transition-colors" data-action="unresolve" data-error-type="{{ error.type }}" data-error-message="{{ error.message }}">
+                <Button variant="warning" size="sm" iconOnly ariaLabel="Reopen" dataAction="unresolve" dataErrorType="{{ error.type }}" dataErrorMessage="{{ error.message }}">
                   <div class="h-5 w-5 i-hugeicons-refresh"></div>
-                </button>
+                </Button>
               @endif
               @if(error.status != 'ignored')
-                <button type="button" title="Ignore" class="text-gray-400 dark:text-neutral-400 hover:text-gray-600 dark:hover:text-gray-300 duration-150 transition-colors" data-action="ignore" data-error-type="{{ error.type }}" data-error-message="{{ error.message }}">
+                <Button variant="secondary" size="sm" iconOnly ariaLabel="Ignore" dataAction="ignore" dataErrorType="{{ error.type }}" dataErrorMessage="{{ error.message }}">
                   <div class="h-5 w-5 i-hugeicons-eye-off"></div>
-                </button>
+                </Button>
               @endif
-              <button type="button" title="Delete" class="text-red-400 dark:text-red-400 hover:text-red-600 dark:hover:text-red-300 duration-150 transition-colors" data-action="delete" data-error-type="{{ error.type }}" data-error-message="{{ error.message }}">
+              <Button variant="danger" size="sm" iconOnly ariaLabel="Delete" dataAction="delete" dataErrorType="{{ error.type }}" dataErrorMessage="{{ error.message }}">
                 <div class="h-5 w-5 i-hugeicons-waste"></div>
-              </button>
+              </Button>
             </div>
           </td>
         </tr>

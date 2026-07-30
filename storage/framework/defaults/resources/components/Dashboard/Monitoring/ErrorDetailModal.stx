@@ -101,35 +101,35 @@ function formatTimeAgo(dateString) {
               </span>
             </div>
           </div>
-          <button type="button" class="text-gray-400 hover:text-gray-500 rounded-md focus:outline-none" data-action="close">
+          <Button variant="ghost" iconOnly ariaLabel="Close error details" dataAction="close">
             <div class="h-6 w-6 i-hugeicons-cancel-01"></div>
-          </button>
+          </Button>
         </div>
 
         <!-- Action buttons -->
         <div class="flex gap-2 mt-4">
           @if(error.status != 'resolved')
-            <button type="button" class="inline-flex items-center px-3 py-2 font-semibold text-sm text-white bg-green-600 hover:bg-green-500 rounded-md shadow-sm" data-action="resolve">
-              <div class="mr-1 h-4 w-4 i-hugeicons-checkmark-circle-02"></div>
+            <Button variant="success" dataAction="resolve">
+              <div class="h-4 w-4 i-hugeicons-checkmark-circle-02"></div>
               Resolve
-            </button>
+            </Button>
           @endif
           @if(error.status == 'resolved')
-            <button type="button" class="inline-flex items-center px-3 py-2 font-semibold text-sm text-white bg-yellow-600 hover:bg-yellow-500 rounded-md shadow-sm" data-action="unresolve">
-              <div class="mr-1 h-4 w-4 i-hugeicons-refresh"></div>
+            <Button variant="warning" dataAction="unresolve">
+              <div class="h-4 w-4 i-hugeicons-refresh"></div>
               Reopen
-            </button>
+            </Button>
           @endif
           @if(error.status != 'ignored')
-            <button type="button" class="inline-flex items-center px-3 py-2 font-semibold text-sm text-white bg-gray-600 hover:bg-gray-500 rounded-md shadow-sm" data-action="ignore">
-              <div class="mr-1 h-4 w-4 i-hugeicons-eye-off"></div>
+            <Button variant="secondary" dataAction="ignore">
+              <div class="h-4 w-4 i-hugeicons-eye-off"></div>
               Ignore
-            </button>
+            </Button>
           @endif
-          <button type="button" class="inline-flex items-center px-3 py-2 font-semibold text-sm text-white bg-red-600 hover:bg-red-500 rounded-md shadow-sm" data-action="delete">
-            <div class="mr-1 h-4 w-4 i-hugeicons-waste"></div>
+          <Button variant="danger" dataAction="delete">
+            <div class="h-4 w-4 i-hugeicons-waste"></div>
             Delete
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -217,9 +217,9 @@ function formatTimeAgo(dateString) {
       <!-- Footer -->
       <div class="px-6 py-4 border-gray-200 border-t dark:border-neutral-700">
         <div class="flex justify-end">
-          <button type="button" class="px-3 py-2 font-semibold text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-600 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 shadow-sm" data-action="close">
+          <Button variant="secondary" dataAction="close">
             Close
-          </button>
+          </Button>
         </div>
       </div>
     </div>

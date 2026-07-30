@@ -16,6 +16,8 @@ describe('dashboard button contract', () => {
     expect(button).toContain("tag?: 'button' | 'a'")
     expect(button).toContain("const liveDownload = useReactiveProp('download', '')")
     expect(button).toContain("const liveDataAction = useReactiveProp('dataAction', '')")
+    expect(button).toContain("const liveDataErrorMessage = useReactiveProp('dataErrorMessage', '')")
+    expect(button).toContain("const liveDataErrorType = useReactiveProp('dataErrorType', '')")
     expect(button).toContain("const liveDataMethodId = useReactiveProp('dataMethodId', '')")
     expect(button).toContain("const livePressed = useReactiveProp('pressed', false)")
     expect(button).toContain(':aria-pressed="String(livePressed())"')
@@ -209,6 +211,22 @@ describe('dashboard button contract', () => {
     expect(nativeButtons.every(button =>
       button.includes("nextSort('")
       || button.includes("emit('row-click', error)"),
+    )).toBe(true)
+
+    const legacySources = [
+      'ErrorsTable.stx',
+      'ErrorDetailModal.stx',
+    ].map(file => readFileSync(
+      resolve('storage/framework/defaults/resources/components/Dashboard/Monitoring', file),
+      'utf8',
+    ))
+
+    expect(legacySources.every(legacySource => legacySource.includes('<Button'))).toBe(true)
+    expect(legacySources.every(legacySource =>
+      [...legacySource.matchAll(/<button\b[^>]*>/g)].every(match =>
+        match[0].includes('data-action="sort"')
+        || match[0].includes('data-action="tab"'),
+      ),
     )).toBe(true)
   })
 })
