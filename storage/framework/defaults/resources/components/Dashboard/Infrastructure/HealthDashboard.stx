@@ -1,0 +1,234 @@
+<script client>
+import { dashboardApi } from '../../../../functions/dashboard-api'
+
+interface HealthCheck {
+  name: string
+  ok: boolean
+  ms: number
+  message: string
+}
+
+interface RuntimeHealth {
+  bunVersion: string
+  nodeVersion: string
+  platform: string
+  architecture: string
+  uptimeSeconds: number
+  residentMemoryBytes: number
+  heapUsedBytes: number
+}
+
+interface HealthResponse {
+  status: 'healthy' | 'degraded'
+  checks: Record<string, { ok: boolean, ms: number, message?: string }>
+  timestamp: number
+  durationMs: number
+  runtime: RuntimeHealth
+}
+
+const EMPTY_RUNTIME: RuntimeHealth = {
+  bunVersion: '',
+  nodeVersion: '',
+  platform: '',
+  architecture: '',
+  uptimeSeconds: 0,
+  residentMemoryBytes: 0,
+  heapUsedBytes: 0,
+}
+
+const status = state<'healthy' | 'degraded' | 'unknown'>('unknown')
+const checks = state<HealthCheck[]>([])
+const checkedAt = state(0)
+const durationMs = state(0)
+const runtime = state<RuntimeHealth>({ ...EMPTY_RUNTIME })
+const loading = state(true)
+const loadError = state('')
+let loadVersion = 0
+
+const passingCount = derived(() => checks().filter(check => check.ok).length)
+const overallLabel = derived(() => {
+  if (loading())
+    return 'checking'
+  if (status() === 'healthy')
+    return 'healthy'
+  if (status() === 'degraded')
+    return 'degraded'
+  return 'unknown'
+})
+const overallClass = derived(() => {
+  const base = 'inline-flex items-center gap-1.5 px-2 py-1 font-semibold text-[11px] rounded-full'
+  if (status() === 'healthy')
+    return `${base} text-green-700 dark:text-green-300 bg-green-50 dark:bg-green-950/40`
+  if (status() === 'degraded')
+    return `${base} text-red-700 dark:text-red-300 bg-red-50 dark:bg-red-950/40`
+  return `${base} text-neutral-600 dark:text-neutral-300 bg-neutral-100 dark:bg-neutral-800`
+})
+
+function formatBytes(value: number): string {
+  if (!Number.isFinite(value) || value <= 0)
+    return 'Not sampled'
+  const units = ['B', 'KB', 'MB', 'GB']
+  let amount = value
+  let unit = 0
+  while (amount >= 1024 && unit < units.length - 1) {
+    amount /= 1024
+    unit++
+  }
+  return `${amount >= 10 || unit === 0 ? Math.round(amount) : amount.toFixed(1)} ${units[unit]}`
+}
+
+function formatUptime(value: number): string {
+  if (!Number.isFinite(value) || value < 0)
+    return 'Not sampled'
+  const days = Math.floor(value / 86400)
+  const hours = Math.floor((value % 86400) / 3600)
+  const minutes = Math.floor((value % 3600) / 60)
+  if (days > 0)
+    return `${days}d ${hours}h`
+  if (hours > 0)
+    return `${hours}h ${minutes}m`
+  return `${minutes}m`
+}
+
+function formatCheckedAt(value: number): string {
+  if (!value)
+    return 'Not checked'
+  const date = new Date(value)
+  return Number.isNaN(date.getTime())
+    ? 'Not checked'
+    : new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'medium' }).format(date)
+}
+
+function clearSnapshot(): void {
+  status.set('unknown')
+  checks.set([])
+  checkedAt.set(0)
+  durationMs.set(0)
+  runtime.set({ ...EMPTY_RUNTIME })
+}
+
+async function loadHealth(): Promise<void> {
+  const version = ++loadVersion
+  loading.set(true)
+  loadError.set('')
+  try {
+    const result = await dashboardApi<HealthResponse>('/api/dashboard/health')
+    if (version !== loadVersion)
+      return
+    status.set(result.status === 'healthy' ? 'healthy' : 'degraded')
+    checks.set(Object.entries(result.checks || {}).map(([name, check]) => ({
+      name,
+      ok: Boolean(check.ok),
+      ms: Number(check.ms) || 0,
+      message: check.message || '',
+    })))
+    checkedAt.set(Number(result.timestamp) || 0)
+    durationMs.set(Number(result.durationMs) || 0)
+    runtime.set(result.runtime || { ...EMPTY_RUNTIME })
+  }
+  catch (error) {
+    if (version !== loadVersion)
+      return
+    clearSnapshot()
+    loadError.set(error instanceof Error ? error.message : 'System health could not be loaded.')
+  }
+  finally {
+    if (version === loadVersion)
+      loading.set(false)
+  }
+}
+
+onMount(() => {
+  void loadHealth()
+})
+</script>
+
+<div class="space-y-6">
+  <header class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+    <div>
+      <div class="flex gap-2 items-center">
+        <h1 class="font-semibold text-2xl text-neutral-900 tracking-tight dark:text-white">System health</h1>
+        <span :class="overallClass()">
+          <span :class="'h-1.5 w-1.5 rounded-full ' + (status() === 'healthy' ? 'bg-green-500' : status() === 'degraded' ? 'bg-red-500' : 'bg-neutral-400')"></span>
+          {{ overallLabel() }}
+        </span>
+      </div>
+      <p class="mt-1 max-w-2xl text-neutral-500 text-sm dark:text-neutral-400">Live database and cache probes from the same native health service used by <code class="font-mono text-xs">/api/health</code>.</p>
+    </div>
+    <button type="button" :disabled="loading()" aria-label="Run health checks" class="inline-flex gap-2 items-center self-start px-3 py-2 font-medium text-neutral-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-900 hover:bg-neutral-50 dark:hover:bg-neutral-800 border border-neutral-300 rounded-lg dark:border-neutral-700 disabled:opacity-50" @click="loadHealth">
+      <span :class="'h-4 w-4 ' + (loading() ? 'animate-spin i-hugeicons-loading-03' : 'i-hugeicons-refresh')"></span>
+      Run checks
+    </button>
+  </header>
+
+  <div :if="loadError()" role="alert" class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between px-4 py-3 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/40 border border-red-200 rounded-xl dark:border-red-900">
+    <span>{{ loadError() }}</span>
+    <button type="button" class="font-semibold hover:underline" @click="loadHealth">Try again</button>
+  </div>
+
+  <section class="grid gap-3 grid-cols-2 xl:grid-cols-4">
+    <div class="p-4 bg-white dark:bg-neutral-900 border border-neutral-200 rounded-xl dark:border-neutral-700">
+      <p class="text-neutral-500 text-xs uppercase dark:text-neutral-400">Passing checks</p>
+      <p class="mt-2 font-semibold text-neutral-900 text-xl dark:text-white">{{ passingCount() }} / {{ checks().length }}</p>
+    </div>
+    <div class="p-4 bg-white dark:bg-neutral-900 border border-neutral-200 rounded-xl dark:border-neutral-700">
+      <p class="text-neutral-500 text-xs uppercase dark:text-neutral-400">Probe duration</p>
+      <p class="mt-2 font-semibold text-neutral-900 text-xl dark:text-white">{{ loading() ? 'Checking' : durationMs() + ' ms' }}</p>
+    </div>
+    <div class="p-4 bg-white dark:bg-neutral-900 border border-neutral-200 rounded-xl dark:border-neutral-700">
+      <p class="text-neutral-500 text-xs uppercase dark:text-neutral-400">Process uptime</p>
+      <p class="mt-2 font-semibold text-neutral-900 text-xl dark:text-white">{{ formatUptime(runtime().uptimeSeconds) }}</p>
+    </div>
+    <div class="p-4 bg-white dark:bg-neutral-900 border border-neutral-200 rounded-xl dark:border-neutral-700">
+      <p class="text-neutral-500 text-xs uppercase dark:text-neutral-400">Last checked</p>
+      <p class="mt-2 font-medium text-neutral-900 text-sm dark:text-white">{{ formatCheckedAt(checkedAt()) }}</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="mb-3">
+      <h2 class="font-semibold text-neutral-900 dark:text-white">Dependency probes</h2>
+      <p class="mt-1 text-neutral-500 text-xs dark:text-neutral-400">Each probe has a 1.5 second deadline and reports its measured latency.</p>
+    </div>
+    <div :if="loading() && checks().length === 0" class="grid gap-4 grid-cols-1 lg:grid-cols-2">
+      <div class="h-48 bg-neutral-100 dark:bg-neutral-800 rounded-xl animate-pulse"></div>
+      <div class="h-48 bg-neutral-100 dark:bg-neutral-800 rounded-xl animate-pulse"></div>
+    </div>
+    <div :else class="grid gap-4 grid-cols-1 lg:grid-cols-2">
+      <HealthCheckCard :for="check in checks()" :name="check.name" :ok="check.ok" :milliseconds="check.ms" :message="check.message" />
+    </div>
+  </section>
+
+  <section class="p-5 bg-white dark:bg-neutral-900 border border-neutral-200 rounded-xl dark:border-neutral-700">
+    <div>
+      <h2 class="font-semibold text-neutral-900 dark:text-white">Runtime telemetry</h2>
+      <p class="mt-1 text-neutral-500 text-xs dark:text-neutral-400">Current process values sampled with the dependency checks.</p>
+    </div>
+    <dl class="grid gap-4 grid-cols-2 lg:grid-cols-3 mt-5">
+      <div>
+        <dt class="text-neutral-500 text-xs dark:text-neutral-400">Bun</dt>
+        <dd class="mt-1 font-mono font-semibold text-neutral-900 text-sm dark:text-white">{{ runtime().bunVersion || 'Not reported' }}</dd>
+      </div>
+      <div>
+        <dt class="text-neutral-500 text-xs dark:text-neutral-400">Node compatibility</dt>
+        <dd class="mt-1 font-mono font-semibold text-neutral-900 text-sm dark:text-white">{{ runtime().nodeVersion || 'Not reported' }}</dd>
+      </div>
+      <div>
+        <dt class="text-neutral-500 text-xs dark:text-neutral-400">Platform</dt>
+        <dd class="mt-1 font-mono font-semibold text-neutral-900 text-sm dark:text-white">{{ runtime().platform || 'Not reported' }} / {{ runtime().architecture || 'unknown' }}</dd>
+      </div>
+      <div>
+        <dt class="text-neutral-500 text-xs dark:text-neutral-400">Resident memory</dt>
+        <dd class="mt-1 font-mono font-semibold text-neutral-900 text-sm dark:text-white">{{ formatBytes(runtime().residentMemoryBytes) }}</dd>
+      </div>
+      <div>
+        <dt class="text-neutral-500 text-xs dark:text-neutral-400">Heap used</dt>
+        <dd class="mt-1 font-mono font-semibold text-neutral-900 text-sm dark:text-white">{{ formatBytes(runtime().heapUsedBytes) }}</dd>
+      </div>
+      <div>
+        <dt class="text-neutral-500 text-xs dark:text-neutral-400">Aggregate status</dt>
+        <dd class="mt-1 capitalize font-semibold text-neutral-900 text-sm dark:text-white">{{ overallLabel() }}</dd>
+      </div>
+    </dl>
+  </section>
+</div>

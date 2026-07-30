@@ -1,0 +1,51 @@
+<script client>
+const name = useReactiveProp<string>('name', 'dependency')
+const ok = useReactiveProp<boolean>('ok', false)
+const milliseconds = useReactiveProp<number>('milliseconds', 0)
+const message = useReactiveProp<string>('message', '')
+
+const label = derived(() => name().replaceAll('-', ' '))
+const iconClass = derived(() => {
+  if (name() === 'database')
+    return 'i-hugeicons-database-02'
+  if (name() === 'cache')
+    return 'i-hugeicons-database-sync'
+  return 'i-hugeicons-pulse-02'
+})
+const iconWrapClass = derived(() => ok()
+  ? 'flex h-10 w-10 flex-shrink-0 items-center justify-center text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-950/40 rounded-lg'
+  : 'flex h-10 w-10 flex-shrink-0 items-center justify-center text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/40 rounded-lg')
+const statusClass = derived(() => ok()
+  ? 'inline-flex items-center gap-1.5 px-2 py-1 font-semibold text-[11px] text-green-700 dark:text-green-300 bg-green-50 dark:bg-green-950/40 rounded-full'
+  : 'inline-flex items-center gap-1.5 px-2 py-1 font-semibold text-[11px] text-red-700 dark:text-red-300 bg-red-50 dark:bg-red-950/40 rounded-full')
+</script>
+
+<article class="p-5 bg-white dark:bg-neutral-900 border border-neutral-200 rounded-xl dark:border-neutral-700">
+  <div class="flex gap-4 items-start">
+    <div :class="iconWrapClass()">
+      <span :class="'h-5 w-5 ' + iconClass()"></span>
+    </div>
+    <div class="flex-1 min-w-0">
+      <div class="flex gap-3 items-center justify-between">
+        <h3 class="capitalize font-semibold text-neutral-900 dark:text-white">{{ label() }}</h3>
+        <span :class="statusClass()">
+          <span :class="'h-1.5 w-1.5 rounded-full ' + (ok() ? 'bg-green-500' : 'bg-red-500')"></span>
+          {{ ok() ? 'passing' : 'failing' }}
+        </span>
+      </div>
+      <p class="mt-2 text-neutral-500 text-sm dark:text-neutral-400">
+        {{ ok() ? 'The live dependency probe completed successfully.' : (message() || 'The dependency probe failed.') }}
+      </p>
+      <dl class="grid gap-3 grid-cols-2 mt-4">
+        <div class="px-3 py-2 bg-neutral-50 dark:bg-neutral-950 rounded-lg">
+          <dt class="text-neutral-500 text-xs dark:text-neutral-400">Probe latency</dt>
+          <dd class="mt-1 font-mono font-semibold text-neutral-900 text-sm dark:text-white">{{ milliseconds() }} ms</dd>
+        </div>
+        <div class="px-3 py-2 bg-neutral-50 dark:bg-neutral-950 rounded-lg">
+          <dt class="text-neutral-500 text-xs dark:text-neutral-400">Result</dt>
+          <dd class="mt-1 font-semibold text-neutral-900 text-sm dark:text-white">{{ ok() ? 'Available' : 'Unavailable' }}</dd>
+        </div>
+      </dl>
+    </div>
+  </div>
+</article>
