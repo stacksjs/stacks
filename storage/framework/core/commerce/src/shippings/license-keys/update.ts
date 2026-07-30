@@ -1,6 +1,7 @@
 import { db } from '@stacksjs/database'
 // Import dependencies
 import { formatDate } from '@stacksjs/orm'
+import { licenseKeyWriteData } from '../write-data'
 type LicenseKeyJsonResponse = ModelRow<typeof LicenseKey>
 type LicenseKeyUpdate = UpdateModelData<typeof LicenseKey>
 
@@ -19,7 +20,7 @@ export async function update(id: number, data: LicenseKeyUpdate): Promise<Licens
     const result = await db
       .updateTable('license_keys')
       .set({
-        ...data,
+        ...licenseKeyWriteData(data as Record<string, unknown>),
         updated_at: formatDate(new Date()),
       })
       .where('id', '=', id)

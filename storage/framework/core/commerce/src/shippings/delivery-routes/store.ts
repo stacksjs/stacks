@@ -7,6 +7,7 @@ type DeliveryRouteInput = NewDeliveryRoute & Partial<{
 }>
 import { randomUUIDv7 } from 'bun'
 import { db } from '@stacksjs/database'
+import { deliveryRouteWriteData } from '../write-data'
 import { fetchById } from './fetch'
 
 /**
@@ -18,17 +19,10 @@ import { fetchById } from './fetch'
 export async function store(data: DeliveryRouteInput): Promise<DeliveryRouteJsonResponse> {
   try {
     const uuid = randomUUIDv7()
-    const {
-      deliveryTime,
-      lastActive,
-      totalDistance,
-      ...columns
-    } = data
+    const columns = deliveryRouteWriteData(data as Record<string, unknown>)
     const routeData = {
       ...columns,
-      delivery_time: columns.delivery_time ?? deliveryTime,
-      last_active: columns.last_active ?? lastActive ?? Date.now(),
-      total_distance: columns.total_distance ?? totalDistance,
+      last_active: columns.last_active ?? Date.now(),
       uuid,
     }
 

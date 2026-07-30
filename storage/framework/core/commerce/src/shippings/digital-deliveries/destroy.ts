@@ -41,7 +41,7 @@ export async function softDelete(id: number): Promise<boolean> {
       .executeTakeFirst()
 
     // Return true if any row was affected (updated)
-    return Number(result.numUpdatedRows) > 0
+    return mutationCount(result) > 0
   }
   catch (error) {
     if (error instanceof Error) {
@@ -100,7 +100,7 @@ export async function bulkSoftDelete(ids: number[]): Promise<number> {
       .executeTakeFirst()
 
     // Return the number of updated rows
-    return Number(result.numUpdatedRows)
+    return mutationCount(result)
   }
   catch (error) {
     if (error instanceof Error) {

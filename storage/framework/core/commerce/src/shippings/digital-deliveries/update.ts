@@ -1,6 +1,7 @@
 import { db } from '@stacksjs/database'
 // Import dependencies
 import { formatDate } from '@stacksjs/orm'
+import { digitalDeliveryWriteData } from '../write-data'
 type DigitalDeliveryJsonResponse = ModelRow<typeof DigitalDelivery>
 type DigitalDeliveryUpdate = UpdateModelData<typeof DigitalDelivery>
 
@@ -19,7 +20,7 @@ export async function update(id: number, data: DigitalDeliveryUpdate): Promise<D
     const result = await db
       .updateTable('digital_deliveries')
       .set({
-        ...data,
+        ...digitalDeliveryWriteData(data as Record<string, unknown>),
         updated_at: formatDate(new Date()),
       })
       .where('id', '=', id)

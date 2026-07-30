@@ -1,5 +1,6 @@
 import { db } from '@stacksjs/database'
 import { formatDate } from '@stacksjs/orm'
+import { shippingZoneWriteData } from '../write-data'
 type ShippingZoneJsonResponse = ModelRow<typeof ShippingZone>
 type ShippingZoneUpdate = UpdateModelData<typeof ShippingZone>
 
@@ -18,7 +19,7 @@ export async function update(id: number, data: ShippingZoneUpdate): Promise<Ship
     const result = await db
       .updateTable('shipping_zones')
       .set({
-        ...data,
+        ...shippingZoneWriteData(data as Record<string, unknown>),
         updated_at: formatDate(new Date()),
       })
       .where('id', '=', id)

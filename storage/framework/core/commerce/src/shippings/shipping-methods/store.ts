@@ -2,7 +2,8 @@ type ShippingMethodJsonResponse = ModelRow<typeof ShippingMethod>
 type NewShippingMethod = NewModelData<typeof ShippingMethod>
 import { randomUUIDv7 } from 'bun'
 import { db } from '@stacksjs/database'
-import { fetchById } from './fetch'
+import { mutationCount } from '../../utils/mutation-count'
+import { shippingMethodWriteData } from '../write-data'
 
 /**
  * Create a new shipping method
@@ -12,28 +13,24 @@ import { fetchById } from './fetch'
  */
 export async function store(data: NewShippingMethod): Promise<ShippingMethodJsonResponse> {
   try {
-    const d = data as Record<string, unknown>
+    const uuid = randomUUIDv7()
     const shippingData = {
-      name: data.name,
-      description: data.description,
-      base_rate: d.base_rate,
-      free_shipping: d.free_shipping,
-      status: data.status,
-      uuid: randomUUIDv7(),
+      ...shippingMethodWriteData(data as Record<string, unknown>),
+      uuid,
     }
 
-    const result = await db
+    await db
       .insertInto('shipping_methods')
       .values(shippingData)
       .executeTakeFirst()
 
-    if (!result)
-      throw new Error('Failed to create shipping method')
-
-    const insertId = Number(result.insertId) || Number(result.numInsertedOrUpdatedRows)
-
-    const model = await fetchById(insertId)
-
+    const model = await db
+      .selectFrom('shipping_methods')
+      .where('uuid', '=', uuid)
+      .selectAll()
+      .executeTakeFirst()
+    if (!model)
+      throw new Error('Failed to resolve created shipping method')
     return model as ShippingMethodJsonResponse
   }
   catch (error) {
@@ -57,7 +54,7 @@ export async function bulkStore(data: NewShippingMethod[]): Promise<number> {
 
   try {
     const shippingDataArray = data.map(item => ({
-      ...item,
+      ...shippingMethodWriteData(item as Record<string, unknown>),
       uuid: randomUUIDv7(),
     }))
 
@@ -66,7 +63,7 @@ export async function bulkStore(data: NewShippingMethod[]): Promise<number> {
       .values(shippingDataArray)
       .executeTakeFirst()
 
-    return Number(result.numInsertedOrUpdatedRows)
+    return mutationCount(result)
   }
   catch (error) {
     if (error instanceof Error) {

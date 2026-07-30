@@ -60,11 +60,11 @@ export async function bulkDestroy(ids: number[]): Promise<number> {
  * @param zone The zone to delete shipping rates for
  * @returns Number of shipping rates deleted
  */
-export async function destroyByZone(zone: string): Promise<number> {
+export async function destroyByZone(zone: number): Promise<number> {
   try {
     const result = await db
       .deleteFrom('shipping_rates')
-      .where('zone', '=', zone)
+      .where('shipping_zone_id', '=', zone)
       .executeTakeFirst()
 
     return mutationCount(result)
@@ -84,11 +84,11 @@ export async function destroyByZone(zone: string): Promise<number> {
  * @param method The shipping method to delete rates for
  * @returns Number of shipping rates deleted
  */
-export async function destroyByMethod(method: string): Promise<number> {
+export async function destroyByMethod(method: number): Promise<number> {
   try {
     const result = await db
       .deleteFrom('shipping_rates')
-      .where('method', '=', method)
+      .where('shipping_method_id', '=', method)
       .executeTakeFirst()
 
     return mutationCount(result)

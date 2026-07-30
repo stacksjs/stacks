@@ -2,7 +2,8 @@ type DigitalDeliveryJsonResponse = ModelRow<typeof DigitalDelivery>
 type NewDigitalDelivery = NewModelData<typeof DigitalDelivery>
 import { randomUUIDv7 } from 'bun'
 import { db } from '@stacksjs/database'
-import { fetchById } from './fetch'
+import { mutationCount } from '../../utils/mutation-count'
+import { digitalDeliveryWriteData } from '../write-data'
 
 /**
  * Create a new digital delivery
@@ -12,25 +13,24 @@ import { fetchById } from './fetch'
  */
 export async function store(data: NewDigitalDelivery): Promise<DigitalDeliveryJsonResponse> {
   try {
+    const uuid = randomUUIDv7()
     const deliveryData = {
-      ...data,
-      uuid: randomUUIDv7(),
+      ...digitalDeliveryWriteData(data as Record<string, unknown>),
+      uuid,
     }
 
-    const result = await db
+    await db
       .insertInto('digital_deliveries')
       .values(deliveryData)
       .executeTakeFirst()
 
-    if (!result)
-      throw new Error('Failed to create digital delivery')
-
-    const insertedId = Number(result.insertId) || Number(result.numInsertedOrUpdatedRows)
-
-    const digitalDelivery = await fetchById(insertedId)
-
+    const digitalDelivery = await db
+      .selectFrom('digital_deliveries')
+      .where('uuid', '=', uuid)
+      .selectAll()
+      .executeTakeFirst()
     if (!digitalDelivery)
-      throw new Error('Failed to create digital delivery')
+      throw new Error('Failed to resolve created digital delivery')
 
     return digitalDelivery
   }
@@ -55,7 +55,7 @@ export async function bulkStore(data: NewDigitalDelivery[]): Promise<number> {
 
   try {
     const deliveryDataArray = data.map(item => ({
-      ...item,
+      ...digitalDeliveryWriteData(item as Record<string, unknown>),
       uuid: randomUUIDv7(),
     }))
 
@@ -64,7 +64,7 @@ export async function bulkStore(data: NewDigitalDelivery[]): Promise<number> {
       .values(deliveryDataArray)
       .executeTakeFirst()
 
-    return Number(result.numInsertedOrUpdatedRows)
+    return mutationCount(result)
   }
   catch (error) {
     if (error instanceof Error) {

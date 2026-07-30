@@ -1,6 +1,7 @@
 import { db } from '@stacksjs/database'
 // Import dependencies
 import { formatDate } from '@stacksjs/orm'
+import { driverWriteData } from '../write-data'
 type DriverJsonResponse = ModelRow<typeof Driver>
 type DriverUpdate = UpdateModelData<typeof Driver>
 
@@ -19,7 +20,7 @@ export async function update(id: number, data: DriverUpdate): Promise<DriverJson
     const result = await db
       .updateTable('drivers')
       .set({
-        ...data,
+        ...driverWriteData(data as Record<string, unknown>),
         updated_at: formatDate(new Date()),
       })
       .where('id', '=', id)

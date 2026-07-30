@@ -1,5 +1,6 @@
 import { db } from '@stacksjs/database'
 import { formatDate } from '@stacksjs/orm'
+import { deliveryRouteWriteData } from '../write-data'
 type DeliveryRouteJsonResponse = ModelRow<typeof DeliveryRoute>
 type DeliveryRouteUpdate = UpdateModelData<typeof DeliveryRoute>
 
@@ -18,7 +19,7 @@ export async function update(id: number, data: DeliveryRouteUpdate): Promise<Del
     const result = await db
       .updateTable('delivery_routes')
       .set({
-        ...data,
+        ...deliveryRouteWriteData(data as Record<string, unknown>),
         updated_at: formatDate(new Date()),
       })
       .where('id', '=', id)

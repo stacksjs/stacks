@@ -3,7 +3,8 @@ type LicenseKeyJsonResponse = ModelRow<typeof LicenseKey>
 type NewLicenseKey = NewModelData<typeof LicenseKey>
 import { randomUUIDv7 } from 'bun'
 import { db } from '@stacksjs/database'
-import { fetchById } from './fetch'
+import { mutationCount } from '../../utils/mutation-count'
+import { licenseKeyWriteData } from '../write-data'
 
 /**
  * Create a new license key
@@ -13,25 +14,24 @@ import { fetchById } from './fetch'
  */
 export async function store(data: NewLicenseKey): Promise<LicenseKeyJsonResponse> {
   try {
+    const uuid = randomUUIDv7()
     const licenseData = {
-      ...data,
-      uuid: randomUUIDv7(),
+      ...licenseKeyWriteData(data as Record<string, unknown>),
+      uuid,
     }
 
-    const result = await db
+    await db
       .insertInto('license_keys')
       .values(licenseData)
       .executeTakeFirst()
 
-    if (!result)
-      throw new Error('Failed to create license key')
-
-    const insertedId = Number(result.insertId) || Number(result.numInsertedOrUpdatedRows)
-
-    const licenseKey = await fetchById(insertedId)
-
+    const licenseKey = await db
+      .selectFrom('license_keys')
+      .where('uuid', '=', uuid)
+      .selectAll()
+      .executeTakeFirst()
     if (!licenseKey)
-      throw new Error('Failed to create license key')
+      throw new Error('Failed to resolve created license key')
 
     return licenseKey
   }
@@ -56,7 +56,7 @@ export async function bulkStore(data: NewLicenseKey[]): Promise<number> {
 
   try {
     const licenseDataArray = data.map(item => ({
-      ...item,
+      ...licenseKeyWriteData(item as Record<string, unknown>),
       uuid: randomUUIDv7(),
     }))
 
@@ -65,7 +65,7 @@ export async function bulkStore(data: NewLicenseKey[]): Promise<number> {
       .values(licenseDataArray)
       .executeTakeFirst()
 
-    return Number(result.numInsertedOrUpdatedRows)
+    return mutationCount(result)
   }
   catch (error) {
     if (error instanceof Error) {

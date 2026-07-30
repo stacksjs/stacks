@@ -3,7 +3,8 @@ type ShippingZoneJsonResponse = ModelRow<typeof ShippingZone>
 type NewShippingZone = NewModelData<typeof ShippingZone>
 import { randomUUIDv7 } from 'bun'
 import { db } from '@stacksjs/database'
-import { fetchById } from './fetch'
+import { mutationCount } from '../../utils/mutation-count'
+import { shippingZoneWriteData } from '../write-data'
 
 /**
  * Create a new shipping zone
@@ -13,23 +14,24 @@ import { fetchById } from './fetch'
  */
 export async function store(data: NewShippingZone): Promise<ShippingZoneJsonResponse> {
   try {
+    const uuid = randomUUIDv7()
     const zoneData = {
-      ...data,
-      uuid: randomUUIDv7(),
+      ...shippingZoneWriteData(data as Record<string, unknown>),
+      uuid,
     }
 
-    const result = await db
+    await db
       .insertInto('shipping_zones')
       .values(zoneData)
       .executeTakeFirst()
 
-    if (!result)
-      throw new Error('Failed to create shipping zone')
-
-    const insertId = Number(result.insertId) || Number(result.numInsertedOrUpdatedRows)
-
-    const model = await fetchById(insertId)
-
+    const model = await db
+      .selectFrom('shipping_zones')
+      .where('uuid', '=', uuid)
+      .selectAll()
+      .executeTakeFirst()
+    if (!model)
+      throw new Error('Failed to resolve created shipping zone')
     return model as ShippingZoneJsonResponse
   }
   catch (error) {
@@ -53,7 +55,7 @@ export async function bulkStore(data: NewShippingZone[]): Promise<number> {
 
   try {
     const zoneDataArray = data.map(item => ({
-      ...item,
+      ...shippingZoneWriteData(item as Record<string, unknown>),
       uuid: randomUUIDv7(),
     }))
 
@@ -62,7 +64,7 @@ export async function bulkStore(data: NewShippingZone[]): Promise<number> {
       .values(zoneDataArray)
       .executeTakeFirst()
 
-    return Number(result.numInsertedOrUpdatedRows)
+    return mutationCount(result)
   }
   catch (error) {
     if (error instanceof Error) {

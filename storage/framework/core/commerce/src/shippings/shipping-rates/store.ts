@@ -3,9 +3,10 @@ type ShippingRateJsonResponse = ModelRow<typeof ShippingRate>
 type NewShippingRate = NewModelData<typeof ShippingRate>
 import { randomUUIDv7 } from 'bun'
 import { db } from '@stacksjs/database'
+import { mutationCount } from '../../utils/mutation-count'
 import { fetchById as fetchShippingMethodById } from '../shipping-methods/fetch'
 import { fetchById as fetchShippingZoneById } from '../shipping-zones/fetch'
-import { fetchById } from './fetch'
+import { shippingRateWriteData } from '../write-data'
 
 /**
  * Create a new shipping rate
@@ -15,31 +16,38 @@ import { fetchById } from './fetch'
  */
 export async function store(data: NewShippingRate): Promise<ShippingRateJsonResponse> {
   try {
-    // Validate that the shipping method and zone exist
-    const method = await fetchShippingMethodById(Number(data.shippingmethod_id))
-    const zone = await fetchShippingZoneById(Number(data.shippingzone_id))
+    const input = shippingRateWriteData(data as Record<string, unknown>)
+    const methodId = Number(input.shipping_method_id)
+    const zoneId = Number(input.shipping_zone_id)
+    const [method, zone] = await Promise.all([
+      fetchShippingMethodById(methodId),
+      fetchShippingZoneById(zoneId),
+    ])
+    if (!method)
+      throw new Error(`Shipping method ${methodId} was not found`)
+    if (!zone)
+      throw new Error(`Shipping zone ${zoneId} was not found`)
 
+    const uuid = randomUUIDv7()
     const rateData = {
-      weightFrom: data.weightFrom,
-      weightTo: data.weightTo,
-      rate: data.rate,
-      shippingmethod_id: method?.id,
-      shippingzone_id: zone?.id,
-      uuid: randomUUIDv7(),
+      ...input,
+      shipping_method_id: Number(method.id),
+      shipping_zone_id: Number(zone.id),
+      uuid,
     }
 
-    const result = await db
+    await db
       .insertInto('shipping_rates')
       .values(rateData)
       .executeTakeFirst()
 
-    if (!result)
-      throw new Error('Failed to create shipping rate')
-
-    const insertId = Number(result.insertId) || Number(result.numInsertedOrUpdatedRows)
-
-    const model = await fetchById(insertId)
-
+    const model = await db
+      .selectFrom('shipping_rates')
+      .where('uuid', '=', uuid)
+      .selectAll()
+      .executeTakeFirst()
+    if (!model)
+      throw new Error('Failed to resolve created shipping rate')
     return model as ShippingRateJsonResponse
   }
   catch (error) {
@@ -64,24 +72,18 @@ export async function bulkStore(data: NewShippingRate[]): Promise<number> {
   try {
     // Validate all methods and zones before bulk insert
     for (const item of data) {
-      const method = await fetchShippingMethodById(Number(item.shippingmethod_id))
-      const zone = await fetchShippingZoneById(Number(item.shippingzone_id))
+      const input = shippingRateWriteData(item as Record<string, unknown>)
+      const method = await fetchShippingMethodById(Number(input.shipping_method_id))
+      const zone = await fetchShippingZoneById(Number(input.shipping_zone_id))
 
-      if (!method) {
-        console.warn(`Shipping method with ID "${item.shippingmethod_id}" not found for bulk insert`)
-      }
-
-      if (!zone) {
-        console.warn(`Shipping zone with ID "${item.shippingzone_id}" not found for bulk insert`)
-      }
+      if (!method)
+        throw new Error(`Shipping method ${String(input.shipping_method_id)} was not found`)
+      if (!zone)
+        throw new Error(`Shipping zone ${String(input.shipping_zone_id)} was not found`)
     }
 
     const rateDataArray = data.map(item => ({
-      weightFrom: item.weightFrom,
-      weightTo: item.weightTo,
-      rate: item.rate,
-      shippingmethod_id: item.shippingmethod_id,
-      shippingzone_id: item.shippingzone_id,
+      ...shippingRateWriteData(item as Record<string, unknown>),
       uuid: randomUUIDv7(),
     }))
 
@@ -90,7 +92,7 @@ export async function bulkStore(data: NewShippingRate[]): Promise<number> {
       .values(rateDataArray)
       .executeTakeFirst()
 
-    return Number(result.numInsertedOrUpdatedRows)
+    return mutationCount(result)
   }
   catch (error) {
     if (error instanceof Error) {

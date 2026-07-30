@@ -2,6 +2,8 @@ type DriverJsonResponse = ModelRow<typeof Driver>
 type NewDriver = NewModelData<typeof Driver>
 import { randomUUIDv7 } from 'bun'
 import { db } from '@stacksjs/database'
+import { mutationCount } from '../../utils/mutation-count'
+import { driverWriteData } from '../write-data'
 
 /**
  * Create a new driver
@@ -11,19 +13,24 @@ import { db } from '@stacksjs/database'
  */
 export async function store(data: NewDriver): Promise<DriverJsonResponse> {
   try {
+    const uuid = randomUUIDv7()
     const driverData = {
-      ...data,
-      uuid: randomUUIDv7(),
+      ...driverWriteData(data as Record<string, unknown>),
+      uuid,
     }
 
-    const result = await db
+    await db
       .insertInto('drivers')
       .values(driverData)
-      .returningAll()
       .executeTakeFirst()
 
+    const result = await db
+      .selectFrom('drivers')
+      .where('uuid', '=', uuid)
+      .selectAll()
+      .executeTakeFirst()
     if (!result)
-      throw new Error('Failed to create driver')
+      throw new Error('Failed to resolve created driver')
 
     return result as DriverJsonResponse
   }
@@ -48,7 +55,7 @@ export async function bulkStore(data: NewDriver[]): Promise<number> {
 
   try {
     const driverDataArray = data.map(item => ({
-      ...item,
+      ...driverWriteData(item as Record<string, unknown>),
       uuid: randomUUIDv7(),
     }))
 
@@ -57,7 +64,7 @@ export async function bulkStore(data: NewDriver[]): Promise<number> {
       .values(driverDataArray)
       .executeTakeFirst()
 
-    return Number(result.numInsertedOrUpdatedRows)
+    return mutationCount(result)
   }
   catch (error) {
     if (error instanceof Error) {

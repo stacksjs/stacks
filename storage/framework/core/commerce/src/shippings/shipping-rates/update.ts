@@ -1,5 +1,7 @@
 import { db } from '@stacksjs/database'
 import { formatDate } from '@stacksjs/orm'
+import { mutationCount } from '../../utils/mutation-count'
+import { shippingRateWriteData } from '../write-data'
 type ShippingRateJsonResponse = ModelRow<typeof ShippingRate>
 type ShippingRateUpdate = UpdateModelData<typeof ShippingRate>
 
@@ -18,7 +20,7 @@ export async function update(id: number, data: ShippingRateUpdate): Promise<Ship
     const result = await db
       .updateTable('shipping_rates')
       .set({
-        ...data,
+        ...shippingRateWriteData(data as Record<string, unknown>),
         updated_at: formatDate(new Date()),
       })
       .where('id', '=', id)
@@ -59,13 +61,13 @@ export async function bulkUpdate(updates: Array<{
       const result = await db
         .updateTable('shipping_rates')
         .set({
-          ...data,
+          ...shippingRateWriteData(data as Record<string, unknown>),
           updated_at: formatDate(new Date()),
         })
         .where('id', '=', id)
         .executeTakeFirst()
 
-      if (Number(result.numUpdatedRows) > 0)
+      if (mutationCount(result) > 0)
         updatedCount++
     }
 
@@ -92,13 +94,13 @@ export async function updateByZone(zone: number, data: ShippingRateUpdate): Prom
     const result = await db
       .updateTable('shipping_rates')
       .set({
-        ...data,
+        ...shippingRateWriteData(data as Record<string, unknown>),
         updated_at: formatDate(new Date()),
       })
-      .where('zone_id', '=', zone)
+      .where('shipping_zone_id', '=', zone)
       .executeTakeFirst()
 
-    return Number(result.numUpdatedRows)
+    return mutationCount(result)
   }
   catch (error) {
     if (error instanceof Error) {
@@ -116,18 +118,18 @@ export async function updateByZone(zone: number, data: ShippingRateUpdate): Prom
  * @param data The update data to apply
  * @returns Number of shipping rates updated
  */
-export async function updateByMethod(method: string, data: ShippingRateUpdate): Promise<number> {
+export async function updateByMethod(method: number, data: ShippingRateUpdate): Promise<number> {
   try {
     const result = await db
       .updateTable('shipping_rates')
       .set({
-        ...data,
+        ...shippingRateWriteData(data as Record<string, unknown>),
         updated_at: formatDate(new Date()),
       })
-      .where('method', '=', method)
+      .where('shipping_method_id', '=', method)
       .executeTakeFirst()
 
-    return Number(result.numUpdatedRows)
+    return mutationCount(result)
   }
   catch (error) {
     if (error instanceof Error) {
