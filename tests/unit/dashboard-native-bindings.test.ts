@@ -379,6 +379,20 @@ describe('dashboard native STX bindings', () => {
     expect(component).not.toContain('<canvas')
   })
 
+  test('CI keeps its data sparkline but delegates status icons to Iconify', () => {
+    const ci = readFileSync(
+      resolve('storage/framework/defaults/views/dashboard/ci/index.stx'),
+      'utf8',
+    )
+
+    expect(ci.match(/<svg\b/g)).toHaveLength(1)
+    expect(ci).toContain(':d="sparklinePath()"')
+    expect(ci).toContain('i-hugeicons-loading-03')
+    expect(ci).toContain('i-hugeicons-checkmark-circle-02')
+    expect(ci).toContain('i-hugeicons-cancel-circle')
+    expect(ci).toContain('i-hugeicons-cancel-01')
+  })
+
   test('kanban uses native reactive drag, dialogs, and form models', () => {
     const board = readFileSync(
       resolve('storage/framework/defaults/views/dashboard/kanban/[id].stx'),
