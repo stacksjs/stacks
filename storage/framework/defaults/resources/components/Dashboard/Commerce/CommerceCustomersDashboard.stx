@@ -191,7 +191,7 @@ async function saveCustomer(payload: CustomerWritePayload): Promise<void> {
   saving.set(true)
   validationErrors.set({})
   try {
-    await dashboardApi(editing ? `/api/customers/${current.id}` : '/api/customers', {
+    await dashboardApi(editing ? `/api/dashboard/commerce/customers/${current.id}` : '/api/dashboard/commerce/customers', {
       method: editing ? 'PATCH' : 'POST',
       body: payload,
     })
@@ -235,7 +235,7 @@ async function deleteCustomer(): Promise<void> {
     return
   deleting.set(true)
   try {
-    await dashboardApi(`/api/customers/${current.id}`, { method: 'DELETE' })
+    await dashboardApi(`/api/dashboard/commerce/customers/${current.id}`, { method: 'DELETE' })
     deletingRecord.set(null)
     detailsRecord.set(null)
     pushToast('success', 'Customer deleted', { detail: current.name })
