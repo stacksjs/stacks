@@ -36,6 +36,15 @@ function guard(r: any): any {
   return r
 }
 
+// Billing is user-scoped even on localhost. Unlike operational dashboard
+// telemetry, payment data must never fall back to anonymous local access.
+function authenticatedGuard(r: any): any {
+  r.middleware('auth')
+  if (!IS_LOCAL_ENV)
+    r.middleware('role:admin')
+  return r
+}
+
 route.group({ prefix: '/api/dashboard', apiResponse: true }, () => {
   guard(route.get('/home', 'Actions/Dashboard/DashboardHomeAction'))
   guard(route.get('/stats', 'Actions/Dashboard/DashboardStatsAction'))
@@ -57,6 +66,7 @@ route.group({ prefix: '/api/dashboard', apiResponse: true }, () => {
   guard(route.put('/environment', 'Actions/Dashboard/Infrastructure/EnvironmentUpdateAction'))
   guard(route.get('/mail-settings', 'Actions/Dashboard/Settings/MailSettingsGetAction'))
   guard(route.put('/mail-settings', 'Actions/Dashboard/Settings/MailSettingsUpdateAction'))
+  authenticatedGuard(route.get('/billing', 'Actions/Dashboard/Settings/BillingShowAction'))
 
   guard(route.get('/analytics/web', 'Actions/Dashboard/Analytics/WebAnalyticsAction'))
   guard(route.get('/analytics/sales', 'Actions/Dashboard/Analytics/SalesAnalyticsAction'))
