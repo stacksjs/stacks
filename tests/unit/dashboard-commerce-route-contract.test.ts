@@ -136,4 +136,29 @@ describe('dashboard commerce route contract', () => {
     expect(update).toContain('...data')
     expect(updateAction).toContain("method: 'PATCH'")
   })
+
+  test('manufacturer mutations use canonical guarded model actions', () => {
+    const routes = source('storage/framework/defaults/routes/dashboard-api.ts')
+    const publicRoutes = source('storage/framework/defaults/routes/dashboard.ts')
+    const manufacturers = source('storage/framework/defaults/resources/components/Dashboard/Commerce/CommerceManufacturersDashboard.stx')
+    const storeAction = source('storage/framework/defaults/app/Actions/Commerce/Product/ManufacturerStoreAction.ts')
+    const updateAction = source('storage/framework/defaults/app/Actions/Commerce/Product/ManufacturerUpdateAction.ts')
+    const destroyAction = source('storage/framework/defaults/app/Actions/Commerce/Product/ManufacturerDestroyAction.ts')
+
+    expect(routes).toContain("guard(route.post('/commerce/manufacturers', 'Actions/Commerce/Product/ManufacturerStoreAction'))")
+    expect(routes).toContain("guard(route.patch('/commerce/manufacturers/{id}', 'Actions/Commerce/Product/ManufacturerUpdateAction'))")
+    expect(routes).toContain("guard(route.delete('/commerce/manufacturers/{id}', 'Actions/Commerce/Product/ManufacturerDestroyAction'))")
+    expect(publicRoutes).toContain("route.patch('/product-manufacturers/{id}', 'Actions/Commerce/Product/ManufacturerUpdateAction')")
+    expect(publicRoutes).not.toContain('ProductManufacturerUpdateAction')
+    expect(manufacturers).toContain('/api/dashboard/commerce/manufacturers')
+    expect(manufacturers).not.toMatch(/\/api\/product-manufacturers(?:\/|\?|'|`)/)
+
+    for (const action of [storeAction, updateAction]) {
+      expect(action).toContain('model: Manufacturer')
+      expect(action).toContain('await request.validate()')
+      expect(action).toContain('toSnakeCaseKeys(request.all())')
+    }
+
+    expect(destroyAction).toContain('response.noContent()')
+  })
 })

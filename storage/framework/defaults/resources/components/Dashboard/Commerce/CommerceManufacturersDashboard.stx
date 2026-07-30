@@ -1,6 +1,6 @@
 <script client>
 import type { ManufacturerRecord, ManufacturerSummary } from '../../../../app/Actions/Dashboard/Commerce/manufacturer-records'
-import { dashboardApi } from '../../../../functions/dashboard-api'
+import { DashboardApiError, dashboardApi } from '../../../../functions/dashboard-api'
 import { pushToast } from '../../../../functions/toasts'
 
 interface ManufacturerIndexResponse {
@@ -30,6 +30,7 @@ const editingRecord = state<ManufacturerRecord | null>(null)
 const deletingRecord = state<ManufacturerRecord | null>(null)
 const saving = state(false)
 const deleting = state(false)
+const validationErrors = state<Record<string, string>>({})
 
 function countries(): string[] {
   return [...new Set(records().map(record => record.country).filter(Boolean))].sort()
@@ -92,12 +93,14 @@ async function loadManufacturers(): Promise<void> {
 function openAdd(): void {
   dialogMode.set('add')
   editingRecord.set(null)
+  validationErrors.set({})
   dialogOpen.set(true)
 }
 
 function openEdit(record: ManufacturerRecord): void {
   dialogMode.set('edit')
   editingRecord.set(record)
+  validationErrors.set({})
   dialogOpen.set(true)
 }
 
@@ -106,15 +109,17 @@ function closeDialog(): void {
     return
   dialogOpen.set(false)
   editingRecord.set(null)
+  validationErrors.set({})
 }
 
 async function saveManufacturer(payload: ManufacturerWritePayload): Promise<void> {
   const current = editingRecord()
   const editing = dialogMode() === 'edit' && current !== null
   const path = editing
-    ? `/api/product-manufacturers/${current.id}`
-    : '/api/product-manufacturers'
+    ? `/api/dashboard/commerce/manufacturers/${current.id}`
+    : '/api/dashboard/commerce/manufacturers'
   saving.set(true)
+  validationErrors.set({})
   try {
     await dashboardApi(path, { method: editing ? 'PATCH' : 'POST', body: payload })
     dialogOpen.set(false)
@@ -123,6 +128,8 @@ async function saveManufacturer(payload: ManufacturerWritePayload): Promise<void
     await loadManufacturers()
   }
   catch (error) {
+    if (error instanceof DashboardApiError)
+      validationErrors.set(error.fields ?? {})
     pushToast('error', 'Could not save manufacturer', {
       detail: error instanceof Error ? error.message : String(error),
     })
@@ -147,7 +154,7 @@ async function deleteManufacturer(): Promise<void> {
     return
   deleting.set(true)
   try {
-    await dashboardApi(`/api/product-manufacturers/${current.id}`, { method: 'DELETE' })
+    await dashboardApi(`/api/dashboard/commerce/manufacturers/${current.id}`, { method: 'DELETE' })
     deletingRecord.set(null)
     pushToast('success', 'Manufacturer deleted')
     await loadManufacturers()
@@ -174,14 +181,14 @@ onMount(() => {
       <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Manage native Manufacturer records and their product relationships.</p>
     </div>
     <div class="flex gap-2">
-      <button type="button" :disabled="loading()" class="inline-flex items-center px-3 py-2 font-semibold text-gray-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700 disabled:opacity-50" @click="loadManufacturers">
-        <span :class="'mr-2 h-4 w-4 ' + (loading() ? 'animate-spin i-hugeicons-loading-03' : 'i-hugeicons-refresh')"></span>
+      <Button variant="secondary" :loading="loading()" @click="loadManufacturers">
+        <span :if="!loading()" class="h-4 w-4 i-hugeicons-refresh"></span>
         Refresh
-      </button>
-      <button type="button" class="inline-flex items-center px-3 py-2 font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md" @click="openAdd()">
-        <span class="mr-2 h-4 w-4 i-hugeicons-add-01"></span>
+      </Button>
+      <Button @click="openAdd()">
+        <span class="h-4 w-4 i-hugeicons-add-01"></span>
         Add manufacturer
-      </button>
+      </Button>
     </div>
   </header>
 
@@ -246,6 +253,7 @@ onMount(() => {
   :mode="dialogMode()"
   :record="editingRecord()"
   :busy="saving()"
+  :errors="validationErrors()"
   @submit="saveManufacturer"
   @close="closeDialog()"
 />
