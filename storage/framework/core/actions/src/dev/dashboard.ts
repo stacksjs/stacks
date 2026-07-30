@@ -112,8 +112,12 @@ async function startStxServer(): Promise<void> {
   try {
     const localStx = process.env.STX_SRC
       || `${process.env.HOME}/Code/Tools/stx/packages/stx/src/index.ts`
-    if (await Bun.file(localStx).exists())
+    if (await Bun.file(localStx).exists()) {
+      const localCrosswind = `${process.env.HOME}/Code/Tools/crosswind/packages/crosswind/src/index.ts`
+      if (!process.env.CROSSWIND_SRC && await Bun.file(localCrosswind).exists())
+        process.env.CROSSWIND_SRC = localCrosswind
       stxModule = await import(localStx)
+    }
   }
   catch { /* fall through */ }
   if (stxModule && verbose)
