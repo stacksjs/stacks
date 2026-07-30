@@ -679,10 +679,10 @@ route.group({ prefix: '/api/marketing', middleware: 'auth' }, () => {
 // ============================================================================
 
 route.group({ prefix: '/api/notifications', middleware: 'auth' }, () => {
-  route.get('/dashboard', 'Actions/Dashboard/Notifications/NotificationDashboardAction')
-  route.get('/email', 'Actions/Dashboard/Notifications/NotificationDashboardAction')
-  route.get('/sms', 'Actions/Dashboard/Notifications/NotificationDashboardAction')
-  route.get('/history', 'Actions/Dashboard/Notifications/NotificationDashboardAction')
+  route.get('/dashboard', 'Actions/Dashboard/Notifications/NotificationDeliveryOverviewAction')
+  route.get('/email', 'Actions/Dashboard/Notifications/NotificationDeliveryIndexAction')
+  route.get('/sms', 'Actions/Dashboard/Notifications/NotificationDeliveryIndexAction')
+  route.get('/history', 'Actions/Dashboard/Notifications/NotificationDeliveryHistoryAction')
 })
 
 // ============================================================================
