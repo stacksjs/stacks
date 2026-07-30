@@ -17,6 +17,8 @@ const range = state<QueryRange>(mode() === 'history' ? 'week' : 'day')
 const connection = state('all')
 const type = state<QueryType>('all')
 const status = state<QueryStatus>('all')
+const currentPage = state(1)
+const itemsPerPage = state(50)
 const loading = state(true)
 const loadError = state('')
 
@@ -43,6 +45,11 @@ const filteredQueries = derived(() => rangedQueries().filter((query) => {
     return false
   return type() === 'all' || query.type === type()
 }))
+const totalPages = derived(() => Math.max(1, Math.ceil(filteredQueries().length / itemsPerPage())))
+const visibleQueries = derived(() => {
+  const start = (currentPage() - 1) * itemsPerPage()
+  return filteredQueries().slice(start, start + itemsPerPage())
+})
 
 const pageTitle = derived(() => mode() === 'slow' ? 'Slow Queries' : mode() === 'history' ? 'Query History' : 'Queries')
 const pageDescription = derived(() => mode() === 'slow'
@@ -66,18 +73,15 @@ const averageDuration = derived(() => {
 
 function setRange(value: QueryRange): void {
   range.set(value)
+  currentPage.set(1)
 }
 
-function updateConnection(event: Event): void {
-  connection.set((event.target as HTMLSelectElement).value)
+function resetPage(): void {
+  currentPage.set(1)
 }
 
-function updateType(event: Event): void {
-  type.set((event.target as HTMLSelectElement).value as QueryType)
-}
-
-function updateStatus(event: Event): void {
-  status.set((event.target as HTMLSelectElement).value as QueryStatus)
+function setCurrentPage(page: number): void {
+  currentPage.set(Math.min(Math.max(1, page), totalPages()))
 }
 
 function formatQuery(query: string): string {
@@ -182,14 +186,14 @@ onMount(() => {
         </div>
         <div class="flex gap-2 items-center">
           <label for="query-connection" class="sr-only">Connection</label>
-          <select id="query-connection" :value="connection()" class="px-3 py-2 text-neutral-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-neutral-300 rounded-lg dark:border-neutral-700" @change="updateConnection($event)">
+          <select id="query-connection" x-model="connection" class="px-3 py-2 text-neutral-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-neutral-300 rounded-lg dark:border-neutral-700" @change="resetPage">
             <option value="all">All connections</option>
             <template :for="item in connections()">
               <option :value="item">{{ item }}</option>
             </template>
           </select>
           <label for="query-type" class="sr-only">Query type</label>
-          <select id="query-type" :value="type()" class="px-3 py-2 text-neutral-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-neutral-300 rounded-lg dark:border-neutral-700" @change="updateType($event)">
+          <select id="query-type" x-model="type" class="px-3 py-2 text-neutral-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-neutral-300 rounded-lg dark:border-neutral-700" @change="resetPage">
             <option value="all">All types</option>
             <option value="SELECT">SELECT</option>
             <option value="INSERT">INSERT</option>
@@ -198,7 +202,7 @@ onMount(() => {
             <option value="OTHER">OTHER</option>
           </select>
           <label :if="mode() !== 'slow'" for="query-status" class="sr-only">Query status</label>
-          <select :if="mode() !== 'slow'" id="query-status" :value="status()" class="px-3 py-2 text-neutral-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-neutral-300 rounded-lg dark:border-neutral-700" @change="updateStatus($event)">
+          <select :if="mode() !== 'slow'" id="query-status" x-model="status" class="px-3 py-2 text-neutral-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-neutral-300 rounded-lg dark:border-neutral-700" @change="resetPage">
             <option value="all">All statuses</option>
             <option value="completed">Completed</option>
             <option value="slow">Slow</option>
@@ -229,7 +233,7 @@ onMount(() => {
           </tr>
         </thead>
         <tbody class="divide-neutral-100 divide-y dark:divide-neutral-700">
-          <template :for="query in filteredQueries()">
+          <template :for="query in visibleQueries()">
             <tr>
               <td class="pl-5 pr-4 py-3.5 max-w-2xl">
                 <div class="flex gap-2 items-start">
@@ -252,6 +256,17 @@ onMount(() => {
           </template>
         </tbody>
       </table>
+    </div>
+
+    <div :if="!loading() && !loadError() && filteredQueries().length > 0" class="px-5 py-4 border-neutral-200 border-t dark:border-neutral-700">
+      <Pagination
+        :currentPage="currentPage"
+        :totalPages="totalPages"
+        :totalItems="filteredQueries().length"
+        :itemsPerPage="itemsPerPage"
+        showTotalItems
+        @page="setCurrentPage"
+      />
     </div>
   </Card>
 </div>

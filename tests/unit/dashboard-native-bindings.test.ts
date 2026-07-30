@@ -81,4 +81,58 @@ describe('dashboard native STX bindings', () => {
     expect(list).toContain("emit('search', $event.target.value)")
     expect(list).not.toContain('function updateSearch(')
   })
+
+  test('shared inputs and selects own their control values natively', () => {
+    const input = componentSource('UI/Input.stx')
+    expect(input).toContain('x-model="liveValue"')
+    expect(input).toContain("emit('update:value', nextValue)")
+    expect(input).toContain('aria-label="{{ ariaLabel }}"')
+    expect(input).not.toContain('liveValue.set(nextValue)')
+
+    const select = componentSource('UI/Select.stx')
+    expect(select).toContain('x-model="liveValue"')
+    expect(select).toContain("emit('update:value', nextValue)")
+    expect(select).toContain('aria-label="{{ ariaLabel }}"')
+    expect(select).not.toContain('liveValue.set(nextValue)')
+  })
+
+  test('shared buttons and modals use native icons and dialog semantics', () => {
+    const button = componentSource('UI/Button.stx')
+    expect(button).toContain('i-hugeicons-loading-03')
+    expect(button).not.toContain('<svg')
+
+    const modal = componentSource('UI/Modal.stx')
+    expect(modal).toContain('role="dialog"')
+    expect(modal).toContain('aria-modal="true"')
+    expect(modal).toContain(`:aria-label="liveTitle() || 'Dialog'"`)
+  })
+
+  test('operational dashboards use native filter models', () => {
+    for (const component of [
+      'Deployments/DeploymentList.stx',
+      'Jobs/JobHistory.stx',
+      'Monitoring/ErrorDashboard.stx',
+      'Queries/QueryDashboard.stx',
+      'Realtime/RealtimeDashboard.stx',
+      'Releases/ReleaseDashboard.stx',
+    ]) {
+      const source = componentSource(component)
+      expect(source).toMatch(/(?:x-model|v-model:value)=/)
+      expect(source).not.toMatch(/:value="[^"]+\(\)"[^>]+@(?:input|change)=/)
+      expect(source).not.toMatch(/function update[A-Z]\w*\(event: Event\)/)
+    }
+
+    const deployments = componentSource('Deployments/DeploymentList.stx')
+    expect(deployments).toContain('v-model:value="environment"')
+    expect(deployments).toContain('v-model:value="domain"')
+
+    const jobs = componentSource('Jobs/JobHistory.stx')
+    expect(jobs).toContain('setTimeout(reloadFilters, 250)')
+    expect(jobs).toContain('onDestroy(')
+
+    const queries = componentSource('Queries/QueryDashboard.stx')
+    expect(queries).toContain('const itemsPerPage = state(50)')
+    expect(queries).toContain(':for="query in visibleQueries()"')
+    expect(queries).toContain('<Pagination')
+  })
 })

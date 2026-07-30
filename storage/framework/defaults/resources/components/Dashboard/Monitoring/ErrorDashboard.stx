@@ -29,17 +29,17 @@
         <h2 class="font-semibold text-lg text-neutral-900 dark:text-white">Issues</h2>
         <div class="flex flex-col gap-3 sm:flex-row">
           <div class="w-full sm:w-64">
-            <Input :value="searchQuery()" placeholder="Search errors..." size="sm" @input="setSearchQuery">
+            <Input v-model:value="searchQuery" ariaLabel="Search errors" placeholder="Search errors..." size="sm" @input="resetFilterPage">
               <template #iconLeft>
                 <div class="h-4 w-4 i-hugeicons-search-01"></div>
               </template>
             </Input>
           </div>
           <div class="w-full sm:w-40">
-            <Select :value="statusFilter() ?? ''" :options="statusOptions" placeholder="" size="sm" @change="setStatusFilter" />
+            <Select v-model:value="statusFilter" :options="statusOptions" ariaLabel="Error status" placeholder="" size="sm" @change="resetFilterPage" />
           </div>
           <div class="w-full sm:w-40">
-            <Select :value="typeFilter() ?? ''" :options="typeOptions" placeholder="" size="sm" @change="setTypeFilter" />
+            <Select v-model:value="typeFilter" :options="typeOptions" ariaLabel="Error type" placeholder="" size="sm" @change="resetFilterPage" />
           </div>
         </div>
       </div>
@@ -169,8 +169,8 @@ interface ErrorGroup {
 const { groupedErrors, errorStats, fetchGroupedErrors, fetchErrorStats, resolveErrorGroup, ignoreErrorGroup, unresolveErrorGroup, deleteErrorGroup } = useErrors()
 
 const searchQuery = state('')
-const statusFilter = state<string | null>(null)
-const typeFilter = state<string | null>(null)
+const statusFilter = state('')
+const typeFilter = state('')
 const sortBy = state('last_seen')
 const sortOrder = state<'asc' | 'desc'>('desc')
 const currentPage = state(1)
@@ -281,18 +281,7 @@ function eventValue<T>(value: T | CustomEvent<T>): T {
   return value instanceof CustomEvent ? value.detail : value
 }
 
-function setSearchQuery(value: string | CustomEvent<string>): void {
-  searchQuery.set(eventValue(value))
-  currentPage.set(1)
-}
-
-function setStatusFilter(value: string | CustomEvent<string>): void {
-  statusFilter.set(eventValue(value) || null)
-  currentPage.set(1)
-}
-
-function setTypeFilter(value: string | CustomEvent<string>): void {
-  typeFilter.set(eventValue(value) || null)
+function resetFilterPage(): void {
   currentPage.set(1)
 }
 

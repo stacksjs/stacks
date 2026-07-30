@@ -26,10 +26,6 @@ const environmentOptions = [
   { value: 'development', label: 'Development' },
 ]
 
-function eventValue<T>(value: T | CustomEvent<T>): T {
-  return value instanceof CustomEvent ? value.detail : value
-}
-
 function rows(): DeploymentRecord[] {
   const query = search().trim().toLowerCase()
   return deployments().filter((deployment) => {
@@ -45,22 +41,6 @@ function rows(): DeploymentRecord[] {
       deployment.author,
     ].some(value => value.toLowerCase().includes(query))
   })
-}
-
-function updateSearch(event: Event): void {
-  search.set((event.target as HTMLInputElement).value)
-}
-
-function updateStatus(event: Event): void {
-  status.set((event.target as HTMLSelectElement).value)
-}
-
-function updateEnvironment(value: string | CustomEvent<string>): void {
-  environment.set(eventValue(value))
-}
-
-function updateDomain(value: string | CustomEvent<string>): void {
-  domain.set(eventValue(value))
 }
 
 function formatNumber(value: number): string {
@@ -177,7 +157,7 @@ onMount(() => {
       </div>
       <div class="flex gap-2">
         <label class="sr-only" for="deployment-status">Status</label>
-        <select id="deployment-status" :value="status()" class="px-3 py-2 text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" @change="updateStatus($event)">
+        <select id="deployment-status" x-model="status" class="px-3 py-2 text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700">
           <option value="all">All statuses</option>
           <option value="success">Success</option>
           <option value="failed">Failed</option>
@@ -186,7 +166,7 @@ onMount(() => {
           <option value="cancelled">Cancelled</option>
         </select>
         <label class="sr-only" for="deployment-search">Search deployments</label>
-        <input id="deployment-search" :value="search()" type="search" placeholder="Search deployments" class="px-3 py-2 w-56 text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" @input="updateSearch($event)" />
+        <input id="deployment-search" x-model="search" type="search" placeholder="Search deployments" class="px-3 py-2 w-56 text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" />
       </div>
     </div>
     <DeploymentTable :deployments="rows()" :loading="isLoading" />
@@ -201,19 +181,17 @@ onMount(() => {
   >
     <div class="space-y-4">
       <Select
-        :value="environment()"
+        v-model:value="environment"
         :options="environmentOptions"
         label="Environment"
         placeholder=""
-        @change="updateEnvironment"
       />
       <Input
-        :value="domain()"
+        v-model:value="domain"
         type="text"
         label="Domain"
         placeholder="app.example.com"
         hint="Optional. Leave blank to use the configured deployment domain."
-        @input="updateDomain"
       />
       <div class="p-3 text-amber-800 text-sm dark:text-amber-200 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 rounded-lg dark:border-amber-900">
         A deployment can create or update cloud resources. Confirm only after reviewing the target environment.

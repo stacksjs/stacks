@@ -37,10 +37,6 @@ function formatDate(value: string): string {
   return new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value))
 }
 
-function updateEndpoint(event: Event): void {
-  endpoint.set((event.target as HTMLInputElement).value)
-}
-
 function addLiveEvent(type: LiveEvent['type'], detail: string): void {
   liveEvents.set([
     { type, detail, occurredAt: new Date().toISOString() },
@@ -170,7 +166,7 @@ onDestroy(() => {
         <span :class="'inline-flex px-2 py-1 font-medium text-xs rounded-full ' + (isConnected() ? 'text-green-700 bg-green-100 dark:text-green-300 dark:bg-green-950' : 'text-gray-600 bg-gray-100 dark:text-neutral-300 dark:bg-neutral-700')">{{ connectionStatus() }}</span>
       </div>
       <label for="realtime-endpoint" class="block mb-1 mt-5 font-medium text-gray-700 text-sm dark:text-neutral-300">WebSocket endpoint</label>
-      <input id="realtime-endpoint" :value="endpoint()" type="url" placeholder="ws://localhost:6001" class="block px-3 py-2 w-full font-mono text-gray-900 text-sm dark:text-white dark:bg-neutral-700 border border-gray-300 rounded-md dark:border-neutral-600" @input="updateEndpoint($event)" />
+      <input id="realtime-endpoint" x-model="endpoint" type="url" placeholder="ws://localhost:6001" class="block px-3 py-2 w-full font-mono text-gray-900 text-sm dark:text-white dark:bg-neutral-700 border border-gray-300 rounded-md dark:border-neutral-600" />
       <button type="button" :class="'inline-flex items-center justify-center mt-3 px-3 py-2 w-full font-semibold text-sm text-white rounded-md ' + (isConnected() ? 'bg-red-600 hover:bg-red-500' : 'bg-blue-600 hover:bg-blue-500')" @click="toggleConnection">
         <span :class="'mr-2 h-4 w-4 ' + (isConnected() ? 'i-hugeicons-link-square-02' : 'i-hugeicons-link-03')"></span>
         {{ isConnected() ? 'Disconnect' : 'Connect' }}

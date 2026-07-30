@@ -13,6 +13,7 @@ const selectedStatus = state('all')
 const searchQuery = state('')
 const isLoading = state(true)
 const loadError = state('')
+let searchTimer: ReturnType<typeof setTimeout> | undefined
 
 function totalPages(): number {
   return Math.max(1, Math.ceil(total() / perPage()))
@@ -26,16 +27,15 @@ function rangeEnd(): number {
   return Math.min(currentPage() * perPage(), total())
 }
 
-function updateFilter(field: string, event: Event): void {
-  const value = (event.target as HTMLInputElement | HTMLSelectElement).value
-  if (field === 'queue')
-    selectedQueue.set(value)
-  else if (field === 'status')
-    selectedStatus.set(value)
-  else
-    searchQuery.set(value)
+function reloadFilters(): void {
   currentPage.set(1)
   void loadJobs()
+}
+
+function reloadSearch(): void {
+  if (searchTimer)
+    clearTimeout(searchTimer)
+  searchTimer = setTimeout(reloadFilters, 250)
 }
 
 async function loadJobs(): Promise<void> {
@@ -93,6 +93,11 @@ async function handleRetry(id: string | CustomEvent<string>): Promise<void> {
 onMount(() => {
   void loadJobs()
 })
+
+onDestroy(() => {
+  if (searchTimer)
+    clearTimeout(searchTimer)
+})
 </script>
 
 <div class="space-y-6">
@@ -104,15 +109,15 @@ onMount(() => {
   <div class="grid gap-3 grid-cols-1 md:grid-cols-[minmax(0,1fr)_12rem_12rem]">
     <div>
       <label for="job-search" class="sr-only">Search jobs</label>
-      <input id="job-search" :value="searchQuery()" type="search" placeholder="Search job names" class="block px-3 py-2 w-full text-gray-900 text-sm dark:text-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" @input="updateFilter('search', $event)" />
+      <input id="job-search" x-model="searchQuery" type="search" placeholder="Search job names" class="block px-3 py-2 w-full text-gray-900 text-sm dark:text-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" @input="reloadSearch" />
     </div>
-    <select :value="selectedQueue()" aria-label="Queue" class="block px-3 py-2 text-gray-900 text-sm dark:text-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" @change="updateFilter('queue', $event)">
+    <select x-model="selectedQueue" aria-label="Queue" class="block px-3 py-2 text-gray-900 text-sm dark:text-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" @change="reloadFilters">
       <option value="all">All queues</option>
       <template :for="queue in queues()">
         <option :value="queue">{{ queue }}</option>
       </template>
     </select>
-    <select :value="selectedStatus()" aria-label="Status" class="block px-3 py-2 text-gray-900 text-sm dark:text-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" @change="updateFilter('status', $event)">
+    <select x-model="selectedStatus" aria-label="Status" class="block px-3 py-2 text-gray-900 text-sm dark:text-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" @change="reloadFilters">
       <option value="all">All statuses</option>
       <option value="queued">Queued</option>
       <option value="processing">Processing</option>

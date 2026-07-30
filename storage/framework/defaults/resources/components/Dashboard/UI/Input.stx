@@ -9,13 +9,14 @@ interface InputProps {
   error?: string
   hint?: string
   label?: string
+  ariaLabel?: string
   id?: string
   size?: 'xs' | 'sm' | 'md' | 'lg'
   name?: string
   fullWidth?: boolean
 }
 
-const { value = '', type = 'text', placeholder = '', disabled = false, readonly = false, required = false, error = '', hint = '', label = '', id = '', size = 'md', name = '', fullWidth = true } = defineProps<InputProps>()
+const { value = '', type = 'text', placeholder = '', disabled = false, readonly = false, required = false, error = '', hint = '', label = '', ariaLabel = '', id = '', size = 'md', name = '', fullWidth = true } = defineProps<InputProps>()
 
 const sizeClasses = {
     xs: 'px-2 py-1 text-[11px] h-6',
@@ -55,7 +56,6 @@ function inputValue(event: Event): string {
 
 function handleInput(event: Event): void {
   const nextValue = inputValue(event)
-  liveValue.set(nextValue)
   emit('input', nextValue)
   emit('update:value', nextValue)
 }
@@ -87,8 +87,9 @@ function handleBlur(event: Event): void {
     <input
       id="{{ inputId }}"
       type="{{ type }}"
-      :value="liveValue()"
+      x-model="liveValue"
       placeholder="{{ placeholder }}"
+      @if(ariaLabel) aria-label="{{ ariaLabel }}" @endif
       name="{{ name }}"
       class="{{ inputClass }} {{ $slots.iconLeft ? 'pl-8' : '' }}"
       @input="handleInput"

@@ -4,6 +4,7 @@ interface SelectProps {
   options?: any[]
   placeholder?: string
   label?: string
+  ariaLabel?: string
   error?: string
   hint?: string
   disabled?: boolean
@@ -13,7 +14,7 @@ interface SelectProps {
   id?: string
 }
 
-const { value = '', options = [], placeholder = 'Select an option', label = '', error = '', hint = '', disabled = false, required = false, size = 'md', name = '', id = '' } = defineProps<SelectProps>()
+const { value = '', options = [], placeholder = 'Select an option', label = '', ariaLabel = '', error = '', hint = '', disabled = false, required = false, size = 'md', name = '', id = '' } = defineProps<SelectProps>()
 
 const sizeClasses = {
   xs: 'h-6 text-[11px] px-2',
@@ -71,7 +72,6 @@ function optionDisabled(option: SelectOption | string | number): boolean {
 
 function handleChange(event: Event): void {
   const nextValue = (event.target as HTMLSelectElement).value
-  liveValue.set(nextValue)
   emit('change', nextValue)
   emit('update:value', nextValue)
 }
@@ -90,7 +90,8 @@ function handleChange(event: Event): void {
       <select
         id="{{ selectId }}"
         name="{{ name }}"
-        :value="liveValue()"
+        @if(ariaLabel) aria-label="{{ ariaLabel }}" @endif
+        x-model="liveValue"
         class="{{ selectClass }} appearance-none pr-8"
         @change="handleChange"
         @if(disabled) disabled @endif
