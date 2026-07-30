@@ -1,13 +1,8 @@
-// reactive state
-const count = ref(0)
-const now = useDateFormat(useNow(), 'YYYY-MM-DD HH:mm:ss')
+export const count = state(0)
 
-// functions that mutate state and trigger updates
-function increment() {
+export function increment(): void {
   // eslint-disable-next-line no-console
-  console.log('increment() was last run:', now)
+  console.log('increment() was run')
 
-  count.value++
+  count.update(value => value + 1)
 }
-
-export { count, increment }

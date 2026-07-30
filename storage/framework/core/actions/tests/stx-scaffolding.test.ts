@@ -22,4 +22,11 @@ describe('STX scaffolding', () => {
     expect(CODE_TEMPLATES.component).not.toContain('<script setup')
     expect(CODE_TEMPLATES.page).not.toContain('<script setup')
   })
+
+  it('scaffolds one uniquely named auto-importable function', () => {
+    expect(CODE_TEMPLATES.function).toContain('export function {0}(): void')
+    expect(CODE_TEMPLATES.function).not.toContain('ref(')
+    expect(CODE_TEMPLATES.function).not.toContain('.value')
+    expect(CODE_TEMPLATES.function).not.toContain('function increment')
+  })
 })

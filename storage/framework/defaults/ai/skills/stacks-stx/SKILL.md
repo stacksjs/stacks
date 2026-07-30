@@ -32,31 +32,34 @@ When the task is how a page should *look* (not just how stx renders), pair this 
 ## Template Structure
 
 ```html
-<template>
-  <div class="container">
-    <h1>{{ title }}</h1>
-    <p x-if="showDescription">{{ description }}</p>
-    <button @click="increment">Count: {{ count }}</button>
-  </div>
-</template>
+<script client>
+const count = state(0)
+const title = state('Hello STX')
+const showDescription = state(true)
 
-<script>
-import { ref, computed } from '@stacksjs/composables'
-
-const count = ref(0)
-const title = ref('Hello STX')
-const showDescription = ref(true)
-
-function increment() {
-  count.value++
+function increment(): void {
+  count.update(value => value + 1)
 }
 </script>
+
+<template>
+  <div class="container">
+    <h1>{{ title() }}</h1>
+    <p :if="showDescription()">Rendered reactively</p>
+    <button type="button" @click="increment()">Count: {{ count() }}</button>
+  </div>
+</template>
 
 <style>
 /* Use crosswind utility classes or custom CSS */
 .container { max-width: 1200px; margin: 0 auto; }
 </style>
 ```
+
+STX signals are callable. Read with `count()`, replace with
+`count.set(value)`, and update from the current value with
+`count.update(value => value + 1)`. Do not use Vue-style `.value` access in
+STX templates or `resources/functions`.
 
 ## Configuration (config/ui.ts)
 

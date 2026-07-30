@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it } from 'bun:test'
 import { existsSync, mkdirSync, mkdtempSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { componentsPath, functionsPath, resolveUserLibBase } from '../src/index'
+import { componentsPath, functionsPath, resolveUserLibBase, userComponentsPath } from '../src/index'
 
 /**
  * Root-level `functions/` and `components/` folders (stacksjs/stacks#929).
@@ -42,6 +42,7 @@ describe('componentsPath / functionsPath integration', () => {
     // In this framework checkout there is no root-level components/ or
     // functions/ folder, so the conventional resources/ path is used.
     expect(componentsPath('Button.stx')).toContain('resources/components/Button.stx')
+    expect(userComponentsPath('Button.stx')).toContain('resources/components/Button.stx')
     expect(functionsPath('useThing.ts')).toContain('resources/functions/useThing.ts')
   })
 

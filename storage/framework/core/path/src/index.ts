@@ -80,7 +80,7 @@ export function builtUserActionsPath(path?: string, options?: { relative: boolea
 }
 
 export function userComponentsPath(path?: string): string {
-  return libsPath(`components/${path || ''}`)
+  return `${resolveUserLibBase(projectPath('components'), resourcesPath('components'))}/${path || ''}`
 }
 
 export function userViewsPath(path?: string): string {
