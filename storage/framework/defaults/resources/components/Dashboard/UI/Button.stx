@@ -33,7 +33,6 @@ const {
   dataMethodId = '',
   tag = 'button',
   href = '',
-  type = 'button',
 } = defineProps<ButtonProps>()
 
 // Variant classes
@@ -84,6 +83,7 @@ const liveHref = useReactiveProp('href', '')
 const liveDownload = useReactiveProp('download', '')
 const liveTarget = useReactiveProp('target', '')
 const liveRel = useReactiveProp('rel', '')
+const liveType = useReactiveProp('type', 'button')
 const liveAriaLabel = useReactiveProp('ariaLabel', '')
 const liveDataAction = useReactiveProp('dataAction', '')
 const liveDataErrorMessage = useReactiveProp('dataErrorMessage', '')
@@ -114,7 +114,7 @@ const liveDataMethodId = useReactiveProp('dataMethodId', '')
   @else
     @if(toggle)
       <button
-        type="{{ type }}"
+        :type="liveType()"
         class="{{ buttonClass }}"
         :aria-label="liveAriaLabel() || undefined"
         :data-action="liveDataAction() || undefined"
@@ -132,7 +132,7 @@ const liveDataMethodId = useReactiveProp('dataMethodId', '')
       </button>
     @else
       <button
-        type="{{ type }}"
+        :type="liveType()"
         class="{{ buttonClass }}"
         :aria-label="liveAriaLabel() || undefined"
         :data-action="liveDataAction() || undefined"

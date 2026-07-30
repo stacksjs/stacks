@@ -27,27 +27,27 @@ function formatDate(value: string): string {
 <section :if="message()" aria-label="Selected message" class="flex flex-col w-full md:w-3/5 bg-white dark:bg-neutral-700">
   <div class="flex items-center justify-between px-4 py-2 border-b border-gray-200 dark:border-neutral-600">
     <div class="flex items-center space-x-2 min-w-0">
-      <button type="button" class="p-1 text-gray-500 dark:text-neutral-400 hover:bg-gray-100 dark:hover:bg-neutral-600 rounded" title="Close message" @click="emit('close')">
+      <Button variant="ghost" iconOnly ariaLabel="Close message" @click="emit('close')">
         <span class="block h-5 w-5 i-hugeicons-arrow-left-02"></span>
-      </button>
+      </Button>
       <h2 class="font-medium text-gray-900 text-lg truncate dark:text-white">{{ message()?.subject }}</h2>
     </div>
     <div class="flex space-x-2">
-      <button type="button" class="p-1 text-gray-500 dark:text-neutral-400 hover:bg-gray-100 dark:hover:bg-neutral-600 rounded" :title="message()?.read ? 'Mark as unread' : 'Mark as read'" @click="emit('toggle-read')">
+      <Button variant="ghost" iconOnly :ariaLabel="message()?.read ? 'Mark as unread' : 'Mark as read'" @click="emit('toggle-read')">
         <span :class="'block h-5 w-5 ' + (message()?.read ? 'i-hugeicons-mail-02' : 'i-hugeicons-mail-open-01')"></span>
-      </button>
-      <button type="button" class="p-1 text-gray-500 dark:text-neutral-400 hover:bg-gray-100 dark:hover:bg-neutral-600 rounded" title="Delete message" @click="emit('request-delete')">
+      </Button>
+      <Button variant="ghost" iconOnly ariaLabel="Delete message" @click="emit('request-delete')">
         <span class="block h-5 w-5 i-hugeicons-waste"></span>
-      </button>
+      </Button>
     </div>
   </div>
 
   <div :if="deletePending()" class="flex gap-3 items-center justify-end px-4 py-2 text-sm bg-red-50 dark:bg-red-950/30 border-b border-red-200 dark:border-red-900">
     <span class="mr-auto text-red-800 dark:text-red-200">Permanently delete this email?</span>
-    <button type="button" class="px-3 py-1.5 text-gray-700 dark:text-neutral-200 hover:bg-white dark:hover:bg-neutral-700 rounded-md" @click="emit('cancel-delete')">Cancel</button>
-    <button type="button" :disabled="deleting()" class="px-3 py-1.5 font-medium text-white bg-red-600 hover:bg-red-500 rounded-md disabled:opacity-50" @click="emit('confirm-delete')">
+    <Button variant="secondary" size="sm" @click="emit('cancel-delete')">Cancel</Button>
+    <Button variant="danger" size="sm" :loading="deleting()" @click="emit('confirm-delete')">
       {{ deleting() ? 'Deleting...' : 'Delete' }}
-    </button>
+    </Button>
   </div>
 
   <div class="px-4 py-3 border-b border-gray-200 dark:border-neutral-600">
@@ -77,9 +77,9 @@ function formatDate(value: string): string {
     <label for="inbox-reply" class="sr-only">Reply</label>
     <textarea id="inbox-reply" x-model="replyText" placeholder="Reply..." class="block p-3 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-600 border border-gray-300 rounded-md dark:border-neutral-600 focus:outline-none focus:ring-1 focus:ring-blue-500" rows="3" @input="emit('update:reply', $event.target.value)"></textarea>
     <div class="flex justify-end mt-2">
-      <button type="button" :disabled="!canSendReply()" class="px-4 py-2 font-medium text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md disabled:opacity-50 disabled:cursor-not-allowed" @click="emit('reply')">
+      <Button :disabled="!canSendReply()" :loading="replying()" @click="emit('reply')">
         {{ replying() ? 'Sending...' : 'Send reply' }}
-      </button>
+      </Button>
     </div>
   </div>
 </section>

@@ -15,6 +15,7 @@ describe('dashboard button contract', () => {
     expect(button).toContain("variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger' | 'success' | 'warning'")
     expect(button).toContain("tag?: 'button' | 'a'")
     expect(button).toContain("const liveDownload = useReactiveProp('download', '')")
+    expect(button).toContain("const liveType = useReactiveProp('type', 'button')")
     expect(button).toContain("const liveDataAction = useReactiveProp('dataAction', '')")
     expect(button).toContain("const liveDataErrorMessage = useReactiveProp('dataErrorMessage', '')")
     expect(button).toContain("const liveDataErrorType = useReactiveProp('dataErrorType', '')")
@@ -228,5 +229,51 @@ describe('dashboard button contract', () => {
         || match[0].includes('data-action="tab"'),
       ),
     )).toBe(true)
+  })
+
+  test('keeps email navigation semantic while sharing compose and message actions', () => {
+    const actionFiles = [
+      'InboxComposer.stx',
+      'InboxMessageDetail.stx',
+      'EmailSettingsList.stx',
+    ]
+
+    for (const file of actionFiles) {
+      const source = readFileSync(
+        resolve('storage/framework/defaults/resources/components/Dashboard/Email', file),
+        'utf8',
+      )
+
+      expect(source).toContain('<Button')
+      expect(source).not.toMatch(/<button\b/)
+    }
+
+    const semanticFiles = [
+      ['InboxDashboard.stx', [':aria-pressed']],
+      ['EmailSidebar.stx', ["emit('update:active-folder'", "emit('category'"]],
+      ['InboxMessageList.stx', ["emit('select', email)"]],
+      ['EmailActivityDashboard.stx', ['changeTimeRange(']],
+      ['EmailSettingsNavigation.stx', ["emit('select', section.id)"]],
+    ] as const
+
+    for (const [file, markers] of semanticFiles) {
+      const source = readFileSync(
+        resolve('storage/framework/defaults/resources/components/Dashboard/Email', file),
+        'utf8',
+      )
+      const nativeButtons = [...source.matchAll(/<button\b[^>]*>/g)].map(match => match[0])
+
+      expect(nativeButtons.every(button => markers.some(marker => button.includes(marker)))).toBe(true)
+    }
+
+    const settingsView = readFileSync(
+      resolve('storage/framework/defaults/views/dashboard/inbox/settings.stx'),
+      'utf8',
+    )
+
+    expect(settingsView).toContain('<Button')
+    expect(settingsView).toContain('<Toggle v-model:checked="vacationEnabled"')
+    expect(settingsView).not.toMatch(/<button\b/)
+    expect(settingsView).not.toMatch(/class="[^"]*{{/)
   })
 })
