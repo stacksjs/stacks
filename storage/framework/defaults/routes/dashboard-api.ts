@@ -145,6 +145,11 @@ route.group({ prefix: '/api/dashboard', apiResponse: true }, () => {
   guard(route.patch('/comments/{id}', 'Actions/Dashboard/Content/CommentUpdateAction'))
   guard(route.delete('/comments/{id}', 'Actions/Dashboard/Content/CommentDestroyAction'))
 
+  guard(route.get('/files', 'Actions/Dashboard/Content/FileIndexAction'))
+  guard(route.post('/files/directories', 'Actions/Dashboard/Content/FileDirectoryStoreAction'))
+  guard(route.post('/files/uploads', 'Actions/Dashboard/Content/FileUploadAction'))
+  guard(route.delete('/files', 'Actions/Dashboard/Content/FileDestroyAction'))
+
   route.get('/ci/status', 'Actions/Dashboard/Ci/StatusAction')
   // CI drilldown (stacksjs/stacks#1848): per-repo run history + per-run
   // job detail. On-demand reads so the polled snapshot stays cheap.
