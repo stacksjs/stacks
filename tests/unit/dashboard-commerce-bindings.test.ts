@@ -138,4 +138,50 @@ describe('commerce dashboard filter bindings', () => {
     expect(source).not.toMatch(/function update[A-Z]\w*\(event: Event\)/)
     expect(source).not.toMatch(/:checked="[^"]+\(\)"[^>]+@change=/)
   })
+
+  test('category, printer, and waitlist forms use native field models', () => {
+    for (const component of [
+      'CommerceCategoryDialog.stx',
+      'PrintDeviceDialog.stx',
+      'ProductWaitlistEntryDialog.stx',
+      'RestaurantWaitlistEntryDialog.stx',
+    ]) {
+      const source = readFileSync(
+        resolve(
+          'storage/framework/defaults/resources/components/Dashboard/Commerce',
+          component,
+        ),
+        'utf8',
+      )
+
+      expect(source).toContain('x-model=')
+      expect(source).not.toMatch(/:value="[^"]+\(\)"[^>]+@(?:input|change)=/)
+      expect(source).not.toMatch(/:checked="[^"]+\(\)"[^>]+@change=/)
+    }
+
+    const category = readFileSync(
+      resolve(
+        'storage/framework/defaults/resources/components/Dashboard/Commerce',
+        'CommerceCategoryDialog.stx',
+      ),
+      'utf8',
+    )
+    expect(category).toContain('@blur="normalizeSlug"')
+
+    for (const component of [
+      'ProductWaitlistEntryDialog.stx',
+      'RestaurantWaitlistEntryDialog.stx',
+    ]) {
+      const source = readFileSync(
+        resolve(
+          'storage/framework/defaults/resources/components/Dashboard/Commerce',
+          component,
+        ),
+        'utf8',
+      )
+      expect(source).toContain('x-model="customerId"')
+      expect(source).toContain('@change="hydrateCustomer($event)"')
+      expect(source).not.toContain('customerId.set(selectedId)')
+    }
+  })
 })

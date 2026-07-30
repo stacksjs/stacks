@@ -33,26 +33,6 @@ effect(() => {
   status.set(current?.status || 'offline')
 })
 
-function updateName(event: Event): void {
-  name.set((event.target as HTMLInputElement).value)
-}
-
-function updateMacAddress(event: Event): void {
-  macAddress.set((event.target as HTMLInputElement).value)
-}
-
-function updateLocation(event: Event): void {
-  location.set((event.target as HTMLInputElement).value)
-}
-
-function updateTerminal(event: Event): void {
-  terminal.set((event.target as HTMLInputElement).value)
-}
-
-function updateStatus(event: Event): void {
-  status.set((event.target as HTMLSelectElement).value as PrintDeviceStatus)
-}
-
 function valid(): boolean {
   return Boolean(name().trim() && macAddress().trim() && location().trim() && terminal().trim())
 }
@@ -78,11 +58,11 @@ function submit(): void {
         <h2 id="print-device-dialog-title" class="font-semibold text-gray-900 text-lg dark:text-white">{{ mode() === 'edit' ? 'Edit print device' : 'Add print device' }}</h2>
         <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Store fields declared by the PrintDevice model.</p>
         <div class="grid gap-4 grid-cols-1 sm:grid-cols-2 mt-5">
-          <label class="block sm:col-span-2"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Name</span><input :value="name()" type="text" maxlength="100" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="updateName($event)" /></label>
-          <label class="block sm:col-span-2"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">MAC address</span><input :value="macAddress()" type="text" maxlength="50" required spellcheck="false" class="mt-1 px-3 py-2 w-full font-mono text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="updateMacAddress($event)" /></label>
-          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Location</span><input :value="location()" type="text" maxlength="100" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="updateLocation($event)" /></label>
-          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Terminal</span><input :value="terminal()" type="text" maxlength="50" required spellcheck="false" class="mt-1 px-3 py-2 w-full font-mono text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="updateTerminal($event)" /></label>
-          <label class="block sm:col-span-2"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Operational status</span><select :value="status()" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @change="updateStatus($event)"><option value="online">Online</option><option value="warning">Warning</option><option value="offline">Offline</option></select></label>
+          <label class="block sm:col-span-2"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Name</span><input x-model="name" type="text" maxlength="100" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label>
+          <label class="block sm:col-span-2"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">MAC address</span><input x-model="macAddress" type="text" maxlength="50" required spellcheck="false" class="mt-1 px-3 py-2 w-full font-mono text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label>
+          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Location</span><input x-model="location" type="text" maxlength="100" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label>
+          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Terminal</span><input x-model="terminal" type="text" maxlength="50" required spellcheck="false" class="mt-1 px-3 py-2 w-full font-mono text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label>
+          <label class="block sm:col-span-2"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Operational status</span><select x-model="status" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700"><option value="online">Online</option><option value="warning">Warning</option><option value="offline">Offline</option></select></label>
         </div>
       </div>
       <footer class="flex gap-2 justify-end px-6 py-4 bg-gray-50 dark:bg-neutral-900/50 border-gray-200 border-t dark:border-neutral-700">

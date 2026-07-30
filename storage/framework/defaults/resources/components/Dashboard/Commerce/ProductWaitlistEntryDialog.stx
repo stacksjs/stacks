@@ -60,9 +60,8 @@ effect(() => {
   reset(entry)
 })
 
-function selectCustomer(event: Event): void {
+function hydrateCustomer(event: Event): void {
   const selectedId = (event.target as HTMLSelectElement).value
-  customerId.set(selectedId)
   const customer = options().customers.find(option => option.id === selectedId)
   if (!customer)
     return
@@ -125,7 +124,7 @@ function submitForm(): void {
 
         <label class="block sm:col-span-2">
           <span class="block font-medium text-gray-900 text-sm dark:text-neutral-200">Existing customer</span>
-          <select :value="customerId()" class="block mt-2 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-700 border border-gray-300 rounded-md dark:border-neutral-600" @change="selectCustomer($event)">
+          <select x-model="customerId" class="block mt-2 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-700 border border-gray-300 rounded-md dark:border-neutral-600" @change="hydrateCustomer($event)">
             <option value="">No linked customer</option>
             <option :for="option in options().customers" :value="option.id">{{ option.label }}{{ option.detail ? ' · ' + option.detail : '' }}</option>
           </select>
