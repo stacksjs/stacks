@@ -10867,6 +10867,31 @@
         }
       }
     },
+    "/api/dashboard/logs": {
+      "get": {
+        "summary": "/api/dashboard/logs",
+        "operationId": "get__api_dashboard_logs",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
     "/api/dashboard/mail-settings": {
       "get": {
         "summary": "/api/dashboard/mail-settings",
@@ -14579,6 +14604,65 @@
       "put": {
         "summary": "/api/license-keys/{id}",
         "operationId": "put__api_license_keys__id_",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/api/logs": {
+      "get": {
+        "summary": "/api/logs",
+        "operationId": "get__api_logs",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/api/logs/{id}": {
+      "get": {
+        "summary": "/api/logs/{id}",
+        "operationId": "get__api_logs__id_",
         "parameters": [
           {
             "name": "id",

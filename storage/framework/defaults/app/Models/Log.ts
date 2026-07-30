@@ -9,6 +9,11 @@ export default defineModel({
 
   traits: {
     useTimestamps: true,
+    useApi: {
+      uri: 'logs',
+      routes: ['index', 'show'],
+      middleware: ['auth'],
+    },
     useSeeder: {
       count: 50,
     },

@@ -1,50 +1,114 @@
+import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
-import { Log } from '@stacksjs/orm'
+import { db } from '@stacksjs/database'
+import { request as routerRequest, response } from '@stacksjs/router'
+import { DASHBOARD_LOG_TYPES, normalizeDashboardLog, summarizeDashboardLogTypes } from './log-dashboard'
+
+const RANGES = ['1', '7', '30', '90', 'all'] as const
+
+function queryValue(request: RequestInstance, key: string): string {
+  const query = ((routerRequest as any).query || {}) as Record<string, string | string[] | undefined>
+  const value = query[key]
+  return String((Array.isArray(value) ? value[0] : value) || request.get(key) || '').trim()
+}
 
 export default new Action({
   name: 'LogIndexAction',
-  description: 'Returns log data for the dashboard.',
+  description: 'Returns filtered, paginated Log model records for the dashboard.',
   method: 'GET',
-  async handle() {
-    const levels = ['All', 'Error', 'Warning', 'Info', 'Debug']
-    const sources = ['All Sources', 'api', 'auth', 'queue', 'http', 'cache', 'payment', 'deploy']
+  apiResponse: true,
 
+  async handle(request: RequestInstance) {
     try {
-      const allLogs = await Log.orderByDesc('id').limit(50).get()
-      const totalLogs = await Log.count()
+      const requestedPage = Math.max(1, Number.parseInt(queryValue(request, 'page') || '1', 10) || 1)
+      const perPage = Math.min(100, Math.max(10, Number.parseInt(queryValue(request, 'per_page') || '25', 10) || 25))
+      const search = queryValue(request, 'search')
+      const requestedType = queryValue(request, 'type').toLowerCase()
+      const type = DASHBOARD_LOG_TYPES.includes(requestedType as typeof DASHBOARD_LOG_TYPES[number])
+        ? requestedType
+        : ''
+      const source = queryValue(request, 'source').toLowerCase()
+      const project = queryValue(request, 'project')
+      const requestedRange = queryValue(request, 'range').toLowerCase()
+      const range = RANGES.includes(requestedRange as typeof RANGES[number]) ? requestedRange : '30'
+      const cutoff = range === 'all' ? 0 : Date.now() - Number(range) * 86400000
+      const searchPattern = `%${search}%`
 
-      const logs = allLogs.map(l => ({
-        timestamp: String(l.get('created_at') || l.get('timestamp') || ''),
-        level: String(l.get('level') || 'info'),
-        source: String(l.get('source') || l.get('channel') || ''),
-        message: String(l.get('message') || ''),
-        context: String(l.get('context') || ''),
-      }))
-
-      const errorCount = allLogs.filter(l => l.get('level') === 'error').length
-      const warnCount = allLogs.filter(l => l.get('level') === 'warn' || l.get('level') === 'warning').length
-
-      const stats = [
-        { label: 'Total Logs (24h)', value: String(totalLogs) },
-        { label: 'Errors', value: String(errorCount) },
-        { label: 'Warnings', value: String(warnCount) },
-        { label: 'Avg Response', value: '-' },
-      ]
-
-      return { logs, stats, levels, sources }
-    }
-    catch {
-      return {
-        logs: [],
-        stats: [
-          { label: 'Total Logs (24h)', value: '0' },
-          { label: 'Errors', value: '0' },
-          { label: 'Warnings', value: '0' },
-          { label: 'Avg Response', value: '-' },
-        ],
-        levels,
-        sources,
+      const applyFilters = <T extends {
+        where: (...args: any[]) => T
+        whereAny: (columns: string[], operator: string, value: unknown) => T
+      }>(query: T): T => {
+        let filtered = query
+        if (cutoff)
+          filtered = filtered.where('timestamp', '>=', cutoff)
+        if (type)
+          filtered = filtered.where('type', '=', type)
+        if (source)
+          filtered = filtered.where('source', '=', source)
+        if (project)
+          filtered = filtered.where('project', '=', project)
+        if (search)
+          filtered = filtered.whereAny(['message', 'project', 'file', 'stacktrace'], 'like', searchPattern)
+        return filtered
       }
+
+      const [countRow, typeRows, sourceRows, projectRows] = await Promise.all([
+        applyFilters(db.selectFrom('logs').select(db.fn.count('id').as('count')))
+          .executeTakeFirst() as Promise<{ count: number | string } | undefined>,
+        applyFilters(db.selectFrom('logs').select(['type', db.fn.count('id').as('count')]))
+          .groupBy('type')
+          .execute() as Promise<Array<{ type: string, count: number | string }>>,
+        db.selectFrom('logs').select('source').distinct().orderBy('source', 'asc').limit(100).execute() as Promise<Array<{ source: string }>>,
+        db.selectFrom('logs').select('project').distinct().orderBy('project', 'asc').limit(500).execute() as Promise<Array<{ project: string }>>,
+      ])
+
+      const total = Number(countRow?.count || 0)
+      const totalPages = Math.max(1, Math.ceil(total / perPage))
+      const page = Math.min(requestedPage, totalPages)
+      const rows = await applyFilters(db.selectFrom('logs').select([
+        'id',
+        'timestamp',
+        'type',
+        'source',
+        'message',
+        'project',
+        'stacktrace',
+        'file',
+        'created_at',
+        'updated_at',
+      ]))
+        .orderBy('timestamp', 'desc')
+        .orderBy('id', 'desc')
+        .limit(perPage)
+        .offset((page - 1) * perPage)
+        .execute()
+
+      return {
+        logs: rows.map(normalizeDashboardLog),
+        summary: summarizeDashboardLogTypes(typeRows, total),
+        pagination: {
+          page,
+          perPage,
+          total,
+          totalPages,
+        },
+        options: {
+          sources: sourceRows.map(row => row.source).filter(Boolean),
+          projects: projectRows.map(row => row.project).filter(Boolean),
+          types: [...DASHBOARD_LOG_TYPES],
+          ranges: [...RANGES],
+        },
+        generatedAt: new Date().toISOString(),
+      }
+    }
+    catch (error) {
+      return response.json({
+        logs: [],
+        summary: { total: 0, error: 0, warning: 0, info: 0, success: 0 },
+        pagination: { page: 1, perPage: 25, total: 0, totalPages: 1 },
+        options: { sources: [], projects: [], types: [...DASHBOARD_LOG_TYPES], ranges: [...RANGES] },
+        error: error instanceof Error ? error.message : 'Logs could not be loaded.',
+      }, 500)
     }
   },
 })

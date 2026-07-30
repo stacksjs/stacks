@@ -1,0 +1,35 @@
+<script client>
+import type { DashboardLogType } from '../../../../app/Actions/Dashboard/Infrastructure/log-dashboard'
+
+const type = useReactiveProp<DashboardLogType>('type', 'unknown')
+
+const badgeClass = derived(() => {
+  const base = 'inline-flex items-center gap-1.5 px-2 py-1 font-semibold text-[11px] capitalize rounded-full'
+  if (type() === 'error')
+    return `${base} text-red-700 dark:text-red-300 bg-red-50 dark:bg-red-950/40`
+  if (type() === 'warning')
+    return `${base} text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40`
+  if (type() === 'success')
+    return `${base} text-green-700 dark:text-green-300 bg-green-50 dark:bg-green-950/40`
+  if (type() === 'info')
+    return `${base} text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/40`
+  return `${base} text-neutral-600 dark:text-neutral-300 bg-neutral-100 dark:bg-neutral-800`
+})
+
+const dotClass = derived(() => {
+  if (type() === 'error')
+    return 'h-1.5 w-1.5 bg-red-500 rounded-full'
+  if (type() === 'warning')
+    return 'h-1.5 w-1.5 bg-amber-500 rounded-full'
+  if (type() === 'success')
+    return 'h-1.5 w-1.5 bg-green-500 rounded-full'
+  if (type() === 'info')
+    return 'h-1.5 w-1.5 bg-blue-500 rounded-full'
+  return 'h-1.5 w-1.5 bg-neutral-400 rounded-full'
+})
+</script>
+
+<span :class="badgeClass()">
+  <span :class="dotClass()"></span>
+  {{ type() }}
+</span>
