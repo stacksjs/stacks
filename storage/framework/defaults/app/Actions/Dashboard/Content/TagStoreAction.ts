@@ -8,8 +8,8 @@ import { findRow, insertedId, slugify, str, timestamp } from './content-input'
 /**
  * `POST /api/dashboard/tags` — creates a CMS tag from the dashboard.
  *
- * The `Tag` model declares `name` and `slug` unique but the table carries no
- * unique constraint, so the duplicate check has to happen here.
+ * The duplicate check provides a clear validation response before the model's
+ * unique constraints enforce the same invariant.
  */
 export default new Action({
   name: 'TagStoreAction',
@@ -44,7 +44,6 @@ export default new Action({
         name,
         slug,
         description,
-        post_count: 0,
         created_at: now,
         updated_at: now,
       } as any)

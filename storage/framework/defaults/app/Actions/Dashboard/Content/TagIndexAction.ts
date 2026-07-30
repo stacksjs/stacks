@@ -6,20 +6,21 @@ interface TagRow {
   name: string | null
   slug: string | null
   description: string | null
-  post_count: number | null
   color: string | null
   created_at: string | null
   updated_at: string | null
 }
 
+interface TagCountRow {
+  tag_id: number
+  count: number
+}
+
 /**
  * `GET /api/dashboard/tags` — backs `views/dashboard/content/tags/index.stx`.
  *
- * Reads the `tags` table via `db`. The previous `Tag.all()` call threw on every
- * request (the ORM model exposes no query methods) and the catch turned that
- * into an empty list, so a broken read looked like a CMS with no tags. It also
- * returned only `{ name, count }`, while the page renders id, slug, and
- * description.
+ * Reads tag records and derives assignment counts from the canonical pivot
+ * table so the dashboard never depends on stale denormalized counters.
  */
 export default new Action({
   name: 'TagIndexAction',
@@ -27,11 +28,20 @@ export default new Action({
   method: 'GET',
   apiResponse: true,
   async handle() {
-    const rows = await db
-      .selectFrom('tags')
-      .selectAll()
-      .orderBy('created_at', 'desc')
-      .execute() as unknown as TagRow[]
+    const [rows, countRows] = await Promise.all([
+      db
+        .selectFrom('tags')
+        .select(['id', 'name', 'slug', 'description', 'color', 'created_at', 'updated_at'])
+        .orderBy('created_at', 'desc')
+        .execute() as unknown as Promise<TagRow[]>,
+      db
+        .selectFrom('taggable_models')
+        .select(['tag_id', db.fn.count('taggable_id').as('count')])
+        .where('taggable_type', '=', 'posts')
+        .groupBy('tag_id')
+        .execute() as unknown as Promise<TagCountRow[]>,
+    ])
+    const countByTag = new Map(countRows.map(row => [Number(row.tag_id), Number(row.count)]))
 
     const tags = rows.map(row => ({
       id: Number(row.id),
@@ -39,7 +49,7 @@ export default new Action({
       slug: String(row.slug || ''),
       description: String(row.description || ''),
       color: String(row.color || ''),
-      post_count: Number(row.post_count || 0),
+      post_count: countByTag.get(Number(row.id)) || 0,
       created_at: row.created_at || null,
       updated_at: row.updated_at || null,
     }))

@@ -1,15 +1,12 @@
 import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
-import { db } from '@stacksjs/database'
 import { response } from '@stacksjs/router'
 
 /**
  * `DELETE /api/dashboard/posts/{id}` — deletes a CMS post from the dashboard.
  *
- * A plain row delete: this schema has no `categorizable_models` /
- * `taggable_models` pivot tables, so there is nothing to cascade to. (The
- * `@stacksjs/cms` `posts.destroy()` helper assumes those tables exist, which is
- * why this action talks to `db` directly instead.)
+ * Detaches the native category and tag relations before removing the post so
+ * no pivot rows are orphaned.
  */
 export default new Action({
   name: 'PostDestroyAction',
@@ -21,16 +18,16 @@ export default new Action({
     if (!Number.isInteger(id) || id <= 0)
       return response.json({ message: 'A valid post id is required.' }, 422)
 
-    const existing = await db
-      .selectFrom('posts')
-      .select(['id'])
-      .where('id', '=', id)
-      .executeTakeFirst()
+    const post = await Post.find(id)
 
-    if (!existing)
+    if (!post)
       return response.json({ message: 'Post not found.' }, 404)
 
-    await db.deleteFrom('posts').where('id', '=', id).execute()
+    await Promise.all([
+      post.categories().detach(),
+      post.tags().detach(),
+    ])
+    await post.delete()
 
     return response.json({ message: 'Post deleted.', id })
   },

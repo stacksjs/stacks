@@ -2,7 +2,7 @@ import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
 import { db } from '@stacksjs/database'
 import { response } from '@stacksjs/router'
-import { findPost, postPayload, publishedAtFor, timestamp } from './post-input'
+import { findPost, invalidPostContent, invalidPostReference, postPayload, publishedAtFor, timestamp } from './post-input'
 
 /**
  * `PATCH /api/dashboard/posts/{id}` — updates a CMS post from the dashboard.
@@ -23,8 +23,13 @@ export default new Action({
 
     const payload = postPayload(request)
 
-    if (!payload.title)
-      return response.json({ message: 'Title is required.' }, 422)
+    const invalidContent = invalidPostContent(payload)
+    if (invalidContent)
+      return response.json({ message: invalidContent }, 422)
+
+    const invalidReference = await invalidPostReference(payload)
+    if (invalidReference)
+      return response.json({ message: invalidReference }, 422)
 
     const existing = await db
       .selectFrom('posts')
@@ -43,11 +48,23 @@ export default new Action({
         content: payload.content,
         poster: payload.poster,
         status: payload.status,
+        author_id: payload.authorId,
+        is_featured: payload.featured ? 1 : 0,
         published_at: publishedAtFor(payload.status, existing.published_at, timestamp()),
         updated_at: timestamp(),
       } as any)
       .where('id', '=', id)
       .execute()
+
+    const post = await Post.find(id)
+
+    if (!post)
+      return response.json({ message: 'Updated post could not be loaded.' }, 500)
+
+    await Promise.all([
+      post.categories().sync(payload.categoryIds),
+      post.tags().sync(payload.tagIds),
+    ])
 
     return response.json(await findPost(id))
   },
