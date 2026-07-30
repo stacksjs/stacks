@@ -381,6 +381,7 @@ export function buildNavSections(
       { to: '/environment', icon: 'settings', text: 'Environment' },
       { to: '/access-tokens', icon: 'lock', text: 'Access Tokens' },
       { to: '/settings', icon: 'settings', text: 'Settings' },
+      { to: '/settings/appearance', icon: 'paintbrush', text: 'Appearance' },
       { to: '/settings/mail', icon: 'mail', text: 'Mail Settings' },
     ]])
   }
@@ -425,6 +426,7 @@ const NAV_ICON_CLASSES: Record<string, string> = {
   'mailbox': 'i-f7-tray',
   'activity': 'i-f7-waveform',
   'settings': 'i-f7-gear-alt',
+  'paintbrush': 'i-f7-paintbrush',
   'users': 'i-f7-person-2',
   'user': 'i-f7-person',
   'group': 'i-f7-person-3',

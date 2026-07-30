@@ -45,6 +45,37 @@ export const sidebarRoleMap = JSON.stringify(
     entire sidebar once this layout started rendering it through a component. -->
 <link rel="stylesheet" href="/__deps/dashboard-icons.css">
 
+<!-- Appearance bootstrap. Runs before the shell below it is parsed, so the
+    chosen skin is on the root element for the FIRST paint rather than being
+    applied after hydration — otherwise every hard reload shows a frame of the
+    macOS shell before flipping to Arc.
+
+    Deliberately inline, tiny and dependency-free: it has to run synchronously
+    at this point in the document, which rules out anything the bundler would
+    defer. It reads the same key useAppearance writes and duplicates only the
+    two defaults, so a storage failure still yields a usable shell. -->
+<script>
+  (function () {
+    try {
+      var raw = window.localStorage.getItem('stacks-dashboard-appearance')
+      var prefs = raw ? JSON.parse(raw) : {}
+      var root = document.documentElement
+      root.dataset.appearance = prefs.sidebarStyle === 'arc' ? 'arc' : 'macos'
+      root.dataset.colorMode = prefs.colorMode || 'system'
+      var dark = prefs.colorMode === 'dark' || (prefs.colorMode !== 'light'
+        && window.matchMedia('(prefers-color-scheme: dark)').matches)
+      root.classList.toggle('dark', dark)
+      // Claims the appearance from the Sidebar component, whose own
+      // prefers-color-scheme mirroring would otherwise overwrite an explicit
+      // Light/Dark choice the moment it mounts.
+      root.dataset.theme = dark ? 'dark' : 'light'
+    }
+    catch (error) {
+      document.documentElement.dataset.appearance = 'macos'
+    }
+  })()
+</script>
+
 <style>
 /*
  * Make every chart canvas fill its wrapper. @stacksjs/charts sizes its
@@ -124,6 +155,236 @@ body {
 .dark [data-stx-content] {
   background: #0a0a0a;
 }
+
+/* ===========================================================================
+ * Appearance: Arc
+ *
+ * Selected in Settings, stamped on the root element as `data-appearance`.
+ * Everything here is keyed on that attribute, so switching is one attribute
+ * write and it reaches every page at once.
+ *
+ * Two halves, and only one of them is the sidebar.
+ *
+ * THE SHELL. Arc's defining move is that the content is not a pane butted up
+ * against a sidebar — it is a card floating ON the sidebar's background, inset
+ * and rounded on every side. So the panel color moves to the body, the sidebar
+ * goes transparent on top of it, and the content gets a margin all the way
+ * round. No sidebar theme can do this part; it belongs to the layout.
+ *
+ * THE ROWS. The installed @stacksjs/components predates its own `arc` theme,
+ * so the component renders macOS rows and this restyles them. The values are
+ * copied from that theme on purpose — 30px rows, 8px radius, a white card with
+ * a hairline and a one-pixel shadow instead of an accent fill — so that when
+ * the package ships it, the component and this skin agree and these rules
+ * become a no-op rather than a second, competing look.
+ *
+ * The selection overrides look redundantly specific because they have to be:
+ * the component paints the macOS selection from its own scoped stylesheet with
+ * selectors like `.scope [data-sidebar-selection="accent"][data-window-key]
+ * [data-sidebar-item][data-active]`. Matching that shape and adding the root
+ * attribute is what wins, and it wins by specificity rather than by `!important`
+ * so the rules stay overridable downstream.
+ * ======================================================================== */
+html[data-appearance="arc"] {
+  /* Warmer and a shade deeper than the content card it carries. The stx `arc`
+     theme paints its pane at #f7f5f1 over whatever sits behind it; here the
+     panel IS the backdrop, so it has to be flat and darker than white or the
+     floating card has no edge to read against. */
+  --dash-arc-panel: #efebe4;
+  --dash-arc-gap: 10px;
+  --dash-arc-radius: 12px;
+}
+/* The dark class is written onto the root element itself, so it stacks with
+   the appearance attribute rather than sitting above it. */
+html[data-appearance="arc"].dark {
+  --dash-arc-panel: #171717;
+}
+
+/* The gap around the content card is the body showing through, which is what
+   makes the card read as floating on the sidebar rather than beside it. */
+html[data-appearance="arc"] body {
+  background: var(--dash-arc-panel);
+}
+
+/* The card owns scrolling, so the page must not also scroll: a document
+   scrollbar would eat the right-hand gap and there would be nothing for it to
+   scroll anyway. */
+html[data-appearance="arc"],
+html[data-appearance="arc"] body {
+  height: 100%;
+  overflow: hidden;
+}
+
+html[data-appearance="arc"] [data-stx-content] {
+  /* Only three margins. `margin-left` is deliberately left to the base rule.
+     
+     It is the one margin that transitions (0.3s, for the sidebar collapse),
+     and overriding a transitioned longhand with a `calc()` over two custom
+     properties wedges the interpolation in WebKit: switching appearance leaves
+     it stuck at the old value until a reload. Inheriting the base declaration
+     means the property never changes when the appearance does, so there is
+     nothing to wedge — and the collapse animation keeps working identically in
+     both styles.
+     
+     The panel strip down the card's left side is the sidebar's own trailing
+     padding, which is where it comes from in Arc too. */
+  margin-top: var(--dash-arc-gap);
+  margin-right: var(--dash-arc-gap);
+  margin-bottom: var(--dash-arc-gap);
+  /* Beats the base rule's `min-height: 100vh`, which would otherwise hold the
+     card a full viewport tall and push its bottom edge off-screen — losing the
+     one gap that shows it is floating. */
+  min-height: 0;
+  /* The card is exactly the viewport minus its own gaps, and scrolls its own
+     content. Letting the page scroll instead would grow the card past the
+     bottom of the window, so the one edge that proves it is floating — the
+     panel showing beneath it — would only ever appear at the end of a long
+     page. This is also what Arc does: the sidebar is stationary and the card
+     scrolls inside its frame. */
+  height: calc(100vh - (2 * var(--dash-arc-gap)));
+  overflow-y: auto;
+  border-radius: var(--dash-arc-radius);
+  background: #fff;
+  /* Clip page content to the rounded corners — full-bleed headers and tables
+     otherwise square them off at the top. */
+  overflow-x: hidden;
+  box-shadow:
+    0 0 0 0.5px rgba(0, 0, 0, 0.07),
+    0 1px 2px rgba(0, 0, 0, 0.05),
+    0 8px 24px rgba(0, 0, 0, 0.06);
+  transition: margin-left 0.3s ease-out;
+}
+html[data-appearance="arc"].dark [data-stx-content] {
+  background: #0a0a0a;
+  box-shadow:
+    0 0 0 0.5px rgba(255, 255, 255, 0.08),
+    0 8px 24px rgba(0, 0, 0, 0.5);
+}
+
+/* An overlay scrollbar inside the card, so the rounded corner is not cut by a
+   full-width native gutter. */
+html[data-appearance="arc"] [data-stx-content] {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+}
+html[data-appearance="arc"] [data-stx-content]::-webkit-scrollbar {
+  width: 8px;
+}
+html[data-appearance="arc"] [data-stx-content]::-webkit-scrollbar-thumb {
+  border: 2px solid transparent;
+  border-radius: 8px;
+  background-clip: content-box;
+  background-color: rgba(0, 0, 0, 0.2);
+}
+html[data-appearance="arc"] [data-stx-content]::-webkit-scrollbar-track {
+  background: transparent;
+}
+html[data-appearance="arc"].dark [data-stx-content] {
+  scrollbar-color: rgba(255, 255, 255, 0.25) transparent;
+}
+html[data-appearance="arc"].dark [data-stx-content]::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.25);
+}
+
+/* On narrow viewports the sidebar is hidden entirely, so the card would float
+   on nothing. Return it to a flush pane. */
+@media (max-width: 1023px) {
+  html[data-appearance="arc"],
+  html[data-appearance="arc"] body {
+    height: auto;
+    overflow: visible;
+  }
+  html[data-appearance="arc"] [data-stx-content] {
+    margin-top: 0;
+    margin-right: 0;
+    margin-bottom: 0;
+    height: auto;
+    min-height: 100vh;
+    overflow-y: visible;
+    border-radius: 0;
+    box-shadow: none;
+  }
+}
+
+/* The panel is the body; the pane just holds rows. */
+html[data-appearance="arc"] [data-stx-sidebar] {
+  background: transparent;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  color: #2c2a28;
+}
+html[data-appearance="arc"].dark [data-stx-sidebar] {
+  color: #ededf0;
+}
+/* Liquid Glass belongs to the macOS material. Arc's panel is flat. */
+html[data-appearance="arc"] .stx-sidebar-rim {
+  display: none;
+}
+
+/* Rows: discrete cards with a 2px gutter, not AppKit's contiguous run. */
+html[data-appearance="arc"] [data-sidebar-row] {
+  height: 32px;
+}
+html[data-appearance="arc"] [data-sidebar-item] {
+  height: 30px;
+  border-radius: 8px;
+  color: inherit;
+}
+html[data-appearance="arc"] [data-sidebar-item]:hover {
+  background: rgba(255, 255, 255, 0.55);
+}
+html[data-appearance="arc"].dark [data-sidebar-item]:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+/* Selection: a raised white card, in both window states. Matching the
+   component's own selector shape is what gives these the specificity to win. */
+html[data-appearance="arc"] [data-sidebar-selection="accent"][data-window-key="true"] [data-sidebar-item][data-active="true"],
+html[data-appearance="arc"] [data-sidebar-selection="accent"][data-window-key="false"] [data-sidebar-item][data-active="true"],
+html[data-appearance="arc"] [data-sidebar-selection="accent"][data-window-key="true"] [data-sidebar-item][data-active="true"]:hover {
+  background: #fff;
+  color: #1b1a19;
+  font-weight: 500;
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.05),
+    0 1px 2px rgba(0, 0, 0, 0.08);
+}
+html[data-appearance="arc"].dark [data-sidebar-selection="accent"][data-window-key="true"] [data-sidebar-item][data-active="true"],
+html[data-appearance="arc"].dark [data-sidebar-selection="accent"][data-window-key="false"] [data-sidebar-item][data-active="true"],
+html[data-appearance="arc"].dark [data-sidebar-selection="accent"][data-window-key="true"] [data-sidebar-item][data-active="true"]:hover {
+  background: rgba(255, 255, 255, 0.14);
+  color: #fff;
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.08),
+    0 1px 2px rgba(0, 0, 0, 0.35);
+}
+
+/* The icon, count and chevron turn white on a macOS accent fill. On a white
+   card they must not — they keep their own tint, the same as an idle row. */
+html[data-appearance="arc"] [data-sidebar-selection="accent"][data-window-key="true"] [data-sidebar-item][data-active="true"] [data-sidebar-icon],
+html[data-appearance="arc"] [data-sidebar-selection="accent"][data-window-key="true"] [data-sidebar-item][data-active="true"] [data-sidebar-chevron] {
+  color: var(--stx-sidebar-icon, currentColor);
+}
+html[data-appearance="arc"] [data-sidebar-selection="accent"][data-window-key="true"] [data-sidebar-item][data-active="true"] [data-sidebar-count] {
+  color: rgba(44, 42, 40, 0.45);
+}
+html[data-appearance="arc"].dark [data-sidebar-selection="accent"][data-window-key="true"] [data-sidebar-item][data-active="true"] [data-sidebar-count] {
+  color: rgba(237, 237, 240, 0.45);
+}
+
+/* Section headers: sentence case and quieter than the macOS uppercase strip. */
+html[data-appearance="arc"] [data-sidebar-section-header],
+html[data-appearance="arc"] [data-sidebar-section] > div:first-child {
+  opacity: 0.55;
+}
+
+/* A viewer can hide navigation sections they never use. Kept as CSS on an
+   attribute rather than a DOM removal so the rows stay hydrated and a later
+   change re-shows them without a re-render — the same approach the role
+   filter above uses. */
+[data-sidebar-section][data-viewer-hidden="true"] {
+  display: none;
+}
 </style>
 
 <script client>
@@ -135,6 +396,7 @@ body {
 // `~/`-anchored for the same reason as the sidebar import above.
 import { useToasts, dismissToast } from '~/storage/framework/defaults/functions/toasts'
 import { ensureCraftNativeSidebarMarker, useCraftSidebarSelection } from '~/storage/framework/defaults/functions/craft'
+import { applyAppearance, useAppearance } from '~/storage/framework/defaults/views/dashboard/composables/useAppearance'
 import { authStore } from '~/storage/framework/defaults/views/dashboard/stores/auth'
 import { kanbanStore } from '~/storage/framework/defaults/views/dashboard/stores/kanban'
 import { rbacStore } from '~/storage/framework/defaults/views/dashboard/stores/rbac'
@@ -204,6 +466,57 @@ effect(() => {
   // Re-runs whenever `auth.roles()` / `auth.unauthenticated()` change,
   // including the first run after the auth fetch resolves.
   applyRoleFilter()
+})
+
+// ---------------------------------------------------------------------------
+// Appearance (Settings → Appearance).
+//
+// The inline bootstrap at the top of this layout already stamped the root
+// attributes for the first paint. These effects keep them in step afterwards:
+// re-running `applyAppearance` whenever a preference signal changes is what
+// makes the settings page feel immediate — the shell restyles under the user
+// while they are still looking at the picker, with no reload and no navigation.
+// ---------------------------------------------------------------------------
+
+const appearance = useAppearance()
+
+effect(() => {
+  applyAppearance({
+    sidebarStyle: appearance.sidebarStyle(),
+    colorMode: appearance.colorMode(),
+    hiddenSections: appearance.hiddenSections(),
+  })
+})
+
+// Section visibility is applied here rather than filtered out of
+// `sidebarSections` server-side, so a viewer toggling one gets the row back
+// instantly instead of on the next full render.
+function applySectionVisibility() {
+  const hidden = appearance.hiddenSections()
+  // Queried from the document rather than through the sidebar refs. There is
+  // exactly one dashboard shell per page, so scoping buys nothing here — and
+  // it costs correctness: the refs are not populated when effects first run, so
+  // a ref-scoped pass finds nothing on load and, because the preference does
+  // not change afterwards, never runs again. Document scope also picks up the
+  // mobile sidebar for free.
+  for (const section of document.querySelectorAll('[data-sidebar-section]')) {
+    const id = section.dataset.sectionId || ''
+    section.setAttribute('data-viewer-hidden', String(hidden.includes(id)))
+  }
+}
+
+// The effect covers later toggles. It cannot cover the FIRST paint on its own:
+// effects run before the layout's refs are populated, so the very first pass
+// finds no panes, and on a fresh load the preference never changes afterwards —
+// leaving hidden sections visible until something else happens to touch the
+// signal. `onMount` below runs it again once the panes exist.
+effect(applySectionVisibility)
+
+// Another tab changed the preferences. `storage` only fires in OTHER tabs, so
+// this cannot loop back on the tab that made the change.
+useEventListener('storage', (event) => {
+  if (event?.key === 'stacks-dashboard-appearance')
+    appearance.sync()
 })
 
 function normalizeRoutePath(path) {
@@ -292,6 +605,7 @@ useEventListener('craft:ready', () => {
 onMount(() => {
   syncActiveSidebarRow()
   applyRoleFilter()
+  applySectionVisibility()
   attachCraftSidebarSelection()
 })
 
