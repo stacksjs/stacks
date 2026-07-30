@@ -63,6 +63,8 @@ export default new Job({
     const list = await (EmailList as any).find(campaign.email_list_id)
     if (!list)
       throw new Error(`[SendCampaign] EmailList ${campaign.email_list_id} not found`)
+    if (list.status !== 'active')
+      throw new Error(`[SendCampaign] EmailList ${campaign.email_list_id} is not active`)
 
     await campaign.update({ status: 'sending' })
 
@@ -85,6 +87,12 @@ export default new Job({
     // crash safety: if the worker dies mid-send we can resume from the
     // first subscriber without a CampaignSend row for this campaign.
     while (true) {
+      const currentCampaign = await (Campaign as any).find(campaign.id)
+      if (!currentCampaign || ['cancelled', 'sent'].includes(currentCampaign.status)) {
+        log.warn(`[SendCampaign] Stopping campaign ${campaign.id} in status '${currentCampaign?.status || 'missing'}'`)
+        return { sent, failed, stopped: true }
+      }
+
       const pivots = await (EmailListSubscriber as any)
         .where('email_list_id', campaign.email_list_id)
         .where('status', 'subscribed')
@@ -195,7 +203,13 @@ export default new Job({
       offset += pivots.length
     }
 
-    await campaign.update({
+    const completedCampaign = await (Campaign as any).find(campaign.id)
+    if (!completedCampaign || completedCampaign.status === 'cancelled') {
+      log.warn(`[SendCampaign] Not completing cancelled campaign ${campaign.id}`)
+      return { sent, failed, stopped: true }
+    }
+
+    await completedCampaign.update({
       status: 'sent',
       sent_at: new Date().toISOString(),
       sent_count: sent,

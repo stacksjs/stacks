@@ -4,6 +4,7 @@ import type {
   CampaignRecord,
   CampaignSummary,
 } from '../../../../app/Actions/Dashboard/Marketing/campaign-records'
+import type { CampaignDeliveryOperation } from '../../../../app/Actions/Dashboard/Marketing/campaign-delivery'
 import { dashboardApi } from '../../../../functions/dashboard-api'
 import { pushToast } from '../../../../functions/toasts'
 
@@ -31,6 +32,11 @@ interface CampaignPayload {
   currency: string
   startDate: string
   endDate: string
+}
+
+interface CampaignDeliveryRequest {
+  mode: CampaignDeliveryOperation
+  record: CampaignRecord
 }
 
 const emptySummary: CampaignSummary = {
@@ -61,6 +67,10 @@ const saving = state(false)
 const saveError = state('')
 const deleting = state(false)
 const deleteError = state('')
+const deliveryMode = state<CampaignDeliveryOperation>('send')
+const deliveryRecord = state<CampaignRecord | null>(null)
+const deliveryBusy = state(false)
+const deliveryError = state('')
 
 function filteredRecords(): CampaignRecord[] {
   const query = search().trim().toLowerCase()
@@ -221,6 +231,50 @@ async function deleteCampaign(): Promise<void> {
   }
 }
 
+function openDelivery(request: CampaignDeliveryRequest): void {
+  deliveryMode.set(request.mode)
+  deliveryRecord.set(request.record)
+  deliveryError.set('')
+}
+
+function closeDelivery(): void {
+  if (deliveryBusy())
+    return
+  deliveryRecord.set(null)
+  deliveryError.set('')
+}
+
+async function confirmDelivery(payload: { scheduledAt?: string }): Promise<void> {
+  const current = deliveryRecord()
+  if (!current)
+    return
+  deliveryBusy.set(true)
+  deliveryError.set('')
+  try {
+    const mode = deliveryMode()
+    await dashboardApi(`/api/dashboard/marketing/campaigns/${current.id}/${mode}`, {
+      method: 'POST',
+      body: mode === 'schedule' ? payload : undefined,
+    })
+    deliveryRecord.set(null)
+    pushToast(
+      'success',
+      mode === 'schedule'
+        ? 'Campaign scheduled'
+        : mode === 'cancel'
+          ? 'Campaign delivery cancelled'
+          : 'Campaign queued for delivery',
+    )
+    await loadCampaigns()
+  }
+  catch (error) {
+    deliveryError.set(error instanceof Error ? error.message : String(error))
+  }
+  finally {
+    deliveryBusy.set(false)
+  }
+}
+
 function previousPage(): void {
   if (page() > 1)
     page.set(page() - 1)
@@ -266,10 +320,11 @@ onMount(() => {
       <label><span class="sr-only">Filter campaign list</span><select :value="listFilter()" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" @change="updateFilter('list', $event)"><option value="all">All email lists</option><template :for="list in lists"><option :value="list.id">{{ list.name }}</option></template></select></label>
       <label><span class="sr-only">Sort campaigns</span><select :value="sort()" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" @change="updateFilter('sort', $event)"><option value="newest">Newest</option><option value="name">Name</option><option value="audience">Largest audience</option><option value="sent">Most sent</option></select></label>
     </div>
-    <CampaignsTable :records="visibleRecords()" :loading="loading()" @edit="openEdit" @delete="openDelete" />
+    <CampaignsTable :records="visibleRecords()" :loading="loading()" @edit="openEdit" @delete="openDelete" @deliver="openDelivery" />
     <div :if="filteredRecords().length > perPage" class="flex items-center justify-between"><p class="text-gray-500 text-sm dark:text-neutral-400">Page {{ page() }} of {{ totalPages() }}</p><div class="flex gap-2"><button type="button" :disabled="page() === 1" class="px-3 py-2 text-gray-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700 disabled:opacity-50" @click="previousPage()">Previous</button><button type="button" :disabled="page() === totalPages()" class="px-3 py-2 text-gray-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700 disabled:opacity-50" @click="nextPage()">Next</button></div></div>
   </section>
 </div>
 
 <CampaignDialog :open="dialogOpen()" :mode="dialogMode()" :record="editingRecord()" :lists="lists()" :defaultCurrency="defaultCurrency()" :busy="saving()" :error="saveError()" @submit="saveCampaign" @close="closeDialog()" />
 <CampaignDeleteDialog :open="Boolean(deletingRecord())" :record="deletingRecord()" :busy="deleting()" :error="deleteError()" @confirm="deleteCampaign()" @close="closeDelete()" />
+<CampaignDeliveryDialog :open="Boolean(deliveryRecord())" :mode="deliveryMode()" :record="deliveryRecord()" :busy="deliveryBusy()" :error="deliveryError()" @confirm="confirmDelivery" @close="closeDelivery()" />

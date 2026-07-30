@@ -1,0 +1,95 @@
+<script client>
+import type { CampaignRecord } from '../../../../app/Actions/Dashboard/Marketing/campaign-records'
+import type { CampaignDeliveryOperation } from '../../../../app/Actions/Dashboard/Marketing/campaign-delivery'
+
+const open = useReactiveProp('open', false)
+const mode = useReactiveProp('mode', 'send' as CampaignDeliveryOperation)
+const record = useReactiveProp('record', null as CampaignRecord | null)
+const busy = useReactiveProp('busy', false)
+const error = useReactiveProp('error', '')
+const emit = defineEmits()
+const scheduledAt = state('')
+let hydrationKey = ''
+
+function localDateTime(value: string): string {
+  if (!value)
+    return ''
+  const date = new Date(value.includes('T') ? value : value.replace(' ', 'T'))
+  if (!Number.isFinite(date.getTime()))
+    return ''
+  return new Date(date.getTime() - date.getTimezoneOffset() * 60_000)
+    .toISOString()
+    .slice(0, 16)
+}
+
+effect(() => {
+  if (!open()) {
+    hydrationKey = ''
+    return
+  }
+  const key = `${mode()}:${record()?.id || 'none'}`
+  if (hydrationKey === key)
+    return
+  hydrationKey = key
+  scheduledAt.set(localDateTime(record()?.scheduledAt || ''))
+})
+
+function heading(): string {
+  if (mode() === 'schedule')
+    return record()?.status === 'scheduled' ? 'Reschedule campaign' : 'Schedule campaign'
+  return mode() === 'cancel' ? 'Cancel delivery?' : 'Send campaign now?'
+}
+
+function description(): string {
+  if (mode() === 'schedule')
+    return 'The campaign will enter the delivery queue at the selected local time.'
+  if (mode() === 'cancel')
+    return 'Queued delivery will stop. A worker already processing recipients stops at its next chunk boundary.'
+  return 'The campaign will enter the delivery queue immediately. This action can email every active list member.'
+}
+
+function confirmLabel(): string {
+  if (mode() === 'schedule')
+    return record()?.status === 'scheduled' ? 'Reschedule' : 'Schedule'
+  return mode() === 'cancel' ? 'Cancel delivery' : 'Send now'
+}
+
+function updateSchedule(event: Event): void {
+  scheduledAt.set((event.target as HTMLInputElement).value)
+}
+
+function submit(): void {
+  if (mode() === 'schedule') {
+    const date = new Date(scheduledAt())
+    if (!Number.isFinite(date.getTime()))
+      return
+    emit('confirm', { scheduledAt: date.toISOString() })
+    return
+  }
+  emit('confirm', {})
+}
+</script>
+
+<div :if="open()" class="flex fixed inset-0 z-50 items-center justify-center p-4">
+  <button type="button" aria-label="Close campaign delivery dialog" class="absolute inset-0 bg-black/45" @click="emit('close')"></button>
+  <section role="dialog" aria-modal="true" aria-labelledby="campaign-delivery-title" class="relative p-6 max-w-lg w-full bg-white dark:bg-neutral-800 border border-gray-200 rounded-xl dark:border-neutral-700 shadow-xl">
+    <h2 id="campaign-delivery-title" class="font-semibold text-gray-900 text-lg dark:text-white">{{ heading() }}</h2>
+    <p class="mt-2 text-gray-500 text-sm dark:text-neutral-400">{{ description() }}</p>
+    <div class="mt-4 p-3 bg-gray-50 dark:bg-neutral-900/50 border border-gray-200 rounded-lg dark:border-neutral-700">
+      <p class="font-medium text-gray-900 text-sm dark:text-white">{{ record()?.name || '' }}</p>
+      <p class="mt-1 text-gray-500 text-xs dark:text-neutral-400">{{ record()?.emailListName || 'Not assigned' }} · {{ record()?.audienceSize.toLocaleString() || '0' }} active recipients</p>
+    </div>
+    <label :if="mode() === 'schedule'" class="block mt-4">
+      <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Delivery time</span>
+      <input :value="scheduledAt()" type="datetime-local" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="updateSchedule($event)" />
+      <span class="block mt-1 text-gray-500 text-xs dark:text-neutral-400">Uses your browser’s local time.</span>
+    </label>
+    <div :if="error()" role="alert" class="mt-4 p-3 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900">{{ error() }}</div>
+    <div class="flex gap-2 justify-end mt-6">
+      <button type="button" :disabled="busy()" class="px-3 py-2 font-semibold text-gray-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700 disabled:opacity-50" @click="emit('close')">Close</button>
+      <button type="button" :disabled="busy() || (mode() === 'schedule' && !scheduledAt())" :class="'inline-flex items-center px-3 py-2 font-semibold text-sm text-white rounded-md disabled:opacity-50 ' + (mode() === 'cancel' ? 'bg-red-600 hover:bg-red-500' : 'bg-blue-600 hover:bg-blue-500')" @click="submit()">
+        <span :if="busy()" class="mr-2 h-4 w-4 animate-spin i-hugeicons-loading-03"></span>{{ confirmLabel() }}
+      </button>
+    </div>
+  </section>
+</div>

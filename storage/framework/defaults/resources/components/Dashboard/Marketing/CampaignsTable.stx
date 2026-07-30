@@ -1,5 +1,6 @@
 <script client>
 import type { CampaignRecord } from '../../../../app/Actions/Dashboard/Marketing/campaign-records'
+import type { CampaignDeliveryOperation } from '../../../../app/Actions/Dashboard/Marketing/campaign-delivery'
 
 const records = useReactiveProp('records', [] as CampaignRecord[])
 const loading = useReactiveProp('loading', false)
@@ -20,6 +21,20 @@ function formatDate(value: string): string {
 
 function percentage(value: number): string {
   return `${value.toFixed(1)}%`
+}
+
+function canSend(record: CampaignRecord): boolean {
+  return record.type === 'email'
+    && ['draft', 'scheduled', 'paused', 'failed'].includes(record.status)
+}
+
+function canCancel(record: CampaignRecord): boolean {
+  return record.type === 'email'
+    && ['scheduled', 'sending'].includes(record.status)
+}
+
+function requestDelivery(mode: CampaignDeliveryOperation, record: CampaignRecord): void {
+  emit('deliver', { mode, record })
 }
 </script>
 
@@ -64,6 +79,9 @@ function percentage(value: number): string {
             <td class="px-4 py-4"><span class="inline-flex px-2 py-1 font-medium text-xs bg-gray-100 dark:bg-neutral-700 rounded-full">{{ titleCase(record.status) }}</span></td>
             <td class="px-4 py-4">
               <div class="flex gap-1 justify-end">
+                <button :if="canSend(record)" type="button" :aria-label="'Send campaign ' + record.id + ' now'" class="p-2 text-gray-500 dark:text-neutral-400 hover:text-blue-600 dark:hover:text-blue-400" @click="requestDelivery('send', record)"><span class="block h-4 w-4 i-hugeicons-mail-send-02"></span></button>
+                <button :if="canSend(record)" type="button" :aria-label="(record.status === 'scheduled' ? 'Reschedule campaign ' : 'Schedule campaign ') + record.id" class="p-2 text-gray-500 dark:text-neutral-400 hover:text-blue-600 dark:hover:text-blue-400" @click="requestDelivery('schedule', record)"><span class="block h-4 w-4 i-hugeicons-calendar-03"></span></button>
+                <button :if="canCancel(record)" type="button" :aria-label="'Cancel campaign ' + record.id + ' delivery'" class="p-2 text-gray-500 dark:text-neutral-400 hover:text-red-600 dark:hover:text-red-400" @click="requestDelivery('cancel', record)"><span class="block h-4 w-4 i-hugeicons-cancel-circle"></span></button>
                 <button type="button" :disabled="['sending', 'sent'].includes(record.status)" :aria-label="'Edit campaign ' + record.id" class="p-2 text-gray-500 dark:text-neutral-400 hover:text-blue-600 dark:hover:text-blue-400 disabled:opacity-30" @click="emit('edit', record)"><span class="block h-4 w-4 i-hugeicons-edit-02"></span></button>
                 <button type="button" :disabled="['scheduled', 'sending', 'sent'].includes(record.status)" :aria-label="'Delete campaign ' + record.id" class="p-2 text-gray-500 dark:text-neutral-400 hover:text-red-600 dark:hover:text-red-400 disabled:opacity-30" @click="emit('delete', record)"><span class="block h-4 w-4 i-hugeicons-delete-02"></span></button>
               </div>
