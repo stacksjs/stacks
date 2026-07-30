@@ -79,4 +79,22 @@ describe('dashboard generic model writes', () => {
     expect(routes).toContain("guard(route.post('/models/{slug}', 'Actions/Dashboard/Models/ModelStoreAction'))")
   })
 
+  test('model browser consumes capability and create-field metadata', () => {
+    const view = source('storage/framework/defaults/views/dashboard/models/[model].stx')
+    const modal = source('storage/framework/defaults/resources/components/Dashboard/CreateRecordModal.stx')
+
+    expect(view).toContain('writeCapabilities.set(data.writeCapabilities')
+    expect(view).toContain('createFields.set(data.createFields')
+    expect(view).toContain('<CreateRecordModal')
+    expect(view).toContain('@submit="createRecord($event)"')
+    expect(view).toContain('<ConfirmDialog')
+    expect(view).toContain('@confirm="confirmDelete"')
+    expect(modal).toContain("const fields = useReactiveProp('fields'")
+    expect(modal).toContain('<Select')
+    expect(modal).toContain('<Input')
+    expect(modal).toContain('@submit.prevent="submit"')
+    expect(modal).not.toMatch(/\b(?:document|window)\./)
+    expect(modal).not.toContain('/api/data/')
+    expect(modal).not.toContain('<svg')
+  })
 })

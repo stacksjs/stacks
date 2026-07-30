@@ -1,363 +1,148 @@
-<script server>
-/**
- * Create Record Modal
- * Native-styled dialog for creating new model records
- *
- * Props passed from parent via attributes:
- * - modalId: Unique identifier for the modal
- * - modelName: Display name of the model (e.g., "User")
- * - tableName: Database table name (e.g., "users")
- * - columns: Array of column definitions from PRAGMA table_info
- *
- * These are passed directly as template variables, no need to redeclare.
- */
-
-// Use the passed variables directly (they're already in scope from props)
-// Just ensure defaults for safety
-const _modalId = typeof modalId !== 'undefined' ? modalId : 'create-record-modal'
-const _modelName = typeof modelName !== 'undefined' ? modelName : 'Record'
-const _tableName = typeof tableName !== 'undefined' ? tableName : ''
-const _columns = typeof columns !== 'undefined' ? columns : []
-
-// Filter out auto-generated columns that shouldn't be in the form
-const formColumns = _columns.filter(col => {
-  const name = col.name.toLowerCase()
-  // Skip auto-generated fields
-  if (name === 'id') return false
-  if (name === 'created_at' || name === 'updated_at') return false
-  if (name === 'deleted_at') return false
-  return true
+<script client>
+interface CreateField {
+  name: string
+  label: string
+  type: 'boolean' | 'date' | 'datetime' | 'email' | 'enum' | 'number' | 'text'
+  required: boolean
+  defaultValue: unknown
+  options: string[]
 }
 
-// Determine input type based on column type and name
-function getInputType(col) {
-  const name = col.name.toLowerCase()
-  const type = (col.type || '').toUpperCase()
+const open = useReactiveProp('open', false)
+const modelName = useReactiveProp('modelName', 'Record')
+const fields = useReactiveProp('fields', [] as CreateField[])
+const busy = useReactiveProp('busy', false)
+const error = useReactiveProp('error', '')
+const errors = useReactiveProp('errors', {} as Record<string, string[]>)
+const values = state<Record<string, unknown>>({})
+const emit = defineEmits()
+let hydrationKey = ''
 
-  // Name-based detection
-  if (name.includes('email')) return 'email'
-  if (name.includes('password')) return 'password'
-  if (name.includes('phone') || name.includes('tel')) return 'tel'
-  if (name.includes('url') || name.includes('website') || name.includes('link')) return 'url'
-  if (name.includes('date') && !name.includes('_at')) return 'date'
-  if (name.includes('time') && !name.includes('_at')) return 'time'
-  if (name.includes('color')) return 'color'
-
-  // Type-based detection
-  if (type.includes('INT') || type.includes('NUMERIC') || type.includes('REAL') || type.includes('FLOAT') || type.includes('DOUBLE')) {
-    return 'number'
+effect(() => {
+  if (!open()) {
+    hydrationKey = ''
+    return
   }
-  if (type.includes('BOOL')) return 'checkbox'
-  if (type.includes('TEXT') && (name.includes('description') || name.includes('content') || name.includes('body') || name.includes('bio'))) {
-    return 'textarea'
-  }
+  const key = `${modelName()}:${fields().map(field => field.name).join(',')}`
+  if (hydrationKey === key)
+    return
+  hydrationKey = key
+  values.set(Object.fromEntries(fields().map(field => [field.name, field.defaultValue])))
+})
 
+function setValue(field: string, value: unknown): void {
+  values.set({ ...values(), [field]: value })
+}
+
+function fieldValue(field: string): string {
+  const value = values()[field]
+  return value === null || value === undefined ? '' : String(value)
+}
+
+function fieldError(field: string): string {
+  return errors()[field]?.[0] || ''
+}
+
+function inputType(field: CreateField): 'date' | 'datetime-local' | 'email' | 'number' | 'text' {
+  if (field.type === 'datetime')
+    return 'datetime-local'
+  if (field.type === 'date' || field.type === 'email' || field.type === 'number')
+    return field.type
   return 'text'
 }
 
-// Check if field should be a select/dropdown
-function isSelectField(col) {
-  const name = col.name.toLowerCase()
-  return name === 'status' || name === 'type' || name === 'role' || name.includes('_type') || name.includes('_status')
+function submit(): void {
+  emit('submit', { ...values() })
+}
+
+function close(): void {
+  if (!busy())
+    emit('close')
 }
 </script>
-<!-- Native-styled Modal Dialog -->
-<div ref="pageRoot">
-<dialog
-  id="{{ modalId }}"
-  class="p-0 max-w-lg w-full bg-white backdrop:bg-black/50 dark:bg-neutral-900 border-0 rounded-xl shadow-2xl backdrop:backdrop-blur-sm modal-dialog"
->
-  <form method="dialog" class="modal-form">
-    <!-- Header - macOS style with vibrancy effect -->
-    <div class="flex items-center justify-between px-5 py-4 bg-neutral-50/80 dark:bg-neutral-800/80 border-b border-neutral-200 rounded-t-xl dark:border-neutral-700">
-      <div>
-        <h2 class="font-semibold text-base text-neutral-900 dark:text-white">
-          Create {{ modelName }}
-        </h2>
-        <p class="mt-0.5 text-neutral-500 text-xs dark:text-neutral-400">
-          Add a new record to {{ tableName }}
-        </p>
-      </div>
-      <button
-        type="button"
-        class="p-1.5 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-700 rounded-lg transition-colors modal-close-btn"
-        aria-label="Close"
-      >
-        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-        </svg>
-      </button>
-    </div>
 
-    <!-- Body - Form Fields -->
-    <div class="overflow-y-auto px-5 py-4 space-y-4 max-h-[60vh]">
-      @foreach(formColumns as col)
-        <div class="form-field">
-          <label
-            for="{{ modalId }}-{{ col.name }}"
-            class="block mb-1.5 font-medium text-neutral-700 text-sm dark:text-neutral-300"
-          >
-            {{ col.label }}
-            @if(col.notnull && col.dflt_value === null)
-              <span class="ml-0.5 text-red-500">*</span>
-            @endif
-          </label>
+<template :if="open()">
+  <div class="fixed inset-0 overflow-y-auto z-[55] dashboard-modal-layer" @keydown.escape="close">
+    <button type="button" class="fixed inset-0 w-full bg-black/50 backdrop-blur-sm cursor-default" aria-label="Close create record dialog" @click="close"></button>
 
-          @if(isSelectField(col))
-            <!-- Select dropdown for status/type fields -->
-            <select
-              id="{{ modalId }}-{{ col.name }}"
-              name="{{ col.name }}"
-              class="px-3 py-2 w-full text-neutral-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-neutral-300 rounded-lg dark:border-neutral-600 focus:border-transparent focus:ring-2 focus:ring-blue-500 transition-shadow"
-              {{ col.notnull && col.dflt_value === null ? 'required' : '' }}
-            >
-              <option value="">Select {{ col.label }}</option>
-              @if(col.name === 'status')
-                <option value="active">Active</option>
-                <option value="inactive">Inactive</option>
-                <option value="pending">Pending</option>
-                <option value="draft">Draft</option>
-              @elseif(col.name === 'role')
-                <option value="user">User</option>
-                <option value="admin">Admin</option>
-                <option value="moderator">Moderator</option>
-              @else
-                <option value="default">Default</option>
-              @endif
-            </select>
+    <div class="flex relative items-center justify-center p-4 min-h-full">
+      <section role="dialog" aria-modal="true" :aria-label="'Create ' + modelName()" class="overflow-hidden relative max-w-lg w-full bg-white dark:bg-neutral-900 rounded-xl shadow-2xl">
+        <form @submit.prevent="submit">
+          <header class="flex gap-4 items-start justify-between px-5 py-4 bg-neutral-50/80 dark:bg-neutral-800/80 border-b border-neutral-200 dark:border-neutral-700">
+            <div>
+              <h2 class="font-semibold text-base text-neutral-900 dark:text-white">
+                Create {{ modelName() }}
+              </h2>
+              <p class="mt-0.5 text-neutral-500 text-xs dark:text-neutral-400">
+                Fields come from the model's fillable attributes and useApi store contract.
+              </p>
+            </div>
+            <button type="button" class="p-1.5 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-700 rounded-lg transition-colors" aria-label="Close create record dialog" @click="close">
+              <span class="block h-4 w-4 i-hugeicons-cancel-01"></span>
+            </button>
+          </header>
 
-          @elseif(getInputType(col) === 'textarea')
-            <!-- Textarea for long text -->
-            <textarea
-              id="{{ modalId }}-{{ col.name }}"
-              name="{{ col.name }}"
-              rows="3"
-              class="px-3 py-2 w-full text-neutral-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-neutral-300 rounded-lg dark:border-neutral-600 focus:border-transparent focus:ring-2 focus:ring-blue-500 transition-shadow resize-none"
-              placeholder="Enter {{ col.label.toLowerCase() }}"
-              {{ col.notnull && col.dflt_value === null ? 'required' : '' }}
-            ></textarea>
+          <div class="overflow-y-auto px-5 py-4 space-y-4 max-h-[65vh]">
+            <div :if="error()" role="alert" class="p-3 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900">
+              {{ error() }}
+            </div>
 
-          @elseif(getInputType(col) === 'checkbox')
-            <!-- Checkbox toggle -->
-            <label class="flex gap-3 items-center cursor-pointer">
-              <input
-                type="checkbox"
-                id="{{ modalId }}-{{ col.name }}"
-                name="{{ col.name }}"
-                value="1"
-                class="h-4 w-4 text-blue-600 border-neutral-300 rounded dark:border-neutral-600 focus:ring-2 focus:ring-blue-500 focus:ring-offset-0"
+            <template :for="field in fields()">
+              <label :if="field.type === 'boolean'" class="flex gap-3 items-start p-3 border border-neutral-200 rounded-lg dark:border-neutral-700">
+                <input
+                  type="checkbox"
+                  :checked="Boolean(values()[field.name])"
+                  :disabled="busy()"
+                  class="mt-0.5 h-4 w-4 text-blue-600 border-neutral-300 rounded"
+                  @change="setValue(field.name, $event.target.checked)"
+                />
+                <span>
+                  <span class="block font-medium text-neutral-700 text-sm dark:text-neutral-200">{{ field.label }}</span>
+                  <span :if="fieldError(field.name)" class="block mt-0.5 text-red-600 text-xs dark:text-red-400">{{ fieldError(field.name) }}</span>
+                </span>
+              </label>
+
+              <Select
+                :if="field.type === 'enum'"
+                :value="fieldValue(field.name)"
+                :options="field.options"
+                :label="field.label"
+                :ariaLabel="field.label"
+                :required="field.required"
+                :disabled="busy()"
+                :error="fieldError(field.name)"
+                @update:value="setValue(field.name, $event)"
               />
-              <span class="text-neutral-600 text-sm dark:text-neutral-400">Enable {{ col.label.toLowerCase() }}</span>
-            </label>
 
-          @else
-            <!-- Standard input -->
-            <input
-              type="{{ getInputType(col) }}"
-              id="{{ modalId }}-{{ col.name }}"
-              name="{{ col.name }}"
-              class="px-3 py-2 w-full text-neutral-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-neutral-300 rounded-lg dark:border-neutral-600 focus:border-transparent focus:ring-2 focus:ring-blue-500 transition-shadow"
-              placeholder="Enter {{ col.label.toLowerCase() }}"
-              {{ col.notnull && col.dflt_value === null ? 'required' : '' }}
-              {{ getInputType(col) === 'number' ? 'step="any"' : '' }}
-            />
-          @endif
+              <Input
+                :if="field.type !== 'boolean' && field.type !== 'enum'"
+                :value="fieldValue(field.name)"
+                :type="inputType(field)"
+                :label="field.label"
+                :ariaLabel="field.label"
+                :required="field.required"
+                :disabled="busy()"
+                :error="fieldError(field.name)"
+                @update:value="setValue(field.name, $event)"
+              />
+            </template>
 
-          @if(col.dflt_value !== null)
-            <p class="mt-1 text-neutral-400 text-xs dark:text-neutral-500">
-              Default: {{ col.dflt_value }}
+            <p :if="fields().length === 0" class="py-8 text-center text-neutral-500 text-sm dark:text-neutral-400">
+              This model exposes no safe fillable fields.
             </p>
-          @endif
-        </div>
-      @endforeach
+          </div>
 
-      @if(formColumns.length === 0)
-        <div class="py-8 text-center text-neutral-500 dark:text-neutral-400">
-          <p>No editable fields available for this model.</p>
-        </div>
-      @endif
+          <footer class="flex gap-2 items-center justify-end px-5 py-4 bg-neutral-50/50 dark:bg-neutral-800/50 border-neutral-200 border-t dark:border-neutral-700">
+            <button type="button" :disabled="busy()" class="px-3 h-8 font-medium text-[13px] text-neutral-700 dark:text-neutral-200 bg-white dark:bg-white/10 hover:bg-neutral-100 dark:hover:bg-white/15 border border-black/10 rounded-lg dark:border-white/15 disabled:opacity-50 transition-colors" @click="close">
+              Cancel
+            </button>
+            <button type="submit" :disabled="busy() || fields().length === 0" class="inline-flex gap-1.5 items-center px-3 h-8 font-medium text-[13px] text-white bg-blue-600 hover:bg-blue-500 rounded-lg disabled:opacity-50 transition-colors">
+              <span :if="busy()" class="h-4 w-4 animate-spin i-hugeicons-loading-03"></span>
+              {{ busy() ? 'Creating' : `Create ${modelName()}` }}
+            </button>
+          </footer>
+        </form>
+      </section>
     </div>
-
-    <!-- Footer - Action buttons -->
-    <div class="flex gap-3 items-center justify-end px-5 py-4 bg-neutral-50/50 dark:bg-neutral-800/50 border-neutral-200 border-t rounded-b-xl dark:border-neutral-700">
-      <button
-        type="button"
-        class="px-4 py-2 font-medium text-neutral-700 text-sm dark:text-neutral-300 bg-white dark:bg-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-600 border border-neutral-300 rounded-lg dark:border-neutral-600 transition-colors modal-close-btn"
-      >
-        Cancel
-      </button>
-      <button
-        type="submit"
-        class="px-4 py-2 font-medium text-sm text-white bg-blue-600 hover:bg-blue-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-neutral-900 disabled:opacity-50 transition-colors disabled:cursor-not-allowed modal-submit-btn"
-        {{ formColumns.length === 0 ? 'disabled' : '' }}
-      >
-        Create {{ modelName }}
-      </button>
-    </div>
-  </form>
-</dialog>
-</div>
-<script client>
-var _root = useRef('pageRoot')
-onMount(function() {
-  var el = _root.current;
-  if (!el) return;
-  // Initialize all create record modals
-  el.querySelectorAll('.modal-dialog').forEach(dialog => {
-    const form = dialog.querySelector('.modal-form');
-    const closeButtons = dialog.querySelectorAll('.modal-close-btn');
-    const submitBtn = dialog.querySelector('.modal-submit-btn');
-
-    // Close on close button click
-    closeButtons.forEach(btn => {
-      btn.addEventListener('click', () => {
-        dialog.close();
-      });
-    });
-
-    // Close on backdrop click
-    dialog.addEventListener('click', (e) => {
-      if (e.target === dialog) {
-        dialog.close();
-      }
-    });
-
-    // Close on Escape key
-    dialog.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') {
-        dialog.close();
-      }
-    });
-
-    // Handle form submission
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-
-      const formData = new FormData(form);
-      const data = Object.fromEntries(formData.entries());
-
-      // Get table name from the modal's data attribute or hidden field
-      const tableName = dialog.dataset.table || '';
-      const modelName = dialog.dataset.model || 'Record';
-
-      // Show loading state
-      submitBtn.disabled = true;
-      submitBtn.innerHTML = `
-        <svg class="inline -ml-1 mr-2 h-4 w-4 text-white animate-spin" fill="none" viewBox="0 0 24 24">
-          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-        </svg>
-        Creating...
-      `;
-
-      try {
-        // Post to API endpoint
-        const response = await fetch(`/api/data/${tableName}`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(data),
-        });
-
-        if (response.ok) {
-          // Show success via Craft native alert if available
-          if (window.webkit?.messageHandlers?.craft) {
-            window.webkit.messageHandlers.craft.postMessage({
-              type: 'dialog',
-              action: 'showAlert',
-              data: {
-                title: `${modelName} Created`,
-                message: 'The record was created successfully.',
-                style: 'info'
-              }
-            });
-          }
-
-          dialog.close();
-          form.reset();
-
-          // Reload the page to show the new record
-          location.reload();
-        } else {
-          const errorData = await response.json().catch(() => ({}));
-          throw new Error(errorData.message || 'Failed to create record');
-        }
-      } catch (error) {
-        // Show error via Craft native alert if available
-        if (window.webkit?.messageHandlers?.craft) {
-          window.webkit.messageHandlers.craft.postMessage({
-            type: 'dialog',
-            action: 'showAlert',
-            data: {
-              title: 'Error',
-              message: error.message || 'Failed to create the record.',
-              style: 'critical'
-            }
-          });
-        } else {
-          alert('Error: ' + (error.message || 'Failed to create the record.'));
-        }
-      } finally {
-        // Reset button state
-        submitBtn.disabled = false;
-        submitBtn.innerHTML = `Create ${modelName}`;
-      }
-    });
-  });
-});
-</script>
-
-<style>
-/* Native macOS-style dialog animations */
-.modal-dialog {
-  animation: modal-appear 0.2s ease-out;
-}
-
-.modal-dialog::backdrop {
-  animation: backdrop-fade 0.2s ease-out;
-}
-
-@keyframes modal-appear {
-  from {
-    opacity: 0;
-    transform: scale(0.95) translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-  }
-}
-
-@keyframes backdrop-fade {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-/* Focus styles for accessibility */
-.modal-dialog:focus {
-  outline: none;
-}
-
-/* Scrollbar styling for the form area */
-.modal-dialog .max-h-\[60vh\]::-webkit-scrollbar {
-  width: 6px;
-}
-
-.modal-dialog .max-h-\[60vh\]::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.modal-dialog .max-h-\[60vh\]::-webkit-scrollbar-thumb {
-  background-color: rgba(0, 0, 0, 0.2);
-  border-radius: 3px;
-}
-
-.dark .modal-dialog .max-h-\[60vh\]::-webkit-scrollbar-thumb {
-  background-color: rgba(255, 255, 255, 0.2);
-}
-</style>
+  </div>
+</template>
