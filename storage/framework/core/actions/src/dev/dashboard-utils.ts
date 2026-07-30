@@ -1,6 +1,8 @@
 import type { DashboardModelOptions } from '@stacksjs/types'
 import { Glob } from 'bun'
+import { existsSync } from 'node:fs'
 import path from 'node:path'
+import { pathToFileURL } from 'node:url'
 
 // Model name to icon mapping (SF Symbols)
 export const iconMap: Record<string, string> = {
@@ -173,7 +175,8 @@ function categorizeModel(relativePath: string, modelId: string, defaultCategory?
  */
 async function readModelDashboardConfig(absolutePath: string): Promise<DashboardModelOptions | undefined> {
   try {
-    const mod = await import(absolutePath) as { default?: { dashboard?: DashboardModelOptions } } & { dashboard?: DashboardModelOptions }
+    const modelUrl = pathToFileURL(absolutePath).href
+    const mod = await import(modelUrl) as { default?: { dashboard?: DashboardModelOptions } } & { dashboard?: DashboardModelOptions }
     const def = mod.default ?? mod
     const dashboard = (def as { dashboard?: DashboardModelOptions }).dashboard
     return dashboard
@@ -190,32 +193,30 @@ export async function scanModelsDir(
   models: DiscoveredModel[],
   defaultCategory?: ModelCategory,
 ): Promise<void> {
-  try {
-    const glob = new Glob('**/*.ts')
-    for await (const file of glob.scan({ cwd: dir })) {
-      if (file.includes('README') || file.includes('.d.ts')) continue
-      const name = file.replace(/\.ts$/, '').split('/').pop() || ''
-      const nameLower = name.toLowerCase()
-      if (name && !seenNames.has(nameLower) && !excludeModels.has(nameLower)) {
-        seenNames.add(nameLower)
-        const id = modelNameToId(name)
-        const absolutePath = path.join(dir, file)
-        // Read the model's optional dashboard config. The import is
-        // wrapped in try/catch (in the helper) so a single broken model
-        // never blocks the rest of the sidebar from rendering.
-        const dashboard = await readModelDashboardConfig(absolutePath)
-        models.push({
-          name,
-          icon: dashboard?.icon ?? getModelIcon(name),
-          id,
-          category: categorizeModel(file, id, defaultCategory),
-          dashboard,
-        })
-      }
+  if (!existsSync(dir))
+    return
+
+  const glob = new Glob('**/*.ts')
+  for await (const file of glob.scan({ cwd: dir })) {
+    if (file.includes('README') || file.includes('.d.ts')) continue
+    const name = file.replace(/\.ts$/, '').split('/').pop() || ''
+    const nameLower = name.toLowerCase()
+    if (name && !seenNames.has(nameLower) && !excludeModels.has(nameLower)) {
+      seenNames.add(nameLower)
+      const id = modelNameToId(name)
+      const absolutePath = path.resolve(dir, file)
+      // Read the model's optional dashboard config. The import is
+      // wrapped in try/catch (in the helper) so a single broken model
+      // never blocks the rest of the sidebar from rendering.
+      const dashboard = await readModelDashboardConfig(absolutePath)
+      models.push({
+        name,
+        icon: dashboard?.icon ?? getModelIcon(name),
+        id,
+        category: categorizeModel(file, id, defaultCategory),
+        dashboard,
+      })
     }
-  }
-  catch {
-    // Directory may not exist
   }
 }
 
@@ -301,9 +302,9 @@ export async function waitForServer(port: number, maxWait = 500): Promise<boolea
 
 /**
  * Per-section toggles. Read from the project's `config/dashboard.ts` (when
- * present) and passed through buildSidebarConfig / buildSidebarNavHtml so the
- * commerce / content / marketing sections collapse out of the sidebar entirely
- * for projects that don't ship those features. Anything not specified is on.
+ * present) and passed through the native sidebar config plus the STX sidebar
+ * data builder, so commerce, content, and marketing sections collapse out for
+ * projects that do not ship those features. Anything not specified is on.
  *
  * `data` is a per-row toggle map (instead of a single boolean) because the
  * Data section is always relevant — projects just want to hide individual

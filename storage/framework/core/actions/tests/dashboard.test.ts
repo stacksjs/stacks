@@ -1,5 +1,5 @@
-import { afterEach, describe, expect, it } from 'bun:test'
-import { existsSync, mkdirSync, rmSync, writeFileSync } from 'node:fs'
+import { afterEach, beforeEach, describe, expect, it } from 'bun:test'
+import { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { tmpdir } from 'node:os'
 import {
@@ -17,7 +17,11 @@ import {
 } from '../src/dev/dashboard-utils'
 
 // Temp directory for model file tests
-const testDir = join(tmpdir(), `dashboard-test-${Date.now()}`)
+let testDir = ''
+
+beforeEach(() => {
+  testDir = mkdtempSync(join(tmpdir(), 'dashboard-test-'))
+})
 
 afterEach(() => {
   try {
