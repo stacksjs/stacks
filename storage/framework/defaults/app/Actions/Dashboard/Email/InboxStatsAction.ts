@@ -1,11 +1,7 @@
 import { Action } from '@stacksjs/actions'
 import { emailSDK } from '@stacksjs/email'
-import { config } from '@stacksjs/config'
-
-function defaultMailbox(): string {
-  const domain = (config as any)?.email?.domain || 'stacksjs.com'
-  return `chris@${domain}`
-}
+import { response } from '@stacksjs/router'
+import { defaultMailbox } from './mail-preference'
 
 export default new Action({
   name: 'InboxStatsAction',
@@ -24,13 +20,9 @@ export default new Action({
       }
     }
     catch (err) {
-      return {
-        mailbox: request?.query?.mailbox || defaultMailbox(),
-        total: 0,
-        unread: 0,
-        read: 0,
-        error: err instanceof Error ? err.message : 'unknown error',
-      }
+      return response.json({
+        message: err instanceof Error ? err.message : 'Inbox statistics could not be loaded.',
+      }, 503)
     }
   },
 })

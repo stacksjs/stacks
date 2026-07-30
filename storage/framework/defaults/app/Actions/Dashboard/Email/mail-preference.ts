@@ -33,7 +33,11 @@ export function defaultMailbox(): string {
   if (mailbox)
     return String(mailbox).includes('@') ? String(mailbox) : `${mailbox}@${domain}`
 
-  return `chris@${domain}`
+  const fromAddress = String(email.from?.address || '').trim()
+  if (fromAddress)
+    return fromAddress
+
+  return `hello@${domain}`
 }
 
 export function normalizeStringList(value: string): string {

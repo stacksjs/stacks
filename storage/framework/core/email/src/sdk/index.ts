@@ -343,63 +343,57 @@ export class EmailSDK {
    * Delete an email
    */
   async delete(mailbox: string, messageId: string): Promise<boolean> {
-    try {
-      const { S3Client } = await import('@stacksjs/ts-cloud')
-      const s3 = new S3Client(this.region)
+    const { S3Client } = await import('@stacksjs/ts-cloud')
+    const s3 = new S3Client(this.region)
 
-      const [localPart, domain] = mailbox.includes('@') ? mailbox.split('@') : [mailbox, this.domain]
+    const [localPart, domain] = mailbox.includes('@') ? mailbox.split('@') : [mailbox, this.domain]
 
-      // Get inbox and find the email
-      const inbox = await this.getInbox(mailbox, { limit: 1000 })
-      const emailIndex = inbox.findIndex(e => e.messageId === messageId)
+    // Get inbox and find the email
+    const inbox = await this.getInbox(mailbox, { limit: 1000 })
+    const emailIndex = inbox.findIndex(e => e.messageId === messageId)
 
-      if (emailIndex === -1) {
-        return false
-      }
-
-      const email = inbox[emailIndex]
-      if (!email)
-        return false
-
-      // Delete the email files from S3
-      // Note: In production, you might want to use S3 delete objects API
-      const basePath = email.path
-      const keysToDelete = [
-        `${basePath}/metadata.json`,
-        `${basePath}/raw.eml`,
-        `${basePath}/body.html`,
-        `${basePath}/body.txt`,
-        `${basePath}/preview.txt`,
-      ]
-
-      for (const key of keysToDelete) {
-        try {
-          await s3.deleteObject(this.bucket, key)
-        }
-        catch (error: unknown) {
-          // Expected for optional files (body.html, body.txt) that may not exist
-          if (!getErrorMessage(error)?.includes('NoSuchKey') && !getErrorMessage(error)?.includes('404')) {
-            console.debug(`[email-sdk] Failed to delete ${key}: ${getErrorMessage(error)}`)
-          }
-        }
-      }
-
-      // Update inbox index
-      inbox.splice(emailIndex, 1)
-
-      await s3.putObject({
-        bucket: this.bucket,
-        key: `mailboxes/${domain}/${localPart}/inbox.json`,
-        body: JSON.stringify(inbox, null, 2),
-        contentType: 'application/json',
-      })
-
-      return true
-    }
-    catch (error: unknown) {
-      console.debug(`[email-sdk] Failed to delete email ${messageId}: ${getErrorMessage(error)}`)
+    if (emailIndex === -1) {
       return false
     }
+
+    const email = inbox[emailIndex]
+    if (!email)
+      return false
+
+    // Delete the email files from S3
+    // Note: In production, you might want to use S3 delete objects API
+    const basePath = email.path
+    const keysToDelete = [
+      `${basePath}/metadata.json`,
+      `${basePath}/raw.eml`,
+      `${basePath}/body.html`,
+      `${basePath}/body.txt`,
+      `${basePath}/preview.txt`,
+    ]
+
+    for (const key of keysToDelete) {
+      try {
+        await s3.deleteObject(this.bucket, key)
+      }
+      catch (error: unknown) {
+        // Expected for optional files (body.html, body.txt) that may not exist.
+        if (!getErrorMessage(error)?.includes('NoSuchKey') && !getErrorMessage(error)?.includes('404')) {
+          throw error
+        }
+      }
+    }
+
+    // Update inbox index only after every stored object was removed.
+    inbox.splice(emailIndex, 1)
+
+    await s3.putObject({
+      bucket: this.bucket,
+      key: `mailboxes/${domain}/${localPart}/inbox.json`,
+      body: JSON.stringify(inbox, null, 2),
+      contentType: 'application/json',
+    })
+
+    return true
   }
 
   /**
@@ -417,34 +411,28 @@ export class EmailSDK {
   }
 
   private async updateEmailStatus(mailbox: string, messageId: string, updates: Partial<InboxEmail>): Promise<boolean> {
-    try {
-      const { S3Client } = await import('@stacksjs/ts-cloud')
-      const s3 = new S3Client(this.region)
+    const { S3Client } = await import('@stacksjs/ts-cloud')
+    const s3 = new S3Client(this.region)
 
-      const [localPart, domain] = mailbox.includes('@') ? mailbox.split('@') : [mailbox, this.domain]
+    const [localPart, domain] = mailbox.includes('@') ? mailbox.split('@') : [mailbox, this.domain]
 
-      const inbox = await this.getInbox(mailbox, { limit: 1000 })
-      const emailIndex = inbox.findIndex(e => e.messageId === messageId)
+    const inbox = await this.getInbox(mailbox, { limit: 1000 })
+    const emailIndex = inbox.findIndex(e => e.messageId === messageId)
 
-      if (emailIndex === -1) {
-        return false
-      }
-
-      Object.assign(inbox[emailIndex]!, updates)
-
-      await s3.putObject({
-        bucket: this.bucket,
-        key: `mailboxes/${domain}/${localPart}/inbox.json`,
-        body: JSON.stringify(inbox, null, 2),
-        contentType: 'application/json',
-      })
-
-      return true
-    }
-    catch (error: unknown) {
-      console.debug(`[email-sdk] Failed to update email status for ${messageId}: ${getErrorMessage(error)}`)
+    if (emailIndex === -1) {
       return false
     }
+
+    Object.assign(inbox[emailIndex]!, updates)
+
+    await s3.putObject({
+      bucket: this.bucket,
+      key: `mailboxes/${domain}/${localPart}/inbox.json`,
+      body: JSON.stringify(inbox, null, 2),
+      contentType: 'application/json',
+    })
+
+    return true
   }
 
   private normalizeAddress(addr: EmailAddress | string): EmailAddress {

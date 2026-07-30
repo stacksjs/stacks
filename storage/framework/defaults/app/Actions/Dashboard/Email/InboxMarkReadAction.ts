@@ -1,13 +1,8 @@
 import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
-import { config } from '@stacksjs/config'
 import { emailSDK } from '@stacksjs/email'
 import { response } from '@stacksjs/router'
-
-function defaultMailbox(): string {
-  const domain = (config as any)?.email?.domain || 'stacksjs.com'
-  return `chris@${domain}`
-}
+import { defaultMailbox } from './mail-preference'
 
 export default new Action({
   name: 'InboxMarkReadAction',

@@ -1,9 +1,9 @@
 import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
-import { config } from '@stacksjs/config'
 import { db } from '@stacksjs/database'
 import { emailSDK } from '@stacksjs/email'
 import { request as routerRequest, response } from '@stacksjs/router'
+import { defaultMailbox } from './mail-preference'
 
 const RANGES = ['day', 'week', 'month', 'year'] as const
 type ActivityRange = typeof RANGES[number]
@@ -31,11 +31,6 @@ interface Bucket {
   label: string
   start: Date
   end: Date
-}
-
-function defaultMailbox(): string {
-  const domain = (config as any)?.email?.domain || 'stacksjs.com'
-  return `chris@${domain}`
 }
 
 function queryValue(request: RequestInstance, key: string): string {

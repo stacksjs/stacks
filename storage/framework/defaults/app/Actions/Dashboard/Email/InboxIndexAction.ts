@@ -1,6 +1,7 @@
 import { Action } from '@stacksjs/actions'
 import { emailSDK } from '@stacksjs/email'
-import { config } from '@stacksjs/config'
+import { response } from '@stacksjs/router'
+import { defaultMailbox } from './mail-preference'
 
 export interface InboxItem {
   messageId: string
@@ -13,11 +14,6 @@ export interface InboxItem {
   preview?: string
   hasAttachments?: boolean
   path: string
-}
-
-function defaultMailbox(): string {
-  const domain = (config as any)?.email?.domain || 'stacksjs.com'
-  return `chris@${domain}`
 }
 
 export default new Action({
@@ -38,12 +34,9 @@ export default new Action({
       }
     }
     catch (err) {
-      return {
-        mailbox: request?.query?.mailbox || defaultMailbox(),
-        total: 0,
-        emails: [],
-        error: err instanceof Error ? err.message : 'unknown error',
-      }
+      return response.json({
+        message: err instanceof Error ? err.message : 'Inbox messages could not be loaded.',
+      }, 503)
     }
   },
 })
