@@ -59,6 +59,7 @@ describe('dashboard file manager', () => {
       id: 'file:documents/readme.txt',
       name: 'readme.txt',
       size: 5,
+      thumbnail: '/documents/readme.txt',
       type: 'txt',
       url: '/storage/documents/readme.txt',
     })

@@ -18,6 +18,7 @@ export interface DashboardFileNode {
   lastModified: string | null
   mime_type?: string
   url?: string
+  thumbnail?: string
   starred: false
   shared: boolean
   items?: DashboardFileNode[]
@@ -73,6 +74,7 @@ interface EntryMetadata extends StorageEntry {
   lastModified: string | null
   mimeType?: string
   url?: string
+  thumbnail?: string
 }
 
 function extensionOf(path: string): string {
@@ -162,11 +164,16 @@ async function mapInBatches<T, U>(values: T[], batchSize: number, mapper: (value
   return result
 }
 
-async function metadataFor(adapter: StorageAdapter, entry: StorageEntry, isPublic: boolean): Promise<EntryMetadata> {
+function dashboardPublicUrl(path: string): string {
+  return `/${path.split('/').map(component => encodeURIComponent(component)).join('/')}`
+}
+
+async function metadataFor(adapter: StorageAdapter, entry: StorageEntry, isPublic: boolean, servesProjectPublic: boolean): Promise<EntryMetadata> {
   let size = 0
   let lastModified: string | null = null
   let mimeType: string | undefined
   let url: string | undefined
+  let thumbnail: string | undefined
 
   try {
     const stat = await adapter.stat(entry.path)
@@ -185,9 +192,11 @@ async function metadataFor(adapter: StorageAdapter, entry: StorageEntry, isPubli
     catch {
       // A public URL is optional metadata, never a reason to hide the file.
     }
+    if (servesProjectPublic)
+      thumbnail = dashboardPublicUrl(entry.path)
   }
 
-  return { ...entry, size, lastModified, mimeType, url }
+  return { ...entry, size, lastModified, mimeType, url, thumbnail }
 }
 
 function categoryFor(entry: EntryMetadata): keyof DashboardFileStats['byType'] {
@@ -242,7 +251,11 @@ export async function getDashboardFileSnapshot(
     entries.push({ path, type: rawEntry.type })
   }
 
-  const metadata = await mapInBatches(entries, STAT_CONCURRENCY, entry => metadataFor(selected.adapter, entry, selected.public))
+  const metadata = await mapInBatches(
+    entries,
+    STAT_CONCURRENCY,
+    entry => metadataFor(selected.adapter, entry, selected.public, selected.name === 'public' && selected.config.driver === 'local'),
+  )
   metadata.sort((a, b) => {
     const depth = a.path.split('/').length - b.path.split('/').length
     if (depth)
@@ -314,6 +327,7 @@ export async function getDashboardFileSnapshot(
       lastModified: entry.lastModified,
       mime_type: entry.mimeType,
       url: entry.url,
+      thumbnail: entry.thumbnail,
       starred: false,
       shared: selected.public,
     }
@@ -398,12 +412,22 @@ export async function uploadDashboardFiles(
     }
   }
   catch (error) {
-    await Promise.allSettled(uploaded.map(file => selected.adapter.deleteFile(file.path)))
+    const rollback = await Promise.allSettled(uploaded.map(file => selected.adapter.deleteFile(file.path)))
+    const rollbackFailed = rollback.some(result => result.status === 'rejected')
     if (error instanceof Error && error.message.startsWith('File already exists:')) {
       throw new DashboardFileError(
-        `${error.message}. No files from this upload were kept.`,
-        409,
-        { files: 'Rename the duplicate file and try again.' },
+        rollbackFailed
+          ? `${error.message}. At least one earlier file could not be rolled back. Refresh the folder before retrying.`
+          : `${error.message}. No files from this upload were kept.`,
+        rollbackFailed ? 500 : 409,
+        { files: rollbackFailed ? 'Refresh the folder and review the uploaded files.' : 'Rename the duplicate file and try again.' },
+      )
+    }
+    if (rollbackFailed) {
+      throw new DashboardFileError(
+        'Upload failed and at least one earlier file could not be rolled back. Refresh the folder before retrying.',
+        500,
+        { files: 'Refresh the folder and review the uploaded files.' },
       )
     }
     throw error

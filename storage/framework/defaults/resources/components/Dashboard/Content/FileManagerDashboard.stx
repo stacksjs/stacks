@@ -1,0 +1,593 @@
+<script client>
+import { dashboardApi } from '../../../../functions/dashboard-api'
+import { pushToast } from '../../../../functions/toasts'
+
+interface FileItem {
+  id: string
+  name: string
+  type: string
+  size: number
+  path: string
+  lastModified: string | null
+  mime_type?: string
+  url?: string
+  thumbnail?: string
+  starred: false
+  shared: boolean
+  items?: FileItem[]
+}
+
+interface FileStats {
+  files: number
+  folders: number
+  contentBytes: number
+  byType: {
+    documents: number
+    images: number
+    videos: number
+    audio: number
+    other: number
+  }
+  disk: {
+    totalBytes: number | null
+    availableBytes: number | null
+    usedBytes: number | null
+  }
+}
+
+interface FileSnapshot {
+  disk: string
+  disks: Array<{ name: string, public: boolean }>
+  root: FileItem
+  stats: FileStats
+  truncated: boolean
+}
+
+const emptyRoot = (): FileItem => ({
+  id: 'folder:',
+  name: 'Home',
+  type: 'folder',
+  size: 0,
+  path: '',
+  lastModified: null,
+  starred: false,
+  shared: true,
+  items: [],
+})
+
+const emptyStats = (): FileStats => ({
+  files: 0,
+  folders: 0,
+  contentBytes: 0,
+  byType: { documents: 0, images: 0, videos: 0, audio: 0, other: 0 },
+  disk: { totalBytes: null, availableBytes: null, usedBytes: null },
+})
+
+const root = state<FileItem>(emptyRoot())
+const stats = state<FileStats>(emptyStats())
+const disks = state<Array<{ name: string, public: boolean }>>([])
+const selectedDisk = state('public')
+const currentFolderPath = state('')
+const searchQuery = state('')
+const sortBy = state<'name' | 'lastModified' | 'size'>('name')
+const sortOrder = state<'asc' | 'desc'>('asc')
+const viewMode = state<'grid' | 'list'>('grid')
+const showSidePanel = state(true)
+const loading = state(true)
+const loadError = state('')
+const truncated = state(false)
+const scanLimit = state(1000)
+
+const selectedItem = state<FileItem | null>(null)
+const showCreateFolderModal = state(false)
+const newFolderName = state('')
+const creatingFolder = state(false)
+const createError = state('')
+const showUploadModal = state(false)
+const selectedFiles = state<File[]>([])
+const uploading = state(false)
+const uploadError = state('')
+const itemToDelete = state<FileItem | null>(null)
+const deleting = state(false)
+const deleteError = state('')
+
+const folderNameInput = useRef<HTMLInputElement>('fileManagerFolderName')
+const uploadInput = useRef<HTMLInputElement>('fileManagerUploadInput')
+
+const fileTypeIcons: Record<string, string> = {
+  pdf: 'i-hugeicons-pdf-01',
+  doc: 'i-hugeicons-doc-01',
+  docx: 'i-hugeicons-doc-01',
+  xls: 'i-hugeicons-xls-01',
+  xlsx: 'i-hugeicons-xls-01',
+  ppt: 'i-hugeicons-ppt-01',
+  pptx: 'i-hugeicons-ppt-01',
+  jpg: 'i-hugeicons-jpg-01',
+  jpeg: 'i-hugeicons-jpg-01',
+  png: 'i-hugeicons-png-01',
+  gif: 'i-hugeicons-gif-01',
+  svg: 'i-hugeicons-svg-01',
+  txt: 'i-hugeicons-txt-01',
+  zip: 'i-hugeicons-zip-01',
+  mp3: 'i-hugeicons-mp3-01',
+  mp4: 'i-hugeicons-mp-4-01',
+  folder: 'i-hugeicons-folder-02',
+  default: 'i-hugeicons-file-02',
+}
+
+function findFolder(folder: FileItem, path: string): FileItem | null {
+  if (folder.path === path)
+    return folder
+  for (const child of folder.items || []) {
+    if (child.type === 'folder') {
+      const found = findFolder(child, path)
+      if (found)
+        return found
+    }
+  }
+  return null
+}
+
+const currentFolder = derived(() => findFolder(root(), currentFolderPath()) || root())
+const topLevelFolders = derived(() => (root().items || []).filter(item => item.type === 'folder'))
+const breadcrumbs = derived(() => {
+  const parts = currentFolderPath() ? currentFolderPath().split('/') : []
+  return [
+    { label: 'Home', path: '' },
+    ...parts.map((label, index) => ({ label, path: parts.slice(0, index + 1).join('/') })),
+  ]
+})
+
+const filteredItems = derived(() => {
+  const query = searchQuery().trim().toLowerCase()
+  const items = [...(currentFolder().items || [])].filter(item => !query || item.name.toLowerCase().includes(query))
+  items.sort((a, b) => {
+    if (a.type === 'folder' && b.type !== 'folder')
+      return -1
+    if (a.type !== 'folder' && b.type === 'folder')
+      return 1
+    if (sortBy() === 'lastModified') {
+      const left = a.lastModified ? new Date(a.lastModified).getTime() : 0
+      const right = b.lastModified ? new Date(b.lastModified).getTime() : 0
+      return sortOrder() === 'asc' ? left - right : right - left
+    }
+    if (sortBy() === 'size')
+      return sortOrder() === 'asc' ? a.size - b.size : b.size - a.size
+    return sortOrder() === 'asc' ? a.name.localeCompare(b.name) : b.name.localeCompare(a.name)
+  })
+  return items
+})
+
+const typeRows = derived(() => [
+  { key: 'documents', label: 'Documents', bytes: stats().byType.documents, color: 'bg-blue-500' },
+  { key: 'images', label: 'Images', bytes: stats().byType.images, color: 'bg-fuchsia-500' },
+  { key: 'videos', label: 'Videos', bytes: stats().byType.videos, color: 'bg-amber-500' },
+  { key: 'audio', label: 'Audio', bytes: stats().byType.audio, color: 'bg-emerald-500' },
+  { key: 'other', label: 'Other', bytes: stats().byType.other, color: 'bg-stone-400 dark:bg-neutral-500' },
+])
+
+const volumePercent = derived(() => {
+  const total = stats().disk.totalBytes
+  const used = stats().disk.usedBytes
+  return total && used !== null ? Math.min(100, Math.max(0, used / total * 100)) : 0
+})
+const capacityKnown = derived(() => stats().disk.totalBytes !== null && stats().disk.availableBytes !== null)
+const currentFolderLabel = derived(() => currentFolderPath() || 'Storage root')
+const emptyHint = derived(() => searchQuery() ? 'No items match your search.' : 'This folder is empty.')
+const selectedFilesLabel = derived(() => {
+  if (!selectedFiles().length)
+    return 'No files selected'
+  if (selectedFiles().length === 1)
+    return selectedFiles()[0]?.name || '1 file selected'
+  return `${selectedFiles().length} files selected`
+})
+
+const sidePanelClass = derived(() => `border-r border-black/[0.06] dark:border-white/[0.08] bg-[#F5F3EE]/70 dark:bg-neutral-900/40 backdrop-blur-2xl transition-all duration-300 ${showSidePanel() ? 'w-64' : 'w-0 overflow-hidden'}`)
+const segmentBase = 'inline-flex items-center px-2.5 py-1.5 rounded-md text-sm font-medium transition-colors'
+const segmentActive = 'bg-white dark:bg-neutral-700 text-stone-800 dark:text-white shadow-sm'
+const segmentInactive = 'text-stone-500 dark:text-neutral-400 hover:text-stone-700 dark:hover:text-neutral-200'
+const gridViewClass = derived(() => `${segmentBase} ${viewMode() === 'grid' ? segmentActive : segmentInactive}`)
+const listViewClass = derived(() => `${segmentBase} ${viewMode() === 'list' ? segmentActive : segmentInactive}`)
+const sortOrderIconClass = derived(() => `${sortOrder() === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02'} h-5 w-5`)
+
+function navRowClass(active: boolean): string {
+  const base = 'group flex items-center gap-2.5 px-2.5 py-1.5 w-full text-left font-medium text-[13px] rounded-lg transition-colors'
+  return active
+    ? `${base} bg-black/[0.06] dark:bg-white/[0.09] text-stone-900 dark:text-white`
+    : `${base} text-stone-600 dark:text-neutral-300 hover:bg-black/[0.04] dark:hover:bg-white/[0.06]`
+}
+
+function gridCardClass(item: FileItem): string {
+  const selected = selectedItem()?.id === item.id
+  return `group relative overflow-hidden bg-white dark:bg-neutral-800 border rounded-lg shadow-sm hover:shadow-md transition-all cursor-pointer ${selected ? 'border-blue-400 ring-2 ring-blue-500/20' : 'border-gray-200 dark:border-neutral-700 hover:border-blue-300 dark:hover:border-blue-700'}`
+}
+
+function itemIconClass(item: FileItem): string {
+  const icon = item.type === 'folder' ? fileTypeIcons.folder : fileTypeIcons[item.type] || fileTypeIcons.default
+  return `${icon} h-5 w-5 mr-3 ${item.type === 'folder' ? 'text-amber-500' : 'text-gray-500 dark:text-neutral-400'}`
+}
+
+function typeBarStyle(bytes: number): string {
+  const total = stats().contentBytes
+  const percentage = total > 0 ? Math.max(bytes > 0 ? 2 : 0, bytes / total * 100) : 0
+  return `width: ${percentage.toFixed(2)}%`
+}
+
+function formatFileSize(bytes: number | null): string {
+  if (bytes === null)
+    return 'Unavailable'
+  if (bytes === 0)
+    return '0 Bytes'
+  const units = ['Bytes', 'KB', 'MB', 'GB', 'TB']
+  const index = Math.min(units.length - 1, Math.floor(Math.log(bytes) / Math.log(1024)))
+  return `${Number.parseFloat((bytes / 1024 ** index).toFixed(2))} ${units[index]}`
+}
+
+function formatDate(value: string | null): string {
+  if (!value)
+    return 'No date'
+  const date = new Date(value)
+  return Number.isNaN(date.getTime())
+    ? 'No date'
+    : new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(date)
+}
+
+async function loadFiles(options: { resetPath?: boolean } = {}): Promise<void> {
+  loading.set(true)
+  loadError.set('')
+  try {
+    const payload = await dashboardApi<FileSnapshot>(`/api/dashboard/files?disk=${encodeURIComponent(selectedDisk())}&limit=${scanLimit()}`)
+    if (!payload?.root || !Array.isArray(payload.root.items) || !payload.stats || !Array.isArray(payload.disks))
+      throw new TypeError('Storage data was not returned in the expected shape.')
+    root.set(payload.root)
+    stats.set(payload.stats)
+    disks.set(payload.disks)
+    selectedDisk.set(payload.disk)
+    truncated.set(Boolean(payload.truncated))
+    if (options.resetPath || !findFolder(payload.root, currentFolderPath()))
+      currentFolderPath.set('')
+  }
+  catch (error) {
+    loadError.set(error instanceof Error ? error.message : String(error))
+    pushToast('error', 'Could not load storage', { detail: loadError() })
+  }
+  finally {
+    loading.set(false)
+  }
+}
+
+function changeDisk(): void {
+  selectedItem.set(null)
+  searchQuery.set('')
+  scanLimit.set(1000)
+  void loadFiles({ resetPath: true })
+}
+
+function loadMore(): void {
+  scanLimit.set(Math.min(5000, scanLimit() + 1000))
+  void loadFiles()
+}
+
+function navigateToFolder(folder: FileItem): void {
+  currentFolderPath.set(folder.path)
+  selectedItem.set(null)
+}
+
+function onItemClick(item: FileItem): void {
+  if (item.type === 'folder')
+    navigateToFolder(item)
+  else
+    selectedItem.set(item)
+}
+
+function onItemKeydown(item: FileItem, event: KeyboardEvent): void {
+  if (event.target !== event.currentTarget || (event.key !== 'Enter' && event.key !== ' '))
+    return
+  event.preventDefault()
+  onItemClick(item)
+}
+
+function toggleSortOrder(): void {
+  sortOrder.set(sortOrder() === 'asc' ? 'desc' : 'asc')
+}
+
+function openCreateFolder(): void {
+  newFolderName.set('')
+  createError.set('')
+  showCreateFolderModal.set(true)
+  void nextTick(() => folderNameInput.current?.focus())
+}
+
+function closeCreateFolder(): void {
+  if (!creatingFolder())
+    showCreateFolderModal.set(false)
+}
+
+async function createFolder(): Promise<void> {
+  const name = newFolderName().trim()
+  if (!name)
+    return
+  creatingFolder.set(true)
+  createError.set('')
+  try {
+    await dashboardApi('/api/dashboard/files/directories', {
+      method: 'POST',
+      body: { disk: selectedDisk(), path: currentFolderPath(), name },
+    })
+    showCreateFolderModal.set(false)
+    pushToast('success', 'Folder created', { detail: name })
+    await loadFiles()
+  }
+  catch (error) {
+    createError.set(error instanceof Error ? error.message : String(error))
+  }
+  finally {
+    creatingFolder.set(false)
+  }
+}
+
+function resetUploadSelection(): void {
+  selectedFiles.set([])
+  if (uploadInput.current)
+    uploadInput.current.value = ''
+}
+
+function openUpload(): void {
+  uploadError.set('')
+  resetUploadSelection()
+  showUploadModal.set(true)
+}
+
+function closeUpload(): void {
+  if (!uploading()) {
+    showUploadModal.set(false)
+    resetUploadSelection()
+  }
+}
+
+function acceptFiles(files: FileList | File[]): void {
+  selectedFiles.set(Array.from(files))
+  uploadError.set('')
+}
+
+function handleFileSelection(event: Event): void {
+  const input = event.target as HTMLInputElement
+  if (input.files)
+    acceptFiles(input.files)
+}
+
+function handleDrop(event: DragEvent): void {
+  if (event.dataTransfer?.files)
+    acceptFiles(event.dataTransfer.files)
+}
+
+function handleDragOver(): void {
+  uploadError.set('')
+}
+
+async function uploadFiles(): Promise<void> {
+  if (!selectedFiles().length)
+    return
+  uploading.set(true)
+  uploadError.set('')
+  try {
+    const formData = new FormData()
+    formData.append('disk', selectedDisk())
+    formData.append('path', currentFolderPath())
+    for (const file of selectedFiles())
+      formData.append('files', file)
+    await dashboardApi('/api/dashboard/files/uploads', { method: 'POST', formData })
+    const count = selectedFiles().length
+    showUploadModal.set(false)
+    resetUploadSelection()
+    pushToast('success', `${count} ${count === 1 ? 'file' : 'files'} uploaded`)
+    await loadFiles()
+  }
+  catch (error) {
+    uploadError.set(error instanceof Error ? error.message : String(error))
+  }
+  finally {
+    uploading.set(false)
+  }
+}
+
+function openDelete(item: FileItem, event: Event): void {
+  event.stopPropagation()
+  itemToDelete.set(item)
+  deleteError.set('')
+}
+
+function closeDelete(): void {
+  if (!deleting())
+    itemToDelete.set(null)
+}
+
+async function deleteItem(): Promise<void> {
+  const item = itemToDelete()
+  if (!item)
+    return
+  deleting.set(true)
+  deleteError.set('')
+  try {
+    await dashboardApi('/api/dashboard/files', {
+      method: 'DELETE',
+      body: { disk: selectedDisk(), path: item.path },
+    })
+    itemToDelete.set(null)
+    if (selectedItem()?.id === item.id)
+      selectedItem.set(null)
+    pushToast('success', item.type === 'folder' ? 'Folder deleted' : 'File deleted', { detail: item.name })
+    await loadFiles()
+  }
+  catch (error) {
+    deleteError.set(error instanceof Error ? error.message : String(error))
+  }
+  finally {
+    deleting.set(false)
+  }
+}
+
+function handleKeydown(event: KeyboardEvent): void {
+  if (event.key !== 'Escape')
+    return
+  if (itemToDelete()) {
+    closeDelete()
+    return
+  }
+  if (showUploadModal()) {
+    closeUpload()
+    return
+  }
+  if (showCreateFolderModal()) {
+    closeCreateFolder()
+    return
+  }
+  selectedItem.set(null)
+}
+
+useEventListener('keydown', handleKeydown)
+onMount(() => { void loadFiles() })
+</script>
+
+<div class="flex min-h-[calc(100dvh-3rem)] bg-white dark:bg-neutral-900">
+  <aside :class="sidePanelClass()">
+    <div class="flex flex-col h-full min-h-[calc(100dvh-3rem)] w-64">
+      <div class="p-4 border-b border-black/[0.06] dark:border-white/[0.08]">
+        <label class="block">
+          <span class="font-semibold text-[11px] text-stone-400 tracking-wider uppercase dark:text-neutral-500">Storage disk</span>
+          <select x-model="selectedDisk" :disabled="loading()" class="mt-2 px-2.5 py-2 w-full text-sm text-stone-800 dark:text-white bg-white/80 dark:bg-neutral-800 border border-stone-200 rounded-lg dark:border-neutral-700 disabled:opacity-60" @change="changeDisk()">
+            <template :for="disk in disks"><option :value="disk.name">{{ disk.name }}{{ disk.public ? ' (public)' : '' }}</option></template>
+          </select>
+        </label>
+      </div>
+
+      <div class="p-4 border-b border-black/[0.06] dark:border-white/[0.08]">
+        <div class="flex items-center justify-between">
+          <p class="font-semibold text-[11px] text-stone-400 tracking-wider uppercase dark:text-neutral-500">Stored content</p>
+          <span class="font-mono text-[11px] text-stone-500 dark:text-neutral-400">{{ formatFileSize(stats().contentBytes) }}</span>
+        </div>
+        <div class="grid gap-2 grid-cols-2 mt-3">
+          <div class="p-2.5 bg-white/65 dark:bg-white/[0.05] rounded-lg"><p class="font-semibold text-lg text-stone-900 dark:text-white">{{ stats().files }}</p><p class="text-[11px] text-stone-500 dark:text-neutral-400">Files</p></div>
+          <div class="p-2.5 bg-white/65 dark:bg-white/[0.05] rounded-lg"><p class="font-semibold text-lg text-stone-900 dark:text-white">{{ stats().folders }}</p><p class="text-[11px] text-stone-500 dark:text-neutral-400">Folders</p></div>
+        </div>
+      </div>
+
+      <div class="p-4 border-b border-black/[0.06] dark:border-white/[0.08]">
+        <p class="font-semibold text-[11px] text-stone-400 tracking-wider uppercase dark:text-neutral-500">Content by type</p>
+        <div class="mt-3 space-y-3">
+          <template :for="row in typeRows">
+            <div>
+              <div class="flex items-center justify-between text-[11px]"><span class="text-stone-600 dark:text-neutral-300">{{ row.label }}</span><span class="font-mono text-stone-400 dark:text-neutral-500">{{ formatFileSize(row.bytes) }}</span></div>
+              <div class="overflow-hidden mt-1 h-1.5 bg-black/[0.06] dark:bg-white/[0.08] rounded-full"><div :class="'h-full rounded-full ' + row.color" :style="typeBarStyle(row.bytes)"></div></div>
+            </div>
+          </template>
+        </div>
+      </div>
+
+      <div :if="capacityKnown()" class="p-4 border-b border-black/[0.06] dark:border-white/[0.08]">
+        <div class="flex items-center justify-between"><p class="font-semibold text-[11px] text-stone-400 tracking-wider uppercase dark:text-neutral-500">Volume capacity</p><span class="font-mono text-[11px] text-stone-500 dark:text-neutral-400">{{ volumePercent().toFixed(0) }}%</span></div>
+        <div class="overflow-hidden mt-2 h-1.5 bg-black/[0.06] dark:bg-white/[0.08] rounded-full"><div class="h-full bg-blue-500 rounded-full" :style="'width: ' + volumePercent().toFixed(2) + '%'"></div></div>
+        <p class="mt-2 text-[11px] text-stone-500 dark:text-neutral-400">{{ formatFileSize(stats().disk.availableBytes) }} available of {{ formatFileSize(stats().disk.totalBytes) }}</p>
+      </div>
+
+      <nav aria-label="Storage folders" class="overflow-y-auto flex-1 p-2">
+        <button type="button" :class="navRowClass(currentFolderPath() === '')" @click="currentFolderPath.set('')"><span class="h-[18px] w-[18px] text-blue-500 i-hugeicons-home-02"></span>Home</button>
+        <template :for="folder in topLevelFolders">
+          <button type="button" :class="navRowClass(currentFolderPath() === folder.path)" @click="navigateToFolder(folder)"><span class="h-[18px] w-[18px] text-amber-500 i-hugeicons-folder-02"></span><span class="truncate">{{ folder.name }}</span><span class="ml-auto tabular-nums text-[11px] text-stone-400 dark:text-neutral-500">{{ (folder.items || []).length }}</span></button>
+        </template>
+      </nav>
+
+      <div class="p-3 border-black/[0.06] border-t dark:border-white/[0.08]">
+        <button type="button" class="inline-flex gap-2 items-center justify-center px-3 py-2 w-full font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-lg disabled:opacity-50" :disabled="loading()" @click="openUpload()"><span class="h-4 w-4 i-hugeicons-upload-01"></span>Upload files</button>
+      </div>
+    </div>
+  </aside>
+
+  <main class="flex-1 min-w-0">
+    <header class="sticky top-0 z-10 p-4 bg-white/85 dark:bg-neutral-900/85 border-b border-black/[0.06] dark:border-white/[0.08] backdrop-blur-xl">
+      <div class="flex flex-wrap gap-3 items-center justify-between">
+        <div class="flex items-center min-w-0">
+          <button type="button" aria-label="Toggle storage sidebar" class="p-2 text-stone-500 dark:text-neutral-400 hover:bg-stone-100 dark:hover:bg-neutral-800 rounded-lg" @click="showSidePanel.set(!showSidePanel())"><span class="block h-5 w-5 i-hugeicons-menu-01"></span></button>
+          <div class="ml-3 min-w-0"><p class="font-semibold text-stone-900 truncate dark:text-white">{{ currentFolderLabel }}</p><p class="mt-0.5 text-stone-500 text-xs dark:text-neutral-400">{{ selectedDisk }} disk</p></div>
+        </div>
+        <div class="flex flex-wrap gap-2 items-center">
+          <label class="relative"><span class="sr-only">Search current folder</span><span class="absolute left-3 top-2.5 h-4 w-4 text-stone-400 i-hugeicons-search-01"></span><input x-model="searchQuery" type="search" placeholder="Search this folder" class="pl-9 pr-3 py-2 w-56 text-sm text-stone-900 dark:text-white bg-white dark:bg-neutral-800 border border-stone-200 rounded-lg dark:border-neutral-700" /></label>
+          <div class="flex gap-0.5 p-0.5 bg-black/[0.05] dark:bg-white/[0.06] rounded-lg"><button type="button" aria-label="Grid view" :class="gridViewClass()" @click="viewMode.set('grid')"><span class="h-5 w-5 i-hugeicons-grid-view"></span></button><button type="button" aria-label="List view" :class="listViewClass()" @click="viewMode.set('list')"><span class="h-5 w-5 i-hugeicons-right-to-left-list-number"></span></button></div>
+          <select x-model="sortBy" aria-label="Sort files" class="px-2.5 py-2 text-sm text-stone-700 dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-stone-200 rounded-lg dark:border-neutral-700"><option value="name">Name</option><option value="lastModified">Date</option><option value="size">Size</option></select>
+          <button type="button" aria-label="Reverse sort order" class="p-2 text-stone-500 dark:text-neutral-400 hover:bg-stone-100 dark:hover:bg-neutral-800 rounded-lg" @click="toggleSortOrder()"><span :class="sortOrderIconClass()"></span></button>
+          <button type="button" class="inline-flex gap-2 items-center px-3 py-2 font-semibold text-sm text-stone-700 dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-stone-200 rounded-lg dark:border-neutral-700 disabled:opacity-50" :disabled="loading()" @click="loadFiles()"><span :class="'h-4 w-4 ' + (loading() ? 'animate-spin i-hugeicons-loading-03' : 'i-hugeicons-refresh')"></span>Refresh</button>
+          <button type="button" class="inline-flex gap-2 items-center px-3 py-2 font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-lg" @click="openCreateFolder()"><span class="h-4 w-4 i-hugeicons-folder-add"></span>New folder</button>
+        </div>
+      </div>
+      <nav aria-label="Folder path" class="flex overflow-x-auto items-center mt-4 text-sm">
+        <template :for="(crumb, index) in breadcrumbs">
+          <span :if="index > 0" aria-hidden="true" class="mx-1 text-stone-300 dark:text-neutral-600">/</span>
+          <button type="button" :aria-current="crumb.path === currentFolderPath() ? 'page' : undefined" class="font-medium text-stone-500 whitespace-nowrap dark:text-neutral-400 hover:text-blue-600 dark:hover:text-blue-400" @click="currentFolderPath.set(crumb.path)">{{ crumb.label }}</button>
+        </template>
+      </nav>
+    </header>
+
+    <div class="p-4 lg:p-6">
+      <div :if="loadError()" role="alert" class="flex gap-4 items-center justify-between p-4 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-xl dark:border-red-900"><span>{{ loadError() }}</span><button type="button" class="font-semibold underline" @click="loadFiles()">Retry</button></div>
+      <div :if="truncated()" role="status" class="flex gap-4 items-center justify-between mb-4 p-3 text-amber-800 text-sm dark:text-amber-200 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 rounded-lg dark:border-amber-900"><span>This disk contains more than {{ scanLimit }} visible entries. The current view shows the first {{ scanLimit }}.</span><button :if="scanLimit() < 5000" type="button" class="flex-shrink-0 font-semibold underline" :disabled="loading()" @click="loadMore()">Load 1,000 more</button><span :else class="flex-shrink-0 font-semibold">5,000 entry limit</span></div>
+
+      <div :if="loading() && !root().items?.length" class="grid gap-4 grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6" aria-label="Loading files">
+        <template :for="index in [1, 2, 3, 4, 5, 6]"><div class="h-44 bg-stone-100 dark:bg-neutral-800 rounded-lg animate-pulse"></div></template>
+      </div>
+
+      <div :else-if="!loadError() && filteredItems().length === 0" class="flex flex-col items-center justify-center min-h-[55dvh] text-center">
+        <span class="h-14 w-14 text-stone-300 dark:text-neutral-700 i-hugeicons-folder-02"></span><h2 class="mt-3 font-semibold text-stone-900 dark:text-white">No items</h2><p class="mt-1 text-sm text-stone-500 dark:text-neutral-400">{{ emptyHint }}</p><div :if="!searchQuery()" class="flex gap-2 mt-5"><button type="button" class="px-3 py-2 font-semibold text-sm text-stone-700 dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-stone-200 rounded-lg dark:border-neutral-700" @click="openCreateFolder()">Create folder</button><button type="button" class="px-3 py-2 font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-lg" @click="openUpload()">Upload files</button></div>
+      </div>
+
+      <div :else-if="viewMode() === 'grid'" class="grid gap-4 grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
+        <template :for="item in filteredItems">
+          <article role="button" tabindex="0" :aria-label="(item.type === 'folder' ? 'Open folder ' : 'View file ') + item.name" :class="gridCardClass(item)" @click="onItemClick(item)" @keydown="onItemKeydown(item, $event)">
+            <MediaCard :item="item" />
+            <button type="button" :aria-label="'Delete ' + item.name" class="absolute right-2 top-2 p-1.5 text-stone-500 dark:text-neutral-300 bg-white/90 dark:bg-neutral-900/90 rounded-md opacity-0 shadow-sm focus:opacity-100 group-hover:opacity-100 transition-opacity" @click="openDelete(item, $event)"><span class="block h-4 w-4 i-hugeicons-delete-02"></span></button>
+          </article>
+        </template>
+      </div>
+
+      <div :else class="overflow-hidden bg-white dark:bg-neutral-800 border border-stone-200 rounded-xl dark:border-neutral-700">
+        <div class="overflow-x-auto"><table class="min-w-full divide-stone-200 divide-y dark:divide-neutral-700"><thead class="bg-stone-50 dark:bg-neutral-900/50"><tr><th class="px-4 py-3 font-semibold text-left text-stone-500 text-xs dark:text-neutral-400">Name</th><th class="px-4 py-3 font-semibold text-left text-stone-500 text-xs dark:text-neutral-400">Size</th><th class="px-4 py-3 font-semibold text-left text-stone-500 text-xs dark:text-neutral-400">Modified</th><th class="px-4 py-3"><span class="sr-only">Actions</span></th></tr></thead><tbody class="divide-stone-200 divide-y dark:divide-neutral-700">
+          <template :for="item in filteredItems"><tr class="hover:bg-stone-50 dark:hover:bg-neutral-700/50"><td class="px-4 py-3"><button type="button" class="flex items-center max-w-md text-left" @click="onItemClick(item)"><span :class="itemIconClass(item)"></span><span class="font-medium text-sm text-stone-900 truncate dark:text-white">{{ item.name }}</span></button></td><td class="px-4 py-3 text-sm text-stone-500 dark:text-neutral-400">{{ item.type === 'folder' ? '-' : formatFileSize(item.size) }}</td><td class="px-4 py-3 text-sm text-stone-500 dark:text-neutral-400">{{ formatDate(item.lastModified) }}</td><td class="px-4 py-3 text-right"><button type="button" :aria-label="'Delete ' + item.name" class="p-2 text-stone-400 hover:text-red-600 dark:hover:text-red-400" @click="openDelete(item, $event)"><span class="block h-4 w-4 i-hugeicons-delete-02"></span></button></td></tr></template>
+        </tbody></table></div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<aside :if="selectedItem()" aria-label="File details" class="flex fixed inset-y-0 right-0 z-40 flex-col max-w-sm w-full bg-white/95 dark:bg-neutral-900/95 border-black/[0.06] border-l dark:border-white/[0.08] shadow-2xl backdrop-blur-2xl">
+  <header class="flex items-center justify-between p-4 border-b border-black/[0.06] dark:border-white/[0.08]"><div><p class="font-semibold text-sm text-stone-900 dark:text-white">File details</p><p class="mt-0.5 text-stone-500 text-xs dark:text-neutral-400">{{ selectedDisk }} disk</p></div><button type="button" aria-label="Close file details" class="p-2 text-stone-400 hover:text-stone-700 dark:hover:text-white rounded-lg" @click="selectedItem.set(null)"><span class="block h-5 w-5 i-hugeicons-cancel-01"></span></button></header>
+  <div class="overflow-y-auto flex-1 p-5"><MediaInfoPanel :item="selectedItem()" /><a :if="selectedItem()?.url" :href="selectedItem()?.url" target="_blank" rel="noopener" class="inline-flex gap-2 items-center justify-center mt-5 px-3 py-2 w-full font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-lg"><span class="h-4 w-4 i-hugeicons-link-square-02"></span>Open file</a></div>
+</aside>
+
+<div :if="showCreateFolderModal()" class="flex fixed inset-0 z-[55] items-center justify-center p-4 dashboard-modal-layer">
+  <button type="button" aria-label="Close new folder dialog" class="absolute inset-0 bg-black/45" @click="closeCreateFolder()"></button>
+  <form role="dialog" aria-modal="true" aria-labelledby="file-manager-folder-title" class="relative p-6 max-w-md w-full bg-white dark:bg-neutral-800 border border-stone-200 rounded-xl dark:border-neutral-700 shadow-xl" @submit.prevent="createFolder()">
+    <h2 id="file-manager-folder-title" class="font-semibold text-lg text-stone-900 dark:text-white">Create folder</h2><p class="mt-1 text-sm text-stone-500 dark:text-neutral-400">Add a folder inside {{ currentFolderLabel }}.</p>
+    <div :if="createError()" role="alert" class="mt-4 p-3 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900">{{ createError() }}</div>
+    <label class="block mt-5"><span class="font-medium text-sm text-stone-700 dark:text-neutral-200">Folder name</span><input ref="fileManagerFolderName" x-model.trim="newFolderName" required maxlength="255" autocomplete="off" class="mt-1 px-3 py-2 w-full text-sm text-stone-900 dark:text-white bg-white dark:bg-neutral-900 border border-stone-300 rounded-lg dark:border-neutral-700" /></label>
+    <div class="flex gap-2 justify-end mt-6"><button type="button" class="px-3 py-2 font-semibold text-sm text-stone-700 dark:text-neutral-200" :disabled="creatingFolder()" @click="closeCreateFolder()">Cancel</button><button type="submit" class="inline-flex gap-2 items-center px-3 py-2 font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-lg disabled:opacity-50" :disabled="creatingFolder() || !newFolderName().trim()"><span :if="creatingFolder()" class="h-4 w-4 animate-spin i-hugeicons-loading-03"></span>Create folder</button></div>
+  </form>
+</div>
+
+<div :if="showUploadModal()" class="flex fixed inset-0 z-[55] items-center justify-center p-4 dashboard-modal-layer">
+  <button type="button" aria-label="Close upload dialog" class="absolute inset-0 bg-black/45" @click="closeUpload()"></button>
+  <form role="dialog" aria-modal="true" aria-labelledby="file-manager-upload-title" class="relative p-6 max-w-lg w-full bg-white dark:bg-neutral-800 border border-stone-200 rounded-xl dark:border-neutral-700 shadow-xl" @submit.prevent="uploadFiles()">
+    <h2 id="file-manager-upload-title" class="font-semibold text-lg text-stone-900 dark:text-white">Upload files</h2><p class="mt-1 text-sm text-stone-500 dark:text-neutral-400">Upload to {{ currentFolderLabel }}. Each file can be up to 10 MB.</p>
+    <div :if="uploadError()" role="alert" class="mt-4 p-3 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900">{{ uploadError() }}</div>
+    <label class="flex flex-col items-center justify-center mt-5 p-8 text-center border-2 border-dashed border-stone-300 rounded-xl dark:border-neutral-600 hover:border-blue-400 dark:hover:border-blue-600 cursor-pointer" @dragover.prevent="handleDragOver()" @drop.prevent="handleDrop($event)"><span class="h-10 w-10 text-stone-400 i-hugeicons-upload-01"></span><span class="mt-3 font-semibold text-sm text-stone-800 dark:text-white">Choose files or drop them here</span><span class="mt-1 text-stone-500 text-xs dark:text-neutral-400">{{ selectedFilesLabel }}</span><input ref="fileManagerUploadInput" type="file" class="sr-only" multiple @change="handleFileSelection($event)" /></label>
+    <ul :if="selectedFiles().length" class="overflow-y-auto mt-4 space-y-1 max-h-32 text-sm"><template :for="file in selectedFiles"><li class="flex gap-4 items-center justify-between px-3 py-2 bg-stone-50 dark:bg-neutral-900 rounded-lg"><span class="text-stone-700 truncate dark:text-neutral-200">{{ file.name }}</span><span class="flex-shrink-0 font-mono text-stone-400 text-xs dark:text-neutral-500">{{ formatFileSize(file.size) }}</span></li></template></ul>
+    <div class="flex gap-2 justify-end mt-6"><button type="button" class="px-3 py-2 font-semibold text-sm text-stone-700 dark:text-neutral-200" :disabled="uploading()" @click="closeUpload()">Cancel</button><button type="submit" class="inline-flex gap-2 items-center px-3 py-2 font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-lg disabled:opacity-50" :disabled="uploading() || !selectedFiles().length"><span :if="uploading()" class="h-4 w-4 animate-spin i-hugeicons-loading-03"></span>Upload</button></div>
+  </form>
+</div>
+
+<div :if="itemToDelete()" class="flex fixed inset-0 z-[60] items-center justify-center p-4 dashboard-modal-layer">
+  <button type="button" aria-label="Close delete dialog" class="absolute inset-0 bg-black/45" @click="closeDelete()"></button>
+  <section role="alertdialog" aria-modal="true" aria-labelledby="file-manager-delete-title" class="relative p-6 max-w-md w-full bg-white dark:bg-neutral-800 border border-stone-200 rounded-xl dark:border-neutral-700 shadow-xl">
+    <div class="flex gap-3 items-start"><span class="flex flex-shrink-0 items-center justify-center h-10 w-10 text-red-600 bg-red-50 dark:bg-red-950/40 rounded-full"><span class="h-5 w-5 i-hugeicons-delete-02"></span></span><div><h2 id="file-manager-delete-title" class="font-semibold text-lg text-stone-900 dark:text-white">Delete {{ itemToDelete()?.name }}</h2><p class="mt-1 text-sm text-stone-500 dark:text-neutral-400">{{ itemToDelete()?.type === 'folder' ? 'The folder and everything inside it will be permanently deleted.' : 'This file will be permanently deleted.' }}</p></div></div>
+    <div :if="deleteError()" role="alert" class="mt-4 p-3 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900">{{ deleteError() }}</div>
+    <div class="flex gap-2 justify-end mt-6"><button type="button" class="px-3 py-2 font-semibold text-sm text-stone-700 dark:text-neutral-200" :disabled="deleting()" @click="closeDelete()">Cancel</button><button type="button" class="inline-flex gap-2 items-center px-3 py-2 font-semibold text-sm text-white bg-red-600 hover:bg-red-500 rounded-lg disabled:opacity-50" :disabled="deleting()" @click="deleteItem()"><span :if="deleting()" class="h-4 w-4 animate-spin i-hugeicons-loading-03"></span>Delete permanently</button></div>
+  </section>
+</div>

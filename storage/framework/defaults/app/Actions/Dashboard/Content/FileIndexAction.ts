@@ -12,6 +12,7 @@ export default new Action({
     try {
       return await getDashboardFileSnapshot({
         disk: String(request.get('disk', 'public')),
+        maxEntries: Number(request.get('limit', 1000)),
       })
     }
     catch (error) {
