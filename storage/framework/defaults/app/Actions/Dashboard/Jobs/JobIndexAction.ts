@@ -1,7 +1,7 @@
 import { Action } from '@stacksjs/actions'
 import { FailedJob, Job } from '@stacksjs/orm'
 import { request } from '@stacksjs/router'
-import { normalizeActiveJob, normalizeFailedJob } from './job-records'
+import { matchesJobSearch, normalizeActiveJob, normalizeFailedJob } from './job-records'
 
 export default new Action({
   name: 'JobIndexAction',
@@ -38,7 +38,7 @@ export default new Action({
       const filtered = merged.filter((job) => {
         if (queueFilter && queueFilter !== 'all' && job.queue !== queueFilter) return false
         if (statusFilter && statusFilter !== 'all' && job.status !== statusFilter) return false
-        if (search && !job.name.toLowerCase().includes(search)) return false
+        if (!matchesJobSearch(job, search)) return false
         return true
       })
 

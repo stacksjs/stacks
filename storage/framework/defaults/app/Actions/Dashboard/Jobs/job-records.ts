@@ -123,3 +123,30 @@ export function normalizeFailedJob(record: ModelRecord): NormalizedJob {
     finished_at: failedAt,
   }
 }
+
+export function matchesJobSearch(job: NormalizedJob, search: string): boolean {
+  const query = search.trim().toLowerCase()
+  if (!query)
+    return true
+
+  let payload = ''
+  try {
+    payload = typeof job.payload === 'string'
+      ? job.payload
+      : JSON.stringify(job.payload ?? '')
+  }
+  catch {
+    payload = ''
+  }
+
+  return [
+    job.id,
+    job.recordId,
+    job.name,
+    job.queue,
+    job.connection,
+    job.status,
+    job.error || '',
+    payload,
+  ].some(value => value.toLowerCase().includes(query))
+}

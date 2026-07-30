@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'bun:test'
 import {
+  matchesJobSearch,
   normalizeActiveJob,
   normalizeFailedJob,
   parseJobReference,
@@ -57,5 +58,23 @@ describe('dashboard job records', () => {
     expect(parseJobReference('failed-42')).toEqual({ source: 'failed', id: '42' })
     expect(parseJobReference('job-9')).toEqual({ source: 'job', id: '9' })
     expect(parseJobReference('12')).toEqual({ source: null, id: '12' })
+  })
+
+  it('searches job identifiers, metadata, errors, and payload values', () => {
+    const job = normalizeFailedJob(record({
+      id: 15,
+      connection: 'database',
+      queue: 'emails',
+      payload: '{"displayName":"SendWelcomeEmail","recipient":"operator@example.com"}',
+      exception: 'SMTP connection refused',
+      failed_at: '2026-07-29 12:05:00',
+    }))
+
+    expect(matchesJobSearch(job, 'failed-15')).toBe(true)
+    expect(matchesJobSearch(job, '15')).toBe(true)
+    expect(matchesJobSearch(job, 'EMAILS')).toBe(true)
+    expect(matchesJobSearch(job, 'connection refused')).toBe(true)
+    expect(matchesJobSearch(job, 'operator@example.com')).toBe(true)
+    expect(matchesJobSearch(job, 'missing')).toBe(false)
   })
 })
