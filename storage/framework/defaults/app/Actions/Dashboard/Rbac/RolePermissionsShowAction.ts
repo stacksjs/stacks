@@ -1,5 +1,6 @@
 import { Action } from '@stacksjs/actions'
 import { findRole, getRolePermissions } from '@stacksjs/auth'
+import { response } from '@stacksjs/router'
 
 /**
  * `GET /api/dashboard/rbac/roles/:name/permissions` (stacksjs/stacks#1845).
@@ -17,18 +18,18 @@ export default new Action({
   async handle(request) {
     const name = String((request as any)?.params?.name ?? '').trim()
     if (!name) {
-      return { error: '`name` route param is required.', status: 400 }
+      return response.json({ error: '`name` route param is required.' }, 400)
     }
     const url = new URL(request.url ?? 'http://localhost/')
     const guardName = (url.searchParams.get('guard') || 'web').trim()
     if (!guardName || guardName.length > 60) {
-      return { error: 'Invalid guard name.', status: 400 }
+      return response.json({ error: 'Invalid guard name.' }, 400)
     }
 
     try {
       const role = await findRole(name, guardName)
       if (!role) {
-        return { error: 'Role not found.', status: 404 }
+        return response.json({ error: 'Role not found.' }, 404)
       }
       const permissions = (await getRolePermissions(role.id)).filter(permission => permission.guard_name === guardName)
       return {
@@ -42,7 +43,7 @@ export default new Action({
     }
     catch (err) {
       console.error('[dashboard/rbac] RolePermissionsShowAction failed:', err)
-      return { permissions: [], error: err instanceof Error ? err.message : 'unknown error' }
+      return response.json({ permissions: [], error: err instanceof Error ? err.message : 'unknown error' }, 500)
     }
   },
 })

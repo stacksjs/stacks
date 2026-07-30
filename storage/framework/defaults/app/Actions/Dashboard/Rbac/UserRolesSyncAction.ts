@@ -1,6 +1,7 @@
 import { Action } from '@stacksjs/actions'
 import { getUserRoles, syncRoles } from '@stacksjs/auth'
 import { User } from '@stacksjs/orm'
+import { response } from '@stacksjs/router'
 
 interface SyncInput {
   roles?: unknown
@@ -27,28 +28,28 @@ export default new Action({
     const rawId = (request as any)?.params?.id
     const userId = Number(rawId)
     if (!Number.isFinite(userId) || userId <= 0) {
-      return { error: 'Invalid user id.', status: 400 }
+      return response.json({ error: 'Invalid user id.' }, 400)
     }
 
     const body = (request as any).jsonBody as SyncInput | undefined ?? {}
     if (!Array.isArray(body.roles)) {
-      return { error: '`roles` must be an array of role names (possibly empty).', status: 400 }
+      return response.json({ error: '`roles` must be an array of role names (possibly empty).' }, 400)
     }
     const names: string[] = []
     for (const v of body.roles) {
       if (typeof v !== 'string' || !v.trim() || v.trim().length > 60) {
-        return { error: '`roles` must contain non-empty strings.', status: 400 }
+        return response.json({ error: '`roles` must contain non-empty strings.' }, 400)
       }
       names.push(v.trim())
     }
     const guardName = typeof body.guardName === 'string' && body.guardName ? body.guardName.trim() : 'web'
     if (!guardName || guardName.length > 60) {
-      return { error: '`guardName` must be 1-60 characters.', status: 400 }
+      return response.json({ error: '`guardName` must be 1-60 characters.' }, 400)
     }
 
     try {
       if (!await User.find(userId)) {
-        return { error: 'User not found.', status: 404 }
+        return response.json({ error: 'User not found.' }, 404)
       }
       await syncRoles(userId, Array.from(new Set(names)), guardName)
       const after = (await getUserRoles(userId)).filter(role => role.guard_name === guardName)
@@ -64,10 +65,10 @@ export default new Action({
       // the UI can show "this role doesn't exist anymore" rather
       // than a 500.
       if (msg.includes('not found')) {
-        return { error: msg, status: 400 }
+        return response.json({ error: msg }, 400)
       }
       console.error('[dashboard/rbac] UserRolesSyncAction failed:', err)
-      return { error: msg, status: 500 }
+      return response.json({ error: msg }, 500)
     }
   },
 })

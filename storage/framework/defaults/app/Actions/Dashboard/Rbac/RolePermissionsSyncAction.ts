@@ -1,5 +1,6 @@
 import { Action } from '@stacksjs/actions'
 import { getRolePermissions, findRole, syncRolePermissions } from '@stacksjs/auth'
+import { response } from '@stacksjs/router'
 
 interface SyncInput {
   permissions?: unknown
@@ -21,23 +22,23 @@ export default new Action({
   async handle(request) {
     const roleName = String((request as any)?.params?.name ?? '').trim()
     if (!roleName) {
-      return { error: '`name` route param is required.', status: 400 }
+      return response.json({ error: '`name` route param is required.' }, 400)
     }
 
     const body = (request as any).jsonBody as SyncInput | undefined ?? {}
     if (!Array.isArray(body.permissions)) {
-      return { error: '`permissions` must be an array of permission names (possibly empty).', status: 400 }
+      return response.json({ error: '`permissions` must be an array of permission names (possibly empty).' }, 400)
     }
     const names: string[] = []
     for (const v of body.permissions) {
       if (typeof v !== 'string' || !v.trim() || v.trim().length > 100) {
-        return { error: '`permissions` must contain non-empty strings.', status: 400 }
+        return response.json({ error: '`permissions` must contain non-empty strings.' }, 400)
       }
       names.push(v.trim())
     }
     const guardName = typeof body.guardName === 'string' && body.guardName ? body.guardName.trim() : 'web'
     if (!guardName || guardName.length > 60) {
-      return { error: '`guardName` must be 1-60 characters.', status: 400 }
+      return response.json({ error: '`guardName` must be 1-60 characters.' }, 400)
     }
 
     try {
@@ -46,7 +47,7 @@ export default new Action({
       // UI can reconcile against canonical state.
       const role = await findRole(roleName, guardName)
       if (!role) {
-        return { error: 'Role not found after sync.', status: 404 }
+        return response.json({ error: 'Role not found after sync.' }, 404)
       }
       const after = (await getRolePermissions(role.id)).filter(permission => permission.guard_name === guardName)
       return {
@@ -57,10 +58,10 @@ export default new Action({
     catch (err) {
       const msg = err instanceof Error ? err.message : 'unknown error'
       if (msg.includes('not found')) {
-        return { error: msg, status: 400 }
+        return response.json({ error: msg }, 400)
       }
       console.error('[dashboard/rbac] RolePermissionsSyncAction failed:', err)
-      return { error: msg, status: 500 }
+      return response.json({ error: msg }, 500)
     }
   },
 })

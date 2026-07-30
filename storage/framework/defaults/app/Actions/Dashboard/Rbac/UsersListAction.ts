@@ -1,5 +1,6 @@
 import { Action } from '@stacksjs/actions'
 import { User } from '@stacksjs/orm'
+import { response } from '@stacksjs/router'
 import { safeGet } from '../../../../resources/functions/dashboard/data'
 
 /**
@@ -40,7 +41,7 @@ export default new Action({
     }
     catch (err) {
       console.error('[dashboard/rbac] UsersListAction failed:', err)
-      return { users: [], error: err instanceof Error ? err.message : 'unknown error' }
+      return response.json({ users: [], error: err instanceof Error ? err.message : 'unknown error' }, 500)
     }
   },
 })

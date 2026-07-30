@@ -1,5 +1,6 @@
 import { Action } from '@stacksjs/actions'
 import { getAllPermissions } from '@stacksjs/auth'
+import { response } from '@stacksjs/router'
 
 /**
  * `GET /api/dashboard/rbac/permissions` (stacksjs/stacks#1845).
@@ -28,7 +29,7 @@ export default new Action({
     }
     catch (err) {
       console.error('[dashboard/rbac] PermissionsIndexAction failed:', err)
-      return { permissions: [], error: err instanceof Error ? err.message : 'unknown error' }
+      return response.json({ permissions: [], error: err instanceof Error ? err.message : 'unknown error' }, 500)
     }
   },
 })
