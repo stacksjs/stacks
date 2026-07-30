@@ -1,5 +1,6 @@
 import { Action } from '@stacksjs/actions'
 import { Deployment } from '@stacksjs/orm'
+import { response } from '@stacksjs/router'
 
 export default new Action({
   name: 'GetDeployments',
@@ -15,8 +16,10 @@ export default new Action({
         deployments: deployments.map(d => d.toJSON()),
       }
     }
-    catch {
-      return { deployments: [] }
+    catch (error) {
+      return response.json({
+        message: error instanceof Error ? error.message : 'Deployment records could not be loaded.',
+      }, 503)
     }
   },
 })

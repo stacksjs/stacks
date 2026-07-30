@@ -3,6 +3,7 @@ import { readFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
 import process from 'node:process'
 import { logging } from '@stacksjs/config'
+import { response } from '@stacksjs/router'
 import { tailLines } from './deployment-input'
 
 export default new Action({
@@ -19,7 +20,13 @@ export default new Action({
         output: tailLines(await readFile(filePath, 'utf8')),
       }
     }
-    catch {
+    catch (error) {
+      if ((error as NodeJS.ErrnoException).code !== 'ENOENT') {
+        return response.json({
+          message: error instanceof Error ? error.message : 'Deployment output could not be read.',
+        }, 500)
+      }
+
       return {
         path: configuredPath,
         output: '',

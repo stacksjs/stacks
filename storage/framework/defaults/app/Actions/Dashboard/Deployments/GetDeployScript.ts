@@ -2,6 +2,7 @@ import { Action } from '@stacksjs/actions'
 import { readFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import process from 'node:process'
+import { response } from '@stacksjs/router'
 
 export default new Action({
   name: 'GetDeployScript',
@@ -16,7 +17,13 @@ export default new Action({
         content: await readFile(filePath, 'utf8'),
       }
     }
-    catch {
+    catch (error) {
+      if ((error as NodeJS.ErrnoException).code !== 'ENOENT') {
+        return response.json({
+          message: error instanceof Error ? error.message : 'Deploy script could not be read.',
+        }, 500)
+      }
+
       return {
         path: 'cloud/deploy-script.ts',
         content: '',
