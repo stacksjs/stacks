@@ -1,52 +1,41 @@
-<script server>
-interface InputProps {
-  value?: string
-  type?: 'text' | 'email' | 'password' | 'number' | 'tel' | 'url' | 'search'
-  placeholder?: string
-  disabled?: boolean
-  readonly?: boolean
-  required?: boolean
-  error?: string
-  hint?: string
-  label?: string
-  ariaLabel?: string
-  id?: string
-  size?: 'xs' | 'sm' | 'md' | 'lg'
-  name?: string
-  fullWidth?: boolean
-}
-
-const { value = '', type = 'text', placeholder = '', disabled = false, readonly = false, required = false, error = '', hint = '', label = '', ariaLabel = '', id = '', size = 'md', name = '', fullWidth = true } = defineProps<InputProps>()
-
-const sizeClasses = {
-    xs: 'px-2 py-1 text-[11px] h-6',
-    sm: 'px-2.5 py-1 text-[12px] h-7',
-    md: 'px-3 py-1.5 text-[13px] h-8',
-    lg: 'px-3.5 py-2 text-[14px] h-9'
-  }
-
-  const inputClass = [
-    'block w-full',
-    'bg-white dark:bg-white/10',
-    'border rounded-lg',
-    'text-stone-900 dark:text-neutral-100',
-    'placeholder:text-stone-400 dark:placeholder:text-neutral-500',
-    'transition-all duration-150',
-    'focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:ring-offset-0',
-    sizeClasses[size]
-  ].join(' ')
-
-  const inputId = id || 'input-' + Math.random().toString(36).slice(2, 11)
-</script>
 <script client>
+type InputType = 'text' | 'email' | 'password' | 'number' | 'tel' | 'url' | 'search' | 'date' | 'time' | 'datetime-local'
+type InputSize = 'xs' | 'sm' | 'md' | 'lg'
+
 const liveValue = useReactiveProp('value', '')
+const liveType = useReactiveProp('type', 'text' as InputType)
+const livePlaceholder = useReactiveProp('placeholder', '')
 const liveDisabled = useReactiveProp('disabled', false)
 const liveReadonly = useReactiveProp('readonly', false)
 const liveRequired = useReactiveProp('required', false)
 const liveError = useReactiveProp('error', '')
 const liveHint = useReactiveProp('hint', '')
+const liveLabel = useReactiveProp('label', '')
+const liveAriaLabel = useReactiveProp('ariaLabel', '')
+const liveId = useReactiveProp('id', '')
+const liveSize = useReactiveProp('size', 'md' as InputSize)
+const liveName = useReactiveProp('name', '')
+const liveFullWidth = useReactiveProp('fullWidth', true)
 const emit = defineEmits()
-const stateClass = derived(() => [
+const generatedId = `input-${Math.random().toString(36).slice(2, 11)}`
+
+const sizeClasses: Record<InputSize, string> = {
+  xs: 'px-2 py-1 text-[11px] h-6',
+  sm: 'px-2.5 py-1 text-[12px] h-7',
+  md: 'px-3 py-1.5 text-[13px] h-8',
+  lg: 'px-3.5 py-2 text-[14px] h-9',
+}
+
+const inputId = derived(() => liveId() || generatedId)
+const inputClass = derived(() => [
+  'block w-full',
+  'bg-white dark:bg-white/10',
+  'border rounded-lg',
+  'text-stone-900 dark:text-neutral-100',
+  'placeholder:text-stone-400 dark:placeholder:text-neutral-500',
+  'transition-all duration-150',
+  'focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:ring-offset-0',
+  sizeClasses[liveSize()] || sizeClasses.md,
   liveError()
     ? 'border-red-400/60 dark:border-red-500/60 focus:border-red-500 focus:ring-red-500/30'
     : 'border-stone-200/80 dark:border-white/15 focus:border-blue-400 hover:border-stone-300 dark:hover:border-white/25',
@@ -71,15 +60,14 @@ function handleBlur(event: Event): void {
   emit('blur', inputValue(event))
 }
 </script>
-<div class="{{ fullWidth ? 'w-full' : '' }}">
-  @if(label)
-    <label for="{{ inputId }}" class="block mb-1.5 font-medium text-[13px] tracking-tight" :class="liveError() ? 'text-red-600 dark:text-red-400' : 'text-stone-600 dark:text-neutral-400'">
-      {{ label }}
-      <template :if="liveRequired()">
-        <span class="ml-0.5 text-red-500">*</span>
-      </template>
+
+<div :class="liveFullWidth() ? 'w-full' : ''">
+  <template :if="liveLabel()">
+    <label :for="inputId()" class="block mb-1.5 font-medium text-[13px] tracking-tight" :class="liveError() ? 'text-red-600 dark:text-red-400' : 'text-stone-600 dark:text-neutral-400'">
+      <span :text="liveLabel()"></span>
+      <span :if="liveRequired()" class="ml-0.5 text-red-500">*</span>
     </label>
-  @endif
+  </template>
 
   <div class="relative">
     @if($slots.iconLeft)
@@ -88,14 +76,14 @@ function handleBlur(event: Event): void {
       </div>
     @endif
     <input
-      id="{{ inputId }}"
-      type="{{ type }}"
+      :id="inputId()"
+      :type="liveType()"
       x-model="liveValue"
-      placeholder="{{ placeholder }}"
-      @if(ariaLabel) aria-label="{{ ariaLabel }}" @endif
-      name="{{ name }}"
-      class="{{ inputClass }} {{ $slots.iconLeft ? 'pl-8' : '' }}"
-      :class="stateClass()"
+      :placeholder="livePlaceholder()"
+      :aria-label="liveAriaLabel() || liveLabel() || null"
+      :name="liveName() || null"
+      class="{{ $slots.iconLeft ? 'pl-8' : '' }}"
+      :class="inputClass()"
       @input="handleInput"
       @change="handleChange"
       @blur="handleBlur"
@@ -105,6 +93,6 @@ function handleBlur(event: Event): void {
     >
   </div>
 
-  <p :if="liveError()" class="mt-1.5 text-red-600 text-sm dark:text-red-400">{{ liveError() }}</p>
-  <p :if="!liveError() && liveHint()" class="mt-1.5 text-sm text-stone-500 dark:text-neutral-400">{{ liveHint() }}</p>
+  <p :if="liveError()" class="mt-1.5 text-red-600 text-sm dark:text-red-400" :text="liveError()"></p>
+  <p :if="!liveError() && liveHint()" class="mt-1.5 text-sm text-stone-500 dark:text-neutral-400" :text="liveHint()"></p>
 </div>

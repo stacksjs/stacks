@@ -1,36 +1,3 @@
-<script server>
-interface SelectProps {
-  value?: string
-  options?: any[]
-  placeholder?: string
-  label?: string
-  ariaLabel?: string
-  error?: string
-  hint?: string
-  disabled?: boolean
-  required?: boolean
-  size?: 'xs' | 'sm' | 'md' | 'lg'
-  name?: string
-  id?: string
-}
-
-const { value = '', options = [], placeholder = 'Select an option', label = '', ariaLabel = '', error = '', hint = '', disabled = false, required = false, size = 'md', name = '', id = '' } = defineProps<SelectProps>()
-
-const sizeClasses = {
-  xs: 'h-6 text-[11px] px-2',
-  sm: 'h-7 text-[12px] px-2.5',
-  md: 'h-8 text-[13px] px-3',
-  lg: 'h-9 text-[14px] px-3.5'
-}
-
-const selectClass = [
-  'w-full flex items-center justify-between gap-2 rounded-md border transition-all duration-150',
-  'focus:outline-none focus:ring-2',
-  sizeClasses[size]
-].join(' ')
-
-const selectId = id || 'select-' + Math.random().toString(36).slice(2, 11)
-</script>
 <script client>
 interface SelectOption {
   value?: string | number
@@ -40,14 +7,35 @@ interface SelectOption {
   disabled?: boolean
 }
 
+type SelectSize = 'xs' | 'sm' | 'md' | 'lg'
+
 const liveValue = useReactiveProp('value', '')
 const liveOptions = useReactiveProp('options', [])
-const liveDisabled = useReactiveProp('disabled', false)
-const liveRequired = useReactiveProp('required', false)
+const livePlaceholder = useReactiveProp('placeholder', 'Select an option')
+const liveLabel = useReactiveProp('label', '')
+const liveAriaLabel = useReactiveProp('ariaLabel', '')
 const liveError = useReactiveProp('error', '')
 const liveHint = useReactiveProp('hint', '')
+const liveDisabled = useReactiveProp('disabled', false)
+const liveRequired = useReactiveProp('required', false)
+const liveSize = useReactiveProp('size', 'md' as SelectSize)
+const liveName = useReactiveProp('name', '')
+const liveId = useReactiveProp('id', '')
 const emit = defineEmits()
-const stateClass = derived(() => [
+const generatedId = `select-${Math.random().toString(36).slice(2, 11)}`
+
+const sizeClasses: Record<SelectSize, string> = {
+  xs: 'h-6 text-[11px] px-2',
+  sm: 'h-7 text-[12px] px-2.5',
+  md: 'h-8 text-[13px] px-3',
+  lg: 'h-9 text-[14px] px-3.5',
+}
+
+const selectId = derived(() => liveId() || generatedId)
+const selectClass = derived(() => [
+  'w-full flex items-center justify-between gap-2 rounded-md border transition-all duration-150',
+  'focus:outline-none focus:ring-2 appearance-none pr-8',
+  sizeClasses[liveSize()] || sizeClasses.md,
   liveError()
     ? 'border-red-400/60 dark:border-red-500/60 focus:ring-red-500/30 focus:border-red-500'
     : 'border-black/10 dark:border-white/15 focus:ring-blue-500/40 focus:border-blue-500/50 hover:border-black/20 dark:hover:border-white/25',
@@ -78,44 +66,40 @@ function handleChange(event: Event): void {
   emit('update:value', nextValue)
 }
 </script>
+
 <div class="relative">
-    @if(label)
-      <label for="{{ selectId }}" class="block mb-1.5 font-medium text-[13px] text-neutral-600 tracking-tight dark:text-neutral-400">
-        {{ label }}
-        <template :if="liveRequired()">
-          <span class="text-red-500">*</span>
-        </template>
-      </label>
-    @endif
+  <template :if="liveLabel()">
+    <label :for="selectId()" class="block mb-1.5 font-medium text-[13px] text-neutral-600 tracking-tight dark:text-neutral-400">
+      <span :text="liveLabel()"></span>
+      <span :if="liveRequired()" class="text-red-500">*</span>
+    </label>
+  </template>
 
-    <div class="relative">
-      <select
-        id="{{ selectId }}"
-        name="{{ name }}"
-        @if(ariaLabel) aria-label="{{ ariaLabel }}" @endif
-        x-model="liveValue"
-        class="{{ selectClass }} appearance-none pr-8"
-        :class="stateClass()"
-        @change="handleChange"
-        :disabled="liveDisabled()"
-        :required="liveRequired()"
+  <div class="relative">
+    <select
+      :id="selectId()"
+      :name="liveName() || null"
+      :aria-label="liveAriaLabel() || liveLabel() || null"
+      x-model="liveValue"
+      :class="selectClass()"
+      @change="handleChange"
+      :disabled="liveDisabled()"
+      :required="liveRequired()"
+    >
+      <option :if="livePlaceholder()" value="" disabled>{{ livePlaceholder() }}</option>
+      <option
+        :for="option in liveOptions()"
+        :value="optionValue(option)"
+        :disabled="optionDisabled(option)"
       >
-        @if(placeholder)
-          <option value="" disabled>{{ placeholder }}</option>
-        @endif
-        <option
-          :for="option in liveOptions()"
-          :value="optionValue(option)"
-          :disabled="optionDisabled(option)"
-        >
-          {{ optionLabel(option) }}
-        </option>
-      </select>
-      <div class="flex absolute inset-y-0 right-0 items-center pr-2 pointer-events-none">
-        <div class="h-3.5 w-3.5 text-neutral-400 i-hugeicons-arrow-down-01"></div>
-      </div>
+        {{ optionLabel(option) }}
+      </option>
+    </select>
+    <div class="flex absolute inset-y-0 right-0 items-center pr-2 pointer-events-none">
+      <div class="h-3.5 w-3.5 text-neutral-400 i-hugeicons-arrow-down-01"></div>
     </div>
-
-    <p :if="liveError()" class="mt-1.5 text-[12px] text-red-600 dark:text-red-400">{{ liveError() }}</p>
-    <p :if="!liveError() && liveHint()" class="mt-1.5 text-[12px] text-neutral-500 dark:text-neutral-400">{{ liveHint() }}</p>
   </div>
+
+  <p :if="liveError()" class="mt-1.5 text-[12px] text-red-600 dark:text-red-400" :text="liveError()"></p>
+  <p :if="!liveError() && liveHint()" class="mt-1.5 text-[12px] text-neutral-500 dark:text-neutral-400" :text="liveHint()"></p>
+</div>

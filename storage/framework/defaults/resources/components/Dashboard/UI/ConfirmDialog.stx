@@ -1,41 +1,63 @@
-<script server>
-interface ConfirmDialogProps {
-  isOpen?: boolean
-  title?: string
-  description?: string
-  confirmLabel?: string
-  cancelLabel?: string
-  variant?: 'danger' | 'warning'
+<script client>
+type ConfirmVariant = 'danger' | 'warning'
+
+const open = useReactiveProp('isOpen', false)
+const title = useReactiveProp('title', 'Are you sure?')
+const description = useReactiveProp('description', 'This action cannot be undone.')
+const confirmLabel = useReactiveProp('confirmLabel', 'Delete')
+const cancelLabel = useReactiveProp('cancelLabel', 'Cancel')
+const variant = useReactiveProp('variant', 'danger' as ConfirmVariant)
+const busy = useReactiveProp('busy', false)
+const emit = defineEmits()
+
+function close(): void {
+  if (!busy())
+    emit('close')
 }
 
-const { isOpen = false, title = 'Are you sure?', description = 'This action cannot be undone.', confirmLabel = 'Delete', cancelLabel = 'Cancel', variant = 'danger' } = defineProps<ConfirmDialogProps>()
-
-const iconClasses = {
-  danger: 'bg-red-500/15 text-red-600 dark:bg-red-400/20 dark:text-red-400',
-  warning: 'bg-orange-500/15 text-orange-600 dark:bg-orange-400/20 dark:text-orange-400'
+function confirm(): void {
+  if (!busy())
+    emit('confirm')
 }
 
-const iconNames = {
-  danger: 'i-hugeicons-alert-02',
-  warning: 'i-hugeicons-alert-circle'
+function iconClass(): string {
+  return variant() === 'warning'
+    ? 'bg-orange-500/15 text-orange-600 dark:bg-orange-400/20 dark:text-orange-400'
+    : 'bg-red-500/15 text-red-600 dark:bg-red-400/20 dark:text-red-400'
+}
+
+function iconName(): string {
+  return variant() === 'warning' ? 'i-hugeicons-alert-circle' : 'i-hugeicons-alert-02'
+}
+
+function confirmClass(): string {
+  return variant() === 'warning'
+    ? 'bg-orange-600 hover:bg-orange-500 focus-visible:ring-orange-500'
+    : 'bg-red-600 hover:bg-red-500 focus-visible:ring-red-500'
 }
 </script>
-@if(isOpen)
-  <div ref="pageRoot" class="fixed inset-y-0 overflow-y-auto right-0 z-[55] dashboard-modal-layer">
-    <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" data-modal-overlay></div>
 
-    <div class="flex items-center justify-center p-4 min-h-full">
-      <div class="relative p-6 max-w-md w-full bg-white dark:bg-neutral-900 rounded-xl shadow-2xl">
+<template :if="open()">
+  <div class="fixed inset-0 overflow-y-auto z-[55] dashboard-modal-layer" @keydown.escape="close">
+    <button type="button" class="fixed inset-0 w-full bg-black/50 backdrop-blur-sm cursor-default" aria-label="Close confirmation dialog" @click="close"></button>
+
+    <div class="flex relative items-center justify-center p-4 min-h-full">
+      <section
+        role="alertdialog"
+        aria-modal="true"
+        :aria-label="title()"
+        class="relative p-6 max-w-md w-full bg-white dark:bg-neutral-900 rounded-xl shadow-2xl"
+      >
         <div class="flex gap-4 items-start">
-          <div class="p-2.5 rounded-lg flex-shrink-0 {{ iconClasses[variant] }}">
-            <div class="{{ iconNames[variant] }} w-5 h-5"></div>
+          <div class="shrink-0 p-2.5 rounded-lg" :class="iconClass()">
+            <span class="block h-5 w-5" :class="iconName()"></span>
           </div>
           <div class="flex-1 min-w-0">
             <h3 class="font-semibold text-lg text-neutral-900 dark:text-white">
-              {{ title }}
+              {{ title() }}
             </h3>
             <p class="mt-1 text-neutral-500 text-sm dark:text-neutral-400">
-              {{ description }}
+              {{ description() }}
             </p>
           </div>
         </div>
@@ -43,32 +65,24 @@ const iconNames = {
         <div class="flex gap-2 items-center justify-end mt-6">
           <button
             type="button"
-            class="inline-flex items-center justify-center px-3 py-1.5 font-medium text-[13px] text-neutral-800 tracking-tight dark:text-neutral-100 bg-white/80 dark:bg-white/10 hover:bg-white dark:hover:bg-white/15 border border-black/10 rounded-lg dark:border-white/10 shadow-sm duration-150 transition-all"
-            data-modal-close
+            class="inline-flex items-center justify-center px-3 py-1.5 font-medium text-[13px] text-neutral-800 tracking-tight dark:text-neutral-100 bg-white/80 dark:bg-white/10 hover:bg-white dark:hover:bg-white/15 border border-black/10 rounded-lg dark:border-white/10 shadow-sm disabled:opacity-50 duration-150 transition-all"
+            :disabled="busy()"
+            @click="close"
           >
-            {{ cancelLabel }}
+            {{ cancelLabel() }}
           </button>
           <button
             type="button"
-            class="inline-flex items-center justify-center px-3 py-1.5 font-medium text-[13px] text-white tracking-tight bg-gradient-to-b from-red-500 to-red-600 hover:from-red-400 hover:to-red-500 rounded-lg shadow-red-600/25 shadow-sm duration-150 transition-all"
-            data-confirm-action
+            class="inline-flex gap-1.5 items-center justify-center px-3 py-1.5 font-medium text-[13px] text-white tracking-tight rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-neutral-900 shadow-sm disabled:opacity-50 duration-150 transition-colors"
+            :class="confirmClass()"
+            :disabled="busy()"
+            @click="confirm"
           >
-            {{ confirmLabel }}
+            <span :if="busy()" class="h-4 w-4 animate-spin i-hugeicons-loading-03"></span>
+            {{ confirmLabel() }}
           </button>
         </div>
-      </div>
+      </section>
     </div>
   </div>
-@endif
-<script client>
-var _root = useRef('pageRoot')
-onMount(function() {
-  var el = _root.current
-  if (!el) return
-  el.querySelectorAll('[data-modal-overlay], [data-modal-close]').forEach(function(item) {
-    item.addEventListener('click', function() {
-      item.closest('.fixed.inset-0')?.remove()
-    })
-  })
-})
-</script>
+</template>

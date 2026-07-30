@@ -1,57 +1,55 @@
-<script>
-interface DropdownProps {
-  label?: string
-  open?: boolean
-  elements?: any[]
-  id?: string
+<script client>
+interface DropdownElement {
+  label: string
+  to: string
 }
 
-const { label = '', open = false, elements = [], id = 'dropdown-nav-' + Math.random().toString(36).slice(2, 11) } = defineProps<DropdownProps>()
+const label = useReactiveProp('label', '')
+const requestedOpen = useReactiveProp('open', false)
+const elements = useReactiveProp('elements', [] as DropdownElement[])
+const disabled = useReactiveProp('disabled', false)
+const isOpen = state(requestedOpen())
+const emit = defineEmits()
+
+effect(() => {
+  isOpen.set(requestedOpen())
+})
+
+function setOpen(next: boolean): void {
+  if (disabled() && next)
+    return
+  isOpen.set(next)
+  emit('update:open', next)
+  emit(next ? 'open' : 'close')
+}
+
+function toggle(): void {
+  setOpen(!isOpen())
+}
 </script>
-<div ref="pageRoot" class="flex overflow-hidden flex-col gap-y-2" data-dropdown-nav="{{ id }}">
-  <a class="flex gap-x-2 items-center justify-between cursor-pointer" data-toggle>
-    <span class="font-medium text-dark text-sm">
-      {{ label }}
+
+<nav class="flex overflow-hidden flex-col gap-y-2" :aria-label="label() || 'Dropdown navigation'" @keydown.escape="setOpen(false)">
+  <button
+    type="button"
+    class="flex gap-x-2 items-center justify-between w-full text-left disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
+    :aria-expanded="String(isOpen())"
+    :disabled="disabled()"
+    @click="toggle"
+  >
+    <span class="font-medium text-dark text-sm dark:text-white">
+      {{ label() }}
     </span>
 
-    <span class="i-hugeicons-chevron-down" data-icon-closed></span>
-    <span class="hidden i-hugeicons-minus" data-icon-open></span>
-  </a>
+    <span :class="isOpen() ? 'h-4 w-4 i-hugeicons-minus-sign' : 'h-4 w-4 i-hugeicons-arrow-down-01'"></span>
+  </button>
 
-  <ul data-list class="{{ open ? '' : 'hidden' }}">
-    @foreach(elements as element)
+  <ul :if="isOpen()" class="space-y-1">
+    <template :for="element in elements()">
       <li>
-        <a href="{{ element.to }}" class="block">
+        <a :href="element.to" class="block px-2 py-1.5 text-neutral-600 text-sm dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-white/10 rounded-md">
           {{ element.label }}
         </a>
       </li>
-    @endforeach
+    </template>
   </ul>
-</div>
-<script client>
-var _root = useRef('pageRoot')
-onMount(function() {
-  var el = _root.current;
-  if (!el) return;
-  const nav = el
-
-  const toggle = nav.querySelector('[data-toggle]')
-  const list = nav.querySelector('[data-list]')
-  const iconClosed = nav.querySelector('[data-icon-closed]')
-  const iconOpen = nav.querySelector('[data-icon-open]')
-  let isOpen = {{ open ? 'true' : 'false' }}
-
-  function updateState() {
-    list.classList.toggle('hidden', !isOpen)
-    iconClosed.classList.toggle('hidden', isOpen)
-    iconOpen.classList.toggle('hidden', !isOpen)
-  }
-
-  toggle?.addEventListener('click', function() {
-    isOpen = !isOpen
-    updateState()
-  })
-
-  updateState()
-})
-</script>
+</nav>

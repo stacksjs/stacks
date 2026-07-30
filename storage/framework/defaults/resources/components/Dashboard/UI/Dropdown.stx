@@ -1,14 +1,17 @@
-<script server>
-interface DropdownProps {
-  align?: 'left' | 'right'
-  width?: 'auto' | 'sm' | 'md' | 'lg' | 'full'
-  disabled?: boolean
-  id?: string
-}
+<script client>
+type DropdownAlign = 'left' | 'right'
+type DropdownWidth = 'auto' | 'sm' | 'md' | 'lg' | 'full'
 
-const { align = 'left', width = 'auto', disabled = false, id = 'dropdown-' + Math.random().toString(36).slice(2, 11) } = defineProps<DropdownProps>()
+const requestedOpen = useReactiveProp('open', false)
+const align = useReactiveProp('align', 'left' as DropdownAlign)
+const width = useReactiveProp('width', 'auto' as DropdownWidth)
+const disabled = useReactiveProp('disabled', false)
+const isOpen = state(requestedOpen())
+const root = useRef('dropdownRoot')
+const menu = useRef('dropdownMenu')
+const emit = defineEmits()
 
-const widthClasses = {
+const widthClasses: Record<DropdownWidth, string> = {
   auto: 'min-w-[12rem]',
   sm: 'w-48',
   md: 'w-56',
@@ -16,57 +19,54 @@ const widthClasses = {
   full: 'w-full',
 }
 
-const alignClass = align === 'right' ? 'right-0' : 'left-0'
-</script>
-<div ref="pageRoot" class="inline-block relative text-left" data-dropdown="{{ id }}">
-    <!-- Trigger -->
-    <div data-dropdown-trigger>
-      {{ triggerSlot }}
-    </div>
-
-    <!-- Menu - macOS popover style -->
-    <div
-      data-dropdown-menu
-      class="absolute z-50 mt-1.5 {{ widthClasses[width] }} {{ alignClass }} origin-top-right bg-white/95 dark:bg-neutral-800/95 backdrop-blur-xl backdrop-saturate-150 rounded-lg shadow-lg shadow-black/10 dark:shadow-black/30 border border-black/10 dark:border-white/10 py-1 focus:outline-none hidden"
-    >
-      <slot />
-    </div>
-  </div>
-<script client>
-var _root = useRef('pageRoot')
-onMount(function() {
-  var el = _root.current;
-  if (!el) return;
-  const dropdown = el
-  if (!dropdown) return
-
-  const trigger = dropdown.querySelector('[data-dropdown-trigger]')
-  const menu = dropdown.querySelector('[data-dropdown-menu]')
-  let isOpen = false
-
-  function toggle() {
-    if ({{ disabled ? 'true' : 'false' }}) return
-    isOpen = !isOpen
-    menu.classList.toggle('hidden', !isOpen)
-  }
-
-  function close() {
-    isOpen = false
-    menu.classList.add('hidden')
-  }
-
-  trigger?.addEventListener('click', toggle)
-
-  document.body.addEventListener('click', function(e) {
-    if (isOpen && !dropdown.contains(e.target)) {
-      close()
-    }
-  })
-
-  document.body.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape' && isOpen) {
-      close()
-    }
-  })
+effect(() => {
+  isOpen.set(requestedOpen())
 })
+
+function setOpen(next: boolean): void {
+  if (disabled() && next)
+    return
+  if (isOpen() === next)
+    return
+  isOpen.set(next)
+  emit('update:open', next)
+  emit(next ? 'open' : 'close')
+  if (next)
+    void nextTick(() => menu.current?.focus())
+}
+
+function toggle(): void {
+  setOpen(!isOpen())
+}
+
+function menuClass(): string {
+  const side = align() === 'right' ? 'right-0' : 'left-0'
+  return `${widthClasses[width()] || widthClasses.auto} ${side}`
+}
+
+useClickOutside(root, () => setOpen(false))
 </script>
+
+<div ref="dropdownRoot" class="inline-block relative text-left" @keydown.escape="setOpen(false)">
+  <button
+    type="button"
+    class="contents disabled:opacity-50 disabled:cursor-not-allowed"
+    :aria-expanded="String(isOpen())"
+    aria-haspopup="menu"
+    :disabled="disabled()"
+    @click="toggle"
+  >
+    <slot name="trigger" />
+  </button>
+
+  <div
+    :if="isOpen()"
+    ref="dropdownMenu"
+    role="menu"
+    tabindex="-1"
+    class="absolute z-50 mt-1.5 py-1 bg-white/95 dark:bg-neutral-800/95 border border-black/10 rounded-lg dark:border-white/10 focus:outline-none shadow-black/10 shadow-lg dark:shadow-black/30 backdrop-blur-xl backdrop-saturate-150 origin-top"
+    :class="menuClass()"
+  >
+    <slot />
+  </div>
+</div>
