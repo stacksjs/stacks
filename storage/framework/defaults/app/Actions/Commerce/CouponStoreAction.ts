@@ -1,6 +1,7 @@
 import { Action } from '@stacksjs/actions'
 
 import { coupons } from '@stacksjs/commerce'
+import { toSnakeCaseKeys } from '@stacksjs/orm'
 
 import { response } from '@stacksjs/router'
 
@@ -12,7 +13,7 @@ export default new Action({
   async handle(request) {
     await request.validate()
 
-    const data = request.all()
+    const data = toSnakeCaseKeys(request.all())
 
     const model = await coupons.store(data)
 

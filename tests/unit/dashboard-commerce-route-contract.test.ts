@@ -91,4 +91,23 @@ describe('dashboard commerce route contract', () => {
 
     expect(updateAction).toContain("method: 'PATCH'")
   })
+
+  test('coupon mutations use guarded dashboard routes and complete model fields', () => {
+    const routes = source('storage/framework/defaults/routes/dashboard-api.ts')
+    const coupons = source('storage/framework/defaults/resources/components/Dashboard/Commerce/CommerceCouponsDashboard.stx')
+    const storeAction = source('storage/framework/defaults/app/Actions/Commerce/CouponStoreAction.ts')
+    const updateAction = source('storage/framework/defaults/app/Actions/Commerce/CouponUpdateAction.ts')
+
+    expect(routes).toContain("guard(route.post('/commerce/coupons', 'Actions/Commerce/CouponStoreAction'))")
+    expect(routes).toContain("guard(route.patch('/commerce/coupons/{id}', 'Actions/Commerce/CouponUpdateAction'))")
+    expect(routes).toContain("guard(route.delete('/commerce/coupons/{id}', 'Actions/Commerce/CouponDestroyAction'))")
+    expect(coupons).toContain('/api/dashboard/commerce/coupons')
+    expect(coupons).not.toMatch(/\/api\/coupons(?:\/|\?|'|`)/)
+
+    for (const action of [storeAction, updateAction]) {
+      expect(action).toContain('model: Coupon')
+      expect(action).toContain('await request.validate()')
+      expect(action).toContain('toSnakeCaseKeys(request.all())')
+    }
+  })
 })

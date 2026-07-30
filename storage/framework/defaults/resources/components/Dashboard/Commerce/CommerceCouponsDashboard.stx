@@ -179,7 +179,7 @@ async function saveCoupon(payload: CouponWritePayload): Promise<void> {
   saving.set(true)
   validationErrors.set({})
   try {
-    await dashboardApi(editing ? `/api/coupons/${current.id}` : '/api/coupons', {
+    await dashboardApi(editing ? `/api/dashboard/commerce/coupons/${current.id}` : '/api/dashboard/commerce/coupons', {
       method: editing ? 'PATCH' : 'POST',
       body,
     })
@@ -223,7 +223,7 @@ async function deleteCoupon(): Promise<void> {
     return
   deleting.set(true)
   try {
-    await dashboardApi(`/api/coupons/${current.id}`, { method: 'DELETE' })
+    await dashboardApi(`/api/dashboard/commerce/coupons/${current.id}`, { method: 'DELETE' })
     deletingRecord.set(null)
     detailsRecord.set(null)
     pushToast('success', 'Coupon deleted', { detail: current.code })
