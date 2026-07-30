@@ -7,8 +7,9 @@ import { dashboardApi } from '../../functions/dashboard-api'
 interface DashboardHomeResponse {
   stats?: Array<{ label: string, value: string }>
   httpMetrics?: Array<{ title: string, value: string, detail: string, icon: string }>
-  services?: Array<{ name: string, status: string, latency: string, uptime?: string }>
-  activities?: Array<{ type: string, message: string, time: string }>
+  services?: Array<{ name: string, status: string, latency: string, detail?: string }>
+  activities?: Array<{ type: string, message: string, time: string, status: string }>
+  issues?: Array<{ source: string, message: string }>
 }
 
 const stats = state([
@@ -21,19 +22,26 @@ const stats = state([
 const httpMetrics = state([
   { title: 'HTTP Requests', value: '0', detail: 'All captured requests', icon: 'i-hugeicons-global' },
   { title: 'Average Response', value: '0ms', detail: 'No requests captured', icon: 'i-hugeicons-clock-01' },
-  { title: 'Success Rate', value: '100%', detail: '2xx and 3xx responses', icon: 'i-hugeicons-checkmark-circle-02' },
-  { title: 'Error Rate', value: '0%', detail: '4xx and 5xx responses', icon: 'i-hugeicons-alert-02' },
+  { title: 'Success Rate', value: 'N/A', detail: 'No requests captured', icon: 'i-hugeicons-checkmark-circle-02' },
+  { title: 'Error Rate', value: 'N/A', detail: 'No requests captured', icon: 'i-hugeicons-alert-02' },
 ])
 
 const recentActivity = state([])
-
 const systemHealth = state([])
+const issues = state([])
 
 function getStatusDotClass(status) {
   if (status === 'healthy') return 'bg-green-500'
   if (status === 'degraded') return 'bg-amber-500'
   if (status === 'critical') return 'bg-red-500'
   return 'bg-gray-500'
+}
+
+function getStatusBadgeClass(status) {
+  if (status === 'healthy') return 'text-green-700 dark:text-green-400 bg-green-100 dark:bg-green-900/30'
+  if (status === 'degraded') return 'text-amber-700 dark:text-amber-400 bg-amber-100 dark:bg-amber-900/30'
+  if (status === 'critical') return 'text-red-700 dark:text-red-400 bg-red-100 dark:bg-red-900/30'
+  return 'text-neutral-700 dark:text-neutral-300 bg-neutral-100 dark:bg-neutral-700'
 }
 
 function getActivityStatusClass(status) {
@@ -69,20 +77,19 @@ async function loadDashboard() {
       })))
     }
     if (Array.isArray(data.httpMetrics)) httpMetrics.set(data.httpMetrics)
-    if (Array.isArray(data.services)) {
-      systemHealth.set(data.services.map(service => ({ ...service, uptime: service.uptime || 'Current' })))
-    }
+    if (Array.isArray(data.services)) systemHealth.set(data.services)
+    if (Array.isArray(data.issues)) issues.set(data.issues)
     if (Array.isArray(data.activities)) {
       recentActivity.set(data.activities.map(activity => ({
         type: activity.type,
         title: activity.message,
         time: activity.time,
-        status: 'success',
+        status: activity.status,
       })))
     }
   }
-  catch {
-    // Keep the useful empty state while a fresh database is being created.
+  catch (cause) {
+    issues.set([{ source: 'Dashboard', message: cause instanceof Error ? cause.message : 'Dashboard data could not be loaded.' }])
   }
 }
 
@@ -92,6 +99,15 @@ onMount(loadDashboard)
 <div class="mx-auto p-6 max-w-7xl">
   <!-- Header -->
   <PageHeader title="Dashboard" description="Welcome back! Here's an overview of your system." />
+
+  <div :show="issues().length > 0" class="mb-6 px-4 py-3 text-amber-800 text-sm dark:text-amber-200 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 rounded-lg dark:border-amber-800/50" role="status">
+    <p class="font-medium">Some dashboard data is unavailable</p>
+    <ul class="mt-1 pl-5 list-disc">
+      <template :for="issue in issues">
+        <li>{{ issue.source }}: {{ issue.message }}</li>
+      </template>
+    </ul>
+  </div>
 
   <!-- Stats Grid -->
   <div class="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 mb-8">
@@ -205,10 +221,10 @@ onMount(loadDashboard)
             </div>
             <div class="flex gap-4 items-center">
               <span class="text-neutral-500 text-sm dark:text-neutral-400">{{ service.latency }}</span>
-              <span class="text-neutral-500 text-sm dark:text-neutral-400">{{ service.uptime }}</span>
-              <span class="px-2 py-0.5 font-medium text-green-700 text-xs dark:text-green-400 bg-green-100 dark:bg-green-900/30 rounded-full">{{ service.status }}</span>
+              <span :class="getStatusBadgeClass(service.status)" class="px-2 py-0.5 font-medium text-xs rounded-full">{{ service.status }}</span>
             </div>
           </div>
+          <p :show="service.detail" class="pb-3 px-5 text-red-600 text-xs dark:text-red-400">{{ service.detail }}</p>
         </template>
       </div>
     </div>

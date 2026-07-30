@@ -1,5 +1,7 @@
 import { Action } from '@stacksjs/actions'
 import { Order, Post, Product, Request, User } from '@stacksjs/orm'
+import { checkApplicationHealth, type ApplicationHealthCheck } from '@stacksjs/router'
+import { formatRelative, safeGet } from '../../../resources/functions/dashboard/data'
 
 interface HttpRequestSample {
   duration: number
@@ -16,9 +18,34 @@ export function summarizeHttpRequests(total: number, requests: HttpRequestSample
   return [
     { title: 'HTTP Requests', value: total.toLocaleString(), detail: 'All captured requests', icon: 'i-hugeicons-global' },
     { title: 'Average Response', value: `${averageDuration}ms`, detail: `Latest ${requests.length.toLocaleString()} requests`, icon: 'i-hugeicons-clock-01' },
-    { title: 'Success Rate', value: requests.length > 0 ? `${((successful / requests.length) * 100).toFixed(1)}%` : '100%', detail: '2xx and 3xx responses', icon: 'i-hugeicons-checkmark-circle-02' },
-    { title: 'Error Rate', value: requests.length > 0 ? `${((failed / requests.length) * 100).toFixed(1)}%` : '0%', detail: '4xx and 5xx responses', icon: 'i-hugeicons-alert-02' },
+    { title: 'Success Rate', value: requests.length > 0 ? `${((successful / requests.length) * 100).toFixed(1)}%` : 'N/A', detail: '2xx and 3xx responses', icon: 'i-hugeicons-checkmark-circle-02' },
+    { title: 'Error Rate', value: requests.length > 0 ? `${((failed / requests.length) * 100).toFixed(1)}%` : 'N/A', detail: '4xx and 5xx responses', icon: 'i-hugeicons-alert-02' },
   ]
+}
+
+export function serializeHealthCheck(name: string, check: ApplicationHealthCheck) {
+  return {
+    name: name.charAt(0).toUpperCase() + name.slice(1),
+    status: check.ok ? 'healthy' : 'critical',
+    latency: `${check.ms}ms`,
+    detail: check.message || '',
+  }
+}
+
+export function orderActivityStatus(status: unknown): 'success' | 'warning' {
+  const normalized = String(status || '').toLowerCase()
+  return normalized.startsWith('cancel') || normalized === 'failed' || normalized === 'refunded'
+    ? 'warning'
+    : 'success'
+}
+
+function issue(source: string, result: PromiseSettledResult<unknown>) {
+  return result.status === 'rejected'
+    ? {
+        source,
+        message: result.reason instanceof Error ? result.reason.message : 'Query failed.',
+      }
+    : null
 }
 
 export default new Action({
@@ -27,94 +54,80 @@ export default new Action({
   method: 'GET',
 
   async handle() {
-    let userCount = 0
-    let productCount = 0
-    let orderCount = 0
-    let postCount = 0
-    let totalRevenue = 0
-    let recentOrderRows: any[] = []
-    let recentUserRows: any[] = []
-    let databaseStatus = 'offline'
-    let httpMetrics = summarizeHttpRequests(0, [])
+    const modelResults = await Promise.allSettled([
+      User.count(),
+      Product.count(),
+      Order.count(),
+      Post.count(),
+      Order.sum('totalAmount'),
+      Order.orderBy('created_at', 'desc').limit(5).get(),
+      User.orderBy('created_at', 'desc').limit(5).get(),
+      Request.count(),
+      Request.orderBy('created_at', 'desc').limit(1000).get(),
+    ])
+    const health = await checkApplicationHealth()
 
-    try {
-      const results = await Promise.all([
-        User.count(),
-        Product.count(),
-        Order.count(),
-        Post.count(),
-        Order.orderBy('created_at', 'desc').limit(5).get(),
-        User.orderBy('created_at', 'desc').limit(3).get(),
-      ])
+    const [
+      userCount,
+      productCount,
+      orderCount,
+      postCount,
+      totalRevenue,
+      recentOrders,
+      recentUsers,
+      requestCount,
+      recentRequests,
+    ] = modelResults
 
-      userCount = results[0]
-      productCount = results[1]
-      orderCount = results[2]
-      postCount = results[3]
-      recentOrderRows = results[4]
-      recentUserRows = results[5]
+    const stats = [
+      { label: 'Total Users', value: userCount.status === 'fulfilled' ? String(userCount.value) : 'Unavailable', color: 'blue' },
+      { label: 'Products', value: productCount.status === 'fulfilled' ? String(productCount.value) : 'Unavailable', color: 'green' },
+      { label: 'Revenue', value: totalRevenue.status === 'fulfilled' ? `$${Number(totalRevenue.value || 0).toLocaleString()}` : 'Unavailable', color: 'orange' },
+      { label: 'Orders', value: orderCount.status === 'fulfilled' ? String(orderCount.value) : 'Unavailable', color: 'red' },
+    ]
 
-      // Calculate total revenue from all orders
-      const allOrders = await Order.all()
-      totalRevenue = allOrders.reduce((sum, o) => sum + (Number(o.get('total_amount')) || 0), 0)
-      databaseStatus = 'healthy'
-    }
-    catch {
-      // A new project may not have run its migrations yet.
-    }
-
-    try {
-      const [requestCount, recentRequests] = await Promise.all([
-        Request.count(),
-        Request.orderBy('created_at', 'desc').limit(1000).get(),
-      ])
-      httpMetrics = summarizeHttpRequests(requestCount, recentRequests.map(request => ({
+    const httpMetrics = requestCount.status === 'fulfilled' && recentRequests.status === 'fulfilled'
+      ? summarizeHttpRequests(requestCount.value, recentRequests.value.map(request => ({
         duration: Number(request.get('duration_ms')) || 0,
         status: Number(request.get('status_code')) || 500,
       })))
-    }
-    catch {
-      // Request capture is optional, so its empty state is valid.
-    }
+      : summarizeHttpRequests(0, [])
 
-    const stats = [
-      { label: 'Total Users', value: String(userCount), color: 'blue' },
-      { label: 'Products', value: String(productCount), color: 'green' },
-      { label: 'Revenue', value: `$${totalRevenue.toLocaleString()}`, color: 'orange' },
-      { label: 'Orders', value: String(orderCount), color: 'red' },
-    ]
+    const services = Object.entries(health.checks).map(([name, check]) => serializeHealthCheck(name, check))
 
-    const quickLinks = [
-      { title: 'Blog', description: 'Manage posts and content', page: 'posts' },
-      { title: 'Commerce', description: 'View sales and orders', page: 'commerce-dashboard' },
-      { title: 'Cloud', description: 'Infrastructure settings', page: 'cloud' },
-      { title: 'Settings', description: 'Configure your app', page: 'settings' },
-    ]
-
-    const services = [
-      { name: 'Database', status: databaseStatus, latency: 'N/A' },
-      { name: 'Cache', status: 'configured', latency: 'N/A' },
-      { name: 'Queue', status: 'configured', latency: 'N/A' },
-      { name: 'Storage', status: 'configured', latency: 'N/A' },
-      { name: 'Email', status: 'configured', latency: 'N/A' },
-    ]
-
-    // Build activities from real data
     const activities = [
-      ...recentOrderRows.map((o: any) => ({
+      ...(recentOrders.status === 'fulfilled' ? recentOrders.value : []).map((order: any) => ({
         type: 'order',
-        message: `Order #${o.get('id')} - $${o.get('total_amount')} (${o.get('status')})`,
-        time: 'Recently',
+        message: `Order #${order.get('id')} - $${order.get('total_amount')} (${order.get('status')})`,
+        time: formatRelative(safeGet(order, 'created_at')),
+        timestamp: String(safeGet(order, 'created_at', '')),
         user: 'Commerce',
+        status: orderActivityStatus(order.get('status')),
       })),
-      ...recentUserRows.map((u: any) => ({
+      ...(recentUsers.status === 'fulfilled' ? recentUsers.value : []).map((user: any) => ({
         type: 'user',
-        message: `User ${u.get('name')} registered`,
-        time: 'Recently',
+        message: `User ${user.get('name') || `#${user.get('id')}`} registered`,
+        time: formatRelative(safeGet(user, 'created_at')),
+        timestamp: String(safeGet(user, 'created_at', '')),
         user: 'System',
+        status: 'success',
       })),
-    ].slice(0, 5)
+    ]
+      .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+      .slice(0, 5)
+      .map(activity => ({
+        type: activity.type,
+        message: activity.message,
+        time: activity.time,
+        user: activity.user,
+        status: activity.status,
+      }))
 
-    return { stats, httpMetrics, quickLinks, services, activities }
+    const sources = ['Users', 'Products', 'Orders', 'Posts', 'Revenue', 'Recent orders', 'Recent users', 'Request count', 'Recent requests']
+    const issues = modelResults
+      .map((result, index) => issue(sources[index], result))
+      .filter((entry): entry is { source: string, message: string } => entry !== null)
+
+    return { stats, httpMetrics, services, activities, issues }
   },
 })

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test'
-import { summarizeHttpRequests } from './DashboardHomeAction'
+import { orderActivityStatus, serializeHealthCheck, summarizeHttpRequests } from './DashboardHomeAction'
 
 describe('dashboard HTTP metrics', () => {
   it('summarizes captured requests without fake values', () => {
@@ -14,6 +14,28 @@ describe('dashboard HTTP metrics', () => {
   })
 
   it('returns explicit empty-state metrics', () => {
-    expect(summarizeHttpRequests(0, []).map(metric => metric.value)).toEqual(['0', '0ms', '100%', '0%'])
+    expect(summarizeHttpRequests(0, []).map(metric => metric.value)).toEqual(['0', '0ms', 'N/A', 'N/A'])
+  })
+
+  it('serializes only probed service health', () => {
+    expect(serializeHealthCheck('database', { ok: true, ms: 3 })).toEqual({
+      name: 'Database',
+      status: 'healthy',
+      latency: '3ms',
+      detail: '',
+    })
+    expect(serializeHealthCheck('cache', { ok: false, ms: 1500, message: 'timeout' })).toEqual({
+      name: 'Cache',
+      status: 'critical',
+      latency: '1500ms',
+      detail: 'timeout',
+    })
+  })
+
+  it('marks unsuccessful order states as warnings', () => {
+    expect(orderActivityStatus('CANCELED')).toBe('warning')
+    expect(orderActivityStatus('cancelled')).toBe('warning')
+    expect(orderActivityStatus('failed')).toBe('warning')
+    expect(orderActivityStatus('preparing')).toBe('success')
   })
 })
