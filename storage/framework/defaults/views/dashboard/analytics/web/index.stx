@@ -15,27 +15,27 @@
 
       <div class="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 mb-8 p-4 bg-black dark:bg-neutral-900 rounded-lg">
         <div class="flex flex-col items-center justify-center">
-          <div class="font-bold text-4xl text-white">{{ analyticsOverview.realtime }}</div>
+          <div class="font-bold text-4xl text-white">{{ analyticsOverview.realtimeVisitors }}</div>
           <div class="text-gray-400 text-sm">Realtime</div>
         </div>
         <div class="flex flex-col items-center justify-center">
-          <div class="font-bold text-4xl text-white">{{ formatNumber(analyticsOverview.people) }}</div>
+          <div class="font-bold text-4xl text-white">{{ formatNumber(analyticsOverview.uniqueVisitors) }}</div>
           <div class="text-gray-400 text-sm">Unique visitors</div>
         </div>
         <div class="flex flex-col items-center justify-center">
-          <div class="font-bold text-4xl text-white">{{ formatNumber(analyticsOverview.views) }}</div>
+          <div class="font-bold text-4xl text-white">{{ formatNumber(analyticsOverview.pageViews) }}</div>
           <div class="text-gray-400 text-sm">Page views</div>
         </div>
         <div class="flex flex-col items-center justify-center">
-          <div class="font-bold text-4xl text-white">{{ analyticsOverview.avgTimeOnSite }}</div>
+          <div class="font-bold text-4xl text-white">{{ analyticsOverview.averageResponseTime }}</div>
           <div class="text-gray-400 text-sm">Avg response</div>
         </div>
         <div class="flex flex-col items-center justify-center">
-          <div class="font-bold text-4xl text-white">{{ analyticsOverview.bounceRate }}</div>
+          <div class="font-bold text-4xl text-white">{{ analyticsOverview.errorRate }}</div>
           <div class="text-gray-400 text-sm">Error rate</div>
         </div>
         <div class="flex flex-col items-center justify-center">
-          <div class="font-bold text-4xl text-white">{{ formatNumber(analyticsOverview.eventCompletions) }}</div>
+          <div class="font-bold text-4xl text-white">{{ formatNumber(analyticsOverview.successfulRequests) }}</div>
           <div class="text-gray-400 text-sm">Successful requests</div>
         </div>
       </div>
@@ -219,12 +219,12 @@ interface ChartLike { destroy: () => void }
 type ChartCtor = new (canvas: HTMLElement, config: { type: string, data: unknown, options?: unknown }) => ChartLike
 
 const analyticsOverview = state<AnalyticsOverview>({
-  realtime: 0,
-  people: 0,
-  views: 0,
-  avgTimeOnSite: '-',
-  bounceRate: '0%',
-  eventCompletions: 0,
+  realtimeVisitors: 0,
+  uniqueVisitors: 0,
+  pageViews: 0,
+  averageResponseTime: '-',
+  errorRate: 'N/A',
+  successfulRequests: 0,
 })
 const analyticsRange = state<AnalyticsRange>('month')
 const dateRangeDisplay = state('Last 30 days')

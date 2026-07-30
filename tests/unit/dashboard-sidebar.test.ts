@@ -50,4 +50,14 @@ describe('dashboard sidebar data', () => {
     })
     expect(library.some(item => item.to === '/components')).toBe(false)
   })
+
+  it('makes the persisted analytics overview directly navigable', () => {
+    const analytics = buildNavSections().find(([id]) => id === 'analytics')?.[2] ?? []
+
+    expect(analytics[0]).toEqual({
+      to: '/analytics',
+      icon: 'dashboard',
+      text: 'Overview',
+    })
+  })
 })

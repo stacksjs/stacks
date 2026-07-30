@@ -5,12 +5,12 @@ import { ref } from '@stacksjs/stx'
 import { dashboardApi } from './dashboard-api'
 
 export interface AnalyticsOverview {
-  realtime: number
-  people: number
-  views: number
-  avgTimeOnSite: string
-  bounceRate: string
-  eventCompletions: number
+  realtimeVisitors: number
+  uniqueVisitors: number
+  pageViews: number
+  averageResponseTime: string
+  errorRate: string
+  successfulRequests: number
 }
 
 export interface TrafficDataPoint {
@@ -270,7 +270,14 @@ export async function recordAnalyticsEvent(input: RecordAnalyticsEventInput): Pr
 }
 
 export function useAnalytics() {
-  const overview = ref<AnalyticsOverview>({ realtime: 0, people: 0, views: 0, avgTimeOnSite: '0s', bounceRate: '0%', eventCompletions: 0 })
+  const overview = ref<AnalyticsOverview>({
+    realtimeVisitors: 0,
+    uniqueVisitors: 0,
+    pageViews: 0,
+    averageResponseTime: '-',
+    errorRate: 'N/A',
+    successfulRequests: 0,
+  })
   const trafficData = ref<TrafficDataPoint[]>([])
   const pagesData = ref<PageData[]>([])
   const referrersData = ref<ReferrerData[]>([])

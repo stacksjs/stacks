@@ -56,11 +56,11 @@ function trafficRows(): TrafficDataPoint[] {
 }
 
 function totalVisitors(): number {
-  return analytics()?.overview.people || 0
+  return analytics()?.overview.uniqueVisitors || 0
 }
 
 function totalViews(): number {
-  return analytics()?.overview.views || 0
+  return analytics()?.overview.pageViews || 0
 }
 
 function rowName(row: BreakdownRow): string {

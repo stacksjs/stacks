@@ -1,0 +1,89 @@
+<script client>
+import type { AnalyticsOverview } from '../../../../functions/analytics'
+import { fetchWebAnalytics } from '../../../../functions/analytics'
+
+const overview = state<AnalyticsOverview | null>(null)
+const loading = state(true)
+const loadError = state('')
+
+const analyticsCards = [
+  { name: 'Web Analytics', description: 'Page views, visitors, and request performance', icon: 'i-hugeicons-chart-line-data-02', to: '/analytics/web' },
+  { name: 'Blog Analytics', description: 'Recorded traffic to blog routes', icon: 'i-hugeicons-edit-02', to: '/analytics/blog' },
+  { name: 'Commerce Analytics', description: 'Persisted sales and revenue', icon: 'i-hugeicons-shopping-cart-01', to: '/analytics/commerce/sales' },
+  { name: 'Marketing Analytics', description: 'Persisted campaign performance', icon: 'i-hugeicons-megaphone-02', to: '/analytics/marketing' },
+  { name: 'Events', description: 'Custom event records', icon: 'i-hugeicons-calendar-03', to: '/analytics/events' },
+  { name: 'Referrers', description: 'Traffic sources when provided', icon: 'i-hugeicons-link-01', to: '/analytics/referrers' },
+  { name: 'Pages', description: 'Recorded page request totals', icon: 'i-hugeicons-file-02', to: '/analytics/pages' },
+  { name: 'Countries', description: 'Geographic data when provided', icon: 'i-hugeicons-globe-02', to: '/analytics/countries' },
+  { name: 'Devices', description: 'Device classes from user agents', icon: 'i-hugeicons-smart-phone-01', to: '/analytics/devices' },
+  { name: 'Browsers', description: 'Browser families from user agents', icon: 'i-hugeicons-browser', to: '/analytics/browsers' },
+]
+
+function formatNumber(value: number | undefined): string {
+  return new Intl.NumberFormat().format(value || 0)
+}
+
+async function loadOverview(): Promise<void> {
+  loading.set(true)
+  loadError.set('')
+  try {
+    overview.set((await fetchWebAnalytics('month')).overview)
+  }
+  catch (error) {
+    loadError.set(error instanceof Error ? error.message : 'Analytics overview could not be loaded.')
+  }
+  finally {
+    loading.set(false)
+  }
+}
+
+onMount(() => {
+  void loadOverview()
+})
+</script>
+
+<div class="space-y-6">
+  <header class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+    <div>
+      <h1 class="font-semibold text-2xl text-neutral-900 tracking-tight dark:text-white">Analytics</h1>
+      <p class="mt-1 text-neutral-500 text-sm dark:text-neutral-400">Persisted business metrics and privacy-safe request telemetry.</p>
+    </div>
+    <button type="button" :disabled="loading()" class="inline-flex items-center px-3 py-2 font-medium text-neutral-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-neutral-300 rounded-lg dark:border-neutral-700 disabled:opacity-50" @click="loadOverview">
+      <span :class="'mr-2 h-4 w-4 ' + (loading() ? 'animate-spin i-hugeicons-loading-03' : 'i-hugeicons-refresh')"></span>
+      Refresh
+    </button>
+  </header>
+
+  <div :if="loadError()" role="alert" class="px-4 py-3 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900">
+    {{ loadError() }}
+  </div>
+
+  <section class="grid gap-4 grid-cols-2 lg:grid-cols-4" aria-label="Web analytics overview">
+    <StatsCard title="Page Views" :value="formatNumber(overview()?.pageViews)" icon="i-hugeicons-chart-line-data-02" iconBg="primary" trendLabel="Last 30 days" />
+    <StatsCard title="Unique Visitors" :value="formatNumber(overview()?.uniqueVisitors)" icon="i-hugeicons-user-multiple-02" iconBg="success" trendLabel="Last 30 days" />
+    <StatsCard title="Average Response" :value="overview()?.averageResponseTime || '-'" icon="i-hugeicons-clock-01" iconBg="info" trendLabel="Captured requests" />
+    <StatsCard title="Error Rate" :value="overview()?.errorRate || 'N/A'" icon="i-hugeicons-alert-02" iconBg="neutral" trendLabel="Captured requests" />
+  </section>
+
+  <section>
+    <h2 class="font-semibold text-neutral-900 dark:text-white">Explore analytics</h2>
+    <div class="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 mt-4">
+      <template :for="card in analyticsCards">
+        <StxLink :to="card.to" class="block">
+          <Card variant="default" padding="md" hoverable clickable>
+            <div class="flex gap-4 items-start">
+              <div class="flex-shrink-0 p-2.5 text-blue-600 dark:text-blue-400 bg-blue-500/15 dark:bg-blue-400/20 rounded-lg">
+                <span :class="card.icon" class="block h-5 w-5"></span>
+              </div>
+              <div class="flex-1 min-w-0">
+                <h3 class="font-medium text-neutral-900 text-sm dark:text-white">{{ card.name }}</h3>
+                <p class="mt-1 text-neutral-500 text-xs dark:text-neutral-400">{{ card.description }}</p>
+              </div>
+              <span class="flex-shrink-0 h-4 w-4 text-neutral-400 i-hugeicons-arrow-right-01"></span>
+            </div>
+          </Card>
+        </StxLink>
+      </template>
+    </div>
+  </section>
+</div>

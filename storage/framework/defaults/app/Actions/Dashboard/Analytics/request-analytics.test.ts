@@ -47,12 +47,12 @@ describe('request analytics', () => {
     ], 'day', now)
 
     expect(result.overview).toEqual({
-      realtime: 1,
-      people: 1,
-      views: 2,
-      avgTimeOnSite: '40 ms',
-      bounceRate: '33.3%',
-      eventCompletions: 2,
+      realtimeVisitors: 1,
+      uniqueVisitors: 1,
+      pageViews: 2,
+      averageResponseTime: '40 ms',
+      errorRate: '33.3%',
+      successfulRequests: 2,
     })
     expect(result.pages).toEqual([{
       path: '/docs',

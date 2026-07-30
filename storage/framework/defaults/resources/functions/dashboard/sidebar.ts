@@ -331,6 +331,7 @@ export function buildNavSections(
   // had no view file at all and is dropped.
   if (toggles.analytics) {
     sections.push(['analytics', 'analytics', [
+      { to: '/analytics', icon: 'dashboard', text: 'Overview' },
       { to: '/analytics/web', icon: 'globe', text: 'Web' },
       { to: '/analytics/pages', icon: 'document', text: 'Top Pages' },
       { to: '/analytics/referrers', icon: 'link', text: 'Referrers' },
