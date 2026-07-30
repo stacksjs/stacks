@@ -1,25 +1,18 @@
 import { Action } from '@stacksjs/actions'
-
 import { devices } from '@stacksjs/commerce'
+import { toSnakeCaseKeys } from '@stacksjs/orm'
 import { response } from '@stacksjs/router'
 
 export default new Action({
   name: 'PrintDevice Update',
-  description: 'PrintDevice Update ORM Action',
+  description: 'Updates a print device through the native commerce module.',
   method: 'PATCH',
+  model: PrintDevice,
   async handle(request: RequestInstance) {
     await request.validate()
 
-    const id = request.getParam('id')
-
-    const data = {
-      name: request.get('name'),
-      mac_address: request.get('mac_address'),
-      location: request.get('location'),
-      terminal: request.get('terminal'),
-      status: request.get('status'),
-    }
-
+    const id = Number(request.getParam('id'))
+    const data = toSnakeCaseKeys(request.all())
     const model = await devices.update(id, data)
 
     return response.json(model)

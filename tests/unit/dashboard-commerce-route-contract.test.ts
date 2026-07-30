@@ -237,4 +237,36 @@ describe('dashboard commerce route contract', () => {
     expect(variants).toContain('options: JSON.stringify(payload.options)')
     expect(destroyAction).toContain('response.noContent()')
   })
+
+  test('print device mutations are guarded and preserve operational state during edits', () => {
+    const routes = source('storage/framework/defaults/routes/dashboard-api.ts')
+    const devices = source('storage/framework/defaults/resources/components/Dashboard/Commerce/PrintDevicesDashboard.stx')
+    const storeAction = source('storage/framework/defaults/app/Actions/Commerce/PrintDeviceStoreAction.ts')
+    const updateAction = source('storage/framework/defaults/app/Actions/Commerce/PrintDeviceUpdateAction.ts')
+    const destroyAction = source('storage/framework/defaults/app/Actions/Commerce/PrintDeviceDestroyAction.ts')
+    const model = source('storage/framework/defaults/app/Models/commerce/PrintDevice.ts')
+    const store = source('storage/framework/core/commerce/src/devices/store.ts')
+
+    expect(routes).toContain("guard(route.post('/commerce/print-devices', 'Actions/Commerce/PrintDeviceStoreAction'))")
+    expect(routes).toContain("guard(route.patch('/commerce/print-devices/{id}', 'Actions/Commerce/PrintDeviceUpdateAction'))")
+    expect(routes).toContain("guard(route.delete('/commerce/print-devices/{id}', 'Actions/Commerce/PrintDeviceDestroyAction'))")
+    expect(devices).toContain('/api/dashboard/commerce/print-devices')
+    expect(devices).not.toMatch(/\/api\/print-devices(?:\/|\?|'|`)/)
+
+    for (const action of [storeAction, updateAction]) {
+      expect(action).toContain('model: PrintDevice')
+      expect(action).toContain('await request.validate()')
+      expect(action).toContain('toSnakeCaseKeys(request.all())')
+    }
+
+    expect(devices).toContain('body: payload')
+    expect(devices).not.toContain('Date.now()')
+    expect(devices).not.toContain('current.lastPing')
+    expect(devices).not.toContain('current.printCount')
+    expect(model).toMatch(/lastPing:\s*{[\s\S]*?default: 0,[\s\S]*?rule: schema\.unix\(\)/)
+    expect(model).toMatch(/printCount:\s*{[\s\S]*?default: 0,[\s\S]*?rule: schema\.number\(\)\.min\(0\)/)
+    expect(store).toContain('last_ping: 0')
+    expect(store).toContain('print_count: 0')
+    expect(destroyAction).toContain('response.noContent()')
+  })
 })

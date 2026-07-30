@@ -89,8 +89,9 @@ export default defineModel({
     lastPing: {
       order: 6,
       fillable: true,
+      default: 0,
       validation: {
-        rule: schema.unix().required(),
+        rule: schema.unix(),
         message: {
           invalid: 'Invalid timestamp format',
         },
@@ -101,8 +102,9 @@ export default defineModel({
     printCount: {
       order: 7,
       fillable: true,
+      default: 0,
       validation: {
-        rule: schema.number().required().min(0),
+        rule: schema.number().min(0),
         message: {
           min: 'Print count cannot be negative',
         },

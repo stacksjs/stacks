@@ -13,6 +13,8 @@ export async function store(data: NewPrintDevice): Promise<PrintDeviceJsonRespon
   try {
     const uuid = randomUUIDv7()
     const deviceData = {
+      last_ping: 0,
+      print_count: 0,
       ...data,
       uuid,
     }
@@ -54,6 +56,8 @@ export async function bulkStore(data: NewPrintDevice[]): Promise<number> {
   try {
     for (const device of data) {
       const deviceData = {
+        last_ping: 0,
+        print_count: 0,
         ...device,
         uuid: randomUUIDv7(),
       }
