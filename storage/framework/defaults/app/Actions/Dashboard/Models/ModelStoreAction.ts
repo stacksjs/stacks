@@ -1,4 +1,5 @@
 import { Action } from '@stacksjs/actions'
+import { toSnakeCaseKeys } from '@stacksjs/orm'
 import { request } from '@stacksjs/router'
 import { modelCreateFields, resolveWritableModel } from './model-write'
 
@@ -83,7 +84,7 @@ export default new Action({
       return { ok: false, error: 'Validation failed.', errors }
 
     try {
-      const row = await resolved.Model.create(data)
+      const row = await resolved.Model.create(toSnakeCaseKeys(data))
       const id = row?.id ?? row?.attributes?.id ?? null
       return { ok: true, id }
     }

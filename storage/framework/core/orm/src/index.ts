@@ -26,7 +26,7 @@ export type { SoftDeleteOptions, SoftDeleteHelpers } from './traits/soft-deletes
 // './auto-crud' via other barrels. `isUniqueViolation` is re-exported by
 // `@stacksjs/auth`'s './rbac-store-bqb' for back-compat; `mapWriteError`
 // powers the auto-CRUD store/update 409 mapping.
-export { isUniqueViolation, mapWriteError } from './auto-crud'
+export { filterFillable, getWritableFields, isUniqueViolation, mapWriteError, toSnakeCaseKeys } from './auto-crud'
 export * from './batch-loader'
 export * from './db'
 export * from './subquery'
