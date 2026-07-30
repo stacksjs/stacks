@@ -106,6 +106,18 @@ describe('Storage.put(uploadedFile, opts)', () => {
     expect(path.endsWith('.jpg')).toBe(true)
   })
 
+  test('overwrite: false preserves an existing upload', async () => {
+    const first = makeFile({ buffer: new TextEncoder().encode('first') })
+    const second = makeFile({ buffer: new TextEncoder().encode('second') })
+
+    await storage.put(first, { filename: 'original', overwrite: false })
+    await expect(storage.put(second, { filename: 'original', overwrite: false }))
+      .rejects
+      .toThrow('File already exists: photo.jpg')
+
+    expect(readFileSync(join(publicRoot, 'photo.jpg'), 'utf8')).toBe('first')
+  })
+
   test('filename: function lets the caller pick the name', async () => {
     const { path } = await storage.put(
       makeFile({ mimetype: 'image/png' }),

@@ -78,6 +78,12 @@ export interface PutFileOptions {
    */
   preserveExtension?: boolean
   /**
+   * Replace an existing file at the resolved path. Defaults to `true` for
+   * backward compatibility. Set to `false` for user-facing uploads where an
+   * accidental name collision should surface instead of replacing data.
+   */
+  overwrite?: boolean
+  /**
    * Optional image-processing pipeline applied before write
    * (stacksjs/stacks#1856 Stage 5). Receives the raw bytes + a Sharp
    * pipeline from the `@stacksjs/storage/image` submodule; returns the
@@ -217,6 +223,9 @@ export async function putUploadedFile(
   const finalName = ext ? `${baseName}.${ext}` : baseName
 
   const fullPath = joinPath(opts.dir ?? '', finalName)
+
+  if (opts.overwrite === false && await disk.fileExists(fullPath))
+    throw new Error(`File already exists: ${fullPath}`)
 
   // Adapters accept Buffer | Uint8Array | string. Normalize ArrayBuffer
   // and read the class-shape's async accessor when there's no sync
