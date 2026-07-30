@@ -25,12 +25,6 @@ const sizeClasses = {
     lg: 'px-3.5 py-2 text-[14px] h-9'
   }
 
-  const borderClass = error
-    ? 'border-red-400/60 dark:border-red-500/60 focus:border-red-500 focus:ring-red-500/30'
-    : 'border-stone-200/80 dark:border-white/15 focus:border-blue-400 hover:border-stone-300 dark:hover:border-white/25'
-
-  const disabledClass = disabled ? 'opacity-40 cursor-not-allowed bg-stone-50 dark:bg-white/5' : ''
-
   const inputClass = [
     'block w-full',
     'bg-white dark:bg-white/10',
@@ -39,16 +33,25 @@ const sizeClasses = {
     'placeholder:text-stone-400 dark:placeholder:text-neutral-500',
     'transition-all duration-150',
     'focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:ring-offset-0',
-    sizeClasses[size],
-    borderClass,
-    disabledClass
+    sizeClasses[size]
   ].join(' ')
 
   const inputId = id || 'input-' + Math.random().toString(36).slice(2, 11)
 </script>
 <script client>
 const liveValue = useReactiveProp('value', '')
+const liveDisabled = useReactiveProp('disabled', false)
+const liveReadonly = useReactiveProp('readonly', false)
+const liveRequired = useReactiveProp('required', false)
+const liveError = useReactiveProp('error', '')
+const liveHint = useReactiveProp('hint', '')
 const emit = defineEmits()
+const stateClass = derived(() => [
+  liveError()
+    ? 'border-red-400/60 dark:border-red-500/60 focus:border-red-500 focus:ring-red-500/30'
+    : 'border-stone-200/80 dark:border-white/15 focus:border-blue-400 hover:border-stone-300 dark:hover:border-white/25',
+  liveDisabled() ? 'opacity-40 cursor-not-allowed bg-stone-50 dark:bg-white/5' : '',
+].join(' '))
 
 function inputValue(event: Event): string {
   return (event.target as HTMLInputElement).value
@@ -56,8 +59,8 @@ function inputValue(event: Event): string {
 
 function handleInput(event: Event): void {
   const nextValue = inputValue(event)
-  emit('input', nextValue)
   emit('update:value', nextValue)
+  emit('input', nextValue)
 }
 
 function handleChange(event: Event): void {
@@ -70,11 +73,11 @@ function handleBlur(event: Event): void {
 </script>
 <div class="{{ fullWidth ? 'w-full' : '' }}">
   @if(label)
-    <label for="{{ inputId }}" class="block text-[13px] font-medium mb-1.5 tracking-tight {{ error ? 'text-red-600 dark:text-red-400' : 'text-stone-600 dark:text-neutral-400' }}">
+    <label for="{{ inputId }}" class="block mb-1.5 font-medium text-[13px] tracking-tight" :class="liveError() ? 'text-red-600 dark:text-red-400' : 'text-stone-600 dark:text-neutral-400'">
       {{ label }}
-      @if(required)
+      <template :if="liveRequired()">
         <span class="ml-0.5 text-red-500">*</span>
-      @endif
+      </template>
     </label>
   @endif
 
@@ -92,18 +95,16 @@ function handleBlur(event: Event): void {
       @if(ariaLabel) aria-label="{{ ariaLabel }}" @endif
       name="{{ name }}"
       class="{{ inputClass }} {{ $slots.iconLeft ? 'pl-8' : '' }}"
+      :class="stateClass()"
       @input="handleInput"
       @change="handleChange"
       @blur="handleBlur"
-      @if(disabled) disabled @endif
-      @if(readonly) readonly @endif
-      @if(required) required @endif
+      :disabled="liveDisabled()"
+      :readonly="liveReadonly()"
+      :required="liveRequired()"
     >
   </div>
 
-  @if(error)
-    <p class="mt-1.5 text-red-600 text-sm dark:text-red-400">{{ error }}</p>
-  @elseif(hint)
-    <p class="mt-1.5 text-sm text-stone-500 dark:text-neutral-400">{{ hint }}</p>
-  @endif
+  <p :if="liveError()" class="mt-1.5 text-red-600 text-sm dark:text-red-400">{{ liveError() }}</p>
+  <p :if="!liveError() && liveHint()" class="mt-1.5 text-sm text-stone-500 dark:text-neutral-400">{{ liveHint() }}</p>
 </div>
