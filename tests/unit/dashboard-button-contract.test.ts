@@ -77,6 +77,7 @@ describe('dashboard button contract', () => {
       'Delivery/DriversTable.stx',
       'Delivery/ShippingZonesTable.stx',
       'Delivery/ShippingRatesTable.stx',
+      'Delivery/DeliveryPagination.stx',
     ]
 
     for (const file of files) {
