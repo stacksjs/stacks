@@ -46,16 +46,16 @@ function date(value: string): string {
       <tbody class="divide-gray-100 divide-y dark:divide-neutral-700">
         <template :for="record in records()" :key="record.id">
           <tr class="hover:bg-gray-50/60 dark:hover:bg-neutral-700/40">
-            <td class="px-4 py-4 min-w-56"><button type="button" class="font-mono font-semibold text-gray-900 text-left text-sm dark:text-white hover:text-blue-700 dark:hover:text-blue-300" @click="emit('view', record)">{{ record.code || 'No code' }}</button><p class="mt-1 max-w-xs text-gray-400 text-xs truncate dark:text-neutral-500">{{ record.description || 'No description recorded' }}</p></td>
+            <td class="px-4 py-4 min-w-56"><Button variant="ghost" size="xs" @click="emit('view', record)">{{ record.code || 'No code' }}</Button><p class="mt-1 max-w-xs text-gray-400 text-xs truncate dark:text-neutral-500">{{ record.description || 'No description recorded' }}</p></td>
             <td class="px-4 py-4 text-gray-700 text-sm whitespace-nowrap dark:text-neutral-200"><span class="font-semibold">{{ discount(record) }}</span><p class="mt-1 text-gray-400 text-xs">{{ record.discountType === 'percentage' ? 'Percentage' : 'Fixed amount' }}</p></td>
             <td class="px-4 py-4 whitespace-nowrap"><span :class="'inline-flex px-2 py-1 font-semibold text-xs rounded-full ' + statusClass(record.status)">{{ record.status }}</span></td>
             <td class="px-4 py-4 text-sm whitespace-nowrap"><span :class="record.isActive ? 'text-emerald-700 dark:text-emerald-300' : 'text-gray-500 dark:text-neutral-400'">{{ record.isActive ? 'Enabled' : 'Disabled' }}</span></td>
             <td class="px-4 py-4 font-mono text-gray-700 text-right text-sm whitespace-nowrap dark:text-neutral-200">{{ record.usageCount.toLocaleString() }} / {{ record.usageLimit ? record.usageLimit.toLocaleString() : 'No limit' }}</td>
             <td class="px-4 py-4 min-w-44 text-gray-500 text-sm dark:text-neutral-400"><p>{{ date(record.startDate) }}</p><p class="mt-1 text-xs">to {{ date(record.endDate) }}</p></td>
             <td class="px-4 py-3 text-right whitespace-nowrap">
-              <button type="button" :aria-label="'View ' + record.code" class="p-2 text-gray-400 hover:text-blue-700 dark:hover:text-blue-300 rounded-md" @click="emit('view', record)"><span class="block h-5 w-5 i-hugeicons-view"></span></button>
-              <button type="button" :aria-label="'Edit ' + record.code" class="p-2 text-gray-400 hover:text-blue-700 dark:hover:text-blue-300 rounded-md" @click="emit('edit', record)"><span class="block h-5 w-5 i-hugeicons-edit-01"></span></button>
-              <button type="button" :aria-label="'Delete ' + record.code" class="p-2 text-gray-400 hover:text-red-700 dark:hover:text-red-300 rounded-md" @click="emit('delete', record)"><span class="block h-5 w-5 i-hugeicons-waste"></span></button>
+              <Button variant="ghost" size="sm" iconOnly :ariaLabel="'View ' + record.code" @click="emit('view', record)"><span class="block h-4 w-4 text-blue-500 i-hugeicons-view"></span></Button>
+              <Button variant="ghost" size="sm" iconOnly :ariaLabel="'Edit ' + record.code" @click="emit('edit', record)"><span class="block h-4 w-4 text-blue-500 i-hugeicons-edit-01"></span></Button>
+              <Button variant="ghost" size="sm" iconOnly :ariaLabel="'Delete ' + record.code" @click="emit('delete', record)"><span class="block h-4 w-4 text-red-500 i-hugeicons-waste"></span></Button>
             </td>
           </tr>
         </template>
