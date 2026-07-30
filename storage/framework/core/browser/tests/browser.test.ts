@@ -1,8 +1,17 @@
 import { afterEach, beforeEach, describe, expect, it, mock } from 'bun:test'
 import * as browser from '../src'
+import { getBrowserAutoImports } from '../src/auto-init'
 import { debounce } from '../src/utils/debounce'
 
 describe('@stacksjs/browser', () => {
+  it('exposes utilities and composables to STX browser auto-imports', () => {
+    const autoImports = getBrowserAutoImports()
+
+    expect(autoImports.debounce).toBe(browser.debounce)
+    expect(autoImports.useDocumentVisibility).toBe(browser.useDocumentVisibility)
+    expect(autoImports.useIntervalFn).toBe(browser.useIntervalFn)
+  })
+
   describe('base', () => {
     it('loop function works correctly', async () => {
       const results: number[] = []
@@ -89,6 +98,15 @@ describe('@stacksjs/browser', () => {
       const result = await promise
 
       expect(result).toBe('result')
+    })
+
+    it('settles pending callers when cancelled', async () => {
+      const debouncedFn = debounce(() => 'result', 100)
+      const pending = debouncedFn()
+
+      debouncedFn.cancel()
+
+      expect(await pending).toBeUndefined()
     })
   })
 

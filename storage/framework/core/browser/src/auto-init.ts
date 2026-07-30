@@ -23,12 +23,35 @@ import {
 
 // Composables from core framework
 import * as Composables from './composables'
+import * as Utils from './utils'
 
 // Model loader - dynamically imports all app models
 import { loadBrowserModels } from './model-loader'
 
 // Flag to prevent double initialization
 let isInitialized = false
+
+/**
+ * Build the complete runtime bag consumed by STX browser auto-imports.
+ *
+ * Keep utilities and composables together here so the runtime matches the
+ * browser auto-import manifest and its generated type declarations.
+ */
+export function getBrowserAutoImports(): Record<string, unknown> {
+  return {
+    browserQuery,
+    BrowserQueryBuilder,
+    BrowserQueryError,
+    browserAuth,
+    configureBrowser,
+    getBrowserConfig,
+    createBrowserDb,
+    createBrowserModel,
+    isBrowser,
+    ...Utils,
+    ...Composables,
+  }
+}
 
 /**
  * Auto-initialize the browser API configuration
@@ -81,21 +104,7 @@ function autoInit(): void {
 
   // Expose core browser exports on window.StacksBrowser for STX auto-imports
   // App-specific models will self-register when loaded
-  ;(window as any).StacksBrowser = {
-    // Core browser query builder exports
-    browserQuery,
-    BrowserQueryBuilder,
-    BrowserQueryError,
-    browserAuth,
-    configureBrowser,
-    getBrowserConfig,
-    createBrowserDb,
-    createBrowserModel,
-    isBrowser,
-
-    // Spread all composables (auth, useAuth, initApi, formatters, etc.)
-    ...Composables,
-  }
+  ;(window as any).StacksBrowser = getBrowserAutoImports()
 
   // Load all app models and register on StacksBrowser
   loadBrowserModels()
