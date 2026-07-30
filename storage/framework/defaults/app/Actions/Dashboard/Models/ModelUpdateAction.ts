@@ -1,6 +1,7 @@
 import { Action } from '@stacksjs/actions'
+import { toSnakeCaseKeys } from '@stacksjs/orm'
 import { request } from '@stacksjs/router'
-import { parseRowId, PROTECTED_COLUMNS, resolveWritableModel } from './model-write'
+import { parseRowId, prepareModelFields, resolveWritableModel } from './model-write'
 
 /**
  * `PATCH /api/dashboard/models/{slug}/{id}`.
@@ -37,11 +38,10 @@ export default new Action({
     const input = (req.all?.() ?? (request as any).all?.() ?? {}) as Record<string, unknown>
     const raw = input.fields
     const body = (raw && typeof raw === 'object' && !Array.isArray(raw)) ? raw as Record<string, unknown> : {}
-    const changes: Record<string, unknown> = {}
-    for (const [key, value] of Object.entries(body)) {
-      if (!/^\w+$/.test(key) || PROTECTED_COLUMNS.has(key)) continue
-      changes[key] = value
-    }
+    const prepared = prepareModelFields(resolved.Model, body, true)
+    if (Object.keys(prepared.errors).length > 0)
+      return { ok: false, error: 'Validation failed.', errors: prepared.errors }
+    const changes = toSnakeCaseKeys(prepared.data)
     if (Object.keys(changes).length === 0)
       return { ok: false, error: 'No writable fields in the request body.' }
 
@@ -49,7 +49,7 @@ export default new Action({
       const row = await resolved.Model.find(id)
       if (!row)
         return { ok: false, error: `${resolved.modelName} ${id} not found.` }
-      await row.update(changes)
+      await resolved.Model.update(id, changes)
       return { ok: true, id, changed: Object.keys(changes) }
     }
     catch (e) {

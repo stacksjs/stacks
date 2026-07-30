@@ -49,6 +49,11 @@ export interface ModelCreateField {
   options: string[]
 }
 
+export interface PreparedModelFields {
+  data: Record<string, unknown>
+  errors: Record<string, string[]>
+}
+
 function snakeCase(name: string): string {
   return name
     .replace(/([a-z\d])([A-Z])/g, '$1_$2')
@@ -190,6 +195,85 @@ export function modelCreateFields(Model: any): ModelCreateField[] {
     const rightOrder = attributes[right.name]?.order ?? Number.MAX_SAFE_INTEGER
     return leftOrder - rightOrder
   })
+}
+
+function normalizeModelValue(type: ModelCreateField['type'], value: unknown): unknown {
+  if (type === 'number') {
+    if (value === '' || value === null || value === undefined)
+      return null
+    const number = Number(value)
+    return Number.isFinite(number) ? number : value
+  }
+  if (type === 'boolean')
+    return value === true || value === 1 || value === '1' || value === 'true' || value === 'on'
+  return value
+}
+
+function normalizeValidationValue(rule: any, value: unknown): unknown {
+  if (typeof value !== 'string')
+    return value
+  if (rule?.name === 'date') {
+    const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value)
+    if (!match)
+      return value
+    return new Date(Date.UTC(Number(match[1]), Number(match[2]) - 1, Number(match[3])))
+  }
+  if (rule?.name === 'datetime') {
+    const parsed = new Date(value)
+    return Number.isNaN(parsed.getTime()) ? value : parsed
+  }
+  return value
+}
+
+/**
+ * Filter, coerce and validate fields through the model definition. Both
+ * camelCase attribute names and snake_case database columns are accepted.
+ * Partial mode validates only supplied fields for PATCH requests.
+ */
+export function prepareModelFields(
+  Model: any,
+  body: Record<string, unknown>,
+  partial = false,
+): PreparedModelFields {
+  const data: Record<string, unknown> = {}
+  const errors: Record<string, string[]> = {}
+  const attributes = Model?.attributes ?? {}
+
+  for (const field of modelCreateFields(Model)) {
+    const column = snakeCase(field.name)
+    const hasAttribute = Object.prototype.hasOwnProperty.call(body, field.name)
+    const hasColumn = Object.prototype.hasOwnProperty.call(body, column)
+    if (!hasAttribute && !hasColumn) {
+      if (!partial && field.required)
+        errors[field.name] = [`${field.label} is required.`]
+      continue
+    }
+
+    const rawValue = hasAttribute ? body[field.name] : body[column]
+    const value = normalizeModelValue(field.type, rawValue)
+    if ((value === '' || value === null || value === undefined) && field.required) {
+      errors[field.name] = [`${field.label} is required.`]
+      continue
+    }
+    if ((value === '' || value === null || value === undefined) && !field.required)
+      continue
+
+    const definition = attributes[field.name]
+    const rule = definition?.validation?.rule
+    if (rule && typeof rule.validate === 'function') {
+      const result = rule.validate(normalizeValidationValue(rule, value))
+      if (!result?.valid && Array.isArray(result?.errors)) {
+        errors[field.name] = result.errors.map((error: any) =>
+          definition?.validation?.message?.[error?.code] ?? error?.message ?? 'Invalid value.',
+        )
+        continue
+      }
+    }
+
+    data[field.name] = value
+  }
+
+  return { data, errors }
 }
 
 /**

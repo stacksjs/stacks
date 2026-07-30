@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test'
-import { modelCreateFields, modelSchemaColumns } from '../../../defaults/app/Actions/Dashboard/Models/model-write'
+import { modelCreateFields, modelSchemaColumns, prepareModelFields } from '../../../defaults/app/Actions/Dashboard/Models/model-write'
 import { loadModel } from '../../../defaults/resources/functions/dashboard/data'
 
 describe('dashboard model loader', () => {
@@ -38,5 +38,28 @@ describe('dashboard model loader', () => {
     expect(fields.find(field => field.name === 'name')?.required).toBe(true)
     expect(fields.find(field => field.name === 'status')?.required).toBe(true)
     expect(fields.find(field => field.name === 'description')?.required).toBe(false)
+  })
+
+  it('validates required create fields and coerces partial snake-case updates', async () => {
+    const Model = await loadModel('EmailList')
+    const create = prepareModelFields(Model, { status: 'active' })
+    const update = prepareModelFields(Model, {
+      subscriber_count: '2',
+      unknown_id: 99,
+    }, true)
+
+    expect(create.errors.name).toEqual(['Name is required.'])
+    expect(update).toEqual({
+      data: { subscriberCount: 2 },
+      errors: {},
+    })
+  })
+
+  it('rejects invalid enum values before an update reaches the ORM', async () => {
+    const Model = await loadModel('EmailList')
+    const prepared = prepareModelFields(Model, { status: 'unknown' }, true)
+
+    expect(prepared.data).toEqual({})
+    expect(prepared.errors.status?.length).toBeGreaterThan(0)
   })
 })
