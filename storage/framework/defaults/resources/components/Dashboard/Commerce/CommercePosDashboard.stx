@@ -350,7 +350,7 @@ onMount(() => {
 
   <div class="grid gap-6 grid-cols-1 items-start lg:grid-cols-[minmax(0,1fr)_20rem]">
     <CommercePosCatalog :products="visibleProducts()" :categories="categories()" :search="search()" :category="categoryFilter()" :availability="availabilityFilter()" :currency="defaultCurrency()" :loading="loading()" @search="updateSearch" @category="updateCategory" @availability="updateAvailability" @add="addProduct" />
-    <CommercePosCart :lines="cartLines()" :currency="defaultCurrency()" :subtotal="subtotal()" :tax-rate="taxRate()" :tax-amount="taxAmount()" :total-amount="totalAmount()" @increase="increaseLine" @decrease="decreaseLine" @remove="removeLine" @instructions="updateInstructions" @clear="clearCart" @checkout="openCheckout" />
+    <CommercePosCart :lines="cartLines()" :currency="defaultCurrency()" :subtotal="subtotal()" :tax-rate="taxRate()" :tax-amount="taxAmount()" :total-amount="totalAmount()" @increase="increaseLine" @decrease="decreaseLine" @remove="removeLine" @instructions="updateInstructions" @clear="clearCart()" @checkout="openCheckout()" />
   </div>
 </div>
 
