@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from 'bun:test'
 import { refreshDatabase } from './setup'
 import { bulkDestroy } from '../shippings/delivery-routes/destroy'
-import { fetchByDriver } from '../shippings/delivery-routes/fetch'
+import { fetchActive, fetchByDriver } from '../shippings/delivery-routes/fetch'
 import { store, updateLastActive } from '../shippings/delivery-routes/store'
 
 beforeEach(async () => {
@@ -58,6 +58,32 @@ describe('Delivery Route Module', () => {
       expect(Number((route as any).delivery_time)).toBe(75)
       expect(Number((route as any).total_distance)).toBe(31)
       expect(Number((route as any).last_active)).toBe(1785360000000)
+    })
+
+    it('should only fetch routes active within the last 24 hours', async () => {
+      const now = Date.now()
+      const recentRoute = await store({
+        driver: 'Recent Driver',
+        vehicle: 'Van R100',
+        stops: 2,
+        deliveryTime: 30,
+        totalDistance: 12,
+        lastActive: now - 60 * 60 * 1000,
+      })
+      const staleRoute = await store({
+        driver: 'Stale Driver',
+        vehicle: 'Van S100',
+        stops: 1,
+        deliveryTime: 20,
+        totalDistance: 8,
+        lastActive: now - 25 * 60 * 60 * 1000,
+      })
+
+      const activeRoutes = await fetchActive()
+      const activeRouteIds = activeRoutes.map(route => Number(route.id))
+
+      expect(activeRouteIds).toContain(Number(recentRoute.id))
+      expect(activeRouteIds).not.toContain(Number(staleRoute.id))
     })
   })
 
