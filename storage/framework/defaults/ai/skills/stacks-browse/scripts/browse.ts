@@ -283,7 +283,7 @@ async function gotoAndInstrument(cdp: Cdp, url: string, opts: { viewport?: { w: 
     }
     else if (e.method === 'Network.responseReceived') {
       const r = e.params.response
-      const started = startById.get(e.params.requestId) ?? r.timing?.requestTime * 1000 ?? 0
+      const started = startById.get(e.params.requestId) ?? (r.timing?.requestTime ?? 0) * 1000
       const ms = started ? Math.max(0, Math.round(e.params.timestamp * 1000 - started)) : 0
       state.responses.push({ url: r.url, status: r.status, ms, type: e.params.type })
       if (e.params.type === 'Document' && state.mainStatus == null)
@@ -336,7 +336,10 @@ function parseFlags(args: string[]): { positional: string[], flags: Record<strin
   const positional: string[] = []
   const flags: Record<string, string | boolean | Array<string | boolean>> = {}
   for (let i = 0; i < args.length; i++) {
-    const a = args[i]
+    const a = args.at(i)
+    if (a === undefined)
+      break
+
     if (a.startsWith('--')) {
       const key = a.slice(2)
       const next = args[i + 1]
@@ -361,6 +364,20 @@ function flagList(value: string | boolean | Array<string | boolean> | undefined)
   if (value == null || value === false) return []
   const arr = Array.isArray(value) ? value : [value]
   return arr.filter((v): v is string => typeof v === 'string')
+}
+
+function parseViewport(value: string | undefined): { w: number, h: number } {
+  if (!value)
+    return { w: 1280, h: 900 }
+
+  const dimensions = value.split('x')
+  const w = Number(dimensions[0])
+  const h = Number(dimensions[1])
+
+  if (dimensions.length !== 2 || !Number.isInteger(w) || !Number.isInteger(h) || w < 1 || h < 1)
+    throw new TypeError(`Invalid viewport "${value}". Expected WIDTHxHEIGHT, for example 1280x900.`)
+
+  return { w, h }
 }
 
 const BREAKPOINTS = [
@@ -408,14 +425,14 @@ async function main() {
 
     else if (command === 'screenshot') {
       const cdp = await openPage(session.port)
-      const vp = typeof flags.viewport === 'string' ? flags.viewport.split('x').map(Number) : [1280, 900]
+      const viewport = parseViewport(typeof flags.viewport === 'string' ? flags.viewport : undefined)
       const scale = flags.scale ? Number(flags.scale) : 1
       const out = (flags.out as string) || `storage/framework/runtime/shots/${new URL(url).pathname.replace(/[^a-z0-9]+/gi, '-').replace(/^-|-$/g, '') || 'home'}.png`
       mkdirSync(out.split('/').slice(0, -1).join('/') || '.', { recursive: true })
-      await gotoAndInstrument(cdp, url, { viewport: { w: vp[0], h: vp[1] }, scale, cookies, settleMs, scheme })
+      await gotoAndInstrument(cdp, url, { viewport, scale, cookies, settleMs, scheme })
       const png = await captureScreenshot(cdp, { full: !!flags.full, element: flags.element as string | undefined })
       await Bun.write(out, png)
-      console.log(JSON.stringify({ url, out, viewport: `${vp[0]}x${vp[1]}`, scale, full: !!flags.full, element: flags.element ?? null, bytes: png.length }, null, 2))
+      console.log(JSON.stringify({ url, out, viewport: `${viewport.w}x${viewport.h}`, scale, full: !!flags.full, element: flags.element ?? null, bytes: png.length }, null, 2))
       cdp.close()
     }
 
