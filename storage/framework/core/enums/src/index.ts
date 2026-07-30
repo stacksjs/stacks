@@ -3,7 +3,6 @@
  */
 export enum NpmScript {
   Build = 'build',
-  BuildComponents = 'vite build --config ./src/vite-config/src/components.ts',
   BuildWebComponents = 'build:web-components',
   BuildFunctions = 'build:functions',
   BuildDocs = 'build:docs',

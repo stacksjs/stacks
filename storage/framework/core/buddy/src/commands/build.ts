@@ -129,7 +129,8 @@ export function build(buddy: CLI): void {
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: BuildOptions) => {
       log.debug('Running `buddy build:components` ...', options)
-      await runAction(Action.BuildComponentLibs, options)
+      if (!await runBuildAction(Action.BuildComponentLibs, 'component libraries'))
+        process.exit(ExitCode.FatalError)
     })
 
   buddy
@@ -176,7 +177,8 @@ export function build(buddy: CLI): void {
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: BuildOptions) => {
       log.debug('Running `buddy build:web-components` ...', options)
-      await runAction(Action.BuildWebComponentLib, options)
+      if (!await runBuildAction(Action.BuildWebComponentLib, 'web component library'))
+        process.exit(ExitCode.FatalError)
     })
 
   buddy

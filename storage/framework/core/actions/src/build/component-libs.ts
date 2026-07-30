@@ -1,8 +1,3 @@
-import { runCommand } from '@stacksjs/cli'
-import { NpmScript } from '@stacksjs/enums'
-import { frameworkPath } from '@stacksjs/path'
+import { buildStxComponentLibrary } from './component-library'
 
-await runCommand(NpmScript.BuildComponents, {
-  cwd: frameworkPath(),
-  verbose: true,
-})
+await buildStxComponentLibrary()

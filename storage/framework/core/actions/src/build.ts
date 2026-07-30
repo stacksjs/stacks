@@ -1,15 +1,16 @@
 import type { BuildOptions } from '@stacksjs/types'
 import { NpmScript } from '@stacksjs/enums'
 import { log } from '@stacksjs/logging'
-import { hasComponents, hasFunctions } from '@stacksjs/storage'
+import { hasFunctions } from '@stacksjs/storage'
 import { runNpmScript } from '@stacksjs/utils'
+import { buildStxComponentLibrary } from './build/component-library'
 import { generateTypes } from './generate'
 
 export async function invoke(options: BuildOptions): Promise<void> {
   if (options.components)
     await componentLibraries(options)
   else if (options.webComponents || options.elements)
-    await webComponentLibrary(options)
+    await webComponentLibrary()
   else if (options.functions)
     await functionsLibrary(options)
   else if (options.docs)
@@ -26,35 +27,15 @@ export async function build(options: BuildOptions): Promise<void> {
 
 export async function componentLibraries(options: BuildOptions): Promise<void> {
   await runNpmScript(NpmScript.GenerateEntries, options)
-  await stxComponentLibrary(options)
-  await webComponentLibrary(options)
+  await stxComponentLibrary()
 }
 
-export async function stxComponentLibrary(options: BuildOptions): Promise<void> {
-  if (hasComponents()) {
-    log.info('Building your component library...')
-    await runNpmScript(NpmScript.BuildComponents, options)
-    log.success('Your component library was built successfully')
-  }
-  else {
-    // todo: throw custom error here
-    log.warn('No components found.')
-    log.info('Before you can build components,')
-    log.info('you need to have created some in the ./components folder.')
-  }
+export async function stxComponentLibrary(): Promise<void> {
+  await buildStxComponentLibrary()
 }
 
-export async function webComponentLibrary(options: BuildOptions): Promise<void> {
-  log.info('Building your component library for production use & npm/CDN distribution...')
-
-  if (hasComponents()) {
-    await runNpmScript(NpmScript.BuildWebComponents, options)
-    log.success('Your Web Component library was built successfully')
-  }
-  else {
-    // todo: throw custom error here
-    log.info('No components found.')
-  }
+export async function webComponentLibrary(): Promise<void> {
+  await buildStxComponentLibrary()
 }
 
 export async function docs(options: BuildOptions): Promise<void> {
