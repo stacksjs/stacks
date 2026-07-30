@@ -196,6 +196,22 @@ describe('dashboard native STX bindings', () => {
     expect(alert).toContain("emit('update:show', false)")
     expect(alert).toContain("emit(event)")
     expect(alert).not.toContain('<svg')
+
+    const toast = componentSource('Modals/Popups/Toast.stx')
+    expect(toast).toContain("const generatedId = useId('toast')")
+    expect(toast).toContain("emit('update:show', false)")
+    expect(toast).toContain("emit('close')")
+    expect(toast).toContain('role="alert"')
+    expect(toast).toContain('pointer-events-none')
+    expect(toast).not.toContain('Math.random')
+    expect(toast).not.toContain('<svg')
+
+    const toastWrapper = componentSource('Modals/ToastWrapper.stx')
+    expect(toastWrapper).toContain("const liveWidth = useReactiveProp('width', 30)")
+    expect(toastWrapper).toContain("emit('close')")
+    expect(toastWrapper).toContain('aria-live="polite"')
+    expect(toastWrapper).not.toContain('role="dialog"')
+    expect(toastWrapper).not.toContain('<svg')
   })
 
   test('shared dropdowns and confirmations use reactive component contracts', () => {
