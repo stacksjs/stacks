@@ -8,7 +8,10 @@ export default new Action({
   name: 'LicenseKey Store',
   description: 'LicenseKey Store ORM Action',
   method: 'POST',
+  model: LicenseKey,
   async handle(request: RequestInstance) {
+    await request.validate()
+
     const data = await request.all()
 
     const results = await shippings.licenses.store(data)

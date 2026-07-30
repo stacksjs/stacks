@@ -32,12 +32,13 @@ export default defineModel({
 
   attributes: {
     key: {
+      unique: true,
       order: 1,
       fillable: true,
       validation: {
-        rule: schema.string().required(),
+        rule: schema.string().matches(/^[A-Z0-9]{4}(?:-[A-Z0-9]{4}){4}$/).required(),
         message: {
-          pattern: 'License key must be in the format XXXX-XXXX-XXXX-XXXX-XXXX',
+          matches: 'License key must be in the format XXXX-XXXX-XXXX-XXXX-XXXX',
         },
       },
       factory: (faker) => {

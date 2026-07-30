@@ -7,8 +7,11 @@ import { response } from '@stacksjs/router'
 export default new Action({
   name: 'LicenseKey Update',
   description: 'LicenseKey Update ORM Action',
-  method: 'PUT',
+  method: 'PATCH',
+  model: LicenseKey,
   async handle(request: RequestInstance) {
+    await request.validate()
+
     const id = request.getParam('id')
     const data = await request.all()
 

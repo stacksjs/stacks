@@ -2124,7 +2124,7 @@
             "name": "key",
             "type": "string",
             "isPrimaryKey": false,
-            "isUnique": false,
+            "isUnique": true,
             "isNullable": false,
             "hasDefault": false
           },
@@ -2226,6 +2226,13 @@
           }
         ],
         "indexes": [
+          {
+            "name": "license_keys_key_unique",
+            "columns": [
+              "key"
+            ],
+            "type": "unique"
+          },
           {
             "name": "license_keys_uuid_unique",
             "columns": [
@@ -8413,7 +8420,7 @@
       }
     ]
   },
-  "hash": "2eade6a74def0af839784edfd08d0e08664b167363450138544fb48e7fc664a0",
+  "hash": "303bc49dbb6d86ab0aabc0fc67e48a1af999b0bb977ea959530c7d01d8a3c56f",
   "dialect": "sqlite",
-  "updatedAt": "2026-07-30T00:42:41.463Z"
+  "updatedAt": "2026-07-30T00:56:17.210Z"
 }
