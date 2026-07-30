@@ -149,7 +149,7 @@ export default {
   },
 
   MAIL_MAILER: {
-    validation: schema.enum(['ses', 'sendgrid', 'mailgun', 'mailtrap', 'smtp', 'postmark', 'sendmail', 'log']),
+    validation: schema.enum(['ses', 'sendgrid', 'mailgun', 'mailtrap', 'smtp', 'log', 'capture']),
     default: 'ses',
   },
 

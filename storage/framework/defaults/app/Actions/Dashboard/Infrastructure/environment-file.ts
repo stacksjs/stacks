@@ -37,6 +37,8 @@ export interface EnvironmentFileOptions {
   backupPath?: string
 }
 
+export type EnvironmentEntryUpdates = Record<string, string>
+
 function resolvedPaths(options: EnvironmentFileOptions = {}): { envPath: string, backupPath: string } {
   return {
     envPath: options.envPath ?? projectPath('.env'),
@@ -66,6 +68,37 @@ async function optionalFile(path: string): Promise<{ content: string, exists: bo
 
 function revisionFor(content: string): string {
   return createHash('sha256').update(content).digest('hex')
+}
+
+function parseEnvironmentValue(source: string): string {
+  const value = source.trim()
+  if (value.length < 2)
+    return value
+
+  const quote = value[0]
+  if ((quote !== '"' && quote !== '\'') || value.at(-1) !== quote)
+    return value
+
+  const inner = value.slice(1, -1)
+  if (quote === '\'')
+    return inner
+
+  return inner
+    .replace(/\\n/g, '\n')
+    .replace(/\\"/g, '"')
+    .replace(/\\\\/g, '\\')
+}
+
+function serializeEnvironmentValue(value: string): string {
+  if (!value)
+    return ''
+  if (/^[A-Za-z0-9_./:@+-]+$/.test(value))
+    return value
+
+  return `"${value
+    .replace(/\\/g, '\\\\')
+    .replace(/"/g, '\\"')
+    .replace(/\n/g, '\\n')}"`
 }
 
 async function atomicWrite(path: string, content: string): Promise<void> {
@@ -135,6 +168,62 @@ export function validateEnvironmentFile(content: string): EnvironmentFileIssue[]
   return issues
 }
 
+export function parseEnvironmentEntries(content: string): Record<string, string> {
+  const entries: Record<string, string> = {}
+
+  for (const sourceLine of content.split('\n')) {
+    const line = sourceLine.trim()
+    if (!line || line.startsWith('#'))
+      continue
+
+    const separator = line.indexOf('=')
+    if (separator < 1)
+      continue
+
+    const key = line.slice(0, separator).trim()
+    if (!ENV_KEY_PATTERN.test(key))
+      continue
+
+    entries[key] = parseEnvironmentValue(line.slice(separator + 1))
+  }
+
+  return entries
+}
+
+export function applyEnvironmentEntries(content: string, updates: EnvironmentEntryUpdates): string {
+  const pending = new Map(Object.entries(updates))
+  const lines = content.split('\n')
+
+  for (let index = 0; index < lines.length; index++) {
+    const sourceLine = lines[index]
+    if (sourceLine === undefined)
+      continue
+
+    const separator = sourceLine.indexOf('=')
+    if (separator < 1)
+      continue
+
+    const key = sourceLine.slice(0, separator).trim()
+    const value = pending.get(key)
+    if (value === undefined)
+      continue
+
+    lines[index] = `${key}=${serializeEnvironmentValue(value)}`
+    pending.delete(key)
+  }
+
+  while (lines.length && !lines.at(-1)?.trim())
+    lines.pop()
+
+  if (pending.size && lines.length)
+    lines.push('')
+
+  for (const [key, value] of pending)
+    lines.push(`${key}=${serializeEnvironmentValue(value)}`)
+
+  return `${lines.join('\n')}\n`
+}
+
 export async function readEnvironmentFile(options: EnvironmentFileOptions = {}): Promise<EnvironmentFileState> {
   const paths = resolvedPaths(options)
   const [environment, backup] = await Promise.all([
@@ -171,4 +260,28 @@ export async function updateEnvironmentFile(
 
   await atomicWrite(paths.envPath, content)
   return { state: await readEnvironmentFile(options) }
+}
+
+export async function updateEnvironmentEntries(
+  updates: EnvironmentEntryUpdates,
+  expectedRevision: string,
+  options: EnvironmentFileOptions = {},
+): Promise<{ state?: EnvironmentFileState, issues?: EnvironmentFileIssue[], conflict?: boolean }> {
+  for (const key of Object.keys(updates)) {
+    if (!ENV_KEY_PATTERN.test(key)) {
+      return {
+        issues: [{ line: 0, message: `${key} is not a valid environment key.` }],
+      }
+    }
+  }
+
+  const current = await readEnvironmentFile(options)
+  if (current.revision !== expectedRevision)
+    return { conflict: true }
+
+  return updateEnvironmentFile(
+    applyEnvironmentEntries(current.content, updates),
+    expectedRevision,
+    options,
+  )
 }

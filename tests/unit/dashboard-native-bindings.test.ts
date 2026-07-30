@@ -87,6 +87,7 @@ describe('dashboard native STX bindings', () => {
     expect(input).toContain('x-model="liveValue"')
     expect(input).toContain("emit('update:value', nextValue)")
     expect(input).toContain(':aria-label="liveAriaLabel() || liveLabel() || null"')
+    expect(input).toContain(':autocomplete="liveAutocomplete() || null"')
     expect(input).toContain(':type="liveType()"')
     expect(input).toContain(':disabled="liveDisabled()"')
     expect(input).toContain(':readonly="liveReadonly()"')
@@ -234,6 +235,35 @@ describe('dashboard native STX bindings', () => {
 
     expect(routes).toContain("guard(route.get('/environment'")
     expect(routes).toContain("guard(route.put('/environment'")
+  })
+
+  test('mail settings use a componentized write-only secret contract', () => {
+    const view = readFileSync(
+      resolve('storage/framework/defaults/views/dashboard/settings/mail.stx'),
+      'utf8',
+    )
+    const component = componentSource('Settings/MailSettingsDashboard.stx')
+    const getAction = readFileSync(
+      resolve('storage/framework/defaults/app/Actions/Dashboard/Settings/MailSettingsGetAction.ts'),
+      'utf8',
+    )
+    const routes = readFileSync(
+      resolve('storage/framework/defaults/routes/dashboard-api.ts'),
+      'utf8',
+    )
+
+    expect(view).toContain('<MailSettingsDashboard />')
+    expect(view).not.toContain('<script client>')
+    expect(component).toContain("dashboardApi<MailSettingsResponse>('/api/dashboard/mail-settings')")
+    expect(component).toContain('@submit.prevent="saveSettings"')
+    expect(component).toContain('v-model:value="driver"')
+    expect(component).toContain('x-model="clearSmtpPassword"')
+    expect(component).not.toMatch(/\b(?:document|window)\./)
+    expect(component).not.toContain('fetch(')
+    expect(getAction).toContain('readMailSettings()')
+    expect(getAction).not.toContain('password:')
+    expect(routes).toContain("guard(route.get('/mail-settings'")
+    expect(routes).toContain("guard(route.put('/mail-settings'")
   })
 
   test('kanban uses native reactive drag, dialogs, and form models', () => {

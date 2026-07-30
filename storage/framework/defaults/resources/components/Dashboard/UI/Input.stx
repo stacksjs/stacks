@@ -12,6 +12,7 @@ const liveError = useReactiveProp('error', '')
 const liveHint = useReactiveProp('hint', '')
 const liveLabel = useReactiveProp('label', '')
 const liveAriaLabel = useReactiveProp('ariaLabel', '')
+const liveAutocomplete = useReactiveProp('autocomplete', '')
 const liveId = useReactiveProp('id', '')
 const liveSize = useReactiveProp('size', 'md' as InputSize)
 const liveName = useReactiveProp('name', '')
@@ -81,6 +82,7 @@ function handleBlur(event: Event): void {
       x-model="liveValue"
       :placeholder="livePlaceholder()"
       :aria-label="liveAriaLabel() || liveLabel() || null"
+      :autocomplete="liveAutocomplete() || null"
       :name="liveName() || null"
       class="{{ $slots.iconLeft ? 'pl-8' : '' }}"
       :class="inputClass()"

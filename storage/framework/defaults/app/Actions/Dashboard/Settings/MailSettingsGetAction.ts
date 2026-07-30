@@ -1,20 +1,16 @@
 import { Action } from '@stacksjs/actions'
+import { readMailSettings } from './mail-settings'
 
 export default new Action({
   name: 'MailSettingsGetAction',
-  description: 'Returns the current mail settings.',
+  description: 'Returns mail settings without exposing stored credentials.',
   method: 'GET',
+  apiResponse: true,
+
   async handle() {
-    return {
-      data: {
-        from: '',
-        to: '',
-        driver: 'SMTP',
-        host: '',
-        port: 587,
-        username: '',
-        password: '',
-      },
-    }
+    return Response.json(
+      { settings: await readMailSettings() },
+      { headers: { 'Cache-Control': 'no-store', Pragma: 'no-cache' } },
+    )
   },
 })

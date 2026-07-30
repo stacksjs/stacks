@@ -1,0 +1,506 @@
+<script client>
+import { DashboardApiError, dashboardApi } from '../../../../functions/dashboard-api'
+
+type MailDriver = 'log' | 'smtp' | 'ses' | 'sendgrid' | 'mailgun' | 'mailtrap' | 'capture'
+
+interface MailSettings {
+  revision: string
+  driver: MailDriver
+  fromName: string
+  fromAddress: string
+  smtp: {
+    host: string
+    port: number
+    username: string
+    encryption: '' | 'tls' | 'ssl'
+    passwordConfigured: boolean
+  }
+  ses: {
+    region: string
+    accessKeyId: string
+    secretAccessKeyConfigured: boolean
+  }
+  sendgrid: {
+    apiKeyConfigured: boolean
+  }
+  mailgun: {
+    domain: string
+    endpoint: string
+    apiKeyConfigured: boolean
+  }
+  mailtrap: {
+    host: string
+    inboxId: string
+    tokenConfigured: boolean
+  }
+}
+
+interface MailSettingsResponse {
+  settings: MailSettings
+}
+
+const driverOptions = [
+  { value: 'log', label: 'Log' },
+  { value: 'smtp', label: 'SMTP' },
+  { value: 'ses', label: 'Amazon SES' },
+  { value: 'sendgrid', label: 'SendGrid' },
+  { value: 'mailgun', label: 'Mailgun' },
+  { value: 'mailtrap', label: 'Mailtrap' },
+  { value: 'capture', label: 'Capture (tests)' },
+]
+const encryptionOptions = [
+  { value: '', label: 'None' },
+  { value: 'tls', label: 'TLS / STARTTLS' },
+  { value: 'ssl', label: 'SSL / implicit TLS' },
+]
+
+const revision = state('')
+const driver = state<MailDriver>('log')
+const fromName = state('')
+const fromAddress = state('')
+
+const smtpHost = state('')
+const smtpPort = state('2525')
+const smtpUsername = state('')
+const smtpEncryption = state('')
+const smtpPassword = state('')
+const smtpPasswordConfigured = state(false)
+const clearSmtpPassword = state(false)
+
+const sesRegion = state('us-east-1')
+const sesAccessKeyId = state('')
+const sesSecretAccessKey = state('')
+const sesSecretAccessKeyConfigured = state(false)
+const clearSesSecretAccessKey = state(false)
+
+const sendgridApiKey = state('')
+const sendgridApiKeyConfigured = state(false)
+const clearSendgridApiKey = state(false)
+
+const mailgunDomain = state('')
+const mailgunEndpoint = state('api.mailgun.net')
+const mailgunApiKey = state('')
+const mailgunApiKeyConfigured = state(false)
+const clearMailgunApiKey = state(false)
+
+const mailtrapHost = state('https://sandbox.api.mailtrap.io/api/send')
+const mailtrapInboxId = state('')
+const mailtrapToken = state('')
+const mailtrapTokenConfigured = state(false)
+const clearMailtrapToken = state(false)
+
+const isLoading = state(true)
+const isSaving = state(false)
+const errorMessage = state('')
+const successMessage = state('')
+const fieldErrors = state<Record<string, string>>({})
+const savedFingerprint = state('')
+
+function settingsFingerprint(): string {
+  return JSON.stringify({
+    driver: driver(),
+    fromName: fromName(),
+    fromAddress: fromAddress(),
+    smtpHost: smtpHost(),
+    smtpPort: smtpPort(),
+    smtpUsername: smtpUsername(),
+    smtpEncryption: smtpEncryption(),
+    sesRegion: sesRegion(),
+    sesAccessKeyId: sesAccessKeyId(),
+    mailgunDomain: mailgunDomain(),
+    mailgunEndpoint: mailgunEndpoint(),
+    mailtrapHost: mailtrapHost(),
+    mailtrapInboxId: mailtrapInboxId(),
+  })
+}
+
+const hasSecretEdits = derived(() =>
+  Boolean(
+    smtpPassword()
+    || sesSecretAccessKey()
+    || sendgridApiKey()
+    || mailgunApiKey()
+    || mailtrapToken()
+    || clearSmtpPassword()
+    || clearSesSecretAccessKey()
+    || clearSendgridApiKey()
+    || clearMailgunApiKey()
+    || clearMailtrapToken(),
+  ),
+)
+const isDirty = derived(() =>
+  Boolean(revision())
+  && (settingsFingerprint() !== savedFingerprint() || hasSecretEdits()),
+)
+const isBusy = derived(() => isLoading() || isSaving())
+const selectedDriverLabel = derived(() =>
+  driverOptions.find(option => option.value === driver())?.label ?? 'Mail',
+)
+const driverReady = derived(() => {
+  if (!fromAddress())
+    return false
+  if (driver() === 'smtp')
+    return Boolean(smtpHost() && smtpPort())
+  if (driver() === 'ses')
+    return Boolean(sesRegion())
+  if (driver() === 'sendgrid')
+    return sendgridApiKeyConfigured() || Boolean(sendgridApiKey())
+  if (driver() === 'mailgun')
+    return Boolean(
+      mailgunDomain()
+      && mailgunEndpoint()
+      && (mailgunApiKeyConfigured() || mailgunApiKey()),
+    )
+  if (driver() === 'mailtrap') {
+    return Boolean(
+      mailtrapHost()
+      && mailtrapInboxId()
+      && (mailtrapTokenConfigured() || mailtrapToken()),
+    )
+  }
+  return true
+})
+
+function resetSecrets(): void {
+  smtpPassword.set('')
+  sesSecretAccessKey.set('')
+  sendgridApiKey.set('')
+  mailgunApiKey.set('')
+  mailtrapToken.set('')
+  clearSmtpPassword.set(false)
+  clearSesSecretAccessKey.set(false)
+  clearSendgridApiKey.set(false)
+  clearMailgunApiKey.set(false)
+  clearMailtrapToken.set(false)
+}
+
+function applySettings(settings: MailSettings): void {
+  revision.set(settings.revision)
+  driver.set(settings.driver)
+  fromName.set(settings.fromName)
+  fromAddress.set(settings.fromAddress)
+  smtpHost.set(settings.smtp.host)
+  smtpPort.set(String(settings.smtp.port))
+  smtpUsername.set(settings.smtp.username)
+  smtpEncryption.set(settings.smtp.encryption)
+  smtpPasswordConfigured.set(settings.smtp.passwordConfigured)
+  sesRegion.set(settings.ses.region)
+  sesAccessKeyId.set(settings.ses.accessKeyId)
+  sesSecretAccessKeyConfigured.set(settings.ses.secretAccessKeyConfigured)
+  sendgridApiKeyConfigured.set(settings.sendgrid.apiKeyConfigured)
+  mailgunDomain.set(settings.mailgun.domain)
+  mailgunEndpoint.set(settings.mailgun.endpoint)
+  mailgunApiKeyConfigured.set(settings.mailgun.apiKeyConfigured)
+  mailtrapHost.set(settings.mailtrap.host)
+  mailtrapInboxId.set(settings.mailtrap.inboxId)
+  mailtrapTokenConfigured.set(settings.mailtrap.tokenConfigured)
+  resetSecrets()
+  savedFingerprint.set(settingsFingerprint())
+}
+
+function describeError(error: unknown, fallback: string): string {
+  return error instanceof DashboardApiError ? error.message : fallback
+}
+
+function fieldError(name: string): string {
+  return fieldErrors()[name] ?? ''
+}
+
+function secretHint(configured: boolean, clear: boolean): string {
+  if (clear)
+    return 'The stored secret will be cleared when you save.'
+  return configured
+    ? 'A secret is stored. Leave this blank to keep it.'
+    : 'No secret is stored.'
+}
+
+async function loadSettings(): Promise<void> {
+  isLoading.set(true)
+  errorMessage.set('')
+  fieldErrors.set({})
+  try {
+    const result = await dashboardApi<MailSettingsResponse>('/api/dashboard/mail-settings')
+    applySettings(result.settings)
+  }
+  catch (error) {
+    errorMessage.set(describeError(error, 'Mail settings could not be loaded.'))
+  }
+  finally {
+    isLoading.set(false)
+  }
+}
+
+async function saveSettings(): Promise<void> {
+  if (isBusy() || !revision())
+    return
+
+  isSaving.set(true)
+  errorMessage.set('')
+  successMessage.set('')
+  fieldErrors.set({})
+
+  try {
+    const result = await dashboardApi<MailSettingsResponse & { success: true }>('/api/dashboard/mail-settings', {
+      method: 'PUT',
+      body: {
+        revision: revision(),
+        driver: driver(),
+        fromName: fromName(),
+        fromAddress: fromAddress(),
+        smtp: {
+          host: smtpHost(),
+          port: smtpPort(),
+          username: smtpUsername(),
+          encryption: smtpEncryption(),
+          password: smtpPassword(),
+          clearPassword: clearSmtpPassword(),
+        },
+        ses: {
+          region: sesRegion(),
+          accessKeyId: sesAccessKeyId(),
+          secretAccessKey: sesSecretAccessKey(),
+          clearSecretAccessKey: clearSesSecretAccessKey(),
+        },
+        sendgrid: {
+          apiKey: sendgridApiKey(),
+          clearApiKey: clearSendgridApiKey(),
+        },
+        mailgun: {
+          domain: mailgunDomain(),
+          endpoint: mailgunEndpoint(),
+          apiKey: mailgunApiKey(),
+          clearApiKey: clearMailgunApiKey(),
+        },
+        mailtrap: {
+          host: mailtrapHost(),
+          inboxId: mailtrapInboxId(),
+          token: mailtrapToken(),
+          clearToken: clearMailtrapToken(),
+        },
+      },
+    })
+    applySettings(result.settings)
+    successMessage.set('Mail settings saved. Restart long-running processes before sending with the new configuration.')
+  }
+  catch (error) {
+    if (error instanceof DashboardApiError)
+      fieldErrors.set(error.fields ?? {})
+    errorMessage.set(describeError(error, 'Mail settings could not be saved.'))
+  }
+  finally {
+    isSaving.set(false)
+  }
+}
+
+onMount(() => void loadSettings())
+</script>
+
+<div class="space-y-6">
+  <PageHeader
+    title="Mail Settings"
+    description="Configure the framework mail driver and its environment-backed credentials."
+  />
+
+  <div class="grid gap-3 sm:grid-cols-3">
+    <div class="p-4 bg-white dark:bg-neutral-900 border border-stone-200 rounded-xl dark:border-neutral-700">
+      <p class="font-medium text-stone-500 text-xs tracking-wide uppercase dark:text-neutral-400">Driver</p>
+      <p class="mt-1 font-semibold text-sm text-stone-900 dark:text-white" :text="selectedDriverLabel()"></p>
+    </div>
+    <div class="p-4 bg-white dark:bg-neutral-900 border border-stone-200 rounded-xl dark:border-neutral-700">
+      <p class="font-medium text-stone-500 text-xs tracking-wide uppercase dark:text-neutral-400">Source</p>
+      <p class="mt-1 font-mono text-sm text-stone-900 dark:text-white">.env</p>
+    </div>
+    <div class="p-4 bg-white dark:bg-neutral-900 border border-stone-200 rounded-xl dark:border-neutral-700">
+      <p class="font-medium text-stone-500 text-xs tracking-wide uppercase dark:text-neutral-400">Configuration</p>
+      <p class="mt-1 font-medium text-sm" :class="driverReady() ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'" :text="driverReady() ? 'Ready' : 'Needs attention'"></p>
+    </div>
+  </div>
+
+  <div :if="errorMessage()" class="p-4 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-xl dark:border-red-900" role="alert">
+    <p :text="errorMessage()"></p>
+    <Button :if="isLoading() === false && !revision()" class="mt-3" size="sm" variant="secondary" @click="loadSettings">Try again</Button>
+  </div>
+
+  <div :if="successMessage()" class="p-4 text-emerald-700 text-sm dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 rounded-xl dark:border-emerald-900" role="status" :text="successMessage()"></div>
+
+  <form :if="revision()" class="space-y-6" @submit.prevent="saveSettings">
+    <section class="p-5 bg-white dark:bg-neutral-900 border border-stone-200 rounded-xl dark:border-neutral-700">
+      <div class="mb-5">
+        <h2 class="font-semibold text-stone-900 dark:text-white">Sender and driver</h2>
+        <p class="mt-1 text-sm text-stone-500 dark:text-neutral-400">These values control every mail sent through the framework singleton.</p>
+      </div>
+      <div class="grid gap-4 md:grid-cols-2">
+        <Select
+          v-model:value="driver"
+          :options="driverOptions"
+          label="Mail driver"
+          placeholder=""
+          required
+          :error="fieldError('driver')"
+        />
+        <Input
+          v-model:value="fromName"
+          label="Sender name"
+          placeholder="Stacks"
+          :error="fieldError('fromName')"
+        />
+        <div class="md:col-span-2">
+          <Input
+            v-model:value="fromAddress"
+            type="email"
+            label="Sender email address"
+            placeholder="no-reply@example.com"
+            required
+            :error="fieldError('fromAddress')"
+          />
+        </div>
+      </div>
+    </section>
+
+    <section :if="driver() === 'smtp'" class="p-5 bg-white dark:bg-neutral-900 border border-stone-200 rounded-xl dark:border-neutral-700">
+      <div class="mb-5">
+        <h2 class="font-semibold text-stone-900 dark:text-white">SMTP transport</h2>
+        <p class="mt-1 text-sm text-stone-500 dark:text-neutral-400">Use any SMTP relay, including local Mailpit, Postmark SMTP, or a hosted mail server.</p>
+      </div>
+      <div class="grid gap-4 md:grid-cols-2">
+        <Input v-model:value="smtpHost" label="Host" placeholder="smtp.example.com" required :error="fieldError('smtp.host')" />
+        <Input v-model:value="smtpPort" type="number" label="Port" placeholder="587" required :error="fieldError('smtp.port')" />
+        <Input v-model:value="smtpUsername" label="Username" placeholder="mailer@example.com" :error="fieldError('smtp.username')" />
+        <Select v-model:value="smtpEncryption" :options="encryptionOptions" label="Encryption" placeholder="" :error="fieldError('smtp.encryption')" />
+        <div class="md:col-span-2">
+          <Input
+            v-model:value="smtpPassword"
+            type="password"
+            label="Password"
+            autocomplete="new-password"
+            :disabled="clearSmtpPassword()"
+            :placeholder="smtpPasswordConfigured() ? 'Stored secret' : 'Enter a password'"
+            :hint="secretHint(smtpPasswordConfigured(), clearSmtpPassword())"
+            :error="fieldError('smtp.password')"
+          />
+          <label :if="smtpPasswordConfigured()" class="inline-flex gap-2 items-center mt-3 text-sm text-stone-600 dark:text-neutral-300">
+            <input x-model="clearSmtpPassword" type="checkbox" class="h-4 w-4 text-red-600 border-stone-300 rounded dark:border-neutral-600" />
+            Clear stored SMTP password
+          </label>
+        </div>
+      </div>
+    </section>
+
+    <section :if="driver() === 'ses'" class="p-5 bg-white dark:bg-neutral-900 border border-stone-200 rounded-xl dark:border-neutral-700">
+      <div class="mb-5">
+        <h2 class="font-semibold text-stone-900 dark:text-white">Amazon SES</h2>
+        <p class="mt-1 text-sm text-stone-500 dark:text-neutral-400">Explicit credentials are optional when the AWS profile or instance role already supplies them.</p>
+      </div>
+      <div class="grid gap-4 md:grid-cols-2">
+        <Input v-model:value="sesRegion" label="AWS region" placeholder="us-east-1" required :error="fieldError('ses.region')" />
+        <Input v-model:value="sesAccessKeyId" label="Access key ID" placeholder="AKIA..." :error="fieldError('ses.accessKeyId')" />
+        <div class="md:col-span-2">
+          <Input
+            v-model:value="sesSecretAccessKey"
+            type="password"
+            label="Secret access key"
+            autocomplete="new-password"
+            :disabled="clearSesSecretAccessKey()"
+            :placeholder="sesSecretAccessKeyConfigured() ? 'Stored secret' : 'Optional with AWS profile or role'"
+            :hint="secretHint(sesSecretAccessKeyConfigured(), clearSesSecretAccessKey())"
+            :error="fieldError('ses.secretAccessKey')"
+          />
+          <label :if="sesSecretAccessKeyConfigured()" class="inline-flex gap-2 items-center mt-3 text-sm text-stone-600 dark:text-neutral-300">
+            <input x-model="clearSesSecretAccessKey" type="checkbox" class="h-4 w-4 text-red-600 border-stone-300 rounded dark:border-neutral-600" />
+            Clear stored AWS secret access key
+          </label>
+        </div>
+      </div>
+    </section>
+
+    <section :if="driver() === 'sendgrid'" class="p-5 bg-white dark:bg-neutral-900 border border-stone-200 rounded-xl dark:border-neutral-700">
+      <div class="mb-5">
+        <h2 class="font-semibold text-stone-900 dark:text-white">SendGrid</h2>
+        <p class="mt-1 text-sm text-stone-500 dark:text-neutral-400">The API key is write-only and is never returned to the browser.</p>
+      </div>
+      <Input
+        v-model:value="sendgridApiKey"
+        type="password"
+        label="API key"
+        autocomplete="new-password"
+        :disabled="clearSendgridApiKey()"
+        :placeholder="sendgridApiKeyConfigured() ? 'Stored secret' : 'SG...'"
+        :hint="secretHint(sendgridApiKeyConfigured(), clearSendgridApiKey())"
+        :error="fieldError('sendgrid.apiKey')"
+      />
+      <label :if="sendgridApiKeyConfigured()" class="inline-flex gap-2 items-center mt-3 text-sm text-stone-600 dark:text-neutral-300">
+        <input x-model="clearSendgridApiKey" type="checkbox" class="h-4 w-4 text-red-600 border-stone-300 rounded dark:border-neutral-600" />
+        Clear stored SendGrid API key
+      </label>
+    </section>
+
+    <section :if="driver() === 'mailgun'" class="p-5 bg-white dark:bg-neutral-900 border border-stone-200 rounded-xl dark:border-neutral-700">
+      <div class="mb-5">
+        <h2 class="font-semibold text-stone-900 dark:text-white">Mailgun</h2>
+        <p class="mt-1 text-sm text-stone-500 dark:text-neutral-400">Configure the verified sending domain and regional API host.</p>
+      </div>
+      <div class="grid gap-4 md:grid-cols-2">
+        <Input v-model:value="mailgunDomain" label="Domain" placeholder="mg.example.com" required :error="fieldError('mailgun.domain')" />
+        <Input v-model:value="mailgunEndpoint" label="API host" placeholder="api.mailgun.net" required :error="fieldError('mailgun.endpoint')" />
+        <div class="md:col-span-2">
+          <Input
+            v-model:value="mailgunApiKey"
+            type="password"
+            label="API key"
+            autocomplete="new-password"
+            :disabled="clearMailgunApiKey()"
+            :placeholder="mailgunApiKeyConfigured() ? 'Stored secret' : 'key-...'"
+            :hint="secretHint(mailgunApiKeyConfigured(), clearMailgunApiKey())"
+            :error="fieldError('mailgun.apiKey')"
+          />
+          <label :if="mailgunApiKeyConfigured()" class="inline-flex gap-2 items-center mt-3 text-sm text-stone-600 dark:text-neutral-300">
+            <input x-model="clearMailgunApiKey" type="checkbox" class="h-4 w-4 text-red-600 border-stone-300 rounded dark:border-neutral-600" />
+            Clear stored Mailgun API key
+          </label>
+        </div>
+      </div>
+    </section>
+
+    <section :if="driver() === 'mailtrap'" class="p-5 bg-white dark:bg-neutral-900 border border-stone-200 rounded-xl dark:border-neutral-700">
+      <div class="mb-5">
+        <h2 class="font-semibold text-stone-900 dark:text-white">Mailtrap</h2>
+        <p class="mt-1 text-sm text-stone-500 dark:text-neutral-400">Use the HTTPS API endpoint, inbox ID, and write-only bearer token.</p>
+      </div>
+      <div class="grid gap-4 md:grid-cols-2">
+        <div class="md:col-span-2">
+          <Input v-model:value="mailtrapHost" type="url" label="API base URL" placeholder="https://sandbox.api.mailtrap.io/api/send" required :error="fieldError('mailtrap.host')" />
+        </div>
+        <Input v-model:value="mailtrapInboxId" label="Inbox ID" placeholder="123456" required :error="fieldError('mailtrap.inboxId')" />
+        <Input
+          v-model:value="mailtrapToken"
+          type="password"
+          label="API token"
+          autocomplete="new-password"
+          :disabled="clearMailtrapToken()"
+          :placeholder="mailtrapTokenConfigured() ? 'Stored secret' : 'Enter a token'"
+          :hint="secretHint(mailtrapTokenConfigured(), clearMailtrapToken())"
+          :error="fieldError('mailtrap.token')"
+        />
+        <label :if="mailtrapTokenConfigured()" class="inline-flex gap-2 items-center md:col-span-2 text-sm text-stone-600 dark:text-neutral-300">
+          <input x-model="clearMailtrapToken" type="checkbox" class="h-4 w-4 text-red-600 border-stone-300 rounded dark:border-neutral-600" />
+          Clear stored Mailtrap API token
+        </label>
+      </div>
+    </section>
+
+    <section :if="driver() === 'log' || driver() === 'capture'" class="p-5 text-sm text-stone-600 dark:text-neutral-300 bg-stone-50 dark:bg-neutral-900 border border-stone-200 rounded-xl dark:border-neutral-700">
+      <div class="flex gap-3 items-start">
+        <span class="mt-0.5 h-5 w-5 text-blue-500 i-hugeicons-information-circle"></span>
+        <div>
+          <h2 class="font-semibold text-stone-900 dark:text-white" :text="driver() === 'log' ? 'Local log delivery' : 'Test capture delivery'"></h2>
+          <p class="mt-1" :text="driver() === 'log' ? 'Messages are written to storage/logs/mail and are not delivered externally.' : 'Messages are kept in memory for automated tests and are not delivered externally.'"></p>
+        </div>
+      </div>
+    </section>
+
+    <div class="flex flex-col gap-3 items-start justify-between sm:flex-row sm:items-center">
+      <p class="text-stone-500 text-xs dark:text-neutral-400">Saving creates a machine-local backup of the previous .env content.</p>
+      <Button type="submit" :loading="isSaving()" :disabled="isBusy() || !isDirty()">Save mail settings</Button>
+    </div>
+  </form>
+</div>

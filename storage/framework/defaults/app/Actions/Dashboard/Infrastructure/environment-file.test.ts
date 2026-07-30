@@ -3,7 +3,10 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { describe, expect, test } from 'bun:test'
 import {
+  applyEnvironmentEntries,
+  parseEnvironmentEntries,
   readEnvironmentFile,
+  updateEnvironmentEntries,
   updateEnvironmentFile,
   validateEnvironmentFile,
 } from './environment-file'
@@ -47,6 +50,42 @@ describe('dashboard environment file', () => {
     const result = await updateEnvironmentFile('APP_NAME=Stale\n', '0'.repeat(64), paths)
     expect(result.conflict).toBe(true)
     expect(await readFile(paths.envPath, 'utf8')).toBe('APP_NAME=Current\n')
+  })
+
+  test('updates selected entries while preserving comments and unrelated secrets', async () => {
+    const paths = await fixture()
+    const source = '# Mail\nMAIL_MAILER=log\nMAIL_PASSWORD="keep me"\nAPP_KEY=secret\n'
+    await writeFile(paths.envPath, source)
+    const current = await readEnvironmentFile(paths)
+
+    const result = await updateEnvironmentEntries({
+      MAIL_MAILER: 'smtp',
+      MAIL_HOST: 'smtp.example.com',
+    }, current.revision, paths)
+
+    expect(result.conflict).toBeUndefined()
+    expect(await readFile(paths.envPath, 'utf8')).toBe(
+      '# Mail\nMAIL_MAILER=smtp\nMAIL_PASSWORD="keep me"\nAPP_KEY=secret\n\nMAIL_HOST=smtp.example.com\n',
+    )
+    expect(parseEnvironmentEntries(result.state?.content ?? '')).toMatchObject({
+      MAIL_MAILER: 'smtp',
+      MAIL_HOST: 'smtp.example.com',
+      MAIL_PASSWORD: 'keep me',
+      APP_KEY: 'secret',
+    })
+  })
+
+  test('quotes structured values without evaluating their contents', () => {
+    const updated = applyEnvironmentEntries('', {
+      MAIL_FROM_NAME: '${APP_NAME} Mail',
+      MAIL_PASSWORD: 'a"b\\c',
+    })
+
+    expect(updated).toBe('MAIL_FROM_NAME="${APP_NAME} Mail"\nMAIL_PASSWORD="a\\"b\\\\c"\n')
+    expect(parseEnvironmentEntries(updated)).toEqual({
+      MAIL_FROM_NAME: '${APP_NAME} Mail',
+      MAIL_PASSWORD: 'a"b\\c',
+    })
   })
 
   test('does not write invalid content', async () => {

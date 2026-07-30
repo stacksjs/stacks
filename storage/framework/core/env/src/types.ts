@@ -16,7 +16,7 @@ export const envEnum: EnumObject = {
   // driver implementation — selecting them surfaced as a runtime
   // throw on the first `mail.send()`. Use `smtp` for any SMTP relay
   // (including Postmark over SMTP). See stacksjs/stacks#1871 M-7.
-  MAIL_MAILER: ['smtp', 'mailgun', 'ses', 'log', 'sendgrid', 'mailtrap'],
+  MAIL_MAILER: ['smtp', 'mailgun', 'ses', 'log', 'sendgrid', 'mailtrap', 'capture'],
   SEARCH_ENGINE_DRIVER: ['opensearch', 'meilisearch', 'algolia', 'typesense'],
   FRONTEND_APP_ENV: ['development', 'staging', 'production'],
 }
