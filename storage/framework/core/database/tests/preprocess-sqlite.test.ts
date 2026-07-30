@@ -291,6 +291,25 @@ describe('preprocessSqliteMigrations — unique-index files must run (stacksjs/s
     expect(migrationRecord(dbPath, fileName)).toBeNull()
   })
 
+  it('records an ADD COLUMN already defined by an earlier create-table migration on a fresh database', () => {
+    const createFileName = '0000000001-create-taggable_models-table.sql'
+    const alterFileName = '0000000002-add-taggable-owner.sql'
+    writeFileSync(
+      join(migrationsDir, createFileName),
+      'CREATE TABLE "taggable_models" ("id" INTEGER PRIMARY KEY, "taggable_id" INTEGER NOT NULL);',
+    )
+    writeFileSync(
+      join(migrationsDir, alterFileName),
+      'ALTER TABLE "taggable_models" ADD COLUMN "taggable_id" INTEGER;',
+    )
+    const dbPath = createDb()
+
+    preprocessSqliteMigrations()
+
+    expect(migrationRecord(dbPath, alterFileName)).not.toBeNull()
+    expect(existsSync(join(migrationsDir, alterFileName))).toBe(true)
+  })
+
   it('repo hygiene: no checked-in unique-index migration is a SELECT 1 stub', () => {
     // The pre-fix preprocessor rewrote 9 unique-index migrations in
     // database/migrations/ to `SELECT 1;` stubs — restored as part of

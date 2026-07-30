@@ -7,7 +7,7 @@
 
 import type { Result } from '@stacksjs/error-handling'
 import { existsSync, mkdirSync, readdirSync, readFileSync, renameSync, unlinkSync, writeFileSync } from 'node:fs'
-import { dirname, join } from 'node:path'
+import { dirname, isAbsolute, join } from 'node:path'
 import { log as _log } from '@stacksjs/logging'
 
 // Defensive log wrapper to handle cases where log methods might not be initialized.
@@ -51,11 +51,25 @@ import { acquireMigrationLock } from './migration-lock'
 import { env as envVars } from '@stacksjs/env'
 import { getConnectionDefaults } from './defaults'
 
+// Shell-provided values must win over the loaded .env file. The migration
+// executor already follows process.env, so resolving preprocessing against
+// only the typed proxy can point the two phases at different SQLite files
+// when a command uses `DB_DATABASE_PATH=/tmp/audit.sqlite buddy migrate`.
+const databaseEnv = {
+  DB_CONNECTION: process.env.DB_CONNECTION || envVars.DB_CONNECTION,
+  DB_DATABASE_PATH: process.env.DB_DATABASE_PATH || envVars.DB_DATABASE_PATH,
+  DB_DATABASE: process.env.DB_DATABASE || envVars.DB_DATABASE,
+  DB_HOST: process.env.DB_HOST || envVars.DB_HOST,
+  DB_PORT: process.env.DB_PORT ? Number(process.env.DB_PORT) : envVars.DB_PORT,
+  DB_USERNAME: process.env.DB_USERNAME || envVars.DB_USERNAME,
+  DB_PASSWORD: process.env.DB_PASSWORD || envVars.DB_PASSWORD,
+}
+
 // Build database config from environment variables
-const dbDriver = envVars.DB_CONNECTION || 'sqlite'
-const sqliteDefaults = getConnectionDefaults('sqlite', envVars)
-const mysqlDefaults = getConnectionDefaults('mysql', envVars)
-const postgresDefaults = getConnectionDefaults('postgres', envVars)
+const dbDriver = databaseEnv.DB_CONNECTION || 'sqlite'
+const sqliteDefaults = getConnectionDefaults('sqlite', databaseEnv)
+const mysqlDefaults = getConnectionDefaults('mysql', databaseEnv)
+const postgresDefaults = getConnectionDefaults('postgres', databaseEnv)
 
 const dbConfig = {
   default: dbDriver,
@@ -64,6 +78,11 @@ const dbConfig = {
     mysql: { name: mysqlDefaults.database, host: mysqlDefaults.host, username: mysqlDefaults.username, password: mysqlDefaults.password, port: mysqlDefaults.port, prefix: '' },
     postgres: { name: postgresDefaults.database, host: postgresDefaults.host, username: postgresDefaults.username, password: postgresDefaults.password, port: postgresDefaults.port, prefix: '' },
   },
+}
+
+function sqliteDatabasePath(): string {
+  const configured = dbConfig.connections.sqlite.database || 'stacks.db'
+  return isAbsolute(configured) ? configured : join(process.cwd(), configured)
 }
 
 function getDriver(): string {
@@ -275,8 +294,28 @@ export function preprocessSqliteMigrations(): void {
     if (!existing || file < existing) createTableEarliest.set(tableName, file)
   }
 
+  const earlierCreateDefinesColumn = (migrationFile: string, table: string, column: string): boolean => {
+    const createFile = createTableEarliest.get(table)
+    if (!createFile || createFile >= migrationFile)
+      return false
+
+    try {
+      const createContent = readFileSync(join(migrationsDir, createFile), 'utf8')
+      const createStatement = sqlStatementsOf(createContent)
+        .find(statement => statement.match(createTablePattern)?.[1] === table)
+      if (!createStatement)
+        return false
+
+      const escapedColumn = column.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+      return new RegExp(`(?:^|[,(])\\s*["'\`]?${escapedColumn}["'\`]?\\s+`, 'i').test(createStatement)
+    }
+    catch {
+      return false
+    }
+  }
+
   // Open SQLite DB to check column existence for DROP COLUMN migrations
-  const sqliteDbPath = join(process.cwd(), dbConfig.connections.sqlite.database || 'stacks.db')
+  const sqliteDbPath = sqliteDatabasePath()
   let sqliteDb: import('bun:sqlite').Database | null = null
   if (existsSync(sqliteDbPath)) {
     try {
@@ -383,20 +422,31 @@ export function preprocessSqliteMigrations(): void {
       .filter((m): m is RegExpMatchArray => Boolean(m?.[1] && m[2]))
       .map(m => ({ table: m[1] as string, column: m[2] as string }))
 
-    if (sqliteDb && addColumnTargets.length > 0 && addColumnTargets.length === statements.length) {
-      const present = addColumnTargets.filter(({ table, column }) => {
+    if (addColumnTargets.length > 0 && addColumnTargets.length === statements.length) {
+      const satisfied = addColumnTargets.filter(({ table, column }) => {
         try {
-          const safeTableName = table.replace(/[^a-zA-Z0-9_]/g, '')
-          const columns = (sqliteDb as any).prepare(`PRAGMA table_info("${safeTableName}")`).all() as Array<{ name: string }>
-          return columns.some(col => col.name === column)
+          if (sqliteDb) {
+            const safeTableName = table.replace(/[^a-zA-Z0-9_]/g, '')
+            const columns = (sqliteDb as any).prepare(`PRAGMA table_info("${safeTableName}")`).all() as Array<{ name: string }>
+            if (columns.some(col => col.name === column))
+              return true
+            if (columns.length > 0)
+              return false
+          }
+
+          // On a fresh database preprocessing runs before the pending
+          // CREATE TABLE files. If an earlier create migration already
+          // defines this column, executing the later ALTER would fail even
+          // though the live schema is currently empty.
+          return earlierCreateDefinesColumn(file, table, column)
         }
         catch {
-          return false // table missing — the ALTER is genuinely pending
+          return false
         }
       })
 
-      if (present.length === addColumnTargets.length) {
-        skipMigration(file, 'every column it adds is already on the table')
+      if (satisfied.length === addColumnTargets.length) {
+        skipMigration(file, 'every column it adds already exists or is defined by an earlier create-table migration')
         continue
       }
 
@@ -404,10 +454,10 @@ export function preprocessSqliteMigrations(): void {
       // needs all of it) and cannot run as-is, so say precisely which
       // statement will fail instead of letting `duplicate column name` be
       // the operator's only clue.
-      if (present.length > 0) {
+      if (satisfied.length > 0) {
         log.warn(
-          `[migration] ${file} is partially applied: ${present.map(p => `${p.table}.${p.column}`).join(', ')} `
-          + `already exist${present.length === 1 ? 's' : ''}, the rest do not. SQLite cannot skip a single ADD COLUMN, so this file will fail. `
+          `[migration] ${file} is partially applied: ${satisfied.map(p => `${p.table}.${p.column}`).join(', ')} `
+          + `already exist${satisfied.length === 1 ? 's' : ''} or will be created earlier, the rest do not. SQLite cannot skip a single ADD COLUMN, so this file will fail. `
           + 'Add the remaining columns by hand, or split the file so the applied statements sit in their own migration.',
         )
       }
@@ -490,7 +540,7 @@ export function preprocessSqliteMigrations(): void {
   // is a no-op for files that were never recorded.
   if (droppedMigrations.length > 0 || replayMigrations.length > 0) {
     try {
-      const dbPath = join(process.cwd(), dbConfig.connections.sqlite.database || 'stacks.db')
+      const dbPath = sqliteDatabasePath()
       // Record the skips even when the DB file does NOT exist yet. On a
       // fresh SQLite install ensureDatabaseExists() is a no-op (SQLite
       // auto-creates on open), so the file is absent here — and if we
