@@ -1,6 +1,5 @@
 import type { CloudConfig } from '@stacksjs/types'
 import type { CloudConfig as TsCloudConfig } from '@stacksjs/ts-cloud'
-import { servers } from '../cloud/servers'
 import { env } from '@stacksjs/env'
 
 /**
@@ -283,17 +282,6 @@ export const tsCloud: TsCloudConfig = {
       //   strategy: 'capacity-optimized',
       // },
     },
-
-    /**
-     * Server Definitions
-     * EC2 instances for server mode deployment
-     */
-    servers: {
-      app: servers.app,
-      // app2: servers.app2,
-      // web: servers.web,
-      // cache: servers.cache,
-    } as NonNullable<TsCloudConfig['infrastructure']>['servers'],
 
     /**
      * Jump Box / Bastion Host
