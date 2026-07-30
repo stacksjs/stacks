@@ -63,10 +63,12 @@ function resetAll() {
 }
 
 // Selected state travels as a data attribute rather than as a swapped class
-// string. Crosswind generates CSS by scanning the markup, and a class name that
-// only ever exists inside a client-script expression is invisible to it — the
-// utility is never emitted and the control renders unstyled. Attributes plus
-// the style block below are immune to that, and they keep the markup readable.
+// string. It began as a workaround — Crosswind could not see class names that
+// existed only inside a client-script expression, so those utilities were never
+// emitted and the control rendered unstyled — and that gap is now closed
+// upstream. It stays because it is the better shape regardless: one selector
+// per state in the block below, rather than two class strings kept in sync by
+// hand inside a ternary.
 const selected = (a, b) => String(a === b)
 </script>
 

@@ -396,7 +396,7 @@ html[data-appearance="arc"] [data-sidebar-section] > div:first-child {
 // `~/`-anchored for the same reason as the sidebar import above.
 import { useToasts, dismissToast } from '~/storage/framework/defaults/functions/toasts'
 import { ensureCraftNativeSidebarMarker, useCraftSidebarSelection } from '~/storage/framework/defaults/functions/craft'
-import { applyAppearance, useAppearance } from '~/storage/framework/defaults/views/dashboard/composables/useAppearance'
+import { readStoredAppearance, useAppearance } from '~/storage/framework/defaults/views/dashboard/composables/useAppearance'
 import { authStore } from '~/storage/framework/defaults/views/dashboard/stores/auth'
 import { kanbanStore } from '~/storage/framework/defaults/views/dashboard/stores/kanban'
 import { rbacStore } from '~/storage/framework/defaults/views/dashboard/stores/rbac'
@@ -481,27 +481,29 @@ effect(() => {
 const appearance = useAppearance()
 
 effect(() => {
-  applyAppearance({
-    sidebarStyle: appearance.sidebarStyle(),
-    colorMode: appearance.colorMode(),
-    hiddenSections: appearance.hiddenSections(),
-  })
+  // Reading the signals here is what subscribes this effect to them; `apply`
+  // reads them again internally, which is harmless and keeps it callable from
+  // anywhere.
+  appearance.sidebarStyle()
+  appearance.colorMode()
+  appearance.apply()
 })
 
 // Section visibility is applied here rather than filtered out of
 // `sidebarSections` server-side, so a viewer toggling one gets the row back
 // instantly instead of on the next full render.
 function applySectionVisibility() {
+  // The signal is read BEFORE the panes are looked up, and that order is the
+  // whole point. Read after an early return, it never gets tracked on the first
+  // pass — the panes are not mounted when effects first run — so the effect
+  // ends up with no dependency and never runs again. The toggle then appears to
+  // do nothing until a reload.
   const hidden = appearance.hiddenSections()
-  // Queried from the document rather than through the sidebar refs. There is
-  // exactly one dashboard shell per page, so scoping buys nothing here — and
-  // it costs correctness: the refs are not populated when effects first run, so
-  // a ref-scoped pass finds nothing on load and, because the preference does
-  // not change afterwards, never runs again. Document scope also picks up the
-  // mobile sidebar for free.
-  for (const section of document.querySelectorAll('[data-sidebar-section]')) {
-    const id = section.dataset.sectionId || ''
-    section.setAttribute('data-viewer-hidden', String(hidden.includes(id)))
+  for (const pane of sidebarPanes()) {
+    for (const section of pane.querySelectorAll('[data-sidebar-section]')) {
+      const id = section.dataset.sectionId || ''
+      section.setAttribute('data-viewer-hidden', String(hidden.includes(id)))
+    }
   }
 }
 
@@ -512,11 +514,17 @@ function applySectionVisibility() {
 // signal. `onMount` below runs it again once the panes exist.
 effect(applySectionVisibility)
 
+
 // Another tab changed the preferences. `storage` only fires in OTHER tabs, so
-// this cannot loop back on the tab that made the change.
+// this cannot loop back on the tab that made the change. The store's own
+// persistence writes but does not watch, so the re-read is explicit.
 useEventListener('storage', (event) => {
-  if (event?.key === 'stacks-dashboard-appearance')
-    appearance.sync()
+  if (event?.key !== 'stacks-dashboard-appearance') return
+  const next = readStoredAppearance()
+  appearance.sidebarStyle.set(next.sidebarStyle)
+  appearance.colorMode.set(next.colorMode)
+  appearance.hiddenSections.set(next.hiddenSections)
+  appearance.apply()
 })
 
 function normalizeRoutePath(path) {
@@ -622,6 +630,7 @@ onDestroy(() => {
     placement="fixed"
     persist-key="stacks-dashboard-sidebar"
     shell-selector="[data-stx-content]"
+    :follow-system-appearance="false"
     @itemClick="handleSidebarItemClick($event)"
   >
     <template #header>

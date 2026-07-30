@@ -19,10 +19,11 @@
  *
  * The alternative was to pass the choice down to `<Sidebar theme>` and let the
  * component render it, which is where a sidebar theme belongs. Two things rule
- * that out today. The installed `@stacksjs/components` predates the `arc`
- * theme, so the component would silently fall back to `macos`. And the parts of
+ * that out. `theme` is a server-rendered prop and this preference is per-viewer
+ * and client-side, so switching it would need a round trip — the shell would
+ * change on the next navigation rather than under the cursor. And the parts of
  * "Arc" that matter most here — the content pane floating on the sidebar's
- * background, inset and rounded on three sides — are the SHELL's business, not
+ * background, inset and rounded on every side — are the SHELL's business, not
  * the sidebar's; no theme prop can reach them.
  *
  * So the dashboard owns the appearance and skins the shared component. When the
@@ -35,7 +36,7 @@
  *
  * @module
  */
-import { state } from '@stacksjs/stx'
+import { defineStore, state } from '@stacksjs/stx'
 
 export type SidebarStyle = 'macos' | 'arc'
 export type ColorMode = 'light' | 'dark' | 'system'
@@ -169,140 +170,147 @@ export function sidebarThemeFor(style: SidebarStyle, knownThemes: Record<string,
   return style in knownThemes ? style : 'macos'
 }
 
-// One signal per preference, shared by every consumer for the lifetime of the
-// module. Seeded from storage at load so the first read is already correct.
-const stored = readStoredAppearance()
-const sidebarStyleSignal = state<SidebarStyle>(stored.sidebarStyle)
-const colorModeSignal = state<ColorMode>(stored.colorMode)
-const hiddenSectionsSignal = state<string[]>(stored.hiddenSections)
-
-function persist(): void {
-  if (typeof window === 'undefined')
-    return
-  try {
-    window.localStorage?.setItem(APPEARANCE_STORAGE_KEY, JSON.stringify(snapshot()))
-  }
-  catch {
-    // Private browsing / quota. The in-memory signals stay authoritative for
-    // this session; only persistence across reloads is lost.
-  }
-}
-
-function snapshot(): AppearancePreferences {
-  return {
-    sidebarStyle: sidebarStyleSignal(),
-    colorMode: colorModeSignal(),
-    hiddenSections: hiddenSectionsSignal(),
-  }
-}
-
 /**
- * Write the preferences onto `<html>`, where the shell CSS reads them.
+ * The preferences themselves live in a STORE, not in module state.
  *
- * `colorMode` also toggles the `dark` class, because Crosswind's `dark:`
- * variants are class-based and the whole dashboard is written against them.
- * `system` defers to the OS query rather than picking a side.
+ * Module-level signals looked right and were quietly broken: the layout and the
+ * settings page are bundled separately, and each bundle inlines its own copy of
+ * this module. Two copies means two independent sets of signals — the settings
+ * page wrote to its own, the layout's effect stayed subscribed to another, and
+ * toggling a section updated storage while the sidebar sat there unchanged.
+ * Only a full reload made it look like it had worked.
+ *
+ * `defineStore` dedupes by id on `window.stx._stores`, so every bundle that
+ * imports this module gets the same instance — which is exactly the framework's
+ * own rule: state two places share is a store, not module state.
+ *
+ * Persistence is the store's, keyed and shaped to match what the layout's
+ * pre-paint bootstrap reads: `{ sidebarStyle, colorMode, hiddenSections }`
+ * under `APPEARANCE_STORAGE_KEY`.
  */
-export function applyAppearance(prefs: AppearancePreferences = snapshot()): void {
-  if (typeof document === 'undefined')
-    return
-  const root = document.documentElement
+export const appearanceStore = defineStore('appearance', () => {
+  const sidebarStyle = state<SidebarStyle>(DEFAULT_APPEARANCE.sidebarStyle)
+  const colorMode = state<ColorMode>(DEFAULT_APPEARANCE.colorMode)
+  const hiddenSections = state<string[]>([...DEFAULT_APPEARANCE.hiddenSections])
 
-  root.dataset.appearance = prefs.sidebarStyle
-  root.dataset.colorMode = prefs.colorMode
+  function snapshot(): AppearancePreferences {
+    return {
+      sidebarStyle: sidebarStyle(),
+      colorMode: colorMode(),
+      hiddenSections: hiddenSections(),
+    }
+  }
 
-  const dark = prefs.colorMode === 'system'
-    ? window.matchMedia?.('(prefers-color-scheme: dark)').matches ?? false
-    : prefs.colorMode === 'dark'
-  root.classList.toggle('dark', dark)
+  /**
+   * Write the preferences onto `<html>`, where the shell CSS reads them.
+   *
+   * `colorMode` also toggles the `dark` class, because Crosswind's `dark:`
+   * variants are class-based and the whole dashboard is written against them.
+   * `system` defers to the OS query rather than picking a side.
+   */
+  function apply(): void {
+    if (typeof document === 'undefined')
+      return
+    const root = document.documentElement
+    const prefs = snapshot()
 
-  // Claims ownership of the appearance from the Sidebar component, which
-  // otherwise mirrors `prefers-color-scheme` straight onto the `dark` class and
-  // erases an explicit Light/Dark choice on the next repaint. Its
-  // `followSystemAppearance` bails when the root carries `data-theme`, which is
-  // exactly the hand-off this is for — and `system` still tracks the OS,
-  // through the listener installed below rather than through the component.
-  root.dataset.theme = dark ? 'dark' : 'light'
-}
+    root.dataset.appearance = prefs.sidebarStyle
+    root.dataset.colorMode = prefs.colorMode
+
+    const dark = prefs.colorMode === 'system'
+      ? window.matchMedia?.('(prefers-color-scheme: dark)').matches ?? false
+      : prefs.colorMode === 'dark'
+    root.classList.toggle('dark', dark)
+
+    // Claims ownership of the appearance from the Sidebar component, which
+    // otherwise mirrors `prefers-color-scheme` onto the `dark` class and erases
+    // an explicit Light/Dark choice the moment it mounts. Its
+    // `follow-system-appearance` prop is the primary hand-off; this is the
+    // belt-and-braces one, and it is what keeps `system` correct while the
+    // component stays out of the way.
+    root.dataset.theme = dark ? 'dark' : 'light'
+  }
+
+  // Setters validate rather than trust. The store's persistence is restored
+  // before this runs, but a hand-edited value would otherwise be applied to the
+  // document and written straight back out.
+  function setSidebarStyle(style: SidebarStyle): void {
+    if (!isSidebarStyle(style))
+      return
+    sidebarStyle.set(style)
+    apply()
+  }
+
+  function setColorMode(mode: ColorMode): void {
+    if (!isColorMode(mode))
+      return
+    colorMode.set(mode)
+    apply()
+  }
+
+  function toggleSection(id: string, visible: boolean): void {
+    const next = hiddenSections().filter(entry => entry !== id)
+    if (!visible)
+      next.push(id)
+    hiddenSections.set(next)
+  }
+
+  function isSectionHidden(id: string): boolean {
+    return hiddenSections().includes(id)
+  }
+
+  function reset(): void {
+    sidebarStyle.set(DEFAULT_APPEARANCE.sidebarStyle)
+    colorMode.set(DEFAULT_APPEARANCE.colorMode)
+    hiddenSections.set([])
+    apply()
+  }
+
+  return {
+    sidebarStyle,
+    colorMode,
+    hiddenSections,
+    isSectionHidden,
+    setSidebarStyle,
+    setColorMode,
+    toggleSection,
+    reset,
+    apply,
+  }
+}, {
+  persist: {
+    storage: 'localStorage',
+    key: APPEARANCE_STORAGE_KEY,
+    pick: ['sidebarStyle', 'colorMode', 'hiddenSections'],
+  },
+})
+
+export type AppearanceSnapshot = ReturnType<typeof appearanceStore>
 
 /**
  * Keep `system` live.
  *
- * Taking `data-theme` above means the component stops mirroring the OS, so the
- * mirroring has to happen here instead — otherwise `system` would only be
- * resolved once, at load, and changing the OS theme would do nothing until a
- * reload. Installed once per module load; the window guard keeps it SSR-safe.
+ * Taking `data-theme` means the Sidebar stops mirroring the OS, so the
+ * mirroring happens here instead — otherwise `system` would be resolved once,
+ * at load, and changing the OS theme would do nothing until a reload.
  */
 function installSystemThemeListener(): void {
   if (typeof window === 'undefined' || typeof window.matchMedia !== 'function')
     return
   window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
-    if (colorModeSignal() === 'system')
-      applyAppearance()
+    const store = appearanceStore
+    if (store.colorMode() === 'system')
+      store.apply()
   })
-}
-
-export interface AppearanceSnapshot {
-  sidebarStyle: () => SidebarStyle
-  colorMode: () => ColorMode
-  hiddenSections: () => string[]
-  isSectionHidden: (id: string) => boolean
-  setSidebarStyle: (style: SidebarStyle) => void
-  setColorMode: (mode: ColorMode) => void
-  toggleSection: (id: string, visible: boolean) => void
-  reset: () => void
-  /** Re-read storage and re-apply. For the `storage` event across tabs. */
-  sync: () => void
 }
 
 installSystemThemeListener()
 
 export function useAppearance(): AppearanceSnapshot {
-  function commit(): void {
-    persist()
-    applyAppearance()
-  }
+  return appearanceStore
+}
 
-  return {
-    sidebarStyle: () => sidebarStyleSignal(),
-    colorMode: () => colorModeSignal(),
-    hiddenSections: () => hiddenSectionsSignal(),
-    isSectionHidden: (id: string) => hiddenSectionsSignal().includes(id),
-
-    // Setters validate rather than trust. Storage is already normalized on
-    // read, but that only catches a bad value on the NEXT load — by which
-    // point it has been applied to the document and written back out.
-    setSidebarStyle(style: SidebarStyle) {
-      if (!isSidebarStyle(style))
-        return
-      sidebarStyleSignal.set(style)
-      commit()
-    },
-    setColorMode(mode: ColorMode) {
-      if (!isColorMode(mode))
-        return
-      colorModeSignal.set(mode)
-      commit()
-    },
-    toggleSection(id: string, visible: boolean) {
-      const next = hiddenSectionsSignal().filter(entry => entry !== id)
-      if (!visible)
-        next.push(id)
-      hiddenSectionsSignal.set(next)
-      commit()
-    },
-    reset() {
-      sidebarStyleSignal.set(DEFAULT_APPEARANCE.sidebarStyle)
-      colorModeSignal.set(DEFAULT_APPEARANCE.colorMode)
-      hiddenSectionsSignal.set([])
-      commit()
-    },
-    sync() {
-      const next = readStoredAppearance()
-      sidebarStyleSignal.set(next.sidebarStyle)
-      colorModeSignal.set(next.colorMode)
-      hiddenSectionsSignal.set(next.hiddenSections)
-      applyAppearance(next)
-    },
-  }
+/** Apply the current preferences to the document. */
+export function applyAppearance(): void {
+  appearanceStore.apply()
 }

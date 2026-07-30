@@ -17,6 +17,7 @@ export type {
   SidebarStyleOption,
 } from './useAppearance'
 export {
+  appearanceStore,
   APPEARANCE_STORAGE_KEY,
   applyAppearance,
   COLOR_MODE_OPTIONS,
