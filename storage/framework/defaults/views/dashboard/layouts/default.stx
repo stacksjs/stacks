@@ -104,6 +104,7 @@ html[data-craft-native-sidebar='true'] .dashboard-modal-layer {
 // layout so every dashboard page picks it up without opting in.
 // `~/`-anchored for the same reason as the sidebar import above.
 import { useToasts, dismissToast } from '~/storage/framework/defaults/functions/toasts'
+import { useCraftSidebarSelection } from '~/storage/framework/defaults/functions/craft'
 import { authStore } from '~/storage/framework/defaults/views/dashboard/stores/auth'
 import { kanbanStore } from '~/storage/framework/defaults/views/dashboard/stores/kanban'
 import { rbacStore } from '~/storage/framework/defaults/views/dashboard/stores/rbac'
@@ -139,15 +140,24 @@ const toastWrapperClass = (type) => `pointer-events-auto overflow-hidden bg-whit
 // TypeScript throughout the bundling pipeline.
 const sidebarRoles = sidebarRoleMap
 const auth = authStore
+const route = useRoute()
+const sidebarHost = useRef('dashboardSidebarHost')
+let removeCraftSidebarSelection = () => {}
 auth.load()
 
+function sidebarPane() {
+  return sidebarHost.current?.querySelector('[data-stx-sidebar]') || null
+}
+
 function applyRoleFilter() {
+  const pane = sidebarPane()
+  if (!pane) return
   const roleList = auth.roles()
   const unauth = auth.unauthenticated()
   for (const [itemId, required] of Object.entries(sidebarRoles)) {
-    const row = document.querySelector(`[data-sidebar-row][data-item-id="${itemId}"]`)
+    const row = pane.querySelector(`[data-sidebar-row][data-item-id="${itemId}"]`)
     if (!row) continue
-    // Unauthenticated viewers see everything — keeps the dev dashboard
+    // Unauthenticated viewers see everything, which keeps the dev dashboard
     // usable. Once authenticated, role membership is authoritative. CSS
     // `display: none` keeps the DOM intact for SPA nav, so a later role
     // change can re-show the row without a re-render.
@@ -161,136 +171,109 @@ effect(() => {
   // including the first run after the auth fetch resolves.
   applyRoleFilter()
 })
+
+function normalizeRoutePath(path) {
+  return (path || '/').replace(/\/+$/, '') || '/'
+}
+
+// Highlight the current route. Longest-prefix matching keeps a detail page
+// such as /commerce/products/42 attached to its /commerce/products row while
+// preventing /health from matching /health-check.
+function syncActiveSidebarRow(url) {
+  const pane = sidebarPane()
+  if (!pane) return
+
+  let path = route.path
+  if (url) {
+    try {
+      path = new URL(url, 'https://stacks.local').pathname
+    }
+    catch {}
+  }
+
+  const currentPath = normalizeRoutePath(path)
+  let bestMatch = null
+  let bestLength = -1
+  const links = pane.querySelectorAll('a[data-sidebar-item][href]')
+
+  for (const link of links) {
+    const href = link.getAttribute('href') || ''
+    if (href.startsWith('http')) continue
+    const candidatePath = normalizeRoutePath(href)
+    if (`${currentPath}/`.startsWith(`${candidatePath}/`) && candidatePath.length > bestLength) {
+      bestMatch = link
+      bestLength = candidatePath.length
+    }
+  }
+
+  for (const active of pane.querySelectorAll('[data-sidebar-item][data-active="true"]')) {
+    active.removeAttribute('data-active')
+    active.removeAttribute('aria-current')
+  }
+
+  if (bestMatch) {
+    bestMatch.setAttribute('data-active', 'true')
+    bestMatch.setAttribute('aria-current', 'page')
+  }
+}
+
+function handleSidebarItemClick(payload) {
+  const href = payload?.item?.href
+  if (!href || href.startsWith('http')) return
+  payload.event?.preventDefault()
+  navigate(href)
+}
+
+function handleCraftSidebarSelection(event) {
+  const pane = sidebarPane()
+  if (!pane || !event?.itemId) return
+  const row = [...pane.querySelectorAll('[data-sidebar-row]')].find(
+    candidate => candidate.dataset.itemId === event.itemId,
+  )
+  const link = row?.querySelector('a[data-sidebar-item][href]')
+  const href = link?.getAttribute('href')
+  if (href) navigate(href)
+}
+
+function attachCraftSidebarSelection() {
+  removeCraftSidebarSelection()
+  removeCraftSidebarSelection = useCraftSidebarSelection(handleCraftSidebarSelection)
+}
+
+useEventListener('stx:navigate', event => syncActiveSidebarRow(event?.detail?.url))
+useEventListener('stx:hydrated', () => syncActiveSidebarRow(), { once: true })
+useEventListener('craft:ready', attachCraftSidebarSelection)
+
+onMount(() => {
+  syncActiveSidebarRow()
+  applyRoleFilter()
+  attachCraftSidebarSelection()
+})
+
+onDestroy(() => {
+  removeCraftSidebarSelection()
+})
 </script>
 
-<Sidebar
-  :sections="sidebarSections"
-  theme="macos"
-  width="250"
-  placement="fixed"
-  persist-key="stacks-dashboard-sidebar"
-  shell-selector="[data-stx-content]"
->
-  <template #header>
-    <!-- Chrome strip. The traffic lights are native (the Craft window is
-        titlebarHidden), so this reserves their space and acts as the window
-        drag region; in a plain browser it is the same empty strip macOS
-        sidebars carry above their first row. -->
-    <SidebarHeader :show-window-controls="false" />
-  </template>
-</Sidebar>
-
-<script>
-// Sidebar wiring the component intentionally leaves to the host app: SPA
-// navigation, keeping the highlight in sync with the real route, and Craft's
-// native selection events.
-//
-// Runs as a plain <script> IIFE (like the import-map script above), NOT via
-// onMount: stx gives a LAYOUT no reactive scope of its own, so its onMount /
-// effect callbacks never fire ("global mountCallbacks: 0"). A DOMContentLoaded
-// IIFE plus the stx:navigate event cover hard loads and every SPA route change
-// without depending on a scope mount.
-;(function () {
-  if (typeof document === 'undefined') return
-
-  function rows(pane) {
-    return pane.querySelectorAll('a[data-sidebar-item][href]')
-  }
-
-  // Highlight the sidebar row for the CURRENT route. Longest-prefix match, so a
-  // nested/detail page (e.g. /commerce/products/42) still lights up its section
-  // row (/commerce/products); the root row (/) only ever matches the home page.
-  function syncActive(url) {
-    var pane = document.querySelector('[data-stx-sidebar]')
-    if (!pane) return
-    var path
-    try { path = new URL(url || location.href, location.origin).pathname }
-    catch (e) { path = location.pathname }
-    var norm = function (p) { return (p || '/').replace(/\/+$/, '') || '/' }
-    var cur = norm(path)
-    var best = null
-    var bestLen = -1
-    var links = rows(pane)
-    for (var i = 0; i < links.length; i++) {
-      var href = links[i].getAttribute('href') || ''
-      if (href.indexOf('http') === 0) continue
-      var h = norm(href)
-      // `${cur}/`.startsWith(`${h}/`) catches an exact hit and any child path,
-      // while the trailing slash stops /health matching /health-check.
-      if ((cur + '/').indexOf(h + '/') === 0 && h.length > bestLen) {
-        best = links[i]
-        bestLen = h.length
-      }
-    }
-    var actives = pane.querySelectorAll('[data-sidebar-item][data-active="true"]')
-    for (var j = 0; j < actives.length; j++) {
-      actives[j].removeAttribute('data-active')
-      actives[j].removeAttribute('aria-current')
-    }
-    if (best) {
-      best.setAttribute('data-active', 'true')
-      best.setAttribute('aria-current', 'page')
-    }
-  }
-
-  function init() {
-    var pane = document.querySelector('[data-stx-sidebar]')
-    if (!pane) return
-
-    syncActive()
-
-    // Bind route + click listeners once. This script can re-run on SPA fragment
-    // swaps, so guard against stacking duplicate handlers on the persistent pane.
-    if (pane.__sidebarWired) return
-    pane.__sidebarWired = true
-
-    // Follow EVERY route change, not just sidebar clicks. navigate() dispatches
-    // stx:navigate (content links, programmatic navigate, and popstate
-    // back/forward all route through it), so the highlight tracks the real
-    // route instead of only updating when a sidebar row is clicked.
-    window.addEventListener('stx:navigate', function (event) {
-      syncActive(event && event.detail && event.detail.url)
-    })
-
-    // The Sidebar component applies its initial server-declared selection
-    // during hydration. Re-sync once that native lifecycle completes so a
-    // direct URL load wins over any stale/default item state.
-    window.addEventListener('stx:hydrated', function () {
-      syncActive()
-    }, { once: true })
-
-    // SPA-navigate sidebar rows; fall back to full loads when the router isn't
-    // available or the target is external. The component already moves
-    // `data-active` on click, and the stx:navigate listener re-syncs after.
-    pane.addEventListener('click', function (event) {
-      var link = event.target.closest('a[data-sidebar-item]')
-      if (!link) return
-      // Disclosure chevrons live inside the row and only expand a subtree.
-      if (event.target.closest('[data-sidebar-disclosure]')) return
-      var href = link.getAttribute('href')
-      if (!href || href.indexOf('http') === 0 || typeof navigate !== 'function') return
-      event.preventDefault()
-      navigate(href)
-    })
-
-    // Craft native sidebar selection. When a Craft build installs a real
-    // NSOutlineView, it reports the selected row's id; resolve that back to a
-    // route from the rendered markup rather than a hand-maintained id-to-URL
-    // table, so the two can never drift apart.
-    window.craft = window.craft || {}
-    window.craft._sidebarSelectHandler = function (event) {
-      var id = event && event.itemId
-      if (!id) return
-      var row = pane.querySelector('[data-sidebar-row][data-item-id="' + id + '"] a[data-sidebar-item][href]')
-      var href = row && row.getAttribute('href')
-      if (href) navigate(href)
-    }
-  }
-
-  if (document.querySelector('[data-stx-sidebar]')) init()
-  else document.addEventListener('DOMContentLoaded', init)
-})();
-</script>
+<div ref="dashboardSidebarHost">
+  <Sidebar
+    :sections="sidebarSections"
+    theme="macos"
+    width="250"
+    placement="fixed"
+    persist-key="stacks-dashboard-sidebar"
+    shell-selector="[data-stx-content]"
+    @itemClick="handleSidebarItemClick($event)"
+  >
+    <template #header>
+      <!-- Chrome strip. The traffic lights are native (the Craft window is
+          titlebarHidden), so this reserves their space and acts as the window
+          drag region; in a plain browser it is the same empty strip macOS
+          sidebars carry above their first row. -->
+      <SidebarHeader :show-window-controls="false" />
+    </template>
+  </Sidebar>
+</div>
 
 <main data-stx-content>
   @slot('content')

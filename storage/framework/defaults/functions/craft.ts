@@ -28,10 +28,27 @@ interface CraftAppBridge {
   getInfo: () => CraftAppInfo | Promise<CraftAppInfo>
 }
 
+export interface CraftSidebarSelectEvent {
+  itemId: string
+  sectionId?: string
+  item?: {
+    id?: string
+    label?: string
+    href?: string
+  }
+  data?: Record<string, unknown>
+}
+
+interface CraftSidebarBridge {
+  onSelect?: (callback: (event: CraftSidebarSelectEvent) => void) => (() => void) | void
+}
+
 interface CraftBridge {
   window?: CraftWindowBridge
   app?: CraftAppBridge
+  sidebar?: CraftSidebarBridge
   tray?: unknown
+  _sidebarSelectHandler?: (event: CraftSidebarSelectEvent) => void
 }
 
 function craftBridge(): CraftBridge | undefined {
@@ -52,6 +69,7 @@ export function useCraft() {
       isNative: false,
       window: undefined,
       app: undefined,
+      sidebar: undefined,
       tray: undefined,
     }
   }
@@ -60,7 +78,35 @@ export function useCraft() {
     isNative: true,
     window: craft.window,
     app: craft.app,
+    sidebar: craft.sidebar,
     tray: craft.tray,
+  }
+}
+
+/**
+ * Subscribe to Craft's native sidebar selection bridge.
+ *
+ * Current Craft builds expose `sidebar.onSelect`. Older native-sidebar
+ * bootstraps dispatch through `_sidebarSelectHandler`; keeping that protocol
+ * inside this composable prevents STX templates from reaching into globals.
+ */
+export function useCraftSidebarSelection(
+  handler: (event: CraftSidebarSelectEvent) => void,
+): () => void {
+  const craft = craftBridge()
+  if (!craft) return () => {}
+
+  if (craft.sidebar?.onSelect) {
+    const unsubscribe = craft.sidebar.onSelect(handler)
+    return typeof unsubscribe === 'function' ? unsubscribe : () => {}
+  }
+
+  const previousHandler = craft._sidebarSelectHandler
+  craft._sidebarSelectHandler = handler
+
+  return () => {
+    if (craft._sidebarSelectHandler === handler)
+      craft._sidebarSelectHandler = previousHandler
   }
 }
 
