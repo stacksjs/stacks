@@ -72,18 +72,18 @@ function formatDate(value: string): string {
             </td>
             <td class="px-4 py-3 text-right whitespace-nowrap">
               <div class="flex gap-1 justify-end">
-                <button type="button" :disabled="busyId() === review.id" :aria-label="review.approved ? 'Return review to pending' : 'Approve review'" class="p-2 text-gray-400 hover:text-green-700 dark:hover:text-green-300 rounded-md disabled:opacity-50" @click="emit('approve', review)">
-                  <span :class="'block h-5 w-5 ' + (review.approved ? 'i-hugeicons-cancel-circle' : 'i-hugeicons-checkmark-circle-02')"></span>
-                </button>
-                <button type="button" :disabled="busyId() === review.id" :aria-label="review.featured ? 'Remove review from featured' : 'Feature review'" class="p-2 text-gray-400 hover:text-amber-600 dark:hover:text-amber-300 rounded-md disabled:opacity-50" @click="emit('feature', review)">
-                  <span :class="'block h-5 w-5 ' + (review.featured ? 'i-hugeicons-star-off' : 'i-hugeicons-star')"></span>
-                </button>
-                <button type="button" :aria-label="'Edit review ' + review.id" class="p-2 text-gray-400 hover:text-blue-700 dark:hover:text-blue-300 rounded-md" @click="emit('edit', review)">
-                  <span class="block h-5 w-5 i-hugeicons-edit-01"></span>
-                </button>
-                <button type="button" :aria-label="'Delete review ' + review.id" class="p-2 text-gray-400 hover:text-red-700 dark:hover:text-red-300 rounded-md" @click="emit('delete', review)">
-                  <span class="block h-5 w-5 i-hugeicons-waste"></span>
-                </button>
+                <Button variant="ghost" size="sm" iconOnly :disabled="busyId() === review.id" :ariaLabel="review.approved ? 'Return review to pending' : 'Approve review'" @click="emit('approve', review)">
+                  <span :class="'block h-4 w-4 text-green-500 ' + (review.approved ? 'i-hugeicons-cancel-circle' : 'i-hugeicons-checkmark-circle-02')"></span>
+                </Button>
+                <Button variant="ghost" size="sm" iconOnly :disabled="busyId() === review.id" :ariaLabel="review.featured ? 'Remove review from featured' : 'Feature review'" @click="emit('feature', review)">
+                  <span :class="'block h-4 w-4 text-amber-500 ' + (review.featured ? 'i-hugeicons-star-off' : 'i-hugeicons-star')"></span>
+                </Button>
+                <Button variant="ghost" size="sm" iconOnly :ariaLabel="'Edit review ' + review.id" @click="emit('edit', review)">
+                  <span class="block h-4 w-4 text-blue-500 i-hugeicons-edit-01"></span>
+                </Button>
+                <Button variant="ghost" size="sm" iconOnly :ariaLabel="'Delete review ' + review.id" @click="emit('delete', review)">
+                  <span class="block h-4 w-4 text-red-500 i-hugeicons-waste"></span>
+                </Button>
               </div>
             </td>
           </tr>

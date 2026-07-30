@@ -39,6 +39,12 @@ describe('dashboard button contract', () => {
       'CommerceGiftCardDialog.stx',
       'CommerceGiftCardDeleteDialog.stx',
       'CommerceGiftCardDetailsDialog.stx',
+      'CommerceCategoriesTable.stx',
+      'CommerceManufacturersTable.stx',
+      'CommerceUnitsTable.stx',
+      'CommerceTaxesTable.stx',
+      'CommerceVariantsTable.stx',
+      'CommerceReviewsTable.stx',
     ]
 
     for (const file of files) {
