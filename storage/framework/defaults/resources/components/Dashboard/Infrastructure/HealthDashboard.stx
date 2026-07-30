@@ -155,15 +155,15 @@ onMount(() => {
       </div>
       <p class="mt-1 max-w-2xl text-neutral-500 text-sm dark:text-neutral-400">Live database and cache probes from the same native health service used by <code class="font-mono text-xs">/api/health</code>.</p>
     </div>
-    <button type="button" :disabled="loading()" aria-label="Run health checks" class="inline-flex gap-2 items-center self-start px-3 py-2 font-medium text-neutral-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-900 hover:bg-neutral-50 dark:hover:bg-neutral-800 border border-neutral-300 rounded-lg dark:border-neutral-700 disabled:opacity-50" @click="loadHealth">
-      <span :class="'h-4 w-4 ' + (loading() ? 'animate-spin i-hugeicons-loading-03' : 'i-hugeicons-refresh')"></span>
+    <Button variant="secondary" :loading="loading()" ariaLabel="Run health checks" @click="loadHealth">
+      <span :if="!loading()" class="h-4 w-4 i-hugeicons-refresh"></span>
       Run checks
-    </button>
+    </Button>
   </header>
 
   <div :if="loadError()" role="alert" class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between px-4 py-3 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/40 border border-red-200 rounded-xl dark:border-red-900">
     <span>{{ loadError() }}</span>
-    <button type="button" class="font-semibold hover:underline" @click="loadHealth">Try again</button>
+    <Button variant="secondary" size="sm" @click="loadHealth">Try again</Button>
   </div>
 
   <section class="grid gap-3 grid-cols-2 xl:grid-cols-4">

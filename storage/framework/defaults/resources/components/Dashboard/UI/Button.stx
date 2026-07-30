@@ -4,6 +4,8 @@ interface ButtonProps {
   size?: 'xs' | 'sm' | 'md' | 'lg'
   disabled?: boolean
   loading?: boolean
+  pressed?: boolean
+  toggle?: boolean
   fullWidth?: boolean
   iconOnly?: boolean
   tag?: 'button' | 'a'
@@ -22,6 +24,7 @@ const {
   size = 'md',
   disabled = false,
   loading = false,
+  toggle = false,
   fullWidth = false,
   iconOnly = false,
   dataAction = '',
@@ -65,6 +68,7 @@ const buttonClass = [
   'focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/40 focus-visible:ring-offset-0',
   'disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none aria-disabled:opacity-40 aria-disabled:cursor-not-allowed aria-disabled:pointer-events-none',
   'active:scale-[0.98]',
+  'aria-pressed:text-blue-700 dark:aria-pressed:text-blue-300 aria-pressed:bg-blue-50 dark:aria-pressed:bg-blue-950/40 aria-pressed:border-blue-200 dark:aria-pressed:border-blue-900',
   fullWidth ? 'w-full' : '',
   iconOnly ? iconOnlySizes[size] : sizeClasses[size],
   variantClasses[variant]
@@ -73,6 +77,7 @@ const buttonClass = [
 <script client>
 const liveDisabled = useReactiveProp('disabled', false)
 const liveLoading = useReactiveProp('loading', false)
+const livePressed = useReactiveProp('pressed', false)
 const liveHref = useReactiveProp('href', '')
 const liveDownload = useReactiveProp('download', '')
 const liveTarget = useReactiveProp('target', '')
@@ -101,18 +106,36 @@ const liveDataMethodId = useReactiveProp('dataMethodId', '')
       <slot />
     </a>
   @else
-    <button
-      type="{{ type }}"
-      class="{{ buttonClass }}"
-      :aria-label="liveAriaLabel() || undefined"
-      :data-action="liveDataAction() || undefined"
-      :data-method-id="liveDataMethodId() || undefined"
-      :aria-busy="liveLoading() ? 'true' : 'false'"
-      :disabled="liveDisabled() || liveLoading()"
-    >
-      <template :if="liveLoading()">
-        <span aria-hidden="true" class="animate-spin h-3.5 w-3.5 i-hugeicons-loading-03 {{ iconOnly ? '' : '-ml-0.5 mr-1.5' }}"></span>
-      </template>
-      <slot />
-    </button>
+    @if(toggle)
+      <button
+        type="{{ type }}"
+        class="{{ buttonClass }}"
+        :aria-label="liveAriaLabel() || undefined"
+        :data-action="liveDataAction() || undefined"
+        :data-method-id="liveDataMethodId() || undefined"
+        :aria-busy="liveLoading() ? 'true' : 'false'"
+        :aria-pressed="String(livePressed())"
+        :disabled="liveDisabled() || liveLoading()"
+      >
+        <template :if="liveLoading()">
+          <span aria-hidden="true" class="animate-spin h-3.5 w-3.5 i-hugeicons-loading-03 {{ iconOnly ? '' : '-ml-0.5 mr-1.5' }}"></span>
+        </template>
+        <slot />
+      </button>
+    @else
+      <button
+        type="{{ type }}"
+        class="{{ buttonClass }}"
+        :aria-label="liveAriaLabel() || undefined"
+        :data-action="liveDataAction() || undefined"
+        :data-method-id="liveDataMethodId() || undefined"
+        :aria-busy="liveLoading() ? 'true' : 'false'"
+        :disabled="liveDisabled() || liveLoading()"
+      >
+        <template :if="liveLoading()">
+          <span aria-hidden="true" class="animate-spin h-3.5 w-3.5 i-hugeicons-loading-03 {{ iconOnly ? '' : '-ml-0.5 mr-1.5' }}"></span>
+        </template>
+        <slot />
+      </button>
+    @endif
   @endif

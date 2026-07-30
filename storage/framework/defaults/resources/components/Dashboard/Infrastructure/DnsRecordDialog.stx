@@ -18,9 +18,9 @@ function ttlLabel(): string {
         <p class="text-neutral-500 text-xs dark:text-neutral-400">Configured DNS record</p>
         <h2 id="dns-record-title" class="mt-1 font-semibold text-lg text-neutral-900 dark:text-white">{{ record()?.type }} · {{ record()?.name }}</h2>
       </div>
-      <button type="button" aria-label="Close DNS record details" class="p-2 text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white rounded-lg" @click="emit('close')">
+      <Button variant="ghost" iconOnly ariaLabel="Close DNS record details" @click="emit('close')">
         <span class="block h-5 w-5 i-hugeicons-cancel-01"></span>
-      </button>
+      </Button>
     </header>
     <dl class="grid gap-5 sm:grid-cols-2 p-5 text-sm">
       <div><dt class="text-neutral-500 dark:text-neutral-400">Type</dt><dd class="mt-1 font-semibold text-neutral-900 dark:text-white">{{ record()?.type }}</dd></div>

@@ -17,6 +17,8 @@ describe('dashboard button contract', () => {
     expect(button).toContain("const liveDownload = useReactiveProp('download', '')")
     expect(button).toContain("const liveDataAction = useReactiveProp('dataAction', '')")
     expect(button).toContain("const liveDataMethodId = useReactiveProp('dataMethodId', '')")
+    expect(button).toContain("const livePressed = useReactiveProp('pressed', false)")
+    expect(button).toContain(':aria-pressed="String(livePressed())"')
   })
 
   test('routes primary commerce actions through the canonical component', () => {
@@ -124,6 +126,17 @@ describe('dashboard button contract', () => {
       'Billing/Plans.stx',
       'Billing/BillingSettings.stx',
       'Auth/AccessTokens.stx',
+      'Infrastructure/DnsRecordDialog.stx',
+      'Infrastructure/LogDetailsDialog.stx',
+      'Infrastructure/MailboxDetailsDialog.stx',
+      'Infrastructure/CloudDetailsDialog.stx',
+      'Infrastructure/HealthDashboard.stx',
+      'Infrastructure/DnsDashboard.stx',
+      'Infrastructure/CloudDashboard.stx',
+      'Infrastructure/ServerlessDashboard.stx',
+      'Infrastructure/InsightsDashboard.stx',
+      'Infrastructure/ServerDetailsDashboard.stx',
+      'Infrastructure/LogsDashboard.stx',
     ]
 
     for (const file of files) {
@@ -155,5 +168,33 @@ describe('dashboard button contract', () => {
 
     expect((source.match(/<Button/g) || []).length).toBeGreaterThanOrEqual(6)
     expect(nativeButtons.every(button => semanticNavigation.some(marker => button.includes(marker)))).toBe(true)
+  })
+
+  test('keeps infrastructure inspector cards semantic while sharing their actions', () => {
+    const dashboardFiles = [
+      'ServersDashboard.stx',
+      'MailboxesDashboard.stx',
+    ]
+
+    for (const file of dashboardFiles) {
+      const source = readFileSync(
+        resolve('storage/framework/defaults/resources/components/Dashboard/Infrastructure', file),
+        'utf8',
+      )
+      const nativeButtons = [...source.matchAll(/<button\b[^>]*>/g)].map(match => match[0])
+
+      expect(source).toContain('<Button')
+      expect(nativeButtons.every(button => button.includes(':for=') && button.includes('@click="inspect'))).toBe(true)
+    }
+
+    const resourceCard = readFileSync(
+      resolve('storage/framework/defaults/resources/components/Dashboard/Infrastructure/CloudResourceButton.stx'),
+      'utf8',
+    )
+    const resourceButtons = [...resourceCard.matchAll(/<button\b[^>]*>/g)].map(match => match[0])
+
+    expect(resourceButtons).toHaveLength(1)
+    expect(resourceButtons[0]).toContain(':aria-label=')
+    expect(resourceButtons[0]).toContain('@click="inspect"')
   })
 })

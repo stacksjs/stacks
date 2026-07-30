@@ -26,9 +26,9 @@ function formatDate(value: string | undefined): string {
         </div>
         <h2 id="log-details-title" class="mt-2 font-semibold text-lg text-neutral-900 dark:text-white">{{ record()?.message }}</h2>
       </div>
-      <button type="button" aria-label="Close log details" class="p-2 text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white rounded-lg" @click="emit('close')">
+      <Button variant="ghost" iconOnly ariaLabel="Close log details" @click="emit('close')">
         <span class="block h-5 w-5 i-hugeicons-cancel-01"></span>
-      </button>
+      </Button>
     </header>
 
     <dl class="grid gap-5 sm:grid-cols-2 p-5 text-sm">

@@ -213,19 +213,19 @@ onDestroy(() => {
       <p class="mt-1 max-w-2xl text-neutral-500 text-sm dark:text-neutral-400">Persisted Log model records. Counts, filters, and details come from the same database query.</p>
     </div>
     <div class="flex gap-2 items-center">
-      <button type="button" :aria-pressed="String(autoRefresh())" :class="'inline-flex gap-2 items-center self-start px-3 py-2 font-medium text-sm border rounded-lg ' + (autoRefresh() ? 'text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/40 border-blue-200 dark:border-blue-900' : 'text-neutral-700 dark:text-neutral-200 bg-white dark:bg-neutral-900 border-neutral-300 dark:border-neutral-700')" @click="toggleAutoRefresh">
+      <Button variant="secondary" :toggle="true" :pressed="autoRefresh()" @click="toggleAutoRefresh">
         <span :class="'h-4 w-4 i-hugeicons-refresh ' + (autoRefresh() ? 'animate-spin' : '')"></span>
         {{ autoRefresh() ? 'Auto refresh on' : 'Auto refresh off' }}
-      </button>
-      <button type="button" :disabled="loading()" aria-label="Refresh system logs" class="inline-flex items-center self-start p-2.5 text-neutral-700 dark:text-neutral-200 bg-white dark:bg-neutral-900 hover:bg-neutral-50 dark:hover:bg-neutral-800 border border-neutral-300 rounded-lg dark:border-neutral-700 disabled:opacity-50" @click="loadLogs">
-        <span :class="'h-4 w-4 ' + (loading() ? 'animate-spin i-hugeicons-loading-03' : 'i-hugeicons-refresh')"></span>
-      </button>
+      </Button>
+      <Button variant="secondary" iconOnly :loading="loading()" ariaLabel="Refresh system logs" @click="loadLogs">
+        <span :if="!loading()" class="h-4 w-4 i-hugeicons-refresh"></span>
+      </Button>
     </div>
   </header>
 
   <div :if="loadError()" role="alert" class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between px-4 py-3 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/40 border border-red-200 rounded-xl dark:border-red-900">
     <span>{{ loadError() }}</span>
-    <button type="button" class="font-semibold hover:underline" @click="loadLogs">Try again</button>
+    <Button variant="secondary" size="sm" @click="loadLogs">Try again</Button>
   </div>
 
   <section class="grid gap-3 grid-cols-2 xl:grid-cols-4">
@@ -277,7 +277,7 @@ onDestroy(() => {
         <label><span class="sr-only">Filter by source</span><select x-model="source" class="px-3 py-2 w-full text-neutral-900 text-sm dark:text-white bg-white dark:bg-neutral-950 border border-neutral-300 rounded-lg dark:border-neutral-700" @change="reloadFilters"><option value="">All sources</option><option :for="entry in options().sources" :value="entry">{{ entry }}</option></select></label>
         <label><span class="sr-only">Filter by project</span><select x-model="project" class="px-3 py-2 w-full text-neutral-900 text-sm dark:text-white bg-white dark:bg-neutral-950 border border-neutral-300 rounded-lg dark:border-neutral-700" @change="reloadFilters"><option value="">All projects</option><option :for="entry in options().projects" :value="entry">{{ entry }}</option></select></label>
         <label><span class="sr-only">Filter by time range</span><select x-model="range" class="px-3 py-2 w-full text-neutral-900 text-sm dark:text-white bg-white dark:bg-neutral-950 border border-neutral-300 rounded-lg dark:border-neutral-700" @change="reloadFilters"><option value="1">Last 24 hours</option><option value="7">Last 7 days</option><option value="30">Last 30 days</option><option value="90">Last 90 days</option><option value="all">All time</option></select></label>
-        <button :if="hasFilters()" type="button" class="inline-flex gap-2 items-center justify-center px-3 py-2 font-medium text-neutral-700 text-sm dark:text-neutral-200 bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 rounded-lg" @click="resetFilters"><span class="h-4 w-4 i-hugeicons-cancel-01"></span>Reset filters</button>
+        <Button :if="hasFilters()" variant="secondary" @click="resetFilters"><span class="h-4 w-4 i-hugeicons-cancel-01"></span>Reset filters</Button>
       </div>
     </div>
   </section>
@@ -297,7 +297,7 @@ onDestroy(() => {
             <td class="px-5 py-4 font-mono text-neutral-700 text-xs dark:text-neutral-300">{{ record.source || 'Not recorded' }}</td>
             <td class="px-5 py-4 max-w-md"><p class="font-medium text-neutral-900 dark:text-white">{{ record.message }}</p><p :if="record.file" class="mt-1 font-mono text-neutral-400 text-xs truncate dark:text-neutral-500">{{ record.file }}</p></td>
             <td class="px-5 py-4 text-neutral-600 whitespace-nowrap dark:text-neutral-300">{{ record.project || 'Not recorded' }}</td>
-            <td class="px-5 py-4 text-right"><button type="button" :aria-label="'Inspect log ' + record.id" class="p-2 text-neutral-500 dark:text-neutral-400 hover:text-blue-600 dark:hover:text-blue-400 rounded-lg" @click="openLog(record)"><span class="block h-5 w-5 i-hugeicons-view"></span></button></td>
+            <td class="px-5 py-4 text-right"><Button variant="ghost" iconOnly :ariaLabel="'Inspect log ' + record.id" @click="openLog(record)"><span class="block h-5 w-5 i-hugeicons-view"></span></Button></td>
           </tr>
         </tbody>
       </table>
@@ -306,9 +306,9 @@ onDestroy(() => {
       <p>Showing {{ pageStart() }} to {{ pageEnd() }} of {{ pagination().total }}</p>
       <div class="flex gap-2 items-center">
         <label><span class="sr-only">Logs per page</span><select x-model="perPage" class="px-2 py-1.5 text-neutral-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-neutral-300 rounded-lg dark:border-neutral-700" @change="reloadFilters"><option value="10">10 per page</option><option value="25">25 per page</option><option value="50">50 per page</option><option value="100">100 per page</option></select></label>
-        <button type="button" :disabled="pagination().page <= 1" aria-label="Previous log page" class="p-2 text-neutral-700 dark:text-neutral-200 bg-white dark:bg-neutral-900 border border-neutral-300 rounded-lg dark:border-neutral-700 disabled:opacity-40" @click="previousPage"><span class="block h-4 w-4 i-hugeicons-arrow-left-01"></span></button>
+        <Button variant="secondary" iconOnly :disabled="pagination().page <= 1" ariaLabel="Previous log page" @click="previousPage"><span class="block h-4 w-4 i-hugeicons-arrow-left-01"></span></Button>
         <span class="font-mono text-neutral-600 text-xs dark:text-neutral-300">{{ pagination().page }} / {{ pagination().totalPages }}</span>
-        <button type="button" :disabled="pagination().page >= pagination().totalPages" aria-label="Next log page" class="p-2 text-neutral-700 dark:text-neutral-200 bg-white dark:bg-neutral-900 border border-neutral-300 rounded-lg dark:border-neutral-700 disabled:opacity-40" @click="nextPage"><span class="block h-4 w-4 i-hugeicons-arrow-right-01"></span></button>
+        <Button variant="secondary" iconOnly :disabled="pagination().page >= pagination().totalPages" ariaLabel="Next log page" @click="nextPage"><span class="block h-4 w-4 i-hugeicons-arrow-right-01"></span></Button>
       </div>
     </footer>
   </section>
