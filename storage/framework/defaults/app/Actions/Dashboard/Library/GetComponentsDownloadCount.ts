@@ -1,5 +1,4 @@
 import { Action } from '@stacksjs/actions'
-// import { Library } from '@stacksjs/orm'
 
 export default new Action({
   name: 'GetComponentsDownloadCount',
@@ -7,6 +6,10 @@ export default new Action({
   apiResponse: true,
 
   async handle() {
-    // return Library.componentsDownloadCount()
+    return {
+      available: false,
+      downloads: null,
+      reason: 'No component download telemetry source is configured.',
+    }
   },
 })

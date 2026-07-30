@@ -17,10 +17,6 @@ export default defineModel({
       filterable: ['type', 'status'],
     },
 
-    useSeeder: {
-      count: 10,
-    },
-
     useApi: {
       uri: 'releases',
       routes: ['index', 'show'],

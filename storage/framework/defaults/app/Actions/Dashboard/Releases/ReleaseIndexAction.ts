@@ -9,20 +9,12 @@ export default new Action({
   apiResponse: true,
 
   async handle() {
-    try {
-      const records = await Release.orderByDesc('id').limit(200).get()
-      const releases = records.map(normalizeReleaseRecord)
+    const records = await Release.orderByDesc('id').limit(200).get()
+    const releases = records.map(normalizeReleaseRecord)
 
-      return {
-        releases,
-        summary: summarizeReleases(releases),
-      }
-    }
-    catch {
-      return {
-        releases: [],
-        summary: summarizeReleases([]),
-      }
+    return {
+      releases,
+      summary: summarizeReleases(releases),
     }
   },
 })

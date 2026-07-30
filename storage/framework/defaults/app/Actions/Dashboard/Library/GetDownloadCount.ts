@@ -1,5 +1,5 @@
 import { Action } from '@stacksjs/actions'
-// import { Library } from '@stacksjs/orm'
+import { db } from '@stacksjs/database'
 
 export default new Action({
   name: 'GetDownloadCount',
@@ -7,6 +7,11 @@ export default new Action({
   apiResponse: true,
 
   async handle() {
-    // return Library.downloadCount()
+    const row = await db
+      .selectFrom('releases')
+      .select(db.fn.sum('downloads').as('downloads'))
+      .executeTakeFirst() as { downloads?: number | string | null } | undefined
+
+    return { downloads: Number(row?.downloads || 0), source: 'releases.downloads' }
   },
 })

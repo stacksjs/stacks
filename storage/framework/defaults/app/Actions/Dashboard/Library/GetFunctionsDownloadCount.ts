@@ -1,5 +1,4 @@
 import { Action } from '@stacksjs/actions'
-// import { Library } from '@stacksjs/orm'
 
 export default new Action({
   name: 'GetFunctionsDownloadCount',
@@ -7,6 +6,10 @@ export default new Action({
   apiResponse: true,
 
   async handle() {
-    // return Library.functionsDownloadCount()
+    return {
+      available: false,
+      downloads: null,
+      reason: 'No function download telemetry source is configured.',
+    }
   },
 })

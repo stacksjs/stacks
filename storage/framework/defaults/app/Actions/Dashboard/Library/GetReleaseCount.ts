@@ -1,5 +1,5 @@
 import { Action } from '@stacksjs/actions'
-// import { Library } from '@stacksjs/orm'
+import { db } from '@stacksjs/database'
 
 export default new Action({
   name: 'GetReleaseCount',
@@ -7,6 +7,11 @@ export default new Action({
   apiResponse: true,
 
   async handle() {
-    // return Library.releaseCount()
+    const row = await db
+      .selectFrom('releases')
+      .select(db.fn.count('id').as('count'))
+      .executeTakeFirst() as { count?: number | string } | undefined
+
+    return { count: Number(row?.count || 0) }
   },
 })
