@@ -14,7 +14,7 @@ export const config: PantryConfig = {
    * These are binary tools and system packages required for development
    */
   dependencies: {
-    bun: '^1.3.14',
+    bun: '^1.3.0',
     git: '^2.47.0',
     // The database engine is swapped for the one DB_CONNECTION names when
     // `buddy setup` regenerates deps.yaml, so only one ever gets installed.
