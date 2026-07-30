@@ -139,6 +139,10 @@ declarations). Full reference: `stacks-auto-imports`.
 - Your components under `resources/components/` (write `<Card />` directly, resolved by the stx
   plugin) and your functions under `resources/functions/` (e.g. `increment`, `toggleDark`).
 
+Browser auto-imports are injected into the STX script entry only. A TypeScript
+module imported by that script must explicitly import every function, store,
+and type it uses; entry bindings do not leak into bundled module scope.
+
 **Server** (routes, `app/Actions/`, `app/Jobs/`, models) - injected into `globalThis`:
 - All 60+ models (`User`, `Product`, `Order`, ...) with their `Model` / `Request` / `RequestModel`
   variants, so `await User.find(1)` works with no import.

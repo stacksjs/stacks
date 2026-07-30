@@ -306,6 +306,30 @@ await handleAddPaymentMethod(clientSecret, elements)  // confirms card setup
 await handlePayment(elements)         // confirms payment
 ```
 
+`useBillable()` explicitly imports `usePaymentStore` from the default payment
+store. Keep that dependency explicit in imported billing modules. Browser
+auto-imports are injected into STX script entries and do not become lexical
+globals inside the TypeScript modules those entries bundle.
+
+`usePaymentStore()` is a callable wrapper around one STX `defineStore()`
+singleton. Its requests resolve the configured API origin, include the current
+bearer token, add the CSRF header for writes, and derive mutation route IDs from
+the authenticated user. Never restore a fixed localhost port or a hard-coded
+user ID.
+
+### Dashboard Billing
+
+`/settings/billing` is a thin route that renders `BillingSettings`. The
+component calls `GET /api/dashboard/billing`, an authenticated aggregate Action
+registered in `routes/dashboard-api.ts`. Do not call the root `/payments/*`
+group from the dashboard: `buddy dev --dashboard` delegates `/api/*` to the
+Stacks router and intentionally leaves root GET paths to STX page rendering.
+
+The aggregate always returns persisted `PaymentTransaction` records for the
+authenticated user. Subscription and payment-method reads are provider-backed
+and may be unavailable when the application User override is not billable.
+Render that as an explicit unavailable state, not sample plans or fake cards.
+
 ## config/payment.ts
 
 ```typescript
@@ -357,6 +381,14 @@ The `UserModel` must have:
 - `hasStripeId()` method -- returns boolean
 - `update(data)` method -- for persisting `stripe_id`
 - `activeSubscription()` method -- for subscription updates
+
+The framework default `storage/framework/defaults/app/Models/User.ts` sets
+`billable: false` intentionally because not every application uses payments.
+Run `buddy publish:model User`, keep the override at `app/Models/User.ts`, and
+enable its `billable` trait before calling instance helpers such as
+`activeSubscription()`, `paymentMethods()`, or `createSetupIntent()`. A payment
+Action must report the missing trait clearly instead of calling an undefined
+method.
 
 ## Gotchas
 - Stripe API keys MUST be in `.env` as `STRIPE_SECRET_KEY` and `STRIPE_PUBLISHABLE_KEY` -- never hardcode them in config files

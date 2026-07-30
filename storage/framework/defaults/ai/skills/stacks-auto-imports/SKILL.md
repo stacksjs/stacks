@@ -30,6 +30,12 @@ Automatically makes functions, models, composables, and utilities available glob
 3. STX plugin (`bun-plugin-stx`) resolves imports at build time
 4. Available in STX `<script>` tags without explicit `import` statements
 
+Browser auto-import injection applies to the STX script entry being compiled.
+TypeScript modules imported by that script do not inherit its lexical bindings.
+Every imported module must explicitly import the functions, stores, and types it
+uses. A generated ambient declaration proves an identifier is available to an
+STX entry; it does not make that identifier global inside bundled dependencies.
+
 ### Server Context (Routes, Actions, Jobs)
 1. `storage/framework/server-auto-imports.json` defines server-side imports (100+ entries)
 2. Types are declared in `storage/framework/types/server-auto-imports.d.ts`
@@ -128,6 +134,7 @@ injectGlobalAutoImports()      // inject models/functions globally
 
 ## Gotchas
 - Browser auto-imports are resolved at BUILD TIME by bun-plugin-stx — not runtime
+- Imported browser modules must declare their own imports; STX entry auto-imports do not leak into module scope
 - Server auto-imports are injected into globalThis at RUNTIME
 - The browser-auto-imports.d.ts file is ~80KB — it's auto-generated, don't edit manually
 - Custom functions must be exported from both the function file AND the auto-imports barrel

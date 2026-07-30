@@ -224,6 +224,7 @@ await addLayout('admin', { nav: true, footer: true })
 - **STX is the ONLY templating system** — do not use other template engines
 - **`bun-plugin-stx` must be loaded** — without it, `.stx` files won't be processed
 - **Auto-imports** — browser auto-imports defined in `storage/framework/browser-auto-imports.json`
+- **Imported module dependencies** - browser auto-imports are injected into the STX script entry only; imported `.ts` modules must explicitly import every function or store they use
 - **`storage/framework/stx/`** — stx build cache and the generated route manifest. `config/ui.ts` sets stx's `stateDir` here, so nothing lands in the project root. Gitignored; safe to delete
 - **Reactivity is signal-based** - use callable `state()` and `derived()` signals, not Vue-style `ref()` or `.value`
 - **Structural DOM timing** - use `nextTick()` with `useRef()` after opening reactive markup

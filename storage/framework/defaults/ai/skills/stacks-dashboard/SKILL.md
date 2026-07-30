@@ -159,6 +159,13 @@ purpose-built transport shape. Register it under `/api/dashboard/*` in
 writes must use the route file's `guard()` boundary so local development stays
 usable while non-local environments require authentication and an admin role.
 
+The dashboard dev server delegates `/api/*` requests to the Stacks router. It
+does not delegate root-level application API groups such as `/payments/*`.
+Dashboard pages must call a registered `/api/dashboard/*` Action instead of
+hard-coding the separate API server port. User-scoped payment data is the
+exception to the local no-auth guard: register it with `authenticatedGuard()`
+so the bearer token is required even on localhost.
+
 For stateful settings, persist through a model with `useApi` and explicit
 middleware, then expose a narrow dashboard Action for the page. Keep account
 identity fields read-only when their source of truth is `config/*.ts`.
