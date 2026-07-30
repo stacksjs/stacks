@@ -10,7 +10,8 @@ import {
   fetchPurchasedBetweenDates,
   fetchWaiting,
 } from '../waitlists/products/fetch'
-import { bulkStore } from '../waitlists/products/store'
+import { bulkStore, store } from '../waitlists/products/store'
+import { update, updateStatus } from '../waitlists/products/update'
 
 beforeEach(async () => {
   await refreshDatabase()
@@ -21,6 +22,42 @@ describe('Waitlist Product Module', () => {
     it('should return 0 when trying to bulk store an empty array', async () => {
       const count = await bulkStore([])
       expect(count).toBe(0)
+    })
+
+    it('persists complete entries and records status timestamps once', async () => {
+      const created = await store({
+        name: 'Status audit',
+        email: 'status-audit@example.test',
+        phone: '+1 555 0100',
+        quantity: 2,
+        notification_preference: 'email',
+        source: 'website',
+        notes: 'Preserve this note',
+        status: 'waiting',
+        product_id: 1,
+        customer_id: 1,
+      } as any)
+
+      const notified = await updateStatus(created.id, 'notified')
+      expect(notified.notified_at).toBeTruthy()
+
+      const pinned = await update(created.id, {
+        notified_at: '2026-01-02 03:04:05',
+      } as any)
+      const edited = await update(created.id, {
+        name: 'Status audit updated',
+        email: 'updated@example.test',
+        quantity: 4,
+        notification_preference: 'both',
+        source: 'app',
+        status: 'notified',
+      } as any)
+
+      expect(edited.notified_at).toBe(pinned.notified_at)
+      expect(edited.phone).toBe('+1 555 0100')
+      expect(edited.notes).toBe('Preserve this note')
+      expect(edited.product_id).toBe(1)
+      expect(edited.customer_id).toBe(1)
     })
   })
 

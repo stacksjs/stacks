@@ -1,5 +1,7 @@
 import { db } from '@stacksjs/database'
 import { formatDate } from '@stacksjs/orm'
+import { fetchById } from './fetch'
+import { productWaitlistWriteData } from './write-data'
 type WaitlistProductJsonResponse = ModelRow<typeof WaitlistProduct>
 type WaitlistProductUpdate = UpdateModelData<typeof WaitlistProduct>
 
@@ -15,29 +17,23 @@ export async function update(id: number, data: WaitlistProductUpdate): Promise<W
     if (!id)
       throw new Error('Waitlist product ID is required for update')
 
-    const d = data as Record<string, unknown>
-    const result = await db
+    const existing = await fetchById(id)
+    if (!existing)
+      throw new Error('Waitlist product not found')
+
+    await db
       .updateTable('waitlist_products')
       .set({
-        name: data.name,
-        email: data.email,
-        phone: data.phone,
-        quantity: data.quantity ?? d.party_size,
-        notification_preference: d.notification_preference,
-        source: data.source,
-        notes: data.notes,
-        status: data.status,
-        product_id: data.product_id,
-        customer_id: data.customer_id,
-        notified_at: d.notified_at,
-        purchased_at: d.purchased_at,
-        cancelled_at: d.cancelled_at,
+        ...productWaitlistWriteData(
+          data as Record<string, unknown>,
+          existing as Record<string, unknown>,
+        ),
         updated_at: formatDate(new Date()),
       })
       .where('id', '=', id)
-      .returningAll()
-      .executeTakeFirst()
+      .execute()
 
+    const result = await fetchById(id)
     if (!result)
       throw new Error('Failed to update waitlist product')
 
@@ -63,29 +59,7 @@ export async function updateStatus(
   id: number,
   status: 'waiting' | 'purchased' | 'notified' | 'cancelled',
 ): Promise<WaitlistProductJsonResponse> {
-  try {
-    const result = await db
-      .updateTable('waitlist_products')
-      .set({
-        status,
-        updated_at: formatDate(new Date()),
-      })
-      .where('id', '=', id)
-      .returningAll()
-      .executeTakeFirst()
-
-    if (!result)
-      throw new Error('Failed to update waitlist product status')
-
-    return result as WaitlistProductJsonResponse
-  }
-  catch (error) {
-    if (error instanceof Error) {
-      throw new TypeError(`Failed to update waitlist product status: ${error.message}`)
-    }
-
-    throw error
-  }
+  return await update(id, { status } as WaitlistProductUpdate)
 }
 
 /**
@@ -99,27 +73,5 @@ export async function updatePartySize(
   id: number,
   partySize: number,
 ): Promise<WaitlistProductJsonResponse> {
-  try {
-    const result = await db
-      .updateTable('waitlist_products')
-      .set({
-        quantity: partySize,
-        updated_at: formatDate(new Date()),
-      })
-      .where('id', '=', id)
-      .returningAll()
-      .executeTakeFirst()
-
-    if (!result)
-      throw new Error('Failed to update party size')
-
-    return result as WaitlistProductJsonResponse
-  }
-  catch (error) {
-    if (error instanceof Error) {
-      throw new TypeError(`Failed to update party size: ${error.message}`)
-    }
-
-    throw error
-  }
+  return await update(id, { quantity: partySize } as WaitlistProductUpdate)
 }
