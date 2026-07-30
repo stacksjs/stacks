@@ -197,4 +197,18 @@ describe('dashboard button contract', () => {
     expect(resourceButtons[0]).toContain(':aria-label=')
     expect(resourceButtons[0]).toContain('@click="inspect"')
   })
+
+  test('keeps error sorting and row navigation semantic while sharing row actions', () => {
+    const source = readFileSync(
+      resolve('storage/framework/defaults/resources/components/Dashboard/Monitoring/ErrorTable.stx'),
+      'utf8',
+    )
+    const nativeButtons = [...source.matchAll(/<button\b[^>]*>/g)].map(match => match[0])
+
+    expect((source.match(/<Button/g) || []).length).toBe(4)
+    expect(nativeButtons.every(button =>
+      button.includes("nextSort('")
+      || button.includes("emit('row-click', error)"),
+    )).toBe(true)
+  })
 })
