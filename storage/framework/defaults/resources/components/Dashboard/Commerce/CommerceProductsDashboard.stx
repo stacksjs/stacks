@@ -156,25 +156,13 @@ function exportHref(): string {
   return `data:text/csv;charset=utf-8,${encodeURIComponent(`\uFEFF${csv}`)}`
 }
 
-function updateSearch(event: Event): void {
-  search.set((event.target as HTMLInputElement).value)
+effect(() => {
+  search()
+  categoryFilter()
+  availabilityFilter()
+  sort()
   page.set(1)
-}
-
-function updateCategory(event: Event): void {
-  categoryFilter.set((event.target as HTMLSelectElement).value)
-  page.set(1)
-}
-
-function updateAvailability(event: Event): void {
-  availabilityFilter.set((event.target as HTMLSelectElement).value)
-  page.set(1)
-}
-
-function updateSort(event: Event): void {
-  sort.set((event.target as HTMLSelectElement).value)
-  page.set(1)
-}
+})
 
 async function loadProducts(): Promise<void> {
   loading.set(true)
@@ -325,11 +313,11 @@ onMount(() => {
       <label class="relative sm:col-span-2">
         <span class="sr-only">Search products</span>
         <span class="flex absolute inset-y-0 left-0 items-center pl-3 text-gray-400 pointer-events-none"><span class="h-4 w-4 i-hugeicons-search-01"></span></span>
-        <input :value="search()" type="search" placeholder="Search name, category, manufacturer, or allergen" class="pl-9 pr-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" @input="updateSearch($event)" />
+        <input x-model="search" type="search" placeholder="Search name, category, manufacturer, or allergen" class="pl-9 pr-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" />
       </label>
-      <label><span class="sr-only">Product category</span><select :value="categoryFilter()" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" @change="updateCategory($event)"><option value="all">Any category</option><template :for="option in categories()" :key="option.id"><option :value="option.id">{{ option.label }}</option></template></select></label>
-      <label><span class="sr-only">Product availability</span><select :value="availabilityFilter()" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" @change="updateAvailability($event)"><option value="all">Any availability</option><option value="available">Available</option><option value="unavailable">Unavailable</option><option value="out-of-stock">Out of stock</option></select></label>
-      <label><span class="sr-only">Sort products</span><select :value="sort()" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" @change="updateSort($event)"><option value="newest">Newest first</option><option value="oldest">Oldest first</option><option value="name">Name</option><option value="price-high">Highest price</option><option value="price-low">Lowest price</option><option value="inventory-high">Highest inventory</option></select></label>
+      <label><span class="sr-only">Product category</span><select x-model="categoryFilter" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700"><option value="all">Any category</option><template :for="option in categories()" :key="option.id"><option :value="option.id">{{ option.label }}</option></template></select></label>
+      <label><span class="sr-only">Product availability</span><select x-model="availabilityFilter" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700"><option value="all">Any availability</option><option value="available">Available</option><option value="unavailable">Unavailable</option><option value="out-of-stock">Out of stock</option></select></label>
+      <label><span class="sr-only">Sort products</span><select x-model="sort" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700"><option value="newest">Newest first</option><option value="oldest">Oldest first</option><option value="name">Name</option><option value="price-high">Highest price</option><option value="price-low">Lowest price</option><option value="inventory-high">Highest inventory</option></select></label>
     </div>
 
     <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
