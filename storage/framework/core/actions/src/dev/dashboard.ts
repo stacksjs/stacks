@@ -339,11 +339,15 @@ async function startStxServer(): Promise<void> {
           }
         }
         const allOk = results.every(r => r.ok)
-        // Always return HTTP 200 so the response is well-formed; the
-        // caller checks `body.ok` to know whether anything failed.
-        // Returning 207 here triggers a Bun internal RangeError under
-        // the bun-router fallback path used by the dashboard server.
-        return Response.json({ ok: allOk, file, results })
+        if (!allOk) {
+          const error = results
+            .filter(result => !result.ok)
+            .map(result => result.error)
+            .filter(Boolean)
+            .join(', ') || 'One or more configuration values could not be updated.'
+          return Response.json({ ok: false, file, results, error }, { status: 422 })
+        }
+        return Response.json({ ok: true, file, results })
       }
       catch (e) {
         return Response.json({ ok: false, error: (e as Error)?.message }, { status: 500 })

@@ -176,7 +176,7 @@ export async function updateConfigKey(
   const source = readFileSync(path, 'utf8')
   const rewritten = rewriteKey(source, key, newValue)
   if (!rewritten)
-    throw new Error(`Cannot edit "${key}" in config/${name}.ts — key is not a top-level scalar literal (likely env-backed or nested).`)
+    throw new Error(`Cannot edit "${key}" in config/${name}.ts. The key is not a top-level scalar literal (likely env-backed or nested).`)
 
   writeFileSync(path, rewritten, 'utf8')
   // We don't bust moduleCache here on purpose — re-importing with a
