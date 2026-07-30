@@ -232,7 +232,7 @@ async function saveOrder(payload: OrderWritePayload): Promise<void> {
   saving.set(true)
   validationErrors.set({})
   try {
-    await dashboardApi(editing ? `/api/orders/${current.id}` : '/api/orders', {
+    await dashboardApi(editing ? `/api/dashboard/commerce/orders/${current.id}` : '/api/dashboard/commerce/orders', {
       method: editing ? 'PATCH' : 'POST',
       body: payload,
     })
@@ -276,7 +276,7 @@ async function deleteOrder(): Promise<void> {
     return
   deleting.set(true)
   try {
-    await dashboardApi(`/api/orders/${current.id}`, { method: 'DELETE' })
+    await dashboardApi(`/api/dashboard/commerce/orders/${current.id}`, { method: 'DELETE' })
     deletingRecord.set(null)
     detailsRecord.set(null)
     pushToast('success', 'Order deleted', { detail: `Order ${current.id}` })

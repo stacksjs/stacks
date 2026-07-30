@@ -70,4 +70,25 @@ describe('dashboard commerce route contract', () => {
 
     expect(updateAction).toContain("method: 'PATCH'")
   })
+
+  test('order mutations use guarded dashboard routes and relationship normalization', () => {
+    const routes = source('storage/framework/defaults/routes/dashboard-api.ts')
+    const orders = source('storage/framework/defaults/resources/components/Dashboard/Commerce/CommerceOrdersDashboard.stx')
+    const storeAction = source('storage/framework/defaults/app/Actions/Commerce/OrderStoreAction.ts')
+    const updateAction = source('storage/framework/defaults/app/Actions/Commerce/OrderUpdateAction.ts')
+
+    expect(routes).toContain("guard(route.post('/commerce/orders', 'Actions/Commerce/OrderStoreAction'))")
+    expect(routes).toContain("guard(route.patch('/commerce/orders/{id}', 'Actions/Commerce/OrderUpdateAction'))")
+    expect(routes).toContain("guard(route.delete('/commerce/orders/{id}', 'Actions/Commerce/OrderDestroyAction'))")
+    expect(orders).toContain('/api/dashboard/commerce/orders')
+    expect(orders).not.toMatch(/\/api\/orders(?:\/|\?|'|`)/)
+
+    for (const action of [storeAction, updateAction]) {
+      expect(action).toContain('model: Order')
+      expect(action).toContain('await request.validate()')
+      expect(action).toContain('toSnakeCaseKeys(request.all())')
+    }
+
+    expect(updateAction).toContain("method: 'PATCH'")
+  })
 })
