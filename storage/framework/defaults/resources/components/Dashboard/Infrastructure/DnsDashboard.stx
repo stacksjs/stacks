@@ -1,0 +1,252 @@
+<script client>
+import type {
+  DashboardDnsDomain,
+  DashboardDnsRecord,
+  DashboardDnsSnapshot,
+  DashboardDnsTypeCount,
+} from '../../../../app/Actions/Dashboard/Infrastructure/dns-overview'
+import { dashboardApi } from '../../../../functions/dashboard-api'
+
+const domains = state<DashboardDnsDomain[]>([])
+const records = state<DashboardDnsRecord[]>([])
+const nameservers = state<string[]>([])
+const typeCounts = state<DashboardDnsTypeCount[]>([])
+const generatedAt = state('')
+const loading = state(true)
+const loadError = state('')
+const search = state('')
+const typeFilter = state('all')
+const selectedRecord = state<DashboardDnsRecord | null>(null)
+
+const filteredRecords = derived(() => {
+  const query = search().trim().toLowerCase()
+  return records().filter((record) => {
+    const matchesType = typeFilter() === 'all' || record.type === typeFilter()
+    const matchesSearch = !query || [
+      record.type,
+      record.name,
+      record.value,
+      record.priority,
+    ].filter(value => value !== null).join(' ').toLowerCase().includes(query)
+    return matchesType && matchesSearch
+  })
+})
+const primaryDomain = derived(() => domains()[0] ?? null)
+const maxTypeCount = derived(() => Math.max(1, ...typeCounts().map(item => item.count)))
+
+function formatDate(value: string): string {
+  const date = new Date(value)
+  return Number.isNaN(date.getTime())
+    ? 'Not recorded'
+    : new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(date)
+}
+
+function ttlLabel(record: DashboardDnsRecord): string {
+  return record.ttl === null ? 'Provider default' : `${record.ttl}s`
+}
+
+function typeWidth(item: DashboardDnsTypeCount): string {
+  return `${Math.round((item.count / maxTypeCount()) * 100)}%`
+}
+
+function typeColor(type: string): string {
+  if (type === 'A')
+    return 'bg-blue-500'
+  if (type === 'AAAA')
+    return 'bg-violet-500'
+  if (type === 'CNAME')
+    return 'bg-green-500'
+  if (type === 'MX')
+    return 'bg-amber-500'
+  return 'bg-rose-500'
+}
+
+function inspectRecord(record: DashboardDnsRecord): void {
+  selectedRecord.set(record)
+}
+
+function closeRecord(): void {
+  selectedRecord.set(null)
+}
+
+async function loadDns(): Promise<void> {
+  loading.set(true)
+  loadError.set('')
+  try {
+    const result = await dashboardApi<DashboardDnsSnapshot>('/api/dashboard/dns')
+    domains.set(Array.isArray(result.domains) ? result.domains : [])
+    records.set(Array.isArray(result.records) ? result.records : [])
+    nameservers.set(Array.isArray(result.nameservers) ? result.nameservers : [])
+    typeCounts.set(Array.isArray(result.typeCounts) ? result.typeCounts : [])
+    generatedAt.set(result.generatedAt || '')
+  }
+  catch (error) {
+    domains.set([])
+    records.set([])
+    nameservers.set([])
+    typeCounts.set([])
+    generatedAt.set('')
+    loadError.set(error instanceof Error ? error.message : 'DNS configuration could not be loaded.')
+  }
+  finally {
+    loading.set(false)
+  }
+}
+
+useEventListener('keydown', (event: KeyboardEvent) => {
+  if (event.key === 'Escape')
+    closeRecord()
+})
+
+onMount(() => {
+  void loadDns()
+})
+</script>
+
+<div class="space-y-6">
+  <header class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+    <div>
+      <div class="flex gap-2 items-center">
+        <h1 class="font-semibold text-2xl text-neutral-900 tracking-tight dark:text-white">DNS</h1>
+        <CloudStatusBadge :status="domains().length || records().length ? 'configured' : 'inactive'" />
+      </div>
+      <p class="mt-1 max-w-2xl text-neutral-500 text-sm dark:text-neutral-400">DNS declarations from config/dns.ts and the project domain from config/cloud.ts.</p>
+    </div>
+    <button type="button" :disabled="loading()" class="inline-flex gap-2 items-center self-start px-3 py-2 font-medium text-neutral-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-900 hover:bg-neutral-50 dark:hover:bg-neutral-800 border border-neutral-300 rounded-lg dark:border-neutral-700 disabled:opacity-50" @click="loadDns">
+      <span :class="'h-4 w-4 ' + (loading() ? 'animate-spin i-hugeicons-loading-03' : 'i-hugeicons-refresh')"></span>
+      Refresh
+    </button>
+  </header>
+
+  <div :if="loadError()" role="alert" class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between px-4 py-3 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/40 border border-red-200 rounded-xl dark:border-red-900">
+    <span>{{ loadError() }}</span>
+    <button type="button" class="font-semibold hover:underline" @click="loadDns">Try again</button>
+  </div>
+
+  <section class="grid gap-3 grid-cols-2 xl:grid-cols-4">
+    <div class="p-4 bg-white dark:bg-neutral-900 border border-neutral-200 rounded-xl dark:border-neutral-700">
+      <p class="text-neutral-500 text-xs uppercase dark:text-neutral-400">Domains</p>
+      <p class="mt-2 font-semibold text-neutral-900 text-xl dark:text-white">{{ domains().length }}</p>
+    </div>
+    <div class="p-4 bg-white dark:bg-neutral-900 border border-neutral-200 rounded-xl dark:border-neutral-700">
+      <p class="text-neutral-500 text-xs uppercase dark:text-neutral-400">Records</p>
+      <p class="mt-2 font-semibold text-neutral-900 text-xl dark:text-white">{{ records().length }}</p>
+    </div>
+    <div class="p-4 bg-white dark:bg-neutral-900 border border-neutral-200 rounded-xl dark:border-neutral-700">
+      <p class="text-neutral-500 text-xs uppercase dark:text-neutral-400">Nameservers</p>
+      <p class="mt-2 font-semibold text-neutral-900 text-xl dark:text-white">{{ nameservers().length }}</p>
+    </div>
+    <div class="p-4 bg-white dark:bg-neutral-900 border border-neutral-200 rounded-xl dark:border-neutral-700">
+      <p class="text-neutral-500 text-xs uppercase dark:text-neutral-400">Hosted zone</p>
+      <p class="mt-2 font-medium text-neutral-900 text-sm truncate dark:text-white">{{ primaryDomain()?.hostedZoneId || 'Not set' }}</p>
+    </div>
+  </section>
+
+  <section class="grid gap-4 grid-cols-1 xl:grid-cols-[minmax(0,1.4fr)_minmax(18rem,0.6fr)]">
+    <div class="p-5 bg-white dark:bg-neutral-900 border border-neutral-200 rounded-xl dark:border-neutral-700">
+      <div class="flex gap-3 items-start justify-between">
+        <div>
+          <h2 class="font-semibold text-neutral-900 dark:text-white">Configured entry point</h2>
+          <p class="mt-1 text-neutral-500 text-xs dark:text-neutral-400">Configuration only. This is not a live DNS resolution or provider health check.</p>
+        </div>
+        <CloudStatusBadge :status="primaryDomain() ? 'configured' : 'inactive'" />
+      </div>
+      <div :if="primaryDomain()" class="flex gap-4 items-center mt-5 p-4 bg-blue-50 dark:bg-blue-950/25 border border-blue-100 rounded-xl dark:border-blue-900/50">
+        <span class="flex items-center justify-center shrink-0 h-10 w-10 text-blue-600 dark:text-blue-300 bg-white/80 dark:bg-black/20 rounded-xl"><span class="h-5 w-5 i-hugeicons-globe"></span></span>
+        <div class="min-w-0">
+          <p class="font-semibold text-neutral-900 truncate dark:text-white">{{ primaryDomain()?.domain }}</p>
+          <p class="mt-1 font-mono text-neutral-500 text-xs truncate dark:text-neutral-400">{{ primaryDomain()?.hostedZoneId || 'No hosted zone ID configured' }}</p>
+        </div>
+      </div>
+      <EmptyState :if="!loading() && !primaryDomain()" icon="i-hugeicons-globe-off" title="No project domain configured" description="Add infrastructure.dns.domain to config/cloud.ts." />
+    </div>
+
+    <div class="p-5 bg-white dark:bg-neutral-900 border border-neutral-200 rounded-xl dark:border-neutral-700">
+      <h2 class="font-semibold text-neutral-900 dark:text-white">Record distribution</h2>
+      <p class="mt-1 text-neutral-500 text-xs dark:text-neutral-400">Exact counts from config/dns.ts.</p>
+      <div class="mt-5 space-y-3">
+        <div :for="item in typeCounts()" class="grid gap-3 grid-cols-[3.5rem_minmax(0,1fr)_2rem] items-center">
+          <span class="font-mono font-semibold text-neutral-700 text-xs dark:text-neutral-300">{{ item.type }}</span>
+          <div class="overflow-hidden h-2 bg-neutral-100 dark:bg-neutral-800 rounded-full">
+            <div :class="'h-full rounded-full ' + typeColor(item.type)" :style="{ width: typeWidth(item) }"></div>
+          </div>
+          <span class="font-mono text-neutral-500 text-right text-xs dark:text-neutral-400">{{ item.count }}</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+      <div>
+        <h2 class="font-semibold text-neutral-900 dark:text-white">Configured records</h2>
+        <p class="mt-1 text-neutral-500 text-sm dark:text-neutral-400">Source-controlled declarations. Provider mutations are intentionally not inferred from this page.</p>
+      </div>
+      <div class="flex flex-col gap-2 sm:flex-row">
+        <label class="block relative sm:w-72">
+          <span class="sr-only">Search DNS records</span>
+          <span class="absolute left-3 top-2.5 h-4 w-4 text-neutral-400 i-hugeicons-search-01"></span>
+          <input x-model="search" type="search" placeholder="Search records" class="pl-9 pr-3 py-2 w-full text-neutral-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-neutral-300 rounded-lg dark:border-neutral-700 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20" />
+        </label>
+        <label>
+          <span class="sr-only">Filter DNS record type</span>
+          <select x-model="typeFilter" class="px-3 py-2 h-10 w-full text-neutral-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-neutral-300 rounded-lg dark:border-neutral-700 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20">
+            <option value="all">All types</option>
+            <option value="A">A</option>
+            <option value="AAAA">AAAA</option>
+            <option value="CNAME">CNAME</option>
+            <option value="MX">MX</option>
+            <option value="TXT">TXT</option>
+          </select>
+        </label>
+      </div>
+    </div>
+
+    <div :if="loading()" class="flex items-center justify-center mt-4 py-16 text-neutral-500 text-sm dark:text-neutral-400 bg-white dark:bg-neutral-900 border border-neutral-200 rounded-xl dark:border-neutral-700">
+      <span class="mr-2 h-5 w-5 animate-spin i-hugeicons-loading-03"></span>
+      Loading DNS configuration...
+    </div>
+
+    <EmptyState :if="!loading() && !loadError() && filteredRecords().length === 0" icon="i-hugeicons-internet" :title="records().length ? 'No matching DNS records' : 'No DNS records configured'" :description="records().length ? 'Adjust the search or record type filter.' : 'Add records to config/dns.ts, then refresh this page.'" />
+
+    <div :if="!loading() && filteredRecords().length > 0" class="overflow-x-auto mt-4 bg-white dark:bg-neutral-900 border border-neutral-200 rounded-xl dark:border-neutral-700">
+      <table class="min-w-full divide-neutral-200 divide-y dark:divide-neutral-700">
+        <thead class="bg-neutral-50 dark:bg-neutral-800/70">
+          <tr>
+            <th scope="col" class="px-5 py-3 font-semibold text-left text-neutral-500 text-xs uppercase dark:text-neutral-400">Type</th>
+            <th scope="col" class="px-5 py-3 font-semibold text-left text-neutral-500 text-xs uppercase dark:text-neutral-400">Name</th>
+            <th scope="col" class="px-5 py-3 font-semibold text-left text-neutral-500 text-xs uppercase dark:text-neutral-400">Value</th>
+            <th scope="col" class="px-5 py-3 font-semibold text-left text-neutral-500 text-xs uppercase dark:text-neutral-400">TTL</th>
+            <th scope="col" class="px-5 py-3"><span class="sr-only">Actions</span></th>
+          </tr>
+        </thead>
+        <tbody class="divide-neutral-100 divide-y dark:divide-neutral-800">
+          <tr :for="record in filteredRecords()" class="hover:bg-neutral-50 dark:hover:bg-neutral-800/50">
+            <td class="px-5 py-4"><span class="inline-flex px-2 py-1 font-mono font-semibold text-blue-700 text-xs dark:text-blue-300 bg-blue-50 dark:bg-blue-950/40 rounded-md">{{ record.type }}</span></td>
+            <td class="px-5 py-4 font-mono text-neutral-900 text-sm whitespace-nowrap dark:text-white">{{ record.name }}</td>
+            <td class="px-5 py-4 max-w-md font-mono text-neutral-500 text-sm truncate dark:text-neutral-400">{{ record.value || 'Not set' }}</td>
+            <td class="px-5 py-4 text-neutral-500 text-sm whitespace-nowrap dark:text-neutral-400">{{ ttlLabel(record) }}</td>
+            <td class="px-5 py-4 text-right"><button type="button" class="font-semibold text-blue-600 text-sm dark:text-blue-400 hover:text-blue-500" @click="inspectRecord(record)">Inspect</button></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="overflow-hidden bg-white dark:bg-neutral-900 border border-neutral-200 rounded-xl dark:border-neutral-700">
+    <header class="flex items-center justify-between px-5 py-4 border-b border-neutral-200 dark:border-neutral-700">
+      <div><h2 class="font-semibold text-neutral-900 dark:text-white">Nameservers</h2><p class="mt-1 text-neutral-500 text-xs dark:text-neutral-400">Configured delegation targets.</p></div>
+      <span class="font-mono text-neutral-400 text-xs">{{ nameservers().length }}</span>
+    </header>
+    <div :if="nameservers().length > 0" class="grid gap-3 sm:grid-cols-2 p-5">
+      <div :for="nameserver in nameservers()" class="flex gap-3 items-center p-3 bg-neutral-50 dark:bg-neutral-800 rounded-lg">
+        <span class="shrink-0 h-4 w-4 text-neutral-400 i-hugeicons-server-stack-01"></span>
+        <code class="break-all text-neutral-700 text-xs dark:text-neutral-300">{{ nameserver }}</code>
+      </div>
+    </div>
+    <p :if="nameservers().length === 0" class="p-5 text-neutral-500 text-sm dark:text-neutral-400">No nameservers configured.</p>
+    <p :if="generatedAt()" class="px-5 py-3 text-neutral-400 text-xs dark:text-neutral-500 bg-neutral-50 dark:bg-neutral-800/50 border-neutral-100 border-t dark:border-neutral-800">Snapshot {{ formatDate(generatedAt()) }}</p>
+  </section>
+
+  <DnsRecordDialog :open="Boolean(selectedRecord())" :record="selectedRecord()" @close="closeRecord" />
+</div>
