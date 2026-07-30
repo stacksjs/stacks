@@ -61,6 +61,36 @@ STX signals are callable. Read with `count()`, replace with
 `count.update(value => value + 1)`. Do not use Vue-style `.value` access in
 STX templates or `resources/functions`.
 
+### Native form binding
+
+Use `x-model` for two-way form state instead of pairing `:value` with a
+manual `@input` or `@change` handler. The expression is the signal name
+without parentheses:
+
+```html
+<script client>
+const query = state('')
+const quantity = state(1)
+const enabled = state(false)
+const categories = state<string[]>([])
+</script>
+
+<input x-model.trim="query" type="search">
+<input x-model.number="quantity" type="number">
+<input x-model="enabled" type="checkbox">
+<input x-model="categories" type="checkbox" value="news">
+<select x-model="query">
+  <option value="">All</option>
+  <option value="active">Active</option>
+</select>
+```
+
+`x-model` supports text inputs, textareas, selects, radio buttons, boolean
+checkboxes, and checkbox arrays. Use `.trim` when whitespace should be
+removed and `.number` when the signal should receive a number. Keep a
+dedicated signal for each binding. Arbitrary expressions such as
+`x-model="user.name"` are not writable bindings.
+
 ## Configuration (config/ui.ts)
 
 ```typescript
@@ -172,7 +202,7 @@ await addLayout('admin', { nav: true, footer: true })
 - **`bun-plugin-stx` must be loaded** — without it, `.stx` files won't be processed
 - **Auto-imports** — browser auto-imports defined in `storage/framework/browser-auto-imports.json`
 - **`storage/framework/stx/`** — stx build cache and the generated route manifest. `config/ui.ts` sets stx's `stateDir` here, so nothing lands in the project root. Gitignored; safe to delete
-- **Reactivity is custom** — `ref()` and `computed()` from STX are not Vue's implementation
+- **Reactivity is signal-based** - use callable `state()` and `derived()` signals, not Vue-style `ref()` or `.value`
 - **Crosswind for styling** — use utility classes, not inline styles
 - **Script block restrictions** — only stx-compatible code (signals, composables, directives), no vanilla DOM APIs
 - **Components go in `resources/`** — not in `app/` or `storage/`
