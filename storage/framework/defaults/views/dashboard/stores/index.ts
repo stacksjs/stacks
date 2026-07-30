@@ -1,4 +1,5 @@
 import { defineStore, derived, registerStoresClient, state } from '@stacksjs/stx'
+import { dashboardApi } from '../../../functions/dashboard-api'
 import { isDarkTheme, useTheme } from '../composables/useTheme'
 
 /**
@@ -89,14 +90,15 @@ export const statsStore = defineStore('stats', () => {
   async function refresh(): Promise<void> {
     isLoading.set(true)
     try {
-      const res = await fetch('/api/dashboard/stats')
-      if (res.ok) {
-        const data = await res.json()
-        if (data.stats) stats.set(data.stats)
-        if (data.systemHealth) systemHealth.set(data.systemHealth)
-        if (data.recentActivity) recentActivity.set(data.recentActivity)
-        lastFetched.set(new Date().toISOString())
-      }
+      const data = await dashboardApi<{
+        stats?: Array<{ title: string, value: string, trend: number, trendLabel: string, icon: string }>
+        systemHealth?: Array<{ name: string, status: string, latency: string, uptime: string }>
+        recentActivity?: Array<{ type: string, title: string, time: string, status: string }>
+      }>('/api/dashboard/stats')
+      if (data.stats) stats.set(data.stats)
+      if (data.systemHealth) systemHealth.set(data.systemHealth)
+      if (data.recentActivity) recentActivity.set(data.recentActivity)
+      lastFetched.set(new Date().toISOString())
     }
     catch {
       // API may not be available — keep existing data

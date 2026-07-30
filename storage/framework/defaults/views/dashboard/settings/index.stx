@@ -2,6 +2,8 @@
 
 @section('content')
 <script client>
+import { dashboardApi } from '../../../functions/dashboard-api'
+
 interface ConfigFile {
   name: string
   title: string
@@ -14,6 +16,29 @@ interface ConfigField {
   type: string
   editable: boolean
   reason?: string
+}
+
+interface ConfigListResponse {
+  ok: boolean
+  files: ConfigFile[]
+  error?: string
+}
+
+interface ConfigReadResponse {
+  ok: boolean
+  fields: ConfigField[]
+  error?: string
+}
+
+interface ConfigUpdateResult {
+  ok: boolean
+  error?: string
+}
+
+interface ConfigUpdateResponse {
+  ok: boolean
+  results?: ConfigUpdateResult[]
+  error?: string
 }
 
 const files = state<ConfigFile[]>([])
@@ -53,9 +78,8 @@ async function loadFiles(): Promise<void> {
   loading.set(true)
   error.set('')
   try {
-    const response = await fetch('/api/config/list')
-    const body = await response.json()
-    if (!response.ok || !body.ok)
+    const body = await dashboardApi<ConfigListResponse>('/api/config/list')
+    if (!body.ok)
       throw new Error(body.error || 'Unable to list configuration files')
 
     files.set(body.files)
@@ -78,9 +102,8 @@ async function selectFile(name: string): Promise<void> {
   error.set('')
   loading.set(true)
   try {
-    const response = await fetch(`/api/config/read?name=${encodeURIComponent(name)}`)
-    const body = await response.json()
-    if (!response.ok || !body.ok)
+    const body = await dashboardApi<ConfigReadResponse>(`/api/config/read?name=${encodeURIComponent(name)}`)
+    if (!body.ok)
       throw new Error(body.error || `Unable to read config/${name}.ts`)
 
     fields.set(body.fields)
@@ -110,13 +133,11 @@ async function save(): Promise<void> {
     const updates = fields()
       .filter(field => field.editable)
       .map(field => ({ key: field.key, value: drafts()[field.key] }))
-    const response = await fetch('/api/config/update', {
+    const body = await dashboardApi<ConfigUpdateResponse>('/api/config/update', {
       method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ file, updates }),
+      body: { file, updates },
     })
-    const body = await response.json()
-    if (!response.ok || !body.ok) {
+    if (!body.ok) {
       const failed = body.results?.filter((result: { ok: boolean }) => !result.ok)
       throw new Error(failed?.map((result: { error?: string }) => result.error).filter(Boolean).join(', ') || body.error || 'Unable to save configuration')
     }

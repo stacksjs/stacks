@@ -2,6 +2,15 @@
 
 @section('content')
 <script client>
+import { dashboardApi } from '../../functions/dashboard-api'
+
+interface DashboardHomeResponse {
+  stats?: Array<{ label: string, value: string }>
+  httpMetrics?: Array<{ title: string, value: string, detail: string, icon: string }>
+  services?: Array<{ name: string, status: string, latency: string, uptime?: string }>
+  activities?: Array<{ type: string, message: string, time: string }>
+}
+
 const stats = state([
   { title: 'Total Users', value: '0', trend: 0, trendLabel: 'vs last period', icon: 'i-hugeicons-user-group' },
   { title: 'Active Projects', value: '0', trend: 0, trendLabel: 'vs last period', icon: 'i-hugeicons-folder-02' },
@@ -43,10 +52,7 @@ function getActivityIconClass(status) {
 
 async function loadDashboard() {
   try {
-    const response = await fetch('/api/dashboard/home', { headers: { accept: 'application/json' } })
-    if (!response.ok) return
-
-    const data = await response.json()
+    const data = await dashboardApi<DashboardHomeResponse>('/api/dashboard/home')
     if (Array.isArray(data.stats)) {
       const iconFor = label => ({
         'Total Users': 'i-hugeicons-user-group',
