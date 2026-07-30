@@ -1,7 +1,7 @@
 type TaxRateJsonResponse = ModelRow<typeof TaxRate>
-type NewTaxRate = NewModelData<typeof TaxRate>
 import { randomUUIDv7 } from 'bun'
 import { db } from '@stacksjs/database'
+import type { TaxRateWriteData } from './types'
 
 /**
  * Create a new tax rate
@@ -9,23 +9,32 @@ import { db } from '@stacksjs/database'
  * @param data Tax rate data to store
  * @returns The newly created tax rate record
  */
-export async function store(data: NewTaxRate): Promise<TaxRateJsonResponse> {
+export async function store(data: TaxRateWriteData): Promise<TaxRateJsonResponse> {
   try {
-    const taxData = {
-      ...data,
-      uuid: randomUUIDv7(),
-    }
+    return await db.transaction(async (trx: any) => {
+      const taxData = {
+        ...data,
+        uuid: randomUUIDv7(),
+      }
 
-    const result = await db
-      .insertInto('tax_rates')
-      .values(taxData)
-      .returningAll()
-      .executeTakeFirst()
+      if (taxData.is_default) {
+        await trx
+          .updateTable('tax_rates')
+          .set({ is_default: false })
+          .execute()
+      }
 
-    if (!result)
-      throw new Error('Failed to create tax rate')
+      const result = await trx
+        .insertInto('tax_rates')
+        .values(taxData)
+        .returningAll()
+        .executeTakeFirst()
 
-    return result as TaxRateJsonResponse
+      if (!result)
+        throw new Error('Failed to create tax rate')
+
+      return result as TaxRateJsonResponse
+    })
   }
   catch (error) {
     if (error instanceof Error) {
@@ -42,22 +51,37 @@ export async function store(data: NewTaxRate): Promise<TaxRateJsonResponse> {
  * @param data Array of tax rate data to store
  * @returns Number of tax rates created
  */
-export async function bulkStore(data: NewTaxRate[]): Promise<number> {
+export async function bulkStore(data: TaxRateWriteData[]): Promise<number> {
   if (!data.length)
     return 0
 
   try {
-    const taxDataArray = data.map(item => ({
-      ...item,
-      uuid: randomUUIDv7(),
-    }))
+    return await db.transaction(async (trx: any) => {
+      let createdCount = 0
+      for (const item of data) {
+        const taxData = {
+          ...item,
+          uuid: randomUUIDv7(),
+        }
 
-    const result = await db
-      .insertInto('tax_rates')
-      .values(taxDataArray)
-      .executeTakeFirst()
+        if (taxData.is_default) {
+          await trx
+            .updateTable('tax_rates')
+            .set({ is_default: false })
+            .execute()
+        }
 
-    return Number(result.numInsertedOrUpdatedRows)
+        const result = await trx
+          .insertInto('tax_rates')
+          .values(taxData)
+          .executeTakeFirst()
+
+        if (result)
+          createdCount++
+      }
+
+      return createdCount
+    })
   }
   catch (error) {
     if (error instanceof Error) {

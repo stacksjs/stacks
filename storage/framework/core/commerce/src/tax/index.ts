@@ -23,3 +23,5 @@ export {
   updateRate,
   updateStatus,
 } from './update'
+
+export type { TaxRateWriteData } from './types'

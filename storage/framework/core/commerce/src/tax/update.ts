@@ -1,7 +1,7 @@
 import { db } from '@stacksjs/database'
 import { formatDate } from '@stacksjs/orm'
+import type { TaxRateWriteData } from './types'
 type TaxRateJsonResponse = ModelRow<typeof TaxRate>
-type TaxRateUpdate = UpdateModelData<typeof TaxRate>
 
 /**
  * Update a tax rate
@@ -10,32 +10,46 @@ type TaxRateUpdate = UpdateModelData<typeof TaxRate>
  * @param data The tax rate data to update
  * @returns The updated tax rate record
  */
-export async function update(id: number, data: TaxRateUpdate): Promise<TaxRateJsonResponse> {
+export async function update(id: number, data: TaxRateWriteData): Promise<TaxRateJsonResponse> {
   try {
     if (!id)
       throw new Error('Tax rate ID is required for update')
 
-    const d = data as Record<string, unknown>
-    const result = await db
-      .updateTable('tax_rates')
-      .set({
-        name: data.name,
-        rate: data.rate,
-        type: data.type,
-        country: data.country,
-        region: data.region,
-        status: data.status,
-        is_default: d.is_default,
-        updated_at: formatDate(new Date()),
-      })
-      .where('id', '=', id)
-      .returningAll()
-      .executeTakeFirst()
+    return await db.transaction(async (trx: any) => {
+      const current = await trx
+        .selectFrom('tax_rates')
+        .select('is_default')
+        .where('id', '=', id)
+        .executeTakeFirst() as { is_default: boolean | null } | undefined
 
-    if (!result)
-      throw new Error('Failed to update tax rate')
+      if (!current)
+        throw new Error(`Tax rate with ID ${id} not found`)
 
-    return result as TaxRateJsonResponse
+      const isDefault = data.is_default ?? Boolean(current.is_default)
+      const updatedAt = formatDate(new Date())
+      if (isDefault) {
+        await trx
+          .updateTable('tax_rates')
+          .set({ is_default: false, updated_at: updatedAt })
+          .where('id', '!=', id)
+          .execute()
+      }
+
+      const result = await trx
+        .updateTable('tax_rates')
+        .set({
+          ...data,
+          updated_at: updatedAt,
+        })
+        .where('id', '=', id)
+        .returningAll()
+        .executeTakeFirst()
+
+      if (!result)
+        throw new Error(`Tax rate with ID ${id} not found`)
+
+      return result as TaxRateJsonResponse
+    })
   }
   catch (error) {
     if (error instanceof Error) {
