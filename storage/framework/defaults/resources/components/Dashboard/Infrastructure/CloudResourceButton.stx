@@ -8,6 +8,16 @@ function iconClass(): string {
   const category = item()?.category
   if (category === 'network')
     return 'i-hugeicons-network'
+  if (category === 'api')
+    return 'i-hugeicons-globe'
+  if (category === 'assets')
+    return 'i-hugeicons-folder-01'
+  if (category === 'cache')
+    return 'i-hugeicons-database-02'
+  if (category === 'cli')
+    return 'i-hugeicons-command-line'
+  if (category === 'firewall')
+    return 'i-hugeicons-shield-01'
   if (category === 'storage')
     return 'i-hugeicons-folder-01'
   if (category === 'queue')

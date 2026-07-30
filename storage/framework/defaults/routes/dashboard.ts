@@ -633,7 +633,7 @@ route.group({ prefix: '/infrastructure', middleware: 'auth' }, () => {
   route.get('/cloud', 'Actions/Dashboard/Cloud/CloudIndexAction')
 })
 
-route.get('/api/serverless', 'Actions/Dashboard/Cloud/CloudIndexAction').middleware('auth')
+route.get('/api/serverless', 'Actions/Dashboard/Cloud/ServerlessIndexAction').middleware('auth')
 
 // ============================================================================
 // Dashboard Views — Commerce
