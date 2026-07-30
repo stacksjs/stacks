@@ -28,6 +28,8 @@ export default defineModel({
     observe: true,
   },
 
+  belongsTo: ['Driver'],
+
   attributes: {
     driver: {
       order: 1,

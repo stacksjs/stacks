@@ -1280,6 +1280,8 @@ export async function generateMigrations(options: GenerateMigrationsOptions = {}
     // not the model, so the differ re-proposes dropping them every run and a
     // stray `y` destroys auth/billing data (stacksjs/stacks#2075).
     let sqlStatements = result.sqlStatements ?? []
+    if (dialect === 'sqlite')
+      sqlStatements = inlineSqliteAddedColumnReferences(sqlStatements, result.plan)
     if (result.hasChanges && sqlStatements.length > 0) {
       const filtered = withoutManagedColumnDropSql(sqlStatements, await frameworkManagedColumns(), result.operations ?? [])
       if (filtered.removed.length > 0)
@@ -1341,6 +1343,68 @@ export function findDanglingTypeReferences(statements: string[]): string[] {
   }
 
   return [...referenced].filter(name => !defined.has(name)).sort()
+}
+
+interface MigrationPlanColumn {
+  name?: string
+  references?: {
+    table?: string
+    column?: string
+  }
+}
+
+interface MigrationPlanTable {
+  table?: string
+  columns?: MigrationPlanColumn[]
+}
+
+interface MigrationPlanLike {
+  tables?: MigrationPlanTable[]
+}
+
+/**
+ * SQLite supports a nullable foreign key on `ADD COLUMN`, but not a later
+ * `ADD CONSTRAINT`. bun-query-builder emits the new relation column without
+ * its reference on incremental SQLite diffs, leaving the live schema weaker
+ * than the model. Recover the reference from the generated current plan and
+ * declare it inline while the column is added.
+ */
+export function inlineSqliteAddedColumnReferences(
+  statements: string[],
+  plan: MigrationPlanLike | undefined,
+): string[] {
+  const references = new Map<string, { table: string, column: string }>()
+
+  for (const table of plan?.tables ?? []) {
+    if (!table.table)
+      continue
+    for (const column of table.columns ?? []) {
+      const reference = column.references
+      if (!column.name || !reference?.table || !reference.column)
+        continue
+      references.set(`${table.table}.${column.name}`, {
+        table: reference.table,
+        column: reference.column,
+      })
+    }
+  }
+
+  if (references.size === 0)
+    return statements
+
+  return statements.map((statement) => {
+    if (/\bREFERENCES\b/i.test(statement))
+      return statement
+
+    const match = statement.match(/^(\s*ALTER\s+TABLE\s+["`]?(\w+)["`]?\s+ADD\s+COLUMN\s+["`]?(\w+)["`]?\s+)([\s\S]*?)(;?\s*)$/i)
+    const reference = match?.[2] && match[3]
+      ? references.get(`${match[2]}.${match[3]}`)
+      : undefined
+    if (!match || !reference)
+      return statement
+
+    return `${match[1]}${match[4]!.trimEnd()} REFERENCES "${reference.table}"("${reference.column}")${match[5]}`
+  })
 }
 
 export interface RegeneratedCorpus {

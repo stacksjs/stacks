@@ -1903,7 +1903,7 @@
           },
           {
             "name": "timestamp",
-            "type": "datetime",
+            "type": "timestamptz",
             "isPrimaryKey": false,
             "isUnique": false,
             "isNullable": false,
@@ -1952,7 +1952,8 @@
             "isPrimaryKey": false,
             "isUnique": false,
             "isNullable": true,
-            "hasDefault": false
+            "hasDefault": true,
+            "defaultValue": "{}"
           },
           {
             "name": "print_device_id",
@@ -5303,7 +5304,8 @@
             "isPrimaryKey": false,
             "isUnique": false,
             "isNullable": false,
-            "hasDefault": false
+            "hasDefault": true,
+            "defaultValue": true
           },
           {
             "name": "discount_type",
@@ -6883,7 +6885,7 @@
           },
           {
             "name": "order_id",
-            "type": "bigint",
+            "type": "integer",
             "isPrimaryKey": false,
             "isUnique": false,
             "isNullable": false,
@@ -7580,11 +7582,23 @@
           },
           {
             "name": "last_active",
-            "type": "datetime",
+            "type": "string",
             "isPrimaryKey": false,
             "isUnique": false,
             "isNullable": false,
             "hasDefault": false
+          },
+          {
+            "name": "driver_id",
+            "type": "bigint",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false,
+            "references": {
+              "table": "drivers",
+              "column": "id"
+            }
           },
           {
             "name": "created_at",
@@ -8399,7 +8413,7 @@
       }
     ]
   },
-  "hash": "7722962550bc5bd3df03a41d0833ef98918f470f0ee109aaaaf7ca83a7b58ac5",
+  "hash": "2eade6a74def0af839784edfd08d0e08664b167363450138544fb48e7fc664a0",
   "dialect": "sqlite",
-  "updatedAt": "2026-07-29T23:26:31.808Z"
+  "updatedAt": "2026-07-30T00:42:41.463Z"
 }

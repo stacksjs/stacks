@@ -1,7 +1,26 @@
 import { describe, expect, it } from 'bun:test'
-import { groupGeneratedStatements } from '../src/migrations'
+import { groupGeneratedStatements, inlineSqliteAddedColumnReferences } from '../src/migrations'
 
 describe('generated migration grouping', () => {
+  it('keeps references when SQLite adds a relation column incrementally', () => {
+    const statements = inlineSqliteAddedColumnReferences(
+      ['ALTER TABLE "delivery_routes" ADD COLUMN "driver_id" INTEGER;'],
+      {
+        tables: [{
+          table: 'delivery_routes',
+          columns: [{
+            name: 'driver_id',
+            references: { table: 'drivers', column: 'id' },
+          }],
+        }],
+      },
+    )
+
+    expect(statements).toEqual([
+      'ALTER TABLE "delivery_routes" ADD COLUMN "driver_id" INTEGER REFERENCES "drivers"("id");',
+    ])
+  })
+
   it('writes PostgreSQL enum types before tables that consume them', () => {
     const groups = groupGeneratedStatements([
       'CREATE TABLE IF NOT EXISTS "subscribers" ("id" BIGSERIAL PRIMARY KEY, "status" "subscribers_status_type" NOT NULL);',

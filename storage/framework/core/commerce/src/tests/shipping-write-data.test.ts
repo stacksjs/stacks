@@ -73,11 +73,13 @@ describe('commerce shipping write data', () => {
     })
     expect(deliveryRouteWriteData({
       driver: 'Alex',
+      driverId: 12,
       deliveryTime: 45,
       lastActive: 123,
       unknown: true,
     })).toEqual({
       driver: 'Alex',
+      driver_id: 12,
       delivery_time: 45,
       last_active: 123,
     })
