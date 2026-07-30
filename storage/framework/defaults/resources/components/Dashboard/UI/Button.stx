@@ -6,11 +6,26 @@ interface ButtonProps {
   loading?: boolean
   fullWidth?: boolean
   iconOnly?: boolean
+  tag?: 'button' | 'a'
   href?: string
+  download?: string
+  target?: string
+  rel?: string
+  ariaLabel?: string
   type?: string
 }
 
-const { variant = 'primary', size = 'md', disabled = false, loading = false, fullWidth = false, iconOnly = false, href = '', type = 'button' } = defineProps<ButtonProps>()
+const {
+  variant = 'primary',
+  size = 'md',
+  disabled = false,
+  loading = false,
+  fullWidth = false,
+  iconOnly = false,
+  tag = 'button',
+  href = '',
+  type = 'button',
+} = defineProps<ButtonProps>()
 
 // Variant classes
 const variantClasses = {
@@ -54,11 +69,19 @@ const buttonClass = [
 const liveDisabled = useReactiveProp('disabled', false)
 const liveLoading = useReactiveProp('loading', false)
 const liveHref = useReactiveProp('href', '')
+const liveDownload = useReactiveProp('download', '')
+const liveTarget = useReactiveProp('target', '')
+const liveRel = useReactiveProp('rel', '')
+const liveAriaLabel = useReactiveProp('ariaLabel', '')
 </script>
-@if(href && href.length > 0)
+@if(tag === 'a' || (href && href.length > 0))
     <a
       :href="liveDisabled() || liveLoading() ? undefined : liveHref()"
+      :download="liveDownload() || undefined"
+      :aria-label="liveAriaLabel() || undefined"
       class="{{ buttonClass }}"
+      :target="liveTarget() || undefined"
+      :rel="liveRel() || undefined"
       :aria-busy="liveLoading() ? 'true' : 'false'"
       :aria-disabled="liveDisabled() || liveLoading() ? 'true' : 'false'"
       :tabindex="liveDisabled() || liveLoading() ? -1 : undefined"
@@ -72,6 +95,7 @@ const liveHref = useReactiveProp('href', '')
     <button
       type="{{ type }}"
       class="{{ buttonClass }}"
+      :aria-label="liveAriaLabel() || undefined"
       :aria-busy="liveLoading() ? 'true' : 'false'"
       :disabled="liveDisabled() || liveLoading()"
     >

@@ -13,5 +13,7 @@ describe('dashboard button contract', () => {
     expect(existsSync(resolve('storage/framework/defaults/resources/components/Buttons/BaseButton.stx'))).toBe(false)
     expect(button).toContain('bg-gradient-to-b from-blue-500 to-blue-600')
     expect(button).toContain("variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger' | 'success'")
+    expect(button).toContain("tag?: 'button' | 'a'")
+    expect(button).toContain("const liveDownload = useReactiveProp('download', '')")
   })
 })

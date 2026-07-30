@@ -255,7 +255,7 @@ onMount(() => {
     </div>
     <div class="flex flex-wrap gap-2">
       <Button variant="secondary" :loading="loading()" @click="loadPrintDevices"><span :if="!loading()" class="h-4 w-4 i-hugeicons-refresh"></span>Refresh</Button>
-      <a :href="exportHref()" :download="exportFilename()" class="inline-flex items-center px-3 py-2 font-semibold text-gray-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700"><span class="mr-2 h-4 w-4 i-hugeicons-download-04"></span>Export filtered</a>
+      <Button tag="a" variant="secondary" :href="exportHref()" :download="exportFilename()"><span class="h-4 w-4 i-hugeicons-download-04"></span>Export filtered</Button>
       <Button @click="openAdd()"><span class="h-4 w-4 i-hugeicons-add-01"></span>Add printer</Button>
     </div>
   </header>

@@ -238,12 +238,15 @@ the canonical primary action style across the dashboard.
 <Button :loading="saving()" type="submit">Save changes</Button>
 <Button variant="secondary" @click="close">Cancel</Button>
 <Button :loading="deleting()" variant="danger" @click="destroy">Delete</Button>
+<Button tag="a" :href="exportHref()" :download="exportFilename()">Export</Button>
 ```
 
 Use its `primary`, `secondary`, `outline`, `ghost`, `danger`, and `success`
 variants instead of repeating color, border, radius, shadow, disabled, or
 loading classes in feature components. Pass `href` for a statically known
-navigation action, `iconOnly` with an accessible label for an icon action, and
+navigation action. For a reactive link or download, set `tag="a"` so the
+component renders the correct element during the server pass, then bind
+`href` and `download`. Use `iconOnly` with `ariaLabel` for an icon action, and
 `fullWidth` when the action must fill its container.
 
 Keep semantic controls such as tabs, switches, pagination state, window
