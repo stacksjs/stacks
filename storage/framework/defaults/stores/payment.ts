@@ -12,7 +12,7 @@ const apiUrl = resolveApiBaseUrl('')
 
 function authenticatedUserId(): string {
   const id = useAuth().user.value?.id
-  if (id === null || id === undefined || id === '')
+  if (id === null || id === undefined)
     throw new Error('Authentication required before using the payment store.')
   return encodeURIComponent(String(id))
 }
