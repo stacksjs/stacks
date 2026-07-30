@@ -37,34 +37,6 @@ effect(() => {
   isDefault.set(current?.isDefault || false)
 })
 
-function updateName(event: Event): void {
-  name.set((event.target as HTMLInputElement).value)
-}
-
-function updateType(event: Event): void {
-  type.set((event.target as HTMLInputElement).value)
-}
-
-function updateCountry(event: Event): void {
-  country.set((event.target as HTMLInputElement).value)
-}
-
-function updateRate(event: Event): void {
-  rate.set(Number((event.target as HTMLInputElement).value))
-}
-
-function updateRegion(event: Event): void {
-  region.set((event.target as HTMLSelectElement).value)
-}
-
-function updateStatus(event: Event): void {
-  status.set((event.target as HTMLSelectElement).value as 'active' | 'inactive')
-}
-
-function updateDefault(event: Event): void {
-  isDefault.set((event.target as HTMLInputElement).checked)
-}
-
 function submit(): void {
   if (!name().trim() || !type().trim() || !country().trim() || rate() < 0 || rate() > 100)
     return
@@ -90,40 +62,40 @@ function submit(): void {
         <div class="mt-5 space-y-4">
           <label class="block">
             <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Name</span>
-            <input :value="name()" type="text" maxlength="255" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="updateName($event)" />
+            <input x-model="name" type="text" maxlength="255" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" />
           </label>
           <div class="grid gap-4 sm:grid-cols-2">
             <label class="block">
               <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Rate (%)</span>
-              <input :value="rate()" type="number" min="0" max="100" step="0.01" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="updateRate($event)" />
+              <input x-model.number="rate" type="number" min="0" max="100" step="0.01" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" />
             </label>
             <label class="block">
               <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Type</span>
-              <input :value="type()" type="text" list="tax-rate-types" maxlength="100" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="updateType($event)" />
+              <input x-model="type" type="text" list="tax-rate-types" maxlength="100" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" />
               <datalist id="tax-rate-types"><template :for="taxType in types()" :key="taxType"><option :value="taxType"></option></template></datalist>
             </label>
           </div>
           <label class="block">
             <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Country</span>
-            <input :value="country()" type="text" maxlength="100" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="updateCountry($event)" />
+            <input x-model="country" type="text" maxlength="100" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" />
           </label>
           <div class="grid gap-4 sm:grid-cols-2">
             <label class="block">
               <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Region</span>
-              <select :value="region()" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @change="updateRegion($event)">
+              <select x-model="region" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700">
                 <template :for="regionOption in regions" :key="regionOption"><option :value="regionOption">{{ regionOption }}</option></template>
               </select>
             </label>
             <label class="block">
               <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Status</span>
-              <select :value="status()" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @change="updateStatus($event)">
+              <select x-model="status" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700">
                 <option value="active">Active</option>
                 <option value="inactive">Inactive</option>
               </select>
             </label>
           </div>
           <label class="flex gap-3 items-start p-3 border border-gray-200 rounded-lg dark:border-neutral-700">
-            <input type="checkbox" :checked="isDefault()" class="mt-0.5 h-4 w-4 text-blue-600 border-gray-300 rounded" @change="updateDefault($event)" />
+            <input x-model="isDefault" type="checkbox" class="mt-0.5 h-4 w-4 text-blue-600 border-gray-300 rounded" />
             <span>
               <span class="block font-medium text-gray-700 text-sm dark:text-neutral-200">Default tax rate</span>
               <span class="block mt-0.5 text-gray-500 text-xs dark:text-neutral-400">Selecting this clears the default flag from every other rate.</span>

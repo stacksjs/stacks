@@ -34,30 +34,6 @@ effect(() => {
   productId.set(current?.productId || '')
 })
 
-function updateVariant(event: Event): void {
-  variant.set((event.target as HTMLInputElement).value)
-}
-
-function updateType(event: Event): void {
-  type.set((event.target as HTMLInputElement).value)
-}
-
-function updateDescription(event: Event): void {
-  description.set((event.target as HTMLTextAreaElement).value)
-}
-
-function updateOptions(event: Event): void {
-  options.set((event.target as HTMLTextAreaElement).value)
-}
-
-function updateStatus(event: Event): void {
-  status.set((event.target as HTMLSelectElement).value as 'active' | 'inactive' | 'draft')
-}
-
-function updateProduct(event: Event): void {
-  productId.set((event.target as HTMLSelectElement).value)
-}
-
 function submit(): void {
   if (!variant().trim() || !type().trim())
     return
@@ -81,13 +57,13 @@ function submit(): void {
         <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Fields and product assignment follow the ProductVariant model.</p>
         <div class="mt-5 space-y-4">
           <div class="grid gap-4 sm:grid-cols-2">
-            <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Variant</span><input :value="variant()" type="text" maxlength="100" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="updateVariant($event)" /></label>
-            <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Type</span><input :value="type()" type="text" list="product-variant-types" maxlength="50" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="updateType($event)" /><datalist id="product-variant-types"><template :for="variantType in types()" :key="variantType"><option :value="variantType"></option></template></datalist></label>
+            <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Variant</span><input x-model="variant" type="text" maxlength="100" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label>
+            <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Type</span><input x-model="type" type="text" list="product-variant-types" maxlength="50" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /><datalist id="product-variant-types"><template :for="variantType in types()" :key="variantType"><option :value="variantType"></option></template></datalist></label>
           </div>
-          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Product</span><select :value="productId()" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @change="updateProduct($event)"><option value="" :selected="!productId()">Unassigned</option><template :for="product in products()" :key="product.id"><option :value="product.id" :selected="productId() === product.id">{{ product.name }}</option></template></select></label>
-          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Description</span><textarea :value="description()" rows="3" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="updateDescription($event)"></textarea></label>
-          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Options</span><textarea :value="options()" rows="3" placeholder="Small, Medium, Large" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="updateOptions($event)"></textarea><span class="block mt-1 text-gray-500 text-xs dark:text-neutral-400">Separate options with commas or new lines.</span></label>
-          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Status</span><select :value="status()" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @change="updateStatus($event)"><option value="active">Active</option><option value="inactive">Inactive</option><option value="draft">Draft</option></select></label>
+          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Product</span><select x-model="productId" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700"><option value="">Unassigned</option><template :for="product in products()" :key="product.id"><option :value="product.id">{{ product.name }}</option></template></select></label>
+          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Description</span><textarea x-model="description" rows="3" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700"></textarea></label>
+          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Options</span><textarea x-model="options" rows="3" placeholder="Small, Medium, Large" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700"></textarea><span class="block mt-1 text-gray-500 text-xs dark:text-neutral-400">Separate options with commas or new lines.</span></label>
+          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Status</span><select x-model="status" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700"><option value="active">Active</option><option value="inactive">Inactive</option><option value="draft">Draft</option></select></label>
         </div>
       </div>
       <footer class="flex gap-2 justify-end px-6 py-4 bg-gray-50 dark:bg-neutral-900/50 border-gray-200 border-t dark:border-neutral-700">

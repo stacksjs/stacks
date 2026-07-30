@@ -28,22 +28,6 @@ effect(() => {
   featured.set(current?.featured || false)
 })
 
-function updateName(event: Event): void {
-  name.set((event.target as HTMLInputElement).value)
-}
-
-function updateDescription(event: Event): void {
-  description.set((event.target as HTMLTextAreaElement).value)
-}
-
-function updateCountry(event: Event): void {
-  country.set((event.target as HTMLInputElement).value)
-}
-
-function updateFeatured(event: Event): void {
-  featured.set((event.target as HTMLInputElement).checked)
-}
-
 function submit(): void {
   if (!name().trim() || !country().trim())
     return
@@ -66,18 +50,18 @@ function submit(): void {
         <div class="mt-5 space-y-4">
           <label class="block">
             <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Name</span>
-            <input :value="name()" type="text" maxlength="100" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="updateName($event)" />
+            <input x-model="name" type="text" maxlength="100" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" />
           </label>
           <label class="block">
             <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Description</span>
-            <textarea :value="description()" rows="4" maxlength="2000" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="updateDescription($event)"></textarea>
+            <textarea x-model="description" rows="4" maxlength="2000" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700"></textarea>
           </label>
           <label class="block">
             <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Country</span>
-            <input :value="country()" type="text" maxlength="100" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="updateCountry($event)" />
+            <input x-model="country" type="text" maxlength="100" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" />
           </label>
           <label class="flex gap-3 items-center p-3 border border-gray-200 rounded-lg dark:border-neutral-700">
-            <input type="checkbox" :checked="featured()" class="h-4 w-4 text-blue-600 border-gray-300 rounded" @change="updateFeatured($event)" />
+            <input x-model="featured" type="checkbox" class="h-4 w-4 text-blue-600 border-gray-300 rounded" />
             <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Featured manufacturer</span>
           </label>
         </div>

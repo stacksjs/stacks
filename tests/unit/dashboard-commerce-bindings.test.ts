@@ -69,4 +69,26 @@ describe('commerce dashboard filter bindings', () => {
     expect(dashboard).toContain('@search="search.set($event)"')
     expect(dashboard).not.toMatch(/function update(?:Search|Category|Availability)\(/)
   })
+
+  test('simple entity dialogs use native field models', () => {
+    for (const component of [
+      'CommerceManufacturerDialog.stx',
+      'CommerceUnitDialog.stx',
+      'CommerceVariantDialog.stx',
+      'CommerceTaxDialog.stx',
+    ]) {
+      const source = readFileSync(
+        resolve(
+          'storage/framework/defaults/resources/components/Dashboard/Commerce',
+          component,
+        ),
+        'utf8',
+      )
+
+      expect(source).toContain('x-model=')
+      expect(source).not.toMatch(/function update[A-Z]\w*\(event: Event\)/)
+      expect(source).not.toMatch(/:value="[^"]+\(\)"[^>]+@(?:input|change)=/)
+      expect(source).not.toMatch(/:checked="[^"]+\(\)"[^>]+@change=/)
+    }
+  })
 })

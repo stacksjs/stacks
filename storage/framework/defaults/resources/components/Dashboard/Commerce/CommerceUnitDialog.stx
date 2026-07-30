@@ -37,30 +37,6 @@ effect(() => {
   isDefault.set(current?.isDefault || false)
 })
 
-function updateName(event: Event): void {
-  name.set((event.target as HTMLInputElement).value)
-}
-
-function updateAbbreviation(event: Event): void {
-  abbreviation.set((event.target as HTMLInputElement).value)
-}
-
-function updateType(event: Event): void {
-  type.set((event.target as HTMLInputElement).value)
-}
-
-function updateDescription(event: Event): void {
-  description.set((event.target as HTMLTextAreaElement).value)
-}
-
-function updateProduct(event: Event): void {
-  productId.set((event.target as HTMLSelectElement).value)
-}
-
-function updateDefault(event: Event): void {
-  isDefault.set((event.target as HTMLInputElement).checked)
-}
-
 function submit(): void {
   if (!name().trim() || !abbreviation().trim() || !type().trim())
     return
@@ -86,16 +62,16 @@ function submit(): void {
           <div class="grid gap-4 sm:grid-cols-2">
             <label class="block">
               <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Name</span>
-              <input :value="name()" type="text" maxlength="100" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="updateName($event)" />
+              <input x-model="name" type="text" maxlength="100" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" />
             </label>
             <label class="block">
               <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Abbreviation</span>
-              <input :value="abbreviation()" type="text" maxlength="10" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="updateAbbreviation($event)" />
+              <input x-model="abbreviation" type="text" maxlength="10" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" />
             </label>
           </div>
           <label class="block">
             <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Type</span>
-            <input :value="type()" type="text" list="product-unit-types" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="updateType($event)" />
+            <input x-model="type" type="text" list="product-unit-types" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" />
             <datalist id="product-unit-types">
               <template :for="unitType in types()" :key="unitType">
                 <option :value="unitType"></option>
@@ -104,7 +80,7 @@ function submit(): void {
           </label>
           <label class="block">
             <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Product</span>
-            <select :value="productId()" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @change="updateProduct($event)">
+            <select x-model="productId" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700">
               <option value="">Unassigned</option>
               <template :for="product in products()" :key="product.id">
                 <option :value="product.id">{{ product.name }}</option>
@@ -113,10 +89,10 @@ function submit(): void {
           </label>
           <label class="block">
             <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Description</span>
-            <textarea :value="description()" rows="3" maxlength="255" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="updateDescription($event)"></textarea>
+            <textarea x-model="description" rows="3" maxlength="255" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700"></textarea>
           </label>
           <label class="flex gap-3 items-start p-3 border border-gray-200 rounded-lg dark:border-neutral-700">
-            <input type="checkbox" :checked="isDefault()" class="mt-0.5 h-4 w-4 text-blue-600 border-gray-300 rounded" @change="updateDefault($event)" />
+            <input x-model="isDefault" type="checkbox" class="mt-0.5 h-4 w-4 text-blue-600 border-gray-300 rounded" />
             <span>
               <span class="block font-medium text-gray-700 text-sm dark:text-neutral-200">Default for this type</span>
               <span class="block mt-0.5 text-gray-500 text-xs dark:text-neutral-400">Selecting this clears any other default in the same unit type.</span>
