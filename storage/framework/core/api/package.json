@@ -3,26 +3,27 @@
   "type": "module",
   "sideEffects": false,
   "version": "0.70.229",
-  "description": "The Stacks array utilities.",
+  "description": "The Stacks API utilities.",
   "author": "Chris Breuer",
   "contributors": [
     "Chris Breuer <chris@stacksjs.com>"
   ],
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
-  "homepage": "https://github.com/stacksjs/stacks/tree/main/storage/framework/core/arrays#readme",
+  "homepage": "https://github.com/stacksjs/stacks/tree/main/storage/framework/core/api#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/stacksjs/stacks.git",
-    "directory": "./storage/framework/core/arrays"
+    "directory": "./storage/framework/core/api"
   },
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"
   },
   "keywords": [
-    "arrays",
-    "collections",
-    "contains",
+    "api",
+    "http",
+    "openapi",
+    "fetch",
     "utilities",
     "functions",
     "stacks"

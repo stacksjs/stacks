@@ -9,7 +9,7 @@
   ],
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
-  "homepage": "https://github.com/stacksjs/stacks/tree/main/storage/framework/core/database#readme",
+  "homepage": "https://github.com/stacksjs/stacks/tree/main/storage/framework/core/slug#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/stacksjs/stacks.git",

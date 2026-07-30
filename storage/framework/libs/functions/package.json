@@ -8,11 +8,11 @@
     "Chris Breuer <chris@stacksjs.com>"
   ],
   "license": "MIT",
-  "homepage": "https://github.com/stacksjs/stacks/tree/main/functions#readme",
+  "homepage": "https://github.com/stacksjs/stacks/tree/main/storage/framework/libs/functions#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/stacksjs/stacks.git",
-    "directory": "functions"
+    "directory": "storage/framework/libs/functions"
   },
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"
