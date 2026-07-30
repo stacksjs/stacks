@@ -14,7 +14,7 @@ export default new Action({
   method: 'DELETE',
   apiResponse: true,
   async handle(req: { getParam?: (name: string) => unknown, route?: { params?: { slug?: string, id?: string } } }) {
-    const resolved = await resolveWritableModel(String(req?.getParam?.('slug') ?? req?.route?.params?.slug ?? ''))
+    const resolved = await resolveWritableModel(String(req?.getParam?.('slug') ?? req?.route?.params?.slug ?? ''), 'destroy')
     if ('error' in resolved)
       return { ok: false, error: resolved.error }
 

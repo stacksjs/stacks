@@ -32,17 +32,139 @@ export interface ResolvedModel {
   modelName: string
 }
 
+export type ModelWriteOperation = 'store' | 'update' | 'destroy'
+
+export interface ModelWriteCapabilities {
+  create: boolean
+  update: boolean
+  destroy: boolean
+}
+
+export interface ModelCreateField {
+  name: string
+  label: string
+  type: 'boolean' | 'date' | 'datetime' | 'email' | 'enum' | 'number' | 'text'
+  required: boolean
+  defaultValue: unknown
+  options: string[]
+}
+
+function humanize(name: string): string {
+  return name
+    .replace(/([a-z\d])([A-Z])/g, '$1 $2')
+    .replace(/_/g, ' ')
+    .replace(/\b\w/g, character => character.toUpperCase())
+    .replace(/\bId\b/g, 'ID')
+}
+
+function isProtectedField(name: string): boolean {
+  const column = name
+    .replace(/([a-z\d])([A-Z])/g, '$1_$2')
+    .toLowerCase()
+  return PROTECTED_COLUMNS.has(name) || PROTECTED_COLUMNS.has(column)
+}
+
+function useApiRoutes(Model: any): string[] {
+  const useApi = Model?.traits?.useApi
+  if (!useApi)
+    return []
+  if (typeof useApi === 'object' && Array.isArray(useApi.routes))
+    return useApi.routes.map(String)
+  return ['index', 'store', 'show', 'update', 'destroy']
+}
+
+export function modelWriteCapabilities(Model: any): ModelWriteCapabilities {
+  const routes = useApiRoutes(Model)
+  return {
+    create: routes.includes('store'),
+    update: routes.includes('update'),
+    destroy: routes.includes('destroy'),
+  }
+}
+
+function relationFieldName(relation: string): string {
+  const words = relation
+    .trim()
+    .replace(/([a-z\d])([A-Z])/g, '$1_$2')
+    .toLowerCase()
+    .split('_')
+    .filter(Boolean)
+  return `${words[0]}${words.slice(1).map(word => `${word[0]?.toUpperCase()}${word.slice(1)}`).join('')}Id`
+}
+
+export function modelCreateFields(Model: any): ModelCreateField[] {
+  const fields: ModelCreateField[] = []
+  const attributes = Model?.attributes ?? {}
+
+  for (const [name, definition] of Object.entries(attributes as Record<string, any>)) {
+    if (!definition?.fillable || definition.hidden || isProtectedField(name))
+      continue
+    const rule = definition.validation?.rule
+    const ruleName = String(rule?.name || definition.type || 'string')
+    const options = Array.isArray(rule?.allowedValues) ? rule.allowedValues.map(String) : []
+    let type: ModelCreateField['type'] = 'text'
+    if (options.length > 0 || ruleName === 'enum')
+      type = 'enum'
+    else if (ruleName === 'number' || ruleName === 'integer' || ruleName === 'timestamp')
+      type = 'number'
+    else if (ruleName === 'boolean')
+      type = 'boolean'
+    else if (ruleName === 'date')
+      type = 'date'
+    else if (ruleName === 'datetime' || ruleName === 'timestampTz')
+      type = 'datetime'
+    else if (name.toLowerCase().includes('email'))
+      type = 'email'
+
+    fields.push({
+      name,
+      label: humanize(name),
+      type,
+      required: rule?.isRequired === true,
+      defaultValue: definition.default ?? (type === 'boolean' ? false : ''),
+      options,
+    })
+  }
+
+  for (const relation of Model?.belongsTo ?? []) {
+    if (typeof relation !== 'string' || !relation.trim())
+      continue
+    const name = relationFieldName(relation)
+    if (fields.some(field => field.name === name) || isProtectedField(name))
+      continue
+    fields.push({
+      name,
+      label: humanize(name),
+      type: 'number',
+      required: false,
+      defaultValue: '',
+      options: [],
+    })
+  }
+
+  return fields.sort((left, right) => {
+    const leftOrder = attributes[left.name]?.order ?? Number.MAX_SAFE_INTEGER
+    const rightOrder = attributes[right.name]?.order ?? Number.MAX_SAFE_INTEGER
+    return leftOrder - rightOrder
+  })
+}
+
 /**
  * Resolve a URL slug to a writable model, preferring the global the ORM
  * injects (the same object the rest of the dashboard queries, so scopes,
  * casts and observers all apply) over the path-map lookup.
  */
-export async function resolveWritableModel(slug: string): Promise<ResolvedModel | { error: string }> {
+export async function resolveWritableModel(slug: string, operation?: ModelWriteOperation): Promise<ResolvedModel | { error: string }> {
   const modelName = slugToPascal(slug)
   const injected = (globalThis as Record<string, any>)[modelName]
   const Model = (injected && typeof injected.where === 'function') ? injected : await loadModel(modelName)
   if (!Model || Model._isStub || typeof Model.find !== 'function')
     return { error: `No ORM model named ${modelName}. Rows from tables without a model are read-only.` }
+  if (operation) {
+    const capability = operation === 'store' ? 'create' : operation
+    if (!modelWriteCapabilities(Model)[capability])
+      return { error: `${modelName} does not declare the ${operation} route in its useApi trait.` }
+  }
   return { Model, modelName }
 }
 

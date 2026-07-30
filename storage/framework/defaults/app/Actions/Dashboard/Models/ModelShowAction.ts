@@ -1,6 +1,8 @@
 import { Action } from '@stacksjs/actions'
+import { env } from '@stacksjs/env'
 import { request } from '@stacksjs/router'
 import { loadModel, safeGet } from '../../../../resources/functions/dashboard/data'
+import { type ModelCreateField, type ModelWriteCapabilities, modelCreateFields, modelWriteCapabilities } from './model-write'
 
 /**
  * `GET /api/dashboard/models/{slug}` (stacksjs/stacks#1838).
@@ -50,6 +52,8 @@ interface ResponseShape {
   source: 'orm' | 'sqlite-fallback'
   /** False for tables reached through the SQLite fallback: no model, no writes. */
   writable: boolean
+  writeCapabilities: ModelWriteCapabilities
+  createFields: ModelCreateField[]
   error: string | null
 }
 
@@ -190,6 +194,8 @@ export default new Action({
       filters,
       source: 'orm',
       writable: false,
+      writeCapabilities: { create: false, update: false, destroy: false },
+      createFields: [],
       error: null,
     }
 
@@ -271,7 +277,7 @@ export default new Action({
     if (response.source === 'sqlite-fallback') {
       try {
         const { Database } = await import('bun:sqlite')
-        const db = new Database('database/stacks.sqlite')
+        const db = new Database(env.DB_DATABASE_PATH || 'database/stacks.sqlite', { readonly: true })
         try {
           const tableInfo = db.query(`PRAGMA table_info(${tableName})`).all() as Array<{ name: string, type: string }>
           response.columns = tableInfo.map(c => c.name)
@@ -320,10 +326,15 @@ export default new Action({
       }
     }
 
-    // Writability follows the existence of a model, not which engine
-    // answered this particular query: a multi-column search is served by
-    // SQLite even for a model that is perfectly writable.
-    response.writable = hasOrm
+    // Writability follows the model's declared useApi routes, not which
+    // engine answered this particular query. A multi-column search can be
+    // served by SQLite for a model that still creates and updates through
+    // the ORM.
+    response.writeCapabilities = hasOrm
+      ? modelWriteCapabilities(Model)
+      : { create: false, update: false, destroy: false }
+    response.writable = Object.values(response.writeCapabilities).some(Boolean)
+    response.createFields = response.writeCapabilities.create ? modelCreateFields(Model) : []
     response.displayColumns = response.columns.filter(col => !HIDDEN_COLUMNS.has(col) && !col.startsWith('_'))
     response.columnMeta = response.displayColumns.map(name => ({
       name,

@@ -20,7 +20,7 @@ export default new Action({
     all?: () => Record<string, unknown>
     route?: { params?: { slug?: string, id?: string } }
   }) {
-    const resolved = await resolveWritableModel(String(req?.getParam?.('slug') ?? req?.route?.params?.slug ?? ''))
+    const resolved = await resolveWritableModel(String(req?.getParam?.('slug') ?? req?.route?.params?.slug ?? ''), 'update')
     if ('error' in resolved)
       return { ok: false, error: resolved.error }
 

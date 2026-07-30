@@ -349,6 +349,7 @@ route.group({ prefix: '/api/dashboard', apiResponse: true }, () => {
   // Row writes from the same page. Guarded like every other mutating
   // dashboard endpoint; models with no ORM file stay read-only, which the
   // actions enforce rather than the route.
+  guard(route.post('/models/{slug}', 'Actions/Dashboard/Models/ModelStoreAction'))
   guard(route.patch('/models/{slug}/{id}', 'Actions/Dashboard/Models/ModelUpdateAction'))
   guard(route.delete('/models/{slug}/{id}', 'Actions/Dashboard/Models/ModelDestroyAction'))
 
