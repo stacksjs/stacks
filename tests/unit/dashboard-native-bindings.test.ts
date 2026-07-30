@@ -230,8 +230,6 @@ describe('dashboard native STX bindings', () => {
       'Email/EmailDetail.stx',
       'Email/EmailList.stx',
       'NavbarModern.stx',
-      'Settings/Forms/AIForm.stx',
-      'Settings/Forms/CloudForm.stx',
       'UI/WindowControls.stx',
       'WindowControls.stx',
     ]) {
