@@ -104,7 +104,7 @@ export default defineModel({
       validation: {
         rule: schema.boolean(),
       },
-      factory: faker => faker.datatype.boolean(),
+      factory: () => false,
     },
   },
 
