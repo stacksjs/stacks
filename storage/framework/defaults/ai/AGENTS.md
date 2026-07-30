@@ -15,7 +15,7 @@ team (and every agent) sees the same rules.
 ### Linting
 
 - Use **pickier**, never eslint directly.
-- Lint: `bunx --bun pickier .` Auto-fix: `bunx --bun pickier . --fix`
+- Lint: `./buddy lint` Auto-fix: `./buddy lint:fix`
 - For unused variables, prefer `// eslint-disable-next-line` over an underscore
   prefix.
 
@@ -74,6 +74,6 @@ Add your own with `app/Skills/<name>/SKILL.md`, then re-run `buddy setup:ai`.
 
 ## Before finishing
 
-- Lint: `bunx --bun pickier .` (fix with `--fix`)
-- Type check: `bun run typecheck:app`
-- Test: `buddy test`
+- Lint: `./buddy lint` (fix with `./buddy lint:fix`)
+- Type check: `./buddy typecheck`
+- Test: `./buddy test`

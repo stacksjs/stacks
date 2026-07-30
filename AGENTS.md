@@ -16,7 +16,9 @@ relevant `SKILL.md` before doing non-trivial work in that area rather than guess
 
 ### Linting
 - Use **pickier** for linting, never eslint directly.
-- Lint: `bunx --bun pickier .` . Auto-fix: `bunx --bun pickier . --fix` .
+- Lint: `./buddy lint` . Auto-fix: `./buddy lint:fix` . These drive pickier through its SDK, so they
+  work the same in a vendored checkout and a package-based app; reach for `bunx --bun pickier .`
+  only when you need a flag the command does not expose.
 - For unused-variable warnings, prefer `// eslint-disable-next-line` over prefixing with `_`.
 
 ### Frontend
@@ -344,8 +346,8 @@ sentences. This is the single most common AI design tell and it is a pre-flight 
 
 ## Before finishing
 
-- Lint: `bunx --bun pickier .` (fix with `--fix`). Run relevant tests with `buddy test`.
-- Type check what you touched: `bun run typecheck:app` for `app/`, `config/`, `resources/` and
+- Lint: `./buddy lint` (fix with `./buddy lint:fix`). Run relevant tests with `./buddy test`.
+- Type check what you touched: `./buddy typecheck` for `app/`, `config/`, `resources/` and
   `routes/`; `bun run typecheck` for framework internals. Both run on TypeScript 7 (`tsc`, the
   native Go compiler) and finish in a couple of seconds.
 - For UI work, run the pre-flight check in `stacks-design-taste` (Section 14). If a box cannot be
