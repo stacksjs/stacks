@@ -1,93 +1,111 @@
-<script server>
-interface TextareaProps {
-  value?: string
-  label?: string
-  placeholder?: string
-  error?: string
-  hint?: string
-  disabled?: boolean
-  readonly?: boolean
-  required?: boolean
-  rows?: number
-  maxLength?: number
-  showCount?: boolean
-  resize?: 'none' | 'vertical' | 'horizontal' | 'both'
-  name?: string
-  id?: string
-}
+<script client>
+type TextareaResize = 'none' | 'vertical' | 'horizontal' | 'both'
 
-const { value = '', label = '', placeholder = '', error = '', hint = '', disabled = false, readonly = false, required = false, rows = 3, maxLength = 0, showCount = false, resize = 'vertical', name = '', id = '' } = defineProps<TextareaProps>()
+const liveValue = useReactiveProp('value', '')
+const liveLabel = useReactiveProp('label', '')
+const livePlaceholder = useReactiveProp('placeholder', '')
+const liveError = useReactiveProp('error', '')
+const liveHint = useReactiveProp('hint', '')
+const liveDisabled = useReactiveProp('disabled', false)
+const liveReadonly = useReactiveProp('readonly', false)
+const liveRequired = useReactiveProp('required', false)
+const liveRows = useReactiveProp('rows', 3)
+const liveMaxLength = useReactiveProp('maxLength', 0)
+const liveShowCount = useReactiveProp('showCount', false)
+const liveResize = useReactiveProp('resize', 'vertical' as TextareaResize)
+const liveName = useReactiveProp('name', '')
+const liveId = useReactiveProp('id', '')
+const liveAriaLabel = useReactiveProp('ariaLabel', '')
+const emit = defineEmits()
+const generatedId = useId('textarea')
 
-const resizeClasses = {
+const resizeClasses: Record<TextareaResize, string> = {
   none: 'resize-none',
   vertical: 'resize-y',
   horizontal: 'resize-x',
-  both: 'resize'
+  both: 'resize',
 }
 
-const borderClass = error
-  ? 'border-red-300 dark:border-red-700 focus:ring-red-500/20 focus:border-red-500'
-  : 'border-neutral-300 dark:border-neutral-600 hover:border-neutral-400 dark:hover:border-neutral-500 focus:ring-blue-500/20 focus:border-blue-500'
+const textareaId = derived(() => liveId() || generatedId)
+const valueLength = derived(() => String(liveValue() || '').length)
+const headerVisible = derived(() => Boolean(liveLabel() || (liveShowCount() && liveMaxLength())))
+const textareaClass = derived(() => [
+  'block w-full rounded-lg border px-3 py-2.5 text-sm transition-all duration-150',
+  'text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:ring-2',
+  'dark:text-white dark:placeholder:text-neutral-500',
+  resizeClasses[liveResize()] || resizeClasses.vertical,
+  liveError()
+    ? 'border-red-300 focus:border-red-500 focus:ring-red-500/20 dark:border-red-700'
+    : 'border-neutral-300 hover:border-neutral-400 focus:border-blue-500 focus:ring-blue-500/20 dark:border-neutral-600 dark:hover:border-neutral-500',
+  liveDisabled()
+    ? 'cursor-not-allowed border-neutral-200 bg-neutral-100 text-neutral-400 dark:border-neutral-700 dark:bg-neutral-800'
+    : 'bg-white dark:bg-neutral-900',
+].join(' '))
+const limitedCountLabel = derived(() => `${valueLength()}/${liveMaxLength()}`)
+const openCountLabel = derived(() => `${valueLength()} characters`)
 
-const disabledClass = disabled
-  ? 'bg-neutral-100 dark:bg-neutral-800 text-neutral-400 cursor-not-allowed border-neutral-200 dark:border-neutral-700'
-  : 'bg-white dark:bg-neutral-900'
+function textareaValue(event: Event): string {
+  return (event.target as HTMLTextAreaElement).value
+}
 
-const textareaClass = [
-  'block w-full rounded-lg border transition-all duration-150',
-  'text-sm text-neutral-900 dark:text-white',
-  'placeholder:text-neutral-400 dark:placeholder:text-neutral-500',
-  'focus:outline-none focus:ring-2',
-  'px-3 py-2.5',
-  resizeClasses[resize],
-  borderClass,
-  disabledClass
-].join(' ')
+function handleInput(event: Event): void {
+  const value = textareaValue(event)
+  emit('update:value', value)
+  emit('input', value)
+}
 
-const textareaId = id || 'textarea-' + Math.random().toString(36).slice(2, 11)
+function handleChange(event: Event): void {
+  emit('change', textareaValue(event))
+}
+
+function handleBlur(event: Event): void {
+  emit('blur', textareaValue(event))
+}
 </script>
+
 <div>
-    @if(label || (showCount && maxLength))
-      <div class="flex items-center justify-between mb-1.5">
-        @if(label)
-          <label for="{{ textareaId }}" class="block font-medium text-neutral-700 text-sm dark:text-neutral-200">
-            {{ label }}
-            @if(required)
-              <span class="text-red-500">*</span>
-            @endif
-          </label>
-        @endif
-        @if(showCount && maxLength)
-          <span class="text-neutral-400 text-xs dark:text-neutral-500">
-            <span data-char-count>{{ value.length || 0 }}</span>/{{ maxLength }}
-          </span>
-        @endif
-      </div>
-    @endif
-
-    <div class="relative">
-      <textarea
-        id="{{ textareaId }}"
-        name="{{ name }}"
-        rows="{{ rows }}"
-        placeholder="{{ placeholder }}"
-        class="{{ textareaClass }}"
-        @if(disabled) disabled @endif
-        @if(readonly) readonly @endif
-        @if(required) required @endif
-        @if(maxLength) maxlength="{{ maxLength }}" @endif
-      >{{ value }}</textarea>
-
-      @if(showCount && !maxLength)
-        <span class="absolute bottom-2 right-2 px-1 text-neutral-400 text-xs dark:text-neutral-500 bg-white dark:bg-neutral-900">
-          <span data-char-count>{{ value.length || 0 }}</span> characters
-        </span>
-      @endif
-    </div>
-
-    @if(error)
-      <p class="mt-1.5 text-red-600 text-sm dark:text-red-400">{{ error }}</p>
-    @elseif(hint)
-      <p class="mt-1.5 text-neutral-500 text-sm dark:text-neutral-400">{{ hint }}</p>
-    @endif
+  <div :if="headerVisible()" class="flex items-center justify-between mb-1.5">
+    <label
+      :if="liveLabel()"
+      :for="textareaId()"
+      class="block font-medium text-neutral-700 text-sm dark:text-neutral-200"
+    >
+      <span :text="liveLabel()"></span>
+      <span :if="liveRequired()" class="text-red-500">*</span>
+    </label>
+    <span
+      :if="liveShowCount() && liveMaxLength()"
+      class="text-neutral-400 text-xs dark:text-neutral-500"
+      :text="limitedCountLabel()"
+    ></span>
   </div>
+
+  <div class="relative">
+    <textarea
+      :id="textareaId()"
+      :name="liveName() || null"
+      :rows="liveRows()"
+      :placeholder="livePlaceholder()"
+      :aria-label="liveAriaLabel() || liveLabel() || null"
+      :aria-invalid="liveError() ? 'true' : null"
+      :maxlength="liveMaxLength() || null"
+      :class="textareaClass()"
+      x-model="liveValue"
+      :disabled="liveDisabled()"
+      :readonly="liveReadonly()"
+      :required="liveRequired()"
+      @input="handleInput"
+      @change="handleChange"
+      @blur="handleBlur"
+    ></textarea>
+
+    <span
+      :if="liveShowCount() && !liveMaxLength()"
+      class="absolute bottom-2 right-2 px-1 text-neutral-400 text-xs dark:text-neutral-500 bg-white dark:bg-neutral-900"
+      :text="openCountLabel()"
+    ></span>
+  </div>
+
+  <p :if="liveError()" class="mt-1.5 text-red-600 text-sm dark:text-red-400" :text="liveError()"></p>
+  <p :if="!liveError() && liveHint()" class="mt-1.5 text-neutral-500 text-sm dark:text-neutral-400" :text="liveHint()"></p>
+</div>

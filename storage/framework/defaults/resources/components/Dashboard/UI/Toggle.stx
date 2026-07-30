@@ -1,84 +1,89 @@
-<script server>
-interface ToggleProps {
-  checked?: boolean
-  label?: string
-  description?: string
-  disabled?: boolean
-  size?: 'sm' | 'md' | 'lg'
-  labelPosition?: 'left' | 'right'
-  name?: string
-  id?: string
-}
+<script client>
+type ToggleSize = 'sm' | 'md' | 'lg'
+type ToggleLabelPosition = 'left' | 'right'
 
-const { checked = false, label = '', description = '', disabled = false, size = 'md', labelPosition = 'right', name = '', id = '' } = defineProps<ToggleProps>()
+const liveChecked = useReactiveProp('checked', false)
+const liveLabel = useReactiveProp('label', '')
+const liveDescription = useReactiveProp('description', '')
+const liveDisabled = useReactiveProp('disabled', false)
+const liveSize = useReactiveProp('size', 'md' as ToggleSize)
+const liveLabelPosition = useReactiveProp('labelPosition', 'right' as ToggleLabelPosition)
+const liveName = useReactiveProp('name', '')
+const liveId = useReactiveProp('id', '')
+const liveAriaLabel = useReactiveProp('ariaLabel', '')
+const emit = defineEmits()
+const generatedId = useId('toggle')
 
-const trackSizes = {
+const trackSizes: Record<ToggleSize, string> = {
   sm: 'h-4 w-7',
   md: 'h-5 w-9',
-  lg: 'h-6 w-11'
+  lg: 'h-6 w-11',
 }
-
-const thumbSizes = {
+const thumbSizes: Record<ToggleSize, string> = {
   sm: 'h-3 w-3',
   md: 'h-4 w-4',
-  lg: 'h-5 w-5'
+  lg: 'h-5 w-5',
 }
-
-const translateSizes = {
+const checkedTranslations: Record<ToggleSize, string> = {
   sm: 'translate-x-3',
   md: 'translate-x-4',
-  lg: 'translate-x-5'
+  lg: 'translate-x-5',
 }
 
-const toggleId = id || 'toggle-' + Math.random().toString(36).slice(2, 11)
+const toggleId = derived(() => liveId() || generatedId)
+const hasCopy = derived(() => Boolean(liveLabel() || liveDescription()))
+const wrapperClass = derived(() => [
+  'flex items-center gap-3',
+  liveLabelPosition() === 'left' ? 'flex-row-reverse justify-end' : '',
+  liveDisabled() ? 'cursor-not-allowed opacity-60' : 'cursor-pointer',
+].join(' '))
+const trackClass = derived(() => [
+  trackSizes[liveSize()] || trackSizes.md,
+  'relative inline-flex shrink-0 rounded-full transition-colors duration-150',
+  'focus-within:ring-2 focus-within:ring-blue-500/40',
+  liveChecked() ? 'bg-green-500' : 'bg-black/15 dark:bg-white/20',
+  liveDisabled() ? 'opacity-40' : '',
+].join(' '))
+const thumbClass = derived(() => [
+  thumbSizes[liveSize()] || thumbSizes.md,
+  'pointer-events-none inline-block translate-x-0.5 rounded-full bg-white shadow-sm transition-transform duration-150 ease-in-out',
+  liveChecked() ? checkedTranslations[liveSize()] || checkedTranslations.md : '',
+].join(' '))
+const labelClass = derived(() => [
+  'text-[13px] font-medium tracking-tight',
+  liveDisabled() ? 'text-neutral-400 dark:text-neutral-600' : 'text-neutral-700 dark:text-neutral-200',
+].join(' '))
+const descriptionClass = derived(() => [
+  'mt-0.5 text-[12px]',
+  liveDisabled() ? 'text-neutral-300 dark:text-neutral-600' : 'text-neutral-500 dark:text-neutral-400',
+].join(' '))
+
+function handleChange(event: Event): void {
+  const checked = (event.target as HTMLInputElement).checked
+  emit('update:checked', checked)
+  emit('change', checked)
+}
 </script>
-<div class="flex items-center gap-3 {{ labelPosition === 'left' ? 'flex-row-reverse justify-end' : '' }} {{ disabled ? 'opacity-60 cursor-not-allowed' : '' }}">
-    <input
-      type="checkbox"
-      id="{{ toggleId }}"
-      name="{{ name }}"
-      class="sr-only peer"
-      @if(checked) checked @endif
-      @if(disabled) disabled @endif
-    >
-    <label
-      for="{{ toggleId }}"
-      class="relative inline-flex shrink-0 rounded-full transition-all duration-150 focus-within:ring-2 focus-within:ring-blue-500/40 {{ trackSizes[size] }} {{ disabled ? 'cursor-not-allowed opacity-40' : 'cursor-pointer' }} peer-checked:bg-green-500 bg-black/15 dark:bg-white/20"
-    >
-      <span
-        class="pointer-events-none inline-block rounded-full bg-white shadow-sm ring-0 transition-transform duration-150 ease-in-out {{ thumbSizes[size] }} peer-checked:{{ translateSizes[size] }} translate-x-0.5"
-      ></span>
-    </label>
 
-    @if(label || description)
-      <div class="flex-1 min-w-0">
-        @if(label)
-          <label
-            for="{{ toggleId }}"
-            class="text-[13px] font-medium tracking-tight {{ disabled ? 'text-neutral-400 dark:text-neutral-600' : 'text-neutral-700 dark:text-neutral-200' }} {{ disabled ? '' : 'cursor-pointer' }}"
-          >
-            {{ label }}
-          </label>
-        @endif
-        @if(description)
-          <p class="text-[12px] mt-0.5 {{ disabled ? 'text-neutral-300 dark:text-neutral-600' : 'text-neutral-500 dark:text-neutral-400' }}">
-            {{ description }}
-          </p>
-        @endif
-      </div>
-    @endif
-  </div>
-<style>
-input:checked + label {
-  background-color: rgb(34 197 94);
-}
-input:checked + label span {
-  transform: translateX(1rem);
-}
-input:checked + label span[class*="sm"] {
-  transform: translateX(0.75rem);
-}
-input:checked + label span[class*="lg"] {
-  transform: translateX(1.25rem);
-}
-</style>
+<label :class="wrapperClass()">
+  <input
+    :id="toggleId()"
+    type="checkbox"
+    role="switch"
+    :name="liveName() || null"
+    :aria-label="liveAriaLabel() || liveLabel() || 'Toggle'"
+    class="sr-only"
+    x-model="liveChecked"
+    :disabled="liveDisabled()"
+    @change="handleChange"
+  >
+
+  <span aria-hidden="true" :class="trackClass()">
+    <span :class="thumbClass()"></span>
+  </span>
+
+  <span :if="hasCopy()" class="flex-1 min-w-0">
+    <span :if="liveLabel()" class="block" :class="labelClass()" :text="liveLabel()"></span>
+    <span :if="liveDescription()" class="block" :class="descriptionClass()" :text="liveDescription()"></span>
+  </span>
+</label>

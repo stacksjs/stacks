@@ -82,7 +82,7 @@ describe('dashboard native STX bindings', () => {
     expect(list).not.toContain('function updateSearch(')
   })
 
-  test('shared inputs and selects own their control values natively', () => {
+  test('shared form controls own their values and stable identities natively', () => {
     const input = componentSource('UI/Input.stx')
     expect(input).toContain('x-model="liveValue"')
     expect(input).toContain("emit('update:value', nextValue)")
@@ -93,8 +93,10 @@ describe('dashboard native STX bindings', () => {
     expect(input).toContain(':readonly="liveReadonly()"')
     expect(input).toContain(':required="liveRequired()"')
     expect(input).toContain(':text="liveError()"')
+    expect(input).toContain("useId('input')")
     expect(input.indexOf("emit('update:value', nextValue)")).toBeLessThan(input.indexOf("emit('input', nextValue)"))
     expect(input).not.toContain('liveValue.set(nextValue)')
+    expect(input).not.toContain('Math.random')
 
     const select = componentSource('UI/Select.stx')
     expect(select).toContain('x-model="liveValue"')
@@ -104,7 +106,34 @@ describe('dashboard native STX bindings', () => {
     expect(select).toContain(':disabled="liveDisabled()"')
     expect(select).toContain(':required="liveRequired()"')
     expect(select).toContain(':text="liveError()"')
+    expect(select).toContain("useId('select')")
     expect(select).not.toContain('liveValue.set(nextValue)')
+    expect(select).not.toContain('Math.random')
+
+    const checkbox = componentSource('UI/Checkbox.stx')
+    expect(checkbox).toContain('x-model="liveChecked"')
+    expect(checkbox).toContain(':indeterminate="liveIndeterminate()"')
+    expect(checkbox).toContain("emit('update:checked', target.checked)")
+    expect(checkbox).toContain("emit('update:indeterminate', target.indeterminate)")
+    expect(checkbox).toContain("useId('checkbox')")
+    expect(checkbox).toContain('i-hugeicons-tick-02')
+    expect(checkbox).not.toContain('<svg')
+    expect(checkbox).not.toContain('Math.random')
+
+    const toggle = componentSource('UI/Toggle.stx')
+    expect(toggle).toContain('x-model="liveChecked"')
+    expect(toggle).toContain('role="switch"')
+    expect(toggle).toContain("emit('update:checked', checked)")
+    expect(toggle).toContain("useId('toggle')")
+    expect(toggle).not.toContain('Math.random')
+
+    const textarea = componentSource('UI/Textarea.stx')
+    expect(textarea).toContain('x-model="liveValue"')
+    expect(textarea).toContain("emit('update:value', value)")
+    expect(textarea).toContain("useId('textarea')")
+    expect(textarea).toContain(':text="limitedCountLabel()"')
+    expect(textarea).not.toContain('liveValue.set(value)')
+    expect(textarea).not.toContain('Math.random')
   })
 
   test('authentication forms use native component and control models', () => {
