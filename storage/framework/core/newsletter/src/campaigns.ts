@@ -24,27 +24,64 @@ async function resolveListId(input: CreateCampaignInput): Promise<number> {
   throw new Error('[newsletter] Campaign requires emailListId or emailListSlug')
 }
 
+type CampaignWriteValue = string | number | null
+
+export function campaignCreateData(
+  input: CreateCampaignInput,
+  emailListId: number,
+): Record<string, CampaignWriteValue> {
+  return {
+    name: input.name,
+    description: input.description ?? null,
+    type: 'email',
+    status: input.scheduledAt ? 'scheduled' : 'draft',
+    subject: input.subject,
+    template: input.template,
+    text: input.text ?? null,
+    from_name: input.fromName ?? null,
+    from_address: input.fromAddress ?? null,
+    email_list_id: emailListId,
+    scheduled_at: input.scheduledAt ?? null,
+    sent_count: 0,
+  }
+}
+
+export function campaignUpdateData(
+  patch: Partial<CreateCampaignInput>,
+  emailListId?: number,
+): Record<string, CampaignWriteValue> {
+  const data: Record<string, CampaignWriteValue> = {}
+
+  if (patch.name !== undefined)
+    data.name = patch.name
+  if (patch.description !== undefined)
+    data.description = patch.description
+  if (patch.subject !== undefined)
+    data.subject = patch.subject
+  if (patch.template !== undefined)
+    data.template = patch.template
+  if (patch.text !== undefined)
+    data.text = patch.text
+  if (patch.fromName !== undefined)
+    data.from_name = patch.fromName
+  if (patch.fromAddress !== undefined)
+    data.from_address = patch.fromAddress
+  if (emailListId !== undefined)
+    data.email_list_id = emailListId
+  if (patch.scheduledAt !== undefined) {
+    data.scheduled_at = patch.scheduledAt || null
+    data.status = patch.scheduledAt ? 'scheduled' : 'draft'
+  }
+
+  return data
+}
+
 export const campaigns = {
   async create(input: CreateCampaignInput) {
     const { Campaign } = await import('@stacksjs/orm') as any
     const emailListId = await resolveListId(input)
 
-    const status = input.scheduledAt ? 'scheduled' : 'draft'
-
-    return Campaign.create({
-      name: input.name,
-      description: input.description ?? null,
-      type: 'email',
-      status,
-      subject: input.subject,
-      template: input.template,
-      text: input.text ?? null,
-      from_name: input.fromName ?? null,
-      from_address: input.fromAddress ?? null,
-      email_list_id: emailListId,
-      scheduled_at: input.scheduledAt ?? null,
-      sentCount: 0,
-    })
+    return Campaign.create(campaignCreateData(input, emailListId))
   },
 
   async find(id: number) {
@@ -58,7 +95,11 @@ export const campaigns = {
       throw new Error(`[newsletter] Campaign ${id} not found`)
     if (campaign.status !== 'draft' && campaign.status !== 'scheduled')
       throw new Error(`[newsletter] Cannot edit campaign in status '${campaign.status}'`)
-    return campaign.update(patch)
+    const shouldResolveList = patch.emailListId !== undefined || patch.emailListSlug !== undefined
+    const emailListId = shouldResolveList
+      ? await resolveListId(patch as CreateCampaignInput)
+      : undefined
+    return campaign.update(campaignUpdateData(patch, emailListId))
   },
 
   /** Move a draft straight into the queue. */
