@@ -5,6 +5,7 @@ import { Action } from '@stacksjs/enums'
 import { log } from '@stacksjs/logging'
 import { projectPath } from '@stacksjs/path'
 import { runActions } from '.'
+import { BYPASS_ENV, formatPreflightFailure, runPinnedChecks } from './release-preflight'
 
 // Forward any flags passed from `buddy release` (e.g. --bump patch, --dry-run)
 // to the chained sub-actions so non-interactive bumps work end-to-end.
@@ -25,6 +26,22 @@ const isDryRun = passthrough.dryRun === true || passthrough.dryRun === 'true'
 const actions: Action[] = isDryRun
   ? [Action.GenerateLibraryEntries, Action.Bump]
   : [Action.GenerateLibraryEntries, Action.LintFix, Action.Bump]
+
+// Pre-flight BEFORE anything mutates the tree or creates a tag.
+//
+// release.yml gates publishing on these same checks, but only after a tag has
+// been pushed, so a stale artifact there costs a re-tag. Catching it here costs
+// nothing: no bump, no commit, no tag. Runs on dry-runs too, because a dry run
+// whose whole purpose is "would this release work" should not answer yes when
+// the real thing would be blocked.
+const preflight = await runPinnedChecks({ cwd: projectPath() })
+if (preflight.bypassed) {
+  log.warn(`${BYPASS_ENV} is set, so the pinned checks were skipped for this release.`)
+}
+else if (preflight.failures.length > 0) {
+  log.error(formatPreflightFailure(preflight.failures))
+  process.exit(1)
+}
 
 const result = await runActions(
   actions,

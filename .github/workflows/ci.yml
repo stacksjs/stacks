@@ -156,6 +156,7 @@ jobs:
           bun test storage/framework/core/buddy/tests/database-preflight.test.ts
           bun test storage/framework/core/database/tests/committed-migrations-dialect.test.ts
           bun test storage/framework/core/database/tests/model-sources.test.ts
+          bun test storage/framework/core/actions/tests/release-preflight.test.ts
 
   compile:
     runs-on: ubuntu-latest
