@@ -326,6 +326,26 @@ describe('dashboard native STX bindings', () => {
     expect(routes).toContain("guard(route.put('/mail-settings'")
   })
 
+  test('component library uses the native source scanner and scaffold APIs', () => {
+    const view = readFileSync(
+      resolve('storage/framework/defaults/views/dashboard/library/components/index.stx'),
+      'utf8',
+    )
+    const component = componentSource('Library/ComponentsDashboard.stx')
+
+    expect(view).toContain('<ComponentsDashboard />')
+    expect(view).not.toContain('<script client>')
+    expect(component).toContain("dashboardApi<ComponentsResponse>('/api/dashboard/library/components')")
+    expect(component).toContain("await dashboardApi('/api/dashboard/library/components'")
+    expect(component).toContain('x-model="search"')
+    expect(component).toContain('x-model="selectedCategory"')
+    expect(component).toContain('x-model.trim="componentName"')
+    expect(component).toContain('@submit.prevent="createComponent()"')
+    expect(component).not.toContain('Math.random')
+    expect(component).not.toContain('fetch(')
+    expect(component).not.toContain('<canvas')
+  })
+
   test('kanban uses native reactive drag, dialogs, and form models', () => {
     const board = readFileSync(
       resolve('storage/framework/defaults/views/dashboard/kanban/[id].stx'),

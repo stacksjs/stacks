@@ -181,13 +181,13 @@ export function buildNavSections(
 ): Array<[string, string, NavItem[]]> {
   const sections: Array<[string, string, NavItem[]]> = []
 
-  // Library section: views live at the project root (e.g. `/functions`,
-  // `/packages`, `/releases`). The historical `/library/*` URLs in the
-  // sidebar 404'd because no matching files exist under that prefix.
-  // `/components` is dropped — that path is taken by the STX components
-  // directory; there's no dashboard page for it.
+  // Library section: the established views live at the project root
+  // (`/functions`, `/packages`, `/releases`). Components use the explicit
+  // `/library/components` path so it does not collide with STX's component
+  // source directory.
   if (toggles.library) {
     sections.push(['library', 'library', [
+      { to: '/library/components', icon: 'layout-table-01', text: 'Components' },
       { to: '/functions', icon: 'function', text: 'Functions' },
       { to: '/releases', icon: 'list-number', text: 'Releases' },
       { to: '/packages', icon: 'package', text: 'Packages' },

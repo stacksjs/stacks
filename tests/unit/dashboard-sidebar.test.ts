@@ -39,4 +39,15 @@ describe('dashboard sidebar data', () => {
     expect(serialized).not.toContain('onclick=')
     expect(serialized).not.toContain('sidebar-link')
   })
+
+  it('links the component library through its non-conflicting route', () => {
+    const library = buildNavSections().find(([id]) => id === 'library')?.[2] ?? []
+
+    expect(library).toContainEqual({
+      to: '/library/components',
+      icon: 'layout-table-01',
+      text: 'Components',
+    })
+    expect(library.some(item => item.to === '/components')).toBe(false)
+  })
 })

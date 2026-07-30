@@ -1,0 +1,294 @@
+<script client>
+import { dashboardApi } from '../../../../functions/dashboard-api'
+import { pushToast } from '../../../../functions/toasts'
+
+interface ComponentRow {
+  name: string
+  path: string
+  category: string
+  bytes: number
+  updatedAt: string
+}
+
+interface ComponentsResponse {
+  components?: ComponentRow[]
+  categories?: string[]
+  totalBytes?: number
+  sourceRoot?: string
+}
+
+const components = state<ComponentRow[]>([])
+const categories = state<string[]>(['All'])
+const totalBytes = state(0)
+const sourceRoot = state('resources/components')
+const loading = state(true)
+const loadError = state('')
+const search = state('')
+const selectedCategory = state('All')
+const dialogOpen = state(false)
+const componentName = state('')
+const saving = state(false)
+const saveError = state('')
+
+function visibleComponents(): ComponentRow[] {
+  const query = search().trim().toLowerCase()
+  return components().filter(component => (
+    (selectedCategory() === 'All' || component.category === selectedCategory())
+    && (!query || [component.name, component.path, component.category].some(value => value.toLowerCase().includes(query)))
+  ))
+}
+
+function formatBytes(bytes: number): string {
+  if (bytes < 1024)
+    return `${bytes} B`
+  return `${(bytes / 1024).toFixed(1)} kB`
+}
+
+function formatDate(value: string): string {
+  const date = new Date(value)
+  return Number.isNaN(date.getTime())
+    ? value
+    : new Intl.DateTimeFormat('en-US', { dateStyle: 'medium', timeStyle: 'short' }).format(date)
+}
+
+async function loadComponents(): Promise<void> {
+  loading.set(true)
+  loadError.set('')
+  try {
+    const data = await dashboardApi<ComponentsResponse>('/api/dashboard/library/components')
+    if (!Array.isArray(data.components))
+      throw new TypeError('Component sources were not returned in the expected shape.')
+
+    components.set(data.components)
+    categories.set(Array.isArray(data.categories) && data.categories.length > 0 ? data.categories : ['All'])
+    totalBytes.set(Number(data.totalBytes || 0))
+    sourceRoot.set(String(data.sourceRoot || 'resources/components'))
+
+    if (!categories().includes(selectedCategory()))
+      selectedCategory.set('All')
+  }
+  catch (error) {
+    loadError.set(error instanceof Error ? error.message : String(error))
+    pushToast('error', 'Could not load components', { detail: loadError() })
+  }
+  finally {
+    loading.set(false)
+  }
+}
+
+function openCreate(): void {
+  componentName.set('')
+  saveError.set('')
+  dialogOpen.set(true)
+}
+
+function closeCreate(): void {
+  if (!saving())
+    dialogOpen.set(false)
+}
+
+function validName(): boolean {
+  return /^[A-Z][A-Za-z0-9]*$/.test(componentName().trim())
+}
+
+async function createComponent(): Promise<void> {
+  saving.set(true)
+  saveError.set('')
+  try {
+    await dashboardApi('/api/dashboard/library/components', {
+      method: 'POST',
+      body: { name: componentName().trim() },
+    })
+    dialogOpen.set(false)
+    pushToast('success', 'Component created', { detail: `${componentName().trim()}.stx` })
+    await loadComponents()
+  }
+  catch (error) {
+    saveError.set(error instanceof Error ? error.message : String(error))
+  }
+  finally {
+    saving.set(false)
+  }
+}
+
+onMount(() => {
+  void loadComponents()
+})
+</script>
+
+<div class="space-y-6">
+  <header class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+    <div>
+      <p class="font-semibold text-blue-600 text-xs tracking-wide uppercase dark:text-blue-400">Library</p>
+      <h1 class="mt-1 font-bold text-2xl text-gray-900 dark:text-white">Components</h1>
+      <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">
+        STX component sources discovered from <span class="font-mono" :text="sourceRoot()"></span>.
+      </p>
+    </div>
+    <div class="flex gap-2">
+      <button
+        type="button"
+        :disabled="loading()"
+        class="inline-flex items-center px-3 py-2 font-semibold text-gray-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700 disabled:opacity-50"
+        @click="loadComponents()"
+      >
+        <span :class="'mr-2 h-4 w-4 ' + (loading() ? 'animate-spin i-hugeicons-loading-03' : 'i-hugeicons-refresh')"></span>
+        Refresh
+      </button>
+      <button
+        type="button"
+        class="inline-flex items-center px-3 py-2 font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md"
+        @click="openCreate()"
+      >
+        <span class="mr-2 h-4 w-4 i-hugeicons-add-01"></span>
+        Create component
+      </button>
+    </div>
+  </header>
+
+  <div
+    :if="loadError()"
+    role="alert"
+    class="flex gap-4 items-center justify-between p-4 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900"
+  >
+    <span :text="loadError()"></span>
+    <button type="button" class="font-semibold underline" @click="loadComponents()">Retry</button>
+  </div>
+
+  <section aria-label="Component metrics" class="grid gap-3 sm:grid-cols-3">
+    <article class="p-4 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
+      <p class="text-gray-500 text-xs dark:text-neutral-400">Source files</p>
+      <p class="mt-2 font-semibold text-2xl text-gray-900 dark:text-white" :text="components().length"></p>
+    </article>
+    <article class="p-4 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
+      <p class="text-gray-500 text-xs dark:text-neutral-400">Combined size</p>
+      <p class="mt-2 font-semibold text-2xl text-gray-900 dark:text-white" :text="formatBytes(totalBytes())"></p>
+    </article>
+    <article class="p-4 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
+      <p class="text-gray-500 text-xs dark:text-neutral-400">Visible</p>
+      <p class="mt-2 font-semibold text-2xl text-blue-700 dark:text-blue-300" :text="visibleComponents().length"></p>
+    </article>
+  </section>
+
+  <section class="overflow-hidden bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
+    <div class="flex flex-col gap-3 sm:flex-row p-4 border-b border-gray-200 dark:border-neutral-700">
+      <label class="flex-1 min-w-0">
+        <span class="sr-only">Search components</span>
+        <input
+          x-model="search"
+          type="search"
+          placeholder="Search name, category, or path"
+          class="px-3 py-2 max-w-lg w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700"
+        >
+      </label>
+      <label>
+        <span class="sr-only">Filter by category</span>
+        <select
+          x-model="selectedCategory"
+          aria-label="Filter by category"
+          class="px-3 py-2 w-full sm:w-48 text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700"
+        >
+          <option :for="category in categories()" :value="category">{{ category }}</option>
+        </select>
+      </label>
+    </div>
+
+    <div class="overflow-x-auto">
+      <table class="min-w-full divide-gray-200 divide-y dark:divide-neutral-700">
+        <thead class="bg-gray-50 dark:bg-neutral-900/50">
+          <tr>
+            <th class="px-4 py-3 font-semibold text-gray-600 text-left text-xs dark:text-neutral-300">Component</th>
+            <th class="px-4 py-3 font-semibold text-gray-600 text-left text-xs dark:text-neutral-300">Category</th>
+            <th class="px-4 py-3 font-semibold text-gray-600 text-left text-xs dark:text-neutral-300">Path</th>
+            <th class="px-4 py-3 font-semibold text-gray-600 text-left text-xs dark:text-neutral-300">Size</th>
+            <th class="px-4 py-3 font-semibold text-gray-600 text-left text-xs dark:text-neutral-300">Updated</th>
+          </tr>
+        </thead>
+        <tbody class="divide-gray-200 divide-y dark:divide-neutral-700">
+          <template :if="loading()">
+            <tr>
+              <td colspan="5" class="px-4 py-12 text-center text-gray-500 text-sm dark:text-neutral-400">
+                <span class="inline-block mr-2 h-4 w-4 animate-spin i-hugeicons-loading-03"></span>
+                Scanning component sources
+              </td>
+            </tr>
+          </template>
+          <template :else-if="visibleComponents().length === 0">
+            <tr>
+              <td colspan="5" class="px-4 py-14 text-center">
+                <span class="inline-block h-6 w-6 text-gray-400 i-hugeicons-layout-table-01"></span>
+                <p class="mt-2 font-medium text-gray-900 text-sm dark:text-white">No components found</p>
+                <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Create a component or adjust the filters.</p>
+              </td>
+            </tr>
+          </template>
+          <template :else>
+            <template :for="component in visibleComponents()">
+              <tr>
+                <td class="px-4 py-3 font-medium text-gray-900 text-sm dark:text-white">{{ component.name }}</td>
+                <td class="px-4 py-3 text-gray-500 text-sm dark:text-neutral-400">
+                  <span class="px-2 py-1 text-xs bg-gray-100 dark:bg-neutral-700 rounded-full" :text="component.category"></span>
+                </td>
+                <td class="px-4 py-3 font-mono text-gray-500 text-xs dark:text-neutral-400">{{ component.path }}</td>
+                <td class="px-4 py-3 text-gray-500 text-sm dark:text-neutral-400">{{ formatBytes(component.bytes) }}</td>
+                <td class="px-4 py-3 text-gray-500 text-sm dark:text-neutral-400">{{ formatDate(component.updatedAt) }}</td>
+              </tr>
+            </template>
+          </template>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
+
+<div :if="dialogOpen()" class="flex fixed inset-y-0 right-0 z-[55] items-center justify-center p-4 dashboard-modal-layer">
+  <button type="button" aria-label="Close component dialog" class="absolute inset-0 bg-black/45" @click="closeCreate()"></button>
+  <section
+    role="dialog"
+    aria-modal="true"
+    aria-label="Create component"
+    class="relative max-w-md w-full bg-white dark:bg-neutral-800 border border-gray-200 rounded-xl dark:border-neutral-700 shadow-xl"
+  >
+    <form @submit.prevent="createComponent()">
+      <div class="p-6">
+        <h2 class="font-semibold text-gray-900 text-lg dark:text-white">Create component</h2>
+        <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Uses the native Stacks component scaffold in resources/components.</p>
+        <div
+          :if="saveError()"
+          role="alert"
+          class="mt-4 p-3 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900"
+          :text="saveError()"
+        ></div>
+        <label class="block mt-5">
+          <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Name</span>
+          <input
+            x-model.trim="componentName"
+            required
+            pattern="[A-Z][A-Za-z0-9]*"
+            placeholder="OrderSummary"
+            class="mt-1 px-3 py-2 w-full font-mono text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700"
+          >
+          <span class="block mt-1 text-gray-500 text-xs dark:text-neutral-400">Use a PascalCase component name.</span>
+        </label>
+      </div>
+      <footer class="flex gap-2 justify-end px-6 py-4 bg-gray-50 dark:bg-neutral-900/50 border-gray-200 border-t dark:border-neutral-700">
+        <button
+          type="button"
+          :disabled="saving()"
+          class="px-3 py-2 font-semibold text-gray-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700"
+          @click="closeCreate()"
+        >
+          Cancel
+        </button>
+        <button
+          type="submit"
+          :disabled="saving() || !validName()"
+          class="inline-flex items-center px-3 py-2 font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md disabled:opacity-50"
+        >
+          <span :if="saving()" class="mr-2 h-4 w-4 animate-spin i-hugeicons-loading-03"></span>
+          Create component
+        </button>
+      </footer>
+    </form>
+  </section>
+</div>
