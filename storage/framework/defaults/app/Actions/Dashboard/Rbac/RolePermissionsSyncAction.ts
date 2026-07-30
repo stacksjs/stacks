@@ -30,12 +30,15 @@ export default new Action({
     }
     const names: string[] = []
     for (const v of body.permissions) {
-      if (typeof v !== 'string' || !v.trim()) {
+      if (typeof v !== 'string' || !v.trim() || v.trim().length > 100) {
         return { error: '`permissions` must contain non-empty strings.', status: 400 }
       }
       names.push(v.trim())
     }
     const guardName = typeof body.guardName === 'string' && body.guardName ? body.guardName.trim() : 'web'
+    if (!guardName || guardName.length > 60) {
+      return { error: '`guardName` must be 1-60 characters.', status: 400 }
+    }
 
     try {
       await syncRolePermissions(roleName, Array.from(new Set(names)), guardName)
@@ -45,7 +48,7 @@ export default new Action({
       if (!role) {
         return { error: 'Role not found after sync.', status: 404 }
       }
-      const after = await getRolePermissions(role.id)
+      const after = (await getRolePermissions(role.id)).filter(permission => permission.guard_name === guardName)
       return {
         role: { id: role.id, name: role.name, guardName: role.guard_name },
         permissions: after.map(p => ({ id: p.id, name: p.name, guardName: p.guard_name })),

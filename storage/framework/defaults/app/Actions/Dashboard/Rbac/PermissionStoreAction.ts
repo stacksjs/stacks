@@ -28,6 +28,12 @@ export default new Action({
     }
     const guardName = typeof body.guardName === 'string' && body.guardName ? body.guardName.trim() : 'web'
     const description = typeof body.description === 'string' ? body.description.trim() : undefined
+    if (!guardName || guardName.length > 60) {
+      return { error: '`guardName` must be 1-60 characters.', status: 400 }
+    }
+    if (description && description.length > 255) {
+      return { error: '`description` must be at most 255 characters.', status: 400 }
+    }
 
     try {
       const existing = await findPermission(name, guardName)

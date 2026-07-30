@@ -1,5 +1,6 @@
 import { Action } from '@stacksjs/actions'
 import { getUserRoles, syncRoles } from '@stacksjs/auth'
+import { User } from '@stacksjs/orm'
 
 interface SyncInput {
   roles?: unknown
@@ -35,18 +36,25 @@ export default new Action({
     }
     const names: string[] = []
     for (const v of body.roles) {
-      if (typeof v !== 'string' || !v.trim()) {
+      if (typeof v !== 'string' || !v.trim() || v.trim().length > 60) {
         return { error: '`roles` must contain non-empty strings.', status: 400 }
       }
       names.push(v.trim())
     }
     const guardName = typeof body.guardName === 'string' && body.guardName ? body.guardName.trim() : 'web'
+    if (!guardName || guardName.length > 60) {
+      return { error: '`guardName` must be 1-60 characters.', status: 400 }
+    }
 
     try {
+      if (!await User.find(userId)) {
+        return { error: 'User not found.', status: 404 }
+      }
       await syncRoles(userId, Array.from(new Set(names)), guardName)
-      const after = await getUserRoles(userId)
+      const after = (await getUserRoles(userId)).filter(role => role.guard_name === guardName)
       return {
         userId,
+        guardName,
         roles: after.map(r => ({ id: r.id, name: r.name, guardName: r.guard_name })),
       }
     }

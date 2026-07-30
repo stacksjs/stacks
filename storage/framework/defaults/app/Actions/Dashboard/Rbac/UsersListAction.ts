@@ -1,5 +1,6 @@
 import { Action } from '@stacksjs/actions'
-import { db } from '@stacksjs/database'
+import { User } from '@stacksjs/orm'
+import { safeGet } from '../../../../resources/functions/dashboard/data'
 
 /**
  * `GET /api/dashboard/rbac/users` (stacksjs/stacks#1845).
@@ -24,11 +25,17 @@ export default new Action({
   apiResponse: true,
   async handle() {
     try {
-      const rows = await db.unsafe(
-        'SELECT id, name, email FROM users ORDER BY name ASC, id ASC LIMIT 500',
-      ).execute() as Array<{ id: number, name: string | null, email: string | null }>
+      const rows = await User.orderBy('name', 'asc').orderBy('id', 'asc').limit(500).get()
       return {
-        users: (rows ?? []).map(r => ({ id: r.id, name: r.name, email: r.email })),
+        users: rows.map((row) => {
+          const name = safeGet(row, 'name')
+          const email = safeGet(row, 'email')
+          return {
+            id: Number(safeGet(row, 'id', 0)),
+            name: typeof name === 'string' ? name : null,
+            email: typeof email === 'string' ? email : null,
+          }
+        }),
       }
     }
     catch (err) {

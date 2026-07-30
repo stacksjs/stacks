@@ -20,14 +20,17 @@ export default new Action({
       return { error: '`name` route param is required.', status: 400 }
     }
     const url = new URL(request.url ?? 'http://localhost/')
-    const guardName = url.searchParams.get('guard') || 'web'
+    const guardName = (url.searchParams.get('guard') || 'web').trim()
+    if (!guardName || guardName.length > 60) {
+      return { error: 'Invalid guard name.', status: 400 }
+    }
 
     try {
       const role = await findRole(name, guardName)
       if (!role) {
         return { error: 'Role not found.', status: 404 }
       }
-      const permissions = await getRolePermissions(role.id)
+      const permissions = (await getRolePermissions(role.id)).filter(permission => permission.guard_name === guardName)
       return {
         role: { id: role.id, name: role.name, guardName: role.guard_name },
         permissions: permissions.map(p => ({

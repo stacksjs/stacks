@@ -21,7 +21,10 @@ export default new Action({
       return { error: '`name` route param is required.', status: 400 }
     }
     const url = new URL(request.url ?? 'http://localhost/')
-    const guardName = url.searchParams.get('guard') || 'web'
+    const guardName = (url.searchParams.get('guard') || 'web').trim()
+    if (!guardName || guardName.length > 60) {
+      return { error: 'Invalid guard name.', status: 400 }
+    }
 
     try {
       await deleteRole(name, guardName)

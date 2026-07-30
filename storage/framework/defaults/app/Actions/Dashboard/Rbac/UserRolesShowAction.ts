@@ -1,5 +1,6 @@
 import { Action } from '@stacksjs/actions'
 import { getUserRoles } from '@stacksjs/auth'
+import { User } from '@stacksjs/orm'
 
 /**
  * `GET /api/dashboard/rbac/users/:id/roles` (stacksjs/stacks#1845).
@@ -20,11 +21,20 @@ export default new Action({
     if (!Number.isFinite(userId) || userId <= 0) {
       return { error: 'Invalid user id.', status: 400 }
     }
+    const url = new URL(request.url ?? 'http://localhost/')
+    const guardName = (url.searchParams.get('guard') || 'web').trim()
+    if (!guardName || guardName.length > 60) {
+      return { error: 'Invalid guard name.', status: 400 }
+    }
 
     try {
-      const roles = await getUserRoles(userId)
+      if (!await User.find(userId)) {
+        return { error: 'User not found.', status: 404 }
+      }
+      const roles = (await getUserRoles(userId)).filter(role => role.guard_name === guardName)
       return {
         userId,
+        guardName,
         roles: roles.map(r => ({
           id: r.id,
           name: r.name,
