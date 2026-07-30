@@ -177,6 +177,17 @@ describe('dashboard native STX bindings', () => {
     expect(button).toContain('i-hugeicons-loading-03')
     expect(button).not.toContain('<svg')
 
+    for (const path of [
+      'Buttons/AppButton.stx',
+      'UI/ChartCard.stx',
+      'UI/Avatar.stx',
+      'Avatar.stx',
+    ]) {
+      const source = componentSource(path)
+      expect(source).toContain('i-hugeicons-')
+      expect(source).not.toContain('<svg')
+    }
+
     const modal = componentSource('UI/Modal.stx')
     expect(modal).toContain('role="dialog"')
     expect(modal).toContain('aria-modal="true"')

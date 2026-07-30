@@ -26,5 +26,7 @@ describe('dashboard layout client architecture', () => {
     expect(layoutSource).not.toContain('window.')
     expect(layoutSource).not.toMatch(/\bvar\s+/)
     expect(layoutSource).not.toContain('__sidebarWired')
+    expect(layoutSource).toContain('i-hugeicons-cancel-01')
+    expect(layoutSource).not.toContain('<svg')
   })
 })
