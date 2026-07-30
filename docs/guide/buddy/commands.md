@@ -3047,6 +3047,7 @@ Create a new Stacks project
 | `-e`, `--email` | Do you need email? | boolean, optional | `false` |
 | `-P`, `--project` | Target a specific project | value, optional | `false` |
 | `-m`, `--minimal` | Skip optional feature bundles (cms, commerce, dashboard, marketing, monitoring, realtime, queue) — bare-bones API/SPA starter that can re-add them later via `./buddy <feature>:install`. | boolean, optional | `false` |
+| `--with-core` | Keep the framework vendored in `storage/framework/core` as a Bun workspace, for working ON Stacks. Apps that only work WITH Stacks want the default, which resolves every @stacksjs/* package from npm. | boolean, optional | `false` |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
 
 ### `outdated`
