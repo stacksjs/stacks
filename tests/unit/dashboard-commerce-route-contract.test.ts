@@ -161,4 +161,31 @@ describe('dashboard commerce route contract', () => {
 
     expect(destroyAction).toContain('response.noContent()')
   })
+
+  test('product unit mutations are guarded and save default state atomically', () => {
+    const routes = source('storage/framework/defaults/routes/dashboard-api.ts')
+    const publicRoutes = source('storage/framework/defaults/routes/dashboard.ts')
+    const units = source('storage/framework/defaults/resources/components/Dashboard/Commerce/CommerceUnitsDashboard.stx')
+    const storeAction = source('storage/framework/defaults/app/Actions/Commerce/Product/ProductUnitStoreAction.ts')
+    const updateAction = source('storage/framework/defaults/app/Actions/Commerce/Product/ProductUnitUpdateAction.ts')
+    const store = source('storage/framework/core/commerce/src/products/units/store.ts')
+    const update = source('storage/framework/core/commerce/src/products/units/update.ts')
+
+    expect(routes).toContain("guard(route.post('/commerce/units', 'Actions/Commerce/Product/ProductUnitStoreAction'))")
+    expect(routes).toContain("guard(route.patch('/commerce/units/{id}', 'Actions/Commerce/Product/ProductUnitUpdateAction'))")
+    expect(routes).toContain("guard(route.delete('/commerce/units/{id}', 'Actions/Commerce/Product/ProductUnitDestroyAction'))")
+    expect(publicRoutes).toContain("route.patch('/products/units/{id}', 'Actions/Commerce/Product/ProductUnitUpdateAction')")
+    expect(units).toContain('/api/dashboard/commerce/units')
+    expect(units).not.toMatch(/\/api\/product-units(?:\/|\?|'|`)/)
+
+    for (const action of [storeAction, updateAction]) {
+      expect(action).toContain('model: ProductUnit')
+      expect(action).toContain('await request.validate()')
+      expect(action).toContain('toSnakeCaseKeys(request.all())')
+    }
+
+    expect(store).toContain('db.transaction')
+    expect(update).toContain('db.transaction')
+    expect(units).not.toContain("did not return an ID")
+  })
 })

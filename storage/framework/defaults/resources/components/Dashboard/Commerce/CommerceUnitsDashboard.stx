@@ -4,7 +4,7 @@ import type {
   ProductUnitRecord,
   ProductUnitSummary,
 } from '../../../../app/Actions/Dashboard/Commerce/product-unit-records'
-import { dashboardApi } from '../../../../functions/dashboard-api'
+import { DashboardApiError, dashboardApi } from '../../../../functions/dashboard-api'
 import { pushToast } from '../../../../functions/toasts'
 
 interface ProductUnitIndexResponse {
@@ -20,10 +20,6 @@ interface ProductUnitWritePayload {
   description: string
   isDefault: boolean
   productId: number | null
-}
-
-interface ProductUnitWriteResponse {
-  data?: { id?: string | number }
 }
 
 const emptySummary: ProductUnitSummary = { total: 0, defaults: 0, types: 0, linkedProducts: 0, defaultConflicts: 0 }
@@ -42,6 +38,7 @@ const editingRecord = state<ProductUnitRecord | null>(null)
 const deletingRecord = state<ProductUnitRecord | null>(null)
 const saving = state(false)
 const deleting = state(false)
+const validationErrors = state<Record<string, string>>({})
 
 function unitTypes(): string[] {
   return [...new Set(records().map(record => record.type).filter(Boolean))].sort()
@@ -111,12 +108,14 @@ async function loadUnits(): Promise<void> {
 function openAdd(): void {
   dialogMode.set('add')
   editingRecord.set(null)
+  validationErrors.set({})
   dialogOpen.set(true)
 }
 
 function openEdit(record: ProductUnitRecord): void {
   dialogMode.set('edit')
   editingRecord.set(record)
+  validationErrors.set({})
   dialogOpen.set(true)
 }
 
@@ -125,37 +124,31 @@ function closeDialog(): void {
     return
   dialogOpen.set(false)
   editingRecord.set(null)
+  validationErrors.set({})
 }
 
 async function saveUnit(payload: ProductUnitWritePayload): Promise<void> {
   const current = editingRecord()
   const editing = dialogMode() === 'edit' && current !== null
-  const path = editing ? `/api/product-units/${current.id}` : '/api/product-units'
+  const path = editing
+    ? `/api/dashboard/commerce/units/${current.id}`
+    : '/api/dashboard/commerce/units'
   const body = {
     name: payload.name,
     abbreviation: payload.abbreviation,
     type: payload.type,
     description: payload.description,
     productId: payload.productId,
-    ...(editing ? {} : { isDefault: false }),
+    isDefault: payload.isDefault,
   }
 
   saving.set(true)
+  validationErrors.set({})
   try {
-    const result = await dashboardApi<ProductUnitWriteResponse>(path, {
+    await dashboardApi(path, {
       method: editing ? 'PATCH' : 'POST',
       body,
     })
-    const savedId = editing ? current.id : String(result.data?.id || '')
-    if (!savedId)
-      throw new Error('The created product unit did not return an ID.')
-
-    if (payload.isDefault || (editing && current.isDefault !== payload.isDefault)) {
-      await dashboardApi(`/api/dashboard/commerce/units/${savedId}/default`, {
-        method: 'PATCH',
-        body: { isDefault: payload.isDefault },
-      })
-    }
 
     dialogOpen.set(false)
     editingRecord.set(null)
@@ -163,6 +156,8 @@ async function saveUnit(payload: ProductUnitWritePayload): Promise<void> {
     await loadUnits()
   }
   catch (error) {
+    if (error instanceof DashboardApiError)
+      validationErrors.set(error.fields ?? {})
     pushToast('error', 'Could not save product unit', {
       detail: error instanceof Error ? error.message : String(error),
     })
@@ -187,7 +182,7 @@ async function deleteUnit(): Promise<void> {
     return
   deleting.set(true)
   try {
-    await dashboardApi(`/api/product-units/${current.id}`, { method: 'DELETE' })
+    await dashboardApi(`/api/dashboard/commerce/units/${current.id}`, { method: 'DELETE' })
     deletingRecord.set(null)
     pushToast('success', 'Product unit deleted')
     await loadUnits()
@@ -214,14 +209,14 @@ onMount(() => {
       <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Manage native ProductUnit records and their product relationships.</p>
     </div>
     <div class="flex gap-2">
-      <button type="button" :disabled="loading()" class="inline-flex items-center px-3 py-2 font-semibold text-gray-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700 disabled:opacity-50" @click="loadUnits">
-        <span :class="'mr-2 h-4 w-4 ' + (loading() ? 'animate-spin i-hugeicons-loading-03' : 'i-hugeicons-refresh')"></span>
+      <Button variant="secondary" :loading="loading()" @click="loadUnits">
+        <span :if="!loading()" class="h-4 w-4 i-hugeicons-refresh"></span>
         Refresh
-      </button>
-      <button type="button" class="inline-flex items-center px-3 py-2 font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md" @click="openAdd()">
-        <span class="mr-2 h-4 w-4 i-hugeicons-add-01"></span>
+      </Button>
+      <Button @click="openAdd()">
+        <span class="h-4 w-4 i-hugeicons-add-01"></span>
         Add unit
-      </button>
+      </Button>
     </div>
   </header>
 
@@ -292,6 +287,7 @@ onMount(() => {
   :products="products()"
   :types="unitTypes()"
   :busy="saving()"
+  :errors="validationErrors()"
   @submit="saveUnit"
   @close="closeDialog()"
 />

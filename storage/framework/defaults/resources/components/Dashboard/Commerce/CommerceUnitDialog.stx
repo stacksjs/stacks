@@ -10,6 +10,7 @@ const record = useReactiveProp('record', null as ProductUnitRecord | null)
 const products = useReactiveProp('products', [] as ProductUnitOption[])
 const types = useReactiveProp('types', [] as string[])
 const busy = useReactiveProp('busy', false)
+const errors = useReactiveProp('errors', {} as Record<string, string>)
 const emit = defineEmits()
 const name = state('')
 const abbreviation = state('')
@@ -49,6 +50,13 @@ function submit(): void {
     isDefault: isDefault(),
   })
 }
+
+function errorMessages(): string[] {
+  return Object.entries(errors()).map(([field, message]) => {
+    const label = field.replace(/([a-z])([A-Z])/g, '$1 $2').replaceAll('_', ' ')
+    return `${label.charAt(0).toUpperCase()}${label.slice(1)}: ${message}`
+  })
+}
 </script>
 
 <div :if="open()" class="flex fixed inset-0 z-50 items-center justify-center p-4">
@@ -58,6 +66,9 @@ function submit(): void {
       <div class="p-6">
         <h2 id="product-unit-dialog-title" class="font-semibold text-gray-900 text-lg dark:text-white">{{ mode() === 'edit' ? 'Edit product unit' : 'Add product unit' }}</h2>
         <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Fields and relationships come from the ProductUnit model.</p>
+        <ul :if="errorMessages().length > 0" class="mt-5 p-3 space-y-1 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900">
+          <template :for="message in errorMessages()" :key="message"><li>{{ message }}</li></template>
+        </ul>
         <div class="mt-5 space-y-4">
           <div class="grid gap-4 sm:grid-cols-2">
             <label class="block">
@@ -101,11 +112,10 @@ function submit(): void {
         </div>
       </div>
       <footer class="flex gap-2 justify-end px-6 py-4 bg-gray-50 dark:bg-neutral-900/50 border-gray-200 border-t dark:border-neutral-700">
-        <button type="button" :disabled="busy()" class="px-3 py-2 font-semibold text-gray-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700 disabled:opacity-50" @click="emit('close')">Cancel</button>
-        <button type="submit" :disabled="busy() || !name().trim() || !abbreviation().trim() || !type().trim()" class="inline-flex items-center px-3 py-2 font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md disabled:opacity-50">
-          <span :if="busy()" class="mr-2 h-4 w-4 animate-spin i-hugeicons-loading-03"></span>
+        <Button variant="secondary" :disabled="busy()" @click="emit('close')">Cancel</Button>
+        <Button type="submit" :loading="busy()" :disabled="!name().trim() || !abbreviation().trim() || !type().trim()">
           {{ mode() === 'edit' ? 'Save product unit' : 'Add product unit' }}
-        </button>
+        </Button>
       </footer>
     </form>
   </section>

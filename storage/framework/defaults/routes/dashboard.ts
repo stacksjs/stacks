@@ -393,6 +393,7 @@ route.group({ prefix: '/api/commerce', middleware: 'auth' }, () => {
   route.get('/products/units', 'Actions/Commerce/Product/ProductUnitIndexAction')
   route.get('/products/units/{id}', 'Actions/Commerce/Product/ProductUnitShowAction')
   route.post('/products/units', 'Actions/Commerce/Product/ProductUnitStoreAction')
+  route.patch('/products/units/{id}', 'Actions/Commerce/Product/ProductUnitUpdateAction')
   route.delete('/products/units/{id}', 'Actions/Commerce/Product/ProductUnitDestroyAction')
 
   route.get('/product-categories', 'Actions/Commerce/Product/ProductCategoryIndexAction')
