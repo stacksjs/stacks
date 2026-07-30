@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, test } from 'bun:test'
 import {
+  ensureCraftNativeSidebarMarker,
   type CraftSidebarSelectEvent,
   useCraftSidebarSelection,
 } from '../../storage/framework/defaults/functions/craft'
@@ -13,10 +14,18 @@ interface TestCraftBridge {
   _sidebarSelectHandler?: (event: CraftSidebarSelectEvent) => void
 }
 
-const runtime = globalThis as typeof globalThis & { craft?: TestCraftBridge }
+const runtime = globalThis as typeof globalThis & {
+  craft?: TestCraftBridge
+  __craftNativeSidebar?: boolean
+  location?: { search?: string }
+  document?: { documentElement?: { setAttribute: (name: string, value: string) => void } }
+}
 
 afterEach(() => {
   delete runtime.craft
+  delete runtime.__craftNativeSidebar
+  delete runtime.location
+  delete runtime.document
 })
 
 describe('Craft sidebar selection', () => {
@@ -60,5 +69,30 @@ describe('Craft sidebar selection', () => {
 
     expect(selected).toEqual(['products'])
     expect(legacySelections).toEqual(['settings'])
+  })
+
+  test('normalizes the legacy native-sidebar flag to the document marker', () => {
+    const attributes: Record<string, string> = {}
+    runtime.__craftNativeSidebar = true
+    runtime.document = {
+      documentElement: {
+        setAttribute(name, value) {
+          attributes[name] = value
+        },
+      },
+    }
+
+    expect(ensureCraftNativeSidebarMarker()).toBe(true)
+    expect(attributes).toEqual({ 'data-craft-native-sidebar': 'true' })
+  })
+
+  test('recognizes URL-mode native sidebars without treating every Craft window as one', () => {
+    runtime.location = { search: '?native-sidebar=1' }
+    expect(ensureCraftNativeSidebarMarker()).toBe(true)
+
+    delete runtime.location
+    delete runtime.__craftNativeSidebar
+    runtime.craft = {} as TestCraftBridge
+    expect(ensureCraftNativeSidebarMarker()).toBe(false)
   })
 })

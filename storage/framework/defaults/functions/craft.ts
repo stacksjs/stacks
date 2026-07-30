@@ -51,12 +51,46 @@ interface CraftBridge {
   _sidebarSelectHandler?: (event: CraftSidebarSelectEvent) => void
 }
 
+interface CraftRuntime {
+  craft?: CraftBridge
+  __craftNativeSidebar?: boolean
+  location?: { search?: string }
+  document?: { documentElement?: { setAttribute: (name: string, value: string) => void } }
+}
+
+function craftRuntime(): CraftRuntime {
+  return globalThis as typeof globalThis & CraftRuntime
+}
+
 function craftBridge(): CraftBridge | undefined {
-  return (globalThis as typeof globalThis & { craft?: CraftBridge }).craft
+  return craftRuntime().craft
 }
 
 export function isCraftNative(): boolean {
   return craftBridge()?.window !== undefined
+}
+
+/**
+ * Keep the native-sidebar marker consistent across current Craft builds,
+ * older bootstraps that only expose `__craftNativeSidebar`, and URL mode.
+ *
+ * Current Craft sets `data-craft-native-sidebar` before the document loads.
+ * The fallback remains here so apps launched by an older installed binary
+ * still receive the same CSS contract without embedding raw browser scripts
+ * in STX components.
+ */
+export function ensureCraftNativeSidebarMarker(): boolean {
+  const runtime = craftRuntime()
+  const search = runtime.location?.search || ''
+  const hasQueryFlag = new URLSearchParams(search).get('native-sidebar') === '1'
+  const hasNativeSidebar = runtime.__craftNativeSidebar === true || hasQueryFlag
+
+  if (hasNativeSidebar) {
+    runtime.__craftNativeSidebar = true
+    runtime.document?.documentElement?.setAttribute('data-craft-native-sidebar', 'true')
+  }
+
+  return hasNativeSidebar
 }
 
 /**

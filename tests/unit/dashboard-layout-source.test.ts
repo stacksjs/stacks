@@ -13,6 +13,8 @@ describe('dashboard layout client architecture', () => {
     expect(layoutSource).toContain('useEventListener(\'stx:navigate\'')
     expect(layoutSource).toContain('onMount(() =>')
     expect(layoutSource).toContain('@itemClick="handleSidebarItemClick($event)"')
+    expect(layoutSource).toContain('ensureCraftNativeSidebarMarker()')
+    expect(layoutSource).toContain('data-dashboard-web-sidebar')
   })
 
   test('does not carry the legacy raw browser wiring', () => {

@@ -91,6 +91,12 @@ body {
 html[data-craft-native-sidebar='true'] .dashboard-modal-layer {
   left: 0;
 }
+html[data-craft-native-sidebar='true'] [data-dashboard-web-sidebar] {
+  display: none;
+}
+html[data-craft-native-sidebar='true'] [data-stx-content] {
+  margin-left: 0;
+}
 .dark [data-stx-content] {
   background: #0a0a0a;
 }
@@ -104,7 +110,7 @@ html[data-craft-native-sidebar='true'] .dashboard-modal-layer {
 // layout so every dashboard page picks it up without opting in.
 // `~/`-anchored for the same reason as the sidebar import above.
 import { useToasts, dismissToast } from '~/storage/framework/defaults/functions/toasts'
-import { useCraftSidebarSelection } from '~/storage/framework/defaults/functions/craft'
+import { ensureCraftNativeSidebarMarker, useCraftSidebarSelection } from '~/storage/framework/defaults/functions/craft'
 import { authStore } from '~/storage/framework/defaults/views/dashboard/stores/auth'
 import { kanbanStore } from '~/storage/framework/defaults/views/dashboard/stores/kanban'
 import { rbacStore } from '~/storage/framework/defaults/views/dashboard/stores/rbac'
@@ -143,6 +149,7 @@ const auth = authStore
 const route = useRoute()
 const sidebarHost = useRef('dashboardSidebarHost')
 let removeCraftSidebarSelection = () => {}
+ensureCraftNativeSidebarMarker()
 auth.load()
 
 function sidebarPane() {
@@ -242,7 +249,10 @@ function attachCraftSidebarSelection() {
 
 useEventListener('stx:navigate', event => syncActiveSidebarRow(event?.detail?.url))
 useEventListener('stx:hydrated', () => syncActiveSidebarRow(), { once: true })
-useEventListener('craft:ready', attachCraftSidebarSelection)
+useEventListener('craft:ready', () => {
+  ensureCraftNativeSidebarMarker()
+  attachCraftSidebarSelection()
+})
 
 onMount(() => {
   syncActiveSidebarRow()
@@ -255,7 +265,7 @@ onDestroy(() => {
 })
 </script>
 
-<div ref="dashboardSidebarHost">
+<div ref="dashboardSidebarHost" data-dashboard-web-sidebar>
   <Sidebar
     :sections="sidebarSections"
     theme="macos"

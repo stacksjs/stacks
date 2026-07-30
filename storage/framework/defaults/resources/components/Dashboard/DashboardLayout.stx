@@ -1,4 +1,4 @@
-<script>
+<script server>
 interface DashboardLayoutProps {
   isMobileMenuOpen?: boolean
   isMobile?: boolean
@@ -41,24 +41,11 @@ function shouldShowWebSidebar() {
   return showSidebar
 }
 </script>
-<script>
-(function() {
-  if (typeof window === 'undefined') return;
+<script client>
+import { ensureCraftNativeSidebarMarker } from '../../../functions/craft'
 
-  // Detect native sidebar via multiple signals:
-  // 1. Craft bridge flag (WKUserScript injection)
-  // 2. Craft window API
-  // 3. URL parameter (reliable fallback when WKUserScript timing is off)
-  var hasNativeSidebarFlag = Boolean(window.__craftNativeSidebar);
-  var hasCraftWindowApi = Boolean(window.craft && window.craft.window);
-  var hasUrlParam = window.location.search.indexOf('native-sidebar=1') !== -1;
-  var hasNativeSidebar = hasNativeSidebarFlag || hasCraftWindowApi || hasUrlParam;
-
-  if (hasNativeSidebar) {
-    window.__craftNativeSidebar = true;
-    document.documentElement.setAttribute('data-craft-native-sidebar', 'true');
-  }
-})();
+ensureCraftNativeSidebarMarker()
+useEventListener('craft:ready', ensureCraftNativeSidebarMarker)
 </script>
 <!-- macOS-inspired layout with subtle background -->
 <div class="min-h-screen bg-white dark:bg-neutral-950">
