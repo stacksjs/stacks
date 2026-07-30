@@ -309,6 +309,10 @@ route.group({ prefix: '/api/dashboard', apiResponse: true }, () => {
   guard(route.post('/marketing/lists', 'Actions/Dashboard/Marketing/ListStoreAction'))
   guard(route.patch('/marketing/lists/{id}', 'Actions/Dashboard/Marketing/ListUpdateAction'))
   guard(route.delete('/marketing/lists/{id}', 'Actions/Dashboard/Marketing/ListDestroyAction'))
+  guard(route.get('/marketing/social-posts', 'Actions/Dashboard/Marketing/SocialPostIndexAction'))
+  guard(route.post('/marketing/social-posts', 'Actions/Dashboard/Marketing/SocialPostStoreAction'))
+  guard(route.patch('/marketing/social-posts/{id}', 'Actions/Dashboard/Marketing/SocialPostUpdateAction'))
+  guard(route.delete('/marketing/social-posts/{id}', 'Actions/Dashboard/Marketing/SocialPostDestroyAction'))
 
   guard(route.get('/notification-deliveries', 'Actions/Dashboard/Notifications/NotificationDeliveryIndexAction'))
   guard(route.get('/notification-deliveries/overview', 'Actions/Dashboard/Notifications/NotificationDeliveryOverviewAction'))

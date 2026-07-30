@@ -1,0 +1,256 @@
+<script client>
+import type {
+  SocialPostRecord,
+  SocialPostSummary,
+  SocialPostUserOption,
+} from '../../../../app/Actions/Dashboard/Marketing/social-post-records'
+import { dashboardApi } from '../../../../functions/dashboard-api'
+import { pushToast } from '../../../../functions/toasts'
+
+interface SocialPostIndexResponse {
+  records: SocialPostRecord[]
+  summary: SocialPostSummary
+  users: SocialPostUserOption[]
+}
+
+interface SocialPostPayload {
+  content: string
+  platform: string
+  status: string
+  scheduledAt: string | null
+  publishedAt: string | null
+  imageUrl: string | null
+  userId: number | null
+}
+
+const emptySummary: SocialPostSummary = { total: 0, published: 0, scheduled: 0, drafts: 0, failed: 0, reach: 0, engagement: 0 }
+const records = state<SocialPostRecord[]>([])
+const summary = state<SocialPostSummary>({ ...emptySummary })
+const users = state<SocialPostUserOption[]>([])
+const loading = state(true)
+const loadError = state('')
+const search = state('')
+const statusFilter = state('all')
+const platformFilter = state('all')
+const authorFilter = state('all')
+const sort = state('newest')
+const page = state(1)
+const perPage = 10
+const dialogOpen = state(false)
+const dialogMode = state<'add' | 'edit'>('add')
+const editingRecord = state<SocialPostRecord | null>(null)
+const deletingRecord = state<SocialPostRecord | null>(null)
+const saving = state(false)
+const saveError = state('')
+const deleting = state(false)
+const deleteError = state('')
+
+function filteredRecords(): SocialPostRecord[] {
+  const query = search().trim().toLowerCase()
+  return [...records()]
+    .filter((record) => {
+      if (statusFilter() !== 'all' && record.status !== statusFilter())
+        return false
+      if (platformFilter() !== 'all' && record.platform !== platformFilter())
+        return false
+      if (authorFilter() !== 'all' && record.userId !== authorFilter())
+        return false
+      return !query || [record.content, record.platform, record.status, record.authorName, record.authorEmail, record.externalId]
+        .some(value => value.toLowerCase().includes(query))
+    })
+    .sort((left, right) => {
+      if (sort() === 'reach')
+        return right.reach - left.reach || Number(right.id) - Number(left.id)
+      if (sort() === 'engagement')
+        return right.engagement - left.engagement || Number(right.id) - Number(left.id)
+      if (sort() === 'scheduled')
+        return String(right.scheduledAt).localeCompare(String(left.scheduledAt))
+      return Number(right.id) - Number(left.id)
+    })
+}
+
+function visibleRecords(): SocialPostRecord[] {
+  const start = (page() - 1) * perPage
+  return filteredRecords().slice(start, start + perPage)
+}
+
+function totalPages(): number {
+  return Math.max(1, Math.ceil(filteredRecords().length / perPage))
+}
+
+function updateSearch(event: Event): void {
+  search.set((event.target as HTMLInputElement).value)
+  page.set(1)
+}
+
+function updateStatusFilter(event: Event): void {
+  statusFilter.set((event.target as HTMLSelectElement).value)
+  page.set(1)
+}
+
+function updatePlatformFilter(event: Event): void {
+  platformFilter.set((event.target as HTMLSelectElement).value)
+  page.set(1)
+}
+
+function updateAuthorFilter(event: Event): void {
+  authorFilter.set((event.target as HTMLSelectElement).value)
+  page.set(1)
+}
+
+function updateSort(event: Event): void {
+  sort.set((event.target as HTMLSelectElement).value)
+  page.set(1)
+}
+
+async function loadPosts(): Promise<void> {
+  loading.set(true)
+  loadError.set('')
+  try {
+    const data = await dashboardApi<SocialPostIndexResponse>('/api/dashboard/marketing/social-posts')
+    if (!data || !Array.isArray(data.records) || !Array.isArray(data.users) || !data.summary)
+      throw new TypeError('Social post resources were not returned in the expected shape.')
+    records.set(data.records)
+    users.set(data.users)
+    summary.set(data.summary)
+    if (page() > totalPages())
+      page.set(totalPages())
+  }
+  catch (error) {
+    loadError.set(error instanceof Error ? error.message : String(error))
+    pushToast('error', 'Could not load social posts', { detail: loadError() })
+  }
+  finally {
+    loading.set(false)
+  }
+}
+
+function openAdd(): void {
+  dialogMode.set('add')
+  editingRecord.set(null)
+  saveError.set('')
+  dialogOpen.set(true)
+}
+
+function openEdit(record: SocialPostRecord): void {
+  dialogMode.set('edit')
+  editingRecord.set(record)
+  saveError.set('')
+  dialogOpen.set(true)
+}
+
+function closeDialog(): void {
+  if (saving())
+    return
+  dialogOpen.set(false)
+  editingRecord.set(null)
+  saveError.set('')
+}
+
+async function savePost(payload: SocialPostPayload): Promise<void> {
+  const current = editingRecord()
+  const editing = dialogMode() === 'edit' && current !== null
+  saving.set(true)
+  saveError.set('')
+  try {
+    await dashboardApi(
+      editing ? `/api/dashboard/marketing/social-posts/${current.id}` : '/api/dashboard/marketing/social-posts',
+      { method: editing ? 'PATCH' : 'POST', body: payload },
+    )
+    dialogOpen.set(false)
+    editingRecord.set(null)
+    pushToast('success', editing ? 'Social post updated' : 'Social post added')
+    await loadPosts()
+  }
+  catch (error) {
+    saveError.set(error instanceof Error ? error.message : String(error))
+  }
+  finally {
+    saving.set(false)
+  }
+}
+
+function openDelete(record: SocialPostRecord): void {
+  deletingRecord.set(record)
+  deleteError.set('')
+}
+
+function closeDelete(): void {
+  if (deleting())
+    return
+  deletingRecord.set(null)
+  deleteError.set('')
+}
+
+async function deletePost(): Promise<void> {
+  const current = deletingRecord()
+  if (!current)
+    return
+  deleting.set(true)
+  deleteError.set('')
+  try {
+    await dashboardApi(`/api/dashboard/marketing/social-posts/${current.id}`, { method: 'DELETE' })
+    deletingRecord.set(null)
+    pushToast('success', 'Social post deleted')
+    await loadPosts()
+  }
+  catch (error) {
+    deleteError.set(error instanceof Error ? error.message : String(error))
+  }
+  finally {
+    deleting.set(false)
+  }
+}
+
+function previousPage(): void {
+  if (page() > 1)
+    page.set(page() - 1)
+}
+
+function nextPage(): void {
+  if (page() < totalPages())
+    page.set(page() + 1)
+}
+
+onMount(() => {
+  void loadPosts()
+})
+</script>
+
+<div class="space-y-6">
+  <header class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+    <div>
+      <h1 class="font-bold text-2xl text-gray-900 dark:text-white">Social posts</h1>
+      <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Create and schedule SocialPost records with persisted User ownership and platform metrics.</p>
+    </div>
+    <div class="flex gap-2">
+      <button type="button" :disabled="loading()" class="inline-flex items-center px-3 py-2 font-semibold text-gray-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700 disabled:opacity-50" @click="loadPosts()"><span :class="'mr-2 h-4 w-4 ' + (loading() ? 'animate-spin i-hugeicons-loading-03' : 'i-hugeicons-refresh')"></span>Refresh</button>
+      <button type="button" class="inline-flex items-center px-3 py-2 font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md" @click="openAdd()"><span class="mr-2 h-4 w-4 i-hugeicons-add-01"></span>Add post</button>
+    </div>
+  </header>
+
+  <div :if="loadError()" role="alert" class="flex gap-4 items-center justify-between p-4 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900"><span>{{ loadError() }}</span><button type="button" class="font-semibold underline" @click="loadPosts()">Retry</button></div>
+  <div :if="summary().failed > 0" class="flex gap-3 items-start p-4 text-red-800 text-sm dark:text-red-200 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900"><span class="shrink-0 mt-0.5 h-5 w-5 i-hugeicons-alert-02"></span><p>{{ summary().failed }} {{ summary().failed === 1 ? 'post has' : 'posts have' }} a failed status and may need review.</p></div>
+
+  <section aria-label="Social post metrics" class="grid gap-3 grid-cols-2 lg:grid-cols-4">
+    <article class="p-4 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700"><p class="text-gray-500 text-xs dark:text-neutral-400">Social posts</p><p class="mt-2 font-semibold text-2xl text-gray-900 dark:text-white">{{ summary().total }}</p><p class="mt-1 text-gray-400 text-xs dark:text-neutral-500">{{ summary().published }} published, {{ summary().drafts }} drafts</p></article>
+    <article class="p-4 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700"><p class="text-gray-500 text-xs dark:text-neutral-400">Scheduled</p><p class="mt-2 font-semibold text-2xl text-gray-900 dark:text-white">{{ summary().scheduled }}</p><p class="mt-1 text-gray-400 text-xs dark:text-neutral-500">Persisted schedule times</p></article>
+    <article class="p-4 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700"><p class="text-gray-500 text-xs dark:text-neutral-400">Reach</p><p class="mt-2 font-semibold text-2xl text-gray-900 dark:text-white">{{ summary().reach.toLocaleString() }}</p><p class="mt-1 text-gray-400 text-xs dark:text-neutral-500">Recorded platform reach</p></article>
+    <article class="p-4 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700"><p class="text-gray-500 text-xs dark:text-neutral-400">Engagement</p><p class="mt-2 font-semibold text-2xl text-gray-900 dark:text-white">{{ summary().engagement.toLocaleString() }}</p><p class="mt-1 text-gray-400 text-xs dark:text-neutral-500">Likes, shares, and comments</p></article>
+  </section>
+
+  <section class="space-y-3">
+    <div class="grid gap-3 grid-cols-1 sm:grid-cols-2 xl:grid-cols-5">
+      <label><span class="sr-only">Search social posts</span><input :value="search()" type="search" placeholder="Search social posts" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" @input="updateSearch($event)" /></label>
+      <label><span class="sr-only">Filter social status</span><select :value="statusFilter()" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" @change="updateStatusFilter($event)"><option value="all">All statuses</option><option value="draft">Draft</option><option value="scheduled">Scheduled</option><option value="published">Published</option><option value="failed">Failed</option></select></label>
+      <label><span class="sr-only">Filter platform</span><select :value="platformFilter()" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" @change="updatePlatformFilter($event)"><option value="all">All platforms</option><option value="twitter">Twitter</option><option value="facebook">Facebook</option><option value="instagram">Instagram</option><option value="linkedin">LinkedIn</option><option value="tiktok">TikTok</option><option value="youtube">YouTube</option></select></label>
+      <label><span class="sr-only">Filter owner</span><select :value="authorFilter()" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" @change="updateAuthorFilter($event)"><option value="all">All owners</option><option value="">Unassigned</option><template :for="user in users()" :key="user.id"><option :value="user.id">{{ user.name }}</option></template></select></label>
+      <label><span class="sr-only">Sort social posts</span><select :value="sort()" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" @change="updateSort($event)"><option value="newest">Newest</option><option value="scheduled">Latest schedule</option><option value="reach">Most reach</option><option value="engagement">Most engagement</option></select></label>
+    </div>
+    <SocialPostsTable :records="visibleRecords()" :loading="loading()" @edit="openEdit" @delete="openDelete" />
+    <div :if="filteredRecords().length > perPage" class="flex items-center justify-between"><p class="text-gray-500 text-sm dark:text-neutral-400">Page {{ page() }} of {{ totalPages() }}</p><div class="flex gap-2"><button type="button" :disabled="page() === 1" class="px-3 py-2 text-gray-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700 disabled:opacity-50" @click="previousPage()">Previous</button><button type="button" :disabled="page() === totalPages()" class="px-3 py-2 text-gray-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700 disabled:opacity-50" @click="nextPage()">Next</button></div></div>
+  </section>
+</div>
+
+<SocialPostDialog :open="dialogOpen()" :mode="dialogMode()" :record="editingRecord()" :users="users()" :busy="saving()" :error="saveError()" @submit="savePost" @close="closeDialog()" />
+<SocialPostDeleteDialog :open="Boolean(deletingRecord())" :record="deletingRecord()" :busy="deleting()" :error="deleteError()" @confirm="deletePost()" @close="closeDelete()" />

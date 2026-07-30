@@ -16,7 +16,15 @@ export default defineModel({
     useApi: {
       uri: 'social-posts',
       routes: ['index', 'store', 'show', 'update', 'destroy'],
+      middleware: ['auth'],
     },
+    useSearch: {
+      displayable: ['id', 'content', 'platform', 'status', 'scheduledAt', 'publishedAt', 'reach'],
+      searchable: ['content', 'externalId'],
+      sortable: ['platform', 'status', 'scheduledAt', 'publishedAt', 'reach', 'createdAt', 'updatedAt'],
+      filterable: ['platform', 'status', 'userId'],
+    },
+    observe: true,
   },
 
   belongsTo: ['User'],
