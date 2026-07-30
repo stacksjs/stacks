@@ -101,6 +101,25 @@ export type CliOptionsKeys = keyof CliOptions
  */
 export interface CliOptions {
   /**
+   * **Throw On A Non-Zero Exit**
+   *
+   * `execSync` returns the child's stdout and, historically, nothing else: the
+   * exit code was never read, and the `onExit` handler it passes to
+   * `Bun.spawnSync` only logs at debug and explicitly cannot propagate an
+   * exception. A command that failed was therefore indistinguishable from one
+   * that succeeded and printed nothing.
+   *
+   * That is how `bump.ts` could run `git commit`, `git tag` and two `git push`
+   * calls, have any of them rejected, and still report a successful release.
+   *
+   * Defaults to false so the existing call sites keep their current behaviour;
+   * set it wherever a silent failure would be worse than a loud one.
+   *
+   * @default false
+   */
+  throwOnError?: boolean
+
+  /**
    * **Verbose Output**
    *
    * When your application is in "verbose"-mode, a different level of,

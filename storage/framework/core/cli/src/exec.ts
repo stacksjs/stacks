@@ -151,7 +151,21 @@ export async function execSync(command: string | string[], options?: CliOptions)
     },
   })
 
-  return proc.stdout?.toString() ?? ''
+  const stdout = proc.stdout?.toString() ?? ''
+
+  // `onExit` above cannot help here: it only logs at debug, and its own comment
+  // notes that an onExit callback cannot propagate an exception. So unless the
+  // caller opts in, a command that exited non-zero is indistinguishable from
+  // one that succeeded and printed nothing. `bump.ts` ran `git commit`,
+  // `git tag` and two `git push` calls through this and would report a
+  // successful release even when every one of them was rejected.
+  if (options?.throwOnError && proc.exitCode !== 0) {
+    const stderr = proc.stderr?.toString() ?? ''
+    const detail = (stderr.trim() || stdout.trim() || '(no output)').split('\n').slice(0, 5).join('\n')
+    throw new Error(`Command failed with exit code ${proc.exitCode}: ${cmd.join(' ')}\n${detail}`)
+  }
+
+  return stdout
 }
 
 function exitHandler(

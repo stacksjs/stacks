@@ -73,10 +73,24 @@ async function resolveBumpArg(bump: string | null): Promise<string | null> {
 
 const resolvedBumpArg = await resolveBumpArg(bumpArg)
 
-async function git(args: string[], cwd = p.projectPath()): Promise<string> {
+/**
+ * Run git, and fail loudly when git fails.
+ *
+ * `execSync` does not read the child's exit code unless asked, so this used to
+ * treat a rejected push exactly like a successful one. The commit, tag and both
+ * pushes at the end of this file all run through here, which meant a release
+ * could be rejected at every single step and still print "Successfully
+ * released" with nothing published and a bogus local tag left behind.
+ *
+ * Callers that legitimately expect failure (the `git describe` probe for the
+ * latest tag, which fails on a repo with no tags) pass `throwOnError: false`.
+ */
+async function git(args: string[], cwd = p.projectPath(), options: { throwOnError?: boolean } = {}): Promise<string> {
   return await execSync(['git', ...args], {
     cwd,
     stdin: 'inherit',
+    stderr: 'pipe',
+    throwOnError: options.throwOnError ?? true,
   })
 }
 
@@ -174,7 +188,7 @@ const nextVersion = isDryRun && resolvedBumpArg && /^\d+\.\d+\.\d+(?:-[0-9A-Za-z
 // Generate the changelog through logsmith's SDK (was a `buddy changelog` shell
 // call into changelogen). `from` is the latest tag so only this release's
 // commits are captured; on a dry run we render to the console instead of writing.
-const latestTag = (await git(['describe', '--abbrev=0', '--tags']).catch(() => '')).trim()
+const latestTag = (await git(['describe', '--abbrev=0', '--tags'], p.projectPath(), { throwOnError: false }).catch(() => '')).trim()
 
 async function writeChangelog(): Promise<void> {
   const config = await loadLogsmithConfig({
