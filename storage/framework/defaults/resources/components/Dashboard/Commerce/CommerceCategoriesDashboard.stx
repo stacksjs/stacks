@@ -13,11 +13,11 @@ interface CategoryIndexResponse {
 
 interface CategoryWritePayload {
   name: string
-  description?: string
+  description: string
   slug: string
-  imageUrl?: string
+  imageUrl: string
   isActive: boolean
-  parentCategoryId?: string
+  parentCategoryId: string
   displayOrder: number
 }
 
@@ -170,7 +170,7 @@ async function saveCategory(payload: CategoryWritePayload): Promise<void> {
   saving.set(true)
   validationErrors.set({})
   try {
-    await dashboardApi(editing ? `/api/product-categories/${current.id}` : '/api/product-categories', {
+    await dashboardApi(editing ? `/api/dashboard/commerce/categories/${current.id}` : '/api/dashboard/commerce/categories', {
       method: editing ? 'PATCH' : 'POST',
       body: payload,
     })
@@ -214,7 +214,7 @@ async function deleteCategory(): Promise<void> {
     return
   deleting.set(true)
   try {
-    await dashboardApi(`/api/product-categories/${current.id}`, { method: 'DELETE' })
+    await dashboardApi(`/api/dashboard/commerce/categories/${current.id}`, { method: 'DELETE' })
     deletingRecord.set(null)
     detailsRecord.set(null)
     pushToast('success', 'Category deleted', { detail: current.name })
@@ -250,9 +250,9 @@ onMount(() => {
       <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Manage the native Category hierarchy, display order, and storefront availability.</p>
     </div>
     <div class="flex flex-wrap gap-2">
-      <button type="button" :disabled="loading()" class="inline-flex items-center px-3 py-2 font-semibold text-gray-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700 disabled:opacity-50" @click="loadCategories()"><span :class="'mr-2 h-4 w-4 ' + (loading() ? 'animate-spin i-hugeicons-loading-03' : 'i-hugeicons-refresh')"></span>Refresh</button>
+      <Button variant="secondary" :loading="loading()" @click="loadCategories()"><span :if="!loading()" class="h-4 w-4 i-hugeicons-refresh"></span>Refresh</Button>
       <a :href="exportHref()" :download="'product-categories-' + new Date().toISOString().slice(0, 10) + '.csv'" class="inline-flex items-center px-3 py-2 font-semibold text-gray-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700"><span class="mr-2 h-4 w-4 i-hugeicons-download-04"></span>Export filtered</a>
-      <button type="button" class="inline-flex items-center px-3 py-2 font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md" @click="openAdd()"><span class="mr-2 h-4 w-4 i-hugeicons-add-01"></span>Add category</button>
+      <Button @click="openAdd()"><span class="h-4 w-4 i-hugeicons-add-01"></span>Add category</Button>
     </div>
   </header>
 
@@ -285,9 +285,9 @@ onMount(() => {
     <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
       <p class="text-gray-500 text-sm dark:text-neutral-400">{{ matchingLabel() }}</p>
       <div class="flex gap-2 items-center">
-        <button type="button" :disabled="page() <= 1" class="px-3 py-1.5 font-medium text-gray-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700 disabled:opacity-40" @click="previousPage()">Previous</button>
+        <Button variant="secondary" size="sm" :disabled="page() <= 1" @click="previousPage()">Previous</Button>
         <span class="text-gray-500 text-sm dark:text-neutral-400">Page {{ Math.min(page(), pageCount()) }} of {{ pageCount() }}</span>
-        <button type="button" :disabled="page() >= pageCount()" class="px-3 py-1.5 font-medium text-gray-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700 disabled:opacity-40" @click="nextPage()">Next</button>
+        <Button variant="secondary" size="sm" :disabled="page() >= pageCount()" @click="nextPage()">Next</Button>
       </div>
     </div>
 

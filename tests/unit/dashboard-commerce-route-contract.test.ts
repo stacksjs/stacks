@@ -110,4 +110,30 @@ describe('dashboard commerce route contract', () => {
       expect(action).toContain('toSnakeCaseKeys(request.all())')
     }
   })
+
+  test('category mutations use guarded dashboard routes and preserve model fields', () => {
+    const routes = source('storage/framework/defaults/routes/dashboard-api.ts')
+    const categories = source('storage/framework/defaults/resources/components/Dashboard/Commerce/CommerceCategoriesDashboard.stx')
+    const storeAction = source('storage/framework/defaults/app/Actions/Commerce/Product/ProductCategoryStoreAction.ts')
+    const updateAction = source('storage/framework/defaults/app/Actions/Commerce/Product/ProductCategoryUpdateAction.ts')
+    const store = source('storage/framework/core/commerce/src/products/categories/store.ts')
+    const update = source('storage/framework/core/commerce/src/products/categories/update.ts')
+
+    expect(routes).toContain("guard(route.post('/commerce/categories', 'Actions/Commerce/Product/ProductCategoryStoreAction'))")
+    expect(routes).toContain("guard(route.patch('/commerce/categories/{id}', 'Actions/Commerce/Product/ProductCategoryUpdateAction'))")
+    expect(routes).toContain("guard(route.delete('/commerce/categories/{id}', 'Actions/Commerce/Product/ProductCategoryDestroyAction'))")
+    expect(categories).toContain('/api/dashboard/commerce/categories')
+    expect(categories).not.toMatch(/\/api\/product-categories(?:\/|\?|'|`)/)
+
+    for (const action of [storeAction, updateAction]) {
+      expect(action).toContain('model: Category')
+      expect(action).toContain('await request.validate()')
+      expect(action).toContain('toSnakeCaseKeys(request.all())')
+    }
+
+    expect(store).not.toContain("categorizable_type: 'product'")
+    expect(store).not.toContain("slug: data.name?.toLowerCase()")
+    expect(update).toContain('...data')
+    expect(updateAction).toContain("method: 'PATCH'")
+  })
 })

@@ -49,6 +49,6 @@ function deleteRecord(): void {
         <div class="col-span-2"><dt class="text-gray-400 text-xs dark:text-neutral-500">Image URL</dt><dd class="mt-1 break-all text-gray-900 text-sm dark:text-white">{{ record()?.imageUrl || 'Not configured' }}</dd></div>
       </dl>
     </div>
-    <footer class="flex gap-2 justify-between px-6 py-4 bg-gray-50 dark:bg-neutral-900/50 border-gray-200 border-t dark:border-neutral-700"><button type="button" class="px-3 py-2 font-semibold text-red-700 text-sm dark:text-red-300" @click="deleteRecord()">Delete</button><div class="flex gap-2"><button type="button" class="px-3 py-2 font-semibold text-gray-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" @click="emit('close')">Close</button><button type="button" class="px-3 py-2 font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md" @click="editRecord()">Edit category</button></div></footer>
+    <footer class="flex gap-2 justify-between px-6 py-4 bg-gray-50 dark:bg-neutral-900/50 border-gray-200 border-t dark:border-neutral-700"><Button variant="danger" @click="deleteRecord()">Delete</Button><div class="flex gap-2"><Button variant="secondary" @click="emit('close')">Close</Button><Button @click="editRecord()">Edit category</Button></div></footer>
   </section>
 </div>
