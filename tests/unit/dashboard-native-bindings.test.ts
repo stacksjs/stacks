@@ -182,6 +182,10 @@ describe('dashboard native STX bindings', () => {
       'UI/ChartCard.stx',
       'UI/Avatar.stx',
       'Avatar.stx',
+      'Email/EmailDetail.stx',
+      'Email/EmailList.stx',
+      'Settings/Forms/AIForm.stx',
+      'Settings/Forms/CloudForm.stx',
     ]) {
       const source = componentSource(path)
       expect(source).toContain('i-hugeicons-')
