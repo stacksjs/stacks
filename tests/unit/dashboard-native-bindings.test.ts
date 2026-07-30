@@ -63,4 +63,22 @@ describe('dashboard native STX bindings', () => {
     expect(taxonomy).toContain('@input="markSlugTouched"')
     expect(taxonomy).toContain('@blur="normalizeSlug"')
   })
+
+  test('inbox components use native local models across event boundaries', () => {
+    const composer = componentSource('Email/InboxComposer.stx')
+    for (const model of ['to', 'subject', 'body'])
+      expect(composer).toContain(`x-model="${model}"`)
+    expect(composer).toContain('@submit.prevent="submit"')
+    expect(composer).not.toContain('function update(')
+
+    const detail = componentSource('Email/InboxMessageDetail.stx')
+    expect(detail).toContain('x-model="replyText"')
+    expect(detail).toContain("emit('update:reply', $event.target.value)")
+    expect(detail).not.toContain('function updateReply(')
+
+    const list = componentSource('Email/InboxMessageList.stx')
+    expect(list).toContain('x-model="search"')
+    expect(list).toContain("emit('search', $event.target.value)")
+    expect(list).not.toContain('function updateSearch(')
+  })
 })

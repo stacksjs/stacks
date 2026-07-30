@@ -22,9 +22,6 @@ function formatDate(value: string): string {
     : new Intl.DateTimeFormat(undefined, { dateStyle: 'long', timeStyle: 'short' }).format(date)
 }
 
-function updateReply(event: Event): void {
-  emit('update:reply', (event.target as HTMLTextAreaElement).value)
-}
 </script>
 
 <section :if="message()" aria-label="Selected message" class="flex flex-col w-full md:w-3/5 bg-white dark:bg-neutral-700">
@@ -78,7 +75,7 @@ function updateReply(event: Event): void {
 
   <div class="p-4 bg-white dark:bg-neutral-700 border-gray-200 border-t dark:border-neutral-600">
     <label for="inbox-reply" class="sr-only">Reply</label>
-    <textarea id="inbox-reply" :value="replyText()" placeholder="Reply..." class="block p-3 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-600 border border-gray-300 rounded-md dark:border-neutral-600 focus:outline-none focus:ring-1 focus:ring-blue-500" rows="3" @input="updateReply($event)"></textarea>
+    <textarea id="inbox-reply" x-model="replyText" placeholder="Reply..." class="block p-3 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-600 border border-gray-300 rounded-md dark:border-neutral-600 focus:outline-none focus:ring-1 focus:ring-blue-500" rows="3" @input="emit('update:reply', $event.target.value)"></textarea>
     <div class="flex justify-end mt-2">
       <button type="button" :disabled="!canSendReply()" class="px-4 py-2 font-medium text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md disabled:opacity-50 disabled:cursor-not-allowed" @click="emit('reply')">
         {{ replying() ? 'Sending...' : 'Send reply' }}
