@@ -6622,6 +6622,31 @@
         }
       }
     },
+    "/api/dashboard/activity": {
+      "get": {
+        "summary": "/api/dashboard/activity",
+        "operationId": "get__api_dashboard_activity",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
     "/api/dashboard/analytics/events": {
       "get": {
         "summary": "/api/dashboard/analytics/events",
@@ -9105,6 +9130,31 @@
       "get": {
         "summary": "/api/dashboard/commerce/waitlist-restaurants",
         "operationId": "get__api_dashboard_commerce_waitlist_restaurants",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/api/dashboard/content/overview": {
+      "get": {
+        "summary": "/api/dashboard/content/overview",
+        "operationId": "get__api_dashboard_content_overview",
         "parameters": [],
         "responses": {
           "200": {
@@ -12869,6 +12919,31 @@
       "get": {
         "summary": "/api/dashboard/source/commands",
         "operationId": "get__api_dashboard_source_commands",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/api/dashboard/stats": {
+      "get": {
+        "summary": "/api/dashboard/stats",
+        "operationId": "get__api_dashboard_stats",
         "parameters": [],
         "responses": {
           "200": {
