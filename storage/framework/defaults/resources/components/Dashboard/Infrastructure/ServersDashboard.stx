@@ -140,6 +140,10 @@ const attentionDeployments = derived(() => deployments().filter(deployment => de
 const dnsResource = derived(() => network().find(resource => resource.id === 'network:dns') ?? null)
 const loadBalancer = derived(() => network().find(resource => resource.id === 'network:load-balancer') ?? null)
 const hasResults = derived(() => filteredServers().length > 0 || filteredDeployments().length > 0)
+const selectedServerDisk = derived(() => {
+  const server = selectedServer()
+  return server ? diskLabel(server) : ''
+})
 
 function formatDate(value: string | null): string {
   if (!value)
@@ -177,6 +181,11 @@ function inspectDeployment(deployment: ServerDeployment): void {
 function closeInspector(): void {
   selectedServer.set(null)
   selectedDeployment.set(null)
+}
+
+function selectedDetailsPath(): string {
+  const identifier = selectedServer()?.key || selectedDeployment()?.id
+  return identifier ? `/servers/${encodeURIComponent(identifier)}` : '/servers'
 }
 
 async function loadServers(): Promise<void> {
@@ -390,7 +399,7 @@ onMount(() => {
         <div><dt class="text-neutral-500 dark:text-neutral-400">Region</dt><dd class="mt-1 font-medium text-neutral-900 dark:text-white">{{ selectedServer()?.region }}</dd></div>
         <div><dt class="text-neutral-500 dark:text-neutral-400">Size</dt><dd class="mt-1 font-medium text-neutral-900 dark:text-white">{{ selectedServer()?.size }}</dd></div>
         <div><dt class="text-neutral-500 dark:text-neutral-400">Instances</dt><dd class="mt-1 font-medium text-neutral-900 dark:text-white">{{ selectedServer()?.instances }}</dd></div>
-        <div><dt class="text-neutral-500 dark:text-neutral-400">Disk</dt><dd class="mt-1 font-medium text-neutral-900 dark:text-white">{{ selectedServer() ? diskLabel(selectedServer()!) : '' }}</dd></div>
+        <div><dt class="text-neutral-500 dark:text-neutral-400">Disk</dt><dd class="mt-1 font-medium text-neutral-900 dark:text-white">{{ selectedServerDisk() }}</dd></div>
         <div><dt class="text-neutral-500 dark:text-neutral-400">Encryption</dt><dd class="mt-1 font-medium text-neutral-900 dark:text-white">{{ selectedServer()?.encrypted ? 'Enabled' : 'Not enabled' }}</dd></div>
         <div><dt class="text-neutral-500 dark:text-neutral-400">Domain</dt><dd class="mt-1 font-medium text-neutral-900 dark:text-white">{{ selectedServer()?.domain || 'Not set' }}</dd></div>
         <div><dt class="text-neutral-500 dark:text-neutral-400">Database</dt><dd class="mt-1 font-medium text-neutral-900 dark:text-white">{{ selectedServer()?.database || 'Not set' }}</dd></div>
@@ -410,6 +419,13 @@ onMount(() => {
           <p class="mt-2 text-sm">Phase {{ selectedDeployment()?.operation?.phase }}. Requested {{ selectedDeployment()?.operation?.sourceType || 'current size' }} to {{ selectedDeployment()?.operation?.targetType || 'target size' }}.</p>
           <p class="mt-2 text-amber-700 text-xs dark:text-amber-300">Updated {{ formatDate(selectedDeployment()?.operation?.updatedAt || null) }} · {{ selectedDeployment()?.operation?.attempts || 0 }} attempts</p>
         </div>
+      </div>
+
+      <div class="flex justify-end mt-6 pt-5 border-neutral-200 border-t dark:border-neutral-700">
+        <StxLink :to="selectedDetailsPath()" class="inline-flex gap-2 items-center px-3 py-2 font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-lg" @click="closeInspector">
+          Open full details
+          <span class="h-4 w-4 i-hugeicons-arrow-right-01"></span>
+        </StxLink>
       </div>
     </section>
   </div>

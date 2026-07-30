@@ -1,0 +1,203 @@
+<script client>
+import type {
+  DashboardCloudEnvironment,
+  DashboardCloudOperation,
+  DashboardCloudProject,
+  DashboardServerDefinition,
+  DashboardServerDeployment,
+} from '../../../../app/Actions/Dashboard/Cloud/cloud-overview'
+import { dashboardApi } from '../../../../functions/dashboard-api'
+
+interface ServerDetailResponse {
+  project: DashboardCloudProject
+  kind: 'configuration' | 'deployment'
+  server: DashboardServerDefinition | null
+  deployment: DashboardServerDeployment | null
+  environment: DashboardCloudEnvironment | null
+  generatedAt: string
+}
+
+const route = useRoute()
+const detail = state<ServerDetailResponse | null>(null)
+const loading = state(true)
+const loadError = state('')
+
+const title = derived(() => detail()?.server?.name || detail()?.deployment?.serverName || 'Server details')
+const status = derived(() => detail()?.server?.status || detail()?.deployment?.status || 'inactive')
+const kindLabel = derived(() => {
+  if (!detail())
+    return 'Inspect desired configuration or persisted deployment state.'
+  return detail()?.kind === 'deployment' ? 'Persisted deployment' : 'Compute configuration'
+})
+const serverDisk = derived(() => {
+  const server = detail()?.server
+  return server ? diskLabel(server) : 'Not set'
+})
+const resizeSummary = derived(() => {
+  const operation = detail()?.deployment?.operation
+  return operation ? operationSummary(operation) : ''
+})
+
+function formatDate(value: string | null): string {
+  if (!value)
+    return 'Not recorded'
+  const date = new Date(value)
+  return Number.isNaN(date.getTime())
+    ? 'Not recorded'
+    : new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(date)
+}
+
+function diskLabel(server: DashboardServerDefinition): string {
+  if (server.diskGb === null)
+    return 'Not set'
+  return `${server.diskGb} GB${server.diskType ? ` ${server.diskType}` : ''}`
+}
+
+function operationSummary(operation: DashboardCloudOperation): string {
+  const source = operation.sourceType || 'current size'
+  const target = operation.targetType || 'requested size'
+  return `${source} to ${target}`
+}
+
+async function loadServer(): Promise<void> {
+  loading.set(true)
+  loadError.set('')
+  const identifier = String(route.params.id || '')
+  if (!identifier) {
+    detail.set(null)
+    loadError.set('A server identifier is required.')
+    loading.set(false)
+    return
+  }
+
+  try {
+    const result = await dashboardApi<ServerDetailResponse>(`/api/dashboard/servers/${encodeURIComponent(identifier)}`)
+    const hasExpectedRecord = result?.kind === 'configuration'
+      ? Boolean(result.server)
+      : result?.kind === 'deployment'
+        ? Boolean(result.deployment)
+        : false
+    if (!result?.project || !hasExpectedRecord)
+      throw new Error('The server API returned incomplete state.')
+    detail.set(result)
+  }
+  catch (error) {
+    detail.set(null)
+    loadError.set(error instanceof Error ? error.message : 'Server state could not be loaded.')
+  }
+  finally {
+    loading.set(false)
+  }
+}
+
+onMount(() => {
+  void loadServer()
+})
+</script>
+
+<div class="space-y-6">
+  <header class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+    <div>
+      <div class="flex gap-2 items-center">
+        <h1 class="font-semibold text-2xl text-neutral-900 tracking-tight dark:text-white">{{ title() }}</h1>
+        <CloudStatusBadge :if="detail()" :status="status()" />
+      </div>
+      <p class="mt-1 text-neutral-500 text-sm dark:text-neutral-400">{{ detail() ? kindLabel() + ' from the current cloud snapshot.' : kindLabel() }}</p>
+    </div>
+    <div class="flex gap-3 items-center">
+      <button type="button" :disabled="loading()" class="inline-flex gap-2 items-center px-3 py-2 font-medium text-neutral-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-900 hover:bg-neutral-50 dark:hover:bg-neutral-800 border border-neutral-300 rounded-lg dark:border-neutral-700 disabled:opacity-50" @click="loadServer">
+        <span :class="'h-4 w-4 ' + (loading() ? 'animate-spin i-hugeicons-loading-03' : 'i-hugeicons-refresh')"></span>
+        Refresh
+      </button>
+      <StxLink to="/servers" class="inline-flex gap-2 items-center font-semibold text-blue-600 text-sm dark:text-blue-400 hover:text-blue-500">
+        <span class="h-4 w-4 i-hugeicons-arrow-left-01"></span>
+        Back to Servers
+      </StxLink>
+    </div>
+  </header>
+
+  <div :if="loading()" class="flex items-center justify-center py-20 text-neutral-500 text-sm dark:text-neutral-400 bg-white dark:bg-neutral-900 border border-neutral-200 rounded-xl dark:border-neutral-700">
+    <span class="mr-2 h-5 w-5 animate-spin i-hugeicons-loading-03"></span>
+    Loading server state...
+  </div>
+
+  <div :if="!loading() && loadError()" role="alert" class="p-6 text-center bg-white dark:bg-neutral-900 border border-red-200 rounded-xl dark:border-red-900">
+    <span class="inline-block h-8 w-8 text-red-500 i-hugeicons-alert-02"></span>
+    <h2 class="mt-3 font-semibold text-neutral-900 dark:text-white">Server state unavailable</h2>
+    <p class="mt-2 text-neutral-500 text-sm dark:text-neutral-400">{{ loadError() }}</p>
+    <button type="button" class="mt-4 px-3 py-2 font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-lg" @click="loadServer">Try again</button>
+  </div>
+
+  <template :if="!loading() && detail()">
+    <section class="grid gap-3 grid-cols-2 xl:grid-cols-4">
+      <div class="p-4 bg-white dark:bg-neutral-900 border border-neutral-200 rounded-xl dark:border-neutral-700">
+        <p class="text-neutral-500 text-xs uppercase dark:text-neutral-400">Provider</p>
+        <p class="mt-2 capitalize font-semibold text-lg text-neutral-900 dark:text-white">{{ detail()?.project.provider }}</p>
+      </div>
+      <div class="p-4 bg-white dark:bg-neutral-900 border border-neutral-200 rounded-xl dark:border-neutral-700">
+        <p class="text-neutral-500 text-xs uppercase dark:text-neutral-400">Project mode</p>
+        <p class="mt-2 capitalize font-semibold text-lg text-neutral-900 dark:text-white">{{ detail()?.project.mode }}</p>
+      </div>
+      <div class="p-4 bg-white dark:bg-neutral-900 border border-neutral-200 rounded-xl dark:border-neutral-700">
+        <p class="text-neutral-500 text-xs uppercase dark:text-neutral-400">Region</p>
+        <p class="mt-2 font-semibold text-lg text-neutral-900 dark:text-white">{{ detail()?.server?.region || detail()?.environment?.region || detail()?.project.region }}</p>
+      </div>
+      <div class="p-4 bg-white dark:bg-neutral-900 border border-neutral-200 rounded-xl dark:border-neutral-700">
+        <p class="text-neutral-500 text-xs uppercase dark:text-neutral-400">Snapshot</p>
+        <p class="mt-2 font-medium text-neutral-900 text-sm dark:text-white">{{ formatDate(detail()?.generatedAt || null) }}</p>
+      </div>
+    </section>
+
+    <section :if="detail()?.server" class="overflow-hidden bg-white dark:bg-neutral-900 border border-neutral-200 rounded-xl dark:border-neutral-700">
+      <header class="px-5 py-4 border-b border-neutral-200 dark:border-neutral-700">
+        <h2 class="font-semibold text-neutral-900 dark:text-white">Desired compute configuration</h2>
+        <p class="mt-1 text-neutral-500 text-xs dark:text-neutral-400">Declared in config/cloud.ts. This does not assert that an instance is running.</p>
+      </header>
+      <dl class="grid gap-x-8 gap-y-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 p-5 text-sm">
+        <div><dt class="text-neutral-500 dark:text-neutral-400">Configuration key</dt><dd class="mt-1 font-medium font-mono text-neutral-900 dark:text-white">{{ detail()?.server?.key }}</dd></div>
+        <div><dt class="text-neutral-500 dark:text-neutral-400">Role</dt><dd class="mt-1 font-medium text-neutral-900 dark:text-white">{{ detail()?.server?.role }}</dd></div>
+        <div><dt class="text-neutral-500 dark:text-neutral-400">Size</dt><dd class="mt-1 font-medium text-neutral-900 dark:text-white">{{ detail()?.server?.size }}</dd></div>
+        <div><dt class="text-neutral-500 dark:text-neutral-400">Instances</dt><dd class="mt-1 font-medium text-neutral-900 dark:text-white">{{ detail()?.server?.instances }}</dd></div>
+        <div><dt class="text-neutral-500 dark:text-neutral-400">Disk</dt><dd class="mt-1 font-medium text-neutral-900 dark:text-white">{{ serverDisk() }}</dd></div>
+        <div><dt class="text-neutral-500 dark:text-neutral-400">Disk encryption</dt><dd class="mt-1 font-medium text-neutral-900 dark:text-white">{{ detail()?.server?.encrypted ? 'Enabled' : 'Not enabled' }}</dd></div>
+        <div><dt class="text-neutral-500 dark:text-neutral-400">Domain</dt><dd class="mt-1 font-medium text-neutral-900 dark:text-white">{{ detail()?.server?.domain || 'Not set' }}</dd></div>
+        <div><dt class="text-neutral-500 dark:text-neutral-400">Operating system</dt><dd class="mt-1 font-medium text-neutral-900 dark:text-white">{{ detail()?.server?.operatingSystem || 'Not set' }}</dd></div>
+        <div><dt class="text-neutral-500 dark:text-neutral-400">Bun version</dt><dd class="mt-1 font-medium text-neutral-900 dark:text-white">{{ detail()?.server?.bunVersion || 'Not set' }}</dd></div>
+        <div><dt class="text-neutral-500 dark:text-neutral-400">Database</dt><dd class="mt-1 font-medium text-neutral-900 dark:text-white">{{ detail()?.server?.database || 'Not set' }}</dd></div>
+      </dl>
+    </section>
+
+    <section :if="detail()?.deployment" class="overflow-hidden bg-white dark:bg-neutral-900 border border-neutral-200 rounded-xl dark:border-neutral-700">
+      <header class="px-5 py-4 border-b border-neutral-200 dark:border-neutral-700">
+        <h2 class="font-semibold text-neutral-900 dark:text-white">Persisted deployment state</h2>
+        <p class="mt-1 text-neutral-500 text-xs dark:text-neutral-400">Recorded by ts-cloud. Values are not live provider health checks.</p>
+      </header>
+      <dl class="grid gap-x-8 gap-y-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 p-5 text-sm">
+        <div><dt class="text-neutral-500 dark:text-neutral-400">Stack</dt><dd class="mt-1 font-medium text-neutral-900 dark:text-white">{{ detail()?.deployment?.stackName }}</dd></div>
+        <div><dt class="text-neutral-500 dark:text-neutral-400">Environment</dt><dd class="mt-1 font-medium text-neutral-900 dark:text-white">{{ detail()?.deployment?.environment || 'Not mapped' }}</dd></div>
+        <div><dt class="text-neutral-500 dark:text-neutral-400">Provider</dt><dd class="mt-1 capitalize font-medium text-neutral-900 dark:text-white">{{ detail()?.deployment?.provider }}</dd></div>
+        <div><dt class="text-neutral-500 dark:text-neutral-400">Public IPv4</dt><dd class="mt-1 font-medium font-mono text-neutral-900 dark:text-white">{{ detail()?.deployment?.publicIp || 'Not recorded' }}</dd></div>
+        <div><dt class="text-neutral-500 dark:text-neutral-400">Public IPv6</dt><dd class="mt-1 break-all font-medium font-mono text-neutral-900 dark:text-white">{{ detail()?.deployment?.publicIpv6 || 'Not recorded' }}</dd></div>
+        <div><dt class="text-neutral-500 dark:text-neutral-400">SSH user</dt><dd class="mt-1 font-medium text-neutral-900 dark:text-white">{{ detail()?.deployment?.sshUser || 'Not recorded' }}</dd></div>
+        <div><dt class="text-neutral-500 dark:text-neutral-400">State recorded</dt><dd class="mt-1 font-medium text-neutral-900 dark:text-white">{{ formatDate(detail()?.deployment?.recordedAt || null) }}</dd></div>
+      </dl>
+      <div :if="detail()?.deployment?.operation" class="mb-5 mx-5 p-4 text-amber-900 dark:text-amber-100 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 rounded-xl dark:border-amber-900/70">
+        <div class="flex gap-3 items-center justify-between">
+          <h3 class="font-semibold text-sm">Resize operation</h3>
+          <CloudStatusBadge :status="detail()?.deployment?.status || 'attention'" />
+        </div>
+        <p class="mt-2 text-sm">{{ resizeSummary() }}</p>
+        <p class="mt-2 text-amber-700 text-xs dark:text-amber-300">Phase {{ detail()?.deployment?.operation?.phase }} · {{ detail()?.deployment?.operation?.status }} · {{ detail()?.deployment?.operation?.attempts || 0 }} attempts</p>
+        <p class="mt-1 text-amber-700 text-xs dark:text-amber-300">Updated {{ formatDate(detail()?.deployment?.operation?.updatedAt || null) }}</p>
+      </div>
+    </section>
+
+    <section class="flex gap-4 items-start p-5 bg-white dark:bg-neutral-900 border border-neutral-200 rounded-xl dark:border-neutral-700">
+      <span class="flex items-center justify-center shrink-0 h-10 w-10 text-neutral-600 dark:text-neutral-300 bg-neutral-100 dark:bg-neutral-800 rounded-xl"><span class="h-5 w-5 i-hugeicons-shield-01"></span></span>
+      <div>
+        <h2 class="font-semibold text-neutral-900 dark:text-white">Firewall state unavailable</h2>
+        <p class="mt-1 max-w-3xl leading-6 text-neutral-500 text-sm dark:text-neutral-400">The dashboard does not currently have a provider-backed firewall reader or mutation endpoint. No firewall rules are inferred, displayed, added, or removed from this page.</p>
+      </div>
+    </section>
+  </template>
+</div>
