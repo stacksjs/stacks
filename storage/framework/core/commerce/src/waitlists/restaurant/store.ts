@@ -2,7 +2,8 @@ type WaitlistRestaurantJsonResponse = ModelRow<typeof WaitlistRestaurant>
 type NewWaitlistRestaurant = NewModelData<typeof WaitlistRestaurant>
 import { randomUUIDv7 } from 'bun'
 import { db } from '@stacksjs/database'
-import { formatDate } from '@stacksjs/orm'
+import { mutationCount } from '../../utils/mutation-count'
+import { restaurantWaitlistWriteData } from './write-data'
 
 /**
  * Create a new restaurant waitlist entry
@@ -12,47 +13,28 @@ import { formatDate } from '@stacksjs/orm'
  */
 export async function store(data: NewWaitlistRestaurant): Promise<WaitlistRestaurantJsonResponse> {
   try {
-    const d = data as Record<string, unknown>
+    const uuid = randomUUIDv7()
     const waitlistData = {
-      name: data.name,
-      email: data.email,
-      phone: data.phone,
-      party_size: d.party_size,
-      check_in_time: typeof d.check_in_time === 'number' ? formatDate(d.check_in_time) : d.check_in_time,
-      table_preference: d.table_preference,
+      ...restaurantWaitlistWriteData(data as Record<string, unknown>),
       status: data.status || 'waiting',
-      quoted_wait_time: data.quoted_wait_time,
-      actual_wait_time: data.actual_wait_time,
-      queue_position: data.queue_position,
-      customer_id: data.customer_id,
-      uuid: randomUUIDv7(),
+      uuid,
     }
 
-    // Filter out undefined values to avoid storing explicit nulls
-    const filteredData: Record<string, any> = {}
-    for (const [key, value] of Object.entries(waitlistData)) {
-      if (value !== undefined) {
-        filteredData[key] = value
-      }
-    }
+    await db
+      .insertInto('waitlist_restaurants')
+      .values(waitlistData)
+      .executeTakeFirst()
 
     const result = await db
-      .insertInto('waitlist_restaurants')
-      .values(filteredData)
-      .returningAll()
+      .selectFrom('waitlist_restaurants')
+      .where('uuid', '=', uuid)
+      .selectAll()
       .executeTakeFirst()
 
     if (!result)
       throw new Error('Failed to create restaurant waitlist entry')
 
-    // Convert null values to undefined for nullable fields
-    const cleaned: any = { ...result }
-    for (const key of Object.keys(cleaned)) {
-      if (cleaned[key] === null)
-        cleaned[key] = undefined
-    }
-
-    return cleaned as WaitlistRestaurantJsonResponse
+    return result as WaitlistRestaurantJsonResponse
   }
   catch (error) {
     if (error instanceof Error) {
@@ -74,30 +56,18 @@ export async function bulkStore(data: NewWaitlistRestaurant[]): Promise<number> 
     return 0
 
   try {
-    const waitlistDataArray = data.map((item) => {
-      const i = item as Record<string, unknown>
-      return {
-      name: item.name,
-      email: item.email,
-      phone: item.phone,
-      party_size: i.party_size,
-      check_in_time: typeof i.check_in_time === 'number' ? formatDate(i.check_in_time as number) : i.check_in_time,
-      table_preference: i.table_preference,
+    const waitlistDataArray = data.map(item => ({
+      ...restaurantWaitlistWriteData(item as Record<string, unknown>),
       status: item.status || 'waiting',
-      quoted_wait_time: item.quoted_wait_time,
-      actual_wait_time: item.actual_wait_time,
-      queue_position: item.queue_position,
-      customer_id: item.customer_id,
       uuid: randomUUIDv7(),
-    }
-    })
+    }))
 
     const result = await db
       .insertInto('waitlist_restaurants')
       .values(waitlistDataArray)
       .executeTakeFirst()
 
-    return Number(result.numInsertedOrUpdatedRows)
+    return mutationCount(result)
   }
   catch (error) {
     if (error instanceof Error) {

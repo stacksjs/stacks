@@ -1,5 +1,7 @@
 import { db } from '@stacksjs/database'
 import { formatDate } from '@stacksjs/orm'
+import { fetchById } from './fetch'
+import { restaurantWaitlistWriteData } from './write-data'
 type WaitlistRestaurantJsonResponse = ModelRow<typeof WaitlistRestaurant>
 type WaitlistRestaurantUpdate = UpdateModelData<typeof WaitlistRestaurant>
 
@@ -15,27 +17,23 @@ export async function update(id: number, data: WaitlistRestaurantUpdate): Promis
     if (!id)
       throw new Error('Restaurant waitlist entry ID is required for update')
 
-    const d = data as Record<string, unknown>
-    const result = await db
+    const existing = await fetchById(id)
+    if (!existing)
+      throw new Error('Restaurant waitlist entry not found')
+
+    await db
       .updateTable('waitlist_restaurants')
       .set({
-        name: data.name,
-        email: data.email,
-        phone: data.phone,
-        party_size: d.party_size,
-        check_in_time: d.check_in_time ? Math.floor(new Date(d.check_in_time as string).getTime() / 1000) : undefined,
-        table_preference: d.table_preference,
-        status: data.status,
-        quoted_wait_time: data.quoted_wait_time,
-        actual_wait_time: data.actual_wait_time,
-        queue_position: data.queue_position,
-        customer_id: data.customer_id,
+        ...restaurantWaitlistWriteData(
+          data as Record<string, unknown>,
+          existing as Record<string, unknown>,
+        ),
         updated_at: formatDate(new Date()),
       })
       .where('id', '=', id)
-      .returningAll()
-      .executeTakeFirst()
+      .execute()
 
+    const result = await fetchById(id)
     if (!result)
       throw new Error('Failed to update restaurant waitlist entry')
 
@@ -59,31 +57,9 @@ export async function update(id: number, data: WaitlistRestaurantUpdate): Promis
  */
 export async function updateStatus(
   id: number,
-  status: 'waiting' | 'seated',
+  status: 'waiting' | 'seated' | 'cancelled' | 'no_show',
 ): Promise<WaitlistRestaurantJsonResponse> {
-  try {
-    const result = await db
-      .updateTable('waitlist_restaurants')
-      .set({
-        status,
-        updated_at: formatDate(new Date()),
-      })
-      .where('id', '=', id)
-      .returningAll()
-      .executeTakeFirst()
-
-    if (!result)
-      throw new Error('Failed to update restaurant waitlist entry status')
-
-    return result as WaitlistRestaurantJsonResponse
-  }
-  catch (error) {
-    if (error instanceof Error) {
-      throw new TypeError(`Failed to update restaurant waitlist entry status: ${error.message}`)
-    }
-
-    throw error
-  }
+  return await update(id, { status } as WaitlistRestaurantUpdate)
 }
 
 /**
@@ -97,29 +73,7 @@ export async function updatePartySize(
   id: number,
   partySize: number,
 ): Promise<WaitlistRestaurantJsonResponse> {
-  try {
-    const result = await db
-      .updateTable('waitlist_restaurants')
-      .set({
-        party_size: partySize,
-        updated_at: formatDate(new Date()),
-      })
-      .where('id', '=', id)
-      .returningAll()
-      .executeTakeFirst()
-
-    if (!result)
-      throw new Error('Failed to update party size')
-
-    return result as WaitlistRestaurantJsonResponse
-  }
-  catch (error) {
-    if (error instanceof Error) {
-      throw new TypeError(`Failed to update party size: ${error.message}`)
-    }
-
-    throw error
-  }
+  return await update(id, { party_size: partySize } as WaitlistRestaurantUpdate)
 }
 
 /**
@@ -135,30 +89,10 @@ export async function updateWaitTimes(
   quotedWaitTime: number,
   actualWaitTime?: number,
 ): Promise<WaitlistRestaurantJsonResponse> {
-  try {
-    const result = await db
-      .updateTable('waitlist_restaurants')
-      .set({
-        quoted_wait_time: quotedWaitTime,
-        actual_wait_time: actualWaitTime,
-        updated_at: formatDate(new Date()),
-      })
-      .where('id', '=', id)
-      .returningAll()
-      .executeTakeFirst()
-
-    if (!result)
-      throw new Error('Failed to update wait times')
-
-    return result as WaitlistRestaurantJsonResponse
-  }
-  catch (error) {
-    if (error instanceof Error) {
-      throw new TypeError(`Failed to update wait times: ${error.message}`)
-    }
-
-    throw error
-  }
+  return await update(id, {
+    quoted_wait_time: quotedWaitTime,
+    ...(actualWaitTime === undefined ? {} : { actual_wait_time: actualWaitTime }),
+  } as WaitlistRestaurantUpdate)
 }
 
 /**
@@ -172,27 +106,5 @@ export async function updateQueuePosition(
   id: number,
   queuePosition: number,
 ): Promise<WaitlistRestaurantJsonResponse> {
-  try {
-    const result = await db
-      .updateTable('waitlist_restaurants')
-      .set({
-        queue_position: queuePosition,
-        updated_at: formatDate(new Date()),
-      })
-      .where('id', '=', id)
-      .returningAll()
-      .executeTakeFirst()
-
-    if (!result)
-      throw new Error('Failed to update queue position')
-
-    return result as WaitlistRestaurantJsonResponse
-  }
-  catch (error) {
-    if (error instanceof Error) {
-      throw new TypeError(`Failed to update queue position: ${error.message}`)
-    }
-
-    throw error
-  }
+  return await update(id, { queue_position: queuePosition } as WaitlistRestaurantUpdate)
 }

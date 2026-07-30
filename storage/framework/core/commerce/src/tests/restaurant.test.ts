@@ -10,7 +10,8 @@ import {
   fetchWaitingWithPartySizes,
   fetchWaitingWithQuotedTimes,
 } from '../waitlists/restaurant/fetch'
-import { bulkStore } from '../waitlists/restaurant/store'
+import { bulkStore, store } from '../waitlists/restaurant/store'
+import { update, updateStatus } from '../waitlists/restaurant/update'
 
 beforeEach(async () => {
   await refreshDatabase()
@@ -21,6 +22,45 @@ describe('Restaurant Waitlist Module', () => {
     it('should return 0 when trying to bulk store an empty array', async () => {
       const count = await bulkStore([])
       expect(count).toBe(0)
+    })
+
+    it('normalizes Unix seconds and preserves one-time seating timestamps', async () => {
+      const checkedInAt = 1785380400
+      const created = await store({
+        name: 'Seating audit',
+        email: 'seating-audit@example.test',
+        phone: '+1 555 0101',
+        party_size: 4,
+        check_in_time: checkedInAt,
+        table_preference: 'booth',
+        status: 'waiting',
+        quoted_wait_time: 20,
+        queue_position: 3,
+        customer_id: 1,
+      } as any)
+
+      expect(created.check_in_time).toBe('2026-07-30 03:00:00')
+
+      const seated = await updateStatus(created.id, 'seated')
+      expect(seated.seated_at).toBeTruthy()
+
+      const pinned = await update(created.id, {
+        seated_at: '2026-01-02 03:04:05',
+      } as any)
+      const edited = await update(created.id, {
+        name: 'Seating audit updated',
+        email: 'updated@example.test',
+        party_size: 5,
+        check_in_time: checkedInAt,
+        table_preference: 'indoor',
+        status: 'seated',
+        quoted_wait_time: 25,
+      } as any)
+
+      expect(edited.seated_at).toBe(pinned.seated_at)
+      expect(edited.phone).toBe('+1 555 0101')
+      expect(edited.queue_position).toBe(3)
+      expect(edited.customer_id).toBe(1)
     })
   })
 

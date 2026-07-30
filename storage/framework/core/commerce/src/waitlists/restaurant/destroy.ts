@@ -1,5 +1,6 @@
 type WaitlistRestaurantJsonResponse = ModelRow<typeof WaitlistRestaurant>
 import { db } from '@stacksjs/database'
+import { mutationCount } from '../../utils/mutation-count'
 
 /**
  * Delete a restaurant waitlist entry by ID
@@ -47,13 +48,12 @@ export async function bulkDestroy(ids: number[]): Promise<number> {
     return 0
 
   try {
-    // Delete all restaurant waitlist entries with the given IDs
     const result = await db
       .deleteFrom('waitlist_restaurants')
       .where('id', 'in', ids)
-      .execute()
+      .executeTakeFirst()
 
-    return (result as any).length || 0
+    return mutationCount(result)
   }
   catch (error) {
     if (error instanceof Error) {
