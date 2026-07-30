@@ -321,7 +321,7 @@ onMount(() => {
       <h1 class="font-bold text-2xl text-gray-900 dark:text-white">Point of sale</h1>
       <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Create server-priced cash sales from native Product, Order, OrderItem, Payment, Customer, and TaxRate records.</p>
     </div>
-    <button type="button" :disabled="loading()" class="inline-flex items-center self-start px-3 py-2 font-semibold text-gray-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700 disabled:opacity-50" @click="loadPos()"><span :class="'mr-2 h-4 w-4 ' + (loading() ? 'animate-spin i-hugeicons-loading-03' : 'i-hugeicons-refresh')"></span>Refresh</button>
+    <Button variant="secondary" :loading="loading()" @click="loadPos()"><span :if="!loading()" class="h-4 w-4 i-hugeicons-refresh"></span>Refresh</Button>
   </header>
 
   <div :if="loadError()" class="p-4 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900">{{ loadError() }}</div>

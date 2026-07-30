@@ -61,8 +61,8 @@ function refundable(): boolean {
       <div :if="refundable()" class="mt-5 p-3 text-amber-800 text-xs dark:text-amber-200 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 rounded-lg dark:border-amber-900">Only record a refund after the payment processor confirms it. This updates the local ledger and does not contact the processor.</div>
     </div>
     <footer class="flex gap-2 justify-end px-6 py-4 bg-gray-50 dark:bg-neutral-900/50 border-gray-200 border-t dark:border-neutral-700">
-      <button type="button" class="px-3 py-2 font-semibold text-gray-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" @click="emit('close')">Close</button>
-      <button :if="refundable()" type="button" class="px-3 py-2 font-semibold text-sm text-white bg-violet-600 hover:bg-violet-500 rounded-md" @click="emit('request-refund')">Record refund</button>
+      <Button variant="secondary" @click="emit('close')">Close</Button>
+      <Button :if="refundable()" @click="emit('request-refund')">Record refund</Button>
     </footer>
   </section>
 </div>

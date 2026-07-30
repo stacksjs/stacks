@@ -77,7 +77,7 @@ function sellable(product: CommercePosProduct): boolean {
             <p class="font-semibold text-gray-900 dark:text-white">{{ formatMoney(product.price) }}</p>
             <p :class="'mt-1 text-xs ' + (product.inventoryCount > 0 ? 'text-gray-400 dark:text-neutral-500' : 'text-red-600 dark:text-red-400')">{{ product.inventoryCount.toLocaleString() }} in stock<span :if="product.preparationTime > 0"> · {{ product.preparationTime }} min</span></p>
           </div>
-          <button type="button" :disabled="!sellable(product)" :aria-label="'Add ' + product.name + ' to cart'" class="inline-flex flex-none items-center px-3 py-2 font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md disabled:opacity-40" @click="emit('add', product)"><span class="mr-1.5 h-4 w-4 i-hugeicons-add-01"></span>Add</button>
+          <Button size="sm" :disabled="!sellable(product)" :ariaLabel="'Add ' + product.name + ' to cart'" @click="emit('add', product)"><span class="h-4 w-4 i-hugeicons-add-01"></span>Add</Button>
         </div>
       </article>
     </template>

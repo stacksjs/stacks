@@ -54,6 +54,14 @@ describe('dashboard button contract', () => {
       'PrintDevicesTable.stx',
       'PrintLogsTable.stx',
       'ProductWaitlistTable.stx',
+      'CommerceOverviewDashboard.stx',
+      'CommercePosDashboard.stx',
+      'CommercePosCatalog.stx',
+      'CommercePosCart.stx',
+      'CommercePosCheckoutDialog.stx',
+      'CommercePosReceiptDialog.stx',
+      'PaymentDetailsDialog.stx',
+      'PaymentRefundDialog.stx',
     ]
 
     for (const file of files) {

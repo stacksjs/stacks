@@ -63,6 +63,6 @@ function formatDate(value: string): string {
         <div class="flex items-center justify-between pt-2 font-semibold text-gray-900 dark:text-white border-gray-200 border-t dark:border-neutral-700"><dt>Cash paid</dt><dd>{{ formatMoney(receipt()?.totalAmount || 0) }}</dd></div>
       </dl>
     </div>
-    <footer class="flex gap-2 justify-end px-6 py-4 bg-gray-50 dark:bg-neutral-900/50 border-gray-200 border-t dark:border-neutral-700"><button type="button" class="px-3 py-2 font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md" @click="emit('close')">Start next sale</button></footer>
+    <footer class="flex gap-2 justify-end px-6 py-4 bg-gray-50 dark:bg-neutral-900/50 border-gray-200 border-t dark:border-neutral-700"><Button @click="emit('close')">Start next sale</Button></footer>
   </section>
 </div>

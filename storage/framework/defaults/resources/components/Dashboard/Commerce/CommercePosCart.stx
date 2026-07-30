@@ -32,7 +32,7 @@ function formatMoney(value: number): string {
       <h2 class="font-semibold text-gray-900 dark:text-white">Current sale</h2>
       <p class="mt-0.5 text-gray-500 text-xs dark:text-neutral-400">{{ lines().length }} distinct {{ lines().length === 1 ? 'product' : 'products' }}</p>
     </div>
-    <button :if="lines().length > 0" type="button" class="font-medium text-red-600 text-xs dark:text-red-400" @click="emit('clear')">Clear</button>
+    <Button :if="lines().length > 0" variant="ghost" size="xs" @click="emit('clear')"><span class="text-red-500">Clear</span></Button>
   </header>
 
   <div :if="lines().length === 0" class="px-5 py-14 text-center">
@@ -46,12 +46,12 @@ function formatMoney(value: number): string {
       <li class="p-4">
         <div class="flex gap-3 items-start justify-between">
           <div class="min-w-0"><p class="font-medium text-gray-900 text-sm truncate dark:text-white">{{ line.name }}</p><p class="mt-1 text-gray-500 text-xs dark:text-neutral-400">{{ formatMoney(line.unitPrice) }} each · {{ formatMoney(line.unitPrice * line.quantity) }}</p></div>
-          <button type="button" :aria-label="'Remove ' + line.name" class="p-1 text-gray-400 hover:text-red-600 dark:hover:text-red-400 rounded" @click="emit('remove', line.productId)"><span class="block h-4 w-4 i-hugeicons-delete-02"></span></button>
+          <Button variant="ghost" size="xs" iconOnly :ariaLabel="'Remove ' + line.name" @click="emit('remove', line.productId)"><span class="block h-4 w-4 text-red-500 i-hugeicons-delete-02"></span></Button>
         </div>
         <div class="flex gap-2 items-center mt-3">
-          <button type="button" :aria-label="'Decrease ' + line.name + ' quantity'" class="p-1.5 text-gray-600 dark:text-neutral-300 bg-gray-100 dark:bg-neutral-700 rounded-md" @click="emit('decrease', line.productId)"><span class="block h-3.5 w-3.5 i-hugeicons-minus-sign"></span></button>
+          <Button variant="secondary" size="xs" iconOnly :ariaLabel="'Decrease ' + line.name + ' quantity'" @click="emit('decrease', line.productId)"><span class="block h-3.5 w-3.5 i-hugeicons-minus-sign"></span></Button>
           <span class="min-w-8 font-semibold text-center text-gray-800 text-sm dark:text-neutral-100">{{ line.quantity }}</span>
-          <button type="button" :disabled="line.quantity >= line.inventoryCount" :aria-label="'Increase ' + line.name + ' quantity'" class="p-1.5 text-gray-600 dark:text-neutral-300 bg-gray-100 dark:bg-neutral-700 rounded-md disabled:opacity-35" @click="emit('increase', line.productId)"><span class="block h-3.5 w-3.5 i-hugeicons-plus-sign"></span></button>
+          <Button variant="secondary" size="xs" iconOnly :disabled="line.quantity >= line.inventoryCount" :ariaLabel="'Increase ' + line.name + ' quantity'" @click="emit('increase', line.productId)"><span class="block h-3.5 w-3.5 i-hugeicons-plus-sign"></span></Button>
           <span class="ml-auto text-gray-400 text-xs dark:text-neutral-500">{{ line.inventoryCount }} available</span>
         </div>
         <label class="block mt-3"><span class="sr-only">Instructions for {{ line.name }}</span><input :value="line.specialInstructions" type="text" maxlength="500" placeholder="Optional line instructions" class="px-3 py-1.5 w-full text-gray-900 text-xs dark:text-white bg-gray-50 dark:bg-neutral-900 border border-gray-200 rounded-md dark:border-neutral-700" @input="emit('instructions', { productId: line.productId, event: $event })" /></label>
@@ -65,6 +65,8 @@ function formatMoney(value: number): string {
       <div class="flex items-center justify-between text-gray-500 text-sm dark:text-neutral-400"><dt>Tax ({{ taxRate() }}%)</dt><dd>{{ formatMoney(taxAmount()) }}</dd></div>
       <div class="flex items-center justify-between pt-2 font-semibold text-gray-900 dark:text-white border-gray-200 border-t dark:border-neutral-700"><dt>Amount due</dt><dd>{{ formatMoney(totalAmount()) }}</dd></div>
     </dl>
-    <button type="button" :disabled="lines().length === 0" class="inline-flex items-center justify-center mt-4 px-4 py-3 w-full font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md disabled:opacity-40" @click="emit('checkout')"><span class="mr-2 h-4 w-4 i-hugeicons-cash-02"></span>Review cash sale</button>
+    <div class="mt-4">
+      <Button size="lg" fullWidth :disabled="lines().length === 0" @click="emit('checkout')"><span class="h-4 w-4 i-hugeicons-cash-02"></span>Review cash sale</Button>
+    </div>
   </footer>
 </aside>
