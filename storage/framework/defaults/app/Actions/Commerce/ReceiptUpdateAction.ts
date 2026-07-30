@@ -1,28 +1,18 @@
 import { Action } from '@stacksjs/actions'
-
 import { receipts } from '@stacksjs/commerce'
+import { toSnakeCaseKeys } from '@stacksjs/orm'
 import { response } from '@stacksjs/router'
 
 export default new Action({
   name: 'Receipt Update',
-  description: 'Receipt Update ORM Action',
+  description: 'Updates a receipt print log through the native commerce module.',
   method: 'PATCH',
+  model: Receipt,
   async handle(request: RequestInstance) {
     await request.validate()
 
-    const id = request.getParam('id')
-
-    const data = {
-      order_id: request.get<number>('order_id'),
-      customer_id: request.get<number>('customer_id'),
-      amount: request.get<number>('amount'),
-      print_device_id: request.get<number>('print_device_id'),
-      printer: request.get('printer'),
-      document: request.get('document'),
-      timestamp: request.get<number>('timestamp'),
-      status: request.get('status'),
-    }
-
+    const id = Number(request.getParam('id'))
+    const data = toSnakeCaseKeys(request.all())
     const result = await receipts.update(id, data)
 
     return response.json(result)

@@ -269,4 +269,26 @@ describe('dashboard commerce route contract', () => {
     expect(store).toContain('print_count: 0')
     expect(destroyAction).toContain('response.noContent()')
   })
+
+  test('print log deletion uses a guarded native Receipt action', () => {
+    const routes = source('storage/framework/defaults/routes/dashboard-api.ts')
+    const logs = source('storage/framework/defaults/resources/components/Dashboard/Commerce/PrintLogsDashboard.stx')
+    const storeAction = source('storage/framework/defaults/app/Actions/Commerce/ReceiptStoreAction.ts')
+    const updateAction = source('storage/framework/defaults/app/Actions/Commerce/ReceiptUpdateAction.ts')
+    const destroyAction = source('storage/framework/defaults/app/Actions/Commerce/ReceiptDestroyAction.ts')
+
+    expect(routes).toContain("guard(route.delete('/commerce/print-logs/{id}', 'Actions/Commerce/ReceiptDestroyAction'))")
+    expect(logs).toContain('/api/dashboard/commerce/print-logs')
+    expect(logs).not.toMatch(/\/api\/print-logs(?:\/|\?|'|`)/)
+
+    for (const action of [storeAction, updateAction]) {
+      expect(action).toContain('model: Receipt')
+      expect(action).toContain('await request.validate()')
+      expect(action).toContain('toSnakeCaseKeys(request.all())')
+    }
+
+    expect(destroyAction).toContain('Number(request.getParam')
+    expect(destroyAction).toContain('receipts.destroy(id)')
+    expect(destroyAction).toContain('response.noContent()')
+  })
 })

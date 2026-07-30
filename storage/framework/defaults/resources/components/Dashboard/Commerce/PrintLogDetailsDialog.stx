@@ -37,6 +37,6 @@ function details(): Array<{ label: string, value: string }> {
       <dl class="grid gap-x-6 gap-y-4 sm:grid-cols-2 mt-6"><template :for="item in details()" :key="item.label"><div><dt class="text-gray-400 text-xs dark:text-neutral-500">{{ item.label }}</dt><dd class="mt-1 break-all text-gray-800 text-sm dark:text-neutral-100">{{ item.value }}</dd></div></template></dl>
       <div :if="record()?.metadata && record()?.metadata !== '{}'" class="mt-5"><p class="text-gray-400 text-xs dark:text-neutral-500">Metadata</p><pre class="overflow-x-auto mt-1 p-3 text-gray-700 text-xs whitespace-pre-wrap dark:text-neutral-200 bg-gray-50 dark:bg-neutral-900/60 rounded-lg">{{ record()?.metadata }}</pre></div>
     </div>
-    <footer class="flex justify-end px-6 py-4 bg-gray-50 dark:bg-neutral-900/50 border-gray-200 border-t dark:border-neutral-700"><button type="button" class="px-3 py-2 font-semibold text-gray-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" @click="emit('close')">Close</button></footer>
+    <footer class="flex justify-end px-6 py-4 bg-gray-50 dark:bg-neutral-900/50 border-gray-200 border-t dark:border-neutral-700"><Button variant="secondary" @click="emit('close')">Close</Button></footer>
   </section>
 </div>
