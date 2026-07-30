@@ -9,11 +9,13 @@ interface FileItem {
   thumbnail?: string
 }
 
-const item = useReactiveProp<FileItem>('item', {
+const EMPTY_ITEM: FileItem = {
   id: '',
   name: '',
   type: 'other',
-})
+}
+const item = useReactiveProp<FileItem | null>('item', null)
+const currentItem = derived(() => item() ?? EMPTY_ITEM)
 
 const IMAGE_EXT = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'avif', 'svg', 'bmp', 'heic']
 const VIDEO_EXT = ['mp4', 'mov', 'webm', 'mkv', 'avi', 'm4v']
@@ -45,9 +47,9 @@ function kindOf(value: FileItem): string {
   return 'other'
 }
 
-const kind = derived(() => kindOf(item()))
-const extension = derived(() => (item().type || '').toUpperCase())
-const previewUrl = derived(() => item().thumbnail || item().url || '')
+const kind = derived(() => kindOf(currentItem()))
+const extension = derived(() => (currentItem().type || '').toUpperCase())
+const previewUrl = derived(() => currentItem().thumbnail || currentItem().url || '')
 const hasImage = derived(() => kind() === 'image' && Boolean(previewUrl()))
 
 const backdropByKind: Record<string, string> = {
@@ -77,13 +79,13 @@ const badgeClass = derived(() => kind() === 'video'
 
 <div class="flex flex-col">
   <div :class="previewClass()">
-    <img :if="hasImage()" :src="previewUrl()" :alt="item().name" loading="lazy" class="object-cover h-full w-full" />
+    <img :if="hasImage()" :src="previewUrl()" :alt="currentItem().name" loading="lazy" class="object-cover h-full w-full" />
     <div :else-if="kind() === 'video'" class="flex items-center justify-center h-12 w-12 bg-white/90 rounded-full shadow-md"><span class="ml-0.5 h-5 w-5 text-neutral-900 i-hugeicons-play"></span></div>
     <span :else :class="glyphClass()"></span>
-    <span :if="item().type !== 'folder' && extension()" :class="badgeClass()">{{ extension() }}</span>
+    <span :if="currentItem().type !== 'folder' && extension()" :class="badgeClass()">{{ extension() }}</span>
   </div>
   <div class="px-3 py-2.5">
-    <p :title="item().name" class="font-medium text-[13px] text-stone-800 truncate dark:text-white">{{ item().name }}</p>
-    <p class="mt-0.5 capitalize text-[11px] text-stone-400 dark:text-neutral-500">{{ item().type === 'folder' ? 'Folder' : kind() }}</p>
+    <p :title="currentItem().name" class="font-medium text-[13px] text-stone-800 truncate dark:text-white">{{ currentItem().name }}</p>
+    <p class="mt-0.5 capitalize text-[11px] text-stone-400 dark:text-neutral-500">{{ currentItem().type === 'folder' ? 'Folder' : kind() }}</p>
   </div>
 </div>

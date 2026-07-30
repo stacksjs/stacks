@@ -12,11 +12,13 @@ interface FileItem {
   shared?: boolean
 }
 
-const item = useReactiveProp<FileItem>('item', {
+const EMPTY_ITEM: FileItem = {
   id: '',
   name: '',
   type: 'other',
-})
+}
+const item = useReactiveProp<FileItem | null>('item', null)
+const currentItem = derived(() => item() ?? EMPTY_ITEM)
 
 const IMAGE_EXT = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'avif', 'svg', 'bmp', 'heic']
 const VIDEO_EXT = ['mp4', 'mov', 'webm', 'mkv', 'avi', 'm4v']
@@ -42,8 +44,8 @@ function kindOf(value: FileItem): string {
   return 'document'
 }
 
-const kind = derived(() => kindOf(item()))
-const previewUrl = derived(() => item().thumbnail || item().url || '')
+const kind = derived(() => kindOf(currentItem()))
+const previewUrl = derived(() => currentItem().thumbnail || currentItem().url || '')
 const hasImage = derived(() => kind() === 'image' && Boolean(previewUrl()))
 
 const glyphByKind: Record<string, string> = {
@@ -75,23 +77,23 @@ function formatWhen(value?: string | null): string {
     : new Intl.DateTimeFormat('en-US', { year: 'numeric', month: 'short', day: 'numeric' }).format(date)
 }
 
-const sizeLabel = derived(() => item().type === 'folder' ? '-' : formatBytes(item().size || 0))
-const locationLabel = derived(() => item().path || '/')
-const kindLabel = derived(() => item().type === 'folder' ? 'Folder' : `${kind()}${item().type ? ` (.${item().type})` : ''}`)
+const sizeLabel = derived(() => currentItem().type === 'folder' ? '-' : formatBytes(currentItem().size || 0))
+const locationLabel = derived(() => currentItem().path || '/')
+const kindLabel = derived(() => currentItem().type === 'folder' ? 'Folder' : `${kind()}${currentItem().type ? ` (.${currentItem().type})` : ''}`)
 </script>
 
 <div class="flex flex-col">
   <div :class="previewClass()">
-    <img :if="hasImage()" :src="previewUrl()" :alt="item().name" class="object-contain h-full w-full" />
+    <img :if="hasImage()" :src="previewUrl()" :alt="currentItem().name" class="object-contain h-full w-full" />
     <div :else-if="kind() === 'video'" class="flex items-center justify-center h-14 w-14 bg-white/90 rounded-full shadow-md"><span class="ml-0.5 h-6 w-6 text-neutral-900 i-hugeicons-play"></span></div>
     <span :else :class="glyphClass()"></span>
   </div>
-  <h4 class="mt-4 break-words font-semibold text-[15px] text-stone-800 dark:text-white">{{ item().name }}</h4>
+  <h4 class="mt-4 break-words font-semibold text-[15px] text-stone-800 dark:text-white">{{ currentItem().name }}</h4>
   <dl class="mt-4 space-y-3 text-[13px]">
     <div class="flex gap-4 items-start justify-between"><dt class="text-stone-400 dark:text-neutral-500">Type</dt><dd class="capitalize font-medium text-right text-stone-700 dark:text-neutral-200">{{ kindLabel() }}</dd></div>
     <div class="flex gap-4 items-start justify-between"><dt class="text-stone-400 dark:text-neutral-500">Size</dt><dd class="font-medium text-right text-stone-700 dark:text-neutral-200">{{ sizeLabel() }}</dd></div>
     <div class="flex gap-4 items-start justify-between"><dt class="text-stone-400 dark:text-neutral-500">Location</dt><dd class="break-all font-medium text-right text-stone-700 dark:text-neutral-200">{{ locationLabel() }}</dd></div>
-    <div class="flex gap-4 items-start justify-between"><dt class="text-stone-400 dark:text-neutral-500">Modified</dt><dd class="font-medium text-right text-stone-700 dark:text-neutral-200">{{ formatWhen(item().lastModified) }}</dd></div>
+    <div class="flex gap-4 items-start justify-between"><dt class="text-stone-400 dark:text-neutral-500">Modified</dt><dd class="font-medium text-right text-stone-700 dark:text-neutral-200">{{ formatWhen(currentItem().lastModified) }}</dd></div>
   </dl>
-  <span :if="item().shared" class="inline-flex gap-1 items-center self-start mt-5 px-2 py-1 font-medium text-[11px] text-indigo-700 dark:text-indigo-300 bg-indigo-100 dark:bg-indigo-500/15 rounded-full"><span class="h-3 w-3 i-hugeicons-share-01"></span>Public disk</span>
+  <span :if="currentItem().shared" class="inline-flex gap-1 items-center self-start mt-5 px-2 py-1 font-medium text-[11px] text-indigo-700 dark:text-indigo-300 bg-indigo-100 dark:bg-indigo-500/15 rounded-full"><span class="h-3 w-3 i-hugeicons-share-01"></span>Public disk</span>
 </div>
