@@ -1,0 +1,143 @@
+<script client>
+type DriverStatus = 'active' | 'on_delivery' | 'on_break'
+
+interface UserOption {
+  id: number
+  name: string
+  email?: string
+}
+
+interface DriverRecord {
+  id: number
+  name: string
+  phone: string
+  vehicle_number: string
+  license: string
+  status: DriverStatus
+  user_id?: number | null
+}
+
+const open = useReactiveProp('open', false)
+const mode = useReactiveProp('mode', 'create')
+const record = useReactiveProp('record', null as DriverRecord | null)
+const users = useReactiveProp('users', [] as UserOption[])
+const busy = useReactiveProp('busy', false)
+const error = useReactiveProp('error', '')
+const emit = defineEmits()
+const name = state('')
+const phone = state('')
+const vehicleNumber = state('')
+const license = state('')
+const status = state<DriverStatus>('active')
+const userId = state('')
+let hydrationKey = ''
+
+effect(() => {
+  if (!open()) {
+    hydrationKey = ''
+    return
+  }
+  const current = record()
+  const nextKey = `${mode()}:${current?.id || 'new'}`
+  if (hydrationKey === nextKey)
+    return
+  hydrationKey = nextKey
+  name.set(current?.name || '')
+  phone.set(current?.phone || '')
+  vehicleNumber.set(current?.vehicle_number || '')
+  license.set(current?.license || '')
+  status.set(current?.status || 'active')
+  userId.set(current?.user_id ? String(current.user_id) : '')
+})
+
+function setName(event: Event): void {
+  name.set((event.target as HTMLInputElement).value)
+}
+
+function setPhone(event: Event): void {
+  phone.set((event.target as HTMLInputElement).value)
+}
+
+function setVehicleNumber(event: Event): void {
+  vehicleNumber.set((event.target as HTMLInputElement).value)
+}
+
+function setLicense(event: Event): void {
+  license.set((event.target as HTMLInputElement).value)
+}
+
+function setStatus(event: Event): void {
+  status.set((event.target as HTMLSelectElement).value as DriverStatus)
+}
+
+function setUser(event: Event): void {
+  userId.set((event.target as HTMLSelectElement).value)
+}
+
+function submit(): void {
+  const selectedUserId = userId() ? Number(userId()) : null
+  if (!name().trim()) {
+    emit('invalid', 'Driver name is required.')
+    return
+  }
+  if (!phone().trim()) {
+    emit('invalid', 'Phone number is required.')
+    return
+  }
+  if (!vehicleNumber().trim()) {
+    emit('invalid', 'Vehicle number is required.')
+    return
+  }
+  if (!license().trim()) {
+    emit('invalid', 'License number is required.')
+    return
+  }
+  if (selectedUserId !== null && (!Number.isInteger(selectedUserId) || selectedUserId < 1)) {
+    emit('invalid', 'Select a valid linked user.')
+    return
+  }
+
+  emit('submit', {
+    name: name().trim(),
+    phone: phone().trim(),
+    vehicle_number: vehicleNumber().trim().toUpperCase(),
+    license: license().trim().toUpperCase(),
+    status: status(),
+    user_id: selectedUserId,
+  })
+}
+</script>
+
+<div :if="open()" class="flex fixed inset-0 z-50 items-center justify-center p-4">
+  <button type="button" aria-label="Close driver dialog" class="absolute inset-0 bg-black/45" @click="emit('close')"></button>
+  <section role="dialog" aria-modal="true" aria-labelledby="driver-dialog-title" class="overflow-y-auto relative max-h-[92dvh] max-w-lg w-full bg-white dark:bg-neutral-800 border border-gray-200 rounded-xl dark:border-neutral-700 shadow-xl">
+    <form @submit.prevent="submit()">
+      <div class="p-6">
+        <h2 id="driver-dialog-title" class="font-semibold text-gray-900 text-lg dark:text-white">{{ mode() === 'edit' ? 'Edit driver' : 'Add driver' }}</h2>
+        <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Manage operational identity, vehicle assignment, availability, and the optional User relationship.</p>
+        <div :if="error()" class="mt-4 p-3 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900">{{ error() }}</div>
+
+        <div class="mt-5 space-y-4">
+          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Driver name</span><input :value="name()" type="text" required maxlength="255" autocomplete="name" placeholder="Alex Morgan" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="setName" /></label>
+          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Phone</span><input :value="phone()" type="tel" required maxlength="255" autocomplete="tel" placeholder="+1 555 0100" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="setPhone" /></label>
+          <div class="grid gap-4 grid-cols-1 sm:grid-cols-2">
+            <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Vehicle number</span><input :value="vehicleNumber()" type="text" required maxlength="255" autocomplete="off" placeholder="VAN-204" class="mt-1 px-3 py-2 w-full font-mono text-gray-900 text-sm uppercase dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="setVehicleNumber" /></label>
+            <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">License number</span><input :value="license()" type="text" required maxlength="255" autocomplete="off" placeholder="D1234567" class="mt-1 px-3 py-2 w-full font-mono text-gray-900 text-sm uppercase dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="setLicense" /></label>
+          </div>
+          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Status</span><select :value="status()" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @change="setStatus"><option value="active">Available</option><option value="on_delivery">On delivery</option><option value="on_break">On break</option></select></label>
+          <label class="block">
+            <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Linked user</span>
+            <select :value="userId()" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @change="setUser">
+              <option value="">No linked user</option>
+              <template :for="user in users()" :key="user.id"><option :value="user.id">{{ user.name }}{{ user.email ? ' - ' + user.email : '' }}</option></template>
+            </select>
+          </label>
+        </div>
+      </div>
+      <footer class="flex gap-2 justify-end px-6 py-4 bg-gray-50 dark:bg-neutral-900/50 border-gray-200 border-t dark:border-neutral-700">
+        <button type="button" :disabled="busy()" class="px-3 py-2 font-semibold text-gray-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700 disabled:opacity-50" @click="emit('close')">Cancel</button>
+        <button type="submit" :disabled="busy()" class="inline-flex items-center px-3 py-2 font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md disabled:opacity-50"><span :if="busy()" class="mr-2 h-4 w-4 animate-spin i-hugeicons-loading-03"></span>{{ mode() === 'edit' ? 'Save changes' : 'Add driver' }}</button>
+      </footer>
+    </form>
+  </section>
+</div>
