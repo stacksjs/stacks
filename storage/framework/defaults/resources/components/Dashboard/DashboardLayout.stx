@@ -132,11 +132,10 @@ useEventListener('craft:ready', ensureCraftNativeSidebarMarker)
   <slot name="overlays" />
 </div>
 <style>
-html[data-craft-native-sidebar='true'] .dashboard-web-sidebar {
-  display: none !important;
-}
-
-html[data-craft-native-sidebar='true'] .dashboard-main-content {
-  padding-left: 0 !important;
-}
+/*
+ * The native NSOutlineView sidebar these rules deferred to is retired, and
+ * Craft sets `data-craft-native-sidebar` whenever `webSidebarMaterial` is on
+ * (vibrancy), not when a native sidebar actually exists. Hiding the web
+ * sidebar on that signal left the window with no navigation at all.
+ */
 </style>

@@ -33,11 +33,16 @@ export const sidebarRoleMap = JSON.stringify(
 </script>
 
 <!-- Dashboard icon stylesheet. Most dashboard icons are applied via dynamic
-    `:class="…"` bindings whose class names live in <script> state, which the stx
-    Crosswind extractor can't see — so their CSS is never generated inline and they
-    render as empty boxes. The dev server generates the full icon set once and serves
-    it here (browser-cached), instead of inlining ~260KB into every page. Route:
-    `/__deps/dashboard-icons.css` in storage/framework/core/actions/src/dev/dashboard.ts. -->
+    `:class="…"` bindings whose class names live in client script state, which the
+    stx Crosswind extractor cannot see, so their CSS is never generated inline and
+    they render as empty boxes. The dev server generates the full icon set once and
+    serves it here (browser-cached), instead of inlining ~260KB into every page.
+    Route: `/__deps/dashboard-icons.css` in actions/src/dev/dashboard.ts.
+
+    No angle-bracket tag names in this comment. stx parses them as elements, which
+    breaks OUT of the comment: the closing marker is then never emitted, and the
+    browser swallows everything after it as comment content. That is what hid the
+    entire sidebar once this layout started rendering it through a component. -->
 <link rel="stylesheet" href="/__deps/dashboard-icons.css">
 
 <style>
@@ -67,7 +72,7 @@ body {
   background: transparent;
 }
 /*
- * The pane offset follows the sidebar's own width variable, which <Sidebar>
+ * The pane offset follows the sidebar's own width variable, which the Sidebar
  * writes onto this element via `shell-selector`. The literal fallback keeps
  * the layout correct on the first paint, before the controller mounts, and
  * the collapsed state animates because the variable changes rather than a
@@ -88,15 +93,27 @@ body {
     left: 0;
   }
 }
-html[data-craft-native-sidebar='true'] .dashboard-modal-layer {
-  left: 0;
-}
-html[data-craft-native-sidebar='true'] [data-dashboard-web-sidebar] {
-  display: none;
-}
-html[data-craft-native-sidebar='true'] [data-stx-content] {
-  margin-left: 0;
-}
+/*
+ * These three rules used to hide the web sidebar and collapse the content
+ * offset, because Craft rendered a real NSOutlineView in that strip and
+ * showing both would have meant two navigations side by side.
+ *
+ * That native sidebar is retired (see actions/src/dev/dashboard.ts: "the web
+ * one owns rendering and behavior"), and the dev server never requests one.
+ * It does request `webSidebarMaterial: true`, purely for the NSVisualEffectView
+ * vibrancy that sits BEHIND the stx-rendered rows.
+ *
+ * Craft conflates the two: macos.zig gates its native-sidebar bootstrap on
+ * `style.web_sidebar_material` alone, and that bootstrap sets the global
+ * `__craftNativeSidebar` flag. So asking for vibrancy silently asserted "a
+ * native sidebar exists", the marker got stamped on the root element, and
+ * these rules hid the only navigation the window had. The Craft window showed
+ * a vibrant empty strip.
+ *
+ * Removed rather than re-gated: with the native sidebar retired there is no
+ * state in which hiding the web sidebar is correct. The upstream conflation is
+ * worth fixing in Craft too, so the flag stops lying to every other consumer.
+ */
 .dark [data-stx-content] {
   background: #0a0a0a;
 }
