@@ -20,12 +20,12 @@ const loading = state(true)
 const loadError = state('')
 let requestSequence = 0
 
-async function loadDashboard(): Promise<void> {
+async function loadRange(selectedRange: CommerceDashboardRange): Promise<void> {
   const sequence = ++requestSequence
   loading.set(true)
   loadError.set('')
   try {
-    const data = await dashboardApi<CommerceDashboardResult>(`/api/dashboard/commerce/stats?range=${encodeURIComponent(range())}`)
+    const data = await dashboardApi<CommerceDashboardResult>(`/api/dashboard/commerce/stats?range=${encodeURIComponent(selectedRange)}`)
     if (sequence !== requestSequence)
       return
     stats.set(Array.isArray(data.stats) ? data.stats : [])
@@ -48,9 +48,12 @@ async function loadDashboard(): Promise<void> {
   }
 }
 
-function updateRange(event: Event): void {
-  range.set((event.target as HTMLSelectElement).value as CommerceDashboardRange)
-  void loadDashboard()
+function loadDashboard(): void {
+  void loadRange(range())
+}
+
+function reloadSelectedRange(event: Event): void {
+  void loadRange((event.target as HTMLSelectElement).value as CommerceDashboardRange)
 }
 
 onMount(() => {
@@ -70,7 +73,7 @@ onMount(() => {
         Refresh
       </button>
       <label class="sr-only" for="commerce-dashboard-range">Reporting range</label>
-      <select id="commerce-dashboard-range" :value="range()" class="block pl-3 pr-10 py-2 text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-800 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-700 focus:ring-2 focus:ring-blue-600" @change="updateRange($event)">
+      <select id="commerce-dashboard-range" x-model="range" class="block pl-3 pr-10 py-2 text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-800 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-700 focus:ring-2 focus:ring-blue-600" @change="reloadSelectedRange($event)">
         <option value="today">Today</option>
         <option value="7d">Last 7 days</option>
         <option value="30d">Last 30 days</option>

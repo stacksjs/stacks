@@ -184,4 +184,34 @@ describe('commerce dashboard filter bindings', () => {
       expect(source).not.toContain('customerId.set(selectedId)')
     }
   })
+
+  test('coupon, checkout, and overview controls use native field models', () => {
+    for (const component of [
+      'CommerceCouponDialog.stx',
+      'CommercePosCheckoutDialog.stx',
+      'CommerceOverviewDashboard.stx',
+    ]) {
+      const source = readFileSync(
+        resolve(
+          'storage/framework/defaults/resources/components/Dashboard/Commerce',
+          component,
+        ),
+        'utf8',
+      )
+
+      expect(source).toContain('x-model=')
+      expect(source).not.toMatch(/:value="[^"]+\(\)"[^>]+@(?:input|change)=/)
+      expect(source).not.toMatch(/:checked="[^"]+\(\)"[^>]+@change=/)
+    }
+
+    const overview = readFileSync(
+      resolve(
+        'storage/framework/defaults/resources/components/Dashboard/Commerce',
+        'CommerceOverviewDashboard.stx',
+      ),
+      'utf8',
+    )
+    expect(overview).toContain('reloadSelectedRange($event)')
+    expect(overview).not.toContain('range.set(')
+  })
 })
