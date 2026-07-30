@@ -1,5 +1,5 @@
 import type { CLI, CreateOptions } from '@stacksjs/types'
-import { chmodSync } from 'node:fs'
+import { chmodSync, existsSync, readdirSync } from 'node:fs'
 import process from 'node:process'
 import { runAction } from '@stacksjs/actions'
 import { bold, cyan, dim, intro, log, onUnknownSubcommand, runCommand } from "@stacksjs/cli"
@@ -9,6 +9,10 @@ import { isFolder } from '@stacksjs/storage'
 import { ExitCode } from '@stacksjs/types'
 import { uninstallAllFeatures } from './features'
 import { ensurePantryDependencies, ensurePantryInstalled } from './setup'
+
+interface NewOptions extends CreateOptions {
+  withCore?: boolean
+}
 
 export function create(buddy: CLI): void {
   const descriptions = {
@@ -26,6 +30,7 @@ export function create(buddy: CLI): void {
     email: 'Do you need email?',
     project: 'Target a specific project',
     minimal: 'Skip optional feature bundles (cms, commerce, dashboard, marketing, monitoring, realtime, queue) — bare-bones API/SPA starter that can re-add them later via `./buddy <feature>:install`.',
+    withCore: 'Keep the framework vendored in `storage/framework/core` as a Bun workspace, for working ON Stacks. Apps that only work WITH Stacks want the default, which resolves every @stacksjs/* package from npm.',
     verbose: 'Enable verbose output',
   }
 
@@ -44,9 +49,10 @@ export function create(buddy: CLI): void {
     .option('-e, --email', descriptions.email, { default: false })
     .option('-P, --project [project]', descriptions.project, { default: false })
     .option('-m, --minimal', descriptions.minimal, { default: false })
+    .option('--with-core', descriptions.withCore, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     // .option('--auth', 'Scaffold an authentication?', { default: true })
-    .action(async (name, options: CreateOptions) => {
+    .action(async (name, options: NewOptions) => {
       log.debug('Running `buddy new <name>` ...', options)
 
       const startTime = await intro('buddy new')
@@ -73,6 +79,9 @@ export function create(buddy: CLI): void {
   await ensureEnv(path, options)
   await install(path, options)
 
+  if (!options.withCore)
+    await unvendorCore(path, options)
+
   if (options.minimal)
     await stripFeatures(path)
 
@@ -92,11 +101,26 @@ export function create(buddy: CLI): void {
   onUnknownSubcommand(buddy, "new")
 }
 
+/**
+ * An empty directory, or one holding nothing but `.git`, is a valid target:
+ * creating the repository on GitHub first and cloning it before scaffolding is
+ * the common way to start a project, and refusing that forced people to
+ * scaffold under a throwaway name and shuffle files (and `.git`) by hand.
+ *
+ * Anything else still hard-fails — overwriting a real project is never what
+ * `buddy new` was asked to do.
+ */
 function isFolderCheck(path: string) {
-  if (isFolder(path)) {
-    log.error(`Path ${path} already exists`)
-    process.exit(ExitCode.FatalError)
-  }
+  if (!isFolder(path))
+    return
+
+  const occupied = readdirSync(path).filter(entry => entry !== '.git')
+
+  if (occupied.length === 0)
+    return
+
+  log.error(`Path ${path} already exists`)
+  process.exit(ExitCode.FatalError)
 }
 
 async function onlineCheck() {
@@ -133,13 +157,21 @@ async function isOnline(): Promise<boolean> {
  * only reaches us via GitHub's repo-transfer redirect. Resolving the GitHub
  * provider directly removes that third-party lookup (and its supply-chain
  * risk) entirely.
+ *
+ * `force` lets the template extract into an already-existing directory, which
+ * is what makes scaffolding into a freshly cloned repository work: gitit
+ * otherwise refuses any non-empty destination, and a `.git` directory counts as
+ * non-empty. It unpacks alongside whatever is there rather than clearing it, so
+ * `.git` survives. Never use `forceClean` here — that deletes the destination
+ * first, which would take the repository's history with it. `isFolderCheck()`
+ * has already established the target holds nothing but `.git`.
  */
 async function download(name: string, path: string, _options: CreateOptions) {
   log.info('Setting up your stack.')
 
   try {
     const { downloadTemplate } = await import('@stacksjs/gitit')
-    await downloadTemplate('gh:stacksjs/stacks', { dir: name })
+    await downloadTemplate('gh:stacksjs/stacks', { dir: name, force: true })
     log.success(`Successfully scaffolded your project at ${cyan(path)}`)
     return { isErr: false as const }
   }
@@ -197,14 +229,51 @@ async function install(path: string, options: CreateOptions) {
     process.exit(ExitCode.FatalError)
   }
 
-  log.info('Initializing git repository...')
-  result = await runCommand('git init', { ...options, cwd: path })
+  // Scaffolding into a cloned repository is supported (see isFolderCheck), and
+  // re-running `git init` there would be pointless noise at best.
+  if (existsSync(resolve(path, '.git'))) {
+    log.info('Existing git repository detected, skipping git init')
+  }
+  else {
+    log.info('Initializing git repository...')
+    result = await runCommand('git init', { ...options, cwd: path })
+    if (result.isErr) {
+      log.error(result.error)
+      process.exit(ExitCode.FatalError)
+    }
+  }
+
+  log.success('Installed & set-up 🚀')
+}
+
+/**
+ * The template ships the whole framework source under `storage/framework/core`
+ * wired up as a Bun workspace. That layout is for working ON Stacks; an app that
+ * only works WITH Stacks wants the same packages from npm, which is what the
+ * single `stacks` dependency in package.json pulls in. So the default is to
+ * unvendor right after install, and `--with-core` opts back into the workspace.
+ *
+ * Delegating to the new project's own `./buddy` keeps the whole rewrite (root
+ * manifest, workspace globs, bunfig preloads, symlink pruning, reinstall) in the
+ * one implementation that owns it, and runs it with the new project as cwd,
+ * which is what it resolves paths against.
+ *
+ * `--force` is required and safe here: the check it bypasses exists to protect
+ * local edits to vendored packages, and this tree is a pristine template
+ * download seconds old. Unvendoring before the first commit also keeps ~2,000
+ * vendored framework files out of the repository's history for good.
+ */
+async function unvendorCore(path: string, options: NewOptions) {
+  log.info('Resolving the framework from npm (pass --with-core to keep it vendored)...')
+
+  const result = await runCommand('./buddy unpublish:core --all --force', { ...options, cwd: path })
+
   if (result.isErr) {
     log.error(result.error)
     process.exit(ExitCode.FatalError)
   }
 
-  log.success('Installed & set-up 🚀')
+  log.success('Framework resolved from npm')
 }
 
 /**
