@@ -46,6 +46,7 @@ import {
 import { resolveModelSources } from './model-sources'
 import { frameworkManagedColumns, withoutManagedColumnDrops, withoutManagedColumnDropSql } from './managed-columns'
 import { acquireMigrationLock } from './migration-lock'
+import { migrateNotificationTables } from './notification-tables'
 
 // Use environment variables via @stacksjs/env for proper type coercion
 import { env as envVars } from '@stacksjs/env'
@@ -953,6 +954,13 @@ export async function runDatabaseMigration(): Promise<Result<string, Error>> {
 
     // Configure bun-query-builder with stacks database settings
     configureQueryBuilder()
+
+    // Generated model migrations may normalize or rebuild the framework
+    // notification tables. Guarantee those sources before executing the
+    // model migration batch, including on a brand-new database.
+    const notificationTables = await migrateNotificationTables()
+    if (!notificationTables.success)
+      throw new Error(notificationTables.error || 'Failed to prepare notification tables')
 
     // Acquire the distributed migration lock (stacksjs/stacks#1876 D-1).
     // Without this, two concurrent runners (parallel CI jobs, two app

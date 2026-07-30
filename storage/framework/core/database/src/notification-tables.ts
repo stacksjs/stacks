@@ -23,7 +23,7 @@ import { sqlHelpers } from './sql-helpers'
 type SqlHelpers = ReturnType<typeof sqlHelpers>
 
 function getDbDriver(): string {
-  return envVars.DB_CONNECTION || 'sqlite'
+  return process.env.DB_CONNECTION || envVars.DB_CONNECTION || 'sqlite'
 }
 
 /**
@@ -40,6 +40,7 @@ export function notificationsTableSql(sql: SqlHelpers): string {
     type VARCHAR(255) NOT NULL,
     data TEXT NOT NULL,
     read_at ${nullableTimestamp},
+    uuid VARCHAR(36),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at ${nullableTimestamp}
   )`

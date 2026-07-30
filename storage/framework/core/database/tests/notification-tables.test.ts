@@ -31,7 +31,7 @@ describe('notification table DDL — cross-dialect (stacksjs/stacks#1937)', () =
       test('notifications table has the columns the database channel writes', () => {
         const ddl = notificationsTableSql(sql)
         expect(ddl).toContain('CREATE TABLE IF NOT EXISTS notifications')
-        for (const col of ['user_id', 'type', 'data', 'read_at', 'created_at', 'updated_at'])
+        for (const col of ['user_id', 'type', 'data', 'read_at', 'uuid', 'created_at', 'updated_at'])
           expect(ddl).toContain(col)
       })
 
