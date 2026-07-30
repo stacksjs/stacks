@@ -79,6 +79,7 @@ body {
  * class toggling a hard-coded margin.
  */
 [data-stx-content] {
+  min-width: 0;
   min-height: 100vh;
   margin-left: var(--stx-sidebar-width, 250px);
   background: #f4f4f5;
@@ -89,6 +90,12 @@ body {
   transition: left 0.3s ease-out;
 }
 @media (max-width: 1023px) {
+  [data-stx-content] {
+    margin-left: 0;
+  }
+  [data-dashboard-web-sidebar] {
+    display: none;
+  }
   .dashboard-modal-layer {
     left: 0;
   }
@@ -165,28 +172,31 @@ const sidebarRoles = sidebarRoleMap
 const auth = authStore
 const route = useRoute()
 const sidebarHost = useRef('dashboardSidebarHost')
+const mobileSidebarHost = useRef('dashboardMobileSidebarHost')
 let removeCraftSidebarSelection = () => {}
 ensureCraftNativeSidebarMarker()
 auth.load()
 
-function sidebarPane() {
-  return sidebarHost.current?.querySelector('[data-stx-sidebar]') || null
+function sidebarPanes() {
+  return [sidebarHost.current, mobileSidebarHost.current]
+    .map(host => host?.querySelector('[data-stx-sidebar]'))
+    .filter(Boolean)
 }
 
 function applyRoleFilter() {
-  const pane = sidebarPane()
-  if (!pane) return
   const roleList = auth.roles()
   const unauth = auth.unauthenticated()
-  for (const [itemId, required] of Object.entries(sidebarRoles)) {
-    const row = pane.querySelector(`[data-sidebar-row][data-item-id="${itemId}"]`)
-    if (!row) continue
-    // Unauthenticated viewers see everything, which keeps the dev dashboard
-    // usable. Once authenticated, role membership is authoritative. CSS
-    // `display: none` keeps the DOM intact for SPA nav, so a later role
-    // change can re-show the row without a re-render.
-    const allowed = unauth || required.some(r => roleList.includes(r))
-    row.style.display = allowed ? '' : 'none'
+  for (const pane of sidebarPanes()) {
+    for (const [itemId, required] of Object.entries(sidebarRoles)) {
+      const row = pane.querySelector(`[data-sidebar-row][data-item-id="${itemId}"]`)
+      if (!row) continue
+      // Unauthenticated viewers see everything, which keeps the dev dashboard
+      // usable. Once authenticated, role membership is authoritative. CSS
+      // `display: none` keeps the DOM intact for SPA nav, so a later role
+      // change can re-show the row without a re-render.
+      const allowed = unauth || required.some(r => roleList.includes(r))
+      row.style.display = allowed ? '' : 'none'
+    }
   }
 }
 
@@ -204,9 +214,6 @@ function normalizeRoutePath(path) {
 // such as /commerce/products/42 attached to its /commerce/products row while
 // preventing /health from matching /health-check.
 function syncActiveSidebarRow(url) {
-  const pane = sidebarPane()
-  if (!pane) return
-
   let path = route.path
   if (url) {
     try {
@@ -216,28 +223,30 @@ function syncActiveSidebarRow(url) {
   }
 
   const currentPath = normalizeRoutePath(path)
-  let bestMatch = null
-  let bestLength = -1
-  const links = pane.querySelectorAll('a[data-sidebar-item][href]')
+  for (const pane of sidebarPanes()) {
+    let bestMatch = null
+    let bestLength = -1
+    const links = pane.querySelectorAll('a[data-sidebar-item][href]')
 
-  for (const link of links) {
-    const href = link.getAttribute('href') || ''
-    if (href.startsWith('http')) continue
-    const candidatePath = normalizeRoutePath(href)
-    if (`${currentPath}/`.startsWith(`${candidatePath}/`) && candidatePath.length > bestLength) {
-      bestMatch = link
-      bestLength = candidatePath.length
+    for (const link of links) {
+      const href = link.getAttribute('href') || ''
+      if (href.startsWith('http')) continue
+      const candidatePath = normalizeRoutePath(href)
+      if (`${currentPath}/`.startsWith(`${candidatePath}/`) && candidatePath.length > bestLength) {
+        bestMatch = link
+        bestLength = candidatePath.length
+      }
     }
-  }
 
-  for (const active of pane.querySelectorAll('[data-sidebar-item][data-active="true"]')) {
-    active.removeAttribute('data-active')
-    active.removeAttribute('aria-current')
-  }
+    for (const active of pane.querySelectorAll('[data-sidebar-item][data-active="true"]')) {
+      active.removeAttribute('data-active')
+      active.removeAttribute('aria-current')
+    }
 
-  if (bestMatch) {
-    bestMatch.setAttribute('data-active', 'true')
-    bestMatch.setAttribute('aria-current', 'page')
+    if (bestMatch) {
+      bestMatch.setAttribute('data-active', 'true')
+      bestMatch.setAttribute('aria-current', 'page')
+    }
   }
 }
 
@@ -248,15 +257,24 @@ function handleSidebarItemClick(payload) {
   navigate(href)
 }
 
+function syncMobileSidebar() {
+  applyRoleFilter()
+  syncActiveSidebarRow()
+}
+
 function handleCraftSidebarSelection(event) {
-  const pane = sidebarPane()
-  if (!pane || !event?.itemId) return
-  const row = [...pane.querySelectorAll('[data-sidebar-row]')].find(
-    candidate => candidate.dataset.itemId === event.itemId,
-  )
-  const link = row?.querySelector('a[data-sidebar-item][href]')
-  const href = link?.getAttribute('href')
-  if (href) navigate(href)
+  if (!event?.itemId) return
+  for (const pane of sidebarPanes()) {
+    const row = [...pane.querySelectorAll('[data-sidebar-row]')].find(
+      candidate => candidate.dataset.itemId === event.itemId,
+    )
+    const link = row?.querySelector('a[data-sidebar-item][href]')
+    const href = link?.getAttribute('href')
+    if (href) {
+      navigate(href)
+      return
+    }
+  }
 }
 
 function attachCraftSidebarSelection() {
@@ -301,6 +319,23 @@ onDestroy(() => {
     </template>
   </Sidebar>
 </div>
+
+<MobileSidebar @open="syncMobileSidebar()">
+  <div ref="dashboardMobileSidebarHost" class="h-full">
+    <Sidebar
+      :sections="sidebarSections"
+      theme="macos"
+      width="320"
+      placement="static"
+      className="h-full max-w-full"
+      @itemClick="handleSidebarItemClick($event)"
+    >
+      <template #header>
+        <SidebarHeader :show-window-controls="false" />
+      </template>
+    </Sidebar>
+  </div>
+</MobileSidebar>
 
 <main data-stx-content>
   @slot('content')

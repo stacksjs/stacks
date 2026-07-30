@@ -1,47 +1,117 @@
-<script>
-interface MobileSidebarProps {
-  isOpen?: boolean
-  companyLogo?: string
-  companyName?: string
+<script client>
+const isOpen = state(false)
+const isDesktop = useMediaQuery('(min-width: 1024px)')
+const scrollLocked = useScrollLock()
+const emit = defineEmits()
+const menuButton = useRef<HTMLButtonElement>('dashboardMobileMenuButton')
+const closeButton = useRef<HTMLButtonElement>('dashboardMobileCloseButton')
+const dialog = useRef<HTMLElement>('dashboardMobileNavigation')
+
+function openSidebar(): void {
+  isOpen.set(true)
+  scrollLocked.value = true
+  void nextTick(() => {
+    closeButton.current?.focus()
+    emit('open')
+  })
 }
 
-const { isOpen = false, companyLogo = 'https:, companyName = 'Your Company' } = defineProps<MobileSidebarProps>()
+function closeSidebar(): void {
+  if (!isOpen()) return
+  isOpen.set(false)
+  scrollLocked.value = false
+  emit('close')
+  void nextTick(() => menuButton.current?.focus())
+}
+
+function handleKeydown(event: KeyboardEvent): void {
+  if (!isOpen()) return
+  if (event.key === 'Escape') {
+    event.preventDefault()
+    closeSidebar()
+    return
+  }
+
+  if (event.key !== 'Tab') return
+  const focusable = [...(dialog.current?.querySelectorAll<HTMLElement>(
+    'a[href]:not([tabindex="-1"]), button:not([disabled]):not([tabindex="-1"]), [tabindex]:not([tabindex="-1"])',
+  ) || [])].filter(element => element.offsetParent !== null)
+  if (focusable.length === 0) return
+
+  const first = focusable[0]
+  const last = focusable[focusable.length - 1]
+  if (event.shiftKey && event.target === first) {
+    event.preventDefault()
+    last.focus()
+  }
+  else if (!event.shiftKey && event.target === last) {
+    event.preventDefault()
+    first.focus()
+  }
+}
+
+function handlePanelClick(event: MouseEvent): void {
+  const target = event.target as HTMLElement | null
+  if (target?.closest('a[href]'))
+    closeSidebar()
+}
+
+effect(() => {
+  if (isDesktop() && isOpen())
+    isOpen.set(false)
+})
+
+useEventListener('keydown', handleKeydown)
+useEventListener('stx:navigate', closeSidebar)
 </script>
-@if(isOpen)
+
+<div class="flex lg:hidden sticky top-0 z-40 gap-3 items-center px-4 h-14 bg-white/95 dark:bg-neutral-950/95 border-b border-neutral-200 dark:border-neutral-800 backdrop-blur-xl">
+  <button
+    ref="dashboardMobileMenuButton"
+    type="button"
+    class="inline-flex items-center justify-center -ml-2 p-2 h-10 w-10 text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg"
+    aria-label="Open dashboard navigation"
+    :aria-expanded="String(isOpen())"
+    aria-controls="dashboard-mobile-navigation"
+    @click="openSidebar()"
+  >
+    <span class="h-5 w-5 i-hugeicons-menu-01"></span>
+  </button>
+  <span class="font-semibold text-neutral-900 text-sm dark:text-white">Dashboard</span>
+</div>
+
+<template :if="isOpen()">
   <div
-    class="lg:hidden relative z-50"
+    ref="dashboardMobileNavigation"
+    id="dashboard-mobile-navigation"
+    class="lg:hidden fixed inset-0 z-[100] dashboard-mobile-sidebar-open"
     role="dialog"
     aria-modal="true"
+    aria-label="Dashboard navigation"
   >
-    <!-- Off-canvas menu backdrop -->
-    <div class="fixed inset-0 bg-gray-900/80"></div>
+    <button
+      type="button"
+      class="absolute inset-0 h-full w-full bg-neutral-950/55 backdrop-blur-sm cursor-default"
+      aria-label="Close dashboard navigation"
+      tabindex="-1"
+      @click="closeSidebar()"
+    ></button>
 
-    <div class="flex fixed inset-0">
-      <!-- Off-canvas menu panel -->
-      <div class="flex relative flex-1 mr-16 max-w-xs w-full">
-        <!-- Close button -->
-        <div class="flex absolute left-full top-0 justify-center pt-5 w-16">
-          <button
-            type="button"
-            class="-m-2.5 p-2.5"
-            data-close-sidebar
-          >
-            <span class="sr-only">Close sidebar</span>
-            <div class="h-6 w-6 text-white i-hugeicons-cancel-01"></div>
-          </button>
-        </div>
+    <div
+      class="overflow-hidden relative h-full max-w-[calc(100vw-3rem)] w-80 bg-white dark:bg-neutral-950 border-neutral-200 border-r dark:border-neutral-800 shadow-2xl"
+      @click="handlePanelClick($event)"
+    >
+      <button
+        ref="dashboardMobileCloseButton"
+        type="button"
+        class="inline-flex absolute right-3 top-3 z-20 items-center justify-center p-2 h-10 w-10 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg"
+        aria-label="Close dashboard navigation"
+        @click="closeSidebar()"
+      >
+        <span class="h-5 w-5 i-hugeicons-cancel-01"></span>
+      </button>
 
-        <!-- Sidebar component -->
-        <div class="flex overflow-y-auto flex-col gap-y-5 grow pb-4 px-6 bg-white dark:bg-neutral-900">
-          <div class="flex items-center shrink-0 h-16">
-            <img
-              class="h-8 w-auto"
-              src="{{ companyLogo }}"
-              alt="{{ companyName }}"
-            >
-          </div>
-        </div>
-      </div>
+      <slot />
     </div>
   </div>
-  @endif
+</template>
