@@ -1,135 +1,119 @@
-<script server>
-interface WindowControlsProps {
-  variant?: 'macos' | 'windows'
-  size?: 'sm' | 'md' | 'lg'
-  showLabels?: boolean
-  disabled?: boolean
+<script client>
+import { useWindowControls } from '../../../../functions/craft'
+
+type WindowControlVariant = 'macos' | 'windows'
+type WindowControlSize = 'sm' | 'md' | 'lg'
+
+const liveVariant = useReactiveProp('variant', 'macos' as WindowControlVariant)
+const liveSize = useReactiveProp('size', 'md' as WindowControlSize)
+const liveShowLabels = useReactiveProp('showLabels', false)
+const liveDisabled = useReactiveProp('disabled', false)
+const emit = defineEmits()
+const windowControls = useWindowControls()
+
+const sizeConfig: Record<WindowControlSize, { button: string, gap: string, icon: string }> = {
+  sm: { button: 'h-3 w-3', gap: 'gap-1.5', icon: 'h-2 w-2' },
+  md: { button: 'h-3.5 w-3.5', gap: 'gap-2', icon: 'h-2.5 w-2.5' },
+  lg: { button: 'h-4 w-4', gap: 'gap-2.5', icon: 'h-3 w-3' },
 }
 
-const { variant = 'macos', size = 'md', showLabels = false, disabled = false } = defineProps<WindowControlsProps>()
+const config = derived(() => sizeConfig[liveSize()] || sizeConfig.md)
+const macButtonClass = (color: string) => [
+  config().button,
+  color,
+  'group relative rounded-full transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-offset-1',
+  liveDisabled() ? 'cursor-not-allowed opacity-50' : 'cursor-pointer',
+].join(' ')
 
-import { isCraftNative, useWindowControls } from '../../../../functions/craft'
+async function handleClose(): Promise<void> {
+  emit('close')
+  await windowControls.close()
+}
 
-  const sizeConfig = {
-    sm: { button: 'w-3 h-3', gap: 'gap-1.5', iconSize: 'w-2 h-2' },
-    md: { button: 'w-3.5 h-3.5', gap: 'gap-2', iconSize: 'w-2.5 h-2.5' },
-    lg: { button: 'w-4 h-4', gap: 'gap-2.5', iconSize: 'w-3 h-3' },
-  }
+async function handleMinimize(): Promise<void> {
+  emit('minimize')
+  await windowControls.minimize()
+}
 
-  const defaultColors = {
-    close: { bg: '#ff5f57', hover: '#ff4136', icon: '#4c0002' },
-    minimize: { bg: '#febc2e', hover: '#ffa500', icon: '#995700' },
-    maximize: { bg: '#28c840', hover: '#00b300', icon: '#006400' },
-  }
-
-  const config = sizeConfig[size]
-  const windowControls = useWindowControls()
-
-  // Window control handlers
-  function handleClose() {
-    windowControls.close()
-  }
-
-  function handleMinimize() {
-    windowControls.minimize()
-  }
-
-  function handleMaximize() {
-    windowControls.toggle()
-  }
-
-  // Check if running in native app
-  const isNative = isCraftNative()
+async function handleMaximize(): Promise<void> {
+  emit('maximize')
+  await windowControls.toggle()
+}
 </script>
-@if(variant == 'macos')
-  <div class="flex items-center {{ config.gap }}" data-window-controls>
-    <!-- Close button -->
-    <button
-      type="button"
-      class="{{ config.button }} rounded-full transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-red-500/50 {{ disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer' }} group"
-      style="background-color: {{ defaultColors.close.bg }}"
-      @if(disabled) disabled @endif
-      title="{{ showLabels ? '' : 'Close' }}"
-      @click="handleClose"
-    >
-      <svg class="{{ config.iconSize }} mx-auto hidden group-hover:block" viewBox="0 0 12 12" fill="none" stroke="currentColor" style="color: {{ defaultColors.close.icon }}">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 3l6 6M9 3l-6 6"></path>
-      </svg>
-    </button>
 
-    <!-- Minimize button -->
+<div :if="liveVariant() === 'macos'" class="flex items-center" :class="config().gap" data-window-controls>
+  <span class="flex gap-1.5 items-center">
     <button
       type="button"
-      class="{{ config.button }} rounded-full transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-yellow-500/50 {{ disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer' }} group"
-      style="background-color: {{ defaultColors.minimize.bg }}"
-      @if(disabled) disabled @endif
-      title="{{ showLabels ? '' : 'Minimize' }}"
-      @click="handleMinimize"
-    >
-      <svg class="{{ config.iconSize }} mx-auto hidden group-hover:block" viewBox="0 0 12 12" fill="none" stroke="currentColor" style="color: {{ defaultColors.minimize.icon }}">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2 6h8"></path>
-      </svg>
-    </button>
-
-    <!-- Maximize button -->
-    <button
-      type="button"
-      class="{{ config.button }} rounded-full transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-green-500/50 {{ disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer' }} group"
-      style="background-color: {{ defaultColors.maximize.bg }}"
-      @if(disabled) disabled @endif
-      title="{{ showLabels ? '' : 'Maximize' }}"
-      @click="handleMaximize"
-    >
-      <svg class="{{ config.iconSize }} mx-auto hidden group-hover:block" viewBox="0 0 12 12" fill="none" stroke="currentColor" style="color: {{ defaultColors.maximize.icon }}">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M2 2l3 3M10 10l-3-3M10 2l-3 3M2 10l3-3"></path>
-      </svg>
-    </button>
-  </div>
-@else
-  <!-- Windows style -->
-  <div class="flex items-center">
-    <!-- Minimize -->
-    <button
-      type="button"
-      class="flex items-center justify-center h-8 w-12 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
-      @if(disabled) disabled @endif
-      title="Minimize"
-      @click="handleMinimize"
-    >
-      <svg class="h-0.5 w-3" fill="currentColor" viewBox="0 0 12 2">
-        <rect width="12" height="2"></rect>
-      </svg>
-    </button>
-
-    <!-- Maximize -->
-    <button
-      type="button"
-      class="flex items-center justify-center h-8 w-12 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
-      @if(disabled) disabled @endif
-      title="Maximize"
-      @click="handleMaximize"
-    >
-      <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 12 12">
-        <rect x="1" y="1" width="10" height="10" stroke-width="1.5"></rect>
-      </svg>
-    </button>
-
-    <!-- Close -->
-    <button
-      type="button"
-      class="flex items-center justify-center h-8 w-12 text-neutral-600 dark:text-neutral-400 hover:text-white hover:bg-red-600 transition-colors"
-      @if(disabled) disabled @endif
+      :class="macButtonClass('bg-[#ff5f57] focus:ring-red-500/50')"
+      :disabled="liveDisabled()"
+      aria-label="Close window"
       title="Close"
       @click="handleClose"
     >
-      <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 12 12">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M1 1l10 10M11 1l-10 10"></path>
-      </svg>
+      <span aria-hidden="true" class="hidden group-hover:block absolute inset-0 m-auto h-1.5 w-1.5 text-[#4c0002] i-hugeicons-cancel-01"></span>
     </button>
-  </div>
-@endif
-<style>
-[data-window-controls]:hover button svg {
-  display: block;
-}
-</style>
+    <span :if="liveShowLabels()" class="text-neutral-500 text-xs dark:text-neutral-400">Close</span>
+  </span>
+
+  <span class="flex gap-1.5 items-center">
+    <button
+      type="button"
+      :class="macButtonClass('bg-[#febc2e] focus:ring-yellow-500/50')"
+      :disabled="liveDisabled()"
+      aria-label="Minimize window"
+      title="Minimize"
+      @click="handleMinimize"
+    >
+      <span aria-hidden="true" class="hidden group-hover:block absolute inset-0 m-auto h-1.5 w-1.5 text-[#995700] i-hugeicons-minus-sign"></span>
+    </button>
+    <span :if="liveShowLabels()" class="text-neutral-500 text-xs dark:text-neutral-400">Minimize</span>
+  </span>
+
+  <span class="flex gap-1.5 items-center">
+    <button
+      type="button"
+      :class="macButtonClass('bg-[#28c840] focus:ring-green-500/50')"
+      :disabled="liveDisabled()"
+      aria-label="Maximize window"
+      title="Maximize"
+      @click="handleMaximize"
+    >
+      <span aria-hidden="true" class="hidden group-hover:block absolute inset-0 m-auto h-1.5 w-1.5 text-[#006400] i-hugeicons-arrow-expand-01"></span>
+    </button>
+    <span :if="liveShowLabels()" class="text-neutral-500 text-xs dark:text-neutral-400">Maximize</span>
+  </span>
+</div>
+
+<div :else class="flex items-center">
+  <button
+    type="button"
+    class="flex items-center justify-center h-8 w-12 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
+    :disabled="liveDisabled()"
+    aria-label="Minimize window"
+    title="Minimize"
+    @click="handleMinimize"
+  >
+    <span aria-hidden="true" class="h-3 w-3 i-hugeicons-minus-sign"></span>
+  </button>
+  <button
+    type="button"
+    class="flex items-center justify-center h-8 w-12 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
+    :disabled="liveDisabled()"
+    aria-label="Maximize window"
+    title="Maximize"
+    @click="handleMaximize"
+  >
+    <span aria-hidden="true" class="h-3 w-3 i-hugeicons-square"></span>
+  </button>
+  <button
+    type="button"
+    class="flex items-center justify-center h-8 w-12 text-neutral-600 dark:text-neutral-400 hover:text-white hover:bg-red-600 transition-colors"
+    :disabled="liveDisabled()"
+    aria-label="Close window"
+    title="Close"
+    @click="handleClose"
+  >
+    <span aria-hidden="true" class="h-3 w-3 i-hugeicons-cancel-01"></span>
+  </button>
+</div>

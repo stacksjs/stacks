@@ -1,119 +1,115 @@
-<script>
-interface WindowControlsProps {
-  size?: string
-  variant?: string
+<script client>
+import { useWindowControls } from '../../../functions/craft'
+
+type WindowControlVariant = 'macos' | 'windows'
+type WindowControlSize = 'xs' | 'sm' | 'md' | 'lg'
+
+const liveVariant = useReactiveProp('variant', 'macos' as WindowControlVariant)
+const liveSize = useReactiveProp('size', 'sm' as WindowControlSize)
+const liveDisabled = useReactiveProp('disabled', false)
+const emit = defineEmits()
+const windowControls = useWindowControls()
+
+const sizeClasses: Record<WindowControlSize, string> = {
+  xs: 'h-2 w-2',
+  sm: 'h-2.5 w-2.5',
+  md: 'h-3 w-3',
+  lg: 'h-3.5 w-3.5',
 }
-
-const { size = 'sm', variant = 'macos' } = defineProps<WindowControlsProps>()
-
-/**
- * WindowControls Component
- * macOS-style traffic light window controls (close, minimize, maximize)
- */
-
-const sizeClasses = {
-  xs: 'w-2 h-2',
-  sm: 'w-2.5 h-2.5',
-  md: 'w-3 h-3',
-  lg: 'w-3.5 h-3.5'
-}
-
-const gapClasses = {
+const gapClasses: Record<WindowControlSize, string> = {
   xs: 'gap-1',
   sm: 'gap-1.5',
   md: 'gap-2',
-  lg: 'gap-2'
+  lg: 'gap-2',
 }
 
-function getSizeClass() {
-  return sizeClasses[size || 'sm']
+const controlSize = derived(() => sizeClasses[liveSize()] || sizeClasses.sm)
+const controlGap = derived(() => gapClasses[liveSize()] || gapClasses.sm)
+const macButtonClass = (color: string) => [
+  controlSize(),
+  color,
+  'group relative rounded-full transition-colors focus:outline-none focus:ring-2',
+  liveDisabled() ? 'cursor-not-allowed opacity-50' : 'cursor-pointer',
+].join(' ')
+
+async function closeWindow(): Promise<void> {
+  emit('close')
+  await windowControls.close()
 }
 
-function getGapClass() {
-  return gapClasses[size || 'sm']
+async function minimizeWindow(): Promise<void> {
+  emit('minimize')
+  await windowControls.minimize()
 }
 
-function getVariant() {
-  return variant || 'macos'
+async function maximizeWindow(): Promise<void> {
+  emit('maximize')
+  await windowControls.toggle()
 }
 </script>
-@if(getVariant() === 'macos')
-    <!-- macOS-style traffic light controls -->
-    <div class="flex items-center {{ getGapClass() }} group">
-      <!-- Close button (red) -->
-      <button
-        type="button"
-        class="relative {{ getSizeClass() }} rounded-full bg-[#ff5f57] hover:bg-[#ff5f57] transition-colors focus:outline-none focus:ring-2 focus:ring-red-500/50"
-        data-action="window-close"
-        title="Close"
-      >
-        <span class="sr-only">Close</span>
-        <!-- X icon on hover -->
-        <svg class="absolute inset-0 m-auto h-1.5 w-1.5 text-[#4d0000] opacity-0 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-          <path d="M6 18L18 6M6 6l12 12"></path>
-        </svg>
-      </button>
 
-      <!-- Minimize button (yellow) -->
-      <button
-        type="button"
-        class="relative {{ getSizeClass() }} rounded-full bg-[#febc2e] hover:bg-[#febc2e] transition-colors focus:outline-none focus:ring-2 focus:ring-yellow-500/50"
-        data-action="window-minimize"
-        title="Minimize"
-      >
-        <span class="sr-only">Minimize</span>
-        <!-- Minus icon on hover -->
-        <svg class="absolute inset-0 m-auto h-1.5 w-1.5 text-[#995700] opacity-0 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-          <path d="M5 12h14"></path>
-        </svg>
-      </button>
+<div :if="liveVariant() === 'macos'" class="flex items-center group" :class="controlGap()">
+  <button
+    type="button"
+    :class="macButtonClass('bg-[#ff5f57] focus:ring-red-500/50')"
+    :disabled="liveDisabled()"
+    aria-label="Close window"
+    title="Close"
+    @click="closeWindow"
+  >
+    <span aria-hidden="true" class="absolute inset-0 m-auto h-1.5 w-1.5 text-[#4d0000] opacity-0 group-hover:opacity-100 transition-opacity i-hugeicons-cancel-01"></span>
+  </button>
+  <button
+    type="button"
+    :class="macButtonClass('bg-[#febc2e] focus:ring-yellow-500/50')"
+    :disabled="liveDisabled()"
+    aria-label="Minimize window"
+    title="Minimize"
+    @click="minimizeWindow"
+  >
+    <span aria-hidden="true" class="absolute inset-0 m-auto h-1.5 w-1.5 text-[#995700] opacity-0 group-hover:opacity-100 transition-opacity i-hugeicons-minus-sign"></span>
+  </button>
+  <button
+    type="button"
+    :class="macButtonClass('bg-[#28c840] focus:ring-green-500/50')"
+    :disabled="liveDisabled()"
+    aria-label="Maximize window"
+    title="Maximize"
+    @click="maximizeWindow"
+  >
+    <span aria-hidden="true" class="absolute inset-0 m-auto h-1.5 w-1.5 text-[#006500] opacity-0 group-hover:opacity-100 transition-opacity i-hugeicons-arrow-expand-01"></span>
+  </button>
+</div>
 
-      <!-- Maximize button (green) -->
-      <button
-        type="button"
-        class="relative {{ getSizeClass() }} rounded-full bg-[#28c840] hover:bg-[#28c840] transition-colors focus:outline-none focus:ring-2 focus:ring-green-500/50"
-        data-action="window-maximize"
-        title="Maximize"
-      >
-        <span class="sr-only">Maximize</span>
-        <!-- Expand icon on hover -->
-        <svg class="absolute inset-0 m-auto h-1.5 w-1.5 text-[#006500] opacity-0 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-          <path d="M4 14h6m0 0v6m0-6L3 21M20 10h-6m0 0V4m0 6l7-7"></path>
-        </svg>
-      </button>
-    </div>
-  @else
-    <!-- Windows-style controls -->
-    <div class="flex items-center">
-      <button
-        type="button"
-        class="p-1.5 hover:bg-neutral-200 dark:hover:bg-neutral-700 rounded transition-colors"
-        data-action="window-minimize"
-        title="Minimize"
-      >
-        <svg class="h-3 w-3 text-neutral-600 dark:text-neutral-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-          <path d="M5 12h14"></path>
-        </svg>
-      </button>
-      <button
-        type="button"
-        class="p-1.5 hover:bg-neutral-200 dark:hover:bg-neutral-700 rounded transition-colors"
-        data-action="window-maximize"
-        title="Maximize"
-      >
-        <svg class="h-3 w-3 text-neutral-600 dark:text-neutral-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-          <rect x="4" y="4" width="16" height="16" rx="2"></rect>
-        </svg>
-      </button>
-      <button
-        type="button"
-        class="p-1.5 hover:text-white hover:bg-red-500 rounded transition-colors"
-        data-action="window-close"
-        title="Close"
-      >
-        <svg class="h-3 w-3 text-neutral-600 dark:text-neutral-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-          <path d="M6 18L18 6M6 6l12 12"></path>
-        </svg>
-      </button>
-    </div>
-  @endif
+<div :else class="flex items-center">
+  <button
+    type="button"
+    class="p-1.5 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-neutral-700 rounded transition-colors"
+    :disabled="liveDisabled()"
+    aria-label="Minimize window"
+    title="Minimize"
+    @click="minimizeWindow"
+  >
+    <span aria-hidden="true" class="h-3 w-3 i-hugeicons-minus-sign"></span>
+  </button>
+  <button
+    type="button"
+    class="p-1.5 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-neutral-700 rounded transition-colors"
+    :disabled="liveDisabled()"
+    aria-label="Maximize window"
+    title="Maximize"
+    @click="maximizeWindow"
+  >
+    <span aria-hidden="true" class="h-3 w-3 i-hugeicons-square"></span>
+  </button>
+  <button
+    type="button"
+    class="p-1.5 text-neutral-600 dark:text-neutral-400 hover:text-white hover:bg-red-500 rounded transition-colors"
+    :disabled="liveDisabled()"
+    aria-label="Close window"
+    title="Close"
+    @click="closeWindow"
+  >
+    <span aria-hidden="true" class="h-3 w-3 i-hugeicons-cancel-01"></span>
+  </button>
+</div>

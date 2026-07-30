@@ -12,7 +12,7 @@ interface NavbarModernProps {
   notificationCount?: number
 }
 
-const { currentPath = '/', user, notificationCount = 3 } = defineProps<NavbarModernProps>()
+const { currentPath = '/', user, notificationCount = 0 } = defineProps<NavbarModernProps>()
 
 /**
  * Modern Navbar Component
@@ -22,9 +22,9 @@ const { currentPath = '/', user, notificationCount = 3 } = defineProps<NavbarMod
 
 // Default user data
 const defaultUser = {
-  name: 'Chris Breuer',
-  email: 'chris@stacksjs.org',
-  avatar: 'https://avatars.githubusercontent.com/u/6228425',
+  name: 'Account',
+  email: '',
+  avatar: '',
 }
 
 function getBreadcrumb(path) {
@@ -52,9 +52,7 @@ function getNotificationCount() {
   <!-- Breadcrumb navigation -->
   <nav class="hidden lg:flex gap-2 items-center text-sm">
     <a href="/" class="text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors">
-      <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
-      </svg>
+      <span aria-hidden="true" class="h-4 w-4 i-hugeicons-home-01"></span>
     </a>
     @foreach(getBreadcrumb(currentPath || '/') as crumb)
       <span class="text-neutral-300 dark:text-neutral-600">/</span>
@@ -74,9 +72,7 @@ function getNotificationCount() {
   <!-- Search -->
   <div class="hidden sm:flex items-center">
     <div class="flex relative items-center w-56 lg:w-64">
-      <svg class="absolute left-3 h-4 w-4 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-      </svg>
+      <span aria-hidden="true" class="absolute left-3 h-4 w-4 text-neutral-400 i-hugeicons-search-01"></span>
       <input
         type="text"
         placeholder="Search..."
@@ -101,9 +97,7 @@ function getNotificationCount() {
       class="p-2 rounded-lg transition-colors {{ isActiveRoute('/monitoring/errors') ? 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30' : 'text-neutral-500 hover:text-neutral-700 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:text-neutral-200 dark:hover:bg-neutral-800' }}"
       title="Error Tracking"
     >
-      <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
-      </svg>
+      <span aria-hidden="true" class="h-5 w-5 i-hugeicons-alert-02"></span>
     </a>
 
     <!-- Health -->
@@ -112,9 +106,7 @@ function getNotificationCount() {
       class="p-2 rounded-lg transition-colors {{ isActiveRoute('/health') ? 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30' : 'text-neutral-500 hover:text-neutral-700 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:text-neutral-200 dark:hover:bg-neutral-800' }}"
       title="System Health"
     >
-      <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
-      </svg>
+      <span aria-hidden="true" class="h-5 w-5 i-hugeicons-chart-histogram"></span>
     </a>
 
     <!-- Notifications -->
@@ -123,9 +115,7 @@ function getNotificationCount() {
       class="relative p-2 rounded-lg transition-colors {{ isActiveRoute('/notifications') ? 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30' : 'text-neutral-500 hover:text-neutral-700 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:text-neutral-200 dark:hover:bg-neutral-800' }}"
       title="Notifications"
     >
-      <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
-      </svg>
+      <span aria-hidden="true" class="h-5 w-5 i-hugeicons-notification-02"></span>
       @if(getNotificationCount() > 0)
         <span class="flex absolute right-1 top-1 items-center justify-center px-1 h-4 min-w-[16px] font-bold text-[10px] text-white bg-red-500 rounded-full">
           {{ getNotificationCount() > 9 ? '9+' : getNotificationCount() }}
@@ -143,17 +133,21 @@ function getNotificationCount() {
         class="flex gap-2 items-center p-1 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors"
         data-action="toggle-dropdown"
       >
-        <img
-          src="{{ getUser().avatar }}"
-          alt="{{ getUser().name }}"
-          class="object-cover h-8 w-8 rounded-full"
-        />
+        @if(getUser().avatar)
+          <img
+            src="{{ getUser().avatar }}"
+            alt="{{ getUser().name }}"
+            class="object-cover h-8 w-8 rounded-full"
+          />
+        @else
+          <span class="flex items-center justify-center h-8 w-8 text-neutral-500 dark:text-neutral-300 bg-neutral-100 dark:bg-neutral-700 rounded-full">
+            <span aria-hidden="true" class="h-4 w-4 i-hugeicons-user"></span>
+          </span>
+        @endif
         <span class="hidden lg:block font-medium text-neutral-700 text-sm dark:text-neutral-200">
           {{ getUser().name }}
         </span>
-        <svg class="hidden lg:block h-4 w-4 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-        </svg>
+        <span aria-hidden="true" class="hidden lg:block h-4 w-4 text-neutral-400 i-hugeicons-arrow-down-01"></span>
       </button>
 
       <!-- Dropdown menu -->

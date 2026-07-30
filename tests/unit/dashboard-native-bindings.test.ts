@@ -184,13 +184,31 @@ describe('dashboard native STX bindings', () => {
       'Avatar.stx',
       'Email/EmailDetail.stx',
       'Email/EmailList.stx',
+      'NavbarModern.stx',
       'Settings/Forms/AIForm.stx',
       'Settings/Forms/CloudForm.stx',
+      'UI/WindowControls.stx',
+      'WindowControls.stx',
     ]) {
       const source = componentSource(path)
       expect(source).toContain('i-hugeicons-')
       expect(source).not.toContain('<svg')
     }
+
+    for (const path of ['UI/WindowControls.stx', 'WindowControls.stx']) {
+      const source = componentSource(path)
+      expect(source).toContain('<script client>')
+      expect(source).toContain("import { useWindowControls }")
+      expect(source).toContain("emit('close')")
+      expect(source).toContain("emit('minimize')")
+      expect(source).toContain("emit('maximize')")
+      expect(source).not.toContain('<script server>')
+    }
+
+    const navbar = componentSource('NavbarModern.stx')
+    expect(navbar).toContain('notificationCount = 0')
+    expect(navbar).not.toContain('Chris Breuer')
+    expect(navbar).not.toContain('chris@stacksjs.org')
 
     const modal = componentSource('UI/Modal.stx')
     expect(modal).toContain('role="dialog"')
