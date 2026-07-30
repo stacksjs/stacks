@@ -247,4 +247,59 @@ describe('dashboard native STX bindings', () => {
     expect(store).toContain("{ method: 'DELETE' }")
     expect(store).not.toContain('fetch(')
   })
+
+  test('RBAC management uses guarded native contracts', () => {
+    const page = readFileSync(
+      resolve('storage/framework/defaults/views/dashboard/management/permissions/index.stx'),
+      'utf8',
+    )
+    const store = readFileSync(
+      resolve('storage/framework/defaults/views/dashboard/stores/rbac.ts'),
+      'utf8',
+    )
+    const usersAction = readFileSync(
+      resolve('storage/framework/defaults/app/Actions/Dashboard/Rbac/UsersListAction.ts'),
+      'utf8',
+    )
+    const userRolesAction = readFileSync(
+      resolve('storage/framework/defaults/app/Actions/Dashboard/Rbac/UserRolesSyncAction.ts'),
+      'utf8',
+    )
+
+    for (const model of [
+      'newRoleName',
+      'newRoleDescription',
+      'newRoleGuard',
+      'newPermName',
+      'newPermDescription',
+      'newPermGuard',
+      'roleFilter',
+      'permissionFilter',
+      'userFilter',
+      'selectedUserGuard',
+    ])
+      expect(page).toContain(`x-model="${model}"`)
+
+    expect(page).toContain('<ConfirmDialog')
+    expect(page).toContain('@click="requestRoleDelete(role)"')
+    expect(page).toContain('@click="requestPermissionDelete(perm)"')
+    expect(page).toContain('@click="selectUser(u)"')
+    expect(page).toContain('@click="selectRole(role)"')
+    expect(page).toContain('useEventListener(\'keydown\', handleKeydown)')
+    expect(page).not.toMatch(/\b(?:document|window)\./)
+    expect(page).not.toContain('window.confirm')
+    expect(page).not.toMatch(/:value="[^"]+\(\)"[^>]+@(?:input|change)=/)
+
+    expect(store).toContain("import { dashboardApi } from '../../../functions/dashboard-api'")
+    expect(store).toContain('function userRoleKey(userId: number, guardName: string)')
+    expect(store).toContain('function rolePermissionKey(roleName: string, guardName: string)')
+    expect(store).toContain('?guard=${encodeURIComponent(guardName)}')
+    expect(store).not.toContain('fetch(')
+
+    expect(usersAction).toContain("import { User } from '@stacksjs/orm'")
+    expect(usersAction).toContain("User.orderBy('name', 'asc')")
+    expect(usersAction).not.toContain('db.unsafe')
+    expect(userRolesAction).toContain('if (!await User.find(userId))')
+    expect(userRolesAction).toContain(".filter(role => role.guard_name === guardName)")
+  })
 })

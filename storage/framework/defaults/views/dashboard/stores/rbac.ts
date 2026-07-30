@@ -1,4 +1,5 @@
 import { defineStore, derived, registerStoresClient, state } from '@stacksjs/stx'
+import { dashboardApi } from '../../../functions/dashboard-api'
 
 interface RoleRow {
   id: number
@@ -43,7 +44,7 @@ export const rbacStore = defineStore('rbac', () => {
   // Per-user role memberships, keyed by user id. Lazy-loaded when
   // the admin picks a user on the Users tab so the page doesn't
   // burn N+1 round-trips just to show the user list.
-  const userRoles = state<Record<number, string[]>>({})
+  const userRoles = state<Record<string, string[]>>({})
   // Per-role permission memberships, keyed by role name (the URL
   // identifier on the matrix endpoint).
   const rolePermissions = state<Record<string, string[]>>({})
@@ -55,21 +56,32 @@ export const rbacStore = defineStore('rbac', () => {
   const hasRoles = derived(() => roles().length > 0)
   const hasPermissions = derived(() => permissions().length > 0)
 
+  function userRoleKey(userId: number, guardName: string): string {
+    return `${userId}:${encodeURIComponent(guardName)}`
+  }
+
+  function rolePermissionKey(roleName: string, guardName: string): string {
+    return `${encodeURIComponent(guardName)}:${encodeURIComponent(roleName)}`
+  }
+
+  function userRoleNames(userId: number, guardName: string = 'web'): string[] {
+    return userRoles()[userRoleKey(userId, guardName)] ?? []
+  }
+
+  function rolePermissionNames(roleName: string, guardName: string = 'web'): string[] {
+    return rolePermissions()[rolePermissionKey(roleName, guardName)] ?? []
+  }
+
   // ─── Initial load ──────────────────────────────────────────────
 
   async function load(): Promise<void> {
     loading.set(true)
     error.set(null)
     try {
-      const [rolesRes, permsRes, usersRes] = await Promise.all([
-        fetch('/api/dashboard/rbac/roles', { headers: { accept: 'application/json' } }),
-        fetch('/api/dashboard/rbac/permissions', { headers: { accept: 'application/json' } }),
-        fetch('/api/dashboard/rbac/users', { headers: { accept: 'application/json' } }),
-      ])
       const [rolesData, permsData, usersData] = await Promise.all([
-        rolesRes.json() as Promise<{ roles?: RoleRow[], error?: string }>,
-        permsRes.json() as Promise<{ permissions?: PermissionRow[], error?: string }>,
-        usersRes.json() as Promise<{ users?: UserRow[], error?: string }>,
+        dashboardApi<{ roles?: RoleRow[], error?: string }>('/api/dashboard/rbac/roles'),
+        dashboardApi<{ permissions?: PermissionRow[], error?: string }>('/api/dashboard/rbac/permissions'),
+        dashboardApi<{ users?: UserRow[], error?: string }>('/api/dashboard/rbac/users'),
       ])
       // Pick the first error if any of the three failed — the page
       // renders a single banner rather than three.
@@ -92,14 +104,12 @@ export const rbacStore = defineStore('rbac', () => {
   // ─── Role mutations ────────────────────────────────────────────
 
   async function createRole(input: { name: string, guardName?: string, description?: string }): Promise<RoleRow | null> {
+    error.set(null)
     try {
-      const res = await fetch('/api/dashboard/rbac/roles', {
+      const data = await dashboardApi<{ role?: RoleRow, error?: string }>('/api/dashboard/rbac/roles', {
         method: 'POST',
-        headers: { 'content-type': 'application/json', accept: 'application/json' },
-        body: JSON.stringify(input),
+        body: input,
       })
-      if (!res.ok && res.status !== 409) throw new Error(`HTTP ${res.status}`)
-      const data = await res.json() as { role?: RoleRow, error?: string }
       if (data.error || !data.role) throw new Error(data.error ?? 'Create failed')
       roles.set([...roles(), data.role])
       return data.role
@@ -111,28 +121,29 @@ export const rbacStore = defineStore('rbac', () => {
   }
 
   async function deleteRole(name: string, guardName: string = 'web'): Promise<boolean> {
+    error.set(null)
     const snapshot = roles()
     roles.set(snapshot.filter(r => !(r.name === name && r.guardName === guardName)))
     // Cascade: a deleted role drops out of every user's role list +
     // its row in the rolePermissions cache. Mirror the server-side
     // cascade so the optimistic UI doesn't show stale attachments.
     const userRolesSnapshot = userRoles()
-    const cleanedUserRoles: Record<number, string[]> = {}
-    for (const [uid, names] of Object.entries(userRolesSnapshot))
-      cleanedUserRoles[Number(uid)] = names.filter(n => n !== name)
+    const cleanedUserRoles: Record<string, string[]> = {}
+    const guardSuffix = `:${encodeURIComponent(guardName)}`
+    for (const [key, names] of Object.entries(userRolesSnapshot))
+      cleanedUserRoles[key] = key.endsWith(guardSuffix) ? names.filter(n => n !== name) : names
     userRoles.set(cleanedUserRoles)
 
     const rolePermsSnapshot = rolePermissions()
     const cleanedRolePerms = { ...rolePermsSnapshot }
-    delete cleanedRolePerms[name]
+    delete cleanedRolePerms[rolePermissionKey(name, guardName)]
     rolePermissions.set(cleanedRolePerms)
 
     try {
-      const res = await fetch(
+      await dashboardApi(
         `/api/dashboard/rbac/roles/${encodeURIComponent(name)}?guard=${encodeURIComponent(guardName)}`,
-        { method: 'DELETE', headers: { accept: 'application/json' } },
+        { method: 'DELETE' },
       )
-      if (!res.ok) throw new Error(`HTTP ${res.status}`)
       return true
     }
     catch (e) {
@@ -148,14 +159,12 @@ export const rbacStore = defineStore('rbac', () => {
   // ─── Permission mutations ──────────────────────────────────────
 
   async function createPermission(input: { name: string, guardName?: string, description?: string }): Promise<PermissionRow | null> {
+    error.set(null)
     try {
-      const res = await fetch('/api/dashboard/rbac/permissions', {
+      const data = await dashboardApi<{ permission?: PermissionRow, error?: string }>('/api/dashboard/rbac/permissions', {
         method: 'POST',
-        headers: { 'content-type': 'application/json', accept: 'application/json' },
-        body: JSON.stringify(input),
+        body: input,
       })
-      if (!res.ok && res.status !== 409) throw new Error(`HTTP ${res.status}`)
-      const data = await res.json() as { permission?: PermissionRow, error?: string }
       if (data.error || !data.permission) throw new Error(data.error ?? 'Create failed')
       permissions.set([...permissions(), data.permission])
       return data.permission
@@ -167,22 +176,23 @@ export const rbacStore = defineStore('rbac', () => {
   }
 
   async function deletePermission(name: string, guardName: string = 'web'): Promise<boolean> {
+    error.set(null)
     const snapshot = permissions()
     permissions.set(snapshot.filter(p => !(p.name === name && p.guardName === guardName)))
     // Cascade through the rolePermissions cache: each role drops the
     // deleted permission from its attached list.
     const rolePermsSnapshot = rolePermissions()
     const cleaned: Record<string, string[]> = {}
-    for (const [roleName, names] of Object.entries(rolePermsSnapshot))
-      cleaned[roleName] = names.filter(n => n !== name)
+    const guardPrefix = `${encodeURIComponent(guardName)}:`
+    for (const [key, names] of Object.entries(rolePermsSnapshot))
+      cleaned[key] = key.startsWith(guardPrefix) ? names.filter(n => n !== name) : names
     rolePermissions.set(cleaned)
 
     try {
-      const res = await fetch(
+      await dashboardApi(
         `/api/dashboard/rbac/permissions/${encodeURIComponent(name)}?guard=${encodeURIComponent(guardName)}`,
-        { method: 'DELETE', headers: { accept: 'application/json' } },
+        { method: 'DELETE' },
       )
-      if (!res.ok) throw new Error(`HTTP ${res.status}`)
       return true
     }
     catch (e) {
@@ -195,59 +205,57 @@ export const rbacStore = defineStore('rbac', () => {
 
   // ─── User-role pivot ───────────────────────────────────────────
 
-  async function loadUserRoles(userId: number): Promise<void> {
-    if (userRoles()[userId] !== undefined) return
-    const key = `user:${userId}`
-    if (loadingPivots()[key]) return
-    loadingPivots.set({ ...loadingPivots(), [key]: true })
+  async function loadUserRoles(userId: number, guardName: string = 'web'): Promise<void> {
+    const cacheKey = userRoleKey(userId, guardName)
+    if (userRoles()[cacheKey] !== undefined) return
+    const loadingKey = `user:${cacheKey}`
+    if (loadingPivots()[loadingKey]) return
+    loadingPivots.set({ ...loadingPivots(), [loadingKey]: true })
     try {
-      const res = await fetch(`/api/dashboard/rbac/users/${userId}/roles`, {
-        headers: { accept: 'application/json' },
-      })
-      if (!res.ok) throw new Error(`HTTP ${res.status}`)
-      const data = await res.json() as { roles?: Array<{ name: string }>, error?: string }
+      const data = await dashboardApi<{ roles?: Array<{ name: string }>, error?: string }>(
+        `/api/dashboard/rbac/users/${userId}/roles?guard=${encodeURIComponent(guardName)}`,
+      )
       if (data.error) {
-        userRoles.set({ ...userRoles(), [userId]: [] })
+        userRoles.set({ ...userRoles(), [cacheKey]: [] })
         return
       }
       userRoles.set({
         ...userRoles(),
-        [userId]: (data.roles ?? []).map(r => r.name),
+        [cacheKey]: (data.roles ?? []).map(r => r.name),
       })
     }
-    catch {
-      // Soft-fail — page shows an empty role list for the user.
-      userRoles.set({ ...userRoles(), [userId]: [] })
+    catch (e) {
+      userRoles.set({ ...userRoles(), [cacheKey]: [] })
+      error.set(e instanceof Error ? e.message : String(e))
     }
     finally {
       const next = { ...loadingPivots() }
-      delete next[key]
+      delete next[loadingKey]
       loadingPivots.set(next)
     }
   }
 
   async function syncUserRoles(userId: number, roleNames: string[], guardName: string = 'web'): Promise<boolean> {
-    const snapshot = userRoles()[userId] ?? []
+    error.set(null)
+    const cacheKey = userRoleKey(userId, guardName)
+    const snapshot = userRoles()[cacheKey] ?? []
     // Optimistic mutation.
-    userRoles.set({ ...userRoles(), [userId]: roleNames })
+    userRoles.set({ ...userRoles(), [cacheKey]: roleNames })
     try {
-      const res = await fetch(`/api/dashboard/rbac/users/${userId}/roles`, {
+      const data = await dashboardApi<{ roles?: Array<{ name: string }>, error?: string }>(`/api/dashboard/rbac/users/${userId}/roles`, {
         method: 'POST',
-        headers: { 'content-type': 'application/json', accept: 'application/json' },
-        body: JSON.stringify({ roles: roleNames, guardName }),
+        body: { roles: roleNames, guardName },
       })
-      if (!res.ok) throw new Error(`HTTP ${res.status}`)
-      const data = await res.json() as { roles?: Array<{ name: string }>, error?: string }
       if (data.error) throw new Error(data.error)
       // Canonical reconciliation — server returns the final list.
       userRoles.set({
         ...userRoles(),
-        [userId]: (data.roles ?? []).map(r => r.name),
+        [cacheKey]: (data.roles ?? []).map(r => r.name),
       })
       return true
     }
     catch (e) {
-      userRoles.set({ ...userRoles(), [userId]: snapshot })
+      userRoles.set({ ...userRoles(), [cacheKey]: snapshot })
       error.set(e instanceof Error ? e.message : String(e))
       return false
     }
@@ -256,59 +264,57 @@ export const rbacStore = defineStore('rbac', () => {
   // ─── Role-permission pivot ─────────────────────────────────────
 
   async function loadRolePermissions(roleName: string, guardName: string = 'web'): Promise<void> {
-    if (rolePermissions()[roleName] !== undefined) return
-    const key = `role:${roleName}`
-    if (loadingPivots()[key]) return
-    loadingPivots.set({ ...loadingPivots(), [key]: true })
+    const cacheKey = rolePermissionKey(roleName, guardName)
+    if (rolePermissions()[cacheKey] !== undefined) return
+    const loadingKey = `role:${cacheKey}`
+    if (loadingPivots()[loadingKey]) return
+    loadingPivots.set({ ...loadingPivots(), [loadingKey]: true })
     try {
-      const res = await fetch(
+      const data = await dashboardApi<{ permissions?: Array<{ name: string }>, error?: string }>(
         `/api/dashboard/rbac/roles/${encodeURIComponent(roleName)}/permissions?guard=${encodeURIComponent(guardName)}`,
-        { headers: { accept: 'application/json' } },
       )
-      if (!res.ok) throw new Error(`HTTP ${res.status}`)
-      const data = await res.json() as { permissions?: Array<{ name: string }>, error?: string }
       if (data.error) {
-        rolePermissions.set({ ...rolePermissions(), [roleName]: [] })
+        rolePermissions.set({ ...rolePermissions(), [cacheKey]: [] })
         return
       }
       rolePermissions.set({
         ...rolePermissions(),
-        [roleName]: (data.permissions ?? []).map(p => p.name),
+        [cacheKey]: (data.permissions ?? []).map(p => p.name),
       })
     }
-    catch {
-      rolePermissions.set({ ...rolePermissions(), [roleName]: [] })
+    catch (e) {
+      rolePermissions.set({ ...rolePermissions(), [cacheKey]: [] })
+      error.set(e instanceof Error ? e.message : String(e))
     }
     finally {
       const next = { ...loadingPivots() }
-      delete next[key]
+      delete next[loadingKey]
       loadingPivots.set(next)
     }
   }
 
   async function syncRolePermissions(roleName: string, permissionNames: string[], guardName: string = 'web'): Promise<boolean> {
-    const snapshot = rolePermissions()[roleName] ?? []
-    rolePermissions.set({ ...rolePermissions(), [roleName]: permissionNames })
+    error.set(null)
+    const cacheKey = rolePermissionKey(roleName, guardName)
+    const snapshot = rolePermissions()[cacheKey] ?? []
+    rolePermissions.set({ ...rolePermissions(), [cacheKey]: permissionNames })
     try {
-      const res = await fetch(
+      const data = await dashboardApi<{ permissions?: Array<{ name: string }>, error?: string }>(
         `/api/dashboard/rbac/roles/${encodeURIComponent(roleName)}/permissions`,
         {
           method: 'POST',
-          headers: { 'content-type': 'application/json', accept: 'application/json' },
-          body: JSON.stringify({ permissions: permissionNames, guardName }),
+          body: { permissions: permissionNames, guardName },
         },
       )
-      if (!res.ok) throw new Error(`HTTP ${res.status}`)
-      const data = await res.json() as { permissions?: Array<{ name: string }>, error?: string }
       if (data.error) throw new Error(data.error)
       rolePermissions.set({
         ...rolePermissions(),
-        [roleName]: (data.permissions ?? []).map(p => p.name),
+        [cacheKey]: (data.permissions ?? []).map(p => p.name),
       })
       return true
     }
     catch (e) {
-      rolePermissions.set({ ...rolePermissions(), [roleName]: snapshot })
+      rolePermissions.set({ ...rolePermissions(), [cacheKey]: snapshot })
       error.set(e instanceof Error ? e.message : String(e))
       return false
     }
@@ -325,6 +331,8 @@ export const rbacStore = defineStore('rbac', () => {
     error,
     hasRoles,
     hasPermissions,
+    userRoleNames,
+    rolePermissionNames,
     load,
     createRole,
     deleteRole,
