@@ -1,5 +1,9 @@
 import { describe, expect, test } from 'bun:test'
-import { campaignCreateData, campaignUpdateData } from './campaigns'
+import {
+  campaignCreateData,
+  campaignUpdateData,
+  shouldRunScheduledCampaign,
+} from './campaigns'
 
 describe('newsletter campaigns', () => {
   test('maps campaign creation to database fillable columns', () => {
@@ -43,5 +47,20 @@ describe('newsletter campaigns', () => {
       scheduled_at: null,
       status: 'draft',
     })
+  })
+
+  test('rejects stale delayed jobs after a campaign is rescheduled or cancelled', () => {
+    expect(shouldRunScheduledCampaign(
+      { status: 'scheduled', scheduled_at: '2030-01-02T09:00:00.000Z' },
+      '2030-01-01T09:00:00.000Z',
+    )).toBe(false)
+    expect(shouldRunScheduledCampaign(
+      { status: 'cancelled', scheduled_at: '2030-01-01T09:00:00.000Z' },
+      '2030-01-01T09:00:00.000Z',
+    )).toBe(false)
+    expect(shouldRunScheduledCampaign(
+      { status: 'scheduled', scheduledAt: '2030-01-01 09:00:00' },
+      '2030-01-01T09:00:00',
+    )).toBe(true)
   })
 })

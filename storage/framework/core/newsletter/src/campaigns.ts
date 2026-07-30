@@ -26,6 +26,29 @@ async function resolveListId(input: CreateCampaignInput): Promise<number> {
 
 type CampaignWriteValue = string | number | null
 
+interface ScheduledCampaignState {
+  status?: unknown
+  scheduled_at?: unknown
+  scheduledAt?: unknown
+}
+
+export function shouldRunScheduledCampaign(
+  campaign: ScheduledCampaignState,
+  expectedScheduledAt?: string,
+): boolean {
+  if (!expectedScheduledAt)
+    return true
+  if (String(campaign.status || '') !== 'scheduled')
+    return false
+
+  const currentScheduledAt = campaign.scheduled_at ?? campaign.scheduledAt
+  const currentTime = new Date(String(currentScheduledAt || '')).getTime()
+  const expectedTime = new Date(expectedScheduledAt).getTime()
+  return Number.isFinite(currentTime)
+    && Number.isFinite(expectedTime)
+    && currentTime === expectedTime
+}
+
 export function campaignCreateData(
   input: CreateCampaignInput,
   emailListId: number,
@@ -134,11 +157,15 @@ export const campaigns = {
       throw new Error(`[newsletter] Campaign ${id} not found`)
 
     const at = scheduledAt instanceof Date ? scheduledAt : new Date(scheduledAt)
+    if (!Number.isFinite(at.getTime()))
+      throw new Error('[newsletter] scheduledAt must be a valid date')
+
     const delaySeconds = Math.max(0, Math.floor((at.getTime() - Date.now()) / 1000))
+    const scheduledAtIso = at.toISOString()
 
     await campaign.update({
       status: delaySeconds === 0 ? 'sending' : 'scheduled',
-      scheduled_at: at.toISOString(),
+      scheduled_at: scheduledAtIso,
     })
 
     const { job } = await import('@stacksjs/queue')
@@ -146,12 +173,13 @@ export const campaigns = {
       campaignId: id,
       chunkSize: options.chunkSize ?? 50,
       dryRun: options.dryRun ?? false,
+      ...(delaySeconds > 0 ? { scheduledAt: scheduledAtIso } : {}),
     })
       .onQueue('campaigns')
       .delay(delaySeconds)
       .dispatch()
 
-    return { ok: true, campaignId: id, scheduledAt: at.toISOString() }
+    return { ok: true, campaignId: id, scheduledAt: scheduledAtIso }
   },
 
   async cancel(id: number) {

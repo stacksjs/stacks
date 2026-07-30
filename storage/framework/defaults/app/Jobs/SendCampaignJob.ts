@@ -1,7 +1,7 @@
 import { config } from '@stacksjs/config'
 import { mail, template } from '@stacksjs/email'
 import { log } from '@stacksjs/logging'
-import { buildUnsubscribeHeaders } from '@stacksjs/newsletter'
+import { buildUnsubscribeHeaders, shouldRunScheduledCampaign } from '@stacksjs/newsletter'
 import { Campaign, CampaignSend, EmailList, EmailListSubscriber, Subscriber } from '@stacksjs/orm'
 import { Job } from '@stacksjs/queue'
 import { url } from '@stacksjs/router'
@@ -27,6 +27,7 @@ interface SendCampaignPayload {
   campaignId: number
   chunkSize?: number
   dryRun?: boolean
+  scheduledAt?: string
 }
 
 export default new Job({
@@ -48,6 +49,11 @@ export default new Job({
 
     if (campaign.status === 'sent' || campaign.status === 'cancelled') {
       log.warn(`[SendCampaign] Skipping campaign ${campaign.id} in status '${campaign.status}'`)
+      return { sent: 0, skipped: true }
+    }
+
+    if (!shouldRunScheduledCampaign(campaign, payload.scheduledAt)) {
+      log.warn(`[SendCampaign] Skipping obsolete schedule for campaign ${campaign.id}`)
       return { sent: 0, skipped: true }
     }
 
