@@ -1,109 +1,210 @@
-<script server>
-import { useGlobalSearch } from '../../../functions/search'
+<script client>
+import type { SearchResultItem, SearchResults } from '../../../functions/search'
+import { fetchGlobalSearch } from '../../../functions/search'
 
-const { query, results, isSearching, isOpen, selectedIndex, modelIcons, search, open, close, moveUp, moveDown, selectCurrent, flatResults } = useGlobalSearch()
+const query = state('')
+const results = state<SearchResults>({})
+const isSearching = state(false)
+const isOpen = state(false)
+const selectedIndex = state(0)
+const error = state('')
+const searchInput = useRef('globalSearchInput')
+let searchTimer: ReturnType<typeof setTimeout> | null = null
+let searchRequest: AbortController | null = null
 
-function handleKeydown(event) {
+function flatResults(): SearchResultItem[] {
+  return Object.values(results()).flat()
+}
+
+function resultGroups(): Array<{ type: string, items: SearchResultItem[] }> {
+  return Object.entries(results()).map(([type, items]) => ({ type, items }))
+}
+
+function resultIndex(item: SearchResultItem): number {
+  return flatResults().indexOf(item)
+}
+
+function open(): void {
+  isOpen.set(true)
+  selectedIndex.set(0)
+  void nextTick(() => searchInput.current?.focus())
+}
+
+function close(): void {
+  isOpen.set(false)
+  query.set('')
+  results.set({})
+  error.set('')
+  searchRequest?.abort()
+}
+
+async function runSearch(value: string): Promise<void> {
+  searchRequest?.abort()
+  if (!value.trim()) {
+    results.set({})
+    isSearching.set(false)
+    error.set('')
+    return
+  }
+
+  const request = new AbortController()
+  searchRequest = request
+  isSearching.set(true)
+  error.set('')
+  try {
+    results.set(await fetchGlobalSearch(value.trim(), request.signal))
+    selectedIndex.set(0)
+  }
+  catch (reason) {
+    if (reason instanceof DOMException && reason.name === 'AbortError') return
+    results.set({})
+    error.set('Search is temporarily unavailable.')
+  }
+  finally {
+    if (searchRequest === request) {
+      searchRequest = null
+      isSearching.set(false)
+    }
+  }
+}
+
+function scheduleSearch(value: string): void {
+  if (searchTimer) clearTimeout(searchTimer)
+  searchTimer = setTimeout(() => {
+    searchTimer = null
+    void runSearch(value)
+  }, 250)
+}
+
+function moveUp(): void {
+  const items = flatResults()
+  if (items.length === 0) return
+  selectedIndex.set(selectedIndex() <= 0 ? items.length - 1 : selectedIndex() - 1)
+}
+
+function moveDown(): void {
+  const items = flatResults()
+  if (items.length === 0) return
+  selectedIndex.set(selectedIndex() >= items.length - 1 ? 0 : selectedIndex() + 1)
+}
+
+function openResult(item: SearchResultItem): void {
+  close()
+  navigate(item.href)
+}
+
+function selectCurrent(): void {
+  const item = flatResults()[selectedIndex()]
+  if (item) openResult(item)
+}
+
+function handleDialogKeydown(event: KeyboardEvent): void {
   if (event.key === 'ArrowUp') {
     event.preventDefault()
     moveUp()
-  } else if (event.key === 'ArrowDown') {
+  }
+  else if (event.key === 'ArrowDown') {
     event.preventDefault()
     moveDown()
-  } else if (event.key === 'Enter') {
+  }
+  else if (event.key === 'Enter') {
     event.preventDefault()
-    const href = selectCurrent()
-    if (href) window.location.href = href
-  } else if (event.key === 'Escape') {
+    selectCurrent()
+  }
+  else if (event.key === 'Escape') {
+    event.preventDefault()
     close()
   }
 }
 
-function handleInput(event) {
-  search(event.target.value)
+function handleGlobalKeydown(event: KeyboardEvent): void {
+  if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
+    event.preventDefault()
+    isOpen() ? close() : open()
+  }
+  else if (isOpen() && event.key === 'Escape') {
+    event.preventDefault()
+    close()
+  }
 }
 
-function navigateTo(href) {
-  close()
-  window.location.href = href
-}
+useEventListener('keydown', handleGlobalKeydown)
+
+onDestroy(() => {
+  if (searchTimer) clearTimeout(searchTimer)
+  searchRequest?.abort()
+})
 </script>
 
-<!-- Search Modal Overlay -->
-@if(isOpen)
-  <div class="fixed inset-0 overflow-y-auto z-50" @keydown="handleKeydown">
-    <!-- Backdrop -->
-    <div class="fixed inset-0 bg-black/50 backdrop-blur-sm" @click="close"></div>
+<template :if="isOpen()">
+  <div class="fixed inset-0 overflow-y-auto z-50 dashboard-modal-layer" role="dialog" aria-modal="true" aria-label="Search dashboard" @keydown="handleDialogKeydown">
+    <button type="button" class="fixed inset-0 w-full bg-black/50 backdrop-blur-sm cursor-default" aria-label="Close search" @click="close"></button>
 
-    <!-- Modal -->
     <div class="relative mt-[15vh] mx-auto max-w-lg">
       <div class="overflow-hidden bg-white dark:bg-neutral-900 border border-neutral-200 rounded-xl dark:border-neutral-700 shadow-2xl">
-        <!-- Search Input -->
         <div class="flex items-center px-4 border-b border-neutral-200 dark:border-neutral-700">
-          <svg class="shrink-0 h-5 w-5 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-          </svg>
+          <span class="shrink-0 h-5 w-5 text-neutral-400 i-hugeicons-search-02"></span>
           <input
-            type="text"
-            placeholder="Search across all models..."
+            ref="globalSearchInput"
+            x-model="query"
+            type="search"
+            placeholder="Search model records"
+            aria-label="Search model records"
             class="px-3 py-4 w-full text-neutral-900 text-sm dark:text-white placeholder:text-neutral-400 bg-transparent border-none focus:outline-none focus:ring-0"
-            :value="query"
-            @input="handleInput"
-            autofocus
+            @input="scheduleSearch($event.target.value)"
           />
-          @if(isSearching)
-            <div class="shrink-0 h-5 w-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-          @else
-            <kbd class="shrink-0 px-1.5 py-0.5 font-medium text-[10px] text-neutral-400 bg-neutral-100 dark:bg-neutral-700 border border-neutral-200 rounded dark:border-neutral-600">
-              ESC
-            </kbd>
-          @endif
+          <span :if="isSearching()" class="shrink-0 h-5 w-5 text-blue-500 animate-spin i-hugeicons-loading-03"></span>
+          <kbd :if="!isSearching()" class="shrink-0 px-1.5 py-0.5 font-medium text-[10px] text-neutral-400 bg-neutral-100 dark:bg-neutral-700 border border-neutral-200 rounded dark:border-neutral-600">
+            ESC
+          </kbd>
         </div>
 
-        <!-- Results -->
         <div class="overflow-y-auto max-h-80">
-          @if(Object.keys(results).length > 0)
-            @for(modelType in results)
+          <div :if="error()" role="alert" class="px-4 py-8 text-center">
+            <span class="mb-2 mx-auto h-8 w-8 text-red-400 i-hugeicons-alert-02"></span>
+            <p class="text-red-600 text-sm dark:text-red-400">{{ error() }}</p>
+          </div>
+
+          <template :if="!error() && Object.keys(results()).length > 0">
+            <template :for="group in resultGroups()">
               <div class="pb-1 pt-3 px-3">
                 <h3 class="px-1 font-semibold text-neutral-400 text-xs tracking-wider uppercase">
-                  {{ modelType }}
+                  {{ group.type }}
                 </h3>
               </div>
-              @for(item, itemIndex in results[modelType])
+              <template :for="item in group.items">
                 <button
-                  class="flex gap-3 items-center px-4 py-2.5 w-full text-left hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
-                  @click="navigateTo(item.href)"
+                  type="button"
+                  class="flex gap-3 items-center px-4 py-2.5 w-full text-left transition-colors"
+                  :class="resultIndex(item) === selectedIndex() ? 'bg-blue-50 dark:bg-blue-950/40' : 'hover:bg-neutral-50 dark:hover:bg-neutral-800'"
+                  @mouseenter="selectedIndex.set(resultIndex(item))"
+                  @click="openResult(item)"
                 >
-                  <div :class="'i-hugeicons-file-02' || modelIcons[modelType]" class="shrink-0 h-5 w-5 text-neutral-400"></div>
-                  <div class="flex-1 min-w-0">
-                    <p class="font-medium text-neutral-900 text-sm truncate dark:text-white">
+                  <span :class="'shrink-0 h-5 w-5 text-neutral-400 ' + item.icon"></span>
+                  <span class="flex-1 min-w-0">
+                    <span class="block font-medium text-neutral-900 text-sm truncate dark:text-white">
                       {{ item.title }}
-                    </p>
-                    @if(item.subtitle)
-                      <p class="text-neutral-500 text-xs truncate dark:text-neutral-400">
-                        {{ item.subtitle }}
-                      </p>
-                    @endif
-                  </div>
-                  <svg class="shrink-0 h-4 w-4 text-neutral-300 dark:text-neutral-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                  </svg>
+                    </span>
+                    <span :if="item.subtitle" class="block text-neutral-500 text-xs truncate dark:text-neutral-400">
+                      {{ item.subtitle }}
+                    </span>
+                  </span>
+                  <span class="shrink-0 h-4 w-4 text-neutral-300 dark:text-neutral-600 i-hugeicons-arrow-right-01"></span>
                 </button>
-              @endfor
-            @endfor
-          @elseif(query && !isSearching)
-            <div class="px-4 py-8 text-center">
-              <div class="mb-2 mx-auto h-8 w-8 text-neutral-300 dark:text-neutral-600 i-hugeicons-search-02"></div>
-              <p class="text-neutral-500 text-sm dark:text-neutral-400">No results found for "{{ query }}"</p>
-            </div>
-          @else
-            <div class="px-4 py-8 text-center">
-              <p class="text-neutral-400 text-sm">Start typing to search...</p>
-            </div>
-          @endif
+              </template>
+            </template>
+          </template>
+
+          <div :if="!error() && query().trim() && !isSearching() && Object.keys(results()).length === 0" class="px-4 py-8 text-center">
+            <span class="mb-2 mx-auto h-8 w-8 text-neutral-300 dark:text-neutral-600 i-hugeicons-search-02"></span>
+            <p class="text-neutral-500 text-sm dark:text-neutral-400">No results found for "{{ query() }}"</p>
+          </div>
+
+          <div :if="!error() && !query().trim() && !isSearching()" class="px-4 py-8 text-center">
+            <p class="text-neutral-400 text-sm">Search fields declared by each model's useSearch trait.</p>
+          </div>
         </div>
 
-        <!-- Footer -->
         <div class="flex gap-4 items-center px-4 py-2.5 text-neutral-400 text-xs border-neutral-200 border-t dark:border-neutral-700">
           <span class="flex gap-1 items-center">
             <kbd class="px-1 py-0.5 text-[10px] bg-neutral-100 dark:bg-neutral-700 border border-neutral-200 rounded dark:border-neutral-600">↑↓</kbd>
@@ -121,4 +222,4 @@ function navigateTo(href) {
       </div>
     </div>
   </div>
-@endif
+</template>

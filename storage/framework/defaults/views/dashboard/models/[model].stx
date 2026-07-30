@@ -37,6 +37,7 @@ interface ResponseShape {
 }
 
 const PER_PAGE_OPTIONS = [25, 50, 100, 200]
+const navigation = useNavigation()
 
 const modelName = state('')
 const tableName = state('')
@@ -48,7 +49,7 @@ const perPage = state(25)
 const lastPage = state(1)
 const sort = state('')
 const dir = state<'asc' | 'desc'>('desc')
-const search = state('')
+const search = state(navigation.urlQuery('q') || '')
 const filters = state<Record<string, string>>({})
 const writable = state(false)
 const source = state<'orm' | 'sqlite-fallback'>('orm')
@@ -64,7 +65,7 @@ const editValues = state<Record<string, string>>({})
 const saving = state(false)
 const confirmingDelete = state<Record<string, unknown> | null>(null)
 
-const slug = derived(() => useNavigation().urlSegment(-1) || '')
+const slug = derived(() => navigation.urlSegment(-1) || '')
 
 const sourceLabel = derived(() => source() === 'orm' ? 'via Stacks ORM' : 'raw SQLite, read-only')
 
@@ -211,8 +212,7 @@ function toggleSort(column: ColumnMeta) {
 // template renders.
 let searchTimer: ReturnType<typeof setTimeout> | undefined
 
-function onSearchInput(event: Event) {
-  search.set((event.target as HTMLInputElement).value)
+function onSearchInput() {
   clearTimeout(searchTimer)
   searchTimer = setTimeout(() => {
     page.set(1)
@@ -243,8 +243,7 @@ function goToPage(next: number) {
   void load()
 }
 
-function onPerPageChange(event: Event) {
-  perPage.set(Number((event.target as HTMLSelectElement).value) || 25)
+function onPerPageChange() {
   page.set(1)
   void load()
 }
@@ -355,8 +354,8 @@ void load()
       </div>
       <input
         type="search"
-        :value="search()"
-        @input="onSearchInput($event)"
+        x-model="search"
+        @input="onSearchInput"
         :placeholder="'Search ' + (modelName() || 'records')"
         class="block pl-9 pr-3 py-1.5 w-full text-[13px] text-neutral-900 dark:text-neutral-100 placeholder:text-neutral-400 dark:placeholder:text-neutral-500 bg-white dark:bg-white/10 border border-black/10 rounded-lg dark:border-white/15 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
       >
@@ -375,7 +374,8 @@ void load()
     <div class="flex gap-2 items-center ml-auto text-[12px] text-neutral-500 dark:text-neutral-400">
       <span>Show</span>
       <select
-        @change="onPerPageChange($event)"
+        x-model.number="perPage"
+        @change="onPerPageChange"
         class="px-2 h-8 text-[12px] text-neutral-700 dark:text-neutral-200 bg-white dark:bg-white/10 border border-black/10 rounded-md dark:border-white/15 focus:border-blue-500/50"
       >
         <template :for="option in PER_PAGE_OPTIONS">

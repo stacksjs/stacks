@@ -1,26 +1,227 @@
 import { Action } from '@stacksjs/actions'
+import { env } from '@stacksjs/env'
+import { readdirSync } from 'node:fs'
+import { basename, extname, join } from 'node:path'
+import process from 'node:process'
+
+interface SearchableModel {
+  name: string
+  table: string
+  slug: string
+  fields: string[]
+  icon: string
+}
+
+interface SearchResult {
+  id: string | number
+  title: string
+  subtitle?: string
+  href: string
+  icon: string
+}
+
+const HIDDEN_FIELDS = new Set([
+  'password',
+  'remember_token',
+  'api_token',
+  'access_token',
+  'refresh_token',
+  'secret',
+  'two_factor_secret',
+])
+const MAX_QUERY_LENGTH = 120
+const MAX_GROUPS = 8
+const RESULTS_PER_MODEL = 5
+
+const modelCatalog: { promise: Promise<SearchableModel[]> | null } = { promise: null }
+
+function snakeCase(value: string): string {
+  return value
+    .replace(/([a-z\d])([A-Z])/g, '$1_$2')
+    .replace(/[-\s]+/g, '_')
+    .toLowerCase()
+}
+
+function kebabCase(value: string): string {
+  return value
+    .replace(/([a-z\d])([A-Z])/g, '$1-$2')
+    .replace(/[_\s]+/g, '-')
+    .toLowerCase()
+}
+
+function pluralize(word: string): string {
+  if (word.endsWith('y') && !/[aeiou]y$/.test(word)) return `${word.slice(0, -1)}ies`
+  if (/(?:s|x|ch|sh)$/.test(word)) return `${word}es`
+  return `${word}s`
+}
+
+function isSafeIdentifier(value: string): boolean {
+  return /^[A-Z_][A-Z0-9_]*$/i.test(value) && value.length <= 64
+}
+
+function modelFiles(root: string): string[] {
+  const files: string[] = []
+
+  function walk(directory: string): void {
+    let entries
+    try {
+      entries = readdirSync(directory, { withFileTypes: true })
+    }
+    catch {
+      return
+    }
+
+    for (const entry of entries) {
+      const file = join(directory, entry.name)
+      if (entry.isDirectory()) {
+        walk(file)
+        continue
+      }
+      if (!['.ts', '.js'].includes(extname(entry.name))) continue
+      if (entry.name.startsWith('.') || entry.name.startsWith('_') || entry.name.startsWith('index')) continue
+      files.push(file)
+    }
+  }
+
+  walk(root)
+  return files.sort()
+}
+
+function iconForModel(name: string): string {
+  const icons: Record<string, string> = {
+    User: 'i-hugeicons-user-group',
+    Team: 'i-hugeicons-user-multiple',
+    Product: 'i-hugeicons-shopping-bag-02',
+    Customer: 'i-hugeicons-user-02',
+    Order: 'i-hugeicons-shopping-cart-01',
+    Post: 'i-hugeicons-note-edit',
+    Page: 'i-hugeicons-file-02',
+    Release: 'i-hugeicons-package-delivered',
+    Deployment: 'i-hugeicons-cloud-upload',
+    Log: 'i-hugeicons-document-validation',
+  }
+  return icons[name] || 'i-hugeicons-database-02'
+}
+
+async function loadSearchableModels(): Promise<SearchableModel[]> {
+  const defaultsRoot = join(process.cwd(), 'storage/framework/defaults/app/Models')
+  const userRoot = join(process.cwd(), 'app/Models')
+  const merged = new Map<string, string>()
+
+  for (const file of modelFiles(defaultsRoot))
+    merged.set(basename(file, extname(file)), file)
+  for (const file of modelFiles(userRoot))
+    merged.set(basename(file, extname(file)), file)
+
+  const models: SearchableModel[] = []
+  for (const [fallbackName, file] of merged) {
+    try {
+      const module = await import(file)
+      const definition = module.default ?? module
+      const name = String(definition.name || fallbackName)
+      const search = definition.traits?.useSearch
+      if (!search || typeof search !== 'object' || !Array.isArray(search.searchable)) continue
+
+      const fields = search.searchable
+        .map((field: unknown) => snakeCase(String(field)))
+        .filter((field: string) => isSafeIdentifier(field) && !HIDDEN_FIELDS.has(field))
+      const table = String(definition.table || pluralize(snakeCase(name)))
+      if (fields.length === 0 || !isSafeIdentifier(table)) continue
+
+      models.push({
+        name,
+        table,
+        slug: kebabCase(name),
+        fields: [...new Set(fields)],
+        icon: iconForModel(name),
+      })
+    }
+    catch {
+      // A single optional model must not make dashboard search unavailable.
+    }
+  }
+
+  return models.sort((a, b) => a.name.localeCompare(b.name))
+}
+
+function catalog(): Promise<SearchableModel[]> {
+  modelCatalog.promise ||= loadSearchableModels()
+  return modelCatalog.promise
+}
+
+function rowValue(row: Record<string, unknown>, field: string): string {
+  const value = row[field]
+  if (value === null || value === undefined) return ''
+  return typeof value === 'string' ? value : String(value)
+}
+
+function resultTitle(model: SearchableModel, row: Record<string, unknown>): string {
+  for (const field of ['name', 'title', 'subject', 'version', 'code', 'email', ...model.fields]) {
+    const value = rowValue(row, field).trim()
+    if (value) return value
+  }
+  return `${model.name} #${rowValue(row, 'id') || 'record'}`
+}
+
+function resultSubtitle(model: SearchableModel, row: Record<string, unknown>, title: string): string | undefined {
+  for (const field of model.fields) {
+    const value = rowValue(row, field).trim()
+    if (value && value !== title) return value
+  }
+  return undefined
+}
 
 export default new Action({
   name: 'GlobalSearchAction',
-  description: 'Returns global search results grouped by model.',
+  description: 'Searches fields declared by model useSearch traits and groups matching records by model.',
   method: 'GET',
+  apiResponse: true,
   async handle(request: RequestInstance) {
-    const q = request?.get('q') || ''
-
+    const q = String(request?.get('q') || '').trim().slice(0, MAX_QUERY_LENGTH)
     if (!q) return { results: {} }
 
-    return {
-      results: {
-        users: [
-          { id: 1, title: 'Chris Breuer', subtitle: 'chris@stacks.dev', href: '/data/users', icon: 'i-hugeicons-user-02' },
-        ],
-        posts: [
-          { id: 1, title: 'Getting Started with Stacks', subtitle: 'Published 2 days ago', href: '/content/posts', icon: 'i-hugeicons-note-edit' },
-        ],
-        products: [
-          { id: 1, title: 'Premium Plan', subtitle: '$99/mo', href: '/commerce/products', icon: 'i-hugeicons-shopping-bag-02' },
-        ],
-      },
+    const { Database } = await import('bun:sqlite')
+    const db = new Database(env.DB_DATABASE_PATH || 'database/stacks.sqlite', { readonly: true })
+    const results: Record<string, SearchResult[]> = {}
+
+    try {
+      for (const model of await catalog()) {
+        if (Object.keys(results).length >= MAX_GROUPS) break
+
+        try {
+          const columns = db.query(`PRAGMA table_info(${model.table})`).all() as Array<{ name: string }>
+          const available = new Set(columns.map(column => column.name))
+          const fields = model.fields.filter(field => available.has(field))
+          if (fields.length === 0) continue
+
+          const selected = [...new Set(['id', ...fields])].filter(field => available.has(field))
+          const where = fields.map(field => `${field} LIKE ? COLLATE NOCASE`).join(' OR ')
+          const bindings = fields.map(() => `%${q}%`)
+          const rows = db
+            .query(`SELECT ${selected.join(', ')} FROM ${model.table} WHERE ${where} LIMIT ?`)
+            .all(...bindings, RESULTS_PER_MODEL) as Array<Record<string, unknown>>
+          if (rows.length === 0) continue
+
+          results[model.name] = rows.map((row, index) => {
+            const title = resultTitle(model, row)
+            return {
+              id: (row.id as string | number | undefined) ?? index,
+              title,
+              subtitle: resultSubtitle(model, row, title),
+              href: `/models/${model.slug}?q=${encodeURIComponent(q)}`,
+              icon: model.icon,
+            }
+          })
+        }
+        catch {
+          // Models may exist before their migration has run. Skip those tables.
+        }
+      }
     }
+    finally {
+      db.close()
+    }
+
+    return { results }
   },
 })

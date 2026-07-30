@@ -279,6 +279,8 @@ onDestroy(() => {
   @slot('content')
 </main>
 
+<GlobalSearch />
+
 <!-- Global toast container. Top-right stack, newest at the bottom.
     Pointer-events-none on the wrapper + auto on individual toasts so
     surrounding UI stays clickable while a toast is up. -->
