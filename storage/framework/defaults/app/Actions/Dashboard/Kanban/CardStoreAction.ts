@@ -1,5 +1,6 @@
 import { Action } from '@stacksjs/actions'
 import { db } from '@stacksjs/database'
+import { kanbanError } from './kanban-response'
 
 interface CardInput {
   columnId?: unknown
@@ -31,11 +32,11 @@ export default new Action({
 
     const columnId = Number(body.columnId)
     if (!Number.isFinite(columnId) || columnId <= 0) {
-      return { error: '`columnId` is required and must be a positive integer.', status: 400 }
+      return kanbanError('`columnId` is required and must be a positive integer.', 400)
     }
     const title = typeof body.title === 'string' ? body.title.trim() : ''
     if (!title || title.length > 300) {
-      return { error: '`title` is required and must be 1-300 characters.', status: 400 }
+      return kanbanError('`title` is required and must be 1-300 characters.', 400)
     }
     const description = typeof body.description === 'string' ? body.description.trim() : null
     const dueDate = typeof body.dueDate === 'string' && body.dueDate ? body.dueDate : null
@@ -51,7 +52,7 @@ export default new Action({
       ).execute() as Array<{ id: number, board_id: number }>
       const col = cols?.[0]
       if (!col) {
-        return { error: 'Column not found.', status: 404 }
+        return kanbanError('Column not found.', 404)
       }
 
       const maxRow = await db.unsafe(
@@ -84,7 +85,7 @@ export default new Action({
       ).execute() as Array<Record<string, unknown>>
       const r = rows?.[0]
       if (!r) {
-        return { error: 'Card insert succeeded but follow-up read returned nothing.', status: 500 }
+        return kanbanError('Card insert succeeded but follow-up read returned nothing.', 500)
       }
 
       return {
@@ -106,7 +107,7 @@ export default new Action({
     }
     catch (err) {
       console.error('[dashboard/kanban] CardStoreAction failed:', err)
-      return { error: err instanceof Error ? err.message : 'unknown error', status: 500 }
+      return kanbanError(err instanceof Error ? err.message : 'unknown error', 500)
     }
   },
 })

@@ -1,5 +1,6 @@
 import { Action } from '@stacksjs/actions'
 import { db } from '@stacksjs/database'
+import { kanbanError } from './kanban-response'
 
 interface BoardInput {
   name?: unknown
@@ -32,7 +33,7 @@ export default new Action({
 
     const name = typeof body.name === 'string' ? body.name.trim() : ''
     if (!name || name.length > 120) {
-      return { error: 'Name is required and must be 1-120 characters.', status: 400 }
+      return kanbanError('Name is required and must be 1-120 characters.', 400)
     }
     const description = typeof body.description === 'string' ? body.description.trim() : null
     const icon = typeof body.icon === 'string' && body.icon ? body.icon : 'rectangle.stack.fill'
@@ -71,7 +72,7 @@ export default new Action({
       ).execute() as Array<{ id: number, uuid: string | null, name: string, description: string | null, icon: string, color: string, position: number, archived: number, created_at: string | null, updated_at: string | null }>
       const row = inserted?.[0]
       if (!row) {
-        return { error: 'Board insert succeeded but follow-up read returned nothing.', status: 500 }
+        return kanbanError('Board insert succeeded but follow-up read returned nothing.', 500)
       }
 
       return {
@@ -92,7 +93,7 @@ export default new Action({
     }
     catch (err) {
       console.error('[dashboard/kanban] BoardStoreAction failed:', err)
-      return { error: err instanceof Error ? err.message : 'unknown error', status: 500 }
+      return kanbanError(err instanceof Error ? err.message : 'unknown error', 500)
     }
   },
 })

@@ -1,5 +1,6 @@
 import { Action } from '@stacksjs/actions'
 import { db } from '@stacksjs/database'
+import { kanbanError } from './kanban-response'
 
 interface ColumnInput {
   boardId?: unknown
@@ -25,11 +26,11 @@ export default new Action({
 
     const boardId = Number(body.boardId)
     if (!Number.isFinite(boardId) || boardId <= 0) {
-      return { error: '`boardId` is required and must be a positive integer.', status: 400 }
+      return kanbanError('`boardId` is required and must be a positive integer.', 400)
     }
     const name = typeof body.name === 'string' ? body.name.trim() : ''
     if (!name || name.length > 80) {
-      return { error: '`name` is required and must be 1-80 characters.', status: 400 }
+      return kanbanError('`name` is required and must be 1-80 characters.', 400)
     }
     const color = typeof body.color === 'string' && body.color ? body.color : 'slate'
     const cardLimit = body.cardLimit == null
@@ -43,7 +44,7 @@ export default new Action({
       // would never surface in any sidebar or API, just rot in the DB.
       const boards = await db.unsafe('SELECT id FROM boards WHERE id = ? LIMIT 1', [boardId]).execute() as Array<{ id: number }>
       if (!boards?.length) {
-        return { error: 'Board not found.', status: 404 }
+        return kanbanError('Board not found.', 404)
       }
 
       const maxRow = await db.unsafe(
@@ -70,7 +71,7 @@ export default new Action({
       ).execute() as Array<Record<string, unknown>>
       const r = rows?.[0]
       if (!r) {
-        return { error: 'Column insert succeeded but follow-up read returned nothing.', status: 500 }
+        return kanbanError('Column insert succeeded but follow-up read returned nothing.', 500)
       }
 
       return {
@@ -88,7 +89,7 @@ export default new Action({
     }
     catch (err) {
       console.error('[dashboard/kanban] ColumnStoreAction failed:', err)
-      return { error: err instanceof Error ? err.message : 'unknown error', status: 500 }
+      return kanbanError(err instanceof Error ? err.message : 'unknown error', 500)
     }
   },
 })

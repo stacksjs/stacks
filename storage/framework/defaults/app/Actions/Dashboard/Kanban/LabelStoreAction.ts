@@ -1,5 +1,6 @@
 import { Action } from '@stacksjs/actions'
 import { db } from '@stacksjs/database'
+import { kanbanError } from './kanban-response'
 
 interface LabelInput {
   boardId?: unknown
@@ -25,11 +26,11 @@ export default new Action({
 
     const boardId = Number(body.boardId)
     if (!Number.isFinite(boardId) || boardId <= 0) {
-      return { error: '`boardId` is required.', status: 400 }
+      return kanbanError('`boardId` is required.', 400)
     }
     const name = typeof body.name === 'string' ? body.name.trim() : ''
     if (!name || name.length > 60) {
-      return { error: '`name` is required and must be 1-60 characters.', status: 400 }
+      return kanbanError('`name` is required and must be 1-60 characters.', 400)
     }
     const color = typeof body.color === 'string' && body.color ? body.color : 'slate'
 
@@ -37,7 +38,7 @@ export default new Action({
       // Reject orphan labels: the board must exist.
       const boards = await db.unsafe('SELECT id FROM boards WHERE id = ? LIMIT 1', [boardId]).execute() as Array<{ id: number }>
       if (!boards?.length)
-        return { error: 'Board not found.', status: 404 }
+        return kanbanError('Board not found.', 404)
 
       // Pre-check uniqueness — clearer error than the DB's
       // `UNIQUE constraint failed: labels.board_id, labels.name`.
@@ -46,7 +47,7 @@ export default new Action({
         [boardId, name],
       ).execute() as Array<{ id: number }>
       if (dup?.length)
-        return { error: 'A label with that name already exists on this board.', status: 409 }
+        return kanbanError('A label with that name already exists on this board.', 409)
 
       await db.insertInto('labels').values({ board_id: boardId, name, color }).execute()
 
@@ -56,7 +57,7 @@ export default new Action({
       ).execute() as Array<{ id: number, board_id: number, name: string, color: string }>
       const r = inserted?.[0]
       if (!r)
-        return { error: 'Label insert succeeded but follow-up read returned nothing.', status: 500 }
+        return kanbanError('Label insert succeeded but follow-up read returned nothing.', 500)
 
       return {
         label: { id: r.id, boardId: r.board_id, name: r.name, color: r.color },
@@ -64,7 +65,7 @@ export default new Action({
     }
     catch (err) {
       console.error('[dashboard/kanban] LabelStoreAction failed:', err)
-      return { error: err instanceof Error ? err.message : 'unknown error', status: 500 }
+      return kanbanError(err instanceof Error ? err.message : 'unknown error', 500)
     }
   },
 })

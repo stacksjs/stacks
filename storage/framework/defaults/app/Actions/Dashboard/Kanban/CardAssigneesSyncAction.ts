@@ -1,5 +1,6 @@
 import { Action } from '@stacksjs/actions'
 import { db } from '@stacksjs/database'
+import { kanbanError } from './kanban-response'
 
 interface SyncInput {
   userIds?: unknown
@@ -31,17 +32,17 @@ export default new Action({
     const rawId = (request as any)?.params?.id ?? (request as any)?.param?.('id') ?? null
     const cardId = Number(rawId)
     if (!Number.isFinite(cardId) || cardId <= 0)
-      return { error: 'Invalid card id', status: 400 }
+      return kanbanError('Invalid card id', 400)
 
     const body = (request as any).jsonBody as SyncInput | undefined ?? {}
     if (!Array.isArray(body.userIds))
-      return { error: '`userIds` must be an array of user ids (possibly empty).', status: 400 }
+      return kanbanError('`userIds` must be an array of user ids (possibly empty).', 400)
 
     const userIds: number[] = []
     for (const v of body.userIds) {
       const n = Number(v)
       if (!Number.isFinite(n) || n <= 0)
-        return { error: '`userIds` contains an invalid id.', status: 400 }
+        return kanbanError('`userIds` contains an invalid id.', 400)
       userIds.push(n)
     }
     const uniqueUserIds = Array.from(new Set(userIds))
@@ -49,7 +50,7 @@ export default new Action({
     try {
       const cardRows = await db.unsafe('SELECT id FROM cards WHERE id = ? LIMIT 1', [cardId]).execute() as Array<{ id: number }>
       if (!cardRows?.length)
-        return { error: 'Card not found.', status: 404 }
+        return kanbanError('Card not found.', 404)
 
       // Validate user ids exist.
       if (uniqueUserIds.length > 0) {
@@ -59,7 +60,7 @@ export default new Action({
           uniqueUserIds,
         ).execute() as Array<{ id: number }>
         if (userRows.length !== uniqueUserIds.length)
-          return { error: 'One or more user ids do not exist.', status: 400 }
+          return kanbanError('One or more user ids do not exist.', 400)
       }
 
       const requester = (request as any).user ?? (request as any)._authenticatedUser ?? null
@@ -97,7 +98,7 @@ export default new Action({
     }
     catch (err) {
       console.error('[dashboard/kanban] CardAssigneesSyncAction failed:', err)
-      return { error: err instanceof Error ? err.message : 'unknown error', status: 500 }
+      return kanbanError(err instanceof Error ? err.message : 'unknown error', 500)
     }
   },
 })

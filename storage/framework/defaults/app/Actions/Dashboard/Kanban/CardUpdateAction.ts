@@ -1,5 +1,6 @@
 import { Action } from '@stacksjs/actions'
 import { db } from '@stacksjs/database'
+import { kanbanError } from './kanban-response'
 
 interface CardInput {
   title?: unknown
@@ -27,7 +28,7 @@ export default new Action({
     const rawId = (request as any)?.params?.id ?? (request as any)?.param?.('id') ?? null
     const id = Number(rawId)
     if (!Number.isFinite(id) || id <= 0) {
-      return { error: 'Invalid card id', status: 400 }
+      return kanbanError('Invalid card id', 400)
     }
 
     const body = (request as any).jsonBody as CardInput | undefined ?? {}
@@ -36,7 +37,7 @@ export default new Action({
     if (typeof body.title === 'string') {
       const title = body.title.trim()
       if (!title || title.length > 300) {
-        return { error: '`title` must be 1-300 characters.', status: 400 }
+        return kanbanError('`title` must be 1-300 characters.', 400)
       }
       set.title = title
     }
@@ -50,7 +51,7 @@ export default new Action({
       set.archived = body.archived ? 1 : 0
 
     if (Object.keys(set).length === 0) {
-      return { error: 'No updatable fields provided.', status: 400 }
+      return kanbanError('No updatable fields provided.', 400)
     }
 
     try {
@@ -64,7 +65,7 @@ export default new Action({
       ).execute() as Array<Record<string, unknown>>
       const r = rows?.[0]
       if (!r) {
-        return { error: 'Card not found', status: 404 }
+        return kanbanError('Card not found', 404)
       }
       return {
         card: {
@@ -85,7 +86,7 @@ export default new Action({
     }
     catch (err) {
       console.error('[dashboard/kanban] CardUpdateAction failed:', err)
-      return { error: err instanceof Error ? err.message : 'unknown error', status: 500 }
+      return kanbanError(err instanceof Error ? err.message : 'unknown error', 500)
     }
   },
 })

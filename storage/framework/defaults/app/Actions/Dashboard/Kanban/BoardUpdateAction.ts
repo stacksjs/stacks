@@ -1,5 +1,6 @@
 import { Action } from '@stacksjs/actions'
 import { db } from '@stacksjs/database'
+import { kanbanError } from './kanban-response'
 
 interface BoardInput {
   name?: unknown
@@ -32,7 +33,7 @@ export default new Action({
     const rawId = (request as any)?.params?.id ?? (request as any)?.param?.('id') ?? null
     const id = Number(rawId)
     if (!Number.isFinite(id) || id <= 0) {
-      return { error: 'Invalid board id', status: 400 }
+      return kanbanError('Invalid board id', 400)
     }
 
     const body = (request as any).jsonBody as BoardInput | undefined ?? {}
@@ -41,7 +42,7 @@ export default new Action({
     if (typeof body.name === 'string') {
       const name = body.name.trim()
       if (!name || name.length > 120) {
-        return { error: 'Name must be 1-120 characters.', status: 400 }
+        return kanbanError('Name must be 1-120 characters.', 400)
       }
       set.name = name
     }
@@ -56,7 +57,7 @@ export default new Action({
       set.archived = body.archived ? 1 : 0
 
     if (Object.keys(set).length === 0) {
-      return { error: 'No updatable fields provided.', status: 400 }
+      return kanbanError('No updatable fields provided.', 400)
     }
 
     try {
@@ -71,7 +72,7 @@ export default new Action({
       ).execute() as Array<Record<string, unknown>>
       const r = rows?.[0]
       if (!r) {
-        return { error: 'Board not found', status: 404 }
+        return kanbanError('Board not found', 404)
       }
       return {
         board: {
@@ -90,7 +91,7 @@ export default new Action({
     }
     catch (err) {
       console.error('[dashboard/kanban] BoardUpdateAction failed:', err)
-      return { error: err instanceof Error ? err.message : 'unknown error', status: 500 }
+      return kanbanError(err instanceof Error ? err.message : 'unknown error', 500)
     }
   },
 })

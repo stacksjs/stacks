@@ -1,5 +1,6 @@
 import { Action } from '@stacksjs/actions'
 import { db } from '@stacksjs/database'
+import { kanbanError } from './kanban-response'
 
 interface ReorderInput {
   boardId?: unknown
@@ -31,21 +32,21 @@ export default new Action({
 
     const boardId = Number(body.boardId)
     if (!Number.isFinite(boardId) || boardId <= 0) {
-      return { error: '`boardId` is required.', status: 400 }
+      return kanbanError('`boardId` is required.', 400)
     }
     if (!Array.isArray(body.order) || body.order.length === 0) {
-      return { error: '`order` must be a non-empty array of column ids.', status: 400 }
+      return kanbanError('`order` must be a non-empty array of column ids.', 400)
     }
     const ids: number[] = []
     for (const v of body.order) {
       const n = Number(v)
       if (!Number.isFinite(n) || n <= 0) {
-        return { error: '`order` contains an invalid id.', status: 400 }
+        return kanbanError('`order` contains an invalid id.', 400)
       }
       ids.push(n)
     }
     if (new Set(ids).size !== ids.length) {
-      return { error: '`order` contains duplicate ids.', status: 400 }
+      return kanbanError('`order` contains duplicate ids.', 400)
     }
 
     try {
@@ -58,7 +59,7 @@ export default new Action({
       ).execute() as Array<{ c: number }>
       const matched = Number(matchRows?.[0]?.c ?? 0)
       if (matched !== ids.length) {
-        return { error: 'One or more column ids do not belong to the named board.', status: 400 }
+        return kanbanError('One or more column ids do not belong to the named board.', 400)
       }
 
       const txOps = async (qb: any) => {
@@ -79,7 +80,7 @@ export default new Action({
     }
     catch (err) {
       console.error('[dashboard/kanban] ColumnsReorderAction failed:', err)
-      return { error: err instanceof Error ? err.message : 'unknown error', status: 500 }
+      return kanbanError(err instanceof Error ? err.message : 'unknown error', 500)
     }
   },
 })

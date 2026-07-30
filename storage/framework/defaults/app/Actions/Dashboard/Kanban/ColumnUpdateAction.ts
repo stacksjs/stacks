@@ -1,5 +1,6 @@
 import { Action } from '@stacksjs/actions'
 import { db } from '@stacksjs/database'
+import { kanbanError } from './kanban-response'
 
 interface ColumnInput {
   name?: unknown
@@ -25,7 +26,7 @@ export default new Action({
     const rawId = (request as any)?.params?.id ?? (request as any)?.param?.('id') ?? null
     const id = Number(rawId)
     if (!Number.isFinite(id) || id <= 0) {
-      return { error: 'Invalid column id', status: 400 }
+      return kanbanError('Invalid column id', 400)
     }
 
     const body = (request as any).jsonBody as ColumnInput | undefined ?? {}
@@ -34,7 +35,7 @@ export default new Action({
     if (typeof body.name === 'string') {
       const name = body.name.trim()
       if (!name || name.length > 80) {
-        return { error: '`name` must be 1-80 characters.', status: 400 }
+        return kanbanError('`name` must be 1-80 characters.', 400)
       }
       set.name = name
     }
@@ -47,14 +48,14 @@ export default new Action({
       else {
         const n = Number(body.cardLimit)
         if (!Number.isFinite(n) || n < 0) {
-          return { error: '`cardLimit` must be a non-negative number or null.', status: 400 }
+          return kanbanError('`cardLimit` must be a non-negative number or null.', 400)
         }
         set.card_limit = n
       }
     }
 
     if (Object.keys(set).length === 0) {
-      return { error: 'No updatable fields provided.', status: 400 }
+      return kanbanError('No updatable fields provided.', 400)
     }
 
     try {
@@ -67,7 +68,7 @@ export default new Action({
       ).execute() as Array<Record<string, unknown>>
       const r = rows?.[0]
       if (!r) {
-        return { error: 'Column not found', status: 404 }
+        return kanbanError('Column not found', 404)
       }
       return {
         column: {
@@ -83,7 +84,7 @@ export default new Action({
     }
     catch (err) {
       console.error('[dashboard/kanban] ColumnUpdateAction failed:', err)
-      return { error: err instanceof Error ? err.message : 'unknown error', status: 500 }
+      return kanbanError(err instanceof Error ? err.message : 'unknown error', 500)
     }
   },
 })

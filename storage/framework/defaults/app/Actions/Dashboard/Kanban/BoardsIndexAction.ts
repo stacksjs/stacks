@@ -1,5 +1,6 @@
 import { Action } from '@stacksjs/actions'
 import { db } from '@stacksjs/database'
+import { kanbanError } from './kanban-response'
 
 interface BoardRow {
   id: number
@@ -69,13 +70,7 @@ export default new Action({
     }
     catch (err) {
       console.error('[dashboard/kanban] BoardsIndexAction failed:', err)
-      // Soft-error shape — page renders an empty-state with the
-      // message instead of bubbling a 500. Missing `boards` table
-      // (migrations not run) ends up here on a fresh project.
-      return {
-        boards: [],
-        error: err instanceof Error ? err.message : 'unknown error',
-      }
+      return kanbanError(err instanceof Error ? err.message : 'unknown error', 500)
     }
   },
 })

@@ -1,5 +1,6 @@
 import { Action } from '@stacksjs/actions'
 import { db } from '@stacksjs/database'
+import { kanbanError } from './kanban-response'
 
 /**
  * `DELETE /api/dashboard/kanban/comments/:id` (stacksjs/stacks#1846 Phase 3).
@@ -19,7 +20,7 @@ export default new Action({
     const rawId = (request as any)?.params?.id ?? (request as any)?.param?.('id') ?? null
     const id = Number(rawId)
     if (!Number.isFinite(id) || id <= 0)
-      return { error: 'Invalid comment id', status: 400 }
+      return kanbanError('Invalid comment id', 400)
 
     try {
       await db.deleteFrom('card_comments').where('id', '=', id).execute()
@@ -27,7 +28,7 @@ export default new Action({
     }
     catch (err) {
       console.error('[dashboard/kanban] CardCommentDestroyAction failed:', err)
-      return { error: err instanceof Error ? err.message : 'unknown error', status: 500 }
+      return kanbanError(err instanceof Error ? err.message : 'unknown error', 500)
     }
   },
 })

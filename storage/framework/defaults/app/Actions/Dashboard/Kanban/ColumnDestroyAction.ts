@@ -1,5 +1,6 @@
 import { Action } from '@stacksjs/actions'
 import { db } from '@stacksjs/database'
+import { kanbanError } from './kanban-response'
 
 /**
  * `DELETE /api/dashboard/kanban/columns/:id` (stacksjs/stacks#1846 Phase 2).
@@ -22,7 +23,7 @@ export default new Action({
     const rawId = (request as any)?.params?.id ?? (request as any)?.param?.('id') ?? null
     const id = Number(rawId)
     if (!Number.isFinite(id) || id <= 0) {
-      return { error: 'Invalid column id', status: 400 }
+      return kanbanError('Invalid column id', 400)
     }
 
     try {
@@ -53,7 +54,7 @@ export default new Action({
     }
     catch (err) {
       console.error('[dashboard/kanban] ColumnDestroyAction failed:', err)
-      return { error: err instanceof Error ? err.message : 'unknown error', status: 500 }
+      return kanbanError(err instanceof Error ? err.message : 'unknown error', 500)
     }
   },
 })

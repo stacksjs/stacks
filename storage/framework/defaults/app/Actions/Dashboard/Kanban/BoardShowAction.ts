@@ -1,5 +1,6 @@
 import { Action } from '@stacksjs/actions'
 import { db } from '@stacksjs/database'
+import { kanbanError } from './kanban-response'
 
 interface BoardRow {
   id: number
@@ -83,7 +84,7 @@ export default new Action({
       ?? null
     const id = Number(rawId)
     if (!Number.isFinite(id) || id <= 0) {
-      return { error: 'Invalid board id', status: 400 }
+      return kanbanError('Invalid board id', 400)
     }
 
     try {
@@ -93,7 +94,7 @@ export default new Action({
       ).execute() as BoardRow[]
       const board = boards[0]
       if (!board) {
-        return { error: 'Board not found', status: 404 }
+        return kanbanError('Board not found', 404)
       }
 
       const [columns, cards, labels] = await Promise.all([
@@ -206,10 +207,7 @@ export default new Action({
     }
     catch (err) {
       console.error('[dashboard/kanban] BoardShowAction failed:', err)
-      return {
-        error: err instanceof Error ? err.message : 'unknown error',
-        status: 500,
-      }
+      return kanbanError(err instanceof Error ? err.message : 'unknown error', 500)
     }
   },
 })

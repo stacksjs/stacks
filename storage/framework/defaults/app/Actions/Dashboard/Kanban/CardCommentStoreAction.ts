@@ -1,5 +1,6 @@
 import { Action } from '@stacksjs/actions'
 import { db } from '@stacksjs/database'
+import { kanbanError } from './kanban-response'
 
 interface CommentInput {
   body?: unknown
@@ -25,17 +26,17 @@ export default new Action({
     const rawId = (request as any)?.params?.id ?? (request as any)?.param?.('id') ?? null
     const cardId = Number(rawId)
     if (!Number.isFinite(cardId) || cardId <= 0)
-      return { error: 'Invalid card id', status: 400 }
+      return kanbanError('Invalid card id', 400)
 
     const body = (request as any).jsonBody as CommentInput | undefined ?? {}
     const text = typeof body.body === 'string' ? body.body.trim() : ''
     if (!text || text.length > 10000)
-      return { error: '`body` is required and must be 1-10000 characters.', status: 400 }
+      return kanbanError('`body` is required and must be 1-10000 characters.', 400)
 
     try {
       const cardRows = await db.unsafe('SELECT id FROM cards WHERE id = ? LIMIT 1', [cardId]).execute() as Array<{ id: number }>
       if (!cardRows?.length)
-        return { error: 'Card not found.', status: 404 }
+        return kanbanError('Card not found.', 404)
 
       const user = (request as any).user ?? (request as any)._authenticatedUser ?? null
       const userId = user && typeof user.id === 'number' ? user.id : null
@@ -59,7 +60,7 @@ export default new Action({
       ).execute() as Array<{ id: number, uuid: string | null, user_id: number | null, body: string, created_at: string | null, updated_at: string | null, name: string | null, email: string | null }>
       const r = rows?.[0]
       if (!r)
-        return { error: 'Comment insert succeeded but follow-up read returned nothing.', status: 500 }
+        return kanbanError('Comment insert succeeded but follow-up read returned nothing.', 500)
 
       return {
         comment: {
@@ -76,7 +77,7 @@ export default new Action({
     }
     catch (err) {
       console.error('[dashboard/kanban] CardCommentStoreAction failed:', err)
-      return { error: err instanceof Error ? err.message : 'unknown error', status: 500 }
+      return kanbanError(err instanceof Error ? err.message : 'unknown error', 500)
     }
   },
 })
