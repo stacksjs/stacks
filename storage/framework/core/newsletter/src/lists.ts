@@ -17,22 +17,25 @@ function slugify(input: string): string {
     .replace(/-+/g, '-')
 }
 
+export function emailListCreateData(input: CreateListInput): Record<string, string | number | null> {
+  return {
+    name: input.name,
+    slug: input.slug ?? slugify(input.name),
+    description: input.description ?? null,
+    status: 'active',
+    is_public: input.isPublic === false ? 0 : 1,
+    double_opt_in: input.doubleOptIn === false ? 0 : 1,
+    subscriber_count: 0,
+    active_count: 0,
+    unsubscribed_count: 0,
+    bounced_count: 0,
+  }
+}
+
 export const lists = {
   async create(input: CreateListInput) {
     const { EmailList } = await import('@stacksjs/orm') as any
-    const slug = input.slug ?? slugify(input.name)
-    return EmailList.create({
-      name: input.name,
-      slug,
-      description: input.description ?? null,
-      status: 'active',
-      isPublic: input.isPublic === false ? 0 : 1,
-      doubleOptIn: input.doubleOptIn === false ? 0 : 1,
-      subscriberCount: 0,
-      activeCount: 0,
-      unsubscribedCount: 0,
-      bouncedCount: 0,
-    })
+    return EmailList.create(emailListCreateData(input))
   },
 
   /** Look up by slug first, then by id — slugs are the public-facing handle. */
