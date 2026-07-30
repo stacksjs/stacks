@@ -1,41 +1,73 @@
-<script>
-interface CodeEditorProps {
-  live?: boolean
-  lang?: string
-  theme?: string
-  content?: string
+<script client>
+type CodeEditorLanguage = 'env' | 'json' | 'typescript' | 'text'
+
+const liveValue = useReactiveProp('value', '')
+const liveLanguage = useReactiveProp('language', 'text' as CodeEditorLanguage)
+const liveLabel = useReactiveProp('label', 'Code editor')
+const liveLoading = useReactiveProp('loading', false)
+const liveReadonly = useReactiveProp('readonly', false)
+const emit = defineEmits()
+
+const lineCount = derived(() => Math.max(1, liveValue().split('\n').length))
+const characterCount = derived(() => liveValue().length)
+
+function inputValue(event: Event): string {
+  return (event.target as HTMLTextAreaElement).value
 }
 
-const defaultContent = `echo 'Hello World!'
-mv ./test/test.ts ./jello
-cp ./jello ./backup`
-const { live = false, lang = 'typescript', theme = 'github_dark', content = defaultContent } = defineProps<CodeEditorProps>()
+function handleInput(event: Event): void {
+  const value = inputValue(event)
+  emit('update:value', value)
+  emit('input', value)
+}
+
+function handleKeydown(event: KeyboardEvent): void {
+  if (!(event.metaKey || event.ctrlKey))
+    return
+
+  if (event.key.toLowerCase() === 's') {
+    event.preventDefault()
+    emit('save')
+  }
+  else if (event.shiftKey && event.key.toLowerCase() === 'f') {
+    event.preventDefault()
+    emit('format')
+  }
+}
 </script>
-<header class="flex items-center justify-between p-4 bg-[#1f2428] border-[#30363d] border-b rounded-t-lg">
-    <div class="flex gap-2 items-center">
-      <div class="h-3 w-3 bg-[#f85149] rounded-full"></div>
-      <div class="h-3 w-3 bg-[#db9d16] rounded-full"></div>
-      <div class="h-3 w-3 bg-[#2ea043] rounded-full"></div>
+
+<div class="overflow-hidden bg-[#0d1117] border border-[#30363d] rounded-xl shadow-sm">
+  <div class="flex items-center justify-between px-4 py-3 bg-[#161b22] border-[#30363d] border-b">
+    <div class="flex gap-3 items-center min-w-0">
+      <div class="flex gap-1.5" aria-hidden="true">
+        <span class="h-2.5 w-2.5 bg-[#f85149] rounded-full"></span>
+        <span class="h-2.5 w-2.5 bg-[#db9d16] rounded-full"></span>
+        <span class="h-2.5 w-2.5 bg-[#2ea043] rounded-full"></span>
+      </div>
+      <span class="font-mono text-[#c9d1d9] text-xs truncate" :text="liveLabel()"></span>
     </div>
-
-    @if(!live)
-      <span class="font-mono text-[#c9d1d9] text-sm">Deploy Script</span>
-    @else
-      <span class="font-mono text-[#c9d1d9] text-sm">Live Terminal Output</span>
-    @endif
-  </header>
-
-  <div class="bg-[#0d1117] rounded-b-lg stx-code-editor" style="height: 300px; font-size: 14px;">
-    <pre class="p-4 font-mono text-[#c9d1d9] text-sm">{{ content }}</pre>
+    <div class="flex gap-2 items-center">
+      <span :if="liveLoading()" class="h-3.5 w-3.5 text-[#8c959f] animate-spin i-hugeicons-loading-03" aria-label="Loading"></span>
+      <span class="px-2 py-0.5 font-semibold text-[#8c959f] text-[10px] uppercase bg-[#21262d] border border-[#30363d] rounded" :text="liveLanguage()"></span>
+    </div>
   </div>
-<style>
-select {
-  margin-right: 15px;
-}
 
-.stx-code-editor {
-  font-size: 14px;
-  flex: 1;
-  font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace;
-}
-</style>
+  <textarea
+    x-model="liveValue"
+    :aria-label="liveLabel()"
+    :readonly="liveReadonly()"
+    :disabled="liveLoading()"
+    spellcheck="false"
+    autocomplete="off"
+    autocapitalize="off"
+    rows="24"
+    class="block p-4 min-h-[28rem] w-full font-mono leading-6 text-[#c9d1d9] text-[13px] bg-[#0d1117] border-0 outline-none focus:ring-2 focus:ring-blue-500/40 focus:ring-inset disabled:opacity-60 resize-y"
+    @input="handleInput"
+    @keydown="handleKeydown"
+  ></textarea>
+
+  <div class="flex items-center justify-between px-4 py-2 font-mono text-[#8c959f] text-[10px] bg-[#161b22] border-[#30363d] border-t">
+    <span :text="`${lineCount()} lines`"></span>
+    <span :text="`${characterCount()} characters`"></span>
+  </div>
+</div>

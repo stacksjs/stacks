@@ -42,6 +42,8 @@ route.group({ prefix: '/api/dashboard', apiResponse: true }, () => {
   guard(route.get('/requests', 'Actions/Dashboard/Infrastructure/RequestIndexAction'))
   guard(route.get('/source/actions', 'Actions/Dashboard/Actions/GetActions'))
   guard(route.get('/source/commands', 'Actions/Dashboard/Infrastructure/CommandIndexAction'))
+  guard(route.get('/environment', 'Actions/Dashboard/Infrastructure/EnvironmentIndexAction'))
+  guard(route.put('/environment', 'Actions/Dashboard/Infrastructure/EnvironmentUpdateAction'))
 
   guard(route.get('/analytics/web', 'Actions/Dashboard/Analytics/WebAnalyticsAction'))
   guard(route.get('/analytics/sales', 'Actions/Dashboard/Analytics/SalesAnalyticsAction'))

@@ -207,6 +207,35 @@ describe('dashboard native STX bindings', () => {
     expect(queries).toContain('<Pagination')
   })
 
+  test('environment editor uses a guarded API and a two-way STX component', () => {
+    const page = readFileSync(
+      resolve('storage/framework/defaults/views/dashboard/environment/index.stx'),
+      'utf8',
+    )
+    const routes = readFileSync(
+      resolve('storage/framework/defaults/routes/dashboard-api.ts'),
+      'utf8',
+    )
+    const editor = componentSource('CodeEditor.stx')
+
+    expect(page).toContain("dashboardApi<EnvironmentResponse>('/api/dashboard/environment')")
+    expect(page).toContain('v-model:value="envValues"')
+    expect(page).toContain("useEventListener('keydown', handlePageKeydown)")
+    expect(page).toContain('<Modal')
+    expect(page).not.toMatch(/\b(?:document|window)\./)
+    expect(page).not.toContain('fetch(')
+    expect(page).not.toContain('setTimeout(')
+
+    expect(editor).toContain("const liveValue = useReactiveProp('value', '')")
+    expect(editor).toContain('x-model="liveValue"')
+    expect(editor).toContain("emit('update:value', value)")
+    expect(editor).toContain("emit('save')")
+    expect(editor).not.toMatch(/\b(?:document|window)\./)
+
+    expect(routes).toContain("guard(route.get('/environment'")
+    expect(routes).toContain("guard(route.put('/environment'")
+  })
+
   test('kanban uses native reactive drag, dialogs, and form models', () => {
     const board = readFileSync(
       resolve('storage/framework/defaults/views/dashboard/kanban/[id].stx'),
