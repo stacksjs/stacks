@@ -92,10 +92,10 @@ onMount(() => {
         <span :class="'mr-1.5 h-1.5 w-1.5 rounded-full ' + (queueConnected() ? 'bg-green-500' : 'bg-red-500')"></span>
         {{ queueConnected() ? 'Queue connected' : 'Queue unavailable' }}
       </span>
-      <button type="button" :disabled="isLoading()" class="inline-flex items-center px-3 py-2 font-semibold text-gray-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700 disabled:opacity-50" @click="loadQueue">
-        <span :class="'mr-2 h-4 w-4 ' + (isLoading() ? 'animate-spin i-hugeicons-loading-03' : 'i-hugeicons-refresh')"></span>
+      <Button variant="secondary" :loading="isLoading()" @click="loadQueue">
+        <span :if="!isLoading()" class="h-4 w-4 i-hugeicons-refresh"></span>
         Refresh
-      </button>
+      </Button>
     </div>
   </header>
 
@@ -170,10 +170,10 @@ onMount(() => {
         <h2 class="font-semibold text-gray-900 dark:text-white">Workers</h2>
         <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">{{ workerRunning() ? 'A worker is running' : 'No worker is currently running' }} · {{ activeWorkerJobs() }} active jobs</p>
       </div>
-      <button type="button" :disabled="isRetrying() || (stats()?.failedJobs || 0) === 0" class="inline-flex items-center px-3 py-2 font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md disabled:opacity-50" @click="retryFailed">
-        <span :class="'mr-2 h-4 w-4 ' + (isRetrying() ? 'animate-spin i-hugeicons-loading-03' : 'i-hugeicons-refresh')"></span>
+      <Button :disabled="(stats()?.failedJobs || 0) === 0" :loading="isRetrying()" @click="retryFailed">
+        <span :if="!isRetrying()" class="h-4 w-4 i-hugeicons-refresh"></span>
         Retry failed jobs
-      </button>
+      </Button>
     </div>
     <div :if="!isLoading() && workerRows().length === 0" class="px-5 py-12 text-center">
       <p class="font-semibold text-gray-900 dark:text-white">No workers tracked in this process</p>

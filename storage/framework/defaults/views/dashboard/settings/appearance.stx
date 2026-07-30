@@ -238,7 +238,7 @@ const selected = (a, b) => String(a === b)
           type="button"
           class="appearance-option flex flex-col gap-3 p-4 w-full text-left rounded-xl"
           :data-selected="selected(sidebarStyle(), option.id)"
-          :aria-pressed="selected(sidebarStyle(), option.id)"
+          :aria-pressed="String(selected(sidebarStyle(), option.id))"
           @click="selectStyle(option.id)"
         >
           <span class="appearance-preview" :data-style="option.id" aria-hidden="true">
@@ -279,7 +279,7 @@ const selected = (a, b) => String(a === b)
           type="button"
           class="appearance-option appearance-mode flex flex-1 gap-2 items-center justify-center px-3 py-2 text-neutral-600 text-sm font-medium rounded-lg dark:text-neutral-300"
           :data-selected="selected(colorMode(), mode.id)"
-          :aria-pressed="selected(colorMode(), mode.id)"
+          :aria-pressed="String(selected(colorMode(), mode.id))"
           @click="selectColorMode(mode.id)"
         >
           <span :class="mode.icon" class="h-4 w-4" aria-hidden="true"></span>

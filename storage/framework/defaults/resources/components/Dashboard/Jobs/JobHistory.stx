@@ -133,8 +133,8 @@ onDestroy(() => {
   <div class="flex items-center justify-between">
     <p class="text-gray-500 text-sm dark:text-neutral-400">Showing {{ rangeStart() }} to {{ rangeEnd() }} of {{ total() }}</p>
     <div class="flex gap-2">
-      <button type="button" :disabled="currentPage() <= 1" class="px-3 py-2 font-semibold text-gray-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700 disabled:opacity-50" @click="previousPage">Previous</button>
-      <button type="button" :disabled="currentPage() >= totalPages()" class="px-3 py-2 font-semibold text-gray-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700 disabled:opacity-50" @click="nextPage">Next</button>
+      <Button variant="secondary" :disabled="currentPage() <= 1" @click="previousPage">Previous</Button>
+      <Button variant="secondary" :disabled="currentPage() >= totalPages()" @click="nextPage">Next</Button>
     </div>
   </div>
 </div>

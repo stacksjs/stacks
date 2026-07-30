@@ -71,9 +71,9 @@ function statusClass(status: DashboardJob['status']): string {
                 <StxLink :to="'/jobs/' + encodeURIComponent(job.id)" class="font-medium text-neutral-600 text-sm dark:text-neutral-300 hover:text-blue-600 dark:hover:text-blue-400">
                   View
                 </StxLink>
-                <button :if="job.status === 'failed'" type="button" class="font-medium text-blue-600 text-sm dark:text-blue-400 hover:text-blue-500" @click="emit('retry', job.id)">
+                <Button :if="job.status === 'failed'" size="sm" @click="emit('retry', job.id)">
                   Retry
-                </button>
+                </Button>
               </div>
             </td>
           </tr>

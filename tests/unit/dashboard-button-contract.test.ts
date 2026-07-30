@@ -22,7 +22,25 @@ describe('dashboard button contract', () => {
     expect(button).toContain("const liveDataErrorType = useReactiveProp('dataErrorType', '')")
     expect(button).toContain("const liveDataMethodId = useReactiveProp('dataMethodId', '')")
     expect(button).toContain("const livePressed = useReactiveProp('pressed', false)")
+    expect(button).toContain("interaction?: 'action' | 'toggle'")
+    expect(button).toContain("@if(interaction === 'toggle')")
     expect(button).toContain(':aria-pressed="String(livePressed())"')
+
+    const pressedStateFiles = [
+      'storage/framework/defaults/resources/components/Dashboard/UI/Button.stx',
+      'storage/framework/defaults/resources/components/Dashboard/Queries/QueryDashboard.stx',
+      'storage/framework/defaults/resources/components/Dashboard/Email/InboxDashboard.stx',
+      'storage/framework/defaults/resources/components/Dashboard/Email/EmailActivityDashboard.stx',
+      'storage/framework/defaults/views/dashboard/settings/appearance.stx',
+    ]
+
+    for (const file of pressedStateFiles) {
+      const source = readFileSync(resolve(file), 'utf8')
+      const pressedExpressions = [...source.matchAll(/:aria-pressed="([^"]+)"/g)].map(match => match[1])
+
+      expect(pressedExpressions.length).toBeGreaterThan(0)
+      expect(pressedExpressions.every(expression => expression.startsWith('String('))).toBe(true)
+    }
   })
 
   test('routes primary commerce actions through the canonical component', () => {
@@ -143,6 +161,12 @@ describe('dashboard button contract', () => {
       'Infrastructure/LogsDashboard.stx',
       'App/RequestsOverview.stx',
       'App/SourceInventory.stx',
+      'Realtime/RealtimeDashboard.stx',
+      'Queue/QueueDashboard.stx',
+      'Queue/QueueTable.stx',
+      'Jobs/JobTable.stx',
+      'Jobs/JobDashboard.stx',
+      'Jobs/JobHistory.stx',
     ]
 
     for (const file of files) {
@@ -294,5 +318,17 @@ describe('dashboard button contract', () => {
       expect(source).toContain('<Button')
       expect(source).not.toMatch(/<button\b/)
     }
+  })
+
+  test('keeps query ranges semantic while sharing query actions', () => {
+    const source = readFileSync(
+      resolve('storage/framework/defaults/resources/components/Dashboard/Queries/QueryDashboard.stx'),
+      'utf8',
+    )
+    const nativeButtons = [...source.matchAll(/<button\b[^>]*>/g)].map(match => match[0])
+
+    expect(source).toContain('<Button')
+    expect(nativeButtons).toHaveLength(3)
+    expect(nativeButtons.every(button => button.includes(':aria-pressed'))).toBe(true)
   })
 })

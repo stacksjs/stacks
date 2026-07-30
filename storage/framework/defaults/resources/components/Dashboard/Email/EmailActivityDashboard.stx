@@ -284,10 +284,10 @@ onDestroy(() => {
             </p>
           </div>
           <div class="inline-flex gap-1 p-1 bg-gray-100 dark:bg-neutral-900 rounded-lg">
-            <button @click="changeTimeRange('day')" :class="'px-3 py-1.5 font-medium text-sm rounded-md transition-colors ' + rangeClass('day')">Day</button>
-            <button @click="changeTimeRange('week')" :class="'px-3 py-1.5 font-medium text-sm rounded-md transition-colors ' + rangeClass('week')">Week</button>
-            <button @click="changeTimeRange('month')" :class="'px-3 py-1.5 font-medium text-sm rounded-md transition-colors ' + rangeClass('month')">Month</button>
-            <button @click="changeTimeRange('year')" :class="'px-3 py-1.5 font-medium text-sm rounded-md transition-colors ' + rangeClass('year')">Year</button>
+            <button :aria-pressed="String(timeRange() === 'day')" @click="changeTimeRange('day')" :class="'px-3 py-1.5 font-medium text-sm rounded-md transition-colors ' + rangeClass('day')">Day</button>
+            <button :aria-pressed="String(timeRange() === 'week')" @click="changeTimeRange('week')" :class="'px-3 py-1.5 font-medium text-sm rounded-md transition-colors ' + rangeClass('week')">Week</button>
+            <button :aria-pressed="String(timeRange() === 'month')" @click="changeTimeRange('month')" :class="'px-3 py-1.5 font-medium text-sm rounded-md transition-colors ' + rangeClass('month')">Month</button>
+            <button :aria-pressed="String(timeRange() === 'year')" @click="changeTimeRange('year')" :class="'px-3 py-1.5 font-medium text-sm rounded-md transition-colors ' + rangeClass('year')">Year</button>
           </div>
         </header>
 

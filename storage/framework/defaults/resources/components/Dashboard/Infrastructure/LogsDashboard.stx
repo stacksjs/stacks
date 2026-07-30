@@ -213,7 +213,7 @@ onDestroy(() => {
       <p class="mt-1 max-w-2xl text-neutral-500 text-sm dark:text-neutral-400">Persisted Log model records. Counts, filters, and details come from the same database query.</p>
     </div>
     <div class="flex gap-2 items-center">
-      <Button variant="secondary" :toggle="true" :pressed="autoRefresh()" @click="toggleAutoRefresh">
+      <Button variant="secondary" interaction="toggle" :pressed="autoRefresh()" @click="toggleAutoRefresh">
         <span :class="'h-4 w-4 i-hugeicons-refresh ' + (autoRefresh() ? 'animate-spin' : '')"></span>
         {{ autoRefresh() ? 'Auto refresh on' : 'Auto refresh off' }}
       </Button>

@@ -145,14 +145,14 @@ onMount(() => {
     </div>
     <div class="flex flex-wrap gap-3 items-center">
       <div class="inline-flex p-1 bg-neutral-100 dark:bg-neutral-800 rounded-lg">
-        <button type="button" :aria-pressed="range() === 'hour'" :class="'px-3 py-1.5 font-medium text-sm rounded-md ' + (range() === 'hour' ? 'text-neutral-900 dark:text-white bg-white dark:bg-neutral-700 shadow-sm' : 'text-neutral-500 dark:text-neutral-400')" @click="setRange('hour')">Hour</button>
-        <button type="button" :aria-pressed="range() === 'day'" :class="'px-3 py-1.5 font-medium text-sm rounded-md ' + (range() === 'day' ? 'text-neutral-900 dark:text-white bg-white dark:bg-neutral-700 shadow-sm' : 'text-neutral-500 dark:text-neutral-400')" @click="setRange('day')">Day</button>
-        <button type="button" :aria-pressed="range() === 'week'" :class="'px-3 py-1.5 font-medium text-sm rounded-md ' + (range() === 'week' ? 'text-neutral-900 dark:text-white bg-white dark:bg-neutral-700 shadow-sm' : 'text-neutral-500 dark:text-neutral-400')" @click="setRange('week')">Week</button>
+        <button type="button" :aria-pressed="String(range() === 'hour')" :class="'px-3 py-1.5 font-medium text-sm rounded-md ' + (range() === 'hour' ? 'text-neutral-900 dark:text-white bg-white dark:bg-neutral-700 shadow-sm' : 'text-neutral-500 dark:text-neutral-400')" @click="setRange('hour')">Hour</button>
+        <button type="button" :aria-pressed="String(range() === 'day')" :class="'px-3 py-1.5 font-medium text-sm rounded-md ' + (range() === 'day' ? 'text-neutral-900 dark:text-white bg-white dark:bg-neutral-700 shadow-sm' : 'text-neutral-500 dark:text-neutral-400')" @click="setRange('day')">Day</button>
+        <button type="button" :aria-pressed="String(range() === 'week')" :class="'px-3 py-1.5 font-medium text-sm rounded-md ' + (range() === 'week' ? 'text-neutral-900 dark:text-white bg-white dark:bg-neutral-700 shadow-sm' : 'text-neutral-500 dark:text-neutral-400')" @click="setRange('week')">Week</button>
       </div>
-      <button type="button" :disabled="loading()" class="inline-flex items-center px-3 py-2 font-medium text-neutral-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-neutral-300 rounded-lg dark:border-neutral-700 disabled:opacity-50" @click="loadQueries">
-        <span :class="'mr-2 h-4 w-4 ' + (loading() ? 'animate-spin i-hugeicons-loading-03' : 'i-hugeicons-refresh')"></span>
+      <Button variant="secondary" :loading="loading()" @click="loadQueries">
+        <span :if="!loading()" class="h-4 w-4 i-hugeicons-refresh"></span>
         Refresh
-      </button>
+      </Button>
     </div>
   </header>
 

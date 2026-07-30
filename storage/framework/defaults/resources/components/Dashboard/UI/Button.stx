@@ -5,7 +5,7 @@ interface ButtonProps {
   disabled?: boolean
   loading?: boolean
   pressed?: boolean
-  toggle?: boolean
+  interaction?: 'action' | 'toggle'
   fullWidth?: boolean
   iconOnly?: boolean
   tag?: 'button' | 'a'
@@ -27,7 +27,7 @@ const {
   size = 'md',
   disabled = false,
   loading = false,
-  toggle = false,
+  interaction = 'action',
   fullWidth = false,
   iconOnly = false,
   dataAction = '',
@@ -115,7 +115,7 @@ const liveDataMethodId = useReactiveProp('dataMethodId', '')
       <slot />
     </a>
   @else
-    @if(toggle)
+    @if(interaction === 'toggle')
       <button
         :type="liveType()"
         class="{{ buttonClass }}"

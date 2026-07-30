@@ -246,8 +246,8 @@ onMount(() => {
           </div>
           <div class="flex gap-2 items-center">
             <div class="inline-flex p-1 bg-gray-100 dark:bg-neutral-800 rounded-md">
-              <button type="button" :aria-pressed="filter() === 'all'" :class="'px-3 py-1.5 font-medium text-sm rounded ' + (filter() === 'all' ? 'text-gray-900 dark:text-white bg-white dark:bg-neutral-700 shadow-sm' : 'text-gray-600 dark:text-neutral-300')" @click="setFilter('all')">All</button>
-              <button type="button" :aria-pressed="filter() === 'unread'" :class="'px-3 py-1.5 font-medium text-sm rounded ' + (filter() === 'unread' ? 'text-gray-900 dark:text-white bg-white dark:bg-neutral-700 shadow-sm' : 'text-gray-600 dark:text-neutral-300')" @click="setFilter('unread')">Unread</button>
+              <button type="button" :aria-pressed="String(filter() === 'all')" :class="'px-3 py-1.5 font-medium text-sm rounded ' + (filter() === 'all' ? 'text-gray-900 dark:text-white bg-white dark:bg-neutral-700 shadow-sm' : 'text-gray-600 dark:text-neutral-300')" @click="setFilter('all')">All</button>
+              <button type="button" :aria-pressed="String(filter() === 'unread')" :class="'px-3 py-1.5 font-medium text-sm rounded ' + (filter() === 'unread' ? 'text-gray-900 dark:text-white bg-white dark:bg-neutral-700 shadow-sm' : 'text-gray-600 dark:text-neutral-300')" @click="setFilter('unread')">Unread</button>
             </div>
             <Button variant="secondary" :loading="isLoading()" @click="loadInbox">
               <span :if="!isLoading()" class="h-4 w-4 i-hugeicons-refresh"></span>
