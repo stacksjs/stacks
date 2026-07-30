@@ -1,6 +1,8 @@
 import { db } from '@stacksjs/database'
-import { formatDate } from '@stacksjs/orm'
+import { HttpError } from '@stacksjs/error-handling'
+import { formatDate, isUniqueViolation } from '@stacksjs/orm'
 import { fetchById } from './fetch'
+import type { CategoryWriteData } from './types'
 
 type CategoryRow = ModelRow<typeof Category>
 
@@ -8,56 +10,53 @@ type CategoryRow = ModelRow<typeof Category>
  * Update a category by ID
  *
  * @param id The ID of the category to update
- * @param request The updated category data
+ * @param data The updated category data
  * @returns The updated category record
  */
-export async function update(id: number, request: RequestInstance<typeof Category>): Promise<CategoryRow | undefined> {
-  // Validate the request data
-  await request.validate()
-
-  // Check if category exists
+export async function update(id: number, data: CategoryWriteData): Promise<CategoryRow> {
   const existingCategory = await fetchById(id)
-  if (!existingCategory) {
-    throw new Error(`Category with ID ${id} not found`)
-  }
+  if (!existingCategory)
+    throw new HttpError(404, `Category with ID ${id} not found`)
 
-  // Create update data object using request fields
-  const updateData = {
-    name: request.get('name'),
-    description: request.get('description'),
-    imageUrl: request.get('imageUrl'),
-    isActive: request.get('isActive'),
-    parentCategoryId: request.get('parentCategoryId'),
-    displayOrder: request.get('displayOrder'),
-    updated_at: formatDate(new Date()),
-  }
-
-  // If no fields to update, just return the existing category
-  if (Object.keys(updateData).length === 0) {
-    return existingCategory
+  if (Object.hasOwn(data, 'parent_category_id')) {
+    const parentCategoryId = data.parent_category_id ? Number(data.parent_category_id) : undefined
+    if (parentCategoryId !== undefined && (!Number.isSafeInteger(parentCategoryId) || parentCategoryId <= 0))
+      throw new HttpError(422, 'Parent category ID must be a positive integer')
+    if (parentCategoryId === id)
+      throw new HttpError(422, 'A category cannot be its own parent')
+    if (parentCategoryId && !await fetchById(parentCategoryId))
+      throw new HttpError(422, `Parent category with ID ${data.parent_category_id} not found`)
+    if (parentCategoryId && await wouldCreateCircularReference(id, String(parentCategoryId)))
+      throw new HttpError(422, 'This operation would create a circular category hierarchy')
   }
 
   try {
-    // Update the category
-    await db
+    const parentUpdate = Object.hasOwn(data, 'parent_category_id')
+      ? { parent_category_id: data.parent_category_id || null }
+      : {}
+    const result = await db
       .updateTable('categories')
-      .set(updateData)
+      .set({
+        ...data,
+        ...parentUpdate,
+        updated_at: formatDate(new Date()),
+      })
       .where('id', '=', id)
-      .execute()
+      .returningAll()
+      .executeTakeFirst()
 
-    // Fetch and return the updated category
-    return await fetchById(id)
+    if (!result)
+      throw new HttpError(404, `Category with ID ${id} not found`)
+
+    return result as CategoryRow
   }
   catch (error) {
-    if (error instanceof Error) {
-      // Handle duplicate name error
-      if (error.message.includes('Duplicate entry') && error.message.includes('name')) {
-        throw new Error('A category with this name already exists')
-      }
-
+    if (error instanceof HttpError)
+      throw error
+    if (isUniqueViolation(error))
+      throw new HttpError(409, 'A category with this name or slug already exists')
+    if (error instanceof Error)
       throw new Error(`Failed to update category: ${error.message}`)
-    }
-
     throw error
   }
 }
@@ -185,7 +184,7 @@ export async function updateParent(id: number, newParentId: string | null): Prom
         .updateTable('categories')
         .set({
           ...updateObject,
-          parent_category_id: undefined,
+          parent_category_id: null,
         })
         .where('id', '=', id)
         .execute()
@@ -238,13 +237,14 @@ async function wouldCreateCircularReference(categoryId: number, newParentId: str
     visited.add(currentParentId)
 
     // Get the parent's parent
-    const parent = await fetchById(currentParentId)
-    if (!parent || !parent.parentCategoryId) {
+    const parent = await fetchById(currentParentId) as (CategoryRow & { parent_category_id?: string | null }) | undefined
+    const nextParentId = parent?.parent_category_id ?? parent?.parentCategoryId
+    if (!parent || !nextParentId) {
       // We've reached a root category, no cycle
       return false
     }
 
-    currentParentId = Number(parent.parentCategoryId)
+    currentParentId = Number(nextParentId)
   }
 
   return false

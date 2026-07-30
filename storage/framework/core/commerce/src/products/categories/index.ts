@@ -34,3 +34,5 @@ export {
   updateDisplayOrder,
   updateParent,
 } from './update'
+
+export type { CategoryWriteData } from './types'

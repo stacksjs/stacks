@@ -1,8 +1,11 @@
 type CategoryJsonResponse = ModelRow<typeof Category>
-type NewCategory = NewModelData<typeof Category>
+import { randomUUIDv7 } from 'bun'
 import { db } from '@stacksjs/database'
+import { HttpError } from '@stacksjs/error-handling'
+import { isUniqueViolation } from '@stacksjs/orm'
 import { slug } from '@stacksjs/strings'
 import { fetchById } from './fetch'
+import type { CategoryWriteData } from './types'
 
 export interface CategorizableTable {
   id: number
@@ -21,42 +24,39 @@ export interface CategorizableTable {
  * @param data The category data to store
  * @returns The newly created category record
  */
-export async function store(data: NewCategory): Promise<CategoryJsonResponse> {
+export async function store(data: CategoryWriteData): Promise<CategoryJsonResponse> {
   try {
-    // Add missing required properties
+    const parentCategoryId = data.parent_category_id ? Number(data.parent_category_id) : undefined
+    if (parentCategoryId !== undefined && (!Number.isSafeInteger(parentCategoryId) || parentCategoryId <= 0))
+      throw new HttpError(422, 'Parent category ID must be a positive integer')
+    if (parentCategoryId && !await fetchById(parentCategoryId))
+      throw new HttpError(422, `Parent category with ID ${data.parent_category_id} not found`)
+
     const categoryData = {
       ...data,
-      slug: data.name?.toLowerCase().replace(/\s+/g, '-') || '',
-      categorizable_type: 'product',
-      display_order: 0,
+      uuid: randomUUIDv7(),
+      is_active: data.is_active ?? true,
+      parent_category_id: data.parent_category_id || null,
     }
 
     const result = await db
       .insertInto('categories')
       .values(categoryData)
+      .returningAll()
       .executeTakeFirst()
 
     if (!result)
       throw new Error('Failed to create category')
 
-    const insertId = Number(result.insertId) || Number(result.numInsertedOrUpdatedRows)
-
-    const model = await fetchById(insertId)
-
-    if (!model)
-      throw new Error('Failed to create category')
-
-    return model
+    return result as CategoryJsonResponse
   }
   catch (error) {
-    if (error instanceof Error) {
-      if (error.message.includes('Duplicate entry') && error.message.includes('name')) {
-        throw new Error('A category with this name already exists')
-      }
-
+    if (error instanceof HttpError)
+      throw error
+    if (isUniqueViolation(error))
+      throw new HttpError(409, 'A category with this name or slug already exists')
+    if (error instanceof Error)
       throw new Error(`Failed to create category: ${error.message}`)
-    }
-
     throw error
   }
 }
@@ -74,13 +74,11 @@ export async function findOrCreateByName(data: Partial<CategorizableTable>): Pro
   if (existingCategory)
     return existingCategory as CategoryJsonResponse
 
-  const categoryData = {
+  const categoryData: CategoryWriteData = {
     name: data.name,
     slug: slug(data.name),
     is_active: data.is_active ?? true,
-    categorizable_type: data.categorizable_type ?? 'default',
     display_order: 0,
-
   }
 
   return await store(categoryData)
