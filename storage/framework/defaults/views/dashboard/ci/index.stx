@@ -12,10 +12,13 @@
   //
   // No <script server>, no window./document. reads — per #1838 the page
   // is pure presentation against the store.
-  import { useStore } from '@stacksjs/stx'
   import { useRole } from '../composables/useRole'
+  import { ciStore } from '../stores/ci'
 
-  const ci = useStore('ci')
+  // Import the store definition directly so its typed setup and persistence
+  // are part of this page's client bundle. A name-only useStore('ci') lookup
+  // cannot create a store whose defining module was never imported.
+  const ci = ciStore
   // Role check is now backed by the real RBAC store + `/api/dashboard/auth/me`
   // (stacksjs/stacks#1843). `isDev()` returns true if the authenticated user
   // holds the `admin` or `dev` role, OR if the request is unauthenticated
