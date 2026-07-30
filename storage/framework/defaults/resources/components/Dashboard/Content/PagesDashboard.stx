@@ -1,0 +1,215 @@
+<script client>
+import { dashboardApi } from '../../../../functions/dashboard-api'
+import { pushToast } from '../../../../functions/toasts'
+
+interface PageRecord {
+  id: string
+  title: string
+  template: string
+  views: number
+  conversions: number
+  publishedAt: string
+}
+
+const pages = state<PageRecord[]>([])
+const loading = state(true)
+const loadError = state('')
+const search = state('')
+const formOpen = state(false)
+const editingPage = state<PageRecord | null>(null)
+const title = state('')
+const template = state('default')
+const published = state(false)
+const saving = state(false)
+const saveError = state('')
+const deletingPage = state<PageRecord | null>(null)
+const deleting = state(false)
+const deleteError = state('')
+
+function normalize(record: any): PageRecord {
+  return {
+    id: String(record?.id || ''),
+    title: String(record?.title || ''),
+    template: String(record?.template || 'default'),
+    views: Number(record?.views || 0),
+    conversions: Number(record?.conversions || 0),
+    publishedAt: String(record?.published_at || ''),
+  }
+}
+
+function visiblePages(): PageRecord[] {
+  const query = search().trim().toLowerCase()
+  return pages().filter(page => !query || [page.title, page.template]
+    .some(value => value.toLowerCase().includes(query)))
+}
+
+function totalViews(): number {
+  return pages().reduce((sum, page) => sum + page.views, 0)
+}
+
+function totalConversions(): number {
+  return pages().reduce((sum, page) => sum + page.conversions, 0)
+}
+
+function formatNumber(value: number): string {
+  return new Intl.NumberFormat('en-US').format(value)
+}
+
+function formatDate(value: string): string {
+  if (!value)
+    return 'Draft'
+  const date = new Date(value)
+  return Number.isNaN(date.getTime())
+    ? value
+    : new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(date)
+}
+
+function updateSearch(event: Event): void {
+  search.set((event.target as HTMLInputElement).value)
+}
+
+function updateTitle(event: Event): void {
+  title.set((event.target as HTMLInputElement).value)
+}
+
+function updateTemplate(event: Event): void {
+  template.set((event.target as HTMLSelectElement).value)
+}
+
+function updatePublished(event: Event): void {
+  published.set((event.target as HTMLInputElement).checked)
+}
+
+async function loadPages(): Promise<void> {
+  loading.set(true)
+  loadError.set('')
+  try {
+    const data = await dashboardApi<{ pages?: unknown[] }>('/api/dashboard/pages')
+    if (!Array.isArray(data.pages))
+      throw new TypeError('Pages were not returned in the expected shape.')
+    pages.set(data.pages.map(normalize))
+  }
+  catch (error) {
+    loadError.set(error instanceof Error ? error.message : String(error))
+    pushToast('error', 'Could not load pages', { detail: loadError() })
+  }
+  finally {
+    loading.set(false)
+  }
+}
+
+function resetForm(page: PageRecord | null): void {
+  editingPage.set(page)
+  title.set(page?.title || '')
+  template.set(page?.template || 'default')
+  published.set(Boolean(page?.publishedAt))
+  saveError.set('')
+}
+
+function openCreate(): void {
+  resetForm(null)
+  formOpen.set(true)
+}
+
+function openEdit(page: PageRecord): void {
+  resetForm(page)
+  formOpen.set(true)
+}
+
+function closeForm(): void {
+  if (!saving())
+    formOpen.set(false)
+}
+
+async function savePage(): Promise<void> {
+  const page = editingPage()
+  saving.set(true)
+  saveError.set('')
+  try {
+    await dashboardApi(page ? `/api/dashboard/pages/${page.id}` : '/api/dashboard/pages', {
+      method: page ? 'PATCH' : 'POST',
+      body: { title: title().trim(), template: template(), published: published() },
+    })
+    formOpen.set(false)
+    pushToast('success', page ? 'Page updated' : 'Page created')
+    await loadPages()
+  }
+  catch (error) {
+    saveError.set(error instanceof Error ? error.message : String(error))
+  }
+  finally {
+    saving.set(false)
+  }
+}
+
+function openDelete(page: PageRecord): void {
+  deletingPage.set(page)
+  deleteError.set('')
+}
+
+function closeDelete(): void {
+  if (!deleting())
+    deletingPage.set(null)
+}
+
+async function deletePage(): Promise<void> {
+  const page = deletingPage()
+  if (!page)
+    return
+  deleting.set(true)
+  deleteError.set('')
+  try {
+    await dashboardApi(`/api/dashboard/pages/${page.id}`, { method: 'DELETE' })
+    deletingPage.set(null)
+    pushToast('success', 'Page deleted')
+    await loadPages()
+  }
+  catch (error) {
+    deleteError.set(error instanceof Error ? error.message : String(error))
+  }
+  finally {
+    deleting.set(false)
+  }
+}
+
+onMount(() => {
+  void loadPages()
+})
+</script>
+
+<div class="space-y-6">
+  <header class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+    <div><p class="font-semibold text-blue-600 text-xs tracking-wide uppercase dark:text-blue-400">CMS</p><h1 class="mt-1 font-bold text-2xl text-gray-900 dark:text-white">Pages</h1><p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Manage persisted CMS pages, templates, and publishing state.</p></div>
+    <div class="flex gap-2"><button type="button" :disabled="loading()" class="inline-flex items-center px-3 py-2 font-semibold text-gray-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700 disabled:opacity-50" @click="loadPages()"><span :class="'mr-2 h-4 w-4 ' + (loading() ? 'animate-spin i-hugeicons-loading-03' : 'i-hugeicons-refresh')"></span>Refresh</button><button type="button" class="inline-flex items-center px-3 py-2 font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md" @click="openCreate()"><span class="mr-2 h-4 w-4 i-hugeicons-add-01"></span>New page</button></div>
+  </header>
+
+  <div :if="loadError()" role="alert" class="flex gap-4 items-center justify-between p-4 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900"><span>{{ loadError() }}</span><button type="button" class="font-semibold underline" @click="loadPages()">Retry</button></div>
+
+  <section aria-label="Page metrics" class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+    <article class="p-4 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700"><p class="text-gray-500 text-xs dark:text-neutral-400">Total</p><p class="mt-2 font-semibold text-2xl text-gray-900 dark:text-white">{{ pages().length }}</p></article>
+    <article class="p-4 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700"><p class="text-gray-500 text-xs dark:text-neutral-400">Views</p><p class="mt-2 font-semibold text-2xl text-gray-900 dark:text-white">{{ formatNumber(totalViews()) }}</p></article>
+    <article class="p-4 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700"><p class="text-gray-500 text-xs dark:text-neutral-400">Conversions</p><p class="mt-2 font-semibold text-2xl text-gray-900 dark:text-white">{{ formatNumber(totalConversions()) }}</p></article>
+    <article class="p-4 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700"><p class="text-gray-500 text-xs dark:text-neutral-400">Newest</p><p class="mt-2 font-semibold text-gray-900 text-lg truncate dark:text-white">{{ pages()[0]?.title || 'None' }}</p></article>
+  </section>
+
+  <section class="overflow-hidden bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
+    <div class="p-4 border-b border-gray-200 dark:border-neutral-700"><label><span class="sr-only">Search pages</span><input :value="search()" type="search" placeholder="Search pages" class="px-3 py-2 max-w-md w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="updateSearch($event)" /></label></div>
+    <div class="overflow-x-auto"><table class="min-w-full divide-gray-200 divide-y dark:divide-neutral-700"><thead class="bg-gray-50 dark:bg-neutral-900/50"><tr><th class="px-4 py-3 font-semibold text-gray-600 text-left text-xs dark:text-neutral-300">Page</th><th class="px-4 py-3 font-semibold text-gray-600 text-left text-xs dark:text-neutral-300">Traffic</th><th class="px-4 py-3 font-semibold text-gray-600 text-left text-xs dark:text-neutral-300">Publishing</th><th class="px-4 py-3"><span class="sr-only">Actions</span></th></tr></thead><tbody class="divide-gray-200 divide-y dark:divide-neutral-700">
+      <template :if="loading()"><tr><td colspan="4" class="px-4 py-12 text-center text-gray-500 text-sm dark:text-neutral-400"><span class="inline-block mr-2 h-4 w-4 animate-spin i-hugeicons-loading-03"></span>Loading pages</td></tr></template>
+      <template :else-if="visiblePages().length === 0"><tr><td colspan="4" class="px-4 py-14 text-center"><span class="inline-block h-6 w-6 text-gray-400 i-hugeicons-file-02"></span><p class="mt-2 font-medium text-gray-900 text-sm dark:text-white">No pages found</p><p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Adjust the search or create a page.</p></td></tr></template>
+      <template :else><template :for="page in visiblePages()"><tr><td class="px-4 py-3"><p class="font-medium text-gray-900 text-sm dark:text-white">{{ page.title }}</p><p class="mt-1 font-mono text-gray-500 text-xs dark:text-neutral-400">{{ page.template }}</p></td><td class="px-4 py-3 text-gray-500 text-sm dark:text-neutral-400"><p>{{ formatNumber(page.views) }} views</p><p class="mt-1 text-xs">{{ formatNumber(page.conversions) }} conversions</p></td><td class="px-4 py-3"><span :class="'inline-flex px-2 py-1 font-medium text-xs rounded-full ' + (page.publishedAt ? 'text-green-700 dark:text-green-300 bg-green-50 dark:bg-green-950/40' : 'text-gray-600 dark:text-neutral-300 bg-gray-100 dark:bg-neutral-700')">{{ formatDate(page.publishedAt) }}</span></td><td class="px-4 py-3"><div class="flex justify-end"><button type="button" :aria-label="'Edit page ' + page.title" class="p-2 text-gray-500 dark:text-neutral-400 hover:text-blue-600 dark:hover:text-blue-400" @click="openEdit(page)"><span class="block h-4 w-4 i-hugeicons-edit-02"></span></button><button type="button" :aria-label="'Delete page ' + page.title" class="p-2 text-gray-500 dark:text-neutral-400 hover:text-red-600 dark:hover:text-red-400" @click="openDelete(page)"><span class="block h-4 w-4 i-hugeicons-delete-02"></span></button></div></td></tr></template></template>
+    </tbody></table></div>
+  </section>
+</div>
+
+<div :if="formOpen()" class="flex fixed inset-0 z-50 items-center justify-center p-4">
+  <button type="button" aria-label="Close page dialog" class="absolute inset-0 bg-black/45" @click="closeForm()"></button>
+  <section role="dialog" aria-modal="true" :aria-label="editingPage() ? 'Edit page' : 'New page'" class="relative max-w-lg w-full bg-white dark:bg-neutral-800 border border-gray-200 rounded-xl dark:border-neutral-700 shadow-xl">
+    <form @submit.prevent="savePage"><div class="p-6"><h2 class="font-semibold text-gray-900 text-lg dark:text-white">{{ editingPage() ? 'Edit page' : 'New page' }}</h2><div :if="saveError()" role="alert" class="mt-4 p-3 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900">{{ saveError() }}</div><div class="grid gap-4 mt-5"><label><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Title</span><input :value="title()" required minlength="3" maxlength="255" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="updateTitle($event)" /></label><label><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Template</span><select :value="template()" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @change="updateTemplate($event)"><option value="default">Default</option><option value="landing">Landing</option><option value="blog">Blog</option><option value="contact">Contact</option></select></label><label class="flex gap-3 items-start p-3 bg-gray-50 dark:bg-neutral-900/50 border border-gray-200 rounded-lg dark:border-neutral-700"><input type="checkbox" :checked="published()" class="mt-0.5 h-4 w-4 rounded" @change="updatePublished($event)" /><span><span class="block font-medium text-gray-700 text-sm dark:text-neutral-200">Published</span><span class="block mt-1 text-gray-500 text-xs dark:text-neutral-400">Published pages receive a timestamp. Clearing this returns the page to draft.</span></span></label></div></div><footer class="flex gap-2 justify-end px-6 py-4 bg-gray-50 dark:bg-neutral-900/50 border-gray-200 border-t dark:border-neutral-700"><button type="button" :disabled="saving()" class="px-3 py-2 font-semibold text-gray-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" @click="closeForm()">Cancel</button><button type="submit" :disabled="saving() || title().trim().length < 3" class="inline-flex items-center px-3 py-2 font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md disabled:opacity-50"><span :if="saving()" class="mr-2 h-4 w-4 animate-spin i-hugeicons-loading-03"></span>{{ editingPage() ? 'Save changes' : 'Create page' }}</button></footer></form>
+  </section>
+</div>
+
+<div :if="Boolean(deletingPage())" class="flex fixed inset-0 z-50 items-center justify-center p-4">
+  <button type="button" aria-label="Close delete page dialog" class="absolute inset-0 bg-black/45" @click="closeDelete()"></button>
+  <section role="dialog" aria-modal="true" aria-label="Delete page?" class="relative p-6 max-w-md w-full bg-white dark:bg-neutral-800 border border-gray-200 rounded-xl dark:border-neutral-700 shadow-xl"><h2 class="font-semibold text-gray-900 text-lg dark:text-white">Delete page?</h2><p class="mt-2 text-gray-500 text-sm dark:text-neutral-400"><strong>{{ deletingPage()?.title || '' }}</strong> will be permanently removed.</p><div :if="deleteError()" role="alert" class="mt-4 p-3 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900">{{ deleteError() }}</div><div class="flex gap-2 justify-end mt-6"><button type="button" :disabled="deleting()" class="px-3 py-2 font-semibold text-gray-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" @click="closeDelete()">Cancel</button><button type="button" :disabled="deleting()" class="inline-flex items-center px-3 py-2 font-semibold text-sm text-white bg-red-600 hover:bg-red-500 rounded-md disabled:opacity-50" @click="deletePage()"><span :if="deleting()" class="mr-2 h-4 w-4 animate-spin i-hugeicons-loading-03"></span>Delete page</button></div></section>
+</div>
