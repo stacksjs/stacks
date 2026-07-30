@@ -19,6 +19,36 @@ import { plural, singular, snakeCase } from '@stacksjs/strings'
 import { isString } from '@stacksjs/validation'
 
 type ModelPath = string
+type LegacyBelongsToMany = ModelNames | BaseBelongsToMany<ModelNames>
+
+function normalizedBelongsToMany(model: Model): Array<{ relationName: string, relation: LegacyBelongsToMany }> {
+  const declared = model.belongsToMany
+
+  if (!declared)
+    return []
+
+  if (Array.isArray(declared)) {
+    return declared.map(relation => ({
+      relationName: typeof relation === 'string' ? snakeCase(relation) : snakeCase(String(relation.model)),
+      relation,
+    }))
+  }
+
+  return Object.entries(declared).map(([relationName, relation]) => {
+    if (typeof relation === 'string')
+      return { relationName, relation }
+
+    return {
+      relationName,
+      relation: {
+        model: relation.model,
+        pivotTable: relation.table,
+        firstForeignKey: relation.foreignKey,
+        secondForeignKey: relation.relatedKey,
+      },
+    }
+  })
+}
 
 export async function modelTableName(model: Model | ModelPath): Promise<string> {
   if (typeof model === 'string') {
@@ -93,8 +123,8 @@ export async function getRelations(model: Model, modelName: string): Promise<Rel
   }
 
   if (model.belongsToMany) {
-    for (const relationInstance of model.belongsToMany) {
-      relationships.push(await processBelongsToMany(relationInstance, model, modelName, 'belongsToMany'))
+    for (const { relationName, relation: relationInstance } of normalizedBelongsToMany(model)) {
+      relationships.push(await processBelongsToMany(relationInstance, model, modelName, 'belongsToMany', relationName))
     }
   }
 
@@ -298,7 +328,7 @@ async function processHasThrough(relationInstance: ModelNames | BaseHasOneThroug
   return relationshipData
 }
 
-async function processBelongsToMany(relationInstance: ModelNames | BaseBelongsToMany<ModelNames>, model: Model, modelName: string, relation: string) {
+async function processBelongsToMany(relationInstance: ModelNames | BaseBelongsToMany<ModelNames>, model: Model, modelName: string, relation: string, relationName: string) {
   let relationModel = ''
   let pivotTable = ''
   let pivotForeign = ''
@@ -327,7 +357,7 @@ async function processBelongsToMany(relationInstance: ModelNames | BaseBelongsTo
     relationTable: table as TableNames,
     foreignKey: typeof relationInstance === 'string' ? `${formattedModelName}_id` : relationInstance.firstForeignKey || `${formattedModelName}_id`,
     modelKey: typeof relationInstance === 'string' ? `${modelRelationName}_id` : relationInstance.secondForeignKey || `${modelRelationName}_id`,
-    relationName: '',
+    relationName,
     relationModel: modelName,
     throughModel: '',
     throughForeignKey: '',
@@ -462,8 +492,7 @@ export async function getPivotTables(
   const pivotTable = []
 
   if ('belongsToMany' in model) {
-    const belongsToManyArr = model.belongsToMany || []
-    for (const belongsToManyRelation of belongsToManyArr) {
+    for (const { relation: belongsToManyRelation } of normalizedBelongsToMany(model)) {
       let modelRelation: Model
       let relationModelName: string
 

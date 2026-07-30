@@ -17,11 +17,9 @@
 import { describe, expect, it } from 'bun:test'
 import { getRelations } from '../src/utils'
 
-// We can't easily exercise getRelations against in-memory model
-// fixtures because `loadModels` reads from disk. The tests here use
-// shapes that don't trigger `loadModels` (morphTo, morphToMany,
-// morphedByMany — all of which have processors that don't call
-// loadModels) so we get coverage of the new branches in isolation.
+// Most fixtures avoid the disk-backed relation loader. The named
+// belongsToMany case intentionally resolves the framework's real Post and Tag
+// models so the modern record form is covered at the Stacks adapter boundary.
 
 describe('getRelations — polymorphic wiring (#6 audit fix)', () => {
   it('processes morphTo declarations into a runtime-resolvable RelationConfig', async () => {
@@ -103,6 +101,34 @@ describe('getRelations — polymorphic wiring (#6 audit fix)', () => {
       'Post',
     )
     expect(result[0].pivotTable).toBe('post_tags')
+  })
+
+  it('normalizes modern named belongsToMany relations', async () => {
+    const result = await getRelations(
+      {
+        name: 'Post',
+        table: 'posts' as any,
+        belongsToMany: {
+          tags: {
+            model: 'Tag',
+            table: 'taggable_models',
+            foreignKey: 'taggable_id',
+            relatedKey: 'tag_id',
+            pivot: {
+              columns: { taggable_type: { default: 'posts' } },
+              timestamps: true,
+            },
+          },
+        },
+      },
+      'Post',
+    )
+
+    expect(result).toHaveLength(1)
+    expect(result[0].relationName).toBe('tags')
+    expect(result[0].pivotTable).toBe('taggable_models')
+    expect(result[0].foreignKey).toBe('taggable_id')
+    expect(result[0].modelKey).toBe('tag_id')
   })
 
   it('returns an empty array when no relations are declared', async () => {

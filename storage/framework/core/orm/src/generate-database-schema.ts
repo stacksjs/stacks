@@ -121,6 +121,21 @@ function pivotTableName(a: string, b: string): string {
   return `${first}_${second}`
 }
 
+function pivotColumnToTsType(attribute: { default?: unknown, nullable?: boolean }): string {
+  const value = attribute.default
+  const base = typeof value === 'string'
+    ? 'string'
+    : typeof value === 'number'
+      ? 'number'
+      : typeof value === 'boolean'
+        ? 'boolean'
+        : value instanceof Date
+          ? 'string'
+          : 'unknown'
+
+  return attribute.nullable ? `${base} | null` : base
+}
+
 /**
  * Read a model's `belongsToMany` declaration and return one pivot-
  * table entry per relation. Handles both shorthand (array of model
@@ -132,21 +147,42 @@ function derivePivotTables(modelName: string, model: Model): Array<{ table: stri
   if (!rel) return []
   const out: Array<{ table: string, columns: Record<string, string> }> = []
 
-  const list = Array.isArray(rel) ? rel : []
-  for (const entry of list) {
+  const entries = Array.isArray(rel) ? rel : Object.values(rel)
+  for (const entry of entries) {
     let related: string
     let table: string | undefined
     let firstFk: string | undefined
     let secondFk: string | undefined
+    let pivotColumns: Record<string, { default?: unknown, nullable?: boolean }> = {}
+    let timestamps = true
+
     if (typeof entry === 'string') {
       related = entry
     }
     else if (entry && typeof entry === 'object' && 'model' in entry) {
       const obj = entry as { model: string, pivotTable?: string, firstForeignKey?: string, secondForeignKey?: string }
       related = obj.model
-      table = obj.pivotTable
-      firstFk = obj.firstForeignKey
-      secondFk = obj.secondForeignKey
+      if ('pivotTable' in obj || 'firstForeignKey' in obj || 'secondForeignKey' in obj) {
+        table = obj.pivotTable
+        firstFk = obj.firstForeignKey
+        secondFk = obj.secondForeignKey
+      }
+      else {
+        const modern = entry as {
+          table?: string
+          foreignKey?: string
+          relatedKey?: string
+          pivot?: {
+            columns?: Record<string, { default?: unknown, nullable?: boolean }>
+            timestamps?: boolean
+          }
+        }
+        table = modern.table
+        firstFk = modern.foreignKey
+        secondFk = modern.relatedKey
+        pivotColumns = modern.pivot?.columns ?? {}
+        timestamps = Boolean(modern.pivot?.timestamps)
+      }
     }
     else {
       continue
@@ -156,15 +192,23 @@ function derivePivotTables(modelName: string, model: Model): Array<{ table: stri
     const fkA = firstFk ?? `${snakeCase(modelName)}_id`
     const fkB = secondFk ?? `${snakeCase(related)}_id`
 
+    const columns: Record<string, string> = {
+      id: 'number',
+      [fkA]: 'number',
+      [fkB]: 'number',
+    }
+
+    for (const [column, attribute] of Object.entries(pivotColumns))
+      columns[column] = pivotColumnToTsType(attribute)
+
+    if (timestamps) {
+      columns.created_at = 'string'
+      columns.updated_at = 'string | null'
+    }
+
     out.push({
       table: tableName,
-      columns: {
-        id: 'number',
-        [fkA]: 'number',
-        [fkB]: 'number',
-        created_at: 'string',
-        updated_at: 'string | null',
-      },
+      columns,
     })
   }
 

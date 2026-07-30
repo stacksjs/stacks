@@ -50,7 +50,6 @@ export interface MorphMany<T = string> extends MorphOne<T> {}
 export interface HasMany<T = string> extends Array<Relation<T>> {}
 export interface BelongsTo<T = string> extends Array<Relation<T>> {}
 
-export interface BelongsToMany<T = string> extends Array<BaseBelongsToMany<T> | T> {}
 export interface HasOneThrough<T = string> extends Array<BaseHasOneThrough<T> | T> {}
 
 export interface BaseBelongsToMany<T = string> {
@@ -59,6 +58,34 @@ export interface BaseBelongsToMany<T = string> {
   secondForeignKey?: string
   pivotTable?: string
 }
+
+export interface PivotColumnAttribute {
+  default?: string | number | boolean | Date
+  nullable?: boolean
+  validation?: {
+    rule: ValidationType
+    message?: ValidatorMessage
+  }
+}
+
+export interface PivotConfig {
+  columns?: Record<string, PivotColumnAttribute>
+  timestamps?: boolean
+  uniques?: string[][]
+}
+
+export interface BelongsToManyConfig<T = string> {
+  model: T
+  through?: T
+  table?: string
+  foreignKey?: string
+  relatedKey?: string
+  pivot?: PivotConfig
+}
+
+export type BelongsToMany<T = string>
+  = Array<BaseBelongsToMany<T> | T>
+    | Record<string, T | BelongsToManyConfig<T>>
 
 export interface BaseHasOneThrough<T = string> {
   model: T
@@ -136,7 +163,7 @@ export interface Relations {
   hasOne: HasOne<ModelNames> | ModelNames[]
   hasMany: HasMany<ModelNames> | ModelNames[]
   belongsTo: BelongsTo<ModelNames> | ModelNames[]
-  belongsToMany: BelongsToMany<ModelNames> | ModelNames[]
+  belongsToMany: BelongsToMany<ModelNames>
 }
 
 export type SocialOptions = SocialProviders[]
@@ -227,7 +254,7 @@ export interface ModelOptions extends Base {
 
   belongsTo?: BelongsTo<ModelNames> | ModelNames[]
 
-  belongsToMany?: BelongsToMany<ModelNames> | ModelNames[]
+  belongsToMany?: BelongsToMany<ModelNames>
 
   hasOneThrough?: HasOneThrough<ModelNames> | ModelNames[]
 

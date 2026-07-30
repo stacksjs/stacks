@@ -319,6 +319,51 @@ describe('belongsToMany pivot tables (stacksjs/stacks#1938)', () => {
     expect(pivot!.columns).toHaveProperty('granted_role_id', 'number')
   })
 
+  test('emits modern named relations with inline pivot metadata', async () => {
+    const root = mkScratch()
+    const modelsDir = join(root, 'app/Models')
+
+    writeModel(modelsDir, 'Post.ts', `
+      export default {
+        name: 'Post',
+        table: 'posts',
+        attributes: {},
+        belongsToMany: {
+          tags: {
+            model: 'Tag',
+            table: 'taggable_models',
+            foreignKey: 'taggable_id',
+            relatedKey: 'tag_id',
+            pivot: {
+              columns: { taggable_type: { default: 'posts' } },
+              timestamps: true,
+            },
+          },
+        },
+      }
+    `)
+    writeModel(modelsDir, 'Tag.ts', `
+      export default { name: 'Tag', table: 'tags', attributes: {} }
+    `)
+
+    const result = await buildDatabaseSchema({
+      modelsDir,
+      defaultsDir: join(root, 'no-defaults'),
+      outFile: join(root, 'database/types.d.ts'),
+    })
+
+    const pivot = result.tables.find(t => t.table === 'taggable_models')
+    expect(pivot).toBeDefined()
+    expect(pivot!.columns).toEqual({
+      id: 'number',
+      taggable_id: 'number',
+      tag_id: 'number',
+      taggable_type: 'string',
+      created_at: 'string',
+      updated_at: 'string | null',
+    })
+  })
+
   test('pivot rows carry id + timestamps', async () => {
     const root = mkScratch()
     const modelsDir = join(root, 'app/Models')
