@@ -1,6 +1,7 @@
 import { Action } from '@stacksjs/actions'
 import { FailedJob, Job } from '@stacksjs/orm'
 import { getGlobalMetrics } from '@stacksjs/queue'
+import { response } from '@stacksjs/router'
 
 interface QueueBucket {
   pending: number
@@ -79,20 +80,10 @@ export default new Action({
 
       return { queues, stats, queueConnected: true }
     }
-    catch {
-      return {
-        queues: [],
-        stats: {
-          totalQueues: 0,
-          totalJobs: 0,
-          activeJobs: 0,
-          completedJobs: 0,
-          failedJobs: 0,
-          throughputPerMinute: 0,
-          averageProcessingTimeMs: 0,
-        },
-        queueConnected: false,
-      }
+    catch (error) {
+      return response.json({
+        message: error instanceof Error ? error.message : 'Queue statistics could not be loaded.',
+      }, 503)
     }
   },
 })
