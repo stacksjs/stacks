@@ -1,4 +1,13 @@
 import { describe, expect, test } from 'bun:test'
+import BlogAnalyticsAction from './Analytics/BlogAnalyticsAction'
+import BrowserAnalyticsAction from './Analytics/BrowserAnalyticsAction'
+import CommerceAnalyticsAction from './Analytics/CommerceAnalyticsAction'
+import CountryAnalyticsAction from './Analytics/CountryAnalyticsAction'
+import DeviceAnalyticsAction from './Analytics/DeviceAnalyticsAction'
+import PageAnalyticsAction from './Analytics/PageAnalyticsAction'
+import ReferrerAnalyticsAction from './Analytics/ReferrerAnalyticsAction'
+import SalesAnalyticsAction from './Analytics/SalesAnalyticsAction'
+import WebAnalyticsAction from './Analytics/WebAnalyticsAction'
 import BuddyChatStateAction from './Buddy/BuddyChatStateAction'
 import BuddyDashboardAction from './BuddyDashboardAction'
 import QueryDashboardAction from './Queries/QueryDashboardAction'
@@ -11,5 +20,19 @@ describe('legacy dashboard action routes', () => {
 
   test('reuse the canonical persisted query action', () => {
     expect(QueryIndexAction).toBe(QueryDashboardAction)
+  })
+
+  test('reuses canonical analytics actions for legacy routes', () => {
+    for (const action of [
+      BlogAnalyticsAction,
+      BrowserAnalyticsAction,
+      CountryAnalyticsAction,
+      DeviceAnalyticsAction,
+      PageAnalyticsAction,
+      ReferrerAnalyticsAction,
+    ])
+      expect(action).toBe(WebAnalyticsAction)
+
+    expect(CommerceAnalyticsAction).toBe(SalesAnalyticsAction)
   })
 })
