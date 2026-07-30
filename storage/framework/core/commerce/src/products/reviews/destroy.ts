@@ -2,25 +2,23 @@ import { db } from '@stacksjs/database'
 import { mutationCount } from '../../utils/mutation-count'
 
 /**
- * Delete an order by ID
+ * Delete a review by ID
  *
- * @param id The ID of the order to delete
- * @returns True if the order was deleted, false otherwise
+ * @param id The ID of the review to delete
+ * @returns True if the review was deleted, false otherwise
  */
 export async function destroy(id: number): Promise<boolean> {
   try {
-    // Perform the delete operation
     const result = await db
       .deleteFrom('reviews')
       .where('id', '=', id)
       .executeTakeFirst()
 
-    // Return true if any row was affected (deleted)
     return mutationCount(result) > 0
   }
   catch (error) {
     if (error instanceof Error) {
-      throw new TypeError(`Failed to delete order: ${error.message}`)
+      throw new TypeError(`Failed to delete review: ${error.message}`)
     }
 
     throw error
@@ -28,28 +26,26 @@ export async function destroy(id: number): Promise<boolean> {
 }
 
 /**
- * Delete multiple orders by ID
+ * Delete multiple reviews by ID
  *
- * @param ids Array of order IDs to delete
- * @returns Number of orders deleted
+ * @param ids Array of review IDs to delete
+ * @returns Number of reviews deleted
  */
 export async function bulkDestroy(ids: number[]): Promise<number> {
   if (!ids.length)
     return 0
 
   try {
-    // Perform the delete operation
     const result = await db
       .deleteFrom('reviews')
       .where('id', 'in', ids)
       .executeTakeFirst()
 
-    // Return the number of deleted rows
     return mutationCount(result)
   }
   catch (error) {
     if (error instanceof Error) {
-      throw new TypeError(`Failed to delete orders: ${error.message}`)
+      throw new TypeError(`Failed to delete reviews: ${error.message}`)
     }
 
     throw error

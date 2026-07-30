@@ -4,7 +4,7 @@ import type {
   ReviewRecord,
   ReviewSummary,
 } from '../../../../app/Actions/Dashboard/Commerce/review-records'
-import { dashboardApi } from '../../../../functions/dashboard-api'
+import { DashboardApiError, dashboardApi } from '../../../../functions/dashboard-api'
 import { pushToast } from '../../../../functions/toasts'
 
 interface ReviewIndexResponse {
@@ -52,6 +52,7 @@ const deletingReview = state<ReviewRecord | null>(null)
 const saving = state(false)
 const deleting = state(false)
 const busyId = state('')
+const validationErrors = state<Record<string, string>>({})
 
 function timestamp(value: string): number {
   if (!value)
@@ -170,7 +171,15 @@ async function loadReviews(): Promise<void> {
 async function patchReview(review: ReviewRecord, payload: Record<string, unknown>, successMessage: string): Promise<void> {
   busyId.set(review.id)
   try {
-    await dashboardApi(`/api/product-reviews/${review.id}`, { method: 'PATCH', body: payload })
+    await dashboardApi(`/api/dashboard/commerce/reviews/${review.id}`, {
+      method: 'PATCH',
+      body: {
+        title: review.title,
+        content: review.content,
+        rating: review.rating,
+        ...payload,
+      },
+    })
     pushToast('success', successMessage)
     await loadReviews()
   }
@@ -202,11 +211,14 @@ function toggleFeatured(review: ReviewRecord): void {
 
 function openEdit(review: ReviewRecord): void {
   editingReview.set(review)
+  validationErrors.set({})
 }
 
 function closeEdit(): void {
-  if (!saving())
+  if (!saving()) {
     editingReview.set(null)
+    validationErrors.set({})
+  }
 }
 
 async function saveReview(payload: ReviewEditPayload): Promise<void> {
@@ -214,13 +226,16 @@ async function saveReview(payload: ReviewEditPayload): Promise<void> {
   if (!review)
     return
   saving.set(true)
+  validationErrors.set({})
   try {
-    await dashboardApi(`/api/product-reviews/${review.id}`, { method: 'PATCH', body: payload })
+    await dashboardApi(`/api/dashboard/commerce/reviews/${review.id}`, { method: 'PATCH', body: payload })
     editingReview.set(null)
     pushToast('success', 'Review updated')
     await loadReviews()
   }
   catch (error) {
+    if (error instanceof DashboardApiError)
+      validationErrors.set(error.fields ?? {})
     pushToast('error', 'Could not save review', {
       detail: error instanceof Error ? error.message : String(error),
     })
@@ -245,7 +260,7 @@ async function deleteSelectedReview(): Promise<void> {
     return
   deleting.set(true)
   try {
-    await dashboardApi(`/api/product-reviews/${review.id}`, { method: 'DELETE' })
+    await dashboardApi(`/api/dashboard/commerce/reviews/${review.id}`, { method: 'DELETE' })
     deletingReview.set(null)
     pushToast('success', 'Review deleted')
     await loadReviews()
@@ -271,10 +286,10 @@ onMount(() => {
       <h1 class="font-bold text-2xl text-gray-900 dark:text-white">{{ title() }}</h1>
       <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">{{ description() }}</p>
     </div>
-    <button type="button" :disabled="loading()" class="inline-flex items-center self-start px-3 py-2 font-semibold text-gray-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700 disabled:opacity-50" @click="loadReviews">
-      <span :class="'mr-2 h-4 w-4 ' + (loading() ? 'animate-spin i-hugeicons-loading-03' : 'i-hugeicons-refresh')"></span>
+    <Button variant="secondary" :loading="loading()" @click="loadReviews">
+      <span :if="!loading()" class="h-4 w-4 i-hugeicons-refresh"></span>
       Refresh
-    </button>
+    </Button>
   </header>
 
   <div :if="loadError()" class="p-4 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900">{{ loadError() }}</div>
@@ -356,9 +371,9 @@ onMount(() => {
     />
 
     <nav :if="totalPages() > 1" aria-label="Review pages" class="flex items-center justify-between">
-      <button type="button" :disabled="page() <= 1" class="px-3 py-2 font-semibold text-gray-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700 disabled:opacity-50" @click="page.update(value => value - 1)">Previous</button>
+      <Button variant="secondary" :disabled="page() <= 1" @click="page.update(value => value - 1)">Previous</Button>
       <span class="text-gray-500 text-sm dark:text-neutral-400">Page {{ page() }} of {{ totalPages() }}</span>
-      <button type="button" :disabled="page() >= totalPages()" class="px-3 py-2 font-semibold text-gray-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700 disabled:opacity-50" @click="page.update(value => value + 1)">Next</button>
+      <Button variant="secondary" :disabled="page() >= totalPages()" @click="page.update(value => value + 1)">Next</Button>
     </nav>
   </section>
 </div>
@@ -367,6 +382,7 @@ onMount(() => {
   :open="Boolean(editingReview())"
   :review="editingReview()"
   :busy="saving()"
+  :errors="validationErrors()"
   @submit="saveReview"
   @close="closeEdit()"
 />

@@ -1,24 +1,17 @@
 import { Action } from '@stacksjs/actions'
 import { products } from '@stacksjs/commerce'
+import { toSnakeCaseKeys } from '@stacksjs/orm'
 import { response } from '@stacksjs/router'
 
 export default new Action({
   name: 'Review Store',
-  description: 'Review Store ORM Action',
+  description: 'Creates a product review through the native commerce module.',
   method: 'POST',
+  model: Review,
   async handle(request: RequestInstance) {
     await request.validate()
 
-    const data = {
-      product_id: request.get<number>('product_id'),
-      customer_id: request.get<number>('customer_id'),
-      rating: request.get<number>('rating'),
-      title: request.get('title'),
-      content: request.get('content'),
-      is_verified_purchase: request.get<boolean>('is_verified_purchase'),
-      is_approved: request.get<boolean>('is_approved'),
-    }
-
+    const data = toSnakeCaseKeys(request.all())
     const model = await products.reviews.store(data)
 
     return response.json(model)

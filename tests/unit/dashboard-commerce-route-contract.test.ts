@@ -291,4 +291,31 @@ describe('dashboard commerce route contract', () => {
     expect(destroyAction).toContain('receipts.destroy(id)')
     expect(destroyAction).toContain('response.noContent()')
   })
+
+  test('review moderation uses guarded complete model actions', () => {
+    const routes = source('storage/framework/defaults/routes/dashboard-api.ts')
+    const publicRoutes = source('storage/framework/defaults/routes/dashboard.ts')
+    const reviews = source('storage/framework/defaults/resources/components/Dashboard/Commerce/CommerceReviewsDashboard.stx')
+    const storeAction = source('storage/framework/defaults/app/Actions/Commerce/ReviewStoreAction.ts')
+    const updateAction = source('storage/framework/defaults/app/Actions/Commerce/ReviewUpdateAction.ts')
+    const destroyAction = source('storage/framework/defaults/app/Actions/Commerce/ReviewDestroyAction.ts')
+
+    expect(routes).toContain("guard(route.patch('/commerce/reviews/{id}', 'Actions/Commerce/ReviewUpdateAction'))")
+    expect(routes).toContain("guard(route.delete('/commerce/reviews/{id}', 'Actions/Commerce/ReviewDestroyAction'))")
+    expect(publicRoutes).toContain("route.delete('/products/reviews/{id}', 'Actions/Commerce/ReviewDestroyAction')")
+    expect(reviews).toContain('/api/dashboard/commerce/reviews')
+    expect(reviews).not.toMatch(/\/api\/product-reviews(?:\/|\?|'|`)/)
+
+    for (const action of [storeAction, updateAction]) {
+      expect(action).toContain('model: Review')
+      expect(action).toContain('await request.validate()')
+      expect(action).toContain('toSnakeCaseKeys(request.all())')
+    }
+
+    expect(reviews).toContain('title: review.title')
+    expect(reviews).toContain('content: review.content')
+    expect(reviews).toContain('rating: review.rating')
+    expect(destroyAction).toContain('products.reviews.destroy(id)')
+    expect(destroyAction).toContain('response.noContent()')
+  })
 })

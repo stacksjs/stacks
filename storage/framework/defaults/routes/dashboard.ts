@@ -447,6 +447,7 @@ route.group({ prefix: '/api/commerce', middleware: 'auth' }, () => {
   route.get('/products/reviews/{id}', 'Actions/Commerce/ReviewShowAction')
   route.post('/products/reviews', 'Actions/Commerce/ReviewStoreAction')
   route.patch('/products/reviews/{id}', 'Actions/Commerce/ReviewUpdateAction')
+  route.delete('/products/reviews/{id}', 'Actions/Commerce/ReviewDestroyAction')
 
   route.get('/receipts', 'Actions/Commerce/ReceiptIndexAction')
   route.get('/receipts/{id}', 'Actions/Commerce/ReceiptShowAction')

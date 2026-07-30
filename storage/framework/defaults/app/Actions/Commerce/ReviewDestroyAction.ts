@@ -3,14 +3,14 @@ import { products } from '@stacksjs/commerce'
 import { response } from '@stacksjs/router'
 
 export default new Action({
-  name: 'Review Show',
-  description: 'Review Show ORM Action',
-  method: 'GET',
+  name: 'Review Destroy',
+  description: 'Deletes a product review through the native commerce module.',
+  method: 'DELETE',
   async handle(request: RequestInstance) {
     const id = Number(request.getParam('id'))
 
-    const model = await products.reviews.fetchById(id)
+    await products.reviews.destroy(id)
 
-    return response.json(model)
+    return response.noContent()
   },
 })
