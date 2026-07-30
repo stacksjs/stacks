@@ -181,6 +181,21 @@ describe('dashboard native STX bindings', () => {
     expect(modal).toContain('role="dialog"')
     expect(modal).toContain('aria-modal="true"')
     expect(modal).toContain(`:aria-label="liveTitle() || 'Dialog'"`)
+
+    const baseModal = componentSource('Modals/BaseModal.stx')
+    expect(baseModal).toContain("const generatedId = useId('modal')")
+    expect(baseModal).toContain("emit('update:show', false)")
+    expect(baseModal).toContain("emit('close', reason)")
+    expect(baseModal).toContain('role="dialog"')
+    expect(baseModal).not.toContain('Math.random')
+    expect(baseModal).not.toContain('<svg')
+
+    const alert = componentSource('Modals/Popups/Alert.stx')
+    expect(alert).toContain("const titleId = useId('alert-title')")
+    expect(alert).toContain('role="alertdialog"')
+    expect(alert).toContain("emit('update:show', false)")
+    expect(alert).toContain("emit(event)")
+    expect(alert).not.toContain('<svg')
   })
 
   test('shared dropdowns and confirmations use reactive component contracts', () => {
