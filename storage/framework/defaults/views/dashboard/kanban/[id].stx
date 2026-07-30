@@ -525,14 +525,9 @@
               <p class="font-medium text-sm text-zinc-700 truncate dark:text-zinc-200" :text="col.name"></p>
               <div class="flex gap-1 items-center">
                 <span class="font-mono text-xs text-zinc-500" :text="col.cards.length"></span>
-                <button
-                  type="button"
-                  @click="requestDelete('column', col.id, col.cards.length > 0)"
-                  class="-m-1 p-1 text-zinc-400 hover:text-red-500"
-                  aria-label="Delete column"
-                >
-                  <span class="block h-3 w-3 i-hugeicons-delete-02"></span>
-                </button>
+                <Button variant="ghost" size="xs" iconOnly :ariaLabel="'Delete column ' + col.name" @click="requestDelete('column', col.id, col.cards.length > 0)">
+                  <span class="block h-3 w-3 text-red-500 i-hugeicons-delete-02"></span>
+                </Button>
               </div>
             </div>
           </div>
@@ -548,47 +543,43 @@
               @dragend="finishDrag"
               @dragover.prevent.stop="previewCardDrop(col.id, card.id, $event)"
               @drop.prevent.stop="dropCard(col.id, card.id, $event)"
-              @click="openDetail(card.id)"
-              class="px-3 py-2 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 rounded dark:border-zinc-800 hover:border-violet-300 dark:hover:border-violet-700 transition-colors cursor-grab group"
+              class="relative bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 rounded dark:border-zinc-800 hover:border-violet-300 dark:hover:border-violet-700 transition-colors cursor-grab group"
               :class="cardDragClass(card.id, col.id)"
             >
-              <!-- Label chips strip -->
-              <div :if="card.labels && card.labels.length > 0" class="flex flex-wrap gap-1 mb-1">
-                <span
-                  :for="lbl in card.labels"
-                  :class="`px-1.5 py-0.5 text-[10px] font-medium rounded ${labelChipClass(lbl.color)}`"
-                  :text="lbl.name"
-                ></span>
-              </div>
-
-              <div class="flex gap-2 items-start justify-between">
-                <p class="flex-1 leading-snug text-xs text-zinc-800 dark:text-zinc-200" :text="card.title"></p>
-                <button
-                  type="button"
-                  @click.stop="requestDelete('card', card.id)"
-                  class="text-zinc-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
-                  aria-label="Delete card"
-                >
-                  <span class="block h-2.5 w-2.5 i-hugeicons-cancel-01"></span>
-                </button>
-              </div>
-
-              <!-- Footer: due date + assignee avatars -->
-              <div :if="card.dueDate || (card.assignees && card.assignees.length > 0)" class="flex gap-2 items-center justify-between mt-1.5 pt-1.5 border-t border-zinc-200/50 dark:border-zinc-800/50">
-                <div :if="card.dueDate" class="flex gap-1 items-center text-[10px] text-zinc-500">
-                  <span class="h-2.5 w-2.5 i-hugeicons-calendar-03"></span>
-                  <span :text="formatDueDate(card.dueDate)"></span>
-                </div>
-                <div :if="!card.dueDate"></div>
-                <div :if="card.assignees && card.assignees.length > 0" class="flex -space-x-1">
+              <button type="button" class="block px-3 py-2 pr-8 w-full text-left" :aria-label="'Open ' + card.title" @click="openDetail(card.id)">
+                <!-- Label chips strip -->
+                <span :if="card.labels && card.labels.length > 0" class="flex flex-wrap gap-1 mb-1">
                   <span
-                    :for="asg in card.assignees"
-                    class="inline-flex items-center justify-center h-5 w-5 font-medium text-[9px] text-white bg-violet-500 ring-1 ring-white rounded-full dark:ring-zinc-950"
-                    :title="asg.name || asg.email || 'Assignee'"
-                    :text="initialsOf(asg.name, asg.email)"
+                    :for="lbl in card.labels"
+                    :class="`px-1.5 py-0.5 text-[10px] font-medium rounded ${labelChipClass(lbl.color)}`"
+                    :text="lbl.name"
                   ></span>
-                </div>
-              </div>
+                </span>
+
+                <span class="block leading-snug text-xs text-zinc-800 dark:text-zinc-200" :text="card.title"></span>
+
+                <!-- Footer: due date + assignee avatars -->
+                <span :if="card.dueDate || (card.assignees && card.assignees.length > 0)" class="flex gap-2 items-center justify-between mt-1.5 pt-1.5 border-t border-zinc-200/50 dark:border-zinc-800/50">
+                  <span :if="card.dueDate" class="flex gap-1 items-center text-[10px] text-zinc-500">
+                    <span class="h-2.5 w-2.5 i-hugeicons-calendar-03"></span>
+                    <span :text="formatDueDate(card.dueDate)"></span>
+                  </span>
+                  <span :if="!card.dueDate"></span>
+                  <span :if="card.assignees && card.assignees.length > 0" class="flex -space-x-1">
+                    <span
+                      :for="asg in card.assignees"
+                      class="inline-flex items-center justify-center h-5 w-5 font-medium text-[9px] text-white bg-violet-500 ring-1 ring-white rounded-full dark:ring-zinc-950"
+                      :title="asg.name || asg.email || 'Assignee'"
+                      :text="initialsOf(asg.name, asg.email)"
+                    ></span>
+                  </span>
+                </span>
+              </button>
+              <span class="absolute right-1.5 top-1.5 opacity-0 focus-within:opacity-100 group-hover:opacity-100 transition-opacity">
+                <Button variant="ghost" size="xs" iconOnly :ariaLabel="'Delete ' + card.title" @click="requestDelete('card', card.id)">
+                  <span class="block h-3 w-3 text-red-500 i-hugeicons-cancel-01"></span>
+                </Button>
+              </span>
             </div>
           </div>
 
@@ -604,27 +595,23 @@
                 class="px-2 py-1 w-full text-xs text-zinc-800 dark:text-zinc-100 bg-white dark:bg-zinc-900 border border-zinc-300 rounded dark:border-zinc-700 focus:border-violet-500 focus:outline-none resize-none"
               ></textarea>
               <div class="flex gap-1">
-                <button
-                  @click="submitCard(col.id)"
-                  class="px-2 py-1 text-white text-xs bg-violet-600 hover:bg-violet-700 rounded"
-                >
+                <Button size="xs" @click="submitCard(col.id)">
                   Add
-                </button>
-                <button
-                  @click="closeCardComposer()"
-                  class="px-2 py-1 text-xs text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300 rounded"
-                >
+                </Button>
+                <Button variant="ghost" size="xs" @click="closeCardComposer()">
                   Cancel
-                </button>
+                </Button>
               </div>
             </div>
-            <button
+            <Button
               :if="!isComposingFor(col.id)"
+              variant="ghost"
+              size="sm"
+              fullWidth
               @click="openCardComposer(col.id)"
-              class="px-2 py-1 w-full text-left text-xs text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-900 rounded"
             >
               + Add card
-            </button>
+            </Button>
           </div>
         </div>
 
@@ -640,27 +627,22 @@
               autofocus
             />
             <div class="flex gap-1">
-              <button
-                @click="submitColumn()"
-                class="px-2 py-1 text-white text-xs bg-violet-600 hover:bg-violet-700 rounded"
-              >
+              <Button size="xs" @click="submitColumn()">
                 Add column
-              </button>
-              <button
-                @click="closeColumnComposer()"
-                class="px-2 py-1 text-xs text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300 rounded"
-              >
+              </Button>
+              <Button variant="ghost" size="xs" @click="closeColumnComposer()">
                 Cancel
-              </button>
+              </Button>
             </div>
           </div>
-          <button
+          <Button
             :if="!composingNewColumn()"
+            variant="outline"
+            fullWidth
             @click="openColumnComposer()"
-            class="h-12 w-full text-sm text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300 border border-dashed border-zinc-300 rounded-lg dark:border-zinc-700 hover:border-zinc-400 dark:hover:border-zinc-600"
           >
             + Add column
-          </button>
+          </Button>
         </div>
       </div>
     </div>
@@ -696,13 +678,9 @@
           @keydown.enter.prevent="(e) => e.target.blur()"
           class="flex-1 -mx-2 -my-1 px-2 py-1 font-semibold text-lg text-zinc-900 dark:text-zinc-100 bg-transparent focus:bg-zinc-50 dark:focus:bg-zinc-800 rounded focus:outline-none"
         />
-        <button
-          @click="closeDetail()"
-          class="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
-          title="Close"
-        >
+        <Button variant="ghost" size="sm" iconOnly ariaLabel="Close card details" @click="closeDetail()">
           <span class="block h-5 w-5 i-hugeicons-cancel-01"></span>
-        </button>
+        </Button>
       </div>
 
       <div :if="loadingCard() && (!openCard() || openCard().comments.length === 0)" class="px-6 py-8 text-center text-sm text-zinc-500">
@@ -742,13 +720,9 @@
                 class="px-3 py-2 w-full text-sm text-zinc-800 dark:text-zinc-200 bg-white dark:bg-zinc-950 border border-zinc-200 rounded dark:border-zinc-800 focus:border-violet-400 focus:outline-none dark:focus:border-violet-600 resize-none"
               ></textarea>
               <div class="flex justify-end mt-2">
-                <button
-                  @click="submitComment()"
-                  :disabled="!commentDraft().trim()"
-                  class="px-3 py-1 text-white text-xs bg-violet-600 hover:bg-violet-700 rounded disabled:opacity-40 disabled:cursor-not-allowed"
-                >
+                <Button size="sm" :disabled="!commentDraft().trim()" @click="submitComment()">
                   Comment
-                </button>
+                </Button>
               </div>
             </div>
 
@@ -766,11 +740,7 @@
                   <div class="flex gap-2 items-baseline">
                     <span class="font-medium text-xs text-zinc-700 dark:text-zinc-200" :text="cm.authorName || cm.authorEmail || 'Unknown'"></span>
                     <span class="text-[10px] text-zinc-400" :text="formatTimestamp(cm.createdAt)"></span>
-                    <button
-                      type="button"
-                      @click="requestDelete('comment', cm.id)"
-                      class="ml-auto text-[10px] text-zinc-400 hover:text-red-500"
-                    >Delete</button>
+                    <Button variant="ghost" size="xs" @click="requestDelete('comment', cm.id)"><span class="text-red-500">Delete</span></Button>
                   </div>
                   <p class="mt-0.5 text-xs text-zinc-700 whitespace-pre-wrap dark:text-zinc-300" :text="cm.body"></p>
                 </div>
@@ -785,13 +755,16 @@
           <section>
             <div class="flex items-center justify-between mb-2">
               <h4 class="font-medium text-xs text-zinc-500 tracking-wide uppercase">Labels</h4>
-              <button
+              <Button
+                variant="ghost"
+                size="xs"
+                interaction="toggle"
+                :pressed="showLabelPicker()"
                 @click="showLabelPicker.set(!showLabelPicker())"
-                class="text-violet-600 text-xs dark:text-violet-400 hover:underline"
               >
                 <span :if="!showLabelPicker()">Edit</span>
                 <span :if="showLabelPicker()">Done</span>
-              </button>
+              </Button>
             </div>
 
             <!-- Selected labels -->
@@ -806,23 +779,23 @@
 
             <!-- Picker -->
             <div :if="showLabelPicker()" class="space-y-2">
-              <button
+              <div
                 :for="lbl in allLabels"
-                @click="toggleLabel(lbl.id)"
-                :class="`w-full flex items-center justify-between px-2 py-1 rounded text-xs ${labelChipClass(lbl.color)} hover:opacity-90`"
+                :class="`flex items-center gap-1 px-1 py-0.5 w-full rounded ${labelChipClass(lbl.color)}`"
               >
-                <span :text="lbl.name"></span>
-                <span class="flex gap-1 items-center">
+                <button
+                  type="button"
+                  class="flex flex-1 items-center justify-between px-1 py-0.5 min-w-0 text-left text-xs rounded hover:opacity-90"
+                  :aria-pressed="String(openCard().labels.some(l => l.id === lbl.id))"
+                  @click="toggleLabel(lbl.id)"
+                >
+                  <span class="truncate" :text="lbl.name"></span>
                   <span :if="openCard().labels.some(l => l.id === lbl.id)" class="h-3 w-3 i-hugeicons-tick-02"></span>
-                  <span
-                    @click.stop="requestDelete('label', lbl.id)"
-                    class="text-zinc-500 hover:text-red-500"
-                    title="Delete label"
-                  >
-                    ✕
-                  </span>
-                </span>
-              </button>
+                </button>
+                <Button variant="ghost" size="xs" iconOnly :ariaLabel="'Delete label ' + lbl.name" @click="requestDelete('label', lbl.id)">
+                  <span class="block h-3 w-3 text-red-500 i-hugeicons-cancel-01"></span>
+                </Button>
+              </div>
 
               <!-- New label composer -->
               <div :if="showNewLabelComposer()" class="pt-2 space-y-2 border-t border-zinc-200 dark:border-zinc-800">
@@ -832,26 +805,30 @@
                   placeholder="Label name"
                   class="px-2 py-1 w-full text-xs bg-white dark:bg-zinc-950 border border-zinc-300 rounded dark:border-zinc-700 focus:border-violet-500 focus:outline-none"
                 />
-                <div class="flex gap-1 items-center">
+                <div class="flex gap-1 items-center" role="group" aria-label="Label color">
                   <button
                     :for="c in labelColors"
+                    type="button"
                     @click="newLabelColor.set(c)"
                     :class="`w-5 h-5 rounded ${labelChipClass(c)} ${newLabelColor() === c ? 'ring-2 ring-offset-1 ring-violet-500 dark:ring-offset-zinc-900' : ''}`"
-                    :title="c"
+                    :aria-label="'Use ' + c + ' label color'"
+                    :aria-pressed="String(newLabelColor() === c)"
                   ></button>
                 </div>
                 <div class="flex gap-1">
-                  <button @click="submitNewLabel()" class="px-2 py-0.5 text-white text-xs bg-violet-600 hover:bg-violet-700 rounded">Create</button>
-                  <button @click="showNewLabelComposer.set(false)" class="px-2 py-0.5 text-xs text-zinc-500 hover:text-zinc-700">Cancel</button>
+                  <Button size="xs" @click="submitNewLabel()">Create</Button>
+                  <Button variant="ghost" size="xs" @click="showNewLabelComposer.set(false)">Cancel</Button>
                 </div>
               </div>
-              <button
+              <Button
                 :if="!showNewLabelComposer()"
+                variant="outline"
+                size="sm"
+                fullWidth
                 @click="showNewLabelComposer.set(true)"
-                class="px-2 py-1 w-full text-xs text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 border border-dashed border-zinc-300 rounded dark:border-zinc-700"
               >
                 + New label
-              </button>
+              </Button>
             </div>
           </section>
 
@@ -859,13 +836,16 @@
           <section>
             <div class="flex items-center justify-between mb-2">
               <h4 class="font-medium text-xs text-zinc-500 tracking-wide uppercase">Assignees</h4>
-              <button
+              <Button
+                variant="ghost"
+                size="xs"
+                interaction="toggle"
+                :pressed="showAssigneePicker()"
                 @click="showAssigneePicker.set(!showAssigneePicker())"
-                class="text-violet-600 text-xs dark:text-violet-400 hover:underline"
               >
                 <span :if="!showAssigneePicker()">Edit</span>
                 <span :if="showAssigneePicker()">Done</span>
-              </button>
+              </Button>
             </div>
 
             <div :if="!showAssigneePicker()" class="flex flex-wrap gap-2">
@@ -883,6 +863,8 @@
               <p :if="kanban.users().length === 0" class="italic text-xs text-zinc-400">No users to assign.</p>
               <button
                 :for="u in kanban.users"
+                type="button"
+                :aria-pressed="String(openCard().assignees.some(a => a.userId === u.id))"
                 @click="toggleAssignee(u.id)"
                 class="flex gap-2 items-center px-2 py-1.5 w-full text-left text-xs hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded"
               >

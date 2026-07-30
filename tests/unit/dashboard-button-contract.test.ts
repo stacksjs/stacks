@@ -34,6 +34,8 @@ describe('dashboard button contract', () => {
       'storage/framework/defaults/resources/components/Dashboard/Email/EmailActivityDashboard.stx',
       'storage/framework/defaults/views/dashboard/settings/appearance.stx',
       'storage/framework/defaults/views/dashboard/ci/index.stx',
+      'storage/framework/defaults/views/dashboard/kanban/index.stx',
+      'storage/framework/defaults/views/dashboard/kanban/[id].stx',
     ]
 
     for (const file of pressedStateFiles) {
@@ -268,6 +270,30 @@ describe('dashboard button contract', () => {
     expect(source).toContain('@click="goToPage(page() + 1)"')
     expect(source).toContain('@click="goToPage(lastPage())"')
     expect(nativeButtons.every(button => button.includes('headerClass(column)'))).toBe(true)
+  })
+
+  test('keeps Kanban selection and card navigation semantic while sharing actions', () => {
+    const index = readFileSync(
+      resolve('storage/framework/defaults/views/dashboard/kanban/index.stx'),
+      'utf8',
+    )
+    const detail = readFileSync(
+      resolve('storage/framework/defaults/views/dashboard/kanban/[id].stx'),
+      'utf8',
+    )
+    const indexButtons = [...index.matchAll(/<button\b[^>]*>/g)].map(match => match[0])
+    const detailButtons = [...detail.matchAll(/<button\b[^>]*>/g)].map(match => match[0])
+    const semanticDetailControls = [
+      ':aria-label="\'Open \' + card.title"',
+      ':aria-pressed="String(openCard().labels.some',
+      ':aria-label="\'Use \' + c + \' label color\'"',
+      ':aria-pressed="String(openCard().assignees.some',
+    ]
+
+    expect((index.match(/<Button/g) || []).length).toBeGreaterThanOrEqual(4)
+    expect((detail.match(/<Button/g) || []).length).toBeGreaterThanOrEqual(17)
+    expect(indexButtons.every(button => button.includes('colorButtonClass(c)'))).toBe(true)
+    expect(detailButtons.every(button => semanticDetailControls.some(marker => button.includes(marker)))).toBe(true)
   })
 
   test('keeps file navigation semantic while sharing all file actions', () => {
