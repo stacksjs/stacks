@@ -9941,6 +9941,31 @@
         }
       }
     },
+    "/api/dashboard/insights": {
+      "get": {
+        "summary": "/api/dashboard/insights",
+        "operationId": "get__api_dashboard_insights",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
     "/api/dashboard/jobs": {
       "get": {
         "summary": "/api/dashboard/jobs",

@@ -1,0 +1,471 @@
+<script client>
+import { dashboardApi } from '../../../../functions/dashboard-api'
+
+interface SlowRequest {
+  id: number
+  method: string
+  path: string
+  statusCode: number
+  durationMs: number
+  recordedAt: string
+}
+
+interface SlowQuery {
+  id: number
+  query: string
+  durationMs: number
+  status: string
+  connection: string
+  executedAt: string
+}
+
+interface RecordedError {
+  id: number
+  type: string
+  message: string
+  status: number
+  recordedAt: string
+}
+
+interface InsightsResponse {
+  sampledAt: string
+  durationMs: number
+  issues: Array<{ source: string, message: string }>
+  requests: {
+    total: number
+    successful: number
+    errors: number
+    successRate: number
+    averageDurationMs: number
+    maximumDurationMs: number
+    latestAt: string
+    slowest: SlowRequest[]
+  }
+  queries: {
+    enabled: boolean
+    slowThresholdMs: number
+    total: number
+    completed: number
+    slow: number
+    failed: number
+    averageDurationMs: number
+    maximumDurationMs: number
+    latestAt: string
+    slowest: SlowQuery[]
+  }
+  runtime: {
+    uptimeSeconds: number
+    cpuUserMs: number
+    cpuSystemMs: number
+    cpuTotalMs: number
+    residentMemoryBytes: number
+    heapUsedBytes: number
+    heapTotalBytes: number
+    heapUsedPercent: number
+    externalMemoryBytes: number
+  }
+  storage: {
+    totalBytes: number
+    availableBytes: number
+    usedBytes: number
+    usedPercent: number
+    databaseDriver: string
+    databaseBytes: number
+  }
+  queue: null | {
+    status: string
+    queues: Array<{
+      name: string
+      status: string
+      pending: number
+      processing: number
+      delayed: number
+      failed: number
+    }>
+    workers: unknown[]
+    metrics: {
+      totalPending: number
+      totalProcessing: number
+      totalDelayed: number
+      totalFailed: number
+      throughputPerMinute: number
+      averageProcessingTime: number
+      errorRate: number
+    }
+    alerts: Array<{ level: string, message: string, queue?: string }>
+  }
+  cache: null | {
+    hits: number
+    misses: number
+    keys: number
+    sizeBytes: number
+    hitRate: number
+  }
+  errors: {
+    total: number
+    latestAt: string
+    recent: RecordedError[]
+  }
+}
+
+const EMPTY_INSIGHTS: InsightsResponse = {
+  sampledAt: '',
+  durationMs: 0,
+  issues: [],
+  requests: { total: 0, successful: 0, errors: 0, successRate: 0, averageDurationMs: 0, maximumDurationMs: 0, latestAt: '', slowest: [] },
+  queries: { enabled: false, slowThresholdMs: 100, total: 0, completed: 0, slow: 0, failed: 0, averageDurationMs: 0, maximumDurationMs: 0, latestAt: '', slowest: [] },
+  runtime: { uptimeSeconds: 0, cpuUserMs: 0, cpuSystemMs: 0, cpuTotalMs: 0, residentMemoryBytes: 0, heapUsedBytes: 0, heapTotalBytes: 0, heapUsedPercent: 0, externalMemoryBytes: 0 },
+  storage: { totalBytes: 0, availableBytes: 0, usedBytes: 0, usedPercent: 0, databaseDriver: 'unknown', databaseBytes: 0 },
+  queue: null,
+  cache: null,
+  errors: { total: 0, latestAt: '', recent: [] },
+}
+
+const insights = state<InsightsResponse>({ ...EMPTY_INSIGHTS })
+const loading = state(true)
+const loadError = state('')
+let loadVersion = 0
+
+const overviewCards = derived(() => [
+  {
+    label: 'Request observations',
+    value: formatNumber(insights().requests.total),
+    detail: insights().requests.latestAt ? `Last recorded ${formatDate(insights().requests.latestAt)}` : 'No request observations recorded',
+    icon: 'i-hugeicons-cursor-click-02',
+    tone: 'blue',
+  },
+  {
+    label: 'Average response',
+    value: formatDuration(insights().requests.averageDurationMs),
+    detail: `Maximum ${formatDuration(insights().requests.maximumDurationMs)}`,
+    icon: 'i-hugeicons-timer-01',
+    tone: 'amber',
+  },
+  {
+    label: 'Observed success',
+    value: `${formatDecimal(insights().requests.successRate)}%`,
+    detail: `${formatNumber(insights().requests.errors)} responses at 400 or above`,
+    icon: 'i-hugeicons-checkmark-circle-02',
+    tone: insights().requests.errors > 0 ? 'amber' : 'green',
+  },
+  {
+    label: 'Recorded queries',
+    value: formatNumber(insights().queries.total),
+    detail: insights().queries.enabled ? `Slow threshold ${formatDuration(insights().queries.slowThresholdMs)}` : 'Query logging is disabled',
+    icon: 'i-hugeicons-database-02',
+    tone: insights().queries.failed > 0 ? 'red' : 'blue',
+  },
+])
+
+const resourceCards = derived(() => [
+  {
+    label: 'Process memory',
+    value: formatBytes(insights().runtime.residentMemoryBytes),
+    detail: `${formatBytes(insights().runtime.heapUsedBytes)} used, ${formatBytes(insights().runtime.heapTotalBytes)} reported heap total`,
+    icon: 'i-hugeicons-memory',
+    percent: insights().runtime.heapUsedPercent,
+  },
+  {
+    label: 'Filesystem',
+    value: formatBytes(insights().storage.usedBytes),
+    detail: `${formatBytes(insights().storage.availableBytes)} available of ${formatBytes(insights().storage.totalBytes)}`,
+    icon: 'i-hugeicons-hard-drive',
+    percent: insights().storage.totalBytes > 0 ? insights().storage.usedPercent : -1,
+  },
+  {
+    label: 'Process CPU time',
+    value: formatDuration(insights().runtime.cpuTotalMs),
+    detail: `${formatDuration(insights().runtime.cpuUserMs)} user, ${formatDuration(insights().runtime.cpuSystemMs)} system`,
+    icon: 'i-hugeicons-cpu',
+    percent: -1,
+  },
+  {
+    label: 'Database storage',
+    value: insights().storage.databaseDriver === 'sqlite' ? formatBytes(insights().storage.databaseBytes) : 'Managed externally',
+    detail: `${insights().storage.databaseDriver} connection`,
+    icon: 'i-hugeicons-database',
+    percent: -1,
+  },
+])
+
+function formatNumber(value: number): string {
+  return new Intl.NumberFormat().format(Number(value) || 0)
+}
+
+function formatDecimal(value: number): string {
+  const number = Number(value) || 0
+  return new Intl.NumberFormat(undefined, { maximumFractionDigits: 1 }).format(number)
+}
+
+function formatDuration(value: number): string {
+  const milliseconds = Math.max(0, Number(value) || 0)
+  if (milliseconds >= 1000)
+    return `${formatDecimal(milliseconds / 1000)} s`
+  return `${formatDecimal(milliseconds)} ms`
+}
+
+function formatBytes(value: number): string {
+  const bytes = Math.max(0, Number(value) || 0)
+  if (bytes === 0)
+    return '0 B'
+  const units = ['B', 'KB', 'MB', 'GB', 'TB']
+  const unit = Math.min(units.length - 1, Math.floor(Math.log(bytes) / Math.log(1024)))
+  const amount = bytes / 1024 ** unit
+  return `${amount >= 10 || unit === 0 ? Math.round(amount) : amount.toFixed(1)} ${units[unit]}`
+}
+
+function formatDate(value: string): string {
+  if (!value)
+    return 'Not recorded'
+  const date = new Date(value)
+  return Number.isNaN(date.getTime())
+    ? 'Not recorded'
+    : new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(date)
+}
+
+function formatUptime(value: number): string {
+  const seconds = Math.max(0, Number(value) || 0)
+  const days = Math.floor(seconds / 86400)
+  const hours = Math.floor((seconds % 86400) / 3600)
+  const minutes = Math.floor((seconds % 3600) / 60)
+  if (days > 0)
+    return `${days}d ${hours}h`
+  if (hours > 0)
+    return `${hours}h ${minutes}m`
+  return `${minutes}m`
+}
+
+function statusClass(status: string): string {
+  const base = 'inline-flex items-center px-2 py-0.5 font-semibold text-[11px] rounded-full'
+  if (status === 'healthy' || status === 'completed')
+    return `${base} text-green-700 dark:text-green-300 bg-green-50 dark:bg-green-950/40`
+  if (status === 'unhealthy' || status === 'failed')
+    return `${base} text-red-700 dark:text-red-300 bg-red-50 dark:bg-red-950/40`
+  return `${base} text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40`
+}
+
+async function loadInsights(): Promise<void> {
+  const version = ++loadVersion
+  loading.set(true)
+  loadError.set('')
+  try {
+    const result = await dashboardApi<InsightsResponse>('/api/dashboard/insights')
+    if (version !== loadVersion)
+      return
+    insights.set(result)
+  }
+  catch (error) {
+    if (version !== loadVersion)
+      return
+    insights.set({ ...EMPTY_INSIGHTS })
+    loadError.set(error instanceof Error ? error.message : 'Insights could not be loaded.')
+  }
+  finally {
+    if (version === loadVersion)
+      loading.set(false)
+  }
+}
+
+onMount(() => {
+  void loadInsights()
+})
+</script>
+
+<div class="space-y-6">
+  <header class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+    <div>
+      <div class="flex gap-2 items-center">
+        <h1 class="font-semibold text-2xl text-neutral-900 tracking-tight dark:text-white">System insights</h1>
+        <span class="inline-flex gap-1.5 items-center px-2 py-1 font-semibold text-[11px] text-neutral-600 dark:text-neutral-300 bg-neutral-100 dark:bg-neutral-800 rounded-full">
+          <span class="h-1.5 w-1.5 bg-blue-500 rounded-full"></span>
+          current snapshot
+        </span>
+      </div>
+      <p class="mt-1 max-w-3xl text-neutral-500 text-sm dark:text-neutral-400">Persisted application observations alongside current process and infrastructure telemetry. Values without retained samples are shown as snapshots, not synthetic trends.</p>
+    </div>
+    <button type="button" :disabled="loading()" aria-label="Refresh system insights" class="inline-flex gap-2 items-center self-start px-3 py-2 font-medium text-neutral-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-900 hover:bg-neutral-50 dark:hover:bg-neutral-800 border border-neutral-300 rounded-lg dark:border-neutral-700 disabled:opacity-50" @click="loadInsights">
+      <span :class="'h-4 w-4 ' + (loading() ? 'animate-spin i-hugeicons-loading-03' : 'i-hugeicons-refresh')"></span>
+      Refresh
+    </button>
+  </header>
+
+  <div :if="loadError()" role="alert" class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between px-4 py-3 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/40 border border-red-200 rounded-xl dark:border-red-900">
+    <span>{{ loadError() }}</span>
+    <button type="button" class="font-semibold hover:underline" @click="loadInsights">Try again</button>
+  </div>
+
+  <div :if="insights().issues.length > 0" role="status" class="px-4 py-3 text-amber-800 text-sm dark:text-amber-200 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 rounded-xl dark:border-amber-900">
+    <p class="font-semibold">Some telemetry sources were unavailable</p>
+    <ul class="mt-2 space-y-1">
+      <li :for="issue in insights().issues"><span class="capitalize font-medium">{{ issue.source }}:</span> {{ issue.message }}</li>
+    </ul>
+  </div>
+
+  <section>
+    <div class="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between mb-3">
+      <div>
+        <h2 class="font-semibold text-neutral-900 dark:text-white">Recorded activity</h2>
+        <p class="mt-1 text-neutral-500 text-xs dark:text-neutral-400">Aggregate values from Request and QueryLog model records.</p>
+      </div>
+      <p class="text-neutral-500 text-xs dark:text-neutral-400">{{ insights().sampledAt ? `Sampled ${formatDate(insights().sampledAt)} in ${insights().durationMs} ms` : 'Loading current snapshot' }}</p>
+    </div>
+    <div :if="loading() && !insights().sampledAt" class="grid gap-3 grid-cols-2 xl:grid-cols-4">
+      <div :for="item in [1, 2, 3, 4]" class="h-36 bg-neutral-100 dark:bg-neutral-800 rounded-xl animate-pulse"></div>
+    </div>
+    <div :else class="grid gap-3 grid-cols-2 xl:grid-cols-4">
+      <InsightMetricCard :for="card in overviewCards()" :label="card.label" :value="card.value" :detail="card.detail" :icon="card.icon" :tone="card.tone" />
+    </div>
+  </section>
+
+  <section>
+    <div class="mb-3">
+      <h2 class="font-semibold text-neutral-900 dark:text-white">Current resources</h2>
+      <p class="mt-1 text-neutral-500 text-xs dark:text-neutral-400">Live values sampled from the dashboard process and its filesystem.</p>
+    </div>
+    <div class="grid gap-3 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
+      <InsightResourceCard :for="card in resourceCards()" :label="card.label" :value="card.value" :detail="card.detail" :icon="card.icon" :percent="card.percent" />
+    </div>
+    <p class="mt-2 text-neutral-500 text-xs dark:text-neutral-400">Process uptime: {{ formatUptime(insights().runtime.uptimeSeconds) }}. CPU time is cumulative since process start and is not presented as utilization.</p>
+  </section>
+
+  <section class="grid gap-4 grid-cols-1 xl:grid-cols-2">
+    <article class="overflow-hidden bg-white dark:bg-neutral-900 border border-neutral-200 rounded-xl dark:border-neutral-700">
+      <div class="flex gap-4 items-start justify-between px-5 py-4 border-b border-neutral-200 dark:border-neutral-700">
+        <div>
+          <h2 class="font-semibold text-neutral-900 dark:text-white">Queue health</h2>
+          <p class="mt-1 text-neutral-500 text-xs dark:text-neutral-400">Native queue inspection across persisted jobs, failed jobs, and current-process workers.</p>
+        </div>
+        <span :if="insights().queue" :class="statusClass(insights().queue?.status || 'unavailable')">{{ insights().queue?.status }}</span>
+      </div>
+      <div :if="!insights().queue" class="px-5 py-12 text-center">
+        <span class="block mx-auto h-8 w-8 text-neutral-400 i-hugeicons-queue-02"></span>
+        <p class="mt-3 font-semibold text-neutral-900 dark:text-white">Queue telemetry unavailable</p>
+      </div>
+      <div :else>
+        <div class="grid gap-px grid-cols-4 bg-neutral-200 dark:bg-neutral-700">
+          <div class="px-3 py-3 text-center bg-white dark:bg-neutral-900"><p class="font-semibold text-neutral-900 dark:text-white">{{ formatNumber(insights().queue?.metrics.totalPending || 0) }}</p><p class="mt-1 text-[11px] text-neutral-500 dark:text-neutral-400">Pending</p></div>
+          <div class="px-3 py-3 text-center bg-white dark:bg-neutral-900"><p class="font-semibold text-neutral-900 dark:text-white">{{ formatNumber(insights().queue?.metrics.totalProcessing || 0) }}</p><p class="mt-1 text-[11px] text-neutral-500 dark:text-neutral-400">Processing</p></div>
+          <div class="px-3 py-3 text-center bg-white dark:bg-neutral-900"><p class="font-semibold text-neutral-900 dark:text-white">{{ formatNumber(insights().queue?.metrics.totalDelayed || 0) }}</p><p class="mt-1 text-[11px] text-neutral-500 dark:text-neutral-400">Delayed</p></div>
+          <div class="px-3 py-3 text-center bg-white dark:bg-neutral-900"><p class="font-semibold text-neutral-900 dark:text-white">{{ formatNumber(insights().queue?.metrics.totalFailed || 0) }}</p><p class="mt-1 text-[11px] text-neutral-500 dark:text-neutral-400">Failed</p></div>
+        </div>
+        <div :if="(insights().queue?.queues.length || 0) === 0" class="px-5 py-8 text-center text-neutral-500 text-sm dark:text-neutral-400">No persisted queues were found.</div>
+        <div :else class="divide-neutral-200 divide-y dark:divide-neutral-700">
+          <div :for="queue in insights().queue?.queues || []" class="flex gap-4 items-center justify-between px-5 py-3">
+            <div>
+              <p class="font-medium text-neutral-900 text-sm dark:text-white">{{ queue.name }}</p>
+              <p class="mt-0.5 text-neutral-500 text-xs dark:text-neutral-400">{{ queue.processing }} processing, {{ queue.pending }} pending, {{ queue.delayed }} delayed</p>
+            </div>
+            <span :class="statusClass(queue.status)">{{ queue.status }}</span>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <article class="overflow-hidden bg-white dark:bg-neutral-900 border border-neutral-200 rounded-xl dark:border-neutral-700">
+      <div class="px-5 py-4 border-b border-neutral-200 dark:border-neutral-700">
+        <h2 class="font-semibold text-neutral-900 dark:text-white">Cache counters</h2>
+        <p class="mt-1 text-neutral-500 text-xs dark:text-neutral-400">Native counters for the active cache driver. Cache values and key names are never exposed.</p>
+      </div>
+      <div :if="!insights().cache" class="px-5 py-12 text-center">
+        <span class="block mx-auto h-8 w-8 text-neutral-400 i-hugeicons-database-sync"></span>
+        <p class="mt-3 font-semibold text-neutral-900 dark:text-white">Cache telemetry unavailable</p>
+      </div>
+      <div :else class="grid gap-px grid-cols-2 bg-neutral-200 dark:bg-neutral-700">
+        <div class="p-5 bg-white dark:bg-neutral-900">
+          <p class="text-neutral-500 text-xs dark:text-neutral-400">Hit rate</p>
+          <p class="mt-2 font-semibold text-neutral-900 text-xl dark:text-white">{{ formatDecimal(insights().cache?.hitRate || 0) }}%</p>
+        </div>
+        <div class="p-5 bg-white dark:bg-neutral-900">
+          <p class="text-neutral-500 text-xs dark:text-neutral-400">Stored keys</p>
+          <p class="mt-2 font-semibold text-neutral-900 text-xl dark:text-white">{{ formatNumber(insights().cache?.keys || 0) }}</p>
+        </div>
+        <div class="p-5 bg-white dark:bg-neutral-900">
+          <p class="text-neutral-500 text-xs dark:text-neutral-400">Hits / misses</p>
+          <p class="mt-2 font-semibold text-neutral-900 text-xl dark:text-white">{{ formatNumber(insights().cache?.hits || 0) }} / {{ formatNumber(insights().cache?.misses || 0) }}</p>
+        </div>
+        <div class="p-5 bg-white dark:bg-neutral-900">
+          <p class="text-neutral-500 text-xs dark:text-neutral-400">Estimated size</p>
+          <p class="mt-2 font-semibold text-neutral-900 text-xl dark:text-white">{{ formatBytes(insights().cache?.sizeBytes || 0) }}</p>
+        </div>
+      </div>
+    </article>
+  </section>
+
+  <section class="grid gap-4 grid-cols-1 xl:grid-cols-2">
+    <article class="overflow-hidden bg-white dark:bg-neutral-900 border border-neutral-200 rounded-xl dark:border-neutral-700">
+      <div class="flex gap-4 items-start justify-between px-5 py-4 border-b border-neutral-200 dark:border-neutral-700">
+        <div>
+          <h2 class="font-semibold text-neutral-900 dark:text-white">Slowest request observations</h2>
+          <p class="mt-1 text-neutral-500 text-xs dark:text-neutral-400">The five longest durations retained by the Request model.</p>
+        </div>
+        <a href="/requests" class="font-medium text-blue-600 text-xs dark:text-blue-400 hover:underline">All requests</a>
+      </div>
+      <div :if="insights().requests.slowest.length === 0" class="px-5 py-12 text-center">
+        <span class="block mx-auto h-8 w-8 text-neutral-400 i-hugeicons-cursor-click-02"></span>
+        <p class="mt-3 font-semibold text-neutral-900 dark:text-white">No requests recorded</p>
+        <p class="mt-1 text-neutral-500 text-sm dark:text-neutral-400">Request observations appear after the application records them.</p>
+      </div>
+      <div :else class="divide-neutral-200 divide-y dark:divide-neutral-700">
+        <div :for="request in insights().requests.slowest" class="px-5 py-3">
+          <div class="flex gap-3 items-center justify-between">
+            <p class="min-w-0 font-mono text-neutral-900 text-sm truncate dark:text-white"><span class="mr-2 font-semibold text-blue-600 dark:text-blue-400">{{ request.method }}</span>{{ request.path || '/' }}</p>
+            <span class="flex-shrink-0 font-mono font-semibold text-neutral-900 text-sm dark:text-white">{{ formatDuration(request.durationMs) }}</span>
+          </div>
+          <p class="mt-1 text-neutral-500 text-xs dark:text-neutral-400">HTTP {{ request.statusCode || 'unknown' }} · {{ formatDate(request.recordedAt) }}</p>
+        </div>
+      </div>
+    </article>
+
+    <article class="overflow-hidden bg-white dark:bg-neutral-900 border border-neutral-200 rounded-xl dark:border-neutral-700">
+      <div class="flex gap-4 items-start justify-between px-5 py-4 border-b border-neutral-200 dark:border-neutral-700">
+        <div>
+          <h2 class="font-semibold text-neutral-900 dark:text-white">Slow query observations</h2>
+          <p class="mt-1 text-neutral-500 text-xs dark:text-neutral-400">Queries at or above the configured {{ formatDuration(insights().queries.slowThresholdMs) }} threshold.</p>
+        </div>
+        <a href="/queries" class="font-medium text-blue-600 text-xs dark:text-blue-400 hover:underline">All queries</a>
+      </div>
+      <div :if="insights().queries.slowest.length === 0" class="px-5 py-12 text-center">
+        <span class="block mx-auto h-8 w-8 text-neutral-400 i-hugeicons-database-02"></span>
+        <p class="mt-3 font-semibold text-neutral-900 dark:text-white">No slow queries recorded</p>
+        <p class="mt-1 text-neutral-500 text-sm dark:text-neutral-400">This is healthy when query logging is enabled and no query exceeds the threshold.</p>
+      </div>
+      <div :else class="divide-neutral-200 divide-y dark:divide-neutral-700">
+        <div :for="query in insights().queries.slowest" class="px-5 py-3">
+          <p class="break-words font-mono leading-relaxed text-neutral-900 text-xs dark:text-white">{{ query.query }}</p>
+          <div class="flex gap-3 items-center justify-between mt-2">
+            <p class="text-neutral-500 text-xs dark:text-neutral-400">{{ query.connection }} · {{ formatDate(query.executedAt) }}</p>
+            <div class="flex gap-2 items-center">
+              <span :class="statusClass(query.status)">{{ query.status }}</span>
+              <span class="font-mono font-semibold text-neutral-900 text-xs dark:text-white">{{ formatDuration(query.durationMs) }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </article>
+  </section>
+
+  <section class="overflow-hidden bg-white dark:bg-neutral-900 border border-neutral-200 rounded-xl dark:border-neutral-700">
+    <div class="flex gap-4 items-start justify-between px-5 py-4 border-b border-neutral-200 dark:border-neutral-700">
+      <div>
+        <h2 class="font-semibold text-neutral-900 dark:text-white">Recorded application errors</h2>
+        <p class="mt-1 text-neutral-500 text-xs dark:text-neutral-400">Recent Error model records without stack traces or additional diagnostic payloads.</p>
+      </div>
+      <span class="font-mono font-semibold text-neutral-900 text-sm dark:text-white">{{ formatNumber(insights().errors.total) }} total</span>
+    </div>
+    <div :if="insights().errors.recent.length === 0" class="px-5 py-12 text-center">
+      <span class="block mx-auto h-8 w-8 text-green-500 i-hugeicons-checkmark-circle-02"></span>
+      <p class="mt-3 font-semibold text-neutral-900 dark:text-white">No application errors recorded</p>
+      <p class="mt-1 text-neutral-500 text-sm dark:text-neutral-400">The errors table does not contain any observations.</p>
+    </div>
+    <div :else class="divide-neutral-200 divide-y dark:divide-neutral-700">
+      <div :for="error in insights().errors.recent" class="px-5 py-3">
+        <div class="flex gap-3 items-center justify-between">
+          <p class="font-medium text-neutral-900 text-sm dark:text-white">{{ error.type }}</p>
+          <span class="font-mono text-red-600 text-xs dark:text-red-400">{{ error.status || 'error' }}</span>
+        </div>
+        <p class="mt-1 text-neutral-600 text-sm dark:text-neutral-300">{{ error.message }}</p>
+        <p class="mt-1 text-neutral-500 text-xs dark:text-neutral-400">{{ formatDate(error.recordedAt) }}</p>
+      </div>
+    </div>
+  </section>
+</div>

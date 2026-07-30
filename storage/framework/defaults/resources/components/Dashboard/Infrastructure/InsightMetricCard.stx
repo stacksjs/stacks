@@ -1,0 +1,30 @@
+<script client>
+const label = useReactiveProp<string>('label', '')
+const value = useReactiveProp<string>('value', '')
+const detail = useReactiveProp<string>('detail', '')
+const icon = useReactiveProp<string>('icon', 'i-hugeicons-analytics-01')
+const tone = useReactiveProp<string>('tone', 'blue')
+
+const iconClass = derived(() => {
+  if (tone() === 'green')
+    return 'flex h-9 w-9 items-center justify-center text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-950/40 rounded-lg'
+  if (tone() === 'red')
+    return 'flex h-9 w-9 items-center justify-center text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/40 rounded-lg'
+  if (tone() === 'amber')
+    return 'flex h-9 w-9 items-center justify-center text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 rounded-lg'
+  return 'flex h-9 w-9 items-center justify-center text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/40 rounded-lg'
+})
+</script>
+
+<article class="p-4 bg-white dark:bg-neutral-900 border border-neutral-200 rounded-xl dark:border-neutral-700">
+  <div class="flex gap-3 items-start justify-between">
+    <div class="min-w-0">
+      <p class="text-neutral-500 text-xs uppercase dark:text-neutral-400">{{ label() }}</p>
+      <p class="mt-2 font-semibold text-neutral-900 text-xl tracking-tight dark:text-white">{{ value() }}</p>
+    </div>
+    <div :class="iconClass()">
+      <span :class="'h-4.5 w-4.5 ' + icon()"></span>
+    </div>
+  </div>
+  <p class="mt-3 text-neutral-500 text-xs dark:text-neutral-400">{{ detail() }}</p>
+</article>

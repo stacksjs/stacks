@@ -1,0 +1,23 @@
+<script client>
+const label = useReactiveProp<string>('label', '')
+const value = useReactiveProp<string>('value', '')
+const detail = useReactiveProp<string>('detail', '')
+const icon = useReactiveProp<string>('icon', 'i-hugeicons-pulse-02')
+const percent = useReactiveProp<number>('percent', -1)
+
+const boundedPercent = derived(() => Math.max(0, Math.min(100, Number(percent()) || 0)))
+</script>
+
+<article class="p-5 bg-white dark:bg-neutral-900 border border-neutral-200 rounded-xl dark:border-neutral-700">
+  <div class="flex gap-3 items-start justify-between">
+    <div>
+      <p class="font-medium text-neutral-500 text-xs uppercase dark:text-neutral-400">{{ label() }}</p>
+      <p class="mt-2 font-semibold text-lg text-neutral-900 dark:text-white">{{ value() }}</p>
+    </div>
+    <span :class="'h-5 w-5 text-neutral-400 ' + icon()"></span>
+  </div>
+  <div :if="percent() >= 0" class="overflow-hidden mt-4 h-1.5 bg-neutral-100 dark:bg-neutral-800 rounded-full">
+    <div class="h-full bg-blue-500 rounded-full duration-300 transition-[width]" :style="'width: ' + boundedPercent() + '%'"></div>
+  </div>
+  <p class="mt-3 text-neutral-500 text-xs dark:text-neutral-400">{{ detail() }}</p>
+</article>
