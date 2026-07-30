@@ -46,7 +46,7 @@ function buildConfig(): FilesystemConfig {
   const cwd = process.cwd()
   const rootDir = filesystems.root || cwd
   const s3Config = filesystems.s3
-  const appUrl = appConfig?.url || ''
+  const appUrl = (appConfig?.url || '').replace(/\/$/, '')
 
   const config: FilesystemConfig = {
     default: filesystems.driver || 'local',
@@ -63,7 +63,11 @@ function buildConfig(): FilesystemConfig {
       public: {
         driver: 'local',
         root: resolve(rootDir, 'public'),
-        url: appUrl ? `${appUrl}/storage` : '/storage',
+        // This disk writes directly under `<project>/public`, so its URL base
+        // is the application origin. `/storage` is only correct for the
+        // Laravel-style `storage/app/public` symlink layout, which Stacks does
+        // not use for this disk.
+        url: appUrl || '/',
         visibility: 'public',
       },
     },

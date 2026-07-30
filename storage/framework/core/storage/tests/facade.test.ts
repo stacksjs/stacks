@@ -137,6 +137,16 @@ describe('Storage Facade - disk selection', () => {
 })
 
 describe('Storage Facade - configuration methods', () => {
+  test('the built-in public disk URL matches its public directory root', () => {
+    const defaults = new StorageManager()
+    const config = defaults.getDiskConfig('public')
+
+    expect(config?.driver).toBe('local')
+    expect(config && 'root' in config ? config.root.endsWith('/public') : false).toBe(true)
+    expect(config && 'url' in config ? config.url?.endsWith('/storage') : true).toBe(false)
+    defaults.reset()
+  })
+
   test('getDefaultDisk() returns the current default', () => {
     expect(storage.getDefaultDisk()).toBe('local')
   })
