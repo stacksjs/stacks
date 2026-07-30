@@ -133,13 +133,12 @@ function close(): void {
           </div>
 
           <footer class="flex gap-2 items-center justify-end px-5 py-4 bg-neutral-50/50 dark:bg-neutral-800/50 border-neutral-200 border-t dark:border-neutral-700">
-            <button type="button" :disabled="busy()" class="px-3 h-8 font-medium text-[13px] text-neutral-700 dark:text-neutral-200 bg-white dark:bg-white/10 hover:bg-neutral-100 dark:hover:bg-white/15 border border-black/10 rounded-lg dark:border-white/15 disabled:opacity-50 transition-colors" @click="close">
+            <Button :disabled="busy()" variant="secondary" @click="close">
               Cancel
-            </button>
-            <button type="submit" :disabled="busy() || fields().length === 0" class="inline-flex gap-1.5 items-center px-3 h-8 font-medium text-[13px] text-white bg-blue-600 hover:bg-blue-500 rounded-lg disabled:opacity-50 transition-colors">
-              <span :if="busy()" class="h-4 w-4 animate-spin i-hugeicons-loading-03"></span>
+            </Button>
+            <Button type="submit" :disabled="busy() || fields().length === 0" :loading="busy()">
               {{ busy() ? 'Creating' : `Create ${modelName()}` }}
-            </button>
+            </Button>
           </footer>
         </form>
       </section>
