@@ -7,8 +7,13 @@ const showItemsPerPage = useReactiveProp('showItemsPerPage', false)
 const showTotalItems = useReactiveProp('showTotalItems', true)
 const maxVisiblePages = useReactiveProp('maxVisiblePages', 5)
 const emit = defineEmits()
+const selectedItemsPerPage = state(20)
 
 const perPageOptions = [10, 20, 25, 50, 100]
+
+effect(() => {
+  selectedItemsPerPage.set(itemsPerPage())
+})
 
 const totalPages = derived(() => {
   if (totalPagesProp() > 0)
@@ -62,7 +67,7 @@ function nextPage(): void {
   emit('page', currentPage() + 1)
 }
 
-function updateItemsPerPage(event: Event): void {
+function emitItemsPerPage(event: Event): void {
   emit('per-page', Number((event.target as HTMLSelectElement).value))
 }
 </script>
@@ -71,7 +76,7 @@ function updateItemsPerPage(event: Event): void {
   <div class="flex flex-wrap gap-4 items-center text-neutral-500 text-sm dark:text-neutral-400">
     <label :if="showItemsPerPage()" class="flex gap-2 items-center">
       <span>Show</span>
-      <select :value="itemsPerPage()" class="px-2 py-1.5 text-neutral-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-neutral-300 rounded-md dark:border-neutral-600" @change="updateItemsPerPage($event)">
+      <select x-model.number="selectedItemsPerPage" class="px-2 py-1.5 text-neutral-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-neutral-300 rounded-md dark:border-neutral-600" @change="emitItemsPerPage($event)">
         <template :for="option in perPageOptions">
           <option :value="option">{{ option }}</option>
         </template>

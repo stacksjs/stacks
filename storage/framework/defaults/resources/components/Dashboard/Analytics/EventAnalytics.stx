@@ -50,20 +50,6 @@ function recentEvents(): EventAnalyticsResponse['recent'] {
   return analytics()?.recent || []
 }
 
-function updateField(field: string, event: Event): void {
-  const value = (event.target as HTMLInputElement | HTMLSelectElement).value
-  if (field === 'name')
-    eventName.set(value)
-  else if (field === 'category')
-    eventCategory.set(value)
-  else if (field === 'path')
-    eventPath.set(value)
-  else if (field === 'value')
-    eventValue.set(value)
-  else if (field === 'currency')
-    eventCurrency.set(value)
-}
-
 function setAnalyticsRange(value: string | CustomEvent<string>): void {
   const range = typeof value === 'string' ? value : value.detail
   analyticsRange.set(range as AnalyticsRange)
@@ -87,8 +73,7 @@ async function loadAnalytics(): Promise<void> {
   }
 }
 
-async function submitEvent(event: Event): Promise<void> {
-  event.preventDefault()
+async function submitEvent(): Promise<void> {
   const name = eventName().trim()
   if (!name) {
     pushToast('warning', 'Enter an event name')
@@ -200,32 +185,32 @@ onMount(() => {
       </div>
     </div>
 
-    <form class="self-start p-5 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700" @submit="submitEvent($event)">
+    <form class="self-start p-5 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700" @submit.prevent="submitEvent">
       <h2 class="font-semibold text-gray-900 dark:text-white">Record an event</h2>
       <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Use this for verification or operational events. Production code can call AnalyticsEvent.create.</p>
       <div class="mt-4 space-y-4">
         <div>
           <label for="event-name" class="block mb-1 font-medium text-gray-700 text-sm dark:text-neutral-300">Name</label>
-          <input id="event-name" :value="eventName()" maxlength="100" required type="text" placeholder="newsletter_signup" class="block px-3 py-2 w-full text-gray-900 text-sm dark:text-white dark:bg-neutral-700 border border-gray-300 rounded-md dark:border-neutral-600" @input="updateField('name', $event)" />
+          <input id="event-name" x-model="eventName" maxlength="100" required type="text" placeholder="newsletter_signup" class="block px-3 py-2 w-full text-gray-900 text-sm dark:text-white dark:bg-neutral-700 border border-gray-300 rounded-md dark:border-neutral-600" />
         </div>
         <div class="grid gap-3 grid-cols-2">
           <div>
             <label for="event-category" class="block mb-1 font-medium text-gray-700 text-sm dark:text-neutral-300">Category</label>
-            <input id="event-category" :value="eventCategory()" maxlength="50" type="text" placeholder="conversion" class="block px-3 py-2 w-full text-gray-900 text-sm dark:text-white dark:bg-neutral-700 border border-gray-300 rounded-md dark:border-neutral-600" @input="updateField('category', $event)" />
+            <input id="event-category" x-model="eventCategory" maxlength="50" type="text" placeholder="conversion" class="block px-3 py-2 w-full text-gray-900 text-sm dark:text-white dark:bg-neutral-700 border border-gray-300 rounded-md dark:border-neutral-600" />
           </div>
           <div>
             <label for="event-path" class="block mb-1 font-medium text-gray-700 text-sm dark:text-neutral-300">Path</label>
-            <input id="event-path" :value="eventPath()" maxlength="2048" type="text" placeholder="/signup" class="block px-3 py-2 w-full text-gray-900 text-sm dark:text-white dark:bg-neutral-700 border border-gray-300 rounded-md dark:border-neutral-600" @input="updateField('path', $event)" />
+            <input id="event-path" x-model="eventPath" maxlength="2048" type="text" placeholder="/signup" class="block px-3 py-2 w-full text-gray-900 text-sm dark:text-white dark:bg-neutral-700 border border-gray-300 rounded-md dark:border-neutral-600" />
           </div>
         </div>
         <div class="grid gap-3 grid-cols-2">
           <div>
             <label for="event-value" class="block mb-1 font-medium text-gray-700 text-sm dark:text-neutral-300">Value</label>
-            <input id="event-value" :value="eventValue()" min="0" step="0.01" type="number" class="block px-3 py-2 w-full text-gray-900 text-sm dark:text-white dark:bg-neutral-700 border border-gray-300 rounded-md dark:border-neutral-600" @input="updateField('value', $event)" />
+            <input id="event-value" x-model="eventValue" min="0" step="0.01" type="number" class="block px-3 py-2 w-full text-gray-900 text-sm dark:text-white dark:bg-neutral-700 border border-gray-300 rounded-md dark:border-neutral-600" />
           </div>
           <div>
             <label for="event-currency" class="block mb-1 font-medium text-gray-700 text-sm dark:text-neutral-300">Currency</label>
-            <select id="event-currency" :value="eventCurrency()" class="block px-3 py-2 w-full text-gray-900 text-sm dark:text-white dark:bg-neutral-700 border border-gray-300 rounded-md dark:border-neutral-600" @change="updateField('currency', $event)">
+            <select id="event-currency" x-model="eventCurrency" class="block px-3 py-2 w-full text-gray-900 text-sm dark:text-white dark:bg-neutral-700 border border-gray-300 rounded-md dark:border-neutral-600">
               <option value="USD">USD</option>
               <option value="EUR">EUR</option>
               <option value="GBP">GBP</option>

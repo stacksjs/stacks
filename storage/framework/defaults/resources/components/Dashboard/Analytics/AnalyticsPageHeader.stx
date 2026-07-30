@@ -5,10 +5,14 @@ const dateRange = useReactiveProp('dateRange', '')
 const range = useReactiveProp('range', 'month')
 const loading = useReactiveProp('loading', false)
 const emit = defineEmits()
+const selectedRange = state('month')
 
-function updateRange(event: Event): void {
-  const target = event.target as HTMLSelectElement
-  emit('range-change', target.value)
+effect(() => {
+  selectedRange.set(range())
+})
+
+function emitRange(event: Event): void {
+  emit('range-change', (event.target as HTMLSelectElement).value)
 }
 </script>
 
@@ -21,10 +25,10 @@ function updateRange(event: Event): void {
   <div class="flex flex-wrap gap-2 items-center">
     <span class="text-gray-500 text-sm dark:text-neutral-400">{{ dateRange() }}</span>
     <select
-      :value="range()"
+      x-model="selectedRange"
       aria-label="Analytics date range"
       class="block pl-3 pr-10 py-1.5 text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-800 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-700 focus:ring-2 focus:ring-blue-600 focus:ring-inset"
-      @change="updateRange($event)"
+      @change="emitRange($event)"
     >
       <option value="day">Last 24 hours</option>
       <option value="week">Last 7 days</option>
