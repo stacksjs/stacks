@@ -27,6 +27,27 @@ describe('dashboard native STX bindings', () => {
     expect(source).not.toContain(':value="range()"')
   })
 
+  test('stats cards react to every dynamic presentation prop', () => {
+    const source = componentSource('UI/StatsCard.stx')
+
+    for (const binding of [
+      'liveTitle',
+      'liveValue',
+      'liveSubtitle',
+      'liveTrendLabel',
+      'liveIcon',
+      'liveIconBg',
+      'liveLoading',
+      'liveTrend',
+    ])
+      expect(source).toContain(`const ${binding} = useReactiveProp`)
+
+    expect(source).toContain('{{ liveValue() }}')
+    expect(source).toContain(':if="liveLoading()"')
+    expect(source).toContain('iconBackgroundClass()')
+    expect(source).not.toContain('<script server>')
+  })
+
   test('event analytics form uses native models and submit prevention', () => {
     const source = componentSource('Analytics/EventAnalytics.stx')
 
