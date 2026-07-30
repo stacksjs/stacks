@@ -22,7 +22,7 @@ const liveSize = useReactiveProp('size', 'md' as SelectSize)
 const liveName = useReactiveProp('name', '')
 const liveId = useReactiveProp('id', '')
 const emit = defineEmits()
-const generatedId = `select-${Math.random().toString(36).slice(2, 11)}`
+const generatedId = useId('select')
 
 const sizeClasses: Record<SelectSize, string> = {
   xs: 'h-6 text-[11px] px-2',
