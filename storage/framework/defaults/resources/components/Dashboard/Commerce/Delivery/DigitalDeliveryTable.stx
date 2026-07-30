@@ -43,7 +43,7 @@ function yesNo(value: boolean | number): string {
       </tr>
     </thead>
     <tbody class="bg-white dark:bg-neutral-800 divide-stone-100 divide-y dark:divide-neutral-700">
-      <template :for="method in methods">
+      <template :for="method in methods" :key="method.id">
         <tr class="hover:bg-stone-50/50 dark:hover:bg-neutral-700/50 transition-colors">
           <td class="pl-6 pr-3 py-3.5 font-medium text-sm text-stone-800 whitespace-nowrap dark:text-white">
             {{ method.name }}
@@ -72,7 +72,7 @@ function yesNo(value: boolean | number): string {
             <button
               type="button"
               @click="emit('edit', method)"
-              :aria-label="'Edit digital delivery method ' + method.name"
+              :aria-label="'Edit digital delivery method ' + method.name + ', record ' + method.id"
               class="mr-1 p-2 text-stone-400 hover:text-blue-700 dark:hover:text-blue-300 rounded-md transition-colors"
             >
               <span class="block h-5 w-5 i-hugeicons-edit-01"></span>
@@ -80,7 +80,7 @@ function yesNo(value: boolean | number): string {
             <button
               type="button"
               @click="emit('delete', method)"
-              :aria-label="'Delete digital delivery method ' + method.name"
+              :aria-label="'Delete digital delivery method ' + method.name + ', record ' + method.id"
               class="p-2 text-stone-400 hover:text-red-700 dark:hover:text-red-300 rounded-md transition-colors"
             >
               <span class="block h-5 w-5 i-hugeicons-waste"></span>
