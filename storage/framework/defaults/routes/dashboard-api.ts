@@ -10,10 +10,10 @@
  * `/api/dashboard/*` requests to the Stacks router; user-defined routes in
  * `routes/api.ts` still take priority because they load first.
  *
- * Routes that mutate data or expose unpublished content are wrapped in
- * `guard()` (see below): a no-op locally so the dev dashboard works without a
- * token, `auth` + `role:admin` everywhere else. The remaining reads are
- * unauthenticated by design.
+ * Dashboard data routes are wrapped in `guard()` (see below): a no-op locally
+ * so the dev dashboard works without a token, `auth` + `role:admin`
+ * everywhere else. Only the soft-fallback identity endpoint is intentionally
+ * unauthenticated.
  */
 
 import { route } from '@stacksjs/router'
@@ -162,18 +162,18 @@ route.group({ prefix: '/api/dashboard', apiResponse: true }, () => {
   guard(route.post('/files/uploads', 'Actions/Dashboard/Content/FileUploadAction'))
   guard(route.delete('/files', 'Actions/Dashboard/Content/FileDestroyAction'))
 
-  route.get('/ci/status', 'Actions/Dashboard/Ci/StatusAction')
+  guard(route.get('/ci/status', 'Actions/Dashboard/Ci/StatusAction'))
   // CI drilldown (stacksjs/stacks#1848): per-repo run history + per-run
   // job detail. On-demand reads so the polled snapshot stays cheap.
   // `name` is the URL-meaningful identifier here; bun-router segments
   // route on per-param basis so the `runs/{runId}/jobs` form doesn't
   // conflict with the `runs?limit=N` collection form.
-  route.get('/ci/repos/{owner}/{name}/runs', 'Actions/Dashboard/Ci/RepoRunsAction')
-  route.get('/ci/repos/{owner}/{name}/runs/{runId}/jobs', 'Actions/Dashboard/Ci/RepoRunJobsAction')
+  guard(route.get('/ci/repos/{owner}/{name}/runs', 'Actions/Dashboard/Ci/RepoRunsAction'))
+  guard(route.get('/ci/repos/{owner}/{name}/runs/{runId}/jobs', 'Actions/Dashboard/Ci/RepoRunJobsAction'))
   // Runner-pressure history for the sparkline (stacksjs/stacks#1850).
   // Only useful when `ci.alerts.enabled` is on — otherwise no samples
   // have been recorded.
-  route.get('/ci/runner-history', 'Actions/Dashboard/Ci/RunnerHistoryAction')
+  guard(route.get('/ci/runner-history', 'Actions/Dashboard/Ci/RunnerHistoryAction'))
 
   // RBAC management surface (stacksjs/stacks#1845).
   //
@@ -275,11 +275,9 @@ route.group({ prefix: '/api/dashboard', apiResponse: true }, () => {
   guard(route.get('/kanban/users', 'Actions/Dashboard/Kanban/UsersListAction'))
 
   // Commerce dashboard stats. Same Action that backs the auth'd
-  // `/api/commerce/dashboard` — exposed here without the auth gate so
-  // the dev-mode dashboard surface in `views/dashboard/commerce/dashboard/`
-  // can load it directly. The page itself stays admin-gated via
-  // `useRole().isAdmin()` (stacksjs/stacks#1838).
-  route.get('/commerce/stats', 'Actions/Dashboard/Commerce/CommerceDashboardAction')
+  // `/api/commerce/dashboard`, projected through the local-friendly dashboard
+  // guard so production totals are never protected by client-side role checks.
+  guard(route.get('/commerce/stats', 'Actions/Dashboard/Commerce/CommerceDashboardAction'))
 
   // Delivery operations overview. Guarded because route and driver data is
   // operational information even though the underlying models expose their
