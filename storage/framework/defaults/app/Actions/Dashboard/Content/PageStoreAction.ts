@@ -2,38 +2,37 @@ import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
 import { db } from '@stacksjs/database'
 import { response } from '@stacksjs/router'
-import { findRow, insertedId, str, timestamp } from './content-input'
+import { randomUUIDv7 } from 'bun'
+import { findRow, insertedId, timestamp } from './content-input'
+import { parsePageInput, parsePublished } from './page-input'
 
 /**
  * `POST /api/dashboard/pages` — creates a CMS page from the dashboard.
  *
- * No `uuid` is written: unlike `posts` / `authors` / `tags`, the `pages` table
- * has no uuid column even though the model declares the `useUuid` trait.
- *
- * `published_at` stays null — the dialog has no publish control, and the page's
- * Published column falls back to `created_at`.
+ * New pages are drafts unless the dashboard explicitly submits `published`;
+ * published records receive the same SQL-style timestamp as other CMS writes.
  */
 export default new Action({
   name: 'PageStoreAction',
   description: 'Creates a CMS page from the dashboard.',
   method: 'POST',
   async handle(request: RequestInstance) {
-    const title = str(request.get('title')).trim()
-    const template = str(request.get('template')).trim() || 'default'
+    const input = parsePageInput(request)
 
-    if (!title)
-      return response.json({ message: 'Title is required.' }, 422)
+    if ('message' in input)
+      return response.json({ message: input.message }, 422)
 
     const now = timestamp()
 
     const result = await db
       .insertInto('pages')
       .values({
-        title,
-        template,
+        uuid: randomUUIDv7(),
+        title: input.data.title,
+        template: input.data.template,
         views: 0,
         conversions: 0,
-        published_at: null,
+        published_at: parsePublished(request.get('published')) ? now : null,
         created_at: now,
         updated_at: now,
       } as any)

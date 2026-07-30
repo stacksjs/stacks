@@ -34,7 +34,7 @@ export default defineModel({
     useApi: {
       uri: 'authors',
 
-      routes: ['index', 'store', 'show'],
+      routes: ['index', 'store', 'show', 'update', 'destroy'],
     },
 
     observe: true,

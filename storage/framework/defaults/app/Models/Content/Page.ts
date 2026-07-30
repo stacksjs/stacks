@@ -16,6 +16,10 @@ export default defineModel({
       sortable: ['views', 'conversions'],
       filterable: ['template'],
     },
+    useApi: {
+      uri: 'pages',
+      routes: ['index', 'store', 'show', 'update', 'destroy'],
+    },
 
     useSeeder: {
       count: 10,

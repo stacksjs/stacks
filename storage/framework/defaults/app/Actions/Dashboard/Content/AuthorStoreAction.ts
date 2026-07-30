@@ -3,14 +3,14 @@ import { Action } from '@stacksjs/actions'
 import { db } from '@stacksjs/database'
 import { response } from '@stacksjs/router'
 import { randomUUIDv7 } from 'bun'
-import { findRow, insertedId, str, timestamp } from './content-input'
+import { parseAuthorInput } from './author-input'
+import { findRow, insertedId, timestamp } from './content-input'
 
 /**
  * `POST /api/dashboard/authors` — creates a CMS author from the dashboard.
  *
- * Does not reuse `Actions/Cms/AuthorStoreAction`: that runs the `Author` model
- * validation, which requires a name of at least five characters and rejects the
- * empty bio/avatar the dashboard dialog submits.
+ * The shared parser mirrors the `Author` model's validation contract so the
+ * dashboard and generated `useApi` routes accept the same record shape.
  *
  * The email check is done here because `authors_email_name_index` is not a
  * unique index — nothing in the schema stops a duplicate.
@@ -20,19 +20,15 @@ export default new Action({
   description: 'Creates a CMS author from the dashboard.',
   method: 'POST',
   async handle(request: RequestInstance) {
-    const name = str(request.get('name')).trim()
-    const email = str(request.get('email')).trim()
+    const input = parseAuthorInput(request)
 
-    if (!name)
-      return response.json({ message: 'Name is required.' }, 422)
-
-    if (!email)
-      return response.json({ message: 'Email is required.' }, 422)
+    if ('message' in input)
+      return response.json({ message: input.message }, 422)
 
     const duplicate = await db
       .selectFrom('authors')
       .select(['id'])
-      .where('email', '=', email)
+      .where('email', '=', input.data.email)
       .executeTakeFirst()
 
     if (duplicate)
@@ -44,8 +40,10 @@ export default new Action({
       .insertInto('authors')
       .values({
         uuid: randomUUIDv7(),
-        name,
-        email,
+        name: input.data.name,
+        email: input.data.email,
+        bio: input.data.bio || null,
+        avatar: input.data.avatar || null,
         created_at: now,
         updated_at: now,
       } as any)

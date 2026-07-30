@@ -113,6 +113,7 @@ route.group({ prefix: '/api/dashboard', apiResponse: true }, () => {
 
   guard(route.get('/authors', 'Actions/Dashboard/Content/AuthorIndexAction'))
   guard(route.post('/authors', 'Actions/Dashboard/Content/AuthorStoreAction'))
+  guard(route.patch('/authors/{id}', 'Actions/Dashboard/Content/AuthorUpdateAction'))
   guard(route.delete('/authors/{id}', 'Actions/Dashboard/Content/AuthorDestroyAction'))
 
   guard(route.get('/categories', 'Actions/Dashboard/Content/CategoryIndexAction'))
@@ -125,6 +126,7 @@ route.group({ prefix: '/api/dashboard', apiResponse: true }, () => {
 
   guard(route.get('/pages', 'Actions/Dashboard/Content/PageIndexAction'))
   guard(route.post('/pages', 'Actions/Dashboard/Content/PageStoreAction'))
+  guard(route.patch('/pages/{id}', 'Actions/Dashboard/Content/PageUpdateAction'))
   guard(route.delete('/pages/{id}', 'Actions/Dashboard/Content/PageDestroyAction'))
 
   // No store route: comments arrive from readers, the dashboard only moderates.
