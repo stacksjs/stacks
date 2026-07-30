@@ -97,6 +97,12 @@ describe('dashboard button contract', () => {
       'Pagination.stx',
       'UI/Modal.stx',
       'UI/ConfirmDialog.stx',
+      'Marketing/SocialPostsTable.stx',
+      'Marketing/CampaignsTable.stx',
+      'Marketing/MarketingListsTable.stx',
+      'Marketing/MarketingListsDashboard.stx',
+      'Marketing/CampaignsDashboard.stx',
+      'Marketing/SocialPostsDashboard.stx',
     ]
 
     for (const file of files) {

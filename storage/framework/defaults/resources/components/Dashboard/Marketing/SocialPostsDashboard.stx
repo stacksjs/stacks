@@ -213,7 +213,7 @@ onMount(() => {
     </div>
   </header>
 
-  <div :if="loadError()" role="alert" class="flex gap-4 items-center justify-between p-4 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900"><span>{{ loadError() }}</span><button type="button" class="font-semibold underline" @click="loadPosts()">Retry</button></div>
+  <div :if="loadError()" role="alert" class="flex gap-4 items-center justify-between p-4 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900"><span>{{ loadError() }}</span><Button variant="secondary" size="sm" @click="loadPosts()">Retry</Button></div>
   <div :if="summary().failed > 0" class="flex gap-3 items-start p-4 text-red-800 text-sm dark:text-red-200 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900"><span class="shrink-0 mt-0.5 h-5 w-5 i-hugeicons-alert-02"></span><p>{{ summary().failed }} {{ summary().failed === 1 ? 'post has' : 'posts have' }} a failed status and may need review.</p></div>
 
   <section aria-label="Social post metrics" class="grid gap-3 grid-cols-2 lg:grid-cols-4">

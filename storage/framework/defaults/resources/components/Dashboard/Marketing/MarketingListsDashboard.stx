@@ -225,7 +225,7 @@ onMount(() => {
 
   <div :if="loadError()" role="alert" class="flex gap-4 items-center justify-between p-4 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900">
     <span>{{ loadError() }}</span>
-    <button type="button" class="font-semibold underline" @click="loadLists()">Retry</button>
+    <Button variant="secondary" size="sm" @click="loadLists()">Retry</Button>
   </div>
   <div :if="summary().counterDriftLists > 0" class="flex gap-3 items-start p-4 text-amber-800 text-sm dark:text-amber-200 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 rounded-lg dark:border-amber-900">
     <span class="shrink-0 mt-0.5 h-5 w-5 i-hugeicons-alert-02"></span>
