@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test'
-import { modelSchemaColumns } from '../../../defaults/app/Actions/Dashboard/Models/model-write'
+import { modelCreateFields, modelSchemaColumns } from '../../../defaults/app/Actions/Dashboard/Models/model-write'
 import { loadModel } from '../../../defaults/resources/functions/dashboard/data'
 
 describe('dashboard model loader', () => {
@@ -29,5 +29,14 @@ describe('dashboard model loader', () => {
       'created_at',
       'updated_at',
     ])
+  })
+
+  it('honors attribute-level required declarations in generated forms', async () => {
+    const Model = await loadModel('EmailList')
+    const fields = modelCreateFields(Model)
+
+    expect(fields.find(field => field.name === 'name')?.required).toBe(true)
+    expect(fields.find(field => field.name === 'status')?.required).toBe(true)
+    expect(fields.find(field => field.name === 'description')?.required).toBe(false)
   })
 })

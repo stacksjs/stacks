@@ -163,7 +163,7 @@ export function modelCreateFields(Model: any): ModelCreateField[] {
       name,
       label: humanize(name),
       type,
-      required: rule?.isRequired === true,
+      required: definition.required === true || rule?.isRequired === true,
       defaultValue: definition.default ?? (type === 'boolean' ? false : ''),
       options,
     })
