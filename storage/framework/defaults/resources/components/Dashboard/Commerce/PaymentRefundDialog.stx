@@ -36,10 +36,6 @@ function valid(): boolean {
   return cents > 0 && cents <= remaining()
 }
 
-function updateAmount(event: Event): void {
-  amount.set((event.target as HTMLInputElement).value)
-}
-
 function money(value: number, currency: string): string {
   try {
     return new Intl.NumberFormat(undefined, { style: 'currency', currency }).format(value / 100)
@@ -62,7 +58,7 @@ function submit(): void {
       <div class="p-6">
         <h2 id="payment-refund-title" class="font-semibold text-gray-900 text-lg dark:text-white">Record confirmed refund</h2>
         <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Payment #{{ record()?.id }} has {{ money(remaining(), record()?.currency || 'USD') }} remaining.</p>
-        <label class="block mt-5"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Refund amount</span><input :value="amount()" type="number" min="0.01" :max="remaining() / 100" step="0.01" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="updateAmount($event)" /></label>
+        <label class="block mt-5"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Refund amount</span><input x-model="amount" type="number" min="0.01" :max="remaining() / 100" step="0.01" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label>
         <p class="mt-2 text-amber-700 text-xs dark:text-amber-300">This records an already confirmed processor refund. It does not initiate money movement.</p>
       </div>
       <footer class="flex gap-2 justify-end px-6 py-4 bg-gray-50 dark:bg-neutral-900/50 border-gray-200 border-t dark:border-neutral-700">

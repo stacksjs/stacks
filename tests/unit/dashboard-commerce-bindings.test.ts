@@ -91,4 +91,34 @@ describe('commerce dashboard filter bindings', () => {
       expect(source).not.toMatch(/:checked="[^"]+\(\)"[^>]+@change=/)
     }
   })
+
+  test('customer, review, and refund dialogs use native field models', () => {
+    for (const component of [
+      'CommerceCustomerDialog.stx',
+      'CommerceReviewEditDialog.stx',
+      'PaymentRefundDialog.stx',
+    ]) {
+      const source = readFileSync(
+        resolve(
+          'storage/framework/defaults/resources/components/Dashboard/Commerce',
+          component,
+        ),
+        'utf8',
+      )
+
+      expect(source).toContain('x-model=')
+      expect(source).not.toMatch(/function update[A-Z]\w*\(event: Event\)/)
+      expect(source).not.toMatch(/:value="[^"]+\(\)"[^>]+@(?:input|change)=/)
+      expect(source).not.toMatch(/:checked="[^"]+\(\)"[^>]+@change=/)
+    }
+
+    const review = readFileSync(
+      resolve(
+        'storage/framework/defaults/resources/components/Dashboard/Commerce',
+        'CommerceReviewEditDialog.stx',
+      ),
+      'utf8',
+    )
+    expect(review).toContain('x-model.number="rating"')
+  })
 })

@@ -28,26 +28,6 @@ effect(() => {
   featured.set(current.featured)
 })
 
-function updateTitle(event: Event): void {
-  title.set((event.target as HTMLInputElement).value)
-}
-
-function updateContent(event: Event): void {
-  content.set((event.target as HTMLTextAreaElement).value)
-}
-
-function updateRating(event: Event): void {
-  rating.set(Number((event.target as HTMLSelectElement).value))
-}
-
-function updateApproved(event: Event): void {
-  approved.set((event.target as HTMLInputElement).checked)
-}
-
-function updateFeatured(event: Event): void {
-  featured.set((event.target as HTMLInputElement).checked)
-}
-
 function submit(): void {
   if (!title().trim() || !content().trim())
     return
@@ -72,15 +52,15 @@ function submit(): void {
         <div class="mt-5 space-y-4">
           <label class="block">
             <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Title</span>
-            <input :value="title()" type="text" maxlength="100" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="updateTitle($event)" />
+            <input x-model="title" type="text" maxlength="100" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" />
           </label>
           <label class="block">
             <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Review</span>
-            <textarea :value="content()" rows="6" maxlength="2000" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="updateContent($event)"></textarea>
+            <textarea x-model="content" rows="6" maxlength="2000" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700"></textarea>
           </label>
           <label class="block">
             <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Rating</span>
-            <select :value="rating()" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @change="updateRating($event)">
+            <select x-model.number="rating" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700">
               <option value="5">5 stars</option>
               <option value="4">4 stars</option>
               <option value="3">3 stars</option>
@@ -90,11 +70,11 @@ function submit(): void {
           </label>
           <div class="grid gap-3 grid-cols-1 sm:grid-cols-2">
             <label class="flex gap-3 items-center p-3 border border-gray-200 rounded-lg dark:border-neutral-700">
-              <input type="checkbox" :checked="approved()" class="h-4 w-4 text-blue-600 border-gray-300 rounded" @change="updateApproved($event)" />
+              <input x-model="approved" type="checkbox" class="h-4 w-4 text-blue-600 border-gray-300 rounded" />
               <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Approved</span>
             </label>
             <label class="flex gap-3 items-center p-3 border border-gray-200 rounded-lg dark:border-neutral-700">
-              <input type="checkbox" :checked="featured()" class="h-4 w-4 text-blue-600 border-gray-300 rounded" @change="updateFeatured($event)" />
+              <input x-model="featured" type="checkbox" class="h-4 w-4 text-blue-600 border-gray-300 rounded" />
               <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Featured</span>
             </label>
           </div>
