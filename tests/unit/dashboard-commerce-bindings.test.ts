@@ -121,4 +121,21 @@ describe('commerce dashboard filter bindings', () => {
     )
     expect(review).toContain('x-model.number="rating"')
   })
+
+  test('gift card dialog uses native field models with isolated balance syncing', () => {
+    const source = readFileSync(
+      resolve(
+        'storage/framework/defaults/resources/components/Dashboard/Commerce',
+        'CommerceGiftCardDialog.stx',
+      ),
+      'utf8',
+    )
+
+    expect(source).toContain('x-model="initialBalance"')
+    expect(source).toContain('@input="syncCurrentBalance($event)"')
+    expect(source).toContain('x-model="currentBalance"')
+    expect(source).toContain('let previousInitialBalance')
+    expect(source).not.toMatch(/function update[A-Z]\w*\(event: Event\)/)
+    expect(source).not.toMatch(/:checked="[^"]+\(\)"[^>]+@change=/)
+  })
 })

@@ -24,6 +24,7 @@ const lastUsedDate = state('')
 const templateId = state('')
 const customerId = state('')
 let hydrationKey = ''
+let previousInitialBalance = '50'
 
 function generatedCode(): string {
   const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
@@ -60,8 +61,10 @@ effect(() => {
     return
   hydrationKey = key
   code.set(current?.code || generatedCode())
-  initialBalance.set(String(current?.initialBalance || 50))
+  const hydratedInitialBalance = String(current?.initialBalance || 50)
+  initialBalance.set(hydratedInitialBalance)
   currentBalance.set(String(current?.currentBalance ?? current?.initialBalance ?? 50))
+  previousInitialBalance = hydratedInitialBalance
   currency.set(current?.currency || 'USD')
   status.set(current?.status || 'ACTIVE')
   purchaserId.set(current?.purchaserId || '')
@@ -77,76 +80,11 @@ effect(() => {
   customerId.set(current?.customerId || '')
 })
 
-function inputValue(event: Event): string {
-  return (event.target as HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement).value
-}
-
-function updateCode(event: Event): void {
-  code.set(inputValue(event))
-}
-
-function updateInitialBalance(event: Event): void {
-  const previous = initialBalance()
-  const next = inputValue(event)
-  initialBalance.set(next)
-  if (currentBalance() === previous)
+function syncCurrentBalance(event: Event): void {
+  const next = (event.target as HTMLInputElement).value
+  if (currentBalance() === previousInitialBalance)
     currentBalance.set(next)
-}
-
-function updateCurrentBalance(event: Event): void {
-  currentBalance.set(inputValue(event))
-}
-
-function updateCurrency(event: Event): void {
-  currency.set(inputValue(event).toUpperCase())
-}
-
-function updateStatus(event: Event): void {
-  status.set(inputValue(event) as GiftCardStatus)
-}
-
-function updatePurchaserId(event: Event): void {
-  purchaserId.set(inputValue(event))
-}
-
-function updateRecipientEmail(event: Event): void {
-  recipientEmail.set(inputValue(event))
-}
-
-function updateRecipientName(event: Event): void {
-  recipientName.set(inputValue(event))
-}
-
-function updatePersonalMessage(event: Event): void {
-  personalMessage.set(inputValue(event))
-}
-
-function updateExpiryDate(event: Event): void {
-  expiryDate.set(inputValue(event))
-}
-
-function updateLastUsedDate(event: Event): void {
-  lastUsedDate.set(inputValue(event))
-}
-
-function updateTemplateId(event: Event): void {
-  templateId.set(inputValue(event))
-}
-
-function updateCustomerId(event: Event): void {
-  customerId.set(inputValue(event))
-}
-
-function updateIsDigital(event: Event): void {
-  isDigital.set((event.target as HTMLInputElement).checked)
-}
-
-function updateIsReloadable(event: Event): void {
-  isReloadable.set((event.target as HTMLInputElement).checked)
-}
-
-function updateIsActive(event: Event): void {
-  isActive.set((event.target as HTMLInputElement).checked)
+  previousInitialBalance = next
 }
 
 function optionalTimestamp(value: string): number | undefined {
@@ -225,24 +163,24 @@ function errorMessages(): string[] {
           <template :for="message in errorMessages()" :key="message"><li>{{ message }}</li></template>
         </ul>
         <div class="grid gap-4 grid-cols-1 sm:grid-cols-2 mt-5">
-          <label class="block sm:col-span-2"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Code</span><input :value="code()" type="text" maxlength="50" required spellcheck="false" class="mt-1 px-3 py-2 w-full font-mono text-gray-900 text-sm uppercase dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="updateCode($event)" /></label>
-          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Initial balance</span><input :value="initialBalance()" type="number" min="1" step="0.01" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="updateInitialBalance($event)" /></label>
-          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Current balance</span><input :value="currentBalance()" :max="initialBalance()" type="number" min="0" step="0.01" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="updateCurrentBalance($event)" /></label>
+          <label class="block sm:col-span-2"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Code</span><input x-model="code" type="text" maxlength="50" required spellcheck="false" class="mt-1 px-3 py-2 w-full font-mono text-gray-900 text-sm uppercase dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label>
+          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Initial balance</span><input x-model="initialBalance" type="number" min="1" step="0.01" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="syncCurrentBalance($event)" /></label>
+          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Current balance</span><input x-model="currentBalance" :max="initialBalance()" type="number" min="0" step="0.01" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label>
           <p :if="balanceError()" class="sm:col-span-2 -mt-2 text-red-600 text-xs dark:text-red-400">{{ balanceError() }}</p>
-          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Currency</span><input :value="currency()" type="text" minlength="3" maxlength="3" required spellcheck="false" class="mt-1 px-3 py-2 w-full font-mono text-gray-900 text-sm uppercase dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="updateCurrency($event)" /></label>
-          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Status</span><select :value="status()" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @change="updateStatus($event)"><option value="ACTIVE">Active</option><option value="USED">Used</option><option value="EXPIRED">Expired</option><option value="DEACTIVATED">Deactivated</option></select></label>
-          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Recipient name</span><input :value="recipientName()" type="text" placeholder="Optional" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="updateRecipientName($event)" /></label>
-          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Recipient email</span><input :value="recipientEmail()" type="email" placeholder="Optional" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="updateRecipientEmail($event)" /></label>
-          <label class="block sm:col-span-2"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Personal message</span><textarea :value="personalMessage()" rows="3" placeholder="Optional" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="updatePersonalMessage($event)"></textarea></label>
-          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Expiry date</span><input :value="expiryDate()" type="datetime-local" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="updateExpiryDate($event)" /></label>
-          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Last used date</span><input :value="lastUsedDate()" type="datetime-local" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="updateLastUsedDate($event)" /></label>
-          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Purchaser ID</span><input :value="purchaserId()" type="text" placeholder="Optional" class="mt-1 px-3 py-2 w-full font-mono text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="updatePurchaserId($event)" /></label>
-          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Customer ID</span><input :value="customerId()" type="number" min="1" step="1" placeholder="Optional" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="updateCustomerId($event)" /></label>
-          <label class="block sm:col-span-2"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Template ID</span><input :value="templateId()" type="text" placeholder="Optional" class="mt-1 px-3 py-2 w-full font-mono text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="updateTemplateId($event)" /></label>
+          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Currency</span><input x-model="currency" type="text" minlength="3" maxlength="3" required spellcheck="false" class="mt-1 px-3 py-2 w-full font-mono text-gray-900 text-sm uppercase dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label>
+          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Status</span><select x-model="status" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700"><option value="ACTIVE">Active</option><option value="USED">Used</option><option value="EXPIRED">Expired</option><option value="DEACTIVATED">Deactivated</option></select></label>
+          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Recipient name</span><input x-model="recipientName" type="text" placeholder="Optional" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label>
+          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Recipient email</span><input x-model="recipientEmail" type="email" placeholder="Optional" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label>
+          <label class="block sm:col-span-2"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Personal message</span><textarea x-model="personalMessage" rows="3" placeholder="Optional" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700"></textarea></label>
+          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Expiry date</span><input x-model="expiryDate" type="datetime-local" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label>
+          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Last used date</span><input x-model="lastUsedDate" type="datetime-local" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label>
+          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Purchaser ID</span><input x-model="purchaserId" type="text" placeholder="Optional" class="mt-1 px-3 py-2 w-full font-mono text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label>
+          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Customer ID</span><input x-model="customerId" type="number" min="1" step="1" placeholder="Optional" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label>
+          <label class="block sm:col-span-2"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Template ID</span><input x-model="templateId" type="text" placeholder="Optional" class="mt-1 px-3 py-2 w-full font-mono text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label>
           <div class="grid gap-3 grid-cols-1 sm:col-span-2 sm:grid-cols-3">
-            <label class="flex gap-3 items-center p-3 border border-gray-200 rounded-lg dark:border-neutral-700"><input type="checkbox" :checked="isActive()" class="h-4 w-4 text-blue-600 border-gray-300 rounded" @change="updateIsActive($event)" /><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Enabled</span></label>
-            <label class="flex gap-3 items-center p-3 border border-gray-200 rounded-lg dark:border-neutral-700"><input type="checkbox" :checked="isDigital()" class="h-4 w-4 text-blue-600 border-gray-300 rounded" @change="updateIsDigital($event)" /><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Digital delivery</span></label>
-            <label class="flex gap-3 items-center p-3 border border-gray-200 rounded-lg dark:border-neutral-700"><input type="checkbox" :checked="isReloadable()" class="h-4 w-4 text-blue-600 border-gray-300 rounded" @change="updateIsReloadable($event)" /><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Reloadable</span></label>
+            <label class="flex gap-3 items-center p-3 border border-gray-200 rounded-lg dark:border-neutral-700"><input x-model="isActive" type="checkbox" class="h-4 w-4 text-blue-600 border-gray-300 rounded" /><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Enabled</span></label>
+            <label class="flex gap-3 items-center p-3 border border-gray-200 rounded-lg dark:border-neutral-700"><input x-model="isDigital" type="checkbox" class="h-4 w-4 text-blue-600 border-gray-300 rounded" /><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Digital delivery</span></label>
+            <label class="flex gap-3 items-center p-3 border border-gray-200 rounded-lg dark:border-neutral-700"><input x-model="isReloadable" type="checkbox" class="h-4 w-4 text-blue-600 border-gray-300 rounded" /><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Reloadable</span></label>
           </div>
         </div>
       </div>
