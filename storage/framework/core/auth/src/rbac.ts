@@ -353,19 +353,27 @@ export async function removeAllRoles(user: UserModel | { id: number } | number):
 }
 
 /**
- * Sync roles for a user (replaces all current roles)
+ * Sync roles for a user within one guard.
+ *
+ * Roles belonging to other guards are preserved. The previous implementation
+ * resolved the requested names within `guardName`, then replaced the complete
+ * pivot set, which silently removed assignments from every other guard.
  */
 export async function syncRoles(user: UserModel | { id: number } | number, roleNames: string[], guardName: string = 'web'): Promise<void> {
   const userId = getUserId(user)
+  const currentRoles = await getUserRoles(userId)
+  const preservedRoleIds = currentRoles
+    .filter(role => role.guard_name !== guardName)
+    .map(role => role.id)
   const roleIds: number[] = []
 
-  for (const name of roleNames) {
+  for (const name of new Set(roleNames)) {
     const role = await findRole(name, guardName)
     if (!role) throw new Error(`Role '${name}' not found.`)
     roleIds.push(role.id)
   }
 
-  await getStore().syncUserRoles(userId, roleIds)
+  await getStore().syncUserRoles(userId, [...preservedRoleIds, ...roleIds])
   cache.userRoles.delete(userId)
   cache.userPermissions.delete(userId)
 }
@@ -462,19 +470,25 @@ export async function revokeAllPermissions(user: UserModel | { id: number } | nu
 }
 
 /**
- * Sync direct permissions for a user
+ * Sync direct permissions for a user within one guard.
+ *
+ * Direct permissions belonging to other guards are preserved.
  */
 export async function syncPermissions(user: UserModel | { id: number } | number, permissionNames: string[], guardName: string = 'web'): Promise<void> {
   const userId = getUserId(user)
+  const currentPermissions = await getStore().getUserDirectPermissions(userId)
+  const preservedPermissionIds = currentPermissions
+    .filter(permission => permission.guard_name !== guardName)
+    .map(permission => permission.id)
   const permissionIds: number[] = []
 
-  for (const name of permissionNames) {
+  for (const name of new Set(permissionNames)) {
     const perm = await findPermission(name, guardName)
     if (!perm) throw new Error(`Permission '${name}' not found.`)
     permissionIds.push(perm.id)
   }
 
-  await getStore().syncUserPermissions(userId, permissionIds)
+  await getStore().syncUserPermissions(userId, [...preservedPermissionIds, ...permissionIds])
   cache.userPermissions.delete(userId)
 }
 

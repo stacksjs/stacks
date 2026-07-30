@@ -199,7 +199,7 @@ Protected helpers: `allow(message?)`, `deny(message?, code?)`, `denyIf(condition
 - `Rbac.assignRole(user, roleName, guardName?): Promise<void>`
 - `Rbac.removeRole(user, roleName, guardName?): Promise<void>`
 - `Rbac.removeAllRoles(user): Promise<void>`
-- `Rbac.syncRoles(user, roleNames[], guardName?): Promise<void>`
+- `Rbac.syncRoles(user, roleNames[], guardName?): Promise<void>` - replaces assignments for that guard and preserves roles from other guards
 - `Rbac.hasRole(user, roleName, guardName?): Promise<boolean>`
 - `Rbac.hasAnyRole(user, roleNames[], guardName?): Promise<boolean>`
 - `Rbac.hasAllRoles(user, roleNames[], guardName?): Promise<boolean>`
@@ -407,6 +407,7 @@ traits: {
 - Bearer tokens come from the `Authorization: Bearer <token>` header
 - `Auth.user()` internally calls `getBearerToken()` → `parseToken()` → `getTokenFromId()` → validates hash
 - RBAC has an internal cache (`userRoles`, `userPermissions`, `rolePermissions`) — call `Rbac.flushCache()` after direct DB changes
+- `syncRoles()` and `syncPermissions()` are guard-scoped replacements: they preserve assignments belonging to other guards
 - Gate `before` callbacks can short-circuit — return `true` to allow, `null` to continue checking
 - `withRbac()` and `withAuthorization()` return new objects with methods mixed in
 - The `RbacStore` interface must be implemented and set via `Rbac.setStore()` for RBAC to work
