@@ -1,0 +1,446 @@
+<script client>
+import { dashboardApi } from '../../../../functions/dashboard-api'
+import { pushToast } from '../../../../functions/toasts'
+import { useChart } from '~/storage/framework/defaults/views/dashboard/composables/useChart'
+
+interface ContentPostSummary {
+  id: number
+  title: string
+  category: string
+  views: number
+  comments: number
+  publishedAt: string
+  status: string
+}
+
+interface ContentCommentSummary {
+  id: number
+  author: string
+  email: string
+  content: string
+  postId: number | null
+  postTitle: string
+  createdAt: string
+  status: string
+}
+
+interface ContentDraftSummary {
+  id: number
+  title: string
+  category: string
+  author: string
+  updatedAt: string
+}
+
+interface ContentOverview {
+  rangeDays: number
+  stats: {
+    posts: number
+    pages: number
+    comments: number
+    views: number
+  }
+  topPosts: ContentPostSummary[]
+  recentComments: ContentCommentSummary[]
+  drafts: ContentDraftSummary[]
+  charts: {
+    views: { labels: string[], data: number[] }
+    categories: { labels: string[], data: number[] }
+  }
+}
+
+interface ChartDataset {
+  data: number[]
+  label?: string
+  backgroundColor?: string | string[]
+  borderColor?: string | string[]
+  borderWidth?: number
+  fill?: boolean
+  tension?: number
+}
+
+interface ChartLike {
+  data: {
+    labels: string[]
+    datasets: ChartDataset[]
+  }
+  destroy: () => void
+  update: () => void
+}
+
+type ChartCtor = new (
+  canvas: HTMLElement,
+  config: { type: string, data: unknown, options?: unknown },
+) => ChartLike
+
+const emptyOverview = (): ContentOverview => ({
+  rangeDays: 30,
+  stats: { posts: 0, pages: 0, comments: 0, views: 0 },
+  topPosts: [],
+  recentComments: [],
+  drafts: [],
+  charts: {
+    views: { labels: [], data: [] },
+    categories: { labels: [], data: [] },
+  },
+})
+
+const overview = state<ContentOverview>(emptyOverview())
+const selectedRange = state('30')
+const loading = state(true)
+const loadError = state('')
+const rangeOptions = [
+  { label: 'Today', value: '1' },
+  { label: 'Last 7 days', value: '7' },
+  { label: 'Last 30 days', value: '30' },
+  { label: 'Last 90 days', value: '90' },
+  { label: 'Last year', value: '365' },
+  { label: 'All time', value: '0' },
+]
+
+let viewsChart: ChartLike | null = null
+let categoriesChart: ChartLike | null = null
+
+function formatNumber(value: number): string {
+  return new Intl.NumberFormat('en-US').format(Number(value || 0))
+}
+
+function formatDate(value: string): string {
+  const date = new Date(value)
+  return Number.isNaN(date.getTime())
+    ? value
+    : new Intl.DateTimeFormat('en-US', { dateStyle: 'medium', timeStyle: 'short' }).format(date)
+}
+
+function postStatusClass(status: string): string {
+  if (status === 'published')
+    return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'
+  if (status === 'archived')
+    return 'bg-gray-100 text-gray-700 dark:bg-neutral-700 dark:text-neutral-300'
+  return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300'
+}
+
+function commentStatusClass(status: string): string {
+  if (status === 'approved')
+    return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'
+  if (status === 'spam' || status === 'trash')
+    return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300'
+  return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300'
+}
+
+function viewsChartData() {
+  return {
+    labels: overview().charts.views.labels,
+    datasets: [{
+      label: 'Recorded views',
+      data: overview().charts.views.data,
+      backgroundColor: 'rgba(59, 130, 246, 0.16)',
+      borderColor: 'rgb(59, 130, 246)',
+      borderWidth: 2,
+      fill: true,
+      tension: 0.35,
+    }],
+  }
+}
+
+function categoriesChartData() {
+  return {
+    labels: overview().charts.categories.labels,
+    datasets: [{
+      data: overview().charts.categories.data,
+      backgroundColor: [
+        'rgba(59, 130, 246, 0.82)',
+        'rgba(16, 185, 129, 0.82)',
+        'rgba(245, 158, 11, 0.82)',
+        'rgba(139, 92, 246, 0.82)',
+        'rgba(239, 68, 68, 0.82)',
+        'rgba(100, 116, 139, 0.82)',
+      ],
+      borderColor: 'rgba(255, 255, 255, 0.45)',
+      borderWidth: 1,
+    }],
+  }
+}
+
+const chartOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: {
+    legend: { display: false },
+  },
+  scales: {
+    y: {
+      beginAtZero: true,
+      grid: { color: 'rgba(148, 163, 184, 0.15)' },
+      ticks: { precision: 0 },
+    },
+    x: { grid: { display: false } },
+  },
+}
+
+const categoryChartOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: {
+    legend: {
+      position: 'right',
+      labels: { boxWidth: 12, padding: 14 },
+    },
+  },
+}
+
+function refreshCharts(): void {
+  if (viewsChart) {
+    const next = viewsChartData()
+    viewsChart.data.labels = next.labels
+    viewsChart.data.datasets = next.datasets
+    viewsChart.update()
+  }
+
+  if (categoriesChart) {
+    const next = categoriesChartData()
+    categoriesChart.data.labels = next.labels
+    categoriesChart.data.datasets = next.datasets
+    categoriesChart.update()
+  }
+}
+
+async function loadOverview(refresh = true): Promise<void> {
+  loading.set(true)
+  loadError.set('')
+  try {
+    const data = await dashboardApi<ContentOverview>(`/api/dashboard/content/overview?days=${selectedRange()}`)
+    if (!data.stats || !Array.isArray(data.topPosts) || !Array.isArray(data.recentComments) || !Array.isArray(data.drafts))
+      throw new TypeError('Content overview was not returned in the expected shape.')
+    overview.set(data)
+    if (refresh)
+      refreshCharts()
+  }
+  catch (error) {
+    loadError.set(error instanceof Error ? error.message : String(error))
+    pushToast('error', 'Could not load content overview', { detail: loadError() })
+  }
+  finally {
+    loading.set(false)
+  }
+}
+
+async function changeRange(): Promise<void> {
+  await loadOverview()
+}
+
+onMount(async () => {
+  await loadOverview(false)
+  const { Chart, registerables } = await import('/__deps/charts.js')
+  Chart.register(...registerables)
+  const Ctor = Chart as unknown as ChartCtor
+  const viewsHandle = useChart({
+    Chart: Ctor,
+    id: 'content_views_chart',
+    type: 'line',
+    data: viewsChartData(),
+    options: chartOptions,
+  })
+  const categoriesHandle = useChart({
+    Chart: Ctor,
+    id: 'content_category_chart',
+    type: 'doughnut',
+    data: categoriesChartData(),
+    options: categoryChartOptions,
+  })
+  viewsChart = viewsHandle.instance as ChartLike | null
+  categoriesChart = categoriesHandle.instance as ChartLike | null
+})
+
+onDestroy(() => {
+  viewsChart?.destroy()
+  categoriesChart?.destroy()
+  viewsChart = null
+  categoriesChart = null
+})
+</script>
+
+<div class="space-y-6">
+  <header class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+    <div>
+      <p class="font-semibold text-blue-600 text-xs tracking-wide uppercase dark:text-blue-400">Content</p>
+      <h1 class="mt-1 font-bold text-2xl text-gray-900 dark:text-white">Content Dashboard</h1>
+      <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Persisted CMS activity for the selected period.</p>
+    </div>
+    <div class="flex gap-2">
+      <label>
+        <span class="sr-only">Content reporting period</span>
+        <select
+          x-model="selectedRange"
+          aria-label="Content reporting period"
+          class="block pl-3 pr-10 py-2 text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700"
+          @change="changeRange"
+        >
+          <option :for="range in rangeOptions" :value="range.value">{{ range.label }}</option>
+        </select>
+      </label>
+      <button
+        type="button"
+        :disabled="loading()"
+        class="inline-flex items-center px-3 py-2 font-semibold text-gray-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700 disabled:opacity-50"
+        @click="loadOverview()"
+      >
+        <span :class="'mr-2 h-4 w-4 ' + (loading() ? 'animate-spin i-hugeicons-loading-03' : 'i-hugeicons-refresh')"></span>
+        Refresh
+      </button>
+    </div>
+  </header>
+
+  <div
+    :if="loadError()"
+    role="alert"
+    class="flex gap-4 items-center justify-between p-4 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900"
+  >
+    <span :text="loadError()"></span>
+    <button type="button" class="font-semibold underline" @click="loadOverview()">Retry</button>
+  </div>
+
+  <section aria-label="Content metrics" class="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+    <article class="p-4 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
+      <p class="text-gray-500 text-xs dark:text-neutral-400">Posts</p>
+      <p class="mt-2 font-semibold text-2xl text-gray-900 dark:text-white" :text="formatNumber(overview().stats.posts)"></p>
+    </article>
+    <article class="p-4 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
+      <p class="text-gray-500 text-xs dark:text-neutral-400">Pages</p>
+      <p class="mt-2 font-semibold text-2xl text-gray-900 dark:text-white" :text="formatNumber(overview().stats.pages)"></p>
+    </article>
+    <article class="p-4 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
+      <p class="text-gray-500 text-xs dark:text-neutral-400">Comments</p>
+      <p class="mt-2 font-semibold text-2xl text-gray-900 dark:text-white" :text="formatNumber(overview().stats.comments)"></p>
+    </article>
+    <article class="p-4 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
+      <p class="text-gray-500 text-xs dark:text-neutral-400">Recorded views</p>
+      <p class="mt-2 font-semibold text-2xl text-gray-900 dark:text-white" :text="formatNumber(overview().stats.views)"></p>
+    </article>
+  </section>
+
+  <section class="grid gap-5 lg:grid-cols-2">
+    <article class="overflow-hidden bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
+      <div class="p-5 border-b border-gray-200 dark:border-neutral-700">
+        <h2 class="font-semibold text-gray-900 text-sm dark:text-white">Views by publication month</h2>
+        <p class="mt-1 text-gray-500 text-xs dark:text-neutral-400">Recorded post and page views grouped by publication date.</p>
+      </div>
+      <div class="relative p-5 h-72">
+        <canvas id="content_views_chart"></canvas>
+        <div :if="!loading() && overview().charts.views.labels.length === 0" class="flex absolute inset-0 items-center justify-center text-gray-500 text-sm dark:text-neutral-400">No view data in this period.</div>
+      </div>
+    </article>
+
+    <article class="overflow-hidden bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
+      <div class="p-5 border-b border-gray-200 dark:border-neutral-700">
+        <h2 class="font-semibold text-gray-900 text-sm dark:text-white">Posts by category</h2>
+        <p class="mt-1 text-gray-500 text-xs dark:text-neutral-400">Category assignments for posts in this period.</p>
+      </div>
+      <div class="relative p-5 h-72">
+        <canvas id="content_category_chart"></canvas>
+        <div :if="!loading() && overview().charts.categories.labels.length === 0" class="flex absolute inset-0 items-center justify-center text-gray-500 text-sm dark:text-neutral-400">No category data in this period.</div>
+      </div>
+    </article>
+  </section>
+
+  <section class="overflow-hidden bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
+    <div class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-neutral-700">
+      <div>
+        <h2 class="font-semibold text-gray-900 text-sm dark:text-white">Top posts</h2>
+        <p class="mt-1 text-gray-500 text-xs dark:text-neutral-400">Ranked by persisted view count.</p>
+      </div>
+      <a href="/content/posts" class="font-semibold text-blue-600 text-sm dark:text-blue-400">Manage posts</a>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="min-w-full divide-gray-200 divide-y dark:divide-neutral-700">
+        <thead class="bg-gray-50 dark:bg-neutral-900/50">
+          <tr>
+            <th class="px-4 py-3 font-semibold text-gray-600 text-left text-xs dark:text-neutral-300">Post</th>
+            <th class="px-4 py-3 font-semibold text-gray-600 text-left text-xs dark:text-neutral-300">Category</th>
+            <th class="px-4 py-3 font-semibold text-gray-600 text-right text-xs dark:text-neutral-300">Views</th>
+            <th class="px-4 py-3 font-semibold text-gray-600 text-right text-xs dark:text-neutral-300">Comments</th>
+            <th class="px-4 py-3 font-semibold text-gray-600 text-left text-xs dark:text-neutral-300">Published</th>
+            <th class="px-4 py-3 font-semibold text-gray-600 text-left text-xs dark:text-neutral-300">Status</th>
+          </tr>
+        </thead>
+        <tbody class="divide-gray-200 divide-y dark:divide-neutral-700">
+          <template :if="loading()">
+            <tr><td colspan="6" class="px-4 py-10 text-center text-gray-500 text-sm dark:text-neutral-400">Loading content</td></tr>
+          </template>
+          <template :else-if="overview().topPosts.length === 0">
+            <tr><td colspan="6" class="px-4 py-10 text-center text-gray-500 text-sm dark:text-neutral-400">No posts in this period.</td></tr>
+          </template>
+          <template :else>
+            <template :for="post in overview().topPosts">
+              <tr>
+                <td class="px-4 py-3 font-medium text-gray-900 text-sm dark:text-white">{{ post.title }}</td>
+                <td class="px-4 py-3 text-gray-500 text-sm dark:text-neutral-400">{{ post.category }}</td>
+                <td class="px-4 py-3 text-gray-500 text-right text-sm dark:text-neutral-400">{{ formatNumber(post.views) }}</td>
+                <td class="px-4 py-3 text-gray-500 text-right text-sm dark:text-neutral-400">{{ formatNumber(post.comments) }}</td>
+                <td class="px-4 py-3 text-gray-500 text-sm dark:text-neutral-400">{{ formatDate(post.publishedAt) }}</td>
+                <td class="px-4 py-3">
+                  <span :class="postStatusClass(post.status)" class="inline-flex px-2 py-1 font-semibold text-xs rounded-full">{{ post.status }}</span>
+                </td>
+              </tr>
+            </template>
+          </template>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="grid gap-5 lg:grid-cols-2">
+    <article class="overflow-hidden bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
+      <div class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-neutral-700">
+        <div>
+          <h2 class="font-semibold text-gray-900 text-sm dark:text-white">Recent comments</h2>
+          <p class="mt-1 text-gray-500 text-xs dark:text-neutral-400">Latest reader responses in this period.</p>
+        </div>
+        <a href="/content/comments" class="font-semibold text-blue-600 text-sm dark:text-blue-400">Moderate</a>
+      </div>
+      <ul :if="overview().recentComments.length > 0" role="list" class="divide-gray-200 divide-y dark:divide-neutral-700">
+        <li :for="comment in overview().recentComments" class="p-4">
+          <div class="flex gap-3 items-start justify-between">
+            <div class="min-w-0">
+              <p class="font-medium text-gray-900 text-sm dark:text-white" :text="comment.author"></p>
+              <p :if="comment.email" class="text-gray-500 text-xs truncate dark:text-neutral-400" :text="comment.email"></p>
+            </div>
+            <span :class="commentStatusClass(comment.status)" class="inline-flex px-2 py-1 font-semibold text-xs rounded-full" :text="comment.status"></span>
+          </div>
+          <p class="mt-2 text-gray-700 text-sm dark:text-neutral-300" :text="comment.content"></p>
+          <p class="mt-2 text-gray-500 text-xs dark:text-neutral-400">
+            <span :if="comment.postTitle">On <span :text="comment.postTitle"></span> · </span>
+            <span :text="formatDate(comment.createdAt)"></span>
+          </p>
+        </li>
+      </ul>
+      <div :if="!loading() && overview().recentComments.length === 0" class="p-10 text-center text-gray-500 text-sm dark:text-neutral-400">No comments in this period.</div>
+    </article>
+
+    <article class="overflow-hidden bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
+      <div class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-neutral-700">
+        <div>
+          <h2 class="font-semibold text-gray-900 text-sm dark:text-white">Draft posts</h2>
+          <p class="mt-1 text-gray-500 text-xs dark:text-neutral-400">Recently updated unpublished work.</p>
+        </div>
+        <a href="/content/posts" class="font-semibold text-blue-600 text-sm dark:text-blue-400">Open drafts</a>
+      </div>
+      <ul :if="overview().drafts.length > 0" role="list" class="divide-gray-200 divide-y dark:divide-neutral-700">
+        <li :for="draft in overview().drafts" class="p-4">
+          <div class="flex gap-3 items-start justify-between">
+            <div class="min-w-0">
+              <p class="font-medium text-gray-900 text-sm dark:text-white" :text="draft.title"></p>
+              <p class="mt-1 text-gray-500 text-xs dark:text-neutral-400">
+                <span :text="draft.category"></span>
+                <span> · </span>
+                <span :text="draft.author"></span>
+              </p>
+            </div>
+            <time class="text-gray-500 text-xs whitespace-nowrap dark:text-neutral-400" :datetime="draft.updatedAt" :text="formatDate(draft.updatedAt)"></time>
+          </div>
+        </li>
+      </ul>
+      <div :if="!loading() && overview().drafts.length === 0" class="p-10 text-center text-gray-500 text-sm dark:text-neutral-400">No drafts in this period.</div>
+    </article>
+  </section>
+</div>

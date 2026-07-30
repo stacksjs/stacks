@@ -64,6 +64,30 @@ describe('dashboard native STX bindings', () => {
     expect(taxonomy).toContain('@blur="normalizeSlug"')
   })
 
+  test('content overview is a thin component backed by persisted metrics', () => {
+    const view = readFileSync(
+      resolve('storage/framework/defaults/views/dashboard/content/dashboard.stx'),
+      'utf8',
+    )
+    const component = componentSource('Content/ContentDashboard.stx')
+    const routes = readFileSync(
+      resolve('storage/framework/defaults/routes/dashboard-api.ts'),
+      'utf8',
+    )
+
+    expect(view).toContain('<ContentDashboard />')
+    expect(view).not.toContain('<script client>')
+    expect(component).toContain("dashboardApi<ContentOverview>(`/api/dashboard/content/overview?days=${selectedRange()}`)")
+    expect(component).toContain('x-model="selectedRange"')
+    expect(component).toContain('@change="changeRange"')
+    expect(component).toContain("import { useChart }")
+    expect(component).not.toContain('Math.random')
+    expect(component).not.toContain('2023-')
+    expect(component).not.toContain('increase')
+    expect(component).not.toContain('decrease')
+    expect(routes).toContain("guard(route.get('/content/overview'")
+  })
+
   test('inbox components use native local models across event boundaries', () => {
     const composer = componentSource('Email/InboxComposer.stx')
     for (const model of ['to', 'subject', 'body'])
