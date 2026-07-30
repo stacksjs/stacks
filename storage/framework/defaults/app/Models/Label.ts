@@ -33,6 +33,7 @@ export default defineModel({
     useApi: {
       uri: 'labels',
       routes: ['index', 'store', 'show', 'update', 'destroy'],
+      middleware: ['auth'],
     },
   },
 

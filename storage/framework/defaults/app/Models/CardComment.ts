@@ -36,6 +36,7 @@ export default defineModel({
     useApi: {
       uri: 'card-comments',
       routes: ['index', 'store', 'show', 'destroy'],
+      middleware: ['auth'],
     },
   },
 

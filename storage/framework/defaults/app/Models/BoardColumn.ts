@@ -35,6 +35,7 @@ export default defineModel({
     useApi: {
       uri: 'board-columns',
       routes: ['index', 'store', 'show', 'update', 'destroy'],
+      middleware: ['auth'],
     },
   },
 
