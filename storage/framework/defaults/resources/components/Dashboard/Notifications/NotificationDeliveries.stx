@@ -123,10 +123,10 @@ onMount(loadDeliveries)
         <p class="mt-2 text-gray-700 text-sm dark:text-neutral-300">{{ description }}</p>
       </div>
       <div class="sm:flex-none mt-4 sm:ml-16 sm:mt-0">
-        <button type="button" class="inline-flex items-center px-3 py-2 font-semibold text-gray-900 text-sm dark:text-neutral-100 bg-white dark:bg-neutral-600 hover:bg-gray-50 dark:hover:bg-neutral-500 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 shadow-sm" @click="showFilters.update(value => !value)">
-          <span class="mr-2 h-5 w-5 i-hugeicons-filter"></span>
+        <Button variant="secondary" @click="showFilters.update(value => !value)">
+          <span class="h-5 w-5 i-hugeicons-filter"></span>
           {{ showFilters ? 'Hide Filters' : 'Show Filters' }}
-        </button>
+        </Button>
       </div>
     </div>
 
@@ -177,7 +177,7 @@ onMount(loadDeliveries)
         </select>
       </label>
       <div>
-        <button type="button" class="px-3 py-2 font-semibold text-gray-900 text-sm dark:text-neutral-100 bg-white dark:bg-neutral-600 hover:bg-gray-50 dark:hover:bg-neutral-500 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 shadow-sm" @click="resetFilters()">Reset Filters</button>
+        <Button variant="secondary" @click="resetFilters()">Reset Filters</Button>
       </div>
     </div>
 
@@ -198,8 +198,8 @@ onMount(loadDeliveries)
         Showing <span class="font-medium">{{ rangeStart }}</span> to <span class="font-medium">{{ rangeEnd }}</span> of <span class="font-medium">{{ totalItems }}</span> results
       </p>
       <div class="flex gap-2 items-center">
-        <button type="button" :disabled="!canGoBack" class="px-3 py-2 font-semibold text-gray-900 text-sm dark:text-neutral-100 bg-white dark:bg-neutral-600 hover:bg-gray-50 dark:hover:bg-neutral-500 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 disabled:opacity-50" @click="previousPage()">Previous</button>
-        <button type="button" :disabled="!canGoForward" class="px-3 py-2 font-semibold text-gray-900 text-sm dark:text-neutral-100 bg-white dark:bg-neutral-600 hover:bg-gray-50 dark:hover:bg-neutral-500 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 disabled:opacity-50" @click="nextPage()">Next</button>
+        <Button variant="secondary" :disabled="!canGoBack" @click="previousPage()">Previous</Button>
+        <Button variant="secondary" :disabled="!canGoForward" @click="nextPage()">Next</Button>
       </div>
     </div>
   </div>

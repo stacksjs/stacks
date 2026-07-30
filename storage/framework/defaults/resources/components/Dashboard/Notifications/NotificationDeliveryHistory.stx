@@ -146,9 +146,9 @@ onDestroy(() => requestController?.abort())
         <span class="sr-only">Search notification history</span>
         <span class="flex">
           <input x-model.trim="searchQuery" type="search" placeholder="Search recipient or content..." class="block px-3 py-2 w-full text-gray-900 text-sm dark:text-neutral-100 placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-l-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset" />
-          <button type="submit" class="inline-flex items-center px-3 py-2 font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-r-md">
+          <Button type="submit">
             Search
-          </button>
+          </Button>
         </span>
       </label>
       <label>
@@ -184,10 +184,10 @@ onDestroy(() => requestController?.abort())
         </select>
       </label>
       <div class="flex gap-2">
-        <button type="button" :aria-label="sortDirection === 'asc' ? 'Sort descending' : 'Sort ascending'" class="inline-flex items-center justify-center px-3 py-2 text-gray-700 dark:text-neutral-200 bg-white dark:bg-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-600 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600" @click="toggleSortDirection()">
+        <Button variant="secondary" iconOnly :ariaLabel="sortDirection === 'asc' ? 'Sort descending' : 'Sort ascending'" @click="toggleSortDirection()">
           <span :class="'h-5 w-5 ' + (sortDirection === 'asc' ? 'i-hugeicons-sort-by-up-01' : 'i-hugeicons-sort-by-down-01')"></span>
-        </button>
-        <button type="button" class="flex-1 px-3 py-2 font-semibold text-gray-900 text-sm dark:text-neutral-100 bg-white dark:bg-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-600 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600" @click="resetFilters()">Reset</button>
+        </Button>
+        <Button variant="secondary" fullWidth @click="resetFilters()">Reset</Button>
       </div>
     </form>
 
@@ -208,9 +208,9 @@ onDestroy(() => requestController?.abort())
         Showing <span class="font-medium">{{ rangeStart }}</span> to <span class="font-medium">{{ rangeEnd }}</span> of <span class="font-medium">{{ totalItems }}</span> results
       </p>
       <div class="flex gap-2 items-center">
-        <button type="button" :disabled="!canGoBack || isLoading" class="px-3 py-2 font-semibold text-gray-900 text-sm dark:text-neutral-100 bg-white dark:bg-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-600 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 disabled:opacity-50" @click="previousPage()">Previous</button>
+        <Button variant="secondary" :disabled="!canGoBack || isLoading" @click="previousPage()">Previous</Button>
         <span class="px-2 font-mono text-gray-500 text-xs dark:text-neutral-400">Page {{ currentPage }} of {{ totalPages }}</span>
-        <button type="button" :disabled="!canGoForward || isLoading" class="px-3 py-2 font-semibold text-gray-900 text-sm dark:text-neutral-100 bg-white dark:bg-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-600 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 disabled:opacity-50" @click="nextPage()">Next</button>
+        <Button variant="secondary" :disabled="!canGoForward || isLoading" @click="nextPage()">Next</Button>
       </div>
     </div>
   </div>

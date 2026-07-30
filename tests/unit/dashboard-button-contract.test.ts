@@ -109,6 +109,10 @@ describe('dashboard button contract', () => {
       'Content/ContentTaxonomyDashboard.stx',
       'Content/CommentsDashboard.stx',
       'Content/ContentDashboard.stx',
+      'Notifications/NotificationDeliveryTable.stx',
+      'Notifications/NotificationDeliveryDialog.stx',
+      'Notifications/NotificationDeliveryHistory.stx',
+      'Notifications/NotificationDeliveries.stx',
     ]
 
     for (const file of files) {

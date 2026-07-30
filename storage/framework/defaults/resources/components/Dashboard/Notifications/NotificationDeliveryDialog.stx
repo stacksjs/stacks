@@ -42,9 +42,9 @@ function metadataText(): string {
           <p class="font-medium text-blue-600 text-xs tracking-wide uppercase dark:text-blue-400">{{ delivery?.channel || 'notification' }}</p>
           <h3 class="mt-1 font-semibold leading-6 text-gray-900 text-lg dark:text-white">Delivery attempt #{{ delivery?.id || '' }}</h3>
         </div>
-        <button type="button" aria-label="Close notification delivery details" class="p-2 text-gray-400 hover:text-gray-700 dark:hover:text-white rounded-md" @click="emit('close')">
+        <Button variant="ghost" iconOnly ariaLabel="Close notification delivery details" @click="emit('close')">
           <span class="block h-5 w-5 i-hugeicons-cancel-01"></span>
-        </button>
+        </Button>
       </div>
 
       <dl class="grid gap-x-6 gap-y-4 grid-cols-1 sm:grid-cols-2 mt-6">
@@ -75,9 +75,9 @@ function metadataText(): string {
       </dl>
 
       <div class="flex justify-end mt-6">
-        <button type="button" class="px-3 py-2 font-semibold text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-600 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 shadow-sm" @click="emit('close')">
+        <Button variant="secondary" @click="emit('close')">
           Close
-        </button>
+        </Button>
       </div>
     </section>
   </div>
