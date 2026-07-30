@@ -1,0 +1,241 @@
+<script client>
+import type {
+  DashboardMailbox,
+  DashboardMailboxDomain,
+  DashboardMailboxFeature,
+  DashboardMailboxForward,
+  DashboardMailboxPort,
+  DashboardMailboxSnapshot,
+  DashboardMailboxStorage,
+} from '../../../../app/Actions/Dashboard/Infrastructure/mailbox-overview'
+import { dashboardApi } from '../../../../functions/dashboard-api'
+
+const mailboxes = state<DashboardMailbox[]>([])
+const domains = state<DashboardMailboxDomain[]>([])
+const from = state<{ name: string | null, address: string | null }>({ name: null, address: null })
+const server = state<DashboardMailboxSnapshot['server']>({
+  enabled: false,
+  mode: null,
+  scan: false,
+  features: [],
+  ports: [],
+  storage: [],
+})
+const forwards = state<DashboardMailboxForward[]>([])
+const generatedAt = state('')
+const loading = state(true)
+const loadError = state('')
+const search = state('')
+const selectedMailbox = state<DashboardMailbox | null>(null)
+
+const filteredMailboxes = derived(() => {
+  const query = search().trim().toLowerCase()
+  if (!query)
+    return mailboxes()
+  return mailboxes().filter(mailbox =>
+    `${mailbox.email} ${mailbox.username}`.toLowerCase().includes(query),
+  )
+})
+const enabledFeatures = derived(() => server().features.filter(feature => feature.enabled))
+const primaryDomain = derived(() => domains()[0] ?? null)
+
+function formatDate(value: string): string {
+  const date = new Date(value)
+  return Number.isNaN(date.getTime())
+    ? 'Not recorded'
+    : new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(date)
+}
+
+function featureLabel(feature: DashboardMailboxFeature): string {
+  return feature.name.replace(/([a-z])([A-Z])/g, '$1 $2')
+}
+
+function portLabel(port: DashboardMailboxPort): string {
+  return port.name.replace(/([a-z])([A-Z])/g, '$1 $2')
+}
+
+function storageLabel(item: DashboardMailboxStorage): string {
+  return item.name.replace(/([a-z])([A-Z])/g, '$1 $2')
+}
+
+function inspectMailbox(mailbox: DashboardMailbox): void {
+  selectedMailbox.set(mailbox)
+}
+
+function closeMailbox(): void {
+  selectedMailbox.set(null)
+}
+
+async function loadMailboxes(): Promise<void> {
+  loading.set(true)
+  loadError.set('')
+  try {
+    const result = await dashboardApi<DashboardMailboxSnapshot>('/api/dashboard/mailboxes')
+    mailboxes.set(Array.isArray(result.mailboxes) ? result.mailboxes : [])
+    domains.set(Array.isArray(result.domains) ? result.domains : [])
+    from.set(result.from || { name: null, address: null })
+    server.set(result.server || {
+      enabled: false,
+      mode: null,
+      scan: false,
+      features: [],
+      ports: [],
+      storage: [],
+    })
+    forwards.set(Array.isArray(result.forwards) ? result.forwards : [])
+    generatedAt.set(result.generatedAt || '')
+  }
+  catch (error) {
+    mailboxes.set([])
+    domains.set([])
+    from.set({ name: null, address: null })
+    server.set({
+      enabled: false,
+      mode: null,
+      scan: false,
+      features: [],
+      ports: [],
+      storage: [],
+    })
+    forwards.set([])
+    generatedAt.set('')
+    loadError.set(error instanceof Error ? error.message : 'Mailbox configuration could not be loaded.')
+  }
+  finally {
+    loading.set(false)
+  }
+}
+
+useEventListener('keydown', (event: KeyboardEvent) => {
+  if (event.key === 'Escape')
+    closeMailbox()
+})
+
+onMount(() => {
+  void loadMailboxes()
+})
+</script>
+
+<div class="space-y-6">
+  <header class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+    <div>
+      <div class="flex gap-2 items-center">
+        <h1 class="font-semibold text-2xl text-neutral-900 tracking-tight dark:text-white">Mailboxes</h1>
+        <CloudStatusBadge :status="server().enabled ? 'configured' : 'inactive'" />
+      </div>
+      <p class="mt-1 max-w-2xl text-neutral-500 text-sm dark:text-neutral-400">Mailbox and mail-server declarations from config/email.ts. No delivery or provider health is inferred.</p>
+    </div>
+    <div class="flex gap-2 items-center">
+      <StxLink to="/inbox/activity" class="inline-flex items-center self-start px-3 py-2 font-medium text-neutral-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-900 hover:bg-neutral-50 dark:hover:bg-neutral-800 border border-neutral-300 rounded-lg dark:border-neutral-700">Mail activity</StxLink>
+      <StxLink to="/inbox" class="inline-flex items-center self-start px-3 py-2 font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-lg">Open inbox</StxLink>
+      <button type="button" :disabled="loading()" aria-label="Refresh mailbox configuration" class="inline-flex items-center self-start p-2.5 text-neutral-700 dark:text-neutral-200 bg-white dark:bg-neutral-900 hover:bg-neutral-50 dark:hover:bg-neutral-800 border border-neutral-300 rounded-lg dark:border-neutral-700 disabled:opacity-50" @click="loadMailboxes">
+        <span :class="'h-4 w-4 ' + (loading() ? 'animate-spin i-hugeicons-loading-03' : 'i-hugeicons-refresh')"></span>
+      </button>
+    </div>
+  </header>
+
+  <div :if="loadError()" role="alert" class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between px-4 py-3 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/40 border border-red-200 rounded-xl dark:border-red-900">
+    <span>{{ loadError() }}</span>
+    <button type="button" class="font-semibold hover:underline" @click="loadMailboxes">Try again</button>
+  </div>
+
+  <section class="grid gap-3 grid-cols-2 xl:grid-cols-4">
+    <div class="p-4 bg-white dark:bg-neutral-900 border border-neutral-200 rounded-xl dark:border-neutral-700">
+      <p class="text-neutral-500 text-xs uppercase dark:text-neutral-400">Mailboxes</p>
+      <p class="mt-2 font-semibold text-neutral-900 text-xl dark:text-white">{{ mailboxes().length }}</p>
+    </div>
+    <div class="p-4 bg-white dark:bg-neutral-900 border border-neutral-200 rounded-xl dark:border-neutral-700">
+      <p class="text-neutral-500 text-xs uppercase dark:text-neutral-400">Mode</p>
+      <p class="mt-2 capitalize font-semibold text-neutral-900 text-xl dark:text-white">{{ server().mode || 'Not set' }}</p>
+    </div>
+    <div class="p-4 bg-white dark:bg-neutral-900 border border-neutral-200 rounded-xl dark:border-neutral-700">
+      <p class="text-neutral-500 text-xs uppercase dark:text-neutral-400">Enabled features</p>
+      <p class="mt-2 font-semibold text-neutral-900 text-xl dark:text-white">{{ enabledFeatures().length }}</p>
+    </div>
+    <div class="p-4 bg-white dark:bg-neutral-900 border border-neutral-200 rounded-xl dark:border-neutral-700">
+      <p class="text-neutral-500 text-xs uppercase dark:text-neutral-400">Domain</p>
+      <p class="mt-2 font-medium text-neutral-900 text-sm truncate dark:text-white">{{ primaryDomain()?.domain || 'Not set' }}</p>
+    </div>
+  </section>
+
+  <section class="grid gap-4 grid-cols-1 xl:grid-cols-[minmax(0,1fr)_minmax(18rem,0.65fr)]">
+    <div class="p-5 bg-white dark:bg-neutral-900 border border-neutral-200 rounded-xl dark:border-neutral-700">
+      <div class="flex gap-3 items-center justify-between">
+        <div><h2 class="font-semibold text-neutral-900 dark:text-white">Mail server</h2><p class="mt-1 text-neutral-500 text-xs dark:text-neutral-400">Declared server capabilities and endpoints.</p></div>
+        <CloudStatusBadge :status="server().enabled ? 'configured' : 'inactive'" />
+      </div>
+      <dl class="grid gap-4 sm:grid-cols-3 mt-5 text-sm">
+        <div><dt class="text-neutral-500 dark:text-neutral-400">Server endpoint</dt><dd class="mt-1 break-all font-medium text-neutral-900 dark:text-white">{{ primaryDomain()?.subdomain || 'Not set' }}</dd></div>
+        <div><dt class="text-neutral-500 dark:text-neutral-400">Spam and virus scan</dt><dd class="mt-1 font-medium text-neutral-900 dark:text-white">{{ server().scan ? 'Enabled' : 'Disabled' }}</dd></div>
+        <div><dt class="text-neutral-500 dark:text-neutral-400">From address</dt><dd class="mt-1 break-all font-medium text-neutral-900 dark:text-white">{{ from().address || 'Not set' }}</dd></div>
+      </dl>
+      <div class="grid gap-2 sm:grid-cols-2 lg:grid-cols-3 mt-5">
+        <div :for="feature in server().features" class="flex gap-3 items-center p-3 bg-neutral-50 dark:bg-neutral-800 rounded-lg">
+          <span :class="'shrink-0 h-4 w-4 ' + (feature.enabled ? 'text-green-500 i-hugeicons-checkmark-circle-02' : 'text-neutral-400 i-hugeicons-cancel-circle')"></span>
+          <span class="capitalize text-neutral-700 text-sm dark:text-neutral-300">{{ featureLabel(feature) }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="p-5 bg-white dark:bg-neutral-900 border border-neutral-200 rounded-xl dark:border-neutral-700">
+      <h2 class="font-semibold text-neutral-900 dark:text-white">Ports</h2>
+      <p class="mt-1 text-neutral-500 text-xs dark:text-neutral-400">Configured listener ports.</p>
+      <dl class="grid gap-x-5 gap-y-3 grid-cols-2 mt-5 text-sm">
+        <div :for="port in server().ports" class="flex gap-3 items-center justify-between">
+          <dt class="capitalize text-neutral-500 dark:text-neutral-400">{{ portLabel(port) }}</dt>
+          <dd class="font-mono font-semibold text-neutral-900 dark:text-white">{{ port.port }}</dd>
+        </div>
+      </dl>
+    </div>
+  </section>
+
+  <section>
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+      <div><h2 class="font-semibold text-neutral-900 dark:text-white">Configured mailboxes</h2><p class="mt-1 text-neutral-500 text-sm dark:text-neutral-400">Addresses are source-controlled in config/email.ts.</p></div>
+      <label class="block relative sm:w-72">
+        <span class="sr-only">Search mailboxes</span>
+        <span class="absolute left-3 top-2.5 h-4 w-4 text-neutral-400 i-hugeicons-search-01"></span>
+        <input x-model="search" type="search" placeholder="Search mailboxes" class="pl-9 pr-3 py-2 w-full text-neutral-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-neutral-300 rounded-lg dark:border-neutral-700 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20" />
+      </label>
+    </div>
+
+    <div :if="loading()" class="flex items-center justify-center mt-4 py-16 text-neutral-500 text-sm dark:text-neutral-400 bg-white dark:bg-neutral-900 border border-neutral-200 rounded-xl dark:border-neutral-700">
+      <span class="mr-2 h-5 w-5 animate-spin i-hugeicons-loading-03"></span>
+      Loading mailbox configuration...
+    </div>
+
+    <EmptyState :if="!loading() && !loadError() && filteredMailboxes().length === 0" icon="i-hugeicons-mail-01" :title="mailboxes().length ? 'No matching mailboxes' : 'No mailboxes configured'" :description="mailboxes().length ? 'Adjust the mailbox search.' : 'Add mailbox names to config/email.ts, then refresh this page.'" />
+
+    <div :if="!loading() && filteredMailboxes().length > 0" class="grid gap-3 grid-cols-1 md:grid-cols-2 xl:grid-cols-3 mt-4">
+      <button :for="mailbox in filteredMailboxes()" type="button" class="flex gap-4 items-center p-4 w-full text-left bg-white dark:bg-neutral-900 hover:bg-neutral-50 dark:hover:bg-neutral-800 border border-neutral-200 rounded-xl dark:border-neutral-700" @click="inspectMailbox(mailbox)">
+        <span class="flex items-center justify-center shrink-0 h-10 w-10 text-blue-600 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/30 rounded-xl"><span class="h-5 w-5 i-hugeicons-mail-01"></span></span>
+        <span class="flex-1 min-w-0"><span class="block font-semibold text-neutral-900 text-sm truncate dark:text-white">{{ mailbox.email }}</span><span class="block mt-1 text-neutral-500 text-xs dark:text-neutral-400">{{ mailbox.username }}</span></span>
+        <CloudStatusBadge :status="mailbox.status" />
+      </button>
+    </div>
+  </section>
+
+  <section class="grid gap-4 grid-cols-1 xl:grid-cols-2">
+    <div class="overflow-hidden bg-white dark:bg-neutral-900 border border-neutral-200 rounded-xl dark:border-neutral-700">
+      <header class="flex items-center justify-between px-5 py-4 border-b border-neutral-200 dark:border-neutral-700"><div><h2 class="font-semibold text-neutral-900 dark:text-white">Forwarding</h2><p class="mt-1 text-neutral-500 text-xs dark:text-neutral-400">Configured address copies.</p></div><span class="font-mono text-neutral-400 text-xs">{{ forwards().length }}</span></header>
+      <div :if="forwards().length > 0" class="divide-neutral-100 divide-y dark:divide-neutral-800">
+        <div :for="forward in forwards()" class="px-5 py-4">
+          <p class="font-medium font-mono text-neutral-900 text-sm dark:text-white">{{ forward.source }}</p>
+          <p class="mt-1 break-all text-neutral-500 text-xs dark:text-neutral-400">Forwards to {{ forward.destinations.join(', ') || 'no destinations' }}</p>
+        </div>
+      </div>
+      <p :if="forwards().length === 0" class="p-5 text-neutral-500 text-sm dark:text-neutral-400">No forwarding rules configured.</p>
+    </div>
+
+    <div class="overflow-hidden bg-white dark:bg-neutral-900 border border-neutral-200 rounded-xl dark:border-neutral-700">
+      <header class="flex items-center justify-between px-5 py-4 border-b border-neutral-200 dark:border-neutral-700"><div><h2 class="font-semibold text-neutral-900 dark:text-white">Retention</h2><p class="mt-1 text-neutral-500 text-xs dark:text-neutral-400">Configured mail storage policy.</p></div><span class="font-mono text-neutral-400 text-xs">{{ server().storage.length }}</span></header>
+      <dl :if="server().storage.length > 0" class="grid gap-4 sm:grid-cols-2 p-5 text-sm">
+        <div :for="item in server().storage"><dt class="capitalize text-neutral-500 dark:text-neutral-400">{{ storageLabel(item) }}</dt><dd class="mt-1 font-medium text-neutral-900 dark:text-white">{{ item.value }}</dd></div>
+      </dl>
+      <p :if="server().storage.length === 0" class="p-5 text-neutral-500 text-sm dark:text-neutral-400">No storage policy configured.</p>
+      <p :if="generatedAt()" class="px-5 py-3 text-neutral-400 text-xs dark:text-neutral-500 bg-neutral-50 dark:bg-neutral-800/50 border-neutral-100 border-t dark:border-neutral-800">Snapshot {{ formatDate(generatedAt()) }}</p>
+    </div>
+  </section>
+
+  <MailboxDetailsDialog :open="Boolean(selectedMailbox())" :mailbox="selectedMailbox()" @close="closeMailbox" />
+</div>
