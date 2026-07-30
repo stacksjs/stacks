@@ -1,6 +1,6 @@
 ---
 name: stacks-env
-description: Use when working with environment variables in Stacks — the typed env proxy with auto-coercion, .env file loading, AES-256-GCM encryption/decryption of env values, runtime/platform detection, CI provider detection, or the env CLI commands. Covers @stacksjs/env, config/env.ts, and .env files.
+description: Use when working with environment variables in Stacks - the typed env proxy with auto-coercion, .env file loading, X25519 and AES-256-GCM encryption/decryption of env values, runtime/platform detection, CI provider detection, or the env CLI commands. Covers @stacksjs/env, config/env.ts, and .env files.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript
 allowed-tools: Read Edit Write Bash Grep Glob
@@ -23,7 +23,7 @@ env/src/
 ├── plugin.ts    # Bun plugin for auto .env loading
 ├── parser.ts    # .env file parser with encryption support
 ├── cli.ts       # CLI commands (get, set, encrypt, decrypt, rotate)
-├── crypto.ts    # AES-256-GCM + secp256k1 encryption
+├── crypto.ts    # X25519 + HKDF-SHA-256 + AES-256-GCM encryption
 └── types.ts     # StacksEnv interface (100+ typed vars)
 ```
 
@@ -105,7 +105,7 @@ const vars = parse(envContent, {
 })
 ```
 
-## Encryption (AES-256-GCM)
+## Encryption (X25519 + AES-256-GCM)
 
 ```typescript
 import { aesEncrypt, aesDecrypt, generateKeypair, encryptValue, decryptValue, getPrivateKey } from '@stacksjs/env'
@@ -114,7 +114,7 @@ import { aesEncrypt, aesDecrypt, generateKeypair, encryptValue, decryptValue, ge
 const encrypted = aesEncrypt(plaintext, password)
 const decrypted = aesDecrypt(encrypted, password)
 
-// Asymmetric encryption (secp256k1 ECIES-style)
+// Versioned ephemeral-static X25519 envelope encryption
 const keypair = generateKeypair()
 const encrypted = encryptValue(value, keypair.publicKey)
 const decrypted = decryptValue(encrypted, keypair.privateKey)
@@ -167,6 +167,25 @@ from a slug prefix by shape alone. Slug punctuation is ignored, so
 The API is `partitionTenantEnv(values, { self, tenants })` from
 `@stacksjs/env`, plus `stripForeignTenantEnv` and `foreignTenantKeys`.
 
+## Dashboard environment editor
+
+The dashboard reads and writes `.env` through guarded
+`/api/dashboard/environment` GET and PUT endpoints. The write contract:
+
+- validates uppercase environment keys and duplicate definitions
+- limits the file to 1 MB and rejects null bytes
+- requires the SHA-256 revision returned by the latest read
+- writes through a 0600 temporary file and atomic rename
+- stores the previous content under
+  `storage/framework/runtime/dashboard/environment.backup`
+- returns `Cache-Control: no-store` because the response contains secrets
+
+Structured settings pages should use `updateEnvironmentEntries()` from the
+dashboard environment-file service. It updates only named keys while
+preserving comments, ordering, unrelated values, and the same revision and
+backup guarantees. Do not implement settings with repeated `writeFileSync`
+calls or raw client-side `fetch`.
+
 ## Gotchas
 - **A tenant's keys in your env file get shipped everywhere.** `buddy deploy`
   sends the entire env file as each site's `.env`. Declare `tenants` in
@@ -174,7 +193,8 @@ The API is `partitionTenantEnv(values, { self, tenants })` from
 - Bun natively loads `.env` — no dotenv package needed
 - The `env` proxy auto-coerces strings to booleans/numbers
 - `.env` should never be committed — use `.env.example` as template
-- Encryption uses AES-256-GCM for values and secp256k1 for key exchange
+- New encrypted values use ephemeral-static X25519, HKDF-SHA-256, and
+  AES-256-GCM. Legacy ciphertext remains readable for migration
 - `autoLoadEnv()` loads in order: `.env`, `.env.local`, `.env.{APP_ENV}`
 - Runtime detection uses Bun globals and process properties
 - CI provider detection checks environment variables specific to each CI system

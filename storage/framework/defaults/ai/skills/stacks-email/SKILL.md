@@ -8,7 +8,7 @@ allowed-tools: Read Edit Write Bash Grep Glob
 
 # Stacks Email
 
-Multi-driver email system with template rendering, S3-based inbox management, and 5 built-in drivers.
+Multi-driver email system with template rendering, S3-based inbox management, and 7 built-in drivers.
 
 ## Key Paths
 - Core package: `storage/framework/core/email/src/`
@@ -33,6 +33,12 @@ email/src/
     ├── mailtrap.ts   # Mailtrap driver (sandbox/production)
     └── smtp.ts       # Raw SMTP driver (TLS/STARTTLS)
 ```
+
+`log` and `capture` are also registered by the Mail singleton. `log` writes
+messages to `storage/logs/mail/` for local inspection. `capture` keeps messages
+in memory for deterministic tests. Unsupported names fail at the first send,
+so `MAIL_MAILER` must be one of `smtp`, `ses`, `sendgrid`, `mailgun`,
+`mailtrap`, `log`, or `capture`.
 
 ## Mail Singleton
 
@@ -118,7 +124,7 @@ await deleteEmail('chris', messageId)
 ## Built-in Drivers
 
 ### SES Driver
-- Uses `@aws-sdk/client-ses` SESClient
+- Uses the `SESClient` from `@stacksjs/ts-cloud`
 - Lazy-loads client on first send
 - Supports `Source` formatting: `"Name" <address>`
 
@@ -147,6 +153,26 @@ await deleteEmail('chris', messageId)
 - 30-second connection timeout
 - Command queue-based protocol
 
+## Environment-backed configuration
+
+The source of truth for dashboard mail settings is `.env`:
+
+- Common: `MAIL_MAILER`, `MAIL_FROM_NAME`, `MAIL_FROM_ADDRESS`
+- SMTP: `MAIL_HOST`, `MAIL_PORT`, `MAIL_USERNAME`, `MAIL_PASSWORD`,
+  `MAIL_ENCRYPTION`
+- SES: `AWS_SES_REGION`, `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`
+- SendGrid: `SENDGRID_API_KEY`
+- Mailgun: `MAILGUN_API_KEY`, `MAILGUN_DOMAIN`, `MAILGUN_ENDPOINT`
+- Mailtrap: `MAILTRAP_HOST`, `MAILTRAP_TOKEN`, `MAILTRAP_INBOX_ID`
+
+The dashboard endpoints are `GET` and `PUT` at
+`/api/dashboard/mail-settings`. They are guarded outside local development,
+return no stored secret values, preserve a secret when its input is blank, and
+require an explicit clear flag to remove one. Writes use the shared atomic
+environment-file service, create a machine-local backup under
+`storage/framework/runtime/dashboard/`, and reject stale revisions instead of
+overwriting concurrent edits.
+
 ## Driver Interface
 
 ```typescript
@@ -169,7 +195,7 @@ abstract class BaseEmailDriver {
   mailboxes: ['chris', 'blake', 'glenn'],
   url: env.APP_URL,
   charset: 'UTF-8',
-  default: 'ses',  // 'ses' | 'sendgrid' | 'mailgun' | 'mailtrap' | 'smtp' | 'postmark'
+  default: 'ses',  // 'ses' | 'sendgrid' | 'mailgun' | 'mailtrap' | 'smtp' | 'log' | 'capture'
   server: {
     enabled: true,
     scan: { enabled: true },
