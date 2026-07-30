@@ -11,6 +11,10 @@ const commerceComponents = [
   'CommerceManufacturersDashboard.stx',
   'CommerceUnitsDashboard.stx',
   'CommerceVariantsDashboard.stx',
+  'CommerceGiftCardsDashboard.stx',
+  'CommercePaymentsDashboard.stx',
+  'CommerceReviewsDashboard.stx',
+  'CommerceTaxesDashboard.stx',
 ]
 
 describe('commerce dashboard filter bindings', () => {

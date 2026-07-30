@@ -138,30 +138,14 @@ function exportHref(): string {
   return `data:text/csv;charset=utf-8,${encodeURIComponent(`\uFEFF${csv}`)}`
 }
 
-function updateSearch(event: Event): void {
-  search.set((event.target as HTMLInputElement).value)
+effect(() => {
+  search()
+  statusFilter()
+  enabledFilter()
+  deliveryFilter()
+  sort()
   page.set(1)
-}
-
-function updateStatus(event: Event): void {
-  statusFilter.set((event.target as HTMLSelectElement).value)
-  page.set(1)
-}
-
-function updateEnabled(event: Event): void {
-  enabledFilter.set((event.target as HTMLSelectElement).value)
-  page.set(1)
-}
-
-function updateDelivery(event: Event): void {
-  deliveryFilter.set((event.target as HTMLSelectElement).value)
-  page.set(1)
-}
-
-function updateSort(event: Event): void {
-  sort.set((event.target as HTMLSelectElement).value)
-  page.set(1)
-}
+})
 
 async function loadGiftCards(): Promise<void> {
   loading.set(true)
@@ -317,12 +301,12 @@ onMount(() => {
       <label class="relative sm:col-span-2">
         <span class="sr-only">Search gift cards</span>
         <span class="flex absolute inset-y-0 left-0 items-center pl-3 text-gray-400 pointer-events-none"><span class="h-4 w-4 i-hugeicons-search-01"></span></span>
-        <input :value="search()" type="search" placeholder="Search codes, recipients, or purchasers" class="pl-9 pr-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" @input="updateSearch($event)" />
+        <input x-model="search" type="search" placeholder="Search codes, recipients, or purchasers" class="pl-9 pr-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" />
       </label>
-      <label><span class="sr-only">Gift card status</span><select :value="statusFilter()" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" @change="updateStatus($event)"><option value="all">All statuses</option><option value="ACTIVE">Active</option><option value="USED">Used</option><option value="EXPIRED">Expired</option><option value="DEACTIVATED">Deactivated</option></select></label>
-      <label><span class="sr-only">Gift card availability</span><select :value="enabledFilter()" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" @change="updateEnabled($event)"><option value="all">Any availability</option><option value="enabled">Enabled</option><option value="disabled">Disabled</option></select></label>
-      <label><span class="sr-only">Gift card delivery</span><select :value="deliveryFilter()" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" @change="updateDelivery($event)"><option value="all">Any delivery</option><option value="digital">Digital</option><option value="physical">Physical</option></select></label>
-      <label><span class="sr-only">Sort gift cards</span><select :value="sort()" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" @change="updateSort($event)"><option value="newest">Newest</option><option value="code">Code</option><option value="balance">Highest balance</option><option value="expiry">Expiry date</option></select></label>
+      <label><span class="sr-only">Gift card status</span><select x-model="statusFilter" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700"><option value="all">All statuses</option><option value="ACTIVE">Active</option><option value="USED">Used</option><option value="EXPIRED">Expired</option><option value="DEACTIVATED">Deactivated</option></select></label>
+      <label><span class="sr-only">Gift card availability</span><select x-model="enabledFilter" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700"><option value="all">Any availability</option><option value="enabled">Enabled</option><option value="disabled">Disabled</option></select></label>
+      <label><span class="sr-only">Gift card delivery</span><select x-model="deliveryFilter" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700"><option value="all">Any delivery</option><option value="digital">Digital</option><option value="physical">Physical</option></select></label>
+      <label><span class="sr-only">Sort gift cards</span><select x-model="sort" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700"><option value="newest">Newest</option><option value="code">Code</option><option value="balance">Highest balance</option><option value="expiry">Expiry date</option></select></label>
     </div>
 
     <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">

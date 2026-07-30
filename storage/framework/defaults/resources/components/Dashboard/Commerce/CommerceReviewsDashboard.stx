@@ -136,30 +136,14 @@ function metricCards(): Array<{ label: string, value: string }> {
   ]
 }
 
-function updateSearch(event: Event): void {
-  search.set((event.target as HTMLInputElement).value)
+effect(() => {
+  search()
+  productFilter()
+  ratingFilter()
+  moderationFilter()
+  sort()
   page.set(1)
-}
-
-function updateProductFilter(event: Event): void {
-  productFilter.set((event.target as HTMLSelectElement).value)
-  page.set(1)
-}
-
-function updateRatingFilter(event: Event): void {
-  ratingFilter.set((event.target as HTMLSelectElement).value)
-  page.set(1)
-}
-
-function updateModerationFilter(event: Event): void {
-  moderationFilter.set((event.target as HTMLSelectElement).value)
-  page.set(1)
-}
-
-function updateSort(event: Event): void {
-  sort.set((event.target as HTMLSelectElement).value)
-  page.set(1)
-}
+})
 
 async function loadReviews(): Promise<void> {
   loading.set(true)
@@ -311,11 +295,11 @@ onMount(() => {
         <span class="flex absolute inset-y-0 left-0 items-center pl-3 text-gray-400 pointer-events-none">
           <span class="h-4 w-4 i-hugeicons-search-01"></span>
         </span>
-        <input id="review-search" :value="search()" type="search" placeholder="Search reviews" class="pl-9 pr-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" @input="updateSearch($event)" />
+        <input id="review-search" x-model="search" type="search" placeholder="Search reviews" class="pl-9 pr-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" />
       </div>
       <label>
         <span class="sr-only">Product</span>
-        <select :value="productFilter()" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" @change="updateProductFilter($event)">
+        <select x-model="productFilter" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700">
           <option value="all">All products</option>
           <template :for="product in products()" :key="product.id">
             <option :value="product.id">{{ product.label }}</option>
@@ -324,7 +308,7 @@ onMount(() => {
       </label>
       <label>
         <span class="sr-only">Rating</span>
-        <select :value="ratingFilter()" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" @change="updateRatingFilter($event)">
+        <select x-model="ratingFilter" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700">
           <option value="all">All ratings</option>
           <option value="5">5 stars</option>
           <option value="4">4 stars</option>
@@ -335,7 +319,7 @@ onMount(() => {
       </label>
       <label>
         <span class="sr-only">Moderation state</span>
-        <select :value="moderationFilter()" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" @change="updateModerationFilter($event)">
+        <select x-model="moderationFilter" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700">
           <option value="all">All states</option>
           <option value="approved">Approved</option>
           <option value="pending">Pending</option>
@@ -351,7 +335,7 @@ onMount(() => {
       </p>
       <label class="flex gap-2 items-center text-gray-500 text-sm dark:text-neutral-400">
         Sort
-        <select :value="sort()" class="px-3 py-1.5 text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" @change="updateSort($event)">
+        <select x-model="sort" class="px-3 py-1.5 text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700">
           <option value="newest">Newest first</option>
           <option value="oldest">Oldest first</option>
           <option value="rating-high">Highest rating</option>
