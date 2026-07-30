@@ -340,7 +340,7 @@ void load()
     <button
       type="button"
       @click="showFilters.set(!showFilters())"
-      class="inline-flex gap-1.5 items-center px-3 h-8 font-medium text-[13px] text-neutral-700 dark:text-neutral-200 bg-white dark:bg-white/10 border border-black/10 rounded-lg dark:border-white/15 hover:bg-neutral-50 dark:hover:bg-white/15 transition-colors"
+      class="inline-flex gap-1.5 items-center px-3 h-8 font-medium text-[13px] text-neutral-700 dark:text-neutral-200 bg-white dark:bg-white/10 hover:bg-neutral-50 dark:hover:bg-white/15 border border-black/10 rounded-lg dark:border-white/15 transition-colors"
     >
       <span class="h-4 w-4 i-hugeicons-filter"></span>
       <span :text="filterLabel()"></span>
@@ -416,20 +416,20 @@ void load()
         <thead class="bg-neutral-50 dark:bg-white/5">
           <tr>
             <template :for="column in columnMeta()">
-              <th scope="col" class="group px-3 py-2 whitespace-nowrap">
+              <th scope="col" class="px-3 py-2 whitespace-nowrap group">
                 <button type="button" @click="toggleSort(column)" :class="headerClass(column)">
                   <span>{{ column.label }}</span>
                   <span :class="sortIconClass(column)"></span>
                 </button>
               </th>
             </template>
-            <th :if="writable()" scope="col" class="px-3 py-2 w-24 font-medium text-[11px] text-neutral-500 text-right uppercase tracking-wide dark:text-neutral-400">Actions</th>
+            <th :if="writable()" scope="col" class="px-3 py-2 w-24 font-medium text-[11px] text-neutral-500 text-right tracking-wide uppercase dark:text-neutral-400">Actions</th>
           </tr>
 
           <!-- Per-column filter row -->
           <tr :if="showFilters()" class="bg-white dark:bg-neutral-900">
             <template :for="column in columnMeta()">
-              <th scope="col" class="px-2 pb-2">
+              <th scope="col" class="pb-2 px-2">
                 <input
                   type="text"
                   :value="filters()[column.name] || ''"
@@ -452,11 +452,11 @@ void load()
             <tr>
               <template :for="column in columnMeta()">
                 <td class="px-3 py-2">
-                  <div class="h-3 rounded bg-neutral-200 dark:bg-white/10 animate-pulse"></div>
+                  <div class="h-3 bg-neutral-200 dark:bg-white/10 rounded animate-pulse"></div>
                 </td>
               </template>
               <td :if="writable()" class="px-3 py-2">
-                <div class="ml-auto h-3 w-16 rounded bg-neutral-200 dark:bg-white/10 animate-pulse"></div>
+                <div class="ml-auto h-3 w-16 bg-neutral-200 dark:bg-white/10 rounded animate-pulse"></div>
               </td>
             </tr>
           </template>
@@ -470,10 +470,10 @@ void load()
               </template>
               <td :if="writable()" class="px-3 py-2 text-right">
                 <div class="flex gap-1 items-center justify-end">
-                  <button type="button" @click="startEdit(row)" class="p-1.5 text-neutral-400 hover:text-blue-600 rounded-md hover:bg-blue-50 dark:hover:bg-blue-500/10 transition-colors" title="Edit">
+                  <button type="button" @click="startEdit(row)" class="p-1.5 text-neutral-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-500/10 rounded-md transition-colors" title="Edit">
                     <span class="h-4 w-4 i-hugeicons-edit-02"></span>
                   </button>
-                  <button type="button" @click="confirmingDelete.set(row)" class="p-1.5 text-neutral-400 hover:text-red-600 rounded-md hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors" title="Delete">
+                  <button type="button" @click="confirmingDelete.set(row)" class="p-1.5 text-neutral-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-md transition-colors" title="Delete">
                     <span class="h-4 w-4 i-hugeicons-delete-02"></span>
                   </button>
                 </div>
@@ -491,26 +491,26 @@ void load()
           type="button"
           @click="goToPage(1)"
           :disabled="page() === 1"
-          class="px-2 h-7 text-[12px] text-neutral-600 dark:text-neutral-300 bg-white dark:bg-white/10 border border-black/10 rounded-md dark:border-white/15 hover:bg-neutral-100 dark:hover:bg-white/15 disabled:opacity-40 disabled:pointer-events-none transition-colors"
+          class="px-2 h-7 text-[12px] text-neutral-600 dark:text-neutral-300 bg-white dark:bg-white/10 hover:bg-neutral-100 dark:hover:bg-white/15 border border-black/10 rounded-md dark:border-white/15 disabled:opacity-40 transition-colors disabled:pointer-events-none"
         >First</button>
         <button
           type="button"
           @click="goToPage(page() - 1)"
           :disabled="page() === 1"
-          class="px-2 h-7 text-[12px] text-neutral-600 dark:text-neutral-300 bg-white dark:bg-white/10 border border-black/10 rounded-md dark:border-white/15 hover:bg-neutral-100 dark:hover:bg-white/15 disabled:opacity-40 disabled:pointer-events-none transition-colors"
+          class="px-2 h-7 text-[12px] text-neutral-600 dark:text-neutral-300 bg-white dark:bg-white/10 hover:bg-neutral-100 dark:hover:bg-white/15 border border-black/10 rounded-md dark:border-white/15 disabled:opacity-40 transition-colors disabled:pointer-events-none"
         >Previous</button>
-        <span class="px-2 text-[12px] text-neutral-500 tabular-nums dark:text-neutral-400">{{ page() }} / {{ lastPage() }}</span>
+        <span class="px-2 tabular-nums text-[12px] text-neutral-500 dark:text-neutral-400">{{ page() }} / {{ lastPage() }}</span>
         <button
           type="button"
           @click="goToPage(page() + 1)"
           :disabled="page() >= lastPage()"
-          class="px-2 h-7 text-[12px] text-neutral-600 dark:text-neutral-300 bg-white dark:bg-white/10 border border-black/10 rounded-md dark:border-white/15 hover:bg-neutral-100 dark:hover:bg-white/15 disabled:opacity-40 disabled:pointer-events-none transition-colors"
+          class="px-2 h-7 text-[12px] text-neutral-600 dark:text-neutral-300 bg-white dark:bg-white/10 hover:bg-neutral-100 dark:hover:bg-white/15 border border-black/10 rounded-md dark:border-white/15 disabled:opacity-40 transition-colors disabled:pointer-events-none"
         >Next</button>
         <button
           type="button"
           @click="goToPage(lastPage())"
           :disabled="page() >= lastPage()"
-          class="px-2 h-7 text-[12px] text-neutral-600 dark:text-neutral-300 bg-white dark:bg-white/10 border border-black/10 rounded-md dark:border-white/15 hover:bg-neutral-100 dark:hover:bg-white/15 disabled:opacity-40 disabled:pointer-events-none transition-colors"
+          class="px-2 h-7 text-[12px] text-neutral-600 dark:text-neutral-300 bg-white dark:bg-white/10 hover:bg-neutral-100 dark:hover:bg-white/15 border border-black/10 rounded-md dark:border-white/15 disabled:opacity-40 transition-colors disabled:pointer-events-none"
         >Last</button>
       </div>
     </div>
@@ -518,8 +518,8 @@ void load()
 
   <!-- Edit sheet -->
   <div :if="editing()" class="flex fixed inset-0 z-50 items-center justify-center p-4 bg-black/30" @click="editing.set(null)">
-    <div class="overflow-hidden bg-white dark:bg-neutral-900 rounded-xl shadow-2xl max-h-[85vh] w-full max-w-lg flex flex-col" @click.stop>
-      <div class="flex items-center justify-between px-4 py-3 border-black/5 border-b dark:border-white/10">
+    <div class="flex overflow-hidden flex-col max-h-[85vh] max-w-lg w-full bg-white dark:bg-neutral-900 rounded-xl shadow-2xl" @click.stop>
+      <div class="flex items-center justify-between px-4 py-3 border-b border-black/5 dark:border-white/10">
         <h2 class="font-semibold text-[14px] text-neutral-900 dark:text-white">Edit <span :text="modelName()"></span></h2>
         <button type="button" @click="editing.set(null)" class="p-1 text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200" aria-label="Close">
           <span class="h-4 w-4 i-hugeicons-cancel-01"></span>
@@ -535,15 +535,15 @@ void load()
               :value="field.value"
               @input="onEditInput(field.name, $event)"
               :readonly="field.readonly"
-              class="px-2.5 py-1.5 text-[13px] text-neutral-900 dark:text-neutral-100 bg-white dark:bg-white/10 border border-black/10 rounded-lg dark:border-white/15 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 read-only:bg-neutral-50 read-only:text-neutral-500 dark:read-only:bg-white/5 dark:read-only:text-neutral-400"
+              class="px-2.5 py-1.5 text-[13px] text-neutral-900 dark:text-neutral-100 read-only:text-neutral-500 dark:read-only:text-neutral-400 bg-white dark:bg-white/10 read-only:bg-neutral-50 dark:read-only:bg-white/5 border border-black/10 rounded-lg dark:border-white/15 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
             >
           </div>
         </template>
       </div>
 
       <div class="flex gap-2 items-center justify-end px-4 py-3 bg-neutral-50 dark:bg-white/5 border-black/5 border-t dark:border-white/10">
-        <button type="button" @click="editing.set(null)" class="px-3 h-8 font-medium text-[13px] text-neutral-700 dark:text-neutral-200 bg-white dark:bg-white/10 border border-black/10 rounded-lg dark:border-white/15 hover:bg-neutral-100 dark:hover:bg-white/15 transition-colors">Cancel</button>
-        <button type="button" @click="saveEdit()" :disabled="saving()" class="px-3 h-8 font-medium text-[13px] text-white bg-blue-600 rounded-lg hover:bg-blue-700 active:scale-[0.98] disabled:opacity-60 disabled:pointer-events-none transition-all">
+        <button type="button" @click="editing.set(null)" class="px-3 h-8 font-medium text-[13px] text-neutral-700 dark:text-neutral-200 bg-white dark:bg-white/10 hover:bg-neutral-100 dark:hover:bg-white/15 border border-black/10 rounded-lg dark:border-white/15 transition-colors">Cancel</button>
+        <button type="button" @click="saveEdit()" :disabled="saving()" class="px-3 h-8 font-medium text-[13px] text-white bg-blue-600 hover:bg-blue-700 rounded-lg disabled:opacity-60 transition-all active:scale-[0.98] disabled:pointer-events-none">
           <span :if="!saving()">Save changes</span>
           <span :if="saving()">Saving</span>
         </button>
@@ -553,14 +553,14 @@ void load()
 
   <!-- Delete confirmation -->
   <div :if="confirmingDelete()" class="flex fixed inset-0 z-50 items-center justify-center p-4 bg-black/30" @click="confirmingDelete.set(null)">
-    <div class="p-5 bg-white dark:bg-neutral-900 rounded-xl shadow-2xl w-full max-w-sm" @click.stop>
+    <div class="p-5 max-w-sm w-full bg-white dark:bg-neutral-900 rounded-xl shadow-2xl" @click.stop>
       <h2 class="font-semibold text-[14px] text-neutral-900 dark:text-white">Delete this <span :text="modelName()"></span>?</h2>
       <p class="mt-1.5 text-[13px] text-neutral-500 dark:text-neutral-400">
         Row <span class="font-mono">{{ confirmingDelete().id }}</span> will be removed. This runs through the model, so soft deletes and observers apply.
       </p>
       <div class="flex gap-2 items-center justify-end mt-4">
-        <button type="button" @click="confirmingDelete.set(null)" class="px-3 h-8 font-medium text-[13px] text-neutral-700 dark:text-neutral-200 bg-white dark:bg-white/10 border border-black/10 rounded-lg dark:border-white/15 hover:bg-neutral-100 dark:hover:bg-white/15 transition-colors">Cancel</button>
-        <button type="button" @click="confirmDelete()" :disabled="saving()" class="px-3 h-8 font-medium text-[13px] text-white bg-red-600 rounded-lg hover:bg-red-700 active:scale-[0.98] disabled:opacity-60 disabled:pointer-events-none transition-all">
+        <button type="button" @click="confirmingDelete.set(null)" class="px-3 h-8 font-medium text-[13px] text-neutral-700 dark:text-neutral-200 bg-white dark:bg-white/10 hover:bg-neutral-100 dark:hover:bg-white/15 border border-black/10 rounded-lg dark:border-white/15 transition-colors">Cancel</button>
+        <button type="button" @click="confirmDelete()" :disabled="saving()" class="px-3 h-8 font-medium text-[13px] text-white bg-red-600 hover:bg-red-700 rounded-lg disabled:opacity-60 transition-all active:scale-[0.98] disabled:pointer-events-none">
           <span :if="!saving()">Delete</span>
           <span :if="saving()">Deleting</span>
         </button>
