@@ -1,0 +1,416 @@
+<script client>
+import { dashboardApi } from '../../../../functions/dashboard-api'
+
+type CloudStatus = 'attention' | 'configured' | 'deployed' | 'inactive'
+
+interface CloudProject {
+  name: string
+  slug: string
+  mode: 'server' | 'serverless'
+  provider: string
+  region: string
+}
+
+interface CloudEnvironment {
+  name: string
+  type: string
+  branch: string | null
+  domain: string | null
+  region: string
+  serverless: boolean
+  status: CloudStatus
+}
+
+interface ServerDefinition {
+  id: string
+  key: string
+  name: string
+  role: string
+  region: string
+  size: string
+  instances: number
+  diskGb: number | null
+  diskType: string | null
+  encrypted: boolean
+  domain: string | null
+  operatingSystem: string | null
+  bunVersion: string | null
+  database: string | null
+  status: 'configured'
+}
+
+interface CloudOperation {
+  kind: 'resize'
+  phase: string
+  status: string
+  sourceType: string | null
+  targetType: string | null
+  startedAt: string | null
+  updatedAt: string | null
+  attempts: number
+}
+
+interface ServerDeployment {
+  id: string
+  stackName: string
+  environment: string | null
+  serverName: string
+  provider: string
+  publicIp: string | null
+  publicIpv6: string | null
+  sshUser: string | null
+  recordedAt: string
+  status: 'attention' | 'deployed'
+  operation: CloudOperation | null
+}
+
+interface CloudResource {
+  id: string
+  name: string
+  type: string
+  category: string
+  status: CloudStatus
+  description: string
+}
+
+interface CloudEvent {
+  id: string
+  service: string
+  type: 'attention' | 'info' | 'success'
+  message: string
+  timestamp: string
+}
+
+interface ServersResponse {
+  project: CloudProject
+  environments: CloudEnvironment[]
+  servers: ServerDefinition[]
+  deployments: ServerDeployment[]
+  network: CloudResource[]
+  events: CloudEvent[]
+  generatedAt: string
+}
+
+const project = state<CloudProject>({
+  name: 'Cloud project',
+  slug: 'app',
+  mode: 'server',
+  provider: 'not configured',
+  region: 'not configured',
+})
+const environments = state<CloudEnvironment[]>([])
+const servers = state<ServerDefinition[]>([])
+const deployments = state<ServerDeployment[]>([])
+const network = state<CloudResource[]>([])
+const events = state<CloudEvent[]>([])
+const generatedAt = state('')
+const loading = state(true)
+const loadError = state('')
+const search = state('')
+const selectedServer = state<ServerDefinition | null>(null)
+const selectedDeployment = state<ServerDeployment | null>(null)
+
+const filteredServers = derived(() => {
+  const query = search().trim().toLowerCase()
+  if (!query)
+    return servers()
+  return servers().filter(server => [
+    server.name,
+    server.role,
+    server.region,
+    server.size,
+    server.domain,
+    server.database,
+  ].filter(Boolean).join(' ').toLowerCase().includes(query))
+})
+const filteredDeployments = derived(() => {
+  const query = search().trim().toLowerCase()
+  if (!query)
+    return deployments()
+  return deployments().filter(deployment => [
+    deployment.serverName,
+    deployment.stackName,
+    deployment.environment,
+    deployment.provider,
+    deployment.publicIp,
+  ].filter(Boolean).join(' ').toLowerCase().includes(query))
+})
+const totalInstances = derived(() => servers().reduce((total, server) => total + server.instances, 0))
+const attentionDeployments = derived(() => deployments().filter(deployment => deployment.status === 'attention'))
+const dnsResource = derived(() => network().find(resource => resource.id === 'network:dns') ?? null)
+const loadBalancer = derived(() => network().find(resource => resource.id === 'network:load-balancer') ?? null)
+const hasResults = derived(() => filteredServers().length > 0 || filteredDeployments().length > 0)
+
+function formatDate(value: string | null): string {
+  if (!value)
+    return 'Not recorded'
+  const date = new Date(value)
+  return Number.isNaN(date.getTime())
+    ? 'Not recorded'
+    : new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(date)
+}
+
+function diskLabel(server: ServerDefinition): string {
+  if (server.diskGb === null)
+    return 'Not set'
+  return `${server.diskGb} GB${server.diskType ? ` ${server.diskType}` : ''}`
+}
+
+function eventIcon(event: CloudEvent): string {
+  if (event.type === 'attention')
+    return 'i-hugeicons-alert-02 text-amber-500'
+  if (event.type === 'success')
+    return 'i-hugeicons-checkmark-circle-02 text-green-500'
+  return 'i-hugeicons-information-circle text-blue-500'
+}
+
+function inspectServer(server: ServerDefinition): void {
+  selectedDeployment.set(null)
+  selectedServer.set(server)
+}
+
+function inspectDeployment(deployment: ServerDeployment): void {
+  selectedServer.set(null)
+  selectedDeployment.set(deployment)
+}
+
+function closeInspector(): void {
+  selectedServer.set(null)
+  selectedDeployment.set(null)
+}
+
+async function loadServers(): Promise<void> {
+  loading.set(true)
+  loadError.set('')
+  try {
+    const response = await dashboardApi<ServersResponse>('/api/dashboard/servers')
+    project.set(response.project)
+    environments.set(Array.isArray(response.environments) ? response.environments : [])
+    servers.set(Array.isArray(response.servers) ? response.servers : [])
+    deployments.set(Array.isArray(response.deployments) ? response.deployments : [])
+    network.set(Array.isArray(response.network) ? response.network : [])
+    events.set(Array.isArray(response.events) ? response.events : [])
+    generatedAt.set(response.generatedAt || '')
+  }
+  catch (error) {
+    environments.set([])
+    servers.set([])
+    deployments.set([])
+    network.set([])
+    events.set([])
+    loadError.set(error instanceof Error ? error.message : 'Server state could not be loaded.')
+  }
+  finally {
+    loading.set(false)
+  }
+}
+
+useEventListener('keydown', (event: KeyboardEvent) => {
+  if (event.key === 'Escape')
+    closeInspector()
+})
+
+onMount(() => {
+  void loadServers()
+})
+</script>
+
+<div class="space-y-6">
+  <header class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+    <div>
+      <div class="flex gap-2 items-center">
+        <h1 class="font-semibold text-2xl text-neutral-900 tracking-tight dark:text-white">Servers</h1>
+        <CloudStatusBadge :status="project().mode === 'server' ? 'configured' : 'inactive'" />
+      </div>
+      <p class="mt-1 max-w-2xl text-neutral-500 text-sm dark:text-neutral-400">Compute declarations from config/cloud.ts and deployment state recorded by ts-cloud.</p>
+    </div>
+    <button type="button" :disabled="loading()" class="inline-flex items-center self-start px-3 py-2 font-medium text-neutral-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-900 hover:bg-neutral-50 dark:hover:bg-neutral-800 border border-neutral-300 rounded-lg dark:border-neutral-700 disabled:opacity-50" @click="loadServers">
+      <span :class="'mr-2 h-4 w-4 ' + (loading() ? 'animate-spin i-hugeicons-loading-03' : 'i-hugeicons-refresh')"></span>
+      Refresh
+    </button>
+  </header>
+
+  <div :if="loadError()" role="alert" class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between px-4 py-3 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/40 border border-red-200 rounded-xl dark:border-red-900">
+    <span>{{ loadError() }}</span>
+    <button type="button" class="font-semibold hover:underline" @click="loadServers">Try again</button>
+  </div>
+
+  <section class="grid gap-3 grid-cols-2 xl:grid-cols-4">
+    <div class="p-4 bg-white dark:bg-neutral-900 border border-neutral-200 rounded-xl dark:border-neutral-700">
+      <p class="text-neutral-500 text-xs uppercase dark:text-neutral-400">Provider</p>
+      <p class="mt-2 capitalize font-semibold text-neutral-900 text-xl dark:text-white">{{ project().provider }}</p>
+    </div>
+    <div class="p-4 bg-white dark:bg-neutral-900 border border-neutral-200 rounded-xl dark:border-neutral-700">
+      <p class="text-neutral-500 text-xs uppercase dark:text-neutral-400">Configured instances</p>
+      <p class="mt-2 font-semibold text-neutral-900 text-xl dark:text-white">{{ totalInstances() }}</p>
+    </div>
+    <div class="p-4 bg-white dark:bg-neutral-900 border border-neutral-200 rounded-xl dark:border-neutral-700">
+      <p class="text-neutral-500 text-xs uppercase dark:text-neutral-400">Recorded deployments</p>
+      <p class="mt-2 font-semibold text-neutral-900 text-xl dark:text-white">{{ deployments().length }}</p>
+    </div>
+    <div class="p-4 bg-white dark:bg-neutral-900 border border-neutral-200 rounded-xl dark:border-neutral-700">
+      <p class="text-neutral-500 text-xs uppercase dark:text-neutral-400">Region</p>
+      <p class="mt-2 font-semibold text-neutral-900 text-xl dark:text-white">{{ project().region }}</p>
+    </div>
+  </section>
+
+  <section :if="attentionDeployments().length > 0" aria-label="Cloud operations needing attention" class="space-y-3">
+    <article :for="deployment in attentionDeployments()" class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between p-4 text-amber-900 dark:text-amber-100 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 rounded-xl dark:border-amber-900/70">
+      <div class="flex gap-3 items-start">
+        <span class="shrink-0 mt-0.5 h-5 w-5 text-amber-600 dark:text-amber-400 i-hugeicons-alert-02"></span>
+        <div>
+          <p class="font-semibold text-sm">{{ deployment.serverName }} needs attention</p>
+          <p class="mt-1 text-amber-700 text-sm dark:text-amber-300">Resize from {{ deployment.operation?.sourceType || 'current size' }} to {{ deployment.operation?.targetType || 'requested size' }} is {{ deployment.operation?.status || 'pending' }}.</p>
+        </div>
+      </div>
+      <button type="button" class="self-start px-3 py-1.5 font-semibold text-amber-800 text-xs dark:text-amber-200 bg-white/70 dark:bg-black/20 rounded-lg" @click="inspectDeployment(deployment)">Inspect state</button>
+    </article>
+  </section>
+
+  <section class="p-5 bg-white dark:bg-neutral-900 border border-neutral-200 rounded-xl dark:border-neutral-700">
+    <div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+      <div>
+        <h2 class="font-semibold text-neutral-900 dark:text-white">Configured request path</h2>
+        <p class="mt-1 text-neutral-500 text-xs dark:text-neutral-400">A structural view of declared routing, with no inferred health data.</p>
+      </div>
+      <p class="text-neutral-400 text-xs dark:text-neutral-500">Source: config/cloud.ts</p>
+    </div>
+    <div class="grid gap-3 grid-cols-1 md:grid-cols-[1fr_auto_1fr_auto_1fr] mt-5">
+      <div class="flex gap-3 items-center p-4 bg-rose-50 dark:bg-rose-950/25 border border-rose-100 rounded-xl dark:border-rose-900/50">
+        <span class="shrink-0 h-6 w-6 text-rose-600 dark:text-rose-300 i-hugeicons-globe"></span>
+        <div class="min-w-0"><p class="font-semibold text-neutral-900 text-sm truncate dark:text-white">{{ dnsResource()?.name || 'DNS not configured' }}</p><p class="mt-0.5 text-neutral-500 text-xs dark:text-neutral-400">Entry point</p></div>
+      </div>
+      <span class="hidden md:block self-center h-5 w-5 text-neutral-300 dark:text-neutral-600 i-hugeicons-arrow-right-01"></span>
+      <div class="flex gap-3 items-center p-4 bg-blue-50 dark:bg-blue-950/25 border border-blue-100 rounded-xl dark:border-blue-900/50">
+        <span class="shrink-0 h-6 w-6 text-blue-600 dark:text-blue-300 i-hugeicons-balance"></span>
+        <div class="min-w-0"><p class="font-semibold text-neutral-900 text-sm dark:text-white">Load balancer</p><p class="mt-0.5 text-neutral-500 text-xs dark:text-neutral-400">{{ loadBalancer() ? 'Configured' : 'Not configured' }}</p></div>
+      </div>
+      <span class="hidden md:block self-center h-5 w-5 text-neutral-300 dark:text-neutral-600 i-hugeicons-arrow-right-01"></span>
+      <div class="flex gap-3 items-center p-4 bg-violet-50 dark:bg-violet-950/25 border border-violet-100 rounded-xl dark:border-violet-900/50">
+        <span class="shrink-0 h-6 w-6 text-violet-600 dark:text-violet-300 i-hugeicons-server-stack-01"></span>
+        <div class="min-w-0"><p class="font-semibold text-neutral-900 text-sm dark:text-white">{{ totalInstances() }} compute instance{{ totalInstances() === 1 ? '' : 's' }}</p><p class="mt-0.5 text-neutral-500 text-xs dark:text-neutral-400">{{ servers().length }} definition{{ servers().length === 1 ? '' : 's' }}</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+      <div>
+        <h2 class="font-semibold text-neutral-900 dark:text-white">Compute inventory</h2>
+        <p class="mt-1 text-neutral-500 text-sm dark:text-neutral-400">Configuration and deployment state remain separate so a declaration is never mistaken for a running server.</p>
+      </div>
+      <label class="block relative sm:w-72">
+        <span class="sr-only">Search server inventory</span>
+        <span class="absolute left-3 top-2.5 h-4 w-4 text-neutral-400 i-hugeicons-search-01"></span>
+        <input x-model="search" type="search" placeholder="Search inventory" class="pl-9 pr-3 py-2 w-full text-neutral-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-neutral-300 rounded-lg dark:border-neutral-700 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20" />
+      </label>
+    </div>
+
+    <div :if="loading()" class="flex items-center justify-center mt-4 py-16 text-neutral-500 text-sm dark:text-neutral-400 bg-white dark:bg-neutral-900 border border-neutral-200 rounded-xl dark:border-neutral-700">
+      <span class="mr-2 h-5 w-5 animate-spin i-hugeicons-loading-03"></span>
+      Loading server state...
+    </div>
+
+    <EmptyState :if="!loading() && !loadError() && !hasResults()" icon="i-hugeicons-server-stack-01" :title="search() ? 'No matching servers' : 'No compute configured'" description="Add infrastructure.compute to config/cloud.ts, then refresh this page." />
+
+    <div :if="!loading() && hasResults()" class="grid gap-4 grid-cols-1 xl:grid-cols-2 mt-4">
+      <div class="overflow-hidden bg-white dark:bg-neutral-900 border border-neutral-200 rounded-xl dark:border-neutral-700">
+        <div class="flex items-center justify-between px-5 py-4 border-b border-neutral-200 dark:border-neutral-700">
+          <div><h3 class="font-semibold text-neutral-900 text-sm dark:text-white">Definitions</h3><p class="mt-0.5 text-neutral-500 text-xs dark:text-neutral-400">Desired compute configuration</p></div>
+          <span class="font-mono text-neutral-400 text-xs">{{ filteredServers().length }}</span>
+        </div>
+        <div class="divide-neutral-100 divide-y dark:divide-neutral-800">
+          <button :for="server in filteredServers()" type="button" class="flex gap-4 items-center px-5 py-4 w-full text-left hover:bg-neutral-50 dark:hover:bg-neutral-800/70" @click="inspectServer(server)">
+            <span class="flex items-center justify-center shrink-0 h-10 w-10 text-violet-600 dark:text-violet-300 bg-violet-50 dark:bg-violet-950/30 rounded-xl"><span class="h-5 w-5 i-hugeicons-server-stack-01"></span></span>
+            <span class="flex-1 min-w-0"><span class="flex gap-2 items-center"><span class="font-semibold text-neutral-900 text-sm truncate dark:text-white">{{ server.name }}</span><CloudStatusBadge :status="server.status" /></span><span class="block mt-1 text-neutral-500 text-xs dark:text-neutral-400">{{ server.role }} · {{ server.size }} · {{ diskLabel(server) }}</span></span>
+            <span class="shrink-0 h-4 w-4 text-neutral-300 dark:text-neutral-600 i-hugeicons-arrow-right-01"></span>
+          </button>
+          <p :if="filteredServers().length === 0" class="px-5 py-10 text-center text-neutral-500 text-sm dark:text-neutral-400">No definitions match this search.</p>
+        </div>
+      </div>
+
+      <div class="overflow-hidden bg-white dark:bg-neutral-900 border border-neutral-200 rounded-xl dark:border-neutral-700">
+        <div class="flex items-center justify-between px-5 py-4 border-b border-neutral-200 dark:border-neutral-700">
+          <div><h3 class="font-semibold text-neutral-900 text-sm dark:text-white">Deployments</h3><p class="mt-0.5 text-neutral-500 text-xs dark:text-neutral-400">Persisted provider state</p></div>
+          <span class="font-mono text-neutral-400 text-xs">{{ filteredDeployments().length }}</span>
+        </div>
+        <div class="divide-neutral-100 divide-y dark:divide-neutral-800">
+          <button :for="deployment in filteredDeployments()" type="button" class="flex gap-4 items-center px-5 py-4 w-full text-left hover:bg-neutral-50 dark:hover:bg-neutral-800/70" @click="inspectDeployment(deployment)">
+            <span class="flex items-center justify-center shrink-0 h-10 w-10 text-green-600 dark:text-green-300 bg-green-50 dark:bg-green-950/30 rounded-xl"><span class="h-5 w-5 i-hugeicons-cloud-server"></span></span>
+            <span class="flex-1 min-w-0"><span class="flex gap-2 items-center"><span class="font-semibold text-neutral-900 text-sm truncate dark:text-white">{{ deployment.serverName }}</span><CloudStatusBadge :status="deployment.status" /></span><span class="block mt-1 text-neutral-500 text-xs dark:text-neutral-400">{{ deployment.provider }} · {{ deployment.environment || 'unmapped environment' }} · {{ deployment.publicIp || 'no public IPv4' }}</span></span>
+            <span class="shrink-0 h-4 w-4 text-neutral-300 dark:text-neutral-600 i-hugeicons-arrow-right-01"></span>
+          </button>
+          <p :if="filteredDeployments().length === 0" class="px-5 py-10 text-center text-neutral-500 text-sm dark:text-neutral-400">No persisted deployments match this search.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="grid gap-4 grid-cols-1 xl:grid-cols-[minmax(0,1fr)_20rem]">
+    <div class="overflow-hidden bg-white dark:bg-neutral-900 border border-neutral-200 rounded-xl dark:border-neutral-700">
+      <div class="px-5 py-4 border-b border-neutral-200 dark:border-neutral-700">
+        <h2 class="font-semibold text-neutral-900 text-sm dark:text-white">Recorded cloud events</h2>
+        <p class="mt-1 text-neutral-500 text-xs dark:text-neutral-400">Events derived from persisted deployment and operation state.</p>
+      </div>
+      <div :if="events().length === 0" class="px-5 py-12 text-center text-neutral-500 text-sm dark:text-neutral-400">No cloud state events are recorded.</div>
+      <div :if="events().length > 0" class="divide-neutral-100 divide-y dark:divide-neutral-800">
+        <article :for="event in events()" class="flex gap-3 px-5 py-4">
+          <span :class="'mt-0.5 h-5 w-5 shrink-0 ' + eventIcon(event)"></span>
+          <div class="flex-1 min-w-0"><p class="font-medium text-neutral-900 text-sm dark:text-white">{{ event.service }}</p><p class="mt-1 text-neutral-500 text-sm dark:text-neutral-400">{{ event.message }}</p></div>
+          <time class="shrink-0 text-neutral-400 text-xs dark:text-neutral-500">{{ formatDate(event.timestamp) }}</time>
+        </article>
+      </div>
+    </div>
+
+    <div class="p-5 bg-white dark:bg-neutral-900 border border-neutral-200 rounded-xl dark:border-neutral-700">
+      <h2 class="font-semibold text-neutral-900 text-sm dark:text-white">Environments</h2>
+      <div class="mt-4 space-y-3">
+        <div :for="environment in environments()" class="flex gap-3 items-center justify-between">
+          <div class="min-w-0"><p class="font-medium text-neutral-900 text-sm truncate dark:text-white">{{ environment.name }}</p><p class="mt-0.5 text-neutral-500 text-xs dark:text-neutral-400">{{ environment.branch || 'No deploy branch' }} · {{ environment.region }}</p></div>
+          <CloudStatusBadge :status="environment.status" />
+        </div>
+        <p :if="environments().length === 0" class="text-neutral-500 text-sm dark:text-neutral-400">No environments configured.</p>
+      </div>
+      <p :if="generatedAt()" class="mt-5 pt-4 text-neutral-400 text-xs dark:text-neutral-500 border-neutral-100 border-t dark:border-neutral-800">Snapshot {{ formatDate(generatedAt()) }}</p>
+    </div>
+  </section>
+
+  <div :if="selectedServer() || selectedDeployment()" class="flex fixed inset-0 z-50 items-center justify-center p-4 bg-black/50" @click.self="closeInspector">
+    <section role="dialog" aria-modal="true" aria-labelledby="server-inspector-title" class="overflow-y-auto relative p-6 max-h-[90dvh] max-w-xl w-full bg-white dark:bg-neutral-900 border border-neutral-200 rounded-xl dark:border-neutral-700 shadow-xl">
+      <div class="flex gap-4 items-start justify-between">
+        <div>
+          <p class="font-semibold text-blue-600 text-xs uppercase dark:text-blue-400">{{ selectedServer() ? 'Configuration' : 'Deployment state' }}</p>
+          <h2 id="server-inspector-title" class="mt-1 font-semibold text-neutral-900 text-xl dark:text-white">{{ selectedServer()?.name || selectedDeployment()?.serverName }}</h2>
+        </div>
+        <button type="button" aria-label="Close server details" class="p-1 text-neutral-500 hover:text-neutral-900 dark:hover:text-white rounded" @click="closeInspector"><span class="h-5 w-5 i-hugeicons-cancel-01"></span></button>
+      </div>
+
+      <dl :if="selectedServer()" class="grid gap-x-6 gap-y-4 grid-cols-1 sm:grid-cols-2 mt-6 text-sm">
+        <div><dt class="text-neutral-500 dark:text-neutral-400">Role</dt><dd class="mt-1 font-medium text-neutral-900 dark:text-white">{{ selectedServer()?.role }}</dd></div>
+        <div><dt class="text-neutral-500 dark:text-neutral-400">Region</dt><dd class="mt-1 font-medium text-neutral-900 dark:text-white">{{ selectedServer()?.region }}</dd></div>
+        <div><dt class="text-neutral-500 dark:text-neutral-400">Size</dt><dd class="mt-1 font-medium text-neutral-900 dark:text-white">{{ selectedServer()?.size }}</dd></div>
+        <div><dt class="text-neutral-500 dark:text-neutral-400">Instances</dt><dd class="mt-1 font-medium text-neutral-900 dark:text-white">{{ selectedServer()?.instances }}</dd></div>
+        <div><dt class="text-neutral-500 dark:text-neutral-400">Disk</dt><dd class="mt-1 font-medium text-neutral-900 dark:text-white">{{ selectedServer() ? diskLabel(selectedServer()!) : '' }}</dd></div>
+        <div><dt class="text-neutral-500 dark:text-neutral-400">Encryption</dt><dd class="mt-1 font-medium text-neutral-900 dark:text-white">{{ selectedServer()?.encrypted ? 'Enabled' : 'Not enabled' }}</dd></div>
+        <div><dt class="text-neutral-500 dark:text-neutral-400">Domain</dt><dd class="mt-1 font-medium text-neutral-900 dark:text-white">{{ selectedServer()?.domain || 'Not set' }}</dd></div>
+        <div><dt class="text-neutral-500 dark:text-neutral-400">Database</dt><dd class="mt-1 font-medium text-neutral-900 dark:text-white">{{ selectedServer()?.database || 'Not set' }}</dd></div>
+      </dl>
+
+      <div :if="selectedDeployment()" class="mt-6">
+        <dl class="grid gap-x-6 gap-y-4 grid-cols-1 sm:grid-cols-2 text-sm">
+          <div><dt class="text-neutral-500 dark:text-neutral-400">Stack</dt><dd class="mt-1 font-medium text-neutral-900 dark:text-white">{{ selectedDeployment()?.stackName }}</dd></div>
+          <div><dt class="text-neutral-500 dark:text-neutral-400">Environment</dt><dd class="mt-1 font-medium text-neutral-900 dark:text-white">{{ selectedDeployment()?.environment || 'Not mapped' }}</dd></div>
+          <div><dt class="text-neutral-500 dark:text-neutral-400">Provider</dt><dd class="mt-1 capitalize font-medium text-neutral-900 dark:text-white">{{ selectedDeployment()?.provider }}</dd></div>
+          <div><dt class="text-neutral-500 dark:text-neutral-400">Public IPv4</dt><dd class="mt-1 font-mono text-neutral-900 dark:text-white">{{ selectedDeployment()?.publicIp || 'Not recorded' }}</dd></div>
+          <div><dt class="text-neutral-500 dark:text-neutral-400">SSH user</dt><dd class="mt-1 font-medium text-neutral-900 dark:text-white">{{ selectedDeployment()?.sshUser || 'Not recorded' }}</dd></div>
+          <div><dt class="text-neutral-500 dark:text-neutral-400">State recorded</dt><dd class="mt-1 font-medium text-neutral-900 dark:text-white">{{ formatDate(selectedDeployment()?.recordedAt || null) }}</dd></div>
+        </dl>
+        <div :if="selectedDeployment()?.operation" class="mt-6 p-4 text-amber-900 dark:text-amber-100 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 rounded-xl dark:border-amber-900/70">
+          <div class="flex gap-3 items-center justify-between"><h3 class="font-semibold text-sm">Resize operation</h3><CloudStatusBadge :status="selectedDeployment()?.status || 'attention'" /></div>
+          <p class="mt-2 text-sm">Phase {{ selectedDeployment()?.operation?.phase }}. Requested {{ selectedDeployment()?.operation?.sourceType || 'current size' }} to {{ selectedDeployment()?.operation?.targetType || 'target size' }}.</p>
+          <p class="mt-2 text-amber-700 text-xs dark:text-amber-300">Updated {{ formatDate(selectedDeployment()?.operation?.updatedAt || null) }} · {{ selectedDeployment()?.operation?.attempts || 0 }} attempts</p>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>

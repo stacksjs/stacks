@@ -13,6 +13,7 @@ export default new Action({
       environments: snapshot.environments,
       servers: snapshot.serverDefinitions,
       deployments: snapshot.deployments,
+      network: snapshot.resources.filter(resource => resource.category === 'network'),
       events: snapshot.events,
       generatedAt: snapshot.generatedAt,
     }
