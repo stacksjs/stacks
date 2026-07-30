@@ -19,7 +19,7 @@
  */
 
 import { existsSync } from 'node:fs'
-import { dirname, resolve } from 'node:path'
+import { basename, dirname, resolve } from 'node:path'
 
 let projectRootCache: string | null = null
 
@@ -45,12 +45,10 @@ function projectRoot(): string {
 }
 
 /**
- * Map of model name → list of relative paths to try, in order. The first
- * existing file wins. User overrides at `app/Models/<Name>.ts` always
- * take priority over framework defaults. The defaults are organised in
- * subdirectories (commerce/, Content/, realtime/) so each model needs an
- * explicit lookup table — globbing at request time would add ~50ms per
- * page render.
+ * Fast-path map of common model names to relative paths. The first existing
+ * file wins, and user overrides always take priority over framework defaults.
+ * A cached filesystem index below covers newly-added and nested models so
+ * this map is an optimization rather than a correctness requirement.
  */
 const MODEL_PATHS: Record<string, string[]> = {
   // Auth / core
@@ -120,6 +118,52 @@ const MODEL_PATHS: Record<string, string[]> = {
 }
 
 const modelCache = new Map<string, any>()
+let discoveredModelPathsPromise: Promise<Map<string, string[]>> | null = null
+
+/**
+ * Index every model file once so newly-added framework models and nested
+ * user models do not also need a hand-maintained entry in MODEL_PATHS.
+ * Userland is scanned first to preserve the app/ override contract.
+ */
+async function discoverModelPaths(): Promise<Map<string, string[]>> {
+  if (discoveredModelPathsPromise)
+    return discoveredModelPathsPromise
+
+  discoveredModelPathsPromise = (async () => {
+    const root = projectRoot()
+    const paths = new Map<string, string[]>()
+    const modelRoots = [
+      resolve(root, 'app/Models'),
+      resolve(root, 'storage/framework/defaults/app/Models'),
+    ]
+
+    for (const modelsRoot of modelRoots) {
+      if (!existsSync(modelsRoot))
+        continue
+
+      const glob = new Bun.Glob('**/*.ts')
+      for await (const relativePath of glob.scan({ cwd: modelsRoot, onlyFiles: true })) {
+        if (relativePath.endsWith('.test.ts') || relativePath.endsWith('.d.ts'))
+          continue
+        const name = basename(relativePath, '.ts')
+        const candidates = paths.get(name) ?? []
+        candidates.push(resolve(modelsRoot, relativePath))
+        paths.set(name, candidates)
+      }
+    }
+
+    return paths
+  })()
+
+  return discoveredModelPathsPromise
+}
+
+async function modelCandidatePaths(name: string): Promise<string[]> {
+  const root = projectRoot()
+  const discovered = (await discoverModelPaths()).get(name) ?? []
+  const explicit = (MODEL_PATHS[name] ?? []).map(path => resolve(root, path))
+  return [...new Set([...discovered, ...explicit])]
+}
 
 /**
  * Load a model class by name, searching userland first then framework
@@ -131,16 +175,7 @@ const modelCache = new Map<string, any>()
 export async function loadModel(name: string): Promise<any> {
   if (modelCache.has(name)) return modelCache.get(name)
 
-  const candidates = MODEL_PATHS[name]
-  if (!candidates) {
-    const stub = makeStub(name)
-    modelCache.set(name, stub)
-    return stub
-  }
-
-  const root = projectRoot()
-  for (const rel of candidates) {
-    const abs = resolve(root, rel)
+  for (const abs of await modelCandidatePaths(name)) {
     if (!existsSync(abs)) continue
     try {
       const mod = await import(abs)
