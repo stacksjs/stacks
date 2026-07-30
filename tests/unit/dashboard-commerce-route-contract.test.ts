@@ -49,4 +49,25 @@ describe('dashboard commerce route contract', () => {
 
     expect(storeAction).not.toContain('user_id: 1')
   })
+
+  test('gift card mutations use guarded dashboard routes and model field normalization', () => {
+    const routes = source('storage/framework/defaults/routes/dashboard-api.ts')
+    const giftCards = source('storage/framework/defaults/resources/components/Dashboard/Commerce/CommerceGiftCardsDashboard.stx')
+    const storeAction = source('storage/framework/defaults/app/Actions/Commerce/GiftCardStoreAction.ts')
+    const updateAction = source('storage/framework/defaults/app/Actions/Commerce/GiftCardUpdateAction.ts')
+
+    expect(routes).toContain("guard(route.post('/commerce/gift-cards', 'Actions/Commerce/GiftCardStoreAction'))")
+    expect(routes).toContain("guard(route.patch('/commerce/gift-cards/{id}', 'Actions/Commerce/GiftCardUpdateAction'))")
+    expect(routes).toContain("guard(route.delete('/commerce/gift-cards/{id}', 'Actions/Commerce/GiftCardDestroyAction'))")
+    expect(giftCards).toContain('/api/dashboard/commerce/gift-cards')
+    expect(giftCards).not.toMatch(/\/api\/gift-cards(?:\/|\?|'|`)/)
+
+    for (const action of [storeAction, updateAction]) {
+      expect(action).toContain('model: GiftCard')
+      expect(action).toContain('await request.validate()')
+      expect(action).toContain('toSnakeCaseKeys(request.all())')
+    }
+
+    expect(updateAction).toContain("method: 'PATCH'")
+  })
 })

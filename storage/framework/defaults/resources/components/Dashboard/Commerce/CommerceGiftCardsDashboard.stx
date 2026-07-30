@@ -196,7 +196,7 @@ async function saveGiftCard(payload: GiftCardWritePayload): Promise<void> {
   saving.set(true)
   validationErrors.set({})
   try {
-    await dashboardApi(editing ? `/api/gift-cards/${current.id}` : '/api/gift-cards', {
+    await dashboardApi(editing ? `/api/dashboard/commerce/gift-cards/${current.id}` : '/api/dashboard/commerce/gift-cards', {
       method: editing ? 'PATCH' : 'POST',
       body: payload,
     })
@@ -240,7 +240,7 @@ async function deleteGiftCard(): Promise<void> {
     return
   deleting.set(true)
   try {
-    await dashboardApi(`/api/gift-cards/${current.id}`, { method: 'DELETE' })
+    await dashboardApi(`/api/dashboard/commerce/gift-cards/${current.id}`, { method: 'DELETE' })
     deletingRecord.set(null)
     detailsRecord.set(null)
     pushToast('success', 'Gift card deleted', { detail: current.code })

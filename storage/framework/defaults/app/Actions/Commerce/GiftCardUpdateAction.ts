@@ -1,23 +1,20 @@
 import { Action } from '@stacksjs/actions'
 
 import { giftCards } from '@stacksjs/commerce'
+import { toSnakeCaseKeys } from '@stacksjs/orm'
 
 import { response } from '@stacksjs/router'
 
 export default new Action({
   name: 'GiftCard Update',
   description: 'GiftCard Update ORM Action',
-  method: 'PUT',
+  method: 'PATCH',
+  model: GiftCard,
   async handle(request: RequestInstance) {
-    const id = request.getParam('id')
+    await request.validate()
 
-    const data = {
-      code: request.get('code'),
-      initial_balance: request.get<number>('initial_balance'),
-      current_balance: request.get<number>('current_balance'),
-      status: request.get('status'),
-      currency: request.get('currency'),
-    }
+    const id = request.getParam('id')
+    const data = toSnakeCaseKeys(request.all())
 
     const model = await giftCards.update(id, data)
 
