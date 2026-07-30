@@ -215,7 +215,7 @@ async function saveProduct(payload: ProductWritePayload): Promise<void> {
   saving.set(true)
   validationErrors.set({})
   try {
-    await dashboardApi(editing ? `/api/products/${current.id}` : '/api/products', {
+    await dashboardApi(editing ? `/api/dashboard/commerce/products/${current.id}` : '/api/dashboard/commerce/products', {
       method: editing ? 'PATCH' : 'POST',
       body: payload,
     })
@@ -255,7 +255,7 @@ async function deleteProduct(): Promise<void> {
     return
   deleting.set(true)
   try {
-    await dashboardApi(`/api/products/${current.id}`, { method: 'DELETE' })
+    await dashboardApi(`/api/dashboard/commerce/products/${current.id}`, { method: 'DELETE' })
     deletingRecord.set(null)
     pushToast('success', 'Product deleted', { detail: current.name })
     await loadProducts()

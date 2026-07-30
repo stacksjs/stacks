@@ -7,7 +7,9 @@ export default new Action({
   name: 'ProductItem Store',
   description: 'ProductItem Store ORM Action',
   method: 'POST',
+  model: Product,
   async handle(request: RequestInstance) {
+    await request.validate()
     const data = request.all()
 
     const model = await products.items.store(data)
