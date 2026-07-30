@@ -34,14 +34,6 @@ function rows(): ProductWaitlistRecord[] {
   })
 }
 
-function updateSearch(event: Event): void {
-  search.set((event.target as HTMLInputElement).value)
-}
-
-function updateStatus(event: Event): void {
-  status.set((event.target as HTMLSelectElement).value)
-}
-
 function openAddDialog(): void {
   entryDialogMode.set('add')
   editingRecord.set(null)
@@ -189,7 +181,7 @@ onMount(() => {
       </div>
       <div class="flex gap-2">
         <label class="sr-only" for="waitlist-status">Status</label>
-        <select id="waitlist-status" :value="status()" class="px-3 py-2 text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" @change="updateStatus($event)">
+        <select id="waitlist-status" x-model="status" class="px-3 py-2 text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700">
           <option value="all">All statuses</option>
           <option value="waiting">Waiting</option>
           <option value="notified">Notified</option>
@@ -197,7 +189,7 @@ onMount(() => {
           <option value="cancelled">Cancelled</option>
         </select>
         <label class="sr-only" for="waitlist-search">Search waitlist</label>
-        <input id="waitlist-search" :value="search()" type="search" placeholder="Search waitlist" class="px-3 py-2 w-56 text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" @input="updateSearch($event)" />
+        <input id="waitlist-search" x-model="search" type="search" placeholder="Search waitlist" class="px-3 py-2 w-56 text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" />
       </div>
     </div>
 

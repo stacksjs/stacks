@@ -37,18 +37,6 @@ function rows(): RestaurantWaitlistRecord[] {
   })
 }
 
-function updateSearch(event: Event): void {
-  search.set((event.target as HTMLInputElement).value)
-}
-
-function updateStatus(event: Event): void {
-  status.set((event.target as HTMLSelectElement).value)
-}
-
-function updatePreference(event: Event): void {
-  preference.set((event.target as HTMLSelectElement).value)
-}
-
 function openAddDialog(): void {
   entryDialogMode.set('add')
   editingRecord.set(null)
@@ -254,7 +242,7 @@ onMount(() => {
       </div>
       <div class="flex flex-wrap gap-2">
         <label class="sr-only" for="restaurant-waitlist-status">Status</label>
-        <select id="restaurant-waitlist-status" :value="status()" class="px-3 py-2 text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" @change="updateStatus($event)">
+        <select id="restaurant-waitlist-status" x-model="status" class="px-3 py-2 text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700">
           <option value="all">All statuses</option>
           <option value="waiting">Waiting</option>
           <option value="seated">Seated</option>
@@ -262,7 +250,7 @@ onMount(() => {
           <option value="no_show">No show</option>
         </select>
         <label class="sr-only" for="restaurant-waitlist-preference">Table preference</label>
-        <select id="restaurant-waitlist-preference" :value="preference()" class="px-3 py-2 text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" @change="updatePreference($event)">
+        <select id="restaurant-waitlist-preference" x-model="preference" class="px-3 py-2 text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700">
           <option value="all">All tables</option>
           <option value="no_preference">No preference</option>
           <option value="indoor">Indoor</option>
@@ -270,7 +258,7 @@ onMount(() => {
           <option value="booth">Booth</option>
         </select>
         <label class="sr-only" for="restaurant-waitlist-search">Search waitlist</label>
-        <input id="restaurant-waitlist-search" :value="search()" type="search" placeholder="Search waitlist" class="px-3 py-2 w-56 text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" @input="updateSearch($event)" />
+        <input id="restaurant-waitlist-search" x-model="search" type="search" placeholder="Search waitlist" class="px-3 py-2 w-56 text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" />
       </div>
     </div>
 
