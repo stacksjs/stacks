@@ -1,0 +1,249 @@
+<script client>
+import type {
+  DashboardCloudEvent,
+  DashboardCloudProject,
+  DashboardCloudResource,
+  DashboardCloudSnapshot,
+  DashboardServerDeployment,
+} from '../../../../app/Actions/Dashboard/Cloud/cloud-overview'
+import { dashboardApi } from '../../../../functions/dashboard-api'
+
+interface ResourceGroup {
+  category: string
+  label: string
+  resources: DashboardCloudResource[]
+}
+
+const project = state<DashboardCloudProject>({
+  name: 'Cloud project',
+  slug: 'app',
+  mode: 'server',
+  provider: 'not configured',
+  region: 'not configured',
+})
+const snapshot = state<DashboardCloudSnapshot | null>(null)
+const loading = state(true)
+const loadError = state('')
+const selectedResource = state<DashboardCloudResource | null>(null)
+
+const resourceGroups = derived<ResourceGroup[]>(() => {
+  const resources = snapshot()?.resources || []
+  const labels: Record<string, string> = {
+    network: 'Network',
+    storage: 'Storage',
+    queue: 'Queues',
+    function: 'Functions',
+    database: 'Databases',
+    cdn: 'Content delivery',
+    container: 'Containers',
+    site: 'Sites',
+  }
+  const order = ['network', 'storage', 'queue', 'function', 'database', 'cdn', 'container', 'site']
+  return order
+    .map(category => ({
+      category,
+      label: labels[category] || category,
+      resources: resources.filter(resource => resource.category === category),
+    }))
+    .filter(group => group.resources.length > 0)
+})
+const totalInstances = derived(() => (snapshot()?.serverDefinitions || []).reduce((total, server) => total + server.instances, 0))
+const attentionDeployments = derived(() => (snapshot()?.deployments || []).filter(deployment => deployment.status === 'attention'))
+const activeResources = derived(() => (snapshot()?.resources || []).filter(resource => resource.status !== 'inactive').length)
+
+function formatDate(value: string | null): string {
+  if (!value)
+    return 'Not recorded'
+  const date = new Date(value)
+  return Number.isNaN(date.getTime())
+    ? 'Not recorded'
+    : new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(date)
+}
+
+function eventIcon(event: DashboardCloudEvent): string {
+  if (event.type === 'attention')
+    return 'i-hugeicons-alert-02 text-amber-500'
+  if (event.type === 'success')
+    return 'i-hugeicons-checkmark-circle-02 text-green-500'
+  return 'i-hugeicons-information-circle text-blue-500'
+}
+
+function deploymentMessage(deployment: DashboardServerDeployment): string {
+  if (!deployment.operation)
+    return 'No pending operation is recorded.'
+  return `Resize ${deployment.operation.sourceType || 'current type'} to ${deployment.operation.targetType || 'requested type'} is ${deployment.operation.status}.`
+}
+
+function closeResource(): void {
+  selectedResource.set(null)
+}
+
+async function loadCloud(): Promise<void> {
+  loading.set(true)
+  loadError.set('')
+  try {
+    const response = await dashboardApi<DashboardCloudSnapshot>('/api/dashboard/cloud')
+    project.set(response.project)
+    snapshot.set({
+      ...response,
+      environments: Array.isArray(response.environments) ? response.environments : [],
+      serverDefinitions: Array.isArray(response.serverDefinitions) ? response.serverDefinitions : [],
+      deployments: Array.isArray(response.deployments) ? response.deployments : [],
+      resources: Array.isArray(response.resources) ? response.resources : [],
+      serverlessServices: Array.isArray(response.serverlessServices) ? response.serverlessServices : [],
+      serverlessLinks: Array.isArray(response.serverlessLinks) ? response.serverlessLinks : [],
+      events: Array.isArray(response.events) ? response.events : [],
+    })
+  }
+  catch (error) {
+    snapshot.set(null)
+    loadError.set(error instanceof Error ? error.message : 'Cloud state could not be loaded.')
+  }
+  finally {
+    loading.set(false)
+  }
+}
+
+useEventListener('keydown', (event: KeyboardEvent) => {
+  if (event.key === 'Escape')
+    closeResource()
+})
+
+onMount(() => {
+  void loadCloud()
+})
+</script>
+
+<div class="space-y-6">
+  <header class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+    <div>
+      <div class="flex gap-2 items-center">
+        <h1 class="font-semibold text-2xl text-neutral-900 tracking-tight dark:text-white">Cloud infrastructure</h1>
+        <CloudStatusBadge :status="project().provider === 'not configured' ? 'inactive' : 'configured'" />
+      </div>
+      <p class="mt-1 max-w-2xl text-neutral-500 text-sm dark:text-neutral-400">Configuration from config/cloud.ts kept separate from deployment state persisted by ts-cloud.</p>
+    </div>
+    <button type="button" :disabled="loading()" class="inline-flex items-center self-start px-3 py-2 font-medium text-neutral-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-900 hover:bg-neutral-50 dark:hover:bg-neutral-800 border border-neutral-300 rounded-lg dark:border-neutral-700 disabled:opacity-50" @click="loadCloud">
+      <span :class="'mr-2 h-4 w-4 ' + (loading() ? 'animate-spin i-hugeicons-loading-03' : 'i-hugeicons-refresh')"></span>
+      Refresh
+    </button>
+  </header>
+
+  <div :if="loadError()" role="alert" class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between px-4 py-3 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/40 border border-red-200 rounded-xl dark:border-red-900">
+    <span>{{ loadError() }}</span>
+    <button type="button" class="font-semibold hover:underline" @click="loadCloud">Try again</button>
+  </div>
+
+  <section class="grid gap-3 grid-cols-2 xl:grid-cols-4">
+    <div class="p-4 bg-white dark:bg-neutral-900 border border-neutral-200 rounded-xl dark:border-neutral-700">
+      <p class="text-neutral-500 text-xs uppercase dark:text-neutral-400">Provider</p>
+      <p class="mt-2 capitalize font-semibold text-neutral-900 text-xl dark:text-white">{{ project().provider }}</p>
+    </div>
+    <div class="p-4 bg-white dark:bg-neutral-900 border border-neutral-200 rounded-xl dark:border-neutral-700">
+      <p class="text-neutral-500 text-xs uppercase dark:text-neutral-400">Mode</p>
+      <p class="mt-2 capitalize font-semibold text-neutral-900 text-xl dark:text-white">{{ project().mode }}</p>
+    </div>
+    <div class="p-4 bg-white dark:bg-neutral-900 border border-neutral-200 rounded-xl dark:border-neutral-700">
+      <p class="text-neutral-500 text-xs uppercase dark:text-neutral-400">Compute instances</p>
+      <p class="mt-2 font-semibold text-neutral-900 text-xl dark:text-white">{{ totalInstances() }}</p>
+    </div>
+    <div class="p-4 bg-white dark:bg-neutral-900 border border-neutral-200 rounded-xl dark:border-neutral-700">
+      <p class="text-neutral-500 text-xs uppercase dark:text-neutral-400">Active resources</p>
+      <p class="mt-2 font-semibold text-neutral-900 text-xl dark:text-white">{{ activeResources() }}</p>
+    </div>
+  </section>
+
+  <section :if="attentionDeployments().length > 0" aria-label="Cloud operations needing attention" class="space-y-3">
+    <article :for="deployment in attentionDeployments()" class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between p-4 text-amber-900 dark:text-amber-100 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 rounded-xl dark:border-amber-900/70">
+      <div class="flex gap-3 items-start">
+        <span class="shrink-0 mt-0.5 h-5 w-5 text-amber-600 dark:text-amber-400 i-hugeicons-alert-02"></span>
+        <div>
+          <p class="font-semibold text-sm">{{ deployment.serverName }} needs attention</p>
+          <p class="mt-1 text-amber-800 text-sm dark:text-amber-200">{{ deploymentMessage(deployment) }}</p>
+        </div>
+      </div>
+      <StxLink to="/servers" class="shrink-0 font-semibold text-amber-800 text-sm dark:text-amber-200 hover:underline">Inspect server state</StxLink>
+    </article>
+  </section>
+
+  <section class="grid gap-4 lg:grid-cols-[minmax(0,1.4fr)_minmax(18rem,0.6fr)]">
+    <div class="p-5 bg-white dark:bg-neutral-900 border border-neutral-200 rounded-xl dark:border-neutral-700">
+      <div class="flex gap-4 items-start justify-between">
+        <div>
+          <h2 class="font-semibold text-neutral-900 dark:text-white">Environment state</h2>
+          <p class="mt-1 text-neutral-500 text-sm dark:text-neutral-400">Deployment badges only appear when persisted provider state exists.</p>
+        </div>
+        <span class="font-mono text-neutral-500 text-xs dark:text-neutral-400">{{ project().region }}</span>
+      </div>
+      <div class="grid gap-3 sm:grid-cols-2 mt-4">
+        <div :for="environment in snapshot()?.environments || []" class="flex gap-3 items-center justify-between p-3 bg-neutral-50 dark:bg-neutral-800 border border-neutral-100 rounded-lg dark:border-neutral-700">
+          <div>
+            <p class="font-semibold text-neutral-900 text-sm dark:text-white">{{ environment.name }}</p>
+            <p class="mt-1 text-neutral-500 text-xs dark:text-neutral-400">{{ environment.branch || 'no branch' }} · {{ environment.region }}</p>
+          </div>
+          <CloudStatusBadge :status="environment.status" />
+        </div>
+      </div>
+      <p :if="(snapshot()?.environments || []).length === 0" class="mt-4 p-4 text-center text-neutral-500 text-sm dark:text-neutral-400 bg-neutral-50 dark:bg-neutral-800 rounded-lg">No environments are configured.</p>
+    </div>
+
+    <div class="p-5 text-white bg-neutral-950 border border-neutral-800 rounded-xl">
+      <p class="text-neutral-400 text-xs uppercase">State boundary</p>
+      <h2 class="mt-2 font-semibold text-lg">Declared is not deployed</h2>
+      <dl class="grid gap-3 grid-cols-2 mt-5">
+        <div><dt class="text-neutral-400 text-xs">Definitions</dt><dd class="mt-1 font-semibold text-xl">{{ (snapshot()?.serverDefinitions || []).length }}</dd></div>
+        <div><dt class="text-neutral-400 text-xs">Deployments</dt><dd class="mt-1 font-semibold text-xl">{{ (snapshot()?.deployments || []).length }}</dd></div>
+      </dl>
+      <StxLink to="/servers" class="inline-flex gap-2 items-center mt-6 font-semibold text-blue-300 text-sm hover:text-blue-200">
+        Open server inventory
+        <span class="h-4 w-4 i-hugeicons-arrow-right-01"></span>
+      </StxLink>
+    </div>
+  </section>
+
+  <section>
+    <div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+      <div>
+        <h2 class="font-semibold text-neutral-900 dark:text-white">Configured resources</h2>
+        <p class="mt-1 text-neutral-500 text-sm dark:text-neutral-400">Only resources present in the current cloud configuration are listed.</p>
+      </div>
+      <p class="font-mono text-neutral-500 text-xs dark:text-neutral-400">{{ (snapshot()?.resources || []).length }} records</p>
+    </div>
+    <div class="mt-4 space-y-6">
+      <section :for="group in resourceGroups()">
+        <div class="flex gap-2 items-center">
+          <h3 class="font-semibold text-neutral-700 text-sm dark:text-neutral-200">{{ group.label }}</h3>
+          <span class="px-2 py-0.5 text-neutral-600 text-xs dark:text-neutral-300 bg-neutral-100 dark:bg-neutral-800 rounded-full">{{ group.resources.length }}</span>
+        </div>
+        <div class="grid gap-3 md:grid-cols-2 xl:grid-cols-3 mt-3">
+          <CloudResourceButton :for="resource in group.resources" :item="resource" @inspect="selectedResource.set($event)" />
+        </div>
+      </section>
+    </div>
+    <div :if="!loading() && (snapshot()?.resources || []).length === 0" class="mt-4 p-8 text-center bg-white dark:bg-neutral-900 border border-dashed border-neutral-200 rounded-xl dark:border-neutral-700">
+      <span class="inline-block h-7 w-7 text-neutral-400 i-hugeicons-cloud"></span>
+      <p class="mt-3 font-semibold text-neutral-900 dark:text-white">No cloud resources configured</p>
+      <p class="mt-1 text-neutral-500 text-sm dark:text-neutral-400">Add infrastructure entries to config/cloud.ts to populate this inventory.</p>
+    </div>
+  </section>
+
+  <section :if="(snapshot()?.events || []).length > 0">
+    <h2 class="font-semibold text-neutral-900 dark:text-white">Recorded cloud events</h2>
+    <div class="mt-3 bg-white dark:bg-neutral-900 border border-neutral-200 divide-neutral-200 divide-y rounded-xl dark:border-neutral-700 dark:divide-neutral-700">
+      <article :for="event in snapshot()?.events || []" class="flex gap-3 p-4">
+        <span :class="'shrink-0 mt-0.5 h-5 w-5 ' + eventIcon(event)"></span>
+        <div class="flex-1 min-w-0">
+          <div class="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+            <p class="font-semibold text-neutral-900 text-sm dark:text-white">{{ event.service }}</p>
+            <time class="text-neutral-500 text-xs dark:text-neutral-400">{{ formatDate(event.timestamp) }}</time>
+          </div>
+          <p class="mt-1 text-neutral-600 text-sm dark:text-neutral-300">{{ event.message }}</p>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <footer :if="snapshot()?.generatedAt" class="text-neutral-400 text-right text-xs dark:text-neutral-500">Snapshot {{ formatDate(snapshot()?.generatedAt || null) }}</footer>
+
+  <CloudDetailsDialog :open="Boolean(selectedResource())" :item="selectedResource()" @close="closeResource" />
+</div>

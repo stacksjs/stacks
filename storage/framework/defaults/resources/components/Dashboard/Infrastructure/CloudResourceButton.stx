@@ -1,0 +1,52 @@
+<script client>
+import type { DashboardCloudResource } from '../../../../app/Actions/Dashboard/Cloud/cloud-overview'
+
+const item = useReactiveProp('item', null as DashboardCloudResource | null)
+const emit = defineEmits()
+
+function iconClass(): string {
+  const category = item()?.category
+  if (category === 'network')
+    return 'i-hugeicons-network'
+  if (category === 'storage')
+    return 'i-hugeicons-folder-01'
+  if (category === 'queue')
+    return 'i-hugeicons-message-multiple-02'
+  if (category === 'function')
+    return 'i-hugeicons-function'
+  if (category === 'database')
+    return 'i-hugeicons-database-02'
+  if (category === 'cdn')
+    return 'i-hugeicons-cloud-fast-wind'
+  if (category === 'container')
+    return 'i-hugeicons-package'
+  if (category === 'site')
+    return 'i-hugeicons-globe'
+  return 'i-hugeicons-cloud'
+}
+
+function inspect(): void {
+  const resource = item()
+  if (resource)
+    emit('inspect', resource)
+}
+</script>
+
+<button
+  type="button"
+  :aria-label="'Inspect ' + (item()?.name || 'cloud resource')"
+  class="flex gap-3 items-start p-4 w-full text-left bg-white dark:bg-neutral-900 hover:bg-neutral-50 dark:hover:bg-neutral-800 border border-neutral-200 rounded-xl dark:border-neutral-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 transition-colors"
+  @click="inspect"
+>
+  <span class="flex items-center justify-center shrink-0 h-9 w-9 text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/50 rounded-lg">
+    <span :class="'h-5 w-5 ' + iconClass()"></span>
+  </span>
+  <span class="flex-1 min-w-0">
+    <span class="flex gap-2 items-center justify-between">
+      <span class="font-semibold text-neutral-900 text-sm truncate dark:text-white">{{ item()?.name || 'Unnamed resource' }}</span>
+      <CloudStatusBadge :status="item()?.status || 'inactive'" />
+    </span>
+    <span class="block mt-1 capitalize text-neutral-500 text-xs dark:text-neutral-400">{{ item()?.type || 'Resource' }}</span>
+    <span class="block mt-2 leading-5 text-neutral-600 text-sm dark:text-neutral-300">{{ item()?.description || 'No description recorded.' }}</span>
+  </span>
+</button>
