@@ -11,6 +11,7 @@ const options = useReactiveProp('options', {
   customers: [],
 } as ProductWaitlistOptions)
 const busy = useReactiveProp('busy', false)
+const errors = useReactiveProp('errors', {} as Record<string, string>)
 const emit = defineEmits()
 
 const productId = state<number | string>('')
@@ -91,6 +92,13 @@ function submitForm(): void {
     status: status(),
   } satisfies ProductWaitlistWritePayload)
 }
+
+function errorMessages(): string[] {
+  return Object.entries(errors()).map(([field, message]) => {
+    const label = field.replace(/([a-z])([A-Z])/g, '$1 $2').replaceAll('_', ' ')
+    return `${label.charAt(0).toUpperCase()}${label.slice(1)}: ${message}`
+  })
+}
 </script>
 
 <div
@@ -108,10 +116,14 @@ function submitForm(): void {
           <h2 class="font-semibold text-gray-900 text-lg dark:text-white">{{ mode() === 'edit' ? 'Edit waitlist entry' : 'Add waitlist entry' }}</h2>
           <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Save this entry through the WaitlistProduct model API.</p>
         </div>
-        <button type="button" aria-label="Close dialog" class="p-2 text-gray-400 hover:text-gray-700 dark:hover:text-white rounded-md" :disabled="busy()" @click="emit('close')">
+        <Button variant="ghost" size="sm" iconOnly ariaLabel="Close dialog" :disabled="busy()" @click="emit('close')">
           <span class="block h-5 w-5 i-hugeicons-cancel-01"></span>
-        </button>
+        </Button>
       </div>
+
+      <ul :if="errorMessages().length > 0" class="mt-5 p-3 space-y-1 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900">
+        <template :for="message in errorMessages()" :key="message"><li>{{ message }}</li></template>
+      </ul>
 
       <div class="grid gap-4 sm:grid-cols-2 mt-6">
         <label class="block sm:col-span-2">
@@ -189,11 +201,8 @@ function submitForm(): void {
       </div>
 
       <div class="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end mt-6">
-        <button type="button" :disabled="busy()" class="px-4 py-2 font-semibold text-gray-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-700 border border-gray-300 rounded-md dark:border-neutral-600 disabled:opacity-50" @click="emit('close')">Cancel</button>
-        <button type="submit" :disabled="busy()" class="inline-flex items-center justify-center px-4 py-2 font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md disabled:opacity-50">
-          <span :if="busy()" class="mr-2 h-4 w-4 animate-spin i-hugeicons-loading-03"></span>
-          {{ busy() ? 'Saving' : mode() === 'edit' ? 'Save changes' : 'Add entry' }}
-        </button>
+        <Button variant="secondary" :disabled="busy()" @click="emit('close')">Cancel</Button>
+        <Button type="submit" :loading="busy()">{{ mode() === 'edit' ? 'Save changes' : 'Add entry' }}</Button>
       </div>
     </form>
   </div>

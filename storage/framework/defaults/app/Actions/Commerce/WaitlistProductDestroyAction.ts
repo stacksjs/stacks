@@ -4,13 +4,13 @@ import { response } from '@stacksjs/router'
 
 export default new Action({
   name: 'WaitlistProduct Destroy',
-  description: 'WaitlistProduct Destroy ORM Action',
+  description: 'Deletes a product waitlist entry through the native commerce module.',
   method: 'DELETE',
   async handle(request: RequestInstance) {
-    const id = request.getParam('id')
+    const id = Number(request.getParam('id'))
 
     await waitlists.products.destroy(id)
 
-    return response.json({ message: 'WaitlistProduct deleted successfully' })
+    return response.noContent()
   },
 })
