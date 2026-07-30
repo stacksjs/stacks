@@ -132,7 +132,7 @@ async function upsertAlertState(org: string, alerting: boolean, nowIso: string):
 function buildPayload(action: PressureAction): { subject: string, body: string, data: Record<string, unknown> } {
   const { org, current, sustainedMs } = action
   const minutes = Math.round(sustainedMs / 60_000)
-  const subject = `Runner pressure: ${org} — ${current.queued} queued`
+  const subject = `Runner pressure: ${org}, ${current.queued} queued`
   const body = [
     `Org: ${org}`,
     `Queue depth: ${current.queued} (cap ${current.cap}, ${current.running} running)`,

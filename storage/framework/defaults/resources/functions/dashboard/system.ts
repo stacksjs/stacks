@@ -52,7 +52,7 @@ export async function getServiceHealth(): Promise<ServiceStatus[]> {
       out.push({
         name: 'Database',
         status: count > 0 ? 'healthy' : 'degraded',
-        detail: count > 0 ? `${count} users` : 'Schema reachable, no rows — run buddy seed',
+        detail: count > 0 ? `${count} users` : 'Schema reachable, no rows. Run buddy seed.',
       })
     }
   }

@@ -250,7 +250,7 @@ function describeFields(values: any, source: string): ConfigField[] {
         value,
         type,
         editable: false,
-        reason: 'Defined via env var or expression — set the env variable to change',
+        reason: 'Defined via env var or expression. Set the environment variable to change it.',
       })
       continue
     }

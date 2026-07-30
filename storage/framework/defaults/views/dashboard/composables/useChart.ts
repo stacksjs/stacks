@@ -56,7 +56,7 @@ export function useChart(opts: UseChartOptions): ChartHandle {
     // is friendlier than throwing — pages stay rendered, devs see the
     // missing chart and can grep the id.
     // eslint-disable-next-line no-console
-    console.warn(`[useChart] no element with id "${opts.id}" — chart not initialised`)
+    console.warn(`[useChart] no element with id "${opts.id}". Chart not initialised.`)
     return { instance: null, destroy: () => {}, update: () => {} }
   }
 

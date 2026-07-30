@@ -114,7 +114,7 @@ function buildPayload(t: FailedTransition): { subject: string, body: string, dat
   const shortSha = t.commitSha ? t.commitSha.slice(0, 7) : ''
   const commit = t.commitMessage ? `${shortSha} ${t.commitMessage.split('\n')[0]}` : shortSha
   const workflow = t.workflowName ? ` (${t.workflowName})` : ''
-  const author = t.commitAuthor ? ` — ${t.commitAuthor}` : ''
+  const author = t.commitAuthor ? `, ${t.commitAuthor}` : ''
   const subject = `CI failed: ${t.repoFullName}${workflow}`
   const lines = [
     `${t.repoFullName}${workflow}`,
