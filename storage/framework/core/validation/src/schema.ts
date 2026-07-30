@@ -42,6 +42,23 @@ const FACTORY_KEYS = new Set([
   'timestamp', 'timestampTz', 'unix',
 ])
 
+function isValidDateInput(value: unknown): boolean {
+  if (value instanceof Date)
+    return !Number.isNaN(value.getTime())
+
+  if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value))
+    return false
+
+  const parsed = new Date(`${value}T00:00:00.000Z`)
+  return !Number.isNaN(parsed.getTime()) && parsed.toISOString().slice(0, 10) === value
+}
+
+function dateInputFactory(): ReturnType<ValidationInstance['date']> {
+  const validator = v.custom(isValidDateInput, 'Must be a valid date')
+  validator.name = 'date'
+  return withConditionals(validator) as unknown as ReturnType<ValidationInstance['date']>
+}
+
 /**
  * Wrap a ts-validation factory function so each returned validator
  * gets `.when()` / `.sometimes()` (see ./conditional.ts) added.
@@ -64,6 +81,7 @@ export const schema: SchemaWithFile = new Proxy(v as unknown as SchemaWithFile, 
   get(target, prop, receiver) {
     if (prop === 'file') return file
     if (prop === 'object') return objectWithContext
+    if (prop === 'date') return dateInputFactory
     if (typeof prop === 'string' && FACTORY_KEYS.has(prop)) {
       const factory = Reflect.get(target, prop, receiver)
       if (typeof factory === 'function') return wrapFactory(factory)
