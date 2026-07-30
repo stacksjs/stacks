@@ -16,6 +16,10 @@
 # Dependencies
 node_modules
 /pantry
+# Locally packed tarballs. These are throwaway artifacts of `bun pm pack` /
+# `npm pack` used to test an unpublished dependency, and one committed by
+# accident ships to every project scaffolded from this template.
+*.tgz
 # Commit both lockfiles. Pantry owns the complete machine and project graph;
 # Bun's lock remains the runtime package-manager lock used by Bun commands.
 
