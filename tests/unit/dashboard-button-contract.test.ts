@@ -122,4 +122,23 @@ describe('dashboard button contract', () => {
       expect(nativeButtons.every(button => button.includes('inset-0'))).toBe(true)
     }
   })
+
+  test('keeps file navigation semantic while sharing all file actions', () => {
+    const source = readFileSync(
+      resolve('storage/framework/defaults/resources/components/Dashboard/Content/FileManagerDashboard.stx'),
+      'utf8',
+    )
+    const nativeButtons = [...source.matchAll(/<button\b[^>]*>/g)].map(match => match[0])
+    const semanticNavigation = [
+      'navRowClass',
+      'aria-label="Grid view"',
+      'aria-label="List view"',
+      ':aria-current',
+      'class="flex items-center max-w-md',
+      'inset-0',
+    ]
+
+    expect((source.match(/<Button/g) || []).length).toBeGreaterThanOrEqual(6)
+    expect(nativeButtons.every(button => semanticNavigation.some(marker => button.includes(marker)))).toBe(true)
+  })
 })
