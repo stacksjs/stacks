@@ -1,7 +1,22 @@
 import { describe, expect, it } from 'bun:test'
-import { normalizeRestaurantWaitlistCustomerOption, normalizeRestaurantWaitlistRecord, summarizeRestaurantWaitlist } from './restaurant-waitlist-records'
+import {
+  normalizeRestaurantWaitlistCustomerOption,
+  normalizeRestaurantWaitlistRecord,
+  restaurantWaitlistDateTimeLocal,
+  restaurantWaitlistTimestamp,
+  summarizeRestaurantWaitlist,
+} from './restaurant-waitlist-records'
 
 describe('dashboard restaurant waitlist records', () => {
+  it('round-trips persisted UTC timestamps through local date inputs', () => {
+    const persisted = '2026-07-30 03:00:00'
+    const input = restaurantWaitlistDateTimeLocal(persisted)
+
+    expect(restaurantWaitlistTimestamp(persisted)).toBe(1785380400)
+    expect(restaurantWaitlistTimestamp(input)).toBe(1785380400)
+    expect(restaurantWaitlistTimestamp('not-a-date')).toBe(0)
+  })
+
   it('normalizes model and database attribute names', () => {
     expect(normalizeRestaurantWaitlistRecord({
       id: 4,

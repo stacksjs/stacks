@@ -340,4 +340,26 @@ describe('dashboard commerce route contract', () => {
 
     expect(destroyAction).toContain('response.noContent()')
   })
+
+  test('restaurant waitlist mutations use guarded complete model actions', () => {
+    const routes = source('storage/framework/defaults/routes/dashboard-api.ts')
+    const waitlist = source('storage/framework/defaults/resources/components/Dashboard/Commerce/RestaurantWaitlistDashboard.stx')
+    const storeAction = source('storage/framework/defaults/app/Actions/Commerce/WaitlistRestaurantStoreAction.ts')
+    const updateAction = source('storage/framework/defaults/app/Actions/Commerce/WaitlistRestaurantUpdateAction.ts')
+    const destroyAction = source('storage/framework/defaults/app/Actions/Commerce/WaitlistRestaurantDestroyAction.ts')
+
+    expect(routes).toContain("guard(route.post('/commerce/waitlist-restaurants', 'Actions/Commerce/WaitlistRestaurantStoreAction'))")
+    expect(routes).toContain("guard(route.patch('/commerce/waitlist-restaurants/{id}', 'Actions/Commerce/WaitlistRestaurantUpdateAction'))")
+    expect(routes).toContain("guard(route.delete('/commerce/waitlist-restaurants/{id}', 'Actions/Commerce/WaitlistRestaurantDestroyAction'))")
+    expect(waitlist).toContain('/api/dashboard/commerce/waitlist-restaurants')
+    expect(waitlist).not.toMatch(/\/api\/waitlist-restaurants(?:\/|\?|'|`)/)
+
+    for (const action of [storeAction, updateAction]) {
+      expect(action).toContain('model: WaitlistRestaurant')
+      expect(action).toContain('await request.validate()')
+      expect(action).toContain('toSnakeCaseKeys(request.all())')
+    }
+
+    expect(destroyAction).toContain('response.noContent()')
+  })
 })

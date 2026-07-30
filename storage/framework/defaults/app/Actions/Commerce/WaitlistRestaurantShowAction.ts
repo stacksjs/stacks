@@ -7,7 +7,7 @@ export default new Action({
   description: 'WaitlistRestaurant Show ORM Action',
   method: 'GET',
   async handle(request: RequestInstance) {
-    const id = request.getParam('id')
+    const id = Number(request.getParam('id'))
 
     const model = await waitlists.restaurant.fetchById(id)
 

@@ -50,6 +50,28 @@ export interface RestaurantWaitlistWritePayload {
   queue_position?: number
 }
 
+export function restaurantWaitlistTimestamp(value: string): number {
+  const raw = String(value || '').trim()
+  if (!raw)
+    return 0
+  if (/^\d{10,13}$/.test(raw)) {
+    const numeric = Number(raw)
+    return raw.length === 13 ? Math.floor(numeric / 1000) : numeric
+  }
+  const source = /^\d{4}-\d{2}-\d{2} \d/.test(raw)
+    ? `${raw.replace(' ', 'T')}Z`
+    : raw
+  const timestamp = new Date(source).getTime()
+  return Number.isFinite(timestamp) ? Math.floor(timestamp / 1000) : 0
+}
+
+export function restaurantWaitlistDateTimeLocal(value: string): string {
+  const timestamp = restaurantWaitlistTimestamp(value)
+  const date = timestamp ? new Date(timestamp * 1000) : new Date()
+  const local = new Date(date.getTime() - date.getTimezoneOffset() * 60000)
+  return local.toISOString().slice(0, 16)
+}
+
 function value(record: any, ...keys: string[]): unknown {
   for (const key of keys) {
     const result = typeof record?.get === 'function' ? record.get(key) : record?.[key]
