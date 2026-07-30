@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test'
-import { readFileSync } from 'node:fs'
+import { readdirSync, readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 
 const dashboardComponents = resolve(
@@ -250,6 +250,13 @@ describe('dashboard native STX bindings', () => {
       expect(source).toContain("emit('minimize')")
       expect(source).toContain("emit('maximize')")
       expect(source).not.toContain('<script server>')
+    }
+
+    const deliveryComponents = resolve(dashboardComponents, 'Commerce/Delivery')
+    for (const file of readdirSync(deliveryComponents).filter(file => file.endsWith('.stx'))) {
+      const source = readFileSync(resolve(deliveryComponents, file), 'utf8')
+      expect(source).not.toContain('bg-blue-600 hover:bg-blue-500')
+      expect(source).not.toContain('bg-red-600 hover:bg-red-500')
     }
 
     const navbar = componentSource('NavbarModern.stx')

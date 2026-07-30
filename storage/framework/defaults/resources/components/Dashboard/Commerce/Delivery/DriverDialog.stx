@@ -111,8 +111,8 @@ function submit(): void {
         </div>
       </div>
       <footer class="flex gap-2 justify-end px-6 py-4 bg-gray-50 dark:bg-neutral-900/50 border-gray-200 border-t dark:border-neutral-700">
-        <button type="button" :disabled="busy()" class="px-3 py-2 font-semibold text-gray-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700 disabled:opacity-50" @click="emit('close')">Cancel</button>
-        <button type="submit" :disabled="busy()" class="inline-flex items-center px-3 py-2 font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md disabled:opacity-50"><span :if="busy()" class="mr-2 h-4 w-4 animate-spin i-hugeicons-loading-03"></span>{{ mode() === 'edit' ? 'Save changes' : 'Add driver' }}</button>
+        <Button :disabled="busy()" variant="secondary" @click="emit('close')">Cancel</Button>
+        <Button type="submit" :loading="busy()">{{ mode() === 'edit' ? 'Save changes' : 'Add driver' }}</Button>
       </footer>
     </form>
   </section>

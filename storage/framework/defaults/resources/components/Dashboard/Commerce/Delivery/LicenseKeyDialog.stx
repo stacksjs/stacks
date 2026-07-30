@@ -133,7 +133,7 @@ function submit(): void {
             <label for="license-key-value" class="font-medium text-gray-700 text-sm dark:text-neutral-200">License key</label>
             <span class="flex gap-2 mt-1">
               <input id="license-key-value" x-model="keyValue" type="text" required maxlength="24" autocomplete="off" placeholder="XXXX-XXXX-XXXX-XXXX-XXXX" class="flex-1 px-3 py-2 min-w-0 font-mono text-gray-900 text-sm uppercase dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" />
-              <button type="button" class="px-3 py-2 font-semibold text-gray-700 text-sm whitespace-nowrap dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" @click="generateKey()">Generate</button>
+              <Button variant="secondary" @click="generateKey()">Generate</Button>
             </span>
           </div>
           <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Template</span><select x-model="templateValue" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700"><option value="Standard License">Standard License</option><option value="Premium License">Premium License</option><option value="Enterprise License">Enterprise License</option></select></label>
@@ -149,8 +149,8 @@ function submit(): void {
         </div>
       </div>
       <footer class="flex gap-2 justify-end px-6 py-4 bg-gray-50 dark:bg-neutral-900/50 border-gray-200 border-t dark:border-neutral-700">
-        <button type="button" :disabled="busy()" class="px-3 py-2 font-semibold text-gray-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700 disabled:opacity-50" @click="emit('close')">Cancel</button>
-        <button type="submit" :disabled="busy()" class="inline-flex items-center px-3 py-2 font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md disabled:opacity-50"><span :if="busy()" class="mr-2 h-4 w-4 animate-spin i-hugeicons-loading-03"></span>{{ mode() === 'edit' ? 'Save changes' : 'Add key' }}</button>
+        <Button :disabled="busy()" variant="secondary" @click="emit('close')">Cancel</Button>
+        <Button type="submit" :loading="busy()">{{ mode() === 'edit' ? 'Save changes' : 'Add key' }}</Button>
       </footer>
     </form>
   </section>
