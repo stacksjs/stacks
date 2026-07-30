@@ -99,6 +99,7 @@ describe('dashboard button contract', () => {
       'Pagination.stx',
       'UI/Modal.stx',
       'UI/ConfirmDialog.stx',
+      'UI/EmptyState.stx',
       'Marketing/SocialPostsTable.stx',
       'Marketing/CampaignsTable.stx',
       'Marketing/MarketingListsTable.stx',
@@ -122,6 +123,7 @@ describe('dashboard button contract', () => {
       'Billing/PaymentMethod.stx',
       'Billing/Plans.stx',
       'Billing/BillingSettings.stx',
+      'Auth/AccessTokens.stx',
     ]
 
     for (const file of files) {

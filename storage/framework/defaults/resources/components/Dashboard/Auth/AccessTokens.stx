@@ -219,14 +219,14 @@ onMount(() => {
       <h1 class="font-semibold text-2xl text-neutral-900 tracking-tight dark:text-white">Access Tokens</h1>
       <p class="mt-1 text-neutral-500 text-sm dark:text-neutral-400">Create and revoke personal API credentials for the signed-in account.</p>
     </div>
-    <button :if="!loading() && !authenticationRequired()" type="button" class="inline-flex items-center self-start px-3 py-2 font-medium text-sm text-white bg-blue-600 hover:bg-blue-700 rounded-lg" @click="openCreate">
-      <span class="mr-2 h-4 w-4 i-hugeicons-key-02"></span>
+    <Button :if="!loading() && !authenticationRequired()" @click="openCreate">
+      <span class="h-4 w-4 i-hugeicons-key-02"></span>
       Create Token
-    </button>
-    <a :if="!loading() && authenticationRequired()" href="/login" class="inline-flex items-center self-start px-3 py-2 font-medium text-sm text-white bg-blue-600 hover:bg-blue-700 rounded-lg">
-      <span class="mr-2 h-4 w-4 i-hugeicons-login-03"></span>
+    </Button>
+    <Button :if="!loading() && authenticationRequired()" tag="a" href="/login">
+      <span class="h-4 w-4 i-hugeicons-login-03"></span>
       Sign in
-    </a>
+    </Button>
   </header>
 
   <div :if="!loading() && !authenticationRequired()" class="grid gap-4 grid-cols-1 sm:grid-cols-3">
@@ -243,7 +243,7 @@ onMount(() => {
 
   <div :if="loadError()" role="alert" class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between px-4 py-3 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/40 border border-red-200 rounded-lg dark:border-red-900">
     <span>{{ loadError() }}</span>
-    <button type="button" class="font-medium hover:underline" @click="loadTokens">Try again</button>
+    <Button variant="secondary" size="sm" @click="loadTokens">Try again</Button>
   </div>
 
   <div :if="actionError()" role="alert" class="px-4 py-3 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/40 border border-red-200 rounded-lg dark:border-red-900">{{ actionError() }}</div>
@@ -255,10 +255,10 @@ onMount(() => {
         <h2 class="font-semibold text-neutral-900 dark:text-white">Personal Access Tokens</h2>
         <p class="mt-1 text-neutral-500 text-xs dark:text-neutral-400">Existing token values are hashed and cannot be retrieved.</p>
       </div>
-      <button :if="!authenticationRequired()" type="button" :disabled="loading()" class="inline-flex items-center px-3 py-2 text-neutral-600 text-sm dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg disabled:opacity-50" @click="loadTokens">
-        <span :class="'mr-2 h-4 w-4 ' + (loading() ? 'animate-spin i-hugeicons-loading-03' : 'i-hugeicons-refresh')"></span>
+      <Button :if="!authenticationRequired()" variant="secondary" :loading="loading()" @click="loadTokens">
+        <span :if="!loading()" class="h-4 w-4 i-hugeicons-refresh"></span>
         Refresh
-      </button>
+      </Button>
     </div>
 
     <div :if="loading()" class="flex items-center justify-center py-16 text-neutral-500 text-sm dark:text-neutral-400">
@@ -273,10 +273,10 @@ onMount(() => {
       description="Personal access tokens belong to an authenticated account. Sign in to create, inspect, or revoke them."
     >
       <template #action>
-        <a href="/login" class="inline-flex gap-2 items-center px-4 py-2 font-medium text-sm text-white bg-blue-600 hover:bg-blue-700 rounded-lg">
+        <Button tag="a" href="/login">
           <span class="h-4 w-4 i-hugeicons-login-03"></span>
           Sign in
-        </a>
+        </Button>
       </template>
     </EmptyState>
 
@@ -287,10 +287,10 @@ onMount(() => {
       description="Create a scoped token when an integration needs API access."
     >
       <template #action>
-        <button type="button" class="inline-flex gap-2 items-center px-4 py-2 font-medium text-sm text-white bg-blue-600 hover:bg-blue-700 rounded-lg" @click="openCreate">
+        <Button @click="openCreate">
           <span class="h-4 w-4 i-hugeicons-add-01"></span>
           Create Token
-        </button>
+        </Button>
       </template>
     </EmptyState>
 
@@ -319,9 +319,9 @@ onMount(() => {
             <td class="px-4 py-3.5"><span :class="'inline-flex px-2 py-0.5 font-medium text-xs capitalize rounded ' + statusClass(token)">{{ tokenStatus(token) }}</span></td>
             <td class="px-4 py-3.5 text-neutral-500 text-right text-xs whitespace-nowrap dark:text-neutral-400">{{ formatDate(token.expires_at) }}</td>
             <td class="pr-5 py-3.5 text-right whitespace-nowrap">
-              <button type="button" :disabled="revoking() === token.id" :class="'px-3 py-1.5 font-medium text-xs rounded-lg disabled:opacity-50 ' + (confirmingRevoke() === token.id ? 'text-white bg-red-600 hover:bg-red-700' : 'text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40')" @click="revokeToken(token.id)">
+              <Button variant="danger" size="sm" :loading="revoking() === token.id" @click="revokeToken(token.id)">
                 {{ revoking() === token.id ? 'Revoking...' : confirmingRevoke() === token.id ? 'Confirm Revoke' : 'Revoke' }}
-              </button>
+              </Button>
             </td>
           </tr>
         </tbody>
@@ -336,9 +336,9 @@ onMount(() => {
           <h2 id="create-token-title" class="font-semibold text-lg text-neutral-900 dark:text-white">Create Access Token</h2>
           <p class="mt-1 text-neutral-500 text-sm dark:text-neutral-400">Grant only the scopes this integration needs.</p>
         </div>
-        <button type="button" aria-label="Close create token dialog" class="p-1 text-neutral-500 hover:text-neutral-900 dark:hover:text-white rounded" @click="closeCreate">
+        <Button variant="ghost" iconOnly ariaLabel="Close create token dialog" @click="closeCreate">
           <span class="h-5 w-5 i-hugeicons-cancel-01"></span>
-        </button>
+        </Button>
       </div>
 
       <div :if="createdToken()" class="mt-6 space-y-4">
@@ -350,11 +350,11 @@ onMount(() => {
           <textarea readonly rows="4" class="block mt-2 p-3 w-full font-mono text-neutral-900 text-xs dark:text-white bg-neutral-50 dark:bg-neutral-950 border border-neutral-300 rounded-lg dark:border-neutral-700">{{ createdToken() }}</textarea>
         </label>
         <div class="flex gap-2 justify-end">
-          <button type="button" class="px-3 py-2 font-medium text-neutral-700 text-sm dark:text-neutral-200 border border-neutral-300 rounded-lg dark:border-neutral-700" @click="closeCreate">Done</button>
-          <button type="button" class="inline-flex items-center px-3 py-2 font-medium text-sm text-white bg-blue-600 hover:bg-blue-700 rounded-lg" @click="copyCreatedToken">
-            <span class="mr-2 h-4 w-4 i-hugeicons-copy-01"></span>
+          <Button variant="secondary" @click="closeCreate">Done</Button>
+          <Button @click="copyCreatedToken">
+            <span class="h-4 w-4 i-hugeicons-copy-01"></span>
             {{ copied() ? 'Copied' : 'Copy Token' }}
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -390,11 +390,10 @@ onMount(() => {
         <div :if="actionError()" role="alert" class="px-3 py-2 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/40 rounded-lg">{{ actionError() }}</div>
 
         <div class="flex gap-2 justify-end pt-2">
-          <button type="button" class="px-3 py-2 font-medium text-neutral-700 text-sm dark:text-neutral-200 border border-neutral-300 rounded-lg dark:border-neutral-700" @click="closeCreate">Cancel</button>
-          <button type="submit" :disabled="creating()" class="inline-flex items-center px-3 py-2 font-medium text-sm text-white bg-blue-600 hover:bg-blue-700 rounded-lg disabled:opacity-50">
-            <span :if="creating()" class="mr-2 h-4 w-4 animate-spin i-hugeicons-loading-03"></span>
+          <Button variant="secondary" :disabled="creating()" @click="closeCreate">Cancel</Button>
+          <Button type="submit" :loading="creating()">
             {{ creating() ? 'Creating...' : 'Create Token' }}
-          </button>
+          </Button>
         </div>
       </form>
     </div>
