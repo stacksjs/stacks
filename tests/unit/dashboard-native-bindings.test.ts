@@ -104,6 +104,33 @@ describe('dashboard native STX bindings', () => {
     expect(select).not.toContain('liveValue.set(nextValue)')
   })
 
+  test('authentication forms use native component and control models', () => {
+    for (const component of [
+      'Auth/Login.stx',
+      'Auth/Register.stx',
+      'Auth/ForgotPassword.stx',
+    ]) {
+      const source = componentSource(component)
+      expect(source).toContain('v-model:value=')
+      expect(source).toContain('@submit.prevent=')
+      expect(source).not.toMatch(/:value="[^"]+\(\)"[^>]+@(?:input|change)=/)
+      expect(source).not.toMatch(/:checked="[^"]+\(\)"[^>]+@change=/)
+      expect(source).not.toMatch(/function set[A-Z]\w*\(event: Event\)/)
+    }
+
+    const login = componentSource('Auth/Login.stx')
+    expect(login).toContain('x-model="rememberMe"')
+
+    const register = componentSource('Auth/Register.stx')
+    expect(register).toContain('x-model="agreeToTerms"')
+
+    const forgotPassword = componentSource('Auth/ForgotPassword.stx')
+    expect(forgotPassword).toContain("emit('retry')")
+    expect(forgotPassword).toContain('i-hugeicons-cube')
+    expect(forgotPassword).not.toContain('<svg')
+    expect(forgotPassword).not.toContain('<script server>')
+  })
+
   test('shared buttons and modals use native icons and dialog semantics', () => {
     const button = componentSource('UI/Button.stx')
     expect(button).toContain('i-hugeicons-loading-03')

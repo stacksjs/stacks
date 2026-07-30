@@ -38,28 +38,6 @@ function fieldError(field: string): string {
   return errors()[field] || ''
 }
 
-function setName(event: Event): void {
-  name.set((event.target as HTMLInputElement).value)
-}
-
-function setEmail(event: Event): void {
-  email.set((event.target as HTMLInputElement).value)
-}
-
-function setPassword(event: Event): void {
-  password.set((event.target as HTMLInputElement).value)
-  validatePassword()
-}
-
-function setPasswordConfirmation(event: Event): void {
-  passwordConfirmation.set((event.target as HTMLInputElement).value)
-  validateConfirmation()
-}
-
-function setAgreeToTerms(event: Event): void {
-  agreeToTerms.set((event.target as HTMLInputElement).checked)
-}
-
 function validateEmail(): void {
   if (!email().trim())
     setFieldError('email', 'Email is required')
@@ -108,8 +86,7 @@ function validateForm(): boolean {
   return Object.keys(newErrors).length === 0
 }
 
-function handleSubmit(event: Event): void {
-  event.preventDefault()
+function handleSubmit(): void {
   if (!validateForm())
     return
 
@@ -146,15 +123,14 @@ function handleSubmit(event: Event): void {
           </div>
         </div>
 
-      <form @submit="handleSubmit">
+      <form @submit.prevent="handleSubmit">
         <!-- Name Field -->
         <div class="mb-4">
           <Input
             type="text"
             label="Full name"
             placeholder="John Doe"
-            :value="name()"
-            @input="setName"
+            v-model:value="name"
             :error="fieldError('name')"
             required
             :disabled="isLoading()"
@@ -167,8 +143,7 @@ function handleSubmit(event: Event): void {
             type="email"
             label="Email address"
             placeholder="you@example.com"
-            :value="email()"
-            @input="setEmail"
+            v-model:value="email"
             @blur="validateEmail"
             :error="fieldError('email')"
             required
@@ -182,8 +157,8 @@ function handleSubmit(event: Event): void {
             type="password"
             label="Password"
             placeholder="At least 8 characters"
-            :value="password()"
-            @input="setPassword"
+            v-model:value="password"
+            @input="validatePassword"
             @blur="validatePassword"
             :error="fieldError('password')"
             required
@@ -209,8 +184,8 @@ function handleSubmit(event: Event): void {
             type="password"
             label="Confirm password"
             placeholder="Confirm your password"
-            :value="passwordConfirmation()"
-            @input="setPasswordConfirmation"
+            v-model:value="passwordConfirmation"
+            @input="validateConfirmation"
             :error="fieldError('passwordConfirmation')"
             required
             :disabled="isLoading()"
@@ -223,8 +198,7 @@ function handleSubmit(event: Event): void {
             <input
               type="checkbox"
               class="mt-0.5 h-4 w-4 text-blue-500 bg-white dark:bg-neutral-800 border-neutral-300 rounded dark:border-neutral-600 focus:ring-blue-500/40 focus:ring-offset-0"
-              :checked="agreeToTerms()"
-              @change="setAgreeToTerms"
+              x-model="agreeToTerms"
               :disabled="isLoading()"
             />
             <span class="text-neutral-600 text-sm dark:text-neutral-400">
