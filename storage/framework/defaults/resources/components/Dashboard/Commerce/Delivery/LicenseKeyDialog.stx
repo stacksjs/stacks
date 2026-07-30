@@ -88,34 +88,6 @@ function relationId(value: string): number | null {
   return value && Number.isInteger(id) && id > 0 ? id : null
 }
 
-function setKey(event: Event): void {
-  keyValue.set((event.target as HTMLInputElement).value.toUpperCase())
-}
-
-function setTemplate(event: Event): void {
-  templateValue.set((event.target as HTMLSelectElement).value)
-}
-
-function setCustomer(event: Event): void {
-  customerId.set((event.target as HTMLSelectElement).value)
-}
-
-function setProduct(event: Event): void {
-  productId.set((event.target as HTMLSelectElement).value)
-}
-
-function setOrder(event: Event): void {
-  orderId.set((event.target as HTMLSelectElement).value)
-}
-
-function setExpiry(event: Event): void {
-  expiryDate.set((event.target as HTMLInputElement).value)
-}
-
-function setStatus(event: Event): void {
-  status.set((event.target as HTMLSelectElement).value as LicenseKeyStatus)
-}
-
 function generateKey(): void {
   const bytes = new Uint8Array(20)
   crypto.getRandomValues(bytes)
@@ -160,20 +132,20 @@ function submit(): void {
           <div>
             <label for="license-key-value" class="font-medium text-gray-700 text-sm dark:text-neutral-200">License key</label>
             <span class="flex gap-2 mt-1">
-              <input id="license-key-value" :value="keyValue()" type="text" required maxlength="24" autocomplete="off" placeholder="XXXX-XXXX-XXXX-XXXX-XXXX" class="flex-1 px-3 py-2 min-w-0 font-mono text-gray-900 text-sm uppercase dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="setKey" />
+              <input id="license-key-value" x-model="keyValue" type="text" required maxlength="24" autocomplete="off" placeholder="XXXX-XXXX-XXXX-XXXX-XXXX" class="flex-1 px-3 py-2 min-w-0 font-mono text-gray-900 text-sm uppercase dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" />
               <button type="button" class="px-3 py-2 font-semibold text-gray-700 text-sm whitespace-nowrap dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" @click="generateKey()">Generate</button>
             </span>
           </div>
-          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Template</span><select :value="templateValue()" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @change="setTemplate"><option value="Standard License">Standard License</option><option value="Premium License">Premium License</option><option value="Enterprise License">Enterprise License</option></select></label>
+          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Template</span><select x-model="templateValue" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700"><option value="Standard License">Standard License</option><option value="Premium License">Premium License</option><option value="Enterprise License">Enterprise License</option></select></label>
           <div class="grid gap-4 grid-cols-1 sm:grid-cols-2">
-            <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Customer</span><select :value="customerId()" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @change="setCustomer"><option value="">Unassigned</option><template :for="option in options().customers" :key="option.id"><option :value="option.id">{{ option.label }}{{ option.detail ? ' - ' + option.detail : '' }}</option></template></select></label>
-            <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Product</span><select :value="productId()" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @change="setProduct"><option value="">Unassigned</option><template :for="option in options().products" :key="option.id"><option :value="option.id">{{ option.label }}</option></template></select></label>
+            <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Customer</span><select x-model="customerId" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700"><option value="">Unassigned</option><template :for="option in options().customers" :key="option.id"><option :value="option.id">{{ option.label }}{{ option.detail ? ' - ' + option.detail : '' }}</option></template></select></label>
+            <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Product</span><select x-model="productId" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700"><option value="">Unassigned</option><template :for="option in options().products" :key="option.id"><option :value="option.id">{{ option.label }}</option></template></select></label>
           </div>
           <div class="grid gap-4 grid-cols-1 sm:grid-cols-2">
-            <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Order</span><select :value="orderId()" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @change="setOrder"><option value="">Unassigned</option><template :for="option in options().orders" :key="option.id"><option :value="option.id">{{ option.label }}{{ option.detail ? ' - ' + option.detail : '' }}</option></template></select></label>
-            <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Expiry date</span><input :value="expiryDate()" type="datetime-local" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="setExpiry" /></label>
+            <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Order</span><select x-model="orderId" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700"><option value="">Unassigned</option><template :for="option in options().orders" :key="option.id"><option :value="option.id">{{ option.label }}{{ option.detail ? ' - ' + option.detail : '' }}</option></template></select></label>
+            <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Expiry date</span><input x-model="expiryDate" type="datetime-local" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label>
           </div>
-          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Status</span><select :value="status()" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @change="setStatus"><option value="unassigned">Unassigned</option><option value="active">Active</option><option value="inactive">Inactive</option></select></label>
+          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Status</span><select x-model="status" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700"><option value="unassigned">Unassigned</option><option value="active">Active</option><option value="inactive">Inactive</option></select></label>
         </div>
       </div>
       <footer class="flex gap-2 justify-end px-6 py-4 bg-gray-50 dark:bg-neutral-900/50 border-gray-200 border-t dark:border-neutral-700">

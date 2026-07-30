@@ -50,30 +50,6 @@ effect(() => {
   userId.set(current?.user_id ? String(current.user_id) : '')
 })
 
-function setName(event: Event): void {
-  name.set((event.target as HTMLInputElement).value)
-}
-
-function setPhone(event: Event): void {
-  phone.set((event.target as HTMLInputElement).value)
-}
-
-function setVehicleNumber(event: Event): void {
-  vehicleNumber.set((event.target as HTMLInputElement).value)
-}
-
-function setLicense(event: Event): void {
-  license.set((event.target as HTMLInputElement).value)
-}
-
-function setStatus(event: Event): void {
-  status.set((event.target as HTMLSelectElement).value as DriverStatus)
-}
-
-function setUser(event: Event): void {
-  userId.set((event.target as HTMLSelectElement).value)
-}
-
 function submit(): void {
   const selectedUserId = userId() ? Number(userId()) : null
   if (!name().trim()) {
@@ -118,16 +94,16 @@ function submit(): void {
         <div :if="error()" class="mt-4 p-3 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900">{{ error() }}</div>
 
         <div class="mt-5 space-y-4">
-          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Driver name</span><input :value="name()" type="text" required maxlength="255" autocomplete="name" placeholder="Alex Morgan" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="setName" /></label>
-          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Phone</span><input :value="phone()" type="tel" required maxlength="255" autocomplete="tel" placeholder="+1 555 0100" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="setPhone" /></label>
+          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Driver name</span><input x-model="name" type="text" required maxlength="255" autocomplete="name" placeholder="Alex Morgan" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label>
+          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Phone</span><input x-model="phone" type="tel" required maxlength="255" autocomplete="tel" placeholder="+1 555 0100" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label>
           <div class="grid gap-4 grid-cols-1 sm:grid-cols-2">
-            <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Vehicle number</span><input :value="vehicleNumber()" type="text" required maxlength="255" autocomplete="off" placeholder="VAN-204" class="mt-1 px-3 py-2 w-full font-mono text-gray-900 text-sm uppercase dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="setVehicleNumber" /></label>
-            <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">License number</span><input :value="license()" type="text" required maxlength="255" autocomplete="off" placeholder="D1234567" class="mt-1 px-3 py-2 w-full font-mono text-gray-900 text-sm uppercase dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="setLicense" /></label>
+            <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Vehicle number</span><input x-model="vehicleNumber" type="text" required maxlength="255" autocomplete="off" placeholder="VAN-204" class="mt-1 px-3 py-2 w-full font-mono text-gray-900 text-sm uppercase dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label>
+            <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">License number</span><input x-model="license" type="text" required maxlength="255" autocomplete="off" placeholder="D1234567" class="mt-1 px-3 py-2 w-full font-mono text-gray-900 text-sm uppercase dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label>
           </div>
-          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Status</span><select :value="status()" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @change="setStatus"><option value="active">Available</option><option value="on_delivery">On delivery</option><option value="on_break">On break</option></select></label>
+          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Status</span><select x-model="status" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700"><option value="active">Available</option><option value="on_delivery">On delivery</option><option value="on_break">On break</option></select></label>
           <label class="block">
             <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Linked user</span>
-            <select :value="userId()" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @change="setUser">
+            <select x-model="userId" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700">
               <option value="">No linked user</option>
               <template :for="user in users()" :key="user.id"><option :value="user.id">{{ user.name }}{{ user.email ? ' - ' + user.email : '' }}</option></template>
             </select>

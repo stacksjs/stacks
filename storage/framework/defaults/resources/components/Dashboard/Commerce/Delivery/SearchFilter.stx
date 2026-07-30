@@ -3,11 +3,7 @@ const placeholder = useReactiveProp('placeholder', 'Search...')
 const query = state('')
 const emit = defineEmits()
 
-function handleInput(event: Event): void {
-  const value = (event.target as HTMLInputElement).value
-  query.set(value)
-  emit('search', value)
-}
+effect(() => emit('search', query()))
 </script>
 
 <div>
@@ -19,8 +15,7 @@ function handleInput(event: Event): void {
       type="search"
       name="search"
       :placeholder="placeholder"
-      :value="query"
-      @input="handleInput($event)"
+      x-model="query"
       autocomplete="off"
       class="block pl-10 pr-3 py-2.5 w-full leading-6 text-gray-900 text-sm dark:text-white placeholder:text-gray-400 dark:placeholder:text-neutral-500 dark:bg-neutral-800 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-700 focus:ring-2 focus:ring-blue-600 focus:ring-inset"
     >

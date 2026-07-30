@@ -77,26 +77,6 @@ function selectedDriver(): DriverOption | undefined {
   return drivers().find(driver => driver.id === id)
 }
 
-function setDriver(event: Event): void {
-  driverId.set((event.target as HTMLSelectElement).value)
-}
-
-function setStops(event: Event): void {
-  stops.set((event.target as HTMLInputElement).value)
-}
-
-function setDeliveryTime(event: Event): void {
-  deliveryTime.set((event.target as HTMLInputElement).value)
-}
-
-function setTotalDistance(event: Event): void {
-  totalDistance.set((event.target as HTMLInputElement).value)
-}
-
-function setLastActive(event: Event): void {
-  lastActive.set((event.target as HTMLInputElement).value)
-}
-
 function submit(): void {
   const driver = selectedDriver()
   const parsedStops = Number(stops())
@@ -148,7 +128,7 @@ function submit(): void {
         <div class="mt-5 space-y-4">
           <label class="block">
             <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Driver</span>
-            <select :value="driverId()" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @change="setDriver">
+            <select x-model="driverId" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700">
               <option value="">Select a driver</option>
               <template :for="driver in drivers()" :key="driver.id"><option :value="driver.id">{{ driver.name }} - {{ driver.vehicle_number }}</option></template>
             </select>
@@ -158,11 +138,11 @@ function submit(): void {
             <span><strong class="text-gray-900 dark:text-white">{{ selectedDriver()?.vehicle_number }}</strong> will be stored as the route vehicle snapshot.</span>
           </div>
           <div class="grid gap-4 grid-cols-1 sm:grid-cols-3">
-            <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Stops</span><input :value="stops()" type="number" required min="0" step="1" inputmode="numeric" class="mt-1 px-3 py-2 w-full tabular-nums text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="setStops" /></label>
-            <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Time, minutes</span><input :value="deliveryTime()" type="number" required min="0" step="1" inputmode="numeric" class="mt-1 px-3 py-2 w-full tabular-nums text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="setDeliveryTime" /></label>
-            <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Distance, miles</span><input :value="totalDistance()" type="number" required min="0" step="1" inputmode="numeric" class="mt-1 px-3 py-2 w-full tabular-nums text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="setTotalDistance" /></label>
+            <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Stops</span><input x-model="stops" type="number" required min="0" step="1" inputmode="numeric" class="mt-1 px-3 py-2 w-full tabular-nums text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label>
+            <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Time, minutes</span><input x-model="deliveryTime" type="number" required min="0" step="1" inputmode="numeric" class="mt-1 px-3 py-2 w-full tabular-nums text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label>
+            <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Distance, miles</span><input x-model="totalDistance" type="number" required min="0" step="1" inputmode="numeric" class="mt-1 px-3 py-2 w-full tabular-nums text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label>
           </div>
-          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Last active</span><input :value="lastActive()" type="datetime-local" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="setLastActive" /></label>
+          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Last active</span><input x-model="lastActive" type="datetime-local" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label>
         </div>
       </div>
       <footer class="flex gap-2 justify-end px-6 py-4 bg-gray-50 dark:bg-neutral-900/50 border-gray-200 border-t dark:border-neutral-700">

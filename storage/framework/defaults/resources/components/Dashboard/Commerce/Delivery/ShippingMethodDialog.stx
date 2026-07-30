@@ -40,26 +40,6 @@ effect(() => {
   status.set(current?.status || 'active')
 })
 
-function setName(event: Event): void {
-  name.set((event.target as HTMLInputElement).value)
-}
-
-function setDescription(event: Event): void {
-  description.set((event.target as HTMLTextAreaElement).value)
-}
-
-function setBaseRate(event: Event): void {
-  baseRate.set((event.target as HTMLInputElement).value)
-}
-
-function setFreeShipping(event: Event): void {
-  freeShipping.set((event.target as HTMLInputElement).value)
-}
-
-function setStatus(event: Event): void {
-  status.set((event.target as HTMLSelectElement).value as 'active' | 'inactive' | 'draft')
-}
-
 function submit(): void {
   const baseRateValue = Number(baseRate())
   const freeShippingValue = freeShipping().trim() === '' ? null : Number(freeShipping())
@@ -95,13 +75,13 @@ function submit(): void {
         <div :if="error()" class="mt-4 p-3 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900">{{ error() }}</div>
 
         <div class="mt-5 space-y-4">
-          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Method name</span><input :value="name()" type="text" required maxlength="100" autocomplete="off" placeholder="Ground shipping" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="setName" /></label>
-          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Description</span><textarea :value="description()" rows="3" maxlength="500" placeholder="How and when this method is used" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="setDescription"></textarea></label>
+          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Method name</span><input x-model="name" type="text" required maxlength="100" autocomplete="off" placeholder="Ground shipping" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label>
+          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Description</span><textarea x-model="description" rows="3" maxlength="500" placeholder="How and when this method is used" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700"></textarea></label>
           <div class="grid gap-4 grid-cols-1 sm:grid-cols-2">
-            <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Base rate</span><input :value="baseRate()" type="number" required min="0" step="0.01" inputmode="decimal" placeholder="0.00" class="mt-1 px-3 py-2 w-full tabular-nums text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="setBaseRate" /></label>
-            <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Free shipping threshold</span><input :value="freeShipping()" type="number" min="0" step="0.01" inputmode="decimal" placeholder="No threshold" class="mt-1 px-3 py-2 w-full tabular-nums text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="setFreeShipping" /></label>
+            <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Base rate</span><input x-model="baseRate" type="number" required min="0" step="0.01" inputmode="decimal" placeholder="0.00" class="mt-1 px-3 py-2 w-full tabular-nums text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label>
+            <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Free shipping threshold</span><input x-model="freeShipping" type="number" min="0" step="0.01" inputmode="decimal" placeholder="No threshold" class="mt-1 px-3 py-2 w-full tabular-nums text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label>
           </div>
-          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Status</span><select :value="status()" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @change="setStatus"><option value="active">Active</option><option value="inactive">Inactive</option><option value="draft">Draft</option></select></label>
+          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Status</span><select x-model="status" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700"><option value="active">Active</option><option value="inactive">Inactive</option><option value="draft">Draft</option></select></label>
         </div>
       </div>
       <footer class="flex gap-2 justify-end px-6 py-4 bg-gray-50 dark:bg-neutral-900/50 border-gray-200 border-t dark:border-neutral-700">

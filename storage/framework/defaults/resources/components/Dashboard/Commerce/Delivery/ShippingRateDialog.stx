@@ -45,26 +45,6 @@ effect(() => {
   amount.set(current ? (current.rate / 100).toFixed(2) : '')
 })
 
-function setMethod(event: Event): void {
-  methodId.set((event.target as HTMLSelectElement).value)
-}
-
-function setZone(event: Event): void {
-  zoneId.set((event.target as HTMLSelectElement).value)
-}
-
-function setWeightFrom(event: Event): void {
-  weightFrom.set((event.target as HTMLInputElement).value)
-}
-
-function setWeightTo(event: Event): void {
-  weightTo.set((event.target as HTMLInputElement).value)
-}
-
-function setAmount(event: Event): void {
-  amount.set((event.target as HTMLInputElement).value)
-}
-
 function submit(): void {
   const selectedMethodId = Number(methodId())
   const selectedZoneId = Number(zoneId())
@@ -115,23 +95,23 @@ function submit(): void {
         <div class="mt-5 space-y-4">
           <label class="block">
             <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Shipping method</span>
-            <select :value="methodId()" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @change="setMethod">
+            <select x-model="methodId" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700">
               <option value="">Select a shipping method</option>
               <template :for="method in methods()" :key="method.id"><option :value="method.id">{{ method.name }}</option></template>
             </select>
           </label>
           <label class="block">
             <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Shipping zone</span>
-            <select :value="zoneId()" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @change="setZone">
+            <select x-model="zoneId" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700">
               <option value="">Select a shipping zone</option>
               <template :for="zone in zones()" :key="zone.id"><option :value="zone.id">{{ zone.name }}</option></template>
             </select>
           </label>
           <div class="grid gap-4 grid-cols-1 sm:grid-cols-2">
-            <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Weight from (kg)</span><input :value="weightFrom()" type="number" required min="0" step="0.01" inputmode="decimal" placeholder="0.00" class="mt-1 px-3 py-2 w-full tabular-nums text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="setWeightFrom" /></label>
-            <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Weight to (kg)</span><input :value="weightTo()" type="number" required min="0" step="0.01" inputmode="decimal" placeholder="10.00" class="mt-1 px-3 py-2 w-full tabular-nums text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="setWeightTo" /></label>
+            <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Weight from (kg)</span><input x-model="weightFrom" type="number" required min="0" step="0.01" inputmode="decimal" placeholder="0.00" class="mt-1 px-3 py-2 w-full tabular-nums text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label>
+            <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Weight to (kg)</span><input x-model="weightTo" type="number" required min="0" step="0.01" inputmode="decimal" placeholder="10.00" class="mt-1 px-3 py-2 w-full tabular-nums text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label>
           </div>
-          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Rate</span><input :value="amount()" type="number" required min="0" step="0.01" inputmode="decimal" placeholder="5.99" class="mt-1 px-3 py-2 w-full tabular-nums text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="setAmount" /></label>
+          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Rate</span><input x-model="amount" type="number" required min="0" step="0.01" inputmode="decimal" placeholder="5.99" class="mt-1 px-3 py-2 w-full tabular-nums text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label>
         </div>
       </div>
       <footer class="flex gap-2 justify-end px-6 py-4 bg-gray-50 dark:bg-neutral-900/50 border-gray-200 border-t dark:border-neutral-700">
