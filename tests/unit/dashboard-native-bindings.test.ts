@@ -152,6 +152,7 @@ describe('dashboard native STX bindings', () => {
       'Content/CommentsDashboard.stx',
       'Content/ContentTaxonomyDashboard.stx',
       'Content/PagesDashboard.stx',
+      'Content/BlogDashboard.stx',
     ]) {
       const source = componentSource(component)
       expect(source).toContain('x-model=')
@@ -164,6 +165,13 @@ describe('dashboard native STX bindings', () => {
     expect(taxonomy).toContain(".normalize('NFKD')")
     expect(taxonomy).toContain('@input="markSlugTouched"')
     expect(taxonomy).toContain('@blur="normalizeSlug"')
+
+    const blogView = readFileSync(
+      resolve('storage/framework/defaults/views/dashboard/content/blog/index.stx'),
+      'utf8',
+    )
+    expect(blogView).toContain('<BlogDashboard />')
+    expect(blogView).not.toContain('<script')
   })
 
   test('content overview is a thin component backed by persisted metrics', () => {
