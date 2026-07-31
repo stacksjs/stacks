@@ -8,6 +8,9 @@ const dashboardComponents = resolve(
 const dashboardResourceViews = resolve(
   'storage/framework/defaults/resources/views/dashboard',
 )
+const dashboardComponentBarrel = resolve(
+  'storage/framework/defaults/resources/components/Dashboard/index.ts',
+)
 
 function componentSource(path: string): string {
   return readFileSync(resolve(dashboardComponents, path), 'utf8')
@@ -60,6 +63,12 @@ describe('dashboard native STX bindings', () => {
     }
 
     expect(existsSync(resolve(dashboardComponents, 'Queue/QueueTable.stx'))).toBe(false)
+
+    const barrel = readFileSync(dashboardComponentBarrel, 'utf8')
+    expect(barrel).toContain("export { default as Card } from './UI/Card.stx'")
+    expect(barrel).toContain("export { default as Table } from './UI/Table.stx'")
+    expect(barrel).toContain("export { default as ChartCard } from './UI/ChartCard.stx'")
+    expect(barrel).not.toMatch(/from '\.\/(?:Card|Table|Chart)\.stx'/)
   })
 
   test('routes primary action links through the shared Button component', () => {

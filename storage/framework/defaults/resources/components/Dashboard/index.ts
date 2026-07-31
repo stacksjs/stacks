@@ -4,21 +4,20 @@
  * Export all custom dashboard components for easy importing.
  *
  * Usage:
- * import { Widget, Card, Table, Chart } from '@/components/Dashboard'
+ * import { Widget, Card, Table, ChartCard } from '@/components/Dashboard'
  */
 
 export { default as Widget } from './Widget.stx'
-export { default as Card } from './Card.stx'
-export { default as Table } from './Table.stx'
-export { default as Chart } from './Chart.stx'
 
 // UI Components
 export { default as Badge } from './UI/Badge.stx'
 export { default as Button } from './UI/Button.stx'
+export { default as Card } from './UI/Card.stx'
 export { default as Input } from './UI/Input.stx'
 export { default as Select } from './UI/Select.stx'
 export { default as Modal } from './UI/Modal.stx'
 export { default as Tabs } from './UI/Tabs.stx'
+export { default as Table } from './UI/Table.stx'
 export { default as Pagination } from './UI/Pagination.stx'
 export { default as StatsCard } from './UI/StatsCard.stx'
 export { default as PageHeader } from './UI/PageHeader.stx'
@@ -59,13 +58,6 @@ export interface TableProps {
   data: any[]
   striped?: boolean
   hoverable?: boolean
-}
-
-export interface ChartProps {
-  type: 'line' | 'bar' | 'pie' | 'doughnut' | 'area'
-  data: object
-  options?: object
-  height?: string
 }
 
 export interface StatsCardProps {
