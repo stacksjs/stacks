@@ -313,6 +313,18 @@ describe('dashboard native STX bindings', () => {
     expect(accessTokens).not.toContain('event.preventDefault()')
   })
 
+  test('dashboard stores share the authenticated API client', () => {
+    for (const store of ['auth.ts', 'ci.ts']) {
+      const source = readFileSync(
+        resolve(dashboardViews, 'stores', store),
+        'utf8',
+      )
+
+      expect(source).toContain("import { dashboardApi } from '../../../functions/dashboard-api'")
+      expect(source).not.toContain('fetch(')
+    }
+  })
+
   test('Buddy prompt uses a native textarea model and submit prevention', () => {
     const source = componentSource('Buddy/BuddyAssistant.stx')
 

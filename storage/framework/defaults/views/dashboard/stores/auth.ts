@@ -1,4 +1,5 @@
 import { defineStore, derived, registerStoresClient, state } from '@stacksjs/stx'
+import { dashboardApi } from '../../../functions/dashboard-api'
 
 /**
  * Dashboard auth/identity store — single source of truth for "who is
@@ -55,13 +56,11 @@ export const authStore = defineStore('auth', () => {
     loading.set(true)
     error.set(null)
     try {
-      const res = await fetch('/api/dashboard/auth/me', { headers: { accept: 'application/json' } })
-      if (!res.ok) throw new Error(`HTTP ${res.status}`)
-      const data = await res.json() as {
+      const data = await dashboardApi<{
         user: { id: number, name: string | null, email: string | null } | null
         roles: string[]
         unauthenticated?: true
-      }
+      }>('/api/dashboard/auth/me')
       if (data.user) {
         userId.set(data.user.id)
         userName.set(data.user.name)
