@@ -3,7 +3,7 @@ import { Action } from '@stacksjs/actions'
 import { orders } from '@stacksjs/commerce'
 import { config } from '@stacksjs/config'
 import { log } from '@stacksjs/logging'
-import { Category, Customer, OrderItem, Payment, Product, TaxRate } from '@stacksjs/orm'
+import { Category, Customer, Manufacturer, OrderItem, Payment, Product, TaxRate } from '@stacksjs/orm'
 import { response } from '@stacksjs/router'
 import {
   calculateCommercePosSale,
@@ -12,7 +12,12 @@ import {
   parseCommercePosLines,
   selectCommercePosTaxRate,
 } from './commerce-pos'
-import { normalizeCommerceProductRecord } from './commerce-product-records'
+import {
+  normalizeCommerceProductRecord,
+  normalizeCommerceCurrency,
+  normalizeManufacturerOption,
+  normalizeProductOption,
+} from './commerce-product-records'
 
 function field(record: any, ...names: string[]): unknown {
   for (const name of names) {
@@ -106,24 +111,31 @@ export default new Action({
       return response.json({ message: 'Order instructions must be 1,000 characters or fewer.' }, 422)
 
     const productIds = parsed.lines.map(line => line.productId)
-    const [productRows, categories, taxRates] = await Promise.all([
+    const [productRows, categories, manufacturers, taxRates] = await Promise.all([
       Product.where('id', 'in', productIds).get(),
       Category.orderBy('name', 'asc').limit(500).get(),
+      Manufacturer.orderBy('manufacturer', 'asc').limit(500).get(),
       TaxRate.orderBy('id', 'asc').limit(500).get(),
     ])
-    const categoryMap = new Map(categories.map(category => [
-      String(category.get('id') || ''),
-      String(category.get('name') || ''),
-    ]))
+    const categoryMap = new Map(categories.map(normalizeProductOption).map(option => [option.id, option.label]))
+    const manufacturerMap = new Map(manufacturers.map(normalizeManufacturerOption).map(option => [option.id, option.label]))
     const emptyCounts = new Map<string, number>()
-    const products = productRows.map(product => normalizeCommercePosProduct(normalizeCommerceProductRecord(
-      product,
-      categoryMap,
-      new Map(),
-      emptyCounts,
-      emptyCounts,
-      emptyCounts,
-    )))
+    let products
+    try {
+      products = productRows.map(product => normalizeCommercePosProduct(normalizeCommerceProductRecord(
+        product,
+        categoryMap,
+        manufacturerMap,
+        emptyCounts,
+        emptyCounts,
+        emptyCounts,
+      )))
+    }
+    catch (error) {
+      return response.json({
+        message: error instanceof Error ? error.message : 'Product records could not be read.',
+      }, 503)
+    }
     if (products.length !== productIds.length)
       return response.json({ message: 'One or more products no longer exist.' }, 422)
 
@@ -135,7 +147,7 @@ export default new Action({
       return response.json({ message: error instanceof Error ? error.message : String(error) }, 422)
     }
 
-    const currency = String((config as any).commerce?.currency || 'USD').toUpperCase()
+    const currency = normalizeCommerceCurrency((config as any).commerce?.currency)
     const transactionId = randomUUIDv7()
     const referenceNumber = `POS-${transactionId.slice(0, 12).toUpperCase()}`
     const result = await orders.placeOrder({
