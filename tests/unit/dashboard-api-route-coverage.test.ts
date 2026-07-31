@@ -63,6 +63,20 @@ function pathsCanMatch(clientPath: string, routePath: string): boolean {
 }
 
 describe('dashboard API route coverage', () => {
+  test('registers each method and path exactly once', () => {
+    const seen = new Set<string>()
+    const duplicates: string[] = []
+
+    for (const route of dashboardRoutes()) {
+      const signature = `${route.method} ${route.path}`
+      if (seen.has(signature))
+        duplicates.push(signature)
+      seen.add(signature)
+    }
+
+    expect(duplicates).toEqual([])
+  })
+
   test('resolves every registered route action to application source', () => {
     const routes = dashboardRoutes()
     const missing = routes
