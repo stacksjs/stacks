@@ -291,24 +291,19 @@ describe('dashboard button contract', () => {
   })
 
   test('routes content view actions through the canonical component', () => {
-    const files = ['seo/index.stx']
-
-    for (const file of files) {
-      const source = readFileSync(
-        resolve('storage/framework/defaults/views/dashboard/content', file),
-        'utf8',
-      )
-
-      expect(source).toContain('<Button')
-      expect(source).not.toMatch(/<button\b/)
-    }
-
     const blog = readFileSync(
       resolve('storage/framework/defaults/resources/components/Dashboard/Content/BlogDashboard.stx'),
       'utf8',
     )
-    expect(blog).toContain('<Button')
-    expect(blog).not.toMatch(/<button\b/)
+    const seo = readFileSync(
+      resolve('storage/framework/defaults/resources/components/Dashboard/Content/SeoDashboard.stx'),
+      'utf8',
+    )
+
+    for (const source of [blog, seo]) {
+      expect(source).toContain('<Button')
+      expect(source).not.toMatch(/<button\b/)
+    }
   })
 
   test('keeps permission navigation semantic while sharing its actions', () => {

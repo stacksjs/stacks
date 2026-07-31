@@ -1,0 +1,389 @@
+<script client>
+import { dashboardApi } from '~/storage/framework/defaults/functions/dashboard-api'
+import { pushToast } from '~/storage/framework/defaults/functions/toasts'
+
+interface PostRow {
+  id: number
+  title: string
+  content?: string | null
+  excerpt?: string | null
+  status?: string | null
+  focus_keyword?: string | null
+  meta_description?: string | null
+  canonical_url?: string | null
+  updated_at?: string | null
+  created_at?: string | null
+}
+
+interface PostResponse {
+  rows: PostRow[]
+  page: number
+  lastPage: number
+  error?: string | null
+}
+
+interface UpdateResponse {
+  ok: boolean
+  error?: string
+  errors?: Record<string, string[]>
+}
+
+interface SeoEntry extends PostRow {
+  score: number
+}
+
+const entries = state<SeoEntry[]>([])
+const loading = state(true)
+const saving = state(false)
+const error = state('')
+const editError = state('')
+const searchQuery = state('')
+const scoreFilter = state<'all' | 'good' | 'medium' | 'poor'>('all')
+const editingEntry = state<SeoEntry | null>(null)
+const editFocusKeyword = state('')
+const editMetaDescription = state('')
+const editCanonical = state('')
+
+function seoScore(post: PostRow): number {
+  const title = String(post.title || '').trim()
+  const content = `${post.excerpt || ''} ${post.content || ''}`.toLowerCase()
+  const keyword = String(post.focus_keyword || '').trim().toLowerCase()
+  const description = String(post.meta_description || '').trim()
+  const canonical = String(post.canonical_url || '').trim()
+  let score = 0
+
+  if (title.length >= 10 && title.length <= 60)
+    score += 20
+  else if (title.length > 0)
+    score += 10
+  if (description.length >= 120 && description.length <= 160)
+    score += 25
+  else if (description.length > 0)
+    score += 12
+  if (keyword)
+    score += 15
+  if (keyword && title.toLowerCase().includes(keyword))
+    score += 15
+  if (keyword && content.includes(keyword))
+    score += 10
+  if (canonical)
+    score += 15
+
+  return score
+}
+
+async function loadEntries(): Promise<void> {
+  loading.set(true)
+  error.set('')
+  try {
+    const rows: PostRow[] = []
+    let page = 1
+    let lastPage = 1
+    do {
+      const response = await dashboardApi<PostResponse>(
+        `/api/dashboard/models/post?per_page=200&page=${page}&sort=updated_at&dir=desc`,
+      )
+      if (response.error)
+        throw new Error(response.error)
+      rows.push(...(response.rows ?? []))
+      lastPage = response.lastPage || 1
+      page += 1
+    } while (page <= lastPage)
+
+    entries.set(rows.map(post => ({ ...post, score: seoScore(post) })))
+  }
+  catch (cause) {
+    error.set(cause instanceof Error ? cause.message : 'Unable to load SEO data.')
+  }
+  finally {
+    loading.set(false)
+  }
+}
+
+const filteredEntries = derived(() => {
+  const needle = searchQuery().trim().toLowerCase()
+  return entries().filter((entry) => {
+    const matchesScore = scoreFilter() === 'all'
+      || (scoreFilter() === 'good' && entry.score >= 80)
+      || (scoreFilter() === 'medium' && entry.score >= 50 && entry.score < 80)
+      || (scoreFilter() === 'poor' && entry.score < 50)
+    const matchesSearch = !needle
+      || entry.title.toLowerCase().includes(needle)
+      || String(entry.focus_keyword || '').toLowerCase().includes(needle)
+    return matchesScore && matchesSearch
+  })
+})
+
+const totalPosts = derived(() => entries().length)
+const optimizedCount = derived(() => entries().filter(entry => entry.score >= 80).length)
+const needsWorkCount = derived(() => entries().filter(entry => entry.score < 50).length)
+const avgScore = derived(() => {
+  if (entries().length === 0)
+    return 0
+  return Math.round(entries().reduce((total, entry) => total + entry.score, 0) / entries().length)
+})
+
+function scoreBadgeClass(score: number): string {
+  const base = 'inline-flex items-center px-2 py-0.5 font-semibold text-xs rounded-full'
+  if (score >= 80)
+    return `${base} bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-200`
+  if (score >= 50)
+    return `${base} bg-amber-100 text-amber-800 dark:bg-amber-900/50 dark:text-amber-200`
+  return `${base} bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-200`
+}
+
+function formatDate(value?: string | null): string {
+  if (!value)
+    return 'Not updated'
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime()))
+    return String(value)
+  return date.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })
+}
+
+function openEdit(entry: SeoEntry): void {
+  editingEntry.set(entry)
+  editFocusKeyword.set(entry.focus_keyword || '')
+  editMetaDescription.set(entry.meta_description || '')
+  editCanonical.set(entry.canonical_url || '')
+  editError.set('')
+}
+
+function closeEdit(): void {
+  if (saving())
+    return
+  editingEntry.set(null)
+  editError.set('')
+}
+
+async function saveEdit(): Promise<void> {
+  const entry = editingEntry()
+  if (!entry || saving())
+    return
+
+  saving.set(true)
+  editError.set('')
+  try {
+    const response = await dashboardApi<UpdateResponse>(
+      `/api/dashboard/models/post/${entry.id}`,
+      {
+        method: 'PATCH',
+        body: {
+          fields: {
+            focus_keyword: editFocusKeyword().trim() || null,
+            meta_description: editMetaDescription().trim() || null,
+            canonical_url: editCanonical().trim() || null,
+          },
+        },
+      },
+    )
+    if (!response.ok) {
+      const fieldErrors = Object.values(response.errors ?? {}).flat().join(' ')
+      throw new Error(fieldErrors || response.error || 'The SEO fields could not be saved.')
+    }
+
+    editingEntry.set(null)
+    pushToast('success', 'SEO fields saved', { detail: entry.title })
+    await loadEntries()
+  }
+  catch (cause) {
+    editError.set(cause instanceof Error ? cause.message : 'The SEO fields could not be saved.')
+  }
+  finally {
+    saving.set(false)
+  }
+}
+
+void loadEntries()
+</script>
+
+<template>
+<div class="mx-auto pb-12 pt-6 px-6 space-y-6 max-w-7xl">
+  <PageHeader
+    title="SEO"
+    description="Review model-backed search metadata for every CMS post"
+  />
+
+  <div class="px-4 py-3 text-blue-800 text-sm dark:text-blue-200 bg-blue-50 dark:bg-blue-500/10 border border-blue-200 rounded-lg dark:border-blue-500/20">
+    Scores are calculated from title length, meta description length, focus keyword placement, body relevance, and canonical URL coverage.
+  </div>
+
+  <dl class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    <Card variant="default" padding="md">
+      <dt class="font-medium text-neutral-500 text-xs dark:text-neutral-400">Average score</dt>
+      <dd class="mt-2 font-semibold tabular-nums text-3xl text-neutral-900 dark:text-white">{{ avgScore() }}</dd>
+    </Card>
+    <Card variant="default" padding="md">
+      <dt class="font-medium text-neutral-500 text-xs dark:text-neutral-400">Optimized</dt>
+      <dd class="mt-2 font-semibold tabular-nums text-3xl text-green-600 dark:text-green-400">{{ optimizedCount() }}</dd>
+    </Card>
+    <Card variant="default" padding="md">
+      <dt class="font-medium text-neutral-500 text-xs dark:text-neutral-400">Needs work</dt>
+      <dd class="mt-2 font-semibold tabular-nums text-3xl text-amber-600 dark:text-amber-400">{{ needsWorkCount() }}</dd>
+    </Card>
+    <Card variant="default" padding="md">
+      <dt class="font-medium text-neutral-500 text-xs dark:text-neutral-400">Total posts</dt>
+      <dd class="mt-2 font-semibold tabular-nums text-3xl text-neutral-900 dark:text-white">{{ totalPosts() }}</dd>
+    </Card>
+  </dl>
+
+  <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+    <div class="relative max-w-sm w-full">
+      <label for="seo-search" class="sr-only">Search posts</label>
+      <span class="absolute left-3 top-1/2 h-4 w-4 text-neutral-400 pointer-events-none -translate-y-1/2 i-hugeicons-search-01"></span>
+      <input
+        id="seo-search"
+        type="search"
+        placeholder="Search posts"
+        x-model="searchQuery"
+        class="block pl-9 pr-3 py-2 w-full text-neutral-900 text-sm dark:text-white placeholder:text-neutral-400 bg-white dark:bg-white/5 border border-black/10 rounded-lg dark:border-white/15 focus:border-blue-500/50 focus:outline-none focus:ring-2 focus:ring-blue-500/30"
+      >
+    </div>
+    <div>
+      <label for="seo-score-filter" class="sr-only">Filter by SEO score</label>
+      <select
+        id="seo-score-filter"
+        x-model="scoreFilter"
+        class="block px-3 py-2 text-neutral-900 text-sm dark:text-white bg-white dark:bg-white/5 border border-black/10 rounded-lg dark:border-white/15 focus:border-blue-500/50 focus:outline-none focus:ring-2 focus:ring-blue-500/30"
+      >
+        <option value="all">All scores</option>
+        <option value="good">Good, 80 or higher</option>
+        <option value="medium">Medium, 50 to 79</option>
+        <option value="poor">Poor, below 50</option>
+      </select>
+    </div>
+  </div>
+
+  @if(error())
+    <div role="alert" class="px-4 py-3 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-500/10 border border-red-200 rounded-lg dark:border-red-500/20">
+      {{ error() }}
+    </div>
+  @endif
+
+  <Card variant="default" padding="none">
+    @if(loading())
+      <div class="flex items-center justify-center min-h-64 text-neutral-500 text-sm dark:text-neutral-400">
+        <span class="mr-2 h-5 w-5 animate-spin i-hugeicons-loading-03"></span>
+        Loading post metadata
+      </div>
+    @elseif(filteredEntries().length === 0)
+      <div class="px-6 py-14 text-center">
+        <span class="inline-block h-8 w-8 text-neutral-400 i-hugeicons-search-remove"></span>
+        <h2 class="mt-3 font-semibold text-neutral-900 dark:text-white">No matching posts</h2>
+        <p class="mt-1 text-neutral-500 text-sm dark:text-neutral-400">Adjust the search or score filter, or create a CMS post first.</p>
+      </div>
+    @else
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-neutral-200/60 divide-y dark:divide-white/5">
+          <thead class="bg-neutral-50 dark:bg-white/[0.03]">
+            <tr>
+              <th class="px-4 py-3 font-semibold text-left text-neutral-700 text-xs dark:text-neutral-300">Post</th>
+              <th class="px-4 py-3 font-semibold text-left text-neutral-700 text-xs dark:text-neutral-300">Focus keyword</th>
+              <th class="px-4 py-3 font-semibold text-left text-neutral-700 text-xs dark:text-neutral-300">Meta description</th>
+              <th class="px-4 py-3 font-semibold text-neutral-700 text-right text-xs dark:text-neutral-300">Score</th>
+              <th class="px-4 py-3 font-semibold text-left text-neutral-700 text-xs dark:text-neutral-300">Updated</th>
+              <th class="px-4 py-3"><span class="sr-only">Actions</span></th>
+            </tr>
+          </thead>
+          <tbody class="divide-neutral-200/60 divide-y dark:divide-white/5">
+            <template :for="entry in filteredEntries">
+              <tr class="hover:bg-neutral-50 dark:hover:bg-white/[0.03]">
+                <td class="px-4 py-4">
+                  <div class="font-medium text-neutral-900 text-sm dark:text-white">{{ entry.title }}</div>
+                  <div class="mt-0.5 text-neutral-500 text-xs dark:text-neutral-400">Post #{{ entry.id }} · {{ entry.status || 'unknown' }}</div>
+                </td>
+                <td class="px-4 py-4 text-neutral-600 text-sm dark:text-neutral-300">{{ entry.focus_keyword || 'Not set' }}</td>
+                <td class="px-4 py-4">
+                  <div class="max-w-md text-neutral-600 text-sm truncate dark:text-neutral-300">{{ entry.meta_description || 'Not set' }}</div>
+                </td>
+                <td class="px-4 py-4 text-right">
+                  <span :class="scoreBadgeClass(entry.score)">{{ entry.score }}</span>
+                </td>
+                <td class="px-4 py-4 text-neutral-500 text-sm whitespace-nowrap dark:text-neutral-400">{{ formatDate(entry.updated_at || entry.created_at) }}</td>
+                <td class="px-4 py-4 text-right">
+                  <Button variant="ghost" size="sm" @click="openEdit(entry)">Edit</Button>
+                </td>
+              </tr>
+            </template>
+          </tbody>
+        </table>
+      </div>
+    @endif
+  </Card>
+
+  <div
+    :if="editingEntry()"
+    class="flex fixed inset-0 z-50 items-center justify-center p-4 bg-black/40 dashboard-modal-layer"
+    @click="closeEdit()"
+  >
+    <form
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="seo-edit-title"
+      class="overflow-hidden max-w-lg w-full bg-white dark:bg-neutral-900 rounded-xl shadow-2xl"
+      @click.stop
+      @submit.prevent="saveEdit()"
+    >
+      <div class="flex items-center justify-between px-5 py-4 border-b border-neutral-200/60 dark:border-white/10">
+        <div>
+          <h2 id="seo-edit-title" class="font-semibold text-neutral-900 dark:text-white">Edit SEO metadata</h2>
+          <p class="mt-1 text-neutral-500 text-xs dark:text-neutral-400">{{ editingEntry()?.title }}</p>
+        </div>
+        <Button variant="ghost" size="sm" iconOnly ariaLabel="Close SEO editor" @click="closeEdit()">
+          <span class="block h-4 w-4 i-hugeicons-cancel-01"></span>
+        </Button>
+      </div>
+
+      <div class="p-5 space-y-4">
+        @if(editError())
+          <div role="alert" class="px-3 py-2 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-500/10 border border-red-200 rounded-lg dark:border-red-500/20">
+            {{ editError() }}
+          </div>
+        @endif
+
+        <div>
+          <label for="seo-focus-keyword" class="block font-medium text-neutral-700 text-sm dark:text-neutral-300">Focus keyword</label>
+          <input
+            id="seo-focus-keyword"
+            type="text"
+            maxlength="100"
+            x-model="editFocusKeyword"
+            class="block mt-1.5 px-3 py-2 w-full text-neutral-900 text-sm dark:text-white bg-white dark:bg-white/5 border border-black/10 rounded-lg dark:border-white/15 focus:border-blue-500/50 focus:outline-none focus:ring-2 focus:ring-blue-500/30"
+          >
+        </div>
+        <div>
+          <div class="flex items-center justify-between">
+            <label for="seo-meta-description" class="block font-medium text-neutral-700 text-sm dark:text-neutral-300">Meta description</label>
+            <span class="tabular-nums text-neutral-400 text-xs">{{ editMetaDescription().length }}/160</span>
+          </div>
+          <textarea
+            id="seo-meta-description"
+            rows="4"
+            maxlength="160"
+            x-model="editMetaDescription"
+            class="block mt-1.5 px-3 py-2 w-full text-neutral-900 text-sm dark:text-white bg-white dark:bg-white/5 border border-black/10 rounded-lg dark:border-white/15 focus:border-blue-500/50 focus:outline-none focus:ring-2 focus:ring-blue-500/30"
+          ></textarea>
+        </div>
+        <div>
+          <label for="seo-canonical-url" class="block font-medium text-neutral-700 text-sm dark:text-neutral-300">Canonical URL</label>
+          <input
+            id="seo-canonical-url"
+            type="url"
+            placeholder="https://example.com/post"
+            x-model="editCanonical"
+            class="block mt-1.5 px-3 py-2 w-full text-neutral-900 text-sm dark:text-white placeholder:text-neutral-400 bg-white dark:bg-white/5 border border-black/10 rounded-lg dark:border-white/15 focus:border-blue-500/50 focus:outline-none focus:ring-2 focus:ring-blue-500/30"
+          >
+        </div>
+      </div>
+
+      <div class="flex gap-2 items-center justify-end px-5 py-4 bg-neutral-50 dark:bg-white/[0.03] border-neutral-200/60 border-t dark:border-white/10">
+        <Button type="button" variant="secondary" size="sm" :disabled="saving()" @click="closeEdit()">Cancel</Button>
+        <Button type="submit" variant="primary" size="sm" :disabled="saving()">
+          <span :if="!saving()">Save metadata</span>
+          <span :if="saving()">Saving...</span>
+        </Button>
+      </div>
+    </form>
+  </div>
+</div>
+</template>

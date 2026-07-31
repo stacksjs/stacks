@@ -153,6 +153,7 @@ describe('dashboard native STX bindings', () => {
       'Content/ContentTaxonomyDashboard.stx',
       'Content/PagesDashboard.stx',
       'Content/BlogDashboard.stx',
+      'Content/SeoDashboard.stx',
     ]) {
       const source = componentSource(component)
       expect(source).toContain('x-model=')
@@ -172,6 +173,13 @@ describe('dashboard native STX bindings', () => {
     )
     expect(blogView).toContain('<BlogDashboard />')
     expect(blogView).not.toContain('<script')
+
+    const seoView = readFileSync(
+      resolve('storage/framework/defaults/views/dashboard/content/seo/index.stx'),
+      'utf8',
+    )
+    expect(seoView).toContain('<SeoDashboard />')
+    expect(seoView).not.toContain('<script')
   })
 
   test('content overview is a thin component backed by persisted metrics', () => {
