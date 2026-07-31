@@ -16,6 +16,7 @@ const liveResize = useReactiveProp('resize', 'vertical' as TextareaResize)
 const liveName = useReactiveProp('name', '')
 const liveId = useReactiveProp('id', '')
 const liveAriaLabel = useReactiveProp('ariaLabel', '')
+const liveClass = useReactiveProp('class', '')
 const emit = defineEmits()
 const generatedId = useId('textarea')
 
@@ -40,6 +41,7 @@ const textareaClass = derived(() => [
   liveDisabled()
     ? 'cursor-not-allowed border-neutral-200 bg-neutral-100 text-neutral-400 dark:border-neutral-700 dark:bg-neutral-800'
     : 'bg-white dark:bg-neutral-900',
+  liveClass(),
 ].join(' '))
 const limitedCountLabel = derived(() => `${valueLength()}/${liveMaxLength()}`)
 const openCountLabel = derived(() => `${valueLength()} characters`)

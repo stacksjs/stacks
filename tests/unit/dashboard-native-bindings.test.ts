@@ -252,6 +252,8 @@ describe('dashboard native STX bindings', () => {
     expect(textarea).toContain('x-model="liveValue"')
     expect(textarea).toContain("emit('update:value', value)")
     expect(textarea).toContain("useId('textarea')")
+    expect(textarea).toContain("const liveClass = useReactiveProp('class', '')")
+    expect(textarea).toContain('liveClass(),')
     expect(textarea).toContain(':text="limitedCountLabel()"')
     expect(textarea).not.toContain('liveValue.set(value)')
     expect(textarea).not.toContain('Math.random')
