@@ -585,16 +585,19 @@ describe('dashboard native STX bindings', () => {
   })
 
   test('environment editor uses a guarded API and a two-way STX component', () => {
-    const page = readFileSync(
+    const view = readFileSync(
       resolve('storage/framework/defaults/views/dashboard/environment/index.stx'),
       'utf8',
     )
+    const page = componentSource('Environment/EnvironmentDashboard.stx')
     const routes = readFileSync(
       resolve('storage/framework/defaults/routes/dashboard-api.ts'),
       'utf8',
     )
     const editor = componentSource('CodeEditor.stx')
 
+    expect(view).toContain('<EnvironmentDashboard />')
+    expect(view).not.toContain('<script')
     expect(page).toContain("dashboardApi<EnvironmentResponse>('/api/dashboard/environment')")
     expect(page).toContain('v-model:value="envValues"')
     expect(page).toContain("useEventListener('keydown', handlePageKeydown)")

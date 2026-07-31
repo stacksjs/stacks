@@ -1,0 +1,301 @@
+<script client>
+import { DashboardApiError, dashboardApi } from '~/storage/framework/defaults/functions/dashboard-api'
+
+interface EnvironmentFileIssue {
+  line: number
+  message: string
+}
+
+interface EnvironmentFileState {
+  path: '.env'
+  content: string
+  revision: string
+  exists: boolean
+  updatedAt: string | null
+  backup: {
+    content: string
+    exists: boolean
+    updatedAt: string | null
+  }
+}
+
+interface EnvironmentResponse {
+  environment: EnvironmentFileState
+}
+
+const envValues = state('')
+const revision = state('')
+const backupContent = state('')
+const backupUpdatedAt = state<string | null>(null)
+const showAddModal = state(false)
+const showBackupModal = state(false)
+const isLoading = state(true)
+const isSaving = state(false)
+const loadError = state('')
+const saveError = state('')
+const successMessage = state('')
+const validationIssues = state<EnvironmentFileIssue[]>([])
+const loadedContent = state('')
+
+const newVarKey = state('')
+const newVarValue = state('')
+const newVarDescription = state('')
+const addError = state('')
+
+const hasBackup = derived(() => backupContent().length > 0)
+const isBusy = derived(() => isLoading() || isSaving())
+const variableCount = derived(() => envValues().split('\n').filter((line) => {
+  const trimmed = line.trim()
+  return trimmed && !trimmed.startsWith('#') && trimmed.includes('=')
+}).length)
+const dirty = derived(() => Boolean(revision()) && envValues() !== loadedContent())
+
+function applyEnvironment(environment: EnvironmentFileState): void {
+  envValues.set(environment.content)
+  loadedContent.set(environment.content)
+  revision.set(environment.revision)
+  backupContent.set(environment.backup.content)
+  backupUpdatedAt.set(environment.backup.updatedAt)
+}
+
+function describeError(error: unknown, fallback: string): string {
+  return error instanceof DashboardApiError ? error.message : fallback
+}
+
+async function loadEnvironment(): Promise<void> {
+  isLoading.set(true)
+  loadError.set('')
+  try {
+    const result = await dashboardApi<EnvironmentResponse>('/api/dashboard/environment')
+    applyEnvironment(result.environment)
+  }
+  catch (error) {
+    loadError.set(describeError(error, 'The environment file could not be loaded.'))
+  }
+  finally {
+    isLoading.set(false)
+  }
+}
+
+function openAddModal(): void {
+  newVarKey.set('')
+  newVarValue.set('')
+  newVarDescription.set('')
+  addError.set('')
+  showAddModal.set(true)
+}
+
+function closeAddModal(): void {
+  showAddModal.set(false)
+  addError.set('')
+}
+
+function formatContent(): void {
+  const formatted = envValues().split('\n').map((sourceLine) => {
+    const line = sourceLine.trim()
+    if (!line || line.startsWith('#'))
+      return sourceLine.trimEnd()
+
+    const separator = sourceLine.indexOf('=')
+    if (separator < 1)
+      return sourceLine.trimEnd()
+
+    const key = sourceLine.slice(0, separator).trim()
+    const value = sourceLine.slice(separator + 1).trim()
+    return `${key}=${value}`
+  }).join('\n').replace(/\n{3,}/g, '\n\n')
+
+  envValues.set(formatted.endsWith('\n') ? formatted : `${formatted}\n`)
+}
+
+function addVariable(): void {
+  const key = newVarKey().trim().toUpperCase()
+  if (!/^[A-Z_][A-Z0-9_]*$/.test(key)) {
+    addError.set('Use uppercase letters, numbers, and underscores. The first character must be a letter or underscore.')
+    return
+  }
+
+  const duplicate = envValues().split('\n').some(line => line.trim().startsWith(`${key}=`))
+  if (duplicate) {
+    addError.set(`${key} is already defined.`)
+    return
+  }
+
+  const description = newVarDescription().trim()
+  const addition = `${description ? `# ${description}\n` : ''}${key}=${newVarValue()}`
+  const current = envValues().trimEnd()
+  envValues.set(`${current}${current ? '\n\n' : ''}${addition}\n`)
+  closeAddModal()
+}
+
+function loadBackup(): void {
+  envValues.set(backupContent())
+  showBackupModal.set(false)
+  successMessage.set('Backup loaded into the editor. Review it, then save to apply it.')
+}
+
+async function handleSave(): Promise<void> {
+  if (isBusy() || !revision())
+    return
+
+  isSaving.set(true)
+  saveError.set('')
+  successMessage.set('')
+  validationIssues.set([])
+
+  try {
+    const result = await dashboardApi<EnvironmentResponse & { success: true }>('/api/dashboard/environment', {
+      method: 'PUT',
+      body: {
+        content: envValues(),
+        revision: revision(),
+      },
+    })
+    applyEnvironment(result.environment)
+    successMessage.set('Environment file saved. Restart long-running processes to load changed values.')
+  }
+  catch (error) {
+    if (error instanceof DashboardApiError && error.status === 422) {
+      const fields = error.fields ?? {}
+      validationIssues.set(Object.entries(fields).map(([line, message]) => ({
+        line: Number(line) || 0,
+        message,
+      })))
+    }
+    saveError.set(describeError(error, 'The environment file could not be saved.'))
+  }
+  finally {
+    isSaving.set(false)
+  }
+}
+
+function handlePageKeydown(event: KeyboardEvent): void {
+  if (event.key === 'Escape') {
+    showAddModal.set(false)
+    showBackupModal.set(false)
+    return
+  }
+
+  if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'n') {
+    event.preventDefault()
+    openAddModal()
+  }
+}
+
+useEventListener('keydown', handlePageKeydown)
+onMount(() => void loadEnvironment())
+</script>
+
+<template>
+<div class="mx-auto pb-12 pt-6 px-4 space-y-6 sm:px-6 lg:px-8 max-w-7xl">
+  <PageHeader
+    title="Environment Variables"
+    description="Edit the project .env file with validation, conflict protection, and an automatic backup."
+  >
+    <template #actions>
+      <div class="flex gap-2 items-center">
+        <Button :if="hasBackup()" variant="secondary" @click="showBackupModal.set(true)">
+          <span class="h-4 w-4 i-hugeicons-clock-03"></span>
+          Backup
+        </Button>
+        <Button @click="openAddModal">
+          <span class="h-4 w-4 i-hugeicons-add-01"></span>
+          Add variable
+        </Button>
+      </div>
+    </template>
+  </PageHeader>
+
+  <div class="grid gap-3 sm:grid-cols-3">
+    <div class="p-4 bg-white dark:bg-neutral-900 border border-stone-200 rounded-xl dark:border-neutral-700">
+      <p class="font-medium text-stone-500 text-xs tracking-wide uppercase dark:text-neutral-400">File</p>
+      <p class="mt-1 font-mono text-sm text-stone-900 dark:text-white">.env</p>
+    </div>
+    <div class="p-4 bg-white dark:bg-neutral-900 border border-stone-200 rounded-xl dark:border-neutral-700">
+      <p class="font-medium text-stone-500 text-xs tracking-wide uppercase dark:text-neutral-400">Variables</p>
+      <p class="mt-1 font-semibold text-lg text-stone-900 dark:text-white" :text="variableCount()"></p>
+    </div>
+    <div class="p-4 bg-white dark:bg-neutral-900 border border-stone-200 rounded-xl dark:border-neutral-700">
+      <p class="font-medium text-stone-500 text-xs tracking-wide uppercase dark:text-neutral-400">Status</p>
+      <p class="mt-1 font-medium text-sm" :class="dirty() ? 'text-amber-600 dark:text-amber-400' : 'text-emerald-600 dark:text-emerald-400'" :text="dirty() ? 'Unsaved changes' : 'Saved on disk'"></p>
+    </div>
+  </div>
+
+  <div :if="loadError()" class="p-4 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-xl dark:border-red-900" role="alert">
+    <p :text="loadError()"></p>
+    <Button class="mt-3" size="sm" variant="secondary" @click="loadEnvironment">Try again</Button>
+  </div>
+
+  <div :if="successMessage()" class="p-4 text-emerald-700 text-sm dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 rounded-xl dark:border-emerald-900" role="status" :text="successMessage()"></div>
+
+  <div :if="saveError()" class="p-4 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-xl dark:border-red-900" role="alert">
+    <p :text="saveError()"></p>
+    <ul :if="validationIssues().length" class="mt-2 pl-5 space-y-1 list-disc">
+      <li :for="issue in validationIssues()" :text="issue.line ? `Line ${issue.line}: ${issue.message}` : issue.message"></li>
+    </ul>
+  </div>
+
+  <div :if="!loadError()">
+    <CodeEditor
+      v-model:value="envValues"
+      label=".env"
+      language="env"
+      :loading="isLoading()"
+      @save="handleSave"
+      @format="formatContent"
+    />
+
+    <div class="flex flex-col gap-3 items-start justify-between sm:flex-row sm:items-center mt-4">
+      <div class="flex flex-wrap gap-x-4 gap-y-2 text-stone-500 text-xs dark:text-neutral-400">
+        <span><kbd class="px-1.5 py-0.5 font-semibold text-stone-700 dark:text-neutral-200 bg-stone-100 dark:bg-neutral-800 border border-stone-200 rounded dark:border-neutral-700">Cmd/Ctrl + S</kbd> save</span>
+        <span><kbd class="px-1.5 py-0.5 font-semibold text-stone-700 dark:text-neutral-200 bg-stone-100 dark:bg-neutral-800 border border-stone-200 rounded dark:border-neutral-700">Cmd/Ctrl + N</kbd> add variable</span>
+        <span><kbd class="px-1.5 py-0.5 font-semibold text-stone-700 dark:text-neutral-200 bg-stone-100 dark:bg-neutral-800 border border-stone-200 rounded dark:border-neutral-700">Cmd/Ctrl + Shift + F</kbd> format</span>
+      </div>
+      <div class="flex gap-2">
+        <Button variant="secondary" :disabled="isBusy()" @click="formatContent">Format</Button>
+        <Button :loading="isSaving()" :disabled="isBusy() || !dirty()" @click="handleSave">Save changes</Button>
+      </div>
+    </div>
+  </div>
+
+  <Modal
+    :isOpen="showAddModal()"
+    title="Add environment variable"
+    description="The variable is added to the editor first. Save the file when you are ready."
+    size="sm"
+    @close="closeAddModal"
+  >
+    <form class="space-y-4" @submit.prevent="addVariable">
+      <Input v-model:value="newVarKey" label="Key" placeholder="APP_NAME" required />
+      <Input v-model:value="newVarValue" label="Value" placeholder="My App" />
+      <Input v-model:value="newVarDescription" label="Description" placeholder="Used in emails and the interface" hint="Optional comment placed above the variable." />
+      <p :if="addError()" class="text-red-600 text-sm dark:text-red-400" role="alert" :text="addError()"></p>
+    </form>
+    <template #footer>
+      <div class="flex gap-2">
+        <Button variant="ghost" @click="closeAddModal">Cancel</Button>
+        <Button @click="addVariable">Add to editor</Button>
+      </div>
+    </template>
+  </Modal>
+
+  <Modal
+    :isOpen="showBackupModal()"
+    title="Environment backup"
+    description="This is the file content from immediately before the latest successful save."
+    size="lg"
+    @close="showBackupModal.set(false)"
+  >
+    <div class="space-y-3">
+      <p :if="backupUpdatedAt()" class="text-stone-500 text-xs dark:text-neutral-400" :text="`Saved ${new Date(backupUpdatedAt()).toLocaleString()}`"></p>
+      <textarea readonly rows="18" class="block p-4 w-full font-mono leading-6 text-[#c9d1d9] text-xs bg-[#0d1117] border border-[#30363d] rounded-lg resize-y" :value="backupContent()"></textarea>
+    </div>
+    <template #footer>
+      <div class="flex gap-2">
+        <Button variant="ghost" @click="showBackupModal.set(false)">Close</Button>
+        <Button @click="loadBackup">Load into editor</Button>
+      </div>
+    </template>
+  </Modal>
+</div>
+</template>
