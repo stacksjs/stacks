@@ -7,8 +7,10 @@ import { response } from '@stacksjs/router'
 export default new Action({
   name: 'DigitalDelivery Update',
   description: 'DigitalDelivery Update ORM Action',
-  method: 'PUT',
+  method: 'PATCH',
+  model: DigitalDelivery,
   async handle(request: RequestInstance) {
+    await request.validate()
     const id = request.getParam('id')
     const data = await request.all()
 

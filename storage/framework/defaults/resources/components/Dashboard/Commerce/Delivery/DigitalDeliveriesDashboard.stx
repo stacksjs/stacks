@@ -10,18 +10,18 @@ interface DigitalDeliveryRecord {
   description: string
   download_limit?: number | null
   expiry_days: number
-  requires_login: boolean | number
-  automatic_delivery: boolean | number
+  requires_login: boolean
+  automatic_delivery: boolean
   status: DigitalDeliveryStatus
 }
 
 interface DigitalDeliveryPayload {
   name: string
   description: string
-  download_limit: number | null
-  expiry_days: number
-  requires_login: boolean
-  automatic_delivery: boolean
+  downloadLimit: number | null
+  expiryDays: number
+  requiresLogin: boolean
+  automaticDelivery: boolean
   status: DigitalDeliveryStatus
 }
 
@@ -62,8 +62,8 @@ function metricCards(): Array<{ label: string, value: string, detail: string }> 
   return [
     { label: 'Methods', value: records().length.toLocaleString(), detail: 'Persisted digital delivery records' },
     { label: 'Active', value: records().filter(record => record.status === 'active').length.toLocaleString(), detail: 'Available for fulfillment' },
-    { label: 'Automatic', value: records().filter(record => Boolean(record.automatic_delivery)).length.toLocaleString(), detail: 'Delivered after payment' },
-    { label: 'Login required', value: records().filter(record => Boolean(record.requires_login)).length.toLocaleString(), detail: 'Protected customer access' },
+    { label: 'Automatic', value: records().filter(record => record.automatic_delivery).length.toLocaleString(), detail: 'Delivered after payment' },
+    { label: 'Login required', value: records().filter(record => record.requires_login).length.toLocaleString(), detail: 'Protected customer access' },
   ]
 }
 

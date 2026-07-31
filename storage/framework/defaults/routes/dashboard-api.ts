@@ -379,7 +379,7 @@ route.group({ prefix: '/api/dashboard', apiResponse: true }, () => {
   guard(route.patch('/commerce/drivers/{id}', 'Actions/Commerce/Shipping/DriverUpdateAction'))
   guard(route.delete('/commerce/drivers/{id}', 'Actions/Commerce/Shipping/DriverDestroyAction'))
 
-  guard(route.get('/commerce/digital-deliveries', 'Actions/Commerce/Shipping/DigitalDeliveryIndexAction'))
+  guard(route.get('/commerce/digital-deliveries', 'Actions/Dashboard/Commerce/DigitalDeliveryIndexAction'))
   guard(route.get('/commerce/digital-deliveries/{id}', 'Actions/Commerce/Shipping/DigitalDeliveryShowAction'))
   guard(route.post('/commerce/digital-deliveries', 'Actions/Commerce/Shipping/DigitalDeliveryStoreAction'))
   guard(route.patch('/commerce/digital-deliveries/{id}', 'Actions/Commerce/Shipping/DigitalDeliveryUpdateAction'))
