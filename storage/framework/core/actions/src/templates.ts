@@ -261,14 +261,10 @@ export default defineModel({
   },
 } as const)`,
 
-  migration: `import type { Database } from '@stacksjs/database'
-
-export async function up(db: Database): Promise<void> {
-  await db.schema
-    .createTable('{0}')
-    .addColumn('id', 'integer', col => col.autoIncrement().primaryKey())
-    .execute()
-}`,
+  migration: `CREATE TABLE {0} (
+  {1}
+);
+`,
 
   stackPackageJson: `{
   "name": "{0}",

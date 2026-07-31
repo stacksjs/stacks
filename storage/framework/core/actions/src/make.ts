@@ -457,16 +457,24 @@ export async function createMigration(options: MakeOptions): Promise<void> {
   // the project's own database/migrations directory (stacksjs/stacks#2001).
   // The previous version wrote into the framework's storage directory, which
   // made `buddy make:migration` look like a no-op from the user's project.
-  const fileName = `${Date.now()}-${kebabCase(optionName)}.ts`
+  const fileName = `${Date.now()}-${kebabCase(optionName)}.sql`
   const path = p.userMigrationsPath(fileName)
 
   // Derive the stub table from `create_<table>_table` style names. Anything
   // else gets a placeholder the user edits before running `buddy migrate`.
   const snake = kebabCase(optionName).replace(/-/g, '_')
   const table = /^create_(.+)_table$/.exec(snake)?.[1] ?? 'table_name'
+  const driver = (process.env.DB_CONNECTION || 'sqlite').toLowerCase()
+  const mysqlLike = driver === 'mysql' || driver === 'singlestore'
+  const tableIdentifier = mysqlLike ? `\`${table}\`` : `"${table}"`
+  const primaryKey = driver === 'postgres'
+    ? '"id" BIGSERIAL PRIMARY KEY'
+    : mysqlLike
+      ? '`id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY'
+      : '"id" INTEGER PRIMARY KEY AUTOINCREMENT'
 
   try {
-    await createFileWithTemplate(path, 'migration', table)
+    await createFileWithTemplate(path, 'migration', tableIdentifier, primaryKey)
 
     log.success(`Migration created: ${italic(`database/migrations/${fileName}`)}`)
   }
