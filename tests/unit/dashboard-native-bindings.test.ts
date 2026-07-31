@@ -51,6 +51,13 @@ describe('dashboard native STX bindings', () => {
     ]) {
       expect(existsSync(resolve(dashboardComponents, 'Email', legacyEmailComponent))).toBe(false)
     }
+
+    for (const legacyMonitoringComponent of [
+      'ErrorDetailModal.stx',
+      'ErrorsTable.stx',
+    ]) {
+      expect(existsSync(resolve(dashboardComponents, 'Monitoring', legacyMonitoringComponent))).toBe(false)
+    }
   })
 
   test('routes primary action links through the shared Button component', () => {

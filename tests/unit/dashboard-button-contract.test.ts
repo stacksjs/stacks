@@ -372,21 +372,6 @@ describe('dashboard button contract', () => {
       || button.includes("emit('row-click', error)"),
     )).toBe(true)
 
-    const legacySources = [
-      'ErrorsTable.stx',
-      'ErrorDetailModal.stx',
-    ].map(file => readFileSync(
-      resolve('storage/framework/defaults/resources/components/Dashboard/Monitoring', file),
-      'utf8',
-    ))
-
-    expect(legacySources.every(legacySource => legacySource.includes('<Button'))).toBe(true)
-    expect(legacySources.every(legacySource =>
-      [...legacySource.matchAll(/<button\b[^>]*>/g)].every(match =>
-        match[0].includes('data-action="sort"')
-        || match[0].includes('data-action="tab"'),
-      ),
-    )).toBe(true)
   })
 
   test('keeps email navigation semantic while sharing compose and message actions', () => {
