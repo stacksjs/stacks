@@ -26,7 +26,7 @@ payment-provider records. They are not missing generic CRUD surfaces.
 
 ### Rendering and navigation
 
-- `./buddy dev --dashboard` starts on port 3002 and renders with STX 0.2.143
+- `./buddy dev --dashboard` starts on port 3002 and renders with STX 0.2.144
   and Crosswind 0.2.14.
 - 108 static route views render with HTTP 200.
 - Full-page and STX fragment requests render for every static route.
@@ -126,7 +126,7 @@ bunx --bun pickier .
 The focused contracts cover buttons, native STX bindings, route and Action
 method alignment, model reads and writes, commerce mutations, deployment
 guards, navigation source, sidebar behavior, toasts, and skill documentation.
-The 2026-07-31 focused run completed 155 tests with 2,913 assertions and no
+The 2026-07-31 focused run completed 156 tests with 2,916 assertions and no
 failures, followed by both TypeScript checks and a clean repository lint.
 
 ## Remaining verification boundaries

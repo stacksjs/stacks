@@ -257,6 +257,7 @@ await addLayout('admin', { nav: true, footer: true })
 - **Imported module dependencies** - browser auto-imports are injected into the STX script entry only; imported `.ts` modules must explicitly import every function or store they use
 - **`storage/framework/stx/`** — stx build cache and the generated route manifest. `config/ui.ts` sets stx's `stateDir` here, so nothing lands in the project root. Gitignored; safe to delete
 - **Reactivity is signal-based** - use callable `state()` and `derived()` signals, not Vue-style `ref()` or `.value`
+- **Component tag case is semantic** - `<Input v-model:value="query">` is a paired component, while lowercase `<input v-model="query">` is a native void element. Keep component tags PascalCase, including names that collide with native elements
 - **Structural DOM timing** - use `nextTick()` with `useRef()` after opening reactive markup
 - **Crosswind for styling** — use utility classes, not inline styles
 - **Script block restrictions** — only stx-compatible code (signals, composables, directives), no vanilla DOM APIs

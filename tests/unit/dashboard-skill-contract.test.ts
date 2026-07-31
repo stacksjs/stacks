@@ -10,6 +10,10 @@ const developmentSkill = readFileSync(
   resolve('storage/framework/defaults/ai/skills/stacks-development/SKILL.md'),
   'utf8',
 )
+const stxSkill = readFileSync(
+  resolve('storage/framework/defaults/ai/skills/stacks-stx/SKILL.md'),
+  'utf8',
+)
 
 describe('dashboard skill contract', () => {
   test('documents root-mounted page routes and dashboard-prefixed APIs', () => {
@@ -43,6 +47,12 @@ describe('dashboard skill contract', () => {
     expect(skill).toContain('both a full\ndocument and an `X-STX-Router` fragment')
     expect(skill).toContain('crawls every registered GET\ndashboard API')
     expect(skill).toContain('HTTP-200 error payloads')
+  })
+
+  test('documents component and native input case semantics', () => {
+    expect(stxSkill).toContain('**Component tag case is semantic**')
+    expect(stxSkill).toContain('<Input v-model:value=\"query\">')
+    expect(stxSkill).toContain('<input v-model=\"query\">')
   })
 
   test('keeps generated guidance free of separator dash typography', () => {
