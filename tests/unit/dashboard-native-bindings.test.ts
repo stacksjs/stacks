@@ -8,6 +8,9 @@ const dashboardComponents = resolve(
 const dashboardResourceViews = resolve(
   'storage/framework/defaults/resources/views/dashboard',
 )
+const dashboardViews = resolve(
+  'storage/framework/defaults/views/dashboard',
+)
 const dashboardComponentBarrel = resolve(
   'storage/framework/defaults/resources/components/Dashboard/index.ts',
 )
@@ -295,6 +298,15 @@ describe('dashboard native STX bindings', () => {
     expect(forgotPassword).toContain('i-hugeicons-cube')
     expect(forgotPassword).not.toContain('<svg')
     expect(forgotPassword).not.toContain('<script server>')
+
+    const forgotPasswordPage = readFileSync(
+      resolve(dashboardViews, 'forgot-password.stx'),
+      'utf8',
+    )
+    expect(forgotPasswordPage).toContain("dashboardApi('/password/forgot', {")
+    expect(forgotPasswordPage).toContain("method: 'POST'")
+    expect(forgotPasswordPage).toContain('auth: false')
+    expect(forgotPasswordPage).not.toContain("fetch('/forgot-password'")
 
     const accessTokens = componentSource('Auth/AccessTokens.stx')
     expect(accessTokens).toContain('@submit.prevent="createAccessToken"')
