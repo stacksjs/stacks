@@ -25,7 +25,7 @@
  * reactively if the user's roles change (admin assigns/revokes via the
  * RBAC UI without a page reload).
  */
-import { useStore } from '@stacksjs/stx'
+import { authStore } from '../stores/auth'
 
 export interface RoleSnapshot {
   /** Admin: every dashboard surface is visible. */
@@ -42,7 +42,9 @@ export interface RoleSnapshot {
 }
 
 export function useRole(): RoleSnapshot {
-  const auth = useStore<RoleSnapshot>('auth')
+  // Importing the definition makes this composable own its dependency and
+  // guarantees registration before any component controller calls useRole().
+  const auth = authStore
 
   // Fire the load lazily on first consumer. The store guards against
   // double-fetch so multiple `useRole()` calls in one page are safe.

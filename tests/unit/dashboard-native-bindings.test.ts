@@ -733,6 +733,10 @@ describe('dashboard native STX bindings', () => {
       resolve('storage/framework/defaults/views/dashboard/stores/kanban.ts'),
       'utf8',
     )
+    const role = readFileSync(
+      resolve('storage/framework/defaults/views/dashboard/composables/useRole.ts'),
+      'utf8',
+    )
 
     expect(page).toContain('<KanbanBoardDashboard />')
     expect(page).not.toContain('<script')
@@ -743,6 +747,9 @@ describe('dashboard native STX bindings', () => {
     expect(board).toContain('x-model="draftCardTitle"')
     expect(board).toContain('x-model="commentDraft"')
     expect(board).toContain('<StxLink to="/kanban"')
+    expect(board).toContain("import { kanbanStore } from '~/storage/framework/defaults/views/dashboard/stores/kanban'")
+    expect(board).toContain('const kanban = kanbanStore')
+    expect(board).not.toContain("useStore('kanban')")
     expect(board).not.toMatch(/\b(?:document|window)\./)
     expect(board).not.toContain('querySelector(')
     expect(board).not.toContain('https://esm.sh')
@@ -756,6 +763,9 @@ describe('dashboard native STX bindings', () => {
     expect(index).toContain('x-model="draftName"')
     expect(index).toContain('x-model="draftDescription"')
     expect(index).toContain(':to="`/kanban/${board.id}`"')
+    expect(index).toContain("import { kanbanStore } from '~/storage/framework/defaults/views/dashboard/stores/kanban'")
+    expect(index).toContain('const kanban = kanbanStore')
+    expect(index).not.toContain("useStore('kanban')")
     expect(index).not.toMatch(/\b(?:document|window)\./)
     expect(index).not.toContain('<svg')
 
@@ -763,6 +773,9 @@ describe('dashboard native STX bindings', () => {
     expect(store).toContain("dashboardApi<{ board?: BoardSummary")
     expect(store).toContain("{ method: 'DELETE' }")
     expect(store).not.toContain('fetch(')
+    expect(role).toContain("import { authStore } from '../stores/auth'")
+    expect(role).toContain('const auth = authStore')
+    expect(role).not.toContain("useStore<RoleSnapshot>('auth')")
   })
 
   test('RBAC management uses guarded native contracts', () => {

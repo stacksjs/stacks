@@ -8,10 +8,12 @@
   // Follows #1838 conventions: no <script server>, no vanilla DOM
   // reads, all state via the store. Role gate via useRole() — the
   // surface is dev-mode-only (admins + devs see it, clients don't).
-  import { useStore } from '@stacksjs/stx'
   import { useRole } from '~/storage/framework/defaults/views/dashboard/composables/useRole'
+  import { kanbanStore } from '~/storage/framework/defaults/views/dashboard/stores/kanban'
 
-  const kanban = useStore('kanban')
+  // Keep the page component self-contained: the imported store definition is
+  // registered before this controller runs on both direct and SPA navigation.
+  const kanban = kanbanStore
   const { isDev } = useRole()
   const canView = derived(() => isDev())
 
