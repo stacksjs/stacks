@@ -45,12 +45,12 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "@stacksjs/bun-router": "^0.0.20",
+    "@stacksjs/bun-router": "^0.0.21",
     "@stacksjs/cache": "workspace:*",
     "@stacksjs/database": "workspace:*",
     "@stacksjs/error-handling": "workspace:*"
   },
   "devDependencies": {
-    "better-dx": "^0.2.17"
+    "better-dx": "^0.2.22"
   }
 }

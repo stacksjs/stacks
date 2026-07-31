@@ -54,12 +54,12 @@
   },
   "devDependencies": {
     "@stacksjs/config": "workspace:*",
-    "better-dx": "^0.2.17",
+    "better-dx": "^0.2.22",
     "@stacksjs/path": "workspace:*",
     "@stacksjs/router": "workspace:*",
     "@stacksjs/validation": "workspace:*"
   },
   "dependencies": {
-    "bun-plugin-auto-imports": "^0.4.0"
+    "bun-plugin-auto-imports": "^0.4.1"
   }
 }

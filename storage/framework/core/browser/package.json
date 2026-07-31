@@ -54,11 +54,11 @@
   "dependencies": {
     "@stacksjs/composables": "workspace:*",
     "@stacksjs/stx": "^0.2.139",
-    "bun-query-builder": "^0.1.63",
+    "bun-query-builder": "^0.2.0",
     "magic-regexp": "^0.11.0"
   },
   "peerDependencies": {
-    "@stripe/stripe-js": "^9.10.0"
+    "@stripe/stripe-js": "^9.12.1"
   },
   "peerDependenciesMeta": {
     "@stripe/stripe-js": {
@@ -66,8 +66,8 @@
     }
   },
   "devDependencies": {
-    "better-dx": "^0.2.17",
+    "better-dx": "^0.2.22",
     "@stacksjs/utils": "workspace:*",
-    "@stripe/stripe-js": "^9.10.0"
+    "@stripe/stripe-js": "^9.12.1"
   }
 }

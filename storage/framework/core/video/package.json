@@ -36,6 +36,6 @@
     "ts-videos": "^0.1.1"
   },
   "devDependencies": {
-    "better-dx": "^0.2.17"
+    "better-dx": "^0.2.22"
   }
 }
