@@ -1,7 +1,12 @@
 import { Action } from '@stacksjs/actions'
 import { config } from '@stacksjs/config'
 import { Customer } from '@stacksjs/orm'
-import { normalizeCommerceCustomerRecord, summarizeCommerceCustomers } from './commerce-customer-records'
+import { response } from '@stacksjs/router'
+import {
+  normalizeCommerceCustomerCurrency,
+  normalizeCommerceCustomerRecord,
+  summarizeCommerceCustomers,
+} from './commerce-customer-records'
 
 export default new Action({
   name: 'CommerceCustomersAction',
@@ -10,12 +15,19 @@ export default new Action({
   apiResponse: true,
 
   async handle() {
-    const customers = await Customer.orderBy('name', 'asc').limit(500).get()
-    const records = customers.map(normalizeCommerceCustomerRecord)
-    return {
-      records,
-      summary: summarizeCommerceCustomers(records),
-      currency: String((config as any).commerce?.currency || 'USD').toUpperCase(),
+    try {
+      const customers = await Customer.orderBy('name', 'asc').limit(500).get()
+      const records = customers.map(normalizeCommerceCustomerRecord)
+      return {
+        records,
+        summary: summarizeCommerceCustomers(records),
+        currency: normalizeCommerceCustomerCurrency((config as any).commerce?.currency),
+      }
+    }
+    catch (error) {
+      return response.json({
+        message: error instanceof Error ? error.message : 'Customer records could not be read.',
+      }, 503)
     }
   },
 })

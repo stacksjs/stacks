@@ -1,4 +1,18 @@
-export type CommerceCustomerStatus = 'Active' | 'Inactive' | 'Unknown'
+import {
+  commerceCurrency,
+  commerceEmail,
+  commerceEnum,
+  commerceIdentifier,
+  commerceNumber,
+  commerceOptionalString,
+  commerceOptionalTimestamp,
+  commerceRequiredString,
+  commerceTimestamp,
+  commerceUrl,
+  commerceValue,
+} from './commerce-record'
+
+export type CommerceCustomerStatus = 'Active' | 'Inactive'
 
 export interface CommerceCustomerRecord {
   id: string
@@ -20,43 +34,24 @@ export interface CommerceCustomerSummary {
   averageSpent: number
 }
 
-function value(record: any, ...keys: string[]): unknown {
-  for (const key of keys) {
-    const result = typeof record?.get === 'function' ? record.get(key) : record?.[key]
-    if (result !== null && result !== undefined)
-      return result
-  }
-  return undefined
-}
-
-function text(input: unknown): string {
-  return input === null || input === undefined ? '' : String(input)
-}
-
-function nonNegativeNumber(input: unknown): number {
-  const result = Number(input)
-  return Number.isFinite(result) && result >= 0 ? result : 0
-}
-
-function status(input: unknown): CommerceCustomerStatus {
-  const result = text(input)
-  if (result === 'Active' || result === 'Inactive')
-    return result
-  return 'Unknown'
-}
-
 export function normalizeCommerceCustomerRecord(record: any): CommerceCustomerRecord {
+  const id = commerceIdentifier(commerceValue(record, 'id', 'uuid'), 'Customer')
+  const source = `Customer ${id}`
   return {
-    id: text(value(record, 'id', 'uuid')),
-    name: text(value(record, 'name')),
-    email: text(value(record, 'email')),
-    phone: text(value(record, 'phone')),
-    totalSpent: nonNegativeNumber(value(record, 'total_spent', 'totalSpent')),
-    lastOrder: text(value(record, 'last_order', 'lastOrder')),
-    status: status(value(record, 'status')),
-    avatar: text(value(record, 'avatar')),
-    createdAt: text(value(record, 'created_at', 'createdAt')),
+    id,
+    name: commerceRequiredString(commerceValue(record, 'name'), source, 'name'),
+    email: commerceEmail(commerceValue(record, 'email'), source),
+    phone: commerceOptionalString(commerceValue(record, 'phone'), source, 'phone'),
+    totalSpent: commerceNumber(commerceValue(record, 'total_spent', 'totalSpent'), source, 'total_spent', { min: 0 }),
+    lastOrder: commerceOptionalTimestamp(commerceValue(record, 'last_order', 'lastOrder'), source, 'last_order'),
+    status: commerceEnum(commerceValue(record, 'status'), source, 'status', ['Active', 'Inactive']),
+    avatar: commerceUrl(commerceValue(record, 'avatar'), source, 'avatar'),
+    createdAt: commerceTimestamp(commerceValue(record, 'created_at', 'createdAt'), source),
   }
+}
+
+export function normalizeCommerceCustomerCurrency(input: unknown): string {
+  return commerceCurrency(input, 'Commerce configuration')
 }
 
 export function summarizeCommerceCustomers(records: CommerceCustomerRecord[]): CommerceCustomerSummary {

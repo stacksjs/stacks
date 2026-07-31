@@ -64,9 +64,8 @@ export default defineModel({
       order: 3,
       fillable: true,
       validation: {
-        rule: schema.string().required().min(10).max(50),
+        rule: schema.string().max(50),
         message: {
-          min: 'Phone number must have a minimum of 10 characters',
           max: 'Phone number must have a maximum of 50 characters',
         },
       },

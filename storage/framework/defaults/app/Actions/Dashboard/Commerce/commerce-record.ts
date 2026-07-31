@@ -102,10 +102,36 @@ export function commerceCurrency(input: unknown, source: string, field = 'curren
   return result
 }
 
+export function commerceEmail(input: unknown, source: string, field = 'email'): string {
+  const result = commerceRequiredString(input, source, field)
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(result))
+    throw commerceRecordError(source, field, 'a valid email address')
+  return result
+}
+
+export function commerceUrl(input: unknown, source: string, field: string): string {
+  const result = commerceRequiredString(input, source, field)
+  try {
+    const url = new URL(result)
+    if (url.protocol !== 'https:' && url.protocol !== 'http:')
+      throw new TypeError('Unsupported URL protocol.')
+    return url.toString()
+  }
+  catch {
+    throw commerceRecordError(source, field, 'a valid HTTP or HTTPS URL')
+  }
+}
+
 export function commerceTimestamp(input: unknown, source: string, field = 'created_at'): string {
   const raw = commerceRequiredString(input, source, field)
   const date = new Date(/^\d{4}-\d{2}-\d{2} \d/.test(raw) ? `${raw.replace(' ', 'T')}Z` : raw)
   if (!Number.isFinite(date.getTime()))
     throw commerceRecordError(source, field, 'a valid timestamp')
   return date.toISOString()
+}
+
+export function commerceOptionalTimestamp(input: unknown, source: string, field: string): string {
+  if (input === undefined || input === null || input === '')
+    return ''
+  return commerceTimestamp(input, source, field)
 }

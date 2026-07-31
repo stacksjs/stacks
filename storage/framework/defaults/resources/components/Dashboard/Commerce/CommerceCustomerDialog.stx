@@ -51,7 +51,6 @@ function valid(): boolean {
   return Boolean(
     name().trim().length >= 2
     && email().trim()
-    && phone().trim().length >= 10
     && Number.isFinite(spend)
     && spend >= 0
     && validAvatar()
@@ -93,7 +92,7 @@ function errorMessages(): string[] {
         <div class="grid gap-4 grid-cols-1 sm:grid-cols-2 mt-5">
           <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Name</span><input x-model="name" type="text" minlength="2" maxlength="255" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label>
           <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Email</span><input x-model="email" type="email" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label>
-          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Phone</span><input x-model="phone" type="tel" minlength="10" maxlength="50" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label>
+          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Phone <span class="font-normal text-gray-400 dark:text-neutral-500">(optional)</span></span><input x-model="phone" type="tel" maxlength="50" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label>
           <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Status</span><select x-model="status" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700"><option value="Active">Active</option><option value="Inactive">Inactive</option></select></label>
           <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Recorded spend ({{ currency() }})</span><input x-model="totalSpent" type="number" min="0" step="0.01" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label>
           <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Last order</span><input x-model="lastOrder" type="date" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label>
