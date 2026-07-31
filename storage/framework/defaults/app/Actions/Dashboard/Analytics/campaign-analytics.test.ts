@@ -57,4 +57,41 @@ describe('campaign analytics', () => {
 
     expect(result.channels.map(channel => `${channel.name}:${channel.currency}`)).toEqual(['Social:EUR', 'Social:USD'])
   })
+
+  test('preserves unrecorded campaign metrics instead of reporting zeroes', () => {
+    const result = buildCampaignAnalytics([
+      {
+        id: '1',
+        name: 'Draft newsletter',
+        type: 'email',
+        status: 'draft',
+        audienceSize: null,
+        sentCount: 0,
+        openRate: null,
+        clickRate: null,
+        conversionRate: null,
+        budget: null,
+        spent: null,
+        currency: 'USD',
+        createdAt: '2026-07-29T10:00:00.000Z',
+      },
+    ], 'day', now)
+
+    expect(result.overview).toMatchObject({
+      audience: null,
+      sent: 0,
+      opens: 0,
+      clicks: 0,
+      conversions: 0,
+      openRate: null,
+      clickRate: null,
+      conversionRate: null,
+    })
+    expect(result.spendByCurrency).toEqual([{
+      currency: 'USD',
+      budget: null,
+      spent: null,
+      campaigns: 1,
+    }])
+  })
 })

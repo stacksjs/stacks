@@ -137,19 +137,19 @@ export interface CampaignAnalyticsResponse {
   }
   overview: {
     campaigns: number
-    audience: number
-    sent: number
-    opens: number
-    clicks: number
-    conversions: number
-    openRate: number
-    clickRate: number
-    conversionRate: number
+    audience: number | null
+    sent: number | null
+    opens: number | null
+    clicks: number | null
+    conversions: number | null
+    openRate: number | null
+    clickRate: number | null
+    conversionRate: number | null
   }
   spendByCurrency: Array<{
     currency: string
-    budget: number
-    spent: number
+    budget: number | null
+    spent: number | null
     campaigns: number
   }>
   campaigns: Array<{
@@ -157,30 +157,30 @@ export interface CampaignAnalyticsResponse {
     name: string
     type: string
     status: string
-    audienceSize: number
-    sentCount: number
-    openRate: number
-    clickRate: number
-    conversionRate: number
-    budget: number
-    spent: number
+    audienceSize: number | null
+    sentCount: number | null
+    openRate: number | null
+    clickRate: number | null
+    conversionRate: number | null
+    budget: number | null
+    spent: number | null
     currency: string
     createdAt: string
-    opens: number
-    clicks: number
-    conversions: number
+    opens: number | null
+    clicks: number | null
+    conversions: number | null
   }>
   channels: Array<{
     type: string
     name: string
     currency: string
     campaigns: number
-    audience: number
-    sent: number
-    spent: number
-    openRate: number
-    clickRate: number
-    conversionRate: number
+    audience: number | null
+    sent: number | null
+    spent: number | null
+    openRate: number | null
+    clickRate: number | null
+    conversionRate: number | null
   }>
   statuses: Array<{
     status: string

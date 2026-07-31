@@ -5,13 +5,13 @@ export interface CampaignAnalyticsRow {
   name: string
   type: string
   status: string
-  audienceSize: number
-  sentCount: number
-  openRate: number
-  clickRate: number
-  conversionRate: number
-  budget: number
-  spent: number
+  audienceSize: number | null
+  sentCount: number | null
+  openRate: number | null
+  clickRate: number | null
+  conversionRate: number | null
+  budget: number | null
+  spent: number | null
   currency: string
   createdAt: string
 }
@@ -43,13 +43,41 @@ function titleCase(value: string): string {
     .replace(/\b\w/g, letter => letter.toUpperCase())
 }
 
-function weightedRate(rows: CampaignAnalyticsRow[], key: 'openRate' | 'clickRate' | 'conversionRate'): number {
-  const sent = rows.reduce((sum, row) => sum + row.sentCount, 0)
-  if (sent > 0)
-    return Math.round((rows.reduce((sum, row) => sum + row[key] * row.sentCount, 0) / sent) * 10) / 10
-  if (rows.length === 0)
+function completeSum(values: Array<number | null>): number | null {
+  if (values.some(value => value === null))
+    return null
+  return values.reduce<number>((sum, value) => sum + (value as number), 0)
+}
+
+function derivedCount(sent: number | null, rate: number | null): number | null {
+  if (sent === null)
+    return null
+  if (sent === 0)
     return 0
-  return Math.round((rows.reduce((sum, row) => sum + row[key], 0) / rows.length) * 10) / 10
+  return rate === null ? null : Math.round(sent * rate / 100)
+}
+
+function weightedRate(rows: CampaignAnalyticsRow[], key: 'openRate' | 'clickRate' | 'conversionRate'): number | null {
+  if (rows.some(row => row.sentCount === null))
+    return null
+
+  const sentRows = rows.filter(row => (row.sentCount as number) > 0)
+  if (sentRows.some(row => row[key] === null))
+    return null
+
+  const sent = sentRows.reduce((sum, row) => sum + (row.sentCount as number), 0)
+  if (sent > 0) {
+    const weighted = sentRows.reduce((sum, row) =>
+      sum + (row[key] as number) * (row.sentCount as number), 0)
+    return Math.round((weighted / sent) * 10) / 10
+  }
+
+  const recorded = rows
+    .map(row => row[key])
+    .filter((value): value is number => value !== null)
+  if (recorded.length === 0)
+    return null
+  return Math.round((recorded.reduce((sum, value) => sum + value, 0) / recorded.length) * 10) / 10
 }
 
 export function buildCampaignAnalytics(
@@ -63,17 +91,17 @@ export function buildCampaignAnalytics(
     .map(campaign => ({
       ...campaign,
       currency: normalizeCurrency(campaign.currency),
-      opens: Math.round(campaign.sentCount * campaign.openRate / 100),
-      clicks: Math.round(campaign.sentCount * campaign.clickRate / 100),
-      conversions: Math.round(campaign.sentCount * campaign.conversionRate / 100),
+      opens: derivedCount(campaign.sentCount, campaign.openRate),
+      clicks: derivedCount(campaign.sentCount, campaign.clickRate),
+      conversions: derivedCount(campaign.sentCount, campaign.conversionRate),
     }))
-    .sort((left, right) => right.sentCount - left.sentCount)
+    .sort((left, right) => (right.sentCount ?? -1) - (left.sentCount ?? -1))
 
-  const spendMap = new Map<string, { currency: string, budget: number, spent: number, campaigns: number }>()
+  const spendMap = new Map<string, { currency: string, budget: Array<number | null>, spent: Array<number | null>, campaigns: number }>()
   for (const campaign of campaigns) {
-    const total = spendMap.get(campaign.currency) || { currency: campaign.currency, budget: 0, spent: 0, campaigns: 0 }
-    total.budget += campaign.budget
-    total.spent += campaign.spent
+    const total = spendMap.get(campaign.currency) || { currency: campaign.currency, budget: [], spent: [], campaigns: 0 }
+    total.budget.push(campaign.budget)
+    total.spent.push(campaign.spent)
     total.campaigns++
     spendMap.set(campaign.currency, total)
   }
@@ -93,16 +121,16 @@ export function buildCampaignAnalytics(
         name: titleCase(type),
         currency,
         campaigns: rows.length,
-        audience: rows.reduce((sum, row) => sum + row.audienceSize, 0),
-        sent: rows.reduce((sum, row) => sum + row.sentCount, 0),
-        spent: rows.reduce((sum, row) => sum + row.spent, 0),
+        audience: completeSum(rows.map(row => row.audienceSize)),
+        sent: completeSum(rows.map(row => row.sentCount)),
+        spent: completeSum(rows.map(row => row.spent)),
         openRate: weightedRate(rows, 'openRate'),
         clickRate: weightedRate(rows, 'clickRate'),
         conversionRate: weightedRate(rows, 'conversionRate'),
       }
     })
     .sort((left, right) =>
-      right.sent - left.sent
+      (right.sent ?? -1) - (left.sent ?? -1)
       || left.name.localeCompare(right.name)
       || left.currency.localeCompare(right.currency),
     )
@@ -120,16 +148,23 @@ export function buildCampaignAnalytics(
     },
     overview: {
       campaigns: campaigns.length,
-      audience: campaigns.reduce((sum, campaign) => sum + campaign.audienceSize, 0),
-      sent: campaigns.reduce((sum, campaign) => sum + campaign.sentCount, 0),
-      opens: campaigns.reduce((sum, campaign) => sum + campaign.opens, 0),
-      clicks: campaigns.reduce((sum, campaign) => sum + campaign.clicks, 0),
-      conversions: campaigns.reduce((sum, campaign) => sum + campaign.conversions, 0),
+      audience: completeSum(campaigns.map(campaign => campaign.audienceSize)),
+      sent: completeSum(campaigns.map(campaign => campaign.sentCount)),
+      opens: completeSum(campaigns.map(campaign => campaign.opens)),
+      clicks: completeSum(campaigns.map(campaign => campaign.clicks)),
+      conversions: completeSum(campaigns.map(campaign => campaign.conversions)),
       openRate: weightedRate(campaigns, 'openRate'),
       clickRate: weightedRate(campaigns, 'clickRate'),
       conversionRate: weightedRate(campaigns, 'conversionRate'),
     },
-    spendByCurrency: [...spendMap.values()].sort((left, right) => right.spent - left.spent),
+    spendByCurrency: [...spendMap.values()]
+      .map(total => ({
+        currency: total.currency,
+        budget: completeSum(total.budget),
+        spent: completeSum(total.spent),
+        campaigns: total.campaigns,
+      }))
+      .sort((left, right) => (right.spent ?? -1) - (left.spent ?? -1)),
     campaigns,
     channels,
     statuses: [...statusMap.entries()]

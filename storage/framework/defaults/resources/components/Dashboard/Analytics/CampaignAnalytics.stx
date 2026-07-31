@@ -9,12 +9,20 @@ const dateRangeDisplay = state('Last 30 days')
 const isLoading = state(false)
 const loadError = state('')
 
-function formatNumber(value: number): string {
-  return new Intl.NumberFormat().format(value)
+function formatNumber(value: number | null | undefined): string {
+  return value === null || value === undefined
+    ? 'Not recorded'
+    : new Intl.NumberFormat().format(value)
 }
 
-function formatCurrency(value: number, currency: string): string {
-  return new Intl.NumberFormat(undefined, { style: 'currency', currency }).format(value)
+function formatCurrency(value: number | null, currency: string): string {
+  return value === null
+    ? 'Not recorded'
+    : new Intl.NumberFormat(undefined, { style: 'currency', currency }).format(value)
+}
+
+function formatRate(value: number | null | undefined): string {
+  return value === null || value === undefined ? 'Not recorded' : `${value}%`
 }
 
 function formatDateRange(start: string, end: string): string {
@@ -84,34 +92,34 @@ onMount(() => {
   <section class="grid gap-3 grid-cols-2 xl:grid-cols-4">
     <div class="p-4 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
       <p class="text-gray-500 text-xs tracking-wide uppercase dark:text-neutral-400">Campaigns</p>
-      <p class="mt-2 font-semibold text-2xl text-gray-900 dark:text-white">{{ formatNumber(analytics()?.overview.campaigns || 0) }}</p>
+      <p class="mt-2 font-semibold text-2xl text-gray-900 dark:text-white">{{ formatNumber(analytics()?.overview.campaigns) }}</p>
     </div>
     <div class="p-4 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
       <p class="text-gray-500 text-xs tracking-wide uppercase dark:text-neutral-400">Audience</p>
-      <p class="mt-2 font-semibold text-2xl text-gray-900 dark:text-white">{{ formatNumber(analytics()?.overview.audience || 0) }}</p>
+      <p class="mt-2 font-semibold text-2xl text-gray-900 dark:text-white">{{ formatNumber(analytics()?.overview.audience) }}</p>
     </div>
     <div class="p-4 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
       <p class="text-gray-500 text-xs tracking-wide uppercase dark:text-neutral-400">Sent</p>
-      <p class="mt-2 font-semibold text-2xl text-gray-900 dark:text-white">{{ formatNumber(analytics()?.overview.sent || 0) }}</p>
+      <p class="mt-2 font-semibold text-2xl text-gray-900 dark:text-white">{{ formatNumber(analytics()?.overview.sent) }}</p>
     </div>
     <div class="p-4 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
       <p class="text-gray-500 text-xs tracking-wide uppercase dark:text-neutral-400">Conversions</p>
-      <p class="mt-2 font-semibold text-2xl text-gray-900 dark:text-white">{{ formatNumber(analytics()?.overview.conversions || 0) }}</p>
+      <p class="mt-2 font-semibold text-2xl text-gray-900 dark:text-white">{{ formatNumber(analytics()?.overview.conversions) }}</p>
     </div>
   </section>
 
   <section class="grid gap-3 grid-cols-1 sm:grid-cols-3">
     <div class="px-4 py-3 bg-neutral-900 rounded-lg">
       <p class="text-neutral-400 text-xs uppercase">Open rate</p>
-      <p class="mt-1 font-semibold text-white text-xl">{{ analytics()?.overview.openRate || 0 }}%</p>
+      <p class="mt-1 font-semibold text-white text-xl">{{ formatRate(analytics()?.overview.openRate) }}</p>
     </div>
     <div class="px-4 py-3 bg-neutral-900 rounded-lg">
       <p class="text-neutral-400 text-xs uppercase">Click rate</p>
-      <p class="mt-1 font-semibold text-white text-xl">{{ analytics()?.overview.clickRate || 0 }}%</p>
+      <p class="mt-1 font-semibold text-white text-xl">{{ formatRate(analytics()?.overview.clickRate) }}</p>
     </div>
     <div class="px-4 py-3 bg-neutral-900 rounded-lg">
       <p class="text-neutral-400 text-xs uppercase">Conversion rate</p>
-      <p class="mt-1 font-semibold text-white text-xl">{{ analytics()?.overview.conversionRate || 0 }}%</p>
+      <p class="mt-1 font-semibold text-white text-xl">{{ formatRate(analytics()?.overview.conversionRate) }}</p>
     </div>
   </section>
 
@@ -226,8 +234,8 @@ onMount(() => {
                 <td class="px-4 py-3 text-gray-500 text-right text-sm dark:text-neutral-300">{{ channel.campaigns }}</td>
                 <td class="px-4 py-3 text-gray-500 text-right text-sm dark:text-neutral-300">{{ formatNumber(channel.sent) }}</td>
                 <td class="px-4 py-3 text-gray-500 text-right text-sm dark:text-neutral-300">{{ formatCurrency(channel.spent, channel.currency) }}</td>
-                <td class="px-4 py-3 text-gray-500 text-right text-sm dark:text-neutral-300">{{ channel.clickRate }}%</td>
-                <td class="px-4 py-3 text-gray-500 text-right text-sm dark:text-neutral-300">{{ channel.conversionRate }}%</td>
+                <td class="px-4 py-3 text-gray-500 text-right text-sm dark:text-neutral-300">{{ formatRate(channel.clickRate) }}</td>
+                <td class="px-4 py-3 text-gray-500 text-right text-sm dark:text-neutral-300">{{ formatRate(channel.conversionRate) }}</td>
               </tr>
             </template>
           </tbody>
