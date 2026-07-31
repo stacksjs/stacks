@@ -151,13 +151,11 @@ export interface StacksRequestMacros {
   /** Get a single uploaded file by field name. */
   file?: (key: string) => FileInfo | null
   /** Get all uploaded files for a field name. */
-  files?: (key: string) => FileInfo[]
+  getFiles?: (key: string) => FileInfo[]
   /** Whether the field has at least one uploaded file. */
   hasFile?: (key: string) => boolean
   /** Snapshot of all uploaded files keyed by field name. */
   allFiles?: () => Record<string, FileInfo | FileInfo[]>
-  /** Alias used by some action helpers. */
-  getFiles?: () => Record<string, FileInfo | FileInfo[]>
 
   /**
    * The authenticated user (resolved lazily — falls back to the
