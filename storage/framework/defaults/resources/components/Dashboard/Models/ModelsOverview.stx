@@ -5,12 +5,13 @@ interface ModelRow {
   name: string
   table: string
   href: string
-  count: number
+  count: number | null
   attributeCount: number
   category: string
   source: 'userland' | 'framework'
   apiUri: string
   apiRoutes: string[]
+  error: string | null
 }
 
 interface ModelGroup {
@@ -24,6 +25,7 @@ interface ModelsResponse {
   totalModels: number
   totalRecords: number
   userlandCount: number
+  unavailableModels: number
   categoryGroups: ModelGroup[]
 }
 
@@ -32,6 +34,7 @@ const description = useReactiveProp('description', 'Inspect application models.'
 const totalModels = state(0)
 const totalRecords = state(0)
 const userlandCount = state(0)
+const unavailableModels = state(0)
 const categoryGroups = state<ModelGroup[]>([])
 const loading = state(true)
 const loadError = state('')
@@ -74,12 +77,14 @@ async function loadModels(): Promise<void> {
     totalModels.set(response.totalModels || 0)
     totalRecords.set(response.totalRecords || 0)
     userlandCount.set(response.userlandCount || 0)
+    unavailableModels.set(response.unavailableModels || 0)
     categoryGroups.set(response.categoryGroups || [])
   }
   catch (error) {
     totalModels.set(0)
     totalRecords.set(0)
     userlandCount.set(0)
+    unavailableModels.set(0)
     categoryGroups.set([])
     loadError.set(error instanceof Error ? error.message : 'Models could not be loaded.')
   }
@@ -120,6 +125,11 @@ onMount(() => {
   <div :if="loadError()" role="alert" class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between px-4 py-3 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/40 border border-red-200 rounded-lg dark:border-red-900">
     <span>{{ loadError() }}</span>
     <Button variant="secondary" size="sm" @click="loadModels">Try again</Button>
+  </div>
+
+  <div :if="!loadError() && unavailableModels() > 0" role="status" class="flex gap-3 items-start px-4 py-3 text-amber-800 text-sm dark:text-amber-200 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 rounded-lg dark:border-amber-900">
+    <span class="flex-none mt-0.5 h-4 w-4 i-hugeicons-alert-02"></span>
+    <span>{{ unavailableModels() }} model {{ unavailableModels() === 1 ? 'count is' : 'counts are' }} unavailable. Affected cards show the query error instead of reporting zero records.</span>
   </div>
 
   <Card padding="none">
@@ -180,13 +190,16 @@ onMount(() => {
             <dl class="grid gap-3 grid-cols-2 mt-5 pt-4 border-neutral-100 border-t dark:border-neutral-800">
               <div>
                 <dt class="text-neutral-500 text-xs dark:text-neutral-400">Records</dt>
-                <dd class="mt-1 font-medium text-neutral-900 text-sm dark:text-white">{{ model.count.toLocaleString() }}</dd>
+                <dd :if="model.count !== null" class="mt-1 font-medium text-neutral-900 text-sm dark:text-white">{{ model.count.toLocaleString() }}</dd>
+                <dd :if="model.count === null" class="mt-1 font-medium text-amber-700 text-sm dark:text-amber-300">Unavailable</dd>
               </div>
               <div>
                 <dt class="text-neutral-500 text-xs dark:text-neutral-400">Attributes</dt>
                 <dd class="mt-1 font-medium text-neutral-900 text-sm dark:text-white">{{ model.attributeCount }}</dd>
               </div>
             </dl>
+
+            <p :if="model.error" role="status" class="mt-4 line-clamp-2 text-amber-700 text-xs dark:text-amber-300">{{ model.error }}</p>
 
             <div :if="model.apiUri" class="flex gap-2 items-center mt-4">
               <span class="inline-flex px-2 py-0.5 font-medium text-green-700 text-xs dark:text-green-300 bg-green-50 dark:bg-green-950/40 rounded">API</span>

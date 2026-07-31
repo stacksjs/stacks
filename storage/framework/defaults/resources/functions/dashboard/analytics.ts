@@ -3,12 +3,11 @@
  * pulls from the seeded `Activity` / `Request` / `Order` / `Subscriber`
  * tables and reduces to the chart-ready shape the page expects.
  *
- * No model is required to exist — the helpers fall back to empty data
- * when the table or column is missing, so analytics pages still render
- * without errors on an unseeded database.
+ * Models and tables must exist. Query failures propagate to the API layer
+ * so pages can distinguish a real empty dataset from unavailable data.
  */
 
-import { countBy, groupByDay, loadModel, safeAll, safeGet, sumByDay, topN } from './data'
+import { allRows, countBy, groupByDay, loadModel, safeGet, sumByDay, topN } from './data'
 
 export interface WebMetrics {
   totalRequests: number
@@ -25,7 +24,7 @@ export interface WebMetrics {
  */
 export async function getWebMetrics(days = 30): Promise<WebMetrics> {
   const Request = await loadModel('Request')
-  const rows = await safeAll(Request)
+  const rows = await allRows(Request)
   const ips = new Set<string>()
   let totalDuration = 0
   let durationSamples = 0
@@ -53,14 +52,14 @@ export async function getWebMetrics(days = 30): Promise<WebMetrics> {
 /** Top referrer hosts. */
 export async function getTopReferrers(n = 10): Promise<Array<{ value: string, count: number }>> {
   const Request = await loadModel('Request')
-  const rows = await safeAll(Request)
+  const rows = await allRows(Request)
   return topN(rows, 'referrer', n)
 }
 
 /** Visitor breakdown by user-agent family (best-effort). */
 export async function getBrowserBreakdown(): Promise<Array<{ value: string, count: number }>> {
   const Request = await loadModel('Request')
-  const rows = await safeAll(Request)
+  const rows = await allRows(Request)
   const counts: Record<string, number> = {}
   for (const r of rows) {
     const ua = String(safeGet(r, 'user_agent', '') || safeGet(r, 'browser', ''))
@@ -75,7 +74,7 @@ export async function getBrowserBreakdown(): Promise<Array<{ value: string, coun
 /** Visitor breakdown by device type (mobile/tablet/desktop). */
 export async function getDeviceBreakdown(): Promise<Array<{ value: string, count: number }>> {
   const Request = await loadModel('Request')
-  const rows = await safeAll(Request)
+  const rows = await allRows(Request)
   const counts: Record<string, number> = { desktop: 0, mobile: 0, tablet: 0, other: 0 }
   for (const r of rows) {
     const ua = String(safeGet(r, 'user_agent', '') || safeGet(r, 'device', '')).toLowerCase()
@@ -93,14 +92,14 @@ export async function getDeviceBreakdown(): Promise<Array<{ value: string, count
 /** Visitor breakdown by country, using an explicit `country` column. */
 export async function getCountryBreakdown(n = 10): Promise<Array<{ value: string, count: number }>> {
   const Request = await loadModel('Request')
-  const rows = await safeAll(Request)
+  const rows = await allRows(Request)
   return topN(rows, 'country', n)
 }
 
 /** Top page paths by request count. */
 export async function getTopPages(n = 10): Promise<Array<{ value: string, count: number }>> {
   const Request = await loadModel('Request')
-  const rows = await safeAll(Request)
+  const rows = await allRows(Request)
   return topN(rows, 'path', n)
 }
 
@@ -113,11 +112,11 @@ export interface SalesTimeSeries {
 
 /**
  * Revenue-per-day plus rollups, derived from the `Order` model.
- * Falls back to zero values if the model isn't loaded.
+ * Empty rows produce zero-valued rollups; unavailable data throws.
  */
 export async function getSalesTimeSeries(days = 30): Promise<SalesTimeSeries> {
   const Order = await loadModel('Order')
-  const rows = await safeAll(Order)
+  const rows = await allRows(Order)
   let totalRevenue = 0
   for (const r of rows) {
     totalRevenue += Number(safeGet(r, 'total_amount', 0)) || Number(safeGet(r, 'amount', 0)) || 0
@@ -133,14 +132,14 @@ export async function getSalesTimeSeries(days = 30): Promise<SalesTimeSeries> {
 /** Top-selling products by occurrence in OrderItems. */
 export async function getTopProducts(n = 5): Promise<Array<{ value: string, count: number }>> {
   const OrderItem = await loadModel('OrderItem')
-  const rows = await safeAll(OrderItem)
+  const rows = await allRows(OrderItem)
   return topN(rows, 'product_name', n)
 }
 
 /** Top customers by order count. */
 export async function getTopCustomers(n = 5): Promise<Array<{ value: string, count: number }>> {
   const Order = await loadModel('Order')
-  const rows = await safeAll(Order)
+  const rows = await allRows(Order)
   return topN(rows, 'customer_name', n)
 }
 
@@ -163,11 +162,11 @@ export async function getMarketingMetrics(days = 30): Promise<MarketingMetrics> 
     loadModel('Review'),
   ])
   const [campaigns, lists, subscribers, posts, reviews] = await Promise.all([
-    safeAll(Campaign),
-    safeAll(EmailList),
-    safeAll(Subscriber),
-    safeAll(SocialPost),
-    safeAll(Review),
+    allRows(Campaign),
+    allRows(EmailList),
+    allRows(Subscriber),
+    allRows(SocialPost),
+    allRows(Review),
   ])
   return {
     campaignCount: campaigns.length,
@@ -187,7 +186,7 @@ export async function getEventStats(): Promise<{
   perDay: Array<{ date: string, count: number }>
 }> {
   const Activity = await loadModel('Activity')
-  const rows = await safeAll(Activity)
+  const rows = await allRows(Activity)
   return {
     total: rows.length,
     byEvent: countBy(rows, 'event'),
@@ -205,7 +204,7 @@ export async function getBlogMetrics(): Promise<{
   postsPerDay: Array<{ date: string, count: number }>
 }> {
   const [Post, Comment] = await Promise.all([loadModel('Post'), loadModel('Comment')])
-  const [posts, comments] = await Promise.all([safeAll(Post), safeAll(Comment)])
+  const [posts, comments] = await Promise.all([allRows(Post), allRows(Comment)])
   let totalViews = 0
   let publishedCount = 0
   let draftCount = 0

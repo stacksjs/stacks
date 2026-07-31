@@ -1,7 +1,7 @@
 import { Action } from '@stacksjs/actions'
 import { env } from '@stacksjs/env'
 import { request } from '@stacksjs/router'
-import { loadModel, safeGet } from '../../../../resources/functions/dashboard/data'
+import { loadModelIfExists, safeGet } from '../../../../resources/functions/dashboard/data'
 import { type ModelCreateField, type ModelWriteCapabilities, modelCreateFields, modelSchemaColumns, modelWriteCapabilities } from './model-write'
 
 /**
@@ -20,7 +20,7 @@ import { type ModelCreateField, type ModelWriteCapabilities, modelCreateFields, 
  *   1. `globalThis[Name]` — @stacksjs/orm injects every registered model
  *      as a global, and that is the same object the rest of the dashboard
  *      queries, so scopes, casts and accessors all apply.
- *   2. `loadModel(Name)` — path-map lookup, covers models the ORM has not
+ *   2. `loadModelIfExists(Name)` — path-map lookup, covers models the ORM has not
  *      registered as a global.
  *   3. Raw SQLite — last resort for a table with no model file at all
  *      (lookup/pivot tables, or a schema added outside the ORM).
@@ -199,8 +199,8 @@ export default new Action({
       error: null,
     }
 
-    const Model = resolveOrmModel(modelName) ?? await loadModel(modelName)
-    const hasOrm = Boolean(Model) && !Model._isStub && typeof Model.where === 'function'
+    const Model = resolveOrmModel(modelName) ?? await loadModelIfExists(modelName)
+    const hasOrm = Boolean(Model) && typeof Model.where === 'function'
 
     if (hasOrm) {
       try {

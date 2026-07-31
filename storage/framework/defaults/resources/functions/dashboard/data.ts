@@ -3,18 +3,16 @@
  *
  * Dashboard `.stx` pages run a `<script server>` block at request time,
  * import the framework's ORM, query for data, and shape it for the
- * template. Several pages need the same primitives — a safe model load
- * (the orm package only re-exports User/Job/FailedJob, the rest must be
- * loaded by file path), null-tolerant getters, and small aggregation
- * helpers — so they live here instead of being copy-pasted into every
- * page header.
+ * template. Several pages need the same primitives: strict model loading,
+ * null-tolerant getters, and small aggregation helpers. They live here
+ * instead of being copied into every page header.
  *
  * Usage from inside a page's `<script server>`:
  *
- *   const { loadModel, safeAll, safeGet, countBy } =
+ *   const { loadModel, allRows, safeGet, countBy } =
  *     await import('../../../resources/functions/dashboard/data')
  *   const Order = await loadModel('Order')
- *   const orders = await safeAll(Order)
+ *   const orders = await allRows(Order)
  *   const byStatus = countBy(orders, 'status')
  */
 
@@ -165,17 +163,22 @@ async function modelCandidatePaths(name: string): Promise<string[]> {
   return [...new Set([...discovered, ...explicit])]
 }
 
-/**
- * Load a model class by name, searching userland first then framework
- * defaults. Returns a stub with no-op `.all()` / `.orderBy()` / `.count()`
- * methods if the model file doesn't exist or fails to import — pages can
- * always call query methods on the result without try/catch around the
- * load itself.
- */
-export async function loadModel(name: string): Promise<any> {
+export class DashboardModelLoadError extends Error {
+  readonly modelName: string
+
+  constructor(modelName: string, detail: string) {
+    super(`Could not load dashboard model ${modelName}: ${detail}`)
+    this.name = 'DashboardModelLoadError'
+    this.modelName = modelName
+  }
+}
+
+async function importModel(name: string): Promise<any | null> {
   if (modelCache.has(name)) return modelCache.get(name)
 
-  for (const abs of await modelCandidatePaths(name)) {
+  const candidates = await modelCandidatePaths(name)
+
+  for (const abs of candidates) {
     if (!existsSync(abs)) continue
     try {
       const mod = await import(abs)
@@ -184,15 +187,36 @@ export async function loadModel(name: string): Promise<any> {
         modelCache.set(name, M)
         return M
       }
+      throw new DashboardModelLoadError(name, `${abs} did not export a model`)
     }
-    catch {
-      // Try the next candidate path; final fallback is the stub below.
+    catch (error) {
+      if (error instanceof DashboardModelLoadError)
+        throw error
+      throw new DashboardModelLoadError(name, `${abs}: ${error instanceof Error ? error.message : String(error)}`)
     }
   }
 
-  const stub = makeStub(name)
-  modelCache.set(name, stub)
-  return stub
+  return null
+}
+
+/**
+ * Load a model class by name, searching userland first and then framework
+ * defaults. Missing files and import failures are explicit errors so a
+ * broken model can never be presented as a healthy empty table.
+ */
+export async function loadModel(name: string): Promise<any> {
+  const Model = await importModel(name)
+  if (!Model)
+    throw new DashboardModelLoadError(name, 'no matching model file exists')
+  return Model
+}
+
+/**
+ * Resolve a model when the caller intentionally supports model-less tables.
+ * Import failures still throw. Only a genuinely absent model resolves null.
+ */
+export async function loadModelIfExists(name: string): Promise<any | null> {
+  return await importModel(name)
 }
 
 /**
@@ -207,74 +231,47 @@ export async function loadModels<T extends string>(names: T[]): Promise<Record<T
   return out
 }
 
-function makeStub(_name: string): any {
-  const empty: any[] = []
-  const chain: any = {
-    get: async () => empty,
-    all: async () => empty,
-    count: async () => 0,
-    first: async () => null,
-    find: async () => null,
-    where: () => chain,
-    orderBy: () => chain,
-    orderByDesc: () => chain,
-    limit: () => chain,
-    take: () => chain,
-    skip: () => chain,
-    select: () => chain,
-    distinct: () => chain,
-    groupBy: () => chain,
-    whereIn: () => chain,
-    whereNotNull: () => chain,
-    whereNull: () => chain,
-    _isStub: true,
+/**
+ * Read every row from a model. Invalid model APIs, query errors, and invalid
+ * return values stay visible to the endpoint instead of becoming fake
+ * empty datasets.
+ */
+export async function allRows(Model: any): Promise<any[]> {
+  if (!Model)
+    throw new TypeError('A model is required to read dashboard rows.')
+
+  let rows: unknown
+  if (typeof Model.all === 'function') {
+    rows = await Model.all()
   }
-  return chain
+  else if (typeof Model.get === 'function') {
+    rows = await Model.get()
+  }
+  else {
+    throw new TypeError('The dashboard model does not expose all() or get().')
+  }
+
+  if (!Array.isArray(rows))
+    throw new TypeError('The dashboard model row query did not return an array.')
+  return rows
 }
 
 /**
- * Run `Model.all()` and always resolve to an array — never throws, never
- * returns undefined. Use this whenever you need every row of a table for
- * the page (the seeder caps each table at ~50 rows so the cost is fine).
+ * Count model rows. Models without a count method use the real row query;
+ * query failures are never converted to a healthy zero.
  */
-export async function safeAll(Model: any): Promise<any[]> {
-  if (!Model) return []
-  try {
-    if (typeof Model.all === 'function') {
-      const rows = await Model.all()
-      return Array.isArray(rows) ? rows : []
-    }
-    if (typeof Model.get === 'function') {
-      const rows = await Model.get()
-      return Array.isArray(rows) ? rows : []
-    }
-  }
-  catch {
-    // DB unreachable / table missing / model schema mismatch — page
-    // should render an empty state, not a 500.
-  }
-  return []
-}
+export async function countRows(Model: any): Promise<number> {
+  if (!Model)
+    throw new TypeError('A model is required to count dashboard rows.')
 
-/**
- * Run `Model.count()` and always resolve to a number — never throws. Falls
- * back to `safeAll(Model).length` when the model has no `.count` method
- * (rare, but the makeStub stub provides one so this is mostly defensive).
- */
-export async function safeCount(Model: any): Promise<number> {
-  if (!Model) return 0
-  try {
-    if (typeof Model.count === 'function') {
-      const n = await Model.count()
-      return typeof n === 'number' ? n : 0
-    }
+  if (typeof Model.count === 'function') {
+    const count = Number(await Model.count())
+    if (!Number.isFinite(count))
+      throw new TypeError('The dashboard model count query did not return a finite number.')
+    return count
   }
-  catch {
-    // count() may fail if the table doesn't exist; let safeAll absorb that
-    // by returning [] and we'll report 0 records.
-  }
-  const rows = await safeAll(Model)
-  return rows.length
+
+  return (await allRows(Model)).length
 }
 
 /**
@@ -284,13 +281,10 @@ export async function safeCount(Model: any): Promise<number> {
  */
 export function safeGet(row: any, key: string, fallback: any = ''): any {
   if (!row) return fallback
-  try {
-    if (typeof row.get === 'function') {
-      const v = row.get(key)
-      if (v !== undefined && v !== null) return v
-    }
+  if (typeof row.get === 'function') {
+    const value = row.get(key)
+    if (value !== undefined && value !== null) return value
   }
-  catch { /* fall through to direct property access */ }
   const direct = row[key]
   return direct !== undefined && direct !== null ? direct : fallback
 }

@@ -7,7 +7,7 @@ import { existsSync, readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import process from 'node:process'
 
-import { loadModel, safeAll } from './data'
+import { allRows, loadModel } from './data'
 
 export interface ServiceStatus {
   name: string
@@ -44,17 +44,12 @@ export async function getServiceHealth(): Promise<ServiceStatus[]> {
   // Database
   try {
     const User = await loadModel('User')
-    if (User?._isStub) {
-      out.push({ name: 'Database', status: 'unknown', detail: 'Model not loaded' })
-    }
-    else {
-      const count = typeof User.count === 'function' ? await User.count() : (await safeAll(User)).length
-      out.push({
-        name: 'Database',
-        status: count > 0 ? 'healthy' : 'degraded',
-        detail: count > 0 ? `${count} users` : 'Schema reachable, no rows. Run buddy seed.',
-      })
-    }
+    const count = typeof User.count === 'function' ? await User.count() : (await allRows(User)).length
+    out.push({
+      name: 'Database',
+      status: count > 0 ? 'healthy' : 'degraded',
+      detail: count > 0 ? `${count} users` : 'Schema reachable, no rows. Run buddy seed.',
+    })
   }
   catch (e: any) {
     out.push({ name: 'Database', status: 'offline', detail: e?.message || 'Connection failed' })
@@ -69,8 +64,8 @@ export async function getServiceHealth(): Promise<ServiceStatus[]> {
   try {
     const Job = await loadModel('Job')
     const FailedJob = await loadModel('FailedJob')
-    const pending = await safeAll(Job)
-    const failed = await safeAll(FailedJob)
+    const pending = await allRows(Job)
+    const failed = await allRows(FailedJob)
     out.push({
       name: 'Queue',
       status: failed.length > 0 ? 'degraded' : 'healthy',

@@ -2,7 +2,7 @@ import type { Model } from '@stacksjs/types'
 import { Glob } from 'bun'
 import { Action } from '@stacksjs/actions'
 import { path } from '@stacksjs/path'
-import { safeCount } from '../../../../resources/functions/dashboard/data'
+import { countRows } from '../../../../resources/functions/dashboard/data'
 
 export default new Action({
   name: 'GetModels',
@@ -33,7 +33,7 @@ export default new Action({
 
     return await Promise.all(displayModels.map(async model => ({
       model: model.name,
-      total: await safeCount(model),
+      total: await countRows(model),
     })))
   },
 })

@@ -6,7 +6,7 @@
  * casts and no observers; writing to it from a generic admin screen would
  * bypass every guarantee the ORM makes. Those rows stay read-only.
  */
-import { loadModel } from '../../../../resources/functions/dashboard/data'
+import { loadModelIfExists } from '../../../../resources/functions/dashboard/data'
 
 /** Never writable from a generic admin table, whatever the model declares. */
 export const PROTECTED_COLUMNS: ReadonlySet<string> = new Set([
@@ -287,8 +287,8 @@ export function prepareModelFields(
 export async function resolveWritableModel(slug: string, operation?: ModelWriteOperation): Promise<ResolvedModel | { error: string }> {
   const modelName = slugToPascal(slug)
   const injected = (globalThis as Record<string, any>)[modelName]
-  const Model = (injected && typeof injected.where === 'function') ? injected : await loadModel(modelName)
-  if (!Model || Model._isStub || typeof Model.find !== 'function')
+  const Model = (injected && typeof injected.where === 'function') ? injected : await loadModelIfExists(modelName)
+  if (!Model || typeof Model.find !== 'function')
     return { error: `No ORM model named ${modelName}. Rows from tables without a model are read-only.` }
   if (operation) {
     const capability = operation === 'store' ? 'create' : operation
