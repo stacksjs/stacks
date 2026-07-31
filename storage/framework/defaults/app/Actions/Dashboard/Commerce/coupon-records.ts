@@ -1,3 +1,17 @@
+import {
+  commerceBoolean,
+  commerceEnum,
+  commerceIdentifier,
+  commerceNumber,
+  commerceOptionalDate,
+  commerceOptionalIdentifier,
+  commerceOptionalNumber,
+  commerceOptionalString,
+  commerceRequiredString,
+  commerceTimestamp,
+  commerceValue,
+} from './commerce-record'
+
 export type CouponStatus = 'Active' | 'Scheduled' | 'Expired'
 export type CouponDiscountType = 'fixed_amount' | 'percentage'
 
@@ -9,10 +23,11 @@ export interface CouponRecord {
   isActive: boolean
   discountType: CouponDiscountType
   discountValue: number
-  minOrderAmount: number
-  maxDiscountAmount: number
+  minOrderAmount: number | null
+  maxDiscountAmount: number | null
   freeProductId: string
-  usageLimit: number
+  productId: string
+  usageLimit: number | null
   usageCount: number
   startDate: string
   endDate: string
@@ -27,54 +42,91 @@ export interface CouponSummary {
   redemptions: number
 }
 
-function value(record: any, ...keys: string[]): unknown {
-  for (const key of keys) {
-    const result = typeof record?.get === 'function' ? record.get(key) : record?.[key]
-    if (result !== null && result !== undefined)
-      return result
-  }
-  return undefined
-}
+export function normalizeCouponRecord(
+  record: any,
+  productIds = new Set<string>(),
+): CouponRecord {
+  const id = commerceIdentifier(commerceValue(record, 'id', 'uuid'), 'Coupon')
+  const source = `Coupon ${id}`
+  const productId = commerceOptionalIdentifier(
+    commerceValue(record, 'product_id', 'productId'),
+    source,
+    'product_id',
+  )
+  if (productId && !productIds.has(productId))
+    throw new TypeError(`${source}.product_id references missing Product ${productId}.`)
+  const discountType = commerceEnum(
+    commerceValue(record, 'discount_type', 'discountType'),
+    source,
+    'discount_type',
+    ['fixed_amount', 'percentage'],
+  )
+  const discountValue = commerceNumber(
+    commerceValue(record, 'discount_value', 'discountValue'),
+    source,
+    'discount_value',
+    { min: 0.01 },
+  )
+  if (discountType === 'percentage' && discountValue > 100)
+    throw new TypeError(`${source}.discount_value must be at most 100 for percentage coupons.`)
 
-function text(input: unknown): string {
-  return input === null || input === undefined ? '' : String(input)
-}
-
-function number(input: unknown): number {
-  const result = Number(input)
-  return Number.isFinite(result) ? result : 0
-}
-
-function boolean(input: unknown): boolean {
-  return input === true || input === 1 || input === '1' || input === 'true'
-}
-
-function status(input: unknown): CouponStatus {
-  const result = text(input)
-  return result === 'Active' || result === 'Scheduled' ? result : 'Expired'
-}
-
-function discountType(input: unknown): CouponDiscountType {
-  return text(input) === 'percentage' ? 'percentage' : 'fixed_amount'
-}
-
-export function normalizeCouponRecord(record: any): CouponRecord {
   return {
-    id: text(value(record, 'id', 'uuid')),
-    code: text(value(record, 'code')),
-    description: text(value(record, 'description')),
-    status: status(value(record, 'status')),
-    isActive: boolean(value(record, 'is_active', 'isActive')),
-    discountType: discountType(value(record, 'discount_type', 'discountType')),
-    discountValue: Math.max(0, number(value(record, 'discount_value', 'discountValue'))),
-    minOrderAmount: Math.max(0, number(value(record, 'min_order_amount', 'minOrderAmount'))),
-    maxDiscountAmount: Math.max(0, number(value(record, 'max_discount_amount', 'maxDiscountAmount'))),
-    freeProductId: text(value(record, 'free_product_id', 'freeProductId')),
-    usageLimit: Math.max(0, number(value(record, 'usage_limit', 'usageLimit'))),
-    usageCount: Math.max(0, number(value(record, 'usage_count', 'usageCount'))),
-    startDate: text(value(record, 'start_date', 'startDate')),
-    endDate: text(value(record, 'end_date', 'endDate')),
-    createdAt: text(value(record, 'created_at', 'createdAt')),
+    id,
+    code: commerceRequiredString(commerceValue(record, 'code'), source, 'code'),
+    description: commerceOptionalString(commerceValue(record, 'description'), source, 'description'),
+    status: commerceEnum(commerceValue(record, 'status'), source, 'status', [
+      'Active',
+      'Scheduled',
+      'Expired',
+    ]),
+    isActive: commerceBoolean(
+      commerceValue(record, 'is_active', 'isActive'),
+      source,
+      'is_active',
+    ),
+    discountType,
+    discountValue,
+    minOrderAmount: commerceOptionalNumber(
+      commerceValue(record, 'min_order_amount', 'minOrderAmount'),
+      source,
+      'min_order_amount',
+      { min: 0 },
+    ),
+    maxDiscountAmount: commerceOptionalNumber(
+      commerceValue(record, 'max_discount_amount', 'maxDiscountAmount'),
+      source,
+      'max_discount_amount',
+      { min: 0 },
+    ),
+    freeProductId: commerceOptionalString(
+      commerceValue(record, 'free_product_id', 'freeProductId'),
+      source,
+      'free_product_id',
+    ),
+    productId,
+    usageLimit: commerceOptionalNumber(
+      commerceValue(record, 'usage_limit', 'usageLimit'),
+      source,
+      'usage_limit',
+      { min: 1, integer: true },
+    ),
+    usageCount: commerceNumber(
+      commerceValue(record, 'usage_count', 'usageCount'),
+      source,
+      'usage_count',
+      { min: 0, integer: true },
+    ),
+    startDate: commerceOptionalDate(
+      commerceValue(record, 'start_date', 'startDate'),
+      source,
+      'start_date',
+    ),
+    endDate: commerceOptionalDate(
+      commerceValue(record, 'end_date', 'endDate'),
+      source,
+      'end_date',
+    ),
+    createdAt: commerceTimestamp(commerceValue(record, 'created_at', 'createdAt'), source),
   }
 }
 

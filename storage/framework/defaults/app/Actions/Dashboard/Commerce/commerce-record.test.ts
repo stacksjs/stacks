@@ -2,6 +2,7 @@ import { describe, expect, test } from 'bun:test'
 import {
   commerceBoolean,
   commerceCurrency,
+  commerceDate,
   commerceEmail,
   commerceEnum,
   commerceIdentifier,
@@ -9,6 +10,7 @@ import {
   commerceOptionalIdentifier,
   commerceOptionalEmail,
   commerceOptionalNumber,
+  commerceOptionalDate,
   commerceOptionalString,
   commerceOptionalTimestamp,
   commerceRequiredString,
@@ -29,6 +31,8 @@ describe('commerce model record validation', () => {
     expect(commerceBoolean('0', 'Product 7', 'is_available')).toBeFalse()
     expect(commerceEnum('active', 'TaxRate 1', 'status', ['active', 'inactive'])).toBe('active')
     expect(commerceCurrency(' usd ', 'Order 1')).toBe('USD')
+    expect(commerceDate('2026-07-29', 'Coupon 1', 'start_date')).toBe('2026-07-29')
+    expect(commerceOptionalDate(null, 'Coupon 1', 'end_date')).toBe('')
     expect(commerceEmail('customer@example.com', 'Customer 1')).toBe('customer@example.com')
     expect(commerceOptionalEmail(null, 'GiftCard 1', 'recipient_email')).toBe('')
     expect(commerceUrl('https://example.com/avatar.png', 'Customer 1', 'avatar')).toBe('https://example.com/avatar.png')
@@ -46,6 +50,7 @@ describe('commerce model record validation', () => {
     expect(() => commerceEnum('legacy', 'TaxRate 1', 'status', ['active', 'inactive']))
       .toThrow('active or inactive')
     expect(() => commerceCurrency('US', 'Order 1')).toThrow('three-letter currency code')
+    expect(() => commerceDate('2026-02-30', 'Coupon 1', 'start_date')).toThrow('valid YYYY-MM-DD date')
     expect(() => commerceEmail('not-an-email', 'Customer 1')).toThrow('valid email address')
     expect(() => commerceUrl('javascript:alert(1)', 'Customer 1', 'avatar')).toThrow('valid HTTP or HTTPS URL')
     expect(() => commerceTimestamp('not-a-date', 'Order 1')).toThrow('valid timestamp')

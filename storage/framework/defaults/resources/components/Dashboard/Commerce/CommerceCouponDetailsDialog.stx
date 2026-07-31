@@ -42,7 +42,8 @@ function deleteRecord(): void {
         <div><dt class="text-gray-400 text-xs dark:text-neutral-500">Usage</dt><dd class="mt-1 font-mono text-gray-900 text-sm dark:text-white">{{ record()?.usageCount || 0 }} / {{ record()?.usageLimit || 'No limit' }}</dd></div>
         <div><dt class="text-gray-400 text-xs dark:text-neutral-500">Minimum order</dt><dd class="mt-1 text-gray-900 text-sm dark:text-white">{{ record()?.minOrderAmount ? money(record()?.minOrderAmount || 0) : 'No minimum' }}</dd></div>
         <div><dt class="text-gray-400 text-xs dark:text-neutral-500">Maximum discount</dt><dd class="mt-1 text-gray-900 text-sm dark:text-white">{{ record()?.maxDiscountAmount ? money(record()?.maxDiscountAmount || 0) : 'No maximum' }}</dd></div>
-        <div><dt class="text-gray-400 text-xs dark:text-neutral-500">Free product ID</dt><dd class="mt-1 font-mono text-gray-900 text-sm dark:text-white">{{ record()?.freeProductId || 'Not configured' }}</dd></div>
+        <div><dt class="text-gray-400 text-xs dark:text-neutral-500">Product relation ID</dt><dd class="mt-1 font-mono text-gray-900 text-sm dark:text-white">{{ record()?.productId || 'Not linked' }}</dd></div>
+        <div><dt class="text-gray-400 text-xs dark:text-neutral-500">Free product reference</dt><dd class="mt-1 font-mono text-gray-900 text-sm dark:text-white">{{ record()?.freeProductId || 'Not configured' }}</dd></div>
         <div><dt class="text-gray-400 text-xs dark:text-neutral-500">Start date</dt><dd class="mt-1 text-gray-900 text-sm dark:text-white">{{ record()?.startDate || 'Not recorded' }}</dd></div>
         <div><dt class="text-gray-400 text-xs dark:text-neutral-500">End date</dt><dd class="mt-1 text-gray-900 text-sm dark:text-white">{{ record()?.endDate || 'Not recorded' }}</dd></div>
       </dl>

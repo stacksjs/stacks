@@ -1,6 +1,8 @@
 import { Action } from '@stacksjs/actions'
-import { Coupon } from '@stacksjs/orm'
+import { Coupon, Product } from '@stacksjs/orm'
+import { response } from '@stacksjs/router'
 import { normalizeCouponRecord, summarizeCoupons } from './coupon-records'
+import { commerceIdentifier, commerceValue } from './commerce-record'
 
 export default new Action({
   name: 'CommerceCouponsAction',
@@ -9,11 +11,24 @@ export default new Action({
   apiResponse: true,
 
   async handle() {
-    const coupons = await Coupon.orderByDesc('id').limit(500).get()
-    const records = coupons.map(normalizeCouponRecord)
-    return {
-      records,
-      summary: summarizeCoupons(records),
+    try {
+      const [coupons, products] = await Promise.all([
+        Coupon.orderByDesc('id').limit(500).get(),
+        Product.orderBy('id', 'asc').limit(500).get(),
+      ])
+      const productIds = new Set(products.map(product =>
+        commerceIdentifier(commerceValue(product, 'id', 'uuid'), 'Product'),
+      ))
+      const records = coupons.map(coupon => normalizeCouponRecord(coupon, productIds))
+      return {
+        records,
+        summary: summarizeCoupons(records),
+      }
+    }
+    catch (error) {
+      return response.json({
+        message: error instanceof Error ? error.message : 'Coupon records could not be read.',
+      }, 503)
     }
   },
 })

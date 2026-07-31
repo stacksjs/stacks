@@ -56,10 +56,11 @@ export default defineModel({
     },
 
     status: {
+      default: 'Active',
       order: 3,
       fillable: true,
       validation: {
-        rule: schema.enum(['Active', 'Scheduled', 'Expired']),
+        rule: schema.enum(['Active', 'Scheduled', 'Expired']).required(),
         message: {
           required: 'Status is required',
         },
@@ -148,6 +149,7 @@ export default defineModel({
     },
 
     usageCount: {
+      default: 0,
       order: 11,
       fillable: true,
       validation: {

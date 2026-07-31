@@ -106,7 +106,7 @@ function exportHref(): string {
     record.discountType,
     String(record.discountValue),
     String(record.usageCount),
-    String(record.usageLimit),
+    record.usageLimit === null ? '' : String(record.usageLimit),
     record.startDate,
     record.endDate,
   ])
