@@ -584,19 +584,6 @@ route.group({ prefix: '/queue', middleware: 'auth' }, () => {
 })
 
 // ============================================================================
-// Inbox — captured transactional emails (log driver)
-//
-// Auth-gated: the rendered email body can include reset links, billing
-// receipts, and PII. Treat as sensitive even though the log driver is
-// "dev-only" — staging environments are still real.
-// ============================================================================
-
-route.group({ prefix: '/inbox', middleware: 'auth' }, () => {
-  route.get('/', 'Actions/Dashboard/Inbox/InboxIndexAction')
-  route.get('/{id}', 'Actions/Dashboard/Inbox/InboxShowAction')
-})
-
-// ============================================================================
 // Releases
 // ============================================================================
 

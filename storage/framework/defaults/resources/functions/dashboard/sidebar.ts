@@ -295,6 +295,7 @@ export function buildNavSections(
     { to: '/notifications/dashboard', icon: 'bell', text: 'Notifications' },
     { to: '/inbox', icon: 'mail', text: 'Inbox' },
     { to: '/inbox/activity', icon: 'activity', text: 'Mail Activity' },
+    { to: '/inbox/captured', icon: 'mail-send-02', text: 'Captured Mail' },
     { to: '/inbox/settings', icon: 'settings', text: 'Mail Settings' },
     ...categoryNavItems(discoveredModels, 'system', new Set()),
   ]])

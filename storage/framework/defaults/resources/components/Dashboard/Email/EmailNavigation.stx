@@ -15,6 +15,9 @@ function linkClass(name: string): string {
   <StxLink to="/inbox/activity" :class="'px-3 py-1.5 font-medium text-sm rounded-md transition-colors ' + linkClass('activity')">
     Activity
   </StxLink>
+  <StxLink to="/inbox/captured" :class="'px-3 py-1.5 font-medium text-sm rounded-md transition-colors ' + linkClass('captured')">
+    Captured
+  </StxLink>
   <StxLink to="/inbox/settings" :class="'px-3 py-1.5 font-medium text-sm rounded-md transition-colors ' + linkClass('settings')">
     Settings
   </StxLink>

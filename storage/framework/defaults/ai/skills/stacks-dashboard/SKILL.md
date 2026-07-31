@@ -70,6 +70,18 @@ dashboard data Actions.
 - `/models`, `/models/{model}` - generic model registry and explorer
 - `/notifications/dashboard`, `/notifications/history` - notification operations
 
+### Mail
+- `/inbox` - inbound messages from the configured mailbox provider
+- `/inbox/activity` - inbound and outbound delivery activity
+- `/inbox/captured` - outbound messages captured by the local log mail driver
+- `/inbox/settings` - mailbox display and behavior preferences
+
+Captured mail uses `GET /api/dashboard/email/captured` and
+`GET /api/dashboard/email/captured/{id}`. Read captures through the shared
+parser in `Actions/Dashboard/Email/captured-mail.ts`; do not scrape files in an
+STX component or duplicate the log-driver format. Render captured HTML only in
+a sandboxed iframe with `srcdoc`. Never inject it into the dashboard document.
+
 ### Marketing
 - `/marketing/campaigns` - campaign management
 - `/marketing/lists` - email list management

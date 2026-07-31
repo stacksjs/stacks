@@ -1,8 +1,7 @@
 /**
  * Inbox Composable
  *
- * Reads captured transactional emails from the framework's mail log driver
- * (in-memory + storage/logs/mail/*.html) for the dashboard inbox view.
+ * Reads inbound mailbox messages and exposes inbox actions for the dashboard.
  */
 
 import { ref } from '@stacksjs/stx'

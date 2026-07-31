@@ -1,0 +1,77 @@
+<script client>
+import type { CapturedMailSummary } from '../../../../functions/captured-mail'
+
+const messages = useReactiveProp<CapturedMailSummary[]>('messages', [])
+const selectedId = useReactiveProp('selectedId', '')
+const loading = useReactiveProp('loading', false)
+const error = useReactiveProp('error', '')
+const emit = defineEmits()
+
+function rows(): CapturedMailSummary[] {
+  return messages()
+}
+
+function formatDate(value: string): string {
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime()))
+    return 'Not recorded'
+  const today = new Date()
+  return date.toDateString() === today.toDateString()
+    ? date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    : date.toLocaleDateString([], { month: 'short', day: 'numeric' })
+}
+
+function rowClass(id: string): string {
+  const base = 'w-full px-4 py-3 text-left transition-colors hover:bg-gray-50 dark:hover:bg-neutral-600'
+  return selectedId() === id
+    ? `${base} bg-blue-50 dark:bg-blue-950/30`
+    : `${base} bg-white dark:bg-neutral-700`
+}
+</script>
+
+<section aria-label="Captured message list" class="flex flex-col w-full md:w-2/5 border-gray-200 border-r dark:border-neutral-600">
+  <div class="flex items-center justify-between px-4 py-3 bg-gray-50 dark:bg-neutral-800 border-b border-gray-200 dark:border-neutral-600">
+    <div>
+      <h2 class="font-semibold text-gray-900 text-sm dark:text-white">Outbound captures</h2>
+      <p class="mt-0.5 text-gray-500 text-xs dark:text-neutral-400">{{ rows().length }} recorded</p>
+    </div>
+    <span class="h-5 w-5 text-gray-400 i-hugeicons-mail-send-02"></span>
+  </div>
+
+  <div class="overflow-y-auto flex-1">
+    <div :if="loading()" aria-live="polite" class="flex gap-2 items-center justify-center p-8 text-gray-500 text-sm dark:text-neutral-400">
+      <span class="h-4 w-4 animate-spin i-hugeicons-loading-03"></span>
+      Loading captured mail
+    </div>
+    <div :if="error() && !loading()" role="alert" class="p-8 text-center text-red-600 text-sm dark:text-red-300">{{ error() }}</div>
+    <div :if="!loading() && !error() && rows().length === 0" aria-live="polite" class="p-8 text-center">
+      <span class="block mb-3 mx-auto h-9 w-9 text-gray-400 i-hugeicons-mail-send-02"></span>
+      <p class="font-semibold text-gray-900 dark:text-white">No captured mail</p>
+      <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Messages sent through the log driver will appear here.</p>
+    </div>
+    <ul :if="!loading() && !error() && rows().length > 0" class="divide-gray-200 divide-y dark:divide-neutral-600">
+      <template :for="message in rows()">
+        <li>
+          <button
+            type="button"
+            :class="rowClass(message.id)"
+            :aria-current="selectedId() === message.id ? 'true' : undefined"
+            @click="emit('select', message)"
+          >
+            <div class="flex gap-3 items-start justify-between">
+              <div class="min-w-0">
+                <div class="flex gap-2 items-center">
+                  <span :class="'flex-shrink-0 h-2 w-2 rounded-full ' + (message.source === 'memory' ? 'bg-green-500' : 'bg-blue-500')"></span>
+                  <p class="font-medium text-gray-900 text-sm truncate dark:text-white">{{ message.subject }}</p>
+                </div>
+                <p class="mt-1 text-gray-600 text-xs truncate dark:text-neutral-300">To {{ message.to }}</p>
+                <p class="mt-1 text-gray-500 text-xs truncate dark:text-neutral-400">{{ message.preview || 'No preview available' }}</p>
+              </div>
+              <time class="flex-shrink-0 text-gray-500 text-xs dark:text-neutral-400" :datetime="message.sentAt">{{ formatDate(message.sentAt) }}</time>
+            </div>
+          </button>
+        </li>
+      </template>
+    </ul>
+  </div>
+</section>

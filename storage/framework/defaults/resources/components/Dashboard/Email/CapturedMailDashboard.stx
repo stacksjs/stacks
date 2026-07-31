@@ -1,0 +1,117 @@
+<script client>
+import type { CapturedMailMessage, CapturedMailSummary } from '../../../../functions/captured-mail'
+import { fetchCapturedMail, fetchCapturedMailMessage } from '../../../../functions/captured-mail'
+import { pushToast } from '../../../../functions/toasts'
+
+const messages = state<CapturedMailSummary[]>([])
+const selectedId = state('')
+const selectedMessage = state<CapturedMailMessage | null>(null)
+const activeDriver = state('')
+const loading = state(true)
+const detailLoading = state(false)
+const error = state('')
+const detailError = state('')
+let selectionVersion = 0
+
+function eventValue<T>(value: T | CustomEvent<T>): T {
+  return value instanceof CustomEvent ? value.detail : value
+}
+
+async function selectMessage(value: CapturedMailSummary | CustomEvent<CapturedMailSummary>): Promise<void> {
+  const summary = eventValue(value)
+  const version = ++selectionVersion
+  selectedId.set(summary.id)
+  selectedMessage.set(null)
+  detailError.set('')
+  detailLoading.set(true)
+
+  try {
+    const message = await fetchCapturedMailMessage(summary.id)
+    if (version === selectionVersion)
+      selectedMessage.set(message)
+  }
+  catch (cause) {
+    if (version !== selectionVersion)
+      return
+    const message = cause instanceof Error ? cause.message : 'Captured message could not be loaded.'
+    detailError.set(message)
+    pushToast('error', 'Could not load captured mail', { detail: message })
+  }
+  finally {
+    if (version === selectionVersion)
+      detailLoading.set(false)
+  }
+}
+
+async function loadCapturedMail(): Promise<void> {
+  loading.set(true)
+  error.set('')
+  try {
+    const result = await fetchCapturedMail()
+    messages.set(result.messages)
+    activeDriver.set(result.activeDriver)
+
+    const current = result.messages.find(message => message.id === selectedId())
+    const next = current || result.messages[0]
+    if (next)
+      await selectMessage(next)
+    else {
+      selectionVersion++
+      selectedId.set('')
+      selectedMessage.set(null)
+      detailError.set('')
+      detailLoading.set(false)
+    }
+  }
+  catch (cause) {
+    const message = cause instanceof Error ? cause.message : 'Captured mail could not be loaded.'
+    error.set(message)
+    messages.set([])
+    selectedId.set('')
+    selectedMessage.set(null)
+    pushToast('error', 'Could not load captured mail', { detail: message })
+  }
+  finally {
+    loading.set(false)
+  }
+}
+
+onMount(() => {
+  void loadCapturedMail()
+})
+</script>
+
+<div class="overflow-hidden min-h-[calc(100vh-3rem)] bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
+  <header class="px-4 py-3 bg-white dark:bg-neutral-700 border-b border-gray-200 dark:border-neutral-600">
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div>
+        <div class="flex gap-4 items-center">
+          <h1 class="font-bold text-gray-900 text-xl dark:text-white">Captured Mail</h1>
+          <EmailNavigation active="captured" />
+        </div>
+        <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">
+          Outbound messages recorded by the local log driver. Active mailer: {{ activeDriver() || 'log' }}.
+        </p>
+      </div>
+      <Button variant="secondary" :loading="loading()" @click="loadCapturedMail">
+        <span :if="!loading()" class="h-4 w-4 i-hugeicons-refresh"></span>
+        Refresh
+      </Button>
+    </div>
+  </header>
+
+  <div class="flex min-h-[calc(100vh-10rem)]">
+    <CapturedMailList
+      :messages="messages"
+      :selectedId="selectedId"
+      :loading="loading"
+      :error="error"
+      @select="selectMessage"
+    />
+    <CapturedMailDetail
+      :message="selectedMessage"
+      :loading="detailLoading"
+      :error="detailError"
+    />
+  </div>
+</div>

@@ -66,6 +66,8 @@ route.group({ prefix: '/api/dashboard', apiResponse: true }, () => {
   guard(route.put('/environment', 'Actions/Dashboard/Infrastructure/EnvironmentUpdateAction'))
   guard(route.get('/mail-settings', 'Actions/Dashboard/Settings/MailSettingsGetAction'))
   guard(route.put('/mail-settings', 'Actions/Dashboard/Settings/MailSettingsUpdateAction'))
+  guard(route.get('/email/captured', 'Actions/Dashboard/Email/CapturedMailIndexAction'))
+  guard(route.get('/email/captured/{id}', 'Actions/Dashboard/Email/CapturedMailShowAction'))
   authenticatedGuard(route.get('/billing', 'Actions/Dashboard/Settings/BillingShowAction'))
 
   guard(route.get('/analytics/web', 'Actions/Dashboard/Analytics/WebAnalyticsAction'))
