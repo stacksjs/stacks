@@ -3,6 +3,7 @@ import { config } from '@stacksjs/config'
 import { Category, Customer, Manufacturer, Product, TaxRate } from '@stacksjs/orm'
 import { response } from '@stacksjs/router'
 import {
+  isCommercePosCustomerActive,
   normalizeCommercePosCustomer,
   normalizeCommercePosProduct,
   selectCommercePosTaxRate,
@@ -49,7 +50,7 @@ export default new Action({
         products: records,
         categories: categoryOptions.filter(category => usedCategoryIds.has(category.id)),
         customers: customers
-          .filter(customer => String(customer.get('status') || '').toLowerCase() === 'active')
+          .filter(isCommercePosCustomerActive)
           .map(normalizeCommercePosCustomer),
         taxRate: selectCommercePosTaxRate(taxRates),
         defaultCurrency: normalizeCommerceCurrency((config as any).commerce?.currency),

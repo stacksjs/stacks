@@ -44,12 +44,80 @@ export interface CommercePosLineInputResult {
   error: string
 }
 
+export class CommercePosAvailabilityError extends Error {
+  constructor(message: string) {
+    super(message)
+    this.name = 'CommercePosAvailabilityError'
+  }
+}
+
 function money(value: number): number {
   return Math.round((value + Number.EPSILON) * 100) / 100
 }
 
+function value(record: any, ...keys: string[]): unknown {
+  for (const key of keys) {
+    const result = typeof record?.get === 'function' ? record.get(key) : record?.[key]
+    if (result !== null && result !== undefined)
+      return result
+  }
+  return undefined
+}
+
+function recordError(source: string, field: string, expectation: string): TypeError {
+  return new TypeError(`${source}.${field} must be ${expectation}.`)
+}
+
+function identifier(input: unknown, source: string, field = 'id'): string {
+  if (typeof input === 'string' && input.trim())
+    return input.trim()
+  if (typeof input === 'number' && Number.isSafeInteger(input) && input > 0)
+    return String(input)
+  throw recordError(source, field, 'a positive integer or non-empty string')
+}
+
+function requiredText(input: unknown, source: string, field: string): string {
+  if (typeof input !== 'string' || !input.trim())
+    throw recordError(source, field, 'a non-empty string')
+  return input.trim()
+}
+
+function storedNumber(
+  input: unknown,
+  source: string,
+  field: string,
+  options: { min?: number, max?: number } = {},
+): number {
+  const result = typeof input === 'number'
+    ? input
+    : typeof input === 'string' && /^[+-]?(?:\d+\.?\d*|\.\d+)(?:e[+-]?\d+)?$/i.test(input.trim())
+      ? Number(input)
+      : Number.NaN
+  if (!Number.isFinite(result))
+    throw recordError(source, field, 'a finite number')
+  if (options.min !== undefined && result < options.min)
+    throw recordError(source, field, `at least ${options.min}`)
+  if (options.max !== undefined && result > options.max)
+    throw recordError(source, field, `at most ${options.max}`)
+  return result
+}
+
+function storedBoolean(input: unknown, source: string, field: string): boolean {
+  if (input === true || input === 1 || input === '1' || input === 'true')
+    return true
+  if (input === false || input === 0 || input === '0' || input === 'false')
+    return false
+  throw recordError(source, field, 'a boolean')
+}
+
 export function deriveCommercePosTaxRate(subtotal: number, taxAmount: number): number {
-  if (!Number.isFinite(subtotal) || !Number.isFinite(taxAmount) || subtotal <= 0 || taxAmount < 0)
+  if (!Number.isFinite(subtotal) || subtotal < 0)
+    throw new TypeError('Receipt subtotal must be a non-negative finite number.')
+  if (!Number.isFinite(taxAmount) || taxAmount < 0)
+    throw new TypeError('Receipt tax amount must be a non-negative finite number.')
+  if (subtotal === 0 && taxAmount > 0)
+    throw new TypeError('A zero-subtotal receipt cannot contain tax.')
+  if (subtotal === 0)
     return 0
   return Math.round((taxAmount / subtotal * 100 + Number.EPSILON) * 10000) / 10000
 }
@@ -70,14 +138,23 @@ export function normalizeCommercePosProduct(record: CommerceProductRecord): Comm
 }
 
 export function normalizeCommercePosCustomer(record: any): CommercePosCustomer {
-  const id = String(record?.get?.('id') ?? record?.id ?? '')
-  const name = String(record?.get?.('name') ?? record?.name ?? '').trim()
-  const email = String(record?.get?.('email') ?? record?.email ?? '').trim()
+  const id = identifier(value(record, 'id'), 'Customer')
+  const source = `Customer ${id}`
+  const name = requiredText(value(record, 'name'), source, 'name')
+  const email = requiredText(value(record, 'email'), source, 'email')
   return {
     id,
-    label: name || email || `Customer ${id}`,
+    label: name,
     email,
   }
+}
+
+export function isCommercePosCustomerActive(record: any): boolean {
+  const id = identifier(value(record, 'id'), 'Customer')
+  const status = requiredText(value(record, 'status'), `Customer ${id}`, 'status')
+  if (status !== 'Active' && status !== 'Inactive')
+    throw recordError(`Customer ${id}`, 'status', 'Active or Inactive')
+  return status === 'Active'
 }
 
 export function parseCommercePosLines(input: unknown): CommercePosLineInputResult {
@@ -88,10 +165,18 @@ export function parseCommercePosLines(input: unknown): CommercePosLineInputResul
 
   const merged = new Map<number, CommercePosCheckoutLine>()
   for (const raw of input) {
+    if (!raw || typeof raw !== 'object' || Array.isArray(raw))
+      return { lines: [], error: 'Every sale line must be an object.' }
     const item = raw as Record<string, unknown>
-    const productId = Number(item?.productId)
-    const quantity = Number(item?.quantity)
-    const specialInstructions = String(item?.specialInstructions || '').trim()
+    const productId = typeof item.productId === 'number' ? item.productId : Number.NaN
+    const quantity = typeof item.quantity === 'number' ? item.quantity : Number.NaN
+    const specialInstructions = item.specialInstructions === undefined || item.specialInstructions === null
+      ? ''
+      : typeof item.specialInstructions === 'string'
+        ? item.specialInstructions.trim()
+        : ''
+    if (item.specialInstructions !== undefined && item.specialInstructions !== null && typeof item.specialInstructions !== 'string')
+      return { lines: [], error: 'Line instructions must be text.' }
     if (!Number.isInteger(productId) || productId <= 0)
       return { lines: [], error: 'Every sale line must reference a valid product.' }
     if (!Number.isInteger(quantity) || quantity <= 0 || quantity > 999)
@@ -117,13 +202,24 @@ export function calculateCommercePosSale(
   checkoutLines: CommercePosCheckoutLine[],
   taxRate: number,
 ): CommercePosSale {
-  const productMap = new Map(products.map(product => [Number(product.id), product]))
+  const productMap = new Map(products.map((product) => {
+    const id = Number(product.id)
+    if (!Number.isSafeInteger(id) || id <= 0)
+      throw new TypeError(`Product id "${product.id}" is invalid.`)
+    if (!Number.isFinite(product.price) || product.price < 0)
+      throw new TypeError(`Product ${id} has an invalid price.`)
+    if (!Number.isSafeInteger(product.inventoryCount) || product.inventoryCount < 0)
+      throw new TypeError(`Product ${id} has an invalid inventory count.`)
+    return [id, product] as const
+  }))
   const lines = checkoutLines.map((line) => {
     const product = productMap.get(line.productId)
     if (!product)
-      throw new Error(`Product ${line.productId} is no longer available.`)
+      throw new CommercePosAvailabilityError(`Product ${line.productId} is no longer available.`)
     if (!product.isAvailable)
-      throw new Error(`${product.name || 'This product'} is not available for sale.`)
+      throw new CommercePosAvailabilityError(`${product.name} is not available for sale.`)
+    if (line.quantity > product.inventoryCount)
+      throw new CommercePosAvailabilityError(`${product.name} has only ${product.inventoryCount} available.`)
     const lineTotal = money(product.price * line.quantity)
     return {
       ...line,
@@ -133,26 +229,32 @@ export function calculateCommercePosSale(
     }
   })
   const subtotal = money(lines.reduce((sum, line) => sum + line.lineTotal, 0))
-  const normalizedTaxRate = Number.isFinite(taxRate) && taxRate >= 0 ? taxRate : 0
-  const taxAmount = money(subtotal * normalizedTaxRate / 100)
+  if (!Number.isFinite(taxRate) || taxRate < 0 || taxRate > 100)
+    throw new TypeError('Tax rate must be between 0 and 100.')
+  const taxAmount = money(subtotal * taxRate / 100)
   return {
     lines,
     subtotal,
-    taxRate: normalizedTaxRate,
+    taxRate,
     taxAmount,
     totalAmount: money(subtotal + taxAmount),
   }
 }
 
 export function selectCommercePosTaxRate(records: any[]): number {
-  const active = records.filter((record) => {
-    const status = String(record?.get?.('status') ?? record?.status ?? '').toLowerCase()
-    return status === 'active'
+  const normalized = records.map((record) => {
+    const id = identifier(value(record, 'id'), 'TaxRate')
+    const source = `TaxRate ${id}`
+    const status = requiredText(value(record, 'status'), source, 'status')
+    if (status !== 'active' && status !== 'inactive')
+      throw recordError(source, 'status', 'active or inactive')
+    return {
+      status,
+      isDefault: storedBoolean(value(record, 'is_default', 'isDefault'), source, 'is_default'),
+      rate: storedNumber(value(record, 'rate'), source, 'rate', { min: 0, max: 100 }),
+    }
   })
-  const preferred = active.find((record) => {
-    const value = record?.get?.('is_default') ?? record?.get?.('isDefault') ?? record?.is_default ?? record?.isDefault
-    return value === true || value === 1 || value === '1' || value === 'true'
-  }) || active[0]
-  const rate = Number(preferred?.get?.('rate') ?? preferred?.rate ?? 0)
-  return Number.isFinite(rate) && rate >= 0 ? rate : 0
+  const active = normalized.filter(record => record.status === 'active')
+  const preferred = active.find(record => record.isDefault) || active[0]
+  return preferred?.rate ?? 0
 }

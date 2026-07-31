@@ -7,6 +7,7 @@ import { Category, Customer, Manufacturer, OrderItem, Payment, Product, TaxRate 
 import { response } from '@stacksjs/router'
 import {
   calculateCommercePosSale,
+  CommercePosAvailabilityError,
   deriveCommercePosTaxRate,
   normalizeCommercePosProduct,
   parseCommercePosLines,
@@ -28,42 +29,119 @@ function field(record: any, ...names: string[]): unknown {
   return undefined
 }
 
+function receiptError(source: string, fieldName: string, expectation: string): TypeError {
+  return new TypeError(`${source}.${fieldName} must be ${expectation}.`)
+}
+
+function receiptId(input: unknown, source: string, fieldName = 'id'): number {
+  const result = typeof input === 'number'
+    ? input
+    : typeof input === 'string' && /^\d+$/.test(input.trim())
+      ? Number(input)
+      : Number.NaN
+  if (!Number.isSafeInteger(result) || result <= 0)
+    throw receiptError(source, fieldName, 'a positive integer')
+  return result
+}
+
+function receiptNumber(
+  input: unknown,
+  source: string,
+  fieldName: string,
+  options: { min?: number, integer?: boolean } = {},
+): number {
+  const result = typeof input === 'number'
+    ? input
+    : typeof input === 'string' && /^[+-]?(?:\d+\.?\d*|\.\d+)(?:e[+-]?\d+)?$/i.test(input.trim())
+      ? Number(input)
+      : Number.NaN
+  if (!Number.isFinite(result))
+    throw receiptError(source, fieldName, 'a finite number')
+  if (options.integer && !Number.isInteger(result))
+    throw receiptError(source, fieldName, 'an integer')
+  if (options.min !== undefined && result < options.min)
+    throw receiptError(source, fieldName, `at least ${options.min}`)
+  return result
+}
+
+function receiptText(input: unknown, source: string, fieldName: string): string {
+  if (typeof input !== 'string' || !input.trim())
+    throw receiptError(source, fieldName, 'a non-empty string')
+  return input.trim()
+}
+
+function receiptOptionalText(input: unknown, source: string, fieldName: string): string {
+  if (input === undefined || input === null || input === '')
+    return ''
+  if (typeof input !== 'string')
+    throw receiptError(source, fieldName, 'a string or null')
+  return input.trim()
+}
+
+function receiptTimestamp(input: unknown, source: string, fieldName: string): string {
+  const raw = receiptText(input, source, fieldName)
+  const date = new Date(/^\d{4}-\d{2}-\d{2} \d/.test(raw) ? `${raw.replace(' ', 'T')}Z` : raw)
+  if (!Number.isFinite(date.getTime()))
+    throw receiptError(source, fieldName, 'a valid timestamp')
+  return date.toISOString()
+}
+
 async function existingReceipt(order: any) {
-  const orderId = Number(field(order, 'id') || 0)
-  const itemRows = orderId > 0 ? await OrderItem.where('order_id', orderId).get() : []
-  const productIds = itemRows.map(item => Number(field(item, 'product_id', 'productId') || 0)).filter(Boolean)
+  const orderId = receiptId(field(order, 'id'), 'Order')
+  const source = `Order ${orderId}`
+  const itemRows = await OrderItem.where('order_id', orderId).get()
+  const productIds = itemRows.map((item, index) =>
+    receiptId(field(item, 'product_id', 'productId'), `OrderItem ${index + 1}`, 'product_id'),
+  )
   const [products, payments] = await Promise.all([
     productIds.length > 0 ? Product.where('id', 'in', productIds).get() : [],
-    orderId > 0 ? Payment.where('order_id', orderId).get() : [],
+    Payment.where('order_id', orderId).get(),
   ])
-  const names = new Map(products.map(product => [
-    Number(field(product, 'id') || 0),
-    String(field(product, 'name') || 'Product'),
-  ]))
-  const taxAmount = Number(field(order, 'tax_amount', 'taxAmount') || 0)
-  const totalAmount = Number(field(order, 'total_amount', 'totalAmount') || 0)
-  const subtotal = Math.max(0, Math.round((totalAmount - taxAmount + Number.EPSILON) * 100) / 100)
+  const names = new Map(products.map((product) => {
+    const productId = receiptId(field(product, 'id'), 'Product')
+    return [productId, receiptText(field(product, 'name'), `Product ${productId}`, 'name')]
+  }))
+  const taxAmount = receiptNumber(field(order, 'tax_amount', 'taxAmount'), source, 'tax_amount', { min: 0 })
+  const totalAmount = receiptNumber(field(order, 'total_amount', 'totalAmount'), source, 'total_amount', { min: 0 })
+  const subtotal = Math.round((totalAmount - taxAmount + Number.EPSILON) * 100) / 100
+  if (subtotal < 0)
+    throw new TypeError(`${source}.tax_amount cannot exceed total_amount.`)
   const taxRate = deriveCommercePosTaxRate(subtotal, taxAmount)
+  const referenceNumber = receiptText(
+    field(payments[0], 'reference_number', 'referenceNumber'),
+    `Payment for ${source}`,
+    'reference_number',
+  )
   return {
     orderId,
-    referenceNumber: String(field(payments[0], 'reference_number', 'referenceNumber') || ''),
-    lines: itemRows.map(item => ({
-      productId: Number(field(item, 'product_id', 'productId') || 0),
-      name: names.get(Number(field(item, 'product_id', 'productId') || 0)) || 'Product',
-      quantity: Number(field(item, 'quantity') || 0),
-      unitPrice: Number(field(item, 'price') || 0),
-      lineTotal: Math.round((
-        Number(field(item, 'price') || 0) * Number(field(item, 'quantity') || 0)
-        + Number.EPSILON
-      ) * 100) / 100,
-      specialInstructions: String(field(item, 'special_instructions', 'specialInstructions') || ''),
-    })),
+    referenceNumber,
+    lines: itemRows.map((item, index) => {
+      const itemSource = `OrderItem ${index + 1}`
+      const productId = receiptId(field(item, 'product_id', 'productId'), itemSource, 'product_id')
+      const name = names.get(productId)
+      if (!name)
+        throw new TypeError(`${itemSource}.product_id references missing Product ${productId}.`)
+      const quantity = receiptNumber(field(item, 'quantity'), itemSource, 'quantity', { min: 1, integer: true })
+      const unitPrice = receiptNumber(field(item, 'price'), itemSource, 'price', { min: 0 })
+      return {
+        productId,
+        name,
+        quantity,
+        unitPrice,
+        lineTotal: Math.round((unitPrice * quantity + Number.EPSILON) * 100) / 100,
+        specialInstructions: receiptOptionalText(
+          field(item, 'special_instructions', 'specialInstructions'),
+          itemSource,
+          'special_instructions',
+        ),
+      }
+    }),
     subtotal,
     taxRate,
     taxAmount,
     totalAmount,
-    currency: String(field(order, 'currency') || 'USD'),
-    createdAt: String(field(order, 'created_at', 'createdAt') || ''),
+    currency: normalizeCommerceCurrency(field(order, 'currency')),
+    createdAt: receiptTimestamp(field(order, 'created_at', 'createdAt'), source, 'created_at'),
   }
 }
 
@@ -74,16 +152,24 @@ export default new Action({
   apiResponse: true,
 
   async handle(request: RequestInstance) {
-    const idempotencyKey = String(request.get('idempotencyKey') || '').trim()
+    const rawIdempotencyKey = request.get('idempotencyKey')
+    const idempotencyKey = typeof rawIdempotencyKey === 'string' ? rawIdempotencyKey.trim() : ''
     if (idempotencyKey.length < 8 || idempotencyKey.length > 255)
       return response.json({ message: 'A valid checkout idempotency key is required.' }, 422)
 
     const existing = await orders.findOrderByIdempotencyKey(idempotencyKey)
     if (existing) {
-      return {
-        ok: true,
-        idempotent: true,
-        receipt: await existingReceipt(existing),
+      try {
+        return {
+          ok: true,
+          idempotent: true,
+          receipt: await existingReceipt(existing),
+        }
+      }
+      catch (error) {
+        return response.json({
+          message: error instanceof Error ? error.message : 'Existing receipt records could not be read.',
+        }, 503)
       }
     }
 
@@ -91,22 +177,44 @@ export default new Action({
     if (parsed.error)
       return response.json({ message: parsed.error }, 422)
 
-    const orderType = String(request.get('orderType') || 'TAKEOUT').toUpperCase()
+    const rawOrderType = request.get('orderType')
+    const orderType = rawOrderType === undefined || rawOrderType === null || rawOrderType === ''
+      ? 'TAKEOUT'
+      : typeof rawOrderType === 'string'
+        ? rawOrderType.toUpperCase()
+        : ''
     if (!['DINE_IN', 'TAKEOUT'].includes(orderType))
       return response.json({ message: 'Order type must be dine in or takeout.' }, 422)
 
-    const paymentMethod = String(request.get('paymentMethod') || 'cash')
+    const rawPaymentMethod = request.get('paymentMethod')
+    const paymentMethod = rawPaymentMethod === undefined || rawPaymentMethod === null || rawPaymentMethod === ''
+      ? 'cash'
+      : typeof rawPaymentMethod === 'string'
+        ? rawPaymentMethod
+        : ''
     if (paymentMethod !== 'cash')
       return response.json({ message: 'Only recorded cash payments are available in this POS flow.' }, 422)
 
-    const customerId = Number(request.get('customerId') || 0)
+    const rawCustomerId = request.get('customerId')
+    const customerId = rawCustomerId === undefined || rawCustomerId === null || rawCustomerId === ''
+      ? 0
+      : typeof rawCustomerId === 'number'
+        ? rawCustomerId
+        : Number.NaN
     if (customerId && (!Number.isInteger(customerId) || customerId <= 0))
       return response.json({ message: 'Select a valid customer.' }, 422)
     const customer = customerId ? await Customer.find(customerId) : null
     if (customerId && !customer)
       return response.json({ message: 'The selected customer no longer exists.' }, 422)
 
-    const specialInstructions = String(request.get('specialInstructions') || '').trim()
+    const rawSpecialInstructions = request.get('specialInstructions')
+    const specialInstructions = rawSpecialInstructions === undefined || rawSpecialInstructions === null
+      ? ''
+      : typeof rawSpecialInstructions === 'string'
+        ? rawSpecialInstructions.trim()
+        : ''
+    if (rawSpecialInstructions !== undefined && rawSpecialInstructions !== null && typeof rawSpecialInstructions !== 'string')
+      return response.json({ message: 'Order instructions must be text.' }, 422)
     if (specialInstructions.length > 1000)
       return response.json({ message: 'Order instructions must be 1,000 characters or fewer.' }, 422)
 
@@ -139,12 +247,25 @@ export default new Action({
     if (products.length !== productIds.length)
       return response.json({ message: 'One or more products no longer exist.' }, 422)
 
-    let sale
+    let taxRate
     try {
-      sale = calculateCommercePosSale(products, parsed.lines, selectCommercePosTaxRate(taxRates))
+      taxRate = selectCommercePosTaxRate(taxRates)
     }
     catch (error) {
-      return response.json({ message: error instanceof Error ? error.message : String(error) }, 422)
+      return response.json({
+        message: error instanceof Error ? error.message : 'Tax rate records could not be read.',
+      }, 503)
+    }
+
+    let sale
+    try {
+      sale = calculateCommercePosSale(products, parsed.lines, taxRate)
+    }
+    catch (error) {
+      return response.json(
+        { message: error instanceof Error ? error.message : String(error) },
+        error instanceof CommercePosAvailabilityError ? 409 : 422,
+      )
     }
 
     const currency = normalizeCommerceCurrency((config as any).commerce?.currency)
@@ -200,11 +321,26 @@ export default new Action({
     }
 
     const order = result.order as any
+    let persistedOrderId: number
+    let persistedCreatedAt: string
+    try {
+      persistedOrderId = receiptId(field(order, 'id'), 'Order')
+      persistedCreatedAt = receiptTimestamp(
+        field(order, 'created_at', 'createdAt'),
+        `Order ${persistedOrderId}`,
+        'created_at',
+      )
+    }
+    catch (error) {
+      return response.json({
+        message: error instanceof Error ? error.message : 'Created order record could not be read.',
+      }, 503)
+    }
     return {
       ok: true,
       idempotent: false,
       receipt: {
-        orderId: Number(field(order, 'id') || 0),
+        orderId: persistedOrderId,
         referenceNumber,
         lines: sale.lines,
         subtotal: sale.subtotal,
@@ -212,7 +348,7 @@ export default new Action({
         taxAmount: sale.taxAmount,
         totalAmount: sale.totalAmount,
         currency,
-        createdAt: String(field(order, 'created_at', 'createdAt') || ''),
+        createdAt: persistedCreatedAt,
       },
     }
   },
