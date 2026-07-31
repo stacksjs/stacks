@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.230...v0.70.231)
+
+## ✨ Features
+
+- **socials**: add post deletion, history enumeration, and the missing drivers ([305708d](https://github.com/stacksjs/stacks/commit/305708d)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.229...v0.70.230)
 
 ## ✨ Features
