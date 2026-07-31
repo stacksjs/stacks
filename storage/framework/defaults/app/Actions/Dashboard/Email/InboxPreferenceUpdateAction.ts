@@ -6,6 +6,7 @@ import {
   defaultMailbox,
   type MailPreferenceInput,
   mailPreferenceAttributes,
+  normalizeStringList,
   serializeMailPreference,
 } from './mail-preference'
 
@@ -16,49 +17,111 @@ const REPLY_BEHAVIORS = new Set(['reply', 'replyAll'])
 const AUTO_ADVANCE_OPTIONS = new Set(['newer', 'older', 'back'])
 const SOUNDS = new Set(['default', 'subtle', 'none'])
 
-function stringInput(request: RequestInstance, key: string, fallback = ''): string {
-  const value = request.get(key)
-  return value === null || value === undefined ? fallback : String(value)
-}
-
-function booleanInput(request: RequestInstance, key: string, fallback: boolean): boolean {
+function stringInput(
+  request: RequestInstance,
+  key: string,
+  fields: Record<string, string>,
+  fallback = '',
+): string {
   const value = request.get(key)
   if (value === null || value === undefined)
     return fallback
-  if (typeof value === 'string')
-    return !['', '0', 'false', 'no', 'off'].includes(value.trim().toLowerCase())
-  return Boolean(value)
+  if (typeof value !== 'string') {
+    fields[key] = 'This field must be a string.'
+    return fallback
+  }
+  return value
 }
 
-function enumInput<T extends string>(request: RequestInstance, key: string, allowed: Set<string>, fallback: T): T {
-  const value = stringInput(request, key, fallback)
-  return (allowed.has(value) ? value : fallback) as T
+function booleanInput(
+  request: RequestInstance,
+  key: string,
+  fields: Record<string, string>,
+  fallback: boolean,
+): boolean {
+  const value = request.get(key)
+  if (value === null || value === undefined)
+    return fallback
+  if (typeof value !== 'boolean') {
+    fields[key] = 'This field must be a boolean.'
+    return fallback
+  }
+  return value
 }
 
-function inputFromRequest(request: RequestInstance, mailbox: string): MailPreferenceInput {
+function enumInput<T extends string>(
+  request: RequestInstance,
+  key: string,
+  allowed: Set<string>,
+  fields: Record<string, string>,
+  fallback: T,
+): T {
+  const value = stringInput(request, key, fields, fallback)
+  if (!allowed.has(value)) {
+    fields[key] = `Choose one of: ${[...allowed].join(', ')}.`
+    return fallback
+  }
+  return value as T
+}
+
+function inputFromRequest(
+  request: RequestInstance,
+  mailbox: string,
+): { fields: Record<string, string>, input: MailPreferenceInput } {
+  const fields: Record<string, string> = {}
+  const accountName = stringInput(request, 'accountName', fields, 'Stacks').trim()
+  const signature = stringInput(request, 'signature', fields)
+  const vacationSubject = stringInput(request, 'vacationSubject', fields)
+  const vacationMessage = stringInput(request, 'vacationMessage', fields)
+
+  if (!accountName)
+    fields.accountName = 'Account name is required.'
+  else if (accountName.length > 255)
+    fields.accountName = 'Account name must be 255 characters or fewer.'
+  if (signature.length > 20_000)
+    fields.signature = 'Signature must be 20,000 characters or fewer.'
+  if (vacationSubject.length > 255)
+    fields.vacationSubject = 'Vacation subject must be 255 characters or fewer.'
+  if (vacationMessage.length > 20_000)
+    fields.vacationMessage = 'Vacation message must be 20,000 characters or fewer.'
+
+  const listInput = (key: 'filters' | 'blockedSenders' | 'labels'): string => {
+    const value = stringInput(request, key, fields, '[]')
+    try {
+      return normalizeStringList(value, key)
+    }
+    catch (error) {
+      fields[key] = error instanceof Error ? error.message : `${key} is invalid.`
+      return '[]'
+    }
+  }
+
   return {
-    mailbox,
-    accountName: stringInput(request, 'accountName', 'Stacks').trim(),
-    signature: stringInput(request, 'signature'),
-    displayDensity: enumInput(request, 'displayDensity', DENSITIES, 'default'),
-    theme: enumInput(request, 'theme', THEMES, 'system'),
-    language: enumInput(request, 'language', LANGUAGES, 'en'),
-    defaultReplyBehavior: enumInput(request, 'defaultReplyBehavior', REPLY_BEHAVIORS, 'replyAll'),
-    sendAndArchive: booleanInput(request, 'sendAndArchive', true),
-    autoAdvance: enumInput(request, 'autoAdvance', AUTO_ADVANCE_OPTIONS, 'newer'),
-    desktopNotifications: booleanInput(request, 'desktopNotifications', true),
-    notificationSound: enumInput(request, 'notificationSound', SOUNDS, 'default'),
-    notificationPreview: booleanInput(request, 'notificationPreview', true),
-    filters: stringInput(request, 'filters', '[]'),
-    blockedSenders: stringInput(request, 'blockedSenders', '[]'),
-    labels: stringInput(request, 'labels', '[]'),
-    loadRemoteImages: booleanInput(request, 'loadRemoteImages', false),
-    showExternalContent: booleanInput(request, 'showExternalContent', false),
-    vacationEnabled: booleanInput(request, 'vacationEnabled', false),
-    vacationStartDate: stringInput(request, 'vacationStartDate'),
-    vacationEndDate: stringInput(request, 'vacationEndDate'),
-    vacationSubject: stringInput(request, 'vacationSubject'),
-    vacationMessage: stringInput(request, 'vacationMessage'),
+    fields,
+    input: {
+      mailbox,
+      accountName,
+      signature,
+      displayDensity: enumInput(request, 'displayDensity', DENSITIES, fields, 'default'),
+      theme: enumInput(request, 'theme', THEMES, fields, 'system'),
+      language: enumInput(request, 'language', LANGUAGES, fields, 'en'),
+      defaultReplyBehavior: enumInput(request, 'defaultReplyBehavior', REPLY_BEHAVIORS, fields, 'replyAll'),
+      sendAndArchive: booleanInput(request, 'sendAndArchive', fields, true),
+      autoAdvance: enumInput(request, 'autoAdvance', AUTO_ADVANCE_OPTIONS, fields, 'newer'),
+      desktopNotifications: booleanInput(request, 'desktopNotifications', fields, true),
+      notificationSound: enumInput(request, 'notificationSound', SOUNDS, fields, 'default'),
+      notificationPreview: booleanInput(request, 'notificationPreview', fields, true),
+      filters: listInput('filters'),
+      blockedSenders: listInput('blockedSenders'),
+      labels: listInput('labels'),
+      loadRemoteImages: booleanInput(request, 'loadRemoteImages', fields, false),
+      showExternalContent: booleanInput(request, 'showExternalContent', fields, false),
+      vacationEnabled: booleanInput(request, 'vacationEnabled', fields, false),
+      vacationStartDate: stringInput(request, 'vacationStartDate', fields),
+      vacationEndDate: stringInput(request, 'vacationEndDate', fields),
+      vacationSubject,
+      vacationMessage,
+    },
   }
 }
 
@@ -69,13 +132,18 @@ export default new Action({
   apiResponse: true,
 
   async handle(request: RequestInstance) {
-    const mailbox = String(request.get('mailbox') || defaultMailbox()).trim().toLowerCase()
-    if (!mailbox || !mailbox.includes('@'))
-      return response.json({ message: 'A valid mailbox is required.' }, 422)
+    const mailboxValue = request.get('mailbox')
+    const mailbox = (mailboxValue === null || mailboxValue === undefined
+      ? defaultMailbox()
+      : typeof mailboxValue === 'string' ? mailboxValue : '')
+      .trim()
+      .toLowerCase()
+    if (!/^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/.test(mailbox) || mailbox.length > 320)
+      return response.json({ message: 'The mail settings are invalid.', fields: { mailbox: 'Enter a valid mailbox.' } }, 422)
 
-    const input = inputFromRequest(request, mailbox)
-    if (!input.accountName)
-      return response.json({ message: 'Account name is required.' }, 422)
+    const { fields, input } = inputFromRequest(request, mailbox)
+    if (Object.keys(fields).length)
+      return response.json({ message: 'The mail settings are invalid.', fields }, 422)
 
     const record = await MailPreference.where('mailbox', '=', mailbox).first()
     const attributes = mailPreferenceAttributes(input)

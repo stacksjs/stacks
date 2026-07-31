@@ -40,22 +40,30 @@ export function defaultMailbox(): string {
   return `hello@${domain}`
 }
 
-export function normalizeStringList(value: string): string {
+export function normalizeStringList(value: string, field = 'list'): string {
+  if (typeof value !== 'string')
+    throw new TypeError(`${field} must be a JSON string array.`)
+
+  let parsed: unknown
   try {
-    const parsed = JSON.parse(value)
-    if (!Array.isArray(parsed))
-      return '[]'
-
-    const entries = parsed
-      .filter(item => typeof item === 'string')
-      .map(item => item.trim())
-      .filter(Boolean)
-
-    return JSON.stringify([...new Set(entries)].slice(0, 100))
+    parsed = JSON.parse(value)
   }
-  catch {
-    return '[]'
+  catch (error) {
+    throw new TypeError(`${field} must contain valid JSON.`, { cause: error })
   }
+
+  if (!Array.isArray(parsed))
+    throw new TypeError(`${field} must be a JSON array.`)
+  if (parsed.length > 100)
+    throw new RangeError(`${field} may contain at most 100 entries.`)
+  if (parsed.some(item => typeof item !== 'string'))
+    throw new TypeError(`${field} may contain only strings.`)
+
+  const entries = parsed
+    .map(item => item.trim())
+    .filter(Boolean)
+
+  return JSON.stringify([...new Set(entries)])
 }
 
 export function defaultMailPreference(mailbox = defaultMailbox()): MailPreferenceInput {
@@ -99,9 +107,9 @@ export function mailPreferenceAttributes(input: MailPreferenceInput): Record<str
     desktop_notifications: input.desktopNotifications,
     notification_sound: input.notificationSound,
     notification_preview: input.notificationPreview,
-    filters: normalizeStringList(input.filters),
-    blocked_senders: normalizeStringList(input.blockedSenders),
-    labels: normalizeStringList(input.labels),
+    filters: normalizeStringList(input.filters, 'filters'),
+    blocked_senders: normalizeStringList(input.blockedSenders, 'blockedSenders'),
+    labels: normalizeStringList(input.labels, 'labels'),
     load_remote_images: input.loadRemoteImages,
     show_external_content: input.showExternalContent,
     vacation_enabled: input.vacationEnabled,
@@ -117,40 +125,61 @@ export function serializeMailPreference(record: any, mailbox = defaultMailbox())
   if (!record)
     return { id: null, ...defaults }
 
-  const stringValue = (key: string, fallback: string): string => {
+  const requiredString = (key: string): string => {
     const value = record.get(key)
-    return value === null || value === undefined ? fallback : String(value)
+    if (typeof value !== 'string')
+      throw new TypeError(`MailPreference.${key} must be a string.`)
+    return value
   }
-  const booleanValue = (key: string, fallback: boolean): boolean => {
+  const optionalString = (key: string): string => {
     const value = record.get(key)
     if (value === null || value === undefined)
-      return fallback
-    return value !== false && value !== 0 && value !== '0' && value !== 'false'
+      return ''
+    if (typeof value !== 'string')
+      throw new TypeError(`MailPreference.${key} must be a string or null.`)
+    return value
   }
+  const enumValue = <T extends string>(key: string, allowed: readonly T[]): T => {
+    const value = requiredString(key)
+    if (!allowed.includes(value as T))
+      throw new TypeError(`MailPreference.${key} contains an unsupported value.`)
+    return value as T
+  }
+  const booleanValue = (key: string): boolean => {
+    const value = record.get(key)
+    if (value === true || value === 1 || value === '1' || value === 'true')
+      return true
+    if (value === false || value === 0 || value === '0' || value === 'false')
+      return false
+    throw new TypeError(`MailPreference.${key} must be a boolean.`)
+  }
+  const id = Number(record.get('id'))
+  if (!Number.isInteger(id) || id < 1)
+    throw new TypeError('MailPreference.id must be a positive integer.')
 
   return {
-    id: Number(record.get('id')) || null,
-    mailbox: stringValue('mailbox', defaults.mailbox),
-    accountName: stringValue('account_name', defaults.accountName),
-    signature: stringValue('signature', defaults.signature),
-    displayDensity: stringValue('display_density', defaults.displayDensity) as MailPreferenceInput['displayDensity'],
-    theme: stringValue('theme', defaults.theme) as MailPreferenceInput['theme'],
-    language: stringValue('language', defaults.language) as MailPreferenceInput['language'],
-    defaultReplyBehavior: stringValue('default_reply_behavior', defaults.defaultReplyBehavior) as MailPreferenceInput['defaultReplyBehavior'],
-    sendAndArchive: booleanValue('send_and_archive', defaults.sendAndArchive),
-    autoAdvance: stringValue('auto_advance', defaults.autoAdvance) as MailPreferenceInput['autoAdvance'],
-    desktopNotifications: booleanValue('desktop_notifications', defaults.desktopNotifications),
-    notificationSound: stringValue('notification_sound', defaults.notificationSound) as MailPreferenceInput['notificationSound'],
-    notificationPreview: booleanValue('notification_preview', defaults.notificationPreview),
-    filters: stringValue('filters', defaults.filters),
-    blockedSenders: stringValue('blocked_senders', defaults.blockedSenders),
-    labels: stringValue('labels', defaults.labels),
-    loadRemoteImages: booleanValue('load_remote_images', defaults.loadRemoteImages),
-    showExternalContent: booleanValue('show_external_content', defaults.showExternalContent),
-    vacationEnabled: booleanValue('vacation_enabled', defaults.vacationEnabled),
-    vacationStartDate: stringValue('vacation_start_date', defaults.vacationStartDate),
-    vacationEndDate: stringValue('vacation_end_date', defaults.vacationEndDate),
-    vacationSubject: stringValue('vacation_subject', defaults.vacationSubject),
-    vacationMessage: stringValue('vacation_message', defaults.vacationMessage),
+    id,
+    mailbox: requiredString('mailbox'),
+    accountName: requiredString('account_name'),
+    signature: optionalString('signature'),
+    displayDensity: enumValue('display_density', ['comfortable', 'default', 'compact']),
+    theme: enumValue('theme', ['light', 'dark', 'system']),
+    language: enumValue('language', ['en', 'fr', 'de', 'es', 'ja']),
+    defaultReplyBehavior: enumValue('default_reply_behavior', ['reply', 'replyAll']),
+    sendAndArchive: booleanValue('send_and_archive'),
+    autoAdvance: enumValue('auto_advance', ['newer', 'older', 'back']),
+    desktopNotifications: booleanValue('desktop_notifications'),
+    notificationSound: enumValue('notification_sound', ['default', 'subtle', 'none']),
+    notificationPreview: booleanValue('notification_preview'),
+    filters: normalizeStringList(requiredString('filters'), 'MailPreference.filters'),
+    blockedSenders: normalizeStringList(requiredString('blocked_senders'), 'MailPreference.blocked_senders'),
+    labels: normalizeStringList(requiredString('labels'), 'MailPreference.labels'),
+    loadRemoteImages: booleanValue('load_remote_images'),
+    showExternalContent: booleanValue('show_external_content'),
+    vacationEnabled: booleanValue('vacation_enabled'),
+    vacationStartDate: optionalString('vacation_start_date'),
+    vacationEndDate: optionalString('vacation_end_date'),
+    vacationSubject: optionalString('vacation_subject'),
+    vacationMessage: optionalString('vacation_message'),
   }
 }
