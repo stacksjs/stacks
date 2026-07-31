@@ -1,0 +1,332 @@
+<script server>
+// The navigation the toggles below control. Read from the same builder the
+// layout uses, so the list can never drift from what the sidebar renders —
+// including sections a project has switched off in config/dashboard.ts, which
+// simply are not here to toggle.
+import { buildWebSidebarSections } from '~/storage/framework/defaults/resources/functions/dashboard/sidebar'
+
+export const navSections = buildWebSidebarSections()
+  .filter(section => section.label && section.items.length > 0)
+  .map(section => ({
+    id: section.id,
+    label: section.label,
+    count: section.items.length,
+  }))
+</script>
+
+<script client>
+import {
+  COLOR_MODE_OPTIONS,
+  SIDEBAR_STYLE_OPTIONS,
+  useAppearance,
+} from '~/storage/framework/defaults/views/dashboard/composables/useAppearance'
+
+const appearance = useAppearance()
+
+// Every control writes straight through to the preference. There is no Save
+// button and no draft state: the shell restyles under the cursor, which is both
+// the confirmation and the preview. A settings page whose changes you cannot
+// see until you navigate away is the thing this is avoiding.
+const styleOptions = SIDEBAR_STYLE_OPTIONS
+const colorModes = COLOR_MODE_OPTIONS
+const sections = navSections
+
+const sidebarStyle = appearance.sidebarStyle
+const colorMode = appearance.colorMode
+const hiddenSections = appearance.hiddenSections
+
+const hiddenCount = derived(() => hiddenSections().length)
+
+function selectStyle(id) {
+  appearance.setSidebarStyle(id)
+}
+
+function selectColorMode(id) {
+  appearance.setColorMode(id)
+}
+
+function isVisible(id) {
+  return !hiddenSections().includes(id)
+}
+
+function toggleSection(id, event) {
+  appearance.toggleSection(id, event.target.checked)
+}
+
+function resetAll() {
+  appearance.reset()
+}
+
+// Selected state travels as a data attribute rather than as a swapped class
+// string. It began as a workaround — Crosswind could not see class names that
+// existed only inside a client-script expression, so those utilities were never
+// emitted and the control rendered unstyled — and that gap is now closed
+// upstream. It stays because it is the better shape regardless: one selector
+// per state in the block below, rather than two class strings kept in sync by
+// hand inside a ternary.
+const selected = (a, b) => String(a === b)
+</script>
+
+<style>
+.appearance-option {
+  border: 1px solid rgba(120, 113, 108, 0.25);
+  background: #fff;
+  transition: border-color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
+}
+.appearance-option:hover {
+  background: #fafaf9;
+}
+.appearance-option[data-selected="true"] {
+  border-color: #3b82f6;
+  background: rgba(239, 246, 255, 0.7);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
+}
+.appearance-option:focus-visible {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+.appearance-option .appearance-check {
+  color: rgba(168, 162, 158, 0.7);
+}
+.appearance-option[data-selected="true"] .appearance-check {
+  color: #2563eb;
+}
+
+.appearance-mode[data-selected="true"] {
+  border-color: #3b82f6;
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
+.dark .appearance-option {
+  border-color: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.03);
+}
+.dark .appearance-option:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+.dark .appearance-option[data-selected="true"] {
+  border-color: #60a5fa;
+  background: rgba(59, 130, 246, 0.12);
+}
+.dark .appearance-option[data-selected="true"] .appearance-check {
+  color: #93c5fd;
+}
+.dark .appearance-mode[data-selected="true"] {
+  border-color: #60a5fa;
+  background: rgba(59, 130, 246, 0.15);
+  color: #bfdbfe;
+}
+
+/*
+ * Shell miniatures.
+ *
+ * Each option is previewed by a small drawing of the shell it produces, built
+ * from elements rather than an image so it follows the palette and cannot go
+ * stale against the real thing. The two differ in exactly the ways the options
+ * describe: macOS runs its rows edge to edge with an accent selection and a
+ * flush content pane; Arc insets a rounded card on a tinted panel and lifts the
+ * selected row into a white card.
+ */
+.appearance-preview {
+  display: flex;
+  height: 6rem;
+  width: 100%;
+  overflow: hidden;
+  border-radius: 0.5rem;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.06);
+}
+.appearance-preview-nav {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  gap: 5px;
+  padding-top: 8px;
+  width: 34%;
+}
+.appearance-preview-row {
+  height: 7px;
+  background: rgba(0, 0, 0, 0.1);
+}
+.appearance-preview-row.is-short {
+  width: 60%;
+}
+.appearance-preview-main {
+  flex: 1;
+}
+
+.appearance-preview[data-style="macos"] {
+  background: #f2f2f4;
+}
+.appearance-preview[data-style="macos"] .appearance-preview-row.is-active {
+  background: #007aff;
+}
+.appearance-preview[data-style="macos"] .appearance-preview-main {
+  background: #f4f4f5;
+}
+
+.appearance-preview[data-style="arc"] {
+  background: #f7f5f1;
+  padding: 6px;
+  gap: 6px;
+}
+.appearance-preview[data-style="arc"] .appearance-preview-nav {
+  padding-top: 2px;
+}
+.appearance-preview[data-style="arc"] .appearance-preview-row {
+  margin-right: 6px;
+  border-radius: 3px;
+}
+.appearance-preview[data-style="arc"] .appearance-preview-row.is-active {
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
+}
+.appearance-preview[data-style="arc"] .appearance-preview-main {
+  background: #fff;
+  border-radius: 6px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+}
+
+.dark .appearance-preview {
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+}
+.dark .appearance-preview-row {
+  background: rgba(255, 255, 255, 0.15);
+}
+.dark .appearance-preview[data-style="macos"] {
+  background: #1c1c1e;
+}
+.dark .appearance-preview[data-style="macos"] .appearance-preview-main {
+  background: #0a0a0a;
+}
+.dark .appearance-preview[data-style="arc"] {
+  background: #171717;
+}
+.dark .appearance-preview[data-style="arc"] .appearance-preview-row.is-active {
+  background: rgba(255, 255, 255, 0.18);
+}
+.dark .appearance-preview[data-style="arc"] .appearance-preview-main {
+  background: #0a0a0a;
+}
+</style>
+
+<template>
+<div class="mx-auto pb-12 pt-6 px-6 space-y-6 max-w-4xl">
+  <PageHeader
+    title="Appearance"
+    description="How the dashboard looks for you. These preferences are stored in this browser and apply to every page."
+    backLink="/settings"
+    backLabel="Settings"
+  />
+
+  <!-- ===================== Sidebar style ===================== -->
+  <Card variant="default" padding="none">
+    <div class="px-6 py-5 border-b border-neutral-200/60 dark:border-white/5">
+      <h2 class="font-semibold text-lg text-neutral-900 dark:text-white">Sidebar style</h2>
+      <p class="mt-1 text-neutral-500 text-sm dark:text-neutral-400">
+        Changes the navigation pane and the shape of every page around it.
+      </p>
+    </div>
+
+    <div class="grid gap-4 sm:grid-cols-2 p-6">
+      <template :for="option in styleOptions">
+        <button
+          type="button"
+          class="flex flex-col gap-3 p-4 w-full text-left rounded-xl appearance-option"
+          :data-selected="selected(sidebarStyle(), option.id)"
+          :aria-pressed="String(selected(sidebarStyle(), option.id))"
+          @click="selectStyle(option.id)"
+        >
+          <span class="appearance-preview" :data-style="option.id" aria-hidden="true">
+            <span class="appearance-preview-nav">
+              <span class="appearance-preview-row is-active"></span>
+              <span class="appearance-preview-row"></span>
+              <span class="appearance-preview-row"></span>
+              <span class="appearance-preview-row is-short"></span>
+            </span>
+            <span class="appearance-preview-main"></span>
+          </span>
+
+          <span class="flex gap-2 items-center">
+            <span
+              class="flex-none h-4 w-4 appearance-check i-hugeicons-checkmark-circle-02"
+              aria-hidden="true"
+            ></span>
+            <span class="font-medium text-neutral-900 text-sm dark:text-white">{{ option.label }}</span>
+          </span>
+          <span class="leading-relaxed text-neutral-500 text-xs dark:text-neutral-400">{{ option.description }}</span>
+        </button>
+      </template>
+    </div>
+  </Card>
+
+  <!-- ===================== Color mode ===================== -->
+  <Card variant="default" padding="none">
+    <div class="px-6 py-5 border-b border-neutral-200/60 dark:border-white/5">
+      <h2 class="font-semibold text-lg text-neutral-900 dark:text-white">Color mode</h2>
+      <p class="mt-1 text-neutral-500 text-sm dark:text-neutral-400">
+        System follows your operating system and changes with it.
+      </p>
+    </div>
+
+    <div class="flex gap-3 p-6" role="group" aria-label="Color mode">
+      <template :for="mode in colorModes">
+        <button
+          type="button"
+          class="flex flex-1 gap-2 items-center justify-center px-3 py-2 font-medium text-neutral-600 text-sm dark:text-neutral-300 rounded-lg appearance-mode appearance-option"
+          :data-selected="selected(colorMode(), mode.id)"
+          :aria-pressed="String(selected(colorMode(), mode.id))"
+          @click="selectColorMode(mode.id)"
+        >
+          <span :class="mode.icon" class="h-4 w-4" aria-hidden="true"></span>
+          <span>{{ mode.label }}</span>
+        </button>
+      </template>
+    </div>
+  </Card>
+
+  <!-- ===================== Navigation sections ===================== -->
+  <Card variant="default" padding="none">
+    <div class="flex flex-wrap gap-4 items-center justify-between px-6 py-5 border-b border-neutral-200/60 dark:border-white/5">
+      <div>
+        <h2 class="font-semibold text-lg text-neutral-900 dark:text-white">Navigation</h2>
+        <p class="mt-1 text-neutral-500 text-sm dark:text-neutral-400">
+          Hide sections you do not use. This only affects your sidebar. It does not
+          disable anything, and every page stays reachable by URL.
+        </p>
+      </div>
+      <span :if="hiddenCount() > 0" class="px-2.5 py-1 font-medium text-amber-700 text-xs dark:text-amber-300 bg-amber-50 dark:bg-amber-500/10 rounded-full">
+        {{ hiddenCount() }} hidden
+      </span>
+    </div>
+
+    <div class="divide-neutral-200/60 divide-y dark:divide-white/5">
+      <template :for="section in sections">
+        <label class="flex gap-4 items-center justify-between px-6 py-4 hover:bg-stone-50/60 dark:hover:bg-white/[0.02] cursor-pointer">
+          <span class="min-w-0">
+            <span class="block font-medium text-neutral-900 text-sm dark:text-white">{{ section.label }}</span>
+            <span class="block mt-0.5 text-neutral-500 text-xs dark:text-neutral-400">{{ section.count }} items</span>
+          </span>
+          <input
+            type="checkbox"
+            :checked="isVisible(section.id)"
+            @change="toggleSection(section.id, $event)"
+            class="flex-none h-4 w-4 text-blue-600 border-neutral-300 rounded focus:ring-blue-500"
+            :aria-label="'Show ' + section.label + ' section'"
+          >
+        </label>
+      </template>
+    </div>
+  </Card>
+
+  <!-- ===================== Reset ===================== -->
+  <div class="flex items-center justify-between px-1">
+    <p class="text-neutral-500 text-xs dark:text-neutral-400">
+      Preferences are stored in this browser only, and sync across its tabs.
+    </p>
+    <Button variant="secondary" size="sm" @click="resetAll()">
+      Reset to defaults
+    </Button>
+  </div>
+</div>
+</template>

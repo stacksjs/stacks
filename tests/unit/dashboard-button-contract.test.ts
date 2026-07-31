@@ -61,7 +61,7 @@ describe('dashboard button contract', () => {
       'storage/framework/defaults/resources/components/Dashboard/Queries/QueryDashboard.stx',
       'storage/framework/defaults/resources/components/Dashboard/Email/InboxDashboard.stx',
       'storage/framework/defaults/resources/components/Dashboard/Email/EmailActivityDashboard.stx',
-      'storage/framework/defaults/views/dashboard/settings/appearance.stx',
+      'storage/framework/defaults/resources/components/Dashboard/Settings/AppearanceSettingsDashboard.stx',
       'storage/framework/defaults/resources/components/Dashboard/Ci/CiDashboard.stx',
       'storage/framework/defaults/views/dashboard/kanban/index.stx',
       'storage/framework/defaults/resources/components/Dashboard/Kanban/KanbanBoardDashboard.stx',
@@ -327,6 +327,10 @@ describe('dashboard button contract', () => {
 
   test('keeps appearance selectors native while sharing shell actions', () => {
     const appearance = readFileSync(
+      resolve('storage/framework/defaults/resources/components/Dashboard/Settings/AppearanceSettingsDashboard.stx'),
+      'utf8',
+    )
+    const appearanceView = readFileSync(
       resolve('storage/framework/defaults/views/dashboard/settings/appearance.stx'),
       'utf8',
     )
@@ -338,6 +342,8 @@ describe('dashboard button contract', () => {
 
     expect(appearance).toContain('<Button variant="secondary" size="sm" @click="resetAll()">')
     expect(appearanceButtons.every(button => button.includes('appearance-option'))).toBe(true)
+    expect(appearanceView).toContain('<AppearanceSettingsDashboard />')
+    expect(appearanceView).not.toContain('<script')
     expect(layout).toContain('<Button variant="ghost" size="xs" iconOnly ariaLabel="Dismiss notification"')
     expect(layout).not.toMatch(/<button\b/)
   })
