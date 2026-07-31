@@ -1,0 +1,111 @@
+export interface CommerceNumberOptions {
+  min?: number
+  max?: number
+  integer?: boolean
+}
+
+export function commerceValue(record: any, ...keys: string[]): unknown {
+  for (const key of keys) {
+    const result = typeof record?.get === 'function' ? record.get(key) : record?.[key]
+    if (result !== null && result !== undefined)
+      return result
+  }
+  return undefined
+}
+
+export function commerceRecordError(source: string, field: string, expectation: string): TypeError {
+  return new TypeError(`${source}.${field} must be ${expectation}.`)
+}
+
+export function commerceIdentifier(input: unknown, source: string, field = 'id'): string {
+  if (typeof input === 'string' && input.trim())
+    return input.trim()
+  if (typeof input === 'number' && Number.isSafeInteger(input) && input > 0)
+    return String(input)
+  if (typeof input === 'bigint' && input > 0)
+    return String(input)
+  throw commerceRecordError(source, field, 'a positive integer or non-empty string')
+}
+
+export function commerceRequiredString(input: unknown, source: string, field: string): string {
+  if (typeof input !== 'string' || !input.trim())
+    throw commerceRecordError(source, field, 'a non-empty string')
+  return input.trim()
+}
+
+export function commerceOptionalString(input: unknown, source: string, field: string): string {
+  if (input === undefined || input === null || input === '')
+    return ''
+  if (typeof input !== 'string')
+    throw commerceRecordError(source, field, 'a string or null')
+  return input.trim()
+}
+
+export function commerceNumber(
+  input: unknown,
+  source: string,
+  field: string,
+  options: CommerceNumberOptions = {},
+): number {
+  const result = typeof input === 'number'
+    ? input
+    : typeof input === 'string' && /^[+-]?(?:\d+\.?\d*|\.\d+)(?:e[+-]?\d+)?$/i.test(input.trim())
+      ? Number(input)
+      : Number.NaN
+
+  if (!Number.isFinite(result))
+    throw commerceRecordError(source, field, 'a finite number')
+  if (options.integer && !Number.isInteger(result))
+    throw commerceRecordError(source, field, 'an integer')
+  if (options.min !== undefined && result < options.min)
+    throw commerceRecordError(source, field, `at least ${options.min}`)
+  if (options.max !== undefined && result > options.max)
+    throw commerceRecordError(source, field, `at most ${options.max}`)
+  return result
+}
+
+export function commerceOptionalNumber(
+  input: unknown,
+  source: string,
+  field: string,
+  options: CommerceNumberOptions = {},
+): number | null {
+  if (input === undefined || input === null || input === '')
+    return null
+  return commerceNumber(input, source, field, options)
+}
+
+export function commerceBoolean(input: unknown, source: string, field: string): boolean {
+  if (input === true || input === 1 || input === '1' || input === 'true')
+    return true
+  if (input === false || input === 0 || input === '0' || input === 'false')
+    return false
+  throw commerceRecordError(source, field, 'a boolean')
+}
+
+export function commerceEnum<const T extends string>(
+  input: unknown,
+  source: string,
+  field: string,
+  values: readonly T[],
+): T {
+  const result = commerceRequiredString(input, source, field)
+  if (!values.includes(result as T))
+    throw commerceRecordError(source, field, values.join(' or '))
+  return result as T
+}
+
+export function commerceCurrency(input: unknown, source: string, field = 'currency'): string {
+  const result = commerceRequiredString(input, source, field).toUpperCase()
+  if (!/^[A-Z]{3}$/.test(result))
+    throw commerceRecordError(source, field, 'a three-letter currency code')
+  return result
+}
+
+export function commerceTimestamp(input: unknown, source: string, field = 'created_at'): string {
+  const raw = commerceRequiredString(input, source, field)
+  const date = new Date(/^\d{4}-\d{2}-\d{2} \d/.test(raw) ? `${raw.replace(' ', 'T')}Z` : raw)
+  if (!Number.isFinite(date.getTime()))
+    throw commerceRecordError(source, field, 'a valid timestamp')
+  return date.toISOString()
+}

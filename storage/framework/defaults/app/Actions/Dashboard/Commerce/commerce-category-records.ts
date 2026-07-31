@@ -1,3 +1,13 @@
+import {
+  commerceBoolean,
+  commerceIdentifier,
+  commerceNumber,
+  commerceOptionalString,
+  commerceRequiredString,
+  commerceTimestamp,
+  commerceValue,
+} from './commerce-record'
+
 export interface CommerceCategoryRecord {
   id: string
   name: string
@@ -17,39 +27,27 @@ export interface CommerceCategorySummary {
   children: number
 }
 
-function value(record: any, ...keys: string[]): unknown {
-  for (const key of keys) {
-    const result = typeof record?.get === 'function' ? record.get(key) : record?.[key]
-    if (result !== null && result !== undefined)
-      return result
-  }
-  return undefined
-}
-
-function text(input: unknown): string {
-  return input === null || input === undefined ? '' : String(input)
-}
-
-function number(input: unknown): number {
-  const result = Number(input)
-  return Number.isFinite(result) ? result : 0
-}
-
-function boolean(input: unknown): boolean {
-  return input === true || input === 1 || input === '1' || input === 'true'
-}
-
 export function normalizeCommerceCategoryRecord(record: any): CommerceCategoryRecord {
+  const id = commerceIdentifier(commerceValue(record, 'id', 'uuid'), 'Category')
+  const source = `Category ${id}`
+  const parentValue = commerceValue(record, 'parent_category_id', 'parentCategoryId')
   return {
-    id: text(value(record, 'id', 'uuid')),
-    name: text(value(record, 'name')),
-    description: text(value(record, 'description')),
-    slug: text(value(record, 'slug')),
-    imageUrl: text(value(record, 'image_url', 'imageUrl')),
-    isActive: boolean(value(record, 'is_active', 'isActive')),
-    parentCategoryId: text(value(record, 'parent_category_id', 'parentCategoryId')),
-    displayOrder: Math.max(0, number(value(record, 'display_order', 'displayOrder'))),
-    createdAt: text(value(record, 'created_at', 'createdAt')),
+    id,
+    name: commerceRequiredString(commerceValue(record, 'name'), source, 'name'),
+    description: commerceOptionalString(commerceValue(record, 'description'), source, 'description'),
+    slug: commerceRequiredString(commerceValue(record, 'slug'), source, 'slug'),
+    imageUrl: commerceOptionalString(commerceValue(record, 'image_url', 'imageUrl'), source, 'image_url'),
+    isActive: commerceBoolean(commerceValue(record, 'is_active', 'isActive'), source, 'is_active'),
+    parentCategoryId: parentValue === undefined || parentValue === null || parentValue === ''
+      ? ''
+      : commerceIdentifier(parentValue, source, 'parent_category_id'),
+    displayOrder: commerceNumber(
+      commerceValue(record, 'display_order', 'displayOrder'),
+      source,
+      'display_order',
+      { integer: true },
+    ),
+    createdAt: commerceTimestamp(commerceValue(record, 'created_at', 'createdAt'), source),
   }
 }
 
