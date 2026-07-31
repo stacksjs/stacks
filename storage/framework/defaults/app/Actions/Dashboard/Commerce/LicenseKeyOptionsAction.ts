@@ -1,5 +1,11 @@
 import { Action } from '@stacksjs/actions'
 import { Customer, Order, Product } from '@stacksjs/orm'
+import { response } from '@stacksjs/router'
+import {
+  normalizeLicenseKeyCustomer,
+  normalizeLicenseKeyOrder,
+  normalizeLicenseKeyProduct,
+} from './license-key-records'
 
 export default new Action({
   name: 'License Key Options',
@@ -7,27 +13,22 @@ export default new Action({
   method: 'GET',
   apiResponse: true,
   async handle() {
-    const [customers, products, orders] = await Promise.all([
-      Customer.all(),
-      Product.all(),
-      Order.all(),
-    ])
-
-    return {
-      customers: customers.map(customer => ({
-        id: Number(customer.get('id')),
-        label: String(customer.get('name') || 'Unnamed customer'),
-        detail: String(customer.get('email') || ''),
-      })),
-      products: products.map(product => ({
-        id: Number(product.get('id')),
-        label: String(product.get('name') || 'Unnamed product'),
-      })),
-      orders: orders.map(order => ({
-        id: Number(order.get('id')),
-        label: `Order #${Number(order.get('id'))}`,
-        detail: String(order.get('status') || ''),
-      })),
+    try {
+      const [customers, products, orders] = await Promise.all([
+        Customer.orderBy('name', 'asc').limit(500).get(),
+        Product.orderBy('name', 'asc').limit(500).get(),
+        Order.orderByDesc('id').limit(500).get(),
+      ])
+      return {
+        customers: customers.map(normalizeLicenseKeyCustomer),
+        products: products.map(normalizeLicenseKeyProduct),
+        orders: orders.map(normalizeLicenseKeyOrder),
+      }
+    }
+    catch (error) {
+      return response.json({
+        message: error instanceof Error ? error.message : 'License key options could not be read.',
+      }, 503)
     }
   },
 })
