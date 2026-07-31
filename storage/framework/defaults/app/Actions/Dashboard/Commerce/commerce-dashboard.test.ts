@@ -2,6 +2,10 @@ import { describe, expect, test } from 'bun:test'
 import {
   buildCommerceDashboard,
   commerceDashboardQueryStart,
+  normalizeCommerceDashboardCustomer,
+  normalizeCommerceDashboardOrder,
+  normalizeCommerceDashboardOrderItem,
+  normalizeCommerceDashboardProduct,
   normalizeCommerceDashboardRange,
 } from './commerce-dashboard'
 
@@ -14,6 +18,47 @@ describe('commerce dashboard', () => {
     expect(normalizeCommerceDashboardRange('unknown')).toBe('30d')
     expect(commerceDashboardQueryStart('30d', now)?.toISOString()).toBe('2026-05-31T00:00:00.000Z')
     expect(commerceDashboardQueryStart('all', now)).toBeNull()
+  })
+
+  test('normalizes model rows without coercing invalid values', () => {
+    expect(normalizeCommerceDashboardOrder({
+      id: 1,
+      status: 'DELIVERED',
+      total_amount: '100',
+      currency: 'usd',
+      customer_id: null,
+      created_at: '2026-07-29 10:00:00',
+    })).toEqual({
+      id: '1',
+      status: 'DELIVERED',
+      totalAmount: 100,
+      currency: 'USD',
+      customerId: '',
+      createdAt: '2026-07-29T10:00:00.000Z',
+    })
+    expect(normalizeCommerceDashboardOrderItem({
+      id: 2,
+      order_id: 1,
+      product_id: 4,
+      quantity: 2,
+      price: 50,
+    })).toEqual({
+      orderId: '1',
+      productId: '4',
+      quantity: 2,
+      price: 50,
+    })
+    expect(normalizeCommerceDashboardProduct({ id: 4, name: 'Native Kit' }))
+      .toEqual({ id: '4', name: 'Native Kit' })
+    expect(normalizeCommerceDashboardCustomer({ id: 9, name: 'Ada Lovelace' }))
+      .toEqual({ id: '9', name: 'Ada Lovelace' })
+    expect(() => normalizeCommerceDashboardOrder({
+      id: 1,
+      status: 'DELIVERED',
+      total_amount: 'free',
+      currency: 'USD',
+      created_at: '2026-07-29 10:00:00',
+    })).toThrow('Order 1.total_amount must be a finite number')
   })
 
   test('builds aligned metrics and chart buckets without counting cancelled revenue', () => {
@@ -89,5 +134,25 @@ describe('commerce dashboard', () => {
 
     expect(result.stats[0].change).toBe('+100.0%')
     expect(result.stats[1].change).toBe('0.0%')
+  })
+
+  test('rejects missing dashboard relationships instead of inventing labels', () => {
+    expect(() => buildCommerceDashboard(
+      [{ id: '1', status: 'DELIVERED', totalAmount: 100, currency: 'USD', customerId: '9', createdAt: now.toISOString() }],
+      [],
+      [],
+      [],
+      'today',
+      now,
+    )).toThrow('Order 1.customer_id references missing Customer 9')
+
+    expect(() => buildCommerceDashboard(
+      [{ id: '1', status: 'DELIVERED', totalAmount: 100, currency: 'USD', customerId: '', createdAt: now.toISOString() }],
+      [{ orderId: '1', productId: '4', quantity: 1, price: 100 }],
+      [],
+      [],
+      'today',
+      now,
+    )).toThrow('OrderItem.product_id references missing Product 4')
   })
 })
