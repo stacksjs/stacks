@@ -1,6 +1,7 @@
 import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
 import { Category, Order, OrderItem, Payment, Product } from '@stacksjs/orm'
+import { response } from '@stacksjs/router'
 import { normalizeAnalyticsRange } from './request-analytics'
 import { buildSalesAnalytics } from './sales-analytics'
 
@@ -11,7 +12,15 @@ export default new Action({
   apiResponse: true,
 
   async handle(request: RequestInstance) {
-    const range = normalizeAnalyticsRange(request.get('range'))
+    let range
+    try {
+      range = normalizeAnalyticsRange(request.get('range'))
+    }
+    catch (error) {
+      return response.json({
+        message: error instanceof Error ? error.message : 'The analytics query is invalid.',
+      }, 422)
+    }
     const [orders, payments, orderItems, products, categories] = await Promise.all([
       Order.orderByDesc('id').limit(10_000).get(),
       Payment.orderByDesc('id').limit(10_000).get(),

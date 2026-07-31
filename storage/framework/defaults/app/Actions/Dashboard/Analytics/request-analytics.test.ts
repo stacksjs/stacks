@@ -6,13 +6,16 @@ const now = new Date('2026-07-29T12:00:00.000Z')
 describe('request analytics', () => {
   test('normalizes supported ranges', () => {
     expect(normalizeAnalyticsRange('week')).toBe('week')
-    expect(normalizeAnalyticsRange('invalid')).toBe('month')
+    expect(normalizeAnalyticsRange(undefined)).toBe('month')
+    expect(() => normalizeAnalyticsRange('invalid')).toThrow('must be day, week, month, or year')
+    expect(() => normalizeAnalyticsRange(7)).toThrow('must be a string')
   })
 
   test('normalizes supported traffic scopes', () => {
     expect(normalizeAnalyticsScope('blog')).toBe('blog')
     expect(normalizeAnalyticsScope('commerce')).toBe('commerce')
-    expect(normalizeAnalyticsScope('unknown')).toBe('all')
+    expect(normalizeAnalyticsScope(undefined)).toBe('all')
+    expect(() => normalizeAnalyticsScope('unknown')).toThrow('must be all, blog, or commerce')
   })
 
   test('aggregates page traffic without exposing visitor identities', () => {

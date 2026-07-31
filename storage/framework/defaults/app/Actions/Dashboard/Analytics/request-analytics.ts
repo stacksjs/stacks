@@ -30,17 +30,27 @@ const SCOPE_PREFIXES: Record<Exclude<AnalyticsScope, 'all'>, string[]> = {
 }
 
 export function normalizeAnalyticsRange(value: unknown): AnalyticsRange {
-  const range = String(value || '').toLowerCase()
-  return ['day', 'week', 'month', 'year'].includes(range)
-    ? range as AnalyticsRange
-    : 'month'
+  if (value === null || value === undefined || value === '')
+    return 'month'
+  if (typeof value !== 'string')
+    throw new TypeError('Analytics range must be a string.')
+
+  const range = value.trim().toLowerCase()
+  if (!['day', 'week', 'month', 'year'].includes(range))
+    throw new RangeError('Analytics range must be day, week, month, or year.')
+  return range as AnalyticsRange
 }
 
 export function normalizeAnalyticsScope(value: unknown): AnalyticsScope {
-  const scope = String(value || '').toLowerCase()
-  return ['blog', 'commerce'].includes(scope)
-    ? scope as AnalyticsScope
-    : 'all'
+  if (value === null || value === undefined || value === '')
+    return 'all'
+  if (typeof value !== 'string')
+    throw new TypeError('Analytics scope must be a string.')
+
+  const scope = value.trim().toLowerCase()
+  if (!['all', 'blog', 'commerce'].includes(scope))
+    throw new RangeError('Analytics scope must be all, blog, or commerce.')
+  return scope as AnalyticsScope
 }
 
 function timestamp(value: string): number {

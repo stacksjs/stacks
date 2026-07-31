@@ -1,6 +1,7 @@
 import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
 import { AnalyticsEvent } from '@stacksjs/orm'
+import { response } from '@stacksjs/router'
 import { buildEventAnalytics } from './event-analytics'
 import { normalizeAnalyticsRange } from './request-analytics'
 
@@ -11,7 +12,15 @@ export default new Action({
   apiResponse: true,
 
   async handle(request: RequestInstance) {
-    const range = normalizeAnalyticsRange(request.get('range'))
+    let range
+    try {
+      range = normalizeAnalyticsRange(request.get('range'))
+    }
+    catch (error) {
+      return response.json({
+        message: error instanceof Error ? error.message : 'The analytics query is invalid.',
+      }, 422)
+    }
     const events = await AnalyticsEvent.orderByDesc('id').limit(20_000).get()
 
     return buildEventAnalytics(

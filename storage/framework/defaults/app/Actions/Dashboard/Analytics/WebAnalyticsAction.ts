@@ -1,6 +1,7 @@
 import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
 import { Request } from '@stacksjs/orm'
+import { response } from '@stacksjs/router'
 import { buildWebAnalytics, normalizeAnalyticsRange, normalizeAnalyticsScope } from './request-analytics'
 
 export default new Action({
@@ -10,8 +11,17 @@ export default new Action({
   apiResponse: true,
 
   async handle(request: RequestInstance) {
-    const range = normalizeAnalyticsRange(request.get('range'))
-    const scope = normalizeAnalyticsScope(request.get('scope'))
+    let range
+    let scope
+    try {
+      range = normalizeAnalyticsRange(request.get('range'))
+      scope = normalizeAnalyticsScope(request.get('scope'))
+    }
+    catch (error) {
+      return response.json({
+        message: error instanceof Error ? error.message : 'The analytics query is invalid.',
+      }, 422)
+    }
     const records = await Request.orderByDesc('id').limit(10_000).get()
     const rows = records.map(record => ({
       method: String(record.get('method') || 'GET'),
