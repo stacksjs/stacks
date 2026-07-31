@@ -63,11 +63,15 @@ describe('dashboard native STX bindings', () => {
     }
 
     expect(existsSync(resolve(dashboardComponents, 'Queue/QueueTable.stx'))).toBe(false)
+    expect(existsSync(resolve(dashboardComponents, 'Widget.stx'))).toBe(false)
+    expect(existsSync(resolve(dashboardComponents, 'UI/DataTable.stx'))).toBe(false)
 
     const barrel = readFileSync(dashboardComponentBarrel, 'utf8')
     expect(barrel).toContain("export { default as Card } from './UI/Card.stx'")
     expect(barrel).toContain("export { default as Table } from './UI/Table.stx'")
     expect(barrel).toContain("export { default as ChartCard } from './UI/ChartCard.stx'")
+    expect(barrel).not.toContain('default as Widget')
+    expect(barrel).not.toContain('default as DataTable')
     expect(barrel).not.toMatch(/from '\.\/(?:Card|Table|Chart)\.stx'/)
   })
 
