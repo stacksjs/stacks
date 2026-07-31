@@ -10,11 +10,10 @@ interface DashboardLayoutProps {
   noPadding?: boolean
   showSidebar?: boolean
   showNavbar?: boolean
-  showWindowControls?: boolean
   isSidebarCollapsed?: boolean
 }
 
-const { isMobileMenuOpen, isMobile, currentPath = '/', isDark = false, fullWidth, pageTitle, pageDescription, noPadding, showSidebar = true, showNavbar = true, showWindowControls = false, isSidebarCollapsed = false } = defineProps<DashboardLayoutProps>()
+const { isMobileMenuOpen, isMobile, currentPath = '/', isDark = false, fullWidth, pageTitle, pageDescription, noPadding, showSidebar = true, showNavbar = true, isSidebarCollapsed = false } = defineProps<DashboardLayoutProps>()
 
 /**
  * Dashboard Layout Component
@@ -79,7 +78,6 @@ useEventListener('craft:ready', ensureCraftNativeSidebarMarker)
     <!-- Navbar -->
     @if(showNavbar)
       <NavbarModern
-        showWindowControls="{{ showWindowControls }}"
         currentPath="{{ currentPath || '/' }}"
         isDark="{{ isDark || false }}"
       />

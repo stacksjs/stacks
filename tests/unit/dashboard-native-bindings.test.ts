@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test'
-import { readdirSync, readFileSync } from 'node:fs'
+import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 
 const dashboardComponents = resolve(
@@ -235,22 +235,20 @@ describe('dashboard native STX bindings', () => {
       'Email/EmailList.stx',
       'NavbarModern.stx',
       'UI/WindowControls.stx',
-      'WindowControls.stx',
     ]) {
       const source = componentSource(path)
       expect(source).toContain('i-hugeicons-')
       expect(source).not.toContain('<svg')
     }
 
-    for (const path of ['UI/WindowControls.stx', 'WindowControls.stx']) {
-      const source = componentSource(path)
-      expect(source).toContain('<script client>')
-      expect(source).toContain("import { useWindowControls }")
-      expect(source).toContain("emit('close')")
-      expect(source).toContain("emit('minimize')")
-      expect(source).toContain("emit('maximize')")
-      expect(source).not.toContain('<script server>')
-    }
+    const windowControls = componentSource('UI/WindowControls.stx')
+    expect(windowControls).toContain('<script client>')
+    expect(windowControls).toContain("import { useWindowControls }")
+    expect(windowControls).toContain("emit('close')")
+    expect(windowControls).toContain("emit('minimize')")
+    expect(windowControls).toContain("emit('maximize')")
+    expect(windowControls).not.toContain('<script server>')
+    expect(existsSync(resolve(dashboardComponents, 'WindowControls.stx'))).toBe(false)
 
     const deliveryComponents = resolve(dashboardComponents, 'Commerce/Delivery')
     for (const file of readdirSync(deliveryComponents).filter(file => file.endsWith('.stx'))) {
