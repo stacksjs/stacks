@@ -713,8 +713,12 @@ describe('dashboard native STX bindings', () => {
       resolve('storage/framework/defaults/resources/components/Dashboard/Kanban/KanbanBoardDashboard.stx'),
       'utf8',
     )
-    const index = readFileSync(
+    const indexView = readFileSync(
       resolve('storage/framework/defaults/views/dashboard/kanban/index.stx'),
+      'utf8',
+    )
+    const index = readFileSync(
+      resolve('storage/framework/defaults/resources/components/Dashboard/Kanban/KanbanBoardsDashboard.stx'),
       'utf8',
     )
     const store = readFileSync(
@@ -737,6 +741,8 @@ describe('dashboard native STX bindings', () => {
     expect(board).not.toContain('<svg')
     expect(board).not.toContain('onUnmount(')
 
+    expect(indexView).toContain('<KanbanBoardsDashboard />')
+    expect(indexView).not.toContain('<script')
     expect(index).toContain('<Modal')
     expect(index).toContain('@submit.prevent="submitCreate"')
     expect(index).toContain('x-model="draftName"')

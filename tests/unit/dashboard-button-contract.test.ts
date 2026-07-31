@@ -63,7 +63,7 @@ describe('dashboard button contract', () => {
       'storage/framework/defaults/resources/components/Dashboard/Email/EmailActivityDashboard.stx',
       'storage/framework/defaults/resources/components/Dashboard/Settings/AppearanceSettingsDashboard.stx',
       'storage/framework/defaults/resources/components/Dashboard/Ci/CiDashboard.stx',
-      'storage/framework/defaults/views/dashboard/kanban/index.stx',
+      'storage/framework/defaults/resources/components/Dashboard/Kanban/KanbanBoardsDashboard.stx',
       'storage/framework/defaults/resources/components/Dashboard/Kanban/KanbanBoardDashboard.stx',
     ]
 
@@ -376,7 +376,7 @@ describe('dashboard button contract', () => {
 
   test('keeps Kanban selection and card navigation semantic while sharing actions', () => {
     const index = readFileSync(
-      resolve('storage/framework/defaults/views/dashboard/kanban/index.stx'),
+      resolve('storage/framework/defaults/resources/components/Dashboard/Kanban/KanbanBoardsDashboard.stx'),
       'utf8',
     )
     const detail = readFileSync(
