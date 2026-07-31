@@ -64,7 +64,7 @@ describe('dashboard button contract', () => {
       'storage/framework/defaults/views/dashboard/settings/appearance.stx',
       'storage/framework/defaults/views/dashboard/ci/index.stx',
       'storage/framework/defaults/views/dashboard/kanban/index.stx',
-      'storage/framework/defaults/views/dashboard/kanban/[id].stx',
+      'storage/framework/defaults/resources/components/Dashboard/Kanban/KanbanBoardDashboard.stx',
     ]
 
     for (const file of pressedStateFiles) {
@@ -357,7 +357,7 @@ describe('dashboard button contract', () => {
 
   test('keeps model sorting semantic while sharing record actions', () => {
     const source = readFileSync(
-      resolve('storage/framework/defaults/views/dashboard/models/[model].stx'),
+      resolve('storage/framework/defaults/resources/components/Dashboard/Models/ModelRecordsDashboard.stx'),
       'utf8',
     )
     const nativeButtons = [...source.matchAll(/<button\b[^>]*>/g)].map(match => match[0])
@@ -375,7 +375,7 @@ describe('dashboard button contract', () => {
       'utf8',
     )
     const detail = readFileSync(
-      resolve('storage/framework/defaults/views/dashboard/kanban/[id].stx'),
+      resolve('storage/framework/defaults/resources/components/Dashboard/Kanban/KanbanBoardDashboard.stx'),
       'utf8',
     )
     const indexButtons = [...index.matchAll(/<button\b[^>]*>/g)].map(match => match[0])

@@ -52,7 +52,7 @@ describe('dashboard global search', () => {
   })
 
   test('the generic model browser honors a search query from navigation', () => {
-    const modelView = source('storage/framework/defaults/views/dashboard/models/[model].stx')
+    const modelView = source('storage/framework/defaults/resources/components/Dashboard/Models/ModelRecordsDashboard.stx')
 
     expect(modelView).toContain("const search = state(navigation.urlQuery('q') || '')")
     expect(modelView).toContain('x-model="search"')

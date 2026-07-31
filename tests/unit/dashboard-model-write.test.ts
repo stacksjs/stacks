@@ -80,9 +80,12 @@ describe('dashboard generic model writes', () => {
   })
 
   test('model browser consumes capability and create-field metadata', () => {
-    const view = source('storage/framework/defaults/views/dashboard/models/[model].stx')
+    const page = source('storage/framework/defaults/views/dashboard/models/[model].stx')
+    const view = source('storage/framework/defaults/resources/components/Dashboard/Models/ModelRecordsDashboard.stx')
     const modal = source('storage/framework/defaults/resources/components/Dashboard/CreateRecordModal.stx')
 
+    expect(page).toContain('<ModelRecordsDashboard />')
+    expect(page).not.toContain('<script')
     expect(view).toContain('writeCapabilities.set(data.writeCapabilities')
     expect(view).toContain('createFields.set(data.createFields')
     expect(view).toContain('<CreateRecordModal')
