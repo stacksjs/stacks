@@ -1,7 +1,7 @@
 import process from 'node:process'
 import { randomUUID } from 'node:crypto'
 import { existsSync, renameSync, unlinkSync, writeFileSync } from 'node:fs'
-import { bold, cyan, dim, green, red } from '@stacksjs/cli'
+import { bold, cyan, dim, green } from '@stacksjs/cli'
 import { projectPath, storagePath } from '@stacksjs/path'
 import { seedCsrfPageResponse } from './csrf'
 import { shouldDelegateDashboardRequest } from './dashboard-request-routing'
@@ -60,24 +60,7 @@ async function startStxServer(): Promise<void> {
   // blocks can reference models as bare names (`await Order.all()`) without
   // an explicit import. Loading it here means the first page render no
   // longer pays the cold-start cost of resolving 50+ model files.
-  try {
-    await import('@stacksjs/orm')
-  }
-  catch (err) {
-    if (verbose) console.warn('[dashboard] orm preload failed:', (err as Error)?.message || err)
-  }
-
-  // Preload the project's resources/functions and app/Helpers trees, then
-  // hoist named exports onto globalThis for server-script auto-imports.
-  // Framework dashboard helpers use explicit imports and are not evaluated
-  // eagerly here.
-  try {
-    const { hoistDashboardGlobals } = await import('./dashboard-globals')
-    await hoistDashboardGlobals({ verbose })
-  }
-  catch (err) {
-    if (verbose) console.warn('[dashboard] globals preload failed:', (err as Error)?.message || err)
-  }
+  await import('@stacksjs/orm')
 
   let serve: typeof import('bun-plugin-stx/serve').serve
   try {
@@ -385,32 +368,10 @@ async function startStxServer(): Promise<void> {
   // endpoint declared via the framework router would 404 in dev — even
   // though it works fine in production (server/start.ts also calls
   // loadRoutes). We scope onRequest delegation tightly below.
-  let stacksRoute: typeof import('@stacksjs/router').route | null = null
-  try {
-    const router = await import('@stacksjs/router')
-    const routeRegistry = (await import(projectPath('app/Routes.ts'))).default
-    await router.loadRoutes(routeRegistry)
-    stacksRoute = router.route
-  }
-  catch (err) {
-    // Don't crash the dashboard if route loading fails — dev devs still
-    // need page rendering even if /api/* endpoints aren't reachable.
-    //
-    // But say so loudly. Without stacksRoute the `onRequest` delegation
-    // below is undefined, so every /api/dashboard/* endpoint 404s while
-    // the pages still render: the dashboard looks fine and shows no data,
-    // with nothing on screen to explain why. This was verbose-only when a
-    // broken @stacksjs/bun-router build made the import throw, and the
-    // dead API surface got misread as a dashboard data bug for far too
-    // long. console.error on purpose: console.log/warn are buffered and
-    // discarded above in non-verbose runs.
-    const detail = (err as Error)?.message || String(err)
-    console.error(`\n${red(bold('  Dashboard API disabled: Stacks router init failed.'))}`)
-    console.error(`  ${detail}`)
-    console.error(dim('  Every /api/dashboard/* endpoint will return 404; pages render but show no data.'))
-    console.error(dim('  Re-run with --verbose for the full stack trace.\n'))
-    if (verbose) console.error(err)
-  }
+  const router = await import('@stacksjs/router')
+  const routeRegistry = (await import(projectPath('app/Routes.ts'))).default
+  await router.loadRoutes(routeRegistry)
+  const stacksRoute = router.route
 
   const serverPromise = serve({
     patterns: [userDashboardPath, dashboardPath],
@@ -438,17 +399,15 @@ async function startStxServer(): Promise<void> {
     //      reaches the action). Without rule (3a), root-level routes that
     //      collide with a page — e.g. `route.health()` registering a
     //      `/health` LB-probe at root — would intercept the page.
-    onRequest: stacksRoute
-      ? async (req: Request) => {
-          const url = new URL(req.url)
-          const pathname = url.pathname
+    onRequest: async (req: Request) => {
+      const url = new URL(req.url)
+      const pathname = url.pathname
 
-          if (shouldDelegateDashboardRequest(pathname, req.method))
-            return stacksRoute!.handleRequest(req)
+      if (shouldDelegateDashboardRequest(pathname, req.method))
+        return stacksRoute.handleRequest(req)
 
-          return null
-        }
-      : undefined,
+      return null
+    },
     // The dashboard's login and registration views submit to CSRF-protected
     // framework routes. Seed the token on the HTML response, matching the
     // regular development and production page servers.
