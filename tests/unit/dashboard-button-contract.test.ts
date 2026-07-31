@@ -194,7 +194,6 @@ describe('dashboard button contract', () => {
       'Models/ModelsOverview.stx',
       'Data/DataRecords.stx',
       'Releases/ReleaseDashboard.stx',
-      'NotificationErrorModal.stx',
       'Teams/TeamPeopleDashboard.stx',
     ]
 

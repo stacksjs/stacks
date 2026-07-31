@@ -23,6 +23,8 @@ describe('dashboard native STX bindings', () => {
     expect(existsSync(resolve(dashboardComponents, 'UI/Card.stx'))).toBe(true)
     expect(existsSync(resolve(dashboardComponents, 'UI/Pagination.stx'))).toBe(true)
     expect(existsSync(resolve(dashboardComponents, 'UI/Table.stx'))).toBe(true)
+    expect(existsSync(resolve(dashboardComponents, 'Chart.stx'))).toBe(false)
+    expect(existsSync(resolve(dashboardComponents, 'NotificationErrorModal.stx'))).toBe(false)
   })
 
   test('shared pagination models its local selection and emits the selected value', () => {
