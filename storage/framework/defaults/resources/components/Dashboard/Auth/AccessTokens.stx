@@ -328,7 +328,7 @@ onMount(() => {
     </div>
   </Card>
 
-  <div :if="showCreate()" class="flex fixed inset-0 z-50 items-center justify-center p-4 bg-black/50" @click.self="closeCreate">
+  <div :if="showCreate()" class="flex fixed inset-0 z-50 items-center justify-center p-4 bg-black/50 dashboard-modal-layer" @click.self="closeCreate">
     <div role="dialog" aria-modal="true" aria-labelledby="create-token-title" class="p-6 max-w-lg w-full bg-white dark:bg-neutral-900 border border-neutral-200 rounded-xl dark:border-neutral-700 shadow-xl">
       <div class="flex gap-4 items-start justify-between">
         <div>

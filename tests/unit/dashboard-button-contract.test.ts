@@ -116,6 +116,30 @@ describe('dashboard button contract', () => {
     }
   })
 
+  test('keeps fixed dialogs inside the shared dashboard modal layer', () => {
+    const files = [
+      ...dashboardTemplates(resolve('storage/framework/defaults/resources/components/Dashboard')),
+      ...dashboardTemplates(resolve('storage/framework/defaults/views/dashboard')),
+    ]
+    const missing: string[] = []
+
+    for (const file of files) {
+      const source = readFileSync(file, 'utf8')
+      const fixedLayers = [...source.matchAll(/<div\b[\s\S]*?>/g)]
+        .map(match => match[0])
+        .filter(element =>
+          /\bfixed inset-(?:0|y-0)\b/.test(element)
+          && /(?::if=|x-show=|role="(?:alert)?dialog")/.test(element)
+          && !element.includes('dashboard-mobile-sidebar-open'),
+        )
+
+      if (fixedLayers.some(element => !element.includes('dashboard-modal-layer')))
+        missing.push(file)
+    }
+
+    expect(missing).toEqual([])
+  })
+
   test('routes primary commerce actions through the canonical component', () => {
     const files = [
       'CommerceProductsDashboard.stx',

@@ -166,7 +166,7 @@
   </div>
 
   <!-- Editor -->
-  <div x-show="isEditorOpen()" class="flex fixed inset-0 overflow-y-auto z-40 items-start justify-center p-4 sm:p-6">
+<div x-show="isEditorOpen()" class="flex fixed inset-0 overflow-y-auto z-40 items-start justify-center p-4 sm:p-6 dashboard-modal-layer">
     <div class="fixed inset-0 bg-neutral-950/60" @click="closeEditor()"></div>
 
     <div role="dialog" aria-modal="true" aria-labelledby="editor-title" class="relative z-10 my-8 max-w-3xl w-full bg-white dark:bg-neutral-900 border border-neutral-200 rounded-lg dark:border-neutral-800 shadow-xl">
@@ -245,7 +245,7 @@
   </div>
 
   <!-- Delete confirmation -->
-  <div x-show="postToDelete()" class="flex fixed inset-0 z-50 items-center justify-center p-4">
+<div x-show="postToDelete()" class="flex fixed inset-0 z-50 items-center justify-center p-4 dashboard-modal-layer">
     <div class="fixed inset-0 bg-neutral-950/60" @click="cancelDelete()"></div>
 
     <div role="dialog" aria-modal="true" aria-labelledby="delete-title" class="relative z-10 p-5 max-w-md w-full bg-white dark:bg-neutral-900 border border-neutral-200 rounded-lg dark:border-neutral-800 shadow-xl">

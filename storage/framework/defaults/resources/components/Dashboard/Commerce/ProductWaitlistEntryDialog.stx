@@ -106,7 +106,7 @@ function errorMessages(): string[] {
   role="dialog"
   aria-modal="true"
   :aria-label="mode() === 'edit' ? 'Edit product waitlist entry' : 'Add product waitlist entry'"
-  class="fixed inset-0 overflow-y-auto z-30"
+  class="fixed inset-0 overflow-y-auto z-30 dashboard-modal-layer"
 >
   <div class="flex items-end justify-center sm:items-center p-4 sm:p-6 min-h-full text-center">
     <button type="button" aria-label="Close product waitlist dialog" class="fixed inset-0 bg-gray-950/50" :disabled="busy()" @click="emit('close')"></button>

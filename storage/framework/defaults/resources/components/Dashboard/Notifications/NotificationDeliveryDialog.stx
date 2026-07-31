@@ -26,7 +26,7 @@ function metadataText(): string {
   role="dialog"
   aria-modal="true"
   aria-label="Notification delivery details"
-  class="fixed inset-0 overflow-y-auto z-30"
+  class="fixed inset-0 overflow-y-auto z-30 dashboard-modal-layer"
 >
   <div class="flex items-end justify-center sm:items-center p-4 sm:p-0 min-h-full text-center">
     <button

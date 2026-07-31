@@ -576,7 +576,7 @@ void load()
   </div>
 
   <!-- Edit sheet -->
-  <div :if="editing()" class="flex fixed inset-0 z-50 items-center justify-center p-4 bg-black/30" @click="editing.set(null)">
+<div :if="editing()" class="flex fixed inset-0 z-50 items-center justify-center p-4 bg-black/30 dashboard-modal-layer" @click="editing.set(null)">
     <div
       role="dialog"
       aria-modal="true"

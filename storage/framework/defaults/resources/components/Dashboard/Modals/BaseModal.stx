@@ -19,7 +19,7 @@ function closeModal(reason: 'backdrop' | 'button'): void {
 <div
   :if="liveShow()"
   :data-modal="modalId()"
-  class="flex fixed inset-0 z-50 items-end justify-center sm:items-center pb-6 px-4 sm:p-0"
+  class="flex fixed inset-0 z-50 items-end justify-center sm:items-center pb-6 px-4 sm:p-0 dashboard-modal-layer"
 >
   <button
     type="button"

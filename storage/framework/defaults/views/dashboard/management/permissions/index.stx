@@ -549,7 +549,7 @@
   </div>
 
   <!-- ─── User-role drawer (right-side panel) ───────────────── -->
-  <div :if="selectedUser()" class="fixed inset-0 z-30">
+<div :if="selectedUser()" class="fixed inset-0 z-30 dashboard-modal-layer">
     <button type="button" aria-label="Close role assignment drawer" class="fixed inset-0 w-full bg-black/50 cursor-default" @click="closeUserDrawer()"></button>
     <aside role="dialog" aria-modal="true" aria-label="User role assignments" class="flex fixed inset-y-0 right-0 flex-col w-full sm:w-[28rem] bg-white dark:bg-neutral-900 shadow-xl">
       <div class="flex items-center justify-between px-5 py-3 border-b border-zinc-200 dark:border-zinc-800">
@@ -592,7 +592,7 @@
   </div>
 
   <!-- ─── Role-permission drawer ────────────────────────────── -->
-  <div :if="selectedRole()" class="fixed inset-0 z-30">
+<div :if="selectedRole()" class="fixed inset-0 z-30 dashboard-modal-layer">
     <button type="button" aria-label="Close permission assignment drawer" class="fixed inset-0 w-full bg-black/50 cursor-default" @click="closeRoleDrawer()"></button>
     <aside role="dialog" aria-modal="true" aria-label="Role permission assignments" class="flex fixed inset-y-0 right-0 flex-col w-full sm:w-[28rem] bg-white dark:bg-neutral-900 shadow-xl">
       <div class="flex items-center justify-between px-5 py-3 border-b border-zinc-200 dark:border-zinc-800">

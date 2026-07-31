@@ -319,7 +319,7 @@ void loadEntries()
 
   <div
     :if="editingEntry()"
-    class="flex fixed inset-0 z-50 items-center justify-center p-4 bg-black/40"
+    class="flex fixed inset-0 z-50 items-center justify-center p-4 bg-black/40 dashboard-modal-layer"
     @click="closeEdit()"
   >
     <form

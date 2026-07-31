@@ -335,7 +335,7 @@
       click + Escape. -->
   <div
     :if="drilldownTarget()"
-    class="flex fixed inset-0 z-50 justify-end"
+    class="flex fixed inset-0 z-50 justify-end dashboard-modal-layer"
     @click="ci.closeDrilldown()"
     @keydown.escape.window="ci.closeDrilldown()"
   >

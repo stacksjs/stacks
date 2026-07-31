@@ -659,7 +659,7 @@
       updates with rollback on failure. -->
   <div
     :if="openCard()"
-    class="flex fixed inset-0 overflow-y-auto z-50 items-start justify-center px-4 py-8 bg-black/50"
+    class="flex fixed inset-0 overflow-y-auto z-50 items-start justify-center px-4 py-8 bg-black/50 dashboard-modal-layer"
     @click="closeDetail()"
   >
     <div

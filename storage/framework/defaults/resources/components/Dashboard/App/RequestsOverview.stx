@@ -229,7 +229,7 @@ onMount(() => {
     </div>
   </Card>
 
-  <div :if="selectedRequest()" class="flex fixed inset-0 z-50 items-center justify-center p-4 bg-black/50" @click.self="closeInspector">
+  <div :if="selectedRequest()" class="flex fixed inset-0 z-50 items-center justify-center p-4 bg-black/50 dashboard-modal-layer" @click.self="closeInspector">
     <div role="dialog" aria-modal="true" aria-labelledby="request-detail-title" class="p-6 max-w-2xl w-full bg-white dark:bg-neutral-900 border border-neutral-200 rounded-xl dark:border-neutral-700 shadow-xl">
       <div class="flex gap-4 items-start justify-between">
         <div>

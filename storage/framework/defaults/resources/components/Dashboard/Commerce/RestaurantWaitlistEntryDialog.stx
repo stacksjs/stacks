@@ -111,7 +111,7 @@ function errorMessages(): string[] {
 }
 </script>
 
-<div :show="open" role="dialog" aria-modal="true" :aria-label="mode() === 'edit' ? 'Edit restaurant waitlist entry' : 'Add restaurant waitlist entry'" class="fixed inset-0 overflow-y-auto z-30">
+<div :show="open" role="dialog" aria-modal="true" :aria-label="mode() === 'edit' ? 'Edit restaurant waitlist entry' : 'Add restaurant waitlist entry'" class="fixed inset-0 overflow-y-auto z-30 dashboard-modal-layer">
   <div class="flex items-end justify-center sm:items-center p-4 sm:p-6 min-h-full text-center">
     <button type="button" aria-label="Close restaurant waitlist dialog" class="fixed inset-0 bg-gray-950/50" :disabled="busy()" @click="emit('close')"></button>
     <form class="overflow-hidden relative p-5 sm:p-6 sm:max-w-2xl sm:w-full text-left bg-white dark:bg-neutral-800 border border-gray-200 rounded-xl dark:border-neutral-700 shadow-xl" @submit.prevent="submitForm()">
