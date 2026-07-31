@@ -1,4 +1,4 @@
-<script>
+<script server>
 interface QueueTableProps {
   queues?: any[]
 }
@@ -86,9 +86,6 @@ function parseName(payload) {
                 <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-sm sm:text-right">
                   Updated At
                 </th>
-                <th scope="col" class="relative pl-3 pr-4 py-3.5 sm:pr-6">
-                  <span class="sr-only">Edit</span>
-                </th>
               </tr>
             </thead>
 
@@ -112,9 +109,6 @@ function parseName(payload) {
                   </td>
                   <td class="px-3 py-4 text-gray-500 text-right text-sm whitespace-nowrap">
                     {{ queue.updated_at }}
-                  </td>
-                  <td class="relative pl-3 pr-4 py-4 sm:pr-6 font-medium text-right text-sm whitespace-nowrap">
-                    <a href="#" class="text-blue-600 hover:text-blue-900">Open<span class="sr-only">, Action in IDE</span></a>
                   </td>
                 </tr>
               @endforeach

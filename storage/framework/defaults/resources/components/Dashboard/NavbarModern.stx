@@ -1,3 +1,5 @@
+@import('./UI/Button')
+
 <script server>
 // `<script server>` (not bare `<script>`) so the function declarations and
 // const bindings below — `getBreadcrumb`, `isActiveRoute`, `getUser`,
@@ -111,8 +113,8 @@ function getNotificationCount() {
 
     <!-- Notifications -->
     <a
-      href="/notifications"
-      class="relative p-2 rounded-lg transition-colors {{ isActiveRoute('/notifications') ? 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30' : 'text-neutral-500 hover:text-neutral-700 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:text-neutral-200 dark:hover:bg-neutral-800' }}"
+      href="/notifications/dashboard"
+      class="relative p-2 rounded-lg transition-colors {{ isActiveRoute('/notifications/dashboard') ? 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30' : 'text-neutral-500 hover:text-neutral-700 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:text-neutral-200 dark:hover:bg-neutral-800' }}"
       title="Notifications"
     >
       <span aria-hidden="true" class="h-5 w-5 i-hugeicons-notification-02"></span>
@@ -157,24 +159,26 @@ function getNotificationCount() {
           <p class="text-neutral-500 text-xs truncate dark:text-neutral-400">{{ getUser().email }}</p>
         </div>
         <div class="py-1">
-          <a href="/profile" class="flex gap-3 items-center px-4 py-2 text-neutral-700 text-sm dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700">
-            Your Profile
+          <a href="/settings" class="flex gap-3 items-center px-4 py-2 text-neutral-700 text-sm dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700">
+            Account settings
           </a>
           <a href="/settings" class="flex gap-3 items-center px-4 py-2 text-neutral-700 text-sm dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700">
             Settings
           </a>
-          <a href="/billing" class="flex gap-3 items-center px-4 py-2 text-neutral-700 text-sm dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700">
+          <a href="/settings/billing" class="flex gap-3 items-center px-4 py-2 text-neutral-700 text-sm dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700">
             Billing
           </a>
         </div>
         <div class="py-1 border-neutral-200 border-t dark:border-neutral-700">
-          <button
+          <Button
             type="button"
-            class="flex gap-3 items-center px-4 py-2 w-full text-red-600 text-sm dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
-            data-action="logout"
+            variant="danger"
+            size="sm"
+            fullWidth
+            dataAction="logout"
           >
             Sign out
-          </button>
+          </Button>
         </div>
       </div>
     </div>

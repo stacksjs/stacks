@@ -281,8 +281,26 @@ describe('dashboard native STX bindings', () => {
 
     const navbar = componentSource('NavbarModern.stx')
     expect(navbar).toContain('notificationCount = 0')
+    expect(navbar).toContain('href="/notifications/dashboard"')
+    expect(navbar).toContain('href="/settings/billing"')
+    expect(navbar).toContain('dataAction="logout"')
+    expect(navbar).not.toContain('href="/notifications"')
+    expect(navbar).not.toContain('href="/profile"')
+    expect(navbar).not.toContain('href="/billing"')
     expect(navbar).not.toContain('Chris Breuer')
     expect(navbar).not.toContain('chris@stacksjs.org')
+
+    const legacyNavbar = componentSource('Navbar.stx')
+    expect(legacyNavbar).toContain('<script server>')
+    expect(legacyNavbar).toContain('href="/notifications/dashboard"')
+    expect(legacyNavbar).toContain('href="/library/components"')
+    expect(legacyNavbar).toContain('href="/settings/billing"')
+    expect(legacyNavbar).toContain('dataAction="logout"')
+    expect(legacyNavbar).not.toContain('href="#"')
+    expect(legacyNavbar).not.toContain('avatars.githubusercontent.com')
+
+    expect(componentSource('Queue/QueueTable.stx')).not.toContain('href="#"')
+    expect(componentSource('Transaction/index.stx')).not.toContain('href="#"')
 
     const modal = componentSource('UI/Modal.stx')
     expect(modal).toContain('role="dialog"')

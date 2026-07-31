@@ -1,4 +1,4 @@
-<script>
+<script server>
 interface indexProps {
   transactionHistory?: any[]
 }
@@ -53,9 +53,6 @@ function formatTimestampDate(timestamp) {
               <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-sm">
                 Payment Method
               </th>
-              <th scope="col" class="relative pl-3 pr-4 py-3.5 sm:pr-6">
-                <span class="sr-only">Edit</span>
-              </th>
             </tr>
           </thead>
 
@@ -74,9 +71,6 @@ function formatTimestampDate(timestamp) {
                 <td class="flex items-center px-3 py-4 space-x-2 text-gray-500 text-sm whitespace-nowrap">
                   <slot name="cardBrand" />
                   <span>**** **** **** {{ getLastDigits(transaction.payment_intent) }}</span>
-                </td>
-                <td class="relative pl-3 pr-4 py-4 sm:pr-6 font-medium text-right text-sm whitespace-nowrap">
-                  <a href="#" class="text-blue-600 hover:text-blue-900">View<span class="sr-only">, Transaction</span></a>
                 </td>
               </tr>
             @endforeach
