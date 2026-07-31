@@ -53,7 +53,7 @@
   },
   "dependencies": {
     "@stacksjs/composables": "workspace:*",
-    "@stacksjs/stx": "^0.2.124",
+    "@stacksjs/stx": "^0.2.125",
     "bun-query-builder": "^0.1.63",
     "magic-regexp": "^0.11.0"
   },
