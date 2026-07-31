@@ -1,13 +1,29 @@
 import type {
+  AuthoredPostPage,
   BlueskySession,
   BlueskySessionCredentials,
   PublishedPost,
   PublishPostInput,
+  RemotePostRef,
+  SocialDeletionDriver,
   SocialIdentityCredentials,
   SocialPublishingDriver,
   TimelineQuery,
   TimelineResult,
 } from '../types'
+
+/** The ATProto collection every Bluesky post record lives in. */
+const POST_COLLECTION = 'app.bsky.feed.post'
+
+/**
+ * Split `at://<repo>/<collection>/<rkey>` into its parts. Deletes are keyed by
+ * repo + collection + rkey, not by the AT-URI itself.
+ */
+export function parseAtUri(uri: string): { repo: string, collection: string, rkey: string } {
+  const match = /^at:\/\/([^/]+)\/([^/]+)\/([^/]+)$/.exec(String(uri || '').trim())
+  if (!match) throw new Error(`"${uri}" is not a Bluesky post URI.`)
+  return { repo: match[1] as string, collection: match[2] as string, rkey: match[3] as string }
+}
 
 export class BlueskyApiError extends Error {
   constructor(
@@ -104,7 +120,7 @@ export function detectFacetCandidates(text: string): FacetCandidate[] {
   return candidates.sort((a, b) => a.byteStart - b.byteStart)
 }
 
-export class BlueskyPublishingDriver implements SocialPublishingDriver {
+export class BlueskyPublishingDriver implements SocialPublishingDriver, SocialDeletionDriver {
   readonly provider: 'bluesky' = 'bluesky'
   characterLimit = 300
 
@@ -206,7 +222,7 @@ export class BlueskyPublishingDriver implements SocialPublishingDriver {
       '/xrpc/com.atproto.repo.createRecord',
       {
         repo,
-        collection: 'app.bsky.feed.post',
+        collection: POST_COLLECTION,
         record,
       },
       {
@@ -374,6 +390,54 @@ export class BlueskyPublishingDriver implements SocialPublishingDriver {
     )
 
     return payload.blob
+  }
+
+  /**
+   * One page of the account's own `app.bsky.feed.post` records, newest first.
+   * `listRecords` reads the repo directly, so it returns everything the
+   * account ever posted rather than only what this app published.
+   */
+  async listAuthoredPosts(
+    identity: SocialIdentityCredentials,
+    query: TimelineQuery = {},
+  ): Promise<AuthoredPostPage> {
+    const repo = identity.did || identity.handle
+    if (!identity.accessToken) throw new Error('Bluesky access token is missing for this identity.')
+    if (!repo) throw new Error('Bluesky identity DID or handle is required.')
+
+    const url = new URL(`${this.service}/xrpc/com.atproto.repo.listRecords`)
+    url.searchParams.set('repo', repo)
+    url.searchParams.set('collection', POST_COLLECTION)
+    url.searchParams.set('limit', String(Math.min(Math.max(query.limit || 100, 1), 100)))
+    if (query.cursor) url.searchParams.set('cursor', query.cursor)
+
+    const payload = await this.request<{
+      cursor?: string
+      records?: Array<{ uri: string, cid?: string, value?: { text?: string, createdAt?: string } }>
+    }>(url, { headers: { authorization: `Bearer ${identity.accessToken}` } })
+
+    return {
+      cursor: payload.cursor,
+      posts: (payload.records || []).filter(record => record?.uri).map(record => ({
+        uri: record.uri,
+        cid: record.cid,
+        text: record.value?.text,
+        postedAt: record.value?.createdAt,
+        url: identity.handle ? this.toPostUrl(identity.handle, record.uri) : undefined,
+      })),
+    }
+  }
+
+  /** Permanently delete one post record from the account's repo. */
+  async deletePost(identity: SocialIdentityCredentials, ref: RemotePostRef): Promise<void> {
+    if (!identity.accessToken) throw new Error('Bluesky access token is missing for this identity.')
+    const { repo, collection, rkey } = parseAtUri(ref.uri)
+
+    await this.post(
+      '/xrpc/com.atproto.repo.deleteRecord',
+      { repo, collection, rkey },
+      { authorization: `Bearer ${identity.accessToken}` },
+    )
   }
 
   protected async post<T>(path: string, body?: unknown, headers: Record<string, string> = {}): Promise<T> {

@@ -200,3 +200,69 @@ export interface SocialPublishingDriver {
   publish: (identity: SocialIdentityCredentials, post: PublishPostInput) => Promise<PublishedPost>
   timeline: (identity: SocialIdentityCredentials, query?: TimelineQuery) => Promise<TimelineResult>
 }
+
+/**
+ * One post the connected account authored, as returned when walking that
+ * account's own history. `uri` is whatever the provider's delete endpoint
+ * keys on — an AT-URI on Bluesky, a numeric id on X and Mastodon, a URN on
+ * LinkedIn — so it can be handed straight back to `deletePost`.
+ */
+export interface AuthoredPost {
+  uri: string
+  cid?: string
+  text?: string
+  postedAt?: string
+  url?: string
+}
+
+/** A page of authored posts plus the cursor for the next page, if any. */
+export interface AuthoredPostPage {
+  cursor?: string
+  posts: AuthoredPost[]
+}
+
+/**
+ * The minimum needed to identify one remote post for deletion. `cid` matters
+ * where the delete key differs from the stored URI — Mastodon records a public
+ * status URL as its URI but deletes by status id.
+ */
+export interface RemotePostRef {
+  uri: string
+  cid?: string
+}
+
+/**
+ * Deletion capability, kept separate from `SocialPublishingDriver` because
+ * publishing and deleting are independently available: Instagram and Threads
+ * can publish but their APIs cannot delete a feed post at all, and LinkedIn
+ * can delete every post it published while needing an extra partner
+ * permission before it will enumerate history.
+ *
+ * A driver implements what it can. Callers should feature-detect rather than
+ * assume, which `supportsDeletion`/`supportsEnumeration` make cheap.
+ */
+export interface SocialDeletionDriver {
+  provider: SocialPublishingProvider
+  /** Permanently delete one post the connected account authored. */
+  deletePost: (identity: SocialIdentityCredentials, ref: RemotePostRef) => Promise<void>
+  /**
+   * One page of the account's own posts, newest first. Omit the cursor for
+   * the first page; a missing cursor in the result means the history ended.
+   */
+  listAuthoredPosts?: (
+    identity: SocialIdentityCredentials,
+    query?: TimelineQuery,
+  ) => Promise<AuthoredPostPage>
+}
+
+/** Whether a driver can delete posts through its provider's API. */
+export function supportsDeletion(driver: unknown): driver is SocialDeletionDriver {
+  return typeof (driver as SocialDeletionDriver)?.deletePost === 'function'
+}
+
+/** Whether a driver can walk the connected account's own post history. */
+export function supportsEnumeration(
+  driver: unknown,
+): driver is Required<Pick<SocialDeletionDriver, 'listAuthoredPosts'>> & SocialDeletionDriver {
+  return typeof (driver as SocialDeletionDriver)?.listAuthoredPosts === 'function'
+}

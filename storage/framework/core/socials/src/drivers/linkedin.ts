@@ -1,6 +1,9 @@
 import type {
+  AuthoredPostPage,
   PublishedPost,
   PublishPostInput,
+  RemotePostRef,
+  SocialDeletionDriver,
   SocialIdentityCredentials,
   SocialPublishingDriver,
   TimelineQuery,
@@ -64,7 +67,7 @@ export interface LinkedInProfile {
  * LinkedIn has no app-password, so a token is always obtained via OAuth (or
  * pasted in from a prior OAuth grant).
  */
-export class LinkedInPublishingDriver implements SocialPublishingDriver {
+export class LinkedInPublishingDriver implements SocialPublishingDriver, SocialDeletionDriver {
   readonly provider: 'linkedin' = 'linkedin'
   characterLimit = 3000
 
@@ -206,6 +209,95 @@ export class LinkedInPublishingDriver implements SocialPublishingDriver {
   // LinkedIn does not expose a personal home timeline under `w_member_social`.
   async timeline(_identity: SocialIdentityCredentials, _query: TimelineQuery = {}): Promise<TimelineResult> {
     return { items: [] }
+  }
+
+  /**
+   * One page of the member's own posts via the Posts API author finder.
+   *
+   * LinkedIn gates this finder behind `r_member_social`, which is granted only
+   * to approved partners — publishing needs just `w_member_social`. A rejection
+   * is therefore the norm rather than a bug, so it is translated into a message
+   * that names the missing permission instead of surfacing a bare 403.
+   */
+  async listAuthoredPosts(
+    identity: SocialIdentityCredentials,
+    query: TimelineQuery = {},
+  ): Promise<AuthoredPostPage> {
+    if (!identity.accessToken) throw new Error('LinkedIn access token is missing for this identity.')
+    // `did` carries the member URN (urn:li:person:{sub}) for LinkedIn.
+    const author = identity.did
+    if (!author) throw new Error('LinkedIn member URN is required to list posts.')
+
+    const count = Math.min(Math.max(query.limit || 50, 1), 100)
+    const start = Number(query.cursor || 0) || 0
+    const url = new URL(`${this.apiBase}/rest/posts`)
+    url.searchParams.set('q', 'author')
+    url.searchParams.set('author', author)
+    url.searchParams.set('count', String(count))
+    url.searchParams.set('start', String(start))
+
+    let payload: { elements?: Array<{ id?: string, commentary?: string, createdAt?: number }> }
+    try {
+      payload = await this.request(url.toString(), {
+        headers: {
+          'authorization': `Bearer ${identity.accessToken}`,
+          'linkedin-version': this.apiVersion,
+          'x-restli-protocol-version': '2.0.0',
+        },
+      })
+    }
+    catch (error) {
+      if (error instanceof LinkedInApiError && (error.status === 401 || error.status === 403)) {
+        throw new LinkedInApiError(
+          'LinkedIn will not list this account\'s posts — the Posts author finder needs the r_member_social permission, which this app does not hold.',
+          error.status,
+          error.body,
+        )
+      }
+      throw error
+    }
+
+    const posts = (payload.elements || []).filter(element => element?.id).map(element => ({
+      uri: String(element.id),
+      text: element.commentary,
+      postedAt: element.createdAt ? new Date(element.createdAt).toISOString() : undefined,
+      url: `https://www.linkedin.com/feed/update/${element.id}`,
+    }))
+
+    return {
+      // Offset paging: a short page means the history ended.
+      cursor: posts.length === count ? String(start + count) : undefined,
+      posts,
+    }
+  }
+
+  /**
+   * Permanently delete one member share by its post URN. Deleting needs only
+   * `w_member_social`, the same scope publishing uses.
+   */
+  async deletePost(identity: SocialIdentityCredentials, ref: RemotePostRef): Promise<void> {
+    if (!identity.accessToken) throw new Error('LinkedIn access token is missing for this identity.')
+    const urn = String(ref.uri || '').trim()
+    if (!urn) throw new Error('A LinkedIn post URN is required to delete a post.')
+
+    const response = await fetch(`${this.apiBase}/rest/posts/${encodeURIComponent(urn)}`, {
+      method: 'DELETE',
+      headers: {
+        'authorization': `Bearer ${identity.accessToken}`,
+        'linkedin-version': this.apiVersion,
+        'x-restli-protocol-version': '2.0.0',
+      },
+    })
+
+    // 404 means it is already gone — the desired end state either way.
+    if (!response.ok && response.status !== 404) {
+      const text = await response.text().catch(() => '')
+      throw new LinkedInApiError(
+        `LinkedIn API failed (${response.status}): ${text || response.statusText}`,
+        response.status,
+        text,
+      )
+    }
   }
 
   protected async request<T>(url: string, init: RequestInit): Promise<T> {
