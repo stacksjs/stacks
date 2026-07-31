@@ -65,6 +65,7 @@ describe('dashboard native STX bindings', () => {
     expect(existsSync(resolve(dashboardComponents, 'Queue/QueueTable.stx'))).toBe(false)
     expect(existsSync(resolve(dashboardComponents, 'Widget.stx'))).toBe(false)
     expect(existsSync(resolve(dashboardComponents, 'UI/DataTable.stx'))).toBe(false)
+    expect(existsSync(resolve(dashboardComponents, 'NavbarModern.stx'))).toBe(false)
 
     const barrel = readFileSync(dashboardComponentBarrel, 'utf8')
     expect(barrel).toContain("export { default as Card } from './UI/Card.stx'")
@@ -340,7 +341,6 @@ describe('dashboard native STX bindings', () => {
     for (const path of [
       'UI/ChartCard.stx',
       'UI/Avatar.stx',
-      'NavbarModern.stx',
       'UI/WindowControls.stx',
     ]) {
       const source = componentSource(path)
@@ -384,33 +384,27 @@ describe('dashboard native STX bindings', () => {
       expect(source).not.toContain('bg-red-600 hover:bg-red-500')
     }
 
-    const navbar = componentSource('NavbarModern.stx')
-    expect(navbar).toContain('notificationCount = 0')
+    const navbar = componentSource('Navbar.stx')
+    expect(navbar).toContain('<script server>')
+    expect(navbar).toContain('<script client>')
+    expect(navbar).toContain('const dropdownOpen = state(requestedDropdown())')
+    expect(navbar).toContain('useClickOutside(userMenu')
+    expect(navbar).toContain('await auth.logout()')
+    expect(navbar).toContain('@click="signOut()"')
+    expect(navbar).toContain('to="/models"')
     expect(navbar).toContain('href="/notifications/dashboard"')
+    expect(navbar).toContain('href="/library/components"')
     expect(navbar).toContain('href="/settings/billing"')
-    expect(navbar).toContain('dataAction="logout"')
-    expect(navbar).not.toContain('href="/notifications"')
-    expect(navbar).not.toContain('href="/profile"')
-    expect(navbar).not.toContain('href="/billing"')
-    expect(navbar).not.toContain('Chris Breuer')
-    expect(navbar).not.toContain('chris@stacksjs.org')
+    expect(navbar).not.toContain('data-action=')
+    expect(navbar).not.toContain('dataAction=')
+    expect(navbar).not.toContain('action="#"')
+    expect(navbar).not.toContain('href="#"')
+    expect(navbar).not.toContain('avatars.githubusercontent.com')
 
-    const legacyNavbar = componentSource('Navbar.stx')
-    expect(legacyNavbar).toContain('<script server>')
-    expect(legacyNavbar).toContain('<script client>')
-    expect(legacyNavbar).toContain('const dropdownOpen = state(requestedDropdown())')
-    expect(legacyNavbar).toContain('useClickOutside(userMenu')
-    expect(legacyNavbar).toContain('await auth.logout()')
-    expect(legacyNavbar).toContain('@click="signOut()"')
-    expect(legacyNavbar).toContain('to="/models"')
-    expect(legacyNavbar).toContain('href="/notifications/dashboard"')
-    expect(legacyNavbar).toContain('href="/library/components"')
-    expect(legacyNavbar).toContain('href="/settings/billing"')
-    expect(legacyNavbar).not.toContain('data-action=')
-    expect(legacyNavbar).not.toContain('dataAction=')
-    expect(legacyNavbar).not.toContain('action="#"')
-    expect(legacyNavbar).not.toContain('href="#"')
-    expect(legacyNavbar).not.toContain('avatars.githubusercontent.com')
+    const dashboardLayout = componentSource('DashboardLayout.stx')
+    expect(dashboardLayout).toContain('<MobileSidebar>')
+    expect(dashboardLayout).toContain('<Navbar currentPath="{{ currentPath }}" />')
+    expect(dashboardLayout).not.toContain('data-action=')
 
     expect(componentSource('Transaction/index.stx')).not.toContain('href="#"')
 

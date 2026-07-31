@@ -1,122 +1,73 @@
 <script server>
 interface DashboardLayoutProps {
-  isMobileMenuOpen?: boolean
-  isMobile?: boolean
   currentPath?: string
-  isDark?: boolean
   fullWidth?: boolean
   pageTitle?: string
   pageDescription?: string
   noPadding?: boolean
   showSidebar?: boolean
   showNavbar?: boolean
-  isSidebarCollapsed?: boolean
 }
 
-const { isMobileMenuOpen, isMobile, currentPath = '/', isDark = false, fullWidth, pageTitle, pageDescription, noPadding, showSidebar = true, showNavbar = true, isSidebarCollapsed = false } = defineProps<DashboardLayoutProps>()
-
-/**
- * Dashboard Layout Component
- * A unified layout wrapper that combines the modern sidebar and navbar
- * for consistent dashboard page structure.
- *
- * When running inside Craft with --native-sidebar, the native macOS
- * sidebar is rendered by Craft - we skip the web sidebar in that case.
- */
-
-// Sidebar width calculation (matches Sidebar width)
-function getSidebarWidth() {
-  if (isMobile) return 0
-  return isSidebarCollapsed ? 64 : 240
-}
-
-function getMainContentStyle() {
-  if (!showSidebar || isMobile) return ''
-  return `padding-left: ${getSidebarWidth()}px`
-}
-
-// Determine if we should show the web sidebar
-function shouldShowWebSidebar() {
-  return showSidebar
-}
+const {
+  currentPath = '/',
+  fullWidth = false,
+  pageTitle = '',
+  pageDescription = '',
+  noPadding = false,
+  showSidebar = true,
+  showNavbar = true,
+} = defineProps<DashboardLayoutProps>()
 </script>
+
 <script client>
 import { ensureCraftNativeSidebarMarker } from '../../../functions/craft'
 
 ensureCraftNativeSidebarMarker()
 useEventListener('craft:ready', ensureCraftNativeSidebarMarker)
 </script>
-<!-- macOS-inspired layout with subtle background -->
+
 <div class="min-h-screen bg-white dark:bg-neutral-950">
-  <!-- Mobile sidebar overlay -->
-  @if(isMobileMenuOpen && isMobile)
-    <div
-      class="lg:hidden fixed inset-0 z-40 bg-black/50 backdrop-blur-sm duration-300 transition-opacity"
-      data-action="close-mobile-menu"
-    ></div>
-  @endif
-
-  <!-- Mobile sidebar (web-based, only when no native sidebar) -->
-  @if(isMobileMenuOpen && isMobile && shouldShowWebSidebar())
-    <div class="lg:hidden fixed inset-y-0 left-0 z-50 w-64 duration-300 transition-transform dashboard-web-sidebar">
+  @if(showSidebar)
+    <MobileSidebar>
+      <Sidebar placement="static" width="320" className="h-full max-w-full" />
+    </MobileSidebar>
+    <div class="hidden lg:block">
       <Sidebar />
     </div>
   @endif
 
-  <!-- Desktop sidebar (web-based, only when no native sidebar) -->
-  @if(shouldShowWebSidebar() && !isMobile)
-    <div class="dashboard-web-sidebar">
-      <Sidebar />
-    </div>
-  @endif
-
-  <!-- Main content area -->
-  <div
-    class="flex flex-col min-h-screen duration-300 transition-all dashboard-main-content"
-    style="{{ getMainContentStyle() }}"
-  >
-    <!-- Navbar -->
+  <div class="flex flex-col min-h-screen {{ showSidebar ? 'lg:pl-64' : '' }}">
     @if(showNavbar)
-      <NavbarModern
-        currentPath="{{ currentPath || '/' }}"
-        isDark="{{ isDark || false }}"
-      />
+      <Navbar currentPath="{{ currentPath }}" />
     @endif
 
-    <!-- Page header slot -->
-    @if($slots.header)
+    @if($slots.header || pageTitle)
       <div class="bg-white dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-800">
         <div class="px-4 lg:px-6 py-4 {{ fullWidth ? '' : 'max-w-7xl mx-auto' }}">
-          <slot name="header">
-            <!-- Default page header -->
-            @if(pageTitle)
-              <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                  <h1 class="font-semibold text-2xl text-neutral-900 dark:text-white">
-                    {{ pageTitle }}
-                  </h1>
-                  @if(pageDescription)
-                    <p class="mt-1 text-neutral-500 text-sm dark:text-neutral-400">
-                      {{ pageDescription }}
-                    </p>
-                  @endif
-                </div>
-                <slot name="header-actions" />
+          @if($slots.header)
+            <slot name="header" />
+          @else
+            <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <h1 class="font-semibold text-2xl text-neutral-900 dark:text-white">{{ pageTitle }}</h1>
+                @if(pageDescription)
+                  <p class="mt-1 text-neutral-500 text-sm dark:text-neutral-400">{{ pageDescription }}</p>
+                @endif
               </div>
-            @endif
-          </slot>
+              <slot name="header-actions" />
+            </div>
+          @endif
         </div>
       </div>
     @endif
 
-    <!-- Main content -->
     <main class="{{ noPadding ? '' : 'px-4 lg:px-6 py-6' }} flex-1">
       <div class="{{ fullWidth ? '' : 'max-w-7xl mx-auto' }}">
         <slot />
       </div>
     </main>
 
-    <!-- Footer slot -->
     @if($slots.footer)
       <footer class="bg-white dark:bg-neutral-900 border-neutral-200 border-t dark:border-neutral-800">
         <div class="px-4 lg:px-6 py-4 {{ fullWidth ? '' : 'max-w-7xl mx-auto' }}">
@@ -124,16 +75,7 @@ useEventListener('craft:ready', ensureCraftNativeSidebarMarker)
         </div>
       </footer>
     @endif
-  </div>
 
-  <!-- Global overlays/modals slot -->
-  <slot name="overlays" />
+    <slot name="overlays" />
+  </div>
 </div>
-<style>
-/*
- * The native NSOutlineView sidebar these rules deferred to is retired, and
- * Craft sets `data-craft-native-sidebar` whenever `webSidebarMaterial` is on
- * (vibrancy), not when a native sidebar actually exists. Hiding the web
- * sidebar on that signal left the window with no navigation at all.
- */
-</style>
