@@ -65,17 +65,12 @@ function formatBytes(value: number): string {
       </div>
     </header>
 
-    <div class="overflow-y-auto flex-1 bg-gray-50 dark:bg-neutral-800">
-      <iframe
-        :if="selected()?.html"
-        title="Captured email preview"
-        :srcdoc="selected()?.html || ''"
-        sandbox=""
-        referrerpolicy="no-referrer"
-        class="block min-h-[36rem] w-full bg-white border-0"
-      ></iframe>
-      <pre :if="!selected()?.html && selected()?.text" class="p-6 font-sans text-gray-900 text-sm whitespace-pre-wrap dark:text-neutral-100">{{ selected()?.text }}</pre>
-      <p :if="!selected()?.html && !selected()?.text" class="p-8 text-center text-gray-500 text-sm dark:text-neutral-400">This capture has no message body.</p>
+    <div class="flex overflow-hidden flex-1 flex-col bg-gray-50 dark:bg-neutral-800">
+      <EmailBodyPreview
+        :html="selected()?.html || ''"
+        :text="selected()?.text || ''"
+        :title="selected()?.subject || 'Captured email preview'"
+      />
     </div>
   </template>
 </section>

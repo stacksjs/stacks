@@ -79,8 +79,10 @@ dashboard data Actions.
 Captured mail uses `GET /api/dashboard/email/captured` and
 `GET /api/dashboard/email/captured/{id}`. Read captures through the shared
 parser in `Actions/Dashboard/Email/captured-mail.ts`; do not scrape files in an
-STX component or duplicate the log-driver format. Render captured HTML only in
-a sandboxed iframe with `srcdoc`. Never inject it into the dashboard document.
+STX component or duplicate the log-driver format. Render all inbound and
+captured HTML through `Email/EmailBodyPreview.stx`. It owns the sandboxed
+`srcdoc` iframe, restrictive content policy, and no-referrer boundary. Never
+inject message HTML into the dashboard document.
 
 ### Marketing
 - `/marketing/campaigns` - campaign management

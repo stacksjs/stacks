@@ -1,0 +1,33 @@
+<script client>
+const html = useReactiveProp('html', '')
+const text = useReactiveProp('text', '')
+const title = useReactiveProp('title', 'Email preview')
+
+const previewPolicy = `default-src 'none'; img-src data: blob:; style-src 'unsafe-inline'; font-src data:`
+const policyTag = `<meta http-equiv="Content-Security-Policy" content="${previewPolicy}">`
+
+function previewHtml(): string {
+  const source = html()
+  if (!source)
+    return ''
+
+  const head = source.match(/<head(?:\s[^>]*)?>/i)
+  return head
+    ? source.replace(head[0], `${head[0]}${policyTag}`)
+    : `<head>${policyTag}</head>${source}`
+}
+</script>
+
+<div class="overflow-hidden flex-1 min-h-0 bg-gray-50 dark:bg-neutral-800">
+  <iframe
+    :if="html()"
+    :title="title()"
+    :srcdoc="previewHtml()"
+    sandbox=""
+    csp="default-src 'none'; img-src data: blob:; style-src 'unsafe-inline'; font-src data:"
+    referrerpolicy="no-referrer"
+    class="block h-full min-h-[36rem] w-full bg-white border-0"
+  ></iframe>
+  <pre :if="!html() && text()" class="overflow-y-auto p-6 h-full font-sans text-gray-900 text-sm whitespace-pre-wrap dark:text-neutral-100">{{ text() }}</pre>
+  <p :if="!html() && !text()" class="p-8 text-center text-gray-500 text-sm dark:text-neutral-400">This message has no body.</p>
+</div>

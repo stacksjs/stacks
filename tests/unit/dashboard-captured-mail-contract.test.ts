@@ -32,8 +32,7 @@ describe('dashboard captured mail contract', () => {
     expect(dashboard).not.toMatch(/\b(?:document|window)\./)
     expect(list).toContain("useReactiveProp<CapturedMailSummary[]>('messages', [])")
     expect(list).toContain("emit('select', message)")
-    expect(detail).toContain(`:srcdoc="selected()?.html || ''"`)
-    expect(detail).toContain('sandbox=""')
+    expect(detail).toContain('<EmailBodyPreview')
     expect(detail).not.toContain('@html=')
   })
 

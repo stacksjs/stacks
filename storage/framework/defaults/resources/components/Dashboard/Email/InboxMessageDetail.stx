@@ -63,11 +63,13 @@ function formatDate(value: string): string {
     </div>
   </div>
 
-  <div class="overflow-y-auto flex-1 p-4 text-gray-900 dark:text-white">
-    <div :if="message()?.bodyHtml" @html="message()?.bodyHtml || ''" class="max-w-none prose dark:prose-invert"></div>
-    <p :if="!message()?.bodyHtml && message()?.bodyText" class="whitespace-pre-wrap">{{ message()?.bodyText }}</p>
-    <p :if="!message()?.bodyHtml && !message()?.bodyText" class="text-gray-500 text-sm dark:text-neutral-400">No message body was available.</p>
-    <div :if="message()?.hasAttachments" class="flex gap-3 items-start mt-5 p-3 text-gray-700 text-sm dark:text-neutral-300 bg-gray-50 dark:bg-neutral-800 border border-gray-200 rounded-md dark:border-neutral-600">
+  <div class="flex overflow-hidden flex-1 flex-col text-gray-900 dark:text-white">
+    <EmailBodyPreview
+      :html="message()?.bodyHtml || ''"
+      :text="message()?.bodyText || ''"
+      :title="message()?.subject || 'Inbound email preview'"
+    />
+    <div :if="message()?.hasAttachments" class="flex gap-3 items-start mb-4 mx-4 p-3 text-gray-700 text-sm dark:text-neutral-300 bg-gray-50 dark:bg-neutral-800 border border-gray-200 rounded-md dark:border-neutral-600">
       <span class="flex-shrink-0 mt-0.5 h-5 w-5 i-hugeicons-attachment-01"></span>
       <p>This message includes attachments. Attachment downloads are not exposed by the inbox API yet.</p>
     </div>

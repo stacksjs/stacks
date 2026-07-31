@@ -197,7 +197,16 @@ describe('dashboard native STX bindings', () => {
     const detail = componentSource('Email/InboxMessageDetail.stx')
     expect(detail).toContain('x-model="replyText"')
     expect(detail).toContain("emit('update:reply', $event.target.value)")
+    expect(detail).toContain('<EmailBodyPreview')
+    expect(detail).not.toContain('@html=')
     expect(detail).not.toContain('function updateReply(')
+
+    const preview = componentSource('Email/EmailBodyPreview.stx')
+    expect(preview).toContain(':srcdoc="previewHtml()"')
+    expect(preview).toContain('sandbox=""')
+    expect(preview).toContain('Content-Security-Policy')
+    expect(preview).toContain("default-src 'none'")
+    expect(preview).toContain('referrerpolicy="no-referrer"')
 
     const list = componentSource('Email/InboxMessageList.stx')
     expect(list).toContain('x-model="search"')
