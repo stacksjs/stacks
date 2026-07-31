@@ -1,38 +1,60 @@
-<script server>
-interface ServiceHealthProps {
-  services?: any[]
+<script client>
+interface ServiceHealthItem {
+  name: string
+  status: 'healthy' | 'degraded' | 'critical' | string
+  latency: string
+  detail?: string
 }
 
-const { services = [] } = defineProps<ServiceHealthProps>()
+const services = useReactiveProp('services', [] as ServiceHealthItem[])
+const loading = useReactiveProp('loading', false)
+const allHealthy = derived(() => services().length > 0 && services().every(service => service.status === 'healthy'))
 
-const allHealthy = services.every(s => s.status === 'healthy')
+function statusClass(status: string): string {
+  if (status === 'healthy')
+    return 'text-green-700 dark:text-green-300 bg-green-50 dark:bg-green-950/40'
+  if (status === 'degraded')
+    return 'text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40'
+  if (status === 'critical')
+    return 'text-red-700 dark:text-red-300 bg-red-50 dark:bg-red-950/40'
+  return 'text-neutral-700 dark:text-neutral-300 bg-neutral-100 dark:bg-neutral-700'
+}
 </script>
-<div class="bg-white dark:bg-neutral-800/90 border border-black/5 rounded-xl dark:border-white/5">
-  <div class="flex items-center justify-between p-5 border-b border-neutral-200/60 dark:border-white/5">
-    <h3 class="font-semibold text-[14px] text-neutral-900 tracking-tight dark:text-white">System Health</h3>
-    @if(allHealthy)
-      <Badge variant="success" size="xs" dot>All Systems Operational</Badge>
-    @else
-      <Badge variant="warning" size="xs" dot>Degraded</Badge>
-    @endif
+
+<section class="bg-white dark:bg-neutral-800/90 border border-black/5 rounded-xl dark:border-white/5">
+  <header class="flex items-center justify-between p-5 border-b border-neutral-200/60 dark:border-white/5">
+    <div>
+      <h2 class="font-semibold text-[14px] text-neutral-900 tracking-tight dark:text-white">System health</h2>
+      <p class="mt-1 text-neutral-500 text-xs dark:text-neutral-400">Native application health probes.</p>
+    </div>
+    <Badge :if="allHealthy()" variant="success" size="xs" dot>All systems operational</Badge>
+    <Badge :if="!loading() && services().length > 0 && !allHealthy()" variant="warning" size="xs" dot>Attention required</Badge>
+  </header>
+
+  <div :if="loading()" class="divide-neutral-100 divide-y dark:divide-white/5">
+    <div :for="item in [1, 2, 3]" class="flex items-center justify-between px-5 py-4">
+      <div class="h-4 w-28 bg-neutral-100 dark:bg-neutral-700 rounded animate-pulse"></div>
+      <div class="h-5 w-20 bg-neutral-100 dark:bg-neutral-700 rounded-full animate-pulse"></div>
+    </div>
   </div>
-  <div class="divide-neutral-100 divide-y dark:divide-white/5">
-    @foreach(services as service)
-      <div class="flex items-center justify-between px-5 py-3">
+
+  <div :if="!loading() && services().length > 0" class="divide-neutral-100 divide-y dark:divide-white/5">
+    <article :for="service in services()" class="px-5 py-3.5">
+      <div class="flex gap-4 items-center justify-between">
         <div>
-          <div class="font-medium text-[13px] text-neutral-900 dark:text-white">{{ service.name }}</div>
-          @if(service.latency)
-            <div class="text-[12px] text-neutral-500 dark:text-neutral-400">{{ service.latency }}</div>
-          @endif
+          <p class="font-medium text-[13px] text-neutral-900 dark:text-white">{{ service.name }}</p>
+          <p class="mt-0.5 text-[12px] text-neutral-500 dark:text-neutral-400">{{ service.latency }}</p>
         </div>
-        <Badge
-          variant="{{ service.status === 'healthy' ? 'success' : service.status === 'offline' ? 'danger' : 'warning' }}"
-          size="xs"
-          dot
-        >
+        <span :class="'px-2 py-0.5 font-medium text-[11px] rounded-full capitalize ' + statusClass(service.status)">
           {{ service.status }}
-        </Badge>
+        </span>
       </div>
-    @endforeach
+      <p :if="service.detail" class="mt-2 text-red-600 text-xs dark:text-red-400">{{ service.detail }}</p>
+    </article>
   </div>
-</div>
+
+  <div :if="!loading() && services().length === 0" class="px-5 py-12 text-center">
+    <span aria-hidden="true" class="inline-block h-7 w-7 text-neutral-300 dark:text-neutral-600 i-hugeicons-health"></span>
+    <p class="mt-2 text-neutral-500 text-sm dark:text-neutral-400">No health checks were returned.</p>
+  </div>
+</section>

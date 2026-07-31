@@ -1,46 +1,73 @@
-<script server>
+<script client>
 interface QuickLink {
   title: string
   description?: string
   href: string
   icon?: string
+  tone?: string
 }
 
-interface QuickLinksProps {
-  title?: string
-  links?: QuickLink[]
+const title = useReactiveProp('title', 'Quick links')
+const links = useReactiveProp('links', [] as QuickLink[])
+const customClass = useReactiveProp('class', '')
+const validLinks = derived(() => links().filter(link => typeof link.href === 'string' && link.href.length > 0))
+
+function isExternal(href: string): boolean {
+  return /^https?:\/\//.test(href)
 }
 
-const { title = 'Quick Links', links = [] } = defineProps<QuickLinksProps>()
-const validLinks = links.filter(link => typeof link.href === 'string' && link.href.length > 0)
+function iconClass(link: QuickLink): string {
+  return `${link.icon || 'i-hugeicons-link-02'} h-5 w-5`
+}
+
+function toneClass(link: QuickLink): string {
+  const tones: Record<string, string> = {
+    blue: 'bg-blue-500',
+    green: 'bg-green-500',
+    purple: 'bg-purple-500',
+    orange: 'bg-orange-500',
+    neutral: 'bg-neutral-500',
+  }
+  return tones[link.tone || 'neutral'] || tones.neutral
+}
 </script>
-<div class="bg-white dark:bg-neutral-800/90 border border-black/5 rounded-xl dark:border-white/5">
-  <div class="p-5 border-b border-neutral-200/60 dark:border-white/5">
-    <h3 class="font-semibold text-[14px] text-neutral-900 tracking-tight dark:text-white">{{ title }}</h3>
-  </div>
-  <div class="divide-neutral-100 divide-y dark:divide-white/5">
-    @foreach(validLinks as link)
+
+<section :class="customClass()">
+  <h2 class="mb-4 font-semibold text-base text-neutral-900 dark:text-white">{{ title() }}</h2>
+  <div class="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+    <template :for="link in validLinks()">
       <a
-        href="{{ link.href }}"
-        @if(!link.href.startsWith('http')) data-stx-link @endif
-        @if(link.href.startsWith('http')) target="_blank" rel="noopener noreferrer" @endif
-        class="flex gap-3.5 items-center px-5 py-3.5 hover:bg-neutral-50 dark:hover:bg-white/5 transition-colors group"
+        :if="isExternal(link.href)"
+        :href="link.href"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="block p-5 no-underline bg-white dark:bg-neutral-800 border border-neutral-200 rounded-xl dark:border-neutral-700 hover:shadow-md transition-shadow"
       >
-        <div class="flex flex-shrink-0 items-center justify-center h-9 w-9 bg-neutral-100 dark:bg-white/10 rounded-lg">
-          @if(link.icon)
-            <div class="{{ link.icon }} w-4.5 h-4.5 text-neutral-500 dark:text-neutral-400"></div>
-          @else
-            <span class="font-semibold text-[13px] text-neutral-500 dark:text-neutral-400">{{ link.title.charAt(0) }}</span>
-          @endif
+        <div class="flex gap-4 items-center">
+          <div :class="'flex flex-shrink-0 items-center justify-center h-11 w-11 text-white rounded-xl ' + toneClass(link)">
+            <span :class="iconClass(link)" aria-hidden="true"></span>
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="font-medium text-neutral-900 text-sm dark:text-white">{{ link.title }}</p>
+            <p :if="link.description" class="mt-0.5 text-neutral-500 text-xs truncate dark:text-neutral-400">{{ link.description }}</p>
+          </div>
         </div>
-        <div class="flex-1 min-w-0">
-          <div class="font-medium text-[13px] text-neutral-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">{{ link.title }}</div>
-          @if(link.description)
-            <div class="text-[12px] text-neutral-500 truncate dark:text-neutral-400">{{ link.description }}</div>
-          @endif
-        </div>
-        <div class="flex-shrink-0 h-4 w-4 text-neutral-300 dark:text-neutral-600 group-hover:text-neutral-400 dark:group-hover:text-neutral-500 transition-colors i-hugeicons-arrow-right-01"></div>
       </a>
-    @endforeach
+      <StxLink
+        :else
+        :to="link.href"
+        class="block p-5 no-underline bg-white dark:bg-neutral-800 border border-neutral-200 rounded-xl dark:border-neutral-700 hover:shadow-md transition-shadow"
+      >
+        <div class="flex gap-4 items-center">
+          <div :class="'flex flex-shrink-0 items-center justify-center h-11 w-11 text-white rounded-xl ' + toneClass(link)">
+            <span :class="iconClass(link)" aria-hidden="true"></span>
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="font-medium text-neutral-900 text-sm dark:text-white">{{ link.title }}</p>
+            <p :if="link.description" class="mt-0.5 text-neutral-500 text-xs truncate dark:text-neutral-400">{{ link.description }}</p>
+          </div>
+        </div>
+      </StxLink>
+    </template>
   </div>
-</div>
+</section>

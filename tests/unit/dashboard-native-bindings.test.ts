@@ -335,9 +335,10 @@ describe('dashboard native STX bindings', () => {
     expect(deliverySearch).toContain(':aria-label="placeholder()"')
 
     const quickLinks = componentSource('UI/QuickLinks.stx')
-    expect(quickLinks).toContain('const validLinks = links.filter')
-    expect(quickLinks).toContain('href="{{ link.href }}"')
-    expect(quickLinks).toContain('data-stx-link')
+    expect(quickLinks).toContain('const validLinks = derived(() => links().filter')
+    expect(quickLinks).toContain(':href="link.href"')
+    expect(quickLinks).toContain('<StxLink')
+    expect(quickLinks).toContain('isExternal(link.href)')
     expect(quickLinks).not.toContain("link.href || '#'")
 
     const table = componentSource('UI/Table.stx')
