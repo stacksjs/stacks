@@ -41,8 +41,9 @@ payment-provider records. They are not missing generic CRUD surfaces.
 - Rendered pages contain no unresolved PascalCase component tags.
 - Rendered pages contain no duplicate emitted IDs or broken
   `aria-labelledby` references.
-- The browser audit covered 114 dashboard destinations plus 20 dynamic model
-  destinations without a render, navigation, or console failure.
+- The live render and navigation audit covers all 108 static destinations,
+  all 69 discovered model destinations, and the remaining eight parameterized
+  route families without a full-page or STX fragment failure.
 - Headless desktop and narrow-viewport visual checks cover the componentized
   Terms of Service and Privacy Policy routes linked from registration.
 - The fixed desktop sidebar keeps its existing style and content-width
@@ -93,11 +94,15 @@ payment-provider records. They are not missing generic CRUD surfaces.
 
 - The 128 live GET dashboard API routes return JSON or their documented text
   payload with no hidden HTTP-200 error body.
-- A fresh live crawl returned 114 successful responses and 14 intentional
+- A fresh live crawl returned 115 successful responses and 13 intentional
   validation, authentication, or missing-resource responses, with no 5xx,
   method mismatch, transport failure, or HTML fallback.
 - Generic model routes reject malformed slugs with HTTP 400 before deriving
   an ORM model or SQLite table name.
+- Seeded image factories use stable Picsum sources instead of retired
+  placeholder hosts. The repair migration preserves non-placeholder URLs.
+- `buddy make:migration` generates executable, dialect-aware SQL migrations,
+  matching the migration runner's discovery contract.
 - Dashboard pages do not substitute mock, sample, random, or placeholder rows
   when an endpoint fails.
 - Commerce, content, delivery, marketing, CI, deployments, models, mail,
