@@ -17,6 +17,7 @@ import process from 'node:process'
 import { Buffer } from 'node:buffer'
 import { existsSync } from 'node:fs'
 import { timingSafeEqual } from 'node:crypto'
+import { collect } from '@stacksjs/collections'
 import { log, report } from '@stacksjs/logging'
 import { path as p } from '@stacksjs/path'
 import { UploadedFile } from '@stacksjs/storage'
@@ -2032,6 +2033,13 @@ function getAllInputFor(req: EnhancedRequest): Record<string, unknown> {
   return input
 }
 
+function flashInputFor(req: EnhancedRequest, keys?: string[]): void {
+  const input = getAllInputFor(req)
+  ;(req as any)._oldInput = keys
+    ? Object.fromEntries(keys.filter(key => key in input).map(key => [key, input[key]]))
+    : { ...input }
+}
+
 // Shared implementations of the Laravel-style request helpers. Assigned onto
 // each request by a single `Object.assign` (reference copy) instead of
 // allocating ~25 fresh closures per request — all per-request state lives on
@@ -2092,6 +2100,12 @@ const REQUEST_METHODS: Record<string, (...args: any[]) => any> & ThisType<Enhanc
       return key.every(k => !(k in input) || input[k] === undefined)
     return !(key in input) || input[key] === undefined
   },
+  merge(data: Record<string, unknown>) {
+    Object.assign(getAllInputFor(this), data)
+  },
+  keys() {
+    return Object.keys(getAllInputFor(this))
+  },
   string(key: string, defaultValue: string = '') {
     const input = getAllInputFor(this)
     const value = input[key]
@@ -2146,6 +2160,50 @@ const REQUEST_METHODS: Record<string, (...args: any[]) => any> & ThisType<Enhanc
       return value
     return value !== undefined && value !== null ? [value] : []
   },
+  date(key: string) {
+    const value = getAllInputFor(this)[key]
+    if (value === undefined || value === null || value === '')
+      return null
+    const parsed = new Date(value as string | number | Date)
+    return Number.isNaN(parsed.getTime()) ? null : parsed
+  },
+  enum(key: string, enumType: Record<string, string | number>) {
+    const value = getAllInputFor(this)[key]
+    if (value === undefined || value === null)
+      return null
+    if (Object.values(enumType).includes(value as string | number))
+      return value
+    const enumKey = String(value)
+    return enumKey in enumType ? enumType[enumKey] : null
+  },
+  collect(key: string) {
+    const value = getAllInputFor(this)[key]
+    if (Array.isArray(value))
+      return collect(value)
+    return collect(value === undefined || value === null ? [] : [value])
+  },
+  whenHas(key: string, callback: (value: unknown) => void, defaultCallback?: () => void) {
+    const input = getAllInputFor(this)
+    if (key in input && input[key] !== undefined)
+      callback(input[key])
+    else
+      defaultCallback?.()
+  },
+  whenFilled(key: string, callback: (value: unknown) => void, defaultCallback?: () => void) {
+    const input = getAllInputFor(this)
+    const value = input[key]
+    const filled = value !== undefined
+      && value !== null
+      && value !== ''
+      && !(Array.isArray(value) && value.length === 0)
+    if (filled)
+      callback(value)
+    else
+      defaultCallback?.()
+  },
+  isValue(key: string, value: unknown) {
+    return getAllInputFor(this)[key] === value
+  },
   async validate(rules?: Record<string, any>, messages: Record<string, string> = {}) {
     const selectedRules = rules ?? (this as any)._requestValidationRules
     if (!selectedRules || Object.keys(selectedRules).length === 0) {
@@ -2186,6 +2244,22 @@ const REQUEST_METHODS: Record<string, (...args: any[]) => any> & ThisType<Enhanc
       except: (keys: string[]) => Object.fromEntries(Object.entries(data).filter(([key]) => !keys.includes(key))),
     }
   },
+  old(key: string, defaultValue?: unknown) {
+    const oldInput = (this as any)._oldInput as Record<string, unknown> | undefined
+    return oldInput?.[key] ?? defaultValue
+  },
+  flashInput(keys?: string[]) {
+    flashInputFor(this, keys)
+  },
+  flashInputOnly(keys: string[]) {
+    flashInputFor(this, keys)
+  },
+  flashInputExcept(keys: string[]) {
+    const input = getAllInputFor(this)
+    ;(this as any)._oldInput = Object.fromEntries(
+      Object.entries(input).filter(([key]) => !keys.includes(key)),
+    )
+  },
   // File handling — returns UploadedFile with store/storeAs methods.
   file(key: string) {
     const files = (this.files || {}) as Record<string, File | File[]>
@@ -2217,6 +2291,24 @@ const REQUEST_METHODS: Record<string, (...args: any[]) => any> & ThisType<Enhanc
         result[key] = new UploadedFile(value as File)
     }
     return result
+  },
+  getParams() {
+    return { ...this.params }
+  },
+  isEmpty() {
+    return Object.keys(getAllInputFor(this)).length === 0
+  },
+  browser() {
+    return this.headers.get('sec-ch-ua') || this.headers.get('user-agent')
+  },
+  ipForRateLimit() {
+    const ip = (this as any).ip
+    if (typeof ip === 'function')
+      return ip.call(this) || null
+    return typeof ip === 'string' && ip ? ip : null
+  },
+  getMethod() {
+    return this.method.toUpperCase()
   },
   // Auth — returns the authenticated user/token set by middleware.
   async user() {

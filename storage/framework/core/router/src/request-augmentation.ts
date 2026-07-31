@@ -23,6 +23,7 @@
  */
 
 import type { FileInfo } from '@stacksjs/bun-router'
+import type { Collection } from '@stacksjs/types'
 
 /**
  * Stacks-specific marker fields attached to the request by the
@@ -133,9 +134,13 @@ export interface StacksRequestMacros {
   /** Whether any of the given keys are present. */
   hasAny?: (keys: string[]) => boolean
   /** Inverse of `has`. */
-  missing?: (key: string) => boolean
+  missing?: (key: string | string[]) => boolean
   /** Whether the key is present AND its value is non-empty. */
-  filled?: (key: string) => boolean
+  filled?: (key: string | string[]) => boolean
+  /** Merge additional values into the request input. */
+  merge?: (data: Record<string, unknown>) => void
+  /** Get every merged input key. */
+  keys?: () => string[]
 
   /** Coerce input to integer. */
   integer?: (key: string, defaultValue?: number) => number
@@ -146,7 +151,19 @@ export interface StacksRequestMacros {
   /** Coerce input to string. */
   string?: (key: string, defaultValue?: string) => string
   /** Coerce input to array. */
-  array?: <T = unknown>(key: string, defaultValue?: T[]) => T[]
+  array?: <T = unknown>(key: string) => T[]
+  /** Parse a date input, returning null when it is absent or invalid. */
+  date?: (key: string, format?: string) => Date | null
+  /** Match input to a value or key from an enum-like object. */
+  enum?: <T extends Record<string, string | number>>(key: string, enumType: T) => T[keyof T] | null
+  /** Wrap scalar or array input in the native Stacks collection. */
+  collect?: <T = unknown>(key: string) => Collection<T>
+  /** Run a callback when an input key exists. */
+  whenHas?: <T>(key: string, callback: (value: T) => void, defaultCallback?: () => void) => void
+  /** Run a callback when an input value is not empty. */
+  whenFilled?: <T>(key: string, callback: (value: T) => void, defaultCallback?: () => void) => void
+  /** Compare an input value without coercion. */
+  isValue?: (key: string, value: unknown) => boolean
 
   /** Get a single uploaded file by field name. */
   file?: (key: string) => FileInfo | null

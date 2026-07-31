@@ -853,6 +853,7 @@
       "version": "0.70.229",
       "dependencies": {
         "@stacksjs/bun-router": "^0.0.21",
+        "@stacksjs/collections": "workspace:*",
         "ts-rate-limiter": "^0.4.2",
       },
       "devDependencies": {
