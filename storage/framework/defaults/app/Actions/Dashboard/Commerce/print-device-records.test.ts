@@ -12,7 +12,7 @@ describe('dashboard print device records', () => {
       mac_address: '00:11:22:33:44:55',
       location: 'Kitchen',
       terminal: 'KDS-1',
-      status: 'WARNING',
+      status: 'warning',
       last_ping: 1785360000,
       print_count: '81',
       created_at: '2026-07-29 10:00:00',
@@ -25,21 +25,28 @@ describe('dashboard print device records', () => {
       status: 'warning',
       lastPing: 1785360000000,
       printCount: 81,
-      createdAt: '2026-07-29 10:00:00',
+      createdAt: '2026-07-29T10:00:00.000Z',
     })
   })
 
-  test('normalizes invalid operational values conservatively', () => {
-    const record = normalizePrintDeviceRecord({
+  test('rejects invalid operational values', () => {
+    const base = {
       id: 8,
-      status: 'unknown',
-      lastPing: 'not-a-date',
-      printCount: -2,
-    })
-
-    expect(record.status).toBe('offline')
-    expect(record.lastPing).toBe(0)
-    expect(record.printCount).toBe(0)
+      name: 'Kitchen printer',
+      macAddress: '00:11:22:33:44:55',
+      location: 'Kitchen',
+      terminal: 'KDS-1',
+      status: 'online',
+      lastPing: 0,
+      printCount: 0,
+      createdAt: '2026-07-29 10:00:00',
+    }
+    expect(() => normalizePrintDeviceRecord({ ...base, status: 'unknown' }))
+      .toThrow('PrintDevice 8.status must be online or offline or warning')
+    expect(() => normalizePrintDeviceRecord({ ...base, lastPing: 'not-a-date' }))
+      .toThrow('PrintDevice 8.last_ping must be a valid timestamp')
+    expect(() => normalizePrintDeviceRecord({ ...base, printCount: -2 }))
+      .toThrow('PrintDevice 8.print_count must be at least 0')
   })
 
   test('summarizes only persisted print device fields', () => {

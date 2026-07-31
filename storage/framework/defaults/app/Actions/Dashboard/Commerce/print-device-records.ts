@@ -1,3 +1,12 @@
+import {
+  commerceEnum,
+  commerceIdentifier,
+  commerceNumber,
+  commerceRequiredString,
+  commerceTimestamp,
+  commerceValue,
+} from './commerce-record'
+
 export type PrintDeviceStatus = 'online' | 'offline' | 'warning'
 
 export interface PrintDeviceRecord {
@@ -20,55 +29,38 @@ export interface PrintDeviceSummary {
   totalPrints: number
 }
 
-function value(record: any, ...keys: string[]): unknown {
-  for (const key of keys) {
-    const result = typeof record?.get === 'function' ? record.get(key) : record?.[key]
-    if (result !== null && result !== undefined)
-      return result
-  }
-  return undefined
-}
-
-function text(input: unknown): string {
-  return input === null || input === undefined ? '' : String(input)
-}
-
-function number(input: unknown): number {
-  const result = Number(input)
-  return Number.isFinite(result) ? result : 0
-}
-
-function timestamp(input: unknown): number {
-  const numeric = number(input)
-  if (numeric > 0)
-    return numeric < 1_000_000_000_000 ? numeric * 1000 : numeric
-
-  const source = text(input)
-  if (!source)
+function printDeviceTimestamp(input: unknown, source: string): number {
+  if (input === 0 || input === '0')
     return 0
-  const normalized = /^\d{4}-\d{2}-\d{2} \d/.test(source)
-    ? `${source.replace(' ', 'T')}Z`
-    : source
-  const parsed = Date.parse(normalized)
-  return Number.isNaN(parsed) ? 0 : parsed
-}
-
-function status(input: unknown): PrintDeviceStatus {
-  const result = text(input).toLowerCase()
-  return result === 'online' || result === 'warning' ? result : 'offline'
+  return new Date(commerceTimestamp(input, source, 'last_ping')).getTime()
 }
 
 export function normalizePrintDeviceRecord(record: any): PrintDeviceRecord {
+  const id = commerceIdentifier(commerceValue(record, 'id', 'uuid'), 'PrintDevice')
+  const source = `PrintDevice ${id}`
   return {
-    id: text(value(record, 'id', 'uuid')),
-    name: text(value(record, 'name')),
-    macAddress: text(value(record, 'mac_address', 'macAddress')),
-    location: text(value(record, 'location')),
-    terminal: text(value(record, 'terminal')),
-    status: status(value(record, 'status')),
-    lastPing: timestamp(value(record, 'last_ping', 'lastPing')),
-    printCount: Math.max(0, number(value(record, 'print_count', 'printCount'))),
-    createdAt: text(value(record, 'created_at', 'createdAt')),
+    id,
+    name: commerceRequiredString(commerceValue(record, 'name'), source, 'name'),
+    macAddress: commerceRequiredString(
+      commerceValue(record, 'mac_address', 'macAddress'),
+      source,
+      'mac_address',
+    ),
+    location: commerceRequiredString(commerceValue(record, 'location'), source, 'location'),
+    terminal: commerceRequiredString(commerceValue(record, 'terminal'), source, 'terminal'),
+    status: commerceEnum(commerceValue(record, 'status'), source, 'status', [
+      'online',
+      'offline',
+      'warning',
+    ]),
+    lastPing: printDeviceTimestamp(commerceValue(record, 'last_ping', 'lastPing'), source),
+    printCount: commerceNumber(
+      commerceValue(record, 'print_count', 'printCount'),
+      source,
+      'print_count',
+      { min: 0, integer: true },
+    ),
+    createdAt: commerceTimestamp(commerceValue(record, 'created_at', 'createdAt'), source),
   }
 }
 

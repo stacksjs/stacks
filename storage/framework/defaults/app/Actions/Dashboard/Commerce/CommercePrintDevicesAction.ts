@@ -1,5 +1,6 @@
 import { Action } from '@stacksjs/actions'
 import { PrintDevice } from '@stacksjs/orm'
+import { response } from '@stacksjs/router'
 import { normalizePrintDeviceRecord, summarizePrintDevices } from './print-device-records'
 
 export default new Action({
@@ -9,11 +10,18 @@ export default new Action({
   apiResponse: true,
 
   async handle() {
-    const devices = await PrintDevice.orderByDesc('id').limit(500).get()
-    const records = devices.map(normalizePrintDeviceRecord)
-    return {
-      records,
-      summary: summarizePrintDevices(records),
+    try {
+      const devices = await PrintDevice.orderByDesc('id').limit(500).get()
+      const records = devices.map(normalizePrintDeviceRecord)
+      return {
+        records,
+        summary: summarizePrintDevices(records),
+      }
+    }
+    catch (error) {
+      return response.json({
+        message: error instanceof Error ? error.message : 'Print device records could not be read.',
+      }, 503)
     }
   },
 })
