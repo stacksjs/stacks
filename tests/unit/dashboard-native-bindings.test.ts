@@ -303,6 +303,13 @@ describe('dashboard native STX bindings', () => {
     expect(card).not.toContain('action.onClick')
     expect(card).not.toMatch(/@click="\{\{/)
 
+    const tabs = componentSource('UI/Tabs.stx')
+    expect(tabs).toContain("emit('update:activeTab', tab.id)")
+    expect(tabs).toContain("emit('change', tab.id, tab)")
+    expect(tabs).toContain(':aria-selected="String(activeTab() === tab.id)"')
+    expect(tabs).toContain('@click="selectTab(tab)"')
+    expect(tabs).not.toContain('data-tab-id')
+
     for (const path of [
       'UI/ChartCard.stx',
       'UI/Avatar.stx',

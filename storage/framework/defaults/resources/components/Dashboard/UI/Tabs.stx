@@ -1,45 +1,108 @@
-<script server>
-interface TabsProps {
-  tabs?: any[]
-  activeTab?: string
-  variant?: 'underline' | 'pills' | 'boxed'
-  size?: 'sm' | 'md' | 'lg'
-  fullWidth?: boolean
+<script client>
+interface DashboardTab {
+  id: string
+  label: string
+  icon?: string
+  badge?: string | number
+  disabled?: boolean
+  panelId?: string
 }
 
-const { tabs = [], activeTab = '', variant = 'underline', size = 'md', fullWidth = false } = defineProps<TabsProps>()
+type TabsVariant = 'underline' | 'pills' | 'boxed'
+type TabsSize = 'sm' | 'md' | 'lg'
 
-const sizeClasses = {
+const tabs = useReactiveProp<DashboardTab[]>('tabs', [])
+const requestedTab = useReactiveProp('activeTab', '')
+const variant = useReactiveProp<TabsVariant>('variant', 'underline')
+const size = useReactiveProp<TabsSize>('size', 'md')
+const fullWidth = useReactiveProp('fullWidth', false)
+const activeTab = state(requestedTab())
+const emit = defineEmits()
+
+const sizeClasses: Record<TabsSize, string> = {
   sm: 'text-sm py-2 px-3',
   md: 'text-sm py-2.5 px-4',
-  lg: 'text-base py-3 px-5'
+  lg: 'text-base py-3 px-5',
 }
 
-const containerClasses = {
+const containerClasses: Record<TabsVariant, string> = {
   underline: 'border-b border-neutral-200 dark:border-neutral-700',
   pills: 'gap-2 bg-neutral-100 dark:bg-neutral-800 p-1 rounded-lg',
-  boxed: 'border border-neutral-200 dark:border-neutral-700 rounded-lg p-1'
+  boxed: 'border border-neutral-200 dark:border-neutral-700 rounded-lg p-1',
+}
+
+effect(() => {
+  const requested = requestedTab()
+  const firstEnabled = tabs().find(tab => !tab.disabled)?.id || ''
+  activeTab.set(requested || firstEnabled)
+})
+
+function selectTab(tab: DashboardTab): void {
+  if (tab.disabled || activeTab() === tab.id)
+    return
+  activeTab.set(tab.id)
+  emit('update:activeTab', tab.id)
+  emit('change', tab.id, tab)
+}
+
+function tabClass(tab: DashboardTab): string {
+  const selected = activeTab() === tab.id
+  const common = [
+    'inline-flex items-center justify-center gap-2 font-medium transition-all duration-150',
+    sizeClasses[size()],
+    fullWidth() ? 'flex-1' : '',
+    tab.disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer',
+  ]
+
+  if (variant() === 'pills') {
+    common.push('rounded-md')
+    common.push(selected
+      ? 'bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white shadow-sm'
+      : 'text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200')
+  }
+  else if (variant() === 'boxed') {
+    common.push('rounded-md')
+    common.push(selected
+      ? 'bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-white'
+      : 'text-neutral-500 hover:text-neutral-700 hover:bg-neutral-50 dark:text-neutral-400 dark:hover:text-neutral-200 dark:hover:bg-neutral-800/50')
+  }
+  else {
+    common.push('-mb-px border-b-2')
+    common.push(selected
+      ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+      : 'border-transparent text-neutral-500 hover:text-neutral-700 hover:border-neutral-300 dark:text-neutral-400 dark:hover:text-neutral-200')
+  }
+
+  return common.filter(Boolean).join(' ')
+}
+
+function badgeClass(tab: DashboardTab): string {
+  return activeTab() === tab.id
+    ? 'bg-blue-100 text-blue-600 dark:bg-blue-900/50 dark:text-blue-400'
+    : 'bg-neutral-200 text-neutral-600 dark:bg-neutral-700 dark:text-neutral-300'
 }
 </script>
-<div class="flex {{ fullWidth ? 'w-full' : '' }} {{ containerClasses[variant] }}" role="tablist">
-    @foreach(tabs as tab)
-      <button
-        type="button"
-        role="tab"
-        aria-selected="{{ activeTab == tab.id ? 'true' : 'false' }}"
-        class="inline-flex items-center justify-center gap-2 font-medium transition-all duration-150 {{ sizeClasses[size] }} {{ fullWidth ? 'flex-1' : '' }} {{ tab.disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer' }} @if(variant == 'underline') -mb-px {{ activeTab == tab.id ? 'border-b-2 border-blue-500 text-blue-600 dark:text-blue-400' : 'border-b-2 border-transparent text-neutral-500 hover:text-neutral-700 hover:border-neutral-300 dark:text-neutral-400 dark:hover:text-neutral-200' }} @elseif(variant == 'pills') rounded-md {{ activeTab == tab.id ? 'bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white shadow-sm' : 'text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200' }} @elseif(variant == 'boxed') rounded-md {{ activeTab == tab.id ? 'bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-white' : 'text-neutral-500 hover:text-neutral-700 hover:bg-neutral-50 dark:text-neutral-400 dark:hover:text-neutral-200 dark:hover:bg-neutral-800/50' }} @endif"
-        data-tab-id="{{ tab.id }}"
-        @if(tab.disabled) disabled @endif
+
+<div role="tablist" :class="'flex ' + (fullWidth() ? 'w-full ' : '') + containerClasses[variant()]">
+  <template :for="tab in tabs()">
+    <button
+      type="button"
+      role="tab"
+      :aria-selected="String(activeTab() === tab.id)"
+      :aria-controls="tab.panelId || undefined"
+      :tabindex="activeTab() === tab.id ? 0 : -1"
+      :disabled="Boolean(tab.disabled)"
+      :class="tabClass(tab)"
+      @click="selectTab(tab)"
+    >
+      <span :if="tab.icon" :class="tab.icon + ' h-4 w-4'"></span>
+      <span>{{ tab.label }}</span>
+      <span
+        :if="tab.badge !== undefined"
+        :class="'inline-flex items-center justify-center px-1.5 h-5 min-w-[1.25rem] font-medium text-xs rounded-full ' + badgeClass(tab)"
       >
-        @if(tab.icon)
-          <div class="{{ tab.icon }} w-4 h-4"></div>
-        @endif
-        <span>{{ tab.label }}</span>
-        @if(tab.badge !== undefined)
-          <span class="inline-flex items-center justify-center min-w-[1.25rem] h-5 px-1.5 text-xs font-medium rounded-full {{ activeTab == tab.id ? 'bg-blue-100 text-blue-600 dark:bg-blue-900/50 dark:text-blue-400' : 'bg-neutral-200 text-neutral-600 dark:bg-neutral-700 dark:text-neutral-300' }}">
-            {{ tab.badge }}
-          </span>
-        @endif
-      </button>
-    @endforeach
-  </div>
+        {{ tab.badge }}
+      </span>
+    </button>
+  </template>
+</div>
