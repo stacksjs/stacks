@@ -29,6 +29,36 @@ When the task is how a page should *look* (not just how stx renders), pair this 
 2. **NEVER use** `var`, `document.*`, `window.*` in STX templates
 3. STX `<script>` tags should ONLY contain stx-compatible code (signals, composables, directives)
 
+### Pre-paint appearance
+
+Use `@appearanceBootstrap({...})` when persisted appearance must be applied
+before the browser parses the application shell. Do not add a raw inline
+script for `localStorage`, `document`, or `matchMedia`. The directive emits the
+synchronous compiler-owned guard, validates storage through explicit
+allowlists, applies the root data attributes and `dark` class, and receives the
+request CSP nonce when nonce support is enabled.
+
+```stx
+@appearanceBootstrap({
+  storageKey: 'app-appearance',
+  appearance: {
+    key: 'sidebarStyle',
+    attribute: 'appearance',
+    allowed: ['macos', 'arc'],
+    default: 'macos',
+  },
+  colorMode: {
+    key: 'colorMode',
+    attribute: 'color-mode',
+    default: 'system',
+  },
+})
+```
+
+Persist a JSON object under `storageKey`. Invalid JSON, storage errors, unknown
+appearance values, and unsupported color modes all fall back to the declared
+defaults before first paint.
+
 ## Template Structure
 
 ```html
@@ -230,5 +260,6 @@ await addLayout('admin', { nav: true, footer: true })
 - **Structural DOM timing** - use `nextTick()` with `useRef()` after opening reactive markup
 - **Crosswind for styling** — use utility classes, not inline styles
 - **Script block restrictions** — only stx-compatible code (signals, composables, directives), no vanilla DOM APIs
+- **Pre-paint state** - use `@appearanceBootstrap`, never a raw browser script in the template
 - **Components go in `resources/`** — not in `app/` or `storage/`
 - **118+ modules** — STX is a comprehensive framework covering rendering, routing, forms, i18n, SEO, PWA, and more

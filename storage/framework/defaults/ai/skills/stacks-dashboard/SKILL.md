@@ -195,6 +195,11 @@ drawer behavior belongs in `Dashboard/MobileSidebar.stx`, with the layout
 passing the same `Sidebar` sections through its slot. This preserves one
 navigation source and the existing sidebar theme across form factors.
 
+Persisted shell appearance is applied with STX's
+`@appearanceBootstrap({...})` directive before the shell markup. Keep the
+storage key and defaults aligned with `composables/useAppearance.ts`. Never
+replace it with raw `window`, `document`, or `localStorage` code in the layout.
+
 At widths below 1024px:
 
 - Hide the fixed desktop sidebar and reset `[data-stx-content]` to
