@@ -447,7 +447,7 @@
             "type": "string",
             "isPrimaryKey": false,
             "isUnique": false,
-            "isNullable": true,
+            "isNullable": false,
             "hasDefault": true,
             "defaultValue": "USD",
             "maxLength": 3
@@ -1211,7 +1211,8 @@
             "isPrimaryKey": false,
             "isUnique": false,
             "isNullable": true,
-            "hasDefault": false
+            "hasDefault": true,
+            "defaultValue": false
           },
           {
             "name": "created_at",
@@ -1587,7 +1588,7 @@
             "type": "string",
             "isPrimaryKey": false,
             "isUnique": false,
-            "isNullable": false,
+            "isNullable": true,
             "hasDefault": false,
             "maxLength": 50
           },
@@ -1962,7 +1963,8 @@
             "isPrimaryKey": false,
             "isUnique": false,
             "isNullable": true,
-            "hasDefault": false
+            "hasDefault": true,
+            "defaultValue": 0
           },
           {
             "name": "pages",
@@ -1970,7 +1972,8 @@
             "isPrimaryKey": false,
             "isUnique": false,
             "isNullable": true,
-            "hasDefault": false
+            "hasDefault": true,
+            "defaultValue": 0
           },
           {
             "name": "duration",
@@ -1978,7 +1981,8 @@
             "isPrimaryKey": false,
             "isUnique": false,
             "isNullable": true,
-            "hasDefault": false
+            "hasDefault": true,
+            "defaultValue": 0
           },
           {
             "name": "metadata",
@@ -3924,7 +3928,7 @@
             "type": "string",
             "isPrimaryKey": false,
             "isUnique": false,
-            "isNullable": false,
+            "isNullable": true,
             "hasDefault": false,
             "maxLength": 100
           },
@@ -3933,7 +3937,7 @@
             "type": "text",
             "isPrimaryKey": false,
             "isUnique": false,
-            "isNullable": false,
+            "isNullable": true,
             "hasDefault": false
           },
           {
@@ -3942,7 +3946,8 @@
             "isPrimaryKey": false,
             "isUnique": false,
             "isNullable": true,
-            "hasDefault": false
+            "hasDefault": true,
+            "defaultValue": false
           },
           {
             "name": "is_approved",
@@ -3950,7 +3955,8 @@
             "isPrimaryKey": false,
             "isUnique": false,
             "isNullable": true,
-            "hasDefault": false
+            "hasDefault": true,
+            "defaultValue": false
           },
           {
             "name": "is_featured",
@@ -3958,7 +3964,8 @@
             "isPrimaryKey": false,
             "isUnique": false,
             "isNullable": true,
-            "hasDefault": false
+            "hasDefault": true,
+            "defaultValue": false
           },
           {
             "name": "helpful_votes",
@@ -4430,7 +4437,8 @@
             "isPrimaryKey": false,
             "isUnique": false,
             "isNullable": true,
-            "hasDefault": false
+            "hasDefault": true,
+            "defaultValue": false
           },
           {
             "name": "product_id",
@@ -5003,17 +5011,24 @@
             "type": "string",
             "isPrimaryKey": false,
             "isUnique": false,
-            "isNullable": true,
-            "hasDefault": false,
+            "isNullable": false,
+            "hasDefault": true,
+            "defaultValue": "USD",
             "maxLength": 3
           },
           {
             "name": "status",
-            "type": "string",
+            "type": "enum",
             "isPrimaryKey": false,
             "isUnique": false,
             "isNullable": false,
-            "hasDefault": false
+            "hasDefault": false,
+            "enumValues": [
+              "ACTIVE",
+              "USED",
+              "EXPIRED",
+              "DEACTIVATED"
+            ]
           },
           {
             "name": "purchaser_id",
@@ -5053,7 +5068,8 @@
             "isPrimaryKey": false,
             "isUnique": false,
             "isNullable": true,
-            "hasDefault": false
+            "hasDefault": true,
+            "defaultValue": false
           },
           {
             "name": "is_reloadable",
@@ -5061,7 +5077,8 @@
             "isPrimaryKey": false,
             "isUnique": false,
             "isNullable": true,
-            "hasDefault": false
+            "hasDefault": true,
+            "defaultValue": false
           },
           {
             "name": "is_active",
@@ -5194,7 +5211,8 @@
             "isPrimaryKey": false,
             "isUnique": false,
             "isNullable": true,
-            "hasDefault": false
+            "hasDefault": true,
+            "defaultValue": 0
           },
           {
             "name": "discount_amount",
@@ -5202,7 +5220,8 @@
             "isPrimaryKey": false,
             "isUnique": false,
             "isNullable": true,
-            "hasDefault": false
+            "hasDefault": true,
+            "defaultValue": 0
           },
           {
             "name": "delivery_fee",
@@ -5210,7 +5229,8 @@
             "isPrimaryKey": false,
             "isUnique": false,
             "isNullable": true,
-            "hasDefault": false
+            "hasDefault": true,
+            "defaultValue": 0
           },
           {
             "name": "tip_amount",
@@ -5218,7 +5238,8 @@
             "isPrimaryKey": false,
             "isUnique": false,
             "isNullable": true,
-            "hasDefault": false
+            "hasDefault": true,
+            "defaultValue": 0
           },
           {
             "name": "order_type",
@@ -5353,8 +5374,9 @@
             "type": "enum",
             "isPrimaryKey": false,
             "isUnique": false,
-            "isNullable": true,
-            "hasDefault": false,
+            "isNullable": false,
+            "hasDefault": true,
+            "defaultValue": "Active",
             "enumValues": [
               "Active",
               "Scheduled",
@@ -5428,7 +5450,8 @@
             "isPrimaryKey": false,
             "isUnique": false,
             "isNullable": true,
-            "hasDefault": false
+            "hasDefault": true,
+            "defaultValue": 0
           },
           {
             "name": "start_date",
@@ -8772,7 +8795,7 @@
       }
     ]
   },
-  "hash": "c818b390e8de97f7da19179052322d9f8aa15c16b0e970e891b8b3b57eeb0eea",
+  "hash": "7a121a6a4f4917e01d90bb7a34d17af8644deb1c045a2b8691a48233fc694794",
   "dialect": "sqlite",
-  "updatedAt": "2026-07-31T00:12:00.067Z"
+  "updatedAt": "2026-07-31T13:00:32.944Z"
 }
