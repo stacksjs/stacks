@@ -1,0 +1,462 @@
+@import('../UI/Button', '../UI/ConfirmDialog')
+
+<script client>
+import { dashboardApi } from '../../../../functions/dashboard-api'
+
+interface TeamSummary {
+  id: number
+  name: string
+}
+
+interface TeamMember {
+  id: number
+  userId: number
+  name: string
+  email: string
+  role: string
+  status: string
+  joinedAt: string | null
+}
+
+interface TeamInvitation {
+  id: number
+  email: string
+  role: string
+  status: string
+  deliveryStatus: string
+  expiresAt: string
+  createdAt: string | null
+}
+
+interface TeamPeopleResponse {
+  team: TeamSummary
+  members: TeamMember[]
+  invitations: TeamInvitation[]
+}
+
+const route = useRoute()
+const team = state<TeamSummary | null>(null)
+const members = state<TeamMember[]>([])
+const invitations = state<TeamInvitation[]>([])
+const isLoading = state(true)
+const loadError = state('')
+
+const inviteEmail = state('')
+const inviteRole = state('member')
+const inviteError = state('')
+const inviteSuccess = state('')
+const isInviting = state(false)
+
+const busyMemberId = state<number | null>(null)
+const busyInvitationId = state<number | null>(null)
+const memberToRemove = state<TeamMember | null>(null)
+const invitationToRevoke = state<TeamInvitation | null>(null)
+
+const teamId = derived(() => Number(route.params.id))
+const hasMembers = derived(() => members().length > 0)
+const hasInvitations = derived(() => invitations().length > 0)
+
+function roleLabel(role: string): string {
+  return role.charAt(0).toUpperCase() + role.slice(1)
+}
+
+function memberCountLabel(): string {
+  const count = members().length
+  return `${count} team ${count === 1 ? 'member' : 'members'}`
+}
+
+function statusClass(status: string): string {
+  if (status === 'active' || status === 'sent')
+    return 'bg-green-50 text-green-700 dark:bg-green-500/10 dark:text-green-400'
+  if (status === 'suspended' || status === 'failed')
+    return 'bg-red-50 text-red-700 dark:bg-red-500/10 dark:text-red-400'
+  if (status === 'expired')
+    return 'bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400'
+  return 'bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-300'
+}
+
+function formatDate(value: string | null): string {
+  if (!value)
+    return 'Not available'
+  const date = new Date(value.replace(' ', 'T'))
+  return Number.isNaN(date.getTime())
+    ? value
+    : date.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
+}
+
+async function fetchPeople(): Promise<void> {
+  isLoading.set(true)
+  loadError.set('')
+  try {
+    const data = await dashboardApi<TeamPeopleResponse>(`/api/dashboard/teams/${teamId()}/people`)
+    team.set(data.team)
+    members.set(data.members)
+    invitations.set(data.invitations)
+  }
+  catch (error) {
+    loadError.set(error instanceof Error ? error.message : 'Team details could not be loaded.')
+  }
+  finally {
+    isLoading.set(false)
+  }
+}
+
+async function handleInvite(): Promise<void> {
+  inviteError.set('')
+  inviteSuccess.set('')
+  isInviting.set(true)
+  const email = inviteEmail().trim()
+
+  try {
+    await dashboardApi(`/api/dashboard/teams/${teamId()}/invitations`, {
+      method: 'POST',
+      body: {
+        email,
+        role: inviteRole(),
+      },
+    })
+    inviteSuccess.set(`Invitation sent to ${email}.`)
+    inviteEmail.set('')
+    inviteRole.set('member')
+    await fetchPeople()
+  }
+  catch (error) {
+    inviteError.set(error instanceof Error ? error.message : 'Invitation could not be sent.')
+    await fetchPeople()
+  }
+  finally {
+    isInviting.set(false)
+  }
+}
+
+async function updateMemberRole(member: TeamMember, event: Event): Promise<void> {
+  const role = String((event.target as HTMLSelectElement).value)
+  busyMemberId.set(member.id)
+  loadError.set('')
+  try {
+    await dashboardApi(`/api/dashboard/teams/${teamId()}/members/${member.id}`, {
+      method: 'PATCH',
+      body: { role },
+    })
+    members.set(members().map(row => row.id === member.id ? { ...row, role } : row))
+  }
+  catch (error) {
+    const message = error instanceof Error ? error.message : 'Member role could not be updated.'
+    await fetchPeople()
+    loadError.set(message)
+  }
+  finally {
+    busyMemberId.set(null)
+  }
+}
+
+async function toggleMemberStatus(member: TeamMember): Promise<void> {
+  const status = member.status === 'active' ? 'suspended' : 'active'
+  busyMemberId.set(member.id)
+  loadError.set('')
+  try {
+    await dashboardApi(`/api/dashboard/teams/${teamId()}/members/${member.id}`, {
+      method: 'PATCH',
+      body: { status },
+    })
+    members.set(members().map(row => row.id === member.id ? { ...row, status } : row))
+  }
+  catch (error) {
+    loadError.set(error instanceof Error ? error.message : 'Member status could not be updated.')
+  }
+  finally {
+    busyMemberId.set(null)
+  }
+}
+
+async function removeMember(): Promise<void> {
+  const member = memberToRemove()
+  if (!member)
+    return
+
+  busyMemberId.set(member.id)
+  loadError.set('')
+  try {
+    await dashboardApi(`/api/dashboard/teams/${teamId()}/members/${member.id}`, {
+      method: 'DELETE',
+    })
+    members.set(members().filter(row => row.id !== member.id))
+    memberToRemove.set(null)
+  }
+  catch (error) {
+    loadError.set(error instanceof Error ? error.message : 'Member could not be removed.')
+  }
+  finally {
+    busyMemberId.set(null)
+  }
+}
+
+async function resendInvitation(invitation: TeamInvitation): Promise<void> {
+  busyInvitationId.set(invitation.id)
+  loadError.set('')
+  try {
+    await dashboardApi(`/api/dashboard/teams/${teamId()}/invitations/${invitation.id}/resend`, {
+      method: 'POST',
+    })
+    inviteSuccess.set(`Invitation resent to ${invitation.email}.`)
+    await fetchPeople()
+  }
+  catch (error) {
+    const message = error instanceof Error ? error.message : 'Invitation could not be resent.'
+    await fetchPeople()
+    loadError.set(message)
+  }
+  finally {
+    busyInvitationId.set(null)
+  }
+}
+
+async function revokeInvitation(): Promise<void> {
+  const invitation = invitationToRevoke()
+  if (!invitation)
+    return
+
+  busyInvitationId.set(invitation.id)
+  loadError.set('')
+  try {
+    await dashboardApi(`/api/dashboard/teams/${teamId()}/invitations/${invitation.id}`, {
+      method: 'DELETE',
+    })
+    invitations.set(invitations().filter(row => row.id !== invitation.id))
+    invitationToRevoke.set(null)
+  }
+  catch (error) {
+    loadError.set(error instanceof Error ? error.message : 'Invitation could not be revoked.')
+  }
+  finally {
+    busyInvitationId.set(null)
+  }
+}
+
+onMount(() => {
+  fetchPeople()
+})
+</script>
+
+<div class="p-6 space-y-6">
+  <PageHeader
+    title="Team members"
+    :description="team() ? `Manage members and invitations for ${team()?.name}` : 'Manage team members and invitations'"
+  />
+
+  <div :show="loadError()" role="alert" class="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 rounded-lg dark:border-red-800">
+    <p class="text-red-700 text-sm dark:text-red-400">{{ loadError() }}</p>
+  </div>
+
+  <form class="p-6 bg-white dark:bg-neutral-900 border border-neutral-200/70 rounded-xl dark:border-neutral-800" @submit.prevent="handleInvite">
+    <div class="flex gap-3 items-start">
+      <span class="shrink-0 mt-0.5 h-5 w-5 text-blue-500 i-hugeicons-user-add-02"></span>
+      <div>
+        <h2 class="font-semibold text-neutral-900 dark:text-white">Invite a teammate</h2>
+        <p class="mt-1 text-neutral-500 text-sm dark:text-neutral-400">They will receive a secure link that expires after seven days.</p>
+      </div>
+    </div>
+
+    <div :show="inviteSuccess()" role="status" class="mt-4 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
+      <p class="text-green-700 text-sm dark:text-green-400">{{ inviteSuccess() }}</p>
+    </div>
+    <div :show="inviteError()" role="alert" class="mt-4 p-3 bg-red-50 dark:bg-red-900/20 rounded-lg">
+      <p class="text-red-700 text-sm dark:text-red-400">{{ inviteError() }}</p>
+    </div>
+
+    <div class="grid gap-4 items-end md:grid-cols-[minmax(0,1fr)_180px_auto] mt-5">
+      <label class="block">
+        <span class="font-medium text-neutral-700 text-sm dark:text-neutral-300">Email address</span>
+        <input
+          type="email"
+          x-model="inviteEmail"
+          required
+          autocomplete="email"
+          placeholder="teammate@example.com"
+          class="block mt-1.5 px-3 h-9 w-full text-neutral-900 text-sm dark:text-neutral-100 bg-white dark:bg-neutral-950 border border-neutral-300 rounded-lg dark:border-neutral-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
+        />
+      </label>
+      <label class="block">
+        <span class="font-medium text-neutral-700 text-sm dark:text-neutral-300">Role</span>
+        <select
+          x-model="inviteRole"
+          class="block mt-1.5 px-3 h-9 w-full text-neutral-900 text-sm dark:text-neutral-100 bg-white dark:bg-neutral-950 border border-neutral-300 rounded-lg dark:border-neutral-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
+        >
+          <option value="admin">Admin</option>
+          <option value="member">Member</option>
+          <option value="viewer">Viewer</option>
+        </select>
+      </label>
+      <Button
+        type="submit"
+        variant="primary"
+        size="lg"
+        :loading="isInviting()"
+        :disabled="isInviting() || !inviteEmail().trim()"
+      >
+        Send invitation
+      </Button>
+    </div>
+  </form>
+
+  <section class="overflow-hidden bg-white dark:bg-neutral-900 border border-neutral-200/70 rounded-xl dark:border-neutral-800">
+    <div class="flex items-center justify-between px-6 py-4 border-b border-neutral-200 dark:border-neutral-800">
+      <div>
+        <h2 class="font-semibold text-neutral-900 dark:text-white">Members</h2>
+        <p class="mt-0.5 text-neutral-500 text-sm dark:text-neutral-400">{{ memberCountLabel() }}</p>
+      </div>
+    </div>
+
+    <div :show="isLoading()" class="px-6 py-10 text-center text-neutral-500 text-sm dark:text-neutral-400">Loading members...</div>
+    <div :show="!isLoading() && !hasMembers()" class="px-6 py-10 text-center text-neutral-500 text-sm dark:text-neutral-400">No members have joined this team yet.</div>
+
+    <div :show="!isLoading() && hasMembers()" class="overflow-x-auto">
+      <table class="min-w-full divide-neutral-200 divide-y dark:divide-neutral-800">
+        <thead class="bg-neutral-50/80 dark:bg-neutral-950/50">
+          <tr>
+            <th scope="col" class="px-6 py-3 font-medium text-left text-neutral-500 text-xs tracking-wide uppercase dark:text-neutral-400">Member</th>
+            <th scope="col" class="px-6 py-3 font-medium text-left text-neutral-500 text-xs tracking-wide uppercase dark:text-neutral-400">Role</th>
+            <th scope="col" class="px-6 py-3 font-medium text-left text-neutral-500 text-xs tracking-wide uppercase dark:text-neutral-400">Status</th>
+            <th scope="col" class="px-6 py-3 font-medium text-neutral-500 text-right text-xs tracking-wide uppercase dark:text-neutral-400">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="divide-neutral-200 divide-y dark:divide-neutral-800">
+          <template :for="member in members">
+            <tr>
+              <td class="px-6 py-4">
+                <div class="flex gap-3 items-center">
+                  <div class="flex items-center justify-center shrink-0 h-9 w-9 font-semibold text-blue-700 text-sm dark:text-blue-300 bg-blue-50 dark:bg-blue-500/10 rounded-full">
+                    {{ member.name.charAt(0).toUpperCase() }}
+                  </div>
+                  <div>
+                    <p class="font-medium text-neutral-900 text-sm dark:text-white">{{ member.name }}</p>
+                    <p class="mt-0.5 text-neutral-500 text-xs dark:text-neutral-400">{{ member.email }}</p>
+                  </div>
+                </div>
+              </td>
+              <td class="px-6 py-4">
+                <span :show="member.role === 'owner'" class="text-neutral-700 text-sm dark:text-neutral-300">Owner</span>
+                <select
+                  :show="member.role !== 'owner'"
+                  :value="member.role"
+                  :disabled="busyMemberId() === member.id"
+                  class="px-2.5 h-8 text-neutral-800 text-sm dark:text-neutral-100 bg-white dark:bg-neutral-950 border border-neutral-300 rounded-lg dark:border-neutral-700"
+                  @change="updateMemberRole(member, $event)"
+                >
+                  <option value="admin">Admin</option>
+                  <option value="member">Member</option>
+                  <option value="viewer">Viewer</option>
+                </select>
+              </td>
+              <td class="px-6 py-4">
+                <span class="inline-flex px-2 py-1 font-medium text-xs rounded-full" :class="statusClass(member.status)">
+                  {{ roleLabel(member.status) }}
+                </span>
+              </td>
+              <td class="px-6 py-4">
+                <div :show="member.role !== 'owner'" class="flex gap-2 items-center justify-end">
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    :loading="busyMemberId() === member.id"
+                    :disabled="busyMemberId() === member.id"
+                    @click="toggleMemberStatus(member)"
+                  >
+                    {{ member.status === 'active' ? 'Suspend' : 'Activate' }}
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    :disabled="busyMemberId() === member.id"
+                    @click="memberToRemove.set(member)"
+                  >
+                    Remove
+                  </Button>
+                </div>
+              </td>
+            </tr>
+          </template>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="overflow-hidden bg-white dark:bg-neutral-900 border border-neutral-200/70 rounded-xl dark:border-neutral-800">
+    <div class="px-6 py-4 border-b border-neutral-200 dark:border-neutral-800">
+      <h2 class="font-semibold text-neutral-900 dark:text-white">Pending invitations</h2>
+      <p class="mt-0.5 text-neutral-500 text-sm dark:text-neutral-400">Track delivery, resend links, or revoke access before acceptance.</p>
+    </div>
+
+    <div :show="isLoading()" class="px-6 py-10 text-center text-neutral-500 text-sm dark:text-neutral-400">Loading invitations...</div>
+    <div :show="!isLoading() && !hasInvitations()" class="px-6 py-10 text-center text-neutral-500 text-sm dark:text-neutral-400">No pending invitations.</div>
+
+    <div :show="hasInvitations()" class="overflow-x-auto">
+      <table class="min-w-full divide-neutral-200 divide-y dark:divide-neutral-800">
+        <thead class="bg-neutral-50/80 dark:bg-neutral-950/50">
+          <tr>
+            <th scope="col" class="px-6 py-3 font-medium text-left text-neutral-500 text-xs tracking-wide uppercase dark:text-neutral-400">Recipient</th>
+            <th scope="col" class="px-6 py-3 font-medium text-left text-neutral-500 text-xs tracking-wide uppercase dark:text-neutral-400">Role</th>
+            <th scope="col" class="px-6 py-3 font-medium text-left text-neutral-500 text-xs tracking-wide uppercase dark:text-neutral-400">Delivery</th>
+            <th scope="col" class="px-6 py-3 font-medium text-left text-neutral-500 text-xs tracking-wide uppercase dark:text-neutral-400">Expires</th>
+            <th scope="col" class="px-6 py-3 font-medium text-neutral-500 text-right text-xs tracking-wide uppercase dark:text-neutral-400">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="divide-neutral-200 divide-y dark:divide-neutral-800">
+          <template :for="invitation in invitations">
+            <tr>
+              <td class="px-6 py-4 text-neutral-900 text-sm dark:text-neutral-100">{{ invitation.email }}</td>
+              <td class="px-6 py-4 text-neutral-600 text-sm dark:text-neutral-300">{{ roleLabel(invitation.role) }}</td>
+              <td class="px-6 py-4">
+                <span class="inline-flex px-2 py-1 font-medium text-xs rounded-full" :class="statusClass(invitation.deliveryStatus)">
+                  {{ roleLabel(invitation.deliveryStatus) }}
+                </span>
+              </td>
+              <td class="px-6 py-4 text-neutral-500 text-sm dark:text-neutral-400">{{ formatDate(invitation.expiresAt) }}</td>
+              <td class="px-6 py-4">
+                <div class="flex gap-2 items-center justify-end">
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    :loading="busyInvitationId() === invitation.id"
+                    :disabled="busyInvitationId() === invitation.id"
+                    @click="resendInvitation(invitation)"
+                  >
+                    Resend
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    :disabled="busyInvitationId() === invitation.id"
+                    @click="invitationToRevoke.set(invitation)"
+                  >
+                    Revoke
+                  </Button>
+                </div>
+              </td>
+            </tr>
+          </template>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
+
+<ConfirmDialog
+  :isOpen="Boolean(memberToRemove())"
+  title="Remove team member?"
+  :description="memberToRemove() ? `${memberToRemove()?.name} will immediately lose access to this team.` : ''"
+  confirmLabel="Remove member"
+  :busy="Boolean(busyMemberId())"
+  @close="memberToRemove.set(null)"
+  @confirm="removeMember"
+/>
+
+<ConfirmDialog
+  :isOpen="Boolean(invitationToRevoke())"
+  title="Revoke invitation?"
+  :description="invitationToRevoke() ? `${invitationToRevoke()?.email} will no longer be able to use this invitation link.` : ''"
+  confirmLabel="Revoke invitation"
+  :busy="Boolean(busyInvitationId())"
+  @close="invitationToRevoke.set(null)"
+  @confirm="revokeInvitation"
+/>

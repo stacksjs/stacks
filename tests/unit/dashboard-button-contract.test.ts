@@ -25,6 +25,8 @@ describe('dashboard button contract', () => {
     expect(button).toContain("const livePressed = useReactiveProp('pressed', false)")
     expect(button).toContain("interaction?: 'action' | 'toggle'")
     expect(button).toContain("@if(interaction === 'toggle')")
+    expect(button).toContain("interaction === 'toggle'")
+    expect(button).toContain('].filter(Boolean).join')
     expect(button).toContain(':aria-pressed="String(livePressed())"')
 
     const pressedStateFiles = [
@@ -179,6 +181,7 @@ describe('dashboard button contract', () => {
       'Data/DataRecords.stx',
       'Releases/ReleaseDashboard.stx',
       'NotificationErrorModal.stx',
+      'Teams/TeamPeopleDashboard.stx',
     ]
 
     for (const file of files) {
