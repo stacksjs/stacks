@@ -24,4 +24,15 @@ describe('development page CSRF seeding', () => {
 
     expect(response).toBeUndefined()
   })
+
+  it('does not seed cookies on shared client assets', async () => {
+    const response = await seedCsrfPageResponse(
+      new Request('http://localhost/_stx/runtime.js'),
+      new Response('window.stx = {}', {
+        headers: { 'content-type': 'application/javascript; charset=utf-8' },
+      }),
+    )
+
+    expect(response).toBeUndefined()
+  })
 })

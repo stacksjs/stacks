@@ -31,6 +31,10 @@ export async function seedCsrfPageResponse(
   if (method !== 'GET' && method !== 'HEAD')
     return
 
+  const contentType = response.headers.get('content-type') || ''
+  if (!contentType.toLowerCase().includes('text/html'))
+    return
+
   try {
     const { seedCsrfCookieIfMissing } = await import(resolveCsrfMiddlewarePath())
     return seedCsrfCookieIfMissing(request, response)
