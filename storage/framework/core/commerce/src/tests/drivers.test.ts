@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'bun:test'
 import { refreshDatabase } from './setup'
-import { bulkDestroy } from '../shippings/drivers/destroy'
+import { bulkDestroy, destroy } from '../shippings/drivers/destroy'
 import { bulkStore } from '../shippings/drivers/store'
 
 beforeEach(async () => {
@@ -16,6 +16,10 @@ describe('Driver Module', () => {
   })
 
   describe('destroy', () => {
+    it('should return false when the driver does not exist', async () => {
+      expect(await destroy(999999)).toBe(false)
+    })
+
     it('should return 0 when trying to delete an empty array of drivers', async () => {
       // Try to delete with an empty array
       const deletedCount = await bulkDestroy([])

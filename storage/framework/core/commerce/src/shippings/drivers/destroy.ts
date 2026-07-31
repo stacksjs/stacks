@@ -1,30 +1,21 @@
-// Import dependencies
-type DriverJsonResponse = ModelRow<typeof Driver>
 import { db } from '@stacksjs/database'
+import { mutationCount } from '../../utils/mutation-count'
 import { fetchById } from './fetch'
 
 /**
  * Delete a driver by ID
  *
  * @param id The ID of the driver to delete
- * @returns The deleted driver record
+ * @returns True if the driver was deleted, false otherwise
  */
-export async function destroy(id: number): Promise<DriverJsonResponse | undefined> {
-  // Check if driver exists
-  const driver = await fetchById(id)
-
-  if (!driver) {
-    throw new Error(`Driver with ID ${id} not found`)
-  }
-
+export async function destroy(id: number): Promise<boolean> {
   try {
-    // Delete the driver
-    await db
+    const result = await db
       .deleteFrom('drivers')
       .where('id', '=', id)
-      .execute()
+      .executeTakeFirst()
 
-    return driver
+    return mutationCount(result) > 0
   }
   catch (error) {
     if (error instanceof Error) {

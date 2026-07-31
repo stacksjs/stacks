@@ -3,15 +3,21 @@ import { Action } from '@stacksjs/actions'
 import { shippings } from '@stacksjs/commerce'
 
 import { response } from '@stacksjs/router'
+import { shippingIdentifier, shippingNotFound } from './shipping-action'
 
 export default new Action({
   name: 'DigitalDelivery Show',
   description: 'DigitalDelivery Show ORM Action',
   method: 'GET',
   async handle(request: RequestInstance) {
-    const id = request.getParam('id')
+    const identifier = shippingIdentifier(request, 'Digital delivery')
+    if (identifier.error)
+      return identifier.error
+    const { id } = identifier
 
     const model = await shippings.digital.fetchById(id)
+    if (!model)
+      return shippingNotFound('Digital delivery', id)
 
     return response.json(model)
   },
