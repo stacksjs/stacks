@@ -14,6 +14,7 @@ export interface ActivityItem {
   id: number
   type: string
   title: string
+  source: string
   time: string
   status: 'success' | 'error' | 'warning' | 'info'
 }
@@ -45,6 +46,7 @@ interface DashboardHomeResponse {
     type: string
     message: string
     time: string
+    user?: string
     status: ActivityItem['status']
   }>
   issues?: DashboardIssue[]
@@ -85,6 +87,7 @@ function normalizeActivities(activities: DashboardHomeResponse['activities']): A
     id: index,
     type: activity.type,
     title: activity.message,
+    source: activity.user || '',
     time: activity.time,
     status: activity.status,
   }))

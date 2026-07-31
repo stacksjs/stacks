@@ -1,0 +1,168 @@
+<script client>
+import { useDashboard } from '../../../../functions/dashboard'
+
+const dashboard = useDashboard()
+const loadingCards = [1, 2, 3, 4]
+
+const quickLinks = [
+  {
+    title: 'Blog',
+    description: 'Manage persisted posts',
+    href: '/content/dashboard',
+    icon: 'i-hugeicons-book-open-01',
+    tone: 'blue',
+  },
+  {
+    title: 'Commerce',
+    description: 'View orders and products',
+    href: '/commerce/dashboard',
+    icon: 'i-hugeicons-store-01',
+    tone: 'green',
+  },
+  {
+    title: 'Cloud',
+    description: 'Monitor infrastructure',
+    href: '/cloud',
+    icon: 'i-hugeicons-cloud',
+    tone: 'purple',
+  },
+  {
+    title: 'Settings',
+    description: 'Configure the application',
+    href: '/settings',
+    icon: 'i-hugeicons-settings-02',
+    tone: 'neutral',
+  },
+]
+
+const resourceLinks = [
+  {
+    title: 'Documentation',
+    description: 'Guides and API references',
+    href: 'https://docs.stacksjs.org',
+    icon: 'i-hugeicons-book-02',
+    tone: 'blue',
+  },
+  {
+    title: 'Community',
+    description: 'Join the Stacks Discord',
+    href: 'https://stacksjs.com/discord',
+    icon: 'i-simple-icons-discord',
+    tone: 'purple',
+  },
+  {
+    title: 'GitHub',
+    description: 'Browse the Stacks source',
+    href: 'https://github.com/stacksjs/stacks',
+    icon: 'i-simple-icons-github',
+    tone: 'neutral',
+  },
+]
+
+function stats() {
+  return dashboard.stats.value
+}
+
+function httpMetrics() {
+  return dashboard.httpMetrics.value
+}
+
+function services() {
+  return dashboard.systemHealth.value
+}
+
+function activities() {
+  return dashboard.recentActivity.value
+}
+
+function issues() {
+  if (dashboard.error.value) {
+    return [{ source: 'Dashboard', message: dashboard.error.value }]
+  }
+  return dashboard.issues.value
+}
+
+async function loadDashboard(): Promise<void> {
+  try {
+    await dashboard.fetchAll()
+  }
+  catch {
+    // The composable exposes the request failure through `error`.
+  }
+}
+
+onMount(() => {
+  void loadDashboard()
+})
+</script>
+
+<div class="mx-auto p-6 max-w-7xl">
+  <PageHeader title="Dashboard" description="A live overview of persisted application and infrastructure data.">
+    <template #actions>
+      <Button variant="secondary" :loading="dashboard.isLoading.value" @click="loadDashboard">
+        <span :if="!dashboard.isLoading.value" aria-hidden="true" class="h-4 w-4 i-hugeicons-refresh"></span>
+        Refresh
+      </Button>
+    </template>
+  </PageHeader>
+
+  <div :if="issues().length > 0" class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between mb-6 px-4 py-3 text-amber-800 text-sm dark:text-amber-200 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 rounded-lg dark:border-amber-800/50" role="status">
+    <div>
+      <p class="font-medium">Some dashboard data is unavailable</p>
+      <ul class="mt-1 pl-5 list-disc">
+        <li :for="issue in issues()">{{ issue.source }}: {{ issue.message }}</li>
+      </ul>
+    </div>
+    <Button variant="secondary" size="sm" :loading="dashboard.isLoading.value" @click="loadDashboard">Try again</Button>
+  </div>
+
+  <section aria-labelledby="application-overview" class="mb-8">
+    <h2 id="application-overview" class="sr-only">Application overview</h2>
+    <div class="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+      <StatsCard :for="item in loadingCards" :if="dashboard.isLoading.value && stats().length === 0" loading />
+      <StatsCard
+        :for="stat in stats()"
+        :title="stat.title"
+        :value="stat.value"
+        :trend="stat.trend"
+        :trendLabel="stat.trendLabel"
+        :icon="stat.icon"
+        :iconBg="stat.iconBg"
+      />
+    </div>
+  </section>
+
+  <section aria-labelledby="http-performance" class="mb-8">
+    <div class="flex items-end justify-between mb-4">
+      <div>
+        <h2 id="http-performance" class="font-semibold text-base text-neutral-900 dark:text-white">HTTP performance</h2>
+        <p class="mt-1 text-neutral-500 text-sm dark:text-neutral-400">Metrics calculated from captured application requests.</p>
+      </div>
+      <StxLink to="/requests" class="text-neutral-500 text-sm hover:text-neutral-700 dark:hover:text-neutral-300">Request history</StxLink>
+    </div>
+    <div class="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+      <StatsCard :for="item in loadingCards" :if="dashboard.isLoading.value && httpMetrics().length === 0" loading />
+      <StatsCard
+        :for="metric in httpMetrics()"
+        :title="metric.title"
+        :value="metric.value"
+        :subtitle="metric.detail"
+        :icon="metric.icon"
+        iconBg="info"
+      />
+    </div>
+  </section>
+
+  <QuickLinks class="mb-8" :links="quickLinks" />
+
+  <div class="grid gap-6 grid-cols-1 lg:grid-cols-2 mt-8">
+    <ServiceHealth :services="services()" :loading="dashboard.isLoading.value" />
+    <ActivityTable :activities="activities()" :loading="dashboard.isLoading.value">
+      <template #actions>
+        <StxLink to="/data/activity" class="text-neutral-500 text-sm hover:text-neutral-700 dark:hover:text-neutral-300">View all</StxLink>
+      </template>
+    </ActivityTable>
+  </div>
+
+  <QuickLinks class="mt-8" title="Resources" :links="resourceLinks" />
+</div>
