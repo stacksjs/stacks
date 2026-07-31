@@ -1,3 +1,13 @@
+import {
+  commerceBoolean,
+  commerceIdentifier,
+  commerceOptionalIdentifier,
+  commerceOptionalString,
+  commerceRequiredString,
+  commerceTimestamp,
+  commerceValue,
+} from './commerce-record'
+
 export interface ProductUnitRecord {
   id: string
   name: string
@@ -23,30 +33,15 @@ export interface ProductUnitSummary {
   defaultConflicts: number
 }
 
-function value(record: any, ...keys: string[]): unknown {
-  for (const key of keys) {
-    const result = typeof record?.get === 'function' ? record.get(key) : record?.[key]
-    if (result !== null && result !== undefined)
-      return result
-  }
-  return undefined
-}
-
-function text(input: unknown): string {
-  return input === null || input === undefined ? '' : String(input)
-}
-
-function boolean(input: unknown): boolean {
-  return input === true || input === 1 || input === '1' || input === 'true'
-}
-
 export function productUnitOptions(products: any[]): ProductUnitOption[] {
   return products
-    .map(product => ({
-      id: text(value(product, 'id', 'uuid')),
-      name: text(value(product, 'name')),
-    }))
-    .filter(product => product.id && product.name)
+    .map((product) => {
+      const id = commerceIdentifier(commerceValue(product, 'id', 'uuid'), 'Product')
+      return {
+        id,
+        name: commerceRequiredString(commerceValue(product, 'name'), `Product ${id}`, 'name'),
+      }
+    })
     .sort((left, right) => left.name.localeCompare(right.name))
 }
 
@@ -54,17 +49,34 @@ export function normalizeProductUnitRecord(
   record: any,
   products = new Map<string, string>(),
 ): ProductUnitRecord {
-  const productId = text(value(record, 'product_id', 'productId'))
+  const id = commerceIdentifier(commerceValue(record, 'id', 'uuid'), 'ProductUnit')
+  const source = `ProductUnit ${id}`
+  const productId = commerceOptionalIdentifier(
+    commerceValue(record, 'product_id', 'productId'),
+    source,
+    'product_id',
+  )
+  const productName = productId ? products.get(productId) : undefined
+  if (productId && !productName)
+    throw new TypeError(`${source}.product_id references missing Product ${productId}.`)
   return {
-    id: text(value(record, 'id', 'uuid')),
-    name: text(value(record, 'name')),
-    abbreviation: text(value(record, 'abbreviation')),
-    type: text(value(record, 'type')),
-    description: text(value(record, 'description')),
-    isDefault: boolean(value(record, 'is_default', 'isDefault')),
+    id,
+    name: commerceRequiredString(commerceValue(record, 'name'), source, 'name'),
+    abbreviation: commerceRequiredString(
+      commerceValue(record, 'abbreviation'),
+      source,
+      'abbreviation',
+    ),
+    type: commerceRequiredString(commerceValue(record, 'type'), source, 'type'),
+    description: commerceOptionalString(commerceValue(record, 'description'), source, 'description'),
+    isDefault: commerceBoolean(
+      commerceValue(record, 'is_default', 'isDefault'),
+      source,
+      'is_default',
+    ),
     productId,
-    productName: products.get(productId) || '',
-    createdAt: text(value(record, 'created_at', 'createdAt')),
+    productName: productName || '',
+    createdAt: commerceTimestamp(commerceValue(record, 'created_at', 'createdAt'), source),
   }
 }
 
@@ -72,7 +84,7 @@ export function summarizeProductUnits(records: ProductUnitRecord[]): ProductUnit
   const defaultsByType = new Map<string, number>()
   for (const record of records) {
     if (record.isDefault && record.type)
-      defaultsByType.set(record.type, (defaultsByType.get(record.type) || 0) + 1)
+      defaultsByType.set(record.type, (defaultsByType.get(record.type) ?? 0) + 1)
   }
 
   return {

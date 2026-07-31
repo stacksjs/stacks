@@ -1,5 +1,6 @@
 import { Action } from '@stacksjs/actions'
 import { Product, ProductUnit } from '@stacksjs/orm'
+import { response } from '@stacksjs/router'
 import {
   normalizeProductUnitRecord,
   productUnitOptions,
@@ -13,17 +14,25 @@ export default new Action({
   apiResponse: true,
 
   async handle() {
-    const [units, products] = await Promise.all([
-      ProductUnit.orderByDesc('id').limit(500).get(),
-      Product.orderBy('name').limit(500).get(),
-    ])
-    const productNames = new Map(productUnitOptions(products).map(product => [product.id, product.name]))
-    const records = units.map(unit => normalizeProductUnitRecord(unit, productNames))
+    try {
+      const [units, products] = await Promise.all([
+        ProductUnit.orderByDesc('id').limit(500).get(),
+        Product.orderBy('name').limit(500).get(),
+      ])
+      const options = productUnitOptions(products)
+      const productNames = new Map(options.map(product => [product.id, product.name]))
+      const records = units.map(unit => normalizeProductUnitRecord(unit, productNames))
 
-    return {
-      records,
-      products: productUnitOptions(products),
-      summary: summarizeProductUnits(records),
+      return {
+        records,
+        products: options,
+        summary: summarizeProductUnits(records),
+      }
+    }
+    catch (error) {
+      return response.json({
+        message: error instanceof Error ? error.message : 'Product unit records could not be read.',
+      }, 503)
     }
   },
 })
