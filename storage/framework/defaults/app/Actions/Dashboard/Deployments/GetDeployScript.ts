@@ -15,6 +15,7 @@ export default new Action({
       return {
         path: 'cloud/deploy-script.ts',
         content: await readFile(filePath, 'utf8'),
+        exists: true,
       }
     }
     catch (error) {

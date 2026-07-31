@@ -1,9 +1,12 @@
 import { describe, expect, it } from 'bun:test'
 import {
+  fetchDeployScript,
+  fetchDeploymentTerminal,
   normalizeDeployment,
   normalizeDeploymentDetail,
   normalizeDeploymentList,
   summarizeDeployments,
+  updateDeployScript,
 } from './deployments'
 
 describe('deployment dashboard data', () => {
@@ -68,5 +71,11 @@ describe('deployment dashboard data', () => {
       active: 1,
       averageDuration: 60,
     })
+  })
+
+  it('exports the deployment operations used by the dashboard components', () => {
+    expect(typeof fetchDeployScript).toBe('function')
+    expect(typeof updateDeployScript).toBe('function')
+    expect(typeof fetchDeploymentTerminal).toBe('function')
   })
 })

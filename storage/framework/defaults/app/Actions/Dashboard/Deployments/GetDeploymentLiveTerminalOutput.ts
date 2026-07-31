@@ -18,6 +18,7 @@ export default new Action({
       return {
         path: configuredPath,
         output: tailLines(await readFile(filePath, 'utf8')),
+        exists: true,
       }
     }
     catch (error) {
