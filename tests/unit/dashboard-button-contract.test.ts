@@ -309,7 +309,7 @@ describe('dashboard button contract', () => {
 
   test('keeps permission navigation semantic while sharing its actions', () => {
     const source = readFileSync(
-      resolve('storage/framework/defaults/views/dashboard/management/permissions/index.stx'),
+      resolve('storage/framework/defaults/resources/components/Dashboard/Management/PermissionsDashboard.stx'),
       'utf8',
     )
     const nativeButtons = [...source.matchAll(/<button\b[^>]*>/g)].map(match => match[0])

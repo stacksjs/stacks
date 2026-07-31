@@ -688,8 +688,12 @@ describe('dashboard native STX bindings', () => {
   })
 
   test('RBAC management uses guarded native contracts', () => {
-    const page = readFileSync(
+    const route = readFileSync(
       resolve('storage/framework/defaults/views/dashboard/management/permissions/index.stx'),
+      'utf8',
+    )
+    const page = readFileSync(
+      resolve('storage/framework/defaults/resources/components/Dashboard/Management/PermissionsDashboard.stx'),
       'utf8',
     )
     const store = readFileSync(
@@ -704,6 +708,9 @@ describe('dashboard native STX bindings', () => {
       resolve('storage/framework/defaults/app/Actions/Dashboard/Rbac/UserRolesSyncAction.ts'),
       'utf8',
     )
+
+    expect(route).toContain('<PermissionsDashboard />')
+    expect(route).not.toContain('<script')
 
     for (const model of [
       'newRoleName',

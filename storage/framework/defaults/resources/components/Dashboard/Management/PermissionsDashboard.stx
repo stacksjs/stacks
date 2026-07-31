@@ -1,0 +1,639 @@
+<script client>
+  // RBAC management surface (stacksjs/stacks#1845).
+  //
+  // Lets an admin manage roles, permissions, per-user role attachments,
+  // and the role/permission matrix against the live `user_roles` /
+  // `role_permissions` / `user_permissions` pivots. All persistence
+  // flows through the dashboard RBAC endpoints, which delegate
+  // to `@stacksjs/auth`'s `Rbac` facade — no direct DB writes from the
+  // page.
+  //
+  // Follows #1838 conventions:
+  //   - No `<script server>` and no vanilla DOM reads.
+  //   - All state in the rbacStore; the page is pure presentation.
+  //   - Mutations are optimistic with rollback on failure (store handles
+  //     the snapshot/rollback dance).
+  import { useStore } from '@stacksjs/stx'
+  import { useRole } from '~/storage/framework/defaults/views/dashboard/composables/useRole'
+
+  const rbac = useStore('rbac')
+  // Admin-only surface. Per `useRole.ts`, `isAdmin()` returns true for
+  // any user with the `admin` role *or* an unauthenticated viewer on
+  // the localhost dev dashboard — same permissive-dev defaults the rest
+  // of the management surface uses.
+  const { isAdmin } = useRole()
+  const canManage = derived(() => isAdmin())
+
+  // ─── Lifted store signals (for template auto-unwrap) ──────────
+
+  const loading = derived(() => rbac.loading())
+  const error = derived(() => rbac.error())
+  const roles = derived(() => rbac.roles())
+  const permissions = derived(() => rbac.permissions())
+  const users = derived(() => rbac.users())
+  const loadingPivots = derived(() => rbac.loadingPivots())
+
+  interface RoleRow {
+    id: number
+    name: string
+    guardName: string
+    description: string | null
+  }
+
+  interface PermissionRow {
+    id: number
+    name: string
+    guardName: string
+    description: string | null
+  }
+
+  interface UserRow {
+    id: number
+    name: string | null
+    email: string | null
+  }
+
+  interface DeleteTarget {
+    kind: 'role' | 'permission'
+    name: string
+    guardName: string
+  }
+
+  // ─── Tab state ────────────────────────────────────────────────
+
+  const activeTab = state('roles')
+
+  function tabClass(id) {
+    const base = 'px-4 py-2 font-medium text-sm whitespace-nowrap bg-transparent border-b-2 transition-colors cursor-pointer '
+    return activeTab() === id
+      ? base + 'border-violet-400 text-violet-600 dark:text-violet-400'
+      : base + 'border-transparent text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300'
+  }
+
+  function selectTab(id) {
+    activeTab.set(id)
+    selectedUser.set(null)
+    selectedRole.set(null)
+  }
+
+  // ─── Filters ──────────────────────────────────────────────────
+
+  const roleFilter = state('')
+  const permissionFilter = state('')
+  const userFilter = state('')
+
+  const filteredRoles = derived(() => {
+    const q = roleFilter().toLowerCase()
+    if (!q) return roles()
+    return roles().filter(r =>
+      r.name.toLowerCase().includes(q)
+      || r.guardName.toLowerCase().includes(q)
+      || (r.description || '').toLowerCase().includes(q),
+    )
+  })
+
+  const filteredPermissions = derived(() => {
+    const q = permissionFilter().toLowerCase()
+    if (!q) return permissions()
+    return permissions().filter(p =>
+      p.name.toLowerCase().includes(q)
+      || p.guardName.toLowerCase().includes(q)
+      || (p.description || '').toLowerCase().includes(q),
+    )
+  })
+
+  const filteredUsers = derived(() => {
+    const q = userFilter().toLowerCase()
+    if (!q) return users()
+    return users().filter(u => (u.name || '').toLowerCase().includes(q) || (u.email || '').toLowerCase().includes(q))
+  })
+
+  const guardOptions = derived(() => {
+    const names = new Set(['web'])
+    for (const role of roles())
+      names.add(role.guardName)
+    for (const permission of permissions())
+      names.add(permission.guardName)
+    return Array.from(names).sort().map(name => ({ value: name, label: name }))
+  })
+
+  // ─── Create-role form ─────────────────────────────────────────
+
+  const newRoleName = state('')
+  const newRoleDescription = state('')
+  const newRoleGuard = state('web')
+  const submittingRole = state(false)
+
+  async function submitNewRole() {
+    const name = newRoleName().trim()
+    if (!name) return
+    submittingRole.set(true)
+    try {
+      const created = await rbac.createRole({
+        name,
+        guardName: newRoleGuard().trim() || 'web',
+        description: newRoleDescription().trim(),
+      })
+      if (created) {
+        newRoleName.set('')
+        newRoleDescription.set('')
+      }
+    }
+    finally {
+      submittingRole.set(false)
+    }
+  }
+
+  // ─── Create-permission form ───────────────────────────────────
+
+  const newPermName = state('')
+  const newPermDescription = state('')
+  const newPermGuard = state('web')
+  const submittingPerm = state(false)
+
+  async function submitNewPermission() {
+    const name = newPermName().trim()
+    if (!name) return
+    submittingPerm.set(true)
+    try {
+      const created = await rbac.createPermission({
+        name,
+        guardName: newPermGuard().trim() || 'web',
+        description: newPermDescription().trim(),
+      })
+      if (created) {
+        newPermName.set('')
+        newPermDescription.set('')
+      }
+    }
+    finally {
+      submittingPerm.set(false)
+    }
+  }
+
+  // ─── User-role assignment drawer ──────────────────────────────
+
+  const selectedUser = state<UserRow | null>(null)
+  const selectedUserGuard = state('web')
+  const userRolesDraft = state([])
+  const savingUserRoles = state(false)
+
+  async function loadSelectedUserRoles() {
+    const user = selectedUser()
+    if (!user) return
+    const guardName = selectedUserGuard()
+    userRolesDraft.set([])
+    await rbac.loadUserRoles(user.id, guardName)
+    if (selectedUser()?.id === user.id && selectedUserGuard() === guardName)
+      userRolesDraft.set([...rbac.userRoleNames(user.id, guardName)])
+  }
+
+  function selectUser(user: UserRow) {
+    selectedUser.set(user)
+    selectedUserGuard.set('web')
+    loadSelectedUserRoles()
+  }
+
+  function changeUserGuard(guardName: string) {
+    selectedUserGuard.set(guardName)
+    loadSelectedUserRoles()
+  }
+
+  function toggleUserRoleDraft(roleName) {
+    const list = userRolesDraft()
+    userRolesDraft.set(
+      list.includes(roleName)
+        ? list.filter(n => n !== roleName)
+        : [...list, roleName],
+    )
+  }
+
+  async function saveUserRoles() {
+    const user = selectedUser()
+    if (!user) return
+    savingUserRoles.set(true)
+    try {
+      await rbac.syncUserRoles(user.id, userRolesDraft(), selectedUserGuard())
+    }
+    finally {
+      savingUserRoles.set(false)
+    }
+  }
+
+  function closeUserDrawer() {
+    selectedUser.set(null)
+    userRolesDraft.set([])
+  }
+
+  function isRoleInDraft(roleName) {
+    return userRolesDraft().includes(roleName)
+  }
+
+  const rolesForSelectedGuard = derived(() => roles().filter(role => role.guardName === selectedUserGuard()))
+  const userRolesLoading = derived(() => {
+    const user = selectedUser()
+    return user ? Boolean(loadingPivots()[`user:${user.id}:${encodeURIComponent(selectedUserGuard())}`]) : false
+  })
+
+  // ─── Role-permission matrix ───────────────────────────────────
+
+  const selectedRole = state<RoleRow | null>(null)
+  const rolePermsDraft = state([])
+  const savingRolePerms = state(false)
+
+  async function selectRole(role: RoleRow) {
+    selectedRole.set(role)
+    rolePermsDraft.set([])
+    await rbac.loadRolePermissions(role.name, role.guardName)
+    rolePermsDraft.set([...rbac.rolePermissionNames(role.name, role.guardName)])
+  }
+
+  function toggleRolePermDraft(permName) {
+    const list = rolePermsDraft()
+    rolePermsDraft.set(
+      list.includes(permName)
+        ? list.filter(n => n !== permName)
+        : [...list, permName],
+    )
+  }
+
+  async function saveRolePerms() {
+    const role = selectedRole()
+    if (!role) return
+    savingRolePerms.set(true)
+    try {
+      await rbac.syncRolePermissions(role.name, rolePermsDraft(), role.guardName)
+    }
+    finally {
+      savingRolePerms.set(false)
+    }
+  }
+
+  function closeRoleDrawer() {
+    selectedRole.set(null)
+    rolePermsDraft.set([])
+  }
+
+  function isPermInDraft(permName) {
+    return rolePermsDraft().includes(permName)
+  }
+
+  const permissionsForSelectedRole = derived(() => {
+    const role = selectedRole()
+    return role ? permissions().filter(permission => permission.guardName === role.guardName) : []
+  })
+
+  const rolePermissionsLoading = derived(() => {
+    const role = selectedRole()
+    return role
+      ? Boolean(loadingPivots()[`role:${encodeURIComponent(role.guardName)}:${encodeURIComponent(role.name)}`])
+      : false
+  })
+
+  // ─── Destructive actions ──────────────────────────────────────
+
+  const pendingDelete = state<DeleteTarget | null>(null)
+  const deleting = state(false)
+
+  function requestRoleDelete(role: RoleRow) {
+    pendingDelete.set({ kind: 'role', name: role.name, guardName: role.guardName })
+  }
+
+  function requestPermissionDelete(permission: PermissionRow) {
+    pendingDelete.set({ kind: 'permission', name: permission.name, guardName: permission.guardName })
+  }
+
+  const deleteTitle = derived(() => {
+    const target = pendingDelete()
+    if (!target) return ''
+    return target.kind === 'role' ? 'Delete this role?' : 'Delete this permission?'
+  })
+  const deleteDescription = derived(() => {
+    const target = pendingDelete()
+    if (!target) return ''
+    return target.kind === 'role'
+      ? `"${target.name}" will be detached from every user and lose its permission assignments.`
+      : `"${target.name}" will be detached from every role and user.`
+  })
+
+  async function confirmDelete() {
+    const target = pendingDelete()
+    if (!target || deleting()) return
+    deleting.set(true)
+    try {
+      const deleted = target.kind === 'role'
+        ? await rbac.deleteRole(target.name, target.guardName)
+        : await rbac.deletePermission(target.name, target.guardName)
+      if (deleted)
+        pendingDelete.set(null)
+    }
+    finally {
+      deleting.set(false)
+    }
+  }
+
+  function handleKeydown(event: KeyboardEvent) {
+    if (event.key !== 'Escape' || pendingDelete())
+      return
+    if (selectedRole())
+      closeRoleDrawer()
+    else if (selectedUser())
+      closeUserDrawer()
+  }
+
+  useEventListener('keydown', handleKeydown)
+
+  // ─── Tiny formatters ──────────────────────────────────────────
+
+  function formatDate(iso) {
+    if (!iso) return ''
+    const d = new Date(iso)
+    if (Number.isNaN(d.getTime())) return ''
+    return d.toLocaleDateString()
+  }
+
+  // Top-level load runs on every page entry (hard reload + SPA swap).
+  // The store dedupes its own loading flag so back-to-back calls don't
+  // double-fire.
+  rbac.load()
+</script>
+
+<template>
+<div class="mx-auto px-6 py-8 max-w-7xl">
+  <!-- Role-gated wrapper: only admins can manage RBAC. Unauthenticated
+      viewers on localhost see the surface as if they were admin so the
+      dev dashboard stays usable; production must put the auth
+      middleware in front of the dashboard RBAC endpoints to make that
+      guarantee real. -->
+  <div :if="!canManage" class="px-5 py-8 text-center bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 rounded-lg dark:border-zinc-800">
+    <p class="text-sm text-zinc-600 dark:text-zinc-400">This surface requires the admin role.</p>
+  </div>
+
+  <div :if="canManage">
+    <header class="mb-6">
+      <h1 class="font-semibold text-2xl text-zinc-900 dark:text-zinc-100">Permissions Management</h1>
+      <p class="mt-1 text-sm text-zinc-500">Manage roles, permissions, and user assignments. Backed by the live <code class="text-xs">user_roles</code> / <code class="text-xs">role_permissions</code> pivots.</p>
+    </header>
+
+    <!-- Error banner (initial load + transient mutation failures) -->
+    <div :if="error" class="mb-4 px-4 py-3 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950 border border-red-300 rounded-md dark:border-red-800">
+      <span :text="error"></span>
+    </div>
+
+    <!-- Loading state -->
+    <div :if="loading" class="px-5 py-8 text-center bg-white dark:bg-neutral-900 border border-zinc-200 rounded-lg dark:border-zinc-800">
+      <p class="text-sm text-zinc-500">Loading…</p>
+    </div>
+
+    <div :if="!loading">
+      <!-- Tabs -->
+      <div class="flex mb-6 border-b border-zinc-200 dark:border-zinc-800">
+        <button type="button" @click="selectTab('roles')" :class="tabClass('roles')">Roles</button>
+        <button type="button" @click="selectTab('permissions')" :class="tabClass('permissions')">Permissions</button>
+        <button type="button" @click="selectTab('users')" :class="tabClass('users')">Users</button>
+        <button type="button" @click="selectTab('matrix')" :class="tabClass('matrix')">Role × Permission</button>
+      </div>
+
+      <!-- ─── Roles tab ─────────────────────────────────────── -->
+      <div :if="activeTab() === 'roles'" class="space-y-6">
+        <div class="p-5 bg-white dark:bg-neutral-900 border border-zinc-200 rounded-lg dark:border-zinc-800">
+          <h2 class="mb-3 font-medium text-sm text-zinc-700 dark:text-zinc-300">Create role</h2>
+          <form @submit.prevent="submitNewRole()" class="grid gap-3 grid-cols-1 sm:grid-cols-6">
+            <input x-model="newRoleName" type="text" required maxlength="60" aria-label="Role name" placeholder="Role name (e.g. editor)" class="block sm:col-span-2 px-3 py-1.5 text-sm text-zinc-900 dark:text-zinc-100 dark:bg-neutral-800 border-0 ring-1 ring-zinc-300 rounded-md dark:ring-zinc-700 focus:ring-2 focus:ring-violet-500" />
+            <input x-model="newRoleDescription" type="text" maxlength="255" aria-label="Role description" placeholder="Description (optional)" class="block sm:col-span-2 px-3 py-1.5 text-sm text-zinc-900 dark:text-zinc-100 dark:bg-neutral-800 border-0 ring-1 ring-zinc-300 rounded-md dark:ring-zinc-700 focus:ring-2 focus:ring-violet-500" />
+            <input x-model="newRoleGuard" type="text" required maxlength="60" aria-label="Role guard" placeholder="Guard" class="block px-3 py-1.5 text-sm text-zinc-900 dark:text-zinc-100 dark:bg-neutral-800 border-0 ring-1 ring-zinc-300 rounded-md dark:ring-zinc-700 focus:ring-2 focus:ring-violet-500" />
+            <Button type="submit" size="sm" fullWidth :loading="submittingRole()">Add role</Button>
+          </form>
+        </div>
+
+        <div class="bg-white dark:bg-neutral-900 border border-zinc-200 rounded-lg dark:border-zinc-800">
+          <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between px-5 py-3 border-b border-zinc-200 dark:border-zinc-800">
+            <h2 class="font-medium text-sm text-zinc-700 dark:text-zinc-300">Roles (<span :text="roles().length"></span>)</h2>
+            <input x-model="roleFilter" type="search" aria-label="Filter roles" placeholder="Filter roles…" class="block px-3 py-1 w-full sm:w-64 text-xs text-zinc-900 dark:text-zinc-100 dark:bg-neutral-800 border-0 ring-1 ring-zinc-300 rounded-md dark:ring-zinc-700 focus:ring-2 focus:ring-violet-500" />
+          </div>
+          <div :if="filteredRoles().length === 0" class="px-5 py-8 text-center text-sm text-zinc-500" :text="roles().length === 0 ? 'No roles yet.' : 'No matching roles.'"></div>
+          <div :if="filteredRoles().length > 0" class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-zinc-200 dark:divide-zinc-800">
+            <thead class="bg-zinc-50 dark:bg-neutral-950/50">
+              <tr>
+                <th class="px-5 py-2 font-medium text-left text-xs text-zinc-500 tracking-wider uppercase">Name</th>
+                <th class="px-5 py-2 font-medium text-left text-xs text-zinc-500 tracking-wider uppercase">Guard</th>
+                <th class="px-5 py-2 font-medium text-left text-xs text-zinc-500 tracking-wider uppercase">Description</th>
+                <th class="px-5 py-2 font-medium text-left text-xs text-zinc-500 tracking-wider uppercase">Created</th>
+                <th class="px-5 py-2 font-medium text-right text-xs text-zinc-500 tracking-wider uppercase">Actions</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-zinc-200 dark:divide-zinc-800">
+              <template :for="role in filteredRoles">
+                <tr>
+                  <td class="px-5 py-2 font-medium text-sm text-zinc-900 dark:text-zinc-100">{{ role.name }}</td>
+                  <td class="px-5 py-2 text-xs text-zinc-500"><code>{{ role.guardName }}</code></td>
+                  <td class="px-5 py-2 text-sm text-zinc-600 dark:text-zinc-400">{{ role.description || '-' }}</td>
+                  <td class="px-5 py-2 text-xs text-zinc-500">{{ formatDate(role.createdAt) }}</td>
+                  <td class="px-5 py-2 text-right text-sm">
+                    <span class="inline-flex gap-1 justify-end">
+                      <Button variant="ghost" size="sm" @click="selectTab('matrix'); selectRole(role)">Permissions</Button>
+                      <Button variant="ghost" size="sm" @click="requestRoleDelete(role)"><span class="text-red-600 dark:text-red-400">Delete</span></Button>
+                    </span>
+                  </td>
+                </tr>
+              </template>
+            </tbody>
+          </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ─── Permissions tab ───────────────────────────────── -->
+      <div :if="activeTab() === 'permissions'" class="space-y-6">
+        <div class="p-5 bg-white dark:bg-neutral-900 border border-zinc-200 rounded-lg dark:border-zinc-800">
+          <h2 class="mb-3 font-medium text-sm text-zinc-700 dark:text-zinc-300">Create permission</h2>
+          <form @submit.prevent="submitNewPermission()" class="grid gap-3 grid-cols-1 sm:grid-cols-6">
+            <input x-model="newPermName" type="text" required maxlength="100" aria-label="Permission name" placeholder="Permission name (e.g. posts.publish)" class="block sm:col-span-2 px-3 py-1.5 text-sm text-zinc-900 dark:text-zinc-100 dark:bg-neutral-800 border-0 ring-1 ring-zinc-300 rounded-md dark:ring-zinc-700 focus:ring-2 focus:ring-violet-500" />
+            <input x-model="newPermDescription" type="text" maxlength="255" aria-label="Permission description" placeholder="Description (optional)" class="block sm:col-span-2 px-3 py-1.5 text-sm text-zinc-900 dark:text-zinc-100 dark:bg-neutral-800 border-0 ring-1 ring-zinc-300 rounded-md dark:ring-zinc-700 focus:ring-2 focus:ring-violet-500" />
+            <input x-model="newPermGuard" type="text" required maxlength="60" aria-label="Permission guard" placeholder="Guard" class="block px-3 py-1.5 text-sm text-zinc-900 dark:text-zinc-100 dark:bg-neutral-800 border-0 ring-1 ring-zinc-300 rounded-md dark:ring-zinc-700 focus:ring-2 focus:ring-violet-500" />
+            <Button type="submit" size="sm" fullWidth :loading="submittingPerm()">Add permission</Button>
+          </form>
+        </div>
+
+        <div class="bg-white dark:bg-neutral-900 border border-zinc-200 rounded-lg dark:border-zinc-800">
+          <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between px-5 py-3 border-b border-zinc-200 dark:border-zinc-800">
+            <h2 class="font-medium text-sm text-zinc-700 dark:text-zinc-300">Permissions (<span :text="permissions().length"></span>)</h2>
+            <input x-model="permissionFilter" type="search" aria-label="Filter permissions" placeholder="Filter permissions…" class="block px-3 py-1 w-full sm:w-64 text-xs text-zinc-900 dark:text-zinc-100 dark:bg-neutral-800 border-0 ring-1 ring-zinc-300 rounded-md dark:ring-zinc-700 focus:ring-2 focus:ring-violet-500" />
+          </div>
+          <div :if="filteredPermissions().length === 0" class="px-5 py-8 text-center text-sm text-zinc-500" :text="permissions().length === 0 ? 'No permissions yet.' : 'No matching permissions.'"></div>
+          <div :if="filteredPermissions().length > 0" class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-zinc-200 dark:divide-zinc-800">
+            <thead class="bg-zinc-50 dark:bg-neutral-950/50">
+              <tr>
+                <th class="px-5 py-2 font-medium text-left text-xs text-zinc-500 tracking-wider uppercase">Name</th>
+                <th class="px-5 py-2 font-medium text-left text-xs text-zinc-500 tracking-wider uppercase">Guard</th>
+                <th class="px-5 py-2 font-medium text-left text-xs text-zinc-500 tracking-wider uppercase">Description</th>
+                <th class="px-5 py-2 font-medium text-left text-xs text-zinc-500 tracking-wider uppercase">Created</th>
+                <th class="px-5 py-2 font-medium text-right text-xs text-zinc-500 tracking-wider uppercase">Actions</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-zinc-200 dark:divide-zinc-800">
+              <template :for="perm in filteredPermissions">
+                <tr>
+                  <td class="px-5 py-2 font-medium text-sm text-zinc-900 dark:text-zinc-100">{{ perm.name }}</td>
+                  <td class="px-5 py-2 text-xs text-zinc-500"><code>{{ perm.guardName }}</code></td>
+                  <td class="px-5 py-2 text-sm text-zinc-600 dark:text-zinc-400">{{ perm.description || '-' }}</td>
+                  <td class="px-5 py-2 text-xs text-zinc-500">{{ formatDate(perm.createdAt) }}</td>
+                  <td class="px-5 py-2 text-right text-sm">
+                    <Button variant="ghost" size="sm" @click="requestPermissionDelete(perm)"><span class="text-red-600 dark:text-red-400">Delete</span></Button>
+                  </td>
+                </tr>
+              </template>
+            </tbody>
+          </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ─── Users tab ─────────────────────────────────────── -->
+      <div :if="activeTab() === 'users'" class="space-y-6">
+        <div class="bg-white dark:bg-neutral-900 border border-zinc-200 rounded-lg dark:border-zinc-800">
+          <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between px-5 py-3 border-b border-zinc-200 dark:border-zinc-800">
+            <h2 class="font-medium text-sm text-zinc-700 dark:text-zinc-300">Users (<span :text="users().length"></span>)</h2>
+            <input x-model="userFilter" type="search" aria-label="Filter users" placeholder="Filter users…" class="block px-3 py-1 w-full sm:w-64 text-xs text-zinc-900 dark:text-zinc-100 dark:bg-neutral-800 border-0 ring-1 ring-zinc-300 rounded-md dark:ring-zinc-700 focus:ring-2 focus:ring-violet-500" />
+          </div>
+          <div :if="filteredUsers().length === 0" class="px-5 py-8 text-center text-sm text-zinc-500" :text="users().length === 0 ? 'No users found.' : 'No matching users.'"></div>
+          <div :if="filteredUsers().length > 0" class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-zinc-200 dark:divide-zinc-800">
+            <thead class="bg-zinc-50 dark:bg-neutral-950/50">
+              <tr>
+                <th class="px-5 py-2 font-medium text-left text-xs text-zinc-500 tracking-wider uppercase">Name</th>
+                <th class="px-5 py-2 font-medium text-left text-xs text-zinc-500 tracking-wider uppercase">Email</th>
+                <th class="px-5 py-2 font-medium text-right text-xs text-zinc-500 tracking-wider uppercase">Actions</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-zinc-200 dark:divide-zinc-800">
+              <template :for="u in filteredUsers">
+                <tr>
+                  <td class="px-5 py-2 font-medium text-sm text-zinc-900 dark:text-zinc-100">{{ u.name || '-' }}</td>
+                  <td class="px-5 py-2 text-sm text-zinc-500">{{ u.email || '-' }}</td>
+                  <td class="px-5 py-2 text-right text-sm">
+                    <Button variant="ghost" size="sm" @click="selectUser(u)">Manage roles</Button>
+                  </td>
+                </tr>
+              </template>
+            </tbody>
+          </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ─── Role × Permission matrix tab ──────────────────── -->
+      <div :if="activeTab() === 'matrix'" class="space-y-4">
+        <div class="p-5 bg-white dark:bg-neutral-900 border border-zinc-200 rounded-lg dark:border-zinc-800">
+          <p class="text-sm text-zinc-500">Pick a role to edit its permission attachments.</p>
+        </div>
+        <div :if="roles().length === 0" class="px-5 py-8 text-center text-sm text-zinc-500 bg-white dark:bg-neutral-900 border border-zinc-200 rounded-lg dark:border-zinc-800">No roles yet. Create one on the Roles tab.</div>
+        <div :if="roles().length > 0" class="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+          <template :for="role in roles">
+            <button type="button" @click="selectRole(role)" class="block px-4 py-3 text-left bg-white dark:bg-neutral-900 border border-zinc-200 rounded-lg dark:border-zinc-800 hover:border-violet-300 dark:hover:border-violet-700 transition-colors">
+              <div class="flex gap-2 items-center justify-between">
+                <span class="font-medium text-sm text-zinc-900 dark:text-zinc-100">{{ role.name }}</span>
+                <code class="text-[10px] text-zinc-500">{{ role.guardName }}</code>
+              </div>
+              <div class="mt-0.5 text-xs text-zinc-500">{{ role.description || 'No description' }}</div>
+            </button>
+          </template>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── User-role drawer (right-side panel) ───────────────── -->
+<div :if="selectedUser()" class="fixed inset-0 z-30 dashboard-modal-layer">
+    <button type="button" aria-label="Close role assignment drawer" class="fixed inset-0 w-full bg-black/50 cursor-default" @click="closeUserDrawer()"></button>
+    <aside role="dialog" aria-modal="true" aria-label="User role assignments" class="flex fixed inset-y-0 right-0 flex-col w-full sm:w-[28rem] bg-white dark:bg-neutral-900 shadow-xl">
+      <div class="flex items-center justify-between px-5 py-3 border-b border-zinc-200 dark:border-zinc-800">
+        <h3 class="font-medium text-sm text-zinc-900 dark:text-zinc-100">
+          Roles for <span :text="selectedUser().name || selectedUser().email || ('User #' + selectedUser().id)"></span>
+        </h3>
+        <Button variant="ghost" size="sm" iconOnly ariaLabel="Close role assignment drawer" @click="closeUserDrawer()">
+          <span class="block h-4 w-4 i-hugeicons-cancel-01"></span>
+        </Button>
+      </div>
+      <div class="px-5 py-3 border-b border-zinc-200 dark:border-zinc-800">
+        <label for="user-role-guard" class="block mb-1.5 font-medium text-xs text-zinc-600 dark:text-zinc-400">Guard</label>
+        <select id="user-role-guard" x-model="selectedUserGuard" @change="changeUserGuard(selectedUserGuard())" class="px-3 py-1.5 w-full text-sm text-zinc-900 dark:text-zinc-100 bg-white dark:bg-neutral-800 border border-zinc-300 rounded-md dark:border-zinc-700 focus:border-violet-500 focus:outline-none focus:ring-2 focus:ring-violet-500/20">
+          <template :for="option in guardOptions">
+            <option :value="option.value">{{ option.label }}</option>
+          </template>
+        </select>
+      </div>
+      <div class="overflow-y-auto flex-1 px-5 py-4 space-y-2">
+        <div :if="userRolesLoading()" class="flex gap-2 items-center py-6 text-sm text-zinc-500">
+          <span class="h-4 w-4 animate-spin i-hugeicons-loading-03"></span>
+          Loading assignments…
+        </div>
+        <div :if="!userRolesLoading() && rolesForSelectedGuard().length === 0" class="text-sm text-zinc-500">No roles are defined for this guard.</div>
+        <template :for="role in rolesForSelectedGuard">
+          <label class="flex gap-2 items-center px-2 py-1.5 hover:bg-zinc-50 dark:hover:bg-neutral-800 rounded-md cursor-pointer">
+            <input type="checkbox" :checked="isRoleInDraft(role.name)" @change="toggleUserRoleDraft(role.name)" class="h-4 w-4 text-violet-600 border-zinc-300 rounded dark:border-zinc-700 focus:ring-violet-500" />
+            <span class="text-sm text-zinc-900 dark:text-zinc-100">{{ role.name }}</span>
+            <span class="text-xs text-zinc-500">{{ role.description || '' }}</span>
+          </label>
+        </template>
+      </div>
+      <div class="flex gap-2 items-center justify-end px-5 py-3 border-t border-zinc-200 dark:border-zinc-800">
+        <Button variant="secondary" size="sm" :disabled="savingUserRoles()" @click="closeUserDrawer()">Cancel</Button>
+        <Button size="sm" :disabled="userRolesLoading()" :loading="savingUserRoles()" @click="saveUserRoles()">
+          Save
+        </Button>
+      </div>
+    </aside>
+  </div>
+
+  <!-- ─── Role-permission drawer ────────────────────────────── -->
+<div :if="selectedRole()" class="fixed inset-0 z-30 dashboard-modal-layer">
+    <button type="button" aria-label="Close permission assignment drawer" class="fixed inset-0 w-full bg-black/50 cursor-default" @click="closeRoleDrawer()"></button>
+    <aside role="dialog" aria-modal="true" aria-label="Role permission assignments" class="flex fixed inset-y-0 right-0 flex-col w-full sm:w-[28rem] bg-white dark:bg-neutral-900 shadow-xl">
+      <div class="flex items-center justify-between px-5 py-3 border-b border-zinc-200 dark:border-zinc-800">
+        <h3 class="font-medium text-sm text-zinc-900 dark:text-zinc-100">
+          Permissions for <span :text="selectedRole().name"></span>
+        </h3>
+        <Button variant="ghost" size="sm" iconOnly ariaLabel="Close permission assignment drawer" @click="closeRoleDrawer()">
+          <span class="block h-4 w-4 i-hugeicons-cancel-01"></span>
+        </Button>
+      </div>
+      <div class="px-5 py-3 text-xs text-zinc-500 border-b border-zinc-200 dark:border-zinc-800">
+        Guard: <code class="text-zinc-700 dark:text-zinc-300">{{ selectedRole().guardName }}</code>
+      </div>
+      <div class="overflow-y-auto flex-1 px-5 py-4 space-y-2">
+        <div :if="rolePermissionsLoading()" class="flex gap-2 items-center py-6 text-sm text-zinc-500">
+          <span class="h-4 w-4 animate-spin i-hugeicons-loading-03"></span>
+          Loading assignments…
+        </div>
+        <div :if="!rolePermissionsLoading() && permissionsForSelectedRole().length === 0" class="text-sm text-zinc-500">No permissions are defined for this guard.</div>
+        <template :for="perm in permissionsForSelectedRole">
+          <label class="flex gap-2 items-center px-2 py-1.5 hover:bg-zinc-50 dark:hover:bg-neutral-800 rounded-md cursor-pointer">
+            <input type="checkbox" :checked="isPermInDraft(perm.name)" @change="toggleRolePermDraft(perm.name)" class="h-4 w-4 text-violet-600 border-zinc-300 rounded dark:border-zinc-700 focus:ring-violet-500" />
+            <span class="text-sm text-zinc-900 dark:text-zinc-100">{{ perm.name }}</span>
+            <span class="text-xs text-zinc-500">{{ perm.description || '' }}</span>
+          </label>
+        </template>
+      </div>
+      <div class="flex gap-2 items-center justify-end px-5 py-3 border-t border-zinc-200 dark:border-zinc-800">
+        <Button variant="secondary" size="sm" :disabled="savingRolePerms()" @click="closeRoleDrawer()">Cancel</Button>
+        <Button size="sm" :disabled="rolePermissionsLoading()" :loading="savingRolePerms()" @click="saveRolePerms()">
+          Save
+        </Button>
+      </div>
+    </aside>
+  </div>
+
+  <ConfirmDialog
+    :isOpen="Boolean(pendingDelete())"
+    :title="deleteTitle()"
+    :description="deleteDescription()"
+    :busy="deleting()"
+    :confirmLabel="deleting() ? 'Deleting' : 'Delete'"
+    @close="pendingDelete.set(null)"
+    @confirm="confirmDelete"
+  />
+</div>
+</template>
