@@ -27,6 +27,15 @@ export function slugToPascal(str: string): string {
   return str.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join('')
 }
 
+/**
+ * Model browser URLs are generated from PascalCase model names as lowercase
+ * kebab-case slugs. Validate that public boundary before deriving a model or
+ * table name from it.
+ */
+export function isValidModelSlug(str: string): boolean {
+  return /^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$/.test(str)
+}
+
 export interface ResolvedModel {
   Model: any
   modelName: string
@@ -285,6 +294,9 @@ export function prepareModelFields(
  * casts and observers all apply) over the path-map lookup.
  */
 export async function resolveWritableModel(slug: string, operation?: ModelWriteOperation): Promise<ResolvedModel | { error: string }> {
+  if (!isValidModelSlug(slug))
+    return { error: 'Model slug must be lowercase kebab-case.' }
+
   const modelName = slugToPascal(slug)
   const injected = (globalThis as Record<string, any>)[modelName]
   const Model = (injected && typeof injected.where === 'function') ? injected : await loadModelIfExists(modelName)

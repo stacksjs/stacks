@@ -2,7 +2,7 @@ import { Action } from '@stacksjs/actions'
 import { env } from '@stacksjs/env'
 import { request, response as routerResponse } from '@stacksjs/router'
 import { loadModelIfExists, safeGet } from '../../../../resources/functions/dashboard/data'
-import { type ModelCreateField, type ModelWriteCapabilities, modelCreateFields, modelSchemaColumns, modelWriteCapabilities } from './model-write'
+import { isValidModelSlug, type ModelCreateField, type ModelWriteCapabilities, modelCreateFields, modelSchemaColumns, modelWriteCapabilities, slugToPascal } from './model-write'
 
 /**
  * `GET /api/dashboard/models/{slug}` (stacksjs/stacks#1838).
@@ -60,10 +60,6 @@ interface ResponseShape {
 const DEFAULT_PER_PAGE = 25
 const MAX_PER_PAGE = 200
 
-function slugToPascal(str: string): string {
-  return str.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join('')
-}
-
 function pascalToSnake(str: string): string {
   return str.replace(/([a-z])([A-Z])/g, '$1_$2').toLowerCase()
 }
@@ -90,10 +86,10 @@ const HIDDEN_COLUMNS = new Set(['password', 'remember_token', 'api_token', 'acce
 
 /**
  * Column identifiers reach the query builder as raw, unquoted SQL, so only
- * word-shaped names from the table's own column list may ever be used.
+ * valid identifiers from the table's own column list may ever be used.
  */
 function isSafeColumn(name: string, allowed: Set<string>): boolean {
-  return /^\w+$/.test(name) && allowed.has(name)
+  return /^[A-Za-z_]\w*$/.test(name) && allowed.has(name)
 }
 
 function inferType(values: unknown[]): ColumnMeta['type'] {
@@ -182,6 +178,9 @@ export default new Action({
   apiResponse: true,
   async handle(req: { getParam?: (name: string) => unknown, route?: { params?: { slug?: string } } }) {
     const slug = String(req?.getParam?.('slug') ?? req?.route?.params?.slug ?? '')
+    if (!isValidModelSlug(slug))
+      return routerResponse.json({ message: 'Model slug must be lowercase kebab-case.' }, 400)
+
     const modelName = slugToPascal(slug)
     const tableName = pluralize(pascalToSnake(modelName))
 
@@ -322,7 +321,7 @@ export default new Action({
         const { Database } = await import('bun:sqlite')
         const db = new Database(env.DB_DATABASE_PATH || 'database/stacks.sqlite', { readonly: true })
         try {
-          if (!/^\w+$/.test(response.tableName))
+          if (!/^[A-Za-z_]\w*$/.test(response.tableName))
             return routerResponse.json({ message: `Model table "${response.tableName}" is not a safe SQL identifier.` }, 500)
 
           const tableInfo = db.query(`PRAGMA table_info(${response.tableName})`).all() as Array<{ name: string, type: string }>
