@@ -255,6 +255,9 @@ await addLayout('admin', { nav: true, footer: true })
 - **`bun-plugin-stx` must be loaded** — without it, `.stx` files won't be processed
 - **Auto-imports** — browser auto-imports defined in `storage/framework/browser-auto-imports.json`
 - **Imported module dependencies** - browser auto-imports are injected into the STX script entry only; imported `.ts` modules must explicitly import every function or store they use
+- **Project-root server imports** - use `~/path` or `@/path` inside `<script server>` when a layout, partial, or page needs a project file. STX resolves both aliases against the application root before executing the server script. Relative imports still resolve against the `.stx` file
+- **Browser package inputs are bundled** - core browser helpers and model auto-import bootstraps are compiler bundle inputs. Rendered HTML must never contain a bare `import '@stacksjs/browser'`, because browsers cannot resolve package specifiers without an import map
+- **Server-to-client values are explicit** - a JSON-serializable top-level value exported by `<script server>` can be referenced by name in `<script client>`. STX serializes only referenced values and never overwrites a client-owned declaration
 - **`storage/framework/stx/`** — stx build cache and the generated route manifest. `config/ui.ts` sets stx's `stateDir` here, so nothing lands in the project root. Gitignored; safe to delete
 - **Reactivity is signal-based** - use callable `state()` and `derived()` signals, not Vue-style `ref()` or `.value`
 - **Component tag case is semantic** - `<Input v-model:value="query">` is a paired component, while lowercase `<input v-model="query">` is a native void element. Keep component tags PascalCase, including names that collide with native elements

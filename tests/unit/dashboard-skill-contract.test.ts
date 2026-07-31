@@ -44,6 +44,7 @@ describe('dashboard skill contract', () => {
 
   test('documents the complete live dashboard audit', () => {
     expect(skill).toContain('scripts/audit.ts')
+    expect(skill).toContain('--base-url http://127.0.0.1:3002')
     expect(skill).toContain('both a full\ndocument and an `X-STX-Router` fragment')
     expect(skill).toContain('crawls every registered GET\ndashboard API')
     expect(skill).toContain('HTTP-200 error payloads')
@@ -53,6 +54,14 @@ describe('dashboard skill contract', () => {
     expect(stxSkill).toContain('**Component tag case is semantic**')
     expect(stxSkill).toContain('<Input v-model:value=\"query\">')
     expect(stxSkill).toContain('<input v-model=\"query\">')
+  })
+
+  test('documents server import aliases and browser bundle boundaries', () => {
+    expect(stxSkill).toContain('**Project-root server imports**')
+    expect(stxSkill).toContain('use `~/path` or `@/path` inside `<script server>`')
+    expect(stxSkill).toContain('**Browser package inputs are bundled**')
+    expect(stxSkill).toContain('must never contain a bare `import \'@stacksjs/browser\'`')
+    expect(stxSkill).toContain('**Server-to-client values are explicit**')
   })
 
   test('keeps generated guidance free of separator dash typography', () => {
