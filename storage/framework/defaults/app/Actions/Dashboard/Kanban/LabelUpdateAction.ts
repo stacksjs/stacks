@@ -1,5 +1,6 @@
 import { Action } from '@stacksjs/actions'
-import { db } from '@stacksjs/database'
+import { Label } from '@stacksjs/orm'
+import { modelNumber, modelString, refreshModel } from './kanban-model'
 import { kanbanError } from './kanban-response'
 
 interface LabelInput {
@@ -46,35 +47,31 @@ export default new Action({
       return kanbanError('No updatable fields provided.', 400)
 
     try {
-      // Fetch current label to know which board to check for the
-      // rename collision.
-      const existing = await db.unsafe(
-        'SELECT id, board_id, name FROM labels WHERE id = ? LIMIT 1',
-        [id],
-      ).execute() as Array<{ id: number, board_id: number, name: string }>
-      const current = existing?.[0]
+      const current = await Label.find(id)
       if (!current)
         return kanbanError('Label not found', 404)
+      const boardId = modelNumber(current, 'boardId', 'board_id')
+      const currentName = modelString(current, 'name')
 
-      if (renamingTo && renamingTo !== current.name) {
-        const dup = await db.unsafe(
-          'SELECT id FROM labels WHERE board_id = ? AND name = ? AND id != ? LIMIT 1',
-          [current.board_id, renamingTo, id],
-        ).execute() as Array<{ id: number }>
-        if (dup?.length)
+      if (renamingTo && renamingTo !== currentName) {
+        const duplicate = await Label
+          .where('boardId', boardId)
+          .where('name', renamingTo)
+          .where('id', '!=', id)
+          .first()
+        if (duplicate)
           return kanbanError('A label with that name already exists on this board.', 409)
       }
 
-      await db.updateTable('labels').set(set as any).where('id', '=', id).execute()
-
-      const rows = await db.unsafe(
-        'SELECT id, board_id, name, color FROM labels WHERE id = ? LIMIT 1',
-        [id],
-      ).execute() as Array<{ id: number, board_id: number, name: string, color: string }>
-      const r = rows?.[0]
-      if (!r)
-        return kanbanError('Label not found', 404)
-      return { label: { id: r.id, boardId: r.board_id, name: r.name, color: r.color } }
+      const updated = await refreshModel(await current.update(set))
+      return {
+        label: {
+          id: modelNumber(updated, 'id'),
+          boardId: modelNumber(updated, 'boardId', 'board_id'),
+          name: modelString(updated, 'name'),
+          color: modelString(updated, 'color'),
+        },
+      }
     }
     catch (err) {
       console.error('[dashboard/kanban] LabelUpdateAction failed:', err)

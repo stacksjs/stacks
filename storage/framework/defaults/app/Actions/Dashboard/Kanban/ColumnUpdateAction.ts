@@ -1,5 +1,6 @@
 import { Action } from '@stacksjs/actions'
-import { db } from '@stacksjs/database'
+import { BoardColumn } from '@stacksjs/orm'
+import { modelNullableString, modelNumber, modelString, modelValue, refreshModel } from './kanban-model'
 import { kanbanError } from './kanban-response'
 
 interface ColumnInput {
@@ -43,14 +44,14 @@ export default new Action({
       set.color = body.color
     if (body.cardLimit !== undefined) {
       if (body.cardLimit === null) {
-        set.card_limit = null
+        set.cardLimit = null
       }
       else {
         const n = Number(body.cardLimit)
         if (!Number.isFinite(n) || n < 0) {
           return kanbanError('`cardLimit` must be a non-negative number or null.', 400)
         }
-        set.card_limit = n
+        set.cardLimit = n
       }
     }
 
@@ -59,26 +60,22 @@ export default new Action({
     }
 
     try {
-      await db.updateTable('board_columns').set(set as any).where('id', '=', id).execute()
-
-      const rows = await db.unsafe(
-        `SELECT id, uuid, board_id, name, position, card_limit, color, created_at, updated_at
-        FROM board_columns WHERE id = ? LIMIT 1`,
-        [id],
-      ).execute() as Array<Record<string, unknown>>
-      const r = rows?.[0]
-      if (!r) {
+      const column = await BoardColumn.find(id)
+      if (!column)
         return kanbanError('Column not found', 404)
-      }
+      const updated = await refreshModel(await column.update(set))
+
       return {
         column: {
-          id: Number(r.id),
-          uuid: r.uuid == null ? null : String(r.uuid),
-          boardId: Number(r.board_id),
-          name: String(r.name),
-          position: Number(r.position),
-          cardLimit: r.card_limit == null ? null : Number(r.card_limit),
-          color: String(r.color),
+          id: modelNumber(updated, 'id'),
+          uuid: modelNullableString(updated, 'uuid'),
+          boardId: modelNumber(updated, 'boardId', 'board_id'),
+          name: modelString(updated, 'name'),
+          position: modelNumber(updated, 'position'),
+          cardLimit: modelValue(updated, 'cardLimit', 'card_limit') == null
+            ? null
+            : modelNumber(updated, 'cardLimit', 'card_limit'),
+          color: modelString(updated, 'color'),
         },
       }
     }

@@ -1,5 +1,6 @@
 import { Action } from '@stacksjs/actions'
-import { db } from '@stacksjs/database'
+import { Card } from '@stacksjs/orm'
+import { modelBoolean, modelNullableString, modelNumber, modelString, modelValue, refreshModel } from './kanban-model'
 import { kanbanError } from './kanban-response'
 
 interface CardInput {
@@ -45,42 +46,37 @@ export default new Action({
       set.description = typeof body.description === 'string' ? body.description.trim() : null
     }
     if (typeof body.dueDate === 'string' || body.dueDate === null) {
-      set.due_date = typeof body.dueDate === 'string' && body.dueDate ? body.dueDate : null
+      set.dueDate = typeof body.dueDate === 'string' && body.dueDate ? body.dueDate : null
     }
     if (typeof body.archived === 'boolean')
-      set.archived = body.archived ? 1 : 0
+      set.archived = body.archived
 
     if (Object.keys(set).length === 0) {
       return kanbanError('No updatable fields provided.', 400)
     }
 
     try {
-      await db.updateTable('cards').set(set as any).where('id', '=', id).execute()
-
-      const rows = await db.unsafe(
-        `SELECT id, uuid, column_id, board_id, title, description, position,
-                created_by_user_id, due_date, archived, created_at, updated_at
-        FROM cards WHERE id = ? LIMIT 1`,
-        [id],
-      ).execute() as Array<Record<string, unknown>>
-      const r = rows?.[0]
-      if (!r) {
+      const card = await Card.find(id)
+      if (!card)
         return kanbanError('Card not found', 404)
-      }
+      const updated = await refreshModel(await card.update(set))
+
       return {
         card: {
-          id: Number(r.id),
-          uuid: r.uuid == null ? null : String(r.uuid),
-          columnId: Number(r.column_id),
-          boardId: Number(r.board_id),
-          title: String(r.title),
-          description: r.description == null ? null : String(r.description),
-          position: Number(r.position),
-          createdByUserId: r.created_by_user_id == null ? null : Number(r.created_by_user_id),
-          dueDate: r.due_date == null ? null : String(r.due_date),
-          archived: Number(r.archived) === 1,
-          createdAt: r.created_at == null ? null : String(r.created_at),
-          updatedAt: r.updated_at == null ? null : String(r.updated_at),
+          id: modelNumber(updated, 'id'),
+          uuid: modelNullableString(updated, 'uuid'),
+          columnId: modelNumber(updated, 'columnId', 'column_id'),
+          boardId: modelNumber(updated, 'boardId', 'board_id'),
+          title: modelString(updated, 'title'),
+          description: modelNullableString(updated, 'description'),
+          position: modelNumber(updated, 'position'),
+          createdByUserId: modelValue(updated, 'createdByUserId', 'created_by_user_id') == null
+            ? null
+            : modelNumber(updated, 'createdByUserId', 'created_by_user_id'),
+          dueDate: modelNullableString(updated, 'dueDate', 'due_date'),
+          archived: modelBoolean(updated, 'archived'),
+          createdAt: modelNullableString(updated, 'createdAt', 'created_at'),
+          updatedAt: modelNullableString(updated, 'updatedAt', 'updated_at'),
         },
       }
     }

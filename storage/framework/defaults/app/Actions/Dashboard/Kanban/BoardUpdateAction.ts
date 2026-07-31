@@ -1,5 +1,6 @@
 import { Action } from '@stacksjs/actions'
-import { db } from '@stacksjs/database'
+import { Board } from '@stacksjs/orm'
+import { modelBoolean, modelNullableString, modelNumber, modelString, refreshModel } from './kanban-model'
 import { kanbanError } from './kanban-response'
 
 interface BoardInput {
@@ -54,38 +55,30 @@ export default new Action({
     if (typeof body.color === 'string' && body.color)
       set.color = body.color
     if (typeof body.archived === 'boolean')
-      set.archived = body.archived ? 1 : 0
+      set.archived = body.archived
 
     if (Object.keys(set).length === 0) {
       return kanbanError('No updatable fields provided.', 400)
     }
 
     try {
-      // The `db.updateTable` chain works across dialects; we accumulate
-      // the partial set above and apply it in one statement.
-      await db.updateTable('boards').set(set as any).where('id', '=', id).execute()
-
-      const rows = await db.unsafe(
-        `SELECT id, uuid, name, description, icon, color, position, archived, created_at, updated_at
-        FROM boards WHERE id = ? LIMIT 1`,
-        [id],
-      ).execute() as Array<Record<string, unknown>>
-      const r = rows?.[0]
-      if (!r) {
+      const board = await Board.find(id)
+      if (!board)
         return kanbanError('Board not found', 404)
-      }
+      const updated = await refreshModel(await board.update(set))
+
       return {
         board: {
-          id: Number(r.id),
-          uuid: r.uuid == null ? null : String(r.uuid),
-          name: String(r.name),
-          description: r.description == null ? null : String(r.description),
-          icon: String(r.icon),
-          color: String(r.color),
-          position: Number(r.position),
-          archived: Number(r.archived) === 1,
-          createdAt: r.created_at == null ? null : String(r.created_at),
-          updatedAt: r.updated_at == null ? null : String(r.updated_at),
+          id: modelNumber(updated, 'id'),
+          uuid: modelNullableString(updated, 'uuid'),
+          name: modelString(updated, 'name'),
+          description: modelNullableString(updated, 'description'),
+          icon: modelString(updated, 'icon'),
+          color: modelString(updated, 'color'),
+          position: modelNumber(updated, 'position'),
+          archived: modelBoolean(updated, 'archived'),
+          createdAt: modelNullableString(updated, 'createdAt', 'created_at'),
+          updatedAt: modelNullableString(updated, 'updatedAt', 'updated_at'),
         },
       }
     }
