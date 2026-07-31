@@ -25,8 +25,8 @@ interface ShippingZonePayload {
   name: string
   countries: string
   regions: string
-  postal_codes: string
-  shipping_method_id: number
+  postalCodes: string
+  shippingMethodId: number
   status: 'active' | 'inactive' | 'draft'
 }
 

@@ -6,7 +6,9 @@ export default new Action({
   name: 'ShippingZone Update',
   description: 'ShippingZone Update ORM Action',
   method: 'PATCH',
+  model: ShippingZone,
   async handle(request: RequestInstance) {
+    await request.validate()
     const id = request.getParam('id')
     const data = await request.all()
     const model = await shippings.zones.update(id, data)

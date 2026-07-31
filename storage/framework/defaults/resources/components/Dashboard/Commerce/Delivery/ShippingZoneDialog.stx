@@ -100,8 +100,8 @@ function submit(): void {
     name: name().trim(),
     countries: serializedCountries,
     regions: serializedRegions,
-    postal_codes: serializedPostalCodes,
-    shipping_method_id: selectedMethodId,
+    postalCodes: serializedPostalCodes,
+    shippingMethodId: selectedMethodId,
     status: status(),
   })
 }
