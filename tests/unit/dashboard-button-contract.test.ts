@@ -1,6 +1,18 @@
 import { describe, expect, test } from 'bun:test'
-import { existsSync, readFileSync } from 'node:fs'
-import { resolve } from 'node:path'
+import { existsSync, readdirSync, readFileSync } from 'node:fs'
+import { join, resolve } from 'node:path'
+
+function dashboardTemplates(directory: string): string[] {
+  const files: string[] = []
+  for (const entry of readdirSync(directory, { withFileTypes: true })) {
+    const path = join(directory, entry.name)
+    if (entry.isDirectory())
+      files.push(...dashboardTemplates(path))
+    else if (path.endsWith('.stx'))
+      files.push(path)
+  }
+  return files
+}
 
 describe('dashboard button contract', () => {
   test('documents the canonical dashboard action contract', () => {
@@ -61,6 +73,46 @@ describe('dashboard button contract', () => {
 
       expect(pressedExpressions.length).toBeGreaterThan(0)
       expect(pressedExpressions.every(expression => expression.startsWith('String('))).toBe(true)
+    }
+  })
+
+  test('keeps the Deployment primary style exclusive to the canonical component', () => {
+    const buttonPath = resolve('storage/framework/defaults/resources/components/Dashboard/UI/Button.stx')
+    const files = [
+      ...dashboardTemplates(resolve('storage/framework/defaults/resources/components/Dashboard')),
+      ...dashboardTemplates(resolve('storage/framework/defaults/views/dashboard')),
+    ]
+
+    for (const file of files) {
+      if (file === buttonPath)
+        continue
+      const source = readFileSync(file, 'utf8')
+      expect(source).not.toContain('bg-gradient-to-b from-blue-500 to-blue-600')
+    }
+  })
+
+  test('keeps native dashboard buttons limited to semantic state controls', () => {
+    const files = [
+      ...dashboardTemplates(resolve('storage/framework/defaults/resources/components/Dashboard')),
+      ...dashboardTemplates(resolve('storage/framework/defaults/views/dashboard')),
+    ]
+    const allowedStyledControls = [
+      'aria-label="Close window"',
+      '@click="selectFile(file.name)"',
+    ]
+
+    for (const file of files) {
+      if (file.endsWith('/UI/Button.stx'))
+        continue
+      const source = readFileSync(file, 'utf8')
+      const nativeButtons = [...source.matchAll(/<button\b[\s\S]*?>/g)].map(match => match[0])
+      const locallyStyledActions = nativeButtons.filter(button =>
+        /(?:bg-gradient|(?:bg|from|to)-(?:blue|red|green|orange)-(?:4|5|6|7)00)/.test(button),
+      )
+
+      expect(locallyStyledActions.every(button =>
+        allowedStyledControls.some(marker => button.includes(marker)),
+      )).toBe(true)
     }
   })
 
