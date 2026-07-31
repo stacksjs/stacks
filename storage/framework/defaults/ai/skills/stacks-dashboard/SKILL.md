@@ -91,9 +91,16 @@ The Stacks admin dashboard provides a full-featured admin panel with 136+ routes
 - `/dashboard/settings/ui` — UI configuration
 
 ### Deployments
-- `/dashboard/deployments` — deployment history and monitoring
-- `/dashboard/deployments/scripts` — deployment scripts
-- `/dashboard/deployments/live-terminal` — live terminal output
+- `/deployments` - deployment history, deployment controls, the custom
+  TypeScript deploy-script editor, and visibility-aware live terminal output
+- `/deployments/{id}` - one persisted Deployment model record
+
+The deployment page composes `DeploymentList`, `DeploymentTable`,
+`DeployScript`, and `LiveTerminalOutput`. Script reads and atomic writes use
+`GET|PUT /api/dashboard/deployments/script`. The terminal uses
+`GET /api/dashboard/deployments/terminal` and pauses polling while the document
+is hidden. Do not create separate `/deployments/scripts` or
+`/deployments/live-terminal` pages.
 
 ### Utilities
 - `/dashboard/maintenance` — maintenance mode toggle
@@ -137,7 +144,8 @@ The Stacks admin dashboard provides a full-featured admin panel with 136+ routes
 - `PostEditor`, `PostList`, `PostPublish`
 - `CouponForm`, `CouponList`
 - `EmailCompose`, `EmailList`, `EmailDetail`
-- `DeploymentHistory`, `LiveTerminal`
+- `DeploymentList`, `DeploymentTable`, `DeploymentDetail`, `DeployScript`,
+  `LiveTerminalOutput`
 - `JobMonitor`, `QueueStatus`
 - `SettingsForm` (generic, used by all settings pages)
 

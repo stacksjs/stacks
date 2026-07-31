@@ -172,6 +172,11 @@ onMount(() => {
     <DeploymentTable :deployments="rows()" :loading="isLoading" />
   </section>
 
+  <section class="grid gap-6 grid-cols-1 xl:grid-cols-2">
+    <DeployScript />
+    <LiveTerminalOutput />
+  </section>
+
   <Modal
     :isOpen="showDeployModal()"
     title="Start deployment"

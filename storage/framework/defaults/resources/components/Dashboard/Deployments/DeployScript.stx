@@ -1,23 +1,104 @@
-<div class="pt-12 px-4 sm:px-6 lg:px-8">
-    <div class="sm:flex sm:items-center">
-      <div class="sm:flex-auto">
-        <h1 class="font-semibold leading-6 text-base text-gray-900">
-          Deploy Script
-        </h1>
+<script client>
+import { fetchDeployScript, updateDeployScript } from '../../../../functions/deployments'
+import { pushToast } from '../../../../functions/toasts'
 
-        <p class="mt-2 text-gray-700 text-sm">
-          If you need a custom deploy script, you may specify it here.
-        </p>
-      </div>
-    </div>
+const content = state('')
+const savedContent = state('')
+const filePath = state('cloud/deploy-script.ts')
+const exists = state(false)
+const isLoading = state(true)
+const isSaving = state(false)
+const loadError = state('')
+const isDirty = derived(() => content() !== savedContent())
+const contentError = derived(() => isDirty() && !content().trim() ? 'Deploy script content is required.' : '')
 
-    <div class="flow-root mt-8">
-      <div class="overflow-x-auto -mx-4 -my-2 sm:-mx-6 lg:-mx-8">
-        <div class="inline-block py-2 sm:px-6 lg:px-8 min-w-full align-middle">
-          <div class="overflow-hidden">
-            <slot />
-          </div>
-        </div>
+async function loadScript(): Promise<void> {
+  isLoading.set(true)
+  loadError.set('')
+  try {
+    const script = await fetchDeployScript()
+    content.set(script.content)
+    savedContent.set(script.content)
+    filePath.set(script.path)
+    exists.set(script.exists)
+  }
+  catch (error) {
+    loadError.set(error instanceof Error ? error.message : 'Deploy script could not be loaded.')
+  }
+  finally {
+    isLoading.set(false)
+  }
+}
+
+async function saveScript(): Promise<void> {
+  if (!isDirty() || !content().trim() || isSaving())
+    return
+
+  isSaving.set(true)
+  try {
+    const result = await updateDeployScript(content())
+    savedContent.set(content())
+    filePath.set(result.path)
+    exists.set(true)
+    pushToast('success', 'Deploy script saved', { detail: result.path })
+  }
+  catch (error) {
+    pushToast('error', 'Could not save deploy script', {
+      detail: error instanceof Error ? error.message : String(error),
+    })
+  }
+  finally {
+    isSaving.set(false)
+  }
+}
+
+onMount(() => {
+  void loadScript()
+})
+</script>
+
+<section class="flex flex-col min-h-[32rem] bg-white dark:bg-neutral-800 border border-gray-200 rounded-xl dark:border-neutral-700">
+  <header class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between px-5 py-4 border-b border-gray-200 dark:border-neutral-700">
+    <div>
+      <div class="flex gap-2 items-center">
+        <span aria-hidden="true" class="h-4 w-4 text-blue-600 dark:text-blue-400 i-hugeicons-code"></span>
+        <h2 class="font-semibold text-gray-900 dark:text-white">Deploy script</h2>
+        <span :if="isDirty()" class="px-1.5 py-0.5 font-medium text-[11px] text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40 rounded">Unsaved</span>
       </div>
+      <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">
+        Hooks loaded by <code class="font-mono text-xs">{{ filePath() }}</code>.
+      </p>
     </div>
+    <div class="flex gap-2 items-center">
+      <Button variant="secondary" :loading="isLoading()" :disabled="isSaving()" @click="loadScript">
+        <span :if="!isLoading()" aria-hidden="true" class="h-4 w-4 i-hugeicons-refresh"></span>
+        Reload
+      </Button>
+      <Button :loading="isSaving()" :disabled="isLoading() || !isDirty()" @click="saveScript">
+        Save script
+      </Button>
+    </div>
+  </header>
+
+  <div :if="loadError()" role="alert" class="m-5 p-4 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900">
+    {{ loadError() }}
   </div>
+
+  <div :if="!loadError()" class="flex-1 p-5">
+    <Textarea
+      v-model:value="content"
+      id="deployment-script"
+      ariaLabel="Deploy script TypeScript source"
+      :rows="18"
+      :maxLength="262144"
+      resize="vertical"
+      :disabled="isLoading() || isSaving()"
+      :error="contentError()"
+      hint="The server validates TypeScript syntax and writes the file atomically."
+      class="font-mono"
+    />
+    <p :if="!isLoading() && !exists()" class="mt-3 text-amber-700 text-sm dark:text-amber-300">
+      This file does not exist yet. Saving creates it.
+    </p>
+  </div>
+</section>

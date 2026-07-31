@@ -1,18 +1,99 @@
-<script>
-interface LiveTerminalOutputProps {
-  live?: boolean
+<script client>
+import { fetchDeploymentTerminal } from '../../../../functions/deployments'
+
+const output = state('')
+const filePath = state('storage/logs/deployments.log')
+const exists = state(false)
+const isLoading = state(true)
+const loadError = state('')
+const autoRefresh = state(true)
+const visibility = useDocumentVisibility()
+
+async function loadOutput(showLoading = true): Promise<void> {
+  if (showLoading)
+    isLoading.set(true)
+  loadError.set('')
+  try {
+    const terminal = await fetchDeploymentTerminal()
+    output.set(terminal.output)
+    filePath.set(terminal.path)
+    exists.set(terminal.exists)
+  }
+  catch (error) {
+    loadError.set(error instanceof Error ? error.message : 'Deployment output could not be loaded.')
+  }
+  finally {
+    if (showLoading)
+      isLoading.set(false)
+  }
 }
 
-const { live = true } = defineProps<LiveTerminalOutputProps>()
+function toggleAutoRefresh(): void {
+  autoRefresh.set(!autoRefresh())
+}
+
+const { pause: pauseRefresh, resume: resumeRefresh } = useIntervalFn(() => {
+  if (autoRefresh() && visibility.value === 'visible')
+    void loadOutput(false)
+}, 4000, { immediate: false })
+
+effect(() => {
+  if (autoRefresh())
+    resumeRefresh()
+  else
+    pauseRefresh()
+})
+
+onMount(() => {
+  void loadOutput()
+})
+
+onDestroy(() => {
+  pauseRefresh()
+})
 </script>
-<div class="pt-12 px-4 sm:px-6 lg:px-8">
-    <div class="flow-root mt-8">
-      <div class="overflow-x-auto -mx-4 -my-2 sm:-mx-6 lg:-mx-8">
-        <div class="inline-block py-2 sm:px-6 lg:px-8 min-w-full align-middle">
-          <div class="overflow-hidden">
-            <slot />
-          </div>
-        </div>
+
+<section class="flex flex-col min-h-[32rem] bg-neutral-950 border border-neutral-800 rounded-xl">
+  <header class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between px-5 py-4 border-b border-neutral-800">
+    <div>
+      <div class="flex gap-2 items-center">
+        <span aria-hidden="true" class="h-4 w-4 text-emerald-400 i-hugeicons-command-line"></span>
+        <h2 class="font-semibold text-white">Deployment output</h2>
+        <span :if="autoRefresh()" class="flex relative h-2 w-2">
+          <span class="inline-flex absolute h-full w-full bg-emerald-400 rounded-full opacity-75 animate-ping"></span>
+          <span class="inline-flex relative h-2 w-2 bg-emerald-500 rounded-full"></span>
+        </span>
       </div>
+      <p class="mt-1 font-mono text-neutral-500 text-xs">{{ filePath() }}</p>
+    </div>
+    <div class="flex gap-2 items-center">
+      <Button variant="secondary" interaction="toggle" :pressed="autoRefresh()" @click="toggleAutoRefresh">
+        {{ autoRefresh() ? 'Live on' : 'Live off' }}
+      </Button>
+      <Button variant="secondary" iconOnly :loading="isLoading()" ariaLabel="Refresh deployment output" @click="loadOutput">
+        <span :if="!isLoading()" aria-hidden="true" class="h-4 w-4 i-hugeicons-refresh"></span>
+      </Button>
+    </div>
+  </header>
+
+  <div :if="loadError()" role="alert" class="m-5 p-4 text-red-300 text-sm bg-red-950/40 border border-red-900 rounded-lg">
+    {{ loadError() }}
+  </div>
+
+  <div :if="!loadError()" class="flex-1 min-h-0">
+    <pre
+      :if="output()"
+      role="log"
+      aria-live="polite"
+      aria-label="Deployment terminal output"
+      class="overflow-auto p-5 max-h-[35rem] min-h-[26rem] font-mono leading-6 text-emerald-300 text-xs whitespace-pre-wrap"
+    >{{ output() }}</pre>
+    <div :if="!isLoading() && !output()" class="flex flex-col items-center justify-center px-6 py-20 min-h-[26rem] text-center">
+      <span aria-hidden="true" class="h-8 w-8 text-neutral-700 i-hugeicons-command-line"></span>
+      <p class="mt-3 font-medium text-neutral-300">No deployment output yet</p>
+      <p class="mt-1 max-w-sm text-neutral-500 text-sm">
+        {{ exists() ? 'The deployment log is empty.' : 'Start a deployment to create the log.' }}
+      </p>
     </div>
   </div>
+</section>
