@@ -22,7 +22,14 @@ interface Failure {
 }
 
 const projectRoot = resolve(process.cwd())
-const baseUrl = (process.argv[2] || process.env.DASHBOARD_URL || 'http://127.0.0.1:3002')
+const args = process.argv.slice(2)
+const baseUrlFlagIndex = args.indexOf('--base-url')
+const baseUrlFlag = baseUrlFlagIndex >= 0
+  ? args[baseUrlFlagIndex + 1]
+  : args.find(arg => arg.startsWith('--base-url='))?.slice('--base-url='.length)
+const positionalBaseUrl = args.find((arg, index) =>
+  !arg.startsWith('-') && index !== baseUrlFlagIndex + 1)
+const baseUrl = (baseUrlFlag || positionalBaseUrl || process.env.DASHBOARD_URL || 'http://127.0.0.1:3002')
   .replace(/\/+$/, '')
 const timeoutMs = 15_000
 const failures: Failure[] = []

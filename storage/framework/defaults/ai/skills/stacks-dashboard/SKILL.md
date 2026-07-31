@@ -372,6 +372,8 @@ the project root:
 
 ```bash
 bun storage/framework/defaults/ai/skills/stacks-dashboard/scripts/audit.ts
+# Or target a non-default origin:
+bun storage/framework/defaults/ai/skills/stacks-dashboard/scripts/audit.ts --base-url http://127.0.0.1:3002
 ```
 
 Pass a base URL as the first argument when the dashboard is not on

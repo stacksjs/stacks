@@ -116,6 +116,8 @@ payment-provider records. They are not missing generic CRUD surfaces.
 ```bash
 ./buddy dev --dashboard
 bun storage/framework/defaults/ai/skills/stacks-dashboard/scripts/audit.ts
+# Or target a non-default origin:
+bun storage/framework/defaults/ai/skills/stacks-dashboard/scripts/audit.ts --base-url http://127.0.0.1:3002
 bun test tests/unit/dashboard-*.test.ts
 bun test storage/framework/core/actions/tests/dev-csrf.test.ts
 bun run typecheck
