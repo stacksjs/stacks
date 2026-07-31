@@ -1,5 +1,6 @@
 import { Action } from '@stacksjs/actions'
 import { db } from '@stacksjs/database'
+import { BoardColumn, Card } from '@stacksjs/orm'
 import { kanbanError } from './kanban-response'
 
 interface CardInput {
@@ -42,18 +43,13 @@ export default new Action({
     const dueDate = typeof body.dueDate === 'string' && body.dueDate ? body.dueDate : null
 
     try {
-      // Resolve the column → board_id so we can denormalise. Same trip
-      // also validates that the column exists; an orphan column id
-      // rejects up front rather than inserting a card with a dangling
-      // FK that no query would ever surface.
-      const cols = await db.unsafe(
-        'SELECT id, board_id FROM board_columns WHERE id = ? LIMIT 1',
-        [columnId],
-      ).execute() as Array<{ id: number, board_id: number }>
-      const col = cols?.[0]
-      if (!col) {
+      const column = await BoardColumn.find(columnId)
+      if (!column) {
         return kanbanError('Column not found.', 404)
       }
+      const boardId = Number(column.get('boardId') ?? column.get('board_id'))
+      if (!Number.isFinite(boardId) || boardId <= 0)
+        return kanbanError('Column is not attached to a valid board.', 409)
 
       const maxRow = await db.unsafe(
         'SELECT COALESCE(MAX(position), -1) AS m FROM cards WHERE column_id = ?',
@@ -64,44 +60,31 @@ export default new Action({
       const user = (request as any).user ?? (request as any)._authenticatedUser ?? null
       const createdByUserId = user && typeof user.id === 'number' ? user.id : null
 
-      await db.insertInto('cards').values({
-        column_id: columnId,
-        board_id: col.board_id,
+      const card = await Card.create({
+        columnId,
+        boardId,
         title,
         description,
         position: nextPosition,
-        created_by_user_id: createdByUserId,
-        due_date: dueDate,
-        archived: 0,
-      }).execute()
-
-      const rows = await db.unsafe(
-        `SELECT id, uuid, column_id, board_id, title, description, position,
-                created_by_user_id, due_date, archived, created_at, updated_at
-        FROM cards
-        WHERE column_id = ? AND title = ? AND position = ?
-        ORDER BY id DESC LIMIT 1`,
-        [columnId, title, nextPosition],
-      ).execute() as Array<Record<string, unknown>>
-      const r = rows?.[0]
-      if (!r) {
-        return kanbanError('Card insert succeeded but follow-up read returned nothing.', 500)
-      }
+        createdByUserId,
+        dueDate,
+        archived: false,
+      })
 
       return {
         card: {
-          id: Number(r.id),
-          uuid: r.uuid == null ? null : String(r.uuid),
-          columnId: Number(r.column_id),
-          boardId: Number(r.board_id),
-          title: String(r.title),
-          description: r.description == null ? null : String(r.description),
-          position: Number(r.position),
-          createdByUserId: r.created_by_user_id == null ? null : Number(r.created_by_user_id),
-          dueDate: r.due_date == null ? null : String(r.due_date),
-          archived: Number(r.archived) === 1,
-          createdAt: r.created_at == null ? null : String(r.created_at),
-          updatedAt: r.updated_at == null ? null : String(r.updated_at),
+          id: Number(card.get('id')),
+          uuid: card.get('uuid') == null ? null : String(card.get('uuid')),
+          columnId,
+          boardId,
+          title,
+          description,
+          position: nextPosition,
+          createdByUserId,
+          dueDate,
+          archived: false,
+          createdAt: card.get('createdAt') ?? card.get('created_at') ?? null,
+          updatedAt: card.get('updatedAt') ?? card.get('updated_at') ?? null,
         },
       }
     }

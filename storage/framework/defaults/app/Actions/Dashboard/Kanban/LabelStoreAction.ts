@@ -1,5 +1,5 @@
 import { Action } from '@stacksjs/actions'
-import { db } from '@stacksjs/database'
+import { Board, Label } from '@stacksjs/orm'
 import { kanbanError } from './kanban-response'
 
 interface LabelInput {
@@ -35,32 +35,18 @@ export default new Action({
     const color = typeof body.color === 'string' && body.color ? body.color : 'slate'
 
     try {
-      // Reject orphan labels: the board must exist.
-      const boards = await db.unsafe('SELECT id FROM boards WHERE id = ? LIMIT 1', [boardId]).execute() as Array<{ id: number }>
-      if (!boards?.length)
+      const board = await Board.find(boardId)
+      if (!board)
         return kanbanError('Board not found.', 404)
 
-      // Pre-check uniqueness — clearer error than the DB's
-      // `UNIQUE constraint failed: labels.board_id, labels.name`.
-      const dup = await db.unsafe(
-        'SELECT id FROM labels WHERE board_id = ? AND name = ? LIMIT 1',
-        [boardId, name],
-      ).execute() as Array<{ id: number }>
-      if (dup?.length)
+      const duplicate = await Label.where('boardId', boardId).where('name', name).first()
+      if (duplicate)
         return kanbanError('A label with that name already exists on this board.', 409)
 
-      await db.insertInto('labels').values({ board_id: boardId, name, color }).execute()
-
-      const inserted = await db.unsafe(
-        'SELECT id, board_id, name, color FROM labels WHERE board_id = ? AND name = ? LIMIT 1',
-        [boardId, name],
-      ).execute() as Array<{ id: number, board_id: number, name: string, color: string }>
-      const r = inserted?.[0]
-      if (!r)
-        return kanbanError('Label insert succeeded but follow-up read returned nothing.', 500)
+      const label = await Label.create({ boardId, name, color })
 
       return {
-        label: { id: r.id, boardId: r.board_id, name: r.name, color: r.color },
+        label: { id: Number(label.get('id')), boardId, name, color },
       }
     }
     catch (err) {

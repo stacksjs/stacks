@@ -1,5 +1,6 @@
 import { Action } from '@stacksjs/actions'
 import { db } from '@stacksjs/database'
+import { Board, BoardColumn } from '@stacksjs/orm'
 import { kanbanError } from './kanban-response'
 
 interface ColumnInput {
@@ -40,10 +41,8 @@ export default new Action({
           : null)
 
     try {
-      // Reject orphan columns up front — a column on a deleted board
-      // would never surface in any sidebar or API, just rot in the DB.
-      const boards = await db.unsafe('SELECT id FROM boards WHERE id = ? LIMIT 1', [boardId]).execute() as Array<{ id: number }>
-      if (!boards?.length) {
+      const board = await Board.find(boardId)
+      if (!board) {
         return kanbanError('Board not found.', 404)
       }
 
@@ -53,36 +52,23 @@ export default new Action({
       ).execute() as Array<{ m: number }>
       const nextPosition = (Number(maxRow?.[0]?.m ?? -1) + 1) || 0
 
-      await db.insertInto('board_columns').values({
-        board_id: boardId,
+      const column = await BoardColumn.create({
+        boardId,
         name,
         color,
-        card_limit: cardLimit,
+        cardLimit,
         position: nextPosition,
-      }).execute()
-
-      const rows = await db.unsafe(
-        `SELECT id, uuid, board_id, name, position, card_limit, color, created_at, updated_at
-        FROM board_columns
-        WHERE board_id = ? AND name = ? AND position = ?
-        ORDER BY id DESC
-        LIMIT 1`,
-        [boardId, name, nextPosition],
-      ).execute() as Array<Record<string, unknown>>
-      const r = rows?.[0]
-      if (!r) {
-        return kanbanError('Column insert succeeded but follow-up read returned nothing.', 500)
-      }
+      })
 
       return {
         column: {
-          id: Number(r.id),
-          uuid: r.uuid == null ? null : String(r.uuid),
-          boardId: Number(r.board_id),
-          name: String(r.name),
-          position: Number(r.position),
-          cardLimit: r.card_limit == null ? null : Number(r.card_limit),
-          color: String(r.color),
+          id: Number(column.get('id')),
+          uuid: column.get('uuid') == null ? null : String(column.get('uuid')),
+          boardId,
+          name,
+          position: nextPosition,
+          cardLimit,
+          color,
           cards: [],
         },
       }
