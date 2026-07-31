@@ -23,10 +23,17 @@ function statusClass(status: DashboardJob['status']): string {
   const classes: Record<DashboardJob['status'], string> = {
     queued: 'text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/40',
     processing: 'text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40',
-    completed: 'text-green-700 dark:text-green-300 bg-green-50 dark:bg-green-950/40',
     failed: 'text-red-700 dark:text-red-300 bg-red-50 dark:bg-red-950/40',
   }
   return classes[status]
+}
+
+function attemptsLabel(job: DashboardJob): string {
+  if (job.attempts === null)
+    return 'Not recorded'
+  return job.maxAttempts === null
+    ? String(job.attempts)
+    : `${job.attempts} / ${job.maxAttempts}`
 }
 </script>
 
@@ -63,8 +70,8 @@ function statusClass(status: DashboardJob['status']): string {
             <td class="px-4 py-3">
               <span :class="'inline-flex px-2 py-1 font-medium text-xs rounded-md ' + statusClass(job.status)">{{ job.status }}</span>
             </td>
-            <td class="px-4 py-3 text-gray-500 text-right text-sm dark:text-neutral-300">{{ job.attempts }} / {{ job.maxAttempts }}</td>
-            <td class="px-4 py-3 font-mono text-gray-500 text-right text-sm dark:text-neutral-300">{{ job.duration }}</td>
+            <td class="px-4 py-3 text-gray-500 text-right text-sm dark:text-neutral-300">{{ attemptsLabel(job) }}</td>
+            <td class="px-4 py-3 font-mono text-gray-500 text-right text-sm dark:text-neutral-300">{{ job.duration || 'Not recorded' }}</td>
             <td class="px-4 py-3 text-gray-500 text-right text-sm whitespace-nowrap dark:text-neutral-300">{{ formatDate(job.created_at) }}</td>
             <td class="px-4 py-3 text-right">
               <div class="inline-flex gap-3 items-center">

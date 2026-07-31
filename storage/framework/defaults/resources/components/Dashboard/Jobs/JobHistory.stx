@@ -121,7 +121,6 @@ onDestroy(() => {
       <option value="all">All statuses</option>
       <option value="queued">Queued</option>
       <option value="processing">Processing</option>
-      <option value="completed">Completed</option>
       <option value="failed">Failed</option>
     </select>
   </div>

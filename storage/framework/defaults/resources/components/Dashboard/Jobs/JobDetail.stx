@@ -20,10 +20,17 @@ function statusClass(status: DashboardJob['status']): string {
   const classes: Record<DashboardJob['status'], string> = {
     queued: 'text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/40',
     processing: 'text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40',
-    completed: 'text-green-700 dark:text-green-300 bg-green-50 dark:bg-green-950/40',
     failed: 'text-red-700 dark:text-red-300 bg-red-50 dark:bg-red-950/40',
   }
   return classes[status]
+}
+
+function attemptsLabel(record?: DashboardJob | null): string {
+  if (!record || record.attempts === null)
+    return 'Not recorded'
+  return record.maxAttempts === null
+    ? String(record.attempts)
+    : `${record.attempts} / ${record.maxAttempts}`
 }
 
 function formatDate(value?: string): string {
@@ -141,11 +148,11 @@ onMount(() => {
         </div>
         <div>
           <dt class="text-neutral-500 text-xs uppercase dark:text-neutral-400">Attempts</dt>
-          <dd class="mt-1 text-neutral-900 text-sm dark:text-white">{{ job()?.attempts }} / {{ job()?.maxAttempts }}</dd>
+          <dd class="mt-1 text-neutral-900 text-sm dark:text-white">{{ attemptsLabel(job()) }}</dd>
         </div>
         <div>
           <dt class="text-neutral-500 text-xs uppercase dark:text-neutral-400">Duration</dt>
-          <dd class="mt-1 font-mono text-neutral-900 text-sm dark:text-white">{{ job()?.duration }}</dd>
+          <dd class="mt-1 font-mono text-neutral-900 text-sm dark:text-white">{{ job()?.duration || 'Not recorded' }}</dd>
         </div>
         <div>
           <dt class="text-neutral-500 text-xs uppercase dark:text-neutral-400">Created</dt>
@@ -157,7 +164,7 @@ onMount(() => {
         </div>
         <div :if="job()?.available_at">
           <dt class="text-neutral-500 text-xs uppercase dark:text-neutral-400">Available at</dt>
-          <dd class="mt-1 font-mono text-neutral-900 text-sm dark:text-white">{{ job()?.available_at }}</dd>
+          <dd class="mt-1 text-neutral-900 text-sm dark:text-white">{{ formatDate(job()?.available_at) }}</dd>
         </div>
         <div :if="job()?.reserved_at">
           <dt class="text-neutral-500 text-xs uppercase dark:text-neutral-400">Reserved at</dt>

@@ -31,7 +31,13 @@ export default defineModel({
       validation: {
         rule: schema.string().required(),
       },
-      factory: faker => faker.lorem.sentence(),
+      factory: () => JSON.stringify({
+        jobName: 'ExampleJob',
+        payload: {},
+        options: { tries: 3 },
+        envelopeVersion: 1,
+        dispatchedAt: new Date().toISOString(),
+      }),
     },
 
     attempts: {
@@ -42,7 +48,7 @@ export default defineModel({
           number: 'attempts must be a number',
         },
       },
-      factory: faker => faker.number.int({ min: 0, max: 10 }),
+      factory: () => 0,
     },
 
     available_at: {
@@ -50,14 +56,14 @@ export default defineModel({
       validation: {
         rule: schema.number(),
       },
-      factory: faker => faker.number.int({ min: 1000000, max: 1999999 }),
+      factory: () => Math.floor(Date.now() / 1000),
     },
     reserved_at: {
       fillable: true,
       validation: {
         rule: schema.number(),
       },
-      factory: faker => faker.number.int({ min: 1000000, max: 1999999 }),
+      factory: () => null,
     },
   },
 } as const)
