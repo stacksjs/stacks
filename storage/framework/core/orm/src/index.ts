@@ -278,6 +278,8 @@ export const FailedJob = lazyModel<typeof import('../../../defaults/app/Models/F
 const FRAMEWORK_MODEL_MANIFEST: Array<[name: string, subdirs: string[], feature: string]> = [
   // Auth
   ['Team', [''], 'auth'],
+  ['TeamInvitation', [''], 'auth'],
+  ['TeamMember', [''], 'auth'],
   ['Subscriber', [''], 'auth'],
   ['SubscriberEmail', [''], 'auth'],
   ['Subscription', [''], 'auth'],
@@ -291,7 +293,12 @@ const FRAMEWORK_MODEL_MANIFEST: Array<[name: string, subdirs: string[], feature:
 
   // Dashboard (admin SPA + monitoring dashboards)
   ['Activity', [''], 'dashboard'],
+  ['Board', [''], 'dashboard'],
+  ['BoardColumn', [''], 'dashboard'],
+  ['Card', [''], 'dashboard'],
+  ['CardComment', [''], 'dashboard'],
   ['Deployment', [''], 'dashboard'],
+  ['Label', [''], 'dashboard'],
   ['Release', [''], 'dashboard'],
   ['Notification', [''], 'dashboard'],
   ['NotificationDelivery', [''], 'dashboard'],
@@ -299,6 +306,7 @@ const FRAMEWORK_MODEL_MANIFEST: Array<[name: string, subdirs: string[], feature:
   ['Log', [''], 'dashboard'],
   ['Request', [''], 'dashboard'],
   ['AnalyticsEvent', [''], 'dashboard'],
+  ['QueryLog', [''], 'dashboard'],
 
   // Monitoring (Error model can be used standalone without the rest of dashboard)
   ['Error', [''], 'monitoring'],
@@ -320,6 +328,7 @@ const FRAMEWORK_MODEL_MANIFEST: Array<[name: string, subdirs: string[], feature:
 
   // Commerce
   ['Order', ['commerce'], 'commerce'],
+  ['OrderIdempotency', ['commerce'], 'commerce'],
   ['OrderItem', ['commerce'], 'commerce'],
   ['Cart', ['commerce'], 'commerce'],
   ['CartItem', ['commerce'], 'commerce'],
@@ -392,7 +401,11 @@ queueMicrotask(async () => {
 export const Activity = lazyModel<typeof import('../../../defaults/app/Models/Activity').default>('Activity')
 export const AnalyticsEvent = lazyModel<typeof import('../../../defaults/app/Models/AnalyticsEvent').default>('AnalyticsEvent')
 export const Author = lazyModel<typeof import('../../../defaults/app/Models/Content/Author').default>('Author')
+export const Board = lazyModel<typeof import('../../../defaults/app/Models/Board').default>('Board')
+export const BoardColumn = lazyModel<typeof import('../../../defaults/app/Models/BoardColumn').default>('BoardColumn')
 export const Campaign = lazyModel<typeof import('../../../defaults/app/Models/Campaign').default>('Campaign')
+export const Card = lazyModel<typeof import('../../../defaults/app/Models/Card').default>('Card')
+export const CardComment = lazyModel<typeof import('../../../defaults/app/Models/CardComment').default>('CardComment')
 export const Cart = lazyModel<typeof import('../../../defaults/app/Models/commerce/Cart').default>('Cart')
 export const CartItem = lazyModel<typeof import('../../../defaults/app/Models/commerce/CartItem').default>('CartItem')
 export const Category = lazyModel<typeof import('../../../defaults/app/Models/commerce/Category').default>('Category')
@@ -408,6 +421,7 @@ export const EmailList = lazyModel<typeof import('../../../defaults/app/Models/E
 export const EmailListSubscriber = lazyModel<typeof import('../../../defaults/app/Models/EmailListSubscriber').default>('EmailListSubscriber')
 export const ErrorModel = lazyModel<typeof import('../../../defaults/app/Models/Error').default>('Error')
 export const GiftCard = lazyModel<typeof import('../../../defaults/app/Models/commerce/GiftCard').default>('GiftCard')
+export const Label = lazyModel<typeof import('../../../defaults/app/Models/Label').default>('Label')
 export const LicenseKey = lazyModel<typeof import('../../../defaults/app/Models/commerce/LicenseKey').default>('LicenseKey')
 export const Log = lazyModel<typeof import('../../../defaults/app/Models/Log').default>('Log')
 export const LoyaltyPoint = lazyModel<typeof import('../../../defaults/app/Models/commerce/LoyaltyPoint').default>('LoyaltyPoint')
@@ -417,6 +431,7 @@ export const Manufacturer = lazyModel<typeof import('../../../defaults/app/Model
 export const Notification = lazyModel<typeof import('../../../defaults/app/Models/Notification').default>('Notification')
 export const NotificationDelivery = lazyModel<typeof import('../../../defaults/app/Models/NotificationDelivery').default>('NotificationDelivery')
 export const Order = lazyModel<typeof import('../../../defaults/app/Models/commerce/Order').default>('Order')
+export const OrderIdempotency = lazyModel<typeof import('../../../defaults/app/Models/commerce/OrderIdempotency').default>('OrderIdempotency')
 export const OrderItem = lazyModel<typeof import('../../../defaults/app/Models/commerce/OrderItem').default>('OrderItem')
 export const Page = lazyModel<typeof import('../../../defaults/app/Models/Content/Page').default>('Page')
 export const Payment = lazyModel<typeof import('../../../defaults/app/Models/commerce/Payment').default>('Payment')
@@ -428,6 +443,7 @@ export const PrintDevice = lazyModel<typeof import('../../../defaults/app/Models
 export const Product = lazyModel<typeof import('../../../defaults/app/Models/commerce/Product').default>('Product')
 export const ProductUnit = lazyModel<typeof import('../../../defaults/app/Models/commerce/ProductUnit').default>('ProductUnit')
 export const ProductVariant = lazyModel<typeof import('../../../defaults/app/Models/commerce/ProductVariant').default>('ProductVariant')
+export const QueryLog = lazyModel<typeof import('../../../defaults/app/Models/QueryLog').default>('QueryLog')
 export const Receipt = lazyModel<typeof import('../../../defaults/app/Models/commerce/Receipt').default>('Receipt')
 export const Release = lazyModel<typeof import('../../../defaults/app/Models/Release').default>('Release')
 export const Request = lazyModel<typeof import('../../../defaults/app/Models/Request').default>('Request')
@@ -442,6 +458,8 @@ export const Subscription = lazyModel<typeof import('../../../defaults/app/Model
 export const Tag = lazyModel<typeof import('../../../defaults/app/Models/Tag').default>('Tag')
 export const TaxRate = lazyModel<typeof import('../../../defaults/app/Models/commerce/TaxRate').default>('TaxRate')
 export const Team = lazyModel<typeof import('../../../defaults/app/Models/Team').default>('Team')
+export const TeamInvitation = lazyModel<typeof import('../../../defaults/app/Models/TeamInvitation').default>('TeamInvitation')
+export const TeamMember = lazyModel<typeof import('../../../defaults/app/Models/TeamMember').default>('TeamMember')
 export const Transaction = lazyModel<typeof import('../../../defaults/app/Models/commerce/Transaction').default>('Transaction')
 export const WaitlistProduct = lazyModel<typeof import('../../../defaults/app/Models/commerce/WaitlistProduct').default>('WaitlistProduct')
 export const WaitlistRestaurant = lazyModel<typeof import('../../../defaults/app/Models/commerce/WaitlistRestaurant').default>('WaitlistRestaurant')
@@ -458,16 +476,17 @@ export const Websocket = lazyModel<typeof import('../../../defaults/app/Models/r
 // drained, so `await Order.all()` resolves transparently.
 const _allExports: Record<string, any> = {
   User, Job, FailedJob,
-  Activity, Author, Campaign, CampaignSend, Cart, CartItem, Category,
-  Comment, Coupon, Customer, DeliveryRoute, Deployment, DigitalDelivery,
-  Driver, EmailList, EmailListSubscriber, ErrorModel, GiftCard, LicenseKey,
+  Activity, Author, Board, BoardColumn, Campaign, CampaignSend, Card,
+  CardComment, Cart, CartItem, Category, Comment, Coupon, Customer,
+  DeliveryRoute, Deployment, DigitalDelivery, Driver, EmailList,
+  EmailListSubscriber, ErrorModel, GiftCard, Label, LicenseKey,
   Log, LoyaltyPoint, LoyaltyReward, MailPreference, Manufacturer, Notification,
-  NotificationDelivery, Order, OrderItem, Page, Payment, PaymentMethod,
+  NotificationDelivery, Order, OrderIdempotency, OrderItem, Page, Payment, PaymentMethod,
   PaymentProduct, PaymentTransaction, Post, PrintDevice, Product, ProductUnit,
-  ProductVariant, Receipt, Release, Request, Review, ShippingMethod,
+  ProductVariant, QueryLog, Receipt, Release, Request, Review, ShippingMethod,
   ShippingRate, ShippingZone, SocialPost, Subscriber, SubscriberEmail,
-  Subscription, Tag, TaxRate, Team, Transaction, WaitlistProduct,
-  WaitlistRestaurant, Websocket,
+  Subscription, Tag, TaxRate, Team, TeamInvitation, TeamMember, Transaction,
+  WaitlistProduct, WaitlistRestaurant, Websocket,
 }
 const g = globalThis as Record<string, any>
 for (const [name, M] of Object.entries(_allExports)) {
