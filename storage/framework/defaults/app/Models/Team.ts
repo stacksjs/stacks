@@ -52,11 +52,11 @@ export default defineModel({
 
     memberCount: {
       order: 3,
-      fillable: true,
+      fillable: false,
+      default: 0,
       validation: {
         rule: schema.number().min(0),
       },
-      factory: faker => faker.number.int({ min: 1, max: 20 }),
     },
 
     status: {

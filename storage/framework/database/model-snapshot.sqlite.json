@@ -60,23 +60,26 @@
               "online",
               "offline",
               "warning"
-            ]
+            ],
+            "enumTypeName": "print_devices_status_type"
           },
           {
             "name": "last_ping",
-            "type": "string",
+            "type": "integer",
             "isPrimaryKey": false,
             "isUnique": false,
-            "isNullable": false,
-            "hasDefault": false
+            "isNullable": true,
+            "hasDefault": true,
+            "defaultValue": 0
           },
           {
             "name": "print_count",
             "type": "integer",
             "isPrimaryKey": false,
             "isUnique": false,
-            "isNullable": false,
-            "hasDefault": false
+            "isNullable": true,
+            "hasDefault": true,
+            "defaultValue": 0
           },
           {
             "name": "created_at",
@@ -4045,7 +4048,8 @@
             "isPrimaryKey": false,
             "isUnique": false,
             "isNullable": true,
-            "hasDefault": false
+            "hasDefault": true,
+            "defaultValue": 0
           },
           {
             "name": "status",
@@ -8728,7 +8732,7 @@
       }
     ]
   },
-  "hash": "65288b35edf8d3e8ed4997c6a1ac978bf62564f9eca33f2ece660c0a11559cee",
+  "hash": "c818b390e8de97f7da19179052322d9f8aa15c16b0e970e891b8b3b57eeb0eea",
   "dialect": "sqlite",
-  "updatedAt": "2026-07-30T23:57:36.233Z"
+  "updatedAt": "2026-07-31T00:12:00.067Z"
 }
