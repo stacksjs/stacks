@@ -39,89 +39,94 @@ export interface GiftCardSummary {
   currencies: GiftCardCurrencySummary[]
 }
 
-function value(record: any, ...keys: string[]): unknown {
-  for (const key of keys) {
-    const result = typeof record?.get === 'function' ? record.get(key) : record?.[key]
-    if (result !== null && result !== undefined)
-      return result
-  }
-  return undefined
-}
+export function normalizeGiftCardRecord(
+  record: any,
+  customerIds = new Set<string>(),
+): GiftCardRecord {
+  const id = commerceIdentifier(commerceValue(record, 'id', 'uuid'), 'GiftCard')
+  const source = `GiftCard ${id}`
+  const customerId = commerceOptionalIdentifier(
+    commerceValue(record, 'customer_id', 'customerId'),
+    source,
+    'customer_id',
+  )
+  if (customerId && !customerIds.has(customerId))
+    throw new TypeError(`${source}.customer_id references missing Customer ${customerId}.`)
 
-function text(input: unknown): string {
-  return input === null || input === undefined ? '' : String(input)
-}
-
-function number(input: unknown): number {
-  const result = Number(input)
-  return Number.isFinite(result) ? result : 0
-}
-
-function boolean(input: unknown): boolean {
-  return input === true || input === 1 || input === '1' || input === 'true'
-}
-
-function status(input: unknown): GiftCardStatus {
-  const result = text(input).toUpperCase()
-  if (result === 'ACTIVE' || result === 'USED' || result === 'EXPIRED')
-    return result
-  return 'DEACTIVATED'
-}
-
-function currency(input: unknown): string {
-  const result = text(input).trim().toUpperCase()
-  return /^[A-Z]{3}$/.test(result) ? result : 'USD'
-}
-
-function dateTime(input: unknown): string {
-  const result = text(input).trim()
-  if (!result)
-    return ''
-
-  if (/^\d{10}$/.test(result)) {
-    const parsed = new Date(Number(result) * 1000)
-    return Number.isNaN(parsed.getTime()) ? result : parsed.toISOString()
-  }
-
-  const sqlDate = /^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2}):(\d{2})$/.exec(result)
-  if (sqlDate) {
-    const [, year, month, day, hour, minute, second] = sqlDate
-    const parsed = new Date(Date.UTC(
-      Number(year),
-      Number(month) - 1,
-      Number(day),
-      Number(hour),
-      Number(minute),
-      Number(second),
-    ))
-    return Number.isNaN(parsed.getTime()) ? result : parsed.toISOString()
-  }
-
-  const parsed = new Date(result)
-  return Number.isNaN(parsed.getTime()) ? result : parsed.toISOString()
-}
-
-export function normalizeGiftCardRecord(record: any): GiftCardRecord {
-  const initialBalance = Math.max(0, number(value(record, 'initial_balance', 'initialBalance')))
   return {
-    id: text(value(record, 'id', 'uuid')),
-    code: text(value(record, 'code')),
-    initialBalance,
-    currentBalance: Math.min(initialBalance, Math.max(0, number(value(record, 'current_balance', 'currentBalance')))),
-    currency: currency(value(record, 'currency')),
-    status: status(value(record, 'status')),
-    purchaserId: text(value(record, 'purchaser_id', 'purchaserId')),
-    recipientEmail: text(value(record, 'recipient_email', 'recipientEmail')),
-    recipientName: text(value(record, 'recipient_name', 'recipientName')),
-    personalMessage: text(value(record, 'personal_message', 'personalMessage')),
-    isDigital: boolean(value(record, 'is_digital', 'isDigital')),
-    isReloadable: boolean(value(record, 'is_reloadable', 'isReloadable')),
-    isActive: boolean(value(record, 'is_active', 'isActive')),
-    expiryDate: dateTime(value(record, 'expiry_date', 'expiryDate')),
-    lastUsedDate: dateTime(value(record, 'last_used_date', 'lastUsedDate')),
-    templateId: text(value(record, 'template_id', 'templateId')),
-    customerId: text(value(record, 'customer_id', 'customerId')),
-    createdAt: dateTime(value(record, 'created_at', 'createdAt')),
+    id,
+    code: commerceRequiredString(commerceValue(record, 'code'), source, 'code'),
+    initialBalance: commerceNumber(
+      commerceValue(record, 'initial_balance', 'initialBalance'),
+      source,
+      'initial_balance',
+      { min: 1 },
+    ),
+    currentBalance: commerceNumber(
+      commerceValue(record, 'current_balance', 'currentBalance'),
+      source,
+      'current_balance',
+      { min: 0 },
+    ),
+    currency: commerceCurrency(commerceValue(record, 'currency'), source),
+    status: commerceEnum(commerceValue(record, 'status'), source, 'status', [
+      'ACTIVE',
+      'USED',
+      'EXPIRED',
+      'DEACTIVATED',
+    ]),
+    purchaserId: commerceOptionalString(
+      commerceValue(record, 'purchaser_id', 'purchaserId'),
+      source,
+      'purchaser_id',
+    ),
+    recipientEmail: commerceOptionalEmail(
+      commerceValue(record, 'recipient_email', 'recipientEmail'),
+      source,
+      'recipient_email',
+    ),
+    recipientName: commerceOptionalString(
+      commerceValue(record, 'recipient_name', 'recipientName'),
+      source,
+      'recipient_name',
+    ),
+    personalMessage: commerceOptionalString(
+      commerceValue(record, 'personal_message', 'personalMessage'),
+      source,
+      'personal_message',
+    ),
+    isDigital: commerceBoolean(
+      commerceValue(record, 'is_digital', 'isDigital'),
+      source,
+      'is_digital',
+    ),
+    isReloadable: commerceBoolean(
+      commerceValue(record, 'is_reloadable', 'isReloadable'),
+      source,
+      'is_reloadable',
+    ),
+    isActive: commerceBoolean(
+      commerceValue(record, 'is_active', 'isActive'),
+      source,
+      'is_active',
+    ),
+    expiryDate: commerceOptionalTimestamp(
+      commerceValue(record, 'expiry_date', 'expiryDate'),
+      source,
+      'expiry_date',
+    ),
+    lastUsedDate: commerceOptionalTimestamp(
+      commerceValue(record, 'last_used_date', 'lastUsedDate'),
+      source,
+      'last_used_date',
+    ),
+    templateId: commerceOptionalString(
+      commerceValue(record, 'template_id', 'templateId'),
+      source,
+      'template_id',
+    ),
+    customerId,
+    createdAt: commerceTimestamp(commerceValue(record, 'created_at', 'createdAt'), source),
   }
 }
 
@@ -160,3 +165,17 @@ export function summarizeGiftCards(records: GiftCardRecord[]): GiftCardSummary {
     currencies: [...currencies.values()].sort((left, right) => left.currency.localeCompare(right.currency)),
   }
 }
+import {
+  commerceBoolean,
+  commerceCurrency,
+  commerceEnum,
+  commerceIdentifier,
+  commerceNumber,
+  commerceOptionalEmail,
+  commerceOptionalIdentifier,
+  commerceOptionalString,
+  commerceOptionalTimestamp,
+  commerceRequiredString,
+  commerceTimestamp,
+  commerceValue,
+} from './commerce-record'

@@ -154,6 +154,12 @@ export function commerceEmail(input: unknown, source: string, field = 'email'): 
   return result
 }
 
+export function commerceOptionalEmail(input: unknown, source: string, field = 'email'): string {
+  if (input === undefined || input === null || input === '')
+    return ''
+  return commerceEmail(input, source, field)
+}
+
 export function commerceUrl(input: unknown, source: string, field: string): string {
   const result = commerceRequiredString(input, source, field)
   try {
@@ -168,8 +174,17 @@ export function commerceUrl(input: unknown, source: string, field: string): stri
 }
 
 export function commerceTimestamp(input: unknown, source: string, field = 'created_at'): string {
-  const raw = commerceRequiredString(input, source, field)
-  const date = new Date(/^\d{4}-\d{2}-\d{2} \d/.test(raw) ? `${raw.replace(' ', 'T')}Z` : raw)
+  const raw = typeof input === 'number'
+    ? String(input)
+    : commerceRequiredString(input, source, field)
+  const timestamp = /^\d{10}$/.test(raw)
+    ? Number(raw) * 1000
+    : /^\d{13}$/.test(raw)
+      ? Number(raw)
+      : /^\d{4}-\d{2}-\d{2} \d/.test(raw)
+        ? `${raw.replace(' ', 'T')}Z`
+        : raw
+  const date = new Date(timestamp)
   if (!Number.isFinite(date.getTime()))
     throw commerceRecordError(source, field, 'a valid timestamp')
   return date.toISOString()

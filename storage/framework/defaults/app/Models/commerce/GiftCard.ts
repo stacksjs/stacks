@@ -67,8 +67,9 @@ export default defineModel({
     currency: {
       order: 4,
       fillable: true,
+      default: 'USD',
       validation: {
-        rule: schema.string().max(3),
+        rule: schema.string().required().max(3),
       },
       factory: faker => faker.helpers.arrayElement(['USD', 'EUR', 'GBP', 'CAD', 'AUD']),
     },
@@ -77,7 +78,7 @@ export default defineModel({
       order: 5,
       fillable: true,
       validation: {
-        rule: schema.string().required(),
+        rule: schema.enum(['ACTIVE', 'USED', 'EXPIRED', 'DEACTIVATED']).required(),
       },
       factory: faker => faker.helpers.arrayElement(['ACTIVE', 'USED', 'EXPIRED', 'DEACTIVATED']),
     },
@@ -119,6 +120,7 @@ export default defineModel({
     },
 
     isDigital: {
+      default: false,
       order: 10,
       fillable: true,
       validation: {
@@ -128,6 +130,7 @@ export default defineModel({
     },
 
     isReloadable: {
+      default: false,
       order: 11,
       fillable: true,
       validation: {

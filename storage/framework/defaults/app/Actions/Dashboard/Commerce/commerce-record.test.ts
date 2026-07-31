@@ -7,6 +7,7 @@ import {
   commerceIdentifier,
   commerceNumber,
   commerceOptionalIdentifier,
+  commerceOptionalEmail,
   commerceOptionalNumber,
   commerceOptionalString,
   commerceOptionalTimestamp,
@@ -29,8 +30,10 @@ describe('commerce model record validation', () => {
     expect(commerceEnum('active', 'TaxRate 1', 'status', ['active', 'inactive'])).toBe('active')
     expect(commerceCurrency(' usd ', 'Order 1')).toBe('USD')
     expect(commerceEmail('customer@example.com', 'Customer 1')).toBe('customer@example.com')
+    expect(commerceOptionalEmail(null, 'GiftCard 1', 'recipient_email')).toBe('')
     expect(commerceUrl('https://example.com/avatar.png', 'Customer 1', 'avatar')).toBe('https://example.com/avatar.png')
     expect(commerceTimestamp('2026-07-29 12:00:00', 'Order 1')).toBe('2026-07-29T12:00:00.000Z')
+    expect(commerceTimestamp(1_788_583_200, 'GiftCard 1', 'last_used_date')).toBe('2026-09-05T04:40:00.000Z')
     expect(commerceOptionalTimestamp(null, 'Customer 1', 'last_order')).toBe('')
   })
 
