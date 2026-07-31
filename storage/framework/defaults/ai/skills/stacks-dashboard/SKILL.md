@@ -1,6 +1,6 @@
 ---
 name: stacks-dashboard
-description: Use when building or customizing the Stacks admin dashboard — adding dashboard pages, model management views, analytics widgets, commerce dashboards, content management, settings panels, deployment monitoring, job/queue management, or the 150+ built-in dashboard components. Covers the dashboard system at storage/framework/defaults/.
+description: Use when building or customizing the Stacks admin dashboard, including dashboard pages, model management views, analytics widgets, commerce dashboards, content management, settings panels, deployment monitoring, job/queue management, or the 250+ built-in dashboard components. Covers the dashboard system at storage/framework/defaults/.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript
 allowed-tools: Read Edit Write Bash Grep Glob
@@ -8,87 +8,88 @@ allowed-tools: Read Edit Write Bash Grep Glob
 
 # Stacks Dashboard
 
-The Stacks admin dashboard provides a full-featured admin panel with 136+ routes, 150+ components, and multi-section layout.
+The Stacks admin dashboard provides a full-featured admin panel with 100+ route views, 250+ components, and a multi-section layout.
 
 ## Key Paths
-- Dashboard pages: `storage/framework/defaults/views/dashboard/`
 - Dashboard components: `storage/framework/defaults/resources/components/Dashboard/`
-- Dashboard views: `storage/framework/defaults/views/dashboard/`
+- Dashboard route views: `storage/framework/defaults/views/dashboard/`
 - Dashboard layouts: `storage/framework/defaults/views/dashboard/layouts/`
 - Dashboard actions: `storage/framework/defaults/app/Actions/Dashboard/`
+- Dashboard page endpoints: `storage/framework/defaults/routes/dashboard-api.ts`
+- Dashboard navigation registry: `storage/framework/defaults/resources/functions/dashboard/sidebar.ts`
 - Configuration: `config/ui.ts`
 
 ## Dashboard Sections
 
-### Analytics & Monitoring
-- `/dashboard` — main dashboard overview
-- `/dashboard/analytics` — analytics widgets and charts
-- `/dashboard/requests` — HTTP request analytics (method, path, status, duration)
-- `/dashboard/errors` — error tracking and analysis
-- `/dashboard/jobs` — background job monitoring
-- `/dashboard/queue` — queue management and metrics
+Dashboard route views are mounted at the dashboard server root. Do not prefix
+page links with `/dashboard`. The `/api/dashboard/*` prefix is reserved for
+dashboard data Actions.
+
+### Analytics and Monitoring
+- `/` - main dashboard overview
+- `/analytics` - analytics hub and chart navigation
+- `/analytics/web`, `/analytics/pages`, `/analytics/referrers` - HTTP analytics
+- `/analytics/countries`, `/analytics/devices`, `/analytics/browsers` - audience breakdowns
+- `/analytics/events`, `/analytics/blog`, `/analytics/marketing` - domain analytics
+- `/requests` - captured HTTP request metrics
+- `/errors`, `/monitoring/errors` - error tracking and analysis
+- `/jobs`, `/jobs/history` - background job monitoring
+- `/queue` - queue management and metrics
+- `/queries`, `/queries/slow`, `/queries/history` - query analysis
 
 ### Commerce
-- `/dashboard/commerce/products` — product management (CRUD, variants, units)
-- `/dashboard/commerce/orders` — order management and processing
-- `/dashboard/commerce/customers` — customer profiles and history
-- `/dashboard/commerce/payments` — payment tracking
-- `/dashboard/commerce/coupons` — coupon and promotion management
-- `/dashboard/commerce/gift-cards` — gift card management
-- `/dashboard/commerce/shipping` — shipping methods, rates, zones
-- `/dashboard/commerce/tax-rates` — tax rate configuration
-- `/dashboard/commerce/reviews` — product review moderation
-- `/dashboard/commerce/loyalty` — loyalty points and rewards
-- `/dashboard/commerce/delivery` — delivery route tracking
-- `/dashboard/commerce/waitlists` — product waitlist management
-- `/dashboard/commerce/receipts` — receipt management
+- `/commerce/dashboard` - commerce overview
+- `/commerce/pos` - point of sale
+- `/commerce/products` - product management
+- `/commerce/orders` - order management and processing
+- `/commerce/customers` - customer profiles and history
+- `/commerce/payments` - payment tracking
+- `/commerce/coupons` - coupon and promotion management
+- `/commerce/gift-cards` - gift card management
+- `/commerce/categories`, `/commerce/manufacturers`, `/commerce/units` - catalog metadata
+- `/commerce/variants`, `/commerce/reviews`, `/commerce/taxes` - catalog operations
+- `/commerce/waitlist/products`, `/commerce/waitlist/restaurant` - waitlists
+- `/commerce/delivery` and `/commerce/delivery/*` - delivery, shipping, driver, and license management
 
 ### Content Management
-- `/dashboard/content/posts` — blog post CRUD
-- `/dashboard/content/pages` — page management
-- `/dashboard/content/authors` — author profiles
-- `/dashboard/content/categories` — content categorization
-- `/dashboard/content/tags` — tag management
-- `/dashboard/content/comments` — comment moderation
+- `/content/dashboard` - content overview
+- `/content/posts` - blog post CRUD
+- `/content/pages` - page management
+- `/content/authors` - author profiles
+- `/content/categories` - content categorization
+- `/content/tags` - tag management
+- `/content/comments` - comment moderation
+- `/content/files`, `/content/blog`, `/content/seo` - files, blog operations, and SEO
 
 ### Data Management
-- `/dashboard/data/users` — user management (highlighted model)
-- `/dashboard/data/subscribers` — subscriber management
-- `/dashboard/data/teams` — team management
-- `/dashboard/data/notifications` — notification history
+- `/data/dashboard` - data overview
+- `/data/users` - user management
+- `/data/subscribers` - subscriber management
+- `/data/teams` - team management
+- `/data/activity` - persisted activity
+- `/models`, `/models/{model}` - generic model registry and explorer
+- `/notifications/dashboard`, `/notifications/history` - notification operations
 
 ### Marketing
-- `/dashboard/marketing/campaigns` — campaign management
-- `/dashboard/marketing/email-lists` — email list management
-- `/dashboard/marketing/social` — social post management
+- `/marketing/campaigns` - campaign management
+- `/marketing/lists` - email list management
+- `/marketing/social-posts` - social post management
+- `/marketing/reviews` - marketing review workflows
 
 ### Library
-- `/dashboard/library/components` — component browser
-- `/dashboard/library/functions` — function registry
-- `/dashboard/library/releases` — release management
+- `/library/components` - component browser
+- `/functions` - function registry and scaffold
+- `/releases` - release management
+- `/packages`, `/dependencies` - package and dependency inspection
 
-### Settings (20+ panels)
-- `/dashboard/settings/ai` — AI/LLM configuration
-- `/dashboard/settings/analytics` — analytics settings
-- `/dashboard/settings/app` — application settings
-- `/dashboard/settings/cache` — cache configuration
-- `/dashboard/settings/cloud` — cloud/deployment settings
-- `/dashboard/settings/database` — database configuration
-- `/dashboard/settings/dns` — DNS management
-- `/dashboard/settings/email` — email settings
-- `/dashboard/settings/environment` — environment variables
-- `/dashboard/settings/hashing` — hashing configuration
-- `/dashboard/settings/logging` — logging settings
-- `/dashboard/settings/notifications` — notification settings
-- `/dashboard/settings/payment` — payment/Stripe settings
-- `/dashboard/settings/ports` — port configuration
-- `/dashboard/settings/queue` — queue settings
-- `/dashboard/settings/search-engine` — search settings
-- `/dashboard/settings/security` — security/firewall settings
-- `/dashboard/settings/services` — third-party services
-- `/dashboard/settings/storage` — storage configuration
-- `/dashboard/settings/team` — team settings
-- `/dashboard/settings/ui` — UI configuration
+### Settings
+- `/settings` - typed `config/*.ts` browser and editor
+- `/settings/appearance` - dashboard appearance
+- `/settings/billing` - account billing
+- `/settings/mail` - mail configuration
+- `/environment` - environment summary
+- `/access-tokens` - access-token management
+- `/cloud`, `/dns`, `/mailboxes` - infrastructure-specific settings
 
 ### Deployments
 - `/deployments` - deployment history, deployment controls, the custom
@@ -103,14 +104,19 @@ is hidden. Do not create separate `/deployments/scripts` or
 `/deployments/live-terminal` pages.
 
 ### Utilities
-- `/dashboard/maintenance` — maintenance mode toggle
+- `/health`, `/insights`, `/logs` - operational health and logs
+- `/servers`, `/serverless`, `/realtime` - runtime infrastructure
+- `/management/permissions` - RBAC management
+- `/kanban` - model-backed board management
+- `/ci`, `/buddy` - CI and Buddy workflows
 
-## Dashboard Components (150+)
+## Dashboard Components (250+)
 
 ### Layout Components
-- `DashboardNavbar` — top navigation bar
-- `DashboardSidebar` — side navigation
-- `DashboardLayout` — main layout wrapper
+- `Navbar` - top navigation bar
+- `Sidebar` - fixed desktop side navigation provided by the STX runtime
+- `MobileSidebar` - responsive drawer around the same sidebar content
+- `DashboardLayout` - reusable layout wrapper
 
 ### UI Components
 - Buttons, Modals, Toasts, Alerts, Dropdowns
@@ -152,14 +158,14 @@ is hidden. Do not create separate `/deployments/scripts` or
 ## Dashboard Actions
 
 Located in `storage/framework/defaults/app/Actions/Dashboard/`:
-- Settings actions — Get/Update for each settings category
-- Commerce actions — CRUD operations for all commerce models
-- Content actions — CRUD operations for content models
-- Data actions — User count, subscriber count, metrics
-- Deployment actions — Create, get, update deployments
-- Job actions — Create, get, metrics
-- Notification actions — Create, get, delivery rate
-- Request actions — Analytics data
+- Settings actions - get and update typed settings
+- Commerce actions - CRUD operations for commerce models
+- Content actions - CRUD operations for content models
+- Data actions - persisted model records and metrics
+- Deployment actions - deploy, script, terminal, and history operations
+- Job actions - job records and metrics
+- Notification actions - notification records and delivery metrics
+- Request actions - captured request analytics
 
 ## Model Dashboard Integration
 
@@ -200,8 +206,11 @@ identity fields read-only when their source of truth is `config/*.ts`.
 ```bash
 buddy dev --dashboard        # start dashboard dev server
 buddy dev -d                 # alias
-buddy build:components       # build dashboard components
+buddy build components       # build component libraries
 ```
+
+`buddy build:components` remains the direct command alias. Prefer
+`buddy build components` in documentation and agent workflows.
 
 Port: 3002 (configured in `config/ports.ts` as `admin`)
 
@@ -318,4 +327,4 @@ sidebar-aware root.
 - Split repeated or stateful page regions into `.stx` components under `resources/components/Dashboard/`; pass reactive values with `useReactiveProp()` and communicate upward with `defineEmits()`
 - Preserve the existing sidebar information architecture and styling when redesigning page content
 - Use `dashboard-modal-layer` for every fixed dashboard dialog or drawer
-- The live terminal component streams deployment output in real-time
+- The live terminal component polls real deployment output and pauses while the document is hidden

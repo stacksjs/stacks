@@ -1,0 +1,34 @@
+import { describe, expect, test } from 'bun:test'
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
+
+const skill = readFileSync(
+  resolve('storage/framework/defaults/ai/skills/stacks-dashboard/SKILL.md'),
+  'utf8',
+)
+
+describe('dashboard skill contract', () => {
+  test('documents root-mounted page routes and dashboard-prefixed APIs', () => {
+    expect(skill).toContain('Do not prefix\npage links with `/dashboard`')
+    expect(skill).toContain('The `/api/dashboard/*` prefix is reserved for')
+    expect(skill).toContain('- `/commerce/products` - product management')
+    expect(skill).toContain('- `/content/posts` - blog post CRUD')
+    expect(skill).toContain('- `/settings` - typed `config/*.ts` browser and editor')
+    expect(skill).not.toContain('/dashboard/commerce/products')
+    expect(skill).not.toContain('/dashboard/content/posts')
+    expect(skill).not.toContain('/dashboard/settings/app')
+  })
+
+  test('documents canonical component build and deployment behavior', () => {
+    expect(skill).toContain('buddy build components       # build component libraries')
+    expect(skill).toContain('`buddy build:components` remains the direct command alias')
+    expect(skill).toContain('GET|PUT /api/dashboard/deployments/script')
+    expect(skill).toContain('GET /api/dashboard/deployments/terminal')
+    expect(skill).toContain('pauses polling while the document')
+  })
+
+  test('keeps generated guidance free of separator dash typography', () => {
+    expect(skill).not.toContain('—')
+    expect(skill).not.toContain('–')
+  })
+})
