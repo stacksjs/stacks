@@ -13,10 +13,10 @@ type CategoryRow = ModelRow<typeof Category>
  * @param data The updated category data
  * @returns The updated category record
  */
-export async function update(id: number, data: CategoryWriteData): Promise<CategoryRow> {
+export async function update(id: number, data: CategoryWriteData): Promise<CategoryRow | undefined> {
   const existingCategory = await fetchById(id)
   if (!existingCategory)
-    throw new HttpError(404, `Category with ID ${id} not found`)
+    return undefined
 
   if (Object.hasOwn(data, 'parent_category_id')) {
     const parentCategoryId = data.parent_category_id ? Number(data.parent_category_id) : undefined
@@ -46,7 +46,7 @@ export async function update(id: number, data: CategoryWriteData): Promise<Categ
       .executeTakeFirst()
 
     if (!result)
-      throw new HttpError(404, `Category with ID ${id} not found`)
+      return undefined
 
     return result as CategoryRow
   }

@@ -11,7 +11,7 @@ type ManufacturerUpdate = UpdateModelData<typeof Manufacturer>
  * @param data The manufacturer data to update
  * @returns The updated manufacturer record
  */
-export async function update(id: number, data: ManufacturerUpdate): Promise<ManufacturerJsonResponse> {
+export async function update(id: number, data: ManufacturerUpdate): Promise<ManufacturerJsonResponse | undefined> {
   try {
     if (!id)
       throw new Error('Manufacturer ID is required for update')
@@ -27,7 +27,7 @@ export async function update(id: number, data: ManufacturerUpdate): Promise<Manu
       .executeTakeFirst()
 
     if (!result)
-      throw new Error(`Manufacturer with ID ${id} not found`)
+      return undefined
 
     return result as ManufacturerJsonResponse
   }

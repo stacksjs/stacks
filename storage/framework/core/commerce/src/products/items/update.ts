@@ -12,7 +12,7 @@ import { fetchById } from './fetch'
  * @param data The product item data to update
  * @returns The updated product item record
  */
-export async function update(id: number, data: Omit<ProductUpdate, 'id'>): Promise<ProductJsonResponse> {
+export async function update(id: number, data: Omit<ProductUpdate, 'id'>): Promise<ProductJsonResponse | undefined> {
   try {
     if (!id)
       throw new Error('Product item ID is required for update')
@@ -28,7 +28,7 @@ export async function update(id: number, data: Omit<ProductUpdate, 'id'>): Promi
       .executeTakeFirst()
 
     if (!result)
-      throw new Error('Failed to update product item')
+      return undefined
 
     return result as ProductJsonResponse
   }

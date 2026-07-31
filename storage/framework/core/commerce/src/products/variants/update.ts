@@ -10,7 +10,7 @@ type ProductVariantUpdate = UpdateModelData<typeof ProductVariant>
  * @param data The product variant data to update
  * @returns The updated product variant record
  */
-export async function update(id: number, data: Omit<ProductVariantUpdate, 'id'>): Promise<ProductVariantJsonResponse> {
+export async function update(id: number, data: Omit<ProductVariantUpdate, 'id'>): Promise<ProductVariantJsonResponse | undefined> {
   try {
     const result = await db
       .updateTable('product_variants')
@@ -23,7 +23,7 @@ export async function update(id: number, data: Omit<ProductVariantUpdate, 'id'>)
       .executeTakeFirst()
 
     if (!result)
-      throw new Error('Failed to update product variant')
+      return undefined
 
     return result as ProductVariantJsonResponse
   }

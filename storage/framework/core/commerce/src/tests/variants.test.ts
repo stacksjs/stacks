@@ -2,13 +2,19 @@ import { beforeEach, describe, expect, it } from 'bun:test'
 import { refreshDatabase } from './setup'
 import { bulkDestroy } from '../products/variants/destroy'
 import { bulkStore, formatVariantOptions, generateVariantCombinations } from '../products/variants/store'
-import { bulkUpdate } from '../products/variants/update'
+import { bulkUpdate, update } from '../products/variants/update'
 
 beforeEach(async () => {
   await refreshDatabase()
 })
 
 describe('Product Variant Module', () => {
+  describe('update', () => {
+    it('should return undefined when the product variant does not exist', async () => {
+      expect(await update(99999999, {})).toBeUndefined()
+    })
+  })
+
   describe('bulkStore', () => {
     it('should create multiple product variants at once', async () => {
       const requestsData = [

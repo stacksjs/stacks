@@ -3,13 +3,19 @@ import { refreshDatabase } from './setup'
 import { bulkDestroy } from '../products/units/destroy'
 import { fetchAll } from '../products/units/fetch'
 import { bulkStore, formatUnitOptions } from '../products/units/store'
-import { bulkUpdate, updateDefaultStatus } from '../products/units/update'
+import { bulkUpdate, update, updateDefaultStatus } from '../products/units/update'
 
 beforeEach(async () => {
   await refreshDatabase()
 })
 
 describe('Product Unit Module', () => {
+  describe('update', () => {
+    it('should return undefined when the product unit does not exist', async () => {
+      expect(await update(99999999, {})).toBeUndefined()
+    })
+  })
+
   describe('bulkStore', () => {
     it('should create multiple product units at once', async () => {
       const unitRequests = [

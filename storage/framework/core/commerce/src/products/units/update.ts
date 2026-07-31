@@ -11,7 +11,7 @@ type ProductUnitUpdate = UpdateModelData<typeof ProductUnit>
  * @param data The product unit data to update
  * @returns The updated product unit record
  */
-export async function update(id: number, data: ProductUnitWriteData): Promise<ProductUnitJsonResponse> {
+export async function update(id: number, data: ProductUnitWriteData): Promise<ProductUnitJsonResponse | undefined> {
   try {
     if (!id)
       throw new Error('Product unit ID is required for update')
@@ -24,7 +24,7 @@ export async function update(id: number, data: ProductUnitWriteData): Promise<Pr
         .executeTakeFirst() as { type: string, is_default: boolean | null } | undefined
 
       if (!current)
-        throw new Error(`Product unit with ID ${id} not found`)
+        return undefined
 
       const unitType = data.type ?? current.type
       const isDefault = data.is_default ?? Boolean(current.is_default)
@@ -48,7 +48,7 @@ export async function update(id: number, data: ProductUnitWriteData): Promise<Pr
         .executeTakeFirst()
 
       if (!result)
-        throw new Error(`Product unit with ID ${id} not found`)
+        return undefined
 
       return result as ProductUnitJsonResponse
     })

@@ -3,12 +3,19 @@ import { refreshDatabase } from './setup'
 import { bulkDestroy } from '../products/manufacturers/destroy'
 import { fetchFeatured } from '../products/manufacturers/fetch'
 import { bulkStore, store } from '../products/manufacturers/store'
+import { update } from '../products/manufacturers/update'
 
 beforeEach(async () => {
   await refreshDatabase()
 })
 
 describe('Manufacturer Module', () => {
+  describe('update', () => {
+    it('should return undefined when the manufacturer does not exist', async () => {
+      expect(await update(99999999, {})).toBeUndefined()
+    })
+  })
+
   describe('store', () => {
     it('should create a manufacturer successfully', async () => {
       const data = {
