@@ -106,6 +106,16 @@ describe('dashboard native STX bindings', () => {
     expect(source).toContain('x-model="selectedRange"')
     expect(source).toContain('emitRange($event)')
     expect(source).not.toContain(':value="range()"')
+
+    const webView = readFileSync(
+      resolve('storage/framework/defaults/views/dashboard/analytics/web/index.stx'),
+      'utf8',
+    )
+    const web = componentSource('Analytics/WebAnalyticsDashboard.stx')
+    expect(webView).toContain('<WebAnalyticsDashboard />')
+    expect(webView).not.toContain('<script')
+    expect(web).toContain('fetchWebAnalytics(analyticsRange())')
+    expect(web).toContain('useChart(')
   })
 
   test('stats cards react to every dynamic presentation prop', () => {

@@ -1,0 +1,312 @@
+<template>
+<PageLayout>
+      <AnalyticsPageHeader
+        title="Web Analytics"
+        description="Privacy-safe traffic aggregates from recorded application requests."
+        :dateRange="dateRangeDisplay"
+        :range="analyticsRange"
+        :loading="isLoading"
+        @range-change="setAnalyticsRange"
+        @refresh="loadAnalytics"
+      />
+
+      <div class="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 mb-8 p-4 bg-black dark:bg-neutral-900 rounded-lg">
+        <div class="flex flex-col items-center justify-center">
+          <div class="font-bold text-4xl text-white">{{ analyticsOverview.realtimeVisitors }}</div>
+          <div class="text-gray-400 text-sm">Realtime</div>
+        </div>
+        <div class="flex flex-col items-center justify-center">
+          <div class="font-bold text-4xl text-white">{{ formatNumber(analyticsOverview.uniqueVisitors) }}</div>
+          <div class="text-gray-400 text-sm">Unique visitors</div>
+        </div>
+        <div class="flex flex-col items-center justify-center">
+          <div class="font-bold text-4xl text-white">{{ formatNumber(analyticsOverview.pageViews) }}</div>
+          <div class="text-gray-400 text-sm">Page views</div>
+        </div>
+        <div class="flex flex-col items-center justify-center">
+          <div class="font-bold text-4xl text-white">{{ analyticsOverview.averageResponseTime }}</div>
+          <div class="text-gray-400 text-sm">Avg response</div>
+        </div>
+        <div class="flex flex-col items-center justify-center">
+          <div class="font-bold text-4xl text-white">{{ analyticsOverview.errorRate }}</div>
+          <div class="text-gray-400 text-sm">Error rate</div>
+        </div>
+        <div class="flex flex-col items-center justify-center">
+          <div class="font-bold text-4xl text-white">{{ formatNumber(analyticsOverview.successfulRequests) }}</div>
+          <div class="text-gray-400 text-sm">Successful requests</div>
+        </div>
+      </div>
+
+      <div class="mb-8 p-4 bg-white dark:bg-neutral-800 rounded-lg shadow">
+        <div class="mb-4">
+          <h3 class="font-medium leading-6 text-gray-900 text-lg dark:text-white">Traffic Overview</h3>
+          <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Daily page views and unique visitors</p>
+        </div>
+        <div class="h-80 w-full"><canvas id="traffic_chart"></canvas></div>
+      </div>
+
+      <div class="grid gap-8 grid-cols-1 lg:grid-cols-2">
+        <div>
+          <div class="mb-4"><h3 class="font-medium text-gray-900 text-lg dark:text-white">Pages</h3></div>
+          <div class="overflow-hidden border border-gray-200 rounded-lg dark:border-neutral-700">
+            <table class="min-w-full divide-gray-200 divide-y dark:divide-neutral-700">
+              <thead class="bg-gray-50 dark:bg-neutral-700/50">
+                <tr>
+                  <th class="px-4 py-3 font-medium text-gray-500 text-left text-xs tracking-wider uppercase dark:text-neutral-300">Pages</th>
+                  <th class="px-4 py-3 font-medium text-gray-500 text-right text-xs tracking-wider uppercase dark:text-neutral-300">Entries</th>
+                  <th class="px-4 py-3 font-medium text-gray-500 text-right text-xs tracking-wider uppercase dark:text-neutral-300">Visitors</th>
+                  <th class="px-4 py-3 font-medium text-gray-500 text-right text-xs tracking-wider uppercase dark:text-neutral-300">Views</th>
+                  <th class="px-4 py-3 font-medium text-gray-500 text-right text-xs tracking-wider uppercase dark:text-neutral-300">%</th>
+                </tr>
+              </thead>
+              <tbody class="bg-white dark:bg-neutral-800 divide-gray-200 divide-y dark:divide-neutral-700">
+                <template :for="page in pagesData">
+                  <tr class="relative hover:bg-gray-50 dark:hover:bg-neutral-700/50">
+                    <td class="px-4 py-3 text-gray-900 text-sm whitespace-nowrap dark:text-white">
+                      <div class="absolute inset-0 bg-blue-100/50 dark:bg-blue-900/50" :style="'width: ' + page.percentage + '%'"></div>
+                      <span class="relative z-10">{{ page.path }}</span>
+                    </td>
+                    <td class="relative px-4 py-3 text-gray-500 text-right text-sm whitespace-nowrap dark:text-neutral-300"><span class="relative z-10">{{ page.entries }}</span></td>
+                    <td class="relative px-4 py-3 text-gray-500 text-right text-sm whitespace-nowrap dark:text-neutral-300"><span class="relative z-10">{{ page.visitors }}</span></td>
+                    <td class="relative px-4 py-3 text-gray-500 text-right text-sm whitespace-nowrap dark:text-neutral-300"><span class="relative z-10">{{ page.views }}</span></td>
+                    <td class="relative px-4 py-3 text-gray-500 text-right text-sm whitespace-nowrap dark:text-neutral-300"><span class="relative z-10">{{ page.percentage }}%</span></td>
+                  </tr>
+                </template>
+              </tbody>
+            </table>
+          </div>
+          <div class="flex justify-end mt-2"><StxLink to="/analytics/pages" class="text-blue-600 text-sm dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">View all pages</StxLink></div>
+        </div>
+
+        <div>
+          <div class="mb-4"><h3 class="font-medium text-gray-900 text-lg dark:text-white">Referrers</h3></div>
+          <div class="overflow-hidden border border-gray-200 rounded-lg dark:border-neutral-700">
+            <table class="min-w-full divide-gray-200 divide-y dark:divide-neutral-700">
+              <thead class="bg-gray-50 dark:bg-neutral-700/50">
+                <tr>
+                  <th class="px-4 py-3 font-medium text-gray-500 text-left text-xs tracking-wider uppercase dark:text-neutral-300">Sources</th>
+                  <th class="px-4 py-3 font-medium text-gray-500 text-right text-xs tracking-wider uppercase dark:text-neutral-300">Visitors</th>
+                  <th class="px-4 py-3 font-medium text-gray-500 text-right text-xs tracking-wider uppercase dark:text-neutral-300">Views</th>
+                  <th class="px-4 py-3 font-medium text-gray-500 text-right text-xs tracking-wider uppercase dark:text-neutral-300">%</th>
+                </tr>
+              </thead>
+              <tbody class="bg-white dark:bg-neutral-800 divide-gray-200 divide-y dark:divide-neutral-700">
+                <template :for="referrer in referrersData">
+                  <tr class="relative hover:bg-gray-50 dark:hover:bg-neutral-700/50">
+                    <td class="px-4 py-3 text-gray-900 text-sm whitespace-nowrap dark:text-white">
+                      <div class="absolute inset-0 bg-green-100/50 dark:bg-green-900/50" :style="'width: ' + referrer.percentage + '%'"></div>
+                      <span class="relative z-10">{{ referrer.name }}</span>
+                    </td>
+                    <td class="relative px-4 py-3 text-gray-500 text-right text-sm whitespace-nowrap dark:text-neutral-300"><span class="relative z-10">{{ referrer.visitors }}</span></td>
+                    <td class="relative px-4 py-3 text-gray-500 text-right text-sm whitespace-nowrap dark:text-neutral-300"><span class="relative z-10">{{ referrer.views }}</span></td>
+                    <td class="relative px-4 py-3 text-gray-500 text-right text-sm whitespace-nowrap dark:text-neutral-300"><span class="relative z-10">{{ referrer.percentage }}%</span></td>
+                  </tr>
+                </template>
+              </tbody>
+            </table>
+          </div>
+          <p :if="referrersData.length === 0" class="mt-3 text-gray-500 text-sm dark:text-neutral-400">Referrers require an analytics provider that records source headers.</p>
+          <div class="flex justify-end mt-2"><StxLink to="/analytics/referrers" class="text-blue-600 text-sm dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">View all referrers</StxLink></div>
+        </div>
+      </div>
+
+      <div class="grid gap-8 grid-cols-1 lg:grid-cols-3 mt-8">
+        <div>
+          <div class="mb-4"><h3 class="font-medium text-gray-900 text-lg dark:text-white">Device Types</h3></div>
+          <div class="overflow-hidden border border-gray-200 rounded-lg dark:border-neutral-700">
+            <table class="min-w-full divide-gray-200 divide-y dark:divide-neutral-700">
+              <thead class="bg-gray-50 dark:bg-neutral-700/50">
+                <tr>
+                  <th class="px-4 py-3 font-medium text-gray-500 text-left text-xs tracking-wider uppercase dark:text-neutral-300">Device Types</th>
+                  <th class="px-4 py-3 font-medium text-gray-500 text-right text-xs tracking-wider uppercase dark:text-neutral-300">Visitors</th>
+                  <th class="px-4 py-3 font-medium text-gray-500 text-right text-xs tracking-wider uppercase dark:text-neutral-300">%</th>
+                </tr>
+              </thead>
+              <tbody class="bg-white dark:bg-neutral-800 divide-gray-200 divide-y dark:divide-neutral-700">
+                <template :for="device in deviceData">
+                  <tr class="relative hover:bg-gray-50 dark:hover:bg-neutral-700/50">
+                    <td class="px-4 py-3 text-gray-900 text-sm whitespace-nowrap dark:text-white">
+                      <div class="absolute inset-0 bg-purple-100/50 dark:bg-purple-900/50" :style="'width: ' + device.percentage + '%'"></div>
+                      <span class="relative z-10">{{ device.name }}</span>
+                    </td>
+                    <td class="relative px-4 py-3 text-gray-500 text-right text-sm whitespace-nowrap dark:text-neutral-300"><span class="relative z-10">{{ device.visitors }}</span></td>
+                    <td class="relative px-4 py-3 text-gray-500 text-right text-sm whitespace-nowrap dark:text-neutral-300"><span class="relative z-10">{{ device.percentage }}%</span></td>
+                  </tr>
+                </template>
+              </tbody>
+            </table>
+          </div>
+          <div class="flex justify-end mt-2"><StxLink to="/analytics/devices" class="text-blue-600 text-sm dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">View all devices</StxLink></div>
+        </div>
+
+        <div>
+          <div class="mb-4"><h3 class="font-medium text-gray-900 text-lg dark:text-white">Browsers</h3></div>
+          <div class="overflow-hidden border border-gray-200 rounded-lg dark:border-neutral-700">
+            <table class="min-w-full divide-gray-200 divide-y dark:divide-neutral-700">
+              <thead class="bg-gray-50 dark:bg-neutral-700/50">
+                <tr>
+                  <th class="px-4 py-3 font-medium text-gray-500 text-left text-xs tracking-wider uppercase dark:text-neutral-300">Browsers</th>
+                  <th class="px-4 py-3 font-medium text-gray-500 text-right text-xs tracking-wider uppercase dark:text-neutral-300">Visitors</th>
+                  <th class="px-4 py-3 font-medium text-gray-500 text-right text-xs tracking-wider uppercase dark:text-neutral-300">%</th>
+                </tr>
+              </thead>
+              <tbody class="bg-white dark:bg-neutral-800 divide-gray-200 divide-y dark:divide-neutral-700">
+                <template :for="browser in browserData">
+                  <tr class="relative hover:bg-gray-50 dark:hover:bg-neutral-700/50">
+                    <td class="px-4 py-3 text-gray-900 text-sm whitespace-nowrap dark:text-white">
+                      <div class="absolute inset-0 bg-amber-100/50 dark:bg-amber-900/50" :style="'width: ' + browser.percentage + '%'"></div>
+                      <span class="relative z-10">{{ browser.name }}</span>
+                    </td>
+                    <td class="relative px-4 py-3 text-gray-500 text-right text-sm whitespace-nowrap dark:text-neutral-300"><span class="relative z-10">{{ browser.visitors }}</span></td>
+                    <td class="relative px-4 py-3 text-gray-500 text-right text-sm whitespace-nowrap dark:text-neutral-300"><span class="relative z-10">{{ browser.percentage }}%</span></td>
+                  </tr>
+                </template>
+              </tbody>
+            </table>
+          </div>
+          <div class="flex justify-end mt-2"><StxLink to="/analytics/browsers" class="text-blue-600 text-sm dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">View all browsers</StxLink></div>
+        </div>
+
+        <div>
+          <div class="mb-4"><h3 class="font-medium text-gray-900 text-lg dark:text-white">Countries</h3></div>
+          <div class="overflow-hidden border border-gray-200 rounded-lg dark:border-neutral-700">
+            <table class="min-w-full divide-gray-200 divide-y dark:divide-neutral-700">
+              <thead class="bg-gray-50 dark:bg-neutral-700/50">
+                <tr>
+                  <th class="px-4 py-3 font-medium text-gray-500 text-left text-xs tracking-wider uppercase dark:text-neutral-300">Countries</th>
+                  <th class="px-4 py-3 font-medium text-gray-500 text-right text-xs tracking-wider uppercase dark:text-neutral-300">Visitors</th>
+                  <th class="px-4 py-3 font-medium text-gray-500 text-right text-xs tracking-wider uppercase dark:text-neutral-300">%</th>
+                </tr>
+              </thead>
+              <tbody class="bg-white dark:bg-neutral-800 divide-gray-200 divide-y dark:divide-neutral-700">
+                <template :for="country in countriesData">
+                  <tr class="relative hover:bg-gray-50 dark:hover:bg-neutral-700/50">
+                    <td class="px-4 py-3 text-gray-900 text-sm whitespace-nowrap dark:text-white">
+                      <div class="absolute inset-0 bg-rose-100/50 dark:bg-rose-900/50" :style="'width: ' + country.percentage + '%'"></div>
+                      <span class="relative z-10"><span class="mr-2">{{ country.flag }}</span>{{ country.name }}</span>
+                    </td>
+                    <td class="relative px-4 py-3 text-gray-500 text-right text-sm whitespace-nowrap dark:text-neutral-300"><span class="relative z-10">{{ country.visitors }}</span></td>
+                    <td class="relative px-4 py-3 text-gray-500 text-right text-sm whitespace-nowrap dark:text-neutral-300"><span class="relative z-10">{{ country.percentage }}%</span></td>
+                  </tr>
+                </template>
+              </tbody>
+            </table>
+          </div>
+          <p :if="countriesData.length === 0" class="mt-3 text-gray-500 text-sm dark:text-neutral-400">Country data requires geolocation tracking in your analytics provider.</p>
+          <div class="flex justify-end mt-2"><StxLink to="/analytics/countries" class="text-blue-600 text-sm dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">View all countries</StxLink></div>
+        </div>
+      </div>
+</PageLayout>
+</template>
+<script client>
+import type {
+  AnalyticsOverview,
+  AnalyticsRange,
+  BrowserData,
+  CountryData,
+  DeviceData,
+  PageData,
+  ReferrerData,
+  TrafficDataPoint,
+} from '~/storage/framework/defaults/functions/analytics'
+import { fetchWebAnalytics } from '~/storage/framework/defaults/functions/analytics'
+import { pushToast } from '~/storage/framework/defaults/functions/toasts'
+import { useChart } from '~/storage/framework/defaults/views/dashboard/composables/useChart'
+
+interface ChartLike { destroy: () => void }
+type ChartCtor = new (canvas: HTMLElement, config: { type: string, data: unknown, options?: unknown }) => ChartLike
+
+const analyticsOverview = state<AnalyticsOverview>({
+  realtimeVisitors: 0,
+  uniqueVisitors: 0,
+  pageViews: 0,
+  averageResponseTime: '-',
+  errorRate: 'N/A',
+  successfulRequests: 0,
+})
+const analyticsRange = state<AnalyticsRange>('month')
+const dateRangeDisplay = state('Last 30 days')
+const trafficData = state<TrafficDataPoint[]>([])
+const pagesData = state<PageData[]>([])
+const referrersData = state<ReferrerData[]>([])
+const deviceData = state<DeviceData[]>([])
+const browserData = state<BrowserData[]>([])
+const countriesData = state<CountryData[]>([])
+const isLoading = state(false)
+
+let chartHandle: { destroy: () => void } | null = null
+
+function formatNumber(value: number): string {
+  return new Intl.NumberFormat().format(value)
+}
+
+function formatDateRange(start: string, end: string): string {
+  const formatter = new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
+  return `${formatter.format(new Date(start))} to ${formatter.format(new Date(end))}`
+}
+
+function setAnalyticsRange(value: string | CustomEvent<string>): void {
+  const range = typeof value === 'string' ? value : value.detail
+  analyticsRange.set(range as AnalyticsRange)
+  void loadAnalytics()
+}
+
+async function renderTrafficChart(): Promise<void> {
+  chartHandle?.destroy()
+  const { Chart, registerables } = await import('/__deps/charts.js')
+  Chart.register(...registerables)
+  const Ctor = Chart as unknown as ChartCtor
+  chartHandle = useChart({
+    Chart: Ctor,
+    id: 'traffic_chart',
+    type: 'line',
+    data: {
+      labels: trafficData().map(item => item.date),
+      datasets: [
+        { label: 'Page Views', data: trafficData().map(item => item.pageViews), backgroundColor: 'rgba(147, 197, 253, 0.3)', borderColor: 'rgba(59, 130, 246, 0.8)', borderWidth: 2, tension: 0.4, fill: true },
+        { label: 'Visitors', data: trafficData().map(item => item.visitors), backgroundColor: 'rgba(147, 197, 253, 0.1)', borderColor: 'rgba(96, 165, 250, 0.8)', borderWidth: 2, tension: 0.4, fill: false },
+      ],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        x: { grid: { display: false }, ticks: { maxTicksLimit: 4 } },
+        y: { beginAtZero: true, grid: { borderDash: [2, 4], color: 'rgba(160, 174, 192, 0.2)' }, ticks: { maxTicksLimit: 6 } },
+      },
+      plugins: { legend: { display: true, position: 'top' }, tooltip: { mode: 'index', intersect: false } },
+    },
+  })
+}
+
+async function loadAnalytics(): Promise<void> {
+  isLoading.set(true)
+  try {
+    const data = await fetchWebAnalytics(analyticsRange())
+    analyticsOverview.set(data.overview)
+    trafficData.set(data.traffic)
+    pagesData.set(data.pages)
+    referrersData.set(data.referrers)
+    deviceData.set(data.devices)
+    browserData.set(data.browsers)
+    countriesData.set(data.countries)
+    dateRangeDisplay.set(formatDateRange(data.dateRange.start, data.dateRange.end))
+    await renderTrafficChart()
+  }
+  catch (error) {
+    pushToast('error', 'Could not load web analytics', { detail: String(error) })
+  }
+  finally {
+    isLoading.set(false)
+  }
+}
+
+onMount(async () => {
+  await loadAnalytics()
+})
+
+onDestroy(() => {
+  chartHandle?.destroy()
+  chartHandle = null
+})
+</script>
