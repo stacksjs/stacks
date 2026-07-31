@@ -77,7 +77,7 @@ const buttonClass = [
   fullWidth ? 'w-full' : '',
   iconOnly ? iconOnlySizes[size] : sizeClasses[size],
   variantClasses[variant]
-].join(' ')
+].filter(Boolean).join(' ')
 </script>
 <script client>
 const liveDisabled = useReactiveProp('disabled', false)
