@@ -1,3 +1,16 @@
+import {
+  commerceEmail,
+  commerceEnum,
+  commerceIdentifier,
+  commerceNumber,
+  commerceOptionalIdentifier,
+  commerceOptionalNumber,
+  commerceOptionalString,
+  commerceRequiredString,
+  commerceTimestamp,
+  commerceValue,
+} from './commerce-record'
+
 export interface RestaurantWaitlistRecord {
   id: string
   customerId: string
@@ -62,7 +75,9 @@ export function restaurantWaitlistTimestamp(value: string): number {
     ? `${raw.replace(' ', 'T')}Z`
     : raw
   const timestamp = new Date(source).getTime()
-  return Number.isFinite(timestamp) ? Math.floor(timestamp / 1000) : 0
+  if (!Number.isFinite(timestamp))
+    throw new TypeError('WaitlistRestaurant.check_in_time must be a valid timestamp.')
+  return Math.floor(timestamp / 1000)
 }
 
 export function restaurantWaitlistDateTimeLocal(value: string): string {
@@ -72,56 +87,81 @@ export function restaurantWaitlistDateTimeLocal(value: string): string {
   return local.toISOString().slice(0, 16)
 }
 
-function value(record: any, ...keys: string[]): unknown {
-  for (const key of keys) {
-    const result = typeof record?.get === 'function' ? record.get(key) : record?.[key]
-    if (result !== undefined && result !== null)
-      return result
-  }
-  return undefined
-}
-
-function text(input: unknown): string {
-  return input === undefined || input === null ? '' : String(input)
-}
-
-function numeric(input: unknown): number {
-  const result = Number(input)
-  return Number.isFinite(result) ? result : 0
-}
-
-function nullableNumeric(input: unknown): number | null {
-  if (input === undefined || input === null || input === '')
-    return null
-  const result = Number(input)
-  return Number.isFinite(result) ? result : null
-}
-
-export function normalizeRestaurantWaitlistRecord(record: any): RestaurantWaitlistRecord {
+export function normalizeRestaurantWaitlistRecord(
+  record: any,
+  customerIds?: Set<string>,
+): RestaurantWaitlistRecord {
+  const id = commerceIdentifier(commerceValue(record, 'id', 'uuid'), 'WaitlistRestaurant')
+  const source = `WaitlistRestaurant ${id}`
+  const customerId = commerceOptionalIdentifier(
+    commerceValue(record, 'customer_id', 'customerId'),
+    source,
+    'customer_id',
+  )
+  if (customerId && customerIds && !customerIds.has(customerId))
+    throw new TypeError(`${source}.customer_id references missing Customer ${customerId}.`)
   return {
-    id: text(value(record, 'id')),
-    customerId: text(value(record, 'customer_id', 'customerId')),
-    name: text(value(record, 'name')),
-    email: text(value(record, 'email')),
-    phone: text(value(record, 'phone')),
-    partySize: numeric(value(record, 'party_size', 'partySize')),
-    checkInTime: text(value(record, 'check_in_time', 'checkInTime')),
-    tablePreference: text(value(record, 'table_preference', 'tablePreference')),
-    status: text(value(record, 'status')).toLowerCase(),
-    quotedWaitTime: numeric(value(record, 'quoted_wait_time', 'quotedWaitTime')),
-    actualWaitTime: nullableNumeric(value(record, 'actual_wait_time', 'actualWaitTime')),
-    queuePosition: nullableNumeric(value(record, 'queue_position', 'queuePosition')),
-    createdAt: text(value(record, 'created_at', 'createdAt')),
+    id,
+    customerId,
+    name: commerceRequiredString(commerceValue(record, 'name'), source, 'name'),
+    email: commerceEmail(commerceValue(record, 'email'), source),
+    phone: commerceOptionalString(commerceValue(record, 'phone'), source, 'phone'),
+    partySize: commerceNumber(
+      commerceValue(record, 'party_size', 'partySize'),
+      source,
+      'party_size',
+      { min: 1, integer: true },
+    ),
+    checkInTime: commerceTimestamp(
+      commerceValue(record, 'check_in_time', 'checkInTime'),
+      source,
+      'check_in_time',
+    ),
+    tablePreference: commerceEnum(
+      commerceValue(record, 'table_preference', 'tablePreference'),
+      source,
+      'table_preference',
+      ['indoor', 'bar', 'booth', 'no_preference'],
+    ),
+    status: commerceEnum(commerceValue(record, 'status'), source, 'status', [
+      'waiting',
+      'seated',
+      'cancelled',
+      'no_show',
+    ]),
+    quotedWaitTime: commerceNumber(
+      commerceValue(record, 'quoted_wait_time', 'quotedWaitTime'),
+      source,
+      'quoted_wait_time',
+      { min: 0, integer: true },
+    ),
+    actualWaitTime: commerceOptionalNumber(
+      commerceValue(record, 'actual_wait_time', 'actualWaitTime'),
+      source,
+      'actual_wait_time',
+      { min: 0, integer: true },
+    ),
+    queuePosition: commerceOptionalNumber(
+      commerceValue(record, 'queue_position', 'queuePosition'),
+      source,
+      'queue_position',
+      { min: 1, integer: true },
+    ),
+    createdAt: commerceTimestamp(commerceValue(record, 'created_at', 'createdAt'), source),
   }
 }
 
 export function normalizeRestaurantWaitlistCustomerOption(record: any): RestaurantWaitlistCustomerOption {
+  const id = commerceIdentifier(commerceValue(record, 'id', 'uuid'), 'Customer')
+  const source = `Customer ${id}`
+  const email = commerceEmail(commerceValue(record, 'email'), source)
+  const phone = commerceOptionalString(commerceValue(record, 'phone'), source, 'phone')
   return {
-    id: text(value(record, 'id')),
-    label: text(value(record, 'name')) || 'Unnamed customer',
-    detail: text(value(record, 'email')) || text(value(record, 'phone')),
-    email: text(value(record, 'email')),
-    phone: text(value(record, 'phone')),
+    id,
+    label: commerceRequiredString(commerceValue(record, 'name'), source, 'name'),
+    detail: email || phone,
+    email,
+    phone,
   }
 }
 
