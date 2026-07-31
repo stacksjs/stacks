@@ -1,10 +1,22 @@
+import {
+  commerceBoolean,
+  commerceEnum,
+  commerceIdentifier,
+  commerceNumber,
+  commerceRequiredString,
+  commerceTimestamp,
+  commerceValue,
+} from './commerce-record'
+
+export type TaxRateRegion = 'North America' | 'South America' | 'Europe' | 'Asia' | 'Africa' | 'Oceania' | 'Antarctica'
+
 export interface TaxRateRecord {
   id: string
   name: string
   rate: number
   type: string
   country: string
-  region: string
+  region: TaxRateRegion
   status: 'active' | 'inactive'
   isDefault: boolean
   createdAt: string
@@ -18,35 +30,27 @@ export interface TaxRateSummary {
   defaultConflicts: number
 }
 
-function value(record: any, ...keys: string[]): unknown {
-  for (const key of keys) {
-    const result = typeof record?.get === 'function' ? record.get(key) : record?.[key]
-    if (result !== null && result !== undefined)
-      return result
-  }
-  return undefined
-}
-
-function text(input: unknown): string {
-  return input === null || input === undefined ? '' : String(input)
-}
-
-function boolean(input: unknown): boolean {
-  return input === true || input === 1 || input === '1' || input === 'true'
-}
-
 export function normalizeTaxRateRecord(record: any): TaxRateRecord {
-  const status = text(value(record, 'status')) === 'inactive' ? 'inactive' : 'active'
+  const id = commerceIdentifier(commerceValue(record, 'id', 'uuid'), 'TaxRate')
+  const source = `TaxRate ${id}`
   return {
-    id: text(value(record, 'id', 'uuid')),
-    name: text(value(record, 'name')),
-    rate: Number(value(record, 'rate') || 0),
-    type: text(value(record, 'type')),
-    country: text(value(record, 'country')),
-    region: text(value(record, 'region')),
-    status,
-    isDefault: boolean(value(record, 'is_default', 'isDefault')),
-    createdAt: text(value(record, 'created_at', 'createdAt')),
+    id,
+    name: commerceRequiredString(commerceValue(record, 'name'), source, 'name'),
+    rate: commerceNumber(commerceValue(record, 'rate'), source, 'rate', { min: 0, max: 100 }),
+    type: commerceRequiredString(commerceValue(record, 'type'), source, 'type'),
+    country: commerceRequiredString(commerceValue(record, 'country'), source, 'country'),
+    region: commerceEnum(commerceValue(record, 'region'), source, 'region', [
+      'North America',
+      'South America',
+      'Europe',
+      'Asia',
+      'Africa',
+      'Oceania',
+      'Antarctica',
+    ]),
+    status: commerceEnum(commerceValue(record, 'status'), source, 'status', ['active', 'inactive']),
+    isDefault: commerceBoolean(commerceValue(record, 'is_default', 'isDefault'), source, 'is_default'),
+    createdAt: commerceTimestamp(commerceValue(record, 'created_at', 'createdAt'), source),
   }
 }
 
