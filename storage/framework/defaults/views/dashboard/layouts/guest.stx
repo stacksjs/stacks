@@ -5,6 +5,8 @@
   <title>Stacks Dashboard</title>
 </head>
 <body class="min-h-screen bg-neutral-100 dark:bg-neutral-950">
-  @yield('content')
+  <main data-stx-content>
+    @yield('content')
+  </main>
 </body>
 </html>

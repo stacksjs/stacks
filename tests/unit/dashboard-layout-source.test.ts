@@ -6,12 +6,21 @@ const layoutSource = readFileSync(
   resolve('storage/framework/defaults/views/dashboard/layouts/default.stx'),
   'utf8',
 )
+const guestLayoutSource = readFileSync(
+  resolve('storage/framework/defaults/views/dashboard/layouts/guest.stx'),
+  'utf8',
+)
 
 /** STX expands this declarative contract into the synchronous pre-paint guard. */
 const BOOTSTRAP = /@appearanceBootstrap\(\{[\s\S]*?\n\}\)/
 const bootstrap = layoutSource.match(BOOTSTRAP)?.[0] ?? ''
 
 describe('dashboard layout client architecture', () => {
+  test('gives guest pages a semantic SPA navigation container', () => {
+    expect(guestLayoutSource).toContain('<main data-stx-content>')
+    expect(guestLayoutSource).toContain('@yield(\'content\')')
+  })
+
   test('uses STX lifecycle and component events for sidebar navigation', () => {
     expect(layoutSource).toContain('useRef(\'dashboardSidebarHost\')')
     expect(layoutSource).toContain('useEventListener(\'stx:navigate\'')
