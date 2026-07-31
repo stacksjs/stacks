@@ -232,11 +232,11 @@ const selected = (a, b) => String(a === b)
       </p>
     </div>
 
-    <div class="grid gap-4 p-6 sm:grid-cols-2">
+    <div class="grid gap-4 sm:grid-cols-2 p-6">
       <template :for="option in styleOptions">
         <button
           type="button"
-          class="appearance-option flex flex-col gap-3 p-4 w-full text-left rounded-xl"
+          class="flex flex-col gap-3 p-4 w-full text-left rounded-xl appearance-option"
           :data-selected="selected(sidebarStyle(), option.id)"
           :aria-pressed="String(selected(sidebarStyle(), option.id))"
           @click="selectStyle(option.id)"
@@ -253,12 +253,12 @@ const selected = (a, b) => String(a === b)
 
           <span class="flex gap-2 items-center">
             <span
-              class="appearance-check flex-none h-4 w-4 i-hugeicons-checkmark-circle-02"
+              class="flex-none h-4 w-4 appearance-check i-hugeicons-checkmark-circle-02"
               aria-hidden="true"
             ></span>
             <span class="font-medium text-neutral-900 text-sm dark:text-white">{{ option.label }}</span>
           </span>
-          <span class="text-neutral-500 text-xs leading-relaxed dark:text-neutral-400">{{ option.description }}</span>
+          <span class="leading-relaxed text-neutral-500 text-xs dark:text-neutral-400">{{ option.description }}</span>
         </button>
       </template>
     </div>
@@ -277,7 +277,7 @@ const selected = (a, b) => String(a === b)
       <template :for="mode in colorModes">
         <button
           type="button"
-          class="appearance-option appearance-mode flex flex-1 gap-2 items-center justify-center px-3 py-2 text-neutral-600 text-sm font-medium rounded-lg dark:text-neutral-300"
+          class="flex flex-1 gap-2 items-center justify-center px-3 py-2 font-medium text-neutral-600 text-sm dark:text-neutral-300 rounded-lg appearance-mode appearance-option"
           :data-selected="selected(colorMode(), mode.id)"
           :aria-pressed="String(selected(colorMode(), mode.id))"
           @click="selectColorMode(mode.id)"
@@ -299,14 +299,14 @@ const selected = (a, b) => String(a === b)
           disable anything, and every page stays reachable by URL.
         </p>
       </div>
-      <span :if="hiddenCount() > 0" class="px-2.5 py-1 text-amber-700 text-xs font-medium bg-amber-50 rounded-full dark:text-amber-300 dark:bg-amber-500/10">
+      <span :if="hiddenCount() > 0" class="px-2.5 py-1 font-medium text-amber-700 text-xs dark:text-amber-300 bg-amber-50 dark:bg-amber-500/10 rounded-full">
         {{ hiddenCount() }} hidden
       </span>
     </div>
 
     <div class="divide-neutral-200/60 divide-y dark:divide-white/5">
       <template :for="section in sections">
-        <label class="flex gap-4 items-center justify-between px-6 py-4 cursor-pointer hover:bg-stone-50/60 dark:hover:bg-white/[0.02]">
+        <label class="flex gap-4 items-center justify-between px-6 py-4 hover:bg-stone-50/60 dark:hover:bg-white/[0.02] cursor-pointer">
           <span class="min-w-0">
             <span class="block font-medium text-neutral-900 text-sm dark:text-white">{{ section.label }}</span>
             <span class="block mt-0.5 text-neutral-500 text-xs dark:text-neutral-400">{{ section.count }} items</span>
