@@ -1,5 +1,6 @@
 import process from 'node:process'
-import { existsSync, writeFileSync } from 'node:fs'
+import { randomUUID } from 'node:crypto'
+import { existsSync, renameSync, unlinkSync, writeFileSync } from 'node:fs'
 import { bold, cyan, dim, green, red } from '@stacksjs/cli'
 import { projectPath, storagePath } from '@stacksjs/path'
 import { seedCsrfPageResponse } from './csrf'
@@ -517,7 +518,15 @@ const manifestPayload = {
   models: buildManifest(discoveredModels),
   sections: dashboardToggles,
 }
-writeFileSync(manifestPath, JSON.stringify(manifestPayload, null, 2))
+const manifestTempPath = `${manifestPath}.${process.pid}.${randomUUID()}.tmp`
+try {
+  writeFileSync(manifestTempPath, JSON.stringify(manifestPayload, null, 2), { flag: 'wx' })
+  renameSync(manifestTempPath, manifestPath)
+}
+finally {
+  if (existsSync(manifestTempPath))
+    unlinkSync(manifestTempPath)
+}
 
 // Wait briefly for STX server (it's usually ready by now)
 // eslint-disable-next-line ts/no-top-level-await
