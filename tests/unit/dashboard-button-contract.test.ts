@@ -174,7 +174,6 @@ describe('dashboard button contract', () => {
       'App/SourceInventory.stx',
       'Realtime/RealtimeDashboard.stx',
       'Queue/QueueDashboard.stx',
-      'Queue/QueueTable.stx',
       'Jobs/JobTable.stx',
       'Jobs/JobDashboard.stx',
       'Jobs/JobHistory.stx',

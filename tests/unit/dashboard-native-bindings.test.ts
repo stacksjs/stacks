@@ -58,6 +58,8 @@ describe('dashboard native STX bindings', () => {
     ]) {
       expect(existsSync(resolve(dashboardComponents, 'Monitoring', legacyMonitoringComponent))).toBe(false)
     }
+
+    expect(existsSync(resolve(dashboardComponents, 'Queue/QueueTable.stx'))).toBe(false)
   })
 
   test('routes primary action links through the shared Button component', () => {
@@ -354,7 +356,6 @@ describe('dashboard native STX bindings', () => {
     expect(legacyNavbar).not.toContain('href="#"')
     expect(legacyNavbar).not.toContain('avatars.githubusercontent.com')
 
-    expect(componentSource('Queue/QueueTable.stx')).not.toContain('href="#"')
     expect(componentSource('Transaction/index.stx')).not.toContain('href="#"')
 
     const modal = componentSource('UI/Modal.stx')
