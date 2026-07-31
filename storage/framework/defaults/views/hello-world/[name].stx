@@ -27,9 +27,9 @@ watchEffect(() => {
       <ul>
         @foreach(otherName in user.otherNames)
           <li :key="otherName">
-            <RouterLink :to="`/hello-world/${otherName}`" replace>
+            <StxLink :to="`/hello-world/${otherName}`">
               {{ otherName }}
-            </RouterLink>
+            </StxLink>
           </li>
         @endforeach
       </ul>

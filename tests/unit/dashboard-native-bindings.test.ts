@@ -65,6 +65,8 @@ describe('dashboard native STX bindings', () => {
     expect(existsSync(resolve(dashboardComponents, 'Queue/QueueTable.stx'))).toBe(false)
     expect(existsSync(resolve(dashboardComponents, 'Widget.stx'))).toBe(false)
     expect(existsSync(resolve(dashboardComponents, 'UI/DataTable.stx'))).toBe(false)
+    expect(existsSync(resolve(dashboardComponents, 'UI/RouterLink.stx'))).toBe(false)
+    expect(existsSync(resolve(dashboardComponents, 'NotificationStatusBadge.stx'))).toBe(false)
     expect(existsSync(resolve(dashboardComponents, 'NavbarModern.stx'))).toBe(false)
 
     const barrel = readFileSync(dashboardComponentBarrel, 'utf8')
