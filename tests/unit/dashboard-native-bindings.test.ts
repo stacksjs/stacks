@@ -616,6 +616,25 @@ describe('dashboard native STX bindings', () => {
     expect(routes).toContain("guard(route.put('/environment'")
   })
 
+  test('settings editor uses reactive keyed drafts and native models', () => {
+    const view = readFileSync(
+      resolve('storage/framework/defaults/views/dashboard/settings/index.stx'),
+      'utf8',
+    )
+    const page = componentSource('Settings/SettingsDashboard.stx')
+
+    expect(view).toContain('<SettingsDashboard />')
+    expect(view).not.toContain('<script')
+    expect(page).toContain('const drafts = reactive<')
+    expect(page).toContain('x-model="query"')
+    expect(page).toContain('x-model="drafts[field.key]"')
+    expect(page).toContain('x-model.number="drafts[field.key]"')
+    expect(page).toContain("dashboardApi<ConfigUpdateResponse>('/api/config/update'")
+    expect(page).not.toMatch(/:value="[^"]+\(\)"[^>]+@(?:input|change)=/)
+    expect(page).not.toContain('setDraft(')
+    expect(page).not.toContain('fetch(')
+  })
+
   test('mail settings use a componentized write-only secret contract', () => {
     const view = readFileSync(
       resolve('storage/framework/defaults/views/dashboard/settings/mail.stx'),
