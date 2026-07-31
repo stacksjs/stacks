@@ -48,6 +48,7 @@ export interface DashboardFileSnapshot {
   root: DashboardFileNode
   stats: DashboardFileStats
   truncated: boolean
+  warnings: string[]
 }
 
 export class DashboardFileError extends Error {
@@ -75,6 +76,7 @@ interface EntryMetadata extends StorageEntry {
   mimeType?: string
   url?: string
   thumbnail?: string
+  warnings: string[]
 }
 
 function extensionOf(path: string): string {
@@ -174,15 +176,33 @@ async function metadataFor(adapter: StorageAdapter, entry: StorageEntry, isPubli
   let mimeType: string | undefined
   let url: string | undefined
   let thumbnail: string | undefined
+  const warnings: string[] = []
 
   try {
-    const stat = await adapter.stat(entry.path)
-    size = Number(stat.size || 0)
-    lastModified = Number.isFinite(stat.lastModified) ? new Date(stat.lastModified).toISOString() : null
-    mimeType = stat.mimeType
+    const metadata = await adapter.stat(entry.path)
+    const recordedSize = Number(metadata.size)
+    if (!Number.isFinite(recordedSize) || recordedSize < 0)
+      throw new DashboardFileError(`Storage metadata for "${entry.path}" contains an invalid size.`, 503)
+    size = recordedSize
+
+    if (metadata.lastModified !== undefined && metadata.lastModified !== null) {
+      const modified = new Date(metadata.lastModified)
+      if (!Number.isFinite(modified.getTime()))
+        throw new DashboardFileError(`Storage metadata for "${entry.path}" contains an invalid modification time.`, 503)
+      lastModified = modified.toISOString()
+    }
+
+    if (metadata.mimeType !== undefined && typeof metadata.mimeType !== 'string')
+      throw new DashboardFileError(`Storage metadata for "${entry.path}" contains an invalid MIME type.`, 503)
+    mimeType = metadata.mimeType
   }
-  catch {
+  catch (error) {
     // Object-store directory markers may not have standalone stat metadata.
+    if (entry.type === 'file') {
+      if (error instanceof DashboardFileError)
+        throw error
+      throw new DashboardFileError(`Metadata for storage file "${entry.path}" could not be read.`, 503)
+    }
   }
 
   if (entry.type === 'file' && isPublic) {
@@ -190,13 +210,13 @@ async function metadataFor(adapter: StorageAdapter, entry: StorageEntry, isPubli
       url = await adapter.publicUrl(entry.path)
     }
     catch {
-      // A public URL is optional metadata, never a reason to hide the file.
+      warnings.push(`Public URL for "${entry.path}" could not be resolved.`)
     }
     if (servesProjectPublic)
       thumbnail = dashboardPublicUrl(entry.path)
   }
 
-  return { ...entry, size, lastModified, mimeType, url, thumbnail }
+  return { ...entry, size, lastModified, mimeType, url, thumbnail, warnings }
 }
 
 function categoryFor(entry: EntryMetadata): keyof DashboardFileStats['byType'] {
@@ -216,19 +236,44 @@ function categoryFor(entry: EntryMetadata): keyof DashboardFileStats['byType'] {
   return 'other'
 }
 
-async function diskCapacity(config: ReturnType<Manager['getDiskConfig']>): Promise<DashboardFileStats['disk']> {
+async function diskCapacity(
+  disk: string,
+  config: ReturnType<Manager['getDiskConfig']>,
+): Promise<{ stats: DashboardFileStats['disk'], warning?: string }> {
   if (!config || config.driver !== 'local')
-    return { totalBytes: null, availableBytes: null, usedBytes: null }
+    return { stats: { totalBytes: null, availableBytes: null, usedBytes: null } }
 
   try {
     const stats = await statfs(config.root)
     const totalBytes = Number(stats.blocks) * Number(stats.bsize)
     const availableBytes = Number(stats.bavail) * Number(stats.bsize)
-    return { totalBytes, availableBytes, usedBytes: totalBytes - availableBytes }
+    if (!Number.isFinite(totalBytes) || !Number.isFinite(availableBytes) || totalBytes < 0 || availableBytes < 0)
+      throw new TypeError('Filesystem capacity values are invalid.')
+    return { stats: { totalBytes, availableBytes, usedBytes: totalBytes - availableBytes } }
   }
   catch {
-    return { totalBytes: null, availableBytes: null, usedBytes: null }
+    return {
+      stats: { totalBytes: null, availableBytes: null, usedBytes: null },
+      warning: `Volume capacity for storage disk "${disk}" could not be read.`,
+    }
   }
+}
+
+export function normalizeDashboardFileLimit(value: unknown): number {
+  if (value === undefined || value === null || value === '')
+    return DEFAULT_MAX_ENTRIES
+
+  const normalized = typeof value === 'number'
+    ? value
+    : typeof value === 'string' && /^\d+$/.test(value.trim())
+      ? Number(value)
+      : Number.NaN
+  if (!Number.isSafeInteger(normalized) || normalized < 1 || normalized > 5000) {
+    throw new DashboardFileError('Limit must be an integer between 1 and 5000.', 422, {
+      limit: 'Choose a limit between 1 and 5000.',
+    })
+  }
+  return normalized
 }
 
 export async function getDashboardFileSnapshot(
@@ -236,7 +281,7 @@ export async function getDashboardFileSnapshot(
   manager: Manager = Storage,
 ): Promise<DashboardFileSnapshot> {
   const selected = resolveDisk(manager, options.disk)
-  const maxEntries = Math.max(1, Math.min(5000, Math.trunc(options.maxEntries ?? DEFAULT_MAX_ENTRIES)))
+  const maxEntries = normalizeDashboardFileLimit(options.maxEntries)
   const entries: StorageEntry[] = []
   let truncated = false
 
@@ -277,12 +322,13 @@ export async function getDashboardFileSnapshot(
     items: [],
   }
   const folders = new Map<string, DashboardFileNode>([['', root]])
+  const capacity = await diskCapacity(selected.name, selected.config)
   const stats: DashboardFileStats = {
     files: 0,
     folders: 0,
     contentBytes: 0,
     byType: { documents: 0, images: 0, videos: 0, audio: 0, other: 0 },
-    disk: await diskCapacity(selected.config),
+    disk: capacity.stats,
   }
 
   function ensureFolder(path: string): DashboardFileNode {
@@ -354,6 +400,10 @@ export async function getDashboardFileSnapshot(
     root,
     stats,
     truncated,
+    warnings: [
+      ...(capacity.warning ? [capacity.warning] : []),
+      ...metadata.flatMap(entry => entry.warnings),
+    ],
   }
 }
 

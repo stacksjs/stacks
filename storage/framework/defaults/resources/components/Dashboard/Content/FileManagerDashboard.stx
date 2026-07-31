@@ -41,6 +41,7 @@ interface FileSnapshot {
   root: FileItem
   stats: FileStats
   truncated: boolean
+  warnings: string[]
 }
 
 const emptyRoot = (): FileItem => ({
@@ -76,6 +77,7 @@ const showSidePanel = state(true)
 const loading = state(true)
 const loadError = state('')
 const truncated = state(false)
+const warnings = state<string[]>([])
 const scanLimit = state(1000)
 
 const selectedItem = state<FileItem | null>(null)
@@ -244,6 +246,7 @@ async function loadFiles(options: { resetPath?: boolean } = {}): Promise<void> {
     disks.set(payload.disks)
     selectedDisk.set(payload.disk)
     truncated.set(Boolean(payload.truncated))
+    warnings.set(Array.isArray(payload.warnings) ? payload.warnings : [])
     if (options.resetPath || !findFolder(payload.root, currentFolderPath()))
       currentFolderPath.set('')
   }
@@ -529,6 +532,14 @@ onMount(() => { void loadFiles() })
 
     <div class="p-4 lg:p-6">
       <div :if="loadError()" role="alert" class="flex gap-4 items-center justify-between p-4 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-xl dark:border-red-900"><span>{{ loadError() }}</span><Button variant="secondary" size="sm" @click="loadFiles()">Retry</Button></div>
+      <div :if="warnings().length" role="status" class="mb-4 p-3 text-amber-800 text-sm dark:text-amber-200 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 rounded-lg dark:border-amber-900">
+        <p class="font-semibold">Some storage metadata is unavailable</p>
+        <ul class="mt-1 list-disc list-inside">
+          <template :for="warning in warnings()">
+            <li>{{ warning }}</li>
+          </template>
+        </ul>
+      </div>
       <div :if="truncated()" role="status" class="flex gap-4 items-center justify-between mb-4 p-3 text-amber-800 text-sm dark:text-amber-200 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 rounded-lg dark:border-amber-900"><span>This disk contains more than {{ scanLimit }} visible entries. The current view shows the first {{ scanLimit }}.</span><Button :if="scanLimit() < 5000" variant="secondary" size="sm" :loading="loading()" @click="loadMore()">Load 1,000 more</Button><span :else class="flex-shrink-0 font-semibold">5,000 entry limit</span></div>
 
       <div :if="loading() && !root().items?.length" class="grid gap-4 grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6" aria-label="Loading files">

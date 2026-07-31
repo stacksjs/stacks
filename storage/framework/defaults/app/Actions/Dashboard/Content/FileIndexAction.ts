@@ -1,7 +1,7 @@
 import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
 import { response } from '@stacksjs/router'
-import { DashboardFileError, getDashboardFileSnapshot } from './file-manager'
+import { DashboardFileError, getDashboardFileSnapshot, normalizeDashboardFileLimit } from './file-manager'
 
 export default new Action({
   name: 'FileIndexAction',
@@ -11,8 +11,8 @@ export default new Action({
   async handle(request: RequestInstance) {
     try {
       return await getDashboardFileSnapshot({
-        disk: String(request.get('disk', 'public')),
-        maxEntries: Number(request.get('limit', 1000)),
+        disk: request.get('disk', 'public'),
+        maxEntries: normalizeDashboardFileLimit(request.get('limit')),
       })
     }
     catch (error) {

@@ -8,6 +8,7 @@ import {
   deleteDashboardFile,
   getDashboardFileSnapshot,
   normalizeDashboardFileName,
+  normalizeDashboardFileLimit,
   normalizeDashboardFilePath,
   uploadDashboardFiles,
 } from './file-manager'
@@ -55,6 +56,7 @@ describe('dashboard file manager', () => {
     expect(snapshot.stats.byType.documents).toBe(5)
     expect(snapshot.stats.byType.images).toBe(4)
     expect(snapshot.root.items?.some(item => item.name === '.hidden')).toBe(false)
+    expect(snapshot.warnings).toEqual([])
     expect(readme).toMatchObject({
       id: 'file:documents/readme.txt',
       name: 'readme.txt',
@@ -73,6 +75,37 @@ describe('dashboard file manager', () => {
 
     expect(snapshot.truncated).toBe(true)
     expect(snapshot.stats.files).toBe(1)
+  })
+
+  test('rejects invalid scan limits instead of silently clamping them', () => {
+    expect(normalizeDashboardFileLimit(undefined)).toBe(1000)
+    expect(normalizeDashboardFileLimit('5000')).toBe(5000)
+    expect(() => normalizeDashboardFileLimit('not-a-limit')).toThrow('between 1 and 5000')
+    expect(() => normalizeDashboardFileLimit(5001)).toThrow('between 1 and 5000')
+  })
+
+  test('fails the snapshot when file metadata cannot be read', async () => {
+    const disk = manager.disk('public')
+    await disk.write('unreadable.txt', 'contents')
+    disk.stat = async () => {
+      throw new Error('metadata unavailable')
+    }
+
+    await expect(getDashboardFileSnapshot({}, manager))
+      .rejects
+      .toThrow('Metadata for storage file "unreadable.txt" could not be read')
+  })
+
+  test('reports unavailable public URLs without hiding stored files', async () => {
+    const disk = manager.disk('public')
+    await disk.write('document.txt', 'contents')
+    disk.publicUrl = async () => {
+      throw new Error('URL unavailable')
+    }
+
+    const snapshot = await getDashboardFileSnapshot({}, manager)
+    expect(snapshot.stats.files).toBe(1)
+    expect(snapshot.warnings).toEqual(['Public URL for "document.txt" could not be resolved.'])
   })
 
   test('creates and deletes persisted directories and files', async () => {
