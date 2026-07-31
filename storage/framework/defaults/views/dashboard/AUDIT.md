@@ -26,10 +26,15 @@ payment-provider records. They are not missing generic CRUD surfaces.
 
 ### Rendering and navigation
 
-- `./buddy dev --dashboard` starts on port 3002 and renders with STX 0.2.140
+- `./buddy dev --dashboard` starts on port 3002 and renders with STX 0.2.143
   and Crosswind 0.2.14.
 - 108 static route views render with HTTP 200.
 - Full-page and STX fragment requests render for every static route.
+- STX prewarms the dependency-aware rendered shell cache with four workers.
+  A warm eight-worker crawl measured 4.4 ms p50 and 25.6 ms p95 for full
+  pages, plus 6.2 ms p50 and 11.3 ms p95 for navigation fragments.
+- Editing a watched route invalidates its rendered cache immediately; editing
+  a dashboard composable invalidates the associated client bundle.
 - The componentized catch-all renders the native not-found page with HTTP 404
   for both full-page and STX fragment requests.
 - 130 distinct rendered local links and assets resolve without a 404 or 5xx.
@@ -110,7 +115,7 @@ bunx --bun pickier .
 The focused contracts cover buttons, native STX bindings, route and Action
 method alignment, model reads and writes, commerce mutations, deployment
 guards, navigation source, sidebar behavior, toasts, and skill documentation.
-The 2026-07-31 focused run completed 149 tests with 2,890 assertions and no
+The 2026-07-31 focused run completed 151 tests with 2,895 assertions and no
 failures, followed by both TypeScript checks and a clean repository lint.
 
 ## Remaining verification boundaries

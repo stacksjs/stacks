@@ -247,6 +247,23 @@ buddy build components       # build component libraries
 
 Port: 3002 (configured in `config/ports.ts` as `admin`)
 
+### Render performance
+
+The dashboard dev action opts into STX's dependency-aware rendered HTML cache
+with `renderCache: true`, `renderCacheVary: 'source'`, and four prewarm workers.
+This is correct because static dashboard routes render source-derived shells
+and load live records through `dashboardApi()` after hydration. Keep the
+project and framework `resources/functions` roots in `watchDirs` so a
+composable edit invalidates its client bundle.
+
+Do not add request-specific server output to a source-cached static dashboard
+route. If a route must render cookies, identity, query-dependent data, or
+another per-request value on the server, set `const __stx_skip_cache = true`
+in its `<script server>` or change that server to request-varying cache
+semantics. Dynamic file routes remain uncached. STX also refuses to cache a
+recovered compiler-failure response, so a transient cold render cannot poison
+later navigation.
+
 ### Runtime shell and responsive navigation
 
 `buddy dev --dashboard` renders its shared shell from

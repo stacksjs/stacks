@@ -31,6 +31,13 @@ describe('dashboard skill contract', () => {
     expect(skill).toContain('pauses polling while the document')
   })
 
+  test('documents native rendered shell caching boundaries', () => {
+    expect(skill).toContain("`renderCache: true`, `renderCacheVary: 'source'`")
+    expect(skill).toContain('four prewarm workers')
+    expect(skill).toContain('set `const __stx_skip_cache = true`')
+    expect(skill).toContain('Dynamic file routes remain uncached')
+  })
+
   test('keeps generated guidance free of separator dash typography', () => {
     expect(skill).not.toContain('—')
     expect(skill).not.toContain('–')
