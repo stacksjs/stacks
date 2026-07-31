@@ -1,6 +1,6 @@
 import { Action } from '@stacksjs/actions'
 import { env } from '@stacksjs/env'
-import { request } from '@stacksjs/router'
+import { request, response as routerResponse } from '@stacksjs/router'
 import { loadModelIfExists, safeGet } from '../../../../resources/functions/dashboard/data'
 import { type ModelCreateField, type ModelWriteCapabilities, modelCreateFields, modelSchemaColumns, modelWriteCapabilities } from './model-write'
 
@@ -123,21 +123,38 @@ function queryParams(): URLSearchParams {
 }
 
 /** `filters` arrives as a JSON object so column names stay unambiguous. */
-function parseFilters(raw: string | null): Record<string, string> {
+export function parseFilters(raw: string | null): Record<string, string> {
   if (!raw) return {}
+
+  if (raw.length > 8192)
+    throw new TypeError('Model filters must be 8 KB or smaller')
+
+  let parsed: unknown
   try {
-    const parsed = JSON.parse(raw) as Record<string, unknown>
-    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return {}
-    const out: Record<string, string> = {}
-    for (const [key, value] of Object.entries(parsed)) {
-      if (value === null || value === undefined || value === '') continue
-      out[key] = String(value)
-    }
-    return out
+    parsed = JSON.parse(raw)
   }
-  catch {
-    return {}
+  catch (error) {
+    throw new Error(`Could not parse model filters: ${error instanceof Error ? error.message : String(error)}`)
   }
+
+  if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed))
+    throw new TypeError('Model filters must be a JSON object')
+
+  const entries = Object.entries(parsed)
+  if (entries.length > 50)
+    throw new TypeError('Model filters may contain at most 50 columns')
+
+  const out: Record<string, string> = {}
+  for (const [key, value] of entries) {
+    if (!/^\w+$/.test(key))
+      throw new TypeError(`Invalid model filter column "${key}"`)
+    if (value === null || value === undefined || value === '')
+      continue
+    if (typeof value !== 'string' && typeof value !== 'number' && typeof value !== 'boolean')
+      throw new TypeError(`Model filter "${key}" must be a scalar value`)
+    out[key] = String(value)
+  }
+  return out
 }
 
 /**
@@ -174,7 +191,15 @@ export default new Action({
     const requestedSort = (params.get('sort') || '').trim()
     const dir: 'asc' | 'desc' = params.get('dir') === 'asc' ? 'asc' : 'desc'
     const q = (params.get('q') || '').trim()
-    const filters = parseFilters(params.get('filters'))
+    let filters: Record<string, string>
+    try {
+      filters = parseFilters(params.get('filters'))
+    }
+    catch (error) {
+      return routerResponse.json({
+        message: error instanceof Error ? error.message : 'Model filters are invalid.',
+      }, 422)
+    }
 
     const response: ResponseShape = {
       modelName,
@@ -218,6 +243,12 @@ export default new Action({
           response.columns = modelSchemaColumns(Model)
 
         const allowed = new Set(response.columns.filter(c => !HIDDEN_COLUMNS.has(c)))
+        const unknownFilter = Object.keys(filters).find(column => !isSafeColumn(column, allowed))
+        if (unknownFilter)
+          return routerResponse.json({ message: `Unknown model filter column "${unknownFilter}".` }, 422)
+        if (requestedSort && !isSafeColumn(requestedSort, allowed))
+          return routerResponse.json({ message: `Unknown model sort column "${requestedSort}".` }, 422)
+
         const sort = isSafeColumn(requestedSort, allowed)
           ? requestedSort
           : (allowed.has('id') ? 'id' : (response.columns[0] ?? ''))
@@ -272,9 +303,14 @@ export default new Action({
         })
       }
       catch (e) {
-        response.source = 'sqlite-fallback'
-        if (!(e instanceof SearchUnsupported))
-          response.error = e instanceof Error ? e.message : String(e)
+        if (e instanceof SearchUnsupported) {
+          response.source = 'sqlite-fallback'
+        }
+        else {
+          return routerResponse.json({
+            message: `Could not query model ${modelName}: ${e instanceof Error ? e.message : String(e)}`,
+          }, 503)
+        }
       }
     }
     else {
@@ -286,11 +322,23 @@ export default new Action({
         const { Database } = await import('bun:sqlite')
         const db = new Database(env.DB_DATABASE_PATH || 'database/stacks.sqlite', { readonly: true })
         try {
-          const tableInfo = db.query(`PRAGMA table_info(${tableName})`).all() as Array<{ name: string, type: string }>
+          if (!/^\w+$/.test(response.tableName))
+            return routerResponse.json({ message: `Model table "${response.tableName}" is not a safe SQL identifier.` }, 500)
+
+          const tableInfo = db.query(`PRAGMA table_info(${response.tableName})`).all() as Array<{ name: string, type: string }>
+          if (tableInfo.length === 0)
+            return routerResponse.json({ message: `Model table "${response.tableName}" does not exist.` }, 404)
+
           response.columns = tableInfo.map(c => c.name)
 
           if (response.columns.length > 0) {
             const allowed = new Set(response.columns.filter(c => !HIDDEN_COLUMNS.has(c)))
+            const unknownFilter = Object.keys(filters).find(column => !isSafeColumn(column, allowed))
+            if (unknownFilter)
+              return routerResponse.json({ message: `Unknown model filter column "${unknownFilter}".` }, 422)
+            if (requestedSort && !isSafeColumn(requestedSort, allowed))
+              return routerResponse.json({ message: `Unknown model sort column "${requestedSort}".` }, 422)
+
             const sort = isSafeColumn(requestedSort, allowed)
               ? requestedSort
               : (allowed.has('id') ? 'id' : response.columns[0])
@@ -316,10 +364,10 @@ export default new Action({
             }
             const whereSql = wheres.length > 0 ? ` WHERE ${wheres.join(' AND ')}` : ''
 
-            const countRow = db.query(`SELECT COUNT(*) as count FROM ${tableName}${whereSql}`).get(...values as any[]) as { count?: number } | null
+            const countRow = db.query(`SELECT COUNT(*) as count FROM ${response.tableName}${whereSql}`).get(...values as any[]) as { count?: number } | null
             response.totalCount = countRow?.count ?? 0
             response.rows = db
-              .query(`SELECT * FROM ${tableName}${whereSql} ORDER BY ${sort} ${dir.toUpperCase()} LIMIT ? OFFSET ?`)
+              .query(`SELECT * FROM ${response.tableName}${whereSql} ORDER BY ${sort} ${dir.toUpperCase()} LIMIT ? OFFSET ?`)
               .all(...values as any[], perPage, (page - 1) * perPage) as Array<Record<string, unknown>>
             response.error = null
           }
@@ -329,7 +377,9 @@ export default new Action({
         }
       }
       catch (e) {
-        response.error = e instanceof Error ? e.message : String(e)
+        return routerResponse.json({
+          message: `Could not query table ${response.tableName}: ${e instanceof Error ? e.message : String(e)}`,
+        }, 503)
       }
     }
 
