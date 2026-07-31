@@ -46,14 +46,14 @@ function formatDate(value: string): string {
         <template :for="review in reviews()" :key="review.id">
           <tr class="hover:bg-gray-50/60 dark:hover:bg-neutral-700/40 align-top">
             <td class="px-4 py-4 min-w-44">
-              <p class="font-medium text-gray-900 text-sm dark:text-white">{{ review.customerName }}</p>
+              <p class="font-medium text-gray-900 text-sm dark:text-white">{{ review.customerName || 'Guest customer' }}</p>
               <p :if="review.customerEmail" class="mt-1 text-gray-500 text-xs dark:text-neutral-400">{{ review.customerEmail }}</p>
               <span :if="review.verifiedPurchase" class="inline-flex items-center mt-2 font-medium text-green-700 text-xs dark:text-green-300">
                 <span class="mr-1 h-3.5 w-3.5 i-hugeicons-checkmark-badge-01"></span>
                 Verified purchase
               </span>
             </td>
-            <td class="px-4 py-4 min-w-40 text-gray-700 text-sm dark:text-neutral-200">{{ review.productName }}</td>
+            <td class="px-4 py-4 min-w-40 text-gray-700 text-sm dark:text-neutral-200">{{ review.productName || 'Unlinked product' }}</td>
             <td class="px-4 py-4 max-w-lg min-w-72">
               <p class="font-medium text-gray-900 text-sm dark:text-white">{{ review.title || 'Untitled review' }}</p>
               <p class="mt-1 line-clamp-2 text-gray-500 text-sm dark:text-neutral-400">{{ review.content || 'No review content recorded.' }}</p>

@@ -49,7 +49,7 @@ export default defineModel({
       order: 4,
       fillable: true,
       validation: {
-        rule: schema.string().required().max(100),
+        rule: schema.string().max(100),
         message: {
           max: 'Title must have a maximum of 100 characters',
         },
@@ -61,7 +61,7 @@ export default defineModel({
       order: 5,
       fillable: true,
       validation: {
-        rule: schema.string().required().max(2000),
+        rule: schema.string().max(2000),
         message: {
           max: 'Review content must have a maximum of 2000 characters',
         },
@@ -70,6 +70,7 @@ export default defineModel({
     },
 
     isVerifiedPurchase: {
+      default: false,
       order: 6,
       fillable: true,
       validation: {
@@ -79,6 +80,7 @@ export default defineModel({
     },
 
     isApproved: {
+      default: false,
       order: 7,
       fillable: true,
       validation: {
@@ -88,6 +90,7 @@ export default defineModel({
     },
 
     isFeatured: {
+      default: false,
       order: 8,
       fillable: true,
       validation: {

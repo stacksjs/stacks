@@ -1,3 +1,15 @@
+import {
+  commerceBoolean,
+  commerceEmail,
+  commerceIdentifier,
+  commerceNumber,
+  commerceOptionalIdentifier,
+  commerceOptionalString,
+  commerceRequiredString,
+  commerceTimestamp,
+  commerceValue,
+} from './commerce-record'
+
 export interface ReviewRecord {
   id: string
   productId: string
@@ -30,62 +42,95 @@ export interface ReviewProductOption {
   label: string
 }
 
-function value(record: any, ...keys: string[]): unknown {
-  for (const key of keys) {
-    const result = typeof record?.get === 'function' ? record.get(key) : record?.[key]
-    if (result !== null && result !== undefined)
-      return result
-  }
-  return undefined
-}
-
-function text(input: unknown): string {
-  return input === null || input === undefined ? '' : String(input)
-}
-
-function boolean(input: unknown): boolean {
-  return input === true || input === 1 || input === '1' || input === 'true'
-}
-
-function nonNegativeNumber(input: unknown): number {
-  const number = Number(input)
-  return Number.isFinite(number) && number >= 0 ? number : 0
-}
-
 export function normalizeReviewRecord(
   review: any,
   products: Map<string, { name: string }>,
   customers: Map<string, { name: string, email: string }>,
 ): ReviewRecord {
-  const productId = text(value(review, 'product_id', 'productId'))
-  const customerId = text(value(review, 'customer_id', 'customerId'))
+  const id = commerceIdentifier(commerceValue(review, 'id', 'uuid'), 'Review')
+  const source = `Review ${id}`
+  const productId = commerceOptionalIdentifier(
+    commerceValue(review, 'product_id', 'productId'),
+    source,
+    'product_id',
+  )
+  const customerId = commerceOptionalIdentifier(
+    commerceValue(review, 'customer_id', 'customerId'),
+    source,
+    'customer_id',
+  )
   const product = products.get(productId)
   const customer = customers.get(customerId)
-  const rating = Math.min(5, Math.max(0, nonNegativeNumber(value(review, 'rating'))))
+  if (productId && !product)
+    throw new TypeError(`${source}.product_id references missing Product ${productId}.`)
+  if (customerId && !customer)
+    throw new TypeError(`${source}.customer_id references missing Customer ${customerId}.`)
 
   return {
-    id: text(value(review, 'id', 'uuid')),
+    id,
     productId,
-    productName: product?.name || (productId ? `Product ${productId}` : 'Unlinked product'),
+    productName: product?.name || '',
     customerId,
-    customerName: customer?.name || (customerId ? `Customer ${customerId}` : 'Guest customer'),
+    customerName: customer?.name || '',
     customerEmail: customer?.email || '',
-    rating,
-    title: text(value(review, 'title')),
-    content: text(value(review, 'content')),
-    approved: boolean(value(review, 'is_approved', 'isApproved')),
-    featured: boolean(value(review, 'is_featured', 'isFeatured')),
-    verifiedPurchase: boolean(value(review, 'is_verified_purchase', 'isVerifiedPurchase')),
-    helpfulVotes: nonNegativeNumber(value(review, 'helpful_votes', 'helpfulVotes')),
-    unhelpfulVotes: nonNegativeNumber(value(review, 'unhelpful_votes', 'unhelpfulVotes')),
-    createdAt: text(value(review, 'created_at', 'createdAt')),
+    rating: commerceNumber(commerceValue(review, 'rating'), source, 'rating', {
+      min: 1,
+      max: 5,
+      integer: true,
+    }),
+    title: commerceOptionalString(commerceValue(review, 'title'), source, 'title'),
+    content: commerceOptionalString(commerceValue(review, 'content'), source, 'content'),
+    approved: commerceBoolean(
+      commerceValue(review, 'is_approved', 'isApproved'),
+      source,
+      'is_approved',
+    ),
+    featured: commerceBoolean(
+      commerceValue(review, 'is_featured', 'isFeatured'),
+      source,
+      'is_featured',
+    ),
+    verifiedPurchase: commerceBoolean(
+      commerceValue(review, 'is_verified_purchase', 'isVerifiedPurchase'),
+      source,
+      'is_verified_purchase',
+    ),
+    helpfulVotes: commerceNumber(
+      commerceValue(review, 'helpful_votes', 'helpfulVotes'),
+      source,
+      'helpful_votes',
+      { min: 0, integer: true },
+    ),
+    unhelpfulVotes: commerceNumber(
+      commerceValue(review, 'unhelpful_votes', 'unhelpfulVotes'),
+      source,
+      'unhelpful_votes',
+      { min: 0, integer: true },
+    ),
+    createdAt: commerceTimestamp(commerceValue(review, 'created_at', 'createdAt'), source),
   }
 }
 
 export function normalizeReviewProductOption(product: any): ReviewProductOption {
+  const id = commerceIdentifier(commerceValue(product, 'id', 'uuid'), 'Product')
   return {
-    id: text(value(product, 'id')),
-    label: text(value(product, 'name')) || 'Unnamed product',
+    id,
+    label: commerceRequiredString(commerceValue(product, 'name'), `Product ${id}`, 'name'),
+  }
+}
+
+export function normalizeReviewCustomerContext(customer: any): {
+  id: string
+  context: { name: string, email: string }
+} {
+  const id = commerceIdentifier(commerceValue(customer, 'id', 'uuid'), 'Customer')
+  const source = `Customer ${id}`
+  return {
+    id,
+    context: {
+      name: commerceRequiredString(commerceValue(customer, 'name'), source, 'name'),
+      email: commerceEmail(commerceValue(customer, 'email'), source),
+    },
   }
 }
 
