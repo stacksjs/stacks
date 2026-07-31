@@ -11,7 +11,7 @@ described the componentized dashboard.
 | Surface | Count |
 |---|---:|
 | Dashboard STX view files | 118 |
-| Dashboard STX components | 263 |
+| Dashboard STX components | 280 |
 | Dashboard Actions | 359 |
 | Registered `/api/dashboard/*` routes | 283 |
 | Framework model files | 69 |
@@ -29,6 +29,8 @@ payment-provider records. They are not missing generic CRUD surfaces.
 - `./buddy dev --dashboard` starts on port 3002 and renders with STX 0.2.138.
 - 106 static route views render with HTTP 200.
 - Full-page and STX fragment requests render for every static route.
+- The componentized catch-all renders the native not-found page with HTTP 404
+  for both full-page and STX fragment requests.
 - 129 distinct rendered local links and assets resolve without a 404 or 5xx.
 - Rendered pages contain no unresolved PascalCase component tags.
 - Rendered pages contain no duplicate emitted IDs or broken
@@ -40,8 +42,9 @@ payment-provider records. They are not missing generic CRUD surfaces.
 
 ### STX and componentization
 
-- Route views are thin and stateful implementations live under
-  `resources/components/Dashboard/`.
+- All 116 non-layout route views are thin component mounts. Stateful
+  implementations live under `resources/components/Dashboard/`, including
+  guest authentication and not-found pages.
 - Project components under `resources/components/` resolve alongside the
   explicit framework dashboard component directory.
 - Dashboard templates do not use `window.*`, `document.*`, or page-local DOM
@@ -104,7 +107,7 @@ bunx --bun pickier .
 The focused contracts cover buttons, native STX bindings, route and Action
 method alignment, model reads and writes, commerce mutations, deployment
 guards, navigation source, sidebar behavior, toasts, and skill documentation.
-The 2026-07-31 focused run completed 145 tests with 2,769 assertions and no
+The 2026-07-31 focused run completed 147 tests with 2,867 assertions and no
 failures, followed by both TypeScript checks and a clean repository lint.
 
 ## Remaining verification boundaries

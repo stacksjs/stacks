@@ -1,0 +1,81 @@
+<template>
+  <div class="flex items-center justify-center pb-12 pt-6 px-6 min-h-[80vh]">
+    <div class="mx-auto space-y-6 max-w-7xl w-full">
+      <div class="text-center">
+        <div class="flex justify-center">
+          <div class="mb-6 h-24 w-24 text-gray-400 dark:text-neutral-500 i-hugeicons-alert-circle"></div>
+        </div>
+        <h1 class="font-bold font-mono text-5xl text-gray-900 dark:text-white">404</h1>
+        <p class="mt-2 font-mono font-semibold text-3xl text-gray-900 tracking-tight sm:text-4xl dark:text-white">Page not found</p>
+        <p class="mt-4 mx-auto max-w-md text-base text-gray-500 dark:text-neutral-400">
+          Sorry, we couldn't find the page you're looking for. The page might have been moved or deleted.
+        </p>
+        <div class="flex gap-x-6 items-center justify-center mt-10">
+          <Button tag="a" href="/dashboard">
+            Return to dashboard
+          </Button>
+          <Button tag="a" href="/" variant="ghost">
+            Go to home <span aria-hidden="true">&rarr;</span>
+          </Button>
+        </div>
+      </div>
+
+      <div>
+        <h2 class="font-semibold leading-6 text-base text-center text-gray-900 dark:text-white">You might be looking for</h2>
+        <div class="grid gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 mt-6">
+          <StxLink to="/dashboard" class="overflow-hidden bg-white dark:bg-neutral-800 rounded-lg shadow hover:shadow-md duration-200 transition-shadow">
+            <div class="p-5">
+              <div class="flex items-center">
+                <div class="flex-shrink-0 p-3 bg-blue-500 rounded-md">
+                  <div class="h-6 w-6 text-white i-hugeicons-home-02"></div>
+                </div>
+                <div class="flex-1 ml-5 w-0">
+                  <dl>
+                    <dt class="font-medium text-gray-900 text-sm truncate dark:text-white">Dashboard</dt>
+                    <dd class="mt-1 text-gray-500 text-sm dark:text-neutral-400">
+                      Return to the main dashboard
+                    </dd>
+                  </dl>
+                </div>
+              </div>
+            </div>
+          </StxLink>
+          <StxLink to="/content/dashboard" class="overflow-hidden bg-white dark:bg-neutral-800 rounded-lg shadow hover:shadow-md duration-200 transition-shadow">
+            <div class="p-5">
+              <div class="flex items-center">
+                <div class="flex-shrink-0 p-3 bg-green-500 rounded-md">
+                  <div class="h-6 w-6 text-white i-hugeicons-document-validation"></div>
+                </div>
+                <div class="flex-1 ml-5 w-0">
+                  <dl>
+                    <dt class="font-medium text-gray-900 text-sm truncate dark:text-white">Blog</dt>
+                    <dd class="mt-1 text-gray-500 text-sm dark:text-neutral-400">
+                      Manage your blog posts and categories
+                    </dd>
+                  </dl>
+                </div>
+              </div>
+            </div>
+          </StxLink>
+          <StxLink to="/settings" class="overflow-hidden bg-white dark:bg-neutral-800 rounded-lg shadow hover:shadow-md duration-200 transition-shadow">
+            <div class="p-5">
+              <div class="flex items-center">
+                <div class="flex-shrink-0 p-3 bg-gray-500 rounded-md">
+                  <div class="h-6 w-6 text-white i-hugeicons-settings-01"></div>
+                </div>
+                <div class="flex-1 ml-5 w-0">
+                  <dl>
+                    <dt class="font-medium text-gray-900 text-sm truncate dark:text-white">Settings</dt>
+                    <dd class="mt-1 text-gray-500 text-sm dark:text-neutral-400">
+                      Configure your application settings
+                    </dd>
+                  </dl>
+                </div>
+              </div>
+            </div>
+          </StxLink>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
