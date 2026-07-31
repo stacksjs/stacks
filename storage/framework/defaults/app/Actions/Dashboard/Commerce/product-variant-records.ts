@@ -1,3 +1,14 @@
+import {
+  commerceEnum,
+  commerceIdentifier,
+  commerceOptionalIdentifier,
+  commerceOptionalString,
+  commerceRequiredString,
+  commerceStringList,
+  commerceTimestamp,
+  commerceValue,
+} from './commerce-record'
+
 export interface ProductVariantRecord {
   id: string
   variant: string
@@ -22,40 +33,19 @@ export interface ProductVariantSummary {
   linkedProducts: number
 }
 
-function value(record: any, ...keys: string[]): unknown {
-  for (const key of keys) {
-    const result = typeof record?.get === 'function' ? record.get(key) : record?.[key]
-    if (result !== null && result !== undefined)
-      return result
-  }
-  return undefined
-}
-
-function text(input: unknown): string {
-  return input === null || input === undefined ? '' : String(input)
-}
-
 export function parseVariantOptions(input: unknown): string[] {
-  if (Array.isArray(input))
-    return input.map(text).map(option => option.trim()).filter(Boolean)
-  const raw = text(input).trim()
-  if (!raw)
-    return []
-  try {
-    const parsed = JSON.parse(raw)
-    return Array.isArray(parsed)
-      ? parsed.map(text).map(option => option.trim()).filter(Boolean)
-      : []
-  }
-  catch {
-    return raw.split(',').map(option => option.trim()).filter(Boolean)
-  }
+  return commerceStringList(input, 'ProductVariant', 'options')
 }
 
 export function productVariantOptions(products: any[]): ProductVariantOption[] {
   return products
-    .map(product => ({ id: text(value(product, 'id', 'uuid')), name: text(value(product, 'name')) }))
-    .filter(product => product.id && product.name)
+    .map((product) => {
+      const id = commerceIdentifier(commerceValue(product, 'id', 'uuid'), 'Product')
+      return {
+        id,
+        name: commerceRequiredString(commerceValue(product, 'name'), `Product ${id}`, 'name'),
+      }
+    })
     .sort((left, right) => left.name.localeCompare(right.name))
 }
 
@@ -63,19 +53,30 @@ export function normalizeProductVariantRecord(
   record: any,
   productNames = new Map<string, string>(),
 ): ProductVariantRecord {
-  const productId = text(value(record, 'product_id', 'productId'))
-  const rawStatus = text(value(record, 'status'))
-  const status = rawStatus === 'inactive' || rawStatus === 'draft' ? rawStatus : 'active'
+  const id = commerceIdentifier(commerceValue(record, 'id', 'uuid'), 'ProductVariant')
+  const source = `ProductVariant ${id}`
+  const productId = commerceOptionalIdentifier(
+    commerceValue(record, 'product_id', 'productId'),
+    source,
+    'product_id',
+  )
+  const productName = productId ? productNames.get(productId) : undefined
+  if (productId && !productName)
+    throw new TypeError(`${source}.product_id references missing Product ${productId}.`)
   return {
-    id: text(value(record, 'id', 'uuid')),
-    variant: text(value(record, 'variant')),
-    type: text(value(record, 'type')),
-    description: text(value(record, 'description')),
-    options: parseVariantOptions(value(record, 'options')),
-    status,
+    id,
+    variant: commerceRequiredString(commerceValue(record, 'variant'), source, 'variant'),
+    type: commerceRequiredString(commerceValue(record, 'type'), source, 'type'),
+    description: commerceOptionalString(commerceValue(record, 'description'), source, 'description'),
+    options: commerceStringList(commerceValue(record, 'options'), source, 'options'),
+    status: commerceEnum(commerceValue(record, 'status'), source, 'status', [
+      'active',
+      'inactive',
+      'draft',
+    ]),
     productId,
-    productName: productNames.get(productId) || '',
-    createdAt: text(value(record, 'created_at', 'createdAt')),
+    productName: productName || '',
+    createdAt: commerceTimestamp(commerceValue(record, 'created_at', 'createdAt'), source),
   }
 }
 
