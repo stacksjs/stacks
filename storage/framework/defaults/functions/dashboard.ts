@@ -1,21 +1,13 @@
-import { resolveApiBaseUrl } from './api-url'
-/**
- * Dashboard Composable
- *
- * Provides data fetching for the main dashboard overview.
- */
-
 import { ref } from '@stacksjs/stx'
-
-const baseUrl = resolveApiBaseUrl()
+import { dashboardApi } from './dashboard-api'
 
 export interface DashboardStats {
   title: string
   value: string
-  trend: number
+  trend: number | null
   trendLabel: string
   icon: string
-  iconBg: string
+  iconBg: 'primary' | 'success' | 'warning' | 'danger' | 'info' | 'neutral'
 }
 
 export interface ActivityItem {
@@ -23,112 +15,134 @@ export interface ActivityItem {
   type: string
   title: string
   time: string
-  status: 'success' | 'error' | 'warning'
+  status: 'success' | 'error' | 'warning' | 'info'
 }
 
 export interface SystemHealthItem {
   name: string
   status: 'healthy' | 'degraded' | 'critical'
   latency: string
-  uptime: string
+  detail: string
 }
 
-// Default fallback data
-const defaultStats: DashboardStats[] = [
-  { title: 'Total Users', value: '0', trend: 0, trendLabel: 'vs last period', icon: 'i-hugeicons-user-group', iconBg: 'primary' },
-  { title: 'Active Projects', value: '0', trend: 0, trendLabel: 'vs last period', icon: 'i-hugeicons-folder-02', iconBg: 'success' },
-  { title: 'Cloud Uptime', value: '0%', trend: 0, trendLabel: 'vs last period', icon: 'i-hugeicons-cloud', iconBg: 'info' },
-  { title: 'Response Time', value: '0ms', trend: 0, trendLabel: 'vs last period', icon: 'i-hugeicons-time-02', iconBg: 'warning' },
-]
+export interface DashboardHttpMetric {
+  title: string
+  value: string
+  detail: string
+  icon: string
+}
 
-const defaultActivity: ActivityItem[] = []
+export interface DashboardIssue {
+  source: string
+  message: string
+}
 
-const defaultHealth: SystemHealthItem[] = [
-  { name: 'API', status: 'healthy', latency: '0ms', uptime: '0%' },
-  { name: 'Database', status: 'healthy', latency: '0ms', uptime: '0%' },
-  { name: 'Storage', status: 'healthy', latency: '0ms', uptime: '0%' },
-  { name: 'Cache', status: 'healthy', latency: '0ms', uptime: '0%' },
-  { name: 'Queue', status: 'healthy', latency: '0ms', uptime: '0%' },
-  { name: 'Notifications', status: 'healthy', latency: '0ms', uptime: '0%' },
-]
+interface DashboardHomeResponse {
+  stats?: Array<{ label: string, value: string }>
+  httpMetrics?: DashboardHttpMetric[]
+  services?: SystemHealthItem[]
+  activities?: Array<{
+    type: string
+    message: string
+    time: string
+    status: ActivityItem['status']
+  }>
+  issues?: DashboardIssue[]
+}
+
+const statPresentation: Record<string, Pick<DashboardStats, 'icon' | 'iconBg'>> = {
+  'Total Users': { icon: 'i-hugeicons-user-group', iconBg: 'primary' },
+  'Products': { icon: 'i-hugeicons-package', iconBg: 'success' },
+  'Revenue': { icon: 'i-hugeicons-money-03', iconBg: 'warning' },
+  'Orders': { icon: 'i-hugeicons-shopping-cart-02', iconBg: 'danger' },
+}
+
+function normalizeStats(stats: DashboardHomeResponse['stats']): DashboardStats[] {
+  if (!Array.isArray(stats))
+    return []
+
+  return stats.map((stat) => {
+    const presentation = statPresentation[stat.label] || {
+      icon: 'i-hugeicons-chart-up',
+      iconBg: 'neutral' as const,
+    }
+
+    return {
+      title: stat.label,
+      value: stat.value,
+      trend: null,
+      trendLabel: 'Current total',
+      ...presentation,
+    }
+  })
+}
+
+function normalizeActivities(activities: DashboardHomeResponse['activities']): ActivityItem[] {
+  if (!Array.isArray(activities))
+    return []
+
+  return activities.map((activity, index) => ({
+    id: index,
+    type: activity.type,
+    title: activity.message,
+    time: activity.time,
+    status: activity.status,
+  }))
+}
+
+export async function fetchDashboardHome(): Promise<DashboardHomeResponse> {
+  return dashboardApi<DashboardHomeResponse>('/api/dashboard/home')
+}
 
 export function useDashboard() {
-  const stats = ref<DashboardStats[]>(defaultStats)
-  const recentActivity = ref<ActivityItem[]>(defaultActivity)
-  const systemHealth = ref<SystemHealthItem[]>(defaultHealth)
+  const stats = ref<DashboardStats[]>([])
+  const httpMetrics = ref<DashboardHttpMetric[]>([])
+  const recentActivity = ref<ActivityItem[]>([])
+  const systemHealth = ref<SystemHealthItem[]>([])
+  const issues = ref<DashboardIssue[]>([])
   const isLoading = ref(false)
   const error = ref<string | null>(null)
 
   async function fetchDashboardStats(timeRange = '7d') {
-    try {
-      const response = await fetch(`${baseUrl}/dashboard/stats?range=${timeRange}`, {
-        headers: {
-          'Accept': 'application/json',
-        },
-      })
-
-      if (response.ok) {
-        const data = await response.json()
-        stats.value = data.stats || defaultStats
-      }
-    }
-    catch (e) {
-      console.error('Failed to fetch dashboard stats:', e)
-      throw e
-    }
+    void timeRange
+    const data = await fetchDashboardHome()
+    stats.value = normalizeStats(data.stats)
+    issues.value = Array.isArray(data.issues) ? data.issues : []
   }
 
   async function fetchRecentActivity() {
-    try {
-      const response = await fetch(`${baseUrl}/dashboard/activity`, {
-        headers: {
-          'Accept': 'application/json',
-        },
-      })
-
-      if (response.ok) {
-        const data = await response.json()
-        recentActivity.value = data.activity || defaultActivity
-      }
-    }
-    catch (e) {
-      console.error('Failed to fetch recent activity:', e)
-      throw e
-    }
+    const data = await fetchDashboardHome()
+    recentActivity.value = normalizeActivities(data.activities)
+    issues.value = Array.isArray(data.issues) ? data.issues : []
   }
 
   async function fetchSystemHealth() {
-    try {
-      const response = await fetch(`${baseUrl}/health`, {
-        headers: {
-          'Accept': 'application/json',
-        },
-      })
-
-      if (response.ok) {
-        const data = await response.json()
-        systemHealth.value = data.services || defaultHealth
-      }
-    }
-    catch (e) {
-      console.error('Failed to fetch system health:', e)
-      throw e
-    }
+    const data = await fetchDashboardHome()
+    systemHealth.value = Array.isArray(data.services) ? data.services : []
+    issues.value = Array.isArray(data.issues) ? data.issues : []
   }
 
   async function fetchAll(timeRange = '7d') {
+    void timeRange
     isLoading.value = true
     error.value = null
 
     try {
-      await Promise.all([
-        fetchDashboardStats(timeRange),
-        fetchRecentActivity(),
-        fetchSystemHealth(),
-      ])
+      const data = await fetchDashboardHome()
+      stats.value = normalizeStats(data.stats)
+      httpMetrics.value = Array.isArray(data.httpMetrics) ? data.httpMetrics : []
+      recentActivity.value = normalizeActivities(data.activities)
+      systemHealth.value = Array.isArray(data.services) ? data.services : []
+      issues.value = Array.isArray(data.issues) ? data.issues : []
     }
-    catch (e) {
-      error.value = 'Failed to load dashboard data. Please try again.'
+    catch (cause) {
+      error.value = cause instanceof Error ? cause.message : 'Dashboard data could not be loaded.'
+      stats.value = []
+      httpMetrics.value = []
+      recentActivity.value = []
+      systemHealth.value = []
+      issues.value = []
+      throw cause
     }
     finally {
       isLoading.value = false
@@ -141,8 +155,10 @@ export function useDashboard() {
 
   return {
     stats,
+    httpMetrics,
     recentActivity,
     systemHealth,
+    issues,
     isLoading,
     error,
     fetchDashboardStats,
