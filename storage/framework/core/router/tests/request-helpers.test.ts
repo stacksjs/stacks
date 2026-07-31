@@ -31,6 +31,26 @@ describe('applyRequestEnhancements', () => {
     expect((enhanced as any).getParam('missing', 'fallback')).toBe('fallback')
   })
 
+  test('attaches getParamAsInt() that safely parses route params', () => {
+    const req = new Request('https://example.com/x')
+    const enhanced = applyRequestEnhancements(req, {
+      empty: '',
+      fractional: '1.5',
+      id: '42',
+      malformed: '12px',
+      negative: '-7',
+      unsafe: '9007199254740992',
+    })
+
+    expect((enhanced as any).getParamAsInt('id')).toBe(42)
+    expect((enhanced as any).getParamAsInt('negative')).toBe(-7)
+    expect((enhanced as any).getParamAsInt('missing')).toBeNull()
+    expect((enhanced as any).getParamAsInt('empty')).toBeNull()
+    expect((enhanced as any).getParamAsInt('fractional')).toBeNull()
+    expect((enhanced as any).getParamAsInt('malformed')).toBeNull()
+    expect((enhanced as any).getParamAsInt('unsafe')).toBeNull()
+  })
+
   test('attaches cookie() that reads named cookies', () => {
     const req = new Request('https://example.com/x', {
       headers: { Cookie: 'session_id=xyz; theme=dark' },

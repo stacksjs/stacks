@@ -54,7 +54,7 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "@stacksjs/bun-router": "^0.0.20",
+    "@stacksjs/bun-router": "^0.0.21",
     "ts-rate-limiter": "^0.4.2"
   },
   "devDependencies": {
