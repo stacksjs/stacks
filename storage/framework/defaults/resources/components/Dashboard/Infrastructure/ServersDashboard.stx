@@ -422,10 +422,10 @@ onMount(() => {
       </div>
 
       <div class="flex justify-end mt-6 pt-5 border-neutral-200 border-t dark:border-neutral-700">
-        <StxLink :to="selectedDetailsPath()" class="inline-flex gap-2 items-center px-3 py-2 font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-lg" @click="closeInspector">
+        <Button tag="a" :href="selectedDetailsPath()" @click="closeInspector">
           Open full details
           <span class="h-4 w-4 i-hugeicons-arrow-right-01"></span>
-        </StxLink>
+        </Button>
       </div>
     </section>
   </div>

@@ -156,6 +156,7 @@ describe('dashboard button contract', () => {
       'Notifications/NotificationDeliveryDialog.stx',
       'Notifications/NotificationDeliveryHistory.stx',
       'Notifications/NotificationDeliveries.stx',
+      'Notifications/NotificationDeliveryOverview.stx',
       'Billing/PaymentForm.stx',
       'Billing/CardForm.stx',
       'Billing/PaymentMethodList.stx',
@@ -328,6 +329,8 @@ describe('dashboard button contract', () => {
     ]
 
     expect((source.match(/<Button/g) || []).length).toBeGreaterThanOrEqual(6)
+    expect(source).toContain('<Button :if="selectedItem()?.url" tag="a" :href="selectedItem()?.url"')
+    expect(source).not.toMatch(/<a\b[^>]*bg-blue-/)
     expect(nativeButtons.every(button => semanticNavigation.some(marker => button.includes(marker)))).toBe(true)
   })
 
@@ -345,6 +348,9 @@ describe('dashboard button contract', () => {
       const nativeButtons = [...source.matchAll(/<button\b[^>]*>/g)].map(match => match[0])
 
       expect(source).toContain('<Button')
+      expect(source).not.toMatch(/<StxLink\b[^>]*bg-blue-/)
+      if (file === 'ServersDashboard.stx')
+        expect(source).toContain('<Button tag="a" :href="selectedDetailsPath()"')
       expect(nativeButtons.every(button => button.includes(':for=') && button.includes('@click="inspect'))).toBe(true)
     }
 

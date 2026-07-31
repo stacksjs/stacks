@@ -559,7 +559,7 @@ onMount(() => { void loadFiles() })
 
 <aside :if="selectedItem()" aria-label="File details" class="flex fixed inset-y-0 right-0 z-40 flex-col max-w-sm w-full bg-white/95 dark:bg-neutral-900/95 border-black/[0.06] border-l dark:border-white/[0.08] shadow-2xl backdrop-blur-2xl">
   <header class="flex items-center justify-between p-4 border-b border-black/[0.06] dark:border-white/[0.08]"><div><p class="font-semibold text-sm text-stone-900 dark:text-white">File details</p><p class="mt-0.5 text-stone-500 text-xs dark:text-neutral-400">{{ selectedDisk }} disk</p></div><Button variant="ghost" iconOnly ariaLabel="Close file details" @click="selectedItem.set(null)"><span class="block h-5 w-5 i-hugeicons-cancel-01"></span></Button></header>
-  <div class="overflow-y-auto flex-1 p-5"><MediaInfoPanel :item="selectedItem()" /><a :if="selectedItem()?.url" :href="selectedItem()?.url" target="_blank" rel="noopener" class="inline-flex gap-2 items-center justify-center mt-5 px-3 py-2 w-full font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-lg"><span class="h-4 w-4 i-hugeicons-link-square-02"></span>Open file</a></div>
+  <div class="overflow-y-auto flex-1 p-5"><MediaInfoPanel :item="selectedItem()" /><Button :if="selectedItem()?.url" tag="a" :href="selectedItem()?.url" target="_blank" rel="noopener" fullWidth class="mt-5"><span class="h-4 w-4 i-hugeicons-link-square-02"></span>Open file</Button></div>
 </aside>
 
 <div :if="showCreateFolderModal()" class="flex fixed inset-0 z-[55] items-center justify-center p-4 dashboard-modal-layer">

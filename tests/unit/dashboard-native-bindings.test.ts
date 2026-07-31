@@ -27,6 +27,17 @@ describe('dashboard native STX bindings', () => {
     expect(existsSync(resolve(dashboardComponents, 'NotificationErrorModal.stx'))).toBe(false)
   })
 
+  test('routes primary action links through the shared Button component', () => {
+    const paths = readdirSync(dashboardComponents, { recursive: true })
+      .map(path => String(path))
+      .filter(path => path.endsWith('.stx'))
+
+    for (const path of paths) {
+      const source = componentSource(path)
+      expect(source).not.toMatch(/<(?:a|StxLink)\b[^>]*(?:bg-blue-600|from-blue-500)/)
+    }
+  })
+
   test('shared pagination models its local selection and emits the selected value', () => {
     const source = componentSource('UI/Pagination.stx')
 
