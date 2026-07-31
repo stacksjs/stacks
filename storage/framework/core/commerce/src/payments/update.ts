@@ -23,9 +23,8 @@ type PaymentUpdate = UpdateModelData<typeof Payment>
  */
 export async function update(id: number, data: Omit<PaymentUpdate, 'id'>): Promise<PaymentJsonResponse | undefined> {
   const existing = await fetchById(id)
-  if (!existing) {
-    throw new Error(`Payment with ID ${id} not found`)
-  }
+  if (!existing)
+    return undefined
 
   try {
     await db

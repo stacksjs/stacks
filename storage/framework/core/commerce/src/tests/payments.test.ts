@@ -4,13 +4,19 @@ import { refreshDatabase } from './setup'
 import { bulkDestroy } from '../payments/destroy'
 import { fetchById, fetchMonthlyPaymentTrends } from '../payments/fetch'
 import { store } from '../payments/store'
-import { recordRefund } from '../payments/update'
+import { recordRefund, update } from '../payments/update'
 
 beforeEach(async () => {
   await refreshDatabase()
 })
 
 describe('Payment Module', () => {
+  describe('update', () => {
+    it('returns undefined when the payment does not exist', async () => {
+      expect(await update(99999999, {})).toBeUndefined()
+    })
+  })
+
   describe('store', () => {
     it('returns the inserted row across dialect-specific insert metadata', async () => {
       const first = await store({

@@ -11,7 +11,7 @@ type CustomerUpdate = UpdateModelData<typeof Customer>
  * @param data The customer data to update
  * @returns The updated customer record
  */
-export async function update(id: number, data: Omit<CustomerUpdate, 'id'>): Promise<CustomerJsonResponse> {
+export async function update(id: number, data: Omit<CustomerUpdate, 'id'>): Promise<CustomerJsonResponse | undefined> {
   try {
     if (!id)
       throw new Error('Customer ID is required for update')
@@ -27,7 +27,7 @@ export async function update(id: number, data: Omit<CustomerUpdate, 'id'>): Prom
       .executeTakeFirst()
 
     if (!result)
-      throw new Error('Failed to update customer')
+      return undefined
 
     return result as CustomerJsonResponse
   }

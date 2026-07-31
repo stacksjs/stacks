@@ -4,6 +4,7 @@ import { refreshDatabase } from './setup'
 import { deleteCoupon } from '../coupons/destroy'
 import { fetchActive, fetchAll } from '../coupons/fetch'
 import { store } from '../coupons/store'
+import { update } from '../coupons/update'
 
 beforeEach(async () => {
   await refreshDatabase()
@@ -13,6 +14,12 @@ describe('Coupon Module', () => {
   describe('destroy', () => {
     it('should return false when the coupon does not exist', async () => {
       expect(await deleteCoupon(99999999)).toBe(false)
+    })
+  })
+
+  describe('update', () => {
+    it('should return undefined when the coupon does not exist', async () => {
+      expect(await update(99999999, {})).toBeUndefined()
     })
   })
 

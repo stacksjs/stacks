@@ -1,16 +1,19 @@
 import { Action } from '@stacksjs/actions'
 import { payments } from '@stacksjs/commerce'
 import { response } from '@stacksjs/router'
+import { commerceIdentifier, commerceNotFound } from './commerce-action'
 
 export default new Action({
   name: 'Payment Update',
   description: 'Payment Update ORM Action',
   method: 'PATCH',
   async handle(request: RequestInstance) {
+    const identifier = commerceIdentifier(request, 'Payment')
+    if (identifier.error)
+      return identifier.error
+    const { id } = identifier
+
     await request.validate()
-
-    const id = request.getParam('id')
-
     const data = {
       order_id: request.get<number>('order_id'),
       customer_id: request.get<number>('customer_id'),
@@ -29,6 +32,8 @@ export default new Action({
     }
 
     const model = await payments.update(id, data)
+    if (!model)
+      return commerceNotFound('Payment', id)
 
     return response.json(model)
   },

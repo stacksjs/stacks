@@ -4,6 +4,7 @@ import { customers } from '@stacksjs/commerce'
 import { toSnakeCaseKeys } from '@stacksjs/orm'
 
 import { response } from '@stacksjs/router'
+import { commerceIdentifier, commerceNotFound } from './commerce-action'
 
 export default new Action({
   name: 'Customer Update',
@@ -11,10 +12,12 @@ export default new Action({
   method: 'PATCH',
   model: Customer,
   async handle(request: RequestInstance) {
+    const identifier = commerceIdentifier(request, 'Customer')
+    if (identifier.error)
+      return identifier.error
+    const { id } = identifier
+
     await request.validate()
-
-    const id = request.getParam('id')
-
     const data = toSnakeCaseKeys({
       name: request.get('name'),
       email: request.get('email'),
@@ -26,6 +29,8 @@ export default new Action({
     })
 
     const result = await customers.update(id, data)
+    if (!result)
+      return commerceNotFound('Customer', id)
 
     return response.json(result)
   },

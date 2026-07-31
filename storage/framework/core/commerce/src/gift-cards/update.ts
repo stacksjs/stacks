@@ -15,9 +15,8 @@ import { fetchById } from './fetch'
 export async function update(id: number, data: Omit<GiftCardUpdate, 'id'>): Promise<GiftCardJsonResponse | undefined> {
   // Check if gift card exists
   const existingGiftCard = await fetchById(id)
-  if (!existingGiftCard) {
-    throw new Error(`Gift card with ID ${id} not found`)
-  }
+  if (!existingGiftCard)
+    return undefined
 
   try {
     // Update the gift card

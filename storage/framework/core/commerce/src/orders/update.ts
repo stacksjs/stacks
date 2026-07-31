@@ -17,9 +17,8 @@ import { canTransition, emitForStatus } from './events'
 export async function update(id: number, data: Omit<OrderUpdate, 'id'>): Promise<OrderJsonResponse | undefined> {
   // Check if order exists
   const existingOrder = await fetchById(id)
-  if (!existingOrder) {
-    throw new Error(`Order with ID ${id} not found`)
-  }
+  if (!existingOrder)
+    return undefined
 
   try {
     // Update the order

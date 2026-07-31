@@ -26,9 +26,8 @@ export type CouponRedemptionResult =
 export async function update(id: number, data: Omit<CouponUpdate, 'id'>): Promise<CouponJsonResponse | undefined> {
   // Check if coupon exists
   const existingCoupon = await fetchById(id)
-  if (!existingCoupon) {
-    throw new Error(`Coupon with ID ${id} not found`)
-  }
+  if (!existingCoupon)
+    return undefined
 
   try {
     // Update the coupon
