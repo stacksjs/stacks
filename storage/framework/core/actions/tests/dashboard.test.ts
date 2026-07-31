@@ -254,17 +254,14 @@ describe('dashboard-utils', () => {
       expect(models[0].icon).toBe('shield.fill')
     })
 
-    it('falls back to filename-only metadata when a model file fails to import', async () => {
+    it('reports a model file that fails to import', async () => {
       mkdirSync(testDir, { recursive: true })
-      // Syntax error — import throws, helper must swallow and return undefined.
       writeFileSync(join(testDir, 'Broken.ts'), 'this is not valid typescript {{{ }}}')
 
       const models: Array<{ name: string, icon: string, id: string, dashboard?: any }> = []
-      await scanModelsDir(testDir, new Set(), models)
-
-      expect(models.length).toBe(1)
-      expect(models[0].name).toBe('Broken')
-      expect(models[0].dashboard).toBeUndefined()
+      expect(scanModelsDir(testDir, new Set(), models)).rejects.toThrow(
+        'Could not discover dashboard model',
+      )
     })
 
     it('leaves dashboard undefined for models without a dashboard field', async () => {
@@ -298,17 +295,22 @@ describe('dashboard-utils', () => {
       expect(models[1].name).toBe('Zebra')
     })
 
-    it('should deduplicate across directories', async () => {
+    it('should deduplicate across directories with user metadata winning', async () => {
       const dir1 = join(testDir, 'user')
       const dir2 = join(testDir, 'default')
       mkdirSync(dir1, { recursive: true })
       mkdirSync(dir2, { recursive: true })
-      writeFileSync(join(dir1, 'User.ts'), 'export default {}')
-      writeFileSync(join(dir2, 'User.ts'), 'export default {}')
+      writeFileSync(join(dir1, 'User.ts'), `export default {
+        dashboard: { label: 'Project users' },
+      }`)
+      writeFileSync(join(dir2, 'User.ts'), `export default {
+        dashboard: { label: 'Framework users' },
+      }`)
 
       const models = await discoverModels(dir1, dir2)
 
       expect(models.length).toBe(1)
+      expect(models[0]?.dashboard?.label).toBe('Project users')
     })
 
     it('should handle empty directories', async () => {

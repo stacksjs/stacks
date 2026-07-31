@@ -121,10 +121,8 @@ export interface DiscoveredModel {
   category?: ModelCategory
   /**
    * Per-model dashboard configuration from `defineModel({ dashboard: … })`
-   * (stacksjs/stacks#1843). Populated when the model file can be imported
-   * and exports a definition with a `dashboard` property; left undefined
-   * otherwise (default behaviour: show the model in its auto-derived
-   * section with the auto-derived icon).
+   * (stacksjs/stacks#1843). Left undefined when the imported model does not
+   * declare dashboard metadata.
    */
   dashboard?: DashboardModelOptions
 }
@@ -161,13 +159,9 @@ function categorizeModel(relativePath: string, modelId: string, defaultCategory?
 }
 
 /**
- * Best-effort import of a model file. Reads `module.default` (the common
- * `defineModel()` export shape) and pulls the `dashboard` field if
- * present. Anything goes wrong — file doesn't load, module has no default
- * export, the import throws transitively pulling in a missing dependency —
- * we swallow and return `undefined`. The model still shows up in the
- * sidebar via the filename-derived metadata; only the per-model overrides
- * are lost.
+ * Import a model file and read its optional dashboard metadata. Import
+ * failures are startup failures so the sidebar cannot present a broken model
+ * as a healthy filename-only entry.
  *
  * Importing models at boot adds ~10-30ms per file. For typical projects
  * with <100 models that's tolerable. The result is cached implicitly
@@ -181,8 +175,8 @@ async function readModelDashboardConfig(absolutePath: string): Promise<Dashboard
     const dashboard = (def as { dashboard?: DashboardModelOptions }).dashboard
     return dashboard
   }
-  catch {
-    return undefined
+  catch (error) {
+    throw new Error(`Could not discover dashboard model ${absolutePath}: ${error instanceof Error ? error.message : String(error)}`)
   }
 }
 
@@ -205,9 +199,6 @@ export async function scanModelsDir(
       seenNames.add(nameLower)
       const id = modelNameToId(name)
       const absolutePath = path.resolve(dir, file)
-      // Read the model's optional dashboard config. The import is
-      // wrapped in try/catch (in the helper) so a single broken model
-      // never blocks the rest of the sidebar from rendering.
       const dashboard = await readModelDashboardConfig(absolutePath)
       models.push({
         name,
@@ -224,10 +215,10 @@ export async function scanModelsDir(
 export async function discoverModels(userModelsPath: string, defaultModelsPath: string): Promise<DiscoveredModel[]> {
   const models: DiscoveredModel[] = []
   const seenNames = new Set<string>()
-  await Promise.all([
-    scanModelsDir(userModelsPath, seenNames, models, 'userland'),
-    scanModelsDir(defaultModelsPath, seenNames, models),
-  ])
+  // User models are deliberate overrides and must win deterministically.
+  // Scanning both trees concurrently races the shared seenNames set.
+  await scanModelsDir(userModelsPath, seenNames, models, 'userland')
+  await scanModelsDir(defaultModelsPath, seenNames, models)
   return models.sort((a, b) => a.name.localeCompare(b.name))
 }
 
