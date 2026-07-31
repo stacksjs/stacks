@@ -641,8 +641,12 @@ describe('dashboard native STX bindings', () => {
   })
 
   test('kanban uses native reactive drag, dialogs, and form models', () => {
-    const board = readFileSync(
+    const page = readFileSync(
       resolve('storage/framework/defaults/views/dashboard/kanban/[id].stx'),
+      'utf8',
+    )
+    const board = readFileSync(
+      resolve('storage/framework/defaults/resources/components/Dashboard/Kanban/KanbanBoardDashboard.stx'),
       'utf8',
     )
     const index = readFileSync(
@@ -654,6 +658,8 @@ describe('dashboard native STX bindings', () => {
       'utf8',
     )
 
+    expect(page).toContain('<KanbanBoardDashboard />')
+    expect(page).not.toContain('<script')
     expect(board).toContain('@dragstart.stop="beginCardDrag')
     expect(board).toContain('@drop.prevent="dropOnColumn(col.id)"')
     expect(board).toContain('await kanban.reorderColumns(currentBoard.id, order)')
