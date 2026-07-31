@@ -13,7 +13,7 @@ type LicenseKeyUpdate = UpdateModelData<typeof LicenseKey>
  * @param data The license key data to update
  * @returns The updated license key record
  */
-export async function update(id: number, data: LicenseKeyUpdate): Promise<LicenseKeyJsonResponse> {
+export async function update(id: number, data: LicenseKeyUpdate): Promise<LicenseKeyJsonResponse | undefined> {
   try {
     if (!id)
       throw new Error('License key ID is required for update')
@@ -24,7 +24,7 @@ export async function update(id: number, data: LicenseKeyUpdate): Promise<Licens
       .selectAll()
       .executeTakeFirst()
     if (!current)
-      throw new Error('License key was not found')
+      return undefined
     const input = licenseKeyWriteData(data as Record<string, unknown>)
     const validated = await validateLicenseKeyWrite(input, current as Record<string, unknown>)
 
@@ -39,7 +39,7 @@ export async function update(id: number, data: LicenseKeyUpdate): Promise<Licens
       .executeTakeFirst()
 
     if (!result)
-      throw new Error('Failed to update license key')
+      return undefined
 
     return result as LicenseKeyJsonResponse
   }

@@ -13,7 +13,7 @@ type ShippingRateUpdate = UpdateModelData<typeof ShippingRate>
  * @param data The shipping rate data to update
  * @returns The updated shipping rate record
  */
-export async function update(id: number, data: ShippingRateUpdate): Promise<ShippingRateJsonResponse> {
+export async function update(id: number, data: ShippingRateUpdate): Promise<ShippingRateJsonResponse | undefined> {
   try {
     if (!id)
       throw new Error('Shipping rate ID is required for update')
@@ -24,7 +24,7 @@ export async function update(id: number, data: ShippingRateUpdate): Promise<Ship
       .selectAll()
       .executeTakeFirst()
     if (!current)
-      throw new Error('Shipping rate was not found')
+      return undefined
 
     const input = shippingRateWriteData(data as Record<string, unknown>)
     await validateShippingRateWrite(input, current as Record<string, unknown>)
@@ -40,7 +40,7 @@ export async function update(id: number, data: ShippingRateUpdate): Promise<Ship
       .executeTakeFirst()
 
     if (!result)
-      throw new Error('Failed to update shipping rate')
+      return undefined
 
     return result as ShippingRateJsonResponse
   }

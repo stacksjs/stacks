@@ -12,7 +12,7 @@ type DriverUpdate = UpdateModelData<typeof Driver>
  * @param data The driver data to update
  * @returns The updated driver record
  */
-export async function update(id: number, data: DriverUpdate): Promise<DriverJsonResponse> {
+export async function update(id: number, data: DriverUpdate): Promise<DriverJsonResponse | undefined> {
   try {
     if (!id)
       throw new Error('Driver ID is required for update')
@@ -28,7 +28,7 @@ export async function update(id: number, data: DriverUpdate): Promise<DriverJson
       .executeTakeFirst()
 
     if (!result)
-      throw new Error('Failed to update driver')
+      return undefined
 
     return result as DriverJsonResponse
   }

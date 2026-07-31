@@ -3,6 +3,7 @@ import { Action } from '@stacksjs/actions'
 import { shippings } from '@stacksjs/commerce'
 
 import { response } from '@stacksjs/router'
+import { commerceIdentifier, commerceNotFound } from '../commerce-action'
 
 export default new Action({
   name: 'LicenseKey Update',
@@ -10,13 +11,18 @@ export default new Action({
   method: 'PATCH',
   model: LicenseKey,
   async handle(request: RequestInstance) {
-    await request.validate()
+    const identifier = commerceIdentifier(request, 'License key')
+    if (identifier.error)
+      return identifier.error
+    const { id } = identifier
 
-    const id = request.getParam('id')
+    await request.validate()
     const data = await request.all()
 
     try {
       const results = await shippings.licenses.update(id, data)
+      if (!results)
+        return commerceNotFound('License key', id)
 
       return response.json(results)
     }

@@ -12,7 +12,7 @@ type DeliveryRouteUpdate = UpdateModelData<typeof DeliveryRoute>
  * @param data The delivery route data to update
  * @returns The updated delivery route record
  */
-export async function update(id: number, data: DeliveryRouteUpdate): Promise<DeliveryRouteJsonResponse> {
+export async function update(id: number, data: DeliveryRouteUpdate): Promise<DeliveryRouteJsonResponse | undefined> {
   try {
     if (!id)
       throw new Error('Delivery route ID is required for update')
@@ -23,7 +23,7 @@ export async function update(id: number, data: DeliveryRouteUpdate): Promise<Del
       .selectAll()
       .executeTakeFirst()
     if (!current)
-      throw new Error('Delivery route was not found')
+      return undefined
     const input = deliveryRouteWriteData(data as Record<string, unknown>)
     const validated = await validateDeliveryRouteWrite(input, current as Record<string, unknown>)
 
@@ -38,7 +38,7 @@ export async function update(id: number, data: DeliveryRouteUpdate): Promise<Del
       .executeTakeFirst()
 
     if (!result)
-      throw new Error('Failed to update delivery route')
+      return undefined
 
     return result as DeliveryRouteJsonResponse
   }

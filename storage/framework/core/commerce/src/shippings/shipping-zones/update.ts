@@ -11,7 +11,7 @@ type ShippingZoneUpdate = UpdateModelData<typeof ShippingZone>
  * @param data The shipping zone data to update
  * @returns The updated shipping zone record
  */
-export async function update(id: number, data: ShippingZoneUpdate): Promise<ShippingZoneJsonResponse> {
+export async function update(id: number, data: ShippingZoneUpdate): Promise<ShippingZoneJsonResponse | undefined> {
   try {
     if (!id)
       throw new Error('Shipping zone ID is required for update')
@@ -27,7 +27,7 @@ export async function update(id: number, data: ShippingZoneUpdate): Promise<Ship
       .executeTakeFirst()
 
     if (!result)
-      throw new Error('Failed to update shipping zone')
+      return undefined
 
     return result as ShippingZoneJsonResponse
   }

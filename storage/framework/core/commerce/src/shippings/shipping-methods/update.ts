@@ -11,7 +11,7 @@ type ShippingMethodUpdate = UpdateModelData<typeof ShippingMethod>
  * @param data The shipping method data to update
  * @returns The updated shipping method record
  */
-export async function update(id: number, data: ShippingMethodUpdate): Promise<ShippingMethodJsonResponse> {
+export async function update(id: number, data: ShippingMethodUpdate): Promise<ShippingMethodJsonResponse | undefined> {
   try {
     if (!id)
       throw new Error('Shipping method ID is required for update')
@@ -27,7 +27,7 @@ export async function update(id: number, data: ShippingMethodUpdate): Promise<Sh
       .executeTakeFirst()
 
     if (!result)
-      throw new Error('Failed to update shipping method')
+      return undefined
 
     return result as ShippingMethodJsonResponse
   }

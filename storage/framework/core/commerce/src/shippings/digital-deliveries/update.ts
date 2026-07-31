@@ -12,7 +12,7 @@ type DigitalDeliveryUpdate = UpdateModelData<typeof DigitalDelivery>
  * @param data The digital delivery data to update
  * @returns The updated digital delivery record
  */
-export async function update(id: number, data: DigitalDeliveryUpdate): Promise<DigitalDeliveryJsonResponse> {
+export async function update(id: number, data: DigitalDeliveryUpdate): Promise<DigitalDeliveryJsonResponse | undefined> {
   try {
     if (!id)
       throw new Error('Digital delivery ID is required for update')
@@ -28,7 +28,7 @@ export async function update(id: number, data: DigitalDeliveryUpdate): Promise<D
       .executeTakeFirst()
 
     if (!result)
-      throw new Error('Failed to update digital delivery')
+      return undefined
 
     return result as DigitalDeliveryJsonResponse
   }
