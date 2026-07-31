@@ -19,6 +19,7 @@ function gitValue(args: string[]): string {
 export default new Action({
   name: 'CreateDeployment',
   description: 'Starts a confirmed non-interactive buddy deployment.',
+  method: 'POST',
   apiResponse: true,
 
   async handle() {

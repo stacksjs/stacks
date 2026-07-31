@@ -4,6 +4,7 @@ import { Deployment } from '@stacksjs/orm'
 export default new Action({
   name: 'GetRecentDeployments',
   description: 'Gets recent deployments.',
+  method: 'GET',
   apiResponse: true,
 
   async handle() {

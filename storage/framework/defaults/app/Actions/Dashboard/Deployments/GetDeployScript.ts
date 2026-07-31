@@ -7,6 +7,7 @@ import { response } from '@stacksjs/router'
 export default new Action({
   name: 'GetDeployScript',
   description: 'Gets the deploy script used by the application.',
+  method: 'GET',
   apiResponse: true,
 
   async handle() {

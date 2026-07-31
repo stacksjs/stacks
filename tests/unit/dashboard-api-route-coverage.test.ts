@@ -166,6 +166,25 @@ describe('dashboard API route coverage', () => {
     expect(missing).toEqual([])
   })
 
+  test('keeps Action method metadata aligned with every registered route', () => {
+    const mismatches = dashboardRoutes().flatMap((route) => {
+      const relativePath = `${route.action}.ts`
+      const actionPath = existsSync(resolve('app', relativePath))
+        ? resolve('app', relativePath)
+        : resolve('storage/framework/defaults/app', relativePath)
+      const action = readFileSync(actionPath, 'utf8')
+      const declaredMethod = action.match(
+        /\bmethod\s*:\s*['"](GET|POST|PUT|PATCH|DELETE)['"]/i,
+      )?.[1].toUpperCase()
+
+      return declaredMethod === route.method
+        ? []
+        : [`${route.method} ${route.path} -> ${route.action} (${declaredMethod || 'missing'})`]
+    })
+
+    expect(mismatches).toEqual([])
+  })
+
   test('backs every dashboard client URL with a registered route', () => {
     const routes = dashboardRoutes()
     const clientPaths = clientDashboardPaths()

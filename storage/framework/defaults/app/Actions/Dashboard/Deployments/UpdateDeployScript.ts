@@ -7,6 +7,7 @@ import { request, response } from '@stacksjs/router'
 export default new Action({
   name: 'UpdateDeployScript',
   description: 'Updates the deploy script.',
+  method: 'PUT',
   apiResponse: true,
 
   async handle() {
