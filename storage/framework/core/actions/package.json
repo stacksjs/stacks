@@ -63,20 +63,20 @@
   },
   "dependencies": {
     "@stacksjs/config": "workspace:*",
-    "@stacksjs/bumpx": "^0.2.6",
-    "@stacksjs/bunpress": "^0.1.18",
-    "@stacksjs/logsmith": "^0.2.3",
+    "@stacksjs/bumpx": "^0.2.14",
+    "@stacksjs/bunpress": "^0.1.21",
+    "@stacksjs/logsmith": "^0.2.11",
     "@stacksjs/registry": "workspace:*",
     "@stacksjs/stx": "^0.2.139",
-    "@stacksjs/ts-cloud": "^0.7.92",
+    "@stacksjs/ts-cloud": "^0.7.93",
     "@stacksjs/ts-md": "^0.1.1"
   },
   "devDependencies": {
     "@stacksjs/api": "workspace:*",
     "@stacksjs/cli": "workspace:*",
     "@stacksjs/database": "workspace:*",
-    "@stacksjs/tlsx": "^0.13.2",
-    "better-dx": "^0.2.17",
+    "@stacksjs/tlsx": "^0.13.14",
+    "better-dx": "^0.2.22",
     "@stacksjs/dns": "workspace:*",
     "@stacksjs/enums": "workspace:*",
     "@stacksjs/env": "workspace:*",
@@ -90,7 +90,7 @@
     "@stacksjs/validation": "workspace:*"
   },
   "peerDependencies": {
-    "pickier": "^0.1.35"
+    "pickier": "^0.1.44"
   },
   "peerDependenciesMeta": {
     "pickier": {
