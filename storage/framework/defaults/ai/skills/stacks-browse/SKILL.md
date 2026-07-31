@@ -96,6 +96,16 @@ bun storage/framework/defaults/ai/skills/stacks-browse/scripts/browse.ts snapsho
 ```
 Extracts headings, links (`text -> href`), buttons, forms (action + field count), and ARIA landmarks — useful for auditing structure and catching broken links.
 
+### Crawl (whole-site browser audit)
+```bash
+bun storage/framework/defaults/ai/skills/stacks-browse/scripts/browse.ts crawl <url> [--max 500] [--path /extra-route] [--settle 350]
+```
+Reuses one Chromium process while following every same-origin link it discovers.
+Each page is checked for a non-200 document, console exceptions, failed
+requests, and horizontal overflow. Repeat `--path` to seed routes that are not
+linked from the starting page. The command prints every crawled path and exits
+nonzero when any page fails.
+
 ## Stacks-Specific QA
 
 When testing a Stacks app, check:

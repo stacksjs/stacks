@@ -12,6 +12,7 @@
  *   bun browse.ts responsive <url> [--out-dir DIR]
  *   bun browse.ts monitor    <url> [--ms 5000]
  *   bun browse.ts snapshot   <url>
+ *   bun browse.ts crawl      <url> [--max 500] [--path /extra]
  *
  * Browser discovery order: $BROWSE_BROWSER → PATH (chromium, google-chrome, …)
  * → common macOS app bundles → a Playwright-cached chromium as last resort.
@@ -330,6 +331,29 @@ async function captureScreenshot(cdp: Cdp, opts: { full?: boolean, element?: str
   return Buffer.from(r.data, 'base64')
 }
 
+interface CrawlPage {
+  consoleErrors: string[]
+  failedRequests: Array<{ status: number, url: string }>
+  horizontalOverflowPx: number
+  path: string
+  status: number | null
+  title: string
+}
+
+function crawlTarget(candidate: string, origin: string): string | null {
+  try {
+    const url = new URL(candidate, origin)
+    if (url.origin !== origin || !['http:', 'https:'].includes(url.protocol))
+      return null
+
+    url.hash = ''
+    return url.href
+  }
+  catch {
+    return null
+  }
+}
+
 // ── CLI ─────────────────────────────────────────────────────────────────────
 
 function parseFlags(args: string[]): { positional: string[], flags: Record<string, string | boolean | Array<string | boolean>> } {
@@ -394,7 +418,7 @@ async function main() {
   const url = positional[0]
 
   if (!command || command === 'help' || !url) {
-    console.log('Usage: bun browse.ts <navigate|screenshot|responsive|monitor|snapshot> <url> [flags]')
+    console.log('Usage: bun browse.ts <navigate|screenshot|responsive|monitor|snapshot|crawl> <url> [flags]')
     console.log('  --cookie "name=value"   repeatable; pre-seeds cookies (e.g. coming-soon bypass)')
     console.log('  --settle 1500           ms to wait after load before acting (default 700; stretch for entrance animations)')
     console.log('  --scheme dark           emulate prefers-color-scheme (light|dark) for QA of theme-aware pages')
@@ -491,6 +515,84 @@ async function main() {
       const r = await cdp.send('Runtime.evaluate', { expression: expr, returnByValue: true })
       console.log(JSON.stringify({ url, ...r.result?.value }, null, 2))
       cdp.close()
+    }
+
+    else if (command === 'crawl') {
+      const start = new URL(url)
+      const max = flags.max ? Number(flags.max) : 500
+      if (!Number.isInteger(max) || max < 1)
+        throw new TypeError(`Invalid crawl max "${String(flags.max)}". Expected a positive integer.`)
+
+      const queue = [
+        start.href,
+        ...flagList(flags.path)
+          .map(path => crawlTarget(path, start.origin))
+          .filter((path): path is string => path !== null),
+      ]
+      const queued = new Set(queue)
+      const visited = new Set<string>()
+      const pages: CrawlPage[] = []
+      const crawlSettleMs = settleMs ?? 350
+
+      while (queue.length > 0 && visited.size < max) {
+        const current = queue.shift()!
+        if (visited.has(current))
+          continue
+        visited.add(current)
+
+        const cdp = await openPage(session.port)
+        const state = await gotoAndInstrument(cdp, current, {
+          cookies,
+          settleMs: crawlSettleMs,
+          scheme,
+        })
+        const inspection = await cdp.send('Runtime.evaluate', {
+          expression: `(() => ({
+            title: document.title,
+            links: Array.from(document.querySelectorAll('a[href]')).map(link => link.href),
+            overflow: Math.max(0, document.documentElement.scrollWidth - window.innerWidth),
+          }))()`,
+          returnByValue: true,
+        })
+        const value = inspection.result?.value || {}
+        const failedRequests = state.responses
+          .filter(response => response.status >= 400)
+          .map(response => ({ status: response.status, url: response.url }))
+        pages.push({
+          path: new URL(current).pathname + new URL(current).search,
+          title: value.title || '',
+          status: state.mainStatus,
+          consoleErrors: [...new Set(state.consoleErrors)],
+          failedRequests,
+          horizontalOverflowPx: Number(value.overflow) || 0,
+        })
+
+        for (const href of value.links || []) {
+          const target = crawlTarget(href, start.origin)
+          if (!target || queued.has(target) || visited.has(target))
+            continue
+          queued.add(target)
+          queue.push(target)
+        }
+        cdp.close()
+      }
+
+      const failures = pages.filter(page =>
+        page.status !== 200
+        || page.consoleErrors.length > 0
+        || page.failedRequests.length > 0
+        || page.horizontalOverflowPx > 0)
+      console.log(JSON.stringify({
+        start: start.href,
+        browser: session.browser,
+        crawled: pages.length,
+        remaining: queue.length,
+        max,
+        paths: pages.map(page => page.path),
+        failures,
+      }, null, 2))
+      if (failures.length > 0)
+        process.exitCode = 1
     }
 
     else {
