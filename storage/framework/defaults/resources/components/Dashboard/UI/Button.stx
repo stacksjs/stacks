@@ -71,7 +71,9 @@ const buttonClass = [
   'focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/40 focus-visible:ring-offset-0',
   'disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none aria-disabled:opacity-40 aria-disabled:cursor-not-allowed aria-disabled:pointer-events-none',
   'active:scale-[0.98]',
-  'aria-pressed:text-blue-700 dark:aria-pressed:text-blue-300 aria-pressed:bg-blue-50 dark:aria-pressed:bg-blue-950/40 aria-pressed:border-blue-200 dark:aria-pressed:border-blue-900',
+  interaction === 'toggle'
+    ? 'aria-pressed:text-blue-700 dark:aria-pressed:text-blue-300 aria-pressed:bg-blue-50 dark:aria-pressed:bg-blue-950/40 aria-pressed:border-blue-200 dark:aria-pressed:border-blue-900'
+    : '',
   fullWidth ? 'w-full' : '',
   iconOnly ? iconOnlySizes[size] : sizeClasses[size],
   variantClasses[variant]
