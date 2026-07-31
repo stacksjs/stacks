@@ -645,11 +645,17 @@ describe('dashboard native STX bindings', () => {
   })
 
   test('CI keeps its data sparkline but delegates status icons to Iconify', () => {
-    const ci = readFileSync(
+    const ciView = readFileSync(
       resolve('storage/framework/defaults/views/dashboard/ci/index.stx'),
       'utf8',
     )
+    const ci = readFileSync(
+      resolve('storage/framework/defaults/resources/components/Dashboard/Ci/CiDashboard.stx'),
+      'utf8',
+    )
 
+    expect(ciView).toContain('<CiDashboard />')
+    expect(ciView).not.toContain('<script')
     expect(ci.match(/<svg\b/g)).toHaveLength(1)
     expect(ci).toContain(':d="sparklinePath()"')
     expect(ci).toContain('i-hugeicons-loading-03')

@@ -62,7 +62,7 @@ describe('dashboard button contract', () => {
       'storage/framework/defaults/resources/components/Dashboard/Email/InboxDashboard.stx',
       'storage/framework/defaults/resources/components/Dashboard/Email/EmailActivityDashboard.stx',
       'storage/framework/defaults/views/dashboard/settings/appearance.stx',
-      'storage/framework/defaults/views/dashboard/ci/index.stx',
+      'storage/framework/defaults/resources/components/Dashboard/Ci/CiDashboard.stx',
       'storage/framework/defaults/views/dashboard/kanban/index.stx',
       'storage/framework/defaults/resources/components/Dashboard/Kanban/KanbanBoardDashboard.stx',
     ]
@@ -349,7 +349,7 @@ describe('dashboard button contract', () => {
 
   test('keeps CI tabs and filters semantic while sharing drawer actions', () => {
     const source = readFileSync(
-      resolve('storage/framework/defaults/views/dashboard/ci/index.stx'),
+      resolve('storage/framework/defaults/resources/components/Dashboard/Ci/CiDashboard.stx'),
       'utf8',
     )
     const nativeButtons = [...source.matchAll(/<button\b[^>]*>/g)].map(match => match[0])
