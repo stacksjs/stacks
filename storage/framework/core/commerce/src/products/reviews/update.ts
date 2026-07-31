@@ -10,7 +10,7 @@ type ReviewUpdate = UpdateModelData<typeof Review>
  * @param data The review data to update
  * @returns The updated review record
  */
-export async function update(id: number, data: ReviewUpdate): Promise<ReviewJsonResponse> {
+export async function update(id: number, data: ReviewUpdate): Promise<ReviewJsonResponse | undefined> {
   try {
     if (!id)
       throw new Error('Review ID is required for update')
@@ -26,7 +26,7 @@ export async function update(id: number, data: ReviewUpdate): Promise<ReviewJson
       .executeTakeFirst()
 
     if (!result)
-      throw new Error('Failed to update review')
+      return undefined
 
     return result
   }

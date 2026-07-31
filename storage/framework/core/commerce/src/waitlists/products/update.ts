@@ -12,14 +12,14 @@ type WaitlistProductUpdate = UpdateModelData<typeof WaitlistProduct>
  * @param data The waitlist product data to update
  * @returns The updated waitlist product record
  */
-export async function update(id: number, data: WaitlistProductUpdate): Promise<WaitlistProductJsonResponse> {
+export async function update(id: number, data: WaitlistProductUpdate): Promise<WaitlistProductJsonResponse | undefined> {
   try {
     if (!id)
       throw new Error('Waitlist product ID is required for update')
 
     const existing = await fetchById(id)
     if (!existing)
-      throw new Error('Waitlist product not found')
+      return undefined
 
     await db
       .updateTable('waitlist_products')
@@ -35,7 +35,7 @@ export async function update(id: number, data: WaitlistProductUpdate): Promise<W
 
     const result = await fetchById(id)
     if (!result)
-      throw new Error('Failed to update waitlist product')
+      return undefined
 
     return result as WaitlistProductJsonResponse
   }
@@ -58,7 +58,7 @@ export async function update(id: number, data: WaitlistProductUpdate): Promise<W
 export async function updateStatus(
   id: number,
   status: 'waiting' | 'purchased' | 'notified' | 'cancelled',
-): Promise<WaitlistProductJsonResponse> {
+): Promise<WaitlistProductJsonResponse | undefined> {
   return await update(id, { status } as WaitlistProductUpdate)
 }
 
@@ -72,6 +72,6 @@ export async function updateStatus(
 export async function updatePartySize(
   id: number,
   partySize: number,
-): Promise<WaitlistProductJsonResponse> {
+): Promise<WaitlistProductJsonResponse | undefined> {
   return await update(id, { quantity: partySize } as WaitlistProductUpdate)
 }

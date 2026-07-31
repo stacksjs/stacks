@@ -10,7 +10,7 @@ type TaxRateJsonResponse = ModelRow<typeof TaxRate>
  * @param data The tax rate data to update
  * @returns The updated tax rate record
  */
-export async function update(id: number, data: TaxRateWriteData): Promise<TaxRateJsonResponse> {
+export async function update(id: number, data: TaxRateWriteData): Promise<TaxRateJsonResponse | undefined> {
   try {
     if (!id)
       throw new Error('Tax rate ID is required for update')
@@ -23,7 +23,7 @@ export async function update(id: number, data: TaxRateWriteData): Promise<TaxRat
         .executeTakeFirst() as { is_default: boolean | null } | undefined
 
       if (!current)
-        throw new Error(`Tax rate with ID ${id} not found`)
+        return undefined
 
       const isDefault = data.is_default ?? Boolean(current.is_default)
       const updatedAt = formatDate(new Date())
@@ -46,7 +46,7 @@ export async function update(id: number, data: TaxRateWriteData): Promise<TaxRat
         .executeTakeFirst()
 
       if (!result)
-        throw new Error(`Tax rate with ID ${id} not found`)
+        return undefined
 
       return result as TaxRateJsonResponse
     })

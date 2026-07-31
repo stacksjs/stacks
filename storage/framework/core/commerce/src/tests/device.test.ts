@@ -10,7 +10,7 @@ import {
   getPrinterStatusCounts,
 } from '../devices/fetch'
 import { bulkStore, store } from '../devices/store'
-import { updatePrintCount, updateStatus } from '../devices/update'
+import { update, updatePrintCount, updateStatus } from '../devices/update'
 import { bulkStore as bulkStoreReceipts } from '../receipts/store'
 
 beforeEach(async () => {
@@ -18,6 +18,12 @@ beforeEach(async () => {
 })
 
 describe('Print Device Module', () => {
+  describe('update', () => {
+    it('should return undefined when the print device does not exist', async () => {
+      expect(await update(99999999, {})).toBeUndefined()
+    })
+  })
+
   describe('store', () => {
     it('should create multiple print devices with bulk store', async () => {
       const devices = [

@@ -18,6 +18,12 @@ beforeEach(async () => {
 })
 
 describe('Restaurant Waitlist Module', () => {
+  describe('update', () => {
+    it('should return undefined when the waitlist entry does not exist', async () => {
+      expect(await update(99999999, {} as any)).toBeUndefined()
+    })
+  })
+
   describe('store', () => {
     it('should return 0 when trying to bulk store an empty array', async () => {
       const count = await bulkStore([])
@@ -42,7 +48,7 @@ describe('Restaurant Waitlist Module', () => {
       expect(created.check_in_time).toBe('2026-07-30 03:00:00')
 
       const seated = await updateStatus(created.id, 'seated')
-      expect(seated.seated_at).toBeTruthy()
+      expect(seated?.seated_at).toBeTruthy()
 
       const pinned = await update(created.id, {
         seated_at: '2026-01-02 03:04:05',
@@ -57,10 +63,10 @@ describe('Restaurant Waitlist Module', () => {
         quoted_wait_time: 25,
       } as any)
 
-      expect(edited.seated_at).toBe(pinned.seated_at)
-      expect(edited.phone).toBe('+1 555 0101')
-      expect(edited.queue_position).toBe(3)
-      expect(edited.customer_id).toBe(1)
+      expect(edited?.seated_at).toBe(pinned?.seated_at)
+      expect(edited?.phone).toBe('+1 555 0101')
+      expect(edited?.queue_position).toBe(3)
+      expect(edited?.customer_id).toBe(1)
     })
   })
 

@@ -18,6 +18,12 @@ beforeEach(async () => {
 })
 
 describe('Print Log Module', () => {
+  describe('update', () => {
+    it('should return undefined when the receipt does not exist', async () => {
+      expect(await update(99999999, {})).toBeUndefined()
+    })
+  })
+
   describe('store', () => {
     it('should return 0 when trying to bulk store an empty array', async () => {
       const count = await bulkStore([])
@@ -49,7 +55,7 @@ describe('Print Log Module', () => {
       const retimed = await update(Number(receipt.id), {
         timestamp: Date.parse('2026-01-10T12:30:00Z') / 1000,
       })
-      expect(String(retimed.timestamp)).toBe('2026-01-10 12:30:00')
+      expect(String(retimed?.timestamp)).toBe('2026-01-10 12:30:00')
       expect(await destroy(Number(receipt.id))).toBe(true)
 
       const unixReceipt = await store({

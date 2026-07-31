@@ -3,13 +3,19 @@ import { refreshDatabase } from './setup'
 import { bulkDestroy } from '../tax/destroy'
 import { fetchAll } from '../tax/fetch'
 import { bulkStore } from '../tax/store'
-import { updateDefaultStatus } from '../tax/update'
+import { update, updateDefaultStatus } from '../tax/update'
 
 beforeEach(async () => {
   await refreshDatabase()
 })
 
 describe('Tax Rate Module', () => {
+  describe('update', () => {
+    it('should return undefined when the tax rate does not exist', async () => {
+      expect(await update(99999999, {})).toBeUndefined()
+    })
+  })
+
   describe('store', () => {
     it('should return 0 when trying to bulk store an empty array', async () => {
       const count = await bulkStore([])

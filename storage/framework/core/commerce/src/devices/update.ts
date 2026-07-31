@@ -15,9 +15,8 @@ export async function update(id: number, data: Omit<PrintDeviceUpdate, 'id'>): P
   // Check if print device exists
   const existingDevice = await fetchById(id)
 
-  if (!existingDevice) {
-    throw new Error(`Print device with ID ${id} not found`)
-  }
+  if (!existingDevice)
+    return undefined
 
   try {
     // Update the print device

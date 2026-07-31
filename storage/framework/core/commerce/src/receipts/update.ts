@@ -12,7 +12,7 @@ type ReceiptUpdate = UpdateModelData<typeof Receipt>
  * @param data The receipt data to update
  * @returns The updated receipt record
  */
-export async function update(id: number, data: ReceiptUpdate): Promise<ReceiptJsonResponse> {
+export async function update(id: number, data: ReceiptUpdate): Promise<ReceiptJsonResponse | undefined> {
   try {
     if (!id)
       throw new Error('Receipt ID is required for update')
@@ -30,7 +30,7 @@ export async function update(id: number, data: ReceiptUpdate): Promise<ReceiptJs
 
     const result = await fetchById(id)
     if (!result)
-      throw new Error('Failed to update receipt')
+      return undefined
 
     return result as ReceiptJsonResponse
   }

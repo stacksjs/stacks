@@ -12,14 +12,14 @@ type WaitlistRestaurantUpdate = UpdateModelData<typeof WaitlistRestaurant>
  * @param data The restaurant waitlist data to update
  * @returns The updated restaurant waitlist record
  */
-export async function update(id: number, data: WaitlistRestaurantUpdate): Promise<WaitlistRestaurantJsonResponse> {
+export async function update(id: number, data: WaitlistRestaurantUpdate): Promise<WaitlistRestaurantJsonResponse | undefined> {
   try {
     if (!id)
       throw new Error('Restaurant waitlist entry ID is required for update')
 
     const existing = await fetchById(id)
     if (!existing)
-      throw new Error('Restaurant waitlist entry not found')
+      return undefined
 
     await db
       .updateTable('waitlist_restaurants')
@@ -35,7 +35,7 @@ export async function update(id: number, data: WaitlistRestaurantUpdate): Promis
 
     const result = await fetchById(id)
     if (!result)
-      throw new Error('Failed to update restaurant waitlist entry')
+      return undefined
 
     return result as WaitlistRestaurantJsonResponse
   }
@@ -58,7 +58,7 @@ export async function update(id: number, data: WaitlistRestaurantUpdate): Promis
 export async function updateStatus(
   id: number,
   status: 'waiting' | 'seated' | 'cancelled' | 'no_show',
-): Promise<WaitlistRestaurantJsonResponse> {
+): Promise<WaitlistRestaurantJsonResponse | undefined> {
   return await update(id, { status } as WaitlistRestaurantUpdate)
 }
 
@@ -72,7 +72,7 @@ export async function updateStatus(
 export async function updatePartySize(
   id: number,
   partySize: number,
-): Promise<WaitlistRestaurantJsonResponse> {
+): Promise<WaitlistRestaurantJsonResponse | undefined> {
   return await update(id, { party_size: partySize } as WaitlistRestaurantUpdate)
 }
 
@@ -88,7 +88,7 @@ export async function updateWaitTimes(
   id: number,
   quotedWaitTime: number,
   actualWaitTime?: number,
-): Promise<WaitlistRestaurantJsonResponse> {
+): Promise<WaitlistRestaurantJsonResponse | undefined> {
   return await update(id, {
     quoted_wait_time: quotedWaitTime,
     ...(actualWaitTime === undefined ? {} : { actual_wait_time: actualWaitTime }),
@@ -105,6 +105,6 @@ export async function updateWaitTimes(
 export async function updateQueuePosition(
   id: number,
   queuePosition: number,
-): Promise<WaitlistRestaurantJsonResponse> {
+): Promise<WaitlistRestaurantJsonResponse | undefined> {
   return await update(id, { queue_position: queuePosition } as WaitlistRestaurantUpdate)
 }

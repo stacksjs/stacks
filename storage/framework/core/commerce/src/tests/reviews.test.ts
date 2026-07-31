@@ -3,12 +3,19 @@ import { refreshDatabase } from './setup'
 import { bulkDestroy } from '../products/reviews/destroy'
 import { fetchApprovedByProductId, fetchByProductId, fetchByUserId, fetchMostHelpfulByProductId } from '../products/reviews/fetch'
 import { store } from '../products/reviews/store'
+import { update } from '../products/reviews/update'
 
 beforeEach(async () => {
   await refreshDatabase()
 })
 
 describe('Product Review Module', () => {
+  describe('update', () => {
+    it('should return undefined when the review does not exist', async () => {
+      expect(await update(99999999, {})).toBeUndefined()
+    })
+  })
+
   describe('fetch methods', () => {
     it('should fetch reviews by product ID', async () => {
       // Create several reviews for the same product

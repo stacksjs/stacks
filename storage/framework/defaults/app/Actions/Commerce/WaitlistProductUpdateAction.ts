@@ -2,6 +2,7 @@ import { Action } from '@stacksjs/actions'
 import { waitlists } from '@stacksjs/commerce'
 import { toSnakeCaseKeys } from '@stacksjs/orm'
 import { response } from '@stacksjs/router'
+import { commerceIdentifier, commerceNotFound } from './commerce-action'
 
 export default new Action({
   name: 'WaitlistProduct Update',
@@ -9,11 +10,16 @@ export default new Action({
   method: 'PATCH',
   model: WaitlistProduct,
   async handle(request: RequestInstance) {
-    await request.validate()
+    const identifier = commerceIdentifier(request, 'Product waitlist entry')
+    if (identifier.error)
+      return identifier.error
+    const { id } = identifier
 
-    const id = Number(request.getParam('id'))
+    await request.validate()
     const data = toSnakeCaseKeys(request.all())
     const model = await waitlists.products.update(id, data)
+    if (!model)
+      return commerceNotFound('Product waitlist entry', id)
 
     return response.json(model)
   },

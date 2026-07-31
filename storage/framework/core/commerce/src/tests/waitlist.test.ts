@@ -18,6 +18,12 @@ beforeEach(async () => {
 })
 
 describe('Waitlist Product Module', () => {
+  describe('update', () => {
+    it('should return undefined when the waitlist entry does not exist', async () => {
+      expect(await update(99999999, {} as any)).toBeUndefined()
+    })
+  })
+
   describe('store', () => {
     it('should return 0 when trying to bulk store an empty array', async () => {
       const count = await bulkStore([])
@@ -39,7 +45,7 @@ describe('Waitlist Product Module', () => {
       } as any)
 
       const notified = await updateStatus(created.id, 'notified')
-      expect(notified.notified_at).toBeTruthy()
+      expect(notified?.notified_at).toBeTruthy()
 
       const pinned = await update(created.id, {
         notified_at: '2026-01-02 03:04:05',
@@ -53,11 +59,11 @@ describe('Waitlist Product Module', () => {
         status: 'notified',
       } as any)
 
-      expect(edited.notified_at).toBe(pinned.notified_at)
-      expect(edited.phone).toBe('+1 555 0100')
-      expect(edited.notes).toBe('Preserve this note')
-      expect(edited.product_id).toBe(1)
-      expect(edited.customer_id).toBe(1)
+      expect(edited?.notified_at).toBe(pinned?.notified_at)
+      expect(edited?.phone).toBe('+1 555 0100')
+      expect(edited?.notes).toBe('Preserve this note')
+      expect(edited?.product_id).toBe(1)
+      expect(edited?.customer_id).toBe(1)
     })
   })
 
