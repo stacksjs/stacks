@@ -24,7 +24,7 @@ const log = {
 import { err, handleError, ok } from '@stacksjs/error-handling'
 import { path } from '@stacksjs/path'
 import { defaultModelsPath } from './seeder'
-import type { MigrationOperation } from '@stacksjs/query-builder'
+import type { MigrationOperation, MigrationPlan } from '@stacksjs/query-builder'
 import {
   createQueryBuilder,
   executeMigration as qbExecuteMigration,
@@ -1420,6 +1420,93 @@ function resolveSnapshotDir(): string {
   return join(process.cwd(), snapshotDirLabel())
 }
 
+function snapshotPathFor(dialect: string): string {
+  return join(resolveSnapshotDir(), `model-snapshot.${dialect}.json`)
+}
+
+function readStoredMigrationPlan(dialect: string): MigrationPlan | undefined {
+  const snapshotPath = snapshotPathFor(dialect)
+  if (!existsSync(snapshotPath))
+    return undefined
+
+  let parsed: unknown
+  try {
+    parsed = JSON.parse(readFileSync(snapshotPath, 'utf8'))
+  }
+  catch (error) {
+    throw new Error(
+      `The migration snapshot is not valid JSON: ${snapshotPath}. Repair or regenerate it before creating migrations.`,
+      { cause: error },
+    )
+  }
+
+  const candidate = parsed && typeof parsed === 'object' && 'plan' in parsed
+    ? (parsed as { plan?: unknown }).plan
+    : parsed
+  if (!candidate || typeof candidate !== 'object' || !Array.isArray((candidate as { tables?: unknown }).tables)) {
+    throw new TypeError(
+      `The migration snapshot has an invalid structure: ${snapshotPath}. Repair or regenerate it before creating migrations.`,
+    )
+  }
+
+  return candidate as MigrationPlan
+}
+
+export function preserveMigrationPlanTableOrder(
+  next: MigrationPlan,
+  previous?: MigrationPlan,
+): MigrationPlan {
+  const orderedByPrevious = <T>(
+    values: T[],
+    previousValues: T[] | undefined,
+    keyFor: (value: T) => string,
+  ): T[] => {
+    if (!previousValues)
+      return [...values]
+    const previousOrder = new Map(previousValues.map((value, index) => [keyFor(value), index]))
+    const nextOrder = new Map(values.map((value, index) => [keyFor(value), index]))
+    const previousCount = previousValues.length
+    return [...values].sort((left, right) => {
+      const leftKey = keyFor(left)
+      const rightKey = keyFor(right)
+      const leftOrder = previousOrder.get(leftKey) ?? previousCount + nextOrder.get(leftKey)!
+      const rightOrder = previousOrder.get(rightKey) ?? previousCount + nextOrder.get(rightKey)!
+      return leftOrder - rightOrder
+    })
+  }
+
+  const previousTables = new Map(previous?.tables.map(table => [table.table, table]) ?? [])
+  const tables = next.tables.map((table) => {
+    const previousTable = previousTables.get(table.table)
+    const previousColumns = new Map(previousTable?.columns.map(column => [column.name, column]) ?? [])
+    return {
+      ...table,
+      columns: orderedByPrevious(
+        table.columns.map((column) => {
+          if (
+            next.dialect !== 'sqlite'
+            || !column.enumTypeName
+            || previousColumns.get(column.name)?.enumTypeName
+          ) {
+            return column
+          }
+          const portableColumn = { ...column }
+          delete portableColumn.enumTypeName
+          return portableColumn
+        }),
+        previousTable?.columns,
+        column => column.name,
+      ),
+      indexes: orderedByPrevious(table.indexes, previousTable?.indexes, index => index.name),
+    }
+  })
+
+  return {
+    ...next,
+    tables: orderedByPrevious(tables, previous?.tables, table => table.table),
+  }
+}
+
 /**
  * Detect a dialect/snapshot mismatch in the snapshot directory. Returns the
  * name of an existing snapshot's dialect when the resolved `dialect` has no
@@ -1484,6 +1571,7 @@ export async function generateMigrations(options: GenerateMigrationsOptions = {}
         + `${snapshotDir}/model-snapshot.${mismatch}.json first.`,
       ))
     }
+    const storedPlan = readStoredMigrationPlan(getQbDialect())
 
     const { modelsDir, skip } = prepareMigrationModelsDir()
     if (skip) {
@@ -1556,7 +1644,11 @@ export async function generateMigrations(options: GenerateMigrationsOptions = {}
     // naming/persistence. Advance its model snapshot only after that writer
     // succeeds, otherwise every run diffs against stale model state and model
     // removals can never be observed.
-    saveMigrationSnapshot(result.plan, { dialect: getQbDialect() })
+    const stablePlan = preserveMigrationPlanTableOrder(result.plan, storedPlan)
+    if (!storedPlan || JSON.stringify(stablePlan) !== JSON.stringify(storedPlan))
+      saveMigrationSnapshot(stablePlan, { dialect: getQbDialect() })
+    else
+      log.debug('Model snapshot unchanged')
 
     return ok('Migrations generated')
   }
