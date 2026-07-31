@@ -69,6 +69,7 @@ export default defineModel({
     },
 
     featured: {
+      default: false,
       order: 4,
       fillable: true,
       validation: {

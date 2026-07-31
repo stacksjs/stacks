@@ -1,3 +1,14 @@
+import {
+  commerceBoolean,
+  commerceIdentifier,
+  commerceNumber,
+  commerceOptionalIdentifier,
+  commerceOptionalString,
+  commerceRequiredString,
+  commerceTimestamp,
+  commerceValue,
+} from './commerce-record'
+
 export interface ManufacturerRecord {
   id: string
   name: string
@@ -15,46 +26,51 @@ export interface ManufacturerSummary {
   linkedProducts: number
 }
 
-function value(record: any, ...keys: string[]): unknown {
-  for (const key of keys) {
-    const result = typeof record?.get === 'function' ? record.get(key) : record?.[key]
-    if (result !== null && result !== undefined)
-      return result
-  }
-  return undefined
-}
-
-function text(input: unknown): string {
-  return input === null || input === undefined ? '' : String(input)
-}
-
-function boolean(input: unknown): boolean {
-  return input === true || input === 1 || input === '1' || input === 'true'
-}
-
-export function manufacturerProductCounts(products: any[]): Map<string, number> {
+export function manufacturerProductCounts(
+  products: any[],
+  manufacturerIds = new Set<string>(),
+): Map<string, number> {
   const counts = new Map<string, number>()
   for (const product of products) {
-    const manufacturerId = text(value(product, 'manufacturer_id', 'manufacturerId'))
-    if (manufacturerId)
-      counts.set(manufacturerId, (counts.get(manufacturerId) || 0) + 1)
+    const id = commerceIdentifier(commerceValue(product, 'id', 'uuid'), 'Product')
+    const source = `Product ${id}`
+    const manufacturerId = commerceOptionalIdentifier(
+      commerceValue(product, 'manufacturer_id', 'manufacturerId'),
+      source,
+      'manufacturer_id',
+    )
+    if (!manufacturerId)
+      continue
+    if (!manufacturerIds.has(manufacturerId))
+      throw new TypeError(`${source}.manufacturer_id references missing Manufacturer ${manufacturerId}.`)
+    counts.set(manufacturerId, (counts.get(manufacturerId) ?? 0) + 1)
   }
   return counts
+}
+
+export function manufacturerIdentifiers(records: any[]): Set<string> {
+  return new Set(records.map(record =>
+    commerceIdentifier(commerceValue(record, 'id', 'uuid'), 'Manufacturer'),
+  ))
 }
 
 export function normalizeManufacturerRecord(
   record: any,
   productCounts = new Map<string, number>(),
 ): ManufacturerRecord {
-  const id = text(value(record, 'id', 'uuid'))
+  const id = commerceIdentifier(commerceValue(record, 'id', 'uuid'), 'Manufacturer')
+  const source = `Manufacturer ${id}`
   return {
     id,
-    name: text(value(record, 'manufacturer', 'name')),
-    description: text(value(record, 'description')),
-    country: text(value(record, 'country')),
-    featured: boolean(value(record, 'featured')),
-    productCount: productCounts.get(id) || 0,
-    createdAt: text(value(record, 'created_at', 'createdAt')),
+    name: commerceRequiredString(commerceValue(record, 'manufacturer', 'name'), source, 'manufacturer'),
+    description: commerceOptionalString(commerceValue(record, 'description'), source, 'description'),
+    country: commerceRequiredString(commerceValue(record, 'country'), source, 'country'),
+    featured: commerceBoolean(commerceValue(record, 'featured'), source, 'featured'),
+    productCount: commerceNumber(productCounts.get(id) ?? 0, source, 'product_count', {
+      min: 0,
+      integer: true,
+    }),
+    createdAt: commerceTimestamp(commerceValue(record, 'created_at', 'createdAt'), source),
   }
 }
 
