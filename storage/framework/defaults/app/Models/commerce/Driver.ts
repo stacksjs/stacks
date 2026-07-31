@@ -26,6 +26,7 @@ export default defineModel({
 
     useApi: {
       uri: 'drivers',
+      middleware: ['auth'],
     },
 
     observe: true,

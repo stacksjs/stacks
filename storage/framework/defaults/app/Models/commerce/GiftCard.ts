@@ -23,6 +23,7 @@ export default defineModel({
 
     useApi: {
       uri: 'gift-cards',
+      middleware: ['auth'],
     },
 
     observe: true,

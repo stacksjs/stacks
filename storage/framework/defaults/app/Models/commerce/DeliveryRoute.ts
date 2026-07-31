@@ -23,6 +23,7 @@ export default defineModel({
 
     useApi: {
       uri: 'delivery-routes',
+      middleware: ['auth'],
     },
 
     observe: true,

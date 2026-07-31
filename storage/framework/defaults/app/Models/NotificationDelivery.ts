@@ -18,6 +18,7 @@ export default defineModel({
     useApi: {
       uri: 'notification-deliveries',
       routes: ['index', 'show', 'destroy'],
+      middleware: ['auth'],
     },
   },
 

@@ -24,6 +24,7 @@ export default defineModel({
 
     useApi: {
       uri: 'customers',
+      middleware: ['auth'],
     },
 
     observe: true,

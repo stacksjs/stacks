@@ -34,6 +34,7 @@ export default defineModel({
 
     useApi: {
       uri: 'print-logs',
+      middleware: ['auth'],
     },
 
     observe: true,

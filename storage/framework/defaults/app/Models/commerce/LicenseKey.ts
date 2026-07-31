@@ -23,6 +23,7 @@ export default defineModel({
 
     useApi: {
       uri: 'license-keys',
+      middleware: ['auth'],
     },
 
     observe: true,

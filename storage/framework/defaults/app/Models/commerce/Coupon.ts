@@ -23,6 +23,7 @@ export default defineModel({
 
     useApi: {
       uri: 'coupons',
+      middleware: ['auth'],
     },
 
     observe: true,

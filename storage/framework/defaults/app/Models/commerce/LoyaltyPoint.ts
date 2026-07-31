@@ -23,6 +23,7 @@ export default defineModel({
 
     useApi: {
       uri: 'loyalty-points',
+      middleware: ['auth'],
     },
 
     observe: true,

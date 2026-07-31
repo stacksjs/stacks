@@ -23,6 +23,7 @@ export default defineModel({
 
     useApi: {
       uri: 'digital-deliveries',
+      middleware: ['auth'],
     },
 
     observe: true,

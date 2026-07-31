@@ -23,6 +23,7 @@ export default defineModel({
 
     useApi: {
       uri: 'payments',
+      middleware: ['auth'],
     },
 
     observe: true,

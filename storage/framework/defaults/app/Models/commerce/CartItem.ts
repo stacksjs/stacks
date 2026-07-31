@@ -23,6 +23,7 @@ export default defineModel({
 
     useApi: {
       uri: 'cart-items',
+      middleware: ['auth'],
     },
 
     observe: true,

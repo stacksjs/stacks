@@ -23,6 +23,7 @@ export default defineModel({
 
     useApi: {
       uri: 'print-devices',
+      middleware: ['auth'],
     },
 
     observe: true,
