@@ -42,4 +42,9 @@ describe('dashboard skill contract', () => {
     expect(developmentSkill).not.toContain('Config API runs on `dashboardPort + 1`')
     expect(developmentSkill).not.toContain('dashboard config API (port 3003)')
   })
+
+  test('keeps dashboard client and server imports in their native runtimes', () => {
+    expect(developmentSkill).toContain('framework server helpers use explicit imports')
+    expect(developmentSkill).toContain('Leaves `resources/functions` to the STX client auto-import pipeline')
+  })
 })

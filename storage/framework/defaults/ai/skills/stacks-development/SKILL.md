@@ -149,6 +149,8 @@ Uses `bun-plugin-stx` serve function with pattern-based view resolution:
 - Config updates support top-level scalar literals only and preserve comments and environment-backed expressions
 - Discovers ORM models from `app/Models/` and `storage/framework/defaults/app/Models/`
 - Writes `.discovered-models.json` manifest for sidebar population
+- Preloads ORM model globals for server scripts, while framework server helpers use explicit imports
+- Leaves `resources/functions` to the STX client auto-import pipeline because browser helpers may depend on signals and other browser-only primitives
 - Opens a Craft `createApp()` window when a supported SDK and native binary are available (1400x900, titlebar hidden)
 - Builds the web sidebar from configured sections and discovered model dashboard metadata
 
