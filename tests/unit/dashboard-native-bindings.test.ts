@@ -42,6 +42,15 @@ describe('dashboard native STX bindings', () => {
     ]) {
       expect(existsSync(resolve(dashboardComponents, 'Billing', legacyBillingComponent))).toBe(false)
     }
+
+    for (const legacyEmailComponent of [
+      'EmailCompose.stx',
+      'EmailDetail.stx',
+      'EmailList.stx',
+      'EmailSearch.stx',
+    ]) {
+      expect(existsSync(resolve(dashboardComponents, 'Email', legacyEmailComponent))).toBe(false)
+    }
   })
 
   test('routes primary action links through the shared Button component', () => {
@@ -274,8 +283,6 @@ describe('dashboard native STX bindings', () => {
     for (const path of [
       'UI/ChartCard.stx',
       'UI/Avatar.stx',
-      'Email/EmailDetail.stx',
-      'Email/EmailList.stx',
       'NavbarModern.stx',
       'UI/WindowControls.stx',
     ]) {

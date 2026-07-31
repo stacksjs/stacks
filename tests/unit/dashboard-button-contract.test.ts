@@ -434,21 +434,6 @@ describe('dashboard button contract', () => {
     expect(settingsView).not.toMatch(/<button\b/)
     expect(settingsView).not.toMatch(/class="[^"]*{{/)
 
-    const legacyActionFiles = [
-      'EmailDetail.stx',
-      'EmailList.stx',
-      'EmailCompose.stx',
-    ]
-
-    for (const file of legacyActionFiles) {
-      const source = readFileSync(
-        resolve('storage/framework/defaults/resources/components/Dashboard/Email', file),
-        'utf8',
-      )
-
-      expect(source).toContain('<Button')
-      expect(source).not.toMatch(/<button\b/)
-    }
   })
 
   test('keeps query ranges semantic while sharing query actions', () => {
