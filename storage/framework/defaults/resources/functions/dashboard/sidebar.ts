@@ -25,7 +25,7 @@ interface DashboardModelOptionsLite {
   description?: string
 }
 
-interface DiscoveredModel {
+export interface DiscoveredModel {
   id: string
   name: string
   icon?: string
@@ -35,7 +35,7 @@ interface DiscoveredModel {
   dashboard?: DashboardModelOptionsLite
 }
 
-interface DataRowToggles {
+export interface DataRowToggles {
   dashboard: boolean
   activity: boolean
   users: boolean
@@ -44,7 +44,7 @@ interface DataRowToggles {
   allModels: boolean
 }
 
-interface DashboardSectionToggles {
+export interface DashboardSectionToggles {
   library: boolean
   content: boolean
   commerce: boolean
@@ -57,12 +57,12 @@ interface DashboardSectionToggles {
   data: DataRowToggles
 }
 
-interface DiscoveredManifest {
+export interface DiscoveredManifest {
   models: DiscoveredModel[]
   sections: DashboardSectionToggles
 }
 
-const DEFAULT_DATA_TOGGLES: DataRowToggles = {
+export const DEFAULT_DATA_TOGGLES: DataRowToggles = {
   dashboard: true,
   activity: true,
   users: true,
@@ -71,7 +71,7 @@ const DEFAULT_DATA_TOGGLES: DataRowToggles = {
   allModels: true,
 }
 
-const DEFAULT_TOGGLES: DashboardSectionToggles = {
+export const DEFAULT_TOGGLES: DashboardSectionToggles = {
   library: true,
   content: true,
   commerce: true,
@@ -96,36 +96,99 @@ interface NavItem {
 
 /**
  * Pull the discovered-models manifest from the framework defaults dir.
- * Handles both the modern envelope (`{ models, sections }`) and the legacy
- * bare-array form to keep dashboards working across versions while a stale
- * `.discovered-models.json` is still on disk.
- *
  * Returns the default empty payload when the file is absent (fresh project
  * before the first dashboard run regenerates it).
  */
-export function loadDiscoveredManifest(): DiscoveredManifest {
-  const manifestPath = resolve(process.cwd(), 'storage/framework/defaults/views/dashboard/.discovered-models.json')
-  if (!existsSync(manifestPath)) return { models: [], sections: DEFAULT_TOGGLES }
+export function loadDiscoveredManifest(
+  manifestPath = resolve(process.cwd(), 'storage/framework/defaults/views/dashboard/.discovered-models.json'),
+): DiscoveredManifest {
+  if (!existsSync(manifestPath))
+    return { models: [], sections: defaultToggles() }
+
   try {
-    const parsed = JSON.parse(readFileSync(manifestPath, 'utf8')) as DiscoveredModel[] | { models?: DiscoveredModel[], sections?: Partial<DashboardSectionToggles> }
-    if (Array.isArray(parsed)) {
-      return {
-        models: parsed.sort((a, b) => (a.name || '').localeCompare(b.name || '')),
-        sections: DEFAULT_TOGGLES,
-      }
-    }
-    const models = Array.isArray(parsed.models) ? parsed.models.sort((a, b) => (a.name || '').localeCompare(b.name || '')) : []
-    return {
-      models,
-      sections: { ...DEFAULT_TOGGLES, ...(parsed.sections ?? {}) },
-    }
+    return parseDiscoveredManifest(readFileSync(manifestPath, 'utf8'))
   }
-  catch {
-    return { models: [], sections: DEFAULT_TOGGLES }
+  catch (error) {
+    throw new Error(`Could not read dashboard model manifest: ${error instanceof Error ? error.message : String(error)}`)
   }
 }
 
-/** Backward-compat: prior callers only needed the model list. */
+export function parseDiscoveredManifest(source: string): DiscoveredManifest {
+  let parsed: unknown
+  try {
+    parsed = JSON.parse(source)
+  }
+  catch (error) {
+    throw new Error(`invalid JSON: ${error instanceof Error ? error.message : String(error)}`)
+  }
+
+  const envelope = objectValue(parsed, 'manifest')
+  if (!Array.isArray(envelope.models))
+    throw new TypeError('manifest models must be an array')
+
+  const models = envelope.models.map((value, index) => {
+    const model = objectValue(value, `manifest models[${index}]`)
+    if (typeof model.id !== 'string' || !model.id)
+      throw new TypeError(`manifest models[${index}].id must be a non-empty string`)
+    if (typeof model.name !== 'string' || !model.name)
+      throw new TypeError(`manifest models[${index}].name must be a non-empty string`)
+    return model as unknown as DiscoveredModel
+  }).sort((a, b) => a.name.localeCompare(b.name))
+
+  return {
+    models,
+    sections: normalizeManifestToggles(envelope.sections),
+  }
+}
+
+function normalizeManifestToggles(value: unknown): DashboardSectionToggles {
+  const sections = objectValue(value, 'manifest sections')
+  const data = sections.data === undefined
+    ? {}
+    : objectValue(sections.data, 'manifest sections.data')
+
+  return {
+    library: booleanValue(sections.library, 'manifest sections.library', true),
+    content: booleanValue(sections.content, 'manifest sections.content', true),
+    commerce: booleanValue(sections.commerce, 'manifest sections.commerce', true),
+    marketing: booleanValue(sections.marketing, 'manifest sections.marketing', true),
+    analytics: booleanValue(sections.analytics, 'manifest sections.analytics', true),
+    management: booleanValue(sections.management, 'manifest sections.management', true),
+    utilities: booleanValue(sections.utilities, 'manifest sections.utilities', true),
+    ci: booleanValue(sections.ci, 'manifest sections.ci', false),
+    data: {
+      dashboard: booleanValue(data.dashboard, 'manifest sections.data.dashboard', true),
+      activity: booleanValue(data.activity, 'manifest sections.data.activity', true),
+      users: booleanValue(data.users, 'manifest sections.data.users', true),
+      teams: booleanValue(data.teams, 'manifest sections.data.teams', true),
+      subscribers: booleanValue(data.subscribers, 'manifest sections.data.subscribers', true),
+      allModels: booleanValue(data.allModels, 'manifest sections.data.allModels', true),
+    },
+  }
+}
+
+function objectValue(value: unknown, label: string): Record<string, unknown> {
+  if (!value || typeof value !== 'object' || Array.isArray(value))
+    throw new TypeError(`${label} must be an object`)
+  return value as Record<string, unknown>
+}
+
+function booleanValue(value: unknown, label: string, fallback: boolean): boolean {
+  if (value === undefined)
+    return fallback
+  if (typeof value !== 'boolean')
+    throw new TypeError(`${label} must be a boolean`)
+  return value
+}
+
+function defaultToggles(): DashboardSectionToggles {
+  return {
+    ...DEFAULT_TOGGLES,
+    data: { ...DEFAULT_DATA_TOGGLES },
+  }
+}
+
+/** Return only the discovered model list for callers that do not need toggles. */
 export function loadDiscoveredModels(): DiscoveredModel[] {
   return loadDiscoveredManifest().models
 }

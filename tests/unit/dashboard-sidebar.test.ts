@@ -2,6 +2,7 @@ import { describe, expect, it } from 'bun:test'
 import {
   buildNavSections,
   buildWebSidebarSections,
+  parseDiscoveredManifest,
 } from '../../storage/framework/defaults/resources/functions/dashboard/sidebar'
 
 describe('dashboard sidebar data', () => {
@@ -59,5 +60,34 @@ describe('dashboard sidebar data', () => {
       icon: 'dashboard',
       text: 'Overview',
     })
+  })
+
+  it('deeply defaults unspecified manifest data toggles', () => {
+    const manifest = parseDiscoveredManifest(JSON.stringify({
+      models: [],
+      sections: {
+        data: {
+          subscribers: false,
+        },
+      },
+    }))
+
+    expect(manifest.sections.data).toEqual({
+      dashboard: true,
+      activity: true,
+      users: true,
+      teams: true,
+      subscribers: false,
+      allModels: true,
+    })
+  })
+
+  it('reports malformed generated manifests', () => {
+    expect(() => parseDiscoveredManifest('{')).toThrow('invalid JSON')
+    expect(() => parseDiscoveredManifest(JSON.stringify([]))).toThrow('manifest must be an object')
+    expect(() => parseDiscoveredManifest(JSON.stringify({
+      models: [],
+      sections: { library: 'false' },
+    }))).toThrow('manifest sections.library must be a boolean')
   })
 })
