@@ -324,6 +324,15 @@ describe('dashboard native STX bindings', () => {
     expect(quickLinks).toContain('data-stx-link')
     expect(quickLinks).not.toContain("link.href || '#'")
 
+    const table = componentSource('UI/Table.stx')
+    expect(table).toContain("emit('sort', { key: column.key, direction })")
+    expect(table).toContain("emit('update:selectedKeys', next)")
+    expect(table).toContain("emit('selection-change', next)")
+    expect(table).toContain(':indeterminate="someSelected()"')
+    expect(table).toContain('<slot name="actions" :row="row" />')
+    expect(table).not.toContain('data-select-all')
+    expect(table).not.toContain('data-row-select')
+
     for (const path of [
       'UI/ChartCard.stx',
       'UI/Avatar.stx',
