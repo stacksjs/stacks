@@ -1,14 +1,14 @@
 import type { RequestInstance } from '@stacksjs/types'
 import { response } from '@stacksjs/router'
 
-export type ShippingIdentifierResult =
+export type CommerceIdentifierResult =
   | { id: number, error?: never }
   | { id?: never, error: Response }
 
-export function shippingIdentifier(
+export function commerceIdentifier(
   request: RequestInstance,
   resource: string,
-): ShippingIdentifierResult {
+): CommerceIdentifierResult {
   const id = Number(request.getParam('id'))
   if (!Number.isSafeInteger(id) || id < 1) {
     return {
@@ -18,6 +18,6 @@ export function shippingIdentifier(
   return { id }
 }
 
-export function shippingNotFound(resource: string, id: number): Response {
+export function commerceNotFound(resource: string, id: number): Response {
   return response.json({ message: `${resource} ${id} was not found.` }, 404)
 }

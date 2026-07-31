@@ -3,21 +3,21 @@ import { Action } from '@stacksjs/actions'
 import { shippings } from '@stacksjs/commerce'
 
 import { response } from '@stacksjs/router'
-import { shippingIdentifier, shippingNotFound } from './shipping-action'
+import { commerceIdentifier, commerceNotFound } from '../commerce-action'
 
 export default new Action({
   name: 'DeliveryRoute Show',
   description: 'DeliveryRoute Show ORM Action',
   method: 'GET',
   async handle(request: RequestInstance) {
-    const identifier = shippingIdentifier(request, 'Delivery route')
+    const identifier = commerceIdentifier(request, 'Delivery route')
     if (identifier.error)
       return identifier.error
     const { id } = identifier
 
     const model = await shippings.routes.fetchById(id)
     if (!model)
-      return shippingNotFound('Delivery route', id)
+      return commerceNotFound('Delivery route', id)
 
     return response.json(model)
   },
