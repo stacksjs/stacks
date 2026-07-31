@@ -4,24 +4,12 @@ import { Action } from '@stacksjs/actions'
 import { notify } from '@stacksjs/notifications'
 import { NotificationDelivery } from '@stacksjs/orm'
 import { response } from '@stacksjs/router'
+import { parseDeliveryMetadata } from './notification-delivery'
 
 type RetryChannel = 'email' | 'sms'
 
 function isRetryChannel(value: string): value is RetryChannel {
   return value === 'email' || value === 'sms'
-}
-
-function parseMetadata(value: unknown): Record<string, unknown> {
-  if (typeof value !== 'string' || !value)
-    return {}
-
-  try {
-    const parsed = JSON.parse(value)
-    return parsed && typeof parsed === 'object' ? parsed as Record<string, unknown> : {}
-  }
-  catch {
-    return {}
-  }
 }
 
 export default new Action({
@@ -55,7 +43,10 @@ export default new Action({
       {
         subject: String(delivery.get('subject') || ''),
         body: String(delivery.get('body') || ''),
-        data: parseMetadata(delivery.get('metadata')),
+        data: parseDeliveryMetadata(
+          delivery.get('metadata'),
+          `notification delivery ${id} metadata`,
+        ),
       },
       channels,
       { ignorePreferences: true },
