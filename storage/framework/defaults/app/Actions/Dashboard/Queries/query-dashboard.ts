@@ -66,38 +66,71 @@ export function queryType(query: string): DashboardQueryLog['type'] {
     : 'OTHER'
 }
 
-export function parseQueryLogList(value?: string | null): string[] {
+export function parseQueryLogList(value?: string | null, label = 'query log list'): string[] {
   if (!value)
     return []
+
+  let parsed: unknown
   try {
-    const parsed = JSON.parse(value)
-    return Array.isArray(parsed) ? parsed.map(String) : []
+    parsed = JSON.parse(value)
   }
-  catch {
-    return []
+  catch (error) {
+    throw new Error(`Could not parse ${label}: ${error instanceof Error ? error.message : String(error)}`)
   }
+
+  if (!Array.isArray(parsed) || !parsed.every(item => typeof item === 'string'))
+    throw new TypeError(`${label} must be a JSON array of strings`)
+
+  return parsed
 }
 
 export function mapDashboardQueryLog(row: QueryLogSourceRow): DashboardQueryLog {
-  const status = row.status === 'failed' || row.status === 'slow' ? row.status : 'completed'
+  const label = `query log ${row.id}`
+  const status = queryStatus(row.status, label)
+  if (typeof row.query !== 'string' || !row.query.trim())
+    throw new TypeError(`${label} query must be a non-empty string`)
+  if (typeof row.executed_at !== 'string' || !row.executed_at.trim())
+    throw new TypeError(`${label} executed_at must be a non-empty string`)
+
   return {
     id: row.id,
     query: row.query,
     normalizedQuery: row.normalized_query || row.query,
     type: queryType(row.query),
-    duration: Number(row.duration) || 0,
+    duration: finiteNumber(row.duration, `${label} duration`),
     connection: row.connection || 'unknown',
     status,
     error: row.error || '',
     executedAt: row.executed_at,
     model: row.model || '',
     method: row.method || '',
-    rowsAffected: row.rows_affected == null ? null : Number(row.rows_affected),
-    memoryUsage: row.memory_usage == null ? null : Number(row.memory_usage),
-    tags: parseQueryLogList(row.tags),
-    affectedTables: parseQueryLogList(row.affected_tables),
-    indexesUsed: parseQueryLogList(row.indexes_used),
-    missingIndexes: parseQueryLogList(row.missing_indexes),
-    suggestions: parseQueryLogList(row.optimization_suggestions),
+    rowsAffected: nullableFiniteNumber(row.rows_affected, `${label} rows_affected`),
+    memoryUsage: nullableFiniteNumber(row.memory_usage, `${label} memory_usage`),
+    tags: parseQueryLogList(row.tags, `${label} tags`),
+    affectedTables: parseQueryLogList(row.affected_tables, `${label} affected_tables`),
+    indexesUsed: parseQueryLogList(row.indexes_used, `${label} indexes_used`),
+    missingIndexes: parseQueryLogList(row.missing_indexes, `${label} missing_indexes`),
+    suggestions: parseQueryLogList(row.optimization_suggestions, `${label} optimization_suggestions`),
   }
+}
+
+function queryStatus(value: unknown, label: string): DashboardQueryLog['status'] {
+  if (value === 'completed' || value === 'failed' || value === 'slow')
+    return value
+  throw new TypeError(`${label} status must be completed, failed, or slow`)
+}
+
+function finiteNumber(value: unknown, label: string): number {
+  const parsed = typeof value === 'number'
+    ? value
+    : typeof value === 'string' && value.trim()
+      ? Number(value)
+      : Number.NaN
+  if (!Number.isFinite(parsed))
+    throw new TypeError(`${label} must be a finite number`)
+  return parsed
+}
+
+function nullableFiniteNumber(value: unknown, label: string): number | null {
+  return value === null || value === undefined ? null : finiteNumber(value, label)
 }

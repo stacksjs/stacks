@@ -8,9 +8,10 @@ describe('query dashboard projection', () => {
     expect(queryType('PRAGMA table_info(users)')).toBe('OTHER')
   })
 
-  it('parses persisted JSON lists without throwing', () => {
+  it('parses persisted JSON lists and reports malformed values', () => {
     expect(parseQueryLogList('["SELECT","table:users"]')).toEqual(['SELECT', 'table:users'])
-    expect(parseQueryLogList('invalid')).toEqual([])
+    expect(() => parseQueryLogList('invalid')).toThrow('Could not parse query log list')
+    expect(() => parseQueryLogList('{"tag":"SELECT"}')).toThrow('must be a JSON array of strings')
   })
 
   it('excludes bindings, traces, and file paths from the dashboard shape', () => {
@@ -36,5 +37,20 @@ describe('query dashboard projection', () => {
     expect(dashboardQueryColumns).not.toContain('bindings')
     expect(dashboardQueryColumns).not.toContain('trace')
     expect(dashboardQueryColumns).not.toContain('file')
+  })
+
+  it('reports invalid persisted metrics and statuses', () => {
+    const base = {
+      id: 7,
+      query: 'SELECT 1',
+      duration: 1,
+      status: 'completed',
+      executed_at: '2026-07-29T14:00:00.000Z',
+    }
+
+    expect(() => mapDashboardQueryLog({ ...base, duration: 'not-a-number' as unknown as number }))
+      .toThrow('query log 7 duration must be a finite number')
+    expect(() => mapDashboardQueryLog({ ...base, status: 'pending' }))
+      .toThrow('query log 7 status must be completed, failed, or slow')
   })
 })
