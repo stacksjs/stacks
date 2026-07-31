@@ -20,8 +20,8 @@ interface ShippingMethodRecord {
 interface ShippingMethodPayload {
   name: string
   description: string
-  base_rate: number
-  free_shipping: number | null
+  baseRate: number
+  freeShipping: number | null
   status: 'active' | 'inactive' | 'draft'
 }
 

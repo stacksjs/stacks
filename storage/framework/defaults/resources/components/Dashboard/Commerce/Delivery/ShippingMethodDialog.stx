@@ -58,8 +58,8 @@ function submit(): void {
   emit('submit', {
     name: name().trim(),
     description: description().trim(),
-    base_rate: Math.round(baseRateValue * 100),
-    free_shipping: freeShippingValue === null ? null : Math.round(freeShippingValue * 100),
+    baseRate: Math.round(baseRateValue * 100),
+    freeShipping: freeShippingValue === null ? null : Math.round(freeShippingValue * 100),
     status: status(),
   })
 }

@@ -349,7 +349,7 @@ route.group({ prefix: '/api/dashboard', apiResponse: true }, () => {
   // Dashboard-local aliases for the model-backed delivery resources. These
   // reuse the same commerce Actions as the authenticated public API while the
   // local guard keeps `buddy dev --dashboard` usable without a login session.
-  guard(route.get('/commerce/shipping-methods', 'Actions/Commerce/Shipping/ShippingMethodIndexAction'))
+  guard(route.get('/commerce/shipping-methods', 'Actions/Dashboard/Commerce/ShippingMethodIndexAction'))
   guard(route.get('/commerce/shipping-methods/{id}', 'Actions/Commerce/Shipping/ShippingMethodShowAction'))
   guard(route.post('/commerce/shipping-methods', 'Actions/Commerce/Shipping/ShippingMethodStoreAction'))
   guard(route.patch('/commerce/shipping-methods/{id}', 'Actions/Commerce/Shipping/ShippingMethodUpdateAction'))

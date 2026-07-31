@@ -71,7 +71,7 @@ export default defineModel({
       order: 5,
       fillable: true,
       validation: {
-        rule: schema.number(),
+        rule: schema.number().min(0),
       },
       factory: (faker) => {
         // 30% chance of being null (N/A), otherwise a minimum order amount
