@@ -1,5 +1,6 @@
 import { Action } from '@stacksjs/actions'
 import { Customer, Product, WaitlistProduct } from '@stacksjs/orm'
+import { response } from '@stacksjs/router'
 import { normalizeProductWaitlistCustomerOption, normalizeProductWaitlistOption, normalizeProductWaitlistRecord, summarizeProductWaitlist } from './product-waitlist-records'
 
 export default new Action({
@@ -9,19 +10,32 @@ export default new Action({
   apiResponse: true,
 
   async handle() {
-    const [rows, products, customers] = await Promise.all([
-      WaitlistProduct.orderByDesc('id').limit(200).get(),
-      Product.orderBy('name').limit(200).get(),
-      Customer.orderBy('name').limit(200).get(),
-    ])
-    const records = rows.map(normalizeProductWaitlistRecord)
-    return {
-      records,
-      summary: summarizeProductWaitlist(records),
-      options: {
-        products: products.map(normalizeProductWaitlistOption),
-        customers: customers.map(normalizeProductWaitlistCustomerOption),
-      },
+    try {
+      const [rows, products, customers] = await Promise.all([
+        WaitlistProduct.orderByDesc('id').limit(500).get(),
+        Product.orderBy('name').limit(500).get(),
+        Customer.orderBy('name').limit(500).get(),
+      ])
+      const productOptions = products.map(normalizeProductWaitlistOption)
+      const customerOptions = customers.map(normalizeProductWaitlistCustomerOption)
+      const productIds = new Set(productOptions.map(product => product.id))
+      const customerIds = new Set(customerOptions.map(customer => customer.id))
+      const records = rows.map(row =>
+        normalizeProductWaitlistRecord(row, productIds, customerIds),
+      )
+      return {
+        records,
+        summary: summarizeProductWaitlist(records),
+        options: {
+          products: productOptions,
+          customers: customerOptions,
+        },
+      }
+    }
+    catch (error) {
+      return response.json({
+        message: error instanceof Error ? error.message : 'Product waitlist records could not be read.',
+      }, 503)
     }
   },
 })

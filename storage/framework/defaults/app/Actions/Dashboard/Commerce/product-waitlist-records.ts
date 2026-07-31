@@ -1,3 +1,15 @@
+import {
+  commerceEmail,
+  commerceEnum,
+  commerceIdentifier,
+  commerceNumber,
+  commerceOptionalIdentifier,
+  commerceOptionalString,
+  commerceRequiredString,
+  commerceTimestamp,
+  commerceValue,
+} from './commerce-record'
+
 export interface ProductWaitlistRecord {
   id: string
   name: string
@@ -50,53 +62,83 @@ export interface ProductWaitlistWritePayload {
   status: 'waiting' | 'notified' | 'purchased' | 'cancelled'
 }
 
-function value(record: any, ...keys: string[]): unknown {
-  for (const key of keys) {
-    const result = typeof record?.get === 'function' ? record.get(key) : record?.[key]
-    if (result !== null && result !== undefined)
-      return result
-  }
-  return undefined
-}
-
-function text(input: unknown): string {
-  return input === null || input === undefined ? '' : String(input)
-}
-
-export function normalizeProductWaitlistRecord(record: any): ProductWaitlistRecord {
-  const quantity = Number(value(record, 'quantity'))
+export function normalizeProductWaitlistRecord(
+  record: any,
+  productIds?: Set<string>,
+  customerIds?: Set<string>,
+): ProductWaitlistRecord {
+  const id = commerceIdentifier(commerceValue(record, 'id', 'uuid'), 'WaitlistProduct')
+  const source = `WaitlistProduct ${id}`
+  const productId = commerceIdentifier(
+    commerceValue(record, 'product_id', 'productId'),
+    source,
+    'product_id',
+  )
+  if (productIds && !productIds.has(productId))
+    throw new TypeError(`${source}.product_id references missing Product ${productId}.`)
+  const customerId = commerceOptionalIdentifier(
+    commerceValue(record, 'customer_id', 'customerId'),
+    source,
+    'customer_id',
+  )
+  if (customerId && customerIds && !customerIds.has(customerId))
+    throw new TypeError(`${source}.customer_id references missing Customer ${customerId}.`)
   return {
-    id: text(value(record, 'id', 'uuid')),
-    name: text(value(record, 'name')),
-    email: text(value(record, 'email')),
-    phone: text(value(record, 'phone')),
-    quantity: Number.isFinite(quantity) && quantity > 0 ? quantity : 0,
-    notificationPreference: text(value(record, 'notification_preference', 'notificationPreference')),
-    source: text(value(record, 'source')),
-    notes: text(value(record, 'notes')),
-    status: text(value(record, 'status')).toLowerCase(),
-    productId: text(value(record, 'product_id', 'productId')),
-    customerId: text(value(record, 'customer_id', 'customerId')),
-    createdAt: text(value(record, 'created_at', 'createdAt')),
+    id,
+    name: commerceRequiredString(commerceValue(record, 'name'), source, 'name'),
+    email: commerceEmail(commerceValue(record, 'email'), source),
+    phone: commerceOptionalString(commerceValue(record, 'phone'), source, 'phone'),
+    quantity: commerceNumber(commerceValue(record, 'quantity'), source, 'quantity', {
+      min: 1,
+      integer: true,
+    }),
+    notificationPreference: commerceEnum(
+      commerceValue(record, 'notification_preference', 'notificationPreference'),
+      source,
+      'notification_preference',
+      ['sms', 'email', 'both'],
+    ),
+    source: commerceRequiredString(commerceValue(record, 'source'), source, 'source'),
+    notes: commerceOptionalString(commerceValue(record, 'notes'), source, 'notes'),
+    status: commerceEnum(commerceValue(record, 'status'), source, 'status', [
+      'waiting',
+      'notified',
+      'purchased',
+      'cancelled',
+    ]),
+    productId,
+    customerId,
+    createdAt: commerceTimestamp(commerceValue(record, 'created_at', 'createdAt'), source),
   }
 }
 
 export function normalizeProductWaitlistOption(record: any): ProductWaitlistOption {
-  const inventory = Number(value(record, 'inventory_count', 'inventoryCount'))
+  const id = commerceIdentifier(commerceValue(record, 'id', 'uuid'), 'Product')
+  const source = `Product ${id}`
+  const inventory = commerceNumber(
+    commerceValue(record, 'inventory_count', 'inventoryCount'),
+    source,
+    'inventory_count',
+    { min: 0, integer: true },
+  )
   return {
-    id: text(value(record, 'id')),
-    label: text(value(record, 'name')) || 'Unnamed product',
-    detail: Number.isFinite(inventory) ? `${inventory} in inventory` : '',
+    id,
+    label: commerceRequiredString(commerceValue(record, 'name'), source, 'name'),
+    detail: `${inventory} in inventory`,
   }
 }
 
 export function normalizeProductWaitlistCustomerOption(record: any): ProductWaitlistCustomerOption {
+  const id = commerceIdentifier(commerceValue(record, 'id', 'uuid'), 'Customer')
+  const source = `Customer ${id}`
+  const email = commerceEmail(commerceValue(record, 'email'), source)
+  const phone = commerceOptionalString(commerceValue(record, 'phone'), source, 'phone')
   return {
-    id: text(value(record, 'id')),
-    label: text(value(record, 'name')) || 'Unnamed customer',
-    detail: text(value(record, 'email')) || text(value(record, 'phone')),
-    email: text(value(record, 'email')),
-    phone: text(value(record, 'phone')),
+    id,
+    label: commerceRequiredString(commerceValue(record, 'name'), source, 'name'),
+    detail: email || phone,
+    email,
+    phone,
   }
 }
 
