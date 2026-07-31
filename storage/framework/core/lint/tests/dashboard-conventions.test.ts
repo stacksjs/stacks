@@ -1,11 +1,11 @@
 /**
  * Dashboard `.stx` conventions guardrail (stacksjs/stacks#1838).
  *
- * The migration to "stores for state, composables for DOM, no
- * `<script server>`" is a multi-PR sweep, not a single change. This
- * test acts as a *ratchet*: it locks in the *current* set of offending
- * files so new pages can't introduce regressions, and signals when a
- * known offender finally gets fixed so the allowlist can shrink.
+ * Dashboard interaction belongs in stores and composables. Server scripts are
+ * limited to rendering responsibilities that cannot run in the browser, such
+ * as filesystem-backed manifest discovery and HTTP response metadata. This
+ * test acts as a ratchet: new server blocks and direct DOM access fail unless
+ * their responsibility is reviewed and documented here.
  *
  * If you fixed a file and a test here fails saying "file X is no
  * longer in the offender list — remove it from the allowlist," that's
@@ -99,44 +99,25 @@ function hasLiveDomAccess(src: string): boolean {
 }
 
 /**
- * Files allowed to contain `<script server>`. Pages on this list are
- * scheduled for conversion to `<script client>` + store/composable
- * access. Each removal here is forward progress on #1838.
+ * Files allowed to contain `<script server>`.
  *
- * Generated 2026-05-20 from a full sweep — every file currently
- * containing the pattern is listed. Adding to this list should be a
- * deliberate decision (reviewer flag).
+ * `layouts/default.stx` reads the generated model manifest through Node's
+ * filesystem APIs before rendering the shared Sidebar data.
+ *
+ * `[...all].stx` uses STX's native `definePageMeta({ status: 404 })` server API
+ * so full-page and fragment responses carry the correct HTTP status.
  */
-const SERVER_SCRIPT_ALLOWLIST: ReadonlySet<string> = new Set<string>([])
+const SERVER_SCRIPT_ALLOWLIST: ReadonlySet<string> = new Set([
+  'layouts/default.stx',
+  '[...all].stx',
+])
 
 /**
- * Files allowed to contain `window.` or `document.` references. Most
- * remaining cases are pre-existing vanilla `<script>` blocks under
- * `content/*` and `commerce/*` doing manual event wiring — converting
- * them is the next sweep target.
- *
- * The layout file is exempted intentionally: it installs the
- * `<script type="importmap">` shim + role-filter at the document level,
- * which is what a layout *should* do.
+ * Dashboard templates no longer need direct `window.` or `document.` access.
+ * Native STX refs, lifecycle hooks, directives, and composables own those
+ * interactions.
  */
-const DOM_ACCESS_ALLOWLIST: ReadonlySet<string> = new Set([
-  'cloud/index.stx',
-  'commerce/pos/index.stx',
-  'content/authors/index.stx',
-  'content/categories/index.stx',
-  'content/comments/index.stx',
-  'content/pages/index.stx',
-  'content/posts/index.stx',
-  'content/tags/index.stx',
-  'environment/index.stx',
-  'jobs/[id].stx',
-  'kanban/[id].stx',
-  'layouts/default.stx',
-  'queries/[id].stx',
-  'requests/index.stx',
-  'servers/index.stx',
-  'serverless/index.stx',
-])
+const DOM_ACCESS_ALLOWLIST: ReadonlySet<string> = new Set([])
 
 describe('dashboard .stx conventions (stacksjs/stacks#1838)', () => {
   const files = walkStxFiles(DASHBOARD_ROOT)
