@@ -102,6 +102,12 @@ route.post('/api/email/unsubscribe', 'Actions/UnsubscribeAction').name('email.un
 // the action itself.
 route.post('/api/contact', 'Actions/ContactAction').name('contact.send').skipCsrf()
 
+// Team invitation bearers are high-entropy, single-use tokens. The public
+// read supplies the acceptance screen; the write still requires a real
+// authenticated user whose email matches the invitation.
+route.get('/api/team-invitation-links/{token}', 'Actions/Teams/ShowInvitationAction').rateLimit(30, 'minute')
+route.post('/api/team-invitations/{token}/accept', 'Actions/Teams/AcceptInvitationAction').middleware('auth').rateLimit(10, 'minute')
+
 // ============================================================================
 // Storefront (anonymous cart + multi-step checkout)
 //

@@ -170,6 +170,12 @@ route.group({ prefix: '/api/dashboard', apiResponse: true }, () => {
   guard(route.get('/data/users', 'Actions/Dashboard/Data/UserIndexAction'))
   guard(route.get('/data/teams', 'Actions/Dashboard/Data/TeamIndexAction'))
   guard(route.get('/data/subscribers', 'Actions/Dashboard/Data/SubscriberIndexAction'))
+  guard(route.get('/teams/{id}/people', 'Actions/Dashboard/Teams/TeamPeopleIndexAction'))
+  guard(route.post('/teams/{id}/invitations', 'Actions/Dashboard/Teams/TeamInviteAction'))
+  guard(route.post('/teams/{id}/invitations/{invitationId}/resend', 'Actions/Dashboard/Teams/TeamInvitationResendAction'))
+  guard(route.delete('/teams/{id}/invitations/{invitationId}', 'Actions/Dashboard/Teams/TeamInvitationDestroyAction'))
+  guard(route.patch('/teams/{id}/members/{memberId}', 'Actions/Dashboard/Teams/TeamMemberUpdateAction'))
+  guard(route.delete('/teams/{id}/members/{memberId}', 'Actions/Dashboard/Teams/TeamMemberDestroyAction'))
 
   // CMS admin — backs the pages under `views/dashboard/content/`.
   //

@@ -15,6 +15,8 @@ import { useAuth } from './auth'
 
 export interface ApiRequestOptions {
   method?: 'GET' | 'HEAD' | 'POST' | 'PATCH' | 'PUT' | 'DELETE'
+  /** Send the stored bearer token when available. Disable for public bearer-link reads. */
+  auth?: boolean
   /** JSON request body. Omitted entirely for GET. */
   body?: unknown
   /** Multipart request body. The browser supplies its boundary header. */
@@ -49,7 +51,7 @@ export async function dashboardApi<T = unknown>(path: string, options: ApiReques
   if (options.body !== undefined && options.formData)
     throw new TypeError('dashboardApi accepts either body or formData, not both.')
 
-  if (authToken)
+  if (authToken && options.auth !== false)
     headers.Authorization = `Bearer ${authToken}`
 
   if (options.body !== undefined)

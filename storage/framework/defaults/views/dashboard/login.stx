@@ -11,9 +11,15 @@
 import { describeAuthError, useAuth } from '../../functions/auth'
 
 const { login } = useAuth()
+const route = useRoute()
 
 const isLoading = state(false)
 const error = state('')
+
+function safeRedirect(): string {
+  const redirect = String(route.query.redirect || '')
+  return redirect.startsWith('/') && !redirect.startsWith('//') ? redirect : '/'
+}
 
 async function handleLogin(credentials) {
   isLoading.set(true)
@@ -27,7 +33,7 @@ async function handleLogin(credentials) {
       return
     }
 
-    navigate('/')
+    navigate(safeRedirect())
   }
   catch (err) {
     error.set(err.message || 'An error occurred during login')
