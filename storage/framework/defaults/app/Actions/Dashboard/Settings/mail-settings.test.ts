@@ -138,4 +138,18 @@ describe('dashboard mail settings', () => {
       },
     })
   })
+
+  test('reports malformed persisted mail settings instead of replacing them with defaults', async () => {
+    const invalidDriver = await fixture('MAIL_MAILER=sendmail\n')
+    await expect(readMailSettings(invalidDriver)).rejects.toThrow('MAIL_MAILER must be one of')
+
+    const invalidPort = await fixture('MAIL_MAILER=smtp\nMAIL_PORT=not-a-port\n')
+    await expect(readMailSettings(invalidPort)).rejects.toThrow('MAIL_PORT must be an integer')
+
+    const invalidEncryption = await fixture('MAIL_MAILER=smtp\nMAIL_ENCRYPTION=starttls\n')
+    await expect(readMailSettings(invalidEncryption)).rejects.toThrow('MAIL_ENCRYPTION must be empty, tls, or ssl')
+
+    const malformedEnvironment = await fixture('MAIL_MAILER=log\nMAIL_MAILER=smtp\n')
+    await expect(readMailSettings(malformedEnvironment)).rejects.toThrow('environment file is invalid on line 2')
+  })
 })

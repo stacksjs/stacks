@@ -3,6 +3,7 @@ import {
   parseEnvironmentEntries,
   readEnvironmentFile,
   updateEnvironmentEntries,
+  validateEnvironmentFile,
 } from '../Infrastructure/environment-file'
 import type { EnvironmentFileOptions } from '../Infrastructure/environment-file'
 
@@ -92,50 +93,68 @@ function configured(value: string | undefined): boolean {
 }
 
 function normalizedDriver(value: string | undefined): MailDriver {
-  return MAIL_DRIVERS.includes(value as MailDriver) ? value as MailDriver : 'log'
+  if (value === undefined)
+    return 'log'
+  if (!MAIL_DRIVERS.includes(value as MailDriver))
+    throw new TypeError(`MAIL_MAILER must be one of: ${MAIL_DRIVERS.join(', ')}.`)
+  return value as MailDriver
 }
 
 function normalizedEncryption(value: string | undefined): '' | 'tls' | 'ssl' {
-  return value === 'tls' || value === 'ssl' ? value : ''
+  if (value === undefined || value === '' || value === 'null')
+    return ''
+  if (value !== 'tls' && value !== 'ssl')
+    throw new TypeError('MAIL_ENCRYPTION must be empty, tls, or ssl.')
+  return value
 }
 
 function portValue(value: string | undefined): number {
+  if (value === undefined)
+    return 2525
   const parsed = Number(value)
-  return Number.isInteger(parsed) && parsed > 0 && parsed <= 65535 ? parsed : 2525
+  if (!Number.isInteger(parsed) || parsed < 1 || parsed > 65535)
+    throw new TypeError('MAIL_PORT must be an integer from 1 to 65535.')
+  return parsed
 }
 
 export async function readMailSettings(options: EnvironmentFileOptions = {}): Promise<MailSettingsState> {
   const environment = await readEnvironmentFile(options)
+  const environmentIssues = validateEnvironmentFile(environment.content)
+  if (environmentIssues.length) {
+    const issue = environmentIssues[0]!
+    const location = issue.line > 0 ? ` on line ${issue.line}` : ''
+    throw new TypeError(`The environment file is invalid${location}: ${issue.message}`)
+  }
   const entries = parseEnvironmentEntries(environment.content)
 
   return {
     revision: environment.revision,
-    driver: normalizedDriver(entries.MAIL_MAILER || entries.MAIL_DRIVER),
-    fromName: entries.MAIL_FROM_NAME || entries.APP_NAME || 'Stacks',
-    fromAddress: entries.MAIL_FROM_ADDRESS || '',
+    driver: normalizedDriver(entries.MAIL_MAILER ?? entries.MAIL_DRIVER),
+    fromName: entries.MAIL_FROM_NAME ?? entries.APP_NAME ?? 'Stacks',
+    fromAddress: entries.MAIL_FROM_ADDRESS ?? '',
     smtp: {
-      host: entries.MAIL_HOST || '127.0.0.1',
+      host: entries.MAIL_HOST ?? '127.0.0.1',
       port: portValue(entries.MAIL_PORT),
       username: entries.MAIL_USERNAME === 'null' ? '' : entries.MAIL_USERNAME || '',
       encryption: normalizedEncryption(entries.MAIL_ENCRYPTION),
       passwordConfigured: configured(entries.MAIL_PASSWORD),
     },
     ses: {
-      region: entries.AWS_SES_REGION || entries.AWS_DEFAULT_REGION || 'us-east-1',
-      accessKeyId: entries.AWS_ACCESS_KEY_ID || '',
+      region: entries.AWS_SES_REGION ?? entries.AWS_DEFAULT_REGION ?? 'us-east-1',
+      accessKeyId: entries.AWS_ACCESS_KEY_ID ?? '',
       secretAccessKeyConfigured: configured(entries.AWS_SECRET_ACCESS_KEY),
     },
     sendgrid: {
       apiKeyConfigured: configured(entries.SENDGRID_API_KEY),
     },
     mailgun: {
-      domain: entries.MAILGUN_DOMAIN || '',
-      endpoint: entries.MAILGUN_ENDPOINT || 'api.mailgun.net',
+      domain: entries.MAILGUN_DOMAIN ?? '',
+      endpoint: entries.MAILGUN_ENDPOINT ?? 'api.mailgun.net',
       apiKeyConfigured: configured(entries.MAILGUN_API_KEY),
     },
     mailtrap: {
-      host: entries.MAILTRAP_HOST || 'https://sandbox.api.mailtrap.io/api/send',
-      inboxId: entries.MAILTRAP_INBOX_ID || '',
+      host: entries.MAILTRAP_HOST ?? 'https://sandbox.api.mailtrap.io/api/send',
+      inboxId: entries.MAILTRAP_INBOX_ID ?? '',
       tokenConfigured: configured(entries.MAILTRAP_TOKEN),
     },
   }
