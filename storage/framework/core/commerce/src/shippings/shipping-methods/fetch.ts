@@ -29,15 +29,15 @@ export async function fetchById(id: number): Promise<ShippingMethodJsonResponse 
 export async function fetchAll(): Promise<ShippingMethodJsonResponse[]> {
   // Fetch all shipping methods
   const models = await db.selectFrom('shipping_methods').selectAll().execute()
+  if (models.length === 0)
+    return []
 
   // Get the IDs of all shipping methods
-  const shippingMethodIds = models.map((model: any) => model.id)
+  const shippingMethodIds = [...new Set(models.map((model: any) => model.id))]
 
-  let shippingQuery = db.selectFrom('shipping_zones') as any
-
-  if (shippingMethodIds.length > 0) {
-    shippingQuery = shippingQuery.where('shipping_method_id', 'in', shippingMethodIds)
-  }
+  const shippingQuery = db
+    .selectFrom('shipping_zones')
+    .where('shipping_method_id', 'in', shippingMethodIds) as any
 
   // Fetch shipping zones for these specific shipping methods using WHERE IN
   const allShippingZones = await shippingQuery.selectAll().execute()

@@ -47,25 +47,22 @@ export async function fetchById(id: number): Promise<ShippingRateJsonResponse | 
 export async function fetchAll(): Promise<ShippingRateJsonResponse[]> {
   // Fetch all shipping rates
   const models = await db.selectFrom('shipping_rates').selectAll().execute()
+  if (models.length === 0)
+    return []
 
   // Get the IDs of all shipping zones and methods
-  const shippingZoneIds = models.map((model: any) => model.shipping_zone_id).filter((id: any) => id !== null && id !== undefined)
-  const shippingMethodIds = models.map((model: any) => model.shipping_method_id).filter((id: any) => id !== null && id !== undefined)
+  const shippingZoneIds = [...new Set(models.map((model: any) => model.shipping_zone_id).filter((id: any) => id !== null && id !== undefined))]
+  const shippingMethodIds = [...new Set(models.map((model: any) => model.shipping_method_id).filter((id: any) => id !== null && id !== undefined))]
 
-  let shippingZonesQuery = db.selectFrom('shipping_zones') as any
-  let shippingMethodsQuery = db.selectFrom('shipping_methods') as any
-
-  if (shippingZoneIds.length > 0) {
-    shippingZonesQuery = shippingZonesQuery.where('id', 'in', shippingZoneIds)
-  }
-
-  if (shippingMethodIds.length > 0) {
-    shippingMethodsQuery = shippingMethodsQuery.where('id', 'in', shippingMethodIds)
-  }
-
-  // Fetch shipping zones and methods for these specific IDs using WHERE IN
-  const allShippingZones = await shippingZonesQuery.selectAll().execute()
-  const allShippingMethods = await shippingMethodsQuery.selectAll().execute()
+  // Fetch only zones and methods referenced by these rates.
+  const [allShippingZones, allShippingMethods] = await Promise.all([
+    shippingZoneIds.length
+      ? db.selectFrom('shipping_zones').where('id', 'in', shippingZoneIds).selectAll().execute()
+      : [],
+    shippingMethodIds.length
+      ? db.selectFrom('shipping_methods').where('id', 'in', shippingMethodIds).selectAll().execute()
+      : [],
+  ])
 
   // Group shipping zones and methods by ID
   const shippingZonesById = allShippingZones.reduce((acc: any, zone: any) => {
