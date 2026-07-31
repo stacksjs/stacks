@@ -1,5 +1,15 @@
+@import('./Button')
+
 <script server>
+interface CardAction {
+  label: string
+  onClick?: string
+}
+
 interface CardProps {
+  title?: string
+  subtitle?: string
+  actions?: CardAction[]
   variant?: 'default' | 'elevated' | 'outline' | 'ghost' | 'vibrancy'
   padding?: 'none' | 'sm' | 'md' | 'lg' | 'xl'
   rounded?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl'
@@ -7,14 +17,23 @@ interface CardProps {
   clickable?: boolean
 }
 
-const { variant = 'default', padding = 'md', rounded = 'lg', hoverable = false, clickable = false } = defineProps<CardProps>()
+const {
+  title = '',
+  subtitle = '',
+  actions = [],
+  variant = 'default',
+  padding = 'md',
+  rounded = 'lg',
+  hoverable = false,
+  clickable = false,
+} = defineProps<CardProps>()
 
 const variantClasses = {
   default: 'bg-white dark:bg-neutral-800/90 border border-stone-200/80 dark:border-white/5 shadow-sm shadow-stone-200/50 dark:shadow-black/20',
-  elevated: 'bg-white dark:bg-neutral-800 shadow-lg shadow-stone-200/60 dark:shadow-black/30 border border-stone-200/60 dark:border-white/10',
+  elevated: 'bg-white dark:bg-neutral-800 border border-stone-200/60 dark:border-white/10 shadow-lg shadow-stone-200/60 dark:shadow-black/30',
   outline: 'bg-transparent border border-stone-200/80 dark:border-white/10',
   ghost: 'bg-stone-50/50 dark:bg-white/[0.05] border border-transparent',
-  vibrancy: 'bg-white/60 dark:bg-neutral-800/60 backdrop-blur-xl backdrop-saturate-150 border border-stone-200/60 dark:border-white/10 shadow-sm shadow-stone-200/50'
+  vibrancy: 'bg-white/60 dark:bg-neutral-800/60 border border-stone-200/60 dark:border-white/10 backdrop-blur-xl backdrop-saturate-150 shadow-sm shadow-stone-200/50',
 }
 
 const paddingClasses = {
@@ -22,7 +41,7 @@ const paddingClasses = {
   sm: 'p-2.5',
   md: 'p-4',
   lg: 'p-5',
-  xl: 'p-6'
+  xl: 'p-6',
 }
 
 const roundedClasses = {
@@ -31,21 +50,56 @@ const roundedClasses = {
   lg: 'rounded-xl',
   xl: 'rounded-2xl',
   '2xl': 'rounded-[20px]',
-  '3xl': 'rounded-[24px]'
+  '3xl': 'rounded-[24px]',
 }
 
-const hoverClass = (hoverable || clickable) ? 'hover:shadow-md hover:shadow-stone-300/60 dark:hover:shadow-black/25 hover:border-stone-300/80 dark:hover:border-white/15' : ''
+const hoverClass = hoverable || clickable
+  ? 'hover:border-stone-300/80 dark:hover:border-white/15 hover:shadow-md hover:shadow-stone-300/60 dark:hover:shadow-black/25'
+  : ''
 const clickableClass = clickable ? 'cursor-pointer active:scale-[0.98] active:shadow-sm' : ''
-
 const cardClass = [
-  'transition-all duration-150',
+  'overflow-hidden transition-all duration-150',
   variantClasses[variant],
-  paddingClasses[padding],
   roundedClasses[rounded],
   hoverClass,
-  clickableClass
+  clickableClass,
 ].join(' ')
 </script>
-<div class="{{ cardClass }}">
-  <slot />
-</div>
+
+<article class="{{ cardClass }}" @if(clickable) role="button" tabindex="0" @endif>
+  @if($slots.header)
+    <header class="px-5 py-4 border-b border-stone-200/80 dark:border-white/5">
+      <slot name="header" />
+    </header>
+  @elseif(title || actions.length > 0)
+    <header class="flex gap-4 items-start justify-between px-5 py-4 border-b border-stone-200/80 dark:border-white/5">
+      <div>
+        @if(title)
+          <h3 class="font-semibold text-base text-neutral-900 dark:text-white">{{ title }}</h3>
+        @endif
+        @if(subtitle)
+          <p class="mt-1 text-neutral-500 text-sm dark:text-neutral-400">{{ subtitle }}</p>
+        @endif
+      </div>
+      @if(actions.length > 0)
+        <div class="flex gap-2 items-center">
+          @foreach(actions as action)
+            <Button type="button" variant="ghost" size="sm" @click="{{ action.onClick || '' }}">
+              {{ action.label }}
+            </Button>
+          @endforeach
+        </div>
+      @endif
+    </header>
+  @endif
+
+  <div class="{{ paddingClasses[padding] }}">
+    <slot />
+  </div>
+
+  @if($slots.footer)
+    <footer class="px-4 py-3 bg-neutral-50/50 dark:bg-white/[0.025] border-stone-200/80 border-t dark:border-white/5">
+      <slot name="footer" />
+    </footer>
+  @endif
+</article>

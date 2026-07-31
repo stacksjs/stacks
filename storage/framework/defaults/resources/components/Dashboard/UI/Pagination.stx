@@ -1,126 +1,116 @@
-<script server>
-interface PaginationProps {
-  currentPage?: number
-  totalPages?: number
-  totalItems?: number
-  itemsPerPage?: number
-  showItemsPerPage?: boolean
-  maxVisiblePages?: number
-  itemsPerPageOptions?: string
-  baseUrl?: string
-  showTotalItems?: boolean
-}
+@import('./Button')
 
-const { currentPage = 1, totalPages = 1, totalItems = 0, itemsPerPage = 10, showItemsPerPage = false, maxVisiblePages = 5, itemsPerPageOptions = [10, 25, 50, 100], baseUrl = '', showTotalItems = true } = defineProps<PaginationProps>()
+<script client>
+const currentPage = useReactiveProp('currentPage', 1)
+const totalPagesProp = useReactiveProp('totalPages', 0)
+const totalItems = useReactiveProp('totalItems', 0)
+const itemsPerPage = useReactiveProp('itemsPerPage', 20)
+const showItemsPerPage = useReactiveProp('showItemsPerPage', false)
+const showTotalItems = useReactiveProp('showTotalItems', true)
+const maxVisiblePages = useReactiveProp('maxVisiblePages', 5)
+const emit = defineEmits()
+const selectedItemsPerPage = state(20)
 
-// Calculate visible page numbers
-function getVisiblePages() {
-  const pages = []
-  const total = totalPages
-  const current = currentPage
-  const max = maxVisiblePages
+const perPageOptions = [10, 20, 25, 50, 100]
 
-  if (total <= max) {
-    for (let i = 1; i <= total; i++) {
-      pages.push(i)
-    }
-  } else {
-    pages.push(1)
-    let start = Math.max(2, current - Math.floor((max - 3) / 2))
-    let end = Math.min(total - 1, start + max - 4)
-    if (end === total - 1) {
-      start = Math.max(2, end - (max - 4))
-    }
-    if (start > 2) {
-      pages.push('...')
-    }
-    for (let i = start; i <= end; i++) {
-      pages.push(i)
-    }
-    if (end < total - 1) {
-      pages.push('...')
-    }
-    pages.push(total)
-  }
+effect(() => {
+  selectedItemsPerPage.set(itemsPerPage())
+})
+
+const totalPages = derived(() => {
+  if (totalPagesProp() > 0)
+    return totalPagesProp()
+  return Math.max(1, Math.ceil(totalItems() / Math.max(1, itemsPerPage())))
+})
+
+const rangeStart = derived(() => totalItems() === 0 ? 0 : (currentPage() - 1) * itemsPerPage() + 1)
+const rangeEnd = derived(() => Math.min(currentPage() * itemsPerPage(), totalItems()))
+
+const visiblePages = derived(() => {
+  const total = totalPages()
+  const current = currentPage()
+  const maximum = Math.max(3, maxVisiblePages())
+  if (total <= maximum)
+    return Array.from({ length: total }, (_, index) => index + 1)
+
+  const pages: Array<number | 'ellipsis-start' | 'ellipsis-end'> = [1]
+  const windowSize = Math.max(1, maximum - 2)
+  let start = Math.max(2, current - Math.floor(windowSize / 2))
+  let end = Math.min(total - 1, start + windowSize - 1)
+  start = Math.max(2, end - windowSize + 1)
+
+  if (start > 2)
+    pages.push('ellipsis-start')
+  for (let page = start; page <= end; page++)
+    pages.push(page)
+  if (end < total - 1)
+    pages.push('ellipsis-end')
+  pages.push(total)
   return pages
+})
+
+function goToPage(page: number): void {
+  if (page < 1 || page > totalPages() || page === currentPage())
+    return
+  emit('page', page)
 }
 
-const visiblePages = getVisiblePages()
+function previousPage(): void {
+  if (currentPage() <= 1)
+    return
+  emit('prev')
+  emit('page', currentPage() - 1)
+}
 
-// Calculate item range
-const itemRangeStart = (currentPage - 1) * itemsPerPage + 1
-const itemRangeEnd = Math.min(currentPage * itemsPerPage, totalItems)
+function nextPage(): void {
+  if (currentPage() >= totalPages())
+    return
+  emit('next')
+  emit('page', currentPage() + 1)
+}
 
-function getPageUrl(page) {
-  return baseUrl ? `${baseUrl}?page=${page}` : `?page=${page}`
+function emitItemsPerPage(event: Event): void {
+  emit('per-page', Number((event.target as HTMLSelectElement).value))
 }
 </script>
+
 <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-    <!-- Left: Items info & per page selector -->
-    <div class="flex gap-4 items-center text-neutral-500 text-sm dark:text-neutral-400">
-      <!-- Items per page -->
-      @if(showItemsPerPage && itemsPerPage)
-        <div class="flex gap-2 items-center">
-          <span>Show</span>
-          <select
-            class="text-neutral-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border-neutral-300 rounded-md dark:border-neutral-600 focus:border-blue-500 focus:ring-blue-500"
-            data-items-per-page
-          >
-            @foreach(itemsPerPageOptions as option)
-              <option value="{{ option }}" @if(option == itemsPerPage) selected @endif>
-                {{ option }}
-              </option>
-            @endforeach
-          </select>
-          <span>per page</span>
-        </div>
-      @endif
+  <div class="flex flex-wrap gap-4 items-center text-neutral-500 text-sm dark:text-neutral-400">
+    <label :if="showItemsPerPage()" class="flex gap-2 items-center">
+      <span>Show</span>
+      <select x-model.number="selectedItemsPerPage" class="px-2 py-1.5 text-neutral-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-neutral-300 rounded-md dark:border-neutral-600" @change="emitItemsPerPage($event)">
+        <template :for="option in perPageOptions">
+          <option :value="option">{{ option }}</option>
+        </template>
+      </select>
+      <span>per page</span>
+    </label>
 
-      <!-- Total items info -->
-      @if(showTotalItems && totalItems > 0)
-        <div>
-          <span class="font-medium text-neutral-700 dark:text-neutral-200">
-            {{ itemRangeStart }}-{{ itemRangeEnd }}
-          </span>
-          of
-          <span class="font-medium text-neutral-700 dark:text-neutral-200">
-            {{ totalItems }}
-          </span>
-          items
-        </div>
-      @endif
-    </div>
-
-    <!-- Right: Page navigation -->
-    <nav class="flex gap-1 items-center" aria-label="Pagination">
-      <!-- Previous button -->
-      <a
-        href="{{ currentPage > 1 ? getPageUrl(currentPage - 1) : '#' }}"
-        class="p-2 rounded-lg text-sm font-medium transition-colors {{ currentPage == 1 ? 'text-neutral-300 dark:text-neutral-600 cursor-not-allowed pointer-events-none' : 'text-neutral-500 hover:text-neutral-700 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:text-neutral-200 dark:hover:bg-neutral-800' }}"
-      >
-        <div class="h-5 w-5 i-hugeicons-arrow-left-01"></div>
-      </a>
-
-      <!-- Page numbers -->
-      @foreach(visiblePages as page)
-        @if(page == '...')
-          <span class="px-2 text-neutral-400 dark:text-neutral-500">...</span>
-        @else
-          <a
-            href="{{ getPageUrl(page) }}"
-            class="min-w-[2.25rem] h-9 px-3 rounded-lg text-sm font-medium transition-colors flex items-center justify-center {{ page == currentPage ? 'bg-blue-600 text-white' : 'text-neutral-600 hover:text-neutral-800 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:text-neutral-200 dark:hover:bg-neutral-800' }}"
-          >
-            {{ page }}
-          </a>
-        @endif
-      @endforeach
-
-      <!-- Next button -->
-      <a
-        href="{{ currentPage < totalPages ? getPageUrl(currentPage + 1) : '#' }}"
-        class="p-2 rounded-lg text-sm font-medium transition-colors {{ currentPage == totalPages ? 'text-neutral-300 dark:text-neutral-600 cursor-not-allowed pointer-events-none' : 'text-neutral-500 hover:text-neutral-700 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:text-neutral-200 dark:hover:bg-neutral-800' }}"
-      >
-        <div class="h-5 w-5 i-hugeicons-arrow-right-01"></div>
-      </a>
-    </nav>
+    <p :if="showTotalItems()" aria-live="polite">
+      <span class="font-medium text-neutral-700 dark:text-neutral-200">{{ rangeStart() }}-{{ rangeEnd() }}</span>
+      of
+      <span class="font-medium text-neutral-700 dark:text-neutral-200">{{ totalItems() }}</span>
+      items
+    </p>
   </div>
+
+  <nav class="flex gap-1 items-center" aria-label="Pagination">
+    <Button variant="secondary" iconOnly :disabled="currentPage() <= 1" ariaLabel="Previous page" @click="previousPage">
+      <span class="block h-5 w-5 i-hugeicons-arrow-left-01"></span>
+    </Button>
+
+    <template :for="page in visiblePages()">
+      <span :if="typeof page !== 'number'" class="px-2 text-neutral-400 dark:text-neutral-500">...</span>
+      <Button :if="typeof page === 'number' && page === currentPage()" @click="goToPage(page)">
+        <span aria-current="page">{{ page }}</span>
+      </Button>
+      <Button :if="typeof page === 'number' && page !== currentPage()" variant="secondary" @click="goToPage(page)">
+        {{ page }}
+      </Button>
+    </template>
+
+    <Button variant="secondary" iconOnly :disabled="currentPage() >= totalPages()" ariaLabel="Next page" @click="nextPage">
+      <span class="block h-5 w-5 i-hugeicons-arrow-right-01"></span>
+    </Button>
+  </nav>
+</div>

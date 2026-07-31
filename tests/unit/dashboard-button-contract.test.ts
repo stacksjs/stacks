@@ -129,8 +129,8 @@ describe('dashboard button contract', () => {
 
   test('routes shared dashboard controls through the canonical component', () => {
     const files = [
-      'Pagination.stx',
-      'Card.stx',
+      'UI/Pagination.stx',
+      'UI/Card.stx',
       'CreateRecordModal.stx',
       'UI/Modal.stx',
       'UI/ConfirmDialog.stx',

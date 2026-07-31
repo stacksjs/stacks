@@ -11,8 +11,22 @@ function componentSource(path: string): string {
 }
 
 describe('dashboard native STX bindings', () => {
+  test('keeps one implementation for every dashboard component name', () => {
+    const paths = readdirSync(dashboardComponents, { recursive: true })
+      .map(path => String(path))
+      .filter(path => path.endsWith('.stx'))
+    const names = paths.map(path => path.split('/').at(-1) || path)
+    const duplicates = [...new Set(names.filter((name, index) => names.indexOf(name) !== index))]
+
+    expect(duplicates).toEqual([])
+    expect(existsSync(resolve(dashboardComponents, 'UI/Avatar.stx'))).toBe(true)
+    expect(existsSync(resolve(dashboardComponents, 'UI/Card.stx'))).toBe(true)
+    expect(existsSync(resolve(dashboardComponents, 'UI/Pagination.stx'))).toBe(true)
+    expect(existsSync(resolve(dashboardComponents, 'UI/Table.stx'))).toBe(true)
+  })
+
   test('shared pagination models its local selection and emits the selected value', () => {
-    const source = componentSource('Pagination.stx')
+    const source = componentSource('UI/Pagination.stx')
 
     expect(source).toContain('x-model.number="selectedItemsPerPage"')
     expect(source).toContain('emitItemsPerPage($event)')
@@ -230,7 +244,6 @@ describe('dashboard native STX bindings', () => {
     for (const path of [
       'UI/ChartCard.stx',
       'UI/Avatar.stx',
-      'Avatar.stx',
       'Email/EmailDetail.stx',
       'Email/EmailList.stx',
       'NavbarModern.stx',
@@ -346,10 +359,12 @@ describe('dashboard native STX bindings', () => {
     expect(dropdown).not.toMatch(/\b(?:document|window)\./)
     expect(dropdown).not.toContain('addEventListener(')
 
-    const navigation = componentSource('Elements/Dropdown.stx')
+    const navigation = componentSource('Elements/DropdownNavigation.stx')
     expect(navigation).toContain("const elements = useReactiveProp('elements'")
     expect(navigation).toContain(':if="isOpen()"')
     expect(navigation).toContain("emit('update:open', next)")
+    expect(navigation).toContain('<StxLink :to="element.to"')
+    expect(navigation).toContain('@click="setOpen(false)"')
     expect(navigation).not.toContain('querySelector(')
 
     const confirmation = componentSource('UI/ConfirmDialog.stx')
