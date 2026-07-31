@@ -50,9 +50,8 @@ function toDateTimeLocal(value?: string | number): string {
   return new Date(date.getTime() - date.getTimezoneOffset() * 60_000).toISOString().slice(0, 16)
 }
 
-function toDatabaseTimestamp(value: string): string {
-  const normalized = value.replace('T', ' ')
-  return normalized.length === 16 ? `${normalized}:00` : normalized
+function toUnixTimestamp(value: string): number {
+  return new Date(value).getTime()
 }
 
 effect(() => {
@@ -106,12 +105,12 @@ function submit(): void {
 
   emit('submit', {
     driver: driver.name,
-    driver_id: driver.id,
+    driverId: driver.id,
     vehicle: driver.vehicle_number,
     stops: parsedStops,
-    delivery_time: parsedDeliveryTime,
-    total_distance: parsedDistance,
-    last_active: toDatabaseTimestamp(lastActive()),
+    deliveryTime: parsedDeliveryTime,
+    totalDistance: parsedDistance,
+    lastActive: toUnixTimestamp(lastActive()),
   })
 }
 </script>

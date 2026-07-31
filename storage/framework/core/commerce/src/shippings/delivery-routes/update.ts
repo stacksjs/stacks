@@ -1,6 +1,7 @@
 import { db } from '@stacksjs/database'
 import { formatDate } from '@stacksjs/orm'
 import { deliveryRouteWriteData } from '../write-data'
+import { DeliveryRouteInputError, validateDeliveryRouteWrite } from './validate-write'
 type DeliveryRouteJsonResponse = ModelRow<typeof DeliveryRoute>
 type DeliveryRouteUpdate = UpdateModelData<typeof DeliveryRoute>
 
@@ -16,10 +17,20 @@ export async function update(id: number, data: DeliveryRouteUpdate): Promise<Del
     if (!id)
       throw new Error('Delivery route ID is required for update')
 
+    const current = await db
+      .selectFrom('delivery_routes')
+      .where('id', '=', id)
+      .selectAll()
+      .executeTakeFirst()
+    if (!current)
+      throw new Error('Delivery route was not found')
+    const input = deliveryRouteWriteData(data as Record<string, unknown>)
+    const validated = await validateDeliveryRouteWrite(input, current as Record<string, unknown>)
+
     const result = await db
       .updateTable('delivery_routes')
       .set({
-        ...deliveryRouteWriteData(data as Record<string, unknown>),
+        ...validated,
         updated_at: formatDate(new Date()),
       })
       .where('id', '=', id)
@@ -32,6 +43,8 @@ export async function update(id: number, data: DeliveryRouteUpdate): Promise<Del
     return result as DeliveryRouteJsonResponse
   }
   catch (error) {
+    if (error instanceof DeliveryRouteInputError)
+      throw error
     if (error instanceof Error) {
       throw new TypeError(`Failed to update delivery route: ${error.message}`)
     }

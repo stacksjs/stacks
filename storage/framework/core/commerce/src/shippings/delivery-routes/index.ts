@@ -24,3 +24,8 @@ export {
   updateMetrics,
   updateStops,
 } from './update'
+
+export {
+  DeliveryRouteInputError,
+  validateDeliveryRouteWrite,
+} from './validate-write'

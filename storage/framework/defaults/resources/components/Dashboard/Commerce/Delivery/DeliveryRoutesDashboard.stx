@@ -23,12 +23,12 @@ interface DeliveryRouteRecord {
 
 interface DeliveryRoutePayload {
   driver: string
-  driver_id: number
+  driverId: number
   vehicle: string
   stops: number
-  delivery_time: number
-  total_distance: number
-  last_active: string
+  deliveryTime: number
+  totalDistance: number
+  lastActive: number
 }
 
 const records = state<DeliveryRouteRecord[]>([])
@@ -54,7 +54,7 @@ function driverFor(id?: number | null): DriverRecord | undefined {
 function withDriver(record: DeliveryRouteRecord): DeliveryRouteRecord {
   return {
     ...record,
-    driver_record: driverFor(record.driver_id),
+    driver_record: driverFor(record.driver_id) || record.driver_record,
   }
 }
 
@@ -85,8 +85,8 @@ function paginatedRecords(): DeliveryRouteRecord[] {
 }
 
 function metricCards(): Array<{ label: string, value: string, detail: string }> {
-  const totalStops = records().reduce((sum, record) => sum + Number(record.stops || 0), 0)
-  const totalDistance = records().reduce((sum, record) => sum + Number(record.total_distance || 0), 0)
+  const totalStops = records().reduce((sum, record) => sum + record.stops, 0)
+  const totalDistance = records().reduce((sum, record) => sum + record.total_distance, 0)
   const activeCutoff = Date.now() - (24 * 60 * 60 * 1000)
   const activeRoutes = records().filter(record => routeTime(record.last_active) >= activeCutoff).length
   return [

@@ -9,6 +9,7 @@ import { randomUUIDv7 } from 'bun'
 import { db } from '@stacksjs/database'
 import { deliveryRouteWriteData } from '../write-data'
 import { fetchById } from './fetch'
+import { DeliveryRouteInputError, validateDeliveryRouteWrite } from './validate-write'
 
 /**
  * Create a new delivery route
@@ -20,9 +21,9 @@ export async function store(data: DeliveryRouteInput): Promise<DeliveryRouteJson
   try {
     const uuid = randomUUIDv7()
     const columns = deliveryRouteWriteData(data as Record<string, unknown>)
+    const validated = await validateDeliveryRouteWrite(columns)
     const routeData = {
-      ...columns,
-      last_active: columns.last_active ?? Date.now(),
+      ...validated,
       uuid,
     }
 
@@ -43,6 +44,8 @@ export async function store(data: DeliveryRouteInput): Promise<DeliveryRouteJson
     return result as DeliveryRouteJsonResponse
   }
   catch (error) {
+    if (error instanceof DeliveryRouteInputError)
+      throw error
     if (error instanceof Error) {
       throw new TypeError(`Failed to create delivery route: ${error.message}`)
     }
