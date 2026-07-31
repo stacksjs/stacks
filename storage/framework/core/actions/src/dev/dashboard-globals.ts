@@ -1,15 +1,18 @@
 /**
- * Hoist every helper exported from the dashboard's resources/functions
- * tree (and the user's app/ helpers) onto globalThis so `<script server>`
- * blocks can use them as bare names without imports.
+ * Hoist project-defined resources/functions and app helpers onto globalThis
+ * so `<script server>` blocks can use them as bare names without imports.
  *
  * Why this exists
  * ---------------
  * The STX dev server evaluates `<script server>` blocks inside an
  * AsyncFunction wrapper that inherits its identifier scope from
- * globalThis. The orm preload uses this trick to expose model classes
- * (`Order`, `Product`, …) as globals; this module does the same for
- * helper functions (`safeAll`, `formatRelative`, `listPackages`, …).
+ * globalThis. The ORM preload uses this mechanism to expose model classes,
+ * and this module applies the same runtime contract to project helpers.
+ *
+ * Framework dashboard helpers are deliberately excluded. Framework views
+ * import those dependencies explicitly, which avoids eagerly evaluating
+ * unrelated modules and prevents obsolete helpers from becoming accidental
+ * public globals.
  *
  * The walk is shallow — direct children of each scanned directory only —
  * so we don't drag arbitrary nested modules into globals (unsafe and
@@ -20,19 +23,17 @@ import { existsSync, readdirSync, statSync } from 'node:fs'
 import { join } from 'node:path'
 import process from 'node:process'
 
-import { projectPath, storagePath } from '@stacksjs/path'
+import { projectPath } from '@stacksjs/path'
 
 interface HoistOptions {
   verbose?: boolean
 }
 
 const HELPER_DIRS = [
-  // Framework defaults — small set of dashboard helpers shipped with stacks.
-  storagePath('framework/defaults/resources/functions/dashboard'),
-  // User helpers — anything the project drops into resources/functions or
-  // app/Helpers will be picked up too. Both directories are scanned
-  // shallowly, so a flat `resources/functions/foo.ts` works but a deeply
-  // nested `resources/functions/payments/stripe/foo.ts` won't auto-hoist.
+  // Anything the project drops into resources/functions or app/Helpers is
+  // available to server scripts. Both directories are scanned shallowly, so
+  // a flat resources/functions/foo.ts works while a deeply nested helper
+  // must be imported explicitly.
   projectPath('resources/functions'),
   projectPath('app/Helpers'),
 ]
@@ -53,9 +54,7 @@ export async function hoistDashboardGlobals(opts: HoistOptions = {}): Promise<vo
       try { s = statSync(full) }
       catch { continue }
       if (s.isDirectory()) {
-        // Walk one level into subdirectories so the dashboard helpers
-        // (data.ts, system.ts, library.ts, analytics.ts) live under
-        // resources/functions/dashboard/ get picked up too.
+        // Walk one level into project helper groups.
         let subEntries: string[]
         try { subEntries = readdirSync(full) }
         catch { continue }

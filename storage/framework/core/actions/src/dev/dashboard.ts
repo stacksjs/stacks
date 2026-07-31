@@ -66,11 +66,10 @@ async function startStxServer(): Promise<void> {
     if (verbose) console.warn('[dashboard] orm preload failed:', (err as Error)?.message || err)
   }
 
-  // Preload every helper module under `storage/framework/defaults/resources/functions/`
-  // and the user's `resources/functions/` and `app/` trees, then hoist each
-  // named export onto globalThis. This lets `<script server>` blocks call
-  // `safeAll(Order)`, `formatRelative(date)`, `listPackages()`, etc. without
-  // importing — same model-as-globals ergonomics as the orm preload.
+  // Preload the project's resources/functions and app/Helpers trees, then
+  // hoist named exports onto globalThis for server-script auto-imports.
+  // Framework dashboard helpers use explicit imports and are not evaluated
+  // eagerly here.
   try {
     const { hoistDashboardGlobals } = await import('./dashboard-globals')
     await hoistDashboardGlobals({ verbose })

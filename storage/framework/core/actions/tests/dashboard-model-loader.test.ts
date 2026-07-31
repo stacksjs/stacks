@@ -12,11 +12,10 @@ describe('dashboard model loader', () => {
     expect(Model.traits.useApi.routes).toContain('store')
   })
 
-  it('returns a safe stub when no model file exists', async () => {
-    const Model = await loadModel('DefinitelyMissingDashboardModel')
-
-    expect(Model._isStub).toBe(true)
-    expect(await Model.all()).toEqual([])
+  it('reports a missing model instead of presenting an empty table', async () => {
+    expect(loadModel('DefinitelyMissingDashboardModel')).rejects.toThrow(
+      'Could not load dashboard model DefinitelyMissingDashboardModel: no matching model file exists',
+    )
   })
 
   it('derives empty-table columns from the model migration definition', async () => {
