@@ -335,14 +335,22 @@ describe('dashboard native STX bindings', () => {
     expect(forgotPassword).not.toContain('<svg')
     expect(forgotPassword).not.toContain('<script server>')
 
-    const forgotPasswordPage = readFileSync(
-      resolve(dashboardViews, 'forgot-password.stx'),
-      'utf8',
-    )
-    expect(forgotPasswordPage).toContain("dashboardApi('/password/forgot', {")
-    expect(forgotPasswordPage).toContain("method: 'POST'")
-    expect(forgotPasswordPage).toContain('auth: false')
-    expect(forgotPasswordPage).not.toContain("fetch('/forgot-password'")
+    const forgotPasswordDashboard = componentSource('Auth/ForgotPasswordDashboard.stx')
+    expect(forgotPasswordDashboard).toContain("dashboardApi('/password/forgot', {")
+    expect(forgotPasswordDashboard).toContain("method: 'POST'")
+    expect(forgotPasswordDashboard).toContain('auth: false')
+    expect(forgotPasswordDashboard).not.toContain("fetch('/forgot-password'")
+
+    const authRoutes = [
+      ['login.stx', '<LoginDashboard />'],
+      ['register.stx', '<RegisterDashboard />'],
+      ['forgot-password.stx', '<ForgotPasswordDashboard />'],
+    ]
+    for (const [route, mount] of authRoutes) {
+      const source = readFileSync(resolve(dashboardViews, route), 'utf8')
+      expect(source).toContain(mount)
+      expect(source).not.toContain('<script')
+    }
 
     const accessTokens = componentSource('Auth/AccessTokens.stx')
     expect(accessTokens).toContain('@submit.prevent="createAccessToken"')

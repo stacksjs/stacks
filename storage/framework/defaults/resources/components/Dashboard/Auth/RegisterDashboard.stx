@@ -1,0 +1,47 @@
+<script client>
+import { describeAuthError, useAuth } from '../../../../functions/auth'
+
+const { register } = useAuth()
+const route = useRoute()
+
+const isLoading = state(false)
+const error = state('')
+
+function safeRedirect(): string {
+  const redirect = String(route.query.redirect || '')
+  return redirect.startsWith('/') && !redirect.startsWith('//') ? redirect : '/'
+}
+
+async function handleRegister(credentials) {
+  isLoading.set(true)
+  error.set('')
+
+  try {
+    const result = await register(credentials)
+
+    if (!result || !('token' in result)) {
+      error.set(describeAuthError(result, 'Registration failed'))
+      return
+    }
+
+    navigate(safeRedirect())
+  }
+  catch (err) {
+    error.set(err.message || 'An error occurred during registration')
+    // eslint-disable-next-line no-console
+    console.error(err)
+  }
+  finally {
+    isLoading.set(false)
+  }
+}
+</script>
+
+<template>
+  <Register
+    @submit="handleRegister"
+    :isLoading="isLoading()"
+    :error="error()"
+    :data-auth-status="isLoading() ? 'loading' : 'ready'"
+  />
+</template>

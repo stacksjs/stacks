@@ -1,0 +1,45 @@
+<script client>
+import { describeAuthError, useAuth } from '../../../../functions/auth'
+
+const { login } = useAuth()
+const route = useRoute()
+
+const isLoading = state(false)
+const error = state('')
+
+function safeRedirect(): string {
+  const redirect = String(route.query.redirect || '')
+  return redirect.startsWith('/') && !redirect.startsWith('//') ? redirect : '/'
+}
+
+async function handleLogin(credentials) {
+  isLoading.set(true)
+  error.set('')
+
+  try {
+    const result = await login(credentials)
+
+    if (!result || !('token' in result)) {
+      error.set(describeAuthError(result, 'Invalid credentials'))
+      return
+    }
+
+    navigate(safeRedirect())
+  }
+  catch (err) {
+    error.set(err.message || 'An error occurred during login')
+  }
+  finally {
+    isLoading.set(false)
+  }
+}
+</script>
+
+<template>
+  <Login
+    @submit="handleLogin"
+    :isLoading="isLoading()"
+    :error="error()"
+    :data-auth-status="isLoading() ? 'loading' : 'ready'"
+  />
+</template>
