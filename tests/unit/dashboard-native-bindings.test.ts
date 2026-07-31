@@ -29,6 +29,19 @@ describe('dashboard native STX bindings', () => {
     expect(existsSync(resolve(dashboardComponents, 'Chart.stx'))).toBe(false)
     expect(existsSync(resolve(dashboardComponents, 'NotificationErrorModal.stx'))).toBe(false)
     expect(existsSync(resolve(dashboardResourceViews, 'custom-page.stx'))).toBe(false)
+
+    for (const legacyBillingComponent of [
+      'ActivePlan.stx',
+      'CardBrands.stx',
+      'CardForm.stx',
+      'OneTimePayment.stx',
+      'PaymentForm.stx',
+      'PaymentMethod.stx',
+      'PaymentMethodList.stx',
+      'Plans.stx',
+    ]) {
+      expect(existsSync(resolve(dashboardComponents, 'Billing', legacyBillingComponent))).toBe(false)
+    }
   })
 
   test('routes primary action links through the shared Button component', () => {
