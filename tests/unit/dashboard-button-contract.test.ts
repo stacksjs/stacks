@@ -14,6 +14,9 @@ describe('dashboard button contract', () => {
     expect(button).toContain('bg-gradient-to-b from-blue-500 to-blue-600')
     expect(button).toContain("variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger' | 'success' | 'warning'")
     expect(button).toContain("tag?: 'button' | 'a'")
+    expect(button).toContain('class?: string')
+    expect(button).toContain("class: customClass = ''")
+    expect(button).toContain('customClass,')
     expect(button).toContain("const liveDownload = useReactiveProp('download', '')")
     expect(button).toContain("const liveType = useReactiveProp('type', 'button')")
     expect(button).toContain("const liveDataAction = useReactiveProp('dataAction', '')")
@@ -127,9 +130,16 @@ describe('dashboard button contract', () => {
   test('routes shared dashboard controls through the canonical component', () => {
     const files = [
       'Pagination.stx',
+      'Card.stx',
+      'CreateRecordModal.stx',
       'UI/Modal.stx',
       'UI/ConfirmDialog.stx',
       'UI/EmptyState.stx',
+      'Auth/ForgotPassword.stx',
+      'Modals/BaseModal.stx',
+      'Modals/Popups/Alert.stx',
+      'Modals/Popups/Toast.stx',
+      'Modals/ToastWrapper.stx',
       'Marketing/SocialPostsTable.stx',
       'Marketing/CampaignsTable.stx',
       'Marketing/MarketingListsTable.stx',

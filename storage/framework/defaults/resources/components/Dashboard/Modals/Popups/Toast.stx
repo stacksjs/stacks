@@ -1,3 +1,5 @@
+@import('../../UI/Button')
+
 <script client>
 type ToastType = 'warning' | 'success' | 'error' | 'info'
 type ToastPosition = 'center' | 'top' | 'top-right' | 'top-left'
@@ -45,14 +47,17 @@ function dismiss(): void {
     <div class="flex items-center p-4">
       <span aria-hidden="true" class="shrink-0 h-6 w-6" :class="iconClass()"></span>
       <p class="flex-1 ml-3 min-w-0 font-medium text-gray-900 text-left text-sm dark:text-neutral-100" :text="liveTitle()"></p>
-      <button
+      <Button
         type="button"
-        class="inline-flex shrink-0 ml-4 text-gray-400 hover:text-gray-500 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-        aria-label="Dismiss notification"
+        variant="ghost"
+        size="sm"
+        iconOnly
+        class="shrink-0 ml-4"
+        ariaLabel="Dismiss notification"
         @click="dismiss"
       >
         <span aria-hidden="true" class="h-5 w-5 i-hugeicons-cancel-01"></span>
-      </button>
+      </Button>
     </div>
   </div>
 </div>

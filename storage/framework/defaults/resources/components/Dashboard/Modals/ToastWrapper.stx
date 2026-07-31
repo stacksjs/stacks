@@ -1,3 +1,5 @@
+@import('../UI/Button')
+
 <script client>
 type ToastWrapperPosition = 'center' | 'top' | 'top-right' | 'top-left'
 
@@ -26,14 +28,17 @@ const wrapperStyle = derived(() => `max-width: ${Math.max(16, Number(liveWidth()
       <div class="flex-1 min-w-0">
         <slot name="body" />
       </div>
-      <button
+      <Button
         type="button"
-        class="inline-flex shrink-0 ml-4 text-gray-400 hover:text-gray-500 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-        aria-label="Dismiss notification"
+        variant="ghost"
+        size="sm"
+        iconOnly
+        class="shrink-0 ml-4"
+        ariaLabel="Dismiss notification"
         @click="emit('close')"
       >
         <span aria-hidden="true" class="h-5 w-5 i-hugeicons-cancel-01"></span>
-      </button>
+      </Button>
     </div>
   </div>
 </div>

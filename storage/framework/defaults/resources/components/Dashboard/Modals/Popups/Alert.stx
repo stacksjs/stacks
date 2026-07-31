@@ -1,3 +1,5 @@
+@import('../../UI/Button')
+
 <script client>
 type AlertType = 'info' | 'warning' | 'danger' | 'success' | 'error'
 
@@ -23,13 +25,6 @@ const iconWrapperClass = derived(() => ({
   success: 'bg-green-100',
   error: 'bg-red-100',
 })[normalizedType()] || 'bg-blue-100')
-const confirmClass = derived(() => ({
-  info: 'bg-blue-600 hover:bg-blue-700 focus:ring-blue-500',
-  warning: 'bg-yellow-600 hover:bg-yellow-700 focus:ring-yellow-500',
-  success: 'bg-green-600 hover:bg-green-700 focus:ring-green-500',
-  error: 'bg-red-600 hover:bg-red-700 focus:ring-red-500',
-})[normalizedType()] || 'bg-blue-600 hover:bg-blue-700 focus:ring-blue-500')
-
 function dismiss(event: 'close' | 'cancel' | 'confirm'): void {
   liveShow.set(false)
   emit('update:show', false)
@@ -51,14 +46,17 @@ function dismiss(event: 'close' | 'cancel' | 'confirm'): void {
     aria-modal="true"
     :aria-labelledby="titleId"
   >
-    <button
+    <Button
       type="button"
-      class="absolute right-4 top-4 text-gray-400 dark:text-neutral-200 hover:text-gray-500 dark:hover:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500/40 transition"
-      aria-label="Close alert"
+      variant="ghost"
+      size="sm"
+      iconOnly
+      class="absolute right-4 top-4"
+      ariaLabel="Close alert"
       @click="dismiss('close')"
     >
       <span aria-hidden="true" class="h-6 w-6 i-hugeicons-cancel-01"></span>
-    </button>
+    </Button>
 
     <div class="sm:flex sm:items-start">
       <div
@@ -75,22 +73,51 @@ function dismiss(event: 'close' | 'cancel' | 'confirm'): void {
     </div>
 
     <div class="sm:flex sm:flex-row-reverse mt-5 space-y-4 sm:mt-4 md:space-y-0">
-      <button
+      <Button
+        :if="normalizedType() === 'info'"
         type="button"
-        class="flex items-center disabled:opacity-50 disabled:cursor-not-allowed primary-button"
-        :class="confirmClass()"
+        variant="primary"
         @click="dismiss('confirm')"
       >
         <span :text="liveConfirmationText()"></span>
-      </button>
+      </Button>
 
-      <button
+      <Button
+        :if="normalizedType() === 'warning'"
+        type="button"
+        variant="warning"
+        @click="dismiss('confirm')"
+      >
+        <span :text="liveConfirmationText()"></span>
+      </Button>
+
+      <Button
+        :if="normalizedType() === 'success'"
+        type="button"
+        variant="success"
+        @click="dismiss('confirm')"
+      >
+        <span :text="liveConfirmationText()"></span>
+      </Button>
+
+      <Button
+        :if="normalizedType() === 'error'"
+        type="button"
+        variant="danger"
+        @click="dismiss('confirm')"
+      >
+        <span :text="liveConfirmationText()"></span>
+      </Button>
+
+      <Button
         :if="liveAbortText()"
         type="button"
-        class="mr-4 secondary-button"
+        variant="secondary"
+        class="mr-4"
         @click="dismiss('cancel')"
-        :text="liveAbortText()"
-      ></button>
+      >
+        {{ liveAbortText() }}
+      </Button>
     </div>
   </div>
 </div>

@@ -1,3 +1,5 @@
+@import('./UI/Button')
+
 <script client>
 interface CreateField {
   name: string
@@ -77,9 +79,9 @@ function close(): void {
                 Fields come from the model's fillable attributes and useApi store contract.
               </p>
             </div>
-            <button type="button" class="p-1.5 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-700 rounded-lg transition-colors" aria-label="Close create record dialog" @click="close">
+            <Button type="button" variant="ghost" size="sm" iconOnly ariaLabel="Close create record dialog" @click="close">
               <span class="block h-4 w-4 i-hugeicons-cancel-01"></span>
-            </button>
+            </Button>
           </header>
 
           <div class="overflow-y-auto px-5 py-4 space-y-4 max-h-[65vh]">

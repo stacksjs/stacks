@@ -1,3 +1,5 @@
+@import('./UI/Button')
+
 <script server>
 interface CardAction {
   label: string
@@ -82,9 +84,9 @@ const cardClass = [
       @if(actions.length > 0)
         <div class="flex gap-2 items-center">
           @foreach(actions as action)
-            <button type="button" class="px-3 py-1.5 font-medium text-neutral-700 text-sm dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-white/5 rounded-md" @click="{{ action.onClick || '' }}">
+            <Button type="button" variant="ghost" size="sm" @click="{{ action.onClick || '' }}">
               {{ action.label }}
-            </button>
+            </Button>
           @endforeach
         </div>
       @endif
