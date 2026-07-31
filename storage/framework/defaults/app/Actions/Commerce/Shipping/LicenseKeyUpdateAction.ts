@@ -15,8 +15,15 @@ export default new Action({
     const id = request.getParam('id')
     const data = await request.all()
 
-    const results = await shippings.licenses.update(id, data)
+    try {
+      const results = await shippings.licenses.update(id, data)
 
-    return response.json(results)
+      return response.json(results)
+    }
+    catch (error) {
+      if (error instanceof shippings.licenses.LicenseKeyInputError)
+        return response.json({ message: error.message }, 422)
+      throw error
+    }
   },
 })

@@ -24,3 +24,8 @@ export {
   updateExpiration,
   updateStatus,
 } from './update'
+
+export {
+  LicenseKeyInputError,
+  validateLicenseKeyWrite,
+} from './validate-write'

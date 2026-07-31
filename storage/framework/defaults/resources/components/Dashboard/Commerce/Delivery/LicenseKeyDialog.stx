@@ -47,15 +47,17 @@ let hydrationKey = ''
 function toDateTimeLocal(value?: string): string {
   if (!value)
     return ''
-  const date = new Date(value.replace(' ', 'T'))
+  const timestamp = /^\d{10,13}$/.test(value)
+    ? Number(value) * (value.length === 10 ? 1000 : 1)
+    : value.replace(' ', 'T')
+  const date = new Date(timestamp)
   if (Number.isNaN(date.getTime()))
     return ''
   return new Date(date.getTime() - date.getTimezoneOffset() * 60_000).toISOString().slice(0, 16)
 }
 
-function toDatabaseTimestamp(value: string): string {
-  const normalized = value.replace('T', ' ')
-  return normalized.length === 16 ? `${normalized}:00` : normalized
+function toUnixTimestamp(value: string): number {
+  return Math.floor(new Date(value).getTime() / 1000)
 }
 
 function defaultExpiry(): string {
@@ -110,10 +112,10 @@ function submit(): void {
   emit('submit', {
     key: normalizedKey,
     template: templateValue(),
-    customer_id: relationId(customerId()),
-    product_id: relationId(productId()),
-    order_id: relationId(orderId()),
-    expiry_date: toDatabaseTimestamp(expiryDate()),
+    customerId: relationId(customerId()),
+    productId: relationId(productId()),
+    orderId: relationId(orderId()),
+    expiryDate: toUnixTimestamp(expiryDate()),
     status: status(),
   })
 }

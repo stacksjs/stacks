@@ -2,6 +2,7 @@ import { db } from '@stacksjs/database'
 // Import dependencies
 import { formatDate } from '@stacksjs/orm'
 import { licenseKeyWriteData } from '../write-data'
+import { LicenseKeyInputError, validateLicenseKeyWrite } from './validate-write'
 type LicenseKeyJsonResponse = ModelRow<typeof LicenseKey>
 type LicenseKeyUpdate = UpdateModelData<typeof LicenseKey>
 
@@ -17,10 +18,20 @@ export async function update(id: number, data: LicenseKeyUpdate): Promise<Licens
     if (!id)
       throw new Error('License key ID is required for update')
 
+    const current = await db
+      .selectFrom('license_keys')
+      .where('id', '=', id)
+      .selectAll()
+      .executeTakeFirst()
+    if (!current)
+      throw new Error('License key was not found')
+    const input = licenseKeyWriteData(data as Record<string, unknown>)
+    const validated = await validateLicenseKeyWrite(input, current as Record<string, unknown>)
+
     const result = await db
       .updateTable('license_keys')
       .set({
-        ...licenseKeyWriteData(data as Record<string, unknown>),
+        ...validated,
         updated_at: formatDate(new Date()),
       })
       .where('id', '=', id)
@@ -33,9 +44,11 @@ export async function update(id: number, data: LicenseKeyUpdate): Promise<Licens
     return result as LicenseKeyJsonResponse
   }
   catch (error) {
+    if (error instanceof LicenseKeyInputError)
+      throw error
     if (error instanceof Error) {
       if (error.message.includes('UNIQUE constraint failed: license_keys.key'))
-        throw new TypeError('A license key with this value already exists.')
+        throw new LicenseKeyInputError('A license key with this value already exists.')
       throw new TypeError(`Failed to update license key: ${error.message}`)
     }
 

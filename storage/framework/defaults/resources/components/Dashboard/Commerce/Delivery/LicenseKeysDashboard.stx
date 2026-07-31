@@ -34,10 +34,10 @@ interface LicenseKeyRecord {
 interface LicenseKeyPayload {
   key: string
   template: string
-  customer_id: number | null
-  product_id: number | null
-  order_id: number | null
-  expiry_date: string
+  customerId: number | null
+  productId: number | null
+  orderId: number | null
+  expiryDate: number
   status: LicenseKeyStatus
 }
 
@@ -73,6 +73,8 @@ function withRelationships(record: LicenseKeyRecord): LicenseKeyRecord {
 }
 
 function dateTime(value: string): number {
+  if (/^\d{10,13}$/.test(value))
+    return Number(value) * (value.length === 10 ? 1000 : 1)
   return new Date(value.replace(' ', 'T')).getTime()
 }
 

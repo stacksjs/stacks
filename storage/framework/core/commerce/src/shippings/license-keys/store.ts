@@ -5,6 +5,7 @@ import { randomUUIDv7 } from 'bun'
 import { db } from '@stacksjs/database'
 import { mutationCount } from '../../utils/mutation-count'
 import { licenseKeyWriteData } from '../write-data'
+import { LicenseKeyInputError, validateLicenseKeyWrite } from './validate-write'
 
 /**
  * Create a new license key
@@ -15,8 +16,9 @@ import { licenseKeyWriteData } from '../write-data'
 export async function store(data: NewLicenseKey): Promise<LicenseKeyJsonResponse> {
   try {
     const uuid = randomUUIDv7()
+    const input = licenseKeyWriteData(data as Record<string, unknown>)
     const licenseData = {
-      ...licenseKeyWriteData(data as Record<string, unknown>),
+      ...await validateLicenseKeyWrite(input),
       uuid,
     }
 
@@ -36,9 +38,11 @@ export async function store(data: NewLicenseKey): Promise<LicenseKeyJsonResponse
     return licenseKey
   }
   catch (error) {
+    if (error instanceof LicenseKeyInputError)
+      throw error
     if (error instanceof Error) {
       if (error.message.includes('UNIQUE constraint failed: license_keys.key'))
-        throw new TypeError('A license key with this value already exists.')
+        throw new LicenseKeyInputError('A license key with this value already exists.')
       throw new TypeError(`Failed to create license key: ${error.message}`)
     }
 
@@ -57,10 +61,10 @@ export async function bulkStore(data: NewLicenseKey[]): Promise<number> {
     return 0
 
   try {
-    const licenseDataArray = data.map(item => ({
-      ...licenseKeyWriteData(item as Record<string, unknown>),
+    const licenseDataArray = await Promise.all(data.map(async item => ({
+      ...await validateLicenseKeyWrite(licenseKeyWriteData(item as Record<string, unknown>)),
       uuid: randomUUIDv7(),
-    }))
+    })))
 
     const result = await db
       .insertInto('license_keys')
@@ -70,6 +74,8 @@ export async function bulkStore(data: NewLicenseKey[]): Promise<number> {
     return mutationCount(result)
   }
   catch (error) {
+    if (error instanceof LicenseKeyInputError)
+      throw error
     if (error instanceof Error) {
       throw new TypeError(`Failed to create license keys in bulk: ${error.message}`)
     }
