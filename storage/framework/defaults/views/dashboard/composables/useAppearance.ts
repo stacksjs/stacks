@@ -31,8 +31,8 @@
  * in the layout becomes redundant — the shell rules stay either way.
  *
  * localStorage rather than a cookie because none of this needs to reach the
- * server: the skin is CSS, and a blocking inline script in the document head
- * stamps the attributes before first paint, so there is no flash to avoid.
+ * server: the skin is CSS, and the layout's native `@appearanceBootstrap`
+ * directive stamps the attributes before first paint.
  *
  * @module
  */
@@ -48,7 +48,7 @@ export interface AppearancePreferences {
   hiddenSections: string[]
 }
 
-/** localStorage key. Also read by the pre-paint bootstrap in the layout. */
+/** localStorage key. Also read by `@appearanceBootstrap` in the layout. */
 export const APPEARANCE_STORAGE_KEY = 'stacks-dashboard-appearance'
 
 export const DEFAULT_APPEARANCE: AppearancePreferences = {
@@ -185,7 +185,7 @@ export function sidebarThemeFor(style: SidebarStyle, knownThemes: Record<string,
  * own rule: state two places share is a store, not module state.
  *
  * Persistence is the store's, keyed and shaped to match what the layout's
- * pre-paint bootstrap reads: `{ sidebarStyle, colorMode, hiddenSections }`
+ * `@appearanceBootstrap` reads: `{ sidebarStyle, colorMode, hiddenSections }`
  * under `APPEARANCE_STORAGE_KEY`.
  */
 export const appearanceStore = defineStore('appearance', () => {

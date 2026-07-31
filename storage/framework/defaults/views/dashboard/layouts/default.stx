@@ -45,36 +45,23 @@ export const sidebarRoleMap = JSON.stringify(
     entire sidebar once this layout started rendering it through a component. -->
 <link rel="stylesheet" href="/__deps/dashboard-icons.css">
 
-<!-- Appearance bootstrap. Runs before the shell below it is parsed, so the
-    chosen skin is on the root element for the FIRST paint rather than being
-    applied after hydration — otherwise every hard reload shows a frame of the
-    macOS shell before flipping to Arc.
-
-    Deliberately inline, tiny and dependency-free: it has to run synchronously
-    at this point in the document, which rules out anything the bundler would
-    defer. It reads the same key useAppearance writes and duplicates only the
-    two defaults, so a storage failure still yields a usable shell. -->
-<script>
-  (function () {
-    try {
-      var raw = window.localStorage.getItem('stacks-dashboard-appearance')
-      var prefs = raw ? JSON.parse(raw) : {}
-      var root = document.documentElement
-      root.dataset.appearance = prefs.sidebarStyle === 'arc' ? 'arc' : 'macos'
-      root.dataset.colorMode = prefs.colorMode || 'system'
-      var dark = prefs.colorMode === 'dark' || (prefs.colorMode !== 'light'
-        && window.matchMedia('(prefers-color-scheme: dark)').matches)
-      root.classList.toggle('dark', dark)
-      // Claims the appearance from the Sidebar component, whose own
-      // prefers-color-scheme mirroring would otherwise overwrite an explicit
-      // Light/Dark choice the moment it mounts.
-      root.dataset.theme = dark ? 'dark' : 'light'
-    }
-    catch (error) {
-      document.documentElement.dataset.appearance = 'macos'
-    }
-  })()
-</script>
+<!-- The native STX appearance bootstrap runs synchronously at this position.
+    It validates persisted values and stamps the root element before the shell
+    below is parsed, so hard reloads never flash the default skin or color mode. -->
+@appearanceBootstrap({
+  storageKey: 'stacks-dashboard-appearance',
+  appearance: {
+    key: 'sidebarStyle',
+    attribute: 'appearance',
+    allowed: ['macos', 'arc'],
+    default: 'macos',
+  },
+  colorMode: {
+    key: 'colorMode',
+    attribute: 'color-mode',
+    default: 'system',
+  },
+})
 
 <style>
 /*
