@@ -30,6 +30,7 @@
 import { chmodSync, existsSync, readdirSync, readFileSync, renameSync, statSync, unlinkSync, writeFileSync } from 'node:fs'
 import { randomUUID } from 'node:crypto'
 import { basename, dirname, join, resolve } from 'node:path'
+import { pathToFileURL } from 'node:url'
 import process from 'node:process'
 
 let projectRootCache: string | null = null
@@ -58,28 +59,39 @@ export interface ConfigFileSummary {
   name: string
   /** Display title, e.g. 'Email'. */
   title: string
-  /** Absolute path to the source file. */
-  path: string
-  /** Bytes — UI uses this to show "small / large config" hints. */
+  /** Bytes - UI uses this to show "small / large config" hints. */
   size: number
 }
 
 /** Enumerate every `.ts` config file. Hidden / non-ts files are skipped. */
-export function listConfigFiles(): ConfigFileSummary[] {
-  const dir = configDir()
-  if (!existsSync(dir)) return []
-  let entries: string[]
-  try { entries = readdirSync(dir) }
-  catch { return [] }
+export function listConfigFiles(dir = configDir()): ConfigFileSummary[] {
+  if (!existsSync(dir))
+    throw new Error(`Could not list dashboard configuration: ${dir} does not exist`)
+
+  let entries: ReturnType<typeof readdirSync>
+  try {
+    entries = readdirSync(dir, { withFileTypes: true })
+  }
+  catch (error) {
+    throw new Error(`Could not list dashboard configuration: ${error instanceof Error ? error.message : String(error)}`)
+  }
+
   const out: ConfigFileSummary[] = []
-  for (const e of entries) {
-    if (!e.endsWith('.ts') || e.startsWith('.')) continue
-    const path = join(dir, e)
-    let size = 0
-    try { size = Bun.file(path).size }
-    catch { /* unreadable — leave at 0 */ }
-    const name = e.replace(/\.ts$/, '')
-    out.push({ name, title: titleCase(name), path, size })
+  for (const entry of entries) {
+    if (!entry.isFile() || !entry.name.endsWith('.ts') || entry.name.startsWith('.'))
+      continue
+
+    const path = join(dir, entry.name)
+    let size: number
+    try {
+      size = statSync(path).size
+    }
+    catch (error) {
+      throw new Error(`Could not read dashboard configuration ${entry.name}: ${error instanceof Error ? error.message : String(error)}`)
+    }
+
+    const name = entry.name.replace(/\.ts$/, '')
+    out.push({ name, title: titleCase(name), size })
   }
   return out.sort((a, b) => a.name.localeCompare(b.name))
 }
@@ -114,29 +126,31 @@ export interface ConfigField {
 
 /** Read one config file by name (e.g. 'email'). */
 export async function readConfig(name: string): Promise<ReadResult | null> {
+  assertConfigName(name)
   const path = join(configDir(), `${name}.ts`)
   if (!existsSync(path)) return null
 
-  const stat = await Bun.file(path).stat?.().catch(() => null)
-  const mtimeMs = stat?.mtimeMs ?? Date.now()
+  let mtimeMs: number
+  try {
+    mtimeMs = (await Bun.file(path).stat()).mtimeMs
+  }
+  catch (error) {
+    throw new Error(`Failed to stat config/${name}.ts: ${error instanceof Error ? error.message : String(error)}`)
+  }
 
   // Read the source as the source-of-truth for the field listing.
-  // We deliberately do NOT re-`import()` the file after every edit — Bun
-  // caches modules by URL, query-string cache-busting (`?t=…`) caused
-  // intermittent 0-status responses for some configs (likely when the
-  // resolved value held a function or unsupported sentinel). The source
-  // text + a one-off initial import gives us everything the editor
-  // needs without re-executing the config graph on every keystroke.
   const source = readFileSync(path, 'utf8')
 
   let modVal: any
   const cached = moduleCache.get(path)
-  if (cached) {
+  if (cached?.mtimeMs === mtimeMs) {
     modVal = cached.value
   }
   else {
     try {
-      const mod = await import(path)
+      const moduleUrl = pathToFileURL(path)
+      moduleUrl.searchParams.set('dashboard-config-mtime', String(mtimeMs))
+      const mod = await import(moduleUrl.href)
       modVal = mod?.default ?? mod
       moduleCache.set(path, { mtimeMs, value: modVal })
     }
@@ -145,10 +159,8 @@ export async function readConfig(name: string): Promise<ReadResult | null> {
     }
   }
 
-  // For previously-cached modules, refresh scalar fields from the source
-  // text instead of re-importing — that way edits made via this API are
-  // reflected immediately in subsequent reads without paying the import
-  // re-evaluation cost (and without tripping Bun's URL cache).
+  // Literal overlays also cover filesystems whose timestamp precision is too
+  // coarse to distinguish two edits made in the same tick.
   modVal = applySourceOverrides(modVal, source)
   const fields = describeFields(modVal, source)
   return { values: modVal, source, fields }
@@ -195,6 +207,7 @@ export async function updateConfigKeys(
   name: string,
   updates: ConfigUpdate[],
 ): Promise<BatchUpdateResult> {
+  assertConfigName(name)
   const path = join(configDir(), `${name}.ts`)
   if (!existsSync(path))
     throw new Error(`config/${name}.ts not found`)
@@ -202,10 +215,6 @@ export async function updateConfigKeys(
   const source = readFileSync(path, 'utf8')
   const rewritten = rewriteConfigKeys(source, updates, `config/${name}.ts`)
   atomicWrite(path, rewritten)
-  // We don't bust moduleCache here on purpose — re-importing with a
-  // changed-on-disk file via Bun reuses the original module from the
-  // first import; subsequent reads pick up the edit through the source-
-  // text overlay (`applySourceOverrides`) instead.
   return { ok: true, updates, source: rewritten }
 }
 
@@ -246,10 +255,25 @@ function parseLiteral(literal: string): any {
 /* -------------------------------------------------------------------------- */
 
 function titleCase(name: string): string {
+  const acronyms: Record<string, string> = {
+    ai: 'AI',
+    cli: 'CLI',
+    cms: 'CMS',
+    dns: 'DNS',
+    saas: 'SaaS',
+    sms: 'SMS',
+    ui: 'UI',
+  }
+
   return name
     .split(/[-_]/)
-    .map(s => s.charAt(0).toUpperCase() + s.slice(1))
+    .map(segment => acronyms[segment.toLowerCase()] || segment.charAt(0).toUpperCase() + segment.slice(1))
     .join(' ')
+}
+
+function assertConfigName(name: string): void {
+  if (!/^[\w-]+$/.test(name))
+    throw new Error('Invalid config name')
 }
 
 function describeFields(values: any, source: string): ConfigField[] {
