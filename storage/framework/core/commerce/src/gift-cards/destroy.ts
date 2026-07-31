@@ -9,20 +9,12 @@ import { mutationCount } from '../utils/mutation-count'
  * @returns A boolean indicating whether the deletion was successful
  */
 export async function destroy(id: number): Promise<boolean> {
-  // First check if the gift card exists
-  const giftCard = await fetchById(id)
-
-  if (!giftCard) {
-    throw new Error(`Gift card with ID ${id} not found`)
-  }
-
-  // Delete the gift card
   const result = await db
     .deleteFrom('gift_cards')
     .where('id', '=', id)
     .executeTakeFirst()
 
-  return !!result
+  return mutationCount(result) > 0
 }
 
 /**

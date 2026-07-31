@@ -13,7 +13,7 @@ export async function deleteCoupon(id: number): Promise<boolean> {
     .where('id', '=', id)
     .executeTakeFirst()
 
-  return !!result
+  return mutationCount(result) > 0
 }
 
 /**

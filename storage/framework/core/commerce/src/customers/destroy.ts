@@ -1,5 +1,4 @@
 import { db } from '@stacksjs/database'
-import { fetchById } from './fetch'
 import { mutationCount } from '../utils/mutation-count'
 
 /**
@@ -10,20 +9,12 @@ import { mutationCount } from '../utils/mutation-count'
  */
 export async function destroy(id: number): Promise<boolean> {
   try {
-    // First check if the customer exists
-    const customer = await fetchById(id)
-
-    if (!customer) {
-      throw new Error(`Customer with ID ${id} not found`)
-    }
-
-    // Delete the customer
     const result = await db
       .deleteFrom('customers')
       .where('id', '=', id)
       .executeTakeFirst()
 
-    return result.numDeletedRows > 0
+    return mutationCount(result) > 0
   }
   catch (error) {
     if (error instanceof Error) {

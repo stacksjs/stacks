@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it } from 'bun:test'
 import { formatDate } from '@stacksjs/orm'
 import { refreshDatabase } from './setup'
+import { deleteCoupon } from '../coupons/destroy'
 import { fetchActive, fetchAll } from '../coupons/fetch'
 import { store } from '../coupons/store'
 
@@ -9,6 +10,12 @@ beforeEach(async () => {
 })
 
 describe('Coupon Module', () => {
+  describe('destroy', () => {
+    it('should return false when the coupon does not exist', async () => {
+      expect(await deleteCoupon(99999999)).toBe(false)
+    })
+  })
+
   describe('fetchById and fetchByCode', () => {
     it('should fetch all coupons', async () => {
       // Create multiple coupons
