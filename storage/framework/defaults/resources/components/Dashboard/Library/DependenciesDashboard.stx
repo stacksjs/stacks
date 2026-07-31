@@ -1,3 +1,5 @@
+@import('../UI/Button')
+
 <script client>
 import { dashboardApi } from '../../../../functions/dashboard-api'
 import { pushToast } from '../../../../functions/toasts'
@@ -66,10 +68,10 @@ onMount(() => { void loadDependencies() })
 <div class="space-y-6">
   <header class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
     <div><p class="font-semibold text-blue-600 text-xs tracking-wide uppercase dark:text-blue-400">Library</p><h1 class="mt-1 font-bold text-2xl text-gray-900 dark:text-white">Dependencies</h1><p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Resolved dependency declarations from {{ source() }}. Updates are managed by buddy-bot.</p></div>
-    <button type="button" :disabled="loading()" class="inline-flex items-center self-start px-3 py-2 font-semibold text-gray-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700 disabled:opacity-50" @click="loadDependencies()"><span :class="'mr-2 h-4 w-4 ' + (loading() ? 'animate-spin i-hugeicons-loading-03' : 'i-hugeicons-refresh')"></span>Refresh</button>
+    <Button type="button" variant="secondary" class="self-start" :loading="loading()" :disabled="loading()" @click="loadDependencies()">Refresh</Button>
   </header>
 
-  <div :if="loadError()" role="alert" class="flex gap-4 items-center justify-between p-4 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900"><span>{{ loadError() }}</span><button type="button" class="font-semibold underline" @click="loadDependencies()">Retry</button></div>
+  <div :if="loadError()" role="alert" class="flex gap-4 items-center justify-between p-4 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900"><span>{{ loadError() }}</span><Button type="button" variant="ghost" size="sm" @click="loadDependencies()">Retry</Button></div>
   <div :if="!loading() && !available()" role="status" class="p-4 text-amber-700 text-sm dark:text-amber-300 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 rounded-lg dark:border-amber-900">No bun.lock exists yet. Run the normal dependency install workflow to create it.</div>
 
   <section aria-label="Dependency metrics" class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">

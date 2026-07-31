@@ -1,3 +1,5 @@
+@import('../UI/Button')
+
 <script client>
 import { dashboardApi } from '../../../../functions/dashboard-api'
 import { pushToast } from '../../../../functions/toasts'
@@ -126,23 +128,23 @@ onMount(() => {
       </p>
     </div>
     <div class="flex gap-2">
-      <button
+      <Button
         type="button"
+        variant="secondary"
+        :loading="loading()"
         :disabled="loading()"
-        class="inline-flex items-center px-3 py-2 font-semibold text-gray-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700 disabled:opacity-50"
         @click="loadComponents()"
       >
-        <span :class="'mr-2 h-4 w-4 ' + (loading() ? 'animate-spin i-hugeicons-loading-03' : 'i-hugeicons-refresh')"></span>
         Refresh
-      </button>
-      <button
+      </Button>
+      <Button
         type="button"
-        class="inline-flex items-center px-3 py-2 font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md"
+        variant="primary"
         @click="openCreate()"
       >
-        <span class="mr-2 h-4 w-4 i-hugeicons-add-01"></span>
+        <span class="h-4 w-4 i-hugeicons-add-01"></span>
         Create component
-      </button>
+      </Button>
     </div>
   </header>
 
@@ -152,7 +154,7 @@ onMount(() => {
     class="flex gap-4 items-center justify-between p-4 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900"
   >
     <span :text="loadError()"></span>
-    <button type="button" class="font-semibold underline" @click="loadComponents()">Retry</button>
+    <Button type="button" variant="ghost" size="sm" @click="loadComponents()">Retry</Button>
   </div>
 
   <section aria-label="Component metrics" class="grid gap-3 sm:grid-cols-3">
@@ -272,22 +274,22 @@ onMount(() => {
         </label>
       </div>
       <footer class="flex gap-2 justify-end px-6 py-4 bg-gray-50 dark:bg-neutral-900/50 border-gray-200 border-t dark:border-neutral-700">
-        <button
+        <Button
           type="button"
+          variant="secondary"
           :disabled="saving()"
-          class="px-3 py-2 font-semibold text-gray-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700"
           @click="closeCreate()"
         >
           Cancel
-        </button>
-        <button
+        </Button>
+        <Button
           type="submit"
+          variant="primary"
+          :loading="saving()"
           :disabled="saving() || !validName()"
-          class="inline-flex items-center px-3 py-2 font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md disabled:opacity-50"
         >
-          <span :if="saving()" class="mr-2 h-4 w-4 animate-spin i-hugeicons-loading-03"></span>
           Create component
-        </button>
+        </Button>
       </footer>
     </form>
   </section>
