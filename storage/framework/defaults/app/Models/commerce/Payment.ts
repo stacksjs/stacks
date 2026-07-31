@@ -96,7 +96,7 @@ export default defineModel({
       fillable: true,
       default: 'USD',
       validation: {
-        rule: schema.string().max(3),
+        rule: schema.string().required().max(3),
       },
       factory: faker => faker.helpers.arrayElement(['USD', 'EUR', 'GBP', 'CAD', 'AUD']),
     },

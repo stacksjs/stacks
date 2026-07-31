@@ -1,10 +1,25 @@
+import {
+  commerceCurrency,
+  commerceEnum,
+  commerceIdentifier,
+  commerceNumber,
+  commerceOptionalEmail,
+  commerceOptionalIdentifier,
+  commerceOptionalString,
+  commerceTimestamp,
+  commerceValue,
+} from './commerce-record'
+
+export type PaymentMethod = 'cash' | 'creditCard' | 'debitCard' | 'paypal' | 'applePay' | 'googlePay' | 'bankTransfer' | 'giftCard'
+export type PaymentStatus = 'pending' | 'processing' | 'completed' | 'failed' | 'refunded' | 'partiallyRefunded' | 'succeeded'
+
 export interface PaymentRecord {
   id: string
   amount: number
   refundAmount: number
   refundRecorded: boolean
-  method: string
-  status: string
+  method: PaymentMethod
+  status: PaymentStatus
   currency: string
   referenceNumber: string
   cardLastFour: string
@@ -27,52 +42,119 @@ export interface PaymentSummary {
   successRate: number
 }
 
-function value(record: any, ...keys: string[]): unknown {
+export interface PaymentRelationshipContext {
+  orderIds?: Set<string>
+  customerIds?: Set<string>
+}
+
+function rawValue(record: any, ...keys: string[]): unknown {
   for (const key of keys) {
     const result = typeof record?.get === 'function' ? record.get(key) : record?.[key]
-    if (result !== null && result !== undefined)
+    if (result !== undefined)
       return result
   }
   return undefined
 }
 
-function text(input: unknown): string {
-  return input === null || input === undefined ? '' : String(input)
-}
-
-function integer(input: unknown): number {
-  const result = Number(input)
-  return Number.isFinite(result) ? Math.round(result) : 0
-}
-
 export function normalizeCardLastFour(input: unknown): string {
-  const raw = text(input).trim()
+  const raw = commerceOptionalString(input, 'Payment', 'card_last_four')
   if (!raw)
     return ''
+  if (!/^[\d -]+$/.test(raw))
+    throw new TypeError('Payment.card_last_four must contain only card digits and separators.')
   const digits = raw.replace(/\D/g, '')
-  return (digits || raw).slice(-4)
+  if (digits.length < 4 || digits.length > 19)
+    throw new TypeError('Payment.card_last_four must contain between 4 and 19 card digits.')
+  return digits.slice(-4)
 }
 
-export function normalizePaymentRecord(record: any): PaymentRecord {
-  const rawRefund = value(record, 'refund_amount', 'refundAmount')
+export function normalizePaymentRecord(
+  record: any,
+  relationships: PaymentRelationshipContext = {},
+): PaymentRecord {
+  const id = commerceIdentifier(commerceValue(record, 'id', 'uuid'), 'Payment')
+  const source = `Payment ${id}`
+  const amount = commerceNumber(commerceValue(record, 'amount'), source, 'amount', {
+    min: 1,
+    integer: true,
+  })
+  const rawRefund = rawValue(record, 'refund_amount', 'refundAmount')
+  const refundRecorded = rawRefund !== null && rawRefund !== undefined && rawRefund !== ''
+  const refundAmount = refundRecorded
+    ? commerceNumber(rawRefund, source, 'refund_amount', { min: 0, integer: true })
+    : 0
+  if (refundAmount > amount)
+    throw new TypeError(`${source}.refund_amount must not exceed amount.`)
+  const orderId = commerceOptionalIdentifier(
+    commerceValue(record, 'order_id', 'orderId'),
+    source,
+    'order_id',
+  )
+  if (orderId && relationships.orderIds && !relationships.orderIds.has(orderId))
+    throw new TypeError(`${source}.order_id references missing Order ${orderId}.`)
+  const customerId = commerceOptionalIdentifier(
+    commerceValue(record, 'customer_id', 'customerId'),
+    source,
+    'customer_id',
+  )
+  if (customerId && relationships.customerIds && !relationships.customerIds.has(customerId))
+    throw new TypeError(`${source}.customer_id references missing Customer ${customerId}.`)
+
   return {
-    id: text(value(record, 'id', 'uuid')),
-    amount: integer(value(record, 'amount')),
-    refundAmount: integer(rawRefund),
-    refundRecorded: rawRefund !== null && rawRefund !== undefined && rawRefund !== '',
-    method: text(value(record, 'method')),
-    status: text(value(record, 'status')),
-    currency: text(value(record, 'currency')) || 'USD',
-    referenceNumber: text(value(record, 'reference_number', 'referenceNumber')),
-    cardLastFour: normalizeCardLastFour(value(record, 'card_last_four', 'cardLastFour')),
-    cardBrand: text(value(record, 'card_brand', 'cardBrand')),
-    billingEmail: text(value(record, 'billing_email', 'billingEmail')),
-    transactionId: text(value(record, 'transaction_id', 'transactionId')),
-    paymentProvider: text(value(record, 'payment_provider', 'paymentProvider')),
-    notes: text(value(record, 'notes')),
-    orderId: text(value(record, 'order_id', 'orderId')),
-    customerId: text(value(record, 'customer_id', 'customerId')),
-    createdAt: text(value(record, 'created_at', 'createdAt')),
+    id,
+    amount,
+    refundAmount,
+    refundRecorded,
+    method: commerceEnum(commerceValue(record, 'method'), source, 'method', [
+      'cash',
+      'creditCard',
+      'debitCard',
+      'paypal',
+      'applePay',
+      'googlePay',
+      'bankTransfer',
+      'giftCard',
+    ]),
+    status: commerceEnum(commerceValue(record, 'status'), source, 'status', [
+      'pending',
+      'processing',
+      'completed',
+      'failed',
+      'refunded',
+      'partiallyRefunded',
+      'succeeded',
+    ]),
+    currency: commerceCurrency(commerceValue(record, 'currency'), source),
+    referenceNumber: commerceOptionalString(
+      commerceValue(record, 'reference_number', 'referenceNumber'),
+      source,
+      'reference_number',
+    ),
+    cardLastFour: normalizeCardLastFour(commerceValue(record, 'card_last_four', 'cardLastFour')),
+    cardBrand: commerceOptionalString(
+      commerceValue(record, 'card_brand', 'cardBrand'),
+      source,
+      'card_brand',
+    ),
+    billingEmail: commerceOptionalEmail(
+      commerceValue(record, 'billing_email', 'billingEmail'),
+      source,
+      'billing_email',
+    ),
+    transactionId: commerceOptionalString(
+      commerceValue(record, 'transaction_id', 'transactionId'),
+      source,
+      'transaction_id',
+    ),
+    paymentProvider: commerceOptionalString(
+      commerceValue(record, 'payment_provider', 'paymentProvider'),
+      source,
+      'payment_provider',
+    ),
+    notes: commerceOptionalString(commerceValue(record, 'notes'), source, 'notes'),
+    orderId,
+    customerId,
+    createdAt: commerceTimestamp(commerceValue(record, 'created_at', 'createdAt'), source),
   }
 }
 
@@ -108,7 +190,7 @@ export function summarizePayments(records: PaymentRecord[]): PaymentSummary {
 }
 
 function csvCell(value: unknown): string {
-  const textValue = text(value)
+  const textValue = String(value ?? '')
   return /[",\n]/.test(textValue) ? `"${textValue.replaceAll('"', '""')}"` : textValue
 }
 

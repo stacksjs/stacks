@@ -1,5 +1,7 @@
 import { Action } from '@stacksjs/actions'
-import { payments } from '@stacksjs/commerce'
+import { Customer, Order, Payment } from '@stacksjs/orm'
+import { response } from '@stacksjs/router'
+import { commerceIdentifier, commerceValue } from './commerce-record'
 import { normalizePaymentRecord, summarizePayments } from './payment-records'
 
 export default new Action({
@@ -9,11 +11,30 @@ export default new Action({
   apiResponse: true,
 
   async handle() {
-    const paymentRows = await payments.fetchAll()
-    const records = paymentRows.map(normalizePaymentRecord)
-    return {
-      records,
-      summary: summarizePayments(records),
+    try {
+      const [paymentRows, orders, customers] = await Promise.all([
+        Payment.orderByDesc('id').limit(500).get(),
+        Order.orderBy('id', 'asc').limit(500).get(),
+        Customer.orderBy('id', 'asc').limit(500).get(),
+      ])
+      const orderIds = new Set(orders.map(order =>
+        commerceIdentifier(commerceValue(order, 'id', 'uuid'), 'Order'),
+      ))
+      const customerIds = new Set(customers.map(customer =>
+        commerceIdentifier(commerceValue(customer, 'id', 'uuid'), 'Customer'),
+      ))
+      const records = paymentRows.map(payment =>
+        normalizePaymentRecord(payment, { orderIds, customerIds }),
+      )
+      return {
+        records,
+        summary: summarizePayments(records),
+      }
+    }
+    catch (error) {
+      return response.json({
+        message: error instanceof Error ? error.message : 'Payment records could not be read.',
+      }, 503)
     }
   },
 })
