@@ -19,19 +19,55 @@ Server actions are reusable business logic units invoked from routes, events, or
 ## Creating an Action
 
 ```typescript
-// app/Actions/NotifyUser.ts
-export default {
-  name: 'NotifyUser',
-  description: 'Notify user after creation',
+// app/Actions/CreateWidget.ts
+import { Action } from '@stacksjs/actions'
+import { toSnakeCaseKeys } from '@stacksjs/orm'
+import { response } from '@stacksjs/router'
 
-  async handle(request: any) {
-    const id = request.get('id')
-    const name = request.get('name')
-    console.log(`User ${name} (${id}) created`)
-    return { success: true }
-  }
-}
+export default new Action({
+  name: 'Create Widget',
+  description: 'Create a widget',
+  method: 'POST',
+  model: Widget,
+
+  async handle(request: RequestInstance) {
+    await request.validate()
+
+    const widget = await Widget.create(toSnakeCaseKeys(request.all()))
+
+    return response.json(widget, 201)
+  },
+})
 ```
+
+Use the `Action` class, an explicit HTTP method, and `response` helpers. Store and
+update actions should set `model` and call `request.validate()` before persisting
+input. Import framework helpers explicitly, following the default actions.
+
+## Resource Action Contract
+
+Show, update, and destroy actions must distinguish malformed identifiers,
+missing records, invalid input, and operational failures:
+
+1. Read resource identifiers from `request.getParam('id')`, never from the
+   request body.
+2. Convert the value to a number and require a safe positive integer. Return
+   `422` when it is malformed.
+3. Validate update input with the action model, then normalize persisted keys
+   with `toSnakeCaseKeys(request.all())` when the service expects database
+   column names.
+4. Core update services return `undefined` when the row does not exist. Core
+   destroy services return `false`. They throw only for invalid domain input,
+   conflicts, or real operational failures.
+5. Return `404` when show or update returns `undefined`, or destroy returns
+   `false`. Never return a successful `null`, an unconditional `204`, or a
+   generic `500` for an absent row.
+6. Preserve domain status codes such as `409` for uniqueness conflicts and
+   `422` for relationship or state validation.
+
+Share identifier and not-found response helpers inside a domain instead of
+copying the contract across every resource. The built-in Commerce actions use
+`Actions/Commerce/commerce-action.ts` as the reference implementation.
 
 ## Auto-Generated API Actions (useApi Trait)
 
