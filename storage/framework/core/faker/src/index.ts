@@ -42,6 +42,20 @@ const datatype: DatatypeCompatibility = {
   },
 }
 
+/**
+ * Keep seeded image URLs usable in real UI previews. The underlying faker's
+ * generic URL still targets the retired via.placeholder.com service, so
+ * factories otherwise persist broken images into commerce and content data.
+ */
+const image = Object.create(baseFaker.image) as typeof baseFaker.image
+image.url = (options?: { width?: number, height?: number }): string => {
+  const width = options?.width ?? 640
+  const height = options?.height ?? 480
+  const seed = baseFaker.string.alphanumeric({ length: 12 }).toLowerCase()
+
+  return `https://picsum.photos/seed/${seed}/${width}/${height}`
+}
+
 // location module (alias to address for @faker-js/faker compatibility)
 const location = {
   street(): string {
@@ -350,6 +364,7 @@ const enhancedLorem = {
 interface FakerCompatibility {
   lorem: typeof enhancedLorem
   datatype: typeof datatype
+  image: typeof image
   location: typeof location
   company: typeof company
   vehicle: typeof vehicle
@@ -362,6 +377,7 @@ export const faker = {
   ...baseFaker,
   lorem: enhancedLorem,
   datatype,
+  image,
   location,
   company,
   vehicle,

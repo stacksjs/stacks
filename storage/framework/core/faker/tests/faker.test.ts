@@ -75,6 +75,13 @@ describe('@stacksjs/faker', () => {
     expect(city.length).toBeGreaterThan(0)
   })
 
+  it('faker.image.url() returns a usable seeded preview URL', () => {
+    const imageUrl = faker.image.url({ width: 800, height: 600 })
+
+    expect(imageUrl).toMatch(/^https:\/\/picsum\.photos\/seed\/[a-z0-9]+\/800\/600$/)
+    expect(imageUrl).not.toContain('placeholder.com')
+  })
+
   it('faker.phone.number() returns a non-empty phone number', () => {
     const phone = faker.phone.number()
     expect(typeof phone).toBe('string')
