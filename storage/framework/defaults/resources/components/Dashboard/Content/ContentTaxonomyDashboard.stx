@@ -182,7 +182,7 @@ onMount(() => {
 })
 </script>
 
-<div class="space-y-6">
+<div class="min-w-0 max-w-full space-y-6">
   <header class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
     <div>
       <p class="font-semibold text-blue-600 text-xs tracking-wide uppercase dark:text-blue-400">CMS</p>
@@ -203,9 +203,9 @@ onMount(() => {
     <article class="p-4 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700"><p class="text-gray-500 text-xs dark:text-neutral-400">Newest</p><p class="mt-2 font-semibold text-gray-900 text-lg truncate dark:text-white">{{ records()[0]?.name || 'None' }}</p></article>
   </section>
 
-  <section class="overflow-hidden bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
+  <section class="overflow-hidden min-w-0 max-w-full bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
     <div class="p-4 border-b border-gray-200 dark:border-neutral-700"><label><span class="sr-only">Search {{ resource() }}</span><input x-model="search" type="search" :placeholder="'Search ' + resource()" class="px-3 py-2 max-w-md w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label></div>
-    <div class="overflow-x-auto">
+    <div class="overflow-x-auto max-w-full w-full">
       <table class="min-w-full divide-gray-200 divide-y dark:divide-neutral-700">
         <thead class="bg-gray-50 dark:bg-neutral-900/50"><tr><th class="px-4 py-3 font-semibold text-gray-600 text-left text-xs dark:text-neutral-300">Name</th><th class="px-4 py-3 font-semibold text-gray-600 text-left text-xs dark:text-neutral-300">Slug</th><th class="px-4 py-3 font-semibold text-gray-600 text-left text-xs dark:text-neutral-300">Description</th><th class="px-4 py-3 font-semibold text-gray-600 text-left text-xs dark:text-neutral-300">{{ resource() === 'tags' ? 'Posts' : 'Status' }}</th><th class="px-4 py-3"><span class="sr-only">Actions</span></th></tr></thead>
         <tbody class="divide-gray-200 divide-y dark:divide-neutral-700">

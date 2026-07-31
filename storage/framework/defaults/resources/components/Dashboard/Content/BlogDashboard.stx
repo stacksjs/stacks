@@ -1,6 +1,6 @@
 <template>
-<div class="p-6 min-h-screen text-neutral-950 dark:text-neutral-100 bg-neutral-50 dark:bg-neutral-950">
-  <div class="flex flex-col gap-6 mx-auto max-w-7xl">
+<div class="p-6 min-h-screen max-w-full text-neutral-950 dark:text-neutral-100 bg-neutral-50 dark:bg-neutral-950">
+  <div class="flex flex-col gap-6 mx-auto min-w-0 max-w-7xl w-full">
 
     <header class="flex flex-col gap-4 md:flex-row md:items-end md:justify-between pb-5 border-b border-neutral-200 dark:border-neutral-800">
       <div>
@@ -40,7 +40,7 @@
       </div>
     </section>
 
-    <section class="bg-white dark:bg-neutral-900 border border-neutral-200 rounded-md dark:border-neutral-800">
+    <section class="overflow-hidden min-w-0 max-w-full bg-white dark:bg-neutral-900 border border-neutral-200 rounded-md dark:border-neutral-800">
       <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between p-4 border-b border-neutral-200 dark:border-neutral-800">
         <div class="relative flex-1 max-w-md">
           <span class="absolute left-3 top-1/2 h-4 w-4 text-neutral-500 pointer-events-none -translate-y-1/2 i-hugeicons-search-01"></span>
@@ -91,7 +91,7 @@
         @endforeach
       </div>
 
-      <div x-show="!isLoading() && !loadError() && filteredPosts().length > 0" class="overflow-x-auto">
+      <div x-show="!isLoading() && !loadError() && filteredPosts().length > 0" class="overflow-x-auto max-w-full w-full">
         <table class="min-w-full text-sm divide-neutral-200 divide-y dark:divide-neutral-800">
           <thead class="font-semibold text-left text-neutral-600 text-xs uppercase dark:text-neutral-300 bg-neutral-50 dark:bg-neutral-950/60">
             <tr>

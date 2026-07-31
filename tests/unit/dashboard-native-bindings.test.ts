@@ -176,13 +176,18 @@ describe('dashboard native STX bindings', () => {
     expect(taxonomy).toContain(".normalize('NFKD')")
     expect(taxonomy).toContain('@input="markSlugTouched"')
     expect(taxonomy).toContain('@blur="normalizeSlug"')
+    expect(taxonomy).toContain('class="min-w-0 max-w-full space-y-6"')
+    expect(taxonomy).toContain('class="overflow-x-auto max-w-full w-full"')
 
     const blogView = readFileSync(
       resolve('storage/framework/defaults/views/dashboard/content/blog/index.stx'),
       'utf8',
     )
+    const blog = componentSource('Content/BlogDashboard.stx')
     expect(blogView).toContain('<BlogDashboard />')
     expect(blogView).not.toContain('<script')
+    expect(blog).toContain('mx-auto min-w-0 max-w-7xl w-full')
+    expect(blog).toContain('class="overflow-x-auto max-w-full w-full"')
 
     const seoView = readFileSync(
       resolve('storage/framework/defaults/views/dashboard/content/seo/index.stx'),

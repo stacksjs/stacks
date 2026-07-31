@@ -1,5 +1,273 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.229...v0.70.230)
+
+## ✨ Features
+
+- **browse**: stream crawl progress ([47f0d15](https://github.com/stacksjs/stacks/commit/47f0d15)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **browse**: add whole-site browser audit ([05cb525](https://github.com/stacksjs/stacks/commit/05cb525)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: add registration legal routes ([f8e3393](https://github.com/stacksjs/stacks/commit/f8e3393)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: expose captured mail ([6371060](https://github.com/stacksjs/stacks/commit/6371060)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: complete deployment workspace ([b876b43](https://github.com/stacksjs/stacks/commit/b876b43)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: expose deployment operations ([3a6bc2f](https://github.com/stacksjs/stacks/commit/3a6bc2f)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: support styled textareas ([9bb76a1](https://github.com/stacksjs/stacks/commit/9bb76a1)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **ui**: make dashboard tables interactive ([5af4f7f](https://github.com/stacksjs/stacks/commit/5af4f7f)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **ui**: make dashboard filters reactive ([8791968](https://github.com/stacksjs/stacks/commit/8791968)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **ui**: make dashboard tabs interactive ([1ede7d8](https://github.com/stacksjs/stacks/commit/1ede7d8)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: complete team management ([6edbde0](https://github.com/stacksjs/stacks/commit/6edbde0)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **teams**: implement invitation lifecycle ([058610d](https://github.com/stacksjs/stacks/commit/058610d)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **teams**: model memberships and invitations ([a90d6ba](https://github.com/stacksjs/stacks/commit/a90d6ba)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **ui**: preserve button integration hooks ([459ae2a](https://github.com/stacksjs/stacks/commit/459ae2a)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: let viewers choose the shell appearance ([82fb210](https://github.com/stacksjs/stacks/commit/82fb210)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: rebuild billing settings ([f6ffac2](https://github.com/stacksjs/stacks/commit/f6ffac2)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: add authenticated billing overview ([4bc9fee](https://github.com/stacksjs/stacks/commit/4bc9fee)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: load local Crosswind source ([8f69a3b](https://github.com/stacksjs/stacks/commit/8f69a3b)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **cms**: add post SEO metadata ([f03558d](https://github.com/stacksjs/stacks/commit/f03558d)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: add persisted content overview ([13caaf1](https://github.com/stacksjs/stacks/commit/13caaf1)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: restore component library ([c83f71b](https://github.com/stacksjs/stacks/commit/c83f71b)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: render native system insights ([6d7266d](https://github.com/stacksjs/stacks/commit/6d7266d)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: render live system health ([7787dd9](https://github.com/stacksjs/stacks/commit/7787dd9)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: render persisted system logs ([4b296a0](https://github.com/stacksjs/stacks/commit/4b296a0)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **release**: fail the pinned checks locally, before the tag exists ([da9359d](https://github.com/stacksjs/stacks/commit/da9359d)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **dashboard**: render configured mailboxes ([17ac28a](https://github.com/stacksjs/stacks/commit/17ac28a)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: render configured DNS state ([5538b9a](https://github.com/stacksjs/stacks/commit/5538b9a)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: render real server details ([b2743ad](https://github.com/stacksjs/stacks/commit/b2743ad)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: render serverless manifests ([9d3d937](https://github.com/stacksjs/stacks/commit/9d3d937)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: render configured cloud resources ([ff88295](https://github.com/stacksjs/stacks/commit/ff88295)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: render real server state ([aae4ac4](https://github.com/stacksjs/stacks/commit/aae4ac4)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: persist storage file management ([48fd7f4](https://github.com/stacksjs/stacks/commit/48fd7f4)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: support multipart API requests ([70ad3a4](https://github.com/stacksjs/stacks/commit/70ad3a4)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: expose storage file APIs ([96b6ca0](https://github.com/stacksjs/stacks/commit/96b6ca0)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **storage**: protect uploads from collisions ([5777dca](https://github.com/stacksjs/stacks/commit/5777dca)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: manage model records natively ([b143141](https://github.com/stacksjs/stacks/commit/b143141)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: expose model write contracts ([a31cb3c](https://github.com/stacksjs/stacks/commit/a31cb3c)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: add model-backed global search ([86559e1](https://github.com/stacksjs/stacks/commit/86559e1)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **buddy**: scaffold into cloned repos and resolve framework from npm by default ([297b66c](https://github.com/stacksjs/stacks/commit/297b66c)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: load library sources from workspace ([5039566](https://github.com/stacksjs/stacks/commit/5039566)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: manage persisted post taxonomies ([f3d0c9b](https://github.com/stacksjs/stacks/commit/f3d0c9b)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **cms**: model post taxonomy relations ([271ab06](https://github.com/stacksjs/stacks/commit/271ab06)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **orm**: support named many-to-many relations ([87481b7](https://github.com/stacksjs/stacks/commit/87481b7)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: moderate native comments ([f788d3e](https://github.com/stacksjs/stacks/commit/f788d3e)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: manage authors and pages ([6739004](https://github.com/stacksjs/stacks/commit/6739004)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **cms**: complete author and page APIs ([ec9a766](https://github.com/stacksjs/stacks/commit/ec9a766)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: manage native taxonomies ([0fa6b5b](https://github.com/stacksjs/stacks/commit/0fa6b5b)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: control campaign delivery ([803cd8c](https://github.com/stacksjs/stacks/commit/803cd8c)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: manage native campaigns ([a221a06](https://github.com/stacksjs/stacks/commit/a221a06)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: manage native social posts ([a9f6292](https://github.com/stacksjs/stacks/commit/a9f6292)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🐛 Bug Fixes
+
+- **dashboard**: initialize component-owned stores ([c3d11c9](https://github.com/stacksjs/stacks/commit/c3d11c9)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: accept explicit audit origin ([a123221](https://github.com/stacksjs/stacks/commit/a123221)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: declare shell favicons ([bc46cf6](https://github.com/stacksjs/stacks/commit/bc46cf6)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **scaffolding**: generate executable SQL migrations ([cf84551](https://github.com/stacksjs/stacks/commit/cf84551)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **faker**: generate usable seeded image URLs ([a015c4e](https://github.com/stacksjs/stacks/commit/a015c4e)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: validate model route slugs ([7622593](https://github.com/stacksjs/stacks/commit/7622593)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: return native not found response ([67c636a](https://github.com/stacksjs/stacks/commit/67c636a)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: render every bundled icon ([1583c82](https://github.com/stacksjs/stacks/commit/1583c82)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: protect config mutations ([4243e2d](https://github.com/stacksjs/stacks/commit/4243e2d)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: share authenticated store requests ([896c848](https://github.com/stacksjs/stacks/commit/896c848)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: submit password reset correctly ([b4d1d66](https://github.com/stacksjs/stacks/commit/b4d1d66)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: align dialogs with content pane ([4754251](https://github.com/stacksjs/stacks/commit/4754251)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: declare deployment action methods ([d86cad0](https://github.com/stacksjs/stacks/commit/d86cad0)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: declare guest documents ([c873c8b](https://github.com/stacksjs/stacks/commit/c873c8b)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: enable guest page navigation ([37d7c02](https://github.com/stacksjs/stacks/commit/37d7c02)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: serve head page requests ([f414c08](https://github.com/stacksjs/stacks/commit/f414c08)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dev**: seed csrf only on pages ([7566b3c](https://github.com/stacksjs/stacks/commit/7566b3c)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **commerce**: report missing shipping updates ([103aaa6](https://github.com/stacksjs/stacks/commit/103aaa6)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **commerce**: report missing operations updates ([4055149](https://github.com/stacksjs/stacks/commit/4055149)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **commerce**: report missing product updates ([b8cdfbf](https://github.com/stacksjs/stacks/commit/b8cdfbf)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **commerce**: report missing core updates ([7c54d16](https://github.com/stacksjs/stacks/commit/7c54d16)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **commerce**: report missing operations records ([ce58b57](https://github.com/stacksjs/stacks/commit/ce58b57)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **commerce**: report missing product records ([ba4095e](https://github.com/stacksjs/stacks/commit/ba4095e)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **commerce**: report missing core records ([0e78457](https://github.com/stacksjs/stacks/commit/0e78457)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **commerce**: report missing shipping records ([bc3a199](https://github.com/stacksjs/stacks/commit/bc3a199)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **commerce**: validate license key writes ([57cb656](https://github.com/stacksjs/stacks/commit/57cb656)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **commerce**: validate delivery routes ([a2e03c5](https://github.com/stacksjs/stacks/commit/a2e03c5)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: validate delivery drivers ([163d667](https://github.com/stacksjs/stacks/commit/163d667)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **commerce**: validate shipping rates ([d8d18e8](https://github.com/stacksjs/stacks/commit/d8d18e8)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: validate shipping zones ([dbda820](https://github.com/stacksjs/stacks/commit/dbda820)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: validate shipping methods ([a9d4f0f](https://github.com/stacksjs/stacks/commit/a9d4f0f)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: validate digital delivery ([5327e80](https://github.com/stacksjs/stacks/commit/5327e80)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: validate license key records ([adad9cd](https://github.com/stacksjs/stacks/commit/adad9cd)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: validate commerce overview ([8ae891d](https://github.com/stacksjs/stacks/commit/8ae891d)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: validate restaurant waitlist ([1f6d7c5](https://github.com/stacksjs/stacks/commit/1f6d7c5)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: validate product waitlist ([d034790](https://github.com/stacksjs/stacks/commit/d034790)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: validate review records ([45a663e](https://github.com/stacksjs/stacks/commit/45a663e)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: validate payment records ([25b5af1](https://github.com/stacksjs/stacks/commit/25b5af1)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: validate print logs ([12988ed](https://github.com/stacksjs/stacks/commit/12988ed)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: validate print devices ([ed08c49](https://github.com/stacksjs/stacks/commit/ed08c49)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: validate product variant records ([5ebb8a8](https://github.com/stacksjs/stacks/commit/5ebb8a8)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: validate product unit records ([8c7ee52](https://github.com/stacksjs/stacks/commit/8c7ee52)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: validate manufacturer records ([b227cdb](https://github.com/stacksjs/stacks/commit/b227cdb)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: validate coupon records ([c99e92f](https://github.com/stacksjs/stacks/commit/c99e92f)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: validate gift card records ([802efc7](https://github.com/stacksjs/stacks/commit/802efc7)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: validate delivery overview ([76ca3c8](https://github.com/stacksjs/stacks/commit/76ca3c8)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: validate order records ([45841be](https://github.com/stacksjs/stacks/commit/45841be)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: validate tax rate records ([580fbdb](https://github.com/stacksjs/stacks/commit/580fbdb)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: validate customer records ([62ef40f](https://github.com/stacksjs/stacks/commit/62ef40f)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: validate category records ([c2dae59](https://github.com/stacksjs/stacks/commit/c2dae59)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## ⚡ Performance Improvements
+
+- **browser**: expose tree-shakeable helper subpaths ([80090bb](https://github.com/stacksjs/stacks/commit/80090bb)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: prewarm rendered route shells ([f84950b](https://github.com/stacksjs/stacks/commit/f84950b)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **commerce**: scope shipping hydration ([5a8ab47](https://github.com/stacksjs/stacks/commit/5a8ab47)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: memoize sidebar rendering ([61a1b82](https://github.com/stacksjs/stacks/commit/61a1b82)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **models**: index insight observations ([cea53be](https://github.com/stacksjs/stacks/commit/cea53be)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **logs**: index dashboard query filters ([b3dd0e2](https://github.com/stacksjs/stacks/commit/b3dd0e2)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **queries**: index query log filters ([c9611eb](https://github.com/stacksjs/stacks/commit/c9611eb)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## ♻️ Code Refactoring
+
+- **dashboard**: componentize guest auth ([99ecc9d](https://github.com/stacksjs/stacks/commit/99ecc9d)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: componentize team invitation ([03c191b](https://github.com/stacksjs/stacks/commit/03c191b)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: componentize kanban boards ([89a2fa7](https://github.com/stacksjs/stacks/commit/89a2fa7)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: componentize project settings ([5631b8a](https://github.com/stacksjs/stacks/commit/5631b8a)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: componentize environment editor ([1cdb579](https://github.com/stacksjs/stacks/commit/1cdb579)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: componentize web analytics ([6dbec97](https://github.com/stacksjs/stacks/commit/6dbec97)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: componentize appearance settings ([d2dddd2](https://github.com/stacksjs/stacks/commit/d2dddd2)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: componentize seo management ([028a410](https://github.com/stacksjs/stacks/commit/028a410)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: componentize ci status ([b01a177](https://github.com/stacksjs/stacks/commit/b01a177)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: componentize inbox settings ([b166e19](https://github.com/stacksjs/stacks/commit/b166e19)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: componentize blog management ([49196e0](https://github.com/stacksjs/stacks/commit/49196e0)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: componentize permissions ([945dd6b](https://github.com/stacksjs/stacks/commit/945dd6b)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: componentize model records ([8631f52](https://github.com/stacksjs/stacks/commit/8631f52)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: componentize kanban board ([85a8aca](https://github.com/stacksjs/stacks/commit/85a8aca)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **commerce**: remove duplicate driver action ([adf4397](https://github.com/stacksjs/stacks/commit/adf4397)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **commerce**: share action responses ([725fd44](https://github.com/stacksjs/stacks/commit/725fd44)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: remove obsolete global helpers ([30e4b62](https://github.com/stacksjs/stacks/commit/30e4b62)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: update kanban records through models ([5e57cda](https://github.com/stacksjs/stacks/commit/5e57cda)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: create kanban records through models ([3c1f259](https://github.com/stacksjs/stacks/commit/3c1f259)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **stx**: remove obsolete router shim ([d2a5746](https://github.com/stacksjs/stacks/commit/d2a5746)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: componentize home overview ([27fbdda](https://github.com/stacksjs/stacks/commit/27fbdda)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: make overview primitives reactive ([8558ee1](https://github.com/stacksjs/stacks/commit/8558ee1)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: remove dead settings navigation ([d288f64](https://github.com/stacksjs/stacks/commit/d288f64)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: remove empty action stubs ([bf53a15](https://github.com/stacksjs/stacks/commit/bf53a15)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **auth**: use native token form submission ([195d6fc](https://github.com/stacksjs/stacks/commit/195d6fc)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **ui**: remove inert button data props ([482d619](https://github.com/stacksjs/stacks/commit/482d619)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **ui**: consolidate dashboard navigation ([e7ffa9f](https://github.com/stacksjs/stacks/commit/e7ffa9f)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **ui**: remove duplicate dashboard primitives ([a88dbd2](https://github.com/stacksjs/stacks/commit/a88dbd2)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **ui**: compose card actions with slots ([1c7c485](https://github.com/stacksjs/stacks/commit/1c7c485)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **queue**: remove inert legacy table ([1411e23](https://github.com/stacksjs/stacks/commit/1411e23)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **monitoring**: remove inert legacy components ([a9b5f45](https://github.com/stacksjs/stacks/commit/a9b5f45)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **email**: remove inert legacy components ([2ae1933](https://github.com/stacksjs/stacks/commit/2ae1933)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **billing**: remove inert legacy components ([dac946a](https://github.com/stacksjs/stacks/commit/dac946a)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **ui**: remove fake dashboard example ([60b20b0](https://github.com/stacksjs/stacks/commit/60b20b0)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **ui**: unify dashboard action links ([598a00b](https://github.com/stacksjs/stacks/commit/598a00b)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **ui**: remove dashboard placeholders ([0d4123a](https://github.com/stacksjs/stacks/commit/0d4123a)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **ui**: consolidate dashboard primitives ([0d6be16](https://github.com/stacksjs/stacks/commit/0d6be16)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **ui**: unify window controls ([71a627b](https://github.com/stacksjs/stacks/commit/71a627b)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **ui**: use native appearance bootstrap ([49f85d6](https://github.com/stacksjs/stacks/commit/49f85d6)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **ui**: unify shared modal actions ([5b9e8ef](https://github.com/stacksjs/stacks/commit/5b9e8ef)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **ui**: unify library actions ([38ee36b](https://github.com/stacksjs/stacks/commit/38ee36b)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **ui**: unify kanban actions ([d6e5a15](https://github.com/stacksjs/stacks/commit/d6e5a15)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **ui**: unify model and ci controls ([44dd15b](https://github.com/stacksjs/stacks/commit/44dd15b)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **ui**: unify dashboard shell actions ([84e9ef5](https://github.com/stacksjs/stacks/commit/84e9ef5)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **ui**: unify permission actions ([e08e6c4](https://github.com/stacksjs/stacks/commit/e08e6c4)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **ui**: unify content view actions ([fd7d6b2](https://github.com/stacksjs/stacks/commit/fd7d6b2)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **ui**: unify utility dashboard controls ([840ea32](https://github.com/stacksjs/stacks/commit/840ea32)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **ui**: unify runtime dashboard controls ([a52270c](https://github.com/stacksjs/stacks/commit/a52270c)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **ui**: unify app dashboard controls ([e382886](https://github.com/stacksjs/stacks/commit/e382886)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **ui**: unify legacy email controls ([16d8a9f](https://github.com/stacksjs/stacks/commit/16d8a9f)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 📝 Documentation
+
+- **stx**: document client bundle boundaries ([6838a7e](https://github.com/stacksjs/stacks/commit/6838a7e)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **stx**: clarify component input semantics ([69a25d1](https://github.com/stacksjs/stacks/commit/69a25d1)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: record complete route matrix ([cfb6b0a](https://github.com/stacksjs/stacks/commit/cfb6b0a)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: record API boundary audit ([829c4c7](https://github.com/stacksjs/stacks/commit/829c4c7)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: record render cache boundaries ([46bdefc](https://github.com/stacksjs/stacks/commit/46bdefc)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: refresh route audit ([4a03c98](https://github.com/stacksjs/stacks/commit/4a03c98)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **api**: refresh generated artifacts ([74e96bc](https://github.com/stacksjs/stacks/commit/74e96bc)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: refresh implementation audit ([03db298](https://github.com/stacksjs/stacks/commit/03db298)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: require shared API client ([d9425f0](https://github.com/stacksjs/stacks/commit/d9425f0)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **actions**: define resource response contracts ([3e478e7](https://github.com/stacksjs/stacks/commit/3e478e7)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **development**: clarify dashboard import runtimes ([6c3f84e](https://github.com/stacksjs/stacks/commit/6c3f84e)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **development**: correct dashboard config runtime ([12569fd](https://github.com/stacksjs/stacks/commit/12569fd)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: correct runtime conventions ([0ace554](https://github.com/stacksjs/stacks/commit/0ace554)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: define shared action controls ([c62affb](https://github.com/stacksjs/stacks/commit/c62affb)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **ai**: document pre-paint appearance ([491ab39](https://github.com/stacksjs/stacks/commit/491ab39)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: define canonical action buttons ([84fd26a](https://github.com/stacksjs/stacks/commit/84fd26a)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: document responsive shell ([969d231](https://github.com/stacksjs/stacks/commit/969d231)) _(by Chris <chrisbreuer93@gmail.com>)_
+- clarify dashboard module boundaries ([3a8c591](https://github.com/stacksjs/stacks/commit/3a8c591)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **agents**: point the quality gates at the buddy commands ([a35d574](https://github.com/stacksjs/stacks/commit/a35d574)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **skills**: document dashboard environment settings ([f1314e5](https://github.com/stacksjs/stacks/commit/f1314e5)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **stx**: explain structural DOM timing ([977d00b](https://github.com/stacksjs/stacks/commit/977d00b)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **stx**: document native form bindings ([3c3168f](https://github.com/stacksjs/stacks/commit/3c3168f)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **skills**: document model registry conventions ([d690868](https://github.com/stacksjs/stacks/commit/d690868)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **api**: refresh generated protocol artifacts ([be12f93](https://github.com/stacksjs/stacks/commit/be12f93)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2200](https://github.com/stacksjs/stacks/issues/2200))
+- **buddy**: refresh mail command reference ([3f77afa](https://github.com/stacksjs/stacks/commit/3f77afa)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2200](https://github.com/stacksjs/stacks/issues/2200))
+
+## 💄 Styles
+
+- **dashboard**: sort utility classes ([535031f](https://github.com/stacksjs/stacks/commit/535031f)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## ✅ Tests
+
+- **dashboard**: add complete live route auditor ([ee3dd2f](https://github.com/stacksjs/stacks/commit/ee3dd2f)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **actions**: stabilize subprocess contracts ([7942c8c](https://github.com/stacksjs/stacks/commit/7942c8c)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: document server rendering boundaries ([9656d61](https://github.com/stacksjs/stacks/commit/9656d61)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **buddy**: fix portable setup contracts ([feb2cd1](https://github.com/stacksjs/stacks/commit/feb2cd1)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: verify client request methods ([86e051c](https://github.com/stacksjs/stacks/commit/86e051c)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: enforce canonical action styling ([9db6f10](https://github.com/stacksjs/stacks/commit/9db6f10)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **models**: allowlist public API reads ([84a2127](https://github.com/stacksjs/stacks/commit/84a2127)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: reject duplicate API routes ([030a296](https://github.com/stacksjs/stacks/commit/030a296)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: enforce API route coverage ([20467f4](https://github.com/stacksjs/stacks/commit/20467f4)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 💚 Continuous Integration
+
+- unwire the core suites that fail on Linux ([fb83c21](https://github.com/stacksjs/stacks/commit/fb83c21)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **release**: gate publishing on the pinned checks ([0616a8d](https://github.com/stacksjs/stacks/commit/0616a8d)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- run each pinned check as its own step ([a5a79c9](https://github.com/stacksjs/stacks/commit/a5a79c9)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+
+## 🔧 Chores
+
+- **deps**: raise the stx floor to 0.2.148 ([a5f342c](https://github.com/stacksjs/stacks/commit/a5f342c)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **deps**: update stx to 0.2.146 ([b50b84c](https://github.com/stacksjs/stacks/commit/b50b84c)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **deps**: update stx to 0.2.145 ([7e9dfda](https://github.com/stacksjs/stacks/commit/7e9dfda)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **deps**: update stx to 0.2.144 ([e14f79a](https://github.com/stacksjs/stacks/commit/e14f79a)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **database**: sync model migration snapshot ([2479527](https://github.com/stacksjs/stacks/commit/2479527)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **deps**: update stx to 0.2.143 ([e6d2ca5](https://github.com/stacksjs/stacks/commit/e6d2ca5)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **deps**: update stx to 0.2.140 ([3db94da](https://github.com/stacksjs/stacks/commit/3db94da)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **deps**: update stx to 0.2.139 ([978cc6a](https://github.com/stacksjs/stacks/commit/978cc6a)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **deps**: update stx to 0.2.138 ([3df68b2](https://github.com/stacksjs/stacks/commit/3df68b2)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **deps**: update stx to 0.2.137 ([c11a036](https://github.com/stacksjs/stacks/commit/c11a036)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **deps**: update stx packages ([15daba4](https://github.com/stacksjs/stacks/commit/15daba4)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **deps**: require stx 0.2.127 ([0ad07c3](https://github.com/stacksjs/stacks/commit/0ad07c3)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **deps**: require stx 0.2.125 ([64f9771](https://github.com/stacksjs/stacks/commit/64f9771)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **deps**: require stx 0.2.124 ([5892807](https://github.com/stacksjs/stacks/commit/5892807)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **deps**: require stx 0.2.123 ([2ed6633](https://github.com/stacksjs/stacks/commit/2ed6633)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **deps**: require stx 0.2.122 ([22d3968](https://github.com/stacksjs/stacks/commit/22d3968)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **deps**: require stx 0.2.121 ([ae0fa8f](https://github.com/stacksjs/stacks/commit/ae0fa8f)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **deps**: require stx 0.2.120 ([df15bab](https://github.com/stacksjs/stacks/commit/df15bab)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: remove obsolete config actions ([54819e0](https://github.com/stacksjs/stacks/commit/54819e0)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: remove obsolete component prototypes ([f2a5ea0](https://github.com/stacksjs/stacks/commit/f2a5ea0)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **api**: regenerate the OpenAPI and API type artifacts ([6e98a71](https://github.com/stacksjs/stacks/commit/6e98a71)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- regenerate the command reference and API artifacts ([2671915](https://github.com/stacksjs/stacks/commit/2671915)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **api**: regenerate the OpenAPI and API type artifacts ([2522977](https://github.com/stacksjs/stacks/commit/2522977)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- drop the committed ts-cloud tarball from the template ([d67db47](https://github.com/stacksjs/stacks/commit/d67db47)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **lint**: clear repository warnings ([5491f5b](https://github.com/stacksjs/stacks/commit/5491f5b)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: remove legacy commerce components ([b4f3f05](https://github.com/stacksjs/stacks/commit/b4f3f05)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: remove unused license template table ([8204067](https://github.com/stacksjs/stacks/commit/8204067)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: remove obsolete placeholder actions ([c0819df](https://github.com/stacksjs/stacks/commit/c0819df)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: remove synthetic email chart ([89c58b6](https://github.com/stacksjs/stacks/commit/89c58b6)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **api**: regenerate the OpenAPI and API type artifacts ([78398b9](https://github.com/stacksjs/stacks/commit/78398b9)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **api**: regenerate the OpenAPI and API type artifacts ([ee3151a](https://github.com/stacksjs/stacks/commit/ee3151a)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2056](https://github.com/stacksjs/stacks/issues/2056))
+
+## ⏪ Reverts
+
+- keep the development export condition tied to the vendored layout ([55eae25](https://github.com/stacksjs/stacks/commit/55eae25)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🎉 Miscellaneous
+
+- Merge pull request #2201 from stacksjs/codex/mail-storage-operations ([235672b](https://github.com/stacksjs/stacks/commit/235672b)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2201](https://github.com/stacksjs/stacks/issues/2201), [#2201](https://github.com/stacksjs/stacks/issues/2201))
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+- _glennmichael123 <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.228...v0.70.229)
 
 ## ⚡ Performance Improvements
