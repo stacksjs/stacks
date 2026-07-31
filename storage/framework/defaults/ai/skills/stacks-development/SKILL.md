@@ -143,13 +143,14 @@ Uses `bun-plugin-stx` serve function with pattern-based view resolution:
 - Serves on `127.0.0.1` at `config.ports.api` (default 3008)
 
 ### Dashboard Dev Server (dashboard.ts)
-- Starts STX server + config API + native Craft window in parallel
-- Config API runs on `dashboardPort + 1` (default 3003), handles `POST /api/config/update`
-- Config API allows live editing of `config/*.ts` files via regex-based key replacement
+- Starts the STX server on `config.ports.admin` and optionally opens a native Craft window
+- Mounts the config API on the same dashboard origin under `/api/config/*`
+- Config routes list, read, expose source for, and atomically update `config/*.ts` files
+- Config updates support top-level scalar literals only and preserve comments and environment-backed expressions
 - Discovers ORM models from `app/Models/` and `storage/framework/defaults/app/Models/`
 - Writes `.discovered-models.json` manifest for sidebar population
-- Opens `@craft-native/ts` native window (1400x900, titlebar hidden, native sidebar)
-- Sidebar has 10 sections: Home, Library, Content, App, Data, Commerce, Marketing, Analytics, Management, Utilities
+- Opens a Craft `createApp()` window when a supported SDK and native binary are available (1400x900, titlebar hidden)
+- Builds the web sidebar from configured sections and discovered model dashboard metadata
 
 ### Docs Dev Server (docs.ts)
 - Uses `@stacksjs/bunpress` with `{ watch: true, quiet: true }`
@@ -288,7 +289,7 @@ Note: Dashboard mode overrides these settings via its own `serve()` options.
 - Dev actions are executed with `bun --watch` automatically -- do NOT add `--watch` manually or you get double-restart behavior
 - The `dev/views` action is special-cased in `runAction()` to run in-process (no subprocess) for performance -- other dev actions spawn subprocesses
 - `NODE_PATH` is injected to include `pantry/` directory so compiled pantry packages can resolve `@stacksjs/*` dependencies at runtime
-- The dashboard config API (port 3003) modifies `config/*.ts` files via regex replacement -- it only handles simple key-value patterns, not nested objects or arrays
+- The dashboard config API shares the dashboard origin and atomically modifies top-level scalar literals in `config/*.ts`. Nested values, arrays, and environment-backed expressions remain read-only.
 - SSL certificates are stored in `~/.stacks/ssl/`, NOT in the project directory -- they persist across projects using the same domain
 - Custom server configuration in `server/` at the project root overrides the default server config via file copy (checked by `useCustomOrDefaultServerConfig()`)
 - The production server doubles as a queue worker when `QUEUE_WORKER` env var is set -- it imports the job by name from `app/Jobs/` and exits after completion

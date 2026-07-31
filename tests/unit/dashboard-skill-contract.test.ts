@@ -6,6 +6,10 @@ const skill = readFileSync(
   resolve('storage/framework/defaults/ai/skills/stacks-dashboard/SKILL.md'),
   'utf8',
 )
+const developmentSkill = readFileSync(
+  resolve('storage/framework/defaults/ai/skills/stacks-development/SKILL.md'),
+  'utf8',
+)
 
 describe('dashboard skill contract', () => {
   test('documents root-mounted page routes and dashboard-prefixed APIs', () => {
@@ -30,5 +34,12 @@ describe('dashboard skill contract', () => {
   test('keeps generated guidance free of separator dash typography', () => {
     expect(skill).not.toContain('—')
     expect(skill).not.toContain('–')
+  })
+
+  test('documents the same-origin dashboard config API', () => {
+    expect(developmentSkill).toContain('Mounts the config API on the same dashboard origin')
+    expect(developmentSkill).toContain('atomically modifies top-level scalar literals')
+    expect(developmentSkill).not.toContain('Config API runs on `dashboardPort + 1`')
+    expect(developmentSkill).not.toContain('dashboard config API (port 3003)')
   })
 })
