@@ -22,6 +22,14 @@ describe('dashboard layout client architecture', () => {
     expect(guestLayoutSource).toContain('@yield(\'content\')')
   })
 
+  test('declares light and dark dashboard favicons in both shells', () => {
+    for (const source of [layoutSource, guestLayoutSource]) {
+      expect(source).toContain('href="/images/logos/favicon.svg"')
+      expect(source).toContain('href="/images/logos/favicon-dark.svg"')
+      expect(source).toContain('media="(prefers-color-scheme: dark)"')
+    }
+  })
+
   test('uses STX lifecycle and component events for sidebar navigation', () => {
     expect(layoutSource).toContain('useRef(\'dashboardSidebarHost\')')
     expect(layoutSource).toContain('useEventListener(\'stx:navigate\'')

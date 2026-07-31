@@ -32,6 +32,11 @@ export const sidebarRoleMap = JSON.stringify(
 )
 </script>
 
+@head
+<link rel="icon" href="/images/logos/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="/images/logos/favicon-dark.svg" type="image/svg+xml" media="(prefers-color-scheme: dark)">
+@endhead
+
 <!-- Dashboard icon stylesheet. Most dashboard icons are applied via dynamic
     `:class="…"` bindings whose class names live in client script state, which the
     stx Crosswind extractor cannot see, so their CSS is never generated inline and
