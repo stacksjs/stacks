@@ -172,6 +172,57 @@ function hasBearerToken(req: Request): boolean {
 
 const SAFE_METHODS = new Set(['GET', 'HEAD', 'OPTIONS'])
 
+/**
+ * Validate one request with the framework's native CSRF contract.
+ *
+ * Exported so direct framework-owned handlers that intentionally sit outside
+ * the router, such as the local dashboard config editor, can enforce the same
+ * double-submit and bearer-token rules without duplicating security logic.
+ */
+export async function validateCsrfRequest(request: Request): Promise<void> {
+  const method = request.method.toUpperCase()
+
+  // Safe methods don't mutate state — no token check needed.
+  // Token *seeding* (set the cookie if it's missing) happens after
+  // the response is built; we don't have a post-response hook
+  // here, so action handlers / SPAs can call `generateCsrfToken()`
+  // themselves on the first GET they need it for.
+  if (SAFE_METHODS.has(method)) return
+
+  // API clients with a bearer token are exempt — see header docstring.
+  if (hasBearerToken(request)) return
+
+  // Per-action opt-out: an action exporting `skipCsrf: true` (or
+  // `csrf: false`) has declared it can't participate in CSRF
+  // (webhooks, third-party callbacks). The router stamps a hint on
+  // the request when it resolves such an action; if that hint is
+  // present, skip enforcement.
+  if (request._skipCsrf === true) return
+
+  // Look up the submitted token. Header is the SPA path; body field
+  // is the traditional form-post path. We accept either.
+  const headerToken = request.headers.get(CSRF_HEADER_NAME)
+    || request.headers.get('X-CSRF-Token')
+    || request.headers.get('X-Csrf-Token')
+  const body = request.jsonBody || request.formBody || {}
+  const bodyToken: string | undefined = body?._token ?? body?.csrf_token
+
+  const submitted = (typeof headerToken === 'string' && headerToken)
+    || (typeof bodyToken === 'string' && bodyToken)
+    || ''
+
+  const cookies = parseCookies(request)
+  const cookieToken = cookies[CSRF_COOKIE_NAME] || cookies['csrf-token'] || ''
+
+  if (!submitted || !cookieToken || !safeEqual(submitted, cookieToken)) {
+    // 419 is the convention Laravel popularized for "CSRF token
+    // mismatch" — it's not in the IANA list but most SPAs already
+    // know how to refresh on 419. We use 403 for the strict-correct
+    // status code instead (419 is non-standard).
+    throw new HttpError(403, 'CSRF token mismatch')
+  }
+}
+
 export default new Middleware({
   name: 'csrf',
   // Run early — before auth, so we don't waste auth work on a request
@@ -179,46 +230,6 @@ export default new Middleware({
   priority: 2,
 
   async handle(request) {
-    const method = request.method.toUpperCase()
-
-    // Safe methods don't mutate state — no token check needed.
-    // Token *seeding* (set the cookie if it's missing) happens after
-    // the response is built; we don't have a post-response hook
-    // here, so action handlers / SPAs can call `generateCsrfToken()`
-    // themselves on the first GET they need it for.
-    if (SAFE_METHODS.has(method)) return
-
-    // API clients with a bearer token are exempt — see header docstring.
-    if (hasBearerToken(request)) return
-
-    // Per-action opt-out: an action exporting `skipCsrf: true` (or
-    // `csrf: false`) has declared it can't participate in CSRF
-    // (webhooks, third-party callbacks). The router stamps a hint on
-    // the request when it resolves such an action; if that hint is
-    // present, skip enforcement.
-    if (request._skipCsrf === true) return
-
-    // Look up the submitted token. Header is the SPA path; body field
-    // is the traditional form-post path. We accept either.
-    const headerToken = request.headers.get(CSRF_HEADER_NAME)
-      || request.headers.get('X-CSRF-Token')
-      || request.headers.get('X-Csrf-Token')
-    const body = request.jsonBody || request.formBody || {}
-    const bodyToken: string | undefined = body?._token ?? body?.csrf_token
-
-    const submitted = (typeof headerToken === 'string' && headerToken)
-      || (typeof bodyToken === 'string' && bodyToken)
-      || ''
-
-    const cookies = parseCookies(request)
-    const cookieToken = cookies[CSRF_COOKIE_NAME] || cookies['csrf-token'] || ''
-
-    if (!submitted || !cookieToken || !safeEqual(submitted, cookieToken)) {
-      // 419 is the convention Laravel popularized for "CSRF token
-      // mismatch" — it's not in the IANA list but most SPAs already
-      // know how to refresh on 419. We use 403 for the strict-correct
-      // status code instead (419 is non-standard).
-      throw new HttpError(403, 'CSRF token mismatch')
-    }
+    await validateCsrfRequest(request)
   },
 })

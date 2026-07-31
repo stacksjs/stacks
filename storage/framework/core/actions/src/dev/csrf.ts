@@ -43,3 +43,12 @@ export async function seedCsrfPageResponse(
     // Keep the page available while the API remains fail-closed.
   }
 }
+
+/**
+ * Apply the application's canonical CSRF validator to a direct development
+ * handler that intentionally does not pass through the Stacks router.
+ */
+export async function validateDevCsrfRequest(request: Request): Promise<void> {
+  const { validateCsrfRequest } = await import(resolveCsrfMiddlewarePath())
+  await validateCsrfRequest(request)
+}

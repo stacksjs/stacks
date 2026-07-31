@@ -3,7 +3,7 @@ import { randomUUID } from 'node:crypto'
 import { existsSync, renameSync, unlinkSync, writeFileSync } from 'node:fs'
 import { bold, cyan, dim, green } from '@stacksjs/cli'
 import { projectPath, storagePath } from '@stacksjs/path'
-import { seedCsrfPageResponse } from './csrf'
+import { seedCsrfPageResponse, validateDevCsrfRequest } from './csrf'
 import { shouldDelegateDashboardRequest } from './dashboard-request-routing'
 import { buildDashboardUrl, buildManifest, discoverModels, findAvailablePort, waitForServer } from './dashboard-utils'
 
@@ -293,6 +293,7 @@ async function startStxServer(): Promise<void> {
       if (req.method !== 'POST')
         return Response.json({ ok: false, error: 'Method not allowed' }, { status: 405 })
       try {
+        await validateDevCsrfRequest(req)
         const body = (await req.json()) as { file?: string, key?: string, value?: unknown, updates?: Array<{ path?: string, key?: string, value?: unknown }> }
         // Accept two shapes:
         //   1) { file, key, value }                 — single key edit
@@ -347,6 +348,8 @@ async function startStxServer(): Promise<void> {
         return Response.json({ ok: true, file, results })
       }
       catch (e) {
+        if ((e as { status?: number })?.status === 403)
+          return Response.json({ ok: false, error: 'Forbidden', message: 'CSRF token mismatch' }, { status: 403 })
         return Response.json({ ok: false, error: (e as Error)?.message }, { status: 500 })
       }
     },

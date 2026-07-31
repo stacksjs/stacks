@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test'
-import { seedCsrfPageResponse } from '../src/dev/csrf'
+import { seedCsrfPageResponse, validateDevCsrfRequest } from '../src/dev/csrf'
 
 describe('development page CSRF seeding', () => {
   it('seeds a CSRF cookie on a first safe page response', async () => {
@@ -34,5 +34,21 @@ describe('development page CSRF seeding', () => {
     )
 
     expect(response).toBeUndefined()
+  })
+
+  it('validates matching tokens for direct development handlers', async () => {
+    await expect(validateDevCsrfRequest(new Request('http://localhost/api/config/update', {
+      method: 'POST',
+      headers: {
+        Cookie: 'X-CSRF-Token=matching-token',
+        'X-CSRF-Token': 'matching-token',
+      },
+    }))).resolves.toBeUndefined()
+  })
+
+  it('rejects direct development mutations without a matching token', async () => {
+    await expect(validateDevCsrfRequest(new Request('http://localhost/api/config/update', {
+      method: 'POST',
+    }))).rejects.toThrow('CSRF token mismatch')
   })
 })
