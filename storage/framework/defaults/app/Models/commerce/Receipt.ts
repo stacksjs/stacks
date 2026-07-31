@@ -87,10 +87,11 @@ export default defineModel({
     },
 
     size: {
+      default: 0,
       order: 5,
       fillable: true,
       validation: {
-        rule: schema.number().max(100),
+        rule: schema.number().min(0).max(100),
         message: {
           max: 'Size must be less than or equal to 100',
         },
@@ -99,10 +100,11 @@ export default defineModel({
     },
 
     pages: {
+      default: 0,
       order: 6,
       fillable: true,
       validation: {
-        rule: schema.number().max(50),
+        rule: schema.number().min(0).max(50),
         message: {
           max: 'Pages must be less than or equal to 50',
         },
@@ -111,10 +113,11 @@ export default defineModel({
     },
 
     duration: {
+      default: 0,
       order: 7,
       fillable: true,
       validation: {
-        rule: schema.number().max(50),
+        rule: schema.number().min(0).max(50),
         message: {
           max: 'Duration must be less than or equal to 50',
         },

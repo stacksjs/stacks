@@ -1,9 +1,22 @@
+import {
+  commerceEnum,
+  commerceIdentifier,
+  commerceNumber,
+  commerceOptionalIdentifier,
+  commerceOptionalString,
+  commerceRequiredString,
+  commerceTimestamp,
+  commerceValue,
+} from './commerce-record'
+
+export type PrintLogStatus = 'success' | 'failed' | 'warning'
+
 export interface PrintLogRecord {
   id: string
   printer: string
   document: string
   timestamp: string
-  status: string
+  status: PrintLogStatus
   sizeKb: number
   pages: number
   durationSeconds: number
@@ -23,52 +36,46 @@ export interface PrintLogSummary {
   averageSuccessfulDuration: number
 }
 
-function value(record: any, ...keys: string[]): unknown {
-  for (const key of keys) {
-    const result = typeof record?.get === 'function' ? record.get(key) : record?.[key]
-    if (result !== null && result !== undefined)
-      return result
-  }
-  return undefined
-}
-
-function text(input: unknown): string {
-  return input === null || input === undefined ? '' : String(input)
-}
-
-function number(input: unknown): number {
-  const result = Number(input)
-  return Number.isFinite(result) ? result : 0
-}
-
 export function printLogTimestamp(input: unknown): number {
-  if (typeof input === 'number') {
-    if (!Number.isFinite(input))
-      return 0
-    return input <= 2147483647 ? input * 1000 : input
-  }
-  const raw = text(input).trim()
-  if (!raw)
-    return 0
-  if (/^\d{10}$/.test(raw))
-    return Number(raw) * 1000
-  const parsed = new Date(raw.includes('T') ? raw : `${raw.replace(' ', 'T')}Z`).getTime()
-  return Number.isFinite(parsed) ? parsed : 0
+  return new Date(commerceTimestamp(input, 'Receipt', 'timestamp')).getTime()
 }
 
-export function normalizePrintLogRecord(record: any): PrintLogRecord {
+export function normalizePrintLogRecord(
+  record: any,
+  printDeviceIds = new Set<string>(),
+): PrintLogRecord {
+  const id = commerceIdentifier(commerceValue(record, 'id', 'uuid'), 'Receipt')
+  const source = `Receipt ${id}`
+  const printDeviceId = commerceOptionalIdentifier(
+    commerceValue(record, 'print_device_id', 'printDeviceId'),
+    source,
+    'print_device_id',
+  )
+  if (printDeviceId && !printDeviceIds.has(printDeviceId))
+    throw new TypeError(`${source}.print_device_id references missing PrintDevice ${printDeviceId}.`)
   return {
-    id: text(value(record, 'id', 'uuid')),
-    printer: text(value(record, 'printer')),
-    document: text(value(record, 'document')),
-    timestamp: text(value(record, 'timestamp')),
-    status: text(value(record, 'status')).toLowerCase(),
-    sizeKb: number(value(record, 'size')),
-    pages: number(value(record, 'pages')),
-    durationSeconds: number(value(record, 'duration')),
-    metadata: text(value(record, 'metadata')),
-    printDeviceId: text(value(record, 'print_device_id', 'printDeviceId')),
-    createdAt: text(value(record, 'created_at', 'createdAt')),
+    id,
+    printer: commerceOptionalString(commerceValue(record, 'printer'), source, 'printer'),
+    document: commerceRequiredString(commerceValue(record, 'document'), source, 'document'),
+    timestamp: commerceTimestamp(commerceValue(record, 'timestamp'), source, 'timestamp'),
+    status: commerceEnum(commerceValue(record, 'status'), source, 'status', [
+      'success',
+      'failed',
+      'warning',
+    ]),
+    sizeKb: commerceNumber(commerceValue(record, 'size'), source, 'size', { min: 0, max: 100 }),
+    pages: commerceNumber(commerceValue(record, 'pages'), source, 'pages', {
+      min: 0,
+      max: 50,
+      integer: true,
+    }),
+    durationSeconds: commerceNumber(commerceValue(record, 'duration'), source, 'duration', {
+      min: 0,
+      max: 50,
+    }),
+    metadata: commerceOptionalString(commerceValue(record, 'metadata'), source, 'metadata'),
+    printDeviceId,
+    createdAt: commerceTimestamp(commerceValue(record, 'created_at', 'createdAt'), source),
   }
 }
 
@@ -91,7 +98,7 @@ export function summarizePrintLogs(records: PrintLogRecord[]): PrintLogSummary {
 }
 
 function csvCell(input: unknown): string {
-  const raw = text(input)
+  const raw = String(input ?? '')
   return /[",\n]/.test(raw) ? `"${raw.replaceAll('"', '""')}"` : raw
 }
 
