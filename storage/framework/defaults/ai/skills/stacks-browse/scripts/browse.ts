@@ -12,7 +12,7 @@
  *   bun browse.ts responsive <url> [--out-dir DIR]
  *   bun browse.ts monitor    <url> [--ms 5000]
  *   bun browse.ts snapshot   <url>
- *   bun browse.ts crawl      <url> [--max 500] [--path /extra]
+ *   bun browse.ts crawl      <url> [--max 500] [--path /extra] [--progress]
  *
  * Browser discovery order: $BROWSE_BROWSER → PATH (chromium, google-chrome, …)
  * → common macOS app bundles → a Playwright-cached chromium as last resort.
@@ -566,6 +566,10 @@ async function main() {
           failedRequests,
           horizontalOverflowPx: Number(value.overflow) || 0,
         })
+        if (flags.progress) {
+          const page = pages.at(-1)!
+          console.error(`[crawl] ${pages.length} ${page.status ?? 'none'} ${page.path}`)
+        }
 
         for (const href of value.links || []) {
           const target = crawlTarget(href, start.origin)
