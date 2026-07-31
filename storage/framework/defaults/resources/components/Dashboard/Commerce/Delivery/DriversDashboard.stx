@@ -28,10 +28,10 @@ interface DriverRecord {
 interface DriverPayload {
   name: string
   phone: string
-  vehicle_number: string
+  vehicleNumber: string
   license: string
   status: DriverStatus
-  user_id: number | null
+  userId: number | null
 }
 
 const records = state<DriverRecord[]>([])
@@ -57,7 +57,7 @@ function userFor(id?: number | null): UserOption | undefined {
 function withUser(record: DriverRecord): DriverRecord {
   return {
     ...record,
-    user: userFor(record.user_id),
+    user: userFor(record.user_id) || record.user,
   }
 }
 

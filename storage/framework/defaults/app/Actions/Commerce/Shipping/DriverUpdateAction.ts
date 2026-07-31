@@ -7,8 +7,10 @@ import { response } from '@stacksjs/router'
 export default new Action({
   name: 'Driver Update',
   description: 'Driver Update ORM Action',
-  method: 'PUT',
+  method: 'PATCH',
+  model: Driver,
   async handle(request: RequestInstance) {
+    await request.validate()
     const id = request.getParam('id')
     const data = await request.all()
 

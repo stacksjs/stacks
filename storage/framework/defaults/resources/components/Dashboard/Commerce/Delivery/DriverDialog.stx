@@ -76,10 +76,10 @@ function submit(): void {
   emit('submit', {
     name: name().trim(),
     phone: phone().trim(),
-    vehicle_number: vehicleNumber().trim().toUpperCase(),
+    vehicleNumber: vehicleNumber().trim().toUpperCase(),
     license: license().trim().toUpperCase(),
     status: status(),
-    user_id: selectedUserId,
+    userId: selectedUserId,
   })
 }
 </script>

@@ -8,7 +8,9 @@ export default new Action({
   name: 'Driver Store',
   description: 'Driver Store ORM Action',
   method: 'POST',
+  model: Driver,
   async handle(request: RequestInstance) {
+    await request.validate()
     const data = await request.all()
     const model = await shippings.drivers.store(data)
 
