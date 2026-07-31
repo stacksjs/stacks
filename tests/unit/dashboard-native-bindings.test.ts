@@ -298,6 +298,11 @@ describe('dashboard native STX bindings', () => {
     expect(button).toContain('i-hugeicons-loading-03')
     expect(button).not.toContain('<svg')
 
+    const card = componentSource('UI/Card.stx')
+    expect(card).toContain('<slot name="actions" />')
+    expect(card).not.toContain('action.onClick')
+    expect(card).not.toMatch(/@click="\{\{/)
+
     for (const path of [
       'UI/ChartCard.stx',
       'UI/Avatar.stx',

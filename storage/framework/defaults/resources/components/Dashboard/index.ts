@@ -42,8 +42,11 @@ export interface WidgetProps {
 export interface CardProps {
   title?: string
   subtitle?: string
-  actions?: Array<{ label: string, onClick: () => void }>
-  padding?: boolean
+  variant?: 'default' | 'elevated' | 'outline' | 'ghost' | 'vibrancy'
+  padding?: 'none' | 'sm' | 'md' | 'lg' | 'xl'
+  rounded?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl'
+  hoverable?: boolean
+  clickable?: boolean
 }
 
 export interface TableColumn {

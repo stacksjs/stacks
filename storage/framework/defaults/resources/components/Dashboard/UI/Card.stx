@@ -1,15 +1,7 @@
-@import('./Button')
-
 <script server>
-interface CardAction {
-  label: string
-  onClick?: string
-}
-
 interface CardProps {
   title?: string
   subtitle?: string
-  actions?: CardAction[]
   variant?: 'default' | 'elevated' | 'outline' | 'ghost' | 'vibrancy'
   padding?: 'none' | 'sm' | 'md' | 'lg' | 'xl'
   rounded?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl'
@@ -20,7 +12,6 @@ interface CardProps {
 const {
   title = '',
   subtitle = '',
-  actions = [],
   variant = 'default',
   padding = 'md',
   rounded = 'lg',
@@ -71,7 +62,7 @@ const cardClass = [
     <header class="px-5 py-4 border-b border-stone-200/80 dark:border-white/5">
       <slot name="header" />
     </header>
-  @elseif(title || actions.length > 0)
+  @elseif(title || subtitle || $slots.actions)
     <header class="flex gap-4 items-start justify-between px-5 py-4 border-b border-stone-200/80 dark:border-white/5">
       <div>
         @if(title)
@@ -81,13 +72,9 @@ const cardClass = [
           <p class="mt-1 text-neutral-500 text-sm dark:text-neutral-400">{{ subtitle }}</p>
         @endif
       </div>
-      @if(actions.length > 0)
+      @if($slots.actions)
         <div class="flex gap-2 items-center">
-          @foreach(actions as action)
-            <Button type="button" variant="ghost" size="sm" @click="{{ action.onClick || '' }}">
-              {{ action.label }}
-            </Button>
-          @endforeach
+          <slot name="actions" />
         </div>
       @endif
     </header>
