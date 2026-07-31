@@ -53,15 +53,21 @@ afterEach(() => {
 })
 
 async function runUpgradeScript(args: string[]): Promise<{ code: number, stdout: string, stderr: string }> {
-  const proc = Bun.spawn({
-    cmd: [process.execPath, script, ...args],
+  const runId = `${Date.now()}-${Math.random().toString(36).slice(2)}`
+  const stdoutPath = join(baseDir, `stdout-${runId}.log`)
+  const stderrPath = join(baseDir, `stderr-${runId}.log`)
+  // Bun's test runner can consume nested child-process pipes before this
+  // helper reads them, producing an empty capture even though the script ran.
+  // File-backed streams preserve the exact CLI output and are removed with
+  // the disposable fixture directory after each test.
+  const proc = Bun.spawn([process.execPath, script, ...args], {
     cwd: appDir,
-    stdout: 'pipe',
-    stderr: 'pipe',
+    stdout: Bun.file(stdoutPath),
+    stderr: Bun.file(stderrPath),
   })
-  const stdout = await new Response(proc.stdout).text()
-  const stderr = await new Response(proc.stderr).text()
   const code = await proc.exited
+  const stdout = existsSync(stdoutPath) ? readFileSync(stdoutPath, 'utf8') : ''
+  const stderr = existsSync(stderrPath) ? readFileSync(stderrPath, 'utf8') : ''
   return { code, stdout, stderr }
 }
 

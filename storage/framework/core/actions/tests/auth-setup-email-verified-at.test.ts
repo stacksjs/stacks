@@ -14,7 +14,7 @@ describe('auth:setup ensures users.email_verified_at (stacksjs/stacks#1948)', ()
   const source = readFileSync(setupPath, 'utf-8')
 
   it('executes the shared usersEmailVerifiedAtSql builder', () => {
-    expect(source).toContain(`import { sqlHelpers, usersEmailVerifiedAtSql } from '@stacksjs/database'`)
+    expect(source).toMatch(/import \{[^}]*\bsqlHelpers\b[^}]*\busersEmailVerifiedAtSql\b[^}]*\} from '@stacksjs\/database'/)
     expect(source).toContain('await db.unsafe(usersEmailVerifiedAtSql(sql))')
   })
 
