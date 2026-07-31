@@ -1,0 +1,146 @@
+<script client>
+import { dashboardApi } from '~/storage/framework/defaults/functions/dashboard-api'
+import { useAuth } from '~/storage/framework/defaults/functions/auth'
+
+interface Invitation {
+  teamId: number
+  teamName: string
+  email: string
+  role: string
+  status: string
+  expiresAt: string
+}
+
+interface InvitationResponse {
+  invitation: Invitation
+}
+
+interface AcceptResponse {
+  accepted: boolean
+  alreadyMember: boolean
+  teamId: number
+}
+
+const route = useRoute()
+const auth = useAuth()
+const invitation = state<Invitation | null>(null)
+const isLoading = state(true)
+const isAccepting = state(false)
+const error = state('')
+const acceptedTeamId = state<number | null>(null)
+
+const token = derived(() => String(route.params.token || ''))
+const isAuthenticated = derived(() => Boolean(auth.getToken()))
+const canAccept = derived(() => invitation()?.status === 'pending' && isAuthenticated() && !acceptedTeamId())
+const returnPath = derived(() => `/team-invitations/${encodeURIComponent(token())}`)
+const loginHref = derived(() => `/login?redirect=${encodeURIComponent(returnPath())}`)
+const registerHref = derived(() => `/register?redirect=${encodeURIComponent(returnPath())}`)
+
+async function loadInvitation(): Promise<void> {
+  isLoading.set(true)
+  error.set('')
+  try {
+    const result = await dashboardApi<InvitationResponse>(`/api/team-invitation-links/${encodeURIComponent(token())}`, {
+      auth: false,
+    })
+    invitation.set(result.invitation)
+  }
+  catch (err) {
+    error.set(err instanceof Error ? err.message : 'Invitation could not be loaded.')
+  }
+  finally {
+    isLoading.set(false)
+  }
+}
+
+async function acceptInvitation(): Promise<void> {
+  isAccepting.set(true)
+  error.set('')
+  try {
+    const result = await dashboardApi<AcceptResponse>(`/api/team-invitations/${encodeURIComponent(token())}/accept`, {
+      method: 'POST',
+    })
+    acceptedTeamId.set(result.teamId)
+  }
+  catch (err) {
+    error.set(err instanceof Error ? err.message : 'Invitation could not be accepted.')
+  }
+  finally {
+    isAccepting.set(false)
+  }
+}
+
+onMount(() => {
+  loadInvitation()
+})
+</script>
+
+<template>
+<main class="flex items-center justify-center px-4 py-12 min-h-screen bg-neutral-50 dark:bg-neutral-950">
+  <section class="max-w-md w-full">
+    <div class="mb-8 text-center">
+      <div class="inline-flex items-center justify-center mb-4 h-12 w-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-blue-500/25 shadow-lg">
+        <span class="h-7 w-7 text-white i-hugeicons-user-multiple-02"></span>
+      </div>
+      <h1 class="font-semibold text-2xl text-neutral-900 dark:text-white">Team invitation</h1>
+      <p class="mt-2 text-neutral-500 text-sm dark:text-neutral-400">Review and accept your invitation.</p>
+    </div>
+
+    <div class="p-6 bg-white dark:bg-neutral-900 border border-neutral-200/60 rounded-2xl dark:border-neutral-800 shadow-black/5 shadow-xl dark:shadow-black/20">
+      <p :show="isLoading()" class="text-center text-neutral-500 text-sm dark:text-neutral-400">Loading invitation...</p>
+
+      <div :show="error()" role="alert" class="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 rounded-lg dark:border-red-800">
+        <p class="text-red-600 text-sm dark:text-red-400">{{ error() }}</p>
+      </div>
+
+      <div :show="invitation() && !acceptedTeamId()" class="space-y-5">
+        <div>
+          <p class="text-neutral-500 text-xs tracking-wide uppercase dark:text-neutral-400">Team</p>
+          <p class="mt-1 font-semibold text-lg text-neutral-900 dark:text-white">{{ invitation()?.teamName }}</p>
+        </div>
+
+        <dl class="grid gap-3 grid-cols-2">
+          <div>
+            <dt class="text-neutral-500 text-xs dark:text-neutral-400">Email</dt>
+            <dd class="mt-1 text-neutral-900 text-sm dark:text-neutral-100">{{ invitation()?.email }}</dd>
+          </div>
+          <div>
+            <dt class="text-neutral-500 text-xs dark:text-neutral-400">Role</dt>
+            <dd class="mt-1 capitalize text-neutral-900 text-sm dark:text-neutral-100">{{ invitation()?.role }}</dd>
+          </div>
+        </dl>
+
+        <p :show="invitation()?.status !== 'pending'" class="p-3 text-amber-700 text-sm dark:text-amber-300 bg-amber-50 dark:bg-amber-900/20 rounded-lg">
+          This invitation is {{ invitation()?.status }}.
+        </p>
+
+        <Button
+          :show="canAccept()"
+          type="button"
+          variant="primary"
+          size="lg"
+          fullWidth
+          :loading="isAccepting()"
+          :disabled="isAccepting()"
+          @click="acceptInvitation"
+        >
+          Accept invitation
+        </Button>
+
+        <div :show="invitation()?.status === 'pending' && !isAuthenticated()" class="space-y-3">
+          <p class="text-neutral-500 text-sm dark:text-neutral-400">Sign in with {{ invitation()?.email }} to accept this invitation.</p>
+          <Button tag="a" :href="loginHref()" variant="primary" size="lg" fullWidth>Sign in to accept</Button>
+          <Button tag="a" :href="registerHref()" variant="secondary" size="lg" fullWidth>Create an account</Button>
+        </div>
+      </div>
+
+      <div :show="acceptedTeamId()" class="text-center">
+        <span class="inline-block h-10 w-10 text-green-600 i-hugeicons-checkmark-circle-02"></span>
+        <h2 class="mt-3 font-semibold text-neutral-900 text-xl dark:text-white">Invitation accepted</h2>
+        <p class="mt-2 text-neutral-500 text-sm dark:text-neutral-400">You now have access to the team.</p>
+        <Button tag="a" :href="'/teams/' + acceptedTeamId()" variant="primary" size="lg" fullWidth class="mt-6">Open team</Button>
+      </div>
+    </div>
+  </section>
+</main>
+</template>

@@ -66,11 +66,14 @@ describe('team management contract', () => {
 
   test('renders team management through a reusable STX component and canonical buttons', () => {
     const view = source('storage/framework/defaults/views/dashboard/teams/[id].stx')
-    const acceptance = source('storage/framework/defaults/views/dashboard/team-invitations/[token].stx')
+    const invitationView = source('storage/framework/defaults/views/dashboard/team-invitations/[token].stx')
+    const acceptance = source('storage/framework/defaults/resources/components/Dashboard/Teams/TeamInvitationDashboard.stx')
     const apiClient = source('storage/framework/defaults/functions/dashboard-api.ts')
     const component = source('storage/framework/defaults/resources/components/Dashboard/Teams/TeamPeopleDashboard.stx')
 
     expect(view).toContain('<TeamPeopleDashboard />')
+    expect(invitationView).toContain('<TeamInvitationDashboard />')
+    expect(invitationView).not.toContain('<script')
     expect(component).toContain('<Button')
     expect(component).toContain('variant="primary"')
     expect(component).toContain('Send invitation')
