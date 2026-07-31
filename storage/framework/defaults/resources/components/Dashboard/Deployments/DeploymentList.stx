@@ -118,7 +118,7 @@ onMount(() => {
       <Button :disabled="isStarting()" variant="outline" @click="startDeployment(true)">
         Preview
       </Button>
-      <Button dataAction="deploy" :disabled="isStarting()" @click="showDeployModal.set(true)">
+      <Button :disabled="isStarting()" @click="showDeployModal.set(true)">
         Deploy
       </Button>
       <Button :loading="isLoading()" variant="secondary" @click="loadDeployments">

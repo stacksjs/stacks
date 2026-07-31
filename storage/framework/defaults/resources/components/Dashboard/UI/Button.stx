@@ -14,12 +14,6 @@ interface ButtonProps {
   target?: string
   rel?: string
   ariaLabel?: string
-  dataAction?: string
-  dataCloseModal?: string
-  dataEmailId?: string
-  dataErrorMessage?: string
-  dataErrorType?: string
-  dataMethodId?: string
   type?: string
   class?: string
 }
@@ -32,8 +26,6 @@ const {
   interaction = 'action',
   fullWidth = false,
   iconOnly = false,
-  dataAction = '',
-  dataMethodId = '',
   class: customClass = '',
   tag = 'button',
   href = '',
@@ -92,24 +84,12 @@ const liveTarget = useReactiveProp('target', '')
 const liveRel = useReactiveProp('rel', '')
 const liveType = useReactiveProp('type', 'button')
 const liveAriaLabel = useReactiveProp('ariaLabel', '')
-const liveDataAction = useReactiveProp('dataAction', '')
-const liveDataCloseModal = useReactiveProp('dataCloseModal', '')
-const liveDataEmailId = useReactiveProp('dataEmailId', '')
-const liveDataErrorMessage = useReactiveProp('dataErrorMessage', '')
-const liveDataErrorType = useReactiveProp('dataErrorType', '')
-const liveDataMethodId = useReactiveProp('dataMethodId', '')
 </script>
 @if(tag === 'a' || (href && href.length > 0))
     <a
       :href="liveDisabled() || liveLoading() ? undefined : liveHref()"
       :download="liveDownload() || undefined"
       :aria-label="liveAriaLabel() || undefined"
-      :data-action="liveDataAction() || undefined"
-      :data-close-modal="liveDataCloseModal() || undefined"
-      :data-email-id="liveDataEmailId() || undefined"
-      :data-error-message="liveDataErrorMessage() || undefined"
-      :data-error-type="liveDataErrorType() || undefined"
-      :data-method-id="liveDataMethodId() || undefined"
       class="{{ buttonClass }}"
       :target="liveTarget() || undefined"
       :rel="liveRel() || undefined"
@@ -128,12 +108,6 @@ const liveDataMethodId = useReactiveProp('dataMethodId', '')
         :type="liveType()"
         class="{{ buttonClass }}"
         :aria-label="liveAriaLabel() || undefined"
-        :data-action="liveDataAction() || undefined"
-        :data-close-modal="liveDataCloseModal() || undefined"
-        :data-email-id="liveDataEmailId() || undefined"
-        :data-error-message="liveDataErrorMessage() || undefined"
-        :data-error-type="liveDataErrorType() || undefined"
-        :data-method-id="liveDataMethodId() || undefined"
         :aria-busy="liveLoading() ? 'true' : 'false'"
         :aria-pressed="String(livePressed())"
         :disabled="liveDisabled() || liveLoading()"
@@ -148,12 +122,6 @@ const liveDataMethodId = useReactiveProp('dataMethodId', '')
         :type="liveType()"
         class="{{ buttonClass }}"
         :aria-label="liveAriaLabel() || undefined"
-        :data-action="liveDataAction() || undefined"
-        :data-close-modal="liveDataCloseModal() || undefined"
-        :data-email-id="liveDataEmailId() || undefined"
-        :data-error-message="liveDataErrorMessage() || undefined"
-        :data-error-type="liveDataErrorType() || undefined"
-        :data-method-id="liveDataMethodId() || undefined"
         :aria-busy="liveLoading() ? 'true' : 'false'"
         :disabled="liveDisabled() || liveLoading()"
       >
