@@ -1,6 +1,6 @@
 import { resolveApiBaseUrl } from '../../api-url'
 import type { WaitlistProduct } from '../../../types/defaults'
-import { useStorage } from '@stacksjs/browser'
+import { useStorage } from '@stacksjs/browser/composables/useStorage'
 import { pushToast } from '../../toasts'
 
 // Create a persistent waitlist products array using STX useStorage

@@ -33,11 +33,26 @@
       "import": "./dist/index.js",
       "default": "./dist/index.js"
     },
+    "./composables": {
+      "types": "./dist/composables/index.d.ts",
+      "development": "./src/composables/index.ts",
+      "bun": "./dist/composables/index.js",
+      "import": "./dist/composables/index.js",
+      "default": "./dist/composables/index.js"
+    },
+    "./utils": {
+      "types": "./dist/utils/index.d.ts",
+      "development": "./src/utils/index.ts",
+      "bun": "./dist/utils/index.js",
+      "import": "./dist/utils/index.js",
+      "default": "./dist/utils/index.js"
+    },
     "./*": {
-      "development": "./src/*",
-      "bun": "./dist/*",
-      "import": "./dist/*",
-      "default": "./dist/*"
+      "types": "./dist/*.d.ts",
+      "development": "./src/*.ts",
+      "bun": "./dist/*.js",
+      "import": "./dist/*.js",
+      "default": "./dist/*.js"
     }
   },
   "module": "dist/index.js",
@@ -53,7 +68,7 @@
   },
   "dependencies": {
     "@stacksjs/composables": "workspace:*",
-    "@stacksjs/stx": "^0.2.145",
+    "@stacksjs/stx": "^0.2.146",
     "bun-query-builder": "^0.1.63",
     "magic-regexp": "^0.11.0"
   },

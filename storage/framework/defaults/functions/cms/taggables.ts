@@ -1,6 +1,7 @@
 import { resolveApiBaseUrl } from '../api-url'
 import type { TaggableTable } from '@stacksjs/orm'
-import { useFetch, useStorage } from '@stacksjs/browser'
+import { useFetch } from '@stacksjs/browser/composables/useFetch'
+import { useStorage } from '@stacksjs/browser/composables/useStorage'
 
 // Create a persistent tags array using STX useStorage
 const taggables = useStorage<TaggableTable[]>('taggables', [])

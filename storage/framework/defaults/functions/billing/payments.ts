@@ -1,4 +1,4 @@
-import { confirmCardSetup, confirmPayment, loadCardElement, loadPaymentElement } from '@stacksjs/browser'
+import { confirmCardSetup, confirmPayment, loadCardElement, loadPaymentElement } from '@stacksjs/browser/utils/billable'
 import { usePaymentStore } from '../../stores/payment'
 
 export function useBillable() {

@@ -1,6 +1,7 @@
 import { resolveApiBaseUrl } from '../api-url'
 import type { Posts, StorePost } from '../../types/defaults'
-import { useFetch, useStorage } from '@stacksjs/browser'
+import { useFetch } from '@stacksjs/browser/composables/useFetch'
+import { useStorage } from '@stacksjs/browser/composables/useStorage'
 
 // Create a persistent posts array using STX useStorage
 const posts = useStorage<Posts[]>('posts', [])

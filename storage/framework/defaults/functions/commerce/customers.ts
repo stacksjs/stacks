@@ -1,6 +1,6 @@
 import { resolveApiBaseUrl } from '../api-url'
 import type { Customers } from '../../types/defaults'
-import { useStorage } from '@stacksjs/browser'
+import { useStorage } from '@stacksjs/browser/composables/useStorage'
 import { pushToast } from '../toasts'
 
 // Create a persistent customers array using STX useStorage

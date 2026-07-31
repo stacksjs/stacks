@@ -1,5 +1,5 @@
 import { resolveApiBaseUrl } from '../api-url'
-import { useStorage } from '@stacksjs/browser'
+import { useStorage } from '@stacksjs/browser/composables/useStorage'
 
 export interface GroupedError {
   id: number

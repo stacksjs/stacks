@@ -1,6 +1,6 @@
 import { resolveApiBaseUrl } from '../api-url'
 import type { GiftCards } from '../../types/defaults'
-import { useStorage } from '@stacksjs/browser'
+import { useStorage } from '@stacksjs/browser/composables/useStorage'
 import { pushToast } from '../toasts'
 
 // Create a persistent gift cards array using STX useStorage

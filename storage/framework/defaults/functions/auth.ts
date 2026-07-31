@@ -1,7 +1,8 @@
 import { resolveApiBaseUrl } from './api-url'
 import type { Ref } from '@stacksjs/stx'
 import type { AuthUser, LoginError, LoginResponse, MeResponse, RegisterCredentials, RegisterError, RegisterResponse, ResponseError, UserData } from '../types/dashboard'
-import { useStorage, withCsrfHeader } from '@stacksjs/browser'
+import { withCsrfHeader } from '@stacksjs/browser/composables/csrf'
+import { useStorage } from '@stacksjs/browser/composables/useStorage'
 import { ref } from '@stacksjs/stx'
 
 const token = useStorage('token', '')

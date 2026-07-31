@@ -1,6 +1,6 @@
 import { dashboardApi } from '../../dashboard-api'
 import { pushToast } from '../../toasts'
-import { useStorage } from '@stacksjs/browser'
+import { useStorage } from '@stacksjs/browser/composables/useStorage'
 
 interface DashboardResourceRecord {
   id?: number

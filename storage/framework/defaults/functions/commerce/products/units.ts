@@ -1,6 +1,6 @@
 import { resolveApiBaseUrl } from '../../api-url'
 import type { Units } from '../../../types/defaults'
-import { useStorage } from '@stacksjs/browser'
+import { useStorage } from '@stacksjs/browser/composables/useStorage'
 import { pushToast } from '../../toasts'
 
 // Create a persistent units array using STX useStorage

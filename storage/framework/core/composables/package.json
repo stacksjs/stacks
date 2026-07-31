@@ -34,10 +34,11 @@
       "default": "./dist/index.js"
     },
     "./*": {
-      "development": "./src/*",
-      "bun": "./dist/*",
-      "import": "./dist/*",
-      "default": "./dist/*"
+      "types": "./dist/*.d.ts",
+      "development": "./src/*.ts",
+      "bun": "./dist/*.js",
+      "import": "./dist/*.js",
+      "default": "./dist/*.js"
     }
   },
   "module": "dist/index.js",
@@ -52,7 +53,7 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "@stacksjs/stx": "^0.2.145",
+    "@stacksjs/stx": "^0.2.146",
     "@stacksjs/datetime": "workspace:*"
   },
   "devDependencies": {

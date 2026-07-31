@@ -1,1 +1,1 @@
-export { useFetch } from '@stacksjs/composables'
+export { useFetch } from '@stacksjs/composables/useFetch'

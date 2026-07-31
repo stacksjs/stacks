@@ -1,6 +1,7 @@
 import { resolveApiBaseUrl } from '../api-url'
 import type { Pages } from '../../types/defaults'
-import { useFetch, useStorage } from '@stacksjs/browser'
+import { useFetch } from '@stacksjs/browser/composables/useFetch'
+import { useStorage } from '@stacksjs/browser/composables/useStorage'
 
 // Create a persistent pages array using STX useStorage
 const pages = useStorage<Pages[]>('pages', [])

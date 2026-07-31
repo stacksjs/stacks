@@ -1,5 +1,6 @@
-import type { ApiErrorBody } from '@stacksjs/browser'
-import { describeResponseError, withCsrfHeader } from '@stacksjs/browser'
+import type { ApiErrorBody } from '@stacksjs/browser/composables/request-error'
+import { withCsrfHeader } from '@stacksjs/browser/composables/csrf'
+import { describeResponseError } from '@stacksjs/browser/composables/request-error'
 import { useAuth } from './auth'
 
 /**

@@ -1,6 +1,6 @@
 import { resolveApiBaseUrl } from '../../api-url'
 import type { Reviews } from '../../../types/defaults'
-import { useStorage } from '@stacksjs/browser'
+import { useStorage } from '@stacksjs/browser/composables/useStorage'
 import { pushToast } from '../../toasts'
 
 // Create a persistent reviews array using STX useStorage

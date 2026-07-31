@@ -1,7 +1,7 @@
 import type { LicenseKeys, NewLicenseKey } from '../../../types/defaults'
 import { dashboardApi } from '../../dashboard-api'
 import { createDashboardResource } from './dashboard-resource'
-import { useStorage } from '@stacksjs/browser'
+import { useStorage } from '@stacksjs/browser/composables/useStorage'
 
 interface LicenseKeyOption {
   id: number
