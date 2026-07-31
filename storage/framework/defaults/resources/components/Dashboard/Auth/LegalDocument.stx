@@ -1,0 +1,38 @@
+@import('../UI/Button')
+
+<script server>
+interface LegalDocumentProps {
+  eyebrow: string
+  title: string
+  summary: string
+}
+
+const { eyebrow, title, summary } = defineProps<LegalDocumentProps>()
+</script>
+
+<template>
+  <div class="px-5 py-10 sm:px-8 sm:py-14 min-h-screen">
+    <article class="mx-auto max-w-3xl">
+      <header class="pb-8 border-b border-neutral-200/80 dark:border-neutral-800">
+        <a href="/register" class="inline-flex gap-2 items-center text-neutral-500 text-sm dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white transition-colors">
+          <span aria-hidden="true" class="h-4 w-4 i-hugeicons-arrow-left-02"></span>
+          Registration
+        </a>
+        <p class="mt-10 font-semibold text-blue-600 text-xs tracking-[0.16em] uppercase dark:text-blue-400">{{ eyebrow }}</p>
+        <h1 class="mt-3 font-semibold text-3xl text-neutral-950 tracking-tight sm:text-4xl dark:text-white">{{ title }}</h1>
+        <p class="mt-4 max-w-2xl leading-7 text-base text-neutral-600 dark:text-neutral-300">{{ summary }}</p>
+      </header>
+
+      <div class="py-8 space-y-8 text-neutral-700 dark:text-neutral-300">
+        <slot />
+      </div>
+
+      <footer class="flex flex-col gap-4 items-start sm:flex-row sm:items-center sm:justify-between pt-6 border-neutral-200/80 border-t dark:border-neutral-800">
+        <p class="text-neutral-500 text-sm dark:text-neutral-400">Questions should be directed to your application administrator.</p>
+        <Button tag="a" href="/register" variant="secondary">
+          Back to registration
+        </Button>
+      </footer>
+    </article>
+  </div>
+</template>

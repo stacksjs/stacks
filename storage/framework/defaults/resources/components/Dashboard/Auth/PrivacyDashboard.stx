@@ -1,0 +1,38 @@
+@import('./LegalDocument')
+
+<!-- Privacy content rendered inside the shared dashboard legal shell. -->
+<template>
+  <LegalDocument
+    eyebrow="Legal"
+    title="Privacy Policy"
+    summary="This notice explains how the Stacks dashboard handles information used to operate your application."
+  >
+    <section>
+      <h2 class="font-semibold text-lg text-neutral-950 dark:text-white">Information handled</h2>
+      <p class="mt-2 leading-7">
+        The dashboard processes account details, session security data, audit information, and the application records needed for the pages and actions you use.
+      </p>
+    </section>
+
+    <section>
+      <h2 class="font-semibold text-lg text-neutral-950 dark:text-white">Local project access</h2>
+      <p class="mt-2 leading-7">
+        In development, the dashboard reads your local project configuration, database, and framework state. It does not invent provider activity or send project data to an external service unless you invoke a feature that requires that provider.
+      </p>
+    </section>
+
+    <section>
+      <h2 class="font-semibold text-lg text-neutral-950 dark:text-white">Credentials and providers</h2>
+      <p class="mt-2 leading-7">
+        Secrets remain in server-side configuration and must not be rendered into dashboard pages. When you use a connected provider, that provider processes requests under its own terms and privacy policy.
+      </p>
+    </section>
+
+    <section>
+      <h2 class="font-semibold text-lg text-neutral-950 dark:text-white">Retention and requests</h2>
+      <p class="mt-2 leading-7">
+        Retention follows your application configuration and the policies of connected storage providers. Contact your application administrator to request access, correction, export, or deletion of personal information.
+      </p>
+    </section>
+  </LegalDocument>
+</template>

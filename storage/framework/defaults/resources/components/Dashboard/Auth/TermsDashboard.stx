@@ -1,0 +1,38 @@
+@import('./LegalDocument')
+
+<!-- Terms content rendered inside the shared dashboard legal shell. -->
+<template>
+  <LegalDocument
+    eyebrow="Legal"
+    title="Terms of Service"
+    summary="These terms govern access to the Stacks dashboard and its administrative tools."
+  >
+    <section>
+      <h2 class="font-semibold text-lg text-neutral-950 dark:text-white">Authorized access</h2>
+      <p class="mt-2 leading-7">
+        Use the dashboard only for an application you own or are authorized to administer. You are responsible for activity performed through your account and for keeping authentication credentials secure.
+      </p>
+    </section>
+
+    <section>
+      <h2 class="font-semibold text-lg text-neutral-950 dark:text-white">Acceptable use</h2>
+      <p class="mt-2 leading-7">
+        Do not use the dashboard to violate applicable law, interfere with another service, bypass access controls, distribute malicious code, or access data without permission.
+      </p>
+    </section>
+
+    <section>
+      <h2 class="font-semibold text-lg text-neutral-950 dark:text-white">Application data</h2>
+      <p class="mt-2 leading-7">
+        You remain responsible for the records, files, provider configuration, and other project data managed through the dashboard. Review changes before applying them and maintain backups appropriate for your application.
+      </p>
+    </section>
+
+    <section>
+      <h2 class="font-semibold text-lg text-neutral-950 dark:text-white">Service changes</h2>
+      <p class="mt-2 leading-7">
+        Dashboard capabilities may change as the framework evolves. Access can be limited or revoked when needed to protect the application, its users, or connected infrastructure.
+      </p>
+    </section>
+  </LegalDocument>
+</template>
