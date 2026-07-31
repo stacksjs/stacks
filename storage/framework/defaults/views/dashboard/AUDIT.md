@@ -93,6 +93,11 @@ payment-provider records. They are not missing generic CRUD surfaces.
 
 - The 128 live GET dashboard API routes return JSON or their documented text
   payload with no hidden HTTP-200 error body.
+- A fresh live crawl returned 114 successful responses and 14 intentional
+  validation, authentication, or missing-resource responses, with no 5xx,
+  method mismatch, transport failure, or HTML fallback.
+- Generic model routes reject malformed slugs with HTTP 400 before deriving
+  an ORM model or SQLite table name.
 - Dashboard pages do not substitute mock, sample, random, or placeholder rows
   when an endpoint fails.
 - Commerce, content, delivery, marketing, CI, deployments, models, mail,
@@ -115,7 +120,7 @@ bunx --bun pickier .
 The focused contracts cover buttons, native STX bindings, route and Action
 method alignment, model reads and writes, commerce mutations, deployment
 guards, navigation source, sidebar behavior, toasts, and skill documentation.
-The 2026-07-31 focused run completed 151 tests with 2,895 assertions and no
+The 2026-07-31 focused run completed 154 tests with 2,909 assertions and no
 failures, followed by both TypeScript checks and a clean repository lint.
 
 ## Remaining verification boundaries
