@@ -393,7 +393,7 @@ async function startStxServer(): Promise<void> {
     //      mismatch) are the right responses, never an HTML page.
     //   3. `/auth/*` and `/me` are JSON authentication endpoints even on
     //      GET, so they also delegate to the Stacks router.
-    //   4. For everything else, GET goes to STX (page rendering wins,
+    //   4. For everything else, GET and HEAD go to STX (page rendering wins,
     //      so `/health`, `/login`, `/content/authors`, etc. render their
     //      `.stx` view) and non-GET goes to bun-router (so POST `/login`
     //      reaches the action). Without rule (3a), root-level routes that

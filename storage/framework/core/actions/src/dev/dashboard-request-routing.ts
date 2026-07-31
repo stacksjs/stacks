@@ -5,5 +5,6 @@ export function shouldDelegateDashboardRequest(pathname: string, method: string)
     return true
   if (pathname.startsWith('/auth/') || pathname === '/me')
     return true
-  return method.toUpperCase() !== 'GET'
+  const normalizedMethod = method.toUpperCase()
+  return normalizedMethod !== 'GET' && normalizedMethod !== 'HEAD'
 }

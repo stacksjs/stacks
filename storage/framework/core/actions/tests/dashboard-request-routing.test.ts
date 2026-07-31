@@ -11,6 +11,7 @@ describe('dashboard request routing', () => {
 
   it('keeps dashboard pages and development assets in the STX server', () => {
     expect(shouldDelegateDashboardRequest('/health', 'GET')).toBe(false)
+    expect(shouldDelegateDashboardRequest('/health', 'HEAD')).toBe(false)
     expect(shouldDelegateDashboardRequest('/auth/tokens', 'POST')).toBe(true)
     expect(shouldDelegateDashboardRequest('/api/config/app', 'GET')).toBe(false)
     expect(shouldDelegateDashboardRequest('/__deps/dashboard-icons.css', 'GET')).toBe(false)
