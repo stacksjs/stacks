@@ -11,6 +11,10 @@ export interface RequestAnalyticsRow {
   createdAt: string
 }
 
+export interface AnalyticsModelRecord {
+  get: (key: string) => unknown
+}
+
 interface TrafficBucket {
   date: string
   pageViews: number
@@ -60,6 +64,60 @@ function timestamp(value: string): number {
     ? `${value.replace(' ', 'T')}Z`
     : value
   return new Date(normalized).getTime()
+}
+
+function requiredRecordString(record: AnalyticsModelRecord, key: string): string {
+  const value = record.get(key)
+  if (typeof value !== 'string' || !value.trim())
+    throw new TypeError(`Request.${key} must be a non-empty string.`)
+  return value
+}
+
+function optionalRecordString(record: AnalyticsModelRecord, key: string): string {
+  const value = record.get(key)
+  if (value === null || value === undefined)
+    return ''
+  if (typeof value !== 'string')
+    throw new TypeError(`Request.${key} must be a string or null.`)
+  return value
+}
+
+function recordNumber(record: AnalyticsModelRecord, key: string): number {
+  const value = record.get(key)
+  const parsed = typeof value === 'number'
+    ? value
+    : typeof value === 'string' && value.trim() ? Number(value) : Number.NaN
+  if (!Number.isFinite(parsed))
+    throw new TypeError(`Request.${key} must be a finite number.`)
+  return parsed
+}
+
+export function requestAnalyticsRow(record: AnalyticsModelRecord): RequestAnalyticsRow {
+  const method = requiredRecordString(record, 'method').toUpperCase()
+  if (!['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS', 'HEAD'].includes(method))
+    throw new TypeError('Request.method contains an unsupported HTTP method.')
+
+  const statusCode = recordNumber(record, 'status_code')
+  if (!Number.isInteger(statusCode) || statusCode < 100 || statusCode > 599)
+    throw new TypeError('Request.status_code must be an integer from 100 to 599.')
+
+  const durationMs = recordNumber(record, 'duration_ms')
+  if (durationMs < 0)
+    throw new TypeError('Request.duration_ms cannot be negative.')
+
+  const createdAt = requiredRecordString(record, 'created_at')
+  if (!Number.isFinite(timestamp(createdAt)))
+    throw new TypeError('Request.created_at must be a valid timestamp.')
+
+  return {
+    method,
+    path: requiredRecordString(record, 'path'),
+    statusCode,
+    durationMs,
+    ipAddress: optionalRecordString(record, 'ip_address'),
+    userAgent: optionalRecordString(record, 'user_agent'),
+    createdAt,
+  }
 }
 
 function pagePath(value: string): string {
