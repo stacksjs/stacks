@@ -215,6 +215,25 @@ For stateful settings, persist through a model with `useApi` and explicit
 middleware, then expose a narrow dashboard Action for the page. Keep account
 identity fields read-only when their source of truth is `config/*.ts`.
 
+### Dashboard API client
+
+Use the shared `dashboardApi()` client for every dashboard network request,
+including requests in stores and guest pages. Do not call `fetch()` directly
+from dashboard views, components, composables, or stores. The shared client
+adds the stored bearer token, same-origin credentials, JSON serialization,
+the double-submit CSRF header for mutations, and normalized response errors.
+
+Pass `auth: false` only for a deliberately public route such as password-reset
+or invitation-link lookup. This disables the bearer header, not CSRF
+protection. Keep the route path aligned with the registered Stacks route, for
+example `POST /password/forgot`, rather than inventing a page-shaped API path.
+
+Most dashboard APIs must be registered Actions so the router applies guards,
+method metadata, rate limits, and default-on CSRF protection. If a development
+handler must intentionally remain outside the router, call
+`validateDevCsrfRequest()` before reading or mutating state. Never reproduce
+the token comparison in a handler.
+
 ## Dashboard Development
 
 ```bash

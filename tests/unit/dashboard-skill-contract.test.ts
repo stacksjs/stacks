@@ -43,6 +43,13 @@ describe('dashboard skill contract', () => {
     expect(developmentSkill).not.toContain('dashboard config API (port 3003)')
   })
 
+  test('documents the shared client and direct-handler CSRF boundary', () => {
+    expect(skill).toContain('Use the shared `dashboardApi()` client for every dashboard network request')
+    expect(skill).toContain('Do not call `fetch()` directly')
+    expect(skill).toContain('Pass `auth: false` only for a deliberately public route')
+    expect(skill).toContain('call\n`validateDevCsrfRequest()` before reading or mutating state')
+  })
+
   test('keeps dashboard client and server imports in their native runtimes', () => {
     expect(developmentSkill).toContain('framework server helpers use explicit imports')
     expect(developmentSkill).toContain('Leaves `resources/functions` to the STX client auto-import pipeline')
