@@ -61,7 +61,7 @@
     "prepublishOnly": "bun run build"
   },
   "peerDependencies": {
-    "web-ext": ">=8"
+    "web-ext": ">=10.5.0"
   },
   "peerDependenciesMeta": {
     "web-ext": {
