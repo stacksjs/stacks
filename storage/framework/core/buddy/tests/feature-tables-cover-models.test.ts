@@ -18,7 +18,7 @@ import { FEATURE_NAMES, FEATURE_TABLES, migrationFeature } from '../src/commands
 
 /** Where a feature's default models live, for the features that ship them. */
 const MODEL_DIRECTORIES: Partial<Record<string, string>> = {
-  commerce: 'Commerce',
+  commerce: 'commerce',
   cms: 'Content',
 }
 

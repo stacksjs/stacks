@@ -3,7 +3,11 @@ import { pantryDatabasePackage } from '../src/commands/setup'
 
 describe('setup database dependencies', () => {
   it('pins PostgreSQL to the supported major', () => {
-    expect(pantryDatabasePackage('postgres')).toEqual({ name: 'postgresql.org', version: '^17.10' })
+    expect(pantryDatabasePackage('postgres')).toEqual({
+      name: 'postgresql.org',
+      version: '^17.10',
+      service: 'postgres',
+    })
   })
 
   it('returns the configured SQLite package', () => {
