@@ -512,6 +512,26 @@
       }
     },
     {
+      "id": "team-invitation",
+      "name": "TeamInvitation",
+      "icon": "tablecells.fill",
+      "hasDedicatedPage": false,
+      "category": "data",
+      "dashboard": {
+        "enabled": false
+      }
+    },
+    {
+      "id": "team-member",
+      "name": "TeamMember",
+      "icon": "tablecells.fill",
+      "hasDedicatedPage": false,
+      "category": "data",
+      "dashboard": {
+        "enabled": false
+      }
+    },
+    {
       "id": "transaction",
       "name": "Transaction",
       "icon": "arrow.left.arrow.right.circle.fill",

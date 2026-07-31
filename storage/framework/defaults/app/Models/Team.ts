@@ -28,6 +28,8 @@ export default defineModel({
     },
   },
 
+  hasMany: ['TeamMember', 'TeamInvitation'],
+
   attributes: {
     name: {
       order: 1,

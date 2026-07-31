@@ -8422,10 +8422,313 @@
             "type": "unique"
           }
         ]
+      },
+      {
+        "table": "team_invitations",
+        "columns": [
+          {
+            "name": "id",
+            "type": "bigint",
+            "isPrimaryKey": true,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": false
+          },
+          {
+            "name": "team_id",
+            "type": "integer",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": false,
+            "references": {
+              "table": "teams",
+              "column": "id"
+            }
+          },
+          {
+            "name": "email",
+            "type": "text",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": false
+          },
+          {
+            "name": "role",
+            "type": "enum",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": true,
+            "defaultValue": "member",
+            "enumValues": [
+              "admin",
+              "member",
+              "viewer"
+            ],
+            "enumTypeName": "team_invitations_role_type"
+          },
+          {
+            "name": "token_hash",
+            "type": "string",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": false,
+            "maxLength": 64
+          },
+          {
+            "name": "invited_by_user_id",
+            "type": "integer",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false
+          },
+          {
+            "name": "accepted_by_user_id",
+            "type": "integer",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": true,
+            "defaultValue": "pending",
+            "enumValues": [
+              "pending",
+              "accepted",
+              "revoked",
+              "expired"
+            ],
+            "enumTypeName": "team_invitations_status_type"
+          },
+          {
+            "name": "delivery_status",
+            "type": "enum",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": true,
+            "defaultValue": "pending",
+            "enumValues": [
+              "pending",
+              "sent",
+              "failed"
+            ],
+            "enumTypeName": "team_invitations_delivery_status_type"
+          },
+          {
+            "name": "delivery_error",
+            "type": "text",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false
+          },
+          {
+            "name": "expires_at",
+            "type": "datetime",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": false
+          },
+          {
+            "name": "delivered_at",
+            "type": "datetime",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false
+          },
+          {
+            "name": "accepted_at",
+            "type": "datetime",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false
+          },
+          {
+            "name": "created_at",
+            "type": "datetime",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": true,
+            "defaultValue": "CURRENT_TIMESTAMP"
+          },
+          {
+            "name": "updated_at",
+            "type": "datetime",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false
+          },
+          {
+            "name": "uuid",
+            "type": "string",
+            "isPrimaryKey": false,
+            "isUnique": true,
+            "isNullable": true,
+            "hasDefault": false
+          }
+        ],
+        "indexes": [
+          {
+            "name": "team_invitations_token_hash_unique",
+            "columns": [
+              "token_hash"
+            ],
+            "type": "unique"
+          },
+          {
+            "name": "team_invitations_team_email_status_index",
+            "columns": [
+              "team_id",
+              "email",
+              "status"
+            ],
+            "type": "index"
+          },
+          {
+            "name": "team_invitations_uuid_unique",
+            "columns": [
+              "uuid"
+            ],
+            "type": "unique"
+          }
+        ]
+      },
+      {
+        "table": "team_members",
+        "columns": [
+          {
+            "name": "id",
+            "type": "bigint",
+            "isPrimaryKey": true,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": false
+          },
+          {
+            "name": "team_id",
+            "type": "integer",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": false,
+            "references": {
+              "table": "teams",
+              "column": "id"
+            }
+          },
+          {
+            "name": "user_id",
+            "type": "integer",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": false,
+            "references": {
+              "table": "users",
+              "column": "id"
+            }
+          },
+          {
+            "name": "role",
+            "type": "enum",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": true,
+            "defaultValue": "member",
+            "enumValues": [
+              "owner",
+              "admin",
+              "member",
+              "viewer"
+            ],
+            "enumTypeName": "team_members_role_type"
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": true,
+            "defaultValue": "active",
+            "enumValues": [
+              "active",
+              "suspended"
+            ],
+            "enumTypeName": "team_members_status_type"
+          },
+          {
+            "name": "created_at",
+            "type": "datetime",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": true,
+            "defaultValue": "CURRENT_TIMESTAMP"
+          },
+          {
+            "name": "updated_at",
+            "type": "datetime",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false
+          },
+          {
+            "name": "uuid",
+            "type": "string",
+            "isPrimaryKey": false,
+            "isUnique": true,
+            "isNullable": true,
+            "hasDefault": false
+          }
+        ],
+        "indexes": [
+          {
+            "name": "team_members_team_user_unique",
+            "columns": [
+              "team_id",
+              "user_id"
+            ],
+            "type": "unique"
+          },
+          {
+            "name": "team_members_user_status_index",
+            "columns": [
+              "user_id",
+              "status"
+            ],
+            "type": "index"
+          },
+          {
+            "name": "team_members_uuid_unique",
+            "columns": [
+              "uuid"
+            ],
+            "type": "unique"
+          }
+        ]
       }
     ]
   },
-  "hash": "a989d53b3dbbb351c76b987c1fff61eeb9955ebd0a195e465a18b81658360b1b",
+  "hash": "65288b35edf8d3e8ed4997c6a1ac978bf62564f9eca33f2ece660c0a11559cee",
   "dialect": "sqlite",
-  "updatedAt": "2026-07-30T15:48:22.053Z"
+  "updatedAt": "2026-07-30T23:57:36.233Z"
 }
