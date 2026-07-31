@@ -119,7 +119,8 @@ export default new Action({
       // moving across columns get both columns of their row rewritten;
       // cards staying put still get their position rewritten (cheap,
       // idempotent).
-      const txOps = async (qb: any) => {
+      await db.transaction(async (rawTrx) => {
+        const qb = rawTrx as unknown as typeof db
         for (const { columnId, order } of reorders) {
           for (let i = 0; i < order.length; i++) {
             await qb.updateTable('cards')
@@ -128,16 +129,7 @@ export default new Action({
               .execute()
           }
         }
-      }
-      try {
-        await (db as any).transaction(txOps)
-      }
-      catch {
-        // Driver-specific transaction shape failed — sequential is
-        // safe (each UPDATE is idempotent), but the page should
-        // refetch on failure to confirm the final state.
-        await txOps(db)
-      }
+      })
 
       return { moved: allCardIds.size, boardId }
     }

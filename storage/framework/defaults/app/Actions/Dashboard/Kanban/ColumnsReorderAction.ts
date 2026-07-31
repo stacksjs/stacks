@@ -62,20 +62,15 @@ export default new Action({
         return kanbanError('One or more column ids do not belong to the named board.', 400)
       }
 
-      const txOps = async (qb: any) => {
+      await db.transaction(async (rawTrx) => {
+        const qb = rawTrx as unknown as typeof db
         for (let i = 0; i < ids.length; i++) {
           await qb.updateTable('board_columns')
             .set({ position: i })
             .where('id', '=', ids[i])
             .execute()
         }
-      }
-      try {
-        await (db as any).transaction(txOps)
-      }
-      catch {
-        await txOps(db)
-      }
+      })
       return { reordered: ids.length }
     }
     catch (err) {

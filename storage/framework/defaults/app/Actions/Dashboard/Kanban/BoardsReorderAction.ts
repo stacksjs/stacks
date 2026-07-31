@@ -54,23 +54,15 @@ export default new Action({
     }
 
     try {
-      const txOps = async (qb: any) => {
+      await db.transaction(async (rawTrx) => {
+        const qb = rawTrx as unknown as typeof db
         for (let i = 0; i < ids.length; i++) {
           await qb.updateTable('boards')
             .set({ position: i })
             .where('id', '=', ids[i])
             .execute()
         }
-      }
-      try {
-        await (db as any).transaction(txOps)
-      }
-      catch {
-        // Same fallback rationale as BoardDestroyAction — UPDATE is
-        // idempotent for `position` (setting it twice to the same
-        // value is a no-op), so a partial run + retry recovers.
-        await txOps(db)
-      }
+      })
       return { reordered: ids.length }
     }
     catch (err) {

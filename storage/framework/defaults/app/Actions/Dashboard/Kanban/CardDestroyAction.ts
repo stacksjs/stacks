@@ -26,19 +26,14 @@ export default new Action({
     }
 
     try {
-      const txOps = async (qb: any) => {
+      await db.transaction(async (rawTrx) => {
+        const qb = rawTrx as unknown as typeof db
         await qb.deleteFrom('card_labels').where('card_id', '=', id).execute()
         await qb.deleteFrom('card_assignees').where('card_id', '=', id).execute()
         // Card comments (Phase 3, stacksjs/stacks#1846).
         await qb.deleteFrom('card_comments').where('card_id', '=', id).execute()
         await qb.deleteFrom('cards').where('id', '=', id).execute()
-      }
-      try {
-        await (db as any).transaction(txOps)
-      }
-      catch {
-        await txOps(db)
-      }
+      })
       return { deleted: true, id }
     }
     catch (err) {

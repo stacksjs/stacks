@@ -70,19 +70,14 @@ export default new Action({
       // Sync: drop all current pivot rows for this card, insert the
       // new set. Cheaper than diffing for the typical "user picked a
       // few labels" use case (single-digit label counts per card).
-      const txOps = async (qb: any) => {
+      await db.transaction(async (rawTrx) => {
+        const qb = rawTrx as unknown as typeof db
         await qb.deleteFrom('card_labels').where('card_id', '=', cardId).execute()
         if (uniqueLabelIds.length > 0) {
           const rows = uniqueLabelIds.map(labelId => ({ card_id: cardId, label_id: labelId }))
           await qb.insertInto('card_labels').values(rows).execute()
         }
-      }
-      try {
-        await (db as any).transaction(txOps)
-      }
-      catch {
-        await txOps(db)
-      }
+      })
 
       // Return the resolved label rows so the optimistic UI can
       // confirm its in-flight state matches what the server stored.

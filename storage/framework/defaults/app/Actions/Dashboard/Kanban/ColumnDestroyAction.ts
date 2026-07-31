@@ -27,7 +27,8 @@ export default new Action({
     }
 
     try {
-      const txOps = async (qb: any) => {
+      await db.transaction(async (rawTrx) => {
+        const qb = rawTrx as unknown as typeof db
         await qb.unsafe(
           'DELETE FROM card_labels WHERE card_id IN (SELECT id FROM cards WHERE column_id = ?)',
           [id],
@@ -43,13 +44,7 @@ export default new Action({
         ).execute()
         await qb.deleteFrom('cards').where('column_id', '=', id).execute()
         await qb.deleteFrom('board_columns').where('id', '=', id).execute()
-      }
-      try {
-        await (db as any).transaction(txOps)
-      }
-      catch {
-        await txOps(db)
-      }
+      })
       return { deleted: true, id }
     }
     catch (err) {

@@ -66,7 +66,8 @@ export default new Action({
       const requester = (request as any).user ?? (request as any)._authenticatedUser ?? null
       const assignedByUserId = requester && typeof requester.id === 'number' ? requester.id : null
 
-      const txOps = async (qb: any) => {
+      await db.transaction(async (rawTrx) => {
+        const qb = rawTrx as unknown as typeof db
         await qb.deleteFrom('card_assignees').where('card_id', '=', cardId).execute()
         if (uniqueUserIds.length > 0) {
           const rows = uniqueUserIds.map(userId => ({
@@ -76,13 +77,7 @@ export default new Action({
           }))
           await qb.insertInto('card_assignees').values(rows).execute()
         }
-      }
-      try {
-        await (db as any).transaction(txOps)
-      }
-      catch {
-        await txOps(db)
-      }
+      })
 
       // Return the resolved user rows for the optimistic UI to confirm.
       let assignees: Array<{ userId: number, name: string | null, email: string | null }> = []

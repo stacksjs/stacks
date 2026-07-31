@@ -22,16 +22,11 @@ export default new Action({
       return kanbanError('Invalid label id', 400)
 
     try {
-      const txOps = async (qb: any) => {
+      await db.transaction(async (rawTrx) => {
+        const qb = rawTrx as unknown as typeof db
         await qb.deleteFrom('card_labels').where('label_id', '=', id).execute()
         await qb.deleteFrom('labels').where('id', '=', id).execute()
-      }
-      try {
-        await (db as any).transaction(txOps)
-      }
-      catch {
-        await txOps(db)
-      }
+      })
       return { deleted: true, id }
     }
     catch (err) {
