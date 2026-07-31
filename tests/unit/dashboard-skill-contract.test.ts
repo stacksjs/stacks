@@ -38,6 +38,13 @@ describe('dashboard skill contract', () => {
     expect(skill).toContain('Dynamic file routes remain uncached')
   })
 
+  test('documents the complete live dashboard audit', () => {
+    expect(skill).toContain('scripts/audit.ts')
+    expect(skill).toContain('both a full\ndocument and an `X-STX-Router` fragment')
+    expect(skill).toContain('crawls every registered GET\ndashboard API')
+    expect(skill).toContain('HTTP-200 error payloads')
+  })
+
   test('keeps generated guidance free of separator dash typography', () => {
     expect(skill).not.toContain('—')
     expect(skill).not.toContain('–')

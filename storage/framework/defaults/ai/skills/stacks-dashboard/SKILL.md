@@ -365,6 +365,28 @@ dialog above the sidebar without centering it in the available content area.
 Keep overlay children `absolute`, not `fixed`, so they remain bounded by the
 sidebar-aware root.
 
+### Live dashboard audit
+
+Start `./buddy dev --dashboard`, then run the dependency-free live audit from
+the project root:
+
+```bash
+bun storage/framework/defaults/ai/skills/stacks-dashboard/scripts/audit.ts
+```
+
+Pass a base URL as the first argument when the dashboard is not on
+`http://127.0.0.1:3002`. The audit discovers route views, model destinations,
+and representative parameterized pages. It requests every page as both a full
+document and an `X-STX-Router` fragment, then crawls every registered GET
+dashboard API. It fails on missing page renders, invalid fragment contracts,
+empty or non-HTML pages, unresolved component tags, 5xx or method-mismatch
+APIs, HTML API fallbacks, invalid JSON, and HTTP-200 error payloads.
+
+Run this after dashboard route, Action, STX, model, migration, or dev-server
+changes. Record provider-backed or destructive success paths as explicit
+environment boundaries. Never replace a failed live contract with sample data
+or a fake success response.
+
 ## Gotchas
 - Dashboard runs on port 3002 by default (separate from frontend on 3000)
 - Dashboard components use STX templating with crosswind CSS

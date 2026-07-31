@@ -94,7 +94,7 @@ payment-provider records. They are not missing generic CRUD surfaces.
 
 - The 128 live GET dashboard API routes return JSON or their documented text
   payload with no hidden HTTP-200 error body.
-- A fresh live crawl returned 115 successful responses and 13 intentional
+- A fresh live crawl returned 117 successful responses and 11 intentional
   validation, authentication, or missing-resource responses, with no 5xx,
   method mismatch, transport failure, or HTML fallback.
 - Generic model routes reject malformed slugs with HTTP 400 before deriving
@@ -115,6 +115,7 @@ payment-provider records. They are not missing generic CRUD surfaces.
 
 ```bash
 ./buddy dev --dashboard
+bun storage/framework/defaults/ai/skills/stacks-dashboard/scripts/audit.ts
 bun test tests/unit/dashboard-*.test.ts
 bun test storage/framework/core/actions/tests/dev-csrf.test.ts
 bun run typecheck
@@ -125,7 +126,7 @@ bunx --bun pickier .
 The focused contracts cover buttons, native STX bindings, route and Action
 method alignment, model reads and writes, commerce mutations, deployment
 guards, navigation source, sidebar behavior, toasts, and skill documentation.
-The 2026-07-31 focused run completed 154 tests with 2,909 assertions and no
+The 2026-07-31 focused run completed 155 tests with 2,913 assertions and no
 failures, followed by both TypeScript checks and a clean repository lint.
 
 ## Remaining verification boundaries
