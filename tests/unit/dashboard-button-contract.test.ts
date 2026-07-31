@@ -500,7 +500,7 @@ describe('dashboard button contract', () => {
     }
 
     const settingsView = readFileSync(
-      resolve('storage/framework/defaults/views/dashboard/inbox/settings.stx'),
+      resolve('storage/framework/defaults/resources/components/Dashboard/Email/InboxSettingsDashboard.stx'),
       'utf8',
     )
 

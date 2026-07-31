@@ -1,0 +1,465 @@
+<template>
+<div class="min-h-screen dark:bg-neutral-800">
+  <div class="flex h-screen">
+    <EmailSidebar :activeFolder="activeFolder" :folders="folders" :unreadCounts="unreadCounts" :mailbox="mailbox" @update:active-folder="handleFolderChange" @compose="handleCompose" />
+
+    <div class="flex overflow-hidden flex-1 flex-col">
+      <div class="px-6 py-4 bg-white dark:bg-neutral-700 border-b border-gray-200 dark:border-neutral-600">
+        <div class="flex items-center justify-between">
+          <div class="flex gap-4 items-center">
+            <h1 class="font-bold text-2xl text-gray-900 dark:text-white">Settings</h1>
+            <EmailNavigation active="settings" />
+          </div>
+          <div>
+            <Button :loading="isLoading()" @click="saveSettings">
+              <i :if="!isLoading()" class="h-4 w-4 i-hugeicons-checkmark-circle-02"></i>
+              Save Changes
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex overflow-hidden flex-1">
+        <EmailSettingsNavigation :activeSection="activeSection" :sections="settingsSections" @select="setActiveSection" />
+
+        <div class="overflow-y-auto flex-1 p-6">
+          <div :show="isGeneralSection" class="space-y-6">
+            <div class="p-6 bg-white dark:bg-neutral-700 rounded-lg shadow">
+              <h2 class="mb-4 font-medium text-gray-900 text-lg dark:text-white">Display Settings</h2>
+
+              <div class="space-y-4">
+                <div>
+                  <label for="displayDensity" class="block font-medium text-gray-700 text-sm dark:text-neutral-300">Display Density</label>
+                  <select id="displayDensity" x-model="displayDensity" class="block mt-1 pl-3 pr-10 py-2 w-full text-base text-gray-900 sm:text-sm dark:text-neutral-100 bg-white dark:bg-neutral-600 border-gray-300 rounded-md dark:border-neutral-600 focus:border-blue-500 focus:outline-none focus:ring-blue-500">
+                    <option value="comfortable">Comfortable</option>
+                    <option value="default">Default</option>
+                    <option value="compact">Compact</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label for="theme" class="block font-medium text-gray-700 text-sm dark:text-neutral-300">Theme</label>
+                  <select id="theme" x-model="theme" class="block mt-1 pl-3 pr-10 py-2 w-full text-base text-gray-900 sm:text-sm dark:text-neutral-100 bg-white dark:bg-neutral-600 border-gray-300 rounded-md dark:border-neutral-600 focus:border-blue-500 focus:outline-none focus:ring-blue-500">
+                    <option value="light">Light</option>
+                    <option value="dark">Dark</option>
+                    <option value="system">System Default</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label for="language" class="block font-medium text-gray-700 text-sm dark:text-neutral-300">Language</label>
+                  <select id="language" x-model="language" class="block mt-1 pl-3 pr-10 py-2 w-full text-base text-gray-900 sm:text-sm dark:text-neutral-100 bg-white dark:bg-neutral-600 border-gray-300 rounded-md dark:border-neutral-600 focus:border-blue-500 focus:outline-none focus:ring-blue-500">
+                    <option value="en">English</option>
+                    <option value="fr">French</option>
+                    <option value="de">German</option>
+                    <option value="es">Spanish</option>
+                    <option value="ja">Japanese</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div class="p-6 bg-white dark:bg-neutral-700 rounded-lg shadow">
+              <h2 class="mb-4 font-medium text-gray-900 text-lg dark:text-white">Email Behavior</h2>
+
+              <div class="space-y-4">
+                <div>
+                  <label for="defaultReplyBehavior" class="block font-medium text-gray-700 text-sm dark:text-neutral-300">Default Reply Behavior</label>
+                  <select id="defaultReplyBehavior" x-model="defaultReplyBehavior" class="block mt-1 pl-3 pr-10 py-2 w-full text-base text-gray-900 sm:text-sm dark:text-neutral-100 bg-white dark:bg-neutral-600 border-gray-300 rounded-md dark:border-neutral-600 focus:border-blue-500 focus:outline-none focus:ring-blue-500">
+                    <option value="reply">Reply</option>
+                    <option value="replyAll">Reply All</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label for="autoAdvance" class="block font-medium text-gray-700 text-sm dark:text-neutral-300">After archiving or deleting an email, show</label>
+                  <select id="autoAdvance" x-model="autoAdvance" class="block mt-1 pl-3 pr-10 py-2 w-full text-base text-gray-900 sm:text-sm dark:text-neutral-100 bg-white dark:bg-neutral-600 border-gray-300 rounded-md dark:border-neutral-600 focus:border-blue-500 focus:outline-none focus:ring-blue-500">
+                    <option value="newer">Newer conversation</option>
+                    <option value="older">Older conversation</option>
+                    <option value="back">Back to inbox</option>
+                  </select>
+                </div>
+
+                <div class="flex items-center">
+                  <input id="sendAndArchive" type="checkbox" x-model="sendAndArchive" class="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500" />
+                  <label for="sendAndArchive" class="block ml-2 text-gray-700 text-sm dark:text-neutral-300">Show "Send & Archive" button in reply</label>
+                </div>
+
+                <div class="flex items-center">
+                  <input id="desktopNotifications" type="checkbox" x-model="desktopNotifications" class="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500" />
+                  <label for="desktopNotifications" class="block ml-2 text-gray-700 text-sm dark:text-neutral-300">Enable desktop notifications</label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div :show="isAccountsSection" class="space-y-6">
+            <div class="p-6 bg-white dark:bg-neutral-700 rounded-lg shadow">
+              <h2 class="mb-4 font-medium text-gray-900 text-lg dark:text-white">Account Information</h2>
+
+              <div class="space-y-4">
+                <div>
+                  <label for="name" class="block font-medium text-gray-700 text-sm dark:text-neutral-300">Your Name</label>
+                  <input id="name" type="text" x-model="accountName" class="block mt-1 px-3 py-2 w-full text-gray-900 sm:text-sm dark:text-neutral-100 bg-white dark:bg-neutral-600 border border-gray-300 rounded-md dark:border-neutral-600 focus:border-blue-500 focus:outline-none focus:ring-blue-500" />
+                </div>
+
+                <div>
+                  <label for="email" class="block font-medium text-gray-700 text-sm dark:text-neutral-300">Email Address</label>
+                  <input id="email" type="email" x-model="accountEmail" readonly class="block mt-1 px-3 py-2 w-full text-gray-600 sm:text-sm dark:text-neutral-300 bg-gray-50 dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-600 cursor-not-allowed" />
+                  <p class="mt-1 text-gray-500 text-xs dark:text-neutral-400">Mailbox identity is managed by your email configuration.</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="p-6 bg-white dark:bg-neutral-700 rounded-lg shadow">
+              <h2 class="mb-4 font-medium text-gray-900 text-lg dark:text-white">Email Signature</h2>
+
+              <div>
+                <label for="signature" class="block mb-2 font-medium text-gray-700 text-sm dark:text-neutral-300">Signature</label>
+                <div class="p-2 bg-white dark:bg-neutral-600 border border-gray-300 rounded-md dark:border-neutral-600">
+                  <textarea id="signature" x-model="signature" rows="4" class="block px-3 py-2 w-full text-gray-900 sm:text-sm dark:text-neutral-100 bg-transparent border-0 focus:outline-none focus:ring-0"></textarea>
+                </div>
+                <p class="mt-1 text-gray-500 text-xs dark:text-neutral-400">HTML formatting is supported</p>
+              </div>
+            </div>
+
+            <div class="p-6 bg-white dark:bg-neutral-700 rounded-lg shadow">
+              <div class="flex items-center justify-between mb-4">
+                <h2 class="font-medium text-gray-900 text-lg dark:text-white">Vacation Responder</h2>
+                <div class="flex items-center">
+                  <span class="mr-2 text-gray-700 text-sm dark:text-neutral-300">Off</span>
+                  <Toggle v-model:checked="vacationEnabled" size="lg" ariaLabel="Vacation responder" />
+                  <span class="ml-2 text-gray-700 text-sm dark:text-neutral-300">On</span>
+                </div>
+              </div>
+
+              <div :show="vacationEnabled" class="space-y-4">
+                <div class="grid gap-4 grid-cols-1 md:grid-cols-2">
+                  <div>
+                    <label for="startDate" class="block font-medium text-gray-700 text-sm dark:text-neutral-300">Start Date</label>
+                    <input id="startDate" type="date" x-model="vacationStartDate" class="block mt-1 px-3 py-2 w-full text-gray-900 sm:text-sm dark:text-neutral-100 bg-white dark:bg-neutral-600 border border-gray-300 rounded-md dark:border-neutral-600 focus:border-blue-500 focus:outline-none focus:ring-blue-500" />
+                  </div>
+                  <div>
+                    <label for="endDate" class="block font-medium text-gray-700 text-sm dark:text-neutral-300">End Date</label>
+                    <input id="endDate" type="date" x-model="vacationEndDate" class="block mt-1 px-3 py-2 w-full text-gray-900 sm:text-sm dark:text-neutral-100 bg-white dark:bg-neutral-600 border border-gray-300 rounded-md dark:border-neutral-600 focus:border-blue-500 focus:outline-none focus:ring-blue-500" />
+                  </div>
+                </div>
+
+                <div>
+                  <label for="subject" class="block font-medium text-gray-700 text-sm dark:text-neutral-300">Subject</label>
+                  <input id="subject" type="text" x-model="vacationSubject" class="block mt-1 px-3 py-2 w-full text-gray-900 sm:text-sm dark:text-neutral-100 bg-white dark:bg-neutral-600 border border-gray-300 rounded-md dark:border-neutral-600 focus:border-blue-500 focus:outline-none focus:ring-blue-500" />
+                </div>
+
+                <div>
+                  <label for="message" class="block font-medium text-gray-700 text-sm dark:text-neutral-300">Message</label>
+                  <textarea id="message" x-model="vacationMessage" rows="4" class="block mt-1 px-3 py-2 w-full text-gray-900 sm:text-sm dark:text-neutral-100 bg-white dark:bg-neutral-600 border border-gray-300 rounded-md dark:border-neutral-600 focus:border-blue-500 focus:outline-none focus:ring-blue-500"></textarea>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div :show="isNotificationsSection" class="space-y-6">
+            <div class="p-6 bg-white dark:bg-neutral-700 rounded-lg shadow">
+              <h2 class="font-medium text-gray-900 text-lg dark:text-white">Notification Delivery</h2>
+              <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Choose how new mailbox activity is announced on this device.</p>
+
+              <div class="mt-5 space-y-4">
+                <label class="flex items-start">
+                  <input id="desktopNotificationsDelivery" type="checkbox" x-model="desktopNotifications" class="mt-0.5 h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500" />
+                  <span class="ml-3">
+                    <span class="block font-medium text-gray-700 text-sm dark:text-neutral-200">Desktop notifications</span>
+                    <span class="block text-gray-500 text-xs dark:text-neutral-400">Show a system notification when new mail arrives.</span>
+                  </span>
+                </label>
+
+                <label class="flex items-start">
+                  <input id="notificationPreview" type="checkbox" x-model="notificationPreview" class="mt-0.5 h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500" />
+                  <span class="ml-3">
+                    <span class="block font-medium text-gray-700 text-sm dark:text-neutral-200">Message previews</span>
+                    <span class="block text-gray-500 text-xs dark:text-neutral-400">Include sender and subject in notifications.</span>
+                  </span>
+                </label>
+
+                <div>
+                  <label for="notificationSound" class="block font-medium text-gray-700 text-sm dark:text-neutral-300">Notification sound</label>
+                  <select id="notificationSound" x-model="notificationSound" class="block mt-1 pl-3 pr-10 py-2 w-full text-gray-900 text-sm dark:text-neutral-100 bg-white dark:bg-neutral-600 border-gray-300 rounded-md dark:border-neutral-600 focus:border-blue-500 focus:outline-none focus:ring-blue-500">
+                    <option value="default">Default</option>
+                    <option value="subtle">Subtle</option>
+                    <option value="none">None</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div :show="isFiltersSection" class="space-y-6">
+            <EmailSettingsList
+              title="Filter Rules"
+              description="Keep a reusable list of mailbox filter expressions."
+              placeholder="from:billing@example.com"
+              :items="filters"
+              @add="addFilter"
+              @remove="removeFilter"
+            />
+            <EmailSettingsList
+              title="Blocked Senders"
+              description="Messages from these addresses can be rejected by mailbox integrations."
+              placeholder="sender@example.com"
+              :items="blockedSenders"
+              @add="addBlockedSender"
+              @remove="removeBlockedSender"
+            />
+          </div>
+
+          <div :show="isLabelsSection" class="space-y-6">
+            <EmailSettingsList
+              title="Mailbox Labels"
+              description="Create labels that integrations can apply to incoming conversations."
+              placeholder="Priority"
+              :items="labels"
+              @add="addLabel"
+              @remove="removeLabel"
+            />
+          </div>
+
+          <div :show="isSecuritySection" class="space-y-6">
+            <div class="p-6 bg-white dark:bg-neutral-700 rounded-lg shadow">
+              <h2 class="font-medium text-gray-900 text-lg dark:text-white">External Content</h2>
+              <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Remote content stays blocked by default to reduce tracking and untrusted requests.</p>
+
+              <div class="mt-5 space-y-4">
+                <label class="flex items-start">
+                  <input id="loadRemoteImages" type="checkbox" x-model="loadRemoteImages" class="mt-0.5 h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500" />
+                  <span class="ml-3">
+                    <span class="block font-medium text-gray-700 text-sm dark:text-neutral-200">Load remote images</span>
+                    <span class="block text-gray-500 text-xs dark:text-neutral-400">Allow message images hosted outside your application.</span>
+                  </span>
+                </label>
+
+                <label class="flex items-start">
+                  <input id="showExternalContent" type="checkbox" x-model="showExternalContent" class="mt-0.5 h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500" />
+                  <span class="ml-3">
+                    <span class="block font-medium text-gray-700 text-sm dark:text-neutral-200">Show external content</span>
+                    <span class="block text-gray-500 text-xs dark:text-neutral-400">Permit embedded content from message authors.</span>
+                  </span>
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</template>
+
+<script client>
+import type {
+  AutoAdvance,
+  DisplayDensity,
+  MailLanguage,
+  MailPreference,
+  MailTheme,
+  NotificationSound,
+  ReplyBehavior,
+} from '~/storage/framework/defaults/functions/mail-preferences'
+import { fetchInboxActivity } from '~/storage/framework/defaults/functions/inbox'
+import { fetchMailPreference, saveMailPreference } from '~/storage/framework/defaults/functions/mail-preferences'
+
+interface SettingsSection {
+  id: string
+  name: string
+  icon: string
+}
+
+const folders = [
+  { id: 'inbox', name: 'Inbox', icon: 'inbox' },
+  { id: 'starred', name: 'Starred', icon: 'star' },
+  { id: 'sent', name: 'Sent', icon: 'mail-send-01' },
+  { id: 'drafts', name: 'Drafts', icon: 'license-draft' },
+  { id: 'archive', name: 'Archive', icon: 'archive' },
+  { id: 'spam', name: 'Spam', icon: 'spam' },
+  { id: 'trash', name: 'Trash', icon: 'waste' },
+]
+
+const unreadCounts = state({
+  inbox: 0,
+  starred: 0,
+  sent: 0,
+  drafts: 0,
+  archive: 0,
+  spam: 0,
+  trash: 0,
+})
+const mailbox = state('')
+
+const settingsSections: SettingsSection[] = [
+  { id: 'general', name: 'General', icon: 'i-hugeicons-settings-01' },
+  { id: 'accounts', name: 'Account', icon: 'i-hugeicons-mail-account-02' },
+  { id: 'notifications', name: 'Notifications', icon: 'i-hugeicons-notification-01' },
+  { id: 'filters', name: 'Filters & Blocking', icon: 'i-hugeicons-filter-mail-circle' },
+  { id: 'labels', name: 'Labels', icon: 'i-hugeicons-tag-01' },
+  { id: 'security', name: 'Security', icon: 'i-hugeicons-security-check' },
+]
+
+const activeFolder = state('inbox')
+const activeSection = state('general')
+const isLoading = state(true)
+
+const displayDensity = state<DisplayDensity>('default')
+const defaultReplyBehavior = state<ReplyBehavior>('replyAll')
+const sendAndArchive = state(true)
+const autoAdvance = state<AutoAdvance>('newer')
+const desktopNotifications = state(true)
+const notificationSound = state<NotificationSound>('default')
+const notificationPreview = state(true)
+const theme = state<MailTheme>('system')
+const language = state<MailLanguage>('en')
+
+const accountName = state('Stacks')
+const accountEmail = state('')
+const signature = state('')
+const vacationEnabled = state(false)
+const vacationStartDate = state('')
+const vacationEndDate = state('')
+const vacationSubject = state('')
+const vacationMessage = state('')
+const filters = state<string[]>([])
+const blockedSenders = state<string[]>([])
+const labels = state<string[]>([])
+const loadRemoteImages = state(false)
+const showExternalContent = state(false)
+
+const isGeneralSection = derived(() => activeSection() === 'general')
+const isAccountsSection = derived(() => activeSection() === 'accounts')
+const isNotificationsSection = derived(() => activeSection() === 'notifications')
+const isFiltersSection = derived(() => activeSection() === 'filters')
+const isLabelsSection = derived(() => activeSection() === 'labels')
+const isSecuritySection = derived(() => activeSection() === 'security')
+
+function eventValue(value: string | CustomEvent<string>): string {
+  return typeof value === 'string' ? value : value.detail
+}
+
+function setActiveSection(value: string | CustomEvent<string>): void {
+  activeSection.set(eventValue(value))
+}
+
+function handleFolderChange(event: CustomEvent<string>): void {
+  const folder = event.detail
+  activeFolder.set(folder)
+  navigate(`/inbox?folder=${encodeURIComponent(folder)}`)
+}
+
+function handleCompose(): void {
+  navigate('/inbox?compose=true')
+}
+
+function parseStringList(value: string): string[] {
+  try {
+    const parsed = JSON.parse(value)
+    if (Array.isArray(parsed))
+      return parsed.map(item => String(item)).filter(Boolean)
+  }
+  catch {}
+  return []
+}
+
+interface StringListSignal {
+  update: (updater: (items: string[]) => string[]) => void
+}
+
+function addUnique(target: StringListSignal, value: string): void {
+  target.update(items => items.includes(value) ? items : [...items, value])
+}
+
+function removeValue(target: StringListSignal, value: string): void {
+  target.update(items => items.filter(item => item !== value))
+}
+
+function addFilter(value: string | CustomEvent<string>): void { addUnique(filters, eventValue(value)) }
+function removeFilter(value: string | CustomEvent<string>): void { removeValue(filters, eventValue(value)) }
+function addBlockedSender(value: string | CustomEvent<string>): void { addUnique(blockedSenders, eventValue(value).toLowerCase()) }
+function removeBlockedSender(value: string | CustomEvent<string>): void { removeValue(blockedSenders, eventValue(value)) }
+function addLabel(value: string | CustomEvent<string>): void { addUnique(labels, eventValue(value)) }
+function removeLabel(value: string | CustomEvent<string>): void { removeValue(labels, eventValue(value)) }
+
+function applyPreference(preference: MailPreference): void {
+  accountEmail.set(preference.mailbox)
+  mailbox.set(preference.mailbox)
+  accountName.set(preference.accountName)
+  signature.set(preference.signature)
+  displayDensity.set(preference.displayDensity)
+  theme.set(preference.theme)
+  language.set(preference.language)
+  defaultReplyBehavior.set(preference.defaultReplyBehavior)
+  sendAndArchive.set(preference.sendAndArchive)
+  autoAdvance.set(preference.autoAdvance)
+  desktopNotifications.set(preference.desktopNotifications)
+  notificationSound.set(preference.notificationSound)
+  notificationPreview.set(preference.notificationPreview)
+  filters.set(parseStringList(preference.filters))
+  blockedSenders.set(parseStringList(preference.blockedSenders))
+  labels.set(parseStringList(preference.labels))
+  loadRemoteImages.set(preference.loadRemoteImages)
+  showExternalContent.set(preference.showExternalContent)
+  vacationEnabled.set(preference.vacationEnabled)
+  vacationStartDate.set(preference.vacationStartDate)
+  vacationEndDate.set(preference.vacationEndDate)
+  vacationSubject.set(preference.vacationSubject)
+  vacationMessage.set(preference.vacationMessage)
+}
+
+async function saveSettings(): Promise<void> {
+  isLoading.set(true)
+  try {
+    const saved = await saveMailPreference({
+      mailbox: accountEmail(),
+      accountName: accountName(),
+      signature: signature(),
+      displayDensity: displayDensity(),
+      theme: theme(),
+      language: language(),
+      defaultReplyBehavior: defaultReplyBehavior(),
+      sendAndArchive: sendAndArchive(),
+      autoAdvance: autoAdvance(),
+      desktopNotifications: desktopNotifications(),
+      notificationSound: notificationSound(),
+      notificationPreview: notificationPreview(),
+      filters: JSON.stringify(filters()),
+      blockedSenders: JSON.stringify(blockedSenders()),
+      labels: JSON.stringify(labels()),
+      loadRemoteImages: loadRemoteImages(),
+      showExternalContent: showExternalContent(),
+      vacationEnabled: vacationEnabled(),
+      vacationStartDate: vacationStartDate(),
+      vacationEndDate: vacationEndDate(),
+      vacationSubject: vacationSubject(),
+      vacationMessage: vacationMessage(),
+    })
+    if (saved)
+      applyPreference(saved)
+  }
+  finally {
+    isLoading.set(false)
+  }
+}
+
+onMount(async () => {
+  try {
+    const activity = await fetchInboxActivity('year')
+    if (activity) {
+      unreadCounts.set(activity.folder_counts)
+      mailbox.set(activity.mailbox)
+      accountEmail.set(activity.mailbox)
+    }
+
+    const preference = await fetchMailPreference(activity?.mailbox)
+    if (preference)
+      applyPreference(preference)
+  }
+  finally {
+    isLoading.set(false)
+  }
+})
+</script>

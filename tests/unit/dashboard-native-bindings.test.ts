@@ -223,6 +223,16 @@ describe('dashboard native STX bindings', () => {
     expect(list).toContain('x-model="search"')
     expect(list).toContain("emit('search', $event.target.value)")
     expect(list).not.toContain('function updateSearch(')
+
+    const settings = componentSource('Email/InboxSettingsDashboard.stx')
+    const settingsView = readFileSync(
+      resolve('storage/framework/defaults/views/dashboard/inbox/settings.stx'),
+      'utf8',
+    )
+    expect(settings).toContain('x-model="displayDensity"')
+    expect(settings).toContain('x-model="vacationMessage"')
+    expect(settingsView).toContain('<InboxSettingsDashboard />')
+    expect(settingsView).not.toContain('<script')
   })
 
   test('shared form controls own their values and stable identities natively', () => {
