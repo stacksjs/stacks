@@ -124,10 +124,17 @@ describe('dashboard cloud overview', () => {
     expect(JSON.stringify(snapshot)).not.toContain('99.99%')
   })
 
-  test('ignores malformed state and keeps an honest configured-only snapshot', async () => {
+  test('reports malformed state instead of presenting a configured-only snapshot', async () => {
     await writeFile(join(stateDir, 'state', 'broken.json'), '{')
 
-    const snapshot = await getDashboardCloudSnapshot(cloudConfig, { stateDir })
+    expect(getDashboardCloudSnapshot(cloudConfig, { stateDir })).rejects.toThrow(
+      'Could not read cloud state broken.json',
+    )
+  })
+
+  test('treats an absent state directory as no deployment state', async () => {
+    const missingStateDir = join(stateDir, 'not-created')
+    const snapshot = await getDashboardCloudSnapshot(cloudConfig, { stateDir: missingStateDir })
 
     expect(snapshot.deployments).toEqual([])
     expect(snapshot.events).toEqual([])

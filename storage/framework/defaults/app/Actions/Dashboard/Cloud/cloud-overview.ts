@@ -191,26 +191,29 @@ async function readStateFiles(stateDir: string): Promise<StateFile[]> {
   try {
     names = (await readdir(directory)).filter(name => name.endsWith('.json')).sort()
   }
-  catch {
-    return []
+  catch (error) {
+    if ((error as NodeJS.ErrnoException).code === 'ENOENT')
+      return []
+    throw new Error(`Could not read cloud state directory: ${error instanceof Error ? error.message : String(error)}`)
   }
 
-  const files = await Promise.all(names.map(async (name): Promise<StateFile | null> => {
+  return await Promise.all(names.map(async (name): Promise<StateFile> => {
     const path = join(directory, name)
     try {
       const [contents, metadata] = await Promise.all([readFile(path, 'utf8'), stat(path)])
+      const parsed = JSON.parse(contents)
+      if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed))
+        throw new TypeError('state root must be an object')
       return {
         path,
         modifiedAt: metadata.mtime.toISOString(),
-        value: record(JSON.parse(contents)),
+        value: parsed as CloudRecord,
       }
     }
-    catch {
-      return null
+    catch (error) {
+      throw new Error(`Could not read cloud state ${name}: ${error instanceof Error ? error.message : String(error)}`)
     }
   }))
-
-  return files.filter((file): file is StateFile => file !== null)
 }
 
 function operationFromState(value: CloudRecord): DashboardCloudOperation | null {
