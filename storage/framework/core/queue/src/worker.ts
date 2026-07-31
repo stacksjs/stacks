@@ -518,7 +518,11 @@ async function processJob(job: any): Promise<void> {
       if (!persisted) {
         log.info(`[Queue] Moving job ${jobId} to failed_jobs`)
         try {
-          persisted = await moveToFailedJobs(job, jobError)
+          persisted = await moveToFailedJobs(job, jobError, {
+            attempts: currentAttempts,
+            maxAttempts,
+            durationMs: Date.now() - startTime,
+          })
         }
         catch {
           persisted = false
@@ -639,7 +643,13 @@ async function releaseJob(jobId: number, delaySeconds: number = 30): Promise<voi
  * error) is what keeps a persistence failure from silently destroying the
  * payload (stacksjs/stacks#1957).
  */
-async function moveToFailedJobs(job: any, error: Error): Promise<boolean> {
+interface FailedJobMetrics {
+  attempts: number
+  maxAttempts: number
+  durationMs: number
+}
+
+async function moveToFailedJobs(job: any, error: Error, metrics: FailedJobMetrics): Promise<boolean> {
   try {
     const failedAt = new Date().toISOString().slice(0, 19).replace('T', ' ')
     const uuid = crypto.randomUUID()
@@ -654,6 +664,9 @@ async function moveToFailedJobs(job: any, error: Error): Promise<boolean> {
         queue: job.queue,
         payload: job.payload,
         exception,
+        attempts: metrics.attempts,
+        max_attempts: metrics.maxAttempts,
+        duration_ms: metrics.durationMs,
         failed_at: failedAt,
       })
       .execute()

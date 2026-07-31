@@ -129,7 +129,12 @@ CREATE TABLE IF NOT EXISTS failed_jobs (
   queue TEXT NOT NULL,
   payload TEXT NOT NULL,
   exception TEXT NOT NULL,
-  failed_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  attempts INTEGER,
+  max_attempts INTEGER,
+  duration_ms INTEGER,
+  failed_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME
 );
 
 -- Create job_batches table
@@ -222,7 +227,12 @@ CREATE TABLE IF NOT EXISTS failed_jobs (
   queue VARCHAR(255) NOT NULL,
   payload LONGTEXT NOT NULL,
   exception LONGTEXT NOT NULL,
-  failed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  attempts INT NULL,
+  max_attempts INT NULL,
+  duration_ms INT NULL,
+  failed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NULL
 );
 
 -- Create job_batches table
@@ -300,7 +310,12 @@ CREATE TABLE IF NOT EXISTS failed_jobs (
   queue VARCHAR(255) NOT NULL,
   payload TEXT NOT NULL,
   exception TEXT NOT NULL,
-  failed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  attempts INTEGER,
+  max_attempts INTEGER,
+  duration_ms INTEGER,
+  failed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP
 );
 
 -- Create job_batches table
@@ -405,7 +420,12 @@ CREATE TABLE IF NOT EXISTS queue_circuit_state (
             queue TEXT NOT NULL,
             payload TEXT NOT NULL,
             exception TEXT NOT NULL,
-            failed_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            attempts INTEGER,
+            max_attempts INTEGER,
+            duration_ms INTEGER,
+            failed_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            updated_at DATETIME
           )`)
 
           sqlite.close()
@@ -430,7 +450,12 @@ CREATE TABLE IF NOT EXISTS queue_circuit_state (
             queue VARCHAR(255) NOT NULL,
             payload LONGTEXT NOT NULL,
             exception LONGTEXT NOT NULL,
-            failed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            attempts INT NULL,
+            max_attempts INT NULL,
+            duration_ms INT NULL,
+            failed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP NULL
           )`).execute()
         }
         else if (driver === 'postgres') {
@@ -453,7 +478,12 @@ CREATE TABLE IF NOT EXISTS queue_circuit_state (
             queue VARCHAR(255) NOT NULL,
             payload TEXT NOT NULL,
             exception TEXT NOT NULL,
-            failed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            attempts INTEGER,
+            max_attempts INTEGER,
+            duration_ms INTEGER,
+            failed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP
           )`).execute()
         }
 

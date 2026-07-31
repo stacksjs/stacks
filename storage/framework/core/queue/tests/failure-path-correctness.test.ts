@@ -14,7 +14,7 @@ describe('queue failure-path correctness (#1957)', () => {
     const worker = src('worker.ts')
 
     it('moveToFailedJobs signals success/failure instead of swallowing', () => {
-      expect(worker).toContain('async function moveToFailedJobs(job: any, error: Error): Promise<boolean>')
+      expect(worker).toContain('async function moveToFailedJobs(job: any, error: Error, metrics: FailedJobMetrics): Promise<boolean>')
       // both outcomes are reported back to the caller
       expect(worker).toMatch(/\.execute\(\)\s*\n\s*return true/)
       expect(worker).toMatch(/log\.error\('Failed to log failed job:'[^)]*\)\s*\n\s*return false/)
@@ -22,10 +22,18 @@ describe('queue failure-path correctness (#1957)', () => {
 
     it('deleteJob only runs once the job is durably persisted', () => {
       // the delete is guarded by the persistence result, not unconditional
-      expect(worker).toContain('persisted = await moveToFailedJobs(job, jobError)')
+      expect(worker).toContain('persisted = await moveToFailedJobs(job, jobError, {')
       expect(worker).toMatch(/if \(persisted\) \{[\s\S]*?await deleteJob\(jobId\)/)
       // the not-persisted branch keeps the row (no data loss)
       expect(worker).toContain('leaving it in the queue to avoid data loss')
+    })
+
+    it('persists the real terminal attempt and runtime metrics', () => {
+      expect(worker).toContain('attempts: currentAttempts')
+      expect(worker).toContain('maxAttempts,')
+      expect(worker).toContain('durationMs: Date.now() - startTime')
+      expect(worker).toContain('max_attempts: metrics.maxAttempts')
+      expect(worker).toContain('duration_ms: metrics.durationMs')
     })
   })
 

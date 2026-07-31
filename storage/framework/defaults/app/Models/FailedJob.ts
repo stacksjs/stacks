@@ -8,6 +8,7 @@ export default defineModel({
   autoIncrement: true,
 
   traits: {
+    useUuid: true,
     useTimestamps: true,
   },
 
@@ -49,6 +50,27 @@ export default defineModel({
         rule: schema.string().required(),
       },
       factory: faker => faker.lorem.sentence(),
+    },
+
+    attempts: {
+      fillable: true,
+      validation: {
+        rule: schema.number().min(0),
+      },
+    },
+
+    maxAttempts: {
+      fillable: true,
+      validation: {
+        rule: schema.number().min(1),
+      },
+    },
+
+    durationMs: {
+      fillable: true,
+      validation: {
+        rule: schema.number().min(0),
+      },
     },
 
     failed_at: {

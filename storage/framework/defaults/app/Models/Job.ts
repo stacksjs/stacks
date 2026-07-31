@@ -55,9 +55,9 @@ export default defineModel({
     reserved_at: {
       fillable: true,
       validation: {
-        rule: schema.date(),
+        rule: schema.number(),
       },
-      factory: () => '2024-12-23 13:32:19',
+      factory: faker => faker.number.int({ min: 1000000, max: 1999999 }),
     },
   },
 } as const)

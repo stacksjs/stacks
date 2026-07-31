@@ -47,7 +47,7 @@ describe('DLQ + quarantine wiring (#1984)', () => {
       expect(worker).toContain(`parsedPayload?._retriedFromFailed === true`)
       expect(worker).toMatch(/moveToDeadLetter\([\s\S]*?'repeat-failure'/)
       // fallback to failed_jobs when not marked or DLQ unavailable
-      expect(worker).toContain('persisted = await moveToFailedJobs(job, jobError)')
+      expect(worker).toContain('persisted = await moveToFailedJobs(job, jobError, {')
     })
   })
 })
