@@ -11,6 +11,7 @@ import {
   commerceOptionalString,
   commerceOptionalTimestamp,
   commerceRequiredString,
+  commerceStringList,
   commerceTimestamp,
   commerceUrl,
 } from './commerce-record'
@@ -21,6 +22,7 @@ describe('commerce model record validation', () => {
     expect(commerceOptionalIdentifier(null, 'Order 1', 'customer_id')).toBe('')
     expect(commerceRequiredString(' Widget ', 'Product 7', 'name')).toBe('Widget')
     expect(commerceOptionalString(null, 'Product 7', 'description')).toBe('')
+    expect(commerceStringList('["US","CA","US"]', 'ShippingZone 1', 'countries')).toEqual(['US', 'CA'])
     expect(commerceNumber('12.50', 'Product 7', 'price', { min: 0 })).toBe(12.5)
     expect(commerceOptionalNumber(null, 'Product 7', 'discount')).toBeNull()
     expect(commerceBoolean('0', 'Product 7', 'is_available')).toBeFalse()
@@ -37,6 +39,7 @@ describe('commerce model record validation', () => {
     expect(() => commerceNumber('', 'Product 7', 'price')).toThrow('finite number')
     expect(() => commerceNumber('0x10', 'Product 7', 'price')).toThrow('finite number')
     expect(() => commerceBoolean(null, 'Product 7', 'is_available')).toThrow('boolean')
+    expect(() => commerceStringList('[\"US\"', 'ShippingZone 1', 'countries')).toThrow('JSON array')
     expect(() => commerceEnum('legacy', 'TaxRate 1', 'status', ['active', 'inactive']))
       .toThrow('active or inactive')
     expect(() => commerceCurrency('US', 'Order 1')).toThrow('three-letter currency code')

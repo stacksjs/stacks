@@ -45,44 +45,6 @@ export interface DeliveryOverviewResult {
 
 const DAY_MS = 24 * 60 * 60 * 1000
 
-function value(record: any, ...keys: string[]): unknown {
-  for (const key of keys) {
-    const result = typeof record?.get === 'function' ? record.get(key) : record?.[key]
-    if (result !== null && result !== undefined)
-      return result
-  }
-  return undefined
-}
-
-function text(input: unknown): string {
-  return input === null || input === undefined ? '' : String(input)
-}
-
-function number(input: unknown): number {
-  const result = Number(input)
-  return Number.isFinite(result) && result >= 0 ? result : 0
-}
-
-function list(input: unknown): string[] {
-  if (Array.isArray(input))
-    return input.map(item => text(item).trim()).filter(Boolean)
-
-  const raw = text(input).trim()
-  if (!raw)
-    return []
-
-  try {
-    const parsed = JSON.parse(raw)
-    if (Array.isArray(parsed))
-      return parsed.map(item => text(item).trim()).filter(Boolean)
-  }
-  catch {
-    return raw.split(/[\n,|;]+/).map(item => item.trim()).filter(Boolean)
-  }
-
-  return []
-}
-
 function formatMoney(cents: number, currency: string): string {
   try {
     return new Intl.NumberFormat('en-US', {
@@ -95,18 +57,21 @@ function formatMoney(cents: number, currency: string): string {
   }
 }
 
-export function deliveryTimestamp(input: unknown): number {
-  const raw = text(input).trim()
-  if (!raw)
-    return 0
-  if (/^\d{10,13}$/.test(raw))
-    return raw.length === 10 ? Number(raw) * 1000 : Number(raw)
+export function deliveryTimestamp(input: unknown, source = 'DeliveryRoute', field = 'last_active'): number {
+  const raw = typeof input === 'number' ? String(input) : commerceRequiredString(input, source, field)
+  if (/^\d{10,13}$/.test(raw)) {
+    const timestamp = raw.length === 10 ? Number(raw) * 1000 : Number(raw)
+    if (Number.isSafeInteger(timestamp))
+      return timestamp
+  }
 
   const normalized = /^\d{4}-\d{2}-\d{2} \d/.test(raw)
     ? `${raw.replace(' ', 'T')}Z`
     : raw
   const timestamp = new Date(normalized).getTime()
-  return Number.isFinite(timestamp) ? timestamp : 0
+  if (!Number.isFinite(timestamp))
+    throw new TypeError(`${source}.${field} must be a valid Unix or ISO timestamp.`)
+  return timestamp
 }
 
 export function formatDeliveryDuration(minutes: number): string {
@@ -126,24 +91,71 @@ export function buildDeliveryOverview(
   currency = 'USD',
   now = new Date(),
 ): DeliveryOverviewResult {
-  const driversById = new Map(driverRows.map(driver => [
-    text(value(driver, 'id')),
-    {
-      name: text(value(driver, 'name')),
-      vehicle: text(value(driver, 'vehicle_number', 'vehicleNumber')),
-    },
-  ]))
-
-  const allRoutes = routeRows.map((route): DeliveryOverviewRoute => {
-    const linkedDriver = driversById.get(text(value(route, 'driver_id', 'driverId')))
+  const normalizedCurrency = commerceCurrency(currency, 'Commerce configuration')
+  const normalizedDrivers = driverRows.map((driver) => {
+    const identifier = commerceIdentifier(commerceValue(driver, 'id', 'uuid'), 'Driver')
+    const source = `Driver ${identifier}`
     return {
-      id: number(value(route, 'id')),
-      driver: linkedDriver?.name || text(value(route, 'driver')) || 'Unassigned',
-      vehicle: linkedDriver?.vehicle || text(value(route, 'vehicle')) || 'Not assigned',
-      stops: number(value(route, 'stops')),
-      duration: formatDeliveryDuration(number(value(route, 'delivery_time', 'deliveryTime'))),
-      distance: `${number(value(route, 'total_distance', 'totalDistance')).toLocaleString('en-US')} mi`,
-      lastActive: deliveryTimestamp(value(route, 'last_active', 'lastActive')),
+      id: identifier,
+      name: commerceRequiredString(commerceValue(driver, 'name'), source, 'name'),
+      vehicle: commerceRequiredString(
+        commerceValue(driver, 'vehicle_number', 'vehicleNumber'),
+        source,
+        'vehicle_number',
+      ),
+      status: commerceEnum(commerceValue(driver, 'status'), source, 'status', [
+        'active',
+        'on_delivery',
+        'on_break',
+      ]),
+    }
+  })
+  const driversById = new Map(normalizedDrivers.map(driver => [driver.id, driver]))
+
+  const routeMinutesById = new Map<number, number>()
+  const allRoutes = routeRows.map((route): DeliveryOverviewRoute => {
+    const numericId = commerceNumber(commerceValue(route, 'id'), 'DeliveryRoute', 'id', {
+      min: 1,
+      integer: true,
+    })
+    const source = `DeliveryRoute ${numericId}`
+    const driverId = commerceOptionalIdentifier(
+      commerceValue(route, 'driver_id', 'driverId'),
+      source,
+      'driver_id',
+    )
+    const linkedDriver = driverId ? driversById.get(driverId) : undefined
+    if (driverId && !linkedDriver)
+      throw new TypeError(`${source}.driver_id references missing Driver ${driverId}.`)
+    const deliveryTime = commerceNumber(
+      commerceValue(route, 'delivery_time', 'deliveryTime'),
+      source,
+      'delivery_time',
+      { min: 0, integer: true },
+    )
+    routeMinutesById.set(numericId, deliveryTime)
+    return {
+      id: numericId,
+      driver: linkedDriver?.name
+        || commerceRequiredString(commerceValue(route, 'driver'), source, 'driver'),
+      vehicle: linkedDriver?.vehicle
+        || commerceRequiredString(commerceValue(route, 'vehicle'), source, 'vehicle'),
+      stops: commerceNumber(commerceValue(route, 'stops'), source, 'stops', {
+        min: 0,
+        integer: true,
+      }),
+      duration: formatDeliveryDuration(deliveryTime),
+      distance: `${commerceNumber(
+        commerceValue(route, 'total_distance', 'totalDistance'),
+        source,
+        'total_distance',
+        { min: 0 },
+      ).toLocaleString('en-US')} mi`,
+      lastActive: deliveryTimestamp(
+        commerceValue(route, 'last_active', 'lastActive'),
+        source,
+        'last_active',
+      ),
     }
   })
 
@@ -151,22 +163,36 @@ export function buildDeliveryOverview(
   const activeRoutes = allRoutes
     .filter(route => route.lastActive >= activeCutoff && route.lastActive <= now.getTime())
     .sort((left, right) => right.lastActive - left.lastActive)
-  const routeMinutesById = new Map(routeRows.map(route => [
-    number(value(route, 'id')),
-    number(value(route, 'delivery_time', 'deliveryTime')),
-  ]))
-
   const methods = methodRows
     .map((method): DeliveryOverviewMethod => {
-      const threshold = value(method, 'free_shipping', 'freeShipping')
+      const id = commerceNumber(commerceValue(method, 'id'), 'ShippingMethod', 'id', {
+        min: 1,
+        integer: true,
+      })
+      const source = `ShippingMethod ${id}`
+      const threshold = commerceOptionalNumber(
+        commerceValue(method, 'free_shipping', 'freeShipping'),
+        source,
+        'free_shipping',
+        { min: 0 },
+      )
       return {
-        id: number(value(method, 'id')),
-        name: text(value(method, 'name')) || 'Unnamed method',
-        status: text(value(method, 'status')) || 'draft',
-        baseRate: formatMoney(number(value(method, 'base_rate', 'baseRate')), currency),
-        freeShipping: threshold === null || threshold === undefined || threshold === ''
+        id,
+        name: commerceRequiredString(commerceValue(method, 'name'), source, 'name'),
+        status: commerceEnum(commerceValue(method, 'status'), source, 'status', [
+          'active',
+          'inactive',
+          'draft',
+        ]),
+        baseRate: formatMoney(commerceNumber(
+          commerceValue(method, 'base_rate', 'baseRate'),
+          source,
+          'base_rate',
+          { min: 0 },
+        ), normalizedCurrency),
+        freeShipping: threshold === null
           ? 'Not enabled'
-          : formatMoney(number(threshold), currency),
+          : formatMoney(threshold, normalizedCurrency),
       }
     })
     .sort((left, right) => {
@@ -175,21 +201,31 @@ export function buildDeliveryOverview(
     })
 
   const zones = zoneRows
-    .map((zone): DeliveryOverviewZone => ({
-      id: number(value(zone, 'id')),
-      name: text(value(zone, 'name')) || 'Unnamed zone',
-      status: text(value(zone, 'status')) || 'draft',
-      countries: list(value(zone, 'countries')).length,
-      regions: list(value(zone, 'regions')).length,
-    }))
+    .map((zone): DeliveryOverviewZone => {
+      const id = commerceNumber(commerceValue(zone, 'id'), 'ShippingZone', 'id', {
+        min: 1,
+        integer: true,
+      })
+      const source = `ShippingZone ${id}`
+      return {
+        id,
+        name: commerceRequiredString(commerceValue(zone, 'name'), source, 'name'),
+        status: commerceEnum(commerceValue(zone, 'status'), source, 'status', [
+          'active',
+          'inactive',
+          'draft',
+        ]),
+        countries: commerceStringList(commerceValue(zone, 'countries'), source, 'countries').length,
+        regions: commerceStringList(commerceValue(zone, 'regions'), source, 'regions').length,
+      }
+    })
     .sort((left, right) => {
       const statusOrder = Number(right.status === 'active') - Number(left.status === 'active')
       return statusOrder || left.name.localeCompare(right.name)
     })
 
-  const driverStatusCounts = driverRows.reduce<Record<string, number>>((counts, driver) => {
-    const status = text(value(driver, 'status')).toLowerCase() || 'active'
-    counts[status] = (counts[status] || 0) + 1
+  const driverStatusCounts = normalizedDrivers.reduce<Record<string, number>>((counts, driver) => {
+    counts[driver.status] = (counts[driver.status] || 0) + 1
     return counts
   }, {})
 
@@ -225,10 +261,21 @@ export function buildDeliveryOverview(
     methods: methods.slice(0, 5),
     zones: zones.slice(0, 5),
     drivers: {
-      total: driverRows.length,
+      total: normalizedDrivers.length,
       active: driverStatusCounts.active || 0,
       onDelivery: driverStatusCounts.on_delivery || 0,
       onBreak: driverStatusCounts.on_break || 0,
     },
   }
 }
+import {
+  commerceCurrency,
+  commerceEnum,
+  commerceIdentifier,
+  commerceNumber,
+  commerceOptionalIdentifier,
+  commerceOptionalNumber,
+  commerceRequiredString,
+  commerceStringList,
+  commerceValue,
+} from './commerce-record'

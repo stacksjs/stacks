@@ -47,6 +47,45 @@ export function commerceOptionalString(input: unknown, source: string, field: st
   return input.trim()
 }
 
+export function commerceStringList(input: unknown, source: string, field: string): string[] {
+  if (input === undefined || input === null || input === '')
+    return []
+
+  let values: unknown[]
+  if (Array.isArray(input)) {
+    values = input
+  }
+  else if (typeof input === 'string') {
+    const raw = input.trim()
+    if (!raw)
+      return []
+    if (raw.startsWith('[') || raw.startsWith('{')) {
+      try {
+        const parsed = JSON.parse(raw)
+        if (!Array.isArray(parsed))
+          throw new TypeError('Expected an array.')
+        values = parsed
+      }
+      catch {
+        throw commerceRecordError(source, field, 'a JSON array or delimited string list')
+      }
+    }
+    else {
+      values = raw.split(/[\n,|;]+/)
+    }
+  }
+  else {
+    throw commerceRecordError(source, field, 'a JSON array or delimited string list')
+  }
+
+  const result = values.map((value) => {
+    if (typeof value !== 'string' || !value.trim())
+      throw commerceRecordError(source, field, 'a list of non-empty strings')
+    return value.trim()
+  })
+  return [...new Set(result)]
+}
+
 export function commerceNumber(
   input: unknown,
   source: string,

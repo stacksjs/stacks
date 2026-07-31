@@ -12,7 +12,7 @@ describe('commerce delivery overview', () => {
     expect(deliveryTimestamp('1785326400000')).toBe(1785326400000)
     expect(deliveryTimestamp('1785326400')).toBe(1785326400000)
     expect(deliveryTimestamp('2026-07-29 12:00:00')).toBe(now.getTime())
-    expect(deliveryTimestamp('invalid')).toBe(0)
+    expect(() => deliveryTimestamp('invalid')).toThrow('valid Unix or ISO timestamp')
     expect(formatDeliveryDuration(45)).toBe('45 min')
     expect(formatDeliveryDuration(135)).toBe('2h 15m')
   })
@@ -82,5 +82,34 @@ describe('commerce delivery overview', () => {
       onDelivery: 1,
       onBreak: 0,
     })
+  })
+
+  test('rejects corrupt delivery records and missing driver relationships', () => {
+    expect(() => buildDeliveryOverview(
+      [{ id: 1, name: 'Ground', status: 'active', base_rate: 'free', free_shipping: null }],
+      [],
+      [],
+      [],
+      'USD',
+      now,
+    )).toThrow('ShippingMethod 1.base_rate must be a finite number')
+
+    expect(() => buildDeliveryOverview(
+      [],
+      [{
+        id: 1,
+        driver_id: 99,
+        driver: 'Recorded driver',
+        vehicle: 'Recorded vehicle',
+        stops: 1,
+        delivery_time: 30,
+        total_distance: 5,
+        last_active: now.toISOString(),
+      }],
+      [],
+      [],
+      'USD',
+      now,
+    )).toThrow('DeliveryRoute 1.driver_id references missing Driver 99')
   })
 })
