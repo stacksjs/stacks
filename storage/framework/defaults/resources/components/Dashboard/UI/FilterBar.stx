@@ -36,6 +36,7 @@ function emitItemsPerPage(event: Event): void {
       x-model="searchValue"
       type="search"
       :placeholder="searchPlaceholder()"
+      :aria-label="searchPlaceholder()"
       class="block pl-9 pr-3 py-1.5 w-full text-[13px] text-neutral-900 dark:text-neutral-100 placeholder:text-neutral-400 dark:placeholder:text-neutral-500 bg-white dark:bg-white/10 border border-black/10 rounded-lg dark:border-white/15 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 hover:border-black/20 dark:hover:border-white/25 duration-150 transition-all"
       @input="emitSearch($event)"
     />

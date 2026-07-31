@@ -339,6 +339,7 @@ onMount(() => {
                 <select
                   :show="member.role !== 'owner'"
                   :value="member.role"
+                  :aria-label="'Role for ' + member.name"
                   :disabled="busyMemberId() === member.id"
                   class="px-2.5 h-8 text-neutral-800 text-sm dark:text-neutral-100 bg-white dark:bg-neutral-950 border border-neutral-300 rounded-lg dark:border-neutral-700"
                   @change="updateMemberRole(member, $event)"

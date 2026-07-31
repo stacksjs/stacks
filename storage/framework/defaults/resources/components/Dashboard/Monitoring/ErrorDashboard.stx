@@ -67,7 +67,7 @@
   <Modal :isOpen="isDetailModalOpen()" :title="detailTitle" size="lg" @close="closeDetailModal">
     <div :show="hasSelectedError" class="space-y-6">
       <div>
-        <h4 class="mb-2 font-medium text-neutral-500 text-sm dark:text-neutral-400">Message</h4>
+        <h3 class="mb-2 font-medium text-neutral-500 text-sm dark:text-neutral-400">Message</h3>
         <p class="p-3 text-neutral-900 dark:text-white bg-neutral-50 dark:bg-neutral-800 rounded-lg">{{ selectedMessage() }}</p>
       </div>
 
@@ -87,7 +87,7 @@
       </div>
 
       <div :show="hasStackTrace">
-        <h4 class="mb-2 font-medium text-neutral-500 text-sm dark:text-neutral-400">Stack Trace</h4>
+        <h3 class="mb-2 font-medium text-neutral-500 text-sm dark:text-neutral-400">Stack Trace</h3>
         <pre class="overflow-x-auto p-4 max-h-64 text-neutral-700 text-xs dark:text-neutral-300 bg-neutral-900 dark:bg-black rounded-lg">{{ selectedStackTrace() }}</pre>
       </div>
 

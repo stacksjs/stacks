@@ -324,8 +324,13 @@ describe('dashboard native STX bindings', () => {
     expect(filterBar).toContain('x-model.number="itemsPerPage"')
     expect(filterBar).toContain("emit('update:searchValue', value)")
     expect(filterBar).toContain("emit('update:itemsPerPage', value)")
+    expect(filterBar).toContain(':aria-label="searchPlaceholder()"')
     expect(filterBar).not.toContain('data-filter-search')
     expect(filterBar).not.toContain('data-items-per-page')
+
+    const deliverySearch = componentSource('Commerce/Delivery/SearchFilter.stx')
+    expect(deliverySearch).toContain(':placeholder="placeholder()"')
+    expect(deliverySearch).toContain(':aria-label="placeholder()"')
 
     const quickLinks = componentSource('UI/QuickLinks.stx')
     expect(quickLinks).toContain('const validLinks = links.filter')
