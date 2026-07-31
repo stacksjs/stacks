@@ -382,6 +382,17 @@ async function startStxServer(): Promise<void> {
     componentsDir: storagePath('framework/defaults/resources/components/Dashboard'),
     layoutsDir: dashboardPath,
     partialsDir: dashboardPath,
+    // Dashboard routes render source-derived STX shells and load live data
+    // through dashboardApi() after hydration. Reuse the dependency-aware
+    // static render between navigations, while watching every composable root
+    // whose client bundle can change the emitted HTML.
+    renderCache: true,
+    renderCacheVary: 'source',
+    prewarmRenderCache: 4,
+    watchDirs: [
+      projectPath('resources/functions'),
+      storagePath('framework/defaults/resources/functions'),
+    ],
     quiet: true,
     routes: configRoutes,
     // onRequest fires BEFORE the `routes` map and BEFORE STX page
