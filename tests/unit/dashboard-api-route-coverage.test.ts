@@ -8,6 +8,12 @@ interface DashboardRoute {
   path: string
 }
 
+interface DashboardClientCall {
+  file: string
+  method: string
+  path: string
+}
+
 const dashboardRouteSource = readFileSync(
   resolve('storage/framework/defaults/routes/dashboard-api.ts'),
   'utf8',
@@ -43,6 +49,75 @@ function clientDashboardPaths(): Array<{ file: string, path: string }> {
     const source = readFileSync(file, 'utf8')
     return [...source.matchAll(/(['"`])(\/api\/dashboard[^'"`\s]*)\1/g)]
       .map(match => ({ file, path: match[2].split('?')[0] }))
+  }))
+}
+
+function findCallEnd(source: string, openingParen: number): number {
+  let depth = 0
+  let quote = ''
+  let escaped = false
+
+  for (let index = openingParen; index < source.length; index++) {
+    const character = source[index]
+
+    if (quote) {
+      if (escaped) {
+        escaped = false
+        continue
+      }
+      if (character === '\\') {
+        escaped = true
+        continue
+      }
+      if (character === quote)
+        quote = ''
+      continue
+    }
+
+    if (character === '\'' || character === '"' || character === '`') {
+      quote = character
+      continue
+    }
+    if (character === '(')
+      depth++
+    else if (character === ')' && --depth === 0)
+      return index
+  }
+
+  return -1
+}
+
+function directDashboardApiCalls(): DashboardClientCall[] {
+  const roots = [
+    'storage/framework/defaults/functions',
+    'storage/framework/defaults/resources/components/Dashboard',
+    'storage/framework/defaults/resources/views/dashboard',
+  ]
+
+  return roots.flatMap(root => sourceFiles(root).flatMap((file) => {
+    const source = readFileSync(file, 'utf8')
+    const calls: DashboardClientCall[] = []
+
+    for (const match of source.matchAll(/\bdashboardApi(?:<[\s\S]*?>)?\s*\(/g)) {
+      const openingParen = source.indexOf('(', match.index)
+      const closingParen = findCallEnd(source, openingParen)
+      if (closingParen === -1)
+        continue
+
+      const call = source.slice(openingParen + 1, closingParen)
+      const pathMatch = call.match(/^\s*(['"`])(\/api\/dashboard[\s\S]*?)\1/)
+      if (!pathMatch)
+        continue
+
+      const method = call.match(/\bmethod\s*:\s*['"](GET|POST|PUT|PATCH|DELETE)['"]/i)?.[1].toUpperCase() ?? 'GET'
+      calls.push({
+        file,
+        method,
+        path: pathMatch[2].split('?')[0],
+      })
+    }
+
+    return calls
   }))
 }
 
@@ -99,6 +174,20 @@ describe('dashboard API route coverage', () => {
       .map(client => `${client.path} (${client.file})`)
 
     expect(clientPaths.length).toBeGreaterThan(200)
+    expect(missing).toEqual([])
+  })
+
+  test('matches every direct dashboard client call by method and path', () => {
+    const routes = dashboardRoutes()
+    const clientCalls = directDashboardApiCalls()
+    const missing = clientCalls
+      .filter(client => !routes.some(route =>
+        route.method === client.method
+        && pathsCanMatch(client.path, route.path),
+      ))
+      .map(client => `${client.method} ${client.path} (${client.file})`)
+
+    expect(clientCalls.length).toBeGreaterThan(150)
     expect(missing).toEqual([])
   })
 })
