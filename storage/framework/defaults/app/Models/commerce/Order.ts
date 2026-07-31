@@ -62,6 +62,7 @@ export default defineModel({
     },
 
     taxAmount: {
+      default: 0,
       order: 5,
       fillable: true,
       validation: {
@@ -71,6 +72,7 @@ export default defineModel({
     },
 
     discountAmount: {
+      default: 0,
       order: 6,
       fillable: true,
       validation: {
@@ -80,6 +82,7 @@ export default defineModel({
     },
 
     deliveryFee: {
+      default: 0,
       order: 7,
       fillable: true,
       validation: {
@@ -89,6 +92,7 @@ export default defineModel({
     },
 
     tipAmount: {
+      default: 0,
       order: 8,
       fillable: true,
       validation: {

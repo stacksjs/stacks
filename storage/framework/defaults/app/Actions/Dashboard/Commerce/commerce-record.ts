@@ -27,6 +27,12 @@ export function commerceIdentifier(input: unknown, source: string, field = 'id')
   throw commerceRecordError(source, field, 'a positive integer or non-empty string')
 }
 
+export function commerceOptionalIdentifier(input: unknown, source: string, field: string): string {
+  if (input === undefined || input === null || input === '')
+    return ''
+  return commerceIdentifier(input, source, field)
+}
+
 export function commerceRequiredString(input: unknown, source: string, field: string): string {
   if (typeof input !== 'string' || !input.trim())
     throw commerceRecordError(source, field, 'a non-empty string')

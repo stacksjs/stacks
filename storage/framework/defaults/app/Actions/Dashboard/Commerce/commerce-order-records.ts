@@ -1,3 +1,16 @@
+import {
+  commerceCurrency,
+  commerceEmail,
+  commerceIdentifier,
+  commerceNumber,
+  commerceOptionalIdentifier,
+  commerceOptionalString,
+  commerceOptionalTimestamp,
+  commerceRequiredString,
+  commerceTimestamp,
+  commerceValue,
+} from './commerce-record'
+
 export interface CommerceOrderRecord {
   id: string
   customerId: string
@@ -34,63 +47,151 @@ export interface OrderCustomerOption {
   label: string
 }
 
-function value(record: any, ...keys: string[]): unknown {
-  for (const key of keys) {
-    const result = typeof record?.get === 'function' ? record.get(key) : record?.[key]
-    if (result !== null && result !== undefined)
-      return result
-  }
-  return undefined
-}
-
-function text(input: unknown): string {
-  return input === null || input === undefined ? '' : String(input)
-}
-
-function nonNegativeNumber(input: unknown): number {
-  const result = Number(input)
-  return Number.isFinite(result) && result >= 0 ? result : 0
+export interface OrderCustomerContext {
+  name: string
+  email: string
 }
 
 export function normalizeCommerceOrderRecord(
   order: any,
-  customers: Map<string, { name: string, email: string }>,
+  customers: Map<string, OrderCustomerContext>,
   itemCounts: Map<string, number>,
+  couponIds = new Set<string>(),
 ): CommerceOrderRecord {
-  const id = text(value(order, 'id', 'uuid'))
-  const customerId = text(value(order, 'customer_id', 'customerId'))
+  const id = commerceIdentifier(commerceValue(order, 'id', 'uuid'), 'Order')
+  const source = `Order ${id}`
+  const customerId = commerceOptionalIdentifier(
+    commerceValue(order, 'customer_id', 'customerId'),
+    source,
+    'customer_id',
+  )
   const customer = customers.get(customerId)
+  if (customerId && !customer)
+    throw new TypeError(`${source}.customer_id references missing Customer ${customerId}.`)
+
+  const couponId = commerceOptionalIdentifier(
+    commerceValue(order, 'coupon_id', 'couponId'),
+    source,
+    'coupon_id',
+  )
+  if (couponId && !couponIds.has(couponId))
+    throw new TypeError(`${source}.coupon_id references missing Coupon ${couponId}.`)
+
   return {
     id,
     customerId,
-    customerName: customer?.name || (customerId ? `Customer ${customerId}` : 'Unassigned customer'),
+    customerName: customer?.name || '',
     customerEmail: customer?.email || '',
-    status: text(value(order, 'status')) || 'UNKNOWN',
-    totalAmount: nonNegativeNumber(value(order, 'total_amount', 'totalAmount')),
-    currency: text(value(order, 'currency')).toUpperCase() || 'USD',
-    taxAmount: nonNegativeNumber(value(order, 'tax_amount', 'taxAmount')),
-    discountAmount: nonNegativeNumber(value(order, 'discount_amount', 'discountAmount')),
-    deliveryFee: nonNegativeNumber(value(order, 'delivery_fee', 'deliveryFee')),
-    tipAmount: nonNegativeNumber(value(order, 'tip_amount', 'tipAmount')),
-    orderType: text(value(order, 'order_type', 'orderType')) || 'UNKNOWN',
-    deliveryAddress: text(value(order, 'delivery_address', 'deliveryAddress')),
-    specialInstructions: text(value(order, 'special_instructions', 'specialInstructions')),
-    estimatedDeliveryTime: text(value(order, 'estimated_delivery_time', 'estimatedDeliveryTime')),
-    appliedCouponId: text(value(order, 'applied_coupon_id', 'appliedCouponId')),
-    couponId: text(value(order, 'coupon_id', 'couponId')),
-    itemCount: itemCounts.get(id) || 0,
-    createdAt: text(value(order, 'created_at', 'createdAt')),
+    status: commerceRequiredString(commerceValue(order, 'status'), source, 'status'),
+    totalAmount: commerceNumber(
+      commerceValue(order, 'total_amount', 'totalAmount'),
+      source,
+      'total_amount',
+      { min: 0 },
+    ),
+    currency: commerceCurrency(commerceValue(order, 'currency'), source),
+    taxAmount: commerceNumber(
+      commerceValue(order, 'tax_amount', 'taxAmount'),
+      source,
+      'tax_amount',
+      { min: 0 },
+    ),
+    discountAmount: commerceNumber(
+      commerceValue(order, 'discount_amount', 'discountAmount'),
+      source,
+      'discount_amount',
+      { min: 0 },
+    ),
+    deliveryFee: commerceNumber(
+      commerceValue(order, 'delivery_fee', 'deliveryFee'),
+      source,
+      'delivery_fee',
+      { min: 0 },
+    ),
+    tipAmount: commerceNumber(
+      commerceValue(order, 'tip_amount', 'tipAmount'),
+      source,
+      'tip_amount',
+      { min: 0 },
+    ),
+    orderType: commerceRequiredString(
+      commerceValue(order, 'order_type', 'orderType'),
+      source,
+      'order_type',
+    ),
+    deliveryAddress: commerceOptionalString(
+      commerceValue(order, 'delivery_address', 'deliveryAddress'),
+      source,
+      'delivery_address',
+    ),
+    specialInstructions: commerceOptionalString(
+      commerceValue(order, 'special_instructions', 'specialInstructions'),
+      source,
+      'special_instructions',
+    ),
+    estimatedDeliveryTime: commerceOptionalTimestamp(
+      commerceValue(order, 'estimated_delivery_time', 'estimatedDeliveryTime'),
+      source,
+      'estimated_delivery_time',
+    ),
+    appliedCouponId: commerceOptionalString(
+      commerceValue(order, 'applied_coupon_id', 'appliedCouponId'),
+      source,
+      'applied_coupon_id',
+    ),
+    couponId,
+    itemCount: commerceNumber(itemCounts.get(id) ?? 0, source, 'item_count', {
+      min: 0,
+      integer: true,
+    }),
+    createdAt: commerceTimestamp(commerceValue(order, 'created_at', 'createdAt'), source),
   }
 }
 
 export function normalizeOrderCustomerOption(customer: any): OrderCustomerOption {
-  const id = text(value(customer, 'id'))
-  const name = text(value(customer, 'name'))
-  const email = text(value(customer, 'email'))
+  const id = commerceIdentifier(commerceValue(customer, 'id', 'uuid'), 'Customer')
+  const source = `Customer ${id}`
   return {
     id,
-    label: name || email || `Customer ${id}`,
+    label: commerceRequiredString(commerceValue(customer, 'name'), source, 'name'),
   }
+}
+
+export function normalizeOrderCustomerContext(customer: any): { id: string, context: OrderCustomerContext } {
+  const id = commerceIdentifier(commerceValue(customer, 'id', 'uuid'), 'Customer')
+  const source = `Customer ${id}`
+  return {
+    id,
+    context: {
+      name: commerceRequiredString(commerceValue(customer, 'name'), source, 'name'),
+      email: commerceEmail(commerceValue(customer, 'email'), source),
+    },
+  }
+}
+
+export function normalizeOrderCouponId(coupon: any): string {
+  return commerceIdentifier(commerceValue(coupon, 'id', 'uuid'), 'Coupon')
+}
+
+export function addOrderItemQuantity(
+  item: any,
+  orderIds: Set<string>,
+  itemCounts: Map<string, number>,
+): void {
+  const id = commerceIdentifier(commerceValue(item, 'id'), 'OrderItem')
+  const source = `OrderItem ${id}`
+  const orderId = commerceIdentifier(
+    commerceValue(item, 'order_id', 'orderId'),
+    source,
+    'order_id',
+  )
+  if (!orderIds.has(orderId))
+    throw new TypeError(`${source}.order_id references missing Order ${orderId}.`)
+  const quantity = commerceNumber(commerceValue(item, 'quantity'), source, 'quantity', {
+    min: 1,
+    integer: true,
+  })
+  itemCounts.set(orderId, (itemCounts.get(orderId) ?? 0) + quantity)
 }
 
 export function summarizeCommerceOrders(records: CommerceOrderRecord[]): CommerceOrderSummary {

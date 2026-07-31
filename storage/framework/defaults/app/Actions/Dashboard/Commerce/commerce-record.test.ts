@@ -6,6 +6,7 @@ import {
   commerceEnum,
   commerceIdentifier,
   commerceNumber,
+  commerceOptionalIdentifier,
   commerceOptionalNumber,
   commerceOptionalString,
   commerceOptionalTimestamp,
@@ -17,6 +18,7 @@ import {
 describe('commerce model record validation', () => {
   test('normalizes recorded scalar values', () => {
     expect(commerceIdentifier(7, 'Product')).toBe('7')
+    expect(commerceOptionalIdentifier(null, 'Order 1', 'customer_id')).toBe('')
     expect(commerceRequiredString(' Widget ', 'Product 7', 'name')).toBe('Widget')
     expect(commerceOptionalString(null, 'Product 7', 'description')).toBe('')
     expect(commerceNumber('12.50', 'Product 7', 'price', { min: 0 })).toBe(12.5)
@@ -31,6 +33,7 @@ describe('commerce model record validation', () => {
   })
 
   test('rejects coercive and invalid values', () => {
+    expect(() => commerceOptionalIdentifier(0, 'Order 1', 'customer_id')).toThrow('positive integer')
     expect(() => commerceNumber('', 'Product 7', 'price')).toThrow('finite number')
     expect(() => commerceNumber('0x10', 'Product 7', 'price')).toThrow('finite number')
     expect(() => commerceBoolean(null, 'Product 7', 'is_available')).toThrow('boolean')

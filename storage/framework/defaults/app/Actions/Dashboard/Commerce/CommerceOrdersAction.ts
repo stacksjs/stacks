@@ -1,11 +1,16 @@
 import { Action } from '@stacksjs/actions'
 import { config } from '@stacksjs/config'
-import { Customer, Order, OrderItem } from '@stacksjs/orm'
+import { Coupon, Customer, Order, OrderItem } from '@stacksjs/orm'
+import { response } from '@stacksjs/router'
 import {
+  addOrderItemQuantity,
   normalizeCommerceOrderRecord,
+  normalizeOrderCouponId,
+  normalizeOrderCustomerContext,
   normalizeOrderCustomerOption,
   summarizeCommerceOrders,
 } from './commerce-order-records'
+import { commerceCurrency, commerceIdentifier, commerceValue } from './commerce-record'
 
 export default new Action({
   name: 'CommerceOrdersAction',
@@ -14,38 +19,44 @@ export default new Action({
   apiResponse: true,
 
   async handle() {
-    const orders = await Order.orderBy('created_at', 'desc').limit(500).get()
-    const orderIds = orders.map(order => Number(order.get('id'))).filter(id => Number.isFinite(id) && id > 0)
-    const [customers, items] = await Promise.all([
-      Customer.orderBy('name', 'asc').limit(500).get(),
-      orderIds.length > 0 ? OrderItem.where('order_id', 'in', orderIds).get() : [],
-    ])
-    const customerMap = new Map(customers.map(customer => [
-      String(customer.get('id') || ''),
-      {
-        name: String(customer.get('name') || ''),
-        email: String(customer.get('email') || ''),
-      },
-    ]))
-    const itemCounts = new Map<string, number>()
-    for (const item of items) {
-      const orderId = String(item.get('order_id') || '')
-      if (orderId)
-        itemCounts.set(orderId, (itemCounts.get(orderId) || 0) + 1)
-    }
+    try {
+      const orders = await Order.orderBy('created_at', 'desc').limit(500).get()
+      const orderIds = new Set(orders.map(order =>
+        commerceIdentifier(commerceValue(order, 'id', 'uuid'), 'Order'),
+      ))
+      const numericOrderIds = [...orderIds].map(Number).filter(Number.isSafeInteger)
+      const [customers, coupons, items] = await Promise.all([
+        Customer.orderBy('name', 'asc').limit(500).get(),
+        Coupon.orderBy('id', 'asc').limit(500).get(),
+        numericOrderIds.length > 0 ? OrderItem.where('order_id', 'in', numericOrderIds).get() : [],
+      ])
+      const customerContexts = customers.map(normalizeOrderCustomerContext)
+      const customerMap = new Map(customerContexts.map(customer => [customer.id, customer.context]))
+      const couponIds = new Set(coupons.map(normalizeOrderCouponId))
+      const itemCounts = new Map<string, number>()
+      for (const item of items)
+        addOrderItemQuantity(item, orderIds, itemCounts)
 
-    const records = orders.map(order => normalizeCommerceOrderRecord(order, customerMap, itemCounts))
-    const defaultStatuses = ['PENDING', 'PREPARING', 'READY', 'DELIVERED', 'CANCELED']
-    const defaultTypes = ['DINE_IN', 'TAKEOUT', 'DELIVERY']
-    return {
-      records,
-      summary: summarizeCommerceOrders(records),
-      customers: customers
-        .map(normalizeOrderCustomerOption)
-        .sort((left, right) => left.label.localeCompare(right.label)),
-      statuses: [...new Set([...defaultStatuses, ...records.map(record => record.status).filter(Boolean)])],
-      orderTypes: [...new Set([...defaultTypes, ...records.map(record => record.orderType).filter(Boolean)])],
-      defaultCurrency: String((config as any).commerce?.currency || 'USD').toUpperCase(),
+      const records = orders.map(order =>
+        normalizeCommerceOrderRecord(order, customerMap, itemCounts, couponIds),
+      )
+      const defaultStatuses = ['PENDING', 'PREPARING', 'READY', 'DELIVERED', 'CANCELED']
+      const defaultTypes = ['DINE_IN', 'TAKEOUT', 'DELIVERY']
+      return {
+        records,
+        summary: summarizeCommerceOrders(records),
+        customers: customers
+          .map(normalizeOrderCustomerOption)
+          .sort((left, right) => left.label.localeCompare(right.label)),
+        statuses: [...new Set([...defaultStatuses, ...records.map(record => record.status)])],
+        orderTypes: [...new Set([...defaultTypes, ...records.map(record => record.orderType)])],
+        defaultCurrency: commerceCurrency((config as any).commerce?.currency, 'Commerce configuration'),
+      }
+    }
+    catch (error) {
+      return response.json({
+        message: error instanceof Error ? error.message : 'Order records could not be read.',
+      }, 503)
     }
   },
 })

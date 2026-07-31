@@ -56,7 +56,7 @@ function statusClass(record: CommerceOrderRecord): string {
         <template :for="record in records()" :key="record.id">
           <tr class="hover:bg-gray-50/70 dark:hover:bg-neutral-900/40">
             <td class="px-4 py-3 min-w-28 whitespace-nowrap"><Button variant="ghost" size="xs" @click="emit('view', record)">ORD-{{ record.id.padStart(5, '0') }}</Button><p class="mt-1 text-gray-400 text-xs dark:text-neutral-500">{{ record.itemCount }} {{ record.itemCount === 1 ? 'item' : 'items' }}</p></td>
-            <td class="px-4 py-3 min-w-40"><p class="text-gray-700 text-sm dark:text-neutral-200">{{ record.customerName }}</p><p :if="record.customerEmail" class="mt-1 text-gray-400 text-xs dark:text-neutral-500">{{ record.customerEmail }}</p></td>
+            <td class="px-4 py-3 min-w-40"><p class="text-gray-700 text-sm dark:text-neutral-200">{{ record.customerName || 'Unassigned customer' }}</p><p :if="record.customerEmail" class="mt-1 text-gray-400 text-xs dark:text-neutral-500">{{ record.customerEmail }}</p></td>
             <td class="px-4 py-3 font-medium text-gray-700 text-sm dark:text-neutral-200">{{ formatMoney(record.totalAmount, record.currency) }}</td>
             <td class="px-4 py-3 min-w-36"><p class="text-gray-700 text-sm dark:text-neutral-200">{{ label(record.orderType) }}</p><p :if="record.deliveryAddress" class="mt-1 max-w-48 text-gray-400 text-xs truncate dark:text-neutral-500">{{ record.deliveryAddress }}</p></td>
             <td class="px-4 py-3"><span :class="'inline-flex px-2 py-1 font-medium text-xs rounded-full ' + statusClass(record)">{{ label(record.status) }}</span></td>
