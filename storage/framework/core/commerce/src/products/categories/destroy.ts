@@ -8,20 +8,12 @@ import { mutationCount } from '../../utils/mutation-count'
  * @returns A boolean indicating whether the deletion was successful
  */
 export async function remove(id: number): Promise<boolean> {
-  // First check if the category exists
-  const category = await fetchById(id)
-
-  if (!category) {
-    throw new Error(`Category with ID ${id} not found`)
-  }
-
-  // Delete the category
   const result = await db
     .deleteFrom('categories')
     .where('id', '=', id)
     .executeTakeFirst()
 
-  return !!result
+  return mutationCount(result) > 0
 }
 
 /**

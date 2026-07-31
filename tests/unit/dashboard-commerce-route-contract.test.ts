@@ -287,8 +287,9 @@ describe('dashboard commerce route contract', () => {
       expect(action).toContain('toSnakeCaseKeys(request.all())')
     }
 
-    expect(destroyAction).toContain('Number(request.getParam')
-    expect(destroyAction).toContain('receipts.destroy(id)')
+    expect(destroyAction).toContain("commerceIdentifier(request, 'Receipt')")
+    expect(destroyAction).toContain('const deleted = await receipts.destroy(id)')
+    expect(destroyAction).toContain("commerceNotFound('Receipt', id)")
     expect(destroyAction).toContain('response.noContent()')
   })
 
