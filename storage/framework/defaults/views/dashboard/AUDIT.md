@@ -10,8 +10,8 @@ described the componentized dashboard.
 
 | Surface | Count |
 |---|---:|
-| Dashboard STX view files | 118 |
-| Dashboard STX components | 280 |
+| Dashboard STX view files | 120 |
+| Dashboard STX components | 283 |
 | Dashboard Actions | 359 |
 | Registered `/api/dashboard/*` routes | 283 |
 | Framework model files | 69 |
@@ -26,25 +26,28 @@ payment-provider records. They are not missing generic CRUD surfaces.
 
 ### Rendering and navigation
 
-- `./buddy dev --dashboard` starts on port 3002 and renders with STX 0.2.138.
-- 106 static route views render with HTTP 200.
+- `./buddy dev --dashboard` starts on port 3002 and renders with STX 0.2.140
+  and Crosswind 0.2.14.
+- 108 static route views render with HTTP 200.
 - Full-page and STX fragment requests render for every static route.
 - The componentized catch-all renders the native not-found page with HTTP 404
   for both full-page and STX fragment requests.
-- 129 distinct rendered local links and assets resolve without a 404 or 5xx.
+- 130 distinct rendered local links and assets resolve without a 404 or 5xx.
 - Rendered pages contain no unresolved PascalCase component tags.
 - Rendered pages contain no duplicate emitted IDs or broken
   `aria-labelledby` references.
 - The browser audit covered 114 dashboard destinations plus 20 dynamic model
   destinations without a render, navigation, or console failure.
+- Headless desktop and narrow-viewport visual checks cover the componentized
+  Terms of Service and Privacy Policy routes linked from registration.
 - The fixed desktop sidebar keeps its existing style and content-width
   contract. Dialogs and drawers use `dashboard-modal-layer`.
 
 ### STX and componentization
 
-- All 116 non-layout route views are thin component mounts. Stateful
+- All 118 non-layout route views are thin component mounts. Stateful
   implementations live under `resources/components/Dashboard/`, including
-  guest authentication and not-found pages.
+  guest authentication, legal documents, and not-found pages.
 - Project components under `resources/components/` resolve alongside the
   explicit framework dashboard component directory.
 - Dashboard templates do not use `window.*`, `document.*`, or page-local DOM
@@ -107,7 +110,7 @@ bunx --bun pickier .
 The focused contracts cover buttons, native STX bindings, route and Action
 method alignment, model reads and writes, commerce mutations, deployment
 guards, navigation source, sidebar behavior, toasts, and skill documentation.
-The 2026-07-31 focused run completed 147 tests with 2,867 assertions and no
+The 2026-07-31 focused run completed 149 tests with 2,890 assertions and no
 failures, followed by both TypeScript checks and a clean repository lint.
 
 ## Remaining verification boundaries
