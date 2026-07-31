@@ -318,6 +318,12 @@ describe('dashboard native STX bindings', () => {
     expect(filterBar).not.toContain('data-filter-search')
     expect(filterBar).not.toContain('data-items-per-page')
 
+    const quickLinks = componentSource('UI/QuickLinks.stx')
+    expect(quickLinks).toContain('const validLinks = links.filter')
+    expect(quickLinks).toContain('href="{{ link.href }}"')
+    expect(quickLinks).toContain('data-stx-link')
+    expect(quickLinks).not.toContain("link.href || '#'")
+
     for (const path of [
       'UI/ChartCard.stx',
       'UI/Avatar.stx',

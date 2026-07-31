@@ -1,18 +1,31 @@
 <script server>
+interface QuickLink {
+  title: string
+  description?: string
+  href: string
+  icon?: string
+}
+
 interface QuickLinksProps {
   title?: string
-  links?: any[]
+  links?: QuickLink[]
 }
 
 const { title = 'Quick Links', links = [] } = defineProps<QuickLinksProps>()
+const validLinks = links.filter(link => typeof link.href === 'string' && link.href.length > 0)
 </script>
 <div class="bg-white dark:bg-neutral-800/90 border border-black/5 rounded-xl dark:border-white/5">
   <div class="p-5 border-b border-neutral-200/60 dark:border-white/5">
     <h3 class="font-semibold text-[14px] text-neutral-900 tracking-tight dark:text-white">{{ title }}</h3>
   </div>
   <div class="divide-neutral-100 divide-y dark:divide-white/5">
-    @foreach(links as link)
-      <a href="{{ link.href || '#' }}" class="flex gap-3.5 items-center px-5 py-3.5 hover:bg-neutral-50 dark:hover:bg-white/5 transition-colors group">
+    @foreach(validLinks as link)
+      <a
+        href="{{ link.href }}"
+        @if(!link.href.startsWith('http')) data-stx-link @endif
+        @if(link.href.startsWith('http')) target="_blank" rel="noopener noreferrer" @endif
+        class="flex gap-3.5 items-center px-5 py-3.5 hover:bg-neutral-50 dark:hover:bg-white/5 transition-colors group"
+      >
         <div class="flex flex-shrink-0 items-center justify-center h-9 w-9 bg-neutral-100 dark:bg-white/10 rounded-lg">
           @if(link.icon)
             <div class="{{ link.icon }} w-4.5 h-4.5 text-neutral-500 dark:text-neutral-400"></div>
@@ -22,7 +35,9 @@ const { title = 'Quick Links', links = [] } = defineProps<QuickLinksProps>()
         </div>
         <div class="flex-1 min-w-0">
           <div class="font-medium text-[13px] text-neutral-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">{{ link.title }}</div>
-          <div class="text-[12px] text-neutral-500 truncate dark:text-neutral-400">{{ link.description }}</div>
+          @if(link.description)
+            <div class="text-[12px] text-neutral-500 truncate dark:text-neutral-400">{{ link.description }}</div>
+          @endif
         </div>
         <div class="flex-shrink-0 h-4 w-4 text-neutral-300 dark:text-neutral-600 group-hover:text-neutral-400 dark:group-hover:text-neutral-500 transition-colors i-hugeicons-arrow-right-01"></div>
       </a>
