@@ -2,6 +2,7 @@ import { db } from '@stacksjs/database'
 import { formatDate } from '@stacksjs/orm'
 import { mutationCount } from '../../utils/mutation-count'
 import { shippingRateWriteData } from '../write-data'
+import { ShippingRateInputError, validateShippingRateWrite } from './validate-write'
 type ShippingRateJsonResponse = ModelRow<typeof ShippingRate>
 type ShippingRateUpdate = UpdateModelData<typeof ShippingRate>
 
@@ -17,10 +18,21 @@ export async function update(id: number, data: ShippingRateUpdate): Promise<Ship
     if (!id)
       throw new Error('Shipping rate ID is required for update')
 
+    const current = await db
+      .selectFrom('shipping_rates')
+      .where('id', '=', id)
+      .selectAll()
+      .executeTakeFirst()
+    if (!current)
+      throw new Error('Shipping rate was not found')
+
+    const input = shippingRateWriteData(data as Record<string, unknown>)
+    await validateShippingRateWrite(input, current as Record<string, unknown>)
+
     const result = await db
       .updateTable('shipping_rates')
       .set({
-        ...shippingRateWriteData(data as Record<string, unknown>),
+        ...input,
         updated_at: formatDate(new Date()),
       })
       .where('id', '=', id)
@@ -33,6 +45,8 @@ export async function update(id: number, data: ShippingRateUpdate): Promise<Ship
     return result as ShippingRateJsonResponse
   }
   catch (error) {
+    if (error instanceof ShippingRateInputError)
+      throw error
     if (error instanceof Error) {
       throw new TypeError(`Failed to update shipping rate: ${error.message}`)
     }

@@ -355,7 +355,7 @@ route.group({ prefix: '/api/dashboard', apiResponse: true }, () => {
   guard(route.patch('/commerce/shipping-methods/{id}', 'Actions/Commerce/Shipping/ShippingMethodUpdateAction'))
   guard(route.delete('/commerce/shipping-methods/{id}', 'Actions/Commerce/Shipping/ShippingMethodDestroyAction'))
 
-  guard(route.get('/commerce/shipping-rates', 'Actions/Commerce/Shipping/ShippingRateIndexAction'))
+  guard(route.get('/commerce/shipping-rates', 'Actions/Dashboard/Commerce/ShippingRateIndexAction'))
   guard(route.get('/commerce/shipping-rates/{id}', 'Actions/Commerce/Shipping/ShippingRateShowAction'))
   guard(route.post('/commerce/shipping-rates', 'Actions/Commerce/Shipping/ShippingRateStoreAction'))
   guard(route.patch('/commerce/shipping-rates/{id}', 'Actions/Commerce/Shipping/ShippingRateUpdateAction'))

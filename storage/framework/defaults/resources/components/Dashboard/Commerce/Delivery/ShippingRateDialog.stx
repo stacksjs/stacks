@@ -74,10 +74,10 @@ function submit(): void {
   }
 
   emit('submit', {
-    shipping_method_id: selectedMethodId,
-    shipping_zone_id: selectedZoneId,
-    weight_from: from,
-    weight_to: to,
+    shippingMethodId: selectedMethodId,
+    shippingZoneId: selectedZoneId,
+    weightFrom: from,
+    weightTo: to,
     rate: Math.round(rate * 100),
   })
 }

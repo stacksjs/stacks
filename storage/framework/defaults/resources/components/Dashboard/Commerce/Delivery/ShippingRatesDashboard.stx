@@ -20,10 +20,10 @@ interface ShippingRateRecord {
 }
 
 interface ShippingRatePayload {
-  shipping_method_id: number
-  shipping_zone_id: number
-  weight_from: number
-  weight_to: number
+  shippingMethodId: number
+  shippingZoneId: number
+  weightFrom: number
+  weightTo: number
   rate: number
 }
 

@@ -4,9 +4,8 @@ type NewShippingRate = NewModelData<typeof ShippingRate>
 import { randomUUIDv7 } from 'bun'
 import { db } from '@stacksjs/database'
 import { mutationCount } from '../../utils/mutation-count'
-import { fetchById as fetchShippingMethodById } from '../shipping-methods/fetch'
-import { fetchById as fetchShippingZoneById } from '../shipping-zones/fetch'
 import { shippingRateWriteData } from '../write-data'
+import { ShippingRateInputError, validateShippingRateWrite } from './validate-write'
 
 /**
  * Create a new shipping rate
@@ -19,20 +18,13 @@ export async function store(data: NewShippingRate): Promise<ShippingRateJsonResp
     const input = shippingRateWriteData(data as Record<string, unknown>)
     const methodId = Number(input.shipping_method_id)
     const zoneId = Number(input.shipping_zone_id)
-    const [method, zone] = await Promise.all([
-      fetchShippingMethodById(methodId),
-      fetchShippingZoneById(zoneId),
-    ])
-    if (!method)
-      throw new Error(`Shipping method ${methodId} was not found`)
-    if (!zone)
-      throw new Error(`Shipping zone ${zoneId} was not found`)
+    await validateShippingRateWrite(input)
 
     const uuid = randomUUIDv7()
     const rateData = {
       ...input,
-      shipping_method_id: Number(method.id),
-      shipping_zone_id: Number(zone.id),
+      shipping_method_id: methodId,
+      shipping_zone_id: zoneId,
       uuid,
     }
 
@@ -51,6 +43,8 @@ export async function store(data: NewShippingRate): Promise<ShippingRateJsonResp
     return model as ShippingRateJsonResponse
   }
   catch (error) {
+    if (error instanceof ShippingRateInputError)
+      throw error
     if (error instanceof Error) {
       throw new TypeError(`Failed to create shipping rate: ${error.message}`)
     }
@@ -73,13 +67,7 @@ export async function bulkStore(data: NewShippingRate[]): Promise<number> {
     // Validate all methods and zones before bulk insert
     for (const item of data) {
       const input = shippingRateWriteData(item as Record<string, unknown>)
-      const method = await fetchShippingMethodById(Number(input.shipping_method_id))
-      const zone = await fetchShippingZoneById(Number(input.shipping_zone_id))
-
-      if (!method)
-        throw new Error(`Shipping method ${String(input.shipping_method_id)} was not found`)
-      if (!zone)
-        throw new Error(`Shipping zone ${String(input.shipping_zone_id)} was not found`)
+      await validateShippingRateWrite(input)
     }
 
     const rateDataArray = data.map(item => ({
@@ -95,6 +83,8 @@ export async function bulkStore(data: NewShippingRate[]): Promise<number> {
     return mutationCount(result)
   }
   catch (error) {
+    if (error instanceof ShippingRateInputError)
+      throw error
     if (error instanceof Error) {
       throw new TypeError(`Failed to create shipping rates in bulk: ${error.message}`)
     }

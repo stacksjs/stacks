@@ -34,3 +34,8 @@ export {
   updateByMethod,
   updateByZone,
 } from './update'
+
+export {
+  ShippingRateInputError,
+  validateShippingRateWrite,
+} from './validate-write'
