@@ -1,48 +1,61 @@
-<script server>
-interface FilterBarProps {
-  searchPlaceholder?: string
-  searchValue?: string
-  itemsPerPage?: number
-  itemsPerPageOptions?: string
-  showItemsPerPage?: boolean
+<script client>
+const searchPlaceholder = useReactiveProp('searchPlaceholder', 'Search...')
+const requestedSearch = useReactiveProp('searchValue', '')
+const requestedItemsPerPage = useReactiveProp('itemsPerPage', 10)
+const itemsPerPageOptions = useReactiveProp<number[]>('itemsPerPageOptions', [10, 25, 50, 100])
+const showItemsPerPage = useReactiveProp('showItemsPerPage', true)
+const searchValue = state(requestedSearch())
+const itemsPerPage = state(requestedItemsPerPage())
+const emit = defineEmits()
+
+effect(() => {
+  searchValue.set(requestedSearch())
+})
+
+effect(() => {
+  itemsPerPage.set(requestedItemsPerPage())
+})
+
+function emitSearch(event: Event): void {
+  const value = (event.target as HTMLInputElement).value
+  emit('update:searchValue', value)
+  emit('search', value)
 }
 
-const { searchPlaceholder = 'Search...', searchValue = '', itemsPerPage = 10, itemsPerPageOptions = [10, 25, 50, 100], showItemsPerPage = true } = defineProps<FilterBarProps>()
+function emitItemsPerPage(event: Event): void {
+  const value = Number((event.target as HTMLSelectElement).value)
+  emit('update:itemsPerPage', value)
+  emit('per-page', value)
+}
 </script>
+
 <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
-  <!-- Search -->
   <div class="relative flex-1 max-w-sm">
-    <div class="flex absolute inset-y-0 left-0 items-center pl-3 pointer-events-none">
-      <div class="h-4 w-4 text-neutral-400 dark:text-neutral-500 i-hugeicons-search-01"></div>
-    </div>
+    <span aria-hidden="true" class="absolute inset-y-0 left-3 my-auto h-4 w-4 text-neutral-400 dark:text-neutral-500 i-hugeicons-search-01"></span>
     <input
+      x-model="searchValue"
       type="search"
-      value="{{ searchValue }}"
-      placeholder="{{ searchPlaceholder }}"
+      :placeholder="searchPlaceholder()"
       class="block pl-9 pr-3 py-1.5 w-full text-[13px] text-neutral-900 dark:text-neutral-100 placeholder:text-neutral-400 dark:placeholder:text-neutral-500 bg-white dark:bg-white/10 border border-black/10 rounded-lg dark:border-white/15 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 hover:border-black/20 dark:hover:border-white/25 duration-150 transition-all"
-      data-filter-search
-    >
+      @input="emitSearch($event)"
+    />
   </div>
 
-  <!-- Filter slots -->
   <div class="flex flex-wrap gap-2 items-center">
     <slot />
   </div>
 
-  <!-- Items per page -->
-  @if(showItemsPerPage)
-    <div class="flex gap-2 items-center ml-auto text-[12px] text-neutral-500 dark:text-neutral-400">
-      <span>Show</span>
-      <select
-        class="px-2 h-7 text-[12px] text-neutral-700 dark:text-neutral-200 bg-white dark:bg-white/10 border border-black/10 rounded-md dark:border-white/15 focus:border-blue-500/50 focus:ring-blue-500/40"
-        data-items-per-page
-      >
-        @foreach(itemsPerPageOptions as option)
-          <option value="{{ option }}" @if(option == itemsPerPage) selected @endif>
-            {{ option }}
-          </option>
-        @endforeach
-      </select>
-    </div>
-  @endif
+  <label :if="showItemsPerPage()" class="flex gap-2 items-center ml-auto text-[12px] text-neutral-500 dark:text-neutral-400">
+    <span>Show</span>
+    <select
+      x-model.number="itemsPerPage"
+      aria-label="Items per page"
+      class="px-2 h-7 text-[12px] text-neutral-700 dark:text-neutral-200 bg-white dark:bg-white/10 border border-black/10 rounded-md dark:border-white/15 focus:border-blue-500/50 focus:ring-blue-500/40"
+      @change="emitItemsPerPage($event)"
+    >
+      <template :for="option in itemsPerPageOptions()">
+        <option :value="option">{{ option }}</option>
+      </template>
+    </select>
+  </label>
 </div>

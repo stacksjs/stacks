@@ -310,6 +310,14 @@ describe('dashboard native STX bindings', () => {
     expect(tabs).toContain('@click="selectTab(tab)"')
     expect(tabs).not.toContain('data-tab-id')
 
+    const filterBar = componentSource('UI/FilterBar.stx')
+    expect(filterBar).toContain('x-model="searchValue"')
+    expect(filterBar).toContain('x-model.number="itemsPerPage"')
+    expect(filterBar).toContain("emit('update:searchValue', value)")
+    expect(filterBar).toContain("emit('update:itemsPerPage', value)")
+    expect(filterBar).not.toContain('data-filter-search')
+    expect(filterBar).not.toContain('data-items-per-page')
+
     for (const path of [
       'UI/ChartCard.stx',
       'UI/Avatar.stx',
