@@ -291,7 +291,7 @@ onMount(() => {
       </div>
       <span class="hidden md:block self-center h-5 w-5 text-neutral-300 dark:text-neutral-600 i-hugeicons-arrow-right-01"></span>
       <div class="flex gap-3 items-center p-4 bg-blue-50 dark:bg-blue-950/25 border border-blue-100 rounded-xl dark:border-blue-900/50">
-        <span class="shrink-0 h-6 w-6 text-blue-600 dark:text-blue-300 i-hugeicons-balance"></span>
+        <span class="shrink-0 h-6 w-6 text-blue-600 dark:text-blue-300 i-hugeicons-balance-scale"></span>
         <div class="min-w-0"><p class="font-semibold text-neutral-900 text-sm dark:text-white">Load balancer</p><p class="mt-0.5 text-neutral-500 text-xs dark:text-neutral-400">{{ loadBalancer() ? 'Configured' : 'Not configured' }}</p></div>
       </div>
       <span class="hidden md:block self-center h-5 w-5 text-neutral-300 dark:text-neutral-600 i-hugeicons-arrow-right-01"></span>

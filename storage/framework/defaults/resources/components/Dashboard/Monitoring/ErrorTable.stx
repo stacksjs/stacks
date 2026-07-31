@@ -62,7 +62,7 @@ function formatRelativeTime(value: string): string {
 
 <div class="overflow-hidden border border-stone-200/80 rounded-xl dark:border-neutral-700">
   <div :if="rows().length === 0" class="flex flex-col items-center justify-center px-4 py-12 text-center">
-    <span class="block mb-3 h-7 w-7 text-neutral-400 i-hugeicons-inbox-01"></span>
+    <span class="block mb-3 h-7 w-7 text-neutral-400 i-hugeicons-inbox"></span>
     <p class="font-medium text-neutral-700 text-sm dark:text-neutral-200">{{ emptyTitle() }}</p>
     <p class="mt-1 text-neutral-500 text-sm dark:text-neutral-400">{{ emptyDescription() }}</p>
   </div>
@@ -74,21 +74,21 @@ function formatRelativeTime(value: string): string {
           <th scope="col" class="pl-5 pr-4 py-3.5 font-semibold text-left text-stone-500 text-xs tracking-wider uppercase dark:text-neutral-400">
             <button type="button" class="inline-flex gap-1.5 items-center hover:text-stone-700 dark:hover:text-neutral-200" @click="nextSort('type')">
               Type
-              <span class="h-3.5 w-3.5 opacity-40 i-hugeicons-arrow-up-down-01"></span>
+              <span class="h-3.5 w-3.5 opacity-40 i-hugeicons-arrow-up-down"></span>
             </button>
           </th>
           <th scope="col" class="px-4 py-3.5 font-semibold text-left text-stone-500 text-xs tracking-wider uppercase dark:text-neutral-400">Message</th>
           <th scope="col" class="px-4 py-3.5 font-semibold text-center text-stone-500 text-xs tracking-wider uppercase dark:text-neutral-400">
             <button type="button" class="inline-flex gap-1.5 items-center hover:text-stone-700 dark:hover:text-neutral-200" @click="nextSort('count')">
               Events
-              <span class="h-3.5 w-3.5 opacity-40 i-hugeicons-arrow-up-down-01"></span>
+              <span class="h-3.5 w-3.5 opacity-40 i-hugeicons-arrow-up-down"></span>
             </button>
           </th>
           <th scope="col" class="px-4 py-3.5 font-semibold text-center text-stone-500 text-xs tracking-wider uppercase dark:text-neutral-400">Status</th>
           <th scope="col" class="px-4 py-3.5 font-semibold text-right text-stone-500 text-xs tracking-wider uppercase dark:text-neutral-400">
             <button type="button" class="inline-flex gap-1.5 items-center hover:text-stone-700 dark:hover:text-neutral-200" @click="nextSort('last_seen')">
               Last seen
-              <span class="h-3.5 w-3.5 opacity-40 i-hugeicons-arrow-up-down-01"></span>
+              <span class="h-3.5 w-3.5 opacity-40 i-hugeicons-arrow-up-down"></span>
             </button>
           </th>
           <th scope="col" class="px-4 py-3.5 w-36"><span class="sr-only">Actions</span></th>
@@ -116,7 +116,7 @@ function formatRelativeTime(value: string): string {
                   <span class="block h-4 w-4 i-hugeicons-checkmark-circle-02"></span>
                 </Button>
                 <Button :if="error.status === 'unresolved'" variant="warning" size="sm" iconOnly ariaLabel="Ignore error" @click="emit('ignore', error)">
-                  <span class="block h-4 w-4 i-hugeicons-eye-off"></span>
+                  <span class="block h-4 w-4 i-hugeicons-view-off"></span>
                 </Button>
                 <Button :if="error.status !== 'unresolved'" variant="secondary" size="sm" iconOnly ariaLabel="Unresolve error" @click="emit('unresolve', error)">
                   <span class="block h-4 w-4 i-hugeicons-refresh"></span>

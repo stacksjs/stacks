@@ -158,7 +158,7 @@ onMount(() => {
           <p class="mt-1 font-mono text-neutral-500 text-xs truncate dark:text-neutral-400">{{ primaryDomain()?.hostedZoneId || 'No hosted zone ID configured' }}</p>
         </div>
       </div>
-      <EmptyState :if="!loading() && !primaryDomain()" icon="i-hugeicons-globe-off" title="No project domain configured" description="Add infrastructure.dns.domain to config/cloud.ts." />
+      <EmptyState :if="!loading() && !primaryDomain()" icon="i-hugeicons-globe-x" title="No project domain configured" description="Add infrastructure.dns.domain to config/cloud.ts." />
     </div>
 
     <div class="p-5 bg-white dark:bg-neutral-900 border border-neutral-200 rounded-xl dark:border-neutral-700">

@@ -114,7 +114,7 @@ onMount(() => {
     <StatsCard title="Total Models" icon="i-hugeicons-database" iconBg="primary">
       <template #value>{{ totalModels() }}</template>
     </StatsCard>
-    <StatsCard title="Total Records" icon="i-hugeicons-rows-01" iconBg="success">
+    <StatsCard title="Total Records" icon="i-hugeicons-table-rows-split" iconBg="success">
       <template #value>{{ totalRecords().toLocaleString() }}</template>
     </StatsCard>
     <StatsCard title="App Overrides" icon="i-hugeicons-folder-02" iconBg="info">

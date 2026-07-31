@@ -108,7 +108,7 @@
           </Button>
           <Button :show="selectedIsUnresolved" variant="outline" size="sm" @click="ignoreSelected()">
             <template #iconLeft>
-              <div class="h-4 w-4 i-hugeicons-eye-off"></div>
+              <div class="h-4 w-4 i-hugeicons-view-off"></div>
             </template>
             Ignore
           </Button>

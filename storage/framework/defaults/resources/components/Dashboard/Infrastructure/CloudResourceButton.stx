@@ -7,7 +7,7 @@ const emit = defineEmits()
 function iconClass(): string {
   const category = item()?.category
   if (category === 'network')
-    return 'i-hugeicons-network'
+    return 'i-hugeicons-cellular-network'
   if (category === 'api')
     return 'i-hugeicons-globe'
   if (category === 'assets')

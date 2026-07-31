@@ -222,7 +222,7 @@ async function startStxServer(): Promise<void> {
     for (const dir of dirs) {
       if (!existsSync(dir))
         continue
-      const glob = new Bun.Glob('**/*.stx')
+      const glob = new Bun.Glob('**/*.{stx,ts}')
       for await (const file of glob.scan({ cwd: dir, absolute: true })) {
         const text = await Bun.file(file).text()
         // `i-collection-name` icon tokens; two+ segments avoids matching `i-foo`.

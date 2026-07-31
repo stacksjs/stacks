@@ -148,7 +148,7 @@ function sortLabel(column: DashboardTableColumn): string {
                 <span>{{ column.label }}</span>
                 <span
                   aria-hidden="true"
-                  :class="'h-3.5 w-3.5 ' + (sortKey() === column.key ? (sortDirection() === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02') : 'opacity-30 i-hugeicons-arrow-up-down-01')"
+                  :class="'h-3.5 w-3.5 ' + (sortKey() === column.key ? (sortDirection() === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02') : 'opacity-30 i-hugeicons-arrow-up-down')"
                 ></span>
               </button>
               <span :else>{{ column.label }}</span>
@@ -192,7 +192,7 @@ function sortLabel(column: DashboardTableColumn): string {
       <slot name="empty" />
     </template>
     <template :else>
-      <span aria-hidden="true" class="mb-3 p-3 h-12 w-12 text-neutral-400 bg-neutral-100 dark:bg-neutral-800 rounded-full i-hugeicons-inbox-01"></span>
+      <span aria-hidden="true" class="mb-3 p-3 h-12 w-12 text-neutral-400 bg-neutral-100 dark:bg-neutral-800 rounded-full i-hugeicons-inbox"></span>
       <p class="font-medium text-neutral-700 text-sm dark:text-neutral-200">{{ emptyTitle() }}</p>
       <p class="mt-1 text-neutral-500 text-sm dark:text-neutral-400">{{ emptyDescription() }}</p>
     </template>

@@ -47,14 +47,14 @@ const resourceLinks = [
     title: 'Community',
     description: 'Join the Stacks Discord',
     href: 'https://stacksjs.com/discord',
-    icon: 'i-simple-icons-discord',
+    icon: 'i-hugeicons-discord',
     tone: 'purple',
   },
   {
     title: 'GitHub',
     description: 'Browse the Stacks source',
     href: 'https://github.com/stacksjs/stacks',
-    icon: 'i-simple-icons-github',
+    icon: 'i-hugeicons-github',
     tone: 'neutral',
   },
 ]

@@ -155,7 +155,7 @@ onMount(() => {
         <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Occurrences are grouped by name, category, and currency.</p>
       </div>
       <div :if="!isLoading() && events().length === 0" class="px-6 py-12 text-center">
-        <div class="mb-3 mx-auto h-9 w-9 text-gray-400 i-hugeicons-cursor-click-02"></div>
+        <div class="mb-3 mx-auto h-9 w-9 text-gray-400 i-hugeicons-mouse-left-click-02"></div>
         <h3 class="font-semibold text-gray-900 dark:text-white">No events in this period</h3>
         <p class="mt-2 text-gray-500 text-sm dark:text-neutral-400">Record an event here or create one from server code with the AnalyticsEvent model.</p>
       </div>

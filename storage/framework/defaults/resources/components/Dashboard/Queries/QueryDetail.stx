@@ -135,7 +135,7 @@ onMount(() => {
         <ul :if="suggestions().length > 0" class="space-y-2">
           <template :for="suggestion in suggestions()">
             <li class="flex gap-2 items-start text-neutral-700 text-sm dark:text-neutral-300">
-              <span class="flex-none mt-0.5 h-4 w-4 text-amber-500 i-hugeicons-lightbulb-02"></span>
+              <span class="flex-none mt-0.5 h-4 w-4 text-amber-500 i-hugeicons-bulb"></span>
               {{ suggestion }}
             </li>
           </template>
