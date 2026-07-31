@@ -64,4 +64,48 @@ describe('dashboard Library source discovery', () => {
       },
     ])
   })
+
+  it('reports a missing lockfile instead of presenting an empty package list', () => {
+    projectRoot = mkdtempSync(join(tmpdir(), 'stacks-library-missing-lock-'))
+
+    expect(() => workspacePackageRows(projectRoot)).toThrow(
+      'Could not read dashboard library source bun.lock: file does not exist',
+    )
+  })
+
+  it('reports a missing workspace manifest', () => {
+    projectRoot = mkdtempSync(join(tmpdir(), 'stacks-library-missing-manifest-'))
+    writeFileSync(join(projectRoot, 'bun.lock'), `{
+      "lockfileVersion": 1,
+      "workspaces": {
+        "packages/missing": {
+          "name": "@example/missing"
+        }
+      }
+    }`)
+
+    expect(() => workspacePackageRows(projectRoot)).toThrow(
+      'Could not read dashboard library source packages/missing/package.json: file does not exist',
+    )
+  })
+
+  it('does not expose unsafe package links', () => {
+    projectRoot = mkdtempSync(join(tmpdir(), 'stacks-library-package-url-'))
+    mkdirSync(join(projectRoot, 'packages', 'example'), { recursive: true })
+    writeFileSync(join(projectRoot, 'bun.lock'), `{
+      "lockfileVersion": 1,
+      "workspaces": {
+        "packages/example": {
+          "name": "@example/package"
+        }
+      }
+    }`)
+    writeFileSync(join(projectRoot, 'packages', 'example', 'package.json'), JSON.stringify({
+      name: '@example/package',
+      homepage: 'javascript:alert(1)',
+      repository: 'file:///tmp/package',
+    }))
+
+    expect(workspacePackageRows(projectRoot)[0]?.url).toBe('')
+  })
 })

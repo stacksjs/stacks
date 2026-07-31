@@ -1,5 +1,5 @@
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs'
-import { extname, join, relative, sep } from 'node:path'
+import { extname, isAbsolute, join, relative, resolve, sep } from 'node:path'
 import { componentsPath, functionsPath } from '@stacksjs/path'
 
 export interface FunctionSourceRow {
@@ -97,33 +97,76 @@ export function componentSourceRows(projectRoot = process.cwd()): ComponentSourc
     .sort((a, b) => a.name.localeCompare(b.name))
 }
 
-function repositoryUrl(value: unknown): string {
+function externalUrl(value: unknown): string {
   const raw = typeof value === 'string'
     ? value
     : value && typeof value === 'object' && 'url' in value
       ? String((value as { url?: unknown }).url || '')
       : ''
 
-  return raw.replace(/^git\+/, '').replace(/\.git$/, '')
+  const normalized = raw
+    .trim()
+    .replace(/^git\+/, '')
+    .replace(/^git:\/\//, 'https://')
+    .replace(/\.git$/, '')
+
+  if (!normalized)
+    return ''
+
+  try {
+    const url = new URL(normalized)
+    return url.protocol === 'https:' || url.protocol === 'http:' ? url.toString() : ''
+  }
+  catch {
+    return ''
+  }
+}
+
+function sourceError(source: string, error: unknown): Error {
+  const detail = error instanceof Error ? error.message : String(error)
+  return new Error(`Could not read dashboard library source ${source}: ${detail}`)
 }
 
 export function workspacePackageRows(projectRoot = process.cwd()): WorkspacePackageRow[] {
   const lockPath = join(projectRoot, 'bun.lock')
   if (!existsSync(lockPath))
-    return []
+    throw new Error('Could not read dashboard library source bun.lock: file does not exist')
 
-  const lockfile = Bun.JSONC.parse(readFileSync(lockPath, 'utf8')) as {
-    workspaces?: Record<string, unknown>
+  let lockfile: { workspaces?: Record<string, unknown> }
+  try {
+    lockfile = Bun.JSONC.parse(readFileSync(lockPath, 'utf8')) as {
+      workspaces?: Record<string, unknown>
+    }
+  }
+  catch (error) {
+    throw sourceError('bun.lock', error)
+  }
+
+  if (lockfile.workspaces !== undefined && (
+    !lockfile.workspaces
+    || typeof lockfile.workspaces !== 'object'
+    || Array.isArray(lockfile.workspaces)
+  )) {
+    throw new TypeError('Could not read dashboard library source bun.lock: workspaces must be an object')
   }
 
   return Object.keys(lockfile.workspaces || {})
     .filter(Boolean)
     .map((workspacePath) => {
-      const manifestPath = join(projectRoot, workspacePath, 'package.json')
-      if (!existsSync(manifestPath))
-        return null
+      const manifestPath = resolve(projectRoot, workspacePath, 'package.json')
+      const manifestRelativePath = relative(projectRoot, manifestPath)
+      if (
+        manifestRelativePath === '..'
+        || manifestRelativePath.startsWith(`..${sep}`)
+        || isAbsolute(manifestRelativePath)
+      ) {
+        throw new Error(`Could not read dashboard library source ${workspacePath}: workspace escapes the project root`)
+      }
 
-      const manifest = Bun.JSONC.parse(readFileSync(manifestPath, 'utf8')) as {
+      if (!existsSync(manifestPath))
+        throw new Error(`Could not read dashboard library source ${workspacePath}/package.json: file does not exist`)
+
+      let manifest: {
         name?: string
         version?: string
         description?: string
@@ -134,24 +177,29 @@ export function workspacePackageRows(projectRoot = process.cwd()): WorkspacePack
         dependencies?: Record<string, string>
         peerDependencies?: Record<string, string>
       }
+      try {
+        manifest = Bun.JSONC.parse(readFileSync(manifestPath, 'utf8')) as typeof manifest
+      }
+      catch (error) {
+        throw sourceError(`${workspacePath}/package.json`, error)
+      }
 
-      if (!manifest.name)
-        return null
+      if (typeof manifest.name !== 'string' || !manifest.name.trim())
+        throw new TypeError(`Could not read dashboard library source ${workspacePath}/package.json: package name is required`)
 
       return {
-        name: manifest.name,
+        name: manifest.name.trim(),
         version: manifest.version || '',
         description: manifest.description || '',
         license: manifest.license || '',
         private: Boolean(manifest.private),
         path: workspacePath,
-        url: manifest.homepage || repositoryUrl(manifest.repository),
+        url: externalUrl(manifest.homepage) || externalUrl(manifest.repository),
         dependencyCount: Object.keys({
           ...manifest.dependencies,
           ...manifest.peerDependencies,
         }).length,
       } satisfies WorkspacePackageRow
     })
-    .filter((row): row is WorkspacePackageRow => Boolean(row))
     .sort((a, b) => a.name.localeCompare(b.name))
 }
