@@ -17,6 +17,7 @@ const bootstrap = layoutSource.match(BOOTSTRAP)?.[0] ?? ''
 
 describe('dashboard layout client architecture', () => {
   test('gives guest pages a semantic SPA navigation container', () => {
+    expect(guestLayoutSource).toStartWith('<!DOCTYPE html>')
     expect(guestLayoutSource).toContain('<main data-stx-content>')
     expect(guestLayoutSource).toContain('@yield(\'content\')')
   })
