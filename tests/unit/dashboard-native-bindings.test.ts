@@ -5,6 +5,9 @@ import { resolve } from 'node:path'
 const dashboardComponents = resolve(
   'storage/framework/defaults/resources/components/Dashboard',
 )
+const dashboardResourceViews = resolve(
+  'storage/framework/defaults/resources/views/dashboard',
+)
 
 function componentSource(path: string): string {
   return readFileSync(resolve(dashboardComponents, path), 'utf8')
@@ -25,6 +28,7 @@ describe('dashboard native STX bindings', () => {
     expect(existsSync(resolve(dashboardComponents, 'UI/Table.stx'))).toBe(true)
     expect(existsSync(resolve(dashboardComponents, 'Chart.stx'))).toBe(false)
     expect(existsSync(resolve(dashboardComponents, 'NotificationErrorModal.stx'))).toBe(false)
+    expect(existsSync(resolve(dashboardResourceViews, 'custom-page.stx'))).toBe(false)
   })
 
   test('routes primary action links through the shared Button component', () => {
