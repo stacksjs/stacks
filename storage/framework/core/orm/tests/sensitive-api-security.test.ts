@@ -1,4 +1,6 @@
 import { describe, expect, test } from 'bun:test'
+import { readdirSync, readFileSync, statSync } from 'node:fs'
+import { join, resolve } from 'node:path'
 import Comment from '../../../defaults/app/Models/Comment'
 import Notification from '../../../defaults/app/Models/Notification'
 import NotificationDelivery from '../../../defaults/app/Models/NotificationDelivery'
@@ -16,6 +18,45 @@ import Payment from '../../../defaults/app/Models/commerce/Payment'
 import PrintDevice from '../../../defaults/app/Models/commerce/PrintDevice'
 import Receipt from '../../../defaults/app/Models/commerce/Receipt'
 import Transaction from '../../../defaults/app/Models/commerce/Transaction'
+
+const PUBLIC_MODEL_APIS = [
+  'Author',
+  'Category',
+  'LoyaltyReward',
+  'Manufacturer',
+  'Page',
+  'Post',
+  'Product',
+  'ProductUnit',
+  'ProductVariant',
+  'Release',
+  'ShippingMethod',
+  'ShippingRate',
+  'ShippingZone',
+  'Tag',
+  'TaxRate',
+]
+
+function modelFiles(path: string): string[] {
+  return readdirSync(path).flatMap((entry) => {
+    const file = join(path, entry)
+    return statSync(file).isDirectory()
+      ? modelFiles(file)
+      : file.endsWith('.ts') ? [file] : []
+  })
+}
+
+function objectBlock(source: string, start: number): string {
+  const open = source.indexOf('{', start)
+  let depth = 0
+  for (let index = open; index < source.length; index++) {
+    if (source[index] === '{')
+      depth += 1
+    else if (source[index] === '}' && --depth === 0)
+      return source.slice(start, index + 1)
+  }
+  return ''
+}
 
 describe('sensitive model API security', () => {
   test.each([
@@ -40,5 +81,23 @@ describe('sensitive model API security', () => {
     expect(model.traits.useApi).toMatchObject({
       middleware: ['auth'],
     })
+  })
+
+  test('keeps anonymous generated reads on an explicit public catalog allowlist', () => {
+    const publicModels = modelFiles(resolve('storage/framework/defaults/app/Models'))
+      .flatMap((file) => {
+        const source = readFileSync(file, 'utf8')
+        const start = source.indexOf('useApi:')
+        if (start < 0)
+          return []
+        const block = objectBlock(source, start)
+        if (/middleware\s*:\s*\[[^\]]*['"]auth['"]/.test(block))
+          return []
+        const name = source.match(/name:\s*['"]([^'"]+)/)?.[1]
+        return name ? [name] : []
+      })
+      .sort()
+
+    expect(publicModels).toEqual([...PUBLIC_MODEL_APIS].sort())
   })
 })
