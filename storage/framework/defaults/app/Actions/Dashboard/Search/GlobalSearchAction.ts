@@ -20,6 +20,11 @@ interface SearchResult {
   icon: string
 }
 
+interface SearchUnavailable {
+  model: string
+  reason: string
+}
+
 const HIDDEN_FIELDS = new Set([
   'password',
   'remember_token',
@@ -67,8 +72,10 @@ function modelFiles(root: string): string[] {
     try {
       entries = readdirSync(directory, { withFileTypes: true })
     }
-    catch {
-      return
+    catch (error) {
+      if ((error as NodeJS.ErrnoException).code === 'ENOENT')
+        return
+      throw new Error(`Could not scan searchable models in ${directory}: ${error instanceof Error ? error.message : String(error)}`)
     }
 
     for (const entry of entries) {
@@ -136,8 +143,8 @@ async function loadSearchableModels(): Promise<SearchableModel[]> {
         icon: iconForModel(name),
       })
     }
-    catch {
-      // A single optional model must not make dashboard search unavailable.
+    catch (error) {
+      throw new Error(`Could not load searchable model ${fallbackName}: ${error instanceof Error ? error.message : String(error)}`)
     }
   }
 
@@ -183,45 +190,61 @@ export default new Action({
     const { Database } = await import('bun:sqlite')
     const db = new Database(env.DB_DATABASE_PATH || 'database/stacks.sqlite', { readonly: true })
     const results: Record<string, SearchResult[]> = {}
+    const unavailable: SearchUnavailable[] = []
 
     try {
       for (const model of await catalog()) {
         if (Object.keys(results).length >= MAX_GROUPS) break
 
-        try {
-          const columns = db.query(`PRAGMA table_info(${model.table})`).all() as Array<{ name: string }>
-          const available = new Set(columns.map(column => column.name))
-          const fields = model.fields.filter(field => available.has(field))
-          if (fields.length === 0) continue
+        const columns = db.query(`PRAGMA table_info(${model.table})`).all() as Array<{ name: string }>
+        if (columns.length === 0) {
+          unavailable.push({
+            model: model.name,
+            reason: `Table ${model.table} has not been migrated.`,
+          })
+          continue
+        }
 
-          const selected = [...new Set(['id', ...fields])].filter(field => available.has(field))
-          const where = fields.map(field => `${field} LIKE ? COLLATE NOCASE`).join(' OR ')
-          const bindings = fields.map(() => `%${q}%`)
-          const rows = db
+        const available = new Set(columns.map(column => column.name))
+        const fields = model.fields.filter(field => available.has(field))
+        if (fields.length === 0) {
+          unavailable.push({
+            model: model.name,
+            reason: 'Declared useSearch fields are not present in the migrated table.',
+          })
+          continue
+        }
+
+        const selected = [...new Set(['id', ...fields])].filter(field => available.has(field))
+        const where = fields.map(field => `${field} LIKE ? COLLATE NOCASE`).join(' OR ')
+        const bindings = fields.map(() => `%${q}%`)
+        let rows: Array<Record<string, unknown>>
+        try {
+          rows = db
             .query(`SELECT ${selected.join(', ')} FROM ${model.table} WHERE ${where} LIMIT ?`)
             .all(...bindings, RESULTS_PER_MODEL) as Array<Record<string, unknown>>
-          if (rows.length === 0) continue
+        }
+        catch (error) {
+          throw new Error(`Could not search model ${model.name}: ${error instanceof Error ? error.message : String(error)}`)
+        }
+        if (rows.length === 0) continue
 
-          results[model.name] = rows.map((row, index) => {
-            const title = resultTitle(model, row)
-            return {
-              id: (row.id as string | number | undefined) ?? index,
-              title,
-              subtitle: resultSubtitle(model, row, title),
-              href: `/models/${model.slug}?q=${encodeURIComponent(q)}`,
-              icon: model.icon,
-            }
-          })
-        }
-        catch {
-          // Models may exist before their migration has run. Skip those tables.
-        }
+        results[model.name] = rows.map((row, index) => {
+          const title = resultTitle(model, row)
+          return {
+            id: (row.id as string | number | undefined) ?? index,
+            title,
+            subtitle: resultSubtitle(model, row, title),
+            href: `/models/${model.slug}?q=${encodeURIComponent(q)}`,
+            icon: model.icon,
+          }
+        })
       }
     }
     finally {
       db.close()
     }
 
-    return { results }
+    return { results, unavailable }
   },
 })
