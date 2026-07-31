@@ -3,6 +3,18 @@ import { existsSync, readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 
 describe('dashboard button contract', () => {
+  test('documents the canonical dashboard action contract', () => {
+    const skill = readFileSync(
+      resolve('storage/framework/defaults/ai/skills/stacks-dashboard/SKILL.md'),
+      'utf8',
+    )
+
+    expect(skill).toContain('Use `Dashboard/UI/Button.stx` for every dashboard action.')
+    expect(skill).toContain('`bg-gradient-to-b from-blue-500 to-blue-600`')
+    expect(skill).toContain('Use `tag="a"` whenever `href` is reactive')
+    expect(skill).toContain('Prefer component events and named slots')
+  })
+
   test('uses one canonical reusable button component', () => {
     const button = readFileSync(
       resolve('storage/framework/defaults/resources/components/Dashboard/UI/Button.stx'),

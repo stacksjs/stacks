@@ -113,6 +113,23 @@ The Stacks admin dashboard provides a full-featured admin panel with 136+ routes
 - File upload components
 - Rich text editors
 
+### Action controls
+
+- Use `Dashboard/UI/Button.stx` for every dashboard action. Do not add page-local
+  primary, secondary, success, warning, or danger button styles.
+- The `primary` variant is the canonical Deployment `Deploy` treatment:
+  `bg-gradient-to-b from-blue-500 to-blue-600`.
+- Keep native buttons only for controls whose visual state is their meaning,
+  such as tabs, sort headers, color choices, and full-surface modal backdrops.
+- Use `variant="secondary"` for supporting actions and `variant="danger"` for
+  destructive confirmation actions.
+- Use `tag="a"` whenever `href` is reactive, for example
+  `<Button tag="a" :href="detailsPath()">Open details</Button>`. Server rendering
+  cannot infer an anchor from a client-only reactive URL.
+- Prefer component events and named slots over string callback props or
+  `data-action` markers. A `data-action` attribute is only valid when an active
+  host integration consumes that exact action.
+
 ### Feature Components
 - `ProductForm`, `ProductList`, `ProductVariants`
 - `OrderTable`, `OrderDetail`, `OrderStatusUpdate`
