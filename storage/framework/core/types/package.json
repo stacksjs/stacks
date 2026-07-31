@@ -53,7 +53,7 @@
   "dependencies": {
     "@stacksjs/bunpress": "^0.1.18",
     "@stacksjs/clapp": "^0.2.12",
-    "@stacksjs/stx": "^0.2.129",
+    "@stacksjs/stx": "^0.2.131",
     "@stacksjs/ts-validation": "^0.5.0",
     "bun-query-builder": "^0.1.63"
   },
