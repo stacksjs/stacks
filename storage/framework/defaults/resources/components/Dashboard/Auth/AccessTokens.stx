@@ -124,8 +124,7 @@ async function loadTokens(): Promise<void> {
   }
 }
 
-async function createAccessToken(event: Event): Promise<void> {
-  event.preventDefault()
+async function createAccessToken(): Promise<void> {
   actionError.set('')
   actionMessage.set('')
 
@@ -358,7 +357,7 @@ onMount(() => {
         </div>
       </div>
 
-      <form :if="!createdToken()" class="mt-6 space-y-5" @submit="createAccessToken">
+      <form :if="!createdToken()" class="mt-6 space-y-5" @submit.prevent="createAccessToken">
         <label class="block">
           <span class="font-medium text-neutral-700 text-sm dark:text-neutral-300">Token name</span>
           <input x-model="tokenName" type="text" maxlength="255" required placeholder="CI deployment" class="block mt-2 px-3 py-2 w-full text-neutral-900 text-sm dark:text-white bg-white dark:bg-neutral-950 border border-neutral-300 rounded-lg dark:border-neutral-700 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20">

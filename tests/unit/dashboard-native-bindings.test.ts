@@ -282,6 +282,10 @@ describe('dashboard native STX bindings', () => {
     expect(forgotPassword).toContain('i-hugeicons-cube')
     expect(forgotPassword).not.toContain('<svg')
     expect(forgotPassword).not.toContain('<script server>')
+
+    const accessTokens = componentSource('Auth/AccessTokens.stx')
+    expect(accessTokens).toContain('@submit.prevent="createAccessToken"')
+    expect(accessTokens).not.toContain('event.preventDefault()')
   })
 
   test('Buddy prompt uses a native textarea model and submit prevention', () => {
