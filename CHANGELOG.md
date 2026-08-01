@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.231...v0.70.232)
+
+## 🐛 Bug Fixes
+
+- **desktop**: make build:desktop work outside this monorepo ([bff25e2](https://github.com/stacksjs/stacks/commit/bff25e2)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.230...v0.70.231)
 
 ## ✨ Features
