@@ -124,7 +124,13 @@ export async function generateOpenApi(options: {
   // module's own import-cache semantics, not a duplicate-registration error.
   try {
     const { loadRoutes } = await import('@stacksjs/router')
-    const { default: routeRegistry } = await import('../../../../../app/Routes')
+    // Resolved through `path`, not by counting `../` up from this file. Five
+    // levels lands on the project root only in the vendored layout; a core-less
+    // app - the default `buddy new` produces - resolves this package out of
+    // node_modules, where the same five levels land somewhere unrelated. The
+    // import then failed, no routes registered, and the generator refused to
+    // emit a spec for an app whose `routes/` directory was right there.
+    const { default: routeRegistry } = await import(path.appPath('Routes.ts'))
     await loadRoutes(routeRegistry)
   }
   catch (error) {
