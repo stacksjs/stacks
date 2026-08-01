@@ -2,7 +2,7 @@
   "name": "@stacksjs/sms",
   "type": "module",
   "sideEffects": false,
-  "version": "0.70.233",
+  "version": "0.70.232",
   "description": "The Stacks SMS integration. Painlessly create & manage your inboxes, templates, and send sms.",
   "author": "Chris Breuer",
   "contributors": [
@@ -50,8 +50,7 @@
   "types": "dist/index.d.ts",
   "files": [
     "README.md",
-    "dist",
-    "src"
+    "dist"
   ],
   "scripts": {
     "build": "bun build.ts",

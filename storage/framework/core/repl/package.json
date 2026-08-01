@@ -2,7 +2,7 @@
   "name": "@stacksjs/repl",
   "type": "module",
   "sideEffects": false,
-  "version": "0.70.233",
+  "version": "0.70.232",
   "description": "A Stacks optimized TypeScript REPL.",
   "author": "Chris Breuer",
   "contributors": [
@@ -45,8 +45,7 @@
   "module": "dist/index.js",
   "files": [
     "README.md",
-    "dist",
-    "src"
+    "dist"
   ],
   "scripts": {
     "build": "bun build.ts",

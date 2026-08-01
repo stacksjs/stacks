@@ -1,6 +1,6 @@
 {
   "name": "@stacksjs/i18n",
-  "version": "0.70.233",
+  "version": "0.70.232",
   "description": "Internationalization system for Stacks.js applications",
   "type": "module",
   "sideEffects": false,
@@ -27,8 +27,7 @@
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "files": [
-    "dist",
-    "src"
+    "dist"
   ],
   "scripts": {
     "build": "bun build.ts",

@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/cache",
   "type": "module",
-  "version": "0.70.233",
+  "version": "0.70.232",
   "description": "Caching the Stacks way.",
   "author": "Chris Breuer",
   "contributors": [
@@ -46,8 +46,7 @@
   "sideEffects": false,
   "files": [
     "README.md",
-    "dist",
-    "src"
+    "dist"
   ],
   "scripts": {
     "build": "bun build.ts",

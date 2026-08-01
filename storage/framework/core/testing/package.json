@@ -2,7 +2,7 @@
   "name": "@stacksjs/testing",
   "type": "module",
   "sideEffects": false,
-  "version": "0.70.233",
+  "version": "0.70.232",
   "description": "The Stacks way of testing.",
   "author": "Chris Breuer",
   "contributors": [
@@ -63,8 +63,7 @@
   "types": "dist/index.d.ts",
   "files": [
     "README.md",
-    "dist",
-    "src"
+    "dist"
   ],
   "scripts": {
     "build": "bun build.ts",

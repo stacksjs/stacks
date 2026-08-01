@@ -2,7 +2,7 @@
   "name": "@stacksjs/buddy",
   "type": "module",
   "sideEffects": false,
-  "version": "0.70.233",
+  "version": "0.70.232",
   "description": "Meet Buddy. The Stacks runtime.",
   "author": "Chris Breuer",
   "contributors": [
@@ -69,8 +69,7 @@
   },
   "files": [
     "README.md",
-    "dist",
-    "src"
+    "dist"
   ],
   "scripts": {
     "buddy": "bunx --bun ./src/cli.ts",

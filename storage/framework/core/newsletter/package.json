@@ -2,8 +2,8 @@
   "name": "@stacksjs/newsletter",
   "type": "module",
   "sideEffects": false,
-  "version": "0.70.233",
-  "description": "Promotional email & newsletter primitives for Stacks. Lists, campaigns, subscribers, and one-click unsubscribe \u2014 sent through @stacksjs/email.",
+  "version": "0.70.232",
+  "description": "Promotional email & newsletter primitives for Stacks. Lists, campaigns, subscribers, and one-click unsubscribe — sent through @stacksjs/email.",
   "author": "Chris Breuer",
   "contributors": [
     "Chris Breuer <chris@stacksjs.com>"
@@ -48,8 +48,7 @@
   "types": "dist/index.d.ts",
   "files": [
     "README.md",
-    "dist",
-    "src"
+    "dist"
   ],
   "scripts": {
     "build": "bun build.ts",

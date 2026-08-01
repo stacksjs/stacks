@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/enums",
   "type": "module",
-  "version": "0.70.233",
+  "version": "0.70.232",
   "description": "Stacks enums.",
   "author": "Chris Breuer",
   "contributors": [
@@ -41,8 +41,7 @@
   },
   "files": [
     "README.md",
-    "dist",
-    "src"
+    "dist"
   ],
   "scripts": {
     "build": "bun build.ts",
