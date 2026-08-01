@@ -201,6 +201,37 @@ function resolveCsrfMiddlewarePath(): string {
   }
 }
 
+/**
+ * Resolve the same-origin `/api/**` proxy target, or `null` when it cannot be
+ * known safely.
+ *
+ * `API_URL` and `PORT_API` are explicit operator intent and always win. The
+ * framework-wide `ports.api` default is only trusted *outside* deployed
+ * environments: locally one app owns the machine, so `127.0.0.1:3008` really is
+ * its own API. On a deployed box that assumption does not hold — ts-cloud runs
+ * many SSR sites side by side, each on its own port, and an unconfigured
+ * default resolves to whichever tenant happens to own it.
+ *
+ * Returning `null` makes the caller answer 502. That is the safe failure: the
+ * alternative is proxying authenticated requests into another app's process.
+ */
+export function resolveApiBase(configuredPort?: number, env: NodeJS.ProcessEnv = process.env): string | null {
+  if (env.API_URL)
+    return env.API_URL
+
+  const explicitPort = Number(env.PORT_API)
+  if (explicitPort)
+    return `http://127.0.0.1:${explicitPort}`
+
+  const deployed = ['production', 'staging', 'development']
+    .includes((env.APP_ENV || '').toLowerCase())
+
+  if (deployed)
+    return null
+
+  return `http://127.0.0.1:${configuredPort || 3008}`
+}
+
 export async function startProductionServer(options?: { port?: string | number, verbose?: boolean }): Promise<void> {
   if (options?.port)
     process.env.PORT = String(options.port)
@@ -256,8 +287,16 @@ export async function startProductionServer(options?: { port?: string | number, 
       // subscribe form), which the dev server reverse-proxies to the API
       // process — production must do the same or every login and form
       // POST 404s on stx-serve (stacksjs/stacks#1950).
-      const apiBase = process.env.API_URL
-        || `http://127.0.0.1:${Number(process.env.PORT_API) || config.ports?.api || 3008}`
+      //
+      // The target must be resolved *explicitly* in a deployed environment.
+      // `127.0.0.1:<default>` is not "my API" on a shared box — it is whichever
+      // tenant bound that port first. Several SSR sites legitimately share one
+      // instance (see SiteConfig.port), so falling back to the framework-wide
+      // default silently forwards this app's `/api/**` traffic — session
+      // cookies, login POSTs, form bodies — into a *different* tenant's
+      // process. Fail closed instead: a 502 with an actionable log beats
+      // misdelivering a visitor's credentials to a stranger.
+      const apiBase = resolveApiBase(config.ports?.api)
 
       log.info(`Starting production server on port ${port}...`)
 
@@ -306,6 +345,15 @@ export async function startProductionServer(options?: { port?: string | number, 
           // server-static site routed by the rpx gateway, not a dev server.
           const url = new URL(req.url)
           if (isApiBoundRequest(req, url.pathname)) {
+            if (!apiBase) {
+              log.error(
+                `No API target configured for ${url.pathname}. This app shares its host with other `
+                + `deployments, so there is no safe default port to guess — refusing to proxy. Set `
+                + `PORT_API (or API_URL) for this site, and deploy an \`api\` site on its own port.`,
+              )
+              return new Response('Bad Gateway', { status: 502 })
+            }
+
             try {
               return await proxyToBackend(req, apiBase)
             }
