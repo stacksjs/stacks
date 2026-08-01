@@ -1,5 +1,19 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.232...v0.70.233)
+
+## ✨ Features
+
+- **desktop**: package builds as a macOS DMG, and stop squatting @stacksjs/desktop ([9ee55ba](https://github.com/stacksjs/stacks/commit/9ee55ba)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 📝 Documentation
+
+- **buddy**: regenerate the command reference for build:dmg ([40148aa](https://github.com/stacksjs/stacks/commit/40148aa)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.231...v0.70.232)
 
 ## 🐛 Bug Fixes
