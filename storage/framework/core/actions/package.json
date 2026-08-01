@@ -30,21 +30,18 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "development": "./src/index.ts",
       "bun": "./dist/index.js",
       "import": "./dist/index.js",
       "default": "./dist/index.js"
     },
     "./run-action": {
       "types": "./dist/run-action.d.ts",
-      "development": "./src/run-action.ts",
       "bun": "./dist/run-action.js",
       "import": "./dist/run-action.js",
       "default": "./dist/run-action.js"
     },
     "./*": {
       "types": "./dist/*.d.ts",
-      "development": "./src/*.ts",
       "bun": "./dist/*.js",
       "import": "./dist/*.js",
       "default": "./dist/*.js"

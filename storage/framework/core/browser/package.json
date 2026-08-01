@@ -28,28 +28,24 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "development": "./src/index.ts",
       "bun": "./dist/index.js",
       "import": "./dist/index.js",
       "default": "./dist/index.js"
     },
     "./composables": {
       "types": "./dist/composables/index.d.ts",
-      "development": "./src/composables/index.ts",
       "bun": "./dist/composables/index.js",
       "import": "./dist/composables/index.js",
       "default": "./dist/composables/index.js"
     },
     "./utils": {
       "types": "./dist/utils/index.d.ts",
-      "development": "./src/utils/index.ts",
       "bun": "./dist/utils/index.js",
       "import": "./dist/utils/index.js",
       "default": "./dist/utils/index.js"
     },
     "./*": {
       "types": "./dist/*.d.ts",
-      "development": "./src/*.ts",
       "bun": "./dist/*.js",
       "import": "./dist/*.js",
       "default": "./dist/*.js"

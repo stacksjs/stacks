@@ -10,26 +10,27 @@ const composablesPackageJson = JSON.parse(
 )
 
 describe('browser package contract', () => {
+  // No `development` condition: it resolved to ./src/*, which is not published
+  // (files is README + dist), so any consumer bundling these subpaths failed to
+  // resolve them. Source resolution inside this repo comes from @stacksjs/alias.
   test('publishes resolvable typed composable and utility subpaths', () => {
     expect(packageJson.exports['./composables']).toEqual({
       types: './dist/composables/index.d.ts',
-      development: './src/composables/index.ts',
       bun: './dist/composables/index.js',
       import: './dist/composables/index.js',
       default: './dist/composables/index.js',
     })
     expect(packageJson.exports['./utils']).toEqual({
       types: './dist/utils/index.d.ts',
-      development: './src/utils/index.ts',
       bun: './dist/utils/index.js',
       import: './dist/utils/index.js',
       default: './dist/utils/index.js',
     })
     expect(packageJson.exports['./*'].types).toBe('./dist/*.d.ts')
-    expect(packageJson.exports['./*'].development).toBe('./src/*.ts')
+    expect(packageJson.exports['./*'].development).toBeUndefined()
     expect(packageJson.exports['./*'].import).toBe('./dist/*.js')
     expect(composablesPackageJson.exports['./*'].types).toBe('./dist/*.d.ts')
-    expect(composablesPackageJson.exports['./*'].development).toBe('./src/*.ts')
+    expect(composablesPackageJson.exports['./*'].development).toBeUndefined()
     expect(composablesPackageJson.exports['./*'].import).toBe('./dist/*.js')
   })
 

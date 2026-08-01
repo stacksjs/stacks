@@ -34,7 +34,6 @@
   ],
   "exports": {
     ".": {
-      "development": "./src/index.ts",
       "bun": "./dist/index.js",
       "import": "./dist/index.js",
       "default": "./dist/index.js"

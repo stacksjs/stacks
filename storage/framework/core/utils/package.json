@@ -33,13 +33,11 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "development": "./src/index.ts",
       "bun": "./dist/index.js",
       "import": "./dist/index.js",
       "default": "./dist/index.js"
     },
     "./*": {
-      "development": "./src/*",
       "bun": "./dist/*",
       "import": "./dist/*",
       "default": "./dist/*"

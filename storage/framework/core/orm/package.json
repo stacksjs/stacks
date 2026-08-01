@@ -27,20 +27,17 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "development": "./src/index.ts",
       "bun": "./dist/index.js",
       "import": "./dist/index.js",
       "default": "./dist/index.js"
     },
     "./traits/*": {
       "types": "./dist/traits/*.d.ts",
-      "development": "./src/traits/*.ts",
       "bun": "./dist/traits/*.js",
       "import": "./dist/traits/*.js",
       "default": "./dist/traits/*.js"
     },
     "./*": {
-      "development": "./src/*",
       "bun": "./dist/*",
       "import": "./dist/*",
       "default": "./dist/*"
