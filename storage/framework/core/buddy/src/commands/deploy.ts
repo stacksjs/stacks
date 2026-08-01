@@ -1442,7 +1442,7 @@ async function runHetznerDeploy(args: {
     '.env.keys',
     '.env.production.bak',
     '.env.production.plain',
-  ].flatMap(p => [`--exclude='${p}'`, `--exclude='*/${p}'`])
+  ]
 
   if (onlySite && !sites[onlySite]) {
     log.error(`--site '${onlySite}' is not a configured site. Available: ${Object.keys(sites).join(', ')}`)
@@ -1485,12 +1485,34 @@ async function runHetznerDeploy(args: {
 
     const root = site.root || '.'
     const tarballPath = join(tmpdir(), `${slug}-${siteName}-${sha}.tar.gz`)
+
+    // Paths the SERVER owns, declared per site.
+    //
+    // The list above is machine-local dev noise. This is the other kind: state
+    // that lives on the box and would be destroyed by shipping a local copy
+    // over it. A git forge keeps its bare repositories under `storage/repos`;
+    // packaging those made a 2 MB release a 195 MB one, stalled the upload for
+    // an hour, and would have replaced live repository storage with whatever
+    // the developer happened to have checked out.
+    //
+    // Per site rather than a framework-wide constant, because only the
+    // application knows which of its directories are authoritative on the box.
+    const siteExcludes: string[] = Array.isArray((site as any).exclude)
+      ? (site as any).exclude.filter((entry: unknown) => typeof entry === 'string' && entry.length > 0)
+      : []
+
+    const excludeArgs = [...tarExcludes, ...siteExcludes]
+      .flatMap(pattern => [`--exclude='${pattern}'`, `--exclude='*/${pattern}'`])
+
+    if (siteExcludes.length > 0)
+      log.info(`Excluding server-owned paths: ${siteExcludes.join(', ')}`)
+
     log.info(`Packaging ${root} → ${tarballPath}...`)
     // COPYFILE_DISABLE stops macOS bsdtar from embedding AppleDouble (._*)
     // resource-fork files — on the server those shadow real files and break
     // anything that globs a directory (e.g. `._0001-….sql` crashes migrate).
     execSync(
-      `tar czf "${tarballPath}" ${tarExcludes.join(' ')} -C "${root}" .`,
+      `tar czf "${tarballPath}" ${excludeArgs.join(' ')} -C "${root}" .`,
       { stdio: verbose ? 'inherit' : 'pipe', env: { ...process.env, COPYFILE_DISABLE: '1' } },
     )
     const sizeMb = Math.max(1, Math.round((statSync(tarballPath).size) / 1048576))
