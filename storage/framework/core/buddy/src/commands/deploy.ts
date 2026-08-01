@@ -1595,8 +1595,43 @@ async function runHetznerDeploy(args: {
   // per-domain via ts-cloud's factory (Porkbun/Route53/Cloudflare/GoDaddy from
   // env) and upsert A records → the box IP. Non-fatal: a DNS hiccup shouldn't
   // fail an otherwise-successful release.
+  let publishedDns: string[] = []
   if (ok)
-    await reconcileHetznerDns(onlySite ? { [onlySite]: sites[onlySite] } : sites, ip, log, ipv6)
+    publishedDns = await reconcileHetznerDns(onlySite ? { [onlySite]: sites[onlySite] } : sites, ip, log, ipv6)
+
+  // A brand-new subdomain does not resolve until the step above runs, and ACME
+  // cannot issue for a name that does not resolve — so the certificate the
+  // gateway loaded moments earlier does not cover it, and the box answers TLS
+  // with another tenant's certificate as the SNI fallback. Re-issue and reload
+  // once records have actually landed. Skipped entirely when nothing was
+  // published, which is the steady state for every redeploy.
+  if (ok && publishedDns.length > 0) {
+    log.info(`Issuing TLS for ${publishedDns.length} newly published record(s)...`)
+    try {
+      const { renewRpxCertificates, reloadRpxGateway } = await import('@stacksjs/ts-cloud') as any
+      const gatewayOptions = {
+        rpxConfig: { ...tsCloudConfig, sites: sitesWithResolvedEnv },
+        environment,
+        driver,
+        logger: {
+          info: (m: string) => log.info(m),
+          warn: (m: string) => log.warn(m),
+          error: (m: string) => log.error(m),
+          step: (m: string) => log.info(m),
+          success: (m: string) => log.success(m),
+        },
+      }
+      await renewRpxCertificates(gatewayOptions)
+      await reloadRpxGateway(gatewayOptions)
+      log.success('TLS issued and gateway reloaded for the new record(s)')
+    }
+    catch (err: any) {
+      // Best-effort, like the reconcilers around it: the release is already
+      // live, and the daily renewal timer picks the certificate up regardless.
+      log.warn(`TLS issuance after DNS failed: ${err?.message || err}`)
+      log.warn(`  Until it succeeds, ${publishedDns.join(', ')} serves a fallback certificate.`)
+    }
+  }
 
   // Reconcile the app's declared DNS records (config/dns.ts) beyond the apex/www
   // A records above — e.g. verification TXT, extra CNAMEs. Strictly additive:
@@ -2359,7 +2394,10 @@ async function reconcileConfigDns(sites: Record<string, any>, logger: typeof log
   }
 }
 
-async function reconcileHetznerDns(sites: Record<string, any>, ip: string, logger: typeof log, ipv6?: string): Promise<void> {
+async function reconcileHetznerDns(sites: Record<string, any>, ip: string, logger: typeof log, ipv6?: string): Promise<string[]> {
+  // FQDNs this run actually published, so the caller can re-issue TLS for
+  // names that did not resolve when the gateway was last reloaded.
+  const published: string[] = []
   // Collect the apex domains declared by sites (skip loopback/domain-less sites).
   const domains = new Set<string>()
   for (const site of Object.values(sites)) {
@@ -2367,7 +2405,7 @@ async function reconcileHetznerDns(sites: Record<string, any>, ip: string, logge
       domains.add(site.domain.replace(/^www\./, ''))
   }
   if (domains.size === 0)
-    return
+    return published
 
   // Candidate provider configs, built from whatever credentials are present.
   const providerConfigs: any[] = []
@@ -2384,7 +2422,7 @@ async function reconcileHetznerDns(sites: Record<string, any>, ip: string, logge
     logger.warn('DNS: no DNS provider credentials found (PORKBUN_API_KEY/…); skipping DNS reconciliation.')
     for (const d of domains)
       logger.info(`  Point manually:  A ${d} → ${ip}   and   A www.${d} → ${ip}`)
-    return
+    return published
   }
 
   const {
@@ -2458,8 +2496,10 @@ async function reconcileHetznerDns(sites: Record<string, any>, ip: string, logge
         // addresses round-robining onto a dead host, mail hosts that must
         // stay IPv4-only).
         const report = await reconcileAddressRecords({ provider, zone: domain, fqdn, ipv4: ip, ipv6 })
-        for (const record of report.published)
+        for (const record of report.published) {
           logger.success(`  DNS: ${record.fqdn} → ${record.content} (${provider.name})`)
+          published.push(record.fqdn)
+        }
         for (const warning of report.warnings)
           logger.warn(`  DNS: ${warning}`)
       }
@@ -2468,6 +2508,8 @@ async function reconcileHetznerDns(sites: Record<string, any>, ip: string, logge
       logger.warn(`  DNS: ${domain} reconciliation failed: ${err?.message || err}`)
     }
   }
+
+  return published
 }
 
 /**
