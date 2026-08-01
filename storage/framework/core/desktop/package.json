@@ -1,9 +1,9 @@
 {
-  "name": "@stacksjs/desktop",
+  "name": "@stacksjs/desktop-build",
   "type": "module",
   "sideEffects": false,
   "version": "0.70.232",
-  "description": "The Stacks Desktop engine.",
+  "description": "Build and launch Craft desktop applications for Stacks",
   "author": "Chris Breuer",
   "contributors": [
     "Chris Breuer <chris@stacksjs.com>"

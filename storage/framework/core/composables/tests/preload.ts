@@ -54,7 +54,7 @@ function computed(fn: () => any) {
 }
 
 // Mock @stacksjs/desktop to avoid the broken openDevWindow import
-mock.module('@stacksjs/desktop', () => ({
+mock.module('@stacksjs/desktop-build', () => ({
   desktop: {},
   openDevWindow: () => {},
 }))

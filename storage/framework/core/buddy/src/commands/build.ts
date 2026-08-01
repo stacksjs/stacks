@@ -24,6 +24,7 @@ export function build(buddy: CLI): void {
     buddy: 'Build the Buddy binary',
     functions: 'Build your function library',
     desktop: 'Build the Desktop Application',
+    dmg: 'Package the desktop build as a macOS .app inside a .dmg',
     pages: 'Build your frontend',
     docs: 'Build your documentation',
     framework: 'Build Stacks framework',
@@ -252,6 +253,30 @@ export function build(buddy: CLI): void {
       if (result.isErr) {
         await outro(
           'While running the build:desktop command, there was an issue',
+          { startTime: perf, useSeconds: true },
+          result.error,
+        )
+        process.exit(ExitCode.FatalError)
+      }
+
+      console.log('')
+      await outro('Exited', { startTime: perf, useSeconds: true })
+      process.exit(ExitCode.Success)
+    })
+
+  buddy
+    .command('build:dmg', descriptions.dmg)
+    .option('-p, --project [project]', descriptions.project, { default: false })
+    .option('--verbose', descriptions.verbose, { default: false })
+    .action(async (options: BuildOptions) => {
+      log.debug('Running `buddy build:dmg` ...', options)
+
+      const perf = await intro('buddy build:dmg')
+      const result = await runAction(Action.BuildDmg, options)
+
+      if (result.isErr) {
+        await outro(
+          'While running the build:dmg command, there was an issue',
           { startTime: perf, useSeconds: true },
           result.error,
         )

@@ -272,7 +272,7 @@
         "@stacksjs/collections": "^0.70.180",
         "@stacksjs/config": "^0.70.180",
         "@stacksjs/database": "^0.70.180",
-        "@stacksjs/desktop": "^0.70.180",
+        "@stacksjs/desktop-build": "^0.70.180",
         "@stacksjs/dns": "^0.70.180",
         "@stacksjs/dnsx": "^0.2.3",
         "@stacksjs/email": "^0.70.180",
@@ -513,7 +513,7 @@
       },
     },
     "storage/framework/core/desktop": {
-      "name": "@stacksjs/desktop",
+      "name": "@stacksjs/desktop-build",
       "version": "0.70.232",
       "devDependencies": {
         "@stacksjs/build": "workspace:*",
@@ -1239,7 +1239,9 @@
 
     "@stacksjs/deploy": ["@stacksjs/deploy@workspace:storage/framework/core/deploy"],
 
-    "@stacksjs/desktop": ["@stacksjs/desktop@workspace:storage/framework/core/desktop"],
+    "@stacksjs/desktop": ["@stacksjs/desktop@0.70.232", "", {}, "sha512-g/C/NbtUeA5SsiaK7u9BC+zMxQdrCyKmvAMIl7B+SVUBfZSs8cRyF+3XJuu2qBlTiYeUVYYD7o4JJzK08xm55g=="],
+
+    "@stacksjs/desktop-build": ["@stacksjs/desktop-build@workspace:storage/framework/core/desktop"],
 
     "@stacksjs/development": ["@stacksjs/development@workspace:storage/framework/core/development"],
 

@@ -4,7 +4,7 @@ import { basename, join } from 'node:path'
 import process from 'node:process'
 import { log, runCommand } from '@stacksjs/cli'
 import { corePath, projectPath, storagePath } from '@stacksjs/path'
-import { assertDesktopReleaseChannel, resolveCraftBinary, resolveDesktopLauncher } from '@stacksjs/desktop'
+import { assertDesktopReleaseChannel, resolveCraftBinary, resolveDesktopLauncher } from '@stacksjs/desktop-build'
 
 const outputDir = storagePath('framework/desktop-dist')
 const launcherName = process.platform === 'win32' ? 'stacks-desktop.exe' : 'stacks-desktop'

@@ -80,10 +80,13 @@ export const alias: Record<string, string> = {
   'stacks/development': p.developmentPath('src/index.ts'),
   '@stacksjs/development/*': p.developmentPath('src/*'),
   'stacks/development/*': p.developmentPath('src/*'),
-  '@stacksjs/desktop': p.desktopPath('src/index.ts'),
-  'stacks/desktop': p.desktopPath('src/index.ts'),
-  '@stacksjs/desktop/*': p.desktopPath('src/*'),
-  'stacks/desktop/*': p.desktopPath('src/*'),
+  // The build/launcher helper. `@stacksjs/desktop` is deliberately NOT aliased
+  // here: that name belongs to the stx native desktop API a Stacks app imports
+  // from node_modules, and aliasing it locally shadowed that package.
+  '@stacksjs/desktop-build': p.desktopPath('src/index.ts'),
+  'stacks/desktop-build': p.desktopPath('src/index.ts'),
+  '@stacksjs/desktop-build/*': p.desktopPath('src/*'),
+  'stacks/desktop-build/*': p.desktopPath('src/*'),
   '@stacksjs/dns': p.dnsPath('src/index.ts'),
   'stacks/dns': p.dnsPath('src/index.ts'),
   '@stacksjs/dns/*': p.dnsPath('src/*'),
