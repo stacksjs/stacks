@@ -2,7 +2,7 @@
   "name": "@stacksjs/browser",
   "type": "module",
   "sideEffects": false,
-  "version": "0.70.232",
+  "version": "0.70.233",
   "description": "Stacks core frontend/browser functionalities.",
   "author": "Chris Breuer",
   "contributors": [
@@ -59,7 +59,8 @@
   "types": "dist/index.d.ts",
   "files": [
     "README.md",
-    "dist"
+    "dist",
+    "src"
   ],
   "scripts": {
     "build": "bun build.ts",

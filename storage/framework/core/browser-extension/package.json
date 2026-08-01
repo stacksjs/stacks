@@ -1,8 +1,8 @@
 {
   "name": "@stacksjs/browser-extension",
   "type": "module",
-  "version": "0.70.232",
-  "description": "Build MV3 browser extensions (Chrome, Firefox, Safari) the Stacks way — manifest, content/background scripts, DNR rules, packaging, Safari container app, all config-driven.",
+  "version": "0.70.233",
+  "description": "Build MV3 browser extensions (Chrome, Firefox, Safari) the Stacks way \u2014 manifest, content/background scripts, DNR rules, packaging, Safari container app, all config-driven.",
   "author": "Chris Breuer",
   "contributors": [
     "Chris Breuer <chris@stacksjs.com>"
@@ -50,7 +50,8 @@
   "files": [
     "README.md",
     "dist",
-    "safari-template"
+    "safari-template",
+    "src"
   ],
   "dependencies": {
     "ts-pantry": "^0.11.0"
