@@ -5,7 +5,11 @@ const { startTime } = await intro({
 })
 
 const result = await Bun.build({
-  entrypoints: ['./src/index.ts'],
+  // The launcher ships alongside the library: `buddy build:desktop` compiles it
+  // into the native bundle, and a consumer app only has the published package
+  // to compile from — without it here, desktop builds work in this monorepo and
+  // nowhere else.
+  entrypoints: ['./src/index.ts', './src/launcher.ts'],
   outdir: './dist',
   format: 'esm',
   target: 'bun',

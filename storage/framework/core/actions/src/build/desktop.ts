@@ -4,7 +4,7 @@ import { basename, join } from 'node:path'
 import process from 'node:process'
 import { log, runCommand } from '@stacksjs/cli'
 import { corePath, projectPath, storagePath } from '@stacksjs/path'
-import { assertDesktopReleaseChannel, resolveCraftBinary } from '@stacksjs/desktop'
+import { assertDesktopReleaseChannel, resolveCraftBinary, resolveDesktopLauncher } from '@stacksjs/desktop'
 
 const outputDir = storagePath('framework/desktop-dist')
 const launcherName = process.platform === 'win32' ? 'stacks-desktop.exe' : 'stacks-desktop'
@@ -21,14 +21,34 @@ const craftBinary = resolveCraftBinary()
 if (basename(craftBinary) === 'craft' && !existsSync(craftBinary))
   throw new Error('Build Craft first in ~/Code/Tools/craft, or set CRAFT_BIN to the native Craft binary')
 
+// The runtime is copied verbatim into the bundle, so it has to be the native
+// executable. A dev wrapper script points at a path outside the bundle and
+// would leave every shipped app broken on first launch.
+if (readFileSync(craftBinary).subarray(0, 2).toString() === '#!') {
+  throw new Error(
+    `CRAFT_BIN points at a script, not a native binary: ${craftBinary}. `
+    + 'Point it at the compiled Craft executable (packages/zig/zig-out/bin/craft).',
+  )
+}
+
 if (existsSync(outputDir))
   rmSync(outputDir, { recursive: true })
 mkdirSync(outputDir, { recursive: true })
 
-await runCommand('bun run build', { cwd: corePath('desktop') })
-await runCommand(`bun build --compile ${JSON.stringify(corePath('desktop/src/launcher.ts'))} --outfile ${JSON.stringify(join(outputDir, launcherName))}`, {
-  cwd: projectPath(),
-})
+// Rebuild the desktop package only when its source is present — inside this
+// monorepo. A consumer app installs it prebuilt and has no `src` to compile.
+const desktopSource = corePath('desktop')
+if (existsSync(join(desktopSource, 'package.json')) && existsSync(join(desktopSource, 'src')))
+  await runCommand('bun run build', { cwd: desktopSource })
+
+// Argv form, not a command string: runCommand splits a string on whitespace,
+// so a quoted path arrived at bun with its quotes still attached and any path
+// containing a space would have split in half.
+const launcherEntry = resolveDesktopLauncher()
+await runCommand(
+  ['bun', 'build', '--compile', launcherEntry, '--outfile', join(outputDir, launcherName)],
+  { cwd: projectPath() },
+)
 
 copyFileSync(craftBinary, join(outputDir, runtimeName))
 if (process.platform !== 'win32') {
@@ -52,13 +72,20 @@ writeFileSync(join(outputDir, 'desktop.json'), `${JSON.stringify({
 const gitResult = Bun.spawnSync(['git', 'rev-parse', 'HEAD'], { cwd: projectPath() })
 if (gitResult.exitCode !== 0) throw new Error('Desktop builds require an exact Git source revision')
 const sourceRevision = gitResult.stdout.toString().trim()
+
+// Provenance must name the repository that was actually built. Hardcoding the
+// Stacks repo made every consumer app's build claim it came from Stacks.
+const remoteResult = Bun.spawnSync(['git', 'remote', 'get-url', 'origin'], { cwd: projectPath() })
+const sourceRepository = remoteResult.exitCode === 0
+  ? remoteResult.stdout.toString().trim().replace(/\.git$/, '')
+  : 'unknown'
 const artifacts = [launcherName, runtimeName, 'desktop.json'].map((name) => {
   const contents = readFileSync(join(outputDir, name))
   return { name, bytes: contents.byteLength, sha256: createHash('sha256').update(contents).digest('hex') }
 })
 writeFileSync(join(outputDir, 'provenance.json'), `${JSON.stringify({
   schemaVersion: '1.0.0',
-  sourceRepository: 'https://github.com/stacksjs/stacks',
+  sourceRepository,
   sourceRevision,
   builtWith: { bun: Bun.version, craftSha256: artifacts.find(artifact => artifact.name === runtimeName)?.sha256 },
   target: { platform: process.platform, architecture: process.arch, status: support.status, osVersions: support.osVersions },

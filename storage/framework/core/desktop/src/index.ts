@@ -1,6 +1,7 @@
 import { existsSync } from 'node:fs'
 import { homedir } from 'node:os'
-import { join } from 'node:path'
+import { dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 
 export * from './invites'
 export * from './updater'
@@ -79,6 +80,34 @@ export function resolveCraftBinary(explicit: string | undefined = process.env.CR
   ]
 
   return candidates.find(candidate => existsSync(candidate)) || 'craft'
+}
+
+/**
+ * The launcher entrypoint `buddy build:desktop` compiles into the native
+ * bundle.
+ *
+ * Inside this monorepo the TypeScript source is right there. A consumer app
+ * only has the published package, which ships `dist/launcher.js` — so resolve
+ * whichever exists rather than assuming the monorepo layout, which is what
+ * previously made desktop builds impossible outside this repo.
+ */
+export function resolveDesktopLauncher(): string {
+  const here = dirname(fileURLToPath(import.meta.url))
+  const candidates = [
+    // Monorepo: src/index.ts sits next to src/launcher.ts.
+    join(here, 'launcher.ts'),
+    // Published package: dist/index.js sits next to dist/launcher.js.
+    join(here, 'launcher.js'),
+  ]
+
+  const launcher = candidates.find(candidate => existsSync(candidate))
+  if (!launcher) {
+    throw new Error(
+      'Desktop launcher entrypoint not found. Reinstall @stacksjs/desktop — the package must ship dist/launcher.js.',
+    )
+  }
+
+  return launcher
 }
 
 export function resolveDevWindowUrl(port: number, options: OpenDevWindowOptions = {}): string {
