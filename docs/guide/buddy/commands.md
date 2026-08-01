@@ -6,7 +6,7 @@ description: Generated reference for every Buddy command, argument, option, alia
 
 # Buddy Command Reference
 
-This reference is generated from Buddy's runtime command registry and currently contains **296 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
+This reference is generated from Buddy's runtime command registry and currently contains **297 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
 
 ## Command groups
 
@@ -14,7 +14,7 @@ This reference is generated from Buddy's runtime command registry and currently 
 | --- | ---: |
 | `ai` | 1 |
 | `auth` | 4 |
-| `build` | 11 |
+| `build` | 12 |
 | `cloud` | 7 |
 | `cms` | 2 |
 | `coming-soon` | 1 |
@@ -267,6 +267,20 @@ Build the Desktop Application
 - Usage: `$ buddy build:desktop`
 - Namespace: `build`
 - Aliases: `prod:desktop`
+- Arguments: none
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `-p`, `--project` | Target a specific project | value, optional | `false` |
+| `--verbose` | Enable verbose output | boolean, optional | `false` |
+
+### `build:dmg`
+
+Package the desktop build as a macOS .app inside a .dmg
+
+- Usage: `$ buddy build:dmg`
+- Namespace: `build`
+- Aliases: none
 - Arguments: none
 
 | Option | Description | Contract | Default |
