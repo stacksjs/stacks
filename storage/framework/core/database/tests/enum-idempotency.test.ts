@@ -14,7 +14,7 @@
  */
 
 import { describe, expect, it } from 'bun:test'
-import { guardPostgresEnumTypes, sqlStatementsOf } from '../src/migrations'
+import { guardPostgresEnumTypes, orderPostgresColumnTypeChanges, sqlStatementsOf } from '../src/migrations'
 
 describe('guardPostgresEnumTypes', () => {
   it('wraps a bare CREATE TYPE so a second run is a no-op', () => {
@@ -127,5 +127,69 @@ describe('sqlStatementsOf', () => {
     const guarded = guardPostgresEnumTypes('CREATE TYPE "t" AS ENUM (\'a\', \'b\');')
 
     expect(sqlStatementsOf(guarded)).toHaveLength(1)
+  })
+})
+
+/**
+ * Migration files are history. The generator emits `DROP DEFAULT` before a type
+ * change now, but every corpus written before that still carries the old order,
+ * and re-running one fails on any database that has not caught up.
+ */
+describe('orderPostgresColumnTypeChanges', () => {
+  it('puts a DROP DEFAULT in front of a type change', () => {
+    const sql = 'ALTER TABLE "t" ALTER COLUMN "status" TYPE "t_status_type" USING "status"::"t_status_type";'
+    const lines = orderPostgresColumnTypeChanges(sql).split('\n')
+
+    expect(lines[0]).toBe('ALTER TABLE "t" ALTER COLUMN "status" DROP DEFAULT;')
+    expect(lines[1]).toContain('TYPE')
+  })
+
+  it('keeps the indentation of the statement it precedes', () => {
+    const sql = '  ALTER TABLE "t" ALTER COLUMN "c" TYPE boolean USING "c"::boolean;'
+
+    expect(orderPostgresColumnTypeChanges(sql).split('\n')[0]).toBe('  ALTER TABLE "t" ALTER COLUMN "c" DROP DEFAULT;')
+  })
+
+  /** Running the pass twice must not stack a second drop on every type change. */
+  it('is idempotent', () => {
+    const sql = 'ALTER TABLE "t" ALTER COLUMN "c" TYPE boolean USING "c"::boolean;'
+    const once = orderPostgresColumnTypeChanges(sql)
+
+    expect(orderPostgresColumnTypeChanges(once)).toBe(once)
+  })
+
+  it('leaves an existing drop alone', () => {
+    const sql = [
+      'ALTER TABLE "t" ALTER COLUMN "c" DROP DEFAULT;',
+      'ALTER TABLE "t" ALTER COLUMN "c" TYPE boolean USING "c"::boolean;',
+    ].join('\n')
+
+    expect(orderPostgresColumnTypeChanges(sql)).toBe(sql)
+  })
+
+  it('handles several columns in one file', () => {
+    const sql = [
+      'ALTER TABLE "a" ALTER COLUMN "x" TYPE boolean USING "x"::boolean;',
+      'ALTER TABLE "b" ALTER COLUMN "y" TYPE boolean USING "y"::boolean;',
+    ].join('\n')
+
+    const out = orderPostgresColumnTypeChanges(sql)
+
+    expect([...out.matchAll(/DROP DEFAULT/g)]).toHaveLength(2)
+    expect(out).toContain('ALTER TABLE "a" ALTER COLUMN "x" DROP DEFAULT;')
+    expect(out).toContain('ALTER TABLE "b" ALTER COLUMN "y" DROP DEFAULT;')
+  })
+
+  it('leaves everything else untouched', () => {
+    const sql = 'ALTER TABLE "t" ADD COLUMN "c" text;\nCREATE INDEX "i" ON "t" ("c");'
+
+    expect(orderPostgresColumnTypeChanges(sql)).toBe(sql)
+  })
+
+  /** A column being set NOT NULL is not a type change and needs no drop. */
+  it('ignores a nullability change', () => {
+    const sql = 'ALTER TABLE "t" ALTER COLUMN "c" SET NOT NULL;'
+
+    expect(orderPostgresColumnTypeChanges(sql)).toBe(sql)
   })
 })

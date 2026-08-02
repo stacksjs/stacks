@@ -311,6 +311,43 @@ export function sqlStatementsOf(content: string): string[] {
  * The guard is a `DO` block catching `duplicate_object`, which needs a
  * dollar-quoted body - hence the splitter above having to understand one.
  */
+/**
+ * Put a `DROP DEFAULT` in front of every `ALTER COLUMN … TYPE …`.
+ *
+ * Postgres checks a column's existing default against the new type and refuses
+ * the whole statement when it cannot cast it - a `varchar` column defaulting to
+ * `'pending'` becoming an enum fails every time. The generator emits the right
+ * order now, but migration files are history: every corpus written before that
+ * still carries the old one, and re-running it fails on a database that has not
+ * caught up yet.
+ *
+ * Rewriting them here is the same bargain the rest of this pass makes. Adding
+ * the drop is safe whatever the column had, because the statement that follows
+ * either sets the new default or deliberately leaves none.
+ */
+export function orderPostgresColumnTypeChanges(sql: string): string {
+  const lines = sql.split('\n')
+  const output: string[] = []
+
+  for (const line of lines) {
+    const match = /^(\s*)ALTER\s+TABLE\s+("?[\w.]+"?)\s+ALTER\s+COLUMN\s+("?[\w]+"?)\s+TYPE\s/i.exec(line)
+
+    if (match) {
+      const [, indent, table, column] = match
+      const drop = `${indent}ALTER TABLE ${table} ALTER COLUMN ${column} DROP DEFAULT;`
+      // Only when it is not already there, so running the pass twice does not
+      // stack a second copy on every type change in the corpus.
+      const previous = output.length > 0 ? output[output.length - 1]!.trim() : ''
+      if (previous !== drop.trim())
+        output.push(drop)
+    }
+
+    output.push(line)
+  }
+
+  return output.join('\n')
+}
+
 export function guardPostgresEnumTypes(sql: string): string {
   return sql.replace(
     /CREATE\s+TYPE\s+("?[\w.]+"?)\s+AS\s+ENUM\s*\(([^)]*)\)/gi,
@@ -1119,7 +1156,9 @@ function makeMigrationsIdempotent(): void {
     catch {
       continue
     }
-    const touchable = /\bADD\s+(?:COLUMN|CONSTRAINT)\b/i.test(sql) || /\bCREATE\s+TYPE\b/i.test(sql)
+    const touchable = /\bADD\s+(?:COLUMN|CONSTRAINT)\b/i.test(sql)
+      || /\bCREATE\s+TYPE\b/i.test(sql)
+      || /\bALTER\s+COLUMN\b[^\n]*\bTYPE\b/i.test(sql)
     if (!touchable)
       continue
 
@@ -1129,7 +1168,7 @@ function makeMigrationsIdempotent(): void {
     // dump, a database built before the ledger existed - stopped `buddy
     // migrate` dead on the first enum, with an error naming a type that was
     // already exactly right.
-    const next = guardPostgresEnumTypes(idempotentSql(sql))
+    const next = orderPostgresColumnTypeChanges(guardPostgresEnumTypes(idempotentSql(sql)))
     if (next !== sql) {
       try {
         writeFileSync(p, next)
