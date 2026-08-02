@@ -297,9 +297,21 @@ export function extension(buddy: CLI): void {
       // Rebuild them from `config/images.ts` on the way to the upload, so the
       // set that ships describes the build that ships. No-ops when the project
       // declares none.
+      //
+      // Never fatal. What gets uploaded is the committed set the config points
+      // at; regenerating is a freshness pass over it, and a publish runner has
+      // no reason to hold captures of a product it did not launch. Letting a
+      // missing capture throw here took down the whole Safari publish — and
+      // with it the Firefox and GitHub Release steps waiting behind it — for a
+      // listing whose screenshots were sitting in the repository, correct.
       if (!options.skipScreenshots) {
-        const { generateProjectImages } = await import('@stacksjs/actions')
-        await generateProjectImages({ only: ['app-store'] })
+        try {
+          const { generateProjectImages } = await import('@stacksjs/actions')
+          await generateProjectImages({ only: ['app-store'] })
+        }
+        catch (error) {
+          log.warn(`[extension:safari:publish] using the committed screenshots — could not regenerate: ${(error as Error).message}`)
+        }
       }
 
       const result = await publishSafariApp(config, {
