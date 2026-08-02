@@ -35,6 +35,7 @@ buddy generate:<type> [options]
 | `--component-meta` | Generate component metadata |
 | `-p, --pantry` | Generate pantry configuration |
 | `-o, --openapi` | Generate OpenAPI specification |
+| `--images` | Generate the imagery declared in `config/images.ts` |
 | `--core-symlink` | Generate core framework symlink |
 | `-p, --project [project]` | Target a specific project |
 | `--verbose` | Enable verbose output |
@@ -147,6 +148,36 @@ buddy generate:openapi-spec
 Generated OpenAPI specification
 
 Completed in 1.23s
+```
+
+### Images
+
+Build the imagery declared in `config/images.ts` — the social cards link
+previews show, the App Store screenshot set, and the app icon and favicon sets.
+See [Generated Images](/features/images) for the configuration.
+
+```bash
+# Everything declared
+buddy generate:images
+
+# Or one at a time
+buddy generate:og          # social cards      (alias: generate:social)
+buddy generate:app-store   # store screenshots (alias: generate:screenshots)
+buddy generate:app-icons   # icon + favicon sets
+```
+
+`buddy generate:images` also takes `--social`, `--app-store` and `--app-icons`
+to restrict a run. Each generator no-ops unless its section is `enabled`, so
+this is safe to wire into a build.
+
+Output:
+
+```
+buddy generate:images
+
+Generated 9 social card(s), 6 App Store screenshot(s)
+
+Completed in 4.10s
 ```
 
 ### Generate Migrations
