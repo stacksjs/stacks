@@ -1,3 +1,4 @@
+import { assertFrameworkRepo } from './framework-repo'
 import type { BuddyCommandInventoryEntry, BuddyCommandInventoryOption } from '../list'
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
@@ -143,6 +144,10 @@ export function loadBuddyInventory(): BuddyInventory {
 }
 
 export async function run(): Promise<void> {
+  // This tool writes into the framework repository. See framework-repo.ts:
+  // run from an application it would edit another project's files.
+  assertFrameworkRepo(root, 'docs:buddy')
+
   const mode = process.argv.includes('--write') ? 'write' : process.argv.includes('--check') ? 'check' : null
   if (!mode) {
     console.error('usage: bun storage/framework/core/buddy/src/commands/docs/buddy-commands.ts --write | --check')

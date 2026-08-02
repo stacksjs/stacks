@@ -1,5 +1,6 @@
 import { readFileSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
+import { assertFrameworkRepo } from './framework-repo'
 import { generateOpenApi } from '../../../../api/src/generate-openapi'
 import { type OpenApiDocument, renderOpenApiTypes } from '../../../../api/src/generate-types'
 
@@ -52,6 +53,10 @@ async function check(): Promise<void> {
 }
 
 export async function run(): Promise<void> {
+  // This tool writes into the framework repository. See framework-repo.ts:
+  // run from an application it would edit another project's files.
+  assertFrameworkRepo(root, 'docs:artifacts')
+
   try {
     if (process.argv.includes('--write')) await write()
     else if (process.argv.includes('--check')) await check()

@@ -10,6 +10,7 @@
  * Usage: `bun storage/framework/core/buddy/src/commands/docs/links.ts [--check]`
  */
 
+import { assertFrameworkRepo } from './framework-repo'
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs'
 import { dirname, join, relative, resolve } from 'node:path'
 
@@ -128,6 +129,10 @@ export function checkDocsLinks(docsRoot = docsDir): BrokenDocLink[] {
 }
 
 export async function run(): Promise<void> {
+  // This tool writes into the framework repository. See framework-repo.ts:
+  // run from an application it would edit another project's files.
+  assertFrameworkRepo(root, 'docs:links')
+
   const broken = checkDocsLinks()
   if (broken.length === 0) {
     console.log('✓ All internal documentation links resolve.')
