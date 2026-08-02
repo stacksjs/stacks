@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.236...v0.70.237)
+
+## 🐛 Bug Fixes
+
+- **storage**: align the ts-images range with the rest of the framework ([e40b319](https://github.com/stacksjs/stacks/commit/e40b319)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.235...v0.70.236)
 
 ## 🐛 Bug Fixes
