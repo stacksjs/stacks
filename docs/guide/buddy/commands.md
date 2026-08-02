@@ -6,7 +6,7 @@ description: Generated reference for every Buddy command, argument, option, alia
 
 # Buddy Command Reference
 
-This reference is generated from Buddy's runtime command registry and currently contains **297 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
+This reference is generated from Buddy's runtime command registry and currently contains **301 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
 
 ## Command groups
 
@@ -32,7 +32,7 @@ This reference is generated from Buddy's runtime command registry and currently 
 | `extension` | 11 |
 | `format` | 1 |
 | `general` | 49 |
-| `generate` | 11 |
+| `generate` | 15 |
 | `inspire` | 1 |
 | `key` | 1 |
 | `link` | 1 |
@@ -1709,6 +1709,7 @@ Archive and validate or upload the Safari app to App Store Connect
 | `--api-key-path` | Path to the App Store Connect AuthKey_*.p8 file | value, required | — |
 | `--validate-only` | Create and validate the archive without uploading it | boolean, optional | — |
 | `--platform` | Publish macos, ios, or all (defaults to config safariPlatforms) | value, required | — |
+| `--skip-screenshots` | Do not regenerate the App Store screenshot set before publishing | boolean, optional | — |
 
 ### `extension:safari:submit`
 
@@ -1790,8 +1791,35 @@ Automagically build any of your libraries/packages for production use. Select an
 | `-c`, `--component-meta` | Generate component meta information | boolean, optional | — |
 | `-p`, `--pantry` | Generate the pantry configuration file | boolean, optional | — |
 | `-o`, `--openapi` | Generate the OpenAPI specification | boolean, optional | — |
+| `--images` | Generate every image declared in config/images.ts | boolean, optional | — |
 | `-p`, `--project` | Target a specific project | value, optional | `false` |
 | `--core-symlink` | Generate symlink of the core framework to the project root | boolean, optional | — |
+| `--verbose` | Enable verbose output | boolean, optional | `false` |
+
+### `generate:app-icons`
+
+Generate the app icon and favicon sets
+
+- Usage: `$ buddy generate:app-icons`
+- Namespace: `generate`
+- Aliases: none
+- Arguments: none
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `--verbose` | Enable verbose output | boolean, optional | `false` |
+
+### `generate:app-store`
+
+Generate the App Store screenshot set
+
+- Usage: `$ buddy generate:app-store`
+- Namespace: `generate`
+- Aliases: `generate:screenshots`
+- Arguments: none
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
 
 ### `generate:component-meta`
@@ -1858,6 +1886,22 @@ Generate IDE helpers
 | `-p`, `--project` | Target a specific project | value, optional | `false` |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
 
+### `generate:images`
+
+Generate every image declared in config/images.ts
+
+- Usage: `$ buddy generate:images`
+- Namespace: `generate`
+- Aliases: `images:generate`
+- Arguments: none
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `--social` | Only build the social cards | boolean, optional | — |
+| `--app-store` | Only build the App Store screenshots | boolean, optional | — |
+| `--app-icons` | Only build the app icons and favicons | boolean, optional | — |
+| `--verbose` | Enable verbose output | boolean, optional | `false` |
+
 ### `generate:migrations`
 
 Generate Migrations
@@ -1866,6 +1910,19 @@ Generate Migrations
 - Namespace: `generate`
 - Aliases: none
 - Arguments: none
+
+### `generate:og`
+
+Generate the social cards used by link previews
+
+- Usage: `$ buddy generate:og`
+- Namespace: `generate`
+- Aliases: `generate:social`
+- Arguments: none
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `--verbose` | Enable verbose output | boolean, optional | `false` |
 
 ### `generate:openapi-spec`
 
