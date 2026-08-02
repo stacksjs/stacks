@@ -104,8 +104,6 @@ fetchData(fetcher, { onError, fallback })
 random(size?)                  // nanoid
 customAlphabet(alphabet, size) // custom nanoid
 
-// Regex (magic-regexp)
-createRegExp(pattern)
 
 // Retry
 retry(fn, { retries: 3, initialDelay: 100, backoffFactor: 2 })
