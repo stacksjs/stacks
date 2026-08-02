@@ -221,13 +221,112 @@ export function prepareMigrationModelsDir(): { modelsDir: string, skip: boolean 
  * applied while its first column had never been created.
  */
 export function sqlStatementsOf(content: string): string[] {
-  return content
-    .split('\n')
-    .map(line => line.replace(/--.*$/, ''))
-    .join('\n')
-    .split(';')
-    .map(s => s.trim())
-    .filter(s => s.length > 0)
+  const statements: string[] = []
+  let current = ''
+  let quote: 'single' | 'double' | null = null
+  let dollarTag: string | null = null
+
+  for (let i = 0; i < content.length; i++) {
+    const char = content[i]!
+
+    // Inside a dollar-quoted body ($$ … $$ or $tag$ … $tag$) nothing is
+    // punctuation: a `;` there belongs to the body. Without this a `DO $$ …
+    // END $$;` block - which is the only way to write an idempotent
+    // CREATE TYPE - is torn into fragments that are not valid SQL on their own.
+    if (dollarTag) {
+      current += char
+      if (char === '$' && content.startsWith(dollarTag, i)) {
+        current += content.slice(i + 1, i + dollarTag.length)
+        i += dollarTag.length - 1
+        dollarTag = null
+      }
+      continue
+    }
+
+    if (quote) {
+      current += char
+      if ((quote === 'single' && char === '\'') || (quote === 'double' && char === '"'))
+        quote = null
+      continue
+    }
+
+    // A comment runs to the end of the line, but only outside a string: a `--`
+    // inside a default value is data.
+    if (char === '-' && content[i + 1] === '-') {
+      const newline = content.indexOf('\n', i)
+      if (newline === -1)
+        break
+      i = newline - 1
+      continue
+    }
+
+    const dollar = char === '$' ? /^\$[A-Za-z_]*\$/.exec(content.slice(i)) : null
+    if (dollar) {
+      dollarTag = dollar[0]
+      current += dollarTag
+      i += dollarTag.length - 1
+      continue
+    }
+
+    if (char === '\'') {
+      quote = 'single'
+      current += char
+      continue
+    }
+
+    if (char === '"') {
+      quote = 'double'
+      current += char
+      continue
+    }
+
+    if (char === ';') {
+      const trimmed = current.trim()
+      if (trimmed.length > 0)
+        statements.push(trimmed)
+      current = ''
+      continue
+    }
+
+    current += char
+  }
+
+  const trailing = current.trim()
+  if (trailing.length > 0)
+    statements.push(trailing)
+
+  return statements
+}
+
+/**
+ * Make a Postgres `CREATE TYPE … AS ENUM` statement safe to run twice.
+ *
+ * `CREATE TYPE` has no `IF NOT EXISTS`, so a corpus containing one can only be
+ * applied to a database that has never seen it. Every other way a migration run
+ * can be interrupted - a partially recorded ledger, a schema restored from a
+ * dump, a database built before the ledger existed - leaves `buddy migrate`
+ * dead on the first enum it meets, with an error naming a type that is already
+ * exactly right.
+ *
+ * The guard is a `DO` block catching `duplicate_object`, which needs a
+ * dollar-quoted body - hence the splitter above having to understand one.
+ */
+export function guardPostgresEnumTypes(sql: string): string {
+  return sql.replace(
+    /CREATE\s+TYPE\s+("?[\w.]+"?)\s+AS\s+ENUM\s*\(([^)]*)\)/gi,
+    (match, name: string, members: string, offset: number, whole: string) => {
+      // Already guarded. Checked against what comes *before* the match rather
+      // than the match itself, because the guard wraps the CREATE TYPE rather
+      // than containing it. Getting this wrong nests the guard one layer deeper
+      // on every run - and this transform rewrites the files on disk, so the
+      // damage compounds.
+      if (/\bBEGIN\s*$/i.test(whole.slice(Math.max(0, offset - 40), offset)))
+        return match
+
+      return `DO $stacks$ BEGIN CREATE TYPE ${name} AS ENUM (${members}); `
+        + 'EXCEPTION WHEN duplicate_object THEN null; END $stacks$'
+    },
+  )
 }
 
 export function preprocessSqliteMigrations(): void {
@@ -1020,9 +1119,17 @@ function makeMigrationsIdempotent(): void {
     catch {
       continue
     }
-    if (!/\bADD\s+(?:COLUMN|CONSTRAINT)\b/i.test(sql))
+    const touchable = /\bADD\s+(?:COLUMN|CONSTRAINT)\b/i.test(sql) || /\bCREATE\s+TYPE\b/i.test(sql)
+    if (!touchable)
       continue
-    const next = idempotentSql(sql)
+
+    // `CREATE TYPE` has no `IF NOT EXISTS`, so a corpus containing one could
+    // only ever be applied to a database that had never seen it. Anything that
+    // leaves the ledger behind the schema - an interrupted run, a restored
+    // dump, a database built before the ledger existed - stopped `buddy
+    // migrate` dead on the first enum, with an error naming a type that was
+    // already exactly right.
+    const next = guardPostgresEnumTypes(idempotentSql(sql))
     if (next !== sql) {
       try {
         writeFileSync(p, next)
@@ -1767,10 +1874,7 @@ export function createMissingEnumTypes(
     // block: the type may already exist on a database that ran an earlier
     // version of this migration, and failing there would stop the run.
     const literals = members.map(member => `'${String(member).replaceAll('\'', '\'\'')}'`).join(', ')
-    statements.push(
-      `DO $$ BEGIN CREATE TYPE "${name}" AS ENUM (${literals}); `
-      + 'EXCEPTION WHEN duplicate_object THEN null; END $$;',
-    )
+    statements.push(`${guardPostgresEnumTypes(`CREATE TYPE "${name}" AS ENUM (${literals})`)};`)
     defined.push(name)
   }
 
