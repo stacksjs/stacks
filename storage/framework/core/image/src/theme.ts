@@ -1,5 +1,6 @@
 import type { ImageData, RGBA, SurfaceBackground } from 'ts-images'
 import type { ImageBackgroundConfig, ImageColor, ImageDeviceConfig, ImagesConfig } from '@stacksjs/types'
+import { existsSync } from 'node:fs'
 import { readFile } from 'node:fs/promises'
 import { isAbsolute, resolve } from 'node:path'
 import process from 'node:process'
@@ -17,6 +18,23 @@ import { decode, drawImage, parseColor } from 'ts-images'
 
 export function projectFile(path: string, root: string = process.cwd()): string {
   return isAbsolute(path) ? path : resolve(root, path)
+}
+
+/**
+ * Resolve a configured asset, failing with something a person can act on.
+ *
+ * These paths point at things a build step produced — a capture of a running
+ * app, an exported logo — so the common failure is not a typo but an ordering
+ * mistake: generate before capture, or after a clean that wiped the captures.
+ * Left to the codec, that surfaces as a bare ENOENT under ten frames of stack
+ * with no mention of which slide or which config key is at fault.
+ */
+export function requireProjectFile(path: string, root: string, describe: string): string {
+  const resolved = projectFile(path, root)
+  if (!existsSync(resolved))
+    throw new Error(`[image] ${describe} not found: ${path}\nLooked in ${resolved}. Capture it before generating — \`buddy generate:images\` frames existing captures, it does not take them.`)
+
+  return resolved
 }
 
 export function color(value: ImageColor | undefined): RGBA | undefined {

@@ -4,7 +4,7 @@ import { mkdir } from 'node:fs/promises'
 import process from 'node:process'
 import { APP_STORE_MAX_SCREENSHOTS, generateAppStoreScreenshots } from 'ts-images'
 import { loadFonts } from './fonts'
-import { background, color, device, markPainter, projectFile, themed } from './theme'
+import { background, color, device, markPainter, projectFile, requireProjectFile, themed } from './theme'
 
 /**
  * Generate the App Store screenshot set a project declares.
@@ -63,7 +63,7 @@ export async function generateAppStoreScreenshotSet(
     const slides: AppStoreSlide[] = declared
       .filter(slide => !slide.displays?.length || slide.displays.includes(display))
       .map(slide => ({
-        capture: projectFile(slide.capture, root),
+        capture: requireProjectFile(slide.capture, root, `Capture for the "${slide.headline}" slide`),
         headline: slide.headline,
         subheadline: slide.subheadline,
         background: background(slide.background, root),

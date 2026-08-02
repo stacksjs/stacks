@@ -4,7 +4,7 @@ import { mkdir } from 'node:fs/promises'
 import process from 'node:process'
 import { generateSocialCards } from 'ts-images'
 import { loadFonts } from './fonts'
-import { background, color, device, markPainter, projectFile, themed } from './theme'
+import { background, color, device, markPainter, projectFile, requireProjectFile, themed } from './theme'
 
 /**
  * Generate the link-preview cards a site declares.
@@ -107,7 +107,7 @@ export async function generateSocialCardSet(
       subtitle: page.subtitle,
       foreground: shot
         ? {
-            image: projectFile(shot, root),
+            image: requireProjectFile(shot, root, `Product shot for ${page.path}`),
             radius: deviceOptions?.radius,
             borderColor: deviceOptions?.borderColor,
             shadow: deviceOptions?.shadow,

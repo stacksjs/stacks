@@ -2,7 +2,7 @@ import type { AppIconResult, FaviconResult } from 'ts-images'
 import type { ImagesConfig } from '@stacksjs/types'
 import process from 'node:process'
 import { generateAppIcons, generateFavicons } from 'ts-images'
-import { projectFile } from './theme'
+import { projectFile, requireProjectFile } from './theme'
 
 /**
  * Generate the platform icon sets from one square source.
@@ -25,7 +25,7 @@ export async function generateAppIconSet(
   if (appIcons?.enabled !== true || !appIcons.source)
     return { icons: [], favicons: [] }
 
-  const source = projectFile(appIcons.source, root)
+  const source = requireProjectFile(appIcons.source, root, 'App icon source')
   const platforms = appIcons.platforms?.length ? appIcons.platforms : (['ios', 'macos'] as const)
 
   const icons = await generateAppIcons(source, {
