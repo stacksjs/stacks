@@ -3,7 +3,7 @@ import { execSync, log, parseOptions } from '@stacksjs/cli'
 import { path as p } from '@stacksjs/path'
 import { versionBump } from '@stacksjs/bumpx'
 import { generateChangelog, loadLogsmithConfig } from '@stacksjs/logsmith'
-import { existsSync, readFileSync, unlinkSync, writeFileSync } from 'node:fs'
+import { existsSync, readdirSync, readFileSync, unlinkSync, writeFileSync } from 'node:fs'
 import { join, relative } from 'node:path'
 
 const options = parseOptions() as { dryRun?: boolean, bump?: string, verbose?: boolean } | undefined
@@ -235,19 +235,28 @@ async function writeChangelog(): Promise<void> {
 
 await writeChangelog()
 
-// Pin the `stacks` meta package's lockstep core dependencies to the freshly
-// bumped version. bumpx only rewrites each manifest's `version`, leaving the
-// meta's `@stacksjs/*` ranges frozen at whatever floor they were last written
-// with (e.g. `^0.70.53`). That floor lets a consumer's stale lockfile keep old
-// framework versions forever — `stacks@X` would happily resolve `@stacksjs/*`
-// to a much older release. Re-pinning to `^<nextVersion>` makes a published
-// `stacks@X` deterministically require the matching core versions, so a plain
-// `bun install` upgrades the whole framework. Only lockstep core packages (a
-// sibling dir under core/ that bumpx just moved to nextVersion) are pinned;
-// independently-versioned scoped deps (tlsx, dnsx, gitit, …) are left alone.
-// Consumer-app releases have no meta to pin, so this is framework-only.
+// Pin every core package's lockstep dependencies to the freshly bumped
+// version. bumpx only rewrites each manifest's `version`, leaving `@stacksjs/*`
+// ranges frozen at whatever floor they were last written with (e.g.
+// `^0.70.53`). That floor lets a consumer's stale lockfile keep old framework
+// versions forever — `stacks@X` would happily resolve `@stacksjs/*` to a much
+// older release. Re-pinning to `^<nextVersion>` makes a published package
+// deterministically require the matching core versions, so a plain `bun
+// install` upgrades the whole framework together.
+//
+// This covers every core manifest, not just the `stacks` meta. A floor left in
+// `@stacksjs/buddy` is the same bug one level down: buddy@0.70.234 asking for
+// `@stacksjs/actions: ^0.70.180` lets a resolver nest a much older actions
+// under it, and buddy's commands then fail to import symbols its own release
+// added — the CLI drops the whole command group with nothing but "command not
+// found" to go on.
+//
+// Only true lockstep packages are pinned: a sibling dir under core/ that
+// publishes under that name and that bumpx just moved to nextVersion.
+// Independently-versioned scoped deps (tlsx, dnsx, gitit, clapp, …) and
+// `workspace:*` links are left alone.
 if (!isDryRun && isFrameworkRelease)
-  pinMetaCoreDeps(nextVersion)
+  pinLockstepDeps(nextVersion)
 
 // The package-version fan-out above changes hundreds of workspace manifests.
 // Keep the root Bun lockfile synchronized in the same release commit; otherwise
@@ -293,57 +302,83 @@ if (!isDryRun && existsSync(p.projectPath('bun.lock'))) {
   }
 }
 
-function pinMetaCoreDeps(version: string): void {
-  const metaPath = p.frameworkPath('core/package.json')
-  const meta = JSON.parse(readFileSync(metaPath, 'utf-8')) as {
-    dependencies?: Record<string, string>
-    devDependencies?: Record<string, string>
-  }
+/**
+ * Index the core packages by the name they publish under.
+ *
+ * Keyed by name rather than directory: a directory under core/ does not have
+ * to publish under its own name. `core/desktop` is `@stacksjs/desktop-build`,
+ * while `@stacksjs/desktop` is the separately-released stx desktop API frozen
+ * at whatever it last shipped. Matching on the directory pinned that external
+ * package to a framework version that would never exist, `bun install
+ * --lockfile-only` then failed to resolve it, and the release threw before it
+ * could commit or tag — which is why v0.70.233 is a bump commit with no tag.
+ */
+function lockstepPackages(version: string): Set<string> {
+  const names = new Set<string>()
 
-  let pinned = 0
-  for (const field of ['dependencies', 'devDependencies'] as const) {
-    const deps = meta[field]
-    if (!deps)
+  for (const entry of readdirSync(p.frameworkPath('core'), { withFileTypes: true })) {
+    if (!entry.isDirectory())
       continue
 
-    for (const name of Object.keys(deps)) {
-      if (!name.startsWith('@stacksjs/'))
+    const manifest = p.frameworkPath(`core/${entry.name}/package.json`)
+    if (!existsSync(manifest))
+      continue
+
+    const pkg = JSON.parse(readFileSync(manifest, 'utf-8')) as { name?: string, version?: string }
+
+    // Only packages the bump just moved to this version are lockstep; an
+    // independently-versioned scoped dep vendored under core/ will not match.
+    if (pkg.name?.startsWith('@stacksjs/') && pkg.version === version)
+      names.add(pkg.name)
+  }
+
+  return names
+}
+
+function pinLockstepDeps(version: string): void {
+  const lockstep = lockstepPackages(version)
+  const next = `^${version}`
+
+  const manifests = [
+    p.frameworkPath('core/package.json'),
+    ...readdirSync(p.frameworkPath('core'), { withFileTypes: true })
+      .filter(entry => entry.isDirectory())
+      .map(entry => p.frameworkPath(`core/${entry.name}/package.json`))
+      .filter(path => existsSync(path)),
+  ]
+
+  let pinned = 0
+  for (const manifestPath of manifests) {
+    const manifest = JSON.parse(readFileSync(manifestPath, 'utf-8')) as {
+      dependencies?: Record<string, string>
+      devDependencies?: Record<string, string>
+    }
+
+    let changed = false
+    for (const field of ['dependencies', 'devDependencies'] as const) {
+      const deps = manifest[field]
+      if (!deps)
         continue
 
-      const dir = name.slice('@stacksjs/'.length)
-      const localPkgPath = p.frameworkPath(`core/${dir}/package.json`)
-      if (!existsSync(localPkgPath))
-        continue
+      for (const name of Object.keys(deps)) {
+        // `workspace:*` already resolves to the sibling and is rewritten to a
+        // concrete version at publish time; overwriting it would break the
+        // local link for no gain.
+        if (!lockstep.has(name) || deps[name]!.startsWith('workspace:') || deps[name] === next)
+          continue
 
-      const localPkg = JSON.parse(readFileSync(localPkgPath, 'utf-8')) as { name?: string, version?: string }
-
-      // A directory under core/ does not have to publish under its own name.
-      // `core/desktop` is `@stacksjs/desktop-build`; `@stacksjs/desktop` is the
-      // separately-released stx desktop API, frozen at whatever it last shipped.
-      // Matching on the directory alone pinned that external package to a
-      // framework version that would never exist, and `bun install
-      // --lockfile-only` then failed before the release could commit or tag —
-      // which is why v0.70.233 has a bump commit and no tag.
-      if (localPkg.name !== name)
-        continue
-
-      // Only pin packages the bump just moved to this version (true lockstep
-      // core packages); an external scoped dep vendored elsewhere won't match.
-      if (localPkg.version !== version)
-        continue
-
-      const next = `^${version}`
-      if (deps[name] !== next) {
         deps[name] = next
+        changed = true
         pinned++
       }
     }
+
+    if (changed)
+      writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`)
   }
 
-  if (pinned > 0) {
-    writeFileSync(metaPath, `${JSON.stringify(meta, null, 2)}\n`)
-    log.debug(`Pinned ${pinned} lockstep core dep(s) in the stacks meta to ^${version}`)
-  }
+  if (pinned > 0)
+    log.debug(`Pinned ${pinned} lockstep core dep(s) to ^${version}`)
 }
 
 if (!isDryRun) {
