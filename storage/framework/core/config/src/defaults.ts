@@ -504,6 +504,16 @@ export const defaults: StacksOptions = {
     },
   },
 
+  // Generated imagery is off until a project declares it: every generator
+  // here needs assets the framework cannot invent — a font, a capture, a
+  // square source icon — so an enabled-by-default build would fail on a fresh
+  // scaffold rather than quietly do nothing.
+  images: {
+    social: { enabled: false, outputDir: 'public/social', publicPath: '/social', presets: ['og', 'square', 'portrait'] },
+    appStore: { enabled: false, outputDir: 'resources/app-store/screenshots' },
+    appIcons: { enabled: false, outputDir: 'resources/app-icons', platforms: ['ios', 'macos'], faviconDir: 'public' },
+  },
+
   library: {
     name: 'hello-world',
     owner: '@stacksjs', // you may or may not add the @ prefix here (it is added automatically)

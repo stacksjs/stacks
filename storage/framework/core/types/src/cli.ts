@@ -292,6 +292,7 @@ export type GeneratorOption =
   | 'pantryConfig'
   | 'openapi'
   | 'modelFiles'
+  | 'images'
 export type GeneratorOptions = {
   [key in GeneratorOption]?: boolean
 } & CliOptions

@@ -13,6 +13,7 @@ import type {
   FeatureFlagsConfig,
   GitConfig,
   HashingConfig,
+  ImagesConfig,
   LibraryConfig,
   Model,
   NotificationConfig,
@@ -174,6 +175,10 @@ export function defineGit(config: GitConfig): GitConfig {
 }
 
 export function defineHashing(config: HashingConfig): HashingConfig {
+  return config
+}
+
+export function defineImages(config: ImagesConfig): ImagesConfig {
   return config
 }
 

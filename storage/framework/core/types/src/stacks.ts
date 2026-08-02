@@ -19,6 +19,7 @@ import type {
   FilesystemsConfig,
   GitConfig,
   HashingConfig,
+  ImagesConfig,
   LibraryConfig,
   LoggingConfig,
   MarketingConfig,
@@ -209,6 +210,17 @@ export interface StacksOptions {
    * have any questions, feel free to reach out via Discord or GitHub Discussions.
    */
   hashing: HashingConfig
+
+  /**
+   * **Images Options**
+   *
+   * This configuration defines all of your generated-imagery options — social
+   * cards, App Store screenshots, and app icons. Because Stacks is fully-typed,
+   * you may hover any of the options below and the definitions will be provided.
+   * In case you have any questions, feel free to reach out via Discord or GitHub
+   * Discussions.
+   */
+  images: ImagesConfig
 
   /**
    * **Library Options**
