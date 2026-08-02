@@ -315,10 +315,21 @@ function pinMetaCoreDeps(version: string): void {
       if (!existsSync(localPkgPath))
         continue
 
+      const localPkg = JSON.parse(readFileSync(localPkgPath, 'utf-8')) as { name?: string, version?: string }
+
+      // A directory under core/ does not have to publish under its own name.
+      // `core/desktop` is `@stacksjs/desktop-build`; `@stacksjs/desktop` is the
+      // separately-released stx desktop API, frozen at whatever it last shipped.
+      // Matching on the directory alone pinned that external package to a
+      // framework version that would never exist, and `bun install
+      // --lockfile-only` then failed before the release could commit or tag —
+      // which is why v0.70.233 has a bump commit and no tag.
+      if (localPkg.name !== name)
+        continue
+
       // Only pin packages the bump just moved to this version (true lockstep
       // core packages); an external scoped dep vendored elsewhere won't match.
-      const localVersion = (JSON.parse(readFileSync(localPkgPath, 'utf-8')) as { version?: string }).version
-      if (localVersion !== version)
+      if (localPkg.version !== version)
         continue
 
       const next = `^${version}`
