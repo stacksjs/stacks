@@ -1,3 +1,4 @@
+import type { ImageTarget } from '@stacksjs/image'
 import type { CLI, GeneratorOptions } from '@stacksjs/types'
 import process from 'node:process'
 import {
@@ -7,6 +8,7 @@ import {
   generateLibEntries,
   generateOpenApiSpec,
   generatePantryConfig,
+  generateProjectImages,
   generateTypes,
   generateVsCodeCustomData,
   generateWebTypes,
@@ -29,6 +31,10 @@ export function generate(buddy: CLI): void {
     coreSymlink: 'Generate symlink of the core framework to the project root',
     pantry: 'Generate the pantry configuration file',
     openApi: 'Generate the OpenAPI specification',
+    images: 'Generate every image declared in config/images.ts',
+    og: 'Generate the social cards used by link previews',
+    appStore: 'Generate the App Store screenshot set',
+    appIcons: 'Generate the app icon and favicon sets',
     select: 'What are you trying to generate?',
     project: 'Target a specific project',
     verbose: 'Enable verbose output',
@@ -44,6 +50,7 @@ export function generate(buddy: CLI): void {
     .option('-c, --component-meta', descriptions.componentMeta)
     .option('-p, --pantry', descriptions.pantry)
     .option('-o, --openapi', descriptions.openApi)
+    .option('--images', descriptions.images)
     .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--core-symlink', descriptions.coreSymlink)
     .option('--verbose', descriptions.verbose, { default: false })
@@ -204,6 +211,63 @@ export function generate(buddy: CLI): void {
     .action(async (options: GeneratorOptions) => {
       log.debug('Running `buddy core-symlink` ...', options)
       await generateCoreSymlink()
+    })
+
+  // Generated imagery — social cards, App Store screenshots, app icons — from
+  // `config/images.ts`. One command builds everything declared; the scoped
+  // aliases exist because a site rebuild wants the cards and nothing else,
+  // while a store submission wants the screenshots and nothing else.
+  buddy
+    .command('generate:images', descriptions.images)
+    .alias('images:generate')
+    .option('--social', 'Only build the social cards')
+    .option('--app-store', 'Only build the App Store screenshots')
+    .option('--app-icons', 'Only build the app icons and favicons')
+    .option('--verbose', descriptions.verbose, { default: false })
+    .action(async (options: GeneratorOptions & { social?: boolean, appStore?: boolean, appIcons?: boolean }) => {
+      log.debug('Running `buddy generate:images` ...', options)
+      const perf = await intro('buddy generate:images')
+
+      const only: ImageTarget[] = []
+      if (options.social) only.push('social')
+      if (options.appStore) only.push('app-store')
+      if (options.appIcons) only.push('app-icons')
+
+      await generateProjectImages({ only, verbose: options.verbose })
+
+      await outro('Generated images', { startTime: perf, useSeconds: true })
+    })
+
+  buddy
+    .command('generate:og', descriptions.og)
+    .alias('generate:social')
+    .option('--verbose', descriptions.verbose, { default: false })
+    .action(async (options: GeneratorOptions) => {
+      log.debug('Running `buddy generate:og` ...', options)
+      const perf = await intro('buddy generate:og')
+      await generateProjectImages({ only: ['social'], verbose: options.verbose })
+      await outro('Generated social cards', { startTime: perf, useSeconds: true })
+    })
+
+  buddy
+    .command('generate:app-store', descriptions.appStore)
+    .alias('generate:screenshots')
+    .option('--verbose', descriptions.verbose, { default: false })
+    .action(async (options: GeneratorOptions) => {
+      log.debug('Running `buddy generate:app-store` ...', options)
+      const perf = await intro('buddy generate:app-store')
+      await generateProjectImages({ only: ['app-store'], verbose: options.verbose })
+      await outro('Generated App Store screenshots', { startTime: perf, useSeconds: true })
+    })
+
+  buddy
+    .command('generate:app-icons', descriptions.appIcons)
+    .option('--verbose', descriptions.verbose, { default: false })
+    .action(async (options: GeneratorOptions) => {
+      log.debug('Running `buddy generate:app-icons` ...', options)
+      const perf = await intro('buddy generate:app-icons')
+      await generateProjectImages({ only: ['app-icons'], verbose: options.verbose })
+      await outro('Generated app icons', { startTime: perf, useSeconds: true })
     })
 
   onUnknownSubcommand(buddy, "generate")

@@ -9,6 +9,10 @@ import { ExitCode } from '@stacksjs/types'
 import { runNpmScript } from '@stacksjs/utils'
 import { runAction } from '../helpers'
 import { generateVsCodeCustomData as genVsCodeCustomData } from '../helpers/vscode-custom-data'
+import { generateProjectImages } from './images'
+
+export { generateProjectImages } from './images'
+export type { GenerateImagesActionOptions } from './images'
 
 // import { files } from '@stacksjs/storage'
 
@@ -31,6 +35,8 @@ export async function invoke(options?: GeneratorOptions): Promise<void> {
   //   await generateModelFiles()
   else if (options?.openApiSpec)
     await generateOpenApiSpec()
+  else if (options?.images)
+    await generateProjectImages({ verbose: options?.verbose })
 }
 
 export function generate(options: GeneratorOptions): Promise<void> {

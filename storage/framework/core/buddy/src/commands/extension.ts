@@ -287,9 +287,21 @@ export function extension(buddy: CLI): void {
     .option('--api-key-path <path>', 'Path to the App Store Connect AuthKey_*.p8 file')
     .option('--validate-only', 'Create and validate the archive without uploading it')
     .option('--platform <platform>', 'Publish macos, ios, or all (defaults to config safariPlatforms)')
-    .action(async (options: { version?: string, buildNumber?: string, teamId?: string, apiKeyId?: string, apiIssuerId?: string, apiKeyPath?: string, validateOnly?: boolean, platform?: string }) => {
+    .option('--skip-screenshots', 'Do not regenerate the App Store screenshot set before publishing')
+    .action(async (options: { version?: string, buildNumber?: string, teamId?: string, apiKeyId?: string, apiIssuerId?: string, apiKeyPath?: string, validateOnly?: boolean, platform?: string, skipScreenshots?: boolean }) => {
       const { publishSafariApp } = await import('@stacksjs/browser-extension')
       const { config, version } = await load()
+
+      // A listing's screenshots are the part most likely to be stale: they are
+      // built from the product, and nothing fails when they fall behind it.
+      // Rebuild them from `config/images.ts` on the way to the upload, so the
+      // set that ships describes the build that ships. No-ops when the project
+      // declares none.
+      if (!options.skipScreenshots) {
+        const { generateProjectImages } = await import('@stacksjs/actions')
+        await generateProjectImages({ only: ['app-store'] })
+      }
+
       const result = await publishSafariApp(config, {
         version: options.version ?? version,
         buildNumber: options.buildNumber,

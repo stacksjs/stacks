@@ -5,6 +5,7 @@ import { hasFunctions } from '@stacksjs/storage'
 import { runNpmScript } from '@stacksjs/utils'
 import { buildStxComponentLibrary } from './build/component-library'
 import { generateTypes } from './generate'
+import { generateProjectImages } from './generate/images'
 
 export async function invoke(options: BuildOptions): Promise<void> {
   if (options.components)
@@ -19,6 +20,21 @@ export async function invoke(options: BuildOptions): Promise<void> {
     await stacks(options)
 
   await generateTypes()
+
+  // Social cards quote the site's own copy, so a build that changes the copy
+  // and leaves the card behind ships a preview that contradicts the page.
+  // Rebuilding here keeps them honest; it no-ops unless the project declares
+  // cards in `config/images.ts`. App Store screenshots are excluded on purpose
+  // — they are built from captures of a finished build, so they belong to the
+  // publish step rather than this one.
+  try {
+    await generateProjectImages({ only: ['social', 'app-icons'] })
+  }
+  catch (error) {
+    // A missing font or capture should not take a build down: the images are
+    // an output of the build, not an input to it.
+    log.warn(`[build] image generation skipped: ${(error as Error).message}`)
+  }
 }
 
 export async function build(options: BuildOptions): Promise<void> {
