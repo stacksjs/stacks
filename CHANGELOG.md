@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.242...v0.70.244)
+
+## 🔧 Chores
+
+- **deps**: bun-query-builder 0.2.4 ([b74e8e2](https://github.com/stacksjs/stacks/commit/b74e8e2)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.241...v0.70.243)
 
 ## 🐛 Bug Fixes
