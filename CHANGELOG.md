@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.244...v0.70.245)
+
+## 🐛 Bug Fixes
+
+- **migrations**: repair the type-change order in migrations already written ([19735ff](https://github.com/stacksjs/stacks/commit/19735ff)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.242...v0.70.244)
 
 ## 🔧 Chores
