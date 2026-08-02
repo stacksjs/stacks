@@ -2456,7 +2456,20 @@ async function reconcileHetznerDns(sites: Record<string, any>, ip: string, logge
 
   for (const domain of domains) {
     try {
-      let provider = await detectDnsProvider(domain, providerConfigs)
+      // A provider whose credentials are rejected is not the same as a
+      // provider that does not hold the zone, and only the second used to be
+      // handled. Stale AWS keys made `detectDnsProvider` throw, the throw
+      // reached the outer catch, and the whole domain reported
+      // "reconciliation failed: InvalidClientTokenId" - which reads as broken
+      // DNS rather than as one unusable credential among several.
+      //
+      // Say which provider was rejected, then carry on as if it were not
+      // configured: the zone may well be managed somewhere else entirely, and
+      // the checks below can still confirm the records are correct.
+      let provider = await detectDnsProvider(domain, providerConfigs).catch((err: any) => {
+        logger.warn(`  DNS: ignoring a configured provider for ${domain} - its credentials were rejected (${err?.message || err})`)
+        return undefined
+      })
       if (!provider) {
         const providerName = dnsProviderNameFromNameservers(await resolveAuthoritativeNameservers(domain))
         const providerConfig = providerConfigs.find(config => config.provider === providerName)
