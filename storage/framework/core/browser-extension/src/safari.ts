@@ -699,9 +699,22 @@ export async function publishSafariApp(config: ExtensionConfig, options: SafariP
       `CURRENT_PROJECT_VERSION=${buildNumber}`,
       `DEVELOPMENT_TEAM=${teamId}`,
       'INFOPLIST_KEY_ITSAppUsesNonExemptEncryption=NO',
-      // A development-signed device archive needs a registered UDID. Keep the
-      // iOS archive unsigned so export can use API-key-backed cloud signing.
-      ...(platform === 'ios' ? ['CODE_SIGNING_ALLOWED=NO'] : []),
+      // Archive unsigned on both platforms; only the export below signs, and it
+      // signs through App Store Connect with the API key.
+      //
+      // iOS was always unsigned here because a development-signed device
+      // archive needs a registered UDID. macOS was not, and that quietly cost a
+      // certificate per run: `xcodeAuthArgs` passes `-allowProvisioningUpdates`
+      // with an API key, so on a CI runner — whose keychain starts empty every
+      // time — Xcode asked Apple for a *new* Mac Development certificate to
+      // sign the archive with, used it once, and threw the machine away. Enough
+      // releases and the team hits Apple's certificate cap, at which point
+      // every macOS build fails with "Choose a certificate to revoke" until
+      // somebody prunes the pile by hand.
+      //
+      // Cloud signing at export needs no local identity at all, so there is
+      // nothing to create, store, rotate, or run out of.
+      'CODE_SIGNING_ALLOWED=NO',
       ...(platform === 'macos' && config.safariAppCategory ? [`INFOPLIST_KEY_LSApplicationCategoryType=${config.safariAppCategory}`] : []),
       ...authArgs,
       'archive',
