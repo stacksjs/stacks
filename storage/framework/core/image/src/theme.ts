@@ -1,0 +1,108 @@
+import type { ImageData, RGBA, SurfaceBackground } from 'ts-images'
+import type { ImageBackgroundConfig, ImageColor, ImageDeviceConfig, ImagesConfig } from '@stacksjs/types'
+import { readFile } from 'node:fs/promises'
+import { isAbsolute, resolve } from 'node:path'
+import process from 'node:process'
+import { decode, drawImage, parseColor } from 'ts-images'
+
+/**
+ * Turn the declarative half of `config/images.ts` into the shapes ts-images
+ * takes.
+ *
+ * Configuration carries colours as strings and paths as project-relative, both
+ * of which have to become something concrete before a pixel is drawn. Doing it
+ * in one place means the three generators agree on what `background` means,
+ * which is the point of having a shared palette at all.
+ */
+
+export function projectFile(path: string, root: string = process.cwd()): string {
+  return isAbsolute(path) ? path : resolve(root, path)
+}
+
+export function color(value: ImageColor | undefined): RGBA | undefined {
+  return value === undefined ? undefined : parseColor(value)
+}
+
+export function background(value: ImageBackgroundConfig | undefined, root: string = process.cwd()): SurfaceBackground | undefined {
+  if (!value)
+    return undefined
+
+  return {
+    color: color(value.color),
+    gradient: value.gradient && {
+      angle: value.gradient.angle,
+      stops: value.gradient.stops.map(stop => ({ offset: stop.offset, color: parseColor(stop.color) })),
+    },
+    glows: value.glows?.map(glow => ({ ...glow, color: parseColor(glow.color) })),
+    image: value.image ? projectFile(value.image, root) : undefined,
+  }
+}
+
+/**
+ * `shadow` is tri-state in configuration and in the renderer: absent means
+ * "the default shadow", `false` means "none", and an object means "this one".
+ * `undefined` cannot express the middle case, so the translation is explicit.
+ */
+export function device(value: ImageDeviceConfig | undefined): {
+  radius?: number
+  borderColor?: RGBA
+  scale?: number
+  shadow?: { blur?: number, offsetX?: number, offsetY?: number, spread?: number, color?: RGBA }
+} | undefined {
+  if (!value)
+    return undefined
+
+  return {
+    radius: value.radius,
+    scale: value.scale,
+    borderColor: color(value.borderColor),
+    shadow: value.shadow === false
+      ? undefined
+      : { ...(value.shadow ?? {}), color: color(value.shadow?.color) },
+  }
+}
+
+/**
+ * Build a `drawMark` callback from an image path.
+ *
+ * ts-images hands back a box and lets the caller paint the mark, because a
+ * library cannot know what a brand's mark looks like. For a Stacks project it
+ * is nearly always a file already in the repository — the app icon — so the
+ * callback is just a placement.
+ */
+export async function markPainter(
+  path: string | undefined,
+  root: string = process.cwd(),
+): Promise<((canvas: ImageData, box: { x: number, y: number, size: number }) => void) | undefined> {
+  if (!path)
+    return undefined
+
+  const mark = await decode(new Uint8Array(await readFile(projectFile(path, root))))
+
+  return (canvas, box) => {
+    drawImage(canvas, mark, { x: box.x, y: box.y, width: box.size, height: box.size, fit: 'contain' })
+  }
+}
+
+/** The palette keys a generator inherits from the top level of the config. */
+export interface ImageTheme {
+  background?: ImageBackgroundConfig
+  color?: ImageColor
+  mutedColor?: ImageColor
+  device?: ImageDeviceConfig
+  brand?: string
+  mark?: string
+}
+
+/** Fold the shared palette into a generator's own, letting the generator win. */
+export function themed<T extends ImageTheme>(images: ImagesConfig, section: T | undefined): T & ImageTheme {
+  return {
+    ...(section ?? {} as T),
+    background: section?.background ?? images.background,
+    color: section?.color ?? images.color,
+    mutedColor: section?.mutedColor ?? images.mutedColor,
+    device: section?.device ?? images.device,
+    brand: section?.brand ?? images.brand,
+    mark: section?.mark ?? images.mark,
+  }
+}

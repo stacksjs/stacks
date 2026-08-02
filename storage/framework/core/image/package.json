@@ -31,7 +31,8 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "ts-images": "^0.2.1"
+    "@stacksjs/types": "workspace:*",
+    "ts-images": "^0.2.6"
   },
   "devDependencies": {
     "better-dx": "^0.2.17"

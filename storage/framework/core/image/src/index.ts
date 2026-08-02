@@ -4,6 +4,17 @@ import { mkdir, readFile, rename, stat, writeFile } from 'node:fs/promises'
 import { basename, extname, isAbsolute, relative, resolve } from 'node:path'
 import { decode, encode, imageToSplatHash, resize } from 'ts-images'
 
+// Generated imagery: social cards, App Store screenshots, app icons. Declared
+// in `config/images.ts` and produced by `buddy generate:images`. Kept in this
+// package rather than a build script because the same wrappers back the CLI,
+// the build pipeline, and anything a project wants to call directly.
+export * from './app-icons'
+export * from './app-store'
+export * from './fonts'
+export * from './generate'
+export * from './social'
+export * from './theme'
+
 export type ImageFormat = 'avif' | 'webp' | 'jpeg' | 'png'
 export interface ImageVariant { width: number, height: number, bytes: number, format: ImageFormat, mimeType: string, path: string, url: string, cacheKey: string }
 export interface ImageManifest { source: { width: number, height: number, hash: string }, variants: ImageVariant[], placeholder: string }
