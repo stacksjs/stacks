@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.235...v0.70.236)
+
+## 🐛 Bug Fixes
+
+- **image**: pin ts-images in the pantry lock and name missing captures ([6ce7a74](https://github.com/stacksjs/stacks/commit/6ce7a74)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.234...v0.70.235)
 
 ## 🐛 Bug Fixes
