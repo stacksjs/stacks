@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.238...v0.70.239)
+
+## 🐛 Bug Fixes
+
+- **extension**: never let a screenshot refresh block a publish ([9e95c19](https://github.com/stacksjs/stacks/commit/9e95c19)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.237...v0.70.238)
 
 ## 🐛 Bug Fixes
