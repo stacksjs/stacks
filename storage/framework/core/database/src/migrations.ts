@@ -1615,13 +1615,30 @@ export async function generateMigrations(options: GenerateMigrationsOptions = {}
     if (result.hasChanges && sqlStatements.length > 0) {
       const dangling = findDanglingTypeReferences(sqlStatements)
       if (dangling.length > 0) {
-        const before = sqlStatements.length
-        sqlStatements = sqlStatements.filter((statement: string) => !referencesUndefinedType(statement, dangling))
-        log.warn(
-          `[migration] Skipped ${before - sqlStatements.length} generated statement(s) referencing enum type(s) `
-          + `nothing creates (${dangling.slice(0, 3).join(', ')}${dangling.length > 3 ? ', …' : ''}). `
-          + 'This is a bug in the migration generator, not in your models.',
-        )
+        // Create the type rather than dropping the statement that needs it.
+        // The values are in the plan - the model declared them - so the enum
+        // this ALTER wants can simply be defined ahead of it. Dropping the
+        // statement left the column as whatever it already was, which meant a
+        // model change silently did not happen.
+        const created = createMissingEnumTypes(dangling, result.plan)
+        if (created.statements.length > 0) {
+          sqlStatements = [...created.statements, ...sqlStatements]
+          log.debug(`[migration] Created ${created.statements.length} enum type(s) an ALTER needed: ${created.defined.join(', ')}`)
+        }
+
+        // Anything still undefined has no values to build it from, and an ALTER
+        // naming a type nothing creates cannot run - it would stop every later
+        // migration at that file. Those are still dropped, and still said out
+        // loud, because the column keeps whatever it already was.
+        const unresolved = dangling.filter(name => !created.defined.includes(name))
+        if (unresolved.length > 0) {
+          const before = sqlStatements.length
+          sqlStatements = sqlStatements.filter((statement: string) => !referencesUndefinedType(statement, unresolved))
+          log.warn(
+            `[migration] Skipped ${before - sqlStatements.length} generated statement(s) referencing enum type(s) `
+            + `nothing creates and no model defines values for (${unresolved.slice(0, 3).join(', ')}${unresolved.length > 3 ? ', …' : ''}).`,
+          )
+        }
       }
     }
 
@@ -1702,6 +1719,62 @@ interface MigrationPlanColumn {
     table?: string
     column?: string
   }
+  enumValues?: string[]
+}
+
+/**
+ * Define the enum types an ALTER needs but nothing in the batch creates.
+ *
+ * Postgres enum columns are backed by a named type, and bun-query-builder names
+ * it `<table>_<column>_type` when it creates the table. A column that becomes an
+ * enum *later* gets an `ALTER … TYPE "<table>_<column>_type"` naming a type that
+ * was never created, because the `CREATE TYPE` only ever accompanied a
+ * `CREATE TABLE`.
+ *
+ * The values are right there in the plan - the model declared them - so the type
+ * can be created instead of the statement being thrown away. Throwing it away
+ * left the column as it was, so a model change quietly did not happen and the
+ * next diff proposed the same thing again forever.
+ */
+export function createMissingEnumTypes(
+  dangling: string[],
+  plan: MigrationPlanLike | undefined,
+): { statements: string[], defined: string[] } {
+  if (dangling.length === 0)
+    return { statements: [], defined: [] }
+
+  // Every enum column in the plan, keyed by the type name the driver would use.
+  const values = new Map<string, string[]>()
+  for (const table of plan?.tables ?? []) {
+    if (!table.table)
+      continue
+    for (const column of table.columns ?? []) {
+      if (!column.name || !column.enumValues?.length)
+        continue
+      values.set(`${table.table}_${column.name}_type`, column.enumValues)
+    }
+  }
+
+  const statements: string[] = []
+  const defined: string[] = []
+
+  for (const name of dangling) {
+    const members = values.get(name)
+    if (!members?.length)
+      continue
+
+    // `IF NOT EXISTS` is not available on CREATE TYPE, so the guard is a DO
+    // block: the type may already exist on a database that ran an earlier
+    // version of this migration, and failing there would stop the run.
+    const literals = members.map(member => `'${String(member).replaceAll('\'', '\'\'')}'`).join(', ')
+    statements.push(
+      `DO $$ BEGIN CREATE TYPE "${name}" AS ENUM (${literals}); `
+      + 'EXCEPTION WHEN duplicate_object THEN null; END $$;',
+    )
+    defined.push(name)
+  }
+
+  return { statements, defined }
 }
 
 interface MigrationPlanTable {

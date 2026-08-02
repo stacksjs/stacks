@@ -1651,7 +1651,7 @@ Build the extension and its macOS, iPhone, and iPad Safari container apps
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
 | `--release` | Build the Release configuration (default Debug) | boolean, optional | — |
-| `--signed` | Allow code signing (needs an Apple Development identity) | boolean, optional | — |
+| `--signed` | Sign locally against the Apple ID in Xcode (local builds only — see below) | boolean, optional | — |
 | `--skip-xcodebuild` | Only build + sync the extension payload | boolean, optional | — |
 | `--version` | Override the extension version (defaults to package.json) | value, required | — |
 | `--platform` | Build macos, ios, or all (defaults to config safariPlatforms) | value, required | — |

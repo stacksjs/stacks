@@ -132,6 +132,27 @@ what `xcrun safari-web-extension-converter` generates, so day-to-day work
 never needs the converter; `--signed` builds need an Apple Development
 identity selected in Xcode.
 
+### Signing
+
+Publishing needs **no signing identity on the machine that runs it**. Both
+platforms archive with `CODE_SIGNING_ALLOWED=NO`, and only `-exportArchive`
+signs — through App Store Connect, using the API key. Apple holds the
+distribution identity, so there is nothing to install, store, rotate, or run
+out of, and a CI runner never needs a keychain.
+
+Keep it that way. Archiving *signed* on a runner looks harmless and is not: a
+runner's keychain starts empty on every job, so `-allowProvisioningUpdates`
+asks Apple for a **new** certificate, signs one archive, and throws the machine
+away. Nothing fails at first — the count just climbs, invisibly, one per
+release, until the team hits Apple's cap and every macOS build stops with
+`Choose a certificate to revoke`, needing someone to prune the pile by hand
+before anything can ship again.
+
+`extension:safari:app --signed` is the exception, and deliberately so: it is a
+local build against the Apple ID in Xcode → Settings → Accounts, where the
+certificate lands in your own keychain and is reused by every later build. Do
+not reach for it in CI.
+
 The provider-neutral App Store Connect client, certificate/profile
 provisioning, version reconciliation, and build attachment live in
 `ts-pantry`. Stacks keeps only the Safari-specific Bundle ID mapping, Xcode

@@ -54,6 +54,6 @@
     "@stacksjs/types": "workspace:*"
   },
   "dependencies": {
-    "bun-query-builder": "^0.2.2"
+    "bun-query-builder": "^0.2.3"
   }
 }

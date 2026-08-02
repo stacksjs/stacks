@@ -477,6 +477,12 @@ export async function buildSafariApp(config: ExtensionConfig, options: SafariApp
 
   // Signed builds let Xcode fetch or create provisioning profiles and
   // certificates for the Apple ID added in Xcode → Settings → Accounts.
+  //
+  // Local builds only. On a developer's machine the certificate lands in their
+  // keychain and every later build reuses it; on a CI runner the keychain is
+  // empty every job, so this asks Apple for a fresh certificate each time and
+  // walks the team into its cap. Publishing does not come through here — it
+  // archives unsigned and signs at export via the App Store Connect key.
   const signing = options.signed ? ['-allowProvisioningUpdates'] : ['CODE_SIGNING_ALLOWED=NO']
   await Bun.$`xcodebuild -project ${join(dir, `${appName}.xcodeproj`)} -scheme ${appName} -configuration ${configuration} -derivedDataPath ${derivedData} ${signing} build`
 

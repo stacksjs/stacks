@@ -232,7 +232,7 @@ export function extension(buddy: CLI): void {
   buddy
     .command('extension:safari:app', 'Build the extension and its macOS, iPhone, and iPad Safari container apps')
     .option('--release', 'Build the Release configuration (default Debug)')
-    .option('--signed', 'Allow code signing (needs an Apple Development identity)')
+    .option('--signed', 'Sign locally against the Apple ID in Xcode (local builds only — see below)')
     .option('--skip-xcodebuild', 'Only build + sync the extension payload')
     .option('--version <version>', 'Override the extension version (defaults to package.json)')
     .option('--platform <platform>', 'Build macos, ios, or all (defaults to config safariPlatforms)')
