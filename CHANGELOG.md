@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.240...v0.70.241)
+
+## ✨ Features
+
+- **migrations**: create the enum type an ALTER needs instead of dropping it ([194c080](https://github.com/stacksjs/stacks/commit/194c080)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.239...v0.70.240)
 
 ## 🐛 Bug Fixes
