@@ -381,8 +381,51 @@ function pinLockstepDeps(version: string): void {
     log.debug(`Pinned ${pinned} lockstep core dep(s) to ^${version}`)
 }
 
+/**
+ * Stage only what a release owns: the manifests the bump rewrote, the
+ * changelog it generated, and the lockfile it refreshed.
+ *
+ * This used to be `git add --all`, which quietly made every release a commit of
+ * whatever happened to be in the tree. A release is usually cut with something
+ * else half-finished next to it — another branch's worth of edits, a colleague's
+ * session, a scratch script — and all of it went out under `chore: release vX`,
+ * tagged, pushed, and built by CI. For a repo that publishes to app stores off
+ * that tag, that is unreviewed work shipping to users.
+ *
+ * Whatever is left dirty is reported rather than swept, so the release stays
+ * the release and the rest stays yours.
+ */
+async function stageReleaseArtifacts(): Promise<void> {
+  // Staged by pathspec rather than by parsing `git status`: porcelain quotes
+  // any path containing a space or a non-ASCII byte, and feeding that back to
+  // `git add` stages a filename with literal quotes in it. Let git do the
+  // matching. Unmodified matches are a no-op, but a pathspec matching nothing
+  // at all is fatal, so the optional two are checked first.
+  const pathspecs = [':(glob)**/package.json', 'package.json']
+  for (const file of ['CHANGELOG.md', 'bun.lock']) {
+    if (existsSync(p.projectPath(file)))
+      pathspecs.push(file)
+  }
+
+  await git(['add', '--', ...pathspecs])
+
+  // Report, don't sweep. Anything still dirty is someone's work in progress,
+  // and it is better for them to see it named than to find it in a release.
+  const leftover = (await git(['status', '--porcelain']))
+    .split('\n')
+    .map(line => line.trimEnd())
+    .filter(line => line && !line.startsWith('A ') && !line.startsWith('M '))
+
+  if (leftover.length) {
+    log.warn(
+      `Kept ${leftover.length} change(s) out of the release commit:\n  ${leftover.slice(0, 20).join('\n  ')}`
+      + `${leftover.length > 20 ? `\n  … and ${leftover.length - 20} more` : ''}`,
+    )
+  }
+}
+
 if (!isDryRun) {
-  await git(['add', '--all'])
+  await stageReleaseArtifacts()
   await git(['commit', '-m', `chore: release v${nextVersion}`])
   await git(['tag', `v${nextVersion}`])
   await git(['push'])
