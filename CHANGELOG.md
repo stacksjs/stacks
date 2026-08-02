@@ -1,5 +1,37 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.241...v0.70.243)
+
+## 🐛 Bug Fixes
+
+- **migrations**: make CREATE TYPE idempotent, so migrate can be re-run ([bc6221d](https://github.com/stacksjs/stacks/commit/bc6221d)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **release**: commit the release, not the whole working tree ([3c3925d](https://github.com/stacksjs/stacks/commit/3c3925d)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🔧 Chores
+
+- wip ([4b1c576](https://github.com/stacksjs/stacks/commit/4b1c576)) _(by Chris <chrisbreuer93@gmail.com>)_
+- wip ([6cc11ec](https://github.com/stacksjs/stacks/commit/6cc11ec)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.241...v0.70.242)
+
+## 🐛 Bug Fixes
+
+- **migrations**: make CREATE TYPE idempotent, so migrate can be re-run ([bc6221d](https://github.com/stacksjs/stacks/commit/bc6221d)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **release**: commit the release, not the whole working tree ([3c3925d](https://github.com/stacksjs/stacks/commit/3c3925d)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🔧 Chores
+
+- wip ([4b1c576](https://github.com/stacksjs/stacks/commit/4b1c576)) _(by Chris <chrisbreuer93@gmail.com>)_
+- wip ([6cc11ec](https://github.com/stacksjs/stacks/commit/6cc11ec)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.240...v0.70.241)
 
 ## ✨ Features
