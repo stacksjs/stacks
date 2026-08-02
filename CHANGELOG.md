@@ -1,5 +1,45 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.232...v0.70.234)
+
+## ✨ Features
+
+- **buddy**: add the image generation commands ([c7f7504](https://github.com/stacksjs/stacks/commit/c7f7504)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **image**: generate social cards, store screenshots and icons ([7932be8](https://github.com/stacksjs/stacks/commit/7932be8)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **config**: add an images configuration section ([7f49a8c](https://github.com/stacksjs/stacks/commit/7f49a8c)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **deploy**: let a site declare the paths its server owns ([cc8477c](https://github.com/stacksjs/stacks/commit/cc8477c)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **desktop**: package builds as a macOS DMG, and stop squatting @stacksjs/desktop ([9ee55ba](https://github.com/stacksjs/stacks/commit/9ee55ba)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🐛 Bug Fixes
+
+- **release**: pin lockstep core deps by package name, not directory ([352a6ec](https://github.com/stacksjs/stacks/commit/352a6ec)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **deploy**: a rejected DNS credential is not a failed reconciliation ([c7d796b](https://github.com/stacksjs/stacks/commit/c7d796b)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **docs**: refuse to run the framework tools from another repository ([4ea4722](https://github.com/stacksjs/stacks/commit/4ea4722)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **server**: never proxy /api to a guessed port on a shared host ([f5a8bbd](https://github.com/stacksjs/stacks/commit/f5a8bbd)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **openapi**: resolve the route registry through path, not ../ ([a91d81e](https://github.com/stacksjs/stacks/commit/a91d81e)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **deploy**: issue TLS after DNS lands, not before ([8341d16](https://github.com/stacksjs/stacks/commit/8341d16)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **packaging**: drop the development export condition ([5c286b3](https://github.com/stacksjs/stacks/commit/5c286b3)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **packaging**: publish src so the development export condition resolves ([beac8b9](https://github.com/stacksjs/stacks/commit/beac8b9)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 📝 Documentation
+
+- **buddy**: regenerate the command reference for the image commands ([4eaa0c2](https://github.com/stacksjs/stacks/commit/4eaa0c2)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **images**: document the generated-image configuration ([c43ac8b](https://github.com/stacksjs/stacks/commit/c43ac8b)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **buddy**: regenerate the command reference for build:dmg ([40148aa](https://github.com/stacksjs/stacks/commit/40148aa)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🔧 Chores
+
+- release v0.70.233 version bumps ([2c7e650](https://github.com/stacksjs/stacks/commit/2c7e650)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **cloud**: register postline as a tenant ([6b20267](https://github.com/stacksjs/stacks/commit/6b20267)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🎉 Miscellaneous
+
+- Revert "fix(packaging): publish src so the development export condition resolves" ([62816fa](https://github.com/stacksjs/stacks/commit/62816fa)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.232...v0.70.233)
 
 ## ✨ Features
