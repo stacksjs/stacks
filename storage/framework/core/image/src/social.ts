@@ -65,7 +65,10 @@ export async function generateSocialCardSet(
   const fonts = await loadFonts(images.fonts, root)
   const outputDir = projectFile(social.outputDir ?? 'public/social', root)
   const publicPath = `/${(social.publicPath ?? '/social').replace(/^\/+|\/+$/g, '')}`
-  const presets = social.presets?.length ? social.presets : (['og', 'square', 'portrait'] as SocialCardPreset[])
+  // One card by default. The square and portrait crops are for URLs you
+  // reference directly; putting them in `og:image` is what made Discord
+  // collage the preview, so generating them unasked only invites that.
+  const presets = social.presets?.length ? social.presets : (['og'] as SocialCardPreset[])
   const format = social.format ?? 'jpeg'
 
   await mkdir(outputDir, { recursive: true })
@@ -163,13 +166,15 @@ export function socialMetaTags(card: SocialCardResult, siteUrl: string, format: 
     `<meta name="twitter:image:alt" content="${escapeAttribute(card.title)}">`,
   ]
 
-  // Alternates, for the consumers that prefer a taller crop than 1.91:1.
-  for (const [preset, url] of Object.entries(card.urls)) {
-    if (preset === 'og')
-      continue
-    tags.push(`<meta property="og:image" content="${base}${url}">`)
-  }
-
+  // Deliberately one og:image.
+  //
+  // The other presets were emitted here too, as alternates for consumers that
+  // reserve a taller slot than 1.91:1. Consumers do not choose between them:
+  // repeated og:image is a gallery, and Discord drew all three side by side
+  // with each cropped to a sliver — a worse preview than the single card it
+  // replaced. Facebook and Apple take the first and ignore the rest, so the
+  // extras bought nothing even where they were harmless. Reference the other
+  // crops by URL where you want that shape.
   return tags
 }
 

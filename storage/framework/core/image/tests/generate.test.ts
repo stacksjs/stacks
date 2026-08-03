@@ -85,11 +85,15 @@ describe('socialMetaTags', () => {
     expect(socialMetaTags(card, 'https://example.com')).toContain('<meta name="twitter:card" content="summary_large_image">')
   })
 
-  test('offers the other presets as alternates', () => {
+  test('declares exactly one og:image', () => {
+    // Repeated og:image is a gallery, not a fallback list: Discord drew all
+    // three side by side, each cropped to a sliver.
     const tags = socialMetaTags(card, 'https://example.com')
-    expect(tags).toContain('<meta property="og:image" content="https://example.com/social/og-square.jpg">')
-    // The primary is declared first, which is the one a scraper takes.
-    expect(tags.indexOf('<meta property="og:image" content="https://example.com/social/og.jpg">')).toBe(0)
+    const images = tags.filter(tag => tag.startsWith('<meta property="og:image" '))
+
+    expect(images).toHaveLength(1)
+    expect(images[0]).toBe('<meta property="og:image" content="https://example.com/social/og.jpg">')
+    expect(tags.some(tag => tag.includes('og-square.jpg'))).toBe(false)
   })
 
   test('escapes the alt text', () => {
