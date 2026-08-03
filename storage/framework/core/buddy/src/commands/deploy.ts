@@ -1608,21 +1608,36 @@ async function runHetznerDeploy(args: {
   if (ok && publishedDns.length > 0) {
     log.info(`Issuing TLS for ${publishedDns.length} newly published record(s)...`)
     try {
-      const { renewRpxCertificates, reloadRpxGateway } = await import('@stacksjs/ts-cloud') as any
-      const gatewayOptions = {
-        rpxConfig: { ...tsCloudConfig, sites: sitesWithResolvedEnv },
-        environment,
-        driver,
-        logger: {
-          info: (m: string) => log.info(m),
-          warn: (m: string) => log.warn(m),
-          error: (m: string) => log.error(m),
-          step: (m: string) => log.info(m),
-          success: (m: string) => log.success(m),
-        },
+      // Run the per-tenant issuance unit this same deploy installs
+      // (`rpx-cert-renew-<slug>.{service,timer}`, see the provisioning step
+      // above). It shells out to tlsx over the http-01 webroot and reloads
+      // the gateway on success.
+      //
+      // This used to call `renewRpxCertificates` out of @stacksjs/ts-cloud.
+      // No such export exists — the package ships `CertificateManager`, which
+      // is the AWS ACM/CloudFormation surface and has nothing to do with the
+      // rpx gateway or Let's Encrypt. So every first deploy of a new domain
+      // threw "renewRpxCertificates is not a function", fell into the
+      // best-effort catch, and left the name answering TLS with another
+      // tenant's certificate until the daily timer happened to fire.
+      //
+      // The unit is idempotent and skips anything not expiring within 30
+      // days, so re-running it costs one ACME no-op.
+      const { execSync } = await import('node:child_process')
+      const slug = tsCloudConfig.project?.slug || 'app'
+      const unit = `rpx-cert-renew-${slug}.service`
+      const certSshArgs = ['-o', 'StrictHostKeyChecking=accept-new', '-o', 'BatchMode=yes', '-o', 'ConnectTimeout=20', `root@${ip}`]
+      const out = execSync(`ssh ${certSshArgs.map(a => `'${a}'`).join(' ')} bash -s`, {
+        input: `systemctl start ${unit} 2>&1 || true\nsystemctl is-active ${unit} >/dev/null 2>&1 && echo TLSUNIT:running || echo TLSUNIT:done\njournalctl -u ${unit} -n 20 --no-pager 2>/dev/null | grep -E 'Certificate written|Skipping|error|Error' | tail -5 || true`,
+        encoding: 'utf8',
+        stdio: ['pipe', 'pipe', 'pipe'],
+      })
+
+      for (const line of out.split('\n')) {
+        if (/Certificate written|Skipping/.test(line))
+          log.info(`  ${line.replace(/^.*?\]:\s*/, '').trim()}`)
       }
-      await renewRpxCertificates(gatewayOptions)
-      await reloadRpxGateway(gatewayOptions)
+
       log.success('TLS issued and gateway reloaded for the new record(s)')
     }
     catch (err: any) {
