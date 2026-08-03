@@ -6,7 +6,7 @@ description: Generated reference for every Buddy command, argument, option, alia
 
 # Buddy Command Reference
 
-This reference is generated from Buddy's runtime command registry and currently contains **302 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
+This reference is generated from Buddy's runtime command registry and currently contains **303 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
 
 ## Command groups
 
@@ -21,6 +21,7 @@ This reference is generated from Buddy's runtime command registry and currently 
 | `commerce` | 2 |
 | `config` | 1 |
 | `configure` | 1 |
+| `core` | 1 |
 | `dashboard` | 2 |
 | `desktop` | 6 |
 | `dev` | 8 |
@@ -738,6 +739,25 @@ Configure the AWS connection
 | `--region` | The AWS region | boolean, optional | — |
 | `--output` | The AWS output format | boolean, optional | — |
 | `--quiet` | Suppress output | boolean, optional | — |
+
+### `core:status`
+
+Report whether this project runs on a vendored storage/framework/core or on the published packages
+
+- Usage: `$ buddy core:status`
+- Namespace: `core`
+- Aliases: `publish:core:status`
+- Arguments: none
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `--verbose` | Enable verbose output | boolean, optional | `false` |
+
+Examples:
+
+```bash
+buddy core:status
+```
 
 ### `dashboard:install`
 
@@ -3525,15 +3545,25 @@ Publish a default controller from storage/framework/defaults/app/Controllers/ to
 
 Publish a framework package source from node_modules/@stacksjs/<pkg>/ into storage/framework/core/<pkg>/ for editing
 
-- Usage: `$ buddy publish:core <pkg>`
+- Usage: `$ buddy publish:core [pkg]`
 - Namespace: `publish`
 - Aliases: none
-- Arguments: `<pkg>`
+- Arguments: `[pkg]`
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
+| `--all` | Vendor the whole framework: copy storage/framework/core out of a local Stacks checkout and wire it up as a Bun workspace | boolean, optional | `false` |
+| `--path` | The Stacks checkout to vendor from (defaults to $STACKS_FRAMEWORK_PATH, ../stacks, then ~/Code/stacks) | value, required | — |
 | `--force` | Overwrite an existing userland file | boolean, optional | `false` |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
+
+Examples:
+
+```bash
+buddy publish:core router
+buddy publish:core --all
+buddy publish:core --all --path ../stacks
+```
 
 ### `publish:middleware`
 

@@ -1,7 +1,8 @@
 import type { CLI } from '@stacksjs/types'
 import { existsSync, mkdirSync } from 'node:fs'
 import { cp, readdir, stat } from 'node:fs/promises'
-import { dirname, resolve } from 'node:path'
+import { homedir } from 'node:os'
+import { dirname, join, resolve } from 'node:path'
 import process from 'node:process'
 import { italic, log, onUnknownSubcommand } from "@stacksjs/cli"
 import { path } from '@stacksjs/path'
@@ -11,6 +12,11 @@ import { ExitCode } from '@stacksjs/types'
 interface PublishOptions {
   force?: boolean
   verbose?: boolean
+}
+
+interface PublishCoreOptions extends PublishOptions {
+  all?: boolean
+  path?: string
 }
 
 interface UnpublishOptions extends PublishOptions {
@@ -27,6 +33,9 @@ export function publish(buddy: CLI): void {
     core: 'Publish a framework package source from node_modules/@stacksjs/<pkg>/ into storage/framework/core/<pkg>/ for editing',
     unpublishCore: 'Drop a vendored storage/framework/core/<pkg>/ and go back to the installed @stacksjs/<pkg>',
     all: 'Unvendor the whole framework: remove storage/framework/core and resolve every @stacksjs package from the `stacks` dependency in package.json',
+    publishAll: 'Vendor the whole framework: copy storage/framework/core out of a local Stacks checkout and wire it up as a Bun workspace',
+    frameworkPath: 'The Stacks checkout to vendor from (defaults to $STACKS_FRAMEWORK_PATH, ../stacks, then ~/Code/stacks)',
+    coreStatus: 'Report whether this project runs on a vendored storage/framework/core or on the published packages',
     name: 'The name of the resource to publish (e.g. Cart, User)',
     pkg: 'The name of the framework package (e.g. router, orm, faker — without @stacksjs/ prefix)',
     force: 'Overwrite an existing userland file',
@@ -91,11 +100,35 @@ export function publish(buddy: CLI): void {
     })
 
   buddy
-    .command('publish:core <pkg>', descriptions.core)
+    .command('publish:core [pkg]', descriptions.core)
+    .option('--all', descriptions.publishAll, { default: false })
+    .option('--path <path>', descriptions.frameworkPath)
     .option('--force', descriptions.force, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
-    .action(async (pkg: string, options: PublishOptions) => {
+    .example('buddy publish:core router')
+    .example('buddy publish:core --all')
+    .example('buddy publish:core --all --path ../stacks')
+    .action(async (pkg: string | undefined, options: PublishCoreOptions) => {
+      if (options.all) {
+        await vendorFramework(options.path, !!options.force)
+        return
+      }
+
+      if (!pkg) {
+        log.error('Usage: buddy publish:core <pkg>   (or --all to vendor the whole framework as a workspace)')
+        process.exit(ExitCode.FatalError)
+      }
+
       await publishCorePackage(pkg, !!options.force)
+    })
+
+  buddy
+    .command('core:status', descriptions.coreStatus)
+    .alias('publish:core:status')
+    .option('--verbose', descriptions.verbose, { default: false })
+    .example('buddy core:status')
+    .action(async () => {
+      await reportCoreStatus()
     })
 
   buddy
@@ -319,6 +352,268 @@ async function publishResource(ctx: PublishContext): Promise<void> {
 }
 
 /**
+ * Move a project ONTO the vendored framework — the exact inverse of
+ * `unpublish:core --all`, and the half of the round trip that was missing.
+ *
+ * `buddy new` leaves an app resolving every `@stacksjs/*` package from npm,
+ * which is right for working WITH Stacks. Working ON Stacks from inside a real
+ * app needs the opposite: the framework source in `storage/framework/core`,
+ * wired up as a Bun workspace, so an edit is live in the app on the next
+ * reload instead of after a release.
+ *
+ * The source has to be a Stacks checkout, not `node_modules`. Published
+ * packages ship `dist` only — vendoring those would produce a directory of
+ * build output that cannot be edited, which defeats the entire point.
+ *
+ * `link:core` solves a narrower version of this by symlinking individual
+ * packages. Use that to try one package against an app; use this when the app
+ * IS the development environment for the framework.
+ */
+async function vendorFramework(explicitPath: string | undefined, force: boolean): Promise<void> {
+  const coreDir = path.frameworkPath('core')
+  const rel = (p: string) => p.replace(`${process.cwd()}/`, '')
+
+  if (existsSync(coreDir) && !force) {
+    log.info(`Already vendored: ${italic(rel(coreDir))}`)
+    log.info('Pass --force to replace it with a fresh copy of the checkout.')
+    return
+  }
+
+  const framework = resolveFrameworkCheckout(explicitPath)
+  if (!framework) {
+    log.error('No Stacks checkout found to vendor from.')
+    log.info('Pass one with `--path <dir>`, or set STACKS_FRAMEWORK_PATH.')
+    log.info('A checkout is required: the published packages ship `dist` only, so a copy of them would not be editable.')
+    process.exit(ExitCode.FatalError)
+  }
+
+  const sourceCore = join(framework, 'storage/framework/core')
+  const corePkgPath = resolve(sourceCore, 'package.json')
+  if (!existsSync(corePkgPath)) {
+    log.error(`${sourceCore} has no package.json — that does not look like a Stacks checkout.`)
+    process.exit(ExitCode.FatalError)
+  }
+
+  const corePkg = JSON.parse(await fs.promises.readFile(corePkgPath, 'utf-8')) as {
+    name?: string
+    version?: string
+    dependencies?: Record<string, string>
+  }
+  const depName = corePkg.name ?? 'stacks'
+
+  // 1. The source itself. `node_modules` is the checkout's own install tree —
+  //    copying it would duplicate thousands of files that `bun install` is
+  //    about to recreate here anyway. `dist` is NOT skipped: a workspace
+  //    package resolves through its export map, which points at the build
+  //    output, so a dist-less copy imports nothing.
+  log.info(`Vendoring the framework from ${italic(framework)}...`)
+  if (existsSync(coreDir))
+    await fs.promises.rm(coreDir, { recursive: true, force: true })
+
+  const SKIP = new Set(['node_modules', '.bun', '.cache', 'tsconfig.tsbuildinfo'])
+  let copied = 0
+  await copyTreeFiltered(sourceCore, coreDir, SKIP, () => copied++)
+
+  // 2. package.json: the version range becomes a workspace link again, and the
+  //    globs that make bun see the vendored packages come back. Both have to
+  //    happen together — a `workspace:*` range with no matching glob fails the
+  //    install outright.
+  const rootPkgPath = resolve(process.cwd(), 'package.json')
+  const rootPkg = JSON.parse(await fs.promises.readFile(rootPkgPath, 'utf-8')) as {
+    dependencies?: Record<string, string>
+    devDependencies?: Record<string, string>
+    workspaces?: string[]
+  }
+
+  const provided = new Set<string>([depName])
+  for (const entry of await readdir(coreDir, { withFileTypes: true })) {
+    if (!entry.isDirectory())
+      continue
+
+    // Only names that are really packages: `core/` also holds plain
+    // directories (dist, codebase) that no dependency ever refers to.
+    if (existsSync(resolve(coreDir, entry.name, 'package.json')))
+      provided.add(`@stacksjs/${entry.name}`)
+  }
+
+  let repointed = 0
+  for (const field of ['dependencies', 'devDependencies'] as const) {
+    const deps = rootPkg[field]
+    if (!deps)
+      continue
+
+    for (const name of Object.keys(deps)) {
+      if (!provided.has(name) || deps[name]!.startsWith('workspace:'))
+        continue
+
+      deps[name] = 'workspace:*'
+      repointed++
+    }
+  }
+
+  if (!rootPkg.dependencies?.[depName] && !rootPkg.devDependencies?.[depName])
+    rootPkg.dependencies = { ...rootPkg.dependencies, [depName]: 'workspace:*' }
+
+  const workspaces = rootPkg.workspaces ?? []
+  let addedGlobs = 0
+  for (const glob of ['storage/framework/core', 'storage/framework/core/*']) {
+    if (workspaces.some(existing => existing.replace(/^\.\//, '').replace(/\/$/, '') === glob))
+      continue
+
+    workspaces.push(glob)
+    addedGlobs++
+  }
+  rootPkg.workspaces = workspaces
+
+  await fs.promises.writeFile(rootPkgPath, `${JSON.stringify(rootPkg, null, 2)}\n`)
+
+  // 3. bunfig.toml preloads. `@stacksjs/env/plugin.js` and
+  //    `storage/framework/core/env/plugin.ts` are the same module; in a
+  //    vendored layout the source is what should load, so an edit to it takes
+  //    effect without a rebuild of that package.
+  const bunfigPath = resolve(process.cwd(), 'bunfig.toml')
+  let rewrittenPreloads = 0
+  if (existsSync(bunfigPath)) {
+    const bunfig = await fs.promises.readFile(bunfigPath, 'utf-8')
+    const next = bunfig.replace(
+      /(["'])@stacksjs\/([\w-]+)\/([^"']+?)\.js\1/g,
+      (match, quote: string, pkgName: string, subpath: string) => {
+        // Only rewrite preloads we actually vendored; an unrelated package
+        // specifier elsewhere in the file is none of our business.
+        if (!provided.has(`@stacksjs/${pkgName}`))
+          return match
+
+        rewrittenPreloads++
+        return `${quote}./storage/framework/core/${pkgName}/${subpath}.ts${quote}`
+      },
+    )
+
+    if (next !== bunfig)
+      await fs.promises.writeFile(bunfigPath, next)
+  }
+
+  // 4. tsconfig. The package layout inherits from
+  //    `storage/framework/tsconfig.app.json` (synced out of @stacksjs/defaults);
+  //    the vendored layout inherits from the checkout's own core config, which
+  //    maps `@stacksjs/*` at source rather than at the installed `.d.ts`.
+  const tsconfigPath = resolve(process.cwd(), 'tsconfig.json')
+  let rewroteTsconfig = false
+  if (existsSync(tsconfigPath)) {
+    const raw = await fs.promises.readFile(tsconfigPath, 'utf-8')
+    const next = raw.replace(
+      /"extends"\s*:\s*"\.\/storage\/framework\/tsconfig\.app\.json"/,
+      '"extends": "./storage/framework/core/tsconfig.json"',
+    )
+
+    if (next !== raw) {
+      await fs.promises.writeFile(tsconfigPath, next)
+      rewroteTsconfig = true
+    }
+  }
+
+  log.success(`Vendored ${copied} files into ${italic(rel(coreDir))}`)
+  log.info(`package.json now depends on ${depName}@workspace:*`)
+  if (repointed > 0)
+    log.info(`Repointed ${repointed} version range${repointed === 1 ? '' : 's'} to workspace:*`)
+  if (addedGlobs > 0)
+    log.info(`Added ${addedGlobs} workspace glob${addedGlobs === 1 ? '' : 's'} for the vendored packages`)
+  if (rewrittenPreloads > 0)
+    log.info(`Rewrote ${rewrittenPreloads} bunfig.toml preload path${rewrittenPreloads === 1 ? '' : 's'} to the vendored source`)
+  if (rewroteTsconfig)
+    log.info('tsconfig.json now extends storage/framework/core/tsconfig.json')
+
+  log.info('Linking the workspace...')
+  const install = Bun.spawn(['bun', 'install'], { cwd: process.cwd(), stdout: 'inherit', stderr: 'inherit' })
+  const code = await install.exited
+  if (code !== 0) {
+    log.error('`bun install` failed. The files are in place; re-run the install once the failure is resolved.')
+    process.exit(ExitCode.FatalError)
+  }
+
+  log.success('This project now runs on the vendored framework — edits under storage/framework/core are live.')
+  log.info('Go back to the published packages any time with `buddy unpublish:core --all`.')
+}
+
+/**
+ * The Stacks checkout to vendor from. An explicit `--path` wins, then
+ * `STACKS_FRAMEWORK_PATH`, then the two conventional locations. Matches the
+ * resolution order `link:core` uses so both commands find the same checkout.
+ */
+function resolveFrameworkCheckout(explicit?: string): string | null {
+  const candidates = [
+    explicit,
+    process.env.STACKS_FRAMEWORK_PATH,
+    resolve(process.cwd(), '../stacks'),
+    join(homedir(), 'Code/stacks'),
+  ].filter(Boolean) as string[]
+
+  for (const candidate of candidates) {
+    const full = resolve(candidate)
+
+    // Never vendor a project into itself: `../stacks` resolves to the checkout
+    // itself when the command is run from one, and the copy would be a no-op
+    // that still rewrites package.json into a self-referencing workspace.
+    if (full === resolve(process.cwd()))
+      continue
+
+    if (existsSync(join(full, 'storage/framework/core/package.json')))
+      return full
+  }
+
+  return null
+}
+
+/**
+ * Which layout is this project on? Both are supported everywhere, which is
+ * exactly why it is easy to lose track — a stale `storage/framework/core` and
+ * an installed `stacks` disagree silently, and the answer decides whether an
+ * edit under `storage/framework/core` does anything at all.
+ */
+async function reportCoreStatus(): Promise<void> {
+  const coreDir = path.frameworkPath('core')
+  const rel = (p: string) => p.replace(`${process.cwd()}/`, '')
+  const vendored = existsSync(resolve(coreDir, 'package.json'))
+
+  const rootPkgPath = resolve(process.cwd(), 'package.json')
+  const rootPkg = existsSync(rootPkgPath)
+    ? JSON.parse(await fs.promises.readFile(rootPkgPath, 'utf-8')) as {
+      dependencies?: Record<string, string>
+      devDependencies?: Record<string, string>
+      workspaces?: string[]
+    }
+    : {}
+
+  const declared = rootPkg.dependencies?.stacks ?? rootPkg.devDependencies?.stacks
+
+  if (vendored) {
+    const corePkg = JSON.parse(await fs.promises.readFile(resolve(coreDir, 'package.json'), 'utf-8')) as { version?: string }
+    const packages = (await readdir(coreDir, { withFileTypes: true }))
+      .filter(entry => entry.isDirectory() && existsSync(resolve(coreDir, entry.name, 'package.json')))
+
+    log.info(`Layout:  vendored — ${italic(rel(coreDir))} (${packages.length} packages, v${corePkg.version ?? 'unknown'})`)
+    log.info(`Declared: stacks@${declared ?? '(not declared)'}`)
+
+    // A vendored directory that nothing links to is the failure mode worth
+    // naming: edits land in files no import ever reaches.
+    if (declared && !declared.startsWith('workspace:'))
+      log.warn(`The vendored copy is not linked: stacks is declared as ${declared}, not workspace:*. Run \`buddy publish:core --all --force\` to relink, or \`buddy unpublish:core --all\` to remove it.`)
+
+    log.info('Move to the published packages with `buddy unpublish:core --all`.')
+    return
+  }
+
+  const installed = resolve(process.cwd(), 'node_modules/@stacksjs/buddy/package.json')
+  const installedVersion = existsSync(installed)
+    ? (JSON.parse(await fs.promises.readFile(installed, 'utf-8')) as { version?: string }).version
+    : undefined
+
+  log.info('Layout:  published packages — no storage/framework/core in this project')
+  log.info(`Declared: stacks@${declared ?? '(not declared)'}`)
+  log.info(`Installed: ${installedVersion ? `v${installedVersion}` : '(run bun install)'}`)
+  log.info('Vendor the framework for local development with `buddy publish:core --all`.')
+}
+
+/**
  * Remove one vendored core package so the project resolves the installed
  * `@stacksjs/<pkg>` again. The exact inverse of `publish:core <pkg>`.
  */
@@ -498,7 +793,27 @@ async function unvendorFramework(force: boolean): Promise<void> {
       await fs.promises.writeFile(bunfigPath, next)
   }
 
-  // 3. The vendored source itself, and any node_modules symlink still
+  // 3. tsconfig.json inherits from the vendored core config, which is about to
+  //    stop existing — and a missing `extends` target is a hard tsc error, so
+  //    `bun run typecheck` breaks days later with nothing pointing back here.
+  //    `storage/framework/tsconfig.app.json` is the package-layout equivalent,
+  //    synced out of @stacksjs/defaults by `buddy upgrade`.
+  const tsconfigPath = resolve(process.cwd(), 'tsconfig.json')
+  let rewroteTsconfig = false
+  if (existsSync(tsconfigPath)) {
+    const raw = await fs.promises.readFile(tsconfigPath, 'utf-8')
+    const next = raw.replace(
+      /"extends"\s*:\s*"\.\/storage\/framework\/core\/tsconfig\.json"/,
+      '"extends": "./storage/framework/tsconfig.app.json"',
+    )
+
+    if (next !== raw) {
+      await fs.promises.writeFile(tsconfigPath, next)
+      rewroteTsconfig = true
+    }
+  }
+
+  // 4. The vendored source itself, and any node_modules symlink still
   //    pointing into it. Those links survive the directory they point at and
   //    then resolve to nothing, so an import of that package fails with a
   //    missing module rather than falling back to the published copy.
@@ -530,6 +845,8 @@ async function unvendorFramework(force: boolean): Promise<void> {
     log.info(`Repointed ${rewrittenScripts} package.json script${rewrittenScripts === 1 ? '' : 's'} to ./buddy`)
   if (rewrittenPreloads > 0)
     log.info(`Rewrote ${rewrittenPreloads} bunfig.toml preload path${rewrittenPreloads === 1 ? '' : 's'} to package specifiers`)
+  if (rewroteTsconfig)
+    log.info('tsconfig.json now extends storage/framework/tsconfig.app.json')
 
   log.info('Installing the published packages...')
   const install = Bun.spawn(['bun', 'install'], { cwd: process.cwd(), stdout: 'inherit', stderr: 'inherit' })
