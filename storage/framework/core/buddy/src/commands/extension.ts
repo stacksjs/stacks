@@ -151,6 +151,28 @@ export function extension(buddy: CLI): void {
     })
 
   buddy
+    .command('extension:firefox:previews', 'Sync the Firefox listing screenshots declared in config/extension.ts')
+    .option('--api-key <issuer>', 'AMO JWT issuer')
+    .option('--api-secret <secret>', 'AMO JWT secret')
+    .option('--dry-run', 'Report what would change without touching the listing')
+    .action(async (options: { apiKey?: string, apiSecret?: string, dryRun?: boolean }) => {
+      const { syncFirefoxPreviews } = await import('@stacksjs/browser-extension')
+      const { config } = await load()
+      const result = await syncFirefoxPreviews(config, {
+        issuer: options.apiKey,
+        secret: options.apiSecret,
+        dryRun: options.dryRun,
+      })
+
+      if (result.unchanged)
+        log.info('Firefox listing screenshots already match config/extension.ts')
+      else if (options.dryRun)
+        log.info(`Would replace ${result.removed.length} Firefox listing screenshot(s)`)
+      else
+        log.success(`Synced ${result.uploaded.length} Firefox listing screenshot(s), removed ${result.removed.length}`)
+    })
+
+  buddy
     .command('extension:firefox:publish', 'Build and submit the Firefox extension through Mozilla Add-ons')
     .option('--version <version>', 'Override the extension version (defaults to package.json)')
     .option('--api-key <issuer>', 'AMO JWT issuer')
@@ -168,6 +190,24 @@ export function extension(buddy: CLI): void {
         approvalTimeout: options.approvalTimeout === undefined ? undefined : Number(options.approvalTimeout),
       })
       log.success(`Submitted Firefox extension (${result.channel}) → ${result.artifactsDir}`)
+
+      // AMO is the only one of the three stores whose API will take listing
+      // screenshots on the way past. Never fatal: the add-on is already
+      // submitted by this point, and a listing with yesterday's screenshots is
+      // a better outcome than a publish reported as failed.
+      if (config.firefoxAddons?.screenshots?.length) {
+        try {
+          const { syncFirefoxPreviews } = await import('@stacksjs/browser-extension')
+          const previews = await syncFirefoxPreviews(config, { issuer: options.apiKey, secret: options.apiSecret })
+          if (previews.unchanged)
+            log.info('Firefox listing screenshots already match')
+          else
+            log.success(`Synced ${previews.uploaded.length} Firefox listing screenshot(s), removed ${previews.removed.length}`)
+        }
+        catch (error) {
+          log.warn(`[extension:firefox:publish] listing screenshots left as they were: ${(error as Error).message}`)
+        }
+      }
       if (result.artifacts.length)
         log.info(`new artifacts: ${result.artifacts.join(', ')}`)
     })

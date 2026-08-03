@@ -6,7 +6,7 @@ description: Generated reference for every Buddy command, argument, option, alia
 
 # Buddy Command Reference
 
-This reference is generated from Buddy's runtime command registry and currently contains **301 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
+This reference is generated from Buddy's runtime command registry and currently contains **302 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
 
 ## Command groups
 
@@ -29,7 +29,7 @@ This reference is generated from Buddy's runtime command registry and currently 
 | `domains` | 3 |
 | `email` | 7 |
 | `env` | 7 |
-| `extension` | 11 |
+| `extension` | 12 |
 | `format` | 1 |
 | `general` | 49 |
 | `generate` | 15 |
@@ -1589,6 +1589,21 @@ Fetch the Chrome Web Store item status
 | --- | --- | --- | --- |
 | `--service-account-path` | Google service-account JSON key path | value, required | — |
 | `--access-token` | Short-lived Chrome Web Store OAuth access token | value, required | — |
+
+### `extension:firefox:previews`
+
+Sync the Firefox listing screenshots declared in config/extension.ts
+
+- Usage: `$ buddy extension:firefox:previews`
+- Namespace: `extension`
+- Aliases: none
+- Arguments: none
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `--api-key` | AMO JWT issuer | value, required | — |
+| `--api-secret` | AMO JWT secret | value, required | — |
+| `--dry-run` | Report what would change without touching the listing | boolean, optional | — |
 
 ### `extension:firefox:publish`
 

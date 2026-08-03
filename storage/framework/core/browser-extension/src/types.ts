@@ -115,6 +115,17 @@ export interface FirefoxAddonsConfig {
   requiresPayment?: boolean
   /** Directory for signed XPI and submission artifacts. @default web-ext-artifacts */
   artifactsDir?: string
+  /**
+   * Listing screenshots, in the order they should appear.
+   *
+   * AMO is the one store of the three whose API will take these — Apple's does
+   * too, Chrome's does not — so a listing that is otherwise generated ends up
+   * showing whatever someone dragged into the Developer Hub once. Declared
+   * here, they are synchronized with the add-on on publish.
+   */
+  screenshots?: string[]
+  /** Caption shown under each screenshot, matched by index. */
+  screenshotCaptions?: string[]
 }
 
 export type SafariScreenshotDisplayType = 'APP_DESKTOP' | 'APP_IPHONE_67' | 'APP_IPAD_PRO_3GEN_129'
