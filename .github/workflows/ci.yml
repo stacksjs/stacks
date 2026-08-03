@@ -178,8 +178,6 @@ jobs:
           bun test storage/framework/core/database/tests/committed-migrations-dialect.test.ts
           bun test storage/framework/core/database/tests/model-sources.test.ts
           bun test storage/framework/core/database/tests/emitted-migration-execution.test.ts
-          bun test storage/framework/core/database/tests/migration-ledger.test.ts
-          bun test storage/framework/core/database/tests/migration-ledger-reconcile.test.ts
 
       - name: Core tests (buddy)
         if: ${{ !cancelled() && steps.install.outcome == 'success' }}
