@@ -847,7 +847,7 @@ const config: CloudConfig = {
     'bughq',
     'pantry',
     'postline',
-    'printel',
+    'predicthq',
     'reveal',
     'training',
     'verygoodadblock',
