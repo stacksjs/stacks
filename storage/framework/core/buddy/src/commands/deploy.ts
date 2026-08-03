@@ -2603,8 +2603,34 @@ export function deploy(buddy: CLI): void {
     .option('--staging', descriptions.staging, { default: false })
     .option('--docker', 'Also build an OCI image with pantry (native, no Docker daemon) and push it to the pantry registry', { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
-    .action(async (envArg: string | undefined, options: DeployOptions & { docker?: boolean }) => {
+    .action(async (envArg: string | undefined, options: DeployOptions & { docker?: boolean, dryRun?: boolean }) => {
       log.debug('Running `buddy deploy` ...', options)
+
+      // `--dry-run` is registered globally, and every other command honours
+      // it. Deploy read the flag and did nothing with it: `buddy deploy
+      // --dry-run` provisioned, shipped a release tarball, started systemd
+      // units, reloaded the gateway, and wrote DNS — the full production
+      // deploy, from the one invocation a person runs precisely because they
+      // are not ready to do that yet.
+      //
+      // Refuse rather than half-simulate. Reporting a plan means predicting
+      // what provisioning, packaging, and each site's preStart would do, and
+      // a plan that quietly diverges from the real run is worse than no plan:
+      // it gets trusted. An explicit refusal costs one flag to get past and
+      // cannot mislead.
+      // Read argv rather than the parsed option. Which key a global flag
+      // lands on is clapp's business and has changed before; if `--dry-run`
+      // ever stops mapping to `dryRun`, an options-based check turns back
+      // into a silent full deploy. argv is what the user actually typed.
+      const askedForDryRun = process.argv.includes('--dry-run')
+        || (options as { dryRun?: boolean }).dryRun === true
+
+      if (askedForDryRun) {
+        log.error('`buddy deploy --dry-run` is not supported.')
+        log.info('Deploy has no preview mode: provisioning, release shipping, and DNS all mutate real infrastructure.')
+        log.info('To see what would ship without touching the server, inspect `config/cloud.ts` sites, or run `buddy deploy --site <name>` to narrow a real deploy to one site.')
+        process.exit(ExitCode.FatalError)
+      }
 
       await ensureDeployPrerequisites(options.verbose === true)
 
