@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.249...v0.70.250)
+
+## 🐛 Bug Fixes
+
+- **firefox**: reconcile captions without re-uploading the screenshots ([5f9a108](https://github.com/stacksjs/stacks/commit/5f9a108)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.248...v0.70.249)
 
 ## ✨ Features
