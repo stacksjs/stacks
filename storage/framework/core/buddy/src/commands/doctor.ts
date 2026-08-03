@@ -300,6 +300,32 @@ export function doctor(buddy: CLI): void {
         throw new Error(`${result.missing.length}/${result.declared.length} declared unique constraints have no UNIQUE index: ${sample}${more}. Run \`buddy migrate\` (re-queues missing unique-index migrations, #1952) — dedupe duplicate rows first or migrate hard-fails; if no migration file exists run \`buddy generate:migrations\`, or create manually: ${example}`)
       }, 10000)
 
+      // Migration ledger drift (stacksjs/stacks#2203). The `migrations`
+      // table keys on the FILENAME, and regenerating the corpus from
+      // the models renumbers every file — so an already-applied
+      // migration reads as pending and everything after it queues
+      // behind. The reported case ran that way for weeks and first
+      // surfaced as a 500 in an unrelated feature panel. Nothing
+      // compared the ledger to the schema, so nothing caught it; this
+      // is that comparison. Read-only. 10s budget — it reads every
+      // migration file and introspects the live schema.
+      await probe(checks, 'Migration ledger', async () => {
+        const { auditMigrationLedger } = await import('@stacksjs/database')
+        const result = await auditMigrationLedger()
+        if (!result.supported) return 'Dialect not audited (skipped)'
+        if (result.entries.length === 0) return 'No migration files'
+        const { counts, orphans } = result
+        if (!result.drift)
+          return `${result.entries.length} migrations, ledger consistent with the schema`
+
+        const parts: string[] = []
+        if (counts.stranded > 0) parts.push(`${counts.stranded} applied but unrecorded (would re-run)`)
+        if (counts.partial > 0) parts.push(`${counts.partial} half-applied`)
+        if (counts.reverted > 0) parts.push(`${counts.reverted} recorded but missing from the schema`)
+        if (orphans.length > 0) parts.push(`${orphans.length} ledger row(s) with no file on disk`)
+        throw new Error(`Migration ledger has drifted: ${parts.join(', ')}. Inspect with \`buddy migrate:status\`, repair with \`buddy migrate:status --reconcile\`.`)
+      }, 10000)
+
       // FK orphans (stacksjs/stacks#1951). FK enforcement flipped ON
       // against databases written under `foreign_keys = OFF`, so legacy
       // rows can reference parents that no longer exist. READ-ONLY scan

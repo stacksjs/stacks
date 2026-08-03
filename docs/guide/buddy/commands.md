@@ -6,7 +6,7 @@ description: Generated reference for every Buddy command, argument, option, alia
 
 # Buddy Command Reference
 
-This reference is generated from Buddy's runtime command registry and currently contains **303 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
+This reference is generated from Buddy's runtime command registry and currently contains **304 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
 
 ## Command groups
 
@@ -41,7 +41,7 @@ This reference is generated from Buddy's runtime command registry and currently 
 | `mail` | 30 |
 | `make` | 18 |
 | `marketing` | 2 |
-| `migrate` | 5 |
+| `migrate` | 6 |
 | `monitoring` | 2 |
 | `package` | 1 |
 | `phone` | 4 |
@@ -3094,6 +3094,21 @@ Rebuild database/migrations from your models for a given dialect
 | --- | --- | --- | --- |
 | `--dry-run` | Show what would change without writing anything | boolean, optional | `false` |
 | `-f`, `--force` | Regenerate even though the database already has migrations recorded | boolean, optional | `false` |
+
+### `migrate:status`
+
+Compare database/migrations, the migrations ledger, and the live schema
+
+- Usage: `$ buddy migrate:status`
+- Namespace: `migrate`
+- Aliases: none
+- Arguments: none
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `--reconcile` | Repair the ledger where the schema proves what happened | boolean, optional | `false` |
+| `--include-partial` | With --reconcile, also record half-applied migrations | boolean, optional | `false` |
+| `--json` | Emit the audit as JSON | boolean, optional | `false` |
 
 ### `migrate:switch`
 

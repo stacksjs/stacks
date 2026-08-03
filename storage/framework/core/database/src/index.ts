@@ -112,6 +112,11 @@ export * from './defaults'
 // emitted for one database fails loudly before a single statement runs.
 export * from './migration-dialect'
 
+// Ledger drift audit (stacksjs/stacks#2203) — compare the corpus on disk, the
+// `migrations` table, and the live schema, because regeneration renumbers files
+// and the ledger keys on the filename.
+export * from './migration-ledger'
+
 // Model resolution for the generator: userland + framework defaults, flattened
 // because bun-query-builder's loadModels reads only the top level of a dir.
 export * from './model-sources'
