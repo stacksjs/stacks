@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.245...v0.70.246)
+
+## 🐛 Bug Fixes
+
+- **image**: require the ts-images release that fixes the card layout ([ec5368c](https://github.com/stacksjs/stacks/commit/ec5368c)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.244...v0.70.245)
 
 ## 🐛 Bug Fixes
