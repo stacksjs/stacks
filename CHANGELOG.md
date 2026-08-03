@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.247...v0.70.248)
+
+## 🐛 Bug Fixes
+
+- **firefox**: wait out AMO's throttle instead of failing the sync ([5265a11](https://github.com/stacksjs/stacks/commit/5265a11)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.246...v0.70.247)
 
 ## ✨ Features
