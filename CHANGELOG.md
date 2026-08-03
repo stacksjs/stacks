@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.253...v0.70.254)
+
+## 🐛 Bug Fixes
+
+- **deploy**: issue TLS through the unit that exists ([e67b49f](https://github.com/stacksjs/stacks/commit/e67b49f)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.252...v0.70.253)
 
 ## ✨ Features
