@@ -5,15 +5,15 @@ import { amoToken, imageSize } from '../src/firefox-previews'
 describe('amoToken', () => {
   it('signs an HS256 token AMO can verify', () => {
     const token = amoToken('user:1:2', 'secret', 1_700_000_000_000)
-    const [header, payload, signature] = token.split('.')
+    const [header = '', payload = '', signature = ''] = token.split('.')
 
-    expect(JSON.parse(Buffer.from(header!, 'base64url').toString())).toEqual({ alg: 'HS256', typ: 'JWT' })
+    expect(JSON.parse(Buffer.from(header, 'base64url').toString())).toEqual({ alg: 'HS256', typ: 'JWT' })
     expect(createHmac('sha256', 'secret').update(`${header}.${payload}`).digest('base64url')).toBe(signature)
   })
 
   it('carries the issuer and expires inside AMO\'s five-minute ceiling', () => {
     const now = 1_700_000_000_000
-    const claims = JSON.parse(Buffer.from(amoToken('user:1:2', 'secret', now).split('.')[1]!, 'base64url').toString())
+    const claims = JSON.parse(Buffer.from(amoToken('user:1:2', 'secret', now).split('.')[1] ?? '', 'base64url').toString())
 
     expect(claims.iss).toBe('user:1:2')
     expect(claims.iat).toBe(Math.floor(now / 1000))
@@ -22,8 +22,8 @@ describe('amoToken', () => {
   })
 
   it('uses a fresh id each time, so a replayed token cannot be reused', () => {
-    const first = JSON.parse(Buffer.from(amoToken('i', 's').split('.')[1]!, 'base64url').toString())
-    const second = JSON.parse(Buffer.from(amoToken('i', 's').split('.')[1]!, 'base64url').toString())
+    const first = JSON.parse(Buffer.from(amoToken('i', 's').split('.')[1] ?? '', 'base64url').toString())
+    const second = JSON.parse(Buffer.from(amoToken('i', 's').split('.')[1] ?? '', 'base64url').toString())
 
     expect(first.jti).not.toBe(second.jti)
   })

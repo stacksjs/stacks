@@ -117,23 +117,59 @@ function resolveAuth(options: FirefoxPreviewAuth): { issuer: string, secret: str
   return { issuer: issuer!, secret: secret! }
 }
 
-async function amo(path: string, token: string, init: RequestInit = {}): Promise<Response> {
+const sleep = (ms: number): Promise<void> => new Promise(resolve => setTimeout(resolve, ms))
+
+/**
+ * How long AMO wants us to wait, from the `Retry-After` header or, failing
+ * that, the sentence it puts in the body ("Expected available in 55 seconds").
+ */
+function retryAfterMs(response: Response, body: string): number | undefined {
+  const header = Number(response.headers.get('retry-after'))
+  if (Number.isFinite(header) && header > 0)
+    return header * 1000
+
+  const stated = /available in (\d+) seconds?/i.exec(body)
+  return stated ? Number(stated[1]) * 1000 : undefined
+}
+
+/**
+ * One AMO call, waiting out the throttle rather than failing on it.
+ *
+ * AMO rate-limits writes, and a preview sync is a burst of them: uploading
+ * three screenshots and captioning each is six calls back to back. The first
+ * run of this hit a 429 partway and left the listing holding two old previews
+ * and one new one — not broken, but not what was asked for either.
+ *
+ * The token is minted per attempt, not passed in: AMO rejects anything older
+ * than five minutes, and waiting out a throttle can outlast one.
+ */
+async function amo(
+  path: string,
+  auth: { issuer: string, secret: string },
+  init: RequestInit = {},
+  attempt = 0,
+): Promise<Response> {
   const response = await fetch(`${AMO_API}${path}`, {
     ...init,
-    headers: { Authorization: `JWT ${token}`, ...init.headers },
+    headers: { Authorization: `JWT ${amoToken(auth.issuer, auth.secret)}`, ...init.headers },
   })
 
-  if (!response.ok && response.status !== 404) {
-    const detail = await response.text().catch(() => '')
-    throw new Error(`[browser-extension] AMO ${init.method ?? 'GET'} ${path} failed (${response.status})${detail ? `: ${detail.slice(0, 300)}` : ''}`)
+  if (response.ok || response.status === 404)
+    return response
+
+  const detail = await response.text().catch(() => '')
+
+  if (response.status === 429 && attempt < 4) {
+    await sleep((retryAfterMs(response, detail) ?? 60_000) + 1_000)
+    return amo(path, auth, init, attempt + 1)
   }
 
-  return response
+  throw new Error(`[browser-extension] AMO ${init.method ?? 'GET'} ${path} failed (${response.status})${detail ? `: ${detail.slice(0, 300)}` : ''}`)
 }
 
 /** Read the previews a listing currently shows. */
-export async function listFirefoxPreviews(addonId: string, token: string): Promise<FirefoxPreview[]> {
-  const response = await amo(`/addons/addon/${encodeURIComponent(addonId)}/`, token)
+export async function listFirefoxPreviews(addonId: string, auth: { issuer: string, secret: string }): Promise<FirefoxPreview[]> {
+  const response = await amo(`/addons/addon/${encodeURIComponent(addonId)}/`, auth)
   if (response.status === 404)
     return []
 
@@ -175,8 +211,8 @@ export async function syncFirefoxPreviews(
     return { path: file, bytes, width: size?.width ?? 0, height: size?.height ?? 0 }
   }))
 
-  const { issuer, secret } = resolveAuth(options)
-  const existing = await listFirefoxPreviews(config.geckoId, amoToken(issuer, secret))
+  const auth = resolveAuth(options)
+  const existing = await listFirefoxPreviews(config.geckoId, auth)
 
   // Dimensions are the only handle AMO gives us on what it is already showing;
   // it reports no checksum. Unreadable local dimensions mean we cannot claim a
@@ -202,7 +238,7 @@ export async function syncFirefoxPreviews(
     form.append('image', new Blob([file.bytes as BlobPart], { type: 'image/png' }), basename(file.path))
     form.append('position', String(index))
 
-    const response = await amo(`/addons/addon/${encodeURIComponent(config.geckoId)}/previews/`, amoToken(issuer, secret), {
+    const response = await amo(`/addons/addon/${encodeURIComponent(config.geckoId)}/previews/`, auth, {
       method: 'POST',
       body: form,
     })
@@ -210,7 +246,7 @@ export async function syncFirefoxPreviews(
 
     const caption = store.screenshotCaptions?.[index]
     if (caption) {
-      await amo(`/addons/addon/${encodeURIComponent(config.geckoId)}/previews/${created.id}/`, amoToken(issuer, secret), {
+      await amo(`/addons/addon/${encodeURIComponent(config.geckoId)}/previews/${created.id}/`, auth, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ caption: { 'en-US': caption } }),
@@ -222,7 +258,7 @@ export async function syncFirefoxPreviews(
 
   const removed: number[] = []
   for (const preview of existing) {
-    await amo(`/addons/addon/${encodeURIComponent(config.geckoId)}/previews/${preview.id}/`, amoToken(issuer, secret), { method: 'DELETE' })
+    await amo(`/addons/addon/${encodeURIComponent(config.geckoId)}/previews/${preview.id}/`, auth, { method: 'DELETE' })
     removed.push(preview.id)
   }
 
