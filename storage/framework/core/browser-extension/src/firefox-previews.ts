@@ -35,6 +35,7 @@ export interface FirefoxPreview {
   id: number
   position: number
   size: [number, number]
+  caption?: string
 }
 
 export interface FirefoxPreviewSyncResult {
@@ -173,12 +174,15 @@ export async function listFirefoxPreviews(addonId: string, auth: { issuer: strin
   if (response.status === 404)
     return []
 
-  const body = await response.json() as { previews?: Array<{ id: number, position?: number, image_size?: [number, number] }> }
+  const body = await response.json() as {
+    previews?: Array<{ id: number, position?: number, image_size?: [number, number], caption?: string | Record<string, string> | null }>
+  }
 
   return (body.previews ?? []).map((preview, index) => ({
     id: preview.id,
     position: preview.position ?? index,
     size: preview.image_size ?? [0, 0],
+    caption: typeof preview.caption === 'string' ? preview.caption : preview.caption?.['en-US'],
   }))
 }
 
@@ -217,16 +221,38 @@ export async function syncFirefoxPreviews(
   // Dimensions are the only handle AMO gives us on what it is already showing;
   // it reports no checksum. Unreadable local dimensions mean we cannot claim a
   // match, so the sync runs rather than silently skipping.
+  const ordered = existing.slice().sort((a, b) => a.position - b.position)
   const measurable = files.every(file => file.width > 0 && file.height > 0)
-  const matches = measurable
-    && existing.length === files.length
-    && existing
-      .slice()
-      .sort((a, b) => a.position - b.position)
-      .every((preview, index) => preview.size[0] === files[index]!.width && preview.size[1] === files[index]!.height)
+  const imagesMatch = measurable
+    && ordered.length === files.length
+    && ordered.every((preview, index) => preview.size[0] === files[index]!.width && preview.size[1] === files[index]!.height)
 
-  if (matches)
+  const captionFor = (index: number): string => store.screenshotCaptions?.[index] ?? ''
+  const drifted = imagesMatch
+    ? ordered.map((preview, index) => ({ preview, caption: captionFor(index) })).filter(entry => (entry.preview.caption ?? '') !== entry.caption)
+    : []
+
+  if (imagesMatch && !drifted.length)
     return { unchanged: true, uploaded: [], removed: [] }
+
+  // The images are already right and only the words are wrong — which is where
+  // a throttled run tends to stop, having uploaded everything and captioned
+  // some of it. Re-uploading identical screenshots to fix a sentence would
+  // churn the listing's preview ids for nothing.
+  if (imagesMatch) {
+    if (options.dryRun)
+      return { unchanged: false, uploaded: [], removed: [] }
+
+    for (const { preview, caption } of drifted) {
+      await amo(`/addons/addon/${encodeURIComponent(config.geckoId)}/previews/${preview.id}/`, auth, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ caption: caption ? { 'en-US': caption } : null }),
+      })
+    }
+
+    return { unchanged: false, uploaded: ordered, removed: [] }
+  }
 
   if (options.dryRun)
     return { unchanged: false, uploaded: [], removed: existing.map(preview => preview.id) }
