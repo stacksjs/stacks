@@ -275,6 +275,7 @@ export type DevOption =
   | 'email'
   | 'system-tray'
   | 'interactive'
+  | 'browser'
   | 'site'
   | 'verbose'
 export type DevOptions = {

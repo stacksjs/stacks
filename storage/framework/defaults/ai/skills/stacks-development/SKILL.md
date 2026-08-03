@@ -79,6 +79,8 @@ buddy/src/commands/
 - `buddy dev` -- Start ALL dev servers in parallel (frontend, API, docs, dashboard + reverse proxy if custom domain)
 - `buddy dev [server]` -- Start a specific server: `frontend`, `api`, `components`, `dashboard`, `desktop`, `system-tray`, `docs`
 - `buddy dev -i` / `--interactive` -- Interactive prompt to choose which server to start
+- `buddy dev --browser` -- Override a configured native launch and open the browser app
+- `buddy dev --site` -- Open the marketing site instead of the app or native window
 - `buddy dev --verbose` -- Show detailed output including proxy info and dependency logs
 - `buddy dev:frontend` (aliases: `dev:pages`, `dev:views`) -- Frontend only
 - `buddy dev:api` -- API server only
@@ -86,6 +88,7 @@ buddy/src/commands/
 - `buddy dev:docs` -- Documentation server only
 - `buddy dev:components` -- Vue component library dev server
 - `buddy dev:desktop` -- Desktop app dev server
+- `buddy dev:native` -- Equivalent native app development flow
 - `buddy dev:system-tray` (alias: `dev:tray`) -- System tray dev server
 
 ### Build Commands
@@ -111,17 +114,18 @@ buddy/src/commands/
 
 ### Unified Dev Server (`buddy dev` with no arguments)
 When `buddy dev` runs without a specific server flag, `startDevelopmentServer()` in `dev.ts`:
-1. Reads port configuration from env vars (`PORT`, `PORT_API`, `PORT_DOCS`, `PORT_ADMIN`)
-2. Detects custom domain from `APP_URL` (e.g., `stacks.localhost`)
-3. Prints Vite-style banner with URLs for Frontend, API, Docs, Dashboard
-4. Sets `STACKS_PROXY_MANAGED=1` to prevent subprocesses from starting their own proxies
-5. Starts all servers in parallel via `Promise.all()`:
+1. Reads `config/app.ts` `devLaunch`; `native` opens `appPath` in Craft, while `browser` keeps the browser default
+2. Reads port configuration from env vars (`PORT`, `PORT_API`, `PORT_DOCS`, `PORT_ADMIN`)
+3. Detects custom domain from `APP_URL` (e.g., `stacks.localhost`)
+4. Prints Vite-style banner with URLs for Frontend, API, Docs, Dashboard
+5. Sets `STACKS_PROXY_MANAGED=1` to prevent subprocesses from starting their own proxies
+6. Starts all servers in parallel via `Promise.all()`:
    - `runFrontendDevServer()` -- STX template server on port 3000
    - `runApiDevServer()` -- bun-router API on port 3008
    - `runDocsDevServer()` -- bunpress docs on port 3006
    - `runDashboardDevServer()` -- STX + Craft native window on port 3002
    - `startReverseProxy()` -- rpx HTTPS proxy on port 443 (only if custom domain set)
-6. Registers SIGINT/SIGTERM handlers that `SIGKILL` the entire process group
+7. Registers SIGINT/SIGTERM handlers that `SIGKILL` the entire process group
 
 ### Action Execution (`runAction` in helpers/utils.ts)
 - Dev actions (paths starting with `dev/`) automatically get `--watch` flag via `bun --watch`

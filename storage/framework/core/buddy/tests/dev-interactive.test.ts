@@ -2,7 +2,7 @@ import { describe, expect, it } from 'bun:test'
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { developmentBrowserCommand, developmentUrl, dispatchInteractiveDevSelection, interactiveDevChoices, resolveDevelopmentEntryPath, resolvePrettyDevDomain, shouldUsePrettyDevUrls } from '../src/commands/dev'
+import { developmentBrowserCommand, developmentUrl, dispatchInteractiveDevSelection, interactiveDevChoices, resolveDevelopmentEntryPath, resolveDevelopmentLaunch, resolvePrettyDevDomain, shouldUsePrettyDevUrls } from '../src/commands/dev'
 
 describe('buddy dev interactive selection', () => {
   it('dispatches every visible choice to exactly one runner', async () => {
@@ -28,6 +28,32 @@ describe('buddy dev interactive selection', () => {
 })
 
 describe('buddy dev URL selection', () => {
+  it('uses the configured native window for a plain app development session', () => {
+    expect(resolveDevelopmentLaunch({ configuredLaunch: 'native' })).toBe('native')
+    expect(resolveDevelopmentLaunch()).toBe('browser')
+  })
+
+  it('reads the development launch target from config/app.ts', () => {
+    const root = mkdtempSync(join(tmpdir(), 'buddy-dev-launch-'))
+    try {
+      mkdirSync(join(root, 'config'), { recursive: true })
+      writeFileSync(join(root, 'config/app.ts'), "export default { devLaunch: 'native' }")
+      expect(resolveDevelopmentLaunch({ root })).toBe('native')
+    }
+    finally {
+      rmSync(root, { recursive: true, force: true })
+    }
+  })
+
+  it('lets browser and site flags override a configured native window', () => {
+    expect(resolveDevelopmentLaunch({ browser: true, configuredLaunch: 'native' })).toBe('browser')
+    expect(resolveDevelopmentLaunch({ site: true, configuredLaunch: 'native' })).toBe('browser')
+  })
+
+  it('honors an explicit native launch for browser-first apps', () => {
+    expect(resolveDevelopmentLaunch({ native: true, configuredLaunch: 'browser' })).toBe('native')
+  })
+
   it('keeps loopback URLs on the zero-setup localhost path', () => {
     expect(resolvePrettyDevDomain('http://localhost:3000')).toBeNull()
     expect(resolvePrettyDevDomain('localhost')).toBeNull()

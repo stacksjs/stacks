@@ -952,6 +952,7 @@ Start development server
 | `-s`, `--system-tray` | Start the System Tray development server | boolean, optional | — |
 | `-i`, `--interactive` | Get asked which development server to start | boolean, optional | `false` |
 | `-l`, `--with-localhost` | Include the localhost URL in the output | boolean, optional | `false` |
+| `--browser` | Open the application in a browser instead of its configured native window | boolean, optional | `false` |
 | `--site` | Open the marketing site instead of the application | boolean, optional | `false` |
 | `-p`, `--project` | Target a specific project | value, optional | `false` |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |

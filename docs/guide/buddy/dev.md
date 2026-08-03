@@ -12,6 +12,12 @@ The `buddy dev` command starts development servers for your Stacks application w
 # Start the default development server
 buddy dev
 
+# Force the browser app when the project defaults to a native window
+buddy dev --browser
+
+# Open the marketing site
+buddy dev --site
+
 # Start with interactive mode to select which server to run
 buddy dev -i
 ```
@@ -43,6 +49,8 @@ buddy dev [server] [options]
 | `--system-tray` | Start the System Tray development server |
 | `-i, --interactive` | Get prompted to select which server to start |
 | `-l, --with-localhost` | Include the localhost URL in the output |
+| `--browser` | Open the application in a browser instead of its configured native window |
+| `--site` | Open the marketing site instead of the application |
 | `-p, --project [project]` | Target a specific project |
 | `--verbose` | Enable verbose output |
 
@@ -101,6 +109,10 @@ buddy dev desktop
 # or
 buddy dev:desktop
 ```
+
+Projects can set `devLaunch: 'native'` beside `appPath` in `config/app.ts` so a
+plain `buddy dev` opens the application in Craft. `buddy dev --browser` keeps
+the same development servers but opens the browser application instead.
 
 ### Documentation Server
 

@@ -126,23 +126,26 @@ buddy dev -o/--docs          # docs only
 buddy dev -s/--system-tray   # system tray only
 buddy dev -i/--interactive   # interactive server selection menu
 buddy dev -l/--with-localhost # include localhost URL in output
+buddy dev --browser          # open the browser app instead of a configured native window
 buddy dev --site             # open the marketing site instead of the detected app entry
 buddy dev -p/--project [name]
 buddy dev --verbose
 ```
 
 When `config/app.ts` defines `appPath` (for example, `/dashboard`), plain
-`buddy dev` treats it as the primary application URL and opens it once the dev
-servers are ready. Without `appPath`, Buddy detects common application views
-and falls back to `/` for site-only projects. Use `buddy dev --site` to force
-the marketing homepage for that session. Set `STACKS_DEV_NO_OPEN=1` when the
-browser should remain closed.
+`buddy dev` treats it as the primary application URL. Set `devLaunch: 'native'`
+for a desktop app to open that URL in a Craft window by default. Use
+`buddy dev --browser` to open the application in a browser or `buddy dev --site`
+to force the marketing homepage for that session. Without `appPath`, Buddy
+detects common application views and falls back to `/` for site-only projects.
+Set `STACKS_DEV_NO_OPEN=1` when the browser should remain closed.
 
 Sub-commands with aliases:
 ```bash
 buddy dev:components         # component library dev server
 buddy dev:docs               # documentation dev server
 buddy dev:desktop            # desktop app dev server
+buddy dev:native             # equivalent native desktop app flow
 buddy dev:api                # API dev server
 buddy dev:frontend           # frontend dev server (aliases: dev:pages, dev:views)
 buddy dev:dashboard          # dashboard dev server (alias: dev:admin)

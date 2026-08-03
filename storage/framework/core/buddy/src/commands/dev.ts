@@ -169,6 +169,37 @@ function configuredApplicationPath(root: string): string | undefined {
   }
 }
 
+function configuredDevelopmentLaunch(root: string): 'browser' | 'native' | undefined {
+  const environmentValue = process.env.STACKS_DEV_LAUNCH?.trim().toLowerCase()
+  if (environmentValue === 'browser' || environmentValue === 'native')
+    return environmentValue
+
+  try {
+    const source = readFileSync(join(root, 'config/app.ts'), 'utf8')
+    const value = source.match(/\bdevLaunch\s*:\s*(['"`])(browser|native)\1/)?.[2]
+    return value === 'browser' || value === 'native' ? value : undefined
+  }
+  catch {
+    return undefined
+  }
+}
+
+export function resolveDevelopmentLaunch(input: {
+  root?: string
+  browser?: boolean
+  native?: boolean
+  site?: boolean
+  configuredLaunch?: 'browser' | 'native'
+} = {}): 'browser' | 'native' {
+  if (input.browser || input.site)
+    return 'browser'
+  if (input.native)
+    return 'native'
+
+  const root = input.root ?? projectPath()
+  return input.configuredLaunch ?? configuredDevelopmentLaunch(root) ?? 'browser'
+}
+
 function viewSource(root: string, route: string): string | undefined {
   const base = join(root, 'resources/views', route)
   for (const extension of ['stx', 'vue', 'html']) {
@@ -283,6 +314,7 @@ export function dev(buddy: CLI): void {
     interactive: 'Get asked which development server to start',
     select: 'Which development server are you trying to start?',
     withLocalhost: 'Include the localhost URL in the output',
+    browser: 'Open the application in a browser instead of its configured native window',
     site: 'Open the marketing site instead of the application',
     project: 'Target a specific project',
     verbose: 'Enable verbose output',
@@ -300,6 +332,7 @@ export function dev(buddy: CLI): void {
     .option('-s, --system-tray', descriptions.systemTray)
     .option('-i, --interactive', descriptions.interactive, { default: false })
     .option('-l, --with-localhost', descriptions.withLocalhost, { default: false })
+    .option('--browser', descriptions.browser, { default: false })
     .option('--site', descriptions.site, { default: false })
     .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
@@ -347,7 +380,7 @@ export function dev(buddy: CLI): void {
             await a.runDashboardDevServer(serverOptions)
             break
           case 'desktop':
-            await a.runDesktopDevServer(serverOptions)
+            await startDevelopmentServer({ ...serverOptions, native: true }, perf)
             break
           case 'system-tray':
             await a.runSystemTrayDevServer(serverOptions)
@@ -375,7 +408,7 @@ export function dev(buddy: CLI): void {
           frontend: () => a.runFrontendDevServer(options),
           api: () => a.runApiDevServer(options),
           dashboard: () => a.runDashboardDevServer(options),
-          desktop: () => a.runDesktopDevServer(options),
+          desktop: () => startDevelopmentServer({ ...options, native: true }, perf),
           native: () => startDevelopmentServer({ ...options, native: true }, perf),
           components: () => a.runComponentsDevServer(options),
           docs: () => a.runDocsDevServer(options),
@@ -461,22 +494,8 @@ export function dev(buddy: CLI): void {
     .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: DevOptions) => {
-
       const perf = await intro('buddy dev:desktop')
-      const result = await (await actions()).runAction(Action.DevDesktop, options)
-
-      if (result.isErr) {
-        await outro(
-          'While running the dev:desktop command, there was an issue',
-          { startTime: perf, useSeconds: true },
-          result.error,
-        )
-        process.exit(ExitCode.FatalError)
-      }
-
-      console.log('')
-      await outro('Exited', { startTime: perf, useSeconds: true })
-      process.exit(ExitCode.Success)
+      await startDevelopmentServer({ ...options, native: true }, perf)
     })
 
   buddy
@@ -551,7 +570,11 @@ export async function startDevelopmentServer(_options: DevOptions, _startTime?: 
   const options = _options
   const startedAt = _startTime
   const appUrl = process.env.APP_URL ?? 'stacks.localhost'
-  const nativeMode = options.native === true
+  const nativeMode = resolveDevelopmentLaunch({
+    browser: options.browser,
+    native: options.native,
+    site: options.site,
+  }) === 'native'
   const entryPath = resolveDevelopmentEntryPath({ site: options.site })
   process.env.STACKS_DEV_ENTRY_PATH = entryPath
   // When rpx's on-demand sites launch `./buddy dev`, rpx already owns the reverse

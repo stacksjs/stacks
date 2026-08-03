@@ -63,6 +63,17 @@ export interface AppOptions {
   appPath?: string
 
   /**
+   * **Development Launch Target**
+   *
+   * The window Buddy should open for a plain `buddy dev` session. Native apps
+   * can opt into a Craft window while browser-first apps keep the browser
+   * default. `buddy dev --browser` and `buddy dev --site` override this value.
+   *
+   * @default "browser"
+   */
+  devLaunch?: 'browser' | 'native'
+
+  /**
    * **Redirect URLs**
    *
    * A Redirect URL is a URL that permanently redirects to the Application URL.
