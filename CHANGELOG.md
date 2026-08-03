@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.254...v0.70.255)
+
+## ✨ Features
+
+- **ai**: expose safe provider configuration metadata ([56ba649](https://github.com/stacksjs/stacks/commit/56ba649)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.253...v0.70.254)
 
 ## 🐛 Bug Fixes
