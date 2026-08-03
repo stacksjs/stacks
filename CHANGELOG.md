@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.248...v0.70.249)
+
+## ✨ Features
+
+- **buddy**: vendor the framework back into a project ([d01e69c](https://github.com/stacksjs/stacks/commit/d01e69c)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.247...v0.70.248)
 
 ## 🐛 Bug Fixes
