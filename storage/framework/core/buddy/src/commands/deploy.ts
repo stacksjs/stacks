@@ -1442,6 +1442,20 @@ async function runHetznerDeploy(args: {
     '.env.keys',
     '.env.production.bak',
     '.env.production.plain',
+    // Local SQLite files. Shipping one overwrites the box's database with
+    // whatever the developer happened to have on disk, silently, on every
+    // deploy — the production rows are simply gone, and nothing in the output
+    // says so. It is not a hypothetical: a row written while testing a feature
+    // locally arrived in production this way.
+    //
+    // The server's database is built by `migrate` in the site's preStart and
+    // owned by the box from then on. A local file is never the right thing to
+    // put on top of it. `-wal`/`-shm` are the write-ahead log and shared-memory
+    // sidecars; a `.sqlite` restored without them is fine, but shipping them
+    // alongside a stale main file is how you get a corrupt-looking database.
+    '*.sqlite',
+    '*.sqlite-wal',
+    '*.sqlite-shm',
   ]
 
   if (onlySite && !sites[onlySite]) {
