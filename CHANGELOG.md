@@ -1,5 +1,23 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.252...v0.70.253)
+
+## ✨ Features
+
+- **dev**: default desktop apps to native windows ([9da9f1c](https://github.com/stacksjs/stacks/commit/9da9f1c)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🐛 Bug Fixes
+
+- **deploy**: refuse --dry-run instead of ignoring it ([d3ac86e](https://github.com/stacksjs/stacks/commit/d3ac86e)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🔧 Chores
+
+- **cloud**: declare printel as a tenant ([4aca5e8](https://github.com/stacksjs/stacks/commit/4aca5e8)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.251...v0.70.252)
 
 ## 🐛 Bug Fixes
