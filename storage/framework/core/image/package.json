@@ -32,7 +32,7 @@
   },
   "dependencies": {
     "@stacksjs/types": "workspace:*",
-    "ts-images": "^0.2.6"
+    "ts-images": "^0.2.7"
   },
   "devDependencies": {
     "better-dx": "^0.2.17"
