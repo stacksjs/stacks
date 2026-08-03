@@ -1,5 +1,21 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.251...v0.70.252)
+
+## 🐛 Bug Fixes
+
+- **database**: detect and repair migration ledger drift (#2204) ([62a4308](https://github.com/stacksjs/stacks/commit/62a4308)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2203](https://github.com/stacksjs/stacks/issues/2203), [#2204](https://github.com/stacksjs/stacks/issues/2204), [#2204](https://github.com/stacksjs/stacks/issues/2204))
+
+## 🔧 Chores
+
+- wip ([5c80012](https://github.com/stacksjs/stacks/commit/5c80012)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **database**: remove the migration ledger test suites (#2205) ([81555c8](https://github.com/stacksjs/stacks/commit/81555c8)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2205](https://github.com/stacksjs/stacks/issues/2205), [#2205](https://github.com/stacksjs/stacks/issues/2205))
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+- _Glenn Michael Torregosa <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.250...v0.70.251)
 
 ## 🐛 Bug Fixes
