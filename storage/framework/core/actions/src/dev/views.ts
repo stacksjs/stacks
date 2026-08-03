@@ -161,6 +161,7 @@ async function startDefaultServer() {
     fallbackLayoutsDir: defaultLayoutsPath,
     fallbackPartialsDir: defaultViewsPath,
     quiet: true,
+    openPath: process.env.STACKS_DEV_ENTRY_PATH || '/',
     ...(i18nConfig && { i18n: i18nConfig }),
     ...(siteConfig?.url && { site: siteConfig }),
     auth: {

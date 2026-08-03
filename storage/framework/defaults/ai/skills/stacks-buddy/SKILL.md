@@ -126,9 +126,17 @@ buddy dev -o/--docs          # docs only
 buddy dev -s/--system-tray   # system tray only
 buddy dev -i/--interactive   # interactive server selection menu
 buddy dev -l/--with-localhost # include localhost URL in output
+buddy dev --site             # open the marketing site instead of the detected app entry
 buddy dev -p/--project [name]
 buddy dev --verbose
 ```
+
+When `config/app.ts` defines `appPath` (for example, `/dashboard`), plain
+`buddy dev` treats it as the primary application URL and opens it once the dev
+servers are ready. Without `appPath`, Buddy detects common application views
+and falls back to `/` for site-only projects. Use `buddy dev --site` to force
+the marketing homepage for that session. Set `STACKS_DEV_NO_OPEN=1` when the
+browser should remain closed.
 
 Sub-commands with aliases:
 ```bash

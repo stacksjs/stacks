@@ -275,6 +275,7 @@ export type DevOption =
   | 'email'
   | 'system-tray'
   | 'interactive'
+  | 'site'
   | 'verbose'
 export type DevOptions = {
   [key in DevOption]: boolean

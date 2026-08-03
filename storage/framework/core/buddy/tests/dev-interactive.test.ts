@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'bun:test'
-import { dispatchInteractiveDevSelection, interactiveDevChoices, resolvePrettyDevDomain, shouldUsePrettyDevUrls } from '../src/commands/dev'
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
+import { developmentBrowserCommand, developmentUrl, dispatchInteractiveDevSelection, interactiveDevChoices, resolveDevelopmentEntryPath, resolvePrettyDevDomain, shouldUsePrettyDevUrls } from '../src/commands/dev'
 
 describe('buddy dev interactive selection', () => {
   it('dispatches every visible choice to exactly one runner', async () => {
@@ -61,5 +64,51 @@ describe('buddy dev URL selection', () => {
       proxyManagedExternally: false,
       systemAuthorized: true,
     })).toBe(false)
+  })
+
+  it('uses an explicitly configured application entry', () => {
+    expect(resolveDevelopmentEntryPath({ configuredPath: '/workspace' })).toBe('/workspace')
+  })
+
+  it('detects an application view without mistaking the marketing homepage for it', () => {
+    const root = mkdtempSync(join(tmpdir(), 'buddy-dev-app-'))
+    try {
+      mkdirSync(join(root, 'resources/views'), { recursive: true })
+      writeFileSync(join(root, 'resources/views/index.stx'), "@extends('layouts/marketing')")
+      writeFileSync(join(root, 'resources/views/composer.stx'), "@extends('layouts/product-shell')")
+
+      expect(resolveDevelopmentEntryPath({ root })).toBe('/composer')
+    }
+    finally {
+      rmSync(root, { recursive: true, force: true })
+    }
+  })
+
+  it('keeps site-only projects at the root', () => {
+    const root = mkdtempSync(join(tmpdir(), 'buddy-dev-site-'))
+    try {
+      mkdirSync(join(root, 'resources/views'), { recursive: true })
+      writeFileSync(join(root, 'resources/views/index.stx'), "@extends('layouts/marketing')")
+
+      expect(resolveDevelopmentEntryPath({ root })).toBe('/')
+    }
+    finally {
+      rmSync(root, { recursive: true, force: true })
+    }
+  })
+
+  it('lets --site override a detected or configured application', () => {
+    expect(resolveDevelopmentEntryPath({ site: true, configuredPath: '/dashboard' })).toBe('/')
+  })
+
+  it('adds the selected entry path without changing the frontend origin', () => {
+    expect(developmentUrl('https://postline.localhost', '/composer')).toBe('https://postline.localhost/composer')
+    expect(developmentUrl('http://localhost:3000', '/')).toBe('http://localhost:3000')
+  })
+
+  it('uses shell-free browser commands on every supported platform', () => {
+    expect(developmentBrowserCommand('https://postline.localhost/composer', 'darwin')).toEqual(['open', 'https://postline.localhost/composer'])
+    expect(developmentBrowserCommand('https://postline.localhost/composer', 'linux')).toEqual(['xdg-open', 'https://postline.localhost/composer'])
+    expect(developmentBrowserCommand('https://postline.localhost/composer', 'win32')).toEqual(['cmd', '/c', 'start', '', 'https://postline.localhost/composer'])
   })
 })

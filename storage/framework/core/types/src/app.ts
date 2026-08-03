@@ -51,6 +51,18 @@ export interface AppOptions {
   url: string
 
   /**
+   * **Application Entry Path**
+   *
+   * The browser path Buddy should treat as the primary application entry
+   * during development. When omitted, Buddy detects common app views and
+   * falls back to the site root when the project has no application UI.
+   *
+   * @default undefined
+   * @example "/dashboard"
+   */
+  appPath?: string
+
+  /**
    * **Redirect URLs**
    *
    * A Redirect URL is a URL that permanently redirects to the Application URL.

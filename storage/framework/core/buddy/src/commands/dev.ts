@@ -121,6 +121,141 @@ export function shouldUsePrettyDevUrls(input: {
     && (input.proxyManagedExternally || input.systemAuthorized)
 }
 
+const APPLICATION_VIEW_CANDIDATES = [
+  'app/index',
+  'app',
+  'dashboard/index',
+  'dashboard',
+  'home/index',
+  'home',
+  'composer',
+  'workspace/index',
+  'workspace',
+  'feed',
+  'portal',
+  'admin',
+  'account/index',
+  'account',
+  'profile/index',
+  'profile',
+] as const
+
+const SITE_LAYOUT_NAMES = new Set(['default', 'guest', 'marketing', 'site'])
+
+export function normalizeDevelopmentEntryPath(path: string | undefined): string {
+  const value = path?.trim()
+  if (!value || value === '/')
+    return '/'
+
+  try {
+    const parsed = new URL(value, 'http://stacks.localhost')
+    return `${parsed.pathname}${parsed.search}${parsed.hash}`
+  }
+  catch {
+    return '/'
+  }
+}
+
+function configuredApplicationPath(root: string): string | undefined {
+  if (process.env.APP_PATH)
+    return process.env.APP_PATH
+
+  try {
+    const source = readFileSync(join(root, 'config/app.ts'), 'utf8')
+    return source.match(/^[ \t]*appPath\s*:\s*(['"`])([^'"`]+)\1/m)?.[2]
+  }
+  catch {
+    return undefined
+  }
+}
+
+function viewSource(root: string, route: string): string | undefined {
+  const base = join(root, 'resources/views', route)
+  for (const extension of ['stx', 'vue', 'html']) {
+    const path = `${base}.${extension}`
+    if (existsSync(path)) {
+      try {
+        return readFileSync(path, 'utf8')
+      }
+      catch {
+        return ''
+      }
+    }
+  }
+  return undefined
+}
+
+function usesApplicationLayout(source: string): boolean {
+  const layout = source.match(/@extends\(\s*['"]layouts\/([^'"]+)['"]\s*\)/)?.[1]
+    ?? source.match(/@layout\(\s*['"]layouts\/([^'"]+)['"]\s*\)/)?.[1]
+
+  if (!layout)
+    return false
+
+  return !SITE_LAYOUT_NAMES.has(layout.split('/').at(-1) ?? layout)
+}
+
+export function resolveDevelopmentEntryPath(input: {
+  root?: string
+  site?: boolean
+  configuredPath?: string
+} = {}): string {
+  if (input.site)
+    return '/'
+
+  const root = input.root ?? projectPath()
+  const configuredPath = input.configuredPath ?? configuredApplicationPath(root)
+  if (configuredPath)
+    return normalizeDevelopmentEntryPath(configuredPath)
+
+  const loginExists = viewSource(root, 'login') !== undefined
+    || viewSource(root, 'auth/login') !== undefined
+  const candidates = APPLICATION_VIEW_CANDIDATES
+    .map(route => ({ route, source: viewSource(root, route) }))
+    .filter((candidate): candidate is { route: typeof APPLICATION_VIEW_CANDIDATES[number], source: string } => candidate.source !== undefined)
+
+  const appCandidate = candidates.find(candidate => usesApplicationLayout(candidate.source))
+    ?? (loginExists ? candidates[0] : undefined)
+
+  if (appCandidate)
+    return normalizeDevelopmentEntryPath(`/${appCandidate.route.replace(/\/index$/, '')}`)
+
+  return loginExists ? '/login' : '/'
+}
+
+export function developmentUrl(baseUrl: string, entryPath: string): string {
+  const normalized = normalizeDevelopmentEntryPath(entryPath)
+  if (normalized === '/')
+    return baseUrl.replace(/\/$/, '')
+
+  return new URL(normalized, `${baseUrl.replace(/\/$/, '')}/`).toString()
+}
+
+export function developmentBrowserCommand(url: string, platform = process.platform): string[] {
+  if (platform === 'darwin')
+    return ['open', url]
+  if (platform === 'win32')
+    return ['cmd', '/c', 'start', '', url]
+  return ['xdg-open', url]
+}
+
+function openDevelopmentBrowser(url: string): void {
+  if (!process.stdout.isTTY || process.env.CI || process.env.STACKS_DEV_NO_OPEN === '1')
+    return
+
+  try {
+    const subprocess = Bun.spawn(developmentBrowserCommand(url), {
+      stdin: 'ignore',
+      stdout: 'ignore',
+      stderr: 'ignore',
+    })
+    subprocess.unref()
+  }
+  catch {
+    // Browser opening is a convenience and must never fail the dev server.
+  }
+}
+
 async function canStartPrettyDevProxy(): Promise<boolean> {
   if (await waitForHttpsProxy(443, 150))
     return true
@@ -148,6 +283,7 @@ export function dev(buddy: CLI): void {
     interactive: 'Get asked which development server to start',
     select: 'Which development server are you trying to start?',
     withLocalhost: 'Include the localhost URL in the output',
+    site: 'Open the marketing site instead of the application',
     project: 'Target a specific project',
     verbose: 'Enable verbose output',
   }
@@ -164,11 +300,13 @@ export function dev(buddy: CLI): void {
     .option('-s, --system-tray', descriptions.systemTray)
     .option('-i, --interactive', descriptions.interactive, { default: false })
     .option('-l, --with-localhost', descriptions.withLocalhost, { default: false })
+    .option('--site', descriptions.site, { default: false })
     .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (server: string | undefined, options: DevOptions) => {
 
       const perf = Bun.nanoseconds()
+      process.env.STACKS_DEV_ENTRY_PATH = resolveDevelopmentEntryPath({ site: options.site })
 
       // log.info('Ensuring web server/s running...')
 
@@ -381,8 +519,10 @@ export function dev(buddy: CLI): void {
     .alias('dev:pages')
     .alias('dev:views')
     .option('-p, --project [project]', descriptions.project, { default: false })
+    .option('--site', descriptions.site, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: DevOptions) => {
+      process.env.STACKS_DEV_ENTRY_PATH = resolveDevelopmentEntryPath({ site: options.site })
       await (await actions()).runFrontendDevServer(options)
     })
 
@@ -412,6 +552,8 @@ export async function startDevelopmentServer(_options: DevOptions, _startTime?: 
   const startedAt = _startTime
   const appUrl = process.env.APP_URL ?? 'stacks.localhost'
   const nativeMode = options.native === true
+  const entryPath = resolveDevelopmentEntryPath({ site: options.site })
+  process.env.STACKS_DEV_ENTRY_PATH = entryPath
   // When rpx's on-demand sites launch `./buddy dev`, rpx already owns the reverse
   // proxy, TLS and the shared :443 daemon — and injects PORT/PORT_API/PORT_DOCS
   // for us to bind. Detect that at entry (before we set the same flag for our own
@@ -501,7 +643,8 @@ export async function startDevelopmentServer(_options: DevOptions, _startTime?: 
   const hasCustomDomain = usePrettyUrls && !proxyManagedExternally
   const displayedDomain = usePrettyUrls ? domain : null
   const dashboardDomain = displayedDomain ? `dashboard.${displayedDomain}` : null
-  const frontendUrl = displayedDomain ? `https://${displayedDomain}` : `http://localhost:${frontendPort}`
+  const frontendBaseUrl = displayedDomain ? `https://${displayedDomain}` : `http://localhost:${frontendPort}`
+  const frontendUrl = developmentUrl(frontendBaseUrl, entryPath)
   const apiUrl = displayedDomain ? `https://${displayedDomain}/api` : `http://localhost:${apiPort}`
   const docsUrl = displayedDomain ? `https://${displayedDomain}/docs` : `http://localhost:${docsPort}`
   const dashboardUrl = dashboardDomain ? `https://${dashboardDomain}` : `http://localhost:${dashboardPort}`
@@ -616,7 +759,7 @@ export async function startDevelopmentServer(_options: DevOptions, _startTime?: 
   ]
   const readinessTimeoutMs = 30000
   let readyAnnounced = false
-  const nativeUrl = `http://localhost:${frontendPort}`
+  const nativeUrl = developmentUrl(`http://localhost:${frontendPort}`, entryPath)
   const nativeWindowReady = nativeMode
     ? waitForPort(frontendPort, readinessTimeoutMs).then(async (ready) => {
       if (!ready) {
@@ -687,6 +830,8 @@ export async function startDevelopmentServer(_options: DevOptions, _startTime?: 
         hasCustomDomain: !!appLooksCustom && !localhostOnly,
         proxyReachable: proxyManagedExternally ? true : proxyReachable,
         frontendUrl,
+        frontendBaseUrl,
+        entryPath,
         apiUrl,
         docsUrl,
         dashboardUrl,
@@ -698,6 +843,13 @@ export async function startDevelopmentServer(_options: DevOptions, _startTime?: 
         dashboardPort,
         dashboardDomain,
       })
+
+      if (!nativeMode) {
+        const browserUrl = hasCustomDomain && (proxyManagedExternally || proxyReachable)
+          ? frontendUrl
+          : developmentUrl(`http://localhost:${frontendPort}`, entryPath)
+        openDevelopmentBrowser(browserUrl)
+      }
 
       if (startedAt) {
         const elapsedMs = (Bun.nanoseconds() - startedAt) / 1_000_000
@@ -780,6 +932,8 @@ function printDevReadyBanner(input: {
   hasCustomDomain: boolean
   proxyReachable: boolean
   frontendUrl: string
+  frontendBaseUrl: string
+  entryPath: string
   apiUrl: string
   docsUrl: string
   dashboardUrl: string
@@ -797,6 +951,8 @@ function printDevReadyBanner(input: {
     hasCustomDomain,
     proxyReachable,
     frontendUrl,
+    frontendBaseUrl,
+    entryPath,
     apiUrl,
     docsUrl,
     dashboardUrl,
@@ -815,14 +971,18 @@ function printDevReadyBanner(input: {
   // for bypassing the proxy. Without a reachable proxy the localhost dev
   // servers stay the primary, honest URLs.
   const useProxy = hasCustomDomain && proxyReachable
-  const feUrl = useProxy ? frontendUrl : `http://localhost:${frontendPort}`
+  const feUrl = useProxy ? frontendUrl : developmentUrl(`http://localhost:${frontendPort}`, entryPath)
+  const feBaseUrl = useProxy ? frontendBaseUrl : `http://localhost:${frontendPort}`
   const apUrl = useProxy ? apiUrl : `http://localhost:${apiPort}`
   const dcUrl = useProxy ? docsUrl : `http://localhost:${docsPort}`
   const dbUrl = useProxy ? dashboardUrl : `http://localhost:${dashboardPort}`
-  const blogUrl = `${feUrl}/blog`
+  const blogUrl = `${feBaseUrl}/blog`
 
   console.log()
-  console.log(`  ${green('➜')}  ${bold('Frontend')}:    ${cyan(feUrl)}`)
+  const frontendLabel = entryPath === '/' ? 'Site' : 'App'
+  console.log(`  ${green('➜')}  ${bold(frontendLabel.padEnd(8))}:    ${cyan(feUrl)}`)
+  if (entryPath !== '/')
+    console.log(`  ${dim('➜')}  ${dim('Site')}:        ${dim(feBaseUrl)}`)
   if (nativeMode)
     console.log(`  ${green('➜')}  ${bold('Native')}:      ${cyan(`Craft → ${feUrl}`)}`)
   console.log(`  ${green('➜')}  ${bold('API')}:         ${cyan(apUrl)}`)
@@ -832,7 +992,7 @@ function printDevReadyBanner(input: {
   if (includeDashboard)
     console.log(`  ${green('➜')}  ${bold('Dashboard')}:   ${cyan(dbUrl)}`)
   if (useProxy) {
-    console.log(`  ${dim('➜')}  ${dim('Direct')}:      ${dim(`http://localhost:${frontendPort} (bypasses the proxy)`)}`)
+    console.log(`  ${dim('➜')}  ${dim('Direct')}:      ${dim(`${developmentUrl(`http://localhost:${frontendPort}`, entryPath)} (bypasses the proxy)`)}`)
     if (includeDashboard && dashboardDomain)
       console.log(`  ${dim('➜')}  ${dim('Direct')}:      ${dim(`http://localhost:${dashboardPort} (dashboard, bypasses the proxy)`)}`)
   }
@@ -842,8 +1002,8 @@ function printDevReadyBanner(input: {
   }
   if (verbose && domain) {
     console.log(`  ${dim('➜')}  ${dim('Proxy')}:       ${dim(`localhost:${frontendPort} → ${domain}`)}`)
-    console.log(`  ${dim('➜')}  ${dim('Proxy')}:       ${dim(`${frontendUrl}/api → localhost:${apiPort}`)}`)
-    console.log(`  ${dim('➜')}  ${dim('Proxy')}:       ${dim(`${frontendUrl}/docs → localhost:${docsPort}`)}`)
+    console.log(`  ${dim('➜')}  ${dim('Proxy')}:       ${dim(`${frontendBaseUrl}/api → localhost:${apiPort}`)}`)
+    console.log(`  ${dim('➜')}  ${dim('Proxy')}:       ${dim(`${frontendBaseUrl}/docs → localhost:${docsPort}`)}`)
     if (includeDashboard)
       console.log(`  ${dim('➜')}  ${dim('Proxy')}:       ${dim(`localhost:${dashboardPort} → ${dashboardDomain}`)}`)
   }

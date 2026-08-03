@@ -8371,11 +8371,7 @@
             "isPrimaryKey": false,
             "isUnique": false,
             "isNullable": false,
-            "hasDefault": false,
-            "references": {
-              "table": "posts",
-              "column": "id"
-            }
+            "hasDefault": false
           },
           {
             "name": "taggable_type",
@@ -8445,11 +8441,7 @@
             "isPrimaryKey": false,
             "isUnique": false,
             "isNullable": false,
-            "hasDefault": false,
-            "references": {
-              "table": "posts",
-              "column": "id"
-            }
+            "hasDefault": false
           },
           {
             "name": "categorizable_type",
@@ -8795,7 +8787,7 @@
       }
     ]
   },
-  "hash": "7a121a6a4f4917e01d90bb7a34d17af8644deb1c045a2b8691a48233fc694794",
+  "hash": "3503d2359aed305cf60a6547cc9bbd880b1607ddf9dcaf3713d4d567dc995484",
   "dialect": "sqlite",
-  "updatedAt": "2026-07-31T13:00:32.944Z"
+  "updatedAt": "2026-08-03T00:11:34.182Z"
 }
