@@ -1110,8 +1110,138 @@ export function migrate(buddy: CLI): void {
       }
 
       log.success(`Wrote ${result.value.files.length} ${target} migration file(s) to database/migrations.`)
+
+      // Regeneration just renumbered every file, and the ledger keys on the
+      // filename — so without this, every migration this database had already
+      // applied now reads as pending and re-runs on the next `migrate`
+      // (stacksjs/stacks#2203). Reconciling is only reachable here after the
+      // guard above, i.e. an empty ledger or an explicit --force, and it is
+      // strictly safer than leaving the rows pointing at files that no longer
+      // exist.
+      if (applied > 0) {
+        const { reconcileMigrationLedger } = await import('@stacksjs/database')
+        const fixed = await reconcileMigrationLedger()
+        if (fixed.remapped.length > 0)
+          log.info(`Repointed ${fixed.remapped.length} ledger row(s) at their renumbered file.`)
+        if (fixed.recorded.length > 0)
+          log.info(`Recorded ${fixed.recorded.length} migration(s) already present in the schema.`)
+        if (fixed.skipped.length > 0) {
+          log.warn(`${fixed.skipped.length} ledger entr(ies) need a look — run \`./buddy migrate:status\`.`)
+        }
+      }
+
       log.info('Review the change with `git diff`, then run `./buddy migrate`.')
       await outro('Regenerated.', { startTime: perf, useSeconds: true })
+      process.exit(ExitCode.Success)
+    })
+
+  // `buddy migrate:status` — compare the corpus on disk, the `migrations`
+  // ledger, and the live schema.
+  //
+  // The ledger alone cannot be trusted to describe itself: it keys on the
+  // filename, regeneration renumbers files, and a renumbered migration then
+  // reads as pending forever. In the reported case (stacksjs/stacks#2203) the
+  // ledger claimed 6 applied while the schema reflected 22, and the first
+  // symptom was a 500 from an unrelated feature weeks later. Reading the schema
+  // is what tells "applied, row lost" apart from "genuinely never ran".
+  buddy
+    .command('migrate:status', 'Compare database/migrations, the migrations ledger, and the live schema')
+    .option('--reconcile', 'Repair the ledger where the schema proves what happened', { default: false })
+    .option('--include-partial', 'With --reconcile, also record half-applied migrations', { default: false })
+    .option('--json', 'Emit the audit as JSON', { default: false })
+    .action(async (options: { reconcile?: boolean, includePartial?: boolean, json?: boolean }) => {
+      const perf = options.json ? undefined : await intro('buddy migrate:status')
+
+      const { auditMigrationLedger, reconcileMigrationLedger } = await import('@stacksjs/database')
+      const audit = await auditMigrationLedger()
+
+      if (options.json) {
+        // eslint-disable-next-line no-console
+        console.log(JSON.stringify(audit, (_k, v) => (v instanceof Set ? [...v] : v), 2))
+        process.exit(audit.drift ? ExitCode.FatalError : ExitCode.Success)
+      }
+
+      if (!audit.supported) {
+        log.info(`Dialect "${audit.dialect}" is not audited. Nothing to compare.`)
+        await outro('Skipped.', { startTime: perf!, useSeconds: true })
+        process.exit(ExitCode.Success)
+      }
+
+      const { counts, entries, orphans } = audit
+      const list = (status: string): string[] => entries.filter(e => e.status === status).map(e => e.file)
+
+      // One buffer, one write. `log.*` is async and `console.log` is not, so
+      // interleaving them detaches every heading from the list it introduces.
+      const report: string[] = []
+      const section = (heading: string, files: string[]): void => {
+        if (files.length === 0) return
+        if (heading) report.push(`  ${heading}`)
+        for (const file of files.slice(0, 8)) report.push(`      ${file}`)
+        if (files.length > 8) report.push(`      … +${files.length - 8} more`)
+        report.push('')
+      }
+
+      report.push('')
+      report.push(`  Migration status: ${audit.dialect}`)
+      report.push('  ─────────────────────────────────────────────')
+      report.push(`  ${entries.length} file(s) on disk · ${audit.recordedCount} recorded in the ledger`)
+      report.push('')
+
+      if (counts.applied > 0)
+        report.push(`  ${counts.applied} applied - recorded, and present in the schema.`, '')
+      if (counts.unverifiable > 0)
+        report.push(`  ${counts.unverifiable} unverifiable - data migrations with no schema trace to check.`, '')
+
+      section(`${counts.pending} pending - not applied yet, will run on the next \`buddy migrate\`:`, list('pending'))
+      if (counts.stranded > 0) {
+        report.push(`  ${counts.stranded} STRANDED - already applied to the schema, but missing from the ledger.`)
+        report.push('  These re-run on the next `buddy migrate`, which is unsafe for anything not idempotent.')
+        section('', list('stranded'))
+      }
+      section(`${counts.partial} PARTIAL - some effects present, some missing. Needs a human:`, list('partial'))
+      section(`${counts.reverted} REVERTED - recorded as applied, but the effects are gone from the schema:`, list('reverted'))
+
+      if (orphans.length > 0) {
+        section(
+          `${orphans.length} orphaned ledger row(s) - recorded, but no such file on disk:`,
+          orphans.map(o => `${o.migration}${o.renamedTo ? `  -> renumbered to ${o.renamedTo}` : '  (no counterpart; migration deleted?)'}`),
+        )
+      }
+
+      // eslint-disable-next-line no-console
+      console.log(report.join('\n'))
+
+      if (!audit.drift) {
+        await outro('Ledger matches the corpus and the schema.', { startTime: perf!, useSeconds: true })
+        process.exit(ExitCode.Success)
+      }
+
+      if (!options.reconcile) {
+        // eslint-disable-next-line no-console
+        console.log(`
+  Repair with:  ./buddy migrate:status --reconcile
+  That repoints renumbered ledger rows and records migrations the schema
+  already proves. It never runs SQL from a migration file.
+`)
+        await outro('Drift detected.', { startTime: perf!, useSeconds: true })
+        process.exit(ExitCode.FatalError)
+      }
+
+      const fixed = await reconcileMigrationLedger({ includePartial: options.includePartial })
+      if (fixed.remapped.length > 0)
+        log.success(`Repointed ${fixed.remapped.length} ledger row(s) at their renumbered file.`)
+      if (fixed.recorded.length > 0)
+        log.success(`Recorded ${fixed.recorded.length} migration(s) the schema already reflects.`)
+      if (fixed.skipped.length > 0) {
+        log.warn(`Left ${fixed.skipped.length} entr(ies) alone:`)
+        // eslint-disable-next-line no-console
+        console.log(fixed.skipped.slice(0, 8).map(s => `      ${s.file} — ${s.reason}`).join('\n')
+          + (fixed.skipped.length > 8 ? `\n      … +${fixed.skipped.length - 8} more` : ''))
+      }
+      if (fixed.remapped.length === 0 && fixed.recorded.length === 0)
+        log.info('Nothing could be repaired automatically.')
+
+      await outro('Reconciled.', { startTime: perf!, useSeconds: true })
       process.exit(ExitCode.Success)
     })
 
