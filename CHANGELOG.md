@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.246...v0.70.247)
+
+## ✨ Features
+
+- **firefox**: sync the listing screenshots AMO will accept ([c8a8a51](https://github.com/stacksjs/stacks/commit/c8a8a51)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.245...v0.70.246)
 
 ## 🐛 Bug Fixes
