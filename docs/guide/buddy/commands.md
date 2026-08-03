@@ -6,7 +6,7 @@ description: Generated reference for every Buddy command, argument, option, alia
 
 # Buddy Command Reference
 
-This reference is generated from Buddy's runtime command registry and currently contains **304 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
+This reference is generated from Buddy's runtime command registry and currently contains **305 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
 
 ## Command groups
 
@@ -37,7 +37,7 @@ This reference is generated from Buddy's runtime command registry and currently 
 | `inspire` | 1 |
 | `key` | 1 |
 | `link` | 1 |
-| `lint` | 1 |
+| `lint` | 2 |
 | `mail` | 30 |
 | `make` | 18 |
 | `marketing` | 2 |
@@ -2163,6 +2163,20 @@ Automagically fixes all lint errors
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
 | `-p`, `--project` | Target a specific project | value, optional | `false` |
+| `--verbose` | Enable verbose output | boolean, optional | `false` |
+
+### `lint:stx`
+
+Run the stx conformance gate against your templates and build output
+
+- Usage: `$ buddy lint:stx`
+- Namespace: `lint`
+- Aliases: none
+- Arguments: none
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `--update` | Rewrite .stx-gate.json baselines to the current counts | boolean, optional | `false` |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
 
 ### `list`

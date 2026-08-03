@@ -1,0 +1,40 @@
+{
+  "$comment": [
+    "Baselines for `buddy lint:stx`. A number here is a DEBT, not a target.",
+    "The gate fails if a count goes above its baseline, and also if a count drops",
+    "below one without the baseline being lowered - a ratchet that only ever",
+    "loosens is theatre. Run `./buddy lint:stx --update` in the same diff as the",
+    "change that clears violations, never on its own.",
+    "",
+    "Every non-zero entry names what clears it:",
+    "  stx-config-keys       3 - config/ui.ts sets no strict/root/pagesDir. Pinning",
+    "                            root+pagesDir changes stx topology resolution, so",
+    "                            it needs a dev+build pass, not a blind edit.",
+    "  doctype-no-nolayout   5 - marketing/desktop shells still own their DOCTYPE;",
+    "                            blocked on stacksjs/stx#1798 (generateDocumentShell",
+    "                            htmlAttrs), without which removing the shell drops",
+    "                            the class the landing-page tokens are scoped to.",
+    "  style-block           2 - two templates still carry a <style> block; the",
+    "                            destination is config/crosswind.ts preflights.",
+    "  dom-guard             3 - coming-soon.stx and index.stx are still imperative.",
+    "  inline-style-attr    49 - mostly the desktop demo components, plus pre-hydration",
+    "                            display:none, whose sanctioned form is a :class with",
+    "                            literal branches.",
+    "  plain-internal-anchor 4 - four <a href=\"/\"> on the marketing pages; use StxLink."
+  ],
+  "baselines": {
+    "comment-landmine": 0,
+    "dist-component-error": 0,
+    "dist-layout-published": 0,
+    "dist-path-leak": 0,
+    "doctype-no-nolayout": 5,
+    "dom-guard": 3,
+    "inline-style-attr": 49,
+    "plain-internal-anchor": 4,
+    "script-tag-balance": 0,
+    "strict-lint": 0,
+    "stx-config-keys": 3,
+    "style-block": 2,
+    "unmanaged-timer": 0
+  }
+}
