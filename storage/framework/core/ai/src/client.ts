@@ -2,6 +2,7 @@ import type {
   AIMessage,
   AIMessageContent,
   AIProvider,
+  AIProviderConfiguration,
   AIResult,
   ChatCompletionOptions,
   ConfiguredAIClient,
@@ -18,7 +19,7 @@ function textContent(content: string | AIMessageContent[]): string {
   return content.filter(block => block.type === 'text').map(block => block.text ?? '').join('\n')
 }
 
-function providerFromConfig(config: ConfiguredAIOptions, override?: AIProvider): AIProvider {
+export function resolveAIProvider(config: ConfiguredAIOptions, override?: AIProvider): AIProvider {
   if (override)
     return override
   const configured = String(config.default || '').toLowerCase()
@@ -29,6 +30,48 @@ function providerFromConfig(config: ConfiguredAIOptions, override?: AIProvider):
   if (configured === 'ollama')
     return 'ollama'
   throw new Error(`Unsupported configured AI driver: ${config.default || '(empty)'}. Expected anthropic, openai, or ollama.`)
+}
+
+function configuredModel(config: ConfiguredAIOptions, provider: AIProvider): string | undefined {
+  const driverModel = config.drivers?.[provider]?.model?.trim()
+  if (driverModel) return driverModel
+
+  const configuredDefault = String(config.default || '').trim()
+  if (!configuredDefault || configuredDefault.toLowerCase() === provider) return undefined
+  return configuredDefault
+}
+
+/**
+ * Inspect the selected provider without creating a request or exposing secrets.
+ * Applications can use this for health checks, settings screens, and fallbacks.
+ */
+export function getAIProviderConfiguration(
+  config: ConfiguredAIOptions,
+  override?: AIProvider,
+  environment: Record<string, string | undefined> = process.env,
+): AIProviderConfiguration {
+  const provider = resolveAIProvider(config, override)
+  const driver = config.drivers?.[provider] ?? {}
+  const model = configuredModel(config, provider)
+
+  if (provider === 'ollama') {
+    return { provider, model, configured: true, source: 'local' }
+  }
+
+  if (driver.apiKey?.trim()) {
+    return { provider, model, configured: true, source: 'config' }
+  }
+
+  const environmentKey = provider === 'openai' ? 'OPENAI_API_KEY' : 'ANTHROPIC_API_KEY'
+  if (environment[environmentKey]?.trim()) {
+    return { provider, model, configured: true, source: 'environment' }
+  }
+
+  if (driver.baseUrl?.trim()) {
+    return { provider, model, configured: true, source: 'base-url' }
+  }
+
+  return { provider, model, configured: false, source: 'none' }
 }
 
 function parseObject(content: string): unknown {
@@ -158,10 +201,12 @@ function createGenerate(config: ConfiguredAIOptions, provider: AIProvider) {
  * Secrets remain server-side and may be supplied by config or provider env vars.
  */
 export function createAIClient(config: ConfiguredAIOptions, override?: AIProvider): ConfiguredAIClient {
-  const provider = providerFromConfig(config, override)
+  const provider = resolveAIProvider(config, override)
+  const configuration = getAIProviderConfiguration(config, provider)
   const generate = createGenerate(config, provider)
   return {
     provider,
+    configuration,
     generate,
     async generateObject<T>(messages: AIMessage[], schema: Record<string, unknown>, options: GenerateObjectOptions = {}) {
       const { attempts = 2, system, ...completionOptions } = options

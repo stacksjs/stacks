@@ -230,6 +230,19 @@ export interface AIConfig {
 
 export type AIProvider = 'anthropic' | 'openai' | 'ollama'
 
+export type AIConfigurationSource = 'config' | 'environment' | 'base-url' | 'local' | 'none'
+
+/**
+ * Safe, provider-neutral configuration metadata for diagnostics and UI.
+ * Never includes credentials.
+ */
+export interface AIProviderConfiguration {
+  provider: AIProvider
+  model?: string
+  configured: boolean
+  source: AIConfigurationSource
+}
+
 export interface ConfiguredAIOptions extends AIConfig {
   drivers?: {
     anthropic?: AIDriverConfig & { anthropicVersion?: string }
@@ -247,6 +260,7 @@ export interface GenerateObjectOptions extends ChatCompletionOptions {
 
 export interface ConfiguredAIClient {
   provider: AIProvider
+  configuration: AIProviderConfiguration
   generate: (messages: AIMessage[], options?: ChatCompletionOptions & { system?: string }) => Promise<AIResult>
   generateObject: <T>(
     messages: AIMessage[],

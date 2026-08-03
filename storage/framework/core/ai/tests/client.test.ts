@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, test } from 'bun:test'
-import { createAIClient, parseAIObject, validateAISchema } from '../src/client'
+import { createAIClient, getAIProviderConfiguration, parseAIObject, resolveAIProvider, validateAISchema } from '../src/client'
 
 const originalFetch = globalThis.fetch
 
@@ -34,6 +34,12 @@ describe('configured AI client', () => {
     ], schema)
 
     expect(client.provider).toBe('openai')
+    expect(client.configuration).toEqual({
+      provider: 'openai',
+      model: 'gpt-test',
+      configured: true,
+      source: 'config',
+    })
     expect(data.answer).toBe('fixed')
     expect(requestBody.response_format).toEqual({
       type: 'json_schema',
@@ -75,5 +81,47 @@ describe('configured AI client', () => {
 
   test('rejects unsupported legacy model defaults with an actionable error', () => {
     expect(() => createAIClient({ default: 'meta.llama3-70b-instruct-v1:0' })).toThrow('Unsupported configured AI driver')
+  })
+
+  test('resolves provider aliases and exposes safe configuration metadata', () => {
+    expect(resolveAIProvider({ default: 'gpt-4o-mini' })).toBe('openai')
+    expect(getAIProviderConfiguration({ default: 'gpt-4o-mini' }, undefined, {
+      OPENAI_API_KEY: 'secret-that-must-not-be-returned',
+    })).toEqual({
+      provider: 'openai',
+      model: 'gpt-4o-mini',
+      configured: true,
+      source: 'environment',
+    })
+  })
+
+  test('reports missing remote credentials without making a request', () => {
+    expect(getAIProviderConfiguration({ default: 'anthropic' }, undefined, {})).toEqual({
+      provider: 'anthropic',
+      model: undefined,
+      configured: false,
+      source: 'none',
+    })
+  })
+
+  test('treats custom base URLs and Ollama as configured runtimes', () => {
+    expect(getAIProviderConfiguration({
+      default: 'openai',
+      drivers: { openai: { baseUrl: 'http://localhost:8080/v1', model: 'local-model' } },
+    }, undefined, {})).toEqual({
+      provider: 'openai',
+      model: 'local-model',
+      configured: true,
+      source: 'base-url',
+    })
+    expect(getAIProviderConfiguration({
+      default: 'ollama',
+      drivers: { ollama: { model: 'llama3.2' } },
+    }, undefined, {})).toEqual({
+      provider: 'ollama',
+      model: 'llama3.2',
+      configured: true,
+      source: 'local',
+    })
   })
 })

@@ -58,6 +58,25 @@ const transcription = await openai.transcribe(audioFile)
 const speech = await openai.textToSpeech('Hello world')
 ```
 
+## Provider-Neutral Client
+
+Use the config-driven client for application features that can run against
+Anthropic, OpenAI, or Ollama. Configuration inspection is safe to return from a
+status endpoint because it never includes credentials.
+
+```typescript
+import { createAIClient, getAIProviderConfiguration } from '@stacksjs/ai'
+import aiConfig from './config/ai'
+
+const configuration = getAIProviderConfiguration(aiConfig)
+// { provider: 'openai', model: 'gpt-4o-mini', configured: true, source: 'environment' }
+
+if (configuration.configured) {
+  const client = createAIClient(aiConfig)
+  const result = await client.generate([{ role: 'user', content: 'Draft a launch plan.' }])
+}
+```
+
 ## Ollama Driver (Local LLMs)
 
 ```typescript
