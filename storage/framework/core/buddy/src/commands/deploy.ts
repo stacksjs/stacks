@@ -1,7 +1,7 @@
 import type { CLI, DeployOptions } from '@stacksjs/types'
 import { existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs'
 import { homedir } from 'node:os'
-import { isAbsolute, join, relative, resolve } from 'node:path'
+import { dirname, isAbsolute, join, relative, resolve } from 'node:path'
 import process from 'node:process'
 import { pathToFileURL } from 'node:url'
 import { runAction } from '@stacksjs/actions'
@@ -1096,14 +1096,41 @@ async function deployToHetzner(tsCloudConfig: any, deployEnv: string, options: D
 }
 
 /**
- * Load the ts-cloud driver used by Buddy. Published installs use the declared
- * package dependency. Framework and ts-cloud development can point at a built
- * local module with TS_CLOUD_MODULE, avoiding stale nested dependency copies
- * while still exercising the exact Buddy deploy path.
+ * Resolve the app's direct ts-cloud dependency before Buddy's own dependency.
+ * Package managers may retain a stale nested copy below Buddy even after the
+ * app explicitly updates ts-cloud; resolving from the project manifest keeps
+ * the deploy engine selected by the application authoritative.
+ */
+export function resolveProjectTsCloudModule(projectRoot = process.cwd()): string | undefined {
+  const manifestPath = join(projectRoot, 'node_modules', '@stacksjs', 'ts-cloud', 'package.json')
+  if (!existsSync(manifestPath)) return undefined
+
+  const manifest = JSON.parse(readFileSync(manifestPath, 'utf8')) as {
+    module?: string
+    exports?: { '.'?: string | { import?: string } }
+  }
+  const rootExport = manifest.exports?.['.']
+  const entry = manifest.module
+    ?? (typeof rootExport === 'string' ? rootExport : rootExport?.import)
+
+  if (!entry) return undefined
+  const modulePath = resolve(dirname(manifestPath), entry)
+  return existsSync(modulePath) ? modulePath : undefined
+}
+
+/**
+ * Load the ts-cloud driver used by Buddy. An explicit TS_CLOUD_MODULE remains
+ * available for framework development; published apps otherwise use their
+ * direct dependency before falling back to Buddy's declared dependency.
  */
 export async function loadTsCloudDeployApi(): Promise<typeof import('@stacksjs/ts-cloud')> {
   const requested = process.env.TS_CLOUD_MODULE?.trim()
-  if (!requested) return import('@stacksjs/ts-cloud')
+  if (!requested) {
+    const projectModule = resolveProjectTsCloudModule()
+    return projectModule
+      ? import(pathToFileURL(projectModule).href) as Promise<typeof import('@stacksjs/ts-cloud')>
+      : import('@stacksjs/ts-cloud')
+  }
 
   const modulePath = isAbsolute(requested) ? requested : resolve(process.cwd(), requested)
   if (!existsSync(modulePath)) throw new Error(`TS_CLOUD_MODULE points to a missing module: ${modulePath}`)

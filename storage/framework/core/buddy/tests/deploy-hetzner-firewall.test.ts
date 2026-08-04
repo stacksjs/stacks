@@ -20,6 +20,7 @@ import { join } from 'node:path'
 import {
   loadTsCloudDeployApi,
   reconcilePartialDeployManagementDashboards,
+  resolveProjectTsCloudModule,
   resolvePersistedAttachTargetBox,
   scrubLoopbackSitePortsForFirewall,
   shouldInjectManagementDashboard,
@@ -221,6 +222,24 @@ describe('attached compute state', () => {
 })
 
 describe('loadTsCloudDeployApi', () => {
+  it('resolves the application dependency before a nested Buddy copy', () => {
+    const fixtureDir = mkdtempSync(join(tmpdir(), 'ts-cloud-project-'))
+    const packageDir = join(fixtureDir, 'node_modules', '@stacksjs', 'ts-cloud')
+    const modulePath = join(packageDir, 'dist', 'index.js')
+    mkdirSync(join(packageDir, 'dist'), { recursive: true })
+    writeFileSync(join(packageDir, 'package.json'), JSON.stringify({
+      exports: { '.': { import: './dist/index.js' } },
+    }))
+    writeFileSync(modulePath, 'export function createCloudDriver() {}')
+
+    try {
+      expect(resolveProjectTsCloudModule(fixtureDir)).toBe(modulePath)
+    }
+    finally {
+      rmSync(fixtureDir, { force: true, recursive: true })
+    }
+  })
+
   it('loads an explicit built module for local ts-cloud dogfooding', async () => {
     const fixtureDir = mkdtempSync(join(tmpdir(), 'ts-cloud-module-'))
     const modulePath = join(fixtureDir, 'index.mjs')
