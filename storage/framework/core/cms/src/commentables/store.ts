@@ -1,3 +1,4 @@
+import { sqlDateTime } from '@stacksjs/database'
 import type { CommentablesTable } from '@stacksjs/orm'
 import { getDb } from '../database'
 import { resolveWrittenRow } from '../results'
@@ -38,7 +39,7 @@ export async function createComment(data: CreateCommentInput): Promise<Commentab
     commentables_id: data.commentables_id,
     commentables_type: data.commentables_type,
     status: 'pending',
-    created_at: now.toISOString(),
+    created_at: sqlDateTime(now),
   }
 
   const written = await db
@@ -64,7 +65,7 @@ export async function updateComment(
     .updateTable('commentables')
     .set({
       ...input,
-      updated_at: new Date().toISOString(),
+      updated_at: sqlDateTime(),
     })
     .where('id', '=', id)
     .execute()
@@ -79,7 +80,7 @@ export async function approveComment(id: number): Promise<CommentablesTable> {
     .set({
       status: 'approved',
       approved_at: Date.now(),
-      updated_at: new Date().toISOString(),
+      updated_at: sqlDateTime(),
     })
     .where('id', '=', id)
     .execute()
@@ -94,7 +95,7 @@ export async function rejectComment(id: number): Promise<CommentablesTable> {
     .set({
       status: 'rejected',
       rejected_at: Date.now(),
-      updated_at: new Date().toISOString(),
+      updated_at: sqlDateTime(),
     })
     .where('id', '=', id)
     .execute()

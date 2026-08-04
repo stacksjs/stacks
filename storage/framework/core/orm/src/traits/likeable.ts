@@ -1,4 +1,4 @@
-import { db as _db } from '@stacksjs/database'
+import { db as _db, sqlDateTime} from '@stacksjs/database'
 
 
 export function createLikeableMethods(tableName: string, options?: { table?: string, foreignKey?: string }) {
@@ -46,7 +46,7 @@ export function createLikeableMethods(tableName: string, options?: { table?: str
       if (typeof userId !== 'number' || !Number.isFinite(userId) || userId <= 0) {
         throw new Error(`[orm/likeable] like requires a positive numeric userId (received ${String(userId)})`)
       }
-      const now = new Date().toISOString()
+      const now = sqlDateTime()
       try {
         return await db
           .insertInto(likeTable)

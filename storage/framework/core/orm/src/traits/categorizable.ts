@@ -1,4 +1,4 @@
-import { db as _db } from '@stacksjs/database'
+import { db as _db, sqlDateTime} from '@stacksjs/database'
 
 // `db` is a Proxy whose methods are typed via bun-query-builder's generics —
 // resolution to the concrete invocation here can leave methods marked
@@ -59,8 +59,8 @@ export function createCategorizableMethods(tableName: string) {
             // categorizables.store() sets it.
             categorizable_type: tableName,
             is_active: true,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
+            created_at: sqlDateTime(),
+            updated_at: sqlDateTime(),
           })
           .execute()
 
@@ -76,8 +76,8 @@ export function createCategorizableMethods(tableName: string) {
           categorizable_id: id,
           categorizable_type: tableName,
           category_id: (categoryRecord as any).id,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
+          created_at: sqlDateTime(),
+          updated_at: sqlDateTime(),
         })
         .execute()
 

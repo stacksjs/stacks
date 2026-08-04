@@ -27,6 +27,7 @@
  * and friends when the trait is on.
  */
 
+import { sqlDateTime } from '@stacksjs/database'
 import { log } from '@stacksjs/logging'
 
 interface SoftDeleteCapableModel {
@@ -86,7 +87,7 @@ export interface SoftDeleteHelpers {
 export function createSoftDeleteMethods(model: SoftDeleteCapableModel, primaryKey: string = 'id'): SoftDeleteHelpers {
   return {
     async softDelete(id) {
-      const now = new Date().toISOString()
+      const now = sqlDateTime()
       const q: any = (model as any).where(primaryKey, id)
       if (typeof q?.update === 'function') {
         await q.update({ [DELETED_AT_COLUMN]: now })

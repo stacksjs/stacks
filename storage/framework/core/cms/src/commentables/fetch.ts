@@ -1,3 +1,4 @@
+import { sqlDateTime } from '@stacksjs/database'
 import { getDb } from '../database'
 import { formatDate } from '@stacksjs/orm'
 
@@ -92,7 +93,7 @@ export async function fetchCommentCountByPeriod(days: number): Promise<number> {
   try {
     const result = await db
       .selectFrom('commentables')
-      .where('created_at', '>=', new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString())
+      .where('created_at', '>=', sqlDateTime(new Date(Date.now() - days * 24 * 60 * 60 * 1000)))
       .count()
 
     return Number(result) || 0

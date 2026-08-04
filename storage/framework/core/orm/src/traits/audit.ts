@@ -42,6 +42,7 @@
  * `storage/framework/core/database/src/custom/audits.ts`.
  */
 
+import { sqlDateTime } from '@stacksjs/database'
 import { log } from '@stacksjs/logging'
 
 /**
@@ -201,7 +202,7 @@ async function writeAuditRow(payload: {
       old_values: payload.old_values ? JSON.stringify(payload.old_values) : null,
       new_values: payload.new_values ? JSON.stringify(payload.new_values) : null,
       user_id: payload.user_id,
-      created_at: new Date().toISOString(),
+      created_at: sqlDateTime(),
     } as Record<string, unknown>).executeTakeFirst()
   }
   catch (err) {

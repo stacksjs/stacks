@@ -1,4 +1,4 @@
-import { db as _db, sql } from '@stacksjs/database'
+import { db as _db, sql, sqlDateTime} from '@stacksjs/database'
 
 
 function assertId(id: unknown, method: string): asserts id is number {
@@ -66,8 +66,8 @@ export function createCommentableMethods(tableName: string) {
           commentables_id: id,
           commentables_type: tableName,
           status: 'pending',
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
+          created_at: sqlDateTime(),
+          updated_at: sqlDateTime(),
         })
         .returningAll()
         .executeTakeFirst()
@@ -152,7 +152,7 @@ export function createCommentableMethods(tableName: string) {
             upvoteable_id: commentId,
             upvoteable_type: COMMENT_UPVOTE_TYPE,
             user_id: userId,
-            created_at: new Date().toISOString(),
+            created_at: sqlDateTime(),
           })
           .execute()
       }

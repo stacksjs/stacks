@@ -1,4 +1,4 @@
-import { db as _db, sql } from '@stacksjs/database'
+import { db as _db, sql, sqlDateTime} from '@stacksjs/database'
 
 
 /**
@@ -51,8 +51,8 @@ export function createTaggableMethods(tableName: string) {
           taggable_type: tableName,
           slug: tag.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
           is_active: true,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
+          created_at: sqlDateTime(),
+          updated_at: sqlDateTime(),
         })
         .execute()
 
