@@ -360,7 +360,44 @@ Schema changes applied from the dashboard run as Vitess online DDL and are track
 Everything above works through vtgate alone, over the same connection your application already uses. Only creating a keyspace and applying a VSchema are vtctld operations. Leave `vtctldAddr` unset and the dashboard stays fully observable but read-only, which is the right default for a cluster you did not provision with ts-cloud.
 :::
 
-ts-cloud does not provision the Vitess cluster itself - vtgate, vttablet, and the topology service are yours to run (or a managed provider's). It manages the layer above: keyspaces, VSchema, schema changes, and observability.
+### Provisioning a cluster
+
+ts-cloud can also install and run Vitess on the box:
+
+```typescript
+// cloud.config.ts
+infrastructure: {
+  compute: {
+    services: {
+      vitess: {
+        cell: 'zone1',
+        keyspaces: [
+          { name: 'commerce', sharded: true },
+          { name: 'lookup' },
+        ],
+      },
+    },
+  },
+},
+```
+
+That installs Vitess and etcd from the pantry registry, writes systemd units for etcd, vtctld, vttablet (beside a managed mysqld), and vtgate, registers the cell, creates the keyspaces, and waits for vtgate to actually serve before the deploy is allowed to continue.
+
+For development, one process instead of five:
+
+```typescript
+services: {
+  vitess: { mode: 'combo' },
+},
+```
+
+`combo` runs the whole stack inside `vtcombo` with an in-memory topology. There is nothing to bootstrap and it goes away cleanly, which makes it right for local work and CI. It is **not durable** and binds to loopback with no authentication, so it must never hold real data.
+
+::: warning Single-box by design
+Cluster mode puts every component on one machine. That is a real deployment for staging, small production, and anywhere you want Vitess's routing and online DDL before you need horizontal scale - but a sharded keyspace here has all of its shards on one host, so you get the semantics without the fault tolerance.
+
+Spreading tablets across machines needs per-shard placement and reparent policy, which are decisions to make deliberately rather than defaults to inherit. For that, run the cluster yourself (or use a managed provider) and point ts-cloud at it with `vitess.vtctldAddr`.
+:::
 
 ## Related
 
