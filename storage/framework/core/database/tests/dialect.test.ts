@@ -91,7 +91,7 @@ describe('sqlHelpers delegates to the capability table', () => {
       expect(h.isSqlite).toBe(false)
       expect(h.isPostgres).toBe(false)
       expect(h.now).toBe('NOW()')
-      expect(h.nullableTimestamp).toBe('TIMESTAMP NULL')
+      expect(h.nullableTimestamp).toBe('DATETIME NULL')
       expect(h.param(1)).toBe('?')
     }
   })

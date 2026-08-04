@@ -33,7 +33,7 @@ function getDbDriver(): string {
  * `notifications/src/drivers/database.ts`.
  */
 export function notificationsTableSql(sql: SqlHelpers): string {
-  const { pkColumn, nullableTimestamp } = sql
+  const { pkColumn, nullableTimestamp, datetime } = sql
   return `CREATE TABLE IF NOT EXISTS notifications (
     ${pkColumn},
     user_id INTEGER NOT NULL,
@@ -41,7 +41,7 @@ export function notificationsTableSql(sql: SqlHelpers): string {
     data TEXT NOT NULL,
     read_at ${nullableTimestamp},
     uuid VARCHAR(36),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_at ${datetime} DEFAULT CURRENT_TIMESTAMP,
     updated_at ${nullableTimestamp}
   )`
 }
@@ -52,14 +52,14 @@ export function notificationsTableSql(sql: SqlHelpers): string {
  * preference upsert safe — matches `NotificationPreferenceRow`.
  */
 export function notificationPreferencesTableSql(sql: SqlHelpers): string {
-  const { pkColumn, boolTrue, nullableTimestamp } = sql
+  const { pkColumn, boolTrue, nullableTimestamp, datetime } = sql
   return `CREATE TABLE IF NOT EXISTS notification_preferences (
     ${pkColumn},
     user_id INTEGER NOT NULL,
     channel VARCHAR(50) NOT NULL,
     enabled BOOLEAN NOT NULL DEFAULT ${boolTrue},
     category VARCHAR(255),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_at ${datetime} DEFAULT CURRENT_TIMESTAMP,
     updated_at ${nullableTimestamp},
     UNIQUE (user_id, channel, category)
   )`
@@ -71,7 +71,7 @@ export function notificationPreferencesTableSql(sql: SqlHelpers): string {
  * state into the database inbox table.
  */
 export function notificationDeliveriesTableSql(sql: SqlHelpers): string {
-  const { pkColumn, nullableTimestamp } = sql
+  const { pkColumn, nullableTimestamp, datetime } = sql
   return `CREATE TABLE IF NOT EXISTS notification_deliveries (
     ${pkColumn},
     user_id INTEGER,
@@ -83,7 +83,7 @@ export function notificationDeliveriesTableSql(sql: SqlHelpers): string {
     error TEXT,
     metadata TEXT,
     sent_at ${nullableTimestamp},
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_at ${datetime} DEFAULT CURRENT_TIMESTAMP,
     updated_at ${nullableTimestamp}
   )`
 }

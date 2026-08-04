@@ -36,7 +36,26 @@ export interface SqlDialectHelpers {
    */
   pkColumn: string
   /**
-   * DDL fragment for a nullable timestamp column.
+   * Column type for a naive UTC datetime.
+   *
+   * `DATETIME` on MySQL, not `TIMESTAMP`. A MySQL `TIMESTAMP` is converted
+   * from the session timezone on write and back to it on read, so the same
+   * row read from two sessions yields two different instants — a value
+   * written as `01:52:47` comes back as `14:22:47` from a `+05:30` session.
+   * The framework stores naive UTC, and `DATETIME` is MySQL's naive type: it
+   * keeps the literal wall-clock value regardless of session or server
+   * timezone, matching SQLite's text columns and Postgres'
+   * `timestamp without time zone`.
+   *
+   * Bun's `SQL` is a connection pool and exposes no connection-string
+   * parameter, option, or connect hook for the session timezone, so pinning
+   * it to UTC is not reachable — a `SET time_zone` lands on one pooled
+   * connection and every other connection keeps the server default. The
+   * column type is the only place this can be fixed reliably.
+   */
+  datetime: string
+  /**
+   * DDL fragment for a nullable datetime column.
    * MySQL needs an explicit `NULL` modifier — without it, the column is
    * implicitly NOT NULL (with `0000-00-00 00:00:00` as the default), which
    * trips the strict-mode insert path. Postgres and SQLite are nullable by
@@ -200,7 +219,8 @@ export function sqlHelpers(driver: string): SqlDialectHelpers {
           : isMysql
             ? 'id INTEGER PRIMARY KEY AUTO_INCREMENT'
             : 'id INTEGER PRIMARY KEY AUTOINCREMENT',
-    nullableTimestamp: isMysql ? 'TIMESTAMP NULL' : 'TIMESTAMP',
+    datetime: isMysql ? 'DATETIME' : 'TIMESTAMP',
+    nullableTimestamp: isMysql ? 'DATETIME NULL' : 'TIMESTAMP',
 
     param(index: number): string {
       return isPostgres ? `$${index}` : '?'

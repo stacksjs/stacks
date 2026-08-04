@@ -30,7 +30,10 @@ describe('sqlHelpers - return shape', () => {
     expect(sqlHelpers('sqlite').pkColumn).toBe('id INTEGER PRIMARY KEY AUTOINCREMENT')
 
     expect(sqlHelpers('postgres').nullableTimestamp).toBe('TIMESTAMP')
-    expect(sqlHelpers('mysql').nullableTimestamp).toBe('TIMESTAMP NULL')
+    // DATETIME, not TIMESTAMP: a MySQL TIMESTAMP converts through the
+    // session timezone, so the same row reads back differently from two
+    // sessions. DATETIME is MySQL's naive type.
+    expect(sqlHelpers('mysql').nullableTimestamp).toBe('DATETIME NULL')
     expect(sqlHelpers('sqlite').nullableTimestamp).toBe('TIMESTAMP')
   })
 

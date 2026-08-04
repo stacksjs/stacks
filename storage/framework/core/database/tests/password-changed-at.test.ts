@@ -27,9 +27,11 @@ describe('users.password_changed_at defensive ALTER (stacksjs/stacks#1957)', () 
         .toBe('ALTER TABLE users ADD COLUMN password_changed_at TIMESTAMP')
     })
 
-    test('mysql needs an explicit NULL modifier (implicit NOT NULL otherwise)', () => {
+    test('mysql gets DATETIME with an explicit NULL modifier', () => {
+      // NULL avoids MySQL's implicit NOT NULL + zero-date default; DATETIME
+      // avoids the session-timezone conversion a MySQL TIMESTAMP applies.
       expect(usersPasswordChangedAtSql(sqlHelpers('mysql')))
-        .toBe('ALTER TABLE users ADD COLUMN password_changed_at TIMESTAMP NULL')
+        .toBe('ALTER TABLE users ADD COLUMN password_changed_at DATETIME NULL')
     })
   })
 

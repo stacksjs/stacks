@@ -36,13 +36,13 @@ function getDbDriver(): string {
 
 /** `roles` table — id + name + guard + timestamps with UNIQUE(name, guard_name). */
 export function rolesTableSql(sql: SqlHelpers): string {
-  const { pkColumn, nullableTimestamp } = sql
+  const { pkColumn, nullableTimestamp, datetime } = sql
   return `CREATE TABLE IF NOT EXISTS roles (
     ${pkColumn},
     name VARCHAR(255) NOT NULL,
     guard_name VARCHAR(255) NOT NULL DEFAULT 'web',
     description TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_at ${datetime} DEFAULT CURRENT_TIMESTAMP,
     updated_at ${nullableTimestamp},
     UNIQUE (name, guard_name)
   )`
@@ -50,44 +50,47 @@ export function rolesTableSql(sql: SqlHelpers): string {
 
 /** `permissions` table — same shape as `roles`. */
 export function permissionsTableSql(sql: SqlHelpers): string {
-  const { pkColumn, nullableTimestamp } = sql
+  const { pkColumn, nullableTimestamp, datetime } = sql
   return `CREATE TABLE IF NOT EXISTS permissions (
     ${pkColumn},
     name VARCHAR(255) NOT NULL,
     guard_name VARCHAR(255) NOT NULL DEFAULT 'web',
     description TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_at ${datetime} DEFAULT CURRENT_TIMESTAMP,
     updated_at ${nullableTimestamp},
     UNIQUE (name, guard_name)
   )`
 }
 
 /** `user_roles` pivot — composite PK makes double-assign a unique violation. */
-export function userRolesTableSql(): string {
+export function userRolesTableSql(sql: SqlHelpers): string {
+  const { datetime } = sql
   return `CREATE TABLE IF NOT EXISTS user_roles (
     user_id INTEGER NOT NULL,
     role_id INTEGER NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_at ${datetime} DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (user_id, role_id)
   )`
 }
 
 /** `user_permissions` pivot. */
-export function userPermissionsTableSql(): string {
+export function userPermissionsTableSql(sql: SqlHelpers): string {
+  const { datetime } = sql
   return `CREATE TABLE IF NOT EXISTS user_permissions (
     user_id INTEGER NOT NULL,
     permission_id INTEGER NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_at ${datetime} DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (user_id, permission_id)
   )`
 }
 
 /** `role_permissions` pivot. */
-export function rolePermissionsTableSql(): string {
+export function rolePermissionsTableSql(sql: SqlHelpers): string {
+  const { datetime } = sql
   return `CREATE TABLE IF NOT EXISTS role_permissions (
     role_id INTEGER NOT NULL,
     permission_id INTEGER NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_at ${datetime} DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (role_id, permission_id)
   )`
 }
@@ -111,13 +114,13 @@ export async function migrateRbacTables(options: { verbose?: boolean } = {}): Pr
     await db.unsafe(permissionsTableSql(sql)).execute()
 
     if (options.verbose) log.info('Creating user_roles pivot...')
-    await db.unsafe(userRolesTableSql()).execute()
+    await db.unsafe(userRolesTableSql(sql)).execute()
 
     if (options.verbose) log.info('Creating user_permissions pivot...')
-    await db.unsafe(userPermissionsTableSql()).execute()
+    await db.unsafe(userPermissionsTableSql(sql)).execute()
 
     if (options.verbose) log.info('Creating role_permissions pivot...')
-    await db.unsafe(rolePermissionsTableSql()).execute()
+    await db.unsafe(rolePermissionsTableSql(sql)).execute()
 
     if (options.verbose) log.success('RBAC tables created')
     return { success: true }

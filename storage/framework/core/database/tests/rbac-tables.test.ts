@@ -58,23 +58,23 @@ describe('RBAC table DDL — cross-dialect (stacksjs/stacks#1941 Phase A)', () =
 
   describe('pivot tables (composite primary keys)', () => {
     test('user_roles PK is (user_id, role_id)', () => {
-      const ddl = userRolesTableSql()
+      const ddl = userRolesTableSql(sqlHelpers('sqlite'))
       expect(ddl).toContain('CREATE TABLE IF NOT EXISTS user_roles')
       expect(ddl).toContain('PRIMARY KEY (user_id, role_id)')
     })
 
     test('user_permissions PK is (user_id, permission_id)', () => {
-      const ddl = userPermissionsTableSql()
+      const ddl = userPermissionsTableSql(sqlHelpers('sqlite'))
       expect(ddl).toContain('PRIMARY KEY (user_id, permission_id)')
     })
 
     test('role_permissions PK is (role_id, permission_id)', () => {
-      const ddl = rolePermissionsTableSql()
+      const ddl = rolePermissionsTableSql(sqlHelpers('sqlite'))
       expect(ddl).toContain('PRIMARY KEY (role_id, permission_id)')
     })
 
     test('every pivot carries created_at', () => {
-      for (const ddl of [userRolesTableSql(), userPermissionsTableSql(), rolePermissionsTableSql()])
+      for (const ddl of [userRolesTableSql(sqlHelpers('sqlite')), userPermissionsTableSql(sqlHelpers('sqlite')), rolePermissionsTableSql(sqlHelpers('sqlite'))])
         expect(ddl).toContain('created_at')
     })
   })

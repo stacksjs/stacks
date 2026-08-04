@@ -30,9 +30,12 @@ describe('users.email_verified_at defensive ALTER (stacksjs/stacks#1948)', () =>
         .toBe('ALTER TABLE users ADD COLUMN email_verified_at TIMESTAMP')
     })
 
-    test('mysql needs an explicit NULL modifier (implicit NOT NULL otherwise)', () => {
+    test('mysql gets DATETIME with an explicit NULL modifier', () => {
+      // The NULL modifier avoids MySQL's implicit NOT NULL + zero-date
+      // default; DATETIME avoids the session-timezone conversion a MySQL
+      // TIMESTAMP applies on every read and write.
       expect(usersEmailVerifiedAtSql(sqlHelpers('mysql')))
-        .toBe('ALTER TABLE users ADD COLUMN email_verified_at TIMESTAMP NULL')
+        .toBe('ALTER TABLE users ADD COLUMN email_verified_at DATETIME NULL')
     })
   })
 

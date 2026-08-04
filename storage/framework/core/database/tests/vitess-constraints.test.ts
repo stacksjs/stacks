@@ -66,7 +66,9 @@ describe('sqlHelpers for a dialect without auto-increment', () => {
     expect(h.isMysql).toBe(true)
     expect(h.now).toBe('NOW()')
     expect(h.param(1)).toBe('?')
-    expect(h.nullableTimestamp).toBe('TIMESTAMP NULL')
+    // DATETIME: vitess speaks MySQL's wire protocol and inherits its
+    // TIMESTAMP session-timezone conversion, so it needs the naive type too.
+    expect(h.nullableTimestamp).toBe('DATETIME NULL')
   })
 
   test('mysql itself is unaffected', () => {
