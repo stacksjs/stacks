@@ -665,24 +665,59 @@ async function pruneBatchRecords(olderThanHours: number): Promise<number> {
 // Database storage implementation
 // =============================================================================
 
+/** True when the record carries at least one persistent terminal handler. */
+function hasPersistentHandlers(record: BatchRecord): boolean {
+  return !!(record.then_handler || record.catch_handler || record.finally_handler)
+}
+
 async function storeBatchInDatabase(record: BatchRecord): Promise<void> {
   const { db } = await import('@stacksjs/database')
 
-  await db
-    .insertInto('job_batches')
-    .values({
-      id: record.id,
-      name: record.name,
-      total_jobs: record.total_jobs,
-      pending_jobs: record.pending_jobs,
-      failed_jobs: record.failed_jobs,
-      failed_job_ids: record.failed_job_ids,
-      options: record.options,
-      cancelled_at: record.cancelled_at,
-      created_at: record.created_at,
-      finished_at: record.finished_at,
-    })
-    .execute()
+  const columns = {
+    id: record.id,
+    name: record.name,
+    total_jobs: record.total_jobs,
+    pending_jobs: record.pending_jobs,
+    failed_jobs: record.failed_jobs,
+    failed_job_ids: record.failed_job_ids,
+    options: record.options,
+    cancelled_at: record.cancelled_at,
+    created_at: record.created_at,
+    finished_at: record.finished_at,
+  }
+
+  // No handlers registered — insert the shape every schema version has.
+  // `job_batches` is created with `CREATE TABLE IF NOT EXISTS` and there is
+  // no ALTER path, so a table created before #1883 added the handler columns
+  // never gains them; naming them unconditionally would break those apps.
+  if (!hasPersistentHandlers(record)) {
+    await db.insertInto('job_batches').values(columns).execute()
+    return
+  }
+
+  try {
+    await db
+      .insertInto('job_batches')
+      .values({
+        ...columns,
+        then_handler: record.then_handler ?? null,
+        catch_handler: record.catch_handler ?? null,
+        finally_handler: record.finally_handler ?? null,
+      })
+      .execute()
+  }
+  catch (error) {
+    // Pre-#1883 schema: keep the batch itself working, but say plainly that
+    // the terminal handlers will not survive a worker restart until the
+    // table is recreated — silently dropping them is what made this feature
+    // look implemented when it was not.
+    log.warn(
+      `[Batch] Could not persist terminal handlers for batch ${record.id}: ${(error as Error)?.message}. `
+      + 'The job_batches table predates the then_handler/catch_handler/finally_handler columns; '
+      + 'recreate it to enable handlers that survive a worker restart.',
+    )
+    await db.insertInto('job_batches').values(columns).execute()
+  }
 }
 
 async function getBatchFromDatabase(id: string): Promise<BatchRecord | null> {
@@ -809,23 +844,38 @@ async function connectBatchRedis(): Promise<RedisClient> {
   return client
 }
 
+/**
+ * Encode a {@link BatchRecord} as a `stacks:batch:*` hash.
+ *
+ * A Redis hash holds only strings, so every nullable field uses the empty
+ * string as its absent marker — {@link batchRecordFromHash} is the exact
+ * inverse. The handler fields are written unconditionally: unlike the
+ * database store there is no schema to migrate, so a hash always carries the
+ * full record shape.
+ */
+export function batchRecordToHash(record: BatchRecord): Record<string, string> {
+  return {
+    id: record.id,
+    name: record.name,
+    total_jobs: String(record.total_jobs),
+    pending_jobs: String(record.pending_jobs),
+    failed_jobs: String(record.failed_jobs),
+    failed_job_ids: record.failed_job_ids,
+    options: record.options,
+    cancelled_at: record.cancelled_at || '',
+    created_at: record.created_at,
+    finished_at: record.finished_at || '',
+    then_handler: record.then_handler || '',
+    catch_handler: record.catch_handler || '',
+    finally_handler: record.finally_handler || '',
+  }
+}
+
 async function storeBatchInRedis(record: BatchRecord): Promise<void> {
   try {
     const client = await connectBatchRedis()
 
-    const key = `${REDIS_BATCH_PREFIX}${record.id}`
-    await client.hset(key, {
-      id: record.id,
-      name: record.name,
-      total_jobs: String(record.total_jobs),
-      pending_jobs: String(record.pending_jobs),
-      failed_jobs: String(record.failed_jobs),
-      failed_job_ids: record.failed_job_ids,
-      options: record.options,
-      cancelled_at: record.cancelled_at || '',
-      created_at: record.created_at,
-      finished_at: record.finished_at || '',
-    })
+    await client.hset(`${REDIS_BATCH_PREFIX}${record.id}`, batchRecordToHash(record))
     await client.sadd(REDIS_BATCH_INDEX, record.id)
     client.close()
   }
@@ -843,7 +893,7 @@ async function storeBatchInRedis(record: BatchRecord): Promise<void> {
  * missing keys the current record type requires. A hash without an `id` is
  * treated as absent rather than yielding a half-built record.
  */
-function batchRecordFromHash(data: Record<string, string> | null): BatchRecord | null {
+export function batchRecordFromHash(data: Record<string, string> | null): BatchRecord | null {
   if (!data?.id)
     return null
 
@@ -858,6 +908,9 @@ function batchRecordFromHash(data: Record<string, string> | null): BatchRecord |
     cancelled_at: data.cancelled_at || null,
     created_at: data.created_at ?? '',
     finished_at: data.finished_at || null,
+    then_handler: data.then_handler || null,
+    catch_handler: data.catch_handler || null,
+    finally_handler: data.finally_handler || null,
   }
 }
 
