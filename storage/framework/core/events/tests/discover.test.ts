@@ -11,9 +11,18 @@ import { dispatch } from '../src/index'
 // log + skip. Errors during import log + skip.
 
 describe('discoverListeners (stacksjs/stacks#1878 E-3)', () => {
-  const testRoot = join(tmpdir(), `stacks-events-discover-${Date.now()}`)
+  // A fresh directory per test. These all shared one `testRoot`, so a
+  // sibling's `afterEach` could delete the directory out from under a test
+  // that had just written its fixtures into it — `discoverListeners` then
+  // scanned an empty (or missing) directory and returned 0. Unique paths also
+  // keep bun's module cache, which is keyed by absolute path, from serving one
+  // test's listener file to another.
+  let testRoot: string
+  let testCounter = 0
 
   beforeEach(() => {
+    testCounter += 1
+    testRoot = join(tmpdir(), `stacks-events-discover-${Date.now()}-${testCounter}`)
     mkdirSync(testRoot, { recursive: true })
   })
 
