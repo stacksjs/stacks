@@ -219,6 +219,29 @@ async function parseOrExit(buddy: CLI): Promise<void> {
 
 await main()
 
+/**
+ * Attach aliases to the command a just-loaded file registered.
+ *
+ * The registry key may carry arguments (`'send-emails <type>'`) while the
+ * registered command is named by its first word, so the lookup matches on
+ * that. Nothing is thrown when no command matches: a registry entry whose
+ * file registers a differently-named command is a mistake worth a log
+ * line, not a reason to take the whole CLI down.
+ */
+export function applyAliases(buddy: CLI, signature: string, aliases: string[]): void {
+  const name = signature.trim().split(/\s+/)[0]
+  const commands = (buddy as any).commands as Array<{ name?: string, alias?: (a: string) => unknown }> | undefined
+  const command = commands?.find(c => c.name === name)
+
+  if (!command || typeof command.alias !== 'function') {
+    log.debug(`Could not alias '${name}': no matching command was registered.`)
+    return
+  }
+
+  for (const alias of aliases)
+    command.alias(alias)
+}
+
 async function dynamicImports(buddy: CLI) {
   const { fs } = await import('@stacksjs/storage')
   const commandsDir = p.appPath('Commands')
@@ -256,12 +279,18 @@ async function dynamicImports(buddy: CLI) {
         if (typeof dynamicImport.default === 'function') {
           dynamicImport.default(buddy)
 
-          // Register aliases if specified
-          if (commandConfig.aliases && Array.isArray(commandConfig.aliases)) {
-            for (const alias of commandConfig.aliases) {
-              ;(buddy as any).alias(signature, alias)
-            }
-          }
+          // Register aliases if specified.
+          //
+          // Aliases belong to the command, not to the CLI: there is no
+          // `cli.alias()`. The previous `(buddy as any).alias(...)` threw
+          // `buddy.alias is not a function` on the first alias anyone
+          // declared, and the throw was swallowed by the catch below and
+          // logged as "Failed to load command X" — so a command with an
+          // alias looked like a broken command file rather than a broken
+          // alias, and every command registered after it in the same pass
+          // still loaded, which made it look intermittent.
+          if (commandConfig.aliases?.length)
+            applyAliases(buddy, signature, commandConfig.aliases)
         }
         else {
           log.error(`Expected a default export function in ${commandConfig.file}.ts, but got:`, dynamicImport.default)
