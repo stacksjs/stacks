@@ -147,53 +147,53 @@ jobs:
 
       # `bun run test` shells out to `buddy test`, which only globs
       # <project>/tests/**, so nothing under storage/framework/core/**/tests
-      # has ever run in CI. The database bootstrap gates every `buddy migrate`
-      # on every server-backed project, so its suite runs explicitly here.
-      # Scoped to one file on purpose: wiring up the core suites wholesale
-      # needs the pre-existing failures in them triaged first.
-      # `bun run test` shells out to `buddy test`, which only globs
-      # <project>/tests/**, so nothing under storage/framework/core/**/tests has
-      # ever run in CI. These five suites are green and cover ~945 tests.
+      # runs there. This step covers every core package.
       #
-      # One suite per step, not one command: `bun test` over all 81 core suites
-      # at once crashes the runtime, and separate steps also mean a failure
-      # names the package instead of one opaque red block.
+      # One `bun test` per package, not one over the whole tree: `bun test
+      # storage/framework/core` segfaults the runtime. And a loop rather than a
+      # hand-written list — the list is how ~70 packages stayed uncovered while
+      # five were wired, and how the wired five silently stopped being
+      # representative.
       #
-      # `actions` and `queue` each still have one pre-existing failure, so they
-      # are deliberately not wired yet rather than being left red.
-      # The whole database and router directories are NOT wired. Both pass on
-      # macOS and fail on Linux, which is exactly why this coverage was worth
-      # adding, but neither is a quick fix:
-      #   database: 425 pass / 4 fail, sqlite-pragmas hits
-      #     `RangeError: Cannot use a closed database`. A cross-file isolation
-      #     bug that macOS file ordering hides; it does not reproduce locally
-      #     when those two files are paired.
-      #   router: 114 pass / 143 fail, every failure at exactly 10000.01ms,
-      #     so the suite hangs on Linux rather than failing. Needs its own look.
-      # The database files below are the ones this work added or verified.
-      - name: Core tests (database bootstrap)
+      # `router` is sharded. bun schedules its 27 files concurrently, and past
+      # roughly 20 the suite stops finishing: every remaining test reports its
+      # own timeout (77 phantom failures locally, 143 on Linux) even for purely
+      # synchronous assertions. Each file passes alone, and split across two
+      # shards the suite passes 283/283. The shard split is a workaround for
+      # the runner, not for a product bug — the three REAL failures it was
+      # hiding are fixed (route middleware registry leaking across files).
+      - name: Core tests (all packages)
         if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: |
-          bun test storage/framework/core/database/tests/ensure-database.test.ts
-          bun test storage/framework/core/database/tests/committed-migrations-dialect.test.ts
-          bun test storage/framework/core/database/tests/model-sources.test.ts
-          bun test storage/framework/core/database/tests/emitted-migration-execution.test.ts
-
-      - name: Core tests (buddy)
-        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
-        run: bun test storage/framework/core/buddy/tests
-
-      - name: Core tests (cli)
-        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
-        run: bun test storage/framework/core/cli/tests
-
-      - name: Core tests (api)
-        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
-        run: bun test storage/framework/core/api/tests
-
-      - name: Core tests (release pre-flight)
-        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
-        run: bun test storage/framework/core/actions/tests/release-preflight.test.ts
+          failed=""
+          for dir in storage/framework/core/*/tests; do
+            pkg=$(basename "$(dirname "$dir")")
+            # charts cannot load: every @ts-charts/* package declares
+            # `"bun": "./src/index.ts"` in its exports map but publishes only
+            # `dist`, so bun picks that condition and resolution fails before a
+            # single test runs. An upstream packaging fix (ship `src`, or drop
+            # the `bun` condition) is the only thing that unblocks it — there is
+            # nothing to fix in this repo.
+            if [ "$pkg" = "charts" ]; then
+              echo "core/charts skipped — @ts-charts/* exports point at unpublished src/"
+              continue
+            fi
+            if [ "$pkg" = "router" ]; then
+              for shard in 1/2 2/2; do
+                echo "::group::core/$pkg (shard $shard)"
+                bun test "$dir" --shard="$shard" || failed="$failed $pkg[$shard]"
+                echo "::endgroup::"
+              done
+              continue
+            fi
+            echo "::group::core/$pkg"
+            bun test "$dir" || failed="$failed $pkg"
+            echo "::endgroup::"
+          done
+          if [ -n "$failed" ]; then
+            echo "Failing core packages:$failed"
+            exit 1
+          fi
 
   compile:
     runs-on: ubuntu-latest
