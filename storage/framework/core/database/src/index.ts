@@ -104,6 +104,9 @@ export { migrateNotificationTables } from './notification-tables'
 // RBAC tables migration (stacksjs/stacks#1941 Phase A)
 export { migrateRbacTables } from './rbac-tables'
 
+// Polymorphic trait tables (commentables/taggables/categorizables/upvotes)
+export { migrateTraitTables } from './trait-tables'
+
 // Dialect capability table — the single source of truth for what each
 // dialect speaks (wire protocol) and what it accepts (DDL features).
 export * from './dialect'

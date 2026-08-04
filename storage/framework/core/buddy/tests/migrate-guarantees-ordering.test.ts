@@ -61,6 +61,25 @@ describe('buddy migrate guarantee-table ordering (stacksjs/stacks#1952)', () => 
     expect(failureExit).toBeGreaterThan(notificationCall)
   })
 
+  it('migrate: runs migrateTraitTables after model migrations and before the failure exit', () => {
+    // commentables/taggables/categorizables have no model, so the model
+    // migration batch never creates them — but an app model that legitimately
+    // owns one of those names must still win, hence "after".
+    const modelMigrate = migrateSection.indexOf('await runAction(Action.Migrate, options)')
+    const traitCall = migrateSection.indexOf('await migrateTraitTables')
+    const failureExit = migrateSection.indexOf('While running the migrate command, there was an issue')
+    expect(traitCall).toBeGreaterThan(modelMigrate)
+    expect(failureExit).toBeGreaterThan(traitCall)
+  })
+
+  it('migrate:fresh action runs migrateTraitTables after model migrations', () => {
+    const modelMigrate = freshAction.indexOf('await runDatabaseMigration')
+    const traitCall = freshAction.indexOf('await migrateTraitTables')
+    const failureExit = freshAction.indexOf("log.error('runDatabaseMigration failed')")
+    expect(traitCall).toBeGreaterThan(modelMigrate)
+    expect(failureExit).toBeGreaterThan(traitCall)
+  })
+
   it('both commands still exit FatalError after a failed model migration', () => {
     for (const [section, outroText] of [
       [migrateSection, 'While running the migrate command, there was an issue'],

@@ -16,9 +16,12 @@ describe('deploy action ensures framework tables (stacksjs/stacks#1948)', () => 
   const deployPath = resolve(__dirname, '../src/deploy/index.ts')
   const source = readFileSync(deployPath, 'utf-8')
 
-  it('runs migrateAuthTables, migrateNotificationTables and migrateRbacTables', () => {
-    expect(source).toContain(`const { migrateAuthTables, migrateNotificationTables, migrateRbacTables } = await import('@stacksjs/database')`)
+  it('runs migrateAuthTables, migrateNotificationTables, migrateRbacTables and migrateTraitTables', () => {
+    expect(source).toContain(`const { migrateAuthTables, migrateNotificationTables, migrateRbacTables, migrateTraitTables } = await import('@stacksjs/database')`)
     expect(source).toMatch(/await migrateTables\(\{ verbose: isVerbose \}\)/)
+    // The polymorphic trait tables (commentables/taggables/categorizables)
+    // have no model, so nothing else in the deploy path creates them.
+    expect(source).toContain(`['trait', migrateTraitTables]`)
   })
 
   it('runs the guarantees outside the model-migration try/catch so a migration failure cannot skip them (stacksjs/stacks#1952)', () => {

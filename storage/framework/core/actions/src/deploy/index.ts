@@ -740,16 +740,17 @@ try {
   // replay hitting duplicate legacy rows, stacksjs/stacks#1952) doesn't
   // also skip these — they're all idempotent CREATE TABLE IF NOT EXISTS
   // plus defensive ALTERs, independent of the model-migration outcome.
-  const frameworkTablesSpinner = spinner('Ensuring framework tables (auth, notifications, RBAC)...')
+  const frameworkTablesSpinner = spinner('Ensuring framework tables (auth, notifications, RBAC, traits)...')
   frameworkTablesSpinner.start()
   try {
-    const { migrateAuthTables, migrateNotificationTables, migrateRbacTables } = await import('@stacksjs/database')
+    const { migrateAuthTables, migrateNotificationTables, migrateRbacTables, migrateTraitTables } = await import('@stacksjs/database')
 
     const failures: string[] = []
     const steps = [
       ['auth', migrateAuthTables],
       ['notification', migrateNotificationTables],
       ['RBAC', migrateRbacTables],
+      ['trait', migrateTraitTables],
     ] as const
     for (const [name, migrateTables] of steps) {
       const result = await migrateTables({ verbose: isVerbose })
@@ -760,7 +761,7 @@ try {
       frameworkTablesSpinner.stop()
       console.log(`⚠ Some framework tables could not be migrated: ${failures.join('; ')}`)
     } else {
-      frameworkTablesSpinner.succeed('Framework tables ensured (auth, notifications, RBAC)')
+      frameworkTablesSpinner.succeed('Framework tables ensured (auth, notifications, RBAC, traits)')
     }
   } catch (frameworkTablesError: any) {
     // Same policy as the model migrations above — the database might not

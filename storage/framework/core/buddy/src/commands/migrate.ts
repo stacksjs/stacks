@@ -580,14 +580,15 @@ export function migrate(buddy: CLI): void {
         log.error('Model migrations failed — applying notification/RBAC table guarantees before exiting.')
       }
 
-      // Notification and RBAC guarantees run AFTER model migrations so an app
-      // model with the same table name remains authoritative. In particular,
+      // Notification, RBAC, and polymorphic-trait guarantees run AFTER model
+      // migrations so an app model with the same table name remains
+      // authoritative. In particular,
       // pre-creating `notification_preferences` used to suppress the generated
       // model migration and silently discard its user_id foreign key. These
       // guarantees are still attempted before the failure exit below (#1952).
       if (options.auth !== false) {
         try {
-          const { migrateNotificationTables, migrateRbacTables } = await import('@stacksjs/database')
+          const { migrateNotificationTables, migrateRbacTables, migrateTraitTables } = await import('@stacksjs/database')
           const notifResult = await migrateNotificationTables({ verbose: options.verbose })
           if (!notifResult.success) {
             log.error(`Failed to migrate notification tables: ${notifResult.error}`)
@@ -597,9 +598,14 @@ export function migrate(buddy: CLI): void {
           if (!rbacResult.success) {
             log.error(`Failed to migrate RBAC tables: ${rbacResult.error}`)
           }
+
+          const traitResult = await migrateTraitTables({ verbose: options.verbose })
+          if (!traitResult.success) {
+            log.error(`Failed to migrate polymorphic trait tables: ${traitResult.error}`)
+          }
         }
         catch (error) {
-          log.error('Failed to migrate notification/RBAC tables:', error)
+          log.error('Failed to migrate notification/RBAC/trait tables:', error)
         }
       }
 
@@ -787,7 +793,7 @@ export function migrate(buddy: CLI): void {
         // every time. Errors still surface via log.error below.
         log.debug('Migrating auth tables...')
         try {
-          const { migrateAuthTables, migrateNotificationTables, migrateRbacTables } = await import('@stacksjs/database')
+          const { migrateAuthTables, migrateNotificationTables, migrateRbacTables, migrateTraitTables } = await import('@stacksjs/database')
           const authResult = await migrateAuthTables({ verbose: options.verbose })
 
           if (!authResult.success) {
@@ -809,9 +815,18 @@ export function migrate(buddy: CLI): void {
           if (!rbacResult.success) {
             log.error(`Failed to migrate RBAC tables: ${rbacResult.error}`)
           }
+
+          // Polymorphic trait tables — commentables/taggables/categorizables
+          // and comment upvotes. None has a model, so the model-derived
+          // generator never produced them and every trait call hit a
+          // missing table.
+          const traitResult = await migrateTraitTables({ verbose: options.verbose })
+          if (!traitResult.success) {
+            log.error(`Failed to migrate polymorphic trait tables: ${traitResult.error}`)
+          }
         }
         catch (error) {
-          log.error('Failed to migrate auth/notification/RBAC tables:', error)
+          log.error('Failed to migrate auth/notification/RBAC/trait tables:', error)
         }
       }
 

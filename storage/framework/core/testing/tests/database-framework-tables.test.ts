@@ -46,6 +46,10 @@ mock.module('@stacksjs/database', () => ({
     calls.push('migrateRbacTables')
     return { success: true }
   },
+  migrateTraitTables: async () => {
+    calls.push('migrateTraitTables')
+    return { success: true }
+  },
   runDatabaseMigration: async () => {
     calls.push('runDatabaseMigration')
     return { isOk: true }
@@ -59,7 +63,7 @@ afterAll(() => {
 })
 
 describe('test database framework-table guarantees (stacksjs/stacks#1948)', () => {
-  it('truncateSqlite migrates auth/notification/RBAC tables after model migrations', async () => {
+  it('truncateSqlite migrates auth/notification/RBAC/trait tables after model migrations', async () => {
     const { truncateSqlite } = await import('../src/database')
     await truncateSqlite()
 
@@ -69,6 +73,10 @@ describe('test database framework-table guarantees (stacksjs/stacks#1948)', () =
     expect(calls.indexOf('migrateAuthTables')).toBeGreaterThan(calls.indexOf('runDatabaseMigration'))
     expect(calls).toContain('migrateNotificationTables')
     expect(calls).toContain('migrateRbacTables')
+    // commentables/taggables/categorizables have no model, so nothing in
+    // runDatabaseMigration() creates them — a test DB without this step
+    // fails any commentable/taggable trait call with "no such table".
+    expect(calls).toContain('migrateTraitTables')
   })
 
   it('setupDatabase (mysql branch) wires the same guarantees', () => {

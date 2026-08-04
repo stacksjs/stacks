@@ -9,6 +9,7 @@ import {
   migrateAuthTables,
   migrateNotificationTables,
   migrateRbacTables,
+  migrateTraitTables,
   runDatabaseMigration,
 } from '@stacksjs/database'
 import { path } from '@stacksjs/path'
@@ -43,12 +44,12 @@ function getSnapshotPath(): string {
 }
 
 /**
- * Auth/oauth, notification, and RBAC tables live outside the generated
+ * Auth/oauth, notification, RBAC, and polymorphic-trait tables live outside the generated
  * model migrations — `buddy migrate` guarantees them as a separate step
  * after `runDatabaseMigration()` (stacksjs/stacks#1948). Test databases
  * need the identical guarantee, or feature tests hit "no such table:
  * oauth_access_tokens" / "no such column: email_verified_at" against a
- * freshly migrated schema. All three migrators are CREATE TABLE IF NOT
+ * freshly migrated schema. All four migrators are CREATE TABLE IF NOT
  * EXISTS plus defensive ALTERs, so reruns are no-ops. Failures surface
  * on stderr but don't throw — matching `buddy migrate` semantics, so
  * tests that never touch these tables aren't broken by one failed
@@ -59,6 +60,7 @@ async function migrateFrameworkTables(): Promise<void> {
     ['auth', migrateAuthTables],
     ['notification', migrateNotificationTables],
     ['RBAC', migrateRbacTables],
+    ['trait', migrateTraitTables],
   ] as const
 
   for (const [name, migrateTables] of steps) {

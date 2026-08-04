@@ -1,5 +1,5 @@
 import process from 'node:process'
-import { generateMigrations, migrateAuthTables, migrateNotificationTables, migrateRbacTables, resetDatabase, runDatabaseMigration } from '@stacksjs/database'
+import { generateMigrations, migrateAuthTables, migrateNotificationTables, migrateRbacTables, migrateTraitTables, resetDatabase, runDatabaseMigration } from '@stacksjs/database'
 import { log } from '@stacksjs/logging'
 
 // First, reset the database
@@ -44,6 +44,10 @@ if (!notifResult.success)
 const rbacResult = await migrateRbacTables()
 if (!rbacResult.success)
   log.error(`Failed to migrate RBAC tables: ${rbacResult.error}`)
+
+const traitResult = await migrateTraitTables()
+if (!traitResult.success)
+  log.error(`Failed to migrate polymorphic trait tables: ${traitResult.error}`)
 
 if ((migrateResult as any).isErr) {
   log.error('runDatabaseMigration failed')
