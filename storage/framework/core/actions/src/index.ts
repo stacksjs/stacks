@@ -23,6 +23,10 @@ export * from './helpers'
 // spawning a deep dist path. Exported from ./lint/lint — the pure module — so
 // importing the barrel never pulls the process-exiting ./lint/index script.
 export { formatProject, lintFix, lintProject } from './lint/lint'
+// stx conformance checks behind `buddy lint --stx`. Pure - returns a report
+// and never exits, so the command owns rendering and the exit code.
+export { DEFAULT_STX_LINT_CONFIG, loadStxLintConfig, runStxLint } from './lint/stx-gate'
+export type { StxLintConfig, StxLintReport, StxLintResult } from './lint/stx-gate'
 export * from './setup'
 
 // makeFactory,
