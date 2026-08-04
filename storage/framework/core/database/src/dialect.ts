@@ -153,9 +153,17 @@ const CAPABILITIES: Record<string, DialectCapabilities> = {
   vitess: {
     dialect: 'vitess',
     wire: 'mysql',
-    // No vitess renderer exists upstream, and none is needed: vtgate parses
-    // MySQL. Handing 'vitess' through would make the query builder fall
-    // back to its default dialect and render the wrong SQL entirely.
+    // Collapsed to 'mysql' on purpose, and this is a VERSION choice rather
+    // than a permanent one. bun-query-builder gained a `vitess` dialect and
+    // a `VitessDriver` (which suppresses foreign keys and AUTO_INCREMENT in
+    // its emitted DDL), but the version pinned here predates it, and passing
+    // a dialect the installed build does not know makes `getDialectDriver`
+    // throw. vtgate parses MySQL, so the collapse renders correct DML
+    // regardless; the DDL constraints the upstream driver would enforce are
+    // already enforced on this side by `./ddl-constraints`.
+    //
+    // Once the dependency is bumped past that release, flip this to 'vitess'
+    // so DDL generation is guarded upstream as well as audited here.
     queryBuilderDialect: 'mysql',
     // vtgate's MySQL-protocol port, not MySQL's own 3306 — connecting to
     // 3306 on a Vitess cluster reaches a vttablet's underlying mysqld and
