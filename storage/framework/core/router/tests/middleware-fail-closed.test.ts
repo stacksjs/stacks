@@ -19,11 +19,21 @@
  * helpers — assertions check membership, not exact equality.
  */
 
-import { beforeEach, describe, expect, test } from 'bun:test'
-import { assertRouteMiddlewareResolvable, clearMiddlewareCache, createStacksRouter, findUnresolvableRouteMiddleware } from '../src/stacks-router'
+import { afterAll, beforeEach, describe, expect, test } from 'bun:test'
+import { assertRouteMiddlewareResolvable, clearMiddlewareCache, clearRouteMiddlewareRegistry, createStacksRouter, findUnresolvableRouteMiddleware } from '../src/stacks-router'
 
 beforeEach(() => {
   clearMiddlewareCache()
+})
+
+// This file registers routes with deliberately unresolvable aliases, and the
+// route registry is module-scoped — so without this they stay visible to every
+// later file in the process and make `assertRouteMiddlewareResolvable()` throw
+// somewhere that never declared them. Cleared in afterAll, not beforeEach:
+// the boot-validation tests below rely on aliases registered by earlier tests
+// in THIS file.
+afterAll(() => {
+  clearRouteMiddlewareRegistry()
 })
 
 describe('request-time fail-closed', () => {

@@ -849,6 +849,25 @@ export function installMiddlewareHotReload(): () => void {
 const routeMiddlewareRegistry = new Map<string, string[]>()
 
 /**
+ * Drop every registered route → middleware mapping.
+ *
+ * The registry is module-scoped and lives for the life of the process, which
+ * is what `listRegisteredRoutes()` and the boot-time validators read. That is
+ * correct at runtime — routes are registered once at boot — but it means a
+ * test that registers a route keeps it visible to every later caller in the
+ * same process, including `assertRouteMiddlewareResolvable()`. A suite that
+ * deliberately registers an unresolvable alias therefore made an unrelated
+ * file's `serverResponse()` throw on routes it never declared.
+ *
+ * `clearMiddlewareCache()` deliberately does NOT do this: it flushes resolved
+ * middleware so a hot-reloaded file is re-read, while the routes themselves
+ * must survive. Clearing the route table is a separate, coarser action.
+ */
+export function clearRouteMiddlewareRegistry(): void {
+  routeMiddlewareRegistry.clear()
+}
+
+/**
  * Route keys that inherited `apiResponse: true` from a `route.group({
  * apiResponse: true }, …)` declaration. Checked at request time to flip
  * `req._forceJson`, which makes `formatResult()` skip content negotiation.
