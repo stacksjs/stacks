@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.259...v0.70.260)
+
+## 🐛 Bug Fixes
+
+- **buddy**: release inherited deploy lock ([38c0874](https://github.com/stacksjs/stacks/commit/38c0874)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.258...v0.70.259)
 
 ## ✨ Features
