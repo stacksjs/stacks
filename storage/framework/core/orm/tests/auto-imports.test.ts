@@ -80,10 +80,10 @@ afterAll(() => {
 
 describe('auto-imports scanning', () => {
   describe('scanModelExports (generated named-export models)', () => {
-    it('should scan a directory and return ExportInfo for each model file', () => {
+    it('should scan a directory and return ExportInfo for each model file', async () => {
       // Re-implement the scanning logic with manual filtering
       // (matches the actual imports.ts scanning pattern)
-      const { globSync } = require('@stacksjs/storage')
+      const { globSync } = await import('@stacksjs/storage')
       const dir = join(tmpDir, 'user-models')
       const allFiles: string[] = globSync(`${dir}/**/*.ts`)
 
@@ -111,8 +111,8 @@ describe('auto-imports scanning', () => {
       expect(names).not.toContain('index')
     })
 
-    it('should filter out .d.ts and index.ts files from scan results', () => {
-      const { globSync } = require('@stacksjs/storage')
+    it('should filter out .d.ts and index.ts files from scan results', async () => {
+      const { globSync } = await import('@stacksjs/storage')
       const dir = join(tmpDir, 'user-models')
 
       // Write a .d.ts file
@@ -138,8 +138,8 @@ describe('auto-imports scanning', () => {
   })
 
   describe('scanDefineModelExports (default-export models)', () => {
-    it('should scan and return unique model names with isDefault flag', () => {
-      const { globSync } = require('@stacksjs/storage')
+    it('should scan and return unique model names with isDefault flag', async () => {
+      const { globSync } = await import('@stacksjs/storage')
       const dir = join(tmpDir, 'default-models')
 
       let allFiles: string[] = []
@@ -180,8 +180,8 @@ describe('auto-imports scanning', () => {
       }
     })
 
-    it('should handle non-existent directories gracefully', () => {
-      const { globSync } = require('@stacksjs/storage')
+    it('should handle non-existent directories gracefully', async () => {
+      const { globSync } = await import('@stacksjs/storage')
       const dir = join(tmpDir, 'nonexistent-dir')
 
       let files: string[] = []
@@ -197,8 +197,8 @@ describe('auto-imports scanning', () => {
   })
 
   describe('deduplication across directories', () => {
-    it('should prioritize user models over framework and default models', () => {
-      const { globSync } = require('@stacksjs/storage')
+    it('should prioritize user models over framework and default models', async () => {
+      const { globSync } = await import('@stacksjs/storage')
       const modelDirs = [
         join(tmpDir, 'user-models'),
         join(tmpDir, 'framework-models'),
@@ -261,8 +261,8 @@ describe('auto-imports scanning', () => {
   })
 
   describe('generateDefineModelIndex output', () => {
-    it('should generate re-export lines for default exports', () => {
-      const { globSync } = require('@stacksjs/storage')
+    it('should generate re-export lines for default exports', async () => {
+      const { globSync } = await import('@stacksjs/storage')
       const outputPath = join(tmpDir, 'output/models.ts')
       const modelDirs = [
         join(tmpDir, 'user-models'),
