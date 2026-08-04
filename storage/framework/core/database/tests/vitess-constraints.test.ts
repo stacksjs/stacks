@@ -62,13 +62,17 @@ describe('sqlHelpers for a dialect without auto-increment', () => {
   })
 
   test('still renders MySQL SQL everywhere else', () => {
-    const h = sqlHelpers('vitess')
-    expect(h.isMysql).toBe(true)
-    expect(h.now).toBe('NOW()')
-    expect(h.param(1)).toBe('?')
-    // DATETIME: vitess speaks MySQL's wire protocol and inherits its
-    // TIMESTAMP session-timezone conversion, so it needs the naive type too.
-    expect(h.nullableTimestamp).toBe('DATETIME NULL')
+    // Asserted against MySQL's own output rather than literals: vtgate
+    // parses MySQL, so the invariant is "renders identically to mysql", and
+    // pinning the literal would make this fail whenever MySQL's rendering is
+    // legitimately changed elsewhere.
+    const vitess = sqlHelpers('vitess')
+    const mysql = sqlHelpers('mysql')
+    expect(vitess.isMysql).toBe(true)
+    expect(vitess.now).toBe(mysql.now)
+    expect(vitess.param(1)).toBe(mysql.param(1))
+    expect(vitess.nullableTimestamp).toBe(mysql.nullableTimestamp)
+    expect(vitess.boolTrue).toBe(mysql.boolTrue)
   })
 
   test('mysql itself is unaffected', () => {
@@ -111,6 +115,37 @@ describe('auditDdlSql', () => {
     expect(violation?.line).toBe(4)
     expect(violation?.file).toBe('posts.sql')
     expect(violation?.snippet).toContain('FOREIGN KEY')
+  })
+})
+
+describe('foreign keys are detected however the identifiers are quoted', () => {
+  // Regression: the rule originally required an identifier character after
+  // REFERENCES, which `stripSqlNoise` has already blanked out for quoted
+  // names. Since quoting is the common form, the rule matched almost
+  // nothing — all 17 foreign-key files in the shipped corpus passed the
+  // audit clean. These cover every quoting style the generators emit.
+  const forms: Array<[string, string]> = [
+    ['double-quoted (sqlite/postgres)', '  "user_id" INTEGER REFERENCES "users"("id"),'],
+    ['backtick-quoted (mysql)', '  `user_id` INT REFERENCES `users`(`id`),'],
+    ['unquoted', '  user_id INT REFERENCES users(id),'],
+    ['with ON DELETE', '  "user_id" INTEGER REFERENCES "users"("id") ON DELETE CASCADE,'],
+  ]
+
+  for (const [label, sql] of forms) {
+    test(`flags an inline reference: ${label}`, () => {
+      const violations = auditDdlSql(sql, 't.sql', 'vitess')
+      expect(violations.some(v => v.capability === 'foreignKeys')).toBe(true)
+    })
+  }
+
+  test('flags a table-level FOREIGN KEY constraint with quoted names', () => {
+    const sql = '  CONSTRAINT `fk` FOREIGN KEY (`user_id`) REFERENCES `users`(`id`)'
+    expect(auditDdlSql(sql, 't.sql', 'vitess').some(v => v.capability === 'foreignKeys')).toBe(true)
+  })
+
+  test('still says nothing for a dialect that supports foreign keys', () => {
+    for (const [, sql] of forms)
+      expect(auditDdlSql(sql, 't.sql', 'mysql')).toEqual([])
   })
 })
 

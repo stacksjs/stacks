@@ -64,7 +64,17 @@ export interface DdlConstraintAudit {
  */
 const CONSTRUCTS: Array<{ capability: DdlCapability, pattern: RegExp, label: string }> = [
   { capability: 'foreignKeys', pattern: /\bFOREIGN\s+KEY\b/i, label: 'FOREIGN KEY' },
-  { capability: 'foreignKeys', pattern: /\bREFERENCES\s+[`"\w]/i, label: 'REFERENCES' },
+  // Matched as a bare keyword, deliberately. An earlier version required a
+  // following identifier character (`REFERENCES\s+[`"\w]`) and therefore
+  // missed every real foreign key in the shipped corpus: `stripSqlNoise`
+  // blanks quoted identifiers, so `REFERENCES "users"("id")` arrives here as
+  // `REFERENCES        (    )` and the identifier the pattern was looking for
+  // is gone. Quoted is the common form, so the rule matched almost nothing.
+  //
+  // The bare keyword is safe because this runs on stripped SQL: a column
+  // named `references` is a reserved word that must be quoted, and quoted
+  // text has already been blanked out.
+  { capability: 'foreignKeys', pattern: /\bREFERENCES\b/i, label: 'REFERENCES' },
   { capability: 'autoIncrement', pattern: /\bAUTO_INCREMENT\b(?!\s*=)/i, label: 'AUTO_INCREMENT' },
   { capability: 'createIndexIfNotExists', pattern: /\bCREATE\s+(?:UNIQUE\s+)?INDEX\s+IF\s+NOT\s+EXISTS\b/i, label: 'CREATE INDEX IF NOT EXISTS' },
 ]
