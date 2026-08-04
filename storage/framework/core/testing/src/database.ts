@@ -10,6 +10,7 @@ import {
   migrateNotificationTables,
   migrateRbacTables,
   migrateTraitTables,
+  ensureUtcDatetimeColumns,
   runDatabaseMigration,
 } from '@stacksjs/database'
 import { path } from '@stacksjs/path'
@@ -61,6 +62,7 @@ async function migrateFrameworkTables(): Promise<void> {
     ['notification', migrateNotificationTables],
     ['RBAC', migrateRbacTables],
     ['trait', migrateTraitTables],
+    ['utc-datetime', ensureUtcDatetimeColumns],
   ] as const
 
   for (const [name, migrateTables] of steps) {

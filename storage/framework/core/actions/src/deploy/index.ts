@@ -743,7 +743,7 @@ try {
   const frameworkTablesSpinner = spinner('Ensuring framework tables (auth, notifications, RBAC, traits)...')
   frameworkTablesSpinner.start()
   try {
-    const { migrateAuthTables, migrateNotificationTables, migrateRbacTables, migrateTraitTables } = await import('@stacksjs/database')
+    const { ensureUtcDatetimeColumns, migrateAuthTables, migrateNotificationTables, migrateRbacTables, migrateTraitTables } = await import('@stacksjs/database')
 
     const failures: string[] = []
     const steps = [
@@ -751,6 +751,7 @@ try {
       ['notification', migrateNotificationTables],
       ['RBAC', migrateRbacTables],
       ['trait', migrateTraitTables],
+      ['utc-datetime', ensureUtcDatetimeColumns],
     ] as const
     for (const [name, migrateTables] of steps) {
       const result = await migrateTables({ verbose: isVerbose })

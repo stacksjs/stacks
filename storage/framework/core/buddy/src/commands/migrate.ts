@@ -588,7 +588,7 @@ export function migrate(buddy: CLI): void {
       // guarantees are still attempted before the failure exit below (#1952).
       if (options.auth !== false) {
         try {
-          const { migrateNotificationTables, migrateRbacTables, migrateTraitTables } = await import('@stacksjs/database')
+          const { ensureUtcDatetimeColumns, migrateNotificationTables, migrateRbacTables, migrateTraitTables } = await import('@stacksjs/database')
           const notifResult = await migrateNotificationTables({ verbose: options.verbose })
           if (!notifResult.success) {
             log.error(`Failed to migrate notification tables: ${notifResult.error}`)
@@ -602,6 +602,13 @@ export function migrate(buddy: CLI): void {
           const traitResult = await migrateTraitTables({ verbose: options.verbose })
           if (!traitResult.success) {
             log.error(`Failed to migrate polymorphic trait tables: ${traitResult.error}`)
+          }
+
+          // MySQL TIMESTAMP columns convert through the session timezone;
+          // repair any left over from before the tables declared DATETIME.
+          const datetimeResult = await ensureUtcDatetimeColumns({ verbose: options.verbose })
+          if (!datetimeResult.success) {
+            log.error(`Failed to convert TIMESTAMP columns to DATETIME: ${datetimeResult.error}`)
           }
         }
         catch (error) {

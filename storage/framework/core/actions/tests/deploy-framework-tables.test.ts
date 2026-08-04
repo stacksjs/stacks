@@ -16,8 +16,12 @@ describe('deploy action ensures framework tables (stacksjs/stacks#1948)', () => 
   const deployPath = resolve(__dirname, '../src/deploy/index.ts')
   const source = readFileSync(deployPath, 'utf-8')
 
-  it('runs migrateAuthTables, migrateNotificationTables, migrateRbacTables and migrateTraitTables', () => {
-    expect(source).toContain(`const { migrateAuthTables, migrateNotificationTables, migrateRbacTables, migrateTraitTables } = await import('@stacksjs/database')`)
+  it('runs every framework-table guarantee, including the trait tables and the UTC datetime repair', () => {
+    expect(source).toContain(`const { ensureUtcDatetimeColumns, migrateAuthTables, migrateNotificationTables, migrateRbacTables, migrateTraitTables } = await import('@stacksjs/database')`)
+    // MySQL TIMESTAMP columns convert through the session timezone; a deploy
+    // against a database migrated before the tables declared DATETIME has to
+    // repair them or its timestamps stay timezone-fragile.
+    expect(source).toContain(`['utc-datetime', ensureUtcDatetimeColumns]`)
     expect(source).toMatch(/await migrateTables\(\{ verbose: isVerbose \}\)/)
     // The polymorphic trait tables (commentables/taggables/categorizables)
     // have no model, so nothing else in the deploy path creates them.

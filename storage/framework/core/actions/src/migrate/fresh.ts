@@ -1,5 +1,5 @@
 import process from 'node:process'
-import { generateMigrations, migrateAuthTables, migrateNotificationTables, migrateRbacTables, migrateTraitTables, resetDatabase, runDatabaseMigration } from '@stacksjs/database'
+import { ensureUtcDatetimeColumns, generateMigrations, migrateAuthTables, migrateNotificationTables, migrateRbacTables, migrateTraitTables, resetDatabase, runDatabaseMigration } from '@stacksjs/database'
 import { log } from '@stacksjs/logging'
 
 // First, reset the database
@@ -48,6 +48,10 @@ if (!rbacResult.success)
 const traitResult = await migrateTraitTables()
 if (!traitResult.success)
   log.error(`Failed to migrate polymorphic trait tables: ${traitResult.error}`)
+
+const datetimeResult = await ensureUtcDatetimeColumns()
+if (!datetimeResult.success)
+  log.error(`Failed to convert TIMESTAMP columns to DATETIME: ${datetimeResult.error}`)
 
 if ((migrateResult as any).isErr) {
   log.error('runDatabaseMigration failed')
