@@ -13,8 +13,14 @@ import type { Middleware } from '@stacksjs/router'
 import { route } from '@stacksjs/router'
 import { generateAutoImportFiles, generateServerAutoImportTypes, injectGlobalAutoImports } from '@stacksjs/server'
 import { resolveApiHost } from '../helpers/api-host'
+import { exitWithParent } from './exit-with-parent'
 
 const _options = parseOptions()
+
+// Do not outlive `./buddy dev`. Orphaned copies of this process keep the
+// API port, and the next dev run then dies on EADDRINUSE with no clue that
+// the culprit is a server from a session that ended hours ago.
+exitWithParent()
 
 // Keep TypeScript's global declarations aligned with the runtime primitives
 // and current models without registering a catch-all bundler plugin in this

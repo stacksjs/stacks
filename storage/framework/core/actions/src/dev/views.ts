@@ -3,6 +3,7 @@ import { existsSync } from 'node:fs'
 import { config, overridesReady } from '@stacksjs/config'
 import { projectPath } from '@stacksjs/path'
 import { seedCsrfPageResponse } from './csrf'
+import { exitWithParent } from './exit-with-parent'
 
 /**
  * Boot the views/SSR dev server.
@@ -70,6 +71,9 @@ function currentRequestContext(): StacksRequestContext | undefined {
     return currentRequestContext()?.locale ?? 'en'
   },
 }
+
+// Do not outlive `./buddy dev`. See exit-with-parent.ts.
+exitWithParent()
 
 const projectServe = projectPath('serve.ts')
 

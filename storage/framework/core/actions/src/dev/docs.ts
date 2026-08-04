@@ -4,6 +4,10 @@ import { overridesReady, config as appConfig, docs } from '@stacksjs/config'
 import { projectPath } from '@stacksjs/path'
 import { startServer } from '@stacksjs/bunpress'
 import type { BunPressConfig } from '@stacksjs/bunpress'
+import { exitWithParent } from './exit-with-parent'
+
+// Do not outlive `./buddy dev`. See exit-with-parent.ts.
+exitWithParent()
 
 await overridesReady
 
