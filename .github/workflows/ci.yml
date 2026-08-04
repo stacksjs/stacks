@@ -168,16 +168,6 @@ jobs:
           failed=""
           for dir in storage/framework/core/*/tests; do
             pkg=$(basename "$(dirname "$dir")")
-            # charts cannot load: every @ts-charts/* package declares
-            # `"bun": "./src/index.ts"` in its exports map but publishes only
-            # `dist`, so bun picks that condition and resolution fails before a
-            # single test runs. An upstream packaging fix (ship `src`, or drop
-            # the `bun` condition) is the only thing that unblocks it — there is
-            # nothing to fix in this repo.
-            if [ "$pkg" = "charts" ]; then
-              echo "core/charts skipped — @ts-charts/* exports point at unpublished src/"
-              continue
-            fi
             if [ "$pkg" = "router" ]; then
               for shard in 1/2 2/2; do
                 echo "::group::core/$pkg (shard $shard)"

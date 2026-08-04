@@ -349,9 +349,9 @@
       "name": "@stacksjs/charts",
       "version": "0.70.257",
       "dependencies": {
-        "@ts-charts/format": "^0.2.0",
-        "@ts-charts/scale": "^0.2.0",
-        "@ts-charts/shape": "^0.2.3",
+        "@ts-charts/format": "^0.2.6",
+        "@ts-charts/scale": "^0.2.6",
+        "@ts-charts/shape": "^0.2.6",
       },
       "devDependencies": {
         "better-dx": "^0.2.17",
