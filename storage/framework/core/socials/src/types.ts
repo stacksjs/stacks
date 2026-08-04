@@ -178,20 +178,30 @@ export interface TimelineQuery {
   limit?: number
 }
 
+/**
+ * One post in a timeline, normalized to the same shape by every driver.
+ *
+ * Named rather than left inline in {@link TimelineResult} so a consumer can
+ * type a single item - a mapper, a row renderer, a test fixture - without
+ * restating the ten fields or reaching for `TimelineResult['items'][number]`.
+ * Apps were redeclaring this verbatim because there was nothing to import.
+ */
+export interface TimelineItem {
+  uri: string
+  authorHandle: string
+  authorName?: string
+  authorAvatar?: string
+  postUrl?: string
+  body: string
+  postedAt: string
+  likeCount: number
+  repostCount: number
+  replyCount: number
+}
+
 export interface TimelineResult {
   cursor?: string
-  items: Array<{
-    uri: string
-    authorHandle: string
-    authorName?: string
-    authorAvatar?: string
-    postUrl?: string
-    body: string
-    postedAt: string
-    likeCount: number
-    repostCount: number
-    replyCount: number
-  }>
+  items: TimelineItem[]
 }
 
 export interface SocialPublishingDriver {
