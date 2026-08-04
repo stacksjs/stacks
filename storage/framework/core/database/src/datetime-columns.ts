@@ -108,13 +108,13 @@ export async function findTimestampColumns(): Promise<TimestampColumn[]> {
   // created_at/updated_at keeps a legitimate text column from being caught.
   const rows = await db.unsafe(
     `SELECT TABLE_NAME, COLUMN_NAME, IS_NULLABLE, COLUMN_DEFAULT, EXTRA
-     FROM information_schema.COLUMNS
-     WHERE TABLE_SCHEMA = DATABASE()
-       AND TABLE_NAME IN (${placeholders})
-       AND (
-         DATA_TYPE = 'timestamp'
-         OR (DATA_TYPE = 'varchar' AND COLUMN_NAME IN ('created_at', 'updated_at'))
-       )`,
+    FROM information_schema.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE()
+      AND TABLE_NAME IN (${placeholders})
+      AND (
+        DATA_TYPE = 'timestamp'
+        OR (DATA_TYPE = 'varchar' AND COLUMN_NAME IN ('created_at', 'updated_at'))
+      )`,
     tables,
   ).execute()
 
