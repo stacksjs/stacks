@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it } from 'bun:test'
+import { afterEach, beforeEach, describe, expect, it } from 'bun:test'
 import {
   I18n,
   addTranslations,
@@ -31,8 +31,18 @@ import {
 import { createLoader, loadFile } from '../src/loader'
 
 // ---------------------------------------------------------------------------
-// Reset global state between tests by re-setting locale
+// Reset global state between tests by re-setting locale.
+//
+// beforeEach, not just afterEach: the locale is process-global, and `bun test`
+// shares one process across files — so a sibling suite that switches to 'de'
+// leaves it there and this file's first test read "Hallo" for "Hello". Setting
+// the precondition up front makes each test independent of whatever ran before
+// it, in this file or any other.
 // ---------------------------------------------------------------------------
+beforeEach(() => {
+  setLocale('en')
+})
+
 afterEach(() => {
   setLocale('en')
 })
