@@ -27,33 +27,22 @@
  * `storage/framework/core/orm/src/generated/table-traits.ts` and the columns
  * the CMS modules read and write.
  *
- * ## Why `created_at` / `updated_at` are VARCHAR here
+ * ## Timestamp columns
  *
- * Unlike `rbac-tables.ts` / `notification-tables.ts`, which declare TIMESTAMP,
- * these columns are VARCHAR(64). Every writer for these tables — the ORM traits
- * and the CMS modules — sends `new Date().toISOString()`, and that literal was
- * exercised against all three engines:
+ * `created_at` / `updated_at` use `sqlHelpers.datetime`, the same type every
+ * other framework table declares — `DATETIME` on MySQL, `TIMESTAMP` elsewhere.
  *
- * - MySQL rejects it outright against a TIMESTAMP column ("Incorrect datetime
- *   value: '2026-08-04T00:59:51.033Z'"), because strict mode does not accept
- *   the ISO-8601 `T`/`Z` form. The table would exist but be unwritable.
- * - Postgres accepts it into a TIMESTAMP but parses it as a naive local
- *   timestamp, so the value round-trips back shifted by the server's UTC
- *   offset.
- * - VARCHAR stores the exact string on all three, and ISO-8601 UTC sorts
- *   correctly lexicographically, so `orderBy('created_at', 'desc')` is
- *   unaffected.
+ * These were briefly VARCHAR, because the writers send an ISO-8601 literal and
+ * MySQL rejects the trailing `Z` against a datetime column. The real cause was
+ * the literal, not the column: `sqlDateTime()` now emits the canonical format
+ * (ISO without the `Z`), which all three engines accept, so the text column is
+ * no longer needed and these line up with the rest of the framework.
  *
- * This also matches how these columns are typed (`created_at?: string`) and how
- * the committed `0000000120-create-commentables-table.sql` declares them.
- *
- * There is no `DEFAULT CURRENT_TIMESTAMP`: MySQL rejects that default on a
- * VARCHAR column ("Invalid default value"). Every current writer sets the value
- * explicitly, so the default was never what filled these columns.
- *
- * The same ISO-vs-TIMESTAMP mismatch affects the already-shipped `notifications`
- * table, whose driver writes `toISOString()` into a TIMESTAMP column. That is a
- * pre-existing bug in a different subsystem and is not addressed here.
+ * `DEFAULT CURRENT_TIMESTAMP` is deliberately absent. The database clock
+ * renders space-separated while the application writes the canonical `T` form,
+ * and on SQLite — where these columns hold text — mixing the two breaks
+ * ordering. Every writer sets the value explicitly, so the default was never
+ * what filled these columns. Read them back with `parseSqlDateTime()`.
  */
 
 import { log } from '@stacksjs/logging'
@@ -69,11 +58,16 @@ function getDbDriver(): string {
 }
 
 /**
- * The timestamp columns on these tables. See the module header for why these
- * are text rather than TIMESTAMP.
+ * The timestamp columns these tables share — same type as every other
+ * framework table. See the module header for why there is no default.
  */
-const CREATED_AT = 'created_at VARCHAR(64)'
-const UPDATED_AT = 'updated_at VARCHAR(64)'
+function createdAt(sql: SqlHelpers): string {
+  return `created_at ${sql.datetime}`
+}
+
+function updatedAt(sql: SqlHelpers): string {
+  return `updated_at ${sql.nullableTimestamp}`
+}
 
 /**
  * The tables {@link migrateTraitTables} owns.
@@ -132,20 +126,20 @@ export function commentablesTableSql(sql: SqlHelpers): string {
     commentables_type VARCHAR(255) NOT NULL,
     user_id INTEGER,
     is_active BOOLEAN NOT NULL DEFAULT ${boolTrue},
-    ${CREATED_AT},
-    ${UPDATED_AT}
+    ${createdAt(sql)},
+    ${updatedAt(sql)}
   )`
 }
 
 /**
  * `taggables` — the tag catalogue, scoped to an owning model type.
  *
- * `taggable_id` is nullable because the two consumers disagree about it: the
- * CMS module treats a row as a type-scoped tag with no single owner, while
- * `orm/src/traits/taggable.ts` writes one row per owner and filters on
- * `taggable_id`. That disagreement predates this file and is not resolved
- * here — the schema is the union both can read, matching the committed
- * `0000000118-create-taggables-table.sql`.
+ * The two consumers disagree about ownership: the CMS module treats a row as a
+ * type-scoped tag with no single owner, while `orm/src/traits/taggable.ts`
+ * writes one row per owner and filters on `taggable_id`. Both are served by
+ * defaulting `taggable_id` to {@link UNSCOPED_OWNER_ID} — a CMS write lands on
+ * the sentinel, an ORM write carries the real owner, and the unique index is
+ * scoped by both so neither collides with the other.
  */
 export function taggablesTableSql(sql: SqlHelpers): string {
   const { pkColumn, boolTrue } = sql
@@ -157,8 +151,8 @@ export function taggablesTableSql(sql: SqlHelpers): string {
     is_active BOOLEAN NOT NULL DEFAULT ${boolTrue},
     taggable_id INTEGER NOT NULL DEFAULT ${UNSCOPED_OWNER_ID},
     taggable_type VARCHAR(255) NOT NULL,
-    ${CREATED_AT},
-    ${UPDATED_AT}
+    ${createdAt(sql)},
+    ${updatedAt(sql)}
   )`
 }
 
@@ -177,8 +171,8 @@ export function categorizablesTableSql(sql: SqlHelpers): string {
     is_active BOOLEAN NOT NULL DEFAULT ${boolTrue},
     categorizable_id INTEGER NOT NULL DEFAULT ${UNSCOPED_OWNER_ID},
     categorizable_type VARCHAR(255) NOT NULL,
-    ${CREATED_AT},
-    ${UPDATED_AT}
+    ${createdAt(sql)},
+    ${updatedAt(sql)}
   )`
 }
 
@@ -197,8 +191,8 @@ export function taggableModelsTableSql(sql: SqlHelpers): string {
     tag_id INTEGER NOT NULL,
     taggable_id INTEGER NOT NULL,
     taggable_type VARCHAR(255) NOT NULL,
-    ${CREATED_AT},
-    ${UPDATED_AT}
+    ${createdAt(sql)},
+    ${updatedAt(sql)}
   )`
 }
 
@@ -214,8 +208,8 @@ export function categorizableModelsTableSql(sql: SqlHelpers): string {
     category_id INTEGER NOT NULL,
     categorizable_id INTEGER NOT NULL,
     categorizable_type VARCHAR(255) NOT NULL,
-    ${CREATED_AT},
-    ${UPDATED_AT}
+    ${createdAt(sql)},
+    ${updatedAt(sql)}
   )`
 }
 
@@ -238,8 +232,8 @@ export function likesTableSql(sql: SqlHelpers, table: string, foreignKey: string
     ${pkColumn},
     ${foreignKey} INTEGER NOT NULL,
     user_id INTEGER NOT NULL,
-    ${CREATED_AT},
-    ${UPDATED_AT},
+    ${createdAt(sql)},
+    ${updatedAt(sql)},
     UNIQUE (${foreignKey}, user_id)
   )`
 }
@@ -255,7 +249,7 @@ export function commentableUpvotesTableSql(sql: SqlHelpers): string {
     user_id INTEGER,
     upvoteable_id INTEGER NOT NULL,
     upvoteable_type VARCHAR(255) NOT NULL,
-    ${CREATED_AT}
+    ${createdAt(sql)}
   )`
 }
 

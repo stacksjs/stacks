@@ -108,13 +108,22 @@ describe('trait table DDL — cross-dialect', () => {
         expect(ddl).toContain('rejected_at BIGINT')
       })
 
-      test('timestamps are text, because every writer sends an ISO-8601 string', () => {
-        // MySQL rejects '2026-08-04T00:59:51.033Z' against TIMESTAMP outright,
-        // and Postgres round-trips it back shifted by the server's UTC offset.
-        // See the trait-tables.ts header for the full rationale.
+      test('timestamps use the same column type as every other framework table', () => {
+        // These were briefly VARCHAR, to dodge MySQL rejecting the ISO `Z`.
+        // `sqlDateTime()` fixed the literal instead, so they line up with
+        // auth/RBAC/notifications now — DATETIME on MySQL, TIMESTAMP elsewhere.
+        expect(commentablesTableSql(sql)).toContain(`created_at ${sql.datetime}`)
+        expect(commentablesTableSql(sql)).toContain(`updated_at ${sql.nullableTimestamp}`)
         for (const ddl of ddlFor(driver).tables)
-          expect(ddl).not.toContain('TIMESTAMP')
-        expect(commentablesTableSql(sql)).toContain('created_at VARCHAR(64)')
+          expect(ddl).not.toContain('VARCHAR(64)')
+      })
+
+      test('carries no DEFAULT CURRENT_TIMESTAMP — the DB clock is a different format', () => {
+        // The database clock renders space-separated while the app writes the
+        // canonical `T` form; on SQLite these hold text and mixing the two
+        // breaks ordering. Every writer sets the value explicitly.
+        for (const ddl of ddlFor(driver).tables)
+          expect(ddl).not.toContain('DEFAULT CURRENT_TIMESTAMP')
       })
 
       test('is_active default uses the dialect boolean literal', () => {

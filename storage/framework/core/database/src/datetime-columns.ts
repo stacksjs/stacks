@@ -43,6 +43,7 @@ import { log } from '@stacksjs/logging'
 import { env as envVars } from '@stacksjs/env'
 import { db } from './utils'
 import { dialectCapabilities } from './dialect'
+import { traitTableNames } from './trait-tables'
 
 function getDbDriver(): string {
   return process.env.DB_CONNECTION || envVars.DB_CONNECTION || 'sqlite'
@@ -56,6 +57,9 @@ function getDbDriver(): string {
  */
 export function frameworkDatetimeTables(): string[] {
   return [
+    // trait-tables.ts — these shipped briefly with VARCHAR timestamp columns
+    // before `sqlDateTime()` made a real datetime column workable on MySQL.
+    ...traitTableNames(),
     // auth-tables.ts
     'passkeys',
     'password_resets',
@@ -98,12 +102,19 @@ export async function findTimestampColumns(): Promise<TimestampColumn[]> {
   const tables = frameworkDatetimeTables()
   const placeholders = tables.map(() => '?').join(', ')
 
+  // `varchar` is matched too, and only for the two timestamp column names:
+  // the trait tables shipped briefly with VARCHAR(64) here, and a database
+  // migrated in that window needs the same repair. Restricting to
+  // created_at/updated_at keeps a legitimate text column from being caught.
   const rows = await db.unsafe(
     `SELECT TABLE_NAME, COLUMN_NAME, IS_NULLABLE, COLUMN_DEFAULT, EXTRA
      FROM information_schema.COLUMNS
      WHERE TABLE_SCHEMA = DATABASE()
-       AND DATA_TYPE = 'timestamp'
-       AND TABLE_NAME IN (${placeholders})`,
+       AND TABLE_NAME IN (${placeholders})
+       AND (
+         DATA_TYPE = 'timestamp'
+         OR (DATA_TYPE = 'varchar' AND COLUMN_NAME IN ('created_at', 'updated_at'))
+       )`,
     tables,
   ).execute()
 
