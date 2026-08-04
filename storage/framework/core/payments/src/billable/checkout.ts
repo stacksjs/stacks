@@ -2,7 +2,7 @@
 import type { UserModel } from '@stacksjs/orm'
 import type Stripe from 'stripe'
 import { config } from '@stacksjs/config'
-import { stripe } from '..'
+import { stripe } from '../drivers/stripe'
 import { freshIdempotencyKey } from '../idempotency'
 
 export interface Checkout {

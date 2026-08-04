@@ -6,7 +6,9 @@ import { isUniqueViolation } from '@stacksjs/orm'
 
 type SubscriptionsTable = Record<string, unknown>
 
-import { manageCustomer, managePrice, stripe } from '..'
+import { stripe } from '../drivers/stripe'
+import { manageCustomer } from './customer'
+import { managePrice } from './price'
 import { stacksIdempotencyKey } from '../idempotency'
 
 export interface SubscriptionManager {

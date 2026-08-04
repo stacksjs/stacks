@@ -1,7 +1,7 @@
 
 import type { UserModel } from '@stacksjs/orm'
 import type Stripe from 'stripe'
-import { stripe } from '..'
+import { stripe } from '../drivers/stripe'
 
 export interface ManageInvoice {
   list: (user: UserModel) => Promise<Stripe.Response<Stripe.ApiList<Stripe.Invoice>>>

@@ -1,7 +1,8 @@
 
 import type { UserModel } from '@stacksjs/orm'
 import type Stripe from 'stripe'
-import { manageCustomer, stripe } from '..'
+import { stripe } from '../drivers/stripe'
+import { manageCustomer } from './customer'
 import { freshIdempotencyKey } from '../idempotency'
 
 export interface SetupIntent {

@@ -3,7 +3,7 @@ import type { ModelRow, UserModel } from '@stacksjs/orm'
 import type Stripe from 'stripe'
 import { db } from '@stacksjs/database'
 import { PaymentMethod } from '@stacksjs/orm'
-import { stripe } from '..'
+import { stripe } from '../drivers/stripe'
 
 type PaymentMethodInstance = NonNullable<Awaited<ReturnType<typeof PaymentMethod.find>>>
 type PaymentMethodsTable = ModelRow<typeof PaymentMethod>

@@ -1,5 +1,5 @@
 import type Stripe from 'stripe'
-import { stripe } from '..'
+import { stripe } from '../drivers/stripe'
 
 export interface PriceManager {
   retrieveByLookupKey: (lookupKey: string) => Promise<Stripe.Price | undefined>

@@ -5,7 +5,7 @@
  */
 
 import type Stripe from 'stripe'
-import { stripe } from '..'
+import { stripe } from '../drivers/stripe'
 
 export type WebhookEventType =
   | 'payment_intent.succeeded'
