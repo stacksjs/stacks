@@ -104,11 +104,13 @@ export { migrateNotificationTables } from './notification-tables'
 // RBAC tables migration (stacksjs/stacks#1941 Phase A)
 export { migrateRbacTables } from './rbac-tables'
 
-// Polymorphic trait tables (commentables/taggables/categorizables/upvotes)
-export { migrateTraitTables } from './trait-tables'
+// Polymorphic trait tables (commentables/taggables/categorizables/upvotes).
+// Exported wholesale like auth-tables: the pure DDL builders are how tests and
+// tooling stand up the same schema `buddy migrate` creates.
+export * from './trait-tables'
 
 // MySQL TIMESTAMP -> DATETIME guarantee for framework tables
-export { ensureUtcDatetimeColumns } from './datetime-columns'
+export * from './datetime-columns'
 
 // Dialect capability table — the single source of truth for what each
 // dialect speaks (wire protocol) and what it accepts (DDL features).
