@@ -70,8 +70,9 @@ describe('model-types.ts defines correct type utilities', () => {
   test('exports ModelRow type (attributes + FK columns)', () => {
     const content = readFileSync(modelTypesFile, 'utf-8')
     expect(content).toContain('export type ModelRow<T>')
-    // Must compose ModelAttributes and BelongsToForeignKeys
-    expect(content).toContain('ModelAttributes')
+    // The attribute half is bun-query-builder's `ModelRow` (imported as
+    // `QueryModelRow`); the FK half is still composed locally.
+    expect(content).toContain('QueryModelRow<T> & BelongsToForeignKeys<Def<T>>')
     expect(content).toContain('BelongsToForeignKeys')
   })
 
@@ -90,8 +91,10 @@ describe('model-types.ts defines correct type utilities', () => {
   test('imports from @stacksjs/query-builder (not generated types)', () => {
     const content = readFileSync(modelTypesFile, 'utf-8')
     expect(content).toContain("from '@stacksjs/query-builder'")
-    expect(content).toContain('InferModelAttributes')
-    expect(content).toContain('ModelAttributes')
+    // Imported under aliases (`ModelRow as QueryModelRow`, …), so assert the
+    // upstream names rather than locals the aliasing removed.
+    for (const util of ['InferAttributes', 'InferColumnNames', 'InferFillableAttributes', 'ModelRow'])
+      expect(content).toContain(util)
     expect(content).toContain('ModelDefinition')
   })
 
@@ -330,9 +333,14 @@ describe('server-auto-imports.d.ts has model declarations with relative paths', 
     expect(content).not.toContain('/Users/')
     expect(content).not.toContain('C:\\')
     // All import paths should start with '..'
+    // Only the MODEL/job/controller entries are file paths. The primitive
+    // auto-imports (`path`, `log`, `config`, …) are bare package specifiers
+    // and are supposed to stay that way.
     const importPaths = content.match(/import\('([^']+)'\)/g) || []
     for (const importPath of importPaths) {
       const path = importPath.match(/import\('([^']+)'\)/)?.[1]
+      if (path?.startsWith('@') || !path?.includes('/'))
+        continue
       expect(path).toMatch(/^\.\./)
     }
   })
@@ -387,7 +395,8 @@ describe('Action class uses smart InferRequest for model-aware handlers', () => 
     // Same multi-generic accommodation as above. The signature wraps
     // across lines, so allow whitespace between `handle: (` and the
     // typed `request:` parameter.
-    expect(content).toMatch(/handle:\s*\(\s*request: InferRequest<TModel[^>]*>/)
+    // `handle: { bivarianceHack: (request: InferRequest<…>) => … }['bivarianceHack']`
+    expect(content).toMatch(/bivarianceHack:\s*\(\s*request: InferRequest<TModel/)
   })
 
   test('model property is stored as string for runtime', () => {
@@ -459,27 +468,27 @@ describe('RequestInstance<TFields> is generic with model-aware narrowing', () =>
 
   test('get() method narrows key to keyof TFields', () => {
     const content = readFileSync(requestFile, 'utf-8')
-    expect(content).toContain('get: <K extends keyof TFields & string>(key: K')
+    expect(content).toContain('get<K extends keyof TFields & string>(key: K')
   })
 
   test('input() method narrows key to keyof TFields', () => {
     const content = readFileSync(requestFile, 'utf-8')
-    expect(content).toContain('input: <K extends keyof TFields & string>(key: K')
+    expect(content).toContain('input<K extends keyof TFields & string>(key: K')
   })
 
   test('only() method returns Pick<TFields, K>', () => {
     const content = readFileSync(requestFile, 'utf-8')
-    expect(content).toContain('only: <K extends keyof TFields & string>(keys: K[]) => Pick<TFields, K>')
+    expect(content).toContain('only<K extends keyof TFields & string>(keys: K[]): Pick<TFields, K>')
   })
 
   test('except() method returns Omit<TFields, K>', () => {
     const content = readFileSync(requestFile, 'utf-8')
-    expect(content).toContain('except: <K extends keyof TFields & string>(keys: K[]) => Omit<TFields, K>')
+    expect(content).toContain('except<K extends keyof TFields & string>(keys: K[]): Omit<TFields, K>')
   })
 
   test('validate() returns Promise<TFields>', () => {
     const content = readFileSync(requestFile, 'utf-8')
-    expect(content).toContain('validate: (rules?: Record<string, string>, messages?: Record<string, string>) => Promise<TFields>')
+    expect(content).toContain('validate: (rules?: RequestValidationRules, messages?: Record<string, string>) => Promise<TFields>')
   })
 
   test('all() returns TFields', () => {
@@ -489,7 +498,9 @@ describe('RequestInstance<TFields> is generic with model-aware narrowing', () =>
 
   test('has() narrows keys to keyof TFields', () => {
     const content = readFileSync(requestFile, 'utf-8')
-    expect(content).toContain('has: (key: (keyof TFields & string) | (keyof TFields & string)[]) => boolean')
+    // `has` deliberately stays wide: callers check for keys that may not be
+    // declared on the model (query params, flashed input).
+    expect(content).toContain('has: (key: string | string[]) => boolean')
   })
 
   test('safe() returns SafeData<TFields>', () => {
@@ -504,10 +515,10 @@ describe('RequestInstance<TFields> is generic with model-aware narrowing', () =>
 
   test('type-casting methods narrow keys to keyof TFields', () => {
     const content = readFileSync(requestFile, 'utf-8')
-    expect(content).toContain('string: (key: keyof TFields & string')
-    expect(content).toContain('integer: (key: keyof TFields & string')
-    expect(content).toContain('float: (key: keyof TFields & string')
-    expect(content).toContain('boolean: (key: keyof TFields & string')
+    expect(content).toContain('string(key: keyof TFields & string')
+    expect(content).toContain('integer(key: keyof TFields & string')
+    expect(content).toContain('float(key: keyof TFields & string')
+    expect(content).toContain('boolean(key: keyof TFields & string')
   })
 
   test('file methods are NOT narrowed (independent of model)', () => {

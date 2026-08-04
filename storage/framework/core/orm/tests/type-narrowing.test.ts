@@ -102,7 +102,10 @@ describe('model files are self-contained (no generated type imports)', () => {
 
     test(`${modelName}: imports defineModel from @stacksjs/orm`, () => {
       const content = readFileSync(fullPath, 'utf-8')
-      expect(content).toContain("import { defineModel } from '@stacksjs/orm'")
+      // A model may pull other helpers from the barrel alongside defineModel
+      // (Receipt imports `formatDate` for its timestamp setter), so match the
+      // import rather than one exact spelling of it.
+      expect(content).toMatch(/import \{[^}]*\bdefineModel\b[^}]*\} from '@stacksjs\/orm'/)
     })
 
     test(`${modelName}: does NOT import from orm/src/types`, () => {
@@ -140,7 +143,9 @@ describe('RequestInstance<TFields> narrowing structure', () => {
   })
 
   test('get() return type is TFields[K] (not any)', () => {
-    expect(content).toContain('(key: K, defaultValue?: TFields[K]) => TFields[K]')
+    // Method-shorthand, because `get` is overloaded (narrow + wide forms);
+    // an arrow property cannot carry overloads.
+    expect(content).toContain('get<K extends keyof TFields & string>(key: K, defaultValue?: TFields[K]): TFields[K]')
   })
 
   test('validate() return type is TFields (not any)', () => {
@@ -152,13 +157,13 @@ describe('RequestInstance<TFields> narrowing structure', () => {
   })
 
   test('merge() accepts Partial<TFields> (not Record<string, any>)', () => {
-    expect(content).toContain('merge: (data: Partial<TFields>) => void')
+    expect(content).toContain('merge(data: Partial<TFields>): void')
   })
 
   test('SafeData interface narrows to TFields', () => {
     expect(content).toContain('interface SafeData<T extends Record<string, any>')
-    expect(content).toContain('only: <K extends keyof T>(keys: K[]) => Pick<T, K>')
-    expect(content).toContain('get: <K extends keyof T>(key: K) => T[K]')
+    expect(content).toContain('only<K extends keyof T>(keys: K[]): Pick<T, K>')
+    expect(content).toContain('get<K extends keyof T>(key: K): T[K]')
   })
 })
 
@@ -187,7 +192,10 @@ describe('Action class InferRequest type resolution', () => {
     // Post stacksjs/stacks#1851 InferRequest is three-generic
     // (TModel, TValidations, TPath) and the signature wraps across
     // lines; match tolerantly.
-    expect(content).toMatch(/handle:\s*\(\s*request: InferRequest<TModel[^>]*>/)
+    // `handle` is declared through a bivariance hack —
+    // `handle: { bivarianceHack: (request: InferRequest<…>) => … }['bivarianceHack']`
+    // — so match the request type it carries rather than a bare `handle: (`.
+    expect(content).toMatch(/bivarianceHack:\s*\(\s*request: InferRequest<TModel/)
   })
 
   test('falls back to bare RequestInstance when model is a string', () => {
@@ -353,10 +361,20 @@ describe('server-auto-imports.d.ts covers all model definitions', () => {
   const autoImportsFile = join(typesDir, 'server-auto-imports.d.ts')
   const autoImportsContent = readFileSync(autoImportsFile, 'utf-8')
 
+  // Models whose name would shadow a JavaScript global are skipped at codegen
+  // on purpose (GLOBAL_SHADOW_BLOCKLIST in core/server/src/imports.ts), so that
+  // `instanceof Error` / `instanceof Request` keep working inside user actions.
+  // They stay importable by file path.
+  const GLOBAL_SHADOWING_MODELS = new Set(['Error', 'Request', 'Response', 'URL', 'Map', 'Set', 'Object', 'Array'])
+
   test('every default model is declared as a global', () => {
     const models = getModelFiles(defaultModelsDir)
     for (const { file } of models) {
       const modelName = file.replace('.ts', '')
+      if (GLOBAL_SHADOWING_MODELS.has(modelName)) {
+        expect(autoImportsContent).not.toContain(`const ${modelName}:`)
+        continue
+      }
       expect(autoImportsContent).toContain(`const ${modelName}:`)
     }
   })
@@ -411,9 +429,12 @@ describe('full type inference chain is structurally correct', () => {
     expect(content).toContain('T extends { getDefinition: () => infer D')
   })
 
-  test('ModelRow composes ModelAttributes with BelongsToForeignKeys', () => {
+  test('ModelRow composes the query-builder row with BelongsToForeignKeys', () => {
+    // The attribute half is delegated to bun-query-builder's `ModelRow` now
+    // (imported as `QueryModelRow`) rather than a local `ModelAttributes`;
+    // the FK half is still composed here.
     const content = readFileSync(join(coreOrmDir, 'model-types.ts'), 'utf-8')
-    expect(content).toContain('ModelAttributes<Def<T>> & BelongsToForeignKeys<Def<T>>')
+    expect(content).toContain('QueryModelRow<T> & BelongsToForeignKeys<Def<T>>')
   })
 
   test('orm-globals.d.ts maps RequestInstance<TModel> to _RequestInstance<_ModelRow<TModel>>', () => {
@@ -447,9 +468,11 @@ describe('model-types.ts has no leaky abstractions', () => {
   })
 
   test('uses only @stacksjs/query-builder type utilities', () => {
+    // The utilities are aliased on import (`ModelRow as QueryModelRow`, …), so
+    // assert the imports themselves rather than bare local names that the
+    // aliasing removed.
     expect(content).toContain("from '@stacksjs/query-builder'")
-    expect(content).toContain('ModelAttributes')
-    expect(content).toContain('InferModelAttributes')
-    expect(content).toContain('ModelDefinition')
+    for (const util of ['InferAttributes', 'InferColumnNames', 'InferFillableAttributes', 'InferNumericColumns', 'ModelRow'])
+      expect(content).toContain(util)
   })
 })
