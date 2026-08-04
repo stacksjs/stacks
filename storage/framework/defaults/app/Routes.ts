@@ -40,8 +40,8 @@ export default {
   // so `routes/api.ts` aligns with the proxy forward path.
   'api': 'api',
 
-  // Add versioned or prefixed routes here:
-  'v1': { path: 'v1', prefix: 'v1' }
+  // Add versioned or prefixed routes here after creating the matching file:
+  // 'v1': { path: 'v1', prefix: 'v1' },
   // 'v2': 'api/v2',
   // 'admin': { path: 'admin', middleware: ['auth'] },
 } satisfies RouteRegistry
