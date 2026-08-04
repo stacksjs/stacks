@@ -136,6 +136,26 @@
       "limitations": []
     },
     {
+      "category": "database",
+      "name": "vitess",
+      "status": "experimental",
+      "implementation": "storage/framework/core/database/src/drivers/mysql.ts",
+      "testEvidence": [
+        "storage/framework/core/database/tests/vitess-constraints.test.ts"
+      ],
+      "topology": "sharded-mysql-behind-vtgate",
+      "prerequisites": [
+        "A Vitess cluster reachable at vtgate",
+        "A VSchema (see `buddy generate:vschema`)"
+      ],
+      "limitations": [
+        "No live cluster in CI; the retained evidence covers the DDL constraint profile and VSchema generation, not a round trip through vtgate.",
+        "Sharded keyspaces reject foreign keys and AUTO_INCREMENT, so a corpus generated for plain MySQL will not migrate — regenerate it, and use `useUuid` for primary keys.",
+        "Schema changes are expected to go through Vitess online DDL; `buddy migrate` applies DDL over the connection and is only appropriate for unsharded keyspaces.",
+        "A transaction spanning shards is best-effort or two-phase, not the single-node ACID the ORM assumes."
+      ]
+    },
+    {
       "category": "deploy",
       "name": "ts-cloud-hetzner",
       "status": "experimental",

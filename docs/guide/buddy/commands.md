@@ -6,7 +6,7 @@ description: Generated reference for every Buddy command, argument, option, alia
 
 # Buddy Command Reference
 
-This reference is generated from Buddy's runtime command registry and currently contains **304 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
+This reference is generated from Buddy's runtime command registry and currently contains **305 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
 
 ## Command groups
 
@@ -33,7 +33,7 @@ This reference is generated from Buddy's runtime command registry and currently 
 | `extension` | 12 |
 | `format` | 1 |
 | `general` | 49 |
-| `generate` | 15 |
+| `generate` | 16 |
 | `inspire` | 1 |
 | `key` | 1 |
 | `link` | 1 |
@@ -1949,20 +1949,6 @@ Generate Migrations
 - Aliases: none
 - Arguments: none
 
-### `generate:vschema`
-
-Derive a Vitess VSchema from your models (writes `database/vschema.json`)
-
-- Usage: `$ buddy generate:vschema`
-- Namespace: `generate`
-- Aliases: none
-- Arguments: none
-
-| Option | Description | Type | Default |
-| --- | --- | --- | --- |
-| `--dry-run` | Print the VSchema without writing it | boolean, optional | `false` |
-| `--out` | Where to write the VSchema | string, optional | `database/vschema.json` |
-
 ### `generate:og`
 
 Generate the social cards used by link previews
@@ -2018,6 +2004,20 @@ Generate your TypeScript types
 | `-p`, `--project` | Target a specific project | value, optional | `false` |
 | `-w`, `--watch` | Re-run on changes to models/ and config/ | boolean, optional | `false` |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
+
+### `generate:vschema`
+
+Derive a Vitess VSchema from your models (writes database/vschema.json)
+
+- Usage: `$ buddy generate:vschema`
+- Namespace: `generate`
+- Aliases: none
+- Arguments: none
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `--dry-run` | Print the VSchema without writing it | boolean, optional | `false` |
+| `--out` | Where to write the VSchema | value, optional | `"database/vschema.json"` |
 
 ### `generate:vscode-custom-data`
 

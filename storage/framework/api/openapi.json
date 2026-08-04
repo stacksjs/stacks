@@ -27533,31 +27533,6 @@
         }
       }
     },
-    "/v1/status": {
-      "get": {
-        "summary": "/v1/status",
-        "operationId": "get__v1_status",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "Successful response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation failed"
-          },
-          "500": {
-            "description": "Server error"
-          }
-        }
-      }
-    },
     "/verify-authentication": {
       "get": {
         "summary": "/verify-authentication",
