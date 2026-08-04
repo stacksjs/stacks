@@ -1,5 +1,34 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.257...v0.70.258)
+
+## ✨ Features
+
+- **lint**: add the stx conformance checks to buddy lint (#2208) ([45655dc](https://github.com/stacksjs/stacks/commit/45655dc)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2208](https://github.com/stacksjs/stacks/issues/2208), [#2208](https://github.com/stacksjs/stacks/issues/2208), [#2206](https://github.com/stacksjs/stacks/issues/2206), [#2206](https://github.com/stacksjs/stacks/issues/2206))
+
+## 🐛 Bug Fixes
+
+- **deploy**: prefer the app ts-cloud runtime ([145db6c](https://github.com/stacksjs/stacks/commit/145db6c)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **defaults**: repair class attributes mangled by a class sorter (#2210) ([9470b64](https://github.com/stacksjs/stacks/commit/9470b64)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2209](https://github.com/stacksjs/stacks/issues/2209), [#2210](https://github.com/stacksjs/stacks/issues/2210), [#2210](https://github.com/stacksjs/stacks/issues/2210), [#2209](https://github.com/stacksjs/stacks/issues/2209))
+- **charts**: require the @ts-charts release with a working bun export ([2d65e0b](https://github.com/stacksjs/stacks/commit/2d65e0b)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## ♻️ Code Refactoring
+
+- **socials**: name the timeline item type (#2207) ([556ee0a](https://github.com/stacksjs/stacks/commit/556ee0a)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2207](https://github.com/stacksjs/stacks/issues/2207), [#2207](https://github.com/stacksjs/stacks/issues/2207))
+
+## 💄 Styles
+
+- **database**: normalize the information_schema query indentation ([f0964dc](https://github.com/stacksjs/stacks/commit/f0964dc)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🔧 Chores
+
+- **defaults**: normalize template whitespace ([08ec6ea](https://github.com/stacksjs/stacks/commit/08ec6ea)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+- _Glenn Michael Torregosa <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.256...v0.70.257)
 
 ## ✨ Features
