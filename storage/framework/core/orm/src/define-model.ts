@@ -890,18 +890,33 @@ function applyMassAssignmentRules(
   const allowed = fillable.size > 0 ? fillable : declared
 
   for (const key of Object.keys(data)) {
-    if (MASS_ASSIGNMENT_SYSTEM_COLUMNS.has(key)) continue
+    // The allowlist above is keyed by COLUMN name (`snakeCase(k)`), so the
+    // payload key has to be normalised the same way before any comparison.
+    // Without this the guard rejected every camelCase attribute, including
+    // ones explicitly marked `fillable: true`: a model declaring
+    // `predictionMarketId` built an allowlist holding
+    // `prediction_market_id`, then tested the raw `predictionMarketId`
+    // against it and threw 'not in the fillable allowlist' for a field the
+    // developer had just allowed.
+    //
+    // The FK escape hatch had the same blind spot: `predictionMarketId`
+    // ends in `Id`, not `_id`, so belongsTo writes in camelCase fell
+    // through to the throw as well. Models written in snake_case were
+    // unaffected, which is why this survived.
+    const col = snakeCase(key)
+
+    if (MASS_ASSIGNMENT_SYSTEM_COLUMNS.has(col)) continue
 
     // Guarded wins for every column, FK included.
-    if (guarded.has(key))
+    if (guarded.has(col))
       throw new MassAssignmentException(definition.name, key, 'guarded')
 
     // Non-guarded foreign keys remain assignable so belongsTo writes work
     // even when the FK column isn't separately declared as an attribute.
-    if (key.endsWith('_id'))
+    if (col.endsWith('_id'))
       continue
 
-    if (!allowed.has(key))
+    if (!allowed.has(col))
       throw new MassAssignmentException(definition.name, key, 'not-fillable')
   }
 

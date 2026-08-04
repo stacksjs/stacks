@@ -221,3 +221,82 @@ describe('mass-assignment enforcement', () => {
     })
   })
 })
+
+/**
+ * camelCase attribute names.
+ *
+ * The allowlist is built by snake_casing every declared attribute, but the
+ * guard used to compare the RAW payload key against it. A model written in
+ * camelCase therefore had an allowlist of `prediction_market_id` and a
+ * payload key of `predictionMarketId`, and every write threw
+ * 'not in the fillable allowlist' for a field the developer had explicitly
+ * marked fillable.
+ *
+ * The `*_id` FK escape hatch had the same blind spot: `predictionMarketId`
+ * ends in `Id`, not `_id`.
+ *
+ * Every model above this block is snake_case, which is why nothing caught it.
+ */
+const CamelModel = defineModel({
+  name: 'CamelNote',
+  table: 'camel_notes',
+  primaryKey: 'id',
+  autoIncrement: true,
+  attributes: {
+    predictionMarketId: { type: 'number', fillable: true },
+    authorName: { type: 'string', fillable: true },
+    secretFlag: { type: 'boolean', guarded: true },
+    notFillable: { type: 'string' },
+  },
+} as const)
+
+describe('camelCase attribute names', () => {
+  it('accepts a camelCase attribute marked fillable', async () => {
+    let thrown: unknown = null
+    try {
+      await (CamelModel as any).create({ predictionMarketId: 7, authorName: 'Marta' })
+    }
+    catch (err) {
+      // A DB-layer failure is fine here; only the guard is under test.
+      if (err instanceof MassAssignmentException) thrown = err
+    }
+    expect(thrown).toBeNull()
+  })
+
+  it('still rejects a camelCase attribute marked guarded', async () => {
+    let thrown: unknown = null
+    try {
+      await (CamelModel as any).create({ authorName: 'Marta', secretFlag: true })
+    }
+    catch (err) {
+      if (err instanceof MassAssignmentException) thrown = err
+    }
+    expect(thrown).toBeInstanceOf(MassAssignmentException)
+    expect((thrown as MassAssignmentException).reason).toBe('guarded')
+  })
+
+  it('still rejects a camelCase attribute outside the allowlist', async () => {
+    let thrown: unknown = null
+    try {
+      await (CamelModel as any).create({ authorName: 'Marta', notFillable: 'x' })
+    }
+    catch (err) {
+      if (err instanceof MassAssignmentException) thrown = err
+    }
+    expect(thrown).toBeInstanceOf(MassAssignmentException)
+    expect((thrown as MassAssignmentException).reason).toBe('not-fillable')
+  })
+
+  it('reports the attribute using the name the caller passed', async () => {
+    let thrown: unknown = null
+    try {
+      await (CamelModel as any).create({ notFillable: 'x' })
+    }
+    catch (err) {
+      if (err instanceof MassAssignmentException) thrown = err
+    }
+    // The message has to name what the developer wrote, not the column it
+    // normalises to, or the error sends them looking for the wrong field.
+    expect((thrown as MassAssignmentException).attribute).toBe('notFillable')
+  })
+})
