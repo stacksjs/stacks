@@ -209,7 +209,7 @@ html[data-appearance="arc"] body {
 
 html[data-appearance="arc"] [data-stx-content] {
   /* Only three margins. `margin-left` is deliberately left to the base rule.
-     
+
      It is the one margin that transitions (0.3s, for the sidebar collapse),
      and overriding a transitioned longhand with a `calc()` over two custom
      properties wedges the interpolation in WebKit: switching appearance leaves
@@ -217,7 +217,7 @@ html[data-appearance="arc"] [data-stx-content] {
      means the property never changes when the appearance does, so there is
      nothing to wedge — and the collapse animation keeps working identically in
      both styles.
-     
+
      The panel strip down the card's left side is the sidebar's own trailing
      padding, which is where it comes from in Arc too. */
   margin-top: var(--dash-arc-gap);

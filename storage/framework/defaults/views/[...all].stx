@@ -5,4 +5,3 @@ const { t } = useI18n()
 <div>
   {{ t('not-found') }}
 </div>
-
