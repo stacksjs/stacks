@@ -57,6 +57,95 @@ export interface SqlDialectHelpers {
 }
 
 /**
+ * The framework's canonical datetime literal: ISO-8601 UTC **without** the
+ * trailing `Z` (`2026-08-04T01:52:47.417`).
+ *
+ * One format for every dialect, because the alternatives are all broken:
+ *
+ * - `new Date().toISOString()` — what the framework used to write — is
+ *   rejected outright by MySQL in strict mode ("Incorrect datetime value"),
+ *   so any insert into a TIMESTAMP column threw. Dropping the `Z` is the
+ *   whole difference; MySQL accepts the rest of the ISO shape.
+ * - A space-separated literal (`2026-08-04 01:52:47`) is accepted everywhere
+ *   but sorts BEFORE an ISO string on SQLite, where these columns hold text.
+ *   Mixing it with already-stored ISO rows would corrupt every ordering and
+ *   range query over existing data.
+ *
+ * Keeping the `T` and dropping only the `Z` satisfies all three engines and
+ * still sorts correctly against rows written in the old format, since the
+ * value is a prefix of the old one for the same instant.
+ *
+ * Use this for every app-generated timestamp written to, or compared against,
+ * a framework table — never the raw `toISOString()`, and never the database's
+ * own clock (see below).
+ *
+ * ## Do not compare these against `NOW()` / `datetime('now')`
+ *
+ * The DB clock renders as `2026-08-04 01:52:47` — space-separated. On SQLite
+ * these columns are text, and `'T' > ' '`, so an ISO value always compares
+ * greater than a same-day DB-clock value regardless of the actual instant.
+ * That silently made every `expires_at > datetime('now')` check pass for
+ * already-expired rows. Compare app-written columns against `sqlDateTime()`.
+ */
+export function sqlDateTime(value: Date = new Date()): string {
+  return value.toISOString().slice(0, -1)
+}
+
+/**
+ * {@link sqlDateTime} pre-quoted for interpolation into a raw SQL string.
+ * The value is generated from a `Date`, never from user input, so it cannot
+ * carry a quote to escape.
+ */
+export function sqlDateTimeLiteral(value: Date = new Date()): string {
+  return `'${sqlDateTime(value)}'`
+}
+
+/**
+ * Read a timestamp back out of a framework table.
+ *
+ * The counterpart to {@link sqlDateTime}, and mandatory wherever a stored
+ * timestamp is compared in JavaScript. `new Date('2026-08-04T01:52:47.417')`
+ * — an ISO date-time with no offset — is parsed as **local** time per the ES
+ * spec, while the same string with a `Z` is UTC. Since the stored format
+ * cannot carry the `Z` (MySQL rejects it), a bare `new Date(...)` on these
+ * values silently shifts every comparison by the host's UTC offset. Only a
+ * server already running in UTC would look correct.
+ *
+ * Accepts every shape these columns hold: the canonical `T` format, the
+ * space-separated form the database clocks emit, values that still carry a
+ * `Z` or an explicit offset from before this format existed, and the `Date`
+ * objects the MySQL driver hands back. Anything without an explicit offset is
+ * read as UTC, which is what the framework writes.
+ *
+ * Returns null for missing or unparseable input so callers can fail closed
+ * rather than treating a bad value as the epoch.
+ */
+export function parseSqlDateTime(value: unknown): Date | null {
+  if (value === null || value === undefined)
+    return null
+  if (value instanceof Date)
+    return Number.isNaN(value.getTime()) ? null : value
+  if (typeof value === 'number')
+    return Number.isNaN(value) ? null : new Date(value)
+  if (typeof value !== 'string')
+    return null
+
+  const trimmed = value.trim()
+  if (!trimmed)
+    return null
+
+  // `2026-08-04 01:52:47` -> `2026-08-04T01:52:47`
+  let normalized = trimmed.replace(' ', 'T')
+  // No `Z` and no `±HH:MM` / `±HHMM` offset means the value is UTC by
+  // convention, so say so explicitly rather than letting JS assume local.
+  if (!/(?:Z|[+-]\d{2}:?\d{2})$/i.test(normalized))
+    normalized += 'Z'
+
+  const parsed = new Date(normalized)
+  return Number.isNaN(parsed.getTime()) ? null : parsed
+}
+
+/**
  * Create SQL dialect helpers for a given driver.
  *
  * @example
