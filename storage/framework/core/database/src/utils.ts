@@ -13,7 +13,9 @@ import { createQueryBuilder, registerPersistentQueryHooks, setConfig } from '@st
 // These can be overridden later once config is fully loaded
 // Read from environment variables first
 import { env as envVars } from '@stacksjs/env'
+import type { QueryBuilderDialect } from './dialect'
 import { getConnectionDefaults } from './defaults'
+import { toQueryBuilderDialect } from './dialect'
 import { aggregateFunctions } from './types'
 
 interface DbConnectionConfig {
@@ -120,17 +122,16 @@ function getDatabaseConfig(): DbConfig {
 }
 
 /**
- * Get the dialect type for bun-query-builder
+ * Get the dialect type for bun-query-builder.
+ *
+ * Collapses through the capability table rather than an if-chain: Stacks
+ * tracks dialects that bun-query-builder has no separate renderer for
+ * (they diverge only in DDL), and those must be handed down as the dialect
+ * whose SQL they actually speak. Unknown values still fall back to sqlite,
+ * matching the previous behavior.
  */
-function getDialect(): 'sqlite' | 'mysql' | 'singlestore' | 'postgres' {
-  const driver = getDriver()
-  if (driver === 'sqlite') return 'sqlite'
-  if (driver === 'mysql') return 'mysql'
-  // Pass 'singlestore' through to bun-query-builder (>=0.1.42), which shares
-  // MySQL's runtime DML behavior for the dialect via isMysqlLike.
-  if (driver === 'singlestore') return 'singlestore'
-  if (driver === 'postgres') return 'postgres'
-  return 'sqlite' // default fallback
+function getDialect(): QueryBuilderDialect {
+  return toQueryBuilderDialect(getDriver())
 }
 
 /**

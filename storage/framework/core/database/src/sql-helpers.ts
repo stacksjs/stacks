@@ -4,7 +4,12 @@
  * Cross-database compatibility utilities for PostgreSQL, MySQL, and SQLite.
  * Centralizes the isPostgres/isMysql/now/boolTrue/boolFalse/param helpers
  * that were previously duplicated across tokens.ts, auth-tables.ts, and setup.ts.
+ *
+ * Dialect classification itself lives in `./dialect` — this module renders
+ * SQL fragments, that one decides what each dialect is.
  */
+
+import { dialectCapabilities } from './dialect'
 
 export interface SqlDialectHelpers {
   driver: string
@@ -62,12 +67,20 @@ export interface SqlDialectHelpers {
  * ```
  */
 export function sqlHelpers(driver: string): SqlDialectHelpers {
-  const isPostgres = driver === 'postgres'
-  // SingleStore speaks the MySQL wire protocol and uses MySQL DDL, so it must
-  // take the MySQL path here — otherwise it falls through to SQLite DDL
-  // (datetime('now'), AUTOINCREMENT) emitted against a MySQL server.
-  const isMysql = driver === 'mysql' || driver === 'singlestore'
-  const isSqlite = !isPostgres && !isMysql
+  // Wire protocol, not feature set: this function only decides how SQL is
+  // rendered (placeholders, quoting, `NOW()` vs `datetime('now')`), and every
+  // MySQL-wire dialect renders identically. What each one *accepts* in DDL
+  // varies and is answered by `dialectCapabilities()` instead.
+  //
+  // Before this delegated to the capability table, each dialect check was an
+  // inline `=== 'mysql' || === 'singlestore'` and a new MySQL-wire dialect
+  // that missed one fell through to the SQLite branch — emitting
+  // `datetime('now')` and `AUTOINCREMENT` at a MySQL server, failing only at
+  // execution time.
+  const caps = dialectCapabilities(driver)
+  const isPostgres = caps.wire === 'postgres'
+  const isMysql = caps.wire === 'mysql'
+  const isSqlite = caps.wire === 'sqlite'
 
   return {
     driver,

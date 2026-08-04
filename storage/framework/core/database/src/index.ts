@@ -104,6 +104,10 @@ export { migrateNotificationTables } from './notification-tables'
 // RBAC tables migration (stacksjs/stacks#1941 Phase A)
 export { migrateRbacTables } from './rbac-tables'
 
+// Dialect capability table — the single source of truth for what each
+// dialect speaks (wire protocol) and what it accepts (DDL features).
+export * from './dialect'
+
 // SQL dialect helpers & connection defaults
 export * from './sql-helpers'
 export * from './defaults'
