@@ -1,8 +1,8 @@
 {
   "name": "@stacksjs/browser-extension",
   "type": "module",
-  "version": "0.70.258",
-  "description": "Build MV3 browser extensions (Chrome, Firefox, Safari) the Stacks way \u2014 manifest, content/background scripts, DNR rules, packaging, Safari container app, all config-driven.",
+  "version": "0.70.259",
+  "description": "Build MV3 browser extensions (Chrome, Firefox, Safari) the Stacks way — manifest, content/background scripts, DNR rules, packaging, Safari container app, all config-driven.",
   "author": "Chris Breuer",
   "contributors": [
     "Chris Breuer <chris@stacksjs.com>"

@@ -1,5 +1,24 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.258...v0.70.259)
+
+## ✨ Features
+
+- **socials**: a provider registry so sign-in buttons match the config ([5deb8cc](https://github.com/stacksjs/stacks/commit/5deb8cc)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🐛 Bug Fixes
+
+- **buddy**: close completed watchdog pipes ([037a86a](https://github.com/stacksjs/stacks/commit/037a86a)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **buddy**: apply command aliases to the command, not to the CLI ([f600ca7](https://github.com/stacksjs/stacks/commit/f600ca7)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dev**: stop the API server leaking a copy of itself on every restart ([bcbb26e](https://github.com/stacksjs/stacks/commit/bcbb26e)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **queue**: actually persist batch terminal handlers ([8aba62a](https://github.com/stacksjs/stacks/commit/8aba62a)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#1883](https://github.com/stacksjs/stacks/issues/1883), [#1883](https://github.com/stacksjs/stacks/issues/1883))
+- **payments**: make subpath imports resolve, and break the barrel cycle ([6cac252](https://github.com/stacksjs/stacks/commit/6cac252)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dev**: stop dev servers outliving the run that started them ([9453a91](https://github.com/stacksjs/stacks/commit/9453a91)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.257...v0.70.258)
 
 ## ✨ Features
