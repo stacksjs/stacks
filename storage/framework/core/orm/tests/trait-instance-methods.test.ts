@@ -46,7 +46,20 @@ const dbFile = join(dir, 'trait-instance.sqlite')
 process.env.DB_CONNECTION = 'sqlite'
 process.env.DB_DATABASE_PATH = dbFile
 
-const { acquireDbConfigLock, db: appDb, ensureDatabaseConfigLoaded, initializeDbConfig } = await import('@stacksjs/database')
+const {
+  acquireDbConfigLock,
+  categorizableModelsTableSql,
+  categorizablesTableSql,
+  commentablesTableSql,
+  commentableUpvotesTableSql,
+  db: appDb,
+  ensureDatabaseConfigLoaded,
+  initializeDbConfig,
+  likesTableSql,
+  sqlHelpers,
+  taggableModelsTableSql,
+  taggablesTableSql,
+} = await import('@stacksjs/database')
 const { configureOrm } = await import('bun-query-builder')
 const { defineModel } = await import('../src/define-model')
 
@@ -101,31 +114,27 @@ describe('trait methods are wired onto hydrated instances (not just the static m
     const run = (sql: string) => (appDb as any).unsafe(sql).execute()
 
     await run(`CREATE TABLE posts (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT)`)
-    await run(`CREATE TABLE taggable (
-      id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, description TEXT,
-      taggable_id INTEGER, taggable_type TEXT, slug TEXT, "order" INTEGER,
-      is_active INTEGER, created_at TEXT, updated_at TEXT
-    )`)
-    await run(`CREATE TABLE categorizable (
-      id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, description TEXT,
-      slug TEXT, is_active INTEGER, created_at TEXT, updated_at TEXT
-    )`)
-    await run(`CREATE TABLE categorizable_models (
-      id INTEGER PRIMARY KEY AUTOINCREMENT, categorizable_id INTEGER,
-      categorizable_type TEXT, category_id INTEGER, created_at TEXT, updated_at TEXT
-    )`)
-    await run(`CREATE TABLE comments (
-      id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT, body TEXT,
-      commentables_id INTEGER, commentables_type TEXT, status TEXT,
-      created_at TEXT, updated_at TEXT
-    )`)
-    await run(`CREATE TABLE posts_likes (
-      id INTEGER PRIMARY KEY AUTOINCREMENT, post_id INTEGER, user_id INTEGER,
-      created_at TEXT, updated_at TEXT
-    )`)
     await run(`CREATE TABLE users (
       id INTEGER PRIMARY KEY AUTOINCREMENT, email TEXT, stripe_id TEXT, two_factor_secret TEXT
     )`)
+
+    // Build the trait tables from the SAME DDL `buddy migrate` runs, rather
+    // than hand-rolling a fixture. The hand-rolled schema named them
+    // `taggable` / `categorizable` / `comments`, but the traits query
+    // `taggables` / `categorizables` / `commentables` — so every end-to-end
+    // assertion below failed with "no such table" and had been red since the
+    // file was written. Sourcing the real DDL also means a future column
+    // change can't drift away from what the traits read.
+    const sql = sqlHelpers('sqlite')
+    for (const ddl of [
+      taggablesTableSql(sql),
+      taggableModelsTableSql(sql),
+      categorizablesTableSql(sql),
+      categorizableModelsTableSql(sql),
+      commentablesTableSql(sql),
+      commentableUpvotesTableSql(sql),
+      likesTableSql(sql, 'posts_likes', 'post_id'),
+    ]) await run(ddl)
   })
 
   afterAll(() => {
