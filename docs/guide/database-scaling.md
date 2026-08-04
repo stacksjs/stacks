@@ -328,6 +328,40 @@ Vitess applies schema changes through its own online DDL machinery so they can r
 vtctldclient ApplySchema --sql-file database/migrations/<file>.sql <keyspace>
 ```
 
+### Managing the cluster from ts-cloud
+
+If you deploy with [ts-cloud](https://github.com/stacksjs/ts-cloud), its dashboard manages most of this for you. Declare the cluster and, optionally, its control plane:
+
+```typescript
+// cloud.config.ts
+infrastructure: {
+  appDatabase: {
+    engine: 'vitess',
+    name: 'commerce',           // keyspace
+    host: 'vtgate.internal',
+    port: 15306,
+    username: 'app',
+    password: env.DB_PASSWORD,
+
+    vitess: {
+      vtctldAddr: 'vtctld.internal:15999',
+      cell: 'zone1',
+      clientVersion: '21.0.0',
+    },
+  },
+},
+```
+
+The dashboard then shows keyspaces, shards, and tablet health, and flags any shard with no serving primary. That failure is worth calling out: such a shard still answers reads and only fails writes, so it does not look like an outage.
+
+Schema changes applied from the dashboard run as Vitess online DDL and are tracked with live progress, so a migration can be retried, cancelled, or completed from there.
+
+::: tip vtctldAddr is optional
+Everything above works through vtgate alone, over the same connection your application already uses. Only creating a keyspace and applying a VSchema are vtctld operations. Leave `vtctldAddr` unset and the dashboard stays fully observable but read-only, which is the right default for a cluster you did not provision with ts-cloud.
+:::
+
+ts-cloud does not provision the Vitess cluster itself - vtgate, vttablet, and the topology service are yours to run (or a managed provider's). It manages the layer above: keyspaces, VSchema, schema changes, and observability.
+
 ## Related
 
 - [Database Package](/packages/database) - connection configuration and the query builder
