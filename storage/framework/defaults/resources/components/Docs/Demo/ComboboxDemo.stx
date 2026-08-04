@@ -56,7 +56,7 @@ function filterItems(items, query) {
                     data-item-id="{{ item.id }}"
                     data-item-name="{{ item.name }}"
                   >
-                    <span class="block truncate selected selected.id : ? 'font-medium' 'font-normal' {{ }} && == item.id">
+                    <span class="block truncate {{ selected && selected.id == item.id ? 'font-medium' : 'font-normal' }}">
                       {{ item.name }}
                     </span>
                     @if(selected && selected.id == item.id)

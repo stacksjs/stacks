@@ -11,7 +11,7 @@ const { currentPage = 1, totalPages = 1, pages = [] } = defineProps<ForumPaginat
     <nav class="flex gap-1 items-center">
       <a
         href="#"
-        class="flex items-center justify-center h-10 w-10 hover:bg-gray-100 border rounded-md cursor-not-allowed' : ? '' 'opacity-50 {{ }} == 1 currentPage"
+        class="w-10 h-10 flex items-center justify-center rounded-md border hover:bg-gray-100 {{ currentPage == 1 ? 'opacity-50 cursor-not-allowed' : '' }}"
         data-action="prev-page"
       >
         <span class="i-hugeicons-arrow-left"></span>
@@ -20,7 +20,7 @@ const { currentPage = 1, totalPages = 1, pages = [] } = defineProps<ForumPaginat
       @foreach(pages as page)
         <a
           href="#"
-          class="flex items-center justify-center h-10 w-10 text-white' hover:bg-gray-100' rounded-md : ? 'bg-primary 'border {{ }} == currentPage page"
+          class="w-10 h-10 flex items-center justify-center rounded-md {{ currentPage == page ? 'bg-primary text-white' : 'border hover:bg-gray-100' }}"
           data-action="go-to-page"
           data-page="{{ page }}"
         >
@@ -30,7 +30,7 @@ const { currentPage = 1, totalPages = 1, pages = [] } = defineProps<ForumPaginat
 
       <a
         href="#"
-        class="flex items-center justify-center h-10 w-10 hover:bg-gray-100 border rounded-md cursor-not-allowed' : ? '' 'opacity-50 {{ }} == currentPage totalPages"
+        class="w-10 h-10 flex items-center justify-center rounded-md border hover:bg-gray-100 {{ currentPage == totalPages ? 'opacity-50 cursor-not-allowed' : '' }}"
         data-action="next-page"
       >
         <span class="i-hugeicons-arrow-right"></span>

@@ -34,7 +34,7 @@ const { solutions = [, isOpen = false } = defineProps<PopoverDemoProps>()
     <div class="items-center mx-auto my-12 space-y-4 h-[150px] w-3/5">
       <div class="relative">
         <button
-          class="inline-flex gap-2 items-center justify-center px-4 py-2.5 font-medium text-sm text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 shadow-sm duration-200 transition-all : ? 'text-white' 'text-white/90' {{ }} group isOpen"
+          class="group inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium rounded-lg shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-all duration-200 {{ isOpen ? 'text-white' : 'text-white/90' }}"
           data-action="toggle-popover"
         >
           <span>Example</span>

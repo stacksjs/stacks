@@ -45,7 +45,7 @@ function getMenuSections(items) {
           data-action="toggle-dropdown"
         >
           Options
-          <div class="h-5 w-5 duration-200 transition-transform : ? '' 'rotate-180' {{ }} i-hugeicons-chevron-down-20-solid isOpen"></div>
+          <div class="i-hugeicons-chevron-down-20-solid w-5 h-5 transition-transform duration-200 {{ isOpen ? 'rotate-180' : '' }}"></div>
         </button>
 
         @if(isOpen)
@@ -55,11 +55,11 @@ function getMenuSections(items) {
                 @foreach(section as item)
                   <button
                     type="button"
-                    class="flex relative items-center px-2 py-2 w-full text-sm hover:bg-gray-50' hover:bg-red-50' outline-none rounded-md transition-colors : ? 'danger' 'text-gray-700 'text-red-600 {{ }} == group item.variant"
+                    class="group relative flex w-full items-center rounded-md px-2 py-2 text-sm outline-none transition-colors {{ item.variant == 'danger' ? 'text-red-600 hover:bg-red-50' : 'text-gray-700 hover:bg-gray-50' }}"
                     data-action="menu-item"
                     data-item-label="{{ item.label }}"
                   >
-                    <div class="mr-2 h-5 w-5 group-hover:text-gray-700' : ? 'danger' 'text-gray-500 'text-red-600' {{ {{ }} }} == item.icon item.variant"></div>
+                    <div class="{{ item.icon }} mr-2 h-5 w-5 {{ item.variant == 'danger' ? 'text-red-600' : 'text-gray-500 group-hover:text-gray-700' }}"></div>
                     {{ item.label }}
                   </button>
                 @endforeach
