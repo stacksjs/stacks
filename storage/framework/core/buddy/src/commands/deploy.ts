@@ -792,6 +792,187 @@ export function mergeSiteDeployEnv(sites: Record<string, any>, resolvedDeployEnv
   )
 }
 
+/** A `DB_DATABASE` value that names a FILE (SQLite) rather than a database. */
+function looksLikeSqliteFile(value: unknown): value is string {
+  return typeof value === 'string' && /\.(?:sqlite3?|db)$/i.test(value.trim())
+}
+
+/**
+ * The SQLite file a site will open, relative to its release root — or `null`
+ * when the site is not on SQLite, or its database already lives outside the
+ * release tree (an absolute `DB_DATABASE_PATH` is the operator saying "I have
+ * placed this somewhere persistent myself").
+ *
+ * Mirrors config/database.ts' resolution order. `DB_DATABASE` is only a path
+ * when it looks like one — for every other driver it is a database NAME, and
+ * linking `stacks` as a file would be nonsense.
+ */
+export function siteSqlitePath(siteEnv: Record<string, any> = {}): string | null {
+  const connection = String(siteEnv.DB_CONNECTION ?? 'sqlite').trim().toLowerCase()
+  if (connection !== 'sqlite')
+    return null
+
+  const configured = typeof siteEnv.DB_DATABASE_PATH === 'string' && siteEnv.DB_DATABASE_PATH.trim()
+    ? siteEnv.DB_DATABASE_PATH
+    : looksLikeSqliteFile(siteEnv.DB_DATABASE)
+      ? siteEnv.DB_DATABASE
+      : 'database/stacks.sqlite'
+
+  const path = String(configured).trim().replace(/^\.\//, '')
+  // Absolute (or `~`) paths are already outside the release; `..` cannot be
+  // expressed as a release-relative shared path at all.
+  if (!path || path.startsWith('/') || path.startsWith('~') || path.split('/').includes('..'))
+    return null
+  return path
+}
+
+/**
+ * Does the loaded ts-cloud actually keep persistent state the way
+ * {@link applyPersistentStatePaths} assumes?
+ *
+ * Declaring shared paths against a ts-cloud that lacks these is worse than not
+ * declaring them at all — it is the difference between "the database dies with
+ * its release" and "the deploy places an empty database over the live one and
+ * migrates into it". So this probes the two capabilities the declaration
+ * depends on and lets the caller refuse the deploy.
+ *
+ * Probed by generating a script and reading what it DOES, not by a version
+ * number or an exported symbol name: a version range goes stale the moment
+ * someone installs a fork, and an internal helper can be renamed without
+ * changing behaviour.
+ *
+ * @param buildSiteDeployScript ts-cloud's script builder, as loaded at runtime.
+ */
+export function tsCloudPersistentStateSupport(buildSiteDeployScript: unknown): { ok: boolean, missing: string[] } {
+  const missing: string[] = []
+  if (typeof buildSiteDeployScript !== 'function')
+    return { ok: false, missing: ['buildSiteDeployScript'] }
+
+  const target = '/var/www/probe-shared/database/probe.sqlite'
+  let script = ''
+  try {
+    script = (buildSiteDeployScript as (o: any) => string[])({
+      siteName: 'probe',
+      slug: 'probe',
+      appDir: '/var/www/probe-probe',
+      artifactFetch: [],
+      releaseId: 'probe',
+      execStart: '/bin/true',
+      envEntries: {},
+      port: 3000,
+      sharedPaths: [{ path: 'database/probe.sqlite', target, seed: true }],
+    }).join('\n')
+  }
+  catch {
+    // A ts-cloud that only knows string shared paths throws on the spec form
+    // (it treats every entry as a string). That IS the answer.
+    return { ok: false, missing: ['shared paths with an explicit target'] }
+  }
+
+  // Adoption: the layout seeds a newly-shared path from the live release.
+  if (!(script.includes('cp -a') && script.includes('/current/')))
+    missing.push('adoption of existing state into shared/')
+  // Project-level targets: the release links at the given absolute path rather
+  // than at the site's own shared/ dir.
+  if (!script.includes(`ln -sfn ${target} `))
+    missing.push('shared paths with an explicit target')
+
+  return { ok: missing.length === 0, missing }
+}
+
+/**
+ * Where a project's app database lives on the box: one directory per project,
+ * outside every site's release tree.
+ *
+ * Deliberately derived from the project slug ALONE. ts-cloud installs each site
+ * under `/var/www/<slug>-<site>`, so anything derived from the site name gives
+ * each site a database of its own — which is exactly how `main` and `api` ended
+ * up on separate files, with only `main` ever migrated. Two sites of one project
+ * cannot disagree about a path that does not mention which site is asking.
+ */
+export function projectDatabaseTarget(slug: string, relativePath: string): string {
+  return `/var/www/${slug}-shared/${relativePath}`
+}
+
+/** Does this site run `migrate`? That site owns the database. */
+function runsMigrations(site: any): boolean {
+  return Array.isArray(site?.preStart) && site.preStart.some((cmd: unknown) => typeof cmd === 'string' && /\bmigrate\b/.test(cmd))
+}
+
+/**
+ * Declare the paths a Stacks server-app WRITES at runtime as ts-cloud shared
+ * paths, so they are symlinked into each release instead of dying with it.
+ *
+ * Two separate failures are closed here.
+ *
+ * **A release owns the database.** `releases/<sha>/database/stacks.sqlite` was a
+ * real file inside the release the deploy had just unpacked: `migrate` (in
+ * preStart) built a brand new empty database, the release went live against it,
+ * and every production row written since the previous deploy was gone the moment
+ * the old release was pruned — silently, with nothing in the deploy output to
+ * say so. Verified on a live box: a sentinel row was gone after the next deploy.
+ *
+ * **A site owns the database.** Each site installs under its own base, so `main`
+ * and `api` both opened `database/stacks.sqlite` relative to their OWN release
+ * — two files, only one of them ever migrated. The database is therefore pointed
+ * at a project-level target ({@link projectDatabaseTarget}) that no site's name
+ * appears in, so siblings share one file by construction. Only the site that
+ * runs `migrate` may create or seed it; the rest link at it (`seed: false`), so
+ * deploy order cannot decide whose data wins.
+ *
+ * Logs stay site-scoped — `main` and `api` are different services and their logs
+ * should not interleave.
+ *
+ * Additive: a site's own `sharedPaths` in config/cloud.ts always survive, so an
+ * app can persist its own state (upload dirs, generated assets) the same way.
+ */
+export function applyPersistentStatePaths(sites: Record<string, any>, slug: string): Record<string, any> {
+  const isServerApp = (site: any): boolean => !!site && typeof site.start === 'string'
+  // The single database owner. `migrate` is the marker: it is the one command
+  // that must run against the real database. Falling back to the first
+  // server-app site keeps a project that migrates elsewhere (or not at all)
+  // from having no owner, in which case nothing would ever create the file.
+  const appSites = Object.entries(sites).filter(([, site]) => isServerApp(site))
+  const owner = (appSites.find(([, site]) => runsMigrations(site)) ?? appSites[0])?.[0]
+
+  const out: Record<string, any> = {}
+  for (const [name, site] of Object.entries(sites)) {
+    // server-app sites only: static sites are pure build output, and bucket
+    // sites never touch the box's disk.
+    if (!isServerApp(site)) {
+      out[name] = site
+      continue
+    }
+
+    const sqlite = siteSqlitePath(site.env || {})
+    const framework: any[] = [
+      // Deploy-to-deploy log continuity: logs written under the release root
+      // are pruned along with the release that wrote them.
+      'storage/logs',
+    ]
+    if (sqlite) {
+      framework.unshift({
+        path: sqlite,
+        target: projectDatabaseTarget(slug, sqlite),
+        seed: name === owner,
+      })
+    }
+
+    // Framework entries are applied LAST, so a site that hand-declares
+    // `database/stacks.sqlite` as a plain (site-scoped) shared path gets the
+    // project-level target anyway. Opting a site onto its own database is done
+    // by giving it its own DB_DATABASE_PATH — a deliberate act — not by a
+    // shared-path declaration that reads identical to the accident.
+    const declared: any[] = Array.isArray(site.sharedPaths) ? site.sharedPaths.filter(Boolean) : []
+    const byPath = new Map<string, any>()
+    for (const entry of [...declared, ...framework])
+      byPath.set(typeof entry === 'string' ? entry : entry.path, entry)
+
+    out[name] = { ...site, sharedPaths: [...byPath.values()] }
+  }
+  return out
+}
+
 /**
  * Prefix a public host for a non-production environment: `acme.com` →
  * `staging.acme.com`, and `www.acme.com` → `www.staging.acme.com` (keep the www
@@ -890,7 +1071,19 @@ async function deployToHetzner(tsCloudConfig: any, deployEnv: string, options: D
     process.exit(ExitCode.FatalError)
   }
 
-  const { createCloudDriver, deployAllComputeSites, ensureManagementDashboard, resolveSiteKind } = await loadTsCloudDeployApi()
+  const { createCloudDriver, deployAllComputeSites, ensureManagementDashboard, resolveSiteKind, buildSiteDeployScript } = await loadTsCloudDeployApi()
+
+  // Refuse rather than deploy a release that would place an empty database over
+  // the live one. See tsCloudPersistentStateSupport — an older ts-cloud honours
+  // the shared-path declaration without the adoption step, which is the one
+  // combination that destroys data instead of merely failing to protect it.
+  const support = tsCloudPersistentStateSupport(buildSiteDeployScript)
+  if (!support.ok) {
+    log.error('This ts-cloud cannot keep your database across deploys, and deploying anyway would destroy it.')
+    log.error(`Missing: ${support.missing.join(', ')}.`)
+    log.error('Upgrade @stacksjs/ts-cloud (bun update @stacksjs/ts-cloud), or point TS_CLOUD_MODULE at a build that has it.')
+    process.exit(ExitCode.FatalError)
+  }
 
   try {
     await runHetznerDeploy({ tsCloudConfig, environment, verbose, docker: (options as any).docker === true, createCloudDriver, deployAllComputeSites, ensureManagementDashboard, resolveSiteKind, onlySite: (options as any).site || undefined, persistedAttachBox })
@@ -1546,7 +1739,12 @@ async function runHetznerDeploy(args: {
   // has to happen here (ts-cloud has no idea .env.production/decryption
   // exist) rather than inside ts-cloud itself.
   const resolvedDeployEnv = await resolveDeployEnvValues(environment, tsCloudConfig)
-  const sitesWithResolvedEnv = mergeSiteDeployEnv(sites, resolvedDeployEnv)
+  // Persistent-state paths are declared AFTER the env merge: which file (or
+  // whether any file) the app opens is decided by the site's resolved
+  // DB_CONNECTION/DB_DATABASE_PATH, not by config/cloud.ts. Requires a ts-cloud
+  // that can adopt existing state and honour explicit targets — checked once,
+  // fatally, in deployToHetzner (tsCloudPersistentStateSupport).
+  const sitesWithResolvedEnv = applyPersistentStatePaths(mergeSiteDeployEnv(sites, resolvedDeployEnv), slug)
 
   // Also apply the decrypted values to THIS (local, deploying) process' env —
   // not just the env shipped to the remote sites above. reconcileHetznerDns

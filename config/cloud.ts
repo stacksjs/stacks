@@ -719,16 +719,22 @@ export const tsCloud: TsCloudConfig = {
       //   2. migrate the database (stacksjs/stacks#1950) — without this a fresh
       //      box served the API against a schema-less / stale-dev SQLite file.
       //
-      // Migrate runs ONLY on `main`, the single DB owner: the `api` site shares
-      // the same box + SQLite file, so migrating from both would race two
-      // writers on one file (the file lock would make one fail; see the
-      // "SQLite migrate gotchas" — `busy_timeout`/single-writer). Migration
-      // remains a short-lived CLI task. No `--force`: additive migrations
+      // Migrate runs ONLY on `main`, the single DB owner. Migration remains a
+      // short-lived CLI task. No `--force`: additive migrations
       // apply on every deploy (a no-op when none pend). A *destructive*
       // change is refused in this
       // non-interactive context — migrate logs the refusal and skips it
       // (leaving prod data intact) rather than dropping columns/tables
       // unattended; apply those deliberately with `--force`.
+      //
+      // `main` and `api` DO share one database — but nothing in this file makes
+      // that true, and nothing here can break it. ts-cloud installs each site
+      // under its own base (`/var/www/<slug>-<site>`), so both sites opening
+      // `database/stacks.sqlite` used to mean two separate files with only this
+      // one ever migrated. The deploy now symlinks that path, for every
+      // server-app site, at one project-level file outside both release trees
+      // (`/var/www/<slug>-shared/…`, see applyPersistentStatePaths), and only
+      // the migrating site may create or seed it.
       preStart: [
         'bun install',
         'mkdir -p storage/framework/runtime/production',
