@@ -32,7 +32,7 @@ describe('polymorphic associations', () => {
   })
 
   it('createCommentableMethods returns the documented methods', async () => {
-    const trait = await import('@stacksjs/orm/traits/commentable')
+    const trait = await import('@stacksjs/orm')
     expect(trait.createCommentableMethods).toBeDefined()
     const methods = trait.createCommentableMethods('posts')
     expect(typeof methods.addComment).toBe('function')
@@ -44,7 +44,7 @@ describe('polymorphic associations', () => {
   })
 
   it('createTaggableMethods returns the documented methods', async () => {
-    const trait = await import('@stacksjs/orm/traits/taggable')
+    const trait = await import('@stacksjs/orm')
     expect(trait.createTaggableMethods).toBeDefined()
     const methods = trait.createTaggableMethods('posts')
     expect(typeof methods.addTag).toBe('function')
@@ -54,7 +54,7 @@ describe('polymorphic associations', () => {
   })
 
   it('createCategorizableMethods returns the documented methods', async () => {
-    const trait = await import('@stacksjs/orm/traits/categorizable')
+    const trait = await import('@stacksjs/orm')
     expect(trait.createCategorizableMethods).toBeDefined()
     const methods = trait.createCategorizableMethods('posts')
     expect(typeof methods.addCategory).toBe('function')

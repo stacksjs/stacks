@@ -18,6 +18,15 @@ export {
 // Audit trait public API: setAuditUser is the queue/cron escape hatch for
 // attributing audit rows to a user when there's no current HTTP request.
 export { setAuditUser, createAuditMethods } from './traits/audit'
+
+// The polymorphic trait factories, alongside audit's. `define-model` already
+// pulls these in, and they are the documented surface for the trait methods —
+// there was no way to reach them except a subpath import that never resolved,
+// since only the `@stacksjs/orm` barrel itself is aliased.
+export { createCommentableMethods } from './traits/commentable'
+export { createTaggableMethods } from './traits/taggable'
+export { createCategorizableMethods } from './traits/categorizable'
+export { createLikeableMethods } from './traits/likeable'
 export type { AuditHelpers } from './traits/audit'
 // Re-export soft-delete option types so user code can `satisfies SoftDeleteOptions`.
 export type { SoftDeleteOptions, SoftDeleteHelpers } from './traits/soft-deletes'
