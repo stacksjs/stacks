@@ -33,7 +33,7 @@ import { getCurrentRequest } from '@stacksjs/router'
 // ============================================================================
 
 import { env } from '@stacksjs/env'
-import { sqlHelpers, sqlDateTime, sqlDateTimeLiteral } from '@stacksjs/database'
+import { parseSqlDateTime, sqlDateTime, sqlDateTimeLiteral, sqlHelpers } from '@stacksjs/database'
 
 /** Current database driver */
 const dbDriver: DatabaseDriver = (env.DB_CONNECTION as DatabaseDriver) || 'sqlite'
@@ -140,8 +140,7 @@ export async function getPasswordChangedAt(
     const value = (rows as any[])[0]?.password_changed_at
     if (value === null || value === undefined)
       return null
-    const parsed = new Date(String(value))
-    return Number.isNaN(parsed.getTime()) ? null : parsed
+    return parseSqlDateTime(value)
   }
   catch {
     // Column or table missing (legacy / un-migrated DB) — allow.
@@ -166,8 +165,8 @@ export function isIssuedBeforePasswordChange(createdAt: unknown, changedAt: Date
     return false
   if (createdAt === null || createdAt === undefined)
     return false
-  const created = new Date(String(createdAt))
-  if (Number.isNaN(created.getTime()))
+  const created = parseSqlDateTime(createdAt)
+  if (!created)
     return false
   return created.getTime() < changedAt.getTime()
 }
@@ -430,12 +429,12 @@ export async function createToken(
   if (isPostgres) {
     await db.unsafe(`
       INSERT INTO oauth_access_tokens (user_id, oauth_client_id, token, name, scopes, revoked, expires_at, created_at, updated_at)
-      VALUES ($1, $2, $3, $4, $5, false, $6, NOW(), NOW())
+      VALUES ($1, $2, $3, $4, $5, false, $6, ${appNow()}, ${appNow()})
     `, [userId, client.id, hashedToken, name, JSON.stringify(scopes), sqlDateTime(expiresAt)])
   } else {
     await db.unsafe(`
       INSERT INTO oauth_access_tokens (user_id, oauth_client_id, token, name, scopes, revoked, expires_at, created_at, updated_at)
-      VALUES (?, ?, ?, ?, ?, 0, ?, ${now}, ${now})
+      VALUES (?, ?, ?, ?, ?, 0, ?, ${appNow()}, ${appNow()})
     `, [userId, client.id, hashedToken, name, JSON.stringify(scopes), sqlDateTime(expiresAt)])
   }
 
@@ -473,12 +472,12 @@ export async function createToken(
     if (isPostgres) {
       await db.unsafe(`
         INSERT INTO oauth_refresh_tokens (access_token_id, token, revoked, expires_at, created_at)
-        VALUES ($1, $2, false, $3, NOW())
+        VALUES ($1, $2, false, $3, ${appNow()})
       `, [accessToken.id, hashedRefreshToken, sqlDateTime(refreshExpiresAt)])
     } else {
       await db.unsafe(`
         INSERT INTO oauth_refresh_tokens (access_token_id, token, revoked, expires_at, created_at)
-        VALUES (?, ?, 0, ?, ${now})
+        VALUES (?, ?, 0, ?, ${appNow()})
       `, [accessToken.id, hashedRefreshToken, sqlDateTime(refreshExpiresAt)])
     }
   }
@@ -602,12 +601,12 @@ export async function refreshToken(
     if (isPostgres) {
       await trx.unsafe(`
         INSERT INTO oauth_access_tokens (user_id, oauth_client_id, token, name, scopes, revoked, expires_at, created_at, updated_at)
-        VALUES ($1, $2, $3, $4, $5, false, $6, NOW(), NOW())
+        VALUES ($1, $2, $3, $4, $5, false, $6, ${appNow()}, ${appNow()})
       `, [refreshRow.user_id, refreshRow.oauth_client_id, hashedToken, refreshRow.name, refreshRow.scopes, sqlDateTime(expiresAt)])
     } else {
       await trx.unsafe(`
         INSERT INTO oauth_access_tokens (user_id, oauth_client_id, token, name, scopes, revoked, expires_at, created_at, updated_at)
-        VALUES (?, ?, ?, ?, ?, 0, ?, ${now}, ${now})
+        VALUES (?, ?, ?, ?, ?, 0, ?, ${appNow()}, ${appNow()})
       `, [refreshRow.user_id, refreshRow.oauth_client_id, hashedToken, refreshRow.name, refreshRow.scopes, sqlDateTime(expiresAt)])
     }
 
@@ -648,12 +647,12 @@ export async function refreshToken(
     if (isPostgres) {
       await trx.unsafe(`
         INSERT INTO oauth_refresh_tokens (access_token_id, token, revoked, expires_at, created_at)
-        VALUES ($1, $2, false, $3, NOW())
+        VALUES ($1, $2, false, $3, ${appNow()})
       `, [accessToken.id, newHashedRefreshToken, sqlDateTime(refreshExpiresAt)])
     } else {
       await trx.unsafe(`
         INSERT INTO oauth_refresh_tokens (access_token_id, token, revoked, expires_at, created_at)
-        VALUES (?, ?, 0, ?, ${now})
+        VALUES (?, ?, 0, ?, ${appNow()})
       `, [accessToken.id, newHashedRefreshToken, sqlDateTime(refreshExpiresAt)])
     }
 
@@ -784,7 +783,7 @@ export async function revokeToken(plainTextToken: string): Promise<void> {
 
   await db.unsafe(`
     UPDATE oauth_access_tokens
-    SET revoked = ${boolTrue}, updated_at = ${now}
+    SET revoked = ${boolTrue}, updated_at = ${appNow()}
     WHERE token = ${param(1)}
   `, [hashedToken])
 }
@@ -806,7 +805,7 @@ export async function revokeTokenById(tokenId: number): Promise<void> {
 
   await db.unsafe(`
     UPDATE oauth_access_tokens
-    SET revoked = ${boolTrue}, updated_at = ${now}
+    SET revoked = ${boolTrue}, updated_at = ${appNow()}
     WHERE id = ${param(1)}
   `, [tokenId])
 }
@@ -824,7 +823,7 @@ export async function revokeAllTokens(userId: number): Promise<void> {
 
   await db.unsafe(`
     UPDATE oauth_access_tokens
-    SET revoked = ${boolTrue}, updated_at = ${now}
+    SET revoked = ${boolTrue}, updated_at = ${appNow()}
     WHERE user_id = ${param(1)}
   `, [userId])
 }
@@ -854,7 +853,7 @@ export async function revokeOtherTokens(userId: number): Promise<void> {
 
     await db.unsafe(`
       UPDATE oauth_access_tokens
-      SET revoked = true, updated_at = NOW()
+      SET revoked = true, updated_at = ${appNow()}
       WHERE user_id = $1 AND id != $2
     `, [userId, current.id])
   } else {
@@ -868,7 +867,7 @@ export async function revokeOtherTokens(userId: number): Promise<void> {
 
     await db.unsafe(`
       UPDATE oauth_access_tokens
-      SET revoked = 1, updated_at = ${now}
+      SET revoked = 1, updated_at = ${appNow()}
       WHERE user_id = ? AND id != ?
     `, [userId, current.id])
   }
@@ -978,7 +977,7 @@ export async function createClient(options: CreateClientOptions): Promise<Create
   if (isPostgres) {
     await db.unsafe(`
       INSERT INTO oauth_clients (name, secret, provider, redirect, personal_access_client, password_client, revoked, created_at)
-      VALUES ($1, $2, 'local', $3, $4, $5, false, NOW())
+      VALUES ($1, $2, 'local', $3, $4, $5, false, ${appNow()})
     `, [
       options.name,
       secret,
@@ -989,7 +988,7 @@ export async function createClient(options: CreateClientOptions): Promise<Create
   } else {
     await db.unsafe(`
       INSERT INTO oauth_clients (name, secret, provider, redirect, personal_access_client, password_client, revoked, created_at)
-      VALUES (?, ?, 'local', ?, ?, ?, 0, ${now})
+      VALUES (?, ?, 'local', ?, ?, ?, 0, ${appNow()})
     `, [
       options.name,
       secret,
@@ -1019,7 +1018,7 @@ export async function createClient(options: CreateClientOptions): Promise<Create
 export async function revokeClient(clientId: number): Promise<void> {
   await db.unsafe(`
     UPDATE oauth_clients
-    SET revoked = ${boolTrue}, updated_at = ${now}
+    SET revoked = ${boolTrue}, updated_at = ${appNow()}
     WHERE id = ${param(1)}
   `, [clientId])
 }
