@@ -117,6 +117,11 @@ export * from './replicas'
 // keys and AUTO_INCREMENT on a sharded engine).
 export * from './ddl-constraints'
 
+// VSchema derivation — turns the model relationship graph into a Vitess
+// keyspace topology, co-locating child tables with their parents so joins
+// between them do not scatter across shards.
+export * from './vschema'
+
 // SQL dialect helpers & connection defaults
 export * from './sql-helpers'
 export * from './defaults'

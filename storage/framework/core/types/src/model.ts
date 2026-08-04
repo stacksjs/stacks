@@ -134,6 +134,53 @@ export interface LikeableOptions {
   foreignKey?: string
 }
 
+/**
+ * Vindex types a column vindex may use.
+ *
+ * A vindex is Vitess's index from a column value to a shard. `hash` is the
+ * general-purpose choice for integer keys and the default here; `xxhash`
+ * suits non-integer keys; `binary`/`binary_md5` and `unicode_loose_md5`
+ * apply to string keys where ordering or case-folding matters.
+ */
+export type VindexType =
+  | 'hash'
+  | 'xxhash'
+  | 'binary'
+  | 'binary_md5'
+  | 'unicode_loose_md5'
+
+/**
+ * Per-model sharding declaration, read by `buddy generate:vschema`.
+ */
+export interface ShardingOptions {
+  /**
+   * Column whose value decides the shard. Rows sharing a value land on the
+   * same shard, which is what keeps a join between related tables from
+   * scattering across the cluster.
+   */
+  column?: string
+  /** Vindex type mapping that column to a shard. Defaults to `hash`. */
+  vindex?: VindexType
+  /**
+   * Keep this table whole on every shard instead of splitting it.
+   *
+   * The right choice for small reference tables (countries, currencies,
+   * feature flags) that are joined against constantly: splitting them
+   * would make every such join a scatter-gather, while duplicating a few
+   * hundred rows costs nothing.
+   */
+  unsharded?: boolean
+  /**
+   * Sequence table backing this table's primary key.
+   *
+   * A sharded keyspace cannot use AUTO_INCREMENT, so a table that still
+   * wants server-generated integer ids names a sequence living in an
+   * unsharded keyspace. Models using `useUuid` do not need this — the
+   * application generates the key.
+   */
+  sequence?: string
+}
+
 type ActionPath = string
 type ActionName = string
 type Action = ActionPath | ActionName | undefined
@@ -243,6 +290,21 @@ export interface ModelOptions extends Base {
     useActivityLog?: boolean | ActivityLogOption
 
     likeable?: boolean | LikeableOptions
+
+    /**
+     * How this table is sharded, for engines that shard (Vitess).
+     *
+     * Ignored entirely on single-node dialects, so declaring it costs
+     * nothing on SQLite/MySQL/Postgres. `buddy generate:vschema` reads it to
+     * emit the keyspace VSchema.
+     *
+     * Usually you do not need it: the generator derives a sharding column
+     * from the relationship graph, putting a child table on the same shard
+     * as its parent so a join between them does not scatter. Set this when
+     * the derived choice is wrong — most often on a table that should be
+     * replicated to every shard instead of split across them.
+     */
+    sharding?: ShardingOptions
   }
 
   attributes?: AttributesElements

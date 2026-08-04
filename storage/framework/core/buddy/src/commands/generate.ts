@@ -125,6 +125,35 @@ export function generate(buddy: CLI): void {
       log.info(`[generate:db-types] resolved ${result.tables.length} table(s)`)
     })
 
+  // `./buddy generate:vschema` — derive a Vitess keyspace VSchema from the
+  // models. Emitted rather than hand-written because the interesting part
+  // (which tables co-locate on a shard) is a fact about the relationship
+  // graph the models already declare, and getting it wrong is invisible:
+  // the cluster still answers, it just scatters every join.
+  buddy
+    .command('generate:vschema', 'Derive a Vitess VSchema from your models (writes database/vschema.json)')
+    .option('--dry-run', 'Print the VSchema without writing it', { default: false })
+    .option('--out [path]', 'Where to write the VSchema', { default: 'database/vschema.json' })
+    .action(async (options: { dryRun?: boolean, out?: string }) => {
+      const { generateVSchema } = await import('@stacksjs/actions')
+      const result = await generateVSchema({ dryRun: options.dryRun, out: options.out })
+
+      if (!result.ok) {
+        console.error(`\n❌ ${result.error}\n`)
+        process.exit(ExitCode.FatalError)
+      }
+
+      // The report, not just the file: a generated topology the user cannot
+      // see is one they cannot challenge, and the co-location choices are
+      // exactly what they should be reviewing.
+      console.log(result.report)
+
+      if (options.dryRun)
+        console.log(JSON.stringify(result.vschema, null, 2))
+      else
+        log.success(`Wrote ${result.path} (${result.tableCount} tables)`)
+    })
+
   buddy
     .command('generate:entries', descriptions.entries)
     .option('-p, --project [project]', descriptions.project, { default: false })

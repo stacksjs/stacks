@@ -14,6 +14,10 @@ import { generateProjectImages } from './images'
 export { generateProjectImages } from './images'
 export type { GenerateImagesActionOptions } from './images'
 
+// Vitess keyspace VSchema, derived from the model relationship graph.
+export { generateVSchema } from './vschema'
+export type { GenerateVSchemaOptions, GenerateVSchemaResult } from './vschema'
+
 // import { files } from '@stacksjs/storage'
 
 export async function invoke(options?: GeneratorOptions): Promise<void> {
