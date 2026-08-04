@@ -30,19 +30,19 @@ function getStepContent(step) {
       <!-- Stepper indicator -->
       <div class="flex items-center justify-between mb-12">
         @foreach(steps as step)
-          <div class="flex items-center : ? '' 'flex-1' {{ }} loop.last">
+          <div class="flex items-center {{ loop.last ? '' : 'flex-1' }}">
             <div class="flex flex-col items-center">
-              <div class="flex items-center justify-center h-8 w-8 text-blue-600' text-gray-500' ring-blue-600 ring-offset-2' rounded-full : : ? ? '' 'bg-blue-100 'bg-gray-100 'ring-2 {{ {{ }} }} <= == currentStep currentStep loop.index loop.index">
+              <div class="flex items-center justify-center w-8 h-8 rounded-full {{ loop.index <= currentStep ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-500' }} {{ loop.index == currentStep ? 'ring-2 ring-blue-600 ring-offset-2' : '' }}">
                 @if(loop.index < currentStep)
                   <div class="h-5 w-5 i-heroicons-check"></div>
                 @else
                   {{ loop.index + 1 }}
                 @endif
               </div>
-              <span class="mt-2 font-medium' text-sm : ? 'text-blue-600 'text-gray-500' {{ }} == currentStep loop.index">{{ step.title }}</span>
+              <span class="mt-2 text-sm {{ loop.index == currentStep ? 'text-blue-600 font-medium' : 'text-gray-500' }}">{{ step.title }}</span>
             </div>
             @if(!loop.last)
-              <div class="flex-1 mx-4 h-0.5 : ? 'bg-blue-500' 'bg-gray-200' {{ }} < currentStep loop.index"></div>
+              <div class="flex-1 h-0.5 mx-4 {{ loop.index < currentStep ? 'bg-blue-500' : 'bg-gray-200' }}"></div>
             @endif
           </div>
         @endforeach
@@ -108,14 +108,14 @@ function getStepContent(step) {
 
       <div class="flex gap-4 justify-center">
         <button
-          class="px-4 py-2 font-medium text-gray-700 text-sm bg-gray-50 hover:bg-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 cursor-not-allowed' : ? '' 'opacity-50 {{ }} == 0 currentStep"
+          class="rounded-md bg-gray-50 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 {{ currentStep == 0 ? 'opacity-50 cursor-not-allowed' : '' }}"
           data-action="previous-step"
           {{ currentStep == 0 ? 'disabled' : '' }}
         >
           Previous
         </button>
         <button
-          class="px-4 py-2 font-medium text-sm text-white bg-blue-500 hover:bg-blue-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 cursor-not-allowed' - : ? '' 'opacity-50 {{ }} == 1 currentStep steps.length"
+          class="rounded-md bg-blue-500 px-4 py-2 text-sm font-medium text-white hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 {{ currentStep == steps.length - 1 ? 'opacity-50 cursor-not-allowed' : '' }}"
           data-action="next-step"
           {{ currentStep == steps.length - 1 ? 'disabled' : '' }}
         >

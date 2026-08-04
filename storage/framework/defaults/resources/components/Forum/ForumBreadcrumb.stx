@@ -20,13 +20,13 @@ const { items = [] } = defineProps<ForumBreadcrumbProps>()
           @if(item.link)
             <a
               href="{{ item.link }}"
-              class="font-medium text-gray-700 text-sm hover:text-blue-600 : ? '' 'ml-1' {{ }} > 0 loop.index"
+              class="text-sm font-medium text-gray-700 hover:text-blue-600 {{ loop.index > 0 ? 'ml-1' : '' }}"
             >
               {{ item.label }}
             </a>
           @else
             <span
-              class="font-medium text-gray-500 text-sm : ? '' 'ml-1' {{ }} > 0 loop.index"
+              class="text-sm font-medium text-gray-500 {{ loop.index > 0 ? 'ml-1' : '' }}"
             >
               {{ item.label }}
             </span>

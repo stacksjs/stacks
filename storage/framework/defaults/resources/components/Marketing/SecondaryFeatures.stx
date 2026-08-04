@@ -45,12 +45,12 @@ const { features = [, selectedIndex = 0 } = defineProps<SecondaryFeaturesProps>(
       <div class="grid gap-x-8 grid-cols-3 pt-12">
         @foreach(features as feature)
           <div class="relative">
-            <div class="w-9 rounded-lg selectedIndex : ? 'bg-blue-600' 'bg-slate-500' {{ }} == loop.index">
+            <div class="w-9 rounded-lg {{ loop.index == selectedIndex ? 'bg-blue-600' : 'bg-slate-500' }}">
               <svg aria-hidden="true" class="h-9 w-9" fill="none">
                 {{ feature.icon }}
               </svg>
             </div>
-            <h3 class="mt-6 font-medium text-sm selectedIndex : ? 'text-blue-600' 'text-slate-600' {{ }} == loop.index">
+            <h3 class="mt-6 text-sm font-medium {{ loop.index == selectedIndex ? 'text-blue-600' : 'text-slate-600' }}">
               <button data-action="select-feature" data-index="{{ loop.index }}">{{ feature.name }}</button>
             </h3>
             <p class="mt-2 font-display text-slate-900 text-xl">
@@ -66,7 +66,7 @@ const { features = [, selectedIndex = 0 } = defineProps<SecondaryFeaturesProps>(
       <div class="overflow-hidden relative mt-20 px-14 py-16 xl:px-16 bg-slate-200 rounded-4xl">
         <div class="flex -mx-5">
           @foreach(features as feature)
-            <div class="px-5 duration-500 ease-in-out transition selectedIndex : != ? '' 'opacity-60' {{ }} loop.index" style="transform: translateX(-{{ selectedIndex * 100 }}%)">
+            <div class="px-5 transition duration-500 ease-in-out {{ loop.index != selectedIndex ? 'opacity-60' : '' }}" style="transform: translateX(-{{ selectedIndex * 100 }}%)">
               <div class="overflow-hidden w-[52.75rem] bg-white ring-1 ring-slate-500/10 rounded-xl shadow-lg shadow-slate-900/5">
                 <img class="w-full" src="{{ feature.image }}" alt="" sizes="52.75rem">
               </div>

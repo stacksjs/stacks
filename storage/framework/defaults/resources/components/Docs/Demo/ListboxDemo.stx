@@ -32,12 +32,12 @@ const { people = [, selectedPerson = people[0], isOpen = false } = defineProps<L
           <div class="absolute overflow-auto mt-1 py-1 max-h-60 w-full text-base sm:text-sm bg-white outline-none ring-1 ring-black/5 rounded-md focus:outline-none shadow-lg">
             @foreach(people as person)
               <div
-                class="relative pl-10 pr-4 py-2 list-none text-amber-900' hover:text-amber-900 hover:bg-amber-100 cursor-default select-none selectedPerson.id : ? 'bg-amber-100 'text-gray-900' {{ }} == person.id"
+                class="list-none relative cursor-default select-none py-2 pl-10 pr-4 hover:bg-amber-100 hover:text-amber-900 {{ selectedPerson.id == person.id ? 'bg-amber-100 text-amber-900' : 'text-gray-900' }}"
                 data-action="select-person"
                 data-person-id="{{ person.id }}"
                 data-person-name="{{ person.name }}"
               >
-                <span class="block truncate selectedPerson.id : ? 'font-medium' 'font-normal' {{ }} == person.id">
+                <span class="block truncate {{ selectedPerson.id == person.id ? 'font-medium' : 'font-normal' }}">
                   {{ person.name }}
                 </span>
                 @if(selectedPerson.id == person.id)

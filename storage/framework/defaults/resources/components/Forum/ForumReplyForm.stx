@@ -64,7 +64,7 @@ function canSubmit(content) {
             Preview
           </button>
           <button
-            class="px-4 py-2 text-white bg-primary rounded-md hover:opacity-90 cursor-not-allowed' : ? '' 'opacity-50 {{ }} canSubmit(replyContent)"
+            class="px-4 py-2 bg-primary text-white rounded-md hover:opacity-90 {{ canSubmit(replyContent) ? '' : 'opacity-50 cursor-not-allowed' }}"
             data-action="submit-reply"
             {{ canSubmit(replyContent) ? '' : 'disabled' }}
           >

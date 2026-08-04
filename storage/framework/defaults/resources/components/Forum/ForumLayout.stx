@@ -19,10 +19,10 @@ function isActiveRoute(currentRoute, targetRoute) {
         </div>
       </div>
       <nav class="flex gap-1 text-sm">
-        <a href="/forum" class="px-3 py-2 font-medium' 'hover:bg-gray-100 rounded-md rounded-md' : ? 'bg-gray-100 'forum') {{ }} isActiveRoute(route,">All Discussions</a>
-        <a href="/forum?filter=popular" class="px-3 py-2 font-medium' 'hover:bg-gray-100 rounded-md rounded-md' : ? 'bg-gray-100 'forum-popular') {{ }} isActiveRoute(route,">Popular</a>
-        <a href="/forum?filter=recent" class="px-3 py-2 font-medium' 'hover:bg-gray-100 rounded-md rounded-md' : ? 'bg-gray-100 'forum-recent') {{ }} isActiveRoute(route,">Recent</a>
-        <a href="/forum?filter=solved" class="px-3 py-2 font-medium' 'hover:bg-gray-100 rounded-md rounded-md' : ? 'bg-gray-100 'forum-solved') {{ }} isActiveRoute(route,">Solved</a>
+        <a href="/forum" class="px-3 py-2 {{ isActiveRoute(route, 'forum') ? 'bg-gray-100 rounded-md font-medium' : 'hover:bg-gray-100 rounded-md' }}">All Discussions</a>
+        <a href="/forum?filter=popular" class="px-3 py-2 {{ isActiveRoute(route, 'forum-popular') ? 'bg-gray-100 rounded-md font-medium' : 'hover:bg-gray-100 rounded-md' }}">Popular</a>
+        <a href="/forum?filter=recent" class="px-3 py-2 {{ isActiveRoute(route, 'forum-recent') ? 'bg-gray-100 rounded-md font-medium' : 'hover:bg-gray-100 rounded-md' }}">Recent</a>
+        <a href="/forum?filter=solved" class="px-3 py-2 {{ isActiveRoute(route, 'forum-solved') ? 'bg-gray-100 rounded-md font-medium' : 'hover:bg-gray-100 rounded-md' }}">Solved</a>
       </nav>
     </header>
 
