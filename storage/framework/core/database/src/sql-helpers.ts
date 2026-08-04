@@ -16,7 +16,20 @@ export interface SqlDialectHelpers {
   isPostgres: boolean
   isMysql: boolean
   isSqlite: boolean
-  /** SQL expression for current timestamp */
+  /**
+   * SQL expression for the DATABASE's current timestamp — `NOW()` on
+   * MySQL/Postgres, `datetime('now')` on SQLite.
+   *
+   * Do NOT compare this against a column the application wrote. The database
+   * clock renders space-separated (`2026-08-04 01:52:47`) while the framework
+   * writes {@link sqlDateTime}'s canonical `T` form, and on SQLite these
+   * columns hold text where `'T' > ' '` — so `expires_at > datetime('now')`
+   * was true for every same-day row no matter how long ago it expired, and
+   * expired tokens kept validating. Use `sqlDateTimeLiteral()` for those
+   * comparisons so both sides come from the same clock in the same format.
+   *
+   * It remains correct for values the database both writes and compares.
+   */
   now: string
   /** SQL literal for boolean true */
   boolTrue: string
