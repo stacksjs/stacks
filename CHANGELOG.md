@@ -1,5 +1,75 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.256...v0.70.257)
+
+## ✨ Features
+
+- **database**: route vitess to the upstream VitessDriver ([c903e6c](https://github.com/stacksjs/stacks/commit/c903e6c)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **database**: derive Vitess VSchema from model relationships ([1eb6f47](https://github.com/stacksjs/stacks/commit/1eb6f47)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **database**: add vitess dialect as a DDL constraint profile ([3047d70](https://github.com/stacksjs/stacks/commit/3047d70)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **database**: add connection pooling and read replica routing ([00ed772](https://github.com/stacksjs/stacks/commit/00ed772)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🐛 Bug Fixes
+
+- **routes**: only register scaffolded defaults ([dbfca58](https://github.com/stacksjs/stacks/commit/dbfca58)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **cache**: stop a timed-out fetcher from stranding every later caller ([ea2b9d0](https://github.com/stacksjs/stacks/commit/ea2b9d0)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **router**: let the route middleware registry be cleared ([ca09dfb](https://github.com/stacksjs/stacks/commit/ca09dfb)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **orm**: make the polymorphic trait factories reachable ([00888a3](https://github.com/stacksjs/stacks/commit/00888a3)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **database**: export the trait-table and datetime-column modules wholesale ([4c547a6](https://github.com/stacksjs/stacks/commit/4c547a6)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **auth**: put created_at and password_changed_at on the same clock ([b4c6288](https://github.com/stacksjs/stacks/commit/b4c6288)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **orm**: write trait-table timestamps in the canonical format ([47f537d](https://github.com/stacksjs/stacks/commit/47f537d)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **router**: establish the read-routing context per request ([cc69048](https://github.com/stacksjs/stacks/commit/cc69048)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **database**: detect foreign keys with quoted identifiers ([ef253ae](https://github.com/stacksjs/stacks/commit/ef253ae)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **database**: convert legacy MySQL TIMESTAMP columns to DATETIME ([8778a07](https://github.com/stacksjs/stacks/commit/8778a07)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **database**: store naive UTC in MySQL DATETIME, not TIMESTAMP ([0b5cb31](https://github.com/stacksjs/stacks/commit/0b5cb31)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **database**: write query-log timestamps in the canonical format ([4fc8778](https://github.com/stacksjs/stacks/commit/4fc8778)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **notifications**: write timestamps MySQL accepts ([558d5a3](https://github.com/stacksjs/stacks/commit/558d5a3)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **auth**: stop accepting expired tokens on SQLite ([c1e6f4a](https://github.com/stacksjs/stacks/commit/c1e6f4a)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **database**: give app-written timestamps one portable format ([49bd9fe](https://github.com/stacksjs/stacks/commit/49bd9fe)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **orm**: add the missing comment upvote accessors ([ad3442e](https://github.com/stacksjs/stacks/commit/ad3442e)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **database**: create the polymorphic trait tables on every driver ([47fe9df](https://github.com/stacksjs/stacks/commit/47fe9df)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## ♻️ Code Refactoring
+
+- **database**: give the trait tables the framework's datetime type ([ec8f583](https://github.com/stacksjs/stacks/commit/ec8f583)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **database**: retire the unreachable trait migration generators ([4317d20](https://github.com/stacksjs/stacks/commit/4317d20)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **database**: centralize dialect classification in a capability table ([c54f8cd](https://github.com/stacksjs/stacks/commit/c54f8cd)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 📝 Documentation
+
+- refresh generated framework artifacts ([3af40df](https://github.com/stacksjs/stacks/commit/3af40df)) _(by Chris <chrisbreuer93@gmail.com>)_
+- cover ts-cloud vitess provisioning ([cd084d9](https://github.com/stacksjs/stacks/commit/cd084d9)) _(by Chris <chrisbreuer93@gmail.com>)_
+- cover ts-cloud vitess cluster management ([ac49a65](https://github.com/stacksjs/stacks/commit/ac49a65)) _(by Chris <chrisbreuer93@gmail.com>)_
+- document pooling, read replicas, and vitess sharding ([51f41d9](https://github.com/stacksjs/stacks/commit/51f41d9)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **database**: warn that sqlHelpers.now is the database clock ([fe67357](https://github.com/stacksjs/stacks/commit/fe67357)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **database**: note that the vitess collapse is version-gated ([eb1a9a7](https://github.com/stacksjs/stacks/commit/eb1a9a7)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## ✅ Tests
+
+- provide requestAnimationFrame once, in the shared setup ([2a4e969](https://github.com/stacksjs/stacks/commit/2a4e969)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **i18n**: set the locale before each test, not only after ([0a33b92](https://github.com/stacksjs/stacks/commit/0a33b92)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **orm**: realign the type-shape assertions with the code they pin ([84ac80a](https://github.com/stacksjs/stacks/commit/84ac80a)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **orm**: await the storage import instead of require()ing it ([7d144dc](https://github.com/stacksjs/stacks/commit/7d144dc)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **router**: make the route-snapshot fixture inert unless it is the entry point ([a5f3f62](https://github.com/stacksjs/stacks/commit/a5f3f62)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **events**: give each discovery test its own directory ([e010909](https://github.com/stacksjs/stacks/commit/e010909)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **config**: drive determineAppEnv instead of relying on ambient config ([ece4326](https://github.com/stacksjs/stacks/commit/ece4326)) _(by Chris <chrisbreuer93@gmail.com>)_
+- unpin a brittle alias count and drop a dead build-utils block ([63bece3](https://github.com/stacksjs/stacks/commit/63bece3)) _(by Chris <chrisbreuer93@gmail.com>)_
+- update two assertions that outlived the code they pinned ([eb74b98](https://github.com/stacksjs/stacks/commit/eb74b98)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **orm**: stand the trait fixture up from the real DDL ([e2db924](https://github.com/stacksjs/stacks/commit/e2db924)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 💚 Continuous Integration
+
+- run every core package, not five of them ([8afa672](https://github.com/stacksjs/stacks/commit/8afa672)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🔧 Chores
+
+- **types**: regenerate server auto-imports ([95d0510](https://github.com/stacksjs/stacks/commit/95d0510)) _(by Chris <chrisbreuer93@gmail.com>)_
+- wip ([e722624](https://github.com/stacksjs/stacks/commit/e722624)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.255...v0.70.256)
 
 ## 🐛 Bug Fixes
