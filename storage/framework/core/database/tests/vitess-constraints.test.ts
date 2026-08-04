@@ -27,13 +27,14 @@ import { sqlHelpers } from '../src/sql-helpers'
 describe('vitess dialect capabilities', () => {
   const caps = dialectCapabilities('vitess')
 
-  test('speaks MySQL but renders through the mysql dialect', () => {
+  test('speaks MySQL and routes to the upstream vitess driver', () => {
     expect(caps.wire).toBe('mysql')
     expect(isMysqlWire('vitess')).toBe(true)
-    // No vitess renderer exists upstream and none is needed. Passing
-    // 'vitess' through would make the query builder fall back to its
-    // default dialect and render the wrong SQL entirely.
-    expect(toQueryBuilderDialect('vitess')).toBe('mysql')
+    // Passed through natively rather than collapsed: bun-query-builder
+    // >= 0.2.6 has a VitessDriver that suppresses foreign keys and
+    // AUTO_INCREMENT while generating DDL. It stays in the MySQL family
+    // upstream, so DML still renders exactly as MySQL's does.
+    expect(toQueryBuilderDialect('vitess')).toBe('vitess')
   })
 
   test('defaults to vtgate port 15306, not mysqld 3306', () => {

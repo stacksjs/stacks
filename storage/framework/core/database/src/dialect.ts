@@ -35,7 +35,7 @@ export type SqlWireProtocol = 'mysql' | 'postgres' | 'sqlite'
  * render SQL, and a dialect that is wire- and DML-identical to MySQL wants
  * MySQL's renderer even when Stacks tracks it separately for DDL purposes.
  */
-export type QueryBuilderDialect = 'sqlite' | 'mysql' | 'singlestore' | 'postgres'
+export type QueryBuilderDialect = 'sqlite' | 'mysql' | 'singlestore' | 'vitess' | 'postgres'
 
 export interface DialectCapabilities {
   /** The Stacks-level dialect name, as it appears in `config/database.ts`. */
@@ -153,18 +153,14 @@ const CAPABILITIES: Record<string, DialectCapabilities> = {
   vitess: {
     dialect: 'vitess',
     wire: 'mysql',
-    // Collapsed to 'mysql' on purpose, and this is a VERSION choice rather
-    // than a permanent one. bun-query-builder gained a `vitess` dialect and
-    // a `VitessDriver` (which suppresses foreign keys and AUTO_INCREMENT in
-    // its emitted DDL), but the version pinned here predates it, and passing
-    // a dialect the installed build does not know makes `getDialectDriver`
-    // throw. vtgate parses MySQL, so the collapse renders correct DML
-    // regardless; the DDL constraints the upstream driver would enforce are
-    // already enforced on this side by `./ddl-constraints`.
-    //
-    // Once the dependency is bumped past that release, flip this to 'vitess'
-    // so DDL generation is guarded upstream as well as audited here.
-    queryBuilderDialect: 'mysql',
+    // Passed through natively (bun-query-builder >= 0.2.6), which routes it
+    // to `VitessDriver`. That driver suppresses foreign keys and
+    // AUTO_INCREMENT as it GENERATES DDL, while `./ddl-constraints` audits a
+    // corpus before it RUNS — the two are complementary, and generation-side
+    // guarding is what stops an unusable corpus from being written in the
+    // first place. It stays in the MySQL family upstream (`isMysqlLike`), so
+    // every DML branch renders exactly as MySQL does.
+    queryBuilderDialect: 'vitess',
     // vtgate's MySQL-protocol port, not MySQL's own 3306 — connecting to
     // 3306 on a Vitess cluster reaches a vttablet's underlying mysqld and
     // bypasses the sharding layer completely.

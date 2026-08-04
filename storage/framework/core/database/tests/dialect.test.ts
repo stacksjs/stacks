@@ -72,6 +72,7 @@ describe('toQueryBuilderDialect', () => {
     expect(toQueryBuilderDialect('sqlite')).toBe('sqlite')
     expect(toQueryBuilderDialect('mysql')).toBe('mysql')
     expect(toQueryBuilderDialect('singlestore')).toBe('singlestore')
+    expect(toQueryBuilderDialect('vitess')).toBe('vitess')
     expect(toQueryBuilderDialect('postgres')).toBe('postgres')
   })
 
