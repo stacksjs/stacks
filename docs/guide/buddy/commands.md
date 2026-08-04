@@ -2164,6 +2164,7 @@ Automagically lints your project codebase
 | --- | --- | --- | --- |
 | `-f`, `--fix` | Automagically fixes all lint errors | boolean, optional | `false` |
 | `-p`, `--project` | Target a specific project | value, optional | `false` |
+| `--stx` | Run the stx conformance checks instead of code style | boolean, optional | `false` |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
 
 ### `lint:fix`
