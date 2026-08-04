@@ -1,3 +1,4 @@
+import { sqlDateTime } from './sql-helpers'
 import { memoryUsage } from 'node:process'
 import { config } from '@stacksjs/config'
 import { log } from '@stacksjs/logging'
@@ -231,7 +232,7 @@ async function createQueryLogRecord(
     connection,
     status,
     error: error ? String(error) : undefined,
-    executed_at: new Date().toISOString(),
+    executed_at: sqlDateTime(),
     bindings,
     trace,
     ...caller,
