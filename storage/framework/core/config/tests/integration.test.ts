@@ -1,4 +1,4 @@
-import { describe, expect, test } from 'bun:test'
+import { afterEach, describe, expect, test } from 'bun:test'
 import {
   ai,
   app,
@@ -226,10 +226,32 @@ describe('Config Integration Tests', () => {
 // ─── determineAppEnv ─────────────────────────────────────────────────────────
 
 describe('determineAppEnv', () => {
-  test('returns dev for local environment', () => {
-    // defaults set app.env to 'local'
-    const result = determineAppEnv()
-    expect(result).toBe('dev')
+  // Drive the input explicitly. These asserted `'dev'` on the premise that
+  // `app.env` "defaults to local", which is not true under the test runner —
+  // it resolves to `test`, so the tests only ever passed by accident of
+  // whatever config happened to be loaded.
+  const original = (config as { app?: { env?: string } }).app?.env
+  const setEnv = (value: string) => { (config as { app: { env: string } }).app.env = value }
+
+  afterEach(() => { if (original !== undefined) setEnv(original) })
+
+  test('maps local and development to dev', () => {
+    setEnv('local')
+    expect(determineAppEnv()).toBe('dev')
+    setEnv('development')
+    expect(determineAppEnv()).toBe('dev')
+  })
+
+  test('maps staging to stage and production to prod', () => {
+    setEnv('staging')
+    expect(determineAppEnv()).toBe('stage')
+    setEnv('production')
+    expect(determineAppEnv()).toBe('prod')
+  })
+
+  test('passes an unmapped environment through unchanged', () => {
+    setEnv('test')
+    expect(determineAppEnv()).toBe('test')
   })
 })
 
