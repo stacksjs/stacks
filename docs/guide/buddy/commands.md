@@ -1949,6 +1949,20 @@ Generate Migrations
 - Aliases: none
 - Arguments: none
 
+### `generate:vschema`
+
+Derive a Vitess VSchema from your models (writes `database/vschema.json`)
+
+- Usage: `$ buddy generate:vschema`
+- Namespace: `generate`
+- Aliases: none
+- Arguments: none
+
+| Option | Description | Type | Default |
+| --- | --- | --- | --- |
+| `--dry-run` | Print the VSchema without writing it | boolean, optional | `false` |
+| `--out` | Where to write the VSchema | string, optional | `database/vschema.json` |
+
 ### `generate:og`
 
 Generate the social cards used by link previews

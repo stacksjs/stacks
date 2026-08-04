@@ -1,10 +1,12 @@
 ---
 title: Database Package
-description: "A powerful database abstraction layer providing seamless driver switching between SQLite, MySQL, and PostgreSQL, built on top of bun-query-builder."
+description: "A powerful database abstraction layer providing seamless driver switching between SQLite, MySQL, PostgreSQL, SingleStore, and Vitess, built on top of bun-query-builder."
 ---
 # Database Package
 
-A powerful database abstraction layer providing seamless driver switching between SQLite, MySQL, and PostgreSQL, built on top of bun-query-builder.
+A powerful database abstraction layer providing seamless driver switching between SQLite, MySQL, PostgreSQL, SingleStore, and Vitess, built on top of bun-query-builder.
+
+For connection pooling, read replicas, and sharding, see [Scaling the Database](/guide/database-scaling).
 
 ## Installation
 
@@ -58,6 +60,28 @@ DB_PORT=5432
 DB_DATABASE=stacks
 DB_USERNAME=postgres
 DB_PASSWORD=secret
+
+# For SingleStore (MySQL wire protocol, port 3306)
+DB_CONNECTION=singlestore
+DB_HOST=svc-xxxx.svc.singlestore.com
+DB_PORT=3306
+DB_SSL=true
+
+# For Vitess. DB_DATABASE is a KEYSPACE, and 15306 is vtgate's port -
+# 3306 would reach one tablet's MySQL and bypass sharding entirely.
+DB_CONNECTION=vitess
+DB_HOST=vtgate.internal
+DB_PORT=15306
+DB_DATABASE=commerce
+
+# Connection pool (ignored for sqlite, which is embedded)
+DB_POOL_MAX=10
+DB_POOL_IDLE_TIMEOUT_MS=30000
+DB_POOL_ACQUIRE_TIMEOUT_MS=10000
+
+# Read replicas (comma-separated hosts; credentials inherit from the primary)
+DB_READ_HOSTS=replica-a.internal,replica-b.internal
+DB_READ_AUTO_ROUTE=false
 ```
 
 ### Programmatic Configuration
@@ -574,6 +598,28 @@ database.switchDriver('postgres', {
 })
 ```
 
+### Supported drivers
+
+| Driver | Wire protocol | Default port | Notes |
+| --- | --- | --- | --- |
+| `sqlite` | embedded | - | Single connection, no pooling. |
+| `mysql` | MySQL | 3306 | |
+| `postgres` | PostgreSQL | 5432 | |
+| `singlestore` | MySQL | 3306 | Distributed. No foreign keys. TLS required on managed (Helios) endpoints. |
+| `vitess` | MySQL | 15306 | Sharded MySQL behind vtgate. No foreign keys, no `AUTO_INCREMENT`, no cross-shard ACID. Needs a [VSchema](/guide/database-scaling#generating-a-vschema). |
+
+The MySQL-wire drivers all render identical SQL - placeholders, backtick quoting, upserts, `LAST_INSERT_ID()`. They differ only in what DDL the engine accepts, which Stacks checks before running a migration rather than discovering halfway through one.
+
+::: warning Migrations are dialect-specific
+Stacks ships one set of migration files, emitted for a single dialect. Switching `DB_CONNECTION` to a different database means regenerating them:
+
+```bash
+./buddy migrate:regenerate mysql
+```
+
+`buddy migrate` refuses to replay a mismatched corpus rather than failing partway through it.
+:::
+
 ## Connection Management
 
 ```typescript
@@ -644,12 +690,34 @@ for await (const row of stream) {
 
 ### Concurrent Connections
 
+Client-server connections (MySQL, PostgreSQL, SingleStore, Vitess) are pooled. Configure the pool per connection in `config/database.ts`:
+
 ```typescript
-// Connection pooling is handled automatically
-// Configure pool size via environment
-// DB_POOL_MIN=2
-// DB_POOL_MAX=10
+connections: {
+  mysql: {
+    // ...
+    pool: {
+      max: 10,              // maximum simultaneous connections
+      min: 2,               // idle connections kept warm
+      idleTimeoutMs: 30_000,
+      acquireTimeoutMs: 10_000,
+      maxLifetimeMs: 1_800_000,
+    },
+  },
+},
 ```
+
+Or from the environment:
+
+```env
+DB_POOL_MAX=10
+DB_POOL_IDLE_TIMEOUT_MS=30000
+DB_POOL_ACQUIRE_TIMEOUT_MS=10000
+```
+
+Omit the `pool` block entirely to use the driver's defaults. SQLite is embedded and single-connection, so a pool block there is ignored.
+
+Size the pool against your database's `max_connections`, remembering to multiply by the number of application processes. See [Scaling the Database](/guide/database-scaling#sizing-the-pool).
 
 ## API Reference
 

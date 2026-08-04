@@ -82,6 +82,7 @@ const config: BunPressOptions = {
           items: [
             { text: 'Authentication', link: '/guide/auth' },
             { text: 'Database', link: '/packages/database' },
+            { text: 'Scaling the Database', link: '/guide/database-scaling' },
             { text: 'Cache', link: '/packages/cache' },
             { text: 'Events', link: '/packages/events' },
             { text: 'Queue', link: '/packages/queue' },

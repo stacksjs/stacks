@@ -214,6 +214,12 @@ traits: {
   useSeeder: {
     count: 50,
   },
+
+  // How this table is sharded, on engines that shard (Vitess).
+  // Ignored on single-node dialects, so it costs nothing to declare.
+  sharding: {
+    column: 'tenant_id',
+  },
 }
 
 ```
@@ -255,6 +261,48 @@ This generates:
 - `GET /posts/{id}` - Show post
 - `PATCH /posts/{id}` - Update post
 - `DELETE /posts/{id}` - Delete post
+
+### Sharding Trait Configuration
+
+Only relevant on engines that shard, currently [Vitess](/guide/database-scaling#sharding-with-vitess). Single-node dialects ignore it, so declaring it early costs nothing.
+
+You usually do not need it. `buddy generate:vschema` derives a sharding column from your relationship graph: a table with a `belongsTo` shards by the key of its parent, so the two live on the same shard and a join between them does not scatter across the cluster. Set this only when that derived choice is wrong.
+
+```typescript
+
+traits: {
+  // A sharded keyspace cannot use AUTO_INCREMENT, because every shard
+  // would hand out the same values. Generate keys in the application.
+  useUuid: true,
+
+  sharding: {
+    // Column whose value decides the shard. Rows sharing a value land together.
+    column: 'tenant_id',
+
+    // How that column maps to a shard. Defaults to 'hash'.
+    // 'hash' | 'xxhash' | 'binary' | 'binary_md5' | 'unicode_loose_md5'
+    vindex: 'hash',
+  },
+}
+
+```
+
+For a small lookup table that is joined against constantly, copy it to every shard instead of splitting it. Splitting would make every such join a scatter-gather; duplicating a few hundred rows costs nothing:
+
+```typescript
+
+traits: {
+  sharding: { unsharded: true },
+}
+
+```
+
+| Option | Meaning |
+| --- | --- |
+| `column` | Column whose value decides the shard. |
+| `vindex` | Mapping from that column to a shard. Defaults to `hash`. |
+| `unsharded` | Replicate this table to every shard instead of splitting it. |
+| `sequence` | Sequence table backing an integer primary key, for models not using `useUuid`. |
 
 ## Querying Models
 

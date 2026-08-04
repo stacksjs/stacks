@@ -108,6 +108,26 @@ Diff your models against the current schema and emit SQL migration files into `d
 buddy generate:migrations
 ```
 
+### Vitess VSchema
+
+Derive a [Vitess](https://vitess.io/) keyspace VSchema from your models and write it to `database/vschema.json`:
+
+```bash
+buddy generate:vschema
+
+# Print it without writing
+buddy generate:vschema --dry-run
+
+# Write somewhere else
+buddy generate:vschema --out infra/vschema.json
+```
+
+A VSchema tells vtgate which column decides each table's shard. Stacks derives it from your relationship graph: a table with a `belongsTo` shards by the key of its parent, so the two stay on the same shard and a join between them does not fan out across the cluster.
+
+The command prints the topology it chose, grouped by reason, along with any table whose joins will still scatter. Review that output rather than trusting the file - a wrong sharding key is not an error, just a query that quietly costs several times more than it should.
+
+See [Scaling the Database](/guide/database-scaling#generating-a-vschema) for the full picture.
+
 ### OpenAPI Specification
 
 Generate OpenAPI (Swagger) specification:

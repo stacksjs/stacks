@@ -187,6 +187,38 @@ When you run `buddy migrate`, Stacks:
 Run `buddy generate:migrations` on its own to produce the SQL without applying
 it, so you can review the file first.
 
+### Pre-flight checks
+
+Before a single statement runs, `buddy migrate` audits the corpus twice and
+refuses rather than failing halfway through, which would leave the schema
+partly applied.
+
+**Is this SQL written for a different database?** Dialect-exclusive syntax
+(`AUTOINCREMENT`, `SERIAL`, `AUTO_INCREMENT`) is matched against the target.
+This is what catches a SQLite corpus pointed at Postgres.
+
+**Does it use a feature this engine lacks?** A separate question, and invisible
+to the first check: `FOREIGN KEY` is perfectly valid MySQL, so a MySQL corpus
+aimed at a distributed engine passes the syntax audit cleanly and then fails on
+the first constraint. Distributed engines reject foreign keys, and sharded ones
+also reject `AUTO_INCREMENT`.
+
+Each failure names the affected files and what to do instead. If you know your
+corpus is correct, either check can be bypassed:
+
+```bash
+STACKS_ALLOW_DIALECT_MISMATCH=1 buddy migrate
+STACKS_ALLOW_DDL_CONSTRAINT_VIOLATIONS=1 buddy migrate
+```
+
+::: warning Vitess uses its own online DDL
+`buddy migrate` applies DDL over the connection. That is right for an
+unsharded keyspace, but a sharded one expects schema changes through Vitess's
+online DDL so they can roll out shard by shard. Generate the SQL and apply it
+with `vtctldclient ApplySchema`. See
+[Scaling the Database](/guide/database-scaling#schema-changes).
+:::
+
 ## Environment-Specific Migrations
 
 Migrations respect the `APP_ENV` environment variable:
