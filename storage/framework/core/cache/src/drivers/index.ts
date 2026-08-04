@@ -167,30 +167,45 @@ export class StacksCache implements CacheDriver {
     const pending = this.inflight.get(key)
     if (pending) return await (pending as Promise<T>)
 
+    // The fetcher runs HERE rather than through `manager.fetch()`, which keeps
+    // an in-flight map of its own. Two independent single-flight maps was the
+    // bug: when a hung fetcher blew past our timeout we reclaimed our slot, but
+    // the manager still had the dead Promise registered, so the next caller
+    // went straight back onto it and timed out too — the cap released nothing.
+    // Owning the single flight here is what makes the timeout mean something.
+    // Mirrors `manager.fetch()`'s remaining semantics: compute, store, emit.
+    const compute = async (): Promise<T> => {
+      const value = await fetcher()
+      await this.manager.set(key, value, ttl)
+      this.manager.emit('fetch', key, value, ttl)
+      return value
+    }
+
+    // `compute()` is async, so a fetcher that throws synchronously still yields
+    // a rejected Promise rather than throwing before `computePromise` exists.
+    const computePromise = compute()
+
+    // Release the slot only while it is still OURS. A compute that settles
+    // after its own timeout must not evict the newer caller that replaced it —
+    // the previous unconditional `finally { delete }` did exactly that.
+    const release = (): void => {
+      if (this.inflight.get(key) === computePromise)
+        this.inflight.delete(key)
+    }
+    computePromise.then(release, release)
+
     // Hard cap on how long a fetcher can hold an in-flight entry
     // (stacksjs/stacks#1876 C-2). Without this, a fetcher that hangs
     // (DB timeout, deadlock, infinite loop) keeps its entry in the
     // inflight map forever — every future caller for the same key
     // hangs on the same dead Promise. Race against a timeout so the
     // entry is reclaimed and the next caller gets to try fresh.
-    const computePromise = (async () => {
-      try {
-        return await this.manager.fetch(key, fetcher, ttl)
-      }
-      finally {
-        this.inflight.delete(key)
-      }
-    })()
-
     const timeoutMs = this.inflightTimeoutMs
     const timeoutPromise = new Promise<never>((_, reject) => {
       const timer = setTimeout(() => {
-        // Best effort: drop the stale entry so the next caller doesn't
-        // pile onto the dead Promise. The hung compute itself keeps
-        // running until it naturally settles — JS Promises can't be
-        // cancelled, only ignored.
-        if (this.inflight.get(key) === computePromise)
-          this.inflight.delete(key)
+        // The hung compute itself keeps running until it naturally settles —
+        // JS Promises can't be cancelled, only ignored.
+        release()
         reject(new Error(`[cache] getOrSet('${key}') timed out after ${timeoutMs}ms`))
       }, timeoutMs)
       // Avoid leaking the timer when computePromise wins the race.
