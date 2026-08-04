@@ -11,7 +11,7 @@ import { config, overridesReady } from '@stacksjs/config'
 import { path } from '@stacksjs/path'
 import type { Middleware } from '@stacksjs/router'
 import { route } from '@stacksjs/router'
-import { generateAutoImportFiles, generateServerAutoImportTypes, injectGlobalAutoImports } from '@stacksjs/server'
+import { autoImportsAreStale, generateAutoImportFiles, generateServerAutoImportTypes, injectGlobalAutoImports } from '@stacksjs/server'
 import { resolveApiHost } from '../helpers/api-host'
 import { exitWithParent } from './exit-with-parent'
 
@@ -35,12 +35,15 @@ await overridesReady
 const port = Number(process.env.PORT_API) || config.ports?.api || 3008
 const hostname = resolveApiHost()
 
-// Regenerate the model + function auto-import manifest ONLY when missing —
-// regenerating on every boot (and thus every hot-reload cycle) triggers an
-// infinite loop when a watcher is observing the auto-imports directory.
+// Regenerate the model + function auto-import manifest when it is missing
+// OR when a source has changed under it. Regenerating on every boot (and
+// thus every hot-reload cycle) would loop against a watcher on the
+// auto-imports directory, which is why this is conditional; keying it on
+// "missing" alone was the other extreme, and left projects running a
+// manifest that still described files renamed or deleted months earlier.
 // initiateImports() handles live updates under the bundler plugin.
 const modelsIndex = path.storagePath('framework/auto-imports/models.ts')
-if (!existsSync(modelsIndex))
+if (!existsSync(modelsIndex) || autoImportsAreStale())
   await generateAutoImportFiles()
 
 // Inject models + framework primitives (Action, response, schema, Auth) onto

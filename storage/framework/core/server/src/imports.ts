@@ -1,5 +1,5 @@
 import type { AutoImportsOptions } from 'bun-plugin-auto-imports'
-import { existsSync } from 'node:fs'
+import { existsSync, statSync } from 'node:fs'
 import { dirname, relative } from 'node:path'
 import { plugin } from 'bun'
 import { log } from '@stacksjs/logging'
@@ -158,6 +158,81 @@ async function generateDefineModelIndex(entries: ScanEntry[], outputPath: string
   }
 
   await Bun.write(outputPath, lines.join('\n') + '\n')
+}
+
+/**
+ * Every directory the auto-import manifest is generated from.
+ *
+ * Shared by the generator and the staleness check below so the two can
+ * never disagree about what the manifest is derived from.
+ */
+function autoImportSourceDirs(): string[] {
+  return [
+    path.resourcesPath('functions'),
+    path.storagePath('framework/defaults/functions'),
+    path.userModelsPath(),
+    ...resolveDefaultModelDirs(),
+    path.userJobsPath(),
+    path.userControllersPath(),
+    path.storagePath('framework/defaults/app/Controllers'),
+  ]
+}
+
+/**
+ * Has anything the manifest is built from changed since it was written?
+ *
+ * The manifest used to be regenerated only when it was missing, so once
+ * written it never refreshed. Files moved, were renamed, or were deleted
+ * underneath it and the stale entries survived: a project on a
+ * months-old manifest carried exports pointing at paths that no longer
+ * existed, plus duplicates when a file was moved into a subdirectory of
+ * the same name (`functions/commerce/products.ts` becoming
+ * `functions/commerce/products/products.ts` produced two `useProducts`
+ * exports and the `Cannot export a duplicate name` warning on every boot).
+ *
+ * Regenerating unconditionally is not the alternative: a watcher on the
+ * auto-imports directory sees the write, restarts, writes again, and the
+ * dev server loops. Comparing mtimes only writes when something actually
+ * moved, and the manifest is the newest file afterwards, so the next boot
+ * is a no-op and the loop cannot start.
+ */
+export function autoImportsAreStale(): boolean {
+  const manifest = path.storagePath('framework/auto-imports/functions.ts')
+  if (!existsSync(manifest))
+    return true
+
+  let manifestTime: number
+  try {
+    manifestTime = statSync(manifest).mtimeMs
+  }
+  catch {
+    return true
+  }
+
+  // Directory mtimes catch adds, renames, and deletes; file mtimes catch
+  // edits to a file's exports. A source newer than the manifest means the
+  // manifest is describing a tree that has since changed.
+  for (const dir of autoImportSourceDirs()) {
+    if (!existsSync(dir))
+      continue
+
+    try {
+      if (statSync(dir).mtimeMs > manifestTime)
+        return true
+
+      for (const file of globSync(`${dir}/**/*.ts`, { ignore: ['**/*.d.ts'] })) {
+        if (statSync(file).mtimeMs > manifestTime)
+          return true
+      }
+    }
+    catch {
+      // An unreadable source directory is not a reason to regenerate on
+      // every boot; the next successful read will catch any real change.
+      continue
+    }
+  }
+
+  return false
 }
 
 /**

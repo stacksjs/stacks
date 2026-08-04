@@ -2,7 +2,7 @@
   "name": "@stacksjs/browser-extension",
   "type": "module",
   "version": "0.70.258",
-  "description": "Build MV3 browser extensions (Chrome, Firefox, Safari) the Stacks way — manifest, content/background scripts, DNR rules, packaging, Safari container app, all config-driven.",
+  "description": "Build MV3 browser extensions (Chrome, Firefox, Safari) the Stacks way \u2014 manifest, content/background scripts, DNR rules, packaging, Safari container app, all config-driven.",
   "author": "Chris Breuer",
   "contributors": [
     "Chris Breuer <chris@stacksjs.com>"
@@ -38,9 +38,16 @@
       "default": "./dist/index.js"
     },
     "./*": {
-      "bun": "./dist/*",
-      "import": "./dist/*",
-      "default": "./dist/*"
+      "types": "./dist/*.d.ts",
+      "bun": "./dist/*.js",
+      "import": "./dist/*.js",
+      "default": "./dist/*.js"
+    },
+    "./*.js": {
+      "types": "./dist/*.d.ts",
+      "bun": "./dist/*.js",
+      "import": "./dist/*.js",
+      "default": "./dist/*.js"
     }
   },
   "module": "dist/index.js",

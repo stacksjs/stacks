@@ -3,7 +3,7 @@
   "type": "module",
   "sideEffects": false,
   "version": "0.70.258",
-  "description": "Promotional email & newsletter primitives for Stacks. Lists, campaigns, subscribers, and one-click unsubscribe — sent through @stacksjs/email.",
+  "description": "Promotional email & newsletter primitives for Stacks. Lists, campaigns, subscribers, and one-click unsubscribe \u2014 sent through @stacksjs/email.",
   "author": "Chris Breuer",
   "contributors": [
     "Chris Breuer <chris@stacksjs.com>"
@@ -37,9 +37,16 @@
       "default": "./dist/index.js"
     },
     "./*": {
-      "bun": "./dist/*",
-      "import": "./dist/*",
-      "default": "./dist/*"
+      "types": "./dist/*.d.ts",
+      "bun": "./dist/*.js",
+      "import": "./dist/*.js",
+      "default": "./dist/*.js"
+    },
+    "./*.js": {
+      "types": "./dist/*.d.ts",
+      "bun": "./dist/*.js",
+      "import": "./dist/*.js",
+      "default": "./dist/*.js"
     }
   },
   "module": "dist/index.js",

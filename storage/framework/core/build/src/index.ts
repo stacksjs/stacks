@@ -155,7 +155,13 @@ export async function transpilePackage(options: {
   })
 
   // 2. Clean 1:1 transpile of every src file — preserves re-exports verbatim.
-  const transpiler = new Bun.Transpiler({ loader: 'ts', target: 'bun' })
+  //
+  // `minifyWhitespace` rather than a full minify: identifier mangling is
+  // exactly what the bundler does to the re-exported bindings this helper
+  // exists to protect. Whitespace-only minification leaves every import,
+  // export, and exported name byte-identical while still shipping compact
+  // output, so a published package carries no formatting it does not need.
+  const transpiler = new Bun.Transpiler({ loader: 'ts', target: 'bun', minifyWhitespace: true })
   for (const f of srcFiles) {
     let js = transpiler.transformSync(await Bun.file(p.resolve(srcDir, f)).text())
     // The transpiler leaves import specifiers verbatim, so an explicit

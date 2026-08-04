@@ -50,9 +50,16 @@
       "default": "./dist/dynamodb.js"
     },
     "./*": {
-      "bun": "./dist/*",
-      "import": "./dist/*",
-      "default": "./dist/*"
+      "types": "./dist/*.d.ts",
+      "bun": "./dist/*.js",
+      "import": "./dist/*.js",
+      "default": "./dist/*.js"
+    },
+    "./*.js": {
+      "types": "./dist/*.d.ts",
+      "bun": "./dist/*.js",
+      "import": "./dist/*.js",
+      "default": "./dist/*.js"
     }
   },
   "module": "dist/index.js",
