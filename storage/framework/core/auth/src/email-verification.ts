@@ -14,7 +14,7 @@
 import { Buffer } from 'node:buffer'
 import { createHmac, randomBytes, timingSafeEqual } from 'node:crypto'
 import { config } from '@stacksjs/config'
-import { db } from '@stacksjs/database'
+import { db, sqlDateTime, parseSqlDateTime} from '@stacksjs/database'
 import { mail, template } from '@stacksjs/email'
 import { log } from '@stacksjs/logging'
 
@@ -125,7 +125,7 @@ export async function sendVerificationEmail(user: { id: number, email: string, n
     .values({
       user_id: user.id,
       token: hash,
-      expires_at: expiresAt.toISOString(),
+      expires_at: sqlDateTime(expiresAt),
     })
     .executeTakeFirst()
 
@@ -189,7 +189,7 @@ export async function verifyEmail(userId: number, token: string): Promise<EmailV
   // treated as expired, not "never expires" — `new Date() > InvalidDate` is
   // false, which would have let a row with a null expires_at verify forever
   // (the reset module already fails closed the same way). #1985.
-  const expiresAt = new Date(record.expires_at as string)
+  const expiresAt = parseSqlDateTime(record.expires_at) ?? new Date(Number.NaN)
   if (Number.isNaN(expiresAt.getTime()) || new Date() > expiresAt) {
     await db
       .deleteFrom('email_verifications')
@@ -206,7 +206,7 @@ export async function verifyEmail(userId: number, token: string): Promise<EmailV
   // Mark the user's email as verified
   await db
     .updateTable('users')
-    .set({ email_verified_at: new Date().toISOString() })
+    .set({ email_verified_at: sqlDateTime() })
     .where('id', '=', userId)
     .executeTakeFirst()
 

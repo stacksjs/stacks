@@ -33,7 +33,7 @@ import { getCurrentRequest } from '@stacksjs/router'
 // ============================================================================
 
 import { env } from '@stacksjs/env'
-import { sqlHelpers } from '@stacksjs/database'
+import { sqlHelpers, sqlDateTime, sqlDateTimeLiteral } from '@stacksjs/database'
 
 /** Current database driver */
 const dbDriver: DatabaseDriver = (env.DB_CONNECTION as DatabaseDriver) || 'sqlite'
@@ -41,6 +41,22 @@ const dbDriver: DatabaseDriver = (env.DB_CONNECTION as DatabaseDriver) || 'sqlit
 /** Cross-database SQL helpers */
 const sql = sqlHelpers(dbDriver)
 const { isPostgres, isMysql, now, boolTrue, boolFalse } = sql
+
+/**
+ * The current time as a quoted SQL literal in the framework's canonical
+ * datetime format — the format `expires_at` is written in.
+ *
+ * `expires_at` is always app-generated, so it must be compared against the app
+ * clock, not the database's. `sql.now` renders `datetime('now')` on SQLite,
+ * which is space-separated, while the stored value is ISO with a `T`. Because
+ * these columns are text on SQLite and `'T' > ' '`, `expires_at > datetime('now')`
+ * was true for every same-day row no matter how long ago it expired — expired
+ * access and refresh tokens kept validating, and the prune queries below
+ * (`expires_at < now`) matched none of them.
+ */
+function appNow(): string {
+  return sqlDateTimeLiteral()
+}
 
 /** Shorthand for sql.param */
 function param(index: number): string {
@@ -205,7 +221,7 @@ export async function findToken(plainTextToken: string): Promise<AccessToken | n
     SELECT * FROM oauth_access_tokens
     WHERE token = ${param(1)}
     AND revoked = ${boolFalse}
-    AND (expires_at IS NULL OR expires_at > ${now})
+    AND (expires_at IS NULL OR expires_at > ${appNow()})
     LIMIT 1
   `, [hashedToken])
 
@@ -415,12 +431,12 @@ export async function createToken(
     await db.unsafe(`
       INSERT INTO oauth_access_tokens (user_id, oauth_client_id, token, name, scopes, revoked, expires_at, created_at, updated_at)
       VALUES ($1, $2, $3, $4, $5, false, $6, NOW(), NOW())
-    `, [userId, client.id, hashedToken, name, JSON.stringify(scopes), expiresAt.toISOString()])
+    `, [userId, client.id, hashedToken, name, JSON.stringify(scopes), sqlDateTime(expiresAt)])
   } else {
     await db.unsafe(`
       INSERT INTO oauth_access_tokens (user_id, oauth_client_id, token, name, scopes, revoked, expires_at, created_at, updated_at)
       VALUES (?, ?, ?, ?, ?, 0, ?, ${now}, ${now})
-    `, [userId, client.id, hashedToken, name, JSON.stringify(scopes), expiresAt.toISOString()])
+    `, [userId, client.id, hashedToken, name, JSON.stringify(scopes), sqlDateTime(expiresAt)])
   }
 
   // Get the inserted token
@@ -458,12 +474,12 @@ export async function createToken(
       await db.unsafe(`
         INSERT INTO oauth_refresh_tokens (access_token_id, token, revoked, expires_at, created_at)
         VALUES ($1, $2, false, $3, NOW())
-      `, [accessToken.id, hashedRefreshToken, refreshExpiresAt.toISOString()])
+      `, [accessToken.id, hashedRefreshToken, sqlDateTime(refreshExpiresAt)])
     } else {
       await db.unsafe(`
         INSERT INTO oauth_refresh_tokens (access_token_id, token, revoked, expires_at, created_at)
         VALUES (?, ?, 0, ?, ${now})
-      `, [accessToken.id, hashedRefreshToken, refreshExpiresAt.toISOString()])
+      `, [accessToken.id, hashedRefreshToken, sqlDateTime(refreshExpiresAt)])
     }
   }
 
@@ -539,7 +555,7 @@ export async function refreshToken(
       JOIN oauth_access_tokens t ON r.access_token_id = t.id
       WHERE r.token = ${param(1)}
       AND r.revoked = ${boolFalse}
-      AND (r.expires_at IS NULL OR r.expires_at > ${now})
+      AND (r.expires_at IS NULL OR r.expires_at > ${appNow()})
       LIMIT 1${forUpdate}
     `, [hashedRefreshToken])
 
@@ -587,12 +603,12 @@ export async function refreshToken(
       await trx.unsafe(`
         INSERT INTO oauth_access_tokens (user_id, oauth_client_id, token, name, scopes, revoked, expires_at, created_at, updated_at)
         VALUES ($1, $2, $3, $4, $5, false, $6, NOW(), NOW())
-      `, [refreshRow.user_id, refreshRow.oauth_client_id, hashedToken, refreshRow.name, refreshRow.scopes, expiresAt.toISOString()])
+      `, [refreshRow.user_id, refreshRow.oauth_client_id, hashedToken, refreshRow.name, refreshRow.scopes, sqlDateTime(expiresAt)])
     } else {
       await trx.unsafe(`
         INSERT INTO oauth_access_tokens (user_id, oauth_client_id, token, name, scopes, revoked, expires_at, created_at, updated_at)
         VALUES (?, ?, ?, ?, ?, 0, ?, ${now}, ${now})
-      `, [refreshRow.user_id, refreshRow.oauth_client_id, hashedToken, refreshRow.name, refreshRow.scopes, expiresAt.toISOString()])
+      `, [refreshRow.user_id, refreshRow.oauth_client_id, hashedToken, refreshRow.name, refreshRow.scopes, sqlDateTime(expiresAt)])
     }
 
     // Get the new access token
@@ -633,12 +649,12 @@ export async function refreshToken(
       await trx.unsafe(`
         INSERT INTO oauth_refresh_tokens (access_token_id, token, revoked, expires_at, created_at)
         VALUES ($1, $2, false, $3, NOW())
-      `, [accessToken.id, newHashedRefreshToken, refreshExpiresAt.toISOString()])
+      `, [accessToken.id, newHashedRefreshToken, sqlDateTime(refreshExpiresAt)])
     } else {
       await trx.unsafe(`
         INSERT INTO oauth_refresh_tokens (access_token_id, token, revoked, expires_at, created_at)
         VALUES (?, ?, 0, ?, ${now})
-      `, [accessToken.id, newHashedRefreshToken, refreshExpiresAt.toISOString()])
+      `, [accessToken.id, newHashedRefreshToken, sqlDateTime(refreshExpiresAt)])
     }
 
     return {
@@ -664,7 +680,7 @@ export async function validateRefreshToken(refreshTokenPlain: string): Promise<b
     SELECT id FROM oauth_refresh_tokens
     WHERE token = ${param(1)}
     AND revoked = ${boolFalse}
-    AND (expires_at IS NULL OR expires_at > ${now})
+    AND (expires_at IS NULL OR expires_at > ${appNow()})
     LIMIT 1
   `, [hashedRefreshToken])
 
@@ -715,7 +731,7 @@ export async function revokeAllRefreshTokens(userId: number): Promise<void> {
 export async function deleteExpiredRefreshTokens(): Promise<number> {
   const result = await db.unsafe(`
     DELETE FROM oauth_refresh_tokens
-    WHERE expires_at < ${now}
+    WHERE expires_at < ${appNow()}
   `)
 
   return (result as any)?.changes || (result as any)?.rowCount || 0
@@ -735,7 +751,7 @@ export async function deleteRevokedRefreshTokens(daysOld: number = 7): Promise<n
   const result = await db.unsafe(`
     DELETE FROM oauth_refresh_tokens
     WHERE revoked = ${boolTrue} AND created_at < ${param(1)}
-  `, [cutoffDate.toISOString()])
+  `, [sqlDateTime(cutoffDate)])
 
   return (result as any)?.changes || (result as any)?.rowCount || 0
 }
@@ -870,13 +886,13 @@ export async function deleteExpiredTokens(): Promise<number> {
   await db.unsafe(`
     DELETE FROM oauth_refresh_tokens
     WHERE access_token_id IN (
-      SELECT id FROM oauth_access_tokens WHERE expires_at < ${now}
+      SELECT id FROM oauth_access_tokens WHERE expires_at < ${appNow()}
     )
   `)
 
   const result = await db.unsafe(`
     DELETE FROM oauth_access_tokens
-    WHERE expires_at < ${now}
+    WHERE expires_at < ${appNow()}
   `)
 
   return (result as any)?.changes || (result as any)?.rowCount || 0
@@ -899,12 +915,12 @@ export async function deleteRevokedTokens(daysOld: number = 7): Promise<number> 
     WHERE access_token_id IN (
       SELECT id FROM oauth_access_tokens WHERE revoked = ${boolTrue} AND updated_at < ${param(1)}
     )
-  `, [cutoffDate.toISOString()])
+  `, [sqlDateTime(cutoffDate)])
 
   const result = await db.unsafe(`
     DELETE FROM oauth_access_tokens
     WHERE revoked = ${boolTrue} AND updated_at < ${param(1)}
-  `, [cutoffDate.toISOString()])
+  `, [sqlDateTime(cutoffDate)])
 
   return (result as any)?.changes || (result as any)?.rowCount || 0
 }

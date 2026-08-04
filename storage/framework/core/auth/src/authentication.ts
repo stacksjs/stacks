@@ -9,7 +9,7 @@ import type {
   TokenCreateOptions,
 } from '@stacksjs/types'
 import { config } from '@stacksjs/config'
-import { db } from '@stacksjs/database'
+import { db, parseSqlDateTime} from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
 import type { EnhancedRequest } from '@stacksjs/bun-router'
 import { formatDate, User } from '@stacksjs/orm'
@@ -250,7 +250,7 @@ export class Auth {
       name: (token.name as string) || 'auth-token',
       scopes: parseScopes(token.scopes as string),
       abilities: parseScopes(token.scopes as string),
-      expiresAt: token.expires_at ? new Date(String(token.expires_at)) : null,
+      expiresAt: parseSqlDateTime(token.expires_at),
       createdAt: token.created_at ? new Date(String(token.created_at)) : new Date(),
       updatedAt: token.updated_at ? new Date(String(token.updated_at)) : new Date(),
       revoked: !!token.revoked,
@@ -617,7 +617,7 @@ export class Auth {
     log.debug(`[auth] Token validated for token#${accessToken.id}`)
 
     // Check if token is expired
-    if (accessToken.expires_at && new Date(String(accessToken.expires_at)) < new Date()) {
+    if (accessToken.expires_at && (parseSqlDateTime(accessToken.expires_at) ?? new Date(0)) < new Date()) {
       await db.deleteFrom('oauth_access_tokens')
         .where('id', '=', accessToken.id)
         .execute()
@@ -667,7 +667,7 @@ export class Auth {
     if (!accessToken)
       return undefined
 
-    if (accessToken.expires_at && new Date(String(accessToken.expires_at)) < new Date()) {
+    if (accessToken.expires_at && (parseSqlDateTime(accessToken.expires_at) ?? new Date(0)) < new Date()) {
       await db.deleteFrom('oauth_access_tokens')
         .where('id', '=', accessToken.id)
         .execute()
@@ -826,7 +826,7 @@ export class Auth {
       name: String(token.name || 'auth-token'),
       scopes: parseScopes(String(token.scopes ?? '')),
       abilities: parseScopes(String(token.scopes ?? '')),
-      expiresAt: token.expires_at ? new Date(String(token.expires_at)) : null,
+      expiresAt: parseSqlDateTime(token.expires_at),
       createdAt: token.created_at ? new Date(String(token.created_at)) : new Date(),
       updatedAt: token.updated_at ? new Date(String(token.updated_at)) : new Date(),
       revoked: !!token.revoked,

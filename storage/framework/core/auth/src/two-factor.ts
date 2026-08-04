@@ -33,7 +33,7 @@
  */
 
 import { randomBytes } from 'node:crypto'
-import { db } from '@stacksjs/database'
+import { db, sqlDateTime, parseSqlDateTime} from '@stacksjs/database'
 import { generateTwoFactorSecret, generateTwoFactorUri, verifyTwoFactorCode } from './authenticator'
 import { RateLimiter } from './rate-limiter'
 
@@ -133,7 +133,7 @@ const PENDING_SECRET_TTL_SECONDS = 10 * 60
  * attempt, same delete-then-insert shape as storeWebAuthnChallenge.
  */
 export async function stashPendingTwoFactorSecret(userId: number, secret: string, ttlSeconds: number = PENDING_SECRET_TTL_SECONDS): Promise<void> {
-  const expiresAt = new Date(Date.now() + ttlSeconds * 1000).toISOString()
+  const expiresAt = sqlDateTime(new Date(Date.now() + ttlSeconds * 1000))
 
   await db
     .deleteFrom('two_factor_pending_secrets')
@@ -168,7 +168,7 @@ export async function consumePendingTwoFactorSecret(userId: number): Promise<str
     .where('user_id', '=', userId)
     .execute()
 
-  const expiresAt = row.expires_at ? new Date(String(row.expires_at)).getTime() : 0
+  const expiresAt = parseSqlDateTime(row.expires_at)?.getTime() ?? 0
   if (Date.now() > expiresAt) return null
 
   return String(row.secret)
@@ -251,7 +251,7 @@ export async function verifyTwoFactorLoginCode(userId: number, code: string): Pr
  */
 export async function createTwoFactorChallenge(userId: number, ttlSeconds: number = DEFAULT_CHALLENGE_TTL_SECONDS): Promise<string> {
   const id = randomBytes(32).toString('hex')
-  const expiresAt = new Date(Date.now() + ttlSeconds * 1000).toISOString()
+  const expiresAt = sqlDateTime(new Date(Date.now() + ttlSeconds * 1000))
 
   await db
     .deleteFrom('two_factor_challenges')
@@ -288,7 +288,7 @@ export async function consumeTwoFactorChallenge(challengeToken: string): Promise
     .where('id', '=', challengeToken)
     .execute()
 
-  const expiresAt = row.expires_at ? new Date(String(row.expires_at)).getTime() : 0
+  const expiresAt = parseSqlDateTime(row.expires_at)?.getTime() ?? 0
   if (Date.now() > expiresAt) return null
 
   return Number(row.user_id)

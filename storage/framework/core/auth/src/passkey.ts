@@ -8,7 +8,7 @@ import type { VerifiedRegistrationResponse } from '@stacksjs/ts-auth'
 import { Buffer } from 'node:buffer'
 import type { Insertable } from '@stacksjs/database'
 
-import { db } from '@stacksjs/database'
+import { db, sqlDateTime, parseSqlDateTime} from '@stacksjs/database'
 import { User } from '@stacksjs/orm'
 
 type UserModel = NonNullable<Awaited<ReturnType<typeof User.find>>>
@@ -202,7 +202,7 @@ export async function storeWebAuthnChallenge(
   purpose: WebAuthnChallengePurpose,
   ttlSeconds: number = DEFAULT_CHALLENGE_TTL_SECONDS,
 ): Promise<void> {
-  const expiresAt = new Date(Date.now() + ttlSeconds * 1000).toISOString()
+  const expiresAt = sqlDateTime(new Date(Date.now() + ttlSeconds * 1000))
   const encodedChallenge = typeof challenge === 'string'
     ? challenge
     : Buffer.from(challenge).toString('base64url')
@@ -255,7 +255,7 @@ export async function consumeWebAuthnChallenge(
     .where('purpose', '=', purpose)
     .execute()
 
-  const expiresAt = row.expires_at ? new Date(String(row.expires_at)).getTime() : 0
+  const expiresAt = parseSqlDateTime(row.expires_at)?.getTime() ?? 0
   if (Date.now() > expiresAt) return null
 
   return Buffer.from(String(row.challenge), 'base64url')

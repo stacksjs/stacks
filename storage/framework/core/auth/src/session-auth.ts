@@ -5,7 +5,7 @@ import { log } from '@stacksjs/logging'
 import { User } from '@stacksjs/orm'
 import { verifyHash } from '@stacksjs/security'
 import { config } from '@stacksjs/config'
-import { db } from '@stacksjs/database'
+import { db, sqlDateTime, parseSqlDateTime} from '@stacksjs/database'
 import { getCurrentRequest } from '@stacksjs/router'
 import { DUMMY_BCRYPT_HASH } from './internal-constants'
 import { RateLimiter } from './rate-limiter'
@@ -158,7 +158,7 @@ export async function sessionLogin(
         user_agent: userAgent,
         payload: '{}',
         last_activity: Math.floor(Date.now() / 1000),
-        expires_at: expiresAt.toISOString(),
+        expires_at: sqlDateTime(expiresAt),
       })
       .execute()
   }
@@ -229,7 +229,7 @@ export async function sessionUser(sessionId: string): Promise<UserModel | undefi
     if (!session)
       return undefined
 
-    const expiresAt = session.expires_at ? new Date(String(session.expires_at)).getTime() : 0
+    const expiresAt = parseSqlDateTime(session.expires_at)?.getTime() ?? 0
     if (Date.now() > expiresAt) {
       await db.deleteFrom('sessions').where('id', '=', sessionId).execute()
       return undefined
@@ -261,7 +261,7 @@ export async function sessionCheck(sessionId: string): Promise<boolean> {
     if (!session)
       return false
 
-    const expiresAt = session.expires_at ? new Date(String(session.expires_at)).getTime() : 0
+    const expiresAt = parseSqlDateTime(session.expires_at)?.getTime() ?? 0
     if (Date.now() > expiresAt) {
       await db.deleteFrom('sessions').where('id', '=', sessionId).execute()
       return false
@@ -290,7 +290,7 @@ export async function sessionRefresh(sessionId: string, ttlMs = 24 * 60 * 60 * 1
     if (!session)
       return false
 
-    const expiresAt = session.expires_at ? new Date(String(session.expires_at)).getTime() : 0
+    const expiresAt = parseSqlDateTime(session.expires_at)?.getTime() ?? 0
     if (Date.now() > expiresAt) {
       await db.deleteFrom('sessions').where('id', '=', sessionId).execute()
       return false
@@ -302,7 +302,7 @@ export async function sessionRefresh(sessionId: string, ttlMs = 24 * 60 * 60 * 1
     const newExpiry = new Date(Date.now() + ttlMs)
     await db.updateTable('sessions')
       .set({
-        expires_at: newExpiry.toISOString(),
+        expires_at: sqlDateTime(newExpiry),
         last_activity: Math.floor(Date.now() / 1000),
       })
       .where('id', '=', sessionId)

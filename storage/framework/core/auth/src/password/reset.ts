@@ -1,6 +1,6 @@
 import { randomBytes } from 'node:crypto'
 import { config } from '@stacksjs/config'
-import { db } from '@stacksjs/database'
+import { db, sqlDateTime} from '@stacksjs/database'
 import { mail, template } from '@stacksjs/email'
 import { log } from '@stacksjs/logging'
 import { formatDate } from '@stacksjs/orm'
@@ -101,7 +101,7 @@ export function passwordResets(email: string): PasswordResetActions {
     const token = generateResetToken()
     const hashedToken = await makeHash(token, { algorithm: 'bcrypt' })
     const expireMinutes = getTokenExpireMinutes()
-    const expiresAt = new Date(Date.now() + expireMinutes * 60_000).toISOString()
+    const expiresAt = sqlDateTime(new Date(Date.now() + expireMinutes * 60_000))
 
     // Delete any existing reset row for this email before inserting
     // the new one so a second reset request invalidates any prior
