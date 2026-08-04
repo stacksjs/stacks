@@ -53,7 +53,11 @@ run_with_timeout() {
   cmd_pid=$!
 
   (
-    sleep "${timeout_seconds}"
+    # Do not let the timer inherit a caller's stdout/stderr pipe. If the
+    # watchdog shell is terminated after the command finishes, its sleep may
+    # briefly remain orphaned; inherited deploy pipes would otherwise stay
+    # open until the full timeout elapsed.
+    sleep "${timeout_seconds}" </dev/null >/dev/null 2>&1
 
     if kill -0 "${cmd_pid}" 2>/dev/null; then
       echo "Command timed out after ${timeout_seconds}s: $*" >&2
