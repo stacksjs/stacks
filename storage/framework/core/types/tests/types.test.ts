@@ -106,9 +106,14 @@ describe('types index re-exports', () => {
     expect(indexContent).toContain("export * from './model'")
   })
 
-  test('index re-exports build module', async () => {
+  test('index does NOT re-export the vite-era modules', async () => {
+    // `./build` (and `./inspect`, `./pwa`, `./ssg`, `./layout`) were removed
+    // deliberately: they exposed `vite` / `vite-ssg` types, and Stacks builds
+    // with Bun. This asserts the removal so the barrel can't quietly regain a
+    // vite dependency — it replaces a test that still required `./build`.
     const indexContent = await Bun.file(join(typesDir, 'index.ts')).text()
-    expect(indexContent).toContain("export * from './build'")
+    for (const mod of ['build', 'inspect', 'pwa', 'ssg', 'layout'])
+      expect(indexContent).not.toContain(`export * from './${mod}'`)
   })
 
   test('index re-exports deploy module', async () => {

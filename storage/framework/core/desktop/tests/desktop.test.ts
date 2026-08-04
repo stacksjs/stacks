@@ -99,7 +99,10 @@ describe('desktop module', () => {
     const { assertDesktopReleaseChannel, desktopSupportMatrix } = await import('../src/index')
     expect(desktopSupportMatrix.every(row => row.status === 'experimental')).toBe(true)
     expect(() => assertDesktopReleaseChannel('stable', 'darwin', 'arm64')).toThrow('#2059')
-    expect(assertDesktopReleaseChannel('experimental', 'linux', 'x64').packageFormat).toBe('unpackaged bundle')
+    // Linux x64 ships a DEB (support.ts), not the unpackaged bundle this
+    // assertion was written against before the matrix gained real packaging
+    // evidence.
+    expect(assertDesktopReleaseChannel('experimental', 'linux', 'x64').packageFormat).toBe('DEB')
     expect(() => assertDesktopReleaseChannel('experimental', 'linux', 'arm64')).toThrow('unsupported')
   })
 })
