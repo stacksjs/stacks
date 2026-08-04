@@ -1,5 +1,20 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.255...v0.70.256)
+
+## 🐛 Bug Fixes
+
+- **orm**: compare mass-assignment keys as columns, not raw names ([7629c90](https://github.com/stacksjs/stacks/commit/7629c90)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **deploy**: stop shipping the local database over production ([508ac7c](https://github.com/stacksjs/stacks/commit/508ac7c)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🔧 Chores
+
+- **cloud**: rename the printel tenant to predicthq ([1f42f94](https://github.com/stacksjs/stacks/commit/1f42f94)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.254...v0.70.255)
 
 ## ✨ Features
