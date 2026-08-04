@@ -8,7 +8,6 @@ function italic(str: string): string {
 }
 // Local relative imports — see drivers/mysql.ts for the cycle-deadlock rationale.
 import { db } from '../utils'
-import { createPasswordResetsTable } from './defaults/passwords'
 import { ok } from '@stacksjs/error-handling'
 // Deep import to the leaf orm/utils file — see drivers/helpers.ts for why
 // we go around the orm barrel.
@@ -33,17 +32,7 @@ import {
   pluckChanges,
 } from './helpers'
 
-import {
-  createPostgresCategorizableTable,
-  createPostgresCommentablesPivotTable,
-  createPostgresCommentsTable,
-  createPostgresCommentUpvoteMigration,
-  createPostgresPasskeyMigration,
-  createPostgresQueryLogsTable,
-  createPostgresTaggablesTable,
-  createPostgresTagsTable,
-  dropMigrationTables,
-} from './defaults/traits'
+import { dropCommonTables, dropMigrationTables } from './defaults/traits'
 
 export async function dropPostgresTables(): Promise<void> {
   const tables = await fetchPostgresTables()
@@ -52,7 +41,7 @@ export async function dropPostgresTables(): Promise<void> {
   await dropMigrationTables()
 
   for (const table of tables) await db.unsafe(`DROP TABLE IF EXISTS "${table}" CASCADE`).execute()
-  await dropCommonPostgresTables()
+  await dropCommonTables()
 
   for (const userModel of userModelFiles) {
     const userModelPath = (await import(userModel)).default
@@ -61,29 +50,7 @@ export async function dropPostgresTables(): Promise<void> {
   }
 }
 
-async function dropCommonPostgresTables(): Promise<void> {
-  await db.unsafe('DROP TABLE IF EXISTS "passkeys" CASCADE').execute()
-  await db.unsafe('DROP TABLE IF EXISTS "password_resets" CASCADE').execute()
-  await db.unsafe('DROP TABLE IF EXISTS "query_logs" CASCADE').execute()
-  await db.unsafe('DROP TABLE IF EXISTS "categorizables" CASCADE').execute()
-  await db.unsafe('DROP TABLE IF EXISTS "commentables" CASCADE').execute()
-  await db.unsafe('DROP TABLE IF EXISTS "comments" CASCADE').execute()
-  await db.unsafe('DROP TABLE IF EXISTS "tags" CASCADE').execute()
-  await db.unsafe('DROP TABLE IF EXISTS "taggables" CASCADE').execute()
-  await db.unsafe('DROP TABLE IF EXISTS "commentable_upvotes" CASCADE').execute()
-}
 
-export async function generatePostgresTraitMigrations(): Promise<void> {
-  await createPostgresCategorizableTable()
-  await createPostgresCommentsTable()
-  await createPostgresTagsTable()
-  await createPostgresCommentUpvoteMigration()
-  await createPostgresPasskeyMigration()
-  await createPostgresQueryLogsTable()
-  await createPasswordResetsTable()
-  await createPostgresCommentablesPivotTable()
-  await createPostgresTaggablesTable()
-}
 
 export async function resetPostgresDatabase(): Promise<Ok<string, never>> {
   await dropPostgresTables()

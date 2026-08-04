@@ -12,7 +12,6 @@ function italic(str: string): string {
 // when @stacksjs/database is imported at top-level outside the framework's
 // preloader context (e.g. by `bun test`).
 import { db } from '../utils'
-import { createPasswordResetsTable } from './defaults/passwords'
 import { ok } from '@stacksjs/error-handling'
 // Deep import to the leaf orm/utils file — see drivers/helpers.ts for why
 // we go around the orm barrel (the barrel re-exports `./db` which loops
@@ -40,7 +39,7 @@ import {
   pluckChanges,
 } from './helpers'
 
-import { createCategorizableTable, createCommentablesTable, createCommentUpvoteMigration, createPasskeyMigration, createQueryLogsTable, createTaggablesTable, createTaggableTable, dropCommonTables } from './defaults/traits'
+import { dropCommonTables } from './defaults/traits'
 
 export async function resetMysqlDatabase(): Promise<Ok<string, never>> {
   await dropMysqlTables()
@@ -125,18 +124,6 @@ export async function generateMysqlMigration(modelPath: string): Promise<void> {
   else await createTableMigration(modelPath)
 }
 
-export async function generateMysqlTraitMigrations(): Promise<void> {
-  await Promise.all([
-    createCategorizableTable(),
-    createCommentablesTable(),
-    createTaggableTable(),
-    createTaggablesTable(),
-    createPasswordResetsTable(),
-    createPasskeyMigration(),
-    createQueryLogsTable(),
-    createCommentUpvoteMigration(),
-  ])
-}
 
 // `createMysqlForeignKeyMigrations` + `createCompositeIndexMigration`
 // used to live here — both were never called from anywhere in the
