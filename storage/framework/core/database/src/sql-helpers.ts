@@ -91,16 +91,26 @@ export function sqlHelpers(driver: string): SqlDialectHelpers {
     boolTrue: isPostgres ? 'true' : '1',
     boolFalse: isPostgres ? 'false' : '0',
     autoIncrement: isPostgres ? 'SERIAL' : 'INTEGER',
-    primaryKey: isPostgres
+    // A dialect without server-side auto-increment gets a plain primary key
+    // and nothing else. Emitting AUTO_INCREMENT on a sharded engine is not a
+    // syntax error — it is worse, because each shard would independently
+    // hand out the same values and collide. The key has to come from a
+    // sequence in an unsharded keyspace or from the application
+    // (`useUuid`), so the DDL says only that the column is the key.
+    primaryKey: !caps.supportsAutoIncrement
       ? 'PRIMARY KEY'
-      : isMysql
-        ? 'PRIMARY KEY AUTO_INCREMENT'
-        : 'PRIMARY KEY AUTOINCREMENT',
-    pkColumn: isPostgres
-      ? 'id SERIAL PRIMARY KEY'
-      : isMysql
-        ? 'id INTEGER PRIMARY KEY AUTO_INCREMENT'
-        : 'id INTEGER PRIMARY KEY AUTOINCREMENT',
+      : isPostgres
+          ? 'PRIMARY KEY'
+          : isMysql
+            ? 'PRIMARY KEY AUTO_INCREMENT'
+            : 'PRIMARY KEY AUTOINCREMENT',
+    pkColumn: !caps.supportsAutoIncrement
+      ? 'id BIGINT NOT NULL PRIMARY KEY'
+      : isPostgres
+          ? 'id SERIAL PRIMARY KEY'
+          : isMysql
+            ? 'id INTEGER PRIMARY KEY AUTO_INCREMENT'
+            : 'id INTEGER PRIMARY KEY AUTOINCREMENT',
     nullableTimestamp: isMysql ? 'TIMESTAMP NULL' : 'TIMESTAMP',
 
     param(index: number): string {

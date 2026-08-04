@@ -65,6 +65,24 @@ export default {
       prefix: '',
     },
 
+    /**
+     * Vitess shards MySQL behind vtgate, which speaks the MySQL wire
+     * protocol. `name` is a KEYSPACE, and the port is vtgate's 15306 - not
+     * mysqld's 3306, which would reach a single tablet and bypass sharding.
+     *
+     * A sharded keyspace has no foreign keys and no AUTO_INCREMENT: use
+     * `useUuid: true` on models, and run `buddy generate:vschema` to emit
+     * the VSchema from your model definitions.
+     */
+    vitess: {
+      name: env.DB_DATABASE || 'stacks',
+      host: env.DB_HOST || '127.0.0.1',
+      port: env.DB_PORT || 15306,
+      username: env.DB_USERNAME || 'root',
+      password: env.DB_PASSWORD || '',
+      prefix: '',
+    },
+
     postgres: {
       name: env.DB_DATABASE || 'stacks',
       host: env.DB_HOST || '127.0.0.1',

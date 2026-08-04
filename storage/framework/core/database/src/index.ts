@@ -112,6 +112,11 @@ export * from './dialect'
 // read-your-writes carve-outs, replica selection).
 export * from './replicas'
 
+// DDL capability audit — catches a corpus that is valid SQL for the target's
+// wire protocol but uses a feature the engine does not implement (foreign
+// keys and AUTO_INCREMENT on a sharded engine).
+export * from './ddl-constraints'
+
 // SQL dialect helpers & connection defaults
 export * from './sql-helpers'
 export * from './defaults'

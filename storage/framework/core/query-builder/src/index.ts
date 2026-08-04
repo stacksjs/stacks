@@ -21,7 +21,15 @@ import { config as bunQbConfig, createQueryBuilder as createBunQueryBuilder } fr
 // Re-export everything from bun-query-builder
 export * from 'bun-query-builder'
 export { saveMigrationSnapshot } from 'bun-query-builder'
-export type StacksDialect = import('bun-query-builder').SupportedDialect | 'singlestore'
+/**
+ * Dialects Stacks accepts in `config/database.ts`.
+ *
+ * A superset of what bun-query-builder renders for: `vitess` speaks MySQL's
+ * wire protocol and identical DML, so it collapses onto the `mysql` renderer
+ * (see `toQueryBuilderDialect` in @stacksjs/database) and diverges only in
+ * DDL and transaction semantics, which the framework handles itself.
+ */
+export type StacksDialect = import('bun-query-builder').SupportedDialect | 'singlestore' | 'vitess'
 
 type QueryHooks = import('bun-query-builder').QueryHooks
 type QueryBuilderConfig = Parameters<typeof setBunQueryBuilderConfig>[0]

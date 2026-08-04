@@ -75,6 +75,13 @@ export interface DialectCapabilities {
    * true, the migration runner cannot simply execute the DDL itself.
    */
   requiresOnlineDdl: boolean
+  /**
+   * Whether `CREATE INDEX IF NOT EXISTS` is accepted. MySQL (and therefore
+   * SingleStore) has no such form and raises a syntax error, so an idempotent
+   * migration has to emit the bare `CREATE INDEX` there and treat the
+   * resulting "Duplicate key name" on replay as success.
+   */
+  supportsCreateIndexIfNotExists: boolean
 }
 
 /**
@@ -94,6 +101,7 @@ const CAPABILITIES: Record<string, DialectCapabilities> = {
     supportsAutoIncrement: true,
     supportsAtomicMultiTableTransactions: true,
     requiresOnlineDdl: false,
+    supportsCreateIndexIfNotExists: true,
   },
   mysql: {
     dialect: 'mysql',
@@ -105,6 +113,7 @@ const CAPABILITIES: Record<string, DialectCapabilities> = {
     supportsAutoIncrement: true,
     supportsAtomicMultiTableTransactions: true,
     requiresOnlineDdl: false,
+    supportsCreateIndexIfNotExists: false,
   },
   // SingleStore takes MySQL's wire protocol and DML but is a distributed
   // engine: tables carry SHARD KEY / SORT KEY and foreign keys are rejected
@@ -121,6 +130,43 @@ const CAPABILITIES: Record<string, DialectCapabilities> = {
     supportsAutoIncrement: true,
     supportsAtomicMultiTableTransactions: false,
     requiresOnlineDdl: false,
+    supportsCreateIndexIfNotExists: false,
+  },
+  // Vitess is a sharding layer in front of MySQL, reached through vtgate.
+  // It speaks MySQL's wire protocol and renders identical DML, which is why
+  // it collapses onto the `mysql` renderer rather than needing one of its
+  // own — every divergence below is DDL or transactional, not syntactic.
+  //
+  // The three `false`s are all consequences of one fact, that a keyspace is
+  // split across shards that share nothing:
+  //   - a foreign key would need a cross-shard read on every write
+  //   - AUTO_INCREMENT would hand out the same values on every shard, so
+  //     primary keys come from a sequence table in an unsharded keyspace or
+  //     from the application (the `useUuid` trait)
+  //   - a transaction touching two shards is best-effort or two-phase, not
+  //     the single-node ACID the rest of the framework assumes
+  //
+  // `requiresOnlineDdl` is what stops the migration runner from simply
+  // executing DDL over this connection: schema changes go through Vitess's
+  // own online-DDL machinery so they can be applied shard by shard without
+  // locking the keyspace.
+  vitess: {
+    dialect: 'vitess',
+    wire: 'mysql',
+    // No vitess renderer exists upstream, and none is needed: vtgate parses
+    // MySQL. Handing 'vitess' through would make the query builder fall
+    // back to its default dialect and render the wrong SQL entirely.
+    queryBuilderDialect: 'mysql',
+    // vtgate's MySQL-protocol port, not MySQL's own 3306 — connecting to
+    // 3306 on a Vitess cluster reaches a vttablet's underlying mysqld and
+    // bypasses the sharding layer completely.
+    defaultPort: 15306,
+    identifierQuote: '`',
+    supportsForeignKeys: false,
+    supportsAutoIncrement: false,
+    supportsAtomicMultiTableTransactions: false,
+    requiresOnlineDdl: true,
+    supportsCreateIndexIfNotExists: false,
   },
   postgres: {
     dialect: 'postgres',
@@ -132,6 +178,7 @@ const CAPABILITIES: Record<string, DialectCapabilities> = {
     supportsAutoIncrement: true,
     supportsAtomicMultiTableTransactions: true,
     requiresOnlineDdl: false,
+    supportsCreateIndexIfNotExists: true,
   },
 }
 

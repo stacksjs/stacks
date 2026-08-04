@@ -38,6 +38,7 @@ interface DbConfig {
     sqlite: DbConnectionConfig
     mysql: DbConnectionConfig
     singlestore: DbConnectionConfig
+    vitess: DbConnectionConfig
     postgres: DbConnectionConfig
   }
   reads?: ReadPolicyConfig
@@ -54,6 +55,8 @@ let dbConfig: DbConfig = {
     sqlite: { database: sqliteDefaults.database, prefix: '' },
     mysql: { name: mysqlDefaults.database, host: mysqlDefaults.host, username: mysqlDefaults.username, password: mysqlDefaults.password, port: mysqlDefaults.port, prefix: '' },
     singlestore: { name: mysqlDefaults.database, host: mysqlDefaults.host, username: mysqlDefaults.username, password: mysqlDefaults.password, port: mysqlDefaults.port, prefix: '' },
+    // vtgate's port, not mysqld's — see VitessConfig in ./driver-config.
+    vitess: { name: mysqlDefaults.database, host: mysqlDefaults.host, username: mysqlDefaults.username, password: mysqlDefaults.password, port: 15306, prefix: '' },
     postgres: { name: postgresDefaults.database, host: postgresDefaults.host, username: postgresDefaults.username, password: postgresDefaults.password, port: postgresDefaults.port, prefix: '' },
   },
 }
@@ -178,6 +181,18 @@ function getDbConfig(): { database: string, username?: string, password?: string
       username: database.connections?.singlestore?.username ?? 'root',
       password: database.connections?.singlestore?.password ?? '',
       port: database.connections?.singlestore?.port ?? 3306,
+    }
+  }
+
+  // Vitess is dialed through vtgate on the MySQL wire protocol; `name` is a
+  // keyspace rather than a database, but it occupies the same slot.
+  if (driver === 'vitess') {
+    return {
+      database: database.connections?.vitess?.name || 'stacks',
+      host: database.connections?.vitess?.host ?? '127.0.0.1',
+      username: database.connections?.vitess?.username ?? 'root',
+      password: database.connections?.vitess?.password ?? '',
+      port: database.connections?.vitess?.port ?? 15306,
     }
   }
 

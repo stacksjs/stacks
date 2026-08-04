@@ -86,6 +86,42 @@ export interface SinglestoreConfig extends NetworkedConnectionConfig {
 }
 
 /**
+ * Vitess specific configuration.
+ *
+ * Vitess is a sharding layer in front of MySQL. The application connects to
+ * vtgate, which speaks the MySQL wire protocol, so this shares MySQL's
+ * connection shape. Two things differ and both matter:
+ *
+ *  - the default port is vtgate's 15306, not mysqld's 3306. Connecting to
+ *    3306 on a Vitess cluster reaches an individual tablet's underlying
+ *    MySQL and silently bypasses sharding altogether.
+ *  - `name` is a KEYSPACE, not a database. It is the unit Vitess shards,
+ *    and it is what the VSchema is written against.
+ */
+export interface VitessConfig extends NetworkedConnectionConfig {
+  /** Keyspace name (Vitess's unit of sharding, dialed like a database). */
+  name: string
+  /** vtgate host. */
+  host?: string
+  /** vtgate's MySQL-protocol port. Defaults to 15306. */
+  port?: number
+  /** Database username */
+  username?: string
+  /** Database password */
+  password?: string
+  /** Table prefix */
+  prefix?: string
+  /** Whether to require TLS — managed Vitess endpoints generally do. */
+  ssl?: boolean
+  /**
+   * Optional target shard/tablet-type qualifier appended to the keyspace,
+   * e.g. `@replica` to send this connection's reads to replica tablets.
+   * Left unset, vtgate routes to primaries.
+   */
+  tabletType?: 'primary' | 'replica' | 'rdonly'
+}
+
+/**
  * PostgreSQL specific configuration
  */
 export interface PostgresConfig extends NetworkedConnectionConfig {
@@ -147,6 +183,7 @@ export interface DatabaseConnections {
   sqlite?: SqliteConfig
   mysql?: MysqlConfig
   singlestore?: SinglestoreConfig
+  vitess?: VitessConfig
   postgres?: PostgresConfig
   dynamodb?: DynamoDbConfig
 }
@@ -175,7 +212,7 @@ export interface FullDatabaseConfig {
 /**
  * Default configuration values for each driver
  */
-export const driverDefaults: Record<StacksDialect, Partial<SqliteConfig | MysqlConfig | SinglestoreConfig | PostgresConfig | DynamoDbConfig>> = {
+export const driverDefaults: Record<StacksDialect, Partial<SqliteConfig | MysqlConfig | SinglestoreConfig | VitessConfig | PostgresConfig | DynamoDbConfig>> = {
   sqlite: {
     database: 'database/stacks.sqlite',
     prefix: '',
@@ -198,6 +235,16 @@ export const driverDefaults: Record<StacksDialect, Partial<SqliteConfig | MysqlC
     password: '',
     prefix: '',
     charset: 'utf8mb4',
+    ssl: false,
+  },
+  // Port 15306 is vtgate's, not mysqld's — see VitessConfig.
+  vitess: {
+    name: 'stacks',
+    host: '127.0.0.1',
+    port: 15306,
+    username: 'root',
+    password: '',
+    prefix: '',
     ssl: false,
   },
   postgres: {
@@ -238,6 +285,17 @@ export function getConnectionString(driver: StacksDialect, config: DatabaseConne
       return `mysql://${username}:${password}@${host}:${port}/${name}`
     }
 
+    // Vitess is reached through vtgate, which speaks the MySQL wire
+    // protocol, so it also dials over `mysql://`. The keyspace takes the
+    // database slot, optionally qualified with a tablet type
+    // (`keyspace@replica`) to pin this connection to replica tablets.
+    case 'vitess': {
+      const vtConfig = config as VitessConfig
+      const { name, host = '127.0.0.1', port = 15306, username = 'root', password = '', tabletType } = vtConfig
+      const keyspace = tabletType ? `${name}@${tabletType}` : name
+      return `mysql://${username}:${password}@${host}:${port}/${keyspace}`
+    }
+
     case 'postgres': {
       const pgConfig = config as PostgresConfig
       const { name, host = '127.0.0.1', port = 5432, username = 'postgres', password = '' } = pgConfig
@@ -276,6 +334,14 @@ export function validateDriverConfig(driver: StacksDialect, config: DatabaseConn
       const ssConfig = config as SinglestoreConfig
       if (!ssConfig.name) {
         errors.push('SingleStore requires a database name')
+      }
+      break
+    }
+
+    case 'vitess': {
+      const vtConfig = config as VitessConfig
+      if (!vtConfig.name) {
+        errors.push('Vitess requires a keyspace name')
       }
       break
     }
@@ -341,6 +407,17 @@ export function getConfigFromEnv(driver: StacksDialect): DatabaseConnections[key
         prefix: env.DB_PREFIX || '',
         ssl: ((env as Record<string, string | undefined>).DB_SSL) === 'true' || ((env as Record<string, string | undefined>).DB_SSL) === '1',
       } as SinglestoreConfig
+
+    case 'vitess':
+      return {
+        name: env.DB_DATABASE || 'stacks',
+        host: env.DB_HOST || '127.0.0.1',
+        port: env.DB_PORT ?? 15306,
+        username: env.DB_USERNAME || 'root',
+        password: env.DB_PASSWORD || '',
+        prefix: env.DB_PREFIX || '',
+        ssl: ((env as Record<string, string | undefined>).DB_SSL) === 'true' || ((env as Record<string, string | undefined>).DB_SSL) === '1',
+      } as VitessConfig
 
     case 'postgres':
       return {

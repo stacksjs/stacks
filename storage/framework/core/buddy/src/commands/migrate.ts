@@ -7,7 +7,7 @@ import { hasTTY, isCI } from '@stacksjs/env'
 import { appPath, frameworkPath, frameworkRuntimePath, projectPath } from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types'
 import { preflightDatabase } from '../database-preflight'
-import { DIALECT_OVERRIDE_ENV, auditMigrationCorpus, formatMigrationDialectError, stripSqlNoise } from '@stacksjs/database'
+import { DDL_CONSTRAINT_OVERRIDE_ENV, DIALECT_OVERRIDE_ENV, auditDdlConstraints, auditMigrationCorpus, dialectCapabilities, formatDdlConstraintError, formatMigrationDialectError, stripSqlNoise } from '@stacksjs/database'
 
 // Lazy-load @stacksjs/actions to keep `buddy --help` cheap. The barrel
 // pulls in the database driver setup transitively, which we don't want
@@ -169,23 +169,37 @@ function validateModelsExist(): { valid: boolean, error?: string } {
  * and only then discover it has nothing to rebuild them with.
  */
 function validateMigrationDialect(): { valid: boolean, error?: string } {
-  if (process.env[DIALECT_OVERRIDE_ENV] === '1')
-    return { valid: true }
-
   const driver = String(process.env.DB_CONNECTION || 'sqlite').toLowerCase()
-  // SingleStore speaks the MySQL wire protocol; anything else (sqlite is
-  // checked too, dynamodb is not a SQL migration target) resolves below.
-  const target = driver === 'singlestore' ? 'mysql' : driver
-  if (target !== 'sqlite' && target !== 'postgres' && target !== 'mysql')
-    return { valid: true }
-
   const dir = projectPath('database/migrations')
-  const audit = auditMigrationCorpus({ dir, target })
 
-  if (audit.empty || audit.incompatible.length === 0)
-    return { valid: true }
+  // Check 1: is this corpus written for a different DATABASE?
+  //
+  // Every MySQL-wire dialect (singlestore, vitess) shares MySQL's syntax, so
+  // they collapse onto the mysql marker set. Anything without a SQL migration
+  // target (dynamodb, browser) resolves to neither branch and is skipped.
+  if (process.env[DIALECT_OVERRIDE_ENV] !== '1') {
+    const caps = dialectCapabilities(driver)
+    const target = caps.wire === 'mysql' ? 'mysql' : caps.wire === 'postgres' ? 'postgres' : 'sqlite'
+    if (driver === 'sqlite' || driver === 'postgres' || caps.wire === 'mysql') {
+      const audit = auditMigrationCorpus({ dir, target })
+      if (!audit.empty && audit.incompatible.length > 0)
+        return { valid: false, error: formatMigrationDialectError(audit, target, 'database/migrations') }
+    }
+  }
 
-  return { valid: false, error: formatMigrationDialectError(audit, target, 'database/migrations') }
+  // Check 2: does this corpus use a FEATURE the engine does not implement?
+  //
+  // Distinct from check 1 and invisible to it. `FOREIGN KEY` is valid MySQL
+  // syntax, so a MySQL corpus pointed at Vitess or SingleStore passes the
+  // dialect audit cleanly and then fails mid-migration on the first
+  // constraint, with tables already created.
+  if (process.env[DDL_CONSTRAINT_OVERRIDE_ENV] !== '1') {
+    const constraints = auditDdlConstraints({ dir, dialect: driver })
+    if (!constraints.empty && constraints.violations.length > 0)
+      return { valid: false, error: formatDdlConstraintError(constraints, driver, 'database/migrations') }
+  }
+
+  return { valid: true }
 }
 
 /**

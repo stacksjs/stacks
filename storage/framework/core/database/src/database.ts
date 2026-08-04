@@ -6,6 +6,7 @@
  * driver switching between SQLite, MySQL, and PostgreSQL.
  */
 
+import { toQueryBuilderDialect } from './dialect'
 import { QB_SNAPSHOT_DIR } from './utils'
 import type { QueryBuilderConfig, StacksDialect } from '@stacksjs/query-builder'
 import { createQueryBuilder, setConfig } from '@stacksjs/query-builder'
@@ -142,7 +143,11 @@ export class Database {
       // See QB_SNAPSHOT_DIR: setConfig replaces the config wholesale, so
       // every call site has to carry this or `.qb` returns to the root.
       snapshotDir: QB_SNAPSHOT_DIR,
-      dialect: this._options.driver,
+      // Collapsed, not passed through: Stacks accepts dialects the query
+      // builder has no renderer for (they diverge only in DDL), and handing
+      // one of those down verbatim makes it fall back to its default
+      // dialect and render the wrong SQL against a live connection.
+      dialect: toQueryBuilderDialect(this._options.driver),
       database: this._options.connection as any,
       verbose: this._options.verbose,
       timestamps: this._options.timestamps as any,

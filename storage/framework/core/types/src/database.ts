@@ -93,6 +93,26 @@ export interface DatabaseOptions {
       ssl?: boolean
     }
 
+    /**
+     * Vitess shards MySQL behind vtgate, which speaks the MySQL wire
+     * protocol, so this shares MySQL's connection shape. Two differences
+     * matter: `name` is a KEYSPACE (Vitess's unit of sharding), and the
+     * port is vtgate's 15306 — 3306 would reach one tablet's mysqld and
+     * bypass sharding entirely.
+     */
+    vitess?: NetworkedConnectionOptions & {
+      url?: string
+      host?: string
+      port?: number
+      name?: string
+      username?: string
+      password?: string
+      prefix?: string
+      ssl?: boolean
+      /** Pin this connection to a tablet type, e.g. `keyspace@replica`. */
+      tabletType?: 'primary' | 'replica' | 'rdonly'
+    }
+
     sqlite: {
       url?: string
       database?: string
