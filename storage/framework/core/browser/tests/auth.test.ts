@@ -21,19 +21,13 @@ function jsonResponse(body: unknown): Response {
 
 describe('useAuth response envelope', () => {
   let originalFetch: typeof fetch
-  let originalRaf: typeof requestAnimationFrame | undefined
 
   beforeEach(() => {
     originalFetch = globalThis.fetch
-    // @stacksjs/stx's reactivity schedules via requestAnimationFrame, which
-    // isn't polyfilled in Bun's non-DOM test environment.
-    originalRaf = globalThis.requestAnimationFrame
-    globalThis.requestAnimationFrame = ((cb: FrameRequestCallback) => setTimeout(() => cb(Date.now()), 0)) as any
   })
 
   afterEach(() => {
     globalThis.fetch = originalFetch
-    globalThis.requestAnimationFrame = originalRaf as any
   })
 
   it('login() stores the flat `token` field LoginAction actually returns', async () => {
