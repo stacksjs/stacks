@@ -12,10 +12,13 @@ import { createQueryBuilder, registerPersistentQueryHooks, setConfig } from '@st
 // Use default values to avoid circular dependencies initially
 // These can be overridden later once config is fully loaded
 // Read from environment variables first
+import { SQL } from 'bun'
 import { env as envVars } from '@stacksjs/env'
 import type { QueryBuilderDialect } from './dialect'
+import type { PoolConfig, ReadPolicyConfig, ReplicaConfig } from './driver-config'
 import { getConnectionDefaults } from './defaults'
-import { toQueryBuilderDialect } from './dialect'
+import { isMysqlWire, toQueryBuilderDialect } from './dialect'
+import { contextInTransaction, markContextWrote, resolveReplicaConnection, selectReplica, shouldRouteToReplica, withTransactionContext } from './replicas'
 import { aggregateFunctions } from './types'
 
 interface DbConnectionConfig {
@@ -26,6 +29,8 @@ interface DbConnectionConfig {
   password?: string
   port?: number
   prefix?: string
+  pool?: PoolConfig
+  replicas?: ReplicaConfig[]
 }
 
 interface DbConfig {
@@ -35,6 +40,7 @@ interface DbConfig {
     singlestore: DbConnectionConfig
     postgres: DbConnectionConfig
   }
+  reads?: ReadPolicyConfig
 }
 
 const sqliteDefaults = getConnectionDefaults('sqlite', envVars)
@@ -106,6 +112,11 @@ export function initializeDbConfig(config: any): void {
   // from mysql back to sqlite otherwise executes `NOW()`-style SQL against
   // the sqlite connection (cross-file test interference).
   _dbInstance = null
+  // Replica builders own their own connections to hosts named in the old
+  // config, so a reconfigured replica list must not keep being served by
+  // them. Dropped rather than closed: the pools are garbage-collected with
+  // the builders, and closing here would race any read still in flight.
+  _replicaInstances = new Map()
 }
 
 // Simple functions with defensive defaults
@@ -261,13 +272,70 @@ function forwardDatabaseQuery(event: DatabaseQueryLogEvent): void {
 
 registerPersistentQueryHooks(createDatabaseQueryHooks(forwardDatabaseQuery))
 
+/**
+ * The active connection's pool block, if it declared one.
+ *
+ * SQLite is excluded on purpose: it is embedded and single-connection, so
+ * a pool block there is a config mistake rather than something to honor.
+ */
+function getPoolConfig(): PoolConfig | undefined {
+  const driver = getDriver()
+  if (driver === 'sqlite')
+    return undefined
+  const connections = getDatabaseConfig().connections as Record<string, DbConnectionConfig | undefined>
+  return connections?.[driver]?.pool
+}
+
+/** Replicas declared on the active connection. */
+function getReplicas(): ReplicaConfig[] {
+  const driver = getDriver()
+  if (driver === 'sqlite')
+    return []
+  const connections = getDatabaseConfig().connections as Record<string, DbConnectionConfig | undefined>
+  return connections?.[driver]?.replicas ?? []
+}
+
+/** The app's read-routing policy. */
+function getReadPolicy(): ReadPolicyConfig {
+  return getDatabaseConfig().reads ?? {}
+}
+
+/**
+ * Translate the framework's millisecond pool knobs onto Bun's SQL driver
+ * options, which are named differently and measured in seconds.
+ *
+ * `min` and `autoReconnect` are accepted on `PoolConfig` but not forwarded
+ * — Bun's driver manages both itself, and passing unknown keys through
+ * would be silently ignored anyway. Keeping them out of the mapping makes
+ * that deliberate rather than accidental.
+ */
+function toBunPoolOptions(pool?: PoolConfig): Record<string, number> {
+  if (!pool)
+    return {}
+  const options: Record<string, number> = {}
+  if (pool.max !== undefined)
+    options.max = pool.max
+  if (pool.idleTimeoutMs !== undefined)
+    options.idleTimeout = Math.round(pool.idleTimeoutMs / 1000)
+  if (pool.acquireTimeoutMs !== undefined)
+    options.connectionTimeout = Math.round(pool.acquireTimeoutMs / 1000)
+  if (pool.maxLifetimeMs !== undefined)
+    options.maxLifetime = Math.round(pool.maxLifetimeMs / 1000)
+  return options
+}
+
 function updateQueryBuilderConfig(): void {
   const dialect = getDialect()
   const dbConfigForQb = getDbConfig()
+  const pool = getPoolConfig()
 
   setConfig({
     dialect: dialect as Parameters<typeof setConfig>[0]['dialect'],
-    database: dbConfigForQb as any,
+    // bun-query-builder accepts `pool` on its database config and maps it
+    // onto Bun's driver options itself, so the block is handed down as-is
+    // rather than pre-translated here. `toBunPoolOptions` exists for the
+    // replica connections below, which are constructed directly.
+    database: (pool ? { ...dbConfigForQb, pool } : dbConfigForQb) as any,
     verbose: getEnv() !== 'production',
     // Must match the value migrations.ts sets. setConfig replaces the config
     // wholesale, so omitting this here silently reverts the snapshot to the
@@ -383,6 +451,25 @@ function applySqliteTransactionSerialization(instance: RawQueryBuilder): void {
     serializeSqliteTransaction(() => original(...args))
 }
 
+/**
+ * Mark the routing context as "inside a transaction" for the duration of
+ * every `db.transaction()` call.
+ *
+ * Without this, rule 2 in `./replicas` could not be enforced: a SELECT
+ * issued inside a transaction callback would look like any other read and
+ * could be routed to a replica, where it would miss the transaction's own
+ * uncommitted writes and run outside its isolation entirely.
+ *
+ * Patched onto the instance's own property rather than a wrapper object so
+ * internal callers reach it too — `transactional()` invokes
+ * `this.transaction(...)`, which would bypass a wrapper.
+ */
+function applyTransactionRoutingContext(instance: RawQueryBuilder): void {
+  const original = (instance.transaction as (...args: any[]) => Promise<any>).bind(instance)
+  ;(instance as any).transaction = (...args: any[]) =>
+    withTransactionContext(() => original(...args))
+}
+
 function getDb(): ReturnType<typeof createQueryBuilder> {
   if (!_dbInstance) {
     updateQueryBuilderConfig()
@@ -398,9 +485,110 @@ function getDb(): ReturnType<typeof createQueryBuilder> {
     // transaction serialization patch is needed here.
     if (getDialect() === 'sqlite')
       applySqliteTransactionSerialization(_dbInstance)
+    // Applied after the sqlite patch so the routing context is the
+    // outermost wrapper — a read issued while queued behind another
+    // transaction is then treated as in-transaction and stays on the
+    // primary, which is the conservative direction to be wrong in.
+    applyTransactionRoutingContext(_dbInstance)
   }
   return _dbInstance
 }
+
+/**
+ * Query builders bound to a replica, keyed by `host:port`.
+ *
+ * Cached because a builder owns a connection pool — rebuilding one per
+ * read would open a fresh pool on every SELECT. Cleared alongside
+ * `_dbInstance` whenever the config changes, so a reconfigured replica
+ * list cannot keep serving reads from the old hosts.
+ */
+let _replicaInstances = new Map<string, ReturnType<typeof createQueryBuilder>>()
+
+/**
+ * Build (or reuse) a query builder pointed at `replica`.
+ *
+ * The builder is created with an injected `SQL` connection, which is the
+ * seam bun-query-builder provides for exactly this: the process-wide
+ * config still supplies the dialect and rendering rules — correct, since a
+ * replica runs the same engine as its primary — while the connection
+ * itself points somewhere else.
+ */
+function getReplicaDb(replica: ReplicaConfig): ReturnType<typeof createQueryBuilder> {
+  const primary = getDbConfig()
+  const resolved = resolveReplicaConnection(replica, primary)
+  const key = `${resolved.host}:${resolved.port ?? ''}`
+
+  const cached = _replicaInstances.get(key)
+  if (cached)
+    return cached
+
+  const scheme = isMysqlWire(getDriver()) ? 'mysql' : 'postgres'
+  const auth = resolved.username
+    ? `${encodeURIComponent(resolved.username)}:${encodeURIComponent(resolved.password ?? '')}@`
+    : ''
+  const url = `${scheme}://${auth}${resolved.host}:${resolved.port}/${resolved.database}`
+
+  const sql = new SQL({ url, ...toBunPoolOptions(getPoolConfig()) })
+  const instance = createQueryBuilder({ sql })
+  _replicaInstances.set(key, instance)
+  return instance
+}
+
+/**
+ * The builder a read should use right now.
+ *
+ * Falls back to the primary whenever routing is not permitted — no
+ * replicas configured, auto-routing off, inside a transaction, or after a
+ * write in this async context. See `./replicas` for why each of those
+ * carve-outs exists.
+ */
+function getReadDb(): ReturnType<typeof createQueryBuilder> {
+  const replicas = getReplicas()
+  const policy = getReadPolicy()
+
+  if (!shouldRouteToReplica({ policy, replicas }))
+    return getDb()
+
+  const replica = selectReplica(replicas, policy.strategy)
+  return replica ? getReplicaDb(replica) : getDb()
+}
+
+/**
+ * Explicitly replica-routed handle: `db.read.selectFrom('users')`.
+ *
+ * Unlike automatic routing this ignores `reads.autoRoute` — asking for
+ * `db.read` IS the statement that this particular query tolerates a stale
+ * result. It still respects the transaction carve-out, because a read
+ * inside a transaction must see that transaction's own writes no matter
+ * how it was requested.
+ */
+function getExplicitReadDb(): ReturnType<typeof createQueryBuilder> {
+  const replicas = getReplicas()
+  if (!replicas.length || contextInTransaction())
+    return getDb()
+  const replica = selectReplica(replicas, getReadPolicy().strategy)
+  return replica ? getReplicaDb(replica) : getDb()
+}
+
+/** Statements that mutate, for the read-your-writes tracking in `./replicas`. */
+const WRITE_ENTRY_POINTS = new Set([
+  'insertInto',
+  'updateTable',
+  'deleteFrom',
+  'create',
+  'createMany',
+  'insertOrIgnore',
+  'insertGetId',
+  'updateOrInsert',
+  'upsert',
+])
+
+/** Reads that are candidates for replica routing. */
+const READ_ENTRY_POINTS = new Set([
+  'selectFrom',
+  'selectFromSub',
+  'select',
+])
 
 // Start config loading in the background
 ensureConfigLoaded()
@@ -585,6 +773,13 @@ interface Db extends Pick<Required<RawQueryBuilder>, GenericPassthroughKeys> {
   selectFromSub: (sub: any, alias: string) => FluentChain
   select: (table: TableName, ...columns: string[]) => FluentChain
   unsafe: (query: string, params?: any[]) => UnsafeReturn
+  /**
+   * Replica-routed handle. Reads issued through it go to a read replica
+   * when one is configured, accepting replication lag in exchange for
+   * taking load off the primary. Falls back to the primary when no
+   * replicas are declared or inside a transaction.
+   */
+  read: Omit<Db, 'read'>
 }
 
 /**
@@ -598,7 +793,47 @@ export const db = new Proxy({} as Db, {
     // instead of forwarding `undefined` from the wrapped instance.
     if (prop === 'fn')
       return aggregateFunctions
-    const instance = getDb()
+
+    // `db.read.*` — explicitly replica-routed, for callers that know the
+    // query tolerates replication lag.
+    if (prop === 'read')
+      return readDb
+
+    // A write pins this async context's later reads to the primary, so a
+    // request that reads back what it just wrote cannot be served a stale
+    // row. Marked before dispatch: the flag must be visible to a read
+    // issued while this statement is still in flight.
+    if (typeof prop === 'string' && WRITE_ENTRY_POINTS.has(prop))
+      markContextWrote()
+
+    // Reads consult the router; everything else (transactions, DDL, raw
+    // `unsafe`) stays on the primary unconditionally. `unsafe` is a
+    // deliberate omission — its SQL is opaque here, so it could be a write,
+    // and routing it on a guess would be the worst kind of wrong.
+    const instance = typeof prop === 'string' && READ_ENTRY_POINTS.has(prop)
+      ? getReadDb()
+      : getDb()
+
+    const value = (instance as any)[prop]
+    if (typeof value === 'function') {
+      return value.bind(instance)
+    }
+    return value
+  },
+})
+
+/**
+ * Replica-routed handle exposed as `db.read`.
+ *
+ * A separate proxy rather than a method so the whole builder surface stays
+ * available behind it (`db.read.selectFrom(...).where(...)`) without
+ * re-declaring every chain entry point.
+ */
+export const readDb = new Proxy({} as Db, {
+  get(_target, prop) {
+    if (prop === 'fn')
+      return aggregateFunctions
+    const instance = getExplicitReadDb()
     const value = (instance as any)[prop]
     if (typeof value === 'function') {
       return value.bind(instance)

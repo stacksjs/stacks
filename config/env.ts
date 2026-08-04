@@ -123,6 +123,37 @@ export default {
     default: 3306,
   },
 
+  DB_POOL_MAX: {
+    validation: schema.number(),
+    default: 10,
+  },
+
+  DB_POOL_IDLE_TIMEOUT_MS: {
+    validation: schema.number(),
+    default: 30_000,
+  },
+
+  DB_POOL_ACQUIRE_TIMEOUT_MS: {
+    validation: schema.number(),
+    default: 10_000,
+  },
+
+  /** Comma-separated read replica hostnames, e.g. `replica-a,replica-b`. */
+  DB_READ_HOSTS: {
+    validation: schema.string(),
+    default: '',
+  },
+
+  /**
+   * Send every read to a replica without the caller asking. Off by default:
+   * replication is asynchronous, so this trades read-after-write correctness
+   * for primary load. See `config/database.ts` -> `reads.autoRoute`.
+   */
+  DB_READ_AUTO_ROUTE: {
+    validation: schema.boolean(),
+    default: false,
+  },
+
   AWS_ACCOUNT_ID: {
     validation: schema.string(),
     default: '',

@@ -1,9 +1,75 @@
 import type { SupportedDialect } from 'bun-query-builder'
+
+/**
+ * Connection pool tuning.
+ *
+ * Every knob is optional — an omitted pool leaves the driver on its own
+ * defaults, which is correct for a single-server app that has never had to
+ * think about pooling. Ignored for SQLite, which is embedded and
+ * single-connection.
+ */
+export interface PoolOptions {
+  /** Maximum simultaneous connections. */
+  max?: number
+  /** Minimum idle connections kept warm. */
+  min?: number
+  /** Close a connection after it has been idle this long. */
+  idleTimeoutMs?: number
+  /** Give up waiting for a free connection after this long. */
+  acquireTimeoutMs?: number
+  /** Recycle a connection at this age regardless of health. */
+  maxLifetimeMs?: number
+  /** Reconnect automatically after the server drops a connection. */
+  autoReconnect?: boolean
+}
+
+/**
+ * A read replica of the connection it is declared on.
+ *
+ * Only `host` is required: port, credentials, and database name are
+ * inherited from the primary, because a replica is the same database on a
+ * different host. Requiring them per replica is how host lists drift out
+ * of sync with a rotated password.
+ */
+export interface ReplicaOptions {
+  /** Replica hostname. */
+  host: string
+  /** Defaults to the primary's port. */
+  port?: number
+  /** Defaults to the primary's username. */
+  username?: string
+  /** Defaults to the primary's password. */
+  password?: string
+  /** Relative share of read traffic under the `weighted` strategy. */
+  weight?: number
+}
+
+/** How reads are distributed across replicas. */
+export interface ReadPolicyOptions {
+  /**
+   * Route plain reads to a replica without the caller asking.
+   *
+   * Defaults to false. Replication is asynchronous, so enabling this
+   * accepts that a read may not see a write that just committed. Reads
+   * stay on the primary inside a transaction and after a write in the same
+   * async context, which covers read-your-writes for a typical request.
+   */
+  autoRoute?: boolean
+  /** Replica selection strategy. Defaults to `round-robin`. */
+  strategy?: 'round-robin' | 'weighted' | 'random'
+}
+
+/** Fields shared by every client-server connection. */
+export interface NetworkedConnectionOptions {
+  pool?: PoolOptions
+  replicas?: ReplicaOptions[]
+}
+
 export interface DatabaseOptions {
   default: SupportedDialect
   logging?: boolean
   connections: {
-    mysql?: {
+    mysql?: NetworkedConnectionOptions & {
       url?: string
       host?: string
       port?: number
@@ -16,7 +82,7 @@ export interface DatabaseOptions {
     // SingleStore is MySQL wire-compatible (port 3306); it shares MySQL's
     // connection shape and adds an optional `ssl` flag for managed (Helios)
     // endpoints, which require TLS.
-    singlestore?: {
+    singlestore?: NetworkedConnectionOptions & {
       url?: string
       host?: string
       port?: number
@@ -41,7 +107,7 @@ export interface DatabaseOptions {
       endpoint?: string
     }
 
-    postgres?: {
+    postgres?: NetworkedConnectionOptions & {
       url?: string
       host?: string
       port?: number
@@ -54,6 +120,13 @@ export interface DatabaseOptions {
 
   migrations: string
   migrationLocks: string
+
+  /**
+   * How reads are distributed across the active connection's replicas.
+   * Cross-cutting rather than per-connection: one connection is active at
+   * a time, and the staleness trade-off is a property of the application.
+   */
+  reads?: ReadPolicyOptions
 
   /**
    * Safety guards for the destructive migration commands.

@@ -33,6 +33,25 @@ export default {
       username: env.DB_USERNAME || 'root',
       password: env.DB_PASSWORD || '',
       prefix: '',
+
+      /**
+       * Connection pool. Omit any knob to leave the driver on its default.
+       */
+      pool: {
+        max: env.DB_POOL_MAX || 10,
+        idleTimeoutMs: env.DB_POOL_IDLE_TIMEOUT_MS || 30_000,
+        acquireTimeoutMs: env.DB_POOL_ACQUIRE_TIMEOUT_MS || 10_000,
+      },
+
+      /**
+       * Read replicas. Each entry inherits the port, credentials, and
+       * database name above, so usually only `host` is needed. Reads reach
+       * them through `db.read`, or through every read once `reads.autoRoute`
+       * below is enabled.
+       */
+      replicas: env.DB_READ_HOSTS
+        ? env.DB_READ_HOSTS.split(',').map((host: string) => ({ host: host.trim() }))
+        : [],
     },
 
     // SingleStore speaks the MySQL wire protocol on port 3306. Managed
@@ -58,6 +77,33 @@ export default {
 
   migrations: 'migrations',
   migrationLocks: 'migration_locks',
+
+  /**
+   * **Read Routing**
+   *
+   * How reads are distributed across the replicas declared on the active
+   * connection above.
+   */
+  reads: {
+    /**
+     * Send plain reads to a replica without the caller asking for it.
+     *
+     * Off by default, deliberately. Replication is asynchronous, so a row
+     * just written to the primary may not be on a replica yet - flipping
+     * this on turns every `Model.find()` into a potential stale read. The
+     * router still keeps reads on the primary inside a transaction and
+     * after a write in the same request, which covers the common
+     * read-your-writes case, but anything outside that window can be stale.
+     *
+     * Leave it off and use `db.read` for the specific queries that tolerate
+     * lag (dashboards, reports, search) unless you have decided the whole
+     * app can.
+     */
+    autoRoute: env.DB_READ_AUTO_ROUTE ?? false,
+
+    /** 'round-robin' (default), 'weighted', or 'random'. */
+    strategy: 'round-robin',
+  },
 
   /**
    * Migration Safety Guards

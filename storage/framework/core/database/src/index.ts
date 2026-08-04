@@ -108,6 +108,10 @@ export { migrateRbacTables } from './rbac-tables'
 // dialect speaks (wire protocol) and what it accepts (DDL features).
 export * from './dialect'
 
+// Read replica routing policy (auto-route opt-in, transaction and
+// read-your-writes carve-outs, replica selection).
+export * from './replicas'
+
 // SQL dialect helpers & connection defaults
 export * from './sql-helpers'
 export * from './defaults'

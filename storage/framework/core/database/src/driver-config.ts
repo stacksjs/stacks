@@ -7,7 +7,20 @@
  */
 
 import type { StacksDialect } from '@stacksjs/query-builder'
+import type { NetworkedConnectionOptions, PoolOptions, ReadPolicyOptions, ReplicaOptions } from '@stacksjs/types'
 import { env } from '@stacksjs/env'
+
+/**
+ * Connection pool, replica, and read-policy shapes.
+ *
+ * Defined in `@stacksjs/types` (the package `config/database.ts` is typed
+ * against) and aliased here so the database package has one name for them
+ * and users never see two subtly different definitions of the same block.
+ */
+export type PoolConfig = PoolOptions
+export type ReplicaConfig = ReplicaOptions
+export type ReadPolicyConfig = ReadPolicyOptions
+export type NetworkedConnectionConfig = NetworkedConnectionOptions
 
 /**
  * SQLite specific configuration
@@ -20,9 +33,13 @@ export interface SqliteConfig {
 }
 
 /**
- * MySQL specific configuration
+ * MySQL specific configuration.
+ *
+ * Extends `NetworkedConnectionConfig` for `pool` and `replicas` — both are
+ * meaningless for the embedded SQLite dialect, which is why they live on a
+ * base the client-server shapes extend rather than on every connection.
  */
-export interface MysqlConfig {
+export interface MysqlConfig extends NetworkedConnectionConfig {
   /** Database name */
   name: string
   /** Database host */
@@ -49,7 +66,7 @@ export interface MysqlConfig {
  * SHARD KEY / SORT KEY, no foreign keys) — handled by the migration generator,
  * not by the connection layer.
  */
-export interface SinglestoreConfig {
+export interface SinglestoreConfig extends NetworkedConnectionConfig {
   /** Database name */
   name: string
   /** Database host (e.g. the SingleStore Helios/managed endpoint) */
@@ -71,7 +88,7 @@ export interface SinglestoreConfig {
 /**
  * PostgreSQL specific configuration
  */
-export interface PostgresConfig {
+export interface PostgresConfig extends NetworkedConnectionConfig {
   /** Database name */
   name: string
   /** Database host */
@@ -146,6 +163,13 @@ export interface FullDatabaseConfig {
   migrations?: string
   /** Migration locks table name */
   migrationLocks?: string
+  /**
+   * How reads are distributed across the active connection's replicas.
+   * Cross-cutting rather than per-connection: only one connection is
+   * active at a time, and the safety trade-off being made is a property of
+   * the application, not of a particular host list.
+   */
+  reads?: ReadPolicyConfig
 }
 
 /**

@@ -90,6 +90,12 @@ export interface StacksEnv {
   DB_PASSWORD: string | undefined
   DB_PREFIX: string | undefined
   DB_SCHEMA: string | undefined
+  DB_POOL_MAX: number | undefined
+  DB_POOL_IDLE_TIMEOUT_MS: number | undefined
+  DB_POOL_ACQUIRE_TIMEOUT_MS: number | undefined
+  /** Comma-separated read replica hostnames. */
+  DB_READ_HOSTS: string | undefined
+  DB_READ_AUTO_ROUTE: boolean | undefined
   DB_QUERY_LOGGING_ENABLED: boolean | undefined
   DB_QUERY_LOGGING_SLOW_THRESHOLD: number | undefined
   DB_QUERY_LOGGING_RETENTION_DAYS: number | undefined

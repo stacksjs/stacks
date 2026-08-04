@@ -20,6 +20,11 @@ declare module 'bun' {
     const DB_DATABASE: string
     const DB_USERNAME: string
     const DB_PASSWORD: string
+    const DB_POOL_MAX: number
+    const DB_POOL_IDLE_TIMEOUT_MS: number
+    const DB_POOL_ACQUIRE_TIMEOUT_MS: number
+    const DB_READ_HOSTS: string
+    const DB_READ_AUTO_ROUTE: boolean
     const AWS_ACCOUNT_ID: string
     const AWS_ACCESS_KEY_ID: string
     const AWS_SECRET_ACCESS_KEY: string
