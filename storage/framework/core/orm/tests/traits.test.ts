@@ -78,9 +78,22 @@ describe('trait modules', () => {
       expect(typeof methods.rejectedComments).toBe('function')
     })
 
-    it('should return exactly 6 methods', () => {
+    it('should expose the comment upvote methods', () => {
+      // `commentable_upvotes` and its generated interface shipped with no way
+      // to read or write them; these four are that missing accessor. They take
+      // a comment id rather than the owning record's id, so — like likeable's
+      // `likedBy` — they stay on the static bag only.
       const methods = createCommentableMethods('posts')
-      expect(Object.keys(methods)).toHaveLength(6)
+
+      expect(typeof methods.upvoteComment).toBe('function')
+      expect(typeof methods.removeCommentUpvote).toBe('function')
+      expect(typeof methods.commentUpvoteCount).toBe('function')
+      expect(typeof methods.hasUpvotedComment).toBe('function')
+    })
+
+    it('should return exactly 10 methods', () => {
+      const methods = createCommentableMethods('posts')
+      expect(Object.keys(methods)).toHaveLength(10)
     })
   })
 

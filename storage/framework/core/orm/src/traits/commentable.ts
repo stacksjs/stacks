@@ -7,6 +7,26 @@ function assertId(id: unknown, method: string): asserts id is number {
   }
 }
 
+/** Where comment upvotes live — see `database/src/trait-tables.ts`. */
+const UPVOTES_TABLE = 'commentable_upvotes'
+
+/**
+ * The `upvoteable_type` written for a comment upvote. The column is
+ * polymorphic so the table can carry upvotes for other targets later; comments
+ * are keyed by the table their rows live in.
+ */
+const COMMENT_UPVOTE_TYPE = 'commentables'
+
+/** Whether a driver error is a unique-constraint collision. */
+function isDuplicateError(err: unknown): boolean {
+  const e = err as { code?: string, errno?: number, message?: string }
+  return e.code === 'SQLITE_CONSTRAINT_UNIQUE'
+    || e.code === 'SQLITE_CONSTRAINT'
+    || e.code === '23505'
+    || e.errno === 1062
+    || /unique|duplicate/i.test(e.message ?? '')
+}
+
 export function createCommentableMethods(tableName: string) {
   const db = _db as any
   return {
@@ -97,6 +117,95 @@ export function createCommentableMethods(tableName: string) {
         .where('status', '=', 'rejected')
         .selectAll()
         .execute()
+    },
+
+    /**
+     * Upvote a comment. Idempotent — a repeat call returns the existing row
+     * rather than tripping the unique (target, user) index.
+     *
+     * These four take a COMMENT id, not the owning record's id, so — like
+     * `likeable`'s `likedBy` — they are reachable only through the static bag
+     * (`Model._commentable.upvoteComment(...)`) and are deliberately absent
+     * from TRAIT_INSTANCE_METHOD_BINDINGS, whose 'id' mode would inject the
+     * wrong id.
+     */
+    async upvoteComment(commentId: number, userId: number): Promise<any> {
+      assertId(commentId, 'upvoteComment')
+      assertId(userId, 'upvoteComment')
+
+      const existing = () => db
+        .selectFrom(UPVOTES_TABLE)
+        .where('upvoteable_id', '=', commentId)
+        .where('upvoteable_type', '=', COMMENT_UPVOTE_TYPE)
+        .where('user_id', '=', userId)
+        .selectAll()
+        .executeTakeFirst()
+
+      const already = await existing()
+      if (already)
+        return already
+
+      try {
+        await db
+          .insertInto(UPVOTES_TABLE)
+          .values({
+            upvoteable_id: commentId,
+            upvoteable_type: COMMENT_UPVOTE_TYPE,
+            user_id: userId,
+            created_at: new Date().toISOString(),
+          })
+          .execute()
+      }
+      catch (err: unknown) {
+        // Two concurrent upvotes race between the check above and the insert;
+        // the unique index is what actually settles it. Anything that is not
+        // that collision is a real failure and must surface.
+        if (!isDuplicateError(err))
+          throw err
+      }
+
+      return await existing()
+    },
+
+    /** Remove a user's upvote. A no-op when they had not upvoted. */
+    async removeCommentUpvote(commentId: number, userId: number): Promise<void> {
+      assertId(commentId, 'removeCommentUpvote')
+      assertId(userId, 'removeCommentUpvote')
+      await db
+        .deleteFrom(UPVOTES_TABLE)
+        .where('upvoteable_id', '=', commentId)
+        .where('upvoteable_type', '=', COMMENT_UPVOTE_TYPE)
+        .where('user_id', '=', userId)
+        .execute()
+    },
+
+    async commentUpvoteCount(commentId: number): Promise<number> {
+      assertId(commentId, 'commentUpvoteCount')
+      const result = await db
+        .selectFrom(UPVOTES_TABLE)
+        // Plain-string select, not a `sql` fragment — bun-query-builder joins
+        // select arguments with `.join(', ')` and a fragment stringifies to
+        // "[object Object]". Same reasoning as likeable's likeCount().
+        .select('count(*) as count')
+        .where('upvoteable_id', '=', commentId)
+        .where('upvoteable_type', '=', COMMENT_UPVOTE_TYPE)
+        .executeTakeFirst()
+
+      return Number((result as any)?.count) || 0
+    },
+
+    async hasUpvotedComment(commentId: number, userId: number): Promise<boolean> {
+      assertId(commentId, 'hasUpvotedComment')
+      assertId(userId, 'hasUpvotedComment')
+      const row = await db
+        .selectFrom(UPVOTES_TABLE)
+        .where('upvoteable_id', '=', commentId)
+        .where('upvoteable_type', '=', COMMENT_UPVOTE_TYPE)
+        .where('user_id', '=', userId)
+        .selectAll()
+        .executeTakeFirst()
+
+      return !!row
     },
   }
 }
