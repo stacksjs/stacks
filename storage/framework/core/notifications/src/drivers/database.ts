@@ -1,5 +1,5 @@
 import { log } from '@stacksjs/cli'
-import { db } from '@stacksjs/database'
+import { db, sqlDateTime} from '@stacksjs/database'
 
 // `./database-schema.d.ts` augments `@stacksjs/database`'s
 // `DatabaseSchema` with the `notifications` + `notification_preferences`
@@ -31,7 +31,7 @@ interface InsertResultLike {
 
 export const DatabaseNotificationDriver = {
   async send(options: CreateNotificationOptions): Promise<DatabaseNotification> {
-    const now = new Date().toISOString()
+    const now = sqlDateTime()
 
     const result = await db
       .insertInto('notifications')
@@ -100,7 +100,7 @@ export const DatabaseNotificationDriver = {
   async markAsRead(id: number): Promise<void> {
     await db
       .updateTable('notifications')
-      .set({ read_at: new Date().toISOString() })
+      .set({ read_at: sqlDateTime() })
       .where('id', '=', id)
       .execute()
   },
@@ -108,7 +108,7 @@ export const DatabaseNotificationDriver = {
   async markAllAsRead(userId: number): Promise<void> {
     await db
       .updateTable('notifications')
-      .set({ read_at: new Date().toISOString() })
+      .set({ read_at: sqlDateTime() })
       .where('user_id', '=', userId)
       .where('read_at', 'is', null)
       .execute()

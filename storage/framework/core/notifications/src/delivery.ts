@@ -1,5 +1,5 @@
 import { log } from '@stacksjs/cli'
-import { db } from '@stacksjs/database'
+import { db, sqlDateTime} from '@stacksjs/database'
 import type {
   NotificationChannel,
   NotificationPayload,
@@ -42,7 +42,7 @@ export function makeDeliveryRecord(
   payload: NotificationPayload,
   result: NotifyResult,
   options: NotifyOptions,
-  sentAt = new Date().toISOString(),
+  sentAt = sqlDateTime(),
 ): NotificationDeliveryRecord {
   return {
     userId: recipient.userId,
@@ -61,7 +61,7 @@ export function makeDeliveryRecord(
 }
 
 export async function recordNotificationDelivery(record: NotificationDeliveryRecord): Promise<void> {
-  const now = new Date().toISOString()
+  const now = sqlDateTime()
 
   try {
     await db

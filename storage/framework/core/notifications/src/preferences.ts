@@ -1,5 +1,5 @@
 import { log } from '@stacksjs/cli'
-import { db } from '@stacksjs/database'
+import { db, sqlDateTime} from '@stacksjs/database'
 import type { NotificationChannel } from './index'
 
 /**
@@ -122,7 +122,7 @@ export async function setNotificationPreference(
   enabled: boolean,
   category?: string,
 ): Promise<void> {
-  const now = new Date().toISOString()
+  const now = sqlDateTime()
   const cat = category ?? null
 
   // Look up an existing row for this (user, channel, category) — cheaper
