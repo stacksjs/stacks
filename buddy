@@ -53,10 +53,12 @@ run_with_timeout() {
   cmd_pid=$!
 
   (
-    # Do not let the timer inherit a caller's stdout/stderr pipe. If the
+    # Do not let the timer inherit the deployment lock or a caller's
+    # stdout/stderr pipe. If the
     # watchdog shell is terminated after the command finishes, its sleep may
-    # briefly remain orphaned; inherited deploy pipes would otherwise stay
-    # open until the full timeout elapsed.
+    # briefly remain orphaned; inherited deploy descriptors would otherwise
+    # keep the release locked until the full timeout elapsed.
+    exec 9>&-
     sleep "${timeout_seconds}" </dev/null >/dev/null 2>&1
 
     if kill -0 "${cmd_pid}" 2>/dev/null; then
