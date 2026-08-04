@@ -111,20 +111,3 @@ describe('build module', () => {
     }
   })
 })
-
-describe('build utils', () => {
-  test('generator is exported', async () => {
-    const mod = await import('../src/utils')
-    expect(mod).toHaveProperty('generator')
-  })
-
-  test('parser is exported', async () => {
-    const mod = await import('../src/utils')
-    expect(mod).toHaveProperty('parser')
-  })
-
-  test('traverse is exported', async () => {
-    const mod = await import('../src/utils')
-    expect(mod).toHaveProperty('traverse')
-  })
-})

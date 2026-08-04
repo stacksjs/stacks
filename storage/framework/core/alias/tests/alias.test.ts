@@ -38,11 +38,14 @@ describe('@stacksjs/alias', () => {
 
   it('should have consistent naming conventions', () => {
     Object.keys(alias).forEach((key) => {
-      expect(key).toMatch(/^(@stacksjs\/|stacks\/|~\/|framework\/|@\/)?[a-z.*-]*(\/[a-z.*-]+)*(\*)?$/)
+      expect(key).toMatch(/^(@stacksjs\/|stacks\/|~\/|framework\/|@\/)?[a-z\d.*-]*(\/[a-z\d.*-]+)*(\*)?$/)
     })
   })
 
-  it('should have the expected number of total aliases', () => {
-    expect(Object.keys(alias).length).toBe(250)
+  it('should map a substantial set of aliases', () => {
+    // A lower bound, not an exact count: every new package adds an entry, and
+    // pinning the exact number only ever produced a failure that was fixed by
+    // typing in the new total. What matters is that the map is populated.
+    expect(Object.keys(alias).length).toBeGreaterThan(200)
   })
 })
