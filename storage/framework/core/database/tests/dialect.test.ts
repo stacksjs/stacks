@@ -85,14 +85,20 @@ describe('sqlHelpers delegates to the capability table', () => {
     // The pre-table failure mode: a MySQL-wire dialect missing from one
     // inline `=== 'mysql' || === 'singlestore'` check silently emitted
     // `datetime('now')` and AUTOINCREMENT at a MySQL server.
+    // Asserted against MySQL's own output rather than literals: the property
+    // is "every MySQL-wire dialect renders identically to mysql", and pinning
+    // the literals makes this fail whenever MySQL's rendering is legitimately
+    // changed elsewhere (as it was when nullable timestamps moved from
+    // TIMESTAMP to DATETIME) even though the invariant still holds.
+    const mysql = sqlHelpers('mysql')
     for (const dialect of knownDialects().filter(isMysqlWire)) {
       const h = sqlHelpers(dialect)
       expect(h.isMysql).toBe(true)
       expect(h.isSqlite).toBe(false)
       expect(h.isPostgres).toBe(false)
-      expect(h.now).toBe('NOW()')
-      expect(h.nullableTimestamp).toBe('DATETIME NULL')
-      expect(h.param(1)).toBe('?')
+      expect(h.now).toBe(mysql.now)
+      expect(h.nullableTimestamp).toBe(mysql.nullableTimestamp)
+      expect(h.param(1)).toBe(mysql.param(1))
     }
   })
 

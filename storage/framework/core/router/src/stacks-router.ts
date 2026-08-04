@@ -3107,10 +3107,54 @@ export const route: StacksRouterInstance = ((globalThis as Record<symbol, unknow
 let routesLoadPromise: Promise<void> | null = null
 
 /**
+ * Per-request read-routing context.
+ *
+ * The database package tracks writes per async context so that a request
+ * which reads back what it just wrote is never served from a read replica
+ * (replication is asynchronous, so the row may not be there yet). That
+ * tracking only works if something establishes the context at the request
+ * boundary — without this, `contextHasWritten()` has no store to consult,
+ * always reports false, and every read routes to a replica including the
+ * one immediately following a write. The safety rule would be dead code.
+ *
+ * Loaded lazily rather than imported: `@stacksjs/database` already depends
+ * on `@stacksjs/router`, so a static import here would close a package
+ * cycle. The dynamic import is resolved once and cached, and the fallback
+ * is a plain pass-through so a build without the database package (or an
+ * older one) still serves requests.
+ */
+type ContextRunner = <T>(fn: () => T) => T
+let routingContextRunner: ContextRunner | null = null
+
+async function getRoutingContextRunner(): Promise<ContextRunner> {
+  if (!routingContextRunner) {
+    try {
+      const { withRoutingContext } = await import('@stacksjs/database')
+      routingContextRunner = typeof withRoutingContext === 'function'
+        ? withRoutingContext
+        : (fn => fn())
+    }
+    catch {
+      // No database package available — routing is moot, so run unwrapped.
+      routingContextRunner = fn => fn()
+    }
+  }
+  return routingContextRunner
+}
+
+/**
  * Handle a server request through the router
  * This is the main entry point for the Stacks server
  */
 export async function serverResponse(request: Request, _body?: string): Promise<Response> {
+  const runInRoutingContext = await getRoutingContextRunner()
+  // The context must wrap the whole handler, not just the dispatch: a write
+  // in a controller has to be visible to a read later in the same request,
+  // and AsyncLocalStorage carries the store across every await inside.
+  return runInRoutingContext(() => handleServerRequest(request))
+}
+
+async function handleServerRequest(request: Request): Promise<Response> {
   // Load routes on first request — use a shared promise to prevent double-loading
   if (!routesLoadPromise) {
     log.debug('[router] Loading routes for first time...')
