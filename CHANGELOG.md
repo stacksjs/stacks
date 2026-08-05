@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.265...v0.70.266)
+
+## 🔧 Chores
+
+- **cloud**: publish Vitess dashboard provisioning ([9dd9f99](https://github.com/stacksjs/stacks/commit/9dd9f99)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.264...v0.70.265)
 
 ## ✨ Features
