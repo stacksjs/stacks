@@ -138,7 +138,15 @@ mock.module('@stacksjs/orm', () => ({
 
 mock.module('../src/authentication', () => ({
   Auth: {
-    createToken: async () => 'tok_test',
+    // `createTokenForUser`, not `createToken`. Registration has to mint the
+    // whole session — `createToken` is a wrapper that discards the refresh
+    // token and expiry, which left every new account unable to refresh
+    // (stacksjs/stacks#2212).
+    createTokenForUser: async () => ({
+      plainTextToken: 'tok_test',
+      refreshToken: 'refresh_test',
+      expiresIn: 3600,
+    }),
   },
 }))
 
@@ -179,7 +187,14 @@ describe('register() transactional create (#1953)', () => {
   test('fresh email → token, hashed password inserted inside the trx, fetch by id', async () => {
     const result = await register({ email: 'fresh@example.com', password: 'long-enough-pw', name: 'Fresh' } as any)
 
-    expect(result).toEqual({ token: 'tok_test' as any })
+    // The full session, not just the access token — a registration that hands
+    // back no refresh token strands the account at `tokenExpiry` (one hour by
+    // default) with no way to renew (stacksjs/stacks#2212).
+    expect(result).toEqual({
+      token: 'tok_test' as any,
+      refreshToken: 'refresh_test',
+      expiresIn: 3600,
+    })
     expect(transactionCalled).toBe(true)
     expect(insertRanOnTrx).toBe(true)
     // Never the plaintext.

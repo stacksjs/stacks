@@ -146,6 +146,31 @@ async function startDefaultServer() {
   const apiBase = `http://127.0.0.1:${apiPort}`
   const docsBase = `http://127.0.0.1:${docsPort}`
 
+  // Whether `/docs` belongs to the docs dev server at all
+  // (stacksjs/stacks#2213).
+  //
+  // The proxy used to be unconditional and sat ahead of page routing, so an app
+  // with its own `resources/views/docs.stx` could never serve it in dev, and an
+  // app with no docs site at all got a proxy to a dead port instead of a 404.
+  // Worse, `buddy serve` has no `/docs` branch — it just resolves the page
+  // route — so dev and production disagreed about what `/docs` is. The page
+  // that shipped was the one nobody could review locally.
+  //
+  // Resolved once here rather than per request: both checks are filesystem
+  // stats, and the answer cannot change without a restart anyway.
+  //
+  // A userland page wins outright. Otherwise the proxy runs only when a docs
+  // site actually exists, and when neither is true `/docs` falls through to
+  // normal routing, which turns the dead-port case into an ordinary 404.
+  //
+  // A plain existence check, not `firstExistingPath` — that helper prefers the
+  // candidate containing templates, which is meaningless for a docs site made
+  // of markdown and for a single `.stx` file.
+  const hasUserDocsView = ['docs.stx', 'docs/index.stx']
+    .some(rel => existsSync(projectPath(`${userViewsPath}/${rel}`)))
+  const hasDocsSite = existsSync(projectPath('docs'))
+  const docsProxyEnabled = !hasUserDocsView && hasDocsSite
+
   // Cookie name the SPA writes when a user logs in. Defaults to whatever
   // `config.auth.defaultTokenName` is set to, falling back to `auth-token`.
   const authCookie = (config as any)?.auth?.defaultTokenName ?? 'auth-token'
@@ -214,7 +239,7 @@ async function startDefaultServer() {
       //      a static stx page, so they always belong to bun-router.
       // Without (2), `route.post('/subscribe', ...)` declared at the
       // root (no /api prefix) hits stx-serve and 404s.
-      if (url.pathname === '/docs' || url.pathname.startsWith('/docs/'))
+      if (docsProxyEnabled && (url.pathname === '/docs' || url.pathname.startsWith('/docs/')))
         return proxyToBackend(req, docsBase, '/docs')
 
       if (isApiBoundRequest(req, url.pathname))

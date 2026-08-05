@@ -28,7 +28,35 @@ function duplicateEmailError(): HttpError {
 // which `validator.isEmail()` would have to special-case anyway.
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
-export async function register(credentials: NewUser): Promise<{ token: AuthToken }> {
+/**
+ * What a successful registration hands back: a complete session, matching
+ * `Auth.loginUsingId()`.
+ *
+ * Named rather than inlined on the signature so consumers can type the result,
+ * and because pickier's unused-parameter analysis mis-reads a multi-line return
+ * annotation and flags `credentials` as unused.
+ */
+export interface RegistrationResult {
+  token: AuthToken
+  refreshToken?: string
+  expiresIn?: number
+}
+
+/**
+ * Register a user and open a full session for them.
+ *
+ * Returns the same triple `Auth.loginUsingId()` does. It used to return only
+ * the access token, because it called `Auth.createToken()` — a wrapper that
+ * mints a refresh token and an expiry and then throws both away. With
+ * `config.auth.tokenExpiry` defaulting to one hour, that made every freshly
+ * registered account unable to refresh: a client that correctly stores the pair
+ * and exchanges it at `/auth/refresh` worked for everyone except the user who
+ * had just signed up, who was logged out an hour into their first session
+ * (stacksjs/stacks#2212).
+ *
+ * Additive, so `const { token } = await register(...)` is unaffected.
+ */
+export async function register(credentials: NewUser): Promise<RegistrationResult> {
   const { email, password, name } = credentials
 
   // Cheap structural validation before we hit the DB. Bad-email registration
@@ -102,6 +130,11 @@ export async function register(credentials: NewUser): Promise<{ token: AuthToken
   if (!user)
     throw new Error('Failed to retrieve created user')
 
-  // Create and return the authentication token
-  return { token: await Auth.createToken(user, 'user-auth-token') }
+  // `createTokenForUser`, not `createToken` — the latter drops the refresh
+  // token and expiry on the floor. Same token name as before.
+  const { plainTextToken, refreshToken, expiresIn } = await Auth.createTokenForUser(user, {
+    name: 'user-auth-token',
+  })
+
+  return { token: plainTextToken, refreshToken, expiresIn }
 }
