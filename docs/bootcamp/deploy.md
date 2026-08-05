@@ -18,8 +18,8 @@ The deploy command verifies environment settings, application keys, AWS access, 
 ## Production push-to-deploy
 
 GitHub Actions maps `main` to the protected `production` environment and runs
-`./buddy deploy --prod --yes` only after lint, typecheck, tests, protocol
-evidence, and generated documentation checks pass. Buddy owns the deployment
+`./buddy deploy --prod --yes` only after lint, typecheck, tests, and generated
+documentation checks pass. Buddy owns the deployment
 boundary and delegates infrastructure generation and application to ts-cloud;
 the workflow does not reproduce cloud provider commands.
 

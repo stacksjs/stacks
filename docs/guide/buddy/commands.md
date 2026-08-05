@@ -6,7 +6,7 @@ description: Generated reference for every Buddy command, argument, option, alia
 
 # Buddy Command Reference
 
-This reference is generated from Buddy's runtime command registry and currently contains **305 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
+This reference is generated from Buddy's runtime command registry and currently contains **289 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
 
 ## Command groups
 
@@ -47,7 +47,6 @@ This reference is generated from Buddy's runtime command registry and currently 
 | `phone` | 4 |
 | `ports` | 2 |
 | `projects` | 1 |
-| `protocol` | 16 |
 | `publish` | 5 |
 | `queue` | 21 |
 | `realtime` | 2 |
@@ -3375,162 +3374,6 @@ Find all Stacks projects on your system
 | `-q`, `--quiet` | Use minimal output | boolean, optional | `false` |
 | `-l`, `--list` | List all local Stacks projects | boolean, optional | `true` |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
-
-### `protocol:check`
-
-Verify the vendored protocol suite is pinned + internally consistent
-
-- Usage: `$ buddy protocol:check`
-- Namespace: `protocol`
-- Aliases: none
-- Arguments: none
-
-### `protocol:conformance`
-
-Generate the Stacks protocol conformance report
-
-- Usage: `$ buddy protocol:conformance`
-- Namespace: `protocol`
-- Aliases: none
-- Arguments: none
-
-### `protocol:craft`
-
-Write the Craft evidence
-
-- Usage: `$ buddy protocol:craft`
-- Namespace: `protocol`
-- Aliases: none
-- Arguments: none
-
-### `protocol:craft:check`
-
-Verify the Craft evidence
-
-- Usage: `$ buddy protocol:craft:check`
-- Namespace: `protocol`
-- Aliases: none
-- Arguments: none
-
-### `protocol:desktop`
-
-Write the desktop support matrix evidence
-
-- Usage: `$ buddy protocol:desktop`
-- Namespace: `protocol`
-- Aliases: none
-- Arguments: none
-
-### `protocol:desktop:check`
-
-Verify the desktop support matrix evidence
-
-- Usage: `$ buddy protocol:desktop:check`
-- Namespace: `protocol`
-- Aliases: none
-- Arguments: none
-
-### `protocol:drivers`
-
-Write the driver capability registry evidence
-
-- Usage: `$ buddy protocol:drivers`
-- Namespace: `protocol`
-- Aliases: none
-- Arguments: none
-
-### `protocol:drivers:check`
-
-Verify the driver capability registry evidence
-
-- Usage: `$ buddy protocol:drivers:check`
-- Namespace: `protocol`
-- Aliases: none
-- Arguments: none
-
-### `protocol:drivers:test`
-
-Run the driver contract suite
-
-- Usage: `$ buddy protocol:drivers:test`
-- Namespace: `protocol`
-- Aliases: none
-- Arguments: none
-
-### `protocol:manifest`
-
-Write the protocol source manifest
-
-- Usage: `$ buddy protocol:manifest`
-- Namespace: `protocol`
-- Aliases: none
-- Arguments: none
-
-| Option | Description | Contract | Default |
-| --- | --- | --- | --- |
-| `--revision` | Source revision to pin (default HEAD) | value, required | — |
-
-### `protocol:manifest:check`
-
-Verify the protocol source manifest is current
-
-- Usage: `$ buddy protocol:manifest:check`
-- Namespace: `protocol`
-- Aliases: none
-- Arguments: none
-
-### `protocol:pantry`
-
-Write the pantry evidence
-
-- Usage: `$ buddy protocol:pantry`
-- Namespace: `protocol`
-- Aliases: none
-- Arguments: none
-
-### `protocol:pantry:check`
-
-Verify the pantry evidence
-
-- Usage: `$ buddy protocol:pantry:check`
-- Namespace: `protocol`
-- Aliases: none
-- Arguments: none
-
-### `protocol:release`
-
-Write the protocol release manifest
-
-- Usage: `$ buddy protocol:release`
-- Namespace: `protocol`
-- Aliases: none
-- Arguments: none
-
-| Option | Description | Contract | Default |
-| --- | --- | --- | --- |
-| `--tag` | Release tag | value, required | — |
-
-### `protocol:release:check`
-
-Verify the protocol release manifest is current
-
-- Usage: `$ buddy protocol:release:check`
-- Namespace: `protocol`
-- Aliases: none
-- Arguments: none
-
-### `protocol:sync`
-
-Sync the vendored protocol suite from stacksjs/rfcs
-
-- Usage: `$ buddy protocol:sync`
-- Namespace: `protocol`
-- Aliases: none
-- Arguments: none
-
-| Option | Description | Contract | Default |
-| --- | --- | --- | --- |
-| `--source` | Path to a local rfcs checkout | value, required | — |
 
 ### `publish`
 
