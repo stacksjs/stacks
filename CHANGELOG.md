@@ -1,5 +1,23 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.262...v0.70.263)
+
+## ✨ Features
+
+- **cloud**: provision PredictHQ Vitess keyspace ([32ae75d](https://github.com/stacksjs/stacks/commit/32ae75d)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🐛 Bug Fixes
+
+- **payments**: pin the supported Stripe API version ([496d69f](https://github.com/stacksjs/stacks/commit/496d69f)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🔧 Chores
+
+- **deps**: synchronize Pantry workspace lock ([fd70767](https://github.com/stacksjs/stacks/commit/fd70767)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.261...v0.70.262)
 
 ## ✨ Features
