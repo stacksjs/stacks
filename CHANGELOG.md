@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.266...v0.70.267)
+
+## 🐛 Bug Fixes
+
+- **buddy**: a refusal that prints nothing is a refusal nobody can act on ([857f8f6](https://github.com/stacksjs/stacks/commit/857f8f6)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.265...v0.70.266)
 
 ## 🔧 Chores
