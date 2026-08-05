@@ -1,5 +1,24 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.264...v0.70.265)
+
+## ✨ Features
+
+- **migrations**: isolate database dialect corpora ([8043058](https://github.com/stacksjs/stacks/commit/8043058)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🐛 Bug Fixes
+
+- **buddy**: every command reported failure on success ([93006af](https://github.com/stacksjs/stacks/commit/93006af)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **query-builder**: expose migration corpus configuration ([b21562e](https://github.com/stacksjs/stacks/commit/b21562e)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🔧 Chores
+
+- **deps**: update query builder migration support ([762130e](https://github.com/stacksjs/stacks/commit/762130e)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.263...v0.70.264)
 
 ## 🐛 Bug Fixes
