@@ -8,7 +8,7 @@ interface EnumObject {
 
 export const envEnum: EnumObject = {
   APP_ENV: ['local', 'dev', 'development', 'staging', 'prod', 'production'],
-  DB_CONNECTION: ['mysql', 'sqlite', 'postgres', 'dynamodb'],
+  DB_CONNECTION: ['mysql', 'sqlite', 'postgres', 'singlestore', 'vitess', 'dynamodb'],
   DB_MIGRATE_FRESH: ['allow', 'confirm', 'disabled'],
   // MAIL_MAILER lists the drivers `@stacksjs/email` actually ships
   // (`registerDefaultDrivers()` in src/email.ts). `postmark`,
@@ -81,7 +81,7 @@ export interface StacksEnv {
   DOCS_PREFIX: string | undefined
 
   // Database
-  DB_CONNECTION: 'mysql' | 'sqlite' | 'postgres' | undefined
+  DB_CONNECTION: 'mysql' | 'sqlite' | 'postgres' | 'singlestore' | 'vitess' | undefined
   DB_HOST: string | undefined
   DB_PORT: number | undefined
   DB_DATABASE: string | undefined
@@ -91,6 +91,7 @@ export interface StacksEnv {
   DB_PREFIX: string | undefined
   DB_SCHEMA: string | undefined
   DB_POOL_MAX: number | undefined
+  DB_VITESS_SHARDED: boolean | undefined
   DB_POOL_IDLE_TIMEOUT_MS: number | undefined
   DB_POOL_ACQUIRE_TIMEOUT_MS: number | undefined
   /** Comma-separated read replica hostnames. */

@@ -44,6 +44,7 @@ export const envKeys = [
   'DB_PREFIX',
   'DB_SCHEMA',
   'DB_POOL_MAX',
+  'DB_VITESS_SHARDED',
   'DB_POOL_IDLE_TIMEOUT_MS',
   'DB_POOL_ACQUIRE_TIMEOUT_MS',
   'DB_READ_HOSTS',
