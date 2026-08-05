@@ -6,7 +6,7 @@ import { join } from 'node:path'
 import { afterEach, beforeEach, describe, expect, it } from 'bun:test'
 import { resolveOutdir, rewriteBrowserNamespace } from '../src/build'
 import { generateManifest } from '../src/manifest'
-import { migrateSafariResourceBuildPhase, resolveSafariPlatforms, safariPackagerArgs, scaffoldSafariApp, safariAppName, syncSafariResources } from '../src/safari'
+import { archiveSigningArgs, migrateSafariResourceBuildPhase, resolveSafariPlatforms, safariPackagerArgs, scaffoldSafariApp, safariAppName, syncSafariResources } from '../src/safari'
 
 const config: ExtensionConfig = {
   name: 'Test Extension',
@@ -251,5 +251,34 @@ describe('safari scaffold + sync', () => {
     expect(migrated).toContain('Resources.inputs.xcfilelist')
     expect(migrated).toContain('Resources.outputs.xcfilelist')
     expect(migrated).not.toContain('Resources in Resources')
+  })
+})
+
+describe('archive signing', () => {
+  it('ad-hoc signs the macOS archive so entitlements survive into the export', () => {
+    const args = archiveSigningArgs('macos')
+
+    // The `-` identity is what makes Xcode process entitlements without asking
+    // Apple for a certificate. Without it the archived app and appex carry no
+    // `com.apple.security.app-sandbox`, `-exportArchive` has none to preserve,
+    // and App Store Connect rejects the upload with "App sandbox not enabled".
+    expect(args).toContain('CODE_SIGN_IDENTITY=-')
+    expect(args).not.toContain('CODE_SIGNING_ALLOWED=NO')
+  })
+
+  it('keeps macOS off automatic provisioning so no certificate is requested', () => {
+    const args = archiveSigningArgs('macos')
+
+    // These three travel together: `-allowProvisioningUpdates` is always passed
+    // alongside an API key, so leaving the style automatic would send Xcode
+    // back to Apple for a fresh Mac Development certificate on every CI run.
+    expect(args).toContain('CODE_SIGN_STYLE=Manual')
+    expect(args).toContain('PROVISIONING_PROFILE_SPECIFIER=')
+  })
+
+  it('leaves iOS archiving unsigned', () => {
+    // A development-signed device archive needs a registered UDID, and iOS has
+    // no entitlement the export cannot supply for itself.
+    expect(archiveSigningArgs('ios')).toEqual(['CODE_SIGNING_ALLOWED=NO'])
   })
 })

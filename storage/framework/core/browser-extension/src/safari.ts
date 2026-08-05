@@ -569,6 +569,43 @@ function xcodeAuthArgs(auth: Required<AppStoreConnectAuth>): string[] {
   ]
 }
 
+/**
+ * Signing settings for the *archive* step. The export below is what signs for
+ * real, through App Store Connect with the API key, so neither platform needs a
+ * developer identity here — but "needs no identity" is not the same as "skip
+ * signing", and the difference cost us every macOS upload for two days.
+ *
+ * iOS archives with signing off outright: a development-signed device archive
+ * needs a registered UDID, and iOS has no entitlement that the export cannot
+ * supply for itself.
+ *
+ * macOS ad-hoc signs instead. Turning signing off entirely (which is what this
+ * used to do) also skips entitlement processing, so the archived app and appex
+ * carried no `com.apple.security.app-sandbox`; `-exportArchive` re-signs from
+ * whatever the archive holds, so it had none to preserve, and App Store Connect
+ * rejected every macOS build with "App sandbox not enabled". The `-` identity
+ * is local and costs nothing — entitlements get embedded, no certificate is
+ * requested from Apple, and the export re-signs over the top.
+ *
+ * Not signing at all was itself a fix, for a real problem: `xcodeAuthArgs`
+ * passes `-allowProvisioningUpdates` with an API key, so on a CI runner whose
+ * keychain starts empty every run, Xcode asked Apple for a *new* Mac
+ * Development certificate, used it once, and threw the machine away. Enough
+ * releases and the team hits Apple's certificate cap. Ad-hoc signing keeps that
+ * fixed: `Manual` style with an explicit empty profile is what stops Xcode
+ * reaching for a certificate, so all three settings have to travel together.
+ */
+export function archiveSigningArgs(platform: SafariPlatform): string[] {
+  if (platform === 'ios')
+    return ['CODE_SIGNING_ALLOWED=NO']
+
+  return [
+    'CODE_SIGN_STYLE=Manual',
+    'CODE_SIGN_IDENTITY=-',
+    'PROVISIONING_PROFILE_SPECIFIER=',
+  ]
+}
+
 async function runXcodebuild(args: string[], cwd: string, operation: string): Promise<void> {
   const child = Bun.spawn(['xcodebuild', ...args], { cwd, stdout: 'inherit', stderr: 'inherit' })
   const exitCode = await child.exited
@@ -705,22 +742,7 @@ export async function publishSafariApp(config: ExtensionConfig, options: SafariP
       `CURRENT_PROJECT_VERSION=${buildNumber}`,
       `DEVELOPMENT_TEAM=${teamId}`,
       'INFOPLIST_KEY_ITSAppUsesNonExemptEncryption=NO',
-      // Archive unsigned on both platforms; only the export below signs, and it
-      // signs through App Store Connect with the API key.
-      //
-      // iOS was always unsigned here because a development-signed device
-      // archive needs a registered UDID. macOS was not, and that quietly cost a
-      // certificate per run: `xcodeAuthArgs` passes `-allowProvisioningUpdates`
-      // with an API key, so on a CI runner — whose keychain starts empty every
-      // time — Xcode asked Apple for a *new* Mac Development certificate to
-      // sign the archive with, used it once, and threw the machine away. Enough
-      // releases and the team hits Apple's certificate cap, at which point
-      // every macOS build fails with "Choose a certificate to revoke" until
-      // somebody prunes the pile by hand.
-      //
-      // Cloud signing at export needs no local identity at all, so there is
-      // nothing to create, store, rotate, or run out of.
-      'CODE_SIGNING_ALLOWED=NO',
+      ...archiveSigningArgs(platform),
       ...(platform === 'macos' && config.safariAppCategory ? [`INFOPLIST_KEY_LSApplicationCategoryType=${config.safariAppCategory}`] : []),
       ...authArgs,
       'archive',
