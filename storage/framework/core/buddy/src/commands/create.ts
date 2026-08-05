@@ -9,6 +9,7 @@ import { isFolder } from '@stacksjs/storage'
 import { ExitCode } from '@stacksjs/types'
 import { uninstallAllFeatures } from './features'
 import { ensurePantryDependencies, ensurePantryInstalled } from './setup'
+import { resultFailed } from '../result'
 
 interface NewOptions extends CreateOptions {
   withCore?: boolean
@@ -65,7 +66,7 @@ export function create(buddy: CLI): void {
 
       const result = await download(name, path, options)
 
-      if (result.isErr) {
+      if (resultFailed(result)) {
         log.error(result.error)
         process.exit(ExitCode.FatalError)
       }
@@ -207,7 +208,7 @@ async function install(path: string, options: CreateOptions) {
   log.info('Copying .env.example → .env')
   let result = await runCommand('cp .env.example .env', { ...options, cwd: path })
 
-  if (result?.isErr) {
+  if (resultFailed(result)) {
     log.error(result.error)
     process.exit(ExitCode.FatalError)
   }
@@ -224,7 +225,7 @@ async function install(path: string, options: CreateOptions) {
 
   log.info('Generating application key...')
   const keyResult = await runAction(Action.KeyGenerate, { ...options, cwd: path })
-  if (keyResult.isErr) {
+  if (resultFailed(keyResult)) {
     log.error(keyResult.error)
     process.exit(ExitCode.FatalError)
   }
@@ -237,7 +238,7 @@ async function install(path: string, options: CreateOptions) {
   else {
     log.info('Initializing git repository...')
     result = await runCommand('git init', { ...options, cwd: path })
-    if (result.isErr) {
+    if (resultFailed(result)) {
       log.error(result.error)
       process.exit(ExitCode.FatalError)
     }
@@ -268,7 +269,7 @@ async function unvendorCore(path: string, options: NewOptions) {
 
   const result = await runCommand('./buddy unpublish:core --all --force', { ...options, cwd: path })
 
-  if (result.isErr) {
+  if (resultFailed(result)) {
     log.error(result.error)
     process.exit(ExitCode.FatalError)
   }

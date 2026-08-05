@@ -18,6 +18,7 @@ import {
 import { hasTTY, isCI } from '@stacksjs/env'
 import { path as p } from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types'
+import { resultFailed } from '../result'
 
 /**
  * Create a temporary IAM role to allow CloudFormation to delete a stuck stack
@@ -179,10 +180,9 @@ interface ResultLike {
 }
 
 function isResultError(result: unknown): result is ResultLike & { error: string } {
-  if (!result || typeof result !== 'object') return false
-  const r = result as ResultLike
-  if (typeof r.isErr === 'function') return r.isErr()
-  return !!r.isErr
+  // The shared reader, which handles both a real Result (where `isErr` is a
+  // method) and the plain `{ isErr: boolean }` several commands build.
+  return resultFailed(result)
 }
 
 function getResultError(result: unknown): string {

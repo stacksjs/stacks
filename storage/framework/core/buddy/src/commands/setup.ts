@@ -11,6 +11,7 @@ import { path as p } from '@stacksjs/path'
 import { copyFile, storage } from '@stacksjs/storage'
 import { ExitCode } from '@stacksjs/types'
 import { setupPrettyDevEnvironment } from './dev'
+import { resultFailed } from '../result'
 
 interface SetupOptions extends CliOptions {
   skipAws?: boolean
@@ -133,7 +134,7 @@ export function setup(buddy: CLI): void {
       log.debug('Running `buddy setup:oh-my-zsh` ...', _options)
       const result = await runAction(Action.UpgradeShell)
 
-      if (result.isErr) {
+      if (resultFailed(result)) {
         log.error(result.error)
         process.exit(ExitCode.FatalError)
       }
@@ -176,7 +177,7 @@ async function installPantry(): Promise<void> {
   if (result.isOk && await isPantryInstalled())
     return
 
-  if (result.isErr)
+  if (resultFailed(result))
     handleError(result.error)
   else
     log.error('Pantry installed but is not available on PATH. Open a new shell and run `buddy setup` again.')
@@ -201,7 +202,7 @@ export async function ensurePantryDependencies(cwd: string): Promise<void> {
     timeoutMs: PANTRY_DEPENDENCIES_TIMEOUT_MS,
   })
 
-  if (result.isErr) {
+  if (resultFailed(result)) {
     handleError(result.error)
     process.exit(ExitCode.FatalError)
   }
@@ -238,7 +239,7 @@ export async function ensureAppKey(cwd: string): Promise<void> {
     timeoutMs: KEYGEN_TIMEOUT_MS,
   })
 
-  if (keyResult.isErr) {
+  if (resultFailed(keyResult)) {
     handleError(keyResult.error)
     process.exit(ExitCode.FatalError)
   }
@@ -265,7 +266,7 @@ async function runInitialMigration(cwd: string): Promise<void> {
     // or no reachable database yet, and neither should fail onboarding.
     const result = await runAction(Action.Migrate, { cwd })
 
-    if (result.isErr) {
+    if (resultFailed(result)) {
       log.warn('Initial migration did not complete - you can run it later via ./buddy migrate')
       log.debug(result.error)
       return
@@ -303,7 +304,7 @@ async function initializeProject(options: SetupOptions): Promise<void> {
         timeoutMs: AWS_CONFIG_TIMEOUT_MS,
       })
 
-      if (awsResult.isErr) {
+      if (resultFailed(awsResult)) {
         // AWS is only needed for deploys, so a missing/canceled configuration
         // downgrades to a warning instead of aborting the whole setup.
         log.warn('AWS not configured - you can do this later via ./buddy configure:aws')

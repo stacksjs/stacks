@@ -5,6 +5,7 @@ import { intro, log, onUnknownSubcommand, outro } from "@stacksjs/cli"
 import { Action } from '@stacksjs/enums'
 import { projectPath } from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types'
+import { resultFailed } from '../result'
 
 export function test(buddy: CLI): void {
   const descriptions = {
@@ -35,7 +36,7 @@ export function test(buddy: CLI): void {
           cwd: projectPath(),
         })
 
-        if (result.isErr) {
+        if (resultFailed(result)) {
           await outro(
             'While running `buddy test`, there was an issue',
             { startTime: perf, useSeconds: true },
@@ -53,7 +54,7 @@ export function test(buddy: CLI): void {
           cwd: projectPath(),
         })
 
-        if (result.isErr) {
+        if (resultFailed(result)) {
           await outro(
             'While running `buddy test`, there was an issue',
             { startTime: perf, useSeconds: true },
@@ -71,7 +72,7 @@ export function test(buddy: CLI): void {
           cwd: projectPath(),
         })
 
-        if (result.isErr) {
+        if (resultFailed(result)) {
           await outro(
             'While running `buddy test`, there was an issue',
             { startTime: perf, useSeconds: true },
@@ -87,7 +88,7 @@ export function test(buddy: CLI): void {
           cwd: projectPath(),
         })
 
-        if (result.isErr) {
+        if (resultFailed(result)) {
           await outro(
             'While running `buddy test`, there was an issue',
             { startTime: perf, useSeconds: true },
@@ -117,7 +118,7 @@ export function test(buddy: CLI): void {
         cwd: projectPath(),
       })
 
-      if (result.isErr) {
+      if (resultFailed(result)) {
         await outro(
           'While running `buddy test:unit`, there was an issue',
           { startTime: perf, useSeconds: true },
@@ -143,7 +144,7 @@ export function test(buddy: CLI): void {
         cwd: projectPath(),
       })
 
-      if (result.isErr) {
+      if (resultFailed(result)) {
         await outro(
           'While running `buddy test:feature`, there was an issue',
           { startTime: perf, useSeconds: true },
@@ -169,7 +170,7 @@ export function test(buddy: CLI): void {
         cwd: projectPath(),
       })
 
-      if (result.isErr) {
+      if (resultFailed(result)) {
         await outro(
           'While running `buddy test:ui`, there was an issue',
           { startTime: perf, useSeconds: true },
@@ -196,7 +197,7 @@ export function test(buddy: CLI): void {
         cwd: projectPath(),
       })
 
-      if (result.isErr) {
+      if (resultFailed(result)) {
         await outro(
           'While running `buddy test:types`, there was an issue',
           { startTime: perf, useSeconds: true },

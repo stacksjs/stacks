@@ -4,6 +4,7 @@ import { runAction } from '@stacksjs/actions'
 import { intro, log, onUnknownSubcommand, outro } from "@stacksjs/cli"
 import { Action } from '@stacksjs/enums'
 import { ExitCode } from '@stacksjs/types'
+import { resultFailed } from '../result'
 
 export function changelog(buddy: CLI): void {
   const descriptions = {
@@ -34,7 +35,7 @@ export function changelog(buddy: CLI): void {
       const perf = await intro('buddy changelog')
       const result = await runAction(Action.Changelog, options)
 
-      if (result.isErr) {
+      if (resultFailed(result)) {
         await outro(
           'While running the changelog command, there was an issue',
           { ...options, startTime: perf, useSeconds: true },

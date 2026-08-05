@@ -6,6 +6,7 @@ import { config } from '@stacksjs/config'
 import { addDomain } from '@stacksjs/dns'
 import { Action } from '@stacksjs/enums'
 import { ExitCode } from '@stacksjs/types'
+import { resultFailed } from '../result'
 
 export function domains(buddy: CLI): void {
   const descriptions = {
@@ -132,7 +133,7 @@ export function domains(buddy: CLI): void {
       const startTime = await intro('buddy domains:purchase')
       const result = await runAction(Action.DomainsPurchase, options)
 
-      if (result.isErr) {
+      if (resultFailed(result)) {
         await outro(
           'While running the domains:purchase command, there was an issue',
           { startTime, useSeconds: true },
@@ -189,7 +190,7 @@ export function domains(buddy: CLI): void {
         startTime,
       })
 
-      if (result.isErr) {
+      if (resultFailed(result)) {
         await outro(
           'While running the `buddy deploy`, there was an issue',
           { startTime, useSeconds: true },
@@ -232,7 +233,7 @@ export function domains(buddy: CLI): void {
 
       const result = await runAction(Action.DomainsRemove, opts)
 
-      if (result.isErr) {
+      if (resultFailed(result)) {
         await outro(
           'While running the domains:remove command, there was an issue',
           { startTime, useSeconds: true },

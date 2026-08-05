@@ -15,6 +15,7 @@ import { path as p } from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types'
 import { getErrorCode, getErrorMessage } from '@stacksjs/utils'
 import { ensureAppKey, ensureEnvIsSet } from './setup'
+import { resultFailed } from '../result'
 
 // Use console.log for clean output without timestamps
 const log = {
@@ -2974,7 +2975,7 @@ export function deploy(buddy: CLI): void {
 
       const result = await runAction(Action.Deploy, options)
 
-      if (result.isErr) {
+      if (resultFailed(result)) {
         await outro(
           'While running the `buddy deploy`, there was an issue',
           { startTime, useSeconds: true },
@@ -3060,7 +3061,7 @@ async function configureDomain(domain: string, options: DeployOptions, startTime
     startTime,
   })
 
-  if (result.isErr) {
+  if (resultFailed(result)) {
     await outro('While running the `buddy deploy`, there was an issue', { startTime, useSeconds: true }, result.error)
     process.exit(ExitCode.FatalError)
   }

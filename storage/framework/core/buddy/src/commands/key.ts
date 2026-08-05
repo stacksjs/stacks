@@ -4,6 +4,7 @@ import { runAction } from '@stacksjs/actions'
 import { intro, log, onUnknownSubcommand, outro } from "@stacksjs/cli"
 import { Action } from '@stacksjs/enums'
 import { ExitCode } from '@stacksjs/types'
+import { resultFailed } from '../result'
 
 export function key(buddy: CLI): void {
   const descriptions = {
@@ -22,7 +23,7 @@ export function key(buddy: CLI): void {
       await intro('buddy key:generate')
       const result = await runAction(Action.KeyGenerate, options)
 
-      if (result.isErr) {
+      if (resultFailed(result)) {
         log.error('Failed to set random application key.', result.error)
         process.exit(ExitCode.FatalError)
       }

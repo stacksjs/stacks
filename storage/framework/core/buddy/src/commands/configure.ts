@@ -3,6 +3,7 @@ import process from 'node:process'
 import { log, onUnknownSubcommand, outro, runCommand } from "@stacksjs/cli"
 import { path as p } from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types'
+import { resultFailed } from '../result'
 
 export function configure(buddy: CLI): void {
   const descriptions = {
@@ -69,7 +70,7 @@ async function configureAws(options?: ConfigureOptions) {
     input, // the actual input to write
   })
 
-  if (result.isErr) {
+  if (resultFailed(result)) {
     await outro('While running the cloud command, there was an issue', { startTime, useSeconds: true }, result.error)
     process.exit(ExitCode.FatalError)
   }

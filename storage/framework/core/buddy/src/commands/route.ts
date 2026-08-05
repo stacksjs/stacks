@@ -4,6 +4,7 @@ import { runAction } from '@stacksjs/actions'
 import { intro, onUnknownSubcommand, outro } from "@stacksjs/cli"
 import { Action } from '@stacksjs/enums'
 import { ExitCode } from '@stacksjs/types'
+import { resultFailed } from '../result'
 
 export function route(buddy: CLI): void {
   const descriptions = {
@@ -18,7 +19,7 @@ export function route(buddy: CLI): void {
       const perf = await intro('buddy route:list')
       const result = await runAction(Action.RouteList, options)
 
-      if (result.isErr) {
+      if (resultFailed(result)) {
         await outro(
           'While running the route:list command, there was an issue',
           { startTime: perf, useSeconds: true },

@@ -4,6 +4,7 @@ import { cli, log } from '@stacksjs/cli'
 import { path as p } from '@stacksjs/path'
 import { registerGlobalOptions } from './global-options'
 import { shouldSkipAppKeyCheck } from './project-setup'
+import { resultFailed } from './result'
 
 // Enforce the minimum supported Bun version before anything else runs, so an
 // outdated runtime fails fast with a clear message instead of an obscure error
@@ -109,7 +110,7 @@ async function main() {
         log.info('Generating application key...')
         const result = await runAction(Action.KeyGenerate)
 
-        if (result.isErr) {
+        if (resultFailed(result)) {
           log.error('Failed to set random application key.', result.error)
           process.exit(1)
         }

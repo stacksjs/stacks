@@ -4,6 +4,7 @@ import { runAction } from '@stacksjs/actions'
 import { intro, log, outro } from '@stacksjs/cli'
 import { Action } from '@stacksjs/enums'
 import { ExitCode } from '@stacksjs/types'
+import { resultFailed } from '../result'
 
 export function search(buddy: CLI): void {
   const descriptions = {
@@ -47,7 +48,7 @@ export function search(buddy: CLI): void {
       const perf = await intro(introString)
       const result = await runAction(actionString, options)
 
-      if (result.isErr) {
+      if (resultFailed(result)) {
         await outro(
           'While running the search-engine:update command, there was an issue',
           { startTime: perf, useSeconds: true },
@@ -77,7 +78,7 @@ export function search(buddy: CLI): void {
       const perf = await intro('search-engine:settings')
       const result = await runAction(Action.SearchEngineListSettings, options)
 
-      if (result.isErr) {
+      if (resultFailed(result)) {
         await outro(
           'While running the search-engine:settings command, there was an issue',
           { startTime: perf, useSeconds: true },
@@ -107,7 +108,7 @@ export function search(buddy: CLI): void {
       log.debug('Running `search:reindex` ...', opts)
       const perf = await intro(`search:reindex${model ? ` ${model}` : ''}`)
       const result = await runAction(Action.SearchEngineImport, opts)
-      if (result.isErr) {
+      if (resultFailed(result)) {
         await outro(
           'While running the search:reindex command, there was an issue',
           { startTime: perf, useSeconds: true },
@@ -131,7 +132,7 @@ export function search(buddy: CLI): void {
       log.debug('Running `search:flush` ...', opts)
       const perf = await intro(`search:flush${model ? ` ${model}` : ''}`)
       const result = await runAction(Action.SearchEngineFlush, opts)
-      if (result.isErr) {
+      if (resultFailed(result)) {
         await outro(
           'While running the search:flush command, there was an issue',
           { startTime: perf, useSeconds: true },

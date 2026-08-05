@@ -11,6 +11,7 @@ import { Action } from '@stacksjs/enums'
 import { libsPath, projectPath, stxPath } from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types'
 import { version } from '../../package.json'
+import { resultFailed } from '../result'
 
 /** Lines printed before the ready banner (`blank`, `stacks … starting…`, `blank`). */
 const DEV_BOOT_STARTING_LINE_COUNT = 3
@@ -346,7 +347,7 @@ export function dev(buddy: CLI): void {
       // // check if port 443 is open
       // const result = await runCommand('lsof -i :443', { silent: true })
 
-      // if (result.isErr)
+      // if (resultFailed(result))
       //   log.warn('While checking if port 443 is open, we noticed it may be in use')
 
       // Determine the target server from positional arg or flags
@@ -443,7 +444,7 @@ export function dev(buddy: CLI): void {
       if (options.verbose)
         log.info('buddy dev:components result', result)
 
-      if (result.isErr) {
+      if (resultFailed(result)) {
         await outro(
           'While running the dev:components command, there was an issue',
           { startTime: perf, useSeconds: true },
@@ -466,7 +467,7 @@ export function dev(buddy: CLI): void {
       const perf = await intro('buddy dev:docs')
       const result = await (await actions()).runAction(Action.DevDocs, options)
 
-      if (result.isErr) {
+      if (resultFailed(result)) {
         await outro(
           'While running the dev:docs command, there was an issue',
           { startTime: perf, useSeconds: true },

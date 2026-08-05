@@ -5,6 +5,7 @@ import { intro, log, onUnknownSubcommand, outro } from "@stacksjs/cli"
 import { hasTTY, isCI } from '@stacksjs/env'
 import { Action } from '@stacksjs/enums'
 import { ExitCode } from '@stacksjs/types'
+import { resultFailed } from '../result'
 
 export function fresh(buddy: CLI): void {
   const descriptions = {
@@ -55,7 +56,7 @@ export function fresh(buddy: CLI): void {
         stdout: 'inherit',
       })
 
-      if (result.isErr) {
+      if (resultFailed(result)) {
         await outro(
           'While running `buddy fresh`, there was an issue',
           { startTime: perf, useSeconds: true },

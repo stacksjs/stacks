@@ -5,6 +5,7 @@ import { runAction } from '@stacksjs/actions'
 import { intro, italic, log, onUnknownSubcommand, outro } from '@stacksjs/cli'
 import { Action } from '@stacksjs/enums'
 import { ExitCode } from '@stacksjs/types'
+import { resultFailed } from '../result'
 
 const descriptions = {
   release: 'Release a new version of your libraries/packages',
@@ -30,7 +31,7 @@ export function release(buddy: CLI): void {
       const startTime = await intro('buddy release')
       const result = await runAction(Action.Release, options)
 
-      if (result.isErr) {
+      if (resultFailed(result)) {
         log.error('Failed to release', result.error)
         process.exit(ExitCode.FatalError)
       }

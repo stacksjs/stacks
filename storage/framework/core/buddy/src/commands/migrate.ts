@@ -8,6 +8,7 @@ import { appPath, frameworkPath, frameworkRuntimePath, projectPath } from '@stac
 import { ExitCode } from '@stacksjs/types'
 import { preflightDatabase } from '../database-preflight'
 import { DDL_CONSTRAINT_OVERRIDE_ENV, DIALECT_OVERRIDE_ENV, auditDdlConstraints, auditMigrationCorpus, dialectCapabilities, formatDdlConstraintError, formatMigrationDialectError, stripSqlNoise } from '@stacksjs/database'
+import { resultFailed } from '../result'
 
 // Lazy-load @stacksjs/actions to keep `buddy --help` cheap. The barrel
 // pulls in the database driver setup transitively, which we don't want
@@ -576,7 +577,7 @@ export function migrate(buddy: CLI): void {
 
       const result = await runAction(Action.Migrate, options).finally(() => lock.release())
 
-      if (result.isErr) {
+      if (resultFailed(result)) {
         log.error('Model migrations failed — applying notification/RBAC table guarantees before exiting.')
       }
 
@@ -618,7 +619,7 @@ export function migrate(buddy: CLI): void {
 
       // Surface the model-migration failure only after the guarantee
       // tables above have had their chance to run (#1952).
-      if (result.isErr) {
+      if (resultFailed(result)) {
         await outro(
           'While running the migrate command, there was an issue',
           { startTime: perf, useSeconds: true },
@@ -785,7 +786,7 @@ export function migrate(buddy: CLI): void {
 
       const result = await runAction(Action.MigrateFresh, options)
 
-      if (result.isErr) {
+      if (resultFailed(result)) {
         // Same ordering rule as `buddy migrate` (#1952): the guarantee
         // tables below are independent, idempotent SQL — a failed model
         // migration must not skip them. Exit comes after they ran.
@@ -851,7 +852,7 @@ export function migrate(buddy: CLI): void {
 
       // Surface the model-migration failure only after the guarantee
       // tables above have had their chance to run (#1952).
-      if (result.isErr) {
+      if (resultFailed(result)) {
         await outro(
           'While running the migrate:fresh command, there was an issue',
           { startTime: perf, useSeconds: true },
@@ -926,7 +927,7 @@ export function migrate(buddy: CLI): void {
       const perf = await intro('buddy migrate:dns')
       const result = await runAction(Action.MigrateDns, { ...options })
 
-      if (result.isErr) {
+      if (resultFailed(result)) {
         await outro(
           'While running the migrate:dns command, there was an issue',
           { startTime: perf, useSeconds: true },
@@ -1108,7 +1109,7 @@ export function migrate(buddy: CLI): void {
       }
 
       const plan = await regenerateMigrationCorpus({ dialect: target, dryRun: true })
-      if (plan.isErr) {
+      if (resultFailed(plan)) {
         log.syncError(plan.error.message)
         process.exit(ExitCode.FatalError)
       }
@@ -1140,7 +1141,7 @@ export function migrate(buddy: CLI): void {
       }
 
       const result = await regenerateMigrationCorpus({ dialect: target })
-      if (result.isErr) {
+      if (resultFailed(result)) {
         log.syncError(result.error.message)
         process.exit(ExitCode.FatalError)
       }

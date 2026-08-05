@@ -13,6 +13,7 @@ import { basename, join, resolve } from 'node:path'
 import process from 'node:process'
 import { log } from '@stacksjs/cli'
 import { projectPath, storagePath } from '@stacksjs/path'
+import { resultFailed } from '../result'
 
 interface AppleDesktopOptions {
   appName?: string
@@ -274,7 +275,7 @@ async function buildDesktop(): Promise<void> {
   const { runAction } = await import('@stacksjs/actions')
   const { Action } = await import('@stacksjs/enums')
   const result = await runAction(Action.BuildDesktop)
-  if (result.isErr) throw result.error
+  if (resultFailed(result)) throw result.error
 }
 
 function sha256(path: string): string {

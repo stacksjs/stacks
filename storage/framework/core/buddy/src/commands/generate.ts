@@ -17,6 +17,7 @@ import {
 } from '@stacksjs/actions'
 import { intro, log, onUnknownSubcommand, outro } from "@stacksjs/cli"
 import { ExitCode } from '@stacksjs/types'
+import { resultError, resultFailed } from '../result'
 
 export function generate(buddy: CLI): void {
   const descriptions = {
@@ -229,8 +230,14 @@ export function generate(buddy: CLI): void {
     log.debug('Running `buddy generate:migrations` ...', options)
     const { generateMigrations } = await import('@stacksjs/database')
     const result = await generateMigrations()
-    if ((result as any)?.isErr) {
-      log.error('generateMigrations failed', (result as any).error)
+
+    if (resultFailed(result)) {
+      // The message, not a summary of it. A generator refuses for reasons the
+      // author can act on - a dialect mismatch, a model that would drop a
+      // framework table's columns - and each one names the fix. Logging
+      // `'generateMigrations failed'` with the error as a second argument threw
+      // all of that away and left an exit code.
+      log.error(resultError(result, 'generateMigrations failed'))
       process.exit(ExitCode.FatalError)
     }
   })

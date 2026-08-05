@@ -4,6 +4,7 @@ import { runAction } from '@stacksjs/actions'
 import { intro, log, onUnknownSubcommand, outro } from "@stacksjs/cli"
 import { Action } from '@stacksjs/enums'
 import { ExitCode } from '@stacksjs/types'
+import { resultFailed } from '../result'
 
 export function auth(buddy: CLI): void {
   const descriptions = {
@@ -26,7 +27,7 @@ export function auth(buddy: CLI): void {
       const perf = await intro('buddy auth:setup')
       const result = await runAction(Action.AuthSetup, options)
 
-      if (result.isErr) {
+      if (resultFailed(result)) {
         await outro(
           'While setting up authentication, there was an issue',
           { startTime: perf, useSeconds: true },
@@ -53,7 +54,7 @@ export function auth(buddy: CLI): void {
       const perf = await intro('buddy auth:token')
       const result = await runAction(Action.CreatePersonalAccessClient, options)
 
-      if (result.isErr) {
+      if (resultFailed(result)) {
         await outro(
           'While creating the personal access client token, there was an issue',
           { startTime: perf, useSeconds: true },
@@ -84,7 +85,7 @@ export function auth(buddy: CLI): void {
       const perf = await intro('buddy auth:client')
       const result = await runAction(Action.AuthClient, options)
 
-      if (result.isErr) {
+      if (resultFailed(result)) {
         await outro(
           'While creating the OAuth client, there was an issue',
           { startTime: perf, useSeconds: true },
@@ -114,7 +115,7 @@ export function auth(buddy: CLI): void {
       const perf = await intro('buddy auth:prune')
       const result = await runAction(Action.AuthPrune, options)
 
-      if (result.isErr) {
+      if (resultFailed(result)) {
         await outro(
           'While pruning tokens, there was an issue',
           { startTime: perf, useSeconds: true },

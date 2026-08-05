@@ -4,6 +4,7 @@ import { runAction } from '@stacksjs/actions'
 import { intro, log, onUnknownSubcommand, outro } from "@stacksjs/cli"
 import { Action } from '@stacksjs/enums'
 import { ExitCode } from '@stacksjs/types'
+import { resultFailed } from '../result'
 
 export function upgrade(buddy: CLI): void {
   const descriptions = {
@@ -66,7 +67,7 @@ export function upgrade(buddy: CLI): void {
       const perf = await intro('buddy upgrade')
       const result = await runAction(Action.UpgradeFramework, opts)
 
-      if (result.isErr) {
+      if (resultFailed(result)) {
         await outro(
           'While running buddy upgrade, there was an issue',
           { startTime: perf, useSeconds: true },
@@ -96,7 +97,7 @@ export function upgrade(buddy: CLI): void {
       options.all = true
       const result = await runAction(Action.Upgrade, options)
 
-      if (result.isErr) {
+      if (resultFailed(result)) {
         await outro(
           'While running buddy upgrade:all, there was an issue',
           { startTime: perf, useSeconds: true },
@@ -122,7 +123,7 @@ export function upgrade(buddy: CLI): void {
       options.dependencies = true
       const result = await runAction(Action.Upgrade, options)
 
-      if (result.isErr) {
+      if (resultFailed(result)) {
         await outro(
           'While running buddy upgrade:dependencies, there was an issue',
           { startTime: perf, useSeconds: true },
@@ -145,7 +146,7 @@ export function upgrade(buddy: CLI): void {
       const perf = await intro('buddy upgrade:bun')
       const result = await runAction(Action.UpgradeBun, options)
 
-      if (result.isErr) {
+      if (resultFailed(result)) {
         await outro(
           'While running buddy upgrade:bun, there was an issue',
           { startTime: perf, useSeconds: true },
@@ -168,7 +169,7 @@ export function upgrade(buddy: CLI): void {
       const perf = await intro('buddy upgrade:shell')
       const result = await runAction(Action.UpgradeShell, options)
 
-      if (result.isErr) {
+      if (resultFailed(result)) {
         await outro(
           'While running buddy upgrade:shell, there was an issue',
           { startTime: perf, useSeconds: true },
@@ -196,7 +197,7 @@ export function upgrade(buddy: CLI): void {
       const perf = await intro('buddy upgrade:binary')
       const result = await runAction(Action.UpgradeBinary, options)
 
-      if (result.isErr) {
+      if (resultFailed(result)) {
         await outro(
           'While running buddy upgrade:binary, there was an issue',
           { startTime: perf, useSeconds: true },

@@ -4,6 +4,7 @@ import { intro, log, multiselect, onUnknownSubcommand, outro } from "@stacksjs/c
 import { Action } from '@stacksjs/enums'
 import { hasTTY, isCI } from '@stacksjs/env'
 import { ExitCode } from '@stacksjs/types'
+import { resultFailed } from '../result'
 
 // Lazy-load @stacksjs/actions — importing it at module level forces every
 // `buddy <anything>` invocation to resolve the actions barrel before
@@ -228,7 +229,7 @@ export function build(buddy: CLI): void {
       const startTime = await intro('buddy build:core')
       const result = await runAction(Action.BuildCore, options)
 
-      if (result.isErr) {
+      if (resultFailed(result)) {
         log.error('Failed to build the Stacks core.', result.error)
         process.exit(ExitCode.FatalError)
       }
@@ -250,7 +251,7 @@ export function build(buddy: CLI): void {
       const perf = await intro('buddy build:desktop')
       const result = await runAction(Action.BuildDesktop, options)
 
-      if (result.isErr) {
+      if (resultFailed(result)) {
         await outro(
           'While running the build:desktop command, there was an issue',
           { startTime: perf, useSeconds: true },
@@ -274,7 +275,7 @@ export function build(buddy: CLI): void {
       const perf = await intro('buddy build:dmg')
       const result = await runAction(Action.BuildDmg, options)
 
-      if (result.isErr) {
+      if (resultFailed(result)) {
         await outro(
           'While running the build:dmg command, there was an issue',
           { startTime: perf, useSeconds: true },
@@ -299,7 +300,7 @@ export function build(buddy: CLI): void {
       const startTime = await intro('buddy build:stacks')
       const result = await runAction(Action.BuildStacks, options)
 
-      if (result.isErr) {
+      if (resultFailed(result)) {
         log.error('Failed to build Stacks.', result.error)
         process.exit(ExitCode.FatalError)
       }
@@ -365,7 +366,7 @@ export function applyBuildTarget(target: string | undefined, options: BuildOptio
 async function runBuildAction(action: Action, target: string): Promise<boolean> {
   const result = await runAction(action)
 
-  if (result.isErr) {
+  if (resultFailed(result)) {
     log.error(`Failed to build ${target}.`, result.error)
     return false
   }

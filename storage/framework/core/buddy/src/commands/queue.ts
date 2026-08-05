@@ -4,6 +4,7 @@ import { runAction } from '@stacksjs/actions'
 import { intro, log, onUnknownSubcommand, outro } from "@stacksjs/cli"
 import { Action } from '@stacksjs/enums'
 import { ExitCode } from '@stacksjs/types'
+import { resultFailed } from '../result'
 
 export function queue(buddy: CLI): void {
   const descriptions = {
@@ -61,7 +62,7 @@ export function queue(buddy: CLI): void {
       const perf = await intro('buddy queue:work')
       const result = await runAction(Action.QueueWork, options)
 
-      if (result.isErr) {
+      if (resultFailed(result)) {
         await outro(
           'While running the queue:work command, there was an issue',
           { startTime: perf, useSeconds: true },
@@ -85,7 +86,7 @@ export function queue(buddy: CLI): void {
       const perf = await intro('buddy queue:failed')
       const result = await runAction(Action.QueueFailed, options)
 
-      if (result.isErr) {
+      if (resultFailed(result)) {
         await outro(
           'While running the queue:failed command, there was an issue',
           { startTime: perf, useSeconds: true },
@@ -113,7 +114,7 @@ export function queue(buddy: CLI): void {
       const perf = await intro('buddy queue:retry')
       const result = await runAction(Action.QueueRetry, { ...options, id } as any)
 
-      if (result.isErr) {
+      if (resultFailed(result)) {
         await outro(
           'While running the queue:retry command, there was an issue',
           { startTime: perf, useSeconds: true },
@@ -142,7 +143,7 @@ export function queue(buddy: CLI): void {
       const perf = await intro('buddy queue:clear')
       const result = await runAction(Action.QueueClear, options)
 
-      if (result.isErr) {
+      if (resultFailed(result)) {
         await outro(
           'While running the queue:clear command, there was an issue',
           { startTime: perf, useSeconds: true },
@@ -172,7 +173,7 @@ export function queue(buddy: CLI): void {
       const perf = await intro('buddy queue:list')
       const result = await runAction(Action.QueueList, options)
 
-      if (result.isErr) {
+      if (resultFailed(result)) {
         await outro(
           'While running the queue:list command, there was an issue',
           { startTime: perf, useSeconds: true },
@@ -199,7 +200,7 @@ export function queue(buddy: CLI): void {
       const perf = await intro('buddy queue:status')
       const result = await runAction(Action.QueueStatus, options)
 
-      if (result.isErr) {
+      if (resultFailed(result)) {
         await outro(
           'While running the queue:status command, there was an issue',
           { startTime: perf, useSeconds: true },
@@ -227,7 +228,7 @@ export function queue(buddy: CLI): void {
       const perf = await intro('buddy queue:flush')
       const result = await runAction(Action.QueueFlush, options)
 
-      if (result.isErr) {
+      if (resultFailed(result)) {
         await outro(
           'While running the queue:flush command, there was an issue',
           { startTime: perf, useSeconds: true },
@@ -258,7 +259,7 @@ export function queue(buddy: CLI): void {
       log.debug('Running `buddy queue:dlq` ...', options)
       const perf = await intro('buddy queue:dlq')
       const result = await runAction(Action.QueueDlq, options)
-      if (result.isErr) {
+      if (resultFailed(result)) {
         await outro('While running queue:dlq there was an issue', { startTime: perf, useSeconds: true }, result.error)
         process.exit(ExitCode.FatalError)
       }
@@ -274,7 +275,7 @@ export function queue(buddy: CLI): void {
       log.debug('Running `buddy queue:dlq:retry` ...', options)
       const perf = await intro('buddy queue:dlq:retry')
       const result = await runAction(Action.QueueDlqRetry, options)
-      if (result.isErr) {
+      if (resultFailed(result)) {
         await outro('While running queue:dlq:retry there was an issue', { startTime: perf, useSeconds: true }, result.error)
         process.exit(ExitCode.FatalError)
       }
@@ -290,7 +291,7 @@ export function queue(buddy: CLI): void {
       log.debug('Running `buddy queue:dlq:purge` ...', options)
       const perf = await intro('buddy queue:dlq:purge')
       const result = await runAction(Action.QueueDlqPurge, options)
-      if (result.isErr) {
+      if (resultFailed(result)) {
         await outro('While running queue:dlq:purge there was an issue', { startTime: perf, useSeconds: true }, result.error)
         process.exit(ExitCode.FatalError)
       }
@@ -306,7 +307,7 @@ export function queue(buddy: CLI): void {
       log.debug('Running `buddy queue:quarantine` ...', options)
       const perf = await intro('buddy queue:quarantine')
       const result = await runAction(Action.QueueQuarantine, options)
-      if (result.isErr) {
+      if (resultFailed(result)) {
         await outro('While running queue:quarantine there was an issue', { startTime: perf, useSeconds: true }, result.error)
         process.exit(ExitCode.FatalError)
       }
@@ -322,7 +323,7 @@ export function queue(buddy: CLI): void {
       log.debug('Running `buddy queue:unquarantine` ...', options)
       const perf = await intro('buddy queue:unquarantine')
       const result = await runAction(Action.QueueUnquarantine, options)
-      if (result.isErr) {
+      if (resultFailed(result)) {
         await outro('While running queue:unquarantine there was an issue', { startTime: perf, useSeconds: true }, result.error)
         process.exit(ExitCode.FatalError)
       }
@@ -339,7 +340,7 @@ export function queue(buddy: CLI): void {
       log.debug('Running `buddy queue:pause` ...', options)
       const perf = await intro('buddy queue:pause')
       const result = await runAction(Action.QueuePause, options)
-      if (result.isErr) {
+      if (resultFailed(result)) {
         await outro('While running queue:pause there was an issue', { startTime: perf, useSeconds: true }, result.error)
         process.exit(ExitCode.FatalError)
       }
@@ -355,7 +356,7 @@ export function queue(buddy: CLI): void {
       log.debug('Running `buddy queue:resume` ...', options)
       const perf = await intro('buddy queue:resume')
       const result = await runAction(Action.QueueResume, options)
-      if (result.isErr) {
+      if (resultFailed(result)) {
         await outro('While running queue:resume there was an issue', { startTime: perf, useSeconds: true }, result.error)
         process.exit(ExitCode.FatalError)
       }
@@ -373,7 +374,7 @@ export function queue(buddy: CLI): void {
       const perf = await intro('buddy queue:table')
       const result = await runAction(Action.QueueTable, options)
 
-      if (result.isErr) {
+      if (resultFailed(result)) {
         await outro(
           'While running the queue:table command, there was an issue',
           { startTime: perf, useSeconds: true },
@@ -400,7 +401,7 @@ export function queue(buddy: CLI): void {
 
       const result = await runAction(Action.QueueMonitor, options)
 
-      if (result.isErr) {
+      if (resultFailed(result)) {
         log.error('While running the queue:monitor command, there was an issue', result.error)
         process.exit(ExitCode.FatalError)
       }
@@ -419,7 +420,7 @@ export function queue(buddy: CLI): void {
       const perf = await intro('buddy queue:inspect')
       const result = await runAction(Action.QueueInspect, { ...options, id } as any)
 
-      if (result.isErr) {
+      if (resultFailed(result)) {
         await outro(
           'While running the queue:inspect command, there was an issue',
           { startTime: perf, useSeconds: true },
@@ -444,7 +445,7 @@ export function queue(buddy: CLI): void {
 
       const result = await runAction(Action.QueueSchedule, options)
 
-      if (result.isErr) {
+      if (resultFailed(result)) {
         log.error('While running the queue:schedule command, there was an issue', result.error)
         process.exit(ExitCode.FatalError)
       }
@@ -462,7 +463,7 @@ export function queue(buddy: CLI): void {
       const perf = await intro('buddy queue:schedule:list')
       const result = await runAction(Action.QueueScheduleList, options)
 
-      if (result.isErr) {
+      if (resultFailed(result)) {
         await outro(
           'While running the queue:schedule:list command, there was an issue',
           { startTime: perf, useSeconds: true },

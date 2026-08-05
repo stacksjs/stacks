@@ -3,6 +3,7 @@ import process from 'node:process'
 import { log, onUnknownSubcommand, runCommand } from "@stacksjs/cli"
 import { path as p } from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types'
+import { resultFailed } from '../result'
 
 export function install(buddy: CLI): void {
   const descriptions = {
@@ -28,7 +29,7 @@ export function install(buddy: CLI): void {
       // halt when dependencies don't resolve. The previous version awaited
       // and discarded the result, leaving the parent process at exit 0
       // even when bun install crashed.
-      if (result.isErr) {
+      if (resultFailed(result)) {
         log.error('bun install failed')
         process.exit(ExitCode.FatalError)
       }
