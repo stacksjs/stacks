@@ -404,7 +404,15 @@ function validateOrUpload(packagePath: string, config: AppleDesktopConfig, valid
 }
 
 function fail(error: unknown): never {
-  log.error(error instanceof Error ? error.message : String(error))
+  const message = error instanceof Error ? error.message : String(error)
+
+  // Write synchronously before exiting. `log.error()` resolves on its own
+  // schedule, and `process.exit()` on the next line tore the process down
+  // first, so every failure in these commands printed nothing at all —
+  // including `desktop:apple:doctor`, whose entire job is naming what is
+  // missing. It reported a bare exit code 1 and no diagnosis.
+  process.stderr.write(`${message}\n`)
+  log.error(message)
   process.exit(1)
 }
 
