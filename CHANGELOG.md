@@ -1,5 +1,46 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.261...v0.70.262)
+
+## ✨ Features
+
+- **vitess**: support unsharded keyspaces end to end ([882126c](https://github.com/stacksjs/stacks/commit/882126c)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🐛 Bug Fixes
+
+- **build**: restore framework typecheck ([ff26613](https://github.com/stacksjs/stacks/commit/ff26613)) _(by Chris <chrisbreuer93@gmail.com>)_
+- docs proxy gating, register session, password-reset enumeration (#2217) ([7b2b46a](https://github.com/stacksjs/stacks/commit/7b2b46a)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2213](https://github.com/stacksjs/stacks/issues/2213), [#2212](https://github.com/stacksjs/stacks/issues/2212), [#2214](https://github.com/stacksjs/stacks/issues/2214), [#2217](https://github.com/stacksjs/stacks/issues/2217), [#2217](https://github.com/stacksjs/stacks/issues/2217))
+- **queue**: stop binding null into IS / IS NOT comparisons (#2216) ([a57c8ed](https://github.com/stacksjs/stacks/commit/a57c8ed)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2215](https://github.com/stacksjs/stacks/issues/2215), [#2216](https://github.com/stacksjs/stacks/issues/2216), [#2216](https://github.com/stacksjs/stacks/issues/2216), [#2215](https://github.com/stacksjs/stacks/issues/2215))
+- **database**: the CREATE TYPE guard has to mean something on an existing type ([8eb71a0](https://github.com/stacksjs/stacks/commit/8eb71a0)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## ♻️ Code Refactoring
+
+- **desktop**: point packaging evidence at the protocol repository ([e2cdc0e](https://github.com/stacksjs/stacks/commit/e2cdc0e)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **buddy**: drop the protocol commands ([883e0d5](https://github.com/stacksjs/stacks/commit/883e0d5)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 📝 Documentation
+
+- regenerate the buddy command reference without protocol ([bdbf79a](https://github.com/stacksjs/stacks/commit/bdbf79a)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 💚 Continuous Integration
+
+- drop the protocol conformance job and release gate checks ([4793417](https://github.com/stacksjs/stacks/commit/4793417)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🔧 Chores
+
+- **deps**: update database and cloud runtimes ([cd749c8](https://github.com/stacksjs/stacks/commit/cd749c8)) _(by Chris <chrisbreuer93@gmail.com>)_
+- drop the protocol scripts from the release gate ([794e68b](https://github.com/stacksjs/stacks/commit/794e68b)) _(by Chris <chrisbreuer93@gmail.com>)_
+- drop the vendored protocol suite and evidence ([221302f](https://github.com/stacksjs/stacks/commit/221302f)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## security
+
+- drop plaintext tenant mail passwords from .env.production (#2211) ([d325181](https://github.com/stacksjs/stacks/commit/d325181)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2211](https://github.com/stacksjs/stacks/issues/2211), [#2211](https://github.com/stacksjs/stacks/issues/2211))
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+- _Glenn Michael Torregosa <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.260...v0.70.261)
 
 ## 🐛 Bug Fixes

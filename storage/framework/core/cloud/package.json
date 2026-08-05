@@ -2,7 +2,7 @@
   "name": "@stacksjs/cloud",
   "type": "module",
   "sideEffects": false,
-  "version": "0.70.261",
+  "version": "0.70.262",
   "description": "The Stacks cloud/serverless integration & implementation.",
   "author": "Chris Breuer",
   "contributors": [
