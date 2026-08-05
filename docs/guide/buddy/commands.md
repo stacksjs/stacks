@@ -3129,7 +3129,7 @@ Compare database/migrations, the migrations ledger, and the live schema
 
 ### `migrate:switch`
 
-Pre-flight check + plan for switching DB_CONNECTION between sqlite / mysql / postgres
+Pre-flight check + plan for switching DB_CONNECTION between sqlite / mysql / vitess / postgres
 
 - Usage: `$ buddy migrate:switch <driver>`
 - Namespace: `migrate`
