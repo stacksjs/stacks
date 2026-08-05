@@ -1,9 +1,20 @@
 import { Action } from '@stacksjs/actions'
 import { RateLimiter } from '@stacksjs/auth'
+import { log } from '@stacksjs/logging'
 import { User } from '@stacksjs/orm'
 import { job } from '@stacksjs/queue'
 import { response } from '@stacksjs/router'
 import { schema } from '@stacksjs/validation'
+
+/**
+ * The one thing this endpoint ever says.
+ *
+ * Held in a constant because the security property is that EVERY path returns
+ * it byte for byte — unknown address, known address, and a mail dispatch that
+ * blew up. The moment one branch returns something else, the endpoint becomes
+ * an account-existence oracle again (stacksjs/stacks#2214).
+ */
+const NEUTRAL_RESPONSE = 'If an account exists for that email address, a password reset link has been sent.'
 
 export default new Action({
   name: 'SendPasswordResetEmailAction',
@@ -15,52 +26,45 @@ export default new Action({
     },
   },
   async handle(request) {
-    console.log('[Action] SendPasswordResetEmailAction.handle() called')
-
     const email = request.get('email')
-    console.log('[Action] Email from request:', email)
 
-    if (!email) {
-      console.log('[Action] No email provided, returning 422')
+    if (!email)
       return response.error('Email is required', 422)
-    }
 
-    // Rate limit password reset requests by email
+    // Rate limiting is per-email, so it does not slow enumeration ACROSS
+    // addresses at all — the shape of the attack this endpoint invites. It
+    // stays because it still limits hammering one mailbox, but it is not the
+    // control that protects existence; the uniform response below is.
     const rateLimitKey = `password_reset:${email.toLowerCase()}`
-    if (await RateLimiter.isRateLimited(rateLimitKey)) {
-      console.log('[Action] Rate limited for:', rateLimitKey)
+    if (await RateLimiter.isRateLimited(rateLimitKey))
       return response.error('Too many password reset attempts. Please try again later.', 429)
-    }
 
-    // Record the attempt
     await RateLimiter.recordFailedAttempt(rateLimitKey)
-    console.log('[Action] Recorded rate limit attempt')
 
-    // Check if user exists
-    console.log('[Action] Looking up user by email...')
     const user = await User.where('email', email).first()
 
-    if (!user) {
-      console.log('[Action] User not found for email:', email)
-      return response.error('No account found with this email address.', 404)
+    // No early return for a missing user. It used to answer
+    // `404 "No account found with this email address."`, which let anyone test
+    // an arbitrary list of addresses for membership against an unauthenticated
+    // endpoint. The sibling `PasswordResetAction` already refuses to leak the
+    // same fact, so this was an inconsistency between two files in one
+    // directory rather than a disagreement about the threat.
+    if (user) {
+      try {
+        await job('SendPasswordResetEmailJob', { email })
+          .onQueue('emails')
+          .dispatch()
+      }
+      catch (error) {
+        // Swallowed DELIBERATELY, and this is the subtle half. Returning a 500
+        // here would reintroduce the oracle whenever the mailer is degraded:
+        // an unknown address never reaches dispatch, so it can never 5xx, and
+        // "neutral message vs. send failure" becomes the tell. The operator
+        // gets the failure in the logs; the caller gets what everyone gets.
+        log.error('[password-reset] failed to dispatch reset email', error)
+      }
     }
-    console.log('[Action] User found:', user.id)
 
-    // Dispatch password reset email job to queue (with 10 second delay)
-    console.log('[Action] About to dispatch SendPasswordResetEmailJob with 10s delay...')
-    try {
-      await job('SendPasswordResetEmailJob', { email })
-        .onQueue('emails')
-        .dispatch()
-      console.log('[Action] Job dispatched successfully with 10s delay!')
-    }
-    catch (error) {
-      console.error('[Action] Failed to dispatch email job for', email)
-      console.error('[Action] Error:', error)
-      return response.error('Failed to send password reset email. Please try again later.', 500)
-    }
-
-    console.log('[Action] Returning success response')
-    return response.success('Password reset link has been sent to your email.')
+    return response.success(NEUTRAL_RESPONSE)
   },
 })
