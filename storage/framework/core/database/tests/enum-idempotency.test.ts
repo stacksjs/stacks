@@ -31,6 +31,48 @@ describe('guardPostgresEnumTypes', () => {
     expect(guarded).toContain('(\'a\', \'b\', \'c\')')
   })
 
+  /**
+   * The bug the guard introduced, and the reason it does more than guard.
+   *
+   * Adding a value to an enum in a model regenerates the `CREATE TYPE` with the
+   * full new set. On a database that already has the type, the guard swallows
+   * it and the value never arrives, so every insert using it fails and the next
+   * diff proposes the same statement forever - the silent-no-op loop the guard
+   * was written to end, one step further along.
+   */
+  it('asserts every member, so an existing type gains a new value', () => {
+    const guarded = guardPostgresEnumTypes('CREATE TYPE "t" AS ENUM (\'a\', \'b\');')
+
+    expect(guarded).toContain('ALTER TYPE "t" ADD VALUE IF NOT EXISTS \'a\'')
+    expect(guarded).toContain('ALTER TYPE "t" ADD VALUE IF NOT EXISTS \'b\'')
+  })
+
+  /** A comma inside a value is part of the value, not a separator. */
+  it('does not tear a member containing a comma in two', () => {
+    const guarded = guardPostgresEnumTypes('CREATE TYPE "t" AS ENUM (\'multi-channel, beta\');')
+
+    expect(guarded).toContain('ADD VALUE IF NOT EXISTS \'multi-channel, beta\'')
+    expect([...guarded.matchAll(/ADD VALUE/g)]).toHaveLength(1)
+  })
+
+  /** Postgres doubles a quote inside a literal, and both halves are one member. */
+  it('keeps a member containing a quote whole', () => {
+    const guarded = guardPostgresEnumTypes('CREATE TYPE "t" AS ENUM (\'it\'\'s\');')
+
+    expect(guarded).toContain('ADD VALUE IF NOT EXISTS \'it\'\'s\'')
+    expect([...guarded.matchAll(/ADD VALUE/g)]).toHaveLength(1)
+  })
+
+  /**
+   * The pass rewrites the files on disk, so running it twice must not stack a
+   * second copy of everything on every enum in the corpus.
+   */
+  it('is idempotent', () => {
+    const once = guardPostgresEnumTypes('CREATE TYPE "t" AS ENUM (\'a\', \'b\');')
+
+    expect(guardPostgresEnumTypes(once)).toBe(once)
+  })
+
   it('guards several in one file', () => {
     const sql = [
       'CREATE TYPE "a_type" AS ENUM (\'x\');',
@@ -122,11 +164,20 @@ describe('sqlStatementsOf', () => {
     expect(sqlStatementsOf('-- nothing here\n')).toEqual([])
   })
 
-  /** The guard and the splitter have to agree, or neither is any use. */
-  it('round-trips a guarded CREATE TYPE as exactly one statement', () => {
-    const guarded = guardPostgresEnumTypes('CREATE TYPE "t" AS ENUM (\'a\', \'b\');')
+  /**
+   * The guard and the splitter have to agree, or neither is any use. The DO
+   * block is the part that needs them to: it contains a `;` of its own, and a
+   * splitter that does not understand dollar quoting tears it in half.
+   */
+  it('round-trips a guarded CREATE TYPE with its body intact', () => {
+    const statements = sqlStatementsOf(guardPostgresEnumTypes('CREATE TYPE "t" AS ENUM (\'a\', \'b\');'))
 
-    expect(sqlStatementsOf(guarded)).toHaveLength(1)
+    expect(statements[0]).toStartWith('DO $stacks$')
+    expect(statements[0]).toEndWith('END $stacks$')
+    expect(statements.slice(1)).toEqual([
+      'ALTER TYPE "t" ADD VALUE IF NOT EXISTS \'a\'',
+      'ALTER TYPE "t" ADD VALUE IF NOT EXISTS \'b\'',
+    ])
   })
 })
 

@@ -299,7 +299,8 @@ export function sqlStatementsOf(content: string): string[] {
 }
 
 /**
- * Make a Postgres `CREATE TYPE … AS ENUM` statement safe to run twice.
+ * Make a Postgres `CREATE TYPE … AS ENUM` statement safe to run twice, and make
+ * it mean something when the type is already there.
  *
  * `CREATE TYPE` has no `IF NOT EXISTS`, so a corpus containing one can only be
  * applied to a database that has never seen it. Every other way a migration run
@@ -310,6 +311,20 @@ export function sqlStatementsOf(content: string): string[] {
  *
  * The guard is a `DO` block catching `duplicate_object`, which needs a
  * dollar-quoted body - hence the splitter above having to understand one.
+ *
+ * The guard on its own is not enough, and quietly broke the case it sat next
+ * to. Adding a value to an enum in a model generates a `CREATE TYPE` naming the
+ * full new set; on a database that already has the type, the guard swallows it
+ * and the new value never arrives. The column keeps the old set, every insert
+ * using the new value fails, and the next diff proposes the same statement
+ * again - which is exactly the silent-no-op loop the guard was introduced to
+ * end, moved one step along.
+ *
+ * So each member is also asserted with `ALTER TYPE … ADD VALUE IF NOT EXISTS`,
+ * which is idempotent on its own and is a no-op on the fresh-database path
+ * where the `CREATE TYPE` just defined all of them. Values are only ever added:
+ * removing one would need a rewrite of every row that carries it, which is a
+ * data migration and not something a schema diff may decide to do by itself.
  */
 /**
  * Put a `DROP DEFAULT` in front of every `ALTER COLUMN … TYPE …`.
@@ -349,6 +364,11 @@ export function orderPostgresColumnTypeChanges(sql: string): string {
 }
 
 export function guardPostgresEnumTypes(sql: string): string {
+  return assertPostgresEnumMembers(wrapPostgresEnumTypes(sql))
+}
+
+/** The `DO` block half: make `CREATE TYPE` survive a second run. */
+function wrapPostgresEnumTypes(sql: string): string {
   return sql.replace(
     /CREATE\s+TYPE\s+("?[\w.]+"?)\s+AS\s+ENUM\s*\(([^)]*)\)/gi,
     (match, name: string, members: string, offset: number, whole: string) => {
@@ -364,6 +384,50 @@ export function guardPostgresEnumTypes(sql: string): string {
         + 'EXCEPTION WHEN duplicate_object THEN null; END $stacks$'
     },
   )
+}
+
+/**
+ * The `ADD VALUE` half: make the guard mean something on a database that
+ * already has the type.
+ *
+ * Written against the guarded block rather than folded into the wrapper,
+ * because a corpus that was already guarded by an earlier version is the case
+ * that matters: those files are on disk, they name enums that have since gained
+ * values, and a transform that only fires on a bare `CREATE TYPE` would never
+ * look at them again.
+ */
+function assertPostgresEnumMembers(sql: string): string {
+  return sql.replace(/DO \$stacks\$[\s\S]*?END \$stacks\$;?/g, (block) => {
+    const created = /CREATE\s+TYPE\s+("?[\w.]+"?)\s+AS\s+ENUM\s*\(([^)]*)\)/i.exec(block)
+    if (!created)
+      return block
+
+    const [, name, members] = created
+    const missing = enumMembers(members!)
+      .map(member => `ALTER TYPE ${name} ADD VALUE IF NOT EXISTS ${member};`)
+      // Against the whole file, so a type created in one place and extended in
+      // another is not asserted twice.
+      .filter(statement => !sql.includes(statement))
+
+    if (missing.length === 0)
+      return block
+
+    const terminated = block.endsWith(';') ? block : `${block};`
+
+    return `${terminated}\n${missing.join('\n')}`
+  })
+}
+
+/**
+ * The members of an `AS ENUM (…)` list, as they were written.
+ *
+ * Split on the commas *between* literals rather than on every comma: a value
+ * like `'multi-channel, beta'` is one member, and a naive split turns it into
+ * two that no `ADD VALUE` can name. Postgres escapes a quote inside a literal
+ * by doubling it, which is why the pattern lets a quote run through `''`.
+ */
+function enumMembers(list: string): string[] {
+  return [...list.matchAll(/'(?:[^']|'')*'/g)].map(match => match[0])
 }
 
 export function preprocessSqliteMigrations(): void {
@@ -1913,7 +1977,11 @@ export function createMissingEnumTypes(
     // block: the type may already exist on a database that ran an earlier
     // version of this migration, and failing there would stop the run.
     const literals = members.map(member => `'${String(member).replaceAll('\'', '\'\'')}'`).join(', ')
-    statements.push(`${guardPostgresEnumTypes(`CREATE TYPE "${name}" AS ENUM (${literals})`)};`)
+    // The guard terminates what it emits when it appends the `ADD VALUE`
+    // assertions, so the `;` is only added when it is missing. Adding it
+    // unconditionally left an empty statement at the end of the file.
+    const guarded = guardPostgresEnumTypes(`CREATE TYPE "${name}" AS ENUM (${literals})`)
+    statements.push(guarded.endsWith(';') ? guarded : `${guarded};`)
     defined.push(name)
   }
 
