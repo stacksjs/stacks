@@ -70,3 +70,21 @@ export function resultError(result: unknown, fallback = 'Unknown error'): string
 
   return error === undefined || error === null ? fallback : String(error)
 }
+
+/**
+ * Print a failure and stop.
+ *
+ * `console.error` rather than the logger, and that is not a style preference.
+ * The logger writes asynchronously, so `log.error(message)` immediately
+ * followed by `process.exit()` loses the message entirely: the process is gone
+ * before the write lands. A command that refuses then produces an exit code and
+ * *nothing else*, which is exactly as useless as the bug this module was
+ * written for - somebody sees a failure with no reason and goes looking through
+ * generated SQL.
+ *
+ * Returns nothing, because it does not return.
+ */
+export function reportFailure(result: unknown, fallback?: string): never {
+  process.stderr.write(`${resultError(result, fallback)}\n`)
+  process.exit(1)
+}

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test'
-import { resultError, resultFailed } from '../src/result'
+import { reportFailure, resultError, resultFailed } from '../src/result'
 
 // The mistake this file guards was made in eighty-six places across the CLI.
 //
@@ -71,5 +71,36 @@ describe('resultError', () => {
     expect(resultError(ok('fine'))).toBe('Unknown error')
     expect(resultError(err(null), 'generateMigrations failed')).toBe('generateMigrations failed')
     expect(resultError(undefined)).toBe('Unknown error')
+  })
+})
+
+describe('reportFailure', () => {
+  /**
+   * The logger writes asynchronously, so `log.error(message)` followed by
+   * `process.exit()` loses the message: the process is gone before the write
+   * lands. A command that refuses then produces an exit code and nothing else.
+   */
+  it('writes to stderr synchronously, so nothing is lost to the exit', () => {
+    const written: string[] = []
+    const stderr = process.stderr.write
+    const exit = process.exit
+
+    ;(process.stderr as any).write = (chunk: string) => {
+      written.push(String(chunk))
+      return true
+    }
+    ;(process as any).exit = (code?: number) => {
+      throw new Error(`exit:${code}`)
+    }
+
+    try {
+      expect(() => reportFailure({ isErr: () => true, error: new Error('would drop `version`') }))
+        .toThrow('exit:1')
+      expect(written.join('')).toContain('would drop `version`')
+    }
+    finally {
+      ;(process.stderr as any).write = stderr
+      ;(process as any).exit = exit
+    }
   })
 })
