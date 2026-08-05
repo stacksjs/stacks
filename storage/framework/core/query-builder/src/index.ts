@@ -33,6 +33,8 @@ export type StacksDialect = import('bun-query-builder').SupportedDialect | 'sing
 
 type QueryHooks = import('bun-query-builder').QueryHooks
 type QueryBuilderConfig = Parameters<typeof setBunQueryBuilderConfig>[0] & {
+  /** Directory containing the active SQL migration corpus. */
+  migrationDir?: string
   /** Vitess topology controls forwarded to bun-query-builder's DDL driver. */
   vitess?: { sharded: boolean }
 }
