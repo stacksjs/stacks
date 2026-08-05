@@ -1,3 +1,4 @@
+import { dts } from 'bun-plugin-dtsx'
 import { frameworkExternal, intro, outro } from '../build/src'
 
 const { startTime } = await intro({
@@ -15,6 +16,13 @@ const result = await Bun.build({
   target: 'bun',
   // sourcemap: 'linked',
   minify: true,
+  external: frameworkExternal(),
+  plugins: [
+    dts({
+      root: './src',
+      outdir: './dist',
+    }),
+  ],
 })
 
 await outro({
