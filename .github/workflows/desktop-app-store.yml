@@ -176,51 +176,53 @@ jobs:
           test "$(git rev-parse HEAD)" = "${{ inputs.craft-revision }}"
           test -x packages/zig/zig-out/bin/craft
 
+      # The Action owns the keychain: it creates an ephemeral one, imports both
+      # identities, writes the provisioning profile, and deletes the keychain in
+      # its post step — which also runs when the job is cancelled, unlike the
+      # `if: always()` cleanup step this replaced.
       - name: Import Apple signing identities
-        env:
-          APP_CERTIFICATE: ${{ secrets.APPLE_APP_CERTIFICATE_BASE64 }}
-          INSTALLER_CERTIFICATE: ${{ secrets.APPLE_INSTALLER_CERTIFICATE_BASE64 }}
-          CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
-        run: |
-          set -euo pipefail
-          KEYCHAIN_PASSWORD="$(uuidgen)"
-          KEYCHAIN_PATH="$RUNNER_TEMP/stacks-app-store.keychain-db"
-          echo "::add-mask::$KEYCHAIN_PASSWORD"
-          printf 'APPLE_KEYCHAIN_PATH=%s\n' "$KEYCHAIN_PATH" >> "$GITHUB_ENV"
-          printf 'APPLE_KEYCHAIN_PASSWORD=%s\n' "$KEYCHAIN_PASSWORD" >> "$GITHUB_ENV"
+        id: signing
+        uses: pantry-pm/pantry/packages/action@3c723aa5d6c8d4572cf2cc8c81356e34b8fea9b9 # v0.11
+        with:
+          version: '0.11.0'
+          install: 'false'
+          apple-signing: 'true'
+          apple-signing-application-certificate: ${{ secrets.APPLE_APP_CERTIFICATE_BASE64 }}
+          apple-signing-installer-certificate: ${{ secrets.APPLE_INSTALLER_CERTIFICATE_BASE64 }}
+          apple-signing-certificate-password: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+          apple-signing-provisioning-profile: ${{ secrets.APPLE_PROVISIONING_PROFILE_BASE64 }}
 
-          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
-          security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
-          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
-          security default-keychain -s "$KEYCHAIN_PATH"
-
-          printf '%s' "$APP_CERTIFICATE" | base64 --decode > "$RUNNER_TEMP/apple-app.p12"
-          printf '%s' "$INSTALLER_CERTIFICATE" | base64 --decode > "$RUNNER_TEMP/apple-installer.p12"
-          security import "$RUNNER_TEMP/apple-app.p12" -k "$KEYCHAIN_PATH" -P "$CERTIFICATE_PASSWORD" -T /usr/bin/codesign
-          security import "$RUNNER_TEMP/apple-installer.p12" -k "$KEYCHAIN_PATH" -P "$CERTIFICATE_PASSWORD" -T /usr/bin/productbuild
-          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
-          rm "$RUNNER_TEMP/apple-app.p12" "$RUNNER_TEMP/apple-installer.p12"
-
+      # buddy reads the profile path from the environment, so publish the
+      # Action's output there. The App Store Connect key still needs a file on
+      # disk for `desktop:apple:doctor` and `desktop:apple:publish`.
       - name: Configure Apple profile and App Store Connect key
         env:
-          PROVISIONING_PROFILE: ${{ secrets.APPLE_PROVISIONING_PROFILE_BASE64 }}
+          PROVISIONING_PROFILE_PATH: ${{ steps.signing.outputs.apple-signing-provisioning-profile }}
           API_KEY: ${{ secrets.APP_STORE_CONNECT_API_KEY }}
         run: |
           set -euo pipefail
           PRIVATE_KEYS_DIR="$RUNNER_TEMP/private_keys"
           mkdir -p "$PRIVATE_KEYS_DIR"
-          printf '%s' "$PROVISIONING_PROFILE" | base64 --decode > "$RUNNER_TEMP/app.provisionprofile"
           printf '%s\n' "$API_KEY" > "$PRIVATE_KEYS_DIR/AuthKey_${APP_STORE_CONNECT_API_KEY_ID}.p8"
-          chmod 600 "$RUNNER_TEMP/app.provisionprofile" "$PRIVATE_KEYS_DIR/AuthKey_${APP_STORE_CONNECT_API_KEY_ID}.p8"
-          printf 'APPLE_PROVISIONING_PROFILE=%s\n' "$RUNNER_TEMP/app.provisionprofile" >> "$GITHUB_ENV"
+          chmod 600 "$PRIVATE_KEYS_DIR/AuthKey_${APP_STORE_CONNECT_API_KEY_ID}.p8"
+          printf 'APPLE_PROVISIONING_PROFILE=%s\n' "$PROVISIONING_PROFILE_PATH" >> "$GITHUB_ENV"
           printf 'APP_STORE_CONNECT_API_KEY_PATH=%s\n' "$PRIVATE_KEYS_DIR/AuthKey_${APP_STORE_CONNECT_API_KEY_ID}.p8" >> "$GITHUB_ENV"
 
+      # Identities default to whatever the Action actually imported, so a caller
+      # only has to pin `app-signing-identity` when the keychain holds more than
+      # one candidate. A hand-typed identity string that does not match the
+      # certificate is the usual cause of a late "identity not found" failure.
       - name: Verify Mac App Store prerequisites
+        env:
+          APPLE_APP_SIGNING_IDENTITY: ${{ inputs.app-signing-identity || steps.signing.outputs.apple-signing-identity }}
+          APPLE_INSTALLER_SIGNING_IDENTITY: ${{ inputs.installer-signing-identity || steps.signing.outputs.apple-signing-installer-identity }}
         run: bun node_modules/@stacksjs/buddy/dist/cli.js desktop:apple:doctor
 
       - name: Build and sign Mac App Store package
         env:
           APPLE_BUILD_NUMBER: ${{ github.run_number }}
+          APPLE_APP_SIGNING_IDENTITY: ${{ inputs.app-signing-identity || steps.signing.outputs.apple-signing-identity }}
+          APPLE_INSTALLER_SIGNING_IDENTITY: ${{ inputs.installer-signing-identity || steps.signing.outputs.apple-signing-installer-identity }}
         run: bun node_modules/@stacksjs/buddy/dist/cli.js desktop:apple:publish --package-only
 
       - name: Publish GitHub release and deliver package
@@ -267,9 +269,3 @@ jobs:
           if-no-files-found: error
           retention-days: 90
 
-      - name: Remove ephemeral signing keychain
-        if: always()
-        run: |
-          if test -n "${APPLE_KEYCHAIN_PATH:-}" && test -e "$APPLE_KEYCHAIN_PATH"; then
-            security delete-keychain "$APPLE_KEYCHAIN_PATH"
-          fi
