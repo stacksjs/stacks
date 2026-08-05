@@ -1,5 +1,21 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.260...v0.70.261)
+
+## 🐛 Bug Fixes
+
+- **safari**: ad-hoc sign the macOS archive so the sandbox entitlement survives ([cbc12aa](https://github.com/stacksjs/stacks/commit/cbc12aa)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **desktop**: record a marketing version without the tag prefix ([c854d89](https://github.com/stacksjs/stacks/commit/c854d89)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **buddy**: print why a desktop:apple command failed ([532c28f](https://github.com/stacksjs/stacks/commit/532c28f)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 💚 Continuous Integration
+
+- **desktop**: let the pantry action own the signing keychain ([4f56181](https://github.com/stacksjs/stacks/commit/4f56181)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.259...v0.70.260)
 
 ## 🐛 Bug Fixes
