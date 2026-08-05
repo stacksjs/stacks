@@ -606,7 +606,7 @@ database.switchDriver('postgres', {
 | `mysql` | MySQL | 3306 | |
 | `postgres` | PostgreSQL | 5432 | |
 | `singlestore` | MySQL | 3306 | Distributed. No foreign keys. TLS required on managed (Helios) endpoints. |
-| `vitess` | MySQL | 15306 | Sharded MySQL behind vtgate. No foreign keys, no `AUTO_INCREMENT`, no cross-shard ACID. Needs a [VSchema](/guide/database-scaling#generating-a-vschema). |
+| `vitess` | MySQL | 15306 | MySQL behind vtgate. Unsharded keyspaces retain MySQL relational features; sharded keyspaces require application-generated IDs and a [VSchema](/guide/database-scaling#generating-a-vschema). |
 
 The MySQL-wire drivers all render identical SQL - placeholders, backtick quoting, upserts, `LAST_INSERT_ID()`. They differ only in what DDL the engine accepts, which Stacks checks before running a migration rather than discovering halfway through one.
 

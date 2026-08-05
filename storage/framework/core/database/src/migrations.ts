@@ -52,6 +52,7 @@ import { migrateNotificationTables } from './notification-tables'
 // Use environment variables via @stacksjs/env for proper type coercion
 import { env as envVars } from '@stacksjs/env'
 import { getConnectionDefaults } from './defaults'
+import { isVitessSharded } from './dialect'
 
 // Shell-provided values must win over the loaded .env file. The migration
 // executor already follows process.env, so resolving preprocessing against
@@ -65,12 +66,15 @@ const databaseEnv = {
   DB_PORT: process.env.DB_PORT ? Number(process.env.DB_PORT) : envVars.DB_PORT,
   DB_USERNAME: process.env.DB_USERNAME || envVars.DB_USERNAME,
   DB_PASSWORD: process.env.DB_PASSWORD || envVars.DB_PASSWORD,
+  DB_VITESS_SHARDED: process.env.DB_VITESS_SHARDED || envVars.DB_VITESS_SHARDED,
 }
 
 // Build database config from environment variables
 const dbDriver = databaseEnv.DB_CONNECTION || 'sqlite'
 const sqliteDefaults = getConnectionDefaults('sqlite', databaseEnv)
 const mysqlDefaults = getConnectionDefaults('mysql', databaseEnv)
+const singlestoreDefaults = getConnectionDefaults('singlestore', databaseEnv)
+const vitessDefaults = getConnectionDefaults('vitess', databaseEnv)
 const postgresDefaults = getConnectionDefaults('postgres', databaseEnv)
 
 const dbConfig = {
@@ -78,6 +82,8 @@ const dbConfig = {
   connections: {
     sqlite: { database: sqliteDefaults.database, prefix: '' },
     mysql: { name: mysqlDefaults.database, host: mysqlDefaults.host, username: mysqlDefaults.username, password: mysqlDefaults.password, port: mysqlDefaults.port, prefix: '' },
+    singlestore: { name: singlestoreDefaults.database, host: singlestoreDefaults.host, username: singlestoreDefaults.username, password: singlestoreDefaults.password, port: singlestoreDefaults.port, prefix: '' },
+    vitess: { name: vitessDefaults.database, host: vitessDefaults.host, username: vitessDefaults.username, password: vitessDefaults.password, port: vitessDefaults.port, prefix: '', sharded: isVitessSharded() },
     postgres: { name: postgresDefaults.database, host: postgresDefaults.host, username: postgresDefaults.username, password: postgresDefaults.password, port: postgresDefaults.port, prefix: '' },
   },
 }
@@ -104,9 +110,9 @@ function getDriver(): string {
  * should use the entity-style `dynamo.entity(...)` API directly
  * instead of the SQL ORM/migration path.
  */
-function getDialect(): 'sqlite' | 'mysql' | 'postgres' {
+function getDialect(): 'sqlite' | 'mysql' | 'vitess' | 'postgres' {
   const driver = getDriver()
-  if (driver === 'sqlite' || driver === 'mysql' || driver === 'postgres') return driver
+  if (driver === 'sqlite' || driver === 'mysql' || driver === 'vitess' || driver === 'postgres') return driver
   // SingleStore is MySQL wire-compatible, so all of the internal migration
   // plumbing that needs a concrete engine (connection ports, admin database,
   // DROP TABLE) treats it as MySQL. DDL *generation* is different — it must
@@ -117,11 +123,11 @@ function getDialect(): 'sqlite' | 'mysql' | 'postgres' {
     throw new Error(
       '[database] DB_CONNECTION=dynamodb is not compatible with the SQL migration runner. '
       + 'DynamoDB has no schema-migration concept — use the entity-style `dynamo.entity(...)` '
-      + 'API from @stacksjs/database directly. To run SQL migrations, set DB_CONNECTION to one of: sqlite, mysql, postgres.',
+      + 'API from @stacksjs/database directly. To run SQL migrations, set DB_CONNECTION to one of: sqlite, mysql, singlestore, vitess, postgres.',
     )
   }
   throw new Error(
-    `[database] Unknown DB_CONNECTION "${driver}". Allowed values: sqlite, mysql, postgres, dynamodb.`,
+    `[database] Unknown DB_CONNECTION "${driver}". Allowed values: sqlite, mysql, singlestore, vitess, postgres, dynamodb.`,
   )
 }
 
@@ -131,7 +137,7 @@ function getDialect(): 'sqlite' | 'mysql' | 'postgres' {
  * bqb selects its SingleStore driver — which drops foreign-key constraints
  * (unsupported by SingleStore) and can emit distributed-table clauses.
  */
-function getQbDialect(): 'sqlite' | 'mysql' | 'singlestore' | 'postgres' {
+function getQbDialect(): 'sqlite' | 'mysql' | 'singlestore' | 'vitess' | 'postgres' {
   return getDriver() === 'singlestore' ? 'singlestore' : getDialect()
 }
 
@@ -143,7 +149,10 @@ function configureQueryBuilder(): void {
   const connectionConfig = dbConfig.connections[dialect] as any
 
   setConfig({
-    dialect,
+    dialect: getQbDialect(),
+    vitess: {
+      sharded: isVitessSharded(connectionConfig?.sharded),
+    },
     // bun-query-builder defaults to `verbose: true`, which dumps an
     // unconditional wall of `-- Comparing with stored snapshot`,
     // `-- Found N script files`, `-- Migrations table ready` etc. to
@@ -1470,9 +1479,9 @@ async function dropOrphanedEnumTypes(): Promise<void> {
 /**
  * Drop framework-managed tables (OAuth, passkeys, jobs, etc.)
  */
-async function dropFrameworkTables(dialect: 'sqlite' | 'mysql' | 'postgres'): Promise<void> {
+async function dropFrameworkTables(dialect: 'sqlite' | 'mysql' | 'vitess' | 'postgres'): Promise<void> {
   // Disable foreign key checks for MySQL to avoid constraint issues
-  if (dialect === 'mysql') {
+  if (dialect === 'mysql' || dialect === 'vitess') {
     try {
       await (db as any).unsafe('SET FOREIGN_KEY_CHECKS = 0').execute()
     }
@@ -1498,7 +1507,7 @@ async function dropFrameworkTables(dialect: 'sqlite' | 'mysql' | 'postgres'): Pr
       if (dialect === 'postgres') {
         dropSql = `DROP TABLE IF EXISTS "${tableName}" CASCADE`
       }
-      else if (dialect === 'mysql') {
+      else if (dialect === 'mysql' || dialect === 'vitess') {
         dropSql = `DROP TABLE IF EXISTS \`${tableName}\``
       }
       else {
@@ -1527,7 +1536,7 @@ async function dropFrameworkTables(dialect: 'sqlite' | 'mysql' | 'postgres'): Pr
   }
 
   // Re-enable foreign key checks for MySQL
-  if (dialect === 'mysql') {
+  if (dialect === 'mysql' || dialect === 'vitess') {
     try {
       await (db as any).unsafe('SET FOREIGN_KEY_CHECKS = 1').execute()
     }

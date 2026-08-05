@@ -119,6 +119,8 @@ export interface VitessConfig extends NetworkedConnectionConfig {
    * Left unset, vtgate routes to primaries.
    */
   tabletType?: 'primary' | 'replica' | 'rdonly'
+  /** Whether this keyspace is split across shards. Defaults to true. */
+  sharded?: boolean
 }
 
 /**
@@ -246,6 +248,7 @@ export const driverDefaults: Record<StacksDialect, Partial<SqliteConfig | MysqlC
     password: '',
     prefix: '',
     ssl: false,
+    sharded: true,
   },
   postgres: {
     name: 'stacks',
@@ -417,6 +420,7 @@ export function getConfigFromEnv(driver: StacksDialect): DatabaseConnections[key
         password: env.DB_PASSWORD || '',
         prefix: env.DB_PREFIX || '',
         ssl: ((env as Record<string, string | undefined>).DB_SSL) === 'true' || ((env as Record<string, string | undefined>).DB_SSL) === '1',
+        sharded: !['0', 'false', 'no', 'off'].includes(String((env as Record<string, string | undefined>).DB_VITESS_SHARDED ?? 'true').toLowerCase()),
       } as VitessConfig
 
     case 'postgres':

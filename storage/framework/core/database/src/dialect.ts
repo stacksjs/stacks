@@ -23,6 +23,8 @@
  * express, so `wire` and the `supports*` flags are tracked separately.
  */
 
+import process from 'node:process'
+
 /**
  * The connection protocol a dialect speaks. Determines placeholder style,
  * identifier quoting, and which connection URL scheme dials it.
@@ -186,6 +188,26 @@ const CAPABILITIES: Record<string, DialectCapabilities> = {
   },
 }
 
+export interface DialectCapabilityOptions {
+  /** Whether the target Vitess keyspace is sharded. */
+  vitessSharded?: boolean
+}
+
+/**
+ * Resolve the Vitess topology from an explicit option or the conventional
+ * environment variable. The historical behavior was sharded, so an omitted
+ * setting remains conservative and never enables unsupported DDL by accident.
+ */
+export function isVitessSharded(explicit?: boolean): boolean {
+  if (explicit !== undefined)
+    return explicit
+
+  const raw = process.env.DB_VITESS_SHARDED?.trim().toLowerCase()
+  if (raw === undefined || raw === '')
+    return true
+  return !['0', 'false', 'no', 'off'].includes(raw)
+}
+
 /**
  * Look up a dialect's capabilities.
  *
@@ -195,8 +217,20 @@ const CAPABILITIES: Record<string, DialectCapabilities> = {
  * existed, rather than throwing during module load in an app that is merely
  * misconfigured.
  */
-export function dialectCapabilities(dialect: string): DialectCapabilities {
-  return CAPABILITIES[dialect] ?? CAPABILITIES.sqlite as DialectCapabilities
+export function dialectCapabilities(dialect: string, options: DialectCapabilityOptions = {}): DialectCapabilities {
+  const caps = CAPABILITIES[dialect] ?? CAPABILITIES.sqlite as DialectCapabilities
+  if (dialect !== 'vitess' || isVitessSharded(options.vitessSharded))
+    return caps
+
+  // An unsharded Vitess keyspace is one MySQL shard behind vtgate. It retains
+  // MySQL's relational and identity guarantees while still using Vitess's
+  // endpoint and native query-builder dialect.
+  return {
+    ...(CAPABILITIES.mysql as DialectCapabilities),
+    dialect: 'vitess',
+    queryBuilderDialect: 'vitess',
+    defaultPort: 15306,
+  }
 }
 
 /** Whether the framework has an explicit capability row for this dialect. */

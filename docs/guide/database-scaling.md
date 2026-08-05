@@ -182,9 +182,9 @@ A replica that has fallen far behind still receives traffic. Stacks does not pro
 
 ## Sharding with Vitess
 
-[Vitess](https://vitess.io/) shards MySQL across many servers. Your application connects to `vtgate`, which speaks the MySQL wire protocol and routes each query to the right shard.
+[Vitess](https://vitess.io/) presents MySQL through `vtgate`, which speaks the MySQL wire protocol and routes each query to the right tablet or shard.
 
-This is the heaviest option on this page. A Vitess cluster means vtgate, a vttablet beside every MySQL instance, and a topology service to coordinate them. Reach for it when one primary genuinely cannot hold your write volume or your data, and not before - pooling and replicas solve the problems most applications actually have.
+An unsharded keyspace is a practical starting point: it retains ordinary MySQL foreign keys, `AUTO_INCREMENT`, and single-shard transactions while putting the routing and operational layer in place. Split the keyspace only when one primary genuinely cannot hold the write volume or data.
 
 ### Configuration
 
@@ -200,6 +200,7 @@ export default {
       port: env.DB_PORT || 15306,        // vtgate's port, not 3306
       username: env.DB_USERNAME || 'root',
       password: env.DB_PASSWORD || '',
+      sharded: env.DB_VITESS_SHARDED ?? false,
     },
   },
 }
@@ -210,12 +211,15 @@ DB_CONNECTION=vitess
 DB_HOST=vtgate.internal
 DB_PORT=15306
 DB_DATABASE=commerce
+DB_VITESS_SHARDED=false
 ```
 
 Two details differ from a plain MySQL connection and both matter:
 
 - **`name` is a keyspace**, not a database. It is the unit Vitess shards and what the VSchema is written against.
 - **The port is 15306**, vtgate's MySQL-protocol port. Connecting to 3306 on a Vitess cluster reaches an individual tablet's underlying MySQL and silently bypasses sharding altogether. That is worse than a connection error, because everything appears to work.
+
+Set `DB_VITESS_SHARDED=true` only after the keyspace is split. Stacks then enables the stricter DDL audit and bun-query-builder generation profile described below.
 
 ### What a sharded keyspace cannot do
 

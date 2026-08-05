@@ -17,7 +17,7 @@ import { env as envVars } from '@stacksjs/env'
 import type { QueryBuilderDialect } from './dialect'
 import type { PoolConfig, ReadPolicyConfig, ReplicaConfig } from './driver-config'
 import { getConnectionDefaults } from './defaults'
-import { isMysqlWire, toQueryBuilderDialect } from './dialect'
+import { isMysqlWire, isVitessSharded, toQueryBuilderDialect } from './dialect'
 import { contextInTransaction, markContextWrote, resolveReplicaConnection, selectReplica, shouldRouteToReplica, withTransactionContext } from './replicas'
 import { aggregateFunctions } from './types'
 
@@ -31,6 +31,7 @@ interface DbConnectionConfig {
   prefix?: string
   pool?: PoolConfig
   replicas?: ReplicaConfig[]
+  sharded?: boolean
 }
 
 interface DbConfig {
@@ -56,7 +57,7 @@ let dbConfig: DbConfig = {
     mysql: { name: mysqlDefaults.database, host: mysqlDefaults.host, username: mysqlDefaults.username, password: mysqlDefaults.password, port: mysqlDefaults.port, prefix: '' },
     singlestore: { name: mysqlDefaults.database, host: mysqlDefaults.host, username: mysqlDefaults.username, password: mysqlDefaults.password, port: mysqlDefaults.port, prefix: '' },
     // vtgate's port, not mysqld's — see VitessConfig in ./driver-config.
-    vitess: { name: mysqlDefaults.database, host: mysqlDefaults.host, username: mysqlDefaults.username, password: mysqlDefaults.password, port: 15306, prefix: '' },
+    vitess: { name: mysqlDefaults.database, host: mysqlDefaults.host, username: mysqlDefaults.username, password: mysqlDefaults.password, port: 15306, prefix: '', sharded: isVitessSharded() },
     postgres: { name: postgresDefaults.database, host: postgresDefaults.host, username: postgresDefaults.username, password: postgresDefaults.password, port: postgresDefaults.port, prefix: '' },
   },
 }
@@ -346,6 +347,9 @@ function updateQueryBuilderConfig(): void {
 
   setConfig({
     dialect: dialect as Parameters<typeof setConfig>[0]['dialect'],
+    vitess: {
+      sharded: isVitessSharded(dbConfig.connections.vitess.sharded),
+    },
     // bun-query-builder accepts `pool` on its database config and maps it
     // onto Bun's driver options itself, so the block is handed down as-is
     // rather than pre-translated here. `toBunPoolOptions` exists for the

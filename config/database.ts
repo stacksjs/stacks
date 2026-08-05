@@ -70,9 +70,9 @@ export default {
      * protocol. `name` is a KEYSPACE, and the port is vtgate's 15306 - not
      * mysqld's 3306, which would reach a single tablet and bypass sharding.
      *
-     * A sharded keyspace has no foreign keys and no AUTO_INCREMENT: use
-     * `useUuid: true` on models, and run `buddy generate:vschema` to emit
-     * the VSchema from your model definitions.
+     * Unsharded keyspaces retain ordinary MySQL foreign keys and
+     * AUTO_INCREMENT. Set DB_VITESS_SHARDED=true only when the keyspace is
+     * actually split, then use application-generated IDs and a VSchema.
      */
     vitess: {
       name: env.DB_DATABASE || 'stacks',
@@ -81,6 +81,7 @@ export default {
       username: env.DB_USERNAME || 'root',
       password: env.DB_PASSWORD || '',
       prefix: '',
+      sharded: !['0', 'false', 'no', 'off'].includes(String(env.DB_VITESS_SHARDED ?? 'true').toLowerCase()),
     },
 
     postgres: {

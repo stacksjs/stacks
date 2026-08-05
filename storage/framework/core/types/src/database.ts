@@ -111,6 +111,8 @@ export interface DatabaseOptions {
       ssl?: boolean
       /** Pin this connection to a tablet type, e.g. `keyspace@replica`. */
       tabletType?: 'primary' | 'replica' | 'rdonly'
+      /** Whether this keyspace is split across shards. Defaults to true. */
+      sharded?: boolean
     }
 
     sqlite: {

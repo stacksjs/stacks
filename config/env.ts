@@ -109,8 +109,13 @@ export default {
   },
 
   DB_CONNECTION: {
-    validation: schema.enum(['mysql', 'sqlite', 'postgres']),
+    validation: schema.enum(['mysql', 'sqlite', 'postgres', 'singlestore', 'vitess']),
     default: 'mysql',
+  },
+
+  DB_VITESS_SHARDED: {
+    validation: schema.boolean(),
+    default: true,
   },
 
   DB_HOST: {

@@ -13,6 +13,7 @@
 
 import { mkdirSync, rmSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
+import process from 'node:process'
 import { afterAll, beforeAll, describe, expect, test } from 'bun:test'
 import {
   auditDdlConstraints,
@@ -79,6 +80,17 @@ describe('sqlHelpers for a dialect without auto-increment', () => {
   test('mysql itself is unaffected', () => {
     expect(sqlHelpers('mysql').pkColumn).toBe('id INTEGER PRIMARY KEY AUTO_INCREMENT')
   })
+
+  test('unsharded keyspaces retain MySQL relational capabilities', () => {
+    const unsharded = dialectCapabilities('vitess', { vitessSharded: false })
+    expect(unsharded.wire).toBe('mysql')
+    expect(unsharded.queryBuilderDialect).toBe('vitess')
+    expect(unsharded.defaultPort).toBe(15306)
+    expect(unsharded.supportsForeignKeys).toBe(true)
+    expect(unsharded.supportsAutoIncrement).toBe(true)
+    expect(unsharded.supportsAtomicMultiTableTransactions).toBe(true)
+    expect(unsharded.requiresOnlineDdl).toBe(false)
+  })
 })
 
 describe('auditDdlSql', () => {
@@ -99,6 +111,20 @@ describe('auditDdlSql', () => {
     // The point of separating capability from syntax: this file is valid,
     // idiomatic MySQL and must not be flagged when MySQL is the target.
     expect(auditDdlSql(FK_SQL, 'posts.sql', 'mysql')).toEqual([])
+  })
+
+  test('accepts MySQL relational DDL for an unsharded Vitess keyspace', () => {
+    const previous = process.env.DB_VITESS_SHARDED
+    process.env.DB_VITESS_SHARDED = 'false'
+    try {
+      expect(auditDdlSql(FK_SQL, 'posts.sql', 'vitess')).toEqual([])
+    }
+    finally {
+      if (previous === undefined)
+        delete process.env.DB_VITESS_SHARDED
+      else
+        process.env.DB_VITESS_SHARDED = previous
+    }
   })
 
   test('flags foreign keys but not auto-increment on singlestore', () => {

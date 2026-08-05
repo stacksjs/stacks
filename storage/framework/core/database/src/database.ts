@@ -6,7 +6,7 @@
  * driver switching between SQLite, MySQL, and PostgreSQL.
  */
 
-import { toQueryBuilderDialect } from './dialect'
+import { isVitessSharded, toQueryBuilderDialect } from './dialect'
 import { QB_SNAPSHOT_DIR } from './utils'
 import type { QueryBuilderConfig, StacksDialect } from '@stacksjs/query-builder'
 import { createQueryBuilder, setConfig } from '@stacksjs/query-builder'
@@ -25,6 +25,8 @@ export interface DatabaseConnectionConfig {
   password?: string
   /** Full connection URL (overrides other options) */
   url?: string
+  /** Whether a Vitess keyspace is split across shards. */
+  sharded?: boolean
 }
 
 export interface DatabaseOptions {
@@ -148,6 +150,9 @@ export class Database {
       // one of those down verbatim makes it fall back to its default
       // dialect and render the wrong SQL against a live connection.
       dialect: toQueryBuilderDialect(this._options.driver),
+      vitess: {
+        sharded: isVitessSharded(this._options.connection.sharded),
+      },
       database: this._options.connection as any,
       verbose: this._options.verbose,
       timestamps: this._options.timestamps as any,

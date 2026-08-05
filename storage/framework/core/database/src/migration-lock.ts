@@ -33,7 +33,7 @@ import { closeSync, openSync, readFileSync, statSync, unlinkSync, writeFileSync 
 import process from 'node:process'
 import { userDatabasePath } from '@stacksjs/path'
 
-export type Dialect = 'sqlite' | 'mysql' | 'postgres'
+export type Dialect = 'sqlite' | 'mysql' | 'vitess' | 'postgres'
 
 /**
  * Total time we'll wait for an existing lock-holder to release before
@@ -100,7 +100,7 @@ export async function acquireMigrationLock(
   // Check dialect FIRST so an unsupported value surfaces a clear
   // "unknown dialect" message rather than the misleading "requires a
   // database connection" path.
-  if (dialect !== 'sqlite' && dialect !== 'postgres' && dialect !== 'mysql')
+  if (dialect !== 'sqlite' && dialect !== 'postgres' && dialect !== 'mysql' && dialect !== 'vitess')
     throw new Error(`[migration-lock] unknown dialect: ${String(dialect)}`)
 
   if (dialect === 'sqlite')

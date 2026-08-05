@@ -32,7 +32,10 @@ export { saveMigrationSnapshot } from 'bun-query-builder'
 export type StacksDialect = import('bun-query-builder').SupportedDialect | 'singlestore' | 'vitess'
 
 type QueryHooks = import('bun-query-builder').QueryHooks
-type QueryBuilderConfig = Parameters<typeof setBunQueryBuilderConfig>[0]
+type QueryBuilderConfig = Parameters<typeof setBunQueryBuilderConfig>[0] & {
+  /** Vitess topology controls forwarded to bun-query-builder's DDL driver. */
+  vitess?: { sharded: boolean }
+}
 
 const persistentQueryHooks = new Set<QueryHooks>()
 
