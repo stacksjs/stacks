@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.263...v0.70.264)
+
+## 🐛 Bug Fixes
+
+- **database**: refuse a migration that drops a framework table's columns ([831b424](https://github.com/stacksjs/stacks/commit/831b424)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.262...v0.70.263)
 
 ## ✨ Features
