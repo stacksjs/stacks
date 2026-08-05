@@ -146,6 +146,7 @@ export * from './migration-ledger'
 // Model resolution for the generator: userland + framework defaults, flattened
 // because bun-query-builder's loadModels reads only the top level of a dir.
 export * from './model-sources'
+export * from './shadowed-models'
 
 // Database bootstrap: probe the target, and create it over a maintenance
 // connection we open ourselves rather than through bun-query-builder, whose

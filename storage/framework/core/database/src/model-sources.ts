@@ -37,6 +37,13 @@ export interface ModelSource {
   origin: 'user' | 'framework'
 }
 
+/** A userland model that replaced a framework default of the same name. */
+export interface ShadowedModel {
+  name: string
+  userFile: string
+  frameworkFile: string
+}
+
 export interface ResolvedModelSources {
   /** A flat directory containing every model, safe to hand to bun-query-builder. */
   dir: string
@@ -45,6 +52,16 @@ export interface ResolvedModelSources {
   roots: string[]
   /** True when `dir` is a staging directory this call created. */
   staged: boolean
+  /**
+   * Which framework defaults a userland model replaced.
+   *
+   * Overriding is a supported thing to do, and it is also how somebody
+   * accidentally writes a model that shares a framework table's name and
+   * generates a migration dropping that table's columns - while the framework's
+   * own code goes on reading them. Reported here so the migration generator can
+   * recognise that case; see `shadowed-models.ts`.
+   */
+  shadowed: ShadowedModel[]
 }
 
 /** Collect model files recursively, skipping index barrels and dotfiles. */
@@ -146,7 +163,15 @@ export function resolveModelSources(options: { userRoot?: string, frameworkRoot?
   // Userland overrides a framework model of the same name.
   const byName = new Map<string, ModelSource>()
   for (const model of framework) byName.set(model.name, model)
-  for (const model of user) byName.set(model.name, model)
+
+  const shadowed: ShadowedModel[] = []
+  for (const model of user) {
+    const replaced = byName.get(model.name)
+    if (replaced?.origin === 'framework')
+      shadowed.push({ name: model.name, userFile: model.file, frameworkFile: replaced.file })
+
+    byName.set(model.name, model)
+  }
 
   const models = [...byName.values()].sort((a, b) => a.name.localeCompare(b.name))
 
@@ -161,10 +186,10 @@ export function resolveModelSources(options: { userRoot?: string, frameworkRoot?
   const onlyUser = framework.length === 0
   const allFlat = models.every(m => basename(join(m.file, '..')) === basename(onlyUser ? userRoot : frameworkRoot))
   if (roots.length === 1 && allFlat) {
-    return { dir: roots[0]!, models, roots, staged: false }
+    return { dir: roots[0]!, models, roots, staged: false, shadowed }
   }
 
-  return { dir: stage(models), models, roots, staged: true }
+  return { dir: stage(models), models, roots, staged: true, shadowed }
 }
 
 /** Remove the staging directory. Safe to call when it was never created. */

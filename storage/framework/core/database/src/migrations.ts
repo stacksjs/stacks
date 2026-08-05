@@ -45,6 +45,7 @@ import {
   resolveConnectionTarget,
 } from './ensure-database'
 import { resolveModelSources } from './model-sources'
+import { findShadowedColumnDrops, shadowDropsAllowed, shadowedDropMessage } from './shadowed-models'
 import { frameworkManagedColumns, withoutManagedColumnDrops, withoutManagedColumnDropSql } from './managed-columns'
 import { acquireMigrationLock } from './migration-lock'
 import { migrateNotificationTables } from './notification-tables'
@@ -1859,6 +1860,20 @@ export async function generateMigrations(options: GenerateMigrationsOptions = {}
           )
         }
       }
+    }
+
+    // A userland model replaces a framework default rather than extending it,
+    // so a model written without knowing the framework ships one of the same
+    // name generates a migration that drops that table's columns while the
+    // framework's own code goes on reading them. Refused rather than written:
+    // this one applies cleanly and says nothing until a page that has always
+    // worked stops finding a column. See `shadowed-models.ts`.
+    if (result.hasChanges && sqlStatements.length > 0 && !shadowDropsAllowed()) {
+      const shadowed = resolveModelSources()?.shadowed ?? []
+      const drops = findShadowedColumnDrops(sqlStatements, shadowed)
+
+      if (drops.length > 0)
+        return err(new Error(shadowedDropMessage(drops)))
     }
 
     if (result.hasChanges) {
