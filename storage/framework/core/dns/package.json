@@ -61,7 +61,7 @@
   },
   "dependencies": {
     "@stacksjs/dnsx": "^0.2.3",
-    "@stacksjs/ts-cloud": "^0.7.98"
+    "@stacksjs/ts-cloud": "^0.7.99"
   },
   "devDependencies": {
     "@stacksjs/actions": "workspace:*",
