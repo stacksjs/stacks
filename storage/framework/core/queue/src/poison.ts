@@ -150,7 +150,7 @@ export async function isQuarantined(jobName: string, payload: unknown): Promise<
       .selectFrom('job_quarantine')
       .where('job_name', '=', jobName)
       .where('payload_hash', 'in', [payloadHash, '*'])
-      .where('quarantined_at', 'is not', null)
+      .whereNotNull('quarantined_at')
       .select(['id'])
       .executeTakeFirst()
     return Boolean(row)
@@ -244,7 +244,7 @@ export async function listQuarantined(): Promise<Array<{
   try {
     const rows = await (db as any)
       .selectFrom('job_quarantine')
-      .where('quarantined_at', 'is not', null)
+      .whereNotNull('quarantined_at')
       .selectAll()
       .execute()
     return (rows ?? []) as Array<{

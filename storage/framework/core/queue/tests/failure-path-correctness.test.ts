@@ -60,7 +60,12 @@ describe('queue failure-path correctness (#1957)', () => {
     })
 
     it('finalizes exactly once via a finished_at IS NULL guard', () => {
-      expect(fn).toContain(`.where('finished_at', 'is', null)`)
+      // `.whereNull(...)`, not `.where(col, 'is', null)`. The latter binds the
+      // null as a parameter and emits `finished_at is $n`, which Postgres
+      // rejects outright (42601) — so the guard that makes this atomic did not
+      // survive the trip to a Postgres server at all (stacksjs/stacks#2215).
+      expect(fn).toContain(`.whereNull('finished_at')`)
+      expect(fn).not.toContain(`'is', null`)
       expect(fn).toContain('updatedRowCount(finalizeResult)')
     })
 

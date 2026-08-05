@@ -779,7 +779,7 @@ async function pruneBatchesFromDatabase(olderThanHours: number): Promise<number>
 
   const result = await db
     .deleteFrom('job_batches')
-    .where('finished_at', 'is not', null)
+    .whereNotNull('finished_at')
     .where('finished_at', '<', cutoff)
     .executeTakeFirst()
 
@@ -1120,7 +1120,7 @@ export async function recordBatchJobCompletion(batchId: string): Promise<void> {
     .set({ finished_at: finishedAt })
     .where('id', '=', batchId)
     .where('pending_jobs', '=', 0)
-    .where('finished_at', 'is', null)
+    .whereNull('finished_at')
     .executeTakeFirst()
   const completed = updatedRowCount(completeResult) > 0
 
@@ -1297,7 +1297,7 @@ export async function recordBatchJobFailure(batchId: string, jobId: string, erro
       ? { finished_at: finishedAt }
       : { finished_at: finishedAt, cancelled_at: finishedAt })
     .where('id', '=', batchId)
-    .where('finished_at', 'is', null)
+    .whereNull('finished_at')
   if (opts.allowFailures)
     finalize = finalize.where('pending_jobs', '=', 0)
   const finalizeResult = await finalize.executeTakeFirst()

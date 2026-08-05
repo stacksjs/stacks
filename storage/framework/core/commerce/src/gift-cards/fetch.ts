@@ -108,7 +108,7 @@ export async function fetchStats(): Promise<GiftCardStats> {
   // Recently used gift cards
   const recentlyUsedGiftCards = await db
     .selectFrom('gift_cards')
-    .where('last_used_date', 'is not', null)
+    .whereNotNull('last_used_date')
     .selectAll()
     .limit(5)
     .execute()

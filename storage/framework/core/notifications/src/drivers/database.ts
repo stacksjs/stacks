@@ -90,7 +90,7 @@ export const DatabaseNotificationDriver = {
       .selectFrom('notifications')
       .selectAll()
       .where('user_id', '=', userId)
-      .where('read_at', 'is', null)
+      .whereNull('read_at')
       .orderBy('created_at', 'desc')
       .execute()
 
@@ -110,7 +110,7 @@ export const DatabaseNotificationDriver = {
       .updateTable('notifications')
       .set({ read_at: sqlDateTime() })
       .where('user_id', '=', userId)
-      .where('read_at', 'is', null)
+      .whereNull('read_at')
       .execute()
   },
 
@@ -119,7 +119,7 @@ export const DatabaseNotificationDriver = {
       .selectFrom('notifications')
       .select(db.fn.countAll().as('count'))
       .where('user_id', '=', userId)
-      .where('read_at', 'is', null)
+      .whereNull('read_at')
       .executeTakeFirst()
 
     return Number((result as unknown as { count?: number | string } | undefined)?.count ?? 0)
