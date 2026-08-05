@@ -1,5 +1,23 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.267...v0.70.268)
+
+## ✨ Features
+
+- **migrations**: regenerate Vitess corpora directly ([9c33746](https://github.com/stacksjs/stacks/commit/9c33746)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🐛 Bug Fixes
+
+- **database**: preserve validated text columns ([2aaec5f](https://github.com/stacksjs/stacks/commit/2aaec5f)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 📝 Documentation
+
+- **buddy**: list Vitess migration commands ([5103c24](https://github.com/stacksjs/stacks/commit/5103c24)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.266...v0.70.267)
 
 ## 🐛 Bug Fixes
