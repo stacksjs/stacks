@@ -46,7 +46,17 @@ export default new Action({
         to: user?.email,
       })
 
+      // Same OAuth2-compatible payload LoginAction returns, so a client can
+      // code against one shape. Registering used to hand back only `token`,
+      // which left brand-new accounts with no refresh token to exchange — they
+      // were signed out an hour into their first session while every other
+      // user refreshed normally (stacksjs/stacks#2212). The legacy `token`
+      // alias stays for backward compatibility.
       return response.json({
+        access_token: result.token,
+        refresh_token: result.refreshToken,
+        token_type: 'Bearer',
+        expires_in: result.expiresIn,
         token: result.token,
         user: {
           id: user?.id,
