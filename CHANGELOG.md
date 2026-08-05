@@ -1,5 +1,19 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.268...v0.70.269)
+
+## 🐛 Bug Fixes
+
+- **migrations**: honor requested Vitess topology ([4d62d01](https://github.com/stacksjs/stacks/commit/4d62d01)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🔧 Chores
+
+- **deps**: update database deployment libraries ([6560640](https://github.com/stacksjs/stacks/commit/6560640)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.267...v0.70.268)
 
 ## ✨ Features
