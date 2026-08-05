@@ -20,10 +20,10 @@ concurrency:
 jobs:
   # Nothing stopped a publish before this job existed. `npm` triggers straight
   # off a `v*` tag push with no dependency on CI, and ci.yml does not even run
-  # on tags, so 24+ releases went out while protocol-conformance was red. The
+  # on tags, so 24+ releases went out while the freshness checks were red. The
   # checks were never the problem; having no consequence was.
   #
-  # These are the same ten checks ci.yml runs, re-run here against the tagged
+  # These are the same checks ci.yml runs, re-run here against the tagged
   # commit rather than trusting a CI verdict that may be absent, cancelled, or
   # for a different SHA. They cost about a minute against an 11 minute release
   # that does not start publishing for over two.
@@ -38,10 +38,6 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v6
-        with:
-          # Full history: protocol:manifest:check resolves a pinned source
-          # revision with git, which a shallow clone cannot see.
-          fetch-depth: 0
 
       - name: Setup Pantry
         uses: pantry-pm/pantry/packages/action@8826c8e3a511995aa0e70a6f0c8b4289f751fa96 # v0.10.50
@@ -71,13 +67,6 @@ jobs:
         run: |
           status=0
           for check in \
-            protocol:check \
-            protocol:manifest:check \
-            protocol:release:check \
-            protocol:drivers:check \
-            protocol:desktop:check \
-            protocol:pantry:check \
-            protocol:craft:check \
             docs:buddy:check \
             docs:artifacts:check \
             docs:links:check

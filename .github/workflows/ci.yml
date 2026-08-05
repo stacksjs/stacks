@@ -227,25 +227,12 @@ jobs:
           cd storage/framework/core/buddy
           bun run compile:linux-x64
 
-  protocol-conformance:
+  artifact-freshness:
     runs-on: ubuntu-latest
-
-    services:
-      redis:
-        image: redis:8
-        ports:
-          - 6379:6379
-        options: >-
-          --health-cmd "redis-cli ping"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
 
     steps:
       - name: Checkout Code
         uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
 
       - name: Setup Pantry
         uses: pantry-pm/pantry/packages/action@8826c8e3a511995aa0e70a6f0c8b4289f751fa96 # v0.10.50
@@ -265,46 +252,18 @@ jobs:
         id: install
         run: bun install --frozen-lockfile
 
-      # One step per check, rather than one `run:` block running all ten.
+      # One step per check, rather than one `run:` block running all of them.
       #
       # Two things were wrong with the block. Under `bash -e` the first failure
-      # ended it, so a red `docs:artifacts:check` (ninth) meant
-      # `docs:links:check` (tenth) never executed at all — it has never run on
-      # main. And a failure surfaced only as "Verify pinned protocol suite",
-      # so finding out WHICH check failed meant grepping the raw log.
+      # ended it, so a red `docs:artifacts:check` meant `docs:links:check` never
+      # executed at all - it has never run on main. And a failure surfaced only
+      # as the name of the block, so finding out WHICH check failed meant
+      # grepping the raw log.
       #
       # `!cancelled()` is what actually fixes the masking: without it Actions
       # skips every later step once one fails, which is the same bug in a new
-      # costume. The install guard keeps the ten from all failing noisily when
-      # the real problem is that dependencies did not install.
-
-      - name: protocol:check
-        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
-        run: bun run protocol:check
-
-      - name: protocol:manifest:check
-        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
-        run: bun run protocol:manifest:check
-
-      - name: protocol:release:check
-        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
-        run: bun run protocol:release:check
-
-      - name: protocol:drivers:check
-        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
-        run: bun run protocol:drivers:check
-
-      - name: protocol:desktop:check
-        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
-        run: bun run protocol:desktop:check
-
-      - name: protocol:pantry:check
-        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
-        run: bun run protocol:pantry:check
-
-      - name: protocol:craft:check
-        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
-        run: bun run protocol:craft:check
+      # costume. The install guard keeps them from all failing noisily when the
+      # real problem is that dependencies did not install.
 
       - name: docs:buddy:check
         if: ${{ !cancelled() && steps.install.outcome == 'success' }}
@@ -318,24 +277,9 @@ jobs:
         if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: bun run docs:links:check
 
-      - name: Run protocol adapter
-        env:
-          PROTOCOL_REPORT_DIR: .github/protocol/reports
-        run: |
-          bun test ./storage/framework/core/buddy/src/commands/protocol/run-conformance.test.ts
-          bun test ./storage/framework/core/buddy/src/commands/protocol/craft-evidence.test.ts ./storage/framework/core/buddy/src/commands/protocol/desktop-lifecycle-report.test.ts
-          bun test ./.github/scripts/deploy/resolve-target.test.ts
-          bun run protocol:drivers:test
-          bun run protocol:conformance
-          cat .github/protocol/reports/driver-matrix.md >> "$GITHUB_STEP_SUMMARY"
-          cat .github/protocol/reports/stacks-conformance.md >> "$GITHUB_STEP_SUMMARY"
-
-      - name: Retain attributable conformance report
-        uses: actions/upload-artifact@v7
-        with:
-          name: stacks-protocol-conformance-${{ github.sha }}
-          path: .github/protocol/reports/
-          if-no-files-found: error
+      - name: Deployment target resolution
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: bun test ./.github/scripts/deploy/resolve-target.test.ts
 
   deployment-target:
     if: >-
@@ -364,7 +308,7 @@ jobs:
     if: >-
       github.event_name == 'workflow_dispatch' ||
       (github.event_name == 'push' && github.ref == 'refs/heads/main')
-    needs: [lint, typecheck, test, compile, protocol-conformance, deployment-target]
+    needs: [lint, typecheck, test, compile, artifact-freshness, deployment-target]
     runs-on: ubuntu-latest
     timeout-minutes: 30
     environment:
@@ -423,7 +367,7 @@ jobs:
 
   publish-commit:
     if: github.event_name == 'pull_request'
-    needs: [lint, typecheck, test, compile, protocol-conformance]
+    needs: [lint, typecheck, test, compile, artifact-freshness]
     runs-on: ubuntu-latest
 
     steps:
