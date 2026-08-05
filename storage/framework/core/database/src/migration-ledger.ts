@@ -14,7 +14,7 @@
  *
  * This module supplies that comparison, across three sources rather than two:
  *
- *   1. `database/migrations/*.sql` — what the corpus says should exist
+ *   1. the active dialect's migration corpus — what should exist
  *   2. the `migrations` table      — what the runner believes it has applied
  *   3. the live schema             — what is actually there
  *
@@ -33,6 +33,7 @@
 import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import process from 'node:process'
 import { join } from 'node:path'
+import { resolveMigrationDirectory } from './migration-path'
 
 export type LedgerDialect = 'sqlite' | 'mysql' | 'postgres'
 
@@ -475,7 +476,9 @@ export function classifyMigration(
 }
 
 function migrationsDir(dir?: string): string {
-  return dir ?? join(process.cwd(), 'database', 'migrations')
+  if (dir) return dir
+  const driver = String(process.env.DB_CONNECTION || 'sqlite').toLowerCase()
+  return resolveMigrationDirectory(driver === 'singlestore' ? 'singlestore' : driver)
 }
 
 function listMigrationFiles(dir: string): string[] {
@@ -492,6 +495,7 @@ async function currentDialect(): Promise<LedgerDialect | 'other'> {
   const env = await import('@stacksjs/env')
   const driver = ((env as { env?: { DB_CONNECTION?: string } }).env?.DB_CONNECTION ?? 'sqlite').toLowerCase()
   if (driver === 'sqlite' || driver === 'mysql' || driver === 'postgres') return driver
+  if (driver === 'vitess' || driver === 'singlestore') return 'mysql'
   return 'other'
 }
 

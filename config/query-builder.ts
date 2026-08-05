@@ -19,6 +19,7 @@ export default {
   dialect,
   database: databaseConfig,
   snapshotDir: 'storage/framework/database',
+  migrationDir: 'database/migrations',
   timestamps: {
     createdAt: 'created_at',
     updatedAt: 'updated_at',

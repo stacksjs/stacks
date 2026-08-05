@@ -8,13 +8,14 @@ import Database from 'bun:sqlite'
 
 // Use environment variables via @stacksjs/env for proper type coercion
 import { env as envVars } from '@stacksjs/env'
+import { resolveMigrationDirectory } from '../migration-path'
 
 function getDriver(): string {
   return envVars.DB_CONNECTION || 'sqlite'
 }
 
 function getMigrationsPath(): string {
-  return join(process.cwd(), 'database', 'migrations')
+  return resolveMigrationDirectory(getDriver())
 }
 
 function hasJobsMigrationBeenCreated(): boolean {

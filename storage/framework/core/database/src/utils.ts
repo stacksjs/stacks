@@ -18,6 +18,7 @@ import type { QueryBuilderDialect } from './dialect'
 import type { PoolConfig, ReadPolicyConfig, ReplicaConfig } from './driver-config'
 import { getConnectionDefaults } from './defaults'
 import { isMysqlWire, isVitessSharded, toQueryBuilderDialect } from './dialect'
+import { relativeMigrationDirectory, resolveMigrationDirectory } from './migration-path'
 import { contextInTransaction, markContextWrote, resolveReplicaConnection, selectReplica, shouldRouteToReplica, withTransactionContext } from './replicas'
 import { aggregateFunctions } from './types'
 
@@ -348,7 +349,7 @@ function updateQueryBuilderConfig(): void {
   setConfig({
     dialect: dialect as Parameters<typeof setConfig>[0]['dialect'],
     vitess: {
-      sharded: isVitessSharded(dbConfig.connections.vitess.sharded),
+      sharded: isVitessSharded(dbConfig.connections.vitess?.sharded),
     },
     // bun-query-builder accepts `pool` on its database config and maps it
     // onto Bun's driver options itself, so the block is handed down as-is
@@ -361,6 +362,7 @@ function updateQueryBuilderConfig(): void {
     // library default and writes a second copy to `.qb` in the project root -
     // the exact directory moving it was meant to remove.
     snapshotDir: QB_SNAPSHOT_DIR,
+    migrationDir: relativeMigrationDirectory(resolveMigrationDirectory(toQueryBuilderDialect(dialect), { snapshotDir: QB_SNAPSHOT_DIR })),
     timestamps: {
       createdAt: 'created_at',
       updatedAt: 'updated_at',

@@ -137,6 +137,7 @@ export * from './defaults'
 // Dialect classification for the committed migration corpus, so a corpus
 // emitted for one database fails loudly before a single statement runs.
 export * from './migration-dialect'
+export * from './migration-path'
 
 // Ledger drift audit (stacksjs/stacks#2203) — compare the corpus on disk, the
 // `migrations` table, and the live schema, because regeneration renumbers files

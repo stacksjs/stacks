@@ -1,13 +1,11 @@
 /**
  * Dialect classification for the committed migration corpus.
  *
- * `database/migrations/` is a single flat, git-tracked directory holding
- * dialect-SPECIFIC DDL under a dialect-ANONYMOUS name. The generator knows
- * which dialect it emitted for (it passes `getQbDialect()` into
- * bun-query-builder and writes a dialect-keyed model snapshot), but the writer
- * throws that knowledge away, and the executor hands each file straight to the
- * server without looking at it. Nothing in between verifies that the SQL on
- * disk matches the database it is about to be replayed against.
+ * A migration corpus contains dialect-specific DDL. Single-dialect projects
+ * retain the legacy flat `database/migrations/` path; multi-dialect projects
+ * isolate additional corpora under `database/migrations/<dialect>/`. This
+ * classifier remains the safety gate for legacy corpora and explicit custom
+ * paths, where the directory name alone cannot prove compatibility.
  *
  * The visible symptom is a user setting DB_CONNECTION=postgres and getting
  * `syntax error at or near "AUTOINCREMENT"` on migration 1 of 121, with

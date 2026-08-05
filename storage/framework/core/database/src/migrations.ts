@@ -48,6 +48,7 @@ import { resolveModelSources } from './model-sources'
 import { findShadowedColumnDrops, shadowDropsAllowed, shadowedDropMessage } from './shadowed-models'
 import { frameworkManagedColumns, withoutManagedColumnDrops, withoutManagedColumnDropSql } from './managed-columns'
 import { acquireMigrationLock } from './migration-lock'
+import { relativeMigrationDirectory, resolveMigrationDirectory } from './migration-path'
 import { migrateNotificationTables } from './notification-tables'
 
 // Use environment variables via @stacksjs/env for proper type coercion
@@ -142,6 +143,13 @@ function getQbDialect(): 'sqlite' | 'mysql' | 'singlestore' | 'vitess' | 'postgr
   return getDriver() === 'singlestore' ? 'singlestore' : getDialect()
 }
 
+function migrationDirectory(dialect: string = getQbDialect()): string {
+  return resolveMigrationDirectory(dialect, {
+    configured: (qbConfig as { migrationDir?: string }).migrationDir,
+    snapshotDir: QB_SNAPSHOT_DIR,
+  })
+}
+
 /**
  * Configure bun-query-builder with stacks database settings
  */
@@ -170,6 +178,7 @@ function configureQueryBuilder(): void {
     // to place there. `storage/framework` is where generated framework state
     // already lives, so it belongs there.
     snapshotDir: QB_SNAPSHOT_DIR,
+    migrationDir: relativeMigrationDirectory(migrationDirectory(getQbDialect())),
     database: {
       database: connectionConfig?.name || connectionConfig?.database || 'stacks',
       host: connectionConfig?.host || 'localhost',
@@ -441,7 +450,7 @@ function enumMembers(list: string): string[] {
 }
 
 export function preprocessSqliteMigrations(): void {
-  const migrationsDir = join(process.cwd(), 'database', 'migrations')
+  const migrationsDir = migrationDirectory('sqlite')
   let files: string[]
   try {
     files = readdirSync(migrationsDir).filter(f => f.endsWith('.sql'))
@@ -979,7 +988,7 @@ async function hideDisabledFeatureMigrations(): Promise<Array<{ original: string
     const { feature: isFeatureEnabled } = await import('@stacksjs/config')
     const fs = await import('node:fs/promises')
 
-    const migrationsDir = path.projectPath('database/migrations')
+    const migrationsDir = migrationDirectory()
     if (!existsSync(migrationsDir)) return hidden
 
     const disabledFeatures = new Set(
@@ -1213,7 +1222,7 @@ function idempotentSql(sql: string): string {
  */
 function makeMigrationsIdempotent(): void {
   const rewritten: string[] = []
-  const migrationsDir = join(process.cwd(), 'database', 'migrations')
+  const migrationsDir = migrationDirectory('postgres')
   let files: string[]
   try {
     files = readdirSync(migrationsDir).filter(f => f.endsWith('.sql'))
@@ -1563,7 +1572,7 @@ async function dropFrameworkTables(dialect: 'sqlite' | 'mysql' | 'vitess' | 'pos
  * Compares the current `app/Models/*` definitions to the stored snapshot
  * (`.qb/model-snapshot.<dialect>.json`) via bun-query-builder, then — if
  * there are changes — writes the resulting ALTER/CREATE/DROP statements
- * out to a fresh file in `database/migrations/`. Each statement is
+ * out to a fresh file in the active dialect's migration corpus. Each statement is
  * grouped by table + DDL verb and lands in its own file using the
  * runner's existing naming convention so it picks them up the same way
  * as a hand-written migration.
@@ -1780,7 +1789,8 @@ export async function generateMigrations(options: GenerateMigrationsOptions = {}
     // silently collides with the committed migrations. Refuse loudly instead of
     // clobbering; the fix is to set DB_CONNECTION (or add the `.env`).
     const mismatch = detectSnapshotDialectMismatch(dialect)
-    if (mismatch) {
+    const flatMigrationDir = join(process.cwd(), 'database', 'migrations')
+    if (mismatch && migrationDirectory(dialect) === flatMigrationDir) {
       const snapshotDir = snapshotDirLabel()
       return err(new Error(
         `Refusing to generate migrations: resolved dialect "${dialect}" has no snapshot in `
@@ -1909,7 +1919,7 @@ export async function generateMigrations(options: GenerateMigrationsOptions = {}
 }
 
 /**
- * Write generated SQL to `database/migrations/` so the runner picks it up.
+ * Write generated SQL to the active dialect's corpus so the runner picks it up.
  * Returns the number of files written.
  */
 /**
@@ -2104,7 +2114,7 @@ export async function regenerateMigrationCorpus(options: {
     configureQueryBuilder()
 
     const dialect = options.dialect ?? getQbDialect()
-    const dir = options.dir ?? join(process.cwd(), 'database', 'migrations')
+    const dir = options.dir ?? migrationDirectory(dialect)
 
     const sources = resolveModelSources()
     if (!sources) {
@@ -2224,7 +2234,7 @@ function persistGeneratedMigrations(sqlStatements: string[]): number {
   if (!sqlStatements?.length)
     return 0
 
-  const migrationsDir = join(process.cwd(), 'database', 'migrations')
+  const migrationsDir = migrationDirectory()
   try { require('node:fs').mkdirSync(migrationsDir, { recursive: true }) }
   catch { /* already exists */ }
 
