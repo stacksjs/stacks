@@ -946,7 +946,7 @@ export function migrate(buddy: CLI): void {
     })
 
   // `buddy migrate:switch <driver>` — pre-flight + plan for flipping
-  // DB_CONNECTION between sqlite / mysql / postgres
+  // DB_CONNECTION between sqlite / mysql / vitess / postgres
   // (stacksjs/stacks#1915 D-4).
   //
   // Intentionally does NOT mutate .env or auto-run migrations. The
@@ -957,16 +957,16 @@ export function migrate(buddy: CLI): void {
   // through manually — the actual migration is still `buddy migrate`
   // (or `migrate:fresh`) once the env is updated.
   buddy
-    .command('migrate:switch <driver>', 'Pre-flight check + plan for switching DB_CONNECTION between sqlite / mysql / postgres')
+    .command('migrate:switch <driver>', 'Pre-flight check + plan for switching DB_CONNECTION between sqlite / mysql / vitess / postgres')
     .action(async (driver: string) => {
       log.debug(`Running \`buddy migrate:switch ${driver}\` ...`)
       const perf = await intro('buddy migrate:switch')
 
       const target = driver.toLowerCase()
-      const allowed = new Set(['sqlite', 'mysql', 'postgres'])
+      const allowed = new Set(['sqlite', 'mysql', 'vitess', 'postgres'])
       if (!allowed.has(target)) {
         // eslint-disable-next-line no-console
-        console.log(`\n  Unknown target driver "${driver}". Allowed: sqlite, mysql, postgres.\n`)
+        console.log(`\n  Unknown target driver "${driver}". Allowed: sqlite, mysql, vitess, postgres.\n`)
         await outro(`Aborted.`, { startTime: perf, useSeconds: true })
         process.exit(ExitCode.FatalError)
       }
@@ -984,6 +984,7 @@ export function migrate(buddy: CLI): void {
       const requiredEnv: Record<string, string[]> = {
         sqlite: ['DB_DATABASE'],
         mysql: ['DB_HOST', 'DB_PORT', 'DB_USERNAME', 'DB_PASSWORD', 'DB_DATABASE'],
+        vitess: ['DB_HOST', 'DB_PORT', 'DB_USERNAME', 'DB_PASSWORD', 'DB_DATABASE'],
         postgres: ['DB_HOST', 'DB_PORT', 'DB_USERNAME', 'DB_PASSWORD', 'DB_DATABASE'],
       }
       const missingEnv = (requiredEnv[target] ?? []).filter(k => !process.env[k])
@@ -1016,8 +1017,10 @@ export function migrate(buddy: CLI): void {
       // The corpus is emitted for ONE dialect, so "switch" is not a thing the
       // shipped migrations can survive. Say so here rather than letting the
       // checklist send the user into `buddy migrate` and a syntax error.
-      // `target` is already validated against the sqlite/mysql/postgres set above.
-      const switchAudit = auditMigrationCorpus({ dir: projectPath('database/migrations'), target: target as 'sqlite' | 'postgres' | 'mysql' })
+      // Vitess uses MySQL DDL; topology-specific constraints are emitted by
+      // its own generator, while the static corpus audit checks MySQL syntax.
+      const auditTarget = target === 'vitess' ? 'mysql' : target as 'sqlite' | 'postgres' | 'mysql'
+      const switchAudit = auditMigrationCorpus({ dir: projectPath('database/migrations'), target: auditTarget })
       const switchBlocked = switchAudit.incompatible.length > 0
       const blockedFiles = new Set(switchAudit.incompatible.map(m => m.file)).size
       const dialectNote = switchBlocked
@@ -1033,7 +1036,7 @@ export function migrate(buddy: CLI): void {
       const sqliteFkNote = current === 'sqlite' && alterCount > 0
         ? `\n    (These were skipped on SQLite per stacksjs/stacks#1916 and survive on disk for replay.)`
         : ''
-      const boolNote = current === 'sqlite' && (target === 'postgres' || target === 'mysql')
+      const boolNote = current === 'sqlite' && (target === 'postgres' || target === 'mysql' || target === 'vitess')
         ? `\n  • Booleans land as 0/1 on SQLite; ${target} stores them as ${target === 'postgres' ? 'true/false' : '0/1 (compatible)'}.`
         : ''
       const tzNote = target === 'postgres'
@@ -1085,9 +1088,9 @@ export function migrate(buddy: CLI): void {
       const perf = await intro('buddy migrate:regenerate')
 
       const target = (dialect || process.env.DB_CONNECTION || 'sqlite').toLowerCase()
-      const allowed = new Set(['sqlite', 'mysql', 'postgres', 'singlestore'])
+      const allowed = new Set(['sqlite', 'mysql', 'vitess', 'postgres', 'singlestore'])
       if (!allowed.has(target)) {
-        log.syncError(`Unknown dialect "${target}". Allowed: sqlite, mysql, postgres, singlestore.`)
+        log.syncError(`Unknown dialect "${target}". Allowed: sqlite, mysql, vitess, postgres, singlestore.`)
         process.exit(ExitCode.FatalError)
       }
 
