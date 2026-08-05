@@ -153,25 +153,6 @@ const commandRegistry: Record<string, CommandLoader> = {
   'upgrade': { path: './commands/upgrade.ts', exportName: 'upgrade' },
   'version': { path: './commands/version.ts', exportName: 'version' },
 
-  // Protocol governance (framework-repo tooling; registrar in commands/protocol.ts,
-  // tooling under commands/protocol/, evidence DATA under .github/protocol/).
-  'protocol:conformance': { path: './commands/protocol.ts', exportName: 'protocol' },
-  'protocol:sync': { path: './commands/protocol.ts', exportName: 'protocol' },
-  'protocol:check': { path: './commands/protocol.ts', exportName: 'protocol' },
-  'protocol:manifest': { path: './commands/protocol.ts', exportName: 'protocol' },
-  'protocol:manifest:check': { path: './commands/protocol.ts', exportName: 'protocol' },
-  'protocol:release': { path: './commands/protocol.ts', exportName: 'protocol' },
-  'protocol:release:check': { path: './commands/protocol.ts', exportName: 'protocol' },
-  'protocol:drivers': { path: './commands/protocol.ts', exportName: 'protocol' },
-  'protocol:drivers:check': { path: './commands/protocol.ts', exportName: 'protocol' },
-  'protocol:drivers:test': { path: './commands/protocol.ts', exportName: 'protocol' },
-  'protocol:desktop': { path: './commands/protocol.ts', exportName: 'protocol' },
-  'protocol:desktop:check': { path: './commands/protocol.ts', exportName: 'protocol' },
-  'protocol:pantry': { path: './commands/protocol.ts', exportName: 'protocol' },
-  'protocol:pantry:check': { path: './commands/protocol.ts', exportName: 'protocol' },
-  'protocol:craft': { path: './commands/protocol.ts', exportName: 'protocol' },
-  'protocol:craft:check': { path: './commands/protocol.ts', exportName: 'protocol' },
-
   // Docs freshness (framework-repo tooling; registrar in commands/docs.ts,
   // tooling under commands/docs/).
   'docs:buddy': { path: './commands/docs.ts', exportName: 'docs' },
