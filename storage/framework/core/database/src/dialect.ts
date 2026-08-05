@@ -198,11 +198,11 @@ export interface DialectCapabilityOptions {
  * environment variable. The historical behavior was sharded, so an omitted
  * setting remains conservative and never enables unsupported DDL by accident.
  */
-export function isVitessSharded(explicit?: boolean): boolean {
-  if (explicit !== undefined)
+export function isVitessSharded(explicit?: boolean | string): boolean {
+  if (typeof explicit === 'boolean')
     return explicit
 
-  const raw = process.env.DB_VITESS_SHARDED?.trim().toLowerCase()
+  const raw = (typeof explicit === 'string' ? explicit : process.env.DB_VITESS_SHARDED)?.trim().toLowerCase()
   if (raw === undefined || raw === '')
     return true
   return !['0', 'false', 'no', 'off'].includes(raw)

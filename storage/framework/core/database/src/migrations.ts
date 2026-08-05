@@ -85,7 +85,7 @@ const dbConfig = {
     sqlite: { database: sqliteDefaults.database, prefix: '' },
     mysql: { name: mysqlDefaults.database, host: mysqlDefaults.host, username: mysqlDefaults.username, password: mysqlDefaults.password, port: mysqlDefaults.port, prefix: '' },
     singlestore: { name: singlestoreDefaults.database, host: singlestoreDefaults.host, username: singlestoreDefaults.username, password: singlestoreDefaults.password, port: singlestoreDefaults.port, prefix: '' },
-    vitess: { name: vitessDefaults.database, host: vitessDefaults.host, username: vitessDefaults.username, password: vitessDefaults.password, port: vitessDefaults.port, prefix: '', sharded: isVitessSharded() },
+    vitess: { name: vitessDefaults.database, host: vitessDefaults.host, username: vitessDefaults.username, password: vitessDefaults.password, port: vitessDefaults.port, prefix: '', sharded: isVitessSharded(databaseEnv.DB_VITESS_SHARDED) },
     postgres: { name: postgresDefaults.database, host: postgresDefaults.host, username: postgresDefaults.username, password: postgresDefaults.password, port: postgresDefaults.port, prefix: '' },
   },
 }
@@ -153,14 +153,16 @@ function migrationDirectory(dialect: string = getQbDialect()): string {
 /**
  * Configure bun-query-builder with stacks database settings
  */
-function configureQueryBuilder(): void {
-  const dialect = getDialect()
-  const connectionConfig = dbConfig.connections[dialect] as any
+function configureQueryBuilder(
+  targetDialect: 'sqlite' | 'mysql' | 'singlestore' | 'vitess' | 'postgres' = getQbDialect(),
+  vitessSharded?: boolean,
+): void {
+  const connectionConfig = dbConfig.connections[targetDialect] as any
 
   setConfig({
-    dialect: getQbDialect(),
+    dialect: targetDialect,
     vitess: {
-      sharded: isVitessSharded(connectionConfig?.sharded),
+      sharded: isVitessSharded(vitessSharded ?? connectionConfig?.sharded),
     },
     // bun-query-builder defaults to `verbose: true`, which dumps an
     // unconditional wall of `-- Comparing with stored snapshot`,
@@ -178,11 +180,11 @@ function configureQueryBuilder(): void {
     // to place there. `storage/framework` is where generated framework state
     // already lives, so it belongs there.
     snapshotDir: QB_SNAPSHOT_DIR,
-    migrationDir: relativeMigrationDirectory(migrationDirectory(getQbDialect())),
+    migrationDir: relativeMigrationDirectory(migrationDirectory(targetDialect)),
     database: {
       database: connectionConfig?.name || connectionConfig?.database || 'stacks',
       host: connectionConfig?.host || 'localhost',
-      port: connectionConfig?.port || (dialect === 'postgres' ? 5432 : dialect === 'mysql' ? 3306 : 0),
+      port: connectionConfig?.port || (targetDialect === 'postgres' ? 5432 : targetDialect === 'vitess' ? 15306 : targetDialect === 'mysql' || targetDialect === 'singlestore' ? 3306 : 0),
       username: connectionConfig?.username || '',
       password: connectionConfig?.password || '',
     },
@@ -1616,7 +1618,14 @@ export async function previewPendingMigrations(options: GenerateMigrationsOption
     if (skip)
       return []
     const { applyRenames, fromDb } = resolveGenerateOptions(options)
-    const result = await qbGenerateMigration(modelsDir, { dialect: getQbDialect(), dryRun: true, applyRenames, fromDb })
+    const qbDialect = getQbDialect()
+    const result = await qbGenerateMigration(modelsDir, {
+      dialect: qbDialect,
+      vitessSharded: qbDialect === 'vitess' ? isVitessSharded(dbConfig.connections.vitess.sharded) : undefined,
+      dryRun: true,
+      applyRenames,
+      fromDb,
+    })
     const operations = result.operations ?? []
     // Framework-managed columns (trait ALTERs, not model `attributes`) are not
     // real strays — don't surface them as destructive drops in the confirmation
@@ -1820,7 +1829,14 @@ export async function generateMigrations(options: GenerateMigrationsOptions = {}
     // then saw its own content already on disk and silently skipped writing
     // anything. Keeping the qb call dry-run makes `persistGeneratedMigrations`
     // the single place that ever writes a migration file.
-    const result = await qbGenerateMigration(modelsDir, { dialect: getQbDialect(), dryRun: true, applyRenames, fromDb })
+    const qbDialect = getQbDialect()
+    const result = await qbGenerateMigration(modelsDir, {
+      dialect: qbDialect,
+      vitessSharded: qbDialect === 'vitess' ? isVitessSharded(dbConfig.connections.vitess.sharded) : undefined,
+      dryRun: true,
+      applyRenames,
+      fromDb,
+    })
 
     // Never write a migration that drops a framework-managed column: those are
     // guaranteed by runtime ALTERs (ensureUsersAuthColumns / ensureUuidColumns),
@@ -2109,11 +2125,26 @@ export async function regenerateMigrationCorpus(options: {
   dryRun?: boolean
 } = {}): Promise<Result<RegeneratedCorpus, Error>> {
   try {
-    // Establish dialect + snapshotDir before anything reads them, as every
-    // other entry point here does. resolveSnapshotDir() below depends on it.
-    configureQueryBuilder()
-
     const dialect = options.dialect ?? getQbDialect()
+    let requestedVitessSharded: boolean | undefined
+    if (dialect === 'vitess') {
+      try {
+        const { config, overridesReady } = await import('@stacksjs/config')
+        await overridesReady
+        requestedVitessSharded = isVitessSharded((config as any)?.database?.connections?.vitess?.sharded)
+      }
+      catch {
+        requestedVitessSharded = isVitessSharded(dbConfig.connections.vitess.sharded)
+      }
+    }
+    // The caller may regenerate a corpus other than DB_CONNECTION. Configure
+    // the generator for that requested target before it selects the DDL
+    // driver; otherwise `migrate:regenerate vitess` inherits SQLite's defaults
+    // and silently emits the sharded Vitess profile.
+    configureQueryBuilder(
+      dialect as 'sqlite' | 'mysql' | 'singlestore' | 'vitess' | 'postgres',
+      requestedVitessSharded,
+    )
     const dir = options.dir ?? migrationDirectory(dialect)
 
     const sources = resolveModelSources()
@@ -2165,7 +2196,11 @@ export async function regenerateMigrationCorpus(options: {
 
     let result: Awaited<ReturnType<typeof qbGenerateMigration>>
     try {
-      result = await qbGenerateMigration(sources.dir, { dialect: dialect as any, dryRun: true })
+      result = await qbGenerateMigration(sources.dir, {
+        dialect: dialect as 'sqlite' | 'mysql' | 'singlestore' | 'vitess' | 'postgres',
+        vitessSharded: requestedVitessSharded,
+        dryRun: true,
+      })
     }
     finally {
       if (snapshotParked) {
@@ -2498,7 +2533,13 @@ export async function generateMigrations2(): Promise<Result<string, Error>> {
     // dryRun: true — see the comment on the equivalent call in
     // generateMigrations() above; bun-query-builder's own file writer
     // doesn't know about already-committed migration numbering.
-    await qbGenerateMigration(modelsDir, { dialect: getQbDialect(), full: true, dryRun: true })
+    const qbDialect = getQbDialect()
+    await qbGenerateMigration(modelsDir, {
+      dialect: qbDialect,
+      vitessSharded: qbDialect === 'vitess' ? isVitessSharded(dbConfig.connections.vitess.sharded) : undefined,
+      full: true,
+      dryRun: true,
+    })
 
     log.success('Migrations generated')
     return ok('Migrations generated')

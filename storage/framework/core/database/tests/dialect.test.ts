@@ -18,6 +18,7 @@ import {
   isKnownDialect,
   isMysqlWire,
   isPostgresWire,
+  isVitessSharded,
   knownDialects,
   toQueryBuilderDialect,
 } from '../src/dialect'
@@ -49,6 +50,14 @@ describe('dialectCapabilities', () => {
 })
 
 describe('wire protocol vs feature set', () => {
+  test('reads typed and dotenv Vitess topology values identically', () => {
+    expect(isVitessSharded(false)).toBe(false)
+    expect(isVitessSharded('false')).toBe(false)
+    expect(isVitessSharded('0')).toBe(false)
+    expect(isVitessSharded(true)).toBe(true)
+    expect(isVitessSharded('true')).toBe(true)
+  })
+
   test('singlestore renders as MySQL but rejects foreign keys', () => {
     // The exact conflation this table exists to prevent.
     expect(isMysqlWire('singlestore')).toBe(true)
