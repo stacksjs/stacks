@@ -56,7 +56,7 @@ export async function fetchActive(): Promise<CategoryJsonResponse[]> {
 export async function fetchRootCategories(): Promise<CategoryJsonResponse[]> {
   const categories = await db
     .selectFrom('categories')
-    .where('parent_category_id', 'is', null)
+    .whereNull('parent_category_id')
     .where('is_active', '=', true)
     .selectAll()
     .execute()
@@ -115,14 +115,14 @@ export async function fetchStats(): Promise<CategoryStats> {
   // Root vs child categories
   const rootCategories = await db
     .selectFrom('categories')
-    .where('parent_category_id', 'is', null)
+    .whereNull('parent_category_id')
     .select(db.fn.count('id').as('count'))
     .executeTakeFirst() as { count: number } | undefined
 
   // Categories with images
   const categoriesWithImages = await db
     .selectFrom('categories')
-    .where('image_url', 'is not', null)
+    .whereNotNull('image_url')
     .select(db.fn.count('id').as('count'))
     .executeTakeFirst() as { count: number } | undefined
 
@@ -142,7 +142,7 @@ export async function fetchStats(): Promise<CategoryStats> {
   const categoriesByParent = await db
     .selectFrom('categories as c')
     .leftJoin('categories as parent', 'c.parent_category_id', '=', 'parent.id')
-    .where('c.parent_category_id', 'is not', null)
+    .whereNotNull('c.parent_category_id')
     .select([
       'c.parent_category_id',
       'parent.name as parent_name',

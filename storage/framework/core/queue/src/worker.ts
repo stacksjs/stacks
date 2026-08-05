@@ -337,7 +337,7 @@ async function fetchPendingJobs(queueName: string, limit: number): Promise<any[]
       .updateTable('jobs')
       .set({ reserved_at: now, attempts: ((job as any).attempts || 0) + 1 })
       .where('id', '=', (job as any).id)
-      .where('reserved_at', 'is', null)
+      .whereNull('reserved_at')
       .executeTakeFirst()
 
     const updated = updatedRowCount(result)

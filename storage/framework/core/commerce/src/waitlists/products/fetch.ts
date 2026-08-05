@@ -161,7 +161,7 @@ export async function fetchNotifiedBetweenDates(
     .selectAll()
     .where('notified_at', '>=', startDateStr)
     .where('notified_at', '<=', endDateStr)
-    .where('notified_at', 'is not', null)
+    .whereNotNull('notified_at')
     .execute() as WaitlistProductJsonResponse[]
 }
 
@@ -183,7 +183,7 @@ export async function fetchPurchasedBetweenDates(
     .selectAll()
     .where('purchased_at', '>=', startDateStr)
     .where('purchased_at', '<=', endDateStr)
-    .where('purchased_at', 'is not', null)
+    .whereNotNull('purchased_at')
     .execute() as WaitlistProductJsonResponse[]
 }
 
@@ -205,7 +205,7 @@ export async function fetchCancelledBetweenDates(
     .selectAll()
     .where('cancelled_at', '>=', startDateStr)
     .where('cancelled_at', '<=', endDateStr)
-    .where('cancelled_at', 'is not', null)
+    .whereNotNull('cancelled_at')
     .execute() as WaitlistProductJsonResponse[]
 }
 

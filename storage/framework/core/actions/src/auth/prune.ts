@@ -52,7 +52,7 @@ if (pruneRevoked) {
   cutoffDate.setDate(cutoffDate.getDate() - daysOld)
 
   revokedCount = await db.deleteFrom('personal_access_tokens')
-    .where('revoked_at', 'is not', null)
+    .whereNotNull('revoked_at')
     .where('revoked_at', '<', cutoffDate.toISOString())
     .execute()
 
