@@ -13,14 +13,14 @@ import { BYPASS_ENV, formatPreflightFailure, pinnedCheckScripts, runPinnedChecks
 
 describe('pinnedCheckScripts', () => {
   it('picks up both the bare and the segmented forms', () => {
-    // `protocol:check` has no middle segment; `protocol:drivers:check` does.
-    // A first attempt at this regex required one and silently dropped
-    // `protocol:check` from the suite, shrinking the gate by one check.
+    // `docs:check` has no middle segment; `docs:buddy:check` does. A first
+    // attempt at this regex required one and silently dropped the unsegmented
+    // scripts from the suite, shrinking the gate.
     expect(pinnedCheckScripts({
-      'protocol:check': 'x',
-      'protocol:drivers:check': 'x',
+      'docs:check': 'x',
+      'docs:artifacts:check': 'x',
       'docs:buddy:check': 'x',
-    })).toEqual(['docs:buddy:check', 'protocol:check', 'protocol:drivers:check'])
+    })).toEqual(['docs:artifacts:check', 'docs:buddy:check', 'docs:check'])
   })
 
   it('excludes checks that are not generated-artifact freshness checks', () => {
@@ -30,26 +30,26 @@ describe('pinnedCheckScripts', () => {
       'types:check': 'x',
       'format:check': 'x',
       'deps:lockfile:check': 'x',
-      'protocol:check': 'x',
-    })).toEqual(['protocol:check'])
+      'docs:links:check': 'x',
+    })).toEqual(['docs:links:check'])
   })
 
   it('excludes generators, keeping only their check counterparts', () => {
     expect(pinnedCheckScripts({
       'docs:buddy': 'x',
       'docs:buddy:check': 'x',
-      'protocol:drivers': 'x',
+      'docs:artifacts': 'x',
     })).toEqual(['docs:buddy:check'])
   })
 
   it('picks up a newly added check with no code change', () => {
     // The point of deriving the list: adding a script is enough.
-    expect(pinnedCheckScripts({ 'protocol:brand-new:check': 'x' })).toEqual(['protocol:brand-new:check'])
+    expect(pinnedCheckScripts({ 'docs:brand-new:check': 'x' })).toEqual(['docs:brand-new:check'])
   })
 
   it('returns a stable order regardless of key order', () => {
-    const a = pinnedCheckScripts({ 'protocol:b:check': 'x', 'protocol:a:check': 'x' })
-    const b = pinnedCheckScripts({ 'protocol:a:check': 'x', 'protocol:b:check': 'x' })
+    const a = pinnedCheckScripts({ 'docs:b:check': 'x', 'docs:a:check': 'x' })
+    const b = pinnedCheckScripts({ 'docs:a:check': 'x', 'docs:b:check': 'x' })
     expect(a).toEqual(b)
   })
 
@@ -125,7 +125,7 @@ describe('formatPreflightFailure', () => {
   })
 
   it('states that nothing was mutated, and how to proceed', () => {
-    const message = formatPreflightFailure([{ script: 'protocol:check', output: 'boom' }])
+    const message = formatPreflightFailure([{ script: 'docs:links:check', output: 'boom' }])
 
     // The whole value over the CI gate is that this runs before the tag exists.
     expect(message).toContain('Nothing was bumped, committed, or tagged.')

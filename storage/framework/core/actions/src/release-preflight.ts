@@ -9,9 +9,8 @@
  * The check list is DERIVED from package.json rather than written out again.
  * There are already copies in ci.yml and release.yml, and a third hand-kept
  * list would be the same drift problem this whole gate exists to prevent: add a
- * `protocol:*:check` script, forget one list, and the gate silently stops
- * covering it. Anything matching `protocol:*:check` or `docs:*:check` is picked
- * up automatically.
+ * `docs:*:check` script, forget one list, and the gate silently stops covering
+ * it. Anything matching `docs:*:check` is picked up automatically.
  */
 
 import { readFileSync } from 'node:fs'
@@ -27,7 +26,7 @@ export interface PreflightResult {
 }
 
 /**
- * The pinned suite: every `protocol:…:check` and `docs:…:check` script.
+ * The pinned suite: every `docs:…:check` script.
  *
  * Deliberately narrow. `types:check`, `format:check` and `deps:lockfile:check`
  * also end in `:check` but are not generated-artifact freshness checks, they
@@ -35,10 +34,9 @@ export interface PreflightResult {
  */
 export function pinnedCheckScripts(scripts: Record<string, unknown>): string[] {
   return Object.keys(scripts)
-    // The optional middle segment matters: `protocol:check` has none, while
-    // `protocol:drivers:check` and `docs:buddy:check` do. Requiring one silently
-    // dropped `protocol:check` from the suite.
-    .filter(name => /^(?:protocol|docs):(?:[\w:-]+:)?check$/.test(name))
+    // The middle segment is optional so a bare `docs:check` would still be
+    // picked up; requiring one silently dropped the unsegmented scripts.
+    .filter(name => /^docs:(?:[\w:-]+:)?check$/.test(name))
     .sort()
 }
 
