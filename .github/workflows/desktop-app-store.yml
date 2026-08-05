@@ -20,12 +20,14 @@ on:
         required: true
         type: string
       app-signing-identity:
-        description: Mac App Distribution signing identity
-        required: true
+        description: Mac App Distribution signing identity; defaults to the identity imported from APPLE_APP_CERTIFICATE_BASE64
+        default: ''
+        required: false
         type: string
       installer-signing-identity:
-        description: Mac Installer Distribution signing identity
-        required: true
+        description: Mac Installer Distribution signing identity; defaults to the identity imported from APPLE_INSTALLER_CERTIFICATE_BASE64
+        default: ''
+        required: false
         type: string
       minimum-macos:
         description: Minimum supported macOS version
@@ -208,6 +210,18 @@ jobs:
           printf 'APPLE_PROVISIONING_PROFILE=%s\n' "$PROVISIONING_PROFILE_PATH" >> "$GITHUB_ENV"
           printf 'APP_STORE_CONNECT_API_KEY_PATH=%s\n' "$PRIVATE_KEYS_DIR/AuthKey_${APP_STORE_CONNECT_API_KEY_ID}.p8" >> "$GITHUB_ENV"
 
+      # A marketing version never carries a `v`. Falling back to the raw tag put
+      # `v1.2.3` in the App Store delivery receipt while buddy built the package
+      # as 1.2.3 from package.json, so the receipt disagreed with its artifact.
+      - name: Resolve marketing version
+        id: version
+        env:
+          APP_VERSION: ${{ inputs.app-version }}
+          RELEASE_TAG: ${{ inputs.release-tag }}
+        run: |
+          set -euo pipefail
+          printf 'value=%s\n' "${APP_VERSION:-${RELEASE_TAG#v}}" >> "$GITHUB_OUTPUT"
+
       # Identities default to whatever the Action actually imported, so a caller
       # only has to pin `app-signing-identity` when the keychain holds more than
       # one candidate. A hand-typed identity string that does not match the
@@ -221,6 +235,7 @@ jobs:
       - name: Build and sign Mac App Store package
         env:
           APPLE_BUILD_NUMBER: ${{ github.run_number }}
+          APPLE_APP_VERSION: ${{ steps.version.outputs.value }}
           APPLE_APP_SIGNING_IDENTITY: ${{ inputs.app-signing-identity || steps.signing.outputs.apple-signing-identity }}
           APPLE_INSTALLER_SIGNING_IDENTITY: ${{ inputs.installer-signing-identity || steps.signing.outputs.apple-signing-installer-identity }}
         run: bun node_modules/@stacksjs/buddy/dist/cli.js desktop:apple:publish --package-only
@@ -239,7 +254,7 @@ jobs:
           release-checksums: sha256
           release-app-store: 'true'
           release-app-store-bundle-id: ${{ inputs.bundle-id }}
-          release-app-store-version: ${{ inputs.app-version || inputs.release-tag }}
+          release-app-store-version: ${{ steps.version.outputs.value }}
           release-app-store-build-number: ${{ github.run_number }}
           release-app-store-api-key-id: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
           release-app-store-issuer-id: ${{ secrets.APP_STORE_CONNECT_API_ISSUER_ID }}
