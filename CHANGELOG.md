@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.284...v0.70.285)
+
+## 🔧 Chores
+
+- **deps**: require accurate MySQL introspection ([ec1d327](https://github.com/stacksjs/stacks/commit/ec1d327)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.283...v0.70.284)
 
 ## 🔧 Chores
