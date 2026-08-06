@@ -483,12 +483,18 @@ for (const [modelName, model] of Object.entries(models)) {
   if (hasMutating && declared && writeMiddleware.length === 0)
     log.warn(`[orm] ${modelName}: registering UNAUTHENTICATED mutating routes at ${basePath} (explicit \`middleware: []\` opt-out)`)
 
-  // Reads get the same treatment. An anonymous read endpoint is how a customer
-  // list leaks, and until now it was the silent default — so when an app opts
-  // back into it, say so at boot with the same volume as the write warning.
+  // Anonymous reads are recorded, not warned about.
+  //
+  // They warranted a warning while they were the silent DEFAULT — that was the
+  // #2224 hazard. Now that reads default to `auth`, an open read route only
+  // exists because a model asked for it in as many words, and asking is
+  // legitimate: every public catalog does it. The framework's own 15 catalog
+  // models declare it, so warning here meant 15 lines on every boot about
+  // behaviour that is working as intended, which is how a warning stops being
+  // read at all. `debug` keeps it available to anyone auditing the surface.
   const hasRead = ['index', 'show'].some(r => enabledRoutes.includes(r))
   if (hasRead && declared && readMiddleware0.length === 0)
-    log.warn(`[orm] ${modelName}: registering UNAUTHENTICATED read routes at ${basePath} (explicit \`middleware\` opt-out) — anyone can list this table`)
+    log.debug(`[orm] ${modelName}: registering public read routes at ${basePath} (declared \`middleware.read: []\`)`)
 
   // Row-scoped resource? (explicit `ownership`, or a model with a team_id
   // column that's auto-team-scoped). If so its index/show handlers below
