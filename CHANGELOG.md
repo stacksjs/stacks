@@ -1,5 +1,19 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.282...v0.70.283)
+
+## 🐛 Bug Fixes
+
+- **cli**: prefer installed dependencies over Pantry ([20a1649](https://github.com/stacksjs/stacks/commit/20a1649)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🔧 Chores
+
+- **deps**: require bounded varchar support ([80b35d3](https://github.com/stacksjs/stacks/commit/80b35d3)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.281...v0.70.282)
 
 ## 🐛 Bug Fixes
