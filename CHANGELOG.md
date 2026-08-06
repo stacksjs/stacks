@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.271...v0.70.272)
+
+## 🔧 Chores
+
+- **deps**: finalize Vitess credential convergence ([487b108](https://github.com/stacksjs/stacks/commit/487b108)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.270...v0.70.271)
 
 ## 🔧 Chores
