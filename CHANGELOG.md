@@ -1,5 +1,23 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.288...v0.70.289)
+
+## ✨ Features
+
+- **models**: a belongsTo can declare its onDelete ([4a49c8d](https://github.com/stacksjs/stacks/commit/4a49c8d)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🐛 Bug Fixes
+
+- **ci**: tolerate npm tarball propagation ([713a685](https://github.com/stacksjs/stacks/commit/713a685)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🔧 Chores
+
+- **deps**: bun-query-builder 0.2.21 ([349047a](https://github.com/stacksjs/stacks/commit/349047a)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.287...v0.70.288)
 
 ## 🔧 Chores
