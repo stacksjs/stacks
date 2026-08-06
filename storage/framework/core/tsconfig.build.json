@@ -17,6 +17,13 @@
     "moduleResolution": "bundler",
     "paths": {
       "~/*": ["../../../*"],
+      // `@stacksjs/*` below binds the wildcard to the whole remainder, so
+      // `@stacksjs/actions/blog` looks for `./actions/blog/src`, misses, and
+      // falls back to the package's unbuilt `dist/`. Bun honours these mappings
+      // during `bun build`, so without this entry `buddy compile:*` cannot
+      // resolve the blog feed renderer on a checkout that has not built every
+      // package, which is every CI run.
+      "@stacksjs/actions/*": ["./actions/src/*"],
       "@stacksjs/*": ["./*/src"],
       "ts-pantry": ["../../../node_modules/ts-pantry"],
       "*": ["../../../pantry/*"]
