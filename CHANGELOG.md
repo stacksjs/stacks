@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.272...v0.70.273)
+
+## 🐛 Bug Fixes
+
+- **ci**: bound release install smoke test ([7ed0d69](https://github.com/stacksjs/stacks/commit/7ed0d69)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.271...v0.70.272)
 
 ## 🔧 Chores
