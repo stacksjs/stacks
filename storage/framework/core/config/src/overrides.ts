@@ -9,6 +9,7 @@
 import type { StacksConfig } from '@stacksjs/types'
 import { resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
+import { defaults } from './defaults'
 import { validateConfig } from './validators'
 
 // PRODUCTION BINARY MODE: Skip runtime config loading
@@ -49,7 +50,25 @@ function defaultsForOverrides(): StacksConfig {
   return {
     ai: {},
     analytics: {},
-    app: { name: process.env.APP_NAME || 'Stacks', env: process.env.APP_ENV || 'production' },
+    // Spread the real `app` defaults rather than hand-writing two of its keys.
+    //
+    // This object is what every consumer reads BEFORE `loadUserConfigs()`
+    // finishes, so any key missing here is `undefined` for a window whose
+    // length depends on module load order. `url` was missing, and
+    // `config.test.ts` asserting `typeof app.url === 'string'` passed or failed
+    // purely on whether the async load happened to win — which made unrelated
+    // changes to the resolution graph (a tsconfig `paths` entry, a new
+    // package.json dependency) flip `core/config` and `core/env` red with no
+    // apparent connection to what changed.
+    //
+    // `defaults.ts` already computes the complete shape and imports nothing
+    // from this file, so there is no cycle. `APP_NAME` / `APP_ENV` still win
+    // where set, preserving the previous behaviour for the two keys that had it.
+    app: {
+      ...defaults.app,
+      name: process.env.APP_NAME || defaults.app?.name || 'Stacks',
+      env: process.env.APP_ENV || 'production',
+    },
     auth: {},
     cache: {},
     cli: {},
