@@ -111,12 +111,13 @@ run_buddy() {
     CONDITIONS="--conditions development"
   fi
 
-  # Only prepend the pantry dir to NODE_PATH when the setup completed: for a
-  # node_modules app there is no ./pantry, and pointing NODE_PATH at a missing
-  # (or half-installed, after a failed bootstrap) dir makes bun miss
-  # node_modules (e.g. `Cannot find module '@stacksjs/env'` from a preload).
+  # Installed dependencies are authoritative; Pantry is a fallback for tools
+  # the app does not install. Keeping node_modules first prevents a stale local
+  # Pantry snapshot from changing migrations, builds, or production commands.
+  # Only add Pantry after setup completed so a partial bootstrap cannot affect
+  # module resolution.
   if [ -f "${PANTRY_SETUP_DONE}" ]; then
-    exec env PATH="${PANTRY_LOCAL_BIN}:${USER_LOCAL_BIN}:${PATH}" NODE_PATH="${PANTRY_DIR}:${NODE_PATH:-}" "${BUN_CMD}" ${CONDITIONS} "${BUDDY_ENTRY}" "$@"
+    exec env PATH="${PANTRY_LOCAL_BIN}:${USER_LOCAL_BIN}:${PATH}" NODE_PATH="${ROOT_DIR}/node_modules:${PANTRY_DIR}${NODE_PATH:+:${NODE_PATH}}" "${BUN_CMD}" ${CONDITIONS} "${BUDDY_ENTRY}" "$@"
   fi
   exec env PATH="${PANTRY_LOCAL_BIN}:${USER_LOCAL_BIN}:${PATH}" "${BUN_CMD}" ${CONDITIONS} "${BUDDY_ENTRY}" "$@"
 }
