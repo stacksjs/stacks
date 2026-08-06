@@ -80,5 +80,27 @@ export interface AuthComposable {
   checkAuthentication: () => Promise<boolean>
   logout: () => void
   getToken: () => string | null
+  /**
+   * The ACCESS token. Short-lived — `config.auth.tokenExpiry` caps it at one
+   * hour by default, so anything holding it must be prepared for it to expire
+   * mid-session. `authFetch` handles that; a hand-rolled `fetch` does not.
+   */
   token: Ref<string | null>
+  /** The refresh token, exchanged at `/auth/refresh` when the access token expires. */
+  refreshToken: Ref<string | null>
+  getRefreshToken: () => string | null
+  /**
+   * Exchange the refresh token for a new access token. Resolves `false` when
+   * the server refused (session over, state cleared) or when the exchange
+   * could not be attempted (offline — state kept). Concurrent callers share
+   * one exchange, which single-use rotation requires.
+   */
+  refreshSession: () => Promise<boolean>
+  /**
+   * `fetch` with the access token attached, retrying once through a refresh on
+   * a 401. Use this for authenticated requests instead of a bare `fetch`.
+   */
+  // `globalThis.Response` explicitly: this module declares its own generic
+  // `Response<T>` (an API envelope, not the DOM class), which shadows it.
+  authFetch: (input: string, init?: RequestInit) => Promise<globalThis.Response>
 }
