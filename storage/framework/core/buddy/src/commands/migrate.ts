@@ -1088,7 +1088,8 @@ export function migrate(buddy: CLI): void {
     .command('migrate:regenerate [dialect]', 'Rebuild database/migrations from your models for a given dialect')
     .option('--dry-run', 'Show what would change without writing anything', { default: false })
     .option('-f, --force', 'Regenerate even though the database already has migrations recorded', { default: false })
-    .action(async (dialect: string | undefined, options: { dryRun?: boolean, force?: boolean }) => {
+    .option('--replace-unmarked', 'Also delete migrations carrying no @generated marker (pre-marker corpora only)', { default: false })
+    .action(async (dialect: string | undefined, options: { dryRun?: boolean, force?: boolean, replaceUnmarked?: boolean }) => {
       const perf = await intro('buddy migrate:regenerate')
 
       const target = (dialect || process.env.DB_CONNECTION || 'sqlite').toLowerCase()
@@ -1115,20 +1116,32 @@ export function migrate(buddy: CLI): void {
         process.exit(ExitCode.FatalError)
       }
 
-      const plan = await regenerateMigrationCorpus({ dialect: target, dryRun: true })
+      const plan = await regenerateMigrationCorpus({ dialect: target, dryRun: true, replaceUnmarked: options.replaceUnmarked })
       if (resultFailed(plan)) {
         log.syncError(plan.error.message)
         process.exit(ExitCode.FatalError)
       }
 
-      const { files, removed, models } = plan.value
+      const { files, removed, preserved, models } = plan.value
+      // Preserved files are the ones no rerun can recreate, so they are the
+      // only part of this plan a user cannot undo by running the command
+      // again. List them by name rather than as a count (stacksjs/stacks#2234).
+      const preservedBlock = preserved.length === 0
+        ? ''
+        : `
+  • ${preserved.length} file(s) carry no @generated marker and will be KEPT:
+${preserved.map(f => `      ${f}`).join('\n')}
+    Hand-authored migrations cannot be regenerated, so they are never deleted.
+    If these are output from a Stacks version that predated the marker, re-run
+    with --replace-unmarked to replace them too.`
+
       // eslint-disable-next-line no-console
       console.log(`
   Regenerate plan: ${target}
   ─────────────────────────────────────────────
   • ${models} model(s) read from app/Models and the framework defaults
   • ${files.length} migration file(s) will be written
-  • ${removed.length} existing file(s) will be removed
+  • ${removed.length} existing file(s) will be removed${preservedBlock}
   • These files are tracked in git, so review with \`git diff\` afterwards
   ─────────────────────────────────────────────
 `)
@@ -1147,7 +1160,7 @@ export function migrate(buddy: CLI): void {
         }
       }
 
-      const result = await regenerateMigrationCorpus({ dialect: target })
+      const result = await regenerateMigrationCorpus({ dialect: target, replaceUnmarked: options.replaceUnmarked })
       if (resultFailed(result)) {
         log.syncError(result.error.message)
         process.exit(ExitCode.FatalError)
