@@ -307,17 +307,31 @@ function sleepWithJitter(ms: number): Promise<void> {
 function extractFirstBool(result: unknown, column: string): boolean {
   const row = pluckFirstRow(result)
   if (!row) return false
-  const value = (row as Record<string, unknown>)[column]
+  const value = firstColumnValue(row, column)
   return value === true || value === 1 || value === '1' || value === 't'
 }
 
 function extractFirstInt(result: unknown, column: string): number | null {
   const row = pluckFirstRow(result)
   if (!row) return null
-  const value = (row as Record<string, unknown>)[column]
+  const value = firstColumnValue(row, column)
   if (typeof value === 'number') return value
   if (typeof value === 'string' && /^-?\d+$/.test(value)) return Number.parseInt(value, 10)
   return null
+}
+
+/**
+ * Vitess may discard an alias on scalar functions and return the expression
+ * itself as the field name (for example `get_lock('name', 0)`). The lock
+ * queries select exactly one value, so falling back to that sole field keeps
+ * the parser driver-agnostic without accepting an ambiguous multi-column row.
+ */
+function firstColumnValue(row: unknown, column: string): unknown {
+  if (!row || typeof row !== 'object') return undefined
+  const record = row as Record<string, unknown>
+  if (column in record) return record[column]
+  const values = Object.values(record)
+  return values.length === 1 ? values[0] : undefined
 }
 
 function pluckFirstRow(result: unknown): unknown {

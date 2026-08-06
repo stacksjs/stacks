@@ -232,4 +232,15 @@ describe('acquireMigrationLock (mysql) — mocked db', () => {
     const handle = await acquireMigrationLock('mysql', db)
     await handle.release()
   })
+
+  test('accepts Vitess function labels when vtgate discards the alias', async () => {
+    const db = mockDb((sql) => {
+      if (sql.includes('GET_LOCK'))
+        return [{ "get_lock('stacks_migrations', 0)": 1 }]
+      return [{ "release_lock('stacks_migrations')": 1 }]
+    })
+
+    const handle = await acquireMigrationLock('vitess', db)
+    await handle.release()
+  })
 })
