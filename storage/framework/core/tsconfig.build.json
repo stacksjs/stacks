@@ -17,6 +17,17 @@
     "moduleResolution": "bundler",
     "paths": {
       "~/*": ["../../../*"],
+      // Deep subpath imports need their own entries, for the same reason they
+      // do in `tsconfig.json`: `@stacksjs/*` binds the wildcard to the whole
+      // remainder, so `@stacksjs/actions/blog` looks for `./actions/blog/src`,
+      // misses, and falls back to the package's unbuilt `dist/`. Bun honours
+      // these mappings during `bun build`, so without them
+      // `buddy compile:*` cannot resolve the blog feed renderer and the
+      // compile job fails on a checkout that has not built every package.
+      "@stacksjs/actions/*": ["./actions/src/*"],
+      "@stacksjs/browser/*": ["./browser/src/*"],
+      "@stacksjs/composables/*": ["./composables/src/*"],
+      "@stacksjs/desktop-build": ["./desktop/src"],
       "@stacksjs/*": ["./*/src"],
       "ts-pantry": ["../../../node_modules/ts-pantry"],
       "*": ["../../../pantry/*"]
