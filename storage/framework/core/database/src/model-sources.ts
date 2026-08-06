@@ -253,22 +253,27 @@ export function resolveModelSources(options: {
   const contributing = useFramework ? framework : []
   const excluded = useFramework ? [] : framework
 
+  // Shadowing is detected against EVERY framework default, not just the ones
+  // contributing models. The hazard it exists to report - a userland model
+  // taking over a framework table's name while the framework's own code goes on
+  // reading that table - does not depend on whether the default is in the
+  // generator's scope. If anything it is sharper once defaults are excluded,
+  // because then nothing else describes the table at all.
+  const frameworkByName = new Map<string, ModelSource>()
+  for (const model of framework) frameworkByName.set(model.name, model)
+
+  const shadowed: ShadowedModel[] = []
+  for (const model of user) {
+    const replaced = frameworkByName.get(model.name)
+    if (replaced)
+      shadowed.push({ name: model.name, userFile: model.file, frameworkFile: replaced.file })
+  }
+
   // Userland still overrides a framework model of the same name, which is what
   // the merge path is for.
   const byName = new Map<string, ModelSource>()
   for (const model of contributing) byName.set(model.name, model)
-
-  // Shadowing is only reachable on the merge path: `contributing` is empty when
-  // the defaults are out of scope, so nothing framework-owned is in the map for
-  // a userland model to replace, and the loop records nothing.
-  const shadowed: ShadowedModel[] = []
-  for (const model of user) {
-    const replaced = byName.get(model.name)
-    if (replaced?.origin === 'framework')
-      shadowed.push({ name: model.name, userFile: model.file, frameworkFile: replaced.file })
-
-    byName.set(model.name, model)
-  }
+  for (const model of user) byName.set(model.name, model)
 
   const models = [...byName.values()].sort((a, b) => a.name.localeCompare(b.name))
 
