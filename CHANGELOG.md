@@ -1,5 +1,19 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.285...v0.70.286)
+
+## 🐛 Bug Fixes
+
+- **deploy**: put the tenant mail hostname on the certificate it is served from ([59f2f09](https://github.com/stacksjs/stacks/commit/59f2f09)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🔧 Chores
+
+- **deps**: preserve MySQL varchar bounds ([5aac4db](https://github.com/stacksjs/stacks/commit/5aac4db)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.284...v0.70.285)
 
 ## 🔧 Chores
