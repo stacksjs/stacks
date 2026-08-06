@@ -1,5 +1,22 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.275...v0.70.277)
+
+## 🐛 Bug Fixes
+
+- **router**: mint the CSRF token before rendering, not after ([76ded64](https://github.com/stacksjs/stacks/commit/76ded64)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **release**: scope staged package manifests ([d97bdf1](https://github.com/stacksjs/stacks/commit/d97bdf1)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **release**: remove transient dependency artifacts ([08dc752](https://github.com/stacksjs/stacks/commit/08dc752)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **database**: render runtime indexes per dialect ([9f82d05](https://github.com/stacksjs/stacks/commit/9f82d05)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🔧 Chores
+
+- release v0.70.276 ([2938b6b](https://github.com/stacksjs/stacks/commit/2938b6b)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.275...v0.70.276)
 
 ## 🐛 Bug Fixes
