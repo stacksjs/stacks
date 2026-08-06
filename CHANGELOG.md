@@ -1,5 +1,20 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.277...v0.70.278)
+
+## 🐛 Bug Fixes
+
+- **migrate**: fail refused unattended changes ([a73bd27](https://github.com/stacksjs/stacks/commit/a73bd27)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **database**: align model-owned bootstrap schemas ([e56c110](https://github.com/stacksjs/stacks/commit/e56c110)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🔧 Chores
+
+- **deps**: upgrade migration planner ([a274aa1](https://github.com/stacksjs/stacks/commit/a274aa1)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.275...v0.70.277)
 
 ## 🐛 Bug Fixes
