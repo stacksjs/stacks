@@ -77,7 +77,9 @@ export function generateCsrfToken(): string {
 
 /**
  * Seed the CSRF cookie on the outgoing response if the incoming request
- * didn't already carry one. Used by the router as a post-response step
+ * didn't already carry one, or with the token the router minted before
+ * rendering (`minted`) so a server-rendered page's forms and the browser's
+ * cookie hold the same string. Used by the router as a post-response step
  * on safe-method (GET/HEAD/OPTIONS) responses so SPAs get a usable
  * cookie value before they ever submit an unsafe request.
  *
@@ -95,13 +97,19 @@ export function generateCsrfToken(): string {
  * - 2-hour `Max-Age` — short enough to limit replay if leaked, long
  *   enough that idle tabs don't constantly re-fetch tokens
  */
-export function seedCsrfCookieIfMissing(req: Request, response: Response): Response {
+export function seedCsrfCookieIfMissing(req: Request, response: Response, minted?: string): Response {
   const cookieHeader = req.headers.get('cookie') || ''
-  if (cookieHeader.includes(`${CSRF_COOKIE_NAME}=`) || cookieHeader.includes('csrf-token=')) {
+
+  // A token the router minted before rendering wins over "the header already
+  // has one", because it put that value in the header itself - and the page
+  // has already embedded it in every form it drew. Generating a second token
+  // here would store one string in the browser while the page carries another,
+  // which fails in a way indistinguishable from having no token at all.
+  if (!minted && (cookieHeader.includes(`${CSRF_COOKIE_NAME}=`) || cookieHeader.includes('csrf-token='))) {
     return response
   }
 
-  const token = generateCsrfToken()
+  const token = minted || generateCsrfToken()
   const isSecure = req.url.startsWith('https://')
   const cookie = [
     `${CSRF_COOKIE_NAME}=${token}`,

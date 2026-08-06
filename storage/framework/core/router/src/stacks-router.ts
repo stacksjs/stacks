@@ -983,6 +983,22 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
       )
     }
     const enhancedReq = enhanceRequest(req)
+
+    // Mint the CSRF token BEFORE the handler runs, not after.
+    //
+    // Seeding it on the way out (below) is too late for a server-rendered
+    // page: the page is what has to embed the token in its forms, and on a
+    // visitor's very first request it renders before any cookie exists. Their
+    // first submit then fails CSRF - the one submit most likely to be somebody
+    // trying the product for the first time.
+    //
+    // So the token is created here and pushed into the request's own cookie
+    // header, which is where a template reads cookies from. The response
+    // seeding below then reuses this exact value rather than generating a
+    // second one, so what the page embedded and what the browser stores are
+    // the same string.
+    await seedCsrfTokenForRender(enhancedReq as unknown as Request & { _csrfToken?: string })
+
     if (actionPrefetch) await actionPrefetch
 
     // Group-level apiResponse: flip `_forceJson` so `formatResult` skips
@@ -1245,9 +1261,11 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
         if (safeMethod) {
           try {
             const { seedCsrfCookieIfMissing } = await import(resolveDefaultsPath('app/Middleware/Csrf.ts'))
-            response = (seedCsrfCookieIfMissing as (req: Request, res: Response) => Response)(
+            response = (seedCsrfCookieIfMissing as (req: Request, res: Response, token?: string) => Response)(
               enhancedReq as unknown as Request,
               response,
+              // The value the render already embedded, when there was one.
+              (enhancedReq as unknown as { _csrfToken?: string })._csrfToken,
             )
           }
           catch (err) {
@@ -2378,6 +2396,60 @@ const REQUEST_METHODS: Record<string, (...args: any[]) => any> & ThisType<Enhanc
 // Decorate the incoming request with the helpers the framework's middleware
 // and actions assume are always available. Names follow Laravel's convention
 // because that's the API surface Stacks userland expects.
+/**
+ * Put a CSRF token where a server-rendered page can find it.
+ *
+ * The router seeds the cookie on the way *out*, which is fine for a
+ * single-page app - it reads the cookie on its next request and echoes the
+ * header. It is too late for a page that renders forms, because the page is
+ * what has to embed the token and, on a visitor's very first request, it
+ * renders before any cookie exists. Their first submit then fails CSRF, which
+ * is the submit most likely to belong to somebody trying the product out.
+ *
+ * So a token is created here and appended to the request's own `cookie`
+ * header, which is where a template reads cookies from. It is also recorded on
+ * the request so the response seeding reuses this exact value: two independent
+ * `randomBytes` calls would embed one token in the page and store a different
+ * one in the browser, which fails in a way that looks identical to no token at
+ * all.
+ *
+ * Safe methods only, and only when the request carries no token already.
+ * Anything else is somebody's live session and must not have its token
+ * rotated mid-flight.
+ */
+async function seedCsrfTokenForRender(req: Request & { _csrfToken?: string }): Promise<void> {
+  const method = req.method?.toUpperCase?.() ?? 'GET'
+  if (method !== 'GET' && method !== 'HEAD')
+    return
+
+  const cookieHeader = req.headers?.get?.('cookie') ?? ''
+  if (cookieHeader.includes('X-CSRF-Token=') || cookieHeader.includes('csrf-token='))
+    return
+
+  try {
+    const { generateCsrfToken, CSRF_COOKIE_NAME } = await import(resolveDefaultsPath('app/Middleware/Csrf.ts'))
+    const token = (generateCsrfToken as () => string)()
+
+    req._csrfToken = token
+
+    // Headers on an incoming Request are immutable in some runtimes, so a
+    // failure here is not fatal: the response still seeds the cookie and the
+    // next page load carries it. It only costs the very first submit.
+    try {
+      const merged = cookieHeader
+        ? `${cookieHeader}; ${CSRF_COOKIE_NAME}=${token}`
+        : `${CSRF_COOKIE_NAME}=${token}`
+      req.headers.set('cookie', merged)
+    }
+    catch {
+      // Immutable headers; the response seeding below still applies.
+    }
+  }
+  catch {
+    // No CSRF middleware in this project's defaults. Nothing to seed.
+  }
+}
+
 export function enhanceRequest(req: EnhancedRequest): EnhancedRequest {
   applyRequestEnhancements(req as unknown as Request, req.params || {})
 
