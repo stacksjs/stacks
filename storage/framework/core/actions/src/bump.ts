@@ -401,7 +401,11 @@ async function stageReleaseArtifacts(): Promise<void> {
   // `git add` stages a filename with literal quotes in it. Let git do the
   // matching. Unmodified matches are a no-op, but a pathspec matching nothing
   // at all is fatal, so the optional two are checked first.
-  const pathspecs = [':(glob)**/package.json', 'package.json']
+  // Framework releases only bump manifests inside the vendored framework.
+  // A repository-wide `**/package.json` also matches package-manager scratch
+  // directories (for example an interrupted `node_modules.partial` install),
+  // which can otherwise smuggle generated dependency manifests into the tag.
+  const pathspecs = [':(glob)storage/framework/**/package.json', 'package.json']
   for (const file of ['CHANGELOG.md', 'bun.lock']) {
     if (existsSync(p.projectPath(file)))
       pathspecs.push(file)
