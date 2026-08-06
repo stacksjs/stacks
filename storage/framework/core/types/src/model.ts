@@ -26,6 +26,26 @@ export interface ForeignKeyConfig {
 export interface BaseRelation {
   foreignKey?: string
   relationName?: string
+  /**
+   * What happens to this row when the row it points at is deleted.
+   *
+   * The database enforces it, which is the point: an application that deletes
+   * a parent and then its children has to get the order right in every place
+   * it deletes, forever, and the one it misses leaves rows nothing can reach.
+   * `'cascade'` on the relation is the same rule written once, and the server
+   * applies it to deletes the application never made - a manual `DELETE`, a
+   * restore, another service sharing the database.
+   *
+   * Left undefined the database's default applies, which is `NO ACTION`: the
+   * delete is refused while a child still points at the row.
+   *
+   * Not for a polymorphic pair (`commentable_id` beside `commentable_type`).
+   * There is no foreign key on those - the constraint would name one table and
+   * reject every row pointing at another - so there is nothing to cascade.
+   */
+  onDelete?: OnForeignKeyAction
+  /** The same for an update to the referenced key. Rare: primary keys are not usually rewritten. */
+  onUpdate?: OnForeignKeyAction
 }
 
 export interface Relation<T = string> extends BaseRelation {

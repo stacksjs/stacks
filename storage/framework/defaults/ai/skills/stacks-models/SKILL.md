@@ -141,6 +141,28 @@ duplicating that relationship column as an attribute.
 `morphedByMany`. Each takes an array of model names, or an object form when you
 need to name the foreign key.
 
+The object form is also where a `belongsTo` says what happens to its row when
+the row it points at is deleted:
+
+```ts
+belongsTo: [
+  { model: 'Repository', onDelete: 'cascade' },
+  { model: 'User', foreignKey: 'author_id', onDelete: 'set null' },
+],
+```
+
+`'cascade' | 'set null' | 'restrict' | 'no action'`, enforced by the database
+on the foreign key. Left off, the default applies: the delete is refused while
+a child still points at the row.
+
+Worth declaring rather than deleting children in application code. The order
+has to be right in every place that deletes, forever, and the place that misses
+one leaves rows nothing can reach - while the database applies the rule to
+deletes the application never made: a manual `DELETE`, a restore, another
+service sharing the schema. Not for a polymorphic pair (`commentable_id`
+beside `commentable_type`): those carry no foreign key at all, because a
+constraint would name one table and reject every row pointing at another.
+
 Use the named object form for a many-to-many relation that owns its pivot
 schema. It keeps the relation accessor, migration, pivot defaults, timestamps,
 and uniqueness in the model definition:
