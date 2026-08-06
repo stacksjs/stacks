@@ -17,19 +17,6 @@
     "moduleResolution": "bundler",
     "paths": {
       "~/*": ["../../../*"],
-      // `@stacksjs/*` below binds the wildcard to the whole remainder, so
-      // `@stacksjs/actions/blog` looks for `./actions/blog/src`, misses, and
-      // falls back to the package's unbuilt `dist/`. Bun honours these mappings
-      // during `bun build`, so without this entry `buddy compile:*` cannot
-      // resolve the blog feed renderer on a checkout that has not built every
-      // package, which is every CI run.
-      //
-      // Deliberately only `actions`. The equivalent `browser` / `composables`
-      // entries belong in `tsconfig.json` (where they fix typecheck) and are
-      // NOT mirrored here: adding them to this file made `core/config` and
-      // `core/env` tests fail in CI, since this config also governs how
-      // `bun test` resolves specifiers for every package under `core/`.
-      "@stacksjs/actions/*": ["./actions/src/*"],
       "@stacksjs/*": ["./*/src"],
       "ts-pantry": ["../../../node_modules/ts-pantry"],
       "*": ["../../../pantry/*"]
