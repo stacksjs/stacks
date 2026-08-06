@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.279...v0.70.280)
+
+## 🐛 Bug Fixes
+
+- **vitess**: parse scalar migration locks ([fe904b7](https://github.com/stacksjs/stacks/commit/fe904b7)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.278...v0.70.279)
 
 ## 🐛 Bug Fixes
