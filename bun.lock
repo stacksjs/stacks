@@ -1008,6 +1008,7 @@
       "name": "@stacksjs/testing",
       "version": "0.70.293",
       "dependencies": {
+        "@stacksjs/auth": "workspace:*",
         "@stacksjs/ts-cloud": "^0.7.103",
       },
       "devDependencies": {
