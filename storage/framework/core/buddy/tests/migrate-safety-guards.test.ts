@@ -36,6 +36,8 @@ describe('buddy migrate safety guards', () => {
     expect(migrateSection).toContain('isCI || !hasTTY')
     // a declined prompt cancels without applying anything
     expect(migrateSection).toContain('Migration cancelled — no changes applied.')
+    // a deploy refused by the destructive gate must fail its pre-start command
+    expect(migrateSection).toContain('isCI || !hasTTY ? ExitCode.FatalError : ExitCode.Success')
   })
 
   it('migrate:fresh: hard kill-switch refuses when the guard is "disabled"', () => {

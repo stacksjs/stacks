@@ -541,7 +541,10 @@ export function migrate(buddy: CLI): void {
       if (!proceed) {
         lock.release()
         await outro('Migration cancelled — no changes applied.', { startTime: perf, useSeconds: true })
-        process.exit(ExitCode.Success)
+        // An operator declining an interactive prompt is a successful cancel.
+        // A non-interactive refusal is a failed deployment precondition and
+        // must propagate a non-zero status to systemd/ts-cloud.
+        process.exit(isCI || !hasTTY ? ExitCode.FatalError : ExitCode.Success)
       }
 
       // Auth/oauth tables migrate by default, and run BEFORE the numbered
