@@ -1,5 +1,27 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.293...v0.70.294)
+
+## ✨ Features
+
+- **deploy**: verify the mail zone after publishing it ([2ab6124](https://github.com/stacksjs/stacks/commit/2ab6124)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🐛 Bug Fixes
+
+- **build**: resolve @stacksjs/actions subpath when compiling the CLI (#2247) ([aabc82b](https://github.com/stacksjs/stacks/commit/aabc82b)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2242](https://github.com/stacksjs/stacks/issues/2242), [#2247](https://github.com/stacksjs/stacks/issues/2247), [#2247](https://github.com/stacksjs/stacks/issues/2247), [#2223](https://github.com/stacksjs/stacks/issues/2223), [#2246](https://github.com/stacksjs/stacks/issues/2246), [#2244](https://github.com/stacksjs/stacks/issues/2244), [#2246](https://github.com/stacksjs/stacks/issues/2246))
+- **testing**: make actingAs() actually authenticate (#2244) ([0e06ef3](https://github.com/stacksjs/stacks/commit/0e06ef3)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2228](https://github.com/stacksjs/stacks/issues/2228), [#2244](https://github.com/stacksjs/stacks/issues/2244), [#2244](https://github.com/stacksjs/stacks/issues/2244))
+- **orm**: auth-guard auto-CRUD reads by default, and match user routes by shape (#2245) ([7daf69e](https://github.com/stacksjs/stacks/commit/7daf69e)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2224](https://github.com/stacksjs/stacks/issues/2224), [#2245](https://github.com/stacksjs/stacks/issues/2245), [#2245](https://github.com/stacksjs/stacks/issues/2245), [#1949](https://github.com/stacksjs/stacks/issues/1949))
+- **queue**: resolve job names against the framework defaults too (#2243) ([150e80e](https://github.com/stacksjs/stacks/commit/150e80e)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2225](https://github.com/stacksjs/stacks/issues/2225), [#2243](https://github.com/stacksjs/stacks/issues/2243), [#2243](https://github.com/stacksjs/stacks/issues/2243))
+- **config**: complete the app shape in the synchronous overrides fallback (#2246) ([e0ceff4](https://github.com/stacksjs/stacks/commit/e0ceff4)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2246](https://github.com/stacksjs/stacks/issues/2246), [#2246](https://github.com/stacksjs/stacks/issues/2246))
+- **database**: stop merging framework demo models into every app's schema (#2221) ([1a998d1](https://github.com/stacksjs/stacks/commit/1a998d1)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2220](https://github.com/stacksjs/stacks/issues/2220), [#2221](https://github.com/stacksjs/stacks/issues/2221), [#2221](https://github.com/stacksjs/stacks/issues/2221))
+- **queue**: make preventOverlapping and withoutOverlapping actually guard (#2222) ([4aba7f8](https://github.com/stacksjs/stacks/commit/4aba7f8)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#1984](https://github.com/stacksjs/stacks/issues/1984), [#2222](https://github.com/stacksjs/stacks/issues/2222), [#2222](https://github.com/stacksjs/stacks/issues/2222))
+- **types**: resolve @stacksjs subpath imports to sources — typecheck green (#2223) ([a535d1a](https://github.com/stacksjs/stacks/commit/a535d1a)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2223](https://github.com/stacksjs/stacks/issues/2223), [#2223](https://github.com/stacksjs/stacks/issues/2223))
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+- _Glenn Michael Torregosa <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.292...v0.70.293)
 
 ## 🐛 Bug Fixes
