@@ -35,6 +35,7 @@ jobs:
   release-gate:
     name: release gate
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - name: Checkout Code
         uses: actions/checkout@v6
@@ -72,7 +73,7 @@ jobs:
             docs:links:check
           do
             echo "::group::$check"
-            if bun run "$check"; then
+            if timeout 120s bun run "$check"; then
               echo "$check ok"
             else
               echo "::error title=Release gate::$check failed. Regenerate the artifact and re-tag, or set RELEASE_GATE_BYPASS to ship anyway."
@@ -90,6 +91,7 @@ jobs:
     name: npm
     needs: release-gate
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     outputs:
       version: ${{ steps.get_version.outputs.version }}
     steps:
