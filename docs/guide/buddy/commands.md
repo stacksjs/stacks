@@ -3111,6 +3111,7 @@ Rebuild database/migrations from your models for a given dialect
 | --- | --- | --- | --- |
 | `--dry-run` | Show what would change without writing anything | boolean, optional | `false` |
 | `-f`, `--force` | Regenerate even though the database already has migrations recorded | boolean, optional | `false` |
+| `--replace-unmarked` | Also delete migrations carrying no @generated marker (pre-marker corpora only) | boolean, optional | `false` |
 
 ### `migrate:status`
 
