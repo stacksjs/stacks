@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.280...v0.70.281)
+
+## 🔧 Chores
+
+- **deps**: require MySQL DDL fix ([2a3d5e6](https://github.com/stacksjs/stacks/commit/2a3d5e6)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.279...v0.70.280)
 
 ## 🐛 Bug Fixes
