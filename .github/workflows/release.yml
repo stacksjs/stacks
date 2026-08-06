@@ -191,7 +191,10 @@ jobs:
           cd "$smoke_dir"
           echo '{"name":"stacks-release-smoke","private":true}' > package.json
           installed=false
-          for attempt in 1 2 3 4 5 6; do
+          # npm's package metadata can become visible before the corresponding
+          # tarball reaches every registry edge. Allow three minutes for that
+          # propagation; the per-attempt timeout still bounds network stalls.
+          for attempt in $(seq 1 18); do
             # A package published near the end of the workspace can still be
             # absent from registry metadata cached by the first failed install.
             # Force each retry to fetch fresh manifests so eventual consistency
@@ -204,7 +207,7 @@ jobs:
               installed=true
               break
             fi
-            if [ "$attempt" -eq 6 ]; then
+            if [ "$attempt" -eq 18 ]; then
               echo "::error::stacks@$version is published but cannot be installed from a clean project"
               exit 1
             fi
