@@ -2631,6 +2631,35 @@ export function resolveDmarcPolicy(policy: unknown): 'none' | 'quarantine' | 're
   return policy === 'none' || policy === 'quarantine' || policy === 'reject' ? policy : 'quarantine'
 }
 
+/**
+ * Normalize a provider's record name to a lowercase FQDN.
+ *
+ * Providers disagree: some return `_dmarc`, some `_dmarc.example.com.`, some
+ * `@` or `''` for the apex. Comparing raw names across them silently matches
+ * nothing, which reads as "no existing record" and duplicates it.
+ */
+export function zoneFqdn(name: unknown, zone: string): string {
+  const apex = zone.replace(/\.$/, '').toLowerCase()
+  const n = String(name ?? '').replace(/\.$/, '').toLowerCase()
+  if (!n || n === '@')
+    return apex
+  return n === apex || n.endsWith(`.${apex}`) ? n : `${n}.${apex}`
+}
+
+/**
+ * Pick every record at one name and type out of a FULL zone listing.
+ *
+ * Separated out because the failure it guards is invisible: a provider's
+ * `listRecords(domain, type)` is not a portable filter — Porkbun scopes it to
+ * the apex — so selecting from a type-filtered listing finds no `_dmarc` or
+ * `<selector>._domainkey` record and the caller adds a duplicate rather than
+ * replacing. Selection must happen here, over everything the zone holds.
+ */
+export function selectRecordsAt<T extends { name?: unknown, type?: unknown }>(records: T[], fqdn: string, type: string, zone: string): T[] {
+  const target = zoneFqdn(fqdn, zone)
+  return records.filter(r => String(r.type).toUpperCase() === type.toUpperCase() && zoneFqdn(r.name, zone) === target)
+}
+
 /** The TXT content a provider returned, unquoted and trimmed for comparison. */
 export function txtContent(record: { content?: unknown, value?: unknown }): string {
   return String(record.content ?? record.value ?? '').replace(/^"|"$/g, '')
@@ -2731,22 +2760,32 @@ export async function reconcileMailDns(res: MailTenantResult, ip: string, logger
     return byHand(`no configured DNS provider administers this zone`)
 
   // Names are written as FQDNs; providers derive the zone root from `domain`
-  // and strip it back off. Records come back either way, so normalize before
-  // comparing.
-  const toFqdn = (name: string): string => {
-    const n = String(name || '').replace(/\.$/, '').toLowerCase()
-    if (!n || n === '@')
-      return domain.toLowerCase()
-    return n === domain.toLowerCase() || n.endsWith(`.${domain.toLowerCase()}`) ? n : `${n}.${domain.toLowerCase()}`
-  }
+  // and strip it back off. Records come back either way, so `zoneFqdn`
+  // normalizes both sides before anything is compared.
   const apex = domain.toLowerCase()
   const dkimFqdn = `${dkimName}.${domain}`
   const dmarcFqdn = `_dmarc.${domain}`
   const mailFqdn = `mail.${domain}`
 
-  const list = async (type: string): Promise<any[]> => {
-    const res = await provider.listRecords(domain, type)
-    return res?.success ? (res.records || []) : []
+  /**
+   * Every record at one name and type, read from a FULL zone listing.
+   *
+   * `listRecords(domain, type)` must not be used here. It is not a portable
+   * server-side filter: Porkbun implements it as `retrieveByNameType` scoped to
+   * the zone apex, so asking for TXT returns the apex TXT records and silently
+   * omits every subdomain one — `_dmarc` and `<selector>._domainkey` come back
+   * as "not present". A replacement that cannot see the existing record does
+   * not replace it, it adds a second one beside it. Two DMARC records is not a
+   * redundant policy: RFC 7489 has receivers ignore the policy entirely, so the
+   * domain silently loses DMARC while the zone looks more configured than
+   * before. Observed in production on the deploy that introduced this function.
+   *
+   * Re-read per call rather than cached, because the writes below change the
+   * answer and a stale listing reintroduces exactly the bug above.
+   */
+  const recordsAt = async (fqdn: string, type: string): Promise<any[]> => {
+    const res = await provider.listRecords(domain)
+    return selectRecordsAt(res?.success ? (res.records || []) : [], fqdn, type, domain)
   }
 
   /**
@@ -2762,13 +2801,20 @@ export async function reconcileMailDns(res: MailTenantResult, ip: string, logger
    * be replaced surgically.
    */
   const replaceTxt = async (fqdn: string, content: string, owns: (existing: string) => boolean): Promise<void> => {
-    const existing = (await list('TXT')).filter(r => toFqdn(r.name) === fqdn.toLowerCase())
+    const existing = await recordsAt(fqdn, 'TXT')
     const { remove, create } = planTxtReplacement(existing, content, owns)
     if (!create)
       return
 
-    for (const record of remove)
-      await provider.deleteRecord(domain, { ...record, name: fqdn, type: 'TXT' })
+    // A delete that fails must not be followed by a create: the old record
+    // stays, the new one lands beside it, and for `_dmarc` two records mean no
+    // policy at all (RFC 7489). Failing loudly leaves the zone as it was, which
+    // is always better than half-replacing it.
+    for (const record of remove) {
+      const removed = await provider.deleteRecord(domain, { ...record, name: fqdn, type: 'TXT' })
+      if (removed && removed.success === false)
+        throw new Error(`TXT ${fqdn}: could not remove the record being replaced (${removed.message || 'provider refused the delete'})`)
+    }
 
     const created = await provider.createRecord(domain, { name: fqdn, type: 'TXT', content, ttl: 600 })
     if (!created?.success)
@@ -2779,7 +2825,7 @@ export async function reconcileMailDns(res: MailTenantResult, ip: string, logger
     // MX: this domain's mail is hosted on our box, so our host replaces the
     // set. Anything else pointing elsewhere is named as it is removed — a
     // silently dropped MX is how a domain stops receiving mail entirely.
-    const mxRecords = (await list('MX')).filter(r => toFqdn(r.name) === apex)
+    const mxRecords = await recordsAt(apex, 'MX')
     const staleMx = mxRecords.filter(r => String(r.content ?? r.value ?? '').replace(/\.$/, '').toLowerCase() !== mailHost.toLowerCase())
     for (const record of staleMx) {
       logger.warn(`  Mail DNS: replacing an existing MX for ${domain} → ${record.content ?? record.value}`)

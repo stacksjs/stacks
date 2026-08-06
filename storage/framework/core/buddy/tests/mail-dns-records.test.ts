@@ -27,7 +27,7 @@
  */
 
 import { describe, expect, it } from 'bun:test'
-import { dnsProviderConfigsFromEnv, planTxtReplacement, resolveDmarcPolicy, txtContent } from '../src/commands/deploy'
+import { dnsProviderConfigsFromEnv, planTxtReplacement, resolveDmarcPolicy, selectRecordsAt, txtContent, zoneFqdn } from '../src/commands/deploy'
 
 /**
  * Mirrors the publisher's selector derivation. `mail` is the fallback only for
@@ -54,6 +54,61 @@ describe('DKIM record name', () => {
   it('falls back to `mail` only when nothing was reported', () => {
     expect(dkimRecordName(undefined)).toBe('mail._domainkey')
     expect(dkimRecordName('')).toBe('mail._domainkey')
+  })
+})
+
+describe('finding the existing record to replace', () => {
+  /**
+   * The bug this covers reached production. `listRecords(domain, type)` is not
+   * a portable server-side filter — Porkbun scopes it to the zone apex — so a
+   * TXT listing came back holding the apex SPF and nothing else. `_dmarc` and
+   * `mail._domainkey` looked absent, the replacement found nothing to remove,
+   * and it created a SECOND `_dmarc` record beside the old one. Under RFC 7489
+   * a domain with two DMARC records has no usable policy at all, so the deploy
+   * that was meant to relax quarantine to none removed DMARC entirely.
+   *
+   * Selection therefore happens here, over a full zone listing.
+   */
+  const zone = 'theopentimes.org'
+  const fullZone = [
+    { type: 'TXT', name: 'theopentimes.org', content: 'v=spf1 ip4:178.105.248.188 ~all' },
+    { type: 'TXT', name: 'theopentimes.org', content: 'google-site-verification=abc' },
+    { type: 'TXT', name: '_dmarc.theopentimes.org', content: 'v=DMARC1; p=quarantine; rua=mailto:no-reply@theopentimes.org' },
+    { type: 'TXT', name: 'mail._domainkey.theopentimes.org', content: 'v=DKIM1; k=rsa; p=AAAA' },
+    { type: 'MX', name: 'theopentimes.org', content: 'mail.theopentimes.org' },
+    { type: 'A', name: 'mail.theopentimes.org', content: '178.105.248.188' },
+  ]
+
+  it('finds a subdomain TXT record, not just apex ones', () => {
+    const found = selectRecordsAt(fullZone, `_dmarc.${zone}`, 'TXT', zone)
+
+    expect(found).toHaveLength(1)
+    expect(found[0]!.content).toContain('p=quarantine')
+  })
+
+  it('finds the DKIM record under its selector', () => {
+    expect(selectRecordsAt(fullZone, `mail._domainkey.${zone}`, 'TXT', zone)).toHaveLength(1)
+  })
+
+  it('separates the two apex TXT records from every subdomain one', () => {
+    expect(selectRecordsAt(fullZone, zone, 'TXT', zone)).toHaveLength(2)
+  })
+
+  it('does not confuse types at the same name', () => {
+    expect(selectRecordsAt(fullZone, zone, 'MX', zone)).toHaveLength(1)
+    expect(selectRecordsAt(fullZone, `mail.${zone}`, 'A', zone)).toHaveLength(1)
+  })
+
+  it('normalizes however a provider spells a name', () => {
+    // Relative, absolute, apex-as-@ and apex-as-empty all name the same thing.
+    expect(zoneFqdn('_dmarc', zone)).toBe(`_dmarc.${zone}`)
+    expect(zoneFqdn('_dmarc.theopentimes.org.', zone)).toBe(`_dmarc.${zone}`)
+    expect(zoneFqdn('@', zone)).toBe(zone)
+    expect(zoneFqdn('', zone)).toBe(zone)
+    expect(zoneFqdn('_DMARC.TheOpenTimes.ORG', zone)).toBe(`_dmarc.${zone}`)
+
+    const relative = [{ type: 'TXT', name: '_dmarc', content: 'v=DMARC1; p=none' }]
+    expect(selectRecordsAt(relative, `_dmarc.${zone}`, 'TXT', zone)).toHaveLength(1)
   })
 })
 
