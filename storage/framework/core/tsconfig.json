@@ -16,6 +16,10 @@
       "@stacksjs/actions/*": ["./actions/src/*"],
       "@stacksjs/browser/*": ["./browser/src/*"],
       "@stacksjs/composables/*": ["./composables/src/*"],
+      // Published name and directory name disagree: `@stacksjs/desktop-build`
+      // lives in `core/desktop/`. `@stacksjs/*` looks for `./desktop-build/src`
+      // and misses, which is the remaining pair of typecheck errors.
+      "@stacksjs/desktop-build": ["./desktop/src"],
       "@stacksjs/*": ["./*/src"],
       "stacks/*": ["./*/src"],
       "buddy": ["./buddy/src/index.ts"],
