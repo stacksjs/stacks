@@ -1,5 +1,19 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.291...v0.70.292)
+
+## 🐛 Bug Fixes
+
+- **cache**: ship runtime cache dependency ([e9a2277](https://github.com/stacksjs/stacks/commit/e9a2277)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## ✅ Tests
+
+- **cache**: guard runtime dependency manifest ([4340b5f](https://github.com/stacksjs/stacks/commit/4340b5f)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.290...v0.70.291)
 
 ## 🐛 Bug Fixes
