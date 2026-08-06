@@ -7,7 +7,7 @@ import { hasTTY, isCI } from '@stacksjs/env'
 import { appPath, frameworkPath, frameworkRuntimePath, projectPath } from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types'
 import { preflightDatabase } from '../database-preflight'
-import { DDL_CONSTRAINT_OVERRIDE_ENV, DIALECT_OVERRIDE_ENV, auditDdlConstraints, auditMigrationCorpus, dialectCapabilities, formatDdlConstraintError, formatMigrationDialectError, stripSqlNoise } from '@stacksjs/database'
+import { DDL_CONSTRAINT_OVERRIDE_ENV, DIALECT_OVERRIDE_ENV, auditDdlConstraints, auditMigrationCorpus, dialectCapabilities, formatDdlConstraintError, formatMigrationDialectError, relativeMigrationDirectory, resolveMigrationDirectory, stripSqlNoise } from '@stacksjs/database'
 import { resultFailed } from '../result'
 
 // Lazy-load @stacksjs/actions to keep `buddy --help` cheap. The barrel
@@ -169,9 +169,10 @@ function validateModelsExist(): { valid: boolean, error?: string } {
  * any action subprocess starts, so a mismatch cannot drop the framework tables
  * and only then discover it has nothing to rebuild them with.
  */
-function validateMigrationDialect(): { valid: boolean, error?: string } {
+export function validateMigrationDialect(cwd = process.cwd()): { valid: boolean, error?: string } {
   const driver = String(process.env.DB_CONNECTION || 'sqlite').toLowerCase()
-  const dir = projectPath('database/migrations')
+  const dir = resolveMigrationDirectory(driver, { cwd })
+  const relativeDir = relativeMigrationDirectory(dir, cwd)
 
   // Check 1: is this corpus written for a different DATABASE?
   //
@@ -184,7 +185,7 @@ function validateMigrationDialect(): { valid: boolean, error?: string } {
     if (driver === 'sqlite' || driver === 'postgres' || caps.wire === 'mysql') {
       const audit = auditMigrationCorpus({ dir, target })
       if (!audit.empty && audit.incompatible.length > 0)
-        return { valid: false, error: formatMigrationDialectError(audit, target, 'database/migrations') }
+        return { valid: false, error: formatMigrationDialectError(audit, target, relativeDir) }
     }
   }
 
@@ -197,7 +198,7 @@ function validateMigrationDialect(): { valid: boolean, error?: string } {
   if (process.env[DDL_CONSTRAINT_OVERRIDE_ENV] !== '1') {
     const constraints = auditDdlConstraints({ dir, dialect: driver })
     if (!constraints.empty && constraints.violations.length > 0)
-      return { valid: false, error: formatDdlConstraintError(constraints, driver, 'database/migrations') }
+      return { valid: false, error: formatDdlConstraintError(constraints, driver, relativeDir) }
   }
 
   return { valid: true }
@@ -997,7 +998,7 @@ export function migrate(buddy: CLI): void {
       let alterCount = 0
       let uniqueIdxCount = 0
       try {
-        const migrationsDir = projectPath('database/migrations')
+        const migrationsDir = resolveMigrationDirectory(target)
         if (existsSync(migrationsDir)) {
           const files = readdirSync(migrationsDir).filter(f => f.endsWith('.sql'))
           for (const f of files) {
@@ -1020,7 +1021,7 @@ export function migrate(buddy: CLI): void {
       // Vitess uses MySQL DDL; topology-specific constraints are emitted by
       // its own generator, while the static corpus audit checks MySQL syntax.
       const auditTarget = target === 'vitess' ? 'mysql' : target as 'sqlite' | 'postgres' | 'mysql'
-      const switchAudit = auditMigrationCorpus({ dir: projectPath('database/migrations'), target: auditTarget })
+      const switchAudit = auditMigrationCorpus({ dir: resolveMigrationDirectory(target), target: auditTarget })
       const switchBlocked = switchAudit.incompatible.length > 0
       const blockedFiles = new Set(switchAudit.incompatible.map(m => m.file)).size
       const dialectNote = switchBlocked
