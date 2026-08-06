@@ -1,8 +1,8 @@
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
-import { join } from 'node:path'
+import { delimiter, join } from 'node:path'
 import { afterEach, describe, expect, it } from 'bun:test'
-import { developmentConditionForProject, publishedActionCandidates, runActionSequence } from '../src/helpers/utils'
+import { actionNodePath, developmentConditionForProject, publishedActionCandidates, runActionSequence } from '../src/helpers/utils'
 
 const roots: string[] = []
 
@@ -40,6 +40,26 @@ describe('publishedActionCandidates', () => {
       '/app/node_modules/@stacksjs/actions/dist/bump.js',
       '/app/node_modules/@stacksjs/actions/dist/src/bump.js',
       '/app/node_modules/@stacksjs/actions/src/bump.ts',
+    ])
+  })
+})
+
+describe('actionNodePath', () => {
+  it('keeps installed dependencies ahead of Pantry fallbacks', () => {
+    expect(actionNodePath('/app')).toBe([
+      join('/app', 'node_modules'),
+      join('/app', 'pantry'),
+    ].join(delimiter))
+  })
+
+  it('preserves existing lookups without letting Pantry shadow node_modules', () => {
+    const pantry = join('/app', 'pantry')
+    const existing = [pantry, '/shared/packages', pantry].join(delimiter)
+
+    expect(actionNodePath('/app', existing).split(delimiter)).toEqual([
+      join('/app', 'node_modules'),
+      '/shared/packages',
+      pantry,
     ])
   })
 })

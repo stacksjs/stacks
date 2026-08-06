@@ -3,7 +3,7 @@ import type { Result } from '@stacksjs/error-handling'
 import type { ActionOptions, CliOptions, CommandError, Subprocess } from '@stacksjs/types'
 import { existsSync } from 'node:fs'
 import { homedir } from 'node:os'
-import { join } from 'node:path'
+import { delimiter, join } from 'node:path'
 import process from 'node:process'
 import { buddyOptions, runCommand } from '@stacksjs/cli'
 import { err } from '@stacksjs/error-handling'
@@ -45,6 +45,28 @@ export function developmentConditionForProject(projectRoot: string): string {
     && existsSync(join(projectRoot, 'node_modules/@stacksjs/env/src/index.ts'))
     ? '--conditions development'
     : ''
+}
+
+/**
+ * Build the lookup path for action subprocesses.
+ *
+ * Installed application dependencies are authoritative. Pantry is a fallback
+ * for compiled tools that need packages which are not installed in the app;
+ * putting it first lets an old local Pantry snapshot silently shadow the
+ * versions locked in node_modules during migrations and production deploys.
+ */
+export function actionNodePath(projectRoot: string, existingNodePath?: string): string {
+  const nodeModulesPath = join(projectRoot, 'node_modules')
+  const pantryPath = join(projectRoot, 'pantry')
+  const paths = [nodeModulesPath]
+
+  for (const entry of existingNodePath?.split(delimiter) ?? []) {
+    if (entry && entry !== nodeModulesPath && entry !== pantryPath && !paths.includes(entry))
+      paths.push(entry)
+  }
+
+  paths.push(pantryPath)
+  return paths.join(delimiter)
 }
 
 /**
@@ -112,9 +134,9 @@ export async function runAction(action: Action, options?: ActionOptions): Promis
   // Special case: hand off to the canonical views entry (STX i18n, /locale proxy, etc.)
   if (action === 'dev/views') {
     try {
-      const pantryPath = p.projectPath('pantry')
-      if (!process.env.NODE_PATH?.includes(pantryPath)) {
-        process.env.NODE_PATH = process.env.NODE_PATH ? `${pantryPath}:${process.env.NODE_PATH}` : pantryPath
+      const nodePath = actionNodePath(p.projectPath(), process.env.NODE_PATH)
+      if (process.env.NODE_PATH !== nodePath) {
+        process.env.NODE_PATH = nodePath
         require('module').Module._initPaths?.()
       }
 
@@ -233,9 +255,7 @@ export async function runAction(action: Action, options?: ActionOptions): Promis
   // Ensure pantry packages are resolvable via NODE_PATH
   // This allows compiled pantry packages (e.g., bun-plugin-stx/serve.js) to
   // import their dependencies like @stacksjs/stx at runtime
-  const pantryNodePath = p.projectPath('pantry')
-  const existingNodePath = process.env.NODE_PATH
-  const nodePath = existingNodePath ? `${pantryNodePath}:${existingNodePath}` : pantryNodePath
+  const nodePath = actionNodePath(p.projectPath(), process.env.NODE_PATH)
 
   // Dev actions manage their own output (buffered banners, etc.), so inherit
   // stdout/stderr by default. Suppress with quiet (used by multi-server mode).
