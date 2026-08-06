@@ -12,6 +12,24 @@ preload = [
 ]
 
 [test]
+# Look for tests where the tests are.
+#
+# Without this, `bun test` walks the whole project looking for test files -
+# `pantry/` included, which is a package tree of hundreds of thousands of
+# files. It follows the symlinks it finds there, and once a few hundred are
+# open the process is out of file descriptors: the next `spawn` fails `EBADF`,
+# and every test that shells out to a binary fails with it, in code nobody
+# touched. Reproduced down to one directory of 800 symlinks anywhere under the
+# project root, imported by nothing.
+#
+# `bun run` was never affected - it resolves modules rather than scanning for
+# files - which is why an application works while its suite does not.
+#
+# This matches what `buddy test` already runs (`bun test ./tests/feature/**
+# ./tests/unit/**`). A package under `storage/framework/core/*` with tests of
+# its own carries its own bunfig and is unaffected.
+root = "tests"
+
 # Tests also get the env layer so encrypted .env values resolve during the
 # suite — match production boot semantics rather than papering over a
 # different decrypt path in test-only code.
