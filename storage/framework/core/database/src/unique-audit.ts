@@ -1,6 +1,7 @@
 import type { Model } from '@stacksjs/types'
 import { path } from '@stacksjs/path'
 import { plural, snakeCase } from '@stacksjs/strings'
+import { toSqlIntrospectionDialect } from './dialect'
 import { safeGlob } from './fk-audit'
 
 // stacksjs/stacks#1952 — Unique-index drift audit. Compares each
@@ -206,8 +207,7 @@ function columnSetKey(columns: string[]): string {
 async function currentDialect(): Promise<Dialect> {
   const env = await import('@stacksjs/env')
   const driver = ((env as { env?: { DB_CONNECTION?: string } }).env?.DB_CONNECTION ?? 'sqlite').toLowerCase()
-  if (driver === 'sqlite' || driver === 'mysql' || driver === 'postgres') return driver
-  return 'other'
+  return toSqlIntrospectionDialect(driver)
 }
 
 async function getSqliteLiveUniques(db: any): Promise<LiveUniqueIndex[]> {

@@ -4,6 +4,7 @@ import { dirname } from 'node:path'
 import { plural, snakeCase } from '@stacksjs/strings'
 import { path } from '@stacksjs/path'
 import { globSync } from '@stacksjs/storage'
+import { dialectCapabilities, isKnownDialect, toSqlIntrospectionDialect } from './dialect'
 
 /**
  * Glob, but resilient to "directory doesn't exist yet" (the userland
@@ -322,8 +323,9 @@ export async function findFkOrphans(dialect?: 'sqlite' | 'mysql' | 'postgres' | 
 async function currentDialect(): Promise<'sqlite' | 'mysql' | 'postgres' | 'other'> {
   const env = await import('@stacksjs/env')
   const driver = ((env as { env?: { DB_CONNECTION?: string } }).env?.DB_CONNECTION ?? 'sqlite').toLowerCase()
-  if (driver === 'sqlite' || driver === 'mysql' || driver === 'postgres') return driver
-  return 'other'
+  if (!isKnownDialect(driver) || !dialectCapabilities(driver).supportsForeignKeys)
+    return 'other'
+  return toSqlIntrospectionDialect(driver)
 }
 
 async function getSqliteLiveFKs(db: any): Promise<LiveFK[]> {

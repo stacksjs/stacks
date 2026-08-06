@@ -21,10 +21,18 @@ import {
   isVitessSharded,
   knownDialects,
   toQueryBuilderDialect,
+  toSqlIntrospectionDialect,
 } from '../src/dialect'
 import { sqlHelpers } from '../src/sql-helpers'
 
 describe('dialectCapabilities', () => {
+  test('maps proxy drivers to their physical catalogue family', () => {
+    expect(toSqlIntrospectionDialect('vitess')).toBe('mysql')
+    expect(toSqlIntrospectionDialect('singlestore')).toBe('mysql')
+    expect(toSqlIntrospectionDialect('postgres')).toBe('postgres')
+    expect(toSqlIntrospectionDialect('unknown')).toBe('other')
+  })
+
   test('every known dialect has a self-consistent row', () => {
     for (const name of knownDialects()) {
       const caps = dialectCapabilities(name)

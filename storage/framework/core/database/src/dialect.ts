@@ -31,6 +31,9 @@ import process from 'node:process'
  */
 export type SqlWireProtocol = 'mysql' | 'postgres' | 'sqlite'
 
+/** SQL catalogue family used by schema audits and migration introspection. */
+export type SqlIntrospectionDialect = SqlWireProtocol | 'other'
+
 /**
  * The dialect string handed to bun-query-builder. Several Stacks dialects
  * collapse onto one of these — the query builder only needs to know how to
@@ -236,6 +239,17 @@ export function dialectCapabilities(dialect: string, options: DialectCapabilityO
 /** Whether the framework has an explicit capability row for this dialect. */
 export function isKnownDialect(dialect: string): boolean {
   return dialect in CAPABILITIES
+}
+
+/**
+ * Collapse a configured database driver to the information-schema family it
+ * exposes. Unknown drivers must not inherit SQLite's compatibility fallback:
+ * an audit should skip an unknown transport instead of querying the wrong
+ * catalogue and reporting false drift.
+ */
+export function toSqlIntrospectionDialect(dialect: string): SqlIntrospectionDialect {
+  if (!isKnownDialect(dialect)) return 'other'
+  return dialectCapabilities(dialect).wire
 }
 
 /**
