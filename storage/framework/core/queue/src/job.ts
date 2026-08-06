@@ -5,7 +5,7 @@
  * For class-based jobs, use bun-queue's JobBase directly.
  */
 
-import { appPath } from '@stacksjs/path'
+import { appPath, frameworkPath } from '@stacksjs/path'
 import { env as envVars } from '@stacksjs/env'
 import { enqueueAfterCommit, isInTransaction } from '@stacksjs/database'
 import { moveToDeadLetter } from './dead-letter'
@@ -549,9 +549,51 @@ export function jobBatch(jobs: Array<import('./action').Job | import('./batch').
 }
 
 /**
+ * Locate a job file by name, userland first.
+ *
+ * Actions resolve by string out of the framework defaults; jobs did not, so a
+ * framework-shipped action that dispatched a framework-shipped job by name
+ * could never find it. The default password-reset flow is exactly that shape —
+ * `SendPasswordResetEmailAction` resolves from `@stacksjs/defaults`, then calls
+ * `job('SendPasswordResetEmailJob')`, which looked only in the app's own
+ * `app/Jobs/`. In a stock app that directory holds a `.gitkeep`, so password
+ * reset silently sent nothing (stacksjs/stacks#2225).
+ *
+ * The three candidates mirror `resolveActionFile`:
+ *   1. `app/Jobs/<name>.ts`                     — userland always wins
+ *   2. `storage/framework/defaults/app/Jobs/…`  — vendored framework checkout
+ *   3. `@stacksjs/defaults`'s copy of the same  — framework-as-dependencies
+ *
+ * (3) resolves the package root through `package.json` and joins the subpath by
+ * hand rather than importing `@stacksjs/defaults/app/Jobs/<name>`, for the
+ * reason documented on `resolveActionFile`: the `./*` exports map rewrites the
+ * subpath under the `bun` condition and does not land on the file.
+ */
+export async function resolveJobFile(name: string): Promise<string | null> {
+  const candidates = [
+    appPath(`Jobs/${name}.ts`),
+    frameworkPath(`defaults/app/Jobs/${name}.ts`),
+  ]
+
+  try {
+    const pkgUrl = import.meta.resolve('@stacksjs/defaults/package.json')
+    const root = new URL('.', pkgUrl).pathname
+    candidates.push(`${root}app/Jobs/${name}.ts`)
+  }
+  catch { /* not installed in this layout; the two paths above still apply */ }
+
+  for (const candidate of candidates) {
+    if (await Bun.file(candidate).exists())
+      return candidate
+  }
+  return null
+}
+
+/**
  * Run a job immediately by name
  *
- * This loads the job from app/Jobs/{name}.ts and executes it
+ * This loads the job from app/Jobs/{name}.ts, falling back to the framework
+ * defaults, and executes it
  *
  * Wraps execution in `withTraceId(...)` so log lines, db queries, and
  * downstream HTTP calls emitted from inside the job carry the same
@@ -565,7 +607,19 @@ export async function runJob(name: string, options: { payload?: any; context?: a
   const traceId = options.traceId ?? `job:${name}:${Math.random().toString(36).slice(2, 10)}`
 
   await withTraceId(traceId, async () => {
-    const jobPath = appPath(`Jobs/${name}.ts`)
+    const jobPath = await resolveJobFile(name)
+
+    // Named explicitly rather than letting `import(undefined)` throw a module
+    // resolution error: the fix for a missing job is to create it or correct
+    // the name, and the old message pointed only at the app directory even
+    // when the job was meant to come from the framework.
+    if (!jobPath) {
+      throw new Error(
+        `Job ${name} not found. Looked in app/Jobs/${name}.ts and the framework defaults `
+        + `(storage/framework/defaults/app/Jobs, @stacksjs/defaults).`,
+      )
+    }
+
     const jobModule = await import(jobPath)
     const jobConfig = jobModule.default
 
