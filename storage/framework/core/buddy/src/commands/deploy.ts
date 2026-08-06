@@ -2298,26 +2298,65 @@ fi
 # list already inside it and skips names that have no certificate file of
 # their own. Adding a name takes an acme:issue for the union of the names
 # already on the certificate plus this one.
+#
+# --cert-name pins where that union lands. Without it tlsx names the output
+# after the FIRST --domains entry, and $CURRENT is read back from the
+# certificate, where openssl prints the SANs sorted. So the union was written
+# to whichever hostname sorted first (autodiscover.chrisbreuer.me, on the box
+# this was found on) while the mail server went on reading the untouched
+# mail.stacksjs.com.crt. The issuance succeeded, the deploy reported success,
+# and the certificate was correct - just not in the file anyone was serving.
+#
+# Nothing is appended to the scheduled renewal script, deliberately. The
+# renewal renews mail.stacksjs.com.crt using the SAN list inside that file, so
+# a name added here is renewed by construction. The previous code tried to
+# splice the hostname into that script's --domains list with
+#   sed -i "s|acme:renew -d \"|..."
+# whose quotes close before the | in the JS template literal, leaving sed the
+# unterminated expression 's|acme:renew -d ' and a shell pipe. That aborted the
+# whole mail step. Adding names there was never necessary and, until tlsx
+# renewed in place, was actively harmful: each extra name made the renewal open
+# another certificate file, and two files sharing a CN meant one overwrote the
+# other.
 CERTFILE=/etc/bun-gateway/certs/mail.stacksjs.com.crt
-RENEW=/opt/mail/renew-mail-cert.sh
 if [ -n "$DOMAIN" ] && [ -f "$CERTFILE" ] && [ -d /opt/tlsx ]; then
   MAILHOSTNAME="mail.$DOMAIN"
+  CERTNAME=$(basename "$CERTFILE" .crt)
+  CERTKEY=/etc/bun-gateway/certs/mail.stacksjs.com.key
   CURRENT=$(openssl x509 -in "$CERTFILE" -noout -text 2>/dev/null | grep -A1 'Subject Alternative Name' | tail -1 | tr -d ' ' | sed 's/DNS://g')
   case ",$CURRENT," in
     *",$MAILHOSTNAME,"*) : ;;
     *)
       ALL="$CURRENT,$MAILHOSTNAME"
-      if (cd /opt/tlsx && /usr/local/bin/bun run packages/tlsx/bin/cli.ts acme:issue -d "$ALL" --method http-01 --webroot /var/www/acme-challenge --dir /etc/bun-gateway/certs --prod) >/tmp/.mailtenant-cert 2>&1; then
-        install -m 644 /etc/bun-gateway/certs/mail.stacksjs.com.crt /etc/letsencrypt/live/mail.stacksjs.com/fullchain.pem
-        install -m 640 -g mail-server /etc/bun-gateway/certs/mail.stacksjs.com.key /etc/letsencrypt/live/mail.stacksjs.com/privkey.pem
-        systemctl restart mail || true
-        # Keep the scheduled renewal issuing the same set, or the name drops
-        # off the certificate at the next renewal.
-        [ -f "$RENEW" ] && ! grep -q "$MAILHOSTNAME" "$RENEW" && sed -i "s|acme:renew -d \"|acme:renew -d \"$MAILHOSTNAME,|" "$RENEW" 2>/dev/null
-        echo "CERTHOST:$MAILHOSTNAME"
+      # acme:issue overwrites the certificate in place, so keep a copy: this is
+      # a certificate other tenants are served from, and a partial result must
+      # not be what they get.
+      SAFE=$(mktemp -d)
+      cp -a "$CERTFILE" "$SAFE/cert" 2>/dev/null || true
+      cp -a "$CERTKEY" "$SAFE/key" 2>/dev/null || true
+      if (cd /opt/tlsx && /usr/local/bin/bun run packages/tlsx/bin/cli.ts acme:issue -d "$ALL" --cert-name "$CERTNAME" --method http-01 --webroot /var/www/acme-challenge --dir /etc/bun-gateway/certs --prod) >/tmp/.mailtenant-cert 2>&1; then
+        # Verify rather than assume. The old code reported CERTHOST on a zero
+        # exit alone, which is how an issuance that wrote somewhere else was
+        # reported as "added to the mail certificate" for weeks.
+        UPDATED=$(openssl x509 -in "$CERTFILE" -noout -text 2>/dev/null | grep -A1 'Subject Alternative Name' | tail -1 | tr -d ' ' | sed 's/DNS://g')
+        MISSING=
+        for n in $(echo "$ALL" | tr ',' ' '); do
+          case ",$UPDATED," in *",$n,"*) : ;; *) MISSING="$MISSING $n" ;; esac
+        done
+        if [ -n "$MISSING" ]; then
+          [ -f "$SAFE/cert" ] && cp -a "$SAFE/cert" "$CERTFILE"
+          [ -f "$SAFE/key" ] && cp -a "$SAFE/key" "$CERTKEY"
+          echo "CERTFAIL:issued certificate does not carry$MISSING - previous certificate kept"
+        else
+          install -m 644 "$CERTFILE" /etc/letsencrypt/live/mail.stacksjs.com/fullchain.pem
+          install -m 640 -g mail-server "$CERTKEY" /etc/letsencrypt/live/mail.stacksjs.com/privkey.pem
+          systemctl restart mail || true
+          echo "CERTHOST:$MAILHOSTNAME"
+        fi
       else
         echo "CERTFAIL:$(tail -c 200 /tmp/.mailtenant-cert | tr '\\n' ' ')"
       fi
+      rm -rf "$SAFE"
       rm -f /tmp/.mailtenant-cert
       ;;
   esac
