@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.273...v0.70.274)
+
+## 🐛 Bug Fixes
+
+- **ci**: bound framework release jobs ([4f0e34c](https://github.com/stacksjs/stacks/commit/4f0e34c)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.272...v0.70.273)
 
 ## 🐛 Bug Fixes
