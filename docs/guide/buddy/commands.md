@@ -1411,6 +1411,7 @@ Check environment configuration and validate setup
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
 | `-f`, `--file` | The environment file to use | value, optional | `""` |
+| `--strict` | Require every value in a committed env file to be encrypted, not just secret-shaped ones | boolean, optional | `false` |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
 
 Examples:
@@ -1418,6 +1419,7 @@ Examples:
 ```bash
 buddy env:check
 buddy env:check --file .env.production
+buddy env:check --file .env.production --strict
 ```
 
 ### `env:decrypt`

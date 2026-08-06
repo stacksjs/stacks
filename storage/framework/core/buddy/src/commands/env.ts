@@ -21,6 +21,8 @@ interface EnvOptions {
   verbose: boolean
   file: string
   plain: boolean
+  /** `env:check`: report EVERY unencrypted value, not just secret-shaped names. */
+  strict: boolean
   /** The global `--env <environment>` flag, e.g. `production`. */
   env: string
 }
@@ -232,9 +234,11 @@ export function env(buddy: CLI): void {
   buddy
     .command('env:check', descriptions.check)
     .option('-f, --file [file]', descriptions.file, { default: '' })
+    .option('--strict', 'Require every value in a committed env file to be encrypted, not just secret-shaped ones', { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .example('buddy env:check')
     .example('buddy env:check --file .env.production')
+    .example('buddy env:check --file .env.production --strict')
     .action(async (options: EnvOptions) => {
       log.debug('Running `buddy env:check` ...', options)
 
@@ -392,6 +396,59 @@ export function env(buddy: CLI): void {
               }
             }
           }
+
+          // Unencrypted secrets in a COMMITTED env file.
+          //
+          // Encrypting in place and un-ignoring the file is a good design with
+          // one failure mode: a value that was never encrypted looks exactly
+          // like one that was. It has already happened here — `.env.production`
+          // carried three SMTP passwords and the coming-soon secret in
+          // plaintext on a public repository (removed in a57c8ed69b, #2211),
+          // and nothing in the toolchain could have said so.
+          //
+          // Scoped to git-tracked files: a gitignored `.env` is machine-local
+          // and plaintext there is the normal case.
+          const { plaintextSecrets, trackedEnvFiles } = await import('@stacksjs/env')
+          const tracked = trackedEnvFiles(gitLsFiles())
+
+          if (!tracked.includes(envFile)) {
+            checks.push({
+              name: 'Committed secrets',
+              status: 'pass',
+              message: `${envFile} is not committed; plaintext here stays local`,
+            })
+          }
+          else {
+            // `.env.example` is the project's own statement of what a
+            // non-secret default looks like, so a value identical to its
+            // counterpart there is a documented placeholder, not a leak.
+            let placeholders: Record<string, string> = {}
+            try {
+              const examplePath = resolve(process.cwd(), '.env.example')
+              if (existsSync(examplePath))
+                placeholders = parseEnvAssignments(await storage.readTextFile(examplePath).then(f => f.data))
+            }
+            catch { /* no example file; every secret-shaped value is then reported */ }
+
+            const leaked = plaintextSecrets(values, { placeholders, strict: options.strict })
+
+            if (leaked.length === 0) {
+              checks.push({
+                name: 'Committed secrets',
+                status: 'pass',
+                message: `No unencrypted secrets in ${envFile}`,
+              })
+            }
+            else {
+              // Key names only. Printing the value would copy the secret into
+              // CI logs and terminal scrollback — the thing being prevented.
+              checks.push({
+                name: 'Committed secrets',
+                status: 'fail',
+                message: `${leaked.length} unencrypted secret${leaked.length === 1 ? '' : 's'} in committed ${envFile}: ${leaked.map(f => f.key).join(', ')}. Run \`buddy env:encrypt\`, then rotate them — they are in git history.`,
+              })
+            }
+          }
         }
         catch (error) {
           checks.push({
@@ -519,6 +576,29 @@ async function resolveDeclaredTenants(): Promise<{ self?: string, tenants: strin
  * needs the key names and whether a value is non-empty, so nothing here has to
  * decrypt - which also means it works without the private key present.
  */
+/**
+ * The repository's tracked files, or an empty string when git cannot answer.
+ *
+ * `git ls-files` rather than a hardcoded `.env.production` / `.env.staging` /
+ * `.env.ci` list: `.gitignore` un-ignores exactly those three, but
+ * `.env.development` is tracked as well — no ignore rule happens to match it —
+ * so a hardcoded list would skip a file just as public as the rest.
+ *
+ * Failing open (empty string) means a non-git checkout reports "not committed"
+ * and skips the check, rather than erroring. That is the right direction: this
+ * check exists to catch a file that IS shared, and a directory git knows
+ * nothing about is not shared by this mechanism.
+ */
+function gitLsFiles(): string {
+  try {
+    const result = Bun.spawnSync(['git', 'ls-files'], { cwd: process.cwd(), stdout: 'pipe', stderr: 'ignore' })
+    return result.success ? result.stdout.toString() : ''
+  }
+  catch {
+    return ''
+  }
+}
+
 export function parseEnvAssignments(content: string): Record<string, string> {
   const values: Record<string, string> = {}
   const assignment = /^\s*(?:export\s+)?([A-Z_][A-Z0-9_]*)\s*=\s*(.*)$/i
