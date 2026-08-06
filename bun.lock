@@ -100,7 +100,7 @@
         "@stacksjs/video": "^0.70.277",
         "@stacksjs/whois": "^0.70.277",
         "better-dx": "^0.2.17",
-        "bun-query-builder": "^0.2.10",
+        "bun-query-builder": "^0.2.11",
       },
     },
     "storage/framework/core/actions": {
@@ -220,7 +220,7 @@
       "dependencies": {
         "@stacksjs/composables": "workspace:*",
         "@stacksjs/stx": "^0.2.148",
-        "bun-query-builder": "^0.2.10",
+        "bun-query-builder": "^0.2.11",
       },
       "devDependencies": {
         "@stacksjs/utils": "workspace:*",
@@ -473,7 +473,7 @@
       "version": "0.70.277",
       "dependencies": {
         "@stacksjs/ts-validation": "^0.5.0",
-        "bun-query-builder": "^0.2.10",
+        "bun-query-builder": "^0.2.11",
         "dynamodb-tooling": "^0.3.2",
       },
       "devDependencies": {
@@ -755,7 +755,7 @@
       "version": "0.70.277",
       "dependencies": {
         "@stacksjs/ts-validation": "^0.5.0",
-        "bun-query-builder": "^0.2.10",
+        "bun-query-builder": "^0.2.11",
       },
       "devDependencies": {
         "@stacksjs/config": "workspace:*",
@@ -804,7 +804,7 @@
       "name": "@stacksjs/query-builder",
       "version": "0.70.277",
       "dependencies": {
-        "bun-query-builder": "^0.2.10",
+        "bun-query-builder": "^0.2.11",
       },
       "devDependencies": {
         "@stacksjs/database": "workspace:*",
@@ -1039,7 +1039,7 @@
         "@stacksjs/clapp": "^0.2.12",
         "@stacksjs/stx": "^0.2.148",
         "@stacksjs/ts-validation": "^0.5.0",
-        "bun-query-builder": "^0.2.10",
+        "bun-query-builder": "^0.2.11",
       },
       "devDependencies": {
         "@stacksjs/validation": "workspace:*",
