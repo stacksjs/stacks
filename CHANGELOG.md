@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.292...v0.70.293)
+
+## 🐛 Bug Fixes
+
+- **deploy**: find the mail record being replaced, not just apex ones ([6bbf2ae](https://github.com/stacksjs/stacks/commit/6bbf2ae)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.291...v0.70.292)
 
 ## 🐛 Bug Fixes
