@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.289...v0.70.290)
+
+## 🔧 Chores
+
+- **deps**: require proxy-safe FK introspection ([46bd319](https://github.com/stacksjs/stacks/commit/46bd319)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.288...v0.70.289)
 
 ## ✨ Features
