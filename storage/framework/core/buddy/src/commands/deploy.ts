@@ -2660,6 +2660,53 @@ export function selectRecordsAt<T extends { name?: unknown, type?: unknown }>(re
   return records.filter(r => String(r.type).toUpperCase() === type.toUpperCase() && zoneFqdn(r.name, zone) === target)
 }
 
+/** A name+type this deploy expects to end up holding exactly one record. */
+export interface MailDnsExpectation {
+  label: string
+  fqdn: string
+  type: string
+  /** Narrows the check to the records this deploy owns at a shared name. */
+  owns?: (content: string) => boolean
+}
+
+/**
+ * Read the zone back and report any name that did not end up holding exactly
+ * one of the records this deploy is responsible for.
+ *
+ * This exists because the failure it catches is silent by construction. A
+ * publisher that trusts its own writes cannot tell a replaced record from a
+ * duplicated one, and the duplicate is invisible: the zone looks *more*
+ * configured, every individual record is well-formed, and the deploy logs
+ * success. That is exactly how `p=none` came to be published beside an existing
+ * `p=quarantine` here — and two DMARC records is not a stricter policy, it is
+ * no policy at all (RFC 7489 §6.6.3 has receivers discard the record set
+ * entirely), so the domain lost DMARC while appearing to have gained it.
+ *
+ * Checking the result rather than the intent catches any cause: a provider that
+ * scopes a listing differently than expected, a delete that fails, a record
+ * added by hand, or another tool writing the same zone. Pure, so the reporting
+ * is testable without touching a registrar.
+ */
+export function findMailDnsAnomalies<T extends { name?: unknown, type?: unknown, content?: unknown, value?: unknown }>(
+  records: T[],
+  expectations: MailDnsExpectation[],
+  zone: string,
+): string[] {
+  const problems: string[] = []
+
+  for (const expectation of expectations) {
+    const at = selectRecordsAt(records, expectation.fqdn, expectation.type, zone)
+    const ours = expectation.owns ? at.filter(record => expectation.owns!(txtContent(record))) : at
+
+    if (ours.length === 0)
+      problems.push(`${expectation.label}: nothing published at ${expectation.fqdn}`)
+    else if (ours.length > 1)
+      problems.push(`${expectation.label}: ${ours.length} records at ${expectation.fqdn}, expected 1 — receivers treat a duplicated ${expectation.type} here as unconfigured, so remove the stale one`)
+  }
+
+  return problems
+}
+
 /** The TXT content a provider returned, unquoted and trimmed for comparison. */
 export function txtContent(record: { content?: unknown, value?: unknown }): string {
   return String(record.content ?? record.value ?? '').replace(/^"|"$/g, '')
@@ -2851,6 +2898,21 @@ export async function reconcileMailDns(res: MailTenantResult, ip: string, logger
     const mailA = await provider.upsertRecord(domain, { name: mailFqdn, type: 'A', content: ip, ttl: 600 })
     if (!mailA?.success)
       throw new Error(`A ${mailFqdn}: ${mailA?.message || 'provider rejected the record'}`)
+
+    // Read the zone back. Publishing reports what was attempted; this reports
+    // what is actually there, which is the only thing a receiver will see.
+    const verifyRes = await provider.listRecords(domain)
+    const anomalies = verifyRes?.success
+      ? findMailDnsAnomalies(verifyRes.records || [], [
+          { label: 'MX', fqdn: apex, type: 'MX' },
+          { label: 'SPF', fqdn: apex, type: 'TXT', owns: content => content.toLowerCase().startsWith('v=spf1') },
+          ...(dkim ? [{ label: 'DKIM', fqdn: dkimFqdn, type: 'TXT' }] : []),
+          { label: 'DMARC', fqdn: dmarcFqdn, type: 'TXT', owns: content => content.toLowerCase().startsWith('v=dmarc1') },
+        ], domain)
+      : []
+
+    for (const anomaly of anomalies)
+      logger.warn(`  Mail DNS: ${anomaly}`)
 
     logger.success(`Mail DNS published for ${domain} via ${provider.name} (MX→${mailHost}, SPF, DKIM at ${dkimName}, DMARC, ${mailFqdn}→${ip})`)
   }

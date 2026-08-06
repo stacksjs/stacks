@@ -27,7 +27,7 @@
  */
 
 import { describe, expect, it } from 'bun:test'
-import { dnsProviderConfigsFromEnv, planTxtReplacement, resolveDmarcPolicy, selectRecordsAt, txtContent, zoneFqdn } from '../src/commands/deploy'
+import { dnsProviderConfigsFromEnv, findMailDnsAnomalies, planTxtReplacement, resolveDmarcPolicy, selectRecordsAt, txtContent, zoneFqdn } from '../src/commands/deploy'
 
 /**
  * Mirrors the publisher's selector derivation. `mail` is the fallback only for
@@ -186,6 +186,63 @@ describe('DNS provider credentials', () => {
         if (!(key in saved)) delete process.env[key]
       Object.assign(process.env, saved)
     }
+  })
+})
+
+describe('reading the zone back after publishing', () => {
+  /**
+   * The last line of defence, and the one that was missing when `p=none` was
+   * published beside an existing `p=quarantine`. Every individual record was
+   * well-formed, the deploy logged success, and the zone looked more configured
+   * than before — while the domain had actually lost DMARC, because RFC 7489
+   * has receivers discard a duplicated record set rather than pick one.
+   *
+   * Checking the result instead of the intent catches whatever the cause was:
+   * a provider listing scoped differently than expected, a delete that failed,
+   * a record added by hand, or a second tool writing the same zone.
+   */
+  const zone = 'theopentimes.org'
+  const expectations = [
+    { label: 'MX', fqdn: zone, type: 'MX' },
+    { label: 'SPF', fqdn: zone, type: 'TXT', owns: (c: string) => c.toLowerCase().startsWith('v=spf1') },
+    { label: 'DKIM', fqdn: `mail._domainkey.${zone}`, type: 'TXT' },
+    { label: 'DMARC', fqdn: `_dmarc.${zone}`, type: 'TXT', owns: (c: string) => c.toLowerCase().startsWith('v=dmarc1') },
+  ]
+  const healthy = [
+    { type: 'MX', name: zone, content: `mail.${zone}` },
+    { type: 'TXT', name: zone, content: 'v=spf1 ip4:178.105.248.188 ~all' },
+    { type: 'TXT', name: zone, content: 'google-site-verification=abc' },
+    { type: 'TXT', name: `mail._domainkey.${zone}`, content: 'v=DKIM1; k=rsa; p=AAAA' },
+    { type: 'TXT', name: `_dmarc.${zone}`, content: 'v=DMARC1; p=none; rua=mailto:chris@theopentimes.org' },
+  ]
+
+  it('is silent on a correctly published zone', () => {
+    expect(findMailDnsAnomalies(healthy, expectations, zone)).toEqual([])
+  })
+
+  it('catches the duplicate DMARC that reached production', () => {
+    const withDuplicate = [...healthy, { type: 'TXT', name: `_dmarc.${zone}`, content: 'v=DMARC1; p=quarantine; rua=mailto:no-reply@theopentimes.org' }]
+    const problems = findMailDnsAnomalies(withDuplicate, expectations, zone)
+
+    expect(problems).toHaveLength(1)
+    expect(problems[0]).toContain('DMARC')
+    expect(problems[0]).toContain('2 records')
+  })
+
+  it('catches a duplicated DKIM key, which fails the same way', () => {
+    const withDuplicate = [...healthy, { type: 'TXT', name: `mail._domainkey.${zone}`, content: 'v=DKIM1; k=rsa; p=BBBB' }]
+    expect(findMailDnsAnomalies(withDuplicate, expectations, zone)[0]).toContain('DKIM')
+  })
+
+  it('catches a record that never landed', () => {
+    const missing = healthy.filter(r => !String(r.name).startsWith('_dmarc'))
+    expect(findMailDnsAnomalies(missing, expectations, zone)[0]).toContain('nothing published')
+  })
+
+  it('does not mistake an unrelated apex TXT for a duplicate SPF', () => {
+    // The apex legitimately holds many TXT records; only ours are counted.
+    const busy = [...healthy, { type: 'TXT', name: zone, content: 'MS=ms12345678' }]
+    expect(findMailDnsAnomalies(busy, expectations, zone)).toEqual([])
   })
 })
 
