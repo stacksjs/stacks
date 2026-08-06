@@ -238,6 +238,23 @@ export function isKnownDialect(dialect: string): boolean {
   return dialect in CAPABILITIES
 }
 
+/**
+ * Render idempotent index DDL for the target dialect. MySQL-compatible
+ * servers reject `CREATE INDEX IF NOT EXISTS`; callers execute the bare form
+ * there and treat only the duplicate-index error as a successful replay.
+ */
+export function indexSqlForDialect(statement: string, dialect: string): string {
+  if (dialectCapabilities(dialect).supportsCreateIndexIfNotExists)
+    return statement
+  return statement.replace(/^(\s*CREATE\s+(?:UNIQUE\s+)?INDEX)\s+IF\s+NOT\s+EXISTS\s+/i, '$1 ')
+}
+
+/** Whether an error is the expected result of replaying bare MySQL index DDL. */
+export function isDuplicateIndexError(error: unknown): boolean {
+  const message = error instanceof Error ? error.message : String(error)
+  return /duplicate key name|already exists/i.test(message)
+}
+
 /** Every dialect with a capability row, for CLI help and validation messages. */
 export function knownDialects(): string[] {
   return Object.keys(CAPABILITIES)

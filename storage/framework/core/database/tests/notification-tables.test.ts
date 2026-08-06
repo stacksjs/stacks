@@ -6,6 +6,7 @@ import {
   notificationsTableSql,
 } from '../src/notification-tables'
 import { sqlHelpers } from '../src/sql-helpers'
+import { indexSqlForDialect, isDuplicateIndexError } from '../src/dialect'
 
 /**
  * Notification tables migration (stacksjs/stacks#1937).
@@ -61,5 +62,15 @@ describe('notification table DDL — cross-dialect (stacksjs/stacks#1937)', () =
   test('sqlite uses AUTOINCREMENT, mysql uses AUTO_INCREMENT', () => {
     expect(notificationsTableSql(sqlHelpers('sqlite'))).toContain('AUTOINCREMENT')
     expect(notificationsTableSql(sqlHelpers('mysql'))).toContain('AUTO_INCREMENT')
+  })
+
+  test('runtime indexes use valid idempotency for MySQL-wire dialects', () => {
+    const statement = '\n      CREATE UNIQUE INDEX IF NOT EXISTS notifications_uuid_unique ON notifications(uuid)'
+    expect(indexSqlForDialect(statement, 'sqlite')).toContain('IF NOT EXISTS')
+    expect(indexSqlForDialect(statement, 'postgres')).toContain('IF NOT EXISTS')
+    expect(indexSqlForDialect(statement, 'mysql')).not.toContain('IF NOT EXISTS')
+    expect(indexSqlForDialect(statement, 'vitess')).not.toContain('IF NOT EXISTS')
+    expect(isDuplicateIndexError(new Error("Duplicate key name 'notifications_uuid_unique'"))).toBe(true)
+    expect(isDuplicateIndexError(new Error('connection refused'))).toBe(false)
   })
 })

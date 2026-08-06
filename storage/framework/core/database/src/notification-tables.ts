@@ -19,6 +19,7 @@ import { log } from '@stacksjs/logging'
 import { env as envVars } from '@stacksjs/env'
 import { db } from './utils'
 import { sqlHelpers } from './sql-helpers'
+import { indexSqlForDialect, isDuplicateIndexError } from './dialect'
 
 type SqlHelpers = ReturnType<typeof sqlHelpers>
 
@@ -88,6 +89,17 @@ export function notificationDeliveriesTableSql(sql: SqlHelpers): string {
   )`
 }
 
+/** Create one index idempotently on every supported SQL dialect. */
+async function createIndex(statement: string, dialect: string): Promise<void> {
+  try {
+    await db.unsafe(indexSqlForDialect(statement, dialect)).execute()
+  }
+  catch (error) {
+    if (!isDuplicateIndexError(error))
+      throw error
+  }
+}
+
 /**
  * Create the notification + notification_preferences tables. Idempotent
  * (`IF NOT EXISTS`), so it's safe to run on every `buddy migrate`.
@@ -102,16 +114,16 @@ export async function migrateNotificationTables(options: { verbose?: boolean } =
   try {
     if (options.verbose) log.info('Creating notifications table...')
     await db.unsafe(notificationsTableSql(sql)).execute()
-    await db.unsafe(`CREATE INDEX IF NOT EXISTS idx_notifications_user ON notifications (user_id)`).execute()
+    await createIndex(`CREATE INDEX IF NOT EXISTS idx_notifications_user ON notifications (user_id)`, dbDriver)
 
     if (options.verbose) log.info('Creating notification_preferences table...')
     await db.unsafe(notificationPreferencesTableSql(sql)).execute()
-    await db.unsafe(`CREATE INDEX IF NOT EXISTS idx_notification_preferences_user ON notification_preferences (user_id)`).execute()
+    await createIndex(`CREATE INDEX IF NOT EXISTS idx_notification_preferences_user ON notification_preferences (user_id)`, dbDriver)
 
     if (options.verbose) log.info('Creating notification deliveries table...')
     await db.unsafe(notificationDeliveriesTableSql(sql)).execute()
-    await db.unsafe(`CREATE INDEX IF NOT EXISTS idx_notification_deliveries_channel ON notification_deliveries (channel)`).execute()
-    await db.unsafe(`CREATE INDEX IF NOT EXISTS idx_notification_deliveries_status ON notification_deliveries (status)`).execute()
+    await createIndex(`CREATE INDEX IF NOT EXISTS idx_notification_deliveries_channel ON notification_deliveries (channel)`, dbDriver)
+    await createIndex(`CREATE INDEX IF NOT EXISTS idx_notification_deliveries_status ON notification_deliveries (status)`, dbDriver)
 
     if (options.verbose) log.success('Notification tables created')
     return { success: true }

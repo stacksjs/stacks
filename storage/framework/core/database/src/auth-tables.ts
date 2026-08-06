@@ -21,6 +21,7 @@ import { log } from '@stacksjs/logging'
 import { env as envVars } from '@stacksjs/env'
 import { db } from './utils'
 import { sqlHelpers } from './sql-helpers'
+import { indexSqlForDialect } from './dialect'
 
 type SqlHelpers = ReturnType<typeof sqlHelpers>
 
@@ -121,7 +122,7 @@ export async function ensureUsersAuthColumns(sql: SqlHelpers, options: { verbose
   }
 
   try {
-    await db.unsafe(`CREATE UNIQUE INDEX IF NOT EXISTS idx_users_stripe_id ON users(stripe_id)`).execute()
+    await db.unsafe(indexSqlForDialect(`CREATE UNIQUE INDEX IF NOT EXISTS idx_users_stripe_id ON users(stripe_id)`, getDbDriver())).execute()
   }
   catch {
     if (options.verbose) log.debug(`[auth-tables] Skipped users.stripe_id unique index (already applied or users missing)`)
@@ -203,9 +204,7 @@ export async function migrateAuthTables(options: { verbose?: boolean } = {}): Pr
     `).execute()
 
     try {
-      await db.unsafe(`
-        CREATE INDEX IF NOT EXISTS idx_password_resets_email ON password_resets(email)
-      `).execute()
+      await db.unsafe(indexSqlForDialect(`CREATE INDEX IF NOT EXISTS idx_password_resets_email ON password_resets(email)`, dbDriver)).execute()
     }
     catch {
       // Index might already exist
@@ -237,9 +236,7 @@ export async function migrateAuthTables(options: { verbose?: boolean } = {}): Pr
     `).execute()
 
     try {
-      await db.unsafe(`
-        CREATE INDEX IF NOT EXISTS idx_passkeys_user_id ON passkeys(user_id)
-      `).execute()
+      await db.unsafe(indexSqlForDialect(`CREATE INDEX IF NOT EXISTS idx_passkeys_user_id ON passkeys(user_id)`, dbDriver)).execute()
     }
     catch {
       // Index might already exist
@@ -263,9 +260,7 @@ export async function migrateAuthTables(options: { verbose?: boolean } = {}): Pr
     `).execute()
 
     try {
-      await db.unsafe(`
-        CREATE UNIQUE INDEX IF NOT EXISTS idx_webauthn_challenges_user_purpose ON webauthn_challenges(user_id, purpose)
-      `).execute()
+      await db.unsafe(indexSqlForDialect(`CREATE UNIQUE INDEX IF NOT EXISTS idx_webauthn_challenges_user_purpose ON webauthn_challenges(user_id, purpose)`, dbDriver)).execute()
     }
     catch {
       // Index might already exist
@@ -291,9 +286,7 @@ export async function migrateAuthTables(options: { verbose?: boolean } = {}): Pr
     `).execute()
 
     try {
-      await db.unsafe(`
-        CREATE INDEX IF NOT EXISTS idx_two_factor_challenges_user_id ON two_factor_challenges(user_id)
-      `).execute()
+      await db.unsafe(indexSqlForDialect(`CREATE INDEX IF NOT EXISTS idx_two_factor_challenges_user_id ON two_factor_challenges(user_id)`, dbDriver)).execute()
     }
     catch {
       // Index might already exist
@@ -379,16 +372,13 @@ export async function migrateAuthTables(options: { verbose?: boolean } = {}): Pr
  * configured index type).
  */
 async function createTokenIndex(indexName: string, tableName: string, column: string): Promise<void> {
+  const dbDriver = getDbDriver()
   try {
-    await db.unsafe(`
-      CREATE INDEX IF NOT EXISTS ${indexName} ON ${tableName}(${column}(255))
-    `).execute()
+    await db.unsafe(indexSqlForDialect(`CREATE INDEX IF NOT EXISTS ${indexName} ON ${tableName}(${column}(255))`, dbDriver)).execute()
   }
   catch {
     try {
-      await db.unsafe(`
-        CREATE INDEX IF NOT EXISTS ${indexName} ON ${tableName}(${column})
-      `).execute()
+      await db.unsafe(indexSqlForDialect(`CREATE INDEX IF NOT EXISTS ${indexName} ON ${tableName}(${column})`, dbDriver)).execute()
     }
     catch {
       // Index might already exist or not supported

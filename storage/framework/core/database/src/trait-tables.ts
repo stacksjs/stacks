@@ -49,7 +49,9 @@ import { log } from '@stacksjs/logging'
 import { env as envVars } from '@stacksjs/env'
 import { db } from './utils'
 import { sqlHelpers } from './sql-helpers'
-import { dialectCapabilities } from './dialect'
+import { indexSqlForDialect, isDuplicateIndexError } from './dialect'
+
+export { indexSqlForDialect } from './dialect'
 
 type SqlHelpers = ReturnType<typeof sqlHelpers>
 
@@ -333,22 +335,6 @@ export async function likeableTargets(): Promise<Array<{ table: string, foreignK
   }
 
   return [...targets.values()]
-}
-
-/**
- * Strip `IF NOT EXISTS` for dialects that reject it on `CREATE INDEX`, and let
- * {@link isDuplicateIndexError} absorb the replay there instead.
- */
-export function indexSqlForDialect(statement: string, dialect: string): string {
-  if (dialectCapabilities(dialect).supportsCreateIndexIfNotExists)
-    return statement
-  return statement.replace(/^(CREATE (?:UNIQUE )?INDEX) IF NOT EXISTS /i, '$1 ')
-}
-
-/** Whether an error is MySQL's "index already exists", i.e. a benign replay. */
-function isDuplicateIndexError(error: unknown): boolean {
-  const message = error instanceof Error ? error.message : String(error)
-  return /duplicate key name|already exists/i.test(message)
 }
 
 /**
