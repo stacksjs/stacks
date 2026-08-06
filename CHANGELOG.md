@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.290...v0.70.291)
+
+## 🐛 Bug Fixes
+
+- **database**: audit proxy SQL catalogues ([bf17d16](https://github.com/stacksjs/stacks/commit/bf17d16)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.289...v0.70.290)
 
 ## 🔧 Chores
