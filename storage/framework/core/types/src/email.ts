@@ -227,6 +227,25 @@ export interface EmailServerConfig {
    */
   mode?: 'serverless' | 'server'
 
+  /**
+   * The DMARC record `buddy deploy` publishes for this domain.
+   *
+   * `p=quarantine` is the default because it is right for a domain that already
+   * sends. It is the wrong default for a domain that does not yet: the same
+   * deploy that first authorizes a new domain would also start diverting its
+   * mail the moment anything misaligns, which is how a launch loses its
+   * confirmation emails. Declare `'none'` while a domain is young, read the
+   * aggregate reports, then tighten.
+   *
+   * @example { policy: 'none', reportTo: 'chris@acme.com' }
+   */
+  dmarc?: {
+    /** @default 'quarantine' */
+    policy?: 'none' | 'quarantine' | 'reject'
+    /** Where aggregate reports go. Defaults to the configured from-address. */
+    reportTo?: string
+  }
+
   storage?: {
     bucket?: string
     retentionDays?: number

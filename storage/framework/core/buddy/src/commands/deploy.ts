@@ -1995,8 +1995,19 @@ export interface MailTenantResult {
   domain: string
   /** The mail server's own hostname (SMTP_HOSTNAME) — the MX target. */
   mailHost: string
-  /** base64(DER) of the domain's DKIM public key, for the `mail._domainkey` TXT. */
+  /**
+   * base64(DER) of the public half of the key the mail server will actually
+   * sign this domain's outbound mail with — which is the domain's own key only
+   * when it is not also the server's global `DKIM_DOMAIN`. See the provisioning
+   * script's DKIM step.
+   */
   dkimPubB64?: string
+  /**
+   * The selector that key signs under, published as `<selector>._domainkey`.
+   * Per-domain keys use `mail`; a domain that collides with the global signer
+   * inherits its `DKIM_SELECTOR`, which need not be `mail`.
+   */
+  dkimSelector?: string
   /** Mailboxes newly created this run (address + password), for reporting. */
   created: Array<{ address: string, password: string }>
 }
@@ -2232,7 +2243,27 @@ if [ -n "$DOMAIN" ] && [ -f "$ENVF" ]; then
       fi
       ENV_CHANGED=1 ;;
   esac
-  echo "DKIMPUB:$(openssl rsa -in "$KEY" -pubout -outform DER 2>/dev/null | base64 -w0)"
+  # Publish the key the server will actually sign with, which is not always the
+  # one registered above. mail's \`configureDkim\` registers the global
+  # DKIM_DOMAIN signer first and then *silently drops* any DKIM_EXTRA_KEYS entry
+  # for a domain that already has a signer. So when this domain is DKIM_DOMAIN,
+  # the effective key stays DKIM_PRIVATE_KEY_PATH under DKIM_SELECTOR, and the
+  # per-domain file above is dead on disk. Advertising it would publish a key
+  # the server never signs with — every message failing DKIM while the record
+  # looks perfectly well-formed. Mirror the server's precedence instead of
+  # assuming ours won.
+  EFF_KEY="$KEY"
+  EFF_SEL=mail
+  gdom=$(grep -E '^DKIM_DOMAIN=' "$ENVF" | head -1 | cut -d= -f2- || true)
+  if [ -n "$gdom" ] && [ "$gdom" = "$DOMAIN" ]; then
+    gkey=$(grep -E '^DKIM_PRIVATE_KEY_PATH=' "$ENVF" | head -1 | cut -d= -f2- || true)
+    gsel=$(grep -E '^DKIM_SELECTOR=' "$ENVF" | head -1 | cut -d= -f2- || true)
+    [ -n "$gkey" ] && [ -f "$gkey" ] && EFF_KEY="$gkey"
+    [ -n "$gsel" ] && EFF_SEL="$gsel"
+    echo "DKIMGLOBAL:$EFF_KEY"
+  fi
+  echo "DKIMSEL:$EFF_SEL"
+  echo "DKIMPUB:$(openssl rsa -in "$EFF_KEY" -pubout -outform DER 2>/dev/null | base64 -w0)"
 fi
 # 3) Create the configured mailboxes as per-domain isolated users (skip existing).
 if [ -n "$BOXES_B64" ] && [ -x "$MS" ]; then
@@ -2464,6 +2495,21 @@ if [ "$ENV_CHANGED" = 1 ]; then systemctl restart mail 2>/dev/null || true; echo
     const mailHostFromOut = (out.match(/MAILHOST:([^\n]*)/) || [])[1]?.trim()
     const mailHost = mailHostFromOut || `mail.${domain}`
     const dkimPubB64 = (out.match(/DKIMPUB:([^\n]*)/) || [])[1]?.trim() || undefined
+    const dkimSelector = (out.match(/DKIMSEL:([^\n]*)/) || [])[1]?.trim() || undefined
+
+    // This domain is the server's global DKIM_DOMAIN, so the mail daemon keeps
+    // signing it with the global key and ignores the per-domain entry we just
+    // registered (`configureDkim` returns early on a duplicate domain, without
+    // logging). Nothing is broken — the DNS step publishes the global key to
+    // match — but the per-domain file on disk is dead, and anyone who later
+    // rotates it will be baffled when signatures do not change. Say so.
+    const dkimGlobalKey = (out.match(/DKIMGLOBAL:([^\n]*)/) || [])[1]?.trim()
+    if (dkimGlobalKey) {
+      logger.warn(
+        `Mail: ${domain} is the mail server's global DKIM_DOMAIN, so it signs with ${dkimGlobalKey} `
+        + `and the per-domain key at /opt/mail/dkim/${domain}.private is unused. Rotate the global key, not that one.`,
+      )
+    }
     const madeAddrs = new Set([...out.matchAll(/MADE:([^\n]+)/g)].flatMap(m => m[1] ? [m[1].trim()] : []))
     const migratedAddrs = new Set([...out.matchAll(/MIGRATED:([^\n]+)/g)].flatMap(m => m[1] ? [m[1].trim()] : []))
     const created = boxes.filter(b => madeAddrs.has(b.address)).map(b => ({ address: b.address, password: b.password }))
@@ -2503,7 +2549,7 @@ if [ "$ENV_CHANGED" = 1 ]; then systemctl restart mail 2>/dev/null || true; echo
     }
     if (migratedAddrs.size)
       logger.success(`Mail: migrated ${migratedAddrs.size} legacy mailbox username(s) to isolated full addresses`)
-    return domain ? { domain, mailHost, dkimPubB64, created } : null
+    return domain ? { domain, mailHost, dkimPubB64, dkimSelector, created } : null
   }
   catch (err) {
     // Never fail a release on a mail-reconcile hiccup — it's additive config.
@@ -2513,18 +2559,132 @@ if [ "$ENV_CHANGED" = 1 ]; then systemctl restart mail 2>/dev/null || true; echo
 }
 
 /**
- * Publish the mail DNS for a hosted domain via Porkbun (idempotent delete+create
- * per record): MX → the mail host, SPF authorizing the box IP, the domain's DKIM
- * public key at `mail._domainkey`, and a DMARC policy. Best-effort — logged, not
- * thrown. No-op without Porkbun credentials (the records are printed to add by
- * hand). MX targets the tenant's own `mail.<domain>` when that name already
- * resolves to the box (own-brand mail host; requires the mail cert to cover it
- * as a SAN), and falls back to the shared mail host (`mail.stacksjs.com`)
- * otherwise, where no per-domain mail A record or extra TLS SAN is needed.
+ * Candidate DNS provider configs, built from whatever credentials the
+ * environment carries. Shared by every DNS path in a deploy so they agree on
+ * which registrars are usable — mail DNS used to read `PORKBUN_API_KEY`
+ * directly and was therefore the one path that could not publish to a Route53,
+ * Cloudflare or GoDaddy zone.
+ */
+export function dnsProviderConfigsFromEnv(): any[] {
+  const configs: any[] = []
+  if (process.env.PORKBUN_API_KEY && process.env.PORKBUN_SECRET_KEY)
+    configs.push({ provider: 'porkbun', apiKey: process.env.PORKBUN_API_KEY, secretKey: process.env.PORKBUN_SECRET_KEY })
+  if (process.env.CLOUDFLARE_API_TOKEN)
+    configs.push({ provider: 'cloudflare', apiToken: process.env.CLOUDFLARE_API_TOKEN })
+  if (process.env.GODADDY_API_KEY && process.env.GODADDY_API_SECRET)
+    configs.push({ provider: 'godaddy', apiKey: process.env.GODADDY_API_KEY, apiSecret: process.env.GODADDY_API_SECRET, environment: process.env.GODADDY_ENVIRONMENT })
+  if (process.env.AWS_ACCESS_KEY_ID || process.env.AWS_PROFILE)
+    configs.push({ provider: 'route53' })
+  return configs
+}
+
+/**
+ * Resolve the provider that actually holds `domain`: probe the configured
+ * credentials, and fall back to inferring from the zone's authoritative
+ * nameservers when every probe declines (some registrars disable the record
+ * API per-domain, which is not the same as not owning the zone).
+ *
+ * Returns undefined when nothing configured owns it — the caller prints the
+ * records for a human rather than writing into a zone it does not administer.
+ */
+async function resolveZoneDnsProvider(domain: string, providerConfigs: any[], logger: typeof log): Promise<any | undefined> {
+  if (providerConfigs.length === 0)
+    return undefined
+
+  const { createDnsProvider, detectDnsProvider } = await import('@stacksjs/ts-cloud') as any
+
+  const provider = await detectDnsProvider(domain, providerConfigs).catch((err: any) => {
+    logger.warn(`  DNS: ignoring a configured provider for ${domain} — its credentials were rejected (${err?.message || err})`)
+    return undefined
+  })
+  if (provider)
+    return provider
+
+  let nameservers: string[] = []
+  try {
+    const { resolveNs } = await import('node:dns/promises')
+    nameservers = await resolveNs(domain)
+  }
+  catch { /* zone may not resolve yet */ }
+
+  const providerName = dnsProviderNameFromNameservers(nameservers)
+  const providerConfig = providerConfigs.find(config => config.provider === providerName)
+  return providerConfig ? createDnsProvider(providerConfig) : undefined
+}
+
+/**
+ * The DMARC policy to publish, from `email.server.dmarc.policy`.
+ *
+ * `quarantine` is the default because it is right for a domain that already
+ * sends. It is the wrong default for one that does not yet: the first deploy
+ * that authorizes a brand-new domain would also start diverting its mail on any
+ * alignment hiccup, which is how a launch quietly loses its confirmation
+ * emails. Young domains declare `none`, read the aggregate reports, then
+ * tighten.
+ *
+ * Anything unrecognised falls back to the default rather than reaching the
+ * zone. The value is interpolated straight into a TXT record, so a typo like
+ * `p=quaranine` would publish a malformed policy that receivers ignore —
+ * failing open, invisibly, which is the worst way for this to be wrong.
+ */
+export function resolveDmarcPolicy(policy: unknown): 'none' | 'quarantine' | 'reject' {
+  return policy === 'none' || policy === 'quarantine' || policy === 'reject' ? policy : 'quarantine'
+}
+
+/** The TXT content a provider returned, unquoted and trimmed for comparison. */
+export function txtContent(record: { content?: unknown, value?: unknown }): string {
+  return String(record.content ?? record.value ?? '').replace(/^"|"$/g, '')
+}
+
+/**
+ * Decide which TXT records at one name to remove and whether to write a new
+ * one, given the records already there and a predicate for the ones this
+ * deploy owns.
+ *
+ * Pure, and separated out because the property that matters is a negative one:
+ * a record this deploy does not own must never appear in `remove`. The previous
+ * implementation deleted every TXT at the name before recreating one, so
+ * publishing SPF at the apex silently destroyed site-verification records for
+ * Google, Microsoft, Atlassian and anyone else — no error, nothing in the
+ * deploy output, and nobody notices until a third party re-checks ownership.
+ */
+export function planTxtReplacement<T extends { content?: unknown, value?: unknown }>(
+  existing: T[],
+  content: string,
+  owns: (existingContent: string) => boolean,
+): { remove: T[], create: boolean } {
+  const ours = existing.filter(record => owns(txtContent(record)))
+  // Already exactly right: touch nothing, so a no-op deploy is a no-op.
+  if (ours.length === 1 && txtContent(ours[0]!) === content)
+    return { remove: [], create: false }
+  return { remove: ours, create: true }
+}
+
+/**
+ * Publish a hosted domain's mail DNS through whichever provider holds the zone:
+ * MX → the mail host, SPF authorizing the box IP, the DKIM public key at the
+ * selector the server actually signs under, a DMARC policy, and `mail.<domain>`
+ * → the box.
+ *
+ * Best-effort: every failure is logged with the records printed for a human,
+ * never thrown, because mail DNS is additive config and must not fail a
+ * release.
+ *
+ * MX targets the tenant's own `mail.<domain>` when that name already resolves
+ * to the box (own-brand mail host; requires the mail cert to cover it as a
+ * SAN), and falls back to the shared mail host otherwise, where no per-domain
+ * mail A record or extra TLS SAN is needed.
+ *
+ * Writes are surgical. This routine used to delete every record of a name+type
+ * before recreating one, which at the apex destroyed unrelated TXT records, and
+ * it spoke only Porkbun, which silently skipped every zone held anywhere else.
  */
 export async function reconcileMailDns(res: MailTenantResult, ip: string, logger: typeof log): Promise<void> {
   const { domain, dkimPubB64 } = res
   let { mailHost } = res
+  // Whatever the server told us it signs under. `mail` only as a last resort,
+  // for a tenant provisioned before the selector was reported.
+  const dkimName = `${res.dkimSelector || 'mail'}._domainkey`
 
   // Prefer the tenant's own mail hostname when it already points at this box.
   try {
@@ -2541,66 +2701,100 @@ export async function reconcileMailDns(res: MailTenantResult, ip: string, logger
   const cfg: any = emailConfig || {}
   const firstBox = resolveMailboxes(cfg.mailboxes, domain)[0]?.address
   const fromAddress = typeof cfg.from?.address === 'string' && cfg.from.address.includes('@') ? cfg.from.address : undefined
-  const rua = fromAddress || firstBox || `chris@${domain}`
-  const dmarc = `v=DMARC1; p=quarantine; rua=mailto:${rua}`
+  const dmarcCfg: any = cfg.server?.dmarc || {}
+  const rua = dmarcCfg.reportTo || fromAddress || firstBox || `chris@${domain}`
+  const dmarc = `v=DMARC1; p=${resolveDmarcPolicy(dmarcCfg.policy)}; rua=mailto:${rua}`
   const dkim = dkimPubB64 ? `v=DKIM1; k=rsa; p=${dkimPubB64}` : undefined
 
-  const apiKey = process.env.PORKBUN_API_KEY
-  const secretKey = process.env.PORKBUN_SECRET_KEY
-  if (!apiKey || !secretKey) {
-    logger.warn(`Mail DNS: no Porkbun credentials — add these records for ${domain} by hand:`)
+  const byHand = (reason: string): void => {
+    logger.warn(`Mail DNS not published for ${domain}: ${reason}`)
+    logger.info(`Add these records by hand, or point a configured provider at the zone:`)
     logger.info(`  MX    @                 10 ${mailHost}`)
     logger.info(`  TXT   @                 ${spf}`)
-    if (dkim) logger.info(`  TXT   mail._domainkey   ${dkim}`)
+    if (dkim) logger.info(`  TXT   ${dkimName.padEnd(17)}${dkim}`)
     logger.info(`  TXT   _dmarc            ${dmarc}`)
-    return
+    logger.info(`  A     mail              ${ip}`)
   }
 
-  const auth = { apikey: apiKey, secretapikey: secretKey }
-  const call = async (path: string, body: Record<string, unknown>): Promise<any> => {
-    const r = await fetch(`https://api.porkbun.com/api/json/v3/${path}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...auth, ...body }),
-    })
-    return r.json().catch(() => ({}))
+  const providerConfigs = dnsProviderConfigsFromEnv()
+  if (providerConfigs.length === 0)
+    return byHand('no DNS provider credentials are configured')
+
+  // Whichever registrar actually holds the zone — not whichever one this
+  // function used to hardcode. Mail domains are frequently not in the same
+  // account as the app's apex (this project's own redirect set spans a Porkbun
+  // zone and a Route53 zone in a different cloud account), and a mail domain in
+  // any provider but Porkbun was silently skipped with four records dumped for
+  // a human who never added them.
+  const provider = await resolveZoneDnsProvider(domain, providerConfigs, logger)
+  if (!provider)
+    return byHand(`no configured DNS provider administers this zone`)
+
+  // Names are written as FQDNs; providers derive the zone root from `domain`
+  // and strip it back off. Records come back either way, so normalize before
+  // comparing.
+  const toFqdn = (name: string): string => {
+    const n = String(name || '').replace(/\.$/, '').toLowerCase()
+    if (!n || n === '@')
+      return domain.toLowerCase()
+    return n === domain.toLowerCase() || n.endsWith(`.${domain.toLowerCase()}`) ? n : `${n}.${domain.toLowerCase()}`
+  }
+  const apex = domain.toLowerCase()
+  const dkimFqdn = `${dkimName}.${domain}`
+  const dmarcFqdn = `_dmarc.${domain}`
+  const mailFqdn = `mail.${domain}`
+
+  const list = async (type: string): Promise<any[]> => {
+    const res = await provider.listRecords(domain, type)
+    return res?.success ? (res.records || []) : []
   }
 
-  // Confirm the zone is ours before touching it. `upsert` deletes every record
-  // of a name+type before recreating it, so pointing this at the wrong domain
-  // is destructive — and a project that never edited the scaffold's
-  // `config/email.ts` inherits `domain: 'stacksjs.com'`, which aims this
-  // routine straight at somebody else's MX. A read-only retrieve says whether
-  // these credentials actually administer the zone.
-  const ownership = await call(`dns/retrieve/${domain}`, {})
-  if (ownership?.status !== 'SUCCESS') {
-    logger.warn(
-      `Mail DNS skipped: ${domain} is not administered by these Porkbun credentials `
-      + `(${ownership?.message || 'domain not in this account'}).`,
-    )
-    logger.info(`Set \`domain\` in config/email.ts to a zone you own, or add these records for ${domain} by hand:`)
-    logger.info(`  MX    @                 10 ${mailHost}`)
-    logger.info(`  TXT   @                 ${spf}`)
-    if (dkim) logger.info(`  TXT   mail._domainkey   ${dkim}`)
-    logger.info(`  TXT   _dmarc            ${dmarc}`)
-    return
-  }
+  /**
+   * Replace only the records this deploy owns at `fqdn`, leaving every other
+   * record at that name untouched.
+   *
+   * The previous implementation deleted every record of a name+type before
+   * recreating one. At the apex that meant `TXT` — so publishing SPF silently
+   * destroyed every other apex TXT in the zone: Google/Microsoft site
+   * verification, Atlassian, Stripe, domain-ownership proofs. They vanish
+   * without an error, and nothing notices until a third party re-checks
+   * ownership weeks later. SPF is one record among many at the apex and has to
+   * be replaced surgically.
+   */
+  const replaceTxt = async (fqdn: string, content: string, owns: (existing: string) => boolean): Promise<void> => {
+    const existing = (await list('TXT')).filter(r => toFqdn(r.name) === fqdn.toLowerCase())
+    const { remove, create } = planTxtReplacement(existing, content, owns)
+    if (!create)
+      return
 
-  // Idempotent upsert: delete every record of this name+type, then recreate.
-  const upsert = async (type: string, name: string, content: string, extra: Record<string, unknown> = {}): Promise<void> => {
-    const sub = name === '@' ? '' : `/${name}`
-    await call(`dns/deleteByNameType/${domain}/${type}${sub}`, {})
-    const created = await call(`dns/create/${domain}`, { name: name === '@' ? '' : name, type, content, ttl: '600', ...extra })
-    if (created?.status !== 'SUCCESS')
-      throw new Error(`${type} ${name}: ${created?.message || 'unknown Porkbun error'}`)
+    for (const record of remove)
+      await provider.deleteRecord(domain, { ...record, name: fqdn, type: 'TXT' })
+
+    const created = await provider.createRecord(domain, { name: fqdn, type: 'TXT', content, ttl: 600 })
+    if (!created?.success)
+      throw new Error(`TXT ${fqdn}: ${created?.message || 'provider rejected the record'}`)
   }
 
   try {
-    await upsert('MX', '@', mailHost, { prio: '10' })
-    await upsert('TXT', '@', spf)
+    // MX: this domain's mail is hosted on our box, so our host replaces the
+    // set. Anything else pointing elsewhere is named as it is removed — a
+    // silently dropped MX is how a domain stops receiving mail entirely.
+    const mxRecords = (await list('MX')).filter(r => toFqdn(r.name) === apex)
+    const staleMx = mxRecords.filter(r => String(r.content ?? r.value ?? '').replace(/\.$/, '').toLowerCase() !== mailHost.toLowerCase())
+    for (const record of staleMx) {
+      logger.warn(`  Mail DNS: replacing an existing MX for ${domain} → ${record.content ?? record.value}`)
+      await provider.deleteRecord(domain, { ...record, name: apex, type: 'MX' })
+    }
+    if (mxRecords.length === staleMx.length) {
+      const created = await provider.createRecord(domain, { name: apex, type: 'MX', content: mailHost, ttl: 600, priority: 10 })
+      if (!created?.success)
+        throw new Error(`MX ${domain}: ${created?.message || 'provider rejected the record'}`)
+    }
+
+    await replaceTxt(apex, spf, existing => existing.toLowerCase().startsWith('v=spf1'))
     if (dkim)
-      await upsert('TXT', 'mail._domainkey', dkim)
-    await upsert('TXT', '_dmarc', dmarc)
+      await replaceTxt(dkimFqdn, dkim, () => true)
+    await replaceTxt(dmarcFqdn, dmarc, existing => existing.toLowerCase().startsWith('v=dmarc1'))
 
     // `mail.<domain>` pointing at the box, because that is the hostname a
     // person types into Mail.app or Outlook. Without it the name resolved to
@@ -2608,9 +2802,11 @@ export async function reconcileMailDns(res: MailTenantResult, ip: string, logger
     // account name or password" — which sounds like a bad password and is
     // really a bad hostname. The certificate for it is arranged separately;
     // until it exists, clients should use the shared host.
-    await upsert('A', 'mail', ip)
+    const mailA = await provider.upsertRecord(domain, { name: mailFqdn, type: 'A', content: ip, ttl: 600 })
+    if (!mailA?.success)
+      throw new Error(`A ${mailFqdn}: ${mailA?.message || 'provider rejected the record'}`)
 
-    logger.success(`Mail DNS published for ${domain} (MX→${mailHost}, SPF, DKIM, DMARC, mail.${domain}→${ip})`)
+    logger.success(`Mail DNS published for ${domain} via ${provider.name} (MX→${mailHost}, SPF, DKIM at ${dkimName}, DMARC, ${mailFqdn}→${ip})`)
   }
   catch (err) {
     logger.warn(`Mail DNS reconcile skipped for ${domain}: ${getErrorMessage(err)}`)
@@ -2702,15 +2898,7 @@ async function reconcileHetznerDns(sites: Record<string, any>, ip: string, logge
     return published
 
   // Candidate provider configs, built from whatever credentials are present.
-  const providerConfigs: any[] = []
-  if (process.env.PORKBUN_API_KEY && process.env.PORKBUN_SECRET_KEY)
-    providerConfigs.push({ provider: 'porkbun', apiKey: process.env.PORKBUN_API_KEY, secretKey: process.env.PORKBUN_SECRET_KEY })
-  if (process.env.CLOUDFLARE_API_TOKEN)
-    providerConfigs.push({ provider: 'cloudflare', apiToken: process.env.CLOUDFLARE_API_TOKEN })
-  if (process.env.GODADDY_API_KEY && process.env.GODADDY_API_SECRET)
-    providerConfigs.push({ provider: 'godaddy', apiKey: process.env.GODADDY_API_KEY, apiSecret: process.env.GODADDY_API_SECRET, environment: process.env.GODADDY_ENVIRONMENT })
-  if (process.env.AWS_ACCESS_KEY_ID || process.env.AWS_PROFILE)
-    providerConfigs.push({ provider: 'route53' })
+  const providerConfigs = dnsProviderConfigsFromEnv()
 
   if (providerConfigs.length === 0) {
     logger.warn('DNS: no DNS provider credentials found (PORKBUN_API_KEY/…); skipping DNS reconciliation.')
@@ -2719,11 +2907,7 @@ async function reconcileHetznerDns(sites: Record<string, any>, ip: string, logge
     return published
   }
 
-  const {
-    createDnsProvider,
-    detectDnsProvider,
-    reconcileAddressRecords,
-  } = await import('@stacksjs/ts-cloud') as any
+  const { reconcileAddressRecords } = await import('@stacksjs/ts-cloud') as any
   logger.info('Reconciling DNS records...')
 
   // Best-effort A-record lookup so externally managed domains that already
@@ -2738,38 +2922,13 @@ async function reconcileHetznerDns(sites: Record<string, any>, ip: string, logge
     }
   }
 
-  const resolveAuthoritativeNameservers = async (domain: string): Promise<string[]> => {
-    try {
-      const { resolveNs } = await import('node:dns/promises')
-      return await resolveNs(domain)
-    }
-    catch {
-      return []
-    }
-  }
-
   for (const domain of domains) {
     try {
-      // A provider whose credentials are rejected is not the same as a
-      // provider that does not hold the zone, and only the second used to be
-      // handled. Stale AWS keys made `detectDnsProvider` throw, the throw
-      // reached the outer catch, and the whole domain reported
-      // "reconciliation failed: InvalidClientTokenId" - which reads as broken
-      // DNS rather than as one unusable credential among several.
-      //
-      // Say which provider was rejected, then carry on as if it were not
-      // configured: the zone may well be managed somewhere else entirely, and
-      // the checks below can still confirm the records are correct.
-      let provider = await detectDnsProvider(domain, providerConfigs).catch((err: any) => {
-        logger.warn(`  DNS: ignoring a configured provider for ${domain} - its credentials were rejected (${err?.message || err})`)
-        return undefined
-      })
-      if (!provider) {
-        const providerName = dnsProviderNameFromNameservers(await resolveAuthoritativeNameservers(domain))
-        const providerConfig = providerConfigs.find(config => config.provider === providerName)
-        if (providerConfig)
-          provider = createDnsProvider(providerConfig)
-      }
+      // Credential rejection, nameserver fallback and the "nothing owns this
+      // zone" case all live in resolveZoneDnsProvider, so the mail path and
+      // this one cannot drift apart on which registrar holds a zone — the
+      // divergence that let mail DNS reach only Porkbun.
+      const provider = await resolveZoneDnsProvider(domain, providerConfigs, logger)
       if (!provider) {
         // No configured provider owns this zone — the records may still be
         // correct (managed at the registrar). Only warn when they aren't.
