@@ -32,6 +32,7 @@ export default defineModel({
     },
 
     channel: {
+      type: 'string',
       required: true,
       fillable: true,
       validation: {
@@ -64,6 +65,7 @@ export default defineModel({
     },
 
     status: {
+      type: 'string',
       required: true,
       fillable: true,
       default: 'pending',
@@ -81,6 +83,7 @@ export default defineModel({
     },
 
     metadata: {
+      type: 'text',
       required: false,
       fillable: true,
       validation: {

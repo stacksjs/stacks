@@ -34,14 +34,14 @@ function getDbDriver(): string {
  * `notifications/src/drivers/database.ts`.
  */
 export function notificationsTableSql(sql: SqlHelpers): string {
-  const { pkColumn, nullableTimestamp, datetime } = sql
+  const { bigPkColumn, bigInteger, nullableTimestamp, datetime } = sql
   return `CREATE TABLE IF NOT EXISTS notifications (
-    ${pkColumn},
-    user_id INTEGER NOT NULL,
+    ${bigPkColumn},
+    user_id ${bigInteger},
     type VARCHAR(255) NOT NULL,
     data TEXT NOT NULL,
     read_at ${nullableTimestamp},
-    uuid VARCHAR(36),
+    uuid VARCHAR(255),
     created_at ${datetime} DEFAULT CURRENT_TIMESTAMP,
     updated_at ${nullableTimestamp}
   )`
@@ -53,10 +53,10 @@ export function notificationsTableSql(sql: SqlHelpers): string {
  * preference upsert safe — matches `NotificationPreferenceRow`.
  */
 export function notificationPreferencesTableSql(sql: SqlHelpers): string {
-  const { pkColumn, boolTrue, nullableTimestamp, datetime } = sql
+  const { bigPkColumn, bigInteger, boolTrue, nullableTimestamp, datetime } = sql
   return `CREATE TABLE IF NOT EXISTS notification_preferences (
-    ${pkColumn},
-    user_id INTEGER NOT NULL,
+    ${bigPkColumn},
+    user_id ${bigInteger} NOT NULL,
     channel VARCHAR(50) NOT NULL,
     enabled BOOLEAN NOT NULL DEFAULT ${boolTrue},
     category VARCHAR(255),
@@ -72,12 +72,12 @@ export function notificationPreferencesTableSql(sql: SqlHelpers): string {
  * state into the database inbox table.
  */
 export function notificationDeliveriesTableSql(sql: SqlHelpers): string {
-  const { pkColumn, nullableTimestamp, datetime } = sql
+  const { bigPkColumn, nullableTimestamp, datetime } = sql
   return `CREATE TABLE IF NOT EXISTS notification_deliveries (
-    ${pkColumn},
+    ${bigPkColumn},
     user_id INTEGER,
     channel VARCHAR(50) NOT NULL,
-    recipient VARCHAR(1000) NOT NULL,
+    recipient TEXT NOT NULL,
     subject VARCHAR(255),
     body TEXT NOT NULL,
     status VARCHAR(50) NOT NULL DEFAULT 'pending',

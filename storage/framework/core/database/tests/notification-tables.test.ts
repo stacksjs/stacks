@@ -53,8 +53,7 @@ describe('notification table DDL — cross-dialect (stacksjs/stacks#1937)', () =
 
       test('primary-key DDL matches the dialect', () => {
         const ddl = notificationsTableSql(sql)
-        // pkColumn from sqlHelpers is dialect-specific; just assert it's present.
-        expect(ddl).toContain(sql.pkColumn)
+        expect(ddl).toContain(sql.bigPkColumn)
       })
     })
   }
@@ -62,6 +61,15 @@ describe('notification table DDL — cross-dialect (stacksjs/stacks#1937)', () =
   test('sqlite uses AUTOINCREMENT, mysql uses AUTO_INCREMENT', () => {
     expect(notificationsTableSql(sqlHelpers('sqlite'))).toContain('AUTOINCREMENT')
     expect(notificationsTableSql(sqlHelpers('mysql'))).toContain('AUTO_INCREMENT')
+  })
+
+  test('model-owned tables use the same wide storage as generated migrations', () => {
+    const mysql = sqlHelpers('mysql')
+    expect(notificationsTableSql(mysql)).toContain('id BIGINT PRIMARY KEY AUTO_INCREMENT')
+    expect(notificationsTableSql(mysql)).toContain('user_id BIGINT,')
+    expect(notificationsTableSql(mysql)).toContain('data TEXT NOT NULL')
+    expect(notificationDeliveriesTableSql(mysql)).toContain('id BIGINT PRIMARY KEY AUTO_INCREMENT')
+    expect(notificationDeliveriesTableSql(mysql)).toContain('recipient TEXT NOT NULL')
   })
 
   test('runtime indexes use valid idempotency for MySQL-wire dialects', () => {

@@ -187,13 +187,13 @@ export function categorizablesTableSql(sql: SqlHelpers): string {
  * does), which left `taggable: true` on its own pointing at a missing table.
  */
 export function taggableModelsTableSql(sql: SqlHelpers): string {
-  const { pkColumn } = sql
+  const { bigPkColumn, bigInteger } = sql
   return `CREATE TABLE IF NOT EXISTS taggable_models (
-    ${pkColumn},
-    tag_id INTEGER NOT NULL,
-    taggable_id INTEGER NOT NULL,
-    taggable_type VARCHAR(255) NOT NULL,
-    ${createdAt(sql)},
+    ${bigPkColumn},
+    tag_id ${bigInteger} NOT NULL,
+    taggable_id ${bigInteger} NOT NULL,
+    taggable_type VARCHAR(255) NOT NULL DEFAULT 'posts',
+    created_at ${sql.datetime} NOT NULL DEFAULT CURRENT_TIMESTAMP,
     ${updatedAt(sql)}
   )`
 }
@@ -204,13 +204,13 @@ export function taggableModelsTableSql(sql: SqlHelpers): string {
  * table directly to resolve the category ids an owner is filed under.
  */
 export function categorizableModelsTableSql(sql: SqlHelpers): string {
-  const { pkColumn } = sql
+  const { bigPkColumn, bigInteger } = sql
   return `CREATE TABLE IF NOT EXISTS categorizable_models (
-    ${pkColumn},
-    category_id INTEGER NOT NULL,
-    categorizable_id INTEGER NOT NULL,
-    categorizable_type VARCHAR(255) NOT NULL,
-    ${createdAt(sql)},
+    ${bigPkColumn},
+    category_id ${bigInteger} NOT NULL,
+    categorizable_id ${bigInteger} NOT NULL,
+    categorizable_type VARCHAR(255) NOT NULL DEFAULT 'posts',
+    created_at ${sql.datetime} NOT NULL DEFAULT CURRENT_TIMESTAMP,
     ${updatedAt(sql)}
   )`
 }

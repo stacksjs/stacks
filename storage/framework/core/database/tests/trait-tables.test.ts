@@ -80,8 +80,11 @@ describe('trait table DDL — cross-dialect', () => {
       })
 
       test('every trait table uses the dialect primary key', () => {
-        for (const ddl of ddlFor(driver).tables)
+        const tables = ddlFor(driver).tables
+        for (const ddl of tables.slice(0, 4))
           expect(ddl).toContain(sql.pkColumn)
+        for (const ddl of tables.slice(4))
+          expect(ddl).toContain(sql.bigPkColumn)
       })
 
       test('commentables carries the polymorphic owner columns the trait filters on', () => {
@@ -122,7 +125,14 @@ describe('trait table DDL — cross-dialect', () => {
         // The database clock renders space-separated while the app writes the
         // canonical `T` form; on SQLite these hold text and mixing the two
         // breaks ordering. Every writer sets the value explicitly.
-        for (const ddl of ddlFor(driver).tables)
+        // The two model-owned pivots deliberately match generated model DDL,
+        // whose created_at column carries the framework default.
+        for (const ddl of [
+          commentablesTableSql(sql),
+          taggablesTableSql(sql),
+          categorizablesTableSql(sql),
+          commentableUpvotesTableSql(sql),
+        ])
           expect(ddl).not.toContain('DEFAULT CURRENT_TIMESTAMP')
       })
 
@@ -142,6 +152,14 @@ describe('trait table DDL — cross-dialect', () => {
       expect(indexSqlForDialect(statement, 'singlestore')).not.toContain('IF NOT EXISTS')
       // stripping the clause must not damage the rest of the statement
       expect(indexSqlForDialect(statement, 'mysql')).toMatch(/^CREATE (UNIQUE )?INDEX \w+ ON \w+ \(/)
+    }
+  })
+
+  test('model-owned pivots match the generator\'s 64-bit relation keys', () => {
+    for (const ddl of [taggableModelsTableSql(sqlHelpers('mysql')), categorizableModelsTableSql(sqlHelpers('mysql'))]) {
+      expect(ddl).toContain('id BIGINT PRIMARY KEY AUTO_INCREMENT')
+      expect(ddl).not.toMatch(/(?:tag_id|taggable_id|category_id|categorizable_id) INTEGER/)
+      expect(ddl).toContain("NOT NULL DEFAULT 'posts'")
     }
   })
 })

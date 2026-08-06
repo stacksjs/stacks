@@ -37,6 +37,8 @@ export interface SqlDialectHelpers {
   boolFalse: string
   /** Auto-increment column type */
   autoIncrement: string
+  /** Physical 64-bit integer type, preserving SQLite's INTEGER affinity. */
+  bigInteger: string
   /** Primary key suffix */
   primaryKey: string
   /**
@@ -48,6 +50,8 @@ export interface SqlDialectHelpers {
    * SQLite  → `id INTEGER PRIMARY KEY AUTOINCREMENT`
    */
   pkColumn: string
+  /** Full DDL for the model generator's canonical 64-bit primary key. */
+  bigPkColumn: string
   /**
    * Column type for a naive UTC datetime.
    *
@@ -212,6 +216,7 @@ export function sqlHelpers(driver: string): SqlDialectHelpers {
     boolTrue: isPostgres ? 'true' : '1',
     boolFalse: isPostgres ? 'false' : '0',
     autoIncrement: isPostgres ? 'SERIAL' : 'INTEGER',
+    bigInteger: isSqlite ? 'INTEGER' : 'BIGINT',
     // A dialect without server-side auto-increment gets a plain primary key
     // and nothing else. Emitting AUTO_INCREMENT on a sharded engine is not a
     // syntax error — it is worse, because each shard would independently
@@ -231,6 +236,13 @@ export function sqlHelpers(driver: string): SqlDialectHelpers {
           ? 'id SERIAL PRIMARY KEY'
           : isMysql
             ? 'id INTEGER PRIMARY KEY AUTO_INCREMENT'
+            : 'id INTEGER PRIMARY KEY AUTOINCREMENT',
+    bigPkColumn: !caps.supportsAutoIncrement
+      ? 'id BIGINT NOT NULL PRIMARY KEY'
+      : isPostgres
+          ? 'id BIGSERIAL PRIMARY KEY'
+          : isMysql
+            ? 'id BIGINT PRIMARY KEY AUTO_INCREMENT'
             : 'id INTEGER PRIMARY KEY AUTOINCREMENT',
     datetime: isMysql ? 'DATETIME' : 'TIMESTAMP',
     nullableTimestamp: isMysql ? 'DATETIME NULL' : 'TIMESTAMP',

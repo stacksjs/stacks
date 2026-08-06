@@ -38,6 +38,7 @@ export default defineModel({
     },
 
     data: {
+      type: 'text',
       required: true,
       fillable: true,
       validation: {
