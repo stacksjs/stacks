@@ -143,6 +143,31 @@ export interface DatabaseOptions {
   migrations: string
   migrationLocks: string
 
+  /** How the migration generator decides which model definitions are in scope. */
+  models?: {
+    /**
+     * Also generate migrations for the framework's own models in
+     * `storage/framework/defaults/app/Models`, on top of your `app/Models`.
+     *
+     * Off by default. The defaults stand in only when `app/Models` is empty —
+     * a vendored framework checkout, or a project that has not defined a model
+     * yet. Merging them into every app meant a five-model project migrated
+     * sixty-seven tables, most of them demo schema (`carts`, `coupons`,
+     * `drivers`, ...), and most of its `migrations` rows had no SQL file in the
+     * repo (stacksjs/stacks#2220).
+     *
+     * Turn it on if your app uses built-in models — `User`, `Team`, the
+     * commerce set — without publishing them. `./buddy publish model <Name>`
+     * is the alternative, and the one that leaves the app's schema
+     * self-describing.
+     *
+     * Env override for a single run: `STACKS_INCLUDE_FRAMEWORK_MODELS=1`.
+     *
+     * @default false
+     */
+    includeFrameworkDefaults?: boolean
+  }
+
   /**
    * How reads are distributed across the active connection's replicas.
    * Cross-cutting rather than per-connection: one connection is active at

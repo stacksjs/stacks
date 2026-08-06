@@ -194,12 +194,67 @@ function configureQueryBuilder(
   resetConnection()
 }
 
-export function prepareMigrationModelsDir(): { modelsDir: string, skip: boolean } {
+export function prepareMigrationModelsDir(): { modelsDir: string, skip: boolean, excludedTables: string[] } {
   const sources = resolveModelSources()
   return {
     modelsDir: sources?.dir ?? path.userModelsPath(),
     skip: !sources,
+    excludedTables: sources?.excludedTables ?? [],
   }
+}
+
+const DROP_TABLE_RE = /^\s*DROP\s+TABLE\s+(?:IF\s+EXISTS\s+)?["'`]?(\w+)["'`]?/i
+
+/**
+ * Drop the generated `DROP TABLE`s for framework defaults that are simply out
+ * of scope, rather than deleted.
+ *
+ * The generator diffs the model set against the stored snapshot, so the first
+ * run after framework defaults stop being merged (stacksjs/stacks#2220) sees
+ * sixty-odd tables vanish from the model set and proposes dropping every one
+ * of them — including any that hold data. "This app no longer generates this
+ * table" is not "destroy this table"; the same distinction
+ * `withoutManagedColumnDropSql` draws for framework-managed columns.
+ *
+ * Self-limiting: the snapshot advances to the narrowed model set at the end of
+ * the same run, so the drops are never proposed again. A table an app really
+ * does want gone is still dropped by hand, the way it always was.
+ */
+export function withoutExcludedTableDropSql(
+  statements: string[],
+  excludedTables: readonly string[],
+  operations: readonly MigrationOperation[],
+): { statements: string[], removed: string[] } {
+  if (excludedTables.length === 0)
+    return { statements, removed: [] }
+
+  const excluded = new Set(excludedTables.map(table => table.toLowerCase()))
+  const normalize = (sql: string): string => sql.replace(/\s+/g, ' ').trim().replace(/;$/, '')
+  const dropped = new Set(
+    operations
+      .filter(op => op.kind === 'drop_table' && excluded.has(op.table.toLowerCase()))
+      .filter(op => Boolean(op.sql))
+      .map(op => normalize(op.sql)),
+  )
+
+  const removed: string[] = []
+  const kept = statements.filter((statement) => {
+    if (dropped.has(normalize(statement))) {
+      removed.push(statement)
+      return false
+    }
+    // Fallback for a dialect whose emitted statement doesn't match the
+    // operation's `sql` byte for byte (Postgres appends CASCADE, MySQL uses
+    // backticks). The shape is simple enough to match directly.
+    const match = statement.match(DROP_TABLE_RE)
+    if (match?.[1] && excluded.has(match[1].toLowerCase())) {
+      removed.push(statement)
+      return false
+    }
+    return true
+  })
+
+  return { statements: kept, removed }
 }
 
 /**
@@ -1614,7 +1669,7 @@ export async function previewPendingMigrations(options: GenerateMigrationsOption
   try {
     configureQueryBuilder()
     const dialect = getDialect()
-    const { modelsDir, skip } = prepareMigrationModelsDir()
+    const { modelsDir, skip, excludedTables } = prepareMigrationModelsDir()
     if (skip)
       return []
     const { applyRenames, fromDb } = resolveGenerateOptions(options)
@@ -1626,7 +1681,17 @@ export async function previewPendingMigrations(options: GenerateMigrationsOption
       applyRenames,
       fromDb,
     })
-    const operations = result.operations ?? []
+    let operations = result.operations ?? []
+    // Out-of-scope framework defaults are never dropped (see
+    // `withoutExcludedTableDropSql`), so they must not appear in the
+    // confirmation gate either — sixty phantom drops would train the user to
+    // approve a prompt that is, on any other run, worth reading.
+    if (excludedTables.length > 0) {
+      const excluded = new Set(excludedTables.map(table => table.toLowerCase()))
+      operations = operations.filter(
+        (op: MigrationOperation) => !(op.kind === 'drop_table' && excluded.has(op.table.toLowerCase())),
+      )
+    }
     // Framework-managed columns (trait ALTERs, not model `attributes`) are not
     // real strays — don't surface them as destructive drops in the confirmation
     // gate, or migrate never shows "nothing to migrate" (stacksjs/stacks#2075).
@@ -1812,7 +1877,7 @@ export async function generateMigrations(options: GenerateMigrationsOptions = {}
     }
     const storedPlan = readStoredMigrationPlan(getQbDialect())
 
-    const { modelsDir, skip } = prepareMigrationModelsDir()
+    const { modelsDir, skip, excludedTables } = prepareMigrationModelsDir()
     if (skip) {
       log.debug('No app/Models directory found; using committed framework migrations')
       return ok('Migrations generated')
@@ -1820,6 +1885,14 @@ export async function generateMigrations(options: GenerateMigrationsOptions = {}
 
     const { applyRenames, fromDb } = resolveGenerateOptions(options)
     log.debug(`[migration] Generating migrations for dialect: ${dialect}, models: ${modelsDir}`)
+    // The first question asked when an expected table doesn't generate. Cheap
+    // to leave in, and it names the flag that answers it.
+    if (excludedTables.length > 0) {
+      log.debug(
+        `[migration] ${excludedTables.length} framework default model(s) out of scope because app/Models defines this app's schema. `
+        + `Enable database.models.includeFrameworkDefaults (or STACKS_INCLUDE_FRAMEWORK_MODELS=1) to generate them too.`,
+      )
+    }
     // dryRun: true — bun-query-builder's own file writer numbers migrations
     // from its own internal counter (1, 2, 3, ...), unaware of any already-
     // committed migration files. On a project with existing migrations that
@@ -1849,6 +1922,22 @@ export async function generateMigrations(options: GenerateMigrationsOptions = {}
       const filtered = withoutManagedColumnDropSql(sqlStatements, await frameworkManagedColumns(), result.operations ?? [])
       if (filtered.removed.length > 0)
         log.debug(`[migration] Skipped ${filtered.removed.length} generated drop(s) of framework-managed column(s) (stacksjs/stacks#2075)`)
+      sqlStatements = filtered.statements
+    }
+
+    // Same idea one level up: framework defaults that are out of scope because
+    // this app has its own models must not be read as tables the app deleted.
+    // Said out loud rather than at debug — an app upgrading into #2220's fix
+    // sees its table count fall by sixty, and should know why nothing dropped.
+    if (result.hasChanges && sqlStatements.length > 0 && excludedTables.length > 0) {
+      const filtered = withoutExcludedTableDropSql(sqlStatements, excludedTables, result.operations ?? [])
+      if (filtered.removed.length > 0) {
+        log.info(
+          `[migration] Left ${filtered.removed.length} framework-default table(s) in place rather than dropping them. `
+          + `They are no longer generated because app/Models defines this app's schema; the tables and their data are untouched. `
+          + `Set database.models.includeFrameworkDefaults to keep generating them (stacksjs/stacks#2220).`,
+        )
+      }
       sqlStatements = filtered.statements
     }
 

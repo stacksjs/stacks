@@ -98,6 +98,25 @@ export default {
   migrationLocks: 'migration_locks',
 
   /**
+   * **Model Discovery**
+   *
+   * Which model definitions the migration generator treats as yours.
+   */
+  models: {
+    /**
+     * Generate migrations for the framework's own models in
+     * `storage/framework/defaults/app/Models` on top of your `app/Models`.
+     *
+     * Leave this off unless your app uses built-in models without publishing
+     * them; the defaults already stand in on their own when `app/Models` is
+     * empty. `./buddy publish model <Name>` copies a single one into your app.
+     *
+     * Override for one run with `STACKS_INCLUDE_FRAMEWORK_MODELS=1`.
+     */
+    includeFrameworkDefaults: false,
+  },
+
+  /**
    * **Read Routing**
    *
    * How reads are distributed across the replicas declared on the active
