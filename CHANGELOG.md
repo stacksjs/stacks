@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.274...v0.70.275)
+
+## 🐛 Bug Fixes
+
+- **migrations**: select the active dialect corpus ([63daf86](https://github.com/stacksjs/stacks/commit/63daf86)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.273...v0.70.274)
 
 ## 🐛 Bug Fixes
