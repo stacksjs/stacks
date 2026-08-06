@@ -97,6 +97,28 @@ export function generateCsrfToken(): string {
  * - 2-hour `Max-Age` — short enough to limit replay if leaked, long
  *   enough that idle tabs don't constantly re-fetch tokens
  */
+/**
+ * Whether a response is already handing the browser a CSRF token.
+ *
+ * `getSetCookie` is the only way to read multiple `Set-Cookie` headers back;
+ * `get` joins them into one string, which is not something a cookie value can
+ * be parsed out of reliably. Older runtimes without it fall back to the joined
+ * form, where a substring match is still correct for the question being asked.
+ */
+function responseAlreadySeeds(response: Response): boolean {
+  const headers = response.headers as Headers & { getSetCookie?: () => string[] }
+  const cookies = typeof headers.getSetCookie === 'function'
+    ? headers.getSetCookie()
+    : [headers.get('set-cookie') || '']
+
+  return cookies.some(cookie =>
+    cookie.startsWith(`${CSRF_COOKIE_NAME}=`)
+    || cookie.startsWith('csrf-token=')
+    || cookie.includes(`, ${CSRF_COOKIE_NAME}=`)
+    || cookie.includes(', csrf-token='),
+  )
+}
+
 export function seedCsrfCookieIfMissing(req: Request, response: Response, minted?: string): Response {
   const cookieHeader = req.headers.get('cookie') || ''
 
@@ -108,6 +130,15 @@ export function seedCsrfCookieIfMissing(req: Request, response: Response, minted
   if (!minted && (cookieHeader.includes(`${CSRF_COOKIE_NAME}=`) || cookieHeader.includes('csrf-token='))) {
     return response
   }
+
+  // A token already on its way to the browser counts as present, exactly like
+  // one in the request. Something upstream can mint before the render - the
+  // stx dev server does, so a page's forms carry a token on a first visit -
+  // and appending a second here would leave the browser storing the last
+  // Set-Cookie while the page embedded the first. Two tokens fail the same way
+  // no token does, and are far harder to see.
+  if (responseAlreadySeeds(response))
+    return response
 
   const token = minted || generateCsrfToken()
   const isSecure = req.url.startsWith('https://')

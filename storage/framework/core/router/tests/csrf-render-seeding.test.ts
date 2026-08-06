@@ -76,6 +76,34 @@ describe('seedCsrfCookieIfMissing', () => {
     expect(seeded.split(`${CSRF_COOKIE_NAME}=`)[1]?.split(';')[0]).toBe(minted)
   })
 
+  /**
+   * The one that took a while to see. The stx dev server mints its own token
+   * before the render so a first visit's forms are not empty, which means the
+   * response arrives here already carrying a Set-Cookie. Appending a second
+   * leaves the browser storing the last one and the page embedding the first,
+   * and the submit fails exactly as if no token existed.
+   */
+  test('does not seed over a token the response is already handing out', () => {
+    const upstream = generateCsrfToken()
+    const res = response()
+    res.headers.append('Set-Cookie', `${CSRF_COOKIE_NAME}=${upstream}; Path=/`)
+
+    const seeded = seedCsrfCookieIfMissing(request(), res).headers.getSetCookie()
+
+    expect(seeded).toHaveLength(1)
+    expect(seeded[0]).toContain(upstream)
+  })
+
+  test('still seeds alongside an unrelated cookie', () => {
+    const res = response()
+    res.headers.append('Set-Cookie', 'auth-token=abc; Path=/')
+
+    const seeded = seedCsrfCookieIfMissing(request(), res).headers.getSetCookie()
+
+    expect(seeded).toHaveLength(2)
+    expect(seeded.join('\n')).toContain(`${CSRF_COOKIE_NAME}=`)
+  })
+
   test('a token is long enough not to be guessed', () => {
     expect(generateCsrfToken()).toMatch(/^[0-9a-f]{64}$/)
     expect(generateCsrfToken()).not.toBe(generateCsrfToken())
