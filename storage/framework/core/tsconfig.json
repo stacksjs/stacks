@@ -6,7 +6,16 @@
   "extends": "../tsconfig.base.json",
   "compilerOptions": {
     "paths": {
+      // Deep subpath imports need their own mapping: `@stacksjs/*` below binds
+      // the wildcard to the WHOLE remainder, so `@stacksjs/browser/composables/csrf`
+      // resolves to `./browser/composables/csrf/src`, which does not exist. tsc
+      // then falls back to node resolution and lands on the package's `dist/`,
+      // which nothing builds before `bun run typecheck` — so these read as
+      // "Cannot find module" on a clean checkout and in CI, and are four of the
+      // six errors that have kept the typecheck job red.
       "@stacksjs/actions/*": ["./actions/src/*"],
+      "@stacksjs/browser/*": ["./browser/src/*"],
+      "@stacksjs/composables/*": ["./composables/src/*"],
       "@stacksjs/*": ["./*/src"],
       "stacks/*": ["./*/src"],
       "buddy": ["./buddy/src/index.ts"],
