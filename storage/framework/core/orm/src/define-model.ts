@@ -1616,7 +1616,33 @@ interface StacksModelDefinition extends Omit<BQBModelDefinition, 'attributes' | 
    * }
    * ```
    */
-  traits?: NonNullable<BQBModelDefinition['traits']> & Record<string, unknown>
+  /**
+   * `useApi.middleware` is widened past bun-query-builder's
+   * `readonly string[]` to also accept `{ read, write }`.
+   *
+   * Stacks defaults BOTH sides of the auto-CRUD surface to `auth`
+   * (stacksjs/stacks#2224), which leaves a flat list unable to express the
+   * commonest real shape — public catalog reads with authenticated writes —
+   * since `middleware: []` opens reads and writes together. The split form
+   * says it exactly. Only that one trait is overridden; everything else still
+   * comes from bqb, so its typing stays authoritative.
+   */
+  traits?: Omit<NonNullable<BQBModelDefinition['traits']>, 'useApi'> & {
+    useApi?: boolean | {
+      readonly uri?: string
+      readonly routes?: readonly string[]
+      /**
+       * `any` on purpose. The real shape is `ApiMiddleware` in
+       * `@stacksjs/types`, but `TDef` is handed straight to
+       * bun-query-builder's `OrmModelStatic<TDef>`, so this property has to
+       * stay assignable to its `readonly string[]`. A union is not, and every
+       * downstream generic in this file breaks on it; `any` is. The runtime
+       * (`resolveApiMiddleware`) validates the shape and discards junk either
+       * way, so nothing is unchecked at the point it matters.
+       */
+      readonly middleware?: any
+    }
+  } & Record<string, unknown>
   indexes?: Array<{ name: string, columns: string[], unique?: boolean, where?: string }>
   casts?: Record<string, CastType | CasterInterface>
   attributes: {

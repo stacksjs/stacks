@@ -26,7 +26,7 @@
 import { describe, expect, it } from 'bun:test'
 import { Database } from 'bun:sqlite'
 import { snakeCase } from '@stacksjs/strings'
-import { applyCasts, applySorting, buildIndexMeta, buildIndexPaginator, buildReadColumnMap, dropHiddenInputs, filterFillable, getWritableFields, INDEX_DEFAULT_PER_PAGE, INDEX_MAX_PER_PAGE, isUniqueViolation, mapWriteError, normalizeValidationValue, resolveApiMiddleware, resolveIndexPageArgs, stripHidden, toSnakeCase, toSnakeCaseKeys } from '../src/auto-crud'
+import { applyCasts, applySorting, buildIndexMeta, buildIndexPaginator, buildReadColumnMap, dropHiddenInputs, filterFillable, getWritableFields, INDEX_DEFAULT_PER_PAGE, INDEX_MAX_PER_PAGE, isUniqueViolation, mapWriteError, normalizeValidationValue, resolveApiMiddleware, resolveIndexPageArgs, routeShape, stripHidden, toSnakeCase, toSnakeCaseKeys } from '../src/auto-crud'
 import { toPaginator } from '../src/paginator'
 
 describe('toSnakeCaseKeys (write-path column mapping)', () => {
@@ -352,13 +352,17 @@ describe('applyCasts (dual-spelling read/write casts)', () => {
   })
 })
 
-describe('resolveApiMiddleware (secure-by-default writes)', () => {
-  it('bare `useApi: true` → public reads, auth-guarded writes', () => {
-    expect(resolveApiMiddleware(true)).toEqual({ read: [], write: ['auth'], declared: false })
+describe('resolveApiMiddleware (secure-by-default reads AND writes)', () => {
+  // #1949 secured writes and left reads public for catalog tables. That cost
+  // landed on models that are not catalogs: a model opting into the trait
+  // without declaring middleware published `GET /api/users` to anyone
+  // (stacksjs/stacks#2224). Reads now default to `auth` as well.
+  it('bare `useApi: true` → auth on BOTH sides', () => {
+    expect(resolveApiMiddleware(true)).toEqual({ read: ['auth'], write: ['auth'], declared: false })
   })
 
-  it('default Coupon shape `{ uri }` (no middleware key) → auth-guarded writes', () => {
-    expect(resolveApiMiddleware({ uri: 'coupons' })).toEqual({ read: [], write: ['auth'], declared: false })
+  it('default Coupon shape `{ uri }` (no middleware key) → auth on both sides', () => {
+    expect(resolveApiMiddleware({ uri: 'coupons' })).toEqual({ read: ['auth'], write: ['auth'], declared: false })
   })
 
   it('explicit `middleware: ["auth"]` applies to both reads and writes', () => {
@@ -376,6 +380,69 @@ describe('resolveApiMiddleware (secure-by-default writes)', () => {
   it('filters non-string/empty entries from declared lists', () => {
     expect(resolveApiMiddleware({ middleware: ['auth', '', 42 as any, null as any] }))
       .toEqual({ read: ['auth'], write: ['auth'], declared: true })
+  })
+
+  describe('split `middleware: { read, write }`', () => {
+    // Without this form the secure default makes the commonest real shape —
+    // public catalog reads, authenticated writes — inexpressible: flat
+    // `middleware: []` is the only way to open reads and it opens writes too.
+    it('expresses public reads with guarded writes', () => {
+      expect(resolveApiMiddleware({ middleware: { read: [], write: ['auth'] } }))
+        .toEqual({ read: [], write: ['auth'], declared: true })
+    })
+
+    it('carries independent lists per side', () => {
+      expect(resolveApiMiddleware({ middleware: { read: ['throttle'], write: ['auth', 'throttle'] } }))
+        .toEqual({ read: ['throttle'], write: ['auth', 'throttle'], declared: true })
+    })
+
+    it('an OMITTED side falls back to auth, not to public', () => {
+      // `{ write: [...] }` must not quietly reopen reads — the whole point of
+      // the change is that silence never means public.
+      expect(resolveApiMiddleware({ middleware: { write: ['auth'] } }))
+        .toEqual({ read: ['auth'], write: ['auth'], declared: true })
+      expect(resolveApiMiddleware({ middleware: { read: [] } }))
+        .toEqual({ read: [], write: ['auth'], declared: true })
+    })
+
+    it('accepts the string shorthand per side', () => {
+      expect(resolveApiMiddleware({ middleware: { read: 'throttle', write: 'auth' } }))
+        .toEqual({ read: ['throttle'], write: ['auth'], declared: true })
+    })
+
+    it('filters junk entries per side', () => {
+      expect(resolveApiMiddleware({ middleware: { read: ['', null as any], write: ['auth', 42 as any] } }))
+        .toEqual({ read: [], write: ['auth'], declared: true })
+    })
+  })
+})
+
+describe('routeShape (user routes win regardless of parameter NAME) (#2224)', () => {
+  // The "user routes win" guard compared paths literally, so an app declaring
+  // `/api/sites/{siteId}` did not suppress the ORM's `/api/sites/{id}`: both
+  // registered, and the ORM copy carried none of the app's authorization.
+  it('treats differently-named parameters as the same route', () => {
+    expect(routeShape('/api/sites/{siteId}')).toBe(routeShape('/api/sites/{id}'))
+  })
+
+  it('matches the colon spelling the router also accepts', () => {
+    expect(routeShape('/api/sites/:siteId')).toBe(routeShape('/api/sites/{id}'))
+  })
+
+  it('keeps genuinely different paths distinct', () => {
+    expect(routeShape('/api/sites/{id}')).not.toBe(routeShape('/api/users/{id}'))
+    expect(routeShape('/api/sites/{id}')).not.toBe(routeShape('/api/sites'))
+    // Same segment count, different literal — must not collapse.
+    expect(routeShape('/api/sites/active')).not.toBe(routeShape('/api/sites/{id}'))
+  })
+
+  it('normalizes every parameter in a multi-parameter path', () => {
+    expect(routeShape('/api/sites/{siteId}/pages/{pageId}'))
+      .toBe(routeShape('/api/sites/{id}/pages/{pageId2}'))
+  })
+
+  it('leaves a path with no parameters untouched', () => {
+    expect(routeShape('/api/sites')).toBe('/api/sites')
   })
 })
 

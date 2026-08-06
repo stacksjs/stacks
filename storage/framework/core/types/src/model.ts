@@ -235,9 +235,30 @@ export interface Relations {
 
 export type SocialOptions = SocialProviders[]
 
+/**
+ * Middleware for the auto-generated REST routes.
+ *
+ * Omit it and both reads and writes get `auth` — an undeclared read route is
+ * how a customer list leaks (stacksjs/stacks#2224). A flat list applies to
+ * both sides; the split form states them separately, which is the only way to
+ * express the common "public catalog, authenticated writes" shape:
+ *
+ * ```ts
+ * middleware: ['auth']                        // both sides
+ * middleware: []                              // both sides public (warns at boot)
+ * middleware: { read: [], write: ['auth'] }   // public reads, guarded writes
+ * ```
+ *
+ * An omitted side of the split form falls back to `auth`, not to public.
+ */
+export type ApiMiddleware =
+  | string
+  | string[]
+  | { read?: string | string[], write?: string | string[] }
+
 export interface ApiSettings {
   uri: string
-  middleware: string[]
+  middleware: ApiMiddleware
   routes:
     | {
       [key in ApiRoutes]: Action

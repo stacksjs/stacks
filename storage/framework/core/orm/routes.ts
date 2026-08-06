@@ -12,7 +12,7 @@ import { projectPath, storagePath } from '@stacksjs/path'
 import { createQueryBuilder, defaultConfig, setConfig } from '@stacksjs/query-builder'
 import { HttpError } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/logging'
-import { applyCasts, applySorting, buildIndexMeta, buildIndexPaginator, buildReadColumnMap, dropHiddenInputs, filterFillable, getWritableFields, mapWriteError, normalizeValidationValue, resolveApiMiddleware, resolveIndexPageArgs, stripHidden, toSnakeCase, toSnakeCaseKeys } from './src/auto-crud'
+import { applyCasts, applySorting, buildIndexMeta, buildIndexPaginator, buildReadColumnMap, dropHiddenInputs, filterFillable, getWritableFields, mapWriteError, normalizeValidationValue, resolveApiMiddleware, resolveIndexPageArgs, routeShape, stripHidden, toSnakeCase, toSnakeCaseKeys } from './src/auto-crud'
 import { loadModelRegistry } from './src/model-registry'
 
 // Initialize the query builder config from the project's optional
@@ -72,8 +72,9 @@ const db = createQueryBuilder()
 
 // Helper: check if a route is already registered (user-defined routes take priority)
 function routeExists(method: string, path: string): boolean {
+  const shape = routeShape(path)
   return route.routes.some(
-    (r: any) => r.method === method && r.path === path,
+    (r: any) => r.method === method && routeShape(String(r.path ?? '')) === shape,
   )
 }
 
@@ -506,18 +507,21 @@ for (const [modelName, model] of Object.entries(models)) {
   // enumerate sensitive/hidden columns.
   const readColumns = buildReadColumnMap(model.attributes, hiddenFields)
 
-  // Per-model middleware, honoring the `useApi.middleware` field declared
-  // on the model trait (e.g. `middleware: ['auth']` for resources that
-  // should never be browsed anonymously). Read routes (index/show) stay
-  // public by default — fine for catalog tables (products, posts). Mutating
-  // routes (store/update/destroy) are secure-by-default: they get `auth`
-  // unless the model explicitly declares `middleware` (an explicit `[]` is
-  // a deliberate opt-out), because `enabledRoutes` defaults to all five and
-  // a bare `useApi: true` used to expose anonymous POST/PUT/PATCH/DELETE.
+  // Per-model middleware from the `useApi.middleware` field. Secure-by-default
+  // on both sides: with nothing declared, reads AND writes get `auth`. A public
+  // catalog asks for it with `middleware: { read: [], write: ['auth'] }`, or
+  // opens everything with `middleware: []`. See `resolveApiMiddleware`.
   const { read: readMiddleware0, write: writeMiddleware, declared } = resolveApiMiddleware(useApi)
   const hasMutating = ['store', 'update', 'destroy'].some(r => enabledRoutes.includes(r))
   if (hasMutating && declared && writeMiddleware.length === 0)
     log.warn(`[orm] ${modelName}: registering UNAUTHENTICATED mutating routes at ${basePath} (explicit \`middleware: []\` opt-out)`)
+
+  // Reads get the same treatment. An anonymous read endpoint is how a customer
+  // list leaks, and until now it was the silent default — so when an app opts
+  // back into it, say so at boot with the same volume as the write warning.
+  const hasRead = ['index', 'show'].some(r => enabledRoutes.includes(r))
+  if (hasRead && declared && readMiddleware0.length === 0)
+    log.warn(`[orm] ${modelName}: registering UNAUTHENTICATED read routes at ${basePath} (explicit \`middleware\` opt-out) — anyone can list this table`)
 
   // Row-scoped resource? (explicit `ownership`, or a model with a team_id
   // column that's auto-team-scoped). If so its index/show handlers below

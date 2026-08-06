@@ -17,6 +17,11 @@ export default defineModel({
       filterable: ['template'],
     },
     useApi: {
+      // Public catalog: anyone may browse, only authenticated callers may
+      // write. Declared explicitly because the trait now defaults BOTH sides to
+      // `auth` — an undeclared read route is how a customer list leaks
+      // (stacksjs/stacks#2224). Behaviour here is unchanged.
+      middleware: { read: [], write: ['auth'] },
       uri: 'pages',
       routes: ['index', 'store', 'show', 'update', 'destroy'],
     },
