@@ -1,5 +1,16 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.294...v0.70.295)
+
+## 🐛 Bug Fixes
+
+- **tests**: look for tests where the tests are ([70d13bc](https://github.com/stacksjs/stacks/commit/70d13bc)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **deploy**: resolve the tlsx CLI instead of hardcoding a checkout path ([d8c9017](https://github.com/stacksjs/stacks/commit/d8c9017)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.293...v0.70.294)
 
 ## ✨ Features
