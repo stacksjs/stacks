@@ -339,21 +339,84 @@ export function applyCasts(
 }
 
 /**
+ * A route path with every parameter name flattened to `{}`.
+ *
+ * The "user routes win" guard compared paths literally, so an app's own
+ * `/api/sites/{siteId}` did not suppress the ORM's `/api/sites/{id}` — the two
+ * strings differ, so BOTH were registered and the ORM copy carried none of the
+ * app's authorization. The app had declared the endpoint and still got a second,
+ * unguarded one it never wrote (stacksjs/stacks#2224).
+ *
+ * The parameter's NAME is the app's business. The shape is what decides whether
+ * this URL is already claimed.
+ */
+export function routeShape(path: string): string {
+  // Both spellings the router accepts, so `/sites/:siteId` matches too.
+  return path.replace(/\{[^}]*\}/g, '{}').replace(/:[^/]+/g, '{}')
+}
+
+/** Drop non-string and empty entries, accepting a bare string as a one-item list. */
+function middlewareList(raw: unknown): string[] {
+  if (Array.isArray(raw))
+    return raw.filter((m: unknown): m is string => typeof m === 'string' && m.length > 0)
+  return typeof raw === 'string' && raw ? [raw] : []
+}
+
+/**
  * Resolve middleware lists for a model's `useApi` trait value (which may be
  * `true` or `{ uri, routes, middleware }`).
  *
- * Secure-by-default: mutating routes (store/update/destroy) get `auth`
- * unless the model explicitly declares `useApi.middleware` — an explicit
- * `middleware: []` is a deliberate opt-out and is honored (with a startup
- * warning at the call site). Read routes stay public unless declared.
+ * Secure-by-default on BOTH sides: with no declared `useApi.middleware`, read
+ * and mutating routes alike get `auth`.
+ *
+ * #1949 gave the mutating routes that default and deliberately left reads
+ * public, reasoning that catalog tables (products, posts) want anonymous
+ * browsing. The cost of that default landed on models that are not catalogs: a
+ * model opting into the trait without declaring middleware published
+ * `GET /api/{uri}` and `GET /api/{uri}/{id}` to anyone. In one real app that
+ * was `GET /api/users` returning the full customer list — only `password` was
+ * `hidden`, so names and emails came back — and the app's own security tests
+ * could not see it, because the route was never declared in its route files
+ * (stacksjs/stacks#2224).
+ *
+ * A wrong "public" default is a data breach; a wrong "private" default is a 401
+ * on the first request in development. Only one of those is recoverable, so the
+ * default is now `auth` and a public read is something an app asks for.
+ *
+ * Three declaration shapes, so asking is always possible:
+ *
+ *   `middleware: ['auth']`              both sides get the list (unchanged)
+ *   `middleware: []`                    both sides public — deliberate opt-out,
+ *                                       warned about at the call site
+ *   `middleware: { read, write }`       per-side lists
+ *
+ * The split form exists because the secure default would otherwise make the
+ * most common real shape — public catalog reads, authenticated writes —
+ * inexpressible: a flat `middleware: []` is the only way to open reads, and it
+ * opens writes at the same time. That is a worse trade than the bug being fixed,
+ * so `{ read: [], write: ['auth'] }` says it exactly.
  */
 export function resolveApiMiddleware(useApi: unknown): { read: string[], write: string[], declared: boolean } {
   const declared = typeof useApi === 'object' && useApi !== null && 'middleware' in (useApi as Record<string, unknown>)
   const raw = (useApi as any)?.middleware
-  const list: string[] = Array.isArray(raw)
-    ? raw.filter((m: unknown) => typeof m === 'string' && m.length > 0)
-    : (typeof raw === 'string' && raw ? [raw] : [])
-  return { read: list, write: declared ? list : ['auth'], declared }
+
+  if (!declared)
+    return { read: ['auth'], write: ['auth'], declared: false }
+
+  // Split form. `read`/`write` are independent: an omitted side falls back to
+  // the secure default rather than to "public", so `{ write: ['auth'] }` does
+  // not quietly reopen reads.
+  if (raw && typeof raw === 'object' && !Array.isArray(raw)) {
+    const split = raw as Record<string, unknown>
+    return {
+      read: 'read' in split ? middlewareList(split.read) : ['auth'],
+      write: 'write' in split ? middlewareList(split.write) : ['auth'],
+      declared: true,
+    }
+  }
+
+  const list = middlewareList(raw)
+  return { read: list, write: list, declared: true }
 }
 
 // Default page size for the auto-CRUD index route. Matches the
