@@ -395,6 +395,6 @@
     "@stacksjs/newsletter": "^0.70.280",
     "@stacksjs/i18n": "^0.70.280",
     "@stacksjs/cron": "^0.70.280",
-    "bun-query-builder": "^0.2.12"
+    "bun-query-builder": "^0.2.13"
   }
 }
