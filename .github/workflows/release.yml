@@ -195,7 +195,10 @@ jobs:
             # Force each retry to fetch fresh manifests so eventual consistency
             # can recover without turning a successful publish into a false
             # release failure.
-            if bun add --no-cache "stacks@$version"; then
+            # A registry or package-manager request can stall without exiting;
+            # bound each attempt so one bad connection cannot hold the
+            # serialized framework release queue forever.
+            if timeout 120s bun add --no-cache "stacks@$version"; then
               installed=true
               break
             fi
