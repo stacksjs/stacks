@@ -802,7 +802,7 @@ for (const [modelName, model] of Object.entries(models)) {
         // schema.string().required().email() }` per attribute — without this
         // call, those declarations were dead documentation.
         const v = validateWriteBody(data, model, 'creating')
-        if (!v.valid) return jsonResponse({ error: 'Validation failed', errors: v.errors }, 422)
+        if (!v.valid) return jsonResponse({ success: false, message: 'Validation failed', errors: v.errors }, 422)
 
         // Add timestamps if model uses them
         if (model.traits?.useTimestamps !== false) {
@@ -876,7 +876,7 @@ for (const [modelName, model] of Object.entries(models)) {
         // Run declared validation rules. Partial updates only validate fields
         // the caller actually sent — see validateWriteBody for the rule.
         const v = validateWriteBody(data, model, 'updating')
-        if (!v.valid) return jsonResponse({ error: 'Validation failed', errors: v.errors }, 422)
+        if (!v.valid) return jsonResponse({ success: false, message: 'Validation failed', errors: v.errors }, 422)
 
         // 404 fast if the row doesn't exist — previously the UPDATE silently
         // matched zero rows and we returned the request body as if it had

@@ -8,6 +8,7 @@
 import type { Server } from 'bun'
 import type { ActionValidations, ValidationResult } from '@stacksjs/actions'
 import type { ActionHandler, EnhancedRequest, Route, ServerOptions } from '@stacksjs/bun-router'
+import { response } from '@stacksjs/bun-router'
 import { Middleware } from './middleware'
 // Side-import the EnhancedRequest module augmentation so every `req._foo`
 // and `req.input(...)` access in this file type-checks without `as any`
@@ -1517,6 +1518,29 @@ function resolveStringHandler(handlerPath: string): Promise<RouteHandlerFn> {
  * Resolve a string handler to an actual handler function
  * Supports user overrides: checks user's app/ first, then falls back to defaults
  */
+/**
+ * The one 422 body a failed `validations:` block produces.
+ *
+ * This path used to hand-build `{ error: 'Validation failed', errors }`, which
+ * made it the only error response in the framework without a `message`. Every
+ * other one — `response.error()`, `unauthorized()`, `forbidden()`,
+ * `notFound()`, and `validationError()` itself — goes through bun-router's
+ * `response.error`, which emits `{ success: false, message, errors }`. So a
+ * client correctly reading `data.message` got `undefined` for the one response
+ * type forms hit most, and showed its own fallback string instead: a 5-character
+ * password on `/login` reported "Invalid email or password" for a 422
+ * (stacksjs/stacks#2227).
+ *
+ * Delegating rather than hand-building is the point: the envelope is defined in
+ * exactly one place, so this path cannot drift from it again. A named helper
+ * rather than an inline call so `createValidationErrorResponse` in
+ * `error-handler.ts` — a third shape, nesting `errors` under `details` — has an
+ * obvious thing to be reconciled with.
+ */
+function validationFailureResponse(errors: Record<string, string[]>): Response {
+  return response.validationError(errors) as Response
+}
+
 async function resolveStringHandlerUncached(handlerPath: string): Promise<RouteHandlerFn> {
   assertSafeHandlerPath(handlerPath)
   let modulePath = handlerPath
@@ -1623,16 +1647,7 @@ async function resolveStringHandlerUncached(handlerPath: string): Promise<RouteH
         if (action.validations) {
           const validationResult = await validateActionInput(req, action.validations)
           if (!validationResult.valid) {
-            // Positional status (not `{ status: 422 }`) — bun-router's
-            // `Response.json` macro had a positional-only signature for a
-            // while (see stacksjs/stacks#1857 for the historical bite).
-            // The macro is dual-shape now, but defensive positional usage
-            // keeps the validation failure path working even if a project
-            // resolves to an older `@stacksjs/bun-router`.
-            return Response.json(
-              { error: 'Validation failed', errors: validationResult.errors },
-              { status: 422 },
-            )
+            return validationFailureResponse(validationResult.errors)
           }
         }
 
