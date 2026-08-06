@@ -162,6 +162,16 @@ jobs:
       # shards the suite passes 283/283. The shard split is a workaround for
       # the runner, not for a product bug — the three REAL failures it was
       # hiding are fixed (route middleware registry leaking across files).
+      #
+      # The leading `./` is load-bearing. bunfig.toml sets `[test] root =
+      # "tests"` so a bare `bun test` does not walk `pantry/` and exhaust file
+      # descriptors (85ebd37886). A bare path argument is then treated as a
+      # FILTER applied within that root, so `bun test storage/...` matches
+      # nothing and exits non-zero — which would have reported all ~81 core
+      # packages as failing. bun says so itself: "To treat ... as a path, run
+      # bun test ./<path>". Running from the package directory would also work
+      # (`root` is cwd-relative) but breaks tests that resolve repo-root
+      # paths, e.g. orm's sensitive-api-security.test.ts.
       - name: Core tests (all packages)
         if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: |
@@ -171,13 +181,13 @@ jobs:
             if [ "$pkg" = "router" ]; then
               for shard in 1/2 2/2; do
                 echo "::group::core/$pkg (shard $shard)"
-                bun test "$dir" --shard="$shard" || failed="$failed $pkg[$shard]"
+                bun test "./$dir" --shard="$shard" || failed="$failed $pkg[$shard]"
                 echo "::endgroup::"
               done
               continue
             fi
             echo "::group::core/$pkg"
-            bun test "$dir" || failed="$failed $pkg"
+            bun test "./$dir" || failed="$failed $pkg"
             echo "::endgroup::"
           done
           if [ -n "$failed" ]; then
