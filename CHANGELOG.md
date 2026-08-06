@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.281...v0.70.282)
+
+## 🐛 Bug Fixes
+
+- **actions**: prefer installed dependencies over Pantry ([0f6a9b1](https://github.com/stacksjs/stacks/commit/0f6a9b1)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.280...v0.70.281)
 
 ## 🔧 Chores
