@@ -58,8 +58,10 @@
     "typecheck": "bun tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
-  "devDependencies": {
-    "@stacksjs/config": "workspace:*",
+  "dependencies": {
     "@stacksjs/ts-cache": "^0.1.5"
+  },
+  "devDependencies": {
+    "@stacksjs/config": "workspace:*"
   }
 }

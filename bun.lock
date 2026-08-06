@@ -328,9 +328,11 @@
     "storage/framework/core/cache": {
       "name": "@stacksjs/cache",
       "version": "0.70.291",
+      "dependencies": {
+        "@stacksjs/ts-cache": "^0.1.5",
+      },
       "devDependencies": {
         "@stacksjs/config": "workspace:*",
-        "@stacksjs/ts-cache": "^0.1.5",
       },
     },
     "storage/framework/core/calendar-api": {
