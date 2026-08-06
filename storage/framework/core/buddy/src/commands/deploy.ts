@@ -2349,8 +2349,27 @@ fi
 # renewed in place, was actively harmful: each extra name made the renewal open
 # another certificate file, and two files sharing a CN meant one overwrote the
 # other.
+#
+# The CLI is resolved rather than hardcoded. This step used to run
+# 'cd /opt/tlsx && bun run packages/tlsx/bin/cli.ts', which requires a source
+# checkout at one exact path and silently does nothing when it is absent -
+# there is no other way to satisfy the guard. On the box this was found on, that
+# checkout had been pinned to a two-month-old tag nobody was updating, so the
+# deploy kept invoking a build whose renewal logic had a known data-loss bug.
+# Preferring an installed 'tlsx' on PATH lets a package manager own the version;
+# the checkout stays as the fallback so existing boxes keep working.
+tlsx_cli() {
+  if command -v tlsx >/dev/null 2>&1; then
+    tlsx "$@"
+  else
+    (cd /opt/tlsx && /usr/local/bin/bun run packages/tlsx/bin/cli.ts "$@")
+  fi
+}
+have_tlsx() {
+  command -v tlsx >/dev/null 2>&1 || { [ -x /usr/local/bin/bun ] && [ -f /opt/tlsx/packages/tlsx/bin/cli.ts ]; }
+}
 CERTFILE=/etc/bun-gateway/certs/mail.stacksjs.com.crt
-if [ -n "$DOMAIN" ] && [ -f "$CERTFILE" ] && [ -d /opt/tlsx ]; then
+if [ -n "$DOMAIN" ] && [ -f "$CERTFILE" ] && have_tlsx; then
   MAILHOSTNAME="mail.$DOMAIN"
   CERTNAME=$(basename "$CERTFILE" .crt)
   CERTKEY=/etc/bun-gateway/certs/mail.stacksjs.com.key
@@ -2365,7 +2384,7 @@ if [ -n "$DOMAIN" ] && [ -f "$CERTFILE" ] && [ -d /opt/tlsx ]; then
       SAFE=$(mktemp -d)
       cp -a "$CERTFILE" "$SAFE/cert" 2>/dev/null || true
       cp -a "$CERTKEY" "$SAFE/key" 2>/dev/null || true
-      if (cd /opt/tlsx && /usr/local/bin/bun run packages/tlsx/bin/cli.ts acme:issue -d "$ALL" --cert-name "$CERTNAME" --method http-01 --webroot /var/www/acme-challenge --dir /etc/bun-gateway/certs --prod) >/tmp/.mailtenant-cert 2>&1; then
+      if tlsx_cli acme:issue -d "$ALL" --cert-name "$CERTNAME" --method http-01 --webroot /var/www/acme-challenge --dir /etc/bun-gateway/certs --prod >/tmp/.mailtenant-cert 2>&1; then
         # Verify rather than assume. The old code reported CERTHOST on a zero
         # exit alone, which is how an issuance that wrote somewhere else was
         # reported as "added to the mail certificate" for weeks.

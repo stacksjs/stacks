@@ -160,6 +160,20 @@ function truncatedSedExpressions(line: string): string[] {
 }
 
 describe('shell shipped by deploy.ts', () => {
+  it('parses as TypeScript at all', () => {
+    // A backtick inside one of the shell comments ends the template literal the
+    // script lives in, and the build then fails tens of lines later with
+    // "',' expected" pointing at shell prose. That has happened three times.
+    // Bun's transpiler reproduces the parse in-process (this repo's preloader
+    // makes spawning a compiler impossible from a test) and names the real line.
+    //
+    // Deliberately a parse rather than a scan for backticks: an ESCAPED backtick
+    // in a shell comment is legal in the literal and inert in the shell, so a
+    // textual scan flags correct code. Only the parser distinguishes the two.
+    const transpiler = new Bun.Transpiler({ loader: 'ts' })
+    expect(() => transpiler.transformSync(fs.readFileSync(SOURCE, 'utf8'))).not.toThrow()
+  })
+
   it('finds the scripts to check', () => {
     expect(shellScripts().length).toBeGreaterThan(0)
   })
