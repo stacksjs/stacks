@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.275...v0.70.276)
+
+## 🐛 Bug Fixes
+
+- **database**: render runtime indexes per dialect ([9f82d05](https://github.com/stacksjs/stacks/commit/9f82d05)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.274...v0.70.275)
 
 ## 🐛 Bug Fixes
