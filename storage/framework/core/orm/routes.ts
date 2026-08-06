@@ -12,7 +12,7 @@ import { projectPath, storagePath } from '@stacksjs/path'
 import { createQueryBuilder, defaultConfig, setConfig } from '@stacksjs/query-builder'
 import { HttpError } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/logging'
-import { applyCasts, applySorting, buildIndexMeta, buildIndexPaginator, buildReadColumnMap, dropHiddenInputs, filterFillable, getWritableFields, mapWriteError, normalizeValidationValue, resolveApiMiddleware, resolveIndexPageArgs, routeShape, stripHidden, toSnakeCase, toSnakeCaseKeys } from './src/auto-crud'
+import { applyCasts, applySorting, buildIndexMeta, buildIndexPaginator, buildReadColumnMap, dropHiddenInputs, filterFillable, getWritableFields, mapWriteError, normalizeValidationValue, resolveApiMiddleware, resolveIndexPageArgs, routeShape, stripHidden, toSnakeCase, toSnakeCaseKeys, validateWriteBody } from './src/auto-crud'
 import { loadModelRegistry } from './src/model-registry'
 
 // Initialize the query builder config from the project's optional
@@ -84,39 +84,6 @@ function getHiddenFields(model: any): string[] {
   return Object.entries(model.attributes)
     .filter(([_, attr]: [string, any]) => attr.hidden === true)
     .map(([name]: [string, any]) => name)
-}
-
-// Run each declared `validation.rule` against an incoming write payload.
-// Returns { valid: true } or { valid: false, errors }. Per-attribute custom
-// messages from `validation.message` override the rule's default text.
-//
-// Skips fields the caller never sent on PATCH requests so a partial update
-// doesn't trip a "required" rule on a sibling field that wasn't touched.
-// eslint-disable-next-line pickier/no-unused-vars
-function validateWriteBody(
-  _data: Record<string, any>,
-  _model: any,
-  _hook: 'creating' | 'updating',
-): { valid: true } | { valid: false, errors: Record<string, string[]> } {
-  const data = _data
-  const model = _model
-  const hook = _hook
-  const attrs = model?.attributes ?? {}
-  const errors: Record<string, string[]> = {}
-  for (const [field, def] of Object.entries(attrs as Record<string, any>)) {
-    const rule: any = def?.validation?.rule
-    if (!rule || typeof rule.validate !== 'function') continue
-    const present = Object.prototype.hasOwnProperty.call(data, field)
-    if (!present && hook === 'updating') continue
-    const value = normalizeValidationValue(rule, present ? data[field] : undefined)
-    const result = rule.validate(value)
-    if (!result?.valid && Array.isArray(result?.errors) && result.errors.length > 0) {
-      errors[field] = result.errors.map((e: any) =>
-        def?.validation?.message?.[e?.code] ?? e?.message ?? 'invalid',
-      )
-    }
-  }
-  return Object.keys(errors).length === 0 ? { valid: true } : { valid: false, errors }
 }
 
 // Naive English pluralization for hasMany relation names. Matches
