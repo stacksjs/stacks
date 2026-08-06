@@ -6,6 +6,7 @@ import { snakeCase } from '@stacksjs/strings'
 import { AsyncLocalStorage } from 'node:async_hooks'
 import { toCursorPaginator, toPaginator, toSimplePaginator } from './paginator'
 import { enrichPaginatorUrls, resolveCursorArgs, resolvePageArgs } from './paginator-request'
+import { validateWriteBody } from './auto-crud'
 
 /**
  * Event-suppression scope. When the current async context's store reports
@@ -39,6 +40,57 @@ function eventsAreSuppressed(): boolean {
  */
 export function withoutEvents<T>(fn: () => T | Promise<T>): Promise<T> {
   return Promise.resolve(eventSuppression.run({ suppressed: true }, fn as () => Promise<T>))
+}
+
+/**
+ * Validation-suppression scope, the same shape as {@link withoutEvents}.
+ *
+ * Declared `validation.rule`s run on every direct write. A bulk import or a
+ * backfill sometimes needs to land rows that predate a rule, so this is the
+ * escape hatch — deliberately an explicit scope rather than a per-call
+ * `{ validate: false }`, so skipping validation is a visible decision about a
+ * block of code rather than an option buried in one call site.
+ */
+const validationSuppression = new AsyncLocalStorage<{ suppressed: boolean }>()
+
+function validationIsSuppressed(): boolean {
+  return validationSuppression.getStore()?.suppressed === true
+}
+
+/**
+ * Run a callback with model validation suppressed for its entire duration.
+ *
+ * @example
+ * ```ts
+ * await User.withoutValidation(async () => {
+ *   for (const row of legacyRows) await User.create(row) // rules do not run
+ * })
+ * ```
+ */
+export function withoutValidation<T>(fn: () => T | Promise<T>): Promise<T> {
+  return Promise.resolve(validationSuppression.run({ suppressed: true }, fn as () => Promise<T>))
+}
+
+/**
+ * Thrown when a direct write fails a declared `validation.rule`.
+ *
+ * Carries `status = 422` and a per-field `errors` map, matching the shape the
+ * generated REST routes already return, so a handler that catches this can
+ * respond with the same body it would have produced through auto-CRUD. It is
+ * duck-typed by `mapWriteError`, which preserves any integer `status` in
+ * 400-599 — so an over-length value now surfaces as a 422 instead of the
+ * driver's raw 22001 becoming a 500 (stacksjs/stacks#2233).
+ */
+export class ModelValidationError extends Error {
+  readonly status = 422
+  readonly errors: Record<string, string[]>
+
+  constructor(modelName: string, errors: Record<string, string[]>) {
+    const fields = Object.keys(errors).join(', ')
+    super(`${modelName} validation failed: ${fields}`)
+    this.name = 'ModelValidationError'
+    this.errors = errors
+  }
 }
 
 // Extended model definition that provides proper contextual typing for factory callbacks.
@@ -1554,6 +1606,60 @@ function wrapWritesWithMassAssignment(baseModel: Record<string, unknown>, defini
   }
 }
 
+/**
+ * Enforce declared `validation.rule`s on every direct write.
+ *
+ * The rules were only ever run by the generated REST routes
+ * (`routes.ts` → `validateWriteBody`). The direct model API — `create`,
+ * `update`, `save`, `firstOrCreate`, `updateOrCreate` — went through
+ * mass-assignment filtering and casts but never touched the declared rules, so
+ * the same model got no width, type or enum enforcement when written from code
+ * rather than over HTTP. The database was the first thing to notice, and on
+ * Postgres an over-length varchar is a hard 22001 that surfaces as a 500 on
+ * whichever endpoint performed the write (stacksjs/stacks#2233).
+ *
+ * Applied LAST in `defineModel`'s wrapper chain, which makes it the OUTERMOST
+ * wrapper and therefore the first to run. That is deliberate: `validateWriteBody`
+ * (and its `normalizeValidationValue`) is written against pre-cast input — an
+ * ISO date string, not a `Date` — because the REST path validates the raw JSON
+ * body. Validating after the cast wrapper would hand the rules values they were
+ * never designed to see.
+ *
+ * `create` validates with the `creating` hook (absent fields are missing
+ * values); `update` with `updating`, which skips fields the caller did not
+ * send, so a partial update cannot trip a `required` rule on an untouched
+ * sibling. `firstOrCreate` / `updateOrCreate` inherit it through the `create`
+ * they call internally.
+ */
+function wrapWritesWithValidation(baseModel: Record<string, unknown>, definition: BQBModelDefinition): void {
+  const modelName = String((definition as any)?.name ?? baseModel.name ?? 'Model')
+
+  const check = (data: unknown, hook: 'creating' | 'updating'): void => {
+    if (validationIsSuppressed()) return
+    if (!data || typeof data !== 'object' || Array.isArray(data)) return
+    const result = validateWriteBody(data as Record<string, any>, definition, hook)
+    if (!result.valid)
+      throw new ModelValidationError(modelName, result.errors)
+  }
+
+  const origCreate = baseModel.create
+  if (typeof origCreate === 'function') {
+    baseModel.create = async function (this: unknown, data: Record<string, unknown>, ...rest: unknown[]) {
+      check(data, 'creating')
+      return await (origCreate as Function).call(this, data, ...rest)
+    }
+  }
+
+  // `update(id, data)` — the id is the first argument here, unlike `create`.
+  const origUpdate = baseModel.update
+  if (typeof origUpdate === 'function') {
+    baseModel.update = async function (this: unknown, id: unknown, data: Record<string, unknown>, ...rest: unknown[]) {
+      check(data, 'updating')
+      return await (origUpdate as Function).call(this, id, data, ...rest)
+    }
+  }
+}
+
 function wrapQueryMethodsWithCasts(baseModel: Record<string, unknown>, casts: Record<string, CastType | CasterInterface>) {
   // Read-side casts are handled inside `wrapModelInstance` so the proxy
   // (and its `toJSON`/`update`/etc. methods) survives. Wrapping reads here
@@ -1716,6 +1822,8 @@ export type StacksModelStatic<TDef extends ModelDefinition> = OrmModelStatic<TDe
   forceCreate: (data: Record<string, unknown>) => ReturnType<OrmModelStatic<TDef>['create']>
   delete: (id: number | string) => Promise<boolean>
   withoutEvents: <T>(fn: () => T | Promise<T>) => Promise<T>
+  /** Run `fn` with declared `validation.rule`s suppressed (bulk imports, backfills). */
+  withoutValidation: <T>(fn: () => T | Promise<T>) => Promise<T>
 }
 
 export function defineModel<const TDef extends ModelDefinition>(definition: TDef): StacksModelStatic<TDef> {
@@ -1805,6 +1913,25 @@ export function defineModel<const TDef extends ModelDefinition>(definition: TDef
   if (useAuditDecl) {
     const auditOpts = resolveAuditOptions(useAuditDecl)
     applyAudit(baseModel, definition.name, definition.primaryKey || 'id', auditOpts)
+  }
+
+  // Declared `validation.rule`s, enforced on direct writes (#2233). Applied
+  // last of the write wrappers so it is the OUTERMOST one and runs first,
+  // against the caller's pre-cast, pre-encryption input — which is what
+  // `validateWriteBody` is written for, since the REST path validates a raw
+  // JSON body.
+  //
+  // It has to come BEFORE the `*Quietly` loop below: that loop captures
+  // whichever `create`/`update` exists when it runs, so applying validation
+  // afterwards would leave `createQuietly` unvalidated. Quiet means "no
+  // events", never "no rules".
+  wrapWritesWithValidation(baseModel, defWithHooks as BQBModelDefinition)
+
+  // `Model.withoutValidation(fn)` — the escape hatch for bulk imports and
+  // backfills carrying rows that predate a rule. Bound to the model for the
+  // same discoverability reason as `withoutEvents`.
+  ;(baseModel as any).withoutValidation = function <T>(fn: () => T | Promise<T>): Promise<T> {
+    return withoutValidation(fn)
   }
 
   // Static-level event suppression helpers. `Model.withoutEvents(fn)`

@@ -339,6 +339,50 @@ export function applyCasts(
 }
 
 /**
+ * Run each declared `validation.rule` against a write payload.
+ *
+ * Returns `{ valid: true }` or `{ valid: false, errors }`. Per-attribute custom
+ * messages from `validation.message` override the rule's default text.
+ *
+ * Fields the caller never sent are skipped on the `updating` hook, so a partial
+ * update does not trip a `required` rule on a sibling field it never touched.
+ *
+ * Lives here rather than in `../routes.ts` so BOTH write paths can reach it.
+ * It used to be a local function in that module, which meant the declared rules
+ * ran on the generated REST routes and nowhere else: `Model.create()`,
+ * `.update()` and `.save()` went straight to the driver, and an over-length
+ * value first got noticed by Postgres as a 22001, surfacing as a 500 on
+ * whichever endpoint performed the write (stacksjs/stacks#2233). Importing it
+ * from `routes.ts` was not an option — that module registers routes on import.
+ */
+export type WriteValidationResult =
+  | { valid: true }
+  | { valid: false, errors: Record<string, string[]> }
+
+export function validateWriteBody(
+  data: Record<string, any>,
+  model: any,
+  hook: 'creating' | 'updating',
+): WriteValidationResult {
+  const attrs = model?.attributes ?? {}
+  const errors: Record<string, string[]> = {}
+  for (const [field, def] of Object.entries(attrs as Record<string, any>)) {
+    const rule: any = def?.validation?.rule
+    if (!rule || typeof rule.validate !== 'function') continue
+    const present = Object.prototype.hasOwnProperty.call(data, field)
+    if (!present && hook === 'updating') continue
+    const value = normalizeValidationValue(rule, present ? data[field] : undefined)
+    const result = rule.validate(value)
+    if (!result?.valid && Array.isArray(result?.errors) && result.errors.length > 0) {
+      errors[field] = result.errors.map((e: any) =>
+        def?.validation?.message?.[e?.code] ?? e?.message ?? 'invalid',
+      )
+    }
+  }
+  return Object.keys(errors).length === 0 ? { valid: true } : { valid: false, errors }
+}
+
+/**
  * A route path with every parameter name flattened to `{}`.
  *
  * The "user routes win" guard compared paths literally, so an app's own
