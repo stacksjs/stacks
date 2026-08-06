@@ -11,7 +11,7 @@
 import { log } from '@stacksjs/logging'
 import { discoverJobs, getScheduledJobs, type DiscoveredJob } from './discovery'
 import { emitQueueEvent } from './events'
-import { loadPersistedLastRun, persistLastRun } from './scheduler-persistence'
+import { hasUnfinishedRun, loadPersistedLastRun, persistLastRun } from './scheduler-persistence'
 import { storeJob } from './utils'
 
 /**
@@ -438,15 +438,25 @@ async function checkScheduledJobs(): Promise<void> {
 
     // Check if job should run (in the configured timezone, if any)
     if (shouldRunNow(cronExpression, state.lastRun, schedulerState.config.timezone)) {
-      // Check overlapping
-      if (schedulerState.config.preventOverlapping && state.isRunning) {
+      // Overlap guards ask the QUEUE, not `state.isRunning` (stacksjs/stacks#1984).
+      // The scheduler only enqueues: it set `isRunning` right before `storeJob`
+      // and cleared it right after, so the flag described the enqueue rather
+      // than the execution and was always false again by the next tick. Both
+      // guards therefore never fired. `hasUnfinishedRun` checks whether the
+      // previously dispatched job row is still there, which is what "previous
+      // execution still running" actually means.
+      //
+      // Only asked when a guard is on, so the default path adds no query.
+      const overlapGuarded = schedulerState.config.preventOverlapping || state.job.config.withoutOverlapping
+      if (overlapGuarded && await hasUnfinishedRun(name)) {
         log.debug(`Skipping ${name}: previous execution still running`)
         continue
       }
 
-      // Check job-level overlapping setting
-      if (state.job.config.withoutOverlapping && state.isRunning) {
-        log.debug(`Skipping ${name}: withoutOverlapping is enabled`)
+      // Re-entrancy guard for the enqueue itself. Narrow on purpose — the
+      // overlap question above is the one about execution.
+      if (state.isRunning) {
+        log.debug(`Skipping ${name}: a dispatch for it is already in flight`)
         continue
       }
 

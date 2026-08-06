@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'bun:test'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
-import { loadPersistedLastRun, persistLastRun } from '../src/scheduler-persistence'
+import { hasUnfinishedRun, loadPersistedLastRun, overlapPayloadPattern, persistLastRun } from '../src/scheduler-persistence'
 
 // stacksjs/stacks#1984 — the scheduler's `lastRun` marker lived only in memory
 // and reset on restart, so a deploy within the same clock-minute a job fires
@@ -45,6 +45,66 @@ describe('scheduler run-marker persistence (#1984)', () => {
     })
     it('persists the run marker when a job is dispatched', () => {
       expect(sched).toContain('await persistLastRun(name, state.lastRun)')
+    })
+  })
+})
+
+// stacksjs/stacks#1984 — `preventOverlapping` / `withoutOverlapping` consulted
+// an in-memory `isRunning` flag the scheduler set immediately before the
+// enqueue and cleared immediately after, so it described the enqueue rather
+// than the execution and was always false again by the next tick. Neither
+// guard ever fired. They now ask whether the dispatched queue row is still
+// present, which is what "previous execution still running" means.
+describe('scheduler overlap guard (#1984)', () => {
+  describe('overlapPayloadPattern', () => {
+    it('anchors on the closing quote so a prefix name does not match', () => {
+      const pattern = overlapPayloadPattern('backup')
+      expect(pattern).toBe('%"jobName":"backup"%')
+      // The row a sibling job would write. Without the closing quote in the
+      // pattern, `backup` would match `backup-daily` and silently suppress it.
+      expect('{"jobName":"backup-daily","payload":{}}').not.toContain('"jobName":"backup"')
+    })
+
+    it('escapes LIKE metacharacters, since `_` is legal in a job name', () => {
+      // Unescaped, `_` matches any single character, so `backup_daily` would
+      // also match a queued `backupXdaily`.
+      expect(overlapPayloadPattern('backup_daily')).toBe('%"jobName":"backup\\_daily"%')
+      expect(overlapPayloadPattern('50%_off')).toBe('%"jobName":"50\\%\\_off"%')
+      expect(overlapPayloadPattern('a\\b')).toBe('%"jobName":"a\\\\b"%')
+    })
+
+    it('matches the envelope storeJob actually writes', () => {
+      // storeJob puts jobName first in the JSON object; if that ever changes,
+      // the guard silently stops matching and both flags go back to no-ops.
+      const utils = readFileSync(resolve(__dirname, '..', 'src', 'utils.ts'), 'utf-8')
+      expect(utils).toMatch(/JSON\.stringify\(\{\s*\n\s*jobName: name,/)
+    })
+  })
+
+  it('degrades to "not running" rather than throwing when the DB is unavailable', async () => {
+    // A scheduler that cannot reach the database must keep dispatching, not
+    // wedge itself shut.
+    expect(await hasUnfinishedRun('__no_such_scheduled_job__')).toBe(false)
+  })
+
+  describe('scheduler wiring', () => {
+    const sched = src('scheduler.ts')
+
+    it('asks the queue, not the in-memory flag', () => {
+      expect(sched).toContain('await hasUnfinishedRun(name)')
+    })
+
+    it('gates both the global and the per-job flag on that same check', () => {
+      expect(sched).toMatch(
+        /const overlapGuarded = schedulerState\.config\.preventOverlapping \|\| state\.job\.config\.withoutOverlapping/,
+      )
+      expect(sched).toContain('if (overlapGuarded && await hasUnfinishedRun(name))')
+    })
+
+    it('only queries when a guard is actually enabled', () => {
+      // The default path must not pay a query per job per minute.
+      const guard = sched.slice(sched.indexOf('const overlapGuarded'))
+      expect(guard.indexOf('overlapGuarded &&')).toBeLessThan(guard.indexOf('hasUnfinishedRun(name)'))
     })
   })
 })

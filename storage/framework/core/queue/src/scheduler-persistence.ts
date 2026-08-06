@@ -90,6 +90,55 @@ export async function persistLastRun(jobName: string, when: Date): Promise<void>
   }
 }
 
+/**
+ * Whether a previous dispatch of this scheduled job is still unfinished.
+ *
+ * This is what `preventOverlapping` / `withoutOverlapping` were supposed to
+ * ask (stacksjs/stacks#1984). They consulted an in-memory `isRunning` flag that
+ * the scheduler set immediately before `storeJob` and cleared immediately
+ * after, so it described the few milliseconds of the ENQUEUE and was reliably
+ * false again by the next tick — the guard never once fired, and a job that
+ * takes longer than its interval still piled up.
+ *
+ * The queue row is the honest signal. It is deleted on success and on terminal
+ * failure (after `failed_jobs` is written), and deliberately KEPT while a job
+ * is waiting to retry — so "a row still exists" is precisely "the previous run
+ * has not finished", which is the semantics being promised.
+ *
+ * Matched on the payload because `jobs` has no name column; `storeJob` writes
+ * `{"jobName":"<name>",...}` as the first key, and the closing quote in the
+ * pattern keeps `backup` from matching `backup-daily`. LIKE metacharacters in
+ * the name are escaped, since `_` is legal in a job name and would otherwise
+ * match any single character.
+ *
+ * Best-effort, like everything else here: an unavailable database returns
+ * false, which degrades to the previous always-dispatch behaviour rather than
+ * wedging the scheduler shut.
+ */
+/** The LIKE pattern {@link hasUnfinishedRun} matches a job's queue row with. */
+export function overlapPayloadPattern(jobName: string): string {
+  const escaped = jobName.replace(/[\\%_]/g, character => `\\${character}`)
+  return `%"jobName":"${escaped}"%`
+}
+
+export async function hasUnfinishedRun(jobName: string): Promise<boolean> {
+  try {
+    const { db } = await import('@stacksjs/database')
+    const rows = await (db as any).unsafe(
+      `SELECT 1 AS present FROM jobs WHERE payload LIKE ? ESCAPE '\\' LIMIT 1`,
+      [overlapPayloadPattern(jobName)],
+    ).execute()
+    // Drivers disagree on the empty-result shape (`[]`, `{ rows: [] }`, or a
+    // bare undefined), so ask only whether anything came back.
+    const list = Array.isArray(rows) ? rows : (rows?.rows ?? [])
+    return Array.isArray(list) && list.length > 0
+  }
+  catch (err) {
+    log.debug(`[scheduler] overlap check unavailable, dispatching anyway: ${err instanceof Error ? err.message : String(err)}`)
+    return false
+  }
+}
+
 /** Test hook: reset the one-time table-ensured flag. */
 export function __resetSchedulerPersistenceForTests(): void {
   ensured = false
