@@ -38,6 +38,12 @@
       "import": "./dist/composables/index.js",
       "default": "./dist/composables/index.js"
     },
+    "./composables/*": {
+      "types": "./dist/composables/*.d.ts",
+      "bun": "./dist/composables/*.js",
+      "import": "./dist/composables/*.js",
+      "default": "./dist/composables/*.js"
+    },
     "./utils": {
       "types": "./dist/utils/index.d.ts",
       "bun": "./dist/utils/index.js",
