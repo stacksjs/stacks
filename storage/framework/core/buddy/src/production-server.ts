@@ -228,6 +228,7 @@ export async function startProductionServer(options?: { port?: string | number, 
   await overridesReady
 
   const { describeApiProxyRules, injectGlobalAutoImports, resolveApiProxyRules } = await import('@stacksjs/server')
+  const { stxPageAuthMiddleware } = await import('@stacksjs/auth')
   await injectGlobalAutoImports()
 
       // Resolve the stx `serve` implementation: local STX worktree first
@@ -335,6 +336,12 @@ export async function startProductionServer(options?: { port?: string | number, 
         ...(stxModule && { stxModule }),
         ...(i18nConfig && { i18n: i18nConfig }),
         ...(siteConfig?.url && { site: siteConfig }),
+        // Override stx-serve's built-in `auth`/`guest` gate, which only
+        // checks that the cookie EXISTS — `document.cookie = 'auth-token=x'`
+        // satisfied it (stacksjs/stacks#2274). These validate the token like
+        // a bearer. Mirrors the dev views server so a page gated under
+        // `buddy dev` is gated identically under `buddy serve`.
+        middleware: stxPageAuthMiddleware(),
         // Maintenance / coming-soon gate runs first so it intercepts every
         // request. The gate allowlists `/coming-soon`, the secret bypass URL,
         // and static assets, so the holding page renders and visitors with a
