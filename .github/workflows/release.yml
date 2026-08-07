@@ -47,7 +47,7 @@ jobs:
           install: 'false'
 
       - name: Use Cached node_modules
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: node_modules
           key: node-modules-${{ hashFiles('**/bun.lock') }}
@@ -106,7 +106,7 @@ jobs:
           version: '0.10.50'
 
       - name: Use Cached node_modules
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: node_modules
           key: node-modules-${{ hashFiles('**/bun.lock') }}
