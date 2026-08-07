@@ -147,7 +147,7 @@ buddy test:types # runs typecheck
 
 ## 🧪 Testing
 
-All of the framework tests are stored within within the `./storage/framework/tests` project folder. When adding or updating functionality, please ensure it is covered through our test suite. Ensure so by running `buddy test`.
+All of this project's tests are stored within the `./tests` project folder. When adding or updating functionality, please ensure it is covered through our test suite. Ensure so by running `buddy test`.
 
 When working on an individual Stack, tests are stored within the `./tests` project folder & it is recommended to write tests (when useful). Bu
 

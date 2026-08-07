@@ -1,5 +1,5 @@
 import type { CLI, CreateOptions } from '@stacksjs/types'
-import { chmodSync, existsSync, readdirSync } from 'node:fs'
+import { chmodSync, cpSync, existsSync, readdirSync, rmSync } from 'node:fs'
 import process from 'node:process'
 import { runAction } from '@stacksjs/actions'
 import { bold, cyan, dim, intro, log, onUnknownSubcommand, runCommand } from "@stacksjs/cli"
@@ -77,6 +77,7 @@ export function create(buddy: CLI): void {
   // migrate` — which fails with `Permission denied` (exit 126) if the chmod
   // has not happened yet.
   ensureExecutableScripts(path)
+  applyAppVcsTemplate(path)
   await ensureEnv(path, options)
   await install(path, options)
 
@@ -178,6 +179,49 @@ async function download(name: string, path: string, _options: CreateOptions) {
   }
   catch (error) {
     return { isErr: true as const, error: error instanceof Error ? error.message : String(error) }
+  }
+}
+
+/**
+ * The template is the framework's own repository, so it arrives carrying the
+ * framework's own `.github/` — workflows written for THIS monorepo. They run
+ * `./storage/framework/scripts/publish-commit` and measure the export size of
+ * `./storage/framework/core/*`, neither of which a generated app has; once the
+ * app unvendors (the default, immediately below) it never will. The app-shaped
+ * set has existed the whole time at `defaults/vcs/github` and was simply never
+ * the one that shipped (stacksjs/stacks#2239).
+ *
+ * Runs BEFORE unvendorCore, which deletes `storage/framework` and takes the
+ * source directory with it.
+ *
+ * A missing source is a warning, not a fatal: scaffolding has otherwise
+ * succeeded at this point, and an app with the framework's CI is a worse
+ * outcome than one with no CI, but neither is worth discarding the download
+ * over. `scaffold-vcs-template.test.ts` is what stops the directory going
+ * missing in the first place.
+ */
+function applyAppVcsTemplate(path: string) {
+  const source = resolve(path, 'storage/framework/defaults/vcs/github')
+  const destination = resolve(path, '.github')
+
+  if (!existsSync(source)) {
+    log.warn('No app CI template found at storage/framework/defaults/vcs/github — leaving .github as downloaded.')
+    return
+  }
+
+  log.info('Installing app-shaped GitHub workflows...')
+
+  try {
+    // Replaced wholesale rather than merged: a merge would leave the
+    // framework-only workflows (publish-commit, desktop-app-store,
+    // browser-extension-release) in place, and those are precisely what must
+    // not ship. Every file the app should have is in the template.
+    rmSync(destination, { recursive: true, force: true })
+    cpSync(source, destination, { recursive: true })
+    log.success('App CI installed')
+  }
+  catch (error) {
+    log.warn(`Could not install the app CI template: ${error instanceof Error ? error.message : String(error)}`)
   }
 }
 

@@ -2,15 +2,14 @@
 
 This folder contains the following GitHub Actions:
 
-- [CI][CI] - all CI jobs for the project
+- [CI][CI] — all CI jobs for the project
   - lints the code
   - `typecheck`s the code
-  - automatically fixes & applies code style updates
-  - runs tests (unit, end-to-end)
-  - runs on `ubuntu-latest` with `bun-versions` set to `[x]`
-- [Release][Release] - automates the release process & changelog generation
-- [Lock Closed Issues][Lock Closed Issues] - Locks all closed issues after 14 days of being closed
+  - runs the test suite
+  - runs on `ubuntu-latest`
+- [Release][Release] — on a `v*` tag, generates the changelog and creates the GitHub release
+- [Labeler][Labeler] — labels pull requests from `.github/labeler.yml`
 
-[CI]: ./workflows/ci.yml
-[Release]: ./workflows/release.yml
-[Lock Closed Issues]: ./workflows/lock-closed-issues.yml
+[CI]: ./ci.yml
+[Release]: ./release.yml
+[Labeler]: ./labeler.yml
