@@ -73,6 +73,7 @@
     "stx": "./buddy"
   },
   "dependencies": {
+    "pickier": "^0.1.49",
     "stacks": "workspace:*"
   },
   "workspaces": [
@@ -92,5 +93,8 @@
   },
   "devDependencies": {
     "better-dx": "^0.2.17"
+  },
+  "overrides": {
+    "pickier": "^0.1.49"
   }
 }

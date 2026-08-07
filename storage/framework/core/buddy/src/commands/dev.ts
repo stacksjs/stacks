@@ -1719,6 +1719,10 @@ async function prepareRpxTlsForDev(input: {
   await ensureRpxDevelopmentHttps(domain, options, includeDashboard, trustCertificate)
 }
 
+// `input` is read throughout this function (input.domain, input.verbose).
+// pickier's no-unused-vars misreads it here and `--fix` would rename it to
+// `_input`, leaving every use referencing an identifier that no longer exists.
+// eslint-disable-next-line pickier/no-unused-vars
 export async function setupPrettyDevEnvironment(input: {
   domain?: string
   skipHosts?: boolean

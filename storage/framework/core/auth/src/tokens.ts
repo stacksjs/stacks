@@ -40,7 +40,7 @@ const dbDriver: DatabaseDriver = (env.DB_CONNECTION as DatabaseDriver) || 'sqlit
 
 /** Cross-database SQL helpers */
 const sql = sqlHelpers(dbDriver)
-const { isPostgres, isMysql, now, boolTrue, boolFalse } = sql
+const { isPostgres, isMysql, boolTrue, boolFalse } = sql
 
 /**
  * The current time as a quoted SQL literal in the framework's canonical
