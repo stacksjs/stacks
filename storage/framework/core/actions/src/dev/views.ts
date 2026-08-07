@@ -1,10 +1,12 @@
 import { AsyncLocalStorage } from 'node:async_hooks'
 import { existsSync } from 'node:fs'
 import type { RequestContextSnapshot } from '@stacksjs/config'
+import { join } from 'node:path'
 import { config, installRequestContext, overridesReady, parseCookieHeader, resolveViewPatterns } from '@stacksjs/config'
 import { log } from '@stacksjs/logging'
 import { projectPath } from '@stacksjs/path'
 import { seedCsrfPageResponse } from './csrf'
+import { resolveDefaultsResources } from './defaults-resources'
 import { exitWithParent } from './exit-with-parent'
 
 /**
@@ -89,8 +91,11 @@ async function startDefaultServer() {
 
   const { site: siteConfig, i18n: i18nConfig } = await loadStxSiteConfig()
 
+  // Vendored in a full checkout, the published @stacksjs/defaults package in a
+  // framework-as-dependencies app (stacksjs/stacks#2240).
+  const defaultsResources = resolveDefaultsResources()
   const userViewsPath = 'resources/views'
-  const defaultViewsPath = 'storage/framework/defaults/resources/views'
+  const defaultViewsPath = join(defaultsResources, 'views')
   // Layouts and partials are distinct resources. Prefer the
   // framework-standard resources/* paths while retaining the older
   // resources/views/* and root partials locations for existing apps.
@@ -98,7 +103,7 @@ async function startDefaultServer() {
     'resources/views/layouts',
     'resources/layouts',
   ]) ?? 'resources/views/layouts'
-  const defaultLayoutsPath = 'storage/framework/defaults/resources/layouts'
+  const defaultLayoutsPath = join(defaultsResources, 'layouts')
   const userPartialsPath = await firstExistingPath([
     'resources/partials',
     'resources/views/partials',
@@ -174,7 +179,7 @@ async function startDefaultServer() {
     // Storefront/* (and any future <Namespace>/Component.stx) get
     // resolved. stx-serve walks one subdirectory deep, so this
     // gives us discovery without enumerating every namespace.
-    componentsDir: 'storage/framework/defaults/resources/components',
+    componentsDir: join(defaultsResources, 'components'),
     layoutsDir: userLayoutsPath,
     // Modern Stacks apps keep include fragments in resources/components;
     // omit only when no conventional include directory exists.
