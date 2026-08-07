@@ -1,5 +1,23 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.303...v0.70.304)
+
+## ✨ Features
+
+- **email**: unsubscribe tokens can name what they opt out of ([57281e9](https://github.com/stacksjs/stacks/commit/57281e9)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🐛 Bug Fixes
+
+- **lint**: range the pickier dependency so its fixes can reach apps ([d91f5ea](https://github.com/stacksjs/stacks/commit/d91f5ea)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🔧 Chores
+
+- **cloud**: register erbamarkets as a box tenant ([f3f1b81](https://github.com/stacksjs/stacks/commit/f3f1b81)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.302...v0.70.303)
 
 ## 🐛 Bug Fixes
