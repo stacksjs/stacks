@@ -1,11 +1,38 @@
 <script client>
+/**
+ * The data table.
+ *
+ * Everything past the plain markup is opt-in, and every default matches the
+ * behaviour this component had before those options existed, so an existing
+ * `<Table :columns :data />` renders exactly as it did.
+ *
+ * The one thing that changed by default is sorting. It used to only emit a
+ * `sort` event and wait for the parent to hand back reordered rows, which
+ * meant a table whose parent ignored the event had sort arrows that did
+ * nothing. It now sorts what it was given. A parent that sorts server-side
+ * sets `manual-sort` and keeps the event.
+ */
 interface DashboardTableColumn {
   key: string
   label: string
   align?: 'left' | 'center' | 'right'
   sortable?: boolean
+  /** Show a filter control for this column in the filter row. */
+  filterable?: boolean
+  /** Constrains the filter to a dropdown of these values. */
+  filterOptions?: string[]
+  /** Include this column in the global search. Defaults to true. */
+  searchable?: boolean
+  /**
+   * How the value is compared and rendered. Kept as a string rather than a
+   * formatter function because props cross an attribute boundary, where a
+   * function does not survive.
+   */
+  type?: 'text' | 'number' | 'currency' | 'date' | 'boolean'
   width?: string
   class?: string
+  /** Hidden until switched on in the column menu. */
+  hidden?: boolean
 }
 
 type DashboardTableRow = Record<string, any>
@@ -24,12 +51,184 @@ const emptyTitle = useReactiveProp('emptyTitle', 'No data')
 const emptyDescription = useReactiveProp('emptyDescription', 'There are no items to display.')
 const rowKey = useReactiveProp('rowKey', 'id')
 const hoverable = useReactiveProp('hoverable', true)
+
+const searchable = useReactiveProp('searchable', false)
+const searchPlaceholder = useReactiveProp('searchPlaceholder', 'Search')
+const filterable = useReactiveProp('filterable', false)
+const paginated = useReactiveProp('paginated', false)
+const pageSize = useReactiveProp('pageSize', 25)
+const pageSizeOptions = useReactiveProp<number[]>('pageSizeOptions', [10, 25, 50, 100])
+const manualSort = useReactiveProp('manualSort', false)
+const columnToggle = useReactiveProp('columnToggle', false)
+const exportable = useReactiveProp('exportable', false)
+const exportFilename = useReactiveProp('exportFilename', 'table')
+const stickyFirstColumn = useReactiveProp('stickyFirstColumn', false)
+
 const selectedKeys = state<TableKey[]>([])
 const sortKey = state('')
 const sortDirection = state<SortDirection>('asc')
+const query = state('')
+const columnFilters = state<Record<string, string>>({})
+const hiddenColumns = state<string[]>([])
+const page = state(1)
+const columnMenuOpen = state(false)
 const emit = defineEmits()
 
-const visibleKeys = derived(() => rows().map(row => row[rowKey()] as TableKey))
+/* ---------------------------------------------------------------- columns */
+
+const visibleColumns = derived(() =>
+  columns().filter(column => !hiddenColumns().includes(column.key)),
+)
+
+// Seed from `hidden` once, so a column can ship hidden without the parent
+// having to manage the list.
+effect(() => {
+  const initial = columns().filter(column => column.hidden).map(column => column.key)
+  if (initial.length && hiddenColumns().length === 0)
+    hiddenColumns.set(initial)
+})
+
+function toggleColumn(key: string): void {
+  const next = hiddenColumns().includes(key)
+    ? hiddenColumns().filter(hidden => hidden !== key)
+    : [...hiddenColumns(), key]
+  hiddenColumns.set(next)
+  emit('column-visibility-change', next)
+}
+
+/* ----------------------------------------------------------------- values */
+
+/** Text used for searching, filtering and CSV. Never the formatted string. */
+function rawValue(row: DashboardTableRow, key: string): any {
+  return row?.[key]
+}
+
+function displayValue(row: DashboardTableRow, column: DashboardTableColumn): string {
+  const value = rawValue(row, column.key)
+  if (value === null || value === undefined || value === '')
+    return '-'
+
+  if (column.type === 'currency') {
+    const amount = Number(value)
+    return Number.isFinite(amount)
+      ? amount.toLocaleString(undefined, { style: 'currency', currency: 'USD' })
+      : String(value)
+  }
+  if (column.type === 'number') {
+    const amount = Number(value)
+    return Number.isFinite(amount) ? amount.toLocaleString() : String(value)
+  }
+  if (column.type === 'date') {
+    const at = new Date(value)
+    return Number.isNaN(at.getTime()) ? String(value) : at.toLocaleDateString()
+  }
+  if (column.type === 'boolean')
+    return value ? 'Yes' : 'No'
+
+  return String(value)
+}
+
+/* ------------------------------------------------- search, filter, sort */
+
+const searchableKeys = derived(() =>
+  columns().filter(column => column.searchable !== false).map(column => column.key),
+)
+
+const searched = derived(() => {
+  const term = query().trim().toLowerCase()
+  if (!term)
+    return rows()
+
+  const keys = searchableKeys()
+  return rows().filter(row => keys.some((key) => {
+    const value = rawValue(row, key)
+    return value !== null && value !== undefined && String(value).toLowerCase().includes(term)
+  }))
+})
+
+const filtered = derived(() => {
+  const active = Object.entries(columnFilters()).filter(([, value]) => value !== '' && value !== undefined)
+  if (!active.length)
+    return searched()
+
+  return searched().filter(row => active.every(([key, value]) => {
+    const cell = rawValue(row, key)
+    if (cell === null || cell === undefined)
+      return false
+    return String(cell).toLowerCase().includes(String(value).toLowerCase())
+  }))
+})
+
+/** Nulls sort last in both directions: "missing" is not a small value. */
+function compare(a: any, b: any, type: DashboardTableColumn['type']): number {
+  const aMissing = a === null || a === undefined || a === ''
+  const bMissing = b === null || b === undefined || b === ''
+  if (aMissing && bMissing)
+    return 0
+  if (aMissing)
+    return 1
+  if (bMissing)
+    return -1
+
+  if (type === 'number' || type === 'currency')
+    return Number(a) - Number(b)
+  if (type === 'date')
+    return new Date(a).getTime() - new Date(b).getTime()
+  if (type === 'boolean')
+    return (a ? 1 : 0) - (b ? 1 : 0)
+
+  return String(a).localeCompare(String(b), undefined, { numeric: true, sensitivity: 'base' })
+}
+
+const sorted = derived(() => {
+  const key = sortKey()
+  if (!key || manualSort())
+    return filtered()
+
+  const column = columns().find(candidate => candidate.key === key)
+  const direction = sortDirection() === 'asc' ? 1 : -1
+
+  // Copy first: sorting the prop array in place would mutate the parent's data.
+  return filtered().slice().sort((a, b) => direction * compare(rawValue(a, key), rawValue(b, key), column?.type))
+})
+
+/* ------------------------------------------------------------- pagination */
+
+const pageCount = derived(() => (paginated() ? Math.max(1, Math.ceil(sorted().length / pageSize())) : 1))
+
+// A filter that shortens the list must not strand the viewer on a page that
+// no longer exists.
+effect(() => {
+  if (page() > pageCount())
+    page.set(pageCount())
+})
+
+const visibleRows = derived(() => {
+  if (!paginated())
+    return sorted()
+  const start = (page() - 1) * pageSize()
+  return sorted().slice(start, start + pageSize())
+})
+
+const rangeStart = derived(() => (sorted().length === 0 ? 0 : (page() - 1) * pageSize() + 1))
+const rangeEnd = derived(() => Math.min(page() * pageSize(), sorted().length))
+
+function goToPage(next: number): void {
+  const target = Math.min(Math.max(1, next), pageCount())
+  page.set(target)
+  emit('page-change', target)
+}
+
+function changePageSize(event: Event): void {
+  const size = Number((event.target as HTMLSelectElement).value)
+  pageSize.set(size)
+  page.set(1)
+  emit('page-size-change', size)
+}
+
+/* -------------------------------------------------------------- selection */
+
+const visibleKeys = derived(() => visibleRows().map(row => row[rowKey()] as TableKey))
 const allSelected = derived(() =>
   visibleKeys().length > 0 && visibleKeys().every(key => selectedKeys().includes(key)),
 )
@@ -37,12 +236,126 @@ const someSelected = derived(() =>
   !allSelected() && visibleKeys().some(key => selectedKeys().includes(key)),
 )
 
+/*
+ * Drop selections whose row is gone from the data entirely. Deliberately
+ * checked against every row rather than the visible page: paginating or
+ * filtering must not silently discard a selection the viewer made two pages
+ * back, which is what a "select all" then "delete" would act on.
+ */
 effect(() => {
-  const valid = new Set(visibleKeys())
-  const next = selectedKeys().filter(key => valid.has(key))
+  const present = new Set(rows().map(row => row[rowKey()] as TableKey))
+  const next = selectedKeys().filter(key => present.has(key))
   if (next.length !== selectedKeys().length)
     selectedKeys.set(next)
 })
+
+function emitSelection(next: TableKey[]): void {
+  selectedKeys.set(next)
+  emit('update:selectedKeys', next)
+  emit('selection-change', next)
+}
+
+function toggleAll(event: Event): void {
+  const checked = (event.target as HTMLInputElement).checked
+  const onPage = visibleKeys()
+  const next = checked
+    ? [...new Set([...selectedKeys(), ...onPage])]
+    : selectedKeys().filter(key => !onPage.includes(key))
+  emitSelection(next)
+}
+
+function toggleRow(row: DashboardTableRow, event: Event): void {
+  const key = row[rowKey()] as TableKey
+  const checked = (event.target as HTMLInputElement).checked
+  const next = checked
+    ? [...new Set([...selectedKeys(), key])]
+    : selectedKeys().filter(selected => selected !== key)
+  emitSelection(next)
+}
+
+/* ------------------------------------------------------------------ sort */
+
+function sort(column: DashboardTableColumn): void {
+  if (!column.sortable)
+    return
+  const direction: SortDirection = sortKey() === column.key && sortDirection() === 'asc' ? 'desc' : 'asc'
+  sortKey.set(column.key)
+  sortDirection.set(direction)
+  emit('sort', { key: column.key, direction })
+}
+
+function sortLabel(column: DashboardTableColumn): string {
+  if (sortKey() !== column.key)
+    return `Sort by ${column.label}`
+  return `Sort by ${column.label} ${sortDirection() === 'asc' ? 'descending' : 'ascending'}`
+}
+
+/** Mirrors sort state into aria-sort so screen readers announce it. */
+function ariaSort(column: DashboardTableColumn): string {
+  if (!column.sortable || sortKey() !== column.key)
+    return 'none'
+  return sortDirection() === 'asc' ? 'ascending' : 'descending'
+}
+
+/* ---------------------------------------------------------------- filters */
+
+function setFilter(key: string, event: Event): void {
+  const value = (event.target as HTMLInputElement | HTMLSelectElement).value
+  columnFilters.set({ ...columnFilters(), [key]: value })
+  page.set(1)
+  emit('filter-change', columnFilters())
+}
+
+function setQuery(event: Event): void {
+  query.set((event.target as HTMLInputElement).value)
+  page.set(1)
+  emit('search', query())
+}
+
+const hasActiveFilters = derived(() =>
+  query().trim() !== '' || Object.values(columnFilters()).some(value => value !== ''),
+)
+
+function clearFilters(): void {
+  query.set('')
+  columnFilters.set({})
+  page.set(1)
+  emit('search', '')
+  emit('filter-change', {})
+}
+
+/* ----------------------------------------------------------------- export */
+
+/**
+ * CSV of what is on screen: current search, filters and sort, all columns
+ * that are visible, every page rather than just the current one. Exporting
+ * the raw prop would hand back something the viewer never asked for.
+ */
+function exportCsv(): void {
+  const cols = visibleColumns()
+  const escape = (value: any): string => {
+    const text = value === null || value === undefined ? '' : String(value)
+    return /[",\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text
+  }
+
+  const lines = [
+    cols.map(column => escape(column.label)).join(','),
+    ...sorted().map(row => cols.map(column => escape(rawValue(row, column.key))).join(',')),
+  ]
+
+  const blob = new Blob([`﻿${lines.join('\n')}`], { type: 'text/csv;charset=utf-8' })
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = `${exportFilename()}.csv`
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+  URL.revokeObjectURL(url)
+  emit('export', sorted().length)
+}
+
+/* ------------------------------------------------------------------ style */
 
 function alignClass(align: DashboardTableColumn['align']): string {
   if (align === 'center') return 'text-center'
@@ -56,6 +369,7 @@ function headerClass(column: DashboardTableColumn, index: number): string {
     'pr-4 font-semibold text-xs uppercase tracking-wider text-stone-500 dark:text-neutral-400',
     compact() ? 'py-2' : 'py-3.5',
     alignClass(column.align),
+    index === 0 && stickyFirstColumn() ? 'sticky left-0 z-20 bg-stone-50 dark:bg-neutral-800' : '',
     column.class || '',
   ].filter(Boolean).join(' ')
 }
@@ -75,60 +389,100 @@ function cellClass(column: DashboardTableColumn, index: number): string {
     'pr-4 text-sm text-stone-700 dark:text-neutral-200',
     compact() ? 'py-2' : 'py-3.5',
     alignClass(column.align),
+    column.type === 'number' || column.type === 'currency' ? 'tabular-nums' : '',
+    index === 0 && stickyFirstColumn() ? 'sticky left-0 z-10 bg-white dark:bg-neutral-900' : '',
     column.class || '',
   ].filter(Boolean).join(' ')
-}
-
-function emitSelection(next: TableKey[]): void {
-  selectedKeys.set(next)
-  emit('update:selectedKeys', next)
-  emit('selection-change', next)
-}
-
-function toggleAll(event: Event): void {
-  const checked = (event.target as HTMLInputElement).checked
-  emitSelection(checked ? [...visibleKeys()] : [])
-}
-
-function toggleRow(row: DashboardTableRow, event: Event): void {
-  const key = row[rowKey()] as TableKey
-  const checked = (event.target as HTMLInputElement).checked
-  const next = checked
-    ? [...new Set([...selectedKeys(), key])]
-    : selectedKeys().filter(selected => selected !== key)
-  emitSelection(next)
-}
-
-function sort(column: DashboardTableColumn): void {
-  if (!column.sortable)
-    return
-  const direction: SortDirection = sortKey() === column.key && sortDirection() === 'asc' ? 'desc' : 'asc'
-  sortKey.set(column.key)
-  sortDirection.set(direction)
-  emit('sort', { key: column.key, direction })
-}
-
-function sortLabel(column: DashboardTableColumn): string {
-  if (sortKey() !== column.key)
-    return `Sort by ${column.label}`
-  return `Sort by ${column.label} ${sortDirection() === 'asc' ? 'descending' : 'ascending'}`
 }
 </script>
 
 <div class="overflow-hidden relative bg-white dark:bg-neutral-900 border border-stone-200/80 rounded-xl dark:border-neutral-700 shadow-sm">
-  <div :if="loading()" class="flex absolute inset-0 z-10 items-center justify-center bg-white/80 dark:bg-neutral-900/80 backdrop-blur-sm" role="status">
+  <div :if="loading()" class="flex absolute inset-0 z-30 items-center justify-center bg-white/80 dark:bg-neutral-900/80 backdrop-blur-sm" role="status">
     <span aria-hidden="true" class="mr-2 h-5 w-5 text-blue-500 animate-spin i-hugeicons-loading-03"></span>
     <span class="text-neutral-500 text-sm dark:text-neutral-400">Loading</span>
   </div>
 
+  <!-- Toolbar: only rendered when something asked for it. -->
+  <div
+    :if="searchable() || columnToggle() || exportable() || $slots.toolbar"
+    class="flex flex-wrap gap-3 items-center justify-between px-4 py-3 border-b border-stone-200/80 dark:border-neutral-700"
+  >
+    <div class="flex flex-wrap gap-2 items-center">
+      <div :if="searchable()" class="relative">
+        <span aria-hidden="true" class="absolute left-2.5 top-1/2 h-4 w-4 text-neutral-400 -translate-y-1/2 i-hugeicons-search-01"></span>
+        <input
+          type="search"
+          :placeholder="searchPlaceholder()"
+          :aria-label="searchPlaceholder()"
+          :value="query()"
+          @input="setQuery($event)"
+          class="pl-8 pr-3 py-1.5 w-56 text-sm bg-white dark:bg-neutral-800 border border-stone-300 rounded-lg dark:border-neutral-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+      </div>
+
+      <button
+        :if="hasActiveFilters()"
+        type="button"
+        @click="clearFilters()"
+        class="px-2.5 py-1.5 text-neutral-600 text-xs dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white"
+      >
+        Clear filters
+      </button>
+
+      <slot name="toolbar" />
+    </div>
+
+    <div class="flex gap-2 items-center">
+      <div :if="columnToggle()" class="relative">
+        <button
+          type="button"
+          aria-haspopup="true"
+          :aria-expanded="columnMenuOpen() ? 'true' : 'false'"
+          @click="columnMenuOpen.set(!columnMenuOpen())"
+          class="inline-flex gap-1.5 items-center px-2.5 py-1.5 text-neutral-600 text-xs dark:text-neutral-300 hover:bg-stone-50 dark:hover:bg-neutral-800 border border-stone-300 rounded-lg dark:border-neutral-600"
+        >
+          <span aria-hidden="true" class="h-3.5 w-3.5 i-hugeicons-layout-table-01"></span>
+          Columns
+        </button>
+
+        <div
+          :if="columnMenuOpen()"
+          class="absolute right-0 z-40 mt-1 p-2 w-52 bg-white dark:bg-neutral-800 border border-stone-200 rounded-lg dark:border-neutral-700 shadow-lg"
+        >
+          <template :for="column in columns()">
+            <label class="flex gap-2 items-center px-2 py-1.5 text-neutral-700 text-sm dark:text-neutral-200 hover:bg-stone-50 dark:hover:bg-neutral-700 rounded cursor-pointer">
+              <input
+                type="checkbox"
+                :checked="!hiddenColumns().includes(column.key)"
+                @change="toggleColumn(column.key)"
+                class="h-3.5 w-3.5 text-blue-600 border-stone-300 rounded dark:border-neutral-600"
+              />
+              {{ column.label }}
+            </label>
+          </template>
+        </div>
+      </div>
+
+      <button
+        :if="exportable()"
+        type="button"
+        @click="exportCsv()"
+        class="inline-flex gap-1.5 items-center px-2.5 py-1.5 text-neutral-600 text-xs dark:text-neutral-300 hover:bg-stone-50 dark:hover:bg-neutral-800 border border-stone-300 rounded-lg dark:border-neutral-600"
+      >
+        <span aria-hidden="true" class="h-3.5 w-3.5 i-hugeicons-download-04"></span>
+        Export CSV
+      </button>
+    </div>
+  </div>
+
   <div class="overflow-x-auto">
     <table class="w-full">
-      <thead :class="'bg-stone-50/80 dark:bg-neutral-800/50 ' + (stickyHeader() ? 'sticky top-0 z-10' : '')">
+      <thead :class="'bg-stone-50/80 dark:bg-neutral-800/50 ' + (stickyHeader() ? 'sticky top-0 z-20' : '')">
         <tr>
-          <th :if="selectable()" class="pl-6 pr-2 py-3 w-12">
+          <th :if="selectable()" scope="col" class="pl-6 pr-2 py-3 w-12">
             <input
               type="checkbox"
-              aria-label="Select all rows"
+              aria-label="Select all rows on this page"
               class="h-4 w-4 text-blue-600 dark:bg-neutral-700 border-stone-300 rounded dark:border-neutral-600 focus:ring-blue-500"
               :checked="allSelected()"
               :indeterminate="someSelected()"
@@ -136,8 +490,13 @@ function sortLabel(column: DashboardTableColumn): string {
             />
           </th>
 
-          <template :for="(column, index) in columns()">
-            <th :class="headerClass(column, index)" :style="column.width ? 'width: ' + column.width : undefined">
+          <template :for="(column, index) in visibleColumns()">
+            <th
+              scope="col"
+              :class="headerClass(column, index)"
+              :style="column.width ? 'width: ' + column.width : undefined"
+              :aria-sort="ariaSort(column)"
+            >
               <button
                 :if="column.sortable"
                 type="button"
@@ -155,12 +514,43 @@ function sortLabel(column: DashboardTableColumn): string {
             </th>
           </template>
 
-          <th :if="$slots.actions" class="px-4 py-3 w-12"><span class="sr-only">Actions</span></th>
+          <th :if="$slots.actions" scope="col" class="px-4 py-3 w-12"><span class="sr-only">Actions</span></th>
+        </tr>
+
+        <!-- Per-column filter row. -->
+        <tr :if="filterable()" class="border-stone-200/70 border-t dark:border-neutral-700">
+          <td :if="selectable()" class="pl-6 pr-2 py-2"></td>
+          <template :for="(column, index) in visibleColumns()">
+            <td :class="(index === 0 && !selectable() ? 'pl-6' : 'pl-4') + ' pr-4 py-2'">
+              <select
+                :if="column.filterable && column.filterOptions"
+                :aria-label="'Filter by ' + column.label"
+                :value="columnFilters()[column.key] || ''"
+                @change="setFilter(column.key, $event)"
+                class="px-1.5 py-1 w-full text-xs bg-white dark:bg-neutral-800 border border-stone-300 rounded dark:border-neutral-600"
+              >
+                <option value="">All</option>
+                <template :for="option in column.filterOptions">
+                  <option :value="option">{{ option }}</option>
+                </template>
+              </select>
+              <input
+                :else-if="column.filterable"
+                type="text"
+                :aria-label="'Filter by ' + column.label"
+                :placeholder="column.label"
+                :value="columnFilters()[column.key] || ''"
+                @input="setFilter(column.key, $event)"
+                class="px-1.5 py-1 w-full text-xs bg-white dark:bg-neutral-800 border border-stone-300 rounded dark:border-neutral-600"
+              />
+            </td>
+          </template>
+          <td :if="$slots.actions" class="px-4 py-2"></td>
         </tr>
       </thead>
 
       <tbody class="divide-stone-100 divide-y dark:divide-neutral-700">
-        <template :for="(row, rowIndex) in rows()">
+        <template :for="(row, rowIndex) in visibleRows()">
           <tr :class="rowClass(rowIndex)" :data-row-id="String(row[rowKey()])">
             <td :if="selectable()" class="pl-6 pr-2 w-12" :class="compact() ? 'py-2' : 'py-3.5'">
               <input
@@ -172,9 +562,11 @@ function sortLabel(column: DashboardTableColumn): string {
               />
             </td>
 
-            <template :for="(column, columnIndex) in columns()">
+            <template :for="(column, columnIndex) in visibleColumns()">
               <td :class="cellClass(column, columnIndex)">
-                {{ row[column.key] }}
+                <slot name="cell" :row="row" :column="column" :value="row[column.key]">
+                  {{ displayValue(row, column) }}
+                </slot>
               </td>
             </template>
 
@@ -187,7 +579,19 @@ function sortLabel(column: DashboardTableColumn): string {
     </table>
   </div>
 
-  <div :if="rows().length === 0 && !loading()" class="flex flex-col items-center justify-center px-4 py-12">
+  <!--
+    Two different empty states. "No data" and "nothing matched your filter"
+    call for different next actions, and showing the first when the viewer has
+    typed a search reads as though their data disappeared.
+  -->
+  <div :if="visibleRows().length === 0 && !loading() && hasActiveFilters()" class="flex flex-col items-center justify-center px-4 py-12">
+    <span aria-hidden="true" class="mb-3 p-3 h-12 w-12 text-neutral-400 bg-neutral-100 dark:bg-neutral-800 rounded-full i-hugeicons-search-remove"></span>
+    <p class="font-medium text-neutral-700 text-sm dark:text-neutral-200">No matches</p>
+    <p class="mt-1 text-neutral-500 text-sm dark:text-neutral-400">No rows match the current search or filters.</p>
+    <button type="button" @click="clearFilters()" class="mt-3 text-blue-600 text-sm dark:text-blue-400 hover:underline">Clear filters</button>
+  </div>
+
+  <div :if="visibleRows().length === 0 && !loading() && !hasActiveFilters()" class="flex flex-col items-center justify-center px-4 py-12">
     <template :if="$slots.empty">
       <slot name="empty" />
     </template>
@@ -196,6 +600,49 @@ function sortLabel(column: DashboardTableColumn): string {
       <p class="font-medium text-neutral-700 text-sm dark:text-neutral-200">{{ emptyTitle() }}</p>
       <p class="mt-1 text-neutral-500 text-sm dark:text-neutral-400">{{ emptyDescription() }}</p>
     </template>
+  </div>
+
+  <div
+    :if="paginated() && sorted().length > 0"
+    class="flex flex-wrap gap-3 items-center justify-between px-4 py-3 bg-neutral-50/50 dark:bg-neutral-800/25 border-neutral-200 border-t dark:border-neutral-700"
+  >
+    <div class="flex gap-3 items-center text-neutral-500 text-sm dark:text-neutral-400">
+      <span>Showing {{ rangeStart() }}-{{ rangeEnd() }} of {{ sorted().length }}</span>
+      <label class="flex gap-1.5 items-center">
+        <span class="sr-only">Rows per page</span>
+        <select
+          :value="String(pageSize())"
+          @change="changePageSize($event)"
+          class="px-1.5 py-1 text-xs bg-white dark:bg-neutral-800 border border-stone-300 rounded dark:border-neutral-600"
+        >
+          <template :for="option in pageSizeOptions()">
+            <option :value="String(option)">{{ option }} / page</option>
+          </template>
+        </select>
+      </label>
+    </div>
+
+    <nav class="flex gap-1 items-center" aria-label="Pagination">
+      <button
+        type="button"
+        aria-label="Previous page"
+        :disabled="page() <= 1"
+        @click="goToPage(page() - 1)"
+        class="p-1.5 text-neutral-600 dark:text-neutral-300 hover:bg-white dark:hover:bg-neutral-800 border border-stone-300 rounded dark:border-neutral-600 disabled:opacity-40 disabled:cursor-not-allowed"
+      >
+        <span aria-hidden="true" class="h-4 w-4 i-hugeicons-arrow-left-01"></span>
+      </button>
+      <span class="px-2 tabular-nums text-neutral-600 text-sm dark:text-neutral-300">{{ page() }} / {{ pageCount() }}</span>
+      <button
+        type="button"
+        aria-label="Next page"
+        :disabled="page() >= pageCount()"
+        @click="goToPage(page() + 1)"
+        class="p-1.5 text-neutral-600 dark:text-neutral-300 hover:bg-white dark:hover:bg-neutral-800 border border-stone-300 rounded dark:border-neutral-600 disabled:opacity-40 disabled:cursor-not-allowed"
+      >
+        <span aria-hidden="true" class="h-4 w-4 i-hugeicons-arrow-right-01"></span>
+      </button>
+    </nav>
   </div>
 
   <div :if="$slots.footer" class="px-4 py-3 bg-neutral-50/50 dark:bg-neutral-800/25 border-neutral-200 border-t dark:border-neutral-700">

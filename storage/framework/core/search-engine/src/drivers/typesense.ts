@@ -1,4 +1,4 @@
-import type { SearchEngineDriver } from '@stacksjs/types'
+import type { CreateIndexOptions, SearchEngineDriver } from '@stacksjs/types'
 import type {
   Dictionary,
   DocumentOptions,
@@ -6,7 +6,6 @@ import type {
   Faceting,
   Index,
   IndexesResults,
-  IndexOptions,
   PaginationSettings,
   SearchResponse,
   Settings,
@@ -111,7 +110,29 @@ function convertToSortBy(jsonData: Record<string, string> | undefined): string |
   return parts.length ? parts.join(',') : undefined
 }
 
-function inferFieldType(_value: unknown): string {
+/**
+ * Map a sample value onto a Typesense field type.
+ *
+ * This used to answer 'string' for everything, which types a price column as
+ * text: `sort_by=price:asc` then orders it lexicographically, so 1000 sorts
+ * before 900, and a numeric `filter_by` range matches nothing.
+ */
+function inferFieldType(value: unknown): string {
+  if (typeof value === 'boolean')
+    return 'bool'
+
+  if (typeof value === 'number')
+    return Number.isInteger(value) ? 'int64' : 'float'
+
+  if (Array.isArray(value)) {
+    const first = value[0]
+    if (typeof first === 'boolean')
+      return 'bool[]'
+    if (typeof first === 'number')
+      return Number.isInteger(first) ? 'int64[]' : 'float[]'
+    return 'string[]'
+  }
+
   return 'string'
 }
 
@@ -156,11 +177,20 @@ async function ensureCollection(indexName: string, sampleDoc?: Record<string, un
   })
 }
 
+/**
+ * Only `id` is coerced to a string, because Typesense requires that one to be
+ * a string. Numbers stay numbers.
+ *
+ * Stringifying every number meant a document's price arrived as "1200" against
+ * a field typed from the same stringified sample, so the collection had no
+ * numeric fields at all and neither sorting nor range filters worked on them.
+ * bigint still has to be stringified: JSON.stringify throws on it.
+ */
 function normalizeDocument(doc: Record<string, unknown>): Record<string, unknown> {
   const out: Record<string, unknown> = {}
   for (const [key, value] of Object.entries(doc)) {
     if (value == null) continue
-    if (key === 'id' || typeof value === 'number' || typeof value === 'bigint') {
+    if (key === 'id' || typeof value === 'bigint') {
       out[key] = String(value)
     }
     else {
@@ -255,8 +285,20 @@ async function deleteIndex(indexName: string): Promise<EnqueuedTask> {
   return fakeTask(indexName)
 }
 
-async function createIndex(name: string): Promise<EnqueuedTask> {
-  await ensureCollection(name)
+/**
+ * Create the collection, using the caller's settings and sample document to
+ * type and mark the fields.
+ *
+ * These two arguments used to be dropped on the floor, and that made calling
+ * createIndex actively harmful: it created a collection carrying nothing but
+ * `id`, and because ensureCollection returns early when the collection already
+ * exists, the addDocuments call that followed could no longer add the fields.
+ * Documents imported fine and every query came back
+ * "Could not find a field named `name` in the schema".
+ */
+async function createIndex(name: string, options?: CreateIndexOptions): Promise<EnqueuedTask> {
+  const sample = options?.sampleDocument
+  await ensureCollection(name, sample ? normalizeDocument(sample) : undefined, options?.settings)
   return fakeTask(name)
 }
 

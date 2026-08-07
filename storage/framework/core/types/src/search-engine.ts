@@ -84,6 +84,26 @@ export interface SearchEngineOptions {
 
 export type SearchEngineConfig = Partial<SearchEngineOptions>
 
+/**
+ * Options for creating an index.
+ *
+ * Meilisearch is schemaless and only ever needed `primaryKey`. Typesense and
+ * OpenSearch are not: a collection has to declare its fields, their types, and
+ * which ones can be faceted or sorted, and it cannot be extended afterwards.
+ *
+ * Without somewhere to put that, those drivers created a collection holding
+ * `id` and nothing else. Documents imported cleanly and then every query
+ * failed with "Could not find a field named ... in the schema".
+ *
+ * Both extra fields are optional and ignored by schemaless engines.
+ */
+export interface CreateIndexOptions extends IndexOptions {
+  /** Which attributes are searchable, filterable, sortable and displayed. */
+  settings?: Settings
+  /** A representative document, used to infer each field's type. */
+  sampleDocument?: Record<string, unknown>
+}
+
 export interface SearchEngineDriver {
   client: () => Meilisearch
   resetClient?: () => void
@@ -91,7 +111,7 @@ export interface SearchEngineDriver {
   search: (index: string, params: any) => Promise<SearchResponse<Record<string, any>>>
 
   // Indexes
-  createIndex: (name: string, options?: IndexOptions) => MaybePromise<EnqueuedTask>
+  createIndex: (name: string, options?: CreateIndexOptions) => MaybePromise<EnqueuedTask>
   getIndex: (name: string) => Promise<Index<Record<string, any>>>
   addDocument: (indexName: string, params: any) => Promise<EnqueuedTask>
   updateDocuments: (indexName: string, params: DocumentOptions[]) => Promise<EnqueuedTask>
