@@ -1,6 +1,7 @@
 import { AsyncLocalStorage } from 'node:async_hooks'
 import { existsSync } from 'node:fs'
-import { config, overridesReady } from '@stacksjs/config'
+import { config, overridesReady, resolveViewPatterns } from '@stacksjs/config'
+import { log } from '@stacksjs/logging'
 import { projectPath } from '@stacksjs/path'
 import { seedCsrfPageResponse } from './csrf'
 import { exitWithParent } from './exit-with-parent'
@@ -175,8 +176,20 @@ async function startDefaultServer() {
   // `config.auth.defaultTokenName` is set to, falling back to `auth-token`.
   const authCookie = (config as any)?.auth?.defaultTokenName ?? 'auth-token'
 
+  // Which of the framework's default views this app serves (#2237). Defaults
+  // to all of them, so an app that says nothing is unaffected.
+  const viewPatterns = resolveViewPatterns(
+    userViewsPath,
+    defaultViewsPath,
+    (config as any)?.ui?.defaultViews,
+    path => existsSync(projectPath(path)),
+  )
+
+  for (const name of viewPatterns.missing)
+    log.warn(`ui.defaultViews lists "${name}", which does not exist under ${defaultViewsPath} — ignoring.`)
+
   await serve({
-    patterns: [userViewsPath, defaultViewsPath],
+    patterns: viewPatterns.patterns,
     port: preferredPort,
     // Wider than the dashboard subdir so both Dashboard/* and
     // Storefront/* (and any future <Namespace>/Component.stx) get
