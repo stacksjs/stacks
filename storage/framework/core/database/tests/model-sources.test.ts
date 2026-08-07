@@ -16,7 +16,7 @@
 import { afterEach, describe, expect, it } from 'bun:test'
 import { existsSync, mkdirSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { prepareMigrationModelsDir, withoutExcludedTableDropSql } from '../src/migrations'
+import { prepareMigrationModelsDir, withoutProtectedTableDropSql } from '../src/migrations'
 import { cleanupModelStaging, resolveModelSources } from '../src/model-sources'
 
 const TMP = join(import.meta.dir, '.tmp-model-sources')
@@ -92,7 +92,7 @@ describe('resolveModelSources', () => {
 
     expect(resolved.excluded.map(m => m.name).sort()).toEqual(['Cart', 'PrintDevice'])
     // Derived exactly as the generator derives them, so the drop suppression
-    // in `withoutExcludedTableDropSql` can match what bqb emits.
+    // in `withoutProtectedTableDropSql` can match what bqb emits.
     expect(resolved.excludedTables).toEqual(['carts', 'print_devices'])
   })
 
@@ -167,7 +167,7 @@ describe('resolveModelSources', () => {
   })
 })
 
-describe('withoutExcludedTableDropSql', () => {
+describe('withoutProtectedTableDropSql', () => {
   // The narrowing in #2220 removes ~62 tables from the model set at once. The
   // generator diffs against the stored snapshot, so without this the very
   // first `generate:migrations` after upgrading proposes dropping all of them.
@@ -180,7 +180,7 @@ describe('withoutExcludedTableDropSql', () => {
 
   it('drops the DROP for an out-of-scope framework table', () => {
     const statements = [`DROP TABLE "carts"`, `CREATE TABLE "projects" (id INTEGER)`]
-    const result = withoutExcludedTableDropSql(statements, ['carts'], [op('carts', `DROP TABLE "carts"`)])
+    const result = withoutProtectedTableDropSql(statements, ['carts'], [op('carts', `DROP TABLE "carts"`)])
 
     expect(result.statements).toEqual([`CREATE TABLE "projects" (id INTEGER)`])
     expect(result.removed).toEqual([`DROP TABLE "carts"`])
@@ -189,7 +189,7 @@ describe('withoutExcludedTableDropSql', () => {
   it('leaves a drop of a table the app actually owns alone', () => {
     // A model the user deleted must still generate its drop.
     const statements = [`DROP TABLE "old_projects"`]
-    const result = withoutExcludedTableDropSql(statements, ['carts'], [op('old_projects', `DROP TABLE "old_projects"`)])
+    const result = withoutProtectedTableDropSql(statements, ['carts'], [op('old_projects', `DROP TABLE "old_projects"`)])
 
     expect(result.statements).toEqual(statements)
     expect(result.removed).toEqual([])
@@ -199,7 +199,7 @@ describe('withoutExcludedTableDropSql', () => {
     // Postgres appends CASCADE and MySQL uses backticks, so the operation's
     // `sql` is not always byte-identical to the emitted statement.
     const statements = [`DROP TABLE IF EXISTS \`coupons\``, `DROP TABLE IF EXISTS "carts" CASCADE`]
-    const result = withoutExcludedTableDropSql(statements, ['coupons', 'carts'], [])
+    const result = withoutProtectedTableDropSql(statements, ['coupons', 'carts'], [])
 
     expect(result.statements).toEqual([])
     expect(result.removed).toHaveLength(2)
@@ -207,7 +207,7 @@ describe('withoutExcludedTableDropSql', () => {
 
   it('is a no-op when nothing was excluded', () => {
     const statements = [`DROP TABLE "carts"`]
-    expect(withoutExcludedTableDropSql(statements, [], [op('carts', `DROP TABLE "carts"`)]).statements)
+    expect(withoutProtectedTableDropSql(statements, [], [op('carts', `DROP TABLE "carts"`)]).statements)
       .toEqual(statements)
   })
 
@@ -216,7 +216,7 @@ describe('withoutExcludedTableDropSql', () => {
       `ALTER TABLE "carts" ADD COLUMN note VARCHAR(255)`,
       `DELETE FROM "carts"`,
     ]
-    expect(withoutExcludedTableDropSql(statements, ['carts'], []).statements).toEqual(statements)
+    expect(withoutProtectedTableDropSql(statements, ['carts'], []).statements).toEqual(statements)
   })
 })
 

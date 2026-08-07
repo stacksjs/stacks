@@ -50,6 +50,7 @@ import { frameworkManagedColumns, withoutManagedColumnDrops, withoutManagedColum
 import { acquireMigrationLock } from './migration-lock'
 import { relativeMigrationDirectory, resolveMigrationDirectory } from './migration-path'
 import { migrateNotificationTables } from './notification-tables'
+import { traitTableNames } from './trait-tables'
 
 // Use environment variables via @stacksjs/env for proper type coercion
 import { env as envVars } from '@stacksjs/env'
@@ -194,20 +195,45 @@ function configureQueryBuilder(
   resetConnection()
 }
 
-export function prepareMigrationModelsDir(): { modelsDir: string, skip: boolean, excludedTables: string[] } {
+export function prepareMigrationModelsDir(): {
+  modelsDir: string
+  skip: boolean
+  /**
+   * Tables owned by framework default models that are out of scope. Reported to
+   * the user, so it stays limited to the models — see {@link protectedTables}
+   * for what actually suppresses a drop.
+   */
+  excludedTables: string[]
+  /**
+   * Every table the generator has no authority to drop.
+   *
+   * {@link excludedTables} plus the polymorphic trait tables. The trait tables
+   * need saying separately because `declaredTableName` reads a model's OWN
+   * table and nothing else: the framework's `Post` declares `taggable_models`
+   * and `categorizable_models` as `belongsToMany` pivots, so when `Post` leaves
+   * scope those two enter the diff as tables the app deleted, while the models
+   * exclusion set never hears about them (stacksjs/stacks#2255).
+   *
+   * They would be dropped and then recreated empty by `migrateTraitTables()` in
+   * the same `buddy migrate` — data loss with no schema change to show for it.
+   */
+  protectedTables: string[]
+} {
   const sources = resolveModelSources()
+  const excludedTables = sources?.excludedTables ?? []
   return {
     modelsDir: sources?.dir ?? path.userModelsPath(),
     skip: !sources,
-    excludedTables: sources?.excludedTables ?? [],
+    excludedTables,
+    protectedTables: [...new Set([...excludedTables, ...traitTableNames()])],
   }
 }
 
 const DROP_TABLE_RE = /^\s*DROP\s+TABLE\s+(?:IF\s+EXISTS\s+)?["'`]?(\w+)["'`]?/i
 
 /**
- * Drop the generated `DROP TABLE`s for framework defaults that are simply out
- * of scope, rather than deleted.
+ * Drop the generated `DROP TABLE`s for tables that are simply out of the
+ * generator's scope, rather than deleted.
  *
  * The generator diffs the model set against the stored snapshot, so the first
  * run after framework defaults stop being merged (stacksjs/stacks#2220) sees
@@ -216,19 +242,26 @@ const DROP_TABLE_RE = /^\s*DROP\s+TABLE\s+(?:IF\s+EXISTS\s+)?["'`]?(\w+)["'`]?/i
  * table" is not "destroy this table"; the same distinction
  * `withoutManagedColumnDropSql` draws for framework-managed columns.
  *
- * Self-limiting: the snapshot advances to the narrowed model set at the end of
- * the same run, so the drops are never proposed again. A table an app really
- * does want gone is still dropped by hand, the way it always was.
+ * Two kinds of table qualify, both supplied via `prepareMigrationModelsDir`'s
+ * `protectedTables`: framework defaults left out of scope, and the polymorphic
+ * trait tables, which arrive in the snapshot as pivots of a framework model and
+ * would be recreated empty moments later by `migrateTraitTables`
+ * (stacksjs/stacks#2255).
+ *
+ * Self-limiting for the first kind: the snapshot advances to the narrowed model
+ * set at the end of the same run, so those drops are never proposed again. A
+ * table an app really does want gone is still dropped by hand, the way it
+ * always was.
  */
-export function withoutExcludedTableDropSql(
+export function withoutProtectedTableDropSql(
   statements: string[],
-  excludedTables: readonly string[],
+  protectedTables: readonly string[],
   operations: readonly MigrationOperation[],
 ): { statements: string[], removed: string[] } {
-  if (excludedTables.length === 0)
+  if (protectedTables.length === 0)
     return { statements, removed: [] }
 
-  const excluded = new Set(excludedTables.map(table => table.toLowerCase()))
+  const excluded = new Set(protectedTables.map(table => table.toLowerCase()))
   const normalize = (sql: string): string => sql.replace(/\s+/g, ' ').trim().replace(/;$/, '')
   const dropped = new Set(
     operations
@@ -1669,7 +1702,7 @@ export async function previewPendingMigrations(options: GenerateMigrationsOption
   try {
     configureQueryBuilder()
     const dialect = getDialect()
-    const { modelsDir, skip, excludedTables } = prepareMigrationModelsDir()
+    const { modelsDir, skip, protectedTables } = prepareMigrationModelsDir()
     if (skip)
       return []
     const { applyRenames, fromDb } = resolveGenerateOptions(options)
@@ -1682,12 +1715,12 @@ export async function previewPendingMigrations(options: GenerateMigrationsOption
       fromDb,
     })
     let operations = result.operations ?? []
-    // Out-of-scope framework defaults are never dropped (see
-    // `withoutExcludedTableDropSql`), so they must not appear in the
-    // confirmation gate either — sixty phantom drops would train the user to
-    // approve a prompt that is, on any other run, worth reading.
-    if (excludedTables.length > 0) {
-      const excluded = new Set(excludedTables.map(table => table.toLowerCase()))
+    // Protected tables are never dropped (see `withoutProtectedTableDropSql`),
+    // so they must not appear in the confirmation gate either — sixty phantom
+    // drops would train the user to approve a prompt that is, on any other run,
+    // worth reading.
+    if (protectedTables.length > 0) {
+      const excluded = new Set(protectedTables.map(table => table.toLowerCase()))
       operations = operations.filter(
         (op: MigrationOperation) => !(op.kind === 'drop_table' && excluded.has(op.table.toLowerCase())),
       )
@@ -1877,7 +1910,7 @@ export async function generateMigrations(options: GenerateMigrationsOptions = {}
     }
     const storedPlan = readStoredMigrationPlan(getQbDialect())
 
-    const { modelsDir, skip, excludedTables } = prepareMigrationModelsDir()
+    const { modelsDir, skip, excludedTables, protectedTables } = prepareMigrationModelsDir()
     if (skip) {
       log.debug('No app/Models directory found; using committed framework migrations')
       return ok('Migrations generated')
@@ -1926,14 +1959,15 @@ export async function generateMigrations(options: GenerateMigrationsOptions = {}
     }
 
     // Same idea one level up: framework defaults that are out of scope because
-    // this app has its own models must not be read as tables the app deleted.
+    // this app has its own models must not be read as tables the app deleted,
+    // and neither must the trait pivots that left scope alongside them.
     // Said out loud rather than at debug — an app upgrading into #2220's fix
     // sees its table count fall by sixty, and should know why nothing dropped.
-    if (result.hasChanges && sqlStatements.length > 0 && excludedTables.length > 0) {
-      const filtered = withoutExcludedTableDropSql(sqlStatements, excludedTables, result.operations ?? [])
+    if (result.hasChanges && sqlStatements.length > 0 && protectedTables.length > 0) {
+      const filtered = withoutProtectedTableDropSql(sqlStatements, protectedTables, result.operations ?? [])
       if (filtered.removed.length > 0) {
         log.info(
-          `[migration] Left ${filtered.removed.length} framework-default table(s) in place rather than dropping them. `
+          `[migration] Left ${filtered.removed.length} framework-owned table(s) in place rather than dropping them. `
           + `They are no longer generated because app/Models defines this app's schema; the tables and their data are untouched. `
           + `Set database.models.includeFrameworkDefaults to keep generating them (stacksjs/stacks#2220).`,
         )
@@ -2208,21 +2242,136 @@ export function isGeneratedMigration(dir: string, file: string): boolean {
   }
 }
 
+/**
+ * The tables a statement ACTS ON — the target of a CREATE/ALTER/DROP TABLE or
+ * a CREATE INDEX.
+ *
+ * Deliberately not "every table the statement mentions". A `REFERENCES users`
+ * in a foreign key makes `users` a table the statement depends on, not one it
+ * changes, and counting it would tie half the corpus to whatever table the app
+ * happens to point its foreign keys at.
+ */
+export function tablesOperatedOn(sql: string): string[] {
+  const tables = new Set<string>()
+
+  for (const statement of sqlStatementsOf(sql)) {
+    const stmt = statement.trim()
+    const direct = stmt.match(/^(?:CREATE\s+TABLE(?:\s+IF\s+NOT\s+EXISTS)?|ALTER\s+TABLE|DROP\s+TABLE(?:\s+IF\s+EXISTS)?|TRUNCATE\s+TABLE)\s+["'`]?(\w+)["'`]?/i)
+    if (direct?.[1]) {
+      tables.add(direct[1].toLowerCase())
+      continue
+    }
+
+    const index = stmt.match(/^CREATE\s+(?:UNIQUE\s+)?INDEX(?:\s+IF\s+NOT\s+EXISTS)?\s+\S+\s+ON\s+["'`]?(\w+)["'`]?/i)
+    if (index?.[1])
+      tables.add(index[1].toLowerCase())
+  }
+
+  return [...tables]
+}
+
+/** The tables a set of generated statements creates, lowercased. */
+export function createdTablesOf(statements: readonly string[]): string[] {
+  const tables = new Set<string>()
+  for (const statement of statements) {
+    const match = statement.trim().match(/^CREATE\s+TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?["'`]?(\w+)["'`]?/i)
+    if (match?.[1])
+      tables.add(match[1].toLowerCase())
+  }
+  return [...tables]
+}
+
+/**
+ * Which existing migrations describe tables the incoming corpus does NOT
+ * rebuild.
+ *
+ * This is the predicate `regenerateMigrationCorpus` needs and, until
+ * stacksjs/stacks#2255, did not have. #2234 established the rule — never
+ * delete a migration this run cannot recreate — and implemented it as "does
+ * the file carry the `@generated` marker". That was a sound proxy while the
+ * generator's model scope was fixed. Once #2220 made framework defaults a
+ * fallback rather than a merge, it stopped being one: in an app with its own
+ * `app/Models`, the migrations for `users`, `jobs`, `failed_jobs`, `payments`,
+ * `subscribers` and `teams` all carry the marker and are all outside the
+ * scope of any rerun. Regenerating deleted them, and the result looked clean —
+ * one tidy file per model — right up until the next deploy dropped the users
+ * table.
+ *
+ * So ask the question directly instead of by proxy: does the corpus about to
+ * be written contain every table this file touches? A file is recreatable only
+ * if it does. Anything else is preserved, whoever wrote it.
+ *
+ * A file whose SQL names no table at all (a bare `SELECT 1;` stub, a
+ * `CREATE TYPE`) is preserved too — the same "cannot prove it is ours" bias
+ * `isGeneratedMigration` takes, for the same reason.
+ */
+export function migrationsOutsideCorpus(
+  dir: string,
+  files: readonly string[],
+  corpusTables: readonly string[],
+): string[] {
+  const rebuilt = new Set(corpusTables.map(table => table.toLowerCase()))
+
+  return files.filter((file) => {
+    let contents: string
+    try {
+      contents = readFileSync(join(dir, file), 'utf8')
+    }
+    catch {
+      return true
+    }
+
+    const touched = tablesOperatedOn(contents)
+    if (touched.length === 0)
+      return true
+
+    return touched.some(table => !rebuilt.has(table))
+  })
+}
+
+/** The leading ordinal in a migration filename, or 0 when it has none. */
+function migrationOrdinal(file: string): number {
+  const match = file.match(/^(\d+)/)
+  return match ? Number(match[1]) : 0
+}
+
 export interface RegeneratedCorpus {
   dialect: string
   /** How many model definitions fed the generation. */
   models: number
+  /**
+   * The model roots that actually contributed, absolute.
+   *
+   * Reported because the plan used to claim it had read "app/Models and the
+   * framework defaults" unconditionally, which since #2220 is false whenever an
+   * app has models of its own — and the count sitting next to that sentence was
+   * the only hint that the defaults had contributed nothing
+   * (stacksjs/stacks#2255).
+   */
+  modelRoots: string[]
   /** Files that would be (or were) written, in order. */
   files: Array<{ name: string, statements: number }>
   /** Existing .sql files that would be (or were) removed. */
   removed: string[]
   /**
-   * Existing .sql files kept because nothing here can recreate them: they
-   * carry no `@generated` marker, so they were either hand-authored or emitted
-   * before the marker existed. Callers should show these to the user — a
-   * corpus written before this marker shipped will list every file here.
+   * Existing .sql files kept because nothing here can recreate them — for
+   * either reason: they carry no `@generated` marker (hand-authored, or
+   * emitted before the marker existed), or they describe a table outside this
+   * corpus. Callers should show these to the user; a corpus written before the
+   * marker shipped will list every file here.
    */
   preserved: string[]
+  /**
+   * The subset of {@link preserved} kept for the second reason: the corpus
+   * does not rebuild the tables these files describe.
+   *
+   * Worth separating in the UI, because the two mean opposite things. An
+   * unmarked file is someone's work the generator must not touch; an
+   * out-of-scope file is the framework's own schema going unregenerated, and
+   * that usually means the model that owned it is no longer in scope
+   * (stacksjs/stacks#2255).
+   */
+  preservedOutOfScope: string[]
   /** The directory operated on. */
   dir: string
 }
@@ -2286,7 +2435,10 @@ export async function regenerateMigrationCorpus(options: {
     )
     const dir = options.dir ?? migrationDirectory(dialect)
 
-    const sources = resolveModelSources()
+    // `forceStage` because of the sentinel written just below: it goes into
+    // `sources.dir`, and that has to be a directory this call owns rather than
+    // the app's own `app/Models` (stacksjs/stacks#2255).
+    const sources = resolveModelSources({ forceStage: true })
     if (!sources) {
       return err(new Error(
         'No models found. Define models in app/Models, or ensure the framework defaults at '
@@ -2307,8 +2459,10 @@ export async function regenerateMigrationCorpus(options: {
     //
     // bun-query-builder reads `.qb-migrations.<dialect>.json` from the models
     // directory as a starting state, so an empty plan there means "assume
-    // nothing exists". The staging directory is ours and is rebuilt on every
-    // call, so this cannot leak into the user's project.
+    // nothing exists". Writing it is only safe because of the `forceStage`
+    // above: the staging directory is ours and is rebuilt on every call, so
+    // this cannot leak into the user's project. Drop that flag and the sentinel
+    // lands in `app/Models` (stacksjs/stacks#2255).
     try {
       writeFileSync(
         join(sources.dir, `.qb-migrations.${dialect}.json`),
@@ -2377,25 +2531,39 @@ export async function regenerateMigrationCorpus(options: {
     }
     catch { /* directory does not exist yet */ }
 
-    // Only files this generator wrote may be deleted. Everything else is
-    // preserved: a hand-authored migration has no model to be rebuilt from, so
-    // deleting it is unrecoverable, and "rebuild from the models" was never a
-    // licence to remove work the models do not describe
-    // (stacksjs/stacks#2234). `--replace-unmarked` opts back into the old
-    // sweep for a corpus that predates the marker and is known to be entirely
-    // generator output.
-    const removed = options.replaceUnmarked
+    // Two independent reasons to keep a file, and a file only gets deleted if
+    // neither applies.
+    //
+    // 1. It carries no `@generated` marker, so a person wrote it and no rerun
+    //    can bring it back (stacksjs/stacks#2234). `--replace-unmarked` waives
+    //    this for a corpus that predates the marker.
+    // 2. It describes a table this corpus does not rebuild
+    //    (stacksjs/stacks#2255). No flag waives this one: `--replace-unmarked`
+    //    means "these unmarked files are generator output", not "delete the
+    //    schema for tables you are not regenerating".
+    const outOfScope = new Set(migrationsOutsideCorpus(dir, existing, createdTablesOf(statements)))
+    const deletable = options.replaceUnmarked
       ? existing
       : existing.filter(file => isGeneratedMigration(dir, file))
+    const removed = deletable.filter(file => !outOfScope.has(file))
     const preserved = existing.filter(file => !removed.includes(file))
+    const preservedOutOfScope = preserved.filter(file => outOfScope.has(file))
+
+    // Numbering continues past whatever is preserved rather than restarting at
+    // 1. The corpus runs in filename order, so a preserved
+    // `0000000076-create-users-table.sql` alongside a fresh
+    // `0000000001-create-orders-table.sql` would try to add the orders foreign
+    // key seventy-five files before its target existed. Nothing preserved means
+    // nothing to order against, and numbering starts at 1 as it always has.
+    const startAt = preserved.reduce((max, file) => Math.max(max, migrationOrdinal(file)), 0) + 1
 
     const files = groups.map((group, index) => ({
-      name: `${String(index + 1).padStart(10, '0')}-${group.label}.sql`,
+      name: `${String(startAt + index).padStart(10, '0')}-${group.label}.sql`,
       statements: group.statements.length,
     }))
 
     if (options.dryRun)
-      return ok({ dialect, models: sources.models.length, files, removed, preserved, dir })
+      return ok({ dialect, models: sources.models.length, modelRoots: sources.roots, files, removed, preserved, preservedOutOfScope, dir })
 
     mkdirSync(dir, { recursive: true })
 
@@ -2409,7 +2577,7 @@ export async function regenerateMigrationCorpus(options: {
       writeFileSync(join(dir, files[index]!.name), `${GENERATED_MIGRATION_MARKER}\n${body}`)
     })
 
-    return ok({ dialect, models: sources.models.length, files, removed, preserved, dir })
+    return ok({ dialect, models: sources.models.length, modelRoots: sources.roots, files, removed, preserved, preservedOutOfScope, dir })
   }
   catch (error) {
     return err(handleError('Migration regeneration failed', error))

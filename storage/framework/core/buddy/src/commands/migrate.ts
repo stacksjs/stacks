@@ -1,5 +1,6 @@
 import type { CLI, MigrateOptions } from '@stacksjs/types'
 import { closeSync, existsSync, mkdirSync, openSync, readdirSync, readFileSync, rmSync } from 'node:fs'
+import { relative } from 'node:path'
 import process from 'node:process'
 import { confirm, intro, log, onUnknownSubcommand, outro, text } from "@stacksjs/cli"
 import { Action } from '@stacksjs/enums'
@@ -1122,26 +1123,56 @@ export function migrate(buddy: CLI): void {
         process.exit(ExitCode.FatalError)
       }
 
-      const { files, removed, preserved, models } = plan.value
+      const { files, removed, preserved, preservedOutOfScope, models, modelRoots } = plan.value
+
       // Preserved files are the ones no rerun can recreate, so they are the
       // only part of this plan a user cannot undo by running the command
-      // again. List them by name rather than as a count (stacksjs/stacks#2234).
-      const preservedBlock = preserved.length === 0
+      // again. List them by name rather than as a count (stacksjs/stacks#2234),
+      // and split the two reasons, because they call for opposite responses:
+      // an unmarked file is someone's work, an out-of-scope one is a table this
+      // app's models no longer describe (stacksjs/stacks#2255).
+      const outOfScope = new Set(preservedOutOfScope)
+      const unmarked = preserved.filter(f => !outOfScope.has(f))
+
+      const unmarkedBlock = unmarked.length === 0
         ? ''
         : `
-  • ${preserved.length} file(s) carry no @generated marker and will be KEPT:
-${preserved.map(f => `      ${f}`).join('\n')}
+  • ${unmarked.length} file(s) carry no @generated marker and will be KEPT:
+${unmarked.map(f => `      ${f}`).join('\n')}
     Hand-authored migrations cannot be regenerated, so they are never deleted.
     If these are output from a Stacks version that predated the marker, re-run
     with --replace-unmarked to replace them too.`
+
+      // Capped, unlike the unmarked list: an app that narrowed its model scope
+      // can have seventy of these, and scrolling the confirmation prompt off
+      // the screen is its own kind of unreadable.
+      const OUT_OF_SCOPE_SHOWN = 20
+      const outOfScopeMore = preservedOutOfScope.length - OUT_OF_SCOPE_SHOWN
+      const outOfScopeBlock = preservedOutOfScope.length === 0
+        ? ''
+        : `
+  • ${preservedOutOfScope.length} file(s) describe tables this corpus does not rebuild, and will be KEPT:
+${preservedOutOfScope.slice(0, OUT_OF_SCOPE_SHOWN).map(f => `      ${f}`).join('\n')}${outOfScopeMore > 0 ? `\n      ... and ${outOfScopeMore} more` : ''}
+    Nothing in scope regenerates these, so removing them would leave the app
+    with no definition for those tables at all. If they belong to framework
+    models your app relies on without declaring (users, jobs, payments, ...),
+    either publish them with \`buddy publish model <Name>\` or set
+    database.models.includeFrameworkDefaults, then regenerate again.`
+
+      // The roots that actually contributed. Saying "app/Models and the
+      // framework defaults" unconditionally was wrong for every app that has
+      // models of its own (stacksjs/stacks#2255).
+      const rootList = modelRoots.length === 0
+        ? 'no model directory'
+        : modelRoots.map(root => relative(process.cwd(), root) || root).join(' and ')
 
       // eslint-disable-next-line no-console
       console.log(`
   Regenerate plan: ${target}
   ─────────────────────────────────────────────
-  • ${models} model(s) read from app/Models and the framework defaults
+  • ${models} model(s) read from ${rootList}
   • ${files.length} migration file(s) will be written
-  • ${removed.length} existing file(s) will be removed${preservedBlock}
+  • ${removed.length} existing file(s) will be removed${unmarkedBlock}${outOfScopeBlock}
   • These files are tracked in git, so review with \`git diff\` afterwards
   ─────────────────────────────────────────────
 `)
