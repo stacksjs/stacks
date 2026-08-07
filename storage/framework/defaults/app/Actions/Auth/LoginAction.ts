@@ -3,6 +3,7 @@ import { Auth, createTwoFactorChallenge, getTwoFactorState } from '@stacksjs/aut
 import { User } from '@stacksjs/orm'
 import { response } from '@stacksjs/router'
 import { schema } from '@stacksjs/validation'
+import { PASSWORD_MAX_LENGTH, PASSWORD_PRESENCE_MESSAGE } from '../../password-policy'
 
 export default new Action({
   name: 'LoginAction',
@@ -14,9 +15,14 @@ export default new Action({
       rule: schema.string().email(),
       message: 'Email must be a valid email address.',
     },
+    // Presence only, NOT the creation policy. Enforcing a minimum length on
+    // sign-in locks out every account created under a shorter one: the user is
+    // told their own password is too short, with a 422 raised before the
+    // credentials are ever checked. The policy belongs on the paths that SET a
+    // password (#2226).
     password: {
-      rule: schema.string().min(6).max(255),
-      message: 'Password must be between 6 and 255 characters.',
+      rule: schema.string().min(1).max(PASSWORD_MAX_LENGTH),
+      message: PASSWORD_PRESENCE_MESSAGE,
     },
   },
 
