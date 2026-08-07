@@ -30,6 +30,20 @@ interface UnsubscribeClaims {
   email: string
   exp: number
   iss: string
+  /**
+   * What this link opts out of, when it is not everything.
+   *
+   * An opaque string the application chooses and interprets - a thread id, a
+   * repository, a newsletter name. Absent means the whole address, which is
+   * what every token minted before this existed means, so old links keep
+   * working and keep meaning what they meant.
+   *
+   * It is inside the signed payload rather than beside it in the URL. A scope
+   * carried as a query parameter is one anybody can edit, and editing it from
+   * "this pull request" to "everything" is a one-character attack on somebody
+   * else's notification settings.
+   */
+  scope?: string
 }
 
 const DEFAULT_TTL_SECONDS = 30 * 24 * 60 * 60 // 30 days
@@ -59,13 +73,14 @@ function b64UrlDecode(s: string): Buffer {
  * works months later, short enough that a leaked URL doesn't grant
  * indefinite control. Tighter caps available via `ttlSeconds`.
  */
-export function createUnsubscribeToken(email: string, ttlSeconds: number = DEFAULT_TTL_SECONDS): string {
+export function createUnsubscribeToken(email: string, ttlSeconds: number = DEFAULT_TTL_SECONDS, scope?: string): string {
   if (!email) throw new Error('[email/unsubscribe] email is required')
   const exp = Math.floor(Date.now() / 1000) + Math.floor(ttlSeconds)
   const claims: UnsubscribeClaims = {
     email: String(email).trim().toLowerCase(),
     exp,
     iss: 'stacks',
+    ...(scope ? { scope: String(scope) } : {}),
   }
   const payload = b64UrlEncode(Buffer.from(JSON.stringify(claims)))
   const sig = b64UrlEncode(createHmac('sha256', getAppKey()).update(payload).digest())
@@ -76,6 +91,11 @@ export interface UnsubscribeVerification {
   valid: boolean
   reason?: 'malformed' | 'bad_signature' | 'expired'
   email?: string
+  /**
+   * What the link opts out of, when the minter said. Absent means the whole
+   * address - the meaning every token had before scopes existed.
+   */
+  scope?: string
 }
 
 /**
@@ -108,7 +128,11 @@ export function verifyUnsubscribeToken(token: string): UnsubscribeVerification {
   if (!claims.email || typeof claims.email !== 'string') {
     return { valid: false, reason: 'malformed' }
   }
-  return { valid: true, email: claims.email }
+  return {
+    valid: true,
+    email: claims.email,
+    ...(typeof claims.scope === 'string' && claims.scope ? { scope: claims.scope } : {}),
+  }
 }
 
 /**
@@ -121,8 +145,8 @@ export function verifyUnsubscribeToken(token: string): UnsubscribeVerification {
  * see {@link buildListUnsubscribeHeaders} for RFC 8058
  * (one-click) compatibility.
  */
-export function buildUnsubscribeUrl(email: string, ttlSeconds?: number, options: { baseUrl?: string, routePrefix?: string } = {}): string {
-  const token = createUnsubscribeToken(email, ttlSeconds)
+export function buildUnsubscribeUrl(email: string, ttlSeconds?: number, options: { baseUrl?: string, routePrefix?: string, scope?: string } = {}): string {
+  const token = createUnsubscribeToken(email, ttlSeconds, options.scope)
   const base = (options.baseUrl || process.env.APP_URL || 'http://localhost').replace(/\/$/, '')
   const route = (options.routePrefix || DEFAULT_ROUTE).replace(/\/$/, '')
   return `${base}${route}/${token}`
@@ -137,7 +161,7 @@ export function buildUnsubscribeUrl(email: string, ttlSeconds?: number, options:
  * Returns a map suitable for passing into `EmailMessage.headers`
  * (or merging with existing headers).
  */
-export function buildListUnsubscribeHeaders(email: string, ttlSeconds?: number, options?: { baseUrl?: string, routePrefix?: string }): Record<string, string> {
+export function buildListUnsubscribeHeaders(email: string, ttlSeconds?: number, options?: { baseUrl?: string, routePrefix?: string, scope?: string }): Record<string, string> {
   const url = buildUnsubscribeUrl(email, ttlSeconds, options)
   return {
     'List-Unsubscribe': `<${url}>`,
