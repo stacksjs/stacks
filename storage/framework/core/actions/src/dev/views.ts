@@ -1,6 +1,7 @@
 import { AsyncLocalStorage } from 'node:async_hooks'
 import { existsSync } from 'node:fs'
-import { config, overridesReady, resolveViewPatterns } from '@stacksjs/config'
+import type { RequestContextSnapshot } from '@stacksjs/config'
+import { config, installRequestContext, overridesReady, parseCookieHeader, resolveViewPatterns } from '@stacksjs/config'
 import { log } from '@stacksjs/logging'
 import { projectPath } from '@stacksjs/path'
 import { seedCsrfPageResponse } from './csrf'
@@ -30,13 +31,7 @@ import { exitWithParent } from './exit-with-parent'
  *      own cookie during SSR.
  */
 
-interface StacksRequestContext {
-  cookies: Record<string, string>
-  url: string
-  locale: string
-}
-
-const requestStore = new AsyncLocalStorage<StacksRequestContext>()
+const requestStore = new AsyncLocalStorage<RequestContextSnapshot>()
 
 // Stable global so server-script blocks (which run inside stx serve's
 // fetch handler but without the raw Request) can read cookies.
@@ -46,32 +41,16 @@ const requestStore = new AsyncLocalStorage<StacksRequestContext>()
 // different async continuation), so we ALSO stash the context on a plain global
 // (`__stxServeContext`) — the same mechanism `__stxServeSearch` already relies
 // on — and fall back to it when the ALS store is empty.
-function currentRequestContext(): StacksRequestContext | undefined {
-  return requestStore.getStore() ?? (globalThis as { __stxServeContext?: StacksRequestContext }).__stxServeContext
+function currentRequestContext(): RequestContextSnapshot | undefined {
+  return requestStore.getStore() ?? (globalThis as { __stxServeContext?: RequestContextSnapshot }).__stxServeContext
 }
-;(globalThis as any).requestContext = {
-  cookie(name: string): string | null {
-    return currentRequestContext()?.cookies?.[name] ?? null
-  },
-  url(): string {
-    return currentRequestContext()?.url ?? ''
-  },
-  /** Just the query string, including the leading `?`. Mirrors production. */
-  search(): string {
-    const url = currentRequestContext()?.url
-    if (!url)
-      return ''
 
-    const mark = url.indexOf('?')
-    return mark === -1 ? '' : url.slice(mark)
-  },
-  locale(): string {
-    // 'en' rather than 'de' as the fallback: this is what a page sees when
-    // the request carried no locale at all, and the framework has no reason
-    // to assume German.
-    return currentRequestContext()?.locale ?? 'en'
-  },
-}
+// Built by the shared factory, not by hand. Two hand-written installers is how
+// production ended up returning the query string from `url()` and having no
+// `locale()` at all — both dev-only-passing bugs that reached a box (#2232).
+// Only the snapshot source differs between the servers, and that is the
+// argument.
+installRequestContext(currentRequestContext)
 
 // Do not outlive `./buddy dev`. See exit-with-parent.ts.
 exitWithParent()
@@ -91,24 +70,9 @@ catch {
   await startDefaultServer()
 }
 
+/** Byte-identical to the production server's copy, so both now share one. */
 function parseCookies(req: Request): Record<string, string> {
-  const out: Record<string, string> = {}
-  const header = req.headers.get('cookie') || ''
-  if (!header)
-    return out
-  for (const part of header.split(';')) {
-    const trimmed = part.trim()
-    const eq = trimmed.indexOf('=')
-    if (eq === -1)
-      continue
-    const k = trimmed.slice(0, eq).trim()
-    const v = trimmed.slice(eq + 1).trim()
-    if (!k)
-      continue
-    try { out[k] = decodeURIComponent(v) }
-    catch { out[k] = v }
-  }
-  return out
+  return parseCookieHeader(req.headers.get('cookie'))
 }
 
 async function startDefaultServer() {
@@ -277,10 +241,21 @@ async function startDefaultServer() {
       // boundary, so we additionally stash a plain global (read as a fallback by
       // requestContext, mirroring __stxServeSearch).
       const locale = await applyRequestLocale(req)
-      const ctx: StacksRequestContext = { cookies: parseCookies(req), url: req.url, locale }
+      // `search` and `path` alongside `url`: production's snapshot carries them,
+      // and a dev snapshot that did not meant `requestContext.path()` answered
+      // differently under `buddy dev` than on the box — the same class of
+      // divergence that produced the url()/locale() incidents (#2232).
+      const ctx: RequestContextSnapshot = {
+        cookies: parseCookies(req),
+        url: req.url,
+        path: url.pathname,
+        search: url.search,
+        host: url.host,
+        locale,
+      }
 
       ;(globalThis as { __stxServeSearch?: string }).__stxServeSearch = url.search
-      ;(globalThis as { __stxServeContext?: StacksRequestContext }).__stxServeContext = ctx
+      ;(globalThis as { __stxServeContext?: RequestContextSnapshot }).__stxServeContext = ctx
 
       requestStore.enterWith(ctx)
       return null
