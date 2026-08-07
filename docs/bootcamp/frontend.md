@@ -554,13 +554,13 @@ Configure your STX components in `stx.config.ts`:
 // stx.config.ts
 export default {
   // Components directory - for user-defined components
-  componentsDir: 'resources/components',
+  componentsDir: 'components',
 
   // Layouts directory - for layout templates
-  layoutsDir: 'resources/layouts',
+  layoutsDir: 'layouts',
 
   // Partials directory - for partial templates
-  partialsDir: 'resources/partials',
+  partialsDir: 'partials',
 }
 ```
 

@@ -127,9 +127,9 @@ dedicated signal for each binding. Arbitrary expressions such as
 import type { StxOptions } from '@stacksjs/stx'
 
 export default {
-  componentsDir: 'resources/components',
-  layoutsDir: 'resources/layouts',
-  partialsDir: 'resources/partials',
+  componentsDir: 'components',
+  layoutsDir: 'layouts',
+  partialsDir: 'partials',
 } satisfies StxOptions
 ```
 

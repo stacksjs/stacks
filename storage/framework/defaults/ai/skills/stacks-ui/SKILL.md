@@ -179,9 +179,9 @@ export default {
 
 ```typescript
 export default {
-  componentsDir: 'resources/components',
-  layoutsDir: 'resources/layouts',
-  partialsDir: 'resources/partials',
+  componentsDir: 'components',
+  layoutsDir: 'layouts',
+  partialsDir: 'partials',
 } satisfies StxOptions
 ```
 

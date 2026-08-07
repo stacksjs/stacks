@@ -279,9 +279,9 @@ Default configurations provided at `storage/framework/defaults/ide/`:
 
 ```typescript
 {
-  componentsDir: 'resources/components',
-  layoutsDir: 'resources/layouts',
-  partialsDir: 'resources/partials',
+  componentsDir: 'components',
+  layoutsDir: 'layouts',
+  partialsDir: 'partials',
 }
 ```
 
