@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import process from 'node:process'
 import { encryptValue, generateKeypair } from '../src/crypto'
-import { autoLoadEnv, decryptEnvValue, loadEnv, resetPrivateKeyCache, resolvePrivateKey } from '../src/plugin'
+import { activeEnvName, autoLoadEnv, decryptEnvValue, loadEnv, resetPrivateKeyCache, resolvePrivateKey } from '../src/plugin'
 
 // Bun natively loads `.env` / `.env.<mode>` into process.env before any
 // preload script runs, and it knows nothing about dotenvx-style encryption.
@@ -212,5 +212,63 @@ describe('resolvePrivateKey / decryptEnvValue - .env.keys discovery', () => {
 
   test('passes non-encrypted values through unchanged', () => {
     expect(decryptEnvValue('plain-value', { env: 'production', cwd: dir })).toBe('plain-value')
+  })
+})
+
+// stacksjs/stacks#2259 — `activeEnvName` puts `loadedEnvName` above `APP_ENV`
+// on purpose: an env file that has been read owns the keys for anything
+// decrypted afterwards. `resetPrivateKeyCache` did not clear it, so once
+// anything in the process had called `autoLoadEnv`, a later `APP_ENV` swap was
+// silently ignored — the one thing that function exists to make possible.
+//
+// It surfaced as CI flake rather than a failure. Whether `loadedEnvName` was
+// set depended on which test file bun happened to run first, so the env proxy's
+// three decryption tests passed or failed on file ordering and `core/env` went
+// red on roughly half of all runs, on main as well as on PRs.
+describe('resetPrivateKeyCache clears the recorded environment (#2259)', () => {
+  let dir: string
+
+  beforeEach(() => {
+    dir = mkdtempSync(join(tmpdir(), 'env-reset-'))
+    resetPrivateKeyCache()
+  })
+
+  afterEach(() => {
+    resetPrivateKeyCache()
+    rmSync(dir, { recursive: true, force: true })
+    delete process.env.APP_ENV
+    delete process.env.DOTENV_PRIVATE_KEY_STAGING
+  })
+
+  test('an APP_ENV swap takes effect after autoLoadEnv has latched an environment', () => {
+    const staging = generateKeypair()
+    writeFileSync(join(dir, '.env.development'), 'SOME_VALUE=development')
+
+    // Latch `loadedEnvName = 'development'`, exactly as any earlier test file
+    // (or a real boot) would.
+    process.env.APP_ENV = 'development'
+    autoLoadEnv({ cwd: dir, quiet: true })
+
+    // Now become staging, the way the env proxy's own tests do.
+    process.env.APP_ENV = 'staging'
+    process.env.DOTENV_PRIVATE_KEY_STAGING = staging.privateKey
+    delete process.env.NODE_ENV
+    resetPrivateKeyCache()
+
+    expect(activeEnvName()).toBe('staging')
+    expect(resolvePrivateKey({ cwd: dir })).toBe(staging.privateKey)
+  })
+
+  test('without the reset, the latched environment still wins', () => {
+    // The precedence itself is deliberate and must not regress: a loaded env
+    // file keeps owning key resolution until something explicitly resets.
+    writeFileSync(join(dir, '.env.development'), 'SOME_VALUE=development')
+    process.env.APP_ENV = 'development'
+    autoLoadEnv({ cwd: dir, quiet: true })
+
+    process.env.APP_ENV = 'staging'
+    delete process.env.NODE_ENV
+
+    expect(activeEnvName()).toBe('development')
   })
 })
