@@ -1443,7 +1443,37 @@ export async function runDatabaseMigration(): Promise<Result<string, Error>> {
     // forced everyone to add their own debug logs.
     const detail = error instanceof Error ? error.message : String(error)
     log.error(`[migration] Failed after ${Date.now() - startedAt}ms: ${detail}`)
-    log.info('[migration] Run `./buddy migrate:fresh` to drop and recreate the schema if state is partial.')
+
+    // A constraint violation is about the *data*, so `migrate:fresh` is the
+    // one thing that cannot help: it replays the same DDL against the same
+    // seeded rows and fails identically, having destroyed the database on the
+    // way. Recommending it here sent people round a loop whose only exit was
+    // deleting the SQLite file by hand.
+    //
+    // The index-named form (`index 'x'` rather than `table.column`) is worth
+    // calling out separately: SQLite only phrases it that way for an
+    // expression index or a 12-step table rebuild, so a plain
+    // `CREATE UNIQUE INDEX` over duplicate values is *not* what happened, and
+    // looking for duplicates in the obvious place will waste an afternoon.
+    if (/UNIQUE constraint failed/i.test(detail)) {
+      const viaIndex = /index\s+'/i.test(detail)
+      log.info(
+        '[migration] This is a data conflict, not a schema one — `migrate:fresh` replays the same '
+        + 'statements against the same rows and fails the same way. Clear or de-duplicate the '
+        + 'offending rows first.',
+      )
+      if (viaIndex) {
+        log.info(
+          '[migration] The error names an index rather than a column, which SQLite only does for an '
+          + 'expression index or a table rebuild — so the conflict is arising while rows are being '
+          + 'copied, not from a bare CREATE UNIQUE INDEX.',
+        )
+      }
+    }
+    else {
+      log.info('[migration] Run `./buddy migrate:fresh` to drop and recreate the schema if state is partial.')
+    }
+
     return err(handleError('Migration failed', error))
   }
   finally {
